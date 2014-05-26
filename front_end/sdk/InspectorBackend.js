@@ -418,7 +418,7 @@ InspectorBackendClass.Connection.prototype = {
         messageObject.id = messageId;
 
         if (InspectorBackendClass.Options.dumpInspectorProtocolMessages)
-            console.log("frontend: " + JSON.stringify(messageObject));
+            this._dumpProtocolMessage("frontend: " + JSON.stringify(messageObject));
 
         this.sendMessage(messageObject);
         ++this._pendingResponsesCount;
@@ -466,7 +466,7 @@ InspectorBackendClass.Connection.prototype = {
     dispatch: function(message)
     {
         if (InspectorBackendClass.Options.dumpInspectorProtocolMessages)
-            console.log("backend: " + ((typeof message === "string") ? message : JSON.stringify(message)));
+            this._dumpProtocolMessage("backend: " + ((typeof message === "string") ? message : JSON.stringify(message)));
 
         var messageObject = /** @type {!Object} */ ((typeof message === "string") ? JSON.parse(message) : message);
 
@@ -543,6 +543,11 @@ InspectorBackendClass.Connection.prototype = {
     fireDisconnected: function(reason)
     {
         this.dispatchEventToListeners(InspectorBackendClass.Connection.Events.Disconnected, {reason: reason});
+    },
+
+    _dumpProtocolMessage: function(message)
+    {
+        console.log(message);
     },
 
     __proto__: WebInspector.Object.prototype
