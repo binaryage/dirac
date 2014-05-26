@@ -38,11 +38,30 @@ WebInspector.TimelineTraceEventBindings.prototype = {
         return this._eventToCallStack.get(event);
     },
 
+    /**
+      * @param {!WebInspector.TracingModel.Event} event
+      * @param {?Element} element
+      */
+    setPreviewElement: function(event, element)
+    {
+        this._eventToPreviewElement.set(event, element);
+    },
+
+    /**
+      * @param {!WebInspector.TracingModel.Event} event
+      * @return {?Element|undefined}
+      */
+    previewElement: function(event)
+    {
+        return this._eventToPreviewElement.get(event);
+    },
+
     _reset: function()
     {
         this._eventToWarning = new Map();
         this._eventToInitiator = new Map();
         this._eventToCallStack = new Map();
+        this._eventToPreviewElement = new Map();
         this._resetProcessingState();
     },
 

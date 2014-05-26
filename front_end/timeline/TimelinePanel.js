@@ -979,10 +979,19 @@ WebInspector.TimelinePanel.prototype = {
             this._updateSelectedRangeStats();
             return;
         }
-        if (this._selection.type() === WebInspector.TimelineSelection.Type.Record) {
+        switch (this._selection.type()) {
+        case WebInspector.TimelineSelection.Type.Record:
             var record = /** @type {!WebInspector.TimelineModel.Record} */ (this._selection.object());
             WebInspector.TimelineUIUtils.generatePopupContent(record, this._model, this._detailsLinkifier, this.showInDetails.bind(this, record.title()), this._model.loadedFromFile());
-        } else if (this._selection.type() === WebInspector.TimelineSelection.Type.Frame) {
+            break;
+        case WebInspector.TimelineSelection.Type.TraceEvent:
+            var event = /** @type {!WebInspector.TracingModel.Event} */ (this._selection.object());
+            var title = WebInspector.TimelineUIUtils.styleForTimelineEvent(event.name).title;
+            var tracingModel = this._tracingModel();
+            var bindings = this._traceEventBindings();
+            WebInspector.TimelineUIUtils.buildTraceEventDetails(event, tracingModel, this._detailsLinkifier, this.showInDetails.bind(this, title), false, bindings, this._model.target());
+            break;
+        case WebInspector.TimelineSelection.Type.Frame:
             var frame = /** @type {!WebInspector.TimelineFrame} */ (this._selection.object());
             if (frame.layerTree) {
                 var layersView = this._layersView();
@@ -991,6 +1000,7 @@ WebInspector.TimelinePanel.prototype = {
             } else {
                 this.showInDetails(WebInspector.UIString("Frame Statistics"), WebInspector.TimelineUIUtils.generatePopupContentForFrame(this._lazyFrameModel, frame));
             }
+            break;
         }
     },
 
