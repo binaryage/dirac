@@ -87,13 +87,38 @@
     border-bottom: 1px solid rgb(163, 163, 163);
 }
 
-.responsive-design-toolbar input {
+.responsive-design-toolbar label {
+    display: inline-flex;
+    align-items: center;
+}
+
+.responsive-design-toolbar input[type='text'] {
     color: rgb(255, 156, 0);
     text-align: center;
     background-color: transparent;
     border: none;
     margin: 0 2px;
     padding: 3px;
+}
+
+.responsive-design-toolbar input[type='checkbox'] {
+    background: none;
+    margin: 0;
+    margin-right: 3px;
+}
+
+.responsive-design-toolbar input[type='checkbox']:after {
+    content:'\2714';
+    color: transparent;
+    line-height: 10px;
+    position: absolute;
+    cursor: pointer;
+    background: rgb(64, 64, 64);
+    border: 1px solid hsla(41, 100%, 47%, 0.6);
+}
+
+.responsive-design-toolbar input[type='checkbox']:checked:after {
+    color: hsl(41, 100%, 47%);
 }
 
 .responsive-design-toolbar input.error-input {

@@ -390,6 +390,10 @@ WebInspector.ResponsiveDesignView.prototype = {
         textAutosizingOverrideElement.title = WebInspector.UIString("Text autosizing is the feature that boosts font sizes on mobile devices.");
         this._textAutosizingOverrideCheckbox = textAutosizingOverrideElement.firstChild;
         this._textAutosizingOverrideCheckbox.checked = metrics.textAutosizing;
+
+        var checkbox = WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Viewport"), WebInspector.overridesSupport.settings.emulateViewport, true);
+        this._toolbarElement.appendChild(checkbox);
+
         WebInspector.overridesSupport.settings.deviceMetrics.addChangeListener(this._updateDeviceMetricsElement, this);
     },
 
