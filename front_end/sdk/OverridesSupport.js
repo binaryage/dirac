@@ -491,6 +491,14 @@ WebInspector.OverridesSupport.prototype = {
 
     _onPageResizerAvailableSizeChanged: function()
     {
+        var metrics = WebInspector.OverridesSupport.DeviceMetrics.parseSetting(this.settings.deviceMetrics.get());
+        if (!metrics.isValid())
+            return;
+
+        var available = this._pageResizer.availableDipSize();
+        if (available.width > metrics.width && available.height > metrics.height)
+            return;
+
         this._deviceMetricsChanged();
     },
 
@@ -550,21 +558,39 @@ WebInspector.OverridesSupport.prototype = {
                 overrideWidth = 0;
                 overrideHeight = 0;
             } else {
-                var widthScale = dipWidth ? dipWidth / Math.max(available.width, 1) : 1;
-                var heightScale = dipHeight ? dipHeight / Math.max(available.height, 1) : 1;
-                var scale = 1 / Math.max(widthScale, heightScale);
-                this._pageResizer.enable(dipWidth ? Math.max(Math.floor(dipWidth * scale), 1) : 0, dipHeight ? Math.max(Math.floor(dipHeight * scale), 1) : 0, scale);
-                if (!dipWidth)
-                    overrideWidth = Math.round(available.width / scale);
-                if (!dipHeight)
-                    overrideHeight = Math.round(available.height / scale);
+                this._pageResizer.enable(Math.min(dipWidth, available.width), Math.min(dipHeight, available.height), 0);
             }
         }
-        PageAgent.setDeviceMetricsOverride(
-            overrideWidth, overrideHeight, metrics.deviceScaleFactor,
-            this.settings.emulateViewport.get(), this._pageResizer ? true : this.settings.deviceFitWindow.get(),
-            metrics.textAutosizing, metrics.fontScaleFactor(),
-            apiCallback.bind(this));
+
+        // Do not emulate resolution more often than 10Hz.
+        this._setDeviceMetricsTimers = (this._setDeviceMetricsTimers || 0) + 1;
+        if (overrideWidth || overrideHeight)
+            setTimeout(setDeviceMetricsOverride.bind(this), 100);
+        else
+            setDeviceMetricsOverride.call(this);
+
+        /**
+         * @this {WebInspector.OverridesSupport}
+         */
+        function setDeviceMetricsOverride()
+        {
+            // Drop heavy intermediate commands.
+            this._setDeviceMetricsTimers--;
+            var isExpensive = overrideWidth || overrideHeight;
+            if (isExpensive && this._setDeviceMetricsTimers) {
+                var commandThreshold = 100;
+                var time = window.performance.now();
+                if (time - this._lastExpensivePageAgentCommandTime < commandThreshold)
+                    return;
+                this._lastExpensivePageAgentCommandTime = time;
+            }
+
+            PageAgent.setDeviceMetricsOverride(
+                overrideWidth, overrideHeight, metrics.deviceScaleFactor,
+                this.settings.emulateViewport.get(), this._pageResizer ? false : this.settings.deviceFitWindow.get(),
+                metrics.textAutosizing, metrics.fontScaleFactor(),
+                apiCallback.bind(this));
+        }
 
         this.maybeHasActiveOverridesChanged();
 
@@ -656,6 +682,8 @@ WebInspector.OverridesSupport.prototype = {
 
     _showRulersChanged: function()
     {
+        if (WebInspector.experimentsSettings.responsiveDesign.isEnabled())
+            return;
         PageAgent.setShowViewportSizeOnResize(true, this.showMetricsRulers());
     },
 

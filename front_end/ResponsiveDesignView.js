@@ -24,17 +24,17 @@ WebInspector.ResponsiveDesignView = function(inspectedPagePlaceholder)
     this._slidersContainer = this._container.element.createChild("div", "vbox responsive-design-sliders-container");
     var hbox = this._slidersContainer.createChild("div", "hbox flex-auto");
     this._heightSliderContainer = this._slidersContainer.createChild("div", "hbox responsive-design-slider-height");
+    this._resolutionHeightLabel = this._heightSliderContainer.createChild("div", "responsive-design-resolution-label responsive-design-resolution-height");
     this._pageContainer = hbox.createChild("div", "vbox flex-auto");
     this._widthSliderContainer = hbox.createChild("div", "vbox responsive-design-slider-width");
+    this._resolutionWidthLabel = this._widthSliderContainer.createChild("div", "responsive-design-resolution-label responsive-design-resolution-width");
 
     this._widthSlider = this._widthSliderContainer.createChild("div", "responsive-design-slider-thumb");
+    this._widthSlider.createChild("div", "responsive-design-thumb-handle");
     this._createResizer(this._widthSlider, false);
-    this._widthZeroButton = this._widthSlider.createChild("div", "responsive-design-zero-button");
-    this._widthZeroButton.addEventListener("click", this._zeroButtonClicked.bind(this, false));
     this._heightSlider = this._heightSliderContainer.createChild("div", "responsive-design-slider-thumb");
+    this._heightSlider.createChild("div", "responsive-design-thumb-handle");
     this._createResizer(this._heightSlider, true);
-    this._heightZeroButton = this._heightSlider.createChild("div", "responsive-design-zero-button");
-    this._heightZeroButton.addEventListener("click", this._zeroButtonClicked.bind(this, true));
 
     this._inspectedPagePlaceholder = inspectedPagePlaceholder;
     inspectedPagePlaceholder.show(this.element);
@@ -76,6 +76,8 @@ WebInspector.ResponsiveDesignView.prototype = {
         this._scale = scale;
         this._dipWidth = dipWidth;
         this._dipHeight = dipHeight;
+        this._resolutionWidthLabel.textContent = dipWidth + "px";
+        this._resolutionHeightLabel.textContent = dipHeight + "px";
         this._updateUI();
     },
 
@@ -105,8 +107,8 @@ WebInspector.ResponsiveDesignView.prototype = {
         if (typeof this._availableSize === "undefined") {
             var zoomFactor = WebInspector.zoomManager.zoomFactor();
             var rect = this.element.getBoundingClientRect();
-            this._availableSize = new Size(rect.width * zoomFactor - WebInspector.ResponsiveDesignView.SliderWidth - WebInspector.ResponsiveDesignView.RulerWidth,
-                                           rect.height * zoomFactor - WebInspector.ResponsiveDesignView.SliderWidth - WebInspector.ResponsiveDesignView.RulerWidth);
+            this._availableSize = new Size(rect.width * zoomFactor - WebInspector.ResponsiveDesignView.RulerWidth,
+                                           rect.height * zoomFactor - WebInspector.ResponsiveDesignView.RulerWidth);
         }
         return this._availableSize;
     },
@@ -143,12 +145,12 @@ WebInspector.ResponsiveDesignView.prototype = {
     {
         var cssOffset = event.data.currentPosition - event.data.startPosition;
         var dipOffset = cssOffset * WebInspector.zoomManager.zoomFactor();
-        var newSize = this._resizeStartSize + dipOffset;
+        var newSize = Math.max(this._resizeStartSize + dipOffset, 1);
         var requested = new Size(this._dipWidth, this._dipHeight);
         if (event.target.isVertical())
-            requested.height = Number.constrain(newSize, 1, this.availableDipSize().height);
+            requested.height = newSize;
         else
-            requested.width = Number.constrain(newSize, 1, this.availableDipSize().width);
+            requested.width = newSize;
         this.dispatchEventToListeners(WebInspector.OverridesSupport.PageResizer.Events.ResizeRequested, requested);
     },
 
@@ -158,20 +160,6 @@ WebInspector.ResponsiveDesignView.prototype = {
     _onResizeEnd: function(event)
     {
         delete this._resizeStartSize;
-    },
-
-    /**
-     * @param {boolean} isHeight
-     */
-    _zeroButtonClicked: function(isHeight)
-    {
-        var size = new Size(this._dipWidth, this._dipHeight);
-        var available = this.availableDipSize();
-        if (isHeight)
-            size.height = this._dipHeight ? 0 : available.height;
-        else
-            size.width = this._dipWidth ? 0 : available.width;
-        this.dispatchEventToListeners(WebInspector.OverridesSupport.PageResizer.Events.ResizeRequested, size);
     },
 
     /**
@@ -199,15 +187,17 @@ WebInspector.ResponsiveDesignView.prototype = {
         canvas.height = deviceScaleFactor * cssCanvasHeight;
         context.scale(canvas.width / dipCanvasWidth, canvas.height / dipCanvasHeight);
 
-        context.font = "10px " + WebInspector.monospaceFontFamily();
+        context.font = "11px " + WebInspector.fontFamily();
 
-        const gridSubStep = 10;
+        const rulerStep = 100;
+        const rulerSubStep = 5;
         const gridStep = 50;
-        const rulerBackgroundColor = "rgb(54, 54, 54)";
+        const gridSubStep = 10;
+        const rulerBackgroundColor = "rgb(64, 64, 64)";
         const backgroundColor = "rgb(102, 102, 102)";
         const lightLineColor = "rgb(132, 132, 132)";
         const darkLineColor = "rgb(114, 114, 114)";
-        const textColor = "rgb(180, 180, 180)";
+        const textColor = "rgb(220, 220, 220)";
 
         var scale = this._scale || 1;
         var rulerWidth = WebInspector.ResponsiveDesignView.RulerWidth;
@@ -225,61 +215,80 @@ WebInspector.ResponsiveDesignView.prototype = {
         context.fillRect(0, 0, dipGridWidth, dipGridHeight);
 
         context.translate(0.5, 0.5);
+        context.strokeStyle = textColor;
         context.fillStyle = textColor;
         context.lineWidth = 1;
 
-        {
-            // Draw vertical lines.
-            for (var x = 0; x < dipGridWidth; x += gridSubStep) {
-                var color = darkLineColor;
-                var y = -rulerWidth / 6;
-                if (!(x % (2 * gridSubStep)))
-                    y = -rulerWidth / 3;
-                if (!(x % gridStep)) {
-                    if (x) {
-                        context.save();
-                        context.translate(x, 0);
-                        context.fillText(x, 2, -rulerWidth / 2);
-                        context.restore();
-                    }
-                    y = -rulerWidth;
-                    color = lightLineColor;
-                }
-                context.strokeStyle = color;
+        // Draw vertical ruler.
+        for (var x = 0; x < dipGridWidth; x += rulerSubStep) {
+            var color = darkLineColor;
+            var y = -rulerWidth / 4;
+            if (!(x % (rulerStep / 2)))
+                y = -rulerWidth / 2;
 
+            if (!(x % rulerStep)) {
+                if (x) {
+                    context.save();
+                    context.translate(x, 0);
+                    context.fillText(x, 2, -rulerWidth / 2);
+                    context.restore();
+                }
+                y = -rulerWidth;
+            }
+
+            context.beginPath();
+            context.moveTo(x, y);
+            context.lineTo(x, 0);
+            context.stroke();
+        }
+
+        // Draw horizontal ruler.
+        for (var y = 0; y < dipGridHeight; y += rulerSubStep) {
+            var color = darkLineColor;
+            x = -rulerWidth / 4;
+            if (!(y % (rulerStep / 2)))
+                x = -rulerWidth / 2;
+
+            if (!(y % rulerStep)) {
+                if (y) {
+                    context.save();
+                    context.translate(0, y);
+                    context.rotate(-Math.PI / 2);
+                    context.fillText(y, 2, -rulerWidth / 2);
+                    context.restore();
+                }
+                x = -rulerWidth;
+            }
+
+            context.beginPath();
+            context.moveTo(x, y);
+            context.lineTo(0, y);
+            context.stroke();
+        }
+
+        // Draw grid.
+        drawGrid(darkLineColor, gridSubStep);
+        drawGrid(lightLineColor, gridStep);
+
+        /**
+         * @param {string} color
+         * @param {number} step
+         */
+        function drawGrid(color, step)
+        {
+            context.strokeStyle = color;
+            for (var x = 0; x < dipGridWidth; x += step) {
                 context.beginPath();
-                context.moveTo(x, y);
+                context.moveTo(x, 0);
                 context.lineTo(x, dipGridHeight);
                 context.stroke();
             }
-        }
-
-        {
-            // Draw horizontal lines.
-            for (var y = 0; y < dipGridHeight; y += gridSubStep) {
-                var color = darkLineColor;
-                var x = -rulerWidth / 6;
-                if (!(y % (2 * gridSubStep)))
-                    x = -rulerWidth / 3;
-                if (!(y % gridStep)) {
-                    if (y) {
-                        context.save();
-                        context.translate(0, y);
-                        context.rotate(-Math.PI / 2);
-                        context.fillText(y, 2, -rulerWidth / 2);
-                        context.restore();
-                    }
-                    x = -rulerWidth;
-                    color = lightLineColor;
-                }
-                context.strokeStyle = color;
-
+            for (var y = 0; y < dipGridHeight; y += step) {
                 context.beginPath();
-                context.moveTo(x, y);
+                context.moveTo(0, y);
                 context.lineTo(dipGridWidth, y);
                 context.stroke();
             }
-            context.restore();
         }
     },
 
@@ -351,7 +360,10 @@ WebInspector.ResponsiveDesignView.prototype = {
      */
     _reset: function()
     {
-        this.dispatchEventToListeners(WebInspector.OverridesSupport.PageResizer.Events.ResizeRequested, this.availableDipSize());
+        var availableDipSize = this.availableDipSize();
+        var size = new Size(availableDipSize.width - WebInspector.ResponsiveDesignView.SliderWidth,
+                            availableDipSize.height - WebInspector.ResponsiveDesignView.SliderWidth);
+        this.dispatchEventToListeners(WebInspector.OverridesSupport.PageResizer.Events.ResizeRequested, size);
     },
 
     __proto__: WebInspector.VBox.prototype
