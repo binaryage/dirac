@@ -110,6 +110,7 @@
             "ui/Popover.js",
             "ui/ProgressIndicator.js",
             "ui/ResizerWidget.js",
+            "ui/SettingsUI.js",
             "ui/SidebarPane.js",
             "ui/SidebarTreeElement.js",
             "ui/ShortcutRegistry.js",
@@ -157,7 +158,6 @@
             "components/PropertiesSection.js",
             "components/SearchableView.js",
             "components/Section.js",
-            "components/SettingsUI.js",
             "components/ShortcutsScreen.js",
             "components/TimelineGrid.js",
             "components/WorkerFrontendManager.js"
