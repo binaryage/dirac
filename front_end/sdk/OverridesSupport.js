@@ -120,7 +120,7 @@ WebInspector.OverridesSupport.DeviceMetrics.parseSetting = function(value)
 /**
  * @return {?WebInspector.OverridesSupport.DeviceMetrics}
  */
-WebInspector.OverridesSupport.DeviceMetrics.parseUserInput = function(widthString, heightString, deviceScaleFactorString, textAutosizing)
+WebInspector.OverridesSupport.DeviceMetrics._parseUserInput = function(widthString, heightString, deviceScaleFactorString, textAutosizing)
 {
     function isUserInputValid(value, isInteger)
     {
@@ -144,6 +144,46 @@ WebInspector.OverridesSupport.DeviceMetrics.parseUserInput = function(widthStrin
     var deviceScaleFactor = isDeviceScaleFactorValid ? parseFloat(deviceScaleFactorString) : -1;
 
     return new WebInspector.OverridesSupport.DeviceMetrics(width, height, deviceScaleFactor, textAutosizing);
+}
+
+/**
+ * @param {!Element} widthInput
+ * @param {!Element} heightInput
+ * @param {!Element} deviceScaleFactorInput
+ * @param {!Element} textAutosizingInput
+ */
+WebInspector.OverridesSupport.DeviceMetrics.applyOverrides = function(widthInput, heightInput, deviceScaleFactorInput, textAutosizingInput)
+{
+    if (WebInspector.OverridesSupport.DeviceMetrics._applyOverridesTimer)
+        clearTimeout(WebInspector.OverridesSupport.DeviceMetrics._applyOverridesTimer);
+    WebInspector.OverridesSupport.DeviceMetrics._applyOverridesTimer = setTimeout(onTimer, 50);
+
+    function onTimer()
+    {
+        delete WebInspector.OverridesSupport.DeviceMetrics._applyOverridesTimer;
+        var metrics = WebInspector.OverridesSupport.DeviceMetrics._parseUserInput(widthInput.value.trim(), heightInput.value.trim(), deviceScaleFactorInput.value.trim(), textAutosizingInput.checked);
+
+        function setValid(condition, element)
+        {
+            if (condition)
+                element.classList.remove("error-input");
+            else
+                element.classList.add("error-input");
+        }
+
+        setValid(metrics && metrics.isWidthValid(), widthInput);
+        setValid(metrics && metrics.isHeightValid(), heightInput);
+        setValid(metrics && metrics.isDeviceScaleFactorValid(), deviceScaleFactorInput);
+
+        if (!metrics)
+            return;
+
+        if (metrics.isValid()) {
+            var value = metrics.toSetting();
+            if (value !== WebInspector.overridesSupport.settings.deviceMetrics.get())
+                WebInspector.overridesSupport.settings.deviceMetrics.set(value);
+        }
+    }
 }
 
 WebInspector.OverridesSupport.DeviceMetrics.prototype = {

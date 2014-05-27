@@ -68,12 +68,30 @@ WebInspector.Main.prototype = {
         if (WebInspector.inspectElementModeController)
             WebInspector.inspectorView.appendToLeftToolbar(WebInspector.inspectElementModeController.toggleSearchButton.element);
 
+        if (WebInspector.experimentsSettings.responsiveDesign.isEnabled() && WebInspector.dockController.canDock()) {
+            this._toggleResponsiveDesignButton = new WebInspector.StatusBarButton(WebInspector.UIString("Responsive design mode."), "responsive-design-status-bar-item");
+            this._toggleResponsiveDesignButton.toggled = WebInspector.overridesSupport.settings.overrideDeviceMetrics.get();
+            this._toggleResponsiveDesignButton.addEventListener("click", this._toggleResponsiveDesign, this);
+            WebInspector.inspectorView.appendToLeftToolbar(this._toggleResponsiveDesignButton.element);
+            WebInspector.overridesSupport.settings.overrideDeviceMetrics.addChangeListener(this._overrideDeviceMetricsChanged, this);
+        }
+
         WebInspector.inspectorView.appendToRightToolbar(WebInspector.settingsController.statusBarItem);
         if (WebInspector.dockController.element)
             WebInspector.inspectorView.appendToRightToolbar(WebInspector.dockController.element);
 
         if (this._screencastController)
             WebInspector.inspectorView.appendToRightToolbar(this._screencastController.statusBarItem());
+    },
+
+    _toggleResponsiveDesign: function()
+    {
+        WebInspector.overridesSupport.settings.overrideDeviceMetrics.set(!this._toggleResponsiveDesignButton.toggled);
+    },
+
+    _overrideDeviceMetricsChanged: function()
+    {
+        this._toggleResponsiveDesignButton.toggled = WebInspector.overridesSupport.settings.overrideDeviceMetrics.get();
     },
 
     _createRootView: function()
@@ -87,8 +105,8 @@ WebInspector.Main.prototype = {
 
         var inspectedPagePlaceholder = new WebInspector.InspectedPagePlaceholder();
         if (WebInspector.dockController.canDock() && WebInspector.experimentsSettings.responsiveDesign.isEnabled()) {
-            var responsiveDesignView = new WebInspector.ResponsiveDesignView(inspectedPagePlaceholder);
-            responsiveDesignView.show(this._rootSplitView.mainElement());
+            this._responsiveDesignView = new WebInspector.ResponsiveDesignView(inspectedPagePlaceholder);
+            this._responsiveDesignView.show(this._rootSplitView.mainElement());
         } else
             inspectedPagePlaceholder.show(this._rootSplitView.mainElement());
 

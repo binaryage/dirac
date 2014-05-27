@@ -13,15 +13,14 @@ WebInspector.ResponsiveDesignView = function(inspectedPagePlaceholder)
     WebInspector.VBox.call(this);
     this.registerRequiredCSS("responsiveDesignView.css");
 
-    this._container = new WebInspector.View();
-    this._container.element.classList.add("responsive-design");
+    this._responsiveDesignContainer = new WebInspector.VBox();
+    this._createToolbar();
+    this._canvasContainer = new WebInspector.View();
+    this._canvasContainer.element.classList.add("responsive-design");
+    this._canvasContainer.show(this._responsiveDesignContainer.element);
 
-    this._canvas = this._container.element.createChild("canvas", "fill");
-    this._resetButton = this._container.element.createChild("div", "responsive-design-reset-button");
-    this._resetButton.addEventListener("click", this._reset.bind(this), false);
-    this._resetButton.title = WebInspector.UIString("Fit available space");
-
-    this._slidersContainer = this._container.element.createChild("div", "vbox responsive-design-sliders-container");
+    this._canvas = this._canvasContainer.element.createChild("canvas", "fill");
+    this._slidersContainer = this._canvasContainer.element.createChild("div", "vbox responsive-design-sliders-container");
     var hbox = this._slidersContainer.createChild("div", "hbox flex-auto");
     this._heightSliderContainer = this._slidersContainer.createChild("div", "hbox responsive-design-slider-height");
     this._resolutionHeightLabel = this._heightSliderContainer.createChild("div", "responsive-design-resolution-label responsive-design-resolution-height");
@@ -48,7 +47,8 @@ WebInspector.ResponsiveDesignView = function(inspectedPagePlaceholder)
 
 // Measured in DIP.
 WebInspector.ResponsiveDesignView.SliderWidth = 19;
-WebInspector.ResponsiveDesignView.RulerWidth = 23;
+WebInspector.ResponsiveDesignView.RulerWidth = 20;
+WebInspector.ResponsiveDesignView.ToolbarHeight = 24;
 
 WebInspector.ResponsiveDesignView.prototype = {
     _updateOverridesSupportOnDockSideChange: function()
@@ -69,7 +69,7 @@ WebInspector.ResponsiveDesignView.prototype = {
             this._enabled = true;
             this._inspectedPagePlaceholder.clearMinimumSizeAndMargins();
             this._inspectedPagePlaceholder.show(this._pageContainer);
-            this._container.show(this.element);
+            this._responsiveDesignContainer.show(this.element);
             delete this._ignoreResize;
         }
 
@@ -93,7 +93,7 @@ WebInspector.ResponsiveDesignView.prototype = {
         this._enabled = false;
         this._scale = 0;
         this._inspectedPagePlaceholder.restoreMinimumSizeAndMargins();
-        this._container.detach();
+        this._responsiveDesignContainer.detach();
         this._inspectedPagePlaceholder.show(this.element);
         delete this._ignoreResize;
     },
@@ -108,7 +108,7 @@ WebInspector.ResponsiveDesignView.prototype = {
             var zoomFactor = WebInspector.zoomManager.zoomFactor();
             var rect = this.element.getBoundingClientRect();
             this._availableSize = new Size(rect.width * zoomFactor - WebInspector.ResponsiveDesignView.RulerWidth,
-                                           rect.height * zoomFactor - WebInspector.ResponsiveDesignView.RulerWidth);
+                                           rect.height * zoomFactor - WebInspector.ResponsiveDesignView.RulerWidth - WebInspector.ResponsiveDesignView.ToolbarHeight);
         }
         return this._availableSize;
     },
@@ -208,7 +208,7 @@ WebInspector.ResponsiveDesignView.prototype = {
         context.translate(rulerWidth, rulerWidth);
 
         context.fillStyle = rulerBackgroundColor;
-        context.fillRect(0, -rulerWidth, dipGridWidth, rulerWidth);
+        context.fillRect(-rulerWidth, -rulerWidth, dipGridWidth + rulerWidth, rulerWidth);
         context.fillRect(-rulerWidth, 0, rulerWidth, dipGridHeight);
 
         context.fillStyle = backgroundColor;
@@ -233,7 +233,7 @@ WebInspector.ResponsiveDesignView.prototype = {
                     context.fillText(x, 2, -rulerWidth / 2);
                     context.restore();
                 }
-                y = -rulerWidth;
+                y = -rulerWidth * 2 / 3;
             }
 
             context.beginPath();
@@ -257,7 +257,7 @@ WebInspector.ResponsiveDesignView.prototype = {
                     context.fillText(y, 2, -rulerWidth / 2);
                     context.restore();
                 }
-                x = -rulerWidth;
+                x = -rulerWidth * 2 / 3;
             }
 
             context.beginPath();
@@ -310,8 +310,6 @@ WebInspector.ResponsiveDesignView.prototype = {
 
         if (this._cachedZoomFactor !== zoomFactor) {
             var cssRulerWidth = WebInspector.ResponsiveDesignView.RulerWidth / zoomFactor + "px";
-            this._resetButton.style.width = cssRulerWidth;
-            this._resetButton.style.height = cssRulerWidth;
             this._slidersContainer.style.left = cssRulerWidth;
             this._slidersContainer.style.top = cssRulerWidth;
 
@@ -355,15 +353,64 @@ WebInspector.ResponsiveDesignView.prototype = {
         this._updateUI();
     },
 
-    /**
-     * Resets emulated size to available space.
-     */
-    _reset: function()
+    _createToolbar: function()
     {
-        var availableDipSize = this.availableDipSize();
-        var size = new Size(availableDipSize.width - WebInspector.ResponsiveDesignView.SliderWidth,
-                            availableDipSize.height - WebInspector.ResponsiveDesignView.SliderWidth);
-        this.dispatchEventToListeners(WebInspector.OverridesSupport.PageResizer.Events.ResizeRequested, size);
+        this._toolbarElement = this._responsiveDesignContainer.element.createChild("div", "responsive-design-toolbar");
+
+        const metricsSetting = WebInspector.overridesSupport.settings.deviceMetrics.get();
+        var metrics = WebInspector.OverridesSupport.DeviceMetrics.parseSetting(metricsSetting);
+
+        /**
+         * @this {WebInspector.ResponsiveDesignView}
+         */
+        function swapDimensionsClicked()
+        {
+            var widthValue = this._widthOverrideElement.value;
+            this._widthOverrideElement.value = this._heightOverrideElement.value;
+            this._heightOverrideElement.value = widthValue;
+            this._applyDeviceMetricsUserInput();
+        }
+
+        this._toolbarElement.appendChild(document.createTextNode("Screen")).title = WebInspector.UIString("Screen resolution");
+        this._widthOverrideElement = WebInspector.SettingsUI.createInput(this._toolbarElement, "responsive-design-override-width", String(metrics.width), this._applyDeviceMetricsUserInput.bind(this), true, "3em");
+        this._toolbarElement.appendChild(document.createTextNode(" \u00D7 "));
+        this._heightOverrideElement = WebInspector.SettingsUI.createInput(this._toolbarElement, "responsive-design-override-height", String(metrics.height), this._applyDeviceMetricsUserInput.bind(this), true, "3em");
+        this._swapDimensionsElement = this._toolbarElement.createChild("button", "responsive-design-override-swap");
+        this._swapDimensionsElement.appendChild(document.createTextNode(" \u21C4 ")); // RIGHTWARDS ARROW OVER LEFTWARDS ARROW.
+        this._swapDimensionsElement.title = WebInspector.UIString("Swap dimensions");
+        this._swapDimensionsElement.addEventListener("click", swapDimensionsClicked.bind(this), false);
+        this._swapDimensionsElement.tabIndex = -1;
+
+        var span = this._toolbarElement.createChild("span");
+        span.textContent = WebInspector.UIString("Dpr");
+        span.title = WebInspector.UIString("Device pixel ratio");
+        this._deviceScaleFactorOverrideElement = WebInspector.SettingsUI.createInput(this._toolbarElement, "responsive-design-device-scale", String(metrics.deviceScaleFactor), this._applyDeviceMetricsUserInput.bind(this), true, "2em");
+
+        var textAutosizingOverrideElement = WebInspector.SettingsUI.createNonPersistedCheckbox(WebInspector.UIString("Enable text autosizing "), this._applyDeviceMetricsUserInput.bind(this));
+        textAutosizingOverrideElement.title = WebInspector.UIString("Text autosizing is the feature that boosts font sizes on mobile devices.");
+        this._textAutosizingOverrideCheckbox = textAutosizingOverrideElement.firstChild;
+        this._textAutosizingOverrideCheckbox.checked = metrics.textAutosizing;
+        WebInspector.overridesSupport.settings.deviceMetrics.addChangeListener(this._updateDeviceMetricsElement, this);
+    },
+
+    _updateDeviceMetricsElement: function()
+    {
+        const metricsSetting = WebInspector.overridesSupport.settings.deviceMetrics.get();
+        var metrics = WebInspector.OverridesSupport.DeviceMetrics.parseSetting(metricsSetting);
+
+        if (this._widthOverrideElement.value != metrics.width)
+            this._widthOverrideElement.value = metrics.width;
+        if (this._heightOverrideElement.value != metrics.height)
+            this._heightOverrideElement.value = metrics.height;
+        if (this._deviceScaleFactorOverrideElement.value != metrics.deviceScaleFactor)
+            this._deviceScaleFactorOverrideElement.value = metrics.deviceScaleFactor;
+        if (this._textAutosizingOverrideCheckbox.checked !== metrics.textAutosizing)
+            this._textAutosizingOverrideCheckbox.checked = metrics.textAutosizing;
+    },
+
+    _applyDeviceMetricsUserInput: function()
+    {
+        WebInspector.OverridesSupport.DeviceMetrics.applyOverrides(this._widthOverrideElement, this._heightOverrideElement, this._deviceScaleFactorOverrideElement, this._textAutosizingOverrideCheckbox);
     },
 
     __proto__: WebInspector.VBox.prototype

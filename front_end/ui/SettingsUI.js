@@ -171,6 +171,57 @@ WebInspector.SettingsUI.regexValidator = function(text)
 }
 
 /**
+ * Creates an input element under the parentElement with the given id and defaultText.
+ * @param {!Element} parentElement
+ * @param {string} id
+ * @param {string} defaultText
+ * @param {function(*)} eventListener
+ * @param {boolean=} numeric
+ * @param {string=} size
+ * @return {!Element} element
+ */
+WebInspector.SettingsUI.createInput = function(parentElement, id, defaultText, eventListener, numeric, size)
+{
+    var element = parentElement.createChild("input");
+    element.id = id;
+    element.type = "text";
+    element.maxLength = 12;
+    element.style.width = size || "80px";
+    element.value = defaultText;
+    element.align = "right";
+    if (numeric)
+        element.className = "numeric";
+    element.addEventListener("input", eventListener, false);
+    element.addEventListener("keydown", keyDownListener, false);
+    function keyDownListener(event)
+    {
+        if (isEnterKey(event))
+            eventListener(event);
+    }
+    return element;
+}
+
+/**
+ * @param {string} title
+ * @param {function(boolean)} callback
+ */
+WebInspector.SettingsUI.createNonPersistedCheckbox = function(title, callback)
+{
+    var labelElement = document.createElement("label");
+    var checkboxElement = labelElement.createChild("input");
+    checkboxElement.type = "checkbox";
+    checkboxElement.checked = false;
+    checkboxElement.addEventListener("click", onclick, false);
+    labelElement.appendChild(document.createTextNode(title));
+    return labelElement;
+
+    function onclick()
+    {
+        callback(checkboxElement.checked);
+    }
+}
+
+/**
  * @constructor
  */
 WebInspector.UISettingDelegate = function()
