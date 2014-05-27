@@ -149,6 +149,14 @@ WebInspector.TracingModel.prototype = {
     },
 
     /**
+     * @param {string} sessionId
+     */
+    setSessionIdForTest: function(sessionId)
+    {
+        this._sessionId = sessionId;
+    },
+
+    /**
      * @return {?string}
      */
     sessionId: function()
@@ -313,6 +321,8 @@ WebInspector.TracingModel.Event = function(payload, level)
     this.stackTrace = null;
     /** @type {?Element} */
     this.previewElement = null;
+    /** @type {number} */
+    this.selfTime = 0;
 }
 
 WebInspector.TracingModel.Event.prototype = {

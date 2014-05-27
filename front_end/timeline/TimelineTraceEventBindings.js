@@ -23,6 +23,7 @@ WebInspector.TimelineTraceEventBindings.prototype = {
         this._lastRecalculateStylesEvent = null;
         this._currentScriptEvent = null;
         this._lastMainThreadEvent = null;
+        this._eventStack = [];
     },
 
     /**
@@ -39,6 +40,19 @@ WebInspector.TimelineTraceEventBindings.prototype = {
     _processMainThreadEvent: function(event)
     {
         var recordTypes = WebInspector.TimelineModel.RecordType;
+
+        var eventStack = this._eventStack;
+        while (eventStack.length && eventStack.peekLast().endTime < event.startTime)
+            eventStack.pop();
+        var duration = event.duration;
+        if (duration) {
+            if (eventStack.length) {
+                var parent = eventStack.peekLast();
+                parent.selfTime -= duration;
+            }
+            event.selfTime = duration;
+            eventStack.push(event);
+        }
 
         if (this._currentScriptEvent && event.startTime > this._currentScriptEvent.endTime)
             this._currentScriptEvent = null;

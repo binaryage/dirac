@@ -745,8 +745,8 @@ WebInspector.TimelineUIUtils._buildTraceEventDetailsSynchronously = function(eve
     var relatedNodeLabel;
 
     var contentHelper = new WebInspector.TimelineDetailsContentHelper(target, linkifier, true);
-    contentHelper.appendTextRow(WebInspector.UIString("Self Time"), Number.millisToString(event.duration, true));
-    contentHelper.appendTextRow(WebInspector.UIString("Start Time"), Number.millisToString(event.startTime - model.minimumRecordTime()));
+    contentHelper.appendTextRow(WebInspector.UIString("Self Time"), Number.millisToString(event.selfTime / 1000, true));
+    contentHelper.appendTextRow(WebInspector.UIString("Start Time"), Number.millisToString((event.startTime - model.minimumRecordTime()) / 1000));
     var eventData = event.args.data;
     var initiator = event.initiator;
 
