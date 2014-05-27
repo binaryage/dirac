@@ -105,7 +105,6 @@
             'front_end/sdk/FileSystemModel.js',
             'front_end/sdk/FileSystemWorkspaceBinding.js',
             'front_end/sdk/FileUtils.js',
-            'front_end/sdk/HAREntry.js',
             'front_end/sdk/IndexedDBModel.js',
             'front_end/sdk/InspectorBackend.js',
             'front_end/sdk/IsolatedFileSystemManager.js',
@@ -331,6 +330,7 @@
             'front_end/source_frame/SourceFrame.js',
         ],
         'devtools_network_js_files': [
+            'front_end/network/HAREntry.js',
             'front_end/network/NetworkItemView.js',
             'front_end/network/RequestCookiesView.js',
             'front_end/network/RequestHeadersView.js',

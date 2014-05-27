@@ -28,6 +28,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+importScript("HAREntry.js");
 importScript("RequestView.js");
 importScript("NetworkItemView.js");
 importScript("RequestCookiesView.js");

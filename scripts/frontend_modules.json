@@ -50,7 +50,6 @@
             "sdk/FileSystemModel.js",
             "sdk/FileSystemWorkspaceBinding.js",
             "sdk/FileUtils.js",
-            "sdk/HAREntry.js",
             "sdk/IndexedDBModel.js",
             "sdk/InspectorBackend.js",
             "sdk/IsolatedFileSystemManager.js",
@@ -212,6 +211,7 @@
         "name": "network",
         "dependencies": ["components", "source_frame"],
         "sources": [
+            "network/HAREntry.js",
             "network/NetworkItemView.js",
             "network/RequestCookiesView.js",
             "network/RequestHeadersView.js",
@@ -356,7 +356,7 @@
     },
     {
         "name": "extensions",
-        "dependencies": ["components", "audits", "sources"],
+        "dependencies": ["components", "audits", "sources", "network"],
         "sources": [
             "extensions/ExtensionAPI.js",
             "extensions/ExtensionAuditCategory.js",
