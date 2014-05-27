@@ -660,7 +660,7 @@ WebInspector.TracingBasedTimelineFlameChartDataProvider.prototype = {
         }
 
         var event = this._entryEvents[entryIndex];
-        if (event && this._traceEventBindings.eventWarning(event)) {
+        if (event && event.warning) {
             context.save();
 
             context.rect(barX, barY, barWidth, this.barHeight());
@@ -688,7 +688,7 @@ WebInspector.TracingBasedTimelineFlameChartDataProvider.prototype = {
         var event = this._entryEvents[entryIndex];
         if (!event)
             return false;
-        return !!this._traceEventBindings.eventWarning(event);
+        return !!event.warning;
     },
 
    /**

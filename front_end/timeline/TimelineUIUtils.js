@@ -674,7 +674,7 @@ WebInspector.TimelineUIUtils._quadWidth = function(quad)
  */
 WebInspector.TimelineUIUtils.buildTraceEventDetails = function(event, model, linkifier, callback, loadedFromFile, bindings, target)
 {
-    var imageElement = bindings.previewElement(event) || null;
+    var imageElement = event.previewElement;
     var relatedNode = null;
     var eventData = event.args.data;
     var barrier = new CallbackBarrier();
@@ -705,7 +705,7 @@ WebInspector.TimelineUIUtils.buildTraceEventDetails = function(event, model, lin
     function saveImage(element)
     {
         imageElement = element || null;
-        bindings.setPreviewElement(event, imageElement);
+        event.previewElement = imageElement;
     }
 
     /**
@@ -748,7 +748,7 @@ WebInspector.TimelineUIUtils._buildTraceEventDetailsSynchronously = function(eve
     contentHelper.appendTextRow(WebInspector.UIString("Self Time"), Number.millisToString(event.duration, true));
     contentHelper.appendTextRow(WebInspector.UIString("Start Time"), Number.millisToString(event.startTime - model.minimumRecordTime()));
     var eventData = event.args.data;
-    var initiator = bindings.initiator(event);
+    var initiator = event.initiator;
 
     switch (event.name) {
         case recordTypes.GCEvent:
@@ -864,15 +864,15 @@ WebInspector.TimelineUIUtils._buildTraceEventDetailsSynchronously = function(eve
         contentHelper.appendLocationRow(WebInspector.UIString("Function Call"), eventData["scriptName"], eventData["scriptLine"]);
 
     if (initiator) {
-        var callSiteStackTrace = bindings.stackTrace(initiator);
+        var callSiteStackTrace = initiator.stackTrace;
         if (callSiteStackTrace)
             contentHelper.appendStackTrace(callSiteStackTraceLabel || WebInspector.UIString("Call Site stack"), callSiteStackTrace);
     }
-    var eventStackTrace = bindings.stackTrace(event);
+    var eventStackTrace = event.stackTrace;
     if (eventStackTrace)
         contentHelper.appendStackTrace(callStackLabel || WebInspector.UIString("Call Stack"), eventStackTrace);
 
-    var warning = bindings.eventWarning(event);
+    var warning = event.warning;
     if (warning) {
         var div = document.createElement("div");
         div.textContent = warning;
@@ -1083,7 +1083,7 @@ WebInspector.TimelineUIUtils.buildDetailsNodeForTraceEvent = function(event, lin
     case WebInspector.TimelineModel.RecordType.ResourceReceivedData:
     case WebInspector.TimelineModel.RecordType.ResourceReceiveResponse:
     case WebInspector.TimelineModel.RecordType.ResourceFinish:
-        var initiator = bindings.initiator(event);
+        var initiator = event.initiator;
         if (initiator) {
             var url = initiator.args.data["url"];
             if (url)
@@ -1145,11 +1145,11 @@ WebInspector.TimelineUIUtils.buildDetailsNodeForTraceEvent = function(event, lin
     {
         if (!bindings)
             return null;
-        var stackTrace = bindings.stackTrace(event);
+        var stackTrace = event.stackTrace;
         if (!stackTrace) {
-            var initiator = bindings.initiator(event);
+            var initiator = event.initiator;
             if (initiator)
-                stackTrace = bindings.stackTrace(initiator);
+                stackTrace = initiator.stackTrace;
         }
         if (!stackTrace || !stackTrace.length)
             return null;

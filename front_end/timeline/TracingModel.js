@@ -304,6 +304,15 @@ WebInspector.TracingModel.Event = function(payload, level)
     this.args = payload.args;
     this.phase = payload.ph;
     this.level = level;
+
+    /** @type {?string} */
+    this.warning = null;
+    /** @type {?WebInspector.TracingModel.Event} */
+    this.initiator = null;
+    /** @type {?Array.<!ConsoleAgent.CallFrame>} */
+    this.stackTrace = null;
+    /** @type {?Element} */
+    this.previewElement = null;
 }
 
 WebInspector.TracingModel.Event.prototype = {
