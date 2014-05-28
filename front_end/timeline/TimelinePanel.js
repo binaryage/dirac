@@ -247,8 +247,12 @@ WebInspector.TimelinePanel.prototype = {
      */
     _frameModel: function()
     {
-        if (!this._lazyFrameModel)
+        if (!this._lazyFrameModel) {
             this._lazyFrameModel = new WebInspector.TimelineFrameModel(this._model);
+            if (this._lazyTracingModel)
+                this._lazyFrameModel.addTraceEvents(this._lazyTracingModel.inspectedTargetEvents(), this._lazyTracingModel.sessionId());
+
+        }
         return this._lazyFrameModel;
     },
 
@@ -272,7 +276,7 @@ WebInspector.TimelinePanel.prototype = {
         if (!this._lazyTraceEventBindings) {
             this._lazyTraceEventBindings = new WebInspector.TimelineTraceEventBindings();
             if (this._lazyTracingModel)
-                this._lazyTraceEventBindings.setEvents(this._lazyTracingModel.inspectedTargetMainThreadEvents());
+                this._lazyTraceEventBindings.setEvents(this._lazyTracingModel.inspectedTargetEvents());
         }
         return this._lazyTraceEventBindings;
     },
@@ -696,11 +700,11 @@ WebInspector.TimelinePanel.prototype = {
     {
         if (this._lazyFrameModel) {
             this._lazyFrameModel.reset();
-            this._lazyFrameModel.addTraceEvents(this._lazyTracingModel);
+            this._lazyFrameModel.addTraceEvents(this._lazyTracingModel.inspectedTargetEvents(), this._lazyTracingModel.sessionId());
             this._overviewPane.update();
         }
         if (this._lazyTraceEventBindings)
-            this._lazyTraceEventBindings.setEvents(this._lazyTracingModel.inspectedTargetMainThreadEvents());
+            this._lazyTraceEventBindings.setEvents(this._lazyTracingModel.inspectedTargetEvents());
         this._refreshViews();
     },
 

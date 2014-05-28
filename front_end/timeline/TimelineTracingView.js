@@ -229,8 +229,8 @@ WebInspector.TraceViewFlameChartDataProvider = function(model, timelineModelForM
         id: 0,
         s: ""
     }
-    this._processHeaderRecord = new WebInspector.TracingModel.Event(dummyEventPayload, 0);
-    this._threadHeaderRecord = new WebInspector.TracingModel.Event(dummyEventPayload, 0);
+    this._processHeaderRecord = new WebInspector.TracingModel.Event(dummyEventPayload, 0, null);
+    this._threadHeaderRecord = new WebInspector.TracingModel.Event(dummyEventPayload, 0, null);
 }
 
 WebInspector.TraceViewFlameChartDataProvider.prototype = {

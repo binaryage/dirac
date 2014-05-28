@@ -553,9 +553,8 @@ WebInspector.TracingBasedTimelineFlameChartDataProvider.prototype = {
         this._currentLevel = 0;
         this._minimumBoundary = this._model.minimumRecordTime() || 0;
         this._timeSpan = Math.max((this._model.maximumRecordTime() || 0) - this._minimumBoundary, 1000000);
-        var tracingModel = this._model;
         this._appendHeaderRecord("CPU");
-        var events = tracingModel.inspectedTargetMainThreadEvents();
+        var events = this._traceEventBindings.mainThreadEvents();
         var maxStackDepth = 0;
         for (var eventIndex = 0; eventIndex < events.length; ++eventIndex) {
             var event = events[eventIndex];

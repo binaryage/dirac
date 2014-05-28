@@ -7,10 +7,96 @@
  */
 WebInspector.TimelineTraceEventBindings = function()
 {
-    this._resetProcessingState();
+    this._reset();
 }
 
+WebInspector.TimelineTraceEventBindings.RecordType = {
+    Program: "Program",
+    EventDispatch: "EventDispatch",
+
+    GPUTask: "GPUTask",
+
+    RequestMainThreadFrame: "RequestMainThreadFrame",
+    BeginFrame: "BeginFrame",
+    BeginMainThreadFrame: "BeginMainThreadFrame",
+    ActivateLayerTree: "ActivateLayerTree",
+    DrawFrame: "DrawFrame",
+    ScheduleStyleRecalculation: "ScheduleStyleRecalculation",
+    RecalculateStyles: "RecalculateStyles",
+    InvalidateLayout: "InvalidateLayout",
+    Layout: "Layout",
+    UpdateLayerTree: "UpdateLayerTree",
+    PaintSetup: "PaintSetup",
+    Paint: "Paint",
+    Rasterize: "Rasterize",
+    RasterTask: "RasterTask",
+    ScrollLayer: "ScrollLayer",
+    DecodeImage: "DecodeImage",
+    ResizeImage: "ResizeImage",
+    CompositeLayers: "CompositeLayers",
+
+    ParseHTML: "ParseHTML",
+
+    TimerInstall: "TimerInstall",
+    TimerRemove: "TimerRemove",
+    TimerFire: "TimerFire",
+
+    XHRReadyStateChange: "XHRReadyStateChange",
+    XHRLoad: "XHRLoad",
+    EvaluateScript: "EvaluateScript",
+
+    MarkLoad: "MarkLoad",
+    MarkDOMContent: "MarkDOMContent",
+    MarkFirstPaint: "MarkFirstPaint",
+
+    TimeStamp: "TimeStamp",
+    ConsoleTime: "ConsoleTime",
+
+    ResourceSendRequest: "ResourceSendRequest",
+    ResourceReceiveResponse: "ResourceReceiveResponse",
+    ResourceReceivedData: "ResourceReceivedData",
+    ResourceFinish: "ResourceFinish",
+
+    FunctionCall: "FunctionCall",
+    GCEvent: "GCEvent",
+    JSFrame: "JSFrame",
+
+    UpdateCounters: "UpdateCounters",
+
+    RequestAnimationFrame: "RequestAnimationFrame",
+    CancelAnimationFrame: "CancelAnimationFrame",
+    FireAnimationFrame: "FireAnimationFrame",
+
+    WebSocketCreate : "WebSocketCreate",
+    WebSocketSendHandshakeRequest : "WebSocketSendHandshakeRequest",
+    WebSocketReceiveHandshakeResponse : "WebSocketReceiveHandshakeResponse",
+    WebSocketDestroy : "WebSocketDestroy",
+
+    EmbedderCallback : "EmbedderCallback",
+
+    CallStack: "CallStack",
+    SetLayerTreeId: "SetLayerTreeId",
+    TracingStartedInPage: "TracingStartedInPage",
+
+    LayerTreeHostImplSnapshot: "cc::LayerTreeHostImpl"
+};
+
+
 WebInspector.TimelineTraceEventBindings.prototype = {
+    /**
+     * @return {!Array.<!WebInspector.TracingModel.Event>}
+     */
+    mainThreadEvents: function()
+    {
+        return this._mainThreadEvents;
+    },
+
+    _reset: function()
+    {
+        this._resetProcessingState();
+        this._mainThreadEvents = [];
+    },
+
     _resetProcessingState: function()
     {
         this._sendRequestEvents = {};
@@ -22,7 +108,6 @@ WebInspector.TimelineTraceEventBindings.prototype = {
 
         this._lastRecalculateStylesEvent = null;
         this._currentScriptEvent = null;
-        this._lastMainThreadEvent = null;
         this._eventStack = [];
     },
 
@@ -33,13 +118,16 @@ WebInspector.TimelineTraceEventBindings.prototype = {
     {
         this._resetProcessingState();
         for (var i = 0, length = events.length; i < length; i++)
-            this._processMainThreadEvent(events[i]);
+            this._processEvent(events[i]);
         this._resetProcessingState();
     },
 
-    _processMainThreadEvent: function(event)
+    /**
+     * @param {!WebInspector.TracingModel.Event} event
+     */
+    _processEvent: function(event)
     {
-        var recordTypes = WebInspector.TimelineModel.RecordType;
+        var recordTypes = WebInspector.TimelineTraceEventBindings.RecordType;
 
         var eventStack = this._eventStack;
         while (eventStack.length && eventStack.peekLast().endTime < event.startTime)
@@ -59,9 +147,10 @@ WebInspector.TimelineTraceEventBindings.prototype = {
 
         switch (event.name) {
         case recordTypes.CallStack:
-            if (this._lastMainThreadEvent)
-                this._lastMainThreadEvent.stackTrace = event.args.stack;
-            break
+            var lastMainThreadEvent = this._mainThreadEvents.peekLast();
+            if (lastMainThreadEvent)
+                lastMainThreadEvent.stackTrace = event.args.stack;
+            break;
 
         case recordTypes.ResourceSendRequest:
             this._sendRequestEvents[event.args.data["requestId"]] = event;
@@ -126,13 +215,22 @@ WebInspector.TimelineTraceEventBindings.prototype = {
             event.initiator = this._webSocketCreateEvents[event.args.data["identifier"]];
             break;
 
-        case WebInspector.TimelineModel.RecordType.EvaluateScript:
-        case WebInspector.TimelineModel.RecordType.FunctionCall:
+        case recordTypes.EvaluateScript:
+        case recordTypes.FunctionCall:
             if (!this._currentScriptEvent)
                 this._currentScriptEvent = event;
             break;
+
+        case recordTypes.SetLayerTreeId:
+            this._inspectedTargetLayerTreeId = event.args["layerTreeId"];
+            break;
+
+        case recordTypes.TracingStartedInPage:
+            this._mainThread = event.thread;
+            break;
         }
-        this._lastMainThreadEvent = event;
+        if (this._mainThread === event.thread)
+            this._mainThreadEvents.push(event);
     }
 }
 

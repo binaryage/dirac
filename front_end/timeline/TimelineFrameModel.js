@@ -142,13 +142,12 @@ WebInspector.TimelineFrameModel.prototype = {
     },
 
     /**
-     * @param {!WebInspector.TracingModel} tracingModel
+     * @param {!Array.<!WebInspector.TracingModel.Event>} events
+     * @param {string} sessionId
      */
-    addTraceEvents: function(tracingModel)
+    addTraceEvents: function(events, sessionId)
     {
-        // FIXME: we also need to process main thread events, so we can assign time spent by categories
-        // to frames. However, this requires that we can map trace event names to Timeline categories.
-        var events = tracingModel.frameLifecycleEvents();
+        this._sessionId = sessionId;
         for (var i = 0; i < events.length; ++i)
             this._addTraceEvent(events[i]);
     },
@@ -158,9 +157,22 @@ WebInspector.TimelineFrameModel.prototype = {
      */
     _addTraceEvent: function(event)
     {
-        var timestamp = event.startTime / 1000;
-        var eventNames = WebInspector.TracingModel.TraceEventName;
+        var eventNames = WebInspector.TimelineTraceEventBindings.RecordType;
 
+        if (event.name === eventNames.SetLayerTreeId) {
+            if (this._sessionId === event.args["sessionId"])
+                this._layerTreeId = event.args["layerTreeId"];
+            return;
+        }
+        if (event.phase === WebInspector.TracingModel.Phase.SnapshotObject && event.name === eventNames.LayerTreeHostImplSnapshot && parseInt(event.id, 0) === this._layerTreeId) {
+            this.handleLayerTreeSnapshot(new WebInspector.DeferredTracingLayerTree(this.target(), event.args["snapshot"]["active_tree"]["root_layer"]));
+            return;
+        }
+
+        if (event.args["layerTreeId"] !== this._layerTreeId)
+            return;
+
+        var timestamp = event.startTime / 1000;
         if (event.name === eventNames.BeginFrame)
             this.handleBeginFrame(timestamp);
         else if (event.name === eventNames.DrawFrame)
@@ -171,8 +183,9 @@ WebInspector.TimelineFrameModel.prototype = {
             this.handleRequestMainThreadFrame();
         else if (event.name === eventNames.CompositeLayers)
             this.handleCompositeLayers();
-        else if (event.name === eventNames.LayerTreeHostImplSnapshot)
-            this.handleLayerTreeSnapshot(new WebInspector.DeferredTracingLayerTree(this.target(), event.args["snapshot"]["active_tree"]["root_layer"]));
+
+        // FIXME: we also need to process main thread events, so we can assign time spent by categories
+        // to frames. However, this requires that we can map trace event names to Timeline categories.
     },
 
     /**
