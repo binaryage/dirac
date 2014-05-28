@@ -70,10 +70,10 @@ WebInspector.Main.prototype = {
 
         if (WebInspector.experimentsSettings.responsiveDesign.isEnabled() && WebInspector.dockController.canDock()) {
             this._toggleResponsiveDesignButton = new WebInspector.StatusBarButton(WebInspector.UIString("Responsive design mode."), "responsive-design-status-bar-item");
-            this._toggleResponsiveDesignButton.toggled = WebInspector.overridesSupport.settings.overrideDeviceMetrics.get();
+            this._toggleResponsiveDesignButton.toggled = WebInspector.settings.responsiveDesignMode.get();
             this._toggleResponsiveDesignButton.addEventListener("click", this._toggleResponsiveDesign, this);
             WebInspector.inspectorView.appendToLeftToolbar(this._toggleResponsiveDesignButton.element);
-            WebInspector.overridesSupport.settings.overrideDeviceMetrics.addChangeListener(this._overrideDeviceMetricsChanged, this);
+            WebInspector.settings.responsiveDesignMode.addChangeListener(this._responsiveDesignModeChanged, this);
         }
 
         WebInspector.inspectorView.appendToRightToolbar(WebInspector.settingsController.statusBarItem);
@@ -86,12 +86,12 @@ WebInspector.Main.prototype = {
 
     _toggleResponsiveDesign: function()
     {
-        WebInspector.overridesSupport.settings.overrideDeviceMetrics.set(!this._toggleResponsiveDesignButton.toggled);
+        WebInspector.settings.responsiveDesignMode.set(!this._toggleResponsiveDesignButton.toggled);
     },
 
-    _overrideDeviceMetricsChanged: function()
+    _responsiveDesignModeChanged: function()
     {
-        this._toggleResponsiveDesignButton.toggled = WebInspector.overridesSupport.settings.overrideDeviceMetrics.get();
+        this._toggleResponsiveDesignButton.toggled = WebInspector.settings.responsiveDesignMode.get();
     },
 
     _createRootView: function()

@@ -88,8 +88,9 @@ WebInspector.SettingsUI.bindCheckbox = function(input, setting)
  * @param {number=} maxLength
  * @param {string=} width
  * @param {function(string):?string=} validatorCallback
+ * @param {boolean=} instant
  */
-WebInspector.SettingsUI.createSettingInputField = function(label, setting, numeric, maxLength, width, validatorCallback)
+WebInspector.SettingsUI.createSettingInputField = function(label, setting, numeric, maxLength, width, validatorCallback, instant)
 {
     var p = document.createElement("p");
     var labelElement = p.createChild("label");
@@ -104,27 +105,53 @@ WebInspector.SettingsUI.createSettingInputField = function(label, setting, numer
     if (width)
         inputElement.style.width = width;
 
+    if (validatorCallback || instant) {
+        inputElement.addEventListener("change", onInput, false);
+        inputElement.addEventListener("input", onInput, false);
+    }
+
     var errorMessageLabel;
     if (validatorCallback) {
         errorMessageLabel = p.createChild("div");
         errorMessageLabel.classList.add("field-error-message");
-        inputElement.oninput = onInput;
-        onInput();
+        validate();
     }
 
     function onInput()
     {
+        if (validatorCallback)
+            validate();
+        if (instant)
+            apply();
+    }
+
+    function validate()
+    {
         var error = validatorCallback(inputElement.value);
         if (!error)
             error = "";
+        inputElement.classList.toggle("error-input", !!error);
         errorMessageLabel.textContent = error;
     }
 
-    function onBlur()
+    if (!instant)
+        inputElement.addEventListener("blur", apply, false);
+
+    function apply()
     {
+        if (validatorCallback && validatorCallback(inputElement.value))
+            return;
+        setting.removeChangeListener(onSettingChange);
         setting.set(numeric ? Number(inputElement.value) : inputElement.value);
+        setting.addChangeListener(onSettingChange);
     }
-    inputElement.addEventListener("blur", onBlur, false);
+
+    setting.addChangeListener(onSettingChange);
+
+    function onSettingChange()
+    {
+        inputElement.value = setting.get();
+    }
 
     return p;
 }
@@ -199,26 +226,6 @@ WebInspector.SettingsUI.createInput = function(parentElement, id, defaultText, e
             eventListener(event);
     }
     return element;
-}
-
-/**
- * @param {string} title
- * @param {function(boolean)} callback
- */
-WebInspector.SettingsUI.createNonPersistedCheckbox = function(title, callback)
-{
-    var labelElement = document.createElement("label");
-    var checkboxElement = labelElement.createChild("input");
-    checkboxElement.type = "checkbox";
-    checkboxElement.checked = false;
-    checkboxElement.addEventListener("click", onclick, false);
-    labelElement.appendChild(document.createTextNode(title));
-    return labelElement;
-
-    function onclick()
-    {
-        callback(checkboxElement.checked);
-    }
 }
 
 /**

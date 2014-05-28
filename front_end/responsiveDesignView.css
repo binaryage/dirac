@@ -81,12 +81,23 @@
     flex: 0 0 24px;
     background-color: rgb(64, 64, 64);
     color: rgb(220, 220, 220);
-    padding-left: 10px;
+    padding-left: 6px;
     display: flex;
     align-items: center;
     border-bottom: 1px solid rgb(163, 163, 163);
 }
 
+.responsive-design-toolbar fieldset,
+.responsive-design-toolbar p {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    display: inline-block;
+}
+
+.responsive-design-toolbar .field-error-message {
+    display: none;
+}
 .responsive-design-toolbar label {
     display: inline-flex;
     align-items: center;
@@ -101,14 +112,19 @@
     padding: 3px;
 }
 
+.responsive-design-toolbar input:disabled,
+.responsive-design-toolbar button:disabled {
+    opacity: 0.6;
+}
+
 .responsive-design-toolbar input[type='checkbox'] {
     background: none;
     margin: 0;
-    margin-right: 3px;
+    margin-right: 5px;
 }
 
 .responsive-design-toolbar input[type='checkbox']:after {
-    content:'\2714';
+    content:'\2713';
     color: transparent;
     line-height: 10px;
     position: absolute;

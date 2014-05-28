@@ -84,6 +84,21 @@
     padding: 0 0 5px 15px;
 }
 
+.overrides-view fieldset p {
+    display: inline-block;
+    padding: 0;
+    margin: 0;
+    border: 0;
+}
+
+.overrides-view fieldset p label {
+    display: inline-block;
+}
+
+.overrides-view .field-error-message {
+    display: none;
+}
+
 .overrides-user-agent fieldset {
     padding-top: 5px;
 }
