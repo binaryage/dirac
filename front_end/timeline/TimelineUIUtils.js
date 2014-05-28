@@ -737,6 +737,9 @@ WebInspector.TimelineUIUtils.buildTraceEventDetails = function(event, model, lin
 WebInspector.TimelineUIUtils._buildTraceEventDetailsSynchronously = function(event, model, linkifier, imagePreviewElement, relatedNode, loadedFromFile, bindings, target)
 {
     var fragment = document.createDocumentFragment();
+    var stats = WebInspector.TimelineUIUtils._aggregatedStatsForTraceEvent(model, event);
+    fragment.appendChild(WebInspector.TimelineUIUtils.generatePieChart(stats));
+
     var recordTypes = WebInspector.TimelineModel.RecordType;
 
     // The messages may vary per event.name;
@@ -880,6 +883,40 @@ WebInspector.TimelineUIUtils._buildTraceEventDetailsSynchronously = function(eve
     }
     fragment.appendChild(contentHelper.element);
     return fragment;
+}
+
+/**
+ * @param {!WebInspector.TracingModel} model
+ * @param {!WebInspector.TracingModel.Event} event
+ * @return {!Object}
+ */
+WebInspector.TimelineUIUtils._aggregatedStatsForTraceEvent = function(model, event)
+{
+    var events = model.inspectedTargetEvents();
+    /**
+     * @param {number} startTime
+     * @param {!WebInspector.TracingModel.Event} e
+     * @return {number}
+     */
+    function eventComparator(startTime, e)
+    {
+        return startTime - e.startTime;
+    }
+    var index = events.binaryIndexOf(event.startTime, eventComparator);
+    var aggregatedStats = {};
+    var endTime = event.endTime;
+    if (!endTime)
+        return aggregatedStats;
+    for (; index < events.length; index++) {
+        var nextEvent = events[index];
+        if (nextEvent.startTime > endTime)
+            break;
+        if (!nextEvent.selfTime)
+            continue;
+        var category = WebInspector.TimelineUIUtils.styleForTimelineEvent(nextEvent.name).category.name;
+        aggregatedStats[category] = (aggregatedStats[category] || 0) + nextEvent.selfTime;
+    }
+    return aggregatedStats;
 }
 
 /**
