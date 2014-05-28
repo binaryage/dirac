@@ -251,7 +251,7 @@ WebInspector.CookiesTable.prototype = {
             if (cookie.maxAge())
                 data.expires = Number.secondsToString(parseInt(cookie.maxAge(), 10));
             else if (cookie.expires())
-                data.expires = new Date(cookie.expires()).toGMTString();
+                data.expires = new Date(cookie.expires()).toISOString();
             else
                 data.expires = WebInspector.UIString("Session");
         }
