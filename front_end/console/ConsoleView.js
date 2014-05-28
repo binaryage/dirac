@@ -512,12 +512,13 @@ WebInspector.ConsoleView.prototype = {
         contextMenu.appendCheckboxItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Preserve log upon navigation" : "Preserve Log upon Navigation"), preserveLogItemAction, WebInspector.settings.preserveConsoleLog.get());
 
         var sourceElement = event.target.enclosingNodeOrSelfWithClass("console-message-wrapper");
+        var consoleMessage = sourceElement ? sourceElement.message.consoleMessage() : null;
 
         var filterSubMenu = contextMenu.appendSubMenuItem(WebInspector.UIString("Filter"));
 
-        if (sourceElement && sourceElement.message.url) {
-            var menuTitle = WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Hide messages from %s" : "Hide Messages from %s", new WebInspector.ParsedURL(sourceElement.message.url).displayName);
-            filterSubMenu.appendItem(menuTitle, this._filter.addMessageURLFilter.bind(this._filter, sourceElement.message.url));
+        if (consoleMessage && consoleMessage.url) {
+            var menuTitle = WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Hide messages from %s" : "Hide Messages from %s", new WebInspector.ParsedURL(consoleMessage.url).displayName);
+            filterSubMenu.appendItem(menuTitle, this._filter.addMessageURLFilter.bind(this._filter, consoleMessage.url));
         }
 
         filterSubMenu.appendSeparator();
@@ -531,13 +532,13 @@ WebInspector.ConsoleView.prototype = {
             hasFilters = true;
         }
 
-        filterSubMenu.setEnabled(hasFilters || (sourceElement && sourceElement.message.url));
+        filterSubMenu.setEnabled(hasFilters || (consoleMessage && consoleMessage.url));
         unhideAll.setEnabled(hasFilters);
 
         contextMenu.appendSeparator();
         contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Clear console" : "Clear Console"), this._requestClearMessages.bind(this));
 
-        var request = (sourceElement && sourceElement.message) ? sourceElement.message.request : null;
+        var request = consoleMessage ? consoleMessage.request : null;
         if (request && request.type === WebInspector.resourceTypes.XHR) {
             contextMenu.appendSeparator();
             contextMenu.appendItem(WebInspector.UIString("Replay XHR"), NetworkAgent.replayXHR.bind(null, request.requestId));

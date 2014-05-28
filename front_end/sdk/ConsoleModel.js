@@ -226,6 +226,14 @@ WebInspector.ConsoleMessage = function(target, source, level, messageText, type,
     this.executionContextId = executionContextId || 0;
 
     this.request = requestId ? target.networkLog.requestForId(requestId) : null;
+
+    if (this.request) {
+        this.stackTrace = this.request.initiator.stackTrace;
+        if (this.request.initiator && this.request.initiator.url) {
+            this.url = this.request.initiator.url;
+            this.line = this.request.initiator.lineNumber;
+        }
+    }
 }
 
 WebInspector.ConsoleMessage.prototype = {

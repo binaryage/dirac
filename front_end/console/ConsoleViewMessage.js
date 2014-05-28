@@ -164,11 +164,6 @@ WebInspector.ConsoleViewMessage.prototype = {
                 }
             } else if (consoleMessage.source === WebInspector.ConsoleMessage.MessageSource.Network) {
                 if (consoleMessage.request) {
-                    consoleMessage.stackTrace = consoleMessage.request.initiator.stackTrace;
-                    if (consoleMessage.request.initiator && consoleMessage.request.initiator.url) {
-                        consoleMessage.url = consoleMessage.request.initiator.url;
-                        consoleMessage.line = consoleMessage.request.initiator.lineNumber;
-                    }
                     this._messageElement = document.createElement("span");
                     if (consoleMessage.level === WebInspector.ConsoleMessage.MessageLevel.Error) {
                         this._messageElement.appendChild(document.createTextNode(consoleMessage.request.requestMethod + " "));
