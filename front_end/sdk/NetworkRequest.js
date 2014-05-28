@@ -897,7 +897,7 @@ WebInspector.NetworkRequest.prototype = {
     },
 
     /**
-     * @return {!{type: !WebInspector.NetworkRequest.InitiatorType, url: string, source: string, lineNumber: number, columnNumber: number}}
+     * @return {!{type: !WebInspector.NetworkRequest.InitiatorType, url: string, lineNumber: number, columnNumber: number}}
      */
     initiatorInfo: function()
     {
@@ -928,7 +928,7 @@ WebInspector.NetworkRequest.prototype = {
             }
         }
 
-        this._initiatorInfo = {type: type, url: url, source: WebInspector.displayNameForURL(url), lineNumber: lineNumber, columnNumber: columnNumber};
+        this._initiatorInfo = {type: type, url: url, lineNumber: lineNumber, columnNumber: columnNumber};
         return this._initiatorInfo;
     },
 
