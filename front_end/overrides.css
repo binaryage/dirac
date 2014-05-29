@@ -249,6 +249,12 @@ button.overrides-swap {
     margin-right: 4px;
 }
 
+@media (-webkit-min-device-pixel-ratio: 1.5) {
+.overrides-view .overrides-footer::before {
+    background-image: url(Images/statusbarButtonGlyphs_2x.png);
+}
+} /* media */
+
 .overrides-view .overrides-footer .warning-icon-small {
     margin-right: 3px;
 }

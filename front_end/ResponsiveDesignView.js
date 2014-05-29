@@ -436,7 +436,20 @@ WebInspector.ResponsiveDesignView.prototype = {
         fieldsetElement = this._toolbarElement.createChild("fieldset", "responsive-design-section");
         fieldsetElement.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Touch"), WebInspector.overridesSupport.settings.emulateTouchEvents, true));
         fieldsetElement.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Viewport"), WebInspector.overridesSupport.settings.emulateViewport, true));
-},
+
+        // Warning
+        this._warningMessage = this._responsiveDesignContainer.element.createChild("div", "responsive-design-warning");
+        WebInspector.overridesSupport.addEventListener(WebInspector.OverridesSupport.Events.OverridesWarningUpdated, this._overridesWarningUpdated, this);
+    },
+
+    _overridesWarningUpdated: function()
+    {
+        var message = WebInspector.overridesSupport.warningMessage();
+        this._warningMessage.classList.toggle("hidden", !message);
+        this._warningMessage.textContent = message;
+        this._responsiveDesignModeChanged();
+        this.onResize();
+    },
 
     __proto__: WebInspector.VBox.prototype
 };

@@ -224,3 +224,30 @@
 .responsive-design-icon-swap:active {
     opacity: 0.8;
 }
+
+.responsive-design-warning {
+    background-color: rgb(64, 64, 64);
+    color: rgb(180, 180, 180);
+    height: 19px;
+    padding: 2px;
+}
+
+.responsive-design-warning::before {
+    background-image: url(Images/statusbarButtonGlyphs.png);
+    background-size: 320px 144px;
+    width: 10px;
+    height: 10px;
+    content: "";
+    position: relative;
+    top: 2px;
+    background-position: -202px -107px;
+    float: left;
+    margin-right: 4px;
+    margin-left: 2px;
+}
+
+@media (-webkit-min-device-pixel-ratio: 1.5) {
+.responsive-design-warning::before {
+    background-image: url(Images/statusbarButtonGlyphs_2x.png);
+}
+} /* media */
