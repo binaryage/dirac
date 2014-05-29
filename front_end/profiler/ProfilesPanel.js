@@ -795,7 +795,7 @@ WebInspector.ProfilesPanel.prototype = {
     {
         var profileType = profile.profileType();
         var typeId = profileType.id;
-        this._typeIdToSidebarSection[typeId].addProfileHeader(profile);;
+        this._typeIdToSidebarSection[typeId].addProfileHeader(profile);
         if (!this.visibleView || this.visibleView === this._launcherView)
             this.showProfile(profile);
     },
