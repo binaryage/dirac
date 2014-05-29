@@ -566,7 +566,7 @@ WebInspector.ProfilesPanel.prototype = {
         function didChangeInterval(error)
         {
             if (error)
-                WebInspector.console.showErrorMessage(error);
+                WebInspector.messageSink.addErrorMessage(error, true);
         }
     },
 
@@ -587,12 +587,12 @@ WebInspector.ProfilesPanel.prototype = {
                     continue;
                 extensions.push(extension);
             }
-            WebInspector.console.log(WebInspector.UIString("Can't load file. Only files with extensions '%s' can be loaded.", extensions.join("', '")));
+            WebInspector.messageSink.addMessage(WebInspector.UIString("Can't load file. Only files with extensions '%s' can be loaded.", extensions.join("', '")));
             return;
         }
 
         if (!!profileType.profileBeingRecorded()) {
-            WebInspector.console.log(WebInspector.UIString("Can't load profile when other profile is recording."));
+            WebInspector.messageSink.addMessage(WebInspector.UIString("Can't load profile while another profile is recording."));
             return;
         }
 

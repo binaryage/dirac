@@ -1035,7 +1035,7 @@ WebInspector.HeapSnapshotDominatorsDataGrid.prototype = {
         function didGetDominators(dominatorIds)
         {
             if (!dominatorIds) {
-                WebInspector.console.log(WebInspector.UIString("Cannot find corresponding heap snapshot node"));
+                console.error("Cannot find corresponding heap snapshot node");
                 callback(false);
                 return;
             }

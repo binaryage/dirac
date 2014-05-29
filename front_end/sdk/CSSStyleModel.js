@@ -1583,7 +1583,7 @@ WebInspector.CSSStyleSheetHeader.prototype = {
         function textCallback(error, text)
         {
             if (error) {
-                WebInspector.console.log("Failed to get text for stylesheet " + this.id + ": " + error);
+                WebInspector.messageSink.addErrorMessage("Failed to get text for stylesheet " + this.id + ": " + error);
                 text = "";
                 // Fall through.
             }

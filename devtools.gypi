@@ -66,6 +66,7 @@
             'front_end/common/CompletionDictionary.js',
             'front_end/common/DOMExtension.js',
             'front_end/common/Geometry.js',
+            'front_end/common/MessageSink.js',
             'front_end/common/ModuleManager.js',
             'front_end/common/modules.js',
             'front_end/common/Object.js',

@@ -398,7 +398,7 @@ WebInspector.StyleFile.prototype = {
     _styleContentSet: function(error)
     {
         if (error)
-            WebInspector.console.showErrorMessage(error);
+            this._mapping._cssModel.target().consoleModel.showErrorMessage(error);
         delete this._isSettingContent;
         this._maybeProcessChange();
     },

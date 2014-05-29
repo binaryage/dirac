@@ -113,22 +113,22 @@ WebInspector.LiveEditSupport.logDetailedError = function(error, errorData, conte
     var warningLevel = WebInspector.ConsoleMessage.MessageLevel.Warning;
     if (!errorData) {
         if (error)
-            WebInspector.console.log(WebInspector.UIString("LiveEdit failed: %s", error), warningLevel, false);
+            WebInspector.messageSink.addMessage(WebInspector.UIString("LiveEdit failed: %s", error), warningLevel);
         return;
     }
     var compileError = errorData.compileError;
     if (compileError) {
         var location = contextScript ? WebInspector.UIString(" at %s:%d:%d", contextScript.sourceURL, compileError.lineNumber, compileError.columnNumber) : "";
         var message = WebInspector.UIString("LiveEdit compile failed: %s%s", compileError.message, location);
-        WebInspector.console.log(message, WebInspector.ConsoleMessage.MessageLevel.Error, false);
+        WebInspector.messageSink.addErrorMessage(message);
     } else {
-        WebInspector.console.log(WebInspector.UIString("Unknown LiveEdit error: %s; %s", JSON.stringify(errorData), error), warningLevel, false);
+        WebInspector.messageSink.addMessage(WebInspector.UIString("Unknown LiveEdit error: %s; %s", JSON.stringify(errorData), error), warningLevel);
     }
 }
 
 WebInspector.LiveEditSupport.logSuccess = function()
 {
-    WebInspector.console.log(WebInspector.UIString("Recompilation and update succeeded."), WebInspector.ConsoleMessage.MessageLevel.Debug, false);
+    WebInspector.messageSink.addMessage(WebInspector.UIString("Recompilation and update succeeded."));
 }
 
 /** @type {!WebInspector.LiveEditSupport} */

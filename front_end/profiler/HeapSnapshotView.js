@@ -945,7 +945,7 @@ WebInspector.HeapSnapshotView.prototype = {
         function didHighlightObject(found)
         {
             if (!found)
-                WebInspector.console.log("Cannot find corresponding heap snapshot node", WebInspector.ConsoleMessage.MessageLevel.Error, true);
+                WebInspector.messageSink.addErrorMessage("Cannot find corresponding heap snapshot node", true);
         }
     },
 
@@ -1676,8 +1676,7 @@ WebInspector.HeapProfileHeader.prototype = {
             if (!accepted)
                 return;
             if (this._failedToCreateTempFile) {
-                WebInspector.console.log("Failed to open temp file with heap snapshot",
-                                 WebInspector.ConsoleMessage.MessageLevel.Error);
+                WebInspector.messageSink.addErrorMessage("Failed to open temp file with heap snapshot");
                 fileOutputStream.close();
             } else if (this._tempFile) {
                 var delegate = new WebInspector.SaveSnapshotOutputStreamDelegate(this);
@@ -1799,8 +1798,7 @@ WebInspector.SaveSnapshotOutputStreamDelegate.prototype = {
      */
     onError: function(reader, event)
     {
-        WebInspector.console.log("Failed to read heap snapshot from temp file: " + event.message,
-                         WebInspector.ConsoleMessage.MessageLevel.Error);
+        WebInspector.messageSink.addErrorMessage("Failed to read heap snapshot from temp file: " + event.message);
         this.onTransferFinished();
     }
 }

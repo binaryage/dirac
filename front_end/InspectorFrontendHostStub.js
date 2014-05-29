@@ -127,7 +127,7 @@ WebInspector.InspectorFrontendHostStub.prototype = {
 
     copyText: function(text)
     {
-        WebInspector.console.log("Clipboard is not enabled in hosted mode. Please inspect using chrome://inspect", WebInspector.ConsoleMessage.MessageLevel.Error, true);
+        WebInspector.messageSink.addErrorMessage("Clipboard is not enabled in hosted mode. Please inspect using chrome://inspect", true);
     },
 
     openInNewTab: function(url)
@@ -137,13 +137,13 @@ WebInspector.InspectorFrontendHostStub.prototype = {
 
     save: function(url, content, forceSaveAs)
     {
-        WebInspector.console.log("Saving files is not enabled in hosted mode. Please inspect using chrome://inspect", WebInspector.ConsoleMessage.MessageLevel.Error, true);
+        WebInspector.messageSink.addErrorMessage("Saving files is not enabled in hosted mode. Please inspect using chrome://inspect", true);
         WebInspector.fileManager.canceledSaveURL(url);
     },
 
     append: function(url, content)
     {
-        WebInspector.console.log("Saving files is not enabled in hosted mode. Please inspect using chrome://inspect", WebInspector.ConsoleMessage.MessageLevel.Error, true);
+        WebInspector.messageSink.addErrorMessage("Saving files is not enabled in hosted mode. Please inspect using chrome://inspect", true);
     },
 
     sendMessageToBackend: function(message)
@@ -274,10 +274,7 @@ if (!window.InspectorFrontendHost) {
             continue;
         InspectorFrontendHost[name] = function(name) {
             var message = "Incompatible embedder: method InspectorFrontendHost." + name + " is missing. Using stub instead.";
-            if (WebInspector.console)
-                WebInspector.console.showErrorMessage(message);
-            else
-                console.error(message);
+            WebInspector.messageSink.addErrorMessage(message, true);
             var args = Array.prototype.slice.call(arguments, 1);
             return proto[name].apply(InspectorFrontendHost, args);
         }.bind(null, name);

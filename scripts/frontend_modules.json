@@ -8,6 +8,7 @@
             "common/CompletionDictionary.js",
             "common/DOMExtension.js",
             "common/Geometry.js",
+            "common/MessageSink.js",
             "common/ModuleManager.js",
             "common/Object.js",
             "common/ParsedURL.js",

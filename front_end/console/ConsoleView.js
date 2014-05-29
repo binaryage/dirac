@@ -138,6 +138,7 @@ WebInspector.ConsoleView = function(hideContextSelector)
     this._updateFilterStatus();
     WebInspector.settings.consoleTimestampsEnabled.addChangeListener(this._consoleTimestampsSettingChanged, this);
 
+    this._registerWithMessageSink();
     WebInspector.targetManager.observeTargets(this);
 }
 
@@ -204,6 +205,41 @@ WebInspector.ConsoleView.prototype = {
         target.consoleModel.removeEventListener(WebInspector.ConsoleModel.Events.CommandEvaluated, this._commandEvaluated, this);
         target.runtimeModel.removeEventListener(WebInspector.RuntimeModel.Events.ExecutionContextCreated, this._onExecutionContextCreated, this);
         target.runtimeModel.removeEventListener(WebInspector.RuntimeModel.Events.ExecutionContextDestroyed, this._onExecutionContextDestroyed, this);
+    },
+
+    _registerWithMessageSink: function()
+    {
+        WebInspector.messageSink.messages().forEach(this._addSinkMessage, this);
+        WebInspector.messageSink.addEventListener(WebInspector.MessageSink.Events.MessageAdded, messageAdded, this);
+
+        /**
+         * @param {!WebInspector.Event} event
+         * @this {WebInspector.ConsoleView}
+         */
+        function messageAdded(event)
+        {
+            this._addSinkMessage(/** @type {!WebInspector.MessageSink.Message} */ (event.data));
+        }
+    },
+
+    /**
+     * @param {!WebInspector.MessageSink.Message} message
+     */
+    _addSinkMessage: function(message)
+    {
+        var level = WebInspector.ConsoleMessage.MessageLevel.Debug;
+        switch (message.level) {
+        case WebInspector.MessageSink.MessageLevel.Error:
+            level = WebInspector.ConsoleMessage.MessageLevel.Error;
+            break;
+        case WebInspector.MessageSink.MessageLevel.Warning:
+            level = WebInspector.ConsoleMessage.MessageLevel.Warning;
+            break;
+        }
+
+        var consoleMessage = new WebInspector.ConsoleMessage(null, WebInspector.ConsoleMessage.MessageSource.Other, level, message.text,
+                undefined, undefined, undefined, undefined, undefined, undefined, undefined, message.timestamp);
+        this._addConsoleMessage(consoleMessage);
     },
 
     /**
@@ -434,6 +470,14 @@ WebInspector.ConsoleView.prototype = {
     _onConsoleMessageAdded: function(event)
     {
         var message = /** @type {!WebInspector.ConsoleMessage} */ (event.data);
+        this._addConsoleMessage(message);
+    },
+
+    /**
+     * @param {!WebInspector.ConsoleMessage} message
+     */
+    _addConsoleMessage: function(message)
+    {
         var viewMessage = this._createViewMessage(message);
         this._consoleMessageAdded(viewMessage);
         this._scheduleViewportRefresh();
@@ -935,6 +979,9 @@ WebInspector.ConsoleViewFilter.prototype = {
     {
         var message = viewMessage.consoleMessage();
         var executionContext = WebInspector.context.flavor(WebInspector.ExecutionContext);
+        if (!message.target())
+            return true;
+
         if (!this._view._showAllMessagesCheckbox.checked() && executionContext && (message.target() !== executionContext.target() || message.executionContextId !== executionContext.id))
             return false;
 

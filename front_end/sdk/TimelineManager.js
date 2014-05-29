@@ -151,11 +151,15 @@ WebInspector.TimelineManager.prototype = {
     _configureCpuProfilerSamplingInterval: function()
     {
         var intervalUs = WebInspector.settings.highResolutionCpuProfiling.get() ? 100 : 1000;
-        ProfilerAgent.setSamplingInterval(intervalUs, didChangeInterval);
+        ProfilerAgent.setSamplingInterval(intervalUs, didChangeInterval.bind(this));
+
+        /**
+         * @this {WebInspector.TimelineManager}
+         */
         function didChangeInterval(error)
         {
             if (error)
-                WebInspector.console.showErrorMessage(error);
+                this.target().consoleModel.showErrorMessage(error);
         }
     },
 

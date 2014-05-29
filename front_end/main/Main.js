@@ -308,6 +308,7 @@ WebInspector.Main.prototype = {
         WebInspector.actionRegistry = new WebInspector.ActionRegistry();
         WebInspector.shortcutRegistry = new WebInspector.ShortcutRegistry(WebInspector.actionRegistry);
         this._registerForwardedShortcuts();
+        this._registerMessageSinkListener();
 
         WebInspector.zoomManager = new WebInspector.ZoomManager();
         WebInspector.inspectorView = new WebInspector.InspectorView();
@@ -353,6 +354,21 @@ WebInspector.Main.prototype = {
 
         actionKeys.push({keyCode: WebInspector.KeyboardShortcut.Keys.F8.code});
         InspectorFrontendHost.setWhitelistedShortcuts(JSON.stringify(actionKeys));
+    },
+
+    _registerMessageSinkListener: function()
+    {
+        WebInspector.messageSink.addEventListener(WebInspector.MessageSink.Events.MessageAdded, messageAdded);
+
+        /**
+         * @param {!WebInspector.Event} event
+         */
+        function messageAdded(event)
+        {
+            var message = /** @type {!WebInspector.MessageSink.Message} */ (event.data);
+            if (message.show)
+                WebInspector.actionRegistry.execute("console.show");
+        }
     },
 
     _documentClick: function(event)

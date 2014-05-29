@@ -283,7 +283,7 @@ WebInspector.BackendSetting.prototype = {
         function callback(error)
         {
             if (error) {
-                WebInspector.console.log("Error applying setting " + this._name + ": " + error);
+                WebInspector.messageSink.addErrorMessage("Error applying setting " + this._name + ": " + error);
                 this._eventSupport.dispatchEventToListeners(this._name, this._value);
                 return;
             }

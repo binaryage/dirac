@@ -128,9 +128,9 @@ WebInspector.IsolatedFileSystemManager.prototype = {
     _fileSystemAdded: function(errorMessage, fileSystem)
     {
         var fileSystemPath;
-        if (errorMessage)
-            WebInspector.console.showErrorMessage(errorMessage)
-        else if (fileSystem) {
+        if (errorMessage) {
+            WebInspector.messageSink.addErrorMessage(errorMessage, true);
+        } else {
             this._innerAddFileSystem(fileSystem);
             fileSystemPath = fileSystem.fileSystemPath;
         }
