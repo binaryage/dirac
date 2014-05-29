@@ -454,13 +454,15 @@ WebInspector.ResponsiveDesignView.prototype = {
         fieldsetElement.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Viewport"), WebInspector.overridesSupport.settings.emulateViewport, true));
 
         // Warning
-        this._warningMessage = this._responsiveDesignContainer.element.createChild("div", "responsive-design-warning");
+        this._warningMessage = this._responsiveDesignContainer.element.createChild("div", "responsive-design-warning hidden");
         WebInspector.overridesSupport.addEventListener(WebInspector.OverridesSupport.Events.OverridesWarningUpdated, this._overridesWarningUpdated, this);
     },
 
     _overridesWarningUpdated: function()
     {
         var message = WebInspector.overridesSupport.warningMessage();
+        if (this._warningMessage.textContent === message)
+            return;
         this._warningMessage.classList.toggle("hidden", !message);
         this._warningMessage.textContent = message;
         this._responsiveDesignModeChanged();
