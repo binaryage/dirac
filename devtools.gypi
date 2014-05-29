@@ -210,7 +210,11 @@
             'front_end/components/WorkerFrontendManager.js',
         ],
         'devtools_main_js_files': [
+            'front_end/main/AdvancedApp.js',
+            'front_end/main/App.js',
             'front_end/main/HelpScreenUntilReload.js',
+            'front_end/main/ScreencastApp.js',
+            'front_end/main/SimpleApp.js',
             'front_end/main/Main.js',
         ],
         'devtools_module_json_files': [

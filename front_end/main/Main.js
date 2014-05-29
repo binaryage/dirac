@@ -63,76 +63,6 @@ WebInspector.Main.prototype = {
         WebInspector.moduleManager.registerModules(configuration);
     },
 
-    _createGlobalStatusBarItems: function()
-    {
-        if (WebInspector.inspectElementModeController)
-            WebInspector.inspectorView.appendToLeftToolbar(WebInspector.inspectElementModeController.toggleSearchButton.element);
-
-        if (WebInspector.experimentsSettings.responsiveDesign.isEnabled() && WebInspector.dockController.canDock()) {
-            this._toggleResponsiveDesignButton = new WebInspector.StatusBarButton(WebInspector.UIString("Responsive design mode."), "responsive-design-status-bar-item");
-            this._toggleResponsiveDesignButton.toggled = WebInspector.settings.responsiveDesignMode.get();
-            this._toggleResponsiveDesignButton.addEventListener("click", this._toggleResponsiveDesign, this);
-            WebInspector.inspectorView.appendToLeftToolbar(this._toggleResponsiveDesignButton.element);
-            WebInspector.settings.responsiveDesignMode.addChangeListener(this._responsiveDesignModeChanged, this);
-        }
-
-        WebInspector.inspectorView.appendToRightToolbar(WebInspector.settingsController.statusBarItem);
-        if (WebInspector.dockController.element)
-            WebInspector.inspectorView.appendToRightToolbar(WebInspector.dockController.element);
-
-        if (this._screencastController)
-            WebInspector.inspectorView.appendToRightToolbar(this._screencastController.statusBarItem());
-    },
-
-    _toggleResponsiveDesign: function()
-    {
-        WebInspector.settings.responsiveDesignMode.set(!this._toggleResponsiveDesignButton.toggled);
-    },
-
-    _responsiveDesignModeChanged: function()
-    {
-        this._toggleResponsiveDesignButton.toggled = WebInspector.settings.responsiveDesignMode.get();
-    },
-
-    _createRootView: function()
-    {
-        var rootView = new WebInspector.RootView();
-
-        this._rootSplitView = new WebInspector.SplitView(false, true, WebInspector.dockController.canDock() ? "InspectorView.splitViewState" : "InspectorView.dummySplitViewState", 300, 300);
-        this._rootSplitView.show(rootView.element);
-
-        WebInspector.inspectorView.show(this._rootSplitView.sidebarElement());
-
-        var inspectedPagePlaceholder = new WebInspector.InspectedPagePlaceholder();
-        if (WebInspector.dockController.canDock() && WebInspector.experimentsSettings.responsiveDesign.isEnabled()) {
-            this._responsiveDesignView = new WebInspector.ResponsiveDesignView(inspectedPagePlaceholder);
-            this._responsiveDesignView.show(this._rootSplitView.mainElement());
-        } else
-            inspectedPagePlaceholder.show(this._rootSplitView.mainElement());
-
-        WebInspector.dockController.addEventListener(WebInspector.DockController.Events.DockSideChanged, this._updateRootSplitViewOnDockSideChange, this);
-        this._updateRootSplitViewOnDockSideChange();
-
-        rootView.attachToBody();
-    },
-
-    _updateRootSplitViewOnDockSideChange: function()
-    {
-        var dockSide = WebInspector.dockController.dockSide();
-        if (dockSide === WebInspector.DockController.State.Undocked) {
-            this._rootSplitView.toggleResizer(this._rootSplitView.resizerElement(), false);
-            this._rootSplitView.toggleResizer(WebInspector.inspectorView.topResizerElement(), false);
-            this._rootSplitView.hideMain();
-            return;
-        }
-
-        this._rootSplitView.setVertical(dockSide === WebInspector.DockController.State.DockedToLeft || dockSide === WebInspector.DockController.State.DockedToRight);
-        this._rootSplitView.setSecondIsSidebar(dockSide === WebInspector.DockController.State.DockedToRight || dockSide === WebInspector.DockController.State.DockedToBottom);
-        this._rootSplitView.toggleResizer(this._rootSplitView.resizerElement(), true);
-        this._rootSplitView.toggleResizer(WebInspector.inspectorView.topResizerElement(), dockSide === WebInspector.DockController.State.DockedToBottom);
-        this._rootSplitView.showBoth();
-    },
-
     _calculateWorkerInspectorTitle: function()
     {
         var expression = "location.href";
@@ -225,7 +155,6 @@ WebInspector.Main.prototype = {
         }
 
         InspectorBackend.loadFromJSONIfNeeded("../protocol.json");
-        WebInspector.dockController = new WebInspector.DockController(!!WebInspector.queryParam("can_dock"));
 
         var onConnectionReady = this._doLoadedDone.bind(this);
 
@@ -299,6 +228,17 @@ WebInspector.Main.prototype = {
 
     _doLoadedDoneWithCapabilities: function(mainTarget)
     {
+        WebInspector.dockController = new WebInspector.DockController(!!WebInspector.queryParam("can_dock"));
+
+        if (mainTarget.canScreencast)
+            WebInspector.app = new WebInspector.ScreencastApp();
+        else if (WebInspector.dockController.canDock())
+            WebInspector.app = new WebInspector.AdvancedApp();
+        else
+            WebInspector.app = new WebInspector.SimpleApp();
+
+        WebInspector.dockController.initialize();
+
         new WebInspector.VersionController().updateVersion();
         WebInspector.shortcutsScreen = new WebInspector.ShortcutsScreen();
         this._registerShortcuts();
@@ -315,8 +255,6 @@ WebInspector.Main.prototype = {
         WebInspector.console.addEventListener(WebInspector.ConsoleModel.Events.MessageAdded, this._updateErrorAndWarningCounts, this);
 
         WebInspector.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.DebuggerPaused, this._debuggerPaused, this);
-
-        WebInspector.zoomManager = new WebInspector.ZoomManager();
 
         WebInspector.inspectorFrontendEventSink = new WebInspector.InspectorFrontendEventSink();
         InspectorBackend.registerInspectorDispatcher(this);
@@ -371,14 +309,10 @@ WebInspector.Main.prototype = {
         WebInspector.shortcutRegistry = new WebInspector.ShortcutRegistry(WebInspector.actionRegistry);
         this._registerForwardedShortcuts();
 
+        WebInspector.zoomManager = new WebInspector.ZoomManager();
         WebInspector.inspectorView = new WebInspector.InspectorView();
-
-        // Screencast controller creates a root view itself.
-        if (mainTarget.canScreencast)
-            this._screencastController = new WebInspector.ScreencastController();
-        else
-            this._createRootView();
-        this._createGlobalStatusBarItems();
+        WebInspector.app.createRootView();
+        WebInspector.app.createGlobalStatusBarItems();
 
         this._addMainEventListeners(document);
 
@@ -400,21 +334,11 @@ WebInspector.Main.prototype = {
 
         WebInspector.extensionServerProxy.setFrontendReady();
 
-        InspectorAgent.enable(inspectorAgentEnableCallback.bind(this));
+        InspectorAgent.enable(inspectorAgentEnableCallback);
 
-        /**
-         * @this {WebInspector.Main}
-         */
         function inspectorAgentEnableCallback()
         {
-            WebInspector.inspectorView.showInitialPanel();
-
-            WebInspector.overridesSupport.applyInitialOverrides();
-            if (WebInspector.overridesSupport.hasActiveOverrides())
-                WebInspector.inspectorView.showViewInDrawer("emulation", true);
-
-            if (this._screencastController)
-                this._screencastController.initialize();
+            WebInspector.app.presentUI();
         }
 
         this._loadCompletedForWorkers();

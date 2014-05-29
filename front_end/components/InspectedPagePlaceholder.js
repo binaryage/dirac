@@ -10,11 +10,13 @@ WebInspector.InspectedPagePlaceholder = function()
 {
     WebInspector.View.call(this);
     this.element.classList.add("white-background");
-    WebInspector.zoomManager.addEventListener(WebInspector.ZoomManager.Events.ZoomChanged, this._onZoomChanged, this);
+    WebInspector.zoomManager.addEventListener(WebInspector.ZoomManager.Events.ZoomChanged, this._scheduleUpdate, this);
     this._margins = { top: 0, right: 0, bottom: 0, left: 0 };
     this.restoreMinimumSizeAndMargins();
-    WebInspector.dockController.addEventListener(WebInspector.DockController.Events.BeforeDockSideChanged, this._beforeDockSideChange, this);
-    WebInspector.dockController.addEventListener(WebInspector.DockController.Events.AfterDockSideChanged, this._afterDockSideChange, this);
+};
+
+WebInspector.InspectedPagePlaceholder.Events = {
+    Update: "Update"
 };
 
 WebInspector.InspectedPagePlaceholder.MarginValue = 3;
@@ -47,11 +49,6 @@ WebInspector.InspectedPagePlaceholder.prototype = {
         }
     },
 
-    _onZoomChanged: function()
-    {
-        this._scheduleUpdate();
-    },
-
     onResize: function()
     {
         this._findMargins();
@@ -60,15 +57,9 @@ WebInspector.InspectedPagePlaceholder.prototype = {
 
     _scheduleUpdate: function()
     {
-        if (this._noUpdates)
-            return;
-
-        var dockSide = WebInspector.dockController.dockSide();
-        if (dockSide !== WebInspector.DockController.State.Undocked) {
-            if (this._updateId)
-                window.cancelAnimationFrame(this._updateId);
-            this._updateId = window.requestAnimationFrame(this._update.bind(this));
-        }
+        if (this._updateId)
+            window.cancelAnimationFrame(this._updateId);
+        this._updateId = window.requestAnimationFrame(this.update.bind(this));
     },
 
     /**
@@ -120,26 +111,12 @@ WebInspector.InspectedPagePlaceholder.prototype = {
         return { x: left, y: top, width: right - left, height: bottom - top };
     },
 
-    _update: function()
+    update: function()
     {
         delete this._updateId;
-        if (this._noUpdates)
-            return;
-
         var rect = this._dipPageRect();
         var bounds = { x: Math.round(rect.x), y: Math.round(rect.y), height: Math.round(rect.height), width: Math.round(rect.width) };
-        InspectorFrontendHost.setInspectedPageBounds(bounds);
-    },
-
-    _beforeDockSideChange: function()
-    {
-        this._noUpdates = true;
-    },
-
-    _afterDockSideChange: function()
-    {
-        this._noUpdates = false;
-        this._scheduleUpdate();
+        this.dispatchEventToListeners(WebInspector.InspectedPagePlaceholder.Events.Update, bounds);
     },
 
     __proto__: WebInspector.View.prototype

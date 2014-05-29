@@ -76,6 +76,12 @@ WebInspector.DockController.Events = {
 }
 
 WebInspector.DockController.prototype = {
+    initialize: function()
+    {
+        if (this._canDock)
+            this._dockToggleButton.toggleInitialState();
+    },
+
     /**
      * @return {?Element}
      */

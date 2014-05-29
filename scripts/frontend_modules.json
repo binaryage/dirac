@@ -465,7 +465,11 @@
             "sdk"
         ],
         "sources": [
+            "main/AdvancedApp.js",
+            "main/App.js",
             "main/HelpScreenUntilReload.js",
+            "main/ScreencastApp.js",
+            "main/SimpleApp.js",
             "main/Main.js"
         ]
     },
