@@ -66,6 +66,12 @@ WebInspector.ViewportControl.Provider = function()
 
 WebInspector.ViewportControl.Provider.prototype = {
     /**
+     * @param {number} index
+     * @return {number}
+     */
+    fastHeight: function(index) { return 0; },
+
+    /**
      * @return {number}
      */
     itemCount: function() { return 0; },
@@ -87,11 +93,6 @@ WebInspector.ViewportElement.prototype = {
     wasShown: function() { },
 
     /**
-     * @return {number}
-     */
-    fastHeight: function() { },
-
-    /**
      * @return {!Element}
      */
     element: function() { },
@@ -101,26 +102,16 @@ WebInspector.ViewportElement.prototype = {
  * @constructor
  * @implements {WebInspector.ViewportElement}
  * @param {!Element} element
- * @param {number} height
  */
-WebInspector.StaticViewportElement = function(element, height)
+WebInspector.StaticViewportElement = function(element)
 {
     this._element = element;
-    this._height = height;
 }
 
 WebInspector.StaticViewportElement.prototype = {
     willHide: function() { },
 
     wasShown: function() { },
-
-    /**
-     * @return {number}
-     */
-    fastHeight: function()
-    {
-        return this._height;
-    },
 
     /**
      * @return {!Element}
@@ -188,9 +179,9 @@ WebInspector.ViewportControl.prototype = {
         if (!itemCount)
             return;
         this._cumulativeHeights = new Int32Array(itemCount);
-        this._cumulativeHeights[0] = this._provider.itemElement(0).fastHeight();
+        this._cumulativeHeights[0] = this._provider.fastHeight(0);
         for (var i = 1; i < itemCount; ++i)
-            this._cumulativeHeights[i] = this._cumulativeHeights[i - 1] + this._provider.itemElement(i).fastHeight();
+            this._cumulativeHeights[i] = this._cumulativeHeights[i - 1] + this._provider.fastHeight(i);
     },
 
     /**
@@ -361,7 +352,7 @@ WebInspector.ViewportControl.prototype = {
         for (var i = 0; i < this._renderedItems.length; ++i) {
             this._renderedItems[i].willHide();
             // Tolerate 1-pixel error due to double-to-integer rounding errors.
-            if (this._cumulativeHeights && Math.abs(this._cachedItemHeight(this._firstVisibleIndex + i) - this._renderedItems[i].fastHeight()) > 1)
+            if (this._cumulativeHeights && Math.abs(this._cachedItemHeight(this._firstVisibleIndex + i) - this._provider.fastHeight(i + this._firstVisibleIndex)) > 1)
                 delete this._cumulativeHeights;
         }
         this._rebuildCumulativeHeightsIfNeeded();

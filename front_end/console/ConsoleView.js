@@ -160,6 +160,15 @@ WebInspector.ConsoleView.prototype = {
     },
 
     /**
+     * @param {number} index
+     * @return {number}
+     */
+    fastHeight: function(index)
+    {
+        return this._visibleViewMessages[index].fastHeight();
+    },
+
+    /**
      * @param {!WebInspector.Target} target
      */
     targetAdded: function(target)

@@ -354,17 +354,29 @@ WebInspector.FilteredItemSelectionDialog.prototype = {
 
     /**
      * @param {number} index
+     * @return {number}
+     */
+    fastHeight: function(index)
+    {
+        if (!this._rowHeight) {
+            var delegateIndex = this._filteredItems[index];
+            var element = this._createItemElement(delegateIndex);
+            this._rowHeight = element.measurePreferredSize(this._viewportControl.contentElement()).height;
+        }
+        return this._rowHeight;
+    },
+
+    /**
+     * @param {number} index
      * @return {!WebInspector.ViewportElement}
      */
     itemElement: function(index)
     {
         var delegateIndex = this._filteredItems[index];
         var element = this._createItemElement(delegateIndex);
-        if (!this._rowHeight)
-            this._rowHeight = element.measurePreferredSize(this._viewportControl.contentElement()).height;
         if (index === this._selectedIndexInFiltered)
             element.classList.add("selected");
-        return new WebInspector.StaticViewportElement(element, this._rowHeight);
+        return new WebInspector.StaticViewportElement(element);
     },
 
     __proto__: WebInspector.DialogDelegate.prototype
