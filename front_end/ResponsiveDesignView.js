@@ -43,6 +43,11 @@ WebInspector.ResponsiveDesignView = function(inspectedPagePlaceholder)
     WebInspector.zoomManager.addEventListener(WebInspector.ZoomManager.Events.ZoomChanged, this._onZoomChanged, this);
     WebInspector.dockController.addEventListener(WebInspector.DockController.Events.DockSideChanged, this._updateOverridesSupportOnDockSideChange, this);
     WebInspector.settings.responsiveDesignMode.addChangeListener(this._responsiveDesignModeChanged, this);
+
+    WebInspector.overridesSupport.settings.emulateViewport.addChangeListener(this._maybeEnableResponsiveDesign, this);
+    WebInspector.overridesSupport.settings.emulateTouchEvents.addChangeListener(this._maybeEnableResponsiveDesign, this);
+    WebInspector.overridesSupport.settings.overrideDeviceResolution.addChangeListener(this._maybeEnableResponsiveDesign, this);
+
     this._updateOverridesSupportOnDockSideChange();
 };
 
@@ -52,6 +57,17 @@ WebInspector.ResponsiveDesignView.RulerWidth = 20;
 WebInspector.ResponsiveDesignView.ToolbarHeight = 24;
 
 WebInspector.ResponsiveDesignView.prototype = {
+    _maybeEnableResponsiveDesign: function()
+    {
+        if (this._enabled)
+            return;
+        if (WebInspector.overridesSupport.settings.emulateViewport.get() ||
+                WebInspector.overridesSupport.settings.emulateTouchEvents.get() ||
+                WebInspector.overridesSupport.settings.overrideDeviceResolution.get()) {
+            WebInspector.settings.responsiveDesignMode.set(true);
+        }
+    },
+
     _responsiveDesignModeChanged: function()
     {
         if (WebInspector.dockController.dockSide() === WebInspector.DockController.State.Undocked) {

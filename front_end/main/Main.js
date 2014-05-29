@@ -358,7 +358,7 @@ WebInspector.Main.prototype = {
 
         new WebInspector.WorkspaceController(WebInspector.workspace);
 
-        WebInspector.overridesSupport = new WebInspector.OverridesSupport();
+        WebInspector.overridesSupport = new WebInspector.OverridesSupport(WebInspector.experimentsSettings.responsiveDesign.isEnabled() && WebInspector.dockController.canDock());
 
         WebInspector.liveEditSupport = new WebInspector.LiveEditSupport(WebInspector.workspace);
         new WebInspector.CSSStyleSheetMapping(WebInspector.cssModel, WebInspector.workspace, WebInspector.networkWorkspaceBinding);

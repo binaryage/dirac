@@ -44,7 +44,8 @@ WebInspector.OverridesView = function()
     this._tabbedPane.verticalTabLayout = true;
 
     if (!WebInspector.overridesSupport.isInspectingDevice()) {
-        new WebInspector.OverridesView.DeviceTab().appendAsTab(this._tabbedPane);
+        if (!WebInspector.overridesSupport.responsiveDesignAvailable())
+            new WebInspector.OverridesView.DeviceTab().appendAsTab(this._tabbedPane);
         new WebInspector.OverridesView.ViewportTab().appendAsTab(this._tabbedPane);
     }
     new WebInspector.OverridesView.UserAgentTab().appendAsTab(this._tabbedPane);
@@ -78,14 +79,6 @@ WebInspector.OverridesView.prototype = {
 
     __proto__: WebInspector.VBox.prototype
 }
-
-/**
- * @return {boolean}
- */
-WebInspector.OverridesView.isResponsiveDesignEnabled = function()
-{
-    return WebInspector.dockController.canDock() && WebInspector.experimentsSettings.responsiveDesign.isEnabled();
-};
 
 /**
  * @constructor
@@ -187,7 +180,7 @@ WebInspector.OverridesView.DeviceTab = function()
 
 WebInspector.OverridesView.DeviceTab.prototype = {
     /**
-     * @param {!Event} e
+     * @param {?Event} e
      */
     _keyPressed: function(e)
     {
@@ -232,12 +225,17 @@ WebInspector.OverridesView.DeviceTab.prototype = {
  */
 WebInspector.OverridesView.ViewportTab = function()
 {
-    WebInspector.OverridesView.Tab.call(this, "viewport", WebInspector.UIString("Screen"), [WebInspector.overridesSupport.settings.overrideDeviceResolution, WebInspector.overridesSupport.settings.emulateViewport, WebInspector.overridesSupport.settings.overrideCSSMedia]);
+    var settings = [WebInspector.overridesSupport.settings.overrideCSSMedia];
+    if (!WebInspector.overridesSupport.responsiveDesignAvailable())
+        settings = settings.concat([WebInspector.overridesSupport.settings.overrideDeviceResolution, WebInspector.overridesSupport.settings.emulateViewport]);
+    WebInspector.OverridesView.Tab.call(this, "viewport", WebInspector.UIString("Screen"), settings);
     this.element.classList.add("overrides-viewport");
 
-    this._createDeviceMetricsElement();
-    var checkbox = this._createSettingCheckbox(WebInspector.UIString("Emulate viewport"), WebInspector.overridesSupport.settings.emulateViewport);
-    this.element.appendChild(checkbox);
+    if (!WebInspector.overridesSupport.responsiveDesignAvailable()) {
+        this._createDeviceMetricsElement();
+        var checkbox = this._createSettingCheckbox(WebInspector.UIString("Emulate viewport"), WebInspector.overridesSupport.settings.emulateViewport);
+        this.element.appendChild(checkbox);
+    }
     this._createMediaEmulationFragment();
 
     var footnote = this.element.createChild("p", "help-footnote");
@@ -276,17 +274,15 @@ WebInspector.OverridesView.ViewportTab.prototype = {
         var heightOverrideInput = WebInspector.SettingsUI.createSettingInputField("", WebInspector.overridesSupport.settings.deviceHeight, true, 4, "80px", WebInspector.OverridesSupport.inputValidator, true);
         cellElement.appendChild(heightOverrideInput);
 
-        if (!WebInspector.OverridesView.isResponsiveDesignEnabled()) {
-            rowElement = tableElement.createChild("tr");
-            cellElement = rowElement.createChild("td");
-            cellElement.colSpan = 4;
+        rowElement = tableElement.createChild("tr");
+        cellElement = rowElement.createChild("td");
+        cellElement.colSpan = 4;
 
-            var widthRangeInput = WebInspector.SettingsUI.createSettingInputField("", WebInspector.overridesSupport.settings.deviceWidth, true, 4, "200px", undefined, true);
-            widthRangeInput.type = "range";
-            widthRangeInput.min = 100;
-            widthRangeInput.max = 2000;
-            cellElement.appendChild(widthRangeInput);
-        }
+        var widthRangeInput = WebInspector.SettingsUI.createSettingInputField("", WebInspector.overridesSupport.settings.deviceWidth, true, 4, "200px", undefined, true).lastChild;
+        widthRangeInput.type = "range";
+        widthRangeInput.min = 100;
+        widthRangeInput.max = 2000;
+        cellElement.appendChild(widthRangeInput);
 
         rowElement = tableElement.createChild("tr");
         rowElement.title = WebInspector.UIString("Ratio between a device's physical pixels and device-independent pixels.");
@@ -297,10 +293,8 @@ WebInspector.OverridesView.ViewportTab.prototype = {
         textAutosizingOverrideElement.title = WebInspector.UIString("Text autosizing is the feature that boosts font sizes on mobile devices.");
         fieldsetElement.appendChild(textAutosizingOverrideElement);
 
-        if (!WebInspector.OverridesView.isResponsiveDesignEnabled()) {
-            checkbox = this._createSettingCheckbox(WebInspector.UIString("Shrink to fit"), WebInspector.overridesSupport.settings.deviceFitWindow);
-            fieldsetElement.appendChild(checkbox);
-        }
+        checkbox = this._createSettingCheckbox(WebInspector.UIString("Shrink to fit"), WebInspector.overridesSupport.settings.deviceFitWindow);
+        fieldsetElement.appendChild(checkbox);
         this.element.appendChild(fieldsetElement);
     },
 
@@ -506,13 +500,13 @@ WebInspector.OverridesView.UserAgentTab.prototype = {
 WebInspector.OverridesView.SensorsTab = function()
 {
     var settings = [WebInspector.overridesSupport.settings.overrideGeolocation, WebInspector.overridesSupport.settings.overrideDeviceOrientation];
-    if (!WebInspector.overridesSupport.hasTouchInputs())
+    if (!WebInspector.overridesSupport.hasTouchInputs() && !WebInspector.overridesSupport.responsiveDesignAvailable())
         settings.push(WebInspector.overridesSupport.settings.emulateTouchEvents);
     WebInspector.OverridesView.Tab.call(this, "sensors", WebInspector.UIString("Sensors"), settings);
 
     this.element.classList.add("overrides-sensors");
     this.registerRequiredCSS("accelerometer.css");
-    if (!WebInspector.overridesSupport.hasTouchInputs())
+    if (!WebInspector.overridesSupport.hasTouchInputs() && !WebInspector.overridesSupport.responsiveDesignAvailable())
         this.element.appendChild(this._createSettingCheckbox(WebInspector.UIString("Emulate touch screen"), WebInspector.overridesSupport.settings.emulateTouchEvents));
     this._appendGeolocationOverrideControl();
     this._apendDeviceOrientationOverrideControl();

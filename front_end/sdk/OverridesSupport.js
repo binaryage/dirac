@@ -32,8 +32,9 @@
  * @constructor
  * @implements {WebInspector.TargetManager.Observer}
  * @extends {WebInspector.Object}
+ * @param {boolean} responsiveDesignAvailable
  */
-WebInspector.OverridesSupport = function()
+WebInspector.OverridesSupport = function(responsiveDesignAvailable)
 {
     WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.MainFrameNavigated, this._onMainFrameNavigated.bind(this), this);
     this._overrideDeviceResolution = false;
@@ -41,6 +42,7 @@ WebInspector.OverridesSupport = function()
     this._userAgent = "";
     this._pageResizer = null;
     WebInspector.targetManager.observeTargets(this);
+    this._responsiveDesignAvailable = responsiveDesignAvailable;
 }
 
 WebInspector.OverridesSupport.Events = {
@@ -399,6 +401,14 @@ WebInspector.OverridesSupport._tablets = [
 
 WebInspector.OverridesSupport.prototype = {
     /**
+     * @return {boolean}
+     */
+    responsiveDesignAvailable: function()
+    {
+        return this._responsiveDesignAvailable;
+    },
+
+    /**
      * @param {?WebInspector.OverridesSupport.PageResizer} pageResizer
      */
     setPageResizer: function(pageResizer)
@@ -523,9 +533,9 @@ WebInspector.OverridesSupport.prototype = {
 
         if (this._deviceMetricsChangedListenerMuted)
             return;
-
+        var responsiveDesignAvailableAndDisabled = this._responsiveDesignAvailable && !WebInspector.settings.responsiveDesignMode.get();
         var overrideDeviceResolution = this.settings.overrideDeviceResolution.get();
-        if (!overrideDeviceResolution && !this.settings.emulateViewport.get()) {
+        if (responsiveDesignAvailableAndDisabled || (!overrideDeviceResolution && !this.settings.emulateViewport.get())) {
             PageAgent.clearDeviceMetricsOverride(apiCallback.bind(this));
             if (this._pageResizer)
                 this._pageResizer.update(0, 0, 0);
