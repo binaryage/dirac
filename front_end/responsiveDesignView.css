@@ -62,11 +62,10 @@
 .responsive-design-resolution-label {
     position: absolute;
     color: white;
-    background-color: hsl(41, 100%, 47%);
+    background-color: rgb(255, 156, 0);
     padding: 3px;
     font-size: 12px;
     text-align: center;
-    text-shadow: hsl(41, 100%, 39%) 1px 1px;
 }
 
 .responsive-design-resolution-width {
@@ -80,11 +79,11 @@
 .responsive-design-toolbar {
     flex: 0 0 24px;
     background-color: rgb(64, 64, 64);
-    color: rgb(220, 220, 220);
-    padding-left: 6px;
+    color: rgb(180, 180, 180);
     display: flex;
     align-items: center;
     border-bottom: 1px solid rgb(163, 163, 163);
+    white-space: nowrap;
 }
 
 .responsive-design-toolbar fieldset,
@@ -95,11 +94,25 @@
     display: inline-block;
 }
 
+.responsive-design-toolbar fieldset {
+    padding: 0 7px 0 0;
+    height: 23px;
+}
+
+.responsive-design-toolbar .responsive-design-section {
+    border-left: 1px solid rgb(163, 163, 163);
+}
+
+.responsive-design-toolbar fieldset:first-child {
+    border-right: none;
+}
+
 .responsive-design-toolbar .field-error-message {
     display: none;
 }
-.responsive-design-toolbar label {
+.responsive-design-toolbar fieldset > label {
     display: inline-flex;
+    height: 22px;
     align-items: center;
 }
 
@@ -108,33 +121,35 @@
     text-align: center;
     background-color: transparent;
     border: none;
-    margin: 0 2px;
-    padding: 3px;
+    margin: 0;
+    padding: 3px 0;
 }
 
 .responsive-design-toolbar input:disabled,
 .responsive-design-toolbar button:disabled {
-    opacity: 0.6;
+    opacity: 0.7;
 }
 
 .responsive-design-toolbar input[type='checkbox'] {
-    background: none;
-    margin: 0;
-    margin-right: 5px;
+    -webkit-appearance: none;
+    margin: 0 5px 0 7px;
+    border: 1px solid rgb(45, 45, 45);
+    border-radius: 3px;
+    background-color: rgb(102, 102, 102);
 }
 
 .responsive-design-toolbar input[type='checkbox']:after {
-    content:'\2713';
-    color: transparent;
+    content: '';
     line-height: 10px;
     position: absolute;
     cursor: pointer;
-    background: rgb(64, 64, 64);
-    border: 1px solid hsla(41, 100%, 47%, 0.6);
+    width: 12px;
+    height: 12px;
+    background: none;
 }
 
 .responsive-design-toolbar input[type='checkbox']:checked:after {
-    color: hsl(41, 100%, 47%);
+    background: rgb(220, 220, 220);
 }
 
 .responsive-design-toolbar input.error-input {
@@ -142,17 +157,70 @@
     text-decoration: line-through;
 }
 
-.responsive-design-override-swap {
-    margin-right: 10px;
+.responsive-design-toolbar select {
+    width: 150px;
+    background-color: transparent;
+    color: rgb(255, 156, 0);
+    border: 0;
+    margin-left: 10px;
+    line-height: 16px;
 }
 
 .responsive-design-toolbar input:focus {
     background-color: rgb(102, 102, 102)
 }
 
-.responsive-design-toolbar button {
-    color: rgb(255, 156, 0);
-    background-color: rgb(64, 64, 64);
-    border: none;
-    cursor: pointer;
+.responsive-design-icon {
+    background-color: rgb(180, 180, 180);
+    -webkit-mask-image: url(Images/responsiveDesign.png);
+    -webkit-mask-size: 48px 16px;
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    position: relative;
+    top: 3px;
+}
+
+@media (-webkit-min-device-pixel-ratio: 1.5) {
+.responsive-design-icon {
+    -webkit-mask-image: url(Images/responsiveDesign_2x.png);
+}
+} /* media */
+
+.responsive-design-toolbar input[type='checkbox']:after {
+    -webkit-mask-image: url(Images/statusbarButtonGlyphs.png);
+    -webkit-mask-size: 320px 144px;
+    -webkit-mask-position: -128px -110px;
+}
+
+@media (-webkit-min-device-pixel-ratio: 1.5) {
+.responsive-design-toolbar input[type='checkbox']:after {
+    -webkit-mask-image: url(Images/statusbarButtonGlyphs_2x.png);
+}
+} /* media */
+
+.responsive-design-icon-resolution {
+    -webkit-mask-position: 0 0;
+}
+
+.responsive-design-icon-dpr {
+    -webkit-mask-position: -16px 0;
+}
+
+.responsive-design-icon-swap {
+    opacity: 0.9;
+    background-color: rgb(255, 156, 0);
+    -webkit-mask-position: -32px 0;
+    margin-right: 10px;
+    -webkit-appearance: none;
+    padding: 0;
+    border: 0;
+}
+
+.responsive-design-icon-swap:hover {
+    opacity: 1;
+}
+
+.responsive-design-icon-swap:active {
+    opacity: 0.8;
 }

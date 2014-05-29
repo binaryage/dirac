@@ -213,7 +213,7 @@ WebInspector.ResponsiveDesignView.prototype = {
         const backgroundColor = "rgb(102, 102, 102)";
         const lightLineColor = "rgb(132, 132, 132)";
         const darkLineColor = "rgb(114, 114, 114)";
-        const textColor = "rgb(220, 220, 220)";
+        const textColor = "rgb(180, 180, 180)";
 
         var scale = this._scale || 1;
         var rulerWidth = WebInspector.ResponsiveDesignView.RulerWidth;
@@ -373,24 +373,70 @@ WebInspector.ResponsiveDesignView.prototype = {
     {
         this._toolbarElement = this._responsiveDesignContainer.element.createChild("div", "responsive-design-toolbar");
 
-        this._toolbarElement.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Resolution"), WebInspector.overridesSupport.settings.overrideDeviceResolution, true));
+        // Device
+        var fieldsetElement = this._toolbarElement.createChild("fieldset");
+        var deviceLabel = fieldsetElement.createChild("label");
+        var deviceCheckbox = deviceLabel.createChild("input");
+        deviceCheckbox.type = "checkbox";
+        deviceLabel.createTextChild(WebInspector.UIString("Device"));
+        deviceLabel.title = WebInspector.UIString("Emulate device");
+        deviceCheckbox.addEventListener("change", deviceChecked, false);
 
-        var fieldsetElement = WebInspector.SettingsUI.createSettingFieldset(WebInspector.overridesSupport.settings.overrideDeviceResolution);
+        function deviceChecked()
+        {
+            if (deviceCheckbox.checked) {
+                var option = deviceSelect.options[deviceSelect.selectedIndex];
+                WebInspector.overridesSupport.emulateDevice(option.metrics, option.userAgent);
+            } else {
+                WebInspector.overridesSupport.resetEmulatedDevice();
+            }
+        }
+
+        var deviceSelect = WebInspector.overridesSupport.createDeviceSelect(document);
+        fieldsetElement.appendChild(deviceSelect);
+        deviceSelect.addEventListener("change", emulateDevice, false);
+
+        function emulateDevice()
+        {
+            var option = deviceSelect.options[deviceSelect.selectedIndex];
+            WebInspector.overridesSupport.emulateDevice(option.metrics, option.userAgent);
+        }
+
+        updateDeviceCheckboxStatus();
+        WebInspector.overridesSupport.settings.emulateViewport.addChangeListener(updateDeviceCheckboxStatus);
+        WebInspector.overridesSupport.settings.emulateTouchEvents.addChangeListener(updateDeviceCheckboxStatus);
+        WebInspector.overridesSupport.settings.overrideDeviceResolution.addChangeListener(updateDeviceCheckboxStatus);
+        function updateDeviceCheckboxStatus()
+        {
+            deviceCheckbox.checked = WebInspector.overridesSupport.settings.emulateViewport.get() &&
+                WebInspector.overridesSupport.settings.emulateTouchEvents.get() &&
+                WebInspector.overridesSupport.settings.overrideDeviceResolution.get();
+        }
+
+        // Screen
+        fieldsetElement = this._toolbarElement.createChild("fieldset", "responsive-design-section");
+        fieldsetElement.appendChild(WebInspector.SettingsUI.createSettingCheckbox("Screen", WebInspector.overridesSupport.settings.overrideDeviceResolution, true));
+
+        fieldsetElement = WebInspector.SettingsUI.createSettingFieldset(WebInspector.overridesSupport.settings.overrideDeviceResolution);
         this._toolbarElement.appendChild(fieldsetElement);
+        fieldsetElement.createChild("div", "responsive-design-icon responsive-design-icon-resolution").title = WebInspector.UIString("Screen resolution");
 
         fieldsetElement.appendChild(WebInspector.SettingsUI.createSettingInputField("", WebInspector.overridesSupport.settings.deviceWidth, true, 4, "3em", WebInspector.OverridesSupport.inputValidator, true));
         fieldsetElement.appendChild(document.createTextNode(" \u00D7 "));
         fieldsetElement.appendChild(WebInspector.SettingsUI.createSettingInputField("", WebInspector.overridesSupport.settings.deviceHeight, true, 4, "3em", WebInspector.OverridesSupport.inputValidator, true));
 
-        this._swapDimensionsElement = fieldsetElement.createChild("button", "responsive-design-override-swap");
-        this._swapDimensionsElement.appendChild(document.createTextNode(" \u21C4 ")); // RIGHTWARDS ARROW OVER LEFTWARDS ARROW.
+        this._swapDimensionsElement = fieldsetElement.createChild("button", "responsive-design-icon responsive-design-icon-swap");
         this._swapDimensionsElement.title = WebInspector.UIString("Swap dimensions");
         this._swapDimensionsElement.addEventListener("click", WebInspector.overridesSupport.swapDimensions.bind(WebInspector.overridesSupport), false);
-        this._swapDimensionsElement.tabIndex = -1;
 
-        fieldsetElement.appendChild(WebInspector.SettingsUI.createSettingInputField(WebInspector.UIString("Dpr"), WebInspector.overridesSupport.settings.deviceScaleFactor, true, 2, "2em", WebInspector.OverridesSupport.inputValidator, true));
-        this._toolbarElement.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Viewport"), WebInspector.overridesSupport.settings.emulateViewport, true));
-    },
+        fieldsetElement.createChild("div", "responsive-design-icon responsive-design-icon-dpr").title = WebInspector.UIString("Device pixel ratio");
+        fieldsetElement.appendChild(WebInspector.SettingsUI.createSettingInputField("", WebInspector.overridesSupport.settings.deviceScaleFactor, true, 2, "2em", WebInspector.OverridesSupport.inputValidator, true));
+
+        // Touch and viewport
+        fieldsetElement = this._toolbarElement.createChild("fieldset", "responsive-design-section");
+        fieldsetElement.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Touch"), WebInspector.overridesSupport.settings.emulateTouchEvents, true));
+        fieldsetElement.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Viewport"), WebInspector.overridesSupport.settings.emulateViewport, true));
+},
 
     __proto__: WebInspector.VBox.prototype
 };

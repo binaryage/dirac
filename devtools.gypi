@@ -519,6 +519,8 @@
             'front_end/Images/resourcePlainIcon.png',
             'front_end/Images/resourcePlainIconSmall.png',
             'front_end/Images/resourcesTimeGraphIcon.png',
+            'front_end/Images/responsiveDesign.png',
+            'front_end/Images/responsiveDesign_2x.png',
             'front_end/Images/searchNext.png',
             'front_end/Images/searchPrev.png',
             'front_end/Images/sessionStorage.png',
