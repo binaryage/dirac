@@ -77,13 +77,9 @@
 }
 
 .responsive-design-toolbar {
-    flex: 0 0 24px;
+    flex: none;
     background-color: rgb(64, 64, 64);
     color: rgb(180, 180, 180);
-    display: flex;
-    align-items: center;
-    border-bottom: 1px solid rgb(163, 163, 163);
-    white-space: nowrap;
 }
 
 .responsive-design-toolbar fieldset,
@@ -94,26 +90,19 @@
     display: inline-block;
 }
 
-.responsive-design-toolbar fieldset {
-    padding: 0 7px 0 0;
-    height: 23px;
-}
-
 .responsive-design-toolbar .responsive-design-section {
-    border-left: 1px solid rgb(163, 163, 163);
-}
-
-.responsive-design-toolbar fieldset:first-child {
-    border-right: none;
+    display: inline-flex;
+    height: 24px;
+    border: 1px solid rgb(163, 163, 163);
+    border-left: none;
+    margin-top: -1px;
+    white-space: nowrap;
+    align-items: center;
+    padding-right: 3px;
 }
 
 .responsive-design-toolbar .field-error-message {
     display: none;
-}
-.responsive-design-toolbar fieldset > label {
-    display: inline-flex;
-    height: 22px;
-    align-items: center;
 }
 
 .responsive-design-toolbar input[type='text'] {
@@ -136,6 +125,8 @@
     border: 1px solid rgb(45, 45, 45);
     border-radius: 3px;
     background-color: rgb(102, 102, 102);
+    position: relative;
+    top: 1px;
 }
 
 .responsive-design-toolbar input[type='checkbox']:after {
@@ -164,6 +155,8 @@
     border: 0;
     margin-left: 10px;
     line-height: 16px;
+    position: relative;
+    top: 1px;
 }
 
 .responsive-design-toolbar input:focus {

@@ -14,7 +14,11 @@ WebInspector.ResponsiveDesignView = function(inspectedPagePlaceholder)
     this.registerRequiredCSS("responsiveDesignView.css");
 
     this._responsiveDesignContainer = new WebInspector.VBox();
+
     this._createToolbar();
+    this._warningMessage = this._responsiveDesignContainer.element.createChild("div", "responsive-design-warning hidden");
+    WebInspector.overridesSupport.addEventListener(WebInspector.OverridesSupport.Events.OverridesWarningUpdated, this._overridesWarningUpdated, this);
+
     this._canvasContainer = new WebInspector.View();
     this._canvasContainer.element.classList.add("responsive-design");
     this._canvasContainer.show(this._responsiveDesignContainer.element);
@@ -390,8 +394,8 @@ WebInspector.ResponsiveDesignView.prototype = {
         this._toolbarElement = this._responsiveDesignContainer.element.createChild("div", "responsive-design-toolbar");
 
         // Device
-        var fieldsetElement = this._toolbarElement.createChild("fieldset");
-        var deviceLabel = fieldsetElement.createChild("label");
+        var sectionElement = this._toolbarElement.createChild("div", "responsive-design-section");
+        var deviceLabel = sectionElement.createChild("label");
         var deviceCheckbox = deviceLabel.createChild("input");
         deviceCheckbox.type = "checkbox";
         deviceLabel.createTextChild(WebInspector.UIString("Device"));
@@ -409,7 +413,7 @@ WebInspector.ResponsiveDesignView.prototype = {
         }
 
         var deviceSelect = WebInspector.overridesSupport.createDeviceSelect(document);
-        fieldsetElement.appendChild(deviceSelect);
+        sectionElement.appendChild(deviceSelect);
         deviceSelect.addEventListener("change", emulateDevice, false);
 
         function emulateDevice()
@@ -419,9 +423,11 @@ WebInspector.ResponsiveDesignView.prototype = {
         }
 
         updateDeviceCheckboxStatus();
+
         WebInspector.overridesSupport.settings.emulateViewport.addChangeListener(updateDeviceCheckboxStatus);
         WebInspector.overridesSupport.settings.emulateTouchEvents.addChangeListener(updateDeviceCheckboxStatus);
         WebInspector.overridesSupport.settings.overrideDeviceResolution.addChangeListener(updateDeviceCheckboxStatus);
+
         function updateDeviceCheckboxStatus()
         {
             deviceCheckbox.checked = WebInspector.overridesSupport.settings.emulateViewport.get() &&
@@ -430,11 +436,11 @@ WebInspector.ResponsiveDesignView.prototype = {
         }
 
         // Screen
-        fieldsetElement = this._toolbarElement.createChild("fieldset", "responsive-design-section");
-        fieldsetElement.appendChild(WebInspector.SettingsUI.createSettingCheckbox("Screen", WebInspector.overridesSupport.settings.overrideDeviceResolution, true));
+        sectionElement = this._toolbarElement.createChild("div", "responsive-design-section");
+        sectionElement.appendChild(WebInspector.SettingsUI.createSettingCheckbox("Screen", WebInspector.overridesSupport.settings.overrideDeviceResolution, true));
 
-        fieldsetElement = WebInspector.SettingsUI.createSettingFieldset(WebInspector.overridesSupport.settings.overrideDeviceResolution);
-        this._toolbarElement.appendChild(fieldsetElement);
+        var fieldsetElement = WebInspector.SettingsUI.createSettingFieldset(WebInspector.overridesSupport.settings.overrideDeviceResolution);
+        sectionElement.appendChild(fieldsetElement);
         fieldsetElement.createChild("div", "responsive-design-icon responsive-design-icon-resolution").title = WebInspector.UIString("Screen resolution");
 
         fieldsetElement.appendChild(WebInspector.SettingsUI.createSettingInputField("", WebInspector.overridesSupport.settings.deviceWidth, true, 4, "3em", WebInspector.OverridesSupport.inputValidator, true));
@@ -449,13 +455,9 @@ WebInspector.ResponsiveDesignView.prototype = {
         fieldsetElement.appendChild(WebInspector.SettingsUI.createSettingInputField("", WebInspector.overridesSupport.settings.deviceScaleFactor, true, 2, "2em", WebInspector.OverridesSupport.inputValidator, true));
 
         // Touch and viewport
-        fieldsetElement = this._toolbarElement.createChild("fieldset", "responsive-design-section");
-        fieldsetElement.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Touch"), WebInspector.overridesSupport.settings.emulateTouchEvents, true));
-        fieldsetElement.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Viewport"), WebInspector.overridesSupport.settings.emulateViewport, true));
-
-        // Warning
-        this._warningMessage = this._responsiveDesignContainer.element.createChild("div", "responsive-design-warning hidden");
-        WebInspector.overridesSupport.addEventListener(WebInspector.OverridesSupport.Events.OverridesWarningUpdated, this._overridesWarningUpdated, this);
+        sectionElement = this._toolbarElement.createChild("div", "responsive-design-section");
+        sectionElement.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Touch"), WebInspector.overridesSupport.settings.emulateTouchEvents, true));
+        sectionElement.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Viewport"), WebInspector.overridesSupport.settings.emulateViewport, true));
     },
 
     _overridesWarningUpdated: function()
