@@ -738,7 +738,10 @@ WebInspector.TimelineUIUtils._buildTraceEventDetailsSynchronously = function(eve
 {
     var fragment = document.createDocumentFragment();
     var stats = WebInspector.TimelineUIUtils._aggregatedStatsForTraceEvent(model, event);
-    fragment.appendChild(WebInspector.TimelineUIUtils.generatePieChart(stats));
+    var pieChart = stats.hasChildren ?
+        WebInspector.TimelineUIUtils.generatePieChart(stats.aggregatedStats, WebInspector.TimelineUIUtils.styleForTimelineEvent(event.name).category, event.selfTime) :
+        WebInspector.TimelineUIUtils.generatePieChart(stats.aggregatedStats);
+    fragment.appendChild(pieChart);
 
     var recordTypes = WebInspector.TimelineModel.RecordType;
 
@@ -888,7 +891,7 @@ WebInspector.TimelineUIUtils._buildTraceEventDetailsSynchronously = function(eve
 /**
  * @param {!WebInspector.TracingModel} model
  * @param {!WebInspector.TracingModel.Event} event
- * @return {!Object}
+ * @return {!{ aggregatedStats: !Object, hasChildren: boolean }}
  */
 WebInspector.TimelineUIUtils._aggregatedStatsForTraceEvent = function(model, event)
 {
@@ -903,20 +906,23 @@ WebInspector.TimelineUIUtils._aggregatedStatsForTraceEvent = function(model, eve
         return startTime - e.startTime;
     }
     var index = events.binaryIndexOf(event.startTime, eventComparator);
+    var hasChildren = false;
     var aggregatedStats = {};
     var endTime = event.endTime;
-    if (!endTime)
-        return aggregatedStats;
-    for (; index < events.length; index++) {
-        var nextEvent = events[index];
-        if (nextEvent.startTime > endTime)
-            break;
-        if (!nextEvent.selfTime)
-            continue;
-        var category = WebInspector.TimelineUIUtils.styleForTimelineEvent(nextEvent.name).category.name;
-        aggregatedStats[category] = (aggregatedStats[category] || 0) + nextEvent.selfTime;
+    if (endTime) {
+        for (var i = index; i < events.length; i++) {
+            var nextEvent = events[i];
+            if (nextEvent.startTime >= endTime)
+                break;
+            if (!nextEvent.selfTime)
+                continue;
+            if (i > index)
+                hasChildren = true;
+            var category = WebInspector.TimelineUIUtils.styleForTimelineEvent(nextEvent.name).category.name;
+            aggregatedStats[category] = (aggregatedStats[category] || 0) + nextEvent.selfTime / 1000;
+        }
     }
-    return aggregatedStats;
+    return { aggregatedStats: aggregatedStats, hasChildren: hasChildren };
 }
 
 /**
