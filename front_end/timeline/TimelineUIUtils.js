@@ -739,7 +739,7 @@ WebInspector.TimelineUIUtils._buildTraceEventDetailsSynchronously = function(eve
     var fragment = document.createDocumentFragment();
     var stats = WebInspector.TimelineUIUtils._aggregatedStatsForTraceEvent(model, event);
     var pieChart = stats.hasChildren ?
-        WebInspector.TimelineUIUtils.generatePieChart(stats.aggregatedStats, WebInspector.TimelineUIUtils.styleForTimelineEvent(event.name).category, event.selfTime) :
+        WebInspector.TimelineUIUtils.generatePieChart(stats.aggregatedStats, WebInspector.TimelineUIUtils.styleForTimelineEvent(event.name).category, event.selfTime / 1000) :
         WebInspector.TimelineUIUtils.generatePieChart(stats.aggregatedStats);
     fragment.appendChild(pieChart);
 
