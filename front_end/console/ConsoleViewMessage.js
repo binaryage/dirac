@@ -48,6 +48,7 @@ WebInspector.ConsoleViewMessage = function(consoleMessage, linkifier, nestingLev
     /** @type {!Map.<!WebInspector.DataGrid, ?Element>} */
     this._dataGridParents = new Map();
 
+    /** @type {!Object.<string, function(!WebInspector.RemoteObject, !Element, boolean=)>} */
     this._customFormatters = {
         "object": this._formatParameterAsObject,
         "array":  this._formatParameterAsArray,
@@ -369,42 +370,36 @@ WebInspector.ConsoleViewMessage.prototype = {
     },
 
     /**
-     * @param {?Object} output
+     * @param {!WebInspector.RemoteObject} output
      * @param {boolean=} forceObjectFormat
      * @param {boolean=} includePreview
      * @return {!Element}
      */
     _formatParameter: function(output, forceObjectFormat, includePreview)
     {
-        var type;
-        if (forceObjectFormat)
-            type = "object";
-        else if (output instanceof WebInspector.RemoteObject)
-            type = output.subtype || output.type;
-        else
-            type = typeof output;
-
-        var formatter = this._customFormatters[type];
-        if (!formatter) {
-            formatter = this._formatParameterAsValue;
-            output = output.description;
-        }
-
+        var type = forceObjectFormat ? "object" : (output.subtype || output.type);
+        var formatter = this._customFormatters[type] || this._formatParameterAsValue;
         var span = document.createElement("span");
         span.className = "console-formatted-" + type + " source-code";
         formatter.call(this, output, span, includePreview);
         return span;
     },
 
-    _formatParameterAsValue: function(val, elem)
+    /**
+     * @param {!WebInspector.RemoteObject} obj
+     * @param {!Element} elem
+     */
+    _formatParameterAsValue: function(obj, elem)
     {
-        elem.appendChild(document.createTextNode(val));
+        elem.appendChild(document.createTextNode(obj.description || ""));
+        if (obj.objectId)
+            elem.addEventListener("contextmenu", this._contextMenuEventFired.bind(this, obj), false);
     },
 
     /**
      * @param {!WebInspector.RemoteObject} obj
      * @param {!Element} elem
-     * @param {boolean} includePreview
+     * @param {boolean=} includePreview
      */
     _formatParameterAsObject: function(obj, elem, includePreview)
     {
@@ -415,7 +410,7 @@ WebInspector.ConsoleViewMessage.prototype = {
      * @param {!WebInspector.RemoteObject} obj
      * @param {string} description
      * @param {!Element} elem
-     * @param {boolean} includePreview
+     * @param {boolean=} includePreview
      */
     _formatParameterAsArrayOrObject: function(obj, description, elem, includePreview)
     {
@@ -534,6 +529,10 @@ WebInspector.ConsoleViewMessage.prototype = {
         return span;
     },
 
+    /**
+     * @param {!WebInspector.RemoteObject} object
+     * @param {!Element} elem
+     */
     _formatParameterAsNode: function(object, elem)
     {
         /**
@@ -649,11 +648,15 @@ WebInspector.ConsoleViewMessage.prototype = {
         return element;
     },
 
+    /**
+     * @param {!WebInspector.RemoteObject} output
+     * @param {!Element} elem
+     */
     _formatParameterAsString: function(output, elem)
     {
         var span = document.createElement("span");
         span.className = "console-formatted-string source-code";
-        span.appendChild(WebInspector.linkifyStringAsFragment(output.description));
+        span.appendChild(WebInspector.linkifyStringAsFragment(output.description || ""));
 
         // Make black quotes.
         elem.classList.remove("console-formatted-string");
@@ -783,7 +786,7 @@ WebInspector.ConsoleViewMessage.prototype = {
 
         /**
          * @param {boolean} force
-         * @param {!Object} obj
+         * @param {!WebInspector.RemoteObject} obj
          * @return {!Element}
          * @this {WebInspector.ConsoleViewMessage}
          */
