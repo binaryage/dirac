@@ -58,7 +58,7 @@ WebInspector.ResponsiveDesignView = function(inspectedPagePlaceholder)
 // Measured in DIP.
 WebInspector.ResponsiveDesignView.SliderWidth = 19;
 WebInspector.ResponsiveDesignView.RulerWidth = 20;
-WebInspector.ResponsiveDesignView.ToolbarHeight = 24;
+WebInspector.ResponsiveDesignView.ToolbarHeight = 23;
 
 WebInspector.ResponsiveDesignView.prototype = {
     _maybeEnableResponsiveDesign: function()
@@ -74,11 +74,6 @@ WebInspector.ResponsiveDesignView.prototype = {
 
     _responsiveDesignModeChanged: function()
     {
-        if (WebInspector.dockController.dockSide() === WebInspector.DockController.State.Undocked) {
-            WebInspector.overridesSupport.setPageResizer(null);
-            return;
-        }
-
         delete this._cachedScale;
         delete this._cachedCssCanvasWidth;
         delete this._cachedCssCanvasHeight;
@@ -87,7 +82,7 @@ WebInspector.ResponsiveDesignView.prototype = {
         delete this._cachedZoomFactor;
         delete this._availableSize;
 
-        var enabled = WebInspector.settings.responsiveDesignMode.get();
+        var enabled = WebInspector.settings.responsiveDesignMode.get() && WebInspector.dockController.dockSide() !== WebInspector.DockController.State.Undocked;
         if (enabled && !this._enabled) {
             this._ignoreResize = true;
             this._enabled = true;

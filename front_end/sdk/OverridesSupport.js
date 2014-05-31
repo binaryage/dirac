@@ -508,7 +508,8 @@ WebInspector.OverridesSupport.prototype = {
             return;
         var userAgent = this.settings.overrideUserAgent.get() ? this.settings.userAgent.get() : "";
         NetworkAgent.setUserAgentOverride(userAgent);
-        this._updateUserAgentWarningMessage(this._userAgent !== userAgent ? WebInspector.UIString("You might need to reload the page for proper user agent spoofing and viewport rendering.") : "");
+        if (this._userAgent !== userAgent)
+            this._updateUserAgentWarningMessage(WebInspector.UIString("You might need to reload the page for proper user agent spoofing and viewport rendering."));
         this._userAgent = userAgent;
         this.maybeHasActiveOverridesChanged();
     },
@@ -610,8 +611,8 @@ WebInspector.OverridesSupport.prototype = {
 
             var overrideDeviceResolution = this.settings.overrideDeviceResolution.get();
             var viewportEnabled = this.settings.emulateViewport.get();
-            this._updateDeviceMetricsWarningMessage(this._overrideDeviceResolution !== overrideDeviceResolution || this._emulateViewportEnabled != viewportEnabled ?
-                WebInspector.UIString("You might need to reload the page for proper user agent spoofing and viewport rendering.") : "");
+            if (this._overrideDeviceResolution !== overrideDeviceResolution || this._emulateViewportEnabled !== viewportEnabled)
+                this._updateDeviceMetricsWarningMessage(WebInspector.UIString("You might need to reload the page for proper user agent spoofing and viewport rendering."));
             this._overrideDeviceResolution = overrideDeviceResolution;
             this._emulateViewportEnabled = viewportEnabled;
             this._deviceMetricsOverrideAppliedForTest();
@@ -716,6 +717,7 @@ WebInspector.OverridesSupport.prototype = {
     {
         this._deviceMetricsChanged();
         this._updateUserAgentWarningMessage("");
+        this._updateDeviceMetricsWarningMessage("");
     },
 
     /**
