@@ -93,7 +93,8 @@ def build_artifacts():
     java_files = []
     for root, dirs, files in sorted(os.walk(src_path)):
         for file_name in files:
-            java_files.append(os.path.join(root, file_name))
+            if file_name.endswith('.java'):
+                java_files.append(os.path.join(root, file_name))
 
     bin_path = tempfile.mkdtemp()
     manifest_file = tempfile.NamedTemporaryFile(mode='wt', delete=False)

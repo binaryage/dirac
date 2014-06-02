@@ -291,3 +291,25 @@ TypeThree.prototype = {
 
 return new TypeThree();
 }
+
+
+/**
+ * @param {string} a
+ * @param {string} b
+ * @param {string} c
+ */
+function funcParamsOK1(a, b, c) {}
+
+function funcParamsOK2(a, b, c) {}
+
+/**
+ * @param {string} a
+ * @param {string} c
+ */
+function funcParamsMissingTag1(a, b, c) {}
+
+/**
+ * @param {string} a
+ */
+function funcParamsMissingTag2(a, b, c) {}
+

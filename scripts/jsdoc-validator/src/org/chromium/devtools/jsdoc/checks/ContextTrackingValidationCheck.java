@@ -30,7 +30,7 @@ public class ContextTrackingValidationCheck extends ValidationCheck {
         super.setContext(context);
         state = new ContextTrackingState(context);
         registerClient(new ProtoFollowsExtendsChecker());
-        registerClient(new ReturnAnnotationChecker());
+        registerClient(new MethodAnnotationChecker());
         registerClient(new FunctionReceiverChecker());
     }
 
