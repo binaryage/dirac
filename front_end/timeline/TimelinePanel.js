@@ -669,15 +669,17 @@ WebInspector.TimelinePanel.prototype = {
     _startRecording: function(userInitiated)
     {
         this._userInitiatedRecording = userInitiated;
-        this._model.startRecording(this._captureStacksSetting.get(), this._captureMemorySetting.get());
         if (WebInspector.experimentsSettings.timelineOnTraceEvents.isEnabled()) {
             var categories = ["disabled-by-default-devtools.timeline", "devtools"];
             if (this._captureStacksSetting.get())
                 categories.push("disabled-by-default-devtools.timeline.stack");
+            this._model.willStartRecordingTraceEvents();
             this._tracingModel().start(categories.join(","), "");
+        } else {
+            this._model.startRecording(this._captureStacksSetting.get(), this._captureMemorySetting.get());
+            if (WebInspector.experimentsSettings.timelineTracingMode.isEnabled())
+                this._tracingModel().start(WebInspector.TimelinePanel.defaultTracingCategoryFilter, "");
         }
-        else if (WebInspector.experimentsSettings.timelineTracingMode.isEnabled())
-            this._tracingModel().start(WebInspector.TimelinePanel.defaultTracingCategoryFilter, "");
         for (var i = 0; i < this._overviewControls.length; ++i)
             this._overviewControls[i].timelineStarted();
 
@@ -703,8 +705,10 @@ WebInspector.TimelinePanel.prototype = {
             this._lazyFrameModel.addTraceEvents(this._lazyTracingModel.inspectedTargetEvents(), this._lazyTracingModel.sessionId());
             this._overviewPane.update();
         }
-        if (this._lazyTraceEventBindings)
+        if (this._lazyTraceEventBindings) {
             this._lazyTraceEventBindings.setEvents(this._lazyTracingModel.inspectedTargetEvents());
+            this._model.didStopRecordingTraceEvents(this._lazyTracingModel);
+        }
         this._refreshViews();
     },
 
