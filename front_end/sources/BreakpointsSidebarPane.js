@@ -25,9 +25,10 @@
 
 /**
  * @constructor
+ * @extends {WebInspector.SidebarPane}
  * @param {!WebInspector.DebuggerModel} debuggerModel
  * @param {!WebInspector.BreakpointManager} breakpointManager
- * @extends {WebInspector.SidebarPane}
+ * @param {function(!WebInspector.UISourceCode, number=, number=, boolean=)} showSourceLineDelegate
  */
 WebInspector.JavaScriptBreakpointsSidebarPane = function(debuggerModel, breakpointManager, showSourceLineDelegate)
 {
@@ -183,6 +184,7 @@ WebInspector.JavaScriptBreakpointsSidebarPane.prototype = {
 
     /**
      * @param {!WebInspector.BreakpointManager.Breakpoint} breakpoint
+     * @param {?Event} event
      */
     _breakpointCheckboxClicked: function(breakpoint, event)
     {
@@ -193,6 +195,7 @@ WebInspector.JavaScriptBreakpointsSidebarPane.prototype = {
 
     /**
      * @param {!WebInspector.BreakpointManager.Breakpoint} breakpoint
+     * @param {?Event} event
      */
     _breakpointContextMenu: function(breakpoint, event)
     {

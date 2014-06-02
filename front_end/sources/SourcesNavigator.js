@@ -51,6 +51,7 @@ WebInspector.SourcesNavigator.Events = {
 
 WebInspector.SourcesNavigator.prototype = {
     /**
+     * @param {string} id
      * @param {!WebInspector.View} view
      */
     _navigatorViewCreated: function(id, view)

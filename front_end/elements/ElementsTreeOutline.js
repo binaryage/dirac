@@ -834,6 +834,7 @@ WebInspector.ElementsTreeOutline.PseudoStateDecorator.prototype = {
 /**
  * @constructor
  * @extends {TreeElement}
+ * @param {!WebInspector.DOMNode} node
  * @param {boolean=} elementCloseTag
  */
 WebInspector.ElementsTreeElement = function(node, elementCloseTag)
@@ -1059,6 +1060,8 @@ WebInspector.ElementsTreeElement.prototype = {
     },
 
     /**
+     * @param {!WebInspector.DOMNode} child
+     * @param {number} index
      * @param {boolean=} closingTag
      * @return {!WebInspector.ElementsTreeElement}
      */
@@ -1668,6 +1671,11 @@ WebInspector.ElementsTreeElement.prototype = {
         return true;
     },
 
+    /**
+     * @param {function(string, string)} commitCallback
+     * @param {?Protocol.Error} error
+     * @param {string} initialValue
+     */
     _startEditingAsHTML: function(commitCallback, error, initialValue)
     {
         if (error)
@@ -2151,12 +2159,13 @@ WebInspector.ElementsTreeElement.prototype = {
 
         switch (node.nodeType()) {
             case Node.ATTRIBUTE_NODE:
-                this._buildAttributeDOM(info.titleDOM, node.name, node.value, true);
+                this._buildAttributeDOM(info.titleDOM, /** @type {string} */ (node.name), /** @type {string} */ (node.value), true);
                 break;
 
             case Node.ELEMENT_NODE:
-                if (node.pseudoType()) {
-                    this._buildPseudoElementDOM(info.titleDOM, node.pseudoType());
+                var pseudoType = node.pseudoType();
+                if (pseudoType) {
+                    this._buildPseudoElementDOM(info.titleDOM, pseudoType);
                     info.hasChildren = false;
                     break;
                 }
@@ -2286,7 +2295,7 @@ WebInspector.ElementsTreeElement.prototype = {
             return;
 
         var self = this;
-        function removeNodeCallback(error, removedNodeId)
+        function removeNodeCallback(error)
         {
             if (error)
                 return;
@@ -2311,7 +2320,10 @@ WebInspector.ElementsTreeElement.prototype = {
         var index = node.index;
         var wasExpanded = this.expanded;
 
-        function selectNode(error, nodeId)
+        /**
+         * @param {?Protocol.Error} error
+         */
+        function selectNode(error)
         {
             if (error)
                 return;
@@ -2332,12 +2344,14 @@ WebInspector.ElementsTreeElement.prototype = {
             }
         }
 
+        /**
+         * @param {string} initialValue
+         * @param {string} value
+         */
         function commitChange(initialValue, value)
         {
             if (initialValue !== value)
                 node.setOuterHTML(value, selectNode);
-            else
-                return;
         }
 
         node.getOuterHTML(this._startEditingAsHTML.bind(this, commitChange));
@@ -2407,7 +2421,7 @@ WebInspector.ElementsTreeElement.prototype = {
     },
 
     /**
-     * @return {!Array.<!WebInspector.DOMModel>}
+     * @return {!Array.<!WebInspector.DOMNode>}
      */
     _visibleShadowRoots: function()
     {

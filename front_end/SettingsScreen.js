@@ -687,6 +687,7 @@ WebInspector.SettingsController.SettingsScreenActionDelegate.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.Object}
+ * @param {!Array.<string>} columns
  * @param {function(!Element, string, ?string)} itemRenderer
  */
 WebInspector.SettingsList = function(columns, itemRenderer)
@@ -861,6 +862,8 @@ WebInspector.SettingsList.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.SettingsList}
+ * @param {!Array.<string>} columns
+ * @param {function(string, string):string} valuesProvider
  * @param {function(?string, !Object)} validateHandler
  * @param {function(?string, !Object)} editHandler
  */
@@ -1020,6 +1023,7 @@ WebInspector.EditableSettingsList.prototype = {
 
     /**
      * @param {string} itemId
+     * @param {!Event} event
      */
     _editMappingBlur: function(itemId, event)
     {

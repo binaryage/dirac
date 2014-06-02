@@ -357,6 +357,7 @@ WebInspector.TextPrompt.prototype = {
     },
 
     /**
+     * @param {boolean=} force
      * @param {boolean=} reverse
      */
     complete: function(force, reverse)
@@ -386,7 +387,7 @@ WebInspector.TextPrompt.prototype = {
 
         var wordPrefixRange = selectionRange.startContainer.rangeOfWord(selectionRange.startOffset, this._completionStopCharacters, this._element, "backward");
         this._waitingForCompletions = true;
-        this._loadCompletions(this.proxyElement, wordPrefixRange, force, this._completionsReady.bind(this, selection, wordPrefixRange, !!reverse));
+        this._loadCompletions(this.proxyElement, wordPrefixRange, force || false, this._completionsReady.bind(this, selection, wordPrefixRange, !!reverse));
     },
 
     disableDefaultSuggestionForEmptyInput: function()

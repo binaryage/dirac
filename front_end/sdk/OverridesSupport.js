@@ -121,6 +121,7 @@ WebInspector.OverridesSupport.DeviceMetrics.parseSetting = function(value)
  * @constructor
  * @param {number} latitude
  * @param {number} longitude
+ * @param {string} error
  */
 WebInspector.OverridesSupport.GeolocationPosition = function(latitude, longitude, error)
 {

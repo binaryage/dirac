@@ -25,6 +25,7 @@
 
 /**
  * @constructor
+ * @param {!Array.<!WebInspector.ContextMenuItem>} items
  * @param {!WebInspector.SoftContextMenu=} parentMenu
  */
 WebInspector.SoftContextMenu = function(items, parentMenu)

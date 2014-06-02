@@ -47,6 +47,7 @@ WebInspector.OutputStreamDelegate.prototype = {
 
     /**
      * @param {!WebInspector.ChunkedReader} reader
+     * @param {!Event} event
      */
     onError: function(reader, event) { },
 }

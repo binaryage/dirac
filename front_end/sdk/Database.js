@@ -29,6 +29,10 @@
 /**
  * @constructor
  * @param {!WebInspector.DatabaseModel} model
+ * @param {string} id
+ * @param {string} domain
+ * @param {string} name
+ * @param {string} version
  */
 WebInspector.Database = function(model, id, domain, name, version)
 {

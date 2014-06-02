@@ -436,6 +436,7 @@ WebInspector.ConsoleViewMessage.prototype = {
 
     /**
      * @param {!WebInspector.RemoteObject} obj
+     * @param {?Event} event
      */
     _contextMenuEventFired: function(obj, event)
     {

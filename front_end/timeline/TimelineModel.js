@@ -401,6 +401,7 @@ WebInspector.TimelineModel.prototype = {
 
     /**
      * @param {string} url
+     * @param {!WebInspector.Progress} progress
      */
     loadFromURL: function(url, progress)
     {
@@ -1088,6 +1089,7 @@ WebInspector.TimelineModelLoadFromFileDelegate.prototype = {
 
     /**
      * @param {!WebInspector.ChunkedReader} reader
+     * @param {!Event} event
      */
     onError: function(reader, event)
     {
@@ -1110,6 +1112,7 @@ WebInspector.TimelineModelLoadFromFileDelegate.prototype = {
 
 /**
  * @constructor
+ * @param {!WebInspector.OutputStream} stream
  */
 WebInspector.TimelineSaver = function(stream)
 {

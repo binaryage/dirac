@@ -1159,6 +1159,7 @@ WebInspector.TimelineRecordListRow.prototype = {
 
 /**
  * @constructor
+ * @param {!Element} graphContainer
  * @param {function(!WebInspector.TimelinePresentationModel.Record)} selectRecord
  * @param {function()} scheduleRefresh
  */
@@ -1279,6 +1280,9 @@ WebInspector.TimelineExpandableElement = function(container)
 WebInspector.TimelineExpandableElement.prototype = {
     /**
      * @param {!WebInspector.TimelinePresentationModel.Record} record
+     * @param {number} index
+     * @param {number} left
+     * @param {number} width
      */
     _update: function(record, index, left, width)
     {

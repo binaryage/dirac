@@ -1034,6 +1034,8 @@ WebInspector.AuditRules.CssInHeadRule.prototype = {
         }
 
         /**
+         * @param {!WebInspector.DOMNode} root
+         * @param {!Array.<!DOMAgent.NodeId>=} inlineStyleNodeIds
          * @param {!Array.<!DOMAgent.NodeId>=} nodeIds
          */
         function externalStylesheetsReceived(root, inlineStyleNodeIds, nodeIds)
@@ -1060,6 +1062,7 @@ WebInspector.AuditRules.CssInHeadRule.prototype = {
         }
 
         /**
+         * @param {!WebInspector.DOMNode} root
          * @param {!Array.<!DOMAgent.NodeId>=} nodeIds
          */
         function inlineStylesReceived(root, nodeIds)
@@ -1072,6 +1075,9 @@ WebInspector.AuditRules.CssInHeadRule.prototype = {
             target.domModel.querySelectorAll(root.id, "body link[rel~='stylesheet'][href]", externalStylesheetsReceived.bind(null, root, nodeIds));
         }
 
+        /**
+         * @param {!WebInspector.DOMNode} root
+         */
         function onDocumentAvailable(root)
         {
             if (progress.isCanceled())

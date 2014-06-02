@@ -1280,6 +1280,7 @@ WebInspector.TimelinePopupContentHelper.prototype = {
     },
 
     /**
+     * @param {string|number} content
      * @param {string=} styleName
      */
     _createCell: function(content, styleName)
@@ -1296,7 +1297,7 @@ WebInspector.TimelinePopupContentHelper.prototype = {
 
     /**
      * @param {string} title
-     * @param {string|number|boolean} content
+     * @param {string|number} content
      */
     appendTextRow: function(title, content)
     {

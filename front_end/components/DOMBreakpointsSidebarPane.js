@@ -123,6 +123,7 @@ WebInspector.DOMBreakpointsSidebarPane.prototype = {
 
     /**
      * @param {!WebInspector.DebuggerPausedDetails} details
+     * @param {function(!Element)} callback
      */
     createBreakpointHitStatusMessage: function(details, callback)
     {
@@ -151,6 +152,7 @@ WebInspector.DOMBreakpointsSidebarPane.prototype = {
      * @param {!Object} auxData
      * @param {?WebInspector.DOMNode} node
      * @param {?WebInspector.DOMNode} targetNode
+     * @param {function(!Element)} callback
      */
     _doCreateBreakpointHitStatusMessage: function(auxData, node, targetNode, callback)
     {

@@ -36,6 +36,7 @@
  * @param {!WebInspector.Project} project
  * @param {string} parentPath
  * @param {string} name
+ * @param {string} originURL
  * @param {string} url
  * @param {!WebInspector.ResourceType} contentType
  */

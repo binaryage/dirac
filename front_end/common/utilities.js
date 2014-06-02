@@ -763,6 +763,7 @@ Object.defineProperty(Array.prototype, "peekLast",
  * @param {!Array.<T>} array1
  * @param {!Array.<T>} array2
  * @param {function(T,T):number} comparator
+ * @param {boolean} mergeNotIntersect
  * @return {!Array.<T>}
  * @template T
  */

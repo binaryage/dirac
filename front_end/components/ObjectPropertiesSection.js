@@ -672,6 +672,8 @@ WebInspector.FunctionScopeMainTreeElement.prototype = {
 /**
  * @constructor
  * @extends {TreeElement}
+ * @param {string} title
+ * @param {?string} subtitle
  * @param {!WebInspector.RemoteObject} remoteObject
  */
 WebInspector.ScopeTreeElement = function(title, subtitle, remoteObject)

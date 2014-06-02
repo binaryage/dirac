@@ -1423,6 +1423,7 @@ WebInspector.CodeMirrorTextEditor.TokenHighlighter.prototype = {
 
     /**
      * @param {function(!CodeMirror.StringStream)} highlighter
+     * @param {?CodeMirror.Pos} selectionStart
      */
     _setHighlighter: function(highlighter, selectionStart)
     {

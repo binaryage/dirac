@@ -246,6 +246,7 @@ WebInspector.ScriptFile.prototype = {
  * @extends {WebInspector.Object}
  * @param {!WebInspector.ResourceScriptMapping} resourceScriptMapping
  * @param {!WebInspector.UISourceCode} uiSourceCode
+ * @param {!Array.<!WebInspector.Script>} scripts
  */
 WebInspector.ResourceScriptFile = function(resourceScriptMapping, uiSourceCode, scripts)
 {

@@ -140,6 +140,7 @@ WebInspector.Panel.prototype = {
 
 /**
  * @extends {WebInspector.Panel}
+ * @param {string} name
  * @param {number=} defaultWidth
  * @constructor
  */

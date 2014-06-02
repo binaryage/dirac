@@ -804,6 +804,10 @@ WebInspector.ResourcesPanel.ResourceRevealer.prototype = {
 /**
  * @constructor
  * @extends {TreeElement}
+ * @param {!WebInspector.ResourcesPanel} storagePanel
+ * @param {?Object} representedObject
+ * @param {string} title
+ * @param {?Array.<string>=} iconClasses
  * @param {boolean=} hasChildren
  * @param {boolean=} noIcon
  */
@@ -937,6 +941,10 @@ WebInspector.BaseStorageTreeElement.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.BaseStorageTreeElement}
+ * @param {!WebInspector.ResourcesPanel} storagePanel
+ * @param {string} categoryName
+ * @param {string} settingsKey
+ * @param {?Array.<string>=} iconClasses
  * @param {boolean=} noIcon
  */
 WebInspector.StorageCategoryTreeElement = function(storagePanel, categoryName, settingsKey, iconClasses, noIcon)
@@ -1295,6 +1303,7 @@ WebInspector.FrameResourceTreeElement.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.BaseStorageTreeElement}
+ * @param {!WebInspector.ResourcesPanel} storagePanel
  * @param {!WebInspector.Database} database
  */
 WebInspector.DatabaseTreeElement = function(storagePanel, database)

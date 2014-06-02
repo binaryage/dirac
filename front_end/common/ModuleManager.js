@@ -210,6 +210,7 @@ WebInspector.ModuleManager.prototype = {
 
     /**
      * @param {string|!Function} type
+     * @param {?Object=} context
      * @return {?Object}
      */
     instance: function(type, context)

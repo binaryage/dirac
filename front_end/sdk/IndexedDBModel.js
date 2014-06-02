@@ -434,6 +434,7 @@ WebInspector.IndexedDBModel.DatabaseId.prototype = {
  * @constructor
  * @param {!WebInspector.IndexedDBModel.DatabaseId} databaseId
  * @param {string} version
+ * @param {number} intVersion
  */
 WebInspector.IndexedDBModel.Database = function(databaseId, version, intVersion)
 {
@@ -447,6 +448,7 @@ WebInspector.IndexedDBModel.Database = function(databaseId, version, intVersion)
  * @constructor
  * @param {string} name
  * @param {*} keyPath
+ * @param {boolean} autoIncrement
  */
 WebInspector.IndexedDBModel.ObjectStore = function(name, keyPath, autoIncrement)
 {
@@ -470,6 +472,8 @@ WebInspector.IndexedDBModel.ObjectStore.prototype = {
  * @constructor
  * @param {string} name
  * @param {*} keyPath
+ * @param {boolean} unique
+ * @param {boolean} multiEntry
  */
 WebInspector.IndexedDBModel.Index = function(name, keyPath, unique, multiEntry)
 {

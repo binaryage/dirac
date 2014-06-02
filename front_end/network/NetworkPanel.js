@@ -1988,6 +1988,7 @@ WebInspector.NetworkPanel.prototype = {
     },
 
     /**
+     * @param {!Event} event
      * @param {!WebInspector.ContextMenu} contextMenu
      * @param {!Object} target
      * @this {WebInspector.NetworkPanel}
@@ -2068,6 +2069,7 @@ WebInspector.NetworkPanel.ContextMenuProvider = function()
 
 WebInspector.NetworkPanel.ContextMenuProvider.prototype = {
     /**
+     * @param {!Event} event
      * @param {!WebInspector.ContextMenu} contextMenu
      * @param {!Object} target
      */

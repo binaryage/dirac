@@ -245,6 +245,7 @@ WebInspector.HandlerRegistry.ContextMenuProvider = function()
 
 WebInspector.HandlerRegistry.ContextMenuProvider.prototype = {
     /**
+     * @param {!Event} event
      * @param {!WebInspector.ContextMenu} contextMenu
      * @param {!Object} target
      */

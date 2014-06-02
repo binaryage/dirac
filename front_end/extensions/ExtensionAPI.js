@@ -904,6 +904,7 @@ function ExtensionServerClient()
 
 ExtensionServerClient.prototype = {
     /**
+     * @param {!Object} message
      * @param {function()=} callback
      */
     sendRequest: function(message, callback)

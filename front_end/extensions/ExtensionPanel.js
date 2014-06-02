@@ -171,6 +171,8 @@ WebInspector.ExtensionSidebarPane.prototype = {
     /**
      * @param {string} expression
      * @param {string} title
+     * @param {!Object} evaluateOptions
+     * @param {string} securityOrigin
      * @param {function(?string=)} callback
      */
     setExpression: function(expression, title, evaluateOptions, securityOrigin, callback)

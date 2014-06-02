@@ -784,6 +784,7 @@ WebInspector.SourcesPanel.prototype = {
     },
 
     /**
+     * @param {!Event} event
      * @param {!WebInspector.ContextMenu} contextMenu
      * @param {!Object} target
      */
@@ -877,7 +878,7 @@ WebInspector.SourcesPanel.prototype = {
     },
 
     /**
-     * @param {!Event} event
+     * @param {?Event} event
      * @param {!WebInspector.ContextMenu} contextMenu
      * @param {!Object} target
      */
@@ -1246,6 +1247,7 @@ WebInspector.SourcesPanel.ContextMenuProvider = function()
 
 WebInspector.SourcesPanel.ContextMenuProvider.prototype = {
     /**
+     * @param {!Event} event
      * @param {!WebInspector.ContextMenu} contextMenu
      * @param {!Object} target
      */

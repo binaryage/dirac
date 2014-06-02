@@ -156,6 +156,11 @@ WebInspector.EditFileSystemDialog.prototype = {
         this._resize();
     },
 
+    /**
+     * @param {string} itemId
+     * @param {string} columnId
+     * @return {string}
+     */
     _fileMappingValuesProvider: function(itemId, columnId)
     {
         if (!itemId)
@@ -280,6 +285,11 @@ WebInspector.EditFileSystemDialog.prototype = {
             this._excludedFolderList.removeItem(entry.path);
     },
 
+    /**
+     * @param {string} itemId
+     * @param {string} columnId
+     * @return {string}
+     */
     _excludedFolderValueProvider: function(itemId, columnId)
     {
         return itemId;

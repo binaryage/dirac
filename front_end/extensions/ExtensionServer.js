@@ -503,6 +503,8 @@ WebInspector.ExtensionServer.prototype = {
 
     /**
      * @param {!WebInspector.ContentProvider} contentProvider
+     * @param {!Object} message
+     * @param {!MessagePort} port
      */
     _getResourceContent: function(contentProvider, message, port)
     {

@@ -205,6 +205,7 @@ WebInspector.ScreencastView.prototype = {
 
     /**
      * @param {boolean} on
+     * @param {!WebInspector.Event} event
      * @private
      */
     _onProfiler: function(on, event) {

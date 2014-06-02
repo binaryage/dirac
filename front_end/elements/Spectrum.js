@@ -131,6 +131,7 @@ WebInspector.Spectrum.Events = {
 };
 
 /**
+ * @param {!Element} element
  * @param {function(!Element, number, number, !MouseEvent)=} onmove
  * @param {function(!Element, !MouseEvent)=} onstart
  * @param {function(!Element, !MouseEvent)=} onstop

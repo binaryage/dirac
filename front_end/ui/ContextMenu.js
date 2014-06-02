@@ -30,7 +30,7 @@
 
 /**
  * @constructor
- * @param {!WebInspector.ContextSubMenuItem} topLevelMenu
+ * @param {!WebInspector.ContextMenu} topLevelMenu
  * @param {string} type
  * @param {string=} label
  * @param {boolean=} disabled
@@ -96,7 +96,7 @@ WebInspector.ContextMenuItem.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.ContextMenuItem}
- * @param topLevelMenu
+ * @param {!WebInspector.ContextMenu} topLevelMenu
  * @param {string=} label
  * @param {boolean=} disabled
  */
@@ -125,7 +125,7 @@ WebInspector.ContextSubMenuItem.prototype = {
     /**
      * @param {string} label
      * @param {boolean=} disabled
-     * @return {!WebInspector.ContextMenuItem}
+     * @return {!WebInspector.ContextSubMenuItem}
      */
     appendSubMenuItem: function(label, disabled)
     {
@@ -135,6 +135,9 @@ WebInspector.ContextSubMenuItem.prototype = {
     },
 
     /**
+     * @param {string} label
+     * @param {function()} handler
+     * @param {boolean=} checked
      * @param {boolean=} disabled
      * @return {!WebInspector.ContextMenuItem}
      */
@@ -186,10 +189,12 @@ WebInspector.ContextSubMenuItem.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.ContextSubMenuItem}
+ * @param {?Event} event
  */
-WebInspector.ContextMenu = function(event) {
+WebInspector.ContextMenu = function(event)
+{
     WebInspector.ContextSubMenuItem.call(this, this, "");
-    this._event = event;
+    this._event = /** @type {!Event} */ (event);
     this._handlers = {};
     this._id = 0;
 }
@@ -227,6 +232,10 @@ WebInspector.ContextMenu.prototype = {
         }
     },
 
+    /**
+     * @param {number} id
+     * @param {function(?)} handler
+     */
     _setHandler: function(id, handler)
     {
         if (handler)
@@ -278,6 +287,7 @@ WebInspector.ContextMenu.Provider = function() {
 
 WebInspector.ContextMenu.Provider.prototype = {
     /**
+     * @param {!Event} event
      * @param {!WebInspector.ContextMenu} contextMenu
      * @param {!Object} target
      */

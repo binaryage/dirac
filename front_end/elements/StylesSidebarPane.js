@@ -2117,6 +2117,9 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
 
         /**
          * @param {!RegExp} regex
+         * @param {function(string):!Node} processor
+         * @param {?function(string):!Node} nextProcessor
+         * @param {string} valueText
          * @return {!DocumentFragment}
          */
         function processValue(regex, processor, nextProcessor, valueText)
@@ -2209,6 +2212,7 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
      * @param {!Element} nameElement
      * @param {!Element} valueElement
      * @param {string} text
+     * @return {!Node}
      */
     _processColor: function(nameElement, valueElement, text)
     {

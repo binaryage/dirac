@@ -1146,6 +1146,7 @@ WebInspector.TimelineDetailsView.prototype = {
     },
 
     /**
+     * @param {string} title
      * @param {!WebInspector.View} view
      */
     setChildView: function(title, view)

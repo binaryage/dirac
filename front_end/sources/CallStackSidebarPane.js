@@ -149,6 +149,7 @@ WebInspector.CallStackSidebarPane.prototype = {
 
     /**
      * @param {!WebInspector.CallStackSidebarPane.Placard} placard
+     * @param {?Event} event
      */
     _placardContextMenu: function(placard, event)
     {
@@ -163,6 +164,7 @@ WebInspector.CallStackSidebarPane.prototype = {
 
     /**
      * @param {number} index
+     * @param {?Event} event
      */
     _asyncPlacardContextMenu: function(index, event)
     {

@@ -493,6 +493,7 @@ WebInspector.ElementsPanel.prototype = {
 
     /**
      * @param {!WebInspector.DOMNode} node
+     * @param {function()} callback
      */
     _loadDimensionsForNode: function(node, callback)
     {
@@ -645,6 +646,7 @@ WebInspector.ElementsPanel.prototype = {
     },
 
     /**
+     * @param {!WebInspector.DOMNode} node
      * @param {boolean=} focus
      */
     selectDOMNode: function(node, focus)
@@ -1210,6 +1212,7 @@ WebInspector.ElementsPanel.prototype = {
     },
 
     /**
+     * @param {!Event} event
      * @param {!WebInspector.ContextMenu} contextMenu
      * @param {!Object} object
      */

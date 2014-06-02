@@ -31,6 +31,9 @@
  */
 
 /**
+ * @param {number} offset
+ * @param {string} stopCharacters
+ * @param {!Node} stayWithinNode
  * @param {string=} direction
  */
 Node.prototype.rangeOfWord = function(offset, stopCharacters, stayWithinNode, direction)
@@ -353,6 +356,7 @@ Document.prototype.createElementWithClass = function(elementName, className)
 }
 
 /**
+ * @param {string} elementName
  * @param {string=} className
  */
 Element.prototype.createChild = function(elementName, className)

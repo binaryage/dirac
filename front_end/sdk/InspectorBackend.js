@@ -778,6 +778,8 @@ InspectorBackendClass.AgentPrototype.prototype = {
     /**
      * @param {number} messageId
      * @param {!Object} messageObject
+     * @param {string} methodName
+     * @param {function(!Array.<*>)} callback
      */
     dispatchResponse: function(messageId, messageObject, methodName, callback)
     {

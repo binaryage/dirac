@@ -689,6 +689,7 @@ WebInspector.CSSStyleModel.LiveLocation.prototype = {
 /**
  * @constructor
  * @implements {WebInspector.RawLocation}
+ * @param {!WebInspector.Target} target
  * @param {string} url
  * @param {number} lineNumber
  * @param {number=} columnNumber

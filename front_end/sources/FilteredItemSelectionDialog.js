@@ -911,6 +911,7 @@ WebInspector.SelectUISourceCodeForProjectTypesDialog.prototype = {
 }
 
 /**
+ * @param {string} name
  * @param {!Array.<string>} types
  * @param {function(!WebInspector.UISourceCode)} callback
  * @param {!Element} relativeToElement

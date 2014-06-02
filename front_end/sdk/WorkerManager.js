@@ -31,6 +31,7 @@
 /**
  * @constructor
  * @extends {WebInspector.Object}
+ * @param {!WebInspector.Target} target
  * @param {boolean} isMainFrontend
  */
 WebInspector.WorkerManager = function(target, isMainFrontend)
@@ -172,6 +173,7 @@ WebInspector.workerManager;
  * @constructor
  * @extends {InspectorBackendClass.Connection}
  * @param {string} workerId
+ * @param {function(!InspectorBackendClass.Connection)} onConnectionReady
  */
 WebInspector.ExternalWorkerConnection = function(workerId, onConnectionReady)
 {

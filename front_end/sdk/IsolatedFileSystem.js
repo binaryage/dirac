@@ -32,6 +32,8 @@
  * @constructor
  * @param {!WebInspector.IsolatedFileSystemManager} manager
  * @param {string} path
+ * @param {string} name
+ * @param {string} rootURL
  */
 WebInspector.IsolatedFileSystem = function(manager, path, name, rootURL)
 {

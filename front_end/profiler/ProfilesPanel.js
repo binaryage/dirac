@@ -979,7 +979,7 @@ WebInspector.ProfilesPanel.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      * @param {!WebInspector.ContextMenu} contextMenu
      * @param {!Object} target
      */
@@ -1181,7 +1181,7 @@ WebInspector.ProfilesPanel.ContextMenuProvider = function()
 
 WebInspector.ProfilesPanel.ContextMenuProvider.prototype = {
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      * @param {!WebInspector.ContextMenu} contextMenu
      * @param {!Object} target
      */
