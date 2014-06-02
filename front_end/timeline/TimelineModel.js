@@ -663,11 +663,6 @@ WebInspector.TimelineModel.Record.prototype = {
     warnings: function() { },
 
     /**
-     * @return {boolean}
-     */
-    childHasWarnings: function() { },
-
-    /**
      * @param {!RegExp} regExp
      * @return {boolean}
      */
@@ -930,13 +925,9 @@ WebInspector.TimelineModel.RecordImpl.prototype = {
      */
     addWarning: function(message)
     {
-        if (this._warnings)
-            this._warnings.push(message);
-        else {
-            this._warnings = [message];
-            for (var parent = this.parent; parent && !parent._childHasWarnings; parent = parent.parent)
-                parent._childHasWarnings = true;
-        }
+        if (!this._warnings)
+            this._warnings = [];
+        this._warnings.push(message);
     },
 
     /**
@@ -945,14 +936,6 @@ WebInspector.TimelineModel.RecordImpl.prototype = {
     warnings: function()
     {
         return this._warnings;
-    },
-
-    /**
-     * @return {boolean}
-     */
-    childHasWarnings: function()
-    {
-        return !!this._childHasWarnings;
     },
 
     /**

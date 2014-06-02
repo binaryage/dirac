@@ -341,7 +341,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
             }
         }
 
-        if (record.warnings() || record.childHasWarnings()) {
+        if (record.warnings()) {
             context.save();
 
             context.rect(barX, barY, barWidth, this.barHeight());
@@ -367,7 +367,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
     forceDecoration: function(entryIndex)
     {
         var record = this._records[entryIndex];
-        return record.childHasWarnings() || !!record.warnings();
+        return !!record.warnings();
     },
 
     /**
