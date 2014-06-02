@@ -91,24 +91,30 @@ WebInspector.ShowMoreDataGridNode.prototype = {
         this.showAll.textContent = WebInspector.UIString("Show all %d", totalSize);
     },
 
+    /** override */
     createCells: function()
     {
-        var cell = document.createElement("td");
-        if (this.depth)
-            cell.style.setProperty("padding-left", (this.depth * this.dataGrid.indentWidth) + "px");
-        cell.appendChild(this.showNext);
-        cell.appendChild(this.showAll);
-        cell.appendChild(this.showLast);
-        this._element.appendChild(cell);
+        this._hasCells = false;
+        WebInspector.DataGridNode.prototype.createCells.call(this);
+    },
 
-        var columns = this.dataGrid.columns;
-        var count = 0;
-        for (var c in columns)
-            ++count;
-        while (--count > 0) {
-            cell = document.createElement("td");
-            this._element.appendChild(cell);
+    /**
+     * @override
+     * @param {string} columnIdentifier
+     * @return {!Element}
+     */
+    createCell: function(columnIdentifier)
+    {
+        var cell = this.createTD(columnIdentifier);
+        if (!this._hasCells) {
+            this._hasCells = true;
+            if (this.depth)
+                cell.style.setProperty("padding-left", (this.depth * this.dataGrid.indentWidth) + "px");
+            cell.appendChild(this.showNext);
+            cell.appendChild(this.showAll);
+            cell.appendChild(this.showLast);
         }
+        return cell;
     },
 
     /**
