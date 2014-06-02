@@ -566,11 +566,6 @@ WebInspector.TimelineModel.Record = function()
 
 WebInspector.TimelineModel.Record.prototype = {
     /**
-     * @return {?string}
-     */
-    url: function() { },
-
-    /**
      * @return {?Array.<!ConsoleAgent.CallFrame>}
      */
     callSiteStackTrace: function() { },
@@ -766,19 +761,6 @@ WebInspector.TimelineModel.RecordImpl = function(model, timelineEvent, parentRec
 }
 
 WebInspector.TimelineModel.RecordImpl.prototype = {
-    /**
-     * @return {?string}
-     */
-    url: function()
-    {
-        var data = this.data();
-        if (data && data["url"])
-            return data["url"];
-        if (this._initiator)
-            return this._initiator.url();
-        return null;
-    },
-
     /**
      * @return {?Array.<!ConsoleAgent.CallFrame>}
      */

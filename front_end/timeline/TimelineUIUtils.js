@@ -550,7 +550,11 @@ WebInspector.TimelineUIUtils._generatePopupContentSynchronously = function(recor
         case recordTypes.ResourceReceiveResponse:
         case recordTypes.ResourceReceivedData:
         case recordTypes.ResourceFinish:
-            var url = record.url();
+            var url;
+            if (record.type() === recordTypes.ResourceSendRequest)
+                url = recordData["url"];
+            else if (record.initiator())
+                url = record.initiator().data()["url"];
             if (url)
                 contentHelper.appendElementRow(WebInspector.UIString("Resource"), WebInspector.linkifyResourceAsNode(url));
             if (imagePreviewElement)
@@ -585,7 +589,7 @@ WebInspector.TimelineUIUtils._generatePopupContentSynchronously = function(recor
         case recordTypes.DecodeImage:
         case recordTypes.ResizeImage:
             relatedNodeLabel = WebInspector.UIString("Image element");
-            var url = record.url();
+            var url = recordData["url"];
             if (url)
                 contentHelper.appendElementRow(WebInspector.UIString("Image URL"), WebInspector.linkifyResourceAsNode(url));
             break;
@@ -989,14 +993,21 @@ WebInspector.TimelineUIUtils.buildDetailsNode = function(record, linkifier, load
     case WebInspector.TimelineModel.RecordType.XHRReadyStateChange:
     case WebInspector.TimelineModel.RecordType.XHRLoad:
     case WebInspector.TimelineModel.RecordType.ResourceSendRequest:
+    case WebInspector.TimelineModel.RecordType.DecodeImage:
+    case WebInspector.TimelineModel.RecordType.ResizeImage:
+        var url = recordData["url"];
+        if (url)
+            detailsText = WebInspector.displayNameForURL(url);
+        break;
     case WebInspector.TimelineModel.RecordType.ResourceReceivedData:
     case WebInspector.TimelineModel.RecordType.ResourceReceiveResponse:
     case WebInspector.TimelineModel.RecordType.ResourceFinish:
-    case WebInspector.TimelineModel.RecordType.DecodeImage:
-    case WebInspector.TimelineModel.RecordType.ResizeImage:
-        var url = record.url();
-        if (url)
-            detailsText = WebInspector.displayNameForURL(url);
+        var initiator = record.initiator();
+        if (initiator) {
+            var url = initiator.data()["url"];
+            if (url)
+                detailsText = WebInspector.displayNameForURL(url);
+        }
         break;
     case WebInspector.TimelineModel.RecordType.ConsoleTime:
         detailsText = recordData["message"];
