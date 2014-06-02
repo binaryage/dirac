@@ -452,6 +452,19 @@ Object.defineProperty(Array.prototype, "keySet",
     }
 });
 
+Object.defineProperty(Array.prototype, "pushAll",
+{
+    /**
+     * @param {!Array.<!T>} array
+     * @this {Array.<!T>}
+     * @template T
+     */
+    value: function(array)
+    {
+        Array.prototype.push.apply(this, array);
+    }
+});
+
 Object.defineProperty(Array.prototype, "rotate",
 {
     /**
@@ -1463,6 +1476,42 @@ StringMultimap.prototype = {
             this._map[key] = new Set();
         }
         this._map[key].add(value);
+    },
+
+    /**
+     * @param {string} key
+     * @return {!Set.<!T>}
+     */
+    get: function(key)
+    {
+        var result = StringMap.prototype.get.call(this, key);
+        if (!result)
+            result = new Set();
+        return result;
+    },
+
+    /**
+     * @param {string} key
+     * @param {T} value
+     */
+    remove: function(key, value)
+    {
+        var values = this.get(key);
+        values.remove(value);
+        if (!values.size())
+            StringMap.prototype.remove.call(this, key)
+    },
+
+    /**
+     * @return {!Array.<!T>}
+     */
+    values: function()
+    {
+        var result = [];
+        var keys = this.keys();
+        for (var i = 0; i < keys.length; ++i)
+            result.pushAll(this.get(keys[i]).values());
+        return result;
     },
 
     __proto__: StringMap.prototype

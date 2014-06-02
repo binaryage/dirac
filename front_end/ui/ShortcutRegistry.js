@@ -32,21 +32,20 @@ WebInspector.ShortcutRegistry.prototype = {
     {
         var result = new StringSet();
         var defaults = this._defaultActionsForKey(key);
-        if (defaults) {
-            defaults.values().forEach(function(actionId) {
-                result.add(actionId);
-            }, this);
-        }
+        defaults.values().forEach(function(actionId) {
+            result.add(actionId);
+        }, this);
+
         return result.values();
     },
 
     /**
      * @param {number} key
-     * @return {?Set.<string>}
+     * @return {!Set.<string>}
      */
     _defaultActionsForKey: function(key)
     {
-        return this._defaultKeyToActions.get(String(key)) || null;
+        return this._defaultKeyToActions.get(String(key));
     },
 
     /**

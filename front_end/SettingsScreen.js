@@ -256,15 +256,15 @@ WebInspector.GenericSettingsTab.prototype = {
         var explicitlyOrderedSections = {};
         for (var i = 0; i < explicitSectionOrder.length; ++i) {
             explicitlyOrderedSections[explicitSectionOrder[i]] = true;
-            var extensions = /** @type {!Set.<!WebInspector.ModuleManager.Extension>} */ (extensionsBySectionId.get(explicitSectionOrder[i]));
-            if (!extensions)
+            var extensions = extensionsBySectionId.get(explicitSectionOrder[i]);
+            if (!extensions.size())
                 continue;
             this._addSectionWithExtensionProvidedSettings(explicitSectionOrder[i], extensions.values(), childSettingExtensionsByParentName);
         }
         for (var i = 0; i < sectionIds.length; ++i) {
             if (explicitlyOrderedSections[sectionIds[i]])
                 continue;
-            this._addSectionWithExtensionProvidedSettings(sectionIds[i], /** @type {!Set.<!WebInspector.ModuleManager.Extension>} */ (extensionsBySectionId.get(sectionIds[i])).values(), childSettingExtensionsByParentName);
+            this._addSectionWithExtensionProvidedSettings(sectionIds[i], extensionsBySectionId.get(sectionIds[i]).values(), childSettingExtensionsByParentName);
         }
     },
 
@@ -305,8 +305,8 @@ WebInspector.GenericSettingsTab.prototype = {
                 settingControl = createSettingControl.call(this, uiTitle, setting, descriptor, instance);
             }
             if (settingName) {
-                var childSettings = /** @type {!Set.<!WebInspector.ModuleManager.Extension>|undefined} */ (childSettingExtensionsByParentName.get(settingName));
-                if (childSettings) {
+                var childSettings = childSettingExtensionsByParentName.get(settingName);
+                if (childSettings.size()) {
                     var fieldSet = WebInspector.SettingsUI.createSettingFieldset(setting);
                     settingControl.appendChild(fieldSet);
                     childSettings.values().forEach(function(item) { processSetting.call(this, fieldSet, item); }, this);
