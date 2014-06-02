@@ -678,29 +678,12 @@ WebInspector.TimelineUIUtils._quadWidth = function(quad)
  */
 WebInspector.TimelineUIUtils.buildTraceEventDetails = function(event, model, linkifier, callback, loadedFromFile, bindings, target)
 {
-    var imageElement = event.previewElement;
     var relatedNode = null;
-    var eventData = event.args.data;
     var barrier = new CallbackBarrier();
-    if (!imageElement && WebInspector.TimelineUIUtils.needsPreviewElement(event.name))
-        WebInspector.DOMPresentationUtils.buildImagePreviewContents(target, eventData["url"], false, barrier.createCallback(saveImage));
-    var backendNodeId;
-    var recordTypes = WebInspector.TimelineModel.RecordType;
-    switch (event.name) {
-        case recordTypes.Layout:
-            backendNodeId = event.args["endData"]["rootNode"];
-            break;
-        case recordTypes.Paint:
-        case recordTypes.ScrollLayer:
-            backendNodeId = eventData["nodeId"];
-            break;
-        case recordTypes.DecodeImage:
-        case recordTypes.ResizeImage:
-            // FIXME: provide node id.
-            break;
-    }
-    if (backendNodeId)
-        target.domModel.pushNodesByBackendIdsToFrontend([backendNodeId], barrier.createCallback(setRelatedNode));
+    if (event.imageURL && !event.previewElement)
+        WebInspector.DOMPresentationUtils.buildImagePreviewContents(target, event.imageURL, false, barrier.createCallback(saveImage));
+    if (event.backendNodeId)
+        target.domModel.pushNodesByBackendIdsToFrontend([event.backendNodeId], barrier.createCallback(setRelatedNode));
     barrier.callWhenDone(callbackWrapper);
 
     /**
@@ -708,8 +691,7 @@ WebInspector.TimelineUIUtils.buildTraceEventDetails = function(event, model, lin
      */
     function saveImage(element)
     {
-        imageElement = element || null;
-        event.previewElement = imageElement;
+        event.previewElement = element || null;
     }
 
     /**
@@ -723,7 +705,7 @@ WebInspector.TimelineUIUtils.buildTraceEventDetails = function(event, model, lin
 
     function callbackWrapper()
     {
-        callback(WebInspector.TimelineUIUtils._buildTraceEventDetailsSynchronously(event, model, linkifier, imageElement, relatedNode, loadedFromFile, bindings, target));
+        callback(WebInspector.TimelineUIUtils._buildTraceEventDetailsSynchronously(event, model, linkifier, relatedNode, loadedFromFile, bindings, target));
     }
 }
 
@@ -731,14 +713,13 @@ WebInspector.TimelineUIUtils.buildTraceEventDetails = function(event, model, lin
  * @param {!WebInspector.TracingModel.Event} event
  * @param {!WebInspector.TracingModel} model
  * @param {!WebInspector.Linkifier} linkifier
- * @param {?Element} imagePreviewElement
  * @param {?WebInspector.DOMNode} relatedNode
  * @param {boolean} loadedFromFile
  * @param {?WebInspector.TimelineTraceEventBindings} bindings
  * @param {!WebInspector.Target} target
  * @return {!DocumentFragment}
  */
-WebInspector.TimelineUIUtils._buildTraceEventDetailsSynchronously = function(event, model, linkifier, imagePreviewElement, relatedNode, loadedFromFile, bindings, target)
+WebInspector.TimelineUIUtils._buildTraceEventDetailsSynchronously = function(event, model, linkifier, relatedNode, loadedFromFile, bindings, target)
 {
     var fragment = document.createDocumentFragment();
     var stats = WebInspector.TimelineUIUtils._aggregatedStatsForTraceEvent(model, event);
@@ -747,7 +728,7 @@ WebInspector.TimelineUIUtils._buildTraceEventDetailsSynchronously = function(eve
         WebInspector.TimelineUIUtils.generatePieChart(stats.aggregatedStats);
     fragment.appendChild(pieChart);
 
-    var recordTypes = WebInspector.TimelineModel.RecordType;
+    var recordTypes = WebInspector.TimelineTraceEventBindings.RecordType;
 
     // The messages may vary per event.name;
     var callSiteStackTraceLabel;
@@ -761,110 +742,114 @@ WebInspector.TimelineUIUtils._buildTraceEventDetailsSynchronously = function(eve
     var initiator = event.initiator;
 
     switch (event.name) {
-        case recordTypes.GCEvent:
-            var delta = event.args["usedHeapSizeBefore"] - event.args["usedHeapSizeAfter"];
-            contentHelper.appendTextRow(WebInspector.UIString("Collected"), Number.bytesToString(delta));
-            break;
-        case recordTypes.TimerFire:
-            callSiteStackTraceLabel = WebInspector.UIString("Timer installed");
-            // Fall-through intended.
+    case recordTypes.GCEvent:
+        var delta = event.args["usedHeapSizeBefore"] - event.args["usedHeapSizeAfter"];
+        contentHelper.appendTextRow(WebInspector.UIString("Collected"), Number.bytesToString(delta));
+        break;
+    case recordTypes.TimerFire:
+        callSiteStackTraceLabel = WebInspector.UIString("Timer installed");
+        // Fall-through intended.
 
-        case recordTypes.TimerInstall:
-        case recordTypes.TimerRemove:
-            contentHelper.appendTextRow(WebInspector.UIString("Timer ID"), eventData["timerId"]);
-            if (event.name === recordTypes.TimerInstall) {
-                contentHelper.appendTextRow(WebInspector.UIString("Timeout"), Number.millisToString(eventData["timeout"]));
-                contentHelper.appendTextRow(WebInspector.UIString("Repeats"), !eventData["singleShot"]);
-            }
-            break;
-        case recordTypes.FireAnimationFrame:
-            callSiteStackTraceLabel = WebInspector.UIString("Animation frame requested");
-            contentHelper.appendTextRow(WebInspector.UIString("Callback ID"), eventData["id"]);
-            break;
-        case recordTypes.FunctionCall:
-            if (eventData["scriptName"])
-                contentHelper.appendLocationRow(WebInspector.UIString("Location"), eventData["scriptName"], eventData["scriptLine"]);
-            break;
-        case recordTypes.ResourceSendRequest:
-        case recordTypes.ResourceReceiveResponse:
-        case recordTypes.ResourceReceivedData:
-        case recordTypes.ResourceFinish:
-            var url = (event.name === recordTypes.ResourceSendRequest) ? eventData["url"] : initiator.args.data["url"];
-            if (url)
-                contentHelper.appendElementRow(WebInspector.UIString("Resource"), WebInspector.linkifyResourceAsNode(url));
-            if (imagePreviewElement)
-                contentHelper.appendElementRow(WebInspector.UIString("Preview"), imagePreviewElement);
-            if (eventData["requestMethod"])
-                contentHelper.appendTextRow(WebInspector.UIString("Request Method"), eventData["requestMethod"]);
-            if (typeof eventData["statusCode"] === "number")
-                contentHelper.appendTextRow(WebInspector.UIString("Status Code"), eventData["statusCode"]);
-            if (eventData["mimeType"])
-                contentHelper.appendTextRow(WebInspector.UIString("MIME Type"), eventData["mimeType"]);
-            if (eventData["encodedDataLength"])
-                contentHelper.appendTextRow(WebInspector.UIString("Encoded Data Length"), WebInspector.UIString("%d Bytes", eventData["encodedDataLength"]));
-            break;
-        case recordTypes.EvaluateScript:
-            var url = eventData["url"];
-            if (url)
-                contentHelper.appendLocationRow(WebInspector.UIString("Script"), url, eventData["lineNumber"]);
-            break;
-        case recordTypes.Paint:
-            var clip = eventData["clip"];
-            contentHelper.appendTextRow(WebInspector.UIString("Location"), WebInspector.UIString("(%d, %d)", clip[0], clip[1]));
-            var clipWidth = WebInspector.TimelineUIUtils._quadWidth(clip);
-            var clipHeight = WebInspector.TimelineUIUtils._quadHeight(clip);
-            contentHelper.appendTextRow(WebInspector.UIString("Dimensions"), WebInspector.UIString("%d × %d", clipWidth, clipHeight));
-            // Fall-through intended.
+    case recordTypes.TimerInstall:
+    case recordTypes.TimerRemove:
+        contentHelper.appendTextRow(WebInspector.UIString("Timer ID"), eventData["timerId"]);
+        if (event.name === recordTypes.TimerInstall) {
+            contentHelper.appendTextRow(WebInspector.UIString("Timeout"), Number.millisToString(eventData["timeout"]));
+            contentHelper.appendTextRow(WebInspector.UIString("Repeats"), !eventData["singleShot"]);
+        }
+        break;
+    case recordTypes.FireAnimationFrame:
+        callSiteStackTraceLabel = WebInspector.UIString("Animation frame requested");
+        contentHelper.appendTextRow(WebInspector.UIString("Callback ID"), eventData["id"]);
+        break;
+    case recordTypes.FunctionCall:
+        if (eventData["scriptName"])
+            contentHelper.appendLocationRow(WebInspector.UIString("Location"), eventData["scriptName"], eventData["scriptLine"]);
+        break;
+    case recordTypes.ResourceSendRequest:
+    case recordTypes.ResourceReceiveResponse:
+    case recordTypes.ResourceReceivedData:
+    case recordTypes.ResourceFinish:
+        var url = (event.name === recordTypes.ResourceSendRequest) ? eventData["url"] : initiator.args.data["url"];
+        if (url)
+            contentHelper.appendElementRow(WebInspector.UIString("Resource"), WebInspector.linkifyResourceAsNode(url));
+        if (event.previewElement)
+            contentHelper.appendElementRow(WebInspector.UIString("Preview"), event.previewElement);
+        if (eventData["requestMethod"])
+            contentHelper.appendTextRow(WebInspector.UIString("Request Method"), eventData["requestMethod"]);
+        if (typeof eventData["statusCode"] === "number")
+            contentHelper.appendTextRow(WebInspector.UIString("Status Code"), eventData["statusCode"]);
+        if (eventData["mimeType"])
+            contentHelper.appendTextRow(WebInspector.UIString("MIME Type"), eventData["mimeType"]);
+        if (eventData["encodedDataLength"])
+            contentHelper.appendTextRow(WebInspector.UIString("Encoded Data Length"), WebInspector.UIString("%d Bytes", eventData["encodedDataLength"]));
+        break;
+    case recordTypes.EvaluateScript:
+        var url = eventData["url"];
+        if (url)
+            contentHelper.appendLocationRow(WebInspector.UIString("Script"), url, eventData["lineNumber"]);
+        break;
+    case recordTypes.Paint:
+        var clip = eventData["clip"];
+        contentHelper.appendTextRow(WebInspector.UIString("Location"), WebInspector.UIString("(%d, %d)", clip[0], clip[1]));
+        var clipWidth = WebInspector.TimelineUIUtils._quadWidth(clip);
+        var clipHeight = WebInspector.TimelineUIUtils._quadHeight(clip);
+        contentHelper.appendTextRow(WebInspector.UIString("Dimensions"), WebInspector.UIString("%d × %d", clipWidth, clipHeight));
+        // Fall-through intended.
 
-        case recordTypes.PaintSetup:
-        case recordTypes.Rasterize:
-        case recordTypes.ScrollLayer:
-            relatedNodeLabel = WebInspector.UIString("Layer root");
-            break;
-        case recordTypes.DecodeImage:
-        case recordTypes.ResizeImage:
-            relatedNodeLabel = WebInspector.UIString("Image element");
-            var url = eventData["url"];
-            if (url)
-                contentHelper.appendElementRow(WebInspector.UIString("Image URL"), WebInspector.linkifyResourceAsNode(url));
-            break;
-        case recordTypes.RecalculateStyles: // We don't want to see default details.
-            contentHelper.appendTextRow(WebInspector.UIString("Elements affected"), event.args["elementCount"]);
-            callStackLabel = WebInspector.UIString("Styles recalculation forced");
-            break;
-        case recordTypes.Layout:
-            var beginData = event.args["beginData"];
-            contentHelper.appendTextRow(WebInspector.UIString("Nodes that need layout"), beginData["dirtyObjects"]);
-            contentHelper.appendTextRow(WebInspector.UIString("Layout tree size"), beginData["totalObjects"]);
-            contentHelper.appendTextRow(WebInspector.UIString("Layout scope"),
-                beginData["partialLayout"] ? WebInspector.UIString("Partial") : WebInspector.UIString("Whole document"));
-            callSiteStackTraceLabel = WebInspector.UIString("Layout invalidated");
-            callStackLabel = WebInspector.UIString("Layout forced");
-            relatedNodeLabel = WebInspector.UIString("Layout root");
-            break;
-        case recordTypes.ConsoleTime:
+    case recordTypes.PaintSetup:
+    case recordTypes.Rasterize:
+    case recordTypes.ScrollLayer:
+        relatedNodeLabel = WebInspector.UIString("Layer root");
+        break;
+    case recordTypes.PaintImage:
+    case recordTypes.DecodeLazyPixelRef:
+    case recordTypes.DecodeImage:
+    case recordTypes.ResizeImage:
+    case recordTypes.DrawLazyPixelRef:
+        relatedNodeLabel = WebInspector.UIString("Image element");
+        if (event.imageURL)
+            contentHelper.appendElementRow(WebInspector.UIString("Image URL"), WebInspector.linkifyResourceAsNode(event.imageURL));
+        if (event.previewElement)
+            contentHelper.appendElementRow(WebInspector.UIString("Preview"), event.previewElement);
+        break;
+    case recordTypes.RecalculateStyles: // We don't want to see default details.
+        contentHelper.appendTextRow(WebInspector.UIString("Elements affected"), event.args["elementCount"]);
+        callStackLabel = WebInspector.UIString("Styles recalculation forced");
+        break;
+    case recordTypes.Layout:
+        var beginData = event.args["beginData"];
+        contentHelper.appendTextRow(WebInspector.UIString("Nodes that need layout"), beginData["dirtyObjects"]);
+        contentHelper.appendTextRow(WebInspector.UIString("Layout tree size"), beginData["totalObjects"]);
+        contentHelper.appendTextRow(WebInspector.UIString("Layout scope"),
+                                    beginData["partialLayout"] ? WebInspector.UIString("Partial") : WebInspector.UIString("Whole document"));
+        callSiteStackTraceLabel = WebInspector.UIString("Layout invalidated");
+        callStackLabel = WebInspector.UIString("Layout forced");
+        relatedNodeLabel = WebInspector.UIString("Layout root");
+        break;
+    case recordTypes.ConsoleTime:
+        contentHelper.appendTextRow(WebInspector.UIString("Message"), eventData["message"]);
+        break;
+    case recordTypes.WebSocketCreate:
+    case recordTypes.WebSocketSendHandshakeRequest:
+    case recordTypes.WebSocketReceiveHandshakeResponse:
+    case recordTypes.WebSocketDestroy:
+        var initiatorData = initiator ? initiator.args.data : eventData;
+        if (typeof initiatorData["webSocketURL"] !== "undefined")
+            contentHelper.appendTextRow(WebInspector.UIString("URL"), initiatorData["webSocketURL"]);
+        if (typeof initiatorData["webSocketProtocol"] !== "undefined")
+            contentHelper.appendTextRow(WebInspector.UIString("WebSocket Protocol"), initiatorData["webSocketProtocol"]);
+        if (typeof eventData["message"] !== "undefined")
             contentHelper.appendTextRow(WebInspector.UIString("Message"), eventData["message"]);
-            break;
-        case recordTypes.WebSocketCreate:
-        case recordTypes.WebSocketSendHandshakeRequest:
-        case recordTypes.WebSocketReceiveHandshakeResponse:
-        case recordTypes.WebSocketDestroy:
-            var initiatorData = initiator ? initiator.args.data : eventData;
-            if (typeof initiatorData["webSocketURL"] !== "undefined")
-                contentHelper.appendTextRow(WebInspector.UIString("URL"), initiatorData["webSocketURL"]);
-            if (typeof initiatorData["webSocketProtocol"] !== "undefined")
-                contentHelper.appendTextRow(WebInspector.UIString("WebSocket Protocol"), initiatorData["webSocketProtocol"]);
-            if (typeof eventData["message"] !== "undefined")
-                contentHelper.appendTextRow(WebInspector.UIString("Message"), eventData["message"]);
-            break;
-        case recordTypes.EmbedderCallback:
-            contentHelper.appendTextRow(WebInspector.UIString("Callback Function"), eventData["callbackName"]);
-            break;
-        default:
-            var detailsNode = WebInspector.TimelineUIUtils.buildDetailsNodeForTraceEvent(event, linkifier, loadedFromFile, bindings, target);
-            if (detailsNode)
-                contentHelper.appendElementRow(WebInspector.UIString("Details"), detailsNode);
-            break;
+        break;
+    case recordTypes.EmbedderCallback:
+        contentHelper.appendTextRow(WebInspector.UIString("Callback Function"), eventData["callbackName"]);
+        break;
+    default:
+        var detailsNode = WebInspector.TimelineUIUtils.buildDetailsNodeForTraceEvent(event, linkifier, loadedFromFile, bindings, target);
+        if (detailsNode)
+            contentHelper.appendElementRow(WebInspector.UIString("Details"), detailsNode);
+        break;
     }
 
     if (relatedNode)
@@ -1080,63 +1065,65 @@ WebInspector.TimelineUIUtils.buildDetailsNode = function(record, linkifier, load
  */
 WebInspector.TimelineUIUtils.buildDetailsNodeForTraceEvent = function(event, linkifier, loadedFromFile, bindings, target)
 {
+    var recordType = WebInspector.TimelineTraceEventBindings.RecordType;
+
     var details;
     var detailsText;
     var eventData = event.args.data;
     switch (event.name) {
-    case WebInspector.TimelineModel.RecordType.GCEvent:
+    case recordType.GCEvent:
         var delta = event.args["usedHeapSizeBefore"] - event.args["usedHeapSizeAfter"];
         detailsText = WebInspector.UIString("%s collected", Number.bytesToString(delta));
         break;
-    case WebInspector.TimelineModel.RecordType.TimerFire:
+    case recordType.TimerFire:
         detailsText = eventData["timerId"];
         break;
-    case WebInspector.TimelineModel.RecordType.FunctionCall:
+    case recordType.FunctionCall:
         details = linkifyLocation(eventData["scriptId"], eventData["scriptName"], eventData["scriptLine"], 0);
         break;
-    case WebInspector.TimelineModel.RecordType.FireAnimationFrame:
+    case recordType.FireAnimationFrame:
         detailsText = eventData["id"];
         break;
-    case WebInspector.TimelineModel.RecordType.EventDispatch:
+    case recordType.EventDispatch:
         detailsText = eventData ? eventData["type"] : null;
         break;
-    case WebInspector.TimelineModel.RecordType.Paint:
+    case recordType.Paint:
         var width = WebInspector.TimelineUIUtils._quadWidth(eventData.clip);
         var height = WebInspector.TimelineUIUtils._quadHeight(eventData.clip);
         if (width && height)
             detailsText = WebInspector.UIString("%d\u2009\u00d7\u2009%d", width, height);
         break;
-    case WebInspector.TimelineModel.RecordType.TimerInstall:
-    case WebInspector.TimelineModel.RecordType.TimerRemove:
+    case recordType.TimerInstall:
+    case recordType.TimerRemove:
         details = linkifyTopCallFrame();
         detailsText = eventData["timerId"];
         break;
-    case WebInspector.TimelineModel.RecordType.RequestAnimationFrame:
-    case WebInspector.TimelineModel.RecordType.CancelAnimationFrame:
+    case recordType.RequestAnimationFrame:
+    case recordType.CancelAnimationFrame:
         details = linkifyTopCallFrame();
         detailsText = eventData["id"];
         break;
-    case WebInspector.TimelineModel.RecordType.ParseHTML:
-    case WebInspector.TimelineModel.RecordType.RecalculateStyles:
+    case recordType.ParseHTML:
+    case recordType.RecalculateStyles:
         details = linkifyTopCallFrame();
         break;
-    case WebInspector.TimelineModel.RecordType.EvaluateScript:
+    case recordType.EvaluateScript:
         var url = eventData["url"];
         if (url)
             details = linkifyLocation("", url, eventData["lineNumber"], 0);
         break;
-    case WebInspector.TimelineModel.RecordType.XHRReadyStateChange:
-    case WebInspector.TimelineModel.RecordType.XHRLoad:
-    case WebInspector.TimelineModel.RecordType.ResourceSendRequest:
-    case WebInspector.TimelineModel.RecordType.DecodeImage:
-    case WebInspector.TimelineModel.RecordType.ResizeImage:
+    case recordType.XHRReadyStateChange:
+    case recordType.XHRLoad:
+    case recordType.ResourceSendRequest:
+    case recordType.DecodeImage:
+    case recordType.ResizeImage:
         var url = eventData["url"];
         if (url)
             detailsText = WebInspector.displayNameForURL(url);
         break;
-    case WebInspector.TimelineModel.RecordType.ResourceReceivedData:
-    case WebInspector.TimelineModel.RecordType.ResourceReceiveResponse:
-    case WebInspector.TimelineModel.RecordType.ResourceFinish:
+    case recordType.ResourceReceivedData:
+    case recordType.ResourceReceiveResponse:
+    case recordType.ResourceFinish:
         var initiator = event.initiator;
         if (initiator) {
             var url = initiator.args.data["url"];
@@ -1144,12 +1131,22 @@ WebInspector.TimelineUIUtils.buildDetailsNodeForTraceEvent = function(event, lin
                 detailsText = WebInspector.displayNameForURL(url);
         }
         break;
-    case WebInspector.TimelineModel.RecordType.ConsoleTime:
+    case recordType.ConsoleTime:
         detailsText = eventData["message"];
         break;
-    case WebInspector.TimelineModel.RecordType.EmbedderCallback:
+    case recordType.EmbedderCallback:
         detailsText = eventData["callbackName"];
         break;
+
+    case recordType.PaintImage:
+    case recordType.DecodeImage:
+    case recordType.ResizeImage:
+    case recordType.DecodeLazyPixelRef:
+            var url = event.imageURL;
+            if (url)
+                detailsText = WebInspector.displayNameForURL(url);
+        break;
+
     default:
         details = linkifyTopCallFrame();
         break;

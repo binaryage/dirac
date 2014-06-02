@@ -28,11 +28,10 @@ WebInspector.TimelineTraceEventBindings.RecordType = {
     UpdateLayerTree: "UpdateLayerTree",
     PaintSetup: "PaintSetup",
     Paint: "Paint",
+    PaintImage: "PaintImage",
     Rasterize: "Rasterize",
     RasterTask: "RasterTask",
     ScrollLayer: "ScrollLayer",
-    DecodeImage: "DecodeImage",
-    ResizeImage: "ResizeImage",
     CompositeLayers: "CompositeLayers",
 
     ParseHTML: "ParseHTML",
@@ -78,6 +77,12 @@ WebInspector.TimelineTraceEventBindings.RecordType = {
     SetLayerTreeId: "SetLayerTreeId",
     TracingStartedInPage: "TracingStartedInPage",
 
+    DecodeImage: "Decode Image",
+    ResizeImage: "Resize Image",
+    DrawLazyPixelRef: "Draw LazyPixelRef",
+    DecodeLazyPixelRef: "Decode LazyPixelRef",
+
+    LazyPixelRef: "LazyPixelRef",
     LayerTreeHostImplSnapshot: "cc::LayerTreeHostImpl"
 };
 
@@ -105,6 +110,7 @@ WebInspector.TimelineTraceEventBindings.prototype = {
         this._layoutInvalidate = {};
         this._lastScheduleStyleRecalculation = {};
         this._webSocketCreateEvents = {};
+        this._paintImageEventByPixelRefId = {};
 
         this._lastRecalculateStylesEvent = null;
         this._currentScriptEvent = null;
@@ -154,12 +160,15 @@ WebInspector.TimelineTraceEventBindings.prototype = {
 
         case recordTypes.ResourceSendRequest:
             this._sendRequestEvents[event.args.data["requestId"]] = event;
+            event.imageURL = event.args.data["url"];
             break;
 
         case recordTypes.ResourceReceiveResponse:
         case recordTypes.ResourceReceivedData:
         case recordTypes.ResourceFinish:
             event.initiator = this._sendRequestEvents[event.args.data["requestId"]];
+            if (event.initiator)
+                event.imageURL = event.initiator.imageURL;
             break;
 
         case recordTypes.TimerInstall:
@@ -200,6 +209,7 @@ WebInspector.TimelineTraceEventBindings.prototype = {
         case recordTypes.Layout:
             var frameId = event.args["beginData"]["frame"];
             event.initiator = this._layoutInvalidate[frameId];
+            event.backendNodeId = event.args["endData"]["rootNode"];
             this._layoutInvalidate[frameId] = null;
             if (this._currentScriptEvent)
                 event.warning = WebInspector.UIString("Forced synchronous layout is a possible performance bottleneck.");
@@ -228,9 +238,55 @@ WebInspector.TimelineTraceEventBindings.prototype = {
         case recordTypes.TracingStartedInPage:
             this._mainThread = event.thread;
             break;
+
+        case recordTypes.Paint:
+        case recordTypes.ScrollLayer:
+            event.backendNodeId = event.args["data"]["nodeId"];
+            break;
+
+        case recordTypes.PaintImage:
+            event.backendNodeId = event.args["data"]["nodeId"];
+            event.imageURL = event.args["data"]["url"];
+            break;
+
+        case recordTypes.DecodeImage:
+        case recordTypes.ResizeImage:
+            var paintImageEvent = this._findAncestorEvent(recordTypes.PaintImage);
+            if (!paintImageEvent) {
+                var decodeLazyPixelRefEvent = this._findAncestorEvent(recordTypes.DecodeLazyPixelRef);
+                paintImageEvent = decodeLazyPixelRefEvent && this._paintImageEventByPixelRefId[decodeLazyPixelRefEvent.args["LazyPixelRef"]];
+            }
+            if (!paintImageEvent)
+                break;
+            event.backendNodeId = paintImageEvent.backendNodeId;
+            event.imageURL = paintImageEvent.imageURL;
+            break;
+
+        case recordTypes.DrawLazyPixelRef:
+            var paintImageEvent = this._findAncestorEvent(recordTypes.PaintImage);
+            if (!paintImageEvent)
+                break;
+            this._paintImageEventByPixelRefId[event.args["LazyPixelRef"]] = paintImageEvent;
+            event.backendNodeId = paintImageEvent.backendNodeId;
+            event.imageURL = paintImageEvent.imageURL;
+            break;
         }
         if (this._mainThread === event.thread)
             this._mainThreadEvents.push(event);
+    },
+
+    /**
+     * @param {string} name
+     * @return {?WebInspector.TracingModel.Event}
+     */
+    _findAncestorEvent: function(name)
+    {
+        for (var i = this._eventStack.length - 1; i >= 0; --i) {
+            var event = this._eventStack[i];
+            if (event.name === name)
+                return event;
+        }
+        return null;
     }
 }
 

@@ -296,6 +296,11 @@ WebInspector.TracingModel.Event = function(payload, level, thread)
     this.stackTrace = null;
     /** @type {?Element} */
     this.previewElement = null;
+    /** @type {?string} */
+    this.imageURL = null;
+    /** @type {number} */
+    this.backendNodeId = 0;
+
     /** @type {number} */
     this.selfTime = 0;
 }
