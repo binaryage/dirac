@@ -2589,9 +2589,28 @@
                     { "name": "source", "type": "string", "enum": ["mediaRule", "importRule", "linkedSheet", "inlineSheet"], "description": "Source of the media query: \"mediaRule\" if specified by a @media rule, \"importRule\" if specified by an @import rule, \"linkedSheet\" if specified by a \"media\" attribute in a linked stylesheet's LINK tag, \"inlineSheet\" if specified by a \"media\" attribute in an inline stylesheet's STYLE tag." },
                     { "name": "sourceURL", "type": "string", "optional": true, "description": "URL of the document containing the media query description." },
                     { "name": "range", "$ref": "SourceRange", "optional": true, "description": "The associated rule (@media or @import) header range in the enclosing stylesheet (if available)." },
-                    { "name": "parentStyleSheetId", "$ref": "StyleSheetId", "optional": true, "description": "Identifier of the stylesheet containing this object (if exists)." }
+                    { "name": "parentStyleSheetId", "$ref": "StyleSheetId", "optional": true, "description": "Identifier of the stylesheet containing this object (if exists)." },
+                    { "name": "mediaList", "type": "array", "items": { "$ref": "MediaQuery" }, "optional": true, "hidden": true, "description": "Array of media queries." }
                 ],
                 "description": "CSS media query descriptor."
+            },
+            {
+                "id": "MediaQuery",
+                "type": "array",
+                "items": { "$ref": "MediaQueryExpression" },
+                "description": "An array of media query expressions.",
+                "hidden": true
+            },
+            {
+                "id": "MediaQueryExpression",
+                "type": "object",
+                "properties": [
+                    { "name": "value", "type": "number", "description": "Media query expression value."},
+                    { "name": "unit", "type": "string", "description": "Media query expression units."},
+                    { "name": "feature", "type": "string", "description": "Media query expression feature."}
+                ],
+                "description": "Media query expression data.",
+                "hidden": true
             },
             {
                 "id": "PlatformFontUsage",
@@ -2731,6 +2750,14 @@
                     { "name": "forcedPseudoClasses", "type": "array", "items": { "type": "string", "enum": ["active", "focus", "hover", "visited"] }, "description": "Element pseudo classes to force when computing the element's style." }
                 ],
                 "description": "Ensures that the given node will have specified pseudo-classes whenever its style is computed by the browser."
+            },
+            {
+                "name": "getMediaQueries",
+                "returns": [
+                    { "name": "medias", "type": "array", "items": { "$ref": "CSSMedia" } }
+                ],
+                "description": "Returns all media queries parsed by the rendering engine.",
+                "hidden": true
             }
         ],
         "events": [
