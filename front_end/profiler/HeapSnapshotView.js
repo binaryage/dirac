@@ -1744,6 +1744,7 @@ WebInspector.HeapSnapshotLoadFromFileDelegate.prototype = {
 
     /**
      * @param {!WebInspector.ChunkedReader} reader
+     * @param {?Event} e
      */
     onError: function (reader, e)
     {
@@ -1795,10 +1796,11 @@ WebInspector.SaveSnapshotOutputStreamDelegate.prototype = {
 
     /**
      * @param {!WebInspector.ChunkedReader} reader
+     * @param {?Event} event
      */
     onError: function(reader, event)
     {
-        WebInspector.messageSink.addErrorMessage("Failed to read heap snapshot from temp file: " + event.message);
+        WebInspector.messageSink.addErrorMessage("Failed to read heap snapshot from temp file: " + /** @type {!ErrorEvent} */ (event).message);
         this.onTransferFinished();
     }
 }

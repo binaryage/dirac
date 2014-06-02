@@ -117,7 +117,7 @@ WebInspector.HeapSnapshotCommon.AllocationStackFrame = function(functionName, sc
  * @param {number} id
  * @param {string} name
  * @param {number} distance
- * @param {number|undefined} nodeIndex
+ * @param {number} nodeIndex
  * @param {number} retainedSize
  * @param {number} selfSize
  * @param {string} type

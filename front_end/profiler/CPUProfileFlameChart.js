@@ -120,15 +120,16 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
          * @param {number} depth
          * @param {number} duration
          * @param {number} startTime
-         * @param {!Object} node
+         * @param {number} selfTime
+         * @param {!ProfilerAgent.CPUProfileNode} node
          */
         function ChartEntry(depth, duration, startTime, selfTime, node)
         {
             this.depth = depth;
             this.duration = duration;
             this.startTime = startTime;
-            this.node = node;
             this.selfTime = selfTime;
+            this.node = node;
         }
 
         /** @type {!Array.<?ChartEntry>} */

@@ -205,7 +205,7 @@ WebInspector.MultiProfileLauncherView.prototype = {
     /**
      * @param {!WebInspector.ProfileType} profileType
      */
-    _profileTypeChanged: function(profileType, event)
+    _profileTypeChanged: function(profileType)
     {
         this.dispatchEventToListeners(WebInspector.MultiProfileLauncherView.EventTypes.ProfileTypeSelected, profileType);
         this._isInstantProfile = profileType.isInstantProfile();

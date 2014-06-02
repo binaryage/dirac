@@ -290,6 +290,7 @@ WebInspector.ProfileType.DataDisplayDelegate.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.TargetAwareObject}
+ * @param {!WebInspector.Target} target
  * @param {!WebInspector.ProfileType} profileType
  * @param {string} title
  */
@@ -978,6 +979,7 @@ WebInspector.ProfilesPanel.prototype = {
     },
 
     /**
+     * @param {?Event} event
      * @param {!WebInspector.ContextMenu} contextMenu
      * @param {!Object} target
      */
@@ -1179,6 +1181,7 @@ WebInspector.ProfilesPanel.ContextMenuProvider = function()
 
 WebInspector.ProfilesPanel.ContextMenuProvider.prototype = {
     /**
+     * @param {?Event} event
      * @param {!WebInspector.ContextMenu} contextMenu
      * @param {!Object} target
      */

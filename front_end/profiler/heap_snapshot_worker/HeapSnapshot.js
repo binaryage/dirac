@@ -729,6 +729,7 @@ WebInspector.HeapSnapshotIndexRangeIterator.prototype = {
  * @constructor
  * @implements {WebInspector.HeapSnapshotItemIterator}
  * @param {!WebInspector.HeapSnapshotItemIterator} iterator
+ * @param {function(!WebInspector.HeapSnapshotItem):boolean=} filter
  */
 WebInspector.HeapSnapshotFilteredIterator = function(iterator, filter)
 {
@@ -811,6 +812,7 @@ WebInspector.HeapSnapshotProgress.prototype = {
 
 
 /**
+ * @param {!Object} profile
  * @param {!WebInspector.HeapSnapshotProgress} progress
  * @param {boolean} showHiddenData
  * @constructor
@@ -1897,6 +1899,7 @@ WebInspector.HeapSnapshot.prototype = {
 
     /**
      * @param {number} nodeIndex
+     * @param {?function(!WebInspector.HeapSnapshotEdge):boolean} filter
      * @return {!WebInspector.HeapSnapshotEdgesProvider}
      */
     createEdgesProviderForTest: function(nodeIndex, filter)
@@ -2089,14 +2092,16 @@ WebInspector.HeapSnapshotItemProvider.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.HeapSnapshotItemProvider}
+ * @param {!WebInspector.HeapSnapshot} snapshot
+ * @param {?function(!WebInspector.HeapSnapshotEdge):boolean} filter
+ * @param {!WebInspector.HeapSnapshotEdgeIterator} edgesIter
  * @param {!WebInspector.HeapSnapshotItemIndexProvider} indexProvider
  */
 WebInspector.HeapSnapshotEdgesProvider = function(snapshot, filter, edgesIter, indexProvider)
 {
     this.snapshot = snapshot;
-    if (filter)
-        edgesIter = new WebInspector.HeapSnapshotFilteredIterator(edgesIter, filter);
-    WebInspector.HeapSnapshotItemProvider.call(this, edgesIter, indexProvider);
+    var iter = filter ? new WebInspector.HeapSnapshotFilteredIterator(edgesIter, /** @type {function(!WebInspector.HeapSnapshotItem):boolean} */ (filter)) : edgesIter;
+    WebInspector.HeapSnapshotItemProvider.call(this, iter, indexProvider);
 }
 
 WebInspector.HeapSnapshotEdgesProvider.prototype = {
@@ -2188,6 +2193,7 @@ WebInspector.HeapSnapshotEdgesProvider.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.HeapSnapshotItemProvider}
+ * @param {!WebInspector.HeapSnapshot} snapshot
  * @param {?function(!WebInspector.HeapSnapshotNode):boolean} filter
  * @param {(!Array.<number>|!Uint32Array)} nodeIndexes
  */
@@ -2196,8 +2202,9 @@ WebInspector.HeapSnapshotNodesProvider = function(snapshot, filter, nodeIndexes)
     this.snapshot = snapshot;
     var indexProvider = new WebInspector.HeapSnapshotNodeIndexProvider(snapshot);
     var it = new WebInspector.HeapSnapshotIndexRangeIterator(indexProvider, nodeIndexes);
+
     if (filter)
-        it = new WebInspector.HeapSnapshotFilteredIterator(it, filter);
+        it = new WebInspector.HeapSnapshotFilteredIterator(it, /** @type {function(!WebInspector.HeapSnapshotItem):boolean} */ (filter));
     WebInspector.HeapSnapshotItemProvider.call(this, it, indexProvider);
 }
 
@@ -2270,6 +2277,7 @@ WebInspector.HeapSnapshotNodesProvider.prototype = {
     },
 
     /**
+     * @param {!WebInspector.HeapSnapshotCommon.ComparatorConfig} comparator
      * @param {number} leftBound
      * @param {number} rightBound
      * @param {number} windowLeft

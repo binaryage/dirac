@@ -472,5 +472,14 @@ CodeMirror.keyMap;
 /** @type {{scrollLeft: number, scrollTop: number}} */
 CodeMirror.doc;
 
+/**
+ * @constructor
+ * @extends {Event}
+ */
+function ErrorEvent() {}
+
+/** @type {string} */
+ErrorEvent.prototype.message;
+
 /** @type {boolean} */
 window.dispatchStandaloneTestRunnerMessages;

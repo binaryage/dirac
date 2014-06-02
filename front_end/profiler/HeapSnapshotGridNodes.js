@@ -492,6 +492,7 @@ WebInspector.HeapSnapshotGridNode.prototype = {
  * @constructor
  * @extends {WebInspector.HeapSnapshotGridNode}
  * @param {!WebInspector.HeapSnapshotSortableDataGrid} dataGrid
+ * @param {!WebInspector.HeapSnapshotCommon.Node} node
  */
 WebInspector.HeapSnapshotGenericObjectNode = function(dataGrid, node)
 {
@@ -907,6 +908,7 @@ WebInspector.HeapSnapshotRetainingObjectNode.prototype = {
  * @extends {WebInspector.HeapSnapshotGenericObjectNode}
  * @param {!WebInspector.HeapSnapshotSortableDataGrid} dataGrid
  * @param {!WebInspector.HeapSnapshotProxy} snapshot
+ * @param {!WebInspector.HeapSnapshotCommon.Node} node
  * @param {boolean} isDeletedNode
  */
 WebInspector.HeapSnapshotInstanceNode = function(dataGrid, snapshot, node, isDeletedNode)
@@ -1164,6 +1166,8 @@ WebInspector.HeapSnapshotConstructorNode.prototype = {
  * @implements {WebInspector.HeapSnapshotGridNode.ChildrenProvider}
  * @param {!WebInspector.HeapSnapshotProviderProxy} addedNodesProvider
  * @param {!WebInspector.HeapSnapshotProviderProxy} deletedNodesProvider
+ * @param {number} addedCount
+ * @param {number} removedCount
  */
 WebInspector.HeapSnapshotDiffNodesProvider = function(addedNodesProvider, deletedNodesProvider, addedCount, removedCount)
 {
@@ -1406,6 +1410,7 @@ WebInspector.HeapSnapshotDiffNode.prototype = {
  * @constructor
  * @extends {WebInspector.HeapSnapshotGenericObjectNode}
  * @param {!WebInspector.HeapSnapshotSortableDataGrid} dataGrid
+ * @param {!WebInspector.HeapSnapshotCommon.Node} node
  */
 WebInspector.HeapSnapshotDominatorObjectNode = function(dataGrid, node)
 {

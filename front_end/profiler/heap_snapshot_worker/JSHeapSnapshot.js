@@ -30,9 +30,10 @@
 
 /**
  * @constructor
+ * @extends {WebInspector.HeapSnapshot}
+ * @param {!Object} profile
  * @param {!WebInspector.HeapSnapshotProgress} progress
  * @param {boolean} showHiddenData
- * @extends {WebInspector.HeapSnapshot}
  */
 WebInspector.JSHeapSnapshot = function(profile, progress, showHiddenData)
 {

@@ -714,6 +714,7 @@ WebInspector.CPUProfileHeader.prototype = {
 
     /**
      * @param {!WebInspector.ChunkedReader} reader
+     * @param {?Event} e
      */
     onError: function(reader, e)
     {

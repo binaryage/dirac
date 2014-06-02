@@ -182,6 +182,7 @@ WebInspector.HeapSnapshotWorkerProxy.prototype = {
 
 /**
  * @constructor
+ * @param {!WebInspector.HeapSnapshotWorkerProxy} worker
  * @param {number} objectId
  */
 WebInspector.HeapSnapshotProxyObject = function(worker, objectId)
@@ -241,6 +242,7 @@ WebInspector.HeapSnapshotProxyObject.prototype = {
  * @constructor
  * @extends {WebInspector.HeapSnapshotProxyObject}
  * @implements {WebInspector.OutputStream}
+ * @param {!WebInspector.HeapSnapshotWorkerProxy} worker
  * @param {number} objectId
  * @param {number} profileUid
  * @param {function(!WebInspector.HeapSnapshotProxy)} snapshotReceivedCallback
