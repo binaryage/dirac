@@ -28,6 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+importScript("EditFileSystemDialog.js");
+
 /**
  * @constructor
  * @param {!function()} onHide
@@ -618,28 +620,14 @@ WebInspector.ExperimentsSettingsTab.prototype = {
  */
 WebInspector.SettingsController = function()
 {
-    this._statusBarButton = new WebInspector.StatusBarButton(WebInspector.UIString("Settings"), "settings-status-bar-item");
-    this._statusBarButton.element.addEventListener("mouseup", this._mouseUp.bind(this), false);
-
     /** @type {?WebInspector.SettingsScreen} */
     this._settingsScreen;
+
+    window.addEventListener("resize", this._resize.bind(this), true);
 }
 
 WebInspector.SettingsController.prototype =
 {
-    /**
-     * @return {!Element}
-     */
-    get statusBarItem()
-    {
-        return this._statusBarButton.element;
-    },
-
-    _mouseUp: function()
-    {
-        this.showSettingsScreen();
-    },
-
     _onHideSettingsScreen: function()
     {
         delete this._settingsScreenVisible;
@@ -660,7 +648,7 @@ WebInspector.SettingsController.prototype =
         this._settingsScreenVisible = true;
     },
 
-    resize: function()
+    _resize: function()
     {
         if (this._settingsScreen && this._settingsScreen.isShowing())
             this._settingsScreen.doResize();
@@ -679,7 +667,7 @@ WebInspector.SettingsController.SettingsScreenActionDelegate.prototype = {
      */
     handleAction: function()
     {
-        WebInspector.settingsController.showSettingsScreen(WebInspector.SettingsScreen.Tabs.General);
+        WebInspector._settingsController.showSettingsScreen(WebInspector.SettingsScreen.Tabs.General);
         return true;
     }
 }
@@ -1075,5 +1063,4 @@ WebInspector.EditableSettingsList.prototype = {
     __proto__: WebInspector.SettingsList.prototype
 }
 
-/** @type {!WebInspector.SettingsController} */
-WebInspector.settingsController;
+WebInspector._settingsController = new WebInspector.SettingsController();

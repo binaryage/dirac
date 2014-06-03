@@ -52,15 +52,48 @@ WebInspector.Main.prototype = {
     {
         var configuration;
         if (!Capabilities.isMainFrontend) {
-            configuration = ["components", "main", "sources", "timeline", "profiler", "console", "source_frame", "search"];
+            configuration = ["main", "sources", "timeline", "profiler", "console", "source_frame", "search"];
         } else {
-            configuration = ["components", "main", "elements", "network", "sources", "timeline", "profiler", "resources", "audits", "console", "source_frame", "extensions", "settings", "search"];
+            configuration = ["main", "elements", "network", "sources", "timeline", "profiler", "resources", "audits", "console", "source_frame", "extensions", "settings", "search"];
             if (WebInspector.experimentsSettings.layersPanel.isEnabled())
                 configuration.push("layers");
             if (WebInspector.experimentsSettings.devicesPanel.isEnabled())
                 configuration.push("devices");
         }
         WebInspector.moduleManager.registerModules(configuration);
+    },
+
+    _createGlobalStatusBarItems: function()
+    {
+        var extensions = WebInspector.moduleManager.extensions(WebInspector.StatusBarButton.Provider);
+        extensions.forEach(function(extension) {
+            var button;
+            switch (extension.descriptor()["location"]) {
+            case "toolbar-left":
+                button = createButton(extension);
+                if (button)
+                    WebInspector.inspectorView.appendToLeftToolbar(button.element);
+                break;
+            case "toolbar-right":
+                button = createButton(extension);
+                if (button)
+                    WebInspector.inspectorView.appendToRightToolbar(button.element);
+                break;
+            }
+            if (button && extension.descriptor()["actionId"]) {
+                button.addEventListener("click", function() {
+                    WebInspector.actionRegistry.execute(extension.descriptor()["actionId"]);
+                });
+            }
+        });
+
+        function createButton(extension)
+        {
+            var descriptor = extension.descriptor();
+            if (descriptor.className)
+                return extension.instance().button();
+            return new WebInspector.StatusBarButton(WebInspector.UIString(descriptor["title"]), descriptor["elementClass"]);
+        }
     },
 
     _calculateWorkerInspectorTitle: function()
@@ -284,8 +317,6 @@ WebInspector.Main.prototype = {
             screen.showModal();
         }
 
-        WebInspector.settingsController = new WebInspector.SettingsController();
-
         WebInspector.domBreakpointsSidebarPane = new WebInspector.DOMBreakpointsSidebarPane();
 
         var autoselectPanel = WebInspector.UIString("a panel chosen automatically");
@@ -313,16 +344,9 @@ WebInspector.Main.prototype = {
         WebInspector.zoomManager = new WebInspector.ZoomManager();
         WebInspector.inspectorView = new WebInspector.InspectorView();
         WebInspector.app.createRootView();
-        WebInspector.app.createGlobalStatusBarItems();
+        this._createGlobalStatusBarItems();
 
         this._addMainEventListeners(document);
-
-        function onResize()
-        {
-            if (WebInspector.settingsController)
-                WebInspector.settingsController.resize();
-        }
-        window.addEventListener("resize", onResize, true);
 
         var errorWarningCount = document.getElementById("error-warning-count");
 

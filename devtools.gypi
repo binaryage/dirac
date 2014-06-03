@@ -43,7 +43,6 @@
         'devtools_core_base_js_files': [
             'front_end/inspector.html',
             'front_end/Tests.js',
-            'front_end/EditFileSystemDialog.js',
             'front_end/ForwardedInputEventHandler.js',
             'front_end/InspectorFrontendAPI.js',
             'front_end/InspectorFrontendEventSink.js',
@@ -51,7 +50,6 @@
             'front_end/jsdifflib.js',
             'front_end/ResponsiveDesignView.js',
             'front_end/ScreencastView.js',
-            'front_end/SettingsScreen.js',
             'front_end/TestController.js',
             'front_end/dialog.css',
             'front_end/inspector.css',
@@ -220,7 +218,6 @@
         ],
         'devtools_module_json_files': [
             'front_end/audits/module.json',
-            'front_end/components/module.json',
             'front_end/console/module.json',
             'front_end/devices/module.json',
             'front_end/elements/module.json',
@@ -291,6 +288,10 @@
         ],
         'devtools_devices_js_files': [
             'front_end/devices/DevicesView.js',
+        ],
+        'devtools_settings_js_files': [
+            'front_end/settings/EditFileSystemDialog.js',
+            'front_end/settings/SettingsScreen.js',
         ],
         'devtools_elements_js_files': [
             'front_end/elements/DOMSyntaxHighlighter.js',

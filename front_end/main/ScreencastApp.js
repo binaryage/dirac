@@ -10,25 +10,19 @@ WebInspector.ScreencastApp = function()
 {
     WebInspector.App.call(this);
 
-    this._currentScreencastState = WebInspector.settings.createSetting("currentScreencastState", "");
-    this._lastScreencastState = WebInspector.settings.createSetting("lastScreencastState", "");
+    var currentScreencastState = WebInspector.settings.createSetting("currentScreencastState", "");
+    var lastScreencastState = WebInspector.settings.createSetting("lastScreencastState", "");
     this._toggleScreencastButton = new WebInspector.StatusBarStatesSettingButton(
         "screencast-status-bar-item",
         ["disabled", "left", "top"],
         [WebInspector.UIString("Disable screencast."), WebInspector.UIString("Switch to portrait screencast."), WebInspector.UIString("Switch to landscape screencast.")],
-        this._currentScreencastState,
-        this._lastScreencastState,
+        currentScreencastState.get(),
+        currentScreencastState,
+        lastScreencastState,
         this._onStatusBarButtonStateChanged.bind(this));
 };
 
 WebInspector.ScreencastApp.prototype = {
-    createGlobalStatusBarItems: function()
-    {
-        this.appendInspectStatusBarItem();
-        this.appendSettingsStatusBarItem();
-        WebInspector.inspectorView.appendToRightToolbar(this._toggleScreencastButton.element);
-    },
-
     createRootView: function()
     {
         var rootView = new WebInspector.RootView();
@@ -49,7 +43,6 @@ WebInspector.ScreencastApp.prototype = {
     {
         WebInspector.App.prototype.presentUI.call(this);
         this._screencastView.initialize();
-        this._toggleScreencastButton.toggleInitialState();
     },
 
     /**
@@ -73,3 +66,23 @@ WebInspector.ScreencastApp.prototype = {
 
     __proto__: WebInspector.App.prototype
 };
+
+/**
+ * @constructor
+ * @implements {WebInspector.StatusBarButton.Provider}
+ */
+WebInspector.ScreencastApp.StatusBarButtonProvider = function()
+{
+}
+
+WebInspector.ScreencastApp.StatusBarButtonProvider.prototype = {
+    /**
+     * @return {?WebInspector.StatusBarButton}
+     */
+    button: function()
+    {
+        if (!(WebInspector.app instanceof WebInspector.ScreencastApp))
+            return null;
+        return /** @type {!WebInspector.ScreencastApp} */ (WebInspector.app)._toggleScreencastButton;
+    }
+}

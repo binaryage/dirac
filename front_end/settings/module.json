@@ -9,6 +9,14 @@
                     "shortcut": "F1 Shift+?"
                 }
             ]
+        },
+        {
+            "type": "@WebInspector.StatusBarButton.Provider",
+            "actionId": "settings.show",
+            "location": "toolbar-right",
+            "title": "Settings",
+            "elementClass": "settings-status-bar-item"
         }
-    ]
+    ],
+    "scripts": [ "SettingsScreen.js" ]
 }

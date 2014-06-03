@@ -44,19 +44,6 @@ WebInspector.DockController = function(canDock)
 
     WebInspector.settings.currentDockState = WebInspector.settings.createSetting("currentDockState", "");
     WebInspector.settings.lastDockState = WebInspector.settings.createSetting("lastDockState", "");
-    var states = [WebInspector.DockController.State.DockedToBottom, WebInspector.DockController.State.Undocked, WebInspector.DockController.State.DockedToRight];
-    var titles = [WebInspector.UIString("Dock to main window."), WebInspector.UIString("Undock into separate window."), WebInspector.UIString("Dock to main window.")];
-    if (WebInspector.experimentsSettings.dockToLeft.isEnabled()) {
-        states.push(WebInspector.DockController.State.DockedToLeft);
-        titles.push(WebInspector.UIString("Dock to main window."));
-    }
-    this._dockToggleButton = new WebInspector.StatusBarStatesSettingButton(
-        "dock-status-bar-item",
-        states,
-        titles,
-        WebInspector.settings.currentDockState,
-        WebInspector.settings.lastDockState,
-        this._dockSideChanged.bind(this));
 }
 
 WebInspector.DockController.State = {
@@ -78,16 +65,18 @@ WebInspector.DockController.Events = {
 WebInspector.DockController.prototype = {
     initialize: function()
     {
-        if (this._canDock)
-            this._dockToggleButton.toggleInitialState();
-    },
+        if (!this._canDock)
+            return;
 
-    /**
-     * @return {?Element}
-     */
-    get element()
-    {
-        return this._canDock ? this._dockToggleButton.element : null;
+        this._states = [WebInspector.DockController.State.DockedToBottom, WebInspector.DockController.State.Undocked, WebInspector.DockController.State.DockedToRight];
+        this._titles = [WebInspector.UIString("Dock to main window."), WebInspector.UIString("Undock into separate window."), WebInspector.UIString("Dock to main window.")];
+        if (WebInspector.experimentsSettings.dockToLeft.isEnabled()) {
+            this._states.push(WebInspector.DockController.State.DockedToLeft);
+            this._titles.push(WebInspector.UIString("Dock to main window."));
+        }
+        var initialState = WebInspector.settings.currentDockState.get();
+        initialState = this._states.indexOf(initialState) >= 0 ? initialState : this._states[0];
+        this._dockSideChanged(initialState);
     },
 
     /**
@@ -166,6 +155,37 @@ WebInspector.DockController.prototype = {
     },
 
     __proto__: WebInspector.Object.prototype
+}
+
+/**
+ * @constructor
+ * @implements {WebInspector.StatusBarButton.Provider}
+ */
+WebInspector.DockController.ButtonProvider = function()
+{
+}
+
+WebInspector.DockController.ButtonProvider.prototype = {
+    /**
+     * @return {?WebInspector.StatusBarButton}
+     */
+    button: function()
+    {
+        if (!WebInspector.dockController.canDock())
+            return null;
+
+        if (!this._dockToggleButton) {
+            this._dockToggleButton = new WebInspector.StatusBarStatesSettingButton(
+                    "dock-status-bar-item",
+                    WebInspector.dockController._states,
+                    WebInspector.dockController._titles,
+                    WebInspector.dockController.dockSide(),
+                    WebInspector.settings.currentDockState,
+                    WebInspector.settings.lastDockState,
+                    WebInspector.dockController._dockSideChanged.bind(WebInspector.dockController));
+        }
+        return this._dockToggleButton;
+    }
 }
 
 /**

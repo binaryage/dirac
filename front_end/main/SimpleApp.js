@@ -12,12 +12,6 @@ WebInspector.SimpleApp = function()
 };
 
 WebInspector.SimpleApp.prototype = {
-    createGlobalStatusBarItems: function()
-    {
-        this.appendInspectStatusBarItem();
-        this.appendSettingsStatusBarItem();
-    },
-
     createRootView: function()
     {
         var rootView = new WebInspector.RootView();

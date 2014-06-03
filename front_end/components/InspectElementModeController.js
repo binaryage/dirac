@@ -31,8 +31,7 @@
  */
 WebInspector.InspectElementModeController = function()
 {
-    this.toggleSearchButton = new WebInspector.StatusBarButton(WebInspector.UIString("Select an element in the page to inspect it."), "node-search-status-bar-item");
-    this.toggleSearchButton.addEventListener("click", this.toggleSearch, this);
+    this._toggleSearchButton = new WebInspector.StatusBarButton(WebInspector.UIString("Select an element in the page to inspect it."), "node-search-status-bar-item");
     this._shortcut = WebInspector.InspectElementModeController.createShortcut();
 }
 
@@ -47,7 +46,7 @@ WebInspector.InspectElementModeController.prototype = {
      */
     enabled: function()
     {
-        return this.toggleSearchButton.toggled;
+        return this._toggleSearchButton.toggled;
     },
 
     disable: function()
@@ -59,7 +58,7 @@ WebInspector.InspectElementModeController.prototype = {
     toggleSearch: function()
     {
         var enabled = !this.enabled();
-        this.toggleSearchButton.toggled = enabled;
+        this._toggleSearchButton.toggled = enabled;
 
         var targets = WebInspector.targetManager.targets();
         for (var i = 0; i < targets.length; ++i)
@@ -88,5 +87,26 @@ WebInspector.InspectElementModeController.ToggleSearchActionDelegate.prototype =
     }
 }
 
-/** @type {!WebInspector.InspectElementModeController} */
-WebInspector.inspectElementModeController;
+/**
+ * @constructor
+ * @implements {WebInspector.StatusBarButton.Provider}
+ */
+WebInspector.InspectElementModeController.ToggleButtonProvider = function()
+{
+}
+
+WebInspector.InspectElementModeController.ToggleButtonProvider.prototype = {
+    /**
+     * @return {?WebInspector.StatusBarButton}
+     */
+    button: function()
+    {
+        if (!WebInspector.inspectElementModeController)
+            return null;
+
+        return WebInspector.inspectElementModeController._toggleSearchButton;
+    }
+}
+
+/** @type {?WebInspector.InspectElementModeController} */
+WebInspector.inspectElementModeController = null;

@@ -434,6 +434,20 @@ WebInspector.StatusBarButton.prototype = {
 }
 
 /**
+ * @interface
+ */
+WebInspector.StatusBarButton.Provider = function()
+{
+}
+
+WebInspector.StatusBarButton.Provider.prototype = {
+    /**
+     * @return {?WebInspector.StatusBarButton}
+     */
+    button: function() {}
+}
+
+/**
  * @constructor
  * @extends {WebInspector.StatusBarItem}
  * @param {?function(!Event)} changeHandler
@@ -584,11 +598,12 @@ WebInspector.StatusBarCheckbox.prototype = {
  * @param {string} className
  * @param {!Array.<string>} states
  * @param {!Array.<string>} titles
+ * @param {string} initialState
  * @param {!WebInspector.Setting} currentStateSetting
  * @param {!WebInspector.Setting} lastStateSetting
  * @param {?function(string)} stateChangedCallback
  */
-WebInspector.StatusBarStatesSettingButton = function(className, states, titles, currentStateSetting, lastStateSetting, stateChangedCallback)
+WebInspector.StatusBarStatesSettingButton = function(className, states, titles, initialState, currentStateSetting, lastStateSetting, stateChangedCallback)
 {
     WebInspector.StatusBarButton.call(this, "", className, states.length);
 
@@ -610,6 +625,7 @@ WebInspector.StatusBarStatesSettingButton = function(className, states, titles, 
     this.setLongClickOptionsEnabled(this._createOptions.bind(this));
 
     this._currentState = null;
+    this.toggleState(initialState);
 }
 
 WebInspector.StatusBarStatesSettingButton.prototype = {
@@ -642,23 +658,11 @@ WebInspector.StatusBarStatesSettingButton.prototype = {
         this.title = this._buttons[this._states.indexOf(defaultState)].title;
     },
 
-    toggleInitialState: function()
-    {
-        if (this._currentState === null)
-            this.toggleState(this._defaultState());
-    },
-
     /**
      * @return {string}
      */
     _defaultState: function()
     {
-        // Not yet initialized - load from setting.
-        if (!this._currentState) {
-            var state = this._currentStateSetting.get();
-            return this._states.indexOf(state) >= 0 ? state : this._states[0];
-        }
-
         var lastState = this._lastStateSetting.get();
         if (lastState && this._states.indexOf(lastState) >= 0 && lastState != this._currentState)
             return lastState;

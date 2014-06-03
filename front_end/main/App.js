@@ -14,10 +14,6 @@ WebInspector.App.prototype = {
     {
     },
 
-    createGlobalStatusBarItems: function()
-    {
-    },
-
     presentUI: function()
     {
         WebInspector.inspectorView.showInitialPanel();
@@ -25,17 +21,6 @@ WebInspector.App.prototype = {
         WebInspector.overridesSupport.applyInitialOverrides();
         if (WebInspector.overridesSupport.hasActiveOverrides())
             WebInspector.inspectorView.showViewInDrawer("emulation", true);
-    },
-
-    appendInspectStatusBarItem: function()
-    {
-        if (WebInspector.inspectElementModeController)
-            WebInspector.inspectorView.appendToLeftToolbar(WebInspector.inspectElementModeController.toggleSearchButton.element);
-    },
-
-    appendSettingsStatusBarItem: function()
-    {
-        WebInspector.inspectorView.appendToRightToolbar(WebInspector.settingsController.statusBarItem);
     }
 };
 

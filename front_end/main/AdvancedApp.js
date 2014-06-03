@@ -9,25 +9,17 @@
 WebInspector.AdvancedApp = function()
 {
     WebInspector.App.call(this);
+
+    if (!WebInspector.experimentsSettings.responsiveDesign.isEnabled())
+        return;
+
+    this._toggleResponsiveDesignButton = new WebInspector.StatusBarButton(WebInspector.UIString("Responsive design mode."), "responsive-design-status-bar-item");
+    this._toggleResponsiveDesignButton.toggled = WebInspector.settings.responsiveDesignMode.get();
+    this._toggleResponsiveDesignButton.addEventListener("click", this._toggleResponsiveDesign, this);
+    WebInspector.settings.responsiveDesignMode.addChangeListener(this._responsiveDesignModeChanged, this);
 };
 
 WebInspector.AdvancedApp.prototype = {
-    createGlobalStatusBarItems: function()
-    {
-        this.appendInspectStatusBarItem();
-
-        if (WebInspector.experimentsSettings.responsiveDesign.isEnabled()) {
-            this._toggleResponsiveDesignButton = new WebInspector.StatusBarButton(WebInspector.UIString("Responsive design mode."), "responsive-design-status-bar-item");
-            this._toggleResponsiveDesignButton.toggled = WebInspector.settings.responsiveDesignMode.get();
-            this._toggleResponsiveDesignButton.addEventListener("click", this._toggleResponsiveDesign, this);
-            WebInspector.inspectorView.appendToLeftToolbar(this._toggleResponsiveDesignButton.element);
-            WebInspector.settings.responsiveDesignMode.addChangeListener(this._responsiveDesignModeChanged, this);
-        }
-
-        this.appendSettingsStatusBarItem();
-        WebInspector.inspectorView.appendToRightToolbar(/** @type {!Element} */ (WebInspector.dockController.element));
-    },
-
     _toggleResponsiveDesign: function()
     {
         WebInspector.settings.responsiveDesignMode.set(!this._toggleResponsiveDesignButton.toggled);
@@ -109,3 +101,23 @@ WebInspector.AdvancedApp.prototype = {
 
     __proto__: WebInspector.App.prototype
 };
+
+/**
+ * @constructor
+ * @implements {WebInspector.StatusBarButton.Provider}
+ */
+WebInspector.AdvancedApp.ResponsiveDesignButtonProvider = function()
+{
+}
+
+WebInspector.AdvancedApp.ResponsiveDesignButtonProvider.prototype = {
+    /**
+     * @return {?WebInspector.StatusBarButton}
+     */
+    button: function()
+    {
+        if (!(WebInspector.app instanceof WebInspector.AdvancedApp))
+            return null;
+        return /** @type {!WebInspector.AdvancedApp} */ (WebInspector.app)._toggleResponsiveDesignButton || null;
+    }
+}

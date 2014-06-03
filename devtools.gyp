@@ -131,6 +131,7 @@
                             '<(PRODUCT_DIR)/resources/inspector/extensions/ExtensionServer.js',
                             '<(PRODUCT_DIR)/resources/inspector/resources/ResourcesPanel.js',
                             '<(PRODUCT_DIR)/resources/inspector/network/NetworkPanel.js',
+                            '<(PRODUCT_DIR)/resources/inspector/settings/SettingsScreen.js',
                             '<(PRODUCT_DIR)/resources/inspector/source_frame/SourceFrame.js',
                             '<(PRODUCT_DIR)/resources/inspector/sources/SourcesPanel.js',
                             '<(PRODUCT_DIR)/resources/inspector/timeline/TimelinePanel.js',
@@ -301,7 +302,6 @@
                             'destination': '<(PRODUCT_DIR)/resources/inspector/components',
                             'files': [
                                 '<@(devtools_components_js_files)',
-                                'front_end/components/module.json',
                             ],
                         },
                         {
@@ -708,12 +708,24 @@
             'type': 'none',
             'conditions': [
                 ['debug_devtools==0', { # Release
+                    'actions': [{
+                        'action_name': 'build_settings_module',
+                        'script_name': 'scripts/inline_js_imports.py',
+                        'input_file': 'front_end/settings/SettingsScreen.js',
+                        'inputs': [
+                            '<@(_script_name)',
+                            '<@(devtools_settings_js_files)',
+                        ],
+                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/settings/SettingsScreen.js'],
+                        'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
+                    }],
                 },
                 { # Debug
                     'copies': [
                         {
                             'destination': '<(PRODUCT_DIR)/resources/inspector/settings',
                             'files': [
+                                '<@(devtools_settings_js_files)',
                                 'front_end/settings/module.json',
                             ],
                         }

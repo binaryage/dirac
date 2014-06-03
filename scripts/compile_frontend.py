@@ -75,6 +75,7 @@ allowed_import_statements_files = [
     "elements/ElementsPanel.js",
     "resources/ResourcesPanel.js",
     "network/NetworkPanel.js",
+    "settings/SettingsScreen.js",
     "sources/SourcesPanel.js",
     "timeline/TimelinePanel.js",
     "profiler/ProfilesPanel.js",
