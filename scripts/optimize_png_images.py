@@ -34,6 +34,7 @@ import os
 import os.path
 import re
 import subprocess
+import sys
 
 try:
     import json
@@ -59,11 +60,34 @@ svg_file_names = [re.sub(".svg$", "", re.sub(".*/", "", file_path)) for file_pat
 optimize_script_path = "tools/resources/optimize-png-files.sh"
 
 
+def check_installed(app_name, package, how_to):
+    proc = subprocess.Popen("which %s" % app_name, stdout=subprocess.PIPE, shell=True)
+    proc.communicate()
+    if proc.returncode != 0:
+        print "This script needs \"%s\" to be installed." % app_name
+        if how_to:
+            print how_to
+        else:
+            print "To install execute the following command: sudo apt-get install %s" % package
+        sys.exit(1)
+
+check_installed("pngcrush", "pngcrush", None)
+check_installed("optipng", "optipng", None)
+check_installed("advdef", "advancecomp", None)
+check_installed("pngout", None, "Utility can be downloaded here: http://www.jonof.id.au/kenutils")
+
+
 def optimize_png(file_name):
     png_full_path = images_path + "/" + file_name + ".png"
     optimize_command = "%s -o2 %s" % (optimize_script_path, png_full_path)
     proc = subprocess.Popen(optimize_command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True, cwd=chromium_src_path)
     return proc
+
+if len(svg_file_names):
+    print "%d unoptimized png files found." % len(svg_file_names)
+else:
+    print "All png files are already optimized."
+    sys.exit()
 
 processes = {}
 for file_name in svg_file_names:
