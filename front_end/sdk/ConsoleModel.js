@@ -84,7 +84,7 @@ WebInspector.ConsoleModel.prototype = {
      */
     addMessage: function(msg, isFromBackend)
     {
-        if (isFromBackend && WebInspector.SourceMap.hasSourceMapRequestHeader(msg.request))
+        if (isFromBackend && WebInspector.NetworkManager.hasDevToolsRequestHeader(msg.request))
             return;
 
         msg.index = this.messages.length;

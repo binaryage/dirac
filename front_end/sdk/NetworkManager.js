@@ -99,6 +99,18 @@ WebInspector.NetworkManager._MIMETypes = {
     "text/vtt":                    {"texttrack": true},
 }
 
+// Keep in sync with kDevToolsRequestInitiator defined in InspectorResourceAgent.cpp
+WebInspector.NetworkManager._devToolsRequestHeader = "X-DevTools-Request-Initiator";
+
+/**
+ * @param {?WebInspector.NetworkRequest} request
+ * @return {boolean}
+ */
+WebInspector.NetworkManager.hasDevToolsRequestHeader = function(request)
+{
+    return !!request && !!request.requestHeaderValue(WebInspector.NetworkManager._devToolsRequestHeader);
+}
+
 WebInspector.NetworkManager.prototype = {
     /**
      * @param {string} url

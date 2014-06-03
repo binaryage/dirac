@@ -83,14 +83,6 @@ WebInspector.SourceMap = function(sourceMappingURL, payload)
     this._parseMappingPayload(payload);
 }
 
-WebInspector.SourceMap._sourceMapRequestHeaderName = "X-Source-Map-Request-From";
-WebInspector.SourceMap._sourceMapRequestHeaderValue = "inspector";
-
-WebInspector.SourceMap.hasSourceMapRequestHeader = function(request)
-{
-    return request && request.requestHeaderValue(WebInspector.SourceMap._sourceMapRequestHeaderName) === WebInspector.SourceMap._sourceMapRequestHeaderValue;
-}
-
 /**
  * @param {string} sourceMapURL
  * @param {string} compiledURL
@@ -100,7 +92,6 @@ WebInspector.SourceMap.hasSourceMapRequestHeader = function(request)
 WebInspector.SourceMap.load = function(sourceMapURL, compiledURL, callback)
 {
     var headers = {};
-    headers[WebInspector.SourceMap._sourceMapRequestHeaderName] = WebInspector.SourceMap._sourceMapRequestHeaderValue;
     NetworkAgent.loadResourceForFrontend(WebInspector.resourceTreeModel.mainFrame.id, sourceMapURL, headers, contentLoaded);
 
     /**

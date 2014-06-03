@@ -1135,7 +1135,7 @@ WebInspector.NetworkLogView.prototype = {
     {
         var httpRequests = this._requests.filter(WebInspector.NetworkLogView.HTTPRequestsFilter);
         httpRequests = httpRequests.filter(WebInspector.NetworkLogView.FinishedRequestsFilter);
-        return httpRequests.filter(WebInspector.NetworkLogView.NonSourceMapRequestsFilter);
+        return httpRequests.filter(WebInspector.NetworkLogView.NonDevToolsRequestsFilter);
     },
 
     _copyAll: function()
@@ -1709,9 +1709,9 @@ WebInspector.NetworkLogView.HTTPRequestsFilter = function(request)
  * @param {!WebInspector.NetworkRequest} request
  * @return {boolean}
  */
-WebInspector.NetworkLogView.NonSourceMapRequestsFilter = function(request)
+WebInspector.NetworkLogView.NonDevToolsRequestsFilter = function(request)
 {
-    return !WebInspector.SourceMap.hasSourceMapRequestHeader(request);
+    return !WebInspector.NetworkManager.hasDevToolsRequestHeader(request);
 }
 
 /**
