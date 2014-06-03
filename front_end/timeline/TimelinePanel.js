@@ -707,7 +707,7 @@ WebInspector.TimelinePanel.prototype = {
         }
         if (this._lazyTraceEventBindings) {
             this._lazyTraceEventBindings.setEvents(this._lazyTracingModel.inspectedTargetEvents());
-            this._model.didStopRecordingTraceEvents(this._lazyTracingModel);
+            this._model.didStopRecordingTraceEvents(this._lazyTraceEventBindings.mainThreadEvents());
         }
         this._refreshViews();
     },

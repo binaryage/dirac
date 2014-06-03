@@ -280,11 +280,10 @@ WebInspector.TimelineModel.prototype = {
     },
 
     /**
-     * @param {!WebInspector.TracingModel} tracingModel
+     * @param {!Array.<!WebInspector.TracingModel.Event>} mainThreadEvents
      */
-    didStopRecordingTraceEvents: function(tracingModel)
+    didStopRecordingTraceEvents: function(mainThreadEvents)
     {
-        var mainThreadEvents = tracingModel.inspectedTargetEvents();
         var recordStack = [];
         for (var i = 0, size = mainThreadEvents.length; i < size; ++i) {
             var event = mainThreadEvents[i];
