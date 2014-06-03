@@ -1164,7 +1164,9 @@
                 "name": "emulateNetworkConditions",
                 "description": "Activates emulation of network conditions.",
                 "parameters": [
-                    { "name": "offline", "type": "boolean", "optional": true, "description": "True to emulate internet disconnection." }
+                    { "name": "domains", "type": "array", "items": { "type": "string" }, "description": "List of affected domains." },
+                    { "name": "maximalThroughput", "type": "number", "description": "Maximal aggregated network throughput." },
+                    { "name": "offline", "type": "boolean", "description": "True to emulate internet disconnection." }
                 ],
                 "hidden": true,
                 "handlers": ["browser"]
