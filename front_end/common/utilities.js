@@ -1503,6 +1503,14 @@ StringMultimap.prototype = {
     },
 
     /**
+     * @param {string} key
+     */
+    removeAll: function(key)
+    {
+        StringMap.prototype.remove.call(this, key);
+    },
+
+    /**
      * @return {!Array.<!T>}
      */
     values: function()

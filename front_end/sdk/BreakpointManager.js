@@ -120,6 +120,7 @@ WebInspector.BreakpointManager.prototype = {
             if (debuggerId)
                 target.debuggerModel.removeBreakpoint(debuggerId);
         }
+        this._provisionalBreakpoints.clear();
     },
 
     /**
@@ -147,6 +148,7 @@ WebInspector.BreakpointManager.prototype = {
                 this._innerSetBreakpoint(uiSourceCode, breakpointItem.lineNumber, breakpointItem.columnNumber, breakpointItem.condition, breakpointItem.enabled);
             }
         }
+        this._provisionalBreakpoints.removeAll(sourceFileId);
         this._storage.unmute();
     },
 
