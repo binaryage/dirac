@@ -77,9 +77,9 @@ WebInspector.TracingModel.prototype = {
     /**
      * @return {!Array.<!WebInspector.TracingModel.Event>}
      */
-    inspectedTargetEvents: function()
+    devtoolsMetadataEvents: function()
     {
-        return this._inspectedTargetEvents;
+        return this._devtoolsMetadataEvents;
     },
 
     /**
@@ -155,17 +155,6 @@ WebInspector.TracingModel.prototype = {
     _tracingComplete: function()
     {
         this._active = false;
-
-        /**
-         * @param {!WebInspector.TracingModel.Event} a
-         * @param {!WebInspector.TracingModel.Event} b
-         */
-        function compareStartTime(a, b)
-        {
-            return a.startTime - b.startTime;
-        }
-
-        this._inspectedTargetEvents.sort(compareStartTime);
         if (!this._pendingStopCallback)
             return;
         this._pendingStopCallback();
@@ -178,8 +167,7 @@ WebInspector.TracingModel.prototype = {
         this._minimumRecordTime = null;
         this._maximumRecordTime = null;
         this._sessionId = null;
-        this._inspectedTargetProcessId = null;
-        this._inspectedTargetEvents = [];
+        this._devtoolsMetadataEvents = [];
     },
 
     /**
@@ -194,10 +182,8 @@ WebInspector.TracingModel.prototype = {
         }
         var thread = process.threadById(payload.tid);
         if (payload.ph === WebInspector.TracingModel.Phase.SnapshotObject) {
-            var event = new WebInspector.TracingModel.Event(payload, 0, thread);
+            var event = thread.addEvent(payload);
             process.addObject(event);
-            if (payload.pid === this._inspectedTargetProcessId)
-                this._inspectedTargetEvents.push(event);
             return;
         }
         if (payload.ph !== WebInspector.TracingModel.Phase.Metadata) {
@@ -208,11 +194,11 @@ WebInspector.TracingModel.prototype = {
                 this._minimumRecordTime = timestamp;
             if (!this._maximumRecordTime || timestamp > this._maximumRecordTime)
                 this._maximumRecordTime = timestamp;
-            if (payload.cat === WebInspector.TracingModel.DevToolsMetadataEventCategory)
-                this._processDevToolsMetadataEvent(payload);
             var event = thread.addEvent(payload);
-            if (event && payload.pid === this._inspectedTargetProcessId)
-                this._inspectedTargetEvents.push(event);
+            if (event && event.name === WebInspector.TracingModel.DevToolsMetadataEvent.TracingStartedInPage &&
+                event.category === WebInspector.TracingModel.DevToolsMetadataEventCategory &&
+                event.args["sessionId"] === this._sessionId)
+                this._devtoolsMetadataEvents.push(event);
             return;
         }
         switch (payload.name) {
@@ -229,16 +215,6 @@ WebInspector.TracingModel.prototype = {
             thread._setName(payload.args["name"]);
             break;
         }
-    },
-
-     /**
-      * @param {!WebInspector.TracingModel.EventPayload} payload
-      */
-    _processDevToolsMetadataEvent: function(payload)
-    {
-        if (payload.args["sessionId"] !== this._sessionId || payload.name !== WebInspector.TracingModel.DevToolsMetadataEvent.TracingStartedInPage)
-            return;
-        this._inspectedTargetProcessId = payload.pid;
     },
 
     /**
@@ -341,6 +317,16 @@ WebInspector.TracingModel.Event.prototype = {
 }
 
 /**
+ * @param {!WebInspector.TracingModel.Event} a
+ * @param {!WebInspector.TracingModel.Event} b
+ * @return {number}
+ */
+WebInspector.TracingModel.Event.compareStartTime = function (a, b)
+{
+    return a.startTime - b.startTime;
+}
+
+/**
  * @constructor
  */
 WebInspector.TracingModel.NamedObject = function()
@@ -412,7 +398,7 @@ WebInspector.TracingModel.Process.prototype = {
     {
         var thread = this._threads[id];
         if (!thread) {
-            thread = new WebInspector.TracingModel.Thread(id);
+            thread = new WebInspector.TracingModel.Thread(this, id);
             this._threads[id] = thread;
         }
         return thread;
@@ -462,11 +448,13 @@ WebInspector.TracingModel.Process.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.TracingModel.NamedObject}
+ * @param {!WebInspector.TracingModel.Process} process
  * @param {number} id
  */
-WebInspector.TracingModel.Thread = function(id)
+WebInspector.TracingModel.Thread = function(process, id)
 {
     WebInspector.TracingModel.NamedObject.call(this);
+    this._process = process;
     this._setName("Thread " + id);
     this._events = [];
     this._stack = [];
@@ -504,6 +492,14 @@ WebInspector.TracingModel.Thread.prototype = {
             console.assert(false, "Event is our of order: " + event.name);
         this._events.push(event);
         return event;
+    },
+
+    /**
+     * @return {!WebInspector.TracingModel.Process}
+     */
+    process: function()
+    {
+        return this._process;
     },
 
     /**

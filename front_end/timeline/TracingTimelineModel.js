@@ -10,6 +10,7 @@ WebInspector.TracingTimelineModel = function(tracingModel)
 {
     this._tracingModel = tracingModel;
     this._mainThreadEvents = [];
+    this._inspectedTargetEvents = [];
 }
 
 WebInspector.TracingTimelineModel.RecordType = {
@@ -87,20 +88,33 @@ WebInspector.TracingTimelineModel.RecordType = {
     LayerTreeHostImplSnapshot: "cc::LayerTreeHostImpl"
 };
 
-
 WebInspector.TracingTimelineModel.prototype = {
     willStartRecordingTraceEvents: function()
     {
         this._mainThreadEvents = [];
+        this._inspectedTargetEvents = [];
     },
 
     didStopRecordingTraceEvents: function()
     {
-        var events = this._tracingModel.inspectedTargetEvents();
+        var events = this._tracingModel.devtoolsMetadataEvents();
+        events.sort(WebInspector.TracingModel.Event.compareStartTime);
+
         this._resetProcessingState();
-        for (var i = 0, length = events.length; i < length; i++)
-            this._processEvent(events[i]);
+        for (var i = 0, length = events.length; i < length; i++) {
+            var event = events[i];
+            var process = event.thread.process();
+            var startTime = event.startTime;
+
+            var endTime = Infinity;
+            if (i + 1 < length)
+                endTime = events[i + 1].startTime;
+
+            process.sortedThreads().forEach(this._processThreadEvents.bind(this, startTime, endTime, event.thread));
+        }
         this._resetProcessingState();
+
+        this._inspectedTargetEvents.sort(WebInspector.TracingModel.Event.compareStartTime);
     },
 
     /**
@@ -124,7 +138,7 @@ WebInspector.TracingTimelineModel.prototype = {
      */
     inspectedTargetEvents: function()
     {
-        return this._tracingModel.inspectedTargetEvents();
+        return this._inspectedTargetEvents;
     },
 
     /**
@@ -148,6 +162,30 @@ WebInspector.TracingTimelineModel.prototype = {
         this._lastRecalculateStylesEvent = null;
         this._currentScriptEvent = null;
         this._eventStack = [];
+    },
+
+    /**
+     * @param {number} startTime
+     * @param {?number} endTime
+     * @param {!WebInspector.TracingModel.Thread} mainThread
+     * @param {!WebInspector.TracingModel.Thread} thread
+     */
+    _processThreadEvents: function(startTime, endTime, mainThread, thread)
+    {
+        var events = thread.events();
+        var length = events.length;
+        var i = events.lowerBound(startTime, function (time, event) { return time - event.startTime });
+
+        this._eventStack = [];
+        for (; i < length; i++) {
+            var event = events[i];
+            if (endTime && event.startTime >= endTime)
+                break;
+            this._processEvent(event);
+            if (thread === mainThread)
+                this._mainThreadEvents.push(event);
+            this._inspectedTargetEvents.push(event);
+        }
     },
 
     /**
@@ -257,10 +295,6 @@ WebInspector.TracingTimelineModel.prototype = {
             this._inspectedTargetLayerTreeId = event.args["layerTreeId"];
             break;
 
-        case recordTypes.TracingStartedInPage:
-            this._mainThread = event.thread;
-            break;
-
         case recordTypes.Paint:
         case recordTypes.ScrollLayer:
             event.backendNodeId = event.args["data"]["nodeId"];
@@ -293,8 +327,6 @@ WebInspector.TracingTimelineModel.prototype = {
             event.imageURL = paintImageEvent.imageURL;
             break;
         }
-        if (this._mainThread === event.thread)
-            this._mainThreadEvents.push(event);
     },
 
     /**

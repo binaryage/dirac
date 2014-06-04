@@ -251,7 +251,7 @@ WebInspector.TimelinePanel.prototype = {
         if (!this._lazyFrameModel) {
             this._lazyFrameModel = new WebInspector.TimelineFrameModel(this._model);
             if (this._lazyTracingModel)
-                this._lazyFrameModel.addTraceEvents(this._lazyTracingModel.inspectedTargetEvents(), this._lazyTracingModel.sessionId());
+                this._lazyFrameModel.addTraceEvents(this._tracingTimelineModel.inspectedTargetEvents(), this._lazyTracingModel.sessionId());
 
         }
         return this._lazyFrameModel;
@@ -663,10 +663,13 @@ WebInspector.TimelinePanel.prototype = {
                 categories.push("disabled-by-default-devtools.timeline.stack");
             this._model.willStartRecordingTraceEvents();
             this._tracingModel().start(categories.join(","), "");
+            this._tracingTimelineModel.willStartRecordingTraceEvents();
         } else {
             this._model.startRecording(this._captureStacksSetting.get(), this._captureMemorySetting.get());
-            if (WebInspector.experimentsSettings.timelineTracingMode.isEnabled())
+            if (WebInspector.experimentsSettings.timelineTracingMode.isEnabled()) {
                 this._tracingModel().start(WebInspector.TimelinePanel.defaultTracingCategoryFilter, "");
+                this._tracingTimelineModel.willStartRecordingTraceEvents();
+            }
         }
         for (var i = 0; i < this._overviewControls.length; ++i)
             this._overviewControls[i].timelineStarted();
@@ -688,15 +691,14 @@ WebInspector.TimelinePanel.prototype = {
 
     _onTracingComplete: function()
     {
+        this._tracingTimelineModel.didStopRecordingTraceEvents();
         if (this._lazyFrameModel) {
             this._lazyFrameModel.reset();
-            this._lazyFrameModel.addTraceEvents(this._lazyTracingModel.inspectedTargetEvents(), this._lazyTracingModel.sessionId());
+            this._lazyFrameModel.addTraceEvents(this._tracingTimelineModel.inspectedTargetEvents(), this._lazyTracingModel.sessionId());
             this._overviewPane.update();
         }
-        if (WebInspector.experimentsSettings.timelineOnTraceEvents.isEnabled()) {
-            this._tracingTimelineModel.didStopRecordingTraceEvents();
+        if (WebInspector.experimentsSettings.timelineOnTraceEvents.isEnabled())
             this._model.didStopRecordingTraceEvents(this._tracingTimelineModel.mainThreadEvents());
-        }
         this._refreshViews();
     },
 
