@@ -260,11 +260,21 @@ WebInspector.OverridesSupport.DeviceOrientation.clearDeviceOrientationOverride =
 /**
  * @param {string} value
  */
-WebInspector.OverridesSupport.inputValidator = function(value)
+WebInspector.OverridesSupport.integerInputValidator = function(value)
 {
-    if (value >= 0 && value <= 10000)
+    if (/^[\d]+$/.test(value) && value >= 0 && value <= 10000)
         return "";
     return WebInspector.UIString("Value must be non-negative integer");
+}
+
+/**
+ * @param {string} value
+ */
+WebInspector.OverridesSupport.doubleInputValidator = function(value)
+{
+    if (/^[\d]+(\.\d+)?|\.\d+$/.test(value) && value >= 0 && value <= 10000)
+        return "";
+    return WebInspector.UIString("Value must be non-negative float");
 }
 
 // Third element lists device metrics separated by 'x':
