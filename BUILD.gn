@@ -1,0 +1,386 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+gypi_values = exec_script(
+    "//build/gypi_to_gn.py",
+    [ rebase_path("devtools.gypi") ],
+    "scope",
+    [ "devtools.gypi" ])
+
+# Some of the files in the .gypi use GYP variable expansions, go through and
+# fix them.
+devtools_core_base_js_files = gypi_values.devtools_core_base_js_files - [
+  "<@(devtools_main_js_files)",
+  "<@(devtools_standalone_files)",
+] + gypi_values.devtools_main_js_files + gypi_values.devtools_standalone_files
+
+devtools_core_js_files =
+  devtools_core_base_js_files +
+  gypi_values.devtools_common_js_files +
+  gypi_values.devtools_sdk_js_files +
+  gypi_values.devtools_ui_js_files +
+  gypi_values.devtools_components_js_files
+
+devtools_extensions_js_files = gypi_values.devtools_extensions_js_files -
+  [ "<@(devtools_extension_api_files)" ] +
+  gypi_values.devtools_extension_api_files
+
+devtools_modules_js_files =
+  gypi_values.devtools_console_js_files +
+  gypi_values.devtools_search_js_files +
+  gypi_values.devtools_devices_js_files +
+  gypi_values.devtools_elements_js_files +
+  devtools_extensions_js_files +
+  gypi_values.devtools_resources_js_files +
+  gypi_values.devtools_network_js_files +
+  gypi_values.devtools_source_frame_js_files +
+  gypi_values.devtools_sources_js_files +
+  gypi_values.devtools_timeline_js_files +
+  gypi_values.devtools_profiler_js_files +
+  gypi_values.devtools_audits_js_files +
+  gypi_values.devtools_layers_js_files +
+  gypi_values.devtools_heap_snapshot_worker_js_files +
+  gypi_values.devtools_temp_storage_shared_worker_js_files +
+  gypi_values.devtools_script_formatter_worker_js_files +
+  gypi_values.devtools_uglify_files
+
+all_devtools_files =
+  devtools_core_js_files +
+  devtools_modules_js_files +
+  gypi_values.devtools_cm_css_files +
+  gypi_values.devtools_cm_js_files +
+  gypi_values.devtools_module_json_files
+
+#-------------------------------------------------------------------------------
+
+visibility = "//third_party/WebKit/*"
+
+# Probably need to parameterize this. If we set it to true, there will be some
+# further work in the scripts below.
+debug_devtools = false
+
+group("devtools_frontend_resources") {
+  deps = [
+    ":build_audits_module",
+    ":build_console_module",
+    ":build_core_module",
+    ":build_devices_module",
+    ":build_elements_module",
+    ":build_extensions_module",
+    ":build_heap_snapshot_worker_module",
+    ":build_layers_module",
+    ":build_network_module",
+    ":build_profiler_module",
+    ":build_resources_module",
+    ":build_script_formatter_worker_module",
+    ":build_search_module",
+    ":build_settings_module",
+    ":build_source_frame_module",
+    ":build_sources_module",
+    ":build_temp_storage_shared_worker_module",
+    ":build_timeline_module",
+    ":copy_inspector_images",
+    ":devtools_html",
+    ":frontend_protocol_sources",
+    ":supported_css_properties",
+  ]
+
+  if (debug_devtools) {
+    deps += [ ":concatenated_devtools_css" ]
+  }
+}
+
+copy("copy_inspector_images") {
+  sources = gypi_values.devtools_image_files
+  outputs = [ "$root_out_dir/resources/inspector/Images/{{source_file_part}}" ]
+}
+
+# TODO(GYP) need debug_devtools support (this runs somewhat differently).
+action("generate_devtools_grd") {
+  script = "scripts/generate_devtools_grd.py"
+
+  input_pages = [
+    "$root_out_dir/resources/inspector/devtools.html",
+    "$root_out_dir/resources/inspector/main/Main.js",
+    "$root_out_dir/resources/inspector/search/AdvancedSearchView.js",
+    "$root_out_dir/resources/inspector/console/ConsolePanel.js",
+    "$root_out_dir/resources/inspector/elements/ElementsPanel.js",
+    "$root_out_dir/resources/inspector/extensions/ExtensionServer.js",
+    "$root_out_dir/resources/inspector/resources/ResourcesPanel.js",
+    "$root_out_dir/resources/inspector/network/NetworkPanel.js",
+    "$root_out_dir/resources/inspector/source_frame/SourceFrame.js",
+    "$root_out_dir/resources/inspector/sources/SourcesPanel.js",
+    "$root_out_dir/resources/inspector/timeline/TimelinePanel.js",
+    "$root_out_dir/resources/inspector/profiler/ProfilesPanel.js",
+    "$root_out_dir/resources/inspector/audits/AuditsPanel.js",
+    "$root_out_dir/resources/inspector/layers/LayersPanel.js",
+    "$root_out_dir/resources/inspector/profiler/heap_snapshot_worker/HeapSnapshotWorker.js",
+    "$root_out_dir/resources/inspector/script_formatter_worker/ScriptFormatterWorker.js",
+    "$root_out_dir/resources/inspector/temp_storage_shared_worker/TempStorageSharedWorker.js",
+    "$root_out_dir/resources/inspector/devices/DevicesView.js",
+    "$root_out_dir/resources/inspector/inspector.css",
+    "$root_out_dir/resources/inspector/devtools_extension_api.js",
+  ] + gypi_values.devtools_standalone_files + gypi_values.devtools_cm_css_files
+
+  images = gypi_values.devtools_image_files
+  images_path = "front_end/Images"
+
+  source_prereqs = input_pages + images
+
+  outfile = "$root_gen_dir/devtools/devtools_resources.grd"
+  outputs = [ outfile ]
+
+  relative_path_dirs = [
+    "$root_out_dir/resources/inspector",
+    "frontend",
+  ]
+
+  args = rebase_path(input_pages, root_build_dir) + [
+    "--relative_path_dirs" ] +
+    rebase_path(relative_path_dirs, root_build_dir) + [
+    "--images", rebase_path(images_path, root_build_dir),
+    "--output", rebase_path(outfile, root_build_dir),
+  ]
+
+  deps = [
+    ":devtools_html",
+    ":devtools_extension_api",
+    ":devtools_frontend_resources",
+  ]
+}
+
+action("devtools_html") {
+  script = "scripts/generate_devtools_html.py"
+
+  source_prereqs = [ "front_end/inspector.html"]
+  outputs = [ "$root_out_dir/resources/inspector/devtools.html"]
+
+  args = rebase_path(source_prereqs, root_build_dir) +
+    rebase_path(outputs, root_build_dir)
+
+  if (debug_devtools) {
+    args += [ "1" ]
+  } else {
+    args += [ "0" ]
+  }
+}
+
+action("devtools_extension_api") {
+  script = "scripts/generate_devtools_extension_api.py"
+
+  source_prereqs = gypi_values.devtools_extension_api_files
+  outputs = [ "$root_out_dir/resources/inspector/devtools_extension_api.js" ]
+
+  args = rebase_path(outputs, root_build_dir) +
+    rebase_path(gypi_values.devtools_extension_api_files, root_build_dir)
+}
+
+action("supported_css_properties") {
+  script = "scripts/generate_supported_css.py"
+
+  source_prereqs = [
+    "../core/css/CSSPropertyNames.in",
+    "../core/css/SVGCSSPropertyNames.in",
+    "../core/css/CSSShorthands.in",
+  ]
+
+  outputs = [
+    "$root_gen_dir/blink/SupportedCSSProperties.js"
+  ]
+
+  args = rebase_path(source_prereqs, root_build_dir) +
+    rebase_path(outputs, root_build_dir)
+}
+
+action("frontend_protocol_sources") {
+  script = "scripts/CodeGeneratorFrontend.py"
+
+  source_prereqs = [ "protocol.json" ]
+  outputs = [ "$root_gen_dir/blink/InspectorBackendCommands.js" ]
+
+  args = rebase_path(source_prereqs, root_build_dir) + [
+    "--output_js_dir", rebase_path("$root_gen_dir/blink", root_build_dir),
+  ]
+}
+
+# Runs the inline_js_imports script.
+#  input: (String) The input .js file to read.
+#  imported_files: (List of strings) The list of files the input depends on.
+#  output: (String) The .js file to write.
+template("inline_js_imports") {
+  assert(defined(invoker.input), target_name)
+  assert(defined(invoker.imported_files), target_name)
+  assert(defined(invoker.output), target_name)
+
+  action(target_name) {
+    script = "scripts/inline_js_imports.py"
+
+    source_prereqs = [ invoker.input ] + invoker.imported_files
+    outputs = [ invoker.output ]
+
+    args = [
+      rebase_path(invoker.input, root_build_dir),
+      rebase_path(invoker.output, root_build_dir),
+    ]
+  }
+}
+
+inline_js_imports("build_audits_module") {
+  input = "front_end/audits/AuditsPanel.js"
+  imported_files = gypi_values.devtools_audits_js_files
+  output = "$root_out_dir/resources/inspector/audits/AuditsPanel.js"
+}
+
+action("build_core_module") {
+  script = "scripts/concatenate_js_files.py"
+  input_page = "front_end/inspector.html"
+  source_prereqs = [
+    input_page,
+    "$root_gen_dir/blink/InspectorBackendCommands.js",
+    "$root_gen_dir/blink/SupportedCSSProperties.js",
+    "$root_gen_dir/blink/common/modules.js",
+  ] + devtools_core_js_files
+
+  search_path = [
+    "$root_gen_dir/blink",
+    "front_end",
+  ]
+  outputs = [
+    "$root_out_dir/resources/inspector/main/Main.js",
+  ]
+
+  args = [
+    rebase_path(input_page, root_build_dir),
+  ]
+  args += rebase_path(search_path, root_build_dir)
+  args += rebase_path(outputs, root_build_dir)
+
+  deps = [
+    ":devtools_html",
+    ":supported_css_properties",
+    ":frontend_protocol_sources",
+    ":concatenated_module_descriptors",
+  ]
+}
+
+inline_js_imports("build_console_module") {
+  input = "front_end/console/ConsolePanel.js"
+  imported_files = gypi_values.devtools_console_js_files
+  output = "$root_out_dir/resources/inspector/console/ConsolePanel.js"
+}
+
+inline_js_imports("build_devices_module") {
+  input = "front_end/devices/DevicesView.js"
+  imported_files = gypi_values.devtools_devices_js_files
+  output = "$root_out_dir/resources/inspector/devices/DevicesView.js"
+}
+
+inline_js_imports("build_elements_module") {
+  input = "front_end/elements/ElementsPanel.js"
+  imported_files = gypi_values.devtools_elements_js_files
+  output = "$root_out_dir/resources/inspector/elements/ElementsPanel.js"
+}
+
+inline_js_imports("build_extensions_module") {
+  input = "front_end/extensions/ExtensionServer.js"
+  imported_files = devtools_extensions_js_files
+  output = "$root_out_dir/resources/inspector/extensions/ExtensionServer.js"
+}
+
+inline_js_imports("build_layers_module") {
+  input = "front_end/layers/LayersPanel.js"
+  imported_files = gypi_values.devtools_layers_js_files
+  output = "$root_out_dir/resources/inspector/layers/LayersPanel.js"
+}
+
+inline_js_imports("build_network_module") {
+  input = "front_end/network/NetworkPanel.js"
+  imported_files = gypi_values.devtools_network_js_files
+  output = "$root_out_dir/resources/inspector/network/NetworkPanel.js"
+}
+
+inline_js_imports("build_profiler_module") {
+  input = "front_end/profiler/ProfilesPanel.js"
+  imported_files = gypi_values.devtools_profiler_js_files
+  output = "$root_out_dir/resources/inspector/profiler/ProfilesPanel.js"
+}
+
+inline_js_imports("build_resources_module") {
+  input = "front_end/resources/ResourcesPanel.js"
+  imported_files = gypi_values.devtools_resources_js_files
+  output = "$root_out_dir/resources/inspector/resources/ResourcesPanel.js"
+}
+
+inline_js_imports("build_search_module") {
+  input = "front_end/search/AdvancedSearchView.js"
+  imported_files = gypi_values.devtools_search_js_files
+  output = "$root_out_dir/resources/inspector/search/AdvancedSearchView.js"
+}
+
+inline_js_imports("build_settings_module") {
+  input = "front_end/settings/SettingsScreen.js"
+  imported_files = gypi_values.devtools_settings_js_files
+  output = "$root_out_dir/resources/inspector/settings/SettingsScreen.js"
+}
+
+inline_js_imports("build_source_frame_module") {
+  input = "front_end/source_frame/SourceFrame.js"
+  imported_files = gypi_values.devtools_source_frame_js_files +
+    gypi_values.devtools_cm_js_files
+  output = "$root_out_dir/resources/inspector/source_frame/SourceFrame.js"
+}
+
+inline_js_imports("build_sources_module") {
+  input = "front_end/sources/SourcesPanel.js"
+  imported_files = gypi_values.devtools_sources_js_files
+  output = "$root_out_dir/resources/inspector/sources/SourcesPanel.js"
+}
+
+inline_js_imports("build_timeline_module") {
+  input = "front_end/timeline/TimelinePanel.js"
+  imported_files = gypi_values.devtools_timeline_js_files
+  output = "$root_out_dir/resources/inspector/timeline/TimelinePanel.js"
+}
+
+inline_js_imports("build_heap_snapshot_worker_module") {
+  input = "front_end/profiler/heap_snapshot_worker/HeapSnapshotWorker.js"
+  imported_files = gypi_values.devtools_heap_snapshot_worker_js_files
+  output = "$root_out_dir/resources/inspector/profiler/heap_snapshot_worker/HeapSnapshotWorker.js"
+}
+
+inline_js_imports("build_script_formatter_worker_module") {
+  input = "front_end/script_formatter_worker/ScriptFormatterWorker.js"
+  imported_files = gypi_values.devtools_uglify_files
+  output = "$root_out_dir/resources/inspector/script_formatter_worker/ScriptFormatterWorker.js"
+}
+
+inline_js_imports("build_temp_storage_shared_worker_module") {
+  input = "front_end/temp_storage_shared_worker/TempStorageSharedWorker.js"
+  imported_files = gypi_values.devtools_temp_storage_shared_worker_js_files
+  output = "$root_out_dir/resources/inspector/temp_storage_shared_worker/TempStorageSharedWorker.js"
+}
+
+action("concatenated_module_descriptors") {
+  script = "scripts/concatenate_module_descriptors.py"
+
+  input = "front_end/common/modules.js"
+  source_prereqs = [ input ] + gypi_values.devtools_module_json_files
+  outputs = [ "$root_gen_dir/blink/common/modules.js" ]
+
+  args = rebase_path([ input ] + outputs + gypi_values.devtools_module_json_files, root_build_dir)
+}
+
+action("concatenated_devtools_css") {
+  script = "scripts/concatenate_css_files.py"
+
+  input_page = "front_end/inspector.html"
+  source_prereqs = [ input_page ] + all_devtools_files
+  search_path = [ "front_end" ]
+
+  outputs = [ "$root_out_dir/resources/inspector/inspector.css" ]
+
+  args = [ rebase_path(input_page, root_build_dir) ] +
+    rebase_path(search_path, root_build_dir) +
+    rebase_path(outputs, root_build_dir)
+}
