@@ -91,11 +91,8 @@ WebInspector.NetworkItemView.prototype = {
         if (!tabId)
             tabId = WebInspector.settings.resourceViewTab.get();
 
-        if (!this.selectTab(tabId)) {
-            this._isInFallbackSelection = true;
+        if (!this.selectTab(tabId))
             this.selectTab("headers");
-            delete this._isInFallbackSelection;
-        }
     },
 
     _tabSelected: function(event)

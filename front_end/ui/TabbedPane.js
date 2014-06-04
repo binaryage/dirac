@@ -299,15 +299,16 @@ WebInspector.TabbedPane.prototype = {
     /**
      * @param {string} id
      * @param {boolean=} userGesture
+     * @return {boolean}
      */
     selectTab: function(id, userGesture)
     {
         var focused = this.hasFocus();
         var tab = this._tabsById[id];
         if (!tab)
-            return;
+            return false;
         if (this._currentTab && this._currentTab.id === id)
-            return;
+            return true;
 
         this._hideCurrentTab();
         this._showTab(tab);
@@ -322,6 +323,7 @@ WebInspector.TabbedPane.prototype = {
 
         var eventData = { tabId: id, view: tab.view, isUserGesture: userGesture };
         this.dispatchEventToListeners(WebInspector.TabbedPane.EventTypes.TabSelected, eventData);
+        return true;
     },
 
     /**
