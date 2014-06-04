@@ -502,7 +502,7 @@ WebInspector.TracingBasedTimelineFlameChartDataProvider.prototype = {
         if (event) {
             var name = WebInspector.TimelineUIUtils.styleForTimelineEvent(event.name).title;
             // TODO(yurys): support event dividers
-            var details = WebInspector.TimelineUIUtils.buildDetailsNodeForTraceEvent(event, this._linkifier, false, this._target);
+            var details = WebInspector.TracingTimelineUIUtils.buildDetailsNodeForTraceEvent(event, this._linkifier, false, this._target);
             return details ? WebInspector.UIString("%s (%s)", name, details.textContent) : name;
         }
         var title = this._entryIndexToTitle[entryIndex];

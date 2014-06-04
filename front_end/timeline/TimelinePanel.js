@@ -50,6 +50,7 @@ importScript("TimelineTracingView.js");
 importScript("TimelineLayersView.js");
 importScript("TracingModel.js");
 importScript("TracingTimelineModel.js");
+importScript("TracingTimelineUIUtils.js");
 importScript("TransformController.js");
 
 /**
@@ -983,7 +984,7 @@ WebInspector.TimelinePanel.prototype = {
             var event = /** @type {!WebInspector.TracingModel.Event} */ (this._selection.object());
             var title = WebInspector.TimelineUIUtils.styleForTimelineEvent(event.name).title;
             var tracingModel = this._tracingTimelineModel;
-            WebInspector.TimelineUIUtils.buildTraceEventDetails(event, tracingModel, this._detailsLinkifier, this.showInDetails.bind(this, title), false, this._model.target());
+            WebInspector.TracingTimelineUIUtils.buildTraceEventDetails(event, tracingModel, this._detailsLinkifier, this.showInDetails.bind(this, title), false, this._model.target());
             break;
         case WebInspector.TimelineSelection.Type.Frame:
             var frame = /** @type {!WebInspector.TimelineFrame} */ (this._selection.object());

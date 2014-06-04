@@ -328,6 +328,7 @@
             "timeline/TimelineLayersView.js",
             "timeline/TracingModel.js",
             "timeline/TracingTimelineModel.js",
+            "timeline/TracingTimelineUIUtils.js",
             "timeline/TransformController.js"
         ]
     },

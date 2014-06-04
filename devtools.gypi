@@ -397,6 +397,7 @@
             'front_end/timeline/TimelineLayersView.js',
             'front_end/timeline/TracingModel.js',
             'front_end/timeline/TracingTimelineModel.js',
+            'front_end/timeline/TracingTimelineUIUtils.js',
             'front_end/timeline/TransformController.js'
         ],
         'devtools_profiler_js_files': [
