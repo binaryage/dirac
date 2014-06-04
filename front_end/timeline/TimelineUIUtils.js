@@ -669,14 +669,13 @@ WebInspector.TimelineUIUtils._quadWidth = function(quad)
 
 /**
  * @param {!WebInspector.TracingModel.Event} event
- * @param {!WebInspector.TracingModel} model
+ * @param {!WebInspector.TracingTimelineModel} model
  * @param {!WebInspector.Linkifier} linkifier
  * @param {function(!DocumentFragment)} callback
  * @param {boolean} loadedFromFile
- * @param {?WebInspector.TimelineTraceEventBindings} bindings
  * @param {!WebInspector.Target} target
  */
-WebInspector.TimelineUIUtils.buildTraceEventDetails = function(event, model, linkifier, callback, loadedFromFile, bindings, target)
+WebInspector.TimelineUIUtils.buildTraceEventDetails = function(event, model, linkifier, callback, loadedFromFile, target)
 {
     var relatedNode = null;
     var barrier = new CallbackBarrier();
@@ -705,21 +704,20 @@ WebInspector.TimelineUIUtils.buildTraceEventDetails = function(event, model, lin
 
     function callbackWrapper()
     {
-        callback(WebInspector.TimelineUIUtils._buildTraceEventDetailsSynchronously(event, model, linkifier, relatedNode, loadedFromFile, bindings, target));
+        callback(WebInspector.TimelineUIUtils._buildTraceEventDetailsSynchronously(event, model, linkifier, relatedNode, loadedFromFile, target));
     }
 }
 
 /**
  * @param {!WebInspector.TracingModel.Event} event
- * @param {!WebInspector.TracingModel} model
+ * @param {!WebInspector.TracingTimelineModel} model
  * @param {!WebInspector.Linkifier} linkifier
  * @param {?WebInspector.DOMNode} relatedNode
  * @param {boolean} loadedFromFile
- * @param {?WebInspector.TimelineTraceEventBindings} bindings
  * @param {!WebInspector.Target} target
  * @return {!DocumentFragment}
  */
-WebInspector.TimelineUIUtils._buildTraceEventDetailsSynchronously = function(event, model, linkifier, relatedNode, loadedFromFile, bindings, target)
+WebInspector.TimelineUIUtils._buildTraceEventDetailsSynchronously = function(event, model, linkifier, relatedNode, loadedFromFile, target)
 {
     var fragment = document.createDocumentFragment();
     var stats = WebInspector.TimelineUIUtils._aggregatedStatsForTraceEvent(model, event);
@@ -728,7 +726,7 @@ WebInspector.TimelineUIUtils._buildTraceEventDetailsSynchronously = function(eve
         WebInspector.TimelineUIUtils.generatePieChart(stats.aggregatedStats);
     fragment.appendChild(pieChart);
 
-    var recordTypes = WebInspector.TimelineTraceEventBindings.RecordType;
+    var recordTypes = WebInspector.TracingTimelineModel.RecordType;
 
     // The messages may vary per event.name;
     var callSiteStackTraceLabel;
@@ -846,7 +844,7 @@ WebInspector.TimelineUIUtils._buildTraceEventDetailsSynchronously = function(eve
         contentHelper.appendTextRow(WebInspector.UIString("Callback Function"), eventData["callbackName"]);
         break;
     default:
-        var detailsNode = WebInspector.TimelineUIUtils.buildDetailsNodeForTraceEvent(event, linkifier, loadedFromFile, bindings, target);
+        var detailsNode = WebInspector.TimelineUIUtils.buildDetailsNodeForTraceEvent(event, linkifier, loadedFromFile, target);
         if (detailsNode)
             contentHelper.appendElementRow(WebInspector.UIString("Details"), detailsNode);
         break;
@@ -878,7 +876,7 @@ WebInspector.TimelineUIUtils._buildTraceEventDetailsSynchronously = function(eve
 }
 
 /**
- * @param {!WebInspector.TracingModel} model
+ * @param {!WebInspector.TracingTimelineModel} model
  * @param {!WebInspector.TracingModel.Event} event
  * @return {!{ aggregatedStats: !Object, hasChildren: boolean }}
  */
@@ -1059,13 +1057,12 @@ WebInspector.TimelineUIUtils.buildDetailsNode = function(record, linkifier, load
  * @param {!WebInspector.TracingModel.Event} event
  * @param {!WebInspector.Linkifier} linkifier
  * @param {boolean} loadedFromFile
- * @param {?WebInspector.TimelineTraceEventBindings} bindings
  * @param {!WebInspector.Target} target
  * @return {?Node}
  */
-WebInspector.TimelineUIUtils.buildDetailsNodeForTraceEvent = function(event, linkifier, loadedFromFile, bindings, target)
+WebInspector.TimelineUIUtils.buildDetailsNodeForTraceEvent = function(event, linkifier, loadedFromFile, target)
 {
-    var recordType = WebInspector.TimelineTraceEventBindings.RecordType;
+    var recordType = WebInspector.TracingTimelineModel.RecordType;
 
     var details;
     var detailsText;
@@ -1194,8 +1191,6 @@ WebInspector.TimelineUIUtils.buildDetailsNodeForTraceEvent = function(event, lin
      */
     function linkifyTopCallFrame()
     {
-        if (!bindings)
-            return null;
         var stackTrace = event.stackTrace;
         if (!stackTrace) {
             var initiator = event.initiator;

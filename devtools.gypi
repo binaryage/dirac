@@ -393,10 +393,10 @@
             'front_end/timeline/TimelinePowerGraph.js',
             'front_end/timeline/TimelinePowerOverview.js',
             'front_end/timeline/TimelinePanel.js',
-            'front_end/timeline/TimelineTraceEventBindings.js',
             'front_end/timeline/TimelineTracingView.js',
             'front_end/timeline/TimelineLayersView.js',
             'front_end/timeline/TracingModel.js',
+            'front_end/timeline/TracingTimelineModel.js',
             'front_end/timeline/TransformController.js'
         ],
         'devtools_profiler_js_files': [

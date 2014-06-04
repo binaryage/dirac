@@ -3,14 +3,16 @@
 // found in the LICENSE file.
 
 /**
+ * @param {!WebInspector.TracingModel} tracingModel
  * @constructor
  */
-WebInspector.TimelineTraceEventBindings = function()
+WebInspector.TracingTimelineModel = function(tracingModel)
 {
-    this._reset();
+    this._tracingModel = tracingModel;
+    this._mainThreadEvents = [];
 }
 
-WebInspector.TimelineTraceEventBindings.RecordType = {
+WebInspector.TracingTimelineModel.RecordType = {
     Program: "Program",
     EventDispatch: "EventDispatch",
 
@@ -87,19 +89,51 @@ WebInspector.TimelineTraceEventBindings.RecordType = {
 };
 
 
-WebInspector.TimelineTraceEventBindings.prototype = {
+WebInspector.TracingTimelineModel.prototype = {
+    willStartRecordingTraceEvents: function()
+    {
+        this._mainThreadEvents = [];
+    },
+
+    didStopRecordingTraceEvents: function()
+    {
+        var events = this._tracingModel.inspectedTargetEvents();
+        this._resetProcessingState();
+        for (var i = 0, length = events.length; i < length; i++)
+            this._processEvent(events[i]);
+        this._resetProcessingState();
+    },
+
+    /**
+     * @return {?number}
+     */
+    minimumRecordTime: function()
+    {
+        return this._tracingModel.minimumRecordTime();
+    },
+
+    /**
+     * @return {?number}
+     */
+    maximumRecordTime: function()
+    {
+        return this._tracingModel.maximumRecordTime();
+    },
+
+    /**
+     * @return {!Array.<!WebInspector.TracingModel.Event>}
+     */
+    inspectedTargetEvents: function()
+    {
+        return this._tracingModel.inspectedTargetEvents();
+    },
+
     /**
      * @return {!Array.<!WebInspector.TracingModel.Event>}
      */
     mainThreadEvents: function()
     {
         return this._mainThreadEvents;
-    },
-
-    _reset: function()
-    {
-        this._resetProcessingState();
-        this._mainThreadEvents = [];
     },
 
     _resetProcessingState: function()
@@ -118,22 +152,11 @@ WebInspector.TimelineTraceEventBindings.prototype = {
     },
 
     /**
-     * @param {!Array.<!WebInspector.TracingModel.Event>} events
-     */
-    setEvents: function(events)
-    {
-        this._resetProcessingState();
-        for (var i = 0, length = events.length; i < length; i++)
-            this._processEvent(events[i]);
-        this._resetProcessingState();
-    },
-
-    /**
      * @param {!WebInspector.TracingModel.Event} event
      */
     _processEvent: function(event)
     {
-        var recordTypes = WebInspector.TimelineTraceEventBindings.RecordType;
+        var recordTypes = WebInspector.TracingTimelineModel.RecordType;
 
         var eventStack = this._eventStack;
         while (eventStack.length && eventStack.peekLast().endTime < event.startTime)

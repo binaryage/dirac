@@ -850,11 +850,11 @@ WebInspector.TimelineModel.TraceEventRecord.prototype = {
     frameId: function()
     {
         switch (this._event.name) {
-        case WebInspector.TimelineTraceEventBindings.RecordType.ScheduleStyleRecalculation:
-        case WebInspector.TimelineTraceEventBindings.RecordType.RecalculateStyles:
-        case WebInspector.TimelineTraceEventBindings.RecordType.InvalidateLayout:
+        case WebInspector.TracingTimelineModel.RecordType.ScheduleStyleRecalculation:
+        case WebInspector.TracingTimelineModel.RecordType.RecalculateStyles:
+        case WebInspector.TracingTimelineModel.RecordType.InvalidateLayout:
             return this._event.args["frameId"];
-        case WebInspector.TimelineTraceEventBindings.RecordType.Layout:
+        case WebInspector.TracingTimelineModel.RecordType.Layout:
             return this._event.args["beginData"]["frameId"];
         default:
             var data = this._event.args.data;

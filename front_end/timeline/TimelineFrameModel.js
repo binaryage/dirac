@@ -157,7 +157,7 @@ WebInspector.TimelineFrameModel.prototype = {
      */
     _addTraceEvent: function(event)
     {
-        var eventNames = WebInspector.TimelineTraceEventBindings.RecordType;
+        var eventNames = WebInspector.TracingTimelineModel.RecordType;
 
         if (event.name === eventNames.SetLayerTreeId) {
             if (this._sessionId === event.args["sessionId"])
