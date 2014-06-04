@@ -408,14 +408,15 @@ InspectorBackendClass.Connection.prototype = {
     _wrapCallbackAndSendMessageObject: function(domain, method, params, callback)
     {
         var messageObject = {};
+
+        var messageId = this.nextMessageId();
+        messageObject.id = messageId;
+
         messageObject.method = method;
         if (params)
             messageObject.params = params;
 
         var wrappedCallback = this._wrap(callback, domain, method);
-
-        var messageId = this.nextMessageId();
-        messageObject.id = messageId;
 
         if (InspectorBackendClass.Options.dumpInspectorProtocolMessages)
             this._dumpProtocolMessage("frontend: " + JSON.stringify(messageObject));
