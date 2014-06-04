@@ -17,9 +17,9 @@ WebInspector.ResizerWidget = function()
 };
 
 WebInspector.ResizerWidget.Events = {
-    ResizeStart: "ResizeStart",  // Data: {{startPosition: number, currentPosition: number}}.
-    ResizeUpdate: "ResizeUpdate",  // Data: {{startPosition: number, currentPosition: number}}.
-    ResizeEnd: "ResizeEnd"  // No data.
+    ResizeStart: "ResizeStart",
+    ResizeUpdate: "ResizeUpdate",
+    ResizeEnd: "ResizeEnd"
 };
 
 WebInspector.ResizerWidget.prototype = {
@@ -138,7 +138,7 @@ WebInspector.ResizerWidget.prototype = {
         }
 
         var position = this._isVertical ? event.pageY : event.pageX;
-        this.dispatchEventToListeners(WebInspector.ResizerWidget.Events.ResizeUpdate, { startPosition: this._startPosition, currentPosition: position });
+        this.dispatchEventToListeners(WebInspector.ResizerWidget.Events.ResizeUpdate, { startPosition: this._startPosition, currentPosition: position, shiftKey: event.shiftKey });
         event.preventDefault();
         return false;  // Continue drag.
     },

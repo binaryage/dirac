@@ -166,6 +166,7 @@ WebInspector.ResponsiveDesignView.prototype = {
     _onResizeStart: function(event)
     {
         var available = this.availableDipSize();
+        this._slowPositionStart = null;
         this._resizeStartSize = event.target.isVertical() ? (this._dipHeight || available.height) : (this._dipWidth || available.width);
     },
 
@@ -174,8 +175,10 @@ WebInspector.ResponsiveDesignView.prototype = {
      */
     _onResizeUpdate: function(event)
     {
-        var cssOffset = event.data.currentPosition - event.data.startPosition;
-        var dipOffset = cssOffset * WebInspector.zoomManager.zoomFactor();
+        if (event.data.shiftKey !== !!this._slowPositionStart)
+            this._slowPositionStart = event.data.shiftKey ? event.data.currentPosition : null;
+        var cssOffset = this._slowPositionStart ? (event.data.currentPosition - this._slowPositionStart) / 10 + this._slowPositionStart - event.data.startPosition : event.data.currentPosition - event.data.startPosition;
+        var dipOffset = Math.round(cssOffset * WebInspector.zoomManager.zoomFactor());
         var newSize = Math.max(this._resizeStartSize + dipOffset, 1);
         var requested = new Size(this._dipWidth, this._dipHeight);
         if (event.target.isVertical())
