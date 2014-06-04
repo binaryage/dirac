@@ -203,11 +203,6 @@ WebInspector.ProjectStore.prototype = {
         this._project._removeFile(path);
     },
 
-    reset: function()
-    {
-        this._project._reset();
-    },
-
     /**
      * @return {!WebInspector.Project}
      */
@@ -304,9 +299,9 @@ WebInspector.Project.prototype = {
         this._workspace.dispatchEventToListeners(WebInspector.Workspace.Events.UISourceCodeRemoved, entry.uiSourceCode);
     },
 
-    _reset: function()
+    _remove: function()
     {
-        this._workspace.dispatchEventToListeners(WebInspector.Workspace.Events.ProjectWillReset, this);
+        this._workspace.dispatchEventToListeners(WebInspector.Workspace.Events.ProjectRemoved, this);
         this._uiSourceCodesMap = {};
         this._uiSourceCodesList = [];
     },
@@ -553,7 +548,7 @@ WebInspector.Workspace.Events = {
     UISourceCodeAdded: "UISourceCodeAdded",
     UISourceCodeRemoved: "UISourceCodeRemoved",
     UISourceCodeContentCommitted: "UISourceCodeContentCommitted",
-    ProjectWillReset: "ProjectWillReset"
+    ProjectRemoved: "ProjectRemoved"
 }
 
 WebInspector.Workspace.prototype = {
@@ -633,8 +628,8 @@ WebInspector.Workspace.prototype = {
         var project = this._projects[projectId];
         if (!project)
             return;
-        project._reset();
         delete this._projects[projectId];
+        project._remove();
     },
 
     /**

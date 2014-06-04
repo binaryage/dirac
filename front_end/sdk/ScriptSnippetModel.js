@@ -49,7 +49,7 @@ WebInspector.ScriptSnippetModel = function(workspace)
     this._projectId = WebInspector.projectTypes.Snippets + ":";
     this._projectDelegate = new WebInspector.SnippetsProjectDelegate(workspace, this, this._projectId);
     this._project = this._workspace.project(this._projectId);
-    this.reset();
+    this._loadSnippets();
     WebInspector.targetManager.observeTargets(this);
 }
 
@@ -369,16 +369,6 @@ WebInspector.ScriptSnippetModel.prototype = {
         var splitURL = sourceURL.substring(snippetPrefix.length).split("_");
         var snippetId = splitURL[0];
         return snippetId;
-    },
-
-    reset: function()
-    {
-        this._mappingForTarget.values().forEach(function(mapping){mapping._reset()});
-        /** @type {!Object.<string, !WebInspector.UISourceCode>} */
-        this._uiSourceCodeForSnippetId = {};
-        this._snippetIdForUISourceCode = new Map();
-        this._projectDelegate.reset();
-        this._loadSnippets();
     },
 
     __proto__: WebInspector.Object.prototype

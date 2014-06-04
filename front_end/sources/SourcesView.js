@@ -64,7 +64,7 @@ WebInspector.SourcesView = function(workspace, sourcesPanel)
 
     this._workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, this._uiSourceCodeAdded, this);
     this._workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeRemoved, this._uiSourceCodeRemoved, this);
-    this._workspace.addEventListener(WebInspector.Workspace.Events.ProjectWillReset, this._projectWillReset.bind(this), this);
+    this._workspace.addEventListener(WebInspector.Workspace.Events.ProjectRemoved, this._projectRemoved.bind(this), this);
 
     function handleBeforeUnload(event)
     {
@@ -260,7 +260,7 @@ WebInspector.SourcesView.prototype = {
         }
     },
 
-    _projectWillReset: function(event)
+    _projectRemoved: function(event)
     {
         var project = event.data;
         var uiSourceCodes = project.uiSourceCodes();

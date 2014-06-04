@@ -56,7 +56,7 @@ WebInspector.RevisionHistoryView = function()
     WebInspector.workspace.uiSourceCodes().forEach(populateRevisions.bind(this));
     WebInspector.workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeContentCommitted, this._revisionAdded, this);
     WebInspector.workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeRemoved, this._uiSourceCodeRemoved, this);
-    WebInspector.workspace.addEventListener(WebInspector.Workspace.Events.ProjectWillReset, this._projectWillReset, this);
+    WebInspector.workspace.addEventListener(WebInspector.Workspace.Events.ProjectRemoved, this._projectRemoved, this);
 }
 
 /**
@@ -167,7 +167,7 @@ WebInspector.RevisionHistoryView.prototype = {
         this._uiSourceCodeItems.remove(uiSourceCode);
     },
 
-    _projectWillReset: function(event)
+    _projectRemoved: function(event)
     {
         var project = event.data;
         project.uiSourceCodes().forEach(this._removeUISourceCode.bind(this));

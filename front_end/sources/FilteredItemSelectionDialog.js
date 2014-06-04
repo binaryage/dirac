@@ -639,11 +639,11 @@ WebInspector.SelectUISourceCodeDialog = function(defaultScores)
     this._defaultScores = defaultScores;
     this._scorer = new WebInspector.FilePathScoreFunction("");
     WebInspector.workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, this._uiSourceCodeAdded, this);
-    WebInspector.workspace.addEventListener(WebInspector.Workspace.Events.ProjectWillReset, this._projectWillReset, this);
+    WebInspector.workspace.addEventListener(WebInspector.Workspace.Events.ProjectRemoved, this._projectRemoved, this);
 }
 
 WebInspector.SelectUISourceCodeDialog.prototype = {
-    _projectWillReset: function(event)
+    _projectRemoved: function(event)
     {
         var project = /** @type {!WebInspector.Project} */ (event.data);
         this._populate(project);
@@ -801,7 +801,7 @@ WebInspector.SelectUISourceCodeDialog.prototype = {
     dispose: function()
     {
         WebInspector.workspace.removeEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, this._uiSourceCodeAdded, this);
-        WebInspector.workspace.removeEventListener(WebInspector.Workspace.Events.ProjectWillReset, this._projectWillReset, this);
+        WebInspector.workspace.removeEventListener(WebInspector.Workspace.Events.ProjectRemoved, this._projectRemoved, this);
     },
 
     __proto__: WebInspector.SelectionDialogContentProvider.prototype

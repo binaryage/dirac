@@ -48,7 +48,7 @@ WebInspector.BreakpointManager = function(breakpointStorage, workspace, targetMa
     /** @type {!StringMultimap.<!WebInspector.BreakpointManager.Breakpoint>} */
     this._provisionalBreakpoints = new StringMultimap();
 
-    this._workspace.addEventListener(WebInspector.Workspace.Events.ProjectWillReset, this._projectWillReset, this);
+    this._workspace.addEventListener(WebInspector.Workspace.Events.ProjectRemoved, this._projectRemoved, this);
     this._workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, this._uiSourceCodeAdded, this);
     this._workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeRemoved, this._uiSourceCodeRemoved, this);
     this._targetManager.observeTargets(this);
@@ -353,7 +353,7 @@ WebInspector.BreakpointManager.prototype = {
             breakpoints[i].remove();
     },
 
-    _projectWillReset: function(event)
+    _projectRemoved: function(event)
     {
         var project = /** @type {!WebInspector.Project} */ (event.data);
         var uiSourceCodes = project.uiSourceCodes();
