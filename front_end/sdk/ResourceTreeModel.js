@@ -61,7 +61,6 @@ WebInspector.ResourceTreeModel.EventTypes = {
     FrameDetached: "FrameDetached",
     FrameResized: "FrameResized",
     MainFrameNavigated: "MainFrameNavigated",
-    MainFrameCreatedOrNavigated: "MainFrameCreatedOrNavigated",
     ResourceAdded: "ResourceAdded",
     WillLoadCachedResources: "WillLoadCachedResources",
     CachedResourcesLoaded: "CachedResourcesLoaded",
@@ -142,8 +141,6 @@ WebInspector.ResourceTreeModel.prototype = {
         this.dispatchEventToListeners(WebInspector.ResourceTreeModel.EventTypes.FrameAdded, frame);
         if (!aboutToNavigate)
             this._addSecurityOrigin(frame.securityOrigin);
-        if (frame.isMainFrame())
-            this.dispatchEventToListeners(WebInspector.ResourceTreeModel.EventTypes.MainFrameCreatedOrNavigated, frame);
     },
 
     /**
@@ -248,10 +245,8 @@ WebInspector.ResourceTreeModel.prototype = {
             this._inspectedPageURL = frame.url;
 
         this.dispatchEventToListeners(WebInspector.ResourceTreeModel.EventTypes.FrameNavigated, frame);
-        if (frame.isMainFrame()) {
+        if (frame.isMainFrame())
             this.dispatchEventToListeners(WebInspector.ResourceTreeModel.EventTypes.MainFrameNavigated, frame);
-            this.dispatchEventToListeners(WebInspector.ResourceTreeModel.EventTypes.MainFrameCreatedOrNavigated, frame);
-        }
         if (addedOrigin)
             this._addSecurityOrigin(addedOrigin);
 
