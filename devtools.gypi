@@ -382,6 +382,7 @@
             'front_end/timeline/TimelineFrameModel.js',
             'front_end/timeline/TimelineJSProfile.js',
             'front_end/timeline/TimelineModel.js',
+            'front_end/timeline/TimelineModelImpl.js',
             'front_end/timeline/TimelinePresentationModel.js',
             'front_end/timeline/TimelineOverviewPane.js',
             'front_end/timeline/TimelineEventOverview.js',

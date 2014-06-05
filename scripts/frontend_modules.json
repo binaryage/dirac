@@ -318,6 +318,7 @@
             "timeline/TimelinePowerGraph.js",
             "timeline/TimelinePowerOverview.js",
             "timeline/TimelineModel.js",
+            "timeline/TimelineModelImpl.js",
             "timeline/TimelineOverviewPane.js",
             "timeline/TimelineFlameChart.js",
             "timeline/TimelinePanel.js",

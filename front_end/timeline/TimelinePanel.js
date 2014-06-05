@@ -34,6 +34,7 @@ importScript("CountersGraph.js");
 importScript("Layers3DView.js");
 importScript("MemoryCountersGraph.js");
 importScript("TimelineModel.js");
+importScript("TimelineModelImpl.js");
 importScript("TimelineJSProfile.js");
 importScript("TimelineOverviewPane.js");
 importScript("TimelinePresentationModel.js");
@@ -72,7 +73,7 @@ WebInspector.TimelinePanel = function()
     this._windowEndTime = Infinity;
 
     // Create model.
-    this._model = new WebInspector.TimelineModel(WebInspector.timelineManager);
+    this._model = new WebInspector.TimelineModelImpl(WebInspector.timelineManager);
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStarted, this._onRecordingStarted, this);
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStopped, this._onRecordingStopped, this);
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordsCleared, this._onRecordsCleared, this);
