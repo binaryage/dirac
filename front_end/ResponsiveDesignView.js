@@ -45,14 +45,12 @@ WebInspector.ResponsiveDesignView = function(inspectedPagePlaceholder)
     this._enabled = false;
 
     WebInspector.zoomManager.addEventListener(WebInspector.ZoomManager.Events.ZoomChanged, this._onZoomChanged, this);
-    WebInspector.dockController.addEventListener(WebInspector.DockController.Events.DockSideChanged, this._updateOverridesSupportOnDockSideChange, this);
     WebInspector.settings.responsiveDesignMode.addChangeListener(this._responsiveDesignModeChanged, this);
-
     WebInspector.overridesSupport.settings.emulateViewport.addChangeListener(this._maybeEnableResponsiveDesign, this);
     WebInspector.overridesSupport.settings.emulateTouchEvents.addChangeListener(this._maybeEnableResponsiveDesign, this);
     WebInspector.overridesSupport.settings.overrideDeviceResolution.addChangeListener(this._maybeEnableResponsiveDesign, this);
-
-    this._updateOverridesSupportOnDockSideChange();
+    this._responsiveDesignModeChanged();
+    this._overridesWarningUpdated();
 };
 
 // Measured in DIP.
@@ -72,7 +70,7 @@ WebInspector.ResponsiveDesignView.prototype = {
         }
     },
 
-    _responsiveDesignModeChanged: function()
+    _invalidateCache: function()
     {
         delete this._cachedScale;
         delete this._cachedCssCanvasWidth;
@@ -81,33 +79,30 @@ WebInspector.ResponsiveDesignView.prototype = {
         delete this._cachedCssWidth;
         delete this._cachedZoomFactor;
         delete this._availableSize;
+    },
 
-        var enabled = WebInspector.settings.responsiveDesignMode.get() && WebInspector.dockController.dockSide() !== WebInspector.DockController.State.Undocked;
+    _responsiveDesignModeChanged: function()
+    {
+        var enabled = WebInspector.settings.responsiveDesignMode.get();
         if (enabled && !this._enabled) {
+            this._invalidateCache();
             this._ignoreResize = true;
             this._enabled = true;
             this._inspectedPagePlaceholder.clearMinimumSizeAndMargins();
             this._inspectedPagePlaceholder.show(this._pageContainer);
             this._responsiveDesignContainer.show(this.element);
-            WebInspector.overridesSupport.setPageResizer(this);
+            this.update(this._dipWidth, this._dipHeight, this._scale);
             delete this._ignoreResize;
-        }
-
-        if (!enabled && this._enabled) {
+        } else if (!enabled && this._enabled) {
+            this._invalidateCache();
             this._ignoreResize = true;
             this._enabled = false;
             this._scale = 0;
             this._inspectedPagePlaceholder.restoreMinimumSizeAndMargins();
             this._responsiveDesignContainer.detach();
             this._inspectedPagePlaceholder.show(this.element);
-            WebInspector.overridesSupport.setPageResizer(null);
             delete this._ignoreResize;
         }
-    },
-
-    _updateOverridesSupportOnDockSideChange: function()
-    {
-        this._responsiveDesignModeChanged();
     },
 
     /**
@@ -118,9 +113,6 @@ WebInspector.ResponsiveDesignView.prototype = {
      */
     update: function(dipWidth, dipHeight, scale)
     {
-        if (!this._enabled)
-            return;
-
         this._scale = scale;
         this._dipWidth = dipWidth;
         this._dipHeight = dipHeight;
@@ -328,7 +320,7 @@ WebInspector.ResponsiveDesignView.prototype = {
 
     _updateUI: function()
     {
-        if (!this._enabled)
+        if (!this._enabled || !this.isShowing())
             return;
 
         var zoomFactor = WebInspector.zoomManager.zoomFactor();
@@ -377,8 +369,10 @@ WebInspector.ResponsiveDesignView.prototype = {
     {
         if (!this._enabled || this._ignoreResize)
             return;
+        var oldSize = this._availableSize;
         delete this._availableSize;
-        this.dispatchEventToListeners(WebInspector.OverridesSupport.PageResizer.Events.AvailableSizeChanged);
+        if (!this.availableDipSize().isEqual(oldSize))
+            this.dispatchEventToListeners(WebInspector.OverridesSupport.PageResizer.Events.AvailableSizeChanged);
         this._updateUI();
     },
 
@@ -465,7 +459,7 @@ WebInspector.ResponsiveDesignView.prototype = {
             return;
         this._warningMessage.classList.toggle("hidden", !message);
         this._warningMessage.textContent = message;
-        this._responsiveDesignModeChanged();
+        this._invalidateCache();
         this.onResize();
     },
 

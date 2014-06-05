@@ -111,16 +111,20 @@ WebInspector.DockController.prototype = {
         if (this._dockSide === dockSide)
             return;
 
-        this.dispatchEventToListeners(WebInspector.DockController.Events.BeforeDockSideChanged, dockSide);
-        InspectorFrontendHost.setIsDocked(dockSide !== WebInspector.DockController.State.Undocked, this._setIsDockedResponse.bind(this));
+        var eventData = { from: this._dockSide, to: dockSide };
+        this.dispatchEventToListeners(WebInspector.DockController.Events.BeforeDockSideChanged, eventData);
+        InspectorFrontendHost.setIsDocked(dockSide !== WebInspector.DockController.State.Undocked, this._setIsDockedResponse.bind(this, eventData));
         this._dockSide = dockSide;
         this._updateUI();
-        this.dispatchEventToListeners(WebInspector.DockController.Events.DockSideChanged, this._dockSide);
+        this.dispatchEventToListeners(WebInspector.DockController.Events.DockSideChanged, eventData);
     },
 
-    _setIsDockedResponse: function()
+    /**
+     * @param {{from: string, to: string}} eventData
+     */
+    _setIsDockedResponse: function(eventData)
     {
-        this.dispatchEventToListeners(WebInspector.DockController.Events.AfterDockSideChanged, this._dockSide);
+        this.dispatchEventToListeners(WebInspector.DockController.Events.AfterDockSideChanged, eventData);
     },
 
     _updateUI: function()

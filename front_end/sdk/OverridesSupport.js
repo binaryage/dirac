@@ -41,6 +41,7 @@ WebInspector.OverridesSupport = function(responsiveDesignAvailable)
     this._emulateViewportEnabled = false;
     this._userAgent = "";
     this._pageResizer = null;
+    this._initialized = false;
     WebInspector.targetManager.observeTargets(this);
     this._responsiveDesignAvailable = responsiveDesignAvailable;
 }
@@ -436,7 +437,8 @@ WebInspector.OverridesSupport.prototype = {
             this._pageResizer.addEventListener(WebInspector.OverridesSupport.PageResizer.Events.AvailableSizeChanged, this._onPageResizerAvailableSizeChanged, this);
             this._pageResizer.addEventListener(WebInspector.OverridesSupport.PageResizer.Events.ResizeRequested, this._onPageResizerResizeRequested, this);
         }
-        this._deviceMetricsChanged();
+        if (this._initialized)
+            this._deviceMetricsChanged();
     },
 
     /**
@@ -459,8 +461,11 @@ WebInspector.OverridesSupport.prototype = {
         this.settings.emulateViewport.set(true);
         delete this._deviceMetricsChangedListenerMuted;
         delete this._userAgentChangedListenerMuted;
-        this._deviceMetricsChanged();
-        this._userAgentChanged();
+
+        if (this._initialized) {
+            this._deviceMetricsChanged();
+            this._userAgentChanged();
+        }
     },
 
     resetEmulatedDevice: function()
@@ -473,8 +478,11 @@ WebInspector.OverridesSupport.prototype = {
         this.settings.emulateViewport.set(false);
         delete this._deviceMetricsChangedListenerMuted;
         delete this._userAgentChangedListenerMuted;
-        this._deviceMetricsChanged();
-        this._userAgentChanged();
+
+        if (this._initialized) {
+            this._deviceMetricsChanged();
+            this._userAgentChanged();
+        }
     },
 
     reset: function()
@@ -491,6 +499,33 @@ WebInspector.OverridesSupport.prototype = {
             this._applyInitialOverridesOnTargetAdded = true;
             return;
         }
+
+        this._initialized = true;
+
+        this.settings.overrideUserAgent.addChangeListener(this._userAgentChanged, this);
+        this.settings.userAgent.addChangeListener(this._userAgentChanged, this);
+
+        this.settings.overrideDeviceResolution.addChangeListener(this._deviceMetricsChanged, this);
+        this.settings.deviceWidth.addChangeListener(this._deviceMetricsChanged, this);
+        this.settings.deviceHeight.addChangeListener(this._deviceMetricsChanged, this);
+        this.settings.deviceScaleFactor.addChangeListener(this._deviceMetricsChanged, this);
+        this.settings.deviceTextAutosizing.addChangeListener(this._deviceMetricsChanged, this);
+        this.settings.emulateViewport.addChangeListener(this._deviceMetricsChanged, this);
+        this.settings.deviceFitWindow.addChangeListener(this._deviceMetricsChanged, this);
+        WebInspector.settings.responsiveDesignMode.addChangeListener(this._deviceMetricsChanged, this);
+
+        this.settings.overrideGeolocation.addChangeListener(this._geolocationPositionChanged, this);
+        this.settings.geolocationOverride.addChangeListener(this._geolocationPositionChanged, this);
+
+        this.settings.overrideDeviceOrientation.addChangeListener(this._deviceOrientationChanged, this);
+        this.settings.deviceOrientationOverride.addChangeListener(this._deviceOrientationChanged, this);
+
+        this.settings.emulateTouchEvents.addChangeListener(this._emulateTouchEventsChanged, this);
+
+        this.settings.overrideCSSMedia.addChangeListener(this._cssMediaChanged, this);
+        this.settings.emulatedCSSMedia.addChangeListener(this._cssMediaChanged, this);
+
+        WebInspector.settings.showMetricsRulers.addChangeListener(this._showRulersChanged, this);
 
         if (this.settings.overrideDeviceOrientation.get())
             this._deviceOrientationChanged();
@@ -527,7 +562,8 @@ WebInspector.OverridesSupport.prototype = {
 
     _onPageResizerAvailableSizeChanged: function()
     {
-        this._deviceMetricsChanged();
+        if (this._initialized)
+            this._deviceMetricsChanged();
     },
 
     _onPageResizerResizeRequested: function(event)
@@ -545,11 +581,12 @@ WebInspector.OverridesSupport.prototype = {
 
         if (this._deviceMetricsChangedListenerMuted)
             return;
-        var responsiveDesignAvailableAndDisabled = this._responsiveDesignAvailable && !WebInspector.settings.responsiveDesignMode.get();
+        var responsiveDesignAvailableAndDisabled = this._responsiveDesignAvailable && (!WebInspector.settings.responsiveDesignMode.get() || !this._pageResizer);
         var overrideDeviceResolution = this.settings.overrideDeviceResolution.get();
-        if (responsiveDesignAvailableAndDisabled || (!overrideDeviceResolution && !this.settings.emulateViewport.get())) {
+        var emulationEnabled = overrideDeviceResolution || this.settings.emulateViewport.get();
+        if (responsiveDesignAvailableAndDisabled || !emulationEnabled) {
             PageAgent.clearDeviceMetricsOverride(apiCallback.bind(this));
-            if (this._pageResizer)
+            if (this._pageResizer && !emulationEnabled)
                 this._pageResizer.update(0, 0, 0);
             this.maybeHasActiveOverridesChanged();
             return;
@@ -726,7 +763,8 @@ WebInspector.OverridesSupport.prototype = {
 
     _onMainFrameNavigated: function()
     {
-        this._deviceMetricsChanged();
+        if (this._initialized)
+            this._deviceMetricsChanged();
         this._updateUserAgentWarningMessage("");
         this._updateDeviceMetricsWarningMessage("");
     },
@@ -789,30 +827,6 @@ WebInspector.OverridesSupport.prototype = {
         this.settings.emulatedDevice = WebInspector.settings.createSetting("emulatedDevice", "Google Nexus 5");
 
         this.maybeHasActiveOverridesChanged();
-
-        this.settings.overrideUserAgent.addChangeListener(this._userAgentChanged, this);
-        this.settings.userAgent.addChangeListener(this._userAgentChanged, this);
-
-        this.settings.overrideDeviceResolution.addChangeListener(this._deviceMetricsChanged, this);
-        this.settings.deviceWidth.addChangeListener(this._deviceMetricsChanged, this);
-        this.settings.deviceHeight.addChangeListener(this._deviceMetricsChanged, this);
-        this.settings.deviceScaleFactor.addChangeListener(this._deviceMetricsChanged, this);
-        this.settings.deviceTextAutosizing.addChangeListener(this._deviceMetricsChanged, this);
-        this.settings.emulateViewport.addChangeListener(this._deviceMetricsChanged, this);
-        this.settings.deviceFitWindow.addChangeListener(this._deviceMetricsChanged, this);
-
-        this.settings.overrideGeolocation.addChangeListener(this._geolocationPositionChanged, this);
-        this.settings.geolocationOverride.addChangeListener(this._geolocationPositionChanged, this);
-
-        this.settings.overrideDeviceOrientation.addChangeListener(this._deviceOrientationChanged, this);
-        this.settings.deviceOrientationOverride.addChangeListener(this._deviceOrientationChanged, this);
-
-        this.settings.emulateTouchEvents.addChangeListener(this._emulateTouchEventsChanged, this);
-
-        this.settings.overrideCSSMedia.addChangeListener(this._cssMediaChanged, this);
-        this.settings.emulatedCSSMedia.addChangeListener(this._cssMediaChanged, this);
-
-        WebInspector.settings.showMetricsRulers.addChangeListener(this._showRulersChanged, this);
 
         if (this._applyInitialOverridesOnTargetAdded) {
             delete this._applyInitialOverridesOnTargetAdded;

@@ -179,6 +179,16 @@ WebInspector.Main.prototype = {
 
     _loaded: function()
     {
+        if (WebInspector.queryParam("toolbox")) {
+            new WebInspector.Toolbox();
+            return;
+        }
+
+        WebInspector.settings = new WebInspector.Settings();
+        WebInspector.experimentsSettings = new WebInspector.ExperimentsSettings(WebInspector.queryParam("experiments") !== null);
+        // This setting is needed for backwards compatibility with Devtools CodeSchool extension. DO NOT REMOVE
+        WebInspector.settings.pauseOnExceptionStateString = new WebInspector.PauseOnExceptionStateSetting();
+
         if (!InspectorFrontendHost.sendMessageToEmbedder) {
             var helpScreen = new WebInspector.HelpScreen(WebInspector.UIString("Incompatible Chrome version"));
             var p = helpScreen.contentElement.createChild("p", "help-section");

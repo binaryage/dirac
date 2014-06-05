@@ -677,8 +677,15 @@ WebInspector.VersionController.prototype = {
     }
 }
 
-WebInspector.settings = new WebInspector.Settings();
-WebInspector.experimentsSettings = new WebInspector.ExperimentsSettings(WebInspector.queryParam("experiments") !== null);
+/**
+ * @type {!WebInspector.Settings}
+ */
+WebInspector.settings;
+
+/**
+ * @type {!WebInspector.ExperimentsSettings}
+ */
+WebInspector.experimentsSettings;
 
 // These methods are added for backwards compatibility with Devtools CodeSchool extension.
 // DO NOT REMOVE
@@ -754,5 +761,3 @@ WebInspector.PauseOnExceptionStateSetting.prototype = {
         this._eventSupport.dispatchEventToListeners(this._name, this._value);
     }
 }
-
-WebInspector.settings.pauseOnExceptionStateString = new WebInspector.PauseOnExceptionStateSetting();

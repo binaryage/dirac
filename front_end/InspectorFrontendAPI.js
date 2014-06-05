@@ -264,7 +264,3 @@ var InspectorFrontendAPI = {
 
 /** @typedef {!Object.<{type: string, keyCode: (number|undefined), keyIdentifier: (string|undefined), modifiers: (number|undefined)}>} */
 InspectorFrontendAPI.ForwardedKeyboardEvent;
-
-if (top !== window) {
-    top.InspectorFrontendAPI = window.InspectorFrontendAPI;
-}

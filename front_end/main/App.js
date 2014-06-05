@@ -19,7 +19,7 @@ WebInspector.App.prototype = {
         WebInspector.inspectorView.showInitialPanel();
 
         WebInspector.overridesSupport.applyInitialOverrides();
-        if (WebInspector.overridesSupport.hasActiveOverrides())
+        if (WebInspector.overridesSupport.hasActiveOverrides() && !WebInspector.experimentsSettings.responsiveDesign.isEnabled())
             WebInspector.inspectorView.showViewInDrawer("emulation", true);
     }
 };
