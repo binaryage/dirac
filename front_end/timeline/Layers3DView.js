@@ -595,7 +595,7 @@ WebInspector.Layers3DView.prototype = {
      * @param {?Event} event
      * @return {?WebInspector.Layers3DView.ActiveObject}
      */
-    _layerFromEventPoint: function(event)
+    _activeObjectFromEventPoint: function(event)
     {
         if (!this._layerTree)
             return null;
@@ -638,8 +638,8 @@ WebInspector.Layers3DView.prototype = {
      */
     _onContextMenu: function(event)
     {
-        var layer = this._layerFromEventPoint(event).layer;
-        var node = layer ? layer.nodeForSelfOrAncestor() : null;
+        var activeObject = this._activeObjectFromEventPoint(event);
+        var node = activeObject && activeObject.layer && activeObject.layer.nodeForSelfOrAncestor();
         var contextMenu = new WebInspector.ContextMenu(event);
         contextMenu.appendItem("Reset view", this._transformController._resetAndNotify.bind(this._transformController), false);
         if (node)
@@ -654,7 +654,7 @@ WebInspector.Layers3DView.prototype = {
     {
         if (event.which)
             return;
-        this.dispatchEventToListeners(WebInspector.Layers3DView.Events.ObjectHovered, this._layerFromEventPoint(event));
+        this.dispatchEventToListeners(WebInspector.Layers3DView.Events.ObjectHovered, this._activeObjectFromEventPoint(event));
     },
 
     /**
@@ -673,7 +673,7 @@ WebInspector.Layers3DView.prototype = {
     {
         const maxDistanceInPixels = 6;
         if (this._mouseDownX && Math.abs(event.clientX - this._mouseDownX) < maxDistanceInPixels && Math.abs(event.clientY - this._mouseDownY) < maxDistanceInPixels)
-            this.dispatchEventToListeners(WebInspector.Layers3DView.Events.ObjectSelected, this._layerFromEventPoint(event));
+            this.dispatchEventToListeners(WebInspector.Layers3DView.Events.ObjectSelected, this._activeObjectFromEventPoint(event));
         delete this._mouseDownX;
         delete this._mouseDownY;
     },
@@ -683,7 +683,7 @@ WebInspector.Layers3DView.prototype = {
      */
     _onDoubleClick: function(event)
     {
-        var object = this._layerFromEventPoint(event);
+        var object = this._activeObjectFromEventPoint(event);
         if (object && object.layer)
             this.dispatchEventToListeners(WebInspector.Layers3DView.Events.LayerSnapshotRequested, object.layer);
         event.stopPropagation();
