@@ -10,99 +10,131 @@ function badFuncAnnotatedButNoReturn() // ERROR - no @return annotation.
 function badFuncAnnotatedButNoReturnValue() // ERROR - no returned value.
          ^
 
-/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/function.js:29: ERROR - invalid @returns annotation found - should be @return instead
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/function.js:29: ERROR - invalid return type annotation found - should be "@return {<type>}"
  * @returns {number}
    ^
 
-/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/function.js:37: ERROR - invalid @returns annotation found - please remove, as function does not return value
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/function.js:37: ERROR - invalid return type annotation found - should be "@return {<type>}"
+ * @return number
+   ^
+
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/function.js:45: ERROR - Invalid @param annotation found - should be "@param {<type>} paramName"
+ * @param number foo
+          ^
+
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/function.js:46: ERROR - Invalid @param annotation found - should be "@param {<type>} paramName"
+ * @param bar
+          ^
+
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/function.js:48: ERROR - @return annotation is required for API functions that return value
+function badParamAnnotationsFunc(foo, bar) // ERROR - @param's should be well-formed
+         ^
+
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/function.js:55: ERROR - invalid return type annotation found - please remove, as function does not return value
  * @returns {number}
    ^
 
-/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/function.js:45: ERROR - invalid @returns annotation found - please remove, as function does not return value
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/function.js:63: ERROR - invalid return type annotation found - please remove, as function does not return value
  * @returns {number}
    ^
 
-/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/function.js:62: ERROR - @return annotation is required for API functions that return value
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/function.js:80: ERROR - @return annotation is required for API functions that return value
     badApiMethodNoAnnotation: function() // ERROR - public method.
     ^
 
-/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/function.js:91: ERROR - @return annotation found, yet function does not return value
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/function.js:109: ERROR - @return annotation found, yet function does not return value
     badMethodDoesNotReturnValue: function() // ERROR - does not return value.
     ^
 
-/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/function.js:99: ERROR - @return annotation found, yet function does not return value
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/function.js:117: ERROR - @return annotation found, yet function does not return value
     badMethodDoesNotReturn: function() // ERROR - does not return.
     ^
 
-/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/function.js:105: ERROR - invalid @returns annotation found - should be @return instead
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/function.js:123: ERROR - invalid return type annotation found - should be "@return {<type>}"
      * @returns {number}
        ^
 
-/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/function.js:113: ERROR - invalid @returns annotation found - please remove, as function does not return value
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/function.js:131: ERROR - invalid return type annotation found - please remove, as function does not return value
      * @returns {number}
        ^
 
-/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/function.js:121: ERROR - invalid @returns annotation found - please remove, as function does not return value
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/function.js:139: ERROR - invalid return type annotation found - please remove, as function does not return value
      * @returns {number}
        ^
 
-/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/function.js:141: ERROR - @return annotation is required for API functions that return value
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/function.js:159: ERROR - @return annotation is required for API functions that return value
     badApiMethodNoAnnotation: function() // ERROR - public method.
     ^
 
-/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/function.js:162: ERROR - @return annotation found, yet function does not return value
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/function.js:180: ERROR - @return annotation found, yet function does not return value
     badMethodDoesNotReturnValue: function() // ERROR - does not return value.
     ^
 
-/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/function.js:170: ERROR - @return annotation found, yet function does not return value
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/function.js:188: ERROR - @return annotation found, yet function does not return value
     badMethodDoesNotReturn: function() // ERROR - does not return.
     ^
 
-/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/function.js:176: ERROR - invalid @returns annotation found - should be @return instead
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/function.js:194: ERROR - invalid return type annotation found - should be "@return {<type>}"
      * @returns {number}
        ^
 
-/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/function.js:184: ERROR - invalid @returns annotation found - please remove, as function does not return value
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/function.js:202: ERROR - invalid return type annotation found - please remove, as function does not return value
      * @returns {number}
        ^
 
-/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/function.js:192: ERROR - invalid @returns annotation found - please remove, as function does not return value
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/function.js:210: ERROR - invalid return type annotation found - please remove, as function does not return value
      * @returns {number}
        ^
 
-/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/function.js:212: ERROR - invalid @returns annotation found - should be @return instead
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/function.js:230: ERROR - invalid return type annotation found - should be "@return {<type>}"
      * @returns {number}
        ^
 
-/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/function.js:233: ERROR - @return annotation is required for API functions that return value
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/function.js:251: ERROR - @return annotation is required for API functions that return value
     badApiMethodNoAnnotation: function() // ERROR - public method.
     ^
 
-/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/function.js:254: ERROR - @return annotation found, yet function does not return value
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/function.js:272: ERROR - @return annotation found, yet function does not return value
     badMethodDoesNotReturnValue: function() // ERROR - does not return value.
     ^
 
-/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/function.js:262: ERROR - @return annotation found, yet function does not return value
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/function.js:280: ERROR - @return annotation found, yet function does not return value
     badMethodDoesNotReturn: function() // ERROR - does not return.
     ^
 
-/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/function.js:268: ERROR - invalid @returns annotation found - should be @return instead
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/function.js:286: ERROR - invalid return type annotation found - should be "@return {<type>}"
      * @returns {number}
        ^
 
-/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/function.js:276: ERROR - invalid @returns annotation found - please remove, as function does not return value
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/function.js:294: ERROR - invalid return type annotation found - should be "@return {<type>}"
+     * @returns number
+       ^
+
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/function.js:302: ERROR - invalid return type annotation found - please remove, as function does not return value
      * @returns {number}
        ^
 
-/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/function.js:284: ERROR - invalid @returns annotation found - please remove, as function does not return value
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/function.js:310: ERROR - invalid return type annotation found - please remove, as function does not return value
      * @returns {number}
        ^
 
-/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/function.js:305: ERROR - No @param JSDoc tag found for parameters: [b]
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/function.js:318: ERROR - Invalid @param annotation found - should be "@param {<type>} paramName"
+     * @param number foo
+              ^
+
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/function.js:319: ERROR - Invalid @param annotation found - should be "@param {<type>} paramName"
+     * @param bar
+              ^
+
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/function.js:321: ERROR - @return annotation is required for API functions that return value
+    badMethodParamAnnotations: function(foo, bar) // ERROR - @param's should be well-formed
+    ^
+
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/function.js:340: ERROR - No @param JSDoc tag found for parameters: [b]
 /**
 ^
 
-/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/function.js:311: ERROR - No @param JSDoc tag found for parameters: [b,c]
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/function.js:346: ERROR - No @param JSDoc tag found for parameters: [b,c]
 /**
 ^
 
@@ -294,4 +326,4 @@ var BadSetSubclass = function()
         function callbackNotReferencingThisAnnotated()
                  ^
 
-Total errors: 74
+Total errors: 82

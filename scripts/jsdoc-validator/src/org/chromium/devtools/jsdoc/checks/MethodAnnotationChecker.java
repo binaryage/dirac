@@ -17,7 +17,10 @@ import java.util.regex.Pattern;
 public final class MethodAnnotationChecker extends ContextTrackingChecker {
 
     private static final Pattern PARAM_PATTERN =
-            Pattern.compile("@param\\s+\\{.+\\}\\s+([^\\s]+)(?:[^}]*)$", Pattern.MULTILINE);
+            Pattern.compile("@param\\s+(\\{.+\\}\\s+)?([^\\s]+).*$", Pattern.MULTILINE);
+
+    private static final Pattern INVALID_RETURN_PATTERN =
+            Pattern.compile("@return(?:s.*|\\s+[^{]*)$", Pattern.MULTILINE);
 
     private final Set<FunctionRecord> valueReturningFunctions = new HashSet<>();
     private final Set<FunctionRecord> throwingFunctions = new HashSet<>();
@@ -68,8 +71,14 @@ public final class MethodAnnotationChecker extends ContextTrackingChecker {
         String jsDoc = getContext().getNodeText(jsDocNode);
         Matcher m = PARAM_PATTERN.matcher(jsDoc);
         while (m.find()) {
-            String jsDocParam = m.group(1);
-            paramNames.remove(jsDocParam);
+            String paramType = m.group(1);
+            if (paramType == null) {
+                getContext().reportErrorInNode(jsDocNode, m.start(2), String.format(
+                        "Invalid @param annotation found -"
+                        + " should be \"@param {<type>} paramName\""));
+            } else {
+                paramNames.remove(m.group(2));
+            }
         }
         return paramNames.toArray(new String[paramNames.size()]);
     }
@@ -130,13 +139,14 @@ public final class MethodAnnotationChecker extends ContextTrackingChecker {
         boolean isInterfaceFunction =
                 function.enclosingType != null && function.enclosingType.isInterface;
         int invalidAnnotationIndex =
-                invalidReturnsAnnotationIndex(getState().getNodeText(jsDocNode));
+                invalidReturnAnnotationIndex(getState().getNodeText(jsDocNode));
         if (invalidAnnotationIndex != -1) {
             String suggestedResolution = (isReturningFunction || isInterfaceFunction)
-                    ? "should be @return instead"
+                    ? "should be \"@return {<type>}\""
                     : "please remove, as function does not return value";
             getContext().reportErrorInNode(jsDocNode, invalidAnnotationIndex,
-                    String.format("invalid @returns annotation found - %s", suggestedResolution));
+                    String.format(
+                            "invalid return type annotation found - %s", suggestedResolution));
             return;
         }
         AstNode functionNameNode = getFunctionNameNode(function.functionNode);
@@ -172,8 +182,12 @@ public final class MethodAnnotationChecker extends ContextTrackingChecker {
         return nameNode == null ? null : getState().getNodeText(nameNode);
     }
 
-    private static int invalidReturnsAnnotationIndex(String jsDoc) {
-        return jsDoc == null ? -1 : jsDoc.indexOf("@returns");
+    private static int invalidReturnAnnotationIndex(String jsDoc) {
+        if (jsDoc == null) {
+            return -1;
+        }
+        Matcher m = INVALID_RETURN_PATTERN.matcher(jsDoc);
+        return m.find() ? m.start() : -1;
     }
 
     private static AstNode getFunctionNameNode(FunctionNode functionNode) {

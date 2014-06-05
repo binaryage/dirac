@@ -34,6 +34,24 @@ function badReturnsShouldBeReturnFunc() // ERROR - @returns, should be @return.
 }
 
 /**
+ * @return number
+ */
+function badReturnShouldBeTypedFunc() // ERROR - number, not {number}.
+{
+    return 1;
+}
+
+/**
+ * @param number foo
+ * @param bar
+ */
+function badParamAnnotationsFunc(foo, bar) // ERROR - @param's should be well-formed
+{
+    return 1;
+}
+
+
+/**
  * @returns {number}
  */
 function badReturnsShouldBeReturnNoValueFunc() // ERROR - @returns, should be @return.
@@ -273,6 +291,14 @@ TypeThree.prototype = {
     },
 
     /**
+     * @returns number
+     */
+    badMethodReturnShouldBeTyped: function() // ERROR - number, not {number}
+    {
+        return 1;
+    },
+
+    /**
      * @returns {number}
      */
     badMethodReturnsShouldBeAbsentToo: function() // ERROR - @returns, should be absent
@@ -286,6 +312,15 @@ TypeThree.prototype = {
     badMethodReturnsShouldBeAbsent: function() // ERROR - @returns, should be absent
     {
         var foo = 1;
+    },
+
+    /**
+     * @param number foo
+     * @param bar
+     */
+    badMethodParamAnnotations: function(foo, bar) // ERROR - @param's should be well-formed
+    {
+        return 1;
     }
 }
 
