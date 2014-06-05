@@ -166,7 +166,7 @@
 
 .resource-headers-view .outline-disclosure .header-value {
     display: inline;
-    margin-right: 100px;
+    margin-right: 1em;
     white-space: pre-wrap;
     word-break: break-all;
     margin-top: 1px;

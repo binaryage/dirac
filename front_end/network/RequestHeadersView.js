@@ -397,10 +397,13 @@ WebInspector.RequestHeadersView.prototype = {
 
             requestMethodElement.title = this._formatHeader(WebInspector.UIString("Request Method"), this._request.requestMethod);
 
-            var value = statusCodeFragment.createChild("div", "header-value source-code");
-            value.textContent = this._request.statusCode + " " + this._request.statusText;
-            if (this._request.cached)
-                value.createChild("span", "status-from-cache").textContent = " " + WebInspector.UIString("(from cache)");
+            var statusTextElement = statusCodeFragment.createChild("div", "header-value source-code");
+            var statusText = this._request.statusCode + " " + this._request.statusText;
+            if (this._request.cached) {
+                statusText += " " + WebInspector.UIString("(from cache)");
+                statusTextElement.classList.add("status-from-cache");
+            }
+            statusTextElement.textContent = statusText;
 
             statusCodeElement.title = statusCodeFragment;
         }
@@ -424,16 +427,16 @@ WebInspector.RequestHeadersView.prototype = {
      * @param {string} title
      * @param {!Array.<!WebInspector.NetworkRequest.NameValue>} headers
      * @param {!TreeElement} headersTreeElement
-     * @param {boolean=} showCaution
+     * @param {boolean=} provisionalHeaders
      */
-    _refreshHeaders: function(title, headers, headersTreeElement, showCaution)
+    _refreshHeaders: function(title, headers, headersTreeElement, provisionalHeaders)
     {
         headersTreeElement.removeChildren();
 
         var length = headers.length;
         this._refreshHeadersTitle(title, headersTreeElement, length);
 
-        if (showCaution) {
+        if (provisionalHeaders) {
             var cautionText = WebInspector.UIString("Provisional headers are shown");
             var cautionFragment = document.createDocumentFragment();
             cautionFragment.createChild("div", "warning-icon-small");
@@ -443,7 +446,7 @@ WebInspector.RequestHeadersView.prototype = {
             headersTreeElement.appendChild(cautionTreeElement);
         }
 
-        headersTreeElement.hidden = !length && !showCaution;
+        headersTreeElement.hidden = !length && !provisionalHeaders;
         for (var i = 0; i < length; ++i) {
             var headerTreeElement = new TreeElement(this._formatHeader(headers[i].name, headers[i].value));
             headerTreeElement.selectable = false;
