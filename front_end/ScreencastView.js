@@ -514,7 +514,7 @@ WebInspector.ScreencastView.prototype = {
 
     /**
      * @param {!Event} event
-     * @return number
+     * @return {number}
      */
     _modifiersForEvent: function(event)
     {

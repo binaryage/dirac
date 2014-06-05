@@ -2489,7 +2489,7 @@ WebInspector.NetworkDataGridNode.prototype = {
     },
 
     /**
-     * @param array {?Array}
+     * @param {?Array} array
      * @return {string}
      */
     _arrayLength: function(array)

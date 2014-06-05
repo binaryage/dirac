@@ -1124,7 +1124,7 @@ WebInspector.HeapSnapshot.prototype = {
     {
         /**
          * @param {!WebInspector.HeapSnapshotNode} node
-         * @return boolean
+         * @return {boolean}
          */
         function nodeIdFilter(node)
         {
@@ -1148,7 +1148,7 @@ WebInspector.HeapSnapshot.prototype = {
             set[traceIds[i]] = true;
         /**
          * @param {!WebInspector.HeapSnapshotNode} node
-         * @return boolean
+         * @return {boolean}
          */
         function traceIdFilter(node)
         {

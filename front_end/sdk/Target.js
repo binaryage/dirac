@@ -245,7 +245,7 @@ WebInspector.TargetManager.prototype = {
 
         /**
          * @this {WebInspector.TargetManager}
-         * @param newTarget
+         * @param {!WebInspector.Target} newTarget
          */
         function callbackWrapper(newTarget)
         {
