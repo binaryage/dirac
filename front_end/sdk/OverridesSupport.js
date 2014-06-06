@@ -601,11 +601,16 @@ WebInspector.OverridesSupport.prototype = {
 
     _onPageResizerResizeRequested: function(event)
     {
-        var size = /** @type {!Size} */ (event.data);
-        if (size.width !== this.settings.deviceWidth.get())
-            this.settings.deviceWidth.set(size.width);
-        if (size.height !== this.settings.deviceHeight.get())
-            this.settings.deviceHeight.set(size.height);
+        if (typeof event.data.width !== "undefined") {
+            var width = /** @type {number} */ (event.data.width);
+            if (width !== this.settings.deviceWidth.get())
+                this.settings.deviceWidth.set(width);
+        }
+        if (typeof event.data.height !== "undefined") {
+            var height = /** @type {number} */ (event.data.height);
+            if (height !== this.settings.deviceHeight.get())
+                this.settings.deviceHeight.set(height);
+        }
     },
 
     _deviceMetricsChanged: function()

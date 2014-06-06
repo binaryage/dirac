@@ -174,7 +174,7 @@ WebInspector.ResponsiveDesignView.prototype = {
         var cssOffset = this._slowPositionStart ? (event.data.currentPosition - this._slowPositionStart) / 10 + this._slowPositionStart - event.data.startPosition : event.data.currentPosition - event.data.startPosition;
         var dipOffset = Math.round(cssOffset * WebInspector.zoomManager.zoomFactor());
         var newSize = Math.max(this._resizeStartSize + dipOffset, 1);
-        var requested = new Size(this._dipWidth, this._dipHeight);
+        var requested = {};
         if (event.target.isVertical())
             requested.height = newSize;
         else
