@@ -5,9 +5,11 @@
 /**
  * @param {!WebInspector.TracingModel} tracingModel
  * @constructor
+ * @extends {WebInspector.TargetAwareObject}
  */
 WebInspector.TracingTimelineModel = function(tracingModel)
 {
+    WebInspector.TargetAwareObject.call(this, tracingModel.target());
     this._tracingModel = tracingModel;
     this._mainThreadEvents = [];
     this._inspectedTargetEvents = [];
@@ -88,7 +90,37 @@ WebInspector.TracingTimelineModel.RecordType = {
     LayerTreeHostImplSnapshot: "cc::LayerTreeHostImpl"
 };
 
+WebInspector.TracingTimelineModel.Events = {
+    TracingComplete: "TracingComplete"
+};
+
+WebInspector.TracingTimelineModel.defaultTracingCategoryFilter = "*,disabled-by-default-cc.debug,disabled-by-default-devtools.timeline";
+
 WebInspector.TracingTimelineModel.prototype = {
+    /**
+     * @param {boolean} captureStacks
+     * @param {boolean} captureMemory
+     */
+    startRecording: function(captureStacks, captureMemory)
+    {
+        var categories;
+        if (WebInspector.experimentsSettings.timelineTracingMode.isEnabled()) {
+            categories = WebInspector.TracingTimelineModel.defaultTracingCategoryFilter;
+        } else {
+            var categoriesArray = ["disabled-by-default-devtools.timeline", "devtools"];
+            if (captureStacks)
+                categoriesArray.push("disabled-by-default-devtools.timeline.stack");
+            categories = categoriesArray.join(",");
+        }
+        this._tracingModel.start(categories, "");
+        this.willStartRecordingTraceEvents();
+    },
+
+    stopRecording: function()
+    {
+        this._tracingModel.stop(this.didStopRecordingTraceEvents.bind(this));
+    },
+
     willStartRecordingTraceEvents: function()
     {
         this._mainThreadEvents = [];
@@ -115,6 +147,8 @@ WebInspector.TracingTimelineModel.prototype = {
         this._resetProcessingState();
 
         this._inspectedTargetEvents.sort(WebInspector.TracingModel.Event.compareStartTime);
+
+        this.dispatchEventToListeners(WebInspector.TracingTimelineModel.Events.TracingComplete);
     },
 
     /**
@@ -341,6 +375,7 @@ WebInspector.TracingTimelineModel.prototype = {
                 return event;
         }
         return null;
-    }
-}
+    },
 
+    __proto__: WebInspector.TargetAwareObject.prototype
+}
