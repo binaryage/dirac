@@ -279,14 +279,6 @@ WebInspector.TimelineModel.prototype = {
     },
 
     /**
-     * @return {boolean}
-     */
-    bufferEvents: function()
-    {
-        return false;
-    },
-
-    /**
      * @param {!Blob} file
      * @param {!WebInspector.Progress} progress
      */

@@ -250,10 +250,11 @@ WebInspector.TimelinePanel.prototype = {
     _frameModel: function()
     {
         if (!this._lazyFrameModel) {
-            this._lazyFrameModel = new WebInspector.TimelineFrameModel(this._model);
+            this._lazyFrameModel = new WebInspector.TimelineFrameModel(this._model.target());
+            this._lazyFrameModel.setMergeRecords(!WebInspector.experimentsSettings.timelineNoLiveUpdate.isEnabled() || !this._recordingInProgress);
+            this._lazyFrameModel.addRecords(this._model.records());
             if (this._lazyTracingModel)
                 this._lazyFrameModel.addTraceEvents(this._tracingTimelineModel.inspectedTargetEvents(), this._lazyTracingModel.sessionId());
-
         }
         return this._lazyFrameModel;
     },
@@ -672,6 +673,9 @@ WebInspector.TimelinePanel.prototype = {
                 this._tracingTimelineModel.willStartRecordingTraceEvents();
             }
         }
+        if (WebInspector.experimentsSettings.timelineNoLiveUpdate.isEnabled() && this._lazyFrameModel)
+            this._lazyFrameModel.setMergeRecords(false);
+
         for (var i = 0; i < this._overviewControls.length; ++i)
             this._overviewControls[i].timelineStarted();
 
@@ -818,6 +822,10 @@ WebInspector.TimelinePanel.prototype = {
     _onRecordingStopped: function()
     {
         this._updateToggleTimelineButton(false);
+        if (this._lazyFrameModel && WebInspector.experimentsSettings.timelineNoLiveUpdate.isEnabled()) {
+            this._lazyFrameModel.reset();
+            this._lazyFrameModel.addRecords(this._model.records());
+        }
         this._hideProgressPane();
     },
 

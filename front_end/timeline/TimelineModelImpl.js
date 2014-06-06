@@ -42,13 +42,12 @@ WebInspector.TimelineModelImpl.prototype = {
         this._clientInitiatedRecording = true;
         this.reset();
         var maxStackFrames = captureStacks ? 30 : 0;
-        this._bufferEvents = WebInspector.experimentsSettings.timelineNoLiveUpdate.isEnabled();
         var includeGPUEvents = WebInspector.experimentsSettings.gpuTimeline.isEnabled();
         var liveEvents = [ WebInspector.TimelineModel.RecordType.BeginFrame,
                            WebInspector.TimelineModel.RecordType.DrawFrame,
                            WebInspector.TimelineModel.RecordType.RequestMainThreadFrame,
                            WebInspector.TimelineModel.RecordType.ActivateLayerTree ];
-        this._timelineManager.start(maxStackFrames, this._bufferEvents, liveEvents.join(","), captureMemory, includeGPUEvents, this._fireRecordingStarted.bind(this));
+        this._timelineManager.start(maxStackFrames, WebInspector.experimentsSettings.timelineNoLiveUpdate.isEnabled(), liveEvents.join(","), captureMemory, includeGPUEvents, this._fireRecordingStarted.bind(this));
     },
 
     stopRecording: function()
@@ -105,6 +104,9 @@ WebInspector.TimelineModelImpl.prototype = {
      */
     _onStopped: function(event)
     {
+        // If we were buffering events, discard those that got through, the real ones are coming!
+        if (WebInspector.experimentsSettings.timelineNoLiveUpdate.isEnabled())
+            this.reset();
         if (event.data) {
             // Stopped from console.
             this._fireRecordingStopped(null, null);
@@ -131,19 +133,10 @@ WebInspector.TimelineModelImpl.prototype = {
      */
     _fireRecordingStopped: function(error, cpuProfile)
     {
-        this._bufferEvents = false;
         this._collectionEnabled = false;
         if (cpuProfile)
             WebInspector.TimelineJSProfileProcessor.mergeJSProfileIntoTimeline(this, cpuProfile);
         this.dispatchEventToListeners(WebInspector.TimelineModel.Events.RecordingStopped);
-    },
-
-    /**
-     * @return {boolean}
-     */
-    bufferEvents: function()
-    {
-        return this._bufferEvents;
     },
 
     /**

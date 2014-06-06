@@ -30,17 +30,14 @@
 
 /**
  * @constructor
- * @extends {WebInspector.Object}
- * @param {!WebInspector.TimelineModel} model
+ * @extends {WebInspector.TargetAwareObject}
+ * @param {!WebInspector.Target} target
  */
-WebInspector.TimelineFrameModel = function(model)
+WebInspector.TimelineFrameModel = function(target)
 {
-    this._model = model;
+    WebInspector.TargetAwareObject.call(this, target);
 
     this.reset();
-    var records = model.records();
-    for (var i = 0; i < records.length; ++i)
-        this.addRecord(records[i]);
 }
 
 WebInspector.TimelineFrameModel.Events = {
@@ -55,14 +52,6 @@ WebInspector.TimelineFrameModel._mainFrameMarkers = [
 ];
 
 WebInspector.TimelineFrameModel.prototype = {
-    /**
-     * @return {!WebInspector.Target}
-     */
-    target: function()
-    {
-        return this._model.target();
-    },
-
     /**
      * @return {!Array.<!WebInspector.TimelineFrame>}
      */
@@ -102,8 +91,18 @@ WebInspector.TimelineFrameModel.prototype = {
         return frames.slice(firstFrame, lastFrame);
     },
 
+    /**
+     * @param {boolean} value
+     */
+    setMergeRecords: function(value)
+    {
+        this._mergeRecords = value;
+    },
+
     reset: function()
     {
+        this._mergeRecords = true;
+        this._minimumRecordTime = Infinity;
         this._frames = [];
         this._lastFrame = null;
         this._lastLayerTree = null;
@@ -112,6 +111,19 @@ WebInspector.TimelineFrameModel.prototype = {
         this._mainFrameRequested = false;
         this._aggregatedMainThreadWork = null;
         this._mergingBuffer = new WebInspector.TimelineMergingRecordBuffer();
+    },
+
+    /**
+     * @param {!Array.<!WebInspector.TimelineModel.Record>} records
+     */
+    addRecords: function(records)
+    {
+        if (!records.length)
+            return;
+        if (records[0].startTime() < this._minimumRecordTime)
+            this._minimumRecordTime = records[0].startTime();
+        for (var i = 0; i < records.length; ++i)
+            this.addRecord(records[i]);
     },
 
     /**
@@ -129,7 +141,7 @@ WebInspector.TimelineFrameModel.prototype = {
         }
         /** type {Array.<!WebInspector.TimelineModel.Record>} */
         var records = [];
-        if (this._model.bufferEvents())
+        if (!this._mergeRecords)
             records = [record];
         else
             records = this._mergingBuffer.process(record.thread(), /** type {Array.<!WebInspector.TimelineModel.Record>} */(programRecord ? record.children() || [] : [record]));
@@ -328,7 +340,7 @@ WebInspector.TimelineFrameModel.prototype = {
         if (this._lastFrame)
             this._flushFrame(this._lastFrame, startTime);
 
-        this._lastFrame = new WebInspector.TimelineFrame(startTime, startTime - this._model.minimumRecordTime());
+        this._lastFrame = new WebInspector.TimelineFrame(startTime, startTime - this._minimumRecordTime);
     },
 
     /**
@@ -338,7 +350,7 @@ WebInspector.TimelineFrameModel.prototype = {
     {
         if (this._lastFrame)
             this._flushFrame(this._lastFrame, startTime);
-        this._lastFrame = new WebInspector.TimelineFrame(startTime, startTime - this._model.minimumRecordTime());
+        this._lastFrame = new WebInspector.TimelineFrame(startTime, startTime - this._minimumRecordTime);
     },
 
     /**
@@ -372,7 +384,7 @@ WebInspector.TimelineFrameModel.prototype = {
         return null;
     },
 
-    __proto__: WebInspector.Object.prototype
+    __proto__: WebInspector.TargetAwareObject.prototype
 }
 
 /**
