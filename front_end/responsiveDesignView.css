@@ -29,16 +29,18 @@
     background-color: lightgray;
     box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
     background-repeat: no-repeat;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex: 0 1 100px;
 }
 
 .responsive-design-slider-width .responsive-design-slider-thumb {
-    padding: 44px 5px;
     border-radius: 0 3px 3px 0;
     border-left: none;
 }
 
 .responsive-design-slider-height .responsive-design-slider-thumb {
-    padding: 4px 44px;
     border-radius: 0 0 3px 3px;
     border-top: none;
 }

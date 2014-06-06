@@ -11,6 +11,7 @@
 WebInspector.ResponsiveDesignView = function(inspectedPagePlaceholder)
 {
     WebInspector.VBox.call(this);
+    this.setMinimumSize(150, 150);
     this.registerRequiredCSS("responsiveDesignView.css");
     this.element.classList.add("overflow-hidden");
 
