@@ -132,6 +132,11 @@
             "location": "toolbar-right"
         },
         {
+            "type": "@WebInspector.StatusBarButton.Provider",
+            "className": "WebInspector.ScreencastApp.StatusBarButtonProvider",
+            "location": "toolbar-right"
+        },
+        {
             "type": "ui-setting",
             "title": "Disable cache (while DevTools is open)",
             "settingName": "cacheDisabled",

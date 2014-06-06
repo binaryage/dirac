@@ -10,14 +10,14 @@ WebInspector.ScreencastApp = function()
 {
     WebInspector.App.call(this);
 
-    var currentScreencastState = WebInspector.settings.createSetting("currentScreencastState", "");
-    var lastScreencastState = WebInspector.settings.createSetting("lastScreencastState", "");
+    var lastScreencastState = WebInspector.settings.createSetting("lastScreencastState", "left");
+    this._currentScreencastState = WebInspector.settings.createSetting("currentScreencastState", "disabled");
     this._toggleScreencastButton = new WebInspector.StatusBarStatesSettingButton(
         "screencast-status-bar-item",
         ["disabled", "left", "top"],
         [WebInspector.UIString("Disable screencast."), WebInspector.UIString("Switch to portrait screencast."), WebInspector.UIString("Switch to landscape screencast.")],
-        currentScreencastState.get(),
-        currentScreencastState,
+        this._currentScreencastState.get(),
+        this._currentScreencastState,
         lastScreencastState,
         this._onStatusBarButtonStateChanged.bind(this));
 };
@@ -35,7 +35,7 @@ WebInspector.ScreencastApp.prototype = {
         this._screencastView = new WebInspector.ScreencastView(target);
         this._screencastView.show(this._rootSplitView.mainElement());
 
-        this._onStatusBarButtonStateChanged("disabled");
+        this._onStatusBarButtonStateChanged(this._currentScreencastState.get());
         rootView.attachToBody();
     },
 
@@ -50,6 +50,8 @@ WebInspector.ScreencastApp.prototype = {
      */
     _onStatusBarButtonStateChanged: function(state)
     {
+        if (!this._rootSplitView)
+            return;
         if (state === "disabled") {
             this._rootSplitView.toggleResizer(this._rootSplitView.resizerElement(), false);
             this._rootSplitView.toggleResizer(WebInspector.inspectorView.topResizerElement(), false);
