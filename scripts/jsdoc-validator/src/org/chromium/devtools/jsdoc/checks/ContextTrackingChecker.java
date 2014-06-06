@@ -27,8 +27,7 @@ abstract class ContextTrackingChecker {
         return state.getContext();
     }
 
-    protected boolean hasAnnotationTag(FunctionNode node, String tagName) {
-        Comment comment = AstUtil.getJsDocNode(node);
+    protected boolean hasAnnotationTag(Comment comment, String tagName) {
         return comment != null &&
                 Pattern.matches("(?s).*@" + tagName + "\\b.*", getContext().getNodeText(comment));
     }

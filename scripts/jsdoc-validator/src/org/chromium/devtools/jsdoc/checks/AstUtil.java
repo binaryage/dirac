@@ -24,21 +24,23 @@ public class AstUtil {
         }
 
         AstNode parentNode = functionNode.getParent();
-        if (parentNode == null) {
-            return null;
-        }
-
-        switch (parentNode.getType()) {
-        case Token.COLON:
-            return ((ObjectProperty) parentNode).getLeft();
-        case Token.ASSIGN:
-            Assignment assignment = (Assignment) parentNode;
-            if (assignment.getRight() == functionNode) {
-                return assignment.getLeft();
+        while (parentNode != null) {
+            switch (parentNode.getType()) {
+            case Token.COLON:
+                return ((ObjectProperty) parentNode).getLeft();
+            case Token.ASSIGN:
+                Assignment assignment = (Assignment) parentNode;
+                if (assignment.getRight() == functionNode &&
+                        assignment.getLeft().getType() == Token.NAME) {
+                    return assignment.getLeft();
+                }
+                parentNode = assignment.getParent();
+                break;
+            case Token.VAR:
+                return ((VariableInitializer) parentNode).getTarget();
+            default:
+                return null;
             }
-            break;
-        case Token.VAR:
-            return ((VariableInitializer) parentNode).getTarget();
         }
 
         return null;
@@ -76,21 +78,23 @@ public class AstUtil {
 
         // reader.onloadend = function() {...}
         AstNode parentNode = functionNode.getParent();
-        if (parentNode == null) {
-            return null;
-        }
-
-        switch (parentNode.getType()) {
-        case Token.COLON:
-            return ((ObjectProperty) parentNode).getLeft().getJsDocNode();
-        case Token.ASSIGN:
-            Assignment assignment = (Assignment) parentNode;
-            if (assignment.getRight() == functionNode) {
-                return assignment.getJsDocNode();
+        while (parentNode != null) {
+            switch (parentNode.getType()) {
+            case Token.COLON:
+                return ((ObjectProperty) parentNode).getLeft().getJsDocNode();
+            case Token.ASSIGN:
+                Assignment assignment = (Assignment) parentNode;
+                if (assignment.getJsDocNode() != null) {
+                    return assignment.getJsDocNode();
+                } else {
+                    parentNode = assignment.getParent();
+                }
+                break;
+            case Token.VAR:
+                return parentNode.getParent().getJsDocNode();
+            default:
+                return null;
             }
-            break;
-        case Token.VAR:
-            return parentNode.getParent().getJsDocNode();
         }
 
         return null;

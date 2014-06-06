@@ -88,14 +88,16 @@ public class ContextTrackingValidationCheck extends ValidationCheck {
         AstNode nameNode = AstUtil.getFunctionNameNode(node);
 
         // It can be a type declaration: /** @constructor */ function MyType() {...}.
-        String functionName = getNodeText(nameNode);
-        boolean isConstructor =
-                functionName != null && rememberTypeRecordIfNeeded(functionName, jsDocNode);
+        // Or even /** @constructor */ window.Foo.Bar = function() {...}.
+        String functionName = nameNode == null ? null : getNodeText(nameNode);
+        boolean isConstructor = rememberTypeRecordIfNeeded(functionName, jsDocNode);
+
         TypeRecord parentType = state.getCurrentFunctionRecord() == null
                 ? state.getCurrentTypeRecord()
                 : null;
         state.pushFunctionRecord(new FunctionRecord(
                 node,
+                AstUtil.getJsDocNode(node),
                 functionName,
                 isConstructor,
                 getReturnType(jsDocNode),
@@ -162,6 +164,9 @@ public class ContextTrackingValidationCheck extends ValidationCheck {
 
     private boolean rememberTypeRecordIfNeeded(String typeName, Comment jsDocNode) {
         String jsDoc = getNodeText(jsDocNode);
+        if (typeName == null) {
+            return isConstructor(jsDoc) || isInterface(jsDoc);
+        }
         if (!isConstructor(jsDoc) && !isInterface(jsDoc)) {
             return false;
         }

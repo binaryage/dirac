@@ -190,23 +190,29 @@ public final class FunctionReceiverChecker extends ContextTrackingChecker {
 
     private void checkThisAnnotation(FunctionRecord function) {
         AstNode functionNameNode = AstUtil.getFunctionNameNode(function.functionNode);
-        if (functionNameNode == null) {
+        if (functionNameNode == null && function.jsDocNode == null) {
+            // Do not check anonymous functions without a JSDoc.
             return;
         }
-        boolean hasThisAnnotation = hasAnnotationTag(function.functionNode, "this");
+        AstNode errorTargetNode =
+                functionNameNode == null ? function.jsDocNode : functionNameNode;
+        if (errorTargetNode == null) {
+            errorTargetNode = function.functionNode;
+        }
+        boolean hasThisAnnotation = hasAnnotationTag(function.jsDocNode, "this");
         if (hasThisAnnotation == functionReferencesThis(function)) {
             return;
         }
         if (hasThisAnnotation) {
             if (!function.isTopLevelFunction()) {
                 reportErrorAtNodeStart(
-                        functionNameNode,
+                        errorTargetNode,
                         "@this annotation found for function not referencing 'this'");
             }
             return;
         } else {
             reportErrorAtNodeStart(
-                    functionNameNode,
+                    errorTargetNode,
                     "@this annotation is required for functions referencing 'this'");
         }
     }
@@ -237,7 +243,7 @@ public final class FunctionReceiverChecker extends ContextTrackingChecker {
     private void processFunctionUsesAsArgument(
             FunctionRecord function, Set<SymbolicArgument> argumentUses) {
         if (argumentUses == null ||
-                hasAnnotationTag(function.functionNode, "suppressReceiverCheck")) {
+                hasAnnotationTag(function.jsDocNode, "suppressReceiverCheck")) {
             return;
         }
 

@@ -161,23 +161,29 @@ public final class ProtoFollowsExtendsChecker extends ContextTrackingChecker {
         }
         typesWithAssignedProto.add(currentType);
         String value = state.getNodeText(node.getRight());
-        if (!AstUtil.isPrototypeName(value)) {
+        boolean isNullPrototype = "null".equals(value);
+        if (!isNullPrototype && !AstUtil.isPrototypeName(value)) {
             reportErrorAtNodeStart(
                     node.getRight(), "__proto__ value is not a prototype");
             return;
         }
-        String superType = AstUtil.getTypeNameFromPrototype(value);
+        String superType = isNullPrototype ? "null" : AstUtil.getTypeNameFromPrototype(value);
         if (type.isInterface) {
             reportErrorAtNodeStart(node.getLeft(), String.format(
                     "__proto__ defined for interface %s", type.typeName));
             return;
         } else {
-            if (type.extendedTypes.isEmpty()) {
+            if (!isNullPrototype && type.extendedTypes.isEmpty()) {
                 reportErrorAtNodeStart(node.getRight(), String.format(
                         "No @extends annotation for %s extending %s", type.typeName, superType));
                 return;
             }
         }
+
+        if (isNullPrototype) {
+            return;
+        }
+
         // FIXME: Should we check that there is only one @extend-ed type
         // for the non-interface |type|? Closure is supposed to do this anyway...
         InheritanceEntry entry = type.getFirstExtendedType();

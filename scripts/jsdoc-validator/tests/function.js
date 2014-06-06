@@ -84,6 +84,23 @@ TypeOne.prototype = {
 
     _privateMethod: function() // OK - non-public method.
     {
+        var obj = {};
+
+        /**
+         * @constructor
+         * @param {number} val
+         */
+        obj["a"] = obj["b"] = function(val) { // OK - constructor
+            this.foo = val;
+        }
+
+        /**
+         * @param {number} val
+         */
+        obj["c"] = obj["d"] = function(val) { // ERROR - no @this
+            this.foo = val;
+        }
+
         return 1;
     },
 

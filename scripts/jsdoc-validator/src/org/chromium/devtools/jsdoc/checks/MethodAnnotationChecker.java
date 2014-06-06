@@ -17,10 +17,10 @@ import java.util.regex.Pattern;
 public final class MethodAnnotationChecker extends ContextTrackingChecker {
 
     private static final Pattern PARAM_PATTERN =
-            Pattern.compile("@param\\s+(\\{.+\\}\\s+)?([^\\s]+).*$", Pattern.MULTILINE);
+            Pattern.compile("^[^@\n]*@param\\s+(\\{.+\\}\\s+)?([^\\s]+).*$", Pattern.MULTILINE);
 
     private static final Pattern INVALID_RETURN_PATTERN =
-            Pattern.compile("@return(?:s.*|\\s+[^{]*)$", Pattern.MULTILINE);
+            Pattern.compile("^[^@\n]*(@)return(?:s.*|\\s+[^{]*)$", Pattern.MULTILINE);
 
     private final Set<FunctionRecord> valueReturningFunctions = new HashSet<>();
     private final Set<FunctionRecord> throwingFunctions = new HashSet<>();
@@ -187,7 +187,7 @@ public final class MethodAnnotationChecker extends ContextTrackingChecker {
             return -1;
         }
         Matcher m = INVALID_RETURN_PATTERN.matcher(jsDoc);
-        return m.find() ? m.start() : -1;
+        return m.find() ? m.start(1) : -1;
     }
 
     private static AstNode getFunctionNameNode(FunctionNode functionNode) {
