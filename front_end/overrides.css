@@ -229,6 +229,10 @@ button.overrides-swap {
     padding: 3px;
 }
 
+.overrides-view input[readonly] {
+    background-color: rgb(235, 235, 228);
+}
+
 .overrides-view .overrides-footer {
     flex: none;
     padding: 0 0 1px 3px;

@@ -48,7 +48,8 @@ WebInspector.OverridesView = function()
             new WebInspector.OverridesView.DeviceTab().appendAsTab(this._tabbedPane);
         new WebInspector.OverridesView.ViewportTab().appendAsTab(this._tabbedPane);
     }
-    new WebInspector.OverridesView.UserAgentTab().appendAsTab(this._tabbedPane);
+    if (!WebInspector.overridesSupport.responsiveDesignAvailable())
+        new WebInspector.OverridesView.UserAgentTab().appendAsTab(this._tabbedPane);
     new WebInspector.OverridesView.SensorsTab().appendAsTab(this._tabbedPane);
 
     this._lastSelectedTabSetting = WebInspector.settings.createSetting("lastSelectedEmulateTab", "device");
@@ -352,141 +353,18 @@ WebInspector.OverridesView.UserAgentTab = function()
     this.element.appendChild(this._createUserAgentSelectRowElement());
 }
 
-WebInspector.OverridesView.UserAgentTab._userAgents = [
-    ["Android 4.0.2 \u2014 Galaxy Nexus", "Mozilla/5.0 (Linux; U; Android 4.0.2; en-us; Galaxy Nexus Build/ICL53F) AppleWebKit/534.30 (KHTML, like Gecko) Version/4.0 Mobile Safari/534.30"],
-    ["Android 2.3 \u2014 Nexus S", "Mozilla/5.0 (Linux; U; Android 2.3.6; en-us; Nexus S Build/GRK39F) AppleWebKit/533.1 (KHTML, like Gecko) Version/4.0 Mobile Safari/533.1"],
-    ["BlackBerry \u2014 BB10", "Mozilla/5.0 (BB10; Touch) AppleWebKit/537.1+ (KHTML, like Gecko) Version/10.0.0.1337 Mobile Safari/537.1+"],
-    ["BlackBerry \u2014 PlayBook 2.1", "Mozilla/5.0 (PlayBook; U; RIM Tablet OS 2.1.0; en-US) AppleWebKit/536.2+ (KHTML, like Gecko) Version/7.2.1.0 Safari/536.2+"],
-    ["BlackBerry \u2014 9900", "Mozilla/5.0 (BlackBerry; U; BlackBerry 9900; en-US) AppleWebKit/534.11+ (KHTML, like Gecko) Version/7.0.0.187 Mobile Safari/534.11+"],
-    ["Chrome 31 \u2014 Mac", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.63 Safari/537.36"],
-    ["Chrome 31 \u2014 Windows", "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.16 Safari/537.36"],
-    ["Chrome \u2014 Android Tablet", "Mozilla/5.0 (Linux; Android 4.1.2; Nexus 7 Build/JZ054K) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.166 Safari/535.19"],
-    ["Chrome \u2014 Android Mobile", "Mozilla/5.0 (Linux; Android 4.0.4; Galaxy Nexus Build/IMM76B) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.133 Mobile Safari/535.19"],
-    ["Firefox 14 \u2014 Android Mobile", "Mozilla/5.0 (Android; Mobile; rv:14.0) Gecko/14.0 Firefox/14.0"],
-    ["Firefox 14 \u2014 Android Tablet", "Mozilla/5.0 (Android; Tablet; rv:14.0) Gecko/14.0 Firefox/14.0"],
-    ["Firefox 4 \u2014 Mac", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.6; rv:2.0.1) Gecko/20100101 Firefox/4.0.1"],
-    ["Firefox 4 \u2014 Windows", "Mozilla/5.0 (Windows NT 6.1; rv:2.0.1) Gecko/20100101 Firefox/4.0.1"],
-    ["Firefox 7 \u2014 Mac", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.6; rv:7.0.1) Gecko/20100101 Firefox/7.0.1"],
-    ["Firefox 7 \u2014 Windows", "Mozilla/5.0 (Windows NT 6.1; Intel Mac OS X 10.6; rv:7.0.1) Gecko/20100101 Firefox/7.0.1"],
-    ["Internet Explorer 10", "Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.2; Trident/6.0)"],
-    ["Internet Explorer 7", "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.0)"],
-    ["Internet Explorer 8", "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.0; Trident/4.0)"],
-    ["Internet Explorer 9", "Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0)"],
-    ["iPad \u2014 iOS 7", "Mozilla/5.0 (iPad; CPU OS 7_0_2 like Mac OS X) AppleWebKit/537.51.1 (KHTML, like Gecko) Version/7.0 Mobile/11A501 Safari/9537.53"],
-    ["iPad \u2014 iOS 6", "Mozilla/5.0 (iPad; CPU OS 6_0 like Mac OS X) AppleWebKit/536.26 (KHTML, like Gecko) Version/6.0 Mobile/10A5376e Safari/8536.25"],
-    ["iPhone \u2014 iOS 7", "Mozilla/5.0 (iPhone; CPU iPhone OS 7_0_2 like Mac OS X) AppleWebKit/537.51.1 (KHTML, like Gecko) Version/7.0 Mobile/11A4449d Safari/9537.53"],
-    ["iPhone \u2014 iOS 6", "Mozilla/5.0 (iPhone; CPU iPhone OS 6_0 like Mac OS X) AppleWebKit/536.26 (KHTML, like Gecko) Version/6.0 Mobile/10A5376e Safari/8536.25"],
-    ["MeeGo \u2014 Nokia N9", "Mozilla/5.0 (MeeGo; NokiaN9) AppleWebKit/534.13 (KHTML, like Gecko) NokiaBrowser/8.5.0 Mobile Safari/534.13"],
-    ["Opera 18 \u2014 Mac", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.63 Safari/537.36 OPR/18.0.1284.68"],
-    ["Opera 18 \u2014 Windows", "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.63 Safari/537.36 OPR/18.0.1284.68"],
-    ["Opera 12 \u2014 Mac", "Opera/9.80 (Macintosh; Intel Mac OS X 10.9.1) Presto/2.12.388 Version/12.16"],
-    ["Opera 12 \u2014 Windows", "Opera/9.80 (Windows NT 6.1) Presto/2.12.388 Version/12.16"],
-    ["Silk \u2014 Kindle Fire (Desktop view)", "Mozilla/5.0 (Linux; U; en-us; KFTHWI Build/JDQ39) AppleWebKit/535.19 (KHTML, like Gecko) Silk/3.13 Safari/535.19 Silk-Accelerated=true"],
-    ["Silk \u2014 Kindle Fire (Mobile view)", "Mozilla/5.0 (Linux; U; Android 4.2.2; en-us; KFTHWI Build/JDQ39) AppleWebKit/535.19 (KHTML, like Gecko) Silk/3.13 Mobile Safari/535.19 Silk-Accelerated=true"],
-];
-
 WebInspector.OverridesView.UserAgentTab.prototype = {
     /**
      * @return {!Element}
      */
     _createUserAgentSelectRowElement: function()
     {
-        var userAgent = WebInspector.overridesSupport.settings.userAgent.get();
-        var userAgents = WebInspector.OverridesView.UserAgentTab._userAgents.concat([[WebInspector.UIString("Other"), "Other"]]);
-
         var fieldsetElement = WebInspector.SettingsUI.createSettingFieldset(WebInspector.overridesSupport.settings.overrideUserAgent);
-
-        this._selectElement = fieldsetElement.createChild("select");
+        var userAgentSelectAndInput = WebInspector.overridesSupport.createUserAgentSelectAndInput(document);
+        fieldsetElement.appendChild(userAgentSelectAndInput.select);
         fieldsetElement.createChild("br");
-        this._otherUserAgentElement = fieldsetElement.createChild("input");
-        this._otherUserAgentElement.type = "text";
-        this._otherUserAgentElement.value = userAgent;
-        this._otherUserAgentElement.title = userAgent;
-
-        var selectionRestored = false;
-        for (var i = 0; i < userAgents.length; ++i) {
-            var agent = userAgents[i];
-            var option = new Option(agent[0], agent[1]);
-            this._selectElement.add(option);
-            if (userAgent === agent[1]) {
-                this._selectElement.selectedIndex = i;
-                selectionRestored = true;
-            }
-        }
-
-        if (!selectionRestored) {
-            if (!userAgent)
-                this._selectElement.selectedIndex = 0;
-            else
-                this._selectElement.selectedIndex = userAgents.length - 1;
-        }
-
-        this._selectElement.addEventListener("change", this._userAgentChanged.bind(this, true), false);
-        WebInspector.overridesSupport.settings.userAgent.addChangeListener(this._userAgentSettingChanged, this);
-
-        fieldsetElement.addEventListener("dblclick", textDoubleClicked.bind(this), false);
-        this._otherUserAgentElement.addEventListener("blur", textChanged.bind(this), false);
-
-        /**
-         * @this {WebInspector.OverridesView.UserAgentTab}
-         */
-        function textDoubleClicked()
-        {
-            this._selectElement.selectedIndex = userAgents.length - 1;
-            this._userAgentChanged();
-        }
-
-        /**
-         * @this {WebInspector.OverridesView.UserAgentTab}
-         */
-        function textChanged()
-        {
-            if (WebInspector.overridesSupport.settings.userAgent.get() !== this._otherUserAgentElement.value)
-                WebInspector.overridesSupport.settings.userAgent.set(this._otherUserAgentElement.value);
-        }
-
+        fieldsetElement.appendChild(userAgentSelectAndInput.input);
         return fieldsetElement;
-    },
-
-    /**
-     * @param {boolean=} isUserGesture
-     */
-    _userAgentChanged: function(isUserGesture)
-    {
-        var value = this._selectElement.options[this._selectElement.selectedIndex].value;
-        if (value !== "Other") {
-            WebInspector.overridesSupport.settings.userAgent.set(value);
-            this._otherUserAgentElement.value = value;
-            this._otherUserAgentElement.title = value;
-            this._otherUserAgentElement.disabled = true;
-        } else {
-            this._otherUserAgentElement.disabled = false;
-            this._otherUserAgentElement.focus();
-        }
-    },
-
-    _userAgentSettingChanged: function()
-    {
-        var value = WebInspector.overridesSupport.settings.userAgent.get();
-        var options = this._selectElement.options;
-        var foundMatch = false;
-        for (var i = 0; i < options.length; ++i) {
-            if (options[i].value === value) {
-                if (this._selectElement.selectedIndex !== i)
-                    this._selectElement.selectedIndex = i;
-                foundMatch = true;
-                break;
-            }
-        }
-
-        this._otherUserAgentElement.disabled = foundMatch;
-        if (!foundMatch)
-            this._selectElement.selectedIndex = options.length - 1;
-
-        if (this._otherUserAgentElement.value !== value) {
-            this._otherUserAgentElement.value = value;
-            this._otherUserAgentElement.title = value;
-        }
     },
 
     __proto__: WebInspector.OverridesView.Tab.prototype

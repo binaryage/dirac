@@ -411,6 +411,39 @@ WebInspector.OverridesSupport._tablets = [
      "1024x600x1"],
 ];
 
+WebInspector.OverridesSupport._userAgents = [
+    ["Android 4.0.2 \u2014 Galaxy Nexus", "Mozilla/5.0 (Linux; U; Android 4.0.2; en-us; Galaxy Nexus Build/ICL53F) AppleWebKit/534.30 (KHTML, like Gecko) Version/4.0 Mobile Safari/534.30"],
+    ["Android 2.3 \u2014 Nexus S", "Mozilla/5.0 (Linux; U; Android 2.3.6; en-us; Nexus S Build/GRK39F) AppleWebKit/533.1 (KHTML, like Gecko) Version/4.0 Mobile Safari/533.1"],
+    ["BlackBerry \u2014 BB10", "Mozilla/5.0 (BB10; Touch) AppleWebKit/537.1+ (KHTML, like Gecko) Version/10.0.0.1337 Mobile Safari/537.1+"],
+    ["BlackBerry \u2014 PlayBook 2.1", "Mozilla/5.0 (PlayBook; U; RIM Tablet OS 2.1.0; en-US) AppleWebKit/536.2+ (KHTML, like Gecko) Version/7.2.1.0 Safari/536.2+"],
+    ["BlackBerry \u2014 9900", "Mozilla/5.0 (BlackBerry; U; BlackBerry 9900; en-US) AppleWebKit/534.11+ (KHTML, like Gecko) Version/7.0.0.187 Mobile Safari/534.11+"],
+    ["Chrome 31 \u2014 Mac", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.63 Safari/537.36"],
+    ["Chrome 31 \u2014 Windows", "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.16 Safari/537.36"],
+    ["Chrome \u2014 Android Tablet", "Mozilla/5.0 (Linux; Android 4.1.2; Nexus 7 Build/JZ054K) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.166 Safari/535.19"],
+    ["Chrome \u2014 Android Mobile", "Mozilla/5.0 (Linux; Android 4.0.4; Galaxy Nexus Build/IMM76B) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.133 Mobile Safari/535.19"],
+    ["Firefox 14 \u2014 Android Mobile", "Mozilla/5.0 (Android; Mobile; rv:14.0) Gecko/14.0 Firefox/14.0"],
+    ["Firefox 14 \u2014 Android Tablet", "Mozilla/5.0 (Android; Tablet; rv:14.0) Gecko/14.0 Firefox/14.0"],
+    ["Firefox 4 \u2014 Mac", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.6; rv:2.0.1) Gecko/20100101 Firefox/4.0.1"],
+    ["Firefox 4 \u2014 Windows", "Mozilla/5.0 (Windows NT 6.1; rv:2.0.1) Gecko/20100101 Firefox/4.0.1"],
+    ["Firefox 7 \u2014 Mac", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.6; rv:7.0.1) Gecko/20100101 Firefox/7.0.1"],
+    ["Firefox 7 \u2014 Windows", "Mozilla/5.0 (Windows NT 6.1; Intel Mac OS X 10.6; rv:7.0.1) Gecko/20100101 Firefox/7.0.1"],
+    ["Internet Explorer 10", "Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.2; Trident/6.0)"],
+    ["Internet Explorer 7", "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.0)"],
+    ["Internet Explorer 8", "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.0; Trident/4.0)"],
+    ["Internet Explorer 9", "Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0)"],
+    ["iPad \u2014 iOS 7", "Mozilla/5.0 (iPad; CPU OS 7_0_2 like Mac OS X) AppleWebKit/537.51.1 (KHTML, like Gecko) Version/7.0 Mobile/11A501 Safari/9537.53"],
+    ["iPad \u2014 iOS 6", "Mozilla/5.0 (iPad; CPU OS 6_0 like Mac OS X) AppleWebKit/536.26 (KHTML, like Gecko) Version/6.0 Mobile/10A5376e Safari/8536.25"],
+    ["iPhone \u2014 iOS 7", "Mozilla/5.0 (iPhone; CPU iPhone OS 7_0_2 like Mac OS X) AppleWebKit/537.51.1 (KHTML, like Gecko) Version/7.0 Mobile/11A4449d Safari/9537.53"],
+    ["iPhone \u2014 iOS 6", "Mozilla/5.0 (iPhone; CPU iPhone OS 6_0 like Mac OS X) AppleWebKit/536.26 (KHTML, like Gecko) Version/6.0 Mobile/10A5376e Safari/8536.25"],
+    ["MeeGo \u2014 Nokia N9", "Mozilla/5.0 (MeeGo; NokiaN9) AppleWebKit/534.13 (KHTML, like Gecko) NokiaBrowser/8.5.0 Mobile Safari/534.13"],
+    ["Opera 18 \u2014 Mac", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.63 Safari/537.36 OPR/18.0.1284.68"],
+    ["Opera 18 \u2014 Windows", "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.63 Safari/537.36 OPR/18.0.1284.68"],
+    ["Opera 12 \u2014 Mac", "Opera/9.80 (Macintosh; Intel Mac OS X 10.9.1) Presto/2.12.388 Version/12.16"],
+    ["Opera 12 \u2014 Windows", "Opera/9.80 (Windows NT 6.1) Presto/2.12.388 Version/12.16"],
+    ["Silk \u2014 Kindle Fire (Desktop view)", "Mozilla/5.0 (Linux; U; en-us; KFTHWI Build/JDQ39) AppleWebKit/535.19 (KHTML, like Gecko) Silk/3.13 Safari/535.19 Silk-Accelerated=true"],
+    ["Silk \u2014 Kindle Fire (Mobile view)", "Mozilla/5.0 (Linux; U; Android 4.2.2; en-us; KFTHWI Build/JDQ39) AppleWebKit/535.19 (KHTML, like Gecko) Silk/3.13 Mobile Safari/535.19 Silk-Accelerated=true"],
+];
+
 WebInspector.OverridesSupport.prototype = {
     /**
      * @return {boolean}
@@ -512,7 +545,7 @@ WebInspector.OverridesSupport.prototype = {
         this.settings.deviceTextAutosizing.addChangeListener(this._deviceMetricsChanged, this);
         this.settings.emulateViewport.addChangeListener(this._deviceMetricsChanged, this);
         this.settings.deviceFitWindow.addChangeListener(this._deviceMetricsChanged, this);
-        WebInspector.settings.responsiveDesignMode.addChangeListener(this._deviceMetricsChanged, this);
+        WebInspector.settings.responsiveDesign.enabled.addChangeListener(this._deviceMetricsChanged, this);
 
         this.settings.overrideGeolocation.addChangeListener(this._geolocationPositionChanged, this);
         this.settings.geolocationOverride.addChangeListener(this._geolocationPositionChanged, this);
@@ -581,7 +614,7 @@ WebInspector.OverridesSupport.prototype = {
 
         if (this._deviceMetricsChangedListenerMuted)
             return;
-        var responsiveDesignAvailableAndDisabled = this._responsiveDesignAvailable && (!WebInspector.settings.responsiveDesignMode.get() || !this._pageResizer);
+        var responsiveDesignAvailableAndDisabled = this._responsiveDesignAvailable && (!WebInspector.settings.responsiveDesign.enabled.get() || !this._pageResizer);
         var overrideDeviceResolution = this.settings.overrideDeviceResolution.get();
         var emulationEnabled = overrideDeviceResolution || this.settings.emulateViewport.get();
         if (responsiveDesignAvailableAndDisabled || !emulationEnabled) {
@@ -953,6 +986,101 @@ WebInspector.OverridesSupport.prototype = {
         }
 
         return deviceSelectElement;
+    },
+
+    /**
+     * @param {!Document} document
+     * @return {{select: !Element, input: !Element}}
+     */
+    createUserAgentSelectAndInput: function(document)
+    {
+        var overrideUserAgentSetting = WebInspector.overridesSupport.settings.overrideUserAgent;
+        var userAgentSetting = WebInspector.overridesSupport.settings.userAgent;
+        var userAgents = WebInspector.OverridesSupport._userAgents.concat([[WebInspector.UIString("Other"), "Other"]]);
+
+        var userAgentSelectElement = document.createElement("select");
+        for (var i = 0; i < userAgents.length; ++i)
+            userAgentSelectElement.add(new Option(userAgents[i][0], userAgents[i][1]));
+        userAgentSelectElement.selectedIndex = 0;
+
+        var otherUserAgentElement = document.createElement("input");
+        otherUserAgentElement.type = "text";
+        otherUserAgentElement.value = userAgentSetting.get();
+        otherUserAgentElement.title = userAgentSetting.get();
+
+        settingChanged();
+        userAgentSetting.addChangeListener(settingChanged);
+        userAgentSelectElement.addEventListener("change", userAgentSelected, false);
+
+        otherUserAgentElement.addEventListener("dblclick", textDoubleClicked, true);
+        otherUserAgentElement.addEventListener("blur", textChanged, false);
+        otherUserAgentElement.addEventListener("keydown", textKeyDown, false);
+
+        function userAgentSelected()
+        {
+            var value = userAgentSelectElement.options[userAgentSelectElement.selectedIndex].value;
+            if (value !== "Other") {
+                userAgentSetting.removeChangeListener(settingChanged);
+                userAgentSetting.set(value);
+                userAgentSetting.addChangeListener(settingChanged);
+                otherUserAgentElement.value = value;
+                otherUserAgentElement.title = value;
+                otherUserAgentElement.readOnly = true;
+            } else {
+                otherUserAgentElement.readOnly = !overrideUserAgentSetting.get();
+                otherUserAgentElement.focus();
+            }
+            overrideUserAgentSetting.set(true);
+        }
+
+        function settingChanged()
+        {
+            var value = userAgentSetting.get();
+            var options = userAgentSelectElement.options;
+            var selectionRestored = false;
+            for (var i = 0; i < options.length; ++i) {
+                if (options[i].value === value) {
+                    userAgentSelectElement.selectedIndex = i;
+                    selectionRestored = true;
+                    break;
+                }
+            }
+
+            otherUserAgentElement.readOnly = !overrideUserAgentSetting.get() || selectionRestored;
+            if (!selectionRestored)
+                userAgentSelectElement.selectedIndex = options.length - 1;
+
+            if (otherUserAgentElement.value !== value) {
+                otherUserAgentElement.value = value;
+                otherUserAgentElement.title = value;
+            }
+        }
+
+        function textKeyDown(event)
+        {
+            if (isEnterKey(event))
+                textChanged();
+        }
+
+        function textDoubleClicked()
+        {
+            userAgentSelectElement.selectedIndex = userAgents.length - 1;
+            userAgentSelected();
+        }
+
+        function textChanged()
+        {
+            if (userAgentSetting.get() !== otherUserAgentElement.value)
+                userAgentSetting.set(otherUserAgentElement.value);
+        }
+
+        overrideUserAgentSetting.addChangeListener(overrideUserAgentChanged);
+        function overrideUserAgentChanged()
+        {
+            otherUserAgentElement.readOnly = !overrideUserAgentSetting.get() || (userAgentSelectElement.options[userAgentSelectElement.selectedIndex].value !== "Other");
+        }
+
+        return { select: userAgentSelectElement, input: otherUserAgentElement };
     },
 
     __proto__: WebInspector.Object.prototype

@@ -90,7 +90,9 @@ WebInspector.Settings = function()
     this.pauseOnExceptionEnabled = this.createSetting("pauseOnExceptionEnabled", false);
     this.pauseOnCaughtException = this.createSetting("pauseOnCaughtException", false);
     this.enableAsyncStackTraces = this.createSetting("enableAsyncStackTraces", false);
-    this.responsiveDesignMode = this.createSetting("responsiveDesignMode", false);
+
+    this.responsiveDesign = {};
+    this.responsiveDesign.enabled = this.createSetting("responsiveDesign.enabled", false);
 }
 
 WebInspector.Settings.prototype = {

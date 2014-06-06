@@ -334,6 +334,18 @@ Element.prototype.removeChildren = function()
         this.textContent = "";
 }
 
+Element.prototype.appendChildren = function(children)
+{
+    for (var i = 0; i < children.length; ++i)
+        this.appendChild(children[i]);
+}
+
+Element.prototype.setChildren = function(children)
+{
+    this.removeChildren();
+    this.appendChildren(children);
+}
+
 Element.prototype.isInsertionCaretInside = function()
 {
     var selection = window.getSelection();

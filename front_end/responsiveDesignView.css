@@ -9,13 +9,6 @@
     position: relative;
 }
 
-.responsive-design-reset-button {
-    position: absolute;
-    left: 0;
-    top: 0;
-    background-color: rgb(54, 54, 54);
-}
-
 .responsive-design-reset-button:hover {
     box-shadow: inset 0 0 5px rgba(255, 255, 255, 0.5);
 }
@@ -77,9 +70,12 @@
 }
 
 .responsive-design-toolbar {
+    display: flex;
     flex: none;
     background-color: rgb(64, 64, 64);
     color: rgb(180, 180, 180);
+    overflow: hidden;
+    border: 1px solid rgb(163, 163, 163);
 }
 
 .responsive-design-toolbar fieldset,
@@ -91,14 +87,37 @@
 }
 
 .responsive-design-toolbar .responsive-design-section {
-    display: inline-flex;
+    display: flex;
+    flex: 1 0 auto;
+    flex-direction: row;
     height: 24px;
-    border: 1px solid rgb(163, 163, 163);
-    border-left: none;
     margin-top: -1px;
     white-space: nowrap;
     align-items: center;
+    justify-content: flex-start;
     padding-right: 3px;
+}
+
+.responsive-design-toolbar .responsive-design-section.vbox {
+    height: auto;
+    padding: 0;
+}
+
+.responsive-design-toolbar .responsive-design-composite-section {
+    align-items: stretch;
+    flex: none;
+}
+
+.responsive-design-toolbar .responsive-design-composite-section.vbox:not(.solid) > :not(:nth-child(1)) {
+    border-top: 1px solid rgb(163, 163, 163);
+}
+
+.responsive-design-toolbar .responsive-design-composite-section.hbox:not(.solid) > :not(:nth-child(1)) {
+    border-left: 1px solid rgb(163, 163, 163);
+}
+
+.responsive-design-toolbar > .responsive-design-composite-section {
+    border-right: 1px solid rgb(163, 163, 163);
 }
 
 .responsive-design-toolbar .field-error-message {
@@ -111,10 +130,16 @@
     background-color: transparent;
     border: none;
     margin: 0;
-    padding: 3px 0;
+    padding-bottom: 4px;
+}
+
+.responsive-design-toolbar input[type='text']:not(.numeric) {
+    width: 100%;
+    margin-left: 7px;
 }
 
 .responsive-design-toolbar input:disabled,
+.responsive-design-toolbar input[readonly],
 .responsive-design-toolbar button:disabled {
     opacity: 0.7;
 }
@@ -155,6 +180,9 @@
     border: 0;
     margin-left: 10px;
     line-height: 16px;
+}
+
+body.platform-mac .responsive-design-toolbar select {
     position: relative;
     top: 1px;
 }
@@ -166,7 +194,7 @@
 .responsive-design-icon {
     background-color: rgb(180, 180, 180);
     -webkit-mask-image: url(Images/responsiveDesign.png);
-    -webkit-mask-size: 48px 16px;
+    -webkit-mask-size: 64px 16px;
     display: inline-block;
     width: 16px;
     height: 16px;
@@ -218,11 +246,37 @@
     opacity: 0.8;
 }
 
+.responsive-design-expand {
+    height: 19px;
+    min-width: 70px;
+    background: rgb(64, 64, 64);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 3px;
+}
+
+.responsive-design-expand:hover,
+.responsive-design-expand:active {
+    background: linear-gradient(to top, rgb(102, 102, 102), rgb(64, 64, 64));
+}
+
+.responsive-design-icon-expand {
+    -webkit-mask-position: -48px 0;
+    top: 0 !important;
+    margin-right: 2px;
+}
+
+.responsive-design-expand.expanded .responsive-design-icon-expand {
+    transform: rotate(180deg);
+}
+
 .responsive-design-warning {
     background-color: rgb(64, 64, 64);
     color: rgb(180, 180, 180);
     height: 19px;
     padding: 2px;
+    white-space: nowrap;
 }
 
 .responsive-design-warning::before {

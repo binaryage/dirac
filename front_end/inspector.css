@@ -92,6 +92,10 @@ fieldset[disabled] label:hover input {
     background-color: white;
 }
 
+.overflow-hidden {
+    overflow: hidden;
+}
+
 .nowrap,
 .nowrap-below,
 .nowrap-below div,
