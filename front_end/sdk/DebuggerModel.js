@@ -48,6 +48,8 @@ WebInspector.DebuggerModel = function(target)
     this._scriptsBySourceURL = new StringMap();
 
     this._breakpointsActive = true;
+    /** @type {!WebInspector.Object} */
+    this._breakpointResolvedEventTarget = new WebInspector.Object();
 
     WebInspector.settings.pauseOnExceptionEnabled.addChangeListener(this._pauseOnExceptionStateChanged, this);
     WebInspector.settings.pauseOnCaughtException.addChangeListener(this._pauseOnExceptionStateChanged, this);
@@ -80,7 +82,6 @@ WebInspector.DebuggerModel.Events = {
     DebuggerResumed: "DebuggerResumed",
     ParsedScriptSource: "ParsedScriptSource",
     FailedToParseScriptSource: "FailedToParseScriptSource",
-    BreakpointResolved: "BreakpointResolved",
     GlobalObjectCleared: "GlobalObjectCleared",
     CallFrameSelected: "CallFrameSelected",
     ConsoleCommandEvaluatedInSelectedCallFrame: "ConsoleCommandEvaluatedInSelectedCallFrame",
@@ -330,7 +331,7 @@ WebInspector.DebuggerModel.prototype = {
      */
     _breakpointResolved: function(breakpointId, location)
     {
-        this.dispatchEventToListeners(WebInspector.DebuggerModel.Events.BreakpointResolved, {breakpointId: breakpointId, location: WebInspector.DebuggerModel.Location.fromPayload(this.target(), location)});
+        this._breakpointResolvedEventTarget.dispatchEventToListeners(breakpointId, WebInspector.DebuggerModel.Location.fromPayload(this.target(), location));
     },
 
     _globalObjectCleared: function()
@@ -704,6 +705,26 @@ WebInspector.DebuggerModel.prototype = {
             }
             callback(response);
         }
+    },
+
+    /**
+     * @param {!DebuggerAgent.BreakpointId} breakpointId
+     * @param {function(!WebInspector.Event)} listener
+     * @param {!Object=} thisObject
+     */
+    addBreakpointListener: function(breakpointId, listener, thisObject)
+    {
+        this._breakpointResolvedEventTarget.addEventListener(breakpointId, listener, thisObject)
+    },
+
+    /**
+     * @param {!DebuggerAgent.BreakpointId} breakpointId
+     * @param {function(!WebInspector.Event)} listener
+     * @param {!Object=} thisObject
+     */
+    removeBreakpointListener: function(breakpointId, listener, thisObject)
+    {
+        this._breakpointResolvedEventTarget.removeEventListener(breakpointId, listener, thisObject);
     },
 
     __proto__: WebInspector.TargetAwareObject.prototype

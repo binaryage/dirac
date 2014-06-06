@@ -231,8 +231,16 @@ WebInspector.TargetManager.prototype = {
      */
     observeTargets: function(targetObserver)
     {
-        WebInspector.targetManager.targets().forEach(targetObserver.targetAdded.bind(targetObserver));
+        this.targets().forEach(targetObserver.targetAdded.bind(targetObserver));
         this._observers.push(targetObserver);
+    },
+
+    /**
+     * @param {!WebInspector.TargetManager.Observer} targetObserver
+     */
+    unobserveTargets: function(targetObserver)
+    {
+        this._observers.remove(targetObserver);
     },
 
     /**
