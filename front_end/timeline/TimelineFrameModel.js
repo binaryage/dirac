@@ -184,7 +184,7 @@ WebInspector.TimelineFrameModel.prototype = {
         if (event.args["layerTreeId"] !== this._layerTreeId)
             return;
 
-        var timestamp = event.startTime / 1000;
+        var timestamp = event.startTime;
         if (event.name === eventNames.BeginFrame)
             this.handleBeginFrame(timestamp);
         else if (event.name === eventNames.DrawFrame)

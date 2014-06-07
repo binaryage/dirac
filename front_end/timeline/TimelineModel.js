@@ -537,7 +537,7 @@ WebInspector.TimelineModel.TraceEventRecord.prototype = {
      */
     selfTime: function()
     {
-        return this._event.selfTime / 1000;
+        return this._event.selfTime;
     },
 
     /**
@@ -570,7 +570,7 @@ WebInspector.TimelineModel.TraceEventRecord.prototype = {
      */
     startTime: function()
     {
-        return this._event.startTime / 1000;
+        return this._event.startTime;
     },
 
     /**
@@ -586,7 +586,7 @@ WebInspector.TimelineModel.TraceEventRecord.prototype = {
      */
     endTime: function()
     {
-        return (this._event.endTime || this._event.startTime) / 1000;
+        return this._event.endTime || this._event.startTime;
     },
 
     /**

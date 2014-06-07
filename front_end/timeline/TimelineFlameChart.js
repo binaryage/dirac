@@ -576,7 +576,7 @@ WebInspector.TracingBasedTimelineFlameChartDataProvider.prototype = {
      */
     minimumBoundary: function()
     {
-        return this._toTimelineTime(this._minimumBoundary);
+        return this._minimumBoundary;
     },
 
     /**
@@ -584,7 +584,7 @@ WebInspector.TracingBasedTimelineFlameChartDataProvider.prototype = {
      */
     totalTime: function()
     {
-        return this._toTimelineTime(this._timeSpan);
+        return this._timeSpan;
     },
 
     /**
@@ -698,8 +698,8 @@ WebInspector.TracingBasedTimelineFlameChartDataProvider.prototype = {
         if (!event)
             return null;
         return {
-            startTime: this._toTimelineTime(event.startTime),
-            endTime: this._toTimelineTime(event.endTime)
+            startTime: event.startTime,
+            endTime: event.endTime
         }
     },
 
@@ -729,8 +729,8 @@ WebInspector.TracingBasedTimelineFlameChartDataProvider.prototype = {
         this._entryIndexToTitle[index] = title;
         this._entryEvents.push(null);
         this._timelineData.entryLevels[index] = this._currentLevel++;
-        this._timelineData.entryTotalTimes[index] = this._toTimelineTime(this._timeSpan);
-        this._timelineData.entryStartTimes[index] = this._toTimelineTime(this._minimumBoundary);
+        this._timelineData.entryTotalTimes[index] = this._timeSpan;
+        this._timelineData.entryStartTimes[index] = this._minimumBoundary;
     },
 
     /**
@@ -741,17 +741,8 @@ WebInspector.TracingBasedTimelineFlameChartDataProvider.prototype = {
         var index = this._entryEvents.length;
         this._entryEvents.push(event);
         this._timelineData.entryLevels[index] = this._currentLevel + event.level;
-        this._timelineData.entryTotalTimes[index] = this._toTimelineTime(event.duration || 1000);
-        this._timelineData.entryStartTimes[index] = this._toTimelineTime(event.startTime);
-    },
-
-    /**
-     * @param {number} time
-     * @return {number}
-     */
-    _toTimelineTime: function(time)
-    {
-        return time / 1000;
+        this._timelineData.entryTotalTimes[index] = event.duration || 1;
+        this._timelineData.entryStartTimes[index] = event.startTime;
     },
 
     /**

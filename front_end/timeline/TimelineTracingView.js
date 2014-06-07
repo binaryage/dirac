@@ -114,8 +114,8 @@ WebInspector.TimelineTracingView.prototype = {
         var contentHelper = new WebInspector.TimelineDetailsContentHelper(null, null, false);
         contentHelper.appendTextRow(WebInspector.UIString("Name"), record.name);
         contentHelper.appendTextRow(WebInspector.UIString("Category"), record.category);
-        contentHelper.appendTextRow(WebInspector.UIString("Start"), Number.millisToString(this._dataProvider._toTimelineTime(record.startTime - this._tracingModel.minimumRecordTime()), true));
-        contentHelper.appendTextRow(WebInspector.UIString("Duration"), Number.millisToString(this._dataProvider._toTimelineTime(record.duration), true));
+        contentHelper.appendTextRow(WebInspector.UIString("Start"), Number.millisToString(record.startTime - this._tracingModel.minimumRecordTime(), true));
+        contentHelper.appendTextRow(WebInspector.UIString("Duration"), Number.millisToString(record.duration, true));
         if (!Object.isEmpty(record.args))
             contentHelper.appendElementRow(WebInspector.UIString("Arguments"), this._formatArguments(record.args));
         /**
@@ -315,8 +315,8 @@ WebInspector.TraceViewFlameChartDataProvider.prototype = {
 
         this._currentLevel = 0;
         this._headerTitles = {};
-        this._minimumBoundary = this._timelineModelForMinimumBoundary.minimumRecordTime() * 1000;
-        this._timeSpan = Math.max((this._model.maximumRecordTime() || 0) - this._minimumBoundary, 1000000);
+        this._minimumBoundary = this._timelineModelForMinimumBoundary.minimumRecordTime();
+        this._timeSpan = Math.max((this._model.maximumRecordTime() || 0) - this._minimumBoundary, 1000);
         var processes = this._model.sortedProcesses();
         for (var processIndex = 0; processIndex < processes.length; ++processIndex) {
             var process = processes[processIndex];
@@ -350,7 +350,7 @@ WebInspector.TraceViewFlameChartDataProvider.prototype = {
      */
     minimumBoundary: function()
     {
-        return this._toTimelineTime(this._minimumBoundary);
+        return this._minimumBoundary;
     },
 
     /**
@@ -358,7 +358,7 @@ WebInspector.TraceViewFlameChartDataProvider.prototype = {
      */
     totalTime: function()
     {
-        return this._toTimelineTime(this._timeSpan);
+        return this._timeSpan;
     },
 
     /**
@@ -439,8 +439,8 @@ WebInspector.TraceViewFlameChartDataProvider.prototype = {
         if (!record || this._isHeaderRecord(record))
             return null;
         return {
-            startTime: this._toTimelineTime(record.startTime),
-            endTime: this._toTimelineTime(record.endTime)
+            startTime: record.startTime,
+            endTime: record.endTime
         }
     },
 
@@ -471,7 +471,7 @@ WebInspector.TraceViewFlameChartDataProvider.prototype = {
         this._records.push(record);
         this._timelineData.entryLevels[index] = this._currentLevel++;
         this._timelineData.entryTotalTimes[index] = this.totalTime();
-        this._timelineData.entryStartTimes[index] = this._toTimelineTime(this._minimumBoundary);
+        this._timelineData.entryStartTimes[index] = this._minimumBoundary;
         this._headerTitles[index] = title;
     },
 
@@ -483,17 +483,8 @@ WebInspector.TraceViewFlameChartDataProvider.prototype = {
         var index = this._records.length;
         this._records.push(record);
         this._timelineData.entryLevels[index] = this._currentLevel + record.level;
-        this._timelineData.entryTotalTimes[index] = this._toTimelineTime(record.phase === WebInspector.TracingModel.Phase.SnapshotObject ? NaN : record.duration || 0);
-        this._timelineData.entryStartTimes[index] = this._toTimelineTime(record.startTime);
-    },
-
-    /**
-     * @param {number} time
-     * @return {number}
-     */
-    _toTimelineTime: function(time)
-    {
-        return time / 1000;
+        this._timelineData.entryTotalTimes[index] = record.phase === WebInspector.TracingModel.Phase.SnapshotObject ? NaN : record.duration || 0;
+        this._timelineData.entryStartTimes[index] = record.startTime;
     },
 
     /**

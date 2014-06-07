@@ -308,7 +308,7 @@ WebInspector.TracingTimelineUIUtils._buildTraceEventDetailsSynchronously = funct
     var fragment = document.createDocumentFragment();
     var stats = WebInspector.TracingTimelineUIUtils._aggregatedStatsForTraceEvent(model, event);
     var pieChart = stats.hasChildren ?
-        WebInspector.TimelineUIUtils.generatePieChart(stats.aggregatedStats, WebInspector.TracingTimelineUIUtils.styleForTraceEvent(event.name).category, event.selfTime / 1000) :
+        WebInspector.TimelineUIUtils.generatePieChart(stats.aggregatedStats, WebInspector.TracingTimelineUIUtils.styleForTraceEvent(event.name).category, event.selfTime) :
         WebInspector.TimelineUIUtils.generatePieChart(stats.aggregatedStats);
     fragment.appendChild(pieChart);
 
@@ -320,8 +320,8 @@ WebInspector.TracingTimelineUIUtils._buildTraceEventDetailsSynchronously = funct
     var relatedNodeLabel;
 
     var contentHelper = new WebInspector.TimelineDetailsContentHelper(target, linkifier, true);
-    contentHelper.appendTextRow(WebInspector.UIString("Self Time"), Number.millisToString(event.selfTime / 1000, true));
-    contentHelper.appendTextRow(WebInspector.UIString("Start Time"), Number.millisToString((event.startTime - model.minimumRecordTime()) / 1000));
+    contentHelper.appendTextRow(WebInspector.UIString("Self Time"), Number.millisToString(event.selfTime, true));
+    contentHelper.appendTextRow(WebInspector.UIString("Start Time"), Number.millisToString((event.startTime - model.minimumRecordTime())));
     var eventData = event.args.data;
     var initiator = event.initiator;
 
@@ -492,7 +492,7 @@ WebInspector.TracingTimelineUIUtils._aggregatedStatsForTraceEvent = function(mod
             if (i > index)
                 hasChildren = true;
             var category = WebInspector.TracingTimelineUIUtils.styleForTraceEvent(nextEvent.name).category.name;
-            aggregatedStats[category] = (aggregatedStats[category] || 0) + nextEvent.selfTime / 1000;
+            aggregatedStats[category] = (aggregatedStats[category] || 0) + nextEvent.selfTime;
         }
     }
     return { aggregatedStats: aggregatedStats, hasChildren: hasChildren };
