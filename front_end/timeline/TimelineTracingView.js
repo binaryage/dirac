@@ -55,7 +55,6 @@ WebInspector.TimelineTracingView.prototype = {
 
     reset: function()
     {
-        this._tracingModel.reset();
         this._dataProvider.reset();
         this._mainView.setWindowTimes(0, Infinity);
     },

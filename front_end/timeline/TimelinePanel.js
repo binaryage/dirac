@@ -709,6 +709,8 @@ WebInspector.TimelinePanel.prototype = {
 
     _onClearButtonClick: function()
     {
+        if (this._tracingModel)
+            this._tracingModel.reset();
         this._model.reset();
     },
 
