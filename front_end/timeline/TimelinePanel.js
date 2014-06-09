@@ -79,8 +79,6 @@ WebInspector.TimelinePanel = function()
         this._tracingModel.addEventListener(WebInspector.TracingModel.Events.BufferUsage, this._onTracingBufferUsage, this);
 
         this._tracingTimelineModel = new WebInspector.TracingTimelineModel(this._tracingModel);
-        this._tracingTimelineModel.addEventListener(WebInspector.TracingTimelineModel.Events.TracingComplete, this._onTracingComplete, this);
-
         this._model = this._tracingTimelineModel;
     } else {
         this._model = new WebInspector.TimelineModelImpl(WebInspector.timelineManager);
@@ -205,7 +203,7 @@ WebInspector.TimelinePanel.prototype = {
         if (this._windowStartTime)
             return this._windowStartTime;
         var minimumRecordTime = this._model.minimumRecordTime();
-        if (minimumRecordTime && minimumRecordTime != -1)
+        if (minimumRecordTime && minimumRecordTime !== -1)
             return minimumRecordTime;
         return 0;
     },
@@ -218,7 +216,7 @@ WebInspector.TimelinePanel.prototype = {
         if (this._windowEndTime < Infinity)
             return this._windowEndTime;
         var maximumRecordTime = this._model.maximumRecordTime();
-        if (maximumRecordTime && maximumRecordTime != -1)
+        if (maximumRecordTime && maximumRecordTime !== -1)
             return maximumRecordTime;
         return Infinity;
     },
@@ -675,16 +673,6 @@ WebInspector.TimelinePanel.prototype = {
             this._overviewControls[i].timelineStopped();
     },
 
-    _onTracingComplete: function()
-    {
-        if (this._lazyFrameModel) {
-            this._lazyFrameModel.reset();
-            this._lazyFrameModel.addTraceEvents(this._tracingTimelineModel.inspectedTargetEvents(), this._tracingModel.sessionId());
-            this._overviewPane.update();
-        }
-        this._refreshViews();
-    },
-
     _onProfilingStateChanged: function()
     {
         this._updateToggleTimelineButton(this.toggleTimelineButton.toggled);
@@ -800,10 +788,18 @@ WebInspector.TimelinePanel.prototype = {
     _onRecordingStopped: function()
     {
         this._updateToggleTimelineButton(false);
-        if (this._lazyFrameModel && WebInspector.experimentsSettings.timelineNoLiveUpdate.isEnabled()) {
-            this._lazyFrameModel.reset();
-            this._lazyFrameModel.addRecords(this._model.records());
+        if (this._lazyFrameModel) {
+            if (this._tracingTimelineModel) {
+                this._lazyFrameModel.reset();
+                this._lazyFrameModel.addTraceEvents(this._tracingTimelineModel.inspectedTargetEvents(), this._tracingModel.sessionId());
+                this._overviewPane.update();
+            } else if (WebInspector.experimentsSettings.timelineNoLiveUpdate.isEnabled()) {
+                this._lazyFrameModel.reset();
+                this._lazyFrameModel.addRecords(this._model.records());
+            }
         }
+        if (this._tracingTimelineModel)
+            this._refreshViews();
         this._hideProgressPane();
     },
 

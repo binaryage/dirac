@@ -92,10 +92,6 @@ WebInspector.TracingTimelineModel.RecordType = {
     LayerTreeHostImplSnapshot: "cc::LayerTreeHostImpl"
 };
 
-WebInspector.TracingTimelineModel.Events = {
-    TracingComplete: "TracingComplete"
-};
-
 WebInspector.TracingTimelineModel.defaultTracingCategoryFilter = "*,disabled-by-default-cc.debug,disabled-by-default-devtools.timeline";
 
 WebInspector.TracingTimelineModel.prototype = {
@@ -169,7 +165,6 @@ WebInspector.TracingTimelineModel.prototype = {
         this._inspectedTargetEvents.sort(WebInspector.TracingModel.Event.compareStartTime);
 
         this._buildTimelineRecords();
-        this.dispatchEventToListeners(WebInspector.TracingTimelineModel.Events.TracingComplete);
         this.dispatchEventToListeners(WebInspector.TimelineModel.Events.RecordingStopped);
     },
 
