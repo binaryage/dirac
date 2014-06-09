@@ -32,19 +32,22 @@
  * @constructor
  * @param {!WebInspector.LayerTreeModel} model
  * @param {!WebInspector.Layers3DView} layers3DView
- * @extends {WebInspector.VBox}
+ * @extends {WebInspector.SplitView}
  */
 WebInspector.PaintProfilerView = function(model, layers3DView)
 {
-    WebInspector.VBox.call(this);
+    WebInspector.SplitView.call(this, true, false);
     this.element.classList.add("paint-profiler-view");
+    this._logTreeView = new WebInspector.PaintProfilerCommandLogView();
+    this._logTreeView.show(this.sidebarElement());
+    this.addEventListener(WebInspector.SplitView.Events.SidebarSizeChanged, this.onResize, this);
 
     this._model = model;
     this._layers3DView = layers3DView;
 
-    this._canvas = this.element.createChild("canvas", "fill");
+    this._canvas = this.mainElement().createChild("canvas", "fill");
     this._context = this._canvas.getContext("2d");
-    this._selectionWindow = new WebInspector.OverviewGrid.Window(this.element, this.element);
+    this._selectionWindow = new WebInspector.OverviewGrid.Window(this.mainElement(), this.mainElement());
     this._selectionWindow.addEventListener(WebInspector.OverviewGrid.Events.WindowChanged, this._onWindowChanged, this);
 
     this._innerBarWidth = 4 * window.devicePixelRatio;
@@ -63,8 +66,8 @@ WebInspector.PaintProfilerView.prototype = {
 
     _update: function()
     {
-        this._canvas.width = this.element.clientWidth * window.devicePixelRatio;
-        this._canvas.height = this.element.clientHeight * window.devicePixelRatio;
+        this._canvas.width = this.mainElement().clientWidth * window.devicePixelRatio;
+        this._canvas.height = this.mainElement().clientHeight * window.devicePixelRatio;
         this._samplesPerBar = 0;
         if (!this._profiles || !this._profiles.length)
             return;
@@ -130,6 +133,7 @@ WebInspector.PaintProfilerView.prototype = {
         var stepLeft = Math.max(0, barLeft * this._samplesPerBar);
         var stepRight = Math.min(barRight * this._samplesPerBar, this._profiles[0].length);
         this._snapshot.requestImage(stepLeft, stepRight, this._layers3DView.showImageForLayer.bind(this._layers3DView, this._layer));
+        this._logTreeView.updateLog(stepLeft, stepRight);
     },
 
     _reset: function()
@@ -161,7 +165,10 @@ WebInspector.PaintProfilerView.prototype = {
                 return;
             }
             snapshot.requestImage(null, null, this._layers3DView.showImageForLayer.bind(this._layers3DView, this._layer));
-            snapshot.profile(onProfileDone.bind(this));
+            var barrier = new CallbackBarrier();
+            snapshot.profile(barrier.createCallback(onProfileDone.bind(this)));
+            snapshot.commandLog(barrier.createCallback(onCommandLogDone.bind(this)));
+            barrier.callWhenDone(this._update.bind(this));
         }
 
         /**
@@ -171,9 +178,129 @@ WebInspector.PaintProfilerView.prototype = {
         function onProfileDone(profiles)
         {
             this._profiles = profiles;
-            this._update();
+        }
+
+        /**
+         * @param {!Array.<!Object>=} log
+         * @this {WebInspector.PaintProfilerView}
+         */
+        function onCommandLogDone(log)
+        {
+            this._logTreeView.setLog(log);
+            this._logTreeView.updateLog();
+        }
+    },
+
+    __proto__: WebInspector.SplitView.prototype
+};
+
+/**
+ * @constructor
+ * @extends {WebInspector.VBox}
+ */
+WebInspector.PaintProfilerCommandLogView = function()
+{
+    WebInspector.VBox.call(this);
+    this.setMinimumSize(100, 25);
+    this.element.classList.add("outline-disclosure");
+    var sidebarTreeElement = this.element.createChild("ol", "sidebar-tree");
+    this.sidebarTree = new TreeOutline(sidebarTreeElement);
+
+    this._log = [];
+}
+
+WebInspector.PaintProfilerCommandLogView.prototype = {
+    setLog: function(log)
+    {
+        this._log = log;
+    },
+
+    /**
+     * @param {number=} stepLeft
+     * @param {number=} stepRight
+     */
+    updateLog: function(stepLeft, stepRight)
+    {
+        var log = this._log;
+        stepLeft = stepLeft || 0;
+        stepRight = stepRight || log.length - 1;
+        this.sidebarTree.removeChildren();
+        for (var i = stepLeft; i <= stepRight; ++i) {
+            var node = new WebInspector.LogTreeElement(log[i]);
+            this.sidebarTree.appendChild(node);
         }
     },
 
     __proto__: WebInspector.VBox.prototype
+};
+
+/**
+  * @constructor
+  * @param {!Object} logItem
+  * @extends {TreeElement}
+  */
+WebInspector.LogTreeElement = function(logItem)
+{
+    TreeElement.call(this, "", logItem);
+    this._update();
+}
+
+WebInspector.LogTreeElement.prototype = {
+    /**
+      * @param {!Object} param
+      * @param {string} name
+      * @return {string}
+      */
+    _paramToString: function(param, name)
+    {
+        if (typeof param !== "object")
+            return typeof param === "string" && param.length > 100 ? name : JSON.stringify(param);
+        var str = "";
+        var keyCount = 0;
+        for (var key in param) {
+            if (++keyCount > 4 || typeof param[key] === "object" || (typeof param[key] === "string" && param[key].length > 100))
+                return name;
+            if (str)
+                str += ", ";
+            str += param[key];
+        }
+        return str;
+    },
+
+    /**
+      * @param {!Object} params
+      * @return {string}
+      */
+    _paramsToString: function(params)
+    {
+        var str = "";
+        for (var key in params) {
+            if (str)
+                str += ", ";
+            str += this._paramToString(params[key], key);
+        }
+        return str;
+    },
+
+    _update: function()
+    {
+        var logItem = this.representedObject;
+        var title = document.createDocumentFragment();
+        title.createChild("div", "selection");
+        var textContent = logItem.method;
+        if (logItem.params)
+            textContent += "(" + this._paramsToString(logItem.params) + ")";
+        title.appendChild(document.createTextNode(textContent));
+        this.title = title;
+    },
+
+    /**
+     * @param {boolean} hovered
+     */
+    setHovered: function(hovered)
+    {
+        this.listItemElement.classList.toggle("hovered", hovered);
+    },
+
+    __proto__: TreeElement.prototype
 };

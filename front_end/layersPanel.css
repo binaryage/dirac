@@ -83,7 +83,7 @@
     background-color: white;
 }
 
-.paint-profiler-view {
+.paint-profiler-view .split-view-main {
     overflow: hidden;
 }
 

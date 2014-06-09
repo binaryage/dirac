@@ -61,5 +61,14 @@ WebInspector.PaintProfilerSnapshot.prototype = {
     {
         var wrappedCallback = InspectorBackend.wrapClientCallback(callback, "LayerTreeAgent.profileSnapshot(): ");
         LayerTreeAgent.profileSnapshot(this._id, 5, 1, wrappedCallback);
+    },
+
+    /**
+     * @param {function(!Array.<!Object>=)} callback
+     */
+    commandLog: function(callback)
+    {
+        var wrappedCallback = InspectorBackend.wrapClientCallback(callback, "LayerTreeAgent.snapshotCommandLog(): ");
+        LayerTreeAgent.snapshotCommandLog(this._id, wrappedCallback);
     }
 };
