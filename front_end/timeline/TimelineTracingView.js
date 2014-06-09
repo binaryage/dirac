@@ -326,7 +326,7 @@ WebInspector.TraceViewFlameChartDataProvider.prototype = {
                 this._appendHeaderRecord(WebInspector.UIString("Object %s", objectNames[objectNameIndex]), this._threadHeaderRecord);
                 var objects = process.objectsByName(objectNames[objectNameIndex]);
                 for (var objectIndex = 0; objectIndex < objects.length; ++objectIndex)
-                    this._appendRecord(objects[objectIndex]);
+                    this._appendRecord(objects[objectIndex], 0);
                 ++this._currentLevel;
             }
             var threads = process.sortedThreads();
@@ -336,7 +336,7 @@ WebInspector.TraceViewFlameChartDataProvider.prototype = {
                 for (var eventIndex = 0; eventIndex < events.length; ++eventIndex) {
                     var event = events[eventIndex];
                     if (event.duration)
-                        this._appendRecord(event);
+                        this._appendRecord(event, event.level);
                 }
                 this._currentLevel += threads[threadIndex].maxStackDepth();
             }
@@ -477,12 +477,13 @@ WebInspector.TraceViewFlameChartDataProvider.prototype = {
 
     /**
      * @param {!WebInspector.TracingModel.Event} record
+     * @param {number} level
      */
-    _appendRecord: function(record)
+    _appendRecord: function(record, level)
     {
         var index = this._records.length;
         this._records.push(record);
-        this._timelineData.entryLevels[index] = this._currentLevel + record.level;
+        this._timelineData.entryLevels[index] = this._currentLevel + level;
         this._timelineData.entryTotalTimes[index] = record.phase === WebInspector.TracingModel.Phase.SnapshotObject ? NaN : record.duration || 0;
         this._timelineData.entryStartTimes[index] = record.startTime;
     },

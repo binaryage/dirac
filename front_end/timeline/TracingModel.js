@@ -185,11 +185,6 @@ WebInspector.TracingModel.prototype = {
             this._processById[payload.pid] = process;
         }
         var thread = process.threadById(payload.tid);
-        if (payload.ph === WebInspector.TracingModel.Phase.SnapshotObject) {
-            var event = thread.addEvent(payload);
-            process.addObject(event);
-            return;
-        }
         if (payload.ph !== WebInspector.TracingModel.Phase.Metadata) {
             var timestamp = payload.ts / 1000;
             // We do allow records for unrelated threads to arrive out-of-order,
@@ -199,6 +194,8 @@ WebInspector.TracingModel.prototype = {
             if (!this._maximumRecordTime || timestamp > this._maximumRecordTime)
                 this._maximumRecordTime = timestamp;
             var event = thread.addEvent(payload);
+            if (payload.ph === WebInspector.TracingModel.Phase.SnapshotObject)
+                process.addObject(event);
             if (event && event.name === WebInspector.TracingModel.DevToolsMetadataEvent.TracingStartedInPage &&
                 event.category === WebInspector.TracingModel.DevToolsMetadataEventCategory &&
                 event.args["sessionId"] === this._sessionId)
