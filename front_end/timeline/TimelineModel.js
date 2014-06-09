@@ -251,8 +251,8 @@ WebInspector.TimelineModel.prototype = {
     {
         this._loadedFromFile = false;
         this._records = [];
-        this._minimumRecordTime = -1;
-        this._maximumRecordTime = -1;
+        this._minimumRecordTime = 0;
+        this._maximumRecordTime = 0;
         /** @type {!Array.<!WebInspector.TimelineModel.Record>} */
         this._mainThreadTasks =  [];
         /** @type {!Array.<!WebInspector.TimelineModel.Record>} */
@@ -286,9 +286,9 @@ WebInspector.TimelineModel.prototype = {
         var startTime = record.startTime();
         var endTime = record.endTime();
 
-        if (this._minimumRecordTime === -1 || startTime < this._minimumRecordTime)
+        if (!this._minimumRecordTime || startTime < this._minimumRecordTime)
             this._minimumRecordTime = startTime;
-        if ((this._maximumRecordTime === -1 && endTime) || endTime > this._maximumRecordTime)
+        if (endTime > this._maximumRecordTime)
             this._maximumRecordTime = endTime;
     },
 

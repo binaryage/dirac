@@ -248,8 +248,8 @@ WebInspector.TimelineView.prototype = {
 
     _resetView: function()
     {
-        this._windowStartTime = -1;
-        this._windowEndTime = -1;
+        this._windowStartTime = 0;
+        this._windowEndTime = 0;
         this._boundariesAreValid = false;
         this._adjustScrollPosition(0);
         this._linkifier.reset();
@@ -456,13 +456,9 @@ WebInspector.TimelineView.prototype = {
             clearTimeout(this._refreshTimeout);
             delete this._refreshTimeout;
         }
-        var windowStartTime = this._windowStartTime;
-        var windowEndTime = this._windowEndTime;
+        var windowStartTime = this._windowStartTime || this._model.minimumRecordTime();
+        var windowEndTime = this._windowEndTime || this._model.maximumRecordTime();
         this._timelinePaddingLeft = this._expandOffset;
-        if (windowStartTime === -1)
-            windowStartTime = this._model.minimumRecordTime();
-        if (windowEndTime === -1)
-            windowEndTime = this._model.maximumRecordTime();
         this._calculator.setWindow(windowStartTime, windowEndTime);
         this._calculator.setDisplayWindow(this._timelinePaddingLeft, this._graphRowsElementWidth);
 

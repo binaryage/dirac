@@ -169,7 +169,7 @@ WebInspector.TracingTimelineModel.prototype = {
     },
 
     /**
-     * @return {?number}
+     * @return {number}
      */
     minimumRecordTime: function()
     {
@@ -177,7 +177,7 @@ WebInspector.TracingTimelineModel.prototype = {
     },
 
     /**
-     * @return {?number}
+     * @return {number}
      */
     maximumRecordTime: function()
     {

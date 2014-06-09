@@ -202,10 +202,7 @@ WebInspector.TimelinePanel.prototype = {
     {
         if (this._windowStartTime)
             return this._windowStartTime;
-        var minimumRecordTime = this._model.minimumRecordTime();
-        if (minimumRecordTime && minimumRecordTime !== -1)
-            return minimumRecordTime;
-        return 0;
+        return this._model.minimumRecordTime();
     },
 
     /**
@@ -215,10 +212,7 @@ WebInspector.TimelinePanel.prototype = {
     {
         if (this._windowEndTime < Infinity)
             return this._windowEndTime;
-        var maximumRecordTime = this._model.maximumRecordTime();
-        if (maximumRecordTime && maximumRecordTime !== -1)
-            return maximumRecordTime;
-        return Infinity;
+        return this._model.maximumRecordTime() || Infinity;
     },
 
     /**

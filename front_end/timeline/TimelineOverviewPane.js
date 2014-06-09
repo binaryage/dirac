@@ -409,7 +409,7 @@ WebInspector.TimelineOverviewBase.prototype = {
     {
         var absoluteMin = this._model.minimumRecordTime();
         var timeSpan = this._model.maximumRecordTime() - absoluteMin;
-        var haveRecords = absoluteMin >= 0;
+        var haveRecords = absoluteMin > 0;
         return {
             left: haveRecords && startTime ? Math.min((startTime - absoluteMin) / timeSpan, 1) : 0,
             right: haveRecords && endTime < Infinity ? (endTime - absoluteMin) / timeSpan : 1

@@ -168,8 +168,8 @@ WebInspector.TracingModel.prototype = {
     reset: function()
     {
         this._processById = {};
-        this._minimumRecordTime = null;
-        this._maximumRecordTime = null;
+        this._minimumRecordTime = 0;
+        this._maximumRecordTime = 0;
         this._sessionId = null;
         this._devtoolsMetadataEvents = [];
     },
@@ -222,7 +222,7 @@ WebInspector.TracingModel.prototype = {
     },
 
     /**
-     * @return {?number}
+     * @return {number}
      */
     minimumRecordTime: function()
     {
@@ -230,7 +230,7 @@ WebInspector.TracingModel.prototype = {
     },
 
     /**
-     * @return {?number}
+     * @return {number}
      */
     maximumRecordTime: function()
     {

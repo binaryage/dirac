@@ -131,7 +131,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
 
         this._records = [];
         this._entryThreadDepths = {};
-        this._minimumBoundary = Math.max(0, this._model.minimumRecordTime());
+        this._minimumBoundary = this._model.minimumRecordTime();
 
         var cpuThreadRecordPayload = { type: WebInspector.TimelineModel.RecordType.Program };
         this._cpuThreadRecord = new WebInspector.TimelineModel.RecordImpl(this._model, /** @type {!TimelineAgent.TimelineEvent} */ (cpuThreadRecordPayload), null);
@@ -549,8 +549,8 @@ WebInspector.TracingBasedTimelineFlameChartDataProvider.prototype = {
         };
 
         this._currentLevel = 0;
-        this._minimumBoundary = this._model.minimumRecordTime() || 0;
-        this._timeSpan = Math.max((this._model.maximumRecordTime() || 0) - this._minimumBoundary, 1000000);
+        this._minimumBoundary = this._model.minimumRecordTime();
+        this._timeSpan = Math.max(this._model.maximumRecordTime() - this._minimumBoundary, 1000);
         this._appendHeaderRecord("CPU");
         var events = this._model.mainThreadEvents();
         var maxStackDepth = 0;
