@@ -38,6 +38,7 @@ importScript("TimelineModelImpl.js");
 importScript("TimelineJSProfile.js");
 importScript("TimelineOverviewPane.js");
 importScript("TimelinePresentationModel.js");
+importScript("TracingTimelineModel.js");
 importScript("TimelineFrameModel.js");
 importScript("TimelineEventOverview.js");
 importScript("TimelineFrameOverview.js");
@@ -50,7 +51,6 @@ importScript("TimelineView.js");
 importScript("TimelineTracingView.js");
 importScript("TimelineLayersView.js");
 importScript("TracingModel.js");
-importScript("TracingTimelineModel.js");
 importScript("TracingTimelineUIUtils.js");
 importScript("TransformController.js");
 
@@ -681,13 +681,13 @@ WebInspector.TimelinePanel.prototype = {
 
     _onTracingComplete: function()
     {
+        if (WebInspector.experimentsSettings.timelineOnTraceEvents.isEnabled())
+            this._model.didStopRecordingTraceEvents(this._tracingTimelineModel.mainThreadEvents());
         if (this._lazyFrameModel) {
             this._lazyFrameModel.reset();
             this._lazyFrameModel.addTraceEvents(this._tracingTimelineModel.inspectedTargetEvents(), this._tracingModel.sessionId());
             this._overviewPane.update();
         }
-        if (WebInspector.experimentsSettings.timelineOnTraceEvents.isEnabled())
-            this._model.didStopRecordingTraceEvents(this._tracingTimelineModel.mainThreadEvents());
         this._refreshViews();
     },
 

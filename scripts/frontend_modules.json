@@ -311,6 +311,7 @@
             "timeline/Layers3DView.js",
             "timeline/MemoryCountersGraph.js",
             "timeline/TimelineEventOverview.js",
+            "timeline/TracingTimelineModel.js",
             "timeline/TimelineFrameModel.js",
             "timeline/TimelineFrameOverview.js",
             "timeline/TimelineJSProfile.js",
@@ -328,7 +329,6 @@
             "timeline/TimelineTracingView.js",
             "timeline/TimelineLayersView.js",
             "timeline/TracingModel.js",
-            "timeline/TracingTimelineModel.js",
             "timeline/TracingTimelineUIUtils.js",
             "timeline/TransformController.js"
         ]

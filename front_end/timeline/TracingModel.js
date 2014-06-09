@@ -120,19 +120,23 @@ WebInspector.TracingModel.prototype = {
     },
 
     /**
-     * @param {string} sessionId
-     */
-    setSessionIdForTest: function(sessionId)
-    {
-        this._sessionId = sessionId;
-    },
-
-    /**
      * @return {?string}
      */
     sessionId: function()
     {
         return this._sessionId;
+    },
+
+    /**
+     * @param {string} sessionId
+     * @param {!Array.<!WebInspector.TracingModel.EventPayload>} events
+     */
+    setEventsForTest: function(sessionId, events)
+    {
+        this.reset();
+        this._sessionId = sessionId;
+        this._eventsCollected(events);
+        this._tracingComplete();
     },
 
     /**

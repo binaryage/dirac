@@ -51,6 +51,13 @@ WebInspector.TimelineFrameModel._mainFrameMarkers = [
     WebInspector.TimelineModel.RecordType.ScrollLayer
 ];
 
+WebInspector.TimelineFrameModel._tracingMainFrameMarkers = [
+    WebInspector.TracingTimelineModel.RecordType.ScheduleStyleRecalculation,
+    WebInspector.TracingTimelineModel.RecordType.InvalidateLayout,
+    WebInspector.TracingTimelineModel.RecordType.BeginMainThreadFrame,
+    WebInspector.TracingTimelineModel.RecordType.ScrollLayer
+];
+
 WebInspector.TimelineFrameModel.prototype = {
     /**
      * @return {!Array.<!WebInspector.TimelineFrame>}
@@ -176,10 +183,29 @@ WebInspector.TimelineFrameModel.prototype = {
                 this._layerTreeId = event.args["layerTreeId"];
             return;
         }
+        if (event.name === eventNames.TracingStartedInPage) {
+            this._mainThread = event.thread;
+            return;
+        }
+        if (event.thread === this._mainThread)
+            this._addMainThreadTraceEvent(event);
+        else
+            this._addBackgroundTraceEvent(event);
+    },
+
+    /**
+     * @param {!WebInspector.TracingModel.Event} event
+     */
+    _addBackgroundTraceEvent: function(event)
+    {
+        var eventNames = WebInspector.TracingTimelineModel.RecordType;
+
         if (event.phase === WebInspector.TracingModel.Phase.SnapshotObject && event.name === eventNames.LayerTreeHostImplSnapshot && parseInt(event.id, 0) === this._layerTreeId) {
             this.handleLayerTreeSnapshot(new WebInspector.DeferredTracingLayerTree(this.target(), event.args["snapshot"]["active_tree"]["root_layer"]));
             return;
         }
+        if (this._lastFrame && event.selfTime)
+            this._lastFrame._addTimeForCategory(WebInspector.TracingTimelineUIUtils.eventStyle(event).category.name, event.selfTime);
 
         if (event.args["layerTreeId"] !== this._layerTreeId)
             return;
@@ -193,11 +219,41 @@ WebInspector.TimelineFrameModel.prototype = {
             this.handleActivateLayerTree();
         else if (event.name === eventNames.RequestMainThreadFrame)
             this.handleRequestMainThreadFrame();
-        else if (event.name === eventNames.CompositeLayers)
-            this.handleCompositeLayers();
+    },
 
-        // FIXME: we also need to process main thread events, so we can assign time spent by categories
-        // to frames. However, this requires that we can map trace event names to Timeline categories.
+    /**
+     * @param {!WebInspector.TracingModel.Event} event
+     */
+    _addMainThreadTraceEvent: function(event)
+    {
+        var eventNames = WebInspector.TracingTimelineModel.RecordType;
+        var timestamp = event.startTime;
+        var selfTime = event.selfTime || 0;
+
+        if (!this._hasThreadedCompositing) {
+            if (event.name === eventNames.BeginMainThreadFrame)
+                this._startMainThreadFrame(timestamp);
+            if (!this._lastFrame)
+                return;
+            if (!selfTime)
+                return;
+
+            var categoryName = WebInspector.TracingTimelineUIUtils.eventStyle(event).category.name;
+            this._lastFrame._addTimeForCategory(categoryName, selfTime);
+            return;
+        }
+
+        if (!this._aggregatedMainThreadWork && WebInspector.TimelineFrameModel._tracingMainFrameMarkers.indexOf(event.name) >= 0)
+            this._aggregatedMainThreadWork = {};
+        if (!this._aggregatedMainThreadWork)
+            return;
+
+        if (selfTime) {
+            var categoryName = WebInspector.TracingTimelineUIUtils.eventStyle(event).category.name;
+            this._aggregatedMainThreadWork[categoryName] = (this._aggregatedMainThreadWork[categoryName] || 0) + selfTime;
+        }
+        if (event.name === eventNames.CompositeLayers && event.args["layerTreeId"] === this._layerTreeId)
+            this.handleCompositeLayers();
     },
 
     /**
@@ -297,10 +353,8 @@ WebInspector.TimelineFrameModel.prototype = {
             this._lastFrame._addTimeFromRecord(record);
 
             // Account for "other" time at the same time as the first child.
-            if (programRecord.children()[0] === record) {
-                this._deriveOtherTime(programRecord, this._lastFrame.timeByCategory);
-                this._lastFrame._updateCpuTime();
-            }
+            if (programRecord.children()[0] === record)
+                this._lastFrame._addTimeForCategory("other", this._deriveOtherTime(programRecord));
             return;
         }
 
@@ -309,7 +363,7 @@ WebInspector.TimelineFrameModel.prototype = {
 
         WebInspector.TimelineUIUtils.aggregateTimeForRecord(this._aggregatedMainThreadWork, record);
         if (programRecord.children()[0] === record)
-            this._deriveOtherTime(programRecord, this._aggregatedMainThreadWork);
+            this._aggregatedMainThreadWork["other"] = (this._aggregatedMainThreadWork["other"] || 0) + this._deriveOtherTime(programRecord);
 
         if (record.type() === recordTypes.CompositeLayers)
             this.handleCompositeLayers();
@@ -317,15 +371,14 @@ WebInspector.TimelineFrameModel.prototype = {
 
     /**
      * @param {!WebInspector.TimelineModel.Record} programRecord
-     * @param {!Object} timeByCategory
+     * @return {number}
      */
-    _deriveOtherTime: function(programRecord, timeByCategory)
+    _deriveOtherTime: function(programRecord)
     {
         var accounted = 0;
         for (var i = 0; i < programRecord.children().length; ++i)
             accounted += programRecord.children()[i].endTime() - programRecord.children()[i].startTime();
-        var otherTime = programRecord.endTime() - programRecord.startTime() - accounted;
-        timeByCategory["other"] = (timeByCategory["other"] || 0) + otherTime;
+        return programRecord.endTime() - programRecord.startTime() - accounted;
     },
 
     /**
@@ -458,8 +511,9 @@ WebInspector.TimelineFrame.prototype = {
     {
         if (!record.endTime())
             return;
-        WebInspector.TimelineUIUtils.aggregateTimeForRecord(this.timeByCategory, record);
-        this._updateCpuTime();
+        var timeByCategory = {};
+        WebInspector.TimelineUIUtils.aggregateTimeForRecord(timeByCategory, record);
+        this._addTimeForCategories(timeByCategory);
     },
 
     /**
@@ -467,14 +521,17 @@ WebInspector.TimelineFrame.prototype = {
      */
     _addTimeForCategories: function(timeByCategory)
     {
-        WebInspector.TimelineUIUtils.aggregateTimeByCategory(this.timeByCategory, timeByCategory);
-        this._updateCpuTime();
+        for (var category in timeByCategory)
+            this._addTimeForCategory(category, timeByCategory[category]);
     },
 
-    _updateCpuTime: function()
+    /**
+     * @param {string} category
+     * @param {number} time
+     */
+    _addTimeForCategory: function(category, time)
     {
-        this.cpuTime = 0;
-        for (var key in this.timeByCategory)
-            this.cpuTime += this.timeByCategory[key];
-    }
+        this.timeByCategory[category] = (this.timeByCategory[category] || 0) + time;
+        this.cpuTime += time;
+    },
 }

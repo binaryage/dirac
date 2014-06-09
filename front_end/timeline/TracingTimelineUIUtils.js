@@ -497,5 +497,3 @@ WebInspector.TracingTimelineUIUtils._aggregatedStatsForTraceEvent = function(mod
     }
     return { aggregatedStats: aggregatedStats, hasChildren: hasChildren };
 }
-
-
