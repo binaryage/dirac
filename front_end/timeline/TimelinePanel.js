@@ -73,7 +73,19 @@ WebInspector.TimelinePanel = function()
     this._windowEndTime = Infinity;
 
     // Create model.
-    this._model = new WebInspector.TimelineModelImpl(WebInspector.timelineManager);
+    if (WebInspector.experimentsSettings.timelineTracingMode.isEnabled() ||
+        WebInspector.experimentsSettings.timelineOnTraceEvents.isEnabled()) {
+        this._tracingModel = new WebInspector.TracingModel(WebInspector.targetManager.activeTarget());
+        this._tracingModel.addEventListener(WebInspector.TracingModel.Events.BufferUsage, this._onTracingBufferUsage, this);
+
+        this._tracingTimelineModel = new WebInspector.TracingTimelineModel(this._tracingModel);
+        this._tracingTimelineModel.addEventListener(WebInspector.TracingTimelineModel.Events.TracingComplete, this._onTracingComplete, this);
+
+        this._model = this._tracingTimelineModel;
+    } else {
+        this._model = new WebInspector.TimelineModelImpl(WebInspector.timelineManager);
+    }
+
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStarted, this._onRecordingStarted, this);
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStopped, this._onRecordingStopped, this);
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordsCleared, this._onRecordsCleared, this);
@@ -91,15 +103,6 @@ WebInspector.TimelinePanel = function()
     this._model.addFilter(this._categoryFilter);
     this._model.addFilter(this._durationFilter);
     this._model.addFilter(this._textFilter);
-
-    if (WebInspector.experimentsSettings.timelineTracingMode.isEnabled() ||
-        WebInspector.experimentsSettings.timelineOnTraceEvents.isEnabled()) {
-        this._tracingModel = new WebInspector.TracingModel(WebInspector.targetManager.activeTarget());
-        this._tracingModel.addEventListener(WebInspector.TracingModel.Events.BufferUsage, this._onTracingBufferUsage, this);
-
-        this._tracingTimelineModel = new WebInspector.TracingTimelineModel(this._tracingModel);
-        this._tracingTimelineModel.addEventListener(WebInspector.TracingTimelineModel.Events.TracingComplete, this._onTracingComplete, this);
-    }
 
     /** @type {!Array.<!WebInspector.TimelineModeView>} */
     this._currentViews = [];
@@ -201,8 +204,9 @@ WebInspector.TimelinePanel.prototype = {
     {
         if (this._windowStartTime)
             return this._windowStartTime;
-        if (this._model.minimumRecordTime() != -1)
-            return this._model.minimumRecordTime();
+        var minimumRecordTime = this._model.minimumRecordTime();
+        if (minimumRecordTime && minimumRecordTime != -1)
+            return minimumRecordTime;
         return 0;
     },
 
@@ -213,8 +217,9 @@ WebInspector.TimelinePanel.prototype = {
     {
         if (this._windowEndTime < Infinity)
             return this._windowEndTime;
-        if (this._model.maximumRecordTime() != -1)
-            return this._model.maximumRecordTime();
+        var maximumRecordTime = this._model.maximumRecordTime();
+        if (maximumRecordTime && maximumRecordTime != -1)
+            return maximumRecordTime;
         return Infinity;
     },
 
@@ -650,14 +655,7 @@ WebInspector.TimelinePanel.prototype = {
     _startRecording: function(userInitiated)
     {
         this._userInitiatedRecording = userInitiated;
-        if (WebInspector.experimentsSettings.timelineOnTraceEvents.isEnabled()) {
-            this._model.willStartRecordingTraceEvents();
-            this._tracingTimelineModel.startRecording(this._captureStacksSetting.get(), this._captureMemorySetting.get());
-        } else {
-            this._model.startRecording(this._captureStacksSetting.get(), this._captureMemorySetting.get());
-            if (this._captureTracingSetting && this._captureTracingSetting.get())
-                this._tracingTimelineModel.startRecording(this._captureStacksSetting.get(), this._captureMemorySetting.get());
-        }
+        this._model.startRecording(this._captureStacksSetting.get(), this._captureMemorySetting.get());
         if (WebInspector.experimentsSettings.timelineNoLiveUpdate.isEnabled() && this._lazyFrameModel)
             this._lazyFrameModel.setMergeRecords(false);
 
@@ -672,8 +670,6 @@ WebInspector.TimelinePanel.prototype = {
     {
         this._userInitiatedRecording = false;
         this._model.stopRecording();
-        if (this._tracingTimelineModel)
-            this._tracingTimelineModel.stopRecording()
 
         for (var i = 0; i < this._overviewControls.length; ++i)
             this._overviewControls[i].timelineStopped();
@@ -681,8 +677,6 @@ WebInspector.TimelinePanel.prototype = {
 
     _onTracingComplete: function()
     {
-        if (WebInspector.experimentsSettings.timelineOnTraceEvents.isEnabled())
-            this._model.didStopRecordingTraceEvents(this._tracingTimelineModel.mainThreadEvents());
         if (this._lazyFrameModel) {
             this._lazyFrameModel.reset();
             this._lazyFrameModel.addTraceEvents(this._tracingTimelineModel.inspectedTargetEvents(), this._tracingModel.sessionId());
