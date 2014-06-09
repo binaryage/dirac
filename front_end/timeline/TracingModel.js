@@ -263,6 +263,9 @@ WebInspector.TracingModel.Event = function(payload, level, thread)
     this.phase = payload.ph;
     this.level = level;
 
+    if (payload.dur)
+        this._setEndTime((payload.ts + payload.dur) / 1000);
+
     if (payload.id)
         this.id = payload.id;
 
@@ -287,12 +290,16 @@ WebInspector.TracingModel.Event = function(payload, level, thread)
 
 WebInspector.TracingModel.Event.prototype = {
     /**
-     * @param {number} duration
+     * @param {number} endTime
      */
-    _setDuration: function(duration)
+    _setEndTime: function(endTime)
     {
-        this.endTime = this.startTime + duration;
-        this.duration = duration;
+        if (endTime < this.startTime) {
+            console.assert(false, "Event out of order: " + this.name);
+            return;
+        }
+        this.endTime = endTime;
+        this.duration = endTime - this.startTime;
     },
 
     /**
@@ -311,12 +318,7 @@ WebInspector.TracingModel.Event.prototype = {
                 this.args[name] = payload.args[name];
             }
         }
-        var duration = payload.ts / 1000 - this.startTime;
-        if (duration < 0) {
-            console.assert(false, "Event out of order: " + this.name);
-            return;
-        }
-        this._setDuration(duration);
+        this._setEndTime(payload.ts / 1000);
     }
 }
 
@@ -472,7 +474,7 @@ WebInspector.TracingModel.Thread.prototype = {
      */
     addEvent: function(payload)
     {
-        for (var top = this._stack.peekLast(); top && top.endTime && top.endTime <= payload.ts;) {
+        for (var top = this._stack.peekLast(); top && top.endTime && top.endTime <= payload.ts / 1000;) {
             this._stack.pop();
             top = this._stack.peekLast();
         }
@@ -486,8 +488,6 @@ WebInspector.TracingModel.Thread.prototype = {
 
         var event = new WebInspector.TracingModel.Event(payload, this._stack.length, this);
         if (payload.ph === WebInspector.TracingModel.Phase.Begin || payload.ph === WebInspector.TracingModel.Phase.Complete) {
-            if (payload.ph === WebInspector.TracingModel.Phase.Complete)
-                event._setDuration(payload.dur / 1000);
             this._stack.push(event);
             if (this._maxStackDepth < this._stack.length)
                 this._maxStackDepth = this._stack.length;
