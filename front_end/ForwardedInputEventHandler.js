@@ -21,11 +21,9 @@ WebInspector.ForwardedInputEventHandler.prototype = {
         if (type !== "keydown")
             return;
 
-        // FIXME: Wire this to the shortcut/action subsystem.
-        if (keyIdentifier === "F8" && !modifiers)
-            /** @type {!WebInspector.SourcesPanel} */ (WebInspector.inspectorView.showPanel("sources")).togglePause();
-
+        WebInspector.context.setFlavor(WebInspector.ShortcutRegistry.ForwardedShortcut, WebInspector.ShortcutRegistry.ForwardedShortcut.instance)
         WebInspector.shortcutRegistry.handleKey(WebInspector.KeyboardShortcut.makeKey(keyCode, modifiers), keyIdentifier);
+        WebInspector.context.setFlavor(WebInspector.ShortcutRegistry.ForwardedShortcut, null);
     }
 }
 

@@ -13,6 +13,22 @@
             "className": "WebInspector.SourcesPanel.ContextMenuProvider"
         },
         {
+            "type": "@WebInspector.ActionDelegate",
+            "actionId": "debugger.toggle-pause",
+            "className": "WebInspector.SourcesPanel.TogglePauseActionDelegate",
+            "contextTypes": ["WebInspector.SourcesPanel", "WebInspector.ShortcutRegistry.ForwardedShortcut"],
+            "bindings": [
+                {
+                    "platform": "windows,linux",
+                    "shortcut": "F8 Ctrl+\\"
+                },
+                {
+                    "platform": "mac",
+                    "shortcut": "F8 Meta+\\"
+                }
+            ]
+        },
+        {
             "type": "@WebInspector.SearchScope",
             "className": "WebInspector.SourcesSearchScope"
         },

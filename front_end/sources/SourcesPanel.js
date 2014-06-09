@@ -198,6 +198,7 @@ WebInspector.SourcesPanel.prototype = {
 
     wasShown: function()
     {
+        WebInspector.context.setFlavor(WebInspector.SourcesPanel, this);
         if (WebInspector.experimentsSettings.editorInDrawer.isEnabled()) {
             this._drawerEditor()._panelWasShown();
             this._sourcesView.show(this.editorView.mainElement());
@@ -212,6 +213,7 @@ WebInspector.SourcesPanel.prototype = {
             this._drawerEditor()._panelWillHide();
             this._sourcesView.show(this._drawerEditorView.element);
         }
+        WebInspector.context.setFlavor(WebInspector.SourcesPanel, null);
     },
 
     /**
@@ -671,8 +673,8 @@ WebInspector.SourcesPanel.prototype = {
         this._runSnippetButton.element.classList.add("hidden");
 
         // Continue.
-        handler = this.togglePause.bind(this);
-        this._pauseButton = this._createButtonAndRegisterShortcuts("scripts-pause", "", handler, WebInspector.ShortcutsScreen.SourcesPanelShortcuts.PauseContinue);
+        handler = function() { return WebInspector.actionRegistry.execute("debugger.toggle-pause"); };
+        this._pauseButton = this._createButtonAndRegisterShortcuts("scripts-pause", "", handler, []);
         debugToolbar.appendChild(this._pauseButton.element);
 
         // Long resume.
@@ -1394,4 +1396,23 @@ WebInspector.SourcesPanel.DisableJavaScriptSettingDelegate.prototype = {
     },
 
     __proto__: WebInspector.UISettingDelegate.prototype
+}
+
+/**
+ * @constructor
+ * @implements {WebInspector.ActionDelegate}
+ */
+WebInspector.SourcesPanel.TogglePauseActionDelegate = function()
+{
+}
+
+WebInspector.SourcesPanel.TogglePauseActionDelegate.prototype = {
+    /**
+     * @return {boolean}
+     */
+    handleAction: function()
+    {
+        /** @type {!WebInspector.SourcesPanel} */ (WebInspector.inspectorView.showPanel("sources")).togglePause();
+        return true;
+    }
 }

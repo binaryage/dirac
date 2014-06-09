@@ -201,5 +201,14 @@ WebInspector.ShortcutRegistry.prototype = {
     }
 }
 
+/**
+ * @constructor
+ */
+WebInspector.ShortcutRegistry.ForwardedShortcut = function()
+{
+}
+
+WebInspector.ShortcutRegistry.ForwardedShortcut.instance = new WebInspector.ShortcutRegistry.ForwardedShortcut();
+
 /** @type {!WebInspector.ShortcutRegistry} */
 WebInspector.shortcutRegistry;
