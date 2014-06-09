@@ -245,11 +245,11 @@ WebInspector.ScriptSnippetModel.prototype = {
         /**
          * @param {!WebInspector.Target} target
          * @param {?string} error
-         * @param {string=} scriptId
-         * @param {string=} syntaxErrorMessage
+         * @param {!DebuggerAgent.ScriptId=} scriptId
+         * @param {?DebuggerAgent.ExceptionDetails=} exceptionDetails
          * @this {WebInspector.ScriptSnippetModel}
          */
-        function compileCallback(target, error, scriptId, syntaxErrorMessage)
+        function compileCallback(target, error, scriptId, exceptionDetails)
         {
             if (!uiSourceCode || this._mappingForTarget.get(target).evaluationIndex(uiSourceCode) !== evaluationIndex)
                 return;
@@ -260,27 +260,23 @@ WebInspector.ScriptSnippetModel.prototype = {
             }
 
             if (!scriptId) {
-                var consoleMessage = new WebInspector.ConsoleMessage(
-                        target,
-                        WebInspector.ConsoleMessage.MessageSource.JS,
-                        WebInspector.ConsoleMessage.MessageLevel.Error,
-                        syntaxErrorMessage || "");
-                target.consoleModel.addMessage(consoleMessage);
+                this._printRunOrCompileScriptResultFailure(target, exceptionDetails, evaluationUrl);
                 return;
             }
 
             var breakpointLocations = this._removeBreakpoints(uiSourceCode);
             this._restoreBreakpoints(uiSourceCode, breakpointLocations);
 
-            this._runScript(scriptId, executionContext);
+            this._runScript(scriptId, executionContext, evaluationUrl);
         }
     },
 
     /**
      * @param {!DebuggerAgent.ScriptId} scriptId
      * @param {!WebInspector.ExecutionContext} executionContext
+     * @param {?string=} sourceURL
      */
-    _runScript: function(scriptId, executionContext)
+    _runScript: function(scriptId, executionContext, sourceURL)
     {
         var target = executionContext.target();
         target.debuggerAgent().runScript(scriptId, executionContext.id, "console", false, runCallback.bind(this, target));
@@ -289,39 +285,65 @@ WebInspector.ScriptSnippetModel.prototype = {
          * @param {!WebInspector.Target} target
          * @param {?string} error
          * @param {?RuntimeAgent.RemoteObject} result
-         * @param {boolean=} wasThrown
+         * @param {?DebuggerAgent.ExceptionDetails=} exceptionDetails
          * @this {WebInspector.ScriptSnippetModel}
          */
-        function runCallback(target, error, result, wasThrown)
+        function runCallback(target, error, result, exceptionDetails)
         {
             if (error) {
                 console.error(error);
                 return;
             }
 
-            this._printRunScriptResult(target, result, wasThrown);
+            if (!exceptionDetails)
+                this._printRunScriptResult(target, result, sourceURL);
+            else
+                this._printRunOrCompileScriptResultFailure(target, exceptionDetails, sourceURL);
         }
     },
 
     /**
      * @param {!WebInspector.Target} target
      * @param {?RuntimeAgent.RemoteObject} result
-     * @param {boolean=} wasThrown
+     * @param {?string=} sourceURL
      */
-    _printRunScriptResult: function(target, result, wasThrown)
+    _printRunScriptResult: function(target, result, sourceURL)
     {
-        var level = (wasThrown ? WebInspector.ConsoleMessage.MessageLevel.Error : WebInspector.ConsoleMessage.MessageLevel.Log);
-        var message = new WebInspector.ConsoleMessage(target,
+        var consoleMessage = new WebInspector.ConsoleMessage(
+            target,
             WebInspector.ConsoleMessage.MessageSource.JS,
-            level,
+            WebInspector.ConsoleMessage.MessageLevel.Log,
             "",
             undefined,
+            sourceURL,
             undefined,
             undefined,
             undefined,
+            [result],
+            undefined);
+        target.consoleModel.addMessage(consoleMessage);
+    },
+
+    /**
+     * @param {!WebInspector.Target} target
+     * @param {?DebuggerAgent.ExceptionDetails=} exceptionDetails
+     * @param {?string=} sourceURL
+     */
+    _printRunOrCompileScriptResultFailure: function(target, exceptionDetails, sourceURL)
+    {
+        var consoleMessage = new WebInspector.ConsoleMessage(
+            target,
+            exceptionDetails.source,
+            WebInspector.ConsoleMessage.MessageLevel.Error,
+            exceptionDetails.text,
             undefined,
-            [result]);
-        target.consoleModel.addMessage(message);
+            sourceURL,
+            exceptionDetails.line,
+            exceptionDetails.column,
+            undefined,
+            undefined,
+            exceptionDetails.stackTrace);
+        target.consoleModel.addMessage(consoleMessage);
     },
 
     /**
