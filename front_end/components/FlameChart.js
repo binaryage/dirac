@@ -232,7 +232,6 @@ WebInspector.FlameChart.ColorGenerator = function(hueSpace, satSpace, lightnessS
     this._satSpace = satSpace || 67;
     this._lightnessSpace = lightnessSpace || 80;
     this._colors = {};
-    this._currentColorIndex = 0;
 }
 
 WebInspector.FlameChart.ColorGenerator.prototype = {
@@ -253,21 +252,22 @@ WebInspector.FlameChart.ColorGenerator.prototype = {
     {
         var color = this._colors[id];
         if (!color) {
-            color = this._createColor(this._currentColorIndex++);
+            color = this._generateColorForID(id);
             this._colors[id] = color;
         }
         return color;
     },
 
     /**
-     * @param {number} index
+     * @param {string} id
      * @return {string}
      */
-    _createColor: function(index)
+    _generateColorForID: function(id)
     {
-        var h = this._indexToValueInSpace(index, this._hueSpace);
-        var s = this._indexToValueInSpace(index, this._satSpace);
-        var l = this._indexToValueInSpace(index, this._lightnessSpace);
+        var hash = id.hashCode();
+        var h = this._indexToValueInSpace(hash, this._hueSpace);
+        var s = this._indexToValueInSpace(hash, this._satSpace);
+        var l = this._indexToValueInSpace(hash, this._lightnessSpace);
         return "hsl(" + h + ", " + s + "%, " + l + "%)";
     },
 
@@ -281,7 +281,7 @@ WebInspector.FlameChart.ColorGenerator.prototype = {
         if (typeof space === "number")
             return space;
         index %= space.count;
-        return space.min + index / space.count * (space.max - space.min);
+        return space.min + Math.floor(index / space.count * (space.max - space.min));
     }
 }
 

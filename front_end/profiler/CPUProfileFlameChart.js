@@ -276,7 +276,7 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
     entryColor: function(entryIndex)
     {
         var node = this._entryNodes[entryIndex];
-        return this._colorGenerator.colorForID(node.functionName + ":" + node.url + ":" + node.lineNumber);
+        return this._colorGenerator.colorForID(node.functionName + ":" + node.url);
     },
 
     /**
@@ -342,10 +342,13 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
 WebInspector.CPUFlameChartDataProvider.colorGenerator = function()
 {
     if (!WebInspector.CPUFlameChartDataProvider._colorGenerator) {
-        var colorGenerator = new WebInspector.FlameChart.ColorGenerator();
-        colorGenerator.setColorForID("(idle)::0", "hsl(0, 0%, 94%)");
-        colorGenerator.setColorForID("(program)::0", "hsl(0, 0%, 80%)");
-        colorGenerator.setColorForID("(garbage collector)::0", "hsl(0, 0%, 80%)");
+        var colorGenerator = new WebInspector.FlameChart.ColorGenerator(
+            { min: 180, max: 310, count: 7 },
+            { min: 50, max: 80, count: 5 },
+            { min: 80, max: 90, count: 3 });
+        colorGenerator.setColorForID("(idle):", "hsl(0, 0%, 94%)");
+        colorGenerator.setColorForID("(program):", "hsl(0, 0%, 80%)");
+        colorGenerator.setColorForID("(garbage collector):", "hsl(0, 0%, 80%)");
         WebInspector.CPUFlameChartDataProvider._colorGenerator = colorGenerator;
     }
     return WebInspector.CPUFlameChartDataProvider._colorGenerator;
