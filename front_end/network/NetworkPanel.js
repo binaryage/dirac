@@ -2473,6 +2473,7 @@ WebInspector.NetworkDataGridNode.prototype = {
         case "name": this._renderNameCell(cell); break;
         case "timeline": this._createTimelineBar(cell); break;
         case "method": cell.setTextAndTitle(this._request.requestMethod); break;
+        case "status": this._renderStatusCell(cell); break;
         case "scheme": cell.setTextAndTitle(this._request.scheme); break;
         case "domain": cell.setTextAndTitle(this._request.domain); break;
         case "remoteAddress": cell.setTextAndTitle(this._request.remoteAddress()); break;
