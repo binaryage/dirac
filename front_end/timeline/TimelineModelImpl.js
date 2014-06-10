@@ -479,6 +479,26 @@ WebInspector.TimelineModel.RecordImpl.prototype = {
     },
 
     /**
+     * @return {?Object}
+     */
+    highlightQuad: function()
+    {
+        var quad = null;
+        var recordTypes = WebInspector.TimelineModel.RecordType;
+        switch(this.type()) {
+        case recordTypes.Layout:
+            quad = this.data().root;
+            break;
+        case recordTypes.Paint:
+            quad = this.data().clip;
+            break;
+        default:
+            break;
+        }
+        return quad;
+    },
+
+    /**
      * @return {string}
      */
     frameId: function()

@@ -366,6 +366,7 @@ WebInspector.TracingTimelineModel.prototype = {
             var frameId = event.args["beginData"]["frame"];
             event.initiator = this._layoutInvalidate[frameId];
             event.backendNodeId = event.args["endData"]["rootNode"];
+            event.highlightQuad =  event.args["endData"]["root"];
             this._layoutInvalidate[frameId] = null;
             if (this._currentScriptEvent)
                 event.warning = WebInspector.UIString("Forced synchronous layout is a possible performance bottleneck.");
@@ -392,6 +393,8 @@ WebInspector.TracingTimelineModel.prototype = {
             break;
 
         case recordTypes.Paint:
+            event.highlightQuad = event.args["data"]["clip"];
+            // Initionally fall through.
         case recordTypes.ScrollLayer:
             event.backendNodeId = event.args["data"]["nodeId"];
             break;
@@ -578,6 +581,14 @@ WebInspector.TracingTimelineModel.TraceEventRecord.prototype = {
     type: function()
     {
         return this._event.name;
+    },
+
+    /**
+     * @return {?Object}
+     */
+    highlightQuad: function()
+    {
+        return this._event.highlightQuad || null;
     },
 
     /**

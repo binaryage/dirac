@@ -829,18 +829,7 @@ WebInspector.TimelineView.prototype = {
             return true;
         this._highlightedQuadRecord = record;
 
-        var quad = null;
-        var recordTypes = WebInspector.TimelineModel.RecordType;
-        switch(record.type()) {
-        case recordTypes.Layout:
-            quad = record.data().root;
-            break;
-        case recordTypes.Paint:
-            quad = record.data().clip;
-            break;
-        default:
-            return false;
-        }
+        var quad = record.highlightQuad();
         if (!quad)
             return false;
         record.target().domAgent().highlightQuad(quad, WebInspector.Color.PageHighlight.Content.toProtocolRGBA(), WebInspector.Color.PageHighlight.ContentOutline.toProtocolRGBA());
