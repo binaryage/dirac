@@ -101,7 +101,6 @@ WebInspector.TracingTimelineModel.prototype = {
      */
     startRecording: function(captureStacks, captureMemory)
     {
-        this.reset();
         var categories;
         if (WebInspector.experimentsSettings.timelineTracingMode.isEnabled()) {
             categories = WebInspector.TracingTimelineModel.defaultTracingCategoryFilter;
@@ -136,6 +135,7 @@ WebInspector.TracingTimelineModel.prototype = {
      */
     _startRecordingWithCategories: function(categories)
     {
+        this.reset();
         this._tracingModel.start(categories, "", this._didStartRecordingTraceEvents.bind(this));
     },
 
