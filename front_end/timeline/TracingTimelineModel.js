@@ -439,6 +439,17 @@ WebInspector.TracingTimelineModel.prototype = {
         return null;
     },
 
+    /**
+     * @param {!WebInspector.TimelineModel.Record} record
+     * @return {!WebInspector.TracingModel.Event}
+     */
+    traceEventFrom: function(record)
+    {
+        if (!(record instanceof WebInspector.TracingTimelineModel.TraceEventRecord))
+            throw new Error("Illegal argument.");
+        return record._event;
+    },
+
     __proto__: WebInspector.TimelineModel.prototype
 }
 

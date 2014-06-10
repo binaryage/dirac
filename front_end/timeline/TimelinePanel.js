@@ -964,13 +964,16 @@ WebInspector.TimelinePanel.prototype = {
         switch (this._selection.type()) {
         case WebInspector.TimelineSelection.Type.Record:
             var record = /** @type {!WebInspector.TimelineModel.Record} */ (this._selection.object());
-            WebInspector.TimelineUIUtils.generatePopupContent(record, this._model, this._detailsLinkifier, this.showInDetails.bind(this, record.title()), this._model.loadedFromFile());
+            if (this._tracingTimelineModel) {
+                var event = this._tracingTimelineModel.traceEventFrom(record);
+                this._buildSelectionDetailsForTraceEvent(event);
+            } else {
+                WebInspector.TimelineUIUtils.generatePopupContent(record, this._model, this._detailsLinkifier, this.showInDetails.bind(this, record.title()), this._model.loadedFromFile());
+            }
             break;
         case WebInspector.TimelineSelection.Type.TraceEvent:
             var event = /** @type {!WebInspector.TracingModel.Event} */ (this._selection.object());
-            var title = WebInspector.TimelineUIUtils.styleForTimelineEvent(event.name).title;
-            var tracingModel = this._tracingTimelineModel;
-            WebInspector.TracingTimelineUIUtils.buildTraceEventDetails(event, tracingModel, this._detailsLinkifier, this.showInDetails.bind(this, title), false, this._model.target());
+            this._buildSelectionDetailsForTraceEvent(event);
             break;
         case WebInspector.TimelineSelection.Type.Frame:
             var frame = /** @type {!WebInspector.TimelineFrame} */ (this._selection.object());
@@ -983,6 +986,15 @@ WebInspector.TimelinePanel.prototype = {
             }
             break;
         }
+    },
+
+    /**
+     * @param {!WebInspector.TracingModel.Event} event
+     */
+    _buildSelectionDetailsForTraceEvent: function(event)
+    {
+        var title = WebInspector.TimelineUIUtils.styleForTimelineEvent(event.name).title;
+        WebInspector.TracingTimelineUIUtils.buildTraceEventDetails(event, this._tracingTimelineModel, this._detailsLinkifier, this.showInDetails.bind(this, title), false, this._model.target());
     },
 
     _updateSelectedRangeStats: function()
