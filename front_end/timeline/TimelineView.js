@@ -1070,7 +1070,9 @@ WebInspector.TimelineRecordListRow.prototype = {
         if (presentationRecord.coalesced()) {
             this._dataElement.createTextChild(WebInspector.UIString("× %d", presentationRecord.presentationChildren().length));
         } else {
-            var detailsNode = WebInspector.TimelineUIUtils.buildDetailsNode(record, this._linkifier, loadedFromFile);
+            var detailsNode = record instanceof WebInspector.TimelineModel.RecordImpl ?
+                WebInspector.TimelineUIUtils.buildDetailsNode(record, this._linkifier, loadedFromFile) :
+                WebInspector.TracingTimelineUIUtils.buildDetailsNodeForTraceEvent(record._event, this._linkifier, loadedFromFile, record.target());
             if (detailsNode) {
                 this._dataElement.appendChild(document.createTextNode("("));
                 this._dataElement.appendChild(detailsNode);
