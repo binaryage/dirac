@@ -890,7 +890,9 @@ WebInspector.SourcesPanel.prototype = {
             return;
 
         var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (target);
-        contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Local modifications\u2026" : "Local Modifications\u2026"), this._showLocalHistory.bind(this, uiSourceCode));
+        var project = uiSourceCode.project();
+        if (project.type() !== WebInspector.projectTypes.FileSystem)
+            contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Local modifications\u2026" : "Local Modifications\u2026"), this._showLocalHistory.bind(this, uiSourceCode));
         this._appendUISourceCodeMappingItems(contextMenu, uiSourceCode);
 
         if (!event.target.isSelfOrDescendant(this.editorView.sidebarElement())) {
