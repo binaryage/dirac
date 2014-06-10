@@ -195,6 +195,8 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
             this.nameElement.classList.add("dimmed");
         if (this.property.isAccessorProperty())
             this.nameElement.classList.add("properties-accessor-property-name");
+        if (this.property.symbol)
+            this.nameElement.addEventListener("contextmenu", this._contextMenuFired.bind(this, this.property.symbol), false);
 
         var separatorElement = document.createElement("span");
         separatorElement.className = "separator";

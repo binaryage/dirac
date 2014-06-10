@@ -334,8 +334,9 @@ WebInspector.RemoteObjectImpl.prototype = {
             for (var i = 0; properties && i < properties.length; ++i) {
                 var property = properties[i];
                 var propertyValue = property.value ? this._target.runtimeModel.createRemoteObject(property.value) : null;
+                var propertySymbol = property.symbol ? this._target.runtimeModel.createRemoteObject(property.symbol) : null;
                 var remoteProperty = new WebInspector.RemoteObjectProperty(property.name, propertyValue,
-                        !!property.enumerable, !!property.writable, !!property.isOwn, !!property.wasThrown);
+                        !!property.enumerable, !!property.writable, !!property.isOwn, !!property.wasThrown, propertySymbol);
 
                 if (typeof property.value === "undefined") {
                     if (property.get && property.get.type !== "undefined")
@@ -721,8 +722,9 @@ WebInspector.ScopeRef = function(number, callFrameId, functionId)
  * @param {boolean=} writable
  * @param {boolean=} isOwn
  * @param {boolean=} wasThrown
+ * @param {?WebInspector.RemoteObject=} symbol
  */
-WebInspector.RemoteObjectProperty = function(name, value, enumerable, writable, isOwn, wasThrown)
+WebInspector.RemoteObjectProperty = function(name, value, enumerable, writable, isOwn, wasThrown, symbol)
 {
     this.name = name;
     if (value !== null)
@@ -731,6 +733,8 @@ WebInspector.RemoteObjectProperty = function(name, value, enumerable, writable, 
     this.writable = typeof writable !== "undefined" ? writable : true;
     this.isOwn = !!isOwn;
     this.wasThrown = !!wasThrown;
+    if (symbol)
+        this.symbol = symbol;
 }
 
 WebInspector.RemoteObjectProperty.prototype = {
