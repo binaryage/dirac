@@ -310,7 +310,7 @@ WebInspector.TracingTimelineModel.prototype = {
         switch (event.name) {
         case recordTypes.CallStack:
             var lastMainThreadEvent = this._mainThreadEvents.peekLast();
-            if (lastMainThreadEvent)
+            if (lastMainThreadEvent && event.args.stack && event.args.stack.length)
                 lastMainThreadEvent.stackTrace = event.args.stack;
             break;
 
