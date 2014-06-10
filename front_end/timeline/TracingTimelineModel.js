@@ -92,7 +92,7 @@ WebInspector.TracingTimelineModel.RecordType = {
     LayerTreeHostImplSnapshot: "cc::LayerTreeHostImpl"
 };
 
-WebInspector.TracingTimelineModel.defaultTracingCategoryFilter = "*,disabled-by-default-cc.debug,disabled-by-default-devtools.timeline";
+WebInspector.TracingTimelineModel.defaultTracingCategoryFilter = "*,disabled-by-default-cc.debug,disabled-by-default-devtools.timeline,disabled-by-default-devtools.timeline.frame";
 
 WebInspector.TracingTimelineModel.prototype = {
     /**
@@ -106,7 +106,7 @@ WebInspector.TracingTimelineModel.prototype = {
         if (WebInspector.experimentsSettings.timelineTracingMode.isEnabled()) {
             categories = WebInspector.TracingTimelineModel.defaultTracingCategoryFilter;
         } else {
-            var categoriesArray = ["disabled-by-default-devtools.timeline", "devtools"];
+            var categoriesArray = ["disabled-by-default-devtools.timeline", "disabled-by-default-devtools.timeline.frame", "devtools"];
             if (captureStacks)
                 categoriesArray.push("disabled-by-default-devtools.timeline.stack");
             categories = categoriesArray.join(",");
