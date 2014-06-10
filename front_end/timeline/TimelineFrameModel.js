@@ -33,32 +33,14 @@
  * @extends {WebInspector.TargetAwareObject}
  * @param {!WebInspector.Target} target
  */
-WebInspector.TimelineFrameModel = function(target)
+WebInspector.TimelineFrameModelBase = function(target)
 {
     WebInspector.TargetAwareObject.call(this, target);
 
     this.reset();
 }
 
-WebInspector.TimelineFrameModel.Events = {
-    FrameAdded: "FrameAdded"
-}
-
-WebInspector.TimelineFrameModel._mainFrameMarkers = [
-    WebInspector.TimelineModel.RecordType.ScheduleStyleRecalculation,
-    WebInspector.TimelineModel.RecordType.InvalidateLayout,
-    WebInspector.TimelineModel.RecordType.BeginFrame,
-    WebInspector.TimelineModel.RecordType.ScrollLayer
-];
-
-WebInspector.TimelineFrameModel._tracingMainFrameMarkers = [
-    WebInspector.TracingTimelineModel.RecordType.ScheduleStyleRecalculation,
-    WebInspector.TracingTimelineModel.RecordType.InvalidateLayout,
-    WebInspector.TracingTimelineModel.RecordType.BeginMainThreadFrame,
-    WebInspector.TracingTimelineModel.RecordType.ScrollLayer
-];
-
-WebInspector.TimelineFrameModel.prototype = {
+WebInspector.TimelineFrameModelBase.prototype = {
     /**
      * @return {!Array.<!WebInspector.TimelineFrame>}
      */
@@ -98,17 +80,8 @@ WebInspector.TimelineFrameModel.prototype = {
         return frames.slice(firstFrame, lastFrame);
     },
 
-    /**
-     * @param {boolean} value
-     */
-    setMergeRecords: function(value)
-    {
-        this._mergeRecords = value;
-    },
-
     reset: function()
     {
-        this._mergeRecords = true;
         this._minimumRecordTime = Infinity;
         this._frames = [];
         this._lastFrame = null;
@@ -117,7 +90,156 @@ WebInspector.TimelineFrameModel.prototype = {
         this._mainFrameCommitted = false;
         this._mainFrameRequested = false;
         this._aggregatedMainThreadWork = null;
+    },
+
+    /**
+     * @param {number} startTime
+     */
+    handleBeginFrame: function(startTime)
+    {
+        if (!this._lastFrame)
+            this._startBackgroundFrame(startTime);
+    },
+
+    /**
+     * @param {number} startTime
+     */
+    handleDrawFrame: function(startTime)
+    {
+        if (!this._lastFrame) {
+            this._startBackgroundFrame(startTime);
+            return;
+        }
+
+        // - if it wasn't drawn, it didn't happen!
+        // - only show frames that either did not wait for the main thread frame or had one committed.
+        if (this._mainFrameCommitted || !this._mainFrameRequested)
+            this._startBackgroundFrame(startTime);
+        this._mainFrameCommitted = false;
+    },
+
+    handleActivateLayerTree: function()
+    {
+        if (!this._lastFrame)
+            return;
+        this._mainFrameRequested = false;
+        this._mainFrameCommitted = true;
+        this._lastFrame._addTimeForCategories(this._aggregatedMainThreadWorkToAttachToBackgroundFrame);
+        this._aggregatedMainThreadWorkToAttachToBackgroundFrame = {};
+    },
+
+    handleRequestMainThreadFrame: function()
+    {
+        if (!this._lastFrame)
+            return;
+        this._mainFrameRequested = true;
+    },
+
+    handleCompositeLayers: function()
+    {
+        if (!this._hasThreadedCompositing || !this._aggregatedMainThreadWork)
+            return;
+        this._aggregatedMainThreadWorkToAttachToBackgroundFrame = this._aggregatedMainThreadWork;
+        this._aggregatedMainThreadWork = null;
+    },
+
+    /**
+     * @param {!WebInspector.DeferredLayerTree} layerTree
+     */
+    handleLayerTreeSnapshot: function(layerTree)
+    {
+        this._lastLayerTree = layerTree;
+    },
+
+    /**
+     * @param {number} startTime
+     */
+    _startBackgroundFrame: function(startTime)
+    {
+        if (!this._hasThreadedCompositing) {
+            this._lastFrame = null;
+            this._hasThreadedCompositing = true;
+        }
+        if (this._lastFrame)
+            this._flushFrame(this._lastFrame, startTime);
+
+        this._lastFrame = new WebInspector.TimelineFrame(startTime, startTime - this._minimumRecordTime);
+    },
+
+    /**
+     * @param {number} startTime
+     */
+    _startMainThreadFrame: function(startTime)
+    {
+        if (this._lastFrame)
+            this._flushFrame(this._lastFrame, startTime);
+        this._lastFrame = new WebInspector.TimelineFrame(startTime, startTime - this._minimumRecordTime);
+    },
+
+    /**
+     * @param {!WebInspector.TimelineFrame} frame
+     * @param {number} endTime
+     */
+    _flushFrame: function(frame, endTime)
+    {
+        frame._setLayerTree(this._lastLayerTree);
+        frame._setEndTime(endTime);
+        this._frames.push(frame);
+    },
+
+    /**
+     * @param {!Array.<string>} types
+     * @param {!WebInspector.TimelineModel.Record} record
+     * @return {?WebInspector.TimelineModel.Record} record
+     */
+    _findRecordRecursively: function(types, record)
+    {
+        if (types.indexOf(record.type()) >= 0)
+            return record;
+        if (!record.children())
+            return null;
+        for (var i = 0; i < record.children().length; ++i) {
+            var result = this._findRecordRecursively(types, record.children()[i]);
+            if (result)
+                return result;
+        }
+        return null;
+    },
+
+    __proto__: WebInspector.TargetAwareObject.prototype
+}
+
+/**
+ * @constructor
+ * @param {!WebInspector.Target} target
+ * @extends {WebInspector.TimelineFrameModelBase}
+ */
+WebInspector.TimelineFrameModel = function(target)
+{
+    WebInspector.TimelineFrameModelBase.call(this, target);
+}
+
+WebInspector.TimelineFrameModel._mainFrameMarkers = [
+    WebInspector.TimelineModel.RecordType.ScheduleStyleRecalculation,
+    WebInspector.TimelineModel.RecordType.InvalidateLayout,
+    WebInspector.TimelineModel.RecordType.BeginFrame,
+    WebInspector.TimelineModel.RecordType.ScrollLayer
+];
+
+WebInspector.TimelineFrameModel.prototype = {
+    reset: function()
+    {
+        this._mergeRecords = true;
         this._mergingBuffer = new WebInspector.TimelineMergingRecordBuffer();
+        WebInspector.TimelineFrameModelBase.prototype.reset.call(this);
+    },
+
+    /**
+     * @param {boolean} value
+     */
+    setMergeRecords: function(value)
+    {
+        this._mergeRecords = value;
     },
 
     /**
@@ -160,6 +282,93 @@ WebInspector.TimelineFrameModel.prototype = {
         }
     },
 
+    /**
+     * @param {!WebInspector.TimelineModel.Record} record
+     */
+    _addBackgroundRecord: function(record)
+    {
+        var recordTypes = WebInspector.TimelineModel.RecordType;
+        if (record.type() === recordTypes.BeginFrame)
+            this.handleBeginFrame(record.startTime());
+        else if (record.type() === recordTypes.DrawFrame)
+            this.handleDrawFrame(record.startTime());
+        else if (record.type() === recordTypes.RequestMainThreadFrame)
+            this.handleRequestMainThreadFrame();
+        else if (record.type() === recordTypes.ActivateLayerTree)
+            this.handleActivateLayerTree();
+
+        if (this._lastFrame)
+            this._lastFrame._addTimeFromRecord(record);
+    },
+
+    /**
+     * @param {?WebInspector.TimelineModel.Record} programRecord
+     * @param {!WebInspector.TimelineModel.Record} record
+     */
+    _addMainThreadRecord: function(programRecord, record)
+    {
+        var recordTypes = WebInspector.TimelineModel.RecordType;
+        if (record.type() === recordTypes.UpdateLayerTree && record.data()["layerTree"])
+            this.handleLayerTreeSnapshot(new WebInspector.DeferredAgentLayerTree(this.target(), record.data()["layerTree"]));
+        if (!this._hasThreadedCompositing) {
+            if (record.type() === recordTypes.BeginFrame)
+                this._startMainThreadFrame(record.startTime());
+
+            if (!this._lastFrame)
+                return;
+
+            this._lastFrame._addTimeFromRecord(record);
+
+            // Account for "other" time at the same time as the first child.
+            if (programRecord.children()[0] === record)
+                this._lastFrame._addTimeForCategory("other", this._deriveOtherTime(programRecord));
+            return;
+        }
+
+        if (!this._aggregatedMainThreadWork)
+            return;
+
+        WebInspector.TimelineUIUtils.aggregateTimeForRecord(this._aggregatedMainThreadWork, record);
+        if (programRecord.children()[0] === record)
+            this._aggregatedMainThreadWork["other"] = (this._aggregatedMainThreadWork["other"] || 0) + this._deriveOtherTime(programRecord);
+
+        if (record.type() === recordTypes.CompositeLayers)
+            this.handleCompositeLayers();
+    },
+
+    /**
+     * @param {!WebInspector.TimelineModel.Record} programRecord
+     * @return {number}
+     */
+    _deriveOtherTime: function(programRecord)
+    {
+        var accounted = 0;
+        for (var i = 0; i < programRecord.children().length; ++i)
+            accounted += programRecord.children()[i].endTime() - programRecord.children()[i].startTime();
+        return programRecord.endTime() - programRecord.startTime() - accounted;
+    },
+
+    __proto__: WebInspector.TimelineFrameModelBase.prototype,
+};
+
+/**
+ * @constructor
+ * @param {!WebInspector.Target} target
+ * @extends {WebInspector.TimelineFrameModelBase}
+ */
+WebInspector.TracingTimelineFrameModel = function(target)
+{
+    WebInspector.TimelineFrameModelBase.call(this, target);
+}
+
+WebInspector.TracingTimelineFrameModel._mainFrameMarkers = [
+    WebInspector.TracingTimelineModel.RecordType.ScheduleStyleRecalculation,
+    WebInspector.TracingTimelineModel.RecordType.InvalidateLayout,
+    WebInspector.TracingTimelineModel.RecordType.BeginMainThreadFrame,
+    WebInspector.TracingTimelineModel.RecordType.ScrollLayer
+];
+
+WebInspector.TracingTimelineFrameModel.prototype = {
     /**
      * @param {!Array.<!WebInspector.TracingModel.Event>} events
      * @param {string} sessionId
@@ -243,7 +452,7 @@ WebInspector.TimelineFrameModel.prototype = {
             return;
         }
 
-        if (!this._aggregatedMainThreadWork && WebInspector.TimelineFrameModel._tracingMainFrameMarkers.indexOf(event.name) >= 0)
+        if (!this._aggregatedMainThreadWork && WebInspector.TracingTimelineFrameModel._mainFrameMarkers.indexOf(event.name) >= 0)
             this._aggregatedMainThreadWork = {};
         if (!this._aggregatedMainThreadWork)
             return;
@@ -256,188 +465,7 @@ WebInspector.TimelineFrameModel.prototype = {
             this.handleCompositeLayers();
     },
 
-    /**
-     * @param {number} startTime
-     */
-    handleBeginFrame: function(startTime)
-    {
-        if (!this._lastFrame)
-            this._startBackgroundFrame(startTime);
-    },
-
-    /**
-     * @param {number} startTime
-     */
-    handleDrawFrame: function(startTime)
-    {
-        if (!this._lastFrame) {
-            this._startBackgroundFrame(startTime);
-            return;
-        }
-
-        // - if it wasn't drawn, it didn't happen!
-        // - only show frames that either did not wait for the main thread frame or had one committed.
-        if (this._mainFrameCommitted || !this._mainFrameRequested)
-            this._startBackgroundFrame(startTime);
-        this._mainFrameCommitted = false;
-    },
-
-    handleActivateLayerTree: function()
-    {
-        if (!this._lastFrame)
-            return;
-        this._mainFrameRequested = false;
-        this._mainFrameCommitted = true;
-        this._lastFrame._addTimeForCategories(this._aggregatedMainThreadWorkToAttachToBackgroundFrame);
-        this._aggregatedMainThreadWorkToAttachToBackgroundFrame = {};
-    },
-
-    handleRequestMainThreadFrame: function()
-    {
-        if (!this._lastFrame)
-            return;
-        this._mainFrameRequested = true;
-    },
-
-    handleCompositeLayers: function()
-    {
-        if (!this._hasThreadedCompositing || !this._aggregatedMainThreadWork)
-            return;
-        this._aggregatedMainThreadWorkToAttachToBackgroundFrame = this._aggregatedMainThreadWork;
-        this._aggregatedMainThreadWork = null;
-    },
-
-    /**
-     * @param {!WebInspector.DeferredLayerTree} layerTree
-     */
-    handleLayerTreeSnapshot: function(layerTree)
-    {
-        this._lastLayerTree = layerTree;
-    },
-
-    /**
-     * @param {!WebInspector.TimelineModel.Record} record
-     */
-    _addBackgroundRecord: function(record)
-    {
-        var recordTypes = WebInspector.TimelineModel.RecordType;
-        if (record.type() === recordTypes.BeginFrame)
-            this.handleBeginFrame(record.startTime());
-        else if (record.type() === recordTypes.DrawFrame)
-            this.handleDrawFrame(record.startTime());
-        else if (record.type() === recordTypes.RequestMainThreadFrame)
-            this.handleRequestMainThreadFrame();
-        else if (record.type() === recordTypes.ActivateLayerTree)
-            this.handleActivateLayerTree();
-
-        if (this._lastFrame)
-            this._lastFrame._addTimeFromRecord(record);
-    },
-
-    /**
-     * @param {?WebInspector.TimelineModel.Record} programRecord
-     * @param {!WebInspector.TimelineModel.Record} record
-     */
-    _addMainThreadRecord: function(programRecord, record)
-    {
-        var recordTypes = WebInspector.TimelineModel.RecordType;
-        if (record.type() === recordTypes.UpdateLayerTree && record.data()["layerTree"])
-            this.handleLayerTreeSnapshot(new WebInspector.DeferredAgentLayerTree(this.target(), record.data()["layerTree"]));
-        if (!this._hasThreadedCompositing) {
-            if (record.type() === recordTypes.BeginFrame)
-                this._startMainThreadFrame(record.startTime());
-
-            if (!this._lastFrame)
-                return;
-
-            this._lastFrame._addTimeFromRecord(record);
-
-            // Account for "other" time at the same time as the first child.
-            if (programRecord.children()[0] === record)
-                this._lastFrame._addTimeForCategory("other", this._deriveOtherTime(programRecord));
-            return;
-        }
-
-        if (!this._aggregatedMainThreadWork)
-            return;
-
-        WebInspector.TimelineUIUtils.aggregateTimeForRecord(this._aggregatedMainThreadWork, record);
-        if (programRecord.children()[0] === record)
-            this._aggregatedMainThreadWork["other"] = (this._aggregatedMainThreadWork["other"] || 0) + this._deriveOtherTime(programRecord);
-
-        if (record.type() === recordTypes.CompositeLayers)
-            this.handleCompositeLayers();
-    },
-
-    /**
-     * @param {!WebInspector.TimelineModel.Record} programRecord
-     * @return {number}
-     */
-    _deriveOtherTime: function(programRecord)
-    {
-        var accounted = 0;
-        for (var i = 0; i < programRecord.children().length; ++i)
-            accounted += programRecord.children()[i].endTime() - programRecord.children()[i].startTime();
-        return programRecord.endTime() - programRecord.startTime() - accounted;
-    },
-
-    /**
-     * @param {number} startTime
-     */
-    _startBackgroundFrame: function(startTime)
-    {
-        if (!this._hasThreadedCompositing) {
-            this._lastFrame = null;
-            this._hasThreadedCompositing = true;
-        }
-        if (this._lastFrame)
-            this._flushFrame(this._lastFrame, startTime);
-
-        this._lastFrame = new WebInspector.TimelineFrame(startTime, startTime - this._minimumRecordTime);
-    },
-
-    /**
-     * @param {number} startTime
-     */
-    _startMainThreadFrame: function(startTime)
-    {
-        if (this._lastFrame)
-            this._flushFrame(this._lastFrame, startTime);
-        this._lastFrame = new WebInspector.TimelineFrame(startTime, startTime - this._minimumRecordTime);
-    },
-
-    /**
-     * @param {!WebInspector.TimelineFrame} frame
-     * @param {number} endTime
-     */
-    _flushFrame: function(frame, endTime)
-    {
-        frame._setLayerTree(this._lastLayerTree);
-        frame._setEndTime(endTime);
-        this._frames.push(frame);
-        this.dispatchEventToListeners(WebInspector.TimelineFrameModel.Events.FrameAdded, frame);
-    },
-
-    /**
-     * @param {!Array.<string>} types
-     * @param {!WebInspector.TimelineModel.Record} record
-     * @return {?WebInspector.TimelineModel.Record} record
-     */
-    _findRecordRecursively: function(types, record)
-    {
-        if (types.indexOf(record.type()) >= 0)
-            return record;
-        if (!record.children())
-            return null;
-        for (var i = 0; i < record.children().length; ++i) {
-            var result = this._findRecordRecursively(types, record.children()[i]);
-            if (result)
-                return result;
-        }
-        return null;
-    },
-
-    __proto__: WebInspector.TargetAwareObject.prototype
+    __proto__: WebInspector.TimelineFrameModelBase.prototype
 }
 
 /**

@@ -32,7 +32,7 @@
  * @constructor
  * @extends {WebInspector.TimelineOverviewBase}
  * @param {!WebInspector.TimelineModel} model
- * @param {!WebInspector.TimelineFrameModel} frameModel
+ * @param {!WebInspector.TimelineFrameModelBase} frameModel
  */
 WebInspector.TimelineFrameOverview = function(model, frameModel)
 {

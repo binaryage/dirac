@@ -33,7 +33,7 @@
  * @implements {WebInspector.FlameChartDataProvider}
  * @implements {WebInspector.TimelineFlameChart.SelectionProvider}
  * @param {!WebInspector.TimelineModel} model
- * @param {!WebInspector.TimelineFrameModel} frameModel
+ * @param {!WebInspector.TimelineFrameModelBase} frameModel
  */
 WebInspector.TimelineFlameChartDataProvider = function(model, frameModel)
 {
@@ -443,7 +443,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
  * @implements {WebInspector.FlameChartDataProvider}
  * @implements {WebInspector.TimelineFlameChart.SelectionProvider}
  * @param {!WebInspector.TracingTimelineModel} model
- * @param {!WebInspector.TimelineFrameModel} frameModel
+ * @param {!WebInspector.TimelineFrameModelBase} frameModel
  * @param {!WebInspector.Target} target
  */
 WebInspector.TracingBasedTimelineFlameChartDataProvider = function(model, frameModel, target)
@@ -805,7 +805,7 @@ WebInspector.TimelineFlameChartDataProvider.jsFrameColorGenerator = function()
  * @param {!WebInspector.TimelineModeViewDelegate} delegate
  * @param {!WebInspector.TimelineModel} model
  * @param {?WebInspector.TracingTimelineModel} tracingModel
- * @param {!WebInspector.TimelineFrameModel} frameModel
+ * @param {!WebInspector.TimelineFrameModelBase} frameModel
  */
 WebInspector.TimelineFlameChart = function(delegate, model, tracingModel, frameModel)
 {

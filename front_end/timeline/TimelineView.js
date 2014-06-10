@@ -73,7 +73,7 @@ WebInspector.TimelineView = function(delegate, model)
 
 WebInspector.TimelineView.prototype = {
     /**
-     * @param {?WebInspector.TimelineFrameModel} frameModel
+     * @param {?WebInspector.TimelineFrameModelBase} frameModel
      */
     setFrameModel: function(frameModel)
     {

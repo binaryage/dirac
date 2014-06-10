@@ -249,16 +249,21 @@ WebInspector.TimelinePanel.prototype = {
     },
 
     /**
-     * @return {!WebInspector.TimelineFrameModel}
+     * @return {!WebInspector.TimelineFrameModelBase}
      */
     _frameModel: function()
     {
-        if (!this._lazyFrameModel) {
-            this._lazyFrameModel = new WebInspector.TimelineFrameModel(this._model.target());
-            this._lazyFrameModel.setMergeRecords(!WebInspector.experimentsSettings.timelineNoLiveUpdate.isEnabled() || !this._recordingInProgress);
-            this._lazyFrameModel.addRecords(this._model.records());
-            if (this._tracingModel)
-                this._lazyFrameModel.addTraceEvents(this._tracingTimelineModel.inspectedTargetEvents(), this._tracingModel.sessionId() || "");
+        if (this._lazyFrameModel)
+            return this._lazyFrameModel;
+        if (this._tracingModel) {
+            var tracingFrameModel = new WebInspector.TracingTimelineFrameModel(this._model.target());
+            tracingFrameModel.addTraceEvents(this._tracingTimelineModel.inspectedTargetEvents(), this._tracingModel.sessionId() || "");
+            this._lazyFrameModel = tracingFrameModel;
+        } else {
+            var frameModel = new WebInspector.TimelineFrameModel(this._model.target());
+            frameModel.setMergeRecords(!WebInspector.experimentsSettings.timelineNoLiveUpdate.isEnabled() || !this._recordingInProgress);
+            frameModel.addRecords(this._model.records());
+            this._lazyFrameModel = frameModel;
         }
         return this._lazyFrameModel;
     },
@@ -809,7 +814,7 @@ WebInspector.TimelinePanel.prototype = {
      */
     _addRecord: function(record)
     {
-        if (this._lazyFrameModel)
+        if (this._lazyFrameModel && !this._tracingModel)
             this._lazyFrameModel.addRecord(record);
         for (var i = 0; i < this._currentViews.length; ++i)
             this._currentViews[i].addRecord(record);
