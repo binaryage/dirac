@@ -391,6 +391,7 @@ WebInspector.ResponsiveDesignView.prototype = {
 
         this._expandedDeviceSection = document.createElementWithClass("div", "responsive-design-composite-section vbox");
         this._expandedScreenTouchSection = document.createElementWithClass("div", "responsive-design-composite-section hbox");
+        this._expandedNetworkSection = document.createElementWithClass("div", "responsive-design-composite-section vbox solid");
 
         this._expandSection = document.createElementWithClass("div", "responsive-design-section vbox");
         WebInspector.settings.responsiveDesign.toolbarExpanded = WebInspector.settings.createSetting("responsiveDesign.toolbarExpanded", false);
@@ -466,6 +467,35 @@ WebInspector.ResponsiveDesignView.prototype = {
         this._touchSection.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Touch"), WebInspector.overridesSupport.settings.emulateTouchEvents, true));
         this._touchSection.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Viewport"), WebInspector.overridesSupport.settings.emulateViewport, true));
 
+        // Network.
+        this._networkSection = document.createElementWithClass("div", "responsive-design-section responsive-design-network");
+        var networkCheckbox = WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Network"), WebInspector.overridesSupport.settings.emulateNetworkConditions, true);
+        this._networkSection.appendChild(networkCheckbox);
+        this._networkSection.appendChild(WebInspector.overridesSupport.createNetworkThroughputSelect(document));
+
+        this._networkDomainsSection = document.createElementWithClass("div", "responsive-design-section");
+        fieldsetElement = WebInspector.SettingsUI.createSettingFieldset(WebInspector.overridesSupport.settings.emulateNetworkConditions);
+        var networkDomainsInput = WebInspector.SettingsUI.createSettingInputField("", WebInspector.overridesSupport.settings.networkConditionsDomains, false, 0, "190px", WebInspector.OverridesSupport.networkDomainsValidator, false);
+        networkDomainsInput.querySelector("input").placeholder = WebInspector.UIString("Leave empty to limit all domains");
+        fieldsetElement.appendChild(networkDomainsInput);
+        this._networkDomainsSection.appendChild(fieldsetElement);
+
+        updateNetworkCheckboxTitle();
+        WebInspector.overridesSupport.settings.networkConditionsDomains.addChangeListener(updateNetworkCheckboxTitle);
+
+        function updateNetworkCheckboxTitle()
+        {
+            var domains = WebInspector.overridesSupport.settings.networkConditionsDomains.get();
+            if (!domains.trim()) {
+                networkCheckbox.title = WebInspector.UIString("Limit for all domains");
+            } else {
+                var trimmed = domains.split(",").map(function(s) { return s.trim(); }).join(", ");
+                if (trimmed.length > 40)
+                    trimmed = trimmed.substring(0, 40) + "...";
+                networkCheckbox.title = WebInspector.UIString("Limit for ") + trimmed;
+            }
+        }
+
         // User agent.
         this._userAgentSection = document.createElementWithClass("div", "responsive-design-composite-section vbox solid");
         var userAgentRow = this._userAgentSection.createChild("div", "responsive-design-composite-section hbox solid");
@@ -491,9 +521,10 @@ WebInspector.ResponsiveDesignView.prototype = {
         if (expanded) {
             this._expandedScreenTouchSection.setChildren([this._screenSection, this._touchSection]);
             this._expandedDeviceSection.setChildren([this._deviceSection, this._expandedScreenTouchSection]);
-            this._toolbarSection.setChildren([this._expandSection, this._expandedDeviceSection, this._userAgentSection]);
+            this._expandedNetworkSection.setChildren([this._networkSection, this._networkDomainsSection]);
+            this._toolbarSection.setChildren([this._expandSection, this._expandedDeviceSection, this._userAgentSection, this._expandedNetworkSection]);
         } else {
-            this._toolbarSection.setChildren([this._expandSection, this._deviceSection, this._screenSection, this._touchSection]);
+            this._toolbarSection.setChildren([this._expandSection, this._deviceSection, this._screenSection, this._touchSection, this._networkSection]);
         }
 
         this.onResize();

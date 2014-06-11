@@ -48,8 +48,10 @@ WebInspector.OverridesView = function()
             new WebInspector.OverridesView.DeviceTab().appendAsTab(this._tabbedPane);
         new WebInspector.OverridesView.ViewportTab().appendAsTab(this._tabbedPane);
     }
-    if (!WebInspector.overridesSupport.responsiveDesignAvailable())
+    if (!WebInspector.overridesSupport.responsiveDesignAvailable()) {
         new WebInspector.OverridesView.UserAgentTab().appendAsTab(this._tabbedPane);
+        new WebInspector.OverridesView.NetworkTab().appendAsTab(this._tabbedPane);
+    }
     new WebInspector.OverridesView.SensorsTab().appendAsTab(this._tabbedPane);
 
     this._lastSelectedTabSetting = WebInspector.settings.createSetting("lastSelectedEmulateTab", "device");
@@ -364,6 +366,41 @@ WebInspector.OverridesView.UserAgentTab.prototype = {
         fieldsetElement.appendChild(userAgentSelectAndInput.select);
         fieldsetElement.createChild("br");
         fieldsetElement.appendChild(userAgentSelectAndInput.input);
+        return fieldsetElement;
+    },
+
+    __proto__: WebInspector.OverridesView.Tab.prototype
+}
+
+
+/**
+ * @constructor
+ * @extends {WebInspector.OverridesView.Tab}
+ */
+WebInspector.OverridesView.NetworkTab = function()
+{
+    WebInspector.OverridesView.Tab.call(this, "network", WebInspector.UIString("Network"), [WebInspector.overridesSupport.settings.emulateNetworkConditions]);
+    this.element.classList.add("overrides-network");
+    this.element.appendChild(this._createSettingCheckbox(WebInspector.UIString("Limit network throughput"), WebInspector.overridesSupport.settings.emulateNetworkConditions));
+    this.element.appendChild(this._createNetworkConditionsElement());
+}
+
+WebInspector.OverridesView.NetworkTab.prototype = {
+    /**
+     * @return {!Element}
+     */
+    _createNetworkConditionsElement: function()
+    {
+        var fieldsetElement = WebInspector.SettingsUI.createSettingFieldset(WebInspector.overridesSupport.settings.emulateNetworkConditions);
+
+        var networkThroughput = WebInspector.overridesSupport.createNetworkThroughputSelect(document);
+        fieldsetElement.appendChild(networkThroughput);
+        fieldsetElement.createChild("br");
+
+        var networkDomains = WebInspector.SettingsUI.createSettingInputField("For domains:", WebInspector.overridesSupport.settings.networkConditionsDomains, false, 0, "", WebInspector.OverridesSupport.networkDomainsValidator, false);
+        networkDomains.querySelector("input").placeholder = WebInspector.UIString("Leave empty to limit all domains");
+        fieldsetElement.appendChild(networkDomains);
+
         return fieldsetElement;
     },
 

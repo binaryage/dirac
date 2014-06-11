@@ -261,6 +261,7 @@ WebInspector.OverridesSupport.DeviceOrientation.clearDeviceOrientationOverride =
 
 /**
  * @param {string} value
+ * @return {!string}
  */
 WebInspector.OverridesSupport.integerInputValidator = function(value)
 {
@@ -271,12 +272,29 @@ WebInspector.OverridesSupport.integerInputValidator = function(value)
 
 /**
  * @param {string} value
+ * @return {!string}
  */
 WebInspector.OverridesSupport.doubleInputValidator = function(value)
 {
     if (/^[\d]+(\.\d+)?|\.\d+$/.test(value) && value >= 0 && value <= 10000)
         return "";
     return WebInspector.UIString("Value must be non-negative float");
+}
+
+/**
+ * @param {string} value
+ * @return {!string}
+ */
+WebInspector.OverridesSupport.networkDomainsValidator = function(value)
+{
+    function test(s)
+    {
+        return /^[\w\-]+(\.[\w\-]+)*$/.test(s.trim());
+    }
+
+    if (!value.trim())
+        return "";
+    return value.split(",").every(test) ? "" : WebInspector.UIString("Value must be a comma-separated list of domains");
 }
 
 // Third element lists device metrics separated by 'x':
@@ -445,6 +463,20 @@ WebInspector.OverridesSupport._userAgents = [
     ["Silk \u2014 Kindle Fire (Mobile view)", "Mozilla/5.0 (Linux; U; Android 4.2.2; en-us; KFTHWI Build/JDQ39) AppleWebKit/535.19 (KHTML, like Gecko) Silk/3.13 Mobile Safari/535.19 Silk-Accelerated=true"],
 ];
 
+WebInspector.OverridesSupport._networkThroughputPresets = [
+    ["Offline", 0],
+    ["5 Kbps", 5 * 1024 / 8],
+    ["10 Kbps (GSM)", 10 * 1024 / 8],
+    ["20 Kbps", 20 * 1024 / 8],
+    ["40 Kbps (GPRS)", 40 * 1024 / 8],
+    ["80 Kbps", 80 * 1024 / 8],
+    ["160 Kbps (EDGE)", 160 * 1024 / 8],
+    ["320 Kbps", 320 * 1024 / 8],
+    ["640 Kbps (3G)", 640 * 1024 / 8],
+    ["1 Mbps", 1024 * 1024 / 8],
+    ["2 Mbps (802.11b)", 2048 * 1024 / 8]
+];
+
 WebInspector.OverridesSupport.prototype = {
     /**
      * @return {boolean}
@@ -559,6 +591,10 @@ WebInspector.OverridesSupport.prototype = {
         this.settings.overrideCSSMedia.addChangeListener(this._cssMediaChanged, this);
         this.settings.emulatedCSSMedia.addChangeListener(this._cssMediaChanged, this);
 
+        this.settings.emulateNetworkConditions.addChangeListener(this._networkConditionsChanged, this);
+        this.settings.networkConditionsDomains.addChangeListener(this._networkConditionsChanged, this);
+        this.settings.networkConditionsThroughput.addChangeListener(this._networkConditionsChanged, this);
+
         WebInspector.settings.showMetricsRulers.addChangeListener(this._showRulersChanged, this);
 
         if (this.settings.overrideDeviceOrientation.get())
@@ -578,6 +614,9 @@ WebInspector.OverridesSupport.prototype = {
 
         if (this.settings.overrideUserAgent.get())
             this._userAgentChanged();
+
+        if (this.settings.emulateNetworkConditions.get())
+            this._networkConditionsChanged();
 
         this._showRulersChanged();
     },
@@ -756,6 +795,20 @@ WebInspector.OverridesSupport.prototype = {
         this.maybeHasActiveOverridesChanged();
     },
 
+    _networkConditionsChanged: function()
+    {
+        if (!this.settings.emulateNetworkConditions.get()) {
+            NetworkAgent.emulateNetworkConditions([], 0, false);
+        } else {
+            var domainsString = this.settings.networkConditionsDomains.get().trim();
+            var domains = domainsString ? domainsString.split(",").map(function (s) { return s.trim(); }) : [];
+            var throughput = this.settings.networkConditionsThroughput.get();
+            var offline = !throughput;
+            NetworkAgent.emulateNetworkConditions(domains, throughput, offline);
+        }
+        this.maybeHasActiveOverridesChanged();
+    },
+
     /**
      * @return {boolean}
      */
@@ -859,6 +912,10 @@ WebInspector.OverridesSupport.prototype = {
         this.settings.overrideCSSMedia = WebInspector.settings.createSetting("overrideCSSMedia", false);
         this.settings.emulatedCSSMedia = WebInspector.settings.createSetting("emulatedCSSMedia", "print");
         this.settings.emulatedDevice = WebInspector.settings.createSetting("emulatedDevice", "Google Nexus 5");
+
+        this.settings.emulateNetworkConditions = WebInspector.settings.createSetting("emulateNetworkConditions", false);
+        this.settings.networkConditionsDomains = WebInspector.settings.createSetting("networkConditionsDomains", "");
+        this.settings.networkConditionsThroughput = WebInspector.settings.createSetting("networkConditionsThroughput", 0);
 
         this.maybeHasActiveOverridesChanged();
 
@@ -1082,6 +1139,52 @@ WebInspector.OverridesSupport.prototype = {
         }
 
         return { select: userAgentSelectElement, input: otherUserAgentElement };
+    },
+
+    /**
+     * @param {!Document} document
+     * @return {!Element}
+     */
+    createNetworkThroughputSelect: function(document)
+    {
+        var throughputSetting = WebInspector.overridesSupport.settings.networkConditionsThroughput;
+        var emulateNetworkSetting = WebInspector.overridesSupport.settings.emulateNetworkConditions;
+        var throughputSelectElement = document.createElement("select");
+        var presets = WebInspector.OverridesSupport._networkThroughputPresets;
+        for (var i = 0; i < presets.length; ++i)
+            throughputSelectElement.add(new Option(presets[i][0], presets[i][1]));
+        throughputSelectElement.selectedIndex = 0;
+
+        settingChanged();
+        throughputSetting.addChangeListener(settingChanged);
+        throughputSelectElement.addEventListener("change", throughputSelected, false);
+
+        function throughputSelected()
+        {
+            var value = Number(throughputSelectElement.options[throughputSelectElement.selectedIndex].value);
+            throughputSetting.removeChangeListener(settingChanged);
+            throughputSetting.set(value);
+            throughputSetting.addChangeListener(settingChanged);
+            emulateNetworkSetting.set(true);
+        }
+
+        function settingChanged()
+        {
+            var value = String(throughputSetting.get());
+            var options = throughputSelectElement.options;
+            var selectionRestored = false;
+            for (var i = 0; i < options.length; ++i) {
+                if (options[i].value === value) {
+                    throughputSelectElement.selectedIndex = i;
+                    selectionRestored = true;
+                    break;
+                }
+            }
+            if (!selectionRestored)
+                throughputSelectElement.selectedIndex = options.length - 1;
+        }
+
+        return throughputSelectElement;
     },
 
     __proto__: WebInspector.Object.prototype

@@ -103,6 +103,30 @@
     padding-top: 5px;
 }
 
+.overrides-network fieldset {
+    padding-top: 5px;
+}
+
+.overrides-network fieldset p {
+    width: 100%;
+    margin-left: 2px;
+}
+
+.overrides-network fieldset select {
+    margin-bottom: 5px;
+}
+
+.overrides-network fieldset p label {
+    cursor: default;
+    margin-right: 5px;
+}
+
+.overrides-network fieldset input[type='text'] {
+    width: 100%;
+    max-width: 400px;
+    min-width: 120px;
+}
+
 .overrides-device > select {
     margin-bottom: 10px;
     width: 400px;
@@ -183,7 +207,7 @@ button.overrides-swap {
     margin-bottom: 10px;
 }
 
-.overrides-device, .overrides-viewport, .overrides-user-agent, .overrides-sensors {
+.overrides-device, .overrides-viewport, .overrides-user-agent, .overrides-network, .overrides-sensors {
     flex: none !important;
 }
 
@@ -194,6 +218,7 @@ button.overrides-swap {
 .overrides-activate-device #tab-device,
 .overrides-activate-viewport #tab-viewport,
 .overrides-activate-user-agent #tab-user-agent,
+.overrides-activate-network #tab-network,
 .overrides-activate-sensors #tab-sensors {
     color: rgb(25, 100, 228);
     opacity: 0.8;
@@ -202,6 +227,7 @@ button.overrides-swap {
 .overrides-activate-device #tab-device.selected,
 .overrides-activate-viewport #tab-viewport.selected,
 .overrides-activate-user-agent #tab-user-agent.selected,
+.overrides-activate-network #tab-network.selected,
 .overrides-activate-sensors #tab-sensors.selected {
     opacity: 1;
 }

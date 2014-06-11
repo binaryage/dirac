@@ -109,6 +109,7 @@ WebInspector.SettingsUI.createSettingInputField = function(label, setting, numer
         inputElement.addEventListener("change", onInput, false);
         inputElement.addEventListener("input", onInput, false);
     }
+    inputElement.addEventListener("keydown", onKeyDown, false);
 
     var errorMessageLabel;
     if (validatorCallback) {
@@ -122,6 +123,12 @@ WebInspector.SettingsUI.createSettingInputField = function(label, setting, numer
         if (validatorCallback)
             validate();
         if (instant)
+            apply();
+    }
+
+    function onKeyDown(event)
+    {
+        if (isEnterKey(event))
             apply();
     }
 
