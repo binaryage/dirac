@@ -340,7 +340,7 @@ WebInspector.TimelineView.prototype = {
             var aggregatedStats = {};
             var presentationChildren = presentationRecord.presentationChildren();
             for (var i = 0; i < presentationChildren.length; ++i)
-                WebInspector.TimelineUIUtils.aggregateTimeByCategory(aggregatedStats, presentationChildren[i].record().aggregatedStats);
+                WebInspector.TimelineUIUtils.aggregateTimeByCategory(aggregatedStats, presentationChildren[i].record().aggregatedStats());
             var idle = presentationRecord.record().endTime() - presentationRecord.record().startTime();
             for (var category in aggregatedStats)
                 idle -= aggregatedStats[category];
