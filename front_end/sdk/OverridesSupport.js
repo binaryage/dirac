@@ -42,6 +42,7 @@ WebInspector.OverridesSupport = function(responsiveDesignAvailable)
     this._userAgent = "";
     this._pageResizer = null;
     this._initialized = false;
+    this._deviceMetricsThrottler = new WebInspector.Throttler(0);
     WebInspector.targetManager.observeTargets(this);
     this._responsiveDesignAvailable = responsiveDesignAvailable;
 }
@@ -623,10 +624,9 @@ WebInspector.OverridesSupport.prototype = {
         var overrideDeviceResolution = this.settings.overrideDeviceResolution.get();
         var emulationEnabled = overrideDeviceResolution || this.settings.emulateViewport.get();
         if (responsiveDesignAvailableAndDisabled || !emulationEnabled) {
-            PageAgent.clearDeviceMetricsOverride(apiCallback.bind(this));
+            this._deviceMetricsThrottler.schedule(clearDeviceMetricsOverride.bind(this));
             if (this._pageResizer && !emulationEnabled)
                 this._pageResizer.update(0, 0, 0);
-            this.maybeHasActiveOverridesChanged();
             return;
         }
 
@@ -651,47 +651,41 @@ WebInspector.OverridesSupport.prototype = {
             }
         }
 
-        // Do not emulate resolution more often than 10Hz.
-        this._setDeviceMetricsTimers = (this._setDeviceMetricsTimers || 0) + 1;
-        if (overrideWidth || overrideHeight)
-            setTimeout(setDeviceMetricsOverride.bind(this), 100);
-        else
-            setDeviceMetricsOverride.call(this);
+        this._deviceMetricsThrottler.schedule(setDeviceMetricsOverride.bind(this));
 
         /**
+         * @param {!WebInspector.Throttler.FinishCallback} finishCallback
          * @this {WebInspector.OverridesSupport}
          */
-        function setDeviceMetricsOverride()
+        function setDeviceMetricsOverride(finishCallback)
         {
-            // Drop heavy intermediate commands.
-            this._setDeviceMetricsTimers--;
-            var isExpensive = overrideWidth || overrideHeight;
-            if (isExpensive && this._setDeviceMetricsTimers) {
-                var commandThreshold = 100;
-                var time = window.performance.now();
-                if (time - this._lastExpensivePageAgentCommandTime < commandThreshold)
-                    return;
-                this._lastExpensivePageAgentCommandTime = time;
-            }
-
             PageAgent.setDeviceMetricsOverride(
                 overrideWidth, overrideHeight, this.settings.deviceScaleFactor.get(),
                 this.settings.emulateViewport.get(), this._pageResizer ? false : this.settings.deviceFitWindow.get(),
                 this.settings.deviceTextAutosizing.get(), this._fontScaleFactor(overrideWidth || dipWidth, overrideHeight || dipHeight),
-                apiCallback.bind(this));
+                apiCallback.bind(this, finishCallback));
         }
 
-        this.maybeHasActiveOverridesChanged();
+        /**
+         * @param {!WebInspector.Throttler.FinishCallback} finishCallback
+         * @this {WebInspector.OverridesSupport}
+         */
+        function clearDeviceMetricsOverride(finishCallback)
+        {
+            PageAgent.clearDeviceMetricsOverride(apiCallback.bind(this, finishCallback));
+        }
 
         /**
+         * @param {!WebInspector.Throttler.FinishCallback} finishCallback
          * @param {?Protocol.Error} error
          * @this {WebInspector.OverridesSupport}
          */
-        function apiCallback(error)
+        function apiCallback(finishCallback, error)
         {
             if (error) {
                 this._updateDeviceMetricsWarningMessage(WebInspector.UIString("Screen emulation is not available on this page."));
                 this._deviceMetricsOverrideAppliedForTest();
+                finishCallback();
                 return;
             }
 
@@ -702,6 +696,8 @@ WebInspector.OverridesSupport.prototype = {
             this._overrideDeviceResolution = overrideDeviceResolution;
             this._emulateViewportEnabled = viewportEnabled;
             this._deviceMetricsOverrideAppliedForTest();
+            this.maybeHasActiveOverridesChanged();
+            finishCallback();
         }
     },
 

@@ -16,6 +16,7 @@
             "common/Progress.js",
             "common/Settings.js",
             "common/TextRange.js",
+            "common/Throttler.js",
             "common/UIString.js",
             "common/UserMetrics.js",
             "common/utilities.js",

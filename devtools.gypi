@@ -73,6 +73,7 @@
             'front_end/common/Progress.js',
             'front_end/common/Settings.js',
             'front_end/common/TextRange.js',
+            'front_end/common/Throttler.js',
             'front_end/common/UIString.js',
             'front_end/common/UserMetrics.js',
             'front_end/common/utilities.js',
