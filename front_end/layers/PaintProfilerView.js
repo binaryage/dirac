@@ -205,6 +205,7 @@ WebInspector.PaintProfilerCommandLogView = function()
     this.element.classList.add("outline-disclosure");
     var sidebarTreeElement = this.element.createChild("ol", "sidebar-tree");
     this.sidebarTree = new TreeOutline(sidebarTreeElement);
+    this._popoverHelper = new WebInspector.ObjectPopoverHelper(this.element, this._getHoverAnchor.bind(this), this._resolveObjectForPopover.bind(this), undefined, true);
 
     this._log = [];
 }
@@ -229,6 +230,29 @@ WebInspector.PaintProfilerCommandLogView.prototype = {
             var node = new WebInspector.LogTreeElement(log[i]);
             this.sidebarTree.appendChild(node);
         }
+    },
+
+    /**
+     * @param {!Element} target
+     * @return {!Element}
+     */
+    _getHoverAnchor: function(target)
+    {
+        return target.enclosingNodeOrSelfWithNodeName("span");
+    },
+
+    /**
+     * @param {!Element} element
+     * @param {function(!WebInspector.RemoteObject, boolean, !Element=):undefined} showCallback
+     */
+    _resolveObjectForPopover: function(element, showCallback)
+    {
+        var liElement = element.enclosingNodeOrSelfWithNodeName("li");
+        var logItem = liElement.treeElement.representedObject;
+        var obj = {"method": logItem.method};
+        if (logItem.params)
+            obj.params = logItem.params;
+        showCallback(WebInspector.RemoteObject.fromLocalObject(obj), false);
     },
 
     __proto__: WebInspector.VBox.prototype
@@ -287,10 +311,11 @@ WebInspector.LogTreeElement.prototype = {
         var logItem = this.representedObject;
         var title = document.createDocumentFragment();
         title.createChild("div", "selection");
+        var span = title.createChild("span");
         var textContent = logItem.method;
         if (logItem.params)
             textContent += "(" + this._paramsToString(logItem.params) + ")";
-        title.appendChild(document.createTextNode(textContent));
+        span.textContent = textContent;
         this.title = title;
     },
 
