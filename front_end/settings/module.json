@@ -15,6 +15,7 @@
             "actionId": "settings.show",
             "location": "toolbar-right",
             "title": "Settings",
+            "order": 0,
             "elementClass": "settings-status-bar-item"
         }
     ],

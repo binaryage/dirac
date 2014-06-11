@@ -66,6 +66,16 @@ WebInspector.Main.prototype = {
     _createGlobalStatusBarItems: function()
     {
         var extensions = WebInspector.moduleManager.extensions(WebInspector.StatusBarButton.Provider);
+
+        /**
+         * @param {!WebInspector.ModuleManager.Extension} left
+         * @param {!WebInspector.ModuleManager.Extension} right
+         */
+        function orderComparator(left, right)
+        {
+            return left.descriptor()["order"] - right.descriptor()["order"];
+        }
+        extensions.sort(orderComparator);
         extensions.forEach(function(extension) {
             var button;
             switch (extension.descriptor()["location"]) {
