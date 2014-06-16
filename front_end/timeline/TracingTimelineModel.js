@@ -32,6 +32,7 @@ WebInspector.TracingTimelineModel.RecordType = {
     RecalculateStyles: "RecalculateStyles",
     InvalidateLayout: "InvalidateLayout",
     Layout: "Layout",
+    UpdateLayer: "UpdateLayer",
     PaintSetup: "PaintSetup",
     Paint: "Paint",
     PaintImage: "PaintImage",
@@ -89,7 +90,8 @@ WebInspector.TracingTimelineModel.RecordType = {
     DecodeLazyPixelRef: "Decode LazyPixelRef",
 
     LazyPixelRef: "LazyPixelRef",
-    LayerTreeHostImplSnapshot: "cc::LayerTreeHostImpl"
+    LayerTreeHostImplSnapshot: "cc::LayerTreeHostImpl",
+    PictureSnapshot: "cc::Picture"
 };
 
 WebInspector.TracingTimelineModel.defaultTracingCategoryFilter = "*,disabled-by-default-cc.debug,disabled-by-default-devtools.timeline,disabled-by-default-devtools.timeline.frame";
@@ -98,8 +100,9 @@ WebInspector.TracingTimelineModel.prototype = {
     /**
      * @param {boolean} captureStacks
      * @param {boolean} captureMemory
+     * @param {boolean} capturePictures
      */
-    startRecording: function(captureStacks, captureMemory)
+    startRecording: function(captureStacks, captureMemory, capturePictures)
     {
         var categories;
         if (WebInspector.experimentsSettings.timelineTracingMode.isEnabled()) {
@@ -108,6 +111,8 @@ WebInspector.TracingTimelineModel.prototype = {
             var categoriesArray = ["disabled-by-default-devtools.timeline", "disabled-by-default-devtools.timeline.frame", "devtools"];
             if (captureStacks)
                 categoriesArray.push("disabled-by-default-devtools.timeline.stack");
+            if (capturePictures)
+                categoriesArray.push("disabled-by-default-devtools.timeline.layers", "disabled-by-default-devtools.timeline.picture");
             categories = categoriesArray.join(",");
         }
         this._startRecordingWithCategories(categories);
@@ -254,7 +259,7 @@ WebInspector.TracingTimelineModel.prototype = {
         this._lastScheduleStyleRecalculation = {};
         this._webSocketCreateEvents = {};
         this._paintImageEventByPixelRefId = {};
-
+        this._lastPaintForLayer = {};
         this._lastRecalculateStylesEvent = null;
         this._currentScriptEvent = null;
         this._eventStack = [];
@@ -394,7 +399,23 @@ WebInspector.TracingTimelineModel.prototype = {
 
         case recordTypes.Paint:
             event.highlightQuad = event.args["data"]["clip"];
-            // Initionally fall through.
+            event.backendNodeId = event.args["data"]["nodeId"];
+            var layerUpdateEvent = this._findAncestorEvent(recordTypes.UpdateLayer);
+            if (!layerUpdateEvent || layerUpdateEvent.args["layerTreeId"] !== this._inspectedTargetLayerTreeId)
+                break;
+            this._lastPaintForLayer[layerUpdateEvent.args["layerId"]] = event;
+            break;
+
+        case recordTypes.PictureSnapshot:
+            var layerUpdateEvent = this._findAncestorEvent(recordTypes.UpdateLayer);
+            if (!layerUpdateEvent || layerUpdateEvent.args["layerTreeId"] !== this._inspectedTargetLayerTreeId)
+                break;
+            var paintEvent = this._lastPaintForLayer[layerUpdateEvent.args["layerId"]];
+            if (!paintEvent)
+                break;
+            paintEvent.picture = event.args["snapshot"]["skp64"];
+            break;
+
         case recordTypes.ScrollLayer:
             event.backendNodeId = event.args["data"]["nodeId"];
             break;

@@ -124,20 +124,31 @@ WebInspector.TimelineTracingView.prototype = {
         {
             WebInspector.Revealer.reveal(new WebInspector.DeferredTracingLayerTree(this._tracingModel.target(), record.args["snapshot"]["active_tree"]["root_layer"]));
         }
-        if (record.name === "cc::LayerTreeHostImpl") {
+        /**
+         * @param {!Node=} node
+         * @this {WebInspector.TimelineTracingView}
+         */
+        function appendPreviewAndshowDetails(node)
+        {
+            if (node)
+                contentHelper.appendElementRow("Preview", node);
+            this._delegate.showInDetails(WebInspector.UIString("Selected Event"), contentHelper.element);
+        }
+        var recordTypes = WebInspector.TracingTimelineModel.RecordType;
+        switch (record.name) {
+        case recordTypes.PictureSnapshot:
+            WebInspector.TracingTimelineUIUtils._buildPicturePreviewContent(record.args["snapshot"]["skp64"], appendPreviewAndshowDetails.bind(this));
+            break;
+        case recordTypes.LayerTreeHostImplSnapshot:
             var link = document.createElement("span");
             link.classList.add("revealable-link");
             link.textContent = "show";
             link.addEventListener("click", reveal.bind(this), false);
             contentHelper.appendElementRow(WebInspector.UIString("Layer tree"), link);
-        } else if (record.name === "cc::Picture") {
-            var div = document.createElement("div");
-            div.className = "image-preview-container";
-            var img = div.createChild("img");
-            contentHelper.appendElementRow("Preview", div);
-            this._requestThumbnail(img, record.args["snapshot"]["skp64"]);
+            // Fall-through intended.
+        default:
+            this._delegate.showInDetails(WebInspector.UIString("Selected Event"), contentHelper.element);
         }
-        this._delegate.showInDetails(WebInspector.UIString("Selected Event"), contentHelper.element);
     },
 
     /**
@@ -161,43 +172,6 @@ WebInspector.TimelineTracingView.prototype = {
             }
         }
         return table;
-    },
-
-    /**
-     * @param {!Element} img
-     * @param {string} encodedPicture
-     */
-    _requestThumbnail: function(img, encodedPicture)
-    {
-        var snapshotId;
-        LayerTreeAgent.loadSnapshot(encodedPicture, onSnapshotLoaded);
-        /**
-         * @param {string} error
-         * @param {string} id
-         */
-        function onSnapshotLoaded(error, id)
-        {
-            if (error) {
-                console.error("LayerTreeAgent.loadSnapshot(): " + error);
-                return;
-            }
-            snapshotId = id;
-            LayerTreeAgent.replaySnapshot(snapshotId, onSnapshotReplayed);
-        }
-
-        /**
-         * @param {string} error
-         * @param {string} encodedBitmap
-         */
-        function onSnapshotReplayed(error, encodedBitmap)
-        {
-            LayerTreeAgent.releaseSnapshot(snapshotId);
-            if (error) {
-                console.error("LayerTreeAgent.replaySnapshot(): " + error);
-                return;
-            }
-            img.src = encodedBitmap;
-        }
     },
 
     __proto__: WebInspector.VBox.prototype

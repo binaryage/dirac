@@ -36,9 +36,11 @@ WebInspector.TimelineModelImpl.prototype = {
     /**
      * @param {boolean} captureStacks
      * @param {boolean} captureMemory
+     * @param {boolean} capturePictures
      */
-    startRecording: function(captureStacks, captureMemory)
+    startRecording: function(captureStacks, captureMemory, capturePictures)
     {
+        console.assert(!capturePictures, "Legacy timeline does not support capturing pictures");
         this._clientInitiatedRecording = true;
         this.reset();
         var maxStackFrames = captureStacks ? 30 : 0;

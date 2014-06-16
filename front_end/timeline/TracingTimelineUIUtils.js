@@ -40,6 +40,7 @@ WebInspector.TracingTimelineUIUtils._initEventStyles = function()
     eventStyles[recordTypes.InvalidateLayout] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Invalidate Layout"), categories["rendering"]);
     eventStyles[recordTypes.Layout] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Layout"), categories["rendering"]);
     eventStyles[recordTypes.PaintSetup] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Paint Setup"), categories["painting"]);
+    eventStyles[recordTypes.UpdateLayer] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Update Layer"), categories["painting"]);
     eventStyles[recordTypes.Paint] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Paint"), categories["painting"]);
     eventStyles[recordTypes.Rasterize] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Paint"), categories["painting"]);
     eventStyles[recordTypes.RasterTask] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Paint"), categories["painting"]);
@@ -265,8 +266,12 @@ WebInspector.TracingTimelineUIUtils.buildTraceEventDetails = function(event, mod
 {
     var relatedNode = null;
     var barrier = new CallbackBarrier();
-    if (event.imageURL && !event.previewElement)
-        WebInspector.DOMPresentationUtils.buildImagePreviewContents(target, event.imageURL, false, barrier.createCallback(saveImage));
+    if (!event.previewElement) {
+        if (event.imageURL)
+            WebInspector.DOMPresentationUtils.buildImagePreviewContents(target, event.imageURL, false, barrier.createCallback(saveImage));
+        else if (event.picture)
+            WebInspector.TracingTimelineUIUtils._buildPicturePreviewContent(event.picture, barrier.createCallback(saveImage));
+    }
     if (event.backendNodeId)
         target.domModel.pushNodesByBackendIdsToFrontend([event.backendNodeId], barrier.createCallback(setRelatedNode));
     barrier.callWhenDone(callbackWrapper);
@@ -357,8 +362,6 @@ WebInspector.TracingTimelineUIUtils._buildTraceEventDetailsSynchronously = funct
         var url = (event.name === recordTypes.ResourceSendRequest) ? eventData["url"] : initiator.args.data["url"];
         if (url)
             contentHelper.appendElementRow(WebInspector.UIString("Resource"), WebInspector.linkifyResourceAsNode(url));
-        if (event.previewElement)
-            contentHelper.appendElementRow(WebInspector.UIString("Preview"), event.previewElement);
         if (eventData["requestMethod"])
             contentHelper.appendTextRow(WebInspector.UIString("Request Method"), eventData["requestMethod"]);
         if (typeof eventData["statusCode"] === "number")
@@ -394,8 +397,6 @@ WebInspector.TracingTimelineUIUtils._buildTraceEventDetailsSynchronously = funct
         relatedNodeLabel = WebInspector.UIString("Image element");
         if (event.imageURL)
             contentHelper.appendElementRow(WebInspector.UIString("Image URL"), WebInspector.linkifyResourceAsNode(event.imageURL));
-        if (event.previewElement)
-            contentHelper.appendElementRow(WebInspector.UIString("Preview"), event.previewElement);
         break;
     case recordTypes.RecalculateStyles: // We don't want to see default details.
         contentHelper.appendTextRow(WebInspector.UIString("Elements affected"), event.args["elementCount"]);
@@ -457,6 +458,8 @@ WebInspector.TracingTimelineUIUtils._buildTraceEventDetailsSynchronously = funct
         div.textContent = warning;
         contentHelper.appendElementRow(WebInspector.UIString("Warning"), div);
     }
+    if (event.previewElement)
+        contentHelper.appendElementRow(WebInspector.UIString("Preview"), event.previewElement);
     fragment.appendChild(contentHelper.element);
     return fragment;
 }
@@ -496,4 +499,48 @@ WebInspector.TracingTimelineUIUtils._aggregatedStatsForTraceEvent = function(mod
         }
     }
     return { aggregatedStats: aggregatedStats, hasChildren: hasChildren };
+}
+
+/**
+ * @param {string} encodedPicture
+ * @param {function(!Element=)} callback
+ */
+WebInspector.TracingTimelineUIUtils._buildPicturePreviewContent = function(encodedPicture, callback)
+{
+    var snapshotId;
+
+    LayerTreeAgent.loadSnapshot(encodedPicture, onSnapshotLoaded);
+    /**
+     * @param {string} error
+     * @param {string} id
+     */
+    function onSnapshotLoaded(error, id)
+    {
+        if (error) {
+            console.error("LayerTreeAgent.loadSnapshot(): " + error);
+            callback();
+            return;
+        }
+        snapshotId = id;
+        LayerTreeAgent.replaySnapshot(snapshotId, onSnapshotReplayed);
+    }
+
+    /**
+     * @param {string} error
+     * @param {string} encodedBitmap
+     */
+    function onSnapshotReplayed(error, encodedBitmap)
+    {
+        LayerTreeAgent.releaseSnapshot(snapshotId);
+        if (error) {
+            console.error("LayerTreeAgent.replaySnapshot(): " + error);
+            callback();
+            return;
+        }
+        var container = document.createElement("div");
+        container.className = "image-preview-container";
+        var img = container.createChild("img");
+        img.src = encodedBitmap;
+        callback(container);
+    }
 }

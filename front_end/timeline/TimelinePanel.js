@@ -341,6 +341,11 @@ WebInspector.TimelinePanel.prototype = {
                                               this._captureTracingSetting, true, undefined,
                                               WebInspector.UIString("Capture tracing information")));
             this._captureTracingSetting.addChangeListener(this._onModeChanged, this);
+        } else if (WebInspector.experimentsSettings.timelineOnTraceEvents.isEnabled()) {
+            this._captureLayersAndPicturesSetting = WebInspector.settings.createSetting("timelineCaptureLayersAndPictures", false);
+            topPaneSidebarElement.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Capture pictures"),
+                                              this._captureLayersAndPicturesSetting, true, undefined,
+                                              WebInspector.UIString("Capture graphics layer positions and painted pictures")));
         }
     },
 
@@ -652,7 +657,7 @@ WebInspector.TimelinePanel.prototype = {
     _startRecording: function(userInitiated)
     {
         this._userInitiatedRecording = userInitiated;
-        this._model.startRecording(this._captureStacksSetting.get(), this._captureMemorySetting.get());
+        this._model.startRecording(this._captureStacksSetting.get(), this._captureMemorySetting.get(), this._captureLayersAndPicturesSetting && this._captureLayersAndPicturesSetting.get());
         if (WebInspector.experimentsSettings.timelineNoLiveUpdate.isEnabled() && this._lazyFrameModel)
             this._lazyFrameModel.setMergeRecords(false);
 
