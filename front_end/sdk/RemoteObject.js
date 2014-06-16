@@ -354,7 +354,8 @@ WebInspector.RemoteObjectImpl.prototype = {
                     var property = internalProperties[i];
                     if (!property.value)
                         continue;
-                    internalPropertiesResult.push(new WebInspector.RemoteObjectProperty(property.name, this._target.runtimeModel.createRemoteObject(property.value)));
+                    var propertyValue = this._target.runtimeModel.createRemoteObject(property.value);
+                    internalPropertiesResult.push(new WebInspector.RemoteObjectProperty(property.name, propertyValue, true, false));
                 }
             }
             callback(result, internalPropertiesResult);
