@@ -257,14 +257,32 @@ WebInspector.TargetManager.prototype = {
          */
         function callbackWrapper(newTarget)
         {
-            this._targets.push(newTarget);
-            var copy = this._observers;
-            for (var i = 0; i < copy.length; ++i)
-                copy[i].targetAdded(newTarget);
-
+            this.addTarget(newTarget);
             if (callback)
                 callback(newTarget);
         }
+    },
+
+    /**
+     * @param {!WebInspector.Target} newTarget
+     */
+    addTarget: function(newTarget)
+    {
+        this._targets.push(newTarget);
+        var copy = this._observers;
+        for (var i = 0; i < copy.length; ++i)
+            copy[i].targetAdded(newTarget);
+    },
+
+    /**
+     * @param {!WebInspector.Target} target
+     */
+    removeTarget: function(target)
+    {
+        this._targets.remove(target);
+        var copy = this._observers;
+        for (var i = 0; i < copy.length; ++i)
+            copy[i].targetRemoved(target);
     },
 
     /**
