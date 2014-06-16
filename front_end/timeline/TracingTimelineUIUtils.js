@@ -163,8 +163,6 @@ WebInspector.TracingTimelineUIUtils.buildDetailsNodeForTraceEvent = function(eve
     case recordType.XHRReadyStateChange:
     case recordType.XHRLoad:
     case recordType.ResourceSendRequest:
-    case recordType.DecodeImage:
-    case recordType.ResizeImage:
         var url = eventData["url"];
         if (url)
             detailsText = WebInspector.displayNameForURL(url);
