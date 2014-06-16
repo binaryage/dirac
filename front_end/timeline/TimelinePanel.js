@@ -670,8 +670,12 @@ WebInspector.TimelinePanel.prototype = {
 
     _stopRecording: function()
     {
+        this._stopPending = true;
+        this._updateToggleTimelineButton(false);
         this._userInitiatedRecording = false;
         this._model.stopRecording();
+        if (this._progressElement)
+            this._updateProgress(WebInspector.UIString("Retrieving events\u2026"));
 
         for (var i = 0; i < this._overviewControls.length; ++i)
             this._overviewControls[i].timelineStopped();
@@ -687,13 +691,20 @@ WebInspector.TimelinePanel.prototype = {
      */
     _updateToggleTimelineButton: function(toggled)
     {
-        var enable = toggled || !this._model.target().profilingLock.isAcquired();
-        this.toggleTimelineButton.setEnabled(enable);
         this.toggleTimelineButton.toggled = toggled;
-        if (enable)
-            this.toggleTimelineButton.title = toggled ? WebInspector.UIString("Stop") : WebInspector.UIString("Record");
-        else
+        if (toggled) {
+            this.toggleTimelineButton.title = WebInspector.UIString("Stop");
+            this.toggleTimelineButton.setEnabled(true);
+        } else if (this._stopPending) {
+            this.toggleTimelineButton.title = WebInspector.UIString("Stop pending");
+            this.toggleTimelineButton.setEnabled(false);
+        } else if (this._model.target().profilingLock.isAcquired()) {
             this.toggleTimelineButton.title = WebInspector.UIString("Another profiler is already active");
+            this.toggleTimelineButton.setEnabled(false);
+        } else {
+            this.toggleTimelineButton.title = WebInspector.UIString("Record");
+            this.toggleTimelineButton.setEnabled(true);
+        }
     },
 
     /**
@@ -793,6 +804,7 @@ WebInspector.TimelinePanel.prototype = {
 
     _onRecordingStopped: function()
     {
+        this._stopPending = false;
         this._updateToggleTimelineButton(false);
         if (this._lazyFrameModel) {
             if (this._tracingTimelineModel) {
