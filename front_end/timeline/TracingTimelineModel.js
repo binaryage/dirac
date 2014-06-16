@@ -607,6 +607,14 @@ WebInspector.TracingTimelineModel.TraceEventRecord.prototype = {
     /**
      * @return {?Object}
      */
+    counters: function()
+    {
+        return this.type() === WebInspector.TracingTimelineModel.RecordType.UpdateCounters ? this._event.args.data : null;
+    },
+
+    /**
+     * @return {?Object}
+     */
     highlightQuad: function()
     {
         return this._event.highlightQuad || null;

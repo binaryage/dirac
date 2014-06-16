@@ -482,6 +482,14 @@ WebInspector.TimelineModel.RecordImpl.prototype = {
     /**
      * @return {?Object}
      */
+    counters: function()
+    {
+        return this.type() === WebInspector.TimelineModel.RecordType.UpdateCounters ? this.data() : null;
+    },
+
+    /**
+     * @return {?Object}
+     */
     highlightQuad: function()
     {
         var quad = null;

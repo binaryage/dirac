@@ -816,8 +816,10 @@ WebInspector.TimelinePanel.prototype = {
                 this._lazyFrameModel.addRecords(this._model.records());
             }
         }
-        if (this._tracingTimelineModel)
+        if (this._tracingTimelineModel) {
+            this.requestWindowTimes(this._tracingTimelineModel.minimumRecordTime(), this._tracingTimelineModel.maximumRecordTime());
             this._refreshViews();
+        }
         this._hideProgressPane();
     },
 

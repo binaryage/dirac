@@ -68,10 +68,8 @@ WebInspector.TimelineMemoryOverview.prototype = {
          */
         function calculateMinMaxSizes(record)
         {
-            if (record.type() !== WebInspector.TimelineModel.RecordType.UpdateCounters)
-                return;
-            var counters = record.data();
-            if (!counters.jsHeapSizeUsed)
+            var counters = record.counters();
+            if (!counters || !counters.jsHeapSizeUsed)
                 return;
             maxUsedHeapSize = Math.max(maxUsedHeapSize, counters.jsHeapSizeUsed);
             minUsedHeapSize = Math.min(minUsedHeapSize, counters.jsHeapSizeUsed);
@@ -92,10 +90,8 @@ WebInspector.TimelineMemoryOverview.prototype = {
          */
         function buildHistogram(record)
         {
-            if (record.type() !== WebInspector.TimelineModel.RecordType.UpdateCounters)
-                return;
-            var counters = record.data();
-            if (!counters.jsHeapSizeUsed)
+            var counters = record.counters();
+            if (!counters || !counters.jsHeapSizeUsed)
                 return;
             var x = Math.round((record.endTime() - minTime) * xFactor);
             var y = Math.round((counters.jsHeapSizeUsed - minUsedHeapSize) * yFactor);

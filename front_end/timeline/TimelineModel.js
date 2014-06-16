@@ -411,6 +411,11 @@ WebInspector.TimelineModel.Record.prototype = {
     type: function() { },
 
     /**
+     * @return {?Object}
+     */
+    counters: function() { },
+
+    /**
      * @return {string}
      */
     frameId: function() { },
