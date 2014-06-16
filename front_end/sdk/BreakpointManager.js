@@ -155,11 +155,12 @@ WebInspector.BreakpointManager.prototype = {
     {
         var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (event.target);
         var isIdentity = /** @type {boolean} */ (event.data.isIdentity);
+        var target = /** @type {!WebInspector.Target} */ (event.data.target);
         if (isIdentity)
             return;
         var breakpoints = this._breakpointsForPrimaryUISourceCode.get(uiSourceCode) || [];
         for (var i = 0; i < breakpoints.length; ++i)
-            breakpoints[i]._updateInDebugger();
+            breakpoints[i]._updateInDebuggerForTarget(target);
     },
 
     /**
@@ -584,7 +585,9 @@ WebInspector.BreakpointManager.Breakpoint.prototype = {
     {
         this._removeFakeBreakpointAtPrimaryLocation();
         this._fakeBreakpointAtPrimaryLocation();
-        this._updateInDebugger();
+        var targetBreakpoints = this._targetBreakpoints.values();
+        for (var i = 0; i < targetBreakpoints.length; ++i)
+            targetBreakpoints[i]._updateInDebugger();
     },
 
     /**
@@ -605,11 +608,12 @@ WebInspector.BreakpointManager.Breakpoint.prototype = {
         this._breakpointManager._targetManager.unobserveTargets(this);
     },
 
-    _updateInDebugger: function()
+    /**
+     * @param {!WebInspector.Target} target
+     */
+    _updateInDebuggerForTarget: function(target)
     {
-        var targetBreakpoints = this._targetBreakpoints.values();
-        for (var i = 0; i < targetBreakpoints.length; ++i)
-            targetBreakpoints[i]._updateInDebugger();
+        this._targetBreakpoints.get(target)._updateInDebugger();
     },
 
     /**
