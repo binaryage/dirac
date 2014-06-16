@@ -164,7 +164,6 @@ WebInspector.TimelineModelImpl.prototype = {
      * @param {!TimelineAgent.TimelineEvent} payload
      * @param {?WebInspector.TimelineModel.Record} parentRecord
      * @return {!WebInspector.TimelineModel.Record}
-     * @this {!WebInspector.TimelineModel}
      */
     _innerAddRecord: function(payload, parentRecord)
     {
@@ -292,7 +291,7 @@ WebInspector.TimelineModelImpl.InterRecordBindings.prototype = {
 /**
  * @constructor
  * @implements {WebInspector.TimelineModel.Record}
- * @param {!WebInspector.TimelineModel} model
+ * @param {!WebInspector.TimelineModelImpl} model
  * @param {!TimelineAgent.TimelineEvent} timelineEvent
  * @param {?WebInspector.TimelineModel.Record} parentRecord
  */

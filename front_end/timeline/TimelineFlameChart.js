@@ -32,7 +32,7 @@
  * @constructor
  * @implements {WebInspector.FlameChartDataProvider}
  * @implements {WebInspector.TimelineFlameChart.SelectionProvider}
- * @param {!WebInspector.TimelineModel} model
+ * @param {!WebInspector.TimelineModelImpl} model
  * @param {!WebInspector.TimelineFrameModelBase} frameModel
  */
 WebInspector.TimelineFlameChartDataProvider = function(model, frameModel)
@@ -816,7 +816,7 @@ WebInspector.TimelineFlameChart = function(delegate, model, tracingModel, frameM
     this._model = model;
     this._dataProvider = tracingModel
         ? new WebInspector.TracingBasedTimelineFlameChartDataProvider(tracingModel, frameModel, model.target())
-        : new WebInspector.TimelineFlameChartDataProvider(model, frameModel);
+        : new WebInspector.TimelineFlameChartDataProvider(/** @type {!WebInspector.TimelineModelImpl} */(model), frameModel);
     this._mainView = new WebInspector.FlameChart(this._dataProvider, this, true);
     this._mainView.show(this.element);
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStarted, this._onRecordingStarted, this);

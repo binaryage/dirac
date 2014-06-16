@@ -83,9 +83,7 @@ WebInspector.TimelinePresentationModel.prototype = {
     reset: function()
     {
         this._recordToPresentationRecord.clear();
-        var rootPayload = { type: WebInspector.TimelineModel.RecordType.Root };
-        var rootRecord = new WebInspector.TimelineModel.RecordImpl(this._model, /** @type {!TimelineAgent.TimelineEvent} */ (rootPayload), null);
-        this._rootRecord = new WebInspector.TimelinePresentationModel.Record(rootRecord, null);
+        this._rootRecord = new WebInspector.TimelinePresentationModel.RootRecord();
         /** @type {!Object.<string, !WebInspector.TimelinePresentationModel.Record>} */
         this._coalescingBuckets = {};
     },
@@ -120,7 +118,7 @@ WebInspector.TimelinePresentationModel.prototype = {
         if (coalescedRecord)
             parentRecord = coalescedRecord;
 
-        var formattedRecord = new WebInspector.TimelinePresentationModel.Record(record, parentRecord);
+        var formattedRecord = new WebInspector.TimelinePresentationModel.ActualRecord(record, parentRecord);
         this._recordToPresentationRecord.put(record, formattedRecord);
 
         formattedRecord._collapsed = parentRecord === this._rootRecord;
@@ -130,7 +128,7 @@ WebInspector.TimelinePresentationModel.prototype = {
         for (var i = 0; record.children() && i < record.children().length; ++i)
             this._innerAddRecord(formattedRecord, record.children()[i]);
 
-        if (parentRecord._coalesced)
+        if (parentRecord.coalesced())
             this._updateCoalescingParent(formattedRecord);
     },
 
@@ -145,7 +143,7 @@ WebInspector.TimelinePresentationModel.prototype = {
         const coalescingThresholdMillis = 5;
 
         var lastRecord = bucket ? this._coalescingBuckets[bucket] : newParent._presentationChildren.peekLast();
-        if (lastRecord && lastRecord._coalesced)
+        if (lastRecord && lastRecord.coalesced())
             lastRecord = lastRecord._presentationChildren.peekLast();
         var startTime = record.startTime();
         var endTime = record.endTime();
@@ -159,7 +157,7 @@ WebInspector.TimelinePresentationModel.prototype = {
             return null;
         if (endTime + coalescingThresholdMillis < lastRecord.record().startTime())
             return null;
-        if (lastRecord.presentationParent()._coalesced)
+        if (lastRecord.presentationParent().coalesced())
             return lastRecord.presentationParent();
         return this._replaceWithCoalescedRecord(lastRecord);
     },
@@ -171,21 +169,9 @@ WebInspector.TimelinePresentationModel.prototype = {
     _replaceWithCoalescedRecord: function(presentationRecord)
     {
         var record = presentationRecord.record();
-        var rawRecord = {
-            type: record.type(),
-            startTime: record.startTime(),
-            data: { }
-        };
-        if (record.thread())
-            rawRecord.thread = "aggregated";
-        if (record.type() === WebInspector.TimelineModel.RecordType.TimeStamp)
-            rawRecord.data["message"] = record.data().message;
-
-        var modelRecord = new WebInspector.TimelineModel.RecordImpl(this._model, /** @type {!TimelineAgent.TimelineEvent} */ (rawRecord), null);
-        var coalescedRecord = new WebInspector.TimelinePresentationModel.Record(modelRecord, null);
         var parent = presentationRecord._presentationParent;
+        var coalescedRecord = new WebInspector.TimelinePresentationModel.CoalescedRecord(record);
 
-        coalescedRecord._coalesced = true;
         coalescedRecord._collapsed = true;
         coalescedRecord._presentationChildren.push(presentationRecord);
         presentationRecord._presentationParent = coalescedRecord;
@@ -194,7 +180,7 @@ WebInspector.TimelinePresentationModel.prototype = {
 
         coalescedRecord._presentationParent = parent;
         parent._presentationChildren[parent._presentationChildren.indexOf(presentationRecord)] = coalescedRecord;
-        WebInspector.TimelineUIUtils.aggregateTimeByCategory(modelRecord.aggregatedStats(), record.aggregatedStats());
+        WebInspector.TimelineUIUtils.aggregateTimeByCategory(coalescedRecord.presentationAggregatedStats(), presentationRecord.presentationAggregatedStats());
 
         return coalescedRecord;
     },
@@ -204,11 +190,10 @@ WebInspector.TimelinePresentationModel.prototype = {
      */
     _updateCoalescingParent: function(presentationRecord)
     {
-        var record = presentationRecord.record();
-        var parentRecord = presentationRecord._presentationParent.record();
-        WebInspector.TimelineUIUtils.aggregateTimeByCategory(parentRecord.aggregatedStats(), record.aggregatedStats());
-        if (parentRecord.endTime() < record.endTime())
-            parentRecord.setEndTime(record.endTime());
+        var parentRecord = presentationRecord._presentationParent;
+        WebInspector.TimelineUIUtils.aggregateTimeByCategory(parentRecord.presentationAggregatedStats(), presentationRecord.presentationAggregatedStats());
+        if (parentRecord.endTime() < presentationRecord.endTime())
+            parentRecord._endTime = presentationRecord.endTime();
     },
 
     /**
@@ -257,9 +242,8 @@ WebInspector.TimelinePresentationModel.prototype = {
             if (records && entry.index < records.length) {
                 var record = records[entry.index];
                 ++entry.index;
-                var rawRecord = record.record();
-                if (rawRecord.startTime() < this._windowEndTime && rawRecord.endTime() > this._windowStartTime) {
-                    if (this._model.isVisible(rawRecord)) {
+                if (record.startTime() < this._windowEndTime && record.endTime() > this._windowStartTime) {
+                    if (this._model.isVisible(record.record())) {
                         record._presentationParent._expandable = true;
                         if (this._textFilter)
                             revealRecordsInStack();
@@ -294,12 +278,10 @@ WebInspector.TimelinePresentationModel.prototype = {
 
 /**
  * @constructor
- * @param {!WebInspector.TimelineModel.Record} record
  * @param {?WebInspector.TimelinePresentationModel.Record} parentRecord
  */
-WebInspector.TimelinePresentationModel.Record = function(record, parentRecord)
+WebInspector.TimelinePresentationModel.Record = function(parentRecord)
 {
-    this._record = record;
     /**
      * @type {!Array.<!WebInspector.TimelinePresentationModel.Record>}
      */
@@ -309,20 +291,47 @@ WebInspector.TimelinePresentationModel.Record = function(record, parentRecord)
         this._presentationParent = parentRecord;
         parentRecord._presentationChildren.push(this);
     }
-
-    if (this.hasWarnings()) {
-        for (var parent = this._presentationParent; parent && !parent._childHasWarnings; parent = parent._presentationParent)
-            parent._childHasWarnings = true;
-    }
 }
 
 WebInspector.TimelinePresentationModel.Record.prototype = {
+    /**
+     * @return {number}
+     */
+    startTime: function()
+    {
+        throw new Error("Not implemented.");
+    },
+
+    /**
+     * @return {number}
+     */
+    endTime: function()
+    {
+        throw new Error("Not implemented.");
+    },
+
+    /**
+     * @return {number}
+     */
+    selfTime: function()
+    {
+        throw new Error("Not implemented.");
+    },
+
     /**
      * @return {!WebInspector.TimelineModel.Record}
      */
     record: function()
     {
-        return this._record;
+        throw new Error("Not implemented.");
+    },
+
+    /**
+     * @return {!Object.<string, number>}
+     */
+    presentationAggregatedStats: function()
+    {
+        throw new Error("Not implemented.");
     },
 
     /**
@@ -338,7 +347,7 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
      */
     coalesced: function()
     {
-        return this._coalesced;
+        return false;
     },
 
     /**
@@ -387,7 +396,7 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
      */
     hasWarnings: function()
     {
-        return !!this._record.warnings();
+        return false;
     },
 
     /**
@@ -429,4 +438,176 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
     {
         this._graphRow = graphRow;
     }
+}
+
+/**
+ * @constructor
+ * @extends {WebInspector.TimelinePresentationModel.Record}
+ * @param {!WebInspector.TimelineModel.Record} record
+ * @param {?WebInspector.TimelinePresentationModel.Record} parentRecord
+ */
+WebInspector.TimelinePresentationModel.ActualRecord = function(record, parentRecord)
+{
+    WebInspector.TimelinePresentationModel.Record.call(this, parentRecord);
+    this._record = record;
+
+    if (this.hasWarnings()) {
+        for (var parent = this._presentationParent; parent && !parent._childHasWarnings; parent = parent._presentationParent)
+            parent._childHasWarnings = true;
+    }
+}
+
+WebInspector.TimelinePresentationModel.ActualRecord.prototype = {
+    /**
+     * @return {number}
+     */
+    startTime: function()
+    {
+        return this._record.startTime();
+    },
+
+    /**
+     * @return {number}
+     */
+    endTime: function()
+    {
+        return this._record.endTime();
+    },
+
+    /**
+     * @return {number}
+     */
+    selfTime: function()
+    {
+        return this._record.selfTime();
+    },
+
+    /**
+     * @return {!WebInspector.TimelineModel.Record}
+     */
+    record: function()
+    {
+        return this._record;
+    },
+
+    /**
+     * @return {!Object.<string, number>}
+     */
+    presentationAggregatedStats: function()
+    {
+        return this._record.aggregatedStats();
+    },
+
+    /**
+     * @return {boolean}
+     */
+    hasWarnings: function()
+    {
+        return !!this._record.warnings();
+    },
+
+    __proto__: WebInspector.TimelinePresentationModel.Record.prototype
+}
+
+/**
+ * @constructor
+ * @extends {WebInspector.TimelinePresentationModel.Record}
+ * @param {!WebInspector.TimelineModel.Record} record
+ */
+WebInspector.TimelinePresentationModel.CoalescedRecord = function(record)
+{
+    WebInspector.TimelinePresentationModel.Record.call(this, null);
+    this._startTime = record.startTime();
+    this._endTime = record.endTime();
+    this._aggregatedStats = {};
+}
+
+WebInspector.TimelinePresentationModel.CoalescedRecord.prototype = {
+    /**
+     * @return {number}
+     */
+    startTime: function()
+    {
+        return this._startTime;
+    },
+
+    /**
+     * @return {number}
+     */
+    endTime: function()
+    {
+        return this._endTime;
+    },
+
+    /**
+     * @return {number}
+     */
+    selfTime: function()
+    {
+        return 0;
+    },
+
+    /**
+     * @return {!WebInspector.TimelineModel.Record}
+     */
+    record: function()
+    {
+        return this._presentationChildren[0].record();
+    },
+
+    /**
+     * @return {!Object.<string, number>}
+     */
+    presentationAggregatedStats: function()
+    {
+        return this._aggregatedStats;
+    },
+
+    /**
+     * @return {boolean}
+     */
+    coalesced: function()
+    {
+        return true;
+    },
+
+    /**
+     * @return {boolean}
+     */
+    hasWarnings: function()
+    {
+        return false;
+    },
+
+    __proto__: WebInspector.TimelinePresentationModel.Record.prototype
+}
+
+/**
+ * @constructor
+ * @extends {WebInspector.TimelinePresentationModel.Record}
+ */
+WebInspector.TimelinePresentationModel.RootRecord = function()
+{
+    WebInspector.TimelinePresentationModel.Record.call(this, null);
+    this._aggregatedStats = {};
+}
+
+WebInspector.TimelinePresentationModel.RootRecord.prototype = {
+    /**
+     * @return {!Object.<string, number>}
+     */
+    presentationAggregatedStats: function()
+    {
+        return this._aggregatedStats;
+    },
+
+    /**
+     * @return {boolean}
+     */
+    hasWarnings: function()
+    {
+        return false;
+    },
+
+    __proto__: WebInspector.TimelinePresentationModel.Record.prototype
 }

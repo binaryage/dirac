@@ -6,7 +6,7 @@
 WebInspector.TimelineJSProfileProcessor = { };
 
 /**
- * @param {!WebInspector.TimelineModel} timelineModel
+ * @param {!WebInspector.TimelineModelImpl} timelineModel
  * @param {!ProfilerAgent.CPUProfile} jsProfile
  */
 WebInspector.TimelineJSProfileProcessor.mergeJSProfileIntoTimeline = function(timelineModel, jsProfile)
