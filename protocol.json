@@ -1165,8 +1165,11 @@
                 "description": "Activates emulation of network conditions.",
                 "parameters": [
                     { "name": "domains", "type": "array", "items": { "type": "string" }, "description": "List of affected domains." },
-                    { "name": "maximalThroughput", "type": "number", "description": "Maximal aggregated network throughput." },
-                    { "name": "offline", "type": "boolean", "description": "True to emulate internet disconnection." }
+                    { "name": "maximalThroughput", "type": "number", "description": "Deprecated." },
+                    { "name": "offline", "type": "boolean", "description": "True to emulate internet disconnection." },
+                    { "name": "latency", "type": "number", "description": "Additional latency (ms)." },
+                    { "name": "downloadThroughput", "type": "number", "description": "Maximal aggregated download throughput." },
+                    { "name": "uploadThroughput", "type": "number", "description": "Maximal aggregated upload throughput." }
                 ],
                 "hidden": true,
                 "handlers": ["browser"]
