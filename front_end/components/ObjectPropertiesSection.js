@@ -298,12 +298,14 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
     },
 
     /**
-     * @param {!Event=} event
-     * @return {!Array.<!Element|undefined>}
+     * @return {{element: !Element, value: (string|undefined)}}
      */
-    elementAndValueToEdit: function(event)
+    elementAndValueToEdit: function()
     {
-        return [this.valueElement, (typeof this.valueElement._originalTextContent === "string") ? this.valueElement._originalTextContent : undefined];
+        return {
+            element: this.valueElement,
+            value: (typeof this.valueElement._originalTextContent === "string") ? this.valueElement._originalTextContent : undefined
+        };
     },
 
     /**
@@ -311,9 +313,9 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
      */
     startEditing: function(event)
     {
-        var elementAndValueToEdit = this.elementAndValueToEdit(event);
-        var elementToEdit = elementAndValueToEdit[0];
-        var valueToEdit = elementAndValueToEdit[1];
+        var elementAndValueToEdit = this.elementAndValueToEdit();
+        var elementToEdit = elementAndValueToEdit.element;
+        var valueToEdit = elementAndValueToEdit.value;
 
         if (WebInspector.isBeingEdited(elementToEdit) || !this.treeOutline.section.editable || this._readOnly)
             return;
@@ -377,7 +379,7 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
         }
 
         this.editingEnded(context);
-        this.applyExpression(userInput, true);
+        this.applyExpression(userInput);
     },
 
     _promptKeyDown: function(context, event)
@@ -394,10 +396,16 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
         }
     },
 
-    applyExpression: function(expression, updateInterface)
+    /**
+     * @param {string} expression
+     */
+    applyExpression: function(expression)
     {
         expression = expression.trim();
-        var expressionLength = expression.length;
+        if (expression)
+            this.property.parentObject.setPropertyValue(this.property.name, expression, callback.bind(this));
+        else
+            this.property.parentObject.deleteProperty(this.property.name, callback.bind(this));
 
         /**
          * @param {?Protocol.Error} error
@@ -405,13 +413,12 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
          */
         function callback(error)
         {
-            if (!updateInterface)
-                return;
-
-            if (error)
+            if (error) {
                 this.update();
+                return;
+            }
 
-            if (!expressionLength) {
+            if (!expression) {
                 // The property was deleted, so remove this tree element.
                 this.parent.removeChild(this);
             } else {
@@ -419,7 +426,6 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
                 this.updateSiblings();
             }
         };
-        this.property.parentObject.setPropertyValue(this.property.name, expression.trim(), callback.bind(this));
     },
 
     /**

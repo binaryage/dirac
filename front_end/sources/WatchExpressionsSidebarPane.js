@@ -449,14 +449,17 @@ WebInspector.WatchExpressionTreeElement.prototype = {
     },
 
     /**
-     * @param {!Event=} event
-     * @return {!Array.<!Element|string>}
+     * @override
+     * @return {{element: !Element, value: (string|undefined)}}
      */
-    elementAndValueToEdit: function(event)
+    elementAndValueToEdit: function()
     {
-        return [this.nameElement, this.property.name.trim()];
+        return { element: this.nameElement, value: this.property.name.trim() };
     },
 
+    /**
+     * @override
+     */
     editingCancelled: function(element, context)
     {
         if (!context.elementToEdit.textContent)
@@ -465,14 +468,14 @@ WebInspector.WatchExpressionTreeElement.prototype = {
         WebInspector.ObjectPropertyTreeElement.prototype.editingCancelled.call(this, element, context);
     },
 
-    applyExpression: function(expression, updateInterface)
+    /**
+     * @override
+     * @param {string} expression
+     */
+    applyExpression: function(expression)
     {
         expression = expression.trim();
-
-        if (!expression)
-            expression = null;
-
-        this.property.name = expression;
+        this.property.name = expression || null;
         this.treeOutline.section.updateExpression(this, expression);
     },
 

@@ -86,6 +86,15 @@ WebInspector.RemoteObject.prototype = {
     },
 
     /**
+     * @param {string} name
+     * @param {function(string=)} callback
+     */
+    deleteProperty: function(name, callback)
+    {
+        throw "Not implemented";
+    },
+
+    /**
      * @param {function(this:Object, ...)} functionDeclaration
      * @param {!Array.<!RuntimeAgent.CallArgument>=} args
      * @param {function(?WebInspector.RemoteObject, boolean=)=} callback
@@ -425,6 +434,38 @@ WebInspector.RemoteObjectImpl.prototype = {
                 return;
             }
             callback();
+        }
+    },
+
+    /**
+     * @param {string} name
+     * @param {function(string=)} callback
+     */
+    deleteProperty: function(name, callback)
+    {
+        if (!this._objectId) {
+            callback("Can't delete a property of non-object.");
+            return;
+        }
+
+        var deletePropertyFunction = "function(a) { delete this[a]; return !(a in this); }";
+        this._runtimeAgent.callFunctionOn(this._objectId, deletePropertyFunction, [{ value: name }], true, undefined, undefined, deletePropertyCallback);
+
+        /**
+         * @param {?Protocol.Error} error
+         * @param {!RuntimeAgent.RemoteObject} result
+         * @param {boolean=} wasThrown
+         */
+        function deletePropertyCallback(error, result, wasThrown)
+        {
+            if (error || wasThrown) {
+                callback(error || result.description);
+                return;
+            }
+            if (!result.value)
+                callback("Failed to delete property.");
+            else
+                callback();
         }
     },
 
