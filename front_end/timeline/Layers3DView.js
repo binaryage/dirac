@@ -249,13 +249,14 @@ WebInspector.Layers3DView.prototype = {
      */
     _calculateProjectionMatrix: function()
     {
-        var rootLayerPadding = 20;
-        var rootWidth = this._layerTree.contentRoot().width();
-        var rootHeight = this._layerTree.contentRoot().height();
+        var scaleFactorForMargins = 1.2;
+        var viewport = this._layerTree.viewportSize();
+        var baseWidth = viewport ? viewport.width : this._layerTree.contentRoot().width();
+        var baseHeight = viewport ? viewport.height : this._layerTree.contentRoot().height();
         var canvasWidth = this._canvasElement.width;
         var canvasHeight = this._canvasElement.height;
-        var scaleX = (canvasWidth - rootLayerPadding) / rootWidth;
-        var scaleY = (canvasHeight - rootLayerPadding) / rootHeight;
+        var scaleX = canvasWidth / baseWidth / scaleFactorForMargins;
+        var scaleY = canvasHeight / baseHeight / scaleFactorForMargins;
         var viewScale = Math.min(scaleX, scaleY);
         var scale = this._transformController.scale();
         var offsetX = this._transformController.offsetX() * window.devicePixelRatio;
@@ -263,7 +264,7 @@ WebInspector.Layers3DView.prototype = {
         var rotateX = this._transformController.rotateX();
         var rotateY = this._transformController.rotateY();
         return new WebKitCSSMatrix().translate(offsetX, offsetY, 0).scale(scale, scale, scale).translate(canvasWidth / 2, canvasHeight / 2, 0)
-            .rotate(rotateX, rotateY, 0).scale(viewScale, viewScale, viewScale).translate(-rootWidth / 2, -rootHeight / 2, 0);
+            .rotate(rotateX, rotateY, 0).scale(viewScale, viewScale, viewScale).translate(-baseWidth / 2, -baseHeight / 2, 0);
     },
 
     _initProjectionMatrix: function()
@@ -498,6 +499,16 @@ WebInspector.Layers3DView.prototype = {
         }
     },
 
+    _drawViewport: function()
+    {
+        var viewport = this._layerTree.viewportSize();
+        var vertices = [0, 0, 0, viewport.width, 0, 0, viewport.width, viewport.height, 0, 0, viewport.height, 0];
+        var color = [0, 0, 0, 1];
+        this._gl.lineWidth(3.0);
+        this._drawRectangle(vertices, color, this._gl.LINE_LOOP);
+        this._gl.lineWidth(1.0);
+    },
+
     _calculateDepths: function()
     {
         this._depthByLayerId = {};
@@ -549,6 +560,8 @@ WebInspector.Layers3DView.prototype = {
         gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
+        if (this._layerTree.viewportSize())
+            this._drawViewport();
         this._layerTree.forEachLayer(this._drawLayer.bind(this));
     },
 

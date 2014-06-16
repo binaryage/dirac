@@ -122,7 +122,7 @@ WebInspector.TimelineTracingView.prototype = {
          */
         function reveal()
         {
-            WebInspector.Revealer.reveal(new WebInspector.DeferredTracingLayerTree(this._tracingModel.target(), record.args["snapshot"]["active_tree"]["root_layer"]));
+            WebInspector.Revealer.reveal(new WebInspector.DeferredTracingLayerTree(this._tracingModel.target(), record.args["snapshot"]["active_tree"]["root_layer"], record.args["snapshot"]["device_viewport_size"]));
         }
         /**
          * @param {!Node=} node

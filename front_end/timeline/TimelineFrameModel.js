@@ -410,7 +410,7 @@ WebInspector.TracingTimelineFrameModel.prototype = {
         var eventNames = WebInspector.TracingTimelineModel.RecordType;
 
         if (event.phase === WebInspector.TracingModel.Phase.SnapshotObject && event.name === eventNames.LayerTreeHostImplSnapshot && parseInt(event.id, 0) === this._layerTreeId) {
-            this.handleLayerTreeSnapshot(new WebInspector.DeferredTracingLayerTree(this.target(), event.args["snapshot"]["active_tree"]["root_layer"]));
+            this.handleLayerTreeSnapshot(new WebInspector.DeferredTracingLayerTree(this.target(), event.args["snapshot"]["active_tree"]["root_layer"], event.args["snapshot"]["device_viewport_size"]));
             return;
         }
         if (this._lastFrame && event.selfTime)
