@@ -99,9 +99,7 @@
     display: none;
 }
 
-.overrides-user-agent fieldset {
-    padding-top: 5px;
-}
+/* Network tab */
 
 .overrides-network fieldset {
     padding-top: 5px;
@@ -125,6 +123,13 @@
     width: 100%;
     max-width: 400px;
     min-width: 120px;
+    margin-left: 2px;
+}
+
+/* Device tab */
+
+.overrides-device {
+    width: 100%;
 }
 
 .overrides-device > select {
@@ -133,8 +138,12 @@
     max-width: 90%;
 }
 
-.overrides-device button {
-    margin-right: 10px;
+.overrides-device input {
+    text-align: right;
+}
+
+.overrides-device input[type=range] {
+    width: 100%;
 }
 
 .overrides-device > label {
@@ -155,20 +164,26 @@
     margin-top: 10px;
 }
 
-.overrides-viewport {
-    width: 100%;
-}
-
-.overrides-viewport input {
-    text-align: right;
-}
-
-.overrides-viewport input[type=range] {
-    width: 100%;
-}
-
 button.overrides-swap {
     height: 20px;
+}
+
+.overrides-device label {
+    margin-bottom: 10px;
+}
+
+.overrides-device table {
+    margin-bottom: 5px;
+}
+
+.overrides-device > label {
+    margin-bottom: 4px;
+}
+
+.overrides-device .help-footnote {
+    border-top: 1px solid #EEEEEE;
+    margin: 0;
+    padding: 12px;
 }
 
 .overrides-view label {
@@ -176,38 +191,19 @@ button.overrides-swap {
     height: auto;
 }
 
-.overrides-viewport label {
-    margin-bottom: 10px;
-}
-
-.overrides-viewport table {
-    margin-bottom: 5px;
-}
+/* Screen tab */
 
 .overrides-viewport > label {
-    margin-bottom: 8px;
+    margin-bottom: 4px;
 }
 
-.overrides-viewport .help-footnote {
-    border-top: 1px solid #EEEEEE;
-    margin: 0;
-    padding: 12px;
-}
-
-.overrides-user-agent input[type=text] {
-    width: 400px;
-    max-width: 90%;
-}
-
-.overrides-user-agent select {
-    margin: 7px 0;
-}
+/* Sensors tab */
 
 .overrides-sensors > label {
     margin-bottom: 10px;
 }
 
-.overrides-device, .overrides-viewport, .overrides-user-agent, .overrides-network, .overrides-sensors {
+.overrides-device, .overrides-viewport, .overrides-network, .overrides-sensors {
     flex: none !important;
 }
 
@@ -217,7 +213,6 @@ button.overrides-swap {
 
 .overrides-activate-device #tab-device,
 .overrides-activate-viewport #tab-viewport,
-.overrides-activate-user-agent #tab-user-agent,
 .overrides-activate-network #tab-network,
 .overrides-activate-sensors #tab-sensors {
     color: rgb(25, 100, 228);
@@ -226,7 +221,6 @@ button.overrides-swap {
 
 .overrides-activate-device #tab-device.selected,
 .overrides-activate-viewport #tab-viewport.selected,
-.overrides-activate-user-agent #tab-user-agent.selected,
 .overrides-activate-network #tab-network.selected,
 .overrides-activate-sensors #tab-sensors.selected {
     opacity: 1;

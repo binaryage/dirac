@@ -88,6 +88,11 @@
     display: inline-block;
 }
 
+.responsive-design-screen-section > fieldset,
+.responsive-design-user-agent-section > p {
+    margin-left: 7px;
+}
+
 .responsive-design-toolbar .responsive-design-section {
     display: flex;
     flex: 1 0 auto;

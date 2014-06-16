@@ -163,6 +163,43 @@ WebInspector.SettingsUI.createSettingInputField = function(label, setting, numer
     return p;
 }
 
+/**
+ * @param {string} label
+ * @param {!WebInspector.Setting} setting
+ * @param {number=} maxLength
+ * @param {string=} width
+ * @param {!WebInspector.Setting=} toggleSetting
+ * @param {string=} defaultText
+ */
+WebInspector.SettingsUI.createSettingLabel = function(label, setting, maxLength, width, toggleSetting, defaultText)
+{
+    var p = document.createElement("p");
+    var labelElement = p.createChild("span");
+    labelElement.textContent = label;
+    if (label)
+        labelElement.style.marginRight = "5px";
+    var spanElement = p.createChild("span");
+    spanElement.textContent = setting.get();
+    if (width)
+        p.style.width = width;
+
+    if (toggleSetting)
+        toggleSetting.addChangeListener(onSettingChange);
+    setting.addChangeListener(onSettingChange);
+    onSettingChange();
+
+    function onSettingChange()
+    {
+        var text = toggleSetting && !toggleSetting.get() ? (defaultText || "") : setting.get();
+        spanElement.title = text;
+        if (maxLength && text.length > maxLength)
+            text = text.substring(0, maxLength - 2) + "...";
+        spanElement.textContent = text;
+    }
+
+    return p;
+}
+
 WebInspector.SettingsUI.createCustomSetting = function(name, element)
 {
     var p = document.createElement("p");

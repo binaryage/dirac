@@ -46,12 +46,9 @@ WebInspector.OverridesView = function()
     if (!WebInspector.overridesSupport.isInspectingDevice()) {
         if (!WebInspector.overridesSupport.responsiveDesignAvailable())
             new WebInspector.OverridesView.DeviceTab().appendAsTab(this._tabbedPane);
-        new WebInspector.OverridesView.ViewportTab().appendAsTab(this._tabbedPane);
     }
-    if (!WebInspector.overridesSupport.responsiveDesignAvailable()) {
-        new WebInspector.OverridesView.UserAgentTab().appendAsTab(this._tabbedPane);
-        new WebInspector.OverridesView.NetworkTab().appendAsTab(this._tabbedPane);
-    }
+    new WebInspector.OverridesView.ViewportTab().appendAsTab(this._tabbedPane);
+    new WebInspector.OverridesView.NetworkTab().appendAsTab(this._tabbedPane);
     new WebInspector.OverridesView.SensorsTab().appendAsTab(this._tabbedPane);
 
     this._lastSelectedTabSetting = WebInspector.settings.createSetting("lastSelectedEmulateTab", "device");
@@ -149,97 +146,11 @@ WebInspector.OverridesView.Tab.prototype = {
  */
 WebInspector.OverridesView.DeviceTab = function()
 {
-    WebInspector.OverridesView.Tab.call(this, "device", WebInspector.UIString("Device"), []);
+    WebInspector.OverridesView.Tab.call(this, "device", WebInspector.UIString("Device"), [WebInspector.overridesSupport.settings.emulateDevice]);
     this.element.classList.add("overrides-device");
 
-    this._deviceSelectElement = WebInspector.overridesSupport.createDeviceSelect(document);
-    this._deviceSelectElement.addEventListener("change", this._updateValueLabels.bind(this), false);
-    this._deviceSelectElement.addEventListener("keypress", this._keyPressed.bind(this), false);
-    this.element.appendChild(this._deviceSelectElement);
-
-    var buttonsBar = this.element.createChild("div");
-    var emulateButton = buttonsBar.createChild("button", "settings-tab-text-button");
-    emulateButton.textContent = WebInspector.UIString("Emulate");
-    emulateButton.addEventListener("click", this._emulateButtonClicked.bind(this), false);
-    emulateButton.disabled = WebInspector.overridesSupport.isInspectingDevice();
-
-    var resetButton = buttonsBar.createChild("button", "settings-tab-text-button");
-    resetButton.textContent = WebInspector.UIString("Reset");
-    resetButton.addEventListener("click", this._resetButtonClicked.bind(this), false);
-    this._resetButton = resetButton;
-
-    this._viewportValueLabel = this.element.createChild("div", "overrides-device-value-label");
-    this._viewportValueLabel.textContent = WebInspector.UIString("Viewport:");
-    this._viewportValueElement = this._viewportValueLabel.createChild("span", "overrides-device-value");
-
-    this._userAgentLabel = this.element.createChild("div", "overrides-device-value-label");
-    this._userAgentLabel.textContent = WebInspector.UIString("User agent:");
-    this._userAgentValueElement = this._userAgentLabel.createChild("span", "overrides-device-value");
-
-    this._updateValueLabels();
-    WebInspector.overridesSupport.addEventListener(WebInspector.OverridesSupport.Events.HasActiveOverridesChanged, this._hasActiveOverridesChanged, this);
-    this._hasActiveOverridesChanged();
-}
-
-WebInspector.OverridesView.DeviceTab.prototype = {
-    /**
-     * @param {?Event} e
-     */
-    _keyPressed: function(e)
-    {
-        if (e.keyCode === WebInspector.KeyboardShortcut.Keys.Enter.code)
-            this._emulateButtonClicked();
-    },
-
-    _emulateButtonClicked: function()
-    {
-        var option = this._deviceSelectElement.options[this._deviceSelectElement.selectedIndex];
-        WebInspector.overridesSupport.emulateDevice(option.metrics, option.userAgent);
-    },
-
-    _resetButtonClicked: function()
-    {
-        WebInspector.overridesSupport.reset();
-    },
-
-    _hasActiveOverridesChanged: function()
-    {
-        this._resetButton.disabled = !WebInspector.overridesSupport.hasActiveOverrides();
-    },
-
-    _updateValueLabels: function()
-    {
-        var option = this._deviceSelectElement.options[this._deviceSelectElement.selectedIndex];
-        var metrics;
-        if (option.metrics && (metrics = WebInspector.OverridesSupport.DeviceMetrics.parseSetting(option.metrics)))
-            this._viewportValueElement.textContent = WebInspector.UIString("%s \xD7 %s, devicePixelRatio = %s", metrics.width, metrics.height, metrics.deviceScaleFactor);
-        else
-            this._viewportValueElement.textContent = "";
-        this._userAgentValueElement.textContent = option.userAgent || "";
-    },
-
-    __proto__: WebInspector.OverridesView.Tab.prototype
-}
-
-
-/**
- * @constructor
- * @extends {WebInspector.OverridesView.Tab}
- */
-WebInspector.OverridesView.ViewportTab = function()
-{
-    var settings = [WebInspector.overridesSupport.settings.overrideCSSMedia];
-    if (!WebInspector.overridesSupport.responsiveDesignAvailable())
-        settings = settings.concat([WebInspector.overridesSupport.settings.overrideDeviceResolution, WebInspector.overridesSupport.settings.emulateViewport]);
-    WebInspector.OverridesView.Tab.call(this, "viewport", WebInspector.UIString("Screen"), settings);
-    this.element.classList.add("overrides-viewport");
-
-    if (!WebInspector.overridesSupport.responsiveDesignAvailable()) {
-        this._createDeviceMetricsElement();
-        var checkbox = this._createSettingCheckbox(WebInspector.UIString("Emulate viewport"), WebInspector.overridesSupport.settings.emulateViewport);
-        this.element.appendChild(checkbox);
-    }
-    this._createMediaEmulationFragment();
+    this.element.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Device"), WebInspector.overridesSupport.settings.emulateDevice, true));
+    this.element.appendChild(this._createDeviceElement());
 
     var footnote = this.element.createChild("p", "help-footnote");
     var footnoteLink = footnote.createChild("a");
@@ -248,17 +159,13 @@ WebInspector.OverridesView.ViewportTab = function()
     footnoteLink.createTextChild(WebInspector.UIString("More information about screen emulation"));
 }
 
-WebInspector.OverridesView.ViewportTab.prototype = {
-    _createDeviceMetricsElement: function()
+WebInspector.OverridesView.DeviceTab.prototype = {
+    _createDeviceElement: function()
     {
-        var checkbox = this._createSettingCheckbox(WebInspector.UIString("Emulate screen"), WebInspector.overridesSupport.settings.overrideDeviceResolution);
-        checkbox.firstChild.disabled = WebInspector.overridesSupport.isInspectingDevice();
-        this.element.appendChild(checkbox);
-
-        var fieldsetElement = WebInspector.SettingsUI.createSettingFieldset(WebInspector.overridesSupport.settings.overrideDeviceResolution);
-        if (WebInspector.overridesSupport.isInspectingDevice())
-            fieldsetElement.disabled = true;
+        var fieldsetElement = WebInspector.SettingsUI.createSettingFieldset(WebInspector.overridesSupport.settings.emulateDevice);
         fieldsetElement.id = "metrics-override-section";
+
+        fieldsetElement.appendChild(WebInspector.overridesSupport.createDeviceSelect(document));
 
         var tableElement = fieldsetElement.createChild("table", "nowrap");
 
@@ -292,15 +199,38 @@ WebInspector.OverridesView.ViewportTab.prototype = {
         rowElement.createChild("td").appendChild(document.createTextNode(WebInspector.UIString("Device pixel ratio:")));
         rowElement.createChild("td").appendChild(WebInspector.SettingsUI.createSettingInputField("", WebInspector.overridesSupport.settings.deviceScaleFactor, true, 4, "80px", WebInspector.OverridesSupport.doubleInputValidator, true));
 
+        var viewportCheckbox = this._createSettingCheckbox(WebInspector.UIString("Emulate mobile"), WebInspector.overridesSupport.settings.emulateViewport);
+        viewportCheckbox.title = WebInspector.UIString("Enable meta viewport, overlay scrollbars and default 980px body width");
+        fieldsetElement.appendChild(viewportCheckbox);
+
+        // FIXME: move text autosizing to the "misc" tab together with css media, and separate it from device emulation.
         var textAutosizingOverrideElement = this._createSettingCheckbox(WebInspector.UIString("Enable text autosizing "), WebInspector.overridesSupport.settings.deviceTextAutosizing);
         textAutosizingOverrideElement.title = WebInspector.UIString("Text autosizing is the feature that boosts font sizes on mobile devices.");
         fieldsetElement.appendChild(textAutosizingOverrideElement);
 
-        checkbox = this._createSettingCheckbox(WebInspector.UIString("Shrink to fit"), WebInspector.overridesSupport.settings.deviceFitWindow);
-        fieldsetElement.appendChild(checkbox);
-        this.element.appendChild(fieldsetElement);
+        fieldsetElement.appendChild(this._createSettingCheckbox(WebInspector.UIString("Shrink to fit"), WebInspector.overridesSupport.settings.deviceFitWindow));
+
+        return fieldsetElement;
     },
 
+    __proto__: WebInspector.OverridesView.Tab.prototype
+}
+
+
+/**
+ * @constructor
+ * @extends {WebInspector.OverridesView.Tab}
+ */
+WebInspector.OverridesView.ViewportTab = function()
+{
+    var settings = [WebInspector.overridesSupport.settings.overrideCSSMedia];
+    WebInspector.OverridesView.Tab.call(this, "viewport", WebInspector.UIString("Screen"), settings);
+    this.element.classList.add("overrides-viewport");
+
+    this._createMediaEmulationFragment();
+}
+
+WebInspector.OverridesView.ViewportTab.prototype = {
     _createMediaEmulationFragment: function()
     {
         var checkbox = WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("CSS media"), WebInspector.overridesSupport.settings.overrideCSSMedia, true);
@@ -346,43 +276,14 @@ WebInspector.OverridesView.ViewportTab.prototype = {
  * @constructor
  * @extends {WebInspector.OverridesView.Tab}
  */
-WebInspector.OverridesView.UserAgentTab = function()
-{
-    WebInspector.OverridesView.Tab.call(this, "user-agent", WebInspector.UIString("User Agent"), [WebInspector.overridesSupport.settings.overrideUserAgent]);
-    this.element.classList.add("overrides-user-agent");
-    var checkbox = this._createSettingCheckbox(WebInspector.UIString("Spoof user agent"), WebInspector.overridesSupport.settings.overrideUserAgent);
-    this.element.appendChild(checkbox);
-    this.element.appendChild(this._createUserAgentSelectRowElement());
-}
-
-WebInspector.OverridesView.UserAgentTab.prototype = {
-    /**
-     * @return {!Element}
-     */
-    _createUserAgentSelectRowElement: function()
-    {
-        var fieldsetElement = WebInspector.SettingsUI.createSettingFieldset(WebInspector.overridesSupport.settings.overrideUserAgent);
-        var userAgentSelectAndInput = WebInspector.overridesSupport.createUserAgentSelectAndInput(document);
-        fieldsetElement.appendChild(userAgentSelectAndInput.select);
-        fieldsetElement.createChild("br");
-        fieldsetElement.appendChild(userAgentSelectAndInput.input);
-        return fieldsetElement;
-    },
-
-    __proto__: WebInspector.OverridesView.Tab.prototype
-}
-
-
-/**
- * @constructor
- * @extends {WebInspector.OverridesView.Tab}
- */
 WebInspector.OverridesView.NetworkTab = function()
 {
-    WebInspector.OverridesView.Tab.call(this, "network", WebInspector.UIString("Network"), [WebInspector.overridesSupport.settings.emulateNetworkConditions]);
+    WebInspector.OverridesView.Tab.call(this, "network", WebInspector.UIString("Network"), [WebInspector.overridesSupport.settings.emulateNetworkConditions, WebInspector.overridesSupport.settings.overrideUserAgent]);
     this.element.classList.add("overrides-network");
     this.element.appendChild(this._createSettingCheckbox(WebInspector.UIString("Limit network throughput"), WebInspector.overridesSupport.settings.emulateNetworkConditions));
     this.element.appendChild(this._createNetworkConditionsElement());
+    this.element.appendChild(this._createSettingCheckbox(WebInspector.UIString("Spoof user agent"), WebInspector.overridesSupport.settings.overrideUserAgent));
+    this.element.appendChild(this._createUserAgentSelectRowElement());
 }
 
 WebInspector.OverridesView.NetworkTab.prototype = {
@@ -401,6 +302,19 @@ WebInspector.OverridesView.NetworkTab.prototype = {
         networkDomains.querySelector("input").placeholder = WebInspector.UIString("Leave empty to limit all domains");
         fieldsetElement.appendChild(networkDomains);
 
+        return fieldsetElement;
+    },
+
+    /**
+     * @return {!Element}
+     */
+    _createUserAgentSelectRowElement: function()
+    {
+        var fieldsetElement = WebInspector.SettingsUI.createSettingFieldset(WebInspector.overridesSupport.settings.overrideUserAgent);
+        var userAgentSelectAndInput = WebInspector.overridesSupport.createUserAgentSelectAndInput(document);
+        fieldsetElement.appendChild(userAgentSelectAndInput.select);
+        fieldsetElement.createChild("br");
+        fieldsetElement.appendChild(userAgentSelectAndInput.input);
         return fieldsetElement;
     },
 
