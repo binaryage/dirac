@@ -138,6 +138,10 @@ WebInspector.ObjectPropertiesSection.CompareProperties = function(propertyA, pro
         return 1;
     if (b === "__proto__")
         return -1;
+    if (propertyA.symbol && !propertyB.symbol)
+        return 1;
+    if (propertyB.symbol && !propertyA.symbol)
+        return -1;
     return String.naturalOrderComparator(a, b);
 }
 
