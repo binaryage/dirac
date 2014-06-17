@@ -297,7 +297,6 @@
             },
             {
                 "name": "getResourceContent",
-                "async": true,
                 "description": "Returns content of the given resource.",
                 "parameters": [
                     { "name": "frameId", "$ref": "FrameId", "description": "Frame id to get resource for." },
