@@ -84,7 +84,7 @@ WebInspector.CodeMirrorUtils.prototype = {
         editingContext.cssLoadView.show(element);
         WebInspector.setCurrentFocusElement(element);
         element.addEventListener("copy", this._consumeCopy, false);
-        var codeMirror = window.CodeMirror(element, {
+        var codeMirror = new window.CodeMirror(element, {
             mode: config.mode,
             lineWrapping: config.lineWrapping,
             smartIndent: config.smartIndent,

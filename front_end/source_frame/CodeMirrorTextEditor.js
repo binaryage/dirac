@@ -44,7 +44,7 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
     this.registerRequiredCSS("cm/codemirror.css");
     this.registerRequiredCSS("cm/cmdevtools.css");
 
-    this._codeMirror = window.CodeMirror(this.element, {
+    this._codeMirror = new window.CodeMirror(this.element, {
         lineNumbers: true,
         gutters: ["CodeMirror-linenumbers"],
         matchBrackets: true,
