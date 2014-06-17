@@ -55,7 +55,7 @@ WebInspector.DebuggerModel = function(target)
     WebInspector.settings.pauseOnCaughtException.addChangeListener(this._pauseOnExceptionStateChanged, this);
 
     WebInspector.settings.enableAsyncStackTraces.addChangeListener(this._asyncStackTracesStateChanged, this);
-    target.profilingLock.addEventListener(WebInspector.Lock.Events.StateChanged, this._asyncStackTracesStateChanged, this);
+    target.profilingLock.addEventListener(WebInspector.Lock.Events.StateChanged, this._profilingStateChanged, this);
 
     this.enableDebugger();
 
@@ -167,6 +167,17 @@ WebInspector.DebuggerModel.prototype = {
             state = WebInspector.DebuggerModel.PauseOnExceptionsState.PauseOnUncaughtExceptions;
         }
         this._agent.setPauseOnExceptions(state);
+    },
+
+    _profilingStateChanged: function()
+    {
+        if (WebInspector.experimentsSettings.disableAgentsWhenProfile.isEnabled()) {
+            if (this.target().profilingLock.isAcquired())
+                this.disableDebugger();
+            else
+                this.enableDebugger();
+        }
+        this._asyncStackTracesStateChanged();
     },
 
     _asyncStackTracesStateChanged: function()

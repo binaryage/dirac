@@ -312,6 +312,7 @@ WebInspector.ExperimentsSettings = function(experimentsEnabled)
     this.applyCustomStylesheet = this._createExperiment("applyCustomStylesheet", "Allow custom UI themes");
     this.canvasInspection = this._createExperiment("canvasInspection ", "Canvas inspection");
     this.devicesPanel = this._createExperiment("devicesPanel", "Devices panel", true);
+    this.disableAgentsWhenProfile = this._createExperiment("disableAgentsWhenProfile", "Disable other agents and UI when profiler is active", true);
     this.dockToLeft = this._createExperiment("dockToLeft", "Dock to left", true);
     this.editorInDrawer = this._createExperiment("showEditorInDrawer", "Editor in drawer", true);
     this.fileSystemInspection = this._createExperiment("fileSystemInspection", "FileSystem inspection");
