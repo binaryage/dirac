@@ -80,6 +80,13 @@ WebInspector.TracingTimelineUIUtils._initEventStyles = function()
     return eventStyles;
 }
 
+WebInspector.TracingTimelineUIUtils.coalescableRecordTypes = {};
+WebInspector.TracingTimelineUIUtils.coalescableRecordTypes[WebInspector.TracingTimelineModel.RecordType.Layout] = 1;
+WebInspector.TracingTimelineUIUtils.coalescableRecordTypes[WebInspector.TracingTimelineModel.RecordType.Paint] = 1;
+WebInspector.TracingTimelineUIUtils.coalescableRecordTypes[WebInspector.TracingTimelineModel.RecordType.Rasterize] = 1;
+WebInspector.TracingTimelineUIUtils.coalescableRecordTypes[WebInspector.TracingTimelineModel.RecordType.DecodeImage] = 1;
+WebInspector.TracingTimelineUIUtils.coalescableRecordTypes[WebInspector.TracingTimelineModel.RecordType.ResizeImage] = 1;
+
 /**
  * @param {!WebInspector.TracingModel.Event} event
  * @return {!{title: string, category: !WebInspector.TimelineCategory}}

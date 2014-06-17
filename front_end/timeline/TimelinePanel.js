@@ -273,8 +273,10 @@ WebInspector.TimelinePanel.prototype = {
      */
     _timelineView: function()
     {
-        if (!this._lazyTimelineView)
-            this._lazyTimelineView = new WebInspector.TimelineView(this, this._model);
+        if (!this._lazyTimelineView) {
+            var coalescableRecordTypes = this._tracingTimelineModel ? WebInspector.TracingTimelineUIUtils.coalescableRecordTypes : WebInspector.TimelineUIUtils.coalescableRecordTypes;
+            this._lazyTimelineView = new WebInspector.TimelineView(this, this._model, coalescableRecordTypes);
+        }
         return this._lazyTimelineView;
     },
 

@@ -108,6 +108,13 @@ WebInspector.TimelineUIUtils._initRecordStyles = function()
     return recordStyles;
 }
 
+WebInspector.TimelineUIUtils.coalescableRecordTypes = {};
+WebInspector.TimelineUIUtils.coalescableRecordTypes[WebInspector.TimelineModel.RecordType.Layout] = 1;
+WebInspector.TimelineUIUtils.coalescableRecordTypes[WebInspector.TimelineModel.RecordType.Paint] = 1;
+WebInspector.TimelineUIUtils.coalescableRecordTypes[WebInspector.TimelineModel.RecordType.Rasterize] = 1;
+WebInspector.TimelineUIUtils.coalescableRecordTypes[WebInspector.TimelineModel.RecordType.DecodeImage] = 1;
+WebInspector.TimelineUIUtils.coalescableRecordTypes[WebInspector.TimelineModel.RecordType.ResizeImage] = 1;
+
 /**
  * @param {!WebInspector.TimelineModel.Record} record
  * @return {!{title: string, category: !WebInspector.TimelineCategory}}

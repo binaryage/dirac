@@ -35,15 +35,16 @@
  * @implements {WebInspector.TimelineModeView}
  * @param {!WebInspector.TimelineModeViewDelegate} delegate
  * @param {!WebInspector.TimelineModel} model
+ * @param {!Object.<string, number>} coalescableRecordTypes
  */
-WebInspector.TimelineView = function(delegate, model)
+WebInspector.TimelineView = function(delegate, model, coalescableRecordTypes)
 {
     WebInspector.HBox.call(this);
     this.element.classList.add("timeline-view");
 
     this._delegate = delegate;
     this._model = model;
-    this._presentationModel = new WebInspector.TimelinePresentationModel(model);
+    this._presentationModel = new WebInspector.TimelinePresentationModel(model, coalescableRecordTypes);
     this._calculator = new WebInspector.TimelineCalculator(model);
     this._linkifier = new WebInspector.Linkifier();
     this._frameStripByFrame = new Map();

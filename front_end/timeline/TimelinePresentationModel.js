@@ -33,10 +33,12 @@
  * @constructor
  * @extends {WebInspector.Object}
  * @param {!WebInspector.TimelineModel} model
+ * @param {!Object.<string, number>} coalescableRecordTypes
  */
-WebInspector.TimelinePresentationModel = function(model)
+WebInspector.TimelinePresentationModel = function(model, coalescableRecordTypes)
 {
     this._model = model;
+    this._coalescableRecordTypes = coalescableRecordTypes;
     this._filters = [];
     /**
      * @type {!Map.<!WebInspector.TimelineModel.Record, !WebInspector.TimelinePresentationModel.Record>}
@@ -44,13 +46,6 @@ WebInspector.TimelinePresentationModel = function(model)
     this._recordToPresentationRecord = new Map();
     this.reset();
 }
-
-WebInspector.TimelinePresentationModel._coalescingRecords = { };
-WebInspector.TimelinePresentationModel._coalescingRecords[WebInspector.TimelineModel.RecordType.Layout] = 1;
-WebInspector.TimelinePresentationModel._coalescingRecords[WebInspector.TimelineModel.RecordType.Paint] = 1;
-WebInspector.TimelinePresentationModel._coalescingRecords[WebInspector.TimelineModel.RecordType.Rasterize] = 1;
-WebInspector.TimelinePresentationModel._coalescingRecords[WebInspector.TimelineModel.RecordType.DecodeImage] = 1;
-WebInspector.TimelinePresentationModel._coalescingRecords[WebInspector.TimelineModel.RecordType.ResizeImage] = 1;
 
 WebInspector.TimelinePresentationModel.prototype = {
     /**
@@ -151,7 +146,7 @@ WebInspector.TimelinePresentationModel.prototype = {
             return null;
         if (lastRecord.record().type() !== record.type())
             return null;
-        if (!WebInspector.TimelinePresentationModel._coalescingRecords[record.type()])
+        if (!this._coalescableRecordTypes[record.type()])
             return null;
         if (lastRecord.record().endTime() + coalescingThresholdMillis < startTime)
             return null;
