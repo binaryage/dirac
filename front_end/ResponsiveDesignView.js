@@ -412,7 +412,8 @@ WebInspector.ResponsiveDesignView.prototype = {
         // Touch and viewport.
         this._touchSection = document.createElementWithClass("div", "responsive-design-section");
         fieldsetElement = WebInspector.SettingsUI.createSettingFieldset(WebInspector.overridesSupport.settings.emulateDevice);
-        fieldsetElement.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Touch"), WebInspector.overridesSupport.settings.emulateTouchEvents, true));
+        if (!WebInspector.overridesSupport.hasTouchInputs())
+            fieldsetElement.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Touch"), WebInspector.overridesSupport.settings.deviceTouch, true));
         var viewportCheckbox = WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Mobile"), WebInspector.overridesSupport.settings.emulateViewport, true);
         viewportCheckbox.title = WebInspector.UIString("Enable meta viewport, overlay scrollbars and default 980px body width");
         fieldsetElement.appendChild(viewportCheckbox);
@@ -425,7 +426,7 @@ WebInspector.ResponsiveDesignView.prototype = {
         this._networkSection.appendChild(WebInspector.overridesSupport.createNetworkThroughputSelect(document));
 
         this._userAgentSection = document.createElementWithClass("div", "responsive-design-section responsive-design-user-agent-section");
-        this._userAgentSection.appendChild(WebInspector.SettingsUI.createSettingLabel(WebInspector.UIString("User Agent:"), WebInspector.overridesSupport.settings.userAgent, 25, "200px", WebInspector.overridesSupport.settings.overrideUserAgent, WebInspector.UIString("no override")));
+        this._userAgentSection.appendChild(WebInspector.SettingsUI.createSettingLabel(WebInspector.UIString("User Agent:"), WebInspector.overridesSupport.settings.deviceUserAgent, 25, "200px", WebInspector.UIString("no override")));
 
         updateNetworkCheckboxTitle();
         WebInspector.overridesSupport.settings.networkConditionsDomains.addChangeListener(updateNetworkCheckboxTitle);
