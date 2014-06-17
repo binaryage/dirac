@@ -304,20 +304,15 @@ WebInspector.ElementsTreeOutline.prototype = {
      */
     findTreeElement: function(node)
     {
-        function isAncestorNode(ancestor, node)
-        {
-            return ancestor.isAncestor(node);
-        }
-
         function parentNode(node)
         {
             return node.parentNode;
         }
 
-        var treeElement = TreeOutline.prototype.findTreeElement.call(this, node, isAncestorNode, parentNode);
+        var treeElement = TreeOutline.prototype.findTreeElement.call(this, node, parentNode);
         if (!treeElement && node.nodeType() === Node.TEXT_NODE) {
             // The text node might have been inlined if it was short, so try to find the parent element.
-            treeElement = TreeOutline.prototype.findTreeElement.call(this, node.parentNode, isAncestorNode, parentNode);
+            treeElement = TreeOutline.prototype.findTreeElement.call(this, node.parentNode, parentNode);
         }
 
         return treeElement;

@@ -283,11 +283,10 @@ TreeOutline.prototype.getCachedTreeElement = function(representedObject)
 
 /**
  * @param {?Object} representedObject
- * @param {function(!Object, !Object):boolean} isAncestor
  * @param {function(!Object):?Object} getParent
  * @return {?TreeElement}
  */
-TreeOutline.prototype.findTreeElement = function(representedObject, isAncestor, getParent)
+TreeOutline.prototype.findTreeElement = function(representedObject, getParent)
 {
     if (!representedObject)
         return null;
