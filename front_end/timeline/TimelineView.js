@@ -825,7 +825,7 @@ WebInspector.TimelineView.prototype = {
         if (!rowElement || !rowElement.row)
             return false;
         var presentationRecord = rowElement.row._record;
-        if (presentationRecord.collapsed())
+        if (presentationRecord.coalesced())
             return false;
         var record = presentationRecord.record();
         if (this._highlightedQuadRecord === record)
