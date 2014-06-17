@@ -14,21 +14,21 @@ WebInspector.AdvancedApp = function()
     if (!WebInspector.experimentsSettings.responsiveDesign.isEnabled())
         return;
 
-    this._toggleResponsiveDesignButton = new WebInspector.StatusBarButton(WebInspector.UIString("Responsive design mode."), "responsive-design-status-bar-item");
-    this._toggleResponsiveDesignButton.toggled = WebInspector.settings.responsiveDesign.enabled.get();
+    this._toggleResponsiveDesignButton = new WebInspector.StatusBarButton(WebInspector.UIString("Responsive design and mobile emulation."), "responsive-design-status-bar-item");
+    this._toggleResponsiveDesignButton.toggled = WebInspector.settings.responsiveDesignEnabled.get();
     this._toggleResponsiveDesignButton.addEventListener("click", this._toggleResponsiveDesign, this);
-    WebInspector.settings.responsiveDesign.enabled.addChangeListener(this._responsiveDesignEnabledChanged, this);
+    WebInspector.settings.responsiveDesignEnabled.addChangeListener(this._responsiveDesignEnabledChanged, this);
 };
 
 WebInspector.AdvancedApp.prototype = {
     _toggleResponsiveDesign: function()
     {
-        WebInspector.settings.responsiveDesign.enabled.set(!this._toggleResponsiveDesignButton.toggled);
+        WebInspector.settings.responsiveDesignEnabled.set(!this._toggleResponsiveDesignButton.toggled);
     },
 
     _responsiveDesignEnabledChanged: function()
     {
-        this._toggleResponsiveDesignButton.toggled = WebInspector.settings.responsiveDesign.enabled.get();
+        this._toggleResponsiveDesignButton.toggled = WebInspector.settings.responsiveDesignEnabled.get();
     },
 
     createRootView: function()

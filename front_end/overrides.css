@@ -66,7 +66,7 @@
     height: 22px;
     padding-left: 0;
     padding-left: 10px;
-    border-left: 6px solid transparent;
+    border-left: 8px solid transparent;
 }
 
 .overrides-view .tabbed-pane-header-tab:not(.selected) {
@@ -76,7 +76,7 @@
 .overrides-view .tabbed-pane-header-tab.selected {
     color: inherit;
     border: none transparent;
-    border-left: 6px solid #666;
+    border-left: 8px solid #666;
 }
 
 .overrides-view fieldset {
@@ -193,7 +193,7 @@ button.overrides-swap {
 
 /* Screen tab */
 
-.overrides-viewport > label {
+.overrides-media > label {
     margin-bottom: 4px;
 }
 
@@ -203,7 +203,7 @@ button.overrides-swap {
     margin-bottom: 10px;
 }
 
-.overrides-device, .overrides-viewport, .overrides-network, .overrides-sensors {
+.overrides-device, .overrides-media, .overrides-network, .overrides-sensors {
     flex: none !important;
 }
 
@@ -212,15 +212,23 @@ button.overrides-swap {
 }
 
 .overrides-activate-device #tab-device,
-.overrides-activate-viewport #tab-viewport,
+.overrides-activate-media #tab-viewport,
 .overrides-activate-network #tab-network,
 .overrides-activate-sensors #tab-sensors {
-    color: rgb(25, 100, 228);
     opacity: 0.8;
 }
 
+.overrides-activate-device #tab-device .tabbed-pane-header-tab-title::after,
+.overrides-activate-media #tab-viewport .tabbed-pane-header-tab-title::after,
+.overrides-activate-network #tab-network .tabbed-pane-header-tab-title::after,
+.overrides-activate-sensors #tab-sensors .tabbed-pane-header-tab-title::after {
+    padding-left: 3px;
+    content: "\2713";
+    color: rgb(25, 100, 228);
+}
+
 .overrides-activate-device #tab-device.selected,
-.overrides-activate-viewport #tab-viewport.selected,
+.overrides-activate-media #tab-viewport.selected,
 .overrides-activate-network #tab-network.selected,
 .overrides-activate-sensors #tab-sensors.selected {
     opacity: 1;

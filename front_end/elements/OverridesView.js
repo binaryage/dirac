@@ -43,11 +43,9 @@ WebInspector.OverridesView = function()
     this._tabbedPane.shrinkableTabs = false;
     this._tabbedPane.verticalTabLayout = true;
 
-    if (!WebInspector.overridesSupport.isInspectingDevice()) {
-        if (!WebInspector.overridesSupport.responsiveDesignAvailable())
-            new WebInspector.OverridesView.DeviceTab().appendAsTab(this._tabbedPane);
-    }
-    new WebInspector.OverridesView.ViewportTab().appendAsTab(this._tabbedPane);
+    if (!WebInspector.overridesSupport.isInspectingDevice())
+        new WebInspector.OverridesView.DeviceTab().appendAsTab(this._tabbedPane);
+    new WebInspector.OverridesView.MediaTab().appendAsTab(this._tabbedPane);
     new WebInspector.OverridesView.NetworkTab().appendAsTab(this._tabbedPane);
     new WebInspector.OverridesView.SensorsTab().appendAsTab(this._tabbedPane);
 
@@ -120,7 +118,6 @@ WebInspector.OverridesView.Tab.prototype = {
         for (var i = 0; !active && i < this._predicates.length; ++i)
             active = this._predicates[i]();
         this._tabbedPane.element.classList.toggle("overrides-activate-" + this._id, active);
-        this._tabbedPane.changeTabTitle(this._id, active ? this._name + " \u2713" : this._name);
     },
 
     /**
@@ -194,12 +191,6 @@ WebInspector.OverridesView.DeviceTab.prototype = {
         cellElement = rowElement.createChild("td");
         cellElement.colSpan = 4;
 
-        var widthRangeInput = WebInspector.SettingsUI.createSettingInputField("", WebInspector.overridesSupport.settings.deviceWidth, true, 4, "200px", undefined, true).lastChild;
-        widthRangeInput.type = "range";
-        widthRangeInput.min = 100;
-        widthRangeInput.max = 2000;
-        cellElement.appendChild(widthRangeInput);
-
         rowElement = tableElement.createChild("tr");
         rowElement.title = WebInspector.UIString("Ratio between a device's physical pixels and device-independent pixels.");
         rowElement.createChild("td").appendChild(document.createTextNode(WebInspector.UIString("Device pixel ratio:")));
@@ -222,21 +213,20 @@ WebInspector.OverridesView.DeviceTab.prototype = {
     __proto__: WebInspector.OverridesView.Tab.prototype
 }
 
-
 /**
  * @constructor
  * @extends {WebInspector.OverridesView.Tab}
  */
-WebInspector.OverridesView.ViewportTab = function()
+WebInspector.OverridesView.MediaTab = function()
 {
     var settings = [WebInspector.overridesSupport.settings.overrideCSSMedia];
-    WebInspector.OverridesView.Tab.call(this, "viewport", WebInspector.UIString("Screen"), settings);
-    this.element.classList.add("overrides-viewport");
+    WebInspector.OverridesView.Tab.call(this, "media", WebInspector.UIString("Media"), settings);
+    this.element.classList.add("overrides-media");
 
     this._createMediaEmulationFragment();
 }
 
-WebInspector.OverridesView.ViewportTab.prototype = {
+WebInspector.OverridesView.MediaTab.prototype = {
     _createMediaEmulationFragment: function()
     {
         var checkbox = WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("CSS media"), WebInspector.overridesSupport.settings.overrideCSSMedia, true);
@@ -284,10 +274,15 @@ WebInspector.OverridesView.ViewportTab.prototype = {
  */
 WebInspector.OverridesView.NetworkTab = function()
 {
-    WebInspector.OverridesView.Tab.call(this, "network", WebInspector.UIString("Network"), [WebInspector.overridesSupport.settings.emulateNetworkConditions], [this._isUserAgentOverrideEnabled.bind(this)]);
+    var flags = [];
+    if (WebInspector.experimentsSettings.networkConditions.isEnabled())
+       flags.push(WebInspector.overridesSupport.settings.emulateNetworkConditions);
+    WebInspector.OverridesView.Tab.call(this, "network", WebInspector.UIString("Network"), flags, [this._isUserAgentOverrideEnabled.bind(this)]);
     this.element.classList.add("overrides-network");
-    this.element.appendChild(this._createSettingCheckbox(WebInspector.UIString("Limit network throughput"), WebInspector.overridesSupport.settings.emulateNetworkConditions));
-    this.element.appendChild(this._createNetworkConditionsElement());
+    if (WebInspector.experimentsSettings.networkConditions.isEnabled()) {
+        this.element.appendChild(this._createSettingCheckbox(WebInspector.UIString("Limit network throughput"), WebInspector.overridesSupport.settings.emulateNetworkConditions));
+        this.element.appendChild(this._createNetworkConditionsElement());
+    }
     this._createUserAgentSection();
 }
 
@@ -329,7 +324,7 @@ WebInspector.OverridesView.NetworkTab.prototype = {
 
     _createUserAgentSection: function()
     {
-        var settings = [WebInspector.overridesSupport.settings.emulateDevice, WebInspector.settings.responsiveDesign.enabled, WebInspector.overridesSupport.settings.deviceUserAgent];
+        var settings = [WebInspector.overridesSupport.settings.emulateDevice, WebInspector.settings.responsiveDesignEnabled, WebInspector.overridesSupport.settings.deviceUserAgent];
         for (var i = 0; i < settings.length; i++) {
             settings[i].addChangeListener(this._onUserAgentOverrideEnabledChanged.bind(this));
             settings[i].addChangeListener(WebInspector.overridesSupport.updateUserAgentToMatchDeviceUserAgent.bind(WebInspector.overridesSupport));
@@ -498,7 +493,7 @@ WebInspector.OverridesView.SensorsTab.prototype = {
      */
     _createTouchCheckbox: function()
     {
-        var settings = [WebInspector.overridesSupport.settings.emulateDevice, WebInspector.settings.responsiveDesign.enabled, WebInspector.overridesSupport.settings.deviceTouch];
+        var settings = [WebInspector.overridesSupport.settings.emulateDevice, WebInspector.settings.responsiveDesignEnabled, WebInspector.overridesSupport.settings.deviceTouch];
         for (var i = 0; i < settings.length; i++) {
             settings[i].addChangeListener(this._onTouchEmulationChanged.bind(this));
             settings[i].addChangeListener(WebInspector.overridesSupport.updateSensorsTouchToMatchDeviceTouch.bind(WebInspector.overridesSupport));

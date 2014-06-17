@@ -480,9 +480,9 @@ WebInspector.OverridesSupport.prototype = {
     /**
      * @return {boolean}
      */
-    responsiveDesignAvailable: function()
+    _responsiveDesignEnabledOrUnavailable: function()
     {
-        return this._responsiveDesignAvailable;
+        return !this._responsiveDesignAvailable || WebInspector.settings.responsiveDesignEnabled.get();
     },
 
     /**
@@ -592,9 +592,11 @@ WebInspector.OverridesSupport.prototype = {
 
         this.settings.overrideGeolocation.addChangeListener(this._geolocationPositionChanged, this);
         this.settings.geolocationOverride.addChangeListener(this._geolocationPositionChanged, this);
+        WebInspector.settings.responsiveDesignEnabled.addChangeListener(this._geolocationPositionChanged, this);
 
         this.settings.overrideDeviceOrientation.addChangeListener(this._deviceOrientationChanged, this);
         this.settings.deviceOrientationOverride.addChangeListener(this._deviceOrientationChanged, this);
+        WebInspector.settings.responsiveDesignEnabled.addChangeListener(this._deviceOrientationChanged, this);
 
         this._addEmulateDeviceListener(this._emulateTouchEventsChanged);
         this.settings.deviceTouch.addChangeListener(this._emulateTouchEventsChanged, this);
@@ -602,10 +604,14 @@ WebInspector.OverridesSupport.prototype = {
 
         this.settings.overrideCSSMedia.addChangeListener(this._cssMediaChanged, this);
         this.settings.emulatedCSSMedia.addChangeListener(this._cssMediaChanged, this);
+        WebInspector.settings.responsiveDesignEnabled.addChangeListener(this._cssMediaChanged, this);
 
-        this.settings.emulateNetworkConditions.addChangeListener(this._networkConditionsChanged, this);
-        this.settings.networkConditionsDomains.addChangeListener(this._networkConditionsChanged, this);
-        this.settings.networkConditionsThroughput.addChangeListener(this._networkConditionsChanged, this);
+        if (WebInspector.experimentsSettings.networkConditions.isEnabled()) {
+            this.settings.emulateNetworkConditions.addChangeListener(this._networkConditionsChanged, this);
+            this.settings.networkConditionsDomains.addChangeListener(this._networkConditionsChanged, this);
+            this.settings.networkConditionsThroughput.addChangeListener(this._networkConditionsChanged, this);
+            WebInspector.settings.responsiveDesignEnabled.addChangeListener(this._networkConditionsChanged, this);
+        }
 
         WebInspector.settings.showMetricsRulers.addChangeListener(this._showRulersChanged, this);
 
@@ -627,7 +633,7 @@ WebInspector.OverridesSupport.prototype = {
         if (this.userAgentOverride())
             this._userAgentChanged();
 
-        if (this.settings.emulateNetworkConditions.get())
+        if (WebInspector.experimentsSettings.networkConditions.isEnabled() && this.settings.emulateNetworkConditions.get())
             this._networkConditionsChanged();
 
         this._showRulersChanged();
@@ -639,7 +645,7 @@ WebInspector.OverridesSupport.prototype = {
     _addEmulateDeviceListener: function(listener)
     {
         this.settings.emulateDevice.addChangeListener(listener, this);
-        WebInspector.settings.responsiveDesign.enabled.addChangeListener(listener, this);
+        WebInspector.settings.responsiveDesignEnabled.addChangeListener(listener, this);
     },
 
     _userAgentChanged: function()
@@ -680,9 +686,8 @@ WebInspector.OverridesSupport.prototype = {
 
         if (this._deviceMetricsChangedListenerMuted)
             return;
-        var responsiveDesignAvailableAndDisabled = this._responsiveDesignAvailable && (!WebInspector.settings.responsiveDesign.enabled.get() || !this._pageResizer);
         var emulateDevice = this.settings.emulateDevice.get();
-        if (responsiveDesignAvailableAndDisabled || !emulateDevice) {
+        if (!this._responsiveDesignEnabledOrUnavailable() || !emulateDevice) {
             this._deviceMetricsThrottler.schedule(clearDeviceMetricsOverride.bind(this));
             if (this._pageResizer && !emulateDevice)
                 this._pageResizer.update(0, 0, 0);
@@ -765,7 +770,7 @@ WebInspector.OverridesSupport.prototype = {
 
     _geolocationPositionChanged: function()
     {
-        if (!this.settings.overrideGeolocation.get()) {
+        if (!this._responsiveDesignEnabledOrUnavailable() || !this.settings.overrideGeolocation.get()) {
             GeolocationAgent.clearGeolocationOverride();
             return;
         }
@@ -779,7 +784,7 @@ WebInspector.OverridesSupport.prototype = {
 
     _deviceOrientationChanged: function()
     {
-        if (!this.settings.overrideDeviceOrientation.get()) {
+        if (!this._responsiveDesignEnabledOrUnavailable() || !this.settings.overrideDeviceOrientation.get()) {
             PageAgent.clearDeviceOrientationOverride();
             return;
         }
@@ -803,7 +808,7 @@ WebInspector.OverridesSupport.prototype = {
         if (this.isInspectingDevice() && this.settings.overrideCSSMedia.get())
             return;
 
-        PageAgent.setEmulatedMedia(this.settings.overrideCSSMedia.get() ? this.settings.emulatedCSSMedia.get() : "");
+        PageAgent.setEmulatedMedia(this._responsiveDesignEnabledOrUnavailable() && this.settings.overrideCSSMedia.get() ? this.settings.emulatedCSSMedia.get() : "");
         var targets = WebInspector.targetManager.targets();
         for (var i = 0; i < targets.length; ++i)
             targets[i].cssModel.mediaQueryResultChanged();
@@ -812,7 +817,7 @@ WebInspector.OverridesSupport.prototype = {
 
     _networkConditionsChanged: function()
     {
-        if (!this.settings.emulateNetworkConditions.get()) {
+        if (!this._responsiveDesignEnabledOrUnavailable() || !this.settings.emulateNetworkConditions.get()) {
             NetworkAgent.emulateNetworkConditions([], 0, false, 0, 0, 0);
         } else {
             var domainsString = this.settings.networkConditionsDomains.get().trim();
@@ -855,6 +860,7 @@ WebInspector.OverridesSupport.prototype = {
             (this.settings.emulateDevice.get() && !this.isInspectingDevice()) ||
             this.settings.overrideGeolocation.get() ||
             this.settings.overrideDeviceOrientation.get() ||
+            (WebInspector.experimentsSettings.networkConditions.isEnabled() && this.settings.emulateNetworkConditions.get()) ||
             this.isTouchEmulationEnabled() ||
             (this.settings.overrideCSSMedia.get() && !this.isInspectingDevice());
         if (this._hasActiveOverrides !== hasActiveOverrides) {
@@ -971,7 +977,7 @@ WebInspector.OverridesSupport.prototype = {
      */
     isEmulateDeviceEnabled: function()
     {
-        return this.settings.emulateDevice.get() && (!this._responsiveDesignAvailable || WebInspector.settings.responsiveDesign.enabled.get());
+        return this.settings.emulateDevice.get() && this._responsiveDesignEnabledOrUnavailable();
     },
 
     /**

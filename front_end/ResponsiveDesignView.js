@@ -47,7 +47,7 @@ WebInspector.ResponsiveDesignView = function(inspectedPagePlaceholder)
     this._enabled = false;
 
     WebInspector.zoomManager.addEventListener(WebInspector.ZoomManager.Events.ZoomChanged, this._onZoomChanged, this);
-    WebInspector.settings.responsiveDesign.enabled.addChangeListener(this._responsiveDesignEnabledChanged, this);
+    WebInspector.settings.responsiveDesignEnabled.addChangeListener(this._responsiveDesignEnabledChanged, this);
     this._responsiveDesignEnabledChanged();
     this._overridesWarningUpdated();
 };
@@ -70,7 +70,7 @@ WebInspector.ResponsiveDesignView.prototype = {
 
     _responsiveDesignEnabledChanged: function()
     {
-        var enabled = WebInspector.settings.responsiveDesign.enabled.get();
+        var enabled = WebInspector.settings.responsiveDesignEnabled.get();
         if (enabled && !this._enabled) {
             this._invalidateCache();
             this._ignoreResize = true;
@@ -380,12 +380,12 @@ WebInspector.ResponsiveDesignView.prototype = {
         this._expandedNetworkSection = document.createElementWithClass("div", "responsive-design-composite-section vbox solid");
 
         this._expandSection = document.createElementWithClass("div", "responsive-design-section vbox");
-        WebInspector.settings.responsiveDesign.toolbarExpanded = WebInspector.settings.createSetting("responsiveDesign.toolbarExpanded", false);
+        this.toolbarExpandedSetting = WebInspector.settings.createSetting("responsiveDesignToolbarExpanded", false);
         this._expandButton = this._expandSection.createChild("div", "responsive-design-expand");
         this._expandButton.createChild("div", "responsive-design-icon responsive-design-icon-expand");
         this._expandButton.createChild("span");
         this._expandButton.addEventListener("click", this._toggleToolbarExpanded.bind(this), false);
-        WebInspector.settings.responsiveDesign.toolbarExpanded.addChangeListener(this._toolbarExpandedChanged, this);
+        this.toolbarExpandedSetting.addChangeListener(this._toolbarExpandedChanged, this);
 
         // Device
         this._deviceSection = document.createElementWithClass("div", "responsive-design-section");
@@ -449,12 +449,12 @@ WebInspector.ResponsiveDesignView.prototype = {
 
     _toggleToolbarExpanded: function()
     {
-        WebInspector.settings.responsiveDesign.toolbarExpanded.set(!WebInspector.settings.responsiveDesign.toolbarExpanded.get());
+        this.toolbarExpandedSetting.set(!this.toolbarExpandedSetting.get());
     },
 
     _toolbarExpandedChanged: function()
     {
-        var expanded = WebInspector.settings.responsiveDesign.toolbarExpanded.get();
+        var expanded = this.toolbarExpandedSetting.get();
         this._expandButton.classList.toggle("expanded", expanded);
         this._expandButton.querySelector("span").textContent = WebInspector.UIString(expanded ? "Collapse" : "Expand");
 
