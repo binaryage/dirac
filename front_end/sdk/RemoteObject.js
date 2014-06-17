@@ -222,7 +222,7 @@ WebInspector.RemoteObjectImpl = function(target, objectId, type, subtype, value,
         // handle
         this._objectId = objectId;
         this._description = description;
-        this._hasChildren = true;
+        this._hasChildren = (type !== "symbol");
         this._preview = preview;
     } else {
         // Primitive or null object.
