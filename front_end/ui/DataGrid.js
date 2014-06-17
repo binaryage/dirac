@@ -672,13 +672,16 @@ WebInspector.DataGrid.prototype = {
 
     _applyColumnWeights: function()
     {
+        var tableWidth = this.element.offsetWidth - this._cornerWidth;
+        if (tableWidth <= 0)
+            return;
+
         var sumOfWeights = 0.0;
         for (var i = 0; i < this._visibleColumnsArray.length; ++i)
             sumOfWeights += this._visibleColumnsArray[i].weight;
 
         var sum = 0;
         var lastOffset = 0;
-        var tableWidth = this.element.offsetWidth - this._cornerWidth;
 
         for (var i = 0; i < this._visibleColumnsArray.length; ++i) {
             sum += this._visibleColumnsArray[i].weight;
@@ -1128,6 +1131,8 @@ WebInspector.DataGrid.prototype = {
      */
     columnOffset: function(columnId)
     {
+        if (!this.element.offsetWidth)
+            return 0;
         for (var i = 1; i < this._visibleColumnsArray.length; ++i) {
             if (columnId === this._visibleColumnsArray[i].identifier)
                 return this._resizers[i - 1].__position;

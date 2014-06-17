@@ -39,6 +39,7 @@
     position: static;
 }
 
+.data-grid.inline col.corner,
 .data-grid.inline th.corner,
 .data-grid.inline td.corner {
     display: none;
@@ -98,8 +99,8 @@
     border-left: 1px solid #aaa;
 }
 
-.data-grid th:first-child,
-.data-grid td:first-child {
+.data-grid:not(.inline) th:first-child,
+.data-grid:not(.inline) td:first-child {
     border-left: none !important;
 }
 
