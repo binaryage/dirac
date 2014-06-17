@@ -488,6 +488,14 @@ WebInspector.TimelineModel.RecordImpl.prototype = {
     },
 
     /**
+     * @return {boolean}
+     */
+    isProgram: function()
+    {
+        return this.type() === WebInspector.TimelineModel.RecordType.Program;
+    },
+
+    /**
      * @return {?Object}
      */
     highlightQuad: function()

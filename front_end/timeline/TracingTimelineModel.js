@@ -613,6 +613,14 @@ WebInspector.TracingTimelineModel.TraceEventRecord.prototype = {
     },
 
     /**
+     * @return {boolean}
+     */
+    isProgram: function()
+    {
+        return this.type() === WebInspector.TracingTimelineModel.RecordType.Program;
+    },
+
+    /**
      * @return {?Object}
      */
     highlightQuad: function()

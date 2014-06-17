@@ -88,14 +88,13 @@ WebInspector.TimelinePresentationModel.prototype = {
      */
     addRecord: function(record)
     {
-        var records;
-        if (record.type() === WebInspector.TimelineModel.RecordType.Program)
-            records = record.children();
-        else
-            records = [record];
-
-        for (var i = 0; i < records.length; ++i)
-            this._innerAddRecord(this._rootRecord, records[i]);
+        if (record.isProgram()) {
+            var records = record.children();
+            for (var i = 0; i < records.length; ++i)
+                this._innerAddRecord(this._rootRecord, records[i]);
+        } else {
+            this._innerAddRecord(this._rootRecord, record);
+        }
     },
 
     /**
