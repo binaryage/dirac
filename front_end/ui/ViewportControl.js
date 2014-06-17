@@ -293,7 +293,7 @@ WebInspector.ViewportControl.prototype = {
      */
     _restoreSelection: function(selection)
     {
-        var anchorElement;
+        var anchorElement = null;
         var anchorOffset;
         if (this._firstVisibleIndex <= this._anchorSelection.item && this._anchorSelection.item <= this._lastVisibleIndex) {
             anchorElement = this._anchorSelection.node;
@@ -306,7 +306,7 @@ WebInspector.ViewportControl.prototype = {
             anchorOffset = this._selectionIsBackward ? 1 : 0;
         }
 
-        var headElement;
+        var headElement = null;
         var headOffset;
         if (this._firstVisibleIndex <= this._headSelection.item && this._headSelection.item <= this._lastVisibleIndex) {
             headElement = this._headSelection.node;
@@ -439,7 +439,7 @@ WebInspector.ViewportControl.prototype = {
             return 0;
         var chars = 0;
         var node = itemElement;
-        while ((node = node.traverseNextTextNode(true)) && node !== container)
+        while ((node = node.traverseNextTextNode()) && node !== container)
             chars += node.textContent.length;
         return chars + offset;
     },
