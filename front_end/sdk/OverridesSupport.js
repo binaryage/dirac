@@ -823,13 +823,13 @@ WebInspector.OverridesSupport.prototype = {
     _networkConditionsChanged: function()
     {
         if (!this.settings.emulateNetworkConditions.get()) {
-            NetworkAgent.emulateNetworkConditions([], 0, false);
+            NetworkAgent.emulateNetworkConditions([], 0, false, 0, 0, 0);
         } else {
             var domainsString = this.settings.networkConditionsDomains.get().trim();
             var domains = domainsString ? domainsString.split(",").map(function (s) { return s.trim(); }) : [];
             var throughput = this.settings.networkConditionsThroughput.get();
             var offline = !throughput;
-            NetworkAgent.emulateNetworkConditions(domains, throughput, offline);
+            NetworkAgent.emulateNetworkConditions(domains, throughput, offline, 0, throughput, throughput);
         }
         this.maybeHasActiveOverridesChanged();
     },
