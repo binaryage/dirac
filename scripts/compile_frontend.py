@@ -92,7 +92,7 @@ type_checked_jsdoc_tags_or = "|".join(type_checked_jsdoc_tags_list)
 # Basic regex for invalid JsDoc types: an object type name ([A-Z][A-Za-z0-9.]+[A-Za-z0-9]) not preceded by '!', '?', ':' (this, new), or '.' (object property).
 invalid_type_regex = re.compile(r"@(?:" + type_checked_jsdoc_tags_or + r")\s*\{.*(?<![!?:.A-Za-z0-9])([A-Z][A-Za-z0-9.]+[A-Za-z0-9])[^/]*\}")
 
-invalid_type_designator_regex = re.compile(r"@(?:" + type_checked_jsdoc_tags_or + r")\s*.*([?!])=?\}")
+invalid_type_designator_regex = re.compile(r"@(?:" + type_checked_jsdoc_tags_or + r")\s*.*(?<![{: ])([?!])=?\}")
 
 importscript_regex = re.compile(r"importScript\(\s*[\"']")
 error_warning_regex = re.compile(r"(?:WARNING|ERROR)")
@@ -189,9 +189,6 @@ jsdocValidatorProc = verify_jsdoc_extra()
 modules_dir = tempfile.mkdtemp()
 common_closure_args = " --summary_detail_level 3 --compilation_level SIMPLE_OPTIMIZATIONS --warning_level VERBOSE --language_in ECMASCRIPT5 --accept_const_keyword --module_output_path_prefix %s/" % modules_dir
 
-compiler_args_file = tempfile.NamedTemporaryFile(mode='wt', delete=False)
-closure_runner_command = "%s -jar %s --compiler-args-file %s" % (java_exec, closure_runner_jar, compiler_args_file.name)
-
 spawned_compiler_command = "%s -jar %s %s \\\n" % (java_exec, closure_compiler_jar, common_closure_args)
 
 modules_by_name = {}
@@ -267,6 +264,9 @@ def dump_module(name, recursively, processed_modules):
 
 print "Compiling frontend..."
 
+compiler_args_file = tempfile.NamedTemporaryFile(mode='wt', delete=False)
+closure_runner_command = "%s -jar %s --compiler-args-file %s" % (java_exec, closure_runner_jar, compiler_args_file.name)
+
 for module in modules:
     closure_args = common_closure_args
     closure_args += " --externs " + global_externs_file
@@ -279,9 +279,8 @@ modular_compiler_proc = subprocess.Popen(closure_runner_command, stdout=subproce
 
 
 def unclosure_injected_script(sourceFileName, outFileName):
-    sourceFile = open(sourceFileName, "r")
-    source = sourceFile.read()
-    sourceFile.close()
+    with open(sourceFileName, "r") as sourceFile:
+        source = sourceFile.read()
 
     def replace_function(matchobj):
         return re.sub(r"@param", "param", matchobj.group(1) or "") + "\n//" + matchobj.group(2)
@@ -292,9 +291,11 @@ def unclosure_injected_script(sourceFileName, outFileName):
     # Comment out its return statement
     source = re.sub(r"\n(\s*return\s+[^;]+;\s*\n\}\)\s*)$", "\n/*\\1*/", source)
 
-    outFileName = open(outFileName, "w")
-    outFileName.write(source)
-    outFileName.close()
+    # Replace the "var Object" override with a "self.Object" one
+    source = re.sub(r"\nvar Object =", "\nself.Object =", source, count=1)
+
+    with open(outFileName, "w") as outFileName:
+        outFileName.write(source)
 
 injectedScriptSourceTmpFile = path.join(inspector_path, "InjectedScriptSourceTmp.js")
 injectedScriptCanvasModuleSourceTmpFile = path.join(inspector_path, "InjectedScriptCanvasModuleSourceTmp.js")
