@@ -9,10 +9,6 @@
     position: relative;
 }
 
-.responsive-design-reset-button:hover {
-    box-shadow: inset 0 0 5px rgba(255, 255, 255, 0.5);
-}
-
 .responsive-design-sliders-container {
     position: absolute;
     overflow: visible;
@@ -71,60 +67,80 @@
     left: 0;
 }
 
+/* Toolbar */
+
 .responsive-design-toolbar {
     display: flex;
     flex: none;
-    background-color: rgb(64, 64, 64);
-    color: rgb(180, 180, 180);
+    background: linear-gradient(to bottom, rgb(64, 64, 64), rgb(58, 58, 58));
+    color: rgb(255, 255, 255);
     overflow: hidden;
-    border: 1px solid rgb(163, 163, 163);
+    border-bottom: 1px solid rgb(104, 104, 104);
 }
+
+.responsive-design-toolbar:not(.expanded) .expanded-only {
+    display: none !important;
+}
+
+.responsive-design-separator {
+    flex: none;
+    width: 2px;
+    background-color: rgb(43, 43, 43);
+    margin: 2px;
+}
+
+.responsive-design-section {
+    display: flex;
+    flex: none;
+    flex-direction: column;
+    white-space: nowrap;
+    align-items: stretch;
+    justify-content: flex-start;
+    padding: 0 10px;
+}
+
+.responsive-design-section-separator {
+    height: 2px;
+}
+
+.responsive-design-suite {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    justify-content: flex-start;
+    padding-top: 2px;
+    padding-bottom: 2px;
+}
+
+.responsive-design-section > :not(:nth-child(1)) {
+    margin-left: 18px;
+}
+
+.responsive-design-suite-separator {
+    flex: none;
+    width: 1px;
+    background-color: rgb(43, 43, 43);
+    margin: 0 3px;
+}
+
+.responsive-design-suite > div:not(.responsive-design-suite-separator) {
+    flex: auto;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    height: 22px;
+    overflow: hidden;
+}
+
+/* Toolbar controls */
 
 .responsive-design-toolbar fieldset,
 .responsive-design-toolbar p {
     margin: 0;
-    padding: 0;
     border: 0;
-    display: inline-block;
-}
-
-.responsive-design-screen-section > fieldset,
-.responsive-design-user-agent-section > p {
-    margin-left: 7px;
-}
-
-.responsive-design-toolbar .responsive-design-section {
-    display: flex;
-    flex: 1 0 auto;
-    flex-direction: row;
-    height: 24px;
-    margin-top: -1px;
-    white-space: nowrap;
-    align-items: center;
-    justify-content: flex-start;
-    padding-right: 3px;
-}
-
-.responsive-design-toolbar .responsive-design-section.vbox {
-    height: auto;
     padding: 0;
-}
-
-.responsive-design-toolbar .responsive-design-composite-section {
-    align-items: stretch;
-    flex: none;
-}
-
-.responsive-design-toolbar .responsive-design-composite-section.vbox:not(.solid) > :not(:nth-child(1)) {
-    border-top: 1px solid rgb(163, 163, 163);
-}
-
-.responsive-design-toolbar .responsive-design-composite-section.hbox:not(.solid) > :not(:nth-child(1)) {
-    border-left: 1px solid rgb(163, 163, 163);
-}
-
-.responsive-design-toolbar > .responsive-design-composite-section {
-    border-right: 1px solid rgb(163, 163, 163);
+    display: inline-block;
 }
 
 .responsive-design-toolbar .field-error-message {
@@ -132,7 +148,6 @@
 }
 
 .responsive-design-toolbar input[type='text'] {
-    color: rgb(255, 156, 0);
     text-align: left;
     background-color: transparent;
     border: none;
@@ -144,24 +159,18 @@
     text-align: center;
 }
 
-.responsive-design-toolbar input[type='text']::-webkit-input-placeholder {
-    color: rgba(255, 156, 0, 0.5);
-}
-
 .responsive-design-toolbar input[type='text']:not(.numeric) {
     width: 100%;
-    margin-left: 7px;
 }
 
-.responsive-design-toolbar input:disabled,
-.responsive-design-toolbar input[readonly],
-.responsive-design-toolbar button:disabled {
+.responsive-design-toolbar fieldset:disabled input,
+.responsive-design-toolbar fieldset:disabled button {
     opacity: 0.7;
 }
 
 .responsive-design-toolbar input[type='checkbox'] {
     -webkit-appearance: none;
-    margin: 0 5px 0 7px;
+    margin: auto 5px auto 0;
     border: 1px solid rgb(45, 45, 45);
     border-radius: 3px;
     background-color: rgb(102, 102, 102);
@@ -189,9 +198,9 @@
 }
 
 .responsive-design-toolbar select {
-    width: 150px;
-    background-color: transparent;
-    color: rgb(255, 156, 0);
+    height: 18px;
+    width: 220px;
+    background-color: rgb(81, 81, 81);
     border: 0;
     margin-left: 10px;
     line-height: 16px;
@@ -205,6 +214,8 @@ body.platform-mac .responsive-design-toolbar select {
 .responsive-design-toolbar input:focus {
     background-color: rgb(102, 102, 102)
 }
+
+/* Toolbar icons */
 
 .responsive-design-icon {
     background-color: rgb(180, 180, 180);
@@ -247,7 +258,6 @@ body.platform-mac .responsive-design-toolbar select {
     opacity: 0.9;
     background-color: rgb(255, 156, 0);
     -webkit-mask-position: -32px 0;
-    margin-right: 10px;
     -webkit-appearance: none;
     padding: 0;
     border: 0;
@@ -261,7 +271,13 @@ body.platform-mac .responsive-design-toolbar select {
     opacity: 0.8;
 }
 
-.responsive-design-expand {
+/* Expand button */
+
+.responsive-design-section-expand {
+    padding: 0 !important;
+}
+
+.responsive-design-expand-button {
     height: 19px;
     min-width: 70px;
     background: rgb(64, 64, 64);
@@ -269,10 +285,11 @@ body.platform-mac .responsive-design-toolbar select {
     align-items: center;
     justify-content: center;
     margin: 3px;
+    cursor: pointer;
 }
 
-.responsive-design-expand:hover,
-.responsive-design-expand:active {
+.responsive-design-expand-button:hover,
+.responsive-design-expand-button:active {
     background: linear-gradient(to top, rgb(102, 102, 102), rgb(64, 64, 64));
 }
 
@@ -282,18 +299,53 @@ body.platform-mac .responsive-design-toolbar select {
     margin-right: 2px;
 }
 
-.responsive-design-expand.expanded .responsive-design-icon-expand {
+.responsive-design-toolbar.expanded .responsive-design-icon-expand {
     transform: rotate(180deg);
 }
 
-.responsive-design-network select {
-    width: 120px;
+/* Device section */
+
+.responsive-design-section-device {
+    width: 340px;
 }
 
+.responsive-design-section-device .responsive-design-section-separator {
+    background: linear-gradient(to bottom, rgb(255, 186, 68), rgb(255, 119, 0));
+}
+
+.responsive-design-section-device input[type='text'],
+.responsive-design-section-device select {
+    color: rgb(255, 156, 0);
+}
+
+.responsive-design-section-device .expanded-only input[type='checkbox']:checked:after {
+    background: rgb(255, 156, 0);
+}
+
+/* Network section */
+
+.responsive-design-section-network {
+    width: 280px;
+}
+
+.responsive-design-section-network select {
+    width: 150px;
+    color: rgb(65, 175, 255);
+}
+
+.responsive-design-section-network .responsive-design-section-separator {
+    background: linear-gradient(to bottom, rgb(77, 170, 243), rgb(0, 130, 255));
+}
+
+/* Warning message */
+
 .responsive-design-warning {
-    background-color: rgb(64, 64, 64);
-    color: rgb(180, 180, 180);
-    height: 19px;
+    background-color: rgb(0, 0, 0);
+    color: rgb(255, 255, 255);
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
     padding: 2px;
     white-space: nowrap;
 }
@@ -317,3 +369,27 @@ body.platform-mac .responsive-design-toolbar select {
     background-image: url(Images/statusbarButtonGlyphs_2x.png);
 }
 } /* media */
+
+.responsive-design-warning-close {
+    position: absolute;
+    right: 3px;
+    top: 3px;
+    width: 13px;
+    height: 13px;
+    cursor: pointer;
+    background-image: url(Images/statusbarButtonGlyphs.png);
+    background-size: 320px 144px;
+    background-position: -175px -96px;
+    display: inline-block;
+}
+
+@media (-webkit-min-device-pixel-ratio: 1.5) {
+    .responsive-design-warning-close {
+        background-image: url(Images/statusbarButtonGlyphs_2x.png);
+    }
+} /* media */
+
+.responsive-design-warning-close:hover,
+.responsive-design-warning-close:active {
+    opacity: 0.7;
+}
