@@ -277,15 +277,16 @@ WebInspector.SourcesPanel.prototype = {
             WebInspector.domBreakpointsSidebarPane.highlightBreakpoint(details.auxData);
             WebInspector.domBreakpointsSidebarPane.createBreakpointHitStatusMessage(details, didCreateBreakpointHitStatusMessage.bind(this));
         } else if (details.reason === WebInspector.DebuggerModel.BreakReason.EventListener) {
-            var eventName = details.auxData.eventName;
-            this.sidebarPanes.eventListenerBreakpoints.highlightBreakpoint(details.auxData.eventName);
+            var eventName = details.auxData["eventName"];
+            var targetName = details.auxData["targetName"];
+            this.sidebarPanes.eventListenerBreakpoints.highlightBreakpoint(eventName, targetName);
             var eventNameForUI = WebInspector.EventListenerBreakpointsSidebarPane.eventNameForUI(eventName, details.auxData);
             this.sidebarPanes.callstack.setStatus(WebInspector.UIString("Paused on a \"%s\" Event Listener.", eventNameForUI));
         } else if (details.reason === WebInspector.DebuggerModel.BreakReason.XHR) {
             this.sidebarPanes.xhrBreakpoints.highlightBreakpoint(details.auxData["breakpointURL"]);
             this.sidebarPanes.callstack.setStatus(WebInspector.UIString("Paused on a XMLHttpRequest."));
         } else if (details.reason === WebInspector.DebuggerModel.BreakReason.Exception)
-            this.sidebarPanes.callstack.setStatus(WebInspector.UIString("Paused on exception: '%s'.", details.auxData.description));
+            this.sidebarPanes.callstack.setStatus(WebInspector.UIString("Paused on exception: '%s'.", details.auxData["description"]));
         else if (details.reason === WebInspector.DebuggerModel.BreakReason.Assert)
             this.sidebarPanes.callstack.setStatus(WebInspector.UIString("Paused on assertion."));
         else if (details.reason === WebInspector.DebuggerModel.BreakReason.CSPViolation)
