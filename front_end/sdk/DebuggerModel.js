@@ -844,6 +844,7 @@ WebInspector.DebuggerModel.Location = function(target, scriptId, lineNumber, col
 /**
  * @param {!WebInspector.Target} target
  * @param {!DebuggerAgent.Location} payload
+ * @return {!WebInspector.DebuggerModel.Location}
  */
 WebInspector.DebuggerModel.Location.fromPayload = function(target, payload)
 {

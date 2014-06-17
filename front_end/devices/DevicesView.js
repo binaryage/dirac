@@ -29,12 +29,12 @@ WebInspector.DevicesView.MinVersionNewTab = 29;
 var Adb = {};
 
 /**
- * @typedef {{adbBrowserChromeVersion:!string, compatibleVersion: boolean, adbBrowserName: !string, source: !string, adbBrowserVersion: !string}}
+ * @typedef {{id: string, adbBrowserChromeVersion: string, compatibleVersion: boolean, adbBrowserName: string, source: string, adbBrowserVersion: string}}
  */
 Adb.Browser;
 
 /**
- * @typedef {{adbModel:!string, adbSerial:!string, browsers:!Array.<!Adb.Browser>, adbPortStatus:!Array.<number>, adbConnected: boolean}}
+ * @typedef {{id: string, adbModel: string, adbSerial: string, browsers: !Array.<!Adb.Browser>, adbPortStatus: !Array.<number>, adbConnected: boolean}}
  */
 Adb.Device;
 
@@ -54,7 +54,7 @@ WebInspector.DevicesView.prototype = {
     _updateDeviceList: function(devices)
     {
         /**
-         * @param {!string} id
+         * @param {string} id
          * @return {string}
          */
         function sanitizeForId(id)

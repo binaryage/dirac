@@ -2838,6 +2838,11 @@ WebInspector.NetworkDataGridNode.prototype = {
     __proto__: WebInspector.DataGridNode.prototype
 }
 
+/**
+ * @param {!WebInspector.NetworkDataGridNode} a
+ * @param {!WebInspector.NetworkDataGridNode} b
+ * @return {number}
+ */
 WebInspector.NetworkDataGridNode.NameComparator = function(a, b)
 {
     var aFileName = a._request.name();
@@ -2849,6 +2854,11 @@ WebInspector.NetworkDataGridNode.NameComparator = function(a, b)
     return 0;
 }
 
+/**
+ * @param {!WebInspector.NetworkDataGridNode} a
+ * @param {!WebInspector.NetworkDataGridNode} b
+ * @return {number}
+ */
 WebInspector.NetworkDataGridNode.RemoteAddressComparator = function(a, b)
 {
     var aRemoteAddress = a._request.remoteAddress();
@@ -2860,6 +2870,11 @@ WebInspector.NetworkDataGridNode.RemoteAddressComparator = function(a, b)
     return 0;
 }
 
+/**
+ * @param {!WebInspector.NetworkDataGridNode} a
+ * @param {!WebInspector.NetworkDataGridNode} b
+ * @return {number}
+ */
 WebInspector.NetworkDataGridNode.SizeComparator = function(a, b)
 {
     if (b._request.cached && !a._request.cached)
@@ -2870,6 +2885,11 @@ WebInspector.NetworkDataGridNode.SizeComparator = function(a, b)
     return a._request.transferSize - b._request.transferSize;
 }
 
+/**
+ * @param {!WebInspector.NetworkDataGridNode} a
+ * @param {!WebInspector.NetworkDataGridNode} b
+ * @return {number}
+ */
 WebInspector.NetworkDataGridNode.InitiatorComparator = function(a, b)
 {
     var aInitiator = a._request.initiatorInfo();
@@ -2903,6 +2923,11 @@ WebInspector.NetworkDataGridNode.InitiatorComparator = function(a, b)
     return 0;
 }
 
+/**
+ * @param {!WebInspector.NetworkDataGridNode} a
+ * @param {!WebInspector.NetworkDataGridNode} b
+ * @return {number}
+ */
 WebInspector.NetworkDataGridNode.RequestCookiesCountComparator = function(a, b)
 {
     var aScore = a._request.requestCookies ? a._request.requestCookies.length : 0;
@@ -2910,6 +2935,11 @@ WebInspector.NetworkDataGridNode.RequestCookiesCountComparator = function(a, b)
     return aScore - bScore;
 }
 
+/**
+ * @param {!WebInspector.NetworkDataGridNode} a
+ * @param {!WebInspector.NetworkDataGridNode} b
+ * @return {number}
+ */
 WebInspector.NetworkDataGridNode.ResponseCookiesCountComparator = function(a, b)
 {
     var aScore = a._request.responseCookies ? a._request.responseCookies.length : 0;
@@ -2917,6 +2947,13 @@ WebInspector.NetworkDataGridNode.ResponseCookiesCountComparator = function(a, b)
     return aScore - bScore;
 }
 
+/**
+ * @param {string} propertyName
+ * @param {boolean} revert
+ * @param {!WebInspector.NetworkDataGridNode} a
+ * @param {!WebInspector.NetworkDataGridNode} b
+ * @return {number}
+ */
 WebInspector.NetworkDataGridNode.RequestPropertyComparator = function(propertyName, revert, a, b)
 {
     var aValue = a._request[propertyName];

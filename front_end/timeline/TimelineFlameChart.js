@@ -271,7 +271,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
 
     /**
      * @param {number} entryIndex
-     * @return {!string}
+     * @return {string}
      */
     entryColor: function(entryIndex)
     {
@@ -395,7 +395,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
 
     /**
      * @param {number} entryIndex
-     * @return {!string}
+     * @return {string}
      */
     textColor: function(entryIndex)
     {
@@ -615,7 +615,7 @@ WebInspector.TracingBasedTimelineFlameChartDataProvider.prototype = {
 
     /**
      * @param {number} entryIndex
-     * @return {!string}
+     * @return {string}
      */
     entryColor: function(entryIndex)
     {
@@ -713,7 +713,7 @@ WebInspector.TracingBasedTimelineFlameChartDataProvider.prototype = {
 
     /**
      * @param {number} entryIndex
-     * @return {!string}
+     * @return {string}
      */
     textColor: function(entryIndex)
     {

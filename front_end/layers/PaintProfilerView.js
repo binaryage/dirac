@@ -238,7 +238,7 @@ WebInspector.PaintProfilerCommandLogView.prototype = {
      */
     _getHoverAnchor: function(target)
     {
-        return target.enclosingNodeOrSelfWithNodeName("span");
+        return /** @type {!Element} */ (target.enclosingNodeOrSelfWithNodeName("span"));
     },
 
     /**

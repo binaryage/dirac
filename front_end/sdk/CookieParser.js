@@ -412,6 +412,7 @@ WebInspector.Cookies.buildCookieProtocolObject = function(protocolCookie)
 /**
  * @param {!WebInspector.Cookie} cookie
  * @param {string} resourceURL
+ * @return {boolean}
  */
 WebInspector.Cookies.cookieMatchesResourceURL = function(cookie, resourceURL)
 {
@@ -426,6 +427,7 @@ WebInspector.Cookies.cookieMatchesResourceURL = function(cookie, resourceURL)
 /**
  * @param {string} cookieDomain
  * @param {string} resourceDomain
+ * @return {boolean}
  */
 WebInspector.Cookies.cookieDomainMatchesResourceDomain = function(cookieDomain, resourceDomain)
 {

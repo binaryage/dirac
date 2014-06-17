@@ -63,6 +63,10 @@ WebInspector.NavigatorView.Events = {
     ItemRenamed: "ItemRenamed",
 }
 
+/**
+ * @param {string} type
+ * @return {string}
+ */
 WebInspector.NavigatorView.iconClassForType = function(type)
 {
     if (type === WebInspector.NavigatorTreeOutline.Types.Domain)

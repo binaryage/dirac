@@ -754,7 +754,7 @@ WebInspector.ConsoleViewMessage.prototype = {
             if (wasThrown) {
                 var element = rootElement.createChild("span", "error-message");
                 element.textContent = WebInspector.UIString("<exception>");
-                element.title = result.description;
+                element.title = /** @type {string} */ (result.description);
             } else if (isArrayEntry) {
                 rootElement.appendChild(this._formatAsArrayEntry(result));
             } else {

@@ -191,7 +191,7 @@ var InspectorFrontendAPI = {
     },
 
     /**
-     * @param {!string} eventType
+     * @param {string} eventType
      * @param {*=} eventData
      * @return {boolean}
      */

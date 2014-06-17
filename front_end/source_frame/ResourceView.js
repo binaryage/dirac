@@ -67,6 +67,7 @@ WebInspector.ResourceView.hasTextContent = function(resource)
 
 /**
  * @param {!WebInspector.Resource} resource
+ * @return {!WebInspector.ResourceView}
  */
 WebInspector.ResourceView.nonSourceViewForResource = function(resource)
 {

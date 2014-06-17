@@ -384,7 +384,7 @@ WebInspector.ResponsiveDesignView.prototype = {
         this._expandButton = this._expandSection.createChild("div", "responsive-design-expand");
         this._expandButton.createChild("div", "responsive-design-icon responsive-design-icon-expand");
         this._expandButton.createChild("span");
-        this._expandButton.addEventListener("click", this._toggleToolbarExpanded.bind(this));
+        this._expandButton.addEventListener("click", this._toggleToolbarExpanded.bind(this), false);
         WebInspector.settings.responsiveDesign.toolbarExpanded.addChangeListener(this._toolbarExpandedChanged, this);
 
         // Device

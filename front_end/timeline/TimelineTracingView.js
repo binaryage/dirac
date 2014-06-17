@@ -363,7 +363,7 @@ WebInspector.TraceViewFlameChartDataProvider.prototype = {
 
     /**
      * @param {number} entryIndex
-     * @return {!string}
+     * @return {string}
      */
     entryColor: function(entryIndex)
     {
@@ -427,7 +427,7 @@ WebInspector.TraceViewFlameChartDataProvider.prototype = {
 
     /**
      * @param {number} entryIndex
-     * @return {!string}
+     * @return {string}
      */
     textColor: function(entryIndex)
     {

@@ -344,6 +344,11 @@ WebInspector.WatchExpressionsSection.prototype = {
     __proto__: WebInspector.ObjectPropertiesSection.prototype
 }
 
+/**
+ * @param {!WebInspector.RemoteObjectProperty} propertyA
+ * @param {!WebInspector.RemoteObjectProperty} propertyB
+ * @return {number}
+ */
 WebInspector.WatchExpressionsSection.CompareProperties = function(propertyA, propertyB)
 {
     if (propertyA.watchIndex == propertyB.watchIndex)

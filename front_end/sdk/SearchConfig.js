@@ -22,6 +22,7 @@ WebInspector.SearchConfig.RegexQuery;
 
 /**
  * @param {{query: string, ignoreCase: boolean, isRegex: boolean}} object
+ * @return {!WebInspector.SearchConfig}
  */
 WebInspector.SearchConfig.fromPlainObject = function(object)
 {

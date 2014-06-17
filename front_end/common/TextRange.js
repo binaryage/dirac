@@ -43,6 +43,11 @@ WebInspector.TextRange = function(startLine, startColumn, endLine, endColumn)
     this.endColumn = endColumn;
 }
 
+/**
+ * @param {number} line
+ * @param {number} column
+ * @return {!WebInspector.TextRange}
+ */
 WebInspector.TextRange.createFromLocation = function(line, column)
 {
     return new WebInspector.TextRange(line, column, line, column);

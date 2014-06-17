@@ -33,6 +33,9 @@
  */
 WebInspector.TimelineUIUtils = function() { }
 
+/**
+ * @return {!Object.<string, !WebInspector.TimelineCategory>}
+ */
 WebInspector.TimelineUIUtils.categories = function()
 {
     if (WebInspector.TimelineUIUtils._categories)
@@ -154,6 +157,7 @@ WebInspector.TimelineUIUtils.categoryForRecord = function(record)
 
 /**
  * @param {!WebInspector.TimelineModel.Record} record
+ * @return {boolean}
  */
 WebInspector.TimelineUIUtils.isEventDivider = function(record)
 {
@@ -190,6 +194,7 @@ WebInspector.TimelineUIUtils.needsPreviewElement = function(recordType)
 /**
  * @param {string} recordType
  * @param {string=} title
+ * @return {!Element}
  */
 WebInspector.TimelineUIUtils.createEventDivider = function(recordType, title)
 {
@@ -370,6 +375,7 @@ WebInspector.TimelineUIUtils.generatePieChart = function(aggregatedStats, selfCa
 /**
  * @param {!WebInspector.TimelineFrameModel} frameModel
  * @param {!WebInspector.TimelineFrame} frame
+ * @return {!Element}
  */
 WebInspector.TimelineUIUtils.generatePopupContentForFrame = function(frameModel, frame)
 {
@@ -391,6 +397,7 @@ WebInspector.TimelineUIUtils.generatePopupContentForFrame = function(frameModel,
 
 /**
  * @param {!WebInspector.FrameStatistics} statistics
+ * @return {!Element}
  */
 WebInspector.TimelineUIUtils.generatePopupContentForFrameStatistics = function(statistics)
 {
@@ -418,6 +425,7 @@ WebInspector.TimelineUIUtils.generatePopupContentForFrameStatistics = function(s
  * @param {string} color0
  * @param {string} color1
  * @param {string} color2
+ * @return {!CanvasGradient}
  */
 WebInspector.TimelineUIUtils.createFillStyle = function(context, width, height, color0, color1, color2)
 {
@@ -434,6 +442,7 @@ WebInspector.TimelineUIUtils.createFillStyle = function(context, width, height, 
  * @param {number} width
  * @param {number} height
  * @param {!WebInspector.TimelineCategory} category
+ * @return {!CanvasGradient}
  */
 WebInspector.TimelineUIUtils.createFillStyleForCategory = function(context, width, height, category)
 {
@@ -442,6 +451,7 @@ WebInspector.TimelineUIUtils.createFillStyleForCategory = function(context, widt
 
 /**
  * @param {!WebInspector.TimelineCategory} category
+ * @return {string}
  */
 WebInspector.TimelineUIUtils.createStyleRuleForCategory = function(category)
 {

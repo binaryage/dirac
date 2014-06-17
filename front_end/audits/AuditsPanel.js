@@ -373,6 +373,10 @@ WebInspector.AuditRuleResult.linkifyDisplayName = function(url)
     return WebInspector.linkifyURLAsNode(url, WebInspector.displayNameForURL(url));
 }
 
+/**
+ * @param {string} domain
+ * @return {string}
+ */
 WebInspector.AuditRuleResult.resourceDomain = function(domain)
 {
     return domain || WebInspector.UIString("[empty domain]");

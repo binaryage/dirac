@@ -53,6 +53,7 @@ WebInspector.CSSStyleModel.PseudoStatePropertyName = "pseudoState";
 /**
  * @param {!WebInspector.CSSStyleModel} cssModel
  * @param {!Array.<!CSSAgent.RuleMatch>|undefined} matchArray
+ * @return {!Array.<!WebInspector.CSSRule>}
  */
 WebInspector.CSSStyleModel.parseRuleMatchArrayPayload = function(cssModel, matchArray)
 {

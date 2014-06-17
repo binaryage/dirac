@@ -83,6 +83,10 @@ WebInspector.RequestTimingView.prototype = {
 }
 
 
+/**
+ * @param {!WebInspector.NetworkRequest} request
+ * @return {!Element}
+ */
 WebInspector.RequestTimingView.createTimingTable = function(request)
 {
     var tableElement = document.createElement("table");

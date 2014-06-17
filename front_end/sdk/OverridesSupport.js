@@ -260,7 +260,7 @@ WebInspector.OverridesSupport.DeviceOrientation.clearDeviceOrientationOverride =
 
 /**
  * @param {string} value
- * @return {!string}
+ * @return {string}
  */
 WebInspector.OverridesSupport.integerInputValidator = function(value)
 {
@@ -271,7 +271,7 @@ WebInspector.OverridesSupport.integerInputValidator = function(value)
 
 /**
  * @param {string} value
- * @return {!string}
+ * @return {string}
  */
 WebInspector.OverridesSupport.doubleInputValidator = function(value)
 {
@@ -282,7 +282,7 @@ WebInspector.OverridesSupport.doubleInputValidator = function(value)
 
 /**
  * @param {string} value
- * @return {!string}
+ * @return {string}
  */
 WebInspector.OverridesSupport.networkDomainsValidator = function(value)
 {

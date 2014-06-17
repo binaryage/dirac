@@ -126,7 +126,7 @@ WebInspector.SidebarPaneTitle.prototype = {
     _expand: function()
     {
         this.element.classList.add("expanded");
-        this._pane.show(this.element.parentNode, this.element.nextSibling);
+        this._pane.show(this.element.parentElement, /** @type {?Element} */ (this.element.nextSibling));
     },
 
     _collapse: function()
@@ -145,7 +145,7 @@ WebInspector.SidebarPaneTitle.prototype = {
     },
 
     /**
-     * @param {!Event} event
+     * @param {?Event} event
      */
     _onTitleKeyDown: function(event)
     {

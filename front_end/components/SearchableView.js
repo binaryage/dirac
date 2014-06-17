@@ -126,6 +126,9 @@ WebInspector.SearchableView = function(searchable)
 
 WebInspector.SearchableView._lastUniqueId = 0;
 
+/**
+ * @return {!Array.<!WebInspector.KeyboardShortcut.Descriptor>}
+ */
 WebInspector.SearchableView.findShortcuts = function()
 {
     if (WebInspector.SearchableView._findShortcuts)
@@ -136,6 +139,9 @@ WebInspector.SearchableView.findShortcuts = function()
     return WebInspector.SearchableView._findShortcuts;
 }
 
+/**
+ * @return {!Array.<!WebInspector.KeyboardShortcut.Descriptor>}
+ */
 WebInspector.SearchableView.cancelSearchShortcuts = function()
 {
     if (WebInspector.SearchableView._cancelSearchShortcuts)
@@ -144,6 +150,9 @@ WebInspector.SearchableView.cancelSearchShortcuts = function()
     return WebInspector.SearchableView._cancelSearchShortcuts;
 }
 
+/**
+ * @return {!Array.<!WebInspector.KeyboardShortcut.Descriptor>}
+ */
 WebInspector.SearchableView.findNextShortcut = function()
 {
     if (WebInspector.SearchableView._findNextShortcut)
@@ -154,6 +163,9 @@ WebInspector.SearchableView.findNextShortcut = function()
     return WebInspector.SearchableView._findNextShortcut;
 }
 
+/**
+ * @return {!Array.<!WebInspector.KeyboardShortcut.Descriptor>}
+ */
 WebInspector.SearchableView.findPreviousShortcuts = function()
 {
     if (WebInspector.SearchableView._findPreviousShortcuts)
@@ -387,7 +399,7 @@ WebInspector.SearchableView.prototype = {
     },
 
     /**
-     * @param {!Event} event
+     * @param {?Event} event
      */
     _onSearchFieldManualFocus: function(event)
     {
@@ -395,7 +407,7 @@ WebInspector.SearchableView.prototype = {
     },
 
     /**
-     * @param {!KeyboardEvent} event
+     * @param {?Event} event
      */
     _onSearchKeyDown: function(event)
     {
@@ -409,7 +421,7 @@ WebInspector.SearchableView.prototype = {
     },
 
     /**
-     * @param {!KeyboardEvent} event
+     * @param {?Event} event
      */
     _onReplaceKeyDown: function(event)
     {

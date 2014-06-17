@@ -58,7 +58,7 @@ WebInspector.FlameChart = function(dataProvider, flameChartDelegate, isTopDown)
     this._calculator = new WebInspector.FlameChart.Calculator();
 
     this._canvas = this.element.createChild("canvas");
-    this._canvas.addEventListener("mousemove", this._onMouseMove.bind(this));
+    this._canvas.addEventListener("mousemove", this._onMouseMove.bind(this), false);
     this._canvas.addEventListener("mousewheel", this._onMouseWheel.bind(this), false);
     this._canvas.addEventListener("click", this._onClick.bind(this), false);
     WebInspector.installDragHandle(this._canvas, this._startCanvasDragging.bind(this), this._canvasDragging.bind(this), this._endCanvasDragging.bind(this), "move", null);
@@ -165,7 +165,7 @@ WebInspector.FlameChartDataProvider.prototype = {
 
     /**
      * @param {number} entryIndex
-     * @return {!string}
+     * @return {string}
      */
     entryColor: function(entryIndex) { },
 
@@ -190,7 +190,7 @@ WebInspector.FlameChartDataProvider.prototype = {
 
     /**
      * @param {number} entryIndex
-     * @return {!string}
+     * @return {string}
      */
     textColor: function(entryIndex) { },
 
@@ -449,7 +449,7 @@ WebInspector.FlameChart.prototype = {
     },
 
     /**
-     * @param {?MouseEvent} event
+     * @param {?Event} event
      */
     _onMouseMove: function(event)
     {
@@ -494,7 +494,7 @@ WebInspector.FlameChart.prototype = {
     },
 
     /**
-     * @param {?MouseEvent} e
+     * @param {?Event} e
      */
     _onMouseWheel: function(e)
     {

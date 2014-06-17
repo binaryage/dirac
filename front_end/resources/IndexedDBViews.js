@@ -225,10 +225,10 @@ WebInspector.IDBDataView.prototype = {
 
         this._keyInputElement = editorToolbar.createChild("input", "key-input");
         this._keyInputElement.placeholder = WebInspector.UIString("Start from key");
-        this._keyInputElement.addEventListener("paste", this._keyInputChanged.bind(this));
-        this._keyInputElement.addEventListener("cut", this._keyInputChanged.bind(this));
-        this._keyInputElement.addEventListener("keypress", this._keyInputChanged.bind(this));
-        this._keyInputElement.addEventListener("keydown", this._keyInputChanged.bind(this));
+        this._keyInputElement.addEventListener("paste", this._keyInputChanged.bind(this), false);
+        this._keyInputElement.addEventListener("cut", this._keyInputChanged.bind(this), false);
+        this._keyInputElement.addEventListener("keypress", this._keyInputChanged.bind(this), false);
+        this._keyInputElement.addEventListener("keydown", this._keyInputChanged.bind(this), false);
 
         return editorToolbar;
     },

@@ -29,6 +29,12 @@
  */
 
 /**
+ * FIXME: ES5 strict mode check is suppressed due to multiple uses of arguments.callee.
+ * @fileoverview
+ * @suppress {es5Strict}
+ */
+
+/**
  * @constructor
  * @extends {WebInspector.VBox}
  * @param {!WebInspector.ProfileType.DataDisplayDelegate} dataDisplayDelegate
@@ -1198,7 +1204,7 @@ WebInspector.HeapSnapshotProfileType.prototype = {
 
     /**
      * @override
-     * @param {!string} title
+     * @param {string} title
      * @return {!WebInspector.ProfileHeader}
      */
     createProfileLoadedFromFile: function(title)

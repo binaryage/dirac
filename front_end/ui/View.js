@@ -201,7 +201,7 @@ WebInspector.View.prototype = {
 
     /**
      * @param {?Element} parentElement
-     * @param {!Element=} insertBefore
+     * @param {?Element=} insertBefore
      */
     show: function(parentElement, insertBefore)
     {
@@ -662,19 +662,34 @@ WebInspector.VBoxWithResizeCallback.prototype = {
     __proto__: WebInspector.VBox.prototype
 }
 
+/**
+ * @param {?Node} child
+ * @return {?Node}
+ * @suppress {duplicate}
+ */
 Element.prototype.appendChild = function(child)
 {
     WebInspector.View._assert(!child.__view || child.parentElement === this, "Attempt to add view via regular DOM operation.");
     return WebInspector.View._originalAppendChild.call(this, child);
 }
 
+/**
+ * @param {?Node} child
+ * @param {?Node} anchor
+ * @return {?Node}
+ * @suppress {duplicate}
+ */
 Element.prototype.insertBefore = function(child, anchor)
 {
     WebInspector.View._assert(!child.__view || child.parentElement === this, "Attempt to add view via regular DOM operation.");
     return WebInspector.View._originalInsertBefore.call(this, child, anchor);
 }
 
-
+/**
+ * @param {?Node} child
+ * @return {?Node}
+ * @suppress {duplicate}
+ */
 Element.prototype.removeChild = function(child)
 {
     WebInspector.View._assert(!child.__viewCounter && !child.__view, "Attempt to remove element containing view via regular DOM operation");

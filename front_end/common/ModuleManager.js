@@ -285,7 +285,7 @@ WebInspector.ModuleManager.ModuleDescriptor = function()
     this.extensions;
 
     /**
-     * @type {!Array.<!string>|undefined}
+     * @type {!Array.<string>|undefined}
      */
     this.dependencies;
 

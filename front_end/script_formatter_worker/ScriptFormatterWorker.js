@@ -479,14 +479,6 @@ FormatterWorker.HTMLFormatter.prototype = {
     }
 }
 
-Array.prototype.keySet = function()
-{
-    var keys = {};
-    for (var i = 0; i < this.length; ++i)
-        keys[this[i]] = true;
-    return keys;
-};
-
 /**
  * @return {!Object}
  */

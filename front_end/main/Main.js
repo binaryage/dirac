@@ -821,6 +821,10 @@ WebInspector.__defineGetter__("inspectedPageURL", function()
     return WebInspector.resourceTreeModel.inspectedPageURL();
 });
 
+/**
+ * @param {string} name
+ * @return {?WebInspector.Panel}
+ */
 WebInspector.panel = function(name)
 {
     return WebInspector.inspectorView.panel(name);

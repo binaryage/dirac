@@ -89,6 +89,7 @@ WebInspector.SettingsUI.bindCheckbox = function(input, setting)
  * @param {string=} width
  * @param {function(string):?string=} validatorCallback
  * @param {boolean=} instant
+ * @return {!Element}
  */
 WebInspector.SettingsUI.createSettingInputField = function(label, setting, numeric, maxLength, width, validatorCallback, instant)
 {
@@ -170,6 +171,7 @@ WebInspector.SettingsUI.createSettingInputField = function(label, setting, numer
  * @param {string=} width
  * @param {!WebInspector.Setting=} toggleSetting
  * @param {string=} defaultText
+ * @return {!Element}
  */
 WebInspector.SettingsUI.createSettingLabel = function(label, setting, maxLength, width, toggleSetting, defaultText)
 {
@@ -200,6 +202,11 @@ WebInspector.SettingsUI.createSettingLabel = function(label, setting, maxLength,
     return p;
 }
 
+/**
+ * @param {string} name
+ * @param {!Element} element
+ * @return {!Element}
+ */
 WebInspector.SettingsUI.createCustomSetting = function(name, element)
 {
     var p = document.createElement("p");

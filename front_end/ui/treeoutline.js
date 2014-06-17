@@ -414,6 +414,9 @@ TreeOutline.prototype.collapse = function()
     // this is the root, do nothing
 }
 
+/**
+ * @return {boolean}
+ */
 TreeOutline.prototype.revealed = function()
 {
     return true;
@@ -764,6 +767,10 @@ TreeElement.prototype.expandRecursively = function(maxDepth)
     }
 }
 
+/**
+ * @param {?TreeElement} ancestor
+ * @return {boolean}
+ */
 TreeElement.prototype.hasAncestor = function(ancestor) {
     if (!ancestor)
         return false;
@@ -790,6 +797,9 @@ TreeElement.prototype.reveal = function()
     this.onreveal();
 }
 
+/**
+ * @return {boolean}
+ */
 TreeElement.prototype.revealed = function()
 {
     var currentAncestor = this.parent;
@@ -847,6 +857,7 @@ TreeElement.prototype.revealAndSelect = function(omitFocus)
 
 /**
  * @param {boolean=} supressOnDeselect
+ * @return {boolean}
  */
 TreeElement.prototype.deselect = function(supressOnDeselect)
 {
@@ -966,6 +977,9 @@ TreeElement.prototype.traversePreviousTreeElement = function(skipUnrevealed, don
     return this.parent;
 }
 
+/**
+ * @return {boolean}
+ */
 TreeElement.prototype.isEventWithinDisclosureTriangle = function(event)
 {
     // FIXME: We should not use getComputedStyle(). For that we need to get rid of using ::before for disclosure triangle. (http://webk.it/74446)

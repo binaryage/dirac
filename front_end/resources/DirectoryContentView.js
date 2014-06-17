@@ -101,6 +101,7 @@ WebInspector.DirectoryContentView.Node = function(entry)
 /**
  * @param {string} column
  * @param {boolean} reverse
+ * @return {function(!WebInspector.DirectoryContentView.Node, !WebInspector.DirectoryContentView.Node):number|undefined}
  */
 WebInspector.DirectoryContentView.Node.comparator = function(column, reverse)
 {

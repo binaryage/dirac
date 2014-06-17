@@ -297,15 +297,25 @@ Element.prototype.containsEventPoint = function(event)
            box.top < event.y && event.y < box.bottom;
 }
 
+/**
+ * @param {!Array.<string>} nameArray
+ * @return {?Node}
+ */
 Node.prototype.enclosingNodeOrSelfWithNodeNameInArray = function(nameArray)
 {
-    for (var node = this; node && node !== this.ownerDocument; node = node.parentNode)
-        for (var i = 0; i < nameArray.length; ++i)
+    for (var node = this; node && node !== this.ownerDocument; node = node.parentNode) {
+        for (var i = 0; i < nameArray.length; ++i) {
             if (node.nodeName.toLowerCase() === nameArray[i].toLowerCase())
                 return node;
+        }
+    }
     return null;
 }
 
+/**
+ * @param {string} nodeName
+ * @return {?Node}
+ */
 Node.prototype.enclosingNodeOrSelfWithNodeName = function(nodeName)
 {
     return this.enclosingNodeOrSelfWithNodeNameInArray([nodeName]);
@@ -314,15 +324,21 @@ Node.prototype.enclosingNodeOrSelfWithNodeName = function(nodeName)
 /**
  * @param {string} className
  * @param {!Element=} stayWithin
+ * @return {?Element}
  */
 Node.prototype.enclosingNodeOrSelfWithClass = function(className, stayWithin)
 {
-    for (var node = this; node && node !== stayWithin && node !== this.ownerDocument; node = node.parentNode)
+    for (var node = this; node && node !== stayWithin && node !== this.ownerDocument; node = node.parentNode) {
         if (node.nodeType === Node.ELEMENT_NODE && node.classList.contains(className))
-            return node;
+            return /** @type {!Element} */ (node);
+    }
     return null;
 }
 
+/**
+ * @param {string} query
+ * @return {?Node}
+ */
 Element.prototype.query = function(query)
 {
     return this.ownerDocument.evaluate(query, this, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
@@ -492,7 +508,7 @@ Element.prototype.offsetRelativeToWindow = function(targetWindow)
 }
 
 /**
- * @param {!Window} targetWindow
+ * @param {!Window=} targetWindow
  * @return {!AnchorBox}
  */
 Element.prototype.boxInWindow = function(targetWindow)

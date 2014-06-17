@@ -653,7 +653,7 @@ WebInspector.TimelineView.prototype = {
         var taskIndex = insertionIndexForObjectInListSortedByFunction(startTime, tasks, compareEndTime);
 
         var foreignStyle = "gpu-task-foreign";
-        var element = container.firstChild;
+        var element = /** @type {?Element} */ (container.firstChild);
         var lastElement;
         var lastLeft;
         var lastRight;
@@ -1102,7 +1102,7 @@ WebInspector.TimelineRecordListRow.prototype = {
     },
 
     /**
-     * @param {!Event} event
+     * @param {?Event} event
      */
     _onExpandClick: function(event)
     {

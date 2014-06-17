@@ -166,7 +166,7 @@ WebInspector.SourcesSearchScope.prototype = {
         }
 
         /**
-         * @param {!string} path
+         * @param {string} path
          * @this {WebInspector.SourcesSearchScope}
          */
         function searchInNextFile(path)
@@ -213,7 +213,7 @@ WebInspector.SourcesSearchScope.prototype = {
         }
 
         /**
-         * @param {!string} path
+         * @param {string} path
          * @param {?string} content
          * @this {WebInspector.SourcesSearchScope}
          */

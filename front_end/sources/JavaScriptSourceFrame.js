@@ -129,7 +129,7 @@ WebInspector.JavaScriptSourceFrame.prototype = {
 
         infobarMainRow.appendChild(document.createTextNode("\u00a0"));
         var detailsToggleElement = infobarMainRow.createChild("div", "java-script-source-frame-infobar-toggle");
-        detailsToggleElement.addEventListener("click", toggleDetails.bind(this));
+        detailsToggleElement.addEventListener("click", toggleDetails.bind(this), false);
         updateDetailsVisibility.call(this);
 
         function createDetailsRowMessage()

@@ -208,7 +208,7 @@ WebInspector.TextFilterUI = function(supportRegex)
     this._filterElement = document.createElement("div");
     this._filterElement.className = "filter-text-filter";
 
-    this._filterInputElement = this._filterElement.createChild("input", "search-replace toolbar-replace-control");
+    this._filterInputElement = /** @type {!HTMLInputElement} */ (this._filterElement.createChild("input", "search-replace toolbar-replace-control"));
     this._filterInputElement.placeholder = WebInspector.UIString("Filter");
     this._filterInputElement.id = "filter-input-field";
     this._filterInputElement.addEventListener("mousedown", this._onFilterFieldManualFocus.bind(this), false); // when the search field is manually selected
@@ -301,18 +301,12 @@ WebInspector.TextFilterUI.prototype = {
         }
     },
 
-    /**
-     * @param {!WebInspector.Event} event
-     */
-    _onInput: function(event)
+    _onInput: function()
     {
         this._valueChanged(true);
     },
 
-    /**
-     * @param {!WebInspector.Event} event
-     */
-    _onChange: function(event)
+    _onChange: function()
     {
         this._valueChanged(false);
     },
@@ -383,7 +377,7 @@ WebInspector.TextFilterUI.prototype = {
     },
 
     /**
-     * @param {!KeyboardEvent} event
+     * @param {?Event} event
      * @return {boolean}
      */
     _onInputKeyDown: function(event)
@@ -400,7 +394,7 @@ WebInspector.TextFilterUI.prototype = {
                 this._valueChanged(true);
                 handled = true;
             } else {
-                handled = this._suggestBox.keyPressed(event);
+                handled = this._suggestBox.keyPressed(/** @type {!KeyboardEvent} */ (event));
             }
         }
         if (handled)
@@ -556,7 +550,7 @@ WebInspector.NamedBitSetFilterUI.prototype = {
     },
 
     /**
-     * @param {!Event} e
+     * @param {?Event} e
      */
     _onTypeFilterClicked: function(e)
     {

@@ -191,8 +191,8 @@ WebInspector.TimelineGrid.prototype = {
         var dividersElementClientWidth = this._dividersElement.clientWidth;
 
         // Reuse divider elements and labels.
-        var divider = this._dividersElement.firstChild;
-        var dividerLabelBar = this._dividersLabelBarElement.firstChild;
+        var divider = /** @type {?Element} */ (this._dividersElement.firstChild);
+        var dividerLabelBar = /** @type {?Element} */ (this._dividersLabelBarElement.firstChild);
 
         const minWidthForTitle = 60;
         var lastPosition = 0;

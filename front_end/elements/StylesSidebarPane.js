@@ -93,6 +93,7 @@ WebInspector.StylesSidebarPane._colorRegex = /((?:rgb|hsl)a?\([^)]+\)|#[0-9a-fA-
 
 /**
  * @param {!WebInspector.CSSProperty} property
+ * @return {!Element}
  */
 WebInspector.StylesSidebarPane.createExclamationMark = function(property)
 {
@@ -2688,7 +2689,7 @@ WebInspector.StylePropertyTreeElement.prototype = {
     },
 
     /**
-     * @param {!Element=} selectElement
+     * @param {?Element=} selectElement
      */
     startEditing: function(selectElement)
     {

@@ -70,11 +70,18 @@ WebInspector.CSSMetadata = function(properties)
  */
 WebInspector.CSSMetadata.cssPropertiesMetainfo = new WebInspector.CSSMetadata([]);
 
+/**
+ * @param {string} propertyName
+ * @return {boolean}
+ */
 WebInspector.CSSMetadata.isColorAwareProperty = function(propertyName)
 {
     return WebInspector.CSSMetadata._colorAwareProperties[propertyName] === true;
 }
 
+/**
+ * @return {!Object.<string, boolean>}
+ */
 WebInspector.CSSMetadata.colors = function()
 {
     if (!WebInspector.CSSMetadata._colorsKeySet)
@@ -729,6 +736,9 @@ WebInspector.CSSMetadata.initializeWithSupportedProperties = function(properties
     WebInspector.CSSMetadata.cssPropertiesMetainfo = new WebInspector.CSSMetadata(properties);
 }
 
+/**
+ * @return {!Object.<string, boolean>}
+ */
 WebInspector.CSSMetadata.cssPropertiesMetainfoKeySet = function()
 {
     if (!WebInspector.CSSMetadata._cssPropertiesMetainfoKeySet)

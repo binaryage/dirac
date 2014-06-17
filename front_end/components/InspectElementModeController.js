@@ -35,6 +35,9 @@ WebInspector.InspectElementModeController = function()
     this._shortcut = WebInspector.InspectElementModeController.createShortcut();
 }
 
+/**
+ * @return {!WebInspector.KeyboardShortcut.Descriptor}
+ */
 WebInspector.InspectElementModeController.createShortcut = function()
 {
     return WebInspector.KeyboardShortcut.makeDescriptor("c", WebInspector.KeyboardShortcut.Modifiers.CtrlOrMeta | WebInspector.KeyboardShortcut.Modifiers.Shift);

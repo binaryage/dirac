@@ -286,6 +286,7 @@ WebInspector.Linkifier.LinkHandler.prototype = {
  * @param {string} scriptId
  * @param {number} lineNumber
  * @param {number=} columnNumber
+ * @return {string}
  */
 WebInspector.Linkifier.liveLocationText = function(target, scriptId, lineNumber, columnNumber)
 {

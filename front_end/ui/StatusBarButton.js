@@ -450,7 +450,7 @@ WebInspector.StatusBarButton.Provider.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.StatusBarItem}
- * @param {?function(!Event)} changeHandler
+ * @param {?function(?Event)} changeHandler
  * @param {string=} className
  */
 WebInspector.StatusBarComboBox = function(changeHandler, className)
@@ -544,7 +544,7 @@ WebInspector.StatusBarComboBox.prototype = {
      */
     select: function(option)
     {
-        this._selectElement.selectedIndex = Array.prototype.indexOf.call(this._selectElement, option);
+        this._selectElement.selectedIndex = Array.prototype.indexOf.call(/** @type {?} */ (this._selectElement), option);
     },
 
     /**

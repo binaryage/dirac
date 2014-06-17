@@ -221,7 +221,7 @@ WebInspector.GenericSettingsTab = function()
     var restoreDefaults = this._appendSection().createChild("input", "settings-tab-text-button");
     restoreDefaults.type = "button";
     restoreDefaults.value = WebInspector.UIString("Restore defaults and reload");
-    restoreDefaults.addEventListener("click", restoreAndReload);
+    restoreDefaults.addEventListener("click", restoreAndReload, false);
 
     function restoreAndReload()
     {
@@ -383,12 +383,12 @@ WebInspector.WorkspaceSettingsTab = function()
     var addFileSystemButton = this._addFileSystemRowElement.createChild("input", "settings-tab-text-button");
     addFileSystemButton.type = "button";
     addFileSystemButton.value = WebInspector.UIString("Add folder\u2026");
-    addFileSystemButton.addEventListener("click", this._addFileSystemClicked.bind(this));
+    addFileSystemButton.addEventListener("click", this._addFileSystemClicked.bind(this), false);
 
     this._editFileSystemButton = this._addFileSystemRowElement.createChild("input", "settings-tab-text-button");
     this._editFileSystemButton.type = "button";
     this._editFileSystemButton.value = WebInspector.UIString("Edit\u2026");
-    this._editFileSystemButton.addEventListener("click", this._editFileSystemClicked.bind(this));
+    this._editFileSystemButton.addEventListener("click", this._editFileSystemClicked.bind(this), false);
     this._updateEditFileSystemButtonState();
 
     this._reset();
@@ -451,10 +451,7 @@ WebInspector.WorkspaceSettingsTab.prototype = {
         this._editFileSystem(id);
     },
 
-    /**
-     * @param {!WebInspector.Event=} event
-     */
-    _editFileSystemClicked: function(event)
+    _editFileSystemClicked: function()
     {
         this._editFileSystem(this._selectedFileSystemPath());
     },
@@ -805,7 +802,7 @@ WebInspector.SettingsList.prototype = {
 
     /**
      * @param {?string} id
-     * @param {!Event=} event
+     * @param {?Event=} event
      */
     _onDoubleClick: function(id, event)
     {
@@ -814,7 +811,7 @@ WebInspector.SettingsList.prototype = {
 
     /**
      * @param {?string} id
-     * @param {!Event=} event
+     * @param {?Event=} event
      */
     selectItem: function(id, event)
     {
@@ -896,10 +893,10 @@ WebInspector.EditableSettingsList.prototype = {
         columnElement.classList.add("settings-list-column-" + columnId);
         var placeholder = (columnId === "url") ? WebInspector.UIString("URL prefix") : WebInspector.UIString("Folder path");
         if (itemId === null) {
-            var inputElement = columnElement.createChild("input", "list-column-editor");
+            var inputElement = /** @type {!HTMLInputElement} */ (columnElement.createChild("input", "list-column-editor"));
             inputElement.placeholder = placeholder;
-            inputElement.addEventListener("blur", this._onAddMappingInputBlur.bind(this));
-            inputElement.addEventListener("input", this._validateEdit.bind(this, itemId));
+            inputElement.addEventListener("blur", this._onAddMappingInputBlur.bind(this), false);
+            inputElement.addEventListener("input", this._validateEdit.bind(this, itemId), false);
             this._addInputElements[columnId] = inputElement;
             return;
         }
@@ -912,16 +909,16 @@ WebInspector.EditableSettingsList.prototype = {
 
         var value = this._valuesProvider(itemId, columnId);
 
-        var textElement = columnElement.createChild("span", "list-column-text");
+        var textElement = /** @type {!HTMLSpanElement} */ (columnElement.createChild("span", "list-column-text"));
         textElement.textContent = value;
         textElement.title = value;
         columnElement.addEventListener("click", rowClicked.bind(this), false);
         this._textElements[itemId][columnId] = textElement;
 
-        var inputElement = columnElement.createChild("input", "list-column-editor");
+        var inputElement = /** @type {!HTMLInputElement} */ (columnElement.createChild("input", "list-column-editor"));
         inputElement.value = value;
-        inputElement.addEventListener("blur", this._editMappingBlur.bind(this, itemId));
-        inputElement.addEventListener("input", this._validateEdit.bind(this, itemId));
+        inputElement.addEventListener("blur", this._editMappingBlur.bind(this, itemId), false);
+        inputElement.addEventListener("input", this._validateEdit.bind(this, itemId), false);
         columnElement.inputElement = inputElement;
         this._editInputElements[itemId][columnId] = inputElement;
 
@@ -1011,7 +1008,7 @@ WebInspector.EditableSettingsList.prototype = {
 
     /**
      * @param {string} itemId
-     * @param {!Event} event
+     * @param {?Event} event
      */
     _editMappingBlur: function(itemId, event)
     {

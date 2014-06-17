@@ -188,7 +188,7 @@ WebInspector.ConsoleModel.evaluateCommandInConsole = function(executionContext, 
     executionContext.evaluate(text, "console", useCommandLineAPI, false, false, true, printResult.bind(target.consoleModel));
 
     WebInspector.userMetrics.ConsoleEvaluated.record();
-},
+}
 
 
 /**

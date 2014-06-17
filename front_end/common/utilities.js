@@ -862,6 +862,11 @@ String.sprintf = function(format, var_arg)
     return String.vsprintf(format, Array.prototype.slice.call(arguments, 1));
 }
 
+/**
+ * @param {string} format
+ * @param {!Object.<string, function(string, ...):*>} formatters
+ * @return {!Array.<!Object>}
+ */
 String.tokenizeFormatString = function(format, formatters)
 {
     var tokens = [];
@@ -976,6 +981,15 @@ String.vsprintf = function(format, substitutions)
     return String.format(format, substitutions, String.standardFormatters, "", function(a, b) { return a + b; }).formattedResult;
 }
 
+/**
+ * @param {string} format
+ * @param {?Array.<string>} substitutions
+ * @param {!Object.<string, function(string, ...):string>} formatters
+ * @param {!T} initialValue
+ * @param {function(T, string): T|undefined} append
+ * @return {!{formattedResult: T, unusedSubstitutions: ?Array.<string>}};
+ * @template T
+ */
 String.format = function(format, substitutions, formatters, initialValue, append)
 {
     if (!format || !substitutions || !substitutions.length)
