@@ -54,7 +54,7 @@ WebInspector.ResponsiveDesignView = function(inspectedPagePlaceholder)
 
 // Measured in DIP.
 WebInspector.ResponsiveDesignView.SliderWidth = 19;
-WebInspector.ResponsiveDesignView.RulerWidth = 20;
+WebInspector.ResponsiveDesignView.RulerWidth = 22;
 
 WebInspector.ResponsiveDesignView.prototype = {
     _invalidateCache: function()
@@ -200,18 +200,18 @@ WebInspector.ResponsiveDesignView.prototype = {
         canvas.width = deviceScaleFactor * cssCanvasWidth;
         canvas.height = deviceScaleFactor * cssCanvasHeight;
         context.scale(canvas.width / dipCanvasWidth, canvas.height / dipCanvasHeight);
-
         context.font = "11px " + WebInspector.fontFamily();
 
         const rulerStep = 100;
         const rulerSubStep = 5;
         const gridStep = 50;
         const gridSubStep = 10;
-        const rulerBackgroundColor = "rgb(64, 64, 64)";
+        const rulerBackgroundColor = "rgb(0, 0, 0)";
         const backgroundColor = "rgb(102, 102, 102)";
         const lightLineColor = "rgb(132, 132, 132)";
         const darkLineColor = "rgb(114, 114, 114)";
-        const textColor = "rgb(180, 180, 180)";
+        const rulerColor = "rgb(125, 125, 125)";
+        const textColor = "rgb(186, 186, 186)";
 
         var scale = this._scale || 1;
         var rulerWidth = WebInspector.ResponsiveDesignView.RulerWidth;
@@ -229,7 +229,7 @@ WebInspector.ResponsiveDesignView.prototype = {
         context.fillRect(0, 0, dipGridWidth, dipGridHeight);
 
         context.translate(0.5, 0.5);
-        context.strokeStyle = textColor;
+        context.strokeStyle = rulerColor;
         context.fillStyle = textColor;
         context.lineWidth = 1;
 
@@ -237,17 +237,17 @@ WebInspector.ResponsiveDesignView.prototype = {
         for (var x = 0; x < dipGridWidth; x += rulerSubStep) {
             var color = darkLineColor;
             var y = -rulerWidth / 4;
-            if (!(x % (rulerStep / 2)))
+            if (!(x % (rulerStep / 4)))
                 y = -rulerWidth / 2;
+            if (!(x % (rulerStep / 2)))
+                y = -rulerWidth + 2;
 
             if (!(x % rulerStep)) {
-                if (x) {
-                    context.save();
-                    context.translate(x, 0);
-                    context.fillText(x, 2, -rulerWidth / 2);
-                    context.restore();
-                }
-                y = -rulerWidth * 2 / 3;
+                context.save();
+                context.translate(x, 0);
+                context.fillText(x, 2, -rulerWidth / 2);
+                context.restore();
+                y = -rulerWidth;
             }
 
             context.beginPath();
@@ -260,18 +260,18 @@ WebInspector.ResponsiveDesignView.prototype = {
         for (var y = 0; y < dipGridHeight; y += rulerSubStep) {
             var color = darkLineColor;
             x = -rulerWidth / 4;
-            if (!(y % (rulerStep / 2)))
+            if (!(y % (rulerStep / 4)))
                 x = -rulerWidth / 2;
+            if (!(y % (rulerStep / 2)))
+                x = -rulerWidth + 2;
 
             if (!(y % rulerStep)) {
-                if (y) {
-                    context.save();
-                    context.translate(0, y);
-                    context.rotate(-Math.PI / 2);
-                    context.fillText(y, 2, -rulerWidth / 2);
-                    context.restore();
-                }
-                x = -rulerWidth * 2 / 3;
+                context.save();
+                context.translate(0, y);
+                context.rotate(-Math.PI / 2);
+                context.fillText(y, 2, -rulerWidth / 2);
+                context.restore();
+                x = -rulerWidth;
             }
 
             context.beginPath();
