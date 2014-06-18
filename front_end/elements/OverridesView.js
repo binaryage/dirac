@@ -43,6 +43,7 @@ WebInspector.OverridesView = function()
     this._tabbedPane.shrinkableTabs = false;
     this._tabbedPane.verticalTabLayout = true;
 
+
     if (!WebInspector.overridesSupport.isInspectingDevice()) {
         new WebInspector.OverridesView.DeviceTab().appendAsTab(this._tabbedPane);
         new WebInspector.OverridesView.MediaTab().appendAsTab(this._tabbedPane);
@@ -55,9 +56,23 @@ WebInspector.OverridesView = function()
     this._tabbedPane.addEventListener(WebInspector.TabbedPane.EventTypes.TabSelected, this._tabSelected, this);
     this._tabbedPane.show(this.element);
 
+    var resetButtonElement = this._tabbedPane.headerElement().createChild("button", "settings-tab-text-button overrides-reset-button");
+    resetButtonElement.textContent = WebInspector.UIString("Reset");
+    resetButtonElement.addEventListener("click", WebInspector.overridesSupport.reset.bind(WebInspector.overridesSupport), false);
+
     this._warningFooter = this.element.createChild("div", "overrides-footer");
     this._overridesWarningUpdated();
+
+    this._splashScreenElement = this.element.createChild("div", "overrides-splash-screen");
+    this._splashScreenElement.createTextChild(WebInspector.UIString("Emulation is currently disabled. Toggle "));
+    var toggleEmulationButton = new WebInspector.StatusBarButton("", "responsive-design-status-bar-item");
+    toggleEmulationButton.addEventListener("click", this._toggleEmulationEnabled, this);
+    this._splashScreenElement.appendChild(toggleEmulationButton.element);
+    this._splashScreenElement.createTextChild(WebInspector.UIString("in the main toolbar to enable it."));
+
     WebInspector.overridesSupport.addEventListener(WebInspector.OverridesSupport.Events.OverridesWarningUpdated, this._overridesWarningUpdated, this);
+    WebInspector.overridesSupport.settings.emulationEnabled.addChangeListener(this._emulationEnabledChanged, this);
+    this._emulationEnabledChanged();
 }
 
 WebInspector.OverridesView.prototype = {
@@ -72,8 +87,20 @@ WebInspector.OverridesView.prototype = {
     _overridesWarningUpdated: function()
     {
         var message = WebInspector.overridesSupport.warningMessage();
-        this._warningFooter.classList.toggle("hidden", !message);
+        this._warningFooter.classList.toggle("hidden", !WebInspector.overridesSupport.settings.emulationEnabled.get() || !message);
         this._warningFooter.textContent = message;
+    },
+
+    _toggleEmulationEnabled: function()
+    {
+        WebInspector.overridesSupport.settings.emulationEnabled.set(true);
+    },
+
+    _emulationEnabledChanged: function()
+    {
+        this._tabbedPane.element.classList.toggle("hidden", !WebInspector.overridesSupport.settings.emulationEnabled.get());
+        this._overridesWarningUpdated();
+        this._splashScreenElement.classList.toggle("hidden", WebInspector.overridesSupport.settings.emulationEnabled.get());
     },
 
     __proto__: WebInspector.VBox.prototype
@@ -150,7 +177,13 @@ WebInspector.OverridesView.Tab.prototype = {
  */
 WebInspector.OverridesView.DeviceTab = function()
 {
-    WebInspector.OverridesView.Tab.call(this, "device", WebInspector.UIString("Device"), [], [function(){return true;}]);
+    WebInspector.OverridesView.Tab.call(this, "device", WebInspector.UIString("Device"),  [
+        WebInspector.overridesSupport.settings.deviceWidth,
+        WebInspector.overridesSupport.settings.deviceHeight,
+        WebInspector.overridesSupport.settings.deviceScaleFactor,
+        WebInspector.overridesSupport.settings.emulateViewport,
+        WebInspector.overridesSupport.settings.deviceTextAutosizing
+    ]);
     this.element.classList.add("overrides-device");
 
     this.element.appendChild(this._createDeviceElement());
@@ -168,7 +201,7 @@ WebInspector.OverridesView.DeviceTab.prototype = {
         var fieldsetElement = document.createElement("fieldset");
         fieldsetElement.id = "metrics-override-section";
 
-        fieldsetElement.createChild("span").textContent = WebInspector.UIString("Device:");
+        fieldsetElement.createChild("span").textContent = WebInspector.UIString("Model:");
         fieldsetElement.appendChild(WebInspector.overridesSupport.createDeviceSelect(document));
 
         var tableElement = fieldsetElement.createChild("table", "nowrap");
@@ -178,14 +211,14 @@ WebInspector.OverridesView.DeviceTab.prototype = {
         cellElement.appendChild(document.createTextNode(WebInspector.UIString("Resolution:")));
         cellElement = rowElement.createChild("td");
 
-        var widthOverrideInput = WebInspector.SettingsUI.createSettingInputField("", WebInspector.overridesSupport.settings.deviceWidth, true, 4, "80px", WebInspector.OverridesSupport.deviceSizeValidator, true, true, WebInspector.UIString("--"));
+        var widthOverrideInput = WebInspector.SettingsUI.createSettingInputField("", WebInspector.overridesSupport.settings.deviceWidth, true, 4, "80px", WebInspector.OverridesSupport.deviceSizeValidator, true, true, WebInspector.UIString("\u2013"));
         cellElement.appendChild(widthOverrideInput);
         this._swapDimensionsElement = cellElement.createChild("button", "overrides-swap");
         this._swapDimensionsElement.appendChild(document.createTextNode(" \u21C4 ")); // RIGHTWARDS ARROW OVER LEFTWARDS ARROW.
         this._swapDimensionsElement.title = WebInspector.UIString("Swap dimensions");
         this._swapDimensionsElement.addEventListener("click", WebInspector.overridesSupport.swapDimensions.bind(WebInspector.overridesSupport), false);
         this._swapDimensionsElement.tabIndex = -1;
-        var heightOverrideInput = WebInspector.SettingsUI.createSettingInputField("", WebInspector.overridesSupport.settings.deviceHeight, true, 4, "80px", WebInspector.OverridesSupport.deviceSizeValidator, true, true, WebInspector.UIString("--"));
+        var heightOverrideInput = WebInspector.SettingsUI.createSettingInputField("", WebInspector.overridesSupport.settings.deviceHeight, true, 4, "80px", WebInspector.OverridesSupport.deviceSizeValidator, true, true, WebInspector.UIString("\u2013"));
         cellElement.appendChild(heightOverrideInput);
 
         rowElement = tableElement.createChild("tr");
@@ -195,7 +228,7 @@ WebInspector.OverridesView.DeviceTab.prototype = {
         rowElement = tableElement.createChild("tr");
         rowElement.title = WebInspector.UIString("Ratio between a device's physical pixels and device-independent pixels.");
         rowElement.createChild("td").appendChild(document.createTextNode(WebInspector.UIString("Device pixel ratio:")));
-        rowElement.createChild("td").appendChild(WebInspector.SettingsUI.createSettingInputField("", WebInspector.overridesSupport.settings.deviceScaleFactor, true, 4, "80px", WebInspector.OverridesSupport.deviceScaleFactorValidator, true, true, WebInspector.UIString("--")));
+        rowElement.createChild("td").appendChild(WebInspector.SettingsUI.createSettingInputField("", WebInspector.overridesSupport.settings.deviceScaleFactor, true, 4, "80px", WebInspector.OverridesSupport.deviceScaleFactorValidator, true, true, WebInspector.UIString("\u2013")));
 
         var viewportCheckbox = this._createSettingCheckbox(WebInspector.UIString("Emulate mobile"), WebInspector.overridesSupport.settings.emulateViewport);
         viewportCheckbox.title = WebInspector.UIString("Enable meta viewport, overlay scrollbars and default 980px body width");
@@ -603,4 +636,23 @@ WebInspector.OverridesView.SensorsTab.DeviceOrientationModificationSource = {
     UserInput: "userInput",
     UserDrag: "userDrag",
     ResetButton: "resetButton"
+}
+
+/**
+ * @constructor
+ * @implements {WebInspector.Revealer}
+ */
+WebInspector.OverridesView.Revealer = function()
+{
+}
+
+WebInspector.OverridesView.Revealer.prototype = {
+    /**
+     * @param {!Object} overridesSupport
+     */
+    reveal: function(overridesSupport)
+    {
+        InspectorFrontendHost.bringToFront();
+        WebInspector.inspectorView.showViewInDrawer("emulation");
+    }
 }

@@ -547,6 +547,10 @@ button.status-bar-item:hover .glyph {
     opacity: 1;
 }
 
+button.status-bar-item:active .glyph {
+    opacity: 0.8;
+}
+
 button.status-bar-item:disabled {
     background-position: 0 0 !important;
 }

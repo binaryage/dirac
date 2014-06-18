@@ -50,23 +50,6 @@
     transform: rotate(90deg);
 }
 
-.responsive-design-resolution-label {
-    position: absolute;
-    color: white;
-    background-color: rgb(255, 156, 0);
-    padding: 3px;
-    font-size: 12px;
-    text-align: center;
-}
-
-.responsive-design-resolution-width {
-    top: 0;
-}
-
-.responsive-design-resolution-height {
-    left: 0;
-}
-
 /* Toolbar */
 
 .responsive-design-toolbar {
@@ -76,10 +59,6 @@
     color: rgb(255, 255, 255);
     overflow: hidden;
     border-bottom: 1px solid rgb(104, 104, 104);
-}
-
-.responsive-design-toolbar:not(.expanded) .expanded-only {
-    display: none !important;
 }
 
 .responsive-design-separator {
@@ -99,6 +78,19 @@
     padding: 0 10px;
 }
 
+.responsive-design-section .status-bar-item {
+    margin: 2px 0;
+}
+
+.responsive-design-section .status-bar-item .glyph {
+    background-color: white;
+}
+
+.responsive-design-section .status-bar-item .glyph.shadow {
+    background-color: black;
+}
+
+
 .responsive-design-section-separator {
     height: 2px;
 }
@@ -106,8 +98,6 @@
 .responsive-design-suite {
     display: flex;
     flex-direction: row;
-    align-items: stretch;
-    justify-content: flex-start;
     padding-top: 2px;
     padding-bottom: 2px;
 }
@@ -120,28 +110,13 @@
 }
 
 .responsive-design-suite > div:not(.responsive-design-suite-separator) {
-    flex: auto;
+    flex: none;
     display: flex;
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
     height: 22px;
     overflow: hidden;
-}
-
-.responsive-design-button {
-    height: 19px;
-    min-width: 70px;
-    background: rgb(64, 64, 64);
-    display: flex;
-    align-items: center;
-    justify-content: center !important;
-    cursor: pointer;
-}
-
-.responsive-design-button:hover,
-.responsive-design-button:active {
-    background: linear-gradient(to top, rgb(102, 102, 102), rgb(64, 64, 64));
 }
 
 /* Toolbar controls */
@@ -168,11 +143,16 @@
     background-color: transparent;
     border: none;
     margin: 0;
-    padding-bottom: 4px;
+    margin-bottom: 4px;
+    padding: 3px 2px;
 }
 
 .responsive-design-toolbar input[type='text'].numeric {
     text-align: center;
+}
+
+.responsive-design-toolbar input:focus::-webkit-input-placeholder {
+    color: transparent !important;
 }
 
 .responsive-design-toolbar fieldset:disabled input,
@@ -205,7 +185,7 @@
 }
 
 .responsive-design-toolbar input.error-input {
-    color: red;
+    color: red !important;
     text-decoration: line-through;
 }
 
@@ -223,7 +203,7 @@ body.platform-mac .responsive-design-toolbar select {
 }
 
 .responsive-design-toolbar input:focus {
-    background-color: rgb(102, 102, 102)
+    background-color: rgb(81, 81, 81);
 }
 
 /* Toolbar icons */
@@ -282,27 +262,30 @@ body.platform-mac .responsive-design-toolbar select {
     opacity: 0.8;
 }
 
-/* Expand button */
+/* Buttons section */
 
-.responsive-design-section-expand {
-    padding: 3px !important;
+.responsive-design-section-buttons {
+    padding: 0;
 }
 
-.responsive-design-icon-expand {
-    -webkit-mask-position: -48px 0;
-    top: 0 !important;
-    margin-right: 2px;
+.responsive-design-more-button {
+    -webkit-appearance: none;
+    border: 0;
+    background-color: transparent;
+    color: white;
+    opacity: 0.8;
+    font-size: 16px;
 }
 
-.responsive-design-toolbar.expanded .responsive-design-icon-expand {
-    transform: rotate(180deg);
+.responsive-design-more-button:hover {
+    opacity: 1;
+}
+
+.responsive-design-more-button:active {
+    opacity: 0.8;
 }
 
 /* Device section */
-
-.responsive-design-section-device {
-    width: 290px;
-}
 
 .responsive-design-section-device .responsive-design-section-separator {
     background: linear-gradient(to bottom, rgb(255, 186, 68), rgb(255, 119, 0));
@@ -318,22 +301,18 @@ body.platform-mac .responsive-design-toolbar select {
     color: rgb(255, 156, 0);
 }
 
-.responsive-design-section-device .expanded-only input[type='checkbox']:checked:after {
+.responsive-design-section-device input[type='checkbox']:checked:after {
     background: rgb(255, 156, 0);
 }
 
 /* Network section */
-
-.responsive-design-section-network {
-    width: 230px;
-}
 
 .responsive-design-section-network select {
     width: 150px;
 }
 
 .responsive-design-section-network input[type='text'] {
-    width: 190px;
+    width: 192px;
 }
 
 .responsive-design-section-network input[type='text'],

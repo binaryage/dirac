@@ -99,6 +99,10 @@
     display: none;
 }
 
+.overrides-view input[type='text']:focus::-webkit-input-placeholder {
+    color: transparent !important;
+}
+
 /* Network tab */
 
 .overrides-network fieldset {
@@ -191,7 +195,15 @@ button.overrides-swap {
     height: auto;
 }
 
-/* Screen tab */
+#metrics-override-section > span {
+    padding: 0 10px 0 3px;
+}
+
+#metrics-override-section > select {
+    width: 244px;
+}
+
+/* Media tab */
 
 .overrides-media > label {
     margin-bottom: 4px;
@@ -289,4 +301,14 @@ button.overrides-swap {
 
 .overrides-view .overrides-footer .warning-icon-small {
     margin-right: 3px;
+}
+
+.overrides-splash-screen {
+    display: flex;
+    align-items: center;
+    padding: 3px 10px;
+}
+
+.overrides-reset-button {
+    margin: 9px 0 0 17px;
 }

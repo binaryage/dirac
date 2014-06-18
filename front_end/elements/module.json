@@ -42,6 +42,11 @@
             "className": "WebInspector.ElementsPanel.NodeRemoteObjectRevealer"
         },
         {
+            "type": "@WebInspector.Revealer",
+            "contextTypes": ["WebInspector.OverridesSupport"],
+            "className": "WebInspector.OverridesView.Revealer"
+        },
+        {
             "type": "ui-setting",
             "section": "Elements",
             "title": "Color format",

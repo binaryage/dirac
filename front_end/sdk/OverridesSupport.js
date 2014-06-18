@@ -265,7 +265,7 @@ WebInspector.OverridesSupport.deviceSizeValidator = function(value)
  */
 WebInspector.OverridesSupport.deviceScaleFactorValidator = function(value)
 {
-    if (!value || (/^[\d]+(\.\d+)?|\.\d+$/.test(value) && value >= 0 && value <= 10000))
+    if (!value || (/^[\d]+(\.\d+)?|\.\d+$/.test(value) && value >= 0 && value <= 10))
         return "";
     return WebInspector.UIString("Value must be non-negative float");
 }
@@ -994,7 +994,7 @@ WebInspector.OverridesSupport.prototype = {
         var devices = WebInspector.OverridesSupport._phones.concat(WebInspector.OverridesSupport._tablets).concat(WebInspector.OverridesSupport._desktops);
         devices.sort();
 
-        var selectDevice = [WebInspector.UIString("<Select device>"), "", ""];
+        var selectDevice = [WebInspector.UIString("<Select model>"), "", ""];
         devices = devices.concat([selectDevice]);
         for (var i = 0; i < devices.length; ++i) {
             var device = devices[i];
@@ -1086,6 +1086,11 @@ WebInspector.OverridesSupport.prototype = {
         }
 
         return throughputSelectElement;
+    },
+
+    reveal: function()
+    {
+        WebInspector.Revealer.reveal(this);
     },
 
     __proto__: WebInspector.Object.prototype

@@ -11,10 +11,7 @@ WebInspector.AdvancedApp = function()
     WebInspector.App.call(this);
     WebInspector.dockController.addEventListener(WebInspector.DockController.Events.BeforeDockSideChanged, this._openToolboxWindow, this);
 
-    if (!WebInspector.experimentsSettings.responsiveDesign.isEnabled())
-        return;
-
-    this._toggleEmulationButton = new WebInspector.StatusBarButton(WebInspector.UIString("Responsive design and mobile emulation."), "responsive-design-status-bar-item");
+    this._toggleEmulationButton = new WebInspector.StatusBarButton(WebInspector.UIString("Toggle emulation enabled."), "responsive-design-status-bar-item");
     this._toggleEmulationButton.toggled = WebInspector.overridesSupport.settings.emulationEnabled.get();
     this._toggleEmulationButton.addEventListener("click", this._toggleEmulationEnabled, this);
     WebInspector.overridesSupport.settings.emulationEnabled.addChangeListener(this._emulationEnabledChanged, this);
@@ -29,6 +26,8 @@ WebInspector.AdvancedApp.prototype = {
     _emulationEnabledChanged: function()
     {
         this._toggleEmulationButton.toggled = WebInspector.overridesSupport.settings.emulationEnabled.get();
+        if (!WebInspector.experimentsSettings.responsiveDesign.isEnabled() && WebInspector.overridesSupport.settings.emulationEnabled.get())
+            WebInspector.inspectorView.showViewInDrawer("emulation", true);
     },
 
     createRootView: function()
