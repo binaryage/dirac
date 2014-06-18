@@ -422,19 +422,16 @@ WebInspector.OverridesSupport._tablets = [
      "1024x600x1"],
 ];
 
-WebInspector.OverridesSupport._desktops = [
-    ["Chromebook Pixel",
-     "Mozilla/5.0 (X11; CrOS x86_64 3912.23.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.46 Safari/537.36",
-     "1280x950x2x1x0"],
-    ["Apple MacBook Pro",
-     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.46 Safari/537.36",
-     "1280x800x1x0x0"],
-    ["Apple MacBook Pro Retina",
-     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.46 Safari/537.36",
+WebInspector.OverridesSupport._notebooks = [
+    ["Notebook with touch",
+     "",
+     "1280x950x1x1x0"],
+    ["Notebook with HiDPI screen",
+     "",
      "1440x900x2x0x0"],
-    ["Apple MacBook Air",
-     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.46 Safari/537.36",
-     "1366x768x1x0x0"],
+    ["Generic notebook",
+     "",
+     "1280x800x1x0x0"],
 ];
 
 WebInspector.OverridesSupport._networkThroughputUnlimitedValue = -1;
@@ -858,6 +855,13 @@ WebInspector.OverridesSupport.prototype = {
         return this._deviceMetricsWarningMessage || this._userAgentWarningMessage || "";
     },
 
+    clearWarningMessage: function()
+    {
+        this._deviceMetricsWarningMessage = "";
+        this._userAgentWarningMessage = "";
+        this.dispatchEventToListeners(WebInspector.OverridesSupport.Events.OverridesWarningUpdated);
+    },
+
     /**
      * @param {!WebInspector.Target} target
      */
@@ -991,16 +995,29 @@ WebInspector.OverridesSupport.prototype = {
         var deviceSelectElement = document.createElement("select");
         deviceSelectElement.disabled = WebInspector.overridesSupport.isInspectingDevice();
 
-        var devices = WebInspector.OverridesSupport._phones.concat(WebInspector.OverridesSupport._tablets).concat(WebInspector.OverridesSupport._desktops);
-        devices.sort();
+        var selectDeviceOption = new Option(WebInspector.UIString("<Select model>"), WebInspector.UIString("<Select model>"));
+        selectDeviceOption.device = new WebInspector.OverridesSupport.Device("", "");
+        deviceSelectElement.add(selectDeviceOption);
 
-        var selectDevice = [WebInspector.UIString("<Select model>"), "", ""];
-        devices = devices.concat([selectDevice]);
-        for (var i = 0; i < devices.length; ++i) {
-            var device = devices[i];
-            var option = new Option(device[0], device[0]);
-            option.device = new WebInspector.OverridesSupport.Device(device[2], device[1]);
-            deviceSelectElement.add(option);
+        addGroup(WebInspector.UIString("Devices"), WebInspector.OverridesSupport._phones.concat(WebInspector.OverridesSupport._tablets));
+        addGroup(WebInspector.UIString("Notebooks"), WebInspector.OverridesSupport._notebooks);
+
+        /**
+         * @param {string} name
+         * @param {!Array.<!Array.<string>>} devices
+         */
+        function addGroup(name, devices)
+        {
+            devices = devices.slice();
+            devices.sort();
+            var groupElement = deviceSelectElement.createChild("optgroup");
+            groupElement.label = name;
+            for (var i = 0; i < devices.length; ++i) {
+                var device = devices[i];
+                var option = new Option(device[0], device[0]);
+                option.device = new WebInspector.OverridesSupport.Device(device[2], device[1]);
+                groupElement.appendChild(option);
+            }
         }
 
         deviceSelectElement.addEventListener("change", deviceSelected, false);
@@ -1017,7 +1034,7 @@ WebInspector.OverridesSupport.prototype = {
 
         function deviceSelected()
         {
-            if (deviceSelectElement.selectedIndex === devices.length - 1)
+            if (deviceSelectElement.selectedIndex === 0)
                 return;
 
             var option = deviceSelectElement.options[deviceSelectElement.selectedIndex];
@@ -1031,8 +1048,8 @@ WebInspector.OverridesSupport.prototype = {
             if (emulatedSettingChangedMuted)
                 return;
 
-            var index = devices.length - 1;
-            for (var i = 0; i < devices.length; ++i) {
+            var index = 0;
+            for (var i = 1; i < deviceSelectElement.options.length; ++i) {
                 var option = deviceSelectElement.options[i];
                 if (WebInspector.overridesSupport.isEmulatingDevice(option.device)) {
                     index = i;

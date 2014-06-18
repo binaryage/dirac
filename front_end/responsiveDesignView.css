@@ -78,16 +78,8 @@
     padding: 0 10px;
 }
 
-.responsive-design-section .status-bar-item {
-    margin: 2px 0;
-}
-
-.responsive-design-section .status-bar-item .glyph {
-    background-color: white;
-}
-
 .responsive-design-section .status-bar-item .glyph.shadow {
-    background-color: black;
+    background-color: black !important;
 }
 
 
@@ -100,6 +92,11 @@
     flex-direction: row;
     padding-top: 2px;
     padding-bottom: 2px;
+    color: rgb(180, 180, 180);
+}
+
+.responsive-design-suite.responsive-design-suite-top {
+    color: rgb(255, 255, 255);
 }
 
 .responsive-design-suite-separator {
@@ -115,7 +112,7 @@
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
-    height: 22px;
+    height: 23px;
     overflow: hidden;
 }
 
@@ -142,8 +139,7 @@
     text-align: left;
     background-color: transparent;
     border: none;
-    margin: 0;
-    margin-bottom: 4px;
+    margin: 0 1px 1px 0;
     padding: 3px 2px;
 }
 
@@ -208,21 +204,28 @@ body.platform-mac .responsive-design-toolbar select {
 
 /* Toolbar icons */
 
-.responsive-design-icon {
+.responsive-design-icon.status-bar-item > .glyph {
     background-color: rgb(180, 180, 180);
     -webkit-mask-image: url(Images/responsiveDesign.png);
     -webkit-mask-size: 64px 16px;
+}
+
+.responsive-design-icon.status-bar-item {
     display: inline-block;
     width: 16px;
     height: 16px;
     position: relative;
-    top: 3px;
+    top: 4px;
+}
+
+.responsive-design-icon.status-bar-item:disabled .glyph {
+    opacity: 1 !important;
 }
 
 @media (-webkit-min-device-pixel-ratio: 1.5) {
-.responsive-design-icon {
-    -webkit-mask-image: url(Images/responsiveDesign_2x.png);
-}
+    .responsive-design-icon.status-bar-item > .glyph {
+        -webkit-mask-image: url(Images/responsiveDesign_2x.png);
+    }
 } /* media */
 
 .responsive-design-toolbar input[type='checkbox']:after {
@@ -232,30 +235,29 @@ body.platform-mac .responsive-design-toolbar select {
 }
 
 @media (-webkit-min-device-pixel-ratio: 1.5) {
-.responsive-design-toolbar input[type='checkbox']:after {
-    -webkit-mask-image: url(Images/statusbarButtonGlyphs_2x.png);
-}
+    .responsive-design-toolbar input[type='checkbox']:after {
+        -webkit-mask-image: url(Images/statusbarButtonGlyphs_2x.png);
+    }
 } /* media */
 
-.responsive-design-icon-resolution {
+.responsive-design-icon-resolution.status-bar-item > .glyph {
     -webkit-mask-position: 0 0;
 }
 
-.responsive-design-icon-dpr {
+.responsive-design-icon-dpr.status-bar-item > .glyph {
     -webkit-mask-position: -16px 0;
 }
 
-.responsive-design-icon-swap {
-    opacity: 0.9;
-    background-color: rgb(255, 156, 0);
+.responsive-design-icon-swap.status-bar-item > .glyph {
+    background-color: rgb(255, 170, 0);
     -webkit-mask-position: -32px 0;
     -webkit-appearance: none;
     padding: 0;
     border: 0;
 }
 
-.responsive-design-icon-swap:hover {
-    opacity: 1;
+.responsive-design-icon-swap.status-bar-item:hover > .glyph {
+    background-color: rgb(255, 180, 0);
 }
 
 .responsive-design-icon-swap:active {
@@ -268,6 +270,14 @@ body.platform-mac .responsive-design-toolbar select {
     padding: 0;
 }
 
+.responsive-design-section-buttons .status-bar-item {
+    margin: 2px 0;
+}
+
+.responsive-design-section-buttons .status-bar-item .glyph {
+    background-color: white;
+}
+
 .responsive-design-more-button {
     -webkit-appearance: none;
     border: 0;
@@ -275,6 +285,7 @@ body.platform-mac .responsive-design-toolbar select {
     color: white;
     opacity: 0.8;
     font-size: 16px;
+    text-shadow: black 1px 1px;
 }
 
 .responsive-design-more-button:hover {
@@ -292,7 +303,7 @@ body.platform-mac .responsive-design-toolbar select {
 }
 
 .responsive-design-section-device select {
-    width: 220px;
+    width: 180px;
 }
 
 .responsive-design-section-device input[type='text'],
@@ -344,4 +355,9 @@ body.platform-mac .responsive-design-toolbar select {
 .responsive-design-warning > span {
     flex: auto;
     padding-left: 3px;
+    overflow: hidden;
+}
+
+.responsive-design-warning > div {
+    flex: none;
 }

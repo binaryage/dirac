@@ -304,9 +304,12 @@ button.overrides-swap {
 }
 
 .overrides-splash-screen {
-    display: flex;
-    align-items: center;
+    display: block;
     padding: 3px 10px;
+}
+
+.overrides-splash-screen > button {
+    margin: -4px 0;
 }
 
 .overrides-reset-button {
