@@ -156,7 +156,7 @@ WebInspector.JSHeapSnapshot.prototype = {
     {
         /**
          * @param {!WebInspector.HeapSnapshotNode} node
-         * @param {!string} name
+         * @param {string} name
          * @return {?WebInspector.HeapSnapshotNode}
          */
         function getChildNodeByName(node, name)

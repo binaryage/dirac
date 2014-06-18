@@ -538,7 +538,7 @@ WebInspector.JavaScriptOutlineDialog = function(uiSourceCode, selectItemCallback
 WebInspector.JavaScriptOutlineDialog.show = function(view, uiSourceCode, selectItemCallback)
 {
     if (WebInspector.Dialog.currentInstance())
-        return null;
+        return;
     var filteredItemSelectionDialog = new WebInspector.FilteredItemSelectionDialog(new WebInspector.JavaScriptOutlineDialog(uiSourceCode, selectItemCallback));
     WebInspector.Dialog.show(view.element, filteredItemSelectionDialog);
 }

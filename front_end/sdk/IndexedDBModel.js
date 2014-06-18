@@ -61,6 +61,10 @@ WebInspector.IndexedDBModel.KeyPathTypes = {
     ArrayType:   "array"
 };
 
+/**
+ * @param {*} idbKey
+ * @return {?Object}
+ */
 WebInspector.IndexedDBModel.keyFromIDBKey = function(idbKey)
 {
     if (typeof(idbKey) === "undefined" || idbKey === null)
@@ -93,10 +97,13 @@ WebInspector.IndexedDBModel.keyFromIDBKey = function(idbKey)
     return key;
 }
 
+/**
+ * @param {?IDBKeyRange=} idbKeyRange
+ * @return {?{lower: ?Object, upper: ?Object, lowerOpen: *, upperOpen: *}}
+ */
 WebInspector.IndexedDBModel.keyRangeFromIDBKeyRange = function(idbKeyRange)
 {
-    var IDBKeyRange = window.IDBKeyRange || window.webkitIDBKeyRange;
-    if (typeof(idbKeyRange) === "undefined" || idbKeyRange === null)
+    if (typeof idbKeyRange === "undefined" || idbKeyRange === null)
         return null;
 
     var keyRange = {};
@@ -109,6 +116,7 @@ WebInspector.IndexedDBModel.keyRangeFromIDBKeyRange = function(idbKeyRange)
 
 /**
  * @param {!IndexedDBAgent.KeyPath} keyPath
+ * @return {?string|!Array.<string>|undefined}
  */
 WebInspector.IndexedDBModel.idbKeyPathFromKeyPath = function(keyPath)
 {
@@ -127,6 +135,10 @@ WebInspector.IndexedDBModel.idbKeyPathFromKeyPath = function(keyPath)
     return idbKeyPath;
 }
 
+/**
+ * @param {?string|!Array.<string>|undefined} idbKeyPath
+ * @return {?string}
+ */
 WebInspector.IndexedDBModel.keyPathStringFromIDBKeyPath = function(idbKeyPath)
 {
     if (typeof idbKeyPath === "string")
@@ -328,7 +340,7 @@ WebInspector.IndexedDBModel.prototype = {
     /**
      * @param {!WebInspector.IndexedDBModel.DatabaseId} databaseId
      * @param {string} objectStoreName
-     * @param {webkitIDBKeyRange} idbKeyRange
+     * @param {?IDBKeyRange} idbKeyRange
      * @param {number} skipCount
      * @param {number} pageSize
      * @param {function(!Array.<!WebInspector.IndexedDBModel.Entry>, boolean)} callback
@@ -342,7 +354,7 @@ WebInspector.IndexedDBModel.prototype = {
      * @param {!WebInspector.IndexedDBModel.DatabaseId} databaseId
      * @param {string} objectStoreName
      * @param {string} indexName
-     * @param {webkitIDBKeyRange} idbKeyRange
+     * @param {?IDBKeyRange} idbKeyRange
      * @param {number} skipCount
      * @param {number} pageSize
      * @param {function(!Array.<!WebInspector.IndexedDBModel.Entry>, boolean)} callback
@@ -357,7 +369,7 @@ WebInspector.IndexedDBModel.prototype = {
      * @param {string} databaseName
      * @param {string} objectStoreName
      * @param {string} indexName
-     * @param {webkitIDBKeyRange} idbKeyRange
+     * @param {?IDBKeyRange} idbKeyRange
      * @param {number} skipCount
      * @param {number} pageSize
      * @param {function(!Array.<!WebInspector.IndexedDBModel.Entry>, boolean)} callback

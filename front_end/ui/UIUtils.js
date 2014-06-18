@@ -34,7 +34,7 @@
  * @param {?function(!MouseEvent): boolean} elementDragStart
  * @param {function(!MouseEvent)} elementDrag
  * @param {?function(!MouseEvent)} elementDragEnd
- * @param {!string} cursor
+ * @param {string} cursor
  * @param {?string=} hoverCursor
  */
 WebInspector.installDragHandle = function(element, elementDragStart, elementDrag, elementDragEnd, cursor, hoverCursor)
@@ -167,9 +167,13 @@ WebInspector.GlassPane.prototype = {
  */
 WebInspector.GlassPane.DefaultFocusedViewStack = [];
 
+/**
+ * @param {?Node=} node
+ * @return {boolean}
+ */
 WebInspector.isBeingEdited = function(node)
 {
-    if (node.nodeType !== Node.ELEMENT_NODE)
+    if (!node || node.nodeType !== Node.ELEMENT_NODE)
         return false;
     var element = /** {!Element} */ (node);
     if (element.classList.contains("text-prompt") || element.nodeName === "INPUT" || element.nodeName === "TEXTAREA")
@@ -186,6 +190,11 @@ WebInspector.isBeingEdited = function(node)
     return false;
 }
 
+/**
+ * @param {!Element} element
+ * @param {boolean} value
+ * @return {boolean}
+ */
 WebInspector.markBeingEdited = function(element, value)
 {
     if (value) {
@@ -469,6 +478,10 @@ Number.bytesToString = function(bytes)
         return WebInspector.UIString("%.0f\u2009MB", megabytes);
 }
 
+/**
+ * @param {number} num
+ * @return {string}
+ */
 Number.withThousandsSeparator = function(num)
 {
     var str = num + "";
@@ -478,21 +491,38 @@ Number.withThousandsSeparator = function(num)
     return str;
 }
 
+/**
+ * @return {boolean}
+ */
 WebInspector.useLowerCaseMenuTitles = function()
 {
     return WebInspector.platform() === "windows";
 }
 
+/**
+ * @param {string} format
+ * @param {?Array.<string>} substitutions
+ * @param {!Object.<string, function(string, ...):*>} formatters
+ * @param {string} initialValue
+ * @param {function(string, string): ?} append
+ * @return {!{formattedResult: string, unusedSubstitutions: ?Array.<string>}};
+ */
 WebInspector.formatLocalized = function(format, substitutions, formatters, initialValue, append)
 {
     return String.format(WebInspector.UIString(format), substitutions, formatters, initialValue, append);
 }
 
+/**
+ * @return {string}
+ */
 WebInspector.openLinkExternallyLabel = function()
 {
     return WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Open link in new tab" : "Open Link in New Tab");
 }
 
+/**
+ * @return {string}
+ */
 WebInspector.copyLinkAddressLabel = function()
 {
     return WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Copy link address" : "Copy Link Address");
@@ -521,11 +551,17 @@ WebInspector._windowBlurred = function(event)
         document.body.classList.add("inactive");
 }
 
+/**
+ * @return {!Element}
+ */
 WebInspector.previousFocusElement = function()
 {
     return WebInspector._previousFocusElement;
 }
 
+/**
+ * @return {!Element}
+ */
 WebInspector.currentFocusElement = function()
 {
     return WebInspector._currentFocusElement;
@@ -627,6 +663,7 @@ WebInspector.resetToolbarColors = function()
  * @param {number} offset
  * @param {number} length
  * @param {!Array.<!Object>=} domChanges
+ * @return {?Element}
  */
 WebInspector.highlightSearchResult = function(element, offset, length, domChanges)
 {
@@ -638,6 +675,7 @@ WebInspector.highlightSearchResult = function(element, offset, length, domChange
  * @param {!Element} element
  * @param {!Array.<!WebInspector.SourceRange>} resultRanges
  * @param {!Array.<!Object>=} changes
+ * @return {!Array.<!Element>}
  */
 WebInspector.highlightSearchResults = function(element, resultRanges, changes)
 {

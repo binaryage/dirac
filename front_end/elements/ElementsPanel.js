@@ -1230,7 +1230,7 @@ WebInspector.ElementsPanel.prototype = {
         if (!commandCallback)
             return;
         // Skip adding "Reveal..." menu item for our own tree outline.
-        if (this.element.isAncestor(event.target))
+        if (this.element.isAncestor(/** @type {!Node} */ (event.target)))
             return;
         contextMenu.appendItem(WebInspector.useLowerCaseMenuTitles() ? "Reveal in Elements panel" : "Reveal in Elements Panel", commandCallback);
     },

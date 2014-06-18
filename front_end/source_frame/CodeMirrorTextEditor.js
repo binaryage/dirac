@@ -246,6 +246,9 @@ CodeMirror.commands.redoAndReveal = function(codemirror)
     codemirror._codeMirrorTextEditor._autocompleteController.finishAutocomplete();
 }
 
+/**
+ * @return {!Object|undefined}
+ */
 CodeMirror.commands.dismissMultipleSelections = function(codemirror)
 {
     var selections = codemirror.listSelections();

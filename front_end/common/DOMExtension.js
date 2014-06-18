@@ -35,6 +35,7 @@
  * @param {string} stopCharacters
  * @param {!Node} stayWithinNode
  * @param {string=} direction
+ * @return {!Range}
  */
 Node.prototype.rangeOfWord = function(offset, stopCharacters, stayWithinNode, direction)
 {
@@ -123,11 +124,15 @@ Node.prototype.rangeOfWord = function(offset, stopCharacters, stayWithinNode, di
     return result;
 }
 
+/**
+ * @param {!Node=} stayWithin
+ * @return {?Node}
+ */
 Node.prototype.traverseNextTextNode = function(stayWithin)
 {
     var node = this.traverseNextNode(stayWithin);
     if (!node)
-        return;
+        return null;
 
     while (node && node.nodeType !== Node.TEXT_NODE)
         node = node.traverseNextNode(stayWithin);
@@ -135,6 +140,10 @@ Node.prototype.traverseNextTextNode = function(stayWithin)
     return node;
 }
 
+/**
+ * @param {number} offset
+ * @return {!{container: !Node, offset: number}}
+ */
 Node.prototype.rangeBoundaryForOffset = function(offset)
 {
     var node = this.traverseNextTextNode(this);
@@ -176,6 +185,9 @@ Element.prototype.positionAt = function(x, y, relativeTo)
         this.style.removeProperty("top");
 }
 
+/**
+ * @return {boolean}
+ */
 Element.prototype.isScrolledToBottom = function()
 {
     // This code works only for 0-width border.
@@ -225,7 +237,7 @@ function Constraints(minimum, preferred)
 Constraints.prototype.isEqual = function(constraints)
 {
     return !!constraints && this.minimum.isEqual(constraints.minimum) && this.preferred.isEqual(constraints.preferred);
-};
+}
 
 /**
  * @param {!Constraints|number} value
@@ -236,7 +248,7 @@ Constraints.prototype.widthToMax = function(value)
     if (typeof value === "number")
         return new Constraints(this.minimum.widthToMax(value), this.preferred.widthToMax(value));
     return new Constraints(this.minimum.widthToMax(value.minimum), this.preferred.widthToMax(value.preferred));
-};
+}
 
 /**
  * @param {!Constraints|number} value
@@ -247,7 +259,7 @@ Constraints.prototype.addWidth = function(value)
     if (typeof value === "number")
         return new Constraints(this.minimum.addWidth(value), this.preferred.addWidth(value));
     return new Constraints(this.minimum.addWidth(value.minimum), this.preferred.addWidth(value.preferred));
-};
+}
 
 /**
  * @param {!Constraints|number} value
@@ -258,7 +270,7 @@ Constraints.prototype.heightToMax = function(value)
     if (typeof value === "number")
         return new Constraints(this.minimum.heightToMax(value), this.preferred.heightToMax(value));
     return new Constraints(this.minimum.heightToMax(value.minimum), this.preferred.heightToMax(value.preferred));
-};
+}
 
 /**
  * @param {!Constraints|number} value
@@ -269,7 +281,7 @@ Constraints.prototype.addHeight = function(value)
     if (typeof value === "number")
         return new Constraints(this.minimum.addHeight(value), this.preferred.addHeight(value));
     return new Constraints(this.minimum.addHeight(value.minimum), this.preferred.addHeight(value.preferred));
-};
+}
 
 /**
  * @param {?Element=} containerElement
@@ -362,6 +374,9 @@ Element.prototype.setChildren = function(children)
     this.appendChildren(children);
 }
 
+/**
+ * @return {boolean}
+ */
 Element.prototype.isInsertionCaretInside = function()
 {
     var selection = window.getSelection();
@@ -374,6 +389,7 @@ Element.prototype.isInsertionCaretInside = function()
 /**
  * @param {string} elementName
  * @param {string=} className
+ * @return {!Element}
  */
 Document.prototype.createElementWithClass = function(elementName, className)
 {
@@ -386,6 +402,7 @@ Document.prototype.createElementWithClass = function(elementName, className)
 /**
  * @param {string} elementName
  * @param {string=} className
+ * @return {!Element}
  */
 Element.prototype.createChild = function(elementName, className)
 {
@@ -398,6 +415,7 @@ DocumentFragment.prototype.createChild = Element.prototype.createChild;
 
 /**
  * @param {string} text
+ * @return {!Text}
  */
 Element.prototype.createTextChild = function(text)
 {
@@ -425,12 +443,18 @@ Element.prototype.totalOffsetTop = function()
 
 }
 
+/**
+ * @return {!{left: number, top: number}}
+ */
 Element.prototype.totalOffset = function()
 {
     var rect = this.getBoundingClientRect();
     return { left: rect.left, top: rect.top };
 }
 
+/**
+ * @return {!{left: number, top: number}}
+ */
 Element.prototype.scrollOffset = function()
 {
     var curLeft = 0;
@@ -465,7 +489,7 @@ AnchorBox.prototype.relativeTo = function(box)
 {
     return new AnchorBox(
         this.x - box.x, this.y - box.y, this.width, this.height);
-};
+}
 
 /**
  * @param {!Element} element
@@ -474,7 +498,7 @@ AnchorBox.prototype.relativeTo = function(box)
 AnchorBox.prototype.relativeToElement = function(element)
 {
     return this.relativeTo(element.boxInWindow(element.ownerDocument.defaultView));
-};
+}
 
 /**
  * @param {?AnchorBox} anchorBox
@@ -483,7 +507,7 @@ AnchorBox.prototype.relativeToElement = function(element)
 AnchorBox.prototype.equals = function(anchorBox)
 {
     return !!anchorBox && this.x === anchorBox.x && this.y === anchorBox.y && this.width === anchorBox.width && this.height === anchorBox.height;
-};
+}
 
 /**
  * @param {!Window} targetWindow
@@ -561,6 +585,11 @@ Event.prototype.consume = function(preventDefault)
     this.handled = true;
 }
 
+/**
+ * @param {number=} start
+ * @param {number=} end
+ * @return {!Text}
+ */
 Text.prototype.select = function(start, end)
 {
     start = start || 0;
@@ -578,6 +607,9 @@ Text.prototype.select = function(start, end)
     return this;
 }
 
+/**
+ * @return {?number}
+ */
 Element.prototype.selectionLeftOffset = function()
 {
     // Calculate selection offset relative to the current element.
@@ -600,6 +632,10 @@ Element.prototype.selectionLeftOffset = function()
     return leftOffset;
 }
 
+/**
+ * @param {?Node} node
+ * @return {boolean}
+ */
 Node.prototype.isAncestor = function(node)
 {
     if (!node)
@@ -614,21 +650,37 @@ Node.prototype.isAncestor = function(node)
     return false;
 }
 
+/**
+ * @param {?Node} descendant
+ * @return {boolean}
+ */
 Node.prototype.isDescendant = function(descendant)
 {
     return !!descendant && descendant.isAncestor(this);
 }
 
+/**
+ * @param {?Node} node
+ * @return {boolean}
+ */
 Node.prototype.isSelfOrAncestor = function(node)
 {
     return !!node && (node === this || this.isAncestor(node));
 }
 
+/**
+ * @param {?Node} node
+ * @return {boolean}
+ */
 Node.prototype.isSelfOrDescendant = function(node)
 {
     return !!node && (node === this || this.isDescendant(node));
 }
 
+/**
+ * @param {!Node=} stayWithin
+ * @return {?Node}
+ */
 Node.prototype.traverseNextNode = function(stayWithin)
 {
     var node = this.firstChild;
@@ -651,6 +703,10 @@ Node.prototype.traverseNextNode = function(stayWithin)
     return node.nextSibling;
 }
 
+/**
+ * @param {!Node=} stayWithin
+ * @return {?Node}
+ */
 Node.prototype.traversePreviousNode = function(stayWithin)
 {
     if (stayWithin && this === stayWithin)

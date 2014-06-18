@@ -180,7 +180,7 @@ WebInspector.ProfileType.prototype = {
     },
 
     /**
-     * @param {!string} title
+     * @param {string} title
      * @return {!WebInspector.ProfileHeader}
      */
     createProfileLoadedFromFile: function(title)

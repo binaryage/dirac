@@ -49,7 +49,7 @@ WebInspector.StyleSheetOutlineDialog = function(uiSourceCode, selectItemCallback
 WebInspector.StyleSheetOutlineDialog.show = function(view, uiSourceCode, selectItemCallback)
 {
     if (WebInspector.Dialog.currentInstance())
-        return null;
+        return;
     var delegate = new WebInspector.StyleSheetOutlineDialog(uiSourceCode, selectItemCallback);
     var filteredItemSelectionDialog = new WebInspector.FilteredItemSelectionDialog(delegate);
     WebInspector.Dialog.show(view.element, filteredItemSelectionDialog);

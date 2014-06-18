@@ -62,7 +62,7 @@ WebInspector.InspectorView = function()
 
     if (WebInspector.experimentsSettings.devicesPanel.isEnabled()) {
         this._remoteDeviceCountElement = this._rightToolbarElement.createChild("div", "hidden");
-        this._remoteDeviceCountElement.addEventListener("click", this.showViewInDrawer.bind(this, "devices"), false);
+        this._remoteDeviceCountElement.addEventListener("click", this.showViewInDrawer.bind(this, "devices", true), false);
         this._remoteDeviceCountElement.id = "remote-device-count";
         WebInspector.inspectorFrontendEventSink.addEventListener(WebInspector.InspectorView.Events.DeviceCountChanged, this._onDeviceCountChanged, this);
     }

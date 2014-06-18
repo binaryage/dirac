@@ -47,7 +47,7 @@ WebInspector.CodeMirrorUtils.toPos = function(range)
         start: new CodeMirror.Pos(range.startLine, range.startColumn),
         end: new CodeMirror.Pos(range.endLine, range.endColumn)
     }
-},
+}
 
 /**
  * @param {!CodeMirror.Pos} start
@@ -57,8 +57,7 @@ WebInspector.CodeMirrorUtils.toPos = function(range)
 WebInspector.CodeMirrorUtils.toRange = function(start, end)
 {
     return new WebInspector.TextRange(start.line, start.ch, end.line, end.ch);
-},
-
+}
 
 WebInspector.CodeMirrorUtils.prototype = {
     /**

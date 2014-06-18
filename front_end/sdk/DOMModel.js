@@ -1015,11 +1015,12 @@ WebInspector.DOMModel.prototype = {
          * @param {!T=} result
          * @template T
          */
-        return function(error, result)
+        var wrapper = function(error, result)
         {
             // Caller is responsible for handling the actual error.
             callback(error ? null : result);
-        }
+        };
+        return wrapper;
     },
 
     /**

@@ -41,6 +41,10 @@ WebInspector.RequestJSONView = function(request, parsedJSON)
     this.element.classList.add("json");
 }
 
+/**
+ * @param {string} text
+ * @return {?WebInspector.ParsedJSON}
+ */
 WebInspector.RequestJSONView.parseJSON = function(text)
 {
     var prefix = "";
@@ -55,17 +59,21 @@ WebInspector.RequestJSONView.parseJSON = function(text)
     try {
         return new WebInspector.ParsedJSON(JSON.parse(text), prefix, "");
     } catch (e) {
-        return;
+        return null;
     }
 }
 
+/**
+ * @param {string} text
+ * @return {?WebInspector.ParsedJSON}
+ */
 WebInspector.RequestJSONView.parseJSONP = function(text)
 {
     // Taking everything between first and last parentheses
     var start = text.indexOf("(");
     var end = text.lastIndexOf(")");
     if (start == -1 || end == -1 || end < start)
-        return;
+        return null;
 
     var prefix = text.substring(0, start + 1);
     var suffix = text.substring(end);
@@ -74,7 +82,7 @@ WebInspector.RequestJSONView.parseJSONP = function(text)
     try {
         return new WebInspector.ParsedJSON(JSON.parse(text), prefix, suffix);
     } catch (e) {
-        return;
+        return null;
     }
 }
 
