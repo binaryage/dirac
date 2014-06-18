@@ -4125,6 +4125,14 @@
                 "name": "end",
                 "description": "Stop trace events collection.",
                 "handlers": ["browser", "frontend"]
+            },
+            {
+                "name": "getCategories",
+                "description": "Gets supported tracing categories.",
+                "returns": [
+                    { "name": "categories", "type": "array", "items": { "type": "string" }, "description": "A list of supported tracing categories." }
+                ],
+                "handlers": ["browser", "frontend"]
             }
         ],
         "events": [
