@@ -2612,7 +2612,8 @@
                 "properties": [
                     { "name": "value", "type": "number", "description": "Media query expression value."},
                     { "name": "unit", "type": "string", "description": "Media query expression units."},
-                    { "name": "feature", "type": "string", "description": "Media query expression feature."}
+                    { "name": "feature", "type": "string", "description": "Media query expression feature."},
+                    { "name": "computedLength", "type": "number", "optional": true, "description": "Computed length of media query expression (if applicable)."}
                 ],
                 "description": "Media query expression data.",
                 "hidden": true
