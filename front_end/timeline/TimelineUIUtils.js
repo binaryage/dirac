@@ -30,8 +30,52 @@
  */
 
 /**
+ * @constructor
  */
 WebInspector.TimelineUIUtils = function() { }
+
+WebInspector.TimelineUIUtils.prototype = {
+    /**
+     * @param {!WebInspector.TimelineModel.Record} record
+     * @return {boolean}
+     */
+    isBeginFrame: function(record)
+    {
+        throw new Error("Not implemented.");
+    },
+    /**
+     * @param {!WebInspector.TimelineModel.Record} record
+     * @return {boolean}
+     */
+    isProgram: function(record)
+    {
+        throw new Error("Not implemented.");
+    },
+    /**
+     * @param {string} recordType
+     * @return {boolean}
+     */
+    isCoalescable: function(recordType)
+    {
+        throw new Error("Not implemented.");
+    },
+    /**
+     * @param {!WebInspector.TimelineModel.Record} record
+     * @return {?Object}
+     */
+    countersForRecord: function(record)
+    {
+        throw new Error("Not implemented.");
+    },
+    /**
+     * @param {!WebInspector.TimelineModel.Record} record
+     * @return {?Object}
+     */
+    highlightQuadForRecord: function(record)
+    {
+        throw new Error("Not implemented.");
+    }
+}
 
 /**
  * @return {!Object.<string, !WebInspector.TimelineCategory>}
@@ -110,13 +154,6 @@ WebInspector.TimelineUIUtils._initRecordStyles = function()
     WebInspector.TimelineUIUtils._recordStylesMap = recordStyles;
     return recordStyles;
 }
-
-WebInspector.TimelineUIUtils.coalescableRecordTypes = {};
-WebInspector.TimelineUIUtils.coalescableRecordTypes[WebInspector.TimelineModel.RecordType.Layout] = 1;
-WebInspector.TimelineUIUtils.coalescableRecordTypes[WebInspector.TimelineModel.RecordType.Paint] = 1;
-WebInspector.TimelineUIUtils.coalescableRecordTypes[WebInspector.TimelineModel.RecordType.Rasterize] = 1;
-WebInspector.TimelineUIUtils.coalescableRecordTypes[WebInspector.TimelineModel.RecordType.DecodeImage] = 1;
-WebInspector.TimelineUIUtils.coalescableRecordTypes[WebInspector.TimelineModel.RecordType.ResizeImage] = 1;
 
 /**
  * @param {!WebInspector.TimelineModel.Record} record

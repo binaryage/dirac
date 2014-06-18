@@ -391,6 +391,7 @@
             'front_end/timeline/TimelineFrameOverview.js',
             'front_end/timeline/TimelineMemoryOverview.js',
             'front_end/timeline/TimelineUIUtils.js',
+            'front_end/timeline/TimelineUIUtilsImpl.js',
             'front_end/timeline/TimelineView.js',
             'front_end/timeline/TimelinePowerGraph.js',
             'front_end/timeline/TimelinePowerOverview.js',

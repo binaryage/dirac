@@ -605,30 +605,6 @@ WebInspector.TracingTimelineModel.TraceEventRecord.prototype = {
     },
 
     /**
-     * @return {?Object}
-     */
-    counters: function()
-    {
-        return this.type() === WebInspector.TracingTimelineModel.RecordType.UpdateCounters ? this._event.args.data : null;
-    },
-
-    /**
-     * @return {boolean}
-     */
-    isProgram: function()
-    {
-        return this.type() === WebInspector.TracingTimelineModel.RecordType.Program;
-    },
-
-    /**
-     * @return {?Object}
-     */
-    highlightQuad: function()
-    {
-        return this._event.highlightQuad || null;
-    },
-
-    /**
      * @return {string}
      */
     frameId: function()
@@ -707,5 +683,13 @@ WebInspector.TracingTimelineModel.TraceEventRecord.prototype = {
                 tokens.push(data[key]);
         }
         return regExp.test(tokens.join("|"));
+    },
+
+    /**
+     * @return {!WebInspector.TracingModel.Event}
+     */
+    traceEvent: function()
+    {
+        return this._event;
     }
 }

@@ -35,16 +35,17 @@
  * @implements {WebInspector.TimelineModeView}
  * @param {!WebInspector.TimelineModeViewDelegate} delegate
  * @param {!WebInspector.TimelineModel} model
- * @param {!Object.<string, number>} coalescableRecordTypes
+ * @param {!WebInspector.TimelineUIUtils} uiUtils
  */
-WebInspector.TimelineView = function(delegate, model, coalescableRecordTypes)
+WebInspector.TimelineView = function(delegate, model, uiUtils)
 {
     WebInspector.HBox.call(this);
+    this._uiUtils = uiUtils;
     this.element.classList.add("timeline-view");
 
     this._delegate = delegate;
     this._model = model;
-    this._presentationModel = new WebInspector.TimelinePresentationModel(model, coalescableRecordTypes);
+    this._presentationModel = new WebInspector.TimelinePresentationModel(model, uiUtils);
     this._calculator = new WebInspector.TimelineCalculator(model);
     this._linkifier = new WebInspector.Linkifier();
     this._frameStripByFrame = new Map();
@@ -833,7 +834,7 @@ WebInspector.TimelineView.prototype = {
             return true;
         this._highlightedQuadRecord = record;
 
-        var quad = record.highlightQuad();
+        var quad = this._uiUtils.highlightQuadForRecord(record);
         if (!quad)
             return false;
         record.target().domAgent().highlightQuad(quad, WebInspector.Color.PageHighlight.Content.toProtocolRGBA(), WebInspector.Color.PageHighlight.ContentOutline.toProtocolRGBA());

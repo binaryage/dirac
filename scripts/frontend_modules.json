@@ -326,6 +326,7 @@
             "timeline/TimelinePanel.js",
             "timeline/TimelinePresentationModel.js",
             "timeline/TimelineUIUtils.js",
+            "timeline/TimelineUIUtilsImpl.js",
             "timeline/TimelineView.js",
             "timeline/TimelineTracingView.js",
             "timeline/TimelineLayersView.js",

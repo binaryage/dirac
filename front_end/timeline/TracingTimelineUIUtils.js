@@ -3,8 +3,62 @@
 // found in the LICENSE file.
 
 /**
+ * @constructor
+ * @extends {WebInspector.TimelineUIUtils}
  */
-WebInspector.TracingTimelineUIUtils = function() { }
+WebInspector.TracingTimelineUIUtils = function()
+{
+    WebInspector.TimelineUIUtils.call(this);
+}
+
+WebInspector.TracingTimelineUIUtils.prototype = {
+    /**
+     * @param {!WebInspector.TimelineModel.Record} record
+     * @return {boolean}
+     */
+    isBeginFrame: function(record)
+    {
+        return record.type() === WebInspector.TracingTimelineModel.RecordType.BeginFrame;
+    },
+
+    /**
+     * @param {!WebInspector.TimelineModel.Record} record
+     * @return {boolean}
+     */
+    isProgram: function(record)
+    {
+        return record.type() === WebInspector.TracingTimelineModel.RecordType.Program;
+    },
+
+    /**
+     * @param {string} recordType
+     * @return {boolean}
+     */
+    isCoalescable: function(recordType)
+    {
+        return !!WebInspector.TracingTimelineUIUtils._coalescableRecordTypes[recordType];
+    },
+
+    /**
+     * @param {!WebInspector.TimelineModel.Record} record
+     * @return {?Object}
+     */
+    countersForRecord: function(record)
+    {
+        return record.type() === WebInspector.TracingTimelineModel.RecordType.UpdateCounters ? record.data() : null;
+    },
+
+    /**
+     * @param {!WebInspector.TimelineModel.Record} record
+     * @return {?Object}
+     */
+    highlightQuadForRecord: function(record)
+    {
+        return record.traceEvent().highlightQuad || null;
+    },
+
+    __proto__: WebInspector.TimelineUIUtils.prototype
+}
 
 /**
  * @constructor
@@ -80,12 +134,12 @@ WebInspector.TracingTimelineUIUtils._initEventStyles = function()
     return eventStyles;
 }
 
-WebInspector.TracingTimelineUIUtils.coalescableRecordTypes = {};
-WebInspector.TracingTimelineUIUtils.coalescableRecordTypes[WebInspector.TracingTimelineModel.RecordType.Layout] = 1;
-WebInspector.TracingTimelineUIUtils.coalescableRecordTypes[WebInspector.TracingTimelineModel.RecordType.Paint] = 1;
-WebInspector.TracingTimelineUIUtils.coalescableRecordTypes[WebInspector.TracingTimelineModel.RecordType.Rasterize] = 1;
-WebInspector.TracingTimelineUIUtils.coalescableRecordTypes[WebInspector.TracingTimelineModel.RecordType.DecodeImage] = 1;
-WebInspector.TracingTimelineUIUtils.coalescableRecordTypes[WebInspector.TracingTimelineModel.RecordType.ResizeImage] = 1;
+WebInspector.TracingTimelineUIUtils._coalescableRecordTypes = {};
+WebInspector.TracingTimelineUIUtils._coalescableRecordTypes[WebInspector.TracingTimelineModel.RecordType.Layout] = 1;
+WebInspector.TracingTimelineUIUtils._coalescableRecordTypes[WebInspector.TracingTimelineModel.RecordType.Paint] = 1;
+WebInspector.TracingTimelineUIUtils._coalescableRecordTypes[WebInspector.TracingTimelineModel.RecordType.Rasterize] = 1;
+WebInspector.TracingTimelineUIUtils._coalescableRecordTypes[WebInspector.TracingTimelineModel.RecordType.DecodeImage] = 1;
+WebInspector.TracingTimelineUIUtils._coalescableRecordTypes[WebInspector.TracingTimelineModel.RecordType.ResizeImage] = 1;
 
 /**
  * @param {!WebInspector.TracingModel.Event} event

@@ -401,24 +401,9 @@ WebInspector.TimelineModel.Record.prototype = {
     data: function() { },
 
     /**
-     * @return {?Object}
-     */
-    highlightQuad: function() { },
-
-    /**
      * @return {string}
      */
     type: function() { },
-
-    /**
-     * @return {?Object}
-     */
-    counters: function() { },
-
-    /**
-     * @return {boolean}
-     */
-    isProgram: function() { },
 
     /**
      * @return {string}

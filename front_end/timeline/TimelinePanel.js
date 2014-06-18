@@ -47,6 +47,7 @@ importScript("TimelinePowerGraph.js");
 importScript("TimelinePowerOverview.js");
 importScript("TimelineFlameChart.js");
 importScript("TimelineUIUtils.js");
+importScript("TimelineUIUtilsImpl.js");
 importScript("TimelineView.js");
 importScript("TimelineTracingView.js");
 importScript("TimelineLayersView.js");
@@ -80,8 +81,10 @@ WebInspector.TimelinePanel = function()
 
         this._tracingTimelineModel = new WebInspector.TracingTimelineModel(this._tracingModel);
         this._model = this._tracingTimelineModel;
+        this._uiUtils = new WebInspector.TracingTimelineUIUtils();
     } else {
         this._model = new WebInspector.TimelineModelImpl(WebInspector.timelineManager);
+        this._uiUtils = new WebInspector.TimelineUIUtilsImpl();
     }
 
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStarted, this._onRecordingStarted, this);
@@ -273,10 +276,8 @@ WebInspector.TimelinePanel.prototype = {
      */
     _timelineView: function()
     {
-        if (!this._lazyTimelineView) {
-            var coalescableRecordTypes = this._tracingTimelineModel ? WebInspector.TracingTimelineUIUtils.coalescableRecordTypes : WebInspector.TimelineUIUtils.coalescableRecordTypes;
-            this._lazyTimelineView = new WebInspector.TimelineView(this, this._model, coalescableRecordTypes);
-        }
+        if (!this._lazyTimelineView)
+            this._lazyTimelineView = new WebInspector.TimelineView(this, this._model, this._uiUtils);
         return this._lazyTimelineView;
     },
 
@@ -621,7 +622,7 @@ WebInspector.TimelinePanel.prototype = {
         if (isFrameMode)
             this._overviewControls.push(new WebInspector.TimelineFrameOverview(this._model, this._frameModel()));
         else
-            this._overviewControls.push(new WebInspector.TimelineEventOverview(this._model));
+            this._overviewControls.push(new WebInspector.TimelineEventOverview(this._model, this._uiUtils));
 
         if (WebInspector.experimentsSettings.timelineFlameChart.isEnabled() && this._flameChartEnabledSetting.get()) {
             var tracingTimelineModel = WebInspector.experimentsSettings.timelineOnTraceEvents.isEnabled() ? this._tracingTimelineModel : null;
@@ -632,8 +633,8 @@ WebInspector.TimelinePanel.prototype = {
 
         if (this._captureMemorySetting.get()) {
             if (!isFrameMode)  // Frame mode skews time, don't render aux overviews.
-                this._overviewControls.push(new WebInspector.TimelineMemoryOverview(this._model));
-            this._addModeView(new WebInspector.MemoryCountersGraph(this, this._model));
+                this._overviewControls.push(new WebInspector.TimelineMemoryOverview(this._model, this._uiUtils));
+            this._addModeView(new WebInspector.MemoryCountersGraph(this, this._model, this._uiUtils));
         }
 
         if (this._capturePowerSetting && this._capturePowerSetting.get()) {
