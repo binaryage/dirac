@@ -989,7 +989,7 @@ WebInspector.TimelinePanel.prototype = {
                 var event = this._tracingTimelineModel.traceEventFrom(record);
                 this._buildSelectionDetailsForTraceEvent(event);
             } else {
-                WebInspector.TimelineUIUtils.generatePopupContent(record, this._model, this._detailsLinkifier, this.showInDetails.bind(this, record.title()), this._model.loadedFromFile());
+                WebInspector.TimelineUIUtils.generateDetailsContent(record, this._model, this._detailsLinkifier, this.showInDetails.bind(this, record.title()), this._model.loadedFromFile());
             }
             break;
         case WebInspector.TimelineSelection.Type.TraceEvent:
@@ -1003,7 +1003,7 @@ WebInspector.TimelinePanel.prototype = {
                 layersView.showLayerTree(frame.layerTree);
                 this._detailsView.setChildView(WebInspector.UIString("Frame Layers"), layersView);
             } else {
-                this.showInDetails(WebInspector.UIString("Frame Statistics"), WebInspector.TimelineUIUtils.generatePopupContentForFrame(this._lazyFrameModel, frame));
+                this.showInDetails(WebInspector.UIString("Frame Statistics"), WebInspector.TimelineUIUtils.generateDetailsContentForFrame(this._lazyFrameModel, frame));
             }
             break;
         }

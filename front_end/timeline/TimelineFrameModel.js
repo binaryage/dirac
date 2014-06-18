@@ -376,6 +376,10 @@ WebInspector.TracingTimelineFrameModel.prototype = {
     addTraceEvents: function(events, sessionId)
     {
         this._sessionId = sessionId;
+        if (!events.length)
+            return;
+        if (events[0].startTime < this._minimumRecordTime)
+            this._minimumRecordTime = events[0].startTime;
         for (var i = 0; i < events.length; ++i)
             this._addTraceEvent(events[i]);
     },

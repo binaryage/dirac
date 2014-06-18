@@ -377,9 +377,9 @@ WebInspector.TimelineUIUtils.generatePieChart = function(aggregatedStats, selfCa
  * @param {!WebInspector.TimelineFrame} frame
  * @return {!Element}
  */
-WebInspector.TimelineUIUtils.generatePopupContentForFrame = function(frameModel, frame)
+WebInspector.TimelineUIUtils.generateDetailsContentForFrame = function(frameModel, frame)
 {
-    var contentHelper = new WebInspector.TimelinePopupContentHelper(WebInspector.UIString("Frame"));
+    var contentHelper = new WebInspector.TimelineDetailsContentHelper(null, null, true);
     var durationInMillis = frame.endTime - frame.startTime;
     var durationText = WebInspector.UIString("%s (at %s)", Number.millisToString(frame.endTime - frame.startTime, true),
         Number.millisToString(frame.startTimeOffset, true));
@@ -392,29 +392,6 @@ WebInspector.TimelineUIUtils.generatePopupContentForFrame = function(frameModel,
         contentHelper.appendElementRow(WebInspector.UIString("Layer tree"),
                                        WebInspector.Linkifier.linkifyUsingRevealer(frame.layerTree, WebInspector.UIString("show")));
     }
-    return contentHelper.contentTable();
-}
-
-/**
- * @param {!WebInspector.FrameStatistics} statistics
- * @return {!Element}
- */
-WebInspector.TimelineUIUtils.generatePopupContentForFrameStatistics = function(statistics)
-{
-    /**
-     * @param {number} time
-     */
-    function formatTimeAndFPS(time)
-    {
-        return WebInspector.UIString("%s (%.0f FPS)", Number.millisToString(time, true), 1 / time);
-    }
-
-    var contentHelper = new WebInspector.TimelineDetailsContentHelper(null, null, false);
-    contentHelper.appendTextRow(WebInspector.UIString("Minimum Time"), formatTimeAndFPS(statistics.minDuration));
-    contentHelper.appendTextRow(WebInspector.UIString("Average Time"), formatTimeAndFPS(statistics.average));
-    contentHelper.appendTextRow(WebInspector.UIString("Maximum Time"), formatTimeAndFPS(statistics.maxDuration));
-    contentHelper.appendTextRow(WebInspector.UIString("Standard Deviation"), Number.millisToString(statistics.stddev, true));
-
     return contentHelper.element;
 }
 
@@ -474,7 +451,7 @@ WebInspector.TimelineUIUtils.createStyleRuleForCategory = function(category)
  * @param {function(!DocumentFragment)} callback
  * @param {boolean} loadedFromFile
  */
-WebInspector.TimelineUIUtils.generatePopupContent = function(record, model, linkifier, callback, loadedFromFile)
+WebInspector.TimelineUIUtils.generateDetailsContent = function(record, model, linkifier, callback, loadedFromFile)
 {
     var imageElement = /** @type {?Element} */ (record.getUserObject("TimelineUIUtils::preview-element") || null);
     var relatedNode = null;
@@ -506,7 +483,7 @@ WebInspector.TimelineUIUtils.generatePopupContent = function(record, model, link
 
     function callbackWrapper()
     {
-        callback(WebInspector.TimelineUIUtils._generatePopupContentSynchronously(record, model, linkifier, imageElement, relatedNode, loadedFromFile));
+        callback(WebInspector.TimelineUIUtils._generateDetailsContentSynchronously(record, model, linkifier, imageElement, relatedNode, loadedFromFile));
     }
 }
 
@@ -519,7 +496,7 @@ WebInspector.TimelineUIUtils.generatePopupContent = function(record, model, link
  * @param {boolean} loadedFromFile
  * @return {!DocumentFragment}
  */
-WebInspector.TimelineUIUtils._generatePopupContentSynchronously = function(record, model, linkifier, imagePreviewElement, relatedNode, loadedFromFile)
+WebInspector.TimelineUIUtils._generateDetailsContentSynchronously = function(record, model, linkifier, imagePreviewElement, relatedNode, loadedFromFile)
 {
     var fragment = document.createDocumentFragment();
     if (record.children().length)
