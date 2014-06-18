@@ -752,8 +752,12 @@
 .timeline-aggregated-info {
     flex: none;
     position: relative;
-    margin: 8px 2px;
-    width: 200px;
+    margin: 8px;
+}
+
+.timeline-range-summary {
+    align-items: center;
+    margin: 6px;
 }
 
 .timeline-aggregated-info-legend > div {
