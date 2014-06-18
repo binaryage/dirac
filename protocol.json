@@ -3060,10 +3060,7 @@
             },
             {
                 "name": "stepOver",
-                "parameters": [
-                    { "name": "callFrameId", "optional": true, "$ref": "CallFrameId", "description": "A frame where the step must be performed." }
-                ],
-                "description": "Steps over the statement. Moves execution to the next statement in the top call frame or in the specified one."
+                "description": "Steps over the statement."
             },
             {
                 "name": "stepInto",
@@ -3071,10 +3068,7 @@
             },
             {
                 "name": "stepOut",
-                "parameters": [
-                    { "name": "callFrameId", "optional": true, "$ref": "CallFrameId", "description": "A frame where the step must be performed." }
-                ],
-                "description": "Steps out of the top call frame or the specified one."
+                "description": "Steps out of the function call."
             },
             {
                 "name": "pause",
