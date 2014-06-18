@@ -554,7 +554,8 @@
             'front_end/layers/LayersPanel.js',
             'front_end/layers/LayerTreeOutline.js',
             'front_end/layers/LayerDetailsView.js',
-            'front_end/layers/PaintProfilerView.js'
+            'front_end/layers/PaintProfilerView.js',
+            'front_end/layers/LayerPaintProfilerView.js'
         ],
         'devtools_extension_api_files': [
             'front_end/extensions/ExtensionAPI.js',

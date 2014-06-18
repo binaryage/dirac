@@ -30,24 +30,19 @@
 
 /**
  * @constructor
- * @param {!WebInspector.LayerTreeModel} model
- * @param {!WebInspector.Layers3DView} layers3DView
- * @extends {WebInspector.SplitView}
+ * @param {function(string=)} showImageCallback
+ * @extends {WebInspector.HBox}
  */
-WebInspector.PaintProfilerView = function(model, layers3DView)
+WebInspector.PaintProfilerView = function(showImageCallback)
 {
-    WebInspector.SplitView.call(this, true, false);
+    WebInspector.View.call(this);
     this.element.classList.add("paint-profiler-view");
-    this._logTreeView = new WebInspector.PaintProfilerCommandLogView();
-    this._logTreeView.show(this.sidebarElement());
-    this.addEventListener(WebInspector.SplitView.Events.SidebarSizeChanged, this.onResize, this);
 
-    this._model = model;
-    this._layers3DView = layers3DView;
+    this._showImageCallback = showImageCallback;
 
-    this._canvas = this.mainElement().createChild("canvas", "fill");
+    this._canvas = this.element.createChild("canvas", "fill");
     this._context = this._canvas.getContext("2d");
-    this._selectionWindow = new WebInspector.OverviewGrid.Window(this.mainElement(), this.mainElement());
+    this._selectionWindow = new WebInspector.OverviewGrid.Window(this.element, this.element);
     this._selectionWindow.addEventListener(WebInspector.OverviewGrid.Events.WindowChanged, this._onWindowChanged, this);
 
     this._innerBarWidth = 4 * window.devicePixelRatio;
@@ -58,16 +53,44 @@ WebInspector.PaintProfilerView = function(model, layers3DView)
     this._reset();
 }
 
+WebInspector.PaintProfilerView.Events = {
+    WindowChanged: "WindowChanged"
+};
+
 WebInspector.PaintProfilerView.prototype = {
     onResize: function()
     {
         this._update();
     },
 
+    /**
+     * @param {?WebInspector.PaintProfilerSnapshot} snapshot
+     */
+    setSnapshot: function(snapshot)
+    {
+        this._reset();
+        this._snapshot = snapshot;
+        if (!this._snapshot) {
+            this._update();
+            return;
+        }
+        snapshot.requestImage(null, null, this._showImageCallback);
+        snapshot.profile(onProfileDone.bind(this));
+        /**
+         * @param {!Array.<!LayerTreeAgent.PaintProfile>=} profiles
+         * @this {WebInspector.PaintProfilerView}
+         */
+        function onProfileDone(profiles)
+        {
+            this._profiles = profiles;
+            this._update();
+        }
+    },
+
     _update: function()
     {
-        this._canvas.width = this.mainElement().clientWidth * window.devicePixelRatio;
-        this._canvas.height = this.mainElement().clientHeight * window.devicePixelRatio;
+        this._canvas.width = this.element.clientWidth * window.devicePixelRatio;
+        this._canvas.height = this.element.clientHeight * window.devicePixelRatio;
         this._samplesPerBar = 0;
         if (!this._profiles || !this._profiles.length)
             return;
@@ -116,6 +139,22 @@ WebInspector.PaintProfilerView.prototype = {
         if (this._updateImageTimer)
             return;
         this._updateImageTimer = setTimeout(this._updateImage.bind(this), 100);
+        this.dispatchEventToListeners(WebInspector.PaintProfilerView.Events.WindowChanged);
+    },
+
+    /**
+     * @return {{left: number, right: number}}
+     */
+    windowBoundaries: function()
+    {
+        var screenLeft = this._selectionWindow.windowLeft * this._canvas.width;
+        var screenRight = this._selectionWindow.windowRight * this._canvas.width;
+        var barLeft = Math.floor((screenLeft - this._barPaddingWidth) / this._outerBarWidth);
+        var barRight = Math.floor((screenRight - this._barPaddingWidth + this._innerBarWidth)/ this._outerBarWidth);
+        var stepLeft = Math.max(0, barLeft * this._samplesPerBar);
+        var stepRight = Math.min(barRight * this._samplesPerBar, this._profiles[0].length);
+
+        return {left: stepLeft, right: stepRight};
     },
 
     _updateImage: function()
@@ -124,16 +163,8 @@ WebInspector.PaintProfilerView.prototype = {
         if (!this._profiles || !this._profiles.length)
             return;
 
-        var screenLeft = this._selectionWindow.windowLeft * this._canvas.width;
-        var screenRight = this._selectionWindow.windowRight * this._canvas.width;
-
-        var barLeft = Math.floor((screenLeft - this._barPaddingWidth) / this._outerBarWidth);
-        var barRight = Math.floor((screenRight - this._barPaddingWidth + this._innerBarWidth)/ this._outerBarWidth);
-
-        var stepLeft = Math.max(0, barLeft * this._samplesPerBar);
-        var stepRight = Math.min(barRight * this._samplesPerBar, this._profiles[0].length);
-        this._snapshot.requestImage(stepLeft, stepRight, this._layers3DView.showImageForLayer.bind(this._layers3DView, this._layer));
-        this._logTreeView.updateLog(stepLeft, stepRight);
+        var window = this.windowBoundaries();
+        this._snapshot.requestImage(window.left, window.right, this._showImageCallback);
     },
 
     _reset: function()
@@ -143,55 +174,7 @@ WebInspector.PaintProfilerView.prototype = {
         this._selectionWindow.reset();
     },
 
-    /**
-     * @param {!WebInspector.Layer} layer
-     */
-    profile: function(layer)
-    {
-        this._reset();
-        this._layer = layer;
-        this._layer.requestSnapshot(onSnapshotDone.bind(this));
-
-        /**
-         * @param {!WebInspector.PaintProfilerSnapshot=} snapshot
-         * @this {WebInspector.PaintProfilerView}
-         */
-        function onSnapshotDone(snapshot)
-        {
-            this._snapshot = snapshot;
-            if (!snapshot) {
-                this._profiles = null;
-                this._update();
-                return;
-            }
-            snapshot.requestImage(null, null, this._layers3DView.showImageForLayer.bind(this._layers3DView, this._layer));
-            var barrier = new CallbackBarrier();
-            snapshot.profile(barrier.createCallback(onProfileDone.bind(this)));
-            snapshot.commandLog(barrier.createCallback(onCommandLogDone.bind(this)));
-            barrier.callWhenDone(this._update.bind(this));
-        }
-
-        /**
-         * @param {!Array.<!LayerTreeAgent.PaintProfile>=} profiles
-         * @this {WebInspector.PaintProfilerView}
-         */
-        function onProfileDone(profiles)
-        {
-            this._profiles = profiles;
-        }
-
-        /**
-         * @param {!Array.<!Object>=} log
-         * @this {WebInspector.PaintProfilerView}
-         */
-        function onCommandLogDone(log)
-        {
-            this._logTreeView.setLog(log);
-            this._logTreeView.updateLog();
-        }
-    },
-
-    __proto__: WebInspector.SplitView.prototype
+    __proto__: WebInspector.HBox.prototype
 };
 
 /**
@@ -206,21 +189,38 @@ WebInspector.PaintProfilerCommandLogView = function()
     var sidebarTreeElement = this.element.createChild("ol", "sidebar-tree");
     this.sidebarTree = new TreeOutline(sidebarTreeElement);
     this._popoverHelper = new WebInspector.ObjectPopoverHelper(this.element, this._getHoverAnchor.bind(this), this._resolveObjectForPopover.bind(this), undefined, true);
-
-    this._log = [];
+    this._reset();
 }
 
 WebInspector.PaintProfilerCommandLogView.prototype = {
-    setLog: function(log)
+    /**
+     * @param {?WebInspector.PaintProfilerSnapshot} snapshot
+     */
+    setSnapshot: function(snapshot)
     {
-        this._log = log;
+        this._reset();
+        if (!snapshot) {
+            this.updateWindow();
+            return;
+        }
+        snapshot.commandLog(onCommandLogDone.bind(this));
+
+        /**
+         * @param {!Array.<!Object>=} log
+         * @this {WebInspector.PaintProfilerCommandLogView}
+         */
+        function onCommandLogDone(log)
+        {
+            this._log = log;
+            this.updateWindow();
+        }
     },
 
     /**
      * @param {number=} stepLeft
      * @param {number=} stepRight
      */
-    updateLog: function(stepLeft, stepRight)
+    updateWindow: function(stepLeft, stepRight)
     {
         var log = this._log;
         stepLeft = stepLeft || 0;
@@ -230,6 +230,11 @@ WebInspector.PaintProfilerCommandLogView.prototype = {
             var node = new WebInspector.LogTreeElement(log[i]);
             this.sidebarTree.appendChild(node);
         }
+    },
+
+    _reset: function()
+    {
+        this._log = [];
     },
 
     /**

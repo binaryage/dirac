@@ -356,7 +356,8 @@
             "layers/LayersPanel.js",
             "layers/LayerTreeOutline.js",
             "layers/LayerDetailsView.js",
-            "layers/PaintProfilerView.js"
+            "layers/PaintProfilerView.js",
+            "layers/LayerPaintProfilerView.js"
         ]
     },
     {

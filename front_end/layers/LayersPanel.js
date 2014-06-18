@@ -31,6 +31,7 @@
 importScript("LayerTreeOutline.js");
 importScript("LayerDetailsView.js");
 importScript("PaintProfilerView.js");
+importScript("LayerPaintProfilerView.js");
 
 /**
  * @constructor
@@ -71,7 +72,8 @@ WebInspector.LayersPanel = function()
     this._layerDetailsView = new WebInspector.LayerDetailsView();
     this._layerDetailsView.addEventListener(WebInspector.LayerDetailsView.Events.ObjectSelected, this._onObjectSelected, this);
     this._tabbedPane.appendTab(WebInspector.LayersPanel.DetailsViewTabs.Details, WebInspector.UIString("Details"), this._layerDetailsView);
-    this._paintProfilerView = new WebInspector.PaintProfilerView(this._model, this._layers3DView);
+
+    this._paintProfilerView = new WebInspector.LayerPaintProfilerView(this._layers3DView.showImageForLayer.bind(this._layers3DView));
     this._tabbedPane.appendTab(WebInspector.LayersPanel.DetailsViewTabs.Profiler, WebInspector.UIString("Profiler"), this._paintProfilerView);
 }
 
@@ -157,7 +159,7 @@ WebInspector.LayersPanel.prototype = {
     {
         var layer = /** @type {!WebInspector.Layer} */ (event.data);
         this._tabbedPane.selectTab(WebInspector.LayersPanel.DetailsViewTabs.Profiler);
-        this._paintProfilerView.profile(layer);
+        this._paintProfilerView.profileLayer(layer);
     },
 
     /**
@@ -195,6 +197,15 @@ WebInspector.LayersPanel.prototype = {
             this._target.domModel.hideDOMNodeHighlight();
         this._layerTreeOutline.hoverLayer(layer);
         this._layers3DView.hoverObject(activeObject);
+    },
+
+    /**
+     * @param {!WebInspector.Layer} layer
+     * @param {string=} imageURL
+     */
+    _showImageForLayer: function(layer, imageURL)
+    {
+        this._layers3DView.showImageForLayer(layer, imageURL);
     },
 
     __proto__: WebInspector.PanelWithSidebarTree.prototype
