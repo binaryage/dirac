@@ -282,8 +282,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
         if (record.type() === WebInspector.TimelineModel.RecordType.JSFrame)
             return WebInspector.TimelineFlameChartDataProvider.jsFrameColorGenerator().colorForID(record.data()["functionName"]);
 
-        var category = WebInspector.TimelineUIUtils.categoryForRecord(record);
-        return category.fillColorStop1;
+        return record.category().fillColorStop1;
     },
 
 
@@ -306,7 +305,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
         var record = this._records[entryIndex];
         var timelineData = this._timelineData;
 
-        var category = WebInspector.TimelineUIUtils.categoryForRecord(record);
+        var category = record.category();
         // Paint text using white color on dark background.
         if (text) {
             context.save();

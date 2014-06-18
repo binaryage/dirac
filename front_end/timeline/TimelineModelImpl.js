@@ -420,7 +420,7 @@ WebInspector.TimelineModel.RecordImpl.prototype = {
      */
     category: function()
     {
-        return WebInspector.TimelineUIUtils.categoryForRecord(this);
+        return WebInspector.TimelineUIUtils.recordStyle(this).category;
     },
 
     /**

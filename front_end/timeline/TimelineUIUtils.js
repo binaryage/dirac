@@ -145,16 +145,6 @@ WebInspector.TimelineUIUtils.styleForTimelineEvent = function(type)
     return result;
 }
 
-
-/**
- * @param {!WebInspector.TimelineModel.Record} record
- * @return {!WebInspector.TimelineCategory}
- */
-WebInspector.TimelineUIUtils.categoryForRecord = function(record)
-{
-    return WebInspector.TimelineUIUtils.recordStyle(record).category;
-}
-
 /**
  * @param {!WebInspector.TimelineModel.Record} record
  * @return {boolean}
