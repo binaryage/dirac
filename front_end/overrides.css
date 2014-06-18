@@ -212,14 +212,14 @@ button.overrides-swap {
 }
 
 .overrides-activate-device #tab-device,
-.overrides-activate-media #tab-viewport,
+.overrides-activate-media #tab-media,
 .overrides-activate-network #tab-network,
 .overrides-activate-sensors #tab-sensors {
     opacity: 0.8;
 }
 
 .overrides-activate-device #tab-device .tabbed-pane-header-tab-title::after,
-.overrides-activate-media #tab-viewport .tabbed-pane-header-tab-title::after,
+.overrides-activate-media #tab-media .tabbed-pane-header-tab-title::after,
 .overrides-activate-network #tab-network .tabbed-pane-header-tab-title::after,
 .overrides-activate-sensors #tab-sensors .tabbed-pane-header-tab-title::after {
     padding-left: 3px;
@@ -228,7 +228,7 @@ button.overrides-swap {
 }
 
 .overrides-activate-device #tab-device.selected,
-.overrides-activate-media #tab-viewport.selected,
+.overrides-activate-media #tab-media.selected,
 .overrides-activate-network #tab-network.selected,
 .overrides-activate-sensors #tab-sensors.selected {
     opacity: 1;

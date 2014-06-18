@@ -282,6 +282,7 @@ WebInspector.Main.prototype = {
     _doLoadedDoneWithCapabilities: function(mainTarget)
     {
         WebInspector.dockController = new WebInspector.DockController(!!WebInspector.queryParam("can_dock"));
+        WebInspector.overridesSupport = new WebInspector.OverridesSupport(WebInspector.experimentsSettings.responsiveDesign.isEnabled() && WebInspector.dockController.canDock());
 
         if (mainTarget.canScreencast)
             WebInspector.app = new WebInspector.ScreencastApp();
@@ -346,8 +347,6 @@ WebInspector.Main.prototype = {
         WebInspector.Linkifier.setLinkHandler(new WebInspector.HandlerRegistry.LinkHandler());
 
         new WebInspector.WorkspaceController(WebInspector.workspace);
-
-        WebInspector.overridesSupport = new WebInspector.OverridesSupport(WebInspector.experimentsSettings.responsiveDesign.isEnabled() && WebInspector.dockController.canDock());
 
         WebInspector.liveEditSupport = new WebInspector.LiveEditSupport(WebInspector.workspace);
         new WebInspector.CSSStyleSheetMapping(WebInspector.cssModel, WebInspector.workspace, WebInspector.networkWorkspaceBinding);

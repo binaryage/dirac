@@ -53,8 +53,8 @@ WebInspector.ResponsiveDesignView = function(inspectedPagePlaceholder)
     this._enabled = false;
 
     WebInspector.zoomManager.addEventListener(WebInspector.ZoomManager.Events.ZoomChanged, this._onZoomChanged, this);
-    WebInspector.settings.responsiveDesignEnabled.addChangeListener(this._responsiveDesignEnabledChanged, this);
-    this._responsiveDesignEnabledChanged();
+    WebInspector.overridesSupport.settings.emulationEnabled.addChangeListener(this._emulationEnabledChanged, this);
+    this._emulationEnabledChanged();
     this._overridesWarningUpdated();
 };
 
@@ -74,9 +74,9 @@ WebInspector.ResponsiveDesignView.prototype = {
         delete this._availableSize;
     },
 
-    _responsiveDesignEnabledChanged: function()
+    _emulationEnabledChanged: function()
     {
-        var enabled = WebInspector.settings.responsiveDesignEnabled.get();
+        var enabled = WebInspector.overridesSupport.settings.emulationEnabled.get();
         if (enabled && !this._enabled) {
             this._invalidateCache();
             this._ignoreResize = true;
@@ -121,7 +121,7 @@ WebInspector.ResponsiveDesignView.prototype = {
     availableDipSize: function()
     {
         if (typeof this._availableSize === "undefined") {
-            this._responsiveDesignEnabledChanged();
+            this._emulationEnabledChanged();
             var zoomFactor = WebInspector.zoomManager.zoomFactor();
             var rect = this._canvasContainer.element.getBoundingClientRect();
             this._availableSize = new Size(rect.width * zoomFactor - WebInspector.ResponsiveDesignView.RulerWidth,
@@ -396,7 +396,7 @@ WebInspector.ResponsiveDesignView.prototype = {
     {
         this.toolbarExpandedSetting = WebInspector.settings.createSetting("responsiveDesignToolbarExpanded", false);
         var expandSection = this._toolbarElement.createChild("div", "responsive-design-section responsive-design-section-expand");
-        this._expandButton = expandSection.createChild("div", "responsive-design-expand-button");
+        this._expandButton = expandSection.createChild("div", "responsive-design-button");
         this._expandButton.createChild("div", "responsive-design-icon responsive-design-icon-expand");
         this._expandButton.createChild("span");
         this._expandButton.addEventListener("click", this._toggleToolbarExpanded.bind(this), false);
@@ -422,8 +422,9 @@ WebInspector.ResponsiveDesignView.prototype = {
 
         // Device.
         var deviceElement = deviceSection.createChild("div", "responsive-design-suite").createChild("div");
-        deviceElement.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Device"), WebInspector.overridesSupport.settings.emulateDevice, true));
-        deviceElement.appendChild(WebInspector.overridesSupport.createDeviceSelect(document));
+        var fieldsetElement = deviceElement.createChild("fieldset");
+        fieldsetElement.createChild("label").textContent = WebInspector.UIString("Device");
+        fieldsetElement.appendChild(WebInspector.overridesSupport.createDeviceSelect(document));
 
         var separator = deviceSection.createChild("div", "responsive-design-section-separator expanded-only");
 
@@ -431,13 +432,11 @@ WebInspector.ResponsiveDesignView.prototype = {
 
         // Dimensions.
         var screenElement = detailsElement.createChild("div", "");
-        var fieldsetElement = WebInspector.SettingsUI.createSettingFieldset(WebInspector.overridesSupport.settings.emulateDevice);
-        screenElement.appendChild(fieldsetElement);
-
+        fieldsetElement = screenElement.createChild("fieldset");
         fieldsetElement.createChild("div", "responsive-design-icon responsive-design-icon-resolution").title = WebInspector.UIString("Screen resolution");
-        fieldsetElement.appendChild(WebInspector.SettingsUI.createSettingInputField("", WebInspector.overridesSupport.settings.deviceWidth, true, 4, "3em", WebInspector.OverridesSupport.integerInputValidator, true));
+        fieldsetElement.appendChild(WebInspector.SettingsUI.createSettingInputField("", WebInspector.overridesSupport.settings.deviceWidth, true, 4, "3em", WebInspector.OverridesSupport.deviceSizeValidator, true, true, WebInspector.UIString("--")));
         fieldsetElement.appendChild(document.createTextNode(" \u00D7 "));
-        fieldsetElement.appendChild(WebInspector.SettingsUI.createSettingInputField("", WebInspector.overridesSupport.settings.deviceHeight, true, 4, "3em", WebInspector.OverridesSupport.integerInputValidator, true));
+        fieldsetElement.appendChild(WebInspector.SettingsUI.createSettingInputField("", WebInspector.overridesSupport.settings.deviceHeight, true, 4, "3em", WebInspector.OverridesSupport.deviceSizeValidator, true, true, WebInspector.UIString("--")));
 
         this._swapDimensionsElement = fieldsetElement.createChild("button", "responsive-design-icon responsive-design-icon-swap");
         this._swapDimensionsElement.title = WebInspector.UIString("Swap dimensions");
@@ -446,30 +445,14 @@ WebInspector.ResponsiveDesignView.prototype = {
         // Device pixel ratio.
         detailsElement.createChild("div", "responsive-design-suite-separator");
         var dprElement = detailsElement.createChild("div", "");
-        fieldsetElement = WebInspector.SettingsUI.createSettingFieldset(WebInspector.overridesSupport.settings.emulateDevice);
-        dprElement.appendChild(fieldsetElement);
-
+        fieldsetElement = dprElement.createChild("fieldset");
         fieldsetElement.createChild("div", "responsive-design-icon responsive-design-icon-dpr").title = WebInspector.UIString("Device pixel ratio");
-        fieldsetElement.appendChild(WebInspector.SettingsUI.createSettingInputField("", WebInspector.overridesSupport.settings.deviceScaleFactor, true, 4, "2.5em", WebInspector.OverridesSupport.doubleInputValidator, true));
+        fieldsetElement.appendChild(WebInspector.SettingsUI.createSettingInputField("", WebInspector.overridesSupport.settings.deviceScaleFactor, true, 4, "2.5em", WebInspector.OverridesSupport.deviceScaleFactorValidator, true, true, WebInspector.UIString("--")));
 
-        // Touch.
-        if (!WebInspector.overridesSupport.hasTouchInputs()) {
-            detailsElement.createChild("div", "responsive-design-suite-separator");
-            var touchElement = detailsElement.createChild("div", "");
-            fieldsetElement = WebInspector.SettingsUI.createSettingFieldset(WebInspector.overridesSupport.settings.emulateDevice);
-            touchElement.appendChild(fieldsetElement);
-            fieldsetElement.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Touch"), WebInspector.overridesSupport.settings.deviceTouch, true));
-        }
-
-        // Viewport.
         detailsElement.createChild("div", "responsive-design-suite-separator");
-        var viewportElement = detailsElement.createChild("div", "");
-        fieldsetElement = WebInspector.SettingsUI.createSettingFieldset(WebInspector.overridesSupport.settings.emulateDevice);
-        viewportElement.appendChild(fieldsetElement);
-
-        var viewportCheckbox = WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Mobile"), WebInspector.overridesSupport.settings.emulateViewport, true);
-        viewportCheckbox.title = WebInspector.UIString("Enable meta viewport, overlay scrollbars and default 980px body width");
-        fieldsetElement.appendChild(viewportCheckbox);
+        var resetButton = detailsElement.createChild("div", "responsive-design-button");
+        resetButton.textContent = WebInspector.UIString("Reset");
+        resetButton.addEventListener("click", WebInspector.overridesSupport.reset.bind(WebInspector.overridesSupport), false);
     },
 
     _createNetworkSection: function()
@@ -478,15 +461,17 @@ WebInspector.ResponsiveDesignView.prototype = {
 
         // Bandwidth.
         var bandwidthElement = networkSection.createChild("div", "responsive-design-suite").createChild("div");
-        var networkCheckbox = WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Bandwidth"), WebInspector.overridesSupport.settings.emulateNetworkConditions, true);
-        bandwidthElement.appendChild(networkCheckbox);
-        bandwidthElement.appendChild(WebInspector.overridesSupport.createNetworkThroughputSelect(document));
+        var fieldsetElement = bandwidthElement.createChild("fieldset");
+        var networkCheckbox = fieldsetElement.createChild("label");
+        networkCheckbox.textContent = WebInspector.UIString("Network");
+        fieldsetElement.appendChild(WebInspector.overridesSupport.createNetworkThroughputSelect(document));
 
         var separator = networkSection.createChild("div", "responsive-design-section-separator expanded-only");
 
         // User agent.
         var userAgentElement = networkSection.createChild("div", "responsive-design-suite expanded-only").createChild("div");
-        userAgentElement.appendChild(WebInspector.SettingsUI.createSettingLabel(WebInspector.UIString("User Agent:"), WebInspector.overridesSupport.settings.deviceUserAgent, 32, "240px", WebInspector.UIString("no override")));
+        fieldsetElement = userAgentElement.createChild("fieldset");
+        fieldsetElement.appendChild(WebInspector.SettingsUI.createSettingInputField("UA", WebInspector.overridesSupport.settings.userAgent, false, 0, "", undefined, false, false, WebInspector.UIString("no override")));
 
         updateNetworkCheckboxTitle();
         WebInspector.overridesSupport.settings.networkConditionsDomains.addChangeListener(updateNetworkCheckboxTitle);

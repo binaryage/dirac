@@ -252,9 +252,9 @@ WebInspector.OverridesSupport.DeviceOrientation.clearDeviceOrientationOverride =
  * @param {string} value
  * @return {string}
  */
-WebInspector.OverridesSupport.integerInputValidator = function(value)
+WebInspector.OverridesSupport.deviceSizeValidator = function(value)
 {
-    if (/^[\d]+$/.test(value) && value >= 0 && value <= 10000)
+    if (!value || (/^[\d]+$/.test(value) && value >= 0 && value <= 10000))
         return "";
     return WebInspector.UIString("Value must be non-negative integer");
 }
@@ -263,9 +263,9 @@ WebInspector.OverridesSupport.integerInputValidator = function(value)
  * @param {string} value
  * @return {string}
  */
-WebInspector.OverridesSupport.doubleInputValidator = function(value)
+WebInspector.OverridesSupport.deviceScaleFactorValidator = function(value)
 {
-    if (/^[\d]+(\.\d+)?|\.\d+$/.test(value) && value >= 0 && value <= 10000)
+    if (!value || (/^[\d]+(\.\d+)?|\.\d+$/.test(value) && value >= 0 && value <= 10000))
         return "";
     return WebInspector.UIString("Value must be non-negative float");
 }
@@ -437,39 +437,7 @@ WebInspector.OverridesSupport._desktops = [
      "1366x768x1x0x0"],
 ];
 
-WebInspector.OverridesSupport._userAgents = [
-    ["Android 4.0.2 \u2014 Galaxy Nexus", "Mozilla/5.0 (Linux; U; Android 4.0.2; en-us; Galaxy Nexus Build/ICL53F) AppleWebKit/534.30 (KHTML, like Gecko) Version/4.0 Mobile Safari/534.30"],
-    ["Android 2.3 \u2014 Nexus S", "Mozilla/5.0 (Linux; U; Android 2.3.6; en-us; Nexus S Build/GRK39F) AppleWebKit/533.1 (KHTML, like Gecko) Version/4.0 Mobile Safari/533.1"],
-    ["BlackBerry \u2014 BB10", "Mozilla/5.0 (BB10; Touch) AppleWebKit/537.1+ (KHTML, like Gecko) Version/10.0.0.1337 Mobile Safari/537.1+"],
-    ["BlackBerry \u2014 PlayBook 2.1", "Mozilla/5.0 (PlayBook; U; RIM Tablet OS 2.1.0; en-US) AppleWebKit/536.2+ (KHTML, like Gecko) Version/7.2.1.0 Safari/536.2+"],
-    ["BlackBerry \u2014 9900", "Mozilla/5.0 (BlackBerry; U; BlackBerry 9900; en-US) AppleWebKit/534.11+ (KHTML, like Gecko) Version/7.0.0.187 Mobile Safari/534.11+"],
-    ["Chrome 31 \u2014 Mac", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.63 Safari/537.36"],
-    ["Chrome 31 \u2014 Windows", "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.16 Safari/537.36"],
-    ["Chrome \u2014 Android Tablet", "Mozilla/5.0 (Linux; Android 4.1.2; Nexus 7 Build/JZ054K) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.166 Safari/535.19"],
-    ["Chrome \u2014 Android Mobile", "Mozilla/5.0 (Linux; Android 4.0.4; Galaxy Nexus Build/IMM76B) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.133 Mobile Safari/535.19"],
-    ["Firefox 14 \u2014 Android Mobile", "Mozilla/5.0 (Android; Mobile; rv:14.0) Gecko/14.0 Firefox/14.0"],
-    ["Firefox 14 \u2014 Android Tablet", "Mozilla/5.0 (Android; Tablet; rv:14.0) Gecko/14.0 Firefox/14.0"],
-    ["Firefox 4 \u2014 Mac", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.6; rv:2.0.1) Gecko/20100101 Firefox/4.0.1"],
-    ["Firefox 4 \u2014 Windows", "Mozilla/5.0 (Windows NT 6.1; rv:2.0.1) Gecko/20100101 Firefox/4.0.1"],
-    ["Firefox 7 \u2014 Mac", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.6; rv:7.0.1) Gecko/20100101 Firefox/7.0.1"],
-    ["Firefox 7 \u2014 Windows", "Mozilla/5.0 (Windows NT 6.1; Intel Mac OS X 10.6; rv:7.0.1) Gecko/20100101 Firefox/7.0.1"],
-    ["Internet Explorer 10", "Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.2; Trident/6.0)"],
-    ["Internet Explorer 7", "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.0)"],
-    ["Internet Explorer 8", "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.0; Trident/4.0)"],
-    ["Internet Explorer 9", "Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0)"],
-    ["iPad \u2014 iOS 7", "Mozilla/5.0 (iPad; CPU OS 7_0_2 like Mac OS X) AppleWebKit/537.51.1 (KHTML, like Gecko) Version/7.0 Mobile/11A501 Safari/9537.53"],
-    ["iPad \u2014 iOS 6", "Mozilla/5.0 (iPad; CPU OS 6_0 like Mac OS X) AppleWebKit/536.26 (KHTML, like Gecko) Version/6.0 Mobile/10A5376e Safari/8536.25"],
-    ["iPhone \u2014 iOS 7", "Mozilla/5.0 (iPhone; CPU iPhone OS 7_0_2 like Mac OS X) AppleWebKit/537.51.1 (KHTML, like Gecko) Version/7.0 Mobile/11A4449d Safari/9537.53"],
-    ["iPhone \u2014 iOS 6", "Mozilla/5.0 (iPhone; CPU iPhone OS 6_0 like Mac OS X) AppleWebKit/536.26 (KHTML, like Gecko) Version/6.0 Mobile/10A5376e Safari/8536.25"],
-    ["MeeGo \u2014 Nokia N9", "Mozilla/5.0 (MeeGo; NokiaN9) AppleWebKit/534.13 (KHTML, like Gecko) NokiaBrowser/8.5.0 Mobile Safari/534.13"],
-    ["Opera 18 \u2014 Mac", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.63 Safari/537.36 OPR/18.0.1284.68"],
-    ["Opera 18 \u2014 Windows", "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.63 Safari/537.36 OPR/18.0.1284.68"],
-    ["Opera 12 \u2014 Mac", "Opera/9.80 (Macintosh; Intel Mac OS X 10.9.1) Presto/2.12.388 Version/12.16"],
-    ["Opera 12 \u2014 Windows", "Opera/9.80 (Windows NT 6.1) Presto/2.12.388 Version/12.16"],
-    ["Silk \u2014 Kindle Fire (Desktop view)", "Mozilla/5.0 (Linux; U; en-us; KFTHWI Build/JDQ39) AppleWebKit/535.19 (KHTML, like Gecko) Silk/3.13 Safari/535.19 Silk-Accelerated=true"],
-    ["Silk \u2014 Kindle Fire (Mobile view)", "Mozilla/5.0 (Linux; U; Android 4.2.2; en-us; KFTHWI Build/JDQ39) AppleWebKit/535.19 (KHTML, like Gecko) Silk/3.13 Mobile Safari/535.19 Silk-Accelerated=true"],
-];
-
+WebInspector.OverridesSupport._networkThroughputUnlimitedValue = -1;
 WebInspector.OverridesSupport._networkThroughputPresets = [
     ["Offline", 0],
     ["5 Kbps", 5 * 1024 / 8],
@@ -481,16 +449,17 @@ WebInspector.OverridesSupport._networkThroughputPresets = [
     ["320 Kbps", 320 * 1024 / 8],
     ["640 Kbps (3G)", 640 * 1024 / 8],
     ["1 Mbps", 1024 * 1024 / 8],
-    ["2 Mbps (802.11b)", 2048 * 1024 / 8]
+    ["2 Mbps (802.11b)", 2048 * 1024 / 8],
+    ["No throttling", WebInspector.OverridesSupport._networkThroughputUnlimitedValue]
 ];
 
 WebInspector.OverridesSupport.prototype = {
     /**
      * @return {boolean}
      */
-    _responsiveDesignEnabledOrUnavailable: function()
+    responsiveDesignAvailable: function()
     {
-        return !this._responsiveDesignAvailable || WebInspector.settings.responsiveDesignEnabled.get();
+        return this._responsiveDesignAvailable;
     },
 
     /**
@@ -521,14 +490,13 @@ WebInspector.OverridesSupport.prototype = {
     {
         this._deviceMetricsChangedListenerMuted = true;
         this._userAgentChangedListenerMuted = true;
-        this.settings.deviceUserAgent.set(device.userAgent);
+        this.settings.userAgent.set(device.userAgent);
         this.settings.deviceWidth.set(device.width);
         this.settings.deviceHeight.set(device.height);
         this.settings.deviceScaleFactor.set(device.deviceScaleFactor);
         this.settings.deviceTextAutosizing.set(device.textAutosizing);
-        this.settings.deviceTouch.set(device.touch);
+        this.settings.emulateTouch.set(device.touch);
         this.settings.emulateViewport.set(device.viewport);
-        this.settings.emulateDevice.set(true);
         delete this._deviceMetricsChangedListenerMuted;
         delete this._userAgentChangedListenerMuted;
 
@@ -542,12 +510,17 @@ WebInspector.OverridesSupport.prototype = {
     {
         this._deviceMetricsChangedListenerMuted = true;
         this._userAgentChangedListenerMuted = true;
-        this.settings.emulateDevice.set(false);
-        this.settings.sensorsTouch.set(false);
-        this.settings.overrideUserAgent.set(false);
+        this.settings.userAgent.set("");
+        this.settings.deviceWidth.set(0);
+        this.settings.deviceHeight.set(0);
+        this.settings.deviceScaleFactor.set(0);
+        this.settings.deviceTextAutosizing.set(false);
+        this.settings.emulateTouch.set(false);
+        this.settings.emulateViewport.set(false);
         this.settings.overrideDeviceOrientation.set(false);
         this.settings.overrideGeolocation.set(false);
         this.settings.overrideCSSMedia.set(false);
+        this.settings.networkConditionsThroughput.set(WebInspector.OverridesSupport._networkThroughputUnlimitedValue);
         delete this._deviceMetricsChangedListenerMuted;
         delete this._userAgentChangedListenerMuted;
 
@@ -563,12 +536,12 @@ WebInspector.OverridesSupport.prototype = {
      */
     isEmulatingDevice: function(device)
     {
-        return this.settings.deviceUserAgent.get() === device.userAgent
+        return this.settings.userAgent.get() === device.userAgent
             && this.settings.deviceWidth.get() === device.width
             && this.settings.deviceHeight.get() === device.height
             && this.settings.deviceScaleFactor.get() === device.deviceScaleFactor
             && this.settings.deviceTextAutosizing.get() === device.textAutosizing
-            && this.settings.deviceTouch.get() === device.touch
+            && this.settings.emulateTouch.get() === device.touch
             && this.settings.emulateViewport.get() === device.viewport;
     },
 
@@ -581,12 +554,10 @@ WebInspector.OverridesSupport.prototype = {
 
         this._initialized = true;
 
-        this._addEmulateDeviceListener(this._userAgentChanged);
-        this.settings.deviceUserAgent.addChangeListener(this._userAgentChanged, this);
-        this.settings.overrideUserAgent.addChangeListener(this._userAgentChanged, this);
+        this.settings.emulationEnabled.addChangeListener(this._userAgentChanged, this);
         this.settings.userAgent.addChangeListener(this._userAgentChanged, this);
 
-        this._addEmulateDeviceListener(this._deviceMetricsChanged);
+        this.settings.emulationEnabled.addChangeListener(this._deviceMetricsChanged, this);
         this.settings.deviceWidth.addChangeListener(this._deviceMetricsChanged, this);
         this.settings.deviceHeight.addChangeListener(this._deviceMetricsChanged, this);
         this.settings.deviceScaleFactor.addChangeListener(this._deviceMetricsChanged, this);
@@ -594,30 +565,32 @@ WebInspector.OverridesSupport.prototype = {
         this.settings.emulateViewport.addChangeListener(this._deviceMetricsChanged, this);
         this.settings.deviceFitWindow.addChangeListener(this._deviceMetricsChanged, this);
 
+        this.settings.emulationEnabled.addChangeListener(this._geolocationPositionChanged, this);
         this.settings.overrideGeolocation.addChangeListener(this._geolocationPositionChanged, this);
         this.settings.geolocationOverride.addChangeListener(this._geolocationPositionChanged, this);
-        WebInspector.settings.responsiveDesignEnabled.addChangeListener(this._geolocationPositionChanged, this);
 
+        this.settings.emulationEnabled.addChangeListener(this._deviceOrientationChanged, this);
         this.settings.overrideDeviceOrientation.addChangeListener(this._deviceOrientationChanged, this);
         this.settings.deviceOrientationOverride.addChangeListener(this._deviceOrientationChanged, this);
-        WebInspector.settings.responsiveDesignEnabled.addChangeListener(this._deviceOrientationChanged, this);
 
-        this._addEmulateDeviceListener(this._emulateTouchEventsChanged);
-        this.settings.deviceTouch.addChangeListener(this._emulateTouchEventsChanged, this);
-        this.settings.sensorsTouch.addChangeListener(this._emulateTouchEventsChanged, this);
+        this.settings.emulationEnabled.addChangeListener(this._emulateTouchEventsChanged, this);
+        this.settings.emulateTouch.addChangeListener(this._emulateTouchEventsChanged, this);
 
+        this.settings.emulationEnabled.addChangeListener(this._cssMediaChanged, this);
         this.settings.overrideCSSMedia.addChangeListener(this._cssMediaChanged, this);
         this.settings.emulatedCSSMedia.addChangeListener(this._cssMediaChanged, this);
-        WebInspector.settings.responsiveDesignEnabled.addChangeListener(this._cssMediaChanged, this);
 
         if (WebInspector.experimentsSettings.networkConditions.isEnabled()) {
-            this.settings.emulateNetworkConditions.addChangeListener(this._networkConditionsChanged, this);
+            this.settings.emulationEnabled.addChangeListener(this._networkConditionsChanged, this);
             this.settings.networkConditionsDomains.addChangeListener(this._networkConditionsChanged, this);
             this.settings.networkConditionsThroughput.addChangeListener(this._networkConditionsChanged, this);
-            WebInspector.settings.responsiveDesignEnabled.addChangeListener(this._networkConditionsChanged, this);
         }
 
         WebInspector.settings.showMetricsRulers.addChangeListener(this._showRulersChanged, this);
+        this._showRulersChanged();
+
+        if (!this.settings.emulationEnabled.get())
+            return;
 
         if (this.settings.overrideDeviceOrientation.get())
             this._deviceOrientationChanged();
@@ -625,38 +598,25 @@ WebInspector.OverridesSupport.prototype = {
         if (this.settings.overrideGeolocation.get())
             this._geolocationPositionChanged();
 
-        if (this.isTouchEmulationEnabled())
+        if (this.settings.emulateTouch.get())
             this._emulateTouchEventsChanged();
 
         if (this.settings.overrideCSSMedia.get())
             this._cssMediaChanged();
 
-        if (this.settings.emulateDevice.get())
-            this._deviceMetricsChanged();
+        this._deviceMetricsChanged();
 
-        if (this.userAgentOverride())
-            this._userAgentChanged();
+        this._userAgentChanged();
 
-        if (WebInspector.experimentsSettings.networkConditions.isEnabled() && this.settings.emulateNetworkConditions.get())
+        if (WebInspector.experimentsSettings.networkConditions.isEnabled() && this.networkThroughputIsLimited())
             this._networkConditionsChanged();
-
-        this._showRulersChanged();
-    },
-
-    /**
-     * @param {function(this:WebInspector.OverridesSupport)} listener
-     */
-    _addEmulateDeviceListener: function(listener)
-    {
-        this.settings.emulateDevice.addChangeListener(listener, this);
-        WebInspector.settings.responsiveDesignEnabled.addChangeListener(listener, this);
     },
 
     _userAgentChanged: function()
     {
         if (this._userAgentChangedListenerMuted)
             return;
-        var userAgent = this.userAgentOverride();
+        var userAgent = this.settings.emulationEnabled.get() ? this.settings.userAgent.get() : "";
         NetworkAgent.setUserAgentOverride(userAgent);
         if (this._userAgent !== userAgent)
             this._updateUserAgentWarningMessage(WebInspector.UIString("You might need to reload the page for proper user agent spoofing and viewport rendering."));
@@ -690,16 +650,16 @@ WebInspector.OverridesSupport.prototype = {
 
         if (this._deviceMetricsChangedListenerMuted)
             return;
-        var emulateDevice = this.settings.emulateDevice.get();
-        if (!this._responsiveDesignEnabledOrUnavailable() || !emulateDevice) {
+
+        if (!this.settings.emulationEnabled.get()) {
             this._deviceMetricsThrottler.schedule(clearDeviceMetricsOverride.bind(this));
-            if (this._pageResizer && !emulateDevice)
+            if (this._pageResizer)
                 this._pageResizer.update(0, 0, 0);
             return;
         }
 
-        var dipWidth = emulateDevice ? this.settings.deviceWidth.get() : 0;
-        var dipHeight = emulateDevice ? this.settings.deviceHeight.get() : 0;
+        var dipWidth = this.settings.deviceWidth.get();
+        var dipHeight = this.settings.deviceHeight.get();
 
         // Disable override without checks.
         if (this.isInspectingDevice())
@@ -757,7 +717,7 @@ WebInspector.OverridesSupport.prototype = {
                 return;
             }
 
-            var viewportEnabled = this.settings.emulateDevice.get() && this.settings.emulateViewport.get();
+            var viewportEnabled = this.settings.emulationEnabled.get() && this.settings.emulateViewport.get();
             if (this._emulateViewportEnabled !== viewportEnabled)
                 this._updateDeviceMetricsWarningMessage(WebInspector.UIString("You might need to reload the page for proper user agent spoofing and viewport rendering."));
             this._emulateViewportEnabled = viewportEnabled;
@@ -774,7 +734,7 @@ WebInspector.OverridesSupport.prototype = {
 
     _geolocationPositionChanged: function()
     {
-        if (!this._responsiveDesignEnabledOrUnavailable() || !this.settings.overrideGeolocation.get()) {
+        if (!this.settings.emulationEnabled.get() || !this.settings.overrideGeolocation.get()) {
             GeolocationAgent.clearGeolocationOverride();
             return;
         }
@@ -788,7 +748,7 @@ WebInspector.OverridesSupport.prototype = {
 
     _deviceOrientationChanged: function()
     {
-        if (!this._responsiveDesignEnabledOrUnavailable() || !this.settings.overrideDeviceOrientation.get()) {
+        if (!this.settings.emulationEnabled.get() || !this.settings.overrideDeviceOrientation.get()) {
             PageAgent.clearDeviceOrientationOverride();
             return;
         }
@@ -800,7 +760,7 @@ WebInspector.OverridesSupport.prototype = {
 
     _emulateTouchEventsChanged: function()
     {
-        var emulateTouch = this.isTouchEmulationEnabled();
+        var emulateTouch = this.settings.emulationEnabled.get() && this.settings.emulateTouch.get();
         var targets = WebInspector.targetManager.targets();
         for (var i = 0; i < targets.length; ++i)
             targets[i].domModel.emulateTouchEventObjects(emulateTouch);
@@ -809,10 +769,8 @@ WebInspector.OverridesSupport.prototype = {
 
     _cssMediaChanged: function()
     {
-        if (this.isInspectingDevice() && this.settings.overrideCSSMedia.get())
-            return;
-
-        PageAgent.setEmulatedMedia(this._responsiveDesignEnabledOrUnavailable() && this.settings.overrideCSSMedia.get() ? this.settings.emulatedCSSMedia.get() : "");
+        var enabled = !this.isInspectingDevice() && this.settings.emulationEnabled.get() && this.settings.overrideCSSMedia.get();
+        PageAgent.setEmulatedMedia(enabled ? this.settings.emulatedCSSMedia.get() : "");
         var targets = WebInspector.targetManager.targets();
         for (var i = 0; i < targets.length; ++i)
             targets[i].cssModel.mediaQueryResultChanged();
@@ -821,7 +779,7 @@ WebInspector.OverridesSupport.prototype = {
 
     _networkConditionsChanged: function()
     {
-        if (!this._responsiveDesignEnabledOrUnavailable() || !this.settings.emulateNetworkConditions.get()) {
+        if (!this.settings.emulationEnabled.get() || !this.networkThroughputIsLimited()) {
             NetworkAgent.emulateNetworkConditions([], 0, false, 0, 0, 0);
         } else {
             var domainsString = this.settings.networkConditionsDomains.get().trim();
@@ -838,7 +796,7 @@ WebInspector.OverridesSupport.prototype = {
      */
     showMetricsRulers: function()
     {
-        var rulersInPageResizer = this._pageResizer && this.settings.emulateDevice.get();
+        var rulersInPageResizer = this._pageResizer && this.settings.emulationEnabled.get();
         return WebInspector.settings.showMetricsRulers.get() && !rulersInPageResizer;
     },
 
@@ -859,14 +817,7 @@ WebInspector.OverridesSupport.prototype = {
 
     maybeHasActiveOverridesChanged: function()
     {
-        var hasActiveOverrides =
-            !!this.userAgentOverride() ||
-            (this.settings.emulateDevice.get() && !this.isInspectingDevice()) ||
-            this.settings.overrideGeolocation.get() ||
-            this.settings.overrideDeviceOrientation.get() ||
-            (WebInspector.experimentsSettings.networkConditions.isEnabled() && this.settings.emulateNetworkConditions.get()) ||
-            this.isTouchEmulationEnabled() ||
-            (this.settings.overrideCSSMedia.get() && !this.isInspectingDevice());
+        var hasActiveOverrides = this.settings.emulationEnabled.get();
         if (this._hasActiveOverrides !== hasActiveOverrides) {
             this._hasActiveOverrides = hasActiveOverrides;
             this.dispatchEventToListeners(WebInspector.OverridesSupport.Events.HasActiveOverridesChanged);
@@ -918,31 +869,31 @@ WebInspector.OverridesSupport.prototype = {
         this._target = target;
 
         this.settings = {};
-        this.settings.overrideUserAgent = WebInspector.settings.createSetting("overrideUserAgent", false);
+        this.settings.emulationEnabled = WebInspector.settings.createSetting("emulationEnabled", false);
+
         this.settings.userAgent = WebInspector.settings.createSetting("userAgent", "");
 
-        this.settings.emulateDevice = WebInspector.settings.createSetting("emulateDevice", false);
-        this.settings.deviceWidth = WebInspector.settings.createSetting("deviceWidth", 800);
-        this.settings.deviceHeight = WebInspector.settings.createSetting("deviceHeight", 600);
-        this.settings.deviceScaleFactor = WebInspector.settings.createSetting("deviceScaleFactor", window.devicePixelRatio);
+        this.settings.deviceWidth = WebInspector.settings.createSetting("deviceWidth", 0);
+        this.settings.deviceHeight = WebInspector.settings.createSetting("deviceHeight", 0);
+        this.settings.deviceScaleFactor = WebInspector.settings.createSetting("deviceScaleFactor", 0);
         this.settings.deviceTextAutosizing = WebInspector.settings.createSetting("deviceTextAutosizing", true);
         this.settings.deviceFitWindow = WebInspector.settings.createSetting("deviceFitWindow", true);
         // FIXME: rename viewport to mobile everywhere in the code.
         this.settings.emulateViewport = WebInspector.settings.createSetting("emulateViewport", false);
-        this.settings.deviceTouch = WebInspector.settings.createSetting("deviceTouch", false);
-        this.settings.deviceUserAgent = WebInspector.settings.createSetting("deviceUserAgent", false);
+
+        this.settings.emulateTouch = WebInspector.settings.createSetting("emulateTouch", false);
 
         this.settings.overrideGeolocation = WebInspector.settings.createSetting("overrideGeolocation", false);
         this.settings.geolocationOverride = WebInspector.settings.createSetting("geolocationOverride", "");
+
         this.settings.overrideDeviceOrientation = WebInspector.settings.createSetting("overrideDeviceOrientation", false);
         this.settings.deviceOrientationOverride = WebInspector.settings.createSetting("deviceOrientationOverride", "");
+
         this.settings.overrideCSSMedia = WebInspector.settings.createSetting("overrideCSSMedia", false);
         this.settings.emulatedCSSMedia = WebInspector.settings.createSetting("emulatedCSSMedia", "print");
-        this.settings.sensorsTouch = WebInspector.settings.createSetting("sensorsTouch", false);
 
-        this.settings.emulateNetworkConditions = WebInspector.settings.createSetting("emulateNetworkConditions", false);
         this.settings.networkConditionsDomains = WebInspector.settings.createSetting("networkConditionsDomains", "");
-        this.settings.networkConditionsThroughput = WebInspector.settings.createSetting("networkConditionsThroughput", 0);
+        this.settings.networkConditionsThroughput = WebInspector.settings.createSetting("networkConditionsThroughput", WebInspector.OverridesSupport._networkThroughputUnlimitedValue);
 
         this.maybeHasActiveOverridesChanged();
 
@@ -979,50 +930,17 @@ WebInspector.OverridesSupport.prototype = {
     /**
      * @return {boolean}
      */
-    isEmulateDeviceEnabled: function()
-    {
-        return this.settings.emulateDevice.get() && this._responsiveDesignEnabledOrUnavailable();
-    },
-
-    /**
-     * @return {boolean}
-     */
-    isTouchEmulationEnabled: function()
-    {
-        return !this.hasTouchInputs() && ((this.isEmulateDeviceEnabled() && this.settings.deviceTouch.get()) || this.settings.sensorsTouch.get());
-    },
-
-    /**
-     * @return {string}
-     */
-    userAgentOverride: function()
-    {
-        return this.isEmulateDeviceEnabled() ? this.settings.deviceUserAgent.get() : (this.settings.overrideUserAgent.get() ? this.settings.userAgent.get() : "");
-    },
-
-    /**
-     * @return {boolean}
-     */
     hasTouchInputs: function()
     {
         return !!this._target && this._target.hasTouchInputs;
     },
 
-    updateSensorsTouchToMatchDeviceTouch: function()
+    /**
+     * @return {boolean}
+     */
+    networkThroughputIsLimited: function()
     {
-        var enabled = this.isEmulateDeviceEnabled() && this.settings.deviceTouch.get();
-        if (this.settings.sensorsTouch.get() !== enabled)
-            this.settings.sensorsTouch.set(enabled);
-    },
-
-    updateUserAgentToMatchDeviceUserAgent: function()
-    {
-        var userAgent = this.settings.deviceUserAgent.get();
-        if (this.isEmulateDeviceEnabled() && userAgent && this.settings.userAgent.get() !== userAgent)
-            this.settings.userAgent.set(userAgent);
-        var enabled = this.isEmulateDeviceEnabled() && !!this.settings.deviceUserAgent.get();
-        if (this.settings.overrideUserAgent.get() !== enabled)
-            this.settings.overrideUserAgent.set(enabled);
+        return this.settings.networkConditionsThroughput.get() !== WebInspector.OverridesSupport._networkThroughputUnlimitedValue;
     },
 
     /**
@@ -1040,12 +958,12 @@ WebInspector.OverridesSupport.prototype = {
      */
     _fontScaleFactor: function(width, height)
     {
-        if (!this.settings.emulateDevice.get())
+        if (!this.settings.emulationEnabled.get())
             return 1;
-        if (!width && !height)
-            return 1;
-
         var deviceScaleFactor = this.settings.deviceScaleFactor.get();
+
+        if (!width || !height || !deviceScaleFactor)
+            return 1;
 
         var minWidth = Math.min(width, height) / deviceScaleFactor;
 
@@ -1093,9 +1011,8 @@ WebInspector.OverridesSupport.prototype = {
         WebInspector.overridesSupport.settings.deviceScaleFactor.addChangeListener(emulatedSettingChanged);
         WebInspector.overridesSupport.settings.deviceTextAutosizing.addChangeListener(emulatedSettingChanged);
         WebInspector.overridesSupport.settings.emulateViewport.addChangeListener(emulatedSettingChanged);
-        WebInspector.overridesSupport.settings.deviceFitWindow.addChangeListener(emulatedSettingChanged);
-        WebInspector.overridesSupport.settings.deviceTouch.addChangeListener(emulatedSettingChanged);
-        WebInspector.overridesSupport.settings.deviceUserAgent.addChangeListener(emulatedSettingChanged);
+        WebInspector.overridesSupport.settings.emulateTouch.addChangeListener(emulatedSettingChanged);
+        WebInspector.overridesSupport.settings.userAgent.addChangeListener(emulatedSettingChanged);
         emulatedSettingChanged();
 
         function deviceSelected()
@@ -1135,12 +1052,10 @@ WebInspector.OverridesSupport.prototype = {
     createNetworkThroughputSelect: function(document)
     {
         var throughputSetting = WebInspector.overridesSupport.settings.networkConditionsThroughput;
-        var emulateNetworkSetting = WebInspector.overridesSupport.settings.emulateNetworkConditions;
         var throughputSelectElement = document.createElement("select");
         var presets = WebInspector.OverridesSupport._networkThroughputPresets;
         for (var i = 0; i < presets.length; ++i)
             throughputSelectElement.add(new Option(presets[i][0], presets[i][1]));
-        throughputSelectElement.selectedIndex = 0;
 
         settingChanged();
         throughputSetting.addChangeListener(settingChanged);
@@ -1152,7 +1067,6 @@ WebInspector.OverridesSupport.prototype = {
             throughputSetting.removeChangeListener(settingChanged);
             throughputSetting.set(value);
             throughputSetting.addChangeListener(settingChanged);
-            emulateNetworkSetting.set(true);
         }
 
         function settingChanged()

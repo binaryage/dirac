@@ -89,15 +89,16 @@ WebInspector.SettingsUI.bindCheckbox = function(input, setting)
  * @param {string=} width
  * @param {function(string):?string=} validatorCallback
  * @param {boolean=} instant
+ * @param {boolean=} clearForZero
+ * @param {string=} placeholder
  * @return {!Element}
  */
-WebInspector.SettingsUI.createSettingInputField = function(label, setting, numeric, maxLength, width, validatorCallback, instant)
+WebInspector.SettingsUI.createSettingInputField = function(label, setting, numeric, maxLength, width, validatorCallback, instant, clearForZero, placeholder)
 {
     var p = document.createElement("p");
     var labelElement = p.createChild("label");
     labelElement.textContent = label;
     var inputElement = p.createChild("input");
-    inputElement.value = setting.get();
     inputElement.type = "text";
     if (numeric)
         inputElement.className = "numeric";
@@ -105,6 +106,7 @@ WebInspector.SettingsUI.createSettingInputField = function(label, setting, numer
         inputElement.maxLength = maxLength;
     if (width)
         inputElement.style.width = width;
+    inputElement.placeholder = placeholder || "";
 
     if (validatorCallback || instant) {
         inputElement.addEventListener("change", onInput, false);
@@ -158,43 +160,12 @@ WebInspector.SettingsUI.createSettingInputField = function(label, setting, numer
 
     function onSettingChange()
     {
-        inputElement.value = setting.get();
+        var value = setting.get();
+        if (clearForZero && !value)
+            value = "";
+        inputElement.value = value;
     }
-
-    return p;
-}
-
-/**
- * @param {string} label
- * @param {!WebInspector.Setting} setting
- * @param {number=} maxLength
- * @param {string=} width
- * @param {string=} defaultText
- * @return {!Element}
- */
-WebInspector.SettingsUI.createSettingLabel = function(label, setting, maxLength, width, defaultText)
-{
-    var p = document.createElement("p");
-    var labelElement = p.createChild("span");
-    labelElement.textContent = label;
-    if (label)
-        labelElement.style.marginRight = "5px";
-    var spanElement = p.createChild("span");
-    spanElement.textContent = setting.get();
-    if (width)
-        p.style.width = width;
-
-    setting.addChangeListener(onSettingChange);
     onSettingChange();
-
-    function onSettingChange()
-    {
-        var text = setting.get() || defaultText;
-        spanElement.title = text;
-        if (maxLength && text.length > maxLength)
-            text = text.substring(0, maxLength - 2) + "...";
-        spanElement.textContent = text;
-    }
 
     return p;
 }
