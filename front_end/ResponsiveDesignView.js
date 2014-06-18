@@ -26,8 +26,9 @@ WebInspector.ResponsiveDesignView = function(inspectedPagePlaceholder)
     this._canvas = this._canvasContainer.element.createChild("canvas", "fill");
 
     this._warningMessage = this._canvasContainer.element.createChild("div", "responsive-design-warning hidden");
+    this._warningMessage.createChild("div", "warning-icon-small");
     this._warningMessage.createChild("span");
-    var warningCloseButton = this._warningMessage.createChild("div", "responsive-design-warning-close");
+    var warningCloseButton = this._warningMessage.createChild("div", "close-button");
     warningCloseButton.addEventListener("click", this._closeOverridesWarning.bind(this), false);
     WebInspector.overridesSupport.addEventListener(WebInspector.OverridesSupport.Events.OverridesWarningUpdated, this._overridesWarningUpdated, this);
 

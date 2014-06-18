@@ -340,56 +340,20 @@ body.platform-mac .responsive-design-toolbar select {
 /* Warning message */
 
 .responsive-design-warning {
-    background-color: rgb(0, 0, 0);
-    color: rgb(255, 255, 255);
+    background-color: rgb(252, 234, 156);
+    color: #222;
     position: absolute;
     left: 0;
     right: 0;
     top: 0;
-    padding: 2px;
+    padding: 2px 4px;
     white-space: nowrap;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid rgb(171, 171, 171);
 }
 
-.responsive-design-warning::before {
-    background-image: url(Images/statusbarButtonGlyphs.png);
-    background-size: 320px 144px;
-    width: 10px;
-    height: 10px;
-    content: "";
-    position: relative;
-    top: 2px;
-    background-position: -202px -107px;
-    float: left;
-    margin-right: 4px;
-    margin-left: 2px;
-}
-
-@media (-webkit-min-device-pixel-ratio: 1.5) {
-.responsive-design-warning::before {
-    background-image: url(Images/statusbarButtonGlyphs_2x.png);
-}
-} /* media */
-
-.responsive-design-warning-close {
-    position: absolute;
-    right: 3px;
-    top: 3px;
-    width: 13px;
-    height: 13px;
-    cursor: pointer;
-    background-image: url(Images/statusbarButtonGlyphs.png);
-    background-size: 320px 144px;
-    background-position: -175px -96px;
-    display: inline-block;
-}
-
-@media (-webkit-min-device-pixel-ratio: 1.5) {
-    .responsive-design-warning-close {
-        background-image: url(Images/statusbarButtonGlyphs_2x.png);
-    }
-} /* media */
-
-.responsive-design-warning-close:hover,
-.responsive-design-warning-close:active {
-    opacity: 0.7;
+.responsive-design-warning > span {
+    flex: auto;
+    padding-left: 3px;
 }
