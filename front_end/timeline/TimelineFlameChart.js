@@ -89,7 +89,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
             return WebInspector.UIString("CPU");
         else if (record === this._gpuThreadRecord)
             return WebInspector.UIString("GPU");
-        var details = WebInspector.TimelineUIUtils.buildDetailsNode(record, this._linkifier, this._model.loadedFromFile());
+        var details = WebInspector.TimelineUIUtilsImpl.buildDetailsNode(record, this._linkifier, this._model.loadedFromFile());
         return details ? WebInspector.UIString("%s (%s)", record.title(), details.textContent) : record.title();
     },
 
@@ -499,7 +499,7 @@ WebInspector.TracingBasedTimelineFlameChartDataProvider.prototype = {
     {
         var event = this._entryEvents[entryIndex];
         if (event) {
-            var name = WebInspector.TimelineUIUtils.styleForTimelineEvent(event.name).title;
+            var name = WebInspector.TracingTimelineUIUtils.styleForTraceEvent(event.name).title;
             // TODO(yurys): support event dividers
             var details = WebInspector.TracingTimelineUIUtils.buildDetailsNodeForTraceEvent(event, this._linkifier, false, this._target);
             return details ? WebInspector.UIString("%s (%s)", name, details.textContent) : name;
@@ -621,7 +621,7 @@ WebInspector.TracingBasedTimelineFlameChartDataProvider.prototype = {
         var event = this._entryEvents[entryIndex];
         if (!event)
             return "#555";
-        var style = WebInspector.TimelineUIUtils.styleForTimelineEvent(event.name);
+        var style = WebInspector.TracingTimelineUIUtils.styleForTraceEvent(event.name);
         return style.category.fillColorStop1;
     },
 

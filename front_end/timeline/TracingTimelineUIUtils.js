@@ -57,6 +57,32 @@ WebInspector.TracingTimelineUIUtils.prototype = {
         return record.traceEvent().highlightQuad || null;
     },
 
+    /**
+     * @param {!WebInspector.TimelineModel.Record} record
+     * @param {!WebInspector.Linkifier} linkifier
+     * @param {boolean} loadedFromFile
+     * @return {?Node}
+     */
+    buildDetailsNode: function(record, linkifier, loadedFromFile)
+    {
+        return WebInspector.TracingTimelineUIUtils.buildDetailsNodeForTraceEvent(record.traceEvent(), linkifier, loadedFromFile, record.target());
+    },
+
+    /**
+     * @param {!WebInspector.TimelineModel.Record} record
+     * @param {!WebInspector.TimelineModel} model
+     * @param {!WebInspector.Linkifier} linkifier
+     * @param {function(!DocumentFragment)} callback
+     * @param {boolean} loadedFromFile
+     */
+    generateDetailsContent: function(record, model, linkifier, callback, loadedFromFile)
+    {
+        if (!(model instanceof WebInspector.TracingTimelineModel))
+            throw new Error("Illegal argument.");
+        var tracingTimelineModel = /** @type {!WebInspector.TracingTimelineModel} */ (model);
+        WebInspector.TracingTimelineUIUtils.buildTraceEventDetails(record.traceEvent(), tracingTimelineModel, linkifier, callback, loadedFromFile, record.target());
+    },
+
     __proto__: WebInspector.TimelineUIUtils.prototype
 }
 

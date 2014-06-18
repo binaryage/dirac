@@ -581,7 +581,7 @@ WebInspector.TimelineView.prototype = {
                     this._graphRowsElement.appendChild(graphRowElement);
                 }
 
-                listRowElement.row.update(record, visibleTop, this._model.loadedFromFile());
+                listRowElement.row.update(record, visibleTop, this._model.loadedFromFile(), this._uiUtils);
                 graphRowElement.row.update(record, this._calculator, this._expandOffset, i);
                 if (this._lastSelectedRecord === record) {
                     listRowElement.row.renderAsSelected(true);
@@ -1048,8 +1048,9 @@ WebInspector.TimelineRecordListRow.prototype = {
      * @param {!WebInspector.TimelinePresentationModel.Record} presentationRecord
      * @param {number} offset
      * @param {boolean} loadedFromFile
+     * @param {!WebInspector.TimelineUIUtils} uiUtils
      */
-    update: function(presentationRecord, offset, loadedFromFile)
+    update: function(presentationRecord, offset, loadedFromFile, uiUtils)
     {
         this._record = presentationRecord;
         var record = presentationRecord.record();
@@ -1075,9 +1076,7 @@ WebInspector.TimelineRecordListRow.prototype = {
         if (presentationRecord.coalesced()) {
             this._dataElement.createTextChild(WebInspector.UIString("× %d", presentationRecord.presentationChildren().length));
         } else {
-            var detailsNode = record instanceof WebInspector.TimelineModel.RecordImpl ?
-                WebInspector.TimelineUIUtils.buildDetailsNode(record, this._linkifier, loadedFromFile) :
-                WebInspector.TracingTimelineUIUtils.buildDetailsNodeForTraceEvent(record._event, this._linkifier, loadedFromFile, record.target());
+            var detailsNode = uiUtils.buildDetailsNode(record, this._linkifier, loadedFromFile);
             if (detailsNode) {
                 this._dataElement.appendChild(document.createTextNode("("));
                 this._dataElement.appendChild(detailsNode);

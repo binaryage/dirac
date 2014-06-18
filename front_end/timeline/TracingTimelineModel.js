@@ -463,17 +463,6 @@ WebInspector.TracingTimelineModel.prototype = {
         return null;
     },
 
-    /**
-     * @param {!WebInspector.TimelineModel.Record} record
-     * @return {!WebInspector.TracingModel.Event}
-     */
-    traceEventFrom: function(record)
-    {
-        if (!(record instanceof WebInspector.TracingTimelineModel.TraceEventRecord))
-            throw new Error("Illegal argument.");
-        return record._event;
-    },
-
     __proto__: WebInspector.TimelineModel.prototype
 }
 
@@ -544,7 +533,7 @@ WebInspector.TracingTimelineModel.TraceEventRecord.prototype = {
      */
     category: function()
     {
-        var style = WebInspector.TimelineUIUtils.styleForTimelineEvent(this._event.name);
+        var style = WebInspector.TracingTimelineUIUtils.styleForTraceEvent(this._event.name);
         return style.category;
     },
 
@@ -553,7 +542,7 @@ WebInspector.TracingTimelineModel.TraceEventRecord.prototype = {
      */
     title: function()
     {
-        return WebInspector.TimelineUIUtils.recordTitle(this, this._model);
+        return WebInspector.TracingTimelineUIUtils.styleForTraceEvent(this._event.name).title;
     },
 
     /**
