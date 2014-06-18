@@ -28,7 +28,7 @@ WebInspector.ResponsiveDesignView = function(inspectedPagePlaceholder)
     this._warningMessage = this._canvasContainer.element.createChild("div", "responsive-design-warning hidden");
     this._warningMessage.createChild("span");
     var warningCloseButton = this._warningMessage.createChild("div", "responsive-design-warning-close");
-    warningCloseButton.addEventListener("click", this._closeOverridesWarning.bind(this));
+    warningCloseButton.addEventListener("click", this._closeOverridesWarning.bind(this), false);
     WebInspector.overridesSupport.addEventListener(WebInspector.OverridesSupport.Events.OverridesWarningUpdated, this._overridesWarningUpdated, this);
 
     this._slidersContainer = this._canvasContainer.element.createChild("div", "vbox responsive-design-sliders-container");

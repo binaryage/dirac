@@ -82,40 +82,30 @@ WebInspector.OverridesSupport.PageResizer.prototype = {
 };
 
 /**
+ * @param {string} description
+ * @param {string} userAgent
  * @constructor
- * @param {number} width
- * @param {number} height
- * @param {number} deviceScaleFactor
- * @param {boolean} textAutosizing
  */
-WebInspector.OverridesSupport.DeviceMetrics = function(width, height, deviceScaleFactor, textAutosizing)
+WebInspector.OverridesSupport.Device = function(description, userAgent)
 {
-    this.width = width;
-    this.height = height;
-    this.deviceScaleFactor = deviceScaleFactor;
-    this.textAutosizing = textAutosizing;
-}
+    this.width = 800;
+    this.height = 600;
+    this.deviceScaleFactor = 1;
+    this.textAutosizing = true;
+    this.userAgent = userAgent;
+    this.touch = true;
+    this.viewport = true;
 
-/**
- * @return {!WebInspector.OverridesSupport.DeviceMetrics}
- */
-WebInspector.OverridesSupport.DeviceMetrics.parseSetting = function(value)
-{
-    var width = screen.width;
-    var height = screen.height;
-    var deviceScaleFactor = 1;
-    var textAutosizing = true;
-    if (value) {
-        var splitMetrics = value.split("x");
-        if (splitMetrics.length >= 3) {
-            width = parseInt(splitMetrics[0], 10);
-            height = parseInt(splitMetrics[1], 10);
-            deviceScaleFactor = parseFloat(splitMetrics[2]);
-            if (splitMetrics.length == 4)
-                textAutosizing = splitMetrics[3] == 1;
-        }
+    var splitMetrics = description.split("x");
+    if (splitMetrics.length >= 3) {
+        this.width = parseInt(splitMetrics[0], 10);
+        this.height = parseInt(splitMetrics[1], 10);
+        this.deviceScaleFactor = parseFloat(splitMetrics[2]);
     }
-    return new WebInspector.OverridesSupport.DeviceMetrics(width, height, deviceScaleFactor, textAutosizing);
+    if (splitMetrics.length >= 4)
+        this.touch = splitMetrics[3] == 1;
+    if (splitMetrics.length >= 5)
+        this.viewport = splitMetrics[4] == 1;
 }
 
 /**
@@ -296,10 +286,13 @@ WebInspector.OverridesSupport.networkDomainsValidator = function(value)
     return value.split(",").every(test) ? "" : WebInspector.UIString("Value must be a comma-separated list of domains");
 }
 
+// Second element is user agent value.
 // Third element lists device metrics separated by 'x':
 // - screen width,
 // - screen height,
 // - device scale factor,
+// - touch (true by default if not present),
+// - viewport (true by default if not present).
 WebInspector.OverridesSupport._phones = [
     ["Apple iPhone 3GS",
      "Mozilla/5.0 (iPhone; U; CPU iPhone OS 4_2_1 like Mac OS X; en-us) AppleWebKit/533.17.9 (KHTML, like Gecko) Version/5.0.2 Mobile/8C148 Safari/6533.18.5",
@@ -429,6 +422,21 @@ WebInspector.OverridesSupport._tablets = [
      "1024x600x1"],
 ];
 
+WebInspector.OverridesSupport._desktops = [
+    ["Chromebook Pixel",
+     "Mozilla/5.0 (X11; CrOS x86_64 3912.23.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.46 Safari/537.36",
+     "1280x950x2x1x0"],
+    ["Apple MacBook Pro",
+     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.46 Safari/537.36",
+     "1280x800x1x0x0"],
+    ["Apple MacBook Pro Retina",
+     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.46 Safari/537.36",
+     "1440x900x2x0x0"],
+    ["Apple MacBook Air",
+     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.46 Safari/537.36",
+     "1366x768x1x0x0"],
+];
+
 WebInspector.OverridesSupport._userAgents = [
     ["Android 4.0.2 \u2014 Galaxy Nexus", "Mozilla/5.0 (Linux; U; Android 4.0.2; en-us; Galaxy Nexus Build/ICL53F) AppleWebKit/534.30 (KHTML, like Gecko) Version/4.0 Mobile Safari/534.30"],
     ["Android 2.3 \u2014 Nexus S", "Mozilla/5.0 (Linux; U; Android 2.3.6; en-us; Nexus S Build/GRK39F) AppleWebKit/533.1 (KHTML, like Gecko) Version/4.0 Mobile Safari/533.1"],
@@ -507,21 +515,19 @@ WebInspector.OverridesSupport.prototype = {
     },
 
     /**
-     * @param {string} deviceMetrics
-     * @param {string} userAgent
+     * @param {!WebInspector.OverridesSupport.Device} device
      */
-    emulateDevice: function(deviceMetrics, userAgent)
+    emulateDevice: function(device)
     {
-        var metrics = WebInspector.OverridesSupport.DeviceMetrics.parseSetting(deviceMetrics);
         this._deviceMetricsChangedListenerMuted = true;
         this._userAgentChangedListenerMuted = true;
-        this.settings.deviceUserAgent.set(userAgent);
-        this.settings.deviceWidth.set(metrics.width);
-        this.settings.deviceHeight.set(metrics.height);
-        this.settings.deviceScaleFactor.set(metrics.deviceScaleFactor);
-        this.settings.deviceTextAutosizing.set(metrics.textAutosizing);
-        this.settings.deviceTouch.set(true);
-        this.settings.emulateViewport.set(true);
+        this.settings.deviceUserAgent.set(device.userAgent);
+        this.settings.deviceWidth.set(device.width);
+        this.settings.deviceHeight.set(device.height);
+        this.settings.deviceScaleFactor.set(device.deviceScaleFactor);
+        this.settings.deviceTextAutosizing.set(device.textAutosizing);
+        this.settings.deviceTouch.set(device.touch);
+        this.settings.emulateViewport.set(device.viewport);
         this.settings.emulateDevice.set(true);
         delete this._deviceMetricsChangedListenerMuted;
         delete this._userAgentChangedListenerMuted;
@@ -552,20 +558,18 @@ WebInspector.OverridesSupport.prototype = {
     },
 
     /**
-     * @param {string} deviceMetrics
-     * @param {string} userAgent
+     * @param {!WebInspector.OverridesSupport.Device} device
      * @return {boolean}
      */
-    isEmulatingDevice: function(deviceMetrics, userAgent)
+    isEmulatingDevice: function(device)
     {
-        var metrics = WebInspector.OverridesSupport.DeviceMetrics.parseSetting(deviceMetrics);
-        return this.settings.deviceUserAgent.get() === userAgent
-            && this.settings.deviceWidth.get() === metrics.width
-            && this.settings.deviceHeight.get() === metrics.height
-            && this.settings.deviceScaleFactor.get() === metrics.deviceScaleFactor
-            && this.settings.deviceTextAutosizing.get() === metrics.textAutosizing
-            && this.settings.deviceTouch.get()
-            && this.settings.emulateViewport.get();
+        return this.settings.deviceUserAgent.get() === device.userAgent
+            && this.settings.deviceWidth.get() === device.width
+            && this.settings.deviceHeight.get() === device.height
+            && this.settings.deviceScaleFactor.get() === device.deviceScaleFactor
+            && this.settings.deviceTextAutosizing.get() === device.textAutosizing
+            && this.settings.deviceTouch.get() === device.touch
+            && this.settings.emulateViewport.get() === device.viewport;
     },
 
     applyInitialOverrides: function()
@@ -1069,7 +1073,7 @@ WebInspector.OverridesSupport.prototype = {
         var deviceSelectElement = document.createElement("select");
         deviceSelectElement.disabled = WebInspector.overridesSupport.isInspectingDevice();
 
-        var devices = WebInspector.OverridesSupport._phones.concat(WebInspector.OverridesSupport._tablets);
+        var devices = WebInspector.OverridesSupport._phones.concat(WebInspector.OverridesSupport._tablets).concat(WebInspector.OverridesSupport._desktops);
         devices.sort();
 
         var selectDevice = [WebInspector.UIString("<Select device>"), "", ""];
@@ -1077,8 +1081,7 @@ WebInspector.OverridesSupport.prototype = {
         for (var i = 0; i < devices.length; ++i) {
             var device = devices[i];
             var option = new Option(device[0], device[0]);
-            option.userAgent = device[1];
-            option.metrics = device[2];
+            option.device = new WebInspector.OverridesSupport.Device(device[2], device[1]);
             deviceSelectElement.add(option);
         }
 
@@ -1102,7 +1105,7 @@ WebInspector.OverridesSupport.prototype = {
 
             var option = deviceSelectElement.options[deviceSelectElement.selectedIndex];
             emulatedSettingChangedMuted = true;
-            WebInspector.overridesSupport.emulateDevice(option.metrics, option.userAgent);
+            WebInspector.overridesSupport.emulateDevice(option.device);
             emulatedSettingChangedMuted = false;
         }
 
@@ -1114,7 +1117,7 @@ WebInspector.OverridesSupport.prototype = {
             var index = devices.length - 1;
             for (var i = 0; i < devices.length; ++i) {
                 var option = deviceSelectElement.options[i];
-                if (WebInspector.overridesSupport.isEmulatingDevice(option.metrics, option.userAgent)) {
+                if (WebInspector.overridesSupport.isEmulatingDevice(option.device)) {
                     index = i;
                     break;
                 }
