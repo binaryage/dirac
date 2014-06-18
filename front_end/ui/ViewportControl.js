@@ -88,6 +88,8 @@ WebInspector.ViewportControl.Provider.prototype = {
  */
 WebInspector.ViewportElement = function() { }
 WebInspector.ViewportElement.prototype = {
+    cacheFastHeight: function() { },
+
     willHide: function() { },
 
     wasShown: function() { },
@@ -109,6 +111,8 @@ WebInspector.StaticViewportElement = function(element)
 }
 
 WebInspector.StaticViewportElement.prototype = {
+    cacheFastHeight: function() { },
+
     willHide: function() { },
 
     wasShown: function() { },
@@ -330,6 +334,8 @@ WebInspector.ViewportControl.prototype = {
         var itemCount = this._provider.itemCount();
         if (!itemCount) {
             for (var i = 0; i < this._renderedItems.length; ++i)
+                this._renderedItems[i].cacheFastHeight();
+            for (var i = 0; i < this._renderedItems.length; ++i)
                 this._renderedItems[i].willHide();
             this._renderedItems = [];
             this._contentElement.removeChildren();
@@ -350,7 +356,7 @@ WebInspector.ViewportControl.prototype = {
         if (this._cumulativeHeights && itemCount !== this._cumulativeHeights.length)
             delete this._cumulativeHeights;
         for (var i = 0; i < this._renderedItems.length; ++i) {
-            this._renderedItems[i].willHide();
+            this._renderedItems[i].cacheFastHeight();
             // Tolerate 1-pixel error due to double-to-integer rounding errors.
             if (this._cumulativeHeights && Math.abs(this._cachedItemHeight(this._firstVisibleIndex + i) - this._provider.fastHeight(i + this._firstVisibleIndex)) > 1)
                 delete this._cumulativeHeights;
@@ -372,6 +378,8 @@ WebInspector.ViewportControl.prototype = {
         this._bottomGapElement._active = !!bottomGapHeight;
 
         this._contentElement.style.setProperty("height", "10000000px");
+        for (var i = 0; i < this._renderedItems.length; ++i)
+            this._renderedItems[i].willHide();
         this._renderedItems = [];
         this._contentElement.removeChildren();
         for (var i = this._firstVisibleIndex; i <= this._lastVisibleIndex; ++i) {

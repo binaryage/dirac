@@ -84,9 +84,13 @@ WebInspector.ConsoleViewMessage.prototype = {
         }
     },
 
-    willHide: function()
+    cacheFastHeight: function()
     {
         this._cachedHeight = this.contentElement().clientHeight;
+    },
+
+    willHide: function()
+    {
         for (var i = 0; this._dataGrids && i < this._dataGrids.length; ++i) {
             var dataGrid = this._dataGrids[i];
             this._dataGridParents.put(dataGrid, dataGrid.element.parentElement);
