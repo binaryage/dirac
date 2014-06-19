@@ -124,7 +124,7 @@
         },
         {
             "type": "@WebInspector.StatusBarButton.Provider",
-            "className": "WebInspector.AdvancedApp.ResponsiveDesignButtonProvider",
+            "className": "WebInspector.App.EmulationButtonProvider",
             "order": 1,
             "location": "toolbar-left"
         },

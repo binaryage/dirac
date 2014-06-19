@@ -2294,7 +2294,7 @@ body.inactive .sidebar-tree-item.selected {
     -webkit-mask-position: -224px -24px;
 }
 
-.responsive-design-status-bar-item .glyph {
+.emulation-status-bar-item .glyph {
     -webkit-mask-position: -164px 0px;
 }
 

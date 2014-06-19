@@ -51,7 +51,7 @@ WebInspector.ResponsiveDesignView = function(inspectedPagePlaceholder)
     this._enabled = false;
 
     WebInspector.zoomManager.addEventListener(WebInspector.ZoomManager.Events.ZoomChanged, this._onZoomChanged, this);
-    WebInspector.overridesSupport.settings.emulationEnabled.addChangeListener(this._emulationEnabledChanged, this);
+    WebInspector.overridesSupport.addEventListener(WebInspector.OverridesSupport.Events.EmulationStateChanged, this._emulationEnabledChanged, this);
     this._emulationEnabledChanged();
     this._overridesWarningUpdated();
 };
@@ -74,7 +74,7 @@ WebInspector.ResponsiveDesignView.prototype = {
 
     _emulationEnabledChanged: function()
     {
-        var enabled = WebInspector.overridesSupport.settings.emulationEnabled.get();
+        var enabled = WebInspector.overridesSupport.emulationEnabled();
         if (enabled && !this._enabled) {
             this._invalidateCache();
             this._ignoreResize = true;

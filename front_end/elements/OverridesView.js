@@ -44,10 +44,8 @@ WebInspector.OverridesView = function()
     this._tabbedPane.verticalTabLayout = true;
 
 
-    if (!WebInspector.overridesSupport.isInspectingDevice()) {
-        new WebInspector.OverridesView.DeviceTab().appendAsTab(this._tabbedPane);
-        new WebInspector.OverridesView.MediaTab().appendAsTab(this._tabbedPane);
-    }
+    new WebInspector.OverridesView.DeviceTab().appendAsTab(this._tabbedPane);
+    new WebInspector.OverridesView.MediaTab().appendAsTab(this._tabbedPane);
     new WebInspector.OverridesView.NetworkTab().appendAsTab(this._tabbedPane);
     new WebInspector.OverridesView.SensorsTab().appendAsTab(this._tabbedPane);
 
@@ -65,13 +63,13 @@ WebInspector.OverridesView = function()
 
     this._splashScreenElement = this.element.createChild("div", "overrides-splash-screen");
     this._splashScreenElement.createTextChild(WebInspector.UIString("Emulation is currently disabled. Toggle "));
-    var toggleEmulationButton = new WebInspector.StatusBarButton("", "responsive-design-status-bar-item");
+    var toggleEmulationButton = new WebInspector.StatusBarButton("", "emulation-status-bar-item");
     toggleEmulationButton.addEventListener("click", this._toggleEmulationEnabled, this);
     this._splashScreenElement.appendChild(toggleEmulationButton.element);
     this._splashScreenElement.createTextChild(WebInspector.UIString("in the main toolbar to enable it."));
 
     WebInspector.overridesSupport.addEventListener(WebInspector.OverridesSupport.Events.OverridesWarningUpdated, this._overridesWarningUpdated, this);
-    WebInspector.overridesSupport.settings.emulationEnabled.addChangeListener(this._emulationEnabledChanged, this);
+    WebInspector.overridesSupport.addEventListener(WebInspector.OverridesSupport.Events.EmulationStateChanged, this._emulationEnabledChanged, this);
     this._emulationEnabledChanged();
 }
 
@@ -87,20 +85,20 @@ WebInspector.OverridesView.prototype = {
     _overridesWarningUpdated: function()
     {
         var message = WebInspector.overridesSupport.warningMessage();
-        this._warningFooter.classList.toggle("hidden", !WebInspector.overridesSupport.settings.emulationEnabled.get() || !message);
+        this._warningFooter.classList.toggle("hidden", !WebInspector.overridesSupport.emulationEnabled() || !message);
         this._warningFooter.textContent = message;
     },
 
     _toggleEmulationEnabled: function()
     {
-        WebInspector.overridesSupport.settings.emulationEnabled.set(true);
+        WebInspector.overridesSupport.setEmulationEnabled(true);
     },
 
     _emulationEnabledChanged: function()
     {
-        this._tabbedPane.element.classList.toggle("hidden", !WebInspector.overridesSupport.settings.emulationEnabled.get());
+        this._tabbedPane.element.classList.toggle("hidden", !WebInspector.overridesSupport.emulationEnabled());
         this._overridesWarningUpdated();
-        this._splashScreenElement.classList.toggle("hidden", WebInspector.overridesSupport.settings.emulationEnabled.get());
+        this._splashScreenElement.classList.toggle("hidden", WebInspector.overridesSupport.emulationEnabled());
     },
 
     __proto__: WebInspector.VBox.prototype

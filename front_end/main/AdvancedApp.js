@@ -10,26 +10,9 @@ WebInspector.AdvancedApp = function()
 {
     WebInspector.App.call(this);
     WebInspector.dockController.addEventListener(WebInspector.DockController.Events.BeforeDockSideChanged, this._openToolboxWindow, this);
-
-    this._toggleEmulationButton = new WebInspector.StatusBarButton(WebInspector.UIString("Toggle emulation enabled."), "responsive-design-status-bar-item");
-    this._toggleEmulationButton.toggled = WebInspector.overridesSupport.settings.emulationEnabled.get();
-    this._toggleEmulationButton.addEventListener("click", this._toggleEmulationEnabled, this);
-    WebInspector.overridesSupport.settings.emulationEnabled.addChangeListener(this._emulationEnabledChanged, this);
 };
 
 WebInspector.AdvancedApp.prototype = {
-    _toggleEmulationEnabled: function()
-    {
-        WebInspector.overridesSupport.settings.emulationEnabled.set(!this._toggleEmulationButton.toggled);
-    },
-
-    _emulationEnabledChanged: function()
-    {
-        this._toggleEmulationButton.toggled = WebInspector.overridesSupport.settings.emulationEnabled.get();
-        if (!WebInspector.experimentsSettings.responsiveDesign.isEnabled() && WebInspector.overridesSupport.settings.emulationEnabled.get())
-            WebInspector.inspectorView.showViewInDrawer("emulation", true);
-    },
-
     createRootView: function()
     {
         var rootView = new WebInspector.RootView();
@@ -174,26 +157,6 @@ WebInspector.AdvancedApp.prototype = {
 
     __proto__: WebInspector.App.prototype
 };
-
-/**
- * @constructor
- * @implements {WebInspector.StatusBarButton.Provider}
- */
-WebInspector.AdvancedApp.ResponsiveDesignButtonProvider = function()
-{
-}
-
-WebInspector.AdvancedApp.ResponsiveDesignButtonProvider.prototype = {
-    /**
-     * @return {?WebInspector.StatusBarButton}
-     */
-    button: function()
-    {
-        if (!(WebInspector.app instanceof WebInspector.AdvancedApp))
-            return null;
-        return /** @type {!WebInspector.AdvancedApp} */ (WebInspector.app)._toggleEmulationButton || null;
-    }
-}
 
 /**
  * @constructor
