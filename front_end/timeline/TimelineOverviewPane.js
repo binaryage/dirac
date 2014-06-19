@@ -32,10 +32,12 @@
  * @constructor
  * @extends {WebInspector.VBox}
  * @param {!WebInspector.TimelineModel} model
+ * @param {!WebInspector.TimelineUIUtils} uiUtils
  */
-WebInspector.TimelineOverviewPane = function(model)
+WebInspector.TimelineOverviewPane = function(model, uiUtils)
 {
     WebInspector.VBox.call(this);
+    this._uiUtils = uiUtils;
     this.element.id = "timeline-overview-pane";
 
     this._eventDividers = [];
@@ -110,7 +112,7 @@ WebInspector.TimelineOverviewPane.prototype = {
             var dividerPosition = Math.round(positions.start * 10);
             if (dividers[dividerPosition])
                 continue;
-            var divider = WebInspector.TimelineUIUtils.createEventDivider(record.type());
+            var divider = this._uiUtils.createEventDivider(record.type());
             divider.style.left = positions.start + "%";
             dividers[dividerPosition] = divider;
         }
@@ -123,9 +125,10 @@ WebInspector.TimelineOverviewPane.prototype = {
     addRecord: function(record)
     {
         var eventDividers = this._eventDividers;
+        var uiUtils = this._uiUtils;
         function addEventDividers(record)
         {
-            if (WebInspector.TimelineUIUtils.isEventDivider(record))
+            if (uiUtils.isEventDivider(record))
                 eventDividers.push(record);
         }
         WebInspector.TimelineModel.forAllRecords([record], addEventDividers);

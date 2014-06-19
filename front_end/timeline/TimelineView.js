@@ -135,7 +135,7 @@ WebInspector.TimelineView.prototype = {
             var dividerPosition = Math.round(position);
             if (dividerPosition < 0 || dividerPosition >= clientWidth || dividers[dividerPosition])
                 continue;
-            var divider = WebInspector.TimelineUIUtils.createEventDivider(record.type(), WebInspector.TimelineUIUtils.recordTitle(record, this._model));
+            var divider = this._uiUtils.createEventDivider(record.type(), record.title());
             divider.style.left = dividerPosition + "px";
             dividers[dividerPosition] = divider;
         }
@@ -181,7 +181,7 @@ WebInspector.TimelineView.prototype = {
             this._frameContainer.appendChild(frameStrip);
 
             if (actualStart > 0) {
-                var frameMarker = WebInspector.TimelineUIUtils.createEventDivider(WebInspector.TimelineModel.RecordType.BeginFrame);
+                var frameMarker = this._uiUtils.createEventDivider(WebInspector.TimelineModel.RecordType.BeginFrame);
                 frameMarker.style.left = frameStart + "px";
                 dividers.push(frameMarker);
             }

@@ -168,7 +168,7 @@ WebInspector.TimelineModelImpl.prototype = {
     _innerAddRecord: function(payload, parentRecord)
     {
         var record = new WebInspector.TimelineModel.RecordImpl(this, payload, parentRecord);
-        if (WebInspector.TimelineUIUtils.isEventDivider(record))
+        if (WebInspector.TimelineUIUtilsImpl.isEventDivider(record))
             this._eventDividerRecords.push(record);
 
         for (var i = 0; payload.children && i < payload.children.length; ++i)

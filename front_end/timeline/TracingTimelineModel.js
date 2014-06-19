@@ -227,7 +227,7 @@ WebInspector.TracingTimelineModel.prototype = {
             }
             var parentRecord = recordStack.peekLast() || null;
             var record = new WebInspector.TracingTimelineModel.TraceEventRecord(this, event, parentRecord);
-            if (WebInspector.TimelineUIUtils.isEventDivider(record))
+            if (WebInspector.TracingTimelineUIUtils.isEventDivider(record))
                 this._eventDividerRecords.push(record);
             if (!recordStack.length)
                 this._addTopLevelRecord(record);

@@ -120,7 +120,7 @@ WebInspector.TimelinePanel = function()
     this._createRecordingOptions();
 
     // Create top overview component.
-    this._overviewPane = new WebInspector.TimelineOverviewPane(this._model);
+    this._overviewPane = new WebInspector.TimelineOverviewPane(this._model, this._uiUtils);
     this._overviewPane.addEventListener(WebInspector.TimelineOverviewPane.Events.WindowChanged, this._onWindowChanged.bind(this));
     this._overviewPane.show(this._topPane.mainElement());
 

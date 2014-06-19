@@ -39,6 +39,15 @@ WebInspector.TimelineUIUtilsImpl.prototype = {
 
     /**
      * @param {!WebInspector.TimelineModel.Record} record
+     * @return {boolean}
+     */
+    isEventDivider: function(record)
+    {
+        return WebInspector.TimelineUIUtilsImpl.isEventDivider(record);
+    },
+
+    /**
+     * @param {!WebInspector.TimelineModel.Record} record
      * @return {?Object}
      */
     countersForRecord: function(record)
@@ -86,6 +95,16 @@ WebInspector.TimelineUIUtilsImpl.prototype = {
         WebInspector.TimelineUIUtilsImpl.generateDetailsContent(record, model, linkifier, callback, loadedFromFile);
     },
 
+    /**
+     * @param {string} recordType
+     * @param {string=} title
+     * @return {!Element}
+     */
+    createEventDivider: function(recordType, title)
+    {
+        return WebInspector.TimelineUIUtilsImpl._createEventDivider(recordType, title);
+    },
+
     __proto__: WebInspector.TimelineUIUtils.prototype
 }
 
@@ -97,6 +116,22 @@ WebInspector.TimelineUIUtilsImpl._coalescableRecordTypes[WebInspector.TimelineMo
 WebInspector.TimelineUIUtilsImpl._coalescableRecordTypes[WebInspector.TimelineModel.RecordType.DecodeImage] = 1;
 WebInspector.TimelineUIUtilsImpl._coalescableRecordTypes[WebInspector.TimelineModel.RecordType.ResizeImage] = 1;
 
+
+/**
+ * @param {!WebInspector.TimelineModel.Record} record
+ * @return {boolean}
+ */
+WebInspector.TimelineUIUtilsImpl.isEventDivider = function(record)
+{
+    var recordTypes = WebInspector.TimelineModel.RecordType;
+    if (record.type() === recordTypes.TimeStamp)
+        return true;
+    if (record.type() === recordTypes.MarkFirstPaint)
+        return true;
+    if (record.type() === recordTypes.MarkDOMContent || record.type() === recordTypes.MarkLoad)
+        return record.data()["isMainFrame"];
+    return false;
+}
 
 /**
  * @param {!WebInspector.TimelineModel.Record} record
@@ -436,4 +471,32 @@ WebInspector.TimelineUIUtilsImpl._generateDetailsContentSynchronously = function
     }
     fragment.appendChild(contentHelper.element);
     return fragment;
+}
+
+/**
+ * @param {string} recordType
+ * @param {string=} title
+ * @return {!Element}
+ */
+WebInspector.TimelineUIUtilsImpl._createEventDivider = function(recordType, title)
+{
+    var eventDivider = document.createElement("div");
+    eventDivider.className = "resources-event-divider";
+    var recordTypes = WebInspector.TimelineModel.RecordType;
+
+    if (recordType === recordTypes.MarkDOMContent)
+        eventDivider.className += " resources-blue-divider";
+    else if (recordType === recordTypes.MarkLoad)
+        eventDivider.className += " resources-red-divider";
+    else if (recordType === recordTypes.MarkFirstPaint)
+        eventDivider.className += " resources-green-divider";
+    else if (recordType === recordTypes.TimeStamp)
+        eventDivider.className += " resources-orange-divider";
+    else if (recordType === recordTypes.BeginFrame)
+        eventDivider.className += " timeline-frame-divider";
+
+    if (title)
+        eventDivider.title = title;
+
+    return eventDivider;
 }
