@@ -47,7 +47,7 @@ WebInspector.Layers3DView = function()
     this._canvasElement.addEventListener("mousemove", this._onMouseMove.bind(this), false);
     this._canvasElement.addEventListener("contextmenu", this._onContextMenu.bind(this), false);
     this._lastActiveObject = {};
-    this._textureForLayer = {};
+    this._picturesForLayer = {};
     this._scrollRectQuadsForLayer = {};
     this._isVisible = {};
     this._layerTree = null;
@@ -56,6 +56,12 @@ WebInspector.Layers3DView = function()
 
 /** @typedef {{layer: !WebInspector.Layer, scrollRectIndex: number}|{layer: !WebInspector.Layer}} */
 WebInspector.Layers3DView.ActiveObject;
+
+/** @typedef {{color: !Array.<number>, borderColor: !Array.<number>, borderWidth: number}} */
+WebInspector.Layers3DView.LayerStyle;
+
+/** @typedef {{layerId: string, rect: !Array.<number>, imageURL: string}} */
+WebInspector.Layers3DView.Tile;
 
 /**
  * @enum {string}
@@ -110,10 +116,13 @@ WebInspector.Layers3DView.VertexShader = "\
 WebInspector.Layers3DView.SelectedBackgroundColor = [20, 40, 110, 0.66];
 WebInspector.Layers3DView.BackgroundColor = [0, 0, 0, 0];
 WebInspector.Layers3DView.HoveredBorderColor = [0, 0, 255, 1];
+WebInspector.Layers3DView.SelectedBorderColor = [0, 255, 0, 1];
 WebInspector.Layers3DView.BorderColor = [0, 0, 0, 1];
 WebInspector.Layers3DView.ScrollRectBackgroundColor = [178, 0, 0, 0.4];
 WebInspector.Layers3DView.SelectedScrollRectBackgroundColor = [178, 0, 0, 0.6];
 WebInspector.Layers3DView.ScrollRectBorderColor = [178, 0, 0, 1];
+WebInspector.Layers3DView.BorderWidth = 1;
+WebInspector.Layers3DView.SelectedBorderWidth = 2;
 
 WebInspector.Layers3DView.LayerSpacing = 20;
 WebInspector.Layers3DView.ScrollRectSpacing = 4;
@@ -175,10 +184,27 @@ WebInspector.Layers3DView.prototype = {
      */
     showImageForLayer: function(layer, imageURL)
     {
+        this.setTiles([{layerId: layer.id(), rect: [0, 0, layer.width(), layer.height()], imageURL: imageURL}])
+    },
+
+    /**
+     * @param {!Array.<!WebInspector.Layers3DView.Tile>} tiles
+     */
+    setTiles: function(tiles)
+    {
+        this._picturesForLayer = {};
+        tiles.forEach(this._setTile, this);
+    },
+
+    /**
+     * @param {!WebInspector.Layers3DView.Tile} tile
+     */
+    _setTile: function(tile)
+    {
         var texture = this._gl.createTexture();
         texture.image = new Image();
-        texture.image.addEventListener("load", this._handleLoadedTexture.bind(this, texture, layer.id()), false);
-        texture.image.src = imageURL;
+        texture.image.addEventListener("load", this._handleLoadedTexture.bind(this, texture, tile.layerId, tile.rect), false);
+        texture.image.src = tile.imageURL;
     },
 
     /**
@@ -277,8 +303,9 @@ WebInspector.Layers3DView.prototype = {
     /**
      * @param {!Object} texture
      * @param {string} layerId
+     * @param {!Array.<number>} rect
      */
-    _handleLoadedTexture: function(texture, layerId)
+    _handleLoadedTexture: function(texture, layerId, rect)
     {
         this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
         this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, true);
@@ -288,8 +315,9 @@ WebInspector.Layers3DView.prototype = {
         this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_WRAP_S, this._gl.CLAMP_TO_EDGE);
         this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_WRAP_T, this._gl.CLAMP_TO_EDGE);
         this._gl.bindTexture(this._gl.TEXTURE_2D, null);
-        this._textureForLayer = {};
-        this._textureForLayer[layerId] = texture;
+        if (!this._picturesForLayer[layerId])
+            this._picturesForLayer[layerId] = [];
+        this._picturesForLayer[layerId].push({texture: texture, rect: rect});
         this._update();
     },
 
@@ -387,15 +415,22 @@ WebInspector.Layers3DView.prototype = {
 
     /**
      * @param {!WebInspector.Layer} layer
-     * @return {!{color: !Array.<number>, borderColor: !Array.<number>}}
+     * @return {!WebInspector.Layers3DView.LayerStyle}
      */
-    _colorsForLayer: function(layer)
+    _styleForLayer: function(layer)
     {
         var isSelected = this._isObjectActive(WebInspector.Layers3DView.OutlineType.Selected, layer);
         var isHovered = this._isObjectActive(WebInspector.Layers3DView.OutlineType.Hovered, layer);
         var color = isSelected ? WebInspector.Layers3DView.SelectedBackgroundColor : WebInspector.Layers3DView.BackgroundColor;
-        var borderColor = isHovered ? WebInspector.Layers3DView.HoveredBorderColor : WebInspector.Layers3DView.BorderColor;
-        return {color: color, borderColor: borderColor};
+        var borderColor;
+        if (isSelected)
+            borderColor = WebInspector.Layers3DView.SelectedBorderColor;
+        else if (isHovered)
+            borderColor = WebInspector.Layers3DView.HoveredBorderColor;
+        else
+            borderColor = WebInspector.Layers3DView.BorderColor;
+        var borderWidth = isSelected ? WebInspector.Layers3DView.SelectedBorderWidth : WebInspector.Layers3DView.BorderWidth;
+        return {color: color, borderColor: borderColor, borderWidth: borderWidth};
     },
 
     /**
@@ -482,11 +517,13 @@ WebInspector.Layers3DView.prototype = {
     {
         var gl = this._gl;
         var vertices;
+        var style = this._styleForLayer(layer);
+        var layerDepth = this._depthByLayerId[layer.id()] * WebInspector.Layers3DView.LayerSpacing;
         if (this._isVisible[layer.id()]) {
-            vertices = this._calculateVerticesForQuad(layer.quad(), this._depthByLayerId[layer.id()] * WebInspector.Layers3DView.LayerSpacing);
-            var colors = this._colorsForLayer(layer);
-            this._drawRectangle(vertices, colors.color, gl.TRIANGLE_FAN, this._textureForLayer[layer.id()]);
-            this._drawRectangle(vertices, colors.borderColor, gl.LINE_LOOP);
+            vertices = this._calculateVerticesForQuad(layer.quad(), layerDepth);
+            gl.lineWidth(style.borderWidth);
+            this._drawRectangle(vertices, style.borderColor, gl.LINE_LOOP);
+            gl.lineWidth(1);
         }
         this._scrollRectQuadsForLayer[layer.id()] = this._calculateScrollRectQuadsForLayer(layer);
         var scrollRectQuads = this._scrollRectQuadsForLayer[layer.id()];
@@ -496,6 +533,13 @@ WebInspector.Layers3DView.prototype = {
             var color = isSelected ? WebInspector.Layers3DView.SelectedScrollRectBackgroundColor : WebInspector.Layers3DView.ScrollRectBackgroundColor;
             this._drawRectangle(vertices, color, gl.TRIANGLE_FAN);
             this._drawRectangle(vertices, WebInspector.Layers3DView.ScrollRectBorderColor, gl.LINE_LOOP);
+        }
+        var tiles = this._picturesForLayer[layer.id()] || [];
+        for (var i = 0; i < tiles.length; ++i) {
+            var tile = tiles[i];
+            var quad = this._calculateRectQuad(layer, {x: tile.rect[0], y: tile.rect[1], width: tile.rect[2] - tile.rect[0], height: tile.rect[3] - tile.rect[1]});
+            vertices = this._calculateVerticesForQuad(quad, layerDepth);
+            this._drawRectangle(vertices, style.color, gl.TRIANGLE_FAN, tile.texture);
         }
     },
 
