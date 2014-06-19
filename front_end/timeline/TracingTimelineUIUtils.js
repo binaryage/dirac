@@ -102,6 +102,14 @@ WebInspector.TracingTimelineUIUtils.prototype = {
     },
 
     /**
+     * @return {!Element}
+     */
+    createBeginFrameDivider: function()
+    {
+        return this.createEventDivider(WebInspector.TracingTimelineModel.RecordType.BeginFrame);
+    },
+
+    /**
      * @param {string} recordType
      * @param {string=} title
      * @return {!Element}

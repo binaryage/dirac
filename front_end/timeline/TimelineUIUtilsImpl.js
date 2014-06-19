@@ -105,6 +105,14 @@ WebInspector.TimelineUIUtilsImpl.prototype = {
     },
 
     /**
+     * @return {!Element}
+     */
+    createBeginFrameDivider: function()
+    {
+        return this.createEventDivider(WebInspector.TimelineModel.RecordType.BeginFrame);
+    },
+
+    /**
      * @param {string} recordType
      * @param {string=} title
      * @return {!Element}

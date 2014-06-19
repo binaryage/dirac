@@ -113,6 +113,13 @@ WebInspector.TimelineUIUtils.prototype = {
         throw new Error("Not implemented.");
     },
     /**
+     * @return {!Element}
+     */
+    createBeginFrameDivider: function()
+    {
+        throw new Error("Not implemented.");
+    },
+    /**
      * @param {string} recordType
      * @param {string=} title
      * @return {!Element}

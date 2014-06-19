@@ -182,7 +182,7 @@ WebInspector.TimelineView.prototype = {
             this._frameContainer.appendChild(frameStrip);
 
             if (actualStart > 0) {
-                var frameMarker = this._uiUtils.createEventDivider(WebInspector.TimelineModel.RecordType.BeginFrame);
+                var frameMarker = this._uiUtils.createBeginFrameDivider();
                 frameMarker.style.left = frameStart + "px";
                 dividers.push(frameMarker);
             }
