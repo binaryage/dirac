@@ -74,6 +74,15 @@ WebInspector.TimelineUIUtilsImpl.prototype = {
 
     /**
      * @param {!WebInspector.TimelineModel.Record} record
+     * @return {string}
+     */
+    titleForRecord: function(record)
+    {
+        return WebInspector.TimelineUIUtilsImpl.recordTitle(record);
+    },
+
+    /**
+     * @param {!WebInspector.TimelineModel.Record} record
      * @param {!WebInspector.Linkifier} linkifier
      * @param {boolean} loadedFromFile
      * @return {?Node}
@@ -105,6 +114,20 @@ WebInspector.TimelineUIUtilsImpl.prototype = {
         return WebInspector.TimelineUIUtilsImpl._createEventDivider(recordType, title);
     },
 
+    /**
+     * @param {!WebInspector.TimelineModel.Record} record
+     * @param {!RegExp} regExp
+     * @return {boolean}
+     */
+    testContentMatching: function(record, regExp)
+    {
+        var tokens = [WebInspector.TimelineUIUtilsImpl.recordTitle(record)];
+        var data = record.data();
+        for (var key in data)
+            tokens.push(data[key])
+        return regExp.test(tokens.join("|"));
+    },
+
     __proto__: WebInspector.TimelineUIUtils.prototype
 }
 
@@ -116,6 +139,24 @@ WebInspector.TimelineUIUtilsImpl._coalescableRecordTypes[WebInspector.TimelineMo
 WebInspector.TimelineUIUtilsImpl._coalescableRecordTypes[WebInspector.TimelineModel.RecordType.DecodeImage] = 1;
 WebInspector.TimelineUIUtilsImpl._coalescableRecordTypes[WebInspector.TimelineModel.RecordType.ResizeImage] = 1;
 
+
+/**
+ * @param {!WebInspector.TimelineModel.Record} record
+ * @return {string}
+ */
+WebInspector.TimelineUIUtilsImpl.recordTitle = function(record)
+{
+    var recordData = record.data();
+    if (record.type() === WebInspector.TimelineModel.RecordType.TimeStamp)
+        return recordData["message"];
+    if (record.type() === WebInspector.TimelineModel.RecordType.JSFrame)
+        return recordData["functionName"];
+    if (WebInspector.TimelineUIUtilsImpl.isEventDivider(record)) {
+        var startTime = Number.millisToString(record.startTime() - record._model.minimumRecordTime());
+        return WebInspector.UIString("%s at %s", WebInspector.TimelineUIUtils.recordStyle(record).title, startTime, true);
+    }
+    return WebInspector.TimelineUIUtils.recordStyle(record).title;
+}
 
 /**
  * @param {!WebInspector.TimelineModel.Record} record

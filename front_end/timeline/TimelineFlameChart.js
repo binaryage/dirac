@@ -90,7 +90,8 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
         else if (record === this._gpuThreadRecord)
             return WebInspector.UIString("GPU");
         var details = WebInspector.TimelineUIUtilsImpl.buildDetailsNode(record, this._linkifier, this._model.loadedFromFile());
-        return details ? WebInspector.UIString("%s (%s)", record.title(), details.textContent) : record.title();
+        var title = WebInspector.TimelineUIUtilsImpl.recordTitle(record);
+        return details ? WebInspector.UIString("%s (%s)", title, details.textContent) : title;
     },
 
     /**

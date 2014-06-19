@@ -371,11 +371,6 @@ WebInspector.TimelineModel.Record.prototype = {
     category: function() { },
 
     /**
-     * @return {string}
-     */
-    title: function() { },
-
-    /**
      * @return {number}
      */
     startTime: function() { },
@@ -435,13 +430,7 @@ WebInspector.TimelineModel.Record.prototype = {
     /**
      * @return {?Array.<string>}
      */
-    warnings: function() { },
-
-    /**
-     * @param {!RegExp} regExp
-     * @return {boolean}
-     */
-    testContentMatching: function(regExp) { }
+    warnings: function() { }
 }
 
 /**

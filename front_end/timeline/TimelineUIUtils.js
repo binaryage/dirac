@@ -85,6 +85,14 @@ WebInspector.TimelineUIUtils.prototype = {
     },
     /**
      * @param {!WebInspector.TimelineModel.Record} record
+     * @return {string}
+     */
+    titleForRecord: function(record)
+    {
+        throw new Error("Not implemented.");
+    },
+    /**
+     * @param {!WebInspector.TimelineModel.Record} record
      * @param {!WebInspector.Linkifier} linkifier
      * @param {boolean} loadedFromFile
      * @return {?Node}
@@ -110,6 +118,15 @@ WebInspector.TimelineUIUtils.prototype = {
      * @return {!Element}
      */
     createEventDivider: function(recordType, title)
+    {
+        throw new Error("Not implemented.");
+    },
+    /**
+     * @param {!WebInspector.TimelineModel.Record} record
+     * @param {!RegExp} regExp
+     * @return {boolean}
+     */
+    testContentMatching: function(record, regExp)
     {
         throw new Error("Not implemented.");
     }
@@ -240,25 +257,6 @@ WebInspector.TimelineUIUtils.generateMainThreadBarPopupContent = function(model,
     contentHelper.appendTextRow(WebInspector.UIString("CPU time"), Number.millisToString(cpuTime, true));
     contentHelper.appendTextRow(WebInspector.UIString("Message Count"), messageCount);
     return contentHelper.contentTable();
-}
-
-/**
- * @param {!WebInspector.TimelineModel.Record} record
- * @param {!WebInspector.TimelineModel} model
- * @return {string}
- */
-WebInspector.TimelineUIUtils.recordTitle = function(record, model)
-{
-    var recordData = record.data();
-    if (record.type() === WebInspector.TimelineModel.RecordType.TimeStamp)
-        return recordData["message"];
-    if (record.type() === WebInspector.TimelineModel.RecordType.JSFrame)
-        return recordData["functionName"];
-    if (WebInspector.TimelineUIUtilsImpl.isEventDivider(record)) {
-        var startTime = Number.millisToString(record.startTime() - model.minimumRecordTime());
-        return WebInspector.UIString("%s at %s", WebInspector.TimelineUIUtils.recordStyle(record).title, startTime, true);
-    }
-    return WebInspector.TimelineUIUtils.recordStyle(record).title;
 }
 
 /**

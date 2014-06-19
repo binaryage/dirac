@@ -98,7 +98,7 @@ WebInspector.TimelinePanel = function()
 
     this._categoryFilter = new WebInspector.TimelineCategoryFilter();
     this._durationFilter = new WebInspector.TimelineIsLongFilter();
-    this._textFilter = new WebInspector.TimelineTextFilter();
+    this._textFilter = new WebInspector.TimelineTextFilter(this._uiUtils);
 
     this._model.addFilter(new WebInspector.TimelineHiddenFilter());
     this._model.addFilter(this._categoryFilter);
@@ -937,7 +937,7 @@ WebInspector.TimelinePanel.prototype = {
             if (record.endTime() < this._windowStartTime ||
                 record.startTime() > this._windowEndTime)
                 return;
-            if (record.testContentMatching(searchRegExp))
+            if (this._uiUtils.testContentMatching(record, searchRegExp))
                 matches.push(record);
         }
         this._model.forAllFilteredRecords(processRecord.bind(this));
@@ -986,7 +986,8 @@ WebInspector.TimelinePanel.prototype = {
         switch (this._selection.type()) {
         case WebInspector.TimelineSelection.Type.Record:
             var record = /** @type {!WebInspector.TimelineModel.Record} */ (this._selection.object());
-            this._uiUtils.generateDetailsContent(record, this._model, this._detailsLinkifier, this.showInDetails.bind(this, record.title()), this._model.loadedFromFile());
+            var title = this._uiUtils.titleForRecord(record);
+            this._uiUtils.generateDetailsContent(record, this._model, this._detailsLinkifier, this.showInDetails.bind(this, title), this._model.loadedFromFile());
             break;
         case WebInspector.TimelineSelection.Type.TraceEvent:
             var event = /** @type {!WebInspector.TracingModel.Event} */ (this._selection.object());
@@ -1379,10 +1380,12 @@ WebInspector.TimelineIsLongFilter.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.TimelineModel.Filter}
+ * @param {!WebInspector.TimelineUIUtils} uiUtils
  */
-WebInspector.TimelineTextFilter = function()
+WebInspector.TimelineTextFilter = function(uiUtils)
 {
     WebInspector.TimelineModel.Filter.call(this);
+    this._uiUtils = uiUtils;
 }
 
 WebInspector.TimelineTextFilter.prototype = {
@@ -1409,7 +1412,7 @@ WebInspector.TimelineTextFilter.prototype = {
      */
     accept: function(record)
     {
-        return !this._regex || record.testContentMatching(this._regex);
+        return !this._regex || this._uiUtils.testContentMatching(record, this._regex);
     },
 
     __proto__: WebInspector.TimelineModel.Filter.prototype

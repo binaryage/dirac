@@ -68,6 +68,15 @@ WebInspector.TracingTimelineUIUtils.prototype = {
 
     /**
      * @param {!WebInspector.TimelineModel.Record} record
+     * @return {string}
+     */
+    titleForRecord: function(record)
+    {
+        return WebInspector.TracingTimelineUIUtils.styleForTraceEvent(record.traceEvent().name).title;
+    },
+
+    /**
+     * @param {!WebInspector.TimelineModel.Record} record
      * @param {!WebInspector.Linkifier} linkifier
      * @param {boolean} loadedFromFile
      * @return {?Node}
@@ -100,6 +109,24 @@ WebInspector.TracingTimelineUIUtils.prototype = {
     createEventDivider: function(recordType, title)
     {
         return WebInspector.TracingTimelineUIUtils._createEventDivider(recordType, title);
+    },
+
+    /**
+     * @param {!WebInspector.TimelineModel.Record} record
+     * @param {!RegExp} regExp
+     * @return {boolean}
+     */
+    testContentMatching: function(record, regExp)
+    {
+        var traceEvent = record.traceEvent();
+        var title = WebInspector.TracingTimelineUIUtils.styleForTraceEvent(traceEvent.name).title;
+        var tokens = [title];
+        for (var argName in traceEvent.args) {
+            var argValue = traceEvent.args[argName];
+            for (var key in argValue)
+                tokens.push(argValue[key]);
+        }
+        return regExp.test(tokens.join("|"));
     },
 
     __proto__: WebInspector.TimelineUIUtils.prototype
