@@ -825,7 +825,7 @@ WebInspector.JavaScriptSourceFrame.prototype = {
         if (!executionContext)
             return;
         var rawLocation = /** @type {!WebInspector.DebuggerModel.Location} */ (this._uiSourceCode.uiLocationToRawLocation(executionContext.target(), lineNumber, 0));
-        rawLocation.continueToLocation();
+        this._scriptsPanel.continueToLocation(rawLocation);
     },
 
     dispose: function()

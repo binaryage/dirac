@@ -52,17 +52,13 @@ WebInspector.WatchExpressionsSidebarPane = function()
     addButton.title = WebInspector.UIString("Add watch expression");
 
     this._requiresUpdate = true;
+    WebInspector.context.addFlavorChangeListener(WebInspector.ExecutionContext ,this.refreshExpressions, this);
 }
 
 WebInspector.WatchExpressionsSidebarPane.prototype = {
     wasShown: function()
     {
         this._refreshExpressionsIfNeeded();
-    },
-
-    reset: function()
-    {
-        this.refreshExpressions();
     },
 
     refreshExpressions: function()

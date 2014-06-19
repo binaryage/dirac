@@ -51,6 +51,7 @@ WebInspector.DebuggerModel = function(target)
     /** @type {!WebInspector.Object} */
     this._breakpointResolvedEventTarget = new WebInspector.Object();
 
+    this._isPausing = false;
     WebInspector.settings.pauseOnExceptionEnabled.addChangeListener(this._pauseOnExceptionStateChanged, this);
     WebInspector.settings.pauseOnCaughtException.addChangeListener(this._pauseOnExceptionStateChanged, this);
 
@@ -190,6 +191,7 @@ WebInspector.DebuggerModel.prototype = {
     _debuggerWasDisabled: function()
     {
         this._debuggerEnabled = false;
+        this._isPausing = false;
         this.dispatchEventToListeners(WebInspector.DebuggerModel.Events.DebuggerWasDisabled);
     },
 
@@ -239,6 +241,14 @@ WebInspector.DebuggerModel.prototype = {
             this._agent.resume();
         }
         this._agent.setOverlayMessage(undefined, callback.bind(this));
+        this._isPausing = false;
+    },
+
+    pause: function()
+    {
+        this._isPausing = true;
+        this.skipAllPauses(false);
+        this._agent.pause();
     },
 
     /**
@@ -435,6 +445,7 @@ WebInspector.DebuggerModel.prototype = {
      */
     _setDebuggerPausedDetails: function(debuggerPausedDetails)
     {
+        this._isPausing = false;
         if (this._debuggerPausedDetails)
             this._debuggerPausedDetails.dispose();
         this._debuggerPausedDetails = debuggerPausedDetails;
@@ -545,6 +556,14 @@ WebInspector.DebuggerModel.prototype = {
     isPaused: function()
     {
         return !!this.debuggerPausedDetails();
+    },
+
+    /**
+     * @return {boolean}
+     */
+    isPausing: function()
+    {
+        return this._isPausing;
     },
 
     /**
