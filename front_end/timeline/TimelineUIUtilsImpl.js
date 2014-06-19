@@ -266,6 +266,26 @@ WebInspector.TimelineUIUtilsImpl.buildDetailsNode = function(record, linkifier, 
 }
 
 /**
+ * @param {string=} recordType
+ * @return {boolean}
+ */
+WebInspector.TimelineUIUtilsImpl._needsPreviewElement = function(recordType)
+{
+    if (!recordType)
+        return false;
+    const recordTypes = WebInspector.TimelineModel.RecordType;
+    switch (recordType) {
+    case recordTypes.ResourceSendRequest:
+    case recordTypes.ResourceReceiveResponse:
+    case recordTypes.ResourceReceivedData:
+    case recordTypes.ResourceFinish:
+        return true;
+    default:
+        return false;
+    }
+}
+
+/**
  * @param {!WebInspector.TimelineModel.Record} record
  * @param {!WebInspector.TimelineModel} model
  * @param {!WebInspector.Linkifier} linkifier
@@ -278,7 +298,7 @@ WebInspector.TimelineUIUtilsImpl.generateDetailsContent = function(record, model
     var relatedNode = null;
     var recordData = record.data();
     var barrier = new CallbackBarrier();
-    if (!imageElement && WebInspector.TimelineUIUtils.needsPreviewElement(record.type()))
+    if (!imageElement && WebInspector.TimelineUIUtilsImpl._needsPreviewElement(record.type()))
         WebInspector.DOMPresentationUtils.buildImagePreviewContents(record.target(), recordData["url"], false, barrier.createCallback(saveImage));
     if (recordData["backendNodeId"])
         record.target().domModel.pushNodesByBackendIdsToFrontend([recordData["backendNodeId"]], barrier.createCallback(setRelatedNode));

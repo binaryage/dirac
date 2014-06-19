@@ -213,26 +213,6 @@ WebInspector.TimelineUIUtils.recordStyle = function(record)
 }
 
 /**
- * @param {string=} recordType
- * @return {boolean}
- */
-WebInspector.TimelineUIUtils.needsPreviewElement = function(recordType)
-{
-    if (!recordType)
-        return false;
-    const recordTypes = WebInspector.TimelineModel.RecordType;
-    switch (recordType) {
-    case recordTypes.ResourceSendRequest:
-    case recordTypes.ResourceReceiveResponse:
-    case recordTypes.ResourceReceivedData:
-    case recordTypes.ResourceFinish:
-        return true;
-    default:
-        return false;
-    }
-}
-
-/**
  * @param {!WebInspector.TimelineModel} model
  * @param {!{name: string, tasks: !Array.<!{startTime: number, endTime: number}>, firstTaskIndex: number, lastTaskIndex: number}} info
  * @return {!Element}
