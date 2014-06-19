@@ -29,7 +29,6 @@
 
 import devtools_file_hashes
 import hashlib
-import optimize_svg_file
 import os
 import os.path
 import re
@@ -50,16 +49,6 @@ def check_installed(app_name):
         sys.exit(1)
 
 
-def optimize_svg(svg_file_path):
-    errors = []
-    optimize_svg_file.optimize_svg(svg_file_path, errors)
-    if len(errors) != 0:
-        print "Failed to optimize '%s'" % (svg_file_path)
-        for error in errors:
-            print "ERROR: %s" % (error)
-        return True
-    return False
-
 check_installed("inkscape")
 
 scripts_path = os.path.dirname(os.path.abspath(__file__))
@@ -72,10 +61,6 @@ hashes_file_path = image_sources_path + "/" + hashes_file_name
 
 file_names = os.listdir(image_sources_path)
 svg_file_paths = [image_sources_path + "/" + file_name for file_name in file_names if file_name.endswith(".svg")]
-
-svg_optimization_failures = [optimize_svg(svg_file_path) for svg_file_path in svg_file_paths]
-if any(svg_optimization_failures):
-    sys.exit(1)
 
 svg_file_paths_to_convert = devtools_file_hashes.files_with_invalid_hashes(hashes_file_path, svg_file_paths)
 svg_file_names = [re.sub(".svg$", "", re.sub(".*/", "", file_path)) for file_path in svg_file_paths_to_convert]

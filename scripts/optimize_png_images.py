@@ -79,7 +79,7 @@ check_installed("pngout", None, "Utility can be downloaded here: http://www.jono
 
 def optimize_png(file_name):
     png_full_path = images_path + "/" + file_name + ".png"
-    optimize_command = "%s -o2 %s" % (optimize_script_path, png_full_path)
+    optimize_command = "bash %s -o2 %s" % (optimize_script_path, png_full_path)
     proc = subprocess.Popen(optimize_command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True, cwd=chromium_src_path)
     return proc
 

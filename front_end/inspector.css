@@ -2295,7 +2295,7 @@ body.inactive .sidebar-tree-item.selected {
 }
 
 .responsive-design-status-bar-item .glyph {
-    -webkit-mask-position: -160px 0px;
+    -webkit-mask-position: -164px 0px;
 }
 
 .delete-storage-status-bar-item .glyph {
