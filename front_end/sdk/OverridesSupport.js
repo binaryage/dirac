@@ -270,22 +270,6 @@ WebInspector.OverridesSupport.deviceScaleFactorValidator = function(value)
     return WebInspector.UIString("Value must be non-negative float");
 }
 
-/**
- * @param {string} value
- * @return {string}
- */
-WebInspector.OverridesSupport.networkDomainsValidator = function(value)
-{
-    function test(s)
-    {
-        return /^[\w\-]+(\.[\w\-]+)*$/.test(s.trim());
-    }
-
-    if (!value.trim())
-        return "";
-    return value.split(",").every(test) ? "" : WebInspector.UIString("Value must be a comma-separated list of domains");
-}
-
 // Second element is user agent value.
 // Third element lists device metrics separated by 'x':
 // - screen width,
@@ -579,7 +563,6 @@ WebInspector.OverridesSupport.prototype = {
 
         if (WebInspector.experimentsSettings.networkConditions.isEnabled()) {
             this.settings.emulationEnabled.addChangeListener(this._networkConditionsChanged, this);
-            this.settings.networkConditionsDomains.addChangeListener(this._networkConditionsChanged, this);
             this.settings.networkConditionsThroughput.addChangeListener(this._networkConditionsChanged, this);
         }
 
@@ -777,13 +760,11 @@ WebInspector.OverridesSupport.prototype = {
     _networkConditionsChanged: function()
     {
         if (!this.settings.emulationEnabled.get() || !this.networkThroughputIsLimited()) {
-            NetworkAgent.emulateNetworkConditions([], 0, false, 0, 0, 0);
+            NetworkAgent.emulateNetworkConditions(false, 0, 0, 0);
         } else {
-            var domainsString = this.settings.networkConditionsDomains.get().trim();
-            var domains = domainsString ? domainsString.split(",").map(function (s) { return s.trim(); }) : [];
             var throughput = this.settings.networkConditionsThroughput.get();
             var offline = !throughput;
-            NetworkAgent.emulateNetworkConditions(domains, throughput, offline, 0, throughput, throughput);
+            NetworkAgent.emulateNetworkConditions(offline, 0, throughput, throughput);
         }
         this.maybeHasActiveOverridesChanged();
     },
@@ -896,7 +877,6 @@ WebInspector.OverridesSupport.prototype = {
         this.settings.overrideCSSMedia = WebInspector.settings.createSetting("overrideCSSMedia", false);
         this.settings.emulatedCSSMedia = WebInspector.settings.createSetting("emulatedCSSMedia", "print");
 
-        this.settings.networkConditionsDomains = WebInspector.settings.createSetting("networkConditionsDomains", "");
         this.settings.networkConditionsThroughput = WebInspector.settings.createSetting("networkConditionsThroughput", WebInspector.OverridesSupport._networkThroughputUnlimitedValue);
 
         this.maybeHasActiveOverridesChanged();

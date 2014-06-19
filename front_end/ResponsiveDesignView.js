@@ -456,22 +456,6 @@ WebInspector.ResponsiveDesignView.prototype = {
         var userAgentElement = networkSection.createChild("div", "responsive-design-suite").createChild("div");
         fieldsetElement = userAgentElement.createChild("fieldset");
         fieldsetElement.appendChild(WebInspector.SettingsUI.createSettingInputField("UA", WebInspector.overridesSupport.settings.userAgent, false, 0, "", undefined, false, false, WebInspector.UIString("No override")));
-
-        updateNetworkCheckboxTitle();
-        WebInspector.overridesSupport.settings.networkConditionsDomains.addChangeListener(updateNetworkCheckboxTitle);
-
-        function updateNetworkCheckboxTitle()
-        {
-            var domains = WebInspector.overridesSupport.settings.networkConditionsDomains.get();
-            if (!domains.trim()) {
-                networkCheckbox.title = WebInspector.UIString("Limit for all domains");
-            } else {
-                var trimmed = domains.split(",").map(function(s) { return s.trim(); }).join(", ");
-                if (trimmed.length > 40)
-                    trimmed = trimmed.substring(0, 40) + "...";
-                networkCheckbox.title = WebInspector.UIString("Limit for ") + trimmed;
-            }
-        }
     },
 
     _overridesWarningUpdated: function()

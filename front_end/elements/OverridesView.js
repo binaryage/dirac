@@ -333,9 +333,6 @@ WebInspector.OverridesView.NetworkTab.prototype = {
         var networkThroughput = WebInspector.overridesSupport.createNetworkThroughputSelect(document);
         fieldsetElement.appendChild(networkThroughput);
 
-        var networkDomains = WebInspector.SettingsUI.createSettingInputField("For domains:", WebInspector.overridesSupport.settings.networkConditionsDomains, false, 0, "", WebInspector.OverridesSupport.networkDomainsValidator, false, false, WebInspector.UIString("Leave empty to limit all domains"));
-        fieldsetElement.appendChild(networkDomains);
-
         WebInspector.overridesSupport.settings.networkConditionsThroughput.addChangeListener(this.updateActiveState, this);
     },
 
