@@ -31,7 +31,7 @@ WebInspector.WorkerTargetManager.prototype = {
          */
         function onConnectionReady(connection)
         {
-            this._targetManager.createTarget(connection)
+            this._targetManager.createTarget(event.data.url, connection)
         }
     }
 

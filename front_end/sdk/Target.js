@@ -7,12 +7,14 @@
 /**
  * @constructor
  * @extends {Protocol.Agents}
+ * @param {string} name
  * @param {!InspectorBackendClass.Connection} connection
  * @param {function(!WebInspector.Target)=} callback
  */
-WebInspector.Target = function(connection, callback)
+WebInspector.Target = function(name, connection, callback)
 {
     Protocol.Agents.call(this, connection.agentsMap());
+    this._name = name;
     this._connection = connection;
     /** @type {boolean} */
     this.isMainFrontend = false;
@@ -44,6 +46,15 @@ WebInspector.Target.prototype = {
     id: function()
     {
         return this._id;
+    },
+
+    /**
+     *
+     * @return {string}
+     */
+    name: function()
+    {
+        return this._name;
     },
 
     /**
@@ -244,12 +255,13 @@ WebInspector.TargetManager.prototype = {
     },
 
     /**
+     * @param {string} name
      * @param {!InspectorBackendClass.Connection} connection
      * @param {function(!WebInspector.Target)=} callback
      */
-    createTarget: function(connection, callback)
+    createTarget: function(name, connection, callback)
     {
-        var target = new WebInspector.Target(connection, callbackWrapper.bind(this));
+        var target = new WebInspector.Target(name, connection, callbackWrapper.bind(this));
 
         /**
          * @this {WebInspector.TargetManager}

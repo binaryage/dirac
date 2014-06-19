@@ -266,7 +266,7 @@ WebInspector.Main.prototype = {
             WebInspector.setToolbarColors(WebInspector.queryParam("toolbarColor"), WebInspector.queryParam("textColor"));
 
         WebInspector.targetManager = new WebInspector.TargetManager();
-        WebInspector.targetManager.createTarget(connection, this._doLoadedDoneWithCapabilities.bind(this));
+        WebInspector.targetManager.createTarget(WebInspector.UIString("Main"), connection, this._doLoadedDoneWithCapabilities.bind(this));
         WebInspector.isolatedFileSystemManager = new WebInspector.IsolatedFileSystemManager();
         WebInspector.isolatedFileSystemDispatcher = new WebInspector.IsolatedFileSystemDispatcher(WebInspector.isolatedFileSystemManager);
         WebInspector.workspace = new WebInspector.Workspace(WebInspector.isolatedFileSystemManager.mapping());
@@ -805,7 +805,7 @@ WebInspector.Main._addWebSocketTarget = function(ws)
      */
     function callback(connection)
     {
-        WebInspector.targetManager.createTarget(connection);
+        WebInspector.targetManager.createTarget(ws, connection);
     }
     new InspectorBackendClass.WebSocketConnection(ws, callback);
 }

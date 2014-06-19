@@ -140,6 +140,7 @@ WebInspector.ConsoleView = function(hideContextSelector)
 
     this._registerWithMessageSink();
     WebInspector.targetManager.observeTargets(this);
+    WebInspector.context.addFlavorChangeListener(WebInspector.ExecutionContext, this._executionContextChangedExternally, this);
 }
 
 WebInspector.ConsoleView.prototype = {
@@ -318,6 +319,8 @@ WebInspector.ConsoleView.prototype = {
             }
         }
         this._executionContextSelector.selectElement().insertBefore(newOption, insertBeforeOption);
+        if (executionContext === WebInspector.context.flavor(WebInspector.ExecutionContext))
+            this._executionContextSelector.select(newOption);
     },
 
     /**
@@ -337,6 +340,22 @@ WebInspector.ConsoleView.prototype = {
         this._prompt.clearAutoComplete(true);
         if (!this._showAllMessagesCheckbox.checked())
             this._updateMessageList();
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _executionContextChangedExternally: function(event)
+    {
+        var executionContext =  /** @type {?WebInspector.ExecutionContext} */ (event.data);
+        if (!executionContext)
+            return;
+
+        var options = this._executionContextSelector.selectElement().options;
+        for (var i = 0; i < options.length; ++i) {
+            if (options[i].__executionContext === executionContext)
+                this._executionContextSelector.select(options[i]);
+        }
     },
 
     /**

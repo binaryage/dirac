@@ -374,7 +374,7 @@
             'front_end/sources/UISourceCodeFrame.js',
             'front_end/sources/WatchExpressionsSidebarPane.js',
             'front_end/sources/WorkersSidebarPane.js',
-            'front_end/sources/ThreadsToolbar.js',
+            'front_end/sources/TargetsToolbar.js',
         ],
         'devtools_timeline_js_files': [
             'front_end/timeline/CountersGraph.js',

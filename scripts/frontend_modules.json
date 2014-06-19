@@ -293,7 +293,7 @@
             "sources/UISourceCodeFrame.js",
             "sources/WatchExpressionsSidebarPane.js",
             "sources/WorkersSidebarPane.js",
-            "sources/ThreadsToolbar.js"
+            "sources/TargetsToolbar.js"
         ]
     },
     {

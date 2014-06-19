@@ -42,7 +42,7 @@ importScript("StyleSheetOutlineDialog.js");
 importScript("TabbedEditorContainer.js");
 importScript("WatchExpressionsSidebarPane.js");
 importScript("WorkersSidebarPane.js");
-importScript("ThreadsToolbar.js");
+importScript("TargetsToolbar.js");
 importScript("ScriptFormatterEditorAction.js");
 importScript("InplaceFormatterEditorAction.js");
 importScript("ScriptFormatter.js");
@@ -69,7 +69,7 @@ WebInspector.SourcesPanel = function(workspaceForTest)
     var helpSection = WebInspector.shortcutsScreen.section(WebInspector.UIString("Sources Panel"));
     this.debugToolbar = this._createDebugToolbar();
     this._debugToolbarDrawer = this._createDebugToolbarDrawer();
-    this.threadsToolbar = new WebInspector.ThreadsToolbar();
+    this._targetsToolbar = new WebInspector.TargetsToolbar();
 
     const initialDebugSidebarWidth = 225;
     this._splitView = new WebInspector.SplitView(true, true, "sourcesPanelSplitViewState", initialDebugSidebarWidth);
@@ -1052,7 +1052,7 @@ WebInspector.SourcesPanel.prototype = {
         var vbox = new WebInspector.VBox();
         vbox.element.appendChild(this._debugToolbarDrawer);
         vbox.element.appendChild(this.debugToolbar);
-        vbox.element.appendChild(this.threadsToolbar.element);
+        vbox.element.appendChild(this._targetsToolbar.element);
         vbox.setMinimumAndPreferredSizes(25, 25, WebInspector.SourcesPanel.minToolbarWidth, 100);
         var sidebarPaneStack = new WebInspector.SidebarPaneStack();
         sidebarPaneStack.element.classList.add("flex-auto");
