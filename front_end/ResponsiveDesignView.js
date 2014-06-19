@@ -19,11 +19,18 @@ WebInspector.ResponsiveDesignView = function(inspectedPagePlaceholder)
 
     this._createToolbar();
 
+    this._mediaInspector = new WebInspector.MediaQueryInspector();
+    this._mediaInspectorContainer = this._responsiveDesignContainer.element.createChild("div");
+    this._updateMediaQueryInspector();
+
     this._canvasContainer = new WebInspector.View();
     this._canvasContainer.element.classList.add("responsive-design");
     this._canvasContainer.show(this._responsiveDesignContainer.element);
 
     this._canvas = this._canvasContainer.element.createChild("canvas", "fill");
+
+    this._rulerGlasspane = this._canvasContainer.element.createChild("div", "responsive-design-ruler-glasspane");
+    this._rulerGlasspane.appendChild(this._mediaInspector.rulerDecorationLayer());
 
     this._warningMessage = this._canvasContainer.element.createChild("div", "responsive-design-warning hidden");
     this._warningMessage.createChild("div", "warning-icon-small");
@@ -52,6 +59,7 @@ WebInspector.ResponsiveDesignView = function(inspectedPagePlaceholder)
 
     WebInspector.zoomManager.addEventListener(WebInspector.ZoomManager.Events.ZoomChanged, this._onZoomChanged, this);
     WebInspector.overridesSupport.addEventListener(WebInspector.OverridesSupport.Events.EmulationStateChanged, this._emulationEnabledChanged, this);
+    this._mediaInspector.addEventListener(WebInspector.MediaQueryInspector.Events.HeightUpdated, this.onResize, this);
     this._emulationEnabledChanged();
     this._overridesWarningUpdated();
 };
@@ -75,6 +83,7 @@ WebInspector.ResponsiveDesignView.prototype = {
     _emulationEnabledChanged: function()
     {
         var enabled = WebInspector.overridesSupport.emulationEnabled();
+        this._mediaInspector.setEnabled(enabled);
         if (enabled && !this._enabled) {
             this._invalidateCache();
             this._ignoreResize = true;
@@ -237,7 +246,6 @@ WebInspector.ResponsiveDesignView.prototype = {
 
         // Draw vertical ruler.
         for (var x = 0; x < dipGridWidth; x += rulerSubStep) {
-            var color = darkLineColor;
             var y = -rulerWidth / 4;
             if (!(x % (rulerStep / 4)))
                 y = -rulerWidth / 2;
@@ -260,7 +268,6 @@ WebInspector.ResponsiveDesignView.prototype = {
 
         // Draw horizontal ruler.
         for (var y = 0; y < dipGridHeight; y += rulerSubStep) {
-            var color = darkLineColor;
             x = -rulerWidth / 4;
             if (!(y % (rulerStep / 4)))
                 x = -rulerWidth / 2;
@@ -326,7 +333,10 @@ WebInspector.ResponsiveDesignView.prototype = {
 
         if (this._cachedZoomFactor !== zoomFactor) {
             var cssRulerWidth = WebInspector.ResponsiveDesignView.RulerWidth / zoomFactor + "px";
+            this._rulerGlasspane.style.height = cssRulerWidth;
+            this._rulerGlasspane.style.left = cssRulerWidth;
             this._slidersContainer.style.left = cssRulerWidth;
+            this._mediaInspector.translateZero(WebInspector.ResponsiveDesignView.RulerWidth / zoomFactor);
             this._slidersContainer.style.top = cssRulerWidth;
             this._warningMessage.style.height = cssRulerWidth;
 
@@ -384,6 +394,12 @@ WebInspector.ResponsiveDesignView.prototype = {
             this._createNetworkSection();
         }
         this._toolbarElement.createChild("div", "responsive-design-separator");
+
+        var moreButtonContainer = this._toolbarElement.createChild("div", "responsive-design-more-button-container");
+        var moreButton = moreButtonContainer.createChild("button", "responsive-design-more-button");
+        moreButton.title = WebInspector.UIString("More overrides");
+        moreButton.addEventListener("click", this._showEmulationInDrawer.bind(this), false);
+        moreButton.textContent = "\u2026";
     },
 
     _createButtonsSection: function()
@@ -394,10 +410,12 @@ WebInspector.ResponsiveDesignView.prototype = {
         buttonsSection.appendChild(resetButton.element);
         resetButton.addEventListener("click", WebInspector.overridesSupport.reset, WebInspector.overridesSupport);
 
-        var moreButton = buttonsSection.createChild("button", "responsive-design-more-button");
-        moreButton.title = WebInspector.UIString("More overrides");
-        moreButton.addEventListener("click", this._showEmulationInDrawer.bind(this), false);
-        moreButton.textContent = "\u2026";
+        // Media Query Inspector.
+        this._toggleMediaInspectorButton = new WebInspector.StatusBarButton(WebInspector.UIString("Media queries."), "responsive-design-toggle-media-inspector");
+        this._toggleMediaInspectorButton.toggled = WebInspector.settings.showMediaQueryInspector.get();
+        this._toggleMediaInspectorButton.addEventListener("click", this._onToggleMediaInspectorButtonClick, this);
+        WebInspector.settings.showMediaQueryInspector.addChangeListener(this._updateMediaQueryInspector, this);
+        buttonsSection.appendChild(this._toggleMediaInspectorButton.element);
     },
 
     _createDeviceSection: function()
@@ -456,6 +474,23 @@ WebInspector.ResponsiveDesignView.prototype = {
         var userAgentElement = networkSection.createChild("div", "responsive-design-suite").createChild("div");
         fieldsetElement = userAgentElement.createChild("fieldset");
         fieldsetElement.appendChild(WebInspector.SettingsUI.createSettingInputField("UA", WebInspector.overridesSupport.settings.userAgent, false, 0, "", undefined, false, false, WebInspector.UIString("No override")));
+    },
+
+    _onToggleMediaInspectorButtonClick: function()
+    {
+        WebInspector.settings.showMediaQueryInspector.set(!this._toggleMediaInspectorButton.toggled);
+    },
+
+    _updateMediaQueryInspector: function()
+    {
+        this._toggleMediaInspectorButton.toggled = WebInspector.settings.showMediaQueryInspector.get();
+        if (this._mediaInspector.isShowing() === WebInspector.settings.showMediaQueryInspector.get())
+            return;
+        if (this._mediaInspector.isShowing())
+            this._mediaInspector.detach();
+        else
+            this._mediaInspector.show(this._mediaInspectorContainer);
+        this.onResize();
     },
 
     _overridesWarningUpdated: function()

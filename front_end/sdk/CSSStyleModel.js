@@ -78,6 +78,26 @@ WebInspector.CSSStyleModel.MediaTypes = ["all", "braille", "embossed", "handheld
 
 WebInspector.CSSStyleModel.prototype = {
     /**
+     * @param {function(!Array.<!WebInspector.CSSMedia>)} userCallback
+     */
+    getMediaQueries: function(userCallback)
+    {
+        /**
+         * @param {?Protocol.Error} error
+         * @param {?Array.<!CSSAgent.CSSMedia>} payload
+         * @this {!WebInspector.CSSStyleModel}
+         */
+        function callback(error, payload)
+        {
+            var models = [];
+            if (!error && payload)
+                models = WebInspector.CSSMedia.parseMediaArrayPayload(this, payload);
+            userCallback(models);
+        }
+        this._agent.getMediaQueries(callback.bind(this));
+    },
+
+    /**
      * @return {boolean}
      */
     isEnabled: function()
@@ -1335,6 +1355,61 @@ WebInspector.CSSProperty.prototype = {
 
 /**
  * @constructor
+ * @param {!CSSAgent.MediaQueryExpression} payload
+ */
+WebInspector.CSSMediaQueryExpression = function(payload)
+{
+    this._value = payload.value;
+    this._unit = payload.unit;
+    this._feature = payload.feature;
+    this._computedLength = payload.computedLength || null;
+}
+
+/**
+ * @param {!CSSAgent.MediaQueryExpression} payload
+ */
+WebInspector.CSSMediaQueryExpression.parsePayload = function(payload)
+{
+    return new WebInspector.CSSMediaQueryExpression(payload);
+}
+
+WebInspector.CSSMediaQueryExpression.prototype = {
+    /**
+     * @return {number}
+     */
+    value: function()
+    {
+        return this._value;
+    },
+
+    /**
+     * @return {string}
+     */
+    unit: function()
+    {
+        return this._unit;
+    },
+
+    /**
+     * @return {string}
+     */
+    feature: function()
+    {
+        return this._feature;
+    },
+
+    /**
+     * @return {?number}
+     */
+    computedLength: function()
+    {
+        return this._computedLength;
+    }
+}
+
+
+/**
+ * @constructor
  * @param {!WebInspector.CSSStyleModel} cssModel
  * @param {!CSSAgent.CSSMedia} payload
  */
@@ -1346,6 +1421,17 @@ WebInspector.CSSMedia = function(cssModel, payload)
     this.sourceURL = payload.sourceURL || "";
     this.range = payload.range ? WebInspector.TextRange.fromObject(payload.range) : null;
     this.parentStyleSheetId = payload.parentStyleSheetId;
+    this.mediaList = null;
+    if (payload.mediaList) {
+        this.mediaList = [];
+        for (var i = 0; i < payload.mediaList.length; ++i) {
+            var mediaQueryPayload = payload.mediaList[i];
+            var mediaQueryExpressions = [];
+            for (var j = 0; j < mediaQueryPayload.length; ++j)
+                mediaQueryExpressions.push(WebInspector.CSSMediaQueryExpression.parsePayload(mediaQueryPayload[j]));
+            this.mediaList.push(mediaQueryExpressions);
+        }
+    }
 }
 
 WebInspector.CSSMedia.Source = {

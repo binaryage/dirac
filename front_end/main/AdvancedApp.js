@@ -170,6 +170,10 @@ WebInspector.Toolbox = function()
     WebInspector.overridesSupport = window.opener.WebInspector.overridesSupport;
     WebInspector.settings = window.opener.WebInspector.settings;
     WebInspector.experimentsSettings = window.opener.WebInspector.experimentsSettings;
+    WebInspector.cssModel = window.opener.WebInspector.cssModel;
+    WebInspector.domModel = window.opener.WebInspector.domModel;
+    WebInspector.workspace = window.opener.WebInspector.workspace;
+    WebInspector.Revealer = window.opener.WebInspector.Revealer;
     WebInspector.installPortStyles();
 
     var advancedApp = /** @type {!WebInspector.AdvancedApp} */ (window.opener.WebInspector.app);

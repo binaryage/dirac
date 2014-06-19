@@ -48,6 +48,7 @@
             'front_end/InspectorFrontendEventSink.js',
             'front_end/InspectorFrontendHostStub.js',
             'front_end/jsdifflib.js',
+            'front_end/MediaQueryInspector.js',
             'front_end/ResponsiveDesignView.js',
             'front_end/ScreencastView.js',
             'front_end/TestController.js',

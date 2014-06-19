@@ -176,6 +176,7 @@
         "name": "responsive_design",
         "dependencies": ["components"],
         "sources": [
+            "MediaQueryInspector.js",
             "ResponsiveDesignView.js"
         ]
     },

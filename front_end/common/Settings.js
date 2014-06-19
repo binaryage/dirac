@@ -90,6 +90,7 @@ WebInspector.Settings = function()
     this.pauseOnExceptionEnabled = this.createSetting("pauseOnExceptionEnabled", false);
     this.pauseOnCaughtException = this.createSetting("pauseOnCaughtException", false);
     this.enableAsyncStackTraces = this.createSetting("enableAsyncStackTraces", false);
+    this.showMediaQueryInspector = this.createSetting("showMediaQueryInspector", false);
 }
 
 WebInspector.Settings.prototype = {

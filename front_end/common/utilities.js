@@ -482,6 +482,27 @@ Object.defineProperty(Array.prototype, "rotate",
     }
 });
 
+Object.defineProperty(Array.prototype, "sortNumbers",
+{
+    /**
+     * @this {Array.<number>}
+     */
+    value: function()
+    {
+        /**
+         * @param {number} a
+         * @param {number} b
+         * @return {number}
+         */
+        function numericComparator(a, b)
+        {
+            return a - b;
+        }
+
+        this.sort(numericComparator);
+    }
+});
+
 Object.defineProperty(Uint32Array.prototype, "sort", {
     value: Array.prototype.sort
 });

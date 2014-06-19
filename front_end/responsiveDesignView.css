@@ -278,6 +278,14 @@ body.platform-mac .responsive-design-toolbar select {
     background-color: white;
 }
 
+.responsive-design-more-button-container {
+    flex: auto;
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-end;
+    overflow: hidden;
+}
+
 .responsive-design-more-button {
     -webkit-appearance: none;
     border: 0;
@@ -360,4 +368,127 @@ body.platform-mac .responsive-design-toolbar select {
 
 .responsive-design-warning > div {
     flex: none;
+}
+
+.responsive-design-ruler-glasspane {
+    position: absolute;
+    left: 0px;
+    right: 0px;
+    top: 0px;
+    background-color: transparent;
+}
+
+.responsive-design-toggle-media-inspector .glyph {
+    background-color: rgb(180, 180, 180);
+    -webkit-mask-position: -128px -48px;
+}
+
+.responsive-design-toolbar button.responsive-design-toggle-media-inspector.toggled-on .glyph:not(.shadow) {
+    background-color: rgb(105, 194, 236) !important;
+}
+
+/* media */
+
+.view.media-inspector-view {
+    overflow-y: auto;
+    overflow-x: hidden;
+    background-color: rgb(0, 0, 0);
+    border-bottom: 1px solid rgb(163, 163, 163);
+    flex: none;
+}
+
+.view.media-inspector-view-fixed-height {
+    height: 100px;
+}
+
+.media-inspector-view::-webkit-scrollbar {
+    background: rgb(54, 54, 54);
+}
+
+.media-inspector-view::-webkit-scrollbar-thumb {
+    background: rgb(94, 94, 94);
+}
+
+.media-inspector-marker-container {
+    position: relative;
+    margin: 2px 0 2px 0;
+}
+
+.media-inspector-min-width-label-container {
+    position: relative;
+}
+
+.media-inspector-marker {
+    position: absolute;
+    top: 0px;
+    bottom: 0px;
+    white-space: nowrap;
+}
+
+.media-inspector-marker-container:hover {
+    background-color: rgb(32, 32, 32);
+}
+
+.media-inspector-marker-container:hover .media-inspector-marker {
+    -webkit-filter: brightness(125%);
+}
+
+.media-inspector-marker-max-width {
+    background-color: rgba(111, 168, 220, 0.66);
+    border-right: 5px solid rgba(111, 168, 220, 0.86);
+}
+
+.media-inspector-marker-min-max-width {
+    background-color: rgba(100, 200, 0, 0.66);
+    border-left: 5px solid rgba(100, 200, 0, 0.86);
+    border-right: 5px solid rgba(100, 200, 0, 0.86);
+}
+
+.media-inspector-marker-min-width {
+    background-color: rgba(225, 124, 0, 0.66);
+    border-left: 5px solid rgba(225, 124, 0, 0.86);
+}
+
+.media-inspector-marker-label {
+    position: absolute;
+    color: rgb(180, 180, 180);
+}
+
+.media-inspector-min-label::after {
+    padding-left: 2px;
+    height: 6px;
+    width: 11px;
+    content: url(Images/graphLabelCalloutLeft.png);
+    -webkit-filter: invert(0.8);
+}
+
+.media-inspector-max-label::before {
+    padding-right: 2px;
+    height: 6px;
+    content: url(Images/graphLabelCalloutRight.png);
+    -webkit-filter: invert(0.8);
+}
+
+.media-inspector-threshold-serif {
+    position: absolute;
+    top: 0px;
+    bottom: 0px;
+    width: 5px;
+    margin-left: -2px;
+}
+
+.media-inspector-threshold-serif::before {
+    content: ".";
+    color: transparent;
+    position: absolute;
+    left: 2px;
+    right: 2px;
+    top: 0px;
+    bottom: 0px;
+    background-color: rgba(225, 124, 0, 0.86);
+}
+
+.media-inspector-threshold-serif:hover::before {
+    left: 1px;
+    right: 1px;
 }
