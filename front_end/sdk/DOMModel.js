@@ -1857,6 +1857,7 @@ WebInspector.DefaultDOMNodeHighlighter.prototype = {
      */
     setInspectModeEnabled: function(enabled, inspectUAShadowDOM, config, callback)
     {
+        WebInspector.overridesSupport.setTouchEmulationSuspended(enabled);
         this._agent.setInspectModeEnabled(enabled, inspectUAShadowDOM, config, callback);
     }
 }

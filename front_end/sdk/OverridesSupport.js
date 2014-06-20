@@ -37,6 +37,7 @@
 WebInspector.OverridesSupport = function(responsiveDesignAvailable)
 {
     WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.MainFrameNavigated, this._onMainFrameNavigated.bind(this), this);
+    this._touchEmulationSuspended = false;
     this._emulateViewportEnabled = false;
     this._userAgent = "";
     this._pageResizer = null;
@@ -553,6 +554,16 @@ WebInspector.OverridesSupport.prototype = {
             && this.settings.emulateViewport.get() === device.viewport;
     },
 
+    /**
+     * @param {boolean} suspended
+     */
+    setTouchEmulationSuspended: function(suspended)
+    {
+        this._touchEmulationSuspended = suspended;
+        if (this._initialized)
+            this._emulateTouchEventsChanged();
+    },
+
     applyInitialOverrides: function()
     {
         if (!this._target) {
@@ -759,7 +770,7 @@ WebInspector.OverridesSupport.prototype = {
 
     _emulateTouchEventsChanged: function()
     {
-        var emulateTouch = this.emulationEnabled() && this.settings.emulateTouch.get();
+        var emulateTouch = this.emulationEnabled() && this.settings.emulateTouch.get() && !this._touchEmulationSuspended;
         var targets = WebInspector.targetManager.targets();
         for (var i = 0; i < targets.length; ++i)
             targets[i].domModel.emulateTouchEventObjects(emulateTouch);
