@@ -553,18 +553,16 @@ WebInspector.NetworkRequest.prototype = {
     },
 
     /**
-     * @return {string|undefined}
+     * @return {string}
      */
     requestHttpVersion: function()
     {
         var headersText = this.requestHeadersText();
-        if (!headersText) {
-            // SPDY header.
-            return this.requestHeaderValue(":version");
-        }
+        if (!headersText)
+            return this.requestHeaderValue("version") || this.requestHeaderValue(":version") || "unknown";
         var firstLine = headersText.split(/\r\n/)[0];
         var match = firstLine.match(/(HTTP\/\d+\.\d+)$/);
-        return match ? match[1] : undefined;
+        return match ? match[1] : "HTTP/0.9";
     },
 
     /**
@@ -689,17 +687,16 @@ WebInspector.NetworkRequest.prototype = {
     },
 
     /**
-     * @return {string|undefined}
+     * @return {string}
      */
-    get responseHttpVersion()
+    responseHttpVersion: function()
     {
         var headersText = this._responseHeadersText;
-        if (!headersText) {
-            // SPDY header.
-            return this.responseHeaderValue(":version");
-        }
-        var match = headersText.match(/^(HTTP\/\d+\.\d+)/);
-        return match ? match[1] : undefined;
+        if (!headersText)
+            return this.responseHeaderValue("version") || this.responseHeaderValue(":version") || "unknown";
+        var firstLine = headersText.split(/\r\n/)[0];
+        var match = firstLine.match(/^(HTTP\/\d+\.\d+)/);
+        return match ? match[1] : "HTTP/0.9";
     },
 
     /**

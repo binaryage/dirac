@@ -97,7 +97,7 @@ WebInspector.HAREntry.prototype = {
         return {
             status: this._request.statusCode,
             statusText: this._request.statusText,
-            httpVersion: this._request.responseHttpVersion,
+            httpVersion: this._request.responseHttpVersion(),
             headers: this._request.responseHeaders,
             cookies: this._buildCookies(this._request.responseCookies || []),
             content: this._buildContent(),
