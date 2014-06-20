@@ -449,21 +449,46 @@ body.platform-mac .responsive-design-toolbar select {
     border-left: 5px solid rgba(225, 124, 0, 0.86);
 }
 
+.media-inspector-max-label-filler {
+    flex: auto;
+}
+
+.media-inspector-min-label-filler {
+    display: flex;
+    justify-content: flex-end;
+}
+
 .media-inspector-marker-label {
-    position: absolute;
     color: rgb(180, 180, 180);
+    position: relative;
+}
+
+.media-inspector-min-label {
+    padding-right: 11px;
 }
 
 .media-inspector-min-label::after {
+    position: absolute;
     padding-left: 2px;
+    right: -1px;
     height: 6px;
-    width: 11px;
     content: url(Images/graphLabelCalloutLeft.png);
     -webkit-filter: invert(0.8);
 }
 
+.media-inspector-max-label {
+    background-color: rgba(0, 0, 0, 0.5);
+    padding-left: 11px;
+}
+
+.media-inspector-marker-container:hover .media-inspector-max-label {
+    background-color: rgba(0, 0, 0, 0.3);
+}
+
 .media-inspector-max-label::before {
+    position: absolute;
     padding-right: 2px;
+    left: -1px;
     height: 6px;
     content: url(Images/graphLabelCalloutRight.png);
     -webkit-filter: invert(0.8);

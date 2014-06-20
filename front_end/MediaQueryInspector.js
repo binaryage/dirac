@@ -271,10 +271,7 @@ WebInspector.MediaQueryInspector.prototype = {
         var zoomFactor = WebInspector.zoomManager.zoomFactor();
         var minWidthValue = model.minWidthExpression ? model.minWidthExpression.computedLength() : 0;
 
-        var container = document.createElementWithClass("div", "media-inspector-marker-container");
-        // Enforce container height if it does not have any children in normal flow.
-        if (model.sectionNumber === 0)
-            container.textContent = ".";
+        var container = document.createElementWithClass("div", "media-inspector-marker-container hbox");
         var markerElement = container.createChild("div", "media-inspector-marker");
         const styleClassPerSection = [
             "media-inspector-marker-max-width",
@@ -282,38 +279,32 @@ WebInspector.MediaQueryInspector.prototype = {
             "media-inspector-marker-min-width"
         ];
         markerElement.classList.add(styleClassPerSection[model.sectionNumber]);
-        markerElement.style.left = (minWidthValue ? minWidthValue / zoomFactor + this._zeroOffset : 0) + "px";
+        var leftPixelValue = minWidthValue ? minWidthValue / zoomFactor + this._zeroOffset : 0;
+        markerElement.style.left = leftPixelValue + "px";
+        var widthPixelValue = null;
         if (model.maxWidthExpression && model.minWidthExpression)
-            markerElement.style.width = (model.maxWidthExpression.computedLength() - minWidthValue) / zoomFactor + "px";
+            widthPixelValue = (model.maxWidthExpression.computedLength() - minWidthValue) / zoomFactor;
         else if (model.maxWidthExpression)
-            markerElement.style.width = model.maxWidthExpression.computedLength() / zoomFactor + this._zeroOffset + "px";
+            widthPixelValue = model.maxWidthExpression.computedLength() / zoomFactor + this._zeroOffset;
         else
             markerElement.style.right = "0";
+        if (typeof widthPixelValue === "number")
+            markerElement.style.width = widthPixelValue + "px";
 
-        const minLabelOverlapMarkerValue = 4;
-        if (model.minWidthExpression) {
-            var minLabelContainer = container.createChild("div", "media-inspector-min-width-label-container");
-            minLabelContainer.style.maxWidth = markerElement.style.left;
-            minLabelContainer.textContent = ".";
-            var label = document.createElementWithClass("span", "media-inspector-marker-label");
-            label.classList.add("media-inspector-min-label");
-            label.textContent = model.minWidthExpression.computedLength() + "px";
-            label.style.right = -minLabelOverlapMarkerValue + "px";
-            minLabelContainer.appendChild(label);
-        }
-        // Image might not be loaded on the moment of label measuring. To avoid
-        // incorrect rendering, image size is hardcoded and label is measured without image.
-        const arrowImageWidth = 13;
-        const maxLabelOverlapMarkerValue = 2 / zoomFactor;
+        var maxLabelFiller = container.createChild("div", "media-inspector-max-label-filler");
         if (model.maxWidthExpression) {
-            var label = document.createElementWithClass("span", "media-inspector-marker-label");
+            maxLabelFiller.style.maxWidth = widthPixelValue + leftPixelValue + "px";
+            var label = container.createChild("span", "media-inspector-marker-label media-inspector-max-label");
             label.textContent = model.maxWidthExpression.computedLength() + "px";
-            var labelSize = label.measurePreferredSize(this.element);
-            // Append arrow image to label.
-            label.classList.add("media-inspector-max-label");
-            label.style.right = -labelSize.width - arrowImageWidth - maxLabelOverlapMarkerValue + "px";
-            markerElement.appendChild(label);
         }
+
+        if (model.minWidthExpression) {
+            var minLabelFiller = maxLabelFiller.createChild("div", "media-inspector-min-label-filler");
+            minLabelFiller.style.maxWidth = leftPixelValue + "px";
+            var label = minLabelFiller.createChild("span", "media-inspector-marker-label media-inspector-min-label");
+            label.textContent = model.minWidthExpression.computedLength() + "px";
+        }
+
         return container;
     },
 
