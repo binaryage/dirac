@@ -34,7 +34,7 @@ WebInspector.ExecutionContextSelector.prototype = {
     {
         target.runtimeModel.removeEventListener(WebInspector.RuntimeModel.Events.ExecutionContextCreated, this._onExecutionContextCreated, this);
         target.runtimeModel.removeEventListener(WebInspector.RuntimeModel.Events.ExecutionContextDestroyed, this._onExecutionContextDestroyed, this);
-        var currentExecutionContext = WebInspector.context.flavor(WebInspector.Target);
+        var currentExecutionContext = WebInspector.context.flavor(WebInspector.ExecutionContext);
         if (currentExecutionContext && currentExecutionContext.target() === target)
             this._currentExecutionContextGone();
 

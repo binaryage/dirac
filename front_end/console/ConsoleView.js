@@ -201,6 +201,7 @@ WebInspector.ConsoleView.prototype = {
      */
     targetRemoved: function(target)
     {
+        this._clearExecutionContextsForTarget(target);
         target.consoleModel.removeEventListener(WebInspector.ConsoleModel.Events.MessageAdded, this._onConsoleMessageAdded, this);
         target.consoleModel.removeEventListener(WebInspector.ConsoleModel.Events.ConsoleCleared, this._consoleCleared, this);
         target.consoleModel.removeEventListener(WebInspector.ConsoleModel.Events.CommandEvaluated, this._commandEvaluated, this);
@@ -329,8 +330,28 @@ WebInspector.ConsoleView.prototype = {
     _onExecutionContextDestroyed: function(event)
     {
         var executionContext = /** @type {!WebInspector.ExecutionContext} */ (event.data);
+        this._executionContextDestroyed(executionContext);
+    },
+
+    /**
+     * @param {!WebInspector.ExecutionContext} executionContext
+     */
+    _executionContextDestroyed: function(executionContext)
+    {
         var option = this._optionByExecutionContext.remove(executionContext);
         option.remove();
+    },
+
+    /**
+     * @param {!WebInspector.Target} target
+     */
+    _clearExecutionContextsForTarget: function(target)
+    {
+        var executionContexts = this._optionByExecutionContext.keys();
+        for (var i = 0; i < executionContexts.length; ++i) {
+            if (executionContexts[i].target() === target)
+                this._executionContextDestroyed(executionContexts[i]);
+        }
     },
 
     _executionContextChanged: function()
