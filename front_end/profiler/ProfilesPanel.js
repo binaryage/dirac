@@ -636,7 +636,7 @@ WebInspector.ProfilesPanel.prototype = {
         if (enable)
             this.recordButton.title = this._selectedProfileType ? this._selectedProfileType.buttonTooltip : "";
         else
-            this.recordButton.title = WebInspector.UIString("Another profiler is already active");
+            this.recordButton.title = WebInspector.anotherProfilerActiveLabel();
         if (this._selectedProfileType)
             this._launcherView.updateProfileType(this._selectedProfileType, enable);
     },

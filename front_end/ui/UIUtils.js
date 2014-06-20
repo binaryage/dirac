@@ -528,6 +528,14 @@ WebInspector.copyLinkAddressLabel = function()
     return WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Copy link address" : "Copy Link Address");
 }
 
+/**
+ * @return {string}
+ */
+WebInspector.anotherProfilerActiveLabel = function()
+{
+    return WebInspector.UIString("Another profiler is already active");
+}
+
 WebInspector.installPortStyles = function()
 {
     var platform = WebInspector.platform();

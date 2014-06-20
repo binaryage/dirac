@@ -702,7 +702,7 @@ WebInspector.TimelinePanel.prototype = {
             this.toggleTimelineButton.title = WebInspector.UIString("Stop pending");
             this.toggleTimelineButton.setEnabled(false);
         } else if (this._model.target().profilingLock.isAcquired()) {
-            this.toggleTimelineButton.title = WebInspector.UIString("Another profiler is already active");
+            this.toggleTimelineButton.title = WebInspector.anotherProfilerActiveLabel();
             this.toggleTimelineButton.setEnabled(false);
         } else {
             this.toggleTimelineButton.title = WebInspector.UIString("Record");
