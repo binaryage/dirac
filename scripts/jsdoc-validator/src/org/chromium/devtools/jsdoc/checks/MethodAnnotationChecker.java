@@ -1,15 +1,12 @@
 package org.chromium.devtools.jsdoc.checks;
 
 import com.google.common.base.Joiner;
-import com.google.javascript.rhino.head.Token;
-import com.google.javascript.rhino.head.ast.AstNode;
-import com.google.javascript.rhino.head.ast.Comment;
-import com.google.javascript.rhino.head.ast.FunctionNode;
-import com.google.javascript.rhino.head.ast.ObjectProperty;
-import com.google.javascript.rhino.head.ast.ReturnStatement;
+import com.google.javascript.jscomp.NodeUtil;
+import com.google.javascript.rhino.JSDocInfo;
+import com.google.javascript.rhino.Node;
+import com.google.javascript.rhino.Token;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -26,13 +23,13 @@ public final class MethodAnnotationChecker extends ContextTrackingChecker {
     private final Set<FunctionRecord> throwingFunctions = new HashSet<>();
 
     @Override
-    public void enterNode(AstNode node) {
+    public void enterNode(Node node) {
         switch (node.getType()) {
         case Token.FUNCTION:
-            handleFunction((FunctionNode) node);
+            handleFunction(node);
             break;
         case Token.RETURN:
-            handleReturn((ReturnStatement) node);
+            handleReturn(node);
             break;
         case Token.THROW:
             handleThrow();
@@ -42,49 +39,52 @@ public final class MethodAnnotationChecker extends ContextTrackingChecker {
         }
     }
 
-    private void handleFunction(FunctionNode node) {
-        int actualParamCount = node.getParams().size();
+    private void handleFunction(Node functionNode) {
+        Node parametersNode = NodeUtil.getFunctionParameters(functionNode);
+        int actualParamCount = parametersNode.getChildCount();
         if (actualParamCount == 0) {
             return;
         }
-        Comment jsDocNode = AstUtil.getJsDocNode(node);
-        String[] nonAnnotatedParams = getNonAnnotatedParamData(node.getParams(), jsDocNode);
-        if (nonAnnotatedParams.length > 0 && node.getParams().size() != nonAnnotatedParams.length) {
-            reportErrorAtNodeStart(jsDocNode, String.format(
-                    "No @param JSDoc tag found for parameters: [%s]",
-                    Joiner.on(',').join(nonAnnotatedParams)));
+        JSDocInfo jsDocInfo = NodeUtil.getBestJSDocInfo(functionNode);
+        String[] nonAnnotatedParams = getNonAnnotatedParamData(parametersNode, jsDocInfo);
+        if (nonAnnotatedParams.length > 0 && actualParamCount != nonAnnotatedParams.length) {
+            reportErrorAtOffset(jsDocInfo.getOriginalCommentPosition(),
+                    String.format(
+                            "No @param JSDoc tag found for parameters: [%s]",
+                            Joiner.on(',').join(nonAnnotatedParams)));
         }
     }
 
-    private String[] getNonAnnotatedParamData(List<AstNode> params, Comment jsDocNode) {
-        if (jsDocNode == null) {
+    private String[] getNonAnnotatedParamData(Node params, JSDocInfo info) {
+        if (info == null) {
             return new String[0];
         }
-        Set<String> paramNames = new HashSet<>();
-        for (AstNode paramNode : params) {
+        Set<String> formalParamNames = new HashSet<>();
+        for (int i = 0, childCount = params.getChildCount(); i < childCount; ++i) {
+            Node paramNode = params.getChildAtIndex(i);
             String paramName = getContext().getNodeText(paramNode);
-            if (!paramNames.add(paramName)) {
+            if (!formalParamNames.add(paramName)) {
                 reportErrorAtNodeStart(paramNode,
                         String.format("Duplicate function argument name: %s", paramName));
             }
         }
-        String jsDoc = getContext().getNodeText(jsDocNode);
-        Matcher m = PARAM_PATTERN.matcher(jsDoc);
+        Matcher m = PARAM_PATTERN.matcher(info.getOriginalCommentString());
         while (m.find()) {
             String paramType = m.group(1);
             if (paramType == null) {
-                getContext().reportErrorInNode(jsDocNode, m.start(2), String.format(
-                        "Invalid @param annotation found -"
-                        + " should be \"@param {<type>} paramName\""));
+                reportErrorAtOffset(info.getOriginalCommentPosition() + m.start(2),
+                        String.format(
+                                "Invalid @param annotation found -"
+                                + " should be \"@param {<type>} paramName\""));
             } else {
-                paramNames.remove(m.group(2));
+                formalParamNames.remove(m.group(2));
             }
         }
-        return paramNames.toArray(new String[paramNames.size()]);
+        return formalParamNames.toArray(new String[formalParamNames.size()]);
     }
 
-    private void handleReturn(ReturnStatement node) {
-        if (node.getReturnValue() == null || AstUtil.parentOfType(node, Token.ASSIGN) != null) {
+    private void handleReturn(Node node) {
+        if (node.getFirstChild() == null || AstUtil.parentOfType(node, Token.ASSIGN) != null) {
             return;
         }
 
@@ -92,7 +92,7 @@ public final class MethodAnnotationChecker extends ContextTrackingChecker {
         if (record == null) {
             return;
         }
-        AstNode nameNode = getFunctionNameNode(record.functionNode);
+        Node nameNode = getFunctionNameNode(record.functionNode);
         if (nameNode == null) {
             return;
         }
@@ -104,7 +104,7 @@ public final class MethodAnnotationChecker extends ContextTrackingChecker {
         if (record == null) {
             return;
         }
-        AstNode nameNode = getFunctionNameNode(record.functionNode);
+        Node nameNode = getFunctionNameNode(record.functionNode);
         if (nameNode == null) {
             return;
         }
@@ -112,7 +112,7 @@ public final class MethodAnnotationChecker extends ContextTrackingChecker {
     }
 
     @Override
-    public void leaveNode(AstNode node) {
+    public void leaveNode(Node node) {
         if (node.getType() != Token.FUNCTION) {
             return;
         }
@@ -129,33 +129,35 @@ public final class MethodAnnotationChecker extends ContextTrackingChecker {
         if (functionName == null) {
             return;
         }
+        String[] parts = functionName.split("\\.");
+        functionName = parts[parts.length - 1];
         boolean isApiFunction = !functionName.startsWith("_")
                 && (function.isTopLevelFunction()
                         || (function.enclosingType != null
                                 && isPlainTopLevelFunction(function.enclosingFunctionRecord)));
-        Comment jsDocNode = AstUtil.getJsDocNode(function.functionNode);
 
         boolean isReturningFunction = valueReturningFunctions.contains(function);
         boolean isInterfaceFunction =
-                function.enclosingType != null && function.enclosingType.isInterface;
+                function.enclosingType != null && function.enclosingType.isInterface();
         int invalidAnnotationIndex =
-                invalidReturnAnnotationIndex(getState().getNodeText(jsDocNode));
+                invalidReturnAnnotationIndex(function.info);
         if (invalidAnnotationIndex != -1) {
             String suggestedResolution = (isReturningFunction || isInterfaceFunction)
                     ? "should be \"@return {<type>}\""
                     : "please remove, as function does not return value";
-            getContext().reportErrorInNode(jsDocNode, invalidAnnotationIndex,
+            getContext().reportErrorAtOffset(
+                    function.info.getOriginalCommentPosition() + invalidAnnotationIndex,
                     String.format(
                             "invalid return type annotation found - %s", suggestedResolution));
             return;
         }
-        AstNode functionNameNode = getFunctionNameNode(function.functionNode);
+        Node functionNameNode = getFunctionNameNode(function.functionNode);
         if (functionNameNode == null) {
             return;
         }
 
         if (isReturningFunction) {
-            if (!function.hasReturnAnnotation() && isApiFunction) {
+            if (!function.isConstructor() && !function.hasReturnAnnotation() && isApiFunction) {
                 reportErrorAtNodeStart(
                         functionNameNode,
                         "@return annotation is required for API functions that return value");
@@ -174,33 +176,24 @@ public final class MethodAnnotationChecker extends ContextTrackingChecker {
 
     private static boolean isPlainTopLevelFunction(FunctionRecord record) {
         return record != null && record.isTopLevelFunction()
-                && (record.enclosingType == null && !record.isConstructor);
+                && (record.enclosingType == null && !record.isConstructor());
     }
 
-    private String getFunctionName(FunctionNode functionNode) {
-        AstNode nameNode = getFunctionNameNode(functionNode);
+    private String getFunctionName(Node functionNode) {
+        Node nameNode = getFunctionNameNode(functionNode);
         return nameNode == null ? null : getState().getNodeText(nameNode);
     }
 
-    private static int invalidReturnAnnotationIndex(String jsDoc) {
-        if (jsDoc == null) {
+    private static int invalidReturnAnnotationIndex(JSDocInfo info) {
+        if (info == null) {
             return -1;
         }
-        Matcher m = INVALID_RETURN_PATTERN.matcher(jsDoc);
+        Matcher m = INVALID_RETURN_PATTERN.matcher(info.getOriginalCommentString());
         return m.find() ? m.start(1) : -1;
     }
 
-    private static AstNode getFunctionNameNode(FunctionNode functionNode) {
-        AstNode nameNode = functionNode.getFunctionName();
-        if (nameNode != null) {
-            return nameNode;
-        }
-
-        ObjectProperty parent = (ObjectProperty) AstUtil.parentOfType(functionNode, Token.COLON);
-        if (parent != null) {
-            return parent.getLeft();
-        }
-        // Do not require annotation for assignment-RHS functions.
-        return null;
+    private static Node getFunctionNameNode(Node functionNode) {
+        // FIXME: Do not require annotation for assignment-RHS functions.
+        return AstUtil.getFunctionNameNode(functionNode);
     }
 }

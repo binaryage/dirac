@@ -1,7 +1,9 @@
 package org.chromium.devtools.jsdoc;
 
-import com.google.javascript.rhino.head.ast.AstNode;
+import com.google.javascript.jscomp.SourceFile;
+import com.google.javascript.rhino.Node;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.SortedSet;
@@ -17,65 +19,57 @@ public class ValidatorContext {
                 }
             };
 
-    public final ScriptText scriptText;
     public final String scriptFileName;
+    public final SourceFile sourceFile;
     private final SortedSet<MessageRecord> validationResult =
             new TreeSet<>(MESSAGE_RECORD_COMPARATOR);
 
-    public ValidatorContext(ScriptText scriptText, String scriptFileName) {
-        this.scriptText = scriptText;
+
+    public ValidatorContext(String text, String scriptFileName) {
         this.scriptFileName = scriptFileName;
+        this.sourceFile = SourceFile.builder().buildFromCode(scriptFileName, text);
     }
 
     public SortedSet<MessageRecord> getValidationResult() {
         return Collections.unmodifiableSortedSet(validationResult);
     }
 
-    public String getNodeText(AstNode node) {
+    public String getNodeText(Node node) {
         if (node == null) {
             return null;
         }
-        return scriptText.text.substring(
-                node.getAbsolutePosition(), node.getAbsolutePosition() + node.getLength());
-    }
-
-    public SourcePosition getPosition(AstNode node, int offsetInNodeText) {
-        String nodeText = getNodeText(node);
-        if (offsetInNodeText >= nodeText.length())
+        try {
+            return sourceFile.getCode().substring(
+                    node.getSourceOffset(), node.getSourceOffset() + node.getLength());
+        } catch (IOException e) {
             return null;
-        int line = node.getLineno();
-        int column = scriptText.getColumn(node.getAbsolutePosition());
-        for (int i = 0; i < offsetInNodeText; ++i) {
-            char ch = nodeText.charAt(i);
-            if (ch == '\n') {
-                line += 1;
-                column = 0;
-                continue;
-            }
-            column += 1;
         }
-        return new SourcePosition(line, column);
     }
 
-    public void reportErrorInNode(AstNode node, int offsetInNodeText, String errorMessage) {
-        SourcePosition position = getPosition(node, offsetInNodeText);
-        if (position == null) {
-            // FIXME: Handle error?
-            return;
-        }
+    public SourcePosition getPosition(int offset) {
+        return new SourcePosition(
+                sourceFile.getLineOfOffset(offset), sourceFile.getColumnOfOffset(offset));
+    }
+
+    public void reportErrorInNode(Node node, int offsetInNodeText, String errorText) {
+        int errorAbsoluteOffset = node.getSourceOffset() + offsetInNodeText;
+        reportErrorAtOffset(errorAbsoluteOffset, errorText);
+    }
+
+    public void reportErrorAtOffset(int offset, String errorText) {
+        SourcePosition position = getPosition(offset);
         StringBuilder positionMarker = new StringBuilder(position.column + 1);
         for (int i = position.column; i > 0; --i) {
             positionMarker.append(' ');
         }
         positionMarker.append('^');
-        int errorAbsolutePosition = node.getAbsolutePosition() + offsetInNodeText;
         String message = String.format("%s:%d: ERROR - %s%n%s%n%s%n",
                 scriptFileName,
                 position.line,
-                errorMessage,
-                scriptText.getLineTextAt(errorAbsolutePosition),
+                errorText,
+                sourceFile.getLine(position.line),
                 positionMarker.toString());
-        validationResult.add(new MessageRecord(errorAbsolutePosition, message));
+        validationResult.add(new MessageRecord(offset, message));
     }
 
     public static class MessageRecord {

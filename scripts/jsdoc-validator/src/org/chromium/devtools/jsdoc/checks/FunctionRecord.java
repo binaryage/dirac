@@ -1,27 +1,28 @@
 package org.chromium.devtools.jsdoc.checks;
 
-import com.google.javascript.rhino.head.ast.Comment;
-import com.google.javascript.rhino.head.ast.FunctionNode;
+import com.google.javascript.jscomp.NodeUtil;
+import com.google.javascript.rhino.JSDocInfo;
+import com.google.javascript.rhino.Node;
 
 public class FunctionRecord {
-    final FunctionNode functionNode;
-    final Comment jsDocNode;
+    final Node functionNode;
+    final JSDocInfo info;
     final String name;
-    final boolean isConstructor;
-    final String returnType;
     final TypeRecord enclosingType;
     final FunctionRecord enclosingFunctionRecord;
 
-    public FunctionRecord(FunctionNode functionNode, Comment jsDocNode, String name,
-            boolean isConstructor, String returnType, TypeRecord parentType,
+    public FunctionRecord(Node functionNode, String name,
+            TypeRecord parentType,
             FunctionRecord enclosingFunctionRecord) {
         this.functionNode = functionNode;
-        this.jsDocNode = jsDocNode;
+        this.info = NodeUtil.getBestJSDocInfo(functionNode);
         this.name = name;
-        this.isConstructor = isConstructor;
-        this.returnType = returnType;
         this.enclosingType = parentType;
         this.enclosingFunctionRecord = enclosingFunctionRecord;
+    }
+
+    public boolean isConstructor() {
+        return info != null && info.isConstructor();
     }
 
     public boolean isTopLevelFunction() {
@@ -29,6 +30,21 @@ public class FunctionRecord {
     }
 
     public boolean hasReturnAnnotation() {
-        return returnType != null;
+        return info != null && info.getReturnType() != null;
+    }
+
+    public boolean hasThisAnnotation() {
+        return info != null && info.getThisType() != null;
+    }
+
+    public boolean suppressesReceiverCheck() {
+        return info != null && info.getOriginalCommentString().contains("@suppressReceiverCheck");
+    }
+
+    @Override
+    public String toString() {
+        return (info == null ? "" : info.getOriginalCommentString() + "\n") +
+                (name == null ? "<anonymous>" : name) + "() @" +
+                functionNode.getLineno();
     }
 }

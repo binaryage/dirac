@@ -1,43 +1,57 @@
 package org.chromium.devtools.jsdoc.checks;
 
-import com.google.javascript.rhino.head.Token;
-import com.google.javascript.rhino.head.ast.Assignment;
-import com.google.javascript.rhino.head.ast.AstNode;
-import com.google.javascript.rhino.head.ast.Comment;
-import com.google.javascript.rhino.head.ast.FunctionNode;
-import com.google.javascript.rhino.head.ast.ObjectProperty;
-import com.google.javascript.rhino.head.ast.VariableInitializer;
+import com.google.common.base.Preconditions;
+import com.google.javascript.rhino.JSTypeExpression;
+import com.google.javascript.rhino.Node;
+import com.google.javascript.rhino.Token;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class AstUtil {
 
     private static final String PROTOTYPE_SUFFIX = ".prototype";
 
-    static AstNode parentOfType(AstNode node, int tokenType) {
-        AstNode parent = node.getParent();
+    static Node parentOfType(Node node, int tokenType) {
+        Node parent = node.getParent();
         return (parent == null || parent.getType() != tokenType) ? null : parent;
     }
 
-    static AstNode getFunctionNameNode(FunctionNode functionNode) {
-        AstNode nameNode = functionNode.getFunctionName();
-        if (nameNode != null) {
-            return nameNode;
+    /**
+     * Based on NodeUtil#getFunctionNameNode(Node).
+     */
+    static Node getFunctionNameNode(Node node) {
+        Preconditions.checkState(node.isFunction());
+        Node funNameNode = node.getFirstChild();
+        // Don't return the name node for anonymous functions
+        if (!funNameNode.getString().isEmpty()) {
+            return funNameNode;
         }
 
-        AstNode parentNode = functionNode.getParent();
-        while (parentNode != null) {
-            switch (parentNode.getType()) {
-            case Token.COLON:
-                return ((ObjectProperty) parentNode).getLeft();
+        Node parent = node.getParent();
+        if (parent != null) {
+            switch (parent.getType()) {
+            case Token.NAME:
+                // var name = function() ...
+                // var name2 = function name1() ...
+                return parent;
+            // FIXME: Perhaps, the setter and getter cases should be handled, too,
+            // but this breaks tests.
+            // case Token.SETTER_DEF:
+            // case Token.GETTER_DEF:
+            case Token.STRING_KEY:
+                return parent;
+            case Token.NUMBER:
+                return parent;
             case Token.ASSIGN:
-                Assignment assignment = (Assignment) parentNode;
-                if (assignment.getRight() == functionNode &&
-                        assignment.getLeft().getType() == Token.NAME) {
-                    return assignment.getLeft();
+                if (parent.getLastChild() == node &&
+                        parent.getFirstChild().getType() == Token.NAME) {
+                    return parent.getFirstChild();
                 }
-                parentNode = assignment.getParent();
-                break;
+                return null;
             case Token.VAR:
-                return ((VariableInitializer) parentNode).getTarget();
+                return parent.getFirstChild();
             default:
                 return null;
             }
@@ -54,50 +68,29 @@ public class AstUtil {
         return typeName.endsWith(PROTOTYPE_SUFFIX);
     }
 
-    static AstNode getAssignedTypeNameNode(Assignment assignment) {
-        AstNode typeNameNode = assignment.getLeft();
+    static Node getAssignedTypeNameNode(Node assignment) {
+        Preconditions.checkState(assignment.isAssign() || assignment.isVar());
+        Node typeNameNode = assignment.getFirstChild();
         if (typeNameNode.getType() != Token.GETPROP && typeNameNode.getType() != Token.NAME) {
             return null;
         }
         return typeNameNode;
     }
 
-    static Comment getJsDocNode(AstNode node) {
-        if (node.getType() == Token.FUNCTION) {
-            return getJsDocNode((FunctionNode) node);
-        } else {
-            return node.getJsDocNode();
+    static List<Node> getArguments(Node functionCall) {
+        int childCount = functionCall.getChildCount();
+        if (childCount == 1) {
+            return Collections.emptyList();
         }
+        List<Node> arguments = new ArrayList<>(childCount - 1);
+        for (int i = 1; i < childCount; ++i) {
+            arguments.add(functionCall.getChildAtIndex(i));
+        }
+        return arguments;
     }
 
-    static Comment getJsDocNode(FunctionNode functionNode) {
-        Comment jsDocNode = functionNode.getJsDocNode();
-        if (jsDocNode != null) {
-            return jsDocNode;
-        }
-
-        // reader.onloadend = function() {...}
-        AstNode parentNode = functionNode.getParent();
-        while (parentNode != null) {
-            switch (parentNode.getType()) {
-            case Token.COLON:
-                return ((ObjectProperty) parentNode).getLeft().getJsDocNode();
-            case Token.ASSIGN:
-                Assignment assignment = (Assignment) parentNode;
-                if (assignment.getJsDocNode() != null) {
-                    return assignment.getJsDocNode();
-                } else {
-                    parentNode = assignment.getParent();
-                }
-                break;
-            case Token.VAR:
-                return parentNode.getParent().getJsDocNode();
-            default:
-                return null;
-            }
-        }
-
-        return null;
+    static String getAnnotationTypeString(JSTypeExpression expression) {
+        return expression.getRoot().getFirstChild().getString();
     }
 
     private AstUtil() {}

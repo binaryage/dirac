@@ -1,15 +1,17 @@
 package org.chromium.devtools.jsdoc;
 
-import com.google.javascript.rhino.head.CompilerEnvirons;
-import com.google.javascript.rhino.head.IRFactory;
-import com.google.javascript.rhino.head.ast.AstNode;
-import com.google.javascript.rhino.head.ast.AstRoot;
+import com.google.javascript.jscomp.Compiler;
+import com.google.javascript.jscomp.NodeTraversal;
+import com.google.javascript.jscomp.parsing.Config;
+import com.google.javascript.jscomp.parsing.Config.LanguageMode;
+import com.google.javascript.jscomp.parsing.ParserRunner;
+import com.google.javascript.rhino.ErrorReporter;
+import com.google.javascript.rhino.Node;
 
 import org.chromium.devtools.jsdoc.checks.ContextTrackingValidationCheck;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.StringReader;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystems;
@@ -30,11 +32,9 @@ public class FileCheckerCallable implements Callable<ValidatorContext> {
     public ValidatorContext call() {
         try {
             ValidatorContext context = new ValidatorContext(readScriptText(), fileName);
-            AstRoot node = parseScript(context);
             ValidationCheckDispatcher dispatcher = new ValidationCheckDispatcher(context);
             dispatcher.registerCheck(new ContextTrackingValidationCheck());
-            node.visit(dispatcher);
-            dispatcher.flush();
+            NodeTraversal.traverse(new Compiler(), parseScript(context), dispatcher);
             return context;
         } catch (FileNotFoundException e) {
             logError("File not found: " + fileName);
@@ -44,21 +44,32 @@ public class FileCheckerCallable implements Callable<ValidatorContext> {
         return null;
     }
 
-    private ScriptText readScriptText() throws IOException {
+    private String readScriptText() throws IOException {
         byte[] encoded = Files.readAllBytes(FileSystems.getDefault().getPath(fileName));
         String text = StandardCharsets.UTF_8.decode(ByteBuffer.wrap(encoded)).toString();
-        return new ScriptText(text);
+        return text;
     }
 
-    private static AstRoot parseScript(ValidatorContext context) throws IOException {
-        CompilerEnvirons env = new CompilerEnvirons();
-        env.setRecoverFromErrors(true);
-        env.setGenerateDebugInfo(true);
-        env.setRecordingLocalJsDocComments(true);
-        env.setAllowSharpComments(true);
-        env.setRecordingComments(true);
-        IRFactory factory = new IRFactory(env);
-        return factory.parse(new StringReader(context.scriptText.text), context.scriptFileName, 1);
+    private static Node parseScript(final ValidatorContext context) {
+        Config config = ParserRunner.createConfig(true, LanguageMode.ECMASCRIPT5_STRICT, true);
+        ErrorReporter errorReporter = new ErrorReporter() {
+            @Override
+            public void warning(String message, String sourceName, int line, int lineOffset) {
+                // Ignore.
+            }
+
+            @Override
+            public void error(String message, String sourceName, int line, int lineOffset) {
+                logError("at " + sourceName + ":" + line + ":" + lineOffset);
+            }
+        };
+        try {
+            return ParserRunner.parse(
+                    context.sourceFile, context.sourceFile.getCode(), config, errorReporter).ast;
+        } catch (IOException e) {
+            // Does not happen with preloaded files.
+            return null;
+        }
     }
 
     private static void logError(String message) {
@@ -79,14 +90,14 @@ public class FileCheckerCallable implements Callable<ValidatorContext> {
         }
 
         @Override
-        public void doVisit(AstNode node) {
+        public void doVisit(Node node) {
             for (DoDidNodeVisitor visitor : checks) {
                 visitor.doVisit(node);
             }
         }
 
         @Override
-        public void didVisit(AstNode node) {
+        public void didVisit(Node node) {
             for (ValidationCheck check : checks) {
                 check.didVisit(node);
             }

@@ -676,7 +676,7 @@ Element.prototype.appendChild = function(child)
 /**
  * @param {?Node} child
  * @param {?Node} anchor
- * @return {?Node}
+ * @return {!Node}
  * @suppress {duplicate}
  */
 Element.prototype.insertBefore = function(child, anchor)
@@ -687,7 +687,7 @@ Element.prototype.insertBefore = function(child, anchor)
 
 /**
  * @param {?Node} child
- * @return {?Node}
+ * @return {!Node}
  * @suppress {duplicate}
  */
 Element.prototype.removeChild = function(child)

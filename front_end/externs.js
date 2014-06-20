@@ -38,10 +38,6 @@ Event.prototype.isMetaOrCtrlForTest;
  */
 KeyboardEvent.DOM_KEY_LOCATION_NUMPAD;
 
-// FIXME: Remove after the Closure compiler roll.
-/** @param {*} message */
-function postMessage(message) {}
-
 /**
  * @param {string} eventName
  * @param {!Function} listener

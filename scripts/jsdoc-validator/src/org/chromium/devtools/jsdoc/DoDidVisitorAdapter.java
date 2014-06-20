@@ -1,35 +1,18 @@
 package org.chromium.devtools.jsdoc;
 
-import com.google.javascript.rhino.head.ast.AstNode;
-import com.google.javascript.rhino.head.ast.NodeVisitor;
+import com.google.javascript.jscomp.NodeTraversal;
+import com.google.javascript.rhino.Node;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
-
-public abstract class DoDidVisitorAdapter implements DoDidNodeVisitor, NodeVisitor {
-
-    private final Deque<AstNode> nodeStack = new ArrayDeque<>();
+public abstract class DoDidVisitorAdapter implements DoDidNodeVisitor, NodeTraversal.Callback {
 
     @Override
-    public boolean visit(AstNode node) {
-        AstNode topNode = nodeStack.peek();
-        if (topNode != null && topNode != node.getParent()) {
-            do {
-                topNode = nodeStack.pop();
-                didVisit(topNode);
-            } while (topNode.getParent() != node.getParent());
-        }
-        nodeStack.push(node);
-        doVisit(node);
+    public boolean shouldTraverse(NodeTraversal nodeTraversal, Node n, Node parent) {
+        doVisit(n);
         return true;
     }
 
-    /**
-     * This method MUST be called after {@code foo.visit(doDidVisitorAdapter)} has finished.
-     */
-    public void flush() {
-        while (!nodeStack.isEmpty()) {
-            didVisit(nodeStack.remove());
-        }
+    @Override
+    public void visit(NodeTraversal t, Node n, Node parent) {
+        didVisit(n);
     }
 }

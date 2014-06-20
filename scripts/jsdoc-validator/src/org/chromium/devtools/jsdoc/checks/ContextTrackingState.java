@@ -1,6 +1,6 @@
 package org.chromium.devtools.jsdoc.checks;
 
-import com.google.javascript.rhino.head.ast.AstNode;
+import com.google.javascript.rhino.Node;
 
 import org.chromium.devtools.jsdoc.ValidatorContext;
 
@@ -36,7 +36,7 @@ public class ContextTrackingState {
         return typeRecordsByTypeName;
     }
 
-    String getNodeText(AstNode node) {
+    String getNodeText(Node node) {
         return getContext().getNodeText(node);
     }
 

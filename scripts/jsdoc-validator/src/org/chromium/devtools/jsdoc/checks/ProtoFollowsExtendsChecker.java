@@ -1,12 +1,8 @@
 package org.chromium.devtools.jsdoc.checks;
 
-import com.google.javascript.rhino.head.Token;
-import com.google.javascript.rhino.head.ast.Assignment;
-import com.google.javascript.rhino.head.ast.AstNode;
-import com.google.javascript.rhino.head.ast.FunctionCall;
-import com.google.javascript.rhino.head.ast.ObjectProperty;
-
-import org.chromium.devtools.jsdoc.checks.TypeRecord.InheritanceEntry;
+import com.google.javascript.rhino.JSTypeExpression;
+import com.google.javascript.rhino.Node;
+import com.google.javascript.rhino.Token;
 
 import java.util.HashSet;
 import java.util.List;
@@ -24,28 +20,29 @@ public final class ProtoFollowsExtendsChecker extends ContextTrackingChecker {
     private final Set<FunctionRecord> functionsMissingSuperCall = new HashSet<>();
 
     @Override
-    protected void enterNode(AstNode node) {
+    protected void enterNode(Node node) {
         switch (node.getType()) {
         case Token.ASSIGN:
-            handleAssignment((Assignment) node);
+        case Token.VAR:
+            handleAssignment(node);
             break;
-        case Token.COLON:
-            handleColonNode((ObjectProperty) node);
+        case Token.STRING_KEY:
+            handleColonNode(node);
             break;
         case Token.FUNCTION:
             enterFunction();
             break;
         case Token.CALL:
-            handleCall((FunctionCall) node);
+            handleCall(node);
             break;
         default:
             break;
         }
     }
 
-    private void handleCall(FunctionCall callNode) {
+    private void handleCall(Node callNode) {
         FunctionRecord contextFunction = getState().getCurrentFunctionRecord();
-        if (contextFunction == null || !contextFunction.isConstructor
+        if (contextFunction == null || !contextFunction.isConstructor()
                 || !functionsMissingSuperCall.contains(contextFunction)) {
             return;
         }
@@ -57,15 +54,17 @@ public final class ProtoFollowsExtendsChecker extends ContextTrackingChecker {
         if (typeRecord == null) {
             return;
         }
-        InheritanceEntry extendedType = typeRecord.getFirstExtendedType();
-        if (extendedType == null || !extendedType.superTypeName.equals(typeName)) {
+        JSTypeExpression extendedType = typeRecord.getExtendedType();
+        // FIXME: Strip template parameters from the extendedType.
+        if (extendedType == null ||
+                !typeName.equals(AstUtil.getAnnotationTypeString(extendedType))) {
             return;
         }
         functionsMissingSuperCall.remove(contextFunction);
     }
 
-    private String validSuperConstructorName(FunctionCall callNode) {
-        String callTarget = getContext().getNodeText(callNode.getTarget());
+    private String validSuperConstructorName(Node callNode) {
+        String callTarget = getContext().getNodeText(callNode.getFirstChild());
         int lastDotIndex = callTarget.lastIndexOf('.');
         if (lastDotIndex == -1) {
             return null;
@@ -74,7 +73,7 @@ public final class ProtoFollowsExtendsChecker extends ContextTrackingChecker {
         if (!"call".equals(methodName) && !"apply".equals(methodName)) {
             return null;
         }
-        List<AstNode> arguments = callNode.getArguments();
+        List<Node> arguments = AstUtil.getArguments(callNode);
         if (arguments.isEmpty() || !"this".equals(getContext().getNodeText(arguments.get(0)))) {
             return null;
         }
@@ -82,7 +81,7 @@ public final class ProtoFollowsExtendsChecker extends ContextTrackingChecker {
     }
 
     @Override
-    protected void leaveNode(AstNode node) {
+    protected void leaveNode(Node node) {
         if (node.getType() == Token.SCRIPT) {
             checkFinished();
             return;
@@ -95,11 +94,11 @@ public final class ProtoFollowsExtendsChecker extends ContextTrackingChecker {
 
     private void enterFunction() {
         FunctionRecord function = getState().getCurrentFunctionRecord();
-        InheritanceEntry extendedType = getExtendedTypeToCheck(function);
+        JSTypeExpression extendedType = getExtendedTypeToCheck(function);
         if (extendedType == null) {
             return;
         }
-        if (!IGNORED_SUPER_TYPES.contains(extendedType.superTypeName)) {
+        if (!IGNORED_SUPER_TYPES.contains(AstUtil.getAnnotationTypeString(extendedType))) {
             functionsMissingSuperCall.add(function);
         }
     }
@@ -109,48 +108,52 @@ public final class ProtoFollowsExtendsChecker extends ContextTrackingChecker {
         if (!functionsMissingSuperCall.contains(function)) {
             return;
         }
-        InheritanceEntry extendedType = getExtendedTypeToCheck(function);
+        JSTypeExpression extendedType = getExtendedTypeToCheck(function);
         if (extendedType == null) {
             return;
         }
         reportErrorAtNodeStart(AstUtil.getFunctionNameNode(function.functionNode),
                 String.format("Type %s extends %s but does not properly invoke its constructor",
-                        function.name, extendedType.superTypeName));
+                        function.name, AstUtil.getAnnotationTypeString(extendedType)));
     }
 
-    private InheritanceEntry getExtendedTypeToCheck(FunctionRecord function) {
-        if (!function.isConstructor || function.name == null) {
+    private JSTypeExpression getExtendedTypeToCheck(FunctionRecord function) {
+        if (!function.isConstructor() || function.name == null) {
             return null;
         }
         TypeRecord type = getState().typeRecordsByTypeName.get(function.name);
-        if (type == null || type.isInterface) {
+        if (type == null || type.isInterface()) {
             return null;
         }
-        return type.getFirstExtendedType();
+        return type.getExtendedType();
     }
 
     private void checkFinished() {
         for (TypeRecord record : getState().getTypeRecordsByTypeName().values()) {
-            if (record.isInterface || typesWithAssignedProto.contains(record)) {
+            if (record.isInterface() || typesWithAssignedProto.contains(record)) {
                 continue;
             }
-            InheritanceEntry entry = record.getFirstExtendedType();
-            if (entry != null) {
-                getContext().reportErrorInNode(
-                        entry.jsDocNode, entry.offsetInJsDocText,
+            JSTypeExpression extendedType = record.getExtendedType();
+            if (extendedType != null) {
+                Node rootNode = extendedType.getRootNode();
+                if (rootNode.getType() == Token.BANG && rootNode.getFirstChild() != null) {
+                    rootNode = rootNode.getFirstChild();
+                }
+                getContext().reportErrorAtOffset(
+                        rootNode.getSourceOffset(),
                         String.format("No __proto__ assigned for type %s having @extends",
                                 record.typeName));
             }
         }
     }
 
-    private void handleColonNode(ObjectProperty node) {
+    private void handleColonNode(Node node) {
         ContextTrackingState state = getState();
         TypeRecord type = state.getCurrentTypeRecord();
         if (type == null) {
             return;
         }
-        String propertyName = state.getNodeText(node.getLeft());
+        String propertyName = node.getString();
         if (!PROTO_PROPERTY_NAME.equals(propertyName)) {
             return;
         }
@@ -160,21 +163,22 @@ public final class ProtoFollowsExtendsChecker extends ContextTrackingChecker {
             return;
         }
         typesWithAssignedProto.add(currentType);
-        String value = state.getNodeText(node.getRight());
+        Node rightNode = node.getFirstChild();
+        String value = state.getNodeText(rightNode);
         boolean isNullPrototype = "null".equals(value);
         if (!isNullPrototype && !AstUtil.isPrototypeName(value)) {
             reportErrorAtNodeStart(
-                    node.getRight(), "__proto__ value is not a prototype");
+                    rightNode, "__proto__ value is not a prototype");
             return;
         }
         String superType = isNullPrototype ? "null" : AstUtil.getTypeNameFromPrototype(value);
-        if (type.isInterface) {
-            reportErrorAtNodeStart(node.getLeft(), String.format(
+        if (type.isInterface()) {
+            reportErrorAtNodeStart(node, String.format(
                     "__proto__ defined for interface %s", type.typeName));
             return;
         } else {
-            if (!isNullPrototype && type.extendedTypes.isEmpty()) {
-                reportErrorAtNodeStart(node.getRight(), String.format(
+            if (!isNullPrototype && type.getExtendedType() == null) {
+                reportErrorAtNodeStart(rightNode, String.format(
                         "No @extends annotation for %s extending %s", type.typeName, superType));
                 return;
             }
@@ -186,17 +190,18 @@ public final class ProtoFollowsExtendsChecker extends ContextTrackingChecker {
 
         // FIXME: Should we check that there is only one @extend-ed type
         // for the non-interface |type|? Closure is supposed to do this anyway...
-        InheritanceEntry entry = type.getFirstExtendedType();
-        String extendedTypeName = entry.superTypeName;
+        JSTypeExpression extendedType = type.getExtendedType();
+        String extendedTypeName = AstUtil.getAnnotationTypeString(extendedType);
         if (!superType.equals(extendedTypeName)) {
-            reportErrorAtNodeStart(node.getRight(), String.format(
+            reportErrorAtNodeStart(rightNode, String.format(
                     "Supertype does not match %s declared in @extends for %s (line %d)",
                     extendedTypeName, type.typeName,
-                    state.getContext().getPosition(entry.jsDocNode, entry.offsetInJsDocText).line));
+                    state.getContext().getPosition(
+                            extendedType.getRoot().getSourceOffset()).line));
         }
     }
 
-    private void handleAssignment(Assignment assignment) {
+    private void handleAssignment(Node assignment) {
         String assignedTypeName =
                 getState().getNodeText(AstUtil.getAssignedTypeNameNode(assignment));
         if (assignedTypeName == null) {
@@ -205,7 +210,7 @@ public final class ProtoFollowsExtendsChecker extends ContextTrackingChecker {
         if (!AstUtil.isPrototypeName(assignedTypeName)) {
             return;
         }
-        AstNode prototypeValueNode = assignment.getRight();
+        Node prototypeValueNode = assignment.getLastChild();
 
         if (prototypeValueNode.getType() == Token.OBJECTLIT) {
             return;
@@ -218,7 +223,7 @@ public final class ProtoFollowsExtendsChecker extends ContextTrackingChecker {
             // Assigning a prototype for unknown type. Leave it to the closure compiler.
             return;
         }
-        if (!type.extendedTypes.isEmpty()) {
+        if (type.getExtendedType() != null) {
             reportErrorAtNodeStart(prototypeValueNode, String.format(
                     "@extends found for type %s but its prototype is not an object "
                     + "containing __proto__", AstUtil.getTypeNameFromPrototype(assignedTypeName)));

@@ -1,6 +1,6 @@
 package org.chromium.devtools.jsdoc;
 
-import com.google.javascript.rhino.head.ast.AstNode;
+import com.google.javascript.rhino.Node;
 
 /**
  * A base class for all JSDoc validation checks.
@@ -9,7 +9,7 @@ public abstract class ValidationCheck implements DoDidNodeVisitor {
 
     private ValidatorContext context;
 
-    protected String getNodeText(AstNode node) {
+    protected String getNodeText(Node node) {
         return context.getNodeText(node);
     }
 

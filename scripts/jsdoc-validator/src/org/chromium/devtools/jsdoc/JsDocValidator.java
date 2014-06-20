@@ -6,7 +6,9 @@ package org.chromium.devtools.jsdoc;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.SortedSet;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -27,8 +29,11 @@ public class JsDocValidator {
 
     private void runWithExecutor(String[] args, ExecutorService executor) {
         List<Future<ValidatorContext>> futures = new ArrayList<>(args.length);
+        Map<Future<ValidatorContext>, String> fileNamesByFuture = new HashMap<>();
         for (String fileName : args) {
-            futures.add(executor.submit(new FileCheckerCallable(fileName)));
+            Future<ValidatorContext> future = executor.submit(new FileCheckerCallable(fileName));
+            fileNamesByFuture.put(future, fileName);
+            futures.add(future);
         }
 
         List<ValidatorContext> contexts = new ArrayList<>(args.length);
@@ -39,7 +44,7 @@ public class JsDocValidator {
                     contexts.add(context);
                 }
             } catch (InterruptedException | ExecutionException e) {
-                System.err.println("ERROR - " + e.getMessage());
+                System.err.println(fileNamesByFuture.get(future) + ": ERROR - " + e.getMessage());
             }
         }
 

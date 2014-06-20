@@ -1,9 +1,8 @@
 package org.chromium.devtools.jsdoc.checks;
 
-import com.google.javascript.rhino.head.Token;
-import com.google.javascript.rhino.head.ast.AstNode;
-import com.google.javascript.rhino.head.ast.FunctionCall;
-import com.google.javascript.rhino.head.ast.FunctionNode;
+import com.google.common.base.Preconditions;
+import com.google.javascript.rhino.Node;
+import com.google.javascript.rhino.Token;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -33,13 +32,13 @@ public final class FunctionReceiverChecker extends ContextTrackingChecker {
     private final Set<FunctionRecord> functionsRequiringThisAnnotation = new HashSet<>();
 
     @Override
-    void enterNode(AstNode node) {
+    void enterNode(Node node) {
         switch (node.getType()) {
         case Token.CALL:
-            handleCall((FunctionCall) node);
+            handleCall(node);
             break;
         case Token.FUNCTION: {
-            handleFunction((FunctionNode) node);
+            handleFunction(node);
             break;
         }
         case Token.THIS: {
@@ -51,10 +50,11 @@ public final class FunctionReceiverChecker extends ContextTrackingChecker {
         }
     }
 
-    private void handleCall(FunctionCall functionCall) {
-        String[] callParts = getContext().getNodeText(functionCall.getTarget()).split("\\.");
+    private void handleCall(Node functionCall) {
+        Preconditions.checkState(functionCall.isCall());
+        String[] callParts = getContext().getNodeText(functionCall.getFirstChild()).split("\\.");
         String firstPart = callParts[0];
-        List<AstNode> argumentNodes = functionCall.getArguments();
+        List<Node> argumentNodes = AstUtil.getArguments(functionCall);
         List<String> actualArguments = argumentsForCall(argumentNodes);
         int partCount = callParts.length;
         String functionName = callParts[partCount - 1];
@@ -80,7 +80,8 @@ public final class FunctionReceiverChecker extends ContextTrackingChecker {
     }
 
 
-    private void handleFunction(FunctionNode node) {
+    private void handleFunction(Node node) {
+        Preconditions.checkState(node.isFunction());
         FunctionRecord function = getState().getCurrentFunctionRecord();
         if (function == null) {
             return;
@@ -88,7 +89,7 @@ public final class FunctionReceiverChecker extends ContextTrackingChecker {
         if (function.isTopLevelFunction()) {
             symbolicArgumentsByName.clear();
         } else {
-            AstNode nameNode = AstUtil.getFunctionNameNode(node);
+            Node nameNode = AstUtil.getFunctionNameNode(node);
             if (nameNode == null) {
                 return;
             }
@@ -101,22 +102,22 @@ public final class FunctionReceiverChecker extends ContextTrackingChecker {
         if (function == null) {
             return;
         }
-        if (!function.isTopLevelFunction() && !function.isConstructor) {
+        if (!function.isTopLevelFunction() && !function.isConstructor()) {
             functionsRequiringThisAnnotation.add(function);
         }
     }
 
-    private List<String> argumentsForCall(List<AstNode> argumentNodes) {
+    private List<String> argumentsForCall(List<Node> argumentNodes) {
         int argumentCount = argumentNodes.size();
         List<String> arguments = new ArrayList<>(argumentCount);
-        for (AstNode argumentNode : argumentNodes) {
+        for (Node argumentNode : argumentNodes) {
             arguments.add(getContext().getNodeText(argumentNode));
         }
         return arguments;
     }
 
     private void saveSymbolicArguments(
-            String functionName, List<AstNode> argumentNodes, List<String> arguments) {
+            String functionName, List<Node> argumentNodes, List<String> arguments) {
         int argumentCount = arguments.size();
         CheckedReceiverPresence receiverPresence = CheckedReceiverPresence.MISSING;
         if (FUNCTIONS_WITH_CALLBACK_RECEIVER_AS_SECOND_ARGUMENT.contains(functionName)) {
@@ -161,7 +162,7 @@ public final class FunctionReceiverChecker extends ContextTrackingChecker {
     }
 
     @Override
-    void leaveNode(AstNode node) {
+    void leaveNode(Node node) {
         if (node.getType() != Token.FUNCTION) {
             return;
         }
@@ -189,30 +190,30 @@ public final class FunctionReceiverChecker extends ContextTrackingChecker {
     }
 
     private void checkThisAnnotation(FunctionRecord function) {
-        AstNode functionNameNode = AstUtil.getFunctionNameNode(function.functionNode);
-        if (functionNameNode == null && function.jsDocNode == null) {
+        Node functionNameNode = AstUtil.getFunctionNameNode(function.functionNode);
+        if (functionNameNode == null && function.info == null) {
             // Do not check anonymous functions without a JSDoc.
             return;
         }
-        AstNode errorTargetNode =
-                functionNameNode == null ? function.jsDocNode : functionNameNode;
-        if (errorTargetNode == null) {
-            errorTargetNode = function.functionNode;
-        }
-        boolean hasThisAnnotation = hasAnnotationTag(function.jsDocNode, "this");
+        int errorTargetOffset = functionNameNode == null
+                ? (function.info == null
+                        ? function.functionNode.getSourceOffset()
+                        : function.info.getOriginalCommentPosition())
+                : functionNameNode.getSourceOffset();
+        boolean hasThisAnnotation = function.hasThisAnnotation();
         if (hasThisAnnotation == functionReferencesThis(function)) {
             return;
         }
         if (hasThisAnnotation) {
             if (!function.isTopLevelFunction()) {
-                reportErrorAtNodeStart(
-                        errorTargetNode,
+                reportErrorAtOffset(
+                        errorTargetOffset,
                         "@this annotation found for function not referencing 'this'");
             }
             return;
         } else {
-            reportErrorAtNodeStart(
-                    errorTargetNode,
+            reportErrorAtOffset(
+                    errorTargetOffset,
                     "@this annotation is required for functions referencing 'this'");
         }
     }
@@ -227,7 +228,7 @@ public final class FunctionReceiverChecker extends ContextTrackingChecker {
         }
         boolean functionReferencesThis = functionReferencesThis(function);
         for (CallSite callSite : callSites) {
-            if (functionReferencesThis == callSite.hasReceiver || function.isConstructor) {
+            if (functionReferencesThis == callSite.hasReceiver || function.isConstructor()) {
                 continue;
             }
             if (callSite.hasReceiver) {
@@ -242,8 +243,7 @@ public final class FunctionReceiverChecker extends ContextTrackingChecker {
 
     private void processFunctionUsesAsArgument(
             FunctionRecord function, Set<SymbolicArgument> argumentUses) {
-        if (argumentUses == null ||
-                hasAnnotationTag(function.jsDocNode, "suppressReceiverCheck")) {
+        if (argumentUses == null || function.suppressesReceiverCheck()) {
             return;
         }
 
@@ -277,9 +277,9 @@ public final class FunctionReceiverChecker extends ContextTrackingChecker {
 
     private static class SymbolicArgument {
         CheckedReceiverPresence receiverPresence;
-        AstNode node;
+        Node node;
 
-        public SymbolicArgument(CheckedReceiverPresence receiverPresence, AstNode node) {
+        public SymbolicArgument(CheckedReceiverPresence receiverPresence, Node node) {
             this.receiverPresence = receiverPresence;
             this.node = node;
         }
@@ -287,9 +287,9 @@ public final class FunctionReceiverChecker extends ContextTrackingChecker {
 
     private static class CallSite {
         boolean hasReceiver;
-        FunctionCall callNode;
+        Node callNode;
 
-        public CallSite(boolean hasReceiver, FunctionCall callNode) {
+        public CallSite(boolean hasReceiver, Node callNode) {
             this.hasReceiver = hasReceiver;
             this.callNode = callNode;
         }

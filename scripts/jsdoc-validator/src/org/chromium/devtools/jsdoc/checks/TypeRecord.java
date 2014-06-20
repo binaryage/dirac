@@ -1,34 +1,24 @@
 package org.chromium.devtools.jsdoc.checks;
 
-import com.google.javascript.rhino.head.ast.Comment;
-
-import java.util.List;
+import com.google.common.base.Preconditions;
+import com.google.javascript.rhino.JSDocInfo;
+import com.google.javascript.rhino.JSTypeExpression;
 
 public class TypeRecord {
     public final String typeName;
-    public final boolean isInterface;
-    public final List<InheritanceEntry> extendedTypes;
+    public final JSDocInfo info;
 
-    public TypeRecord(String typeName, boolean isInterface,
-            List<InheritanceEntry> extendedTypes) {
+    public TypeRecord(String typeName, JSDocInfo info) {
+        Preconditions.checkNotNull(info);
         this.typeName = typeName;
-        this.isInterface = isInterface;
-        this.extendedTypes = extendedTypes;
+        this.info = info;
     }
 
-    public InheritanceEntry getFirstExtendedType() {
-        return this.extendedTypes.isEmpty() ? null : this.extendedTypes.get(0);
+    public boolean isInterface() {
+        return this.info.isInterface();
     }
 
-    public static class InheritanceEntry {
-        public final String superTypeName;
-        public final Comment jsDocNode;
-        public final int offsetInJsDocText;
-
-        public InheritanceEntry(String superTypeName, Comment jsDocNode, int offsetInJsDocText) {
-            this.superTypeName = superTypeName;
-            this.offsetInJsDocText = offsetInJsDocText;
-            this.jsDocNode = jsDocNode;
-        }
+    public JSTypeExpression getExtendedType() {
+        return this.info.getBaseType();
     }
 }
