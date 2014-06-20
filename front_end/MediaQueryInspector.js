@@ -120,20 +120,30 @@ WebInspector.MediaQueryInspector.prototype = {
         var mediaQueryMarkerContainer = event.target.enclosingNodeOrSelfWithClass("media-inspector-marker-container");
         if (!mediaQueryMarkerContainer)
             return;
+
+        /**
+         * @param {number} width
+         */
+        function setWidth(width)
+        {
+            WebInspector.overridesSupport.settings.deviceWidth.set(width);
+            WebInspector.overridesSupport.settings.emulateResolution.set(true);
+        }
+
         var model = mediaQueryMarkerContainer._model;
         if (model.section() === WebInspector.MediaQueryInspector.Section.Max) {
-            WebInspector.overridesSupport.settings.deviceWidth.set(model.maxWidthExpression().computedLength());
+            setWidth(model.maxWidthExpression().computedLength());
             return;
         }
         if (model.section() === WebInspector.MediaQueryInspector.Section.Min) {
-            WebInspector.overridesSupport.settings.deviceWidth.set(model.minWidthExpression().computedLength());
+            setWidth(model.minWidthExpression().computedLength());
             return;
         }
         var currentWidth = WebInspector.overridesSupport.settings.deviceWidth.get();
         if (currentWidth !== model.minWidthExpression().computedLength())
-            WebInspector.overridesSupport.settings.deviceWidth.set(model.minWidthExpression().computedLength());
+            setWidth(model.minWidthExpression().computedLength());
         else
-            WebInspector.overridesSupport.settings.deviceWidth.set(model.maxWidthExpression().computedLength());
+            setWidth(model.maxWidthExpression().computedLength());
     },
 
     /**

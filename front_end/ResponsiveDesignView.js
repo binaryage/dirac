@@ -435,26 +435,35 @@ WebInspector.ResponsiveDesignView.prototype = {
         // Dimensions.
         var screenElement = detailsElement.createChild("div", "");
         fieldsetElement = screenElement.createChild("fieldset");
+
+        var emulateResolutionCheckbox = WebInspector.SettingsUI.createSettingCheckbox("", WebInspector.overridesSupport.settings.emulateResolution, true, undefined, WebInspector.UIString("Emulate screen resolution"));
+        fieldsetElement.appendChild(emulateResolutionCheckbox);
+
         var resolutionButton = new WebInspector.StatusBarButton(WebInspector.UIString("Screen resolution"), "responsive-design-icon responsive-design-icon-resolution");
         resolutionButton.setEnabled(false);
         fieldsetElement.appendChild(resolutionButton.element);
-        fieldsetElement.appendChild(WebInspector.SettingsUI.createSettingInputField("", WebInspector.overridesSupport.settings.deviceWidth, true, 4, "3em", WebInspector.OverridesSupport.deviceSizeValidator, true, true, WebInspector.UIString("\u2013")));
-        fieldsetElement.appendChild(document.createTextNode(" \u00D7 "));
-        fieldsetElement.appendChild(WebInspector.SettingsUI.createSettingInputField("", WebInspector.overridesSupport.settings.deviceHeight, true, 4, "3em", WebInspector.OverridesSupport.deviceSizeValidator, true, true, WebInspector.UIString("\u2013")));
+        var resolutionFieldset = WebInspector.SettingsUI.createSettingFieldset(WebInspector.overridesSupport.settings.emulateResolution);
+        fieldsetElement.appendChild(resolutionFieldset);
+
+        resolutionFieldset.appendChild(WebInspector.SettingsUI.createSettingInputField("", WebInspector.overridesSupport.settings.deviceWidth, true, 4, "3em", WebInspector.OverridesSupport.deviceSizeValidator, true, true, WebInspector.UIString("\u2013")));
+        resolutionFieldset.appendChild(document.createTextNode(" \u00D7 "));
+        resolutionFieldset.appendChild(WebInspector.SettingsUI.createSettingInputField("", WebInspector.overridesSupport.settings.deviceHeight, true, 4, "3em", WebInspector.OverridesSupport.deviceSizeValidator, true, true, WebInspector.UIString("\u2013")));
 
         var swapButton = new WebInspector.StatusBarButton(WebInspector.UIString("Swap dimensions"), "responsive-design-icon responsive-design-icon-swap");
         swapButton.element.tabIndex = -1;
         swapButton.addEventListener("click", WebInspector.overridesSupport.swapDimensions, WebInspector.overridesSupport);
-        fieldsetElement.appendChild(swapButton.element);
+        resolutionFieldset.appendChild(swapButton.element);
 
         // Device pixel ratio.
         detailsElement.createChild("div", "responsive-design-suite-separator");
+
         var dprElement = detailsElement.createChild("div", "");
-        fieldsetElement = dprElement.createChild("fieldset");
+        var resolutionFieldset2 = WebInspector.SettingsUI.createSettingFieldset(WebInspector.overridesSupport.settings.emulateResolution);
+        dprElement.appendChild(resolutionFieldset2);
         var dprButton = new WebInspector.StatusBarButton(WebInspector.UIString("Device pixel ratio"), "responsive-design-icon responsive-design-icon-dpr");
         dprButton.setEnabled(false);
-        fieldsetElement.appendChild(dprButton.element);
-        fieldsetElement.appendChild(WebInspector.SettingsUI.createSettingInputField("", WebInspector.overridesSupport.settings.deviceScaleFactor, true, 4, "2.5em", WebInspector.OverridesSupport.deviceScaleFactorValidator, true, true, WebInspector.UIString("\u2013")));
+        resolutionFieldset2.appendChild(dprButton.element);
+        resolutionFieldset2.appendChild(WebInspector.SettingsUI.createSettingInputField("", WebInspector.overridesSupport.settings.deviceScaleFactor, true, 4, "2.5em", WebInspector.OverridesSupport.deviceScaleFactorValidator, true, true, WebInspector.UIString("\u2013")));
     },
 
     _createNetworkSection: function()

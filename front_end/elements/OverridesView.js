@@ -202,8 +202,12 @@ WebInspector.OverridesView.DeviceTab.prototype = {
         fieldsetElement.createChild("span").textContent = WebInspector.UIString("Model:");
         fieldsetElement.appendChild(WebInspector.overridesSupport.createDeviceSelect(document));
 
-        var tableElement = fieldsetElement.createChild("table", "nowrap");
+        var emulateResolutionCheckbox = WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Emulate screen resolution"), WebInspector.overridesSupport.settings.emulateResolution, true);
+        fieldsetElement.appendChild(emulateResolutionCheckbox);
+        var resolutionFieldset = WebInspector.SettingsUI.createSettingFieldset(WebInspector.overridesSupport.settings.emulateResolution);
+        fieldsetElement.appendChild(resolutionFieldset);
 
+        var tableElement = resolutionFieldset.createChild("table", "nowrap");
         var rowElement = tableElement.createChild("tr");
         var cellElement = rowElement.createChild("td");
         cellElement.appendChild(document.createTextNode(WebInspector.UIString("Resolution:")));

@@ -201,6 +201,7 @@ button.overrides-swap {
 
 #metrics-override-section > select {
     width: 244px;
+    margin-bottom: 15px;
 }
 
 /* Media tab */

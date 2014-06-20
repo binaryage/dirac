@@ -500,6 +500,7 @@ WebInspector.OverridesSupport.prototype = {
         this._deviceMetricsChangedListenerMuted = true;
         this._userAgentChangedListenerMuted = true;
         this.settings.userAgent.set(device.userAgent);
+        this.settings.emulateResolution.set(true);
         this.settings.deviceWidth.set(device.width);
         this.settings.deviceHeight.set(device.height);
         this.settings.deviceScaleFactor.set(device.deviceScaleFactor);
@@ -520,8 +521,7 @@ WebInspector.OverridesSupport.prototype = {
         this._deviceMetricsChangedListenerMuted = true;
         this._userAgentChangedListenerMuted = true;
         this.settings.userAgent.set("");
-        this.settings.deviceWidth.set(0);
-        this.settings.deviceHeight.set(0);
+        this.settings.emulateResolution.set(false);
         this.settings.deviceScaleFactor.set(0);
         this.settings.deviceTextAutosizing.set(false);
         this.settings.emulateTouch.set(false);
@@ -551,7 +551,8 @@ WebInspector.OverridesSupport.prototype = {
             && this.settings.deviceScaleFactor.get() === device.deviceScaleFactor
             && this.settings.deviceTextAutosizing.get() === device.textAutosizing
             && this.settings.emulateTouch.get() === device.touch
-            && this.settings.emulateViewport.get() === device.viewport;
+            && this.settings.emulateViewport.get() === device.viewport
+            && this.settings.emulateResolution.get();
     },
 
     /**
@@ -577,6 +578,7 @@ WebInspector.OverridesSupport.prototype = {
         this.settings.userAgent.addChangeListener(this._userAgentChanged, this);
 
         this.settings._emulationEnabled.addChangeListener(this._deviceMetricsChanged, this);
+        this.settings.emulateResolution.addChangeListener(this._deviceMetricsChanged, this);
         this.settings.deviceWidth.addChangeListener(this._deviceMetricsChanged, this);
         this.settings.deviceHeight.addChangeListener(this._deviceMetricsChanged, this);
         this.settings.deviceScaleFactor.addChangeListener(this._deviceMetricsChanged, this);
@@ -676,8 +678,8 @@ WebInspector.OverridesSupport.prototype = {
             return;
         }
 
-        var dipWidth = this.settings.deviceWidth.get();
-        var dipHeight = this.settings.deviceHeight.get();
+        var dipWidth = this.settings.emulateResolution.get() ? this.settings.deviceWidth.get() : 0;
+        var dipHeight = this.settings.emulateResolution.get() ? this.settings.deviceHeight.get() : 0;
 
         var overrideWidth = dipWidth;
         var overrideHeight = dipHeight;
@@ -881,8 +883,9 @@ WebInspector.OverridesSupport.prototype = {
 
         this.settings.userAgent = WebInspector.settings.createSetting("userAgent", "");
 
-        this.settings.deviceWidth = WebInspector.settings.createSetting("deviceWidth", 0);
-        this.settings.deviceHeight = WebInspector.settings.createSetting("deviceHeight", 0);
+        this.settings.emulateResolution = WebInspector.settings.createSetting("emulateResolution", true);
+        this.settings.deviceWidth = WebInspector.settings.createSetting("deviceWidth", 360);
+        this.settings.deviceHeight = WebInspector.settings.createSetting("deviceHeight", 640);
         this.settings.deviceScaleFactor = WebInspector.settings.createSetting("deviceScaleFactor", 0);
         this.settings.deviceTextAutosizing = WebInspector.settings.createSetting("deviceTextAutosizing", true);
         this.settings.deviceFitWindow = WebInspector.settings.createSetting("deviceFitWindow", true);
@@ -1016,6 +1019,7 @@ WebInspector.OverridesSupport.prototype = {
         deviceSelectElement.addEventListener("change", deviceSelected, false);
 
         var emulatedSettingChangedMuted = false;
+        WebInspector.overridesSupport.settings.emulateResolution.addChangeListener(emulatedSettingChanged);
         WebInspector.overridesSupport.settings.deviceWidth.addChangeListener(emulatedSettingChanged);
         WebInspector.overridesSupport.settings.deviceHeight.addChangeListener(emulatedSettingChanged);
         WebInspector.overridesSupport.settings.deviceScaleFactor.addChangeListener(emulatedSettingChanged);
