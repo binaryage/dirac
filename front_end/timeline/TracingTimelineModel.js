@@ -634,14 +634,6 @@ WebInspector.TracingTimelineModel.TraceEventRecord.prototype = {
     },
 
     /**
-     * @return {!Object.<string, number>}
-     */
-    aggregatedStats: function()
-    {
-        return {};
-    },
-
-    /**
      * @return {?Array.<string>}
      */
     warnings: function()

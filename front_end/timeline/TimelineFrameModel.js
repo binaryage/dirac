@@ -328,7 +328,7 @@ WebInspector.TimelineFrameModel.prototype = {
         if (!this._aggregatedMainThreadWork)
             return;
 
-        WebInspector.TimelineUIUtils.aggregateTimeForRecord(this._aggregatedMainThreadWork, record);
+        WebInspector.TimelineUIUtilsImpl.aggregateTimeForRecord(this._aggregatedMainThreadWork, record);
         if (programRecord.children()[0] === record)
             this._aggregatedMainThreadWork["other"] = (this._aggregatedMainThreadWork["other"] || 0) + this._deriveOtherTime(programRecord);
 
@@ -494,11 +494,21 @@ WebInspector.FrameStatistics = function(frames)
         sumOfSquares += duration * duration;
         this.minDuration = Math.min(this.minDuration, duration);
         this.maxDuration = Math.max(this.maxDuration, duration);
-        WebInspector.TimelineUIUtils.aggregateTimeByCategory(this.timeByCategory, frames[i].timeByCategory);
+        WebInspector.FrameStatistics._aggregateTimeByCategory(this.timeByCategory, frames[i].timeByCategory);
     }
     this.average = totalDuration / this.frameCount;
     var variance = sumOfSquares / this.frameCount - this.average * this.average;
     this.stddev = Math.sqrt(variance);
+}
+
+/**
+ * @param {!Object} total
+ * @param {!Object} addend
+ */
+WebInspector.FrameStatistics._aggregateTimeByCategory = function(total, addend)
+{
+    for (var category in addend)
+        total[category] = (total[category] || 0) + addend[category];
 }
 
 /**
@@ -544,7 +554,7 @@ WebInspector.TimelineFrame.prototype = {
         if (!record.endTime())
             return;
         var timeByCategory = {};
-        WebInspector.TimelineUIUtils.aggregateTimeForRecord(timeByCategory, record);
+        WebInspector.TimelineUIUtilsImpl.aggregateTimeForRecord(timeByCategory, record);
         this._addTimeForCategories(timeByCategory);
     },
 

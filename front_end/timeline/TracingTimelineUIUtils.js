@@ -138,6 +138,17 @@ WebInspector.TracingTimelineUIUtils.prototype = {
     },
 
     /**
+     * @param {!Object} total
+     * @param {!WebInspector.TimelineModel.Record} record
+     */
+    aggregateTimeForRecord: function(total, record)
+    {
+        var traceEvent = record.traceEvent();
+        var model = record._model;
+        WebInspector.TracingTimelineUIUtils._aggregatedStatsForTraceEvent(total, model, traceEvent);
+    },
+
+    /**
      * @return {!Object.<string, boolean>}
      */
     hiddenRecordTypes: function()
@@ -487,10 +498,11 @@ WebInspector.TracingTimelineUIUtils.buildTraceEventDetails = function(event, mod
 WebInspector.TracingTimelineUIUtils._buildTraceEventDetailsSynchronously = function(event, model, linkifier, relatedNode, loadedFromFile, target)
 {
     var fragment = document.createDocumentFragment();
-    var stats = WebInspector.TracingTimelineUIUtils._aggregatedStatsForTraceEvent(model, event);
-    var pieChart = stats.hasChildren ?
-        WebInspector.TimelineUIUtils.generatePieChart(stats.aggregatedStats, WebInspector.TracingTimelineUIUtils.styleForTraceEvent(event.name).category, event.selfTime) :
-        WebInspector.TimelineUIUtils.generatePieChart(stats.aggregatedStats);
+    var stats = {};
+    var hasChildren = WebInspector.TracingTimelineUIUtils._aggregatedStatsForTraceEvent(stats, model, event);
+    var pieChart = hasChildren ?
+        WebInspector.TimelineUIUtils.generatePieChart(stats, WebInspector.TracingTimelineUIUtils.styleForTraceEvent(event.name).category, event.selfTime) :
+        WebInspector.TimelineUIUtils.generatePieChart(stats);
     fragment.appendChild(pieChart);
 
     var recordTypes = WebInspector.TracingTimelineModel.RecordType;
@@ -641,11 +653,12 @@ WebInspector.TracingTimelineUIUtils._buildTraceEventDetailsSynchronously = funct
 }
 
 /**
+ * @param {!Object} total
  * @param {!WebInspector.TracingTimelineModel} model
  * @param {!WebInspector.TracingModel.Event} event
- * @return {!{ aggregatedStats: !Object, hasChildren: boolean }}
+ * @return {boolean}
  */
-WebInspector.TracingTimelineUIUtils._aggregatedStatsForTraceEvent = function(model, event)
+WebInspector.TracingTimelineUIUtils._aggregatedStatsForTraceEvent = function(total, model, event)
 {
     var events = model.inspectedTargetEvents();
     /**
@@ -659,7 +672,6 @@ WebInspector.TracingTimelineUIUtils._aggregatedStatsForTraceEvent = function(mod
     }
     var index = events.binaryIndexOf(event.startTime, eventComparator);
     var hasChildren = false;
-    var aggregatedStats = {};
     var endTime = event.endTime;
     if (endTime) {
         for (var i = index; i < events.length; i++) {
@@ -671,10 +683,10 @@ WebInspector.TracingTimelineUIUtils._aggregatedStatsForTraceEvent = function(mod
             if (i > index)
                 hasChildren = true;
             var category = WebInspector.TracingTimelineUIUtils.styleForTraceEvent(nextEvent.name).category.name;
-            aggregatedStats[category] = (aggregatedStats[category] || 0) + nextEvent.selfTime;
+            total[category] = (total[category] || 0) + nextEvent.selfTime;
         }
     }
-    return { aggregatedStats: aggregatedStats, hasChildren: hasChildren };
+    return hasChildren;
 }
 
 /**

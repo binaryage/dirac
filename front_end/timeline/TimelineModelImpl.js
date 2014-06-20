@@ -174,7 +174,6 @@ WebInspector.TimelineModelImpl.prototype = {
         for (var i = 0; payload.children && i < payload.children.length; ++i)
             this._innerAddRecord.call(this, payload.children[i], record);
 
-        record._calculateAggregatedStats();
         if (parentRecord)
             parentRecord._selfTime -= record.endTime() - record.startTime();
         return record;
@@ -299,7 +298,6 @@ WebInspector.TimelineModel.RecordImpl = function(model, timelineEvent, parentRec
 {
     this._model = model;
     var bindings = this._model._bindings;
-    this._aggregatedStats = {};
     this._record = timelineEvent;
     this._children = [];
     if (parentRecord) {
@@ -509,26 +507,6 @@ WebInspector.TimelineModel.RecordImpl.prototype = {
         if (!this._userObjects)
             this._userObjects = new StringMap();
         this._userObjects.put(key, value);
-    },
-
-    _calculateAggregatedStats: function()
-    {
-        this._aggregatedStats = {};
-
-        for (var index = this._children.length; index; --index) {
-            var child = this._children[index - 1];
-            for (var category in child._aggregatedStats)
-                this._aggregatedStats[category] = (this._aggregatedStats[category] || 0) + child._aggregatedStats[category];
-        }
-        this._aggregatedStats[this.category().name] = (this._aggregatedStats[this.category().name] || 0) + this._selfTime;
-    },
-
-    /**
-     * @return {!Object.<string, number>}
-     */
-    aggregatedStats: function()
-    {
-        return this._aggregatedStats;
     },
 
     /**

@@ -138,6 +138,14 @@ WebInspector.TimelineUIUtils.prototype = {
         throw new Error("Not implemented.");
     },
     /**
+     * @param {!Object} total
+     * @param {!WebInspector.TimelineModel.Record} record
+     */
+    aggregateTimeForRecord: function(total, record)
+    {
+        throw new Error("Not implemented.");
+    },
+    /**
      * @return {!Object.<string, boolean>}
      */
     hiddenRecordTypes: function()
@@ -271,33 +279,6 @@ WebInspector.TimelineUIUtils.generateMainThreadBarPopupContent = function(model,
     contentHelper.appendTextRow(WebInspector.UIString("CPU time"), Number.millisToString(cpuTime, true));
     contentHelper.appendTextRow(WebInspector.UIString("Message Count"), messageCount);
     return contentHelper.contentTable();
-}
-
-/**
- * @param {!Object} total
- * @param {!Object} addend
- */
-WebInspector.TimelineUIUtils.aggregateTimeByCategory = function(total, addend)
-{
-    for (var category in addend)
-        total[category] = (total[category] || 0) + addend[category];
-}
-
-/**
- * @param {!Object} total
- * @param {!WebInspector.TimelineModel.Record} record
- */
-WebInspector.TimelineUIUtils.aggregateTimeForRecord = function(total, record)
-{
-    var childrenTime = 0;
-    var children = record.children();
-    for (var i = 0; i < children.length; ++i) {
-        WebInspector.TimelineUIUtils.aggregateTimeForRecord(total, children[i]);
-        childrenTime += children[i].endTime() - children[i].startTime();
-    }
-    var categoryName = WebInspector.TimelineUIUtils.recordStyle(record).category.name;
-    var ownTime = record.endTime() - record.startTime() - childrenTime;
-    total[categoryName] = (total[categoryName] || 0) + ownTime;
 }
 
 /**

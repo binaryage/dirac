@@ -423,11 +423,6 @@ WebInspector.TimelineModel.Record.prototype = {
     setUserObject: function(key, value) { },
 
     /**
-     * @return {!Object.<string, number>}
-     */
-    aggregatedStats: function() { },
-
-    /**
      * @return {?Array.<string>}
      */
     warnings: function() { }

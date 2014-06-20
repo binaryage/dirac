@@ -137,6 +137,15 @@ WebInspector.TimelineUIUtilsImpl.prototype = {
     },
 
     /**
+     * @param {!Object} total
+     * @param {!WebInspector.TimelineModel.Record} record
+     */
+    aggregateTimeForRecord: function(total, record)
+    {
+        WebInspector.TimelineUIUtilsImpl.aggregateTimeForRecord(total, record);
+    },
+
+    /**
      * @return {!Object.<string, boolean>}
      */
     hiddenRecordTypes: function()
@@ -201,6 +210,23 @@ WebInspector.TimelineUIUtilsImpl.isEventDivider = function(record)
     if (record.type() === recordTypes.MarkDOMContent || record.type() === recordTypes.MarkLoad)
         return record.data()["isMainFrame"];
     return false;
+}
+
+/**
+ * @param {!Object} total
+ * @param {!WebInspector.TimelineModel.Record} record
+ */
+WebInspector.TimelineUIUtilsImpl.aggregateTimeForRecord = function(total, record)
+{
+    var childrenTime = 0;
+    var children = record.children();
+    for (var i = 0; i < children.length; ++i) {
+        WebInspector.TimelineUIUtilsImpl.aggregateTimeForRecord(total, children[i]);
+        childrenTime += children[i].endTime() - children[i].startTime();
+    }
+    var categoryName = WebInspector.TimelineUIUtils.recordStyle(record).category.name;
+    var ownTime = record.endTime() - record.startTime() - childrenTime;
+    total[categoryName] = (total[categoryName] || 0) + ownTime;
 }
 
 /**
@@ -410,10 +436,12 @@ WebInspector.TimelineUIUtilsImpl.generateDetailsContent = function(record, model
 WebInspector.TimelineUIUtilsImpl._generateDetailsContentSynchronously = function(record, model, linkifier, imagePreviewElement, relatedNode, loadedFromFile)
 {
     var fragment = document.createDocumentFragment();
+    var aggregatedStats = {};
+    WebInspector.TimelineUIUtilsImpl.aggregateTimeForRecord(aggregatedStats, record);
     if (record.children().length)
-        fragment.appendChild(WebInspector.TimelineUIUtils.generatePieChart(record.aggregatedStats(), record.category(), record.selfTime()));
+        fragment.appendChild(WebInspector.TimelineUIUtils.generatePieChart(aggregatedStats, record.category(), record.selfTime()));
     else
-        fragment.appendChild(WebInspector.TimelineUIUtils.generatePieChart(record.aggregatedStats()));
+        fragment.appendChild(WebInspector.TimelineUIUtils.generatePieChart(aggregatedStats));
 
     const recordTypes = WebInspector.TimelineModel.RecordType;
 

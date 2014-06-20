@@ -343,13 +343,14 @@ WebInspector.TimelineView.prototype = {
             var aggregatedStats = {};
             var presentationChildren = presentationRecord.presentationChildren();
             for (var i = 0; i < presentationChildren.length; ++i)
-                WebInspector.TimelineUIUtils.aggregateTimeByCategory(aggregatedStats, presentationChildren[i].record().aggregatedStats());
-            var idle = presentationRecord.record().endTime() - presentationRecord.record().startTime();
+                this._uiUtils.aggregateTimeForRecord(aggregatedStats, presentationChildren[i].record());
+            var idle = presentationRecord.endTime() - presentationRecord.startTime();
             for (var category in aggregatedStats)
                 idle -= aggregatedStats[category];
             aggregatedStats["idle"] = idle;
             var pieChart = WebInspector.TimelineUIUtils.generatePieChart(aggregatedStats);
-            this._delegate.showInDetails(WebInspector.TimelineUIUtils.recordStyle(presentationRecord.record()).title, pieChart);
+            var title = this._uiUtils.titleForRecord(presentationRecord.record());
+            this._delegate.showInDetails(title, pieChart);
             return;
         }
         this._delegate.select(WebInspector.TimelineSelection.fromRecord(presentationRecord.record()));
