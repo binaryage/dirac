@@ -1510,6 +1510,19 @@ WebInspector.CSSMedia.prototype = {
     header: function()
     {
         return this.parentStyleSheetId ? this._cssModel.styleSheetHeaderForId(this.parentStyleSheetId) : null;
+    },
+
+    /**
+     * @return {?WebInspector.UILocation}
+     */
+    uiLocation: function()
+    {
+        var styleSheetHeader = this.header();
+        var lineNumber = this.lineNumberInSource();
+        var columnNumber = this.columnNumberInSource();
+        if (!styleSheetHeader || typeof lineNumber !== "number")
+            return null;
+        return styleSheetHeader.rawLocationToUILocation(/** @type {number} */(lineNumber), columnNumber);
     }
 }
 

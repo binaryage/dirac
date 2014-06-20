@@ -146,13 +146,9 @@ WebInspector.MediaQueryInspector.prototype = {
             return;
 
         var model = mediaQueryMarkerContainer._model;
-        var uiSourceCode = WebInspector.workspace.uiSourceCodeForURL(model.sourceURL());
-        if (!uiSourceCode || typeof model.lineNumber() !== "number" || typeof model.columnNumber() !== "number")
-            return;
 
         var contextMenu = new WebInspector.ContextMenu(event);
-        var location = uiSourceCode.uiLocation(model.lineNumber(), model.columnNumber());
-        contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Reveal in source code" : "Reveal In Source Code"), this._revealSourceLocation.bind(this, location));
+        contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Reveal in source code" : "Reveal In Source Code"), this._revealSourceLocation.bind(this, model.uiLocation()));
         contextMenu.show();
     },
 
@@ -194,6 +190,21 @@ WebInspector.MediaQueryInspector.prototype = {
     },
 
     /**
+     * @param {!Array.<!WebInspector.MediaQueryInspector.MediaQueryUIModel>} models
+     * @return {!Array.<!WebInspector.MediaQueryInspector.MediaQueryUIModel>}
+     */
+    _squashAdjacentEqual: function(models)
+    {
+        var filtered = [];
+        for (var i = 0; i < models.length; ++i) {
+            var last = filtered.peekLast();
+            if (!last || !last.equals(models[i]))
+                filtered.push(models[i]);
+        }
+        return filtered;
+    },
+
+    /**
      * @param {!Array.<!WebInspector.CSSMedia>} cssMedias
      */
     _rebuildMediaQueries: function(cssMedias)
@@ -211,6 +222,7 @@ WebInspector.MediaQueryInspector.prototype = {
             }
         }
         queryModels.sort(compareModels);
+        queryModels = this._squashAdjacentEqual(queryModels);
 
         var allEqual = this._cachedQueryModels && this._cachedQueryModels.length == queryModels.length;
         for (var i = 0; allEqual && i < queryModels.length; ++i)
@@ -383,13 +395,12 @@ WebInspector.MediaQueryInspector.MediaQueryUIModel.prototype = {
      */
     equals: function(other)
     {
-        return this.sourceURL() === other.sourceURL()
-            && this.mediaText() === other.mediaText()
-            && this.lineNumber() === other.lineNumber()
-            && this.columnNumber() === other.columnNumber()
+        return this.mediaText() === other.mediaText()
             && this.section() === other.section()
             && (!this.minWidthExpression() || (this.minWidthExpression().computedLength() === other.minWidthExpression().computedLength()))
-            && (!this.maxWidthExpression() || (this.maxWidthExpression().computedLength() === other.maxWidthExpression().computedLength()));
+            && (!this.maxWidthExpression() || (this.maxWidthExpression().computedLength() === other.maxWidthExpression().computedLength()))
+            && (!!this.uiLocation() === !!other.uiLocation())
+            && (!this.uiLocation() || this.uiLocation().id() === other.uiLocation().id());
     },
 
     /**
@@ -409,27 +420,11 @@ WebInspector.MediaQueryInspector.MediaQueryUIModel.prototype = {
     },
 
     /**
-     * @return {string}
+     * @return {?WebInspector.UILocation}
      */
-    sourceURL: function()
+    uiLocation: function()
     {
-        return this._cssMedia.sourceURL;
-    },
-
-    /**
-     * @return {number|undefined}
-     */
-    lineNumber: function()
-    {
-        return this._cssMedia.lineNumberInSource();
-    },
-
-    /**
-     * @return {number|undefined}
-     */
-    columnNumber: function()
-    {
-        return this._cssMedia.columnNumberInSource();
+        return this._cssMedia.uiLocation();
     },
 
     /**
