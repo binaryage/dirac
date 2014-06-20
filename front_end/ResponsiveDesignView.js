@@ -20,7 +20,7 @@ WebInspector.ResponsiveDesignView = function(inspectedPagePlaceholder)
     this._createToolbar();
 
     this._mediaInspector = new WebInspector.MediaQueryInspector();
-    this._mediaInspectorContainer = this._responsiveDesignContainer.element.createChild("div");
+    this._mediaInspectorContainer = this._responsiveDesignContainer.element.createChild("div", "responsive-design-media-container");
     this._updateMediaQueryInspector();
 
     this._canvasContainer = new WebInspector.View();

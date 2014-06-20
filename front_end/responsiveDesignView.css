@@ -331,6 +331,7 @@ body.platform-mac .responsive-design-toolbar select {
 
 .responsive-design-section-network input[type='text'] {
     width: 222px;
+    margin-left: 5px;
 }
 
 .responsive-design-section-network input[type='text'],
@@ -388,11 +389,14 @@ body.platform-mac .responsive-design-toolbar select {
 
 /* media */
 
+.responsive-design-media-container {
+    flex: none;
+}
+
 .view.media-inspector-view {
     overflow-y: auto;
     overflow-x: hidden;
     background-color: rgb(0, 0, 0);
-    flex: none;
     max-height: 100px;
 }
 
