@@ -9,7 +9,7 @@
 WebInspector.MediaQueryInspector = function()
 {
     WebInspector.View.call(this);
-    this.element.classList.add("media-inspector-view");
+    this.element.classList.add("media-inspector-view", "media-inspector-view-empty");
     this.element.addEventListener("click", this._onMediaQueryClicked.bind(this), false);
     this.element.addEventListener("contextmenu", this._onContextMenu.bind(this), false);
     this._mediaThrottler = new WebInspector.Throttler(100);
@@ -299,6 +299,7 @@ WebInspector.MediaQueryInspector.prototype = {
             this.element.appendChild(bar);
         }
         this.element.scrollTop = scrollTop;
+        this.element.classList.toggle("media-inspector-view-empty", !this.element.children.length);
         if (heightChanges)
             this.dispatchEventToListeners(WebInspector.MediaQueryInspector.Events.HeightUpdated);
     },
