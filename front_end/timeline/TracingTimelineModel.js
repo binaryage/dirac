@@ -243,9 +243,9 @@ WebInspector.TracingTimelineModel.prototype = {
     {
         this._updateBoundaries(record);
         this._records.push(record);
-        if (record.type() === WebInspector.TimelineModel.RecordType.Program)
+        if (record.type() === WebInspector.TracingTimelineModel.RecordType.Program)
             this._mainThreadTasks.push(record);
-        if (record.type() === WebInspector.TimelineModel.RecordType.GPUTask)
+        if (record.type() === WebInspector.TracingTimelineModel.RecordType.GPUTask)
             this._gpuThreadTasks.push(record);
         this.dispatchEventToListeners(WebInspector.TimelineModel.Events.RecordAdded, record);
     },

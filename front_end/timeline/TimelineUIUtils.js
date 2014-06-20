@@ -136,6 +136,13 @@ WebInspector.TimelineUIUtils.prototype = {
     testContentMatching: function(record, regExp)
     {
         throw new Error("Not implemented.");
+    },
+    /**
+     * @return {!Object.<string, boolean>}
+     */
+    hiddenRecordTypes: function()
+    {
+        throw new Error("Not implemented.");
     }
 }
 

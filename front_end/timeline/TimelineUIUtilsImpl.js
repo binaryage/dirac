@@ -136,6 +136,27 @@ WebInspector.TimelineUIUtilsImpl.prototype = {
         return regExp.test(tokens.join("|"));
     },
 
+    /**
+     * @return {!Object.<string, boolean>}
+     */
+    hiddenRecordTypes: function()
+    {
+        var recordTypes = WebInspector.TimelineModel.RecordType;
+        var hiddenRecords = {};
+        hiddenRecords[recordTypes.MarkDOMContent] = true;
+        hiddenRecords[recordTypes.MarkLoad] = true;
+        hiddenRecords[recordTypes.MarkFirstPaint] = true;
+        hiddenRecords[recordTypes.GPUTask] = true;
+        hiddenRecords[recordTypes.ScheduleStyleRecalculation] = true;
+        hiddenRecords[recordTypes.InvalidateLayout] = true;
+        hiddenRecords[recordTypes.RequestMainThreadFrame] = true;
+        hiddenRecords[recordTypes.ActivateLayerTree] = true;
+        hiddenRecords[recordTypes.DrawFrame] = true;
+        hiddenRecords[recordTypes.BeginFrame] = true;
+        hiddenRecords[recordTypes.UpdateCounters] = true;
+        return hiddenRecords;
+    },
+
     __proto__: WebInspector.TimelineUIUtils.prototype
 }
 

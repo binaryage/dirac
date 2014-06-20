@@ -100,7 +100,7 @@ WebInspector.TimelinePanel = function()
     this._durationFilter = new WebInspector.TimelineIsLongFilter();
     this._textFilter = new WebInspector.TimelineTextFilter(this._uiUtils);
 
-    this._model.addFilter(new WebInspector.TimelineHiddenFilter());
+    this._model.addFilter(new WebInspector.TimelineHiddenFilter(this._uiUtils.hiddenRecordTypes()));
     this._model.addFilter(this._categoryFilter);
     this._model.addFilter(this._durationFilter);
     this._model.addFilter(this._textFilter);
@@ -1421,22 +1421,12 @@ WebInspector.TimelineTextFilter.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.TimelineModel.Filter}
+ * @param {!Object.<string, boolean>} hiddenTypes
  */
-WebInspector.TimelineHiddenFilter = function()
+WebInspector.TimelineHiddenFilter = function(hiddenTypes)
 {
     WebInspector.TimelineModel.Filter.call(this);
-    this._hiddenRecords = {};
-    this._hiddenRecords[WebInspector.TimelineModel.RecordType.MarkDOMContent] = 1;
-    this._hiddenRecords[WebInspector.TimelineModel.RecordType.MarkLoad] = 1;
-    this._hiddenRecords[WebInspector.TimelineModel.RecordType.MarkFirstPaint] = 1;
-    this._hiddenRecords[WebInspector.TimelineModel.RecordType.GPUTask] = 1;
-    this._hiddenRecords[WebInspector.TimelineModel.RecordType.ScheduleStyleRecalculation] = 1;
-    this._hiddenRecords[WebInspector.TimelineModel.RecordType.InvalidateLayout] = 1;
-    this._hiddenRecords[WebInspector.TimelineModel.RecordType.RequestMainThreadFrame] = 1;
-    this._hiddenRecords[WebInspector.TimelineModel.RecordType.ActivateLayerTree] = 1;
-    this._hiddenRecords[WebInspector.TimelineModel.RecordType.DrawFrame] = 1;
-    this._hiddenRecords[WebInspector.TimelineModel.RecordType.BeginFrame] = 1;
-    this._hiddenRecords[WebInspector.TimelineModel.RecordType.UpdateCounters] = 1;
+    this._hiddenTypes = hiddenTypes;
 }
 
 WebInspector.TimelineHiddenFilter.prototype = {
@@ -1446,7 +1436,7 @@ WebInspector.TimelineHiddenFilter.prototype = {
      */
     accept: function(record)
     {
-        return !this._hiddenRecords[record.type()];
+        return !this._hiddenTypes[record.type()];
     },
 
     __proto__: WebInspector.TimelineModel.Filter.prototype
