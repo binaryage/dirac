@@ -30,7 +30,6 @@
 
 importScript("LayerTreeOutline.js");
 importScript("LayerDetailsView.js");
-importScript("PaintProfilerView.js");
 importScript("LayerPaintProfilerView.js");
 
 /**

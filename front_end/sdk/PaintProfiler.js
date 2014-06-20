@@ -37,6 +37,16 @@ WebInspector.PaintProfilerSnapshot = function(snapshotId)
     this._id = snapshotId;
 }
 
+/**
+ * @param {string} encodedPicture
+ * @param {function(?WebInspector.PaintProfilerSnapshot)} callback
+ */
+WebInspector.PaintProfilerSnapshot.load = function(encodedPicture, callback)
+{
+    var wrappedCallback = InspectorBackend.wrapClientCallback(callback, "LayerTreeAgent.loadSnapshot(): ", WebInspector.PaintProfilerSnapshot);
+    LayerTreeAgent.loadSnapshot(encodedPicture, wrappedCallback);
+}
+
 WebInspector.PaintProfilerSnapshot.prototype = {
     dispose: function()
     {

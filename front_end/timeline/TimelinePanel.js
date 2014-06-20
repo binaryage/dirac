@@ -51,9 +51,11 @@ importScript("TimelineUIUtilsImpl.js");
 importScript("TimelineView.js");
 importScript("TimelineTracingView.js");
 importScript("TimelineLayersView.js");
+importScript("TimelinePaintProfilerView.js");
 importScript("TracingModel.js");
 importScript("TracingTimelineUIUtils.js");
 importScript("TransformController.js");
+importScript("PaintProfilerView.js");
 
 /**
  * @constructor
@@ -290,6 +292,14 @@ WebInspector.TimelinePanel.prototype = {
             return this._lazyLayersView;
         this._lazyLayersView = new WebInspector.TimelineLayersView();
         return this._lazyLayersView;
+    },
+
+    _paintProfilerView: function()
+    {
+        if (this._lazyPaintProfilerView)
+            return this._lazyPaintProfilerView;
+        this._lazyPaintProfilerView = new WebInspector.TimelinePaintProfilerView();
+        return this._lazyPaintProfilerView;
     },
 
     /**
@@ -986,13 +996,17 @@ WebInspector.TimelinePanel.prototype = {
         switch (this._selection.type()) {
         case WebInspector.TimelineSelection.Type.Record:
             var record = /** @type {!WebInspector.TimelineModel.Record} */ (this._selection.object());
+            if (this._tracingTimelineModel) {
+                var event = record.traceEvent();
+                this._uiUtils.generateDetailsContent(record, this._model, this._detailsLinkifier, this._appendDetailsTabsForTraceEventAndShowDetails.bind(this, event), this._model.loadedFromFile());
+                break;
+            }
             var title = this._uiUtils.titleForRecord(record);
             this._uiUtils.generateDetailsContent(record, this._model, this._detailsLinkifier, this.showInDetails.bind(this, title), this._model.loadedFromFile());
             break;
         case WebInspector.TimelineSelection.Type.TraceEvent:
             var event = /** @type {!WebInspector.TracingModel.Event} */ (this._selection.object());
-            var title = WebInspector.TracingTimelineUIUtils.styleForTraceEvent(event.name).title;
-            WebInspector.TracingTimelineUIUtils.buildTraceEventDetails(event, this._tracingTimelineModel, this._detailsLinkifier, this.showInDetails.bind(this, title), false, this._model.target());
+            WebInspector.TracingTimelineUIUtils.buildTraceEventDetails(event, this._tracingTimelineModel, this._detailsLinkifier, this._appendDetailsTabsForTraceEventAndShowDetails.bind(this, event), false, this._model.target());
             break;
         case WebInspector.TimelineSelection.Type.Frame:
             var frame = /** @type {!WebInspector.TimelineFrame} */ (this._selection.object());
@@ -1003,6 +1017,21 @@ WebInspector.TimelinePanel.prototype = {
                 this._detailsView.appendTab("layers", WebInspector.UIString("Layers"), layersView);
             }
             break;
+        }
+    },
+
+    /**
+     * @param {!WebInspector.TracingModel.Event} event
+     * @param {!Node} content
+     */
+    _appendDetailsTabsForTraceEventAndShowDetails: function(event, content)
+    {
+        var title = WebInspector.TracingTimelineUIUtils.styleForTraceEvent(event.name).title;
+        this.showInDetails(title, content);
+        if (event.picture) {
+            var paintProfilerView = this._paintProfilerView();
+            paintProfilerView.setPicture(event.picture);
+            this._detailsView.appendTab("paintProfiler", WebInspector.UIString("Paint Profiler"), paintProfilerView);
         }
     },
 

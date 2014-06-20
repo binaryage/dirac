@@ -311,6 +311,7 @@
         "sources": [
             "timeline/CountersGraph.js",
             "timeline/Layers3DView.js",
+            "timeline/PaintProfilerView.js",
             "timeline/MemoryCountersGraph.js",
             "timeline/TimelineEventOverview.js",
             "timeline/TracingTimelineModel.js",
@@ -329,6 +330,7 @@
             "timeline/TimelineUIUtils.js",
             "timeline/TimelineUIUtilsImpl.js",
             "timeline/TimelineView.js",
+            "timeline/TimelinePaintProfilerView.js",
             "timeline/TimelineTracingView.js",
             "timeline/TimelineLayersView.js",
             "timeline/TracingModel.js",
@@ -357,7 +359,6 @@
             "layers/LayersPanel.js",
             "layers/LayerTreeOutline.js",
             "layers/LayerDetailsView.js",
-            "layers/PaintProfilerView.js",
             "layers/LayerPaintProfilerView.js"
         ]
     },

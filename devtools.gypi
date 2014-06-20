@@ -394,6 +394,7 @@
             'front_end/timeline/TimelineUIUtils.js',
             'front_end/timeline/TimelineUIUtilsImpl.js',
             'front_end/timeline/TimelineView.js',
+            'front_end/timeline/TimelinePaintProfilerView.js',
             'front_end/timeline/TimelinePowerGraph.js',
             'front_end/timeline/TimelinePowerOverview.js',
             'front_end/timeline/TimelinePanel.js',
@@ -402,7 +403,8 @@
             'front_end/timeline/TracingModel.js',
             'front_end/timeline/TracingTimelineModel.js',
             'front_end/timeline/TracingTimelineUIUtils.js',
-            'front_end/timeline/TransformController.js'
+            'front_end/timeline/TransformController.js',
+            'front_end/timeline/PaintProfilerView.js'
         ],
         'devtools_profiler_js_files': [
             'front_end/profiler/CPUProfileBottomUpDataGrid.js',
@@ -555,7 +557,6 @@
             'front_end/layers/LayersPanel.js',
             'front_end/layers/LayerTreeOutline.js',
             'front_end/layers/LayerDetailsView.js',
-            'front_end/layers/PaintProfilerView.js',
             'front_end/layers/LayerPaintProfilerView.js'
         ],
         'devtools_extension_api_files': [

@@ -8,14 +8,16 @@
  * @constructor
  * @extends {WebInspector.Object}
  * @param {!Element} element
+ * @param {boolean=} disableRotate
  */
-WebInspector.TransformController = function(element)
+WebInspector.TransformController = function(element, disableRotate)
 {
     this.element = element;
     element.addEventListener("mousemove", this._onMouseMove.bind(this), false);
     element.addEventListener("mousedown", this._onMouseDown.bind(this), false);
     element.addEventListener("mouseup", this._onMouseUp.bind(this), false);
     element.addEventListener("mousewheel", this._onMouseWheel.bind(this), false);
+    this._disableRotate = disableRotate;
     this._reset();
 }
 
@@ -191,6 +193,12 @@ WebInspector.TransformController.prototype = {
     {
         if (event.which !== 1 || typeof this._originX !== "number")
             return;
+        if (this._disableRotate) {
+            this._onPan(event.clientX - this._originX, event.clientY - this._originY);
+            this._originX = event.clientX;
+            this._originY = event.clientY;
+            return;
+        }
         this._onRotate(this._oldRotateX + (this._originY - event.clientY) / this.element.clientHeight * 180, this._oldRotateY - (this._originX - event.clientX) / this.element.clientWidth * 180);
     },
 

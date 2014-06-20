@@ -794,3 +794,21 @@
     text-decoration: underline;
     cursor: pointer;
 }
+
+.timeline-paint-profiler-view .outline-disclosure li {
+    margin-top: 0;
+    margin-bottom: 0;
+    padding: 1 1 1 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.paint-profiler-image-view {
+    overflow: hidden;
+}
+
+.paint-profiler-image-view img {
+    border: solid 1px black;
+    -webkit-transform-origin: 0px 0px;
+}

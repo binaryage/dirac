@@ -525,7 +525,7 @@ WebInspector.TimelineModel.RecordImpl.prototype = {
     warnings: function()
     {
         return this._warnings;
-   }
+    }
 }
 
 /**
