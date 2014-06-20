@@ -41,6 +41,8 @@ WebInspector.OverridesSupport = function(responsiveDesignAvailable)
     this._emulateViewportEnabled = false;
     this._userAgent = "";
     this._pageResizer = null;
+    this._deviceScale = 1;
+    this._fixedDeviceScale = false;
     this._initialized = false;
     this._deviceMetricsThrottler = new WebInspector.Throttler(0);
     this._responsiveDesignAvailable = responsiveDesignAvailable;
@@ -52,6 +54,8 @@ WebInspector.OverridesSupport.Events = {
     EmulationStateChanged: "EmulationStateChanged"
 }
 
+WebInspector.OverridesSupport.MaxDeviceSize = 3000;
+
 /**
  * @interface
  * @extends {WebInspector.EventTarget}
@@ -61,8 +65,9 @@ WebInspector.OverridesSupport.PageResizer = function()
 };
 
 WebInspector.OverridesSupport.PageResizer.Events = {
-    AvailableSizeChanged: "AvailableSizeChanged",  // No data.
-    ResizeRequested: "ResizeRequested"  // Data is of type {!Size}.
+    AvailableSizeChanged: "AvailableSizeChanged",
+    ResizeRequested: "ResizeRequested",
+    FixedScaleRequested: "FixedScaleRequested"
 };
 
 WebInspector.OverridesSupport.PageResizer.prototype = {
@@ -255,7 +260,7 @@ WebInspector.OverridesSupport.DeviceOrientation.clearDeviceOrientationOverride =
  */
 WebInspector.OverridesSupport.deviceSizeValidator = function(value)
 {
-    if (!value || (/^[\d]+$/.test(value) && value >= 0 && value <= 10000))
+    if (!value || (/^[\d]+$/.test(value) && value >= 0 && value <= WebInspector.OverridesSupport.MaxDeviceSize))
         return "";
     return WebInspector.UIString("Value must be non-negative integer");
 }
@@ -482,11 +487,13 @@ WebInspector.OverridesSupport.prototype = {
         if (this._pageResizer) {
             this._pageResizer.removeEventListener(WebInspector.OverridesSupport.PageResizer.Events.AvailableSizeChanged, this._onPageResizerAvailableSizeChanged, this);
             this._pageResizer.removeEventListener(WebInspector.OverridesSupport.PageResizer.Events.ResizeRequested, this._onPageResizerResizeRequested, this);
+            this._pageResizer.removeEventListener(WebInspector.OverridesSupport.PageResizer.Events.FixedScaleRequested, this._onPageResizerFixedScaleRequested, this);
         }
         this._pageResizer = pageResizer;
         if (this._pageResizer) {
             this._pageResizer.addEventListener(WebInspector.OverridesSupport.PageResizer.Events.AvailableSizeChanged, this._onPageResizerAvailableSizeChanged, this);
             this._pageResizer.addEventListener(WebInspector.OverridesSupport.PageResizer.Events.ResizeRequested, this._onPageResizerResizeRequested, this);
+            this._pageResizer.addEventListener(WebInspector.OverridesSupport.PageResizer.Events.FixedScaleRequested, this._onPageResizerFixedScaleRequested, this);
         }
         if (this._initialized)
             this._deviceMetricsChanged();
@@ -664,6 +671,13 @@ WebInspector.OverridesSupport.prototype = {
         }
     },
 
+    _onPageResizerFixedScaleRequested: function(event)
+    {
+        this._fixedDeviceScale = /** @type {boolean} */ (event.data);
+        if (this._initialized)
+            this._deviceMetricsChanged();
+    },
+
     _deviceMetricsChanged: function()
     {
         this._showRulersChanged();
@@ -683,17 +697,31 @@ WebInspector.OverridesSupport.prototype = {
 
         var overrideWidth = dipWidth;
         var overrideHeight = dipHeight;
+        var scale = 1;
         if (this._pageResizer) {
             var available = this._pageResizer.availableDipSize();
-            if (available.width >= dipWidth && available.height >= dipHeight) {
-                this._pageResizer.update(dipWidth, dipHeight, 0);
+            if (this.settings.deviceFitWindow.get()) {
+                if (this._fixedDeviceScale) {
+                    scale = this._deviceScale;
+                } else {
+                    scale = 1;
+                    while (available.width < dipWidth * scale || available.height < dipHeight * scale)
+                        scale *= 0.8;
+                }
+            }
+
+            this._pageResizer.update(Math.min(dipWidth * scale, available.width), Math.min(dipHeight * scale, available.height), scale);
+            if (scale === 1 && available.width >= dipWidth && available.height >= dipHeight) {
                 // When we have enough space, no page size override is required. This will speed things up and remove lag.
                 overrideWidth = 0;
                 overrideHeight = 0;
-            } else {
-                this._pageResizer.update(Math.min(dipWidth, available.width), Math.min(dipHeight, available.height), 0);
             }
+            if (dipWidth === 0 && dipHeight !== 0)
+                overrideWidth = Math.round(available.width / scale);
+            if (dipHeight === 0 && dipWidth !== 0)
+                overrideHeight = Math.round(available.height / scale);
         }
+        this._deviceScale = scale;
 
         this._deviceMetricsThrottler.schedule(setDeviceMetricsOverride.bind(this));
 
@@ -705,7 +733,7 @@ WebInspector.OverridesSupport.prototype = {
         {
             PageAgent.setDeviceMetricsOverride(
                 overrideWidth, overrideHeight, this.settings.deviceScaleFactor.get(),
-                this.settings.emulateViewport.get(), this._pageResizer ? false : this.settings.deviceFitWindow.get(),
+                this.settings.emulateViewport.get(), this._pageResizer ? false : this.settings.deviceFitWindow.get(), scale, 0, 0,
                 this.settings.deviceTextAutosizing.get(), this._fontScaleFactor(overrideWidth || dipWidth, overrideHeight || dipHeight),
                 apiCallback.bind(this, finishCallback));
         }

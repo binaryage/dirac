@@ -241,8 +241,7 @@ WebInspector.OverridesView.DeviceTab.prototype = {
         textAutosizingOverrideElement.title = WebInspector.UIString("Text autosizing is the feature that boosts font sizes on mobile devices.");
         fieldsetElement.appendChild(textAutosizingOverrideElement);
 
-        if (!WebInspector.overridesSupport.responsiveDesignAvailable())
-            fieldsetElement.appendChild(this._createSettingCheckbox(WebInspector.UIString("Shrink to fit"), WebInspector.overridesSupport.settings.deviceFitWindow));
+        fieldsetElement.appendChild(this._createSettingCheckbox(WebInspector.UIString("Shrink to fit"), WebInspector.overridesSupport.settings.deviceFitWindow));
 
         return fieldsetElement;
     },

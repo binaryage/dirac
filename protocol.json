@@ -341,6 +341,9 @@
                     { "name": "deviceScaleFactor", "type": "number", "description": "Overriding device scale factor value. 0 disables the override." },
                     { "name": "emulateViewport", "type": "boolean", "description": "Whether viewport meta tag should be respected." },
                     { "name": "fitWindow", "type": "boolean", "description": "Whether a view that exceeds the available browser window area should be scaled down to fit." },
+                    { "name": "scale", "type": "number", "optional": true, "description": "Scale to apply to resulting view image. Ignored in |fitWindow| mode." },
+                    { "name": "offsetX", "type": "number", "optional": true, "description": "X offset to shift resulting view image by. Ignored in |fitWindow| mode." },
+                    { "name": "offsetY", "type": "number", "optional": true, "description": "Y offset to shift resulting view image by. Ignored in |fitWindow| mode." },
                     { "name": "textAutosizing", "type": "boolean", "optional": true, "description": "Whether to override the text autosizing feature." },
                     { "name": "fontScaleFactor", "type": "number", "optional": true, "description": "Overriding system font scale factor (must be positive)." }
                 ],
