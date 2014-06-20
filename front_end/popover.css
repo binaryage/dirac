@@ -1,3 +1,8 @@
+.popover-container {
+    pointer-events: none;
+    overflow: hidden;
+}
+
 .popover {
     position: absolute;
     -webkit-border-image: url(Images/popoverBackground.png) 25 25 25 25;
