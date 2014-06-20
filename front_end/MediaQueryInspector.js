@@ -155,10 +155,14 @@ WebInspector.MediaQueryInspector.prototype = {
         if (!mediaQueryMarkerContainer)
             return;
 
-        var model = mediaQueryMarkerContainer._model;
-
+        var locations = mediaQueryMarkerContainer._locations;
         var contextMenu = new WebInspector.ContextMenu(event);
-        contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Reveal in source code" : "Reveal In Source Code"), this._revealSourceLocation.bind(this, model.uiLocation()));
+        var subMenuItem = contextMenu.appendSubMenuItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Reveal in source code" : "Reveal In Source Code"));
+        for (var i = 0; i < locations.length; ++i) {
+            var location = locations[i];
+            var title = String.sprintf("%s:%d:%d", location.uiSourceCode.uri(), location.lineNumber + 1, location.columnNumber + 1);
+            subMenuItem.appendItem(title, this._revealSourceLocation.bind(this, location));
+        }
         contextMenu.show();
     },
 
@@ -266,17 +270,35 @@ WebInspector.MediaQueryInspector.prototype = {
         this._renderRulerDecorations();
         if (!this.isShowing())
             return;
-        var scrollTop = this.element.scrollTop;
-        var heightChanges = this.element.children.length !== this._cachedQueryModels.length;
-        this.element.removeChildren();
+
+        var markers = [];
+        var lastMarker = null;
         for (var i = 0; i < this._cachedQueryModels.length; ++i) {
             var model = this._cachedQueryModels[i];
-            var bar = this._createElementFromMediaQueryModel(model);
-            bar._model = model;
+            if (!model.uiLocation())
+                continue;
+            if (lastMarker && lastMarker.model.dimensionsEqual(model)) {
+                lastMarker.locations.push(model.uiLocation());
+            } else {
+                lastMarker = {
+                    model: model,
+                    locations: [ model.uiLocation() ]
+                };
+                markers.push(lastMarker);
+            }
+        }
+        var heightChanges = this.element.children.length !== markers.length;
+
+        var scrollTop = this.element.scrollTop;
+        this.element.removeChildren();
+        for (var i = 0; i < markers.length; ++i) {
+            var marker = markers[i];
+            var bar = this._createElementFromMediaQueryModel(marker.model);
+            bar._model = marker.model;
+            bar._locations = marker.locations;
             this.element.appendChild(bar);
         }
         this.element.scrollTop = scrollTop;
-        this.element.classList.toggle("media-inspector-view-fixed-height", this._cachedQueryModels.length > 5);
         if (heightChanges)
             this.dispatchEventToListeners(WebInspector.MediaQueryInspector.Events.HeightUpdated);
     },
@@ -405,12 +427,20 @@ WebInspector.MediaQueryInspector.MediaQueryUIModel.prototype = {
      */
     equals: function(other)
     {
-        return this.mediaText() === other.mediaText()
-            && this.section() === other.section()
-            && (!this.minWidthExpression() || (this.minWidthExpression().computedLength() === other.minWidthExpression().computedLength()))
-            && (!this.maxWidthExpression() || (this.maxWidthExpression().computedLength() === other.maxWidthExpression().computedLength()))
+        return this.mediaText() === other.mediaText() && this.dimensionsEqual(other)
             && (!!this.uiLocation() === !!other.uiLocation())
             && (!this.uiLocation() || this.uiLocation().id() === other.uiLocation().id());
+    },
+
+    /**
+     * @param {!WebInspector.MediaQueryInspector.MediaQueryUIModel} other
+     * @return {boolean}
+     */
+    dimensionsEqual: function(other)
+    {
+        return this.section() === other.section()
+            && (!this.minWidthExpression() || (this.minWidthExpression().computedLength() === other.minWidthExpression().computedLength()))
+            && (!this.maxWidthExpression() || (this.maxWidthExpression().computedLength() === other.maxWidthExpression().computedLength()));
     },
 
     /**

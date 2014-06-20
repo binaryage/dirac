@@ -394,10 +394,7 @@ body.platform-mac .responsive-design-toolbar select {
     background-color: rgb(0, 0, 0);
     border-bottom: 1px solid rgb(163, 163, 163);
     flex: none;
-}
-
-.view.media-inspector-view-fixed-height {
-    height: 100px;
+    max-height: 100px;
 }
 
 .media-inspector-view::-webkit-scrollbar {
