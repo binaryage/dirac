@@ -1457,8 +1457,7 @@ WebInspector.DOMModel.prototype = {
     _buildHighlightConfig: function(mode)
     {
         mode = mode || "all";
-        // FIXME: split show rulers and show extension lines.
-        var highlightConfig = { showInfo: mode === "all", showRulers: WebInspector.overridesSupport.showMetricsRulers() };
+        var highlightConfig = { showInfo: mode === "all", showRulers: WebInspector.overridesSupport.showMetricsRulers(), showExtensionLines: WebInspector.overridesSupport.showExtensionLines()};
         if (mode === "all" || mode === "content")
             highlightConfig.contentColor = WebInspector.Color.PageHighlight.Content.toProtocolRGBA();
 

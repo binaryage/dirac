@@ -604,6 +604,7 @@ WebInspector.OverridesSupport.prototype = {
             this.settings.networkConditionsThroughput.addChangeListener(this._networkConditionsChanged, this);
         }
 
+        this.settings._emulationEnabled.addChangeListener(this._showRulersChanged, this);
         WebInspector.settings.showMetricsRulers.addChangeListener(this._showRulersChanged, this);
         this._showRulersChanged();
 
@@ -796,20 +797,30 @@ WebInspector.OverridesSupport.prototype = {
         }
     },
 
+    _pageResizerActive: function()
+    {
+        return this._pageResizer && this.emulationEnabled();
+    },
+
     /**
      * @return {boolean}
      */
     showMetricsRulers: function()
     {
-        var rulersInPageResizer = this._pageResizer && this.emulationEnabled();
-        return WebInspector.settings.showMetricsRulers.get() && !rulersInPageResizer;
+        return WebInspector.settings.showMetricsRulers.get() && !this._pageResizerActive();
+    },
+
+    /**
+     * @return {boolean}
+     */
+    showExtensionLines: function()
+    {
+        return WebInspector.settings.showMetricsRulers.get();
     },
 
     _showRulersChanged: function()
     {
-        if (WebInspector.experimentsSettings.responsiveDesign.isEnabled())
-            return;
-        PageAgent.setShowViewportSizeOnResize(true, this.showMetricsRulers());
+        PageAgent.setShowViewportSizeOnResize(!this._pageResizerActive(), WebInspector.settings.showMetricsRulers.get());
     },
 
     _onMainFrameNavigated: function()
