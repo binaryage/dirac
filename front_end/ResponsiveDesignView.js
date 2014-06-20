@@ -466,7 +466,7 @@ WebInspector.ResponsiveDesignView.prototype = {
         var fieldsetElement = bandwidthElement.createChild("fieldset");
         var networkCheckbox = fieldsetElement.createChild("label");
         networkCheckbox.textContent = WebInspector.UIString("Network");
-        fieldsetElement.appendChild(WebInspector.overridesSupport.createNetworkThroughputSelect(document));
+        fieldsetElement.appendChild(WebInspector.overridesSupport.createNetworkConditionsSelect(document));
 
         var separator = networkSection.createChild("div", "responsive-design-section-separator");
 

@@ -420,19 +420,19 @@ WebInspector.OverridesSupport._notebooks = [
 ];
 
 WebInspector.OverridesSupport._networkThroughputUnlimitedValue = -1;
-WebInspector.OverridesSupport._networkThroughputPresets = [
-    ["Offline", 0],
-    ["5 Kbps", 5 * 1024 / 8],
-    ["10 Kbps (GSM)", 10 * 1024 / 8],
-    ["20 Kbps", 20 * 1024 / 8],
-    ["40 Kbps (GPRS)", 40 * 1024 / 8],
-    ["80 Kbps", 80 * 1024 / 8],
-    ["160 Kbps (EDGE)", 160 * 1024 / 8],
-    ["320 Kbps", 320 * 1024 / 8],
-    ["640 Kbps (3G)", 640 * 1024 / 8],
-    ["1 Mbps", 1024 * 1024 / 8],
-    ["2 Mbps (802.11b)", 2048 * 1024 / 8],
-    ["No throttling", WebInspector.OverridesSupport._networkThroughputUnlimitedValue]
+
+/** @typedef {{id: string, title: string, throughput: number, latency: number}} */
+WebInspector.OverridesSupport.NetworkConditionsPreset;
+
+/** @type {!Array.<!WebInspector.OverridesSupport.NetworkConditionsPreset>} */
+WebInspector.OverridesSupport._networkConditionsPresets = [
+    {id: "offline", title: "Offline", throughput: 0, latency: 0},
+    {id: "gprs", title: "GPRS", throughput: 50, latency: 500},
+    {id: "edge", title: "EDGE", throughput: 250, latency: 300},
+    {id: "3g", title: "3G", throughput: 750, latency: 100},
+    {id: "dsl", title: "DSL", throughput: 2 * 1024, latency: 5},
+    {id: "wifi", title: "WiFi", throughput: 30 * 1024, latency: 2},
+    {id: "online", title: "No throttling", throughput: WebInspector.OverridesSupport._networkThroughputUnlimitedValue, latency: 0}
 ];
 
 WebInspector.OverridesSupport.prototype = {
@@ -529,7 +529,7 @@ WebInspector.OverridesSupport.prototype = {
         this.settings.overrideDeviceOrientation.set(false);
         this.settings.overrideGeolocation.set(false);
         this.settings.overrideCSSMedia.set(false);
-        this.settings.networkConditionsThroughput.set(WebInspector.OverridesSupport._networkThroughputUnlimitedValue);
+        this.settings.networkConditions.set({throughput: WebInspector.OverridesSupport._networkThroughputUnlimitedValue, latency: 0});
         delete this._deviceMetricsChangedListenerMuted;
         delete this._userAgentChangedListenerMuted;
 
@@ -601,7 +601,7 @@ WebInspector.OverridesSupport.prototype = {
 
         if (WebInspector.experimentsSettings.networkConditions.isEnabled()) {
             this.settings._emulationEnabled.addChangeListener(this._networkConditionsChanged, this);
-            this.settings.networkConditionsThroughput.addChangeListener(this._networkConditionsChanged, this);
+            this.settings.networkConditions.addChangeListener(this._networkConditionsChanged, this);
         }
 
         this.settings._emulationEnabled.addChangeListener(this._showRulersChanged, this);
@@ -791,9 +791,11 @@ WebInspector.OverridesSupport.prototype = {
         if (!this.emulationEnabled() || !this.networkThroughputIsLimited()) {
             NetworkAgent.emulateNetworkConditions(false, 0, 0, 0);
         } else {
-            var throughput = this.settings.networkConditionsThroughput.get();
-            var offline = !throughput;
-            NetworkAgent.emulateNetworkConditions(offline, 0, throughput, throughput);
+            var conditions = this.settings.networkConditions.get();
+            var throughput = conditions.throughput;
+            var latency = conditions.latency;
+            var offline = !throughput && !latency;
+            NetworkAgent.emulateNetworkConditions(offline, latency, throughput, throughput);
         }
     },
 
@@ -898,7 +900,7 @@ WebInspector.OverridesSupport.prototype = {
         this.settings.overrideCSSMedia = WebInspector.settings.createSetting("overrideCSSMedia", false);
         this.settings.emulatedCSSMedia = WebInspector.settings.createSetting("emulatedCSSMedia", "print");
 
-        this.settings.networkConditionsThroughput = WebInspector.settings.createSetting("networkConditionsThroughput", WebInspector.OverridesSupport._networkThroughputUnlimitedValue);
+        this.settings.networkConditions = WebInspector.settings.createSetting("networkConditions", {throughput: WebInspector.OverridesSupport._networkThroughputUnlimitedValue, latency: 0});
 
         if (this._applyInitialOverridesOnTargetAdded) {
             delete this._applyInitialOverridesOnTargetAdded;
@@ -935,7 +937,8 @@ WebInspector.OverridesSupport.prototype = {
      */
     networkThroughputIsLimited: function()
     {
-        return this.settings.networkConditionsThroughput.get() !== WebInspector.OverridesSupport._networkThroughputUnlimitedValue;
+        var conditions = this.settings.networkConditions.get();
+        return conditions.throughput !== WebInspector.OverridesSupport._networkThroughputUnlimitedValue;
     },
 
     /**
@@ -1056,43 +1059,64 @@ WebInspector.OverridesSupport.prototype = {
      * @param {!Document} document
      * @return {!Element}
      */
-    createNetworkThroughputSelect: function(document)
+    createNetworkConditionsSelect: function(document)
     {
-        var throughputSetting = WebInspector.overridesSupport.settings.networkConditionsThroughput;
-        var throughputSelectElement = document.createElement("select");
-        var presets = WebInspector.OverridesSupport._networkThroughputPresets;
-        for (var i = 0; i < presets.length; ++i)
-            throughputSelectElement.add(new Option(presets[i][0], presets[i][1]));
+        var networkConditionsSetting = WebInspector.overridesSupport.settings.networkConditions;
+        var conditionsSelectElement = document.createElement("select");
+        var presets = WebInspector.OverridesSupport._networkConditionsPresets;
+        for (var i = 0; i < presets.length; ++i) {
+            var preset = presets[i];
+            var throughput = preset.throughput | 0;
+            var latency = preset.latency | 0;
+            var isThrottling = (throughput > 0) || latency;
+            if (!isThrottling) {
+                conditionsSelectElement.add(new Option(preset.title, preset.id));
+            } else {
+                var throughputText = (throughput < 1024) ? WebInspector.UIString("%d Kbps", throughput) : WebInspector.UIString("%d Mbps", (throughput / 1024) | 0);
+                var title = WebInspector.UIString("%s (%s %dms RTT)", preset.title, throughputText, latency);
+                var option = new Option(title, preset.id);
+                option.title = WebInspector.UIString("Maximum download throughput: %s.\r\nMinimum round-trip time: %dms.", throughputText, latency);
+                conditionsSelectElement.add(option);
+            }
+        }
 
         settingChanged();
-        throughputSetting.addChangeListener(settingChanged);
-        throughputSelectElement.addEventListener("change", throughputSelected, false);
+        networkConditionsSetting.addChangeListener(settingChanged);
+        conditionsSelectElement.addEventListener("change", presetSelected, false);
 
-        function throughputSelected()
+        function presetSelected()
         {
-            var value = Number(throughputSelectElement.options[throughputSelectElement.selectedIndex].value);
-            throughputSetting.removeChangeListener(settingChanged);
-            throughputSetting.set(value);
-            throughputSetting.addChangeListener(settingChanged);
+            var selectedOption = conditionsSelectElement.options[conditionsSelectElement.selectedIndex];
+            conditionsSelectElement.title = selectedOption.title;
+            var presetId = selectedOption.value;
+            var preset = presets[presets.length - 1];
+            for (var i = 0; i < presets.length; ++i) {
+                if (presets[i].id === presetId) {
+                    preset = presets[i];
+                    break;
+                }
+            }
+            var kbps = 1024 / 8;
+            networkConditionsSetting.removeChangeListener(settingChanged);
+            networkConditionsSetting.set({throughput: preset.throughput * kbps, latency: preset.latency});
+            networkConditionsSetting.addChangeListener(settingChanged);
         }
 
         function settingChanged()
         {
-            var value = String(throughputSetting.get());
-            var options = throughputSelectElement.options;
-            var selectionRestored = false;
-            for (var i = 0; i < options.length; ++i) {
-                if (options[i].value === value) {
-                    throughputSelectElement.selectedIndex = i;
-                    selectionRestored = true;
+            var conditions = networkConditionsSetting.get();
+            var presetIndex = presets.length - 1;
+            for (var i = 0; i < presets.length; ++i) {
+                if (presets[i].throughput === conditions.throughput && presets[i].latency === conditions.latency) {
+                    conditionsSelectElement.selectedIndex = i;
                     break;
                 }
             }
-            if (!selectionRestored)
-                throughputSelectElement.selectedIndex = options.length - 1;
+            conditionsSelectElement.selectedIndex = presetIndex;
+            conditionsSelectElement.title = conditionsSelectElement.options[presetIndex].title;
         }
 
-        return throughputSelectElement;
+        return conditionsSelectElement;
     },
 
     reveal: function()

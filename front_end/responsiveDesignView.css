@@ -327,11 +327,11 @@ body.platform-mac .responsive-design-toolbar select {
 /* Network section */
 
 .responsive-design-section-network select {
-    width: 150px;
+    width: 180px;
 }
 
 .responsive-design-section-network input[type='text'] {
-    width: 192px;
+    width: 222px;
 }
 
 .responsive-design-section-network input[type='text'],

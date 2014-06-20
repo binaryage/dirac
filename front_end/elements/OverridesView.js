@@ -328,10 +328,9 @@ WebInspector.OverridesView.NetworkTab.prototype = {
         var fieldsetElement = this.element.createChild("fieldset");
         fieldsetElement.createChild("span").textContent = WebInspector.UIString("Limit network throughput:");
 
-        var networkThroughput = WebInspector.overridesSupport.createNetworkThroughputSelect(document);
-        fieldsetElement.appendChild(networkThroughput);
+        fieldsetElement.appendChild(WebInspector.overridesSupport.createNetworkConditionsSelect(document));
 
-        WebInspector.overridesSupport.settings.networkConditionsThroughput.addChangeListener(this.updateActiveState, this);
+        WebInspector.overridesSupport.settings.networkConditions.addChangeListener(this.updateActiveState, this);
     },
 
     /**
