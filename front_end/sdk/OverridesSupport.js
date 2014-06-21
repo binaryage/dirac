@@ -915,7 +915,7 @@ WebInspector.OverridesSupport.prototype = {
         this.settings.deviceWidth = WebInspector.settings.createSetting("deviceWidth", 360);
         this.settings.deviceHeight = WebInspector.settings.createSetting("deviceHeight", 640);
         this.settings.deviceScaleFactor = WebInspector.settings.createSetting("deviceScaleFactor", 0);
-        this.settings.deviceTextAutosizing = WebInspector.settings.createSetting("deviceTextAutosizing", true);
+        this.settings.deviceTextAutosizing = WebInspector.settings.createSetting("deviceTextAutosizing", false);
         this.settings.deviceFitWindow = WebInspector.settings.createSetting("deviceFitWindow", true);
         // FIXME: rename viewport to mobile everywhere in the code.
         this.settings.emulateViewport = WebInspector.settings.createSetting("emulateViewport", false);
