@@ -513,10 +513,9 @@ body.platform-mac .responsive-design-toolbar select {
     right: 2px;
     top: 0px;
     bottom: 0px;
-    background-color: rgba(225, 124, 0, 0.86);
+    border-left: 1px solid rgba(225, 124, 0, 0.86);
 }
 
-.media-inspector-threshold-serif:hover::before {
-    left: 1px;
-    right: 1px;
+.media-inspector-threshold-serif:hover {
+    background-color: rgba(225, 124, 0, 0.86);
 }

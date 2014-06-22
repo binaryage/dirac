@@ -13,7 +13,9 @@ WebInspector.MediaQueryInspector = function()
     this.element.addEventListener("click", this._onMediaQueryClicked.bind(this), false);
     this.element.addEventListener("contextmenu", this._onContextMenu.bind(this), false);
     this._mediaThrottler = new WebInspector.Throttler(100);
-    this._zeroOffset = 0;
+
+    this._translateZero = 0;
+    this._scale = 1;
 
     this._rulerDecorationLayer = document.createElementWithClass("div", "fill");
     this._rulerDecorationLayer.classList.add("media-inspector-ruler-decoration");
@@ -40,8 +42,6 @@ WebInspector.MediaQueryInspector.Events = {
     HeightUpdated: "HeightUpdated"
 }
 
-WebInspector.MediaQueryInspector._ThresholdPadding = 1;
-
 WebInspector.MediaQueryInspector.prototype = {
     /**
      * @return {!Element}
@@ -67,12 +67,7 @@ WebInspector.MediaQueryInspector.prototype = {
                 thresholds.push(model.maxWidthExpression().computedLength());
         }
         thresholds.sortNumbers();
-        var filtered = [];
-        for (var i = 0; i < thresholds.length; ++i) {
-            if (i == 0 || thresholds[i] - filtered.peekLast() > WebInspector.MediaQueryInspector._ThresholdPadding)
-                filtered.push(thresholds[i]);
-        }
-        return filtered;
+        return thresholds;
     },
 
     /**
@@ -87,8 +82,8 @@ WebInspector.MediaQueryInspector.prototype = {
         var revealValue = thresholdElement._value;
         for (var mediaQueryContainer = this.element.firstChild; mediaQueryContainer; mediaQueryContainer = mediaQueryContainer.nextSibling) {
             var model = mediaQueryContainer._model;
-            if ((model.minWidthExpression() && Math.abs(model.minWidthExpression().computedLength() - revealValue) <= WebInspector.MediaQueryInspector._ThresholdPadding)
-                || (model.maxWidthExpression() && Math.abs(model.maxWidthExpression().computedLength() - revealValue) <= WebInspector.MediaQueryInspector._ThresholdPadding)) {
+            if ((model.minWidthExpression() && Math.abs(model.minWidthExpression().computedLength() - revealValue) === 0)
+                || (model.maxWidthExpression() && Math.abs(model.maxWidthExpression().computedLength() - revealValue) === 0)) {
                 mediaQueryContainer.scrollIntoViewIfNeeded(false);
                 return;
             }
@@ -96,11 +91,15 @@ WebInspector.MediaQueryInspector.prototype = {
     },
 
     /**
-     * @param {number} offset
+     * @param {number} translate
+     * @param {number} scale
      */
-    translateZero: function(offset)
+    setAxisTransform: function(translate, scale)
     {
-        this._zeroOffset = offset;
+        if (this._translateZero === translate && Math.abs(this._scale - scale) < 1e-8)
+            return;
+        this._translateZero = translate;
+        this._scale = scale;
         this._renderMediaQueries();
     },
 
@@ -304,10 +303,18 @@ WebInspector.MediaQueryInspector.prototype = {
             this.dispatchEventToListeners(WebInspector.MediaQueryInspector.Events.HeightUpdated);
     },
 
+    /**
+     * @return {number}
+     */
+    _zoomFactor: function()
+    {
+        return WebInspector.zoomManager.zoomFactor() / this._scale;
+    },
+
     _renderRulerDecorations: function()
     {
         this._rulerDecorationLayer.removeChildren();
-        var zoomFactor = WebInspector.zoomManager.zoomFactor();
+        var zoomFactor = this._zoomFactor();
 
         var thresholds = this._mediaQueryThresholds();
         for (var i = 0; i < thresholds.length; ++i) {
@@ -328,7 +335,7 @@ WebInspector.MediaQueryInspector.prototype = {
      */
     _createElementFromMediaQueryModel: function(model)
     {
-        var zoomFactor = WebInspector.zoomManager.zoomFactor();
+        var zoomFactor = this._zoomFactor();
         var minWidthValue = model.minWidthExpression() ? model.minWidthExpression().computedLength() : 0;
 
         var container = document.createElementWithClass("div", "media-inspector-marker-container hbox");
@@ -339,13 +346,13 @@ WebInspector.MediaQueryInspector.prototype = {
             "media-inspector-marker-min-width"
         ];
         markerElement.classList.add(styleClassPerSection[model.section()]);
-        var leftPixelValue = minWidthValue ? minWidthValue / zoomFactor + this._zeroOffset : 0;
+        var leftPixelValue = minWidthValue ? minWidthValue / zoomFactor + this._translateZero : 0;
         markerElement.style.left = leftPixelValue + "px";
         var widthPixelValue = null;
         if (model.maxWidthExpression() && model.minWidthExpression())
             widthPixelValue = (model.maxWidthExpression().computedLength() - minWidthValue) / zoomFactor;
         else if (model.maxWidthExpression())
-            widthPixelValue = model.maxWidthExpression().computedLength() / zoomFactor + this._zeroOffset;
+            widthPixelValue = model.maxWidthExpression().computedLength() / zoomFactor + this._translateZero;
         else
             markerElement.style.right = "0";
         if (typeof widthPixelValue === "number")

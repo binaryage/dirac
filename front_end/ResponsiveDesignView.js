@@ -330,12 +330,13 @@ WebInspector.ResponsiveDesignView.prototype = {
         var cssCanvasWidth = rect.width;
         var cssCanvasHeight = rect.height;
 
+        this._mediaInspector.setAxisTransform(WebInspector.ResponsiveDesignView.RulerWidth / zoomFactor, this._scale);
+
         if (this._cachedZoomFactor !== zoomFactor) {
             var cssRulerWidth = WebInspector.ResponsiveDesignView.RulerWidth / zoomFactor + "px";
             this._rulerGlasspane.style.height = cssRulerWidth;
             this._rulerGlasspane.style.left = cssRulerWidth;
             this._slidersContainer.style.left = cssRulerWidth;
-            this._mediaInspector.translateZero(WebInspector.ResponsiveDesignView.RulerWidth / zoomFactor);
             this._slidersContainer.style.top = cssRulerWidth;
             this._warningMessage.style.height = cssRulerWidth;
 
