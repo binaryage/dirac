@@ -388,10 +388,8 @@ WebInspector.ResponsiveDesignView.prototype = {
         this._createButtonsSection();
         this._toolbarElement.createChild("div", "responsive-design-separator");
         this._createDeviceSection();
-        if (WebInspector.experimentsSettings.networkConditions.isEnabled()) {
-            this._toolbarElement.createChild("div", "responsive-design-separator");
-            this._createNetworkSection();
-        }
+        this._toolbarElement.createChild("div", "responsive-design-separator");
+        this._createNetworkSection();
         this._toolbarElement.createChild("div", "responsive-design-separator");
 
         var moreButtonContainer = this._toolbarElement.createChild("div", "responsive-design-more-button-container");

@@ -307,13 +307,9 @@ WebInspector.OverridesView.MediaTab.prototype = {
  */
 WebInspector.OverridesView.NetworkTab = function()
 {
-    var predicates = [this._userAgentOverrideEnabled.bind(this)];
-    if (WebInspector.experimentsSettings.networkConditions.isEnabled())
-       predicates.push(this._networkThroughputIsLimited.bind(this));
-    WebInspector.OverridesView.Tab.call(this, "network", WebInspector.UIString("Network"), [], predicates);
+    WebInspector.OverridesView.Tab.call(this, "network", WebInspector.UIString("Network"), [], [this._userAgentOverrideEnabled.bind(this), this._networkThroughputIsLimited.bind(this)]);
     this.element.classList.add("overrides-network");
-    if (WebInspector.experimentsSettings.networkConditions.isEnabled())
-        this._createNetworkConditionsElement();
+    this._createNetworkConditionsElement();
     this._createUserAgentSection();
 }
 

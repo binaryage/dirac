@@ -24,12 +24,8 @@ WebInspector.AdvancedApp.prototype = {
 
         this._inspectedPagePlaceholder = new WebInspector.InspectedPagePlaceholder();
         this._inspectedPagePlaceholder.addEventListener(WebInspector.InspectedPagePlaceholder.Events.Update, this._onSetInspectedPageBounds.bind(this, false), this);
-        if (WebInspector.experimentsSettings.responsiveDesign.isEnabled()) {
-            this._responsiveDesignView = new WebInspector.ResponsiveDesignView(this._inspectedPagePlaceholder);
-            this._responsiveDesignView.show(this._rootSplitView.mainElement());
-        } else {
-            this._inspectedPagePlaceholder.show(this._rootSplitView.mainElement());
-        }
+        this._responsiveDesignView = new WebInspector.ResponsiveDesignView(this._inspectedPagePlaceholder);
+        this._responsiveDesignView.show(this._rootSplitView.mainElement());
 
         WebInspector.dockController.addEventListener(WebInspector.DockController.Events.BeforeDockSideChanged, this._onBeforeDockSideChange, this);
         WebInspector.dockController.addEventListener(WebInspector.DockController.Events.DockSideChanged, this._onDockSideChange, this);
@@ -47,7 +43,7 @@ WebInspector.AdvancedApp.prototype = {
         if (/** @type {string} */ (event.data.to) !== WebInspector.DockController.State.Undocked)
             return;
 
-        if (this._toolboxWindow || !WebInspector.experimentsSettings.responsiveDesign.isEnabled())
+        if (this._toolboxWindow)
             return;
 
         var toolbox = (window.location.search ? "&" : "?") + "toolbox=true";
@@ -67,8 +63,7 @@ WebInspector.AdvancedApp.prototype = {
 
     _updatePageResizer: function()
     {
-        if (WebInspector.experimentsSettings.responsiveDesign.isEnabled())
-            WebInspector.overridesSupport.setPageResizer(this._isDocked() ? this._responsiveDesignView : (this._toolbox ? this._toolbox._responsiveDesignView : null));
+        WebInspector.overridesSupport.setPageResizer(this._isDocked() ? this._responsiveDesignView : (this._toolbox ? this._toolbox._responsiveDesignView : null));
     },
 
     /**
@@ -180,12 +175,8 @@ WebInspector.Toolbox = function()
     var rootView = new WebInspector.RootView();
     this._inspectedPagePlaceholder = new WebInspector.InspectedPagePlaceholder();
     this._inspectedPagePlaceholder.addEventListener(WebInspector.InspectedPagePlaceholder.Events.Update, advancedApp._onSetInspectedPageBounds.bind(advancedApp, true));
-    if (WebInspector.experimentsSettings.responsiveDesign.isEnabled()) {
-        this._responsiveDesignView = new WebInspector.ResponsiveDesignView(this._inspectedPagePlaceholder);
-        this._responsiveDesignView.show(rootView.element);
-    } else {
-        this._inspectedPagePlaceholder.show(rootView.element);
-    }
+    this._responsiveDesignView = new WebInspector.ResponsiveDesignView(this._inspectedPagePlaceholder);
+    this._responsiveDesignView.show(rootView.element);
     rootView.attachToBody();
     advancedApp._toolboxLoaded(this);
 }

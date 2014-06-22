@@ -282,7 +282,7 @@ WebInspector.Main.prototype = {
     _doLoadedDoneWithCapabilities: function(mainTarget)
     {
         WebInspector.dockController = new WebInspector.DockController(!!WebInspector.queryParam("can_dock"));
-        WebInspector.overridesSupport = new WebInspector.OverridesSupport(WebInspector.experimentsSettings.responsiveDesign.isEnabled() && WebInspector.dockController.canDock());
+        WebInspector.overridesSupport = new WebInspector.OverridesSupport(WebInspector.dockController.canDock());
 
         if (mainTarget.canScreencast)
             WebInspector.app = new WebInspector.ScreencastApp();

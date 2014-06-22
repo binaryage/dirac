@@ -608,10 +608,8 @@ WebInspector.OverridesSupport.prototype = {
         this.settings.overrideCSSMedia.addChangeListener(this._cssMediaChanged, this);
         this.settings.emulatedCSSMedia.addChangeListener(this._cssMediaChanged, this);
 
-        if (WebInspector.experimentsSettings.networkConditions.isEnabled()) {
-            this.settings._emulationEnabled.addChangeListener(this._networkConditionsChanged, this);
-            this.settings.networkConditions.addChangeListener(this._networkConditionsChanged, this);
-        }
+        this.settings._emulationEnabled.addChangeListener(this._networkConditionsChanged, this);
+        this.settings.networkConditions.addChangeListener(this._networkConditionsChanged, this);
 
         this.settings._emulationEnabled.addChangeListener(this._showRulersChanged, this);
         WebInspector.settings.showMetricsRulers.addChangeListener(this._showRulersChanged, this);
@@ -636,7 +634,7 @@ WebInspector.OverridesSupport.prototype = {
 
         this._userAgentChanged();
 
-        if (WebInspector.experimentsSettings.networkConditions.isEnabled() && this.networkThroughputIsLimited())
+        if (this.networkThroughputIsLimited())
             this._networkConditionsChanged();
     },
 
