@@ -91,17 +91,18 @@ WebInspector.ResponsiveDesignView.prototype = {
             this._inspectedPagePlaceholder.clearMinimumSizeAndMargins();
             this._inspectedPagePlaceholder.show(this._pageContainer);
             this._responsiveDesignContainer.show(this.element);
-            this.update(this._dipWidth || 0, this._dipHeight || 0, this._scale || 0);
             delete this._ignoreResize;
+            this.onResize();
         } else if (!enabled && this._enabled) {
             this._invalidateCache();
             this._ignoreResize = true;
             this._enabled = false;
-            this._scale = 0;
+            this._scale = 1;
             this._inspectedPagePlaceholder.restoreMinimumSizeAndMargins();
             this._responsiveDesignContainer.detach();
             this._inspectedPagePlaceholder.show(this.element);
             delete this._ignoreResize;
+            this.onResize();
         }
     },
 
@@ -119,14 +120,17 @@ WebInspector.ResponsiveDesignView.prototype = {
         this._updateUI();
     },
 
+    updatePageResizer: function()
+    {
+        WebInspector.overridesSupport.setPageResizer(this, this._availableDipSize());
+    },
+
     /**
-     * WebInspector.OverridesSupport.PageResizer override.
      * @return {!Size}
      */
-    availableDipSize: function()
+    _availableDipSize: function()
     {
         if (typeof this._availableSize === "undefined") {
-            this._emulationEnabledChanged();
             var zoomFactor = WebInspector.zoomManager.zoomFactor();
             var rect = this._canvasContainer.element.getBoundingClientRect();
             this._availableSize = new Size(Math.max(rect.width * zoomFactor - WebInspector.ResponsiveDesignView.RulerWidth, 1),
@@ -156,7 +160,7 @@ WebInspector.ResponsiveDesignView.prototype = {
      */
     _onResizeStart: function(event)
     {
-        var available = this.availableDipSize();
+        var available = this._availableDipSize();
         this._slowPositionStart = null;
         this._resizeStartSize = event.target.isVertical() ? (this._dipHeight || available.height) : (this._dipWidth || available.width);
         this.dispatchEventToListeners(WebInspector.OverridesSupport.PageResizer.Events.FixedScaleRequested, true);
@@ -326,7 +330,7 @@ WebInspector.ResponsiveDesignView.prototype = {
 
         var zoomFactor = WebInspector.zoomManager.zoomFactor();
         var rect = this._canvas.parentElement.getBoundingClientRect();
-        var availableDip = this.availableDipSize();
+        var availableDip = this._availableDipSize();
         var cssCanvasWidth = rect.width;
         var cssCanvasHeight = rect.height;
 
@@ -372,8 +376,9 @@ WebInspector.ResponsiveDesignView.prototype = {
             return;
         var oldSize = this._availableSize;
         delete this._availableSize;
-        if (!this.availableDipSize().isEqual(oldSize))
-            this.dispatchEventToListeners(WebInspector.OverridesSupport.PageResizer.Events.AvailableSizeChanged);
+        var newSize = this._availableDipSize();
+        if (!newSize.isEqual(oldSize))
+            this.dispatchEventToListeners(WebInspector.OverridesSupport.PageResizer.Events.AvailableSizeChanged, newSize);
         this._updateUI();
         this._inspectedPagePlaceholder.onResize();
     },
