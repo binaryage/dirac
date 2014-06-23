@@ -176,8 +176,7 @@ WebInspector.OverridesView.Tab.prototype = {
 WebInspector.OverridesView.DeviceTab = function()
 {
     WebInspector.OverridesView.Tab.call(this, "device", WebInspector.UIString("Device"),  [
-        WebInspector.overridesSupport.settings.deviceWidth,
-        WebInspector.overridesSupport.settings.deviceHeight,
+        WebInspector.overridesSupport.settings.emulateResolution,
         WebInspector.overridesSupport.settings.deviceScaleFactor,
         WebInspector.overridesSupport.settings.emulateViewport,
         WebInspector.overridesSupport.settings.deviceTextAutosizing
