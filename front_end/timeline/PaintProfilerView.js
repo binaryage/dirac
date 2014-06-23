@@ -65,11 +65,13 @@ WebInspector.PaintProfilerView.prototype = {
 
     /**
      * @param {?WebInspector.PaintProfilerSnapshot} snapshot
+     * @param {!Array.<!Object>} log
      */
-    setSnapshot: function(snapshot)
+    setSnapshotAndLog: function(snapshot, log)
     {
         this._reset();
         this._snapshot = snapshot;
+        this._logCategories = log.map(WebInspector.PaintProfilerView._categoryForLogItem);
         if (!this._snapshot) {
             this._update();
             return;
@@ -102,36 +104,61 @@ WebInspector.PaintProfilerView.prototype = {
 
         var maxBarTime = 0;
         var barTimes = [];
+        var barHeightByCategory = [];
+        var heightByCategory = {};
         for (var i = 0, lastBarIndex = 0, lastBarTime = 0; i < sampleCount;) {
-            for (var row = 0; row < this._profiles.length; row++)
+            var categoryName = (this._logCategories[i] && this._logCategories[i].name) || "misc";
+            for (var row = 0; row < this._profiles.length; row++) {
                 lastBarTime += this._profiles[row][i];
+                if (!heightByCategory[categoryName])
+                    heightByCategory[categoryName] = 0;
+                heightByCategory[categoryName] += this._profiles[row][i];
+            }
             ++i;
             if (i - lastBarIndex == this._samplesPerBar || i == sampleCount) {
                 // Normalize by total number of samples accumulated.
-                lastBarTime /= this._profiles.length * (i - lastBarIndex);
+                var factor = this._profiles.length * (i - lastBarIndex);
+                lastBarTime /= factor;
+                for (categoryName in heightByCategory)
+                    heightByCategory[categoryName] /= factor;
+
                 barTimes.push(lastBarTime);
+                barHeightByCategory.push(heightByCategory);
+
                 if (lastBarTime > maxBarTime)
                     maxBarTime = lastBarTime;
                 lastBarTime = 0;
+                heightByCategory = {};
                 lastBarIndex = i;
             }
         }
+
         const paddingHeight = 4 * window.devicePixelRatio;
         var scale = (this._canvas.height - paddingHeight - this._minBarHeight) / maxBarTime;
-        this._context.fillStyle = "rgba(110, 180, 110, 0.7)";
-        for (var i = 0; i < barTimes.length; ++i)
-            this._renderBar(i, barTimes[i] * scale + this._minBarHeight);
+        for (var i = 0; i < barTimes.length; ++i) {
+            for (var categoryName in barHeightByCategory[i])
+                barHeightByCategory[i][categoryName] *= (barTimes[i] * scale + this._minBarHeight) / barTimes[i];
+            this._renderBar(i, barHeightByCategory[i]);
+        }
     },
 
     /**
      * @param {number} index
-     * @param {number} height
+     * @param {!Object.<string, number>} heightByCategory
      */
-    _renderBar: function(index, height)
+    _renderBar: function(index, heightByCategory)
     {
+        var categories = WebInspector.PaintProfilerView.categories();
+        var currentHeight = 0;
         var x = this._barPaddingWidth + index * this._outerBarWidth;
-        var y = this._canvas.height - height;
-        this._context.fillRect(x, y, this._innerBarWidth, height);
+        for (var categoryName in categories) {
+            if (!heightByCategory[categoryName])
+                continue;
+            currentHeight += heightByCategory[categoryName];
+            var y = this._canvas.height - currentHeight;
+            this._context.fillStyle = categories[categoryName].color;
+            this._context.fillRect(x, y, this._innerBarWidth, heightByCategory[categoryName]);
+        }
     },
 
     _onWindowChanged: function()
@@ -194,26 +221,12 @@ WebInspector.PaintProfilerCommandLogView = function()
 
 WebInspector.PaintProfilerCommandLogView.prototype = {
     /**
-     * @param {?WebInspector.PaintProfilerSnapshot} snapshot
+     * @param {!Array.<!Object>=} log
      */
-    setSnapshot: function(snapshot)
+    setCommandLog: function(log)
     {
-        this._reset();
-        if (!snapshot) {
-            this.updateWindow();
-            return;
-        }
-        snapshot.commandLog(onCommandLogDone.bind(this));
-
-        /**
-         * @param {!Array.<!Object>=} log
-         * @this {WebInspector.PaintProfilerCommandLogView}
-         */
-        function onCommandLogDone(log)
-        {
-            this._log = log;
-            this.updateWindow();
-        }
+        this._log = log;
+        this.updateWindow();
     },
 
     /**
@@ -334,3 +347,101 @@ WebInspector.LogTreeElement.prototype = {
 
     __proto__: TreeElement.prototype
 };
+
+/**
+ * @return {!Object.<string, !WebInspector.PaintProfilerCategory>}
+ */
+WebInspector.PaintProfilerView.categories = function()
+{
+    if (WebInspector.PaintProfilerView._categories)
+        return WebInspector.PaintProfilerView._categories;
+    WebInspector.PaintProfilerView._categories = {
+        shapes: new WebInspector.PaintProfilerCategory("shapes", WebInspector.UIString("Shapes"), "rgba(255, 0, 0, 0.7)"),
+        bitmap: new WebInspector.PaintProfilerCategory("bitmap", WebInspector.UIString("Bitmap"), "rgba(0, 255, 0, 0.7)"),
+        text: new WebInspector.PaintProfilerCategory("text", WebInspector.UIString("Text"), "rgba(0, 0, 255, 0.7)"),
+        misc: new WebInspector.PaintProfilerCategory("misc", WebInspector.UIString("Misc"), "rgba(100, 0, 100, 0.7)")
+    };
+    return WebInspector.PaintProfilerView._categories;
+};
+
+/**
+ * @constructor
+ * @param {string} name
+ * @param {string} title
+ * @param {string} color
+ */
+WebInspector.PaintProfilerCategory = function(name, title, color)
+{
+    this.name = name;
+    this.title = title;
+    this.color = color;
+}
+
+/**
+ * @return {!Object.<string, !WebInspector.PaintProfilerCategory>}
+ */
+WebInspector.PaintProfilerView._initLogItemCategories = function()
+{
+    if (WebInspector.PaintProfilerView._logItemCategoriesMap)
+        return WebInspector.PaintProfilerView._logItemCategoriesMap;
+
+    var categories = WebInspector.PaintProfilerView.categories();
+
+    var logItemCategories = {};
+    logItemCategories["Clear"] = categories["misc"];
+    logItemCategories["DrawPaint"] = categories["misc"];
+    logItemCategories["DrawData"] = categories["misc"];
+    logItemCategories["SetMatrix"] = categories["misc"];
+    logItemCategories["PushCull"] = categories["misc"];
+    logItemCategories["PopCull"] = categories["misc"];
+    logItemCategories["Translate"] = categories["misc"];
+    logItemCategories["Scale"] = categories["misc"];
+    logItemCategories["Concat"] = categories["misc"];
+    logItemCategories["Restore"] = categories["misc"];
+    logItemCategories["SaveLayer"] = categories["misc"];
+    logItemCategories["Save"] = categories["misc"];
+    logItemCategories["BeginCommentGroup"] = categories["misc"];
+    logItemCategories["AddComment"] = categories["misc"];
+    logItemCategories["EndCommentGroup"] = categories["misc"];
+    logItemCategories["ClipRect"] = categories["misc"];
+    logItemCategories["ClipRRect"] = categories["misc"];
+    logItemCategories["ClipPath"] = categories["misc"];
+    logItemCategories["ClipRegion"] = categories["misc"];
+    logItemCategories["DrawPoints"] = categories["shapes"];
+    logItemCategories["DrawRect"] = categories["shapes"];
+    logItemCategories["DrawOval"] = categories["shapes"];
+    logItemCategories["DrawRRect"] = categories["shapes"];
+    logItemCategories["DrawPath"] = categories["shapes"];
+    logItemCategories["DrawVertices"] = categories["shapes"];
+    logItemCategories["DrawDRRect"] = categories["shapes"];
+    logItemCategories["DrawBitmap"] = categories["bitmap"];
+    logItemCategories["DrawBitmapRectToRect"] = categories["bitmap"];
+    logItemCategories["DrawBitmapMatrix"] = categories["bitmap"];
+    logItemCategories["DrawBitmapNine"] = categories["bitmap"];
+    logItemCategories["DrawSprite"] = categories["bitmap"];
+    logItemCategories["DrawPicture"] = categories["bitmap"];
+    logItemCategories["DrawText"] = categories["text"];
+    logItemCategories["DrawPosText"] = categories["text"];
+    logItemCategories["DrawPosTextH"] = categories["text"];
+    logItemCategories["DrawTextOnPath"] = categories["text"];
+
+    WebInspector.PaintProfilerView._logItemCategoriesMap = logItemCategories;
+    return logItemCategories;
+}
+
+/**
+ * @param {!Object} logItem
+ * @return {!WebInspector.PaintProfilerCategory}
+ */
+WebInspector.PaintProfilerView._categoryForLogItem = function(logItem)
+{
+    var method = logItem.method.toTitleCase();
+
+    var logItemCategories = WebInspector.PaintProfilerView._initLogItemCategories();
+    var result = logItemCategories[method];
+    if (!result) {
+        result = WebInspector.PaintProfilerView.categories()["misc"];
+        logItemCategories[method] = result;
+    }
+    return result;
+}

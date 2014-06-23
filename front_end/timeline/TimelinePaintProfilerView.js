@@ -64,8 +64,18 @@ WebInspector.TimelinePaintProfilerView.prototype = {
         function onSnapshotLoaded(snapshot)
         {
             this._lastLoadedSnapshot = snapshot;
-            this._paintProfilerView.setSnapshot(snapshot || null);
-            this._logTreeView.setSnapshot(snapshot || null);
+            snapshot.commandLog(onCommandLogDone.bind(this, snapshot));
+        }
+
+        /**
+         * @param {!WebInspector.PaintProfilerSnapshot=} snapshot
+         * @param {!Array.<!Object>=} log
+         * @this {WebInspector.TimelinePaintProfilerView}
+         */
+        function onCommandLogDone(snapshot, log)
+        {
+            this._logTreeView.setCommandLog(log);
+            this._paintProfilerView.setSnapshotAndLog(snapshot || null, log || []);
         }
     },
 
