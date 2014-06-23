@@ -92,7 +92,7 @@ WebInspector.TimelineEventOverview.prototype = {
                 return;
             var recordStart = Math.floor((record.startTime() - timeOffset) * scale);
             var recordEnd = Math.ceil((record.endTime() - timeOffset) * scale);
-            var category = record.category();
+            var category = this._uiUtils.categoryForRecord(record);
             if (category.overviewStripGroupIndex < 0)
                 return;
             var bar = lastBarByGroup[category.overviewStripGroupIndex];

@@ -366,11 +366,6 @@ WebInspector.TimelineModel.Record.prototype = {
     children: function() { },
 
     /**
-     * @return {!WebInspector.TimelineCategory}
-     */
-    category: function() { },
-
-    /**
      * @return {number}
      */
     startTime: function() { },

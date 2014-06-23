@@ -414,14 +414,6 @@ WebInspector.TimelineModel.RecordImpl.prototype = {
     },
 
     /**
-     * @return {!WebInspector.TimelineCategory}
-     */
-    category: function()
-    {
-        return WebInspector.TimelineUIUtils.recordStyle(this).category;
-    },
-
-    /**
      * @return {number}
      */
     startTime: function()

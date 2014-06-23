@@ -83,6 +83,15 @@ WebInspector.TimelineUIUtilsImpl.prototype = {
 
     /**
      * @param {!WebInspector.TimelineModel.Record} record
+     * @return {!WebInspector.TimelineCategory}
+     */
+    categoryForRecord: function(record)
+    {
+        return WebInspector.TimelineUIUtilsImpl.recordStyle(record).category;
+    },
+
+    /**
+     * @param {!WebInspector.TimelineModel.Record} record
      * @param {!WebInspector.Linkifier} linkifier
      * @param {boolean} loadedFromFile
      * @return {?Node}
@@ -177,6 +186,84 @@ WebInspector.TimelineUIUtilsImpl._coalescableRecordTypes[WebInspector.TimelineMo
 WebInspector.TimelineUIUtilsImpl._coalescableRecordTypes[WebInspector.TimelineModel.RecordType.DecodeImage] = 1;
 WebInspector.TimelineUIUtilsImpl._coalescableRecordTypes[WebInspector.TimelineModel.RecordType.ResizeImage] = 1;
 
+/**
+ * @return {!Object.<string, !{title: string, category: !WebInspector.TimelineCategory}>}
+ */
+WebInspector.TimelineUIUtils._initRecordStyles = function()
+{
+    if (WebInspector.TimelineUIUtils._recordStylesMap)
+        return WebInspector.TimelineUIUtils._recordStylesMap;
+
+    var recordTypes = WebInspector.TimelineModel.RecordType;
+    var categories = WebInspector.TimelineUIUtils.categories();
+
+    var recordStyles = {};
+    recordStyles[recordTypes.Root] = { title: "#root", category: categories["loading"] };
+    recordStyles[recordTypes.Program] = { title: WebInspector.UIString("Other"), category: categories["other"] };
+    recordStyles[recordTypes.EventDispatch] = { title: WebInspector.UIString("Event"), category: categories["scripting"] };
+    recordStyles[recordTypes.BeginFrame] = { title: WebInspector.UIString("Frame Start"), category: categories["rendering"] };
+    recordStyles[recordTypes.ScheduleStyleRecalculation] = { title: WebInspector.UIString("Schedule Style Recalculation"), category: categories["rendering"] };
+    recordStyles[recordTypes.RecalculateStyles] = { title: WebInspector.UIString("Recalculate Style"), category: categories["rendering"] };
+    recordStyles[recordTypes.InvalidateLayout] = { title: WebInspector.UIString("Invalidate Layout"), category: categories["rendering"] };
+    recordStyles[recordTypes.Layout] = { title: WebInspector.UIString("Layout"), category: categories["rendering"] };
+    recordStyles[recordTypes.UpdateLayerTree] = { title: WebInspector.UIString("Update layer tree"), category: categories["rendering"] };
+    recordStyles[recordTypes.PaintSetup] = { title: WebInspector.UIString("Paint Setup"), category: categories["painting"] };
+    recordStyles[recordTypes.Paint] = { title: WebInspector.UIString("Paint"), category: categories["painting"] };
+    recordStyles[recordTypes.Rasterize] = { title: WebInspector.UIString("Paint"), category: categories["painting"] };
+    recordStyles[recordTypes.ScrollLayer] = { title: WebInspector.UIString("Scroll"), category: categories["rendering"] };
+    recordStyles[recordTypes.DecodeImage] = { title: WebInspector.UIString("Image Decode"), category: categories["painting"] };
+    recordStyles[recordTypes.ResizeImage] = { title: WebInspector.UIString("Image Resize"), category: categories["painting"] };
+    recordStyles[recordTypes.CompositeLayers] = { title: WebInspector.UIString("Composite Layers"), category: categories["painting"] };
+    recordStyles[recordTypes.ParseHTML] = { title: WebInspector.UIString("Parse HTML"), category: categories["loading"] };
+    recordStyles[recordTypes.TimerInstall] = { title: WebInspector.UIString("Install Timer"), category: categories["scripting"] };
+    recordStyles[recordTypes.TimerRemove] = { title: WebInspector.UIString("Remove Timer"), category: categories["scripting"] };
+    recordStyles[recordTypes.TimerFire] = { title: WebInspector.UIString("Timer Fired"), category: categories["scripting"] };
+    recordStyles[recordTypes.XHRReadyStateChange] = { title: WebInspector.UIString("XHR Ready State Change"), category: categories["scripting"] };
+    recordStyles[recordTypes.XHRLoad] = { title: WebInspector.UIString("XHR Load"), category: categories["scripting"] };
+    recordStyles[recordTypes.EvaluateScript] = { title: WebInspector.UIString("Evaluate Script"), category: categories["scripting"] };
+    recordStyles[recordTypes.ResourceSendRequest] = { title: WebInspector.UIString("Send Request"), category: categories["loading"] };
+    recordStyles[recordTypes.ResourceReceiveResponse] = { title: WebInspector.UIString("Receive Response"), category: categories["loading"] };
+    recordStyles[recordTypes.ResourceFinish] = { title: WebInspector.UIString("Finish Loading"), category: categories["loading"] };
+    recordStyles[recordTypes.FunctionCall] = { title: WebInspector.UIString("Function Call"), category: categories["scripting"] };
+    recordStyles[recordTypes.ResourceReceivedData] = { title: WebInspector.UIString("Receive Data"), category: categories["loading"] };
+    recordStyles[recordTypes.GCEvent] = { title: WebInspector.UIString("GC Event"), category: categories["scripting"] };
+    recordStyles[recordTypes.JSFrame] = { title: WebInspector.UIString("JS Frame"), category: categories["scripting"] };
+    recordStyles[recordTypes.MarkDOMContent] = { title: WebInspector.UIString("DOMContentLoaded event"), category: categories["scripting"] };
+    recordStyles[recordTypes.MarkLoad] = { title: WebInspector.UIString("Load event"), category: categories["scripting"] };
+    recordStyles[recordTypes.MarkFirstPaint] = { title: WebInspector.UIString("First paint"), category: categories["painting"] };
+    recordStyles[recordTypes.TimeStamp] = { title: WebInspector.UIString("Stamp"), category: categories["scripting"] };
+    recordStyles[recordTypes.ConsoleTime] = { title: WebInspector.UIString("Console Time"), category: categories["scripting"] };
+    recordStyles[recordTypes.RequestAnimationFrame] = { title: WebInspector.UIString("Request Animation Frame"), category: categories["scripting"] };
+    recordStyles[recordTypes.CancelAnimationFrame] = { title: WebInspector.UIString("Cancel Animation Frame"), category: categories["scripting"] };
+    recordStyles[recordTypes.FireAnimationFrame] = { title: WebInspector.UIString("Animation Frame Fired"), category: categories["scripting"] };
+    recordStyles[recordTypes.WebSocketCreate] = { title: WebInspector.UIString("Create WebSocket"), category: categories["scripting"] };
+    recordStyles[recordTypes.WebSocketSendHandshakeRequest] = { title: WebInspector.UIString("Send WebSocket Handshake"), category: categories["scripting"] };
+    recordStyles[recordTypes.WebSocketReceiveHandshakeResponse] = { title: WebInspector.UIString("Receive WebSocket Handshake"), category: categories["scripting"] };
+    recordStyles[recordTypes.WebSocketDestroy] = { title: WebInspector.UIString("Destroy WebSocket"), category: categories["scripting"] };
+    recordStyles[recordTypes.EmbedderCallback] = { title: WebInspector.UIString("Embedder Callback"), category: categories["scripting"] };
+
+    WebInspector.TimelineUIUtils._recordStylesMap = recordStyles;
+    return recordStyles;
+}
+
+/**
+ * @param {!WebInspector.TimelineModel.Record} record
+ * @return {!{title: string, category: !WebInspector.TimelineCategory}}
+ */
+WebInspector.TimelineUIUtilsImpl.recordStyle = function(record)
+{
+    var type = record.type();
+    var recordStyles = WebInspector.TimelineUIUtils._initRecordStyles();
+    var result = recordStyles[type];
+    if (!result) {
+        result = {
+            title: WebInspector.UIString("Unknown: %s", type),
+            category: WebInspector.TimelineUIUtils.categories()["other"]
+        };
+        recordStyles[type] = result;
+    }
+    return result;
+}
 
 /**
  * @param {!WebInspector.TimelineModel.Record} record
@@ -191,9 +278,9 @@ WebInspector.TimelineUIUtilsImpl.recordTitle = function(record)
         return recordData["functionName"];
     if (WebInspector.TimelineUIUtilsImpl.isEventDivider(record)) {
         var startTime = Number.millisToString(record.startTime() - record._model.minimumRecordTime());
-        return WebInspector.UIString("%s at %s", WebInspector.TimelineUIUtils.recordStyle(record).title, startTime, true);
+        return WebInspector.UIString("%s at %s", WebInspector.TimelineUIUtilsImpl.recordStyle(record).title, startTime, true);
     }
-    return WebInspector.TimelineUIUtils.recordStyle(record).title;
+    return WebInspector.TimelineUIUtilsImpl.recordStyle(record).title;
 }
 
 /**
@@ -221,7 +308,7 @@ WebInspector.TimelineUIUtilsImpl.aggregateTimeForRecord = function(total, record
     var children = record.children();
     for (var i = 0; i < children.length; ++i)
         WebInspector.TimelineUIUtilsImpl.aggregateTimeForRecord(total, children[i]);
-    var categoryName = WebInspector.TimelineUIUtils.recordStyle(record).category.name;
+    var categoryName = WebInspector.TimelineUIUtilsImpl.recordStyle(record).category.name;
     total[categoryName] = (total[categoryName] || 0) + record.selfTime();
 }
 
@@ -435,7 +522,7 @@ WebInspector.TimelineUIUtilsImpl._generateDetailsContentSynchronously = function
     var aggregatedStats = {};
     WebInspector.TimelineUIUtilsImpl.aggregateTimeForRecord(aggregatedStats, record);
     if (record.children().length)
-        fragment.appendChild(WebInspector.TimelineUIUtils.generatePieChart(aggregatedStats, record.category(), record.selfTime()));
+        fragment.appendChild(WebInspector.TimelineUIUtils.generatePieChart(aggregatedStats, WebInspector.TimelineUIUtilsImpl.recordStyle(record).category, record.selfTime()));
     else
         fragment.appendChild(WebInspector.TimelineUIUtils.generatePieChart(aggregatedStats));
 

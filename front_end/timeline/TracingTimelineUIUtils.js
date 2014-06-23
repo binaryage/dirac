@@ -77,6 +77,15 @@ WebInspector.TracingTimelineUIUtils.prototype = {
 
     /**
      * @param {!WebInspector.TimelineModel.Record} record
+     * @return {!WebInspector.TimelineCategory}
+     */
+    categoryForRecord: function(record)
+    {
+        return WebInspector.TracingTimelineUIUtils.styleForTraceEvent(record.traceEvent().name).category;
+    },
+
+    /**
+     * @param {!WebInspector.TimelineModel.Record} record
      * @param {!WebInspector.Linkifier} linkifier
      * @param {boolean} loadedFromFile
      * @return {?Node}

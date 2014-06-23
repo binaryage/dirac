@@ -584,7 +584,7 @@ WebInspector.TimelineView.prototype = {
                 }
 
                 listRowElement.row.update(record, visibleTop, this._model.loadedFromFile(), this._uiUtils);
-                graphRowElement.row.update(record, this._calculator, this._expandOffset, i);
+                graphRowElement.row.update(record, this._calculator, this._expandOffset, i, this._uiUtils);
                 if (this._lastSelectedRecord === record) {
                     listRowElement.row.renderAsSelected(true);
                     graphRowElement.row.renderAsSelected(true);
@@ -1058,7 +1058,7 @@ WebInspector.TimelineRecordListRow.prototype = {
         var record = presentationRecord.record();
         this._offset = offset;
 
-        this.element.className = "timeline-tree-item timeline-category-" + record.category().name;
+        this.element.className = "timeline-tree-item timeline-category-" + uiUtils.categoryForRecord(record).name;
         var paddingLeft = 5;
         var step = -3;
         for (var currentRecord = presentationRecord.presentationParent() ? presentationRecord.presentationParent().presentationParent() : null; currentRecord; currentRecord = currentRecord.presentationParent())
@@ -1190,12 +1190,13 @@ WebInspector.TimelineRecordGraphRow.prototype = {
      * @param {!WebInspector.TimelineCalculator} calculator
      * @param {number} expandOffset
      * @param {number} index
+     * @param {!WebInspector.TimelineUIUtils} uiUtils
      */
-    update: function(presentationRecord, calculator, expandOffset, index)
+    update: function(presentationRecord, calculator, expandOffset, index, uiUtils)
     {
         this._record = presentationRecord;
         var record = presentationRecord.record();
-        this.element.className = "timeline-graph-side timeline-category-" + record.category().name;
+        this.element.className = "timeline-graph-side timeline-category-" + uiUtils.categoryForRecord(record).name;
         if (record.thread())
             this.element.classList.add("background");
 

@@ -529,15 +529,6 @@ WebInspector.TracingTimelineModel.TraceEventRecord.prototype = {
     },
 
     /**
-     * @return {!WebInspector.TimelineCategory}
-     */
-    category: function()
-    {
-        var style = WebInspector.TracingTimelineUIUtils.styleForTraceEvent(this._event.name);
-        return style.category;
-    },
-
-    /**
      * @return {number}
      */
     startTime: function()

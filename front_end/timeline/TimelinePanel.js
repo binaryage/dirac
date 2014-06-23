@@ -98,7 +98,7 @@ WebInspector.TimelinePanel = function()
 
     this._model.target().profilingLock.addEventListener(WebInspector.Lock.Events.StateChanged, this._onProfilingStateChanged, this);
 
-    this._categoryFilter = new WebInspector.TimelineCategoryFilter();
+    this._categoryFilter = new WebInspector.TimelineCategoryFilter(this._uiUtils);
     this._durationFilter = new WebInspector.TimelineIsLongFilter();
     this._textFilter = new WebInspector.TimelineTextFilter(this._uiUtils);
 
@@ -1042,6 +1042,7 @@ WebInspector.TimelinePanel.prototype = {
 
         var startTime = this._windowStartTime;
         var endTime = this._windowEndTime;
+        var uiUtils = this._uiUtils;
 
         // Return early in case 0 selection window.
         if (startTime < 0)
@@ -1076,7 +1077,7 @@ WebInspector.TimelinePanel.prototype = {
                 childrenTime += Math.min(endTime, child.endTime()) - Math.max(startTime, child.startTime());
                 aggregateTimeForRecordWithinWindow(child);
             }
-            var categoryName = record.category().name;
+            var categoryName = uiUtils.categoryForRecord(record).name;
             var ownTime = Math.min(endTime, record.endTime()) - Math.max(startTime, record.startTime()) - childrenTime;
             aggregatedStats[categoryName] = (aggregatedStats[categoryName] || 0) + ownTime;
         }
@@ -1354,10 +1355,12 @@ WebInspector.TimelineModeViewDelegate.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.TimelineModel.Filter}
+ * @param {!WebInspector.TimelineUIUtils} uiUtils
  */
-WebInspector.TimelineCategoryFilter = function()
+WebInspector.TimelineCategoryFilter = function(uiUtils)
 {
     WebInspector.TimelineModel.Filter.call(this);
+    this._uiUtils = uiUtils;
 }
 
 WebInspector.TimelineCategoryFilter.prototype = {
@@ -1367,7 +1370,7 @@ WebInspector.TimelineCategoryFilter.prototype = {
      */
     accept: function(record)
     {
-        return !record.category().hidden;
+        return !this._uiUtils.categoryForRecord(record).hidden;
     },
 
     __proto__: WebInspector.TimelineModel.Filter.prototype
