@@ -405,11 +405,12 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
      */
     applyExpression: function(expression)
     {
+        var property = WebInspector.RemoteObject.toCallArgument(this.property.symbol || this.property.name);
         expression = expression.trim();
         if (expression)
-            this.property.parentObject.setPropertyValue(this.property.name, expression, callback.bind(this));
+            this.property.parentObject.setPropertyValue(property, expression, callback.bind(this));
         else
-            this.property.parentObject.deleteProperty(this.property.name, callback.bind(this));
+            this.property.parentObject.deleteProperty(property, callback.bind(this));
 
         /**
          * @param {?Protocol.Error} error

@@ -86,7 +86,7 @@ WebInspector.RemoteObject.prototype = {
     },
 
     /**
-     * @param {string} name
+     * @param {!RuntimeAgent.CallArgument} name
      * @param {function(string=)} callback
      */
     deleteProperty: function(name, callback)
@@ -170,30 +170,51 @@ WebInspector.RemoteObject.type = function(remoteObject)
 }
 
 /**
- * @param {!RuntimeAgent.RemoteObject|!WebInspector.RemoteObject} remoteObject
+ * @param {!RuntimeAgent.RemoteObject|!WebInspector.RemoteObject|number|string|boolean|undefined|null} object
  * @return {!RuntimeAgent.CallArgument}
  */
-WebInspector.RemoteObject.toCallArgument = function(remoteObject)
+WebInspector.RemoteObject.toCallArgument = function(object)
 {
-    var type = /** @type {!RuntimeAgent.CallArgumentType.<string>} */ (remoteObject.type);
-    var value = remoteObject.value;
+    var type = typeof object;
+    var value = object;
+    var objectId = undefined;
+    var description = String(object);
+
+    if (type === "number" && value === 0 && 1 / value < 0)
+        description = "-0";
+
+    switch (type) {
+    case "number":
+    case "string":
+    case "boolean":
+    case "undefined":
+        break;
+    default:
+        if (object) {
+            type = object.type;
+            value = object.value;
+            objectId = object.objectId;
+            description = object.description;
+        }
+        break;
+    }
 
     // Handle special numbers: NaN, Infinity, -Infinity, -0.
     if (type === "number") {
-        switch (remoteObject.description) {
+        switch (description) {
         case "NaN":
         case "Infinity":
         case "-Infinity":
         case "-0":
-            value = remoteObject.description;
+            value = description;
             break;
         }
     }
 
     return {
         value: value,
-        objectId: remoteObject.objectId,
-        type: type
+        objectId: objectId,
+        type: /** @type {!RuntimeAgent.CallArgumentType.<string>} */ (type)
     };
 }
 
@@ -373,7 +394,7 @@ WebInspector.RemoteObjectImpl.prototype = {
     },
 
     /**
-     * @param {string} name
+     * @param {!RuntimeAgent.CallArgument} name
      * @param {string} value
      * @param {function(string=)} callback
      */
@@ -408,7 +429,7 @@ WebInspector.RemoteObjectImpl.prototype = {
 
     /**
      * @param {!RuntimeAgent.RemoteObject} result
-     * @param {string} name
+     * @param {!RuntimeAgent.CallArgument} name
      * @param {function(string=)} callback
      */
     doSetObjectPropertyValue: function(result, name, callback)
@@ -419,7 +440,7 @@ WebInspector.RemoteObjectImpl.prototype = {
         // where property was defined; so do we.
         var setPropertyValueFunction = "function(a, b) { this[a] = b; }";
 
-        var argv = [{ value: name }, WebInspector.RemoteObject.toCallArgument(result)]
+        var argv = [name, WebInspector.RemoteObject.toCallArgument(result)];
         this._runtimeAgent.callFunctionOn(this._objectId, setPropertyValueFunction, argv, true, undefined, undefined, propertySetCallback);
 
         /**
@@ -438,7 +459,7 @@ WebInspector.RemoteObjectImpl.prototype = {
     },
 
     /**
-     * @param {string} name
+     * @param {!RuntimeAgent.CallArgument} name
      * @param {function(string=)} callback
      */
     deleteProperty: function(name, callback)
@@ -449,7 +470,7 @@ WebInspector.RemoteObjectImpl.prototype = {
         }
 
         var deletePropertyFunction = "function(a) { delete this[a]; return !(a in this); }";
-        this._runtimeAgent.callFunctionOn(this._objectId, deletePropertyFunction, [{ value: name }], true, undefined, undefined, deletePropertyCallback);
+        this._runtimeAgent.callFunctionOn(this._objectId, deletePropertyFunction, [name], true, undefined, undefined, deletePropertyCallback);
 
         /**
          * @param {?Protocol.Error} error
