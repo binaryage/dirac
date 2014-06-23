@@ -218,15 +218,11 @@ WebInspector.TimelineUIUtilsImpl.isEventDivider = function(record)
  */
 WebInspector.TimelineUIUtilsImpl.aggregateTimeForRecord = function(total, record)
 {
-    var childrenTime = 0;
     var children = record.children();
-    for (var i = 0; i < children.length; ++i) {
+    for (var i = 0; i < children.length; ++i)
         WebInspector.TimelineUIUtilsImpl.aggregateTimeForRecord(total, children[i]);
-        childrenTime += children[i].endTime() - children[i].startTime();
-    }
     var categoryName = WebInspector.TimelineUIUtils.recordStyle(record).category.name;
-    var ownTime = record.endTime() - record.startTime() - childrenTime;
-    total[categoryName] = (total[categoryName] || 0) + ownTime;
+    total[categoryName] = (total[categoryName] || 0) + record.selfTime();
 }
 
 /**
