@@ -221,10 +221,6 @@ WebInspector.ResponsiveDesignView.prototype = {
         context.scale(canvas.width / dipCanvasWidth, canvas.height / dipCanvasHeight);
         context.font = "11px " + WebInspector.fontFamily();
 
-        const rulerStep = 100;
-        const rulerSubStep = 5;
-        const gridStep = 50;
-        const gridSubStep = 10;
         const rulerBackgroundColor = "rgb(0, 0, 0)";
         const backgroundColor = "rgb(102, 102, 102)";
         const lightLineColor = "rgb(132, 132, 132)";
@@ -233,11 +229,19 @@ WebInspector.ResponsiveDesignView.prototype = {
         const textColor = "rgb(186, 186, 186)";
 
         var scale = this._scale || 1;
+        var rulerScale = 1;
+        while (Math.abs(rulerScale * scale - 1) > Math.abs((rulerScale + 1) * scale - 1))
+            rulerScale++;
+
+        var gridStep = 50 * scale * rulerScale;
+        var gridSubStep = 10 * scale * rulerScale;
+
+        var rulerSubStep = 5 * scale * rulerScale;
+        var rulerStepCount = 20;
+
         var rulerWidth = WebInspector.ResponsiveDesignView.RulerWidth;
-        var dipGridWidth = (dipCanvasWidth - rulerWidth) / scale;
-        var dipGridHeight = (dipCanvasHeight - rulerWidth) / scale;
-        rulerWidth /= scale;
-        context.scale(scale, scale);
+        var dipGridWidth = dipCanvasWidth - rulerWidth;
+        var dipGridHeight = dipCanvasHeight - rulerWidth;
         context.translate(rulerWidth, rulerWidth);
 
         context.fillStyle = rulerBackgroundColor;
@@ -253,17 +257,17 @@ WebInspector.ResponsiveDesignView.prototype = {
         context.lineWidth = 1;
 
         // Draw vertical ruler.
-        for (var x = 0; x < dipGridWidth; x += rulerSubStep) {
+        for (var x, index = 0; (x = index * rulerSubStep) < dipGridWidth; index++) {
             var y = -rulerWidth / 4;
-            if (!(x % (rulerStep / 4)))
+            if (!(index % (rulerStepCount / 4)))
                 y = -rulerWidth / 2;
-            if (!(x % (rulerStep / 2)))
+            if (!(index % (rulerStepCount / 2)))
                 y = -rulerWidth + 2;
 
-            if (!(x % rulerStep)) {
+            if (!(index % rulerStepCount)) {
                 context.save();
                 context.translate(x, 0);
-                context.fillText(x, 2, -rulerWidth / 2);
+                context.fillText(Math.round(x / scale), 2, -rulerWidth / 2);
                 context.restore();
                 y = -rulerWidth;
             }
@@ -275,18 +279,18 @@ WebInspector.ResponsiveDesignView.prototype = {
         }
 
         // Draw horizontal ruler.
-        for (var y = 0; y < dipGridHeight; y += rulerSubStep) {
-            x = -rulerWidth / 4;
-            if (!(y % (rulerStep / 4)))
+        for (var y, index = 0; (y = index * rulerSubStep) < dipGridHeight; index++) {
+            var x = -rulerWidth / 4;
+            if (!(index % (rulerStepCount / 4)))
                 x = -rulerWidth / 2;
-            if (!(y % (rulerStep / 2)))
+            if (!(index % (rulerStepCount / 2)))
                 x = -rulerWidth + 2;
 
-            if (!(y % rulerStep)) {
+            if (!(index % rulerStepCount)) {
                 context.save();
                 context.translate(0, y);
                 context.rotate(-Math.PI / 2);
-                context.fillText(y, 2, -rulerWidth / 2);
+                context.fillText(Math.round(y / scale), 2, -rulerWidth / 2);
                 context.restore();
                 x = -rulerWidth;
             }
