@@ -409,8 +409,12 @@ WebInspector.UISourceCode.prototype = {
     /**
      * @param {boolean} forceSaveAs
      */
-    saveToFileSystem: function(forceSaveAs)
+    save: function(forceSaveAs)
     {
+        if (this.project().type() === WebInspector.projectTypes.FileSystem || this.project().type() === WebInspector.projectTypes.Snippets) {
+            this.commitWorkingCopy(function() { });
+            return;
+        }
         if (this.isDirty()) {
             this._saveURLWithFileManager(forceSaveAs, this.workingCopy());
             this.commitWorkingCopy(function() { });

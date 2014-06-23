@@ -146,7 +146,7 @@ WebInspector.HandlerRegistry.prototype = {
         {
             if (contentProvider instanceof WebInspector.UISourceCode) {
                 var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (contentProvider);
-                uiSourceCode.saveToFileSystem(forceSaveAs);
+                uiSourceCode.save(forceSaveAs);
                 return;
             }
             contentProvider.requestContent(doSave.bind(null, forceSaveAs));
@@ -154,7 +154,12 @@ WebInspector.HandlerRegistry.prototype = {
 
         contextMenu.appendSeparator();
         contextMenu.appendItem(WebInspector.UIString("Save"), save.bind(null, false));
-        contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Save as..." : "Save As..."), save.bind(null, true));
+
+        if (contentProvider instanceof WebInspector.UISourceCode) {
+            var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (contentProvider);
+            if (uiSourceCode.project().type() !== WebInspector.projectTypes.FileSystem && uiSourceCode.project().type() !== WebInspector.projectTypes.Snippets)
+                contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Save as..." : "Save As..."), save.bind(null, true));
+        }
     },
 
     /**
