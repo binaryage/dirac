@@ -252,13 +252,7 @@ WebInspector.MediaQueryInspector.prototype = {
          */
         function compareModels(model1, model2)
         {
-            if (model1.section() !== model2.section())
-                return model1.section() - model2.section();
-            if (model1.section() === WebInspector.MediaQueryInspector.Section.Max)
-                return model1.maxWidthExpression().computedLength() - model2.maxWidthExpression().computedLength();
-            if (model1.section() === WebInspector.MediaQueryInspector.Section.Min)
-                return model1.minWidthExpression().computedLength() - model2.minWidthExpression().computedLength();
-            return model1.minWidthExpression().computedLength() - model2.minWidthExpression().computedLength() || model1.maxWidthExpression().computedLength() - model2.maxWidthExpression().computedLength();
+            return model1.compareTo(model2);
         }
     },
 
@@ -435,9 +429,7 @@ WebInspector.MediaQueryInspector.MediaQueryUIModel.prototype = {
      */
     equals: function(other)
     {
-        return this.mediaText() === other.mediaText() && this.dimensionsEqual(other)
-            && (!!this.uiLocation() === !!other.uiLocation())
-            && (!this.uiLocation() || this.uiLocation().id() === other.uiLocation().id());
+        return this.compareTo(other) === 0;
     },
 
     /**
@@ -449,6 +441,32 @@ WebInspector.MediaQueryInspector.MediaQueryUIModel.prototype = {
         return this.section() === other.section()
             && (!this.minWidthExpression() || (this.minWidthExpression().computedLength() === other.minWidthExpression().computedLength()))
             && (!this.maxWidthExpression() || (this.maxWidthExpression().computedLength() === other.maxWidthExpression().computedLength()));
+    },
+
+    /**
+     * @param {!WebInspector.MediaQueryInspector.MediaQueryUIModel} other
+     * @return {number}
+     */
+    compareTo: function(other)
+    {
+        if (this.section() !== other.section())
+            return this.section() - other.section();
+        if (this.dimensionsEqual(other)) {
+            var myLocation = this.uiLocation();
+            var otherLocation = other.uiLocation();
+            if (!myLocation && !otherLocation)
+                return this.mediaText().compareTo(other.mediaText());
+            if (myLocation && !otherLocation)
+                return 1;
+            if (!myLocation && otherLocation)
+                return -1;
+            return myLocation.uiSourceCode.uri().compareTo(otherLocation.uiSourceCode.uri()) || myLocation.lineNumber - otherLocation.lineNumber || myLocation.columnNumber - otherLocation.columnNumber;
+        }
+        if (this.section() === WebInspector.MediaQueryInspector.Section.Max)
+            return this.maxWidthExpression().computedLength() - other.maxWidthExpression().computedLength();
+        if (this.section() === WebInspector.MediaQueryInspector.Section.Min)
+            return this.minWidthExpression().computedLength() - other.minWidthExpression().computedLength();
+        return this.minWidthExpression().computedLength() - other.minWidthExpression().computedLength() || this.maxWidthExpression().computedLength() - other.maxWidthExpression().computedLength();
     },
 
     /**
