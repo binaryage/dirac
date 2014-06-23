@@ -186,7 +186,7 @@ action("supported_css_properties") {
   ]
 
   outputs = [
-    "$root_gen_dir/blink/SupportedCSSProperties.js"
+    "$root_gen_dir/blink/devtools/SupportedCSSProperties.js"
   ]
 
   args = rebase_path(source_prereqs, root_build_dir) +
@@ -197,7 +197,7 @@ action("frontend_protocol_sources") {
   script = "scripts/CodeGeneratorFrontend.py"
 
   source_prereqs = [ "protocol.json" ]
-  outputs = [ "$root_gen_dir/blink/InspectorBackendCommands.js" ]
+  outputs = [ "$root_gen_dir/blink/devtools/InspectorBackendCommands.js" ]
 
   args = rebase_path(source_prereqs, root_build_dir) + [
     "--output_js_dir", rebase_path("$root_gen_dir/blink", root_build_dir),
@@ -237,9 +237,9 @@ action("build_core_module") {
   input_page = "front_end/inspector.html"
   source_prereqs = [
     input_page,
-    "$root_gen_dir/blink/InspectorBackendCommands.js",
-    "$root_gen_dir/blink/SupportedCSSProperties.js",
-    "$root_gen_dir/blink/common/modules.js",
+    "$root_gen_dir/blink/devtools/InspectorBackendCommands.js",
+    "$root_gen_dir/blink/devtools/SupportedCSSProperties.js",
+    "$root_gen_dir/blink/devtools/common/modules.js",
   ] + devtools_core_js_files
 
   search_path = [
@@ -366,7 +366,7 @@ action("concatenated_module_descriptors") {
 
   input = "front_end/common/modules.js"
   source_prereqs = [ input ] + gypi_values.devtools_module_json_files
-  outputs = [ "$root_gen_dir/blink/common/modules.js" ]
+  outputs = [ "$root_gen_dir/blink/devtools/common/modules.js" ]
 
   args = rebase_path([ input ] + outputs + gypi_values.devtools_module_json_files, root_build_dir)
 }
