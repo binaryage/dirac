@@ -104,7 +104,6 @@ WebInspector.ConsoleView = function(hideContextSelector)
     this._promptElement.id = "console-prompt";
     this._promptElement.spellcheck = false;
     this._messagesElement.appendChild(this._promptElement);
-    this._messagesElement.appendChild(document.createElement("br"));
 
     this._showAllMessagesCheckbox = new WebInspector.StatusBarCheckbox(WebInspector.UIString("Show all messages"));
     this._showAllMessagesCheckbox.inputElement.checked = true;
