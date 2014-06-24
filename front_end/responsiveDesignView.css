@@ -519,3 +519,22 @@ body.platform-mac .responsive-design-toolbar select {
 .media-inspector-threshold-serif:hover {
     background-color: rgba(225, 124, 0, 0.86);
 }
+
+.media-inspector-marker-highlight-1 {
+    -webkit-animation: media-inspector-animation-highlight-1 0.7s 1;
+}
+
+.media-inspector-marker-highlight-2 {
+    -webkit-animation: media-inspector-animation-highlight-2 0.7s 1;
+}
+
+
+@-webkit-keyframes media-inspector-animation-highlight-1 {
+    from { -webkit-filter: brightness(135%); }
+    to { -webkit-filter: brightness(100%); }
+}
+
+@-webkit-keyframes media-inspector-animation-highlight-2 {
+    from { -webkit-filter: brightness(135%); }
+    to { -webkit-filter: brightness(100%); }
+}

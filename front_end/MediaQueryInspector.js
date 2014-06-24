@@ -12,6 +12,7 @@ WebInspector.MediaQueryInspector = function()
     this.element.classList.add("media-inspector-view", "media-inspector-view-empty");
     this.element.addEventListener("click", this._onMediaQueryClicked.bind(this), false);
     this.element.addEventListener("contextmenu", this._onContextMenu.bind(this), false);
+    this.element.addEventListener("webkitAnimationEnd", this._onAnimationEnd.bind(this), false);
     this._mediaThrottler = new WebInspector.Throttler(100);
 
     this._translateZero = 0;
@@ -85,9 +86,22 @@ WebInspector.MediaQueryInspector.prototype = {
             if ((model.minWidthExpression() && Math.abs(model.minWidthExpression().computedLength() - revealValue) === 0)
                 || (model.maxWidthExpression() && Math.abs(model.maxWidthExpression().computedLength() - revealValue) === 0)) {
                 mediaQueryContainer.scrollIntoViewIfNeeded(false);
+                var hasRunningAnimation = mediaQueryContainer.classList.contains("media-inspector-marker-highlight-1") || mediaQueryContainer.classList.contains("media-inspector-marker-highlight-2");
+                mediaQueryContainer.classList.toggle("media-inspector-marker-highlight-1");
+                if (hasRunningAnimation)
+                    mediaQueryContainer.classList.toggle("media-inspector-marker-highlight-2");
                 return;
             }
         }
+    },
+
+    /**
+     * @param {?Event} event
+     */
+    _onAnimationEnd: function(event)
+    {
+        event.target.classList.remove("media-inspector-marker-highlight-1");
+        event.target.classList.remove("media-inspector-marker-highlight-2");
     },
 
     /**
