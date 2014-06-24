@@ -3,16 +3,18 @@
 // found in the LICENSE file.
 
 /**
- * @param {!WebInspector.TracingModel} tracingModel
  * @constructor
+ * @param {!WebInspector.TracingModel} tracingModel
+ * @param {!WebInspector.TimelineModel.Filter} recordFilter
  * @extends {WebInspector.TimelineModel}
  */
-WebInspector.TracingTimelineModel = function(tracingModel)
+WebInspector.TracingTimelineModel = function(tracingModel, recordFilter)
 {
     WebInspector.TimelineModel.call(this, tracingModel.target());
     this._tracingModel = tracingModel;
     this._mainThreadEvents = [];
     this._inspectedTargetEvents = [];
+    this._recordFilter = recordFilter;
 
     this.reset();
 }
@@ -227,10 +229,14 @@ WebInspector.TracingTimelineModel.prototype = {
                 if (!recordStack.length)
                     this._addTopLevelRecord(top);
             }
-            var parentRecord = recordStack.peekLast() || null;
-            var record = new WebInspector.TracingTimelineModel.TraceEventRecord(this, event, parentRecord);
+            var record = new WebInspector.TracingTimelineModel.TraceEventRecord(this, event);
             if (WebInspector.TracingTimelineUIUtils.isEventDivider(record))
                 this._eventDividerRecords.push(record);
+            if (!this._recordFilter.accept(record))
+                continue;
+            var parentRecord = recordStack.peekLast();
+            if (parentRecord)
+                parentRecord._addChild(record);
             if (event.endTime)
                 recordStack.push(record);
         }
@@ -473,17 +479,12 @@ WebInspector.TracingTimelineModel.prototype = {
  * @implements {WebInspector.TimelineModel.Record}
  * @param {!WebInspector.TimelineModel} model
  * @param {!WebInspector.TracingModel.Event} traceEvent
- * @param {?WebInspector.TracingTimelineModel.TraceEventRecord} parentRecord
  */
-WebInspector.TracingTimelineModel.TraceEventRecord = function(model, traceEvent, parentRecord)
+WebInspector.TracingTimelineModel.TraceEventRecord = function(model, traceEvent)
 {
     this._model = model;
     this._event = traceEvent;
     traceEvent._timelineRecord = this;
-    if (parentRecord) {
-        this.parent = parentRecord;
-        parentRecord._children.push(this);
-    }
     this._children = [];
 }
 
@@ -642,5 +643,16 @@ WebInspector.TracingTimelineModel.TraceEventRecord.prototype = {
     traceEvent: function()
     {
         return this._event;
-    }
+    },
+
+    /**
+     * @param {!WebInspector.TracingTimelineModel.TraceEventRecord} child
+     */
+    _addChild: function(child)
+    {
+        this._children.push(child);
+        child.parent = this;
+    },
+
+
 }

@@ -450,6 +450,32 @@ WebInspector.TimelineModel.Filter.prototype = {
 
 /**
  * @constructor
+ * @extends {WebInspector.TimelineModel.Filter}
+ * @param {!Array.<string>} excludeTypes
+ */
+WebInspector.TimelineRecordTypeFilter = function(excludeTypes)
+{
+    WebInspector.TimelineModel.Filter.call(this);
+    this._excludeTypes = {};
+    for (var i = 0; i < excludeTypes.length; ++i)
+        this._excludeTypes[excludeTypes[i]] = true;
+}
+
+WebInspector.TimelineRecordTypeFilter.prototype = {
+    /**
+     * @param {!WebInspector.TimelineModel.Record} record
+     * @return {boolean}
+     */
+    accept: function(record)
+    {
+        return !this._excludeTypes[record.type()];
+    },
+
+    __proto__: WebInspector.TimelineModel.Filter.prototype
+}
+
+/**
+ * @constructor
  */
 WebInspector.TimelineMergingRecordBuffer = function()
 {

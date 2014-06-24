@@ -81,12 +81,12 @@ WebInspector.TimelinePanel = function()
         this._tracingModel = new WebInspector.TracingModel(WebInspector.targetManager.activeTarget());
         this._tracingModel.addEventListener(WebInspector.TracingModel.Events.BufferUsage, this._onTracingBufferUsage, this);
 
-        this._tracingTimelineModel = new WebInspector.TracingTimelineModel(this._tracingModel);
-        this._model = this._tracingTimelineModel;
         this._uiUtils = new WebInspector.TracingTimelineUIUtils();
+        this._tracingTimelineModel = new WebInspector.TracingTimelineModel(this._tracingModel, this._uiUtils.hiddenRecordsFilter());
+        this._model = this._tracingTimelineModel;
     } else {
-        this._model = new WebInspector.TimelineModelImpl(WebInspector.timelineManager);
         this._uiUtils = new WebInspector.TimelineUIUtilsImpl();
+        this._model = new WebInspector.TimelineModelImpl(WebInspector.timelineManager);
     }
 
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStarted, this._onRecordingStarted, this);
@@ -102,7 +102,7 @@ WebInspector.TimelinePanel = function()
     this._durationFilter = new WebInspector.TimelineIsLongFilter();
     this._textFilter = new WebInspector.TimelineTextFilter(this._uiUtils);
 
-    this._model.addFilter(new WebInspector.TimelineHiddenFilter(this._uiUtils.hiddenRecordTypes()));
+    this._model.addFilter(this._uiUtils.hiddenRecordsFilter());
     this._model.addFilter(this._categoryFilter);
     this._model.addFilter(this._durationFilter);
     this._model.addFilter(this._textFilter);
@@ -1445,30 +1445,6 @@ WebInspector.TimelineTextFilter.prototype = {
     accept: function(record)
     {
         return !this._regex || this._uiUtils.testContentMatching(record, this._regex);
-    },
-
-    __proto__: WebInspector.TimelineModel.Filter.prototype
-}
-
-/**
- * @constructor
- * @extends {WebInspector.TimelineModel.Filter}
- * @param {!Object.<string, boolean>} hiddenTypes
- */
-WebInspector.TimelineHiddenFilter = function(hiddenTypes)
-{
-    WebInspector.TimelineModel.Filter.call(this);
-    this._hiddenTypes = hiddenTypes;
-}
-
-WebInspector.TimelineHiddenFilter.prototype = {
-    /**
-     * @param {!WebInspector.TimelineModel.Record} record
-     * @return {boolean}
-     */
-    accept: function(record)
-    {
-        return !this._hiddenTypes[record.type()];
     },
 
     __proto__: WebInspector.TimelineModel.Filter.prototype

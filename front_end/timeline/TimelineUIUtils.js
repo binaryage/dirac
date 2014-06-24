@@ -154,9 +154,9 @@ WebInspector.TimelineUIUtils.prototype = {
         throw new Error("Not implemented.");
     },
     /**
-     * @return {!Object.<string, boolean>}
+     * @return {!WebInspector.TimelineModel.Filter}
      */
-    hiddenRecordTypes: function()
+    hiddenRecordsFilter: function()
     {
         throw new Error("Not implemented.");
     }

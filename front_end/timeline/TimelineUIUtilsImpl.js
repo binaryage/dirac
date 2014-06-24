@@ -155,24 +155,25 @@ WebInspector.TimelineUIUtilsImpl.prototype = {
     },
 
     /**
-     * @return {!Object.<string, boolean>}
+     * @return {!WebInspector.TimelineModel.Filter}
      */
-    hiddenRecordTypes: function()
+    hiddenRecordsFilter: function()
     {
         var recordTypes = WebInspector.TimelineModel.RecordType;
-        var hiddenRecords = {};
-        hiddenRecords[recordTypes.MarkDOMContent] = true;
-        hiddenRecords[recordTypes.MarkLoad] = true;
-        hiddenRecords[recordTypes.MarkFirstPaint] = true;
-        hiddenRecords[recordTypes.GPUTask] = true;
-        hiddenRecords[recordTypes.ScheduleStyleRecalculation] = true;
-        hiddenRecords[recordTypes.InvalidateLayout] = true;
-        hiddenRecords[recordTypes.RequestMainThreadFrame] = true;
-        hiddenRecords[recordTypes.ActivateLayerTree] = true;
-        hiddenRecords[recordTypes.DrawFrame] = true;
-        hiddenRecords[recordTypes.BeginFrame] = true;
-        hiddenRecords[recordTypes.UpdateCounters] = true;
-        return hiddenRecords;
+        var hiddenRecords = [
+            recordTypes.ActivateLayerTree,
+            recordTypes.BeginFrame,
+            recordTypes.DrawFrame,
+            recordTypes.GPUTask,
+            recordTypes.InvalidateLayout,
+            recordTypes.MarkDOMContent,
+            recordTypes.MarkFirstPaint,
+            recordTypes.MarkLoad,
+            recordTypes.RequestMainThreadFrame,
+            recordTypes.ScheduleStyleRecalculation,
+            recordTypes.UpdateCounters
+        ]
+        return new WebInspector.TimelineRecordTypeFilter(hiddenRecords);
     },
 
     __proto__: WebInspector.TimelineUIUtils.prototype
