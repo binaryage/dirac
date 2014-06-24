@@ -224,16 +224,18 @@ WebInspector.TracingTimelineModel.prototype = {
                 if (top._event.endTime >= event.startTime)
                     break;
                 recordStack.pop();
+                if (!recordStack.length)
+                    this._addTopLevelRecord(top);
             }
             var parentRecord = recordStack.peekLast() || null;
             var record = new WebInspector.TracingTimelineModel.TraceEventRecord(this, event, parentRecord);
             if (WebInspector.TracingTimelineUIUtils.isEventDivider(record))
                 this._eventDividerRecords.push(record);
-            if (!recordStack.length)
-                this._addTopLevelRecord(record);
             if (event.endTime)
                 recordStack.push(record);
         }
+        if (recordStack.length)
+            this._addTopLevelRecord(recordStack[0]);
     },
 
     /**

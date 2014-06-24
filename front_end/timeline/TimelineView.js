@@ -293,10 +293,6 @@ WebInspector.TimelineView.prototype = {
      */
     refreshRecords: function(textFilter)
     {
-        this._presentationModel.reset();
-        var records = this._model.records();
-        for (var i = 0; i < records.length; ++i)
-            this.addRecord(records[i]);
         this._automaticallySizeWindow = false;
         this._presentationModel.setTextFilter(textFilter);
         this._invalidateAndScheduleRefresh(false, true);
