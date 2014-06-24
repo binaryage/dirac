@@ -2079,8 +2079,11 @@ WebInspector.NetworkPanel.RequestRevealer.prototype = {
      */
     reveal: function(request)
     {
-        if (request instanceof WebInspector.NetworkRequest)
-            /** @type {!WebInspector.NetworkPanel} */ (WebInspector.inspectorView.showPanel("network")).revealAndHighlightRequest(request);
+        if (request instanceof WebInspector.NetworkRequest) {
+            var panel = /** @type {?WebInspector.NetworkPanel} */ (WebInspector.inspectorView.showPanel("network"));
+            if (panel)
+                panel.revealAndHighlightRequest(request);
+        }
     }
 }
 

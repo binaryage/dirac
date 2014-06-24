@@ -790,8 +790,11 @@ WebInspector.ResourcesPanel.ResourceRevealer.prototype = {
      */
     reveal: function(resource, lineNumber)
     {
-        if (resource instanceof WebInspector.Resource)
-            /** @type {!WebInspector.ResourcesPanel} */ (WebInspector.inspectorView.showPanel("resources")).showResource(resource, lineNumber);
+        if (resource instanceof WebInspector.Resource) {
+            var panel = /** @type {?WebInspector.ResourcesPanel} */ (WebInspector.inspectorView.showPanel("resources"));
+            if (panel)
+                panel.showResource(resource, lineNumber);
+        }
     }
 }
 

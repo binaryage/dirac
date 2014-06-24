@@ -226,7 +226,8 @@ WebInspector.LayersPanel.LayerTreeRevealer.prototype = {
     {
         if (!(snapshotData instanceof WebInspector.DeferredLayerTree))
             return;
-        var panel = /** @type {!WebInspector.LayersPanel} */ (WebInspector.inspectorView.showPanel("layers"));
-        panel._showLayerTree(/** @type {!WebInspector.DeferredLayerTree} */ (snapshotData));
+        var panel = /** @type {?WebInspector.LayersPanel} */ (WebInspector.inspectorView.showPanel("layers"));
+        if (panel)
+            panel._showLayerTree(/** @type {!WebInspector.DeferredLayerTree} */ (snapshotData));
     }
 }

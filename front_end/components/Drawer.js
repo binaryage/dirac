@@ -68,11 +68,11 @@ WebInspector.Drawer = function(splitView)
 
 WebInspector.Drawer.prototype = {
     /**
-     * @return {!Element}
+     * @return {!WebInspector.StatusBarButton}
      */
-    toggleButtonElement: function()
+    toggleButton: function()
     {
-        return this._toggleDrawerButton.element;
+        return this._toggleDrawerButton;
     },
 
     /**

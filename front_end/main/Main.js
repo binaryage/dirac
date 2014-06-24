@@ -82,12 +82,12 @@ WebInspector.Main.prototype = {
             case "toolbar-left":
                 button = createButton(extension);
                 if (button)
-                    WebInspector.inspectorView.appendToLeftToolbar(button.element);
+                    WebInspector.inspectorView.appendToLeftToolbar(button);
                 break;
             case "toolbar-right":
                 button = createButton(extension);
                 if (button)
-                    WebInspector.inspectorView.appendToRightToolbar(button.element);
+                    WebInspector.inspectorView.appendToRightToolbar(button);
                 break;
             }
             if (button && extension.descriptor()["actionId"]) {

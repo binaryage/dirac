@@ -630,6 +630,8 @@ WebInspector.ProfilesPanel.prototype = {
      */
     _updateRecordButton: function(toggled)
     {
+        if (WebInspector.experimentsSettings.disableAgentsWhenProfile.isEnabled())
+            WebInspector.inspectorView.setCurrentPanelLocked(toggled);
         var enable = toggled || !this._target.profilingLock.isAcquired();
         this.recordButton.setEnabled(enable);
         this.recordButton.toggled = toggled;

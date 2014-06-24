@@ -1370,7 +1370,10 @@ WebInspector.SourcesPanel.ShowGoToSourceDialogActionDelegate.prototype = {
      */
     handleAction: function()
     {
-        /** @type {!WebInspector.SourcesPanel} */ (WebInspector.inspectorView.showPanel("sources")).showGoToSourceDialog();
+        var panel = /** @type {?WebInspector.SourcesPanel} */ (WebInspector.inspectorView.showPanel("sources"));
+        if (!panel)
+            return false;
+        panel.showGoToSourceDialog();
         return true;
     }
 }
@@ -1473,7 +1476,10 @@ WebInspector.SourcesPanel.TogglePauseActionDelegate.prototype = {
      */
     handleAction: function()
     {
-        /** @type {!WebInspector.SourcesPanel} */ (WebInspector.inspectorView.showPanel("sources")).togglePause();
+        var panel = /** @type {?WebInspector.SourcesPanel} */ (WebInspector.inspectorView.showPanel("sources"));
+        if (!panel)
+            return false;
+        panel.togglePause();
         return true;
     }
 }

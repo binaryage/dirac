@@ -204,6 +204,10 @@ body.undocked.platform-mac.inactive .toolbar-background {
     flex: auto;
 }
 
+.tabbed-pane-header.locked .tabbed-pane-header-tab:not(.selected) {
+    opacity: 0.6;
+}
+
 .toolbar-controls-left {
     flex: none;
     opacity: 0.8;

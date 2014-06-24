@@ -59,6 +59,7 @@ WebInspector.InspectorView = function()
     this._leftToolbarElement = this._toolbarElement.createChild("div", "toolbar-controls-left");
     this._toolbarElement.appendChild(headerElement);
     this._rightToolbarElement = this._toolbarElement.createChild("div", "toolbar-controls-right");
+    this._toolbarItems = [];
 
     if (WebInspector.experimentsSettings.devicesPanel.isEnabled()) {
         this._remoteDeviceCountElement = this._rightToolbarElement.createChild("div", "hidden");
@@ -75,7 +76,7 @@ WebInspector.InspectorView = function()
     closeButtonElement.addEventListener("click", InspectorFrontendHost.closeWindow.bind(InspectorFrontendHost), true);
     this._rightToolbarElement.appendChild(this._closeButtonToolbarItem);
 
-    this.appendToRightToolbar(this._drawer.toggleButtonElement());
+    this.appendToRightToolbar(this._drawer.toggleButton());
 
     this._panels = {};
     // Used by tests.
@@ -116,19 +117,21 @@ WebInspector.InspectorView.prototype = {
     },
 
     /**
-     * @param {!Element} element
+     * @param {!WebInspector.StatusBarItem} item
      */
-    appendToLeftToolbar: function(element)
+    appendToLeftToolbar: function(item)
     {
-        this._leftToolbarElement.appendChild(element);
+        this._toolbarItems.push(item);
+        this._leftToolbarElement.appendChild(item.element);
     },
 
     /**
-     * @param {!Element} element
+     * @param {!WebInspector.StatusBarItem} item
      */
-    appendToRightToolbar: function(element)
+    appendToRightToolbar: function(item)
     {
-        this._rightToolbarElement.insertBefore(element, this._closeButtonToolbarItem);
+        this._toolbarItems.push(item);
+        this._rightToolbarElement.insertBefore(item.element, this._closeButtonToolbarItem);
     },
 
     /**
@@ -169,11 +172,25 @@ WebInspector.InspectorView.prototype = {
     },
 
     /**
+     * @param {boolean} locked
+     */
+    setCurrentPanelLocked: function(locked)
+    {
+        this._currentPanelLocked = locked;
+        this._tabbedPane.setCurrentTabLocked(locked);
+        for (var i = 0; i < this._toolbarItems.length; ++i)
+            this._toolbarItems[i].setEnabled(!locked);
+    },
+
+    /**
      * @param {string} panelName
      * @return {?WebInspector.Panel}
      */
     showPanel: function(panelName)
     {
+        if (this._currentPanelLocked)
+            return this._currentPanel === this._panels[panelName] ? this._currentPanel : null;
+
         var panel = this.panel(panelName);
         if (panel)
             this.setCurrentPanel(panel);
@@ -242,6 +259,8 @@ WebInspector.InspectorView.prototype = {
      */
     setCurrentPanel: function(x)
     {
+        if (this._currentPanelLocked)
+            return;
         if (this._currentPanel === x)
             return;
 
@@ -337,7 +356,7 @@ WebInspector.InspectorView.prototype = {
             if (panelIndex !== -1) {
                 var panelName = this._tabbedPane.allTabs()[panelIndex];
                 if (panelName) {
-                    if (!WebInspector.Dialog.currentInstance())
+                    if (!WebInspector.Dialog.currentInstance() && !this._currentPanelLocked)
                         this.showPanel(panelName);
                     event.consume(true);
                 }
@@ -358,6 +377,9 @@ WebInspector.InspectorView.prototype = {
 
     _keyDownInternal: function(event)
     {
+        if (this._currentPanelLocked)
+            return;
+
         var direction = 0;
 
         if (this._openBracketIdentifiers[event.keyIdentifier])
