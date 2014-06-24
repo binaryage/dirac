@@ -96,3 +96,8 @@
 .paint-profiler-view .overview-grid-window-resizer {
     z-index: 2000;
 }
+
+.paint-profiler-view canvas {
+    height: 100%;
+    width: 100%;
+}
