@@ -60,7 +60,6 @@ WebInspector.NetworkLogView = function(filterBar, coulmnsVisibilitySetting)
     this._allowRequestSelection = false;
     this._requests = [];
     this._requestsById = {};
-    this._requestsByURL = {};
     this._staleRequests = {};
     this._requestGridNodes = {};
     this._lastRequestGridNodeId = 0;
@@ -809,7 +808,6 @@ WebInspector.NetworkLogView.prototype = {
 
         this._requests = [];
         this._requestsById = {};
-        this._requestsByURL = {};
         this._staleRequests = {};
         this._requestGridNodes = {};
         this._resetSuggestionBuilder();
@@ -822,11 +820,6 @@ WebInspector.NetworkLogView.prototype = {
 
         this._mainRequestLoadTime = -1;
         this._mainRequestDOMContentLoadedTime = -1;
-    },
-
-    get requests()
-    {
-        return this._requests;
     },
 
     _onRequestStarted: function(event)
@@ -848,8 +841,6 @@ WebInspector.NetworkLogView.prototype = {
             this._updateSearchMatchedListAfterRequestIdChanged(request.requestId, oldRequest.requestId);
         }
         this._requestsById[request.requestId] = request;
-
-        this._requestsByURL[request.url] = request;
 
         // Pull all the redirects of the main request upon commit load.
         if (request.redirects) {
@@ -1861,11 +1852,6 @@ WebInspector.NetworkPanel.prototype = {
     wasShown: function()
     {
         WebInspector.Panel.prototype.wasShown.call(this);
-    },
-
-    get requests()
-    {
-        return this._networkLogView.requests;
     },
 
     /**
