@@ -679,6 +679,7 @@ WebInspector.TimelinePanel.prototype = {
 
         if (userInitiated)
             WebInspector.userMetrics.TimelineStarted.record();
+        WebInspector.inspectorView.setCurrentPanelLocked(true);
     },
 
     _stopRecording: function()
@@ -692,6 +693,7 @@ WebInspector.TimelinePanel.prototype = {
 
         for (var i = 0; i < this._overviewControls.length; ++i)
             this._overviewControls[i].timelineStopped();
+        WebInspector.inspectorView.setCurrentPanelLocked(false);
     },
 
     _onProfilingStateChanged: function()
