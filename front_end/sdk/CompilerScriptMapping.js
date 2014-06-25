@@ -257,5 +257,10 @@ WebInspector.CompilerScriptMapping.prototype = {
         this._sourceMapForScriptId = {};
         this._scriptForSourceMap.clear();
         this._sourceMapForURL.clear();
+    },
+
+    dispose: function()
+    {
+        this._workspace.removeEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, this._uiSourceCodeAddedToWorkspace, this);
     }
 }

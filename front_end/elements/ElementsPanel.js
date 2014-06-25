@@ -147,7 +147,7 @@ WebInspector.ElementsPanel.prototype = {
      */
     targetRemoved: function(target)
     {
-        var treeOutline = this._targetToTreeOutline.get(target);
+        var treeOutline = this._targetToTreeOutline.remove(target);
         treeOutline.unwireFromDOMModel();
         this._treeOutlines.remove(treeOutline);
         treeOutline.element.remove();

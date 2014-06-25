@@ -130,6 +130,11 @@ WebInspector.NetworkManager.prototype = {
         this._networkAgent.setCacheDisabled(enabled);
     },
 
+    dispose: function()
+    {
+        WebInspector.settings.cacheDisabled.removeChangeListener(this._cacheDisabledSettingChanged, this)
+    },
+
     __proto__: WebInspector.TargetAwareObject.prototype
 }
 

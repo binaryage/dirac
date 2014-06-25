@@ -39,7 +39,7 @@ WebInspector.TimelineManager = function(target)
     this._dispatcher = new WebInspector.TimelineDispatcher(this);
     this._enablementCount = 0;
     this._jsProfilerStarted = false;
-    TimelineAgent.enable();
+    target.timelineAgent().enable();
 }
 
 WebInspector.TimelineManager.EventTypes = {
@@ -173,7 +173,7 @@ WebInspector.TimelineManager.prototype = {
 WebInspector.TimelineDispatcher = function(manager)
 {
     this._manager = manager;
-    InspectorBackend.registerTimelineDispatcher(this);
+    this._manager.target().registerTimelineDispatcher(this);
 }
 
 WebInspector.TimelineDispatcher.prototype = {

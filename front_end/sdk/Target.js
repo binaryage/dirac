@@ -146,7 +146,7 @@ WebInspector.Target.prototype = {
         if (!WebInspector.cpuProfilerModel)
             WebInspector.cpuProfilerModel = this.cpuProfilerModel;
 
-        new WebInspector.DebuggerScriptMapping(this.debuggerModel, WebInspector.workspace, WebInspector.networkWorkspaceBinding);
+        this._debuggerScriptMapping = new WebInspector.DebuggerScriptMapping(this.debuggerModel, WebInspector.workspace, WebInspector.networkWorkspaceBinding);
 
         if (callback)
             callback(this);
@@ -177,6 +177,13 @@ WebInspector.Target.prototype = {
     {
         // FIXME: either add a separate capability or rename canScreencast to isMobile.
         return this.canScreencast;
+    },
+
+    dispose: function()
+    {
+        this.debuggerModel.dispose();
+        this.networkManager.dispose();
+        this._debuggerScriptMapping.dispose();
     },
 
     __proto__: Protocol.Agents.prototype
@@ -292,6 +299,7 @@ WebInspector.TargetManager.prototype = {
     removeTarget: function(target)
     {
         this._targets.remove(target);
+        target.dispose();
         var copy = this._observers;
         for (var i = 0; i < copy.length; ++i)
             copy[i].targetRemoved(target);

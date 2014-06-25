@@ -39,8 +39,8 @@ WebInspector.CPUProfilerModel = function(target)
     /** @type {?WebInspector.CPUProfilerModel.Delegate} */
     this._delegate = null;
     this._isRecording = false;
-    InspectorBackend.registerProfilerDispatcher(this);
-    ProfilerAgent.enable();
+    target.registerProfilerDispatcher(this);
+    target.profilerAgent().enable();
 }
 
 WebInspector.CPUProfilerModel.EventTypes = {

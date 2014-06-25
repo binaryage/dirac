@@ -784,7 +784,7 @@ InspectorBackendClass.AgentPrototype.prototype = {
      */
     dispatchResponse: function(messageId, messageObject, methodName, callback)
     {
-        if (messageObject.error && messageObject.error.code !== -32000)
+        if (messageObject.error && messageObject.error.code !== -32000 && !InspectorBackendClass.Options.suppressRequestErrors)
             console.error("Request with id = " + messageObject.id + " failed. " + JSON.stringify(messageObject.error));
 
         var argumentsArray = [];
@@ -871,7 +871,8 @@ InspectorBackendClass.DispatcherPrototype.prototype = {
 
 InspectorBackendClass.Options = {
     dumpInspectorTimeStats: false,
-    dumpInspectorProtocolMessages: false
+    dumpInspectorProtocolMessages: false,
+    suppressRequestErrors: false
 }
 
 InspectorBackend = new InspectorBackendClass();

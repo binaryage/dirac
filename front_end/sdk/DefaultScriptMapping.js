@@ -114,6 +114,11 @@ WebInspector.DefaultScriptMapping.prototype = {
         this._uiSourceCodeForScriptId = {};
         this._scriptIdForUISourceCode = new Map();
         this._projectDelegate.reset();
+    },
+
+    dispose: function()
+    {
+        this._workspace.removeProject(this._projectId);
     }
 }
 

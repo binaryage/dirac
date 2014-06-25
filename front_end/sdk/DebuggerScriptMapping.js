@@ -62,5 +62,12 @@ WebInspector.DebuggerScriptMapping.prototype = {
 
         if (WebInspector.settings.jsSourceMapsEnabled.get())
             this._compilerMapping.addScript(script);
+    },
+
+    dispose: function()
+    {
+        this._compilerMapping.dispose();
+        this._resourceMapping.dispose();
+        this._defaultMapping.dispose();
     }
 }

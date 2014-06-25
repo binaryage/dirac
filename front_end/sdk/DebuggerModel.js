@@ -757,6 +757,16 @@ WebInspector.DebuggerModel.prototype = {
         this._breakpointResolvedEventTarget.removeEventListener(breakpointId, listener, thisObject);
     },
 
+    dispose: function()
+    {
+        WebInspector.settings.pauseOnExceptionEnabled.removeChangeListener(this._pauseOnExceptionStateChanged, this);
+        WebInspector.settings.pauseOnCaughtException.removeChangeListener(this._pauseOnExceptionStateChanged, this);
+
+        WebInspector.settings.skipStackFramesSwitch.removeChangeListener(this._applySkipStackFrameSettings, this);
+        WebInspector.settings.skipStackFramesPattern.removeChangeListener(this._applySkipStackFrameSettings, this);
+        WebInspector.settings.enableAsyncStackTraces.removeChangeListener(this._asyncStackTracesStateChanged, this);
+    },
+
     __proto__: WebInspector.TargetAwareObject.prototype
 }
 

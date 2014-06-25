@@ -201,6 +201,13 @@ WebInspector.ResourceScriptMapping.prototype = {
         }
         this._boundURLs.clear();
     },
+
+    dispose: function()
+    {
+        this._debuggerReset();
+        this._workspace.removeEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, this._uiSourceCodeAddedToWorkspace, this);
+    }
+
 }
 
 /**
