@@ -96,7 +96,7 @@ WebInspector.TracingTimelineModel.RecordType = {
     PictureSnapshot: "cc::Picture"
 };
 
-WebInspector.TracingTimelineModel.defaultTracingCategoryFilter = "*,disabled-by-default-cc.debug,disabled-by-default-devtools.timeline,disabled-by-default-devtools.timeline.frame";
+WebInspector.TracingTimelineModel.defaultTracingCategoryFilter = "-*,disabled-by-default-cc.debug,disabled-by-default-devtools.timeline,disabled-by-default-devtools.timeline.frame";
 
 WebInspector.TracingTimelineModel.prototype = {
     /**
