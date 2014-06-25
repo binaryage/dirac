@@ -30,7 +30,9 @@
 def _CheckCodeMirrorChanges(input_api, output_api):
     errorText = ("ERROR: Attempt to modify CodeMirror. The only allowed changes are "
                  "rolls from the upstream (http://codemirror.net). If this is a roll, "
-                 "make sure you mention 'roll CodeMirror' (no quotes) in the change description.")
+                 "make sure you mention 'roll CodeMirror' (no quotes) in the change description.\n"
+                 "CodeMirror rolling instructions:\n"
+                 "    https://sites.google.com/a/chromium.org/devtools-codemirror-rolling")
     changeDescription = input_api.change.DescriptionText()
     errors = []
     if not "roll codemirror" in changeDescription.lower():
