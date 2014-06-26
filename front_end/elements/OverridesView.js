@@ -644,7 +644,6 @@ WebInspector.OverridesView.Revealer.prototype = {
      */
     reveal: function(overridesSupport)
     {
-        InspectorFrontendHost.bringToFront();
         WebInspector.inspectorView.showViewInDrawer("emulation");
     }
 }
