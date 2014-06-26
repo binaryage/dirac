@@ -132,12 +132,6 @@ WebInspector.JSHeapSnapshot.prototype = {
         return filter;
     },
 
-    dispose: function()
-    {
-        WebInspector.HeapSnapshot.prototype.dispose.call(this);
-        delete this._flags;
-    },
-
     _calculateFlags: function()
     {
         this._flags = new Uint32Array(this.nodeCount);

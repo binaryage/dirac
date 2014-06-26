@@ -1035,21 +1035,6 @@ WebInspector.HeapSnapshot.prototype = {
         throw new Error("Not implemented");
     },
 
-    dispose: function()
-    {
-        delete this._nodes;
-        delete this._strings;
-        delete this._retainingEdges;
-        delete this._retainingNodes;
-        delete this._firstRetainerIndex;
-        delete this._aggregates;
-        delete this._aggregatesSortedFlags;
-        delete this._dominatedNodes;
-        delete this._firstDominatedNodeIndex;
-        delete this._nodeDistances;
-        delete this._dominatorsTree;
-    },
-
     _allNodes: function()
     {
         return new WebInspector.HeapSnapshotNodeIterator(this.rootNode());
