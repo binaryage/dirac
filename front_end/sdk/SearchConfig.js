@@ -64,9 +64,12 @@ WebInspector.SearchConfig.prototype = {
 
     _parse: function()
     {
-        var filePattern = "(?:-)?file:(([^\\\\ ]|\\\\.)+)"; // After file: prefix: any symbol except space and backslash or any symbol escaped with a backslash.
+        var filePattern = "-?file:(([^\\\\ ]|\\\\.)+)"; // After file: prefix: any symbol except space and backslash or any symbol escaped with a backslash.
         var quotedPattern = "\"(([^\\\\\"]|\\\\.)+)\""; // Inside double quotes: any symbol except double quote and backslash or any symbol escaped with a backslash.
-        var unquotedPattern = "(([^\\\\ ]|\\\\.)+)"; // any symbol except space and backslash or any symbol escaped with a backslash.
+
+        // A word is a sequence of any symbols except space and backslash or any symbols escaped with a backslash, that does not start with file:.
+        var unquotedWordPattern = "((?!file:)[^\\\\ ]|\\\\.)+";
+        var unquotedPattern = unquotedWordPattern + "( +" + unquotedWordPattern + ")*"; // A word or several words separated by space(s).
 
         var pattern = "(" + filePattern + ")|(" + quotedPattern + ")|(" + unquotedPattern + ")";
         var regexp = new RegExp(pattern, "g");
