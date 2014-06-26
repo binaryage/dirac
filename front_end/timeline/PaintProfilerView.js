@@ -35,7 +35,7 @@
  */
 WebInspector.PaintProfilerView = function(showImageCallback)
 {
-    WebInspector.View.call(this);
+    WebInspector.HBox.call(this);
     this.element.classList.add("paint-profiler-view");
 
     this._showImageCallback = showImageCallback;
