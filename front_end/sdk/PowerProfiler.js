@@ -29,6 +29,9 @@ WebInspector.PowerProfiler.prototype = {
         PowerAgent.end();
     },
 
+    /**
+     * @return {string}
+     */
     getAccuracyLevel: function()
     {
         return this._accuracyLevel;

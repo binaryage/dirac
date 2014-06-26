@@ -89,6 +89,7 @@ WebInspector.TracingModel.prototype = {
      */
     start: function(categoryFilter, options, callback)
     {
+        this.target().profilingLock.acquire();
         this.reset();
         var bufferUsageReportingIntervalMs = 500;
         /**
@@ -117,6 +118,7 @@ WebInspector.TracingModel.prototype = {
         }
         this._pendingStopCallback = callback;
         TracingAgent.end();
+        this.target().profilingLock.release();
     },
 
     /**
