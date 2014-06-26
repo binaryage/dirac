@@ -61,7 +61,10 @@
 
 .tabbed-pane-header-contents {
     margin: 0 10px;
-    display: flex;
+}
+
+.tabbed-pane-header-tabs {
+    float: left;
 }
 
 .tabbed-pane-header-tab {
@@ -116,7 +119,9 @@
 }
 
 .tabbed-pane-header-tabs-drop-down-container {
+    float: left;
     position: relative;
+    vertical-align: bottom;
     padding-left: 3px;
     line-height: 20px;
 }

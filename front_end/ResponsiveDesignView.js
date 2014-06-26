@@ -356,8 +356,6 @@ WebInspector.ResponsiveDesignView.prototype = {
         }
 
         var cssWidth = this._dipWidth ? (this._dipWidth / zoomFactor + "px") : (availableDip.width / zoomFactor + "px");
-        this._widthSliderContainer.classList.toggle("hidden", !this._dipWidth);
-        this._heightSliderContainer.classList.toggle("hidden", !this._dipHeight);
         var cssHeight = this._dipHeight ? (this._dipHeight / zoomFactor + "px") : (availableDip.height / zoomFactor + "px");
         if (this._cachedCssWidth !== cssWidth || this._cachedCssHeight !== cssHeight) {
             this._slidersContainer.style.width = cssWidth;
