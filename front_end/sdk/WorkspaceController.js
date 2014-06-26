@@ -34,19 +34,10 @@
 WebInspector.WorkspaceController = function(workspace)
 {
     this._workspace = workspace;
-    WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.InspectedURLChanged, this._inspectedURLChanged, this);
     window.addEventListener("focus", this._windowFocused.bind(this), false);
 }
 
 WebInspector.WorkspaceController.prototype = {
-    /**
-     * @param {!WebInspector.Event} event
-     */
-    _inspectedURLChanged: function(event)
-    {
-        WebInspector.Revision.filterOutStaleRevisions();
-    },
-
     /**
      * @param {?Event} event
      */
