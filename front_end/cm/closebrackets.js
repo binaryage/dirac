@@ -1,3 +1,6 @@
+// CodeMirror, copyright (c) by Marijn Haverbeke and others
+// Distributed under an MIT license: http://codemirror.net/LICENSE
+
 (function(mod) {
   if (typeof exports == "object" && typeof module == "object") // CommonJS
     mod(require("../../lib/codemirror"));
@@ -69,7 +72,8 @@
             else
               curType = "skip";
           } else if (left == right && cur.ch > 1 &&
-                     cm.getRange(Pos(cur.line, cur.ch - 2), cur) == left + left)
+                     cm.getRange(Pos(cur.line, cur.ch - 2), cur) == left + left &&
+                     (cur.ch <= 2 || cm.getRange(Pos(cur.line, cur.ch - 3), Pos(cur.line, cur.ch - 2)) != left))
             curType = "addFour";
           else if (left == right && CodeMirror.isWordChar(next))
             return CodeMirror.Pass;

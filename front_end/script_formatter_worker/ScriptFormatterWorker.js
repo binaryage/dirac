@@ -279,7 +279,7 @@ FormatterWorker.parseCSS = function(params)
             }
             break;
         case FormatterWorker.CSSParserStates.PropertyName:
-            if (tokenValue === ":" && tokenType["operator"]) {
+            if (tokenValue === ":" && tokenType === UndefTokenType) {
                 property.name = property.name.trim();
                 state = FormatterWorker.CSSParserStates.PropertyValue;
             } else if (tokenType["property"]) {
@@ -389,28 +389,41 @@ FormatterWorker.HTMLFormatter.prototype = {
         var scriptOpened = false;
         var styleOpened = false;
         var tokenizer = FormatterWorker.createTokenizer("text/html");
+        var accumulatedTokenValue = "";
+        var accumulatedTokenStart = 0;
 
         /**
          * @this {FormatterWorker.HTMLFormatter}
          */
         function processToken(tokenValue, tokenType, tokenStart, tokenEnd) {
-            if (tokenType !== "tag")
+            if (!tokenType)
                 return;
-            if (tokenValue.toLowerCase() === "<script") {
+            var oldType = tokenType;
+            tokenType = tokenType.split(" ").keySet();
+            if (!tokenType["tag"])
+                return;
+            if (tokenType["bracket"] && (tokenValue === "<" || tokenValue === "</")) {
+                accumulatedTokenValue = tokenValue;
+                accumulatedTokenStart = tokenStart;
+                return;
+            }
+            accumulatedTokenValue = accumulatedTokenValue + tokenValue.toLowerCase();
+            if (accumulatedTokenValue === "<script") {
                 scriptOpened = true;
             } else if (scriptOpened && tokenValue === ">") {
                 scriptOpened = false;
                 this._scriptStarted(tokenEnd);
-            } else if (tokenValue.toLowerCase() === "</script") {
-                this._scriptEnded(tokenStart);
-            } else if (tokenValue.toLowerCase() === "<style") {
+            } else if (accumulatedTokenValue === "</script") {
+                this._scriptEnded(accumulatedTokenStart);
+            } else if (accumulatedTokenValue === "<style") {
                 styleOpened = true;
             } else if (styleOpened && tokenValue === ">") {
                 styleOpened = false;
                 this._styleStarted(tokenEnd);
-            } else if (tokenValue.toLowerCase() === "</style") {
-                this._styleEnded(tokenStart);
+            } else if (accumulatedTokenValue === "</style") {
+                this._styleEnded(accumulatedTokenStart);
             }
+            accumulatedTokenValue = "";
         }
         tokenizer(content, processToken.bind(this));
 

@@ -2114,7 +2114,7 @@ WebInspector.CodeMirrorTextEditor._overrideModeWithPrefixedTokens = function(mod
     function tokenOverride(superToken, stream, state)
     {
         var token = superToken(stream, state);
-        return token ? tokenPrefix + token : token;
+        return token ? tokenPrefix + token.split(/ +/).join(" " + tokenPrefix) : token;
     }
 }
 
