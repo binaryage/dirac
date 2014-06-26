@@ -2840,7 +2840,7 @@ WebInspector.NetworkDataGridNode.NameComparator = function(a, b)
         return 1;
     if (bFileName > aFileName)
         return -1;
-    return 0;
+    return a._request.indentityCompare(b._request);
 }
 
 /**
@@ -2856,7 +2856,7 @@ WebInspector.NetworkDataGridNode.RemoteAddressComparator = function(a, b)
         return 1;
     if (bRemoteAddress > aRemoteAddress)
         return -1;
-    return 0;
+    return a._request.indentityCompare(b._request);
 }
 
 /**
@@ -2870,8 +2870,7 @@ WebInspector.NetworkDataGridNode.SizeComparator = function(a, b)
         return 1;
     if (a._request.cached && !b._request.cached)
         return -1;
-
-    return a._request.transferSize - b._request.transferSize;
+    return (a._request.transferSize - b._request.transferSize) || a._request.indentityCompare(b._request);
 }
 
 /**
@@ -2909,7 +2908,7 @@ WebInspector.NetworkDataGridNode.InitiatorComparator = function(a, b)
     if (aInitiator.columnNumber > bInitiator.columnNumber)
         return 1;
 
-    return 0;
+    return a._request.indentityCompare(b._request);
 }
 
 /**
@@ -2921,7 +2920,7 @@ WebInspector.NetworkDataGridNode.RequestCookiesCountComparator = function(a, b)
 {
     var aScore = a._request.requestCookies ? a._request.requestCookies.length : 0;
     var bScore = b._request.requestCookies ? b._request.requestCookies.length : 0;
-    return aScore - bScore;
+    return (aScore - bScore) || a._request.indentityCompare(b._request);
 }
 
 /**
@@ -2933,7 +2932,7 @@ WebInspector.NetworkDataGridNode.ResponseCookiesCountComparator = function(a, b)
 {
     var aScore = a._request.responseCookies ? a._request.responseCookies.length : 0;
     var bScore = b._request.responseCookies ? b._request.responseCookies.length : 0;
-    return aScore - bScore;
+    return (aScore - bScore) || a._request.indentityCompare(b._request);
 }
 
 /**
@@ -2951,5 +2950,5 @@ WebInspector.NetworkDataGridNode.RequestPropertyComparator = function(propertyNa
         return revert ? -1 : 1;
     if (bValue > aValue)
         return revert ? 1 : -1;
-    return 0;
+    return a._request.indentityCompare(b._request);
 }
