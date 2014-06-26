@@ -814,10 +814,9 @@ WebInspector.HeapSnapshotProgress.prototype = {
 /**
  * @param {!Object} profile
  * @param {!WebInspector.HeapSnapshotProgress} progress
- * @param {boolean} showHiddenData
  * @constructor
  */
-WebInspector.HeapSnapshot = function(profile, progress, showHiddenData)
+WebInspector.HeapSnapshot = function(profile, progress)
 {
     this._nodes = profile.nodes;
     this._containmentEdges = profile.edges;
@@ -835,7 +834,6 @@ WebInspector.HeapSnapshot = function(profile, progress, showHiddenData)
     this._aggregatesForDiff = null;
     this._aggregates = {};
     this._aggregatesSortedFlags = {};
-    this._showHiddenData = showHiddenData;
 
     this._init();
 

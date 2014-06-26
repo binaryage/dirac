@@ -42,11 +42,12 @@ WebInspector.JSHeapSnapshot = function(profile, progress, showHiddenData)
         detachedDOMTreeNode: 2,
         pageObject: 4, // The idea is to track separately the objects owned by the page and the objects owned by debugger.
 
-        visitedMarkerMask: 0x0ffff, // bits: 0,1111,1111,1111,1111
-        visitedMarker:     0x10000  // bits: 1,0000,0000,0000,0000
+        visitedMarkerMask: 0x0ffff,
+        visitedMarker:     0x10000
     };
     this._lazyStringCache = { };
-    WebInspector.HeapSnapshot.call(this, profile, progress, showHiddenData);
+    this._showHiddenData = showHiddenData;
+    WebInspector.HeapSnapshot.call(this, profile, progress);
 }
 
 WebInspector.JSHeapSnapshot.prototype = {
@@ -85,15 +86,20 @@ WebInspector.JSHeapSnapshot.prototype = {
      */
     classNodesFilter: function()
     {
+        var mapAndFlag = this.userObjectsMapAndFlag();
+        if (!mapAndFlag)
+            return null;
+        var map = mapAndFlag.map;
+        var flag = mapAndFlag.flag;
         /**
          * @param {!WebInspector.JSHeapSnapshotNode} node
          * @return {boolean}
          */
         function filter(node)
         {
-            return node.isUserObject();
+            return !!(map[node._ordinal()] & flag);
         }
-        return this._showHiddenData ? null : filter;
+        return filter;
     },
 
     /**
@@ -102,7 +108,8 @@ WebInspector.JSHeapSnapshot.prototype = {
     containmentEdgesFilter: function()
     {
         var showHiddenData = this._showHiddenData;
-        function filter(edge) {
+        function filter(edge)
+        {
             if (edge.isInvisible())
                 return false;
             if (showHiddenData)
@@ -457,19 +464,10 @@ WebInspector.JSHeapSnapshotNode.prototype = {
     },
 
     /**
-     * @return {boolean}
-     */
-    isUserObject: function()
-    {
-        var flags = this._snapshot._flagsOfNode(this);
-        return !!(flags & this._snapshot._nodeFlags.pageObject);
-    },
-
-
-    /**
      * @return {string}
      */
-    name: function() {
+    name: function()
+    {
         var snapshot = this._snapshot;
         if (this._type() === snapshot._nodeConsStringType) {
             var string = snapshot._lazyStringCache[this.nodeIndex];
