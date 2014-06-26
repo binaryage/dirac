@@ -106,6 +106,7 @@
             "ui/Dialog.js",
             "ui/DropDownMenu.js",
             "ui/EmptyView.js",
+            "ui/ForwardedInputEventHandler.js",
             "ui/InplaceEditor.js",
             "ui/KeyboardShortcut.js",
             "ui/PieChart.js",
@@ -435,15 +436,8 @@
         ]
     },
     {
-        "name": "input",
-        "dependencies": ["sources"],
-        "sources": [
-            "ForwardedInputEventHandler.js"
-        ]
-    },
-    {
         "name": "host_stub",
-        "dependencies": ["components", "profiler", "timeline", "sources", "input"],
+        "dependencies": ["components", "profiler", "timeline", "sources"],
         "sources": [
             "InspectorFrontendAPI.js",
             "InspectorFrontendEventSink.js",

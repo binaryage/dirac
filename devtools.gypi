@@ -43,7 +43,6 @@
         'devtools_core_base_js_files': [
             'front_end/inspector.html',
             'front_end/Tests.js',
-            'front_end/ForwardedInputEventHandler.js',
             'front_end/InspectorFrontendAPI.js',
             'front_end/InspectorFrontendEventSink.js',
             'front_end/InspectorFrontendHostStub.js',
@@ -156,6 +155,7 @@
             'front_end/ui/Dialog.js',
             'front_end/ui/DropDownMenu.js',
             'front_end/ui/EmptyView.js',
+            'front_end/ui/ForwardedInputEventHandler.js',
             'front_end/ui/InplaceEditor.js',
             'front_end/ui/KeyboardShortcut.js',
             'front_end/ui/PieChart.js',
