@@ -85,7 +85,7 @@ WebInspector.HeapSnapshotView = function(dataDisplayDelegate, profile)
     this._dominatorDataGrid.show(this._dominatorView.element);
     this._dominatorDataGrid.addEventListener(WebInspector.DataGrid.Events.SelectedNode, this._selectionChanged, this);
 
-    if (WebInspector.experimentsSettings.heapAllocationProfiler.isEnabled() && profile.profileType() === WebInspector.ProfileTypeRegistry.instance.trackingHeapSnapshotProfileType) {
+    if (profile._hasAllocationStacks) {
         this._allocationView = new WebInspector.VBox();
         this._allocationView.setMinimumSize(50, 25);
         this._allocationDataGrid = new WebInspector.AllocationDataGrid(dataDisplayDelegate);
@@ -1380,14 +1380,18 @@ WebInspector.TrackingHeapSnapshotProfileType.prototype = {
     {
         if (this.profileBeingRecorded())
             return;
-        this._addNewProfile();
-        HeapProfilerAgent.startTrackingHeapObjects(WebInspector.experimentsSettings.heapAllocationProfiler.isEnabled());
+        var recordAllocationStacks = WebInspector.settings.recordAllocationStacks.get();
+        this._addNewProfile(recordAllocationStacks);
+        HeapProfilerAgent.startTrackingHeapObjects(recordAllocationStacks);
     },
 
-    _addNewProfile: function()
+    /**
+     * @param {boolean} withAllocationStacks
+     */
+    _addNewProfile: function(withAllocationStacks)
     {
         var target = /** @type {!WebInspector.Target} */ (WebInspector.targetManager.activeTarget());
-        this.setProfileBeingRecorded(new WebInspector.HeapProfileHeader(target, this));
+        this.setProfileBeingRecorded(new WebInspector.HeapProfileHeader(target, this, undefined, withAllocationStacks));
         this._lastSeenIndex = -1;
         this._profileSamples = {
             'sizes': [],
@@ -1451,13 +1455,14 @@ WebInspector.TrackingHeapSnapshotProfileType.prototype = {
     resetProfiles: function()
     {
         var wasRecording = this._recording;
+        var recordingAllocationStacks = wasRecording && this.profileBeingRecorded()._hasAllocationStacks;
         // Clear current profile to avoid stopping backend.
         this.setProfileBeingRecorded(null);
         WebInspector.HeapSnapshotProfileType.prototype.resetProfiles.call(this);
         this._profileSamples = null;
         this._lastSeenIndex = -1;
         if (wasRecording)
-            this._addNewProfile();
+            this._addNewProfile(recordingAllocationStacks);
     },
 
     /**
@@ -1478,10 +1483,12 @@ WebInspector.TrackingHeapSnapshotProfileType.prototype = {
  * @param {!WebInspector.Target} target
  * @param {!WebInspector.HeapSnapshotProfileType} type
  * @param {string=} title
+ * @param {boolean=} hasAllocationStacks
  */
-WebInspector.HeapProfileHeader = function(target, type, title)
+WebInspector.HeapProfileHeader = function(target, type, title, hasAllocationStacks)
 {
     WebInspector.ProfileHeader.call(this, target, type, title || WebInspector.UIString("Snapshot %d", type._nextProfileUid));
+    this._hasAllocationStacks = !!hasAllocationStacks;
     this.maxJSObjectId = -1;
     /**
      * @type {?WebInspector.HeapSnapshotWorkerProxy}
