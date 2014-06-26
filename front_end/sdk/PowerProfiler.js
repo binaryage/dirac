@@ -10,6 +10,7 @@ WebInspector.PowerProfiler = function()
 {
     WebInspector.Object.call(this);
     this._dispatcher = new WebInspector.PowerDispatcher(this);
+    PowerAgent.getAccuracyLevel(this._onAccuracyLevel.bind(this));
 }
 
 WebInspector.PowerProfiler.EventTypes = {
@@ -26,6 +27,20 @@ WebInspector.PowerProfiler.prototype = {
     stopProfile: function ()
     {
         PowerAgent.end();
+    },
+
+    getAccuracyLevel: function()
+    {
+        return this._accuracyLevel;
+    },
+
+    _onAccuracyLevel: function(error, result) {
+        this._accuracyLevel = "";
+        if (error) {
+            console.log("Unable to retrieve PowerProfiler accuracy level: " + error);
+            return;
+        }
+        this._accuracyLevel = result;
     },
 
     __proto__: WebInspector.Object.prototype

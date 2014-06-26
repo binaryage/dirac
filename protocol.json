@@ -4193,6 +4193,14 @@
                 ],
                 "hidden": true,
                 "handlers": ["browser", "frontend"]
+            },
+            {
+                "name": "getAccuracyLevel",
+                "description": "Describes the accuracy level of the data provider.",
+                "returns": [
+                    { "name": "result", "type": "string", "enum": ["high", "moderate", "low"] }
+                ],
+                "handlers": ["browser", "frontend"]
             }
         ],
         "events": [
