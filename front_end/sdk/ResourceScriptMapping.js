@@ -272,10 +272,11 @@ WebInspector.ResourceScriptFile = function(resourceScriptMapping, uiSourceCode, 
 
 WebInspector.ResourceScriptFile.prototype = {
     /**
-     * @param {function(boolean)=} callback
+     * @param {function(?string,!DebuggerAgent.SetScriptSourceError=,!WebInspector.Script=)=} callback
      */
     commitLiveEdit: function(callback)
     {
+        var target = this._resourceScriptMapping._target;
         /**
          * @param {?string} error
          * @param {!DebuggerAgent.SetScriptSourceError=} errorData
@@ -283,24 +284,16 @@ WebInspector.ResourceScriptFile.prototype = {
          */
         function innerCallback(error, errorData)
         {
-            if (error) {
-                this._update();
-                WebInspector.LiveEditSupport.logDetailedError(error, errorData, this._script);
-                if (callback)
-                    callback(false);
-                return;
-            }
-
-            this._scriptSource = source;
+            if (!error)
+                this._scriptSource = source;
             this._update();
-            WebInspector.LiveEditSupport.logSuccess();
             if (callback)
-                callback(true);
+                callback(error, errorData, this._script);
         }
         if (!this._script)
             return;
         var source = this._uiSourceCode.workingCopy();
-        this._resourceScriptMapping._debuggerModel.setScriptSource(this._script.scriptId, source, innerCallback.bind(this));
+        target.debuggerModel.setScriptSource(this._script.scriptId, source, innerCallback.bind(this));
     },
 
     /**

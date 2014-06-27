@@ -146,7 +146,8 @@ WebInspector.Target.prototype = {
         if (!WebInspector.cpuProfilerModel)
             WebInspector.cpuProfilerModel = this.cpuProfilerModel;
 
-        this._debuggerScriptMapping = new WebInspector.DebuggerScriptMapping(this.debuggerModel, WebInspector.workspace, WebInspector.networkWorkspaceBinding);
+        /** @type {!WebInspector.DebuggerScriptMapping} */
+        this.debuggerScriptMapping = new WebInspector.DebuggerScriptMapping(this.debuggerModel, WebInspector.workspace, WebInspector.networkWorkspaceBinding);
 
         if (callback)
             callback(this);
@@ -183,7 +184,7 @@ WebInspector.Target.prototype = {
     {
         this.debuggerModel.dispose();
         this.networkManager.dispose();
-        this._debuggerScriptMapping.dispose();
+        this.debuggerScriptMapping.dispose();
     },
 
     __proto__: Protocol.Agents.prototype

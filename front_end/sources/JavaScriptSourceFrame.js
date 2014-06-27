@@ -280,16 +280,21 @@ WebInspector.JavaScriptSourceFrame.prototype = {
             // FIXME: Change condition above to explicitly check that current uiSourceCode is created by default debugger mapping
             // and move the code adding this menu item to generic context menu provider for UISourceCode.
             var liveEditLabel = WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Live edit" : "Live Edit");
-            contextMenu.appendItem(liveEditLabel, liveEdit.bind(this));
+            var liveEditSupport = WebInspector.LiveEditSupport.liveEditSupportForUISourceCode(this._uiSourceCode);
+            if (!liveEditSupport)
+                return;
+
+            contextMenu.appendItem(liveEditLabel, liveEdit.bind(this, liveEditSupport));
             contextMenu.appendSeparator();
         }
 
         /**
          * @this {WebInspector.JavaScriptSourceFrame}
+         * @param {!WebInspector.LiveEditSupport} liveEditSupport
          */
-        function liveEdit()
+        function liveEdit(liveEditSupport)
         {
-            var liveEditUISourceCode = WebInspector.liveEditSupport.uiSourceCodeForLiveEdit(this._uiSourceCode);
+            var liveEditUISourceCode = liveEditSupport.uiSourceCodeForLiveEdit(this._uiSourceCode);
             WebInspector.Revealer.reveal(liveEditUISourceCode.uiLocation(lineNumber));
         }
 
@@ -309,13 +314,45 @@ WebInspector.JavaScriptSourceFrame.prototype = {
 
     _workingCopyCommitted: function(event)
     {
+
+        var liveEditError;
+        var liveEditErrorData;
+        var contextScript;
+        var succeededEdits = 0;
+        var failedEdits = 0;
+
+        /**
+         * @param {?string} error
+         * @param {!DebuggerAgent.SetScriptSourceError=} errorData
+         * @param {!WebInspector.Script=} script
+         */
+        function liveEditCallback(error, errorData, script)
+        {
+            if (error) {
+                liveEditError = error;
+                liveEditErrorData = errorData;
+                contextScript = script;
+                failedEdits++;
+            } else
+                succeededEdits++;
+
+            if (succeededEdits + failedEdits !== scriptFiles.length)
+                return;
+
+            if (!failedEdits)
+                WebInspector.LiveEditSupport.logSuccess();
+            else
+                WebInspector.LiveEditSupport.logDetailedError(liveEditError, liveEditErrorData, contextScript)
+
+        }
+
         if (this._supportsEnabledBreakpointsWhileEditing())
             return;
         if (this._scriptFileForTarget.size()) {
             this._hasCommittedLiveEdit = true;
             var scriptFiles = this._scriptFileForTarget.values();
             for (var i = 0; i < scriptFiles.length; ++i)
-                scriptFiles[i].commitLiveEdit();
+                scriptFiles[i].commitLiveEdit(liveEditCallback);
             return;
         }
         this._restoreBreakpointsAfterEditing();

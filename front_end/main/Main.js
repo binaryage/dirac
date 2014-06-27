@@ -348,7 +348,6 @@ WebInspector.Main.prototype = {
 
         new WebInspector.WorkspaceController(WebInspector.workspace);
 
-        WebInspector.liveEditSupport = new WebInspector.LiveEditSupport(WebInspector.workspace);
         new WebInspector.CSSStyleSheetMapping(WebInspector.cssModel, WebInspector.workspace, WebInspector.networkWorkspaceBinding);
 
         // Create settings before loading modules.

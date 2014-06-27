@@ -38,7 +38,7 @@ WebInspector.DefaultScriptMapping = function(debuggerModel, workspace)
 {
     this._debuggerModel = debuggerModel;
     this._workspace = workspace;
-    this._projectId = "debugger:" + debuggerModel.target().id();
+    this._projectId = WebInspector.DefaultScriptMapping.projectIdForTarget(debuggerModel.target());
     this._projectDelegate = new WebInspector.DebuggerProjectDelegate(this._workspace, this._projectId, WebInspector.projectTypes.Debugger);
     debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.GlobalObjectCleared, this._debuggerReset, this);
     this._debuggerReset();
@@ -120,6 +120,15 @@ WebInspector.DefaultScriptMapping.prototype = {
     {
         this._workspace.removeProject(this._projectId);
     }
+}
+
+/**
+ * @param {!WebInspector.Target} target
+ * @return {string}
+ */
+WebInspector.DefaultScriptMapping.projectIdForTarget = function(target)
+{
+    return "debugger:" + target.id();
 }
 
 /**

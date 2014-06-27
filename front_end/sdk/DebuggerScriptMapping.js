@@ -40,6 +40,9 @@ WebInspector.DebuggerScriptMapping = function(debuggerModel, workspace, networkW
     this._resourceMapping = new WebInspector.ResourceScriptMapping(debuggerModel, workspace);
     this._compilerMapping = new WebInspector.CompilerScriptMapping(debuggerModel, workspace, networkWorkspaceBinding);
 
+    /** @type {!WebInspector.LiveEditSupport} */
+    this._liveEditSupport = new WebInspector.LiveEditSupport(debuggerModel.target(), WebInspector.workspace);
+
     debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.ParsedScriptSource, this._parsedScriptSource, this);
     debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.FailedToParseScriptSource, this._parsedScriptSource, this);
 }
@@ -69,5 +72,13 @@ WebInspector.DebuggerScriptMapping.prototype = {
         this._compilerMapping.dispose();
         this._resourceMapping.dispose();
         this._defaultMapping.dispose();
+    },
+
+    /**
+     * @return {!WebInspector.LiveEditSupport}
+     */
+    liveEditSupport: function()
+    {
+        return this._liveEditSupport;
     }
 }

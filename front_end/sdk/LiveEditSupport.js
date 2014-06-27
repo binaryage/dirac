@@ -30,14 +30,17 @@
 
 /**
  * @constructor
+ * @extends {WebInspector.TargetAware}
+ * @param {!WebInspector.Target} target
  * @param {!WebInspector.Workspace} workspace
  */
-WebInspector.LiveEditSupport = function(workspace)
+WebInspector.LiveEditSupport = function(target, workspace)
 {
+    WebInspector.TargetAware.call(this, target);
     this._workspace = workspace;
-    this._projectId = "liveedit:";
+    this._projectId = "liveedit:" + target.id();
     this._projectDelegate = new WebInspector.DebuggerProjectDelegate(workspace, this._projectId, WebInspector.projectTypes.LiveEdit);
-    WebInspector.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.GlobalObjectCleared, this._debuggerReset, this);
+    target.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.GlobalObjectCleared, this._debuggerReset, this);
     this._debuggerReset();
 }
 
@@ -48,7 +51,7 @@ WebInspector.LiveEditSupport.prototype = {
      */
     uiSourceCodeForLiveEdit: function(uiSourceCode)
     {
-        var rawLocation = uiSourceCode.uiLocationToRawLocation(WebInspector.targetManager.targets()[0], 0, 0);
+        var rawLocation = uiSourceCode.uiLocationToRawLocation(this.target(), 0, 0);
         var debuggerModelLocation = /** @type {!WebInspector.DebuggerModel.Location} */ (rawLocation);
         var script = debuggerModelLocation.script();
         var uiLocation = script.rawLocationToUILocation(0, 0);
@@ -85,22 +88,43 @@ WebInspector.LiveEditSupport.prototype = {
     {
         var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (event.target);
         var scriptId = /** @type {string} */ (this._scriptIdForUISourceCode.get(uiSourceCode));
-        WebInspector.debuggerModel.setScriptSource(scriptId, uiSourceCode.workingCopy(), innerCallback);
+        this.target().debuggerModel.setScriptSource(scriptId, uiSourceCode.workingCopy(), innerCallback.bind(this));
 
         /**
+         * @this {WebInspector.LiveEditSupport}
          * @param {?string} error
          * @param {!DebuggerAgent.SetScriptSourceError=} errorData
          */
         function innerCallback(error, errorData)
         {
             if (error) {
-                var script = WebInspector.debuggerModel.scriptForId(scriptId);
+                var script = this.target().debuggerModel.scriptForId(scriptId);
                 WebInspector.LiveEditSupport.logDetailedError(error, errorData, script);
                 return;
             }
             WebInspector.LiveEditSupport.logSuccess();
         }
+    },
+
+    __proto__: WebInspector.TargetAware.prototype
+}
+
+/**
+ * @param {!WebInspector.UISourceCode} uiSourceCode
+ * @return {?WebInspector.LiveEditSupport}
+ */
+WebInspector.LiveEditSupport.liveEditSupportForUISourceCode = function(uiSourceCode)
+{
+    var projectId = uiSourceCode.project().id();
+    var target;
+    var targets = WebInspector.targetManager.targets();
+    for (var i = 0; i < targets.length; ++i) {
+        if (projectId === WebInspector.DefaultScriptMapping.projectIdForTarget(targets[i])) {
+            target = targets[i];
+            break;
+        }
     }
+    return target ? target.debuggerScriptMapping.liveEditSupport() : null;
 }
 
 /**
@@ -130,6 +154,3 @@ WebInspector.LiveEditSupport.logSuccess = function()
 {
     WebInspector.messageSink.addMessage(WebInspector.UIString("Recompilation and update succeeded."));
 }
-
-/** @type {!WebInspector.LiveEditSupport} */
-WebInspector.liveEditSupport;
