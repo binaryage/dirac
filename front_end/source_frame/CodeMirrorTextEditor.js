@@ -118,6 +118,7 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
     };
 
     WebInspector.settings.textEditorIndent.addChangeListener(this._updateEditorIndentation, this);
+    WebInspector.settings.textEditorAutoDetectIndent.addChangeListener(this._updateEditorIndentation, this);
     this._updateEditorIndentation();
     WebInspector.settings.showWhitespacesInEditor.addChangeListener(this._updateCodeMirrorMode, this);
     WebInspector.settings.textEditorBracketMatching.addChangeListener(this._enableBracketMatchingIfNeeded, this);
@@ -451,6 +452,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     dispose: function()
     {
         WebInspector.settings.textEditorIndent.removeChangeListener(this._updateEditorIndentation, this);
+        WebInspector.settings.textEditorAutoDetectIndent.removeChangeListener(this._updateEditorIndentation, this);
         WebInspector.settings.showWhitespacesInEditor.removeChangeListener(this._updateCodeMirrorMode, this);
         WebInspector.settings.textEditorBracketMatching.removeChangeListener(this._enableBracketMatchingIfNeeded, this);
     },
@@ -503,7 +505,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
                 minimumIndent = indent;
         }
         if (minimumIndent === Infinity)
-            return WebInspector.TextUtils.Indent.FourSpaces;
+            return WebInspector.settings.textEditorIndent.get();
         return new Array(minimumIndent + 1).join(" ");
     },
 
