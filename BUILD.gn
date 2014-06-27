@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+blink_devtools_output_dir = "$root_gen_dir/blink/devtools/"
+
 gypi_values = exec_script(
     "//build/gypi_to_gn.py",
     [ rebase_path("devtools.gypi") ],
@@ -186,7 +188,7 @@ action("supported_css_properties") {
   ]
 
   outputs = [
-    "$root_gen_dir/blink/devtools/SupportedCSSProperties.js"
+    blink_devtools_output_dir + "SupportedCSSProperties.js"
   ]
 
   args = rebase_path(source_prereqs, root_build_dir) +
@@ -197,10 +199,10 @@ action("frontend_protocol_sources") {
   script = "scripts/CodeGeneratorFrontend.py"
 
   source_prereqs = [ "protocol.json" ]
-  outputs = [ "$root_gen_dir/blink/devtools/InspectorBackendCommands.js" ]
+  outputs = [ blink_devtools_output_dir + "InspectorBackendCommands.js" ]
 
   args = rebase_path(source_prereqs, root_build_dir) + [
-    "--output_js_dir", rebase_path("$root_gen_dir/blink", root_build_dir),
+    "--output_js_dir", rebase_path(blink_devtools_output_dir, root_build_dir),
   ]
 }
 
@@ -237,13 +239,13 @@ action("build_core_module") {
   input_page = "front_end/inspector.html"
   source_prereqs = [
     input_page,
-    "$root_gen_dir/blink/devtools/InspectorBackendCommands.js",
-    "$root_gen_dir/blink/devtools/SupportedCSSProperties.js",
-    "$root_gen_dir/blink/devtools/common/modules.js",
+    blink_devtools_output_dir + "InspectorBackendCommands.js",
+    blink_devtools_output_dir + "SupportedCSSProperties.js",
+    blink_devtools_output_dir + "common/modules.js",
   ] + devtools_core_js_files
 
   search_path = [
-    "$root_gen_dir/blink",
+    blink_devtools_output_dir,
     "front_end",
   ]
   outputs = [
@@ -366,7 +368,7 @@ action("concatenated_module_descriptors") {
 
   input = "front_end/common/modules.js"
   source_prereqs = [ input ] + gypi_values.devtools_module_json_files
-  outputs = [ "$root_gen_dir/blink/devtools/common/modules.js" ]
+  outputs = [ blink_devtools_output_dir + "common/modules.js" ]
 
   args = rebase_path([ input ] + outputs + gypi_values.devtools_module_json_files, root_build_dir)
 }
