@@ -142,9 +142,12 @@ WebInspector.ContentProviderBasedProjectDelegate.prototype = {
 
     /**
      * @param {string} path
+     * @param {function()=} callback
      */
-    refresh: function(path)
+    refresh: function(path, callback)
     {
+        if (callback)
+            callback();
     },
 
     /**

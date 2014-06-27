@@ -99,8 +99,9 @@ WebInspector.ProjectDelegate.prototype = {
 
     /**
      * @param {string} path
+     * @param {function()=} callback
      */
-    refresh: function(path) { },
+    refresh: function(path, callback) { },
 
     /**
      * @param {string} path
@@ -438,10 +439,11 @@ WebInspector.Project.prototype = {
 
     /**
      * @param {string} path
+     * @param {function()=} callback
      */
-    refresh: function(path)
+    refresh: function(path, callback)
     {
-        this._projectDelegate.refresh(path);
+        this._projectDelegate.refresh(path, callback);
     },
 
     /**

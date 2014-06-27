@@ -109,13 +109,15 @@ WebInspector.IsolatedFileSystem.prototype = {
 
     /**
      * @param {string} path
-     * @param {function(string)} callback
+     * @param {function(string)} fileCallback
+     * @param {function()=} finishedCallback
      */
-    requestFilesRecursive: function(path, callback)
+    requestFilesRecursive: function(path, fileCallback, finishedCallback)
     {
         this._requestFileSystem(fileSystemLoaded.bind(this));
 
         var domFileSystem;
+        var pendingRequests = 0;
         /**
          * @param {?DOMFileSystem} fs
          * @this {WebInspector.IsolatedFileSystem}
@@ -124,6 +126,7 @@ WebInspector.IsolatedFileSystem.prototype = {
         {
             domFileSystem = /** @type {!DOMFileSystem} */ (fs);
             console.assert(domFileSystem);
+            ++pendingRequests;
             this._requestEntries(domFileSystem, path, innerCallback.bind(this));
         }
 
@@ -138,14 +141,17 @@ WebInspector.IsolatedFileSystem.prototype = {
                 if (!entry.isDirectory) {
                     if (this._manager.mapping().isFileExcluded(this._path, entry.fullPath))
                         continue;
-                    callback(entry.fullPath.substr(1));
+                    fileCallback(entry.fullPath.substr(1));
                 }
                 else {
                     if (this._manager.mapping().isFileExcluded(this._path, entry.fullPath + "/"))
                         continue;
+                    ++pendingRequests;
                     this._requestEntries(domFileSystem, entry.fullPath, innerCallback.bind(this));
                 }
             }
+            if (finishedCallback && (--pendingRequests === 0))
+                finishedCallback();
         }
     },
 
