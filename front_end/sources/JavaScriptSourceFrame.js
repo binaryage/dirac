@@ -424,17 +424,17 @@ WebInspector.JavaScriptSourceFrame.prototype = {
     {
         var target = WebInspector.context.flavor(WebInspector.Target);
         if (!target || !target.debuggerModel.isPaused())
-            return null;
+            return;
 
         var textPosition = this.textEditor.coordinatesToCursorPosition(event.x, event.y);
         if (!textPosition)
-            return null;
+            return;
         var mouseLine = textPosition.startLine;
         var mouseColumn = textPosition.startColumn;
         var textSelection = this.textEditor.selection().normalize();
         if (textSelection && !textSelection.isEmpty()) {
             if (textSelection.startLine !== textSelection.endLine || textSelection.startLine !== mouseLine || mouseColumn < textSelection.startColumn || mouseColumn > textSelection.endColumn)
-                return null;
+                return;
 
             var leftCorner = this.textEditor.cursorPositionToCoordinates(textSelection.startLine, textSelection.startColumn);
             var rightCorner = this.textEditor.cursorPositionToCoordinates(textSelection.endLine, textSelection.endColumn);
@@ -450,14 +450,14 @@ WebInspector.JavaScriptSourceFrame.prototype = {
 
         var token = this.textEditor.tokenAtTextPosition(textPosition.startLine, textPosition.startColumn);
         if (!token)
-            return null;
+            return;
         var lineNumber = textPosition.startLine;
         var line = this.textEditor.line(lineNumber);
         var tokenContent = line.substring(token.startColumn, token.endColumn + 1);
 
         var isIdentifier = token.type.startsWith("js-variable") || token.type.startsWith("js-property") || token.type == "js-def";
         if (!isIdentifier && (token.type !== "js-keyword" || tokenContent !== "this"))
-            return null;
+            return;
 
         var leftCorner = this.textEditor.cursorPositionToCoordinates(lineNumber, token.startColumn);
         var rightCorner = this.textEditor.cursorPositionToCoordinates(lineNumber, token.endColumn + 1);

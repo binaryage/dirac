@@ -468,15 +468,20 @@ WebInspector.ElementsPanel.prototype = {
         pane.populateNodeContextMenu(node, contextMenu);
     },
 
-    _getPopoverAnchor: function(element)
+    /**
+     * @param {!Element} element
+     * @param {!Event} event
+     * @return {!Element|!AnchorBox|undefined}
+     */
+    _getPopoverAnchor: function(element, event)
     {
         var anchor = element.enclosingNodeOrSelfWithClass("webkit-html-resource-link");
         if (!anchor || !anchor.href)
-            return null;
+            return;
 
         var treeOutlineElement = anchor.enclosingNodeOrSelfWithClass("elements-tree-outline");
         if (!treeOutlineElement)
-            return null;
+            return;
 
         for (var i = 0; i < this._treeOutlines.length; ++i) {
             if (this._treeOutlines[i].element !== treeOutlineElement)
@@ -484,11 +489,10 @@ WebInspector.ElementsPanel.prototype = {
 
             var resource = this._treeOutlines[i].target().resourceTreeModel.resourceForURL(anchor.href);
             if (!resource || resource.type !== WebInspector.resourceTypes.Image)
-                return null;
+                return;
             anchor.removeAttribute("title");
             return anchor;
         }
-        return null;
     },
 
     /**

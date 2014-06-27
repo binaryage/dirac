@@ -519,11 +519,16 @@ WebInspector.CanvasProfileView.prototype = {
         return node;
     },
 
+    /**
+     * @param {!Element} element
+     * @param {!Event} event
+     * @return {!Element|!AnchorBox|undefined}
+     */
     _popoverAnchor: function(element, event)
     {
         var argumentElement = element.enclosingNodeOrSelfWithClass("canvas-call-argument");
         if (!argumentElement || argumentElement.__suppressPopover)
-            return null;
+            return;
         return argumentElement;
     },
 

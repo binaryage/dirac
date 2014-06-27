@@ -232,7 +232,7 @@ WebInspector.Popover.prototype = {
 /**
  * @constructor
  * @param {!Element} panelElement
- * @param {function(!Element, !Event):(!Element|!AnchorBox)|undefined} getAnchor
+ * @param {function(!Element, !Event):(!Element|!AnchorBox|undefined)} getAnchor
  * @param {function(!Element, !WebInspector.Popover):undefined} showPopover
  * @param {function()=} onHide
  * @param {boolean=} disableOnClick

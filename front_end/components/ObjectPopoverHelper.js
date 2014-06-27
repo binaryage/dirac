@@ -32,7 +32,7 @@
  * @constructor
  * @extends {WebInspector.PopoverHelper}
  * @param {!Element} panelElement
- * @param {function(!Element, !Event):!Element|undefined} getAnchor
+ * @param {function(!Element, !Event):(!Element|!AnchorBox|undefined)} getAnchor
  * @param {function(!Element, function(!WebInspector.RemoteObject, boolean, !Element=):undefined, string):undefined} queryObject
  * @param {function()=} onHide
  * @param {boolean=} disableOnClick

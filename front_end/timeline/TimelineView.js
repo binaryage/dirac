@@ -707,12 +707,16 @@ WebInspector.TimelineView.prototype = {
             this._containerElement.scrollTop = (totalHeight - this._containerElement.offsetHeight);
     },
 
-    _getPopoverAnchor: function(element)
+    /**
+     * @param {!Element} element
+     * @param {!Event} event
+     * @return {!Element|!AnchorBox|undefined}
+     */
+    _getPopoverAnchor: function(element, event)
     {
         var anchor = element.enclosingNodeOrSelfWithClass("timeline-graph-bar");
         if (anchor && anchor._tasksInfo)
             return anchor;
-        return null;
     },
 
     _mouseOut: function()
