@@ -480,12 +480,8 @@ body.platform-mac .responsive-design-toolbar select {
 }
 
 .media-inspector-max-label {
-    background-color: rgba(0, 0, 0, 0.5);
+    text-shadow: 0px 0px 2px black;
     padding-left: 11px;
-}
-
-.media-inspector-marker-container:hover .media-inspector-max-label {
-    background-color: rgba(0, 0, 0, 0.3);
 }
 
 .media-inspector-max-label::before {
