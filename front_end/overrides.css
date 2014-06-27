@@ -115,7 +115,7 @@
 }
 
 .overrides-network fieldset select {
-    margin-bottom: 5px;
+    margin: 5px 0;
 }
 
 .overrides-network fieldset p label {
@@ -124,10 +124,11 @@
 }
 
 .overrides-network fieldset input[type='text'] {
+    display: block;
     width: 100%;
     max-width: 400px;
-    min-width: 120px;
-    margin-left: 2px;
+    min-width: 176px;
+    margin: 5px 0;
 }
 
 /* Device tab */
@@ -170,6 +171,7 @@
 
 button.overrides-swap {
     height: 20px;
+    margin: 0 3px;
 }
 
 .overrides-device label {
@@ -193,6 +195,10 @@ button.overrides-swap {
 .overrides-view label {
     display: flex;
     height: auto;
+}
+
+.overrides-view fieldset[disabled] * {
+    cursor: default !important;
 }
 
 #metrics-override-section > span {
@@ -313,6 +319,13 @@ button.overrides-swap {
     margin: -4px 0;
 }
 
-.overrides-reset-button {
+.overrides-reset-button,
+.overrides-disable-button {
     margin: 9px 0 0 17px;
+    display: block;
+    width: 60px;
+}
+
+.overrides-enable-button {
+    margin: 4px !important;
 }

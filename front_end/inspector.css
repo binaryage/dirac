@@ -39,7 +39,7 @@ input[type="checkbox"] {
     flex-shrink: 0;
 }
 
-label:hover {
+label {
     cursor: pointer;
 }
 

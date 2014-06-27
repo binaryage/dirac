@@ -39,10 +39,14 @@ WebInspector.OverridesView = function()
     this.registerRequiredCSS("helpScreen.css");
     this.element.classList.add("overrides-view");
 
+    if (!WebInspector.overridesSupport.canEmulate()) {
+        this.element.createChild("div", "overrides-splash-screen").createTextChild(WebInspector.UIString("Emulation is not available."));
+        return;
+    }
+
     this._tabbedPane = new WebInspector.TabbedPane();
     this._tabbedPane.shrinkableTabs = false;
     this._tabbedPane.verticalTabLayout = true;
-
 
     new WebInspector.OverridesView.DeviceTab().appendAsTab(this._tabbedPane);
     new WebInspector.OverridesView.MediaTab().appendAsTab(this._tabbedPane);
@@ -58,15 +62,27 @@ WebInspector.OverridesView = function()
     resetButtonElement.textContent = WebInspector.UIString("Reset");
     resetButtonElement.addEventListener("click", WebInspector.overridesSupport.reset.bind(WebInspector.overridesSupport), false);
 
+    if (!WebInspector.overridesSupport.responsiveDesignAvailable()) {
+        var disableButtonElement = this._tabbedPane.headerElement().createChild("button", "settings-tab-text-button overrides-disable-button");
+        disableButtonElement.textContent = WebInspector.UIString("Disable");
+        disableButtonElement.addEventListener("click", this._toggleEmulationEnabled.bind(this), false);
+    }
+
     this._warningFooter = this.element.createChild("div", "overrides-footer");
     this._overridesWarningUpdated();
 
     this._splashScreenElement = this.element.createChild("div", "overrides-splash-screen");
-    this._splashScreenElement.createTextChild(WebInspector.UIString("Emulation is currently disabled. Toggle "));
-    var toggleEmulationButton = new WebInspector.StatusBarButton("", "emulation-status-bar-item");
-    toggleEmulationButton.addEventListener("click", this._toggleEmulationEnabled, this);
-    this._splashScreenElement.appendChild(toggleEmulationButton.element);
-    this._splashScreenElement.createTextChild(WebInspector.UIString("in the main toolbar to enable it."));
+    if (WebInspector.overridesSupport.responsiveDesignAvailable()) {
+        this._splashScreenElement.createTextChild(WebInspector.UIString("Emulation is currently disabled. Toggle "));
+        var toggleEmulationButton = new WebInspector.StatusBarButton("", "emulation-status-bar-item");
+        toggleEmulationButton.addEventListener("click", this._toggleEmulationEnabled, this);
+        this._splashScreenElement.appendChild(toggleEmulationButton.element);
+        this._splashScreenElement.createTextChild(WebInspector.UIString("in the main toolbar to enable it."));
+    } else {
+        var toggleEmulationButton = this._splashScreenElement.createChild("button", "settings-tab-text-button overrides-enable-button");
+        toggleEmulationButton.textContent = WebInspector.UIString("Enable emulation");
+        toggleEmulationButton.addEventListener("click", this._toggleEmulationEnabled.bind(this), false);
+    }
 
     WebInspector.overridesSupport.addEventListener(WebInspector.OverridesSupport.Events.OverridesWarningUpdated, this._overridesWarningUpdated, this);
     WebInspector.overridesSupport.addEventListener(WebInspector.OverridesSupport.Events.EmulationStateChanged, this._emulationEnabledChanged, this);
@@ -91,7 +107,7 @@ WebInspector.OverridesView.prototype = {
 
     _toggleEmulationEnabled: function()
     {
-        WebInspector.overridesSupport.setEmulationEnabled(true);
+        WebInspector.overridesSupport.setEmulationEnabled(!WebInspector.overridesSupport.emulationEnabled());
     },
 
     _emulationEnabledChanged: function()
@@ -319,7 +335,7 @@ WebInspector.OverridesView.NetworkTab.prototype = {
     {
         var fieldsetElement = this.element.createChild("fieldset");
         fieldsetElement.createChild("span").textContent = WebInspector.UIString("Limit network throughput:");
-
+        fieldsetElement.createChild("br");
         fieldsetElement.appendChild(WebInspector.overridesSupport.createNetworkConditionsSelect(document));
 
         WebInspector.overridesSupport.settings.networkConditions.addChangeListener(this.updateActiveState, this);

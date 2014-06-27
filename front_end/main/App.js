@@ -7,8 +7,8 @@
  */
 WebInspector.App = function()
 {
-    if (WebInspector.overridesSupport.canEmulate()) {
-        this._toggleEmulationButton = new WebInspector.StatusBarButton(WebInspector.UIString("Toggle emulation enabled."), "emulation-status-bar-item");
+    if (WebInspector.overridesSupport.responsiveDesignAvailable()) {
+        this._toggleEmulationButton = new WebInspector.StatusBarButton(WebInspector.UIString("Toggle device mode."), "emulation-status-bar-item");
         this._toggleEmulationButton.toggled = WebInspector.overridesSupport.emulationEnabled();
         this._toggleEmulationButton.addEventListener("click", this._toggleEmulationEnabled, this);
         WebInspector.overridesSupport.addEventListener(WebInspector.OverridesSupport.Events.EmulationStateChanged, this._emulationEnabledChanged, this);
