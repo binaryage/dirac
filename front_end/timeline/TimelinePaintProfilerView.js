@@ -15,19 +15,15 @@ WebInspector.TimelinePaintProfilerView = function()
     this.setResizable(false);
     this._logAndImageSplitView = new WebInspector.SplitView(true, false);
     this._logAndImageSplitView.show(this.mainElement());
-    this._imageContainerElement = this._logAndImageSplitView.mainElement().createChild("div", "fill paint-profiler-image-view");
-    this._imageElement = this._imageContainerElement.createChild("img");
-    this._imageElement.addEventListener("load", this._updateImagePosition.bind(this), false);
+    this._imageView = new WebInspector.TimelinePaintImageView();
+    this._imageView.show(this._logAndImageSplitView.mainElement());
 
-    this._paintProfilerView = new WebInspector.PaintProfilerView(this._showImage.bind(this));
+    this._paintProfilerView = new WebInspector.PaintProfilerView(this._imageView.showImage.bind(this._imageView));
     this._paintProfilerView.addEventListener(WebInspector.PaintProfilerView.Events.WindowChanged, this._onWindowChanged, this);
     this._paintProfilerView.show(this.sidebarElement());
 
     this._logTreeView = new WebInspector.PaintProfilerCommandLogView();
     this._logTreeView.show(this._logAndImageSplitView.sidebarElement());
-
-    this._transformController = new WebInspector.TransformController(this._imageContainerElement, true);
-    this._transformController.addEventListener(WebInspector.TransformController.Events.TransformChanged, this._updateImagePosition, this);
 }
 
 WebInspector.TimelinePaintProfilerView.prototype = {
@@ -79,42 +75,64 @@ WebInspector.TimelinePaintProfilerView.prototype = {
         }
     },
 
-    _updateImagePosition: function()
-    {
-        var width = this._imageElement.width;
-        var height = this._imageElement.height;
-
-        var container = this._logAndImageSplitView.mainElement();
-        var paddingFactor = 1.1;
-        var scaleX = container.clientWidth / width / paddingFactor;
-        var scaleY = container.clientHeight / height / paddingFactor;
-        var scale = Math.min(scaleX, scaleY);
-
-        var matrix = new WebKitCSSMatrix()
-            .translate(this._transformController.offsetX(), this._transformController.offsetY())
-            .scale(this._transformController.scale(), this._transformController.scale())
-            .translate(container.clientWidth / 2, container.clientHeight / 2)
-            .scale(scale, scale)
-            .translate(-width / 2, -height / 2);
-
-        this._imageElement.style.webkitTransform = matrix.toString();
-    },
-
     _onWindowChanged: function()
     {
         var window = this._paintProfilerView.windowBoundaries();
         this._logTreeView.updateWindow(window.left, window.right);
     },
 
+    __proto__: WebInspector.SplitView.prototype
+};
+
+/**
+ * @constructor
+ * @extends {WebInspector.View}
+ */
+WebInspector.TimelinePaintImageView = function()
+{
+    WebInspector.View.call(this);
+    this.element.classList.add("fill", "paint-profiler-image-view");
+    this._imageElement = this.element.createChild("img");
+    this._imageElement.addEventListener("load", this._updateImagePosition.bind(this), false);
+
+    this._transformController = new WebInspector.TransformController(this.element, true);
+    this._transformController.addEventListener(WebInspector.TransformController.Events.TransformChanged, this._updateImagePosition, this);
+}
+
+WebInspector.TimelinePaintImageView.prototype = {
+    onResize: function()
+    {
+        this._updateImagePosition();
+    },
+
+    _updateImagePosition: function()
+    {
+        var width = this._imageElement.width;
+        var height = this._imageElement.height;
+
+        var paddingFactor = 1.1;
+        var scaleX = this.element.clientWidth / width / paddingFactor;
+        var scaleY = this.element.clientHeight / height / paddingFactor;
+        var scale = Math.min(scaleX, scaleY);
+
+        var matrix = new WebKitCSSMatrix()
+            .translate(this._transformController.offsetX(), this._transformController.offsetY())
+            .scale(this._transformController.scale(), this._transformController.scale())
+            .translate(this.element.clientWidth / 2, this.element.clientHeight / 2)
+            .scale(scale, scale)
+            .translate(-width / 2, -height / 2);
+
+        this._imageElement.style.webkitTransform = matrix.toString();
+    },
+
     /**
      * @param {string=} imageURL
      */
-    _showImage: function(imageURL)
+    showImage: function(imageURL)
     {
         this._imageElement.classList.toggle("hidden", !imageURL);
         this._imageElement.src = imageURL;
     },
 
-    __proto__: WebInspector.SplitView.prototype
+    __proto__: WebInspector.View.prototype
 };
-
