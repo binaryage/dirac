@@ -315,7 +315,7 @@ WebInspector.ResourceTreeModel.prototype = {
         if (frame._resourcesMap[url])
             return;
 
-        var resource = new WebInspector.Resource(null, url, frame.url, frameId, event.data.loaderId, WebInspector.resourceTypes[event.data.resourceType], event.data.mimeType);
+        var resource = new WebInspector.Resource(this.target(), null, url, frame.url, frameId, event.data.loaderId, WebInspector.resourceTypes[event.data.resourceType], event.data.mimeType);
         frame.addResource(resource);
     },
 
@@ -457,7 +457,7 @@ WebInspector.ResourceTreeModel.prototype = {
      */
     _createResourceFromFramePayload: function(frame, url, type, mimeType)
     {
-        return new WebInspector.Resource(null, url, frame.url, frame.id, frame.loaderId, type, mimeType);
+        return new WebInspector.Resource(this.target(), null, url, frame.url, frame.id, frame.loaderId, type, mimeType);
     },
 
     /**
@@ -657,7 +657,7 @@ WebInspector.ResourceTreeFrame.prototype = {
             // Already in the tree, we just got an extra update.
             return resource;
         }
-        resource = new WebInspector.Resource(request, request.url, request.documentURL, request.frameId, request.loaderId, request.type, request.mimeType);
+        resource = new WebInspector.Resource(this.target(), request, request.url, request.documentURL, request.frameId, request.loaderId, request.type, request.mimeType);
         this._resourcesMap[resource.url] = resource;
         this._model.dispatchEventToListeners(WebInspector.ResourceTreeModel.EventTypes.ResourceAdded, resource);
         return resource;

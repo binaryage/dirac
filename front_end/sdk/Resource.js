@@ -28,8 +28,9 @@
 
 /**
  * @constructor
- * @extends {WebInspector.Object}
+ * @extends {WebInspector.TargetAwareObject}
  * @implements {WebInspector.ContentProvider}
+ * @param {!WebInspector.Target} target
  * @param {?WebInspector.NetworkRequest} request
  * @param {string} url
  * @param {string} documentURL
@@ -39,8 +40,9 @@
  * @param {string} mimeType
  * @param {boolean=} isHidden
  */
-WebInspector.Resource = function(request, url, documentURL, frameId, loaderId, type, mimeType, isHidden)
+WebInspector.Resource = function(target, request, url, documentURL, frameId, loaderId, type, mimeType, isHidden)
 {
+    WebInspector.TargetAwareObject.call(this, target);
     this._request = request;
     this.url = url;
     this._documentURL = documentURL;
@@ -272,7 +274,7 @@ WebInspector.Resource.prototype = {
         }
 
         if (this.frameId)
-            PageAgent.searchInResource(this.frameId, this.url, query, caseSensitive, isRegex, callbackWrapper);
+            this.target().pageAgent().searchInResource(this.frameId, this.url, query, caseSensitive, isRegex, callbackWrapper);
         else
             callback([]);
     },
@@ -367,7 +369,7 @@ WebInspector.Resource.prototype = {
             contentLoaded.call(this, null, content, this.request.contentEncoded);
         }
 
-        PageAgent.getResourceContent(this.frameId, this.url, resourceContentLoaded.bind(this));
+        this.target().pageAgent().getResourceContent(this.frameId, this.url, resourceContentLoaded.bind(this));
     },
 
     /**
@@ -378,6 +380,6 @@ WebInspector.Resource.prototype = {
         return !!this._isHidden;
     },
 
-    __proto__: WebInspector.Object.prototype
+    __proto__: WebInspector.TargetAwareObject.prototype
 }
 
