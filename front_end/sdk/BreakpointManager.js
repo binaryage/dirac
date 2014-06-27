@@ -710,13 +710,13 @@ WebInspector.BreakpointManager.TargetBreakpoint.prototype = {
         var uiSourceCode = this._breakpoint.uiSourceCode();
         if (!uiSourceCode || !this._breakpoint._enabled)
             return;
-        var scriptFile = uiSourceCode.scriptFileForTarget(this._target);
+        var scriptFile = uiSourceCode.scriptFileForTarget(this.target());
         if (scriptFile && scriptFile.hasDivergedFromVM())
             return;
 
         var lineNumber = this._breakpoint._lineNumber;
         var columnNumber = this._breakpoint._columnNumber;
-        var rawLocation = uiSourceCode.uiLocationToRawLocation(this._target, lineNumber, columnNumber);
+        var rawLocation = uiSourceCode.uiLocationToRawLocation(this.target(), lineNumber, columnNumber);
         var debuggerModelLocation = /** @type {!WebInspector.DebuggerModel.Location} */ (rawLocation);
         var condition = this._breakpoint.condition();
         if (debuggerModelLocation)

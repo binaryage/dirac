@@ -346,8 +346,8 @@ WebInspector.TracingTimelineUIUtils.buildDetailsNodeForTraceEvent = function(eve
         detailsText = eventData ? eventData["type"] : null;
         break;
     case recordType.Paint:
-        var width = WebInspector.TimelineUIUtils._quadWidth(eventData.clip);
-        var height = WebInspector.TimelineUIUtils._quadHeight(eventData.clip);
+        var width = WebInspector.TimelineUIUtils.quadWidth(eventData.clip);
+        var height = WebInspector.TimelineUIUtils.quadHeight(eventData.clip);
         if (width && height)
             detailsText = WebInspector.UIString("%d\u2009\u00d7\u2009%d", width, height);
         break;
@@ -478,7 +478,7 @@ WebInspector.TracingTimelineUIUtils.buildTraceEventDetails = function(event, mod
         if (event.imageURL)
             WebInspector.DOMPresentationUtils.buildImagePreviewContents(target, event.imageURL, false, barrier.createCallback(saveImage));
         else if (event.picture)
-            WebInspector.TracingTimelineUIUtils._buildPicturePreviewContent(event.picture, barrier.createCallback(saveImage));
+            WebInspector.TracingTimelineUIUtils.buildPicturePreviewContent(event.picture, barrier.createCallback(saveImage));
     }
     if (event.backendNodeId)
         target.domModel.pushNodesByBackendIdsToFrontend([event.backendNodeId], barrier.createCallback(setRelatedNode));
@@ -588,8 +588,8 @@ WebInspector.TracingTimelineUIUtils._buildTraceEventDetailsSynchronously = funct
     case recordTypes.Paint:
         var clip = eventData["clip"];
         contentHelper.appendTextRow(WebInspector.UIString("Location"), WebInspector.UIString("(%d, %d)", clip[0], clip[1]));
-        var clipWidth = WebInspector.TimelineUIUtils._quadWidth(clip);
-        var clipHeight = WebInspector.TimelineUIUtils._quadHeight(clip);
+        var clipWidth = WebInspector.TimelineUIUtils.quadWidth(clip);
+        var clipHeight = WebInspector.TimelineUIUtils.quadHeight(clip);
         contentHelper.appendTextRow(WebInspector.UIString("Dimensions"), WebInspector.UIString("%d × %d", clipWidth, clipHeight));
         // Fall-through intended.
 
@@ -714,7 +714,7 @@ WebInspector.TracingTimelineUIUtils._aggregatedStatsForTraceEvent = function(tot
  * @param {string} encodedPicture
  * @param {function(!Element=)} callback
  */
-WebInspector.TracingTimelineUIUtils._buildPicturePreviewContent = function(encodedPicture, callback)
+WebInspector.TracingTimelineUIUtils.buildPicturePreviewContent = function(encodedPicture, callback)
 {
     var snapshotId;
 

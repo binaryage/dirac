@@ -82,7 +82,7 @@ WebInspector.LayerTreeModel.prototype = {
         if (this._enabled)
             return;
         this._enabled = true;
-        this._layerTree = new WebInspector.AgentLayerTree(this._target);
+        this._layerTree = new WebInspector.AgentLayerTree(this.target());
         this._lastPaintRectByLayerId = {};
         LayerTreeAgent.enable();
     },
@@ -321,7 +321,7 @@ WebInspector.TracingLayerTree.prototype = {
             this._contentRoot = layer;
 
         if (payload.owner_node && this._backendNodeIdToNodeId[payload.owner_node])
-            layer._setNode(this._target.domModel.nodeForId(this._backendNodeIdToNodeId[payload.owner_node]));
+            layer._setNode(this.target().domModel.nodeForId(this._backendNodeIdToNodeId[payload.owner_node]));
 
         for (var i = 0; payload.children && i < payload.children.length; ++i)
             layer.addChild(this._innerSetLayers(oldLayersById, payload.children[i]));
@@ -411,7 +411,7 @@ WebInspector.AgentLayerTree.prototype = {
                 layer = new WebInspector.AgentLayer(layers[i]);
             this._layersById[layerId] = layer;
             if (layers[i].backendNodeId) {
-                layer._setNode(this._target.domModel.nodeForId(this._backendNodeIdToNodeId[layers[i].backendNodeId]));
+                layer._setNode(this.target().domModel.nodeForId(this._backendNodeIdToNodeId[layers[i].backendNodeId]));
                 if (!this._contentRoot)
                     this._contentRoot = layer;
             }

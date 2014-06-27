@@ -65,7 +65,7 @@ WebInspector.FlameChart = function(dataProvider, flameChartDelegate, isTopDown)
 
     this._vScrollElement = this.element.createChild("div", "flame-chart-v-scroll");
     this._vScrollContent = this._vScrollElement.createChild("div");
-    this._vScrollElement.addEventListener("scroll", this._scheduleUpdate.bind(this), false);
+    this._vScrollElement.addEventListener("scroll", this.scheduleUpdate.bind(this), false);
 
     this._entryInfo = this.element.createChild("div", "profile-entry-info");
     this._highlightElement = this.element.createChild("div", "flame-chart-highlight-element");
@@ -399,7 +399,7 @@ WebInspector.FlameChart.prototype = {
     {
         this._timeWindowLeft = startTime;
         this._timeWindowRight = endTime;
-        this._scheduleUpdate();
+        this.scheduleUpdate();
     },
 
     /**
@@ -926,7 +926,7 @@ WebInspector.FlameChart.prototype = {
     onResize: function()
     {
         this._updateScrollBar();
-        this._scheduleUpdate();
+        this.scheduleUpdate();
     },
 
     _updateScrollBar: function()
@@ -937,7 +937,7 @@ WebInspector.FlameChart.prototype = {
         this._offsetHeight = this.element.offsetHeight;
     },
 
-    _scheduleUpdate: function()
+    scheduleUpdate: function()
     {
         if (this._updateTimerId)
             return;

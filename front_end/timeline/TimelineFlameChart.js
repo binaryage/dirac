@@ -845,12 +845,12 @@ WebInspector.TimelineFlameChart.prototype = {
     refreshRecords: function(textFilter)
     {
         this._dataProvider.reset();
-        this._mainView._scheduleUpdate();
+        this._mainView.scheduleUpdate();
     },
 
     wasShown: function()
     {
-        this._mainView._scheduleUpdate();
+        this._mainView.scheduleUpdate();
     },
 
 
@@ -888,7 +888,7 @@ WebInspector.TimelineFlameChart.prototype = {
                 this._automaticallySizeWindow = false;
                 this._delegate.requestWindowTimes(minimumRecordTime, minimumRecordTime + 1000);
             }
-            this._mainView._scheduleUpdate();
+            this._mainView.scheduleUpdate();
         } else {
             if (!this._pendingUpdateTimer)
                 this._pendingUpdateTimer = window.setTimeout(this._updateOnAddRecord.bind(this), 300);
@@ -898,7 +898,7 @@ WebInspector.TimelineFlameChart.prototype = {
     _updateOnAddRecord: function()
     {
         delete this._pendingUpdateTimer;
-        this._mainView._scheduleUpdate();
+        this._mainView.scheduleUpdate();
     },
 
     /**

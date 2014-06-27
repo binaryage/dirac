@@ -362,7 +362,7 @@ WebInspector.TimelineUIUtils.createStyleRuleForCategory = function(category)
  * @param {!Array.<number>} quad
  * @return {number}
  */
-WebInspector.TimelineUIUtils._quadWidth = function(quad)
+WebInspector.TimelineUIUtils.quadWidth = function(quad)
 {
     return Math.round(Math.sqrt(Math.pow(quad[0] - quad[2], 2) + Math.pow(quad[1] - quad[3], 2)));
 }
@@ -371,7 +371,7 @@ WebInspector.TimelineUIUtils._quadWidth = function(quad)
  * @param {!Array.<number>} quad
  * @return {number}
  */
-WebInspector.TimelineUIUtils._quadHeight = function(quad)
+WebInspector.TimelineUIUtils.quadHeight = function(quad)
 {
     return Math.round(Math.sqrt(Math.pow(quad[0] - quad[6], 2) + Math.pow(quad[1] - quad[7], 2)));
 }

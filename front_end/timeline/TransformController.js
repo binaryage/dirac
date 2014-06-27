@@ -34,7 +34,7 @@ WebInspector.TransformController.prototype = {
      */
     registerShortcuts: function(registerShortcutDelegate)
     {
-        registerShortcutDelegate(WebInspector.ShortcutsScreen.LayersPanelShortcuts.ResetView, this._resetAndNotify.bind(this));
+        registerShortcutDelegate(WebInspector.ShortcutsScreen.LayersPanelShortcuts.ResetView, this.resetAndNotify.bind(this));
         var zoomFactor = 1.1;
         registerShortcutDelegate(WebInspector.ShortcutsScreen.LayersPanelShortcuts.ZoomIn, this._onKeyboardZoom.bind(this, zoomFactor));
         registerShortcutDelegate(WebInspector.ShortcutsScreen.LayersPanelShortcuts.ZoomOut, this._onKeyboardZoom.bind(this, 1 / zoomFactor));
@@ -67,7 +67,7 @@ WebInspector.TransformController.prototype = {
     /**
      * @param {?Event=} event
      */
-    _resetAndNotify: function(event)
+    resetAndNotify: function(event)
     {
         this._reset();
         this._postChangeEvent();

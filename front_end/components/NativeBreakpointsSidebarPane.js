@@ -48,11 +48,15 @@ WebInspector.NativeBreakpointsSidebarPane = function(title)
 }
 
 WebInspector.NativeBreakpointsSidebarPane.prototype = {
-    _addListElement: function(element, beforeElement)
+    /**
+     * @param {!Element} element
+     * @param {?Element=} beforeElement
+     */
+    addListElement: function(element, beforeElement)
     {
-        if (beforeElement)
+        if (beforeElement) {
             this.listElement.insertBefore(element, beforeElement);
-        else {
+        } else {
             if (!this.listElement.firstChild) {
                 this.bodyElement.removeChild(this.emptyElement);
                 this.bodyElement.appendChild(this.listElement);
@@ -61,7 +65,10 @@ WebInspector.NativeBreakpointsSidebarPane.prototype = {
         }
     },
 
-    _removeListElement: function(element)
+    /**
+     * @param {!Element} element
+     */
+    removeListElement: function(element)
     {
         this.listElement.removeChild(element);
         if (!this.listElement.firstChild) {
@@ -70,7 +77,7 @@ WebInspector.NativeBreakpointsSidebarPane.prototype = {
         }
     },
 
-    _reset: function()
+    reset: function()
     {
         this.listElement.removeChildren();
         if (this.listElement.parentElement) {

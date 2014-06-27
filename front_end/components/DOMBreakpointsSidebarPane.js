@@ -79,7 +79,7 @@ WebInspector.DOMBreakpointsSidebarPane.prototype = {
     _inspectedURLChanged: function(event)
     {
         this._breakpointElements = {};
-        this._reset();
+        this.reset();
         var url = /** @type {string} */ (event.data);
         this._inspectedURL = url.removeURLFragment();
     },
@@ -254,7 +254,7 @@ WebInspector.DOMBreakpointsSidebarPane.prototype = {
                 break;
             currentElement = currentElement.nextSibling;
         }
-        this._addListElement(element, currentElement);
+        this.addListElement(element, currentElement);
         this._breakpointElements[breakpointId] = element;
         if (enabled)
             DOMDebuggerAgent.setDOMBreakpoint(node.id, type);
@@ -276,7 +276,7 @@ WebInspector.DOMBreakpointsSidebarPane.prototype = {
         if (!element)
             return;
 
-        this._removeListElement(element);
+        this.removeListElement(element);
         delete this._breakpointElements[breakpointId];
         if (element._checkboxElement.checked)
             DOMDebuggerAgent.removeDOMBreakpoint(node.id, type);
@@ -415,7 +415,7 @@ WebInspector.DOMBreakpointsSidebarPane.prototype = {
  */
 WebInspector.DOMBreakpointsSidebarPane.Proxy = function(pane, panel)
 {
-    WebInspector.View._assert(!pane.titleElement.firstChild, "Cannot create proxy for a sidebar pane with a toolbar");
+    WebInspector.View.__assert(!pane.titleElement.firstChild, "Cannot create proxy for a sidebar pane with a toolbar");
 
     WebInspector.SidebarPane.call(this, pane.title());
     this.registerRequiredCSS("breakpointsList.css");

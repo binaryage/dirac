@@ -327,7 +327,7 @@ WebInspector.XHRBreakpointsSidebarPane.prototype = {
         inputElement.className = "editing";
         inputElement.id = "breakpoint-condition-input";
         inputElementContainer.appendChild(inputElement);
-        this._addListElement(inputElementContainer, this.listElement.firstChild);
+        this.addListElement(inputElementContainer, /** @type {?Element} */ (this.listElement.firstChild));
 
         /**
          * @param {boolean} accept
@@ -337,7 +337,7 @@ WebInspector.XHRBreakpointsSidebarPane.prototype = {
          */
         function finishEditing(accept, e, text)
         {
-            this._removeListElement(inputElementContainer);
+            this.removeListElement(inputElementContainer);
             if (accept) {
                 this._setBreakpoint(text, true);
                 this._saveBreakpoints();
@@ -374,13 +374,13 @@ WebInspector.XHRBreakpointsSidebarPane.prototype = {
         labelElement.addEventListener("dblclick", this._labelClicked.bind(this, url), false);
         element.appendChild(labelElement);
 
-        var currentElement = this.listElement.firstChild;
+        var currentElement = /** @type {?Element} */ (this.listElement.firstChild);
         while (currentElement) {
             if (currentElement._url && currentElement._url < element._url)
                 break;
-            currentElement = currentElement.nextSibling;
+            currentElement = /** @type {?Element} */ (currentElement.nextSibling);
         }
-        this._addListElement(element, currentElement);
+        this.addListElement(element, currentElement);
         this._breakpointElements[url] = element;
         if (enabled)
             DOMDebuggerAgent.setXHRBreakpoint(url);
@@ -392,7 +392,7 @@ WebInspector.XHRBreakpointsSidebarPane.prototype = {
         if (!element)
             return;
 
-        this._removeListElement(element);
+        this.removeListElement(element);
         delete this._breakpointElements[url];
         if (element._checkboxElement.checked)
             DOMDebuggerAgent.removeXHRBreakpoint(url);
@@ -454,7 +454,7 @@ WebInspector.XHRBreakpointsSidebarPane.prototype = {
          */
         function finishEditing(accept, e, text)
         {
-            this._removeListElement(inputElement);
+            this.removeListElement(inputElement);
             if (accept) {
                 this._removeBreakpoint(url);
                 this._setBreakpoint(text, element._checkboxElement.checked);

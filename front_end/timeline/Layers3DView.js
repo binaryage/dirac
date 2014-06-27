@@ -698,7 +698,7 @@ WebInspector.Layers3DView.prototype = {
         var activeObject = this._activeObjectFromEventPoint(event);
         var node = activeObject && activeObject.layer && activeObject.layer.nodeForSelfOrAncestor();
         var contextMenu = new WebInspector.ContextMenu(event);
-        contextMenu.appendItem("Reset view", this._transformController._resetAndNotify.bind(this._transformController), false);
+        contextMenu.appendItem("Reset view", this._transformController.resetAndNotify.bind(this._transformController), false);
         if (node)
             contextMenu.appendApplicableItems(node);
         contextMenu.show();

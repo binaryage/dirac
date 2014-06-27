@@ -341,8 +341,8 @@ WebInspector.TimelineUIUtilsImpl.buildDetailsNode = function(record, linkifier, 
         detailsText = recordData ? recordData["type"] : null;
         break;
     case WebInspector.TimelineModel.RecordType.Paint:
-        var width = WebInspector.TimelineUIUtils._quadWidth(recordData.clip);
-        var height = WebInspector.TimelineUIUtils._quadHeight(recordData.clip);
+        var width = WebInspector.TimelineUIUtils.quadWidth(recordData.clip);
+        var height = WebInspector.TimelineUIUtils.quadHeight(recordData.clip);
         if (width && height)
             detailsText = WebInspector.UIString("%d\u2009\u00d7\u2009%d", width, height);
         break;
@@ -593,8 +593,8 @@ WebInspector.TimelineUIUtilsImpl._generateDetailsContentSynchronously = function
         case recordTypes.Paint:
             var clip = recordData["clip"];
             contentHelper.appendTextRow(WebInspector.UIString("Location"), WebInspector.UIString("(%d, %d)", clip[0], clip[1]));
-            var clipWidth = WebInspector.TimelineUIUtils._quadWidth(clip);
-            var clipHeight = WebInspector.TimelineUIUtils._quadHeight(clip);
+            var clipWidth = WebInspector.TimelineUIUtils.quadWidth(clip);
+            var clipHeight = WebInspector.TimelineUIUtils.quadHeight(clip);
             contentHelper.appendTextRow(WebInspector.UIString("Dimensions"), WebInspector.UIString("%d × %d", clipWidth, clipHeight));
             // Fall-through intended.
 

@@ -38,7 +38,7 @@ WebInspector.TimelineTracingView.prototype = {
 
     wasShown: function()
     {
-        this._mainView._scheduleUpdate();
+        this._mainView.scheduleUpdate();
     },
 
     /**
@@ -65,7 +65,7 @@ WebInspector.TimelineTracingView.prototype = {
     refreshRecords: function(textFilter)
     {
         this._dataProvider.reset();
-        this._mainView._scheduleUpdate();
+        this._mainView.scheduleUpdate();
     },
 
     /**
@@ -137,7 +137,7 @@ WebInspector.TimelineTracingView.prototype = {
         var recordTypes = WebInspector.TracingTimelineModel.RecordType;
         switch (record.name) {
         case recordTypes.PictureSnapshot:
-            WebInspector.TracingTimelineUIUtils._buildPicturePreviewContent(record.args["snapshot"]["skp64"], appendPreviewAndshowDetails.bind(this));
+            WebInspector.TracingTimelineUIUtils.buildPicturePreviewContent(record.args["snapshot"]["skp64"], appendPreviewAndshowDetails.bind(this));
             break;
         case recordTypes.LayerTreeHostImplSnapshot:
             var link = document.createElement("span");
