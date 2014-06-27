@@ -115,7 +115,7 @@ WebInspector.InspectedPagePlaceholder.prototype = {
     {
         delete this._updateId;
         var rect = this._dipPageRect();
-        var bounds = { x: Math.round(rect.x), y: Math.round(rect.y), height: Math.round(rect.height), width: Math.round(rect.width) };
+        var bounds = { x: Math.round(rect.x), y: Math.round(rect.y), height: Math.max(1, Math.round(rect.height)), width: Math.max(1, Math.round(rect.width)) };
         this.dispatchEventToListeners(WebInspector.InspectedPagePlaceholder.Events.Update, bounds);
     },
 

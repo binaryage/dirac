@@ -836,6 +836,7 @@ body.platform-linux .source-code {
 
 .console-view {
     background-color: white;
+    overflow: hidden;
 }
 
 .console-view-wrapper {
