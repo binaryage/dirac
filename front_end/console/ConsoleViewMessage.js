@@ -86,7 +86,7 @@ WebInspector.ConsoleViewMessage.prototype = {
 
     cacheFastHeight: function()
     {
-        this._cachedHeight = this.contentElement().clientHeight;
+        this._cachedHeight = this.contentElement().offsetHeight;
     },
 
     willHide: function()
@@ -906,8 +906,6 @@ WebInspector.ConsoleViewMessage.prototype = {
         this._highlightSearchResultsInElement(regexObject, this._messageElement);
         if (this._anchorElement)
             this._highlightSearchResultsInElement(regexObject, this._anchorElement);
-
-        this._element.scrollIntoViewIfNeeded();
     },
 
     _highlightSearchResultsInElement: function(regexObject, element)

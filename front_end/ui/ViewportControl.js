@@ -367,7 +367,7 @@ WebInspector.ViewportControl.prototype = {
             this._firstVisibleIndex = Math.max(Array.prototype.lowerBound.call(this._cumulativeHeights, this._cumulativeHeights[this._cumulativeHeights.length - 1] - clientHeight), 0);
         } else {
             this._firstVisibleIndex = Math.max(Array.prototype.lowerBound.call(this._cumulativeHeights, visibleFrom), 0);
-            this._lastVisibleIndex = Math.min(Array.prototype.upperBound.call(this._cumulativeHeights, visibleFrom + clientHeight), itemCount - 1);
+            this._lastVisibleIndex = Math.min(Array.prototype.upperBound.call(this._cumulativeHeights, visibleFrom + clientHeight - 1), itemCount - 1);
         }
         var topGapHeight = this._cumulativeHeights[this._firstVisibleIndex - 1] || 0;
         var bottomGapHeight = this._cumulativeHeights[this._cumulativeHeights.length - 1] - this._cumulativeHeights[this._lastVisibleIndex];
@@ -498,8 +498,10 @@ WebInspector.ViewportControl.prototype = {
             return;
         if (makeLast)
             this.forceScrollItemToBeLast(index);
-        else
+        else if (index <= this._firstVisibleIndex)
             this.forceScrollItemToBeFirst(index);
+        else if (index >= this._lastVisibleIndex)
+            this.forceScrollItemToBeLast(index);
     },
 
     /**

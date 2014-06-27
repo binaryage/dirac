@@ -876,6 +876,7 @@ WebInspector.ConsoleView.prototype = {
         this._clearCurrentSearchResultHighlight();
         delete this._searchResults;
         delete this._searchRegex;
+        this._viewport.refresh();
     },
 
     /**
@@ -889,15 +890,17 @@ WebInspector.ConsoleView.prototype = {
         this._searchableView.updateSearchMatchesCount(0);
         this._searchRegex = createPlainTextSearchRegex(query, "gi");
 
+        /** @type {!Array.<number>} */
         this._searchResults = [];
         for (var i = 0; i < this._visibleViewMessages.length; i++) {
             if (this._visibleViewMessages[i].matchesRegex(this._searchRegex))
-                this._searchResults.push(this._visibleViewMessages[i]);
+                this._searchResults.push(i);
         }
         this._searchableView.updateSearchMatchesCount(this._searchResults.length);
         this._currentSearchResultIndex = -1;
         if (shouldJump && this._searchResults.length)
             this._jumpToSearchResult(jumpBackwards ? -1 : 0);
+        this._viewport.refresh();
     },
 
     jumpToNextSearchResult: function()
@@ -919,7 +922,7 @@ WebInspector.ConsoleView.prototype = {
         if (!this._searchResults)
             return;
 
-        var highlightedViewMessage = this._searchResults[this._currentSearchResultIndex];
+        var highlightedViewMessage = this._visibleViewMessages[this._searchResults[this._currentSearchResultIndex]];
         if (highlightedViewMessage)
             highlightedViewMessage.clearHighlight();
         this._currentSearchResultIndex = -1;
@@ -931,7 +934,9 @@ WebInspector.ConsoleView.prototype = {
         this._clearCurrentSearchResultHighlight();
         this._currentSearchResultIndex = index;
         this._searchableView.updateCurrentMatchIndex(this._currentSearchResultIndex);
-        this._searchResults[index].highlightSearchResults(this._searchRegex);
+        var currentViewMessageIndex = this._searchResults[index];
+        this._viewport.scrollItemIntoView(currentViewMessageIndex);
+        this._visibleViewMessages[currentViewMessageIndex].highlightSearchResults(this._searchRegex);
     },
 
     __proto__: WebInspector.VBox.prototype
