@@ -79,12 +79,6 @@ WebInspector.HeapSnapshotView = function(dataDisplayDelegate, profile)
     this._diffDataGrid.show(this._diffView.element);
     this._diffDataGrid.addEventListener(WebInspector.DataGrid.Events.SelectedNode, this._selectionChanged, this);
 
-    this._dominatorView = new WebInspector.VBox();
-    this._dominatorView.setMinimumSize(50, 25);
-    this._dominatorDataGrid = new WebInspector.HeapSnapshotDominatorsDataGrid(dataDisplayDelegate);
-    this._dominatorDataGrid.show(this._dominatorView.element);
-    this._dominatorDataGrid.addEventListener(WebInspector.DataGrid.Events.SelectedNode, this._selectionChanged, this);
-
     if (profile._hasAllocationStacks) {
         this._allocationView = new WebInspector.VBox();
         this._allocationView.setMinimumSize(50, 25);
@@ -138,8 +132,6 @@ WebInspector.HeapSnapshotView = function(dataDisplayDelegate, profile)
     if (profile.profileType() !== WebInspector.ProfileTypeRegistry.instance.trackingHeapSnapshotProfileType)
         this._perspectives.push(new WebInspector.HeapSnapshotView.ComparisonPerspective());
     this._perspectives.push(new WebInspector.HeapSnapshotView.ContainmentPerspective());
-    if (WebInspector.settings.showAdvancedHeapSnapshotProperties.get())
-        this._perspectives.push(new WebInspector.HeapSnapshotView.DominatorPerspective());
     if (this._allocationView)
         this._perspectives.push(new WebInspector.HeapSnapshotView.AllocationPerspective());
     if (WebInspector.experimentsSettings.heapSnapshotStatistics.isEnabled())
@@ -361,40 +353,6 @@ WebInspector.HeapSnapshotView.ContainmentPerspective.prototype = {
     {
         return heapSnapshotView._containmentDataGrid;
     },
-   __proto__: WebInspector.HeapSnapshotView.Perspective.prototype
-}
-
-/**
- * @constructor
- * @extends {WebInspector.HeapSnapshotView.Perspective}
- */
-WebInspector.HeapSnapshotView.DominatorPerspective = function()
-{
-    WebInspector.HeapSnapshotView.Perspective.call(this,  WebInspector.UIString("Dominators"));
-}
-
-WebInspector.HeapSnapshotView.DominatorPerspective.prototype = {
-    /**
-     * @override
-     * @param {!WebInspector.HeapSnapshotView} heapSnapshotView
-     */
-    activate: function(heapSnapshotView)
-    {
-        heapSnapshotView._dominatorView.show(heapSnapshotView._splitView.mainElement());
-        heapSnapshotView._objectDetailsView.show(heapSnapshotView._splitView.sidebarElement());
-        heapSnapshotView._splitView.show(heapSnapshotView.element);
-    },
-
-    /**
-     * @override
-     * @param {!WebInspector.HeapSnapshotView} heapSnapshotView
-     * @return {?WebInspector.DataGrid}
-     */
-    masterGrid: function(heapSnapshotView)
-    {
-        return heapSnapshotView._dominatorDataGrid;
-    },
-
    __proto__: WebInspector.HeapSnapshotView.Perspective.prototype
 }
 

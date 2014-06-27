@@ -336,11 +336,6 @@ WebInspector.HeapSnapshotProxy.prototype = {
         this.callMethod(callback, "nodeClassName", snapshotObjectId);
     },
 
-    dominatorIdsForNode: function(nodeIndex, callback)
-    {
-        this.callMethod(callback, "dominatorIdsForNode", nodeIndex);
-    },
-
     /**
      * @param {number} nodeIndex
      * @return {!WebInspector.HeapSnapshotProviderProxy}
@@ -395,15 +390,6 @@ WebInspector.HeapSnapshotProxy.prototype = {
     createNodesProviderForClass: function(className, nodeFilter)
     {
         return this.callFactoryMethod(null, "createNodesProviderForClass", WebInspector.HeapSnapshotProviderProxy, className, nodeFilter);
-    },
-
-    /**
-     * @param {number} nodeIndex
-     * @return {?WebInspector.HeapSnapshotProviderProxy}
-     */
-    createNodesProviderForDominator: function(nodeIndex)
-    {
-        return this.callFactoryMethod(null, "createNodesProviderForDominator", WebInspector.HeapSnapshotProviderProxy, nodeIndex);
     },
 
     allocationTracesTops: function(callback)

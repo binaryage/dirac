@@ -1066,17 +1066,6 @@ WebInspector.HeapSnapshot.prototype = {
     },
 
     /**
-     * @param {!WebInspector.HeapSnapshotNode} node
-     * @return {!Uint32Array}
-     */
-    _dominatedNodesOfNode: function(node)
-    {
-        var dominatedIndexFrom = this._getDominatedIndex(node.nodeIndex);
-        var dominatedIndexTo = this._getDominatedIndex(node._nextNodeIndex());
-        return this._dominatedNodes.subarray(dominatedIndexFrom, dominatedIndexTo);
-    },
-
-    /**
      * @param {!WebInspector.HeapSnapshotCommon.NodeFilter} nodeFilter
      * @return {!Object.<string, !WebInspector.HeapSnapshotCommon.Aggregate>}
      */
@@ -1852,23 +1841,6 @@ WebInspector.HeapSnapshot.prototype = {
     },
 
     /**
-     * @param {string} snapshotObjectId
-     * @return {?Array.<string>}
-     */
-    dominatorIdsForNode: function(snapshotObjectId)
-    {
-        var node = this._nodeForSnapshotObjectId(snapshotObjectId);
-        if (!node)
-            return null;
-        var result = [];
-        while (!node.isRoot()) {
-            result.push(node.id());
-            node.nodeIndex = node.dominatorIndex();
-        }
-        return result;
-    },
-
-    /**
      * @param {number} nodeIndex
      * @return {!WebInspector.HeapSnapshotEdgesProvider}
      */
@@ -1957,16 +1929,6 @@ WebInspector.HeapSnapshot.prototype = {
     createNodesProviderForClass: function(className, nodeFilter)
     {
         return new WebInspector.HeapSnapshotNodesProvider(this, this.classNodesFilter(), this.aggregatesWithFilter(nodeFilter)[className].idxs);
-    },
-
-    /**
-     * @param {number} nodeIndex
-     * @return {!WebInspector.HeapSnapshotNodesProvider}
-     */
-    createNodesProviderForDominator: function(nodeIndex)
-    {
-        var node = this.createNode(nodeIndex);
-        return new WebInspector.HeapSnapshotNodesProvider(this, null, this._dominatedNodesOfNode(node));
     },
 
     /**

@@ -132,27 +132,13 @@ WebInspector.HeapSnapshotSortableDataGrid.prototype = {
         /**
          * @this {WebInspector.HeapSnapshotSortableDataGrid}
          */
-        function revealInDominatorsView()
-        {
-            this._dataDisplayDelegate.showObject(node.snapshotNodeId, "Dominators");
-        }
-
-        /**
-         * @this {WebInspector.HeapSnapshotSortableDataGrid}
-         */
         function revealInSummaryView()
         {
             this._dataDisplayDelegate.showObject(node.snapshotNodeId, "Summary");
         }
 
-        if (node instanceof WebInspector.HeapSnapshotRetainingObjectNode) {
+        if (node instanceof WebInspector.HeapSnapshotRetainingObjectNode)
             contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Reveal in Summary view" : "Reveal in Summary View"), revealInSummaryView.bind(this));
-            contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Reveal in Dominators view" : "Reveal in Dominators View"), revealInDominatorsView.bind(this));
-        } else if (node instanceof WebInspector.HeapSnapshotInstanceNode || node instanceof WebInspector.HeapSnapshotObjectNode) {
-            contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Reveal in Dominators view" : "Reveal in Dominators View"), revealInDominatorsView.bind(this));
-        } else if (node instanceof WebInspector.HeapSnapshotDominatorObjectNode) {
-            contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Reveal in Summary view" : "Reveal in Summary View"), revealInSummaryView.bind(this));
-        }
     },
 
     resetSortingCache: function()
@@ -968,105 +954,6 @@ WebInspector.HeapSnapshotDiffDataGrid.prototype = {
     },
 
     __proto__: WebInspector.HeapSnapshotViewportDataGrid.prototype
-}
-
-
-/**
- * @constructor
- * @extends {WebInspector.HeapSnapshotSortableDataGrid}
- * @param {!WebInspector.ProfileType.DataDisplayDelegate} dataDisplayDelegate
- */
-WebInspector.HeapSnapshotDominatorsDataGrid = function(dataDisplayDelegate)
-{
-    var columns = [
-        {id: "object", title: WebInspector.UIString("Object"), disclosure: true, sortable: true},
-        {id: "shallowSize", title: WebInspector.UIString("Shallow Size"), width: "120px", sortable: true},
-        {id: "retainedSize", title: WebInspector.UIString("Retained Size"), width: "120px", sort: WebInspector.DataGrid.Order.Descending, sortable: true}
-    ];
-    WebInspector.HeapSnapshotSortableDataGrid.call(this, dataDisplayDelegate, columns);
-    this._objectIdToSelect = null;
-}
-
-WebInspector.HeapSnapshotDominatorsDataGrid.prototype = {
-    /**
-     * @override
-     * @return {number}
-     */
-    defaultPopulateCount: function()
-    {
-        return 25;
-    },
-
-    setDataSource: function(snapshot)
-    {
-        this.snapshot = snapshot;
-
-        var fakeNode = new WebInspector.HeapSnapshotCommon.Node(-1, "", 0, this.snapshot.rootNodeIndex, 0, 0, "");
-        this.setRootNode(new WebInspector.HeapSnapshotDominatorObjectNode(this, fakeNode));
-        this.rootNode().sort();
-
-        if (this._objectIdToSelect) {
-            this.highlightObjectByHeapSnapshotId(this._objectIdToSelect, function(found) {});
-            this._objectIdToSelect = null;
-        }
-    },
-
-    sortingChanged: function()
-    {
-        this.rootNode().sort();
-    },
-
-    /**
-     * @override
-     * @param {!HeapProfilerAgent.HeapSnapshotObjectId} id
-     * @param {function(boolean)} callback
-     */
-    highlightObjectByHeapSnapshotId: function(id, callback)
-    {
-        if (!this.snapshot) {
-            this._objectIdToSelect = id;
-            callback(false);
-            return;
-        }
-
-        /**
-         * @this {WebInspector.HeapSnapshotDominatorsDataGrid}
-         */
-        function didGetDominators(dominatorIds)
-        {
-            if (!dominatorIds) {
-                console.error("Cannot find corresponding heap snapshot node");
-                callback(false);
-                return;
-            }
-            var dominatorNode = this.rootNode();
-            expandNextDominator.call(this, dominatorIds, dominatorNode);
-        }
-
-        /**
-         * @this {WebInspector.HeapSnapshotDominatorsDataGrid}
-         */
-        function expandNextDominator(dominatorIds, dominatorNode)
-        {
-            if (!dominatorNode) {
-                console.error("Cannot find dominator node");
-                callback(false);
-                return;
-            }
-            if (!dominatorIds.length) {
-                this.highlightNode(dominatorNode);
-                dominatorNode.element.scrollIntoViewIfNeeded(true);
-                callback(true);
-                return;
-            }
-            var snapshotObjectId = dominatorIds.pop();
-            dominatorNode.retrieveChildBySnapshotObjectId(snapshotObjectId, expandNextDominator.bind(this, dominatorIds));
-        }
-
-        this.snapshot.dominatorIdsForNode(parseInt(id, 10), didGetDominators.bind(this));
-    },
-
-    __proto__: WebInspector.HeapSnapshotSortableDataGrid.prototype
 }
 
 
