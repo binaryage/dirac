@@ -49,7 +49,7 @@ WebInspector.HeapSnapshotView = function(dataDisplayDelegate, profile)
     profile.profileType().addEventListener(WebInspector.HeapSnapshotProfileType.SnapshotReceived, this._onReceiveSnapshot, this);
     profile.profileType().addEventListener(WebInspector.ProfileType.Events.RemoveProfileHeader, this._onProfileHeaderRemoved, this);
 
-    if (profile._profileType.id === WebInspector.TrackingHeapSnapshotProfileType.TypeId) {
+    if (profile.profileType().id === WebInspector.TrackingHeapSnapshotProfileType.TypeId) {
         this._trackingOverviewGrid = new WebInspector.HeapTrackingOverviewGrid(profile);
         this._trackingOverviewGrid.addEventListener(WebInspector.HeapTrackingOverviewGrid.IdsRangeChanged, this._onIdsRangeChanged.bind(this));
     }
@@ -1374,7 +1374,7 @@ WebInspector.TrackingHeapSnapshotProfileType.prototype = {
          */
         function didTakeHeapSnapshot(error)
         {
-            var profile = this._profileBeingRecorded;
+            var profile = this.profileBeingRecorded();
             if (!profile)
                 return;
             profile._finishLoad();
@@ -1445,7 +1445,7 @@ WebInspector.TrackingHeapSnapshotProfileType.prototype = {
  */
 WebInspector.HeapProfileHeader = function(target, type, title, hasAllocationStacks)
 {
-    WebInspector.ProfileHeader.call(this, target, type, title || WebInspector.UIString("Snapshot %d", type._nextProfileUid));
+    WebInspector.ProfileHeader.call(this, target, type, title || WebInspector.UIString("Snapshot %d", type.nextProfileUid()));
     this._hasAllocationStacks = !!hasAllocationStacks;
     this.maxJSObjectId = -1;
     /**
@@ -1799,7 +1799,7 @@ WebInspector.HeapTrackingOverviewGrid = function(heapProfileHeader)
 
     this._profileSamples = heapProfileHeader._profileSamples;
     if (heapProfileHeader.profileType().profileBeingRecorded() === heapProfileHeader) {
-        this._profileType = heapProfileHeader._profileType;
+        this._profileType = heapProfileHeader.profileType();
         this._profileType.addEventListener(WebInspector.TrackingHeapSnapshotProfileType.HeapStatsUpdate, this._onHeapStatsUpdate, this);
         this._profileType.addEventListener(WebInspector.TrackingHeapSnapshotProfileType.TrackingStopped, this._onStopTracking, this);
     }

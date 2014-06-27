@@ -48,7 +48,7 @@ WebInspector.BottomUpProfileDataGridNode.prototype = {
      */
     _takePropertiesFromProfileDataGridNode: function(profileDataGridNode)
     {
-        this._save();
+        this.save();
 
         this.selfTime = profileDataGridNode.selfTime;
         this.totalTime = profileDataGridNode.totalTime;
@@ -60,18 +60,21 @@ WebInspector.BottomUpProfileDataGridNode.prototype = {
      */
     _keepOnlyChild: function(child)
     {
-        this._save();
+        this.save();
 
         this.removeChildren();
         this.appendChild(child);
     },
 
+    /**
+     * @param {number} aCallUID
+     */
     _exclude: function(aCallUID)
     {
         if (this._remainingNodeInfos)
             this.populate();
 
-        this._save();
+        this.save();
 
         var children = this.children;
         var index = this.children.length;
@@ -82,72 +85,38 @@ WebInspector.BottomUpProfileDataGridNode.prototype = {
         var child = this.childrenByCallUID[aCallUID];
 
         if (child)
-            this._merge(child, true);
+            this.merge(child, true);
     },
 
-    _restore: function()
+    /**
+     * @override
+     */
+    restore: function()
     {
-        WebInspector.ProfileDataGridNode.prototype._restore();
+        WebInspector.ProfileDataGridNode.prototype.restore.call(this);
 
         if (!this.children.length)
             this.hasChildren = this._willHaveChildren(this.profileNode);
     },
 
     /**
+     * @override
      * @param {!WebInspector.ProfileDataGridNode} child
      * @param {boolean} shouldAbsorb
      */
-    _merge: function(child, shouldAbsorb)
+    merge: function(child, shouldAbsorb)
     {
         this.selfTime -= child.selfTime;
 
-        WebInspector.ProfileDataGridNode.prototype._merge.call(this, child, shouldAbsorb);
+        WebInspector.ProfileDataGridNode.prototype.merge.call(this, child, shouldAbsorb);
     },
 
-    _sharedPopulate: function()
+    /**
+     * @override
+     */
+    populateChildren: function()
     {
-        var remainingNodeInfos = this._remainingNodeInfos;
-        var count = remainingNodeInfos.length;
-
-        for (var index = 0; index < count; ++index) {
-            var nodeInfo = remainingNodeInfos[index];
-            var ancestor = nodeInfo.ancestor;
-            var focusNode = nodeInfo.focusNode;
-            var child = this.findChild(ancestor);
-
-            // If we already have this child, then merge the data together.
-            if (child) {
-                var totalTimeAccountedFor = nodeInfo.totalTimeAccountedFor;
-
-                child.selfTime += focusNode.selfTime;
-
-                if (!totalTimeAccountedFor)
-                    child.totalTime += focusNode.totalTime;
-            } else {
-                // If not, add it as a true ancestor.
-                // In heavy mode, we take our visual identity from ancestor node...
-                child = new WebInspector.BottomUpProfileDataGridNode(ancestor, this.tree);
-
-                if (ancestor !== focusNode) {
-                    // but the actual statistics from the "root" node (bottom of the callstack).
-                    child.selfTime = focusNode.selfTime;
-                    child.totalTime = focusNode.totalTime;
-                }
-
-                this.appendChild(child);
-            }
-
-            var parent = ancestor.parent;
-            if (parent && parent.parent) {
-                nodeInfo.ancestor = parent;
-                child._remainingNodeInfos.push(nodeInfo);
-            }
-        }
-
-        for (var i = 0; i < this.children.length; ++i)
-            this.children[i].buildData();
-
-        delete this._remainingNodeInfos;
+        WebInspector.BottomUpProfileDataGridNode._sharedPopulate(this);
     },
 
     _willHaveChildren: function(profileNode)
@@ -158,6 +127,55 @@ WebInspector.BottomUpProfileDataGridNode.prototype = {
     },
 
     __proto__: WebInspector.ProfileDataGridNode.prototype
+}
+
+/**
+ * @param {!WebInspector.BottomUpProfileDataGridNode|!WebInspector.BottomUpProfileDataGridTree} container
+ */
+WebInspector.BottomUpProfileDataGridNode._sharedPopulate = function(container)
+{
+    var remainingNodeInfos = container._remainingNodeInfos;
+    var count = remainingNodeInfos.length;
+
+    for (var index = 0; index < count; ++index) {
+        var nodeInfo = remainingNodeInfos[index];
+        var ancestor = nodeInfo.ancestor;
+        var focusNode = nodeInfo.focusNode;
+        var child = container.findChild(ancestor);
+
+        // If we already have this child, then merge the data together.
+        if (child) {
+            var totalTimeAccountedFor = nodeInfo.totalTimeAccountedFor;
+
+            child.selfTime += focusNode.selfTime;
+
+            if (!totalTimeAccountedFor)
+                child.totalTime += focusNode.totalTime;
+        } else {
+            // If not, add it as a true ancestor.
+            // In heavy mode, we take our visual identity from ancestor node...
+            child = new WebInspector.BottomUpProfileDataGridNode(ancestor, container.tree);
+
+            if (ancestor !== focusNode) {
+                // But the actual statistics from the "root" node (bottom of the callstack).
+                child.selfTime = focusNode.selfTime;
+                child.totalTime = focusNode.totalTime;
+            }
+
+            container.appendChild(child);
+        }
+
+        var parent = ancestor.parent;
+        if (parent && parent.parent) {
+            nodeInfo.ancestor = parent;
+            child._remainingNodeInfos.push(nodeInfo);
+        }
+    }
+
+    for (var i = 0; i < container.children.length; ++i)
+        container.children[i].buildData();
+
+    delete container._remainingNodeInfos;
 }
 
 /**
@@ -222,9 +240,7 @@ WebInspector.BottomUpProfileDataGridTree = function(profileView, rootProfileNode
     }
 
     // Populate the top level nodes.
-    var any = /** @type {*} */(this);
-    var node = /** @type {!WebInspector.ProfileDataGridNode} */(any);
-    WebInspector.BottomUpProfileDataGridNode.prototype.populate.call(node);
+    WebInspector.ProfileDataGridNode.populate(this);
 
     return this;
 }
@@ -239,7 +255,7 @@ WebInspector.BottomUpProfileDataGridTree.prototype = {
         if (!profileDataGridNode)
             return;
 
-        this._save();
+        this.save();
 
         var currentNode = profileDataGridNode;
         var focusNode = profileDataGridNode;
@@ -266,7 +282,7 @@ WebInspector.BottomUpProfileDataGridTree.prototype = {
         if (!profileDataGridNode)
             return;
 
-        this._save();
+        this.save();
 
         var excludedCallUID = profileDataGridNode.callUID;
         var excludedTopLevelChild = this.childrenByCallUID[excludedCallUID];
@@ -290,7 +306,13 @@ WebInspector.BottomUpProfileDataGridTree.prototype = {
     {
     },
 
-    _sharedPopulate: WebInspector.BottomUpProfileDataGridNode.prototype._sharedPopulate,
+    /**
+     * @override
+     */
+    populateChildren: function()
+    {
+        WebInspector.BottomUpProfileDataGridNode._sharedPopulate(this);
+    },
 
     __proto__: WebInspector.ProfileDataGridTree.prototype
 }

@@ -682,7 +682,7 @@ WebInspector.CPUProfileType.prototype = {
  */
 WebInspector.CPUProfileHeader = function(target, type, title)
 {
-    WebInspector.ProfileHeader.call(this, target, type, title || WebInspector.UIString("Profile %d", type._nextProfileUid));
+    WebInspector.ProfileHeader.call(this, target, type, title || WebInspector.UIString("Profile %d", type.nextProfileUid()));
     this._tempFile = null;
 }
 

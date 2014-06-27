@@ -55,6 +55,14 @@ WebInspector.ProfileType.Events = {
 
 WebInspector.ProfileType.prototype = {
     /**
+     * @return {number}
+     */
+    nextProfileUid: function()
+    {
+        return this._nextProfileUid;
+    },
+
+    /**
      * @return {boolean}
      */
     hasTemporaryView: function()
