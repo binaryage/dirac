@@ -698,8 +698,17 @@ WebInspector.BreakpointManager.TargetBreakpoint.prototype = {
         this._resetLocations();
         if (!this._debuggerId)
             return;
-        this.target().debuggerModel.removeBreakpoint(this._debuggerId, callbackImmediately ? undefined : this._didRemoveFromDebugger.bind(this));
+        var debuggerId = this._debuggerId;
+        this.target().debuggerModel.removeBreakpoint(this._debuggerId, callbackImmediately ? undefined : didRemoveFromDebugger.bind(this));
 
+        /**
+         * @this {WebInspector.BreakpointManager.TargetBreakpoint}
+         */
+        function didRemoveFromDebugger()
+        {
+            if (this._debuggerId === debuggerId)
+                this._didRemoveFromDebugger();
+        }
         if (callbackImmediately)
             this._didRemoveFromDebugger();
     },
