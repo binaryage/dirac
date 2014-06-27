@@ -190,6 +190,19 @@
                 "hidden": true
             },
             {
+                "id": "Viewport",
+                "type": "object",
+                "description": "Visible page viewport",
+                "properties": [
+                    { "name": "scrollX", "type": "number", "description": "X scroll offset in CSS pixels." },
+                    { "name": "scrollY", "type": "number", "description": "Y scroll offset in CSS pixels." },
+                    { "name": "contentsWidth", "type": "number", "description": "Contents width in CSS pixels." },
+                    { "name": "contentsHeight", "type": "number", "description": "Contents height in CSS pixels." },
+                    { "name": "pageScaleFactor", "type": "number", "description": "Page scale factor." }
+                ],
+                "hidden": true
+            },
+            {
                 "id": "ScreencastFrameMetadata",
                 "type": "object",
                 "description": "Screencast frame metadata",
@@ -652,6 +665,14 @@
                 ],
                 "hidden": true,
                 "handlers": ["browser"]
+            },
+            {
+                "name": "viewportChanged",
+                "description": "Fired when a visible page viewport has changed.",
+                "parameters": [
+                    { "name": "viewport", "$ref": "Viewport", "description": "Viewport description." }
+                ],
+                "hidden": true
             }
         ]
     },

@@ -16,6 +16,7 @@ WebInspector.MediaQueryInspector = function()
     this._mediaThrottler = new WebInspector.Throttler(100);
 
     this._translateZero = 0;
+    this._offset = 0;
     this._scale = 1;
 
     this._rulerDecorationLayer = document.createElementWithClass("div", "fill");
@@ -106,13 +107,15 @@ WebInspector.MediaQueryInspector.prototype = {
 
     /**
      * @param {number} translate
+     * @param {number} offset
      * @param {number} scale
      */
-    setAxisTransform: function(translate, scale)
+    setAxisTransform: function(translate, offset, scale)
     {
-        if (this._translateZero === translate && Math.abs(this._scale - scale) < 1e-8)
+        if (this._translateZero === translate && this._offset === offset && Math.abs(this._scale - scale) < 1e-8)
             return;
         this._translateZero = translate;
+        this._offset = offset;
         this._scale = scale;
         this._renderMediaQueries();
     },
@@ -328,7 +331,7 @@ WebInspector.MediaQueryInspector.prototype = {
         for (var i = 0; i < thresholds.length; ++i) {
             var thresholdElement = this._rulerDecorationLayer.createChild("div", "media-inspector-threshold-serif");
             thresholdElement._value = thresholds[i];
-            thresholdElement.style.left = thresholds[i] / zoomFactor + "px";
+            thresholdElement.style.left = (thresholds[i] - this._offset) / zoomFactor + "px";
         }
     },
 
@@ -354,13 +357,13 @@ WebInspector.MediaQueryInspector.prototype = {
             "media-inspector-marker-min-width"
         ];
         markerElement.classList.add(styleClassPerSection[model.section()]);
-        var leftPixelValue = minWidthValue ? minWidthValue / zoomFactor + this._translateZero : 0;
+        var leftPixelValue = minWidthValue ? (minWidthValue - this._offset) / zoomFactor + this._translateZero : 0;
         markerElement.style.left = leftPixelValue + "px";
         var widthPixelValue = null;
         if (model.maxWidthExpression() && model.minWidthExpression())
             widthPixelValue = (model.maxWidthExpression().computedLength() - minWidthValue) / zoomFactor;
         else if (model.maxWidthExpression())
-            widthPixelValue = model.maxWidthExpression().computedLength() / zoomFactor + this._translateZero;
+            widthPixelValue = (model.maxWidthExpression().computedLength() - this._offset) / zoomFactor + this._translateZero;
         else
             markerElement.style.right = "0";
         if (typeof widthPixelValue === "number")

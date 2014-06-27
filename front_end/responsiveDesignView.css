@@ -376,6 +376,7 @@ body.platform-mac .responsive-design-toolbar select {
     right: 0px;
     top: 0px;
     background-color: transparent;
+    overflow: hidden;
 }
 
 .responsive-design-toggle-media-inspector .glyph {
