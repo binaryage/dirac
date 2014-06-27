@@ -118,7 +118,6 @@ WebInspector.SettingsUI.createSettingInputField = function(label, setting, numer
     if (validatorCallback) {
         errorMessageLabel = p.createChild("div");
         errorMessageLabel.classList.add("field-error-message");
-        validate();
     }
 
     function onInput()
@@ -166,6 +165,9 @@ WebInspector.SettingsUI.createSettingInputField = function(label, setting, numer
         inputElement.value = value;
     }
     onSettingChange();
+
+    if (validatorCallback)
+      validate();
 
     return p;
 }

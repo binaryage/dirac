@@ -91,7 +91,6 @@ WebInspector.OverridesSupport.Device = function(description, userAgent)
     this.width = 800;
     this.height = 600;
     this.deviceScaleFactor = 1;
-    this.textAutosizing = true;
     this.userAgent = userAgent;
     this.touch = true;
     this.viewport = true;
@@ -507,7 +506,6 @@ WebInspector.OverridesSupport.prototype = {
         this.settings.deviceWidth.set(device.width);
         this.settings.deviceHeight.set(device.height);
         this.settings.deviceScaleFactor.set(device.deviceScaleFactor);
-        this.settings.deviceTextAutosizing.set(device.textAutosizing);
         this.settings.emulateTouch.set(device.touch);
         this.settings.emulateViewport.set(device.viewport);
         delete this._deviceMetricsChangedListenerMuted;
@@ -526,7 +524,6 @@ WebInspector.OverridesSupport.prototype = {
         this.settings.userAgent.set("");
         this.settings.emulateResolution.set(false);
         this.settings.deviceScaleFactor.set(0);
-        this.settings.deviceTextAutosizing.set(false);
         this.settings.emulateTouch.set(false);
         this.settings.emulateViewport.set(false);
         this.settings.overrideDeviceOrientation.set(false);
@@ -552,7 +549,6 @@ WebInspector.OverridesSupport.prototype = {
             && this.settings.deviceWidth.get() === device.width
             && this.settings.deviceHeight.get() === device.height
             && this.settings.deviceScaleFactor.get() === device.deviceScaleFactor
-            && this.settings.deviceTextAutosizing.get() === device.textAutosizing
             && this.settings.emulateTouch.get() === device.touch
             && this.settings.emulateViewport.get() === device.viewport
             && this.settings.emulateResolution.get();
@@ -585,7 +581,6 @@ WebInspector.OverridesSupport.prototype = {
         this.settings.deviceWidth.addChangeListener(this._deviceMetricsChanged, this);
         this.settings.deviceHeight.addChangeListener(this._deviceMetricsChanged, this);
         this.settings.deviceScaleFactor.addChangeListener(this._deviceMetricsChanged, this);
-        this.settings.deviceTextAutosizing.addChangeListener(this._deviceMetricsChanged, this);
         this.settings.emulateViewport.addChangeListener(this._deviceMetricsChanged, this);
         this.settings.deviceFitWindow.addChangeListener(this._deviceMetricsChanged, this);
 
@@ -738,7 +733,6 @@ WebInspector.OverridesSupport.prototype = {
             PageAgent.setDeviceMetricsOverride(
                 overrideWidth, overrideHeight, this.settings.deviceScaleFactor.get(),
                 this.settings.emulateViewport.get(), this._pageResizer ? false : this.settings.deviceFitWindow.get(), scale, 0, 0,
-                this.settings.deviceTextAutosizing.get(), this._fontScaleFactor(overrideWidth || dipWidth, overrideHeight || dipHeight),
                 apiCallback.bind(this, finishCallback));
         }
 
@@ -919,7 +913,6 @@ WebInspector.OverridesSupport.prototype = {
         this.settings.deviceWidth = WebInspector.settings.createSetting("deviceWidth", 360);
         this.settings.deviceHeight = WebInspector.settings.createSetting("deviceHeight", 640);
         this.settings.deviceScaleFactor = WebInspector.settings.createSetting("deviceScaleFactor", 0);
-        this.settings.deviceTextAutosizing = WebInspector.settings.createSetting("deviceTextAutosizing", false);
         this.settings.deviceFitWindow = WebInspector.settings.createSetting("deviceFitWindow", true);
         // FIXME: rename viewport to mobile everywhere in the code.
         this.settings.emulateViewport = WebInspector.settings.createSetting("emulateViewport", false);
@@ -977,45 +970,6 @@ WebInspector.OverridesSupport.prototype = {
     },
 
     /**
-     * Compute the font scale factor.
-     *
-     * Chromium on Android uses a device scale adjustment for fonts used in text autosizing for
-     * improved legibility. This function computes this adjusted value for text autosizing.
-     *
-     * For a description of the Android device scale adjustment algorithm, see:
-     *     chrome/browser/chrome_content_browser_client.cc, GetFontScaleMultiplier(...)
-     *
-     * @param {number} width
-     * @param {number} height
-     * @return {number} font scale factor.
-     */
-    _fontScaleFactor: function(width, height)
-    {
-        if (!this.emulationEnabled())
-            return 1;
-        var deviceScaleFactor = this.settings.deviceScaleFactor.get();
-
-        if (!width || !height || !deviceScaleFactor)
-            return 1;
-
-        var minWidth = Math.min(width, height) / deviceScaleFactor;
-
-        var kMinFSM = 1.05;
-        var kWidthForMinFSM = 320;
-        var kMaxFSM = 1.3;
-        var kWidthForMaxFSM = 800;
-
-        if (minWidth <= kWidthForMinFSM)
-            return kMinFSM;
-        if (minWidth >= kWidthForMaxFSM)
-            return kMaxFSM;
-
-        // The font scale multiplier varies linearly between kMinFSM and kMaxFSM.
-        var ratio = (minWidth - kWidthForMinFSM) / (kWidthForMaxFSM - kWidthForMinFSM);
-        return ratio * (kMaxFSM - kMinFSM) + kMinFSM;
-    },
-
-    /**
      * @param {!Document} document
      * @return {!Element}
      */
@@ -1055,7 +1009,6 @@ WebInspector.OverridesSupport.prototype = {
         WebInspector.overridesSupport.settings.deviceWidth.addChangeListener(emulatedSettingChanged);
         WebInspector.overridesSupport.settings.deviceHeight.addChangeListener(emulatedSettingChanged);
         WebInspector.overridesSupport.settings.deviceScaleFactor.addChangeListener(emulatedSettingChanged);
-        WebInspector.overridesSupport.settings.deviceTextAutosizing.addChangeListener(emulatedSettingChanged);
         WebInspector.overridesSupport.settings.emulateViewport.addChangeListener(emulatedSettingChanged);
         WebInspector.overridesSupport.settings.emulateTouch.addChangeListener(emulatedSettingChanged);
         WebInspector.overridesSupport.settings.userAgent.addChangeListener(emulatedSettingChanged);

@@ -178,8 +178,7 @@ WebInspector.OverridesView.DeviceTab = function()
     WebInspector.OverridesView.Tab.call(this, "device", WebInspector.UIString("Device"),  [
         WebInspector.overridesSupport.settings.emulateResolution,
         WebInspector.overridesSupport.settings.deviceScaleFactor,
-        WebInspector.overridesSupport.settings.emulateViewport,
-        WebInspector.overridesSupport.settings.deviceTextAutosizing
+        WebInspector.overridesSupport.settings.emulateViewport
     ]);
     this.element.classList.add("overrides-device");
 
@@ -232,13 +231,8 @@ WebInspector.OverridesView.DeviceTab.prototype = {
         rowElement.createChild("td").appendChild(WebInspector.SettingsUI.createSettingInputField("", WebInspector.overridesSupport.settings.deviceScaleFactor, true, 4, "80px", WebInspector.OverridesSupport.deviceScaleFactorValidator, true, true, WebInspector.UIString("\u2013")));
 
         var viewportCheckbox = this._createSettingCheckbox(WebInspector.UIString("Emulate mobile"), WebInspector.overridesSupport.settings.emulateViewport);
-        viewportCheckbox.title = WebInspector.UIString("Enable meta viewport, overlay scrollbars and default 980px body width");
+        viewportCheckbox.title = WebInspector.UIString("Enable meta viewport, overlay scrollbars, text autosizing and default 980px body width");
         fieldsetElement.appendChild(viewportCheckbox);
-
-        // FIXME: move text autosizing to the "misc" tab together with css media, and separate it from device emulation.
-        var textAutosizingOverrideElement = this._createSettingCheckbox(WebInspector.UIString("Enable text autosizing "), WebInspector.overridesSupport.settings.deviceTextAutosizing);
-        textAutosizingOverrideElement.title = WebInspector.UIString("Text autosizing is the feature that boosts font sizes on mobile devices.");
-        fieldsetElement.appendChild(textAutosizingOverrideElement);
 
         fieldsetElement.appendChild(this._createSettingCheckbox(WebInspector.UIString("Shrink to fit"), WebInspector.overridesSupport.settings.deviceFitWindow));
 
