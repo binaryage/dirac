@@ -116,7 +116,7 @@ WebInspector.SourcesPanel = function(workspaceForTest)
     this.sidebarPanes.callstack.registerShortcuts(this.registerShortcuts.bind(this));
 
     this.sidebarPanes.scopechain = new WebInspector.ScopeChainSidebarPane();
-    this.sidebarPanes.jsBreakpoints = new WebInspector.JavaScriptBreakpointsSidebarPane(WebInspector.debuggerModel, WebInspector.breakpointManager, this.showUISourceCode.bind(this));
+    this.sidebarPanes.jsBreakpoints = new WebInspector.JavaScriptBreakpointsSidebarPane(WebInspector.breakpointManager, this.showUISourceCode.bind(this));
     this.sidebarPanes.domBreakpoints = WebInspector.domBreakpointsSidebarPane.createProxy(this);
     this.sidebarPanes.xhrBreakpoints = new WebInspector.XHRBreakpointsSidebarPane();
     this.sidebarPanes.eventListenerBreakpoints = new WebInspector.EventListenerBreakpointsSidebarPane();
@@ -136,6 +136,7 @@ WebInspector.SourcesPanel = function(workspaceForTest)
     WebInspector.settings.pauseOnExceptionEnabled.addChangeListener(this._pauseOnExceptionEnabledChanged, this);
     WebInspector.targetManager.observeTargets(this);
     this._setTarget(WebInspector.context.flavor(WebInspector.Target));
+    WebInspector.breakpointManager.addEventListener(WebInspector.BreakpointManager.Events.BreakpointsActiveStateChanged, this._breakpointsActiveStateChanged, this);
     WebInspector.context.addFlavorChangeListener(WebInspector.Target, this._onCurrentTargetChanged, this);
 }
 
@@ -153,7 +154,6 @@ WebInspector.SourcesPanel.prototype = {
         target.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.DebuggerResumed, this._debuggerResumed, this);
         target.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.CallFrameSelected, this._callFrameSelected, this);
         target.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.ConsoleCommandEvaluatedInSelectedCallFrame, this._consoleCommandEvaluatedInSelectedCallFrame, this);
-        target.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.BreakpointsActiveStateChanged, this._breakpointsActiveStateChanged, this);
         target.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.GlobalObjectCleared, this._debuggerReset, this);
     },
 
@@ -168,7 +168,6 @@ WebInspector.SourcesPanel.prototype = {
         target.debuggerModel.removeEventListener(WebInspector.DebuggerModel.Events.DebuggerResumed, this._debuggerResumed, this);
         target.debuggerModel.removeEventListener(WebInspector.DebuggerModel.Events.CallFrameSelected, this._callFrameSelected, this);
         target.debuggerModel.removeEventListener(WebInspector.DebuggerModel.Events.ConsoleCommandEvaluatedInSelectedCallFrame, this._consoleCommandEvaluatedInSelectedCallFrame, this);
-        target.debuggerModel.removeEventListener(WebInspector.DebuggerModel.Events.BreakpointsActiveStateChanged, this._breakpointsActiveStateChanged, this);
         target.debuggerModel.removeEventListener(WebInspector.DebuggerModel.Events.GlobalObjectCleared, this._debuggerReset, this);
     },
 
@@ -257,7 +256,10 @@ WebInspector.SourcesPanel.prototype = {
 
     _consoleCommandEvaluatedInSelectedCallFrame: function(event)
     {
-        this.sidebarPanes.scopechain.update(WebInspector.debuggerModel.selectedCallFrame());
+        var target = /** @type {!WebInspector.Target} */  (event.target.target());
+        if (WebInspector.context.flavor(WebInspector.Target) !== target)
+            return;
+        this.sidebarPanes.scopechain.update(target.debuggerModel.selectedCallFrame());
     },
 
     /**
@@ -699,7 +701,7 @@ WebInspector.SourcesPanel.prototype = {
 
     _toggleBreakpointsClicked: function(event)
     {
-        WebInspector.debuggerModel.setBreakpointsActive(!WebInspector.debuggerModel.breakpointsActive());
+        WebInspector.breakpointManager.setBreakpointsActive(!WebInspector.breakpointManager.breakpointsActive());
     },
 
     _breakpointsActiveStateChanged: function(event)

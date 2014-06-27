@@ -47,7 +47,6 @@ WebInspector.DebuggerModel = function(target)
     /** @type {!StringMap.<!Array.<!WebInspector.Script>>} */
     this._scriptsBySourceURL = new StringMap();
 
-    this._breakpointsActive = true;
     /** @type {!WebInspector.Object} */
     this._breakpointResolvedEventTarget = new WebInspector.Object();
 
@@ -86,7 +85,6 @@ WebInspector.DebuggerModel.Events = {
     GlobalObjectCleared: "GlobalObjectCleared",
     CallFrameSelected: "CallFrameSelected",
     ConsoleCommandEvaluatedInSelectedCallFrame: "ConsoleCommandEvaluatedInSelectedCallFrame",
-    BreakpointsActiveStateChanged: "BreakpointsActiveStateChanged"
 }
 
 WebInspector.DebuggerModel.BreakReason = {
@@ -645,26 +643,6 @@ WebInspector.DebuggerModel.prototype = {
             pendingRequests++;
             object.getAllProperties(false, propertiesCollected);
         }
-    },
-
-    /**
-     * @param {boolean} active
-     */
-    setBreakpointsActive: function(active)
-    {
-        if (this._breakpointsActive === active)
-            return;
-        this._breakpointsActive = active;
-        this._agent.setBreakpointsActive(active);
-        this.dispatchEventToListeners(WebInspector.DebuggerModel.Events.BreakpointsActiveStateChanged, active);
-    },
-
-    /**
-     * @return {boolean}
-     */
-    breakpointsActive: function()
-    {
-        return this._breakpointsActive;
     },
 
     /**
