@@ -422,7 +422,8 @@ WebInspector.JavaScriptSourceFrame.prototype = {
 
     _getPopoverAnchor: function(element, event)
     {
-        if (!WebInspector.debuggerModel.isPaused())
+        var target = WebInspector.context.flavor(WebInspector.Target);
+        if (!target || !target.debuggerModel.isPaused())
             return null;
 
         var textPosition = this.textEditor.coordinatesToCursorPosition(event.x, event.y);
@@ -473,7 +474,8 @@ WebInspector.JavaScriptSourceFrame.prototype = {
 
     _resolveObjectForPopover: function(anchorBox, showCallback, objectGroupName)
     {
-        if (!WebInspector.debuggerModel.isPaused()) {
+        var target = WebInspector.context.flavor(WebInspector.Target);
+        if (!target || !target.debuggerModel.isPaused()) {
             this._popoverHelper.hidePopover();
             return;
         }
@@ -492,7 +494,7 @@ WebInspector.JavaScriptSourceFrame.prototype = {
             }
         }
         var evaluationText = line.substring(startHighlight, endHighlight + 1);
-        var selectedCallFrame = WebInspector.debuggerModel.selectedCallFrame();
+        var selectedCallFrame = target.debuggerModel.selectedCallFrame();
         selectedCallFrame.evaluate(evaluationText, objectGroupName, false, true, false, false, showObjectPopover.bind(this));
 
         /**
@@ -502,12 +504,13 @@ WebInspector.JavaScriptSourceFrame.prototype = {
          */
         function showObjectPopover(result, wasThrown)
         {
-            if (!WebInspector.debuggerModel.isPaused() || !result) {
+            var target = WebInspector.context.flavor(WebInspector.Target);
+            if (selectedCallFrame.target() != target || !target.debuggerModel.isPaused() || !result) {
                 this._popoverHelper.hidePopover();
                 return;
             }
             this._popoverAnchorBox = anchorBox;
-            showCallback(selectedCallFrame.target().runtimeModel.createRemoteObject(result), wasThrown, this._popoverAnchorBox);
+            showCallback(target.runtimeModel.createRemoteObject(result), wasThrown, this._popoverAnchorBox);
             // Popover may have been removed by showCallback().
             if (this._popoverAnchorBox) {
                 var highlightRange = new WebInspector.TextRange(lineNumber, startHighlight, lineNumber, endHighlight);
