@@ -387,7 +387,7 @@ WebInspector.WorkspaceSettingsTab = function()
 
     this._editFileSystemButton = this._addFileSystemRowElement.createChild("input", "settings-tab-text-button");
     this._editFileSystemButton.type = "button";
-    this._editFileSystemButton.value = WebInspector.UIString("Edit\u2026");
+    this._editFileSystemButton.value = WebInspector.UIString("Folder options\u2026");
     this._editFileSystemButton.addEventListener("click", this._editFileSystemClicked.bind(this), false);
     this._updateEditFileSystemButtonState();
 
