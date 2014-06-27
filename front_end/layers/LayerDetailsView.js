@@ -60,6 +60,7 @@ WebInspector.LayerDetailsView.CompositingReasonDetail = {
     "animation": WebInspector.UIString("Composition due to association with an animated element."),
     "filters": WebInspector.UIString("Composition due to association with an element with CSS filters applied."),
     "positionFixed": WebInspector.UIString("Composition due to association with an element with a \"position: fixed\" style."),
+    // FIXME: Can we remove this entry now that position: sticky has been removed?
     "positionSticky": WebInspector.UIString("Composition due to association with an element with a \"position: sticky\" style."),
     "overflowScrollingTouch": WebInspector.UIString("Composition due to association with an element with a \"overflow-scrolling: touch\" style."),
     "blending": WebInspector.UIString("Composition due to association with an element that has blend mode other than \"normal\"."),
