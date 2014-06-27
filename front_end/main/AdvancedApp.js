@@ -172,6 +172,7 @@ WebInspector.Toolbox = function()
     WebInspector.domModel = window.opener.WebInspector.domModel;
     WebInspector.workspace = window.opener.WebInspector.workspace;
     WebInspector.Revealer = window.opener.WebInspector.Revealer;
+    WebInspector.ContextMenu = window.opener.WebInspector.ContextMenu;
     WebInspector.installPortStyles();
 
     var advancedApp = /** @type {!WebInspector.AdvancedApp} */ (window.opener.WebInspector.app);
