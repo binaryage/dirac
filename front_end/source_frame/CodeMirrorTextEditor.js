@@ -83,8 +83,10 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
         "Ctrl-Down": "goDocEnd",
         "Ctrl-Left": "goGroupLeft",
         "Ctrl-Right": "goGroupRight",
-        "Alt-Left": "goLineStart",
-        "Alt-Right": "goLineEnd",
+        "Alt-Left": "moveCamelLeft",
+        "Alt-Right": "moveCamelRight",
+        "Shift-Alt-Left": "selectCamelLeft",
+        "Shift-Alt-Right": "selectCamelRight",
         "Ctrl-Backspace": "delGroupBefore",
         "Ctrl-Delete": "delGroupAfter",
         "Ctrl-/": "toggleComment",
@@ -101,6 +103,10 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
         "Cmd-Down": "goDocEnd",
         "Alt-Left": "goGroupLeft",
         "Alt-Right": "goGroupRight",
+        "Ctrl-Left": "moveCamelLeft",
+        "Ctrl-Right": "moveCamelRight",
+        "Shift-Ctrl-Left": "selectCamelLeft",
+        "Shift-Ctrl-Right": "selectCamelRight",
         "Cmd-Left": "goLineStartSmart",
         "Cmd-Right": "goLineEnd",
         "Alt-Backspace": "delGroupBefore",
@@ -200,6 +206,28 @@ WebInspector.CodeMirrorTextEditor.selectNextOccurrenceCommand = function(codeMir
 CodeMirror.commands.selectNextOccurrence = WebInspector.CodeMirrorTextEditor.selectNextOccurrenceCommand;
 
 /**
+ * @param {boolean} shift
+ * @param {!CodeMirror} codeMirror
+ */
+WebInspector.CodeMirrorTextEditor.moveCamelLeftCommand = function(shift, codeMirror)
+{
+    codeMirror._codeMirrorTextEditor._doCamelCaseMovement(-1, shift);
+}
+CodeMirror.commands.moveCamelLeft = WebInspector.CodeMirrorTextEditor.moveCamelLeftCommand.bind(null, false);
+CodeMirror.commands.selectCamelLeft = WebInspector.CodeMirrorTextEditor.moveCamelLeftCommand.bind(null, true);
+
+/**
+ * @param {boolean} shift
+ * @param {!CodeMirror} codeMirror
+ */
+WebInspector.CodeMirrorTextEditor.moveCamelRightCommand = function(shift, codeMirror)
+{
+    codeMirror._codeMirrorTextEditor._doCamelCaseMovement(1, shift);
+}
+CodeMirror.commands.moveCamelRight = WebInspector.CodeMirrorTextEditor.moveCamelRightCommand.bind(null, false);
+CodeMirror.commands.selectCamelRight = WebInspector.CodeMirrorTextEditor.moveCamelRightCommand.bind(null, true);
+
+/**
  * @param {!CodeMirror} codeMirror
  */
 CodeMirror.commands.smartNewlineAndIndent = function(codeMirror)
@@ -272,6 +300,154 @@ WebInspector.CodeMirrorTextEditor.MaximumNumberOfWhitespacesPerSingleSpan = 16;
 WebInspector.CodeMirrorTextEditor.MaxEditableTextSize = 1024 * 1024 * 10;
 
 WebInspector.CodeMirrorTextEditor.prototype = {
+    /**
+     * @param {number} lineNumber
+     * @param {number} lineLength
+     * @param {number} charNumber
+     * @return {{lineNumber: number, columnNumber: number}}
+     */
+    _normalizePositionForOverlappingColumn: function(lineNumber, lineLength, charNumber)
+    {
+        var linesCount = this._codeMirror.lineCount();
+        var columnNumber = charNumber;
+        if (charNumber < 0 && lineNumber > 0) {
+            --lineNumber;
+            columnNumber = this.line(lineNumber).length;
+        } else if (charNumber >= lineLength && lineNumber < linesCount - 1) {
+            ++lineNumber;
+            columnNumber = 0;
+        } else {
+            columnNumber = Number.constrain(charNumber, 0, lineLength);
+        }
+        return {
+            lineNumber: lineNumber,
+            columnNumber: columnNumber
+        };
+    },
+
+    /**
+     * @param {number} lineNumber
+     * @param {number} columnNumber
+     * @param {number} direction
+     * @return {{lineNumber: number, columnNumber: number}}
+     */
+    _camelCaseMoveFromPosition: function(lineNumber, columnNumber, direction)
+    {
+        /**
+         * @param {number} charNumber
+         * @param {number} length
+         * @return {boolean}
+         */
+        function valid(charNumber, length)
+        {
+            return charNumber >= 0 && charNumber < length;
+        }
+
+        /**
+         * @param {string} text
+         * @param {number} charNumber
+         * @return {boolean}
+         */
+        function isWordStart(text, charNumber)
+        {
+            var position = charNumber;
+            var nextPosition = charNumber + 1;
+            return valid(position, text.length) && valid(nextPosition, text.length)
+                && WebInspector.TextUtils.isWordChar(text[position]) && WebInspector.TextUtils.isWordChar(text[nextPosition])
+                && WebInspector.TextUtils.isUpperCase(text[position]) && WebInspector.TextUtils.isLowerCase(text[nextPosition]);
+        }
+
+        /**
+         * @param {string} text
+         * @param {number} charNumber
+         * @return {boolean}
+         */
+        function isWordEnd(text, charNumber)
+        {
+            var position = charNumber;
+            var prevPosition = charNumber - 1;
+            return valid(position, text.length) && valid(prevPosition, text.length)
+                && WebInspector.TextUtils.isWordChar(text[position]) && WebInspector.TextUtils.isWordChar(text[prevPosition])
+                && WebInspector.TextUtils.isUpperCase(text[position]) && WebInspector.TextUtils.isLowerCase(text[prevPosition]);
+        }
+
+        /**
+         * @param {number} lineNumber
+         * @param {number} lineLength
+         * @param {number} columnNumber
+         * @return {{lineNumber: number, columnNumber: number}}
+         */
+        function constrainPosition(lineNumber, lineLength, columnNumber)
+        {
+            return {
+                lineNumber: lineNumber,
+                columnNumber: Number.constrain(columnNumber, 0, lineLength)
+            };
+        }
+
+        var text = this.line(lineNumber);
+        var length = text.length;
+
+        if ((columnNumber === length && direction === 1)
+            || (columnNumber === 0 && direction === -1))
+            return this._normalizePositionForOverlappingColumn(lineNumber, length, columnNumber + direction);
+
+        var charNumber = direction === 1 ? columnNumber : columnNumber - 1;
+
+        // Move through initial spaces if any.
+        while (valid(charNumber, length) && WebInspector.TextUtils.isSpaceChar(text[charNumber]))
+            charNumber += direction;
+        if (!valid(charNumber, length))
+            return constrainPosition(lineNumber, length, charNumber);
+
+        if (WebInspector.TextUtils.isStopChar(text[charNumber])) {
+            while (valid(charNumber, length) && WebInspector.TextUtils.isStopChar(text[charNumber]))
+                charNumber += direction;
+            if (!valid(charNumber, length))
+                return constrainPosition(lineNumber, length, charNumber);
+            return {
+                lineNumber: lineNumber,
+                columnNumber: direction === -1 ? charNumber + 1 : charNumber
+            };
+        }
+
+        charNumber += direction;
+        while (valid(charNumber, length) && !isWordStart(text, charNumber) && !isWordEnd(text, charNumber) && WebInspector.TextUtils.isWordChar(text[charNumber]))
+            charNumber += direction;
+
+        if (!valid(charNumber, length))
+            return constrainPosition(lineNumber, length, charNumber);
+        if (isWordStart(text, charNumber) || isWordEnd(text, charNumber)) {
+            return {
+                lineNumber: lineNumber,
+                columnNumber: charNumber
+            };
+        }
+
+        return {
+            lineNumber: lineNumber,
+            columnNumber: direction === -1 ? charNumber + 1 : charNumber
+        };
+    },
+
+    /**
+     * @param {number} direction
+     * @param {boolean} shift
+     */
+    _doCamelCaseMovement: function(direction, shift)
+    {
+        var selections = this.selections();
+        for (var i = 0; i < selections.length; ++i) {
+            var selection = selections[i];
+            var move = this._camelCaseMoveFromPosition(selection.endLine, selection.endColumn, direction);
+            selection.endLine = move.lineNumber;
+            selection.endColumn = move.columnNumber;
+            if (!shift)
+                selections[i] = selection.collapseToEnd();
+        }
+        this.setSelections(selections);
+    },
+
     dispose: function()
     {
         WebInspector.settings.textEditorIndent.removeChangeListener(this._updateEditorIndentation, this);

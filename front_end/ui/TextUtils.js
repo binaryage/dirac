@@ -153,6 +153,24 @@ WebInspector.TextUtils = {
             }
         }
         return -1;
+    },
+
+    /**
+     * @param {string} text
+     * @return {boolean}
+     */
+    isUpperCase: function(text)
+    {
+        return text === text.toUpperCase();
+    },
+
+    /**
+     * @param {string} text
+     * @return {boolean}
+     */
+    isLowerCase: function(text)
+    {
+        return text === text.toLowerCase();
     }
 }
 
