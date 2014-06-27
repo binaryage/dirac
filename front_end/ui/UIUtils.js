@@ -317,7 +317,7 @@ WebInspector._modifiedFloatNumber = function(number, event)
   * @param {!Element} element
   * @param {function(string,string)=} finishHandler
   * @param {function(string)=} suggestionHandler
-  * @param {function(number):number=} customNumberHandler
+  * @param {function(string, number, string):string=} customNumberHandler
   * @return {boolean}
  */
 WebInspector.handleElementValueModifications = function(event, element, finishHandler, suggestionHandler, customNumberHandler)
@@ -352,10 +352,7 @@ WebInspector.handleElementValueModifications = function(event, element, finishHa
         suffix = matches[3];
         number = WebInspector._modifiedHexValue(matches[2], event);
 
-        if (customNumberHandler)
-            number = customNumberHandler(number);
-
-        replacementString = prefix + number + suffix;
+        replacementString = customNumberHandler ? customNumberHandler(prefix, number, suffix) : prefix + number + suffix;
     } else {
         matches = /(.*?)(-?(?:\d+(?:\.\d+)?|\.\d+))(.*)/.exec(wordString);
         if (matches && matches.length) {
@@ -367,10 +364,7 @@ WebInspector.handleElementValueModifications = function(event, element, finishHa
             if (number === null)
                 return false;
 
-            if (customNumberHandler)
-                number = customNumberHandler(number);
-
-            replacementString = prefix + number + suffix;
+            replacementString = customNumberHandler ? customNumberHandler(prefix, number, suffix) : prefix + number + suffix;
         }
     }
 

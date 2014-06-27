@@ -375,11 +375,17 @@ WebInspector.MetricsSidebarPane.prototype = {
             this._applyUserInput(element, replacementString, originalValue, context, false);
         }
 
-        function customNumberHandler(number)
+        /**
+         * @param {string} prefix
+         * @param {number} number
+         * @param {string} suffix
+         * @return {string}
+         */
+        function customNumberHandler(prefix, number, suffix)
         {
             if (styleProperty !== "margin" && number < 0)
                 number = 0;
-            return number;
+            return prefix + number + suffix;
         }
 
         WebInspector.handleElementValueModifications(event, element, finishHandler.bind(this), undefined, customNumberHandler);

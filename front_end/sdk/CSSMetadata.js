@@ -89,6 +89,17 @@ WebInspector.CSSMetadata.colors = function()
     return WebInspector.CSSMetadata._colorsKeySet;
 }
 
+/**
+ * @param {string} propertyName
+ * @return {boolean}
+ */
+WebInspector.CSSMetadata.isLengthProperty = function(propertyName)
+{
+    if (!WebInspector.CSSMetadata._distancePropertiesKeySet)
+        WebInspector.CSSMetadata._distancePropertiesKeySet = WebInspector.CSSMetadata._distanceProperties.keySet();
+    return WebInspector.CSSMetadata._distancePropertiesKeySet[propertyName] || propertyName.startsWith("margin") || propertyName.startsWith("padding") || propertyName.indexOf("width") !== -1 || propertyName.indexOf("height") !== -1;
+}
+
 // Taken from http://www.w3.org/TR/CSS21/propidx.html.
 WebInspector.CSSMetadata.InheritedProperties = [
     "azimuth", "border-collapse", "border-spacing", "caption-side", "color", "cursor", "direction", "elevation",
@@ -149,6 +160,11 @@ WebInspector.CSSMetadata._colors = [
     "royalblue", "saddlebrown", "salmon", "sandybrown", "seagreen", "seashell", "sienna", "skyblue", "slateblue",
     "slategray", "slategrey", "snow", "springgreen", "steelblue", "tan", "thistle", "tomato", "turquoise", "violet",
     "wheat", "whitesmoke", "yellowgreen"
+];
+
+WebInspector.CSSMetadata._distanceProperties = [
+    'background-position', 'border-spacing', 'bottom', 'font-size', 'height', 'left', 'letter-spacing', 'line-height', 'max-height', 'max-width', 'min-height',
+    'min-width', 'right', 'text-indent', 'top', 'width', 'word-spacing'
 ];
 
 WebInspector.CSSMetadata._colorAwareProperties = [

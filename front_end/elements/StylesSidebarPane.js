@@ -3285,8 +3285,22 @@ WebInspector.StylesSidebarPane.CSSPropertyPrompt.prototype = {
             this._sidebarPane.applyStyleText(this._sidebarPane.nameElement.textContent + ": " + this._sidebarPane.valueElement.textContent, false, false, false);
         }
 
+        /**
+         * @param {string} prefix
+         * @param {number} number
+         * @param {string} suffix
+         * @return {string}
+         * @this {WebInspector.StylesSidebarPane.CSSPropertyPrompt}
+         */
+        function customNumberHandler(prefix, number, suffix)
+        {
+            if (number !== 0 && !suffix.length && WebInspector.CSSMetadata.isLengthProperty(this._sidebarPane.property.name))
+                suffix = "px";
+            return prefix + number + suffix;
+        }
+
         // Handle numeric value increment/decrement only at this point.
-        if (!this._isEditingName && WebInspector.handleElementValueModifications(event, this._sidebarPane.valueElement, finishHandler.bind(this), this._isValueSuggestion.bind(this)))
+        if (!this._isEditingName && WebInspector.handleElementValueModifications(event, this._sidebarPane.valueElement, finishHandler.bind(this), this._isValueSuggestion.bind(this), customNumberHandler.bind(this)))
             return true;
 
         return false;
