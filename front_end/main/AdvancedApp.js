@@ -171,6 +171,7 @@ WebInspector.Toolbox = function()
     WebInspector.cssModel = window.opener.WebInspector.cssModel;
     WebInspector.domModel = window.opener.WebInspector.domModel;
     WebInspector.workspace = window.opener.WebInspector.workspace;
+    WebInspector.resourceTreeModel = window.opener.WebInspector.resourceTreeModel;
     WebInspector.Revealer = window.opener.WebInspector.Revealer;
     WebInspector.ContextMenu = window.opener.WebInspector.ContextMenu;
     WebInspector.installPortStyles();
