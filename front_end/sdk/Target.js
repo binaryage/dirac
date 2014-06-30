@@ -149,6 +149,9 @@ WebInspector.Target.prototype = {
         /** @type {!WebInspector.DebuggerScriptMapping} */
         this.debuggerScriptMapping = new WebInspector.DebuggerScriptMapping(this.debuggerModel, WebInspector.workspace, WebInspector.networkWorkspaceBinding);
 
+        /** @type {!WebInspector.HeapProfilerModel} */
+        this.heapProfilerModel = new WebInspector.HeapProfilerModel(this);
+
         if (callback)
             callback(this);
     },

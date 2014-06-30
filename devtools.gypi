@@ -109,6 +109,7 @@
             'front_end/sdk/InspectorBackend.js',
             'front_end/sdk/IsolatedFileSystemManager.js',
             'front_end/sdk/IsolatedFileSystem.js',
+            'front_end/sdk/HeapProfilerModel.js',
             'front_end/sdk/LayerTreeModel.js',
             'front_end/sdk/Linkifier.js',
             'front_end/sdk/LiveEditSupport.js',

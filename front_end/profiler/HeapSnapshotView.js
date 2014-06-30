@@ -1008,97 +1008,42 @@ WebInspector.HeapSnapshotView.prototype = {
 
 /**
  * @constructor
- * @implements {HeapProfilerAgent.Dispatcher}
- */
-WebInspector.HeapProfilerDispatcher = function()
-{
-    this._dispatchers = [];
-    InspectorBackend.registerHeapProfilerDispatcher(this);
-}
-
-WebInspector.HeapProfilerDispatcher.prototype = {
-    /**
-     * @param {!HeapProfilerAgent.Dispatcher} dispatcher
-     */
-    register: function(dispatcher)
-    {
-        this._dispatchers.push(dispatcher);
-    },
-
-    _genericCaller: function(eventName)
-    {
-        var args = Array.prototype.slice.call(arguments.callee.caller.arguments);
-        for (var i = 0; i < this._dispatchers.length; ++i)
-            this._dispatchers[i][eventName].apply(this._dispatchers[i], args);
-    },
-
-    /**
-     * @override
-     * @param {!Array.<number>} samples
-     */
-    heapStatsUpdate: function(samples)
-    {
-        this._genericCaller("heapStatsUpdate");
-    },
-
-    /**
-     * @override
-     * @param {number} lastSeenObjectId
-     * @param {number} timestamp
-     */
-    lastSeenObjectId: function(lastSeenObjectId, timestamp)
-    {
-        this._genericCaller("lastSeenObjectId");
-    },
-
-    /**
-     * @override
-     * @param {string} chunk
-     */
-    addHeapSnapshotChunk: function(chunk)
-    {
-        this._genericCaller("addHeapSnapshotChunk");
-    },
-
-    /**
-     * @override
-     * @param {number} done
-     * @param {number} total
-     * @param {boolean=} finished
-     */
-    reportHeapSnapshotProgress: function(done, total, finished)
-    {
-        this._genericCaller("reportHeapSnapshotProgress");
-    },
-
-    /**
-     * @override
-     */
-    resetProfiles: function()
-    {
-        this._genericCaller("resetProfiles");
-    }
-}
-
-WebInspector.HeapProfilerDispatcher._dispatcher = new WebInspector.HeapProfilerDispatcher();
-
-/**
- * @constructor
  * @extends {WebInspector.ProfileType}
- * @implements {HeapProfilerAgent.Dispatcher}
+ * @implements {WebInspector.TargetManager.Observer}
  * @param {string=} id
  * @param {string=} title
  */
 WebInspector.HeapSnapshotProfileType = function(id, title)
 {
     WebInspector.ProfileType.call(this, id || WebInspector.HeapSnapshotProfileType.TypeId, title || WebInspector.UIString("Take Heap Snapshot"));
-    WebInspector.HeapProfilerDispatcher._dispatcher.register(this);
+    WebInspector.targetManager.observeTargets(this);
 }
 
 WebInspector.HeapSnapshotProfileType.TypeId = "HEAP";
 WebInspector.HeapSnapshotProfileType.SnapshotReceived = "SnapshotReceived";
 
 WebInspector.HeapSnapshotProfileType.prototype = {
+    /**
+     * @param {!WebInspector.Target} target
+     */
+    targetAdded: function(target)
+    {
+        target.heapProfilerModel.enable();
+        target.heapProfilerModel.addEventListener(WebInspector.HeapProfilerModel.Events.ResetProfiles, this._resetProfiles, this);
+        target.heapProfilerModel.addEventListener(WebInspector.HeapProfilerModel.Events.AddHeapSnapshotChunk, this._addHeapSnapshotChunk, this);
+        target.heapProfilerModel.addEventListener(WebInspector.HeapProfilerModel.Events.ReportHeapSnapshotProgress, this._reportHeapSnapshotProgress, this);
+    },
+
+    /**
+     * @param {!WebInspector.Target} target
+     */
+    targetRemoved: function(target)
+    {
+        target.heapProfilerModel.removeEventListener(WebInspector.HeapProfilerModel.Events.ResetProfiles, this._resetProfiles, this);
+        target.heapProfilerModel.removeEventListener(WebInspector.HeapProfilerModel.Events.AddHeapSnapshotChunk, this._addHeapSnapshotChunk, this);
+        target.heapProfilerModel.removeEventListener(WebInspector.HeapProfilerModel.Events.ReportHeapSnapshotProgress, this._reportHeapSnapshotProgress, this);
+    },
+
     /**
      * @override
      * @return {string}
@@ -1133,23 +1078,6 @@ WebInspector.HeapSnapshotProfileType.prototype = {
         return false;
     },
 
-    /**
-     * @override
-     * @param {!Array.<number>} samples
-     */
-    heapStatsUpdate: function(samples)
-    {
-    },
-
-    /**
-     * @override
-     * @param {number} lastSeenObjectId
-     * @param {number} timestamp
-     */
-    lastSeenObjectId: function(lastSeenObjectId, timestamp)
-    {
-    },
-
     get treeItemTitle()
     {
         return WebInspector.UIString("HEAP SNAPSHOTS");
@@ -1175,7 +1103,7 @@ WebInspector.HeapSnapshotProfileType.prototype = {
     {
         if (this.profileBeingRecorded())
             return;
-        var target = /** @type {!WebInspector.Target} */ (WebInspector.targetManager.activeTarget());
+        var target = /** @type {!WebInspector.Target} */ (WebInspector.context.flavor(WebInspector.Target));
         var profile = new WebInspector.HeapProfileHeader(target, this);
         this.setProfileBeingRecorded(profile);
         this.addProfile(profile);
@@ -1194,40 +1122,35 @@ WebInspector.HeapSnapshotProfileType.prototype = {
             this.dispatchEventToListeners(WebInspector.ProfileType.Events.ProfileComplete, profile);
             callback();
         }
-        HeapProfilerAgent.takeHeapSnapshot(true, didTakeHeapSnapshot.bind(this));
+        target.heapProfilerAgent().takeHeapSnapshot(true, didTakeHeapSnapshot.bind(this));
     },
 
     /**
-     * @override
-     * @param {string} chunk
+     * @param {!WebInspector.Event} event
      */
-    addHeapSnapshotChunk: function(chunk)
+    _addHeapSnapshotChunk: function(event)
     {
         if (!this.profileBeingRecorded())
             return;
+        var chunk = /** @type {string} */(event.data);
         this.profileBeingRecorded().transferChunk(chunk);
     },
 
     /**
-     * @override
-     * @param {number} done
-     * @param {number} total
-     * @param {boolean=} finished
+     * @param {!WebInspector.Event} event
      */
-    reportHeapSnapshotProgress: function(done, total, finished)
+    _reportHeapSnapshotProgress: function(event)
     {
         var profile = this.profileBeingRecorded();
         if (!profile)
             return;
-        profile.updateStatus(WebInspector.UIString("%.0f%", (done / total) * 100), true);
-        if (finished)
+        var data = /** @type {{done: number, total: number, finished: boolean}} */ (event.data);
+        profile.updateStatus(WebInspector.UIString("%.0f%", (data.done / data.total) * 100), true);
+        if (data.finished)
             profile._prepareToLoad();
     },
 
-    /**
-     * @override
-     */
-    resetProfiles: function()
+    _resetProfiles: function()
     {
         this._reset();
     },
@@ -1261,13 +1184,33 @@ WebInspector.TrackingHeapSnapshotProfileType.TrackingStopped = "TrackingStopped"
 WebInspector.TrackingHeapSnapshotProfileType.prototype = {
 
     /**
-     * @override
-     * @param {!Array.<number>} samples
+     * @param {!WebInspector.Target} target
      */
-    heapStatsUpdate: function(samples)
+    targetAdded: function(target)
+    {
+        WebInspector.HeapSnapshotProfileType.prototype.targetAdded.call(this, target);
+        target.heapProfilerModel.addEventListener(WebInspector.HeapProfilerModel.Events.HeapStatsUpdate, this._heapStatsUpdate, this);
+        target.heapProfilerModel.addEventListener(WebInspector.HeapProfilerModel.Events.LastSeenObjectId, this._lastSeenObjectId, this);
+    },
+
+    /**
+     * @param {!WebInspector.Target} target
+     */
+    targetRemoved: function(target)
+    {
+        WebInspector.HeapSnapshotProfileType.prototype.targetRemoved.call(this, target);
+        target.heapProfilerModel.removeEventListener(WebInspector.HeapProfilerModel.Events.HeapStatsUpdate, this._heapStatsUpdate, this);
+        target.heapProfilerModel.removeEventListener(WebInspector.HeapProfilerModel.Events.LastSeenObjectId, this._lastSeenObjectId, this);
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _heapStatsUpdate: function(event)
     {
         if (!this._profileSamples)
             return;
+        var samples = /** @type {!Array.<number>} */ (event.data);
         var index;
         for (var i = 0; i < samples.length; i += 3) {
             index = samples[i];
@@ -1280,23 +1223,22 @@ WebInspector.TrackingHeapSnapshotProfileType.prototype = {
     },
 
     /**
-     * @override
-     * @param {number} lastSeenObjectId
-     * @param {number} timestamp
+     * @param {!WebInspector.Event} event
      */
-    lastSeenObjectId: function(lastSeenObjectId, timestamp)
+    _lastSeenObjectId: function(event)
     {
         var profileSamples = this._profileSamples;
         if (!profileSamples)
             return;
+        var data = /** @type {{lastSeenObjectId: number, timestamp: number}} */ (event.data);
         var currentIndex = Math.max(profileSamples.ids.length, profileSamples.max.length - 1);
-        profileSamples.ids[currentIndex] = lastSeenObjectId;
+        profileSamples.ids[currentIndex] = data.lastSeenObjectId;
         if (!profileSamples.max[currentIndex]) {
             profileSamples.max[currentIndex] = 0;
             profileSamples.sizes[currentIndex] = 0;
         }
-        profileSamples.timestamps[currentIndex] = timestamp;
-        if (profileSamples.totalTime < timestamp - profileSamples.timestamps[0])
+        profileSamples.timestamps[currentIndex] = data.timestamp;
+        if (profileSamples.totalTime < data.timestamp - profileSamples.timestamps[0])
             profileSamples.totalTime *= 2;
         this.dispatchEventToListeners(WebInspector.TrackingHeapSnapshotProfileType.HeapStatsUpdate, this._profileSamples);
         this._profileBeingRecorded.updateStatus(null, true);
@@ -1340,7 +1282,7 @@ WebInspector.TrackingHeapSnapshotProfileType.prototype = {
             return;
         var recordAllocationStacks = WebInspector.settings.recordAllocationStacks.get();
         this._addNewProfile(recordAllocationStacks);
-        HeapProfilerAgent.startTrackingHeapObjects(recordAllocationStacks);
+        this.profileBeingRecorded().target().heapProfilerAgent().startTrackingHeapObjects(recordAllocationStacks);
     },
 
     /**
@@ -1383,7 +1325,7 @@ WebInspector.TrackingHeapSnapshotProfileType.prototype = {
             this.dispatchEventToListeners(WebInspector.ProfileType.Events.ProfileComplete, profile);
         }
 
-        HeapProfilerAgent.stopTrackingHeapObjects(true, didTakeHeapSnapshot.bind(this));
+        this._profileBeingRecorded.target().heapProfilerAgent().stopTrackingHeapObjects(true, didTakeHeapSnapshot.bind(this));
         this._recording = false;
         this.dispatchEventToListeners(WebInspector.TrackingHeapSnapshotProfileType.TrackingStopped);
     },
