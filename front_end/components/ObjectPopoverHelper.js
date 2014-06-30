@@ -105,7 +105,7 @@ WebInspector.ObjectPopoverHelper.prototype = {
                 this.hidePopover();
                 return;
             }
-
+            this._objectTarget = result.target();
             var anchorElement = anchorOverride || element;
             var description = (this._remoteObjectFormatter && this._remoteObjectFormatter(result)) || result.description;
 
@@ -164,7 +164,10 @@ WebInspector.ObjectPopoverHelper.prototype = {
         }
         if (this._onHideCallback)
             this._onHideCallback();
-        RuntimeAgent.releaseObjectGroup(this._popoverObjectGroup);
+        if (this._objectTarget) {
+            this._objectTarget.runtimeAgent().releaseObjectGroup(this._popoverObjectGroup);
+            delete this._objectTarget;
+        }
     },
 
     _updateHTMLId: function(properties, rootTreeElementConstructor, rootPropertyComparer)
