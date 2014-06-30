@@ -303,7 +303,7 @@ WebInspector.Main.prototype = {
         WebInspector.ShortcutsScreen.registerShortcuts();
 
         if (WebInspector.experimentsSettings.workersInMainWindow.isEnabled())
-            new WebInspector.WorkerTargetManager(mainTarget, WebInspector.targetManager);
+            WebInspector.workerTargetManager = new WebInspector.WorkerTargetManager(mainTarget, WebInspector.targetManager);
 
         WebInspector.console.addEventListener(WebInspector.ConsoleModel.Events.ConsoleCleared, this._resetErrorAndWarningCounts, this);
         WebInspector.console.addEventListener(WebInspector.ConsoleModel.Events.MessageAdded, this._updateErrorAndWarningCounts, this);
