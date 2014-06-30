@@ -411,6 +411,9 @@ WebInspector.TracingTimelineModel.prototype = {
             var layerUpdateEvent = this._findAncestorEvent(recordTypes.UpdateLayer);
             if (!layerUpdateEvent || layerUpdateEvent.args["layerTreeId"] !== this._inspectedTargetLayerTreeId)
                 break;
+            // Only keep layer paint events, skip paints for subframes that get painted to the same layer as parent.
+            if (!event.args["data"]["layerId"])
+                break;
             this._lastPaintForLayer[layerUpdateEvent.args["layerId"]] = event;
             break;
 
