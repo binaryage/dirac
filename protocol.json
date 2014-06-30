@@ -371,6 +371,11 @@
                 "hidden": true
             },
             {
+                "name": "resetScrollAndPageScaleFactor",
+                "description": "Requests that scroll offsets and page scale factor are reset to initial values.",
+                "hidden": true
+            },
+            {
                 "name": "setShowPaintRects",
                 "description": "Requests that backend shows paint rectangles",
                 "parameters": [

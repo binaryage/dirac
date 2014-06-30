@@ -514,6 +514,7 @@ WebInspector.OverridesSupport.prototype = {
         if (this._initialized) {
             this._deviceMetricsChanged();
             this._userAgentChanged();
+            PageAgent.resetScrollAndPageScaleFactor();
         }
     },
 
