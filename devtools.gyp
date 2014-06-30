@@ -290,7 +290,7 @@
                         {
                             'destination': '<(PRODUCT_DIR)/resources/inspector',
                             'files': [
-                                '<@(devtools_core_base_js_files)',
+                                '<@(devtools_core_base_files)',
                                 '<(blink_devtools_output_dir)/InspectorBackendCommands.js',
                                 '<(blink_devtools_output_dir)/SupportedCSSProperties.js',
                             ],

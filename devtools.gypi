@@ -34,13 +34,13 @@
         # stored as is. Otherwise, a concatenated file is stored.
         'debug_devtools%': 0,
         'devtools_core_js_files': [
-            '<@(devtools_core_base_js_files)',
+            '<@(devtools_core_base_files)',
             '<@(devtools_common_js_files)',
             '<@(devtools_sdk_js_files)',
             '<@(devtools_ui_js_files)',
             '<@(devtools_components_js_files)',
         ],
-        'devtools_core_base_js_files': [
+        'devtools_core_base_files': [
             'front_end/inspector.html',
             'front_end/Tests.js',
             'front_end/InspectorFrontendAPI.js',
@@ -248,6 +248,7 @@
             'front_end/auditsPanel.css',
             'front_end/breadcrumbList.css',
             'front_end/breakpointsList.css',
+            'front_end/cmdevtools.css',
             'front_end/dataGrid.css',
             'front_end/devicesView.css',
             'front_end/elementsPanel.css',
@@ -446,7 +447,6 @@
             'front_end/audits/AuditsPanel.js',
         ],
         'devtools_cm_css_files': [
-            'front_end/cm/cmdevtools.css',
             'front_end/cm/codemirror.css',
         ],
         'devtools_cm_js_files': [

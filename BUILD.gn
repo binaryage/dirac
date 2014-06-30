@@ -12,13 +12,13 @@ gypi_values = exec_script(
 
 # Some of the files in the .gypi use GYP variable expansions, go through and
 # fix them.
-devtools_core_base_js_files = gypi_values.devtools_core_base_js_files - [
+devtools_core_base_files = gypi_values.devtools_core_base_files - [
   "<@(devtools_main_js_files)",
   "<@(devtools_standalone_files)",
 ] + gypi_values.devtools_main_js_files + gypi_values.devtools_standalone_files
 
 devtools_core_js_files =
-  devtools_core_base_js_files +
+  devtools_core_base_files +
   gypi_values.devtools_common_js_files +
   gypi_values.devtools_sdk_js_files +
   gypi_values.devtools_ui_js_files +
