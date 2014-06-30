@@ -264,6 +264,9 @@
                 "parameters": [
                     { "name": "url", "type": "string", "description": "URL to navigate the page to." }
                 ],
+                "returns": [
+                    { "name": "frameId", "$ref": "FrameId", "hidden": true, "description": "Frame id that will be navigated." }
+                ],
                 "description": "Navigates current page to the given URL.",
                 "handlers": ["browser", "renderer"]
             },
