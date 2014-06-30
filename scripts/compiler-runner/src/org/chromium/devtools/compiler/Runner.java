@@ -182,6 +182,13 @@ public class Runner {
             return options;
         }
 
+        @Override
+        protected void setRunOptions(CompilerOptions options)
+                throws FlagUsageException, IOException {
+            super.setRunOptions(options);
+            options.setCodingConvention(new DevToolsCodingConvention());
+        }
+
         int execute() {
             int result = 0;
             int runs = 1;

@@ -259,7 +259,7 @@ WebInspector.ProfileDataGridNode.prototype = {
     },
 
     /**
-     * FIXME: make protected when compiler is fixed
+     * @protected
      */
     populateChildren: function()
     {
@@ -282,7 +282,7 @@ WebInspector.ProfileDataGridNode.prototype = {
     /**
      * When focusing and collapsing we modify lots of nodes in the tree.
      * This allows us to restore them all to their original state when we revert.
-     * FIXME: make protected when compiler is fixed
+     * @protected
      */
     restore: function()
     {
@@ -418,7 +418,7 @@ WebInspector.ProfileDataGridTree.prototype = {
     sort: WebInspector.ProfileDataGridNode.prototype.sort,
 
     /**
-     * FIXME: make protected when compiler is fixed
+     * @protected
      */
     save: function()
     {

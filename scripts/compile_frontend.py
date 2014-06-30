@@ -187,7 +187,7 @@ errors_found |= verify_jsdoc()
 jsdocValidatorProc = verify_jsdoc_extra()
 
 modules_dir = tempfile.mkdtemp()
-common_closure_args = " --summary_detail_level 3 --compilation_level SIMPLE_OPTIMIZATIONS --warning_level VERBOSE --language_in ECMASCRIPT5 --accept_const_keyword --module_output_path_prefix %s/" % modules_dir
+common_closure_args = " --summary_detail_level 3 --jscomp_error visibility --compilation_level SIMPLE_OPTIMIZATIONS --warning_level VERBOSE --language_in ECMASCRIPT5 --accept_const_keyword --module_output_path_prefix %s/" % modules_dir
 
 spawned_compiler_command = "%s -jar %s %s \\\n" % (java_exec, closure_compiler_jar, common_closure_args)
 

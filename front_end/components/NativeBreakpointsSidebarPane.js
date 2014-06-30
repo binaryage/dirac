@@ -51,6 +51,7 @@ WebInspector.NativeBreakpointsSidebarPane.prototype = {
     /**
      * @param {!Element} element
      * @param {?Element=} beforeElement
+     * @protected
      */
     addListElement: function(element, beforeElement)
     {
@@ -67,6 +68,7 @@ WebInspector.NativeBreakpointsSidebarPane.prototype = {
 
     /**
      * @param {!Element} element
+     * @protected
      */
     removeListElement: function(element)
     {
@@ -77,6 +79,9 @@ WebInspector.NativeBreakpointsSidebarPane.prototype = {
         }
     },
 
+    /**
+     * @protected
+     */
     reset: function()
     {
         this.listElement.removeChildren();

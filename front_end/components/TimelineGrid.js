@@ -230,8 +230,8 @@ WebInspector.TimelineGrid.prototype = {
             divider.style.left = percentLeft + "%";
             dividerLabelBar.style.left = percentLeft + "%";
 
-            divider = divider.nextSibling;
-            dividerLabelBar = dividerLabelBar.nextSibling;
+            divider = /** @type {?Element} */ (divider.nextSibling);
+            dividerLabelBar = /** @type {?Element} */ (dividerLabelBar.nextSibling);
         }
 
         // Remove extras.

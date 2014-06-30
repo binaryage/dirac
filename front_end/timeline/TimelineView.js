@@ -686,7 +686,7 @@ WebInspector.TimelineView.prototype = {
             lastLeft = left;
             lastRight = right;
             lastElement = element;
-            element = element.nextSibling;
+            element = /** @type {?Element} */ (element.nextSibling);
         }
 
         if (lastElement)

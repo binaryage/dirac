@@ -49,13 +49,13 @@ WebInspector.StatusBarItem.prototype = {
         if (this._enabled === value)
             return;
         this._enabled = value;
-        this._applyEnabledState();
+        this.applyEnabledState();
     },
 
     /**
      * @protected
      */
-    _applyEnabledState: function()
+    applyEnabledState: function()
     {
         this.element.disabled = !this._enabled;
     },
@@ -198,7 +198,7 @@ WebInspector.StatusBarButton.prototype = {
     /**
      * @override
      */
-    _applyEnabledState: function()
+    applyEnabledState: function()
     {
         this.element.disabled = !this._enabled;
         if (this._longClickInterval) {
@@ -511,7 +511,7 @@ WebInspector.StatusBarComboBox.prototype = {
     /**
      * @override
      */
-    _applyEnabledState: function()
+    applyEnabledState: function()
     {
         this._selectElement.disabled = !this._enabled;
     },
