@@ -723,11 +723,6 @@ WebInspector.ProfilesPanel.prototype = {
         this.visibleView = this._launcherView;
     },
 
-    _garbageCollectButtonClicked: function()
-    {
-        HeapProfilerAgent.collectGarbage();
-    },
-
     /**
      * @param {!WebInspector.ProfileType} profileType
      */
@@ -1022,7 +1017,7 @@ WebInspector.ProfilesPanel.prototype = {
          */
         function revealInView(viewName)
         {
-            HeapProfilerAgent.getHeapObjectId(objectId, didReceiveHeapObjectId.bind(this, viewName));
+            object.target().heapProfilerAgent().getHeapObjectId(objectId, didReceiveHeapObjectId.bind(this, viewName));
         }
 
         /**

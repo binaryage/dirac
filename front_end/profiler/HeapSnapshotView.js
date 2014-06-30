@@ -86,7 +86,7 @@ WebInspector.HeapSnapshotView = function(dataDisplayDelegate, profile)
         this._allocationDataGrid.addEventListener(WebInspector.DataGrid.Events.SelectedNode, this._onSelectAllocationNode, this);
         this._allocationDataGrid.show(this._allocationView.element);
 
-        this._allocationStackView = new WebInspector.HeapAllocationStackView();
+        this._allocationStackView = new WebInspector.HeapAllocationStackView(profile.target());
         this._allocationStackView.setMinimumSize(50, 25);
 
         this._tabbedPane = new WebInspector.TabbedPane();
@@ -927,9 +927,9 @@ WebInspector.HeapSnapshotView.prototype = {
 
     _resolveObjectForPopover: function(element, showCallback, objectGroupName)
     {
-        if (this._profile.fromFile())
+        if (!this._profile.target())
             return;
-        element.node.queryObjectContent(showCallback, objectGroupName);
+        element.node.queryObjectContent(this._profile.target(), showCallback, objectGroupName);
     },
 
     _updateBaseOptions: function()
@@ -2133,11 +2133,12 @@ WebInspector.HeapSnapshotStatisticsView.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.View}
+ * @param {?WebInspector.Target} target
  */
-WebInspector.HeapAllocationStackView = function()
+WebInspector.HeapAllocationStackView = function(target)
 {
     WebInspector.View.call(this);
-    this._target = /** @type {!WebInspector.Target} */ (WebInspector.targetManager.activeTarget());
+    this._target = target;
     this._linkifier = new WebInspector.Linkifier();
 }
 
@@ -2175,7 +2176,7 @@ WebInspector.HeapAllocationStackView.prototype = {
             var frameDiv = stackDiv.createChild("div", "stack-frame");
             var name = frameDiv.createChild("div");
             name.textContent = frame.functionName;
-            if (frame.scriptId) {
+            if (frame.scriptId && this._target) {
                 var urlElement;
                 var rawLocation = new WebInspector.DebuggerModel.Location(this._target, String(frame.scriptId), frame.line - 1, frame.column - 1);
                 if (rawLocation)

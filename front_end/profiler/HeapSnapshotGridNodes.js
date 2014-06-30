@@ -625,7 +625,12 @@ WebInspector.HeapSnapshotGenericObjectNode.prototype = {
     {
     },
 
-    queryObjectContent: function(callback, objectGroupName)
+    /**
+     * @param {!WebInspector.Target} target
+     * @param {!function(!WebInspector.RemoteObject)} callback
+     * @param {string} objectGroupName
+     */
+    queryObjectContent: function(target, callback, objectGroupName)
     {
         /**
          * @param {?Protocol.Error} error
@@ -634,15 +639,15 @@ WebInspector.HeapSnapshotGenericObjectNode.prototype = {
         function formatResult(error, object)
         {
             if (!error && object.type)
-                callback(WebInspector.runtimeModel.createRemoteObject(object), !!error);
+                callback(target.runtimeModel.createRemoteObject(object));
             else
-                callback(WebInspector.runtimeModel.createRemoteObjectFromPrimitiveValue(WebInspector.UIString("Preview is not available")));
+                callback(target.runtimeModel.createRemoteObjectFromPrimitiveValue(WebInspector.UIString("Preview is not available")));
         }
 
         if (this._type === "string")
-            callback(WebInspector.runtimeModel.createRemoteObjectFromPrimitiveValue(this._name));
+            callback(target.runtimeModel.createRemoteObjectFromPrimitiveValue(this._name));
         else
-            HeapProfilerAgent.getObjectByHeapObjectId(String(this.snapshotNodeId), objectGroupName, formatResult);
+            target.heapProfilerAgent().getObjectByHeapObjectId(String(this.snapshotNodeId), objectGroupName, formatResult);
     },
 
     updateHasChildren: function()
