@@ -570,6 +570,7 @@ button.status-bar-item.extension {
 .status-bar-select-container {
     display: inline-flex;
     flex-shrink: 0;
+    margin-right: 6px;
 }
 
 .status-bar-select-arrow {

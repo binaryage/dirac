@@ -68,10 +68,15 @@ WebInspector.ConsoleView = function(hideContextSelector)
 
     this._filterBar = new WebInspector.FilterBar();
 
+    this._preserveLogCheckbox = new WebInspector.StatusBarCheckbox(WebInspector.UIString("Preserve log"));
+    WebInspector.SettingsUI.bindCheckbox(this._preserveLogCheckbox.inputElement, WebInspector.settings.preserveConsoleLog);
+    this._preserveLogCheckbox.element.title = WebInspector.UIString("Do not clear log on page reload / navigation.");
+
     var statusBarElement = this._contentsElement.createChild("div", "console-status-bar");
     statusBarElement.appendChild(this._clearConsoleButton.element);
     statusBarElement.appendChild(this._filterBar.filterButton().element);
     statusBarElement.appendChild(this._executionContextSelector.element);
+    statusBarElement.appendChild(this._preserveLogCheckbox.element);
 
     this._filtersContainer = this._contentsElement.createChild("div", "console-filters-header hidden");
     this._filtersContainer.appendChild(this._filterBar.filtersElement());
@@ -597,12 +602,6 @@ WebInspector.ConsoleView.prototype = {
             WebInspector.settings.monitoringXHREnabled.set(!WebInspector.settings.monitoringXHREnabled.get());
         }
         contextMenu.appendCheckboxItem(WebInspector.UIString("Log XMLHttpRequests"), monitoringXHRItemAction, WebInspector.settings.monitoringXHREnabled.get());
-
-        function preserveLogItemAction()
-        {
-            WebInspector.settings.preserveConsoleLog.set(!WebInspector.settings.preserveConsoleLog.get());
-        }
-        contextMenu.appendCheckboxItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Preserve log upon navigation" : "Preserve Log upon Navigation"), preserveLogItemAction, WebInspector.settings.preserveConsoleLog.get());
 
         var sourceElement = event.target.enclosingNodeOrSelfWithClass("console-message-wrapper");
         var consoleMessage = sourceElement ? sourceElement.message.consoleMessage() : null;
