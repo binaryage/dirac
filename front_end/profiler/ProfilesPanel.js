@@ -237,9 +237,9 @@ WebInspector.ProfileType.prototype = {
      */
     setProfileBeingRecorded: function(profile)
     {
-        if (this._profileBeingRecorded)
+        if (this._profileBeingRecorded && this._profileBeingRecorded.target())
             this._profileBeingRecorded.target().profilingLock.release();
-        if (profile)
+        if (profile && profile.target())
             profile.target().profilingLock.acquire();
         this._profileBeingRecorded = profile;
     },
@@ -297,14 +297,14 @@ WebInspector.ProfileType.DataDisplayDelegate.prototype = {
 
 /**
  * @constructor
- * @extends {WebInspector.TargetAwareObject}
- * @param {!WebInspector.Target} target
+ * @extends {WebInspector.Object}
+ * @param {?WebInspector.Target} target
  * @param {!WebInspector.ProfileType} profileType
  * @param {string} title
  */
 WebInspector.ProfileHeader = function(target, profileType, title)
 {
-    WebInspector.TargetAwareObject.call(this, target);
+    this._target = target;
     this._profileType = profileType;
     this.title = title;
     this.uid = profileType._nextProfileUid++;
@@ -330,6 +330,14 @@ WebInspector.ProfileHeader.Events = {
 }
 
 WebInspector.ProfileHeader.prototype = {
+    /**
+     * @return {?WebInspector.Target}
+     */
+    target: function()
+    {
+        return this._target;
+    },
+
     /**
      * @return {!WebInspector.ProfileType}
      */
@@ -417,7 +425,7 @@ WebInspector.ProfileHeader.prototype = {
         this._fromFile = true;
     },
 
-    __proto__: WebInspector.TargetAwareObject.prototype
+    __proto__: WebInspector.Object.prototype
 }
 
 /**

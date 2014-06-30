@@ -1095,8 +1095,7 @@ WebInspector.HeapSnapshotProfileType.prototype = {
      */
     createProfileLoadedFromFile: function(title)
     {
-        var target = /** @type {!WebInspector.Target} */ (WebInspector.targetManager.activeTarget());
-        return new WebInspector.HeapProfileHeader(target, this, title);
+        return new WebInspector.HeapProfileHeader(null, this, title);
     },
 
     _takeHeapSnapshot: function(callback)
@@ -1380,7 +1379,7 @@ WebInspector.TrackingHeapSnapshotProfileType.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.ProfileHeader}
- * @param {!WebInspector.Target} target
+ * @param {?WebInspector.Target} target
  * @param {!WebInspector.HeapSnapshotProfileType} type
  * @param {string=} title
  * @param {boolean=} hasAllocationStacks

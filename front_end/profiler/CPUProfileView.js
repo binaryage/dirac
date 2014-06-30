@@ -656,8 +656,7 @@ WebInspector.CPUProfileType.prototype = {
      */
     createProfileLoadedFromFile: function(title)
     {
-        var target = /** @type {!WebInspector.Target} */ (WebInspector.targetManager.activeTarget());
-        return new WebInspector.CPUProfileHeader(target, this, title);
+        return new WebInspector.CPUProfileHeader(null, this, title);
     },
 
     /**
@@ -676,7 +675,7 @@ WebInspector.CPUProfileType.prototype = {
  * @extends {WebInspector.ProfileHeader}
  * @implements {WebInspector.OutputStream}
  * @implements {WebInspector.OutputStreamDelegate}
- * @param {!WebInspector.Target} target
+ * @param {?WebInspector.Target} target
  * @param {!WebInspector.CPUProfileType} type
  * @param {string=} title
  */
