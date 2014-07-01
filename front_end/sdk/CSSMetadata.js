@@ -163,7 +163,7 @@ WebInspector.CSSMetadata._colors = [
 ];
 
 WebInspector.CSSMetadata._distanceProperties = [
-    'background-position', 'border-spacing', 'bottom', 'font-size', 'height', 'left', 'letter-spacing', 'line-height', 'max-height', 'max-width', 'min-height',
+    'background-position', 'border-spacing', 'bottom', 'font-size', 'height', 'left', 'letter-spacing', 'max-height', 'max-width', 'min-height',
     'min-width', 'right', 'text-indent', 'top', 'width', 'word-spacing'
 ];
 
