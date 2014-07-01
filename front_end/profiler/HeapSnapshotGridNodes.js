@@ -1487,17 +1487,17 @@ WebInspector.AllocationGridNode.prototype = {
 
         var cell = WebInspector.HeapSnapshotGridNode.prototype.createCell.call(this, columnIdentifier);
         var allocationNode = this._allocationNode;
-        if (allocationNode.scriptId) {
+        var target = this._dataGrid.target();
+        if (allocationNode.scriptId && target) {
             var urlElement;
             var linkifier = this._dataGrid._linkifier;
-            var script = WebInspector.debuggerModel.scriptForId(String(allocationNode.scriptId));
+            var script = target.debuggerModel.scriptForId(String(allocationNode.scriptId));
             if (script) {
-                var rawLocation = WebInspector.debuggerModel.createRawLocation(script, allocationNode.line - 1, allocationNode.column - 1);
+                var rawLocation = target.debuggerModel.createRawLocation(script, allocationNode.line - 1, allocationNode.column - 1);
                 urlElement = linkifier.linkifyRawLocation(rawLocation, "profile-node-file");
-            } else {
-                var target = /** @type {!WebInspector.Target} */ (WebInspector.targetManager.activeTarget());
+            } else
                 urlElement = linkifier.linkifyLocation(target, allocationNode.scriptName, allocationNode.line - 1, allocationNode.column - 1, "profile-node-file");
-            }
+
             urlElement.style.maxWidth = "75%";
             cell.insertBefore(urlElement, cell.firstChild);
         }

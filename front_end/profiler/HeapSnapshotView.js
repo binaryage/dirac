@@ -82,7 +82,7 @@ WebInspector.HeapSnapshotView = function(dataDisplayDelegate, profile)
     if (profile._hasAllocationStacks) {
         this._allocationView = new WebInspector.VBox();
         this._allocationView.setMinimumSize(50, 25);
-        this._allocationDataGrid = new WebInspector.AllocationDataGrid(dataDisplayDelegate);
+        this._allocationDataGrid = new WebInspector.AllocationDataGrid(profile.target() , dataDisplayDelegate);
         this._allocationDataGrid.addEventListener(WebInspector.DataGrid.Events.SelectedNode, this._onSelectAllocationNode, this);
         this._allocationDataGrid.show(this._allocationView.element);
 
@@ -1289,7 +1289,7 @@ WebInspector.TrackingHeapSnapshotProfileType.prototype = {
      */
     _addNewProfile: function(withAllocationStacks)
     {
-        var target = /** @type {!WebInspector.Target} */ (WebInspector.targetManager.activeTarget());
+        var target =  WebInspector.context.flavor(WebInspector.Target);
         this.setProfileBeingRecorded(new WebInspector.HeapProfileHeader(target, this, undefined, withAllocationStacks));
         this._lastSeenIndex = -1;
         this._profileSamples = {

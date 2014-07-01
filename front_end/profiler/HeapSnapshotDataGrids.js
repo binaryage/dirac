@@ -960,9 +960,10 @@ WebInspector.HeapSnapshotDiffDataGrid.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.HeapSnapshotViewportDataGrid}
+ * @param {?WebInspector.Target} target
  * @param {!WebInspector.ProfileType.DataDisplayDelegate} dataDisplayDelegate
  */
-WebInspector.AllocationDataGrid = function(dataDisplayDelegate)
+WebInspector.AllocationDataGrid = function(target, dataDisplayDelegate)
 {
     var columns = [
         {id: "liveCount", title: WebInspector.UIString("Live Count"), width: "72px", sortable: true},
@@ -972,10 +973,20 @@ WebInspector.AllocationDataGrid = function(dataDisplayDelegate)
         {id: "name", title: WebInspector.UIString("Function"), disclosure: true, sortable: true},
     ];
     WebInspector.HeapSnapshotViewportDataGrid.call(this, dataDisplayDelegate, columns);
+    this._target = target;
     this._linkifier = new WebInspector.Linkifier();
 }
 
 WebInspector.AllocationDataGrid.prototype = {
+
+    /**
+     * @return {?WebInspector.Target}
+     */
+    target: function()
+    {
+        return this._target;
+    },
+
     dispose: function()
     {
         this._linkifier.reset();
