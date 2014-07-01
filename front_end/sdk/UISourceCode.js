@@ -660,6 +660,21 @@ WebInspector.UISourceCode.prototype = {
     },
 
     /**
+     * @param {number} lineNumber
+     * @return {boolean}
+     */
+    uiLineHasMapping: function(lineNumber)
+    {
+        var sourceMappings = this._sourceMappingForTarget.values();
+        for (var i = 0; i < sourceMappings.length; ++i) {
+            var sourceMapping = sourceMappings[i];
+            if (!sourceMappings[i].uiLineHasMapping(this, lineNumber))
+                return false;
+        }
+        return true;
+    },
+
+    /**
      * @return {!Array.<!WebInspector.PresentationConsoleMessage>}
      */
     consoleMessages: function()

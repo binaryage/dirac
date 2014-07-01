@@ -573,6 +573,16 @@ WebInspector.SASSSourceMapping.prototype = {
     },
 
     /**
+     * @param {!WebInspector.UISourceCode} uiSourceCode
+     * @param {number} lineNumber
+     * @return {boolean}
+     */
+    uiLineHasMapping: function(uiSourceCode, lineNumber)
+    {
+        return true;
+    },
+
+    /**
      * @return {!WebInspector.Target}
      */
     target: function()

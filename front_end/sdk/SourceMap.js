@@ -210,17 +210,19 @@ WebInspector.SourceMap.prototype = {
     /**
      * @param {string} sourceURL of the originating resource
      * @param {number} lineNumber in the originating resource
-     * @return {!Array.<*>}
+     * @param {number=} span
+     * @return {?Array.<*>}
      */
-    findEntryReversed: function(sourceURL, lineNumber)
+    findEntryReversed: function(sourceURL, lineNumber, span)
     {
         var mappings = this._reverseMappingsBySourceURL[sourceURL];
-        for ( ; lineNumber < mappings.length; ++lineNumber) {
+        var maxLineNumber = typeof span === "number" ? Math.min(lineNumber + span + 1, mappings.length) : mappings.length;
+        for ( ; lineNumber < maxLineNumber; ++lineNumber) {
             var mapping = mappings[lineNumber];
             if (mapping)
                 return mapping;
         }
-        return this._mappings[0];
+        return null;
     },
 
     /**

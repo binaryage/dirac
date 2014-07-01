@@ -53,7 +53,14 @@ WebInspector.SourceMapping.prototype = {
     /**
      * @return {boolean}
      */
-    isIdentity: function() { }
+    isIdentity: function() { },
+
+    /**
+     * @param {!WebInspector.UISourceCode} uiSourceCode
+     * @param {number} lineNumber
+     * @return {boolean}
+     */
+    uiLineHasMapping: function(uiSourceCode, lineNumber) { }
 }
 
 /**

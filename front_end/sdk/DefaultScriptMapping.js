@@ -99,6 +99,16 @@ WebInspector.DefaultScriptMapping.prototype = {
     },
 
     /**
+     * @param {!WebInspector.UISourceCode} uiSourceCode
+     * @param {number} lineNumber
+     * @return {boolean}
+     */
+    uiLineHasMapping: function(uiSourceCode, lineNumber)
+    {
+        return true;
+    },
+
+    /**
      * @param {string} scriptId
      * @param {!WebInspector.Event} event
      */

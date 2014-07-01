@@ -965,6 +965,22 @@ WebInspector.CodeMirrorTextEditor.prototype = {
 
     /**
      * @param {number} lineNumber
+     * @param {string} className
+     * @param {boolean} toggled
+     */
+    toggleLineClass: function(lineNumber, className, toggled)
+    {
+        var lineHandle = this._codeMirror.getLineHandle(lineNumber);
+        if (!lineHandle)
+            return;
+        if (toggled)
+            this._codeMirror.addLineClass(lineHandle, "wrap", className);
+        else
+            this._codeMirror.removeLineClass(lineHandle, "wrap", className);
+    },
+
+    /**
+     * @param {number} lineNumber
      * @param {!Element} element
      */
     addDecoration: function(lineNumber, element)

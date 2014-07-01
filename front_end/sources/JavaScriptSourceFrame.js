@@ -742,6 +742,14 @@ WebInspector.JavaScriptSourceFrame.prototype = {
     {
         var data = /** @type {{target: !WebInspector.Target}} */ (event.data);
         this._updateScriptFile(data.target);
+        this._updateLinesWithoutMappingHighlight();
+    },
+
+    _updateLinesWithoutMappingHighlight: function()
+    {
+        var linesCount = this.textEditor.linesCount;
+        for (var i = 0; i < linesCount; ++i)
+            this.textEditor.toggleLineClass(i, "cm-line-without-source-mapping", !this._uiSourceCode.uiLineHasMapping(i));
     },
 
     /**
@@ -790,6 +798,8 @@ WebInspector.JavaScriptSourceFrame.prototype = {
         var scriptFiles = this._scriptFileForTarget.values();
         for (var i = 0; i < scriptFiles.length; ++i)
             scriptFiles[i].checkMapping();
+
+        this._updateLinesWithoutMappingHighlight();
     },
 
     /**

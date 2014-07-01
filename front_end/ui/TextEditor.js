@@ -133,6 +133,13 @@ WebInspector.TextEditor.prototype = {
 
     /**
      * @param {number} lineNumber
+     * @param {string} className
+     * @param {boolean} toggled
+     */
+    toggleLineClass: function(lineNumber, className, toggled) { },
+
+    /**
+     * @param {number} lineNumber
      * @param {!Element} element
      */
     addDecoration: function(lineNumber, element) { },

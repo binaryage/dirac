@@ -68,6 +68,16 @@ WebInspector.FormatterScriptMapping.prototype = {
 
     /**
      * @param {!WebInspector.UISourceCode} uiSourceCode
+     * @param {number} lineNumber
+     * @return {boolean}
+     */
+    uiLineHasMapping: function(uiSourceCode, lineNumber)
+    {
+        return true;
+    },
+
+    /**
+     * @param {!WebInspector.UISourceCode} uiSourceCode
      * @return {!Array.<!WebInspector.Script>}
      */
     _scriptsForUISourceCode: function(uiSourceCode)

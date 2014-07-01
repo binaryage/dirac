@@ -68,6 +68,10 @@
   line-height: 12px !important;
 }
 
+.cm-line-without-source-mapping {
+  background-color: rgb(243, 243, 243);
+}
+
 .cm-breakpoint.cm-breakpoint-conditional .CodeMirror-linenumber {
   -webkit-border-image: url(Images/breakpointConditional.png) 1 4 1 1;
 }

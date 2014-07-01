@@ -93,7 +93,11 @@ WebInspector.CompilerScriptMapping.prototype = {
             return null;
         var script = /** @type {!WebInspector.Script} */ (this._scriptForSourceMap.get(sourceMap));
         console.assert(script);
-        var entry = sourceMap.findEntryReversed(uiSourceCode.url, lineNumber);
+        var mappingSearchLinesCount = 5;
+        // We do not require precise (breakpoint) location but limit the number of lines to search or mapping.
+        var entry = sourceMap.findEntryReversed(uiSourceCode.url, lineNumber, mappingSearchLinesCount);
+        if (!entry)
+            return null;
         return this._debuggerModel.createRawLocation(script, /** @type {number} */ (entry[0]), /** @type {number} */ (entry[1]));
     },
 
@@ -149,6 +153,21 @@ WebInspector.CompilerScriptMapping.prototype = {
     isIdentity: function()
     {
         return false;
+    },
+
+    /**
+     * @param {!WebInspector.UISourceCode} uiSourceCode
+     * @param {number} lineNumber
+     * @return {boolean}
+     */
+    uiLineHasMapping: function(uiSourceCode, lineNumber)
+    {
+        if (!uiSourceCode.url)
+            return true;
+        var sourceMap = this._sourceMapForURL.get(uiSourceCode.url);
+        if (!sourceMap)
+            return true;
+        return !!sourceMap.findEntryReversed(uiSourceCode.url, lineNumber, 0);
     },
 
     /**
