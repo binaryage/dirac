@@ -68,9 +68,6 @@ WebInspector.OverridesView = function()
         disableButtonElement.addEventListener("click", this._toggleEmulationEnabled.bind(this), false);
     }
 
-    this._warningFooter = this.element.createChild("div", "overrides-footer");
-    this._overridesWarningUpdated();
-
     this._splashScreenElement = this.element.createChild("div", "overrides-splash-screen");
     if (WebInspector.overridesSupport.responsiveDesignAvailable()) {
         this._splashScreenElement.createTextChild(WebInspector.UIString("Emulation is currently disabled. Toggle "));
@@ -83,6 +80,9 @@ WebInspector.OverridesView = function()
         toggleEmulationButton.textContent = WebInspector.UIString("Enable emulation");
         toggleEmulationButton.addEventListener("click", this._toggleEmulationEnabled.bind(this), false);
     }
+
+    this._warningFooter = this.element.createChild("div", "overrides-footer");
+    this._overridesWarningUpdated();
 
     WebInspector.overridesSupport.addEventListener(WebInspector.OverridesSupport.Events.OverridesWarningUpdated, this._overridesWarningUpdated, this);
     WebInspector.overridesSupport.addEventListener(WebInspector.OverridesSupport.Events.EmulationStateChanged, this._emulationEnabledChanged, this);
@@ -101,7 +101,7 @@ WebInspector.OverridesView.prototype = {
     _overridesWarningUpdated: function()
     {
         var message = WebInspector.overridesSupport.warningMessage();
-        this._warningFooter.classList.toggle("hidden", !WebInspector.overridesSupport.emulationEnabled() || !message);
+        this._warningFooter.classList.toggle("hidden", !message);
         this._warningFooter.textContent = message;
     },
 
@@ -113,7 +113,6 @@ WebInspector.OverridesView.prototype = {
     _emulationEnabledChanged: function()
     {
         this._tabbedPane.element.classList.toggle("hidden", !WebInspector.overridesSupport.emulationEnabled());
-        this._overridesWarningUpdated();
         this._splashScreenElement.classList.toggle("hidden", WebInspector.overridesSupport.emulationEnabled());
     },
 

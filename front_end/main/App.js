@@ -12,6 +12,7 @@ WebInspector.App = function()
         this._toggleEmulationButton.toggled = WebInspector.overridesSupport.emulationEnabled();
         this._toggleEmulationButton.addEventListener("click", this._toggleEmulationEnabled, this);
         WebInspector.overridesSupport.addEventListener(WebInspector.OverridesSupport.Events.EmulationStateChanged, this._emulationEnabledChanged, this);
+        WebInspector.overridesSupport.addEventListener(WebInspector.OverridesSupport.Events.OverridesWarningUpdated, this._overridesWarningUpdated, this);
     }
 };
 
@@ -28,6 +29,15 @@ WebInspector.App.prototype = {
             WebInspector.inspectorView.showViewInDrawer("emulation", true);
     },
 
+    _overridesWarningUpdated: function()
+    {
+        if (!this._toggleEmulationButton)
+            return;
+        var message = WebInspector.overridesSupport.warningMessage();
+        this._toggleEmulationButton.title = message || WebInspector.UIString("Toggle device mode.");
+        this._toggleEmulationButton.element.classList.toggle("warning", !!message);
+    },
+
     createRootView: function()
     {
     },
@@ -39,6 +49,7 @@ WebInspector.App.prototype = {
         WebInspector.overridesSupport.applyInitialOverrides();
         if (!WebInspector.overridesSupport.responsiveDesignAvailable() && WebInspector.overridesSupport.emulationEnabled())
             WebInspector.inspectorView.showViewInDrawer("emulation", true);
+        this._overridesWarningUpdated();
     }
 };
 

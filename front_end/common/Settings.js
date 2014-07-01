@@ -92,6 +92,7 @@ WebInspector.Settings = function()
     this.pauseOnCaughtException = this.createSetting("pauseOnCaughtException", false);
     this.enableAsyncStackTraces = this.createSetting("enableAsyncStackTraces", false);
     this.showMediaQueryInspector = this.createSetting("showMediaQueryInspector", false);
+    this.disableOverridesWarning = this.createSetting("disableOverridesWarning", false);
 }
 
 WebInspector.Settings.prototype = {

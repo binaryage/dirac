@@ -2304,6 +2304,25 @@ body.inactive .sidebar-tree-item.selected {
     -webkit-mask-position: -164px 0px;
 }
 
+.emulation-status-bar-item.warning::before {
+    background-image: url(Images/statusbarButtonGlyphs.png);
+    background-size: 320px 144px;
+    width: 10px;
+    height: 10px;
+    content: "";
+    position: relative;
+    top: 4px;
+    left: -7px;
+    background-position: -202px -107px;
+    float: right;
+}
+
+@media (-webkit-min-device-pixel-ratio: 1.5) {
+    .emulation-status-bar-item.warning::before {
+        background-image: url(Images/statusbarButtonGlyphs_2x.png);
+    }
+} /* media */
+
 .delete-storage-status-bar-item .glyph {
     -webkit-mask-position: -128px 0;
 }

@@ -313,6 +313,7 @@ button.overrides-swap {
 .overrides-splash-screen {
     display: block;
     padding: 10px 10px;
+    flex: auto;
 }
 
 .overrides-splash-screen > button {

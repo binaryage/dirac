@@ -607,6 +607,8 @@ WebInspector.OverridesSupport.prototype = {
         WebInspector.settings.showMetricsRulers.addChangeListener(this._showRulersChanged, this);
         this._showRulersChanged();
 
+        WebInspector.settings.disableOverridesWarning.addChangeListener(this._dispatchWarningChanged, this);
+
         if (!this.emulationEnabled())
             return;
 
@@ -862,13 +864,18 @@ WebInspector.OverridesSupport.prototype = {
         this._updateDeviceMetricsWarningMessage("");
     },
 
+    _dispatchWarningChanged: function()
+    {
+        this.dispatchEventToListeners(WebInspector.OverridesSupport.Events.OverridesWarningUpdated);
+    },
+
     /**
      * @param {string} warningMessage
      */
     _updateDeviceMetricsWarningMessage: function(warningMessage)
     {
         this._deviceMetricsWarningMessage = warningMessage;
-        this.dispatchEventToListeners(WebInspector.OverridesSupport.Events.OverridesWarningUpdated);
+        this._dispatchWarningChanged();
     },
 
     /**
@@ -877,7 +884,7 @@ WebInspector.OverridesSupport.prototype = {
     _updateUserAgentWarningMessage: function(warningMessage)
     {
         this._userAgentWarningMessage = warningMessage;
-        this.dispatchEventToListeners(WebInspector.OverridesSupport.Events.OverridesWarningUpdated);
+        this._dispatchWarningChanged();
     },
 
     /**
@@ -885,14 +892,14 @@ WebInspector.OverridesSupport.prototype = {
      */
     warningMessage: function()
     {
-        return this._deviceMetricsWarningMessage || this._userAgentWarningMessage || "";
+        return WebInspector.settings.disableOverridesWarning.get() ? "" : (this._deviceMetricsWarningMessage || this._userAgentWarningMessage || "");
     },
 
     clearWarningMessage: function()
     {
         this._deviceMetricsWarningMessage = "";
         this._userAgentWarningMessage = "";
-        this.dispatchEventToListeners(WebInspector.OverridesSupport.Events.OverridesWarningUpdated);
+        this._dispatchWarningChanged();
     },
 
     /**

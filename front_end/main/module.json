@@ -161,6 +161,13 @@
         },
         {
             "type": "ui-setting",
+            "section": "Appearance",
+            "title": "Don't show emulation warnings",
+            "settingName": "disableOverridesWarning",
+            "settingType": "checkbox"
+        },
+        {
+            "type": "ui-setting",
             "section": "Extensions",
             "settingType": "custom",
             "className": "WebInspector.HandlerRegistry.OpenAnchorLocationSettingDelegate"
