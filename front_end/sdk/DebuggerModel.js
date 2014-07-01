@@ -415,11 +415,15 @@ WebInspector.DebuggerModel.prototype = {
      */
     _didEditScriptSource: function(scriptId, newSource, callback, error, errorData, callFrames, asyncStackTrace, needsStepIn)
     {
-        callback(error, errorData);
-        if (needsStepIn)
+        if (needsStepIn) {
             this.stepInto();
-        else if (!error && callFrames && callFrames.length)
+            this._pendingLiveEditCallback = callback.bind(this, error, errorData);
+            return;
+        }
+
+        if (!error && callFrames && callFrames.length)
             this._pausedScript(callFrames, this._debuggerPausedDetails.reason, this._debuggerPausedDetails.auxData, this._debuggerPausedDetails.breakpointIds, asyncStackTrace);
+        callback(error, errorData);
     },
 
     /**
@@ -468,6 +472,11 @@ WebInspector.DebuggerModel.prototype = {
     _pausedScript: function(callFrames, reason, auxData, breakpointIds, asyncStackTrace)
     {
         this._setDebuggerPausedDetails(new WebInspector.DebuggerPausedDetails(this.target(), callFrames, reason, auxData, breakpointIds, asyncStackTrace));
+        if (this._pendingLiveEditCallback) {
+            var callback = this._pendingLiveEditCallback;
+            delete this._pendingLiveEditCallback;
+            callback();
+        }
     },
 
     _resumedScript: function()

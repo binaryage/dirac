@@ -247,6 +247,13 @@ WebInspector.JavaScriptSourceFrame.prototype = {
         WebInspector.UISourceCodeFrame.prototype.onUISourceCodeContentChanged.call(this);
     },
 
+    onTextChanged: function(oldRange, newRange)
+    {
+        this._scriptsPanel.setIgnoreExecutionLineEvents(true);
+        WebInspector.UISourceCodeFrame.prototype.onTextChanged.call(this, oldRange, newRange);
+        this._scriptsPanel.setIgnoreExecutionLineEvents(false);
+    },
+
     populateLineGutterContextMenu: function(contextMenu, lineNumber)
     {
         contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Continue to here" : "Continue to Here"), this._continueToLine.bind(this, lineNumber));
@@ -314,6 +321,13 @@ WebInspector.JavaScriptSourceFrame.prototype = {
 
     _workingCopyCommitted: function(event)
     {
+        if (this._supportsEnabledBreakpointsWhileEditing())
+            return;
+
+        if (!this._scriptFileForTarget.size()) {
+            this._restoreBreakpointsAfterEditing();
+            return;
+        }
 
         var liveEditError;
         var liveEditErrorData;
@@ -322,6 +336,7 @@ WebInspector.JavaScriptSourceFrame.prototype = {
         var failedEdits = 0;
 
         /**
+         * @this {WebInspector.JavaScriptSourceFrame}
          * @param {?string} error
          * @param {!DebuggerAgent.SetScriptSourceError=} errorData
          * @param {!WebInspector.Script=} script
@@ -343,19 +358,14 @@ WebInspector.JavaScriptSourceFrame.prototype = {
                 WebInspector.LiveEditSupport.logSuccess();
             else
                 WebInspector.LiveEditSupport.logDetailedError(liveEditError, liveEditErrorData, contextScript)
-
+            this._scriptsPanel.setIgnoreExecutionLineEvents(false);
         }
 
-        if (this._supportsEnabledBreakpointsWhileEditing())
-            return;
-        if (this._scriptFileForTarget.size()) {
-            this._hasCommittedLiveEdit = true;
-            var scriptFiles = this._scriptFileForTarget.values();
-            for (var i = 0; i < scriptFiles.length; ++i)
-                scriptFiles[i].commitLiveEdit(liveEditCallback);
-            return;
-        }
-        this._restoreBreakpointsAfterEditing();
+        this._scriptsPanel.setIgnoreExecutionLineEvents(true);
+        this._hasCommittedLiveEdit = true;
+        var scriptFiles = this._scriptFileForTarget.values();
+        for (var i = 0; i < scriptFiles.length; ++i)
+            scriptFiles[i].commitLiveEdit(liveEditCallback.bind(this));
     },
 
     _didMergeToVM: function()

@@ -40,7 +40,6 @@ WebInspector.CallStackSidebarPane = function()
 }
 
 WebInspector.CallStackSidebarPane.Events = {
-    CallFrameRestarted: "CallFrameRestarted",
     CallFrameSelected: "CallFrameSelected"
 }
 
@@ -183,7 +182,6 @@ WebInspector.CallStackSidebarPane.prototype = {
     _restartFrame: function(placard)
     {
         placard._callFrame.restart();
-        this.dispatchEventToListeners(WebInspector.CallStackSidebarPane.Events.CallFrameRestarted, placard._callFrame);
     },
 
     _asyncStackTracesStateChanged: function()

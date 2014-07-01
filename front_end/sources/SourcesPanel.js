@@ -112,7 +112,6 @@ WebInspector.SourcesPanel = function(workspaceForTest)
     this.sidebarPanes.watchExpressions = new WebInspector.WatchExpressionsSidebarPane();
     this.sidebarPanes.callstack = new WebInspector.CallStackSidebarPane();
     this.sidebarPanes.callstack.addEventListener(WebInspector.CallStackSidebarPane.Events.CallFrameSelected, this._callFrameSelectedInSidebar.bind(this));
-    this.sidebarPanes.callstack.addEventListener(WebInspector.CallStackSidebarPane.Events.CallFrameRestarted, this._callFrameRestartedInSidebar.bind(this));
     this.sidebarPanes.callstack.registerShortcuts(this.registerShortcuts.bind(this));
 
     this.sidebarPanes.scopechain = new WebInspector.ScopeChainSidebarPane();
@@ -373,7 +372,6 @@ WebInspector.SourcesPanel.prototype = {
     _debuggerReset: function(event)
     {
         this._debuggerResumed(event);
-        delete this._skipExecutionLineRevealing;
     },
 
     /**
@@ -432,13 +430,20 @@ WebInspector.SourcesPanel.prototype = {
         this._navigator.revealUISourceCode(uiSourceCode);
     },
 
+    /**
+     * @param {boolean} ignoreExecutionLineEvents
+     */
+    setIgnoreExecutionLineEvents: function(ignoreExecutionLineEvents)
+    {
+        this._ignoreExecutionLineEvents = ignoreExecutionLineEvents;
+    },
+
     _executionLineChanged: function(uiLocation)
     {
         this._sourcesView.clearCurrentExecutionLine();
         this._sourcesView.setExecutionLine(uiLocation);
-        if (this._skipExecutionLineRevealing)
+        if (this._ignoreExecutionLineEvents)
             return;
-        this._skipExecutionLineRevealing = true;
         this._sourcesView.showSourceLocation(uiLocation.uiSourceCode, uiLocation.lineNumber, 0, undefined, true);
     },
 
@@ -592,7 +597,6 @@ WebInspector.SourcesPanel.prototype = {
             return true;
 
         if (this._paused) {
-            delete this._skipExecutionLineRevealing;
             this._paused = false;
             target.debuggerModel.resume();
         } else {
@@ -612,7 +616,6 @@ WebInspector.SourcesPanel.prototype = {
         if (!this._paused)
             return null;
 
-        delete this._skipExecutionLineRevealing;
         this._paused = false;
 
         this._clearInterface();
@@ -679,13 +682,7 @@ WebInspector.SourcesPanel.prototype = {
     _callFrameSelectedInSidebar: function(event)
     {
         var callFrame = /** @type {!WebInspector.DebuggerModel.CallFrame} */ (event.data);
-        delete this._skipExecutionLineRevealing;
         callFrame.target().debuggerModel.setSelectedCallFrame(callFrame);
-    },
-
-    _callFrameRestartedInSidebar: function()
-    {
-        delete this._skipExecutionLineRevealing;
     },
 
     /**
