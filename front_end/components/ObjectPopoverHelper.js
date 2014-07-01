@@ -114,13 +114,14 @@ WebInspector.ObjectPopoverHelper.prototype = {
                 popoverContentElement = document.createElement("span");
                 popoverContentElement.className = "monospace console-formatted-" + result.type;
                 popoverContentElement.style.whiteSpace = "pre";
-                popoverContentElement.textContent = description;
+                if (result.type === "string")
+                    popoverContentElement.createTextChildren("\"", description, "\"");
+                else
+                    popoverContentElement.textContent = description;
                 if (result.type === "function") {
                     result.functionDetails(didGetDetails.bind(this, result.target(), anchorElement, popoverContentElement));
                     return;
                 }
-                if (result.type === "string")
-                    popoverContentElement.textContent = "\"" + popoverContentElement.textContent + "\"";
                 popover.show(popoverContentElement, anchorElement);
             } else {
                 if (result.subtype === "node") {

@@ -191,10 +191,10 @@ WebInspector.IDBDataView.prototype = {
     _keyPathStringFragment: function(keyPathString)
     {
         var keyPathStringFragment = document.createDocumentFragment();
-        keyPathStringFragment.appendChild(document.createTextNode("\""));
+        keyPathStringFragment.createTextChild("\"");
         var keyPathSpan = keyPathStringFragment.createChild("span", "source-code console-formatted-string");
         keyPathSpan.textContent = keyPathString;
-        keyPathStringFragment.appendChild(document.createTextNode("\""));
+        keyPathStringFragment.createTextChild("\"");
         return keyPathStringFragment;
     },
 
@@ -417,11 +417,11 @@ WebInspector.IDBDataGridNode.prototype = {
             break;
         case "string":
             contents.classList.add("primitive-value");
-            contents.appendChild(document.createTextNode("\"" + value.description + "\""));
+            contents.createTextChildren("\"", value.description, "\"");
             break;
         default:
             contents.classList.add("primitive-value");
-            contents.appendChild(document.createTextNode(value.description));
+            contents.createTextChild(value.description);
         }
     },
 

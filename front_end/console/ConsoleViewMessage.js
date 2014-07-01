@@ -471,8 +471,9 @@ WebInspector.ConsoleViewMessage.prototype = {
             var name = property.name;
             if (!isArray || name != i) {
                 if (/^\s|\s$|^$|\n/.test(name))
-                    name = "\"" + name.replace(/\n/g, "\u21B5") + "\"";
-                titleElement.createChild("span", "name").textContent = name;
+                    titleElement.createChild("span", "name").createTextChildren("\"", name.replace(/\n/g, "\u21B5"), "\"");
+                else
+                    titleElement.createChild("span", "name").textContent = name;
                 titleElement.createTextChild(": ");
             }
 
@@ -526,7 +527,7 @@ WebInspector.ConsoleViewMessage.prototype = {
         }
 
         if (type === "string") {
-            span.textContent = "\"" + description.replace(/\n/g, "\u21B5") + "\"";
+            span.createTextChildren("\"", description.replace(/\n/g, "\u21B5"), "\"");
             return span;
         }
 
@@ -665,9 +666,9 @@ WebInspector.ConsoleViewMessage.prototype = {
 
         // Make black quotes.
         elem.classList.remove("console-formatted-string");
-        elem.appendChild(document.createTextNode("\""));
+        elem.createTextChild("\"");
         elem.appendChild(span);
-        elem.appendChild(document.createTextNode("\""));
+        elem.createTextChild("\"");
     },
 
     /**

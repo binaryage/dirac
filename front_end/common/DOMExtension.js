@@ -362,18 +362,6 @@ Element.prototype.removeChildren = function()
         this.textContent = "";
 }
 
-Element.prototype.appendChildren = function(children)
-{
-    for (var i = 0; i < children.length; ++i)
-        this.appendChild(children[i]);
-}
-
-Element.prototype.setChildren = function(children)
-{
-    this.removeChildren();
-    this.appendChildren(children);
-}
-
 /**
  * @return {boolean}
  */
@@ -425,6 +413,17 @@ Element.prototype.createTextChild = function(text)
 }
 
 DocumentFragment.prototype.createTextChild = Element.prototype.createTextChild;
+
+/**
+ * @param {...string} var_args
+ */
+Element.prototype.createTextChildren = function(var_args)
+{
+    for (var i = 0, n = arguments.length; i < n; ++i)
+        this.createTextChild(arguments[i]);
+}
+
+DocumentFragment.prototype.createTextChildren = Element.prototype.createTextChildren;
 
 /**
  * @return {number}

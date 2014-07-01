@@ -114,8 +114,7 @@ WebInspector.ObjectPropertiesSection.prototype = {
         this.propertiesForTest = properties;
 
         if (!this.propertiesTreeOutline.children.length) {
-            var title = document.createElement("div");
-            title.className = "info";
+            var title = document.createElementWithClass("div", "info");
             title.textContent = this.emptyPlaceholder;
             var infoElement = new TreeElement(title, null, false);
             this.propertiesTreeOutline.appendChild(infoElement);
@@ -189,12 +188,12 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
 
     update: function()
     {
-        this.nameElement = document.createElement("span");
-        this.nameElement.className = "name";
+        this.nameElement = document.createElementWithClass("span", "name");
         var name = this.property.name;
         if (/^\s|\s$|^$|\n/.test(name))
-            name = "\"" + name.replace(/\n/g, "\u21B5") + "\"";
-        this.nameElement.textContent = name;
+            this.nameElement.createTextChildren("\"", name.replace(/\n/g, "\u21B5"), "\"");
+        else
+            this.nameElement.textContent = name;
         if (!this.property.enumerable)
             this.nameElement.classList.add("dimmed");
         if (this.property.isAccessorProperty())
@@ -202,20 +201,24 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
         if (this.property.symbol)
             this.nameElement.addEventListener("contextmenu", this._contextMenuFired.bind(this, this.property.symbol), false);
 
-        var separatorElement = document.createElement("span");
-        separatorElement.className = "separator";
+        var separatorElement = document.createElementWithClass("span", "separator");
         separatorElement.textContent = ": ";
 
         if (this.property.value) {
-            this.valueElement = document.createElement("span");
-            this.valueElement.className = "value";
+            this.valueElement = document.createElementWithClass("span", "value");
             var description = this.property.value.description;
+            var prefix;
             var valueText;
+            var suffix;
             if (this.property.wasThrown) {
-                valueText = "[Exception: " + description + "]";
+                prefix = "[Exception: ";
+                valueText = description;
+                suffix = "]";
             } else if (this.property.value.type === "string" && typeof description === "string") {
                 // Render \n as a nice unicode cr symbol.
-                valueText = "\"" + description.replace(/\n/g, "\u21B5") + "\"";
+                prefix = "\"";
+                valueText = description.replace(/\n/g, "\u21B5");
+                suffix = "\"";
                 this.valueElement._originalTextContent = "\"" + description + "\"";
             } else if (this.property.value.type === "function" && typeof description === "string") {
                 valueText = /.*/.exec(description)[0].replace(/ +$/g, "");
@@ -224,6 +227,10 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
                 valueText = description;
             }
             this.valueElement.setTextContentTruncatedIfNeeded(valueText || "");
+            if (prefix)
+                this.valueElement.insertBefore(document.createTextNode(prefix), this.valueElement.firstChild);
+            if (suffix)
+                this.valueElement.createTextChild(suffix);
 
             if (this.property.wasThrown)
                 this.valueElement.classList.add("error");
@@ -248,8 +255,7 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
             if (this.property.getter) {
                 this.valueElement = WebInspector.ObjectPropertyTreeElement.createRemoteObjectAccessorPropertySpan(this.property.parentObject, [this.property.name], this._onInvokeGetterClick.bind(this));
             } else {
-                this.valueElement = document.createElement("span");
-                this.valueElement.className = "console-formatted-undefined";
+                this.valueElement = document.createElementWithClass("span", "console-formatted-undefined");
                 this.valueElement.textContent = WebInspector.UIString("<unreadable>");
                 this.valueElement.title = WebInspector.UIString("No property getter");
             }
