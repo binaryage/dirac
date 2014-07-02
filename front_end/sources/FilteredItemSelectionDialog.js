@@ -326,6 +326,8 @@ WebInspector.FilteredItemSelectionDialog.prototype = {
      */
     _updateSelection: function(index, makeLast)
     {
+        if (!this._filteredItems.length)
+            return;
         var element = this._viewportControl.renderedElementAt(this._selectedIndexInFiltered);
         if (element)
             element.classList.remove("selected");
