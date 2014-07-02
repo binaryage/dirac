@@ -40,13 +40,8 @@ WebInspector.Popover = function(popoverHelper)
     this.element.className = "popover custom-popup-vertical-scroll custom-popup-horizontal-scroll"; // Override
     this._containerElement = document.createElementWithClass("div", "fill popover-container");
 
-    this._popupArrowElement = document.createElement("div");
-    this._popupArrowElement.className = "arrow";
-    this.element.appendChild(this._popupArrowElement);
-
-    this._contentDiv = document.createElement("div");
-    this._contentDiv.className = "content";
-    this.element.appendChild(this._contentDiv);
+    this._popupArrowElement = this.element.createChild("div", "arrow");
+    this._contentDiv = this.element.createChild("div", "content");
 
     this._popoverHelper = popoverHelper;
     this._hideBound = this.hide.bind(this);

@@ -31,13 +31,10 @@
  */
 WebInspector.Checkbox = function(label, className, tooltip)
 {
-    this.element = document.createElement('label');
-    this._inputElement = document.createElement('input');
+    this.element = document.createElementWithClass("label", className);
+    this._inputElement = this.element.createChild("input");
     this._inputElement.type = "checkbox";
-
-    this.element.className = className;
-    this.element.appendChild(this._inputElement);
-    this.element.appendChild(document.createTextNode(label));
+    this.element.createTextChild(label);
     if (tooltip)
         this.element.title = tooltip;
 }

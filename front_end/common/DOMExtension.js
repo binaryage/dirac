@@ -439,7 +439,6 @@ Element.prototype.totalOffsetLeft = function()
 Element.prototype.totalOffsetTop = function()
 {
     return this.totalOffset().top;
-
 }
 
 /**

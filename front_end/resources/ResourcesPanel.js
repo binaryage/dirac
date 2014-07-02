@@ -826,23 +826,15 @@ WebInspector.BaseStorageTreeElement.prototype = {
                 this.listItemElement.classList.add(this._iconClasses[i]);
         }
 
-        var selectionElement = document.createElement("div");
-        selectionElement.className = "selection";
-        this.listItemElement.appendChild(selectionElement);
+        this.listItemElement.createChild("div", "selection");
 
-        if (!this._noIcon) {
-            this.imageElement = document.createElement("img");
-            this.imageElement.className = "icon";
-            this.listItemElement.appendChild(this.imageElement);
-        }
+        if (!this._noIcon)
+            this.imageElement = this.listItemElement.createChild("img", "icon");
 
-        this.titleElement = document.createElement("div");
-        this.titleElement.className = "base-storage-tree-element-title";
-        this._titleTextNode = document.createTextNode("");
-        this.titleElement.appendChild(this._titleTextNode);
+        this.titleElement = this.listItemElement.createChild("div", "base-storage-tree-element-title");
+        this._titleTextNode = this.titleElement.createTextChild("");
         this._updateTitle();
         this._updateSubtitle();
-        this.listItemElement.appendChild(this.titleElement);
     },
 
     get displayName()
@@ -875,14 +867,11 @@ WebInspector.BaseStorageTreeElement.prototype = {
             return;
 
         if (this._subtitleText) {
-            if (!this._subtitleElement) {
-                this._subtitleElement = document.createElement("span");
-                this._subtitleElement.className = "base-storage-tree-element-subtitle";
-                this.titleElement.appendChild(this._subtitleElement);
-            }
+            if (!this._subtitleElement)
+                this._subtitleElement = this.titleElement.createChild("span", "base-storage-tree-element-subtitle");
             this._subtitleElement.textContent = "(" + this._subtitleText + ")";
         } else if (this._subtitleElement) {
-            this.titleElement.removeChild(this._subtitleElement);
+            this._subtitleElement.remove();
             delete this._subtitleElement;
         }
     },
@@ -1184,18 +1173,13 @@ WebInspector.FrameResourceTreeElement.prototype = {
         WebInspector.BaseStorageTreeElement.prototype.onattach.call(this);
 
         if (this._resource.type === WebInspector.resourceTypes.Image) {
-            var previewImage = document.createElement("img");
-            previewImage.className = "image-resource-icon-preview";
+            var iconElement = document.createElementWithClass("div", "icon");
+            var previewImage = iconElement.createChild("img", "image-resource-icon-preview");
             this._resource.populateImageSource(previewImage);
-
-            var iconElement = document.createElement("div");
-            iconElement.className = "icon";
-            iconElement.appendChild(previewImage);
             this.listItemElement.replaceChild(iconElement, this.imageElement);
         }
 
-        this._statusElement = document.createElement("div");
-        this._statusElement.className = "status";
+        this._statusElement = document.createElementWithClass("div", "status");
         this.listItemElement.insertBefore(this._statusElement, this.titleElement);
 
         this.listItemElement.draggable = true;
@@ -1223,14 +1207,13 @@ WebInspector.FrameResourceTreeElement.prototype = {
         contextMenu.show();
     },
 
+    /**
+     * @param {string} x
+     */
     _setBubbleText: function(x)
     {
-        if (!this._bubbleElement) {
-            this._bubbleElement = document.createElement("div");
-            this._bubbleElement.className = "bubble";
-            this._statusElement.appendChild(this._bubbleElement);
-        }
-
+        if (!this._bubbleElement)
+            this._bubbleElement = this._statusElement.createChild("div", "bubble");
         this._bubbleElement.textContent = x;
     },
 

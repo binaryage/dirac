@@ -660,8 +660,7 @@ WebInspector.SourceFrame.prototype = {
         this._textEditor.beginUpdates();
         var messageBubbleElement = this._messageBubbles[lineNumber];
         if (!messageBubbleElement) {
-            messageBubbleElement = document.createElement("div");
-            messageBubbleElement.className = "webkit-html-message-bubble";
+            messageBubbleElement = document.createElementWithClass("div", "webkit-html-message-bubble");
             this._messageBubbles[lineNumber] = messageBubbleElement;
             this._textEditor.addDecoration(lineNumber, messageBubbleElement);
         }
@@ -678,13 +677,10 @@ WebInspector.SourceFrame.prototype = {
                 break;
         }
 
-        var messageLineElement = document.createElement("div");
-        messageLineElement.className = "webkit-html-message-line";
-        messageBubbleElement.appendChild(messageLineElement);
-
         // Create the image element in the Inspector's document so we can use relative image URLs.
+        var messageLineElement = messageBubbleElement.createChild("div", "webkit-html-message-line");
         messageLineElement.appendChild(imageElement);
-        messageLineElement.appendChild(document.createTextNode(msg.messageText));
+        messageLineElement.createTextChild(msg.messageText);
 
         rowMessage.element = messageLineElement;
         rowMessage.repeatCount = 1;

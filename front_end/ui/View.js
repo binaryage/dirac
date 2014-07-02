@@ -30,8 +30,7 @@
  */
 WebInspector.View = function()
 {
-    this.element = document.createElement("div");
-    this.element.className = "view";
+    this.element = document.createElementWithClass("div", "view");
     this.element.__view = this;
     this._visible = true;
     this._isRoot = false;

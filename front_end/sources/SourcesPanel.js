@@ -715,8 +715,7 @@ WebInspector.SourcesPanel.prototype = {
 
     _createDebugToolbar: function()
     {
-        var debugToolbar = document.createElement("div");
-        debugToolbar.className = "scripts-debug-toolbar";
+        var debugToolbar = document.createElementWithClass("div", "scripts-debug-toolbar");
 
         var title, handler;
         var platformSpecificModifier = WebInspector.KeyboardShortcut.Modifiers.CtrlOrMeta;
@@ -772,8 +771,7 @@ WebInspector.SourcesPanel.prototype = {
 
     _createDebugToolbarDrawer: function()
     {
-        var debugToolbarDrawer = document.createElement("div");
-        debugToolbarDrawer.className = "scripts-debug-toolbar-drawer";
+        var debugToolbarDrawer = document.createElementWithClass("div", "scripts-debug-toolbar-drawer");
 
         var label = WebInspector.UIString("Pause On Caught Exceptions");
         var setting = WebInspector.settings.pauseOnCaughtException;

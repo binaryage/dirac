@@ -56,26 +56,14 @@ WebInspector.ImageView.prototype = {
         if (this._container)
             return;
 
-        var imageContainer = document.createElement("div");
-        imageContainer.className = "image";
-        this.element.appendChild(imageContainer);
-
-        var imagePreviewElement = document.createElement("img");
-        imagePreviewElement.classList.add("resource-image-view");
-        imageContainer.appendChild(imagePreviewElement);
+        var imageContainer = this.element.createChild("div", "image");
+        var imagePreviewElement = imageContainer.createChild("img", "resource-image-view");
         imagePreviewElement.addEventListener("contextmenu", this._contextMenu.bind(this), true);
 
-        this._container = document.createElement("div");
-        this._container.className = "info";
-        this.element.appendChild(this._container);
+        this._container = this.element.createChild("div", "info");
+        this._container.createChild("h1", "title").textContent = this.resource.displayName;
 
-        var imageNameElement = document.createElement("h1");
-        imageNameElement.className = "title";
-        imageNameElement.textContent = this.resource.displayName;
-        this._container.appendChild(imageNameElement);
-
-        var infoListElement = document.createElement("dl");
-        infoListElement.className = "infoList";
+        var infoListElement = document.createElementWithClass("dl", "infoList");
 
         this.resource.populateImageSource(imagePreviewElement);
 
@@ -98,21 +86,11 @@ WebInspector.ImageView.prototype = {
 
             infoListElement.removeChildren();
             for (var i = 0; i < imageProperties.length; ++i) {
-                var dt = document.createElement("dt");
-                dt.textContent = imageProperties[i].name;
-                infoListElement.appendChild(dt);
-                var dd = document.createElement("dd");
-                dd.textContent = imageProperties[i].value;
-                infoListElement.appendChild(dd);
+                infoListElement.createChild("dt").textContent = imageProperties[i].name;
+                infoListElement.createChild("dd").textContent = imageProperties[i].value;
             }
-            var dt = document.createElement("dt");
-            dt.textContent = WebInspector.UIString("URL");
-            infoListElement.appendChild(dt);
-            var dd = document.createElement("dd");
-            var externalResource = true;
-            dd.appendChild(WebInspector.linkifyURLAsNode(this.resource.url, undefined, undefined, externalResource));
-            infoListElement.appendChild(dd);
-
+            infoListElement.createChild("dt").textContent = WebInspector.UIString("URL");
+            infoListElement.createChild("dd").appendChild(WebInspector.linkifyURLAsNode(this.resource.url, undefined, undefined, true /* externalResource */));
             this._container.appendChild(infoListElement);
         }
         imagePreviewElement.addEventListener("load", onImageLoad.bind(this), false);

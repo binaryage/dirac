@@ -646,20 +646,15 @@ WebInspector.JavaScriptSourceFrame.prototype = {
 
     _createConditionElement: function(lineNumber)
     {
-        var conditionElement = document.createElement("div");
-        conditionElement.className = "source-frame-breakpoint-condition";
+        var conditionElement = document.createElementWithClass("div", "source-frame-breakpoint-condition");
 
-        var labelElement = document.createElement("label");
-        labelElement.className = "source-frame-breakpoint-message";
+        var labelElement = conditionElement.createChild("label", "source-frame-breakpoint-message");
         labelElement.htmlFor = "source-frame-breakpoint-condition";
-        labelElement.appendChild(document.createTextNode(WebInspector.UIString("The breakpoint on line %d will stop only if this expression is true:", lineNumber + 1)));
-        conditionElement.appendChild(labelElement);
+        labelElement.createTextChild(WebInspector.UIString("The breakpoint on line %d will stop only if this expression is true:", lineNumber + 1));
 
-        var editorElement = document.createElement("input");
+        var editorElement = conditionElement.createChild("input", "monospace");
         editorElement.id = "source-frame-breakpoint-condition";
-        editorElement.className = "monospace";
         editorElement.type = "text";
-        conditionElement.appendChild(editorElement);
         this._conditionEditorElement = editorElement;
 
         return conditionElement;
