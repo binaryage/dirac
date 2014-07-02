@@ -695,22 +695,22 @@ TestSuite.prototype.testDeviceMetricsOverrides = function()
 
     function step1()
     {
-        testOverrides({width: 1200, height: 1000, deviceScaleFactor: 1, emulateViewport: false, fitWindow: true}, {width: 1200, height: 1000, deviceScaleFactor: 1}, step2);
+        testOverrides({width: 1200, height: 1000, deviceScaleFactor: 1, mobile: false, fitWindow: true}, {width: 1200, height: 1000, deviceScaleFactor: 1}, step2);
     }
 
     function step2()
     {
-        testOverrides({width: 1200, height: 1000, deviceScaleFactor: 1, emulateViewport: false, fitWindow: false}, {width: 1200, height: 1000, deviceScaleFactor: 1}, step3);
+        testOverrides({width: 1200, height: 1000, deviceScaleFactor: 1, mobile: false, fitWindow: false}, {width: 1200, height: 1000, deviceScaleFactor: 1}, step3);
     }
 
     function step3()
     {
-        testOverrides({width: 1200, height: 1000, deviceScaleFactor: 3, emulateViewport: false, fitWindow: true}, {width: 1200, height: 1000, deviceScaleFactor: 3}, step4);
+        testOverrides({width: 1200, height: 1000, deviceScaleFactor: 3, mobile: false, fitWindow: true}, {width: 1200, height: 1000, deviceScaleFactor: 3}, step4);
     }
 
     function step4()
     {
-        testOverrides({width: 1200, height: 1000, deviceScaleFactor: 3, emulateViewport: false, fitWindow: false}, {width: 1200, height: 1000, deviceScaleFactor: 3}, finish);
+        testOverrides({width: 1200, height: 1000, deviceScaleFactor: 3, mobile: false, fitWindow: false}, {width: 1200, height: 1000, deviceScaleFactor: 3}, finish);
     }
 
     function finish()

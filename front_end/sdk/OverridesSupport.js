@@ -38,7 +38,7 @@ WebInspector.OverridesSupport = function(responsiveDesignAvailable)
 {
     WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.MainFrameNavigated, this._onMainFrameNavigated.bind(this), this);
     this._touchEmulationSuspended = false;
-    this._emulateViewportEnabled = false;
+    this._emulateMobileEnabled = false;
     this._userAgent = "";
     this._pageResizer = null;
     this._deviceScale = 1;
@@ -93,7 +93,7 @@ WebInspector.OverridesSupport.Device = function(description, userAgent)
     this.deviceScaleFactor = 1;
     this.userAgent = userAgent;
     this.touch = true;
-    this.viewport = true;
+    this.mobile = true;
 
     var splitMetrics = description.split("x");
     if (splitMetrics.length >= 3) {
@@ -104,7 +104,7 @@ WebInspector.OverridesSupport.Device = function(description, userAgent)
     if (splitMetrics.length >= 4)
         this.touch = splitMetrics[3] == 1;
     if (splitMetrics.length >= 5)
-        this.viewport = splitMetrics[4] == 1;
+        this.mobile = splitMetrics[4] == 1;
 }
 
 /**
@@ -275,7 +275,7 @@ WebInspector.OverridesSupport.deviceScaleFactorValidator = function(value)
 // - screen height,
 // - device scale factor,
 // - touch (true by default if not present),
-// - viewport (true by default if not present).
+// - mobile (true by default if not present).
 WebInspector.OverridesSupport._phones = [
     ["Apple iPhone 3GS",
      "Mozilla/5.0 (iPhone; U; CPU iPhone OS 4_2_1 like Mac OS X; en-us) AppleWebKit/533.17.9 (KHTML, like Gecko) Version/5.0.2 Mobile/8C148 Safari/6533.18.5",
@@ -507,7 +507,7 @@ WebInspector.OverridesSupport.prototype = {
         this.settings.deviceHeight.set(device.height);
         this.settings.deviceScaleFactor.set(device.deviceScaleFactor);
         this.settings.emulateTouch.set(device.touch);
-        this.settings.emulateViewport.set(device.viewport);
+        this.settings.emulateMobile.set(device.mobile);
         delete this._deviceMetricsChangedListenerMuted;
         delete this._userAgentChangedListenerMuted;
 
@@ -526,7 +526,7 @@ WebInspector.OverridesSupport.prototype = {
         this.settings.emulateResolution.set(false);
         this.settings.deviceScaleFactor.set(0);
         this.settings.emulateTouch.set(false);
-        this.settings.emulateViewport.set(false);
+        this.settings.emulateMobile.set(false);
         this.settings.overrideDeviceOrientation.set(false);
         this.settings.overrideGeolocation.set(false);
         this.settings.overrideCSSMedia.set(false);
@@ -551,7 +551,7 @@ WebInspector.OverridesSupport.prototype = {
             && this.settings.deviceHeight.get() === device.height
             && this.settings.deviceScaleFactor.get() === device.deviceScaleFactor
             && this.settings.emulateTouch.get() === device.touch
-            && this.settings.emulateViewport.get() === device.viewport
+            && this.settings.emulateMobile.get() === device.mobile
             && this.settings.emulateResolution.get();
     },
 
@@ -582,7 +582,7 @@ WebInspector.OverridesSupport.prototype = {
         this.settings.deviceWidth.addChangeListener(this._deviceMetricsChanged, this);
         this.settings.deviceHeight.addChangeListener(this._deviceMetricsChanged, this);
         this.settings.deviceScaleFactor.addChangeListener(this._deviceMetricsChanged, this);
-        this.settings.emulateViewport.addChangeListener(this._deviceMetricsChanged, this);
+        this.settings.emulateMobile.addChangeListener(this._deviceMetricsChanged, this);
         this.settings.deviceFitWindow.addChangeListener(this._deviceMetricsChanged, this);
 
         this.settings._emulationEnabled.addChangeListener(this._geolocationPositionChanged, this);
@@ -735,7 +735,7 @@ WebInspector.OverridesSupport.prototype = {
         {
             PageAgent.setDeviceMetricsOverride(
                 overrideWidth, overrideHeight, this.settings.deviceScaleFactor.get(),
-                this.settings.emulateViewport.get(), this._pageResizer ? false : this.settings.deviceFitWindow.get(), scale, 0, 0,
+                this.settings.emulateMobile.get(), this._pageResizer ? false : this.settings.deviceFitWindow.get(), scale, 0, 0,
                 apiCallback.bind(this, finishCallback));
         }
 
@@ -762,10 +762,10 @@ WebInspector.OverridesSupport.prototype = {
                 return;
             }
 
-            var viewportEnabled = this.emulationEnabled() && this.settings.emulateViewport.get();
-            if (this._emulateViewportEnabled !== viewportEnabled)
+            var mobileEnabled = this.emulationEnabled() && this.settings.emulateMobile.get();
+            if (this._emulateMobileEnabled !== mobileEnabled)
                 this._updateDeviceMetricsWarningMessage(WebInspector.UIString("You might need to reload the page for proper user agent spoofing and viewport rendering."));
-            this._emulateViewportEnabled = viewportEnabled;
+            this._emulateMobileEnabled = mobileEnabled;
             this._deviceMetricsOverrideAppliedForTest();
             finishCallback();
         }
@@ -922,8 +922,7 @@ WebInspector.OverridesSupport.prototype = {
         this.settings.deviceHeight = WebInspector.settings.createSetting("deviceHeight", 640);
         this.settings.deviceScaleFactor = WebInspector.settings.createSetting("deviceScaleFactor", 0);
         this.settings.deviceFitWindow = WebInspector.settings.createSetting("deviceFitWindow", true);
-        // FIXME: rename viewport to mobile everywhere in the code.
-        this.settings.emulateViewport = WebInspector.settings.createSetting("emulateViewport", false);
+        this.settings.emulateMobile = WebInspector.settings.createSetting("emulateMobile", false);
 
         this.settings.emulateTouch = WebInspector.settings.createSetting("emulateTouch", false);
 
@@ -1017,7 +1016,7 @@ WebInspector.OverridesSupport.prototype = {
         WebInspector.overridesSupport.settings.deviceWidth.addChangeListener(emulatedSettingChanged);
         WebInspector.overridesSupport.settings.deviceHeight.addChangeListener(emulatedSettingChanged);
         WebInspector.overridesSupport.settings.deviceScaleFactor.addChangeListener(emulatedSettingChanged);
-        WebInspector.overridesSupport.settings.emulateViewport.addChangeListener(emulatedSettingChanged);
+        WebInspector.overridesSupport.settings.emulateMobile.addChangeListener(emulatedSettingChanged);
         WebInspector.overridesSupport.settings.emulateTouch.addChangeListener(emulatedSettingChanged);
         WebInspector.overridesSupport.settings.userAgent.addChangeListener(emulatedSettingChanged);
         emulatedSettingChanged();

@@ -193,7 +193,7 @@ WebInspector.OverridesView.DeviceTab = function()
     WebInspector.OverridesView.Tab.call(this, "device", WebInspector.UIString("Device"),  [
         WebInspector.overridesSupport.settings.emulateResolution,
         WebInspector.overridesSupport.settings.deviceScaleFactor,
-        WebInspector.overridesSupport.settings.emulateViewport
+        WebInspector.overridesSupport.settings.emulateMobile
     ]);
     this.element.classList.add("overrides-device");
 
@@ -245,9 +245,9 @@ WebInspector.OverridesView.DeviceTab.prototype = {
         rowElement.createChild("td").appendChild(document.createTextNode(WebInspector.UIString("Device pixel ratio:")));
         rowElement.createChild("td").appendChild(WebInspector.SettingsUI.createSettingInputField("", WebInspector.overridesSupport.settings.deviceScaleFactor, true, 4, "80px", WebInspector.OverridesSupport.deviceScaleFactorValidator, true, true, WebInspector.UIString("\u2013")));
 
-        var viewportCheckbox = this._createSettingCheckbox(WebInspector.UIString("Emulate mobile"), WebInspector.overridesSupport.settings.emulateViewport);
-        viewportCheckbox.title = WebInspector.UIString("Enable meta viewport, overlay scrollbars, text autosizing and default 980px body width");
-        fieldsetElement.appendChild(viewportCheckbox);
+        var mobileCheckbox = this._createSettingCheckbox(WebInspector.UIString("Emulate mobile"), WebInspector.overridesSupport.settings.emulateMobile);
+        mobileCheckbox.title = WebInspector.UIString("Enable meta viewport, overlay scrollbars, text autosizing and default 980px body width");
+        fieldsetElement.appendChild(mobileCheckbox);
 
         fieldsetElement.appendChild(this._createSettingCheckbox(WebInspector.UIString("Shrink to fit"), WebInspector.overridesSupport.settings.deviceFitWindow));
 
