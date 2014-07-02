@@ -150,9 +150,7 @@ WebInspector.TimelineView.prototype = {
             this._frameContainer.removeChildren();
         } else {
             const frameContainerBorderWidth = 1;
-            this._frameContainer = document.createElement("div");
-            this._frameContainer.classList.add("fill");
-            this._frameContainer.classList.add("timeline-frame-container");
+            this._frameContainer = document.createElementWithClass("div", "fill timeline-frame-container");
             this._frameContainer.style.height = WebInspector.TimelinePanel.rowHeight + frameContainerBorderWidth + "px";
             this._frameContainer.addEventListener("dblclick", this._onFrameDoubleClicked.bind(this), false);
             this._frameContainer.addEventListener("click", this._onFrameClicked.bind(this), false);
@@ -166,8 +164,7 @@ WebInspector.TimelineView.prototype = {
             var frameStart = this._calculator.computePosition(frame.startTime);
             var frameEnd = this._calculator.computePosition(frame.endTime);
 
-            var frameStrip = document.createElement("div");
-            frameStrip.className = "timeline-frame-strip";
+            var frameStrip = document.createElementWithClass("div", "timeline-frame-strip");
             var actualStart = Math.max(frameStart, 0);
             var width = frameEnd - actualStart;
             frameStrip.style.left = actualStart + "px";
@@ -1080,9 +1077,9 @@ WebInspector.TimelineRecordListRow.prototype = {
         } else {
             var detailsNode = uiUtils.buildDetailsNode(record, this._linkifier, loadedFromFile);
             if (detailsNode) {
-                this._dataElement.appendChild(document.createTextNode("("));
+                this._dataElement.createTextChild("(");
                 this._dataElement.appendChild(detailsNode);
-                this._dataElement.appendChild(document.createTextNode(")"));
+                this._dataElement.createTextChild(")");
             }
         }
 
@@ -1164,19 +1161,13 @@ WebInspector.TimelineRecordGraphRow = function(graphContainer, selectRecord, sch
     this.element.addEventListener("mouseout", this._onMouseOut.bind(this), false);
     this.element.addEventListener("click", this._onClick.bind(this), false);
 
-    this._barAreaElement = document.createElement("div");
-    this._barAreaElement.className = "timeline-graph-bar-area";
-    this.element.appendChild(this._barAreaElement);
+    this._barAreaElement = this.element.createChild("div", "timeline-graph-bar-area");
 
-    this._barCpuElement = document.createElement("div");
-    this._barCpuElement.className = "timeline-graph-bar cpu"
+    this._barCpuElement = this._barAreaElement.createChild("div", "timeline-graph-bar cpu");
     this._barCpuElement.row = this;
-    this._barAreaElement.appendChild(this._barCpuElement);
 
-    this._barElement = document.createElement("div");
-    this._barElement.className = "timeline-graph-bar";
+    this._barElement = this._barAreaElement.createChild("div", "timeline-graph-bar");
     this._barElement.row = this;
-    this._barAreaElement.appendChild(this._barElement);
 
     this._expandElement = new WebInspector.TimelineExpandableElement(graphContainer);
 
@@ -1295,8 +1286,9 @@ WebInspector.TimelineExpandableElement.prototype = {
                 this._element.classList.remove("timeline-expandable-expanded");
             }
             this._element.classList.remove("hidden");
-        } else
+        } else {
             this._element.classList.add("hidden");
+        }
     },
 
     _dispose: function()

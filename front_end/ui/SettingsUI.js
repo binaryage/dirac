@@ -115,10 +115,8 @@ WebInspector.SettingsUI.createSettingInputField = function(label, setting, numer
     inputElement.addEventListener("keydown", onKeyDown, false);
 
     var errorMessageLabel;
-    if (validatorCallback) {
-        errorMessageLabel = p.createChild("div");
-        errorMessageLabel.classList.add("field-error-message");
-    }
+    if (validatorCallback)
+        errorMessageLabel = p.createChild("div", "field-error-message");
 
     function onInput()
     {
@@ -180,10 +178,9 @@ WebInspector.SettingsUI.createSettingInputField = function(label, setting, numer
 WebInspector.SettingsUI.createCustomSetting = function(name, element)
 {
     var p = document.createElement("p");
-    var fieldsetElement = document.createElement("fieldset");
+    var fieldsetElement = p.createChild("fieldset");
     fieldsetElement.createChild("label").textContent = name;
     fieldsetElement.appendChild(element);
-    p.appendChild(fieldsetElement);
     return p;
 }
 

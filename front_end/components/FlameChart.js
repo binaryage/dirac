@@ -829,15 +829,11 @@ WebInspector.FlameChart.prototype = {
 
     _buildEntryInfo: function(entryInfo)
     {
-        var infoTable = document.createElement("table");
-        infoTable.className = "info-table";
+        var infoTable = document.createElementWithClass("table", "info-table");
         for (var i = 0; i < entryInfo.length; ++i) {
             var row = infoTable.createChild("tr");
-            var titleCell = row.createChild("td");
-            titleCell.textContent = entryInfo[i].title;
-            titleCell.className = "title";
-            var textCell = row.createChild("td");
-            textCell.textContent = entryInfo[i].text;
+            row.createChild("td", "title").textContent = entryInfo[i].title;
+            row.createChild("td").textContent = entryInfo[i].text;
         }
         return infoTable;
     },

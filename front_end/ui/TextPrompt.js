@@ -157,9 +157,10 @@ WebInspector.TextPrompt.prototype = {
         if (!x) {
             // Append a break element instead of setting textContent to make sure the selection is inside the prompt.
             this._element.removeChildren();
-            this._element.appendChild(document.createElement("br"));
-        } else
+            this._element.createChild("br");
+        } else {
             this._element.textContent = x;
+        }
 
         this.moveCaretToEndOfPrompt();
         this._element.scrollIntoView();
@@ -481,8 +482,7 @@ WebInspector.TextPrompt.prototype = {
             var prefixTextNode = document.createTextNode(prefixText);
             fullWordRange.insertNode(prefixTextNode);
 
-            this.autoCompleteElement = document.createElement("span");
-            this.autoCompleteElement.className = "auto-complete-text";
+            this.autoCompleteElement = document.createElementWithClass("span", "auto-complete-text");
             this.autoCompleteElement.textContent = suffixText;
 
             prefixTextNode.parentNode.insertBefore(this.autoCompleteElement, prefixTextNode.nextSibling);

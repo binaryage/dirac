@@ -57,8 +57,7 @@ WebInspector.SoftContextMenu.prototype = {
 
         // Create context menu.
         var targetRect;
-        this._contextMenuElement = document.createElement("div");
-        this._contextMenuElement.className = "soft-context-menu";
+        this._contextMenuElement = document.createElementWithClass("div", "soft-context-menu");
         this._contextMenuElement.tabIndex = 0;
         this._contextMenuElement.style.top = absoluteY + "px";
         this._contextMenuElement.style.left = absoluteX + "px";
@@ -71,15 +70,15 @@ WebInspector.SoftContextMenu.prototype = {
 
         // Install glass pane capturing events.
         if (!this._parentMenu) {
-            this._glassPaneElement = document.createElement("div");
-            this._glassPaneElement.className = "soft-context-menu-glass-pane";
+            this._glassPaneElement = document.createElementWithClass("div", "soft-context-menu-glass-pane");
             this._glassPaneElement.tabIndex = 0;
             this._glassPaneElement.addEventListener("mouseup", this._glassPaneMouseUp.bind(this), false);
             this._glassPaneElement.appendChild(this._contextMenuElement);
             document.body.appendChild(this._glassPaneElement);
             this._focus();
-        } else
+        } else {
             this._parentMenu._parentGlassPaneElement().appendChild(this._contextMenuElement);
+        }
 
         // Re-position menu in case it does not fit.
         if (document.body.offsetWidth <  this._contextMenuElement.offsetLeft + this._contextMenuElement.offsetWidth)
@@ -107,17 +106,13 @@ WebInspector.SoftContextMenu.prototype = {
         if (item.type === "subMenu")
             return this._createSubMenu(item);
 
-        var menuItemElement = document.createElement("div");
-        menuItemElement.className = "soft-context-menu-item";
-
-        var checkMarkElement = document.createElement("span");
+        var menuItemElement = document.createElementWithClass("div", "soft-context-menu-item");
+        var checkMarkElement = menuItemElement.createChild("span", "soft-context-menu-item-checkmark");
         checkMarkElement.textContent = "\u2713 "; // Checkmark Unicode symbol
-        checkMarkElement.className = "soft-context-menu-item-checkmark";
         if (!item.checked)
             checkMarkElement.style.opacity = "0";
 
-        menuItemElement.appendChild(checkMarkElement);
-        menuItemElement.appendChild(document.createTextNode(item.label));
+        menuItemElement.createTextChild(item.label);
 
         menuItemElement.addEventListener("mousedown", this._menuItemMouseDown.bind(this), false);
         menuItemElement.addEventListener("mouseup", this._menuItemMouseUp.bind(this), false);
@@ -132,23 +127,18 @@ WebInspector.SoftContextMenu.prototype = {
 
     _createSubMenu: function(item)
     {
-        var menuItemElement = document.createElement("div");
-        menuItemElement.className = "soft-context-menu-item";
+        var menuItemElement = document.createElementWithClass("div", "soft-context-menu-item");
         menuItemElement._subItems = item.subItems;
 
         // Occupy the same space on the left in all items.
-        var checkMarkElement = document.createElement("span");
+        var checkMarkElement = menuItemElement.createChild("span", "soft-context-menu-item-checkmark");
         checkMarkElement.textContent = "\u2713 "; // Checkmark Unicode symbol
-        checkMarkElement.className = "soft-context-menu-item-checkmark";
         checkMarkElement.style.opacity = "0";
-        menuItemElement.appendChild(checkMarkElement);
 
-        var subMenuArrowElement = document.createElement("span");
+        menuItemElement.createTextChild(item.label);
+
+        var subMenuArrowElement = menuItemElement.createChild("span", "soft-context-menu-item-submenu-arrow");
         subMenuArrowElement.textContent = "\u25B6"; // BLACK RIGHT-POINTING TRIANGLE
-        subMenuArrowElement.className = "soft-context-menu-item-submenu-arrow";
-
-        menuItemElement.appendChild(document.createTextNode(item.label));
-        menuItemElement.appendChild(subMenuArrowElement);
 
         menuItemElement.addEventListener("mousedown", this._menuItemMouseDown.bind(this), false);
         menuItemElement.addEventListener("mouseup", this._menuItemMouseUp.bind(this), false);
@@ -162,8 +152,7 @@ WebInspector.SoftContextMenu.prototype = {
 
     _createSeparator: function()
     {
-        var separatorElement = document.createElement("div");
-        separatorElement.className = "soft-context-menu-separator";
+        var separatorElement = document.createElementWithClass("div", "soft-context-menu-separator");
         separatorElement._isSeparator = true;
         separatorElement.addEventListener("mouseover", this._hideSubMenu.bind(this), false);
         separatorElement.createChild("div", "separator-line");

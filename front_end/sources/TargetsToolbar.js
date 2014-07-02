@@ -8,8 +8,7 @@
  */
 WebInspector.TargetsToolbar = function()
 {
-    this.element = document.createElement("div");
-    this.element.className = "status-bar scripts-debug-toolbar targets-toolbar hidden";
+    this.element = document.createElementWithClass("div", "status-bar scripts-debug-toolbar targets-toolbar hidden");
     this._comboBox = new WebInspector.StatusBarComboBox(this._onComboBoxSelectionChange.bind(this));
     this.element.appendChild(this._comboBox.element);
 

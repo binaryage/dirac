@@ -35,8 +35,7 @@
  */
 WebInspector.ProgressIndicator = function()
 {
-    this.element = document.createElement("div");
-    this.element.className = "progress-bar-container";
+    this.element = document.createElementWithClass("div", "progress-bar-container");
     this._labelElement = this.element.createChild("span");
     this._progressElement = this.element.createChild("progress");
     this._stopButton = new WebInspector.StatusBarButton(WebInspector.UIString("Cancel"), "progress-bar-stop-button");

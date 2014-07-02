@@ -164,13 +164,8 @@ WebInspector.StatusBarButton = function(title, className, states)
     this.element.className = className + " status-bar-item";
     this.element.addEventListener("click", this._clicked.bind(this), false);
 
-    this.glyph = document.createElement("div");
-    this.glyph.className = "glyph";
-    this.element.appendChild(this.glyph);
-
-    this.glyphShadow = document.createElement("div");
-    this.glyphShadow.className = "glyph shadow";
-    this.element.appendChild(this.glyphShadow);
+    this.glyph = this.element.createChild("div", "glyph");
+    this.glyphShadow = this.element.createChild("div", "glyph shadow");
 
     this.states = states;
     if (!states)
@@ -238,9 +233,9 @@ WebInspector.StatusBarButton.prototype = {
         if (this._state === x)
             return;
 
-        if (this.states === 2)
+        if (this.states === 2) {
             this.element.classList.toggle("toggled-on", x);
-        else {
+        } else {
             this.element.classList.remove("toggled-" + this._state);
             if (x !== 0)
                 this.element.classList.add("toggled-" + x);
@@ -330,13 +325,8 @@ WebInspector.StatusBarButton.prototype = {
             if (!this._longClickOptionsData) {
                 this.makeLongClickEnabled();
 
-                this.longClickGlyph = document.createElement("div");
-                this.longClickGlyph.className = "fill long-click-glyph";
-                this.element.appendChild(this.longClickGlyph);
-
-                this.longClickGlyphShadow = document.createElement("div");
-                this.longClickGlyphShadow.className = "fill long-click-glyph shadow";
-                this.element.appendChild(this.longClickGlyphShadow);
+                this.longClickGlyph = this.element.createChild("div", "fill long-click-glyph");
+                this.longClickGlyphShadow = this.element.createChild("div", "fill long-click-glyph shadow");
 
                 var longClickDownListener = this._showOptions.bind(this);
                 this.addEventListener("longClickDown", longClickDownListener, this);

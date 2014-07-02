@@ -83,10 +83,8 @@ WebInspector.SidebarTreeElement = function(className, title, subtitle, represent
 {
     TreeElement.call(this, "", representedObject, hasChildren);
 
-    if (hasChildren) {
-        this.disclosureButton = document.createElement("button");
-        this.disclosureButton.className = "disclosure-button";
-    }
+    if (hasChildren)
+        this.disclosureButton = document.createElementWithClass("button", "disclosure-button");
 
     this.iconElement = document.createElementWithClass("div", "icon");
     this.statusElement = document.createElementWithClass("div", "status");
@@ -180,9 +178,7 @@ WebInspector.SidebarTreeElement.prototype = {
         if (this.hasChildren && this.disclosureButton)
             this.listItemElement.appendChild(this.disclosureButton);
 
-        this.listItemElement.appendChild(this.iconElement);
-        this.listItemElement.appendChild(this.statusElement);
-        this.listItemElement.appendChild(this.titlesElement);
+        this.listItemElement.appendChildren(this.iconElement, this.statusElement, this.titlesElement);
     },
 
     onreveal: function()

@@ -426,6 +426,15 @@ Element.prototype.createTextChildren = function(var_args)
 DocumentFragment.prototype.createTextChildren = Element.prototype.createTextChildren;
 
 /**
+ * @param {...!Element} var_args
+ */
+Element.prototype.appendChildren = function(var_args)
+{
+    for (var i = 0, n = arguments.length; i < n; ++i)
+        this.appendChild(arguments[i]);
+}
+
+/**
  * @return {number}
  */
 Element.prototype.totalOffsetLeft = function()

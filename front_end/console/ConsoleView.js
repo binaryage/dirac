@@ -73,10 +73,7 @@ WebInspector.ConsoleView = function(hideContextSelector)
     this._preserveLogCheckbox.element.title = WebInspector.UIString("Do not clear log on page reload / navigation.");
 
     var statusBarElement = this._contentsElement.createChild("div", "console-status-bar");
-    statusBarElement.appendChild(this._clearConsoleButton.element);
-    statusBarElement.appendChild(this._filterBar.filterButton().element);
-    statusBarElement.appendChild(this._executionContextSelector.element);
-    statusBarElement.appendChild(this._preserveLogCheckbox.element);
+    statusBarElement.appendChildren(this._clearConsoleButton.element, this._filterBar.filterButton().element, this._executionContextSelector.element, this._preserveLogCheckbox.element);
 
     this._filtersContainer = this._contentsElement.createChild("div", "console-filters-header hidden");
     this._filtersContainer.appendChild(this._filterBar.filtersElement());
@@ -86,8 +83,7 @@ WebInspector.ConsoleView = function(hideContextSelector)
 
     this._viewport = new WebInspector.ViewportControl(this);
     this._viewport.setStickToBottom(true);
-    this._viewport.contentElement().classList.add("console-group");
-    this._viewport.contentElement().classList.add("console-group-messages");
+    this._viewport.contentElement().classList.add("console-group", "console-group-messages");
     this._contentsElement.appendChild(this._viewport.element);
     this._messagesElement = this._viewport.element;
     this._messagesElement.id = "console-messages";
@@ -109,7 +105,6 @@ WebInspector.ConsoleView = function(hideContextSelector)
     this._promptElement = this._messagesElement.createChild("div", "source-code");
     this._promptElement.id = "console-prompt";
     this._promptElement.spellcheck = false;
-    this._messagesElement.appendChild(this._promptElement);
 
     this._showAllMessagesCheckbox = new WebInspector.StatusBarCheckbox(WebInspector.UIString("Show all messages"));
     this._showAllMessagesCheckbox.inputElement.checked = true;
@@ -1117,9 +1112,8 @@ WebInspector.ConsoleCommand.prototype = {
     contentElement: function()
     {
         if (!this._element) {
-            this._element = document.createElement("div");
+            this._element = document.createElementWithClass("div", "console-user-command");
             this._element.message = this;
-            this._element.className = "console-user-command";
 
             this._formatCommand();
             this._element.appendChild(this._formattedCommand);
@@ -1129,8 +1123,7 @@ WebInspector.ConsoleCommand.prototype = {
 
     _formatCommand: function()
     {
-        this._formattedCommand = document.createElement("span");
-        this._formattedCommand.className = "console-message-text source-code";
+        this._formattedCommand = document.createElementWithClass("span", "console-message-text source-code");
         this._formattedCommand.textContent = this.text;
     },
 

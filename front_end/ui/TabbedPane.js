@@ -508,10 +508,9 @@ WebInspector.TabbedPane.prototype = {
 
     _createDropDownButton: function()
     {
-        var dropDownContainer = document.createElement("div");
-        dropDownContainer.classList.add("tabbed-pane-header-tabs-drop-down-container");
+        var dropDownContainer = document.createElementWithClass("div", "tabbed-pane-header-tabs-drop-down-container");
         var dropDownButton = dropDownContainer.createChild("div", "tabbed-pane-header-tabs-drop-down");
-        dropDownButton.appendChild(document.createTextNode("\u00bb"));
+        dropDownButton.createTextChild("\u00bb");
 
         this._dropDownMenu = new WebInspector.DropDownMenu();
         this._dropDownMenu.addEventListener(WebInspector.DropDownMenu.Events.ItemSelected, this._dropDownMenuItemSelected, this);
@@ -899,8 +898,7 @@ WebInspector.TabbedPaneTab.prototype = {
 
     _createIconElement: function(tabElement, titleElement)
     {
-        var iconElement = document.createElement("span");
-        iconElement.className = "tabbed-pane-header-tab-icon " + this._iconClass;
+        var iconElement = document.createElementWithClass("span", "tabbed-pane-header-tab-icon " + this._iconClass);
         if (this._iconTooltip)
             iconElement.title = this._iconTooltip;
         tabElement.insertBefore(iconElement, titleElement);
@@ -913,8 +911,7 @@ WebInspector.TabbedPaneTab.prototype = {
      */
     _createTabElement: function(measuring)
     {
-        var tabElement = document.createElement("div");
-        tabElement.classList.add("tabbed-pane-header-tab");
+        var tabElement = document.createElementWithClass("div", "tabbed-pane-header-tab");
         tabElement.id = "tab-" + this._id;
         tabElement.tabIndex = -1;
         tabElement.selectTabForTest = this._tabbedPane.selectTab.bind(this._tabbedPane, this.id, true);
