@@ -1156,7 +1156,7 @@ WebInspector.StylePropertiesSection.prototype = {
         if (!this.rule || !this.rule.styleSheetId)
             return;
         if (this.rule !== editedRule)
-            this.rule.sourceStyleSheetEdited(this.rule.styleSheetId, oldRange, newRange);
+            this.rule.sourceStyleSheetEdited(editedRule.styleSheetId, oldRange, newRange);
         this._updateMediaList();
         this._updateRuleOrigin();
     },
