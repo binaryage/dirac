@@ -60,7 +60,8 @@ WebInspector.NetworkLogView = function(filterBar, coulmnsVisibilitySetting)
     this._allowRequestSelection = false;
     this._requests = [];
     this._requestsById = {};
-    this._staleRequests = {};
+    /** @type {!Object.<string, boolean>} */
+    this._staleRequestIds = {};
     this._requestGridNodes = {};
     this._lastRequestGridNodeId = 0;
     this._mainRequestLoadTime = -1;
@@ -662,7 +663,7 @@ WebInspector.NetworkLogView.prototype = {
     {
         for (var i = 0; i < this._requests.length; ++i) {
             var request = this._requests[i];
-            this._staleRequests[request.requestId] = request;
+            this._staleRequestIds[request.requestId] = true;
         }
     },
 
@@ -767,8 +768,8 @@ WebInspector.NetworkLogView.prototype = {
             boundariesChanged = this.calculator.updateBoundariesForEventTime(this._mainRequestDOMContentLoadedTime) || boundariesChanged;
         }
 
-        for (var requestId in this._staleRequests) {
-            var request = this._staleRequests[requestId];
+        for (var requestId in this._staleRequestIds) {
+            var request = this._requestsById[requestId];
             var node = this._requestGridNode(request);
             if (!node) {
                 // Create the timeline tree element and graph.
@@ -790,10 +791,10 @@ WebInspector.NetworkLogView.prototype = {
             this._invalidateAllItems();
         }
 
-        for (var requestId in this._staleRequests)
-            this._requestGridNode(this._staleRequests[requestId]).refreshGraph(this.calculator);
+        for (var requestId in this._staleRequestIds)
+            this._requestGridNode(this._requestsById[requestId]).refreshGraph(this.calculator);
 
-        this._staleRequests = {};
+        this._staleRequestIds = {};
         this._sortItems();
         this._updateSummaryBar();
         this._dataGrid.updateWidths();
@@ -822,7 +823,7 @@ WebInspector.NetworkLogView.prototype = {
 
         this._requests = [];
         this._requestsById = {};
-        this._staleRequests = {};
+        this._staleRequestIds = {};
         this._requestGridNodes = {};
         this._resetSuggestionBuilder();
 
@@ -906,7 +907,7 @@ WebInspector.NetworkLogView.prototype = {
             this._suggestionBuilder.addItem(WebInspector.NetworkPanel.FilterType.SetCookieValue, cookie.value());
         }
 
-        this._staleRequests[request.requestId] = request;
+        this._staleRequestIds[request.requestId] = true;
         this._scheduleRefresh();
     },
 
