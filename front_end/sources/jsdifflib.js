@@ -3,10 +3,10 @@
  *
  * Copyright (c) 2007, Snowtide Informatics Systems, Inc.
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- * 
+ *
  *    * Redistributions of source code must retain the above copyright notice, this
  * list of conditions and the following disclaimer.
  *    * Redistributions in binary form must reproduce the above copyright notice,
@@ -96,7 +96,7 @@ difflib = {
     // replacement for python's dict.get function -- need easy default values
     __dictget: function (dict, key, defaultValue) {
         return dict.hasOwnProperty(key) ? dict[key] : defaultValue;
-    },  
+    },
 
     SequenceMatcher: function (a, b, isjunk) {
         this.set_seqs = function (a, b) {

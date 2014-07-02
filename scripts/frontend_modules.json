@@ -152,7 +152,6 @@
             "components/HandlerRegistry.js",
             "components/HelpScreen.js",
             "components/InspectElementModeController.js",
-            "components/InspectedPagePlaceholder.js",
             "components/InspectorView.js",
             "components/NativeBreakpointsSidebarPane.js",
             "components/ObjectPopoverHelper.js",
@@ -175,11 +174,12 @@
         ]
     },
     {
-        "name": "responsive_design",
-        "dependencies": ["components"],
+        "name": "toolbox",
+        "dependencies": ["ui", "sdk"],
         "sources": [
-            "MediaQueryInspector.js",
-            "ResponsiveDesignView.js"
+            "toolbox/InspectedPagePlaceholder.js",
+            "toolbox/MediaQueryInspector.js",
+            "toolbox/ResponsiveDesignView.js"
         ]
     },
     {
@@ -461,11 +461,11 @@
         "dependencies": [
             "elements",
             "host_stub",
-            "responsive_design",
             "screencast",
             "settings",
             "sources",
-            "sdk"
+            "sdk",
+            "toolbox"
         ],
         "sources": [
             "main/AdvancedApp.js",
