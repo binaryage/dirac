@@ -1112,7 +1112,7 @@ WebInspector.TimelinePanel.prototype = {
                 break;
             }
         }
-        pieChartContainer.appendChild(document.createTextNode(title));
+        pieChartContainer.createChild("div").textContent = title;
         pieChartContainer.appendChild(WebInspector.TimelineUIUtils.generatePieChart(aggregatedStats));
         this.showInDetails(WebInspector.UIString("Selected Range"), pieChartContainer);
     },

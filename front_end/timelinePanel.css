@@ -760,6 +760,10 @@
     margin: 6px;
 }
 
+.timeline-range-summary > div {
+    flex-shrink: 0;
+}
+
 .timeline-aggregated-info-legend > div {
     overflow: hidden;
     white-space: nowrap;
