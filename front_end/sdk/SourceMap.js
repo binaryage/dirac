@@ -269,7 +269,7 @@ WebInspector.SourceMap.prototype = {
             }
 
             columnNumber += this._decodeVLQ(stringCharIterator);
-            if (this._isSeparator(stringCharIterator.peek())) {
+            if (!stringCharIterator.hasNext() || this._isSeparator(stringCharIterator.peek())) {
                 this._mappings.push([lineNumber, columnNumber]);
                 continue;
             }
