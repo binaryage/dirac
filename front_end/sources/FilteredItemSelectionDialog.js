@@ -91,6 +91,7 @@ WebInspector.FilteredItemSelectionDialog.prototype = {
         this._dialogHeight = height;
 
         this._updateShowMatchingItems();
+        this._viewportControl.refresh();
     },
 
     focus: function()
