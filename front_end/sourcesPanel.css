@@ -71,6 +71,7 @@
     display: flex;
     padding-left: 3px;
     border-top: 1px solid rgb(196,196,196);
+    height: 24px;
 }
 
 #scripts-editor-toolbar {
