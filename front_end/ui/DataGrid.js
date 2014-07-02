@@ -324,6 +324,16 @@ WebInspector.DataGrid.prototype = {
         return this._rootNode;
     },
 
+    /**
+     * @param {!WebInspector.DataGridNode} node
+     */
+    insertChild: function(node)
+    {
+        // Currently only non-hierarchical tables are supported.
+        var parentNode = this._rootNode;
+        parentNode.insertChild(node, parentNode.children.upperBound(node, this._sortingFunction));
+    },
+
     _ondblclick: function(event)
     {
         if (this._editing || this._editingNode)
@@ -846,6 +856,7 @@ WebInspector.DataGrid.prototype = {
         sortedRows.sort(comparatorWrapper);
         var sortedRowsLength = sortedRows.length;
 
+        this._rootNode.children = [];
         tbody.removeChildren();
         var previousSiblingNode = null;
         for (var i = 0; i < sortedRowsLength; ++i) {
@@ -854,6 +865,7 @@ WebInspector.DataGrid.prototype = {
             node.previousSibling = previousSiblingNode;
             if (previousSiblingNode)
                 previousSiblingNode.nextSibling = node;
+            this._rootNode.children.push(node);
             tbody.appendChild(row);
             previousSiblingNode = node;
         }
