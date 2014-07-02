@@ -155,6 +155,66 @@ WebInspector.DataGrid.Align = {
     Right: "right"
 }
 
+/** @typedef {function(!WebInspector.DataGridNode, !WebInspector.DataGridNode):number} */
+WebInspector.DataGrid.NodeComparator;
+
+/**
+ * @param {!WebInspector.DataGridNode} a
+ * @param {!WebInspector.DataGridNode} b
+ * @return {number}
+ */
+WebInspector.DataGrid.TrivialComparator = function(a, b)
+{
+    return 0;
+}
+
+/**
+ * @param {string} columnIdentifier
+ * @param {!WebInspector.DataGridNode} a
+ * @param {!WebInspector.DataGridNode} b
+ * @return {number}
+ */
+WebInspector.DataGrid.NumericComparator = function(columnIdentifier, a, b)
+{
+    var aValue = a.data[columnIdentifier];
+    var bValue = b.data[columnIdentifier];
+    var aNumber = Number(aValue instanceof Node ? aValue.textContent : aValue);
+    var bNumber = Number(bValue instanceof Node ? bValue.textContent : bValue);
+    return aNumber < bNumber ? -1 : (aNumber > bNumber ? 1 : 0);
+}
+
+/**
+ * @param {string} columnIdentifier
+ * @param {!WebInspector.DataGridNode} a
+ * @param {!WebInspector.DataGridNode} b
+ * @return {number}
+ */
+WebInspector.DataGrid.StringComparator = function(columnIdentifier, a, b)
+{
+    var aValue = a.data[columnIdentifier];
+    var bValue = b.data[columnIdentifier];
+    var aString = aValue instanceof Node ? aValue.textContent : String(aValue);
+    var bString = bValue instanceof Node ? bValue.textContent : String(bValue);
+    return aString < bString ? -1 : (aString > bString ? 1 : 0);
+}
+
+/**
+ * @param {!WebInspector.DataGrid.NodeComparator} comparator
+ * @param {boolean} reverseMode
+ * @param {!WebInspector.DataGridNode} a
+ * @param {!WebInspector.DataGridNode} b
+ * @return {number}
+ */
+WebInspector.DataGrid.Comparator = function(comparator, reverseMode, a, b)
+{
+    if (a._data.summaryRow)
+        return 1;
+    if (b._data.summaryRow)
+        return -1;
+
+    return reverseMode ? comparator(b, a) : comparator(a, b);
+}
+
 /**
  * @param {!Array.<string>} columnNames
  * @param {!Array.<string>} values
@@ -190,43 +250,22 @@ WebInspector.DataGrid.createSortableDataGrid = function(columnNames, values)
 
     function sortDataGrid()
     {
-        var nodes = dataGrid._rootNode.children.slice();
+        var nodes = dataGrid._rootNode.children;
         var sortColumnIdentifier = dataGrid.sortColumnIdentifier();
-        var sortDirection = dataGrid.isSortOrderAscending() ? 1 : -1;
-        var columnIsNumeric = true;
+        if (!sortColumnIdentifier)
+            return;
 
+        var columnIsNumeric = true;
         for (var i = 0; i < nodes.length; i++) {
             var value = nodes[i].data[sortColumnIdentifier];
-            value = value instanceof Node ? Number(value.textContent) : Number(value);
-            if (isNaN(value)) {
+            if (isNaN(value instanceof Node ? value.textContent : value)) {
                 columnIsNumeric = false;
                 break;
             }
         }
 
-        function comparator(dataGridNode1, dataGridNode2)
-        {
-            var item1 = dataGridNode1.data[sortColumnIdentifier];
-            var item2 = dataGridNode2.data[sortColumnIdentifier];
-            item1 = item1 instanceof Node ? item1.textContent : String(item1);
-            item2 = item2 instanceof Node ? item2.textContent : String(item2);
-
-            var comparison;
-            if (columnIsNumeric) {
-                // Sort numbers based on comparing their values rather than a lexicographical comparison.
-                var number1 = parseFloat(item1);
-                var number2 = parseFloat(item2);
-                comparison = number1 < number2 ? -1 : (number1 > number2 ? 1 : 0);
-            } else
-                comparison = item1 < item2 ? -1 : (item1 > item2 ? 1 : 0);
-
-            return sortDirection * comparison;
-        }
-
-        nodes.sort(comparator);
-        dataGrid.rootNode().removeChildren();
-        for (var i = 0; i < nodes.length; i++)
-            dataGrid._rootNode.appendChild(nodes[i]);
+        var comparator = columnIsNumeric ? WebInspector.DataGrid.NumericComparator : WebInspector.DataGrid.StringComparator;
+        dataGrid.sortNodes(comparator.bind(null, sortColumnIdentifier), !dataGrid.isSortOrderAscending());
     }
     return dataGrid;
 }
@@ -782,18 +821,18 @@ WebInspector.DataGrid.prototype = {
         this.rootNode().appendChild(this.creationNode);
     },
 
+    /**
+     * @param {!WebInspector.DataGrid.NodeComparator} comparator
+     * @param {boolean} reverseMode
+     */
     sortNodes: function(comparator, reverseMode)
     {
+        var sortingFunction = WebInspector.DataGrid.Comparator.bind(null, comparator, reverseMode);
+        this._sortingFunction = sortingFunction;
+
         function comparatorWrapper(a, b)
         {
-            if (a._dataGridNode._data.summaryRow)
-                return 1;
-            if (b._dataGridNode._data.summaryRow)
-                return -1;
-
-            var aDataGirdNode = a._dataGridNode;
-            var bDataGirdNode = b._dataGridNode;
-            return reverseMode ? comparator(bDataGirdNode, aDataGirdNode) : comparator(aDataGirdNode, bDataGirdNode);
+            return sortingFunction(a._dataGridNode, b._dataGridNode);
         }
 
         var tbody = this.dataTableBody;
