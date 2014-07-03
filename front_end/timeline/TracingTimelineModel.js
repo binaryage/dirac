@@ -110,7 +110,7 @@ WebInspector.TracingTimelineModel.prototype = {
         if (WebInspector.experimentsSettings.timelineTracingMode.isEnabled()) {
             categories = WebInspector.TracingTimelineModel.defaultTracingCategoryFilter;
         } else {
-            var categoriesArray = ["disabled-by-default-devtools.timeline", "disabled-by-default-devtools.timeline.frame", "devtools"];
+            var categoriesArray = ["disabled-by-default-devtools.timeline", "disabled-by-default-devtools.timeline.frame"];
             if (captureStacks)
                 categoriesArray.push("disabled-by-default-devtools.timeline.stack");
             if (capturePictures)
