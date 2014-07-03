@@ -129,8 +129,14 @@ WebInspector.NetworkWorkspaceBinding.prototype = {
     {
         var splitURL = WebInspector.ParsedURL.splitURL(url);
         var projectName = splitURL[0];
-        var parentPath = decodeURI(splitURL.slice(1, splitURL.length - 1).join("/"));
-        var name = decodeURI(splitURL[splitURL.length - 1]);
+        var parentPath = splitURL.slice(1, -1).join("/");
+        try {
+            parentPath = decodeURI(parentPath);
+        } catch (e) { }
+        var name = splitURL.peekLast() || "";
+        try {
+            name = decodeURI(name);
+        } catch (e) { }
         var projectDelegate = this._projectDelegate(projectName, isContentScript || false);
         var path = projectDelegate.addFile(parentPath, name, url, contentProvider);
         var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (this._workspace.uiSourceCode(projectDelegate.id(), path));
