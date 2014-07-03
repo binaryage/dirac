@@ -74,6 +74,7 @@ WebInspector.CPUProfileView = function(profileHeader)
     this._statusBarButtonsElement.appendChild(this.resetButton.element);
 
     this._profileHeader = profileHeader;
+    this._target = profileHeader.target();
     this._linkifier = new WebInspector.Linkifier(new WebInspector.Linkifier.DefaultFormatter(30));
 
     this.profile = new WebInspector.CPUProfileDataModel(profileHeader._profile || profileHeader.protocolProfile());
@@ -352,7 +353,7 @@ WebInspector.CPUProfileView.prototype = {
     {
         if (this._flameChart)
             return;
-        this._dataProvider = new WebInspector.CPUFlameChartDataProvider(this.profile, this._profileHeader.target());
+        this._dataProvider = new WebInspector.CPUFlameChartDataProvider(this.profile, this._target);
         this._flameChart = new WebInspector.CPUProfileFlameChart(this._dataProvider);
         this._flameChart.addEventListener(WebInspector.FlameChart.Events.EntrySelected, this._onEntrySelected.bind(this));
     },
@@ -364,9 +365,9 @@ WebInspector.CPUProfileView.prototype = {
     {
         var entryIndex = event.data;
         var node = this._dataProvider._entryNodes[entryIndex];
-        if (!node || !node.scriptId)
+        if (!node || !node.scriptId || !this._target)
             return;
-        var script = WebInspector.debuggerModel.scriptForId(node.scriptId)
+        var script = this._target.debuggerModel.scriptForId(node.scriptId)
         if (!script)
             return;
         WebInspector.Revealer.reveal(script.rawLocationToUILocation(node.lineNumber));
@@ -481,7 +482,7 @@ WebInspector.CPUProfileView.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.ProfileType}
- * @implements {WebInspector.CPUProfilerModel.Delegate}
+ * @implements {WebInspector.TargetManager.Observer}
  */
 WebInspector.CPUProfileType = function()
 {
@@ -492,12 +493,30 @@ WebInspector.CPUProfileType = function()
     this._anonymousConsoleProfileIdToTitle = {};
 
     WebInspector.CPUProfileType.instance = this;
-    WebInspector.cpuProfilerModel.setDelegate(this);
+    WebInspector.targetManager.observeTargets(this);
 }
 
 WebInspector.CPUProfileType.TypeId = "CPU";
 
 WebInspector.CPUProfileType.prototype = {
+    /**
+     * @param {!WebInspector.Target} target
+     */
+    targetAdded: function(target)
+    {
+        target.cpuProfilerModel.addEventListener(WebInspector.CPUProfilerModel.EventTypes.ConsoleProfileStarted, this._consoleProfileStarted, this);
+        target.cpuProfilerModel.addEventListener(WebInspector.CPUProfilerModel.EventTypes.ConsoleProfileFinished, this._consoleProfileFinished, this);
+    },
+
+    /**
+     * @param {!WebInspector.Target} target
+     */
+    targetRemoved: function(target)
+    {
+        target.cpuProfilerModel.removeEventListener(WebInspector.CPUProfilerModel.EventTypes.ConsoleProfileStarted, this._consoleProfileStarted, this);
+        target.cpuProfilerModel.removeEventListener(WebInspector.CPUProfilerModel.EventTypes.ConsoleProfileFinished, this._consoleProfileFinished, this);
+    },
+
     /**
      * @override
      * @return {string}
@@ -538,36 +557,35 @@ WebInspector.CPUProfileType.prototype = {
     },
 
     /**
-     * @param {string} id
-     * @param {!WebInspector.DebuggerModel.Location} scriptLocation
-     * @param {string=} title
+     * @param {!WebInspector.Event} event
      */
-    consoleProfileStarted: function(id, scriptLocation, title)
+    _consoleProfileStarted: function(event)
     {
-        var resolvedTitle = title;
+        var protocolId = /** @type {string} */ (event.data.protocolId);
+        var scriptLocation = /** @type {!WebInspector.DebuggerModel.Location} */ (event.data.scriptLocation);
+        var resolvedTitle = /** @type {string|undefined} */ (event.data.title);
         if (!resolvedTitle) {
             resolvedTitle = WebInspector.UIString("Profile %s", this._nextAnonymousConsoleProfileNumber++);
-            this._anonymousConsoleProfileIdToTitle[id] = resolvedTitle;
+            this._anonymousConsoleProfileIdToTitle[protocolId] = resolvedTitle;
         }
         this._addMessageToConsole(WebInspector.ConsoleMessage.MessageType.Profile, scriptLocation, WebInspector.UIString("Profile '%s' started.", resolvedTitle));
     },
 
     /**
-     * @param {string} protocolId
-     * @param {!WebInspector.DebuggerModel.Location} scriptLocation
-     * @param {!ProfilerAgent.CPUProfile} cpuProfile
-     * @param {string=} title
+     * @param {!WebInspector.Event} event
      */
-    consoleProfileFinished: function(protocolId, scriptLocation, cpuProfile, title)
+    _consoleProfileFinished: function(event)
     {
-        var resolvedTitle = title;
-        if (typeof title === "undefined") {
+        var protocolId = /** @type {string} */ (event.data.protocolId);
+        var scriptLocation = /** @type {!WebInspector.DebuggerModel.Location} */ (event.data.scriptLocation);
+        var cpuProfile = /** @type {!ProfilerAgent.CPUProfile} */ (event.data.cpuProfile);
+        var resolvedTitle = /** @type {string|undefined} */ (event.data.title);
+        if (typeof resolvedTitle === "undefined") {
             resolvedTitle = this._anonymousConsoleProfileIdToTitle[protocolId];
             delete this._anonymousConsoleProfileIdToTitle[protocolId];
         }
 
-        var target = /** @type {!WebInspector.Target} */ (WebInspector.targetManager.activeTarget());
-        var profile = new WebInspector.CPUProfileHeader(target, this, resolvedTitle);
+        var profile = new WebInspector.CPUProfileHeader(scriptLocation.target(), this, resolvedTitle);
         profile.setProtocolProfile(cpuProfile);
         this.addProfile(profile);
         this._addMessageToConsole(WebInspector.ConsoleMessage.MessageType.ProfileEnd, scriptLocation, WebInspector.UIString("Profile '%s' finished.", resolvedTitle));
@@ -581,8 +599,9 @@ WebInspector.CPUProfileType.prototype = {
     _addMessageToConsole: function(type, scriptLocation, messageText)
     {
         var script = scriptLocation.script();
+        var target = scriptLocation.target();
         var message = new WebInspector.ConsoleMessage(
-            WebInspector.console.target(),
+            target,
             WebInspector.ConsoleMessage.MessageSource.ConsoleAPI,
             WebInspector.ConsoleMessage.MessageLevel.Debug,
             messageText,
@@ -600,36 +619,27 @@ WebInspector.CPUProfileType.prototype = {
                 columnNumber: scriptLocation.columnNumber || 0
             }]);
 
-        WebInspector.console.addMessage(message);
-    },
-
-    /**
-     * @return {boolean}
-     */
-    isRecordingProfile: function()
-    {
-        return this._recording;
+        target.consoleModel.addMessage(message);
     },
 
     startRecordingProfile: function()
     {
-        if (this._profileBeingRecorded)
+        var target = WebInspector.context.flavor(WebInspector.Target);
+        if (this._profileBeingRecorded || !target)
             return;
-        var target = /** @type {!WebInspector.Target} */ (WebInspector.targetManager.activeTarget());
         var profile = new WebInspector.CPUProfileHeader(target, this);
         this.setProfileBeingRecorded(profile);
         this.addProfile(profile);
         profile.updateStatus(WebInspector.UIString("Recording\u2026"));
         this._recording = true;
-        WebInspector.cpuProfilerModel.setRecording(true);
-        WebInspector.userMetrics.ProfilesCPUProfileTaken.record();
-        ProfilerAgent.start();
+        target.cpuProfilerModel.startRecording();
     },
 
     stopRecordingProfile: function()
     {
         this._recording = false;
-        WebInspector.cpuProfilerModel.setRecording(false);
+        if (!this._profileBeingRecorded || !this._profileBeingRecorded.target())
+            return;
 
         /**
          * @param {?string} error
@@ -646,7 +656,7 @@ WebInspector.CPUProfileType.prototype = {
             this.setProfileBeingRecorded(null);
             this.dispatchEventToListeners(WebInspector.ProfileType.Events.ProfileComplete, recordedProfile);
         }
-        ProfilerAgent.stop(didStopProfiling.bind(this));
+        this._profileBeingRecorded.target().cpuProfilerModel.stopRecording(didStopProfiling.bind(this));
     },
 
     /**

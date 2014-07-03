@@ -35,28 +35,19 @@
 WebInspector.CPUProfilerModel = function(target)
 {
     WebInspector.TargetAwareObject.call(this, target);
-
-    /** @type {?WebInspector.CPUProfilerModel.Delegate} */
-    this._delegate = null;
     this._isRecording = false;
     target.registerProfilerDispatcher(this);
     target.profilerAgent().enable();
 }
 
 WebInspector.CPUProfilerModel.EventTypes = {
-    ProfileStarted: "profile-started",
-    ProfileStopped: "profile-stopped"
+    ProfileStarted: "ProfileStarted",
+    ProfileStopped: "ProfileStopped",
+    ConsoleProfileStarted: "ConsoleProfileStarted",
+    ConsoleProfileFinished: "ConsoleProfileFinished"
 };
 
 WebInspector.CPUProfilerModel.prototype = {
-    /**
-      * @param {!WebInspector.CPUProfilerModel.Delegate} delegate
-      */
-    setDelegate: function(delegate)
-    {
-        this._delegate = delegate;
-    },
-
     /**
      * @param {string} id
      * @param {!DebuggerAgent.Location} scriptLocation
@@ -67,7 +58,8 @@ WebInspector.CPUProfilerModel.prototype = {
     {
         // Make sure ProfilesPanel is initialized and CPUProfileType is created.
         WebInspector.moduleManager.loadModule("profiler");
-        this._delegate.consoleProfileFinished(id, WebInspector.DebuggerModel.Location.fromPayload(this.target(), scriptLocation), cpuProfile, title);
+        var debuggerLocation = WebInspector.DebuggerModel.Location.fromPayload(this.target(), scriptLocation);
+        this.dispatchEventToListeners(WebInspector.CPUProfilerModel.EventTypes.ConsoleProfileFinished, {protocolId: id, scriptLocation: debuggerLocation, cpuProfile: cpuProfile, title: title});
     },
 
     /**
@@ -79,18 +71,8 @@ WebInspector.CPUProfilerModel.prototype = {
     {
         // Make sure ProfilesPanel is initialized and CPUProfileType is created.
         WebInspector.moduleManager.loadModule("profiler");
-        this._delegate.consoleProfileStarted(id, WebInspector.DebuggerModel.Location.fromPayload(this.target(), scriptLocation), title);
-    },
-
-    /**
-      * @param {boolean} isRecording
-      */
-    setRecording: function(isRecording)
-    {
-        this._isRecording = isRecording;
-        this.dispatchEventToListeners(isRecording ?
-            WebInspector.CPUProfilerModel.EventTypes.ProfileStarted :
-            WebInspector.CPUProfilerModel.EventTypes.ProfileStopped);
+        var debuggerLocation = WebInspector.DebuggerModel.Location.fromPayload(this.target(), scriptLocation)
+        this.dispatchEventToListeners(WebInspector.CPUProfilerModel.EventTypes.ConsoleProfileStarted, {protocolId: id, scriptLocation: debuggerLocation, title: title});
     },
 
     /**
@@ -101,27 +83,25 @@ WebInspector.CPUProfilerModel.prototype = {
         return this._isRecording;
     },
 
+    startRecording: function()
+    {
+        this._isRecording = true;
+        this.target().profilerAgent().start();
+        this.dispatchEventToListeners(WebInspector.CPUProfilerModel.EventTypes.ProfileStarted);
+        WebInspector.userMetrics.ProfilesCPUProfileTaken.record();
+    },
+
+    /**
+     * @param {!function(?string,?ProfilerAgent.CPUProfile)} callback
+     */
+    stopRecording: function(callback)
+    {
+        this._isRecording = false;
+        this.target().profilerAgent().stop(callback);
+        this.dispatchEventToListeners(WebInspector.CPUProfilerModel.EventTypes.ProfileStopped);
+    },
+
     __proto__: WebInspector.TargetAwareObject.prototype
-}
-
-/** @interface */
-WebInspector.CPUProfilerModel.Delegate = function() {};
-
-WebInspector.CPUProfilerModel.Delegate.prototype = {
-    /**
-     * @param {string} protocolId
-     * @param {!WebInspector.DebuggerModel.Location} scriptLocation
-     * @param {string=} title
-     */
-    consoleProfileStarted: function(protocolId, scriptLocation, title) {},
-
-    /**
-     * @param {string} protocolId
-     * @param {!WebInspector.DebuggerModel.Location} scriptLocation
-     * @param {!ProfilerAgent.CPUProfile} cpuProfile
-     * @param {string=} title
-     */
-    consoleProfileFinished: function(protocolId, scriptLocation, cpuProfile, title) {}
 }
 
 /**
