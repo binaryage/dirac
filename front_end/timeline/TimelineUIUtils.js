@@ -182,7 +182,7 @@ WebInspector.TimelineUIUtils.categories = function()
 
 /**
  * @param {!WebInspector.TimelineModel} model
- * @param {!{name: string, tasks: !Array.<!{startTime: number, endTime: number}>, firstTaskIndex: number, lastTaskIndex: number}} info
+ * @param {!{name: string, tasks: !Array.<!WebInspector.TimelineModel.Record>, firstTaskIndex: number, lastTaskIndex: number}} info
  * @return {!Element}
  */
 WebInspector.TimelineUIUtils.generateMainThreadBarPopupContent = function(model, info)
@@ -195,10 +195,10 @@ WebInspector.TimelineUIUtils.generateMainThreadBarPopupContent = function(model,
 
     for (var i = firstTaskIndex; i <= lastTaskIndex; ++i) {
         var task = tasks[i];
-        cpuTime += task.endTime - task.startTime;
+        cpuTime += task.endTime() - task.startTime();
     }
-    var startTime = tasks[firstTaskIndex].startTime;
-    var endTime = tasks[lastTaskIndex].endTime;
+    var startTime = tasks[firstTaskIndex].startTime();
+    var endTime = tasks[lastTaskIndex].endTime();
     var duration = endTime - startTime;
 
     var contentHelper = new WebInspector.TimelinePopupContentHelper(info.name);
