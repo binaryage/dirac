@@ -241,7 +241,6 @@ WebInspector.TimelinePanel.prototype = {
 
         for (var i = 0; i < this._currentViews.length; ++i)
             this._currentViews[i].setWindowTimes(this._windowStartTime, this._windowEndTime);
-        this._updateSelectedRangeStats();
     },
 
     /**
