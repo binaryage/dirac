@@ -30,12 +30,12 @@
 
 /**
  * @constructor
- * @extends {WebInspector.TargetAwareObject}
+ * @extends {WebInspector.SDKObject}
  * @param {!WebInspector.Target} target
  */
 WebInspector.RuntimeModel = function(target)
 {
-    WebInspector.TargetAwareObject.call(this, target);
+    WebInspector.SDKObject.call(this, target);
 
     this._debuggerModel = target.debuggerModel;
     this._agent = target.runtimeAgent();
@@ -129,7 +129,7 @@ WebInspector.RuntimeModel.prototype = {
         return new WebInspector.RemoteObjectProperty(name, this.createRemoteObjectFromPrimitiveValue(value));
     },
 
-    __proto__: WebInspector.TargetAwareObject.prototype
+    __proto__: WebInspector.SDKObject.prototype
 }
 
 /**
@@ -162,7 +162,7 @@ WebInspector.RuntimeDispatcher.prototype = {
 
 /**
  * @constructor
- * @extends {WebInspector.TargetAware}
+ * @extends {WebInspector.SDKObject}
  * @param {!WebInspector.Target} target
  * @param {number|undefined} id
  * @param {string} name
@@ -171,7 +171,7 @@ WebInspector.RuntimeDispatcher.prototype = {
  */
 WebInspector.ExecutionContext = function(target, id, name, isPageContext, frameId)
 {
-    WebInspector.TargetAware.call(this, target);
+    WebInspector.SDKObject.call(this, target);
     this.id = id;
     this.name = (isPageContext && !name) ? "<page context>" : name;
     this.isMainWorldContext = isPageContext;
@@ -400,7 +400,7 @@ WebInspector.ExecutionContext.prototype = {
         completionsReadyCallback(results);
     },
 
-    __proto__: WebInspector.TargetAware.prototype
+    __proto__: WebInspector.SDKObject.prototype
 }
 
 /**

@@ -1,11 +1,11 @@
 /**
  * @constructor
- * @extends {WebInspector.TargetAwareObject}
+ * @extends {WebInspector.SDKObject}
  * @param {!WebInspector.Target} target
  */
 WebInspector.HeapProfilerModel = function(target)
 {
-    WebInspector.TargetAwareObject.call(this, target);
+    WebInspector.SDKObject.call(this, target);
     target.registerHeapProfilerDispatcher(new WebInspector.HeapProfilerDispatcher(this));
     this._enabled = false;
     this._heapProfilerAgent = target.heapProfilerAgent();
@@ -70,7 +70,7 @@ WebInspector.HeapProfilerModel.prototype = {
         this.dispatchEventToListeners(WebInspector.HeapProfilerModel.Events.ResetProfiles);
     },
 
-    __proto__: WebInspector.TargetAwareObject.prototype
+    __proto__: WebInspector.SDKObject.prototype
 }
 
 

@@ -31,13 +31,13 @@
 
 /**
  * @constructor
- * @extends {WebInspector.TargetAware}
+ * @extends {WebInspector.SDKObject}
  * @param {!WebInspector.Target} target
  * @param {!WebInspector.AuditsPanel} auditsPanel
  */
 WebInspector.AuditController = function(target, auditsPanel)
 {
-    WebInspector.TargetAware.call(this, target);
+    WebInspector.SDKObject.call(this, target);
     this._auditsPanel = auditsPanel;
     this.target().resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.Load, this._didMainResourceLoad, this);
 }
@@ -163,5 +163,5 @@ WebInspector.AuditController.prototype = {
         this._auditsPanel.clearResults();
     },
 
-    __proto__: WebInspector.TargetAware.prototype
+    __proto__: WebInspector.SDKObject.prototype
 }

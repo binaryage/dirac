@@ -6,11 +6,11 @@
 
 /**
  * @constructor
- * @extends {WebInspector.TargetAwareObject}
+ * @extends {WebInspector.SDKObject}
  */
 WebInspector.TracingModel = function(target)
 {
-    WebInspector.TargetAwareObject.call(this, target);
+    WebInspector.SDKObject.call(this, target);
     this.reset();
     this._active = false;
     InspectorBackend.registerTracingDispatcher(new WebInspector.TracingDispatcher(this));
@@ -244,7 +244,7 @@ WebInspector.TracingModel.prototype = {
         return WebInspector.TracingModel.NamedObject._sort(Object.values(this._processById));
     },
 
-    __proto__: WebInspector.TargetAwareObject.prototype
+    __proto__: WebInspector.SDKObject.prototype
 }
 
 /**

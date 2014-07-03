@@ -44,11 +44,11 @@ WebInspector.TracingLayerPayload;
 
 /**
   * @constructor
-  * @extends {WebInspector.TargetAwareObject}
+  * @extends {WebInspector.SDKObject}
   */
 WebInspector.LayerTreeModel = function(target)
 {
-    WebInspector.TargetAwareObject.call(this, target);
+    WebInspector.SDKObject.call(this, target);
     InspectorBackend.registerLayerTreeDispatcher(new WebInspector.LayerTreeDispatcher(this));
     target.domModel.addEventListener(WebInspector.DOMModel.Events.DocumentUpdated, this._onDocumentUpdated, this);
     /** @type {?WebInspector.LayerTreeBase} */
@@ -158,17 +158,17 @@ WebInspector.LayerTreeModel.prototype = {
         this.enable();
     },
 
-    __proto__: WebInspector.TargetAwareObject.prototype
+    __proto__: WebInspector.SDKObject.prototype
 }
 
 /**
   * @constructor
-  * @extends {WebInspector.TargetAwareObject}
+  * @extends {WebInspector.SDKObject}
   * @param {!WebInspector.Target} target
   */
 WebInspector.LayerTreeBase = function(target)
 {
-    WebInspector.TargetAwareObject.call(this, target);
+    WebInspector.SDKObject.call(this, target);
     this._layersById = {};
     this._backendNodeIdToNodeId = {};
     this._reset();
@@ -267,7 +267,7 @@ WebInspector.LayerTreeBase.prototype = {
         return this._viewportSize;
     },
 
-    __proto__: WebInspector.TargetAwareObject.prototype
+    __proto__: WebInspector.SDKObject.prototype
 };
 
 /**

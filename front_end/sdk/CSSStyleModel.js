@@ -30,12 +30,12 @@
 
 /**
  * @constructor
- * @extends {WebInspector.TargetAwareObject}
+ * @extends {WebInspector.SDKObject}
  * @param {!WebInspector.Target} target
  */
 WebInspector.CSSStyleModel = function(target)
 {
-    WebInspector.TargetAwareObject.call(this, target);
+    WebInspector.SDKObject.call(this, target);
     this._domModel = target.domModel;
     this._agent = target.cssAgent();
     this._pendingCommandsMajorState = [];
@@ -617,7 +617,7 @@ WebInspector.CSSStyleModel.prototype = {
         return uiLocation || null;
     },
 
-    __proto__: WebInspector.TargetAwareObject.prototype
+    __proto__: WebInspector.SDKObject.prototype
 }
 
 /**

@@ -30,12 +30,12 @@
 
 /**
  * @constructor
- * @extends {WebInspector.TargetAwareObject}
+ * @extends {WebInspector.SDKObject}
  * @param {!WebInspector.Target} target
  */
 WebInspector.DebuggerModel = function(target)
 {
-    WebInspector.TargetAwareObject.call(this, target);
+    WebInspector.SDKObject.call(this, target);
 
     target.registerDebuggerDispatcher(new WebInspector.DebuggerDispatcher(this));
     this._agent = target.debuggerAgent();
@@ -754,7 +754,7 @@ WebInspector.DebuggerModel.prototype = {
         WebInspector.settings.enableAsyncStackTraces.removeChangeListener(this._asyncStackTracesStateChanged, this);
     },
 
-    __proto__: WebInspector.TargetAwareObject.prototype
+    __proto__: WebInspector.SDKObject.prototype
 }
 
 WebInspector.DebuggerEventTypes = {
@@ -842,7 +842,7 @@ WebInspector.DebuggerDispatcher.prototype = {
 /**
  * @constructor
  * @implements {WebInspector.RawLocation}
- * @extends {WebInspector.TargetAware}
+ * @extends {WebInspector.SDKObject}
  * @param {!WebInspector.Target} target
  * @param {string} scriptId
  * @param {number} lineNumber
@@ -850,7 +850,7 @@ WebInspector.DebuggerDispatcher.prototype = {
  */
 WebInspector.DebuggerModel.Location = function(target, scriptId, lineNumber, columnNumber)
 {
-    WebInspector.TargetAware.call(this, target);
+    WebInspector.SDKObject.call(this, target);
     this._debuggerModel = target.debuggerModel;
     this.scriptId = scriptId;
     this.lineNumber = lineNumber;
@@ -914,12 +914,12 @@ WebInspector.DebuggerModel.Location.prototype = {
         return this.target().id() + ":" + this.scriptId + ":" + this.lineNumber + ":" + this.columnNumber
     },
 
-    __proto__: WebInspector.TargetAware.prototype
+    __proto__: WebInspector.SDKObject.prototype
 }
 
 /**
  * @constructor
- * @extends {WebInspector.TargetAware}
+ * @extends {WebInspector.SDKObject}
  * @param {!WebInspector.Target} target
  * @param {!WebInspector.Script} script
  * @param {!DebuggerAgent.CallFrame} payload
@@ -927,7 +927,7 @@ WebInspector.DebuggerModel.Location.prototype = {
  */
 WebInspector.DebuggerModel.CallFrame = function(target, script, payload, isAsync)
 {
-    WebInspector.TargetAware.call(this, target);
+    WebInspector.SDKObject.call(this, target);
     this._debuggerAgent = target.debuggerModel._agent;
     this._script = script;
     this._payload = payload;
@@ -1097,7 +1097,7 @@ WebInspector.DebuggerModel.CallFrame.prototype = {
         this._liveLocations = [];
     },
 
-    __proto__: WebInspector.TargetAware.prototype
+    __proto__: WebInspector.SDKObject.prototype
 }
 
 /**
@@ -1142,7 +1142,7 @@ WebInspector.DebuggerModel.StackTrace.prototype = {
 
 /**
  * @constructor
- * @extends {WebInspector.TargetAware}
+ * @extends {WebInspector.SDKObject}
  * @param {!WebInspector.Target} target
  * @param {!Array.<!DebuggerAgent.CallFrame>} callFrames
  * @param {string} reason
@@ -1152,7 +1152,7 @@ WebInspector.DebuggerModel.StackTrace.prototype = {
  */
 WebInspector.DebuggerPausedDetails = function(target, callFrames, reason, auxData, breakpointIds, asyncStackTrace)
 {
-    WebInspector.TargetAware.call(this, target);
+    WebInspector.SDKObject.call(this, target);
     this.callFrames = WebInspector.DebuggerModel.CallFrame.fromPayloadArray(target, callFrames);
     this.reason = reason;
     this.auxData = auxData;
@@ -1179,7 +1179,7 @@ WebInspector.DebuggerPausedDetails.prototype = {
             this.asyncStackTrace.dispose();
     },
 
-    __proto__: WebInspector.TargetAware.prototype
+    __proto__: WebInspector.SDKObject.prototype
 }
 
 /**

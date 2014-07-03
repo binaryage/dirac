@@ -31,14 +31,14 @@
 
 /**
  * @constructor
- * @extends {WebInspector.TargetAware}
+ * @extends {WebInspector.SDKObject}
  * @param {!WebInspector.DOMModel} domModel
  * @param {?WebInspector.DOMDocument} doc
  * @param {boolean} isInShadowTree
  * @param {!DOMAgent.Node} payload
  */
 WebInspector.DOMNode = function(domModel, doc, isInShadowTree, payload) {
-    WebInspector.TargetAware.call(this, domModel.target());
+    WebInspector.SDKObject.call(this, domModel.target());
     this._domModel = domModel;
     this._agent = domModel._agent;
     this.ownerDocument = doc;
@@ -861,7 +861,7 @@ WebInspector.DOMNode.prototype = {
         this._agent.getBoxModel(this.id, this._domModel._wrapClientCallback(callback));
     },
 
-    __proto__: WebInspector.TargetAware.prototype
+    __proto__: WebInspector.SDKObject.prototype
 }
 
 /**
@@ -885,11 +885,11 @@ WebInspector.DOMDocument.prototype = {
 
 /**
  * @constructor
- * @extends {WebInspector.TargetAwareObject}
+ * @extends {WebInspector.SDKObject}
  * @param {!WebInspector.Target} target
  */
 WebInspector.DOMModel = function(target) {
-    WebInspector.TargetAwareObject.call(this, target);
+    WebInspector.SDKObject.call(this, target);
 
     this._agent = target.domAgent();
 
@@ -1628,7 +1628,7 @@ WebInspector.DOMModel.prototype = {
         }
     },
 
-    __proto__: WebInspector.TargetAwareObject.prototype
+    __proto__: WebInspector.SDKObject.prototype
 }
 
 /**
@@ -1767,13 +1767,13 @@ WebInspector.DOMDispatcher.prototype = {
 
 /**
  * @constructor
- * @extends {WebInspector.TargetAware}
+ * @extends {WebInspector.SDKObject}
  * @param {!WebInspector.Target} target
  * @param {!DOMAgent.EventListener} payload
  */
 WebInspector.DOMModel.EventListener = function(target, payload)
 {
-    WebInspector.TargetAware.call(this, target);
+    WebInspector.SDKObject.call(this, target);
     this._payload = payload;
 }
 
@@ -1810,7 +1810,7 @@ WebInspector.DOMModel.EventListener.prototype = {
         return this._payload.handler ? this.target().runtimeModel.createRemoteObject(this._payload.handler) : null;
     },
 
-    __proto__: WebInspector.TargetAware.prototype
+    __proto__: WebInspector.SDKObject.prototype
 }
 
 /**

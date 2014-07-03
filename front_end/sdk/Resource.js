@@ -28,7 +28,7 @@
 
 /**
  * @constructor
- * @extends {WebInspector.TargetAwareObject}
+ * @extends {WebInspector.SDKObject}
  * @implements {WebInspector.ContentProvider}
  * @param {!WebInspector.Target} target
  * @param {?WebInspector.NetworkRequest} request
@@ -42,7 +42,7 @@
  */
 WebInspector.Resource = function(target, request, url, documentURL, frameId, loaderId, type, mimeType, isHidden)
 {
-    WebInspector.TargetAwareObject.call(this, target);
+    WebInspector.SDKObject.call(this, target);
     this._request = request;
     this.url = url;
     this._documentURL = documentURL;
@@ -380,6 +380,6 @@ WebInspector.Resource.prototype = {
         return !!this._isHidden;
     },
 
-    __proto__: WebInspector.TargetAwareObject.prototype
+    __proto__: WebInspector.SDKObject.prototype
 }
 

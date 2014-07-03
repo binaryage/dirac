@@ -695,13 +695,13 @@ WebInspector.BreakpointManager.Breakpoint.prototype = {
 
 /**
  * @constructor
- * @extends {WebInspector.TargetAware}
+ * @extends {WebInspector.SDKObject}
  * @param {!WebInspector.Target} target
  * @param {!WebInspector.BreakpointManager.Breakpoint} breakpoint
  */
 WebInspector.BreakpointManager.TargetBreakpoint = function(target, breakpoint)
 {
-    WebInspector.TargetAware.call(this, target);
+    WebInspector.SDKObject.call(this, target);
     this._breakpoint = breakpoint;
     /** @type {!Array.<!WebInspector.Script.Location>} */
     this._liveLocations = [];
@@ -850,7 +850,7 @@ WebInspector.BreakpointManager.TargetBreakpoint.prototype = {
         this.target().debuggerModel.removeEventListener(WebInspector.DebuggerModel.Events.DebuggerWasEnabled, this._updateInDebugger, this);
     },
 
-    __proto__: WebInspector.TargetAware.prototype
+    __proto__: WebInspector.SDKObject.prototype
 }
 
 /**

@@ -195,35 +195,16 @@ WebInspector.Target.prototype = {
 
 /**
  * @constructor
- * @param {!WebInspector.Target} target
- */
-WebInspector.TargetAware = function(target)
-{
-    this._target = target;
-}
-
-WebInspector.TargetAware.prototype = {
-    /**
-     * @return {!WebInspector.Target}
-     */
-    target: function()
-    {
-        return this._target;
-    }
-}
-
-/**
- * @constructor
  * @extends {WebInspector.Object}
  * @param {!WebInspector.Target} target
  */
-WebInspector.TargetAwareObject = function(target)
+WebInspector.SDKObject = function(target)
 {
     WebInspector.Object.call(this);
     this._target = target;
 }
 
-WebInspector.TargetAwareObject.prototype = {
+WebInspector.SDKObject.prototype = {
     /**
      * @return {!WebInspector.Target}
      */

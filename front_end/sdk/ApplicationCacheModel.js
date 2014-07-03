@@ -28,12 +28,12 @@
 
 /**
  * @constructor
- * @extends {WebInspector.TargetAwareObject}
+ * @extends {WebInspector.SDKObject}
  * @param {!WebInspector.Target} target
  */
 WebInspector.ApplicationCacheModel = function(target)
 {
-    WebInspector.TargetAwareObject.call(this, target);
+    WebInspector.SDKObject.call(this, target);
 
     target.registerApplicationCacheDispatcher(new WebInspector.ApplicationCacheDispatcher(this));
     this._agent = target.applicationCacheAgent();
@@ -228,7 +228,7 @@ WebInspector.ApplicationCacheModel.prototype = {
         this.dispatchEventToListeners(WebInspector.ApplicationCacheModel.EventTypes.NetworkStateChanged, isNowOnline);
     },
 
-    __proto__: WebInspector.TargetAwareObject.prototype
+    __proto__: WebInspector.SDKObject.prototype
 }
 
 /**

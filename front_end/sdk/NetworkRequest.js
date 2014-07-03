@@ -30,7 +30,7 @@
 
 /**
  * @constructor
- * @extends {WebInspector.TargetAwareObject}
+ * @extends {WebInspector.SDKObject}
  * @implements {WebInspector.ContentProvider}
  * @param {!NetworkAgent.RequestId} requestId
  * @param {!WebInspector.Target} target
@@ -41,7 +41,7 @@
  */
 WebInspector.NetworkRequest = function(target, requestId, url, documentURL, frameId, loaderId)
 {
-    WebInspector.TargetAwareObject.call(this, target);
+    WebInspector.SDKObject.call(this, target);
 
     this._requestId = requestId;
     this.url = url;
@@ -990,5 +990,5 @@ WebInspector.NetworkRequest.prototype = {
         this._frames.push(frameOrError);
     },
 
-    __proto__: WebInspector.TargetAwareObject.prototype
+    __proto__: WebInspector.SDKObject.prototype
 }

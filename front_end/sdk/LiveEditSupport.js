@@ -30,13 +30,13 @@
 
 /**
  * @constructor
- * @extends {WebInspector.TargetAware}
+ * @extends {WebInspector.SDKObject}
  * @param {!WebInspector.Target} target
  * @param {!WebInspector.Workspace} workspace
  */
 WebInspector.LiveEditSupport = function(target, workspace)
 {
-    WebInspector.TargetAware.call(this, target);
+    WebInspector.SDKObject.call(this, target);
     this._workspace = workspace;
     this._projectId = "liveedit:" + target.id();
     this._projectDelegate = new WebInspector.DebuggerProjectDelegate(workspace, this._projectId, WebInspector.projectTypes.LiveEdit);
@@ -106,7 +106,7 @@ WebInspector.LiveEditSupport.prototype = {
         }
     },
 
-    __proto__: WebInspector.TargetAware.prototype
+    __proto__: WebInspector.SDKObject.prototype
 }
 
 /**
