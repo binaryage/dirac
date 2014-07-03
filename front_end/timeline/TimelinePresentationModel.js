@@ -199,6 +199,14 @@ WebInspector.TimelinePresentationModel.prototype = {
         this._textFilter = textFilter;
     },
 
+    refreshRecords: function()
+    {
+        this.reset();
+        var modelRecords = this._model.records();
+        for (var i = 0; i < modelRecords.length; ++i)
+            this.addRecord(modelRecords[i]);
+    },
+
     invalidateFilteredRecords: function()
     {
         delete this._filteredRecords;

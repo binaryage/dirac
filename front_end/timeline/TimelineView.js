@@ -301,6 +301,12 @@ WebInspector.TimelineView.prototype = {
         WebInspector.View.prototype.willHide.call(this);
     },
 
+    wasShown: function()
+    {
+        this._presentationModel.refreshRecords();
+        WebInspector.HBox.prototype.wasShown.call(this);
+    },
+
     _onScroll: function(event)
     {
         this._closeRecordDetails();
