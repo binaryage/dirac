@@ -60,7 +60,6 @@ WebInspector.SourcesPanel = function(workspaceForTest)
 {
     WebInspector.Panel.call(this, "sources");
     this.registerRequiredCSS("sourcesPanel.css");
-    this.registerRequiredCSS("suggestBox.css");
     new WebInspector.UpgradeFileSystemDropTarget(this.element);
 
     WebInspector.settings.showEditorInDrawer = WebInspector.settings.createSetting("showEditorInDrawer", true);

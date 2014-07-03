@@ -40,7 +40,6 @@ WebInspector.SplitView = function(isVertical, secondIsSidebar, settingName, defa
 {
     WebInspector.View.call(this);
 
-    this.registerRequiredCSS("splitView.css");
     this.element.classList.add("split-view");
 
     this._mainView = new WebInspector.VBox();

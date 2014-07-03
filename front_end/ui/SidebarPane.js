@@ -159,7 +159,6 @@ WebInspector.SidebarPaneStack = function()
     WebInspector.View.call(this);
     this.setMinimumSize(25, 0);
     this.element.className = "sidebar-pane-stack"; // Override
-    this.registerRequiredCSS("sidebarPane.css");
 }
 
 WebInspector.SidebarPaneStack.prototype = {
@@ -183,7 +182,6 @@ WebInspector.SidebarTabbedPane = function()
     WebInspector.TabbedPane.call(this);
     this.setRetainTabOrder(true);
     this.element.classList.add("sidebar-tabbed-pane");
-    this.registerRequiredCSS("sidebarPane.css");
 }
 
 WebInspector.SidebarTabbedPane.prototype = {

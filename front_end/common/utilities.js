@@ -1674,11 +1674,10 @@ function loadResource(url)
 {
     var xhr = new XMLHttpRequest();
     xhr.open("GET", url, false);
-    var stack = new Error().stack;
     try {
         xhr.send(null);
     } catch (e) {
-        console.error(url + " -> " + stack);
+        console.error(url + " -> " + new Error().stack);
         throw e;
     }
     return xhr.responseText;

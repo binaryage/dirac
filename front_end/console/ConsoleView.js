@@ -116,7 +116,6 @@ WebInspector.ConsoleView = function(hideContextSelector)
     statusBarElement.appendChild(this._showAllMessagesCheckbox.element);
 
     this._registerShortcuts();
-    this.registerRequiredCSS("suggestBox.css");
 
     this._messagesElement.addEventListener("contextmenu", this._handleContextMenuEvent.bind(this), false);
     WebInspector.settings.monitoringXHREnabled.addChangeListener(this._monitoringXHREnabledSettingChanged, this);

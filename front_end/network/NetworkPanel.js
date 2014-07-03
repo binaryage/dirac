@@ -53,7 +53,6 @@ WebInspector.NetworkLogView = function(filterBar, coulmnsVisibilitySetting)
     WebInspector.VBox.call(this);
     this.registerRequiredCSS("networkLogView.css");
     this.registerRequiredCSS("filter.css");
-    this.registerRequiredCSS("suggestBox.css");
 
     this._filterBar = filterBar;
     this._coulmnsVisibilitySetting = coulmnsVisibilitySetting;
