@@ -112,6 +112,8 @@ WebInspector.TimelineModel.Events = {
     RecordFilterChanged: "RecordFilterChanged"
 }
 
+WebInspector.TimelineModel.MainThreadName = "main";
+
 /**
  * @param {!Array.<!WebInspector.TimelineModel.Record>} recordsArray
  * @param {?function(!WebInspector.TimelineModel.Record)|?function(!WebInspector.TimelineModel.Record,number)} preOrderCallback
@@ -371,7 +373,7 @@ WebInspector.TimelineModel.Record.prototype = {
     startTime: function() { },
 
     /**
-     * @return {string|undefined}
+     * @return {string}
      */
     thread: function() { },
 
@@ -493,7 +495,7 @@ WebInspector.TimelineMergingRecordBuffer.prototype = {
      */
     process: function(thread, records)
     {
-        if (thread) {
+        if (thread !== WebInspector.TimelineModel.MainThreadName) {
             this._backgroundRecordsBuffer = this._backgroundRecordsBuffer.concat(records);
             return [];
         }

@@ -146,7 +146,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
             var thread = record.thread();
             if (thread === "gpu")
                 continue;
-            if (!thread) {
+            if (thread === WebInspector.TimelineModel.MainThreadName) {
                 for (var j = 0; j < record.children().length; ++j)
                     this._appendRecord(record.children()[j], 1);
             } else {
@@ -159,8 +159,8 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
             }
         }
 
-        var cpuStackDepth = Math.max(4, this._entryThreadDepths[undefined]);
-        delete this._entryThreadDepths[undefined];
+        var cpuStackDepth = Math.max(4, this._entryThreadDepths[WebInspector.TimelineModel.MainThreadName]);
+        delete this._entryThreadDepths[WebInspector.TimelineModel.MainThreadName];
         this._maxStackDepth = cpuStackDepth;
 
         if (this._gpuThreadRecord) {
@@ -181,7 +181,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
                     level = 0;
                 else if (record === this._gpuThreadRecord)
                     level = cpuStackDepth + 2;
-                else if (record.thread())
+                else if (record.thread() !== WebInspector.TimelineModel.MainThreadName)
                     level += threadBaselines[record.thread()];
                 this._timelineData.entryLevels[i] = level;
             }

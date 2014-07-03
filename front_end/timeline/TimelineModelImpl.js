@@ -299,6 +299,7 @@ WebInspector.TimelineModel.RecordImpl = function(model, timelineEvent, parentRec
     this._model = model;
     var bindings = this._model._bindings;
     this._record = timelineEvent;
+    this._thread = this._record.thread || WebInspector.TimelineModel.MainThreadName;
     this._children = [];
     if (parentRecord) {
         this.parent = parentRecord;
@@ -422,11 +423,11 @@ WebInspector.TimelineModel.RecordImpl.prototype = {
     },
 
     /**
-     * @return {string|undefined}
+     * @return {string}
      */
     thread: function()
     {
-        return this._record.thread;
+        return this._thread;
     },
 
     /**

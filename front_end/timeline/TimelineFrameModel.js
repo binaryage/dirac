@@ -275,10 +275,10 @@ WebInspector.TimelineFrameModel.prototype = {
         else
             records = this._mergingBuffer.process(record.thread(), /** type {Array.<!WebInspector.TimelineModel.Record>} */(programRecord ? record.children() || [] : [record]));
         for (var i = 0; i < records.length; ++i) {
-            if (records[i].thread())
-                this._addBackgroundRecord(records[i]);
-            else
+            if (records[i].thread() === WebInspector.TimelineModel.MainThreadName)
                 this._addMainThreadRecord(programRecord, records[i]);
+            else
+                this._addBackgroundRecord(records[i]);
         }
     },
 

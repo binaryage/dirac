@@ -543,11 +543,12 @@ WebInspector.TracingTimelineModel.TraceEventRecord.prototype = {
     },
 
     /**
-     * @return {string|undefined}
+     * @return {string}
      */
     thread: function()
     {
-        return "CPU";
+        // FIXME: Should return the actual thread name.
+        return WebInspector.TimelineModel.MainThreadName;
     },
 
     /**
