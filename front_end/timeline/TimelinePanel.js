@@ -327,7 +327,6 @@ WebInspector.TimelinePanel.prototype = {
     _createRecordingOptions: function()
     {
         var topPaneSidebarElement = this._topPane.sidebarElement();
-
         this._captureStacksSetting = WebInspector.settings.createSetting("timelineCaptureStacks", true);
         topPaneSidebarElement.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Capture stacks"),
                                           this._captureStacksSetting, true, undefined,
@@ -655,7 +654,9 @@ WebInspector.TimelinePanel.prototype = {
         if (this._captureTracingSetting && this._captureTracingSetting.get())
             this._addModeView(new WebInspector.TimelineTracingView(this, this._tracingModel, this._model));
 
-        this._timelineView().setFrameModel(isFrameMode ? this._frameModel() : null);
+        if (this._lazyTimelineView)
+            this._lazyTimelineView.setFrameModel(isFrameMode ? this._frameModel() : null);
+
         this._overviewPane.setOverviewControls(this._overviewControls);
         this.doResize();
         this._updateSelectedRangeStats();
