@@ -816,3 +816,7 @@
     border: solid 1px black;
     -webkit-transform-origin: 0px 0px;
 }
+
+label.dimmed {
+    opacity: 0.6;
+}

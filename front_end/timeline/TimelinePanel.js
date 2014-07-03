@@ -323,39 +323,56 @@ WebInspector.TimelinePanel.prototype = {
         this._stackView.detachChildViews();
     },
 
+    /**
+     * @param {string} name
+     * @param {!WebInspector.Setting} setting
+     * @param {string} tooltip
+     * @return {!Element}
+     */
+    _createSettingCheckbox: function(name, setting, tooltip)
+    {
+        if (!this._recordingOptionUIControls)
+            this._recordingOptionUIControls = [];
+
+        var checkboxElement = document.createElement("input");
+        var labelElement = WebInspector.SettingsUI.createSettingCheckbox(name, setting, true, checkboxElement, tooltip);
+        this._recordingOptionUIControls.push({ "label": labelElement, "checkbox": checkboxElement });
+        return labelElement;
+    },
+
     _createRecordingOptions: function()
     {
         var topPaneSidebarElement = this._topPane.sidebarElement();
         this._captureStacksSetting = WebInspector.settings.createSetting("timelineCaptureStacks", true);
-        topPaneSidebarElement.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Capture stacks"),
-                                          this._captureStacksSetting, true, undefined,
-                                          WebInspector.UIString("Capture JavaScript stack on every timeline event")));
+        topPaneSidebarElement.appendChild(this._createSettingCheckbox(WebInspector.UIString("Capture stacks"),
+                                                                      this._captureStacksSetting,
+                                                                      WebInspector.UIString("Capture JavaScript stack on every timeline event")));
 
         this._captureMemorySetting = WebInspector.settings.createSetting("timelineCaptureMemory", false);
-        topPaneSidebarElement.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Capture memory"),
-                                          this._captureMemorySetting, true, undefined,
-                                          WebInspector.UIString("Capture memory information on every timeline event")));
+        topPaneSidebarElement.appendChild(this._createSettingCheckbox(WebInspector.UIString("Capture memory"),
+                                                                      this._captureMemorySetting,
+                                                                      WebInspector.UIString("Capture memory information on every timeline event")));
         this._captureMemorySetting.addChangeListener(this._onModeChanged, this);
 
         if (Capabilities.canProfilePower) {
             this._capturePowerSetting = WebInspector.settings.createSetting("timelineCapturePower", false);
-            topPaneSidebarElement.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Capture power"),
-                                              this._capturePowerSetting, true, undefined,
-                                              WebInspector.UIString("Capture power information")));
+            topPaneSidebarElement.appendChild(this._createSettingCheckbox(WebInspector.UIString("Capture power"),
+                                                                          this._capturePowerSetting,
+                                                                          WebInspector.UIString("Capture power information")));
             this._capturePowerSetting.addChangeListener(this._onModeChanged, this);
         }
 
         if (WebInspector.experimentsSettings.timelineTracingMode.isEnabled()) {
             this._captureTracingSetting = WebInspector.settings.createSetting("timelineCaptureTracing", false);
-            topPaneSidebarElement.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Capture tracing"),
-                                              this._captureTracingSetting, true, undefined,
-                                              WebInspector.UIString("Capture tracing information")));
+            topPaneSidebarElement.appendChild(this._createSettingCheckbox(WebInspector.UIString("Capture tracing"),
+                                                                          this._captureTracingSetting,
+                                                                          WebInspector.UIString("Capture tracing information")));
             this._captureTracingSetting.addChangeListener(this._onModeChanged, this);
         } else if (WebInspector.experimentsSettings.timelineOnTraceEvents.isEnabled()) {
             this._captureLayersAndPicturesSetting = WebInspector.settings.createSetting("timelineCaptureLayersAndPictures", false);
-            topPaneSidebarElement.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Capture pictures"),
-                                              this._captureLayersAndPicturesSetting, true, undefined,
-                                              WebInspector.UIString("Capture graphics layer positions and painted pictures")));
+            topPaneSidebarElement.appendChild(this._createSettingCheckbox(WebInspector.UIString("Capture pictures"),
+                                                                          this._captureLayersAndPicturesSetting,
+                                                                          WebInspector.UIString("Capture graphics layer positions and painted pictures")));
         }
     },
 
@@ -664,6 +681,19 @@ WebInspector.TimelinePanel.prototype = {
     },
 
     /**
+     * @param {boolean} enabled
+     */
+    _setUIControlsEnabled: function(enabled) {
+        function handler(uiControl)
+        {
+            uiControl.checkbox.disabled = !enabled;
+            uiControl.label.classList.toggle("dimmed", !enabled);
+        }
+        this._recordingOptionUIControls.forEach(handler);
+        WebInspector.inspectorView.setCurrentPanelLocked(!enabled);
+    },
+
+    /**
      * @param {boolean} userInitiated
      */
     _startRecording: function(userInitiated)
@@ -678,7 +708,7 @@ WebInspector.TimelinePanel.prototype = {
 
         if (userInitiated)
             WebInspector.userMetrics.TimelineStarted.record();
-        WebInspector.inspectorView.setCurrentPanelLocked(true);
+        this._setUIControlsEnabled(false);
     },
 
     _stopRecording: function()
@@ -692,7 +722,7 @@ WebInspector.TimelinePanel.prototype = {
 
         for (var i = 0; i < this._overviewControls.length; ++i)
             this._overviewControls[i].timelineStopped();
-        WebInspector.inspectorView.setCurrentPanelLocked(false);
+        this._setUIControlsEnabled(true);
     },
 
     _onProfilingStateChanged: function()
