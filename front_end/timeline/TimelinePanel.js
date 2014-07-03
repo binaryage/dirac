@@ -29,7 +29,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-importScript("../sdk/CPUProfileModel.js");
 importScript("CountersGraph.js");
 importScript("Layers3DView.js");
 importScript("MemoryCountersGraph.js");

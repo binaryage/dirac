@@ -88,7 +88,7 @@
             'front_end/sdk/ContentProviderBasedProjectDelegate.js',
             'front_end/sdk/ContentProviders.js',
             'front_end/sdk/CookieParser.js',
-            'front_end/sdk/CPUProfileModel.js',
+            'front_end/sdk/CPUProfileDataModel.js',
             'front_end/sdk/CPUProfilerModel.js',
             'front_end/sdk/CSSMetadata.js',
             'front_end/sdk/CSSParser.js',

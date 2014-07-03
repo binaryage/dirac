@@ -35,7 +35,7 @@
             "sdk/ContentProviderBasedProjectDelegate.js",
             "sdk/ContentProviders.js",
             "sdk/CookieParser.js",
-            "sdk/CPUProfileModel.js",
+            "sdk/CPUProfileDataModel.js",
             "sdk/CPUProfilerModel.js",
             "sdk/CSSMetadata.js",
             "sdk/CSSParser.js",
