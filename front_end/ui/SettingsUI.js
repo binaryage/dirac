@@ -130,6 +130,36 @@ WebInspector.SettingsUI.createSettingInputField = function(label, setting, numer
     {
         if (isEnterKey(event))
             apply();
+        incrementForArrows(event);
+    }
+
+    function incrementForArrows(event)
+    {
+        if (!numeric)
+            return;
+
+        var increment = event.keyIdentifier === "Up" ? 1 : event.keyIdentifier === "Down" ? -1 : 0;
+        if (!increment)
+            return;
+        if (event.shiftKey)
+            increment *= 10;
+
+        var value = inputElement.value;
+        if (validatorCallback && validatorCallback(value))
+            return;
+        value = Number(value);
+        if (clearForZero && !value)
+            return;
+        value += increment;
+        if (clearForZero && !value)
+            return;
+        value = String(value);
+        if (validatorCallback && validatorCallback(value))
+            return;
+
+        inputElement.value = value;
+        apply();
+        event.preventDefault();
     }
 
     function validate()
