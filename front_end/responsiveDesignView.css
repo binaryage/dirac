@@ -437,20 +437,25 @@ body.platform-mac .responsive-design-toolbar select {
     -webkit-filter: brightness(125%);
 }
 
-.media-inspector-marker-max-width {
+.media-inspector-marker-container-max-width .media-inspector-marker {
     background-color: rgba(111, 168, 220, 0.66);
     border-right: 5px solid rgba(111, 168, 220, 0.86);
 }
 
-.media-inspector-marker-min-max-width {
+.media-inspector-marker-container-min-max-width .media-inspector-marker {
     background-color: rgba(100, 200, 0, 0.66);
     border-left: 5px solid rgba(100, 200, 0, 0.86);
     border-right: 5px solid rgba(100, 200, 0, 0.86);
 }
 
-.media-inspector-marker-min-width {
+.media-inspector-marker-container-min-width .media-inspector-marker {
     background-color: rgba(225, 124, 0, 0.66);
     border-left: 5px solid rgba(225, 124, 0, 0.86);
+}
+
+.media-inspector-marker-container:not(.media-inspector-marker-container-max-width) .media-inspector-max-label-filler,
+.media-inspector-marker-container:not(.media-inspector-marker-container-max-width) .media-inspector-min-label-filler {
+    min-width: 50px;
 }
 
 .media-inspector-max-label-filler {
@@ -465,6 +470,7 @@ body.platform-mac .responsive-design-toolbar select {
 .media-inspector-marker-label {
     color: rgb(180, 180, 180);
     position: relative;
+    text-shadow: 0px 0px 2px black;
 }
 
 .media-inspector-min-label {
@@ -481,7 +487,6 @@ body.platform-mac .responsive-design-toolbar select {
 }
 
 .media-inspector-max-label {
-    text-shadow: 0px 0px 2px black;
     padding-left: 11px;
 }
 

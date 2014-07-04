@@ -349,14 +349,15 @@ WebInspector.MediaQueryInspector.prototype = {
         var zoomFactor = this._zoomFactor();
         var minWidthValue = model.minWidthExpression() ? model.minWidthExpression().computedLength() : 0;
 
-        var container = document.createElementWithClass("div", "media-inspector-marker-container hbox");
-        var markerElement = container.createChild("div", "media-inspector-marker");
         const styleClassPerSection = [
-            "media-inspector-marker-max-width",
-            "media-inspector-marker-min-max-width",
-            "media-inspector-marker-min-width"
+            "media-inspector-marker-container-max-width",
+            "media-inspector-marker-container-min-max-width",
+            "media-inspector-marker-container-min-width"
         ];
-        markerElement.classList.add(styleClassPerSection[model.section()]);
+        var container = document.createElementWithClass("div", "media-inspector-marker-container hbox");
+        container.classList.add(styleClassPerSection[model.section()]);
+
+        var markerElement = container.createChild("div", "media-inspector-marker");
         var leftPixelValue = minWidthValue ? (minWidthValue - this._offset) / zoomFactor + this._translateZero : 0;
         markerElement.style.left = leftPixelValue + "px";
         var widthPixelValue = null;
@@ -371,14 +372,14 @@ WebInspector.MediaQueryInspector.prototype = {
 
         var maxLabelFiller = container.createChild("div", "media-inspector-max-label-filler");
         if (model.maxWidthExpression()) {
-            maxLabelFiller.style.maxWidth = widthPixelValue + leftPixelValue + "px";
+            maxLabelFiller.style.maxWidth = Math.max(widthPixelValue + leftPixelValue, 0) + "px";
             var label = container.createChild("span", "media-inspector-marker-label media-inspector-max-label");
             label.textContent = model.maxWidthExpression().computedLength() + "px";
         }
 
         if (model.minWidthExpression()) {
             var minLabelFiller = maxLabelFiller.createChild("div", "media-inspector-min-label-filler");
-            minLabelFiller.style.maxWidth = leftPixelValue + "px";
+            minLabelFiller.style.maxWidth = Math.max(leftPixelValue, 0) + "px";
             var label = minLabelFiller.createChild("span", "media-inspector-marker-label media-inspector-min-label");
             label.textContent = model.minWidthExpression().computedLength() + "px";
         }
