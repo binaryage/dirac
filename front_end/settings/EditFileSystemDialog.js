@@ -61,7 +61,10 @@ WebInspector.EditFileSystemDialog = function(fileSystemPath)
     this._fileMappingsListContainer = this._fileMappingsSection.createChild("div", "settings-list-container");
     var entries = WebInspector.isolatedFileSystemManager.mapping().mappingEntries(this._fileSystemPath);
 
-    this._fileMappingsList = new WebInspector.EditableSettingsList(["url", "path"], this._fileMappingValuesProvider.bind(this), this._fileMappingValidate.bind(this), this._fileMappingEdit.bind(this));
+    var urlColumn = { id: "url", placeholder: WebInspector.UIString("URL prefix") };
+    var pathColumn = { id: "path", placeholder: WebInspector.UIString("Folder path") };
+
+    this._fileMappingsList = new WebInspector.EditableSettingsList([urlColumn, pathColumn], this._fileMappingValuesProvider.bind(this), this._fileMappingValidate.bind(this), this._fileMappingEdit.bind(this));
     this._fileMappingsList.addEventListener(WebInspector.SettingsList.Events.Removed, this._fileMappingRemovedfromList.bind(this));
 
     this._fileMappingsList.element.classList.add("file-mappings-list");
@@ -77,7 +80,7 @@ WebInspector.EditFileSystemDialog = function(fileSystemPath)
     this._excludedFolderListContainer = this._excludedFolderListSection.createChild("div", "settings-list-container");
     var excludedFolderEntries = WebInspector.isolatedFileSystemManager.mapping().excludedFolders(fileSystemPath);
 
-    this._excludedFolderList = new WebInspector.EditableSettingsList(["path"], this._excludedFolderValueProvider.bind(this), this._excludedFolderValidate.bind(this), this._excludedFolderEdit.bind(this));
+    this._excludedFolderList = new WebInspector.EditableSettingsList([pathColumn], this._excludedFolderValueProvider.bind(this), this._excludedFolderValidate.bind(this), this._excludedFolderEdit.bind(this));
     this._excludedFolderList.addEventListener(WebInspector.SettingsList.Events.Removed, this._excludedFolderRemovedfromList.bind(this));
     this._excludedFolderList.element.classList.add("excluded-folders-list");
     this._excludedFolderListContainer.appendChild(this._excludedFolderList.element);

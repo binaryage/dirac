@@ -587,11 +587,15 @@ body.platform-mac .help-key {
     background-color: pink;
 }
 
-.list-column-editor {
+input.list-column-editor,
+select.list-column-editor {
     border: 1px solid rgb(213, 213, 213);
     border-radius: 2px;
     color: #444444;
     padding: 3px;
+}
+select.list-column-editor {
+    padding: 2px;
 }
 
 .settings-tab .settings-list .settings-list-item .file-system-path {
