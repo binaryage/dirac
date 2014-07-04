@@ -182,6 +182,7 @@ WebInspector.ConsoleModel.evaluateCommandInConsole = function(executionContext, 
         if (!result)
             return;
 
+        this.show();
         this.dispatchEventToListeners(WebInspector.ConsoleModel.Events.CommandEvaluated, {result: result, wasThrown: wasThrown, text: text, commandMessage: commandMessage});
     }
 
