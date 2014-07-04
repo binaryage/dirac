@@ -556,9 +556,6 @@ WebInspector.TracingBasedTimelineFlameChartDataProvider.prototype = {
         var maxStackDepth = 0;
         for (var eventIndex = 0; eventIndex < events.length; ++eventIndex) {
             var event = events[eventIndex];
-            var category = event.category;
-            if (category !== "disabled-by-default-devtools.timeline" && category !== "devtools")
-                continue;
             if (event.duration || event.phase === WebInspector.TracingModel.Phase.Instant) {
                 this._appendEvent(event);
                 if (maxStackDepth < event.level)
