@@ -100,14 +100,14 @@ WebInspector.CSSMetadata.isLengthProperty = function(propertyName)
     return WebInspector.CSSMetadata._distancePropertiesKeySet[propertyName] || propertyName.startsWith("margin") || propertyName.startsWith("padding") || propertyName.indexOf("width") !== -1 || propertyName.indexOf("height") !== -1;
 }
 
-// Taken from http://www.w3.org/TR/CSS21/propidx.html.
+// Originally taken from http://www.w3.org/TR/CSS21/propidx.html and augmented.
 WebInspector.CSSMetadata.InheritedProperties = [
     "azimuth", "border-collapse", "border-spacing", "caption-side", "color", "cursor", "direction", "elevation",
     "empty-cells", "font-family", "font-size", "font-style", "font-variant", "font-weight", "font", "letter-spacing",
-    "line-height", "list-style-image", "list-style-position", "list-style-type", "list-style", "orphans", "pitch-range",
+    "line-height", "list-style-image", "list-style-position", "list-style-type", "list-style", "orphans", "overflow-wrap", "pitch-range",
     "pitch", "quotes", "resize", "richness", "speak-header", "speak-numeral", "speak-punctuation", "speak", "speech-rate", "stress",
     "text-align", "text-indent", "text-transform", "text-shadow", "visibility", "voice-family", "volume", "white-space", "widows",
-    "word-spacing", "zoom"
+    "word-spacing", "word-wrap", "zoom"
 ].keySet();
 
 // These non-standard Blink-specific properties augment the InheritedProperties.
