@@ -84,6 +84,11 @@ WebInspector.ShortcutRegistry.prototype = {
     handleKey: function(key, keyIdentifier, event)
     {
         var actionIds = this.applicableActions(key);
+        if (WebInspector.GlassPane.DefaultFocusedViewStack.length > 1) {
+            if (actionIds.length)
+                event.consume(true);
+            return;
+        }
 
         for (var i = 0; i < actionIds.length; ++i) {
             var keyModifiers = key >> 8;

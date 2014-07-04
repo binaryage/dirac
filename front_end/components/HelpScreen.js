@@ -57,19 +57,6 @@ WebInspector.HelpScreen = function(title)
  */
 WebInspector.HelpScreen._visibleScreen = null;
 
-/**
- * @return {boolean}
- */
-WebInspector.HelpScreen.isVisible = function()
-{
-    return !!WebInspector.HelpScreen._visibleScreen;
-}
-
-WebInspector.HelpScreen.focus = function()
-{
-    WebInspector.HelpScreen._visibleScreen.element.focus();
-}
-
 WebInspector.HelpScreen.prototype = {
     _createCloseButton: function()
     {
@@ -88,7 +75,7 @@ WebInspector.HelpScreen.prototype = {
         if (visibleHelpScreen)
             visibleHelpScreen.hide();
         WebInspector.HelpScreen._visibleScreen = this;
-        WebInspector.GlassPane.DefaultFocusedViewStack.unshift(this);
+        WebInspector.GlassPane.DefaultFocusedViewStack.push(this);
         this.show(WebInspector.inspectorView.element);
         this.focus();
     },
@@ -99,7 +86,7 @@ WebInspector.HelpScreen.prototype = {
             return;
 
         WebInspector.HelpScreen._visibleScreen = null;
-        WebInspector.GlassPane.DefaultFocusedViewStack.shift();
+        WebInspector.GlassPane.DefaultFocusedViewStack.pop();
 
         WebInspector.restoreFocusFromElement(this.element);
         this.detach();

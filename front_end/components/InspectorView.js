@@ -36,7 +36,7 @@ WebInspector.InspectorView = function()
 {
     WebInspector.VBox.call(this);
     WebInspector.Dialog.setModalHostView(this);
-    WebInspector.GlassPane.DefaultFocusedViewStack.unshift(this);
+    WebInspector.GlassPane.DefaultFocusedViewStack.push(this);
     this.setMinimumSize(180, 72);
 
     // DevTools sidebar is a vertical split of panels tabbed pane and a drawer.

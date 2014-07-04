@@ -157,7 +157,7 @@ WebInspector.GlassPane.prototype = {
     {
         delete WebInspector._glassPane;
         if (WebInspector.GlassPane.DefaultFocusedViewStack.length)
-            WebInspector.GlassPane.DefaultFocusedViewStack[0].focus();
+            WebInspector.GlassPane.DefaultFocusedViewStack.peekLast().focus();
         this.element.remove();
     }
 }
