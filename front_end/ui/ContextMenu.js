@@ -224,9 +224,9 @@ WebInspector.ContextMenu.prototype = {
             WebInspector._contextMenu = this;
             if (WebInspector.ContextMenu._useSoftMenu) {
                 var softMenu = new WebInspector.SoftContextMenu(menuObject);
-                softMenu.show(this._event);
+                softMenu.show(this._event.x, this._event.y);
             } else {
-                InspectorFrontendHost.showContextMenu(this._event, menuObject);
+                InspectorFrontendHost.showContextMenuAtPoint(this._event.x, this._event.y, menuObject);
             }
             this._event.consume(true);
         }
@@ -302,6 +302,7 @@ WebInspector.contextMenuItemSelected = function(id)
 
 WebInspector.contextMenuCleared = function()
 {
-    // FIXME: Unfortunately, contextMenuCleared is invoked between show and item selected
-    // so we can't delete last menu object from WebInspector. Fix the contract.
+    // We can notify menu client if any need occurs.
+    if (WebInspector._contextMenu)
+        delete WebInspector._contextMenu;
 }
