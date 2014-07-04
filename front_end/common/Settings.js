@@ -203,6 +203,9 @@ WebInspector.Setting.prototype = {
         return this._value;
     },
 
+    /**
+     * @param {V} value
+     */
     set: function(value)
     {
         this._value = value;
@@ -228,14 +231,48 @@ WebInspector.Setting.prototype = {
  */
 WebInspector.RegExpSetting = function(name, defaultValue, eventSupport, storage, regexFlags)
 {
-    WebInspector.Setting.call(this, name, defaultValue, eventSupport, storage);
+    WebInspector.Setting.call(this, name, [defaultValue], eventSupport, storage);
     this._regexFlags = regexFlags;
 }
 
 WebInspector.RegExpSetting.prototype = {
+    /**
+     * @override
+     * @return {string}
+     */
+    get: function()
+    {
+        return this.getAsArray().join("|");
+    },
+
+    /**
+     * @return {!Array.<string>}
+     */
+    getAsArray: function()
+    {
+        var value = WebInspector.Setting.prototype.get.call(this);
+        if (typeof value === "string") // Backward compatibility.
+            value = [value];
+        value.remove("");
+        return value;
+    },
+
+    /**
+     * @override
+     * @param {string} value
+     */
     set: function(value)
     {
+        this.setAsArray([value]);
+    },
+
+    /**
+     * @param {!Array.<string>} value
+     */
+    setAsArray: function(value)
+    {
         delete this._regex;
+        value.remove("");
         WebInspector.Setting.prototype.set.call(this, value);
     },
 
@@ -248,7 +285,9 @@ WebInspector.RegExpSetting.prototype = {
             return this._regex;
         this._regex = null;
         try {
-            this._regex = new RegExp(this.get(), this._regexFlags || "");
+            var pattern = this.get();
+            if (pattern)
+                this._regex = new RegExp(pattern, this._regexFlags || "");
         } catch (e) {
         }
         return this._regex;
@@ -276,6 +315,10 @@ WebInspector.BackendSetting = function(name, defaultValue, eventSupport, storage
 }
 
 WebInspector.BackendSetting.prototype = {
+    /**
+     * @override
+     * @param {*} value
+     */
     set: function(value)
     {
         /**
