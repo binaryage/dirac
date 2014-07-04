@@ -34,12 +34,14 @@
  * @implements {WebInspector.TimelineFlameChart.SelectionProvider}
  * @param {!WebInspector.TimelineModelImpl} model
  * @param {!WebInspector.TimelineFrameModelBase} frameModel
+ * @param {!WebInspector.TimelineUIUtils} uiUtils
  */
-WebInspector.TimelineFlameChartDataProvider = function(model, frameModel)
+WebInspector.TimelineFlameChartDataProvider = function(model, frameModel, uiUtils)
 {
     WebInspector.FlameChartDataProvider.call(this);
     this._model = model;
     this._frameModel = frameModel;
+    this._uiUtils = uiUtils;
     this._font = "12px " + WebInspector.fontFamily();
     this._linkifier = new WebInspector.Linkifier();
 }
@@ -89,8 +91,8 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
             return WebInspector.UIString("CPU");
         else if (record === this._gpuThreadRecord)
             return WebInspector.UIString("GPU");
-        var details = WebInspector.TimelineUIUtilsImpl.buildDetailsNode(record, this._linkifier, this._model.loadedFromFile());
-        var title = WebInspector.TimelineUIUtilsImpl.recordTitle(record);
+        var details = this._uiUtils.buildDetailsNode(record, this._linkifier, this._model.loadedFromFile());
+        var title = this._uiUtils.titleForRecord(record);
         return details ? WebInspector.UIString("%s (%s)", title, details.textContent) : title;
     },
 
@@ -134,8 +136,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
         this._entryThreadDepths = {};
         this._minimumBoundary = this._model.minimumRecordTime();
 
-        var cpuThreadRecordPayload = { type: WebInspector.TimelineModel.RecordType.Program };
-        this._cpuThreadRecord = new WebInspector.TimelineModel.RecordImpl(this._model, /** @type {!TimelineAgent.TimelineEvent} */ (cpuThreadRecordPayload), null);
+        this._cpuThreadRecord = this._uiUtils.createProgramRecord(this._model);
         this._pushRecord(this._cpuThreadRecord, 0, this.minimumBoundary(), Math.max(this._model.maximumRecordTime(), this.totalTime() + this.minimumBoundary()));
 
         this._gpuThreadRecord = null;
@@ -152,8 +153,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
             } else {
                 var visible = this._appendRecord(records[i], 1);
                 if (visible && !this._gpuThreadRecord) {
-                    var gpuThreadRecordPayload = { type: WebInspector.TimelineModel.RecordType.Program };
-                    this._gpuThreadRecord = new WebInspector.TimelineModel.RecordImpl(this._model, /** @type {!TimelineAgent.TimelineEvent} */ (gpuThreadRecordPayload), null);
+                    this._gpuThreadRecord = this._uiUtils.createProgramRecord(this._model);
                     this._pushRecord(this._gpuThreadRecord, 0, this.minimumBoundary(), Math.max(this._model.maximumRecordTime(), this.totalTime() + this.minimumBoundary()));
                 }
             }
@@ -283,7 +283,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
         if (record.type() === WebInspector.TimelineModel.RecordType.JSFrame)
             return WebInspector.TimelineFlameChartDataProvider.jsFrameColorGenerator().colorForID(record.data()["functionName"]);
 
-        return WebInspector.TimelineUIUtilsImpl.recordStyle(record).category.fillColorStop1;
+        return this._uiUtils.categoryForRecord(record).fillColorStop1;
     },
 
 
@@ -306,7 +306,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
         var record = this._records[entryIndex];
         var timelineData = this._timelineData;
 
-        var category = WebInspector.TimelineUIUtilsImpl.recordStyle(record).category;
+        var category = this._uiUtils.categoryForRecord(record);
         // Paint text using white color on dark background.
         if (text) {
             context.save();
@@ -803,8 +803,9 @@ WebInspector.TimelineFlameChartDataProvider.jsFrameColorGenerator = function()
  * @param {!WebInspector.TimelineModel} model
  * @param {?WebInspector.TracingTimelineModel} tracingModel
  * @param {!WebInspector.TimelineFrameModelBase} frameModel
+ * @param {!WebInspector.TimelineUIUtils} uiUtils
  */
-WebInspector.TimelineFlameChart = function(delegate, model, tracingModel, frameModel)
+WebInspector.TimelineFlameChart = function(delegate, model, tracingModel, frameModel, uiUtils)
 {
     WebInspector.VBox.call(this);
     this.element.classList.add("timeline-flamechart");
@@ -813,7 +814,7 @@ WebInspector.TimelineFlameChart = function(delegate, model, tracingModel, frameM
     this._model = model;
     this._dataProvider = tracingModel
         ? new WebInspector.TracingBasedTimelineFlameChartDataProvider(tracingModel, frameModel, model.target())
-        : new WebInspector.TimelineFlameChartDataProvider(/** @type {!WebInspector.TimelineModelImpl} */(model), frameModel);
+        : new WebInspector.TimelineFlameChartDataProvider(/** @type {!WebInspector.TimelineModelImpl} */(model), frameModel, uiUtils);
     this._mainView = new WebInspector.FlameChart(this._dataProvider, this, true);
     this._mainView.show(this.element);
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStarted, this._onRecordingStarted, this);

@@ -650,7 +650,7 @@ WebInspector.TimelinePanel.prototype = {
 
         if (WebInspector.experimentsSettings.timelineFlameChart.isEnabled() && this._flameChartEnabledSetting.get()) {
             var tracingTimelineModel = WebInspector.experimentsSettings.timelineOnTraceEvents.isEnabled() ? this._tracingTimelineModel : null;
-            this._addModeView(new WebInspector.TimelineFlameChart(this, this._model, tracingTimelineModel, this._frameModel()));
+            this._addModeView(new WebInspector.TimelineFlameChart(this, this._model, tracingTimelineModel, this._frameModel(), this._uiUtils));
         } else {
             this._addModeView(this._timelineView());
         }

@@ -290,7 +290,7 @@ WebInspector.TimelineModelImpl.InterRecordBindings.prototype = {
 /**
  * @constructor
  * @implements {WebInspector.TimelineModel.Record}
- * @param {!WebInspector.TimelineModelImpl} model
+ * @param {!WebInspector.TimelineModel} model
  * @param {!TimelineAgent.TimelineEvent} timelineEvent
  * @param {?WebInspector.TimelineModel.Record} parentRecord
  */

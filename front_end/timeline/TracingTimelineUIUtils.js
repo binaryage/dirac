@@ -190,6 +190,16 @@ WebInspector.TracingTimelineUIUtils.prototype = {
         return new WebInspector.TimelineRecordTypeFilter(hiddenRecords);
     },
 
+    /**
+     * @param {!WebInspector.TimelineModel} model
+     * @return {!WebInspector.TimelineModel.Record}
+     */
+    createProgramRecord: function(model)
+    {
+        var payload = { name: WebInspector.TracingTimelineModel.RecordType.Program };
+        return new WebInspector.TracingTimelineModel.TraceEventRecord(model, new WebInspector.TracingModel.Event(/** @type {!WebInspector.TracingModel.EventPayload} */ (payload), 0, null));
+    },
+
     __proto__: WebInspector.TimelineUIUtils.prototype
 }
 
