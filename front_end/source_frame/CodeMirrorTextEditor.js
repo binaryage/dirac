@@ -235,20 +235,11 @@ CodeMirror.commands.smartNewlineAndIndent = function(codeMirror)
 {
     codeMirror.operation(innerSmartNewlineAndIndent.bind(null, codeMirror));
 
-    function countIndent(line)
-    {
-        for (var i = 0; i < line.length; ++i) {
-            if (!WebInspector.TextUtils.isSpaceChar(line[i]))
-                return i;
-        }
-        return line.length;
-    }
-
     function innerSmartNewlineAndIndent(codeMirror)
     {
         var cur = codeMirror.getCursor("start");
         var line = codeMirror.getLine(cur.line);
-        var indent = cur.line > 0 ? countIndent(line) : 0;
+        var indent = cur.line > 0 ? WebInspector.TextUtils.lineIndent(line).length : 0;
         if (cur.ch <= indent) {
             codeMirror.replaceSelection("\n" + line.substring(0, cur.ch), "end", "+input");
             codeMirror.setSelection(new CodeMirror.Pos(cur.line + 1, cur.ch));
@@ -1652,22 +1643,42 @@ WebInspector.CodeMirrorTextEditor.BlockIndentController.prototype = {
      */
     Enter: function(codeMirror)
     {
-        if (codeMirror.somethingSelected())
-            return CodeMirror.Pass;
-        var cursor = codeMirror.getCursor();
-        if (cursor.ch === 0)
-            return CodeMirror.Pass;
-        var line = codeMirror.getLine(cursor.line);
-        if (line.substr(cursor.ch - 1, 2) === "{}") {
-            codeMirror.execCommand("newlineAndIndent");
-            codeMirror.setCursor(cursor);
-            codeMirror.execCommand("newlineAndIndent");
-            codeMirror.execCommand("indentMore");
-        } else if (line.substr(cursor.ch - 1, 1) === "{") {
-            codeMirror.execCommand("newlineAndIndent");
-            codeMirror.execCommand("indentMore");
-        } else
-            return CodeMirror.Pass;
+        var selections = codeMirror.listSelections();
+        var replacements = [];
+        var allSelectionsAreCollapsedBlocks = false;
+        for (var i = 0; i < selections.length; ++i) {
+            var selection = selections[i];
+            var start = CodeMirror.cmpPos(selection.head, selection.anchor) < 0 ? selection.head : selection.anchor;
+            var line = codeMirror.getLine(start.line);
+            var indent = WebInspector.TextUtils.lineIndent(line);
+            var indentToInsert = "\n" + indent + codeMirror._codeMirrorTextEditor.indent();
+            var isCollapsedBlock = false;
+            if (line.substr(selection.head.ch - 1, 2) === "{}") {
+                indentToInsert += "\n" + indent;
+                isCollapsedBlock = true;
+            } else if (line.substr(selection.head.ch - 1, 1) !== "{") {
+                return CodeMirror.Pass;
+            }
+            if (i > 0 && allSelectionsAreCollapsedBlocks !== isCollapsedBlock)
+                return CodeMirror.Pass;
+            replacements.push(indentToInsert);
+            allSelectionsAreCollapsedBlocks = isCollapsedBlock;
+        }
+        codeMirror.replaceSelections(replacements);
+        if (!allSelectionsAreCollapsedBlocks)
+            return;
+        selections = codeMirror.listSelections();
+        var updatedSelections = [];
+        for (var i = 0; i < selections.length; ++i) {
+            var selection = selections[i];
+            var line = codeMirror.getLine(selection.head.line - 1);
+            var position = new CodeMirror.Pos(selection.head.line - 1, line.length);
+            updatedSelections.push({
+                head: position,
+                anchor: position
+            });
+        }
+        codeMirror.setSelections(updatedSelections);
     },
 
     /**
@@ -1675,24 +1686,38 @@ WebInspector.CodeMirrorTextEditor.BlockIndentController.prototype = {
      */
     "'}'": function(codeMirror)
     {
-        var cursor = codeMirror.getCursor();
-        var line = codeMirror.getLine(cursor.line);
-        for (var i = 0 ; i < line.length; ++i) {
-            if (!WebInspector.TextUtils.isSpaceChar(line.charAt(i)))
+        if (codeMirror.somethingSelected())
+            return CodeMirror.Pass;
+
+        var selections = codeMirror.listSelections();
+        var replacements = [];
+        for (var i = 0; i < selections.length; ++i) {
+            var selection = selections[i];
+            var line = codeMirror.getLine(selection.head.line);
+            if (line !== WebInspector.TextUtils.lineIndent(line))
                 return CodeMirror.Pass;
+            replacements.push("}");
         }
 
-        codeMirror.replaceRange("}", cursor);
-        var matchingBracket = codeMirror.findMatchingBracket(cursor);
-        if (!matchingBracket || !matchingBracket.match)
-            return;
-
-        line = codeMirror.getLine(matchingBracket.to.line);
-        var desiredIndentation = 0;
-        while (desiredIndentation < line.length && WebInspector.TextUtils.isSpaceChar(line.charAt(desiredIndentation)))
-            ++desiredIndentation;
-
-        codeMirror.replaceRange(line.substr(0, desiredIndentation) + "}", new CodeMirror.Pos(cursor.line, 0), new CodeMirror.Pos(cursor.line, cursor.ch + 1));
+        codeMirror.replaceSelections(replacements);
+        selections = codeMirror.listSelections();
+        replacements = [];
+        var updatedSelections = [];
+        for (var i = 0; i < selections.length; ++i) {
+            var selection = selections[i];
+            var matchingBracket = codeMirror.findMatchingBracket(selection.head);
+            if (!matchingBracket || !matchingBracket.match)
+                return;
+            updatedSelections.push({
+                head: selection.head,
+                anchor: new CodeMirror.Pos(selection.head.line, 0)
+            });
+            var line = codeMirror.getLine(matchingBracket.to.line);
+            var indent = WebInspector.TextUtils.lineIndent(line);
+            replacements.push(indent + "}");
+        }
+        codeMirror.setSelections(updatedSelections);
+        codeMirror.replaceSelections(replacements);
     }
 }
 

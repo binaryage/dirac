@@ -421,6 +421,10 @@ CodeMirror.prototype = {
     /** @param {*=} origin */
     replaceRange: function(code, from, to, origin) { },
     replaceSelection: function(code, collapse, origin) { },
+    /**
+     * @param {!Array.<string>} textPerSelection
+     */
+    replaceSelections: function(textPerSelection) { },
     /** @param {*=} margin */
     scrollIntoView: function(pos, margin) { },
     scrollTo: function(x, y) { },
@@ -463,6 +467,13 @@ CodeMirror.Pos = function(line, ch) { }
 CodeMirror.Pos.prototype.line;
 /** @type {number} */
 CodeMirror.Pos.prototype.ch;
+
+/**
+ * @param {!CodeMirror.Pos} pos1
+ * @param {!CodeMirror.Pos} pos2
+ * @return {number}
+ */
+CodeMirror.cmpPos = function(pos1, pos2) { };
 
 /** @constructor */
 CodeMirror.StringStream = function(line)

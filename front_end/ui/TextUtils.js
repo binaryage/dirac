@@ -156,6 +156,18 @@ WebInspector.TextUtils = {
     },
 
     /**
+     * @param {string} line
+     * @return {string}
+     */
+    lineIndent: function(line)
+    {
+        var indentation = 0;
+        while (indentation < line.length && WebInspector.TextUtils.isSpaceChar(line.charAt(indentation)))
+            ++indentation;
+        return line.substr(0, indentation);
+    },
+
+    /**
      * @param {string} text
      * @return {boolean}
      */
