@@ -58,7 +58,7 @@ WebInspector.UserMetrics._PanelCodes = {
     elements: 1,
     resources: 2,
     network: 3,
-    scripts: 4,
+    sources: 4,
     timeline: 5,
     profiles: 6,
     audits: 7,
