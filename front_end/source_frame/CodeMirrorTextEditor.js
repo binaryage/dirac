@@ -1653,6 +1653,8 @@ WebInspector.CodeMirrorTextEditor.BlockIndentController.prototype = {
             var indent = WebInspector.TextUtils.lineIndent(line);
             var indentToInsert = "\n" + indent + codeMirror._codeMirrorTextEditor.indent();
             var isCollapsedBlock = false;
+            if (selection.head.ch === 0)
+                return CodeMirror.Pass;
             if (line.substr(selection.head.ch - 1, 2) === "{}") {
                 indentToInsert += "\n" + indent;
                 isCollapsedBlock = true;
