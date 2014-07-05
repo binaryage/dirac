@@ -572,7 +572,7 @@ WebInspector.TimelineDetailsContentHelper.prototype = {
             var row = stackTraceElement.createChild("div");
             row.createTextChild(stackFrame.functionName || WebInspector.UIString("(anonymous function)"));
             row.createTextChild(" @ ");
-            var urlElement = this._linkifier.linkifyLocation(this._target, stackFrame.url, stackFrame.lineNumber - 1);
+            var urlElement = this._linkifier.linkifyLocationByScriptId(this._target, stackFrame.scriptId, stackFrame.url, stackFrame.lineNumber - 1, stackFrame.columnNumber - 1);
             row.appendChild(urlElement);
         }
     }
