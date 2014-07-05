@@ -57,8 +57,8 @@ WebInspector.NetworkLogView = function(filterBar, coulmnsVisibilitySetting)
     this._filterBar = filterBar;
     this._coulmnsVisibilitySetting = coulmnsVisibilitySetting;
     this._allowRequestSelection = false;
-    this._requests = [];
-    this._requestsById = {};
+    /** @type {!StringMap.<!WebInspector.NetworkRequest>} */
+    this._requestsById = new StringMap();
     /** @type {!Object.<string, boolean>} */
     this._staleRequestIds = {};
     this._requestGridNodes = {};
@@ -530,7 +530,7 @@ WebInspector.NetworkLogView.prototype = {
 
     _updateSummaryBar: function()
     {
-        var requestsNumber = this._requests.length;
+        var requestsNumber = this._requestsById.size();
 
         if (!requestsNumber) {
             if (this._summaryBarElement._isDisplayingWarning)
@@ -550,8 +550,9 @@ WebInspector.NetworkLogView.prototype = {
         var selectedTransferSize = 0;
         var baseTime = -1;
         var maxTime = -1;
-        for (var i = 0; i < this._requests.length; ++i) {
-            var request = this._requests[i];
+        var requests = this._requestsById.values();
+        for (var i = 0; i < requests.length; ++i) {
+            var request = requests[i];
             var requestTransferSize = request.transferSize;
             transferSize += requestTransferSize;
             if (!this._filteredOutRequests.get(request)) {
@@ -660,10 +661,9 @@ WebInspector.NetworkLogView.prototype = {
 
     _invalidateAllItems: function()
     {
-        for (var i = 0; i < this._requests.length; ++i) {
-            var request = this._requests[i];
-            this._staleRequestIds[request.requestId] = true;
-        }
+        var requestIds = this._requestsById.keys();
+        for (var i = 0; i < requestIds.length; ++i)
+            this._staleRequestIds[requestIds[i]] = true;
     },
 
     get calculator()
@@ -768,7 +768,9 @@ WebInspector.NetworkLogView.prototype = {
         }
 
         for (var requestId in this._staleRequestIds) {
-            var request = this._requestsById[requestId];
+            var request = this._requestsById.get(requestId);
+            if (!request)
+                continue;
             var node = this._requestGridNode(request);
             if (!node) {
                 // Create the timeline tree element and graph.
@@ -791,7 +793,7 @@ WebInspector.NetworkLogView.prototype = {
         }
 
         for (var requestId in this._staleRequestIds)
-            this._requestGridNode(this._requestsById[requestId]).refreshGraph(this.calculator);
+            this._requestGridNode(this._requestsById.get(requestId)).refreshGraph(this.calculator);
 
         this._staleRequestIds = {};
         this._sortItems();
@@ -820,8 +822,7 @@ WebInspector.NetworkLogView.prototype = {
         if (this._calculator)
             this._calculator.reset();
 
-        this._requests = [];
-        this._requestsById = {};
+        this._requestsById.clear();
         this._staleRequestIds = {};
         this._requestGridNodes = {};
         this._resetSuggestionBuilder();
@@ -852,17 +853,14 @@ WebInspector.NetworkLogView.prototype = {
      */
     _appendRequest: function(request)
     {
-        this._requests.push(request);
-
         // In case of redirect request id is reassigned to a redirected
         // request and we need to update _requestsById and search results.
-        if (this._requestsById[request.requestId]) {
-            var oldRequest = request.redirects[request.redirects.length - 1];
-            this._requestsById[oldRequest.requestId] = oldRequest;
-
-            this._updateSearchMatchedListAfterRequestIdChanged(request.requestId, oldRequest.requestId);
+        var originalRequest = this._requestsById.get(request.requestId);
+        if (originalRequest) {
+            this._requestsById.put(originalRequest.requestId, originalRequest);
+            this._updateSearchMatchedListAfterRequestIdChanged(request.requestId, originalRequest.requestId);
         }
-        this._requestsById[request.requestId] = request;
+        this._requestsById.put(request.requestId, request);
 
         // Pull all the redirects of the main request upon commit load.
         if (request.redirects) {
@@ -887,7 +885,7 @@ WebInspector.NetworkLogView.prototype = {
      */
     _refreshRequest: function(request)
     {
-        if (!this._requestsById[request.requestId])
+        if (!this._requestsById.get(request.requestId))
             return;
 
         this._suggestionBuilder.addItem(WebInspector.NetworkPanel.FilterType.Domain, request.domain);
@@ -1161,7 +1159,8 @@ WebInspector.NetworkLogView.prototype = {
 
     _harRequests: function()
     {
-        var httpRequests = this._requests.filter(WebInspector.NetworkLogView.HTTPRequestsFilter);
+        var requests = this._requestsById.values();
+        var httpRequests = requests.filter(WebInspector.NetworkLogView.HTTPRequestsFilter);
         httpRequests = httpRequests.filter(WebInspector.NetworkLogView.FinishedRequestsFilter);
         return httpRequests.filter(WebInspector.NetworkLogView.NonDevToolsRequestsFilter);
     },
@@ -1350,7 +1349,7 @@ WebInspector.NetworkLogView.prototype = {
      */
     _highlightNthMatchedRequestForSearch: function(matchedRequestIndex, reveal)
     {
-        var request = this._requestsById[this._matchedRequests[matchedRequestIndex]];
+        var request = this._requestsById.get(this._matchedRequests[matchedRequestIndex]);
         if (!request)
             return;
         this._removeAllHighlights();
