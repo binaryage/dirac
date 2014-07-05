@@ -74,7 +74,6 @@ WebInspector.CPUProfileView = function(profileHeader)
     this._statusBarButtonsElement.appendChild(this.resetButton.element);
 
     this._profileHeader = profileHeader;
-    this._target = profileHeader.target();
     this._linkifier = new WebInspector.Linkifier(new WebInspector.Linkifier.DefaultFormatter(30));
 
     this.profile = new WebInspector.CPUProfileDataModel(profileHeader._profile || profileHeader.protocolProfile());
@@ -353,7 +352,7 @@ WebInspector.CPUProfileView.prototype = {
     {
         if (this._flameChart)
             return;
-        this._dataProvider = new WebInspector.CPUFlameChartDataProvider(this.profile, this._target);
+        this._dataProvider = new WebInspector.CPUFlameChartDataProvider(this.profile, this._profileHeader.target());
         this._flameChart = new WebInspector.CPUProfileFlameChart(this._dataProvider);
         this._flameChart.addEventListener(WebInspector.FlameChart.Events.EntrySelected, this._onEntrySelected.bind(this));
     },
@@ -365,9 +364,10 @@ WebInspector.CPUProfileView.prototype = {
     {
         var entryIndex = event.data;
         var node = this._dataProvider._entryNodes[entryIndex];
-        if (!node || !node.scriptId || !this._target)
+        var target = this._profileHeader.target();
+        if (!node || !node.scriptId || !target)
             return;
-        var script = this._target.debuggerModel.scriptForId(node.scriptId)
+        var script = target.debuggerModel.scriptForId(node.scriptId)
         if (!script)
             return;
         WebInspector.Revealer.reveal(script.rawLocationToUILocation(node.lineNumber));

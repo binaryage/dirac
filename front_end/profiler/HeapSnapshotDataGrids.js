@@ -973,7 +973,7 @@ WebInspector.AllocationDataGrid = function(target, dataDisplayDelegate)
         {id: "name", title: WebInspector.UIString("Function"), disclosure: true, sortable: true},
     ];
     WebInspector.HeapSnapshotViewportDataGrid.call(this, dataDisplayDelegate, columns);
-    this._target = target;
+    this._targetObserver = new WebInspector.TargetObserver(target);
     this._linkifier = new WebInspector.Linkifier();
 }
 
@@ -984,7 +984,7 @@ WebInspector.AllocationDataGrid.prototype = {
      */
     target: function()
     {
-        return this._target;
+        return this._targetObserver.target();
     },
 
     dispose: function()

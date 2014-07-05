@@ -1488,16 +1488,9 @@ WebInspector.AllocationGridNode.prototype = {
         var cell = WebInspector.HeapSnapshotGridNode.prototype.createCell.call(this, columnIdentifier);
         var allocationNode = this._allocationNode;
         var target = this._dataGrid.target();
-        if (allocationNode.scriptId && target) {
-            var urlElement;
+        if (allocationNode.scriptId) {
             var linkifier = this._dataGrid._linkifier;
-            var script = target.debuggerModel.scriptForId(String(allocationNode.scriptId));
-            if (script) {
-                var rawLocation = target.debuggerModel.createRawLocation(script, allocationNode.line - 1, allocationNode.column - 1);
-                urlElement = linkifier.linkifyRawLocation(rawLocation, "profile-node-file");
-            } else
-                urlElement = linkifier.linkifyLocation(target, allocationNode.scriptName, allocationNode.line - 1, allocationNode.column - 1, "profile-node-file");
-
+            var urlElement = linkifier.linkifyLocationByScriptId(target, String(allocationNode.scriptId), allocationNode.scriptName, allocationNode.line - 1, allocationNode.column - 1, "profile-node-file");
             urlElement.style.maxWidth = "75%";
             cell.insertBefore(urlElement, cell.firstChild);
         }

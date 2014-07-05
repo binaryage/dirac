@@ -529,7 +529,7 @@ WebInspector.DebuggerModel.prototype = {
     createRawLocation: function(script, lineNumber, columnNumber)
     {
         if (script.sourceURL)
-            return this.createRawLocationByURL(script.sourceURL, lineNumber, columnNumber)
+            return this.createRawLocationByURL(script.sourceURL, lineNumber, columnNumber);
         return new WebInspector.DebuggerModel.Location(this.target(), script.scriptId, lineNumber, columnNumber);
     },
 
@@ -555,6 +555,19 @@ WebInspector.DebuggerModel.prototype = {
             break;
         }
         return closestScript ? new WebInspector.DebuggerModel.Location(this.target(), closestScript.scriptId, lineNumber, columnNumber) : null;
+    },
+
+    /**
+     * @param {!DebuggerAgent.ScriptId} scriptId
+     * @param {string} sourceUrl
+     * @param {number} lineNumber
+     * @param {number} columnNumber
+     * @return {?WebInspector.DebuggerModel.Location}
+     */
+    createRawLocationByScriptId: function(scriptId, sourceUrl, lineNumber, columnNumber)
+    {
+        var script = this.scriptForId(scriptId);
+        return script ? this.createRawLocation(script, lineNumber, columnNumber) : this.createRawLocationByURL(sourceUrl, lineNumber, columnNumber);
     },
 
     /**

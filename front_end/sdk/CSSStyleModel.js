@@ -710,6 +710,7 @@ WebInspector.CSSStyleModel.LiveLocation.prototype = {
 /**
  * @constructor
  * @implements {WebInspector.RawLocation}
+ * @extends {WebInspector.SDKObject}
  * @param {!WebInspector.Target} target
  * @param {string} url
  * @param {number} lineNumber
@@ -717,6 +718,7 @@ WebInspector.CSSStyleModel.LiveLocation.prototype = {
  */
 WebInspector.CSSLocation = function(target, url, lineNumber, columnNumber)
 {
+    WebInspector.SDKObject.call(this, target);
     this._cssModel = target.cssModel;
     this.url = url;
     this.lineNumber = lineNumber;
@@ -741,7 +743,9 @@ WebInspector.CSSLocation.prototype = {
     toUILocation: function()
     {
         return this._cssModel.rawLocationToUILocation(this);
-    }
+    },
+
+    __proto__: WebInspector.SDKObject.prototype
 }
 
 /**

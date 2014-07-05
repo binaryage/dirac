@@ -2138,7 +2138,7 @@ WebInspector.HeapSnapshotStatisticsView.prototype = {
 WebInspector.HeapAllocationStackView = function(target)
 {
     WebInspector.View.call(this);
-    this._target = target;
+    this._targetObserver = new WebInspector.TargetObserver(target);
     this._linkifier = new WebInspector.Linkifier();
 }
 
@@ -2176,13 +2176,8 @@ WebInspector.HeapAllocationStackView.prototype = {
             var frameDiv = stackDiv.createChild("div", "stack-frame");
             var name = frameDiv.createChild("div");
             name.textContent = frame.functionName;
-            if (frame.scriptId && this._target) {
-                var urlElement;
-                var rawLocation = new WebInspector.DebuggerModel.Location(this._target, String(frame.scriptId), frame.line - 1, frame.column - 1);
-                if (rawLocation)
-                    urlElement = this._linkifier.linkifyRawLocation(rawLocation);
-                if (!urlElement)
-                    urlElement = this._linkifier.linkifyLocation(this._target, frame.scriptName, frame.line - 1, frame.column - 1);
+            if (frame.scriptId) {
+                var urlElement = this._linkifier.linkifyLocationByScriptId(this._targetObserver.target(), String(frame.scriptId), frame.scriptName, frame.line - 1, frame.column - 1);
                 frameDiv.appendChild(urlElement);
             }
         }
