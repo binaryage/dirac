@@ -17,6 +17,13 @@
             "title": "Settings",
             "order": 0,
             "elementClass": "settings-status-bar-item"
+        },
+        {
+            "type": "ui-setting",
+            "section": "Sources",
+            "experiment": "frameworksDebuggingSupport",
+            "settingType": "custom",
+            "className": "WebInspector.SettingsScreen.SkipStackFramePatternSettingDelegate"
         }
     ],
     "scripts": [ "SettingsScreen.js" ]

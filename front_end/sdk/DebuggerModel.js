@@ -59,7 +59,6 @@ WebInspector.DebuggerModel = function(target)
 
     this.enableDebugger();
 
-    WebInspector.settings.skipStackFramesSwitch.addChangeListener(this._applySkipStackFrameSettings, this);
     WebInspector.settings.skipStackFramesPattern.addChangeListener(this._applySkipStackFrameSettings, this);
     this._applySkipStackFrameSettings();
 }
@@ -709,9 +708,7 @@ WebInspector.DebuggerModel.prototype = {
     {
         if (!WebInspector.experimentsSettings.frameworksDebuggingSupport.isEnabled())
             return;
-        var settings = WebInspector.settings;
-        var patternParameter = settings.skipStackFramesSwitch.get() ? settings.skipStackFramesPattern.get() : undefined;
-        this._agent.skipStackFrames(patternParameter);
+        this._agent.skipStackFrames(WebInspector.settings.skipStackFramesPattern.get());
     },
 
     /**
@@ -761,8 +758,6 @@ WebInspector.DebuggerModel.prototype = {
     {
         WebInspector.settings.pauseOnExceptionEnabled.removeChangeListener(this._pauseOnExceptionStateChanged, this);
         WebInspector.settings.pauseOnCaughtException.removeChangeListener(this._pauseOnExceptionStateChanged, this);
-
-        WebInspector.settings.skipStackFramesSwitch.removeChangeListener(this._applySkipStackFrameSettings, this);
         WebInspector.settings.skipStackFramesPattern.removeChangeListener(this._applySkipStackFrameSettings, this);
         WebInspector.settings.enableAsyncStackTraces.removeChangeListener(this._asyncStackTracesStateChanged, this);
     },

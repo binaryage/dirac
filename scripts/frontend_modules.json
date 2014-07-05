@@ -381,7 +381,8 @@
         "dependencies": ["components"],
         "sources": [
             "settings/SettingsScreen.js",
-            "settings/EditFileSystemDialog.js"
+            "settings/EditFileSystemDialog.js",
+            "settings/FrameworkBlackboxDialog.js"
         ]
     },
     {

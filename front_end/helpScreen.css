@@ -612,11 +612,7 @@ select.list-column-editor {
     font-weight: bold;
 }
 
-.file-mappings-list .settings-list-item .list-column.settings-list-column-url {
-    width: 50%;
-}
-
-.file-mappings-list .settings-list-item .list-column.settings-list-column-path {
+.settings-list .settings-list-item .list-column {
     width: 50%;
 }
 
@@ -657,6 +653,23 @@ select.list-column-editor {
     margin-bottom: 0.8em;
 }
 
+.blackbox-dialog .columns-header {
+    color: black;
+    font-weight: bold;
+    margin-bottom: 0.4em;
+    display: -webkit-box;
+    padding: 0;
+}
+
+.blackbox-dialog .columns-header span {
+    width: 50%;
+    display: -webkit-box;
+}
+
+.blackbox-dialog .columns-header span + span {
+    margin-left: -7px
+}
+
 .settings-dialog .done-button {
     float: right;
 }
@@ -680,7 +693,7 @@ select.list-column-editor {
     padding-left: 19px;
 }
 
-.edit-file-system-dialog .section {
+.dialog-contents .section {
     min-width: 400px;
 }
 

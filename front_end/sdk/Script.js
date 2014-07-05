@@ -235,8 +235,6 @@ WebInspector.Script.prototype = {
     {
         if (!WebInspector.experimentsSettings.frameworksDebuggingSupport.isEnabled())
             return false;
-        if (!WebInspector.settings.skipStackFramesSwitch.get())
-            return false;
         var regex = WebInspector.settings.skipStackFramesPattern.asRegExp();
         return regex ? regex.test(this.sourceURL) : false;
     },

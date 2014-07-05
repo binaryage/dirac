@@ -85,7 +85,7 @@ WebInspector.ShortcutRegistry.prototype = {
     {
         var actionIds = this.applicableActions(key);
         if (WebInspector.GlassPane.DefaultFocusedViewStack.length > 1) {
-            if (actionIds.length)
+            if (actionIds.length && !isPossiblyInputKey())
                 event.consume(true);
             return;
         }

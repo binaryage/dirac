@@ -1379,28 +1379,6 @@ WebInspector.SourcesPanel.ShowGoToSourceDialogActionDelegate.prototype = {
  * @constructor
  * @extends {WebInspector.UISettingDelegate}
  */
-WebInspector.SourcesPanel.SkipStackFramePatternSettingDelegate = function()
-{
-    WebInspector.UISettingDelegate.call(this);
-}
-
-WebInspector.SourcesPanel.SkipStackFramePatternSettingDelegate.prototype = {
-    /**
-     * @override
-     * @return {!Element}
-     */
-    settingElement: function()
-    {
-        return WebInspector.SettingsUI.createSettingInputField(WebInspector.UIString("Pattern"), WebInspector.settings.skipStackFramesPattern, false, 1000, "100px", WebInspector.SettingsUI.regexValidator);
-    },
-
-    __proto__: WebInspector.UISettingDelegate.prototype
-}
-
-/**
- * @constructor
- * @extends {WebInspector.UISettingDelegate}
- */
 WebInspector.SourcesPanel.DisableJavaScriptSettingDelegate = function()
 {
     WebInspector.UISettingDelegate.call(this);

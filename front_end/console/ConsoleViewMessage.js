@@ -295,8 +295,6 @@ WebInspector.ConsoleViewMessage.prototype = {
         var callFrame = stackTrace[0].scriptId ? stackTrace[0] : null;
         if (!WebInspector.experimentsSettings.frameworksDebuggingSupport.isEnabled())
             return callFrame;
-        if (!WebInspector.settings.skipStackFramesSwitch.get())
-            return callFrame;
         var regex = WebInspector.settings.skipStackFramesPattern.asRegExp();
         if (!regex)
             return callFrame;

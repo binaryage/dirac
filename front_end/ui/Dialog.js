@@ -123,9 +123,9 @@ WebInspector.Dialog.prototype = {
         }
 
         if (event.keyCode === WebInspector.KeyboardShortcut.Keys.Enter.code)
-            this._delegate.onEnter();
+            this._delegate.onEnter(event);
 
-        if (this._closeKeys.indexOf(event.keyCode) >= 0) {
+        if (!event.handled && this._closeKeys.indexOf(event.keyCode) >= 0) {
             this._hide();
             event.consume(true);
         }
@@ -174,7 +174,7 @@ WebInspector.DialogDelegate.prototype = {
 
     focus: function() { },
 
-    onEnter: function() { },
+    onEnter: function(event) { },
 
     willHide: function() { },
 

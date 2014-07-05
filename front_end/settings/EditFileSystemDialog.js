@@ -38,8 +38,7 @@ WebInspector.EditFileSystemDialog = function(fileSystemPath)
     WebInspector.DialogDelegate.call(this);
     this._fileSystemPath = fileSystemPath;
 
-    this.element = document.createElement("div");
-    this.element.className = "edit-file-system-dialog";
+    this.element = document.createElementWithClass("div", "dialog-contents");
 
     var header = this.element.createChild("div", "header");
     var headerText = header.createChild("span");
@@ -57,7 +56,7 @@ WebInspector.EditFileSystemDialog = function(fileSystemPath)
 
     var blockHeader = contents.createChild("div", "block-header");
     blockHeader.textContent = WebInspector.UIString("Mappings");
-    this._fileMappingsSection = contents.createChild("div", "section file-mappings-section");
+    this._fileMappingsSection = contents.createChild("div", "section");
     this._fileMappingsListContainer = this._fileMappingsSection.createChild("div", "settings-list-container");
     var entries = WebInspector.isolatedFileSystemManager.mapping().mappingEntries(this._fileSystemPath);
 
@@ -104,11 +103,9 @@ WebInspector.EditFileSystemDialog.prototype = {
      */
     show: function(element)
     {
-        element.appendChild(this.element);
-        this.element.classList.add("dialog-contents");
-        element.classList.add("settings-dialog");
-        element.classList.add("settings-tab");
         this._dialogElement = element;
+        element.appendChild(this.element);
+        element.classList.add("settings-dialog", "settings-tab");
     },
 
     _resize: function()

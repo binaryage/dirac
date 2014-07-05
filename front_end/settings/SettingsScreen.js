@@ -29,6 +29,7 @@
  */
 
 importScript("EditFileSystemDialog.js");
+importScript("FrameworkBlackboxDialog.js");
 
 /**
  * @constructor
@@ -362,6 +363,38 @@ WebInspector.GenericSettingsTab.prototype = {
 
 /**
  * @constructor
+ * @extends {WebInspector.UISettingDelegate}
+ */
+WebInspector.SettingsScreen.SkipStackFramePatternSettingDelegate = function()
+{
+    WebInspector.UISettingDelegate.call(this);
+}
+
+WebInspector.SettingsScreen.SkipStackFramePatternSettingDelegate.prototype = {
+    /**
+     * @override
+     * @return {!Element}
+     */
+    settingElement: function()
+    {
+        var button = document.createElementWithClass("input", "settings-tab-text-button");
+        button.type = "button";
+        button.value = WebInspector.UIString("Manage framework blackboxing...");
+        button.title = WebInspector.UIString("Skip stepping through sources with particular names");
+        button.addEventListener("click", this._onManageButtonClick.bind(this), false);
+        return button;
+    },
+
+    _onManageButtonClick: function()
+    {
+        WebInspector.FrameworkBlackboxDialog.show(WebInspector.inspectorView.element);
+    },
+
+    __proto__: WebInspector.UISettingDelegate.prototype
+}
+
+/**
+ * @constructor
  * @extends {WebInspector.SettingsTab}
  */
 WebInspector.WorkspaceSettingsTab = function()
@@ -619,8 +652,7 @@ WebInspector.SettingsController = function()
     window.addEventListener("resize", this._resize.bind(this), true);
 }
 
-WebInspector.SettingsController.prototype =
-{
+WebInspector.SettingsController.prototype = {
     _onHideSettingsScreen: function()
     {
         delete this._settingsScreenVisible;
@@ -843,7 +875,7 @@ WebInspector.SettingsList.prototype = {
  * @extends {WebInspector.SettingsList}
  * @param {!Array.<{id: string, placeholder: (string|undefined), options: (!Array.<string>|undefined)}>} columns
  * @param {function(string, string):string} valuesProvider
- * @param {function(?string, !Object)} validateHandler
+ * @param {function(?string, !Object):!Array.<string>} validateHandler
  * @param {function(?string, !Object)} editHandler
  */
 WebInspector.EditableSettingsList = function(columns, valuesProvider, validateHandler, editHandler)

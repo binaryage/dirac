@@ -151,21 +151,6 @@
             "parentSettingName": "cssSourceMapsEnabled",
             "settingName": "cssReloadEnabled",
             "settingType": "checkbox"
-        },
-        {
-            "type": "ui-setting",
-            "section": "Sources",
-            "experiment": "frameworksDebuggingSupport",
-            "title": "Skip stepping through sources with particular names",
-            "settingName": "skipStackFramesSwitch",
-            "settingType": "checkbox"
-        },
-        {
-            "type": "ui-setting",
-            "experiment": "frameworksDebuggingSupport",
-            "parentSettingName": "skipStackFramesSwitch",
-            "settingType": "custom",
-            "className": "WebInspector.SourcesPanel.SkipStackFramePatternSettingDelegate"
         }
     ],
     "dependencies": [ "source_frame" ],
