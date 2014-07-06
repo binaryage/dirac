@@ -761,8 +761,9 @@ WebInspector.HeapSnapshotView.prototype = {
     _inspectedObjectChanged: function(event)
     {
         var selectedNode = event.target.selectedNode;
-        if (!this._profile.fromFile() && selectedNode instanceof WebInspector.HeapSnapshotGenericObjectNode)
-            ConsoleAgent.addInspectedHeapObject(selectedNode.snapshotNodeId);
+        var target = this._profile.target();
+        if (!target && selectedNode instanceof WebInspector.HeapSnapshotGenericObjectNode)
+            target.consoleAgent().addInspectedHeapObject(selectedNode.snapshotNodeId);
     },
 
     /**

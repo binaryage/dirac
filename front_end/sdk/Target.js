@@ -188,6 +188,7 @@ WebInspector.Target.prototype = {
         this.debuggerModel.dispose();
         this.networkManager.dispose();
         this.debuggerScriptMapping.dispose();
+        this.cpuProfilerModel.dispose();
     },
 
     __proto__: Protocol.Agents.prototype

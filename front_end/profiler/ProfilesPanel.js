@@ -432,6 +432,7 @@ WebInspector.ProfileHeader.prototype = {
  * @constructor
  * @implements {WebInspector.Searchable}
  * @implements {WebInspector.ProfileType.DataDisplayDelegate}
+ * @implements {WebInspector.TargetManager.Observer}
  * @extends {WebInspector.PanelWithSidebarTree}
  */
 WebInspector.ProfilesPanel = function()
@@ -440,9 +441,6 @@ WebInspector.ProfilesPanel = function()
     this.registerRequiredCSS("panelEnablerView.css");
     this.registerRequiredCSS("heapProfiler.css");
     this.registerRequiredCSS("profilesPanel.css");
-
-    this._target = /** @type {!WebInspector.Target} */ (WebInspector.targetManager.activeTarget());
-    this._target.profilingLock.addEventListener(WebInspector.Lock.Events.StateChanged, this._onProfilingStateChanged, this);
 
     this._searchableView = new WebInspector.SearchableView(this);
 
@@ -495,10 +493,8 @@ WebInspector.ProfilesPanel = function()
     this.element.addEventListener("contextmenu", this._handleContextMenuEvent.bind(this), true);
     this._registerShortcuts();
 
-    this._configureCpuProfilerSamplingInterval();
-    WebInspector.settings.highResolutionCpuProfiling.addChangeListener(this._configureCpuProfilerSamplingInterval, this);
+    WebInspector.targetManager.observeTargets(this);
 }
-
 
 /**
  * @constructor
@@ -541,6 +537,22 @@ WebInspector.ProfileTypeRegistry.prototype = {
 
 WebInspector.ProfilesPanel.prototype = {
     /**
+     * @param {!WebInspector.Target} target
+     */
+    targetAdded: function(target)
+    {
+        target.profilingLock.addEventListener(WebInspector.Lock.Events.StateChanged, this._onProfilingStateChanged, this);
+    },
+
+    /**
+     * @param {!WebInspector.Target} target
+     */
+    targetRemoved: function(target)
+    {
+        target.profilingLock.removeEventListener(WebInspector.Lock.Events.StateChanged, this._onProfilingStateChanged, this);
+    },
+
+    /**
      * @return {!WebInspector.SearchableView}
      */
     searchableView: function()
@@ -573,17 +585,6 @@ WebInspector.ProfilesPanel.prototype = {
     _registerShortcuts: function()
     {
         this.registerShortcuts(WebInspector.ShortcutsScreen.ProfilesPanelShortcuts.StartStopRecording, this.toggleRecordButton.bind(this));
-    },
-
-    _configureCpuProfilerSamplingInterval: function()
-    {
-        var intervalUs = WebInspector.settings.highResolutionCpuProfiling.get() ? 100 : 1000;
-        ProfilerAgent.setSamplingInterval(intervalUs, didChangeInterval);
-        function didChangeInterval(error)
-        {
-            if (error)
-                WebInspector.messageSink.addErrorMessage(error, true);
-        }
     },
 
     /**
@@ -647,7 +648,11 @@ WebInspector.ProfilesPanel.prototype = {
     {
         if (WebInspector.experimentsSettings.disableAgentsWhenProfile.isEnabled())
             WebInspector.inspectorView.setCurrentPanelLocked(toggled);
-        var enable = toggled || !this._target.profilingLock.isAcquired();
+        var isAcquiredInSomeTarget = false;
+        var targets = WebInspector.targetManager.targets();
+        for (var i = 0; i < targets.length; ++i)
+            isAcquiredInSomeTarget = isAcquiredInSomeTarget || targets[i].profilingLock.isAcquired();
+        var enable = toggled || !isAcquiredInSomeTarget;
         this.recordButton.setEnabled(enable);
         this.recordButton.toggled = toggled;
         if (enable)

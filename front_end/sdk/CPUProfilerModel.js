@@ -38,6 +38,9 @@ WebInspector.CPUProfilerModel = function(target)
     this._isRecording = false;
     target.registerProfilerDispatcher(this);
     target.profilerAgent().enable();
+
+    this._configureCpuProfilerSamplingInterval();
+    WebInspector.settings.highResolutionCpuProfiling.addChangeListener(this._configureCpuProfilerSamplingInterval, this);
 }
 
 WebInspector.CPUProfilerModel.EventTypes = {
@@ -48,6 +51,18 @@ WebInspector.CPUProfilerModel.EventTypes = {
 };
 
 WebInspector.CPUProfilerModel.prototype = {
+
+    _configureCpuProfilerSamplingInterval: function()
+    {
+        var intervalUs = WebInspector.settings.highResolutionCpuProfiling.get() ? 100 : 1000;
+        this.target().profilerAgent().setSamplingInterval(intervalUs, didChangeInterval);
+        function didChangeInterval(error)
+        {
+            if (error)
+                WebInspector.messageSink.addErrorMessage(error, true);
+        }
+    },
+
     /**
      * @param {string} id
      * @param {!DebuggerAgent.Location} scriptLocation
@@ -100,6 +115,12 @@ WebInspector.CPUProfilerModel.prototype = {
         this.target().profilerAgent().stop(callback);
         this.dispatchEventToListeners(WebInspector.CPUProfilerModel.EventTypes.ProfileStopped);
     },
+
+    dispose: function()
+    {
+        WebInspector.settings.highResolutionCpuProfiling.removeChangeListener(this._configureCpuProfilerSamplingInterval, this);
+    },
+
 
     __proto__: WebInspector.SDKObject.prototype
 }

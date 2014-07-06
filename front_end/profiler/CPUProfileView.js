@@ -89,6 +89,14 @@ WebInspector.CPUProfileView._TypeHeavy = "Heavy";
 
 WebInspector.CPUProfileView.prototype = {
     /**
+     * @return {?WebInspector.Target}
+     */
+    target: function()
+    {
+        return this._profileHeader.target();
+    },
+
+    /**
      * @param {!number} timeLeft
      * @param {!number} timeRight
      */
