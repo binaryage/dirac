@@ -47,6 +47,11 @@ label:hover input {
     box-shadow: 0 0 3px highlight;
 }
 
+label.dimmed {
+    opacity: 0.6;
+    cursor: default;
+}
+
 fieldset[disabled] label:hover input {
     box-shadow: none;
 }
