@@ -57,12 +57,10 @@ WebInspector.NetworkLogView = function(filterBar, coulmnsVisibilitySetting)
     this._filterBar = filterBar;
     this._coulmnsVisibilitySetting = coulmnsVisibilitySetting;
     this._allowRequestSelection = false;
-    /** @type {!StringMap.<!WebInspector.NetworkRequest>} */
-    this._requestsById = new StringMap();
+    /** @type {!StringMap.<!WebInspector.NetworkDataGridNode>} */
+    this._nodesByRequestId = new StringMap();
     /** @type {!Object.<string, boolean>} */
     this._staleRequestIds = {};
-    this._requestGridNodes = {};
-    this._lastRequestGridNodeId = 0;
     this._mainRequestLoadTime = -1;
     this._mainRequestDOMContentLoadedTime = -1;
     this._matchedRequests = [];
@@ -530,7 +528,7 @@ WebInspector.NetworkLogView.prototype = {
 
     _updateSummaryBar: function()
     {
-        var requestsNumber = this._requestsById.size();
+        var requestsNumber = this._nodesByRequestId.size();
 
         if (!requestsNumber) {
             if (this._summaryBarElement._isDisplayingWarning)
@@ -550,9 +548,9 @@ WebInspector.NetworkLogView.prototype = {
         var selectedTransferSize = 0;
         var baseTime = -1;
         var maxTime = -1;
-        var requests = this._requestsById.values();
-        for (var i = 0; i < requests.length; ++i) {
-            var request = requests[i];
+        var nodes = this._nodesByRequestId.values();
+        for (var i = 0; i < nodes.length; ++i) {
+            var request = nodes[i]._request;
             var requestTransferSize = request.transferSize;
             transferSize += requestTransferSize;
             if (!this._filteredOutRequests.get(request)) {
@@ -661,7 +659,7 @@ WebInspector.NetworkLogView.prototype = {
 
     _invalidateAllItems: function()
     {
-        var requestIds = this._requestsById.keys();
+        var requestIds = this._nodesByRequestId.keys();
         for (var i = 0; i < requestIds.length; ++i)
             this._staleRequestIds[requestIds[i]] = true;
     },
@@ -681,19 +679,6 @@ WebInspector.NetworkLogView.prototype = {
 
         this._invalidateAllItems();
         this.refresh();
-    },
-
-    _requestGridNode: function(request)
-    {
-        return this._requestGridNodes[request.__gridNodeId];
-    },
-
-    _createRequestGridNode: function(request)
-    {
-        var node = new WebInspector.NetworkDataGridNode(this, request);
-        request.__gridNodeId = this._lastRequestGridNodeId++;
-        this._requestGridNodes[request.__gridNodeId] = node;
-        return node;
     },
 
     _createStatusbarButtons: function()
@@ -768,18 +753,17 @@ WebInspector.NetworkLogView.prototype = {
         }
 
         for (var requestId in this._staleRequestIds) {
-            var request = this._requestsById.get(requestId);
-            if (!request)
+            var node = this._nodesByRequestId.get(requestId);
+            if (!node)
                 continue;
-            var node = this._requestGridNode(request);
-            if (!node) {
-                // Create the timeline tree element and graph.
-                node = this._createRequestGridNode(request);
+            if (!node._visible) {
                 this._dataGrid.rootNode().appendChild(node);
+                node._visible = true;
             }
             node.refresh();
             this._applyFilter(node);
 
+            var request = node._request;
             if (this.calculator.updateBoundaries(request))
                 boundariesChanged = true;
 
@@ -793,7 +777,7 @@ WebInspector.NetworkLogView.prototype = {
         }
 
         for (var requestId in this._staleRequestIds)
-            this._requestGridNode(this._requestsById.get(requestId)).refreshGraph(this.calculator);
+            this._nodesByRequestId.get(requestId).refreshGraph(this.calculator);
 
         this._staleRequestIds = {};
         this._sortItems();
@@ -822,9 +806,8 @@ WebInspector.NetworkLogView.prototype = {
         if (this._calculator)
             this._calculator.reset();
 
-        this._requestsById.clear();
+        this._nodesByRequestId.clear();
         this._staleRequestIds = {};
-        this._requestGridNodes = {};
         this._resetSuggestionBuilder();
 
         if (this._dataGrid) {
@@ -853,14 +836,16 @@ WebInspector.NetworkLogView.prototype = {
      */
     _appendRequest: function(request)
     {
+        var node = new WebInspector.NetworkDataGridNode(this, request);
+
         // In case of redirect request id is reassigned to a redirected
-        // request and we need to update _requestsById and search results.
-        var originalRequest = this._requestsById.get(request.requestId);
-        if (originalRequest) {
-            this._requestsById.put(originalRequest.requestId, originalRequest);
-            this._updateSearchMatchedListAfterRequestIdChanged(request.requestId, originalRequest.requestId);
+        // request and we need to update _nodesByRequestId and search results.
+        var originalRequestNode = this._nodesByRequestId.get(request.requestId);
+        if (originalRequestNode) {
+            this._nodesByRequestId.put(originalRequestNode._request.requestId, originalRequestNode);
+            this._updateSearchMatchedListAfterRequestIdChanged(request.requestId, originalRequestNode._request.requestId);
         }
-        this._requestsById.put(request.requestId, request);
+        this._nodesByRequestId.put(request.requestId, node);
 
         // Pull all the redirects of the main request upon commit load.
         if (request.redirects) {
@@ -885,7 +870,7 @@ WebInspector.NetworkLogView.prototype = {
      */
     _refreshRequest: function(request)
     {
-        if (!this._requestsById.get(request.requestId))
+        if (!this._nodesByRequestId.get(request.requestId))
             return;
 
         this._suggestionBuilder.addItem(WebInspector.NetworkPanel.FilterType.Domain, request.domain);
@@ -1159,7 +1144,7 @@ WebInspector.NetworkLogView.prototype = {
 
     _harRequests: function()
     {
-        var requests = this._requestsById.values();
+        var requests = this._nodesByRequestId.values().map(function(node) { return node._request; });
         var httpRequests = requests.filter(WebInspector.NetworkLogView.HTTPRequestsFilter);
         httpRequests = httpRequests.filter(WebInspector.NetworkLogView.FinishedRequestsFilter);
         return httpRequests.filter(WebInspector.NetworkLogView.NonDevToolsRequestsFilter);
@@ -1321,15 +1306,13 @@ WebInspector.NetworkLogView.prototype = {
     },
 
     /**
-     * @param {!WebInspector.NetworkRequest} request
+     * @param {!WebInspector.NetworkDataGridNode} node
      * @param {boolean} reveal
      * @param {!RegExp=} regExp
      */
-    _highlightMatchedRequest: function(request, reveal, regExp)
+    _highlightMatchedNode: function(node, reveal, regExp)
     {
-        var node = this._requestGridNode(request);
-        if (!node)
-            return;
+        var request = node._request;
 
         var nameMatched = request.name().match(regExp);
         var pathMatched = request.path().match(regExp);
@@ -1349,14 +1332,12 @@ WebInspector.NetworkLogView.prototype = {
      */
     _highlightNthMatchedRequestForSearch: function(matchedRequestIndex, reveal)
     {
-        var request = this._requestsById.get(this._matchedRequests[matchedRequestIndex]);
-        if (!request)
+        var node = this._nodesByRequestId.get(this._matchedRequests[matchedRequestIndex]);
+        if (!node)
             return;
         this._removeAllHighlights();
-        this._highlightMatchedRequest(request, reveal, this._searchRegExp);
-        var node = this._requestGridNode(request);
-        if (node)
-            this._currentMatchedRequestIndex = matchedRequestIndex;
+        this._highlightMatchedNode(node, reveal, this._searchRegExp);
+        this._currentMatchedRequestIndex = matchedRequestIndex;
 
         this.dispatchEventToListeners(WebInspector.NetworkLogView.EventTypes.SearchIndexUpdated, this._currentMatchedRequestIndex);
     },
@@ -1521,7 +1502,7 @@ WebInspector.NetworkLogView.prototype = {
     {
         this._removeAllNodeHighlights();
 
-        var node = this._requestGridNode(request);
+        var node = this._nodesByRequestId.get(request.requestId);
         if (node) {
             this._dataGrid.element.focus();
             node.reveal();
@@ -2537,6 +2518,7 @@ WebInspector.NetworkDataGridNode = function(parentView, request)
     this._parentView = parentView;
     this._request = request;
     this._linkifier = new WebInspector.Linkifier();
+    this._visible = false;
 }
 
 WebInspector.NetworkDataGridNode.prototype = {
