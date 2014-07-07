@@ -114,10 +114,9 @@ WebInspector.IsolatedFileSystem.prototype = {
      */
     requestFilesRecursive: function(path, fileCallback, finishedCallback)
     {
-        this._requestFileSystem(fileSystemLoaded.bind(this));
-
         var domFileSystem;
         var pendingRequests = 0;
+        this._requestFileSystem(fileSystemLoaded.bind(this));
         /**
          * @param {?DOMFileSystem} fs
          * @this {WebInspector.IsolatedFileSystem}
