@@ -912,9 +912,10 @@
                     { "name": "repeatCount", "type": "integer", "optional": true, "description": "Repeat count for repeated messages." },
                     { "name": "parameters", "type": "array", "items": { "$ref": "Runtime.RemoteObject" }, "optional": true, "description": "Message parameters in case of the formatted message." },
                     { "name": "stackTrace", "$ref": "StackTrace", "optional": true, "description": "JavaScript stack trace for assertions and error messages." },
+                    { "name": "asyncStackTrace", "$ref": "AsyncStackTrace", "optional": true, "description": "Asynchronous JavaScript stack trace that preceded this message, if available.", "hidden": true },
                     { "name": "networkRequestId", "$ref": "Network.RequestId", "optional": true, "description": "Identifier of the network request associated with this message." },
                     { "name": "timestamp", "$ref": "Timestamp", "description": "Timestamp, when this message was fired.", "hidden": true },
-                    {"name": "executionContextId", "$ref": "Runtime.ExecutionContextId",  "optional": true, "description": "identifier of the context where message was created", "hidden": true }
+                    { "name": "executionContextId", "$ref": "Runtime.ExecutionContextId", "optional": true, "description": "Identifier of the context where this message was created", "hidden": true }
                 ]
             },
             {
@@ -934,6 +935,17 @@
                 "type": "array",
                 "items": { "$ref": "CallFrame" },
                 "description": "Call frames for assertions or error messages."
+            },
+            {
+                "id": "AsyncStackTrace",
+                "type": "object",
+                "properties": [
+                    { "name": "callFrames", "type": "array", "items": { "$ref": "CallFrame" }, "description": "Call frames of the stack trace." },
+                    { "name": "description", "type": "string", "optional": true, "description": "String label of this stack trace. For async traces this may be a name of the function that initiated the async call." },
+                    { "name": "asyncStackTrace", "$ref": "AsyncStackTrace", "optional": true, "description": "Next asynchronous stack trace, if any." }
+                ],
+                "description": "Asynchronous JavaScript call stack.",
+                "hidden": true
             }
         ],
         "commands": [
