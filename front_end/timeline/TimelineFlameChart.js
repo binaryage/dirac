@@ -548,24 +548,35 @@ WebInspector.TracingBasedTimelineFlameChartDataProvider.prototype = {
             entryStartTimes: []
         };
 
-        this._currentLevel = 0;
         this._minimumBoundary = this._model.minimumRecordTime();
         this._timeSpan = Math.max(this._model.maximumRecordTime() - this._minimumBoundary, 1000);
-        this._appendHeaderRecord("CPU");
-        var events = this._model.mainThreadEvents();
-        var maxStackDepth = 0;
-        for (var eventIndex = 0; eventIndex < events.length; ++eventIndex) {
-            var event = events[eventIndex];
-            if (event.duration || event.phase === WebInspector.TracingModel.Phase.Instant) {
-                this._appendEvent(event);
-                if (maxStackDepth < event.level)
-                    maxStackDepth = event.level;
-            }
-        }
-        this._currentLevel += maxStackDepth + 1;
-
-        this._appendHeaderRecord("GPU");
+        this._currentLevel = 0;
+        this._appendHeaderRecord("CPU", this._currentLevel++);
+        this._currentLevel += this._appendThreadTimelineData(this._model.mainThreadEvents(), this._currentLevel) + 1;
         return this._timelineData;
+    },
+
+    /**
+     * @param {!Array.<!WebInspector.TracingModel.Event>} events
+     * @param {number} level
+     * @return {number}
+     */
+    _appendThreadTimelineData: function(events, level)
+    {
+        var maxStackDepth = 0;
+        var openEvents = [];
+        for (var i = 0; i < events.length; ++i) {
+            var e = events[i];
+            if (!e.endTime && e.phase !== WebInspector.TracingModel.Phase.Instant)
+                continue;
+            while (openEvents.length && openEvents.peekLast().endTime <= e.startTime)
+                openEvents.pop();
+            this._appendEvent(e, level + openEvents.length);
+            maxStackDepth = Math.max(maxStackDepth, openEvents.length + 1);
+            if (e.endTime)
+                openEvents.push(e);
+        }
+        return maxStackDepth;
     },
 
     /**
@@ -719,25 +730,27 @@ WebInspector.TracingBasedTimelineFlameChartDataProvider.prototype = {
 
     /**
      * @param {string} title
+     * @param {number} level
      */
-    _appendHeaderRecord: function(title)
+    _appendHeaderRecord: function(title, level)
     {
         var index = this._entryEvents.length;
         this._entryIndexToTitle[index] = title;
         this._entryEvents.push(null);
-        this._timelineData.entryLevels[index] = this._currentLevel++;
+        this._timelineData.entryLevels[index] = level;
         this._timelineData.entryTotalTimes[index] = this._timeSpan;
         this._timelineData.entryStartTimes[index] = this._minimumBoundary;
     },
 
     /**
      * @param {!WebInspector.TracingModel.Event} event
+     * @param {number} level
      */
-    _appendEvent: function(event)
+    _appendEvent: function(event, level)
     {
         var index = this._entryEvents.length;
         this._entryEvents.push(event);
-        this._timelineData.entryLevels[index] = this._currentLevel + event.level;
+        this._timelineData.entryLevels[index] = level;
         this._timelineData.entryTotalTimes[index] = event.duration || 1;
         this._timelineData.entryStartTimes[index] = event.startTime;
     },
