@@ -271,7 +271,7 @@ String.prototype.hashCode = function()
 {
     var result = 0;
     for (var i = 0; i < this.length; ++i)
-        result = result * 3 + this.charCodeAt(i);
+        result = (result * 3 + this.charCodeAt(i)) | 0;
     return result;
 }
 
