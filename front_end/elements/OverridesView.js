@@ -653,6 +653,6 @@ WebInspector.OverridesView.Revealer.prototype = {
      */
     reveal: function(overridesSupport)
     {
-        WebInspector.inspectorView.showViewInDrawer("emulation");
+        WebInspector.actionRegistry.execute("main.show-drawer-view", "emulation");
     }
 }
