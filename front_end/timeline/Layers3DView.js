@@ -60,8 +60,8 @@ WebInspector.Layers3DView.ActiveObject;
 /** @typedef {{color: !Array.<number>, borderColor: !Array.<number>, borderWidth: number}} */
 WebInspector.Layers3DView.LayerStyle;
 
-/** @typedef {{layerId: string, rect: !Array.<number>, imageURL: string}} */
-WebInspector.Layers3DView.Tile;
+/** @typedef {{layerId: string, rect: !Array.<number>, snapshot: !WebInspector.PaintProfilerSnapshot}} */
+WebInspector.Layers3DView.PaintTile;
 
 /**
  * @enum {string}
@@ -188,23 +188,43 @@ WebInspector.Layers3DView.prototype = {
     },
 
     /**
-     * @param {!Array.<!WebInspector.Layers3DView.Tile>} tiles
+     * @param {!Array.<!WebInspector.Layers3DView.PaintTile>} tiles
      */
     setTiles: function(tiles)
     {
         this._picturesForLayer = {};
+        this._initGLIfNecessary();
         tiles.forEach(this._setTile, this);
     },
 
     /**
-     * @param {!WebInspector.Layers3DView.Tile} tile
+     * @param {!WebInspector.Layers3DView.PaintTile} tile
      */
     _setTile: function(tile)
     {
-        var texture = this._gl.createTexture();
-        texture.image = new Image();
-        texture.image.addEventListener("load", this._handleLoadedTexture.bind(this, texture, tile.layerId, tile.rect), false);
-        texture.image.src = tile.imageURL;
+        var image = new Image();
+        image.addEventListener("load", onImageLoaded.bind(this), false);
+        tile.snapshot.requestImage(null, null, onGotImage)
+
+        /**
+         * @param {string=} imageURL
+         */
+        function onGotImage(imageURL)
+        {
+            image.src = imageURL;
+        }
+
+        /**
+         * @this {WebInspector.Layers3DView}
+         */
+        function onImageLoaded()
+        {
+            var texture = this._createTextureForImage(image);
+            if (!this._picturesForLayer[tile.layerId])
+                this._picturesForLayer[tile.layerId] = [];
+            this._picturesForLayer[tile.layerId].push({texture: texture, rect: tile.rect});
+            this._update();
+        }
     },
 
     /**
@@ -301,12 +321,13 @@ WebInspector.Layers3DView.prototype = {
     },
 
     /**
-     * @param {!Object} texture
-     * @param {string} layerId
-     * @param {!Array.<number>} rect
+     * @param {!Image} image
+     * @return {!WebGLTexture} texture
      */
-    _handleLoadedTexture: function(texture, layerId, rect)
+    _createTextureForImage: function(image)
     {
+        var texture = this._gl.createTexture();
+        texture.image = image;
         this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
         this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, true);
         this._gl.texImage2D(this._gl.TEXTURE_2D, 0, this._gl.RGBA, this._gl.RGBA, this._gl.UNSIGNED_BYTE, texture.image);
@@ -315,10 +336,7 @@ WebInspector.Layers3DView.prototype = {
         this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_WRAP_S, this._gl.CLAMP_TO_EDGE);
         this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_WRAP_T, this._gl.CLAMP_TO_EDGE);
         this._gl.bindTexture(this._gl.TEXTURE_2D, null);
-        if (!this._picturesForLayer[layerId])
-            this._picturesForLayer[layerId] = [];
-        this._picturesForLayer[layerId].push({texture: texture, rect: rect});
-        this._update();
+        return texture;
     },
 
     _initWhiteTexture: function()
@@ -537,7 +555,7 @@ WebInspector.Layers3DView.prototype = {
         var tiles = this._picturesForLayer[layer.id()] || [];
         for (var i = 0; i < tiles.length; ++i) {
             var tile = tiles[i];
-            var quad = this._calculateRectQuad(layer, {x: tile.rect[0], y: tile.rect[1], width: tile.rect[2] - tile.rect[0], height: tile.rect[3] - tile.rect[1]});
+            var quad = this._calculateRectQuad(layer, {x: tile.rect[0], y: tile.rect[1], width: tile.rect[2], height: tile.rect[3]});
             vertices = this._calculateVerticesForQuad(quad, layerDepth);
             this._drawRectangle(vertices, style.color, gl.TRIANGLE_FAN, tile.texture);
         }
@@ -546,7 +564,8 @@ WebInspector.Layers3DView.prototype = {
     _drawViewport: function()
     {
         var viewport = this._layerTree.viewportSize();
-        var vertices = [0, 0, 0, viewport.width, 0, 0, viewport.width, viewport.height, 0, 0, viewport.height, 0];
+        var depth = (this._maxDepth + 1) * WebInspector.Layers3DView.LayerSpacing;
+        var vertices = [0, 0, depth, viewport.width, 0, depth, viewport.width, viewport.height, depth, 0, viewport.height, depth];
         var color = [0, 0, 0, 1];
         this._gl.lineWidth(3.0);
         this._drawRectangle(vertices, color, this._gl.LINE_LOOP);
@@ -571,6 +590,7 @@ WebInspector.Layers3DView.prototype = {
                 queue.push(children[i]);
             }
         }
+        this._maxDepth = depth;
     },
 
 
@@ -604,9 +624,9 @@ WebInspector.Layers3DView.prototype = {
         gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
+        this._layerTree.forEachLayer(this._drawLayer.bind(this));
         if (this._layerTree.viewportSize())
             this._drawViewport();
-        this._layerTree.forEachLayer(this._drawLayer.bind(this));
     },
 
     /**

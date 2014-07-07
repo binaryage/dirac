@@ -425,6 +425,7 @@ WebInspector.TracingTimelineModel.prototype = {
             if (!paintEvent)
                 break;
             paintEvent.picture = event.args["snapshot"]["skp64"];
+            paintEvent.layerRect = event.args["snapshot"]["params"]["layer_rect"];
             break;
 
         case recordTypes.ScrollLayer:
@@ -657,6 +658,4 @@ WebInspector.TracingTimelineModel.TraceEventRecord.prototype = {
         this._children.push(child);
         child.parent = this;
     },
-
-
 }

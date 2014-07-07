@@ -11,6 +11,8 @@
 WebInspector.TimelineLayersView = function()
 {
     WebInspector.VBox.call(this);
+
+    this._paintTiles = [];
     this._layers3DView = new WebInspector.Layers3DView();
     this._layers3DView.addEventListener(WebInspector.Layers3DView.Events.ObjectSelected, this._onObjectSelected, this);
     this._layers3DView.addEventListener(WebInspector.Layers3DView.Events.ObjectHovered, this._onObjectHovered, this);
@@ -20,18 +22,51 @@ WebInspector.TimelineLayersView = function()
 WebInspector.TimelineLayersView.prototype = {
     /**
      * @param {!WebInspector.DeferredLayerTree} deferredLayerTree
+     * @param {?Array.<!WebInspector.LayerPaintEvent>} paints
      */
-    showLayerTree: function(deferredLayerTree)
+    showLayerTree: function(deferredLayerTree, paints)
     {
         this._target = deferredLayerTree.target();
-        deferredLayerTree.resolve(onLayersReady.bind(this));
+        this._disposeTiles();
+        var originalTiles = this._paintTiles;
+        var tilesReadyBarrier = new CallbackBarrier();
+        deferredLayerTree.resolve(tilesReadyBarrier.createCallback(onLayersReady.bind(this)));
+        for (var i = 0; paints && i < paints.length; ++i)
+            WebInspector.PaintProfilerSnapshot.load(paints[i].picture, tilesReadyBarrier.createCallback(onSnapshotLoaded.bind(this, paints[i])));
+        tilesReadyBarrier.callWhenDone(onTilesReady.bind(this));
+
         /**
          * @param {!WebInspector.LayerTreeBase} layerTree
-         * @this {WebInspector.TimelineLayersView} this
+         * @this {WebInspector.TimelineLayersView}
          */
         function onLayersReady(layerTree)
         {
             this._layers3DView.setLayerTree(layerTree);
+        }
+
+        /**
+         * @param {!WebInspector.LayerPaintEvent} paintEvent
+         * @param {?WebInspector.PaintProfilerSnapshot} snapshot
+         * @this {WebInspector.TimelineLayersView}
+         */
+        function onSnapshotLoaded(paintEvent, snapshot)
+        {
+            if (!snapshot)
+                return;
+            // We're too late and there's a new generation of tiles being loaded.
+            if (originalTiles !== this._paintTiles) {
+                snapshot.dispose();
+                return;
+            }
+            this._paintTiles.push({layerId: paintEvent.layerId, rect: paintEvent.rect, snapshot: snapshot});
+        }
+
+        /**
+         * @this {WebInspector.TimelineLayersView}
+         */
+        function onTilesReady()
+        {
+            this._layers3DView.setTiles(this._paintTiles);
         }
     },
 
@@ -85,6 +120,13 @@ WebInspector.TimelineLayersView.prototype = {
     {
         var activeObject = /** @type {!WebInspector.Layers3DView.ActiveObject} */ (event.data);
         this._hoverObject(activeObject);
+    },
+
+    _disposeTiles: function()
+    {
+        for (var i = 0; i < this._paintTiles.length; ++i)
+            this._paintTiles[i].snapshot.dispose();
+        this._paintTiles = [];
     },
 
     __proto__: WebInspector.VBox.prototype

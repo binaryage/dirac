@@ -1044,7 +1044,7 @@ WebInspector.TimelinePanel.prototype = {
             this.showInDetails(WebInspector.UIString("Frame Statistics"), WebInspector.TimelineUIUtils.generateDetailsContentForFrame(this._lazyFrameModel, frame));
             if (frame.layerTree) {
                 var layersView = this._layersView();
-                layersView.showLayerTree(frame.layerTree);
+                layersView.showLayerTree(frame.layerTree, frame.paints);
                 this._detailsView.appendTab("layers", WebInspector.UIString("Layers"), layersView);
             }
             break;
