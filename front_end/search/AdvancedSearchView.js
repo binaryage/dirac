@@ -42,8 +42,10 @@ WebInspector.AdvancedSearchView = function()
     this._regexLabel.appendChild(document.createTextNode(WebInspector.UIString("Regular expression")));
 
     this._searchStatusBarElement = this.element.createChild("div", "search-status-bar-summary");
-    this._searchMessageElement = this._searchStatusBarElement.createChild("span");
-    this._searchResultsMessageElement = document.createElement("span");
+    this._searchMessageElement = this._searchStatusBarElement.createChild("div", "search-message");
+    this._searchProgressPlaceholderElement = this._searchStatusBarElement.createChild("div");
+    this._searchStatusBarElement.createChild("div", "search-message-spacer");
+    this._searchResultsMessageElement = this._searchStatusBarElement.createChild("div", "search-message");
 
     WebInspector.settings.advancedSearchConfig = WebInspector.settings.createSetting("advancedSearchConfig", new WebInspector.SearchConfig("", true, false).toPlainObject());
     this._load();
@@ -198,12 +200,12 @@ WebInspector.AdvancedSearchView.prototype = {
         this._resetResults();
         this._resetCounters();
 
-        this._searchMessageElement.textContent = WebInspector.UIString("Searching...");
-        progressIndicator.show(this._searchStatusBarElement);
+        this._searchMessageElement.textContent = WebInspector.UIString("Searching\u2026");
+        progressIndicator.show(this._searchProgressPlaceholderElement);
         this._updateSearchResultsMessage();
 
         if (!this._searchingView)
-            this._searchingView = new WebInspector.EmptyView(WebInspector.UIString("Searching..."));
+            this._searchingView = new WebInspector.EmptyView(WebInspector.UIString("Searching\u2026"));
         this._searchingView.show(this._searchResultsElement);
     },
 
@@ -212,8 +214,8 @@ WebInspector.AdvancedSearchView.prototype = {
      */
     _indexingStarted: function(progressIndicator)
     {
-        this._searchMessageElement.textContent = WebInspector.UIString("Indexing...");
-        progressIndicator.show(this._searchStatusBarElement);
+        this._searchMessageElement.textContent = WebInspector.UIString("Indexing\u2026");
+        progressIndicator.show(this._searchProgressPlaceholderElement);
     },
 
     /**
