@@ -116,11 +116,6 @@
             ]
         },
         {
-            "type": "@WebInspector.ActionDelegate",
-            "actionId": "main.show-drawer-view",
-            "className": "WebInspector.ShowDrawerViewActionDelegate"
-        },
-        {
             "type": "@WebInspector.StatusBarButton.Provider",
             "className": "WebInspector.InspectElementModeController.ToggleButtonProvider",
             "location": "toolbar-left",

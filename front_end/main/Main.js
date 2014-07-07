@@ -795,29 +795,6 @@ WebInspector.Main.ShortcutPanelSwitchSettingDelegate.prototype = {
 }
 
 /**
- * @constructor
- * @implements {WebInspector.ActionDelegate}
- */
-WebInspector.ShowDrawerViewActionDelegate = function()
-{
-}
-
-WebInspector.ShowDrawerViewActionDelegate.prototype = {
-    /**
-     * @param {!WebInspector.Context} context
-     * @param {*=} config
-     * @return {boolean}
-     */
-    handleAction: function(context, config)
-    {
-        if (typeof config !== "string")
-            return false;
-        WebInspector.inspectorView.showViewInDrawer(/** @type {string} */ (config));
-        return true;
-    }
-}
-
-/**
  * @param {string} ws
  */
 WebInspector.Main._addWebSocketTarget = function(ws)

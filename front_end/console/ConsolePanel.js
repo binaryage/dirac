@@ -141,6 +141,6 @@ WebInspector.ConsolePanel.ConsoleRevealer.prototype = {
             consoleView.focus();
             return;
         }
-        WebInspector.actionRegistry.execute("main.show-drawer-view", "console");
+        WebInspector.inspectorView.showViewInDrawer("console");
     }
 }

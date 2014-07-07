@@ -66,7 +66,7 @@ WebInspector.AdvancedSearchView.prototype = {
             queryCandidate = selection.toString().replace(/\r?\n.*/, "");
 
         if (!this.isShowing())
-            WebInspector.actionRegistry.execute("main.show-drawer-view", "search");
+            WebInspector.inspectorView.showViewInDrawer("search");
         if (queryCandidate)
             this._search.value = queryCandidate;
         this.focus();
