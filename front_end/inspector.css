@@ -52,6 +52,10 @@ label.dimmed {
     cursor: default;
 }
 
+label.dimmed:hover input {
+    box-shadow: none;
+}
+
 fieldset[disabled] label:hover input {
     box-shadow: none;
 }
