@@ -2952,3 +2952,8 @@ select.drop-down-menu {
 .viewport-control-gap-element {
     color: transparent;
 }
+
+label.checkbox-with-label {
+    display: flex;
+    -webkit-user-select: none;
+}

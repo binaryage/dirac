@@ -661,20 +661,6 @@
     border-bottom: none;
 }
 
-.styles-section.computed-style > .header > .sidebar-pane-subtitle {
-    line-height: 17px;
-    margin: 2px;
-    -webkit-user-select: none;
-}
-
-.styles-section.computed-style > .header > .sidebar-pane-subtitle > input {
-    vertical-align: middle;
-}
-
-.sidebar-pane.composite .sidebar-pane-toolbar > .sidebar-pane-subtitle {
-    left: 8px;
-}
-
 .sidebar-pane > .body > .split-view {
     position: absolute;
     top: 0;

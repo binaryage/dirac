@@ -1721,32 +1721,21 @@ WebInspector.StylePropertiesSection.prototype = {
 WebInspector.ComputedStylePropertiesSection = function(stylesPane, styleRule, usedProperties)
 {
     WebInspector.PropertiesSection.call(this, "");
-
-    var subtitle = this.headerElement.createChild("div", "sidebar-pane-subtitle vbox");
-    var showInheritedCheckbox = new WebInspector.Checkbox(WebInspector.UIString("Show inherited properties"), "hbox");
-    subtitle.appendChild(showInheritedCheckbox.element);
-
     this._hasFreshContent = false;
+    this.element.className = "styles-section monospace read-only computed-style";
+
+    var showInheritedCheckbox = WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Show inherited properties"), WebInspector.settings.showInheritedComputedStyleProperties, true);
+    showInheritedCheckbox.classList.add("checkbox-with-label");
+    this.headerElement.appendChild(showInheritedCheckbox);
+    WebInspector.settings.showInheritedComputedStyleProperties.addChangeListener(showInheritedChanged.bind(this));
+    showInheritedChanged.call(this);
 
     /**
      * @this {WebInspector.ComputedStylePropertiesSection}
      */
-    function showInheritedToggleFunction()
+    function showInheritedChanged()
     {
-        var showInherited = showInheritedCheckbox.checked;
-        WebInspector.settings.showInheritedComputedStyleProperties.set(showInherited);
-        if (showInherited)
-            this.element.classList.add("styles-show-inherited");
-        else
-            this.element.classList.remove("styles-show-inherited");
-    }
-
-    showInheritedCheckbox.addEventListener(showInheritedToggleFunction.bind(this));
-
-    this.element.className = "styles-section monospace read-only computed-style";
-    if (WebInspector.settings.showInheritedComputedStyleProperties.get()) {
-        this.element.classList.add("styles-show-inherited");
-        showInheritedCheckbox.checked = true;
+        this.element.classList.toggle("styles-show-inherited", WebInspector.settings.showInheritedComputedStyleProperties.get());
     }
 
     this._stylesPane = stylesPane;

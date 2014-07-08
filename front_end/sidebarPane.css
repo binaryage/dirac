@@ -178,15 +178,6 @@
     display: flex;
 }
 
-.sidebar-pane-subtitle {
-    position: absolute;
-    right: 0;
-}
-
-body.platform-windows .sidebar-pane-subtitle {
-    padding-top: 1px;
-}
-
 .section > .header input[type=checkbox] {
     height: 1em;
     width: 1em;
