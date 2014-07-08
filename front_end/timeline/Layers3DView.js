@@ -231,16 +231,6 @@ WebInspector.Layers3DView.prototype = {
         this._gl.attachShader(this._shaderProgram, shader);
     },
 
-    /**
-     * @param {string} attributeName
-     * @param {string} glName
-     */
-    _enableVertexAttribArray: function(attributeName, glName)
-    {
-        this._shaderProgram[attributeName] = this._gl.getAttribLocation(this._shaderProgram, glName);
-        this._gl.enableVertexAttribArray(this._shaderProgram[attributeName]);
-    },
-
     _initShaders: function()
     {
         this._shaderProgram = this._gl.createProgram();
