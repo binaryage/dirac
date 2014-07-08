@@ -1807,13 +1807,8 @@ WebInspector.ElementsTreeElement.prototype = {
             }
         }
 
-        if (!attributeName.trim() && !newText.trim()) {
-            element.remove();
-            moveToNextAttributeIfNeeded.call(this);
-            return;
-        }
 
-        if (oldText !== newText) {
+        if ((attributeName.trim() || newText.trim()) && oldText !== newText) {
             this._node.setAttribute(attributeName, newText, moveToNextAttributeIfNeeded.bind(this));
             return;
         }
