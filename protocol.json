@@ -3990,7 +3990,7 @@
                     { "name": "parentLayerId", "$ref": "LayerId", "optional": true, "description": "The id of parent (not present for root)." },
                     { "name": "backendNodeId", "$ref": "DOM.BackendNodeId", "optional": true, "description": "The backend id for the node associated with this layer." },
                     { "name": "offsetX", "type": "number", "description": "Offset from parent layer, X coordinate." },
-                    { "name": "offsetY", "type": "number", "description": "Offset from parent layer, X coordinate." },
+                    { "name": "offsetY", "type": "number", "description": "Offset from parent layer, Y coordinate." },
                     { "name": "width", "type": "number", "description": "Layer width." },
                     { "name": "height", "type": "number", "description": "Layer height." },
                     { "name": "transform", "type": "array", "items": { "type": "number" }, "minItems": 16, "maxItems": 16, "optional": true, "description": "Transformation matrix for layer, default is identity matrix" },
