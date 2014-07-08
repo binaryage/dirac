@@ -100,6 +100,10 @@ error_warning_regex = re.compile(r"(?:WARNING|ERROR)")
 errors_found = False
 
 
+def run_in_shell(command_line):
+    return subprocess.Popen(command_line, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+
+
 def hasErrors(output):
     return re.search(error_warning_regex, output) != None
 
@@ -127,27 +131,34 @@ def dump_all_checked_files():
     for module in modules:
         for source in module["sources"]:
             files[path.join(devtools_frontend_path, source)] = True
-    return " ".join(files.keys())
+    return files.keys()
 
 
-def verify_jsdoc_extra():
-    return subprocess.Popen("%s -jar %s %s" % (java_exec, jsdoc_validator_jar, dump_all_checked_files()), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+def verify_jsdoc_extra(additional_files):
+    return run_in_shell("%s -jar %s %s" % (java_exec, jsdoc_validator_jar, " ".join(dump_all_checked_files() + additional_files)))
 
 
-def verify_jsdoc():
+def verify_jsdoc(additional_files):
+    def file_list():
+        result = []
+        for module in modules:
+            for file_name in module["sources"]:
+                result.append(path.join(devtools_frontend_path, file_name))
+        for file in additional_files:
+            result.append(file)
+        return result
+
     errors_found = False
-    for module in modules:
-        for file_name in module["sources"]:
-            lineIndex = 0
-            full_file_name = path.join(devtools_frontend_path, file_name)
-            with open(full_file_name, "r") as sourceFile:
-                for line in sourceFile:
-                    line = line.rstrip()
-                    lineIndex += 1
-                    if not line:
-                        continue
-                    if verify_jsdoc_line(full_file_name, lineIndex, line):
-                        errors_found = True
+    for full_file_name in file_list():
+        lineIndex = 0
+        with open(full_file_name, "r") as sourceFile:
+            for line in sourceFile:
+                line = line.rstrip()
+                lineIndex += 1
+                if not line:
+                    continue
+                if verify_jsdoc_line(full_file_name, lineIndex, line):
+                    errors_found = True
     return errors_found
 
 
@@ -181,10 +192,6 @@ check_java_path()
 
 print "Verifying 'importScript' function usage..."
 errors_found |= verify_importScript_usage()
-
-print "Verifying JSDoc comments..."
-errors_found |= verify_jsdoc()
-jsdocValidatorProc = verify_jsdoc_extra()
 
 modules_dir = tempfile.mkdtemp()
 common_closure_args = " --summary_detail_level 3 --jscomp_error visibility --compilation_level SIMPLE_OPTIMIZATIONS --warning_level VERBOSE --language_in ECMASCRIPT5 --accept_const_keyword --module_output_path_prefix %s/" % modules_dir
@@ -275,7 +282,7 @@ for module in modules:
     compiler_args_file.write("%s %s\n" % (module["name"], closure_args))
 
 compiler_args_file.close()
-modular_compiler_proc = subprocess.Popen(closure_runner_command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+modular_compiler_proc = run_in_shell(closure_runner_command)
 
 
 def unclosure_injected_script(sourceFileName, outFileName):
@@ -313,15 +320,20 @@ command += "    --module " + jsmodule_name_prefix + "injected_canvas_script" + "
 command += "        --js " + injectedScriptCanvasModuleSourceTmpFile + " \\\n"
 command += "\n"
 
-injectedScriptCompileProc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+injectedScriptCompileProc = run_in_shell(command)
+
+print "Verifying JSDoc comments..."
+additional_jsdoc_check_files = [injectedScriptSourceTmpFile, injectedScriptCanvasModuleSourceTmpFile]
+errors_found |= verify_jsdoc(additional_jsdoc_check_files)
+jsdocValidatorProc = verify_jsdoc_extra(additional_jsdoc_check_files)
 
 print "Checking generated code in InjectedScriptCanvasModuleSource.js..."
 check_injected_webgl_calls_command = "%s/check_injected_webgl_calls_info.py %s %s" % (scripts_path, webgl_rendering_context_idl_path, canvas_injected_script_source_name)
-canvasModuleCompileProc = subprocess.Popen(check_injected_webgl_calls_command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+canvasModuleCompileProc = run_in_shell(check_injected_webgl_calls_command)
 
 print "Validating InjectedScriptSource.js..."
 check_injected_script_command = "%s/check_injected_script_source.py %s" % (scripts_path, injected_script_source_name)
-validateInjectedScriptProc = subprocess.Popen(check_injected_script_command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+validateInjectedScriptProc = run_in_shell(check_injected_script_command)
 
 print
 
