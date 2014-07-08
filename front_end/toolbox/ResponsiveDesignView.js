@@ -489,7 +489,7 @@ WebInspector.ResponsiveDesignView.prototype = {
         var deviceElement = deviceSection.createChild("div", "responsive-design-suite responsive-design-suite-top").createChild("div");
         var fieldsetElement = deviceElement.createChild("fieldset");
         fieldsetElement.createChild("label").textContent = WebInspector.UIString("Device");
-        fieldsetElement.appendChild(WebInspector.overridesSupport.createDeviceSelect(document));
+        fieldsetElement.appendChild(WebInspector.OverridesUI.createDeviceSelect(document));
 
         var separator = deviceSection.createChild("div", "responsive-design-section-separator");
 
@@ -544,7 +544,7 @@ WebInspector.ResponsiveDesignView.prototype = {
         var fieldsetElement = bandwidthElement.createChild("fieldset");
         var networkCheckbox = fieldsetElement.createChild("label");
         networkCheckbox.textContent = WebInspector.UIString("Network");
-        fieldsetElement.appendChild(WebInspector.overridesSupport.createNetworkConditionsSelect(document));
+        fieldsetElement.appendChild(WebInspector.OverridesUI.createNetworkConditionsSelect(document));
 
         var separator = networkSection.createChild("div", "responsive-design-section-separator");
 

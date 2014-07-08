@@ -63,7 +63,6 @@
         'devtools_common_js_files': [
             'front_end/common/Color.js',
             'front_end/common/CompletionDictionary.js',
-            'front_end/common/DOMExtension.js',
             'front_end/common/Geometry.js',
             'front_end/common/MessageSink.js',
             'front_end/common/ModuleManager.js',
@@ -155,6 +154,7 @@
             'front_end/ui/ContextMenu.js',
             'front_end/ui/DataGrid.js',
             'front_end/ui/Dialog.js',
+            'front_end/ui/DOMExtension.js',
             'front_end/ui/DropDownMenu.js',
             'front_end/ui/EmptyView.js',
             'front_end/ui/ForwardedInputEventHandler.js',
@@ -214,12 +214,14 @@
         'devtools_toolbox_js_files': [
             'front_end/toolbox/InspectedPagePlaceholder.js',
             'front_end/toolbox/MediaQueryInspector.js',
+            'front_end/toolbox/OverridesUI.js',
             'front_end/toolbox/ResponsiveDesignView.js',
         ],
         'devtools_main_js_files': [
             'front_end/main/AdvancedApp.js',
             'front_end/main/App.js',
             'front_end/main/HelpScreenUntilReload.js',
+            'front_end/main/OverridesView.js',
             'front_end/main/ScreencastApp.js',
             'front_end/main/SimpleApp.js',
             'front_end/main/Main.js',
@@ -305,7 +307,6 @@
             'front_end/elements/ElementsPanel.js',
             'front_end/elements/EventListenersSidebarPane.js',
             'front_end/elements/MetricsSidebarPane.js',
-            'front_end/elements/OverridesView.js',
             'front_end/elements/PlatformFontsSidebarPane.js',
             'front_end/elements/PropertiesSidebarPane.js',
             'front_end/elements/RenderingOptionsView.js',
