@@ -365,3 +365,16 @@ function funcParamsMissingTag1(a, b, c) {}
  */
 function funcParamsMissingTag2(a, b, c) {}
 
+/**
+ * @interface
+ */
+function FuncInterface()
+{
+}
+
+FuncInterface.prototype = {
+    /**
+     * @return {number}
+     */
+    returnNumber: function() { }
+}

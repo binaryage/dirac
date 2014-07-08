@@ -76,20 +76,17 @@ public class ContextTrackingValidationCheck extends ValidationCheck {
     }
 
     private void enterFunctionNode(Node node) {
-        Node nameNode = AstUtil.getFunctionNameNode(node);
-
-        // It can be a type declaration: /** @constructor */ function MyType() {...}.
-        // Or even /** @constructor */ window.Foo.Bar = function() {...}.
-        String functionName = nameNode == null ? null : getNodeText(nameNode);
-
         TypeRecord parentType = state.getCurrentFunctionRecord() == null
                 ? state.getCurrentTypeRecord()
                 : null;
-        state.pushFunctionRecord(new FunctionRecord(
+        String functionName = NodeUtil.getNearestFunctionName(node);
+        FunctionRecord functionRecord = new FunctionRecord(
                 node,
                 functionName,
                 parentType,
-                state.getCurrentFunctionRecord()));
+                state.getCurrentFunctionRecord());
+        state.pushFunctionRecord(functionRecord);
+        rememberTypeRecordIfNeeded(functionName, functionRecord.info);
     }
 
     @SuppressWarnings("unused")
@@ -111,15 +108,6 @@ public class ContextTrackingValidationCheck extends ValidationCheck {
             state.pushFunctionRecord(null);
             return;
         }
-
-        Node rhsNode = node.isVar()
-                ? (node.getFirstChild() == null ? null : node.getFirstChild().getFirstChild())
-                : node.getChildAtIndex(1);
-        if (rhsNode != null && rhsNode.getType() == Token.FUNCTION) {
-            // [var] MyType = function() {...}
-            rememberTypeRecordIfNeeded(assignedTypeName, NodeUtil.getBestJSDocInfo(node));
-        }
-
     }
 
     private void leaveAssignNode(Node assignment) {
