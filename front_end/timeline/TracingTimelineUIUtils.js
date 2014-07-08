@@ -162,32 +162,7 @@ WebInspector.TracingTimelineUIUtils.prototype = {
      */
     hiddenRecordsFilter: function()
     {
-        var recordTypes = WebInspector.TracingTimelineModel.RecordType;
-        var hiddenRecords = [
-            recordTypes.ActivateLayerTree,
-            recordTypes.BeginFrame,
-            recordTypes.BeginMainThreadFrame,
-            recordTypes.CallStack,
-            recordTypes.DecodeLazyPixelRef,
-            recordTypes.DrawFrame,
-            recordTypes.DrawLazyPixelRef,
-            recordTypes.GPUTask,
-            recordTypes.InvalidateLayout,
-            recordTypes.LayerTreeHostImplSnapshot,
-            recordTypes.LazyPixelRef,
-            recordTypes.MarkDOMContent,
-            recordTypes.MarkFirstPaint,
-            recordTypes.MarkLoad,
-            recordTypes.PaintImage,
-            recordTypes.PictureSnapshot,
-            recordTypes.RequestMainThreadFrame,
-            recordTypes.ScheduleStyleRecalculation,
-            recordTypes.SetLayerTreeId,
-            recordTypes.TracingStartedInPage,
-            recordTypes.UpdateCounters,
-            recordTypes.UpdateLayer
-        ];
-        return new WebInspector.TimelineRecordTypeFilter(hiddenRecords);
+        return new WebInspector.TimelineRecordTypeFilter(WebInspector.TracingTimelineUIUtils._hiddenTypes());
     },
 
     /**
@@ -790,4 +765,44 @@ WebInspector.TracingTimelineUIUtils._createEventDivider = function(recordType, t
         eventDivider.title = title;
 
     return eventDivider;
+}
+
+/**
+ * @return {!Array.<string>}
+ */
+WebInspector.TracingTimelineUIUtils._hiddenTypes = function()
+{
+    var recordTypes = WebInspector.TracingTimelineModel.RecordType;
+    return [
+        recordTypes.ActivateLayerTree,
+        recordTypes.BeginFrame,
+        recordTypes.BeginMainThreadFrame,
+        recordTypes.CallStack,
+        recordTypes.DecodeLazyPixelRef,
+        recordTypes.DrawFrame,
+        recordTypes.DrawLazyPixelRef,
+        recordTypes.GPUTask,
+        recordTypes.InvalidateLayout,
+        recordTypes.LayerTreeHostImplSnapshot,
+        recordTypes.LazyPixelRef,
+        recordTypes.MarkDOMContent,
+        recordTypes.MarkFirstPaint,
+        recordTypes.MarkLoad,
+        recordTypes.PaintImage,
+        recordTypes.PictureSnapshot,
+        recordTypes.RequestMainThreadFrame,
+        recordTypes.ScheduleStyleRecalculation,
+        recordTypes.SetLayerTreeId,
+        recordTypes.TracingStartedInPage,
+        recordTypes.UpdateCounters,
+        recordTypes.UpdateLayer
+    ];
+}
+
+/**
+ * @return {!WebInspector.TracingTimelineModel.Filter}
+ */
+WebInspector.TracingTimelineUIUtils.hiddenEventsFilter = function()
+{
+    return new WebInspector.TracingTimelineModel.EventNamesFilter(WebInspector.TracingTimelineUIUtils._hiddenTypes());
 }

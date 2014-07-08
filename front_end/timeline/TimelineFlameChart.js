@@ -456,6 +456,7 @@ WebInspector.TracingBasedTimelineFlameChartDataProvider = function(model, frameM
     this._linkifier = new WebInspector.Linkifier();
     this._palette = new WebInspector.TraceViewPalette();
     this._entryIndexToTitle = {};
+    this._filters = [];
 }
 
 WebInspector.TracingBasedTimelineFlameChartDataProvider.prototype = {
@@ -569,6 +570,8 @@ WebInspector.TracingBasedTimelineFlameChartDataProvider.prototype = {
             var e = events[i];
             if (!e.endTime && e.phase !== WebInspector.TracingModel.Phase.Instant)
                 continue;
+            if (!this._isVisible(e))
+                continue;
             while (openEvents.length && openEvents.peekLast().endTime <= e.startTime)
                 openEvents.pop();
             this._appendEvent(e, level + openEvents.length);
@@ -577,6 +580,23 @@ WebInspector.TracingBasedTimelineFlameChartDataProvider.prototype = {
                 openEvents.push(e);
         }
         return maxStackDepth;
+    },
+
+    /**
+     * @param {!WebInspector.TracingTimelineModel.Filter} filter
+     */
+    addFilter: function(filter)
+    {
+        this._filters.push(filter);
+    },
+
+    /**
+     * @param {!WebInspector.TracingModel.Event} event
+     * @return {boolean}
+     */
+    _isVisible: function(event)
+    {
+        return this._filters.every(function (filter) { return filter.accept(event); });
     },
 
     /**
@@ -828,6 +848,8 @@ WebInspector.TimelineFlameChart = function(delegate, model, tracingModel, frameM
     this._dataProvider = tracingModel
         ? new WebInspector.TracingBasedTimelineFlameChartDataProvider(tracingModel, frameModel, model.target())
         : new WebInspector.TimelineFlameChartDataProvider(/** @type {!WebInspector.TimelineModelImpl} */(model), frameModel, uiUtils);
+    if (tracingModel)
+        this._dataProvider.addFilter(WebInspector.TracingTimelineUIUtils.hiddenEventsFilter());
     this._mainView = new WebInspector.FlameChart(this._dataProvider, this, true);
     this._mainView.show(this.element);
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStarted, this._onRecordingStarted, this);

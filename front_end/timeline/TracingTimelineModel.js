@@ -487,6 +487,43 @@ WebInspector.TracingTimelineModel.prototype = {
 }
 
 /**
+ * @interface
+ */
+WebInspector.TracingTimelineModel.Filter = function() { }
+
+WebInspector.TracingTimelineModel.Filter.prototype = {
+    /**
+     * @param {!WebInspector.TracingModel.Event} event
+     * @return {boolean}
+     */
+    accept: function(event) { }
+}
+
+/**
+ * @constructor
+ * @implements {WebInspector.TracingTimelineModel.Filter}
+ * @param {!Array.<string>} excludeNames
+ */
+WebInspector.TracingTimelineModel.EventNamesFilter = function(excludeNames)
+{
+    this._excludeNames = {};
+    for (var i = 0; i < excludeNames.length; ++i)
+        this._excludeNames[excludeNames[i]] = true;
+}
+
+WebInspector.TracingTimelineModel.EventNamesFilter.prototype = {
+    /**
+     * @override
+     * @param {!WebInspector.TracingModel.Event} event
+     * @return {boolean}
+     */
+    accept: function(event)
+    {
+        return !this._excludeNames[event.name];
+    }
+}
+
+/**
  * @constructor
  * @implements {WebInspector.TimelineModel.Record}
  * @param {!WebInspector.TimelineModel} model
