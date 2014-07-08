@@ -56,12 +56,13 @@ WebInspector.PaintProfilerSnapshot.prototype = {
     /**
      * @param {?number} firstStep
      * @param {?number} lastStep
+     * @param {?number} scale
      * @param {function(string=)} callback
      */
-    requestImage: function(firstStep, lastStep, callback)
+    requestImage: function(firstStep, lastStep, scale, callback)
     {
         var wrappedCallback = InspectorBackend.wrapClientCallback(callback, "LayerTreeAgent.replaySnapshot(): ");
-        LayerTreeAgent.replaySnapshot(this._id, firstStep || undefined, lastStep || undefined, wrappedCallback);
+        LayerTreeAgent.replaySnapshot(this._id, firstStep || undefined, lastStep || undefined, scale || 1.0, wrappedCallback);
     },
 
     /**

@@ -76,7 +76,7 @@ WebInspector.PaintProfilerView.prototype = {
             this._update();
             return;
         }
-        snapshot.requestImage(null, null, this._showImageCallback);
+        snapshot.requestImage(null, null, 1, this._showImageCallback);
         snapshot.profile(onProfileDone.bind(this));
         /**
          * @param {!Array.<!LayerTreeAgent.PaintProfile>=} profiles

@@ -52,6 +52,9 @@ WebInspector.Layers3DView = function()
     this._scrollRectQuadsForLayer = {};
     this._isVisible = {};
     this._layerTree = null;
+    this._textureManager = new WebInspector.LayerTextureManager();
+    this._textureManager.addEventListener(WebInspector.LayerTextureManager.Events.TextureUpdated, this._update, this);
+
     WebInspector.settings.showPaintRects.addChangeListener(this._update, this);
 }
 
@@ -130,6 +133,33 @@ WebInspector.Layers3DView.ScrollRectSpacing = 4;
 
 WebInspector.Layers3DView.prototype = {
     /**
+     * @param {?WebInspector.LayerTreeBase} layerTree
+     */
+    setLayerTree: function(layerTree)
+    {
+        this._layerTree = layerTree;
+        this._textureManager.reset();
+        this._update();
+    },
+
+    /**
+     * @param {?Array.<!WebInspector.Layers3DView.PaintTile>} tiles
+     */
+    setTiles: function(tiles)
+    {
+        this._textureManager.setTiles(tiles);
+    },
+
+    /**
+     * @param {!WebInspector.Layer} layer
+     * @param {string=} imageURL
+     */
+    showImageForLayer: function(layer, imageURL)
+    {
+        this.setTiles([{layerId: layer.id(), rect: [0, 0, layer.width(), layer.height()], imageURL: imageURL}]);
+    },
+
+    /**
      * @param {function(!Array.<!WebInspector.KeyboardShortcut.Descriptor>, function(?Event=))} registerShortcutDelegate
      */
     registerShortcuts: function(registerShortcutDelegate)
@@ -140,10 +170,6 @@ WebInspector.Layers3DView.prototype = {
     onResize: function()
     {
         this._update();
-    },
-
-    willHide: function()
-    {
     },
 
     wasShown: function()
@@ -180,57 +206,8 @@ WebInspector.Layers3DView.prototype = {
     },
 
     /**
-     * @param {!WebInspector.Layer} layer
-     * @param {string=} imageURL
-     */
-    showImageForLayer: function(layer, imageURL)
-    {
-        this.setTiles([{layerId: layer.id(), rect: [0, 0, layer.width(), layer.height()], imageURL: imageURL}])
-    },
-
-    /**
-     * @param {!Array.<!WebInspector.Layers3DView.PaintTile>} tiles
-     */
-    setTiles: function(tiles)
-    {
-        this._picturesForLayer = {};
-        this._initGLIfNecessary();
-        tiles.forEach(this._setTile, this);
-    },
-
-    /**
-     * @param {!WebInspector.Layers3DView.PaintTile} tile
-     */
-    _setTile: function(tile)
-    {
-        var image = new Image();
-        image.addEventListener("load", onImageLoaded.bind(this), false);
-        tile.snapshot.requestImage(null, null, onGotImage)
-
-        /**
-         * @param {string=} imageURL
-         */
-        function onGotImage(imageURL)
-        {
-            image.src = imageURL;
-        }
-
-        /**
-         * @this {WebInspector.Layers3DView}
-         */
-        function onImageLoaded()
-        {
-            var texture = this._createTextureForImage(image);
-            if (!this._picturesForLayer[tile.layerId])
-                this._picturesForLayer[tile.layerId] = [];
-            this._picturesForLayer[tile.layerId].push({texture: texture, rect: tile.rect});
-            this._update();
-        }
-    },
-
-    /**
      * @param {!Element} canvas
-     * @return {!Object}
+     * @return {!WebGLRenderingContext}
      */
     _initGL: function(canvas)
     {
@@ -316,28 +293,11 @@ WebInspector.Layers3DView.prototype = {
 
     _initProjectionMatrix: function()
     {
+        var projectionMatrix = this._calculateProjectionMatrix();
         this._pMatrix = new WebKitCSSMatrix().scale(1, -1, -1).translate(-1, -1, 0)
-            .scale(2 / this._canvasElement.width, 2 / this._canvasElement.height, 1 / 1000000).multiply(this._calculateProjectionMatrix());
+            .scale(2 / this._canvasElement.width, 2 / this._canvasElement.height, 1 / 1000000).multiply(projectionMatrix);
         this._gl.uniformMatrix4fv(this._shaderProgram.pMatrixUniform, false, this._arrayFromMatrix(this._pMatrix));
-    },
-
-    /**
-     * @param {!Image} image
-     * @return {!WebGLTexture} texture
-     */
-    _createTextureForImage: function(image)
-    {
-        var texture = this._gl.createTexture();
-        texture.image = image;
-        this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
-        this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, true);
-        this._gl.texImage2D(this._gl.TEXTURE_2D, 0, this._gl.RGBA, this._gl.RGBA, this._gl.UNSIGNED_BYTE, texture.image);
-        this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MIN_FILTER, this._gl.LINEAR);
-        this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MAG_FILTER, this._gl.LINEAR);
-        this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_WRAP_S, this._gl.CLAMP_TO_EDGE);
-        this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_WRAP_T, this._gl.CLAMP_TO_EDGE);
-        this._gl.bindTexture(this._gl.TEXTURE_2D, null);
-        return texture;
+        this._textureScale = Math.min(1, Math.max(projectionMatrix.m11, projectionMatrix.m22));
     },
 
     _initWhiteTexture: function()
@@ -355,6 +315,7 @@ WebInspector.Layers3DView.prototype = {
         this._gl = this._initGL(this._canvasElement);
         this._initShaders();
         this._initWhiteTexture();
+        this._textureManager.setContext(this._gl);
         return this._gl;
     },
 
@@ -556,9 +517,11 @@ WebInspector.Layers3DView.prototype = {
             this._drawRectangle(vertices, WebInspector.Layers3DView.ScrollRectBorderColor, gl.LINE_LOOP);
         }
         if (this._showPaintsSetting.get()) {
-            var tiles = this._picturesForLayer[layer.id()] || [];
+            var tiles = this._textureManager.tilesForLayer(layer.id());
             for (var i = 0; i < tiles.length; ++i) {
                 var tile = tiles[i];
+                if (!tile.texture)
+                    continue;
                 var quad = this._calculateRectQuad(layer, {x: tile.rect[0], y: tile.rect[1], width: tile.rect[2], height: tile.rect[3]});
                 vertices = this._calculateVerticesForQuad(quad, layerDepth);
                 this._drawRectangle(vertices, style.color, gl.TRIANGLE_FAN, tile.texture);
@@ -598,16 +561,6 @@ WebInspector.Layers3DView.prototype = {
         this._maxDepth = depth;
     },
 
-
-    /**
-     * @param {?WebInspector.LayerTreeBase} layerTree
-     */
-    setLayerTree: function(layerTree)
-    {
-        this._layerTree = layerTree;
-        this._update();
-    },
-
     _update: function()
     {
         if (!this.isShowing()) {
@@ -626,6 +579,7 @@ WebInspector.Layers3DView.prototype = {
         this._initProjectionMatrix();
         this._calculateDepths();
 
+        this._textureManager.setScale(this._textureScale);
         gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
@@ -797,4 +751,160 @@ WebInspector.Layers3DView.prototype = {
     },
 
     __proto__: WebInspector.VBox.prototype
+}
+
+/**
+ * @constructor
+ * @extends {WebInspector.Object}
+ */
+WebInspector.LayerTextureManager = function()
+{
+    WebInspector.Object.call(this);
+    this.reset();
+}
+
+WebInspector.LayerTextureManager.Events = {
+    TextureUpdated: "TextureUpated"
+}
+
+WebInspector.LayerTextureManager.prototype = {
+    reset: function()
+    {
+        /** @type {!Object.<string, !Array.<!WebInspector.LayerTextureManager.Tile>>} */
+        this._tilesByLayerId = {};
+        this._scale = 0;
+    },
+
+    /**
+     * @param {!WebGLRenderingContext} glContext
+     */
+    setContext: function(glContext)
+    {
+        this._gl = glContext;
+        if (this._scale)
+            this._updateTextures();
+    },
+
+    /**
+     * @param {?Array.<!WebInspector.Layers3DView.PaintTile>} paintTiles
+     */
+    setTiles: function(paintTiles)
+    {
+        this._tilesByLayerId = {};
+        if (!paintTiles)
+            return;
+        for (var i = 0; i < paintTiles.length; ++i) {
+            var layerId = paintTiles[i].layerId;
+            var tilesForLayer = this._tilesByLayerId[layerId];
+            if (!tilesForLayer) {
+                tilesForLayer = [];
+                this._tilesByLayerId[layerId] = tilesForLayer;
+            }
+            var tile = new WebInspector.LayerTextureManager.Tile(paintTiles[i].snapshot, paintTiles[i].rect);
+            tilesForLayer.push(tile);
+            if (this._scale && this._gl)
+                this._updateTile(tile);
+        }
+    },
+
+    /**
+     * @param {number} scale
+     */
+    setScale: function(scale)
+    {
+        if (this._scale && this._scale >= scale)
+            return;
+        this._scale = scale;
+        this._updateTextures();
+    },
+
+    /**
+     * @param {string} layerId
+     * @return {!Array.<!WebInspector.LayerTextureManager.Tile>}
+     */
+    tilesForLayer: function(layerId)
+    {
+        return this._tilesByLayerId[layerId] || [];
+    },
+
+    _updateTextures: function()
+    {
+        if (!this._gl)
+            return;
+        if (!this._scale)
+            return;
+
+        for (var layerId in this._tilesByLayerId) {
+            for (var i = 0; i < this._tilesByLayerId[layerId].length; ++i) {
+                var tile = this._tilesByLayerId[layerId][i];
+                if (!tile.scale || tile.scale < this._scale)
+                    this._updateTile(tile);
+            }
+        }
+    },
+
+    /**
+     * @param {!WebInspector.LayerTextureManager.Tile} tile
+     */
+    _updateTile: function(tile)
+    {
+        console.assert(this._scale && this._gl);
+        tile.scale = this._scale;
+
+        var image = new Image();
+        image.addEventListener("load", onImageLoaded.bind(this), false);
+        tile.snapshot.requestImage(null, null, tile.scale, onGotImage)
+
+        /**
+         * @param {string=} imageURL
+         */
+        function onGotImage(imageURL)
+        {
+            image.src = imageURL;
+        }
+
+        /**
+         * @this {WebInspector.LayerTextureManager}
+         */
+        function onImageLoaded()
+        {
+            tile.texture = this._createTextureForImage(image);
+            this.dispatchEventToListeners(WebInspector.LayerTextureManager.Events.TextureUpdated);
+        }
+    },
+
+    /**
+     * @param {!Image} image
+     * @return {!WebGLTexture} texture
+     */
+    _createTextureForImage: function(image)
+    {
+        var texture = this._gl.createTexture();
+        texture.image = image;
+        this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
+        this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, true);
+        this._gl.texImage2D(this._gl.TEXTURE_2D, 0, this._gl.RGBA, this._gl.RGBA, this._gl.UNSIGNED_BYTE, texture.image);
+        this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MIN_FILTER, this._gl.LINEAR);
+        this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MAG_FILTER, this._gl.LINEAR);
+        this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_WRAP_S, this._gl.CLAMP_TO_EDGE);
+        this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_WRAP_T, this._gl.CLAMP_TO_EDGE);
+        this._gl.bindTexture(this._gl.TEXTURE_2D, null);
+        return texture;
+    },
+
+    __proto__: WebInspector.Object.prototype
+}
+
+/**
+ * @constructor
+ * @param {!WebInspector.PaintProfilerSnapshot} snapshot
+ * @param {!Array.<number>} rect
+ */
+WebInspector.LayerTextureManager.Tile = function(snapshot, rect)
+{
+    this.snapshot = snapshot;
+    this.rect = rect;
+    this.scale = 0;
+    /** @type {?WebGLTexture} */
+    this.texture = null;
 }

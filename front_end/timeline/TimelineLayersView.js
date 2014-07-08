@@ -26,22 +26,46 @@ WebInspector.TimelineLayersView.prototype = {
      */
     showLayerTree: function(deferredLayerTree, paints)
     {
-        this._target = deferredLayerTree.target();
         this._disposeTiles();
+        if (!this.isShowing()) {
+            this._pendingLayerTree = deferredLayerTree,
+            this._pendingPaints = paints;
+            return;
+        }
+        this._actuallyShowLayerTree(deferredLayerTree, paints);
+    },
+
+    wasShown: function()
+    {
+        if (!this._pendingLayerTree)
+            return;
+        this._actuallyShowLayerTree(this._pendingLayerTree, this._pendingPaints);
+        this._pendingLayerTree = null;
+        this._pendingPaints = null;
+    },
+
+    /**
+     * @param {!WebInspector.DeferredLayerTree} deferredLayerTree
+     * @param {?Array.<!WebInspector.LayerPaintEvent>} paints
+     */
+    _actuallyShowLayerTree: function(deferredLayerTree, paints)
+    {
+        var layerTree;
+
+        this._target = deferredLayerTree.target();
         var originalTiles = this._paintTiles;
         var tilesReadyBarrier = new CallbackBarrier();
-        deferredLayerTree.resolve(tilesReadyBarrier.createCallback(onLayersReady.bind(this)));
+        deferredLayerTree.resolve(tilesReadyBarrier.createCallback(onLayersReady));
         for (var i = 0; paints && i < paints.length; ++i)
             WebInspector.PaintProfilerSnapshot.load(paints[i].picture, tilesReadyBarrier.createCallback(onSnapshotLoaded.bind(this, paints[i])));
-        tilesReadyBarrier.callWhenDone(onTilesReady.bind(this));
+        tilesReadyBarrier.callWhenDone(onLayersAndTilesReady.bind(this));
 
         /**
-         * @param {!WebInspector.LayerTreeBase} layerTree
-         * @this {WebInspector.TimelineLayersView}
+         * @param {!WebInspector.LayerTreeBase} resolvedLayerTree
          */
-        function onLayersReady(layerTree)
+        function onLayersReady(resolvedLayerTree)
         {
-            this._layers3DView.setLayerTree(layerTree);
+            layerTree = resolvedLayerTree;
         }
 
         /**
@@ -64,8 +88,9 @@ WebInspector.TimelineLayersView.prototype = {
         /**
          * @this {WebInspector.TimelineLayersView}
          */
-        function onTilesReady()
+        function onLayersAndTilesReady()
         {
+            this._layers3DView.setLayerTree(layerTree);
             this._layers3DView.setTiles(this._paintTiles);
         }
     },

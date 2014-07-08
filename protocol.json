@@ -4074,7 +4074,8 @@
                 "parameters": [
                     { "name": "snapshotId", "$ref": "SnapshotId", "description": "The id of the layer snapshot." },
                     { "name": "fromStep", "type": "integer", "optional": true, "description": "The first step to replay from (replay from the very start if not specified)." },
-                    { "name": "toStep", "type": "integer", "optional": true, "description": "The last step to replay to (replay till the end if not specified)." }
+                    { "name": "toStep", "type": "integer", "optional": true, "description": "The last step to replay to (replay till the end if not specified)." },
+                    { "name": "scale", "type": "number", "optional": true, "description": "The scale to apply while replaying (defaults to 1)." }
                 ],
                 "description": "Replays the layer snapshot and returns the resulting bitmap.",
                 "returns": [
