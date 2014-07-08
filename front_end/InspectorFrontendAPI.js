@@ -28,239 +28,90 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-var InspectorFrontendAPI = {
-    _pendingCommands: [],
+/**
+ * @constructor
+ */
+function InspectorFrontendAPIClass()
+{
+    this._isLoaded = false;
+    this._pendingCommands = [];
 
-    // Methods called by the embedder on load, potentially before front-end is initialized.
-    //////////////////////////////////////////////////////////////////////////////////////////////////
+    var descriptors = [
+        ["appendedToURL", ["url"]],
+        ["canceledSaveURL", ["url"]],
+        ["contextMenuCleared", []],
+        ["contextMenuItemSelected", ["id"]],
+        ["dispatchEventToListeners", ["eventType", "eventData"]],
+        ["dispatchMessage", ["messageObject"]],
+        ["embedderMessageAck", ["id", "error"]],
+        ["enterInspectElementMode", [], true],
+        ["fileSystemsLoaded", ["fileSystems"]],
+        ["fileSystemRemoved", ["fileSystemPath"]],
+        ["fileSystemAdded", ["errorMessage", "fileSystem"]],
+        ["indexingTotalWorkCalculated", ["requestId", "fileSystemPath", "totalWork"]],
+        ["indexingWorked", ["requestId", "fileSystemPath", "worked"]],
+        ["indexingDone", ["requestId", "fileSystemPath"]],
+        ["keyEventUnhandled", ["event"], true],
+        ["revealSourceLine", ["url", "lineNumber", "columnNumber"], true],
+        ["savedURL", ["url"]],
+        ["searchCompleted", ["requestId", "fileSystemPath", "files"]],
+        ["setToolbarColors", ["backgroundColor", "color"]],
+        ["setUseSoftMenu", ["useSoftMenu"]],
+        ["showConsole", [], true]
+    ];
+    for (var i = 0; i < descriptors.length; ++i)
+        this[descriptors[i][0]] = this._dispatch.bind(this, descriptors[i][0], descriptors[i][1], descriptors[i][2]);
+}
 
-    showConsole: function()
-    {
-        InspectorFrontendAPI._runOnceLoaded(function() {
-            WebInspector.inspectorView.showPanel("console");
-        });
-    },
-
-    enterInspectElementMode: function()
-    {
-        InspectorFrontendAPI._runOnceLoaded(function() {
-            WebInspector.inspectorView.showPanel("elements");
-            if (WebInspector.inspectElementModeController)
-                WebInspector.inspectElementModeController.toggleSearch();
-        });
-    },
-
-    /**
-     * Focus on a particular line in the specified resource.
-     * @param {string} url The url to the resource.
-     * @param {number} lineNumber The line number to focus on.
-     * @param {number} columnNumber The column number to focus on.
-     */
-    revealSourceLine: function(url, lineNumber, columnNumber)
-    {
-        InspectorFrontendAPI._runOnceLoaded(function() {
-            var uiSourceCode = WebInspector.workspace.uiSourceCodeForURL(url);
-            if (uiSourceCode) {
-                WebInspector.Revealer.reveal(uiSourceCode.uiLocation(lineNumber, columnNumber));
-                return;
-            }
-
-            /**
-             * @param {!WebInspector.Event} event
-             */
-            function listener(event)
-            {
-                var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (event.data);
-                if (uiSourceCode.url === url) {
-                    WebInspector.Revealer.reveal(uiSourceCode.uiLocation(lineNumber, columnNumber));
-                    WebInspector.workspace.removeEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, listener);
-                }
-            }
-
-            WebInspector.workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, listener);
-        });
-    },
-
-    /**
-     * @param {string} backgroundColor
-     * @param {string} color
-     */
-    setToolbarColors: function(backgroundColor, color)
-    {
-        WebInspector.setToolbarColors(backgroundColor, color);
-    },
-
-    /**
-     * @param {string} url
-     */
-    loadTimelineFromURL: function(url)
-    {
-        InspectorFrontendAPI._runOnceLoaded(function() {
-            /** @type {!WebInspector.TimelinePanel} */ (WebInspector.inspectorView.showPanel("timeline")).loadFromURL(url);
-        });
-    },
-
-    /**
-     * @param {boolean} useSoftMenu
-     */
-    setUseSoftMenu: function(useSoftMenu)
-    {
-        WebInspector.ContextMenu.setUseSoftMenu(useSoftMenu);
-    },
-
-    dispatchMessage: function(messageObject)
-    {
-        InspectorBackend.connection().dispatch(messageObject);
-    },
-
-    // Callbacks to the methods called from within initialized front-end.
-    //////////////////////////////////////////////////////////////////////////////////////////////////
-
-    contextMenuItemSelected: function(id)
-    {
-        WebInspector.contextMenuItemSelected(id);
-    },
-
-    contextMenuCleared: function()
-    {
-        WebInspector.contextMenuCleared();
-    },
-
-    fileSystemsLoaded: function(fileSystems)
-    {
-        WebInspector.isolatedFileSystemDispatcher.fileSystemsLoaded(fileSystems);
-    },
-
-    fileSystemRemoved: function(fileSystemPath)
-    {
-        WebInspector.isolatedFileSystemDispatcher.fileSystemRemoved(fileSystemPath);
-    },
-
-    fileSystemAdded: function(errorMessage, fileSystem)
-    {
-        WebInspector.isolatedFileSystemDispatcher.fileSystemAdded(errorMessage, fileSystem);
-    },
-
-    /**
-     * @param {number} requestId
-     * @param {string} fileSystemPath
-     * @param {number} totalWork
-     */
-    indexingTotalWorkCalculated: function(requestId, fileSystemPath, totalWork)
-    {
-        WebInspector.fileSystemWorkspaceBinding.indexingTotalWorkCalculated(requestId, fileSystemPath, totalWork);
-    },
-
-    /**
-     * @param {number} requestId
-     * @param {string} fileSystemPath
-     * @param {number} worked
-     */
-    indexingWorked: function(requestId, fileSystemPath, worked)
-    {
-        WebInspector.fileSystemWorkspaceBinding.indexingWorked(requestId, fileSystemPath, worked);
-    },
-
-    /**
-     * @param {number} requestId
-     * @param {string} fileSystemPath
-     */
-    indexingDone: function(requestId, fileSystemPath)
-    {
-        WebInspector.fileSystemWorkspaceBinding.indexingDone(requestId, fileSystemPath);
-    },
-
-    /**
-     * @param {number} requestId
-     * @param {string} fileSystemPath
-     * @param {!Array.<string>} files
-     */
-    searchCompleted: function(requestId, fileSystemPath, files)
-    {
-        WebInspector.fileSystemWorkspaceBinding.searchCompleted(requestId, fileSystemPath, files);
-    },
-
-    /**
-     * @param {!InspectorFrontendAPI.ForwardedKeyboardEvent} event
-     */
-    keyEventUnhandled: function(event)
-    {
-        InspectorFrontendAPI._runOnceLoaded(function() {
-            WebInspector.forwardedEventHandler.keyEventReceived(event.type, event.keyIdentifier, event.keyCode, event.modifiers);
-        });
-    },
-
-    /**
-     * @param {string} eventType
-     * @param {*=} eventData
-     * @return {boolean}
-     */
-    dispatchEventToListeners: function(eventType, eventData)
-    {
-        return WebInspector.inspectorFrontendEventSink.dispatchEventToListeners(eventType, eventData);
-    },
-
-    /**
-     * @param {string} url
-     */
-    savedURL: function(url)
-    {
-        WebInspector.fileManager.savedURL(url);
-    },
-
-    /**
-     * @param {string} url
-     */
-    canceledSaveURL: function(url)
-    {
-        WebInspector.fileManager.canceledSaveURL(url);
-    },
-
-    /**
-     * @param {string} url
-     */
-    appendedToURL: function(url)
-    {
-        WebInspector.fileManager.appendedToURL(url);
-    },
-
-    /**
-     * @param {number} id
-     * @param {?string} error
-     */
-    embedderMessageAck: function(id, error)
-    {
-        InspectorFrontendHost.embedderMessageAck(id, error);
-    },
-
-    // Called from within front-end
-    ///////////////////////////////
-
+InspectorFrontendAPIClass.prototype = {
     loadCompleted: function()
     {
-        InspectorFrontendAPI._isLoaded = true;
-        for (var i = 0; i < InspectorFrontendAPI._pendingCommands.length; ++i)
-            InspectorFrontendAPI._pendingCommands[i]();
-        InspectorFrontendAPI._pendingCommands = [];
+        this._isLoaded = true;
+        for (var i = 0; i < this._pendingCommands.length; ++i)
+            this._pendingCommands[i]();
+        this._pendingCommands = [];
         if (window.opener)
             window.opener.postMessage(["loadCompleted"], "*");
     },
 
-    // Implementation details
-    /////////////////////////
+    /**
+     * @param {string} name
+     * @param {!Array.<string>} signature
+     * @param {boolean} runOnceLoaded
+     */
+    _dispatch: function(name, signature, runOnceLoaded)
+    {
+        var params = Array.prototype.slice.call(arguments, 3);
+        if (runOnceLoaded)
+            this._runOnceLoaded(dispatchAfterLoad);
+        else
+            dispatchAfterLoad();
+
+        function dispatchAfterLoad()
+        {
+            // Single argument methods get dispatched with the param.
+            if (signature.length < 2) {
+                WebInspector.notifications.dispatchEventToListeners("InspectorFrontendAPI." + name, params[0]);
+                return;
+            }
+            var data = {};
+            for (var i = 0; i < signature.length; ++i)
+                data[signature[i]] = params[i];
+            WebInspector.notifications.dispatchEventToListeners("InspectorFrontendAPI." + name, data);
+        }
+    },
 
     /**
      * @param {function()} command
      */
     _runOnceLoaded: function(command)
     {
-        if (InspectorFrontendAPI._isLoaded) {
+        if (this._isLoaded) {
             command();
             return;
         }
-        InspectorFrontendAPI._pendingCommands.push(command);
+        this._pendingCommands.push(command);
     }
 }
 
-/** @typedef {!Object.<{type: string, keyCode: (number|undefined), keyIdentifier: (string|undefined), modifiers: (number|undefined)}>} */
-InspectorFrontendAPI.ForwardedKeyboardEvent;
+var InspectorFrontendAPI = new InspectorFrontendAPIClass();

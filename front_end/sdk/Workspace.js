@@ -544,6 +544,7 @@ WebInspector.Workspace = function(fileSystemMapping)
     /** @type {!Object.<string, !WebInspector.Project>} */
     this._projects = {};
     this._hasResourceContentTrackingExtensions = false;
+    WebInspector.notifications.addEventListener("InspectorFrontendAPI.revealSourceLine", this._revealSourceLine, this);
 }
 
 WebInspector.Workspace.Events = {
@@ -770,6 +771,37 @@ WebInspector.Workspace.prototype = {
     hasResourceContentTrackingExtensions: function()
     {
         return this._hasResourceContentTrackingExtensions;
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _revealSourceLine: function(event)
+    {
+        var url = /** @type {string} */ (event.data["url"]);
+        var lineNumber = /** @type {number} */ (event.data["lineNumber"]);
+        var columnNumber = /** @type {number} */ (event.data["columnNumber"]);
+
+        var uiSourceCode = this.uiSourceCodeForURL(url);
+        if (uiSourceCode) {
+            WebInspector.Revealer.reveal(uiSourceCode.uiLocation(lineNumber, columnNumber));
+            return;
+        }
+
+        /**
+         * @param {!WebInspector.Event} event
+         * @this {WebInspector.Workspace}
+         */
+        function listener(event)
+        {
+            var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (event.data);
+            if (uiSourceCode.url === url) {
+                WebInspector.Revealer.reveal(uiSourceCode.uiLocation(lineNumber, columnNumber));
+                this.removeEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, listener, this);
+            }
+        }
+
+        this.addEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, listener, this);
     },
 
     __proto__: WebInspector.Object.prototype

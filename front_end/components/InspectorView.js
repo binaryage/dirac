@@ -94,6 +94,8 @@ WebInspector.InspectorView = function()
     this._lastActivePanelSetting = WebInspector.settings.createSetting("lastActivePanel", "elements");
 
     this._loadPanelDesciptors();
+
+    WebInspector.notifications.addEventListener("InspectorFrontendAPI.showConsole", this.showPanel.bind(this, "console"));
 };
 
 WebInspector.InspectorView.Events = {

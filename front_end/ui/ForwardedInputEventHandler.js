@@ -7,17 +7,21 @@
  */
 WebInspector.ForwardedInputEventHandler = function()
 {
+    WebInspector.notifications.addEventListener("InspectorFrontendAPI.keyEventUnhandled", this._onKeyEventUnhandled, this);
 }
 
 WebInspector.ForwardedInputEventHandler.prototype = {
     /**
-     * @param {string} type
-     * @param {string} keyIdentifier
-     * @param {number} keyCode
-     * @param {number} modifiers
+     * @param {!WebInspector.Event} event
      */
-    keyEventReceived: function(type, keyIdentifier, keyCode, modifiers)
+    _onKeyEventUnhandled: function(event)
     {
+        var data = event.data;
+        var type = /** @type {string} */ (data.type);
+        var keyIdentifier = /** @type {string} */ (data.keyIdentifier);
+        var keyCode = /** @type {number} */ (data.keyCode);
+        var modifiers =/** @type {number} */ (data.modifiers);
+
         if (type !== "keydown")
             return;
 

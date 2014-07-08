@@ -138,7 +138,7 @@ WebInspector.InspectorFrontendHostStub.prototype = {
     save: function(url, content, forceSaveAs)
     {
         WebInspector.messageSink.addErrorMessage("Saving files is not enabled in hosted mode. Please inspect using chrome://inspect", true);
-        WebInspector.fileManager.canceledSaveURL(url);
+        WebInspector.fileManager.canceledSaveURL({data: url});
     },
 
     append: function(url, content)
@@ -256,22 +256,43 @@ WebInspector.InspectorFrontendHostStub.prototype = {
      */
     unsubscribe: function(eventType)
     {
-    }
-}
+    },
 
-if (!window.InspectorFrontendHost) {
-    InspectorFrontendHost = new WebInspector.InspectorFrontendHostStub();
-} else {
-    var proto = WebInspector.InspectorFrontendHostStub.prototype;
-    for (var name in proto) {
-        var value = proto[name];
-        if (typeof value !== "function" || InspectorFrontendHost[name])
-            continue;
-        InspectorFrontendHost[name] = function(name) {
-            var message = "Incompatible embedder: method InspectorFrontendHost." + name + " is missing. Using stub instead.";
-            WebInspector.messageSink.addErrorMessage(message, true);
-            var args = Array.prototype.slice.call(arguments, 1);
-            return proto[name].apply(InspectorFrontendHost, args);
-        }.bind(null, name);
+    /**
+     * @param {number} x
+     * @param {number} y
+     * @param {!Array.<!Object>} items
+     */
+    showContextMenuAtPoint: function(x, y, items)
+    {
+        throw "Soft context menu should be used";
     }
-}
+};
+
+(function() {
+    if (!window.InspectorFrontendHost) {
+        InspectorFrontendHost = new WebInspector.InspectorFrontendHostStub();
+    } else {
+        var proto = WebInspector.InspectorFrontendHostStub.prototype;
+        for (var name in proto) {
+            var value = proto[name];
+            if (typeof value !== "function" || InspectorFrontendHost[name])
+                continue;
+            InspectorFrontendHost[name] = function(name) {
+                var message = "Incompatible embedder: method InspectorFrontendHost." + name + " is missing. Using stub instead.";
+                WebInspector.messageSink.addErrorMessage(message, true);
+                var args = Array.prototype.slice.call(arguments, 1);
+                return proto[name].apply(InspectorFrontendHost, args);
+            }.bind(null, name);
+        }
+        WebInspector.notifications.addEventListener("InspectorFrontendAPI.embedderMessageAck", embedderMessageAck);
+    }
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    function embedderMessageAck(event)
+    {
+        InspectorFrontendHost.embedderMessageAck(event.data["id"], event.data["error"]);
+    }
+})();

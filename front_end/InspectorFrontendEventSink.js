@@ -10,9 +10,19 @@
  * @extends {WebInspector.Object}
  */
 WebInspector.InspectorFrontendEventSink = function() {
+    WebInspector.notifications.addEventListener("InspectorFrontendAPI.dispatchEventToListeners", this._dispatchEventToListeners, this);
 }
 
 WebInspector.InspectorFrontendEventSink.prototype = {
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _dispatchEventToListeners: function(event)
+    {
+       var eventType = /** @type {string} */ (event.data["eventType"]);
+       this.dispatchEventToListeners(eventType, event.data["eventData"]);
+    },
+
     /**
      * @param {string} eventType
      * @param {function(!WebInspector.Event)} listener

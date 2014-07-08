@@ -194,6 +194,7 @@ InspectorFrontendHostAPI.prototype.getSelectionBackgroundColor = function() {}
 InspectorFrontendHostAPI.prototype.getSelectionForegroundColor = function() {}
 /** @return {boolean} */
 InspectorFrontendHost.isUnderTest = function() {}
+InspectorFrontendHost.isStub = false;
 /**
  * Requests inspected page to be placed atop of the inspector frontend with specified bounds.
  * @param {{x: number, y: number, width: number, height: number}} bounds
@@ -246,6 +247,7 @@ InspectorFrontendHostAPI.prototype.zoomFactor = function() {}
 InspectorFrontendHostAPI.prototype.zoomIn = function() {}
 InspectorFrontendHostAPI.prototype.zoomOut = function() {}
 InspectorFrontendHostAPI.prototype.resetZoom = function() {}
+InspectorFrontendHostAPI.prototype.showContextMenuAtPoint = function(x, y, items) {}
 /** @type {InspectorFrontendHostAPI} */
 var InspectorFrontendHost;
 InspectorFrontendHost.embedderMessageAck = function(id, error) {}

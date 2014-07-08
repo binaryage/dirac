@@ -25,12 +25,14 @@
 
 /**
  * @constructor
- * @param {!Array.<!WebInspector.ContextMenuItem>} items
+ * @param {!Array.<!WebInspector.ContextMenuItem.Descriptor>} items
+ * @param {function(string)} itemSelectedCallback
  * @param {!WebInspector.SoftContextMenu=} parentMenu
  */
-WebInspector.SoftContextMenu = function(items, parentMenu)
+WebInspector.SoftContextMenu = function(items, itemSelectedCallback, parentMenu)
 {
     this._items = items;
+    this._itemSelectedCallback = itemSelectedCallback;
     this._parentMenu = parentMenu;
 }
 
@@ -168,7 +170,7 @@ WebInspector.SoftContextMenu.prototype = {
         if (!menuItemElement._subItems) {
             this._discardMenu(true, event);
             if (typeof menuItemElement._actionId !== "undefined") {
-                WebInspector.contextMenuItemSelected(menuItemElement._actionId);
+                this._itemSelectedCallback(menuItemElement._actionId);
                 delete menuItemElement._actionId;
             }
             return;
@@ -187,7 +189,7 @@ WebInspector.SoftContextMenu.prototype = {
         if (this._subMenu)
             return;
 
-        this._subMenu = new WebInspector.SoftContextMenu(menuItemElement._subItems, this);
+        this._subMenu = new WebInspector.SoftContextMenu(menuItemElement._subItems, this._itemSelectedCallback, this);
         this._subMenu.show(this._x + menuItemElement.offsetWidth - 3, this._y + menuItemElement.offsetTop - 1);
     },
 
@@ -340,13 +342,4 @@ WebInspector.SoftContextMenu.prototype = {
         if (this._parentMenu)
             delete this._parentMenu._subMenu;
     }
-}
-
-if (!InspectorFrontendHost.showContextMenuAtPoint) {
-
-InspectorFrontendHost.showContextMenuAtPoint = function(x, y, items)
-{
-    new WebInspector.SoftContextMenu(items).show(x, y);
-}
-
 }

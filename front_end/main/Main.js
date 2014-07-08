@@ -264,11 +264,19 @@ WebInspector.Main.prototype = {
 
         if (WebInspector.queryParam("toolbarColor") && WebInspector.queryParam("textColor"))
             WebInspector.setToolbarColors(WebInspector.queryParam("toolbarColor"), WebInspector.queryParam("textColor"));
+        WebInspector.notifications.addEventListener("InspectorFrontendAPI.setToolbarColors", updateToolbarColors);
+        /**
+         * @param {!WebInspector.Event} event
+         */
+        function updateToolbarColors(event)
+        {
+            WebInspector.setToolbarColors(/** @type {string} */ (event.data["backgroundColor"]), /** @type {string} */ (event.data["color"]));
+        }
+        WebInspector.ContextMenu.initialize();
 
         WebInspector.targetManager = new WebInspector.TargetManager();
         WebInspector.targetManager.createTarget(WebInspector.UIString("Main"), connection, this._doLoadedDoneWithCapabilities.bind(this));
         WebInspector.isolatedFileSystemManager = new WebInspector.IsolatedFileSystemManager();
-        WebInspector.isolatedFileSystemDispatcher = new WebInspector.IsolatedFileSystemDispatcher(WebInspector.isolatedFileSystemManager);
         WebInspector.workspace = new WebInspector.Workspace(WebInspector.isolatedFileSystemManager.mapping());
         WebInspector.networkWorkspaceBinding = new WebInspector.NetworkWorkspaceBinding(WebInspector.workspace);
         new WebInspector.NetworkUISourceCodeProvider(WebInspector.networkWorkspaceBinding, WebInspector.workspace);
