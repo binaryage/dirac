@@ -237,14 +237,16 @@ CodeMirror.commands.smartNewlineAndIndent = function(codeMirror)
 
     function innerSmartNewlineAndIndent(codeMirror)
     {
-        var cur = codeMirror.getCursor("start");
-        var line = codeMirror.getLine(cur.line);
-        var indent = cur.line > 0 ? WebInspector.TextUtils.lineIndent(line).length : 0;
-        if (cur.ch <= indent) {
-            codeMirror.replaceSelection("\n" + line.substring(0, cur.ch), "end", "+input");
-            codeMirror.setSelection(new CodeMirror.Pos(cur.line + 1, cur.ch));
-        } else
-            codeMirror.execCommand("newlineAndIndent");
+        var selections = codeMirror.listSelections();
+        var replacements = [];
+        for (var i = 0; i < selections.length; ++i) {
+            var selection = selections[i];
+            var cur = CodeMirror.cmpPos(selection.head, selection.anchor) < 0 ? selection.head : selection.anchor;
+            var line = codeMirror.getLine(cur.line);
+            var indent = WebInspector.TextUtils.lineIndent(line);
+            replacements.push("\n" + indent.substring(0, Math.min(cur.ch, indent.length)));
+        }
+        codeMirror.replaceSelections(replacements);
     }
 }
 
