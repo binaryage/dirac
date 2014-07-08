@@ -719,8 +719,11 @@ WebInspector.NetworkRequest.prototype = {
     {
         function parseNameValue(pair)
         {
-            var splitPair = pair.split("=", 2);
-            return {name: splitPair[0], value: splitPair[1] || ""};
+            var position = pair.indexOf("=");
+            if (position === -1)
+                return {name: pair, value: ""};
+            else
+                return {name: pair.substring(0, position), value: pair.substring(position + 1)};
         }
         return queryString.split("&").map(parseNameValue);
     },
