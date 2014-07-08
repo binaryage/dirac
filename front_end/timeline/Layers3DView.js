@@ -36,6 +36,7 @@ WebInspector.Layers3DView = function()
 {
     WebInspector.VBox.call(this);
     this.element.classList.add("layers-3d-view");
+    this._initStatusBar();
     this._emptyView = new WebInspector.EmptyView(WebInspector.UIString("Not in the composited mode.\nConsider forcing composited mode in Settings."));
     this._canvasElement = this.element.createChild("canvas");
     this._transformController = new WebInspector.TransformController(this._canvasElement);
@@ -513,6 +514,8 @@ WebInspector.Layers3DView.prototype = {
     _calculateScrollRectQuadsForLayer: function(layer)
     {
         var quads = [];
+        if (!this._showSlowScrollRectsSetting.get())
+            return quads;
         for (var i = 0; i < layer.scrollRects().length; ++i)
             quads.push(this._calculateRectQuad(layer, layer.scrollRects()[i].rect));
         return quads;
@@ -552,12 +555,14 @@ WebInspector.Layers3DView.prototype = {
             this._drawRectangle(vertices, color, gl.TRIANGLE_FAN);
             this._drawRectangle(vertices, WebInspector.Layers3DView.ScrollRectBorderColor, gl.LINE_LOOP);
         }
-        var tiles = this._picturesForLayer[layer.id()] || [];
-        for (var i = 0; i < tiles.length; ++i) {
-            var tile = tiles[i];
-            var quad = this._calculateRectQuad(layer, {x: tile.rect[0], y: tile.rect[1], width: tile.rect[2], height: tile.rect[3]});
-            vertices = this._calculateVerticesForQuad(quad, layerDepth);
-            this._drawRectangle(vertices, style.color, gl.TRIANGLE_FAN, tile.texture);
+        if (this._showPaintsSetting.get()) {
+            var tiles = this._picturesForLayer[layer.id()] || [];
+            for (var i = 0; i < tiles.length; ++i) {
+                var tile = tiles[i];
+                var quad = this._calculateRectQuad(layer, {x: tile.rect[0], y: tile.rect[1], width: tile.rect[2], height: tile.rect[3]});
+                vertices = this._calculateVerticesForQuad(quad, layerDepth);
+                this._drawRectangle(vertices, style.color, gl.TRIANGLE_FAN, tile.texture);
+            }
         }
     },
 
@@ -625,7 +630,7 @@ WebInspector.Layers3DView.prototype = {
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
         this._layerTree.forEachLayer(this._drawLayer.bind(this));
-        if (this._layerTree.viewportSize())
+        if (this._layerTree.viewportSize() && this._showViewportSetting.get())
             this._drawViewport();
     },
 
@@ -708,6 +713,31 @@ WebInspector.Layers3DView.prototype = {
 
         this._layerTree.forEachLayer(checkIntersection.bind(this));
         return closestLayer;
+    },
+
+    /**
+     * @param {string} caption
+     * @param {string} name
+     * @param {boolean} value
+     * @param {!Element} statusBarElement
+     * @return {!WebInspector.Setting}
+     */
+    _createVisibilitySetting: function(caption, name, value, statusBarElement)
+    {
+        var checkbox = new WebInspector.StatusBarCheckbox(WebInspector.UIString(caption))
+        statusBarElement.appendChild(checkbox.element);
+        var setting = WebInspector.settings.createSetting(name, value)
+        WebInspector.SettingsUI.bindCheckbox(checkbox.inputElement, setting);
+        setting.addChangeListener(this._update, this);
+        return setting;
+    },
+
+    _initStatusBar: function()
+    {
+        this._panelStatusBarElement = this.element.createChild("div", "panel-status-bar");
+        this._showViewportSetting = this._createVisibilitySetting("Viewport", "showViewport", true, this._panelStatusBarElement);
+        this._showSlowScrollRectsSetting = this._createVisibilitySetting("Slow scroll rects", "showSlowScrollRects", true, this._panelStatusBarElement);
+        this._showPaintsSetting = this._createVisibilitySetting("Paints", "showPaints", true, this._panelStatusBarElement);
     },
 
     /**
