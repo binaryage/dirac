@@ -106,15 +106,23 @@ WebInspector.TracingTimelineModel.prototype = {
      */
     startRecording: function(captureStacks, captureMemory, capturePictures)
     {
+        function disabledByDefault(category)
+        {
+            return "disabled-by-default-" + category;
+        }
         var categories;
         if (WebInspector.experimentsSettings.timelineTracingMode.isEnabled()) {
             categories = WebInspector.TracingTimelineModel.defaultTracingCategoryFilter;
         } else {
-            var categoriesArray = ["-*", "disabled-by-default-devtools.timeline", "disabled-by-default-devtools.timeline.frame"];
+            var categoriesArray = ["-*", disabledByDefault("devtools.timeline"), disabledByDefault("devtools.timeline.frame")];
             if (captureStacks)
-                categoriesArray.push("disabled-by-default-devtools.timeline.stack");
-            if (capturePictures)
-                categoriesArray.push("disabled-by-default-devtools.timeline.layers", "disabled-by-default-devtools.timeline.picture");
+                categoriesArray.push(disabledByDefault("devtools.timeline.stack"));
+            if (capturePictures) {
+                categoriesArray = categoriesArray.concat([
+                    disabledByDefault("devtools.timeline.layers"),
+                    disabledByDefault("devtools.timeline.picture"),
+                    disabledByDefault("blink.graphics_context_annotations")]);
+            }
             categories = categoriesArray.join(",");
         }
         this._startRecordingWithCategories(categories);
