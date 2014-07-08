@@ -362,6 +362,8 @@ WebInspector.ViewportControl.prototype = {
                 delete this._cumulativeHeights;
         }
         this._rebuildCumulativeHeightsIfNeeded();
+        var oldLastVisibleIndex = this._lastVisibleIndex;
+        var oldFirstVisibleIndex = this._firstVisibleIndex;
         if (shouldStickToBottom) {
             this._lastVisibleIndex = itemCount - 1;
             this._firstVisibleIndex = Math.max(Array.prototype.lowerBound.call(this._cumulativeHeights, this._cumulativeHeights[this._cumulativeHeights.length - 1] - clientHeight), 0);
@@ -369,6 +371,8 @@ WebInspector.ViewportControl.prototype = {
             this._firstVisibleIndex = Math.max(Array.prototype.lowerBound.call(this._cumulativeHeights, visibleFrom), 0);
             this._lastVisibleIndex = Math.min(Array.prototype.upperBound.call(this._cumulativeHeights, visibleFrom + clientHeight - 1), itemCount - 1);
         }
+        if (oldLastVisibleIndex === this._lastVisibleIndex && oldFirstVisibleIndex === this._firstVisibleIndex)
+            return;
         var topGapHeight = this._cumulativeHeights[this._firstVisibleIndex - 1] || 0;
         var bottomGapHeight = this._cumulativeHeights[this._cumulativeHeights.length - 1] - this._cumulativeHeights[this._lastVisibleIndex];
 
