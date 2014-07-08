@@ -976,6 +976,11 @@ body.platform-linux .source-code {
     white-space: pre-wrap;
 }
 
+.console-async-trace-text {
+    margin-left: -10px;
+    font-style: italic;
+}
+
 .repeated-message.console-error-level::before,
 .repeated-message.console-warning-level:before,
 .repeated-message.console-debug-level:before,

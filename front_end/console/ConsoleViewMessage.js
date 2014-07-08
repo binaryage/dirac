@@ -1042,28 +1042,49 @@ WebInspector.ConsoleViewMessage.prototype = {
         return this._wrapperElement;
     },
 
+    /**
+     * @param {!TreeElement} parentTreeElement
+     */
     _populateStackTraceTreeElement: function(parentTreeElement)
     {
-        for (var i = 0; i < this._message.stackTrace.length; i++) {
-            var frame = this._message.stackTrace[i];
+        /**
+         * @param {!Array.<!ConsoleAgent.CallFrame>=} stackTrace
+         * @this {WebInspector.ConsoleViewMessage}
+         */
+        function appendStackTrace(stackTrace)
+        {
+            if (!stackTrace)
+                return;
 
-            var content = document.createElementWithClass("div", "stacktrace-entry");
-            var messageTextElement = document.createElement("span");
-            messageTextElement.className = "console-message-text source-code";
-            var functionName = frame.functionName || WebInspector.UIString("(anonymous function)");
-            messageTextElement.appendChild(document.createTextNode(functionName));
-            content.appendChild(messageTextElement);
+            for (var i = 0; i < stackTrace.length; i++) {
+                var frame = stackTrace[i];
 
-            if (frame.scriptId) {
-                content.appendChild(document.createTextNode(" "));
-                var urlElement = this._linkifyCallFrame(frame);
-                if (!urlElement)
-                    continue;
-                content.appendChild(urlElement);
+                var content = document.createElementWithClass("div", "stacktrace-entry");
+                var functionName = frame.functionName || WebInspector.UIString("(anonymous function)");
+                content.createChild("span", "console-message-text source-code").textContent = functionName;
+
+                if (frame.scriptId) {
+                    content.createTextChild(" ");
+                    var urlElement = this._linkifyCallFrame(frame);
+                    if (!urlElement)
+                        continue;
+                    content.appendChild(urlElement);
+                }
+
+                parentTreeElement.appendChild(new TreeElement(content));
             }
+        }
 
-            var treeElement = new TreeElement(content);
-            parentTreeElement.appendChild(treeElement);
+        appendStackTrace.call(this, this._message.stackTrace);
+
+        for (var asyncTrace = this._message.asyncStackTrace; asyncTrace; asyncTrace = asyncTrace.asyncStackTrace) {
+            if (!asyncTrace.callFrames || !asyncTrace.callFrames.length)
+                break;
+            var content = document.createElementWithClass("div", "stacktrace-entry");
+            var description = asyncTrace.description ? asyncTrace.description + " " + WebInspector.UIString("(async)") : WebInspector.UIString("Async Call");
+            content.createChild("span", "console-message-text source-code console-async-trace-text").textContent = description;
+            parentTreeElement.appendChild(new TreeElement(content));
+            appendStackTrace.call(this, asyncTrace.callFrames);
         }
     },
 

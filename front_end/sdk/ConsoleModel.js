@@ -208,8 +208,9 @@ WebInspector.ConsoleModel.evaluateCommandInConsole = function(executionContext, 
  * @param {number=} timestamp
  * @param {boolean=} isOutdated
  * @param {!RuntimeAgent.ExecutionContextId=} executionContextId
+ * @param {!ConsoleAgent.AsyncStackTrace=} asyncStackTrace
  */
-WebInspector.ConsoleMessage = function(target, source, level, messageText, type, url, line, column, requestId, parameters, stackTrace, timestamp, isOutdated, executionContextId)
+WebInspector.ConsoleMessage = function(target, source, level, messageText, type, url, line, column, requestId, parameters, stackTrace, timestamp, isOutdated, executionContextId, asyncStackTrace)
 {
     this._target = target;
     this.source = source;
@@ -224,6 +225,7 @@ WebInspector.ConsoleMessage = function(target, source, level, messageText, type,
     this.timestamp = timestamp || Date.now();
     this.isOutdated = isOutdated;
     this.executionContextId = executionContextId || 0;
+    this.asyncStackTrace = asyncStackTrace;
 
     this.request = requestId ? target.networkLog.requestForId(requestId) : null;
 
@@ -233,6 +235,7 @@ WebInspector.ConsoleMessage = function(target, source, level, messageText, type,
             this.url = this.request.initiator.url;
             this.line = this.request.initiator.lineNumber;
         }
+        this.asyncStackTrace = undefined;
     }
 }
 
@@ -307,7 +310,8 @@ WebInspector.ConsoleMessage.prototype = {
             this.stackTrace,
             this.timestamp,
             this.isOutdated,
-            this.executionContextId);
+            this.executionContextId,
+            this.asyncStackTrace);
     },
 
     /**
@@ -319,17 +323,20 @@ WebInspector.ConsoleMessage.prototype = {
         if (!msg)
             return false;
 
-        if (this.stackTrace) {
-            if (!msg.stackTrace || this.stackTrace.length !== msg.stackTrace.length)
-                return false;
+        if (!this._isEqualStackTraces(this.stackTrace, msg.stackTrace))
+            return false;
 
-            for (var i = 0; i < msg.stackTrace.length; ++i) {
-                if (this.stackTrace[i].url !== msg.stackTrace[i].url ||
-                    this.stackTrace[i].functionName !== msg.stackTrace[i].functionName ||
-                    this.stackTrace[i].lineNumber !== msg.stackTrace[i].lineNumber ||
-                    this.stackTrace[i].columnNumber !== msg.stackTrace[i].columnNumber)
-                    return false;
-            }
+        var asyncTrace1 = this.asyncStackTrace;
+        var asyncTrace2 = msg.asyncStackTrace;
+        while (asyncTrace1 || asyncTrace2) {
+            if (!asyncTrace1 || !asyncTrace2)
+                return false;
+            if (asyncTrace1.description !== asyncTrace2.description)
+                return false;
+            if (!this._isEqualStackTraces(asyncTrace1.callFrames, asyncTrace2.callFrames))
+                return false;
+            asyncTrace1 = asyncTrace1.asyncStackTrace;
+            asyncTrace2 = asyncTrace2.asyncStackTrace;
         }
 
         if (this.parameters) {
@@ -352,6 +359,27 @@ WebInspector.ConsoleMessage.prototype = {
             && (this.messageText === msg.messageText)
             && (this.request === msg.request)
             && (this.executionContextId === msg.executionContextId);
+    },
+
+    /**
+     * @param {!Array.<!ConsoleAgent.CallFrame>|undefined} stackTrace1
+     * @param {!Array.<!ConsoleAgent.CallFrame>|undefined} stackTrace2
+     * @return {boolean}
+     */
+    _isEqualStackTraces: function(stackTrace1, stackTrace2)
+    {
+        stackTrace1 = stackTrace1 || [];
+        stackTrace2 = stackTrace2 || [];
+        if (stackTrace1.length !== stackTrace2.length)
+            return false;
+        for (var i = 0, n = stackTrace1.length; i < n; ++i) {
+            if (stackTrace1[i].url !== stackTrace2[i].url ||
+                stackTrace1[i].functionName !== stackTrace2[i].functionName ||
+                stackTrace1[i].lineNumber !== stackTrace2[i].lineNumber ||
+                stackTrace1[i].columnNumber !== stackTrace2[i].columnNumber)
+                return false;
+        }
+        return true;
     }
 }
 
@@ -444,7 +472,8 @@ WebInspector.ConsoleDispatcher.prototype = {
             payload.stackTrace,
             payload.timestamp * 1000, // Convert to ms.
             this._console._enablingConsole,
-            payload.executionContextId);
+            payload.executionContextId,
+            payload.asyncStackTrace);
         this._console.addMessage(consoleMessage, true);
     },
 
