@@ -741,8 +741,8 @@ WebInspector.SettingsList.prototype = {
 
         listItem.columnElements = {};
         for (var i = 0; i < this._columns.length; ++i) {
-            var columnElement = listItemColumnsElement.createChild("div", "list-column");
             var column = this._columns[i];
+            var columnElement = listItemColumnsElement.createChild("div", "list-column settings-list-column-" + column.id);
             listItem.columnElements[column.id] = columnElement;
             this._itemRenderer(columnElement, column, itemId);
         }
@@ -916,7 +916,6 @@ WebInspector.EditableSettingsList.prototype = {
     _renderColumn: function(columnElement, column, itemId)
     {
         var columnId = column.id;
-        columnElement.classList.add("settings-list-column-" + columnId);
         if (itemId === null) {
             this._createEditElement(columnElement, column, itemId);
             return;

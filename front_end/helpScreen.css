@@ -612,7 +612,23 @@ select.list-column-editor {
     font-weight: bold;
 }
 
-.settings-list .settings-list-item .list-column {
+.file-systems-list .settings-list-item .list-column.settings-list-column-path {
+    width: 100%;
+}
+
+.file-mappings-list .settings-list-item .list-column.settings-list-column-url {
+    width: 50%;
+}
+
+.file-mappings-list .settings-list-item .list-column.settings-list-column-path {
+    width: 50%;
+}
+
+.blackbox-patterns-list .settings-list-item .list-column.settings-list-column-pattern {
+    width: 50%;
+}
+
+.blackbox-patterns-list .settings-list-item .list-column.settings-list-column-value {
     width: 50%;
 }
 

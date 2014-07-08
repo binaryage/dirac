@@ -33,6 +33,7 @@ WebInspector.FrameworkBlackboxDialog = function()
     var column2 = { id: "value", options: [WebInspector.UIString("Blackbox")] };
 
     this._patternsList = new WebInspector.EditableSettingsList([column1, column2], this._patternValuesProvider.bind(this), this._patternValidate.bind(this), this._patternEdit.bind(this));
+    this._patternsList.element.classList.add("blackbox-patterns-list");
     this._patternsList.addEventListener(WebInspector.SettingsList.Events.Removed, this._patternRemovedFromList.bind(this));
     container.appendChild(this._patternsList.element);
 
