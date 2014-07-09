@@ -47,10 +47,10 @@ WebInspector.FileSystemWorkspaceBinding = function(isolatedFileSystemManager, wo
     /** @type {!Object.<number, !WebInspector.Progress>} */
     this._progresses = {};
 
-    WebInspector.notifications.addEventListener("InspectorFrontendAPI.indexingTotalWorkCalculated", this._onIndexingTotalWorkCalculated, this);
-    WebInspector.notifications.addEventListener("InspectorFrontendAPI.indexingWorked", this._onIndexingWorked, this);
-    WebInspector.notifications.addEventListener("InspectorFrontendAPI.indexingDone", this._onIndexingDone, this);
-    WebInspector.notifications.addEventListener("InspectorFrontendAPI.searchCompleted", this._onSearchCompleted, this);
+    InspectorFrontendHost.events.addEventListener(InspectorFrontendHostAPI.Events.IndexingTotalWorkCalculated, this._onIndexingTotalWorkCalculated, this);
+    InspectorFrontendHost.events.addEventListener(InspectorFrontendHostAPI.Events.IndexingWorked, this._onIndexingWorked, this);
+    InspectorFrontendHost.events.addEventListener(InspectorFrontendHostAPI.Events.IndexingDone, this._onIndexingDone, this);
+    InspectorFrontendHost.events.addEventListener(InspectorFrontendHostAPI.Events.SearchCompleted, this._onSearchCompleted, this);
 }
 
 WebInspector.FileSystemWorkspaceBinding._scriptExtensions = ["js", "java", "coffee", "ts", "dart"].keySet();

@@ -25,7 +25,7 @@
 
 /**
  * @constructor
- * @param {!Array.<!WebInspector.ContextMenuItem.Descriptor>} items
+ * @param {!Array.<!InspectorFrontendHostAPI.ContextMenuDescriptor>} items
  * @param {function(string)} itemSelectedCallback
  * @param {!WebInspector.SoftContextMenu=} parentMenu
  */

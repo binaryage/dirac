@@ -544,7 +544,7 @@ WebInspector.Workspace = function(fileSystemMapping)
     /** @type {!Object.<string, !WebInspector.Project>} */
     this._projects = {};
     this._hasResourceContentTrackingExtensions = false;
-    WebInspector.notifications.addEventListener("InspectorFrontendAPI.revealSourceLine", this._revealSourceLine, this);
+    InspectorFrontendHost.events.addEventListener(InspectorFrontendHostAPI.Events.RevealSourceLine, this._revealSourceLine, this);
 }
 
 WebInspector.Workspace.Events = {

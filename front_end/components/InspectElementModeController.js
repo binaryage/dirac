@@ -33,7 +33,7 @@ WebInspector.InspectElementModeController = function()
 {
     this._toggleSearchButton = new WebInspector.StatusBarButton(WebInspector.UIString("Select an element in the page to inspect it."), "node-search-status-bar-item");
     this._shortcut = WebInspector.InspectElementModeController.createShortcut();
-    WebInspector.notifications.addEventListener("InspectorFrontendAPI.enterInspectElementMode", this._toggleSearch, this);
+    InspectorFrontendHost.events.addEventListener(InspectorFrontendHostAPI.Events.EnterInspectElementMode, this._toggleSearch, this);
 }
 
 /**

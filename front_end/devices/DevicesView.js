@@ -21,6 +21,7 @@ WebInspector.DevicesView = function()
     this.element.createChild("div", "devices-info").innerHTML = WebInspector.UIString("Click \"Try here\" button, to open the current page in the selected remote browser.");
     this._devicesList = this.element.createChild("div");
     this._devicesList.cellSpacing = 0;
+    InspectorFrontendHost.events.addEventListener(InspectorFrontendHostAPI.Events.DevicesUpdated, this._onDevicesUpdated, this);
 };
 
 WebInspector.DevicesView.MinVersionNewTab = 29;
@@ -43,7 +44,7 @@ WebInspector.DevicesView.Events = {
 };
 
 WebInspector.DevicesView.prototype = {
-    _onDevicesChanged: function(event)
+    _onDevicesUpdated: function(event)
     {
         this._updateDeviceList(/** @type {!Array.<!Adb.Device>} */(event.data));
     },
@@ -174,12 +175,12 @@ WebInspector.DevicesView.prototype = {
 
     willHide: function()
     {
-        WebInspector.inspectorFrontendEventSink.removeEventListener(WebInspector.DevicesView.Events.DevicesChanged, this._onDevicesChanged, this);
+        InspectorFrontendHost.setDevicesUpdatesEnabled(false);
     },
 
     wasShown: function()
     {
-        WebInspector.inspectorFrontendEventSink.addEventListener(WebInspector.DevicesView.Events.DevicesChanged, this._onDevicesChanged, this);
+        InspectorFrontendHost.setDevicesUpdatesEnabled(true);
     },
 
     __proto__: WebInspector.VBox.prototype

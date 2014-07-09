@@ -47,10 +47,6 @@ WebInspector.ContextMenuItem = function(topLevelMenu, type, label, disabled, che
         this._id = topLevelMenu.nextId();
 }
 
-/** @typedef {{type:string, id:(number|undefined), label:(string|undefined), enabled:(boolean|undefined), checked:(boolean|undefined),
-               subItems:(!Array.<!WebInspector.ContextMenuItem.Descriptor>|undefined)}} */
-WebInspector.ContextMenuItem.Descriptor;
-
 WebInspector.ContextMenuItem.prototype = {
     /**
      * @return {number}
@@ -85,7 +81,7 @@ WebInspector.ContextMenuItem.prototype = {
     },
 
     /**
-     * @return {!WebInspector.ContextMenuItem.Descriptor}
+     * @return {!InspectorFrontendHostAPI.ContextMenuDescriptor}
      */
     _buildDescriptor: function()
     {
@@ -184,7 +180,7 @@ WebInspector.ContextSubMenuItem.prototype = {
     },
 
     /**
-     * @return {!WebInspector.ContextMenuItem.Descriptor}
+     * @return {!InspectorFrontendHostAPI.ContextMenuDescriptor}
      */
     _buildDescriptor: function()
     {
@@ -212,7 +208,7 @@ WebInspector.ContextMenu = function(event)
 
 WebInspector.ContextMenu.initialize = function()
 {
-    WebInspector.notifications.addEventListener("InspectorFrontendAPI.setUseSoftMenu", setUseSoftMenu);
+    InspectorFrontendHost.events.addEventListener(InspectorFrontendHostAPI.Events.SetUseSoftMenu, setUseSoftMenu);
     /**
      * @param {!WebInspector.Event} event
      */
@@ -237,13 +233,13 @@ WebInspector.ContextMenu.prototype = {
 
         if (menuObject.length) {
             WebInspector._contextMenu = this;
-            if (WebInspector.ContextMenu._useSoftMenu || InspectorFrontendHost.isStub) {
+            if (WebInspector.ContextMenu._useSoftMenu || InspectorFrontendHost.isStub()) {
                 var softMenu = new WebInspector.SoftContextMenu(menuObject, this._itemSelected.bind(this));
                 softMenu.show(this._event.x, this._event.y);
             } else {
                 InspectorFrontendHost.showContextMenuAtPoint(this._event.x, this._event.y, menuObject);
-                WebInspector.notifications.addEventListener("InspectorFrontendAPI.contextMenuCleared", this._menuCleared, this);
-                WebInspector.notifications.addEventListener("InspectorFrontendAPI.contextMenuItemSelected", this._onItemSelected, this);
+                InspectorFrontendHost.events.addEventListener(InspectorFrontendHostAPI.Events.ContextMenuCleared, this._menuCleared, this);
+                InspectorFrontendHost.events.addEventListener(InspectorFrontendHostAPI.Events.ContextMenuItemSelected, this._onItemSelected, this);
             }
             this._event.consume(true);
         }
@@ -260,7 +256,7 @@ WebInspector.ContextMenu.prototype = {
     },
 
     /**
-     * @return {!Array.<!WebInspector.ContextMenuItem.Descriptor>}
+     * @return {!Array.<!InspectorFrontendHostAPI.ContextMenuDescriptor>}
      */
     _buildDescriptor: function()
     {

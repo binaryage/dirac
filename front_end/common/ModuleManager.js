@@ -473,10 +473,8 @@ WebInspector.Revealer.reveal = function(revealable, lineNumber)
     if (!revealable)
         return;
     var revealer = WebInspector.moduleManager.instance(WebInspector.Revealer, revealable);
-    if (revealer) {
-        InspectorFrontendHost.bringToFront();
+    if (revealer)
         revealer.reveal(revealable, lineNumber);
-    }
 }
 
 WebInspector.Revealer.prototype = {

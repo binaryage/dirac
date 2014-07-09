@@ -7,7 +7,7 @@
  */
 WebInspector.ForwardedInputEventHandler = function()
 {
-    WebInspector.notifications.addEventListener("InspectorFrontendAPI.keyEventUnhandled", this._onKeyEventUnhandled, this);
+    InspectorFrontendHost.events.addEventListener(InspectorFrontendHostAPI.Events.KeyEventUnhandled, this._onKeyEventUnhandled, this);
 }
 
 WebInspector.ForwardedInputEventHandler.prototype = {

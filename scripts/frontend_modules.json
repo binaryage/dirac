@@ -12,20 +12,18 @@
             "common/NotificationService.js",
             "common/Object.js",
             "common/ParsedURL.js",
-            "common/Platform.js",
             "common/Progress.js",
             "common/Settings.js",
             "common/TextRange.js",
             "common/Throttler.js",
             "common/UIString.js",
-            "common/UserMetrics.js",
             "common/utilities.js",
             "common/WebInspector.js"
         ]
     },
     {
         "name": "sdk",
-        "dependencies": ["common"],
+        "dependencies": ["common", "host"],
         "sources": [
             "sdk/Target.js",
             "sdk/ApplicationCacheModel.js",
@@ -96,7 +94,7 @@
     },
     {
         "name": "ui",
-        "dependencies": ["common"],
+        "dependencies": ["common", "host"],
         "sources": [
             "ui/ActionRegistry.js",
             "ui/Checkbox.js",
@@ -433,11 +431,11 @@
     },
     {
         "name": "host",
-        "dependencies": ["components"],
+        "dependencies": ["common"],
         "sources": [
-            "host/InspectorFrontendAPI.js",
-            "host/InspectorFrontendEventSink.js",
-            "host/InspectorFrontendHostStub.js"
+            "host/InspectorFrontendHost.js",
+            "host/Platform.js",
+            "host/UserMetrics.js"
         ]
     },
     {

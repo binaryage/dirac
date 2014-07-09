@@ -65,7 +65,8 @@ WebInspector.InspectorView = function()
         this._remoteDeviceCountElement = this._rightToolbarElement.createChild("div", "hidden");
         this._remoteDeviceCountElement.addEventListener("click", this.showViewInDrawer.bind(this, "devices", true), false);
         this._remoteDeviceCountElement.id = "remote-device-count";
-        WebInspector.inspectorFrontendEventSink.addEventListener(WebInspector.InspectorView.Events.DeviceCountChanged, this._onDeviceCountChanged, this);
+        InspectorFrontendHost.setDeviceCountUpdatesEnabled(true);
+        InspectorFrontendHost.events.addEventListener(InspectorFrontendHostAPI.Events.DeviceCountUpdated, this._onDeviceCountUpdated, this);
     }
 
     this._errorWarningCountElement = this._rightToolbarElement.createChild("div", "hidden");
@@ -95,7 +96,7 @@ WebInspector.InspectorView = function()
 
     this._loadPanelDesciptors();
 
-    WebInspector.notifications.addEventListener("InspectorFrontendAPI.showConsole", this.showPanel.bind(this, "console"));
+    InspectorFrontendHost.events.addEventListener(InspectorFrontendHostAPI.Events.ShowConsole, this.showPanel.bind(this, "console"));
 };
 
 WebInspector.InspectorView.Events = {
@@ -488,7 +489,7 @@ WebInspector.InspectorView.prototype = {
     /**
      * @param {!WebInspector.Event} event
      */
-    _onDeviceCountChanged: function(event)
+    _onDeviceCountUpdated: function(event)
     {
         var count = /** @type {number} */ (event.data);
         if (count === this.deviceCount_)

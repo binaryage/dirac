@@ -564,7 +564,7 @@ InspectorBackendClass.MainConnection = function(onConnectionReady)
 {
     InspectorBackendClass.Connection.call(this);
     onConnectionReady(this);
-    WebInspector.notifications.addEventListener("InspectorFrontendAPI.dispatchMessage", this._dispatchMessage, this);
+    InspectorFrontendHost.events.addEventListener(InspectorFrontendHostAPI.Events.DispatchMessage, this._dispatchMessage, this);
 }
 
 InspectorBackendClass.MainConnection.prototype = {

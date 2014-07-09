@@ -41,9 +41,9 @@ WebInspector.IsolatedFileSystemManager = function()
     this._fileSystemMapping = new WebInspector.FileSystemMapping();
     this._requestFileSystems();
 
-    WebInspector.notifications.addEventListener("InspectorFrontendAPI.fileSystemsLoaded", this._onFileSystemsLoaded, this);
-    WebInspector.notifications.addEventListener("InspectorFrontendAPI.fileSystemRemoved", this._onFileSystemRemoved, this);
-    WebInspector.notifications.addEventListener("InspectorFrontendAPI.fileSystemAdded", this._onFileSystemAdded, this);
+    InspectorFrontendHost.events.addEventListener(InspectorFrontendHostAPI.Events.FileSystemsLoaded, this._onFileSystemsLoaded, this);
+    InspectorFrontendHost.events.addEventListener(InspectorFrontendHostAPI.Events.FileSystemRemoved, this._onFileSystemRemoved, this);
+    InspectorFrontendHost.events.addEventListener(InspectorFrontendHostAPI.Events.FileSystemAdded, this._onFileSystemAdded, this);
 }
 
 /** @typedef {!{fileSystemName: string, rootURL: string, fileSystemPath: string}} */

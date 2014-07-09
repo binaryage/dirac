@@ -36,9 +36,9 @@ WebInspector.FileManager = function()
 {
     /** @type {!Object.<string, ?function(boolean)>} */
     this._saveCallbacks = {};
-    WebInspector.notifications.addEventListener("InspectorFrontendAPI.savedURL", this._savedURL, this);
-    WebInspector.notifications.addEventListener("InspectorFrontendAPI.canceledSaveURL", this.canceledSaveURL, this);
-    WebInspector.notifications.addEventListener("InspectorFrontendAPI.appendedToURL", this._appendedToURL, this);
+    InspectorFrontendHost.events.addEventListener(InspectorFrontendHostAPI.Events.SavedURL, this._savedURL, this);
+    InspectorFrontendHost.events.addEventListener(InspectorFrontendHostAPI.Events.CanceledSaveURL, this._canceledSaveURL, this);
+    InspectorFrontendHost.events.addEventListener(InspectorFrontendHostAPI.Events.AppendedToURL, this._appendedToURL, this);
 }
 
 WebInspector.FileManager.EventTypes = {
@@ -99,7 +99,7 @@ WebInspector.FileManager.prototype = {
     /**
      * @param {!WebInspector.Event} event
      */
-    canceledSaveURL: function(event)
+    _canceledSaveURL: function(event)
     {
         var url = /** @type {string} */ (event.data);
         this._invokeSaveCallback(url, false);

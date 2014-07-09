@@ -124,7 +124,7 @@ WebInspector.Main.prototype = {
                 console.error(error);
                 return;
             }
-            InspectorFrontendHost.inspectedURLChanged(result.value);
+            InspectorFrontendHost.inspectedURLChanged(String(result.value));
         }
     },
 
@@ -232,7 +232,7 @@ WebInspector.Main.prototype = {
             return;
         }
 
-        if (!InspectorFrontendHost.isStub) {
+        if (!InspectorFrontendHost.isStub()) {
             new InspectorBackendClass.MainConnection(onConnectionReady);
             return;
         }
@@ -264,7 +264,7 @@ WebInspector.Main.prototype = {
 
         if (WebInspector.queryParam("toolbarColor") && WebInspector.queryParam("textColor"))
             WebInspector.setToolbarColors(WebInspector.queryParam("toolbarColor"), WebInspector.queryParam("textColor"));
-        WebInspector.notifications.addEventListener("InspectorFrontendAPI.setToolbarColors", updateToolbarColors);
+        InspectorFrontendHost.events.addEventListener(InspectorFrontendHostAPI.Events.SetToolbarColors, updateToolbarColors);
         /**
          * @param {!WebInspector.Event} event
          */
@@ -318,7 +318,6 @@ WebInspector.Main.prototype = {
 
         WebInspector.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.DebuggerPaused, this._debuggerPaused, this);
 
-        WebInspector.inspectorFrontendEventSink = new WebInspector.InspectorFrontendEventSink();
         InspectorBackend.registerInspectorDispatcher(this);
 
         if (Capabilities.isMainFrontend) {
@@ -727,7 +726,7 @@ WebInspector.Main.ZoomInActionDelegate.prototype = {
      */
     handleAction: function()
     {
-        if (InspectorFrontendHost.isStub)
+        if (InspectorFrontendHost.isStub())
             return false;
 
         InspectorFrontendHost.zoomIn();
@@ -749,7 +748,7 @@ WebInspector.Main.ZoomOutActionDelegate.prototype = {
      */
     handleAction: function()
     {
-        if (InspectorFrontendHost.isStub)
+        if (InspectorFrontendHost.isStub())
             return false;
 
         InspectorFrontendHost.zoomOut();
@@ -771,7 +770,7 @@ WebInspector.Main.ZoomResetActionDelegate.prototype = {
      */
     handleAction: function()
     {
-        if (InspectorFrontendHost.isStub)
+        if (InspectorFrontendHost.isStub())
             return false;
 
         InspectorFrontendHost.resetZoom();
