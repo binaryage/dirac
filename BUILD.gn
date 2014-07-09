@@ -127,7 +127,7 @@ action("generate_devtools_grd") {
   images = gypi_values.devtools_image_files
   images_path = "front_end/Images"
 
-  source_prereqs = input_pages + images
+  inputs = input_pages + images
 
   outfile = "$root_gen_dir/devtools/devtools_resources.grd"
   outputs = [ outfile ]
@@ -154,10 +154,10 @@ action("generate_devtools_grd") {
 action("devtools_html") {
   script = "scripts/generate_devtools_html.py"
 
-  source_prereqs = [ "front_end/inspector.html"]
+  inputs = [ "front_end/inspector.html"]
   outputs = [ "$root_out_dir/resources/inspector/devtools.html"]
 
-  args = rebase_path(source_prereqs, root_build_dir) +
+  args = rebase_path(inputs, root_build_dir) +
     rebase_path(outputs, root_build_dir)
 
   if (debug_devtools) {
@@ -170,7 +170,7 @@ action("devtools_html") {
 action("devtools_extension_api") {
   script = "scripts/generate_devtools_extension_api.py"
 
-  source_prereqs = gypi_values.devtools_extension_api_files
+  inputs = gypi_values.devtools_extension_api_files
   outputs = [ "$root_out_dir/resources/inspector/devtools_extension_api.js" ]
 
   args = rebase_path(outputs, root_build_dir) +
@@ -180,7 +180,7 @@ action("devtools_extension_api") {
 action("supported_css_properties") {
   script = "scripts/generate_supported_css.py"
 
-  source_prereqs = [
+  inputs = [
     "../core/css/CSSPropertyNames.in",
     "../core/css/SVGCSSPropertyNames.in",
     "../core/css/CSSShorthands.in",
@@ -190,17 +190,17 @@ action("supported_css_properties") {
     blink_devtools_output_dir + "SupportedCSSProperties.js"
   ]
 
-  args = rebase_path(source_prereqs, root_build_dir) +
+  args = rebase_path(inputs, root_build_dir) +
     rebase_path(outputs, root_build_dir)
 }
 
 action("frontend_protocol_sources") {
   script = "scripts/CodeGeneratorFrontend.py"
 
-  source_prereqs = [ "protocol.json" ]
+  inputs = [ "protocol.json" ]
   outputs = [ blink_devtools_output_dir + "InspectorBackendCommands.js" ]
 
-  args = rebase_path(source_prereqs, root_build_dir) + [
+  args = rebase_path(inputs, root_build_dir) + [
     "--output_js_dir", rebase_path(blink_devtools_output_dir, root_build_dir),
   ]
 }
@@ -217,7 +217,7 @@ template("inline_js_imports") {
   action(target_name) {
     script = "scripts/inline_js_imports.py"
 
-    source_prereqs = [ invoker.input ] + invoker.imported_files
+    inputs = [ invoker.input ] + invoker.imported_files
     outputs = [ invoker.output ]
 
     args = [
@@ -236,7 +236,7 @@ inline_js_imports("build_audits_module") {
 action("build_core_module") {
   script = "scripts/concatenate_js_files.py"
   input_page = "front_end/inspector.html"
-  source_prereqs = [
+  inputs = [
     input_page,
     blink_devtools_output_dir + "InspectorBackendCommands.js",
     blink_devtools_output_dir + "SupportedCSSProperties.js",
@@ -360,7 +360,7 @@ action("concatenated_module_descriptors") {
   script = "scripts/concatenate_module_descriptors.py"
 
   input = "front_end/common/modules.js"
-  source_prereqs = [ input ] + gypi_values.devtools_module_json_files
+  inputs = [ input ] + gypi_values.devtools_module_json_files
   outputs = [ blink_devtools_output_dir + "common/modules.js" ]
 
   args = rebase_path([ input ] + outputs + gypi_values.devtools_module_json_files, root_build_dir)
@@ -370,7 +370,7 @@ action("concatenated_devtools_css") {
   script = "scripts/concatenate_css_files.py"
 
   input_page = "front_end/inspector.html"
-  source_prereqs = [ input_page ] + all_devtools_files
+  inputs = [ input_page ] + all_devtools_files
   search_path = [ "front_end" ]
 
   outputs = [ "$root_out_dir/resources/inspector/inspector.css" ]
