@@ -213,6 +213,7 @@ WebInspector.TracingTimelineUIUtils._initEventStyles = function()
     eventStyles[recordTypes.Layout] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Layout"), categories["rendering"]);
     eventStyles[recordTypes.PaintSetup] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Paint Setup"), categories["painting"]);
     eventStyles[recordTypes.UpdateLayer] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Update Layer"), categories["painting"]);
+    eventStyles[recordTypes.UpdateLayerTree] = { title: WebInspector.UIString("Update Layer Tree"), category: categories["rendering"] };
     eventStyles[recordTypes.Paint] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Paint"), categories["painting"]);
     eventStyles[recordTypes.Rasterize] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Paint"), categories["painting"]);
     eventStyles[recordTypes.RasterTask] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Paint"), categories["painting"]);

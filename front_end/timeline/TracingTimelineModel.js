@@ -35,6 +35,7 @@ WebInspector.TracingTimelineModel.RecordType = {
     InvalidateLayout: "InvalidateLayout",
     Layout: "Layout",
     UpdateLayer: "UpdateLayer",
+    UpdateLayerTree: "UpdateLayerTree",
     PaintSetup: "PaintSetup",
     Paint: "Paint",
     PaintImage: "PaintImage",
