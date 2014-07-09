@@ -39,6 +39,7 @@ WebInspector.Layers3DView = function()
     this._initStatusBar();
     this._emptyView = new WebInspector.EmptyView(WebInspector.UIString("Not in the composited mode.\nConsider forcing composited mode in Settings."));
     this._canvasElement = this.element.createChild("canvas");
+    this._canvasElement.tabIndex = 0;
     this._transformController = new WebInspector.TransformController(this._canvasElement);
     this._transformController.addEventListener(WebInspector.TransformController.Events.TransformChanged, this._update, this);
     this._canvasElement.addEventListener("dblclick", this._onDoubleClick.bind(this), false);
@@ -157,14 +158,6 @@ WebInspector.Layers3DView.prototype = {
     showImageForLayer: function(layer, imageURL)
     {
         this.setTiles([{layerId: layer.id(), rect: [0, 0, layer.width(), layer.height()], imageURL: imageURL}]);
-    },
-
-    /**
-     * @param {function(!Array.<!WebInspector.KeyboardShortcut.Descriptor>, function(?Event=))} registerShortcutDelegate
-     */
-    registerShortcuts: function(registerShortcutDelegate)
-    {
-        this._transformController.registerShortcuts(registerShortcutDelegate);
     },
 
     onResize: function()

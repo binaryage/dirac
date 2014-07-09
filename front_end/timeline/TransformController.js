@@ -12,7 +12,10 @@
  */
 WebInspector.TransformController = function(element, disableRotate)
 {
+    this._shortcuts = {};
     this.element = element;
+    this._registerShortcuts();
+    element.addEventListener("keydown", this._onKeyDown.bind(this), false);
     element.addEventListener("mousemove", this._onMouseMove.bind(this), false);
     element.addEventListener("mousedown", this._onMouseDown.bind(this), false);
     element.addEventListener("mouseup", this._onMouseUp.bind(this), false);
@@ -29,25 +32,35 @@ WebInspector.TransformController.Events = {
 }
 
 WebInspector.TransformController.prototype = {
-    /**
-     * @param {function(!Array.<!WebInspector.KeyboardShortcut.Descriptor>, function(?Event=))} registerShortcutDelegate
-     */
-    registerShortcuts: function(registerShortcutDelegate)
+    _onKeyDown: function(event)
     {
-        registerShortcutDelegate(WebInspector.ShortcutsScreen.LayersPanelShortcuts.ResetView, this.resetAndNotify.bind(this));
+        var shortcutKey = WebInspector.KeyboardShortcut.makeKeyFromEvent(event);
+        var handler = this._shortcuts[shortcutKey];
+        event.handled = handler && handler(event);
+    },
+
+    _addShortcuts: function(keys, handler)
+    {
+        for (var i = 0; i < keys.length; ++i)
+            this._shortcuts[keys[i].key] = handler;
+    },
+
+    _registerShortcuts: function()
+    {
+        this._addShortcuts(WebInspector.ShortcutsScreen.LayersPanelShortcuts.ResetView, this.resetAndNotify.bind(this));
         var zoomFactor = 1.1;
-        registerShortcutDelegate(WebInspector.ShortcutsScreen.LayersPanelShortcuts.ZoomIn, this._onKeyboardZoom.bind(this, zoomFactor));
-        registerShortcutDelegate(WebInspector.ShortcutsScreen.LayersPanelShortcuts.ZoomOut, this._onKeyboardZoom.bind(this, 1 / zoomFactor));
+        this._addShortcuts(WebInspector.ShortcutsScreen.LayersPanelShortcuts.ZoomIn, this._onKeyboardZoom.bind(this, zoomFactor));
+        this._addShortcuts(WebInspector.ShortcutsScreen.LayersPanelShortcuts.ZoomOut, this._onKeyboardZoom.bind(this, 1 / zoomFactor));
         var panDistanceInPixels = 6;
-        registerShortcutDelegate(WebInspector.ShortcutsScreen.LayersPanelShortcuts.PanUp, this._onPan.bind(this, 0, -panDistanceInPixels));
-        registerShortcutDelegate(WebInspector.ShortcutsScreen.LayersPanelShortcuts.PanDown, this._onPan.bind(this, 0, panDistanceInPixels));
-        registerShortcutDelegate(WebInspector.ShortcutsScreen.LayersPanelShortcuts.PanLeft, this._onPan.bind(this, -panDistanceInPixels, 0));
-        registerShortcutDelegate(WebInspector.ShortcutsScreen.LayersPanelShortcuts.PanRight, this._onPan.bind(this, panDistanceInPixels, 0));
+        this._addShortcuts(WebInspector.ShortcutsScreen.LayersPanelShortcuts.PanUp, this._onPan.bind(this, 0, -panDistanceInPixels));
+        this._addShortcuts(WebInspector.ShortcutsScreen.LayersPanelShortcuts.PanDown, this._onPan.bind(this, 0, panDistanceInPixels));
+        this._addShortcuts(WebInspector.ShortcutsScreen.LayersPanelShortcuts.PanLeft, this._onPan.bind(this, -panDistanceInPixels, 0));
+        this._addShortcuts(WebInspector.ShortcutsScreen.LayersPanelShortcuts.PanRight, this._onPan.bind(this, panDistanceInPixels, 0));
         var rotateDegrees = 5;
-        registerShortcutDelegate(WebInspector.ShortcutsScreen.LayersPanelShortcuts.RotateCWX, this._onKeyboardRotate.bind(this, rotateDegrees, 0));
-        registerShortcutDelegate(WebInspector.ShortcutsScreen.LayersPanelShortcuts.RotateCCWX, this._onKeyboardRotate.bind(this, -rotateDegrees, 0));
-        registerShortcutDelegate(WebInspector.ShortcutsScreen.LayersPanelShortcuts.RotateCWY, this._onKeyboardRotate.bind(this, 0, -rotateDegrees));
-        registerShortcutDelegate(WebInspector.ShortcutsScreen.LayersPanelShortcuts.RotateCCWY, this._onKeyboardRotate.bind(this, 0, rotateDegrees));
+        this._addShortcuts(WebInspector.ShortcutsScreen.LayersPanelShortcuts.RotateCWX, this._onKeyboardRotate.bind(this, rotateDegrees, 0));
+        this._addShortcuts(WebInspector.ShortcutsScreen.LayersPanelShortcuts.RotateCCWX, this._onKeyboardRotate.bind(this, -rotateDegrees, 0));
+        this._addShortcuts(WebInspector.ShortcutsScreen.LayersPanelShortcuts.RotateCWY, this._onKeyboardRotate.bind(this, 0, -rotateDegrees));
+        this._addShortcuts(WebInspector.ShortcutsScreen.LayersPanelShortcuts.RotateCCWY, this._onKeyboardRotate.bind(this, 0, rotateDegrees));
     },
 
     _postChangeEvent: function()
