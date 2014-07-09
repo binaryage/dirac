@@ -1185,8 +1185,10 @@ WebInspector.DataGrid.prototype = {
         if (!this.element.offsetWidth)
             return 0;
         for (var i = 1; i < this._visibleColumnsArray.length; ++i) {
-            if (columnId === this._visibleColumnsArray[i].identifier)
-                return this._resizers[i - 1].__position;
+            if (columnId === this._visibleColumnsArray[i].identifier) {
+                if (this._resizers[i - 1])
+                    return this._resizers[i - 1].__position;
+            }
         }
         return 0;
     },
