@@ -796,6 +796,7 @@ WebInspector.BreakpointManager.TargetBreakpoint.prototype = {
 
     _didRemoveFromDebugger: function()
     {
+        this._resetLocations();
         this.target().debuggerModel.removeBreakpointListener(this._debuggerId, this._breakpointResolved, this);
         delete this._debuggerId;
     },
