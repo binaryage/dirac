@@ -1790,7 +1790,7 @@ li.editing-sub-part .delete-button {
 
 .section .properties li.editing-sub-part {
     padding: 3px 6px 8px 18px;
-    margin: -3px -6px -8px -6px;
+    margin: -1px -6px -8px -6px;
     text-overflow: clip;
 }
 
