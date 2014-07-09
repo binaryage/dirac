@@ -4,7 +4,7 @@
  * found in the LICENSE file.
  */
 
-self.WebInspector = {
+window.WebInspector = {
     _queryParamsObject: {}
 }
 
@@ -23,7 +23,7 @@ WebInspector.queryParam = function(name)
 
 {(function parseQueryParameters()
 {
-    var queryParams = location.search;
+    var queryParams = window.location.search;
     if (!queryParams)
         return;
     var params = queryParams.substring(1).split("&");

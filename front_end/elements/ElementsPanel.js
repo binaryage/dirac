@@ -33,6 +33,7 @@ importScript("DOMSyntaxHighlighter.js");
 importScript("ElementsTreeOutline.js");
 importScript("EventListenersSidebarPane.js");
 importScript("MetricsSidebarPane.js");
+importScript("OverridesView.js");
 importScript("PlatformFontsSidebarPane.js");
 importScript("PropertiesSidebarPane.js");
 importScript("RenderingOptionsView.js");
