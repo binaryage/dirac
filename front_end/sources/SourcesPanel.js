@@ -49,6 +49,11 @@ importScript("InplaceFormatterEditorAction.js");
 importScript("ScriptFormatter.js");
 importScript("SourcesView.js");
 
+// Search results pane
+importScript("AdvancedSearchView.js");
+importScript("FileBasedSearchResultsPane.js");
+importScript("SourcesSearchScope.js");
+
 /**
  * @constructor
  * @implements {WebInspector.ContextMenu.Provider}

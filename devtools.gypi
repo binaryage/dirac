@@ -237,7 +237,6 @@
             'front_end/network/module.json',
             'front_end/profiler/module.json',
             'front_end/resources/module.json',
-            'front_end/search/module.json',
             'front_end/settings/module.json',
             'front_end/source_frame/module.json',
             'front_end/sources/module.json',
@@ -287,11 +286,6 @@
             'front_end/console/ConsolePanel.js',
             'front_end/console/ConsoleView.js',
             'front_end/console/ConsoleViewMessage.js',
-        ],
-        'devtools_search_js_files': [
-            'front_end/search/AdvancedSearchView.js',
-            'front_end/search/FileBasedSearchResultsPane.js',
-            'front_end/search/SourcesSearchScope.js',
         ],
         'devtools_devices_js_files': [
             'front_end/devices/DevicesView.js',
@@ -357,10 +351,12 @@
             'front_end/network/NetworkPanel.js',
         ],
         'devtools_sources_js_files': [
+            'front_end/sources/AdvancedSearchView.js',
             'front_end/sources/BreakpointsSidebarPane.js',
             'front_end/sources/CSSSourceFrame.js',
             'front_end/sources/CallStackSidebarPane.js',
             'front_end/sources/EditingLocationHistoryManager.js',
+            'front_end/sources/FileBasedSearchResultsPane.js',
             'front_end/sources/FilePathScoreFunction.js',
             'front_end/sources/FilteredItemSelectionDialog.js',
             'front_end/sources/InplaceFormatterEditorAction.js',
@@ -375,6 +371,7 @@
             'front_end/sources/SimpleHistoryManager.js',
             'front_end/sources/SourcesNavigator.js',
             'front_end/sources/SourcesPanel.js',
+            'front_end/sources/SourcesSearchScope.js',
             'front_end/sources/SourcesView.js',
             'front_end/sources/StyleSheetOutlineDialog.js',
             'front_end/sources/TabbedEditorContainer.js',
@@ -474,7 +471,6 @@
         ],
         'devtools_modules_js_files': [
             '<@(devtools_console_js_files)',
-            '<@(devtools_search_js_files)',
             '<@(devtools_devices_js_files)',
             '<@(devtools_elements_js_files)',
             '<@(devtools_extensions_js_files)',

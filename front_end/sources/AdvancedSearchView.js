@@ -49,6 +49,9 @@ WebInspector.AdvancedSearchView = function()
 
     WebInspector.settings.advancedSearchConfig = WebInspector.settings.createSetting("advancedSearchConfig", new WebInspector.SearchConfig("", true, false).toPlainObject());
     this._load();
+    WebInspector.AdvancedSearchView._instance = this;
+    /** @type {!WebInspector.SearchScope} */
+    this._searchScope = new WebInspector.SourcesSearchScope();
 }
 
 WebInspector.AdvancedSearchView.prototype = {
@@ -60,15 +63,11 @@ WebInspector.AdvancedSearchView.prototype = {
         return new WebInspector.SearchConfig(this._search.value, this._ignoreCaseCheckbox.checked, this._regexCheckbox.checked);
     },
 
-    toggle: function()
+    /**
+     * @param {string} queryCandidate
+     */
+    _toggle: function(queryCandidate)
     {
-        var selection = window.getSelection();
-        var queryCandidate;
-        if (selection.rangeCount)
-            queryCandidate = selection.toString().replace(/\r?\n.*/, "");
-
-        if (!this.isShowing())
-            WebInspector.inspectorView.showViewInDrawer("search");
         if (queryCandidate)
             this._search.value = queryCandidate;
         this.focus();
@@ -95,13 +94,11 @@ WebInspector.AdvancedSearchView.prototype = {
     _startIndexing: function()
     {
         this._isIndexing = true;
-        // FIXME: this._currentSearchScope should be initialized based on searchConfig
-        this._currentSearchScope = this._searchScopes()[0];
         if (this._progressIndicator)
             this._progressIndicator.done();
         this._progressIndicator = new WebInspector.ProgressIndicator();
         this._indexingStarted(this._progressIndicator);
-        this._currentSearchScope.performIndexing(this._progressIndicator, this._onIndexingFinished.bind(this));
+        this._searchScope.performIndexing(this._progressIndicator, this._onIndexingFinished.bind(this));
     },
 
     /**
@@ -116,7 +113,7 @@ WebInspector.AdvancedSearchView.prototype = {
         if (!searchResult.searchMatches.length)
             return;
         if (!this._searchResultsPane)
-            this._searchResultsPane = this._currentSearchScope.createSearchResultsPane(this._searchConfig);
+            this._searchResultsPane = this._searchScope.createSearchResultsPane(this._searchConfig);
         this._resetResults();
         this._searchResultsElement.appendChild(this._searchResultsPane.element);
         this._searchResultsPane.addSearchResult(searchResult);
@@ -154,14 +151,11 @@ WebInspector.AdvancedSearchView.prototype = {
     _innerStartSearch: function(searchConfig)
     {
         this._searchConfig = searchConfig;
-        // FIXME: this._currentSearchScope should be initialized based on searchConfig
-        this._currentSearchScope = this._searchScopes()[0];
-
         if (this._progressIndicator)
             this._progressIndicator.done();
         this._progressIndicator = new WebInspector.ProgressIndicator();
         this._searchStarted(this._progressIndicator);
-        this._currentSearchScope.performSearch(searchConfig, this._progressIndicator, this._onSearchResult.bind(this, this._searchId), this._onSearchFinished.bind(this, this._searchId));
+        this._searchScope.performSearch(searchConfig, this._progressIndicator, this._onSearchResult.bind(this, this._searchId), this._onSearchFinished.bind(this, this._searchId));
     },
 
     _resetSearch: function()
@@ -178,18 +172,9 @@ WebInspector.AdvancedSearchView.prototype = {
     {
         if (this._progressIndicator)
             this._progressIndicator.cancel();
-        if (this._currentSearchScope)
-            this._currentSearchScope.stopSearch();
+        if (this._searchScope)
+            this._searchScope.stopSearch();
         delete this._searchConfig;
-    },
-
-    /**
-     * @return {!Array.<!WebInspector.SearchScope>}
-     */
-    _searchScopes: function()
-    {
-        // FIXME: implement multiple search scopes.
-        return /** @type {!Array.<!WebInspector.SearchScope>} */ (WebInspector.moduleManager.instances(WebInspector.SearchScope));
     },
 
     /**
@@ -368,36 +353,22 @@ WebInspector.AdvancedSearchView.ToggleDrawerViewActionDelegate.prototype = {
      */
     handleAction: function()
     {
-        var searchView = this._searchView();
-        if (!searchView)
-            return false;
-        if (!searchView.isShowing() || searchView._search !== document.activeElement) {
+        var searchView = WebInspector.AdvancedSearchView._instance;
+        if (!searchView || !searchView.isShowing() || searchView._search !== document.activeElement) {
+            var selection = window.getSelection();
+            var queryCandidate = "";
+            if (selection.rangeCount)
+                queryCandidate = selection.toString().replace(/\r?\n.*/, "");
+
             WebInspector.inspectorView.showPanel("sources");
-            searchView.toggle();
+            WebInspector.inspectorView.showViewInDrawer("sources.search");
+            WebInspector.AdvancedSearchView._instance._toggle(queryCandidate);
         } else {
             WebInspector.inspectorView.closeDrawer();
         }
         return true;
-    },
-
-    /**
-     * @return {?WebInspector.AdvancedSearchView}
-     */
-    _searchView: function()
-    {
-        if (!this._view) {
-            var extensions = WebInspector.moduleManager.extensions("drawer-view");
-            for (var i = 0; i < extensions.length; ++i) {
-                if (extensions[i].descriptor()["name"] === "search") {
-                    this._view = extensions[i].instance();
-                    break;
-                }
-            }
-        }
-        return this._view;
     }
 }
-
 
 /**
  * @constructor
@@ -439,6 +410,3 @@ WebInspector.SearchScope.prototype = {
      */
     createSearchResultsPane: function(searchConfig) { }
 }
-
-importScript("FileBasedSearchResultsPane.js");
-importScript("SourcesSearchScope.js");

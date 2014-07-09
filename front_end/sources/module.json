@@ -8,6 +8,13 @@
             "className": "WebInspector.SourcesPanel"
         },
         {
+            "type": "drawer-view",
+            "name": "sources.search",
+            "title": "Search",
+            "order": "1",
+            "className": "WebInspector.AdvancedSearchView"
+        },
+        {
             "type": "@WebInspector.ContextMenu.Provider",
             "contextTypes": ["WebInspector.UISourceCode", "WebInspector.RemoteObject"],
             "className": "WebInspector.SourcesPanel.ContextMenuProvider"
@@ -29,8 +36,19 @@
             ]
         },
         {
-            "type": "@WebInspector.SearchScope",
-            "className": "WebInspector.SourcesSearchScope"
+            "type": "@WebInspector.ActionDelegate",
+            "actionId": "sources.search.toggle",
+            "className": "WebInspector.AdvancedSearchView.ToggleDrawerViewActionDelegate",
+            "bindings": [
+                {
+                    "platform": "mac",
+                    "shortcut": "Meta+Alt+F"
+                },
+                {
+                    "platform": "windows,linux",
+                    "shortcut": "Ctrl+Shift+F"
+                }
+            ]
         },
         {
             "type": "@WebInspector.DrawerEditor",

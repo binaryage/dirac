@@ -256,15 +256,6 @@
         ]
     },
     {
-        "name": "search",
-        "dependencies": ["components"],
-        "sources": [
-            "search/AdvancedSearchView.js",
-            "search/FileBasedSearchResultsPane.js",
-            "search/SourcesSearchScope.js"
-        ]
-    },
-    {
         "name": "devices",
         "dependencies": ["sdk", "ui"],
         "sources": [
@@ -275,10 +266,12 @@
         "name": "sources",
         "dependencies": ["components", "source_frame"],
         "sources": [
+            "sources/AdvancedSearchView.js",
             "sources/BreakpointsSidebarPane.js",
             "sources/CSSSourceFrame.js",
             "sources/CallStackSidebarPane.js",
             "sources/EditingLocationHistoryManager.js",
+            "sources/FileBasedSearchResultsPane.js",
             "sources/FilePathScoreFunction.js",
             "sources/FilteredItemSelectionDialog.js",
             "sources/JavaScriptSourceFrame.js",
@@ -288,9 +281,10 @@
             "sources/ScopeChainSidebarPane.js",
             "sources/ScriptFormatter.js",
             "sources/SimpleHistoryManager.js",
-            "sources/SourcesView.js",
             "sources/SourcesNavigator.js",
+            "sources/SourcesSearchScope.js",
             "sources/SourcesPanel.js",
+            "sources/SourcesView.js",
             "sources/StyleSheetOutlineDialog.js",
             "sources/TabbedEditorContainer.js",
             "sources/UISourceCodeFrame.js",

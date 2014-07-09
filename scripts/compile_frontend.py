@@ -70,7 +70,6 @@ except:
 # except module headers. Refer to devtools.gyp file for
 # the module header list.
 allowed_import_statements_files = [
-    "search/AdvancedSearchView.js",
     "console/ConsolePanel.js",
     "elements/ElementsPanel.js",
     "resources/ResourcesPanel.js",

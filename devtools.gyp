@@ -53,7 +53,6 @@
                 'build_network_module',
                 'build_profiler_module',
                 'build_resources_module',
-                'build_search_module',
                 'build_settings_module',
                 'build_source_frame_module',
                 'build_sources_module',
@@ -128,7 +127,6 @@
                         'input_pages': [
                             '<(PRODUCT_DIR)/resources/inspector/devtools.html',
                             '<(PRODUCT_DIR)/resources/inspector/main/Main.js',
-                            '<(PRODUCT_DIR)/resources/inspector/search/AdvancedSearchView.js',
                             '<(PRODUCT_DIR)/resources/inspector/console/ConsolePanel.js',
                             '<(PRODUCT_DIR)/resources/inspector/elements/ElementsPanel.js',
                             '<(PRODUCT_DIR)/resources/inspector/extensions/ExtensionServer.js',
@@ -360,36 +358,6 @@
                             'files': [
                                 '<@(devtools_console_js_files)',
                                 'front_end/console/module.json',
-                            ],
-                        }
-                    ]
-                }]
-            ]
-        },
-        {
-            'target_name': 'build_search_module',
-            'type': 'none',
-            'conditions': [
-                ['debug_devtools==0', { # Release
-                    'actions': [{
-                        'action_name': 'build_search_module',
-                        'script_name': 'scripts/inline_js_imports.py',
-                        'input_file': 'front_end/search/AdvancedSearchView.js',
-                        'inputs': [
-                            '<@(_script_name)',
-                            '<@(devtools_search_js_files)',
-                        ],
-                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/search/AdvancedSearchView.js'],
-                        'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
-                    }],
-                },
-                { # Debug
-                    'copies': [
-                        {
-                            'destination': '<(PRODUCT_DIR)/resources/inspector/search',
-                            'files': [
-                                '<@(devtools_search_js_files)',
-                                'front_end/search/module.json',
                             ],
                         }
                     ]

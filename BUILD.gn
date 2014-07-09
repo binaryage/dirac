@@ -31,7 +31,6 @@ devtools_extensions_js_files = gypi_values.devtools_extensions_js_files -
 
 devtools_modules_js_files =
   gypi_values.devtools_console_js_files +
-  gypi_values.devtools_search_js_files +
   gypi_values.devtools_devices_js_files +
   gypi_values.devtools_elements_js_files +
   devtools_extensions_js_files +
@@ -77,7 +76,6 @@ group("devtools_frontend_resources") {
     ":build_profiler_module",
     ":build_resources_module",
     ":build_script_formatter_worker_module",
-    ":build_search_module",
     ":build_settings_module",
     ":build_source_frame_module",
     ":build_sources_module",
@@ -106,7 +104,6 @@ action("generate_devtools_grd") {
   input_pages = [
     "$root_out_dir/resources/inspector/devtools.html",
     "$root_out_dir/resources/inspector/main/Main.js",
-    "$root_out_dir/resources/inspector/search/AdvancedSearchView.js",
     "$root_out_dir/resources/inspector/console/ConsolePanel.js",
     "$root_out_dir/resources/inspector/elements/ElementsPanel.js",
     "$root_out_dir/resources/inspector/extensions/ExtensionServer.js",
@@ -313,12 +310,6 @@ inline_js_imports("build_resources_module") {
   input = "front_end/resources/ResourcesPanel.js"
   imported_files = gypi_values.devtools_resources_js_files
   output = "$root_out_dir/resources/inspector/resources/ResourcesPanel.js"
-}
-
-inline_js_imports("build_search_module") {
-  input = "front_end/search/AdvancedSearchView.js"
-  imported_files = gypi_values.devtools_search_js_files
-  output = "$root_out_dir/resources/inspector/search/AdvancedSearchView.js"
 }
 
 inline_js_imports("build_settings_module") {
