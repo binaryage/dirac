@@ -116,6 +116,18 @@
             ]
         },
         {
+            "type": "drawer-view",
+            "name": "emulation",
+            "title": "Emulation",
+            "order": "10",
+            "className": "WebInspector.OverridesView"
+        },
+        {
+            "type": "@WebInspector.Revealer",
+            "contextTypes": ["WebInspector.OverridesSupport"],
+            "className": "WebInspector.OverridesView.Revealer"
+        },
+        {
             "type": "@WebInspector.StatusBarButton.Provider",
             "className": "WebInspector.InspectElementModeController.ToggleButtonProvider",
             "location": "toolbar-left",

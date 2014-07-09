@@ -6,7 +6,6 @@
             "common/modules.js",
             "common/Color.js",
             "common/CompletionDictionary.js",
-            "common/DOMExtension.js",
             "common/Geometry.js",
             "common/MessageSink.js",
             "common/ModuleManager.js",
@@ -105,6 +104,7 @@
             "ui/ContextMenu.js",
             "ui/DataGrid.js",
             "ui/Dialog.js",
+            "ui/DOMExtension.js",
             "ui/DropDownMenu.js",
             "ui/EmptyView.js",
             "ui/ForwardedInputEventHandler.js",
@@ -179,6 +179,7 @@
         "sources": [
             "toolbox/InspectedPagePlaceholder.js",
             "toolbox/MediaQueryInspector.js",
+            "toolbox/OverridesUI.js",
             "toolbox/ResponsiveDesignView.js"
         ]
     },
@@ -204,7 +205,6 @@
             "elements/ElementsTreeOutline.js",
             "elements/EventListenersSidebarPane.js",
             "elements/MetricsSidebarPane.js",
-            "elements/OverridesView.js",
             "elements/PlatformFontsSidebarPane.js",
             "elements/PropertiesSidebarPane.js",
             "elements/Spectrum.js",
@@ -466,6 +466,7 @@
             "main/AdvancedApp.js",
             "main/App.js",
             "main/HelpScreenUntilReload.js",
+            "main/OverridesView.js",
             "main/ScreencastApp.js",
             "main/SimpleApp.js",
             "main/Main.js"

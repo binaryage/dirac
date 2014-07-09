@@ -213,7 +213,7 @@ WebInspector.OverridesView.DeviceTab.prototype = {
         fieldsetElement.id = "metrics-override-section";
 
         fieldsetElement.createChild("span").textContent = WebInspector.UIString("Model:");
-        fieldsetElement.appendChild(WebInspector.overridesSupport.createDeviceSelect(document));
+        fieldsetElement.appendChild(WebInspector.OverridesUI.createDeviceSelect(document));
 
         var emulateResolutionCheckbox = WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Emulate screen resolution"), WebInspector.overridesSupport.settings.emulateResolution, true);
         fieldsetElement.appendChild(emulateResolutionCheckbox);
@@ -335,7 +335,7 @@ WebInspector.OverridesView.NetworkTab.prototype = {
         var fieldsetElement = this.element.createChild("fieldset");
         fieldsetElement.createChild("span").textContent = WebInspector.UIString("Limit network throughput:");
         fieldsetElement.createChild("br");
-        fieldsetElement.appendChild(WebInspector.overridesSupport.createNetworkConditionsSelect(document));
+        fieldsetElement.appendChild(WebInspector.OverridesUI.createNetworkConditionsSelect(document));
 
         WebInspector.overridesSupport.settings.networkConditions.addChangeListener(this.updateActiveState, this);
     },
