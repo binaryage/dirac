@@ -318,6 +318,12 @@
                             ],
                         },
                         {
+                            'destination': '<(PRODUCT_DIR)/resources/inspector/host',
+                            'files': [
+                                '<@(devtools_host_js_files)',
+                            ],
+                        },
+                        {
                             'destination': '<(PRODUCT_DIR)/resources/inspector/toolbox',
                             'files': [
                                 '<@(devtools_toolbox_js_files)',

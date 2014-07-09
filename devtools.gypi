@@ -39,14 +39,12 @@
             '<@(devtools_sdk_js_files)',
             '<@(devtools_ui_js_files)',
             '<@(devtools_components_js_files)',
+            '<@(devtools_host_js_files)',
             '<@(devtools_toolbox_js_files)',
         ],
         'devtools_core_base_files': [
             'front_end/inspector.html',
             'front_end/Tests.js',
-            'front_end/InspectorFrontendAPI.js',
-            'front_end/InspectorFrontendEventSink.js',
-            'front_end/InspectorFrontendHostStub.js',
             'front_end/ScreencastView.js',
             'front_end/TestController.js',
             'front_end/dialog.css',
@@ -210,6 +208,11 @@
             'front_end/components/ShortcutsScreen.js',
             'front_end/components/TimelineGrid.js',
             'front_end/components/WorkerFrontendManager.js',
+        ],
+        'devtools_host_js_files': [
+            'front_end/host/InspectorFrontendAPI.js',
+            'front_end/host/InspectorFrontendEventSink.js',
+            'front_end/host/InspectorFrontendHostStub.js',
         ],
         'devtools_toolbox_js_files': [
             'front_end/toolbox/InspectedPagePlaceholder.js',

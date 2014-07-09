@@ -432,12 +432,12 @@
         ]
     },
     {
-        "name": "host_stub",
-        "dependencies": ["components", "profiler", "timeline", "sources"],
+        "name": "host",
+        "dependencies": ["components"],
         "sources": [
-            "InspectorFrontendAPI.js",
-            "InspectorFrontendEventSink.js",
-            "InspectorFrontendHostStub.js"
+            "host/InspectorFrontendAPI.js",
+            "host/InspectorFrontendEventSink.js",
+            "host/InspectorFrontendHostStub.js"
         ]
     },
     {
@@ -455,7 +455,7 @@
         "name": "main",
         "dependencies": [
             "elements",
-            "host_stub",
+            "host",
             "screencast",
             "settings",
             "sources",
@@ -493,7 +493,7 @@
             "settings",
             "tests",
             "profiler",
-            "host_stub",
+            "host",
             "screencast",
             "main"
         ],
