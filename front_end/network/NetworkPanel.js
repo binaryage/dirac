@@ -63,14 +63,14 @@ WebInspector.NetworkLogView = function(filterBar, coulmnsVisibilitySetting)
     this._staleRequestIds = {};
     this._mainRequestLoadTime = -1;
     this._mainRequestDOMContentLoadedTime = -1;
-    this._matchedRequests = [];
+    this._matchedRequestCount = 0;
     this._highlightedSubstringChanges = [];
     this._filteredOutRequests = new Map();
 
     /** @type {!Array.<!WebInspector.NetworkLogView.Filter>} */
     this._filters = [];
 
-    this._matchedRequestsMap = {};
+    this._currentMatchedRequestNode = null;
     this._currentMatchedRequestIndex = -1;
 
     this._createStatusbarButtons();
@@ -187,7 +187,6 @@ WebInspector.NetworkLogView.prototype = {
     _filterChanged: function(event)
     {
         this._removeAllNodeHighlights();
-        this.searchCanceled();
         this._parseFilterQuery(this._textFilterUI.value());
         this._filterRequests();
     },
@@ -490,9 +489,8 @@ WebInspector.NetworkLogView.prototype = {
             return;
 
         this._dataGrid.sortNodes(sortingFunction, !this._dataGrid.isSortOrderAscending());
+        this._highlightNthMatchedRequestForSearch(this._updateMatchCountAndFindMatchIndex(this._currentMatchedRequestNode), false);
         this._timelineSortSelector.selectedIndex = 0;
-
-        this.searchCanceled();
 
         WebInspector.notifications.dispatchEventToListeners(WebInspector.UserMetrics.UserAction, {
             action: WebInspector.UserMetrics.UserActionNames.NetworkSort,
@@ -512,6 +510,7 @@ WebInspector.NetworkLogView.prototype = {
 
         var sortingFunction = this._sortingFunctions[value];
         this._dataGrid.sortNodes(sortingFunction);
+        this._highlightNthMatchedRequestForSearch(this._updateMatchCountAndFindMatchIndex(this._currentMatchedRequestNode), false);
         this.calculator = this._calculators[value];
         if (this.calculator.startAtZero)
             this._timelineGrid.hideEventDividers();
@@ -764,12 +763,12 @@ WebInspector.NetworkLogView.prototype = {
             this._applyFilter(node);
 
             var request = node._request;
+            node._isMatchingSearchQuery = this._matchRequest(request);
             if (this.calculator.updateBoundaries(request))
                 boundariesChanged = true;
-
-            if (!node.isFilteredOut())
-                this._updateHighlightIfMatched(request);
         }
+
+        this._highlightNthMatchedRequestForSearch(this._updateMatchCountAndFindMatchIndex(this._currentMatchedRequestNode), false);
 
         if (boundariesChanged) {
             // The boundaries changed, so all item graphs are stale.
@@ -841,10 +840,8 @@ WebInspector.NetworkLogView.prototype = {
         // In case of redirect request id is reassigned to a redirected
         // request and we need to update _nodesByRequestId and search results.
         var originalRequestNode = this._nodesByRequestId.get(request.requestId);
-        if (originalRequestNode) {
+        if (originalRequestNode)
             this._nodesByRequestId.put(originalRequestNode._request.requestId, originalRequestNode);
-            this._updateSearchMatchedListAfterRequestIdChanged(request.requestId, originalRequestNode._request.requestId);
-        }
         this._nodesByRequestId.put(request.requestId, node);
 
         // Pull all the redirects of the main request upon commit load.
@@ -1242,59 +1239,21 @@ WebInspector.NetworkLogView.prototype = {
 
     /**
      * @param {!WebInspector.NetworkRequest} request
-     * @return {number}
+     * @return {boolean}
      */
     _matchRequest: function(request)
     {
-        if (!this._searchRegExp)
-            return -1;
-
-        if (!request.name().match(this._searchRegExp) && !request.path().match(this._searchRegExp))
-            return -1;
-
-        if (request.requestId in this._matchedRequestsMap)
-            return this._matchedRequestsMap[request.requestId];
-
-        var matchedRequestIndex = this._matchedRequests.length;
-        this._matchedRequestsMap[request.requestId] = matchedRequestIndex;
-        this._matchedRequests.push(request.requestId);
-
-        return matchedRequestIndex;
+        var re = this._searchRegExp;
+        if (!re)
+            return false;
+        return re.test(request.name()) || re.test(request.path());
     },
 
     _clearSearchMatchedList: function()
     {
-        delete this._searchRegExp;
-        this._matchedRequests = [];
-        this._matchedRequestsMap = {};
+        this._matchedRequestCount = -1;
+        this._currentMatchedRequestNode = null;
         this._removeAllHighlights();
-    },
-
-    _updateSearchMatchedListAfterRequestIdChanged: function(oldRequestId, newRequestId)
-    {
-        var requestIndex = this._matchedRequestsMap[oldRequestId];
-        if (requestIndex) {
-            delete this._matchedRequestsMap[oldRequestId];
-            this._matchedRequestsMap[newRequestId] = requestIndex;
-            this._matchedRequests[requestIndex] = newRequestId;
-        }
-    },
-
-    /**
-     * @param {!WebInspector.NetworkRequest} request
-     */
-    _updateHighlightIfMatched: function(request)
-    {
-        var matchedRequestIndex = this._matchRequest(request);
-        if (matchedRequestIndex === -1)
-            return;
-
-        this.dispatchEventToListeners(WebInspector.NetworkLogView.EventTypes.SearchCountUpdated, this._matchedRequests.length);
-
-        if (this._currentMatchedRequestIndex !== -1 && this._currentMatchedRequestIndex !== matchedRequestIndex)
-            return;
-
-        this._highlightNthMatchedRequestForSearch(matchedRequestIndex, false);
     },
 
     _removeAllHighlights: function()
@@ -1306,14 +1265,33 @@ WebInspector.NetworkLogView.prototype = {
     },
 
     /**
-     * @param {!WebInspector.NetworkDataGridNode} node
+     * @param {number} n
      * @param {boolean} reveal
-     * @param {!RegExp=} regExp
      */
-    _highlightMatchedNode: function(node, reveal, regExp)
+    _highlightNthMatchedRequestForSearch: function(n, reveal)
     {
-        var request = node._request;
+        this._removeAllHighlights();
 
+        /** @type {!Array.<!WebInspector.NetworkDataGridNode>} */
+        var nodes = this._dataGrid.rootNode().children;
+        var matchCount = 0;
+        var node = null;
+        for (var i = 0; i < nodes.length; ++i) {
+            if (!nodes[i].isFilteredOut() && nodes[i]._isMatchingSearchQuery) {
+                if (matchCount === n) {
+                    node = nodes[i];
+                    break;
+                }
+                matchCount++;
+            }
+        }
+        if (!node) {
+            this._currentMatchedRequestNode = null;
+            return;
+        }
+
+        var request = node._request;
+        var regExp = this._searchRegExp;
         var nameMatched = request.name().match(regExp);
         var pathMatched = request.path().match(regExp);
         if (!nameMatched && pathMatched && !this._largerRequestsButton.toggled)
@@ -1324,22 +1302,10 @@ WebInspector.NetworkLogView.prototype = {
             node.reveal();
             this._highlightNode(node);
         }
-    },
 
-    /**
-     * @param {number} matchedRequestIndex
-     * @param {boolean} reveal
-     */
-    _highlightNthMatchedRequestForSearch: function(matchedRequestIndex, reveal)
-    {
-        var node = this._nodesByRequestId.get(this._matchedRequests[matchedRequestIndex]);
-        if (!node)
-            return;
-        this._removeAllHighlights();
-        this._highlightMatchedNode(node, reveal, this._searchRegExp);
-        this._currentMatchedRequestIndex = matchedRequestIndex;
-
-        this.dispatchEventToListeners(WebInspector.NetworkLogView.EventTypes.SearchIndexUpdated, this._currentMatchedRequestIndex);
+        this._currentMatchedRequestNode = node;
+        this._currentMatchedRequestIndex = n;
+        this.dispatchEventToListeners(WebInspector.NetworkLogView.EventTypes.SearchIndexUpdated, n);
     },
 
     /**
@@ -1349,32 +1315,42 @@ WebInspector.NetworkLogView.prototype = {
      */
     performSearch: function(query, shouldJump, jumpBackwards)
     {
-        var newMatchedRequestIndex = jumpBackwards ? -1 : 0;
-        var currentMatchedRequestId;
-        if (this._currentMatchedRequestIndex !== -1)
-            currentMatchedRequestId = this._matchedRequests[this._currentMatchedRequestIndex];
-
+        var currentMatchedRequestNode = this._currentMatchedRequestNode;
         this._clearSearchMatchedList();
         this._searchRegExp = createPlainTextSearchRegex(query, "i");
 
-        var childNodes = this._dataGrid.dataTableBody.childNodes;
-        var requestNodes = Array.prototype.slice.call(childNodes, 0, childNodes.length - 1); // drop the filler row.
+        /** @type {!Array.<!WebInspector.NetworkDataGridNode>} */
+        var nodes = this._dataGrid.rootNode().children;
+        for (var i = 0; i < nodes.length; ++i)
+            nodes[i]._isMatchingSearchQuery = this._matchRequest(nodes[i]._request);
+        var newMatchedRequestIndex = this._updateMatchCountAndFindMatchIndex(currentMatchedRequestNode);
+        if (!newMatchedRequestIndex && jumpBackwards)
+            newMatchedRequestIndex = this._matchedRequestCount - 1;
+        this._highlightNthMatchedRequestForSearch(newMatchedRequestIndex, shouldJump);
+    },
 
-        for (var i = 0; i < requestNodes.length; ++i) {
-            var dataGridNode = this._dataGrid.dataGridNodeFromNode(requestNodes[i]);
-            if (dataGridNode.isFilteredOut())
+    /**
+     * @param {?WebInspector.NetworkDataGridNode} node
+     * @return {number}
+     */
+    _updateMatchCountAndFindMatchIndex: function(node)
+    {
+        /** @type {!Array.<!WebInspector.NetworkDataGridNode>} */
+        var nodes = this._dataGrid.rootNode().children;
+        var matchCount = 0;
+        var matchIndex = 0;
+        for (var i = 0; i < nodes.length; ++i) {
+            if (nodes[i].isFilteredOut() || !nodes[i]._isMatchingSearchQuery)
                 continue;
-            if (this._matchRequest(dataGridNode._request) !== -1 && dataGridNode._request.requestId === currentMatchedRequestId) {
-                // Keep current search result the same if it still matches.
-                newMatchedRequestIndex = this._matchedRequests.length - 1;
-            }
+            if (node === nodes[i])
+                matchIndex = matchCount;
+            matchCount++;
         }
-
-        this.dispatchEventToListeners(WebInspector.NetworkLogView.EventTypes.SearchCountUpdated, this._matchedRequests.length);
-        if (shouldJump) {
-            var index = this._normalizeSearchResultIndex(newMatchedRequestIndex);
-            this._highlightNthMatchedRequestForSearch(index, true);
+        if (this._matchedRequestCount !== matchCount) {
+            this._matchedRequestCount = matchCount;
+            this.dispatchEventToListeners(WebInspector.NetworkLogView.EventTypes.SearchCountUpdated, matchCount);
         }
+        return matchIndex;
     },
 
     /**
@@ -1383,7 +1359,7 @@ WebInspector.NetworkLogView.prototype = {
      */
     _normalizeSearchResultIndex: function(index)
     {
-        return (index + this._matchedRequests.length) % this._matchedRequests.length;
+        return (index + this._matchedRequestCount) % this._matchedRequestCount;
     },
 
     /**
@@ -1475,7 +1451,7 @@ WebInspector.NetworkLogView.prototype = {
 
     jumpToPreviousSearchResult: function()
     {
-        if (!this._matchedRequests.length)
+        if (!this._matchedRequestCount)
             return;
         var index = this._normalizeSearchResultIndex(this._currentMatchedRequestIndex - 1);
         this._highlightNthMatchedRequestForSearch(index, true);
@@ -1483,7 +1459,7 @@ WebInspector.NetworkLogView.prototype = {
 
     jumpToNextSearchResult: function()
     {
-        if (!this._matchedRequests.length)
+        if (!this._matchedRequestCount)
             return;
         var index = this._normalizeSearchResultIndex(this._currentMatchedRequestIndex + 1);
         this._highlightNthMatchedRequestForSearch(index, true);
@@ -1491,6 +1467,7 @@ WebInspector.NetworkLogView.prototype = {
 
     searchCanceled: function()
     {
+        delete this._searchRegExp;
         this._clearSearchMatchedList();
         this.dispatchEventToListeners(WebInspector.NetworkLogView.EventTypes.SearchCountUpdated, 0);
     },
@@ -2519,6 +2496,7 @@ WebInspector.NetworkDataGridNode = function(parentView, request)
     this._request = request;
     this._linkifier = new WebInspector.Linkifier();
     this._visible = false;
+    this._isMatchingSearchQuery = false;
 }
 
 WebInspector.NetworkDataGridNode.prototype = {
