@@ -191,7 +191,7 @@ WebInspector.PaintProfilerView.prototype = {
             return;
 
         var window = this.windowBoundaries();
-        this._snapshot.requestImage(window.left, window.right, this._showImageCallback);
+        this._snapshot.requestImage(window.left, window.right, 1, this._showImageCallback);
     },
 
     _reset: function()
