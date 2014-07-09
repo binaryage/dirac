@@ -95,6 +95,8 @@ WebInspector.CSSMetadata.colors = function()
  */
 WebInspector.CSSMetadata.isLengthProperty = function(propertyName)
 {
+    if (propertyName === "line-height")
+        return false;
     if (!WebInspector.CSSMetadata._distancePropertiesKeySet)
         WebInspector.CSSMetadata._distancePropertiesKeySet = WebInspector.CSSMetadata._distanceProperties.keySet();
     return WebInspector.CSSMetadata._distancePropertiesKeySet[propertyName] || propertyName.startsWith("margin") || propertyName.startsWith("padding") || propertyName.indexOf("width") !== -1 || propertyName.indexOf("height") !== -1;
