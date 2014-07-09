@@ -40,7 +40,7 @@ WebInspector.TabbedPane = function()
     this._headerElement = this.element.createChild("div", "tabbed-pane-header");
     this._headerContentsElement = this._headerElement.createChild("div", "tabbed-pane-header-contents");
     this._tabsElement = this._headerContentsElement.createChild("div", "tabbed-pane-header-tabs");
-    this._contentElement = this.element.createChild("div", "tabbed-pane-content scroll-target");
+    this._contentElement = this.element.createChild("div", "tabbed-pane-content");
     /** @type {!Array.<!WebInspector.TabbedPaneTab>} */
     this._tabs = [];
     /** @type {!Array.<!WebInspector.TabbedPaneTab>} */

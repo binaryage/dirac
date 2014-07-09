@@ -2287,7 +2287,7 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
                 spectrum.addEventListener(WebInspector.Spectrum.Events.ColorChanged, boundSpectrumChanged);
                 spectrumHelper.addEventListener(WebInspector.SpectrumPopupHelper.Events.Hidden, boundSpectrumHidden);
 
-                scrollerElement = colorSwatch.element.enclosingNodeOrSelfWithClass("scroll-target");
+                scrollerElement = colorSwatch.element.enclosingNodeOrSelfWithClass("style-panes-wrapper");
                 if (scrollerElement)
                     scrollerElement.addEventListener("scroll", repositionSpectrum, false);
                 else
