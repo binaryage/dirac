@@ -172,7 +172,24 @@ WebInspector.ViewportControl.prototype = {
     invalidate: function()
     {
         delete this._cumulativeHeights;
+        delete this._cachedProviderElements;
         this.refresh();
+    },
+
+    /**
+     * @param {number} index
+     * @return {?WebInspector.ViewportElement}
+     */
+    _providerElement: function(index)
+    {
+        if (!this._cachedProviderElements)
+            this._cachedProviderElements = new Array(this._provider.itemCount());
+        var element = this._cachedProviderElements[index];
+        if (!element) {
+            element = this._provider.itemElement(index);
+            this._cachedProviderElements[index] = element;
+        }
+        return element;
     },
 
     _rebuildCumulativeHeightsIfNeeded: function()
@@ -352,6 +369,7 @@ WebInspector.ViewportControl.prototype = {
         var visibleFrom = this.element.scrollTop;
         var clientHeight = this.element.clientHeight;
         var shouldStickToBottom = this._stickToBottom && this.element.isScrolledToBottom();
+        var isInvalidating = !this._cumulativeHeights;
 
         if (this._cumulativeHeights && itemCount !== this._cumulativeHeights.length)
             delete this._cumulativeHeights;
@@ -362,6 +380,8 @@ WebInspector.ViewportControl.prototype = {
                 delete this._cumulativeHeights;
         }
         this._rebuildCumulativeHeightsIfNeeded();
+        var oldFirstVisibleIndex = this._firstVisibleIndex;
+        var oldLastVisibleIndex = this._lastVisibleIndex;
         if (shouldStickToBottom) {
             this._lastVisibleIndex = itemCount - 1;
             this._firstVisibleIndex = Math.max(Array.prototype.lowerBound.call(this._cumulativeHeights, this._cumulativeHeights[this._cumulativeHeights.length - 1] - clientHeight), 0);
@@ -378,23 +398,62 @@ WebInspector.ViewportControl.prototype = {
         this._bottomGapElement._active = !!bottomGapHeight;
 
         this._contentElement.style.setProperty("height", "10000000px");
-        for (var i = 0; i < this._renderedItems.length; ++i)
-            this._renderedItems[i].willHide();
-        this._renderedItems = [];
-        this._contentElement.removeChildren();
-        for (var i = this._firstVisibleIndex; i <= this._lastVisibleIndex; ++i) {
-            var viewportElement = this._provider.itemElement(i);
-            this._contentElement.appendChild(viewportElement.element());
-            this._renderedItems.push(viewportElement);
-            viewportElement.wasShown();
-        }
-
+        if (isInvalidating)
+            this._fullViewportUpdate();
+        else
+            this._partialViewportUpdate(oldFirstVisibleIndex, oldLastVisibleIndex);
         this._contentElement.style.removeProperty("height");
         // Should be the last call in the method as it might force layout.
         if (shouldRestoreSelection)
             this._restoreSelection(selection);
         if (shouldStickToBottom)
             this.element.scrollTop = this.element.scrollHeight;
+    },
+
+    _fullViewportUpdate: function()
+    {
+        for (var i = 0; i < this._renderedItems.length; ++i)
+            this._renderedItems[i].willHide();
+        this._renderedItems = [];
+        this._contentElement.removeChildren();
+        for (var i = this._firstVisibleIndex; i <= this._lastVisibleIndex; ++i) {
+            var viewportElement = this._providerElement(i);
+            this._contentElement.appendChild(viewportElement.element());
+            this._renderedItems.push(viewportElement);
+            viewportElement.wasShown();
+        }
+    },
+
+    /**
+     * @param {number} oldFirstVisibleIndex
+     * @param {number} oldLastVisibleIndex
+     */
+    _partialViewportUpdate: function(oldFirstVisibleIndex, oldLastVisibleIndex)
+    {
+        var willBeHidden = [];
+        for (var i = 0; i < this._renderedItems.length; ++i) {
+            var index = oldFirstVisibleIndex + i;
+            if (index < this._firstVisibleIndex || this._lastVisibleIndex < index)
+                willBeHidden.push(this._renderedItems[i]);
+        }
+        for (var i = 0; i < willBeHidden.length; ++i)
+            willBeHidden[i].willHide();
+        for (var i = 0; i < willBeHidden.length; ++i)
+            willBeHidden[i].element().remove();
+
+        this._renderedItems = [];
+        var anchor = this._contentElement.firstChild;
+        for (var i = this._firstVisibleIndex; i <= this._lastVisibleIndex; ++i) {
+            var viewportElement = this._providerElement(i);
+            var element = viewportElement.element();
+            if (element !== anchor) {
+                this._contentElement.insertBefore(element, anchor);
+                viewportElement.wasShown();
+            } else {
+                anchor = anchor.nextSibling;
+            }
+            this._renderedItems.push(viewportElement);
+        }
     },
 
     /**
@@ -418,15 +477,15 @@ WebInspector.ViewportControl.prototype = {
 
         var textLines = [];
         for (var i = startSelection.item; i <= endSelection.item; ++i)
-            textLines.push(this._provider.itemElement(i).element().textContent);
+            textLines.push(this._providerElement(i).element().textContent);
 
-        var endSelectionElement = this._provider.itemElement(endSelection.item).element();
+        var endSelectionElement = this._providerElement(endSelection.item).element();
         if (endSelection.node && endSelection.node.isSelfOrDescendant(endSelectionElement)) {
             var itemTextOffset = this._textOffsetInNode(endSelectionElement, endSelection.node, endSelection.offset);
             textLines[textLines.length - 1] = textLines.peekLast().substring(0, itemTextOffset);
         }
 
-        var startSelectionElement = this._provider.itemElement(startSelection.item).element();
+        var startSelectionElement = this._providerElement(startSelection.item).element();
         if (startSelection.node && startSelection.node.isSelfOrDescendant(startSelectionElement)) {
             var itemTextOffset = this._textOffsetInNode(startSelectionElement, startSelection.node, startSelection.offset);
             textLines[0] = textLines[0].substring(itemTextOffset);
