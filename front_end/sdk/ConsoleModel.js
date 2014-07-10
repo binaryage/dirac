@@ -494,4 +494,4 @@ WebInspector.ConsoleDispatcher.prototype = {
 /**
  * @type {!WebInspector.ConsoleModel}
  */
-WebInspector.console;
+WebInspector.consoleModel;

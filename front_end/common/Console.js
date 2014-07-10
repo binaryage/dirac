@@ -6,23 +6,23 @@
  * @constructor
  * @extends {WebInspector.Object}
  */
-WebInspector.MessageSink = function()
+WebInspector.Console = function()
 {
-    /** @type {!Array.<!WebInspector.MessageSink.Message>} */
+    /** @type {!Array.<!WebInspector.Console.Message>} */
     this._messages = [];
 }
 
 /**
  * @enum {string}
  */
-WebInspector.MessageSink.Events = {
+WebInspector.Console.Events = {
     MessageAdded: "messageAdded"
 }
 
 /**
  * @enum {string}
  */
-WebInspector.MessageSink.MessageLevel = {
+WebInspector.Console.MessageLevel = {
     Log: "log",
     Warning: "warning",
     Error: "error"
@@ -31,11 +31,11 @@ WebInspector.MessageSink.MessageLevel = {
 /**
  * @constructor
  * @param {string} text
- * @param {!WebInspector.MessageSink.MessageLevel} level
+ * @param {!WebInspector.Console.MessageLevel} level
  * @param {number} timestamp
  * @param {boolean} show
  */
-WebInspector.MessageSink.Message = function(text, level, timestamp, show)
+WebInspector.Console.Message = function(text, level, timestamp, show)
 {
     this.text = text;
     this.level = level;
@@ -43,17 +43,17 @@ WebInspector.MessageSink.Message = function(text, level, timestamp, show)
     this.show = show;
 }
 
-WebInspector.MessageSink.prototype = {
+WebInspector.Console.prototype = {
     /**
      * @param {string} text
-     * @param {!WebInspector.MessageSink.MessageLevel=} level
+     * @param {!WebInspector.Console.MessageLevel} level
      * @param {boolean=} show
      */
     addMessage: function(text, level, show)
     {
-        var message = new WebInspector.MessageSink.Message(text, level || WebInspector.MessageSink.MessageLevel.Log, Date.now(), show || false);
+        var message = new WebInspector.Console.Message(text, level || WebInspector.Console.MessageLevel.Log, Date.now(), show || false);
         this._messages.push(message);
-        this.dispatchEventToListeners(WebInspector.MessageSink.Events.MessageAdded, message);
+        this.dispatchEventToListeners(WebInspector.Console.Events.MessageAdded, message);
     },
 
     /**
@@ -62,11 +62,11 @@ WebInspector.MessageSink.prototype = {
      */
     addErrorMessage: function(text, show)
     {
-        this.addMessage(text, WebInspector.MessageSink.MessageLevel.Error, show);
+        this.addMessage(text, WebInspector.Console.MessageLevel.Error, show);
     },
 
     /**
-     * @return {!Array.<!WebInspector.MessageSink.Message>}
+     * @return {!Array.<!WebInspector.Console.Message>}
      */
     messages: function()
     {
@@ -76,4 +76,4 @@ WebInspector.MessageSink.prototype = {
     __proto__: WebInspector.Object.prototype
 }
 
-WebInspector.messageSink = new WebInspector.MessageSink();
+WebInspector.console = new WebInspector.Console();

@@ -80,8 +80,8 @@ WebInspector.Target.prototype = {
         /** @type {!WebInspector.ConsoleModel} */
         this.consoleModel = new WebInspector.ConsoleModel(this);
         // This and similar lines are needed for compatibility.
-        if (!WebInspector.console)
-            WebInspector.console = this.consoleModel;
+        if (!WebInspector.consoleModel)
+            WebInspector.consoleModel = this.consoleModel;
 
         /** @type {!WebInspector.NetworkManager} */
         this.networkManager = new WebInspector.NetworkManager(this);

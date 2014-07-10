@@ -394,7 +394,7 @@ WebInspector.ExtensionServer.prototype = {
 
     _onGetConsoleMessages: function()
     {
-        return WebInspector.console.messages.map(this._makeConsoleMessage);
+        return WebInspector.consoleModel.messages.map(this._makeConsoleMessage);
     },
 
     _onAddConsoleMessage: function(message)
@@ -417,14 +417,14 @@ WebInspector.ExtensionServer.prototype = {
             return this._status.E_BADARG("message.severity", message.severity);
 
         var consoleMessage = new WebInspector.ConsoleMessage(
-            WebInspector.console.target(),
+            WebInspector.consoleModel.target(),
             WebInspector.ConsoleMessage.MessageSource.JS,
             level,
             message.text,
             WebInspector.ConsoleMessage.MessageType.Log,
             message.url,
             message.line);
-        WebInspector.console.addMessage(consoleMessage);
+        WebInspector.consoleModel.addMessage(consoleMessage);
     },
 
     _makeConsoleMessage: function(message)
@@ -666,7 +666,7 @@ WebInspector.ExtensionServer.prototype = {
     _initExtensions: function()
     {
         this._registerAutosubscriptionHandler(WebInspector.extensionAPI.Events.ConsoleMessageAdded,
-            WebInspector.console, WebInspector.ConsoleModel.Events.MessageAdded, this._notifyConsoleMessageAdded);
+            WebInspector.consoleModel, WebInspector.ConsoleModel.Events.MessageAdded, this._notifyConsoleMessageAdded);
         this._registerAutosubscriptionHandler(WebInspector.extensionAPI.Events.NetworkRequestFinished,
             WebInspector.networkManager, WebInspector.NetworkManager.EventTypes.RequestFinished, this._notifyRequestFinished);
         this._registerAutosubscriptionHandler(WebInspector.extensionAPI.Events.ResourceAdded,

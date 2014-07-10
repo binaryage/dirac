@@ -497,19 +497,19 @@ TestSuite.prototype.testNetworkTiming = function()
 
 TestSuite.prototype.testConsoleOnNavigateBack = function()
 {
-    if (WebInspector.console.messages.length === 1)
+    if (WebInspector.consoleModel.messages.length === 1)
         firstConsoleMessageReceived.call(this);
     else
-        WebInspector.console.addEventListener(WebInspector.ConsoleModel.Events.MessageAdded, firstConsoleMessageReceived, this);
+        WebInspector.consoleModel.addEventListener(WebInspector.ConsoleModel.Events.MessageAdded, firstConsoleMessageReceived, this);
 
     function firstConsoleMessageReceived() {
-        WebInspector.console.removeEventListener(WebInspector.ConsoleModel.Events.MessageAdded, firstConsoleMessageReceived, this);
+        WebInspector.consoleModel.removeEventListener(WebInspector.ConsoleModel.Events.MessageAdded, firstConsoleMessageReceived, this);
         this.evaluateInConsole_("clickLink();", didClickLink.bind(this));
     }
 
     function didClickLink() {
         // Check that there are no new messages(command is not a message).
-        this.assertEquals(3, WebInspector.console.messages.length);
+        this.assertEquals(3, WebInspector.consoleModel.messages.length);
         this.evaluateInConsole_("history.back();", didNavigateBack.bind(this));
     }
 
@@ -520,7 +520,7 @@ TestSuite.prototype.testConsoleOnNavigateBack = function()
     }
 
     function didCompleteNavigation() {
-        this.assertEquals(7, WebInspector.console.messages.length);
+        this.assertEquals(7, WebInspector.consoleModel.messages.length);
         this.releaseControl();
     }
 
@@ -765,7 +765,7 @@ TestSuite.prototype.stopTimeline = function()
 
 TestSuite.prototype.waitForTestResultsInConsole = function()
 {
-    var messages = WebInspector.console.messages;
+    var messages = WebInspector.consoleModel.messages;
     for (var i = 0; i < messages.length; ++i) {
         var text = messages[i].messageText;
         if (text === "PASS")
@@ -783,13 +783,13 @@ TestSuite.prototype.waitForTestResultsInConsole = function()
             this.fail(text);
     }
 
-    WebInspector.console.addEventListener(WebInspector.ConsoleModel.Events.MessageAdded, onConsoleMessage, this);
+    WebInspector.consoleModel.addEventListener(WebInspector.ConsoleModel.Events.MessageAdded, onConsoleMessage, this);
     this.takeControl();
 };
 
 TestSuite.prototype.checkLogAndErrorMessages = function()
 {
-    var messages = WebInspector.console.messages;
+    var messages = WebInspector.consoleModel.messages;
 
     var matchesCount = 0;
     function validMessage(message)
@@ -828,7 +828,7 @@ TestSuite.prototype.checkLogAndErrorMessages = function()
             this.fail(message.text + ":" + messages[i].level);
     }
 
-    WebInspector.console.addEventListener(WebInspector.ConsoleModel.Events.MessageAdded, onConsoleMessage, this);
+    WebInspector.consoleModel.addEventListener(WebInspector.ConsoleModel.Events.MessageAdded, onConsoleMessage, this);
     this.takeControl();
 };
 
@@ -878,7 +878,7 @@ TestSuite.prototype.evaluateInConsole_ = function(code, callback)
 {
     function innerEvaluate()
     {
-        WebInspector.console.show();
+        WebInspector.consoleModel.show();
         var consoleView = WebInspector.ConsolePanel._view();
         consoleView._prompt.text = code;
         consoleView._promptElement.dispatchEvent(TestSuite.createKeyEvent("Enter"));

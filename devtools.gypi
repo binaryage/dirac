@@ -60,9 +60,8 @@
         ],
         'devtools_common_js_files': [
             'front_end/common/Color.js',
-            'front_end/common/CompletionDictionary.js',
             'front_end/common/Geometry.js',
-            'front_end/common/MessageSink.js',
+            'front_end/common/Console.js',
             'front_end/common/ModuleManager.js',
             'front_end/common/modules.js',
             'front_end/common/Object.js',
@@ -146,6 +145,7 @@
         'devtools_ui_js_files': [
             'front_end/ui/ActionRegistry.js',
             'front_end/ui/Checkbox.js',
+            'front_end/ui/CompletionDictionary.js',
             'front_end/ui/Context.js',
             'front_end/ui/ContextMenu.js',
             'front_end/ui/DataGrid.js',

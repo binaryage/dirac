@@ -159,8 +159,8 @@ WebInspector.HeapSnapshotWorkerProxy.prototype = {
         }
         if (data.error) {
             if (data.errorMethodName)
-                WebInspector.messageSink.addMessage(WebInspector.UIString("An error occurred when a call to method '%s' was requested", data.errorMethodName));
-            WebInspector.messageSink.addMessage(data["errorCallStack"]);
+                WebInspector.console.addErrorMessage(WebInspector.UIString("An error occurred when a call to method '%s' was requested", data.errorMethodName));
+            WebInspector.console.addErrorMessage(data["errorCallStack"]);
             delete this._callbacks[data.callId];
             return;
         }

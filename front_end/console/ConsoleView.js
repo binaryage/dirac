@@ -210,8 +210,8 @@ WebInspector.ConsoleView.prototype = {
 
     _registerWithMessageSink: function()
     {
-        WebInspector.messageSink.messages().forEach(this._addSinkMessage, this);
-        WebInspector.messageSink.addEventListener(WebInspector.MessageSink.Events.MessageAdded, messageAdded, this);
+        WebInspector.console.messages().forEach(this._addSinkMessage, this);
+        WebInspector.console.addEventListener(WebInspector.Console.Events.MessageAdded, messageAdded, this);
 
         /**
          * @param {!WebInspector.Event} event
@@ -219,21 +219,21 @@ WebInspector.ConsoleView.prototype = {
          */
         function messageAdded(event)
         {
-            this._addSinkMessage(/** @type {!WebInspector.MessageSink.Message} */ (event.data));
+            this._addSinkMessage(/** @type {!WebInspector.Console.Message} */ (event.data));
         }
     },
 
     /**
-     * @param {!WebInspector.MessageSink.Message} message
+     * @param {!WebInspector.Console.Message} message
      */
     _addSinkMessage: function(message)
     {
         var level = WebInspector.ConsoleMessage.MessageLevel.Debug;
         switch (message.level) {
-        case WebInspector.MessageSink.MessageLevel.Error:
+        case WebInspector.Console.MessageLevel.Error:
             level = WebInspector.ConsoleMessage.MessageLevel.Error;
             break;
-        case WebInspector.MessageSink.MessageLevel.Warning:
+        case WebInspector.Console.MessageLevel.Warning:
             level = WebInspector.ConsoleMessage.MessageLevel.Warning;
             break;
         }
@@ -745,7 +745,7 @@ WebInspector.ConsoleView.prototype = {
 
     _requestClearMessages: function()
     {
-        WebInspector.console.requestClearMessages();
+        WebInspector.consoleModel.requestClearMessages();
     },
 
     _promptKeyDown: function(event)
@@ -1225,7 +1225,7 @@ WebInspector.ConsoleView.ShowConsoleActionDelegate.prototype = {
      */
     handleAction: function()
     {
-        WebInspector.console.show();
+        WebInspector.consoleModel.show();
         return true;
     }
 }

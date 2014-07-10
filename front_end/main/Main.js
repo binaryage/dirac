@@ -176,8 +176,8 @@ WebInspector.Main.prototype = {
 
     _updateErrorAndWarningCounts: function()
     {
-        var errors = WebInspector.console.errors;
-        var warnings = WebInspector.console.warnings;
+        var errors = WebInspector.consoleModel.errors;
+        var warnings = WebInspector.consoleModel.warnings;
         WebInspector.inspectorView.setErrorAndWarningCounts(errors, warnings);
     },
 
@@ -313,8 +313,8 @@ WebInspector.Main.prototype = {
         if (WebInspector.experimentsSettings.workersInMainWindow.isEnabled())
             WebInspector.workerTargetManager = new WebInspector.WorkerTargetManager(mainTarget, WebInspector.targetManager);
 
-        WebInspector.console.addEventListener(WebInspector.ConsoleModel.Events.ConsoleCleared, this._resetErrorAndWarningCounts, this);
-        WebInspector.console.addEventListener(WebInspector.ConsoleModel.Events.MessageAdded, this._updateErrorAndWarningCounts, this);
+        WebInspector.consoleModel.addEventListener(WebInspector.ConsoleModel.Events.ConsoleCleared, this._resetErrorAndWarningCounts, this);
+        WebInspector.consoleModel.addEventListener(WebInspector.ConsoleModel.Events.MessageAdded, this._updateErrorAndWarningCounts, this);
 
         WebInspector.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.DebuggerPaused, this._debuggerPaused, this);
 
@@ -377,7 +377,7 @@ WebInspector.Main.prototype = {
 
         function showConsole()
         {
-            WebInspector.console.show();
+            WebInspector.consoleModel.show();
         }
         errorWarningCount.addEventListener("click", showConsole, false);
         this._updateErrorAndWarningCounts();
@@ -407,14 +407,14 @@ WebInspector.Main.prototype = {
 
     _registerMessageSinkListener: function()
     {
-        WebInspector.messageSink.addEventListener(WebInspector.MessageSink.Events.MessageAdded, messageAdded);
+        WebInspector.console.addEventListener(WebInspector.Console.Events.MessageAdded, messageAdded);
 
         /**
          * @param {!WebInspector.Event} event
          */
         function messageAdded(event)
         {
-            var message = /** @type {!WebInspector.MessageSink.Message} */ (event.data);
+            var message = /** @type {!WebInspector.Console.Message} */ (event.data);
             if (message.show)
                 WebInspector.actionRegistry.execute("console.show");
         }

@@ -565,7 +565,7 @@ WebInspector.TimelineModelLoader.prototype = {
         try {
             items = /** @type {!Array.<!TimelineAgent.TimelineEvent>} */ (JSON.parse(json));
         } catch (e) {
-            WebInspector.messageSink.addErrorMessage("Malformed timeline data.", true);
+            WebInspector.console.addErrorMessage("Malformed timeline data.", true);
             this._model.reset();
             this._reader.cancel();
             this._progress.done();
@@ -641,15 +641,15 @@ WebInspector.TimelineModelLoadFromFileDelegate.prototype = {
         this._model.reset();
         switch (event.target.error.code) {
         case FileError.NOT_FOUND_ERR:
-            WebInspector.messageSink.addErrorMessage(WebInspector.UIString("File \"%s\" not found.", reader.fileName()), true);
+            WebInspector.console.addErrorMessage(WebInspector.UIString("File \"%s\" not found.", reader.fileName()), true);
             break;
         case FileError.NOT_READABLE_ERR:
-            WebInspector.messageSink.addErrorMessage(WebInspector.UIString("File \"%s\" is not readable", reader.fileName()), true);
+            WebInspector.console.addErrorMessage(WebInspector.UIString("File \"%s\" is not readable", reader.fileName()), true);
             break;
         case FileError.ABORT_ERR:
             break;
         default:
-            WebInspector.messageSink.addErrorMessage(WebInspector.UIString("An error occurred while reading the file \"%s\"", reader.fileName()), true);
+            WebInspector.console.addErrorMessage(WebInspector.UIString("An error occurred while reading the file \"%s\"", reader.fileName()), true);
         }
     }
 }

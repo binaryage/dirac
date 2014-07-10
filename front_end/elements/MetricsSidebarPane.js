@@ -439,7 +439,7 @@ WebInspector.MetricsSidebarPane.prototype = {
 
         if (computedStyle.getPropertyValue("box-sizing") === "border-box" && (styleProperty === "width" || styleProperty === "height")) {
             if (!userInput.match(/px$/)) {
-                WebInspector.messageSink.addErrorMessage("For elements with box-sizing: border-box, only absolute content area dimensions can be applied", true);
+                WebInspector.console.addErrorMessage("For elements with box-sizing: border-box, only absolute content area dimensions can be applied", true);
                 return;
             }
 

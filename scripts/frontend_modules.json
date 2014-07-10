@@ -5,9 +5,8 @@
         "sources": [
             "common/modules.js",
             "common/Color.js",
-            "common/CompletionDictionary.js",
             "common/Geometry.js",
-            "common/MessageSink.js",
+            "common/Console.js",
             "common/ModuleManager.js",
             "common/NotificationService.js",
             "common/Object.js",
@@ -98,6 +97,7 @@
         "sources": [
             "ui/ActionRegistry.js",
             "ui/Checkbox.js",
+            "ui/CompletionDictionary.js",
             "ui/Context.js",
             "ui/ContextMenu.js",
             "ui/DataGrid.js",
