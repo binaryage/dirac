@@ -286,8 +286,8 @@ WebInspector.ContextMenu.prototype = {
 
     _menuCleared: function()
     {
-        WebInspector.notifications.removeEventListener("InspectorFrontendAPI.contextMenuCleared", this._menuCleared, this);
-        WebInspector.notifications.removeEventListener("InspectorFrontendAPI.contextMenuItemSelected", this._onItemSelected, this);
+        InspectorFrontendHost.events.removeEventListener(InspectorFrontendHostAPI.Events.ContextMenuCleared, this._menuCleared, this);
+        InspectorFrontendHost.events.removeEventListener(InspectorFrontendHostAPI.Events.ContextMenuItemSelected, this._onItemSelected, this);
     },
 
     /**
