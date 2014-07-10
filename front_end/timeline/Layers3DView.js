@@ -157,7 +157,17 @@ WebInspector.Layers3DView.prototype = {
      */
     showImageForLayer: function(layer, imageURL)
     {
-        this.setTiles([{layerId: layer.id(), rect: [0, 0, layer.width(), layer.height()], imageURL: imageURL}]);
+        this._textureManager.createTexture(onTextureCreated.bind(this), imageURL);
+
+        /**
+         * @this {WebInspector.Layers3DView}
+         * @param {!WebGLTexture} texture
+         */
+        function onTextureCreated(texture)
+        {
+            this._layerTexture = {layerId: layer.id(), texture: texture};
+            this._update();
+        }
     },
 
     onResize: function()
@@ -500,14 +510,23 @@ WebInspector.Layers3DView.prototype = {
             this._drawRectangle(vertices, WebInspector.Layers3DView.ScrollRectBorderColor, gl.LINE_LOOP);
         }
         if (this._showPaintsSetting.get()) {
-            var tiles = this._textureManager.tilesForLayer(layer.id());
-            for (var i = 0; i < tiles.length; ++i) {
-                var tile = tiles[i];
-                if (!tile.texture)
-                    continue;
-                var quad = this._calculateRectQuad(layer, {x: tile.rect[0], y: tile.rect[1], width: tile.rect[2], height: tile.rect[3]});
+            if (this._layerTexture) {
+                var layerTexture = this._layerTexture;
+                if (layer.id() !== layerTexture.layerId)
+                    return;
+                var quad = this._calculateRectQuad(layer, {x: 0, y: 0, width: layer.width(), height: layer.height()});
                 vertices = this._calculateVerticesForQuad(quad, layerDepth);
-                this._drawRectangle(vertices, style.color, gl.TRIANGLE_FAN, tile.texture);
+                this._drawRectangle(vertices, style.color, gl.TRIANGLE_FAN, layerTexture.texture);
+            } else {
+                var tiles = this._textureManager.tilesForLayer(layer.id());
+                for (var i = 0; i < tiles.length; ++i) {
+                    var tile = tiles[i];
+                    if (!tile.texture)
+                        continue;
+                    var quad = this._calculateRectQuad(layer, {x: tile.rect[0], y: tile.rect[1], width: tile.rect[2], height: tile.rect[3]});
+                    vertices = this._calculateVerticesForQuad(quad, layerDepth);
+                    this._drawRectangle(vertices, style.color, gl.TRIANGLE_FAN, tile.texture);
+                }
             }
         }
     },
@@ -833,26 +852,44 @@ WebInspector.LayerTextureManager.prototype = {
     {
         console.assert(this._scale && this._gl);
         tile.scale = this._scale;
-
-        var image = new Image();
-        image.addEventListener("load", onImageLoaded.bind(this), false);
-        tile.snapshot.requestImage(null, null, tile.scale, onGotImage)
+        tile.snapshot.requestImage(null, null, tile.scale, onGotImage.bind(this));
 
         /**
+         * @this {WebInspector.LayerTextureManager}
          * @param {string=} imageURL
          */
         function onGotImage(imageURL)
         {
-            image.src = imageURL;
+            this.createTexture(onTextureCreated.bind(this), imageURL);
         }
+
+        /**
+         * @this {WebInspector.LayerTextureManager}
+         * @param {!WebGLTexture} texture
+         */
+        function onTextureCreated(texture)
+        {
+            tile.texture = texture;
+            this.dispatchEventToListeners(WebInspector.LayerTextureManager.Events.TextureUpdated);
+        }
+    },
+
+    /**
+     * @param {!function(!WebGLTexture)} textureCreatedCallback
+     * @param {string=} imageURL
+     */
+    createTexture: function(textureCreatedCallback, imageURL)
+    {
+        var image = new Image();
+        image.addEventListener("load", onImageLoaded.bind(this), false);
+        image.src = imageURL;
 
         /**
          * @this {WebInspector.LayerTextureManager}
          */
         function onImageLoaded()
         {
-            tile.texture = this._createTextureForImage(image);
-            this.dispatchEventToListeners(WebInspector.LayerTextureManager.Events.TextureUpdated);
+            textureCreatedCallback(this._createTextureForImage(image));
         }
     },
 

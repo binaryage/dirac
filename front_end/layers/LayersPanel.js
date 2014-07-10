@@ -197,15 +197,6 @@ WebInspector.LayersPanel.prototype = {
         this._layers3DView.hoverObject(activeObject);
     },
 
-    /**
-     * @param {!WebInspector.Layer} layer
-     * @param {string=} imageURL
-     */
-    _showImageForLayer: function(layer, imageURL)
-    {
-        this._layers3DView.showImageForLayer(layer, imageURL);
-    },
-
     __proto__: WebInspector.PanelWithSidebarTree.prototype
 }
 
