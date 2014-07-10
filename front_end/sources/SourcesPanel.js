@@ -733,8 +733,7 @@ WebInspector.SourcesPanel.prototype = {
         this._runSnippetButton.element.classList.add("hidden");
 
         // Continue.
-        handler = function() { return WebInspector.actionRegistry.execute("debugger.toggle-pause"); };
-        this._pauseButton = this._createButtonAndRegisterShortcuts("scripts-pause", "", handler, []);
+        this._pauseButton = this._createButtonAndRegisterShortcutsForAction("scripts-pause", "", "debugger.toggle-pause");
         debugToolbar.appendChild(this._pauseButton.element);
 
         // Long resume.
@@ -813,6 +812,25 @@ WebInspector.SourcesPanel.prototype = {
         this._updateButtonTitle(button, buttonTitle);
         this.registerShortcuts(shortcuts, handler);
         return button;
+    },
+
+    /**
+     * @param {string} buttonId
+     * @param {string} buttonTitle
+     * @param {string} actionId
+     * @return {!WebInspector.StatusBarButton}
+     */
+    _createButtonAndRegisterShortcutsForAction: function(buttonId, buttonTitle, actionId)
+    {
+        /**
+         * @return {boolean}
+         */
+        function handler()
+        {
+            return WebInspector.actionRegistry.execute(actionId);
+        }
+        var shortcuts = WebInspector.shortcutRegistry.shortcutDescriptorsForAction(actionId);
+        return this._createButtonAndRegisterShortcuts(buttonId, buttonTitle, handler, shortcuts);
     },
 
     addToWatch: function(expression)
