@@ -453,27 +453,64 @@ WebInspector.TimelineModel.Filter.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.TimelineModel.Filter}
- * @param {!Array.<string>} excludeTypes
+ * @param {!Array.<string>} recordTypes
  */
-WebInspector.TimelineRecordTypeFilter = function(excludeTypes)
+WebInspector.TimelineRecordTypeFilter = function(recordTypes)
 {
     WebInspector.TimelineModel.Filter.call(this);
-    this._excludeTypes = {};
-    for (var i = 0; i < excludeTypes.length; ++i)
-        this._excludeTypes[excludeTypes[i]] = true;
+    this._recordTypes = {};
+    for (var i = 0; i < recordTypes.length; ++i)
+        this._recordTypes[recordTypes[i]] = true;
 }
 
 WebInspector.TimelineRecordTypeFilter.prototype = {
+    __proto__: WebInspector.TimelineModel.Filter.prototype
+}
+
+/**
+ * @constructor
+ * @extends {WebInspector.TimelineRecordTypeFilter}
+ * @param {!Array.<string>} recordTypes
+ */
+WebInspector.TimelineRecordHiddenTypeFilter = function(recordTypes)
+{
+    WebInspector.TimelineRecordTypeFilter.call(this, recordTypes);
+}
+
+WebInspector.TimelineRecordHiddenTypeFilter.prototype = {
     /**
      * @param {!WebInspector.TimelineModel.Record} record
      * @return {boolean}
      */
     accept: function(record)
     {
-        return !this._excludeTypes[record.type()];
+        return !this._recordTypes[record.type()];
     },
 
-    __proto__: WebInspector.TimelineModel.Filter.prototype
+    __proto__: WebInspector.TimelineRecordTypeFilter.prototype
+}
+
+/**
+ * @constructor
+ * @extends {WebInspector.TimelineRecordTypeFilter}
+ * @param {!Array.<string>} recordTypes
+ */
+WebInspector.TimelineRecordVisibleTypeFilter = function(recordTypes)
+{
+    WebInspector.TimelineRecordTypeFilter.call(this, recordTypes);
+}
+
+WebInspector.TimelineRecordVisibleTypeFilter.prototype = {
+    /**
+     * @param {!WebInspector.TimelineModel.Record} record
+     * @return {boolean}
+     */
+    accept: function(record)
+    {
+        return !!this._recordTypes[record.type()];
+    },
+
+    __proto__: WebInspector.TimelineRecordTypeFilter.prototype
 }
 
 /**

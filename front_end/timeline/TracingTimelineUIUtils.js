@@ -162,7 +162,7 @@ WebInspector.TracingTimelineUIUtils.prototype = {
      */
     hiddenRecordsFilter: function()
     {
-        return new WebInspector.TimelineRecordTypeFilter(WebInspector.TracingTimelineUIUtils._hiddenTypes());
+        return new WebInspector.TimelineRecordVisibleTypeFilter(WebInspector.TracingTimelineUIUtils._visibleTypes());
     },
 
     /**
@@ -182,11 +182,13 @@ WebInspector.TracingTimelineUIUtils.prototype = {
  * @constructor
  * @param {string} title
  * @param {!WebInspector.TimelineCategory} category
+ * @param {boolean=} hidden
  */
-WebInspector.TimelineRecordStyle = function(title, category)
+WebInspector.TimelineRecordStyle = function(title, category, hidden)
 {
     this.title = title;
     this.category = category;
+    this.hidden = !!hidden;
 }
 
 /**
@@ -203,16 +205,16 @@ WebInspector.TracingTimelineUIUtils._initEventStyles = function()
     var eventStyles = {};
     eventStyles[recordTypes.Program] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Other"), categories["other"]);
     eventStyles[recordTypes.EventDispatch] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Event"), categories["scripting"]);
-    eventStyles[recordTypes.RequestMainThreadFrame] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Request Main Thread Frame"), categories["rendering"]);
-    eventStyles[recordTypes.BeginFrame] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Frame Start"), categories["rendering"]);
-    eventStyles[recordTypes.BeginMainThreadFrame] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Frame Start (main thread)"), categories["rendering"]);
-    eventStyles[recordTypes.DrawFrame] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Draw Frame"), categories["rendering"]);
-    eventStyles[recordTypes.ScheduleStyleRecalculation] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Schedule Style Recalculation"), categories["rendering"]);
+    eventStyles[recordTypes.RequestMainThreadFrame] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Request Main Thread Frame"), categories["rendering"], true);
+    eventStyles[recordTypes.BeginFrame] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Frame Start"), categories["rendering"], true);
+    eventStyles[recordTypes.BeginMainThreadFrame] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Frame Start (main thread)"), categories["rendering"], true);
+    eventStyles[recordTypes.DrawFrame] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Draw Frame"), categories["rendering"], true);
+    eventStyles[recordTypes.ScheduleStyleRecalculation] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Schedule Style Recalculation"), categories["rendering"], true);
     eventStyles[recordTypes.RecalculateStyles] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Recalculate Style"), categories["rendering"]);
-    eventStyles[recordTypes.InvalidateLayout] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Invalidate Layout"), categories["rendering"]);
+    eventStyles[recordTypes.InvalidateLayout] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Invalidate Layout"), categories["rendering"], true);
     eventStyles[recordTypes.Layout] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Layout"), categories["rendering"]);
     eventStyles[recordTypes.PaintSetup] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Paint Setup"), categories["painting"]);
-    eventStyles[recordTypes.UpdateLayer] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Update Layer"), categories["painting"]);
+    eventStyles[recordTypes.UpdateLayer] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Update Layer"), categories["painting"], true);
     eventStyles[recordTypes.UpdateLayerTree] = { title: WebInspector.UIString("Update Layer Tree"), category: categories["rendering"] };
     eventStyles[recordTypes.Paint] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Paint"), categories["painting"]);
     eventStyles[recordTypes.Rasterize] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Paint"), categories["painting"]);
@@ -226,9 +228,9 @@ WebInspector.TracingTimelineUIUtils._initEventStyles = function()
     eventStyles[recordTypes.XHRReadyStateChange] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("XHR Ready State Change"), categories["scripting"]);
     eventStyles[recordTypes.XHRLoad] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("XHR Load"), categories["scripting"]);
     eventStyles[recordTypes.EvaluateScript] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Evaluate Script"), categories["scripting"]);
-    eventStyles[recordTypes.MarkLoad] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Load event"), categories["scripting"]);
-    eventStyles[recordTypes.MarkDOMContent] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("DOMContentLoaded event"), categories["scripting"]);
-    eventStyles[recordTypes.MarkFirstPaint] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("First paint"), categories["painting"]);
+    eventStyles[recordTypes.MarkLoad] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Load event"), categories["scripting"], true);
+    eventStyles[recordTypes.MarkDOMContent] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("DOMContentLoaded event"), categories["scripting"], true);
+    eventStyles[recordTypes.MarkFirstPaint] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("First paint"), categories["painting"], true);
     eventStyles[recordTypes.TimeStamp] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Stamp"), categories["scripting"]);
     eventStyles[recordTypes.ConsoleTime] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Console Time"), categories["scripting"]);
     eventStyles[recordTypes.ResourceSendRequest] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Send Request"), categories["loading"]);
@@ -248,7 +250,6 @@ WebInspector.TracingTimelineUIUtils._initEventStyles = function()
     eventStyles[recordTypes.EmbedderCallback] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Embedder Callback"), categories["scripting"]);
     eventStyles[recordTypes.DecodeImage] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Image Decode"), categories["painting"]);
     eventStyles[recordTypes.ResizeImage] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Image Resize"), categories["painting"]);
-
     WebInspector.TracingTimelineUIUtils._eventStylesMap = eventStyles;
     return eventStyles;
 }
@@ -771,33 +772,15 @@ WebInspector.TracingTimelineUIUtils._createEventDivider = function(recordType, t
 /**
  * @return {!Array.<string>}
  */
-WebInspector.TracingTimelineUIUtils._hiddenTypes = function()
+WebInspector.TracingTimelineUIUtils._visibleTypes = function()
 {
-    var recordTypes = WebInspector.TracingTimelineModel.RecordType;
-    return [
-        recordTypes.ActivateLayerTree,
-        recordTypes.BeginFrame,
-        recordTypes.BeginMainThreadFrame,
-        recordTypes.CallStack,
-        recordTypes.DecodeLazyPixelRef,
-        recordTypes.DrawFrame,
-        recordTypes.DrawLazyPixelRef,
-        recordTypes.GPUTask,
-        recordTypes.InvalidateLayout,
-        recordTypes.LayerTreeHostImplSnapshot,
-        recordTypes.LazyPixelRef,
-        recordTypes.MarkDOMContent,
-        recordTypes.MarkFirstPaint,
-        recordTypes.MarkLoad,
-        recordTypes.PaintImage,
-        recordTypes.PictureSnapshot,
-        recordTypes.RequestMainThreadFrame,
-        recordTypes.ScheduleStyleRecalculation,
-        recordTypes.SetLayerTreeId,
-        recordTypes.TracingStartedInPage,
-        recordTypes.UpdateCounters,
-        recordTypes.UpdateLayer
-    ];
+    var eventStyles = WebInspector.TracingTimelineUIUtils._initEventStyles();
+    var result = [];
+    for (var name in eventStyles) {
+        if (!eventStyles[name].hidden)
+            result.push(name);
+    }
+    return result;
 }
 
 /**
@@ -805,5 +788,5 @@ WebInspector.TracingTimelineUIUtils._hiddenTypes = function()
  */
 WebInspector.TracingTimelineUIUtils.hiddenEventsFilter = function()
 {
-    return new WebInspector.TracingTimelineModel.EventNamesFilter(WebInspector.TracingTimelineUIUtils._hiddenTypes());
+    return new WebInspector.TracingTimelineModel.EventNamesFilter(WebInspector.TracingTimelineUIUtils._visibleTypes());
 }

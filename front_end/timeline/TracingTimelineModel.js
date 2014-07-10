@@ -503,13 +503,13 @@ WebInspector.TracingTimelineModel.Filter.prototype = {
 /**
  * @constructor
  * @implements {WebInspector.TracingTimelineModel.Filter}
- * @param {!Array.<string>} excludeNames
+ * @param {!Array.<string>} includeNames
  */
-WebInspector.TracingTimelineModel.EventNamesFilter = function(excludeNames)
+WebInspector.TracingTimelineModel.EventNamesFilter = function(includeNames)
 {
-    this._excludeNames = {};
-    for (var i = 0; i < excludeNames.length; ++i)
-        this._excludeNames[excludeNames[i]] = true;
+    this._includeNames = {};
+    for (var i = 0; i < includeNames.length; ++i)
+        this._includeNames[includeNames[i]] = true;
 }
 
 WebInspector.TracingTimelineModel.EventNamesFilter.prototype = {
@@ -520,7 +520,7 @@ WebInspector.TracingTimelineModel.EventNamesFilter.prototype = {
      */
     accept: function(event)
     {
-        return !this._excludeNames[event.name];
+        return !!this._includeNames[event.name];
     }
 }
 

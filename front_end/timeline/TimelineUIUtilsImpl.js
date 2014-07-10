@@ -173,7 +173,7 @@ WebInspector.TimelineUIUtilsImpl.prototype = {
             recordTypes.ScheduleStyleRecalculation,
             recordTypes.UpdateCounters
         ]
-        return new WebInspector.TimelineRecordTypeFilter(hiddenRecords);
+        return new WebInspector.TimelineRecordHiddenTypeFilter(hiddenRecords);
     },
 
     /**
