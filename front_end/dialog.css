@@ -1,16 +1,11 @@
 .dialog {
     position: absolute;
-    
-    padding: 10px;
-    border-radius: 10px;
-    border: 1px solid gray;
 
-    box-shadow: rgb(40,40,40) 0 0 50px;
-    
-    display: -webkit-flex;
+    padding: 10px;
+    border: 1px solid rgb(204, 204, 204);
+    box-shadow: rgb(140, 140, 140) 0 2px 3px;
+    display: flex;
     -webkit-flex-direction: column;
-    
-    background-image: linear-gradient(to bottom, #E9E9E9, #CFCFCF);
 }
 
 .dialog-contents {

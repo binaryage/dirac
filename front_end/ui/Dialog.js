@@ -150,7 +150,7 @@ WebInspector.DialogDelegate.prototype = {
     {
         element.appendChild(this.element);
         this.element.classList.add("dialog-contents");
-        element.classList.add("dialog");
+        element.classList.add("dialog", "toolbar-colors");
     },
 
     /**

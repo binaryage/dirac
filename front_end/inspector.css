@@ -27,11 +27,6 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-input[type="search"]:focus,
-input[type="text"]:focus {
-    outline: auto 5px -webkit-focus-ring-color;
-}
-
 input[type="checkbox"] {
     height: 12px;
     width: 12px;
@@ -113,11 +108,14 @@ fieldset[disabled] label:hover input {
 }
 
 .toolbar-background {
-    background-image: linear-gradient(to bottom, rgb(191, 191, 191), rgb(151, 151, 151));
     padding-left: 1px;
     border-bottom: 1px solid rgb(64%, 64%, 64%);
     background-origin: padding-box;
     background-clip: padding-box;
+}
+
+.toolbar-colors {
+    background-color: rgb(233, 233, 233);
 }
 
 .toolbar {
@@ -158,10 +156,6 @@ select {
   font-size: inherit;
 }
 
-body.inactive .toolbar-background {
-    background-image: linear-gradient(to bottom, rgb(233, 233, 233), rgb(207, 207, 207));
-}
-
 body.dock-to-bottom .toolbar-background {
     padding-top: 0;
 }
@@ -174,37 +168,37 @@ body.dock-to-bottom .toolbar-background .tabbed-pane-header .tabbed-pane-header-
     cursor: default;
 }
 
-body.platform-windows .toolbar-background,
-body.platform-windows.inactive .toolbar-background {
+body.platform-windows .toolbar-colors,
+body.platform-windows.inactive .toolbar-colors {
     background-image: none;
 }
 
-body.undocked.platform-mac-leopard .toolbar-background {
+body.undocked.platform-mac-leopard .toolbar-colors {
     background-image: linear-gradient(to bottom, rgb(175, 175, 175), rgb(151, 151, 151)) !important;
     color: #333 !important;
 }
 
-body.undocked.platform-mac-leopard.inactive .toolbar-background {
+body.undocked.platform-mac-leopard.inactive .toolbar-colors {
     background-image: linear-gradient(to bottom, rgb(221, 221, 221), rgb(207, 207, 207)) !important;
     color: #555 !important;
 }
 
-body.undocked.platform-mac-snowleopard .toolbar-background {
+body.undocked.platform-mac-snowleopard .toolbar-colors {
     background-image: linear-gradient(to bottom, rgb(189, 189, 189), rgb(167, 167, 167)) !important;
     color: #333 !important;
 }
 
-body.undocked.platform-mac-snowleopard.inactive .toolbar-background {
+body.undocked.platform-mac-snowleopard.inactive .toolbar-colors {
     background-image: linear-gradient(to bottom, rgb(228, 228, 228), rgb(216, 216, 216)) !important;
     color: #555 !important;
 }
 
-body.undocked.platform-mac .toolbar-background {
+body.undocked.platform-mac .toolbar-colors {
     background-image: linear-gradient(to bottom, rgb(208, 208, 208), rgb(200, 200, 200)) !important;
     color: #333 !important;
 }
 
-body.undocked.platform-mac.inactive .toolbar-background {
+body.undocked.platform-mac.inactive .toolbar-colors {
     background-image: linear-gradient(to bottom, rgb(238, 238, 238), rgb(224, 224, 224)) !important;
     color: #555 !important;
 }

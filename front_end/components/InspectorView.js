@@ -52,7 +52,7 @@ WebInspector.InspectorView = function()
 
     // Patch tabbed pane header with toolbar actions.
     this._toolbarElement = document.createElement("div");
-    this._toolbarElement.className = "toolbar toolbar-background";
+    this._toolbarElement.className = "toolbar toolbar-background toolbar-colors";
     var headerElement = this._tabbedPane.headerElement();
     headerElement.parentElement.insertBefore(this._toolbarElement, headerElement);
 

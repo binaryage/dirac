@@ -489,7 +489,9 @@ WebInspector.ResponsiveDesignView.prototype = {
         var deviceElement = deviceSection.createChild("div", "responsive-design-suite responsive-design-suite-top").createChild("div");
         var fieldsetElement = deviceElement.createChild("fieldset");
         fieldsetElement.createChild("label").textContent = WebInspector.UIString("Device");
-        fieldsetElement.appendChild(WebInspector.OverridesUI.createDeviceSelect(document));
+        var deviceSelectElement = WebInspector.OverridesUI.createDeviceSelect(document);
+        fieldsetElement.appendChild(deviceSelectElement);
+        deviceSelectElement.classList.add("responsive-design-device-select");
 
         var separator = deviceSection.createChild("div", "responsive-design-section-separator");
 

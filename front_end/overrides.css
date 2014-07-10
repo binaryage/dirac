@@ -137,13 +137,7 @@
     width: 100%;
 }
 
-.overrides-device > select {
-    margin-bottom: 10px;
-    width: 400px;
-    max-width: 90%;
-}
-
-.overrides-device input {
+.overrides-device input.numeric {
     text-align: right;
 }
 
@@ -169,7 +163,7 @@
     margin-top: 10px;
 }
 
-button.overrides-swap {
+.overrides-device button {
     height: 20px;
     margin: 0 3px;
 }
@@ -201,13 +195,24 @@ button.overrides-swap {
     cursor: default !important;
 }
 
-#metrics-override-section > span {
+.overrides-device .overrides-device-model-section {
+    margin-bottom: 15px;
+    white-space: nowrap;
+}
+
+.overrides-device .overrides-device-model-section > span {
     padding: 0 10px 0 3px;
 }
 
-#metrics-override-section > select {
+.overrides-device .overrides-device-model-section select {
     width: 244px;
-    margin-bottom: 15px;
+    height: 20px;
+}
+
+.custom-device-title-dialog input {
+    margin: 0 5px;
+    line-height: 18px;
+    padding: 0 2px;
 }
 
 /* Media tab */

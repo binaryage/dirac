@@ -323,6 +323,10 @@ body.platform-mac .responsive-design-toolbar select {
     background: rgb(255, 156, 0);
 }
 
+.responsive-design-device-select button {
+    display: none !important;
+}
+
 /* Network section */
 
 .responsive-design-section-network select {

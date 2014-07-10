@@ -81,31 +81,8 @@ WebInspector.OverridesSupport.PageResizer.prototype = {
     update: function(dipWidth, dipHeight, scale) { }
 };
 
-/**
- * @param {string} description
- * @param {string} userAgent
- * @constructor
- */
-WebInspector.OverridesSupport.Device = function(description, userAgent)
-{
-    this.width = 800;
-    this.height = 600;
-    this.deviceScaleFactor = 1;
-    this.userAgent = userAgent;
-    this.touch = true;
-    this.mobile = true;
-
-    var splitMetrics = description.split("x");
-    if (splitMetrics.length >= 3) {
-        this.width = parseInt(splitMetrics[0], 10);
-        this.height = parseInt(splitMetrics[1], 10);
-        this.deviceScaleFactor = parseFloat(splitMetrics[2]);
-    }
-    if (splitMetrics.length >= 4)
-        this.touch = splitMetrics[3] == 1;
-    if (splitMetrics.length >= 5)
-        this.mobile = splitMetrics[4] == 1;
-}
+/** @typedef {{title: string, width: number, height: number, deviceScaleFactor: number, userAgent: string, touch: boolean, mobile: boolean}} */
+WebInspector.OverridesSupport.Device = {};
 
 /**
  * @constructor
@@ -387,13 +364,34 @@ WebInspector.OverridesSupport.prototype = {
      */
     isEmulatingDevice: function(device)
     {
+        var sameResolution = this.settings.emulateResolution.get() ?
+            (this.settings.deviceWidth.get() === device.width && this.settings.deviceHeight.get() === device.height && this.settings.deviceScaleFactor.get() === device.deviceScaleFactor) :
+            (!device.width && !device.height && !device.deviceScaleFactor);
         return this.settings.userAgent.get() === device.userAgent
-            && this.settings.deviceWidth.get() === device.width
-            && this.settings.deviceHeight.get() === device.height
-            && this.settings.deviceScaleFactor.get() === device.deviceScaleFactor
             && this.settings.emulateTouch.get() === device.touch
             && this.settings.emulateMobile.get() === device.mobile
-            && this.settings.emulateResolution.get();
+            && sameResolution;
+    },
+
+    /**
+     * @return {!WebInspector.OverridesSupport.Device}
+     */
+    deviceFromCurrentSettings: function()
+    {
+        var device = {};
+        if (this.settings.emulateResolution.get()) {
+            device.width = this.settings.deviceWidth.get();
+            device.height = this.settings.deviceHeight.get();
+        } else {
+            device.width = 0;
+            device.height = 0;
+        }
+        device.deviceScaleFactor = this.settings.deviceScaleFactor.get();
+        device.touch = this.settings.emulateTouch.get();
+        device.mobile = this.settings.emulateMobile.get();
+        device.userAgent = this.settings.userAgent.get();
+        device.title = "";
+        return device;
     },
 
     /**
@@ -575,7 +573,7 @@ WebInspector.OverridesSupport.prototype = {
         function setDeviceMetricsOverride(finishCallback)
         {
             PageAgent.setDeviceMetricsOverride(
-                overrideWidth, overrideHeight, this.settings.deviceScaleFactor.get(),
+                overrideWidth, overrideHeight, this.settings.emulateResolution.get() ? this.settings.deviceScaleFactor.get() : 0,
                 this.settings.emulateMobile.get(), this._pageResizer ? false : this.settings.deviceFitWindow.get(), scale, 0, 0,
                 apiCallback.bind(this, finishCallback));
         }
@@ -764,6 +762,7 @@ WebInspector.OverridesSupport.prototype = {
         this.settings.deviceScaleFactor = WebInspector.settings.createSetting("deviceScaleFactor", 0);
         this.settings.deviceFitWindow = WebInspector.settings.createSetting("deviceFitWindow", true);
         this.settings.emulateMobile = WebInspector.settings.createSetting("emulateMobile", false);
+        this.settings.customDevicePresets = WebInspector.settings.createSetting("customDevicePresets", []);
 
         this.settings.emulateTouch = WebInspector.settings.createSetting("emulateTouch", false);
 
