@@ -308,7 +308,6 @@ WebInspector.Main.prototype = {
         // set order of some sections explicitly
         WebInspector.shortcutsScreen.section(WebInspector.UIString("Console"));
         WebInspector.shortcutsScreen.section(WebInspector.UIString("Elements Panel"));
-        WebInspector.ShortcutsScreen.registerShortcuts();
 
         if (WebInspector.experimentsSettings.workersInMainWindow.isEnabled())
             WebInspector.workerTargetManager = new WebInspector.WorkerTargetManager(mainTarget, WebInspector.targetManager);
@@ -365,6 +364,7 @@ WebInspector.Main.prototype = {
         WebInspector.shortcutRegistry = new WebInspector.ShortcutRegistry(WebInspector.actionRegistry);
         this._registerForwardedShortcuts();
         this._registerMessageSinkListener();
+        WebInspector.ShortcutsScreen.registerShortcuts();
 
         WebInspector.zoomManager = new WebInspector.ZoomManager();
         WebInspector.inspectorView = new WebInspector.InspectorView();
