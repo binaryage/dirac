@@ -29,12 +29,6 @@
  */
 
 /**
- * FIXME: ES5 strict mode check is suppressed due to multiple uses of arguments.callee.
- * @fileoverview
- * @suppress {es5Strict}
- */
-
-/**
  * @constructor
  * @extends {WebInspector.VBox}
  * @param {!WebInspector.ProfileType.DataDisplayDelegate} dataDisplayDelegate
