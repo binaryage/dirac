@@ -47,6 +47,53 @@ WebInspector.PaintProfilerSnapshot.load = function(encodedPicture, callback)
     LayerTreeAgent.loadSnapshot(encodedPicture, wrappedCallback);
 }
 
+/**
+ * @param {!Array.<!WebInspector.RawPaintProfilerLogItem>} log
+ * @return {!Array.<!WebInspector.PaintProfilerLogItem>}
+ */
+WebInspector.PaintProfilerSnapshot._processAnnotations = function(log)
+{
+    var result = [];
+    /** @type {!Array.<!Object.<string, string>>} */
+    var commentGroupStack = [];
+
+    for (var i = 0; i < log.length; ++i) {
+        var method = log[i].method;
+        switch (method) {
+        case "beginCommentGroup":
+            commentGroupStack.push({});
+            break;
+        case "addComment":
+            var group = commentGroupStack.peekLast();
+            if (!group) {
+                console.assert(false, "Stray comment without a group");
+                break;
+            }
+            var key = String(log[i].params["key"]);
+            var value = String(log[i].params["value"]);
+            if (!key || typeof value === "undefined") {
+                console.assert(false, "Missing key or value in addComment() params");
+                break;
+            }
+            if (key in group) {
+                console.assert(false, "Duplicate key in comment group");
+                break;
+            }
+            group[key] = value;
+            break;
+        case "endCommentGroup":
+            if (!commentGroupStack.length)
+                console.assert(false, "Unbalanced commentGroupEnd call");
+            else
+                commentGroupStack.pop();
+            break;
+        default:
+            result.push(new WebInspector.PaintProfilerLogItem(log[i], i, commentGroupStack.peekLast()));
+        }
+    }
+    return result;
+}
+
 WebInspector.PaintProfilerSnapshot.prototype = {
     dispose: function()
     {
@@ -75,11 +122,43 @@ WebInspector.PaintProfilerSnapshot.prototype = {
     },
 
     /**
-     * @param {function(!Array.<!Object>=)} callback
+     * @param {function(!Array.<!WebInspector.PaintProfilerLogItem>=)} callback
      */
     commandLog: function(callback)
     {
-        var wrappedCallback = InspectorBackend.wrapClientCallback(callback, "LayerTreeAgent.snapshotCommandLog(): ");
-        LayerTreeAgent.snapshotCommandLog(this._id, wrappedCallback);
-    }
+        /**
+         * @param {?string} error
+         * @param {!Array.<!WebInspector.RawPaintProfilerLogItem>} log
+         */
+        function callbackWrapper(error, log)
+        {
+            if (error) {
+                console.error("LayerTreeAgent.snapshotCommandLog(): " + error);
+                callback();
+                return;
+            }
+            callback(WebInspector.PaintProfilerSnapshot._processAnnotations(log));
+        }
+        LayerTreeAgent.snapshotCommandLog(this._id, callbackWrapper);
+    },
+
 };
+
+/**
+ * @typedef {!{method: string, params: Array.<Object.<string, *>>}}
+ */
+WebInspector.RawPaintProfilerLogItem;
+
+/**
+ * @constructor
+ * @param {!WebInspector.RawPaintProfilerLogItem} rawEntry
+ * @param {number} commandIndex
+ * @param {!Object.<string, string>=} annotations
+ */
+WebInspector.PaintProfilerLogItem = function(rawEntry, commandIndex, annotations)
+{
+    this.method = rawEntry.method;
+    this.params = rawEntry.params;
+    this.annotations = annotations;
+    this.commandIndex = commandIndex;
+}

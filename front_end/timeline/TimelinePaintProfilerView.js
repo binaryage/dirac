@@ -65,7 +65,7 @@ WebInspector.TimelinePaintProfilerView.prototype = {
 
         /**
          * @param {!WebInspector.PaintProfilerSnapshot=} snapshot
-         * @param {!Array.<!Object>=} log
+         * @param {!Array.<!WebInspector.PaintProfilerLogItem>=} log
          * @this {WebInspector.TimelinePaintProfilerView}
          */
         function onCommandLogDone(snapshot, log)

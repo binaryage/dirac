@@ -65,13 +65,15 @@ WebInspector.PaintProfilerView.prototype = {
 
     /**
      * @param {?WebInspector.PaintProfilerSnapshot} snapshot
-     * @param {!Array.<!Object>} log
+     * @param {!Array.<!WebInspector.PaintProfilerLogItem>} log
      */
     setSnapshotAndLog: function(snapshot, log)
     {
         this._reset();
         this._snapshot = snapshot;
-        this._logCategories = log.map(WebInspector.PaintProfilerView._categoryForLogItem);
+        this._log = log;
+        this._logCategories = this._log.map(WebInspector.PaintProfilerView._categoryForLogItem);
+
         if (!this._snapshot) {
             this._update();
             return;
@@ -98,7 +100,7 @@ WebInspector.PaintProfilerView.prototype = {
             return;
 
         var maxBars = Math.floor((this._canvas.width - 2 * this._barPaddingWidth) / this._outerBarWidth);
-        var sampleCount = this._profiles[0].length;
+        var sampleCount = this._log.length;
         this._samplesPerBar = Math.ceil(sampleCount / maxBars);
         var barCount = Math.floor(sampleCount / this._samplesPerBar);
 
@@ -108,11 +110,11 @@ WebInspector.PaintProfilerView.prototype = {
         var heightByCategory = {};
         for (var i = 0, lastBarIndex = 0, lastBarTime = 0; i < sampleCount;) {
             var categoryName = (this._logCategories[i] && this._logCategories[i].name) || "misc";
+            var sampleIndex = this._log[i].commandIndex;
             for (var row = 0; row < this._profiles.length; row++) {
-                lastBarTime += this._profiles[row][i];
-                if (!heightByCategory[categoryName])
-                    heightByCategory[categoryName] = 0;
-                heightByCategory[categoryName] += this._profiles[row][i];
+                var sample = this._profiles[row][sampleIndex];
+                lastBarTime += sample;
+                heightByCategory[categoryName] = (heightByCategory[categoryName] || 0) + sample;
             }
             ++i;
             if (i - lastBarIndex == this._samplesPerBar || i == sampleCount) {
@@ -179,7 +181,7 @@ WebInspector.PaintProfilerView.prototype = {
         var barLeft = Math.floor((screenLeft - this._barPaddingWidth) / this._outerBarWidth);
         var barRight = Math.floor((screenRight - this._barPaddingWidth + this._innerBarWidth)/ this._outerBarWidth);
         var stepLeft = Math.max(0, barLeft * this._samplesPerBar);
-        var stepRight = Math.min(barRight * this._samplesPerBar, this._profiles[0].length);
+        var stepRight = Math.min(barRight * this._samplesPerBar, this._profiles[0].length - 1);
 
         return {left: stepLeft, right: stepRight};
     },
@@ -191,7 +193,7 @@ WebInspector.PaintProfilerView.prototype = {
             return;
 
         var window = this.windowBoundaries();
-        this._snapshot.requestImage(window.left, window.right, 1, this._showImageCallback);
+        this._snapshot.requestImage(this._log[window.left].commandIndex, this._log[window.right].commandIndex, 1, this._showImageCallback);
     },
 
     _reset: function()
@@ -221,7 +223,7 @@ WebInspector.PaintProfilerCommandLogView = function()
 
 WebInspector.PaintProfilerCommandLogView.prototype = {
     /**
-     * @param {!Array.<!Object>=} log
+     * @param {!Array.<!WebInspector.PaintProfilerLogItem>=} log
      */
     setCommandLog: function(log)
     {
