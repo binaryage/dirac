@@ -455,11 +455,6 @@ WebInspector.UISourceCode.prototype = {
         }
 
         this.requestOriginalContent(callback.bind(this));
-
-        WebInspector.notifications.dispatchEventToListeners(WebInspector.UserMetrics.UserAction, {
-            action: WebInspector.UserMetrics.UserActionNames.ApplyOriginalContent,
-            url: this.url
-        });
     },
 
     /**
@@ -482,11 +477,6 @@ WebInspector.UISourceCode.prototype = {
         }
 
         this.requestOriginalContent(revert.bind(this));
-
-        WebInspector.notifications.dispatchEventToListeners(WebInspector.UserMetrics.UserAction, {
-            action: WebInspector.UserMetrics.UserActionNames.RevertRevision,
-            url: this.url
-        });
     },
 
     /**
@@ -551,11 +541,6 @@ WebInspector.UISourceCode.prototype = {
 
         this._commitContent(this.workingCopy(), true);
         callback(null);
-
-        WebInspector.notifications.dispatchEventToListeners(WebInspector.UserMetrics.UserAction, {
-            action: WebInspector.UserMetrics.UserActionNames.FileSaved,
-            url: this.url
-        });
     },
 
     /**

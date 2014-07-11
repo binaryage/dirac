@@ -105,7 +105,7 @@ WebInspector.RevisionHistoryView.prototype = {
 
         var revertToOriginal = linkItem.listItemElement.createChild("span", "revision-history-link revision-history-link-row");
         revertToOriginal.textContent = WebInspector.UIString("apply original content");
-        revertToOriginal.addEventListener("click", uiSourceCode.revertToOriginal.bind(uiSourceCode));
+        revertToOriginal.addEventListener("click", this._revertToOriginal.bind(this, uiSourceCode));
 
         var clearHistoryElement = uiSourceCodeItem.listItemElement.createChild("span", "revision-history-link");
         clearHistoryElement.textContent = WebInspector.UIString("revert");
@@ -116,9 +116,27 @@ WebInspector.RevisionHistoryView.prototype = {
     /**
      * @param {!WebInspector.UISourceCode} uiSourceCode
      */
+    _revertToOriginal: function(uiSourceCode)
+    {
+        uiSourceCode.revertToOriginal();
+
+        WebInspector.notifications.dispatchEventToListeners(WebInspector.UserMetrics.UserAction, {
+            action: WebInspector.UserMetrics.UserActionNames.ApplyOriginalContent,
+            url: uiSourceCode.url
+        });
+    },
+
+    /**
+     * @param {!WebInspector.UISourceCode} uiSourceCode
+     */
     _clearHistory: function(uiSourceCode)
     {
         uiSourceCode.revertAndClearHistory(this._removeUISourceCode.bind(this));
+
+        WebInspector.notifications.dispatchEventToListeners(WebInspector.UserMetrics.UserAction, {
+            action: WebInspector.UserMetrics.UserActionNames.RevertRevision,
+            url: uiSourceCode.url
+        });
     },
 
     _revisionAdded: function(event)
