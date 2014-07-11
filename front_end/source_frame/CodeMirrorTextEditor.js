@@ -50,7 +50,7 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
         matchBrackets: true,
         smartIndent: false,
         styleSelectedText: true,
-        electricChars: false,
+        electricChars: false
     });
     this._codeMirror._codeMirrorTextEditor = this;
 
@@ -69,7 +69,8 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
         "Shift-Tab": "indentLess",
         "Enter": "smartNewlineAndIndent",
         "Ctrl-Space": "autocomplete",
-        "Esc": "dismissMultipleSelections"
+        "Esc": "dismissMultipleSelections",
+        "Ctrl-M": "gotoMatchingBracket"
     };
 
     CodeMirror.keyMap["devtools-pc"] = {
@@ -250,6 +251,33 @@ CodeMirror.commands.smartNewlineAndIndent = function(codeMirror)
     }
 }
 
+/**
+ * @param {!CodeMirror} codeMirror
+ */
+CodeMirror.commands.gotoMatchingBracket = function(codeMirror)
+{
+    var updatedSelections = [];
+    var selections = codeMirror.listSelections();
+    for (var i = 0; i < selections.length; ++i) {
+        var selection = selections[i];
+        var cursor = selection.head;
+        var matchingBracket = codeMirror.findMatchingBracket(cursor, false, { maxScanLines: 10000 });
+        var updatedHead = cursor;
+        if (matchingBracket && matchingBracket.match) {
+            var columnCorrection = CodeMirror.cmpPos(matchingBracket.from, cursor) === 0 ? 1 : 0;
+            updatedHead = new CodeMirror.Pos(matchingBracket.to.line, matchingBracket.to.ch + columnCorrection);
+        }
+        updatedSelections.push({
+            anchor: updatedHead,
+            head: updatedHead
+        });
+    }
+    codeMirror.setSelections(updatedSelections);
+}
+
+/**
+ * @param {!CodeMirror} codemirror
+ */
 CodeMirror.commands.undoAndReveal = function(codemirror)
 {
     var scrollInfo = codemirror.getScrollInfo();
@@ -259,6 +287,9 @@ CodeMirror.commands.undoAndReveal = function(codemirror)
     codemirror._codeMirrorTextEditor._autocompleteController.finishAutocomplete();
 }
 
+/**
+ * @param {!CodeMirror} codemirror
+ */
 CodeMirror.commands.redoAndReveal = function(codemirror)
 {
     var scrollInfo = codemirror.getScrollInfo();

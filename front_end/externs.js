@@ -280,7 +280,12 @@ CodeMirror.prototype = {
     execCommand: function(cmd) { },
     extendSelection: function(from, to) { },
     findMarksAt: function(pos) { },
-    findMatchingBracket: function() { },
+    /**
+     * @param {!CodeMirror.Pos} from
+     * @param {boolean=} strict
+     * @param {Object=} config
+     */
+    findMatchingBracket: function(from, strict, config) { },
     findPosH: function(from, amount, unit, visually) { },
     findPosV: function(from, amount, unit, goalColumn) { },
     firstLine: function() { },
