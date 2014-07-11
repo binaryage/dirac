@@ -133,7 +133,8 @@ fieldset[disabled] label:hover input {
     margin: 0;
 }
 
-.toolbar .tabbed-pane-header-tab {
+.toolbar .tabbed-pane-header-tab,
+.toolbar .tabbed-pane-header-tab.selected {
     border-width: 0 2px 0 2px;
     background: none;
     padding-right: 3px;
