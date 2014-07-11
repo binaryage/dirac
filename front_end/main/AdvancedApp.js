@@ -32,6 +32,7 @@ WebInspector.AdvancedApp.prototype = {
         WebInspector.dockController.addEventListener(WebInspector.DockController.Events.AfterDockSideChanged, this._onAfterDockSideChange, this);
         this._onDockSideChange();
 
+        console.timeStamp("AdvancedApp.attachToBody");
         rootView.attachToBody();
     },
 
@@ -150,6 +151,7 @@ WebInspector.AdvancedApp.prototype = {
         if (this._changingDockSide || (this._isDocked() === toolbox))
             return;
         var bounds = /** @type {{x: number, y: number, width: number, height: number}} */ (event.data);
+        console.timeStamp("AdvancedApp.setInspectedPageBounds");
         InspectorFrontendHost.setInspectedPageBounds(bounds);
     },
 

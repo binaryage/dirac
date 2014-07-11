@@ -113,6 +113,7 @@ WebInspector.DockController.prototype = {
 
         var eventData = { from: this._dockSide, to: dockSide };
         this.dispatchEventToListeners(WebInspector.DockController.Events.BeforeDockSideChanged, eventData);
+        console.timeStamp("DockController.setIsDocked");
         InspectorFrontendHost.setIsDocked(dockSide !== WebInspector.DockController.State.Undocked, this._setIsDockedResponse.bind(this, eventData));
         this._dockSide = dockSide;
         this._updateUI();

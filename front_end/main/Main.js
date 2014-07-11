@@ -189,6 +189,7 @@ WebInspector.Main.prototype = {
 
     _loaded: function()
     {
+        console.timeStamp("Main._loaded");
         if (WebInspector.queryParam("toolbox")) {
             new WebInspector.Toolbox();
             return;
@@ -245,6 +246,7 @@ WebInspector.Main.prototype = {
      */
     _doLoadedDone: function(connection)
     {
+        console.timeStamp("Main._doLoadedDone");
         connection.addEventListener(InspectorBackendClass.Connection.Events.Disconnected, onDisconnected);
 
         /**
@@ -288,6 +290,7 @@ WebInspector.Main.prototype = {
 
     _doLoadedDoneWithCapabilities: function(mainTarget)
     {
+        console.timeStamp("Main._doLoadedDoneWithCapabilities");
         WebInspector.dockController = new WebInspector.DockController(!!WebInspector.queryParam("can_dock"));
         WebInspector.overridesSupport = new WebInspector.OverridesSupport(WebInspector.dockController.canDock());
 
@@ -387,7 +390,9 @@ WebInspector.Main.prototype = {
 
         function inspectorAgentEnableCallback()
         {
+            console.timeStamp("Main.inspectorAgentEnableCallback");
             WebInspector.app.presentUI();
+            console.timeStamp("Main.inspectorAgentEnableCallbackPresentUI");
         }
 
         this._loadCompletedForWorkers();

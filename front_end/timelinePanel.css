@@ -498,27 +498,40 @@
 
 .timeline .resources-event-divider {
     height: 19px;
-    width: 8px;
-    border-left-width: 2px;
-    border-left-style: solid;
-    bottom: auto;
+    width: 6px;
     pointer-events: auto;
+    margin-left: -2px;
 }
 
-.resources-red-divider {
-    border-color: rgba(255, 0, 0, 0.5);
+.timeline .resources-event-divider::before {
+    height: 19px;
+    width: 2px;
+    margin-left: 2px;
+    border: 1px solid rgb(163, 109, 0);
+    bottom: auto;
+    content: "";
+    display: block;
 }
 
-.resources-blue-divider {
-    border-color: rgba(0, 0, 255, 0.5);
+.timeline .resources-event-divider:hover::before {
+    border-width: 2px;
+    margin-left: 1px;
 }
 
-.resources-orange-divider {
-    border-color: rgba(255, 178, 23, 0.5);
+.timeline .resources-event-divider.resources-red-divider::before {
+    border-color: rgb(255, 0, 0);
 }
 
-.resources-green-divider {
-    border-color: rgba(0, 130, 0, 0.5);
+.timeline .resources-event-divider.resources-blue-divider::before {
+    border-color: rgb(0, 0, 255);
+}
+
+.timeline .resources-event-divider.resources-orange-divider::before {
+    border-color: rgb(255, 178, 23);
+}
+
+.timeline .resources-event-divider.resources-green-divider::before {
+    border-color: rgb(0, 130, 0);
 }
 
 .resources-divider:last-child {
