@@ -274,7 +274,6 @@ WebInspector.Main.prototype = {
         }
         WebInspector.ContextMenu.initialize();
 
-        WebInspector.targetManager = new WebInspector.TargetManager();
         WebInspector.targetManager.createTarget(WebInspector.UIString("Main"), connection, this._doLoadedDoneWithCapabilities.bind(this));
         WebInspector.isolatedFileSystemManager = new WebInspector.IsolatedFileSystemManager();
         WebInspector.workspace = new WebInspector.Workspace(WebInspector.isolatedFileSystemManager.mapping());

@@ -146,9 +146,6 @@ WebInspector.Target.prototype = {
         if (!WebInspector.cpuProfilerModel)
             WebInspector.cpuProfilerModel = this.cpuProfilerModel;
 
-        /** @type {!WebInspector.DebuggerScriptMapping} */
-        this.debuggerScriptMapping = new WebInspector.DebuggerScriptMapping(this.debuggerModel, WebInspector.workspace, WebInspector.networkWorkspaceBinding);
-
         /** @type {!WebInspector.HeapProfilerModel} */
         this.heapProfilerModel = new WebInspector.HeapProfilerModel(this);
 
@@ -187,7 +184,6 @@ WebInspector.Target.prototype = {
     {
         this.debuggerModel.dispose();
         this.networkManager.dispose();
-        this.debuggerScriptMapping.dispose();
         this.cpuProfilerModel.dispose();
     },
 
@@ -368,4 +364,4 @@ WebInspector.TargetObserver.prototype = {
 /**
  * @type {!WebInspector.TargetManager}
  */
-WebInspector.targetManager;
+WebInspector.targetManager = new WebInspector.TargetManager();

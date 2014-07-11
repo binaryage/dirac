@@ -116,7 +116,7 @@ WebInspector.LiveEditSupport.prototype = {
 WebInspector.LiveEditSupport.liveEditSupportForUISourceCode = function(uiSourceCode)
 {
     var projectId = uiSourceCode.project().id();
-    var target;
+    var target = null;
     var targets = WebInspector.targetManager.targets();
     for (var i = 0; i < targets.length; ++i) {
         if (projectId === WebInspector.DefaultScriptMapping.projectIdForTarget(targets[i])) {
@@ -124,7 +124,8 @@ WebInspector.LiveEditSupport.liveEditSupportForUISourceCode = function(uiSourceC
             break;
         }
     }
-    return target ? target.debuggerScriptMapping.liveEditSupport() : null;
+    var mapping = WebInspector.DebuggerScriptMapping.registry.instance(target);
+    return mapping ? mapping.liveEditSupport() : null;
 }
 
 /**
