@@ -774,6 +774,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
 
     _updateCodeMirrorMode: function()
     {
+        this._setupWhitespaceHighlight();
         var showWhitespaces = WebInspector.settings.showWhitespacesInEditor.get();
         this.element.classList.toggle("show-whitespaces", showWhitespaces);
         this._codeMirror.setOption("mode", showWhitespaces ? this._whitespaceOverlayMode(this._mimeType) : this._mimeType);
