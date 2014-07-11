@@ -12,7 +12,6 @@ WebInspector.TracingTimelineModel = function(tracingModel, recordFilter)
 {
     WebInspector.TimelineModel.call(this, tracingModel.target());
     this._tracingModel = tracingModel;
-    this._mainThreadEvents = [];
     this._inspectedTargetEvents = [];
     this._recordFilter = recordFilter;
 
@@ -214,12 +213,20 @@ WebInspector.TracingTimelineModel.prototype = {
      */
     mainThreadEvents: function()
     {
-        return this._mainThreadEvents;
+        return this._virtualThreads[WebInspector.TimelineModel.MainThreadName] || [];
+    },
+
+    /**
+     * @return {!Object.<string, !Array.<!WebInspector.TracingModel.Event>>}
+     */
+    virtualThreads: function()
+    {
+        return this._virtualThreads;
     },
 
     reset: function()
     {
-        this._mainThreadEvents = [];
+        this._virtualThreads = {};
         this._inspectedTargetEvents = [];
         WebInspector.TimelineModel.prototype.reset.call(this);
     },
@@ -227,7 +234,7 @@ WebInspector.TracingTimelineModel.prototype = {
     _buildTimelineRecords: function()
     {
         var recordStack = [];
-        var mainThreadEvents = this._mainThreadEvents;
+        var mainThreadEvents = this.mainThreadEvents();
         for (var i = 0, size = mainThreadEvents.length; i < size; ++i) {
             var event = mainThreadEvents[i];
             while (recordStack.length) {
@@ -300,8 +307,13 @@ WebInspector.TracingTimelineModel.prototype = {
             if (endTime && event.startTime >= endTime)
                 break;
             this._processEvent(event);
-            if (thread === mainThread)
-                this._mainThreadEvents.push(event);
+            var threadName = thread === mainThread ? WebInspector.TimelineModel.MainThreadName : thread.name();
+            var threadEvents = this._virtualThreads[threadName];
+            if (!threadEvents) {
+                threadEvents = [];
+                this._virtualThreads[threadName] = threadEvents;
+            }
+            threadEvents.push(event);
             this._inspectedTargetEvents.push(event);
         }
     },
@@ -331,7 +343,7 @@ WebInspector.TracingTimelineModel.prototype = {
 
         switch (event.name) {
         case recordTypes.CallStack:
-            var lastMainThreadEvent = this._mainThreadEvents.peekLast();
+            var lastMainThreadEvent = this.mainThreadEvents().peekLast();
             if (lastMainThreadEvent && event.args.stack && event.args.stack.length)
                 lastMainThreadEvent.stackTrace = event.args.stack;
             break;

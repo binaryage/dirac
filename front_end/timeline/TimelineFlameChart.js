@@ -552,8 +552,15 @@ WebInspector.TracingBasedTimelineFlameChartDataProvider.prototype = {
         this._minimumBoundary = this._model.minimumRecordTime();
         this._timeSpan = Math.max(this._model.maximumRecordTime() - this._minimumBoundary, 1000);
         this._currentLevel = 0;
-        this._appendHeaderRecord("CPU", this._currentLevel++);
+        this._appendHeaderRecord(WebInspector.UIString("Main Thread"), this._currentLevel++);
         this._currentLevel += this._appendThreadTimelineData(this._model.mainThreadEvents(), this._currentLevel) + 1;
+        var threads = this._model.virtualThreads();
+        for (var threadName in threads) {
+            if (threadName === WebInspector.TimelineModel.MainThreadName)
+                continue;
+            this._appendHeaderRecord(threadName, this._currentLevel++);
+            this._currentLevel += this._appendThreadTimelineData(threads[threadName], this._currentLevel) + 1;
+        }
         return this._timelineData;
     },
 
