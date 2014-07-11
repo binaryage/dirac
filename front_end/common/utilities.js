@@ -276,6 +276,16 @@ String.prototype.hashCode = function()
 }
 
 /**
+ * @param {number} index
+ * @return {boolean}
+ */
+String.prototype.isDigitAt = function(index)
+{
+    var c = this.charCodeAt(index);
+    return 48 <= c && c <= 57;
+}
+
+/**
  * @param {string} a
  * @param {string} b
  * @return {number}
@@ -903,11 +913,6 @@ String.tokenizeFormatString = function(format, formatters)
         tokens.push({ type: "specifier", specifier: specifier, precision: precision, substitutionIndex: substitutionIndex });
     }
 
-    function isDigit(c)
-    {
-        return !!/[0-9]/.exec(c);
-    }
-
     var index = 0;
     for (var precentIndex = format.indexOf("%", index); precentIndex !== -1; precentIndex = format.indexOf("%", index)) {
         addStringToken(format.substring(index, precentIndex));
@@ -920,10 +925,10 @@ String.tokenizeFormatString = function(format, formatters)
             continue;
         }
 
-        if (isDigit(format[index])) {
+        if (format.isDigitAt(index)) {
             // The first character is a number, it might be a substitution index.
             var number = parseInt(format.substring(index), 10);
-            while (isDigit(format[index]))
+            while (format.isDigitAt(index))
                 ++index;
 
             // If the number is greater than zero and ends with a "$",
@@ -943,7 +948,7 @@ String.tokenizeFormatString = function(format, formatters)
             if (isNaN(precision))
                 precision = 0;
 
-            while (isDigit(format[index]))
+            while (format.isDigitAt(index))
                 ++index;
         }
 
