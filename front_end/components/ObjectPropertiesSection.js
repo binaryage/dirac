@@ -206,6 +206,8 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
 
         if (this.property.value) {
             this.valueElement = document.createElementWithClass("span", "value");
+            var type = this.property.value.type;
+            var subtype = this.property.value.subtype;
             var description = this.property.value.description;
             var prefix;
             var valueText;
@@ -214,16 +216,17 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
                 prefix = "[Exception: ";
                 valueText = description;
                 suffix = "]";
-            } else if (this.property.value.type === "string" && typeof description === "string") {
+            } else if (type === "string" && typeof description === "string") {
                 // Render \n as a nice unicode cr symbol.
                 prefix = "\"";
                 valueText = description.replace(/\n/g, "\u21B5");
                 suffix = "\"";
                 this.valueElement._originalTextContent = "\"" + description + "\"";
-            } else if (this.property.value.type === "function" && typeof description === "string") {
-                valueText = /.*/.exec(description)[0].replace(/ +$/g, "");
+            } else if (type === "function" && typeof description === "string") {
+                // Render function description until the first \n.
+                valueText = /.*/.exec(description)[0].replace(/\s+$/g, "");
                 this.valueElement._originalTextContent = description;
-            } else if (this.property.value.type !== "object" || this.property.value.subtype !== "node") {
+            } else if (type !== "object" || subtype !== "node") {
                 valueText = description;
             }
             this.valueElement.setTextContentTruncatedIfNeeded(valueText || "");
@@ -234,14 +237,12 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
 
             if (this.property.wasThrown)
                 this.valueElement.classList.add("error");
-            if (this.property.value.subtype)
-                this.valueElement.classList.add("console-formatted-" + this.property.value.subtype);
-            else if (this.property.value.type)
-                this.valueElement.classList.add("console-formatted-" + this.property.value.type);
+            if (subtype || type)
+                this.valueElement.classList.add("console-formatted-" + (subtype || type));
 
             this.valueElement.addEventListener("contextmenu", this._contextMenuFired.bind(this, this.property.value), false);
-            if (this.property.value.type === "object" && this.property.value.subtype === "node" && this.property.value.description) {
-                WebInspector.DOMPresentationUtils.createSpansForNodeTitle(this.valueElement, this.property.value.description);
+            if (type === "object" && subtype === "node" && description) {
+                WebInspector.DOMPresentationUtils.createSpansForNodeTitle(this.valueElement, description);
                 this.valueElement.addEventListener("mousemove", this._mouseMove.bind(this, this.property.value), false);
                 this.valueElement.addEventListener("mouseout", this._mouseOut.bind(this, this.property.value), false);
             } else {
@@ -261,9 +262,7 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
             }
         }
 
-        this.listItemElement.appendChild(this.nameElement);
-        this.listItemElement.appendChild(separatorElement);
-        this.listItemElement.appendChild(this.valueElement);
+        this.listItemElement.appendChildren(this.nameElement, separatorElement, this.valueElement);
     },
 
     _contextMenuFired: function(value, event)
