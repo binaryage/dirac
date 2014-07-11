@@ -284,15 +284,6 @@ Constraints.prototype.addHeight = function(value)
 }
 
 /**
- * @return {string}
- */
-Selection.currentText = function()
-{
-    var selection = window.getSelection();
-    return selection.rangeCount ? selection.toString() : "";
-}
-
-/**
  * @param {?Element=} containerElement
  * @return {!Size}
  */

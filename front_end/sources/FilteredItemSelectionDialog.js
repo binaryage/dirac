@@ -66,21 +66,6 @@ WebInspector.FilteredItemSelectionDialog = function(delegate)
     this._itemsLoaded();
 }
 
-/**
- * @param {!WebInspector.SelectionDialogContentProvider} provider
- * @param {!WebInspector.View} view
- */
-WebInspector.FilteredItemSelectionDialog.showWithSelectionAsQuery = function(provider, view)
-{
-    var selection = Selection.currentText().replace(/\r?\n.*/, "");
-    var filteredItemSelectionDialog = new WebInspector.FilteredItemSelectionDialog(provider);
-    WebInspector.Dialog.show(view.element, filteredItemSelectionDialog);
-    if (selection) {
-        filteredItemSelectionDialog.setQuery(selection);
-        filteredItemSelectionDialog._promptElement.select();
-    }
-}
-
 WebInspector.FilteredItemSelectionDialog.prototype = {
     /**
      * @param {!Element} element
@@ -557,7 +542,8 @@ WebInspector.JavaScriptOutlineDialog.show = function(view, uiSourceCode, selectI
 {
     if (WebInspector.Dialog.currentInstance())
         return;
-    WebInspector.FilteredItemSelectionDialog.showWithSelectionAsQuery(new WebInspector.JavaScriptOutlineDialog(uiSourceCode, selectItemCallback), view);
+    var filteredItemSelectionDialog = new WebInspector.FilteredItemSelectionDialog(new WebInspector.JavaScriptOutlineDialog(uiSourceCode, selectItemCallback));
+    WebInspector.Dialog.show(view.element, filteredItemSelectionDialog);
 }
 
 WebInspector.JavaScriptOutlineDialog.prototype = {
@@ -884,17 +870,11 @@ WebInspector.OpenResourceDialog.show = function(sourcesView, relativeToElement, 
     if (WebInspector.Dialog.currentInstance())
         return;
 
-    var queryProvided = typeof query === "string";
-    if (!queryProvided)
-        query = Selection.currentText();
     var filteredItemSelectionDialog = new WebInspector.FilteredItemSelectionDialog(new WebInspector.OpenResourceDialog(sourcesView, defaultScores));
     filteredItemSelectionDialog.renderAsTwoRows();
-    WebInspector.Dialog.show(relativeToElement, filteredItemSelectionDialog);
-    if (query) {
+    if (query)
         filteredItemSelectionDialog.setQuery(query);
-        if (!queryProvided)
-            filteredItemSelectionDialog._promptElement.select();
-    }
+    WebInspector.Dialog.show(relativeToElement, filteredItemSelectionDialog);
 }
 
 /**
