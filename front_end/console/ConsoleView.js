@@ -91,6 +91,8 @@ WebInspector.ConsoleView = function(hideContextSelector)
     this._messagesElement.addEventListener("click", this._messagesClicked.bind(this), true);
     this._scrolledToBottom = true;
 
+    this._viewportThrottler = new WebInspector.Throttler(50);
+
     this._filterStatusMessageElement = document.createElementWithClass("div", "console-message");
     this._messagesElement.insertBefore(this._filterStatusMessageElement, this._messagesElement.firstChild);
     this._filterStatusTextElement = this._filterStatusMessageElement.createChild("span", "console-info");
@@ -429,39 +431,24 @@ WebInspector.ConsoleView.prototype = {
         this.restoreScrollPositions();
     },
 
-    _isScrollIntoViewScheduled: function()
-    {
-        return !!this._scrollIntoViewTimer;
-    },
-
     _scheduleViewportRefresh: function()
     {
-        if (this._scrollIntoViewTimer)
-            return;
         /**
+         * @param {!WebInspector.Throttler.FinishCallback} finishCallback
          * @this {WebInspector.ConsoleView}
          */
-        function scrollIntoView()
+        function invalidateViewport(finishCallback)
         {
-            delete this._scrollIntoViewTimer;
             this._viewport.invalidate();
+            finishCallback();
         }
-        this._scrollIntoViewTimer = setTimeout(scrollIntoView.bind(this), 50);
+        this._viewportThrottler.schedule(invalidateViewport.bind(this));
     },
 
     _immediatelyScrollIntoView: function()
     {
+        // This will scroll viewport and trigger its refresh.
         this._promptElement.scrollIntoView(true);
-        this._cancelScheduledScrollIntoView();
-    },
-
-    _cancelScheduledScrollIntoView: function()
-    {
-        if (!this._isScrollIntoViewScheduled())
-            return;
-        clearTimeout(this._scrollIntoViewTimer);
-        this._viewport.refresh();
-        delete this._scrollIntoViewTimer;
     },
 
     _updateFilterStatus: function()
