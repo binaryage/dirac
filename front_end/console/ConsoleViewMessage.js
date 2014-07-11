@@ -217,8 +217,6 @@ WebInspector.ConsoleViewMessage.prototype = {
 
             var content = this._formattedMessage;
             var root = new TreeElement(content, null, true);
-            root.toggleOnClick = true;
-            root.selectable = false;
             content.treeElementForTest = root;
             treeOutline.appendChild(root);
             if (consoleMessage.type === WebInspector.ConsoleMessage.MessageType.Trace)
