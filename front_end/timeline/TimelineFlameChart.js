@@ -457,6 +457,8 @@ WebInspector.TracingBasedTimelineFlameChartDataProvider = function(model, frameM
     this._palette = new WebInspector.TraceViewPalette();
     this._entryIndexToTitle = {};
     this._filters = [];
+    this.addFilter(WebInspector.TracingTimelineUIUtils.hiddenEventsFilter());
+    this.addFilter(new WebInspector.TracingTimelineModel.ExclusiveEventNameFilter([WebInspector.TracingTimelineModel.RecordType.Program]));
 }
 
 WebInspector.TracingBasedTimelineFlameChartDataProvider.prototype = {
@@ -855,8 +857,6 @@ WebInspector.TimelineFlameChart = function(delegate, model, tracingModel, frameM
     this._dataProvider = tracingModel
         ? new WebInspector.TracingBasedTimelineFlameChartDataProvider(tracingModel, frameModel, model.target())
         : new WebInspector.TimelineFlameChartDataProvider(/** @type {!WebInspector.TimelineModelImpl} */(model), frameModel, uiUtils);
-    if (tracingModel)
-        this._dataProvider.addFilter(WebInspector.TracingTimelineUIUtils.hiddenEventsFilter());
     this._mainView = new WebInspector.FlameChart(this._dataProvider, this, true);
     this._mainView.show(this.element);
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStarted, this._onRecordingStarted, this);

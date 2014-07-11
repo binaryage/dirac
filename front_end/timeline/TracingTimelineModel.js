@@ -515,16 +515,37 @@ WebInspector.TracingTimelineModel.Filter.prototype = {
 /**
  * @constructor
  * @implements {WebInspector.TracingTimelineModel.Filter}
- * @param {!Array.<string>} includeNames
+ * @param {!Array.<string>} eventNames
  */
-WebInspector.TracingTimelineModel.EventNamesFilter = function(includeNames)
+WebInspector.TracingTimelineModel.EventNameFilter = function(eventNames)
 {
-    this._includeNames = {};
-    for (var i = 0; i < includeNames.length; ++i)
-        this._includeNames[includeNames[i]] = true;
+    this._eventNames = {};
+    for (var i = 0; i < eventNames.length; ++i)
+        this._eventNames[eventNames[i]] = true;
 }
 
-WebInspector.TracingTimelineModel.EventNamesFilter.prototype = {
+WebInspector.TracingTimelineModel.EventNameFilter.prototype = {
+    /**
+     * @param {!WebInspector.TracingModel.Event} event
+     * @return {boolean}
+     */
+    accept: function(event)
+    {
+        throw new Error("Not implemented.");
+    }
+}
+
+/**
+ * @constructor
+ * @extends {WebInspector.TracingTimelineModel.EventNameFilter}
+ * @param {!Array.<string>} includeNames
+ */
+WebInspector.TracingTimelineModel.InclusiveEventNameFilter = function(includeNames)
+{
+    WebInspector.TracingTimelineModel.EventNameFilter.call(this, includeNames)
+}
+
+WebInspector.TracingTimelineModel.InclusiveEventNameFilter.prototype = {
     /**
      * @override
      * @param {!WebInspector.TracingModel.Event} event
@@ -532,8 +553,32 @@ WebInspector.TracingTimelineModel.EventNamesFilter.prototype = {
      */
     accept: function(event)
     {
-        return !!this._includeNames[event.name];
-    }
+        return !!this._eventNames[event.name];
+    },
+    __proto__: WebInspector.TracingTimelineModel.EventNameFilter.prototype
+}
+
+/**
+ * @constructor
+ * @extends {WebInspector.TracingTimelineModel.EventNameFilter}
+ * @param {!Array.<string>} excludeNames
+ */
+WebInspector.TracingTimelineModel.ExclusiveEventNameFilter = function(excludeNames)
+{
+    WebInspector.TracingTimelineModel.EventNameFilter.call(this, excludeNames)
+}
+
+WebInspector.TracingTimelineModel.ExclusiveEventNameFilter.prototype = {
+    /**
+     * @override
+     * @param {!WebInspector.TracingModel.Event} event
+     * @return {boolean}
+     */
+    accept: function(event)
+    {
+        return !this._eventNames[event.name];
+    },
+    __proto__: WebInspector.TracingTimelineModel.EventNameFilter.prototype
 }
 
 /**

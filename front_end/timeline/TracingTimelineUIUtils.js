@@ -788,5 +788,5 @@ WebInspector.TracingTimelineUIUtils._visibleTypes = function()
  */
 WebInspector.TracingTimelineUIUtils.hiddenEventsFilter = function()
 {
-    return new WebInspector.TracingTimelineModel.EventNamesFilter(WebInspector.TracingTimelineUIUtils._visibleTypes());
+    return new WebInspector.TracingTimelineModel.InclusiveEventNameFilter(WebInspector.TracingTimelineUIUtils._visibleTypes());
 }
