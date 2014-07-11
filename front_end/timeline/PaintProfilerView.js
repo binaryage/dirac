@@ -181,7 +181,7 @@ WebInspector.PaintProfilerView.prototype = {
         var barLeft = Math.floor((screenLeft - this._barPaddingWidth) / this._outerBarWidth);
         var barRight = Math.floor((screenRight - this._barPaddingWidth + this._innerBarWidth)/ this._outerBarWidth);
         var stepLeft = Math.max(0, barLeft * this._samplesPerBar);
-        var stepRight = Math.min(barRight * this._samplesPerBar, this._profiles[0].length - 1);
+        var stepRight = Math.min(barRight * this._samplesPerBar, this._log.length - 1);
 
         return {left: stepLeft, right: stepRight};
     },
