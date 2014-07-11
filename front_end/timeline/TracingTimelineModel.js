@@ -443,7 +443,7 @@ WebInspector.TracingTimelineModel.prototype = {
             if (!layerUpdateEvent || layerUpdateEvent.args["layerTreeId"] !== this._inspectedTargetLayerTreeId)
                 break;
             var paintEvent = this._lastPaintForLayer[layerUpdateEvent.args["layerId"]];
-            if (!paintEvent)
+            if (!paintEvent || !event.args["snapshot"] || !event.args["snapshot"]["params"])
                 break;
             paintEvent.picture = event.args["snapshot"]["skp64"];
             paintEvent.layerRect = event.args["snapshot"]["params"]["layer_rect"];
