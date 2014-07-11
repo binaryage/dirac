@@ -86,7 +86,7 @@ WebInspector.AdvancedSearchView.prototype = {
             delete this._pendingSearchConfig;
         if (!this._pendingSearchConfig)
             return;
-        var searchConfig = this._pendingSearchConfig
+        var searchConfig = this._pendingSearchConfig;
         delete this._pendingSearchConfig;
         this._innerStartSearch(searchConfig);
     },

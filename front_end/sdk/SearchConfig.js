@@ -68,7 +68,7 @@ WebInspector.SearchConfig.prototype = {
         var quotedPattern = "\"(([^\\\\\"]|\\\\.)+)\""; // Inside double quotes: any symbol except double quote and backslash or any symbol escaped with a backslash.
 
         // A word is a sequence of any symbols except space and backslash or any symbols escaped with a backslash, that does not start with file:.
-        var unquotedWordPattern = "((?!file:)[^\\\\ ]|\\\\.)+";
+        var unquotedWordPattern = "((?!-?file:)[^\\\\ ]|\\\\.)+";
         var unquotedPattern = unquotedWordPattern + "( +" + unquotedWordPattern + ")*"; // A word or several words separated by space(s).
 
         var pattern = "(" + filePattern + ")|(" + quotedPattern + ")|(" + unquotedPattern + ")";
