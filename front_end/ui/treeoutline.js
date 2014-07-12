@@ -602,6 +602,7 @@ TreeElement.prototype._attach = function()
             this._listItemNode.classList.add("selected");
 
         this._listItemNode.addEventListener("mousedown", TreeElement.treeElementMouseDown, false);
+        this._listItemNode.addEventListener("selectstart", TreeElement.treeElementSelectStart, false);
         this._listItemNode.addEventListener("click", TreeElement.treeElementToggled, false);
         this._listItemNode.addEventListener("dblclick", TreeElement.treeElementDoubleClicked, false);
 
@@ -631,7 +632,11 @@ TreeElement.prototype._detach = function()
 TreeElement.treeElementMouseDown = function(event)
 {
     var element = event.currentTarget;
-    if (!element || !element.treeElement || !element.treeElement.selectable)
+    if (!element)
+        return;
+    delete element._selectionStarted;
+
+    if (!element.treeElement || !element.treeElement.selectable)
         return;
 
     if (element.treeElement.isEventWithinDisclosureTriangle(event))
@@ -640,15 +645,35 @@ TreeElement.treeElementMouseDown = function(event)
     element.treeElement.selectOnMouseDown(event);
 }
 
+TreeElement.treeElementSelectStart = function(event)
+{
+    var element = event.currentTarget;
+    if (!element)
+        return;
+    element._selectionStarted = true;
+}
+
 TreeElement.treeElementToggled = function(event)
 {
     var element = event.currentTarget;
-    if (!element || !element.treeElement)
+    if (!element)
+        return;
+    if (element._selectionStarted) {
+        delete element._selectionStarted
+        var selection = window.getSelection();
+        if (selection && !selection.isCollapsed && element.isSelfOrAncestor(selection.anchorNode) && element.isSelfOrAncestor(selection.focusNode))
+            return;
+    }
+
+    if (!element.treeElement)
         return;
 
     var toggleOnClick = element.treeElement.toggleOnClick && !element.treeElement.selectable;
     var isInTriangle = element.treeElement.isEventWithinDisclosureTriangle(event);
     if (!toggleOnClick && !isInTriangle)
+        return;
+
+    if (event.target && event.target.enclosingNodeOrSelfWithNodeName("a"))
         return;
 
     if (element.treeElement.expanded) {
