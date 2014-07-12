@@ -570,6 +570,7 @@ WebInspector.ViewportControl.prototype = {
     {
         this._rebuildCumulativeHeightsIfNeeded();
         this.element.scrollTop = index > 0 ? this._cumulativeHeights[index - 1] : 0;
+        this.refresh();
     },
 
     /**
@@ -579,5 +580,6 @@ WebInspector.ViewportControl.prototype = {
     {
         this._rebuildCumulativeHeightsIfNeeded();
         this.element.scrollTop = this._cumulativeHeights[index] - this.element.clientHeight;
+        this.refresh();
     }
 }
