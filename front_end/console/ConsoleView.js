@@ -172,6 +172,14 @@ WebInspector.ConsoleView.prototype = {
     },
 
     /**
+     * @return {number}
+     */
+    minimumRowHeight: function()
+    {
+        return 16;
+    },
+
+    /**
      * @param {!WebInspector.Target} target
      */
     targetAdded: function(target)

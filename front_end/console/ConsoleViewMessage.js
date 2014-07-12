@@ -105,7 +105,7 @@ WebInspector.ConsoleViewMessage.prototype = {
     {
         if (this._cachedHeight)
             return this._cachedHeight;
-        const defaultConsoleRowHeight = 17;
+        const defaultConsoleRowHeight = 16;
         if (this._message.type === WebInspector.ConsoleMessage.MessageType.Table) {
             var table = this._message.parameters[0];
             if (table && table.preview)

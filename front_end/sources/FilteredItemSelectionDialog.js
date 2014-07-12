@@ -382,6 +382,14 @@ WebInspector.FilteredItemSelectionDialog.prototype = {
         return new WebInspector.StaticViewportElement(element);
     },
 
+    /**
+     * @return {number}
+     */
+    minimumRowHeight: function()
+    {
+        return this.fastHeight(0);
+    },
+
     __proto__: WebInspector.DialogDelegate.prototype
 }
 
