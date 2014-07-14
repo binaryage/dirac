@@ -264,6 +264,7 @@
         "name": "sources",
         "dependencies": ["components", "source_frame"],
         "sources": [
+            "sources/AddSourceMapURLDialog.js",
             "sources/AdvancedSearchView.js",
             "sources/BreakpointsSidebarPane.js",
             "sources/CSSSourceFrame.js",

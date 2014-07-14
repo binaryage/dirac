@@ -26,6 +26,7 @@
 
 importScript("jsdifflib.js")
 importScript("Placard.js");
+importScript("AddSourceMapURLDialog.js");
 importScript("BreakpointsSidebarPane.js");
 importScript("CallStackSidebarPane.js");
 importScript("SimpleHistoryManager.js");

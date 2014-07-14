@@ -61,7 +61,7 @@ WebInspector.JavaScriptSourceFrame = function(scriptsPanel, uiSourceCode)
     this._uiSourceCode.addEventListener(WebInspector.UISourceCode.Events.WorkingCopyChanged, this._workingCopyChanged, this);
     this._uiSourceCode.addEventListener(WebInspector.UISourceCode.Events.WorkingCopyCommitted, this._workingCopyCommitted, this);
 
-    /** @type {!Map.<!WebInspector.Target, !WebInspector.ScriptFile>}*/
+    /** @type {!Map.<!WebInspector.Target, !WebInspector.ResourceScriptFile>}*/
     this._scriptFileForTarget = new Map();
     this._registerShortcuts();
     var targets = WebInspector.targetManager.targets();
@@ -305,7 +305,36 @@ WebInspector.JavaScriptSourceFrame.prototype = {
             WebInspector.Revealer.reveal(liveEditUISourceCode.uiLocation(lineNumber));
         }
 
+        /**
+         * @this {WebInspector.JavaScriptSourceFrame}
+         * @param {!WebInspector.ResourceScriptFile} scriptFile
+         */
+        function addSourceMapURL(scriptFile)
+        {
+            WebInspector.AddSourceMapURLDialog.show(this.element, addSourceMapURLDialogCallback.bind(null, scriptFile));
+        }
+
+        /**
+         * @param {!WebInspector.ResourceScriptFile} scriptFile
+         * @param {string} url
+         */
+        function addSourceMapURLDialogCallback(scriptFile, url)
+        {
+            if (!url)
+                return;
+            scriptFile.addSourceMapURL(url);
+        }
+
         WebInspector.UISourceCodeFrame.prototype.populateTextAreaContextMenu.call(this, contextMenu, lineNumber);
+
+        if (this._uiSourceCode.project().type() === WebInspector.projectTypes.Network && WebInspector.settings.jsSourceMapsEnabled.get()) {
+            if (this._scriptFileForTarget.size()) {
+                var scriptFile = this._scriptFileForTarget.values()[0];
+                var addSourceMapURLLabel = WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Add source map" : "Add Source Map");
+                contextMenu.appendItem(addSourceMapURLLabel, addSourceMapURL.bind(this, scriptFile));
+                contextMenu.appendSeparator();
+            }
+        }
     },
 
     _workingCopyChanged: function(event)
@@ -766,8 +795,8 @@ WebInspector.JavaScriptSourceFrame.prototype = {
         var newScriptFile = this._uiSourceCode.scriptFileForTarget(target);
         this._scriptFileForTarget.remove(target);
         if (oldScriptFile) {
-            oldScriptFile.removeEventListener(WebInspector.ScriptFile.Events.DidMergeToVM, this._didMergeToVM, this);
-            oldScriptFile.removeEventListener(WebInspector.ScriptFile.Events.DidDivergeFromVM, this._didDivergeFromVM, this);
+            oldScriptFile.removeEventListener(WebInspector.ResourceScriptFile.Events.DidMergeToVM, this._didMergeToVM, this);
+            oldScriptFile.removeEventListener(WebInspector.ResourceScriptFile.Events.DidDivergeFromVM, this._didDivergeFromVM, this);
             if (this._muted && !this._uiSourceCode.isDirty())
                 this._restoreBreakpointsIfConsistentScripts();
         }
@@ -778,8 +807,8 @@ WebInspector.JavaScriptSourceFrame.prototype = {
         this._updateDivergedInfobar();
 
         if (newScriptFile) {
-            newScriptFile.addEventListener(WebInspector.ScriptFile.Events.DidMergeToVM, this._didMergeToVM, this);
-            newScriptFile.addEventListener(WebInspector.ScriptFile.Events.DidDivergeFromVM, this._didDivergeFromVM, this);
+            newScriptFile.addEventListener(WebInspector.ResourceScriptFile.Events.DidMergeToVM, this._didMergeToVM, this);
+            newScriptFile.addEventListener(WebInspector.ResourceScriptFile.Events.DidDivergeFromVM, this._didDivergeFromVM, this);
             if (this.loaded)
                 newScriptFile.checkMapping();
         }

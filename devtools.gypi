@@ -352,6 +352,7 @@
             'front_end/network/NetworkPanel.js',
         ],
         'devtools_sources_js_files': [
+            'front_end/sources/AddSourceMapURLDialog.js',
             'front_end/sources/AdvancedSearchView.js',
             'front_end/sources/BreakpointsSidebarPane.js',
             'front_end/sources/CSSSourceFrame.js',

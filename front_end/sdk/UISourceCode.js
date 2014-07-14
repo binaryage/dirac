@@ -59,7 +59,7 @@ WebInspector.UISourceCode = function(project, parentPath, name, originURL, url, 
     this._sourceMappingForTarget = new Map();
 
     /**
-     * @type {!Map.<!WebInspector.Target, !WebInspector.ScriptFile>}
+     * @type {!Map.<!WebInspector.Target, !WebInspector.ResourceScriptFile>}
      */
     this._scriptFileForTarget = new Map();
 
@@ -224,7 +224,7 @@ WebInspector.UISourceCode.prototype = {
 
     /**
      * @param {!WebInspector.Target} target
-     * @return {?WebInspector.ScriptFile}
+     * @return {?WebInspector.ResourceScriptFile}
      */
     scriptFileForTarget: function(target)
     {
@@ -233,7 +233,7 @@ WebInspector.UISourceCode.prototype = {
 
     /**
      * @param {!WebInspector.Target} target
-     * @param {?WebInspector.ScriptFile} scriptFile
+     * @param {?WebInspector.ResourceScriptFile} scriptFile
      */
     setScriptFileForTarget: function(target, scriptFile)
     {

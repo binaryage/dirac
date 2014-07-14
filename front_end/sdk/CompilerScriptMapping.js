@@ -107,6 +107,24 @@ WebInspector.CompilerScriptMapping.prototype = {
     addScript: function(script)
     {
         script.pushSourceMapping(this);
+        script.addEventListener(WebInspector.Script.Events.SourceMapURLAdded, this._sourceMapURLAdded.bind(this));
+        this._processScript(script);
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _sourceMapURLAdded: function(event)
+    {
+        var script = /** @type {!WebInspector.Script} */ (event.target);
+        this._processScript(script);
+    },
+
+    /**
+     * @param {!WebInspector.Script} script
+     */
+    _processScript: function(script)
+    {
         this.loadSourceMapForScript(script, sourceMapLoaded.bind(this));
 
         /**

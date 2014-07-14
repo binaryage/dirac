@@ -58,6 +58,7 @@ WebInspector.Script = function(target, scriptId, sourceURL, startLine, startColu
 
 WebInspector.Script.Events = {
     ScriptEdited: "ScriptEdited",
+    SourceMapURLAdded: "SourceMapURLAdded",
 }
 
 WebInspector.Script.snippetSourceURLPrefix = "snippets:///";
@@ -210,6 +211,17 @@ WebInspector.Script.prototype = {
     {
         var startsAtZero = !this.lineOffset && !this.columnOffset;
         return !!this.sourceURL && !startsAtZero;
+    },
+
+    /**
+     * @param {string} sourceMapURL
+     */
+    addSourceMapURL: function(sourceMapURL)
+    {
+        if (this.sourceMapURL)
+            return;
+        this.sourceMapURL = sourceMapURL;
+        this.dispatchEventToListeners(WebInspector.Script.Events.SourceMapURLAdded, this.sourceMapURL);
     },
 
     /**
