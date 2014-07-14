@@ -494,12 +494,16 @@ WebInspector.DebuggerModel.prototype = {
      * @param {boolean} isContentScript
      * @param {string=} sourceMapURL
      * @param {boolean=} hasSourceURL
+     * @param {boolean=} hasSyntaxError
      */
-    _parsedScriptSource: function(scriptId, sourceURL, startLine, startColumn, endLine, endColumn, isContentScript, sourceMapURL, hasSourceURL)
+    _parsedScriptSource: function(scriptId, sourceURL, startLine, startColumn, endLine, endColumn, isContentScript, sourceMapURL, hasSourceURL, hasSyntaxError)
     {
         var script = new WebInspector.Script(this.target(), scriptId, sourceURL, startLine, startColumn, endLine, endColumn, isContentScript, sourceMapURL, hasSourceURL);
         this._registerScript(script);
-        this.dispatchEventToListeners(WebInspector.DebuggerModel.Events.ParsedScriptSource, script);
+        if (!hasSyntaxError)
+            this.dispatchEventToListeners(WebInspector.DebuggerModel.Events.ParsedScriptSource, script);
+        else
+            this.dispatchEventToListeners(WebInspector.DebuggerModel.Events.FailedToParseScriptSource, script);
     },
 
     /**
@@ -823,18 +827,23 @@ WebInspector.DebuggerDispatcher.prototype = {
      */
     scriptParsed: function(scriptId, sourceURL, startLine, startColumn, endLine, endColumn, isContentScript, sourceMapURL, hasSourceURL)
     {
-        this._debuggerModel._parsedScriptSource(scriptId, sourceURL, startLine, startColumn, endLine, endColumn, !!isContentScript, sourceMapURL, hasSourceURL);
+        this._debuggerModel._parsedScriptSource(scriptId, sourceURL, startLine, startColumn, endLine, endColumn, !!isContentScript, sourceMapURL, hasSourceURL, false);
     },
 
     /**
+     * @param {!DebuggerAgent.ScriptId} scriptId
      * @param {string} sourceURL
-     * @param {string} source
-     * @param {number} startingLine
-     * @param {number} errorLine
-     * @param {string} errorMessage
+     * @param {number} startLine
+     * @param {number} startColumn
+     * @param {number} endLine
+     * @param {number} endColumn
+     * @param {boolean=} isContentScript
+     * @param {string=} sourceMapURL
+     * @param {boolean=} hasSourceURL
      */
-    scriptFailedToParse: function(sourceURL, source, startingLine, errorLine, errorMessage)
+    scriptFailedToParse: function(scriptId, sourceURL, startLine, startColumn, endLine, endColumn, isContentScript, sourceMapURL, hasSourceURL)
     {
+        this._debuggerModel._parsedScriptSource(scriptId, sourceURL, startLine, startColumn, endLine, endColumn, !!isContentScript, sourceMapURL, hasSourceURL, true);
     },
 
     /**
