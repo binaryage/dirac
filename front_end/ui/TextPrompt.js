@@ -472,12 +472,12 @@ WebInspector.TextPrompt.prototype = {
         this._commonPrefix = this._buildCommonPrefix(completions, wordPrefixLength);
 
         if (this.isCaretAtEndOfPrompt()) {
+            var completionText = completions[selectedIndex];
+            var prefixText = this._userEnteredRange.toString();
+            var suffixText = completionText.substring(wordPrefixLength);
             this._userEnteredRange.deleteContents();
             this._element.normalize();
             var finalSelectionRange = document.createRange();
-            var completionText = completions[selectedIndex];
-            var prefixText = completionText.substring(0, wordPrefixLength);
-            var suffixText = completionText.substring(wordPrefixLength);
 
             var prefixTextNode = document.createTextNode(prefixText);
             fullWordRange.insertNode(prefixTextNode);

@@ -2296,7 +2296,10 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
         }
 
         var colorValueElement = document.createElement("span");
-        colorValueElement.textContent = color.toString(format);
+        if (format === WebInspector.Color.Format.Original)
+            colorValueElement.textContent = text;
+        else
+            colorValueElement.textContent = color.toString(format);
 
         /**
          * @param {string} curFormat
@@ -3322,6 +3325,11 @@ WebInspector.StylesSidebarPane.CSSPropertyPrompt.prototype = {
         }
 
         var results = this._cssCompletions.startsWith(prefix);
+        var userEnteredText = wordRange.toString().replace("-", "");
+        if (userEnteredText && (userEnteredText === userEnteredText.toUpperCase())) {
+            for (var i = 0; i < results.length; ++i)
+                results[i] = results[i].toUpperCase();
+        }
         var selectedIndex = this._cssCompletions.mostUsedOf(results);
         completionsReadyCallback(results, selectedIndex);
     },

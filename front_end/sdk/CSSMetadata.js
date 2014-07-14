@@ -76,7 +76,7 @@ WebInspector.CSSMetadata.cssPropertiesMetainfo = new WebInspector.CSSMetadata([]
  */
 WebInspector.CSSMetadata.isColorAwareProperty = function(propertyName)
 {
-    return WebInspector.CSSMetadata._colorAwareProperties[propertyName] === true;
+    return !!WebInspector.CSSMetadata._colorAwareProperties[propertyName.toLowerCase()];
 }
 
 /**
@@ -729,7 +729,7 @@ WebInspector.CSSMetadata.keywordsForProperty = function(propertyName)
     var descriptor = WebInspector.CSSMetadata.descriptor(propertyName);
     if (descriptor && descriptor.values)
         acceptedKeywords.push.apply(acceptedKeywords, descriptor.values);
-    if (propertyName in WebInspector.CSSMetadata._colorAwareProperties)
+    if (WebInspector.CSSMetadata.isColorAwareProperty(propertyName))
         acceptedKeywords.push.apply(acceptedKeywords, WebInspector.CSSMetadata._colors);
     return new WebInspector.CSSMetadata(acceptedKeywords);
 }
@@ -743,6 +743,7 @@ WebInspector.CSSMetadata.descriptor = function(propertyName)
     if (!propertyName)
         return null;
     var unprefixedName = propertyName.replace(/^-webkit-/, "");
+    propertyName = propertyName.toLowerCase();
     var entry = WebInspector.CSSMetadata._propertyDataMap[propertyName];
     if (!entry && unprefixedName !== propertyName)
         entry = WebInspector.CSSMetadata._propertyDataMap[unprefixedName];
