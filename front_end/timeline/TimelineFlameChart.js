@@ -554,27 +554,24 @@ WebInspector.TracingBasedTimelineFlameChartDataProvider.prototype = {
         this._minimumBoundary = this._model.minimumRecordTime();
         this._timeSpan = Math.max(this._model.maximumRecordTime() - this._minimumBoundary, 1000);
         this._currentLevel = 0;
-        this._appendHeaderRecord(WebInspector.UIString("Main Thread"), this._currentLevel++);
-        this._currentLevel += this._appendThreadTimelineData(this._model.mainThreadEvents(), this._currentLevel) + 1;
+        this._appendThreadTimelineData(WebInspector.UIString("Main Thread"), this._model.mainThreadEvents());
         var threads = this._model.virtualThreads();
         for (var threadName in threads) {
-            if (threadName === WebInspector.TimelineModel.MainThreadName)
-                continue;
-            this._appendHeaderRecord(threadName, this._currentLevel++);
-            this._currentLevel += this._appendThreadTimelineData(threads[threadName], this._currentLevel) + 1;
+            if (threadName !== WebInspector.TimelineModel.MainThreadName)
+                this._appendThreadTimelineData(threadName, threads[threadName]);
         }
         return this._timelineData;
     },
 
     /**
+     * @param {string} headerName
      * @param {!Array.<!WebInspector.TracingModel.Event>} events
-     * @param {number} level
-     * @return {number}
      */
-    _appendThreadTimelineData: function(events, level)
+    _appendThreadTimelineData: function(headerName, events)
     {
         var maxStackDepth = 0;
         var openEvents = [];
+        var headerAppended = false;
         for (var i = 0; i < events.length; ++i) {
             var e = events[i];
             if (!e.endTime && e.phase !== WebInspector.TracingModel.Phase.Instant)
@@ -583,12 +580,16 @@ WebInspector.TracingBasedTimelineFlameChartDataProvider.prototype = {
                 continue;
             while (openEvents.length && openEvents.peekLast().endTime <= e.startTime)
                 openEvents.pop();
-            this._appendEvent(e, level + openEvents.length);
+            if (!headerAppended) {
+                this._appendHeaderRecord(headerName, this._currentLevel++);
+                headerAppended = true;
+            }
+            this._appendEvent(e, this._currentLevel + openEvents.length);
             maxStackDepth = Math.max(maxStackDepth, openEvents.length + 1);
             if (e.endTime)
                 openEvents.push(e);
         }
-        return maxStackDepth;
+        this._currentLevel += maxStackDepth + (headerAppended ? 1 : 0);
     },
 
     /**
