@@ -148,11 +148,10 @@ WebInspector.ConsoleModel.prototype = {
 
     clearMessages: function()
     {
-        this.dispatchEventToListeners(WebInspector.ConsoleModel.Events.ConsoleCleared);
-
         this.messages = [];
         this.errors = 0;
         this.warnings = 0;
+        this.dispatchEventToListeners(WebInspector.ConsoleModel.Events.ConsoleCleared);
     },
 
     __proto__: WebInspector.SDKObject.prototype

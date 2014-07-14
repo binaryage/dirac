@@ -136,7 +136,7 @@ WebInspector.PresentationConsoleMessageHelper.prototype = {
         for (var i = 0; i < messages.length; i++) {
             var message = messages[i];
             var rawLocation = this._rawLocation(message);
-            if (script.scriptId === rawLocation.scriptId)
+            if (script.target() === message.target() && script.scriptId === rawLocation.scriptId)
                 this._addConsoleMessageToScript(message, rawLocation);
             else
                 pendingMessages.push(message);

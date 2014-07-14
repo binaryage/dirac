@@ -169,24 +169,6 @@ WebInspector.Main.prototype = {
         }
     },
 
-    _resetErrorAndWarningCounts: function()
-    {
-        WebInspector.inspectorView.setErrorAndWarningCounts(0, 0);
-    },
-
-    _updateErrorAndWarningCounts: function()
-    {
-        var errors = WebInspector.consoleModel.errors;
-        var warnings = WebInspector.consoleModel.warnings;
-        WebInspector.inspectorView.setErrorAndWarningCounts(errors, warnings);
-    },
-
-    _debuggerPaused: function()
-    {
-        WebInspector.debuggerModel.removeEventListener(WebInspector.DebuggerModel.Events.DebuggerPaused, this._debuggerPaused, this);
-        WebInspector.inspectorView.showPanel("sources");
-    },
-
     _loaded: function()
     {
         console.timeStamp("Main._loaded");
@@ -314,11 +296,6 @@ WebInspector.Main.prototype = {
         if (WebInspector.experimentsSettings.workersInMainWindow.isEnabled())
             WebInspector.workerTargetManager = new WebInspector.WorkerTargetManager(mainTarget, WebInspector.targetManager);
 
-        WebInspector.consoleModel.addEventListener(WebInspector.ConsoleModel.Events.ConsoleCleared, this._resetErrorAndWarningCounts, this);
-        WebInspector.consoleModel.addEventListener(WebInspector.ConsoleModel.Events.MessageAdded, this._updateErrorAndWarningCounts, this);
-
-        WebInspector.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.DebuggerPaused, this._debuggerPaused, this);
-
         InspectorBackend.registerInspectorDispatcher(this);
 
         if (Capabilities.isMainFrontend) {
@@ -370,6 +347,10 @@ WebInspector.Main.prototype = {
 
         WebInspector.zoomManager = new WebInspector.ZoomManager();
         WebInspector.inspectorView = new WebInspector.InspectorView();
+
+        new WebInspector.Main.PauseListener();
+        new WebInspector.Main.WarningErrorCounter();
+
         WebInspector.app.createRootView();
         this._createGlobalStatusBarItems();
 
@@ -382,7 +363,6 @@ WebInspector.Main.prototype = {
             WebInspector.consoleModel.show();
         }
         errorWarningCount.addEventListener("click", showConsole, false);
-        this._updateErrorAndWarningCounts();
 
         WebInspector.extensionServerProxy.setFrontendReady();
 
@@ -837,4 +817,88 @@ WebInspector.__defineGetter__("inspectedPageURL", function()
 WebInspector.panel = function(name)
 {
     return WebInspector.inspectorView.panel(name);
+}
+
+/**
+ * @constructor
+ * @implements {WebInspector.TargetManager.Observer}
+ */
+WebInspector.Main.WarningErrorCounter = function()
+{
+    WebInspector.targetManager.observeTargets(this);
+}
+
+WebInspector.Main.WarningErrorCounter.prototype = {
+    /**
+     * @param {!WebInspector.Target} target
+     */
+    targetAdded: function(target)
+    {
+        target.consoleModel.addEventListener(WebInspector.ConsoleModel.Events.ConsoleCleared, this._updateErrorAndWarningCounts, this);
+        target.consoleModel.addEventListener(WebInspector.ConsoleModel.Events.MessageAdded, this._updateErrorAndWarningCounts, this);
+        this._updateErrorAndWarningCounts();
+    },
+
+    /**
+     * @param {!WebInspector.Target} target
+     */
+    targetRemoved: function(target)
+    {
+        target.consoleModel.removeEventListener(WebInspector.ConsoleModel.Events.ConsoleCleared, this._updateErrorAndWarningCounts, this);
+        target.consoleModel.removeEventListener(WebInspector.ConsoleModel.Events.MessageAdded, this._updateErrorAndWarningCounts, this);
+    },
+
+    _updateErrorAndWarningCounts: function()
+    {
+        var errors = 0;
+        var warnings = 0;
+        var targets = WebInspector.targetManager.targets();
+        for (var i = 0; i < targets.length; ++i) {
+            errors = errors + targets[i].consoleModel.errors;
+            warnings = warnings + targets[i].consoleModel.warnings;
+        }
+        WebInspector.inspectorView.setErrorAndWarningCounts(errors, warnings);
+    }
+}
+
+/**
+ * @constructor
+ * @implements {WebInspector.TargetManager.Observer}
+ */
+WebInspector.Main.PauseListener = function()
+{
+    WebInspector.targetManager.observeTargets(this);
+}
+
+WebInspector.Main.PauseListener.prototype = {
+    /**
+     * @param {!WebInspector.Target} target
+     */
+    targetAdded: function(target)
+    {
+        target.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.DebuggerPaused, this._debuggerPaused, this);
+    },
+
+    /**
+     * @param {!WebInspector.Target} target
+     */
+    targetRemoved: function(target)
+    {
+        target.debuggerModel.removeEventListener(WebInspector.DebuggerModel.Events.DebuggerPaused, this._debuggerPaused, this);
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _debuggerPaused: function(event)
+    {
+        var targets = WebInspector.targetManager.targets();
+        for (var i = 0; i < targets.length; ++i)
+            targets[i].debuggerModel.removeEventListener(WebInspector.DebuggerModel.Events.DebuggerPaused, this._debuggerPaused, this);
+
+        var debuggerModel = /** @type {!WebInspector.DebuggerModel} */ (event.target);
+        WebInspector.context.setFlavor(WebInspector.Target, debuggerModel.target());
+        WebInspector.targetManager.unobserveTargets(this);
+        WebInspector.inspectorView.showPanel("sources");
+    }
 }
