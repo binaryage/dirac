@@ -17,7 +17,7 @@ WebInspector.AdvancedApp.prototype = {
     {
         var rootView = new WebInspector.RootView();
 
-        this._rootSplitView = new WebInspector.SplitView(false, true, WebInspector.dockController.canDock() ? "InspectorView.splitViewState" : "InspectorView.dummySplitViewState", 300, 300, true);
+        this._rootSplitView = new WebInspector.SplitView(false, true, "InspectorView.splitViewState", 300, 300, true);
         this._rootSplitView.show(rootView.element);
 
         WebInspector.inspectorView.show(this._rootSplitView.sidebarElement());

@@ -173,63 +173,57 @@ WebInspector.Main.prototype = {
     {
         console.timeStamp("Main._loaded");
         WebInspector.moduleManager = new WebInspector.ModuleManager(allDescriptors);
+
+        // FIXME: Make toolbox a real app.
         if (WebInspector.queryParam("toolbox")) {
             new WebInspector.Toolbox();
             return;
         }
 
+        this._createSettings();
+        this._createConnection();
+    },
+
+    _createSettings: function()
+    {
         WebInspector.settings = new WebInspector.Settings();
         WebInspector.experimentsSettings = new WebInspector.ExperimentsSettings(WebInspector.queryParam("experiments") !== null);
         // This setting is needed for backwards compatibility with Devtools CodeSchool extension. DO NOT REMOVE
         WebInspector.settings.pauseOnExceptionStateString = new WebInspector.PauseOnExceptionStateSetting();
+        new WebInspector.VersionController().updateVersion();
+    },
 
-        if (!InspectorFrontendHost.sendMessageToEmbedder) {
-            var helpScreen = new WebInspector.HelpScreen(WebInspector.UIString("Incompatible Chrome version"));
-            var p = helpScreen.contentElement.createChild("p", "help-section");
-            p.textContent = WebInspector.UIString("Please upgrade to a newer Chrome version (you might need a Dev or Canary build).");
-            helpScreen.showModal();
-            return;
-        }
-
+    _createConnection: function()
+    {
         InspectorBackend.loadFromJSONIfNeeded("../protocol.json");
-
-        var onConnectionReady = this._doLoadedDone.bind(this);
 
         var workerId = WebInspector.queryParam("dedicatedWorkerId");
         if (workerId) {
-            new WebInspector.ExternalWorkerConnection(workerId, onConnectionReady);
+            this._connectionEstablished(new WebInspector.ExternalWorkerConnection(workerId));
             return;
         }
 
-        var ws;
         if (WebInspector.queryParam("ws")) {
-            ws = "ws://" + WebInspector.queryParam("ws");
-        } else if (WebInspector.queryParam("page")) {
-            var page = WebInspector.queryParam("page");
-            var host = WebInspector.queryParam("host") || window.location.host;
-            ws = "ws://" + host + "/devtools/page/" + page;
-        }
-
-        if (ws) {
+            var ws = "ws://" + WebInspector.queryParam("ws");
             document.body.classList.add("remote");
-            new InspectorBackendClass.WebSocketConnection(ws, onConnectionReady);
+            InspectorBackendClass.WebSocketConnection.Create(ws, this._connectionEstablished.bind(this));
             return;
         }
 
         if (!InspectorFrontendHost.isStub()) {
-            new InspectorBackendClass.MainConnection(onConnectionReady);
+            this._connectionEstablished(new InspectorBackendClass.MainConnection());
             return;
         }
 
-        new InspectorBackendClass.StubConnection(onConnectionReady);
+        this._connectionEstablished(new InspectorBackendClass.StubConnection());
     },
 
     /**
      * @param {!InspectorBackendClass.Connection} connection
      */
-    _doLoadedDone: function(connection)
+    _connectionEstablished: function(connection)
     {
-        console.timeStamp("Main._doLoadedDone");
+        console.timeStamp("Main._connectionEstablished");
         connection.addEventListener(InspectorBackendClass.Connection.Events.Disconnected, onDisconnected);
 
         /**
@@ -259,7 +253,7 @@ WebInspector.Main.prototype = {
         }
         WebInspector.ContextMenu.initialize();
 
-        WebInspector.targetManager.createTarget(WebInspector.UIString("Main"), connection, this._doLoadedDoneWithCapabilities.bind(this));
+        WebInspector.targetManager.createTarget(WebInspector.UIString("Main"), connection, this._mainTargetCreated.bind(this));
         WebInspector.isolatedFileSystemManager = new WebInspector.IsolatedFileSystemManager();
         WebInspector.workspace = new WebInspector.Workspace(WebInspector.isolatedFileSystemManager.mapping());
         WebInspector.networkWorkspaceBinding = new WebInspector.NetworkWorkspaceBinding(WebInspector.workspace);
@@ -271,9 +265,12 @@ WebInspector.Main.prototype = {
         this._executionContextSelector = new WebInspector.ExecutionContextSelector();
     },
 
-    _doLoadedDoneWithCapabilities: function(mainTarget)
+    /**
+     * @param {!WebInspector.Target} mainTarget
+     */
+    _mainTargetCreated: function(mainTarget)
     {
-        console.timeStamp("Main._doLoadedDoneWithCapabilities");
+        console.timeStamp("Main._mainTargetCreated");
         WebInspector.dockController = new WebInspector.DockController(!!WebInspector.queryParam("can_dock"));
         WebInspector.overridesSupport = new WebInspector.OverridesSupport(WebInspector.dockController.canDock());
 
@@ -286,7 +283,6 @@ WebInspector.Main.prototype = {
 
         WebInspector.dockController.initialize();
 
-        new WebInspector.VersionController().updateVersion();
         WebInspector.shortcutsScreen = new WebInspector.ShortcutsScreen();
         this._registerShortcuts();
 

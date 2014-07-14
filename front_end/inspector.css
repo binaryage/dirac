@@ -427,10 +427,6 @@ body.undocked .toolbar-item .close-button {
     display: none;
 }
 
-body.remote .toolbar-item .close-button {
-    display: none;
-}
-
 .panel-status-bar {
     border-top: none;
     display: flex;
@@ -709,10 +705,6 @@ div.resizer-widget {
 
 .settings-status-bar-item .glyph {
     -webkit-mask-position: -160px -24px;
-}
-
-body.remote .dock-status-bar-item {
-    display: none;
 }
 
 .console-status-bar-item .glyph {

@@ -558,12 +558,10 @@ InspectorBackendClass.Connection.prototype = {
 /**
  * @constructor
  * @extends {InspectorBackendClass.Connection}
- * @param {!function(!InspectorBackendClass.Connection)} onConnectionReady
  */
-InspectorBackendClass.MainConnection = function(onConnectionReady)
+InspectorBackendClass.MainConnection = function()
 {
     InspectorBackendClass.Connection.call(this);
-    onConnectionReady(this);
     InspectorFrontendHost.events.addEventListener(InspectorFrontendHostAPI.Events.DispatchMessage, this._dispatchMessage, this);
 }
 
@@ -605,6 +603,15 @@ InspectorBackendClass.WebSocketConnection = function(url, onConnectionReady)
     this._socket.onclose = this.fireDisconnected.bind(this, "websocket_closed");
 }
 
+/**
+ * @param {string} url
+ * @param {!function(!InspectorBackendClass.Connection)} onConnectionReady
+ */
+InspectorBackendClass.WebSocketConnection.Create = function(url, onConnectionReady)
+{
+    new InspectorBackendClass.WebSocketConnection(url, onConnectionReady);
+}
+
 InspectorBackendClass.WebSocketConnection.prototype = {
 
     /**
@@ -640,12 +647,10 @@ InspectorBackendClass.WebSocketConnection.prototype = {
 /**
  * @constructor
  * @extends {InspectorBackendClass.Connection}
- * @param {!function(!InspectorBackendClass.Connection)} onConnectionReady
  */
-InspectorBackendClass.StubConnection = function(onConnectionReady)
+InspectorBackendClass.StubConnection = function()
 {
     InspectorBackendClass.Connection.call(this);
-    onConnectionReady(this);
 }
 
 InspectorBackendClass.StubConnection.prototype = {
