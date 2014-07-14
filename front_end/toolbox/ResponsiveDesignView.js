@@ -238,7 +238,7 @@ WebInspector.ResponsiveDesignView.prototype = {
         const darkLineColor = "rgb(114, 114, 114)";
         const rulerColor = "rgb(125, 125, 125)";
         const textColor = "rgb(186, 186, 186)";
-        const contentsSizeColor = "rgba(128, 128, 128, 0.5)";
+        const contentsSizeColor = "rgba(0, 0, 0, 0.3)";
 
         var scale = (this._scale || 1) * this._viewport.pageScaleFactor;
         var rulerScale = 0.5;
@@ -369,7 +369,8 @@ WebInspector.ResponsiveDesignView.prototype = {
         context.translate(-0.5, -0.5);
 
         // Draw contents size.
-        if (this._drawContentsSize) {
+        var pageScaleAvailable = WebInspector.overridesSupport.settings.emulateMobile.get() || WebInspector.overridesSupport.settings.emulateTouch.get();
+        if (this._drawContentsSize && pageScaleAvailable) {
             context.fillStyle = contentsSizeColor;
             var visibleContentsWidth = Math.max(0, Math.min(dipGridWidth, this._viewport.contentsWidth * scale - dipScrollX));
             var visibleContentsHeight = Math.max(0, Math.min(dipGridHeight, this._viewport.contentsHeight * scale - dipScrollY));
