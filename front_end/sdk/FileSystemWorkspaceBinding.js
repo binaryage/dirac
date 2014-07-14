@@ -356,12 +356,13 @@ WebInspector.FileSystemWorkspaceBinding.FileSystem.prototype = {
 
     /**
      * @param {!WebInspector.ProjectSearchConfig} searchConfig
+     * @param {!Array.<string>} filesMathingFileQuery
      * @param {!WebInspector.Progress} progress
      * @param {function(!Array.<string>)} callback
      */
-    findFilesMatchingSearchRequest: function(searchConfig, progress, callback)
+    findFilesMatchingSearchRequest: function(searchConfig, filesMathingFileQuery, progress, callback)
     {
-        var result = null;
+        var result = filesMathingFileQuery;
         var queriesToRun = searchConfig.queries().slice();
         if (!queriesToRun.length)
             queriesToRun.push("");
@@ -374,7 +375,8 @@ WebInspector.FileSystemWorkspaceBinding.FileSystem.prototype = {
         function searchNextQuery()
         {
             if (!queriesToRun.length) {
-                matchFileQueries.call(null, result);
+                progress.done();
+                callback(result);
                 return;
             }
             var query = queriesToRun.shift();
@@ -389,21 +391,8 @@ WebInspector.FileSystemWorkspaceBinding.FileSystem.prototype = {
         {
             files = files.sort();
             progress.worked(1);
-            if (!result)
-                result = files;
-            else
-                result = result.intersectOrdered(files, String.naturalOrderComparator);
+            result = result.intersectOrdered(files, String.naturalOrderComparator);
             searchNextQuery.call(this);
-        }
-
-        /**
-         * @param {!Array.<string>} files
-         */
-        function matchFileQueries(files)
-        {
-            files = files.filter(searchConfig.filePathMatchesFileQuery.bind(searchConfig));
-            progress.done();
-            callback(files);
         }
     },
 

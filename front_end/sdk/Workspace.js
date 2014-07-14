@@ -134,10 +134,11 @@ WebInspector.ProjectDelegate.prototype = {
 
     /**
      * @param {!WebInspector.ProjectSearchConfig} searchConfig
+     * @param {!Array.<string>} filesMathingFileQuery
      * @param {!WebInspector.Progress} progress
      * @param {function(!Array.<string>)} callback
      */
-    findFilesMatchingSearchRequest: function(searchConfig, progress, callback) { },
+    findFilesMatchingSearchRequest: function(searchConfig, filesMathingFileQuery, progress, callback) { },
 
     /**
      * @param {!WebInspector.Progress} progress
@@ -503,12 +504,13 @@ WebInspector.Project.prototype = {
 
     /**
      * @param {!WebInspector.ProjectSearchConfig} searchConfig
+     * @param {!Array.<string>} filesMathingFileQuery
      * @param {!WebInspector.Progress} progress
      * @param {function(!Array.<string>)} callback
      */
-    findFilesMatchingSearchRequest: function(searchConfig, progress, callback)
+    findFilesMatchingSearchRequest: function(searchConfig, filesMathingFileQuery, progress, callback)
     {
-        this._projectDelegate.findFilesMatchingSearchRequest(searchConfig, progress, callback);
+        this._projectDelegate.findFilesMatchingSearchRequest(searchConfig, filesMathingFileQuery, progress, callback);
     },
 
     /**

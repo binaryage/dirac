@@ -112,27 +112,53 @@ WebInspector.SourcesSearchScope.prototype = {
             var findMatchingFilesProgress = projectProgress.createSubProgress();
             var searchContentProgress = projectProgress.createSubProgress();
             var barrierCallback = barrier.createCallback();
-            var callback = this._processMatchingFilesForProject.bind(this, this._searchId, project, searchContentProgress, barrierCallback);
-            project.findFilesMatchingSearchRequest(searchConfig, findMatchingFilesProgress, callback);
+            var filesMathingFileQuery = this._projectFilesMatchingFileQuery(project, searchConfig);
+            var callback = this._processMatchingFilesForProject.bind(this, this._searchId, project, filesMathingFileQuery, searchContentProgress, barrierCallback);
+            project.findFilesMatchingSearchRequest(searchConfig, filesMathingFileQuery, findMatchingFilesProgress, callback);
         }
         barrier.callWhenDone(this._searchFinishedCallback.bind(this, true));
     },
 
     /**
+     * @param {!WebInspector.Project} project
+     * @param {!WebInspector.ProjectSearchConfig} searchConfig
+     * @param {boolean=} dirtyOnly
+     * @return {!Array.<string>}
+     */
+    _projectFilesMatchingFileQuery: function(project, searchConfig, dirtyOnly)
+    {
+        var result = [];
+        var uiSourceCodes = project.uiSourceCodes();
+        for (var i = 0; i < uiSourceCodes.length; ++i) {
+            var uiSourceCode = uiSourceCodes[i];
+            if (dirtyOnly && !uiSourceCode.isDirty())
+                continue;
+            if (this._searchConfig.filePathMatchesFileQuery(uiSourceCode.fullDisplayName()))
+                result.push(uiSourceCode.path());
+        }
+        result = result.sort(String.naturalOrderComparator);
+        return result;
+    },
+
+    /**
      * @param {number} searchId
      * @param {!WebInspector.Project} project
+     * @param {!Array.<string>} filesMathingFileQuery
      * @param {!WebInspector.Progress} progress
      * @param {function()} callback
      * @param {!Array.<string>} files
      */
-    _processMatchingFilesForProject: function(searchId, project, progress, callback, files)
+    _processMatchingFilesForProject: function(searchId, project, filesMathingFileQuery, progress, callback, files)
     {
         if (searchId !== this._searchId) {
             this._searchFinishedCallback(false);
             return;
         }
 
-        addDirtyFiles.call(this);
+        files = files.sort(String.naturalOrderComparator);
+        files = files.intersectOrdered(filesMathingFileQuery, String.naturalOrderComparator);
+        var dirtyFiles = this._projectFilesMatchingFileQuery(project, this._searchConfig, true);
+        files = files.mergeOrdered(dirtyFiles);
 
         if (!files.length) {
             progress.done();
@@ -148,22 +174,6 @@ WebInspector.SourcesSearchScope.prototype = {
 
         for (var i = 0; i < maxFileContentRequests && i < files.length; ++i)
             scheduleSearchInNextFileOrFinish.call(this);
-
-        /**
-         * @this {WebInspector.SourcesSearchScope}
-         */
-        function addDirtyFiles()
-        {
-            var matchingFiles = StringSet.fromArray(files);
-            var uiSourceCodes = project.uiSourceCodes();
-            for (var i = 0; i < uiSourceCodes.length; ++i) {
-                if (!uiSourceCodes[i].isDirty())
-                    continue;
-                var path = uiSourceCodes[i].path();
-                if (!matchingFiles.contains(path) && this._searchConfig.filePathMatchesFileQuery(path))
-                    files.push(path);
-            }
-        }
 
         /**
          * @param {string} path
