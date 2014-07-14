@@ -130,6 +130,18 @@ WebInspector.SourcesView.prototype = {
             event.consume(true);
     },
 
+    wasShown: function()
+    {
+        WebInspector.VBox.prototype.wasShown.call(this);
+        WebInspector.context.setFlavor(WebInspector.SourcesView, this);
+    },
+
+    willHide: function()
+    {
+        WebInspector.context.setFlavor(WebInspector.SourcesView, null);
+        WebInspector.VBox.prototype.willHide.call(this);
+    },
+
     /**
      * @return {!Element}
      */
@@ -699,4 +711,69 @@ WebInspector.SourcesView.EditorAction.prototype = {
      * @return {!Element}
      */
     button: function(sourcesView) { }
+}
+
+/**
+ * @constructor
+ * @implements {WebInspector.ActionDelegate}
+ */
+WebInspector.SourcesView.SwitchFileActionDelegate = function()
+{
+}
+
+/**
+ * @param {!WebInspector.UISourceCode} currentUISourceCode
+ * @return {?WebInspector.UISourceCode}
+ */
+WebInspector.SourcesView.SwitchFileActionDelegate._nextFile = function(currentUISourceCode)
+{
+    /**
+     * @param {string} name
+     * @return {string}
+     */
+    function fileNamePrefix(name)
+    {
+        var lastDotIndex = name.lastIndexOf(".");
+        var namePrefix = name.substr(0, lastDotIndex !== -1 ? lastDotIndex : name.length);
+        return namePrefix.toLowerCase();
+    }
+
+    var uiSourceCodes = currentUISourceCode.project().uiSourceCodes();
+    var candidates = [];
+    var path = currentUISourceCode.parentPath();
+    var name = currentUISourceCode.name();
+    var namePrefix = fileNamePrefix(name);
+    for (var i = 0; i < uiSourceCodes.length; ++i) {
+        var uiSourceCode = uiSourceCodes[i];
+        if (path !== uiSourceCode.parentPath())
+            continue;
+        if (fileNamePrefix(uiSourceCode.name()) === namePrefix)
+            candidates.push(uiSourceCode.name());
+    }
+    candidates.sort(String.naturalOrderComparator);
+    var index = mod(candidates.indexOf(name) + 1, candidates.length);
+    var fullPath = (path ? path + "/" : "") + candidates[index];
+    var nextUISourceCode = currentUISourceCode.project().uiSourceCode(fullPath);
+    return nextUISourceCode !== currentUISourceCode ? nextUISourceCode : null;
+},
+
+
+WebInspector.SourcesView.SwitchFileActionDelegate.prototype = {
+    /**
+     * @return {boolean}
+     */
+    handleAction: function()
+    {
+        var sourcesView = WebInspector.context.flavor(WebInspector.SourcesView);
+        if (!sourcesView)
+            return false;
+        var currentUISourceCode = sourcesView.currentUISourceCode();
+        if (!currentUISourceCode)
+            return true;
+        var nextUISourceCode = WebInspector.SourcesView.SwitchFileActionDelegate._nextFile(currentUISourceCode);
+        if (!nextUISourceCode)
+            return true;
+        sourcesView.showSourceLocation(nextUISourceCode);
+        return true;
+    }
 }

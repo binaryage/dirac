@@ -109,6 +109,17 @@
             ]
         },
         {
+            "type": "@WebInspector.ActionDelegate",
+            "actionId": "sources.switch-file",
+            "className": "WebInspector.SourcesView.SwitchFileActionDelegate",
+            "contextTypes": ["WebInspector.SourcesView"],
+            "bindings": [
+                {
+                    "shortcut": "Alt+O"
+                }
+            ]
+        },
+        {
             "type": "ui-setting",
             "settingName": "javaScriptDisabled",
             "settingType": "custom",

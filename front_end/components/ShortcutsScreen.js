@@ -269,6 +269,7 @@ WebInspector.ShortcutsScreen.registerShortcuts = function()
     section.addAlternateKeys(WebInspector.ShortcutsScreen.SourcesPanelShortcuts.DecreaseCSSUnitByTen, WebInspector.UIString("Decrement CSS unit by 10"));
     section.addAlternateKeys(WebInspector.ShortcutsScreen.SourcesPanelShortcuts.JumpToPreviousLocation, WebInspector.UIString("Jump to previous editing location"));
     section.addAlternateKeys(WebInspector.ShortcutsScreen.SourcesPanelShortcuts.JumpToNextLocation, WebInspector.UIString("Jump to next editing location"));
+    section.addAlternateKeys(WebInspector.shortcutRegistry.shortcutDescriptorsForAction("sources.switch-file"), WebInspector.UIString("Switch between files with the same name and different extensions."));
 
     // Timeline panel
     section = WebInspector.shortcutsScreen.section(WebInspector.UIString("Timeline Panel"));
