@@ -472,6 +472,29 @@ WebInspector.TimelineRecordTypeFilter.prototype = {
  * @extends {WebInspector.TimelineRecordTypeFilter}
  * @param {!Array.<string>} recordTypes
  */
+WebInspector.TimelineRecordHiddenEmptyTypeFilter = function(recordTypes)
+{
+    WebInspector.TimelineRecordTypeFilter.call(this, recordTypes);
+}
+
+WebInspector.TimelineRecordHiddenEmptyTypeFilter.prototype = {
+    /**
+     * @param {!WebInspector.TimelineModel.Record} record
+     * @return {boolean}
+     */
+    accept: function(record)
+    {
+        return record.children().length !== 0 || !this._recordTypes[record.type()];
+    },
+
+    __proto__: WebInspector.TimelineRecordTypeFilter.prototype
+}
+
+/**
+ * @constructor
+ * @extends {WebInspector.TimelineRecordTypeFilter}
+ * @param {!Array.<string>} recordTypes
+ */
 WebInspector.TimelineRecordHiddenTypeFilter = function(recordTypes)
 {
     WebInspector.TimelineRecordTypeFilter.call(this, recordTypes);

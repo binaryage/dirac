@@ -101,6 +101,9 @@ WebInspector.TimelinePanel = function()
     this._durationFilter = new WebInspector.TimelineIsLongFilter();
     this._textFilter = new WebInspector.TimelineTextFilter(this._uiUtils);
 
+    var hiddenEmptyRecordsFilter = this._uiUtils.hiddenEmptyRecordsFilter();
+    if (hiddenEmptyRecordsFilter)
+        this._model.addFilter(hiddenEmptyRecordsFilter);
     this._model.addFilter(this._uiUtils.hiddenRecordsFilter());
     this._model.addFilter(this._categoryFilter);
     this._model.addFilter(this._durationFilter);

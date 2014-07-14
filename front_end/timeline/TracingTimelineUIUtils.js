@@ -166,6 +166,15 @@ WebInspector.TracingTimelineUIUtils.prototype = {
     },
 
     /**
+     * @return {?WebInspector.TimelineModel.Filter}
+     */
+    hiddenEmptyRecordsFilter: function()
+    {
+        var hiddenEmptyRecords = [WebInspector.TimelineModel.RecordType.EventDispatch];
+        return new WebInspector.TimelineRecordHiddenEmptyTypeFilter(hiddenEmptyRecords);
+    },
+
+    /**
      * @param {!WebInspector.TimelineModel} model
      * @return {!WebInspector.TimelineModel.Record}
      */
