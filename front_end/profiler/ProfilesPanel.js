@@ -304,7 +304,7 @@ WebInspector.ProfileType.DataDisplayDelegate.prototype = {
  */
 WebInspector.ProfileHeader = function(target, profileType, title)
 {
-    this._targetObserver = new WebInspector.TargetObserver(target);
+    this._weakTarget = target ? target.weakReference() : new WeakReference(null);
     this._profileType = profileType;
     this.title = title;
     this.uid = profileType._nextProfileUid++;
@@ -335,7 +335,15 @@ WebInspector.ProfileHeader.prototype = {
      */
     target: function()
     {
-        return this._targetObserver.target();
+        return this._weakTarget.get();
+    },
+
+    /**
+     * @return {!WeakReference.<!WebInspector.Target>}
+     */
+    weakTarget: function()
+    {
+        return this._weakTarget;
     },
 
     /**

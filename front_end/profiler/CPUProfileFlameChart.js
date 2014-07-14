@@ -33,13 +33,13 @@
  * @constructor
  * @implements {WebInspector.FlameChartDataProvider}
  * @param {!WebInspector.CPUProfileDataModel} cpuProfile
- * @param {?WebInspector.Target} target
+ * @param {!WeakReference.<!WebInspector.Target>} weakTarget
  */
-WebInspector.CPUFlameChartDataProvider = function(cpuProfile, target)
+WebInspector.CPUFlameChartDataProvider = function(cpuProfile, weakTarget)
 {
     WebInspector.FlameChartDataProvider.call(this);
     this._cpuProfile = cpuProfile;
-    this._targetObserver = new WebInspector.TargetObserver(target);
+    this._weakTarget = weakTarget;
     this._colorGenerator = WebInspector.CPUFlameChartDataProvider.colorGenerator();
 }
 
@@ -224,7 +224,7 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
         var totalTime = this._millisecondsToString(timelineData.entryTotalTimes[entryIndex]);
         pushEntryInfoRow(WebInspector.UIString("Self time"), selfTime);
         pushEntryInfoRow(WebInspector.UIString("Total time"), totalTime);
-        var target = this._targetObserver.target();
+        var target = this._weakTarget.get();
         var text = target ? WebInspector.Linkifier.liveLocationText(target, node.scriptId, node.lineNumber, node.columnNumber) : node.url;
         pushEntryInfoRow(WebInspector.UIString("URL"), text);
         pushEntryInfoRow(WebInspector.UIString("Aggregated self time"), Number.secondsToString(node.selfTime / 1000, true));

@@ -335,44 +335,6 @@ WebInspector.TargetManager.Observer.prototype = {
 }
 
 /**
- * @constructor
- * @implements {WebInspector.TargetManager.Observer}
- * @param {?WebInspector.Target} target
- */
-WebInspector.TargetObserver = function(target)
-{
-    this._target = target;
-    if (target)
-        WebInspector.targetManager.observeTargets(this);
-}
-
-WebInspector.TargetObserver.prototype = {
-    /**
-     * @param {!WebInspector.Target} target
-     */
-    targetAdded: function(target) { },
-
-    /**
-     * @param {!WebInspector.Target} target
-     */
-    targetRemoved: function(target)
-    {
-        if (this._target === target) {
-            this._target = null;
-            WebInspector.targetManager.unobserveTargets(this);
-        }
-    },
-
-    /**
-     * @return {?WebInspector.Target}
-     */
-    target: function()
-    {
-        return this._target;
-    }
-}
-
-/**
  * @type {!WebInspector.TargetManager}
  */
 WebInspector.targetManager = new WebInspector.TargetManager();
