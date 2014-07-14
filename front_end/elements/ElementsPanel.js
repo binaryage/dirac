@@ -35,7 +35,6 @@ importScript("EventListenersSidebarPane.js");
 importScript("MetricsSidebarPane.js");
 importScript("PlatformFontsSidebarPane.js");
 importScript("PropertiesSidebarPane.js");
-importScript("RenderingOptionsView.js");
 importScript("StylesSidebarPane.js");
 
 /**

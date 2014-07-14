@@ -170,10 +170,8 @@ WebInspector.Toolbox = function()
     WebInspector.overridesSupport = window.opener.WebInspector.overridesSupport;
     WebInspector.settings = window.opener.WebInspector.settings;
     WebInspector.experimentsSettings = window.opener.WebInspector.experimentsSettings;
-    WebInspector.cssModel = window.opener.WebInspector.cssModel;
-    WebInspector.domModel = window.opener.WebInspector.domModel;
+    WebInspector.targetManager = window.opener.WebInspector.targetManager;
     WebInspector.workspace = window.opener.WebInspector.workspace;
-    WebInspector.resourceTreeModel = window.opener.WebInspector.resourceTreeModel;
     WebInspector.Revealer = window.opener.WebInspector.Revealer;
     WebInspector.ContextMenu = window.opener.WebInspector.ContextMenu;
     WebInspector.installPortStyles();

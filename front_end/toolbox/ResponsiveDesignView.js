@@ -6,6 +6,7 @@
  * @constructor
  * @extends {WebInspector.VBox}
  * @implements {WebInspector.OverridesSupport.PageResizer}
+ * @implements {WebInspector.TargetManager.Observer}
  * @param {!WebInspector.InspectedPagePlaceholder} inspectedPagePlaceholder
  */
 WebInspector.ResponsiveDesignView = function(inspectedPagePlaceholder)
@@ -63,7 +64,7 @@ WebInspector.ResponsiveDesignView = function(inspectedPagePlaceholder)
     WebInspector.zoomManager.addEventListener(WebInspector.ZoomManager.Events.ZoomChanged, this._onZoomChanged, this);
     WebInspector.overridesSupport.addEventListener(WebInspector.OverridesSupport.Events.EmulationStateChanged, this._emulationEnabledChanged, this);
     this._mediaInspector.addEventListener(WebInspector.MediaQueryInspector.Events.HeightUpdated, this.onResize, this);
-    WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.ViewportChanged, this._viewportChanged, this);
+    WebInspector.targetManager.observeTargets(this);
 
     this._emulationEnabledChanged();
     this._overridesWarningUpdated();
@@ -74,6 +75,29 @@ WebInspector.ResponsiveDesignView.SliderWidth = 19;
 WebInspector.ResponsiveDesignView.RulerWidth = 22;
 
 WebInspector.ResponsiveDesignView.prototype = {
+
+    /**
+     * @param {!WebInspector.Target} target
+     */
+    targetAdded: function(target)
+    {
+        // FIXME: adapt this to multiple targets.
+        if (this._target)
+            return;
+        this._target = target;
+        target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.ViewportChanged, this._viewportChanged, this);
+    },
+
+    /**
+     * @param {!WebInspector.Target} target
+     */
+    targetRemoved: function(target)
+    {
+        if (target !== this._target)
+            return;
+        target.resourceTreeModel.removeEventListener(WebInspector.ResourceTreeModel.EventTypes.ViewportChanged, this._viewportChanged, this);
+    },
+
     _invalidateCache: function()
     {
         delete this._cachedScale;

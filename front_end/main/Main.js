@@ -172,6 +172,7 @@ WebInspector.Main.prototype = {
     _loaded: function()
     {
         console.timeStamp("Main._loaded");
+        WebInspector.moduleManager = new WebInspector.ModuleManager(allDescriptors);
         if (WebInspector.queryParam("toolbox")) {
             new WebInspector.Toolbox();
             return;
@@ -336,7 +337,7 @@ WebInspector.Main.prototype = {
         new WebInspector.CSSStyleSheetMapping(WebInspector.cssModel, WebInspector.workspace, WebInspector.networkWorkspaceBinding);
 
         // Create settings before loading modules.
-        WebInspector.settings.initializeBackendSettings();
+        new WebInspector.RenderingOptions();
 
         this._registerModules();
         WebInspector.actionRegistry = new WebInspector.ActionRegistry();

@@ -30,9 +30,69 @@
 
 /**
  * @constructor
+ * @implements {WebInspector.TargetManager.Observer}
+ */
+WebInspector.RenderingOptions = function()
+{
+    /**
+     * @type {!Map.<!WebInspector.Setting, string>}
+     */
+    this._setterNames = new Map();
+    this._mapSettingToSetter(WebInspector.settings.showPaintRects, "setShowPaintRects");
+    this._mapSettingToSetter(WebInspector.settings.showDebugBorders, "setShowDebugBorders");
+    this._mapSettingToSetter(WebInspector.settings.showFPSCounter, "setShowFPSCounter");
+    this._mapSettingToSetter(WebInspector.settings.continuousPainting, "setContinuousPaintingEnabled");
+    this._mapSettingToSetter(WebInspector.settings.showScrollBottleneckRects, "setShowScrollBottleneckRects");
+
+    WebInspector.targetManager.observeTargets(this);
+}
+
+WebInspector.RenderingOptions.prototype = {
+    /**
+     * @param {!WebInspector.Target} target
+     */
+    targetAdded: function(target)
+    {
+        var settings = this._setterNames.keys();
+        for (var i = 0; i < settings.length; ++i) {
+            var setting = settings[i];
+            if (setting.get()) {
+                var setterName = this._setterNames.get(setting);
+                target.pageAgent()[setterName](true);
+            }
+        }
+    },
+
+    /**
+     * @param {!WebInspector.Target} target
+     */
+    targetRemoved: function(target)
+    {
+    },
+
+    /**
+     * @param {!WebInspector.Setting} setting
+     * @param {string} setterName
+     */
+    _mapSettingToSetter: function(setting, setterName)
+    {
+        this._setterNames.put(setting, setterName);
+        setting.addChangeListener(changeListener);
+
+        function changeListener()
+        {
+            var targets = WebInspector.targetManager.targets();
+            for (var i = 0; i < targets.length; ++i)
+                targets[i].pageAgent()[setterName](setting.get());
+        }
+    }
+}
+
+/**
+ * @constructor
  * @extends {WebInspector.VBox}
  */
-WebInspector.RenderingOptionsView = function()
+WebInspector.RenderingOptions.View = function()
 {
     WebInspector.VBox.call(this);
     this.registerRequiredCSS("helpScreen.css");
@@ -48,6 +108,6 @@ WebInspector.RenderingOptionsView = function()
     div.appendChild(child);
 }
 
-WebInspector.RenderingOptionsView.prototype = {
+WebInspector.RenderingOptions.View.prototype = {
     __proto__: WebInspector.VBox.prototype
 }

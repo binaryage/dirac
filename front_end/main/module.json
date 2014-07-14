@@ -123,6 +123,13 @@
             "className": "WebInspector.OverridesView"
         },
         {
+            "type": "drawer-view",
+            "name": "rendering",
+            "title": "Rendering",
+            "order": "11",
+            "className": "WebInspector.RenderingOptions.View"
+        },
+        {
             "type": "@WebInspector.Revealer",
             "contextTypes": ["WebInspector.OverridesSupport"],
             "className": "WebInspector.OverridesView.Revealer"

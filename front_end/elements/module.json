@@ -13,13 +13,6 @@
             "className": "WebInspector.ElementsPanel.ContextMenuProvider"
         },
         {
-            "type": "drawer-view",
-            "name": "rendering",
-            "title": "Rendering",
-            "order": "11",
-            "className": "WebInspector.RenderingOptionsView"
-        },
-        {
             "type": "@WebInspector.Renderer",
             "contextTypes": ["WebInspector.DOMNode"],
             "className": "WebInspector.ElementsTreeOutline.Renderer"

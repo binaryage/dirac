@@ -206,8 +206,7 @@
             "elements/PlatformFontsSidebarPane.js",
             "elements/PropertiesSidebarPane.js",
             "elements/Spectrum.js",
-            "elements/StylesSidebarPane.js",
-            "elements/RenderingOptionsView.js"
+            "elements/StylesSidebarPane.js"
         ]
     },
     {
@@ -466,6 +465,7 @@
             "main/App.js",
             "main/HelpScreenUntilReload.js",
             "main/OverridesView.js",
+            "main/RenderingOptions.js",
             "main/ScreencastApp.js",
             "main/SimpleApp.js",
             "main/Main.js"

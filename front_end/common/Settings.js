@@ -92,6 +92,13 @@ WebInspector.Settings = function()
     this.enableAsyncStackTraces = this.createSetting("enableAsyncStackTraces", false);
     this.showMediaQueryInspector = this.createSetting("showMediaQueryInspector", false);
     this.disableOverridesWarning = this.createSetting("disableOverridesWarning", false);
+
+    // Rendering options
+    this.showPaintRects = this.createSetting("showPaintRects", false);
+    this.showDebugBorders = this.createSetting("showDebugBorders", false);
+    this.showFPSCounter = this.createSetting("showFPSCounter", false);
+    this.continuousPainting = this.createSetting("continuousPainting", false);
+    this.showScrollBottleneckRects = this.createSetting("showScrollBottleneckRects", false);
 }
 
 WebInspector.Settings.prototype = {
@@ -118,28 +125,6 @@ WebInspector.Settings.prototype = {
         if (!this._registry[key])
             this._registry[key] = new WebInspector.RegExpSetting(key, defaultValue, this._eventSupport, window.localStorage, regexFlags);
         return this._registry[key];
-    },
-
-    /**
-     * @param {string} key
-     * @param {*} defaultValue
-     * @param {function(*, function(string, ...))} setterCallback
-     * @return {!WebInspector.Setting}
-     */
-    createBackendSetting: function(key, defaultValue, setterCallback)
-    {
-        if (!this._registry[key])
-            this._registry[key] = new WebInspector.BackendSetting(key, defaultValue, this._eventSupport, window.localStorage, setterCallback);
-        return this._registry[key];
-    },
-
-    initializeBackendSettings: function()
-    {
-        this.showPaintRects = WebInspector.settings.createBackendSetting("showPaintRects", false, PageAgent.setShowPaintRects.bind(PageAgent));
-        this.showDebugBorders = WebInspector.settings.createBackendSetting("showDebugBorders", false, PageAgent.setShowDebugBorders.bind(PageAgent));
-        this.continuousPainting = WebInspector.settings.createBackendSetting("continuousPainting", false, PageAgent.setContinuousPaintingEnabled.bind(PageAgent));
-        this.showFPSCounter = WebInspector.settings.createBackendSetting("showFPSCounter", false, PageAgent.setShowFPSCounter.bind(PageAgent));
-        this.showScrollBottleneckRects = WebInspector.settings.createBackendSetting("showScrollBottleneckRects", false, PageAgent.setShowScrollBottleneckRects.bind(PageAgent));
     }
 }
 
@@ -290,50 +275,6 @@ WebInspector.RegExpSetting.prototype = {
         } catch (e) {
         }
         return this._regex;
-    },
-
-    __proto__: WebInspector.Setting.prototype
-}
-
-/**
- * @constructor
- * @extends {WebInspector.Setting}
- * @param {string} name
- * @param {*} defaultValue
- * @param {!WebInspector.Object} eventSupport
- * @param {?Storage} storage
- * @param {function(*,function(string, ...))} setterCallback
- */
-WebInspector.BackendSetting = function(name, defaultValue, eventSupport, storage, setterCallback)
-{
-    WebInspector.Setting.call(this, name, defaultValue, eventSupport, storage);
-    this._setterCallback = setterCallback;
-    var currentValue = this.get();
-    if (currentValue !== defaultValue)
-        this.set(currentValue);
-}
-
-WebInspector.BackendSetting.prototype = {
-    /**
-     * @override
-     * @param {*} value
-     */
-    set: function(value)
-    {
-        /**
-         * @param {?Protocol.Error} error
-         * @this {WebInspector.BackendSetting}
-         */
-        function callback(error)
-        {
-            if (error) {
-                WebInspector.console.addErrorMessage("Error applying setting " + this._name + ": " + error);
-                this._eventSupport.dispatchEventToListeners(this._name, this._value);
-                return;
-            }
-            WebInspector.Setting.prototype.set.call(this, value);
-        }
-        this._setterCallback(value, callback.bind(this));
     },
 
     __proto__: WebInspector.Setting.prototype
