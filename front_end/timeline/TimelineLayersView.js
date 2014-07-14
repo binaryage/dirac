@@ -27,37 +27,35 @@ WebInspector.TimelineLayersView.prototype = {
     showLayerTree: function(deferredLayerTree, paints)
     {
         this._disposeTiles();
-        if (!this.isShowing()) {
-            this._pendingLayerTree = deferredLayerTree,
-            this._pendingPaints = paints;
-            return;
-        }
-        this._actuallyShowLayerTree(deferredLayerTree, paints);
+        this._deferredLayerTree = deferredLayerTree;
+        this._paints = paints;
+        if (this.isShowing())
+            this._update();
+        else
+            this._updateWhenVisible = true;
     },
 
     wasShown: function()
     {
-        if (!this._pendingLayerTree)
-            return;
-        this._actuallyShowLayerTree(this._pendingLayerTree, this._pendingPaints);
-        this._pendingLayerTree = null;
-        this._pendingPaints = null;
+        if (this._updateWhenVisible) {
+            this._updateWhenVisible = false;
+            this._update();
+        }
     },
 
-    /**
-     * @param {!WebInspector.DeferredLayerTree} deferredLayerTree
-     * @param {?Array.<!WebInspector.LayerPaintEvent>} paints
-     */
-    _actuallyShowLayerTree: function(deferredLayerTree, paints)
+    _update: function()
     {
         var layerTree;
 
-        this._target = deferredLayerTree.target();
+        this._weakTarget = this._deferredLayerTree.weakTarget();
         var originalTiles = this._paintTiles;
         var tilesReadyBarrier = new CallbackBarrier();
-        deferredLayerTree.resolve(tilesReadyBarrier.createCallback(onLayersReady));
-        for (var i = 0; paints && i < paints.length; ++i)
-            WebInspector.PaintProfilerSnapshot.load(paints[i].picture, tilesReadyBarrier.createCallback(onSnapshotLoaded.bind(this, paints[i])));
+        this._deferredLayerTree.resolve(tilesReadyBarrier.createCallback(onLayersReady));
+        var target = this._weakTarget.get();
+        if (target) {
+            for (var i = 0; this._paints && i < this._paints.length; ++i)
+                WebInspector.PaintProfilerSnapshot.load(target, this._paints[i].picture, tilesReadyBarrier.createCallback(onSnapshotLoaded.bind(this, this._paints[i])));
+        }
         tilesReadyBarrier.callWhenDone(onLayersAndTilesReady.bind(this));
 
         /**
@@ -104,11 +102,7 @@ WebInspector.TimelineLayersView.prototype = {
         if (this._currentlySelectedLayer === activeObject)
             return;
         this._currentlySelectedLayer = activeObject;
-        var node = layer ? layer.nodeForSelfOrAncestor() : null;
-        if (node)
-            node.highlightForTwoSeconds();
-        else
-            this._target.domModel.hideDOMNodeHighlight();
+        this._toggleNodeHighlight(layer ? layer.nodeForSelfOrAncestor() : null);
         this._layers3DView.selectObject(activeObject);
     },
 
@@ -121,12 +115,23 @@ WebInspector.TimelineLayersView.prototype = {
         if (this._currentlyHoveredLayer === activeObject)
             return;
         this._currentlyHoveredLayer = activeObject;
-        var node = layer ? layer.nodeForSelfOrAncestor() : null;
-        if (node)
-            node.highlight();
-        else
-            this._target.domModel.hideDOMNodeHighlight();
+        this._toggleNodeHighlight(layer ? layer.nodeForSelfOrAncestor() : null);
         this._layers3DView.hoverObject(activeObject);
+    },
+
+    /**
+     * @param {?WebInspector.DOMNode} node
+     */
+    _toggleNodeHighlight: function(node)
+    {
+        if (node) {
+            node.highlightForTwoSeconds();
+            return;
+        }
+        var target = this._weakTarget.get();
+        if (target)
+            target.domModel.hideDOMNodeHighlight();
+
     },
 
     /**

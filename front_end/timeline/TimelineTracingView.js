@@ -122,13 +122,13 @@ WebInspector.TimelineTracingView.prototype = {
          */
         function reveal()
         {
-            WebInspector.Revealer.reveal(new WebInspector.DeferredTracingLayerTree(this._tracingModel.target(), record.args["snapshot"]["active_tree"]["root_layer"], record.args["snapshot"]["device_viewport_size"]));
+            WebInspector.Revealer.reveal(new WebInspector.DeferredTracingLayerTree(this._tracingModel.target().weakReference(), record.args["snapshot"]["active_tree"]["root_layer"], record.args["snapshot"]["device_viewport_size"]));
         }
         /**
          * @param {!Node=} node
          * @this {WebInspector.TimelineTracingView}
          */
-        function appendPreviewAndshowDetails(node)
+        function appendPreviewAndShowDetails(node)
         {
             if (node)
                 contentHelper.appendElementRow("Preview", node);
@@ -137,7 +137,7 @@ WebInspector.TimelineTracingView.prototype = {
         var recordTypes = WebInspector.TracingTimelineModel.RecordType;
         switch (record.name) {
         case recordTypes.PictureSnapshot:
-            WebInspector.TracingTimelineUIUtils.buildPicturePreviewContent(record.args["snapshot"]["skp64"], appendPreviewAndshowDetails.bind(this));
+            WebInspector.TracingTimelineUIUtils.buildPicturePreviewContent(this._tracingModel.target(), record.args["snapshot"]["skp64"], appendPreviewAndShowDetails.bind(this));
             break;
         case recordTypes.LayerTreeHostImplSnapshot:
             var link = document.createElement("span");

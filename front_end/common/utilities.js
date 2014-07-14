@@ -1777,3 +1777,29 @@ CallbackBarrier.prototype = {
 function suppressUnused(value)
 {
 }
+
+/**
+ * @constructor
+ * @param {!T} targetObject
+ * @template T
+ */
+function WeakReference(targetObject)
+{
+    this._targetObject = targetObject;
+}
+
+WeakReference.prototype = {
+    /**
+     * @return {?T}
+     */
+    get: function()
+    {
+        return this._targetObject;
+    },
+
+    clear: function()
+    {
+        this._targetObject = null;
+    }
+};
+

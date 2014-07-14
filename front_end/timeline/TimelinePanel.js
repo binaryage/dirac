@@ -1061,7 +1061,7 @@ WebInspector.TimelinePanel.prototype = {
         this.showInDetails(title, content);
         if (event.picture) {
             var paintProfilerView = this._paintProfilerView();
-            paintProfilerView.setPicture(event.picture);
+            paintProfilerView.setPicture(this._model.target().weakReference(), event.picture);
             this._detailsView.appendTab("paintProfiler", WebInspector.UIString("Paint Profiler"), paintProfilerView);
         }
     },

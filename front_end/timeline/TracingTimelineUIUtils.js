@@ -465,7 +465,7 @@ WebInspector.TracingTimelineUIUtils.buildTraceEventDetails = function(event, mod
         if (event.imageURL)
             WebInspector.DOMPresentationUtils.buildImagePreviewContents(target, event.imageURL, false, barrier.createCallback(saveImage));
         else if (event.picture)
-            WebInspector.TracingTimelineUIUtils.buildPicturePreviewContent(event.picture, barrier.createCallback(saveImage));
+            WebInspector.TracingTimelineUIUtils.buildPicturePreviewContent(model.target(), event.picture, barrier.createCallback(saveImage));
     }
     if (event.backendNodeId)
         target.domModel.pushNodesByBackendIdsToFrontend([event.backendNodeId], barrier.createCallback(setRelatedNode));
@@ -698,45 +698,39 @@ WebInspector.TracingTimelineUIUtils._aggregatedStatsForTraceEvent = function(tot
 }
 
 /**
+ * @param {!WebInspector.Target} target
  * @param {string} encodedPicture
  * @param {function(!Element=)} callback
  */
-WebInspector.TracingTimelineUIUtils.buildPicturePreviewContent = function(encodedPicture, callback)
+WebInspector.TracingTimelineUIUtils.buildPicturePreviewContent = function(target, encodedPicture, callback)
 {
-    var snapshotId;
-
-    LayerTreeAgent.loadSnapshot(encodedPicture, onSnapshotLoaded);
+    WebInspector.PaintProfilerSnapshot.load(target, encodedPicture, onSnapshotLoaded);
     /**
-     * @param {string} error
-     * @param {string} id
+     * @param {?WebInspector.PaintProfilerSnapshot} snapshot
      */
-    function onSnapshotLoaded(error, id)
+    function onSnapshotLoaded(snapshot)
     {
-        if (error) {
-            console.error("LayerTreeAgent.loadSnapshot(): " + error);
+        if (!snapshot) {
             callback();
             return;
         }
-        snapshotId = id;
-        LayerTreeAgent.replaySnapshot(snapshotId, onSnapshotReplayed);
+        snapshot.requestImage(null, null, 1, onGotImage);
+        snapshot.dispose();
     }
 
     /**
-     * @param {string} error
-     * @param {string} encodedBitmap
+     * @param {string=} imageURL
      */
-    function onSnapshotReplayed(error, encodedBitmap)
+    function onGotImage(imageURL)
     {
-        LayerTreeAgent.releaseSnapshot(snapshotId);
-        if (error) {
-            console.error("LayerTreeAgent.replaySnapshot(): " + error);
+        if (!imageURL) {
             callback();
             return;
         }
         var container = document.createElement("div");
         container.className = "image-preview-container";
         var img = container.createChild("img");
-        img.src = encodedBitmap;
+        img.src = imageURL;
         callback(container);
     }
 }

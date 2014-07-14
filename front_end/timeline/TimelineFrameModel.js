@@ -312,7 +312,7 @@ WebInspector.TimelineFrameModel.prototype = {
     {
         var recordTypes = WebInspector.TimelineModel.RecordType;
         if (record.type() === recordTypes.UpdateLayerTree && record.data()["layerTree"])
-            this.handleLayerTreeSnapshot(new WebInspector.DeferredAgentLayerTree(this.target(), record.data()["layerTree"]));
+            this.handleLayerTreeSnapshot(new WebInspector.DeferredAgentLayerTree(this.target().weakReference(), record.data()["layerTree"]));
         if (!this._hasThreadedCompositing) {
             if (record.type() === recordTypes.BeginFrame)
                 this._startMainThreadFrame(record.startTime());
@@ -417,7 +417,7 @@ WebInspector.TracingTimelineFrameModel.prototype = {
         var eventNames = WebInspector.TracingTimelineModel.RecordType;
 
         if (event.phase === WebInspector.TracingModel.Phase.SnapshotObject && event.name === eventNames.LayerTreeHostImplSnapshot && parseInt(event.id, 0) === this._layerTreeId) {
-            this.handleLayerTreeSnapshot(new WebInspector.DeferredTracingLayerTree(this.target(), event.args["snapshot"]["active_tree"]["root_layer"], event.args["snapshot"]["device_viewport_size"]));
+            this.handleLayerTreeSnapshot(new WebInspector.DeferredTracingLayerTree(this.target().weakReference(), event.args["snapshot"]["active_tree"]["root_layer"], event.args["snapshot"]["device_viewport_size"]));
             return;
         }
         if (this._lastFrame && event.selfTime)

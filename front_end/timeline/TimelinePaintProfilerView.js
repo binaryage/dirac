@@ -29,36 +29,40 @@ WebInspector.TimelinePaintProfilerView = function()
 WebInspector.TimelinePaintProfilerView.prototype = {
     wasShown: function()
     {
-        this._innerSetPicture(this._picture);
-    },
-
-    /**
-     * @param {string} encodedPicture
-     */
-    setPicture: function(encodedPicture)
-    {
-        if (this._lastLoadedSnapshot) {
-            this._lastLoadedSnapshot.dispose();
-            this._lastLoadedSnapshot = null;
+        if (this._updateWhenVisible) {
+            this._updateWhenVisible = false;
+            this._update();
         }
-        this._picture = encodedPicture;
-        if (!this.isShowing())
-            return;
-        this._innerSetPicture(this._picture);
     },
 
     /**
+     * @param {!WeakReference.<!WebInspector.Target>} weakTarget
      * @param {string} encodedPicture
      */
-    _innerSetPicture: function(encodedPicture)
+    setPicture: function(weakTarget, encodedPicture)
     {
-        WebInspector.PaintProfilerSnapshot.load(encodedPicture, onSnapshotLoaded.bind(this));
+        this._disposeSnapshot();
+        this._picture = encodedPicture;
+        this._weakTarget = weakTarget;
+        if (this.isShowing())
+            this._update();
+        else
+            this._updateWhenVisible = true;
+    },
+
+    _update: function()
+    {
+        var target = this._weakTarget.get();
+        if (!target)
+            return;
+        WebInspector.PaintProfilerSnapshot.load(target, this._picture, onSnapshotLoaded.bind(this));
         /**
          * @param {?WebInspector.PaintProfilerSnapshot} snapshot
          * @this WebInspector.TimelinePaintProfilerView
          */
         function onSnapshotLoaded(snapshot)
         {
+            this._disposeSnapshot();
             this._lastLoadedSnapshot = snapshot;
             snapshot.commandLog(onCommandLogDone.bind(this, snapshot));
         }
@@ -73,6 +77,14 @@ WebInspector.TimelinePaintProfilerView.prototype = {
             this._logTreeView.setCommandLog(log);
             this._paintProfilerView.setSnapshotAndLog(snapshot || null, log || []);
         }
+    },
+
+    _disposeSnapshot: function()
+    {
+        if (!this._lastLoadedSnapshot)
+            return;
+        this._lastLoadedSnapshot.dispose();
+        this._lastLoadedSnapshot = null;
     },
 
     _onWindowChanged: function()

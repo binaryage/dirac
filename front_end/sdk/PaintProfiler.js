@@ -30,21 +30,24 @@
 
 /**
  * @constructor
+ * @param {!WeakReference.<!WebInspector.Target>} weakTarget
  * @param {string} snapshotId
  */
-WebInspector.PaintProfilerSnapshot = function(snapshotId)
+WebInspector.PaintProfilerSnapshot = function(weakTarget, snapshotId)
 {
+    this._weakTarget = weakTarget;
     this._id = snapshotId;
 }
 
 /**
+ * @param {!WebInspector.Target} target
  * @param {string} encodedPicture
  * @param {function(?WebInspector.PaintProfilerSnapshot)} callback
  */
-WebInspector.PaintProfilerSnapshot.load = function(encodedPicture, callback)
+WebInspector.PaintProfilerSnapshot.load = function(target, encodedPicture, callback)
 {
-    var wrappedCallback = InspectorBackend.wrapClientCallback(callback, "LayerTreeAgent.loadSnapshot(): ", WebInspector.PaintProfilerSnapshot);
-    LayerTreeAgent.loadSnapshot(encodedPicture, wrappedCallback);
+    var wrappedCallback = InspectorBackend.wrapClientCallback(callback, "LayerTreeAgent.loadSnapshot(): ", WebInspector.PaintProfilerSnapshot.bind(null, target.weakReference()));
+    target.layerTreeAgent().loadSnapshot(encodedPicture, wrappedCallback);
 }
 
 /**
@@ -97,7 +100,9 @@ WebInspector.PaintProfilerSnapshot._processAnnotations = function(log)
 WebInspector.PaintProfilerSnapshot.prototype = {
     dispose: function()
     {
-        LayerTreeAgent.releaseSnapshot(this._id);
+        var target = this._weakTarget.get();
+        if (target)
+            target.layerTreeAgent().releaseSnapshot(this._id);
     },
 
     /**
@@ -108,8 +113,13 @@ WebInspector.PaintProfilerSnapshot.prototype = {
      */
     requestImage: function(firstStep, lastStep, scale, callback)
     {
+        var target = this._weakTarget.get();
+        if (!target) {
+            callback();
+            return;
+        }
         var wrappedCallback = InspectorBackend.wrapClientCallback(callback, "LayerTreeAgent.replaySnapshot(): ");
-        LayerTreeAgent.replaySnapshot(this._id, firstStep || undefined, lastStep || undefined, scale || 1.0, wrappedCallback);
+        target.layerTreeAgent().replaySnapshot(this._id, firstStep || undefined, lastStep || undefined, scale || 1.0, wrappedCallback);
     },
 
     /**
@@ -117,8 +127,13 @@ WebInspector.PaintProfilerSnapshot.prototype = {
      */
     profile: function(callback)
     {
+        var target = this._weakTarget.get();
+        if (!target) {
+            callback();
+            return;
+        }
         var wrappedCallback = InspectorBackend.wrapClientCallback(callback, "LayerTreeAgent.profileSnapshot(): ");
-        LayerTreeAgent.profileSnapshot(this._id, 5, 1, wrappedCallback);
+        target.layerTreeAgent().profileSnapshot(this._id, 5, 1, wrappedCallback);
     },
 
     /**
@@ -126,6 +141,11 @@ WebInspector.PaintProfilerSnapshot.prototype = {
      */
     commandLog: function(callback)
     {
+        var target = this._weakTarget.get();
+        if (!target) {
+            callback();
+            return;
+        }
         /**
          * @param {?string} error
          * @param {!Array.<!WebInspector.RawPaintProfilerLogItem>} log
@@ -139,9 +159,9 @@ WebInspector.PaintProfilerSnapshot.prototype = {
             }
             callback(WebInspector.PaintProfilerSnapshot._processAnnotations(log));
         }
-        LayerTreeAgent.snapshotCommandLog(this._id, callbackWrapper);
-    },
 
+        target.layerTreeAgent().snapshotCommandLog(this._id, callbackWrapper);
+    }
 };
 
 /**
