@@ -34,6 +34,7 @@ WebInspector.AdvancedApp.prototype = {
 
         console.timeStamp("AdvancedApp.attachToBody");
         rootView.attachToBody();
+        this._inspectedPagePlaceholder.update();
     },
 
     /**

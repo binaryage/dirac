@@ -42,7 +42,10 @@ WebInspector.App.prototype = {
     {
     },
 
-    presentUI: function()
+    /**
+     * @param {!WebInspector.Target} mainTarget
+     */
+    presentUI: function(mainTarget)
     {
         WebInspector.inspectorView.showInitialPanel();
 
