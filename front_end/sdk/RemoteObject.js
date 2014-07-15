@@ -130,11 +130,6 @@ WebInspector.RemoteObject.prototype = {
         return false;
     },
 
-    reveal: function()
-    {
-        WebInspector.Revealer.reveal(this);
-    },
-
     /**
      * @param {function(?DebuggerAgent.FunctionDetails)} callback
      */

@@ -1302,10 +1302,8 @@ WebInspector.NetworkLogView.prototype = {
             this._toggleLargerRequests();
         var highlightedSubstringChanges = node._highlightMatchedSubstring(regExp);
         this._highlightedSubstringChanges.push(highlightedSubstringChanges);
-        if (reveal) {
-            node.reveal();
-            this._highlightNode(node);
-        }
+        if (reveal)
+            WebInspector.Revealer.reveal(node);
 
         this._currentMatchedRequestNode = node;
         this._currentMatchedRequestIndex = n;

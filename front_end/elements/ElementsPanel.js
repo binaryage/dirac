@@ -1239,20 +1239,14 @@ WebInspector.ElementsPanel.prototype = {
      */
     appendApplicableItems: function(event, contextMenu, object)
     {
-        var commandCallback;
-        if (object instanceof WebInspector.RemoteObject) {
-            var remoteObject = /** @type {!WebInspector.RemoteObject} */ (object);
-            if (remoteObject.isNode())
-                commandCallback = remoteObject.reveal.bind(remoteObject);
-        } else if (object instanceof WebInspector.DOMNode) {
-            var domNode = /** @type {!WebInspector.DOMNode} */ (object);
-            commandCallback = domNode.reveal.bind(domNode);
-        }
-        if (!commandCallback)
+        if (!(object instanceof WebInspector.RemoteObject && (/** @type {!WebInspector.RemoteObject} */ (object)).isNode())
+            && !(object instanceof WebInspector.DOMNode)) {
             return;
+        }
         // Skip adding "Reveal..." menu item for our own tree outline.
         if (this.element.isAncestor(/** @type {!Node} */ (event.target)))
             return;
+        var commandCallback = WebInspector.Revealer.reveal.bind(WebInspector.Revealer, object);
         contextMenu.appendItem(WebInspector.useLowerCaseMenuTitles() ? "Reveal in Elements panel" : "Reveal in Elements Panel", commandCallback);
     },
 
@@ -1481,7 +1475,7 @@ WebInspector.ElementsPanel.NodeRemoteObjectRevealer.prototype = {
         function selectNode(remoteObject, node)
         {
             if (node) {
-                node.reveal();
+                WebInspector.Revealer.reveal(node);
                 return;
             }
             if (!remoteObject || remoteObject.description !== "#text" || !remoteObject.isNode())

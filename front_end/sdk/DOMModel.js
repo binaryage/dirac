@@ -823,11 +823,6 @@ WebInspector.DOMNode.prototype = {
         this._domModel.highlightDOMNodeForTwoSeconds(this.id);
     },
 
-    reveal: function()
-    {
-        WebInspector.Revealer.reveal(this);
-    },
-
     /**
      * @param {string=} objectGroup
      * @param {function(?WebInspector.RemoteObject)=} callback

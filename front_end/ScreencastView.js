@@ -267,7 +267,7 @@ WebInspector.ScreencastView.prototype = {
             if (event.type === "mousemove")
                 this.highlightDOMNode(node, this._inspectModeConfig);
             else if (event.type === "click")
-                node.reveal();
+                WebInspector.Revealer.reveal(node);
         }
     },
 

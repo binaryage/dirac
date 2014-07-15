@@ -579,7 +579,7 @@ WebInspector.Main.prototype = {
         function callback(node)
         {
             elementsPanel.stopOmittingDefaultSelection();
-            node.reveal();
+            WebInspector.Revealer.reveal(node);
             if (!WebInspector.inspectorView.drawerVisible() && !WebInspector._notFirstInspectElement)
                 InspectorFrontendHost.inspectElementCompleted();
             WebInspector._notFirstInspectElement = true;
