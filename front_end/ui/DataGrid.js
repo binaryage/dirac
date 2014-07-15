@@ -41,15 +41,15 @@ WebInspector.DataGrid = function(columnsArray, editCallback, deleteCallback, ref
     this.element.tabIndex = 0;
     this.element.addEventListener("keydown", this._keyDown.bind(this), false);
 
-    this._headerTable = document.createElement("table");
-    this._headerTable.className = "header";
+    var headerContainer = document.createElementWithClass("div", "header-container");
+    this._headerTable = headerContainer.createChild("table", "header");
     /**
      * @type {!Object.<string, !Element>}
      */
     this._headerTableHeaders = {};
 
-    this._dataTable = document.createElement("table");
-    this._dataTable.className = "data";
+    this._scrollContainer = document.createElementWithClass("div", "data-container");
+    this._dataTable = this._scrollContainer.createChild("table", "data");
 
     this._dataTable.addEventListener("mousedown", this._mouseDownInDataTable.bind(this), true);
     this._dataTable.addEventListener("click", this._clickInDataTable.bind(this), true);
@@ -65,11 +65,7 @@ WebInspector.DataGrid = function(columnsArray, editCallback, deleteCallback, ref
     this._refreshCallback = refreshCallback;
     this._contextMenuCallback = contextMenuCallback;
 
-    this._scrollContainer = document.createElement("div");
-    this._scrollContainer.className = "data-container";
-    this._scrollContainer.appendChild(this._dataTable);
-
-    this.element.appendChild(this._headerTable);
+    this.element.appendChild(headerContainer);
     this.element.appendChild(this._scrollContainer);
 
     this._headerRow = document.createElement("tr");
