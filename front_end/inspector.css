@@ -1055,6 +1055,7 @@ body.platform-linux .source-code {
     margin-left: 100%;
     width: 3px;
     height: 100%;
+    box-sizing: border-box;
 }
 
 .console-message {
@@ -1416,6 +1417,7 @@ iframe.panel.extension {
     float: left;
     width: 10px;
     padding-right: 2px;
+    box-sizing: border-box;
 }
 
 .outline-disclosure li.parent::before {
@@ -2105,6 +2107,7 @@ button.show-all-nodes:active {
     content: "";
     position: absolute;
     -webkit-animation: spinner-animation 1s linear infinite;
+    box-sizing: border-box;
 }
 
 .spinner-icon.small::before,
@@ -2627,6 +2630,7 @@ body.platform-mac .search-drawer-header input[type="search"].search-config-searc
     margin-left: -5px;
     padding-right: 4px;
     display: inline-block;
+    box-sizing: border-box;
 }
 
 @media (-webkit-min-device-pixel-ratio: 1.5) {

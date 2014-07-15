@@ -30,7 +30,7 @@ body.platform-windows {
   font-family: 'Segoe UI', Tahoma, sans-serif;
 }
 
-*, *::before, *::after {
+* {
     box-sizing: border-box;
 }
 

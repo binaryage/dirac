@@ -488,6 +488,7 @@ body.platform-mac .responsive-design-toolbar select {
     height: 6px;
     content: url(Images/graphLabelCalloutLeft.png);
     -webkit-filter: invert(0.8);
+    box-sizing: border-box;
 }
 
 .media-inspector-max-label {
@@ -520,6 +521,7 @@ body.platform-mac .responsive-design-toolbar select {
     top: 0px;
     bottom: 0px;
     border-left: 1px solid rgba(225, 124, 0, 0.86);
+    box-sizing: border-box;
 }
 
 .media-inspector-threshold-serif:hover {
