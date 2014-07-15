@@ -51,7 +51,7 @@ WebInspector.Main.prototype = {
     _registerModules: function()
     {
         var configuration;
-        if (!Capabilities.isMainFrontend) {
+        if (WebInspector.isWorkerFrontend()) {
             configuration = ["main", "sources", "timeline", "profiler", "console", "source_frame"];
         } else {
             configuration = ["main", "elements", "network", "sources", "timeline", "profiler", "resources", "audits", "console", "source_frame", "extensions", "settings"];
@@ -146,7 +146,7 @@ WebInspector.Main.prototype = {
         {
             if (result) {
                 pauseAndResume.call(this);
-            } else if (!Capabilities.isMainFrontend) {
+            } else if (WebInspector.isWorkerFrontend()) {
                 calculateTitle.call(this);
             }
         }
@@ -274,7 +274,7 @@ WebInspector.Main.prototype = {
         WebInspector.dockController = new WebInspector.DockController(!!WebInspector.queryParam("can_dock"));
         WebInspector.overridesSupport = new WebInspector.OverridesSupport(WebInspector.dockController.canDock());
 
-        if (mainTarget.canScreencast)
+        if (mainTarget.hasCapability(WebInspector.Target.Capabilities.canScreencast))
             WebInspector.app = new WebInspector.ScreencastApp();
         else if (WebInspector.dockController.canDock())
             WebInspector.app = new WebInspector.AdvancedApp();
@@ -295,7 +295,7 @@ WebInspector.Main.prototype = {
 
         InspectorBackend.registerInspectorDispatcher(this);
 
-        if (Capabilities.isMainFrontend) {
+        if (!WebInspector.isWorkerFrontend()) {
             WebInspector.inspectElementModeController = new WebInspector.InspectElementModeController();
             WebInspector.workerFrontendManager = new WebInspector.WorkerFrontendManager();
         } else {

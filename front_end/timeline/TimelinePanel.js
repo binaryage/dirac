@@ -357,7 +357,7 @@ WebInspector.TimelinePanel.prototype = {
                                                                       WebInspector.UIString("Capture memory information on every timeline event")));
         this._captureMemorySetting.addChangeListener(this._onModeChanged, this);
 
-        if (Capabilities.canProfilePower) {
+        if (WebInspector.experimentsSettings.timelinePowerProfiler.isEnabled()) {
             this._capturePowerSetting = WebInspector.settings.createSetting("timelineCapturePower", false);
             topPaneSidebarElement.appendChild(this._createSettingCheckbox(WebInspector.UIString("Capture power"),
                                                                           this._capturePowerSetting,

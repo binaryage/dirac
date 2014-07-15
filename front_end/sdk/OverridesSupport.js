@@ -811,7 +811,7 @@ WebInspector.OverridesSupport.prototype = {
      */
     hasTouchInputs: function()
     {
-        return !!this._target && this._target.hasTouchInputs;
+        return !!this._target && this._target.hasCapability(WebInspector.Target.Capabilities.hasTouchInputs);
     },
 
     /**

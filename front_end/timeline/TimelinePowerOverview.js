@@ -108,13 +108,13 @@ WebInspector.TimelinePowerOverview.prototype = {
 
     timelineStarted: function()
     {
-        if (Capabilities.canProfilePower)
+        if (WebInspector.targetManager.activeTarget().hasCapability(WebInspector.Target.Capabilities.canProfilePower))
             WebInspector.powerProfiler.startProfile();
     },
 
     timelineStopped: function()
     {
-        if (Capabilities.canProfilePower)
+        if (WebInspector.targetManager.activeTarget().hasCapability(WebInspector.Target.Capabilities.canProfilePower))
             WebInspector.powerProfiler.stopProfile();
     },
 

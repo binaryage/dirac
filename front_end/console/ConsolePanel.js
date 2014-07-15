@@ -45,7 +45,7 @@ WebInspector.ConsolePanel = function()
 WebInspector.ConsolePanel._view = function()
 {
     if (!WebInspector.ConsolePanel._consoleView)
-        WebInspector.ConsolePanel._consoleView = new WebInspector.ConsoleView(!Capabilities.isMainFrontend);
+        WebInspector.ConsolePanel._consoleView = new WebInspector.ConsoleView(WebInspector.isWorkerFrontend());
 
     return WebInspector.ConsolePanel._consoleView;
 }

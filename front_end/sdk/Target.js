@@ -18,24 +18,28 @@ WebInspector.Target = function(name, connection, callback)
     this._weakReference = new WeakReference(this);
     this._name = name;
     this._connection = connection;
-    /** @type {boolean} */
-    this.isMainFrontend = false;
     this._id = WebInspector.Target._nextId++;
-    /** @type {boolean} */
-    this.canScreencast = false;
-    this.pageAgent().canScreencast(this._initializeCapability.bind(this, "canScreencast", null));
 
-    /** @type {boolean} */
-    this.hasTouchInputs = false;
-    this.pageAgent().hasTouchInputs(this._initializeCapability.bind(this, "hasTouchInputs", null));
-
+    /** @type {!Object.<string, boolean>} */
+    this._capabilities = {};
+    this.pageAgent().canScreencast(this._initializeCapability.bind(this, WebInspector.Target.Capabilities.canScreencast, null));
+    this.pageAgent().hasTouchInputs(this._initializeCapability.bind(this, WebInspector.Target.Capabilities.hasTouchInputs, null));
     if (WebInspector.experimentsSettings.timelinePowerProfiler.isEnabled())
-        this.powerAgent().canProfilePower(this._initializeCapability.bind(this, "canProfilePower", null));
-
-    this.workerAgent().canInspectWorkers(this._initializeCapability.bind(this, "isMainFrontend", this._loadedWithCapabilities.bind(this, callback)));
+        this.powerAgent().canProfilePower(this._initializeCapability.bind(this, WebInspector.Target.Capabilities.canProfilePower, null));
+    this.workerAgent().canInspectWorkers(this._initializeCapability.bind(this, WebInspector.Target.Capabilities.canInspectWorkers, this._loadedWithCapabilities.bind(this, callback)));
 
     /** @type {!WebInspector.Lock} */
     this.profilingLock = new WebInspector.Lock();
+}
+
+/**
+ * @enum {string}
+ */
+WebInspector.Target.Capabilities = {
+    canScreencast: "canScreencast",
+    hasTouchInputs: "hasTouchInputs",
+    canProfilePower: "canProfilePower",
+    canInspectWorkers: "canInspectWorkers"
 }
 
 WebInspector.Target._nextId = 1;
@@ -71,15 +75,22 @@ WebInspector.Target.prototype = {
      * @param {string} name
      * @param {function()|null} callback
      * @param {?Protocol.Error} error
-     * @param {*} result
+     * @param {boolean} result
      */
     _initializeCapability: function(name, callback, error, result)
     {
-        this[name] = result;
-        if (!Capabilities[name])
-            Capabilities[name] = result;
+        this._capabilities[name] = result;
         if (callback)
             callback();
+    },
+
+    /**
+     * @param {string} capability
+     * @return {boolean}
+     */
+    hasCapability: function(capability)
+    {
+        return !!this._capabilities[capability];
     },
 
     /**
@@ -129,11 +140,11 @@ WebInspector.Target.prototype = {
             WebInspector.cssModel = this.cssModel;
 
         /** @type {!WebInspector.WorkerManager} */
-        this.workerManager = new WebInspector.WorkerManager(this, this.isMainFrontend);
+        this.workerManager = new WebInspector.WorkerManager(this, this.hasCapability(WebInspector.Target.Capabilities.canInspectWorkers));
         if (!WebInspector.workerManager)
             WebInspector.workerManager = this.workerManager;
 
-        if (this.canProfilePower)
+        if (this.hasCapability(WebInspector.Target.Capabilities.canProfilePower))
             WebInspector.powerProfiler = new WebInspector.PowerProfiler();
 
         /** @type {!WebInspector.TimelineManager} */
@@ -178,7 +189,7 @@ WebInspector.Target.prototype = {
      */
     isWorkerTarget: function()
     {
-        return !this.isMainFrontend;
+        return !this.hasCapability(WebInspector.Target.Capabilities.canInspectWorkers);
     },
 
     /**
@@ -187,7 +198,7 @@ WebInspector.Target.prototype = {
     isMobile: function()
     {
         // FIXME: either add a separate capability or rename canScreencast to isMobile.
-        return this.canScreencast;
+        return this.hasCapability(WebInspector.Target.Capabilities.canScreencast);
     },
 
     dispose: function()
