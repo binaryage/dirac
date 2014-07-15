@@ -1346,6 +1346,38 @@ WebInspector.DOMModel.prototype = {
     },
 
     /**
+     * @param {string} query
+     * @return {!Promise.<number>}
+     */
+    performSearchPromise: function(query)
+    {
+        return new Promise(performSearch.bind(this));
+
+        /**
+         * @param {function(number)} resolve
+         * @this {WebInspector.DOMModel}
+         */
+        function performSearch(resolve)
+        {
+            this._agent.performSearch(query, callback.bind(this));
+
+            /**
+             * @param {?Protocol.Error} error
+             * @param {string} searchId
+             * @param {number} resultsCount
+             * @this {WebInspector.DOMModel}
+             */
+            function callback(error, searchId, resultsCount)
+            {
+                if (error)
+                    return;
+                this._searchId = searchId;
+                resolve(error ? 0 : resultsCount);
+            }
+        }
+    },
+
+    /**
      * @param {number} index
      * @param {?function(?WebInspector.DOMNode)} callback
      */
@@ -1872,8 +1904,3 @@ WebInspector.DefaultDOMNodeHighlighter.prototype = {
         this._agent.setInspectModeEnabled(enabled, inspectUAShadowDOM, config, callback);
     }
 }
-
-/**
- * @type {!WebInspector.DOMModel}
- */
-WebInspector.domModel;

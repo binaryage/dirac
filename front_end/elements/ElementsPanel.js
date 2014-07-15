@@ -386,7 +386,10 @@ WebInspector.ElementsPanel.prototype = {
 
         delete this._currentSearchResultIndex;
         delete this._searchResults;
-        WebInspector.domModel.cancelSearch();
+
+        var targets = WebInspector.targetManager.targets();
+        for (var i = 0; i < targets.length; ++i)
+            targets[i].domModel.cancelSearch();
     },
 
     /**
@@ -405,22 +408,35 @@ WebInspector.ElementsPanel.prototype = {
 
         this._searchQuery = query;
 
+        var targets = WebInspector.targetManager.targets();
+        var promises = [];
+        for (var i = 0; i < targets.length; ++i)
+            promises.push(targets[i].domModel.performSearchPromise(whitespaceTrimmedQuery));
+        Promise.all(promises).then(resultCountCallback.bind(this));
+
         /**
-         * @param {number} resultCount
+         * @param {!Array.<number>} resultCounts
          * @this {WebInspector.ElementsPanel}
          */
-        function resultCountCallback(resultCount)
+        function resultCountCallback(resultCounts)
         {
-            this._searchableView.updateSearchMatchesCount(resultCount);
-            if (!resultCount)
+            /**
+             * @type {!Array.<{target: !WebInspector.Target, index: number, node: (?WebInspector.DOMNode|undefined)}>}
+             */
+            this._searchResults = [];
+            for (var i = 0; i < resultCounts.length; ++i) {
+                var resultCount = resultCounts[i];
+                for (var j = 0; j < resultCount; ++j)
+                    this._searchResults.push({target: targets[i], index: j, node: undefined});
+            }
+            this._searchableView.updateSearchMatchesCount(this._searchResults.length);
+            if (!this._searchResults.length)
                 return;
-
             this._currentSearchResultIndex = -1;
-            this._searchResults = new Array(resultCount);
+
             if (shouldJump)
                 this._jumpToSearchResult(jumpBackwards ? -1 : 0);
         }
-        WebInspector.domModel.performSearch(whitespaceTrimmedQuery, resultCountCallback.bind(this));
     },
 
     _contextMenuEventFired: function(event)
@@ -578,15 +594,11 @@ WebInspector.ElementsPanel.prototype = {
 
     _highlightCurrentSearchResult: function()
     {
-        var treeOutline = this._firstTreeOutlineDeprecated();
-        if (!treeOutline)
-            return;
-
         var index = this._currentSearchResultIndex;
         var searchResults = this._searchResults;
         var searchResult = searchResults[index];
 
-        if (searchResult === null) {
+        if (searchResult.node === null) {
             this._searchableView.updateCurrentMatchIndex(index);
             return;
         }
@@ -597,19 +609,20 @@ WebInspector.ElementsPanel.prototype = {
          */
         function searchCallback(node)
         {
-            searchResults[index] = node;
+            searchResult.node = node;
             this._highlightCurrentSearchResult();
         }
 
-        if (typeof searchResult === "undefined") {
+        if (typeof searchResult.node === "undefined") {
             // No data for slot, request it.
-            WebInspector.domModel.searchResult(index, searchCallback.bind(this));
+            searchResult.target.domModel.searchResult(searchResult.index, searchCallback.bind(this));
             return;
         }
 
         this._searchableView.updateCurrentMatchIndex(index);
 
-        var treeElement = treeOutline.findTreeElement(searchResult);
+        var treeOutline = this._targetToTreeOutline.get(searchResult.target);
+        var treeElement = treeOutline.findTreeElement(searchResult.node);
         if (treeElement) {
             treeElement.highlightSearchResults(this._searchQuery);
             treeElement.reveal();
@@ -621,13 +634,13 @@ WebInspector.ElementsPanel.prototype = {
 
     _hideSearchHighlights: function()
     {
-        if (!this._searchResults)
+        if (!this._searchResults || this._currentSearchResultIndex < 0)
             return;
         var searchResult = this._searchResults[this._currentSearchResultIndex];
-        if (!searchResult)
+        if (!searchResult.node)
             return;
-        var treeOutline = this._targetToTreeOutline.get(searchResult.target());
-        var treeElement = treeOutline.findTreeElement(searchResult);
+        var treeOutline = this._targetToTreeOutline.get(searchResult.target);
+        var treeElement = treeOutline.findTreeElement(searchResult.node);
         if (treeElement)
             treeElement.hideSearchHighlights();
     },
@@ -1145,12 +1158,13 @@ WebInspector.ElementsPanel.prototype = {
     handleShortcut: function(event)
     {
         /**
+         * @param {!WebInspector.ElementsTreeOutline} treeOutline
          * @this {WebInspector.ElementsPanel}
          */
-        function handleUndoRedo()
+        function handleUndoRedo(treeOutline)
         {
             if (WebInspector.KeyboardShortcut.eventHasCtrlOrMeta(event) && !event.shiftKey && event.keyIdentifier === "U+005A") { // Z key
-                WebInspector.domModel.undo(this._updateSidebars.bind(this));
+                treeOutline.target().domModel.undo(this._updateSidebars.bind(this));
                 event.handled = true;
                 return;
             }
@@ -1158,17 +1172,24 @@ WebInspector.ElementsPanel.prototype = {
             var isRedoKey = WebInspector.isMac() ? event.metaKey && event.shiftKey && event.keyIdentifier === "U+005A" : // Z key
                                                    event.ctrlKey && event.keyIdentifier === "U+0059"; // Y key
             if (isRedoKey) {
-                WebInspector.domModel.redo(this._updateSidebars.bind(this));
+                treeOutline.target().domModel.redo(this._updateSidebars.bind(this));
                 event.handled = true;
             }
         }
 
-        var treeOutline = this._firstTreeOutlineDeprecated();
+        var element = event.target.enclosingNodeOrSelfWithClass("elements-tree-outline");
+        if (!element)
+            return;
+        var treeOutline = null;
+        for (var i = 0; i < this._treeOutlines.length; ++i) {
+            if (this._treeOutlines[i].element === element)
+                treeOutline = this._treeOutlines[i];
+        }
         if (!treeOutline)
             return;
 
         if (!treeOutline.editing()) {
-            handleUndoRedo.call(this);
+            handleUndoRedo.call(this, treeOutline);
             if (event.handled)
                 return;
         }

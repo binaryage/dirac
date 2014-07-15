@@ -131,8 +131,6 @@ WebInspector.Target.prototype = {
 
         /** @type {!WebInspector.DOMModel} */
         this.domModel = new WebInspector.DOMModel(this);
-        if (!WebInspector.domModel)
-            WebInspector.domModel = this.domModel;
 
         /** @type {!WebInspector.CSSStyleModel} */
         this.cssModel = new WebInspector.CSSStyleModel(this);
@@ -314,7 +312,7 @@ WebInspector.TargetManager.prototype = {
      */
     targets: function()
     {
-        return this._targets;
+        return this._targets.slice();
     },
 
     /**
