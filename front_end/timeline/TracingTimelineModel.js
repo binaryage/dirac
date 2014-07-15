@@ -519,9 +519,7 @@ WebInspector.TracingTimelineModel.Filter.prototype = {
  */
 WebInspector.TracingTimelineModel.EventNameFilter = function(eventNames)
 {
-    this._eventNames = {};
-    for (var i = 0; i < eventNames.length; ++i)
-        this._eventNames[eventNames[i]] = true;
+    this._eventNames = eventNames.keySet();
 }
 
 WebInspector.TracingTimelineModel.EventNameFilter.prototype = {

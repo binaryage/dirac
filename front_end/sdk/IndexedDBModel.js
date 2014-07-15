@@ -233,12 +233,8 @@ WebInspector.IndexedDBModel.prototype = {
      */
     _updateOriginDatabaseNames: function(securityOrigin, databaseNames)
     {
-        var newDatabaseNames = {};
-        for (var i = 0; i < databaseNames.length; ++i)
-            newDatabaseNames[databaseNames[i]] = true;
-        var oldDatabaseNames = {};
-        for (var i = 0; i < this._databaseNamesBySecurityOrigin[securityOrigin].length; ++i)
-            oldDatabaseNames[this._databaseNamesBySecurityOrigin[securityOrigin][i]] = true;
+        var newDatabaseNames = databaseNames.keySet();
+        var oldDatabaseNames = this._databaseNamesBySecurityOrigin[securityOrigin].keySet();
 
         this._databaseNamesBySecurityOrigin[securityOrigin] = databaseNames;
 

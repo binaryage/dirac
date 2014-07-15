@@ -458,9 +458,7 @@ WebInspector.TimelineModel.Filter.prototype = {
 WebInspector.TimelineRecordTypeFilter = function(recordTypes)
 {
     WebInspector.TimelineModel.Filter.call(this);
-    this._recordTypes = {};
-    for (var i = 0; i < recordTypes.length; ++i)
-        this._recordTypes[recordTypes[i]] = true;
+    this._recordTypes = recordTypes.keySet();
 }
 
 WebInspector.TimelineRecordTypeFilter.prototype = {

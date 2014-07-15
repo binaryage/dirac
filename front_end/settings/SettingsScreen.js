@@ -254,9 +254,8 @@ WebInspector.GenericSettingsTab.prototype = {
         });
 
         var sectionIds = extensionsBySectionId.keys();
-        var explicitlyOrderedSections = {};
+        var explicitlyOrderedSections = explicitSectionOrder.keySet();
         for (var i = 0; i < explicitSectionOrder.length; ++i) {
-            explicitlyOrderedSections[explicitSectionOrder[i]] = true;
             var extensions = extensionsBySectionId.get(explicitSectionOrder[i]);
             if (!extensions.size())
                 continue;
