@@ -245,8 +245,8 @@ WebInspector.ShortcutsScreen.registerShortcuts = function()
     stylesPaneSection.addAlternateKeys(WebInspector.ShortcutsScreen.ElementsPanelShortcuts.DecrementBy01, WebInspector.UIString("Decrement by %f", 0.1));
 
 
-    // Sources panel
-    var section = WebInspector.shortcutsScreen.section(WebInspector.UIString("Sources Panel"));
+    // Debugger
+    var section = WebInspector.shortcutsScreen.section(WebInspector.UIString("Debugger"));
 
     section.addAlternateKeys(WebInspector.shortcutRegistry.shortcutDescriptorsForAction("debugger.toggle-pause"), WebInspector.UIString("Pause/Continue"));
     section.addAlternateKeys(WebInspector.ShortcutsScreen.SourcesPanelShortcuts.StepOver, WebInspector.UIString("Step over"));
@@ -258,17 +258,24 @@ WebInspector.ShortcutsScreen.registerShortcuts = function()
 
     section.addAlternateKeys(WebInspector.ShortcutsScreen.SourcesPanelShortcuts.EvaluateSelectionInConsole, WebInspector.UIString("Evaluate selection in console"));
     section.addAlternateKeys(WebInspector.ShortcutsScreen.SourcesPanelShortcuts.AddSelectionToWatch, WebInspector.UIString("Add selection to watch"));
-    section.addAlternateKeys(WebInspector.ShortcutsScreen.SourcesPanelShortcuts.GoToMember, WebInspector.UIString("Go to member"));
-    section.addAlternateKeys(WebInspector.ShortcutsScreen.SourcesPanelShortcuts.GoToLine, WebInspector.UIString("Go to line"));
     section.addAlternateKeys(WebInspector.ShortcutsScreen.SourcesPanelShortcuts.ToggleBreakpoint, WebInspector.UIString("Toggle breakpoint"));
+
+    // Editing
+    section = WebInspector.shortcutsScreen.section(WebInspector.UIString("Text Editor"));
+    section.addAlternateKeys(WebInspector.ShortcutsScreen.SourcesPanelShortcuts.GoToMember, WebInspector.UIString("Go to member"));
+    section.addAlternateKeys(WebInspector.ShortcutsScreen.SourcesPanelShortcuts.ToggleAutocompletion, WebInspector.UIString("Autocompletion"));
+    section.addAlternateKeys(WebInspector.ShortcutsScreen.SourcesPanelShortcuts.GoToLine, WebInspector.UIString("Go to line"));
+    section.addAlternateKeys(WebInspector.ShortcutsScreen.SourcesPanelShortcuts.JumpToPreviousLocation, WebInspector.UIString("Jump to previous editing location"));
+    section.addAlternateKeys(WebInspector.ShortcutsScreen.SourcesPanelShortcuts.JumpToNextLocation, WebInspector.UIString("Jump to next editing location"));
     section.addAlternateKeys(WebInspector.ShortcutsScreen.SourcesPanelShortcuts.ToggleComment, WebInspector.UIString("Toggle comment"));
-    section.addAlternateKeys(WebInspector.ShortcutsScreen.SourcesPanelShortcuts.CloseEditorTab, WebInspector.UIString("Close editor tab"));
     section.addAlternateKeys(WebInspector.ShortcutsScreen.SourcesPanelShortcuts.IncreaseCSSUnitByOne, WebInspector.UIString("Increment CSS unit by 1"));
     section.addAlternateKeys(WebInspector.ShortcutsScreen.SourcesPanelShortcuts.DecreaseCSSUnitByOne, WebInspector.UIString("Decrement CSS unit by 1"));
     section.addAlternateKeys(WebInspector.ShortcutsScreen.SourcesPanelShortcuts.IncreaseCSSUnitByTen, WebInspector.UIString("Increment CSS unit by 10"));
     section.addAlternateKeys(WebInspector.ShortcutsScreen.SourcesPanelShortcuts.DecreaseCSSUnitByTen, WebInspector.UIString("Decrement CSS unit by 10"));
-    section.addAlternateKeys(WebInspector.ShortcutsScreen.SourcesPanelShortcuts.JumpToPreviousLocation, WebInspector.UIString("Jump to previous editing location"));
-    section.addAlternateKeys(WebInspector.ShortcutsScreen.SourcesPanelShortcuts.JumpToNextLocation, WebInspector.UIString("Jump to next editing location"));
+    section.addAlternateKeys(WebInspector.ShortcutsScreen.SourcesPanelShortcuts.SelectNextOccurrence, WebInspector.UIString("Select next occurrence"));
+    section.addAlternateKeys(WebInspector.ShortcutsScreen.SourcesPanelShortcuts.SoftUndo, WebInspector.UIString("Soft undo"));
+    section.addAlternateKeys(WebInspector.ShortcutsScreen.SourcesPanelShortcuts.GotoMatchingBracket, WebInspector.UIString("Go to matching bracket"));
+    section.addAlternateKeys(WebInspector.ShortcutsScreen.SourcesPanelShortcuts.CloseEditorTab, WebInspector.UIString("Close editor tab"));
     section.addAlternateKeys(WebInspector.shortcutRegistry.shortcutDescriptorsForAction("sources.switch-file"), WebInspector.UIString("Switch between files with the same name and different extensions."));
 
     // Timeline panel
@@ -373,6 +380,22 @@ WebInspector.ShortcutsScreen.ElementsPanelShortcuts = {
 };
 
 WebInspector.ShortcutsScreen.SourcesPanelShortcuts = {
+    SelectNextOccurrence: [
+        WebInspector.KeyboardShortcut.makeDescriptor("d", WebInspector.KeyboardShortcut.Modifiers.CtrlOrMeta)
+    ],
+
+    SoftUndo: [
+        WebInspector.KeyboardShortcut.makeDescriptor("u", WebInspector.KeyboardShortcut.Modifiers.CtrlOrMeta)
+    ],
+
+    GotoMatchingBracket: [
+        WebInspector.KeyboardShortcut.makeDescriptor("m", WebInspector.KeyboardShortcut.Modifiers.Ctrl)
+    ],
+
+    ToggleAutocompletion: [
+        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Space, WebInspector.KeyboardShortcut.Modifiers.Ctrl)
+    ],
+
     IncreaseCSSUnitByOne: [
         WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Up, WebInspector.KeyboardShortcut.Modifiers.Alt)
     ],
