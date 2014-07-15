@@ -880,9 +880,9 @@ WebInspector.OpenResourceDialog.show = function(sourcesView, relativeToElement, 
 
     var filteredItemSelectionDialog = new WebInspector.FilteredItemSelectionDialog(new WebInspector.OpenResourceDialog(sourcesView, defaultScores));
     filteredItemSelectionDialog.renderAsTwoRows();
+    WebInspector.Dialog.show(relativeToElement, filteredItemSelectionDialog);
     if (query)
         filteredItemSelectionDialog.setQuery(query);
-    WebInspector.Dialog.show(relativeToElement, filteredItemSelectionDialog);
 }
 
 /**
