@@ -71,11 +71,11 @@
 .network-log-grid.data-grid th {
     border-bottom: 1px solid rgb(205, 205, 205);
     border-left: 1px solid rgb(205, 205, 205);
-    height: 30px;
+    height: 31px;
 }
 
 .network-log-grid.data-grid.small th {
-    height: 22px;
+    height: 23px;
 }
 
 .network-log-grid.data-grid th,

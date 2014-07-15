@@ -16,7 +16,7 @@
 .data-grid table {
     table-layout: fixed;
     border-spacing: 0;
-    border-collapse: collapse;
+    border-collapse: separate;
     width: 100%;
 }
 
@@ -94,9 +94,16 @@
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
-    height: 16px; /* Keep in sync with .data-grid table.data @ background-size */
     line-height: 14px;
     border-left: 1px solid #aaa;
+}
+
+.data-grid td {
+    height: 16px; /* Keep in sync with .data-grid table.data @ background-size */
+}
+
+.data-grid th {
+    height: 17px;
 }
 
 .data-grid:not(.inline) th:first-child,
