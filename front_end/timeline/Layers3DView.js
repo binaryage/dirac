@@ -62,7 +62,7 @@ WebInspector.Layers3DView = function()
 /** @typedef {{layer: !WebInspector.Layer, scrollRectIndex: number}|{layer: !WebInspector.Layer}} */
 WebInspector.Layers3DView.ActiveObject;
 
-/** @typedef {{color: !Array.<number>, borderColor: !Array.<number>, borderWidth: number}} */
+/** @typedef {{borderColor: !Array.<number>, borderWidth: number}} */
 WebInspector.Layers3DView.LayerStyle;
 
 /** @typedef {{layerId: string, rect: !Array.<number>, snapshot: !WebInspector.PaintProfilerSnapshot}} */
@@ -284,6 +284,15 @@ WebInspector.Layers3DView.prototype = {
             .rotate(rotateX, rotateY, 0).scale(viewScale, viewScale, viewScale).translate(-baseWidth / 2, -baseHeight / 2, 0);
     },
 
+    /**
+     * @param {!CSSMatrix} m
+     * @return {!Float32Array}
+     */
+    _arrayFromMatrix: function(m)
+    {
+        return new Float32Array([m.m11, m.m12, m.m13, m.m14, m.m21, m.m22, m.m23, m.m24, m.m31, m.m32, m.m33, m.m34, m.m41, m.m42, m.m43, m.m44]);
+    },
+
     _initProjectionMatrix: function()
     {
         var projectionMatrix = this._calculateProjectionMatrix();
@@ -312,13 +321,169 @@ WebInspector.Layers3DView.prototype = {
         return this._gl;
     },
 
-    /**
-     * @param {!CSSMatrix} m
-     * @return {!Float32Array}
-     */
-    _arrayFromMatrix: function(m)
+    _calculateDepths: function()
     {
-        return new Float32Array([m.m11, m.m12, m.m13, m.m14, m.m21, m.m22, m.m23, m.m24, m.m31, m.m32, m.m33, m.m34, m.m41, m.m42, m.m43, m.m44]);
+        this._depthByLayerId = {};
+        this._isVisible = {};
+        var depth = 0;
+        var root = this._layerTree.root();
+        var queue = [root];
+        this._depthByLayerId[root.id()] = 0;
+        this._isVisible[root.id()] = false;
+        while (queue.length > 0) {
+            var layer = queue.shift();
+            var children = layer.children();
+            for (var i = 0; i < children.length; ++i) {
+                this._depthByLayerId[children[i].id()] = ++depth;
+                this._isVisible[children[i].id()] = children[i] === this._layerTree.contentRoot() || this._isVisible[layer.id()];
+                queue.push(children[i]);
+            }
+        }
+        this._maxDepth = depth;
+    },
+
+    /**
+     * @param {!WebInspector.Layers3DView.OutlineType} type
+     * @param {!WebInspector.Layer} layer
+     * @param {number=} scrollRectIndex
+     */
+    _isObjectActive: function(type, layer, scrollRectIndex)
+    {
+        var activeObject = this._lastActiveObject[type];
+        return activeObject && activeObject.layer && activeObject.layer.id() === layer.id() && (typeof scrollRectIndex !== "number" || activeObject.scrollRectIndex === scrollRectIndex);
+    },
+
+    /**
+     * @param {!WebInspector.Layer} layer
+     * @return {!WebInspector.Layers3DView.LayerStyle}
+     */
+    _styleForLayer: function(layer)
+    {
+        var isSelected = this._isObjectActive(WebInspector.Layers3DView.OutlineType.Selected, layer);
+        var isHovered = this._isObjectActive(WebInspector.Layers3DView.OutlineType.Hovered, layer);
+        var borderColor;
+        if (isSelected)
+            borderColor = WebInspector.Layers3DView.SelectedBorderColor;
+        else if (isHovered)
+            borderColor = WebInspector.Layers3DView.HoveredBorderColor;
+        else
+            borderColor = WebInspector.Layers3DView.BorderColor;
+        var borderWidth = isSelected ? WebInspector.Layers3DView.SelectedBorderWidth : WebInspector.Layers3DView.BorderWidth;
+        return {borderColor: borderColor, borderWidth: borderWidth};
+    },
+
+    /**
+     * @param {!WebInspector.Layer} layer
+     * @return {number}
+     */
+    _depthForLayer: function(layer)
+    {
+        return this._depthByLayerId[layer.id()] * WebInspector.Layers3DView.LayerSpacing;
+    },
+
+    /**
+     * @param {!WebInspector.Layer} layer
+     * @param {number} index
+     * @return {number}
+     */
+    _calculateScrollRectDepth: function(layer, index)
+    {
+        return this._depthForLayer(layer) + index * WebInspector.Layers3DView.ScrollRectSpacing + 1;
+    },
+
+    /**
+     * @param {!WebInspector.Layer} layer
+     */
+    _calculateLayerRect: function(layer)
+    {
+        if (!this._isVisible[layer.id()])
+            return;
+        var rect = new WebInspector.Layers3DView.Rectangle({layer: layer});
+        var style = this._styleForLayer(layer);
+        rect.setVertices(layer.quad(), this._depthForLayer(layer));
+        rect.lineWidth = style.borderWidth;
+        rect.borderColor = style.borderColor;
+        this._rects.push(rect);
+    },
+
+    /**
+     * @param {!WebInspector.Layer} layer
+     */
+    _calculateLayerScrollRects: function(layer)
+    {
+        var scrollRects = layer.scrollRects();
+        for (var i = 0; i < scrollRects.length; ++i) {
+            var rect = new WebInspector.Layers3DView.Rectangle({layer: layer, scrollRectIndex: i});
+            rect.calculateVerticesFromRect(layer, scrollRects[i].rect, this._calculateScrollRectDepth(layer, i));
+            var isSelected = this._isObjectActive(WebInspector.Layers3DView.OutlineType.Selected, layer, i);
+            var color = isSelected ? WebInspector.Layers3DView.SelectedScrollRectBackgroundColor : WebInspector.Layers3DView.ScrollRectBackgroundColor;
+            rect.fillColor = color;
+            rect.borderColor = WebInspector.Layers3DView.ScrollRectBorderColor;
+            this._rects.push(rect);
+        }
+    },
+
+    /**
+     * @param {!WebInspector.Layer} layer
+     */
+    _calculateLayerImageRect: function(layer)
+    {
+        var layerTexture = this._layerTexture;
+        if (layer.id() !== layerTexture.layerId)
+            return;
+        var rect = new WebInspector.Layers3DView.Rectangle({layer: layer});
+        rect.setVertices(layer.quad(), this._depthForLayer(layer));
+        rect.texture = layerTexture.texture;
+        this._rects.push(rect);
+    },
+
+    /**
+     * @param {!WebInspector.Layer} layer
+     */
+    _calculateLayerTileRects: function(layer)
+    {
+        var tiles = this._textureManager.tilesForLayer(layer.id());
+        for (var i = 0; i < tiles.length; ++i) {
+            var tile = tiles[i];
+            if (!tile.texture)
+                continue;
+            var rect = new WebInspector.Layers3DView.Rectangle({layer: layer});
+            rect.calculateVerticesFromRect(layer, {x: tile.rect[0], y: tile.rect[1], width: tile.rect[2], height: tile.rect[3]}, this._depthForLayer(layer));
+            rect.texture = tile.texture;
+            this._rects.push(rect);
+        }
+    },
+
+    _calculateViewportRect: function()
+    {
+        var rect = new WebInspector.Layers3DView.Rectangle(null);
+        var viewport = this._layerTree.viewportSize();
+        var depth = (this._maxDepth + 1) * WebInspector.Layers3DView.LayerSpacing;
+        var vertices = [0, 0, depth, viewport.width, 0, depth, viewport.width, viewport.height, depth, 0, viewport.height, depth];
+        rect.vertices = vertices;
+        rect.borderColor = [0, 0, 0, 1];
+        rect.lineWidth = 3;
+        this._rects.push(rect);
+    },
+
+    _calculateRects: function()
+    {
+        this._rects = [];
+
+        this._layerTree.forEachLayer(this._calculateLayerRect.bind(this));
+
+        if (this._showSlowScrollRectsSetting.get())
+            this._layerTree.forEachLayer(this._calculateLayerScrollRects.bind(this));
+
+        if (this._showPaintsSetting.get()) {
+            if (this._layerTexture)
+                this._layerTree.forEachLayer(this._calculateLayerImageRect.bind(this));
+            else
+                this._layerTree.forEachLayer(this._calculateLayerTileRects.bind(this));
+        }
+
+        if (this._layerTree.viewportSize() && this._showViewportSetting.get())
+            this._calculateViewportRect();
     },
 
     /**
@@ -351,216 +516,45 @@ WebInspector.Layers3DView.prototype = {
 
     /**
      * @param {!Array.<number>} vertices
-     * @param {!Array.<number>} color
-     * @param {!Object} glMode
+     * @param {boolean} isBorder
+     * @param {!Array.<number>=} color
      * @param {!Object=} texture
      */
-    _drawRectangle: function(vertices, color, glMode, texture)
+    _drawRectangle: function(vertices, isBorder, color, texture)
     {
+        var gl = this._gl;
+        var glMode = isBorder ? gl.LINE_LOOP : gl.TRIANGLE_FAN;
+        var white = [255, 255, 255, 1];
         this._setVertexAttribute(this._shaderProgram.vertexPositionAttribute, vertices, 3);
         this._setVertexAttribute(this._shaderProgram.textureCoordAttribute, [0, 1, 1, 1, 1, 0, 0, 0], 2);
 
         if (texture) {
-            var white = [255, 255, 255, 1];
             this._setVertexAttribute(this._shaderProgram.vertexColorAttribute, this._makeColorsArray(white), white.length);
-            this._gl.activeTexture(this._gl.TEXTURE0);
-            this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
-            this._gl.uniform1i(this._shaderProgram.samplerUniform, 0);
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, texture);
+            gl.uniform1i(this._shaderProgram.samplerUniform, 0);
         } else {
-            this._setVertexAttribute(this._shaderProgram.vertexColorAttribute, this._makeColorsArray(color), color.length);
-            this._gl.bindTexture(this._gl.TEXTURE_2D, this._whiteTexture);
+            this._setVertexAttribute(this._shaderProgram.vertexColorAttribute, this._makeColorsArray(color || white), color.length);
+            gl.bindTexture(gl.TEXTURE_2D, this._whiteTexture);
         }
 
         var numberOfVertices = 4;
-        this._gl.drawArrays(glMode, 0, numberOfVertices);
+        gl.drawArrays(glMode, 0, numberOfVertices);
     },
 
     /**
-     * @param {!WebInspector.Layers3DView.OutlineType} type
-     * @param {!WebInspector.Layer} layer
-     * @param {number=} scrollRectIndex
+     * @param {!WebInspector.Layers3DView.Rectangle} rect
      */
-    _isObjectActive: function(type, layer, scrollRectIndex)
+    _drawViewRect: function(rect)
     {
-        var activeObject = this._lastActiveObject[type];
-        return activeObject && activeObject.layer && activeObject.layer.id() === layer.id() && (typeof scrollRectIndex !== "number" || activeObject.scrollRectIndex === scrollRectIndex);
-    },
-
-    /**
-     * @param {!WebInspector.Layer} layer
-     * @return {!WebInspector.Layers3DView.LayerStyle}
-     */
-    _styleForLayer: function(layer)
-    {
-        var isSelected = this._isObjectActive(WebInspector.Layers3DView.OutlineType.Selected, layer);
-        var isHovered = this._isObjectActive(WebInspector.Layers3DView.OutlineType.Hovered, layer);
-        var color = isSelected ? WebInspector.Layers3DView.SelectedBackgroundColor : WebInspector.Layers3DView.BackgroundColor;
-        var borderColor;
-        if (isSelected)
-            borderColor = WebInspector.Layers3DView.SelectedBorderColor;
-        else if (isHovered)
-            borderColor = WebInspector.Layers3DView.HoveredBorderColor;
-        else
-            borderColor = WebInspector.Layers3DView.BorderColor;
-        var borderWidth = isSelected ? WebInspector.Layers3DView.SelectedBorderWidth : WebInspector.Layers3DView.BorderWidth;
-        return {color: color, borderColor: borderColor, borderWidth: borderWidth};
-    },
-
-    /**
-     * @param {!Array.<number>} quad
-     * @param {number} z
-     * @return {!Array.<number>}
-     */
-    _calculateVerticesForQuad: function(quad, z)
-    {
-        return [quad[0], quad[1], z, quad[2], quad[3], z, quad[4], quad[5], z, quad[6], quad[7], z];
-    },
-
-    /**
-     * Finds coordinates of point on layer quad, having offsets (ratioX * width) and (ratioY * height)
-     * from the left corner of the initial layer rect, where width and heigth are layer bounds.
-     * @param {!Array.<number>} quad
-     * @param {number} ratioX
-     * @param {number} ratioY
-     * @return {!Array.<number>}
-     */
-    _calculatePointOnQuad: function(quad, ratioX, ratioY)
-    {
-        var x0 = quad[0];
-        var y0 = quad[1];
-        var x1 = quad[2];
-        var y1 = quad[3];
-        var x2 = quad[4];
-        var y2 = quad[5];
-        var x3 = quad[6];
-        var y3 = quad[7];
-        // Point on the first quad side clockwise
-        var firstSidePointX = x0 + ratioX * (x1 - x0);
-        var firstSidePointY = y0 + ratioX * (y1 - y0);
-        // Point on the third quad side clockwise
-        var thirdSidePointX = x3 + ratioX * (x2 - x3);
-        var thirdSidePointY = y3 + ratioX * (y2 - y3);
-        var x = firstSidePointX + ratioY * (thirdSidePointX - firstSidePointX);
-        var y = firstSidePointY + ratioY * (thirdSidePointY - firstSidePointY);
-        return [x, y];
-    },
-
-    /**
-     * @param {!WebInspector.Layer} layer
-     * @param {!DOMAgent.Rect} rect
-     * @return {!Array.<number>}
-     */
-    _calculateRectQuad: function(layer, rect)
-    {
-        var quad = layer.quad();
-        var rx1 = rect.x / layer.width();
-        var rx2 = (rect.x + rect.width) / layer.width();
-        var ry1 = rect.y / layer.height();
-        var ry2 = (rect.y + rect.height) / layer.height();
-        return this._calculatePointOnQuad(quad, rx1, ry1).concat(this._calculatePointOnQuad(quad, rx2, ry1))
-            .concat(this._calculatePointOnQuad(quad, rx2, ry2)).concat(this._calculatePointOnQuad(quad, rx1, ry2));
-    },
-
-    /**
-     * @param {!WebInspector.Layer} layer
-     * @return {!Array.<!Array.<number>>}
-     */
-    _calculateScrollRectQuadsForLayer: function(layer)
-    {
-        var quads = [];
-        if (!this._showSlowScrollRectsSetting.get())
-            return quads;
-        for (var i = 0; i < layer.scrollRects().length; ++i)
-            quads.push(this._calculateRectQuad(layer, layer.scrollRects()[i].rect));
-        return quads;
-    },
-
-    /**
-     * @param {!WebInspector.Layer} layer
-     * @param {number} index
-     * @return {number}
-     */
-    _calculateScrollRectDepth: function(layer, index)
-    {
-        return this._depthByLayerId[layer.id()] * WebInspector.Layers3DView.LayerSpacing + index * WebInspector.Layers3DView.ScrollRectSpacing + 1;
-    },
-
-    /**
-     * @param {!WebInspector.Layer} layer
-     */
-    _drawLayer: function(layer)
-    {
-        var gl = this._gl;
-        var vertices;
-        var style = this._styleForLayer(layer);
-        var layerDepth = this._depthByLayerId[layer.id()] * WebInspector.Layers3DView.LayerSpacing;
-        if (this._isVisible[layer.id()]) {
-            vertices = this._calculateVerticesForQuad(layer.quad(), layerDepth);
-            gl.lineWidth(style.borderWidth);
-            this._drawRectangle(vertices, style.borderColor, gl.LINE_LOOP);
-            gl.lineWidth(1);
-        }
-        this._scrollRectQuadsForLayer[layer.id()] = this._calculateScrollRectQuadsForLayer(layer);
-        var scrollRectQuads = this._scrollRectQuadsForLayer[layer.id()];
-        for (var i = 0; i < scrollRectQuads.length; ++i) {
-            vertices = this._calculateVerticesForQuad(scrollRectQuads[i], this._calculateScrollRectDepth(layer, i));
-            var isSelected = this._isObjectActive(WebInspector.Layers3DView.OutlineType.Selected, layer, i);
-            var color = isSelected ? WebInspector.Layers3DView.SelectedScrollRectBackgroundColor : WebInspector.Layers3DView.ScrollRectBackgroundColor;
-            this._drawRectangle(vertices, color, gl.TRIANGLE_FAN);
-            this._drawRectangle(vertices, WebInspector.Layers3DView.ScrollRectBorderColor, gl.LINE_LOOP);
-        }
-        if (this._showPaintsSetting.get()) {
-            if (this._layerTexture) {
-                var layerTexture = this._layerTexture;
-                if (layer.id() !== layerTexture.layerId)
-                    return;
-                var quad = this._calculateRectQuad(layer, {x: 0, y: 0, width: layer.width(), height: layer.height()});
-                vertices = this._calculateVerticesForQuad(quad, layerDepth);
-                this._drawRectangle(vertices, style.color, gl.TRIANGLE_FAN, layerTexture.texture);
-            } else {
-                var tiles = this._textureManager.tilesForLayer(layer.id());
-                for (var i = 0; i < tiles.length; ++i) {
-                    var tile = tiles[i];
-                    if (!tile.texture)
-                        continue;
-                    var quad = this._calculateRectQuad(layer, {x: tile.rect[0], y: tile.rect[1], width: tile.rect[2], height: tile.rect[3]});
-                    vertices = this._calculateVerticesForQuad(quad, layerDepth);
-                    this._drawRectangle(vertices, style.color, gl.TRIANGLE_FAN, tile.texture);
-                }
-            }
-        }
-    },
-
-    _drawViewport: function()
-    {
-        var viewport = this._layerTree.viewportSize();
-        var depth = (this._maxDepth + 1) * WebInspector.Layers3DView.LayerSpacing;
-        var vertices = [0, 0, depth, viewport.width, 0, depth, viewport.width, viewport.height, depth, 0, viewport.height, depth];
-        var color = [0, 0, 0, 1];
-        this._gl.lineWidth(3.0);
-        this._drawRectangle(vertices, color, this._gl.LINE_LOOP);
-        this._gl.lineWidth(1.0);
-    },
-
-    _calculateDepths: function()
-    {
-        this._depthByLayerId = {};
-        this._isVisible = {};
-        var depth = 0;
-        var root = this._layerTree.root();
-        var queue = [root];
-        this._depthByLayerId[root.id()] = 0;
-        this._isVisible[root.id()] = false;
-        while (queue.length > 0) {
-            var layer = queue.shift();
-            var children = layer.children();
-            for (var i = 0; i < children.length; ++i) {
-                this._depthByLayerId[children[i].id()] = ++depth;
-                this._isVisible[children[i].id()] = children[i] === this._layerTree.contentRoot() || this._isVisible[layer.id()];
-                queue.push(children[i]);
-            }
-        }
-        this._maxDepth = depth;
+        var vertices = rect.vertices;
+        if (rect.texture)
+            this._drawRectangle(vertices, false, undefined, rect.texture);
+        else if (rect.fillColor)
+            this._drawRectangle(vertices, false, rect.fillColor);
+        this._gl.lineWidth(rect.lineWidth);
+        if (rect.borderColor)
+            this._drawRectangle(vertices, true, rect.borderColor);
     },
 
     _update: function()
@@ -585,48 +579,8 @@ WebInspector.Layers3DView.prototype = {
         gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-        this._layerTree.forEachLayer(this._drawLayer.bind(this));
-        if (this._layerTree.viewportSize() && this._showViewportSetting.get())
-            this._drawViewport();
-    },
-
-    /**
-     * Intersects quad with given transform matrix and line l(t) = (x0, y0, t)
-     * @param {!Array.<number>} vertices
-     * @param {!CSSMatrix} matrix
-     * @param {!number} x0
-     * @param {!number} y0
-     * @return {(number|undefined)}
-     */
-    _intersectLineAndRect: function(vertices, matrix, x0, y0)
-    {
-        var epsilon = 1e-8;
-        var i;
-        // Vertices of the quad with transform matrix applied
-        var points = [];
-        for (i = 0; i < 4; ++i)
-            points[i] = WebInspector.Geometry.multiplyVectorByMatrixAndNormalize(new WebInspector.Geometry.Vector(vertices[i * 3], vertices[i * 3 + 1], vertices[i * 3 + 2]), matrix);
-        // Calculating quad plane normal
-        var normal = WebInspector.Geometry.crossProduct(WebInspector.Geometry.subtract(points[1], points[0]), WebInspector.Geometry.subtract(points[2], points[1]));
-        // General form of the equation of the quad plane: A * x + B * y + C * z + D = 0
-        var A = normal.x;
-        var B = normal.y;
-        var C = normal.z;
-        var D = -(A * points[0].x + B * points[0].y + C * points[0].z);
-        // Finding t from the equation
-        var t = -(D + A * x0 + B * y0) / C;
-        // Point of the intersection
-        var pt = new WebInspector.Geometry.Vector(x0, y0, t);
-        // Vectors from the intersection point to vertices of the quad
-        var tVects = points.map(WebInspector.Geometry.subtract.bind(null, pt));
-        // Intersection point lies inside of the polygon if scalar products of normal of the plane and
-        // cross products of successive tVects are all nonstrictly above or all nonstrictly below zero
-        for (i = 0; i < tVects.length; ++i) {
-            var product = WebInspector.Geometry.scalarProduct(normal, WebInspector.Geometry.crossProduct(tVects[i], tVects[(i + 1) % tVects.length]));
-            if (product < 0)
-                return undefined;
-        }
-        return t;
+        this._calculateRects();
+        this._rects.forEach(this._drawViewRect.bind(this));
     },
 
     /**
@@ -638,37 +592,27 @@ WebInspector.Layers3DView.prototype = {
         if (!this._layerTree)
             return null;
         var closestIntersectionPoint = Infinity;
-        var closestLayer = null;
+        var closestObject = null;
         var projectionMatrix = new WebKitCSSMatrix().scale(1, -1, -1).translate(-1, -1, 0).multiply(this._calculateProjectionMatrix());
         var x0 = (event.clientX - this._canvasElement.totalOffsetLeft()) * window.devicePixelRatio;
         var y0 = -(event.clientY - this._canvasElement.totalOffsetTop()) * window.devicePixelRatio;
 
         /**
-         * @param {!WebInspector.Layer} layer
-         * @this {WebInspector.Layers3DView}
+         * @param {!WebInspector.Layers3DView.Rectangle} rect
          */
-        function checkIntersection(layer)
+        function checkIntersection(rect)
         {
-            var t;
-            if (this._isVisible[layer.id()]) {
-                t = this._intersectLineAndRect(this._calculateVerticesForQuad(layer.quad(), this._depthByLayerId[layer.id()] * WebInspector.Layers3DView.LayerSpacing), projectionMatrix, x0, y0);
-                if (t < closestIntersectionPoint) {
-                    closestIntersectionPoint = t;
-                    closestLayer = {layer: layer};
-                }
-            }
-            var scrollRectQuads = this._scrollRectQuadsForLayer[layer.id()];
-            for (var i = 0; i < scrollRectQuads.length; ++i) {
-                t = this._intersectLineAndRect(this._calculateVerticesForQuad(scrollRectQuads[i], this._calculateScrollRectDepth(layer, i)), projectionMatrix, x0, y0);
-                if (t < closestIntersectionPoint) {
-                    closestIntersectionPoint = t;
-                    closestLayer = {layer: layer, scrollRectIndex: i};
-                }
+            if (!rect.relatedObject)
+                return;
+            var t = rect.intersectWithLine(projectionMatrix, x0, y0);
+            if (t < closestIntersectionPoint) {
+                closestIntersectionPoint = t;
+                closestObject = rect.relatedObject;
             }
         }
 
-        this._layerTree.forEachLayer(checkIntersection.bind(this));
-        return closestLayer;
+        this._rects.forEach(checkIntersection);
+        return closestObject;
     },
 
     /**
@@ -913,6 +857,118 @@ WebInspector.LayerTextureManager.prototype = {
     },
 
     __proto__: WebInspector.Object.prototype
+}
+
+/**
+ * @constructor
+ * @param {?WebInspector.Layers3DView.ActiveObject} relatedObject
+ */
+WebInspector.Layers3DView.Rectangle = function(relatedObject)
+{
+    this.relatedObject = relatedObject;
+    /** @type {number} */
+    this.lineWidth = 1;
+    /** @type {?Array.<number>} */
+    this.borderColor = null;
+    /** @type {?Array.<number>} */
+    this.fillColor = null;
+    /** @type {?WebGLTexture} */
+    this.texture = null;
+}
+
+WebInspector.Layers3DView.Rectangle.prototype = {
+    /**
+     * @param {!Array.<number>} quad
+     * @param {number} z
+     */
+    setVertices: function(quad, z)
+    {
+        this.vertices = [quad[0], quad[1], z, quad[2], quad[3], z, quad[4], quad[5], z, quad[6], quad[7], z];
+    },
+
+    /**
+     * Finds coordinates of point on layer quad, having offsets (ratioX * width) and (ratioY * height)
+     * from the left corner of the initial layer rect, where width and heigth are layer bounds.
+     * @param {!Array.<number>} quad
+     * @param {number} ratioX
+     * @param {number} ratioY
+     * @return {!Array.<number>}
+     */
+    _calculatePointOnQuad: function(quad, ratioX, ratioY)
+    {
+        var x0 = quad[0];
+        var y0 = quad[1];
+        var x1 = quad[2];
+        var y1 = quad[3];
+        var x2 = quad[4];
+        var y2 = quad[5];
+        var x3 = quad[6];
+        var y3 = quad[7];
+        // Point on the first quad side clockwise
+        var firstSidePointX = x0 + ratioX * (x1 - x0);
+        var firstSidePointY = y0 + ratioX * (y1 - y0);
+        // Point on the third quad side clockwise
+        var thirdSidePointX = x3 + ratioX * (x2 - x3);
+        var thirdSidePointY = y3 + ratioX * (y2 - y3);
+        var x = firstSidePointX + ratioY * (thirdSidePointX - firstSidePointX);
+        var y = firstSidePointY + ratioY * (thirdSidePointY - firstSidePointY);
+        return [x, y];
+    },
+
+    /**
+     * @param {!WebInspector.Layer} layer
+     * @param {!DOMAgent.Rect} rect
+     * @param {number} z
+     */
+    calculateVerticesFromRect: function(layer, rect, z)
+    {
+        var quad = layer.quad();
+        var rx1 = rect.x / layer.width();
+        var rx2 = (rect.x + rect.width) / layer.width();
+        var ry1 = rect.y / layer.height();
+        var ry2 = (rect.y + rect.height) / layer.height();
+        var rectQuad = this._calculatePointOnQuad(quad, rx1, ry1).concat(this._calculatePointOnQuad(quad, rx2, ry1))
+            .concat(this._calculatePointOnQuad(quad, rx2, ry2)).concat(this._calculatePointOnQuad(quad, rx1, ry2));
+        this.setVertices(rectQuad, z);
+    },
+
+    /**
+     * Intersects quad with given transform matrix and line l(t) = (x0, y0, t)
+     * @param {!CSSMatrix} matrix
+     * @param {!number} x0
+     * @param {!number} y0
+     * @return {(number|undefined)}
+     */
+    intersectWithLine: function(matrix, x0, y0)
+    {
+        var epsilon = 1e-8;
+        var i;
+        // Vertices of the quad with transform matrix applied
+        var points = [];
+        for (i = 0; i < 4; ++i)
+            points[i] = WebInspector.Geometry.multiplyVectorByMatrixAndNormalize(new WebInspector.Geometry.Vector(this.vertices[i * 3], this.vertices[i * 3 + 1], this.vertices[i * 3 + 2]), matrix);
+        // Calculating quad plane normal
+        var normal = WebInspector.Geometry.crossProduct(WebInspector.Geometry.subtract(points[1], points[0]), WebInspector.Geometry.subtract(points[2], points[1]));
+        // General form of the equation of the quad plane: A * x + B * y + C * z + D = 0
+        var A = normal.x;
+        var B = normal.y;
+        var C = normal.z;
+        var D = -(A * points[0].x + B * points[0].y + C * points[0].z);
+        // Finding t from the equation
+        var t = -(D + A * x0 + B * y0) / C;
+        // Point of the intersection
+        var pt = new WebInspector.Geometry.Vector(x0, y0, t);
+        // Vectors from the intersection point to vertices of the quad
+        var tVects = points.map(WebInspector.Geometry.subtract.bind(null, pt));
+        // Intersection point lies inside of the polygon if scalar products of normal of the plane and
+        // cross products of successive tVects are all nonstrictly above or all nonstrictly below zero
+        for (i = 0; i < tVects.length; ++i) {
+            var product = WebInspector.Geometry.scalarProduct(normal, WebInspector.Geometry.crossProduct(tVects[i], tVects[(i + 1) % tVects.length]));
+            if (product < 0)
+                return undefined;
+        }
+        return t;
+    }
 }
 
 /**
