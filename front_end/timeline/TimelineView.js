@@ -728,7 +728,7 @@ WebInspector.TimelineView.prototype = {
     },
 
     /**
-     * @param {?Event} e
+     * @param {!Event} e
      */
     _mouseMove: function(e)
     {
@@ -745,7 +745,7 @@ WebInspector.TimelineView.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _keyDown: function(event)
     {
@@ -1107,7 +1107,7 @@ WebInspector.TimelineRecordListRow.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _onExpandClick: function(event)
     {
@@ -1117,7 +1117,7 @@ WebInspector.TimelineRecordListRow.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _onClick: function(event)
     {
@@ -1133,7 +1133,7 @@ WebInspector.TimelineRecordListRow.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _onMouseOver: function(event)
     {
@@ -1143,7 +1143,7 @@ WebInspector.TimelineRecordListRow.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _onMouseOut: function(event)
     {
@@ -1207,7 +1207,7 @@ WebInspector.TimelineRecordGraphRow.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _onClick: function(event)
     {
@@ -1232,7 +1232,7 @@ WebInspector.TimelineRecordGraphRow.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _onMouseOver: function(event)
     {
@@ -1242,7 +1242,7 @@ WebInspector.TimelineRecordGraphRow.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _onMouseOut: function(event)
     {

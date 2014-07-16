@@ -162,7 +162,7 @@ WebInspector.MetricsSidebarPane.prototype = {
     /**
      * @param {boolean} showHighlight
      * @param {string} mode
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _highlightDOMNode: function(showHighlight, mode, event)
     {

@@ -120,7 +120,7 @@ WebInspector.HeapSnapshotSortableDataGrid.prototype = {
 
     /**
      * @param {!WebInspector.ContextMenu} contextMenu
-     * @param {?Event} event
+     * @param {!Event} event
      */
     populateContextMenu: function(contextMenu, event)
     {

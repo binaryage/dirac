@@ -49,7 +49,7 @@ WebInspector.installDragHandle = function(element, elementDragStart, elementDrag
  * @param {function(!MouseEvent)} elementDrag
  * @param {?function(!MouseEvent)} elementDragEnd
  * @param {string} cursor
- * @param {?Event} event
+ * @param {!Event} event
  */
 WebInspector.elementDragStart = function(elementDragStart, elementDrag, elementDragEnd, cursor, event)
 {
@@ -313,7 +313,7 @@ WebInspector._modifiedFloatNumber = function(number, event)
 }
 
 /**
-  * @param {?Event} event
+  * @param {!Event} event
   * @param {!Element} element
   * @param {function(string,string)=} finishHandler
   * @param {function(string)=} suggestionHandler

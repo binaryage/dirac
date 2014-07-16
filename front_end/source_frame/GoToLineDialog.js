@@ -63,7 +63,7 @@ WebInspector.GoToLineDialog.install = function(panel, sourceFrameGetter)
 
 /**
  * @param {function():?WebInspector.SourceFrame} sourceFrameGetter
- * @param {?Event=} event
+ * @param {!Event=} event
  * @return {boolean}
  */
 WebInspector.GoToLineDialog._show = function(sourceFrameGetter, event)

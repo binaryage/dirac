@@ -449,7 +449,7 @@ WebInspector.FlameChart.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _onMouseMove: function(event)
     {
@@ -494,7 +494,7 @@ WebInspector.FlameChart.prototype = {
     },
 
     /**
-     * @param {?Event} e
+     * @param {!Event} e
      */
     _onMouseWheel: function(e)
     {

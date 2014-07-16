@@ -1831,7 +1831,7 @@ WebInspector.CodeMirrorTextEditor.AutocompleteControllerAPI.prototype = {
     finishAutocomplete: function() { },
 
     /**
-     * @param {?Event} e
+     * @param {!Event} e
      * @return {boolean}
      */
     keyDown: function(e) { }
@@ -1861,7 +1861,7 @@ WebInspector.CodeMirrorTextEditor.DummyAutocompleteController.prototype = {
     finishAutocomplete: function() { },
 
     /**
-     * @param {?Event} e
+     * @param {!Event} e
      * @return {boolean}
      */
     keyDown: function(e)
@@ -2125,7 +2125,7 @@ WebInspector.CodeMirrorTextEditor.AutocompleteController.prototype = {
     },
 
     /**
-     * @param {?Event} e
+     * @param {!Event} e
      * @return {boolean}
      */
     keyDown: function(e)

@@ -192,7 +192,7 @@ WebInspector.SearchableView.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _onKeyDown: function(event)
     {
@@ -399,7 +399,7 @@ WebInspector.SearchableView.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _onSearchFieldManualFocus: function(event)
     {
@@ -407,7 +407,7 @@ WebInspector.SearchableView.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _onSearchKeyDown: function(event)
     {
@@ -421,7 +421,7 @@ WebInspector.SearchableView.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _onReplaceKeyDown: function(event)
     {

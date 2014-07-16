@@ -730,7 +730,7 @@ WebInspector.HeapSnapshotView.prototype = {
 
     /**
      * @param {!WebInspector.ContextMenu} contextMenu
-     * @param {?Event} event
+     * @param {!Event} event
      */
     populateContextMenu: function(contextMenu, event)
     {
@@ -1651,7 +1651,7 @@ WebInspector.HeapSnapshotLoadFromFileDelegate.prototype = {
 
     /**
      * @param {!WebInspector.ChunkedReader} reader
-     * @param {?Event} e
+     * @param {!Event} e
      */
     onError: function (reader, e)
     {
@@ -1703,7 +1703,7 @@ WebInspector.SaveSnapshotOutputStreamDelegate.prototype = {
 
     /**
      * @param {!WebInspector.ChunkedReader} reader
-     * @param {?Event} event
+     * @param {!Event} event
      */
     onError: function(reader, event)
     {

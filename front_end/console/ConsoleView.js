@@ -678,7 +678,7 @@ WebInspector.ConsoleView.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _messagesClicked: function(event)
     {

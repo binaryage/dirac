@@ -196,12 +196,12 @@ WebInspector.ContextSubMenuItem.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.ContextSubMenuItem}
- * @param {?Event} event
+ * @param {!Event} event
  */
 WebInspector.ContextMenu = function(event)
 {
     WebInspector.ContextSubMenuItem.call(this, this, "");
-    this._event = /** @type {!Event} */ (event);
+    this._event = event;
     this._handlers = {};
     this._id = 0;
 }

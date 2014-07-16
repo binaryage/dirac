@@ -121,7 +121,7 @@ WebInspector.SuggestBox.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _onBoxMouseDown: function(event)
     {
@@ -228,7 +228,7 @@ WebInspector.SuggestBox.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _onItemMouseDown: function(event)
     {

@@ -563,7 +563,7 @@ WebInspector.ElementsTreeOutline.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _onkeydown: function(event)
     {
@@ -1395,7 +1395,7 @@ WebInspector.ElementsTreeElement.prototype = {
 
     /**
      * @param {!WebInspector.ContextMenu} contextMenu
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _populateTagContextMenu: function(contextMenu, event)
     {
@@ -1630,7 +1630,7 @@ WebInspector.ElementsTreeElement.prototype = {
         var closingTagElement = this._distinctClosingTagElement();
 
         /**
-         * @param {?Event} event
+         * @param {!Event} event
          */
         function keyupListener(event)
         {

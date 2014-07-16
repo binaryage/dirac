@@ -148,7 +148,7 @@ WebInspector.CountersGraph.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _onClick: function(event)
     {
@@ -199,7 +199,7 @@ WebInspector.CountersGraph.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _onMouseOut: function(event)
     {
@@ -214,7 +214,7 @@ WebInspector.CountersGraph.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _onMouseMove: function(event)
     {

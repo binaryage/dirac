@@ -141,7 +141,7 @@ WebInspector.ViewportControl.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _onCopy: function(event)
     {
@@ -153,7 +153,7 @@ WebInspector.ViewportControl.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _onDragStart: function(event)
     {
@@ -519,7 +519,7 @@ WebInspector.ViewportControl.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _onScroll: function(event)
     {

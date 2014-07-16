@@ -137,7 +137,7 @@ WebInspector.SettingsScreen.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _keyDown: function(event)
     {
@@ -482,7 +482,7 @@ WebInspector.WorkspaceSettingsTab.prototype = {
     },
 
     /**
-     * @param {function(?Event)} handler
+     * @param {function(!Event)} handler
      * @return {!Element}
      */
     _createRemoveButton: function(handler)
@@ -744,7 +744,7 @@ WebInspector.SettingsList.prototype = {
             this._ids.push(itemId);
 
         /**
-         * @param {?Event} event
+         * @param {!Event} event
          * @this {WebInspector.SettingsList}
          */
         function removeItemClicked(event)
@@ -816,7 +816,7 @@ WebInspector.SettingsList.prototype = {
 
     /**
      * @param {?string} id
-     * @param {?Event=} event
+     * @param {!Event=} event
      */
     _onDoubleClick: function(id, event)
     {
@@ -825,7 +825,7 @@ WebInspector.SettingsList.prototype = {
 
     /**
      * @param {?string} id
-     * @param {?Event=} event
+     * @param {!Event=} event
      */
     selectItem: function(id, event)
     {
@@ -842,7 +842,7 @@ WebInspector.SettingsList.prototype = {
     },
 
     /**
-     * @param {function(?Event)} handler
+     * @param {function(!Event)} handler
      * @return {!Element}
      */
     _createRemoveButton: function(handler)
@@ -924,7 +924,7 @@ WebInspector.EditableSettingsList.prototype = {
         this._createEditElement(columnElement, column, itemId, value);
 
         /**
-         * @param {?Event} event
+         * @param {!Event} event
          * @this {WebInspector.EditableSettingsList}
          */
         function rowClicked(event)
@@ -1059,7 +1059,7 @@ WebInspector.EditableSettingsList.prototype = {
 
     /**
      * @param {?string} itemId
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _editMappingBlur: function(itemId, event)
     {
@@ -1093,7 +1093,7 @@ WebInspector.EditableSettingsList.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _onAddMappingInputBlur: function(event)
     {

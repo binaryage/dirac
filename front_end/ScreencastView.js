@@ -233,7 +233,7 @@ WebInspector.ScreencastView.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _handleMouseEvent: function(event)
     {
@@ -272,7 +272,7 @@ WebInspector.ScreencastView.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _handleKeyEvent: function(event)
     {
@@ -304,7 +304,7 @@ WebInspector.ScreencastView.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _handleContextMenuEvent: function(event)
     {
@@ -312,7 +312,7 @@ WebInspector.ScreencastView.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _simulateTouchGestureForMouseEvent: function(event)
     {
@@ -473,7 +473,7 @@ WebInspector.ScreencastView.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      * @return {!{x: number, y: number}}
      */
     _zoomIntoScreenSpace: function(event)
@@ -485,7 +485,7 @@ WebInspector.ScreencastView.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      * @return {!{x: number, y: number}}
      */
     _convertIntoScreenSpace: function(event)
@@ -496,7 +496,7 @@ WebInspector.ScreencastView.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      * @return {number}
      */
     _modifiersForEvent: function(event)

@@ -103,7 +103,7 @@ WebInspector.ResizerWidget.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _installDragOnMouseDown: function(event)
     {

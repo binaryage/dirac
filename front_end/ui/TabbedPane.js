@@ -944,7 +944,7 @@ WebInspector.TabbedPaneTab.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _tabClicked: function(event)
     {
@@ -959,7 +959,7 @@ WebInspector.TabbedPaneTab.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _tabMouseDown: function(event)
     {
@@ -969,7 +969,7 @@ WebInspector.TabbedPaneTab.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _tabMouseUp: function(event)
     {

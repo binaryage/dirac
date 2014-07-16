@@ -271,7 +271,7 @@ WebInspector.StatusBarButton.prototype = {
         this._longClickData = { mouseUp: boundMouseUp, mouseDown: boundMouseDown };
 
         /**
-         * @param {?Event} e
+         * @param {!Event} e
          * @this {WebInspector.StatusBarButton}
          */
         function mouseDown(e)
@@ -283,7 +283,7 @@ WebInspector.StatusBarButton.prototype = {
         }
 
         /**
-         * @param {?Event} e
+         * @param {!Event} e
          * @this {WebInspector.StatusBarButton}
          */
         function mouseUp(e)
@@ -440,7 +440,7 @@ WebInspector.StatusBarButton.Provider.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.StatusBarItem}
- * @param {?function(?Event)} changeHandler
+ * @param {?function(!Event)} changeHandler
  * @param {string=} className
  */
 WebInspector.StatusBarComboBox = function(changeHandler, className)

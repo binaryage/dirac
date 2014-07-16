@@ -391,7 +391,7 @@ WebInspector.OverviewGrid.Window.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _onMouseWheel: function(event)
     {

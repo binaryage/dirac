@@ -801,7 +801,7 @@ WebInspector.SourcesPanel.prototype = {
     /**
      * @param {string} buttonId
      * @param {string} buttonTitle
-     * @param {function(?Event=):boolean} handler
+     * @param {function(!Event=):boolean} handler
      * @param {!Array.<!WebInspector.KeyboardShortcut.Descriptor>} shortcuts
      * @return {!WebInspector.StatusBarButton}
      */
@@ -958,7 +958,7 @@ WebInspector.SourcesPanel.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      * @param {!WebInspector.ContextMenu} contextMenu
      * @param {!Object} target
      */

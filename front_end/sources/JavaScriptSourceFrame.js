@@ -846,7 +846,7 @@ WebInspector.JavaScriptSourceFrame.prototype = {
 
         var eventData = /** @type {!WebInspector.TextEditor.GutterClickEventData} */ (event.data);
         var lineNumber = eventData.lineNumber;
-        var eventObject = /** @type {!Event} */ (eventData.event);
+        var eventObject = eventData.event;
 
         if (eventObject.button != 0 || eventObject.altKey || eventObject.ctrlKey || eventObject.metaKey)
             return;

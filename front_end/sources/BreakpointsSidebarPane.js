@@ -191,7 +191,7 @@ WebInspector.JavaScriptBreakpointsSidebarPane.prototype = {
 
     /**
      * @param {!WebInspector.BreakpointManager.Breakpoint} breakpoint
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _breakpointCheckboxClicked: function(breakpoint, event)
     {
@@ -202,7 +202,7 @@ WebInspector.JavaScriptBreakpointsSidebarPane.prototype = {
 
     /**
      * @param {!WebInspector.BreakpointManager.Breakpoint} breakpoint
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _breakpointContextMenu: function(breakpoint, event)
     {
@@ -672,7 +672,7 @@ WebInspector.EventListenerBreakpointsSidebarPane.prototype = {
     /**
      * @param {string} eventName
      * @param {!Array.<string>} targetNames
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _breakpointCheckboxClicked: function(eventName, targetNames, event)
     {

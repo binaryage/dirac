@@ -272,7 +272,7 @@ WebInspector.NavigatorView.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     handleContextMenu: function(event)
     {
@@ -771,14 +771,14 @@ WebInspector.NavigatorFolderTreeElement.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _handleContextMenuEvent: function(event)
     {
         if (!this._node)
             return;
         this.select();
-        this._navigatorView.handleFolderContextMenu(/** @type {!Event} */ (event), this._node);
+        this._navigatorView.handleFolderContextMenu(event, this._node);
     },
 
     __proto__: WebInspector.BaseNavigatorTreeElement.prototype

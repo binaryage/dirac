@@ -160,7 +160,7 @@ WebInspector.CanvasProfileView.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _onMouseClick: function(event)
     {

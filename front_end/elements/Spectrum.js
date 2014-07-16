@@ -143,7 +143,7 @@ WebInspector.Spectrum.draggable = function(element, onmove, onstart, onstop) {
     var maxWidth;
 
     /**
-     * @param {?Event} e
+     * @param {!Event} e
      */
     function consume(e)
     {
@@ -151,7 +151,7 @@ WebInspector.Spectrum.draggable = function(element, onmove, onstart, onstop) {
     }
 
     /**
-     * @param {?Event} e
+     * @param {!Event} e
      */
     function move(e)
     {
@@ -165,7 +165,7 @@ WebInspector.Spectrum.draggable = function(element, onmove, onstart, onstop) {
     }
 
     /**
-     * @param {?Event} e
+     * @param {!Event} e
      */
     function start(e)
     {
@@ -195,7 +195,7 @@ WebInspector.Spectrum.draggable = function(element, onmove, onstart, onstop) {
     }
 
     /**
-     * @param {?Event} e
+     * @param {!Event} e
      */
     function stop(e)
     {

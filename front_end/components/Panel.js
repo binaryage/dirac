@@ -127,7 +127,7 @@ WebInspector.Panel.prototype = {
 
     /**
      * @param {!Array.<!WebInspector.KeyboardShortcut.Descriptor>} keys
-     * @param {function(?Event=):boolean} handler
+     * @param {function(!Event=):boolean} handler
      */
     registerShortcuts: function(keys, handler)
     {

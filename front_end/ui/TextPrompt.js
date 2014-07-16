@@ -245,7 +245,7 @@ WebInspector.TextPrompt.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     onMouseWheel: function(event)
     {
@@ -253,7 +253,7 @@ WebInspector.TextPrompt.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     onKeyDown: function(event)
     {
@@ -305,7 +305,7 @@ WebInspector.TextPrompt.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     onInput: function(event)
     {

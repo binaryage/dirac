@@ -163,7 +163,7 @@ WebInspector.ShortcutRegistry.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _onInput: function(event)
     {

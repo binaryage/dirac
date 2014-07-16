@@ -241,7 +241,7 @@ WebInspector.RequestHeadersView.prototype = {
         paramsTreeElement.listItemElement.appendChild(headerCount);
 
         /**
-         * @param {?Event} event
+         * @param {!Event} event
          * @this {WebInspector.RequestHeadersView}
          */
         function toggleViewSource(event)
@@ -289,7 +289,7 @@ WebInspector.RequestHeadersView.prototype = {
         listItem.appendChild(document.createTextNode(this._requestPayloadTreeElement.title));
 
         /**
-         * @param {?Event} event
+         * @param {!Event} event
          * @this {WebInspector.RequestHeadersView}
          */
         function toggleViewSource(event)
@@ -312,7 +312,7 @@ WebInspector.RequestHeadersView.prototype = {
 
     /**
      * @param {boolean} viewSource
-     * @param {function(?Event)} handler
+     * @param {function(!Event)} handler
      * @return {!Element}
      */
     _createViewSourceToggle: function(viewSource, handler)
@@ -324,7 +324,7 @@ WebInspector.RequestHeadersView.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _toggleURLDecoding: function(event)
     {
@@ -476,7 +476,7 @@ WebInspector.RequestHeadersView.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _toggleRequestHeadersText: function(event)
     {
@@ -485,7 +485,7 @@ WebInspector.RequestHeadersView.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _toggleResponseHeadersText: function(event)
     {

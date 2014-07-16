@@ -148,7 +148,7 @@ WebInspector.CallStackSidebarPane.prototype = {
 
     /**
      * @param {!WebInspector.CallStackSidebarPane.Placard} placard
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _placardContextMenu: function(placard, event)
     {
@@ -163,7 +163,7 @@ WebInspector.CallStackSidebarPane.prototype = {
 
     /**
      * @param {number} index
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _asyncPlacardContextMenu: function(index, event)
     {
@@ -306,7 +306,7 @@ WebInspector.CallStackSidebarPane.prototype = {
     },
 
     /**
-     * @param {function(!Array.<!WebInspector.KeyboardShortcut.Descriptor>, function(?Event=):boolean)} registerShortcutDelegate
+     * @param {function(!Array.<!WebInspector.KeyboardShortcut.Descriptor>, function(!Event=):boolean)} registerShortcutDelegate
      */
     registerShortcuts: function(registerShortcutDelegate)
     {

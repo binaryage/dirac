@@ -785,7 +785,7 @@ WebInspector.ProfilesPanel.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _handleContextMenuEvent: function(event)
     {

@@ -277,7 +277,7 @@ WebInspector.AdvancedSearchView.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _onKeyDown: function(event)
     {

@@ -78,7 +78,7 @@ WebInspector.TransformController.prototype = {
     },
 
     /**
-     * @param {?Event=} event
+     * @param {!Event=} event
      */
     resetAndNotify: function(event)
     {
@@ -181,7 +181,7 @@ WebInspector.TransformController.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _onMouseWheel: function(event)
     {
@@ -200,7 +200,7 @@ WebInspector.TransformController.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _onMouseMove: function(event)
     {
@@ -216,7 +216,7 @@ WebInspector.TransformController.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _setReferencePoint: function(event)
     {
@@ -235,7 +235,7 @@ WebInspector.TransformController.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _onMouseDown: function(event)
     {
@@ -245,7 +245,7 @@ WebInspector.TransformController.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _onMouseUp: function(event)
     {

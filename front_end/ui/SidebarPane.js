@@ -141,7 +141,7 @@ WebInspector.SidebarPaneTitle.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _onTitleKeyDown: function(event)
     {

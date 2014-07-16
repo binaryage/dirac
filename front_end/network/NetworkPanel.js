@@ -1076,7 +1076,7 @@ WebInspector.NetworkLogView.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _contextMenu: function(event)
     {

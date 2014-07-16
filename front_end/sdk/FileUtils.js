@@ -157,7 +157,7 @@ WebInspector.ChunkedFileReader.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _onChunkLoaded: function(event)
     {
@@ -259,7 +259,7 @@ WebInspector.ChunkedXHRReader.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _onProgress: function(event)
     {
@@ -281,7 +281,7 @@ WebInspector.ChunkedXHRReader.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _onLoad: function(event)
     {

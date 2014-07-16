@@ -68,7 +68,7 @@ WebInspector.CodeMirrorUtils.prototype = {
     },
 
     /**
-     * @param {?Event} e
+     * @param {!Event} e
      */
     _consumeCopy: function(e)
     {

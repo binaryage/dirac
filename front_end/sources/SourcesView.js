@@ -86,14 +86,14 @@ WebInspector.SourcesView.Events = {
 
 WebInspector.SourcesView.prototype = {
     /**
-     * @param {function(!Array.<!WebInspector.KeyboardShortcut.Descriptor>, function(?Event=):boolean)} registerShortcutDelegate
+     * @param {function(!Array.<!WebInspector.KeyboardShortcut.Descriptor>, function(!Event=):boolean)} registerShortcutDelegate
      */
     registerShortcuts: function(registerShortcutDelegate)
     {
         /**
          * @this {WebInspector.SourcesView}
          * @param {!Array.<!WebInspector.KeyboardShortcut.Descriptor>} shortcuts
-         * @param {function(?Event=):boolean} handler
+         * @param {function(!Event=):boolean} handler
          */
         function registerShortcut(shortcuts, handler)
         {
@@ -114,7 +114,7 @@ WebInspector.SourcesView.prototype = {
 
     /**
      * @param {!Array.<!WebInspector.KeyboardShortcut.Descriptor>} keys
-     * @param {function(?Event=):boolean} handler
+     * @param {function(!Event=):boolean} handler
      */
     _registerShortcuts: function(keys, handler)
     {
@@ -194,7 +194,7 @@ WebInspector.SourcesView.prototype = {
     },
 
     /**
-     * @param {?Event=} event
+     * @param {!Event=} event
      */
     _onCloseEditorTab: function(event)
     {
@@ -206,7 +206,7 @@ WebInspector.SourcesView.prototype = {
     },
 
     /**
-     * @param {?Event=} event
+     * @param {!Event=} event
      */
     _onJumpToPreviousLocation: function(event)
     {
@@ -215,7 +215,7 @@ WebInspector.SourcesView.prototype = {
     },
 
     /**
-     * @param {?Event=} event
+     * @param {!Event=} event
      */
     _onJumpToNextLocation: function(event)
     {
@@ -594,7 +594,7 @@ WebInspector.SourcesView.prototype = {
     },
 
     /**
-     * @param {?Event=} event
+     * @param {!Event=} event
      * @return {boolean}
      */
     _showOutlineDialog: function(event)
@@ -629,7 +629,7 @@ WebInspector.SourcesView.prototype = {
     },
 
     /**
-     * @param {?Event=} event
+     * @param {!Event=} event
      * @return {boolean}
      */
     _showGoToLineDialog: function(event)

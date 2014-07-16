@@ -95,7 +95,7 @@ WebInspector.Linkifier.linkifyUsingRevealer = function(revealable, text, fallbac
         a.lineNumber = fallbackLineNumber;
     }
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      * @this {Object}
      */
     function clickHandler(event)
@@ -221,7 +221,7 @@ WebInspector.Linkifier.prototype = {
         anchor.className = (classes || "") + " webkit-html-resource-link";
 
         /**
-         * @param {?Event} event
+         * @param {!Event} event
          */
         function clickHandler(event)
         {

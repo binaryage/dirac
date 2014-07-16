@@ -584,7 +584,7 @@ WebInspector.Layers3DView.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      * @return {?WebInspector.Layers3DView.ActiveObject}
      */
     _activeObjectFromEventPoint: function(event)
@@ -641,7 +641,7 @@ WebInspector.Layers3DView.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _onContextMenu: function(event)
     {
@@ -655,7 +655,7 @@ WebInspector.Layers3DView.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _onMouseMove: function(event)
     {
@@ -665,7 +665,7 @@ WebInspector.Layers3DView.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _onMouseDown: function(event)
     {
@@ -674,7 +674,7 @@ WebInspector.Layers3DView.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _onMouseUp: function(event)
     {
@@ -686,7 +686,7 @@ WebInspector.Layers3DView.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _onDoubleClick: function(event)
     {

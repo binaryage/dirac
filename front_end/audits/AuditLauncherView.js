@@ -255,7 +255,7 @@ WebInspector.AuditLauncherView.prototype = {
         this._contentElement.appendChild(this._headerElement);
 
         /**
-         * @param {?Event} event
+         * @param {!Event} event
          * @this {WebInspector.AuditLauncherView}
          */
         function handleSelectAllClick(event)

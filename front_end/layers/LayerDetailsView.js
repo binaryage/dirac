@@ -106,7 +106,7 @@ WebInspector.LayerDetailsView.prototype = {
 
     /**
      * @param {number} index
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _onScrollRectClicked: function(index, event)
     {

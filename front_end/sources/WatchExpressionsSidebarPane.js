@@ -133,7 +133,7 @@ WebInspector.WatchExpressionsSection.NewWatchExpression = "\xA0";
 
 WebInspector.WatchExpressionsSection.prototype = {
     /**
-     * @param {?Event=} e
+     * @param {!Event=} e
      */
     update: function(e)
     {

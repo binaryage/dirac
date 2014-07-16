@@ -184,7 +184,7 @@ WebInspector.ExternalWorkerConnection = function(workerId)
 WebInspector.ExternalWorkerConnection.prototype = {
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _processMessage: function(event)
     {

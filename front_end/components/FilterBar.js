@@ -128,7 +128,7 @@ WebInspector.FilterBar.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _handleFilterButtonClick: function(event)
     {
@@ -278,7 +278,7 @@ WebInspector.TextFilterUI.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _onFilterFieldManualFocus: function(event)
     {
@@ -286,7 +286,7 @@ WebInspector.TextFilterUI.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _onBlur: function(event)
     {
@@ -377,7 +377,7 @@ WebInspector.TextFilterUI.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      * @return {boolean}
      */
     _onInputKeyDown: function(event)
@@ -550,7 +550,7 @@ WebInspector.NamedBitSetFilterUI.prototype = {
     },
 
     /**
-     * @param {?Event} e
+     * @param {!Event} e
      */
     _onTypeFilterClicked: function(e)
     {
@@ -652,7 +652,7 @@ WebInspector.ComboBoxFilterUI.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _filterChanged: function(event)
     {
@@ -737,7 +737,7 @@ WebInspector.CheckboxFilterUI.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _onClick: function(event)
     {

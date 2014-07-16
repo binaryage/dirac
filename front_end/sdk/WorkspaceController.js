@@ -40,7 +40,7 @@ WebInspector.WorkspaceController = function(workspace)
 
 WebInspector.WorkspaceController.prototype = {
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _windowFocused: function(event)
     {

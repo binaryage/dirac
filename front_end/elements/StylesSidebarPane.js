@@ -175,7 +175,7 @@ WebInspector.StylesSidebarPane.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _contextMenuEventFired: function(event)
     {
@@ -845,7 +845,7 @@ WebInspector.StylesSidebarPane.prototype = {
         this._elementStatePane.inputs = inputs;
 
         /**
-         * @param {?Event} event
+         * @param {!Event} event
          * @this {WebInspector.StylesSidebarPane}
          */
         function clickListener(event)
@@ -920,7 +920,7 @@ WebInspector.StylesSidebarPane.prototype = {
         input.addEventListener("input", boundSearchHandler, false);
 
         /**
-         * @param {?Event} event
+         * @param {!Event} event
          */
         function keydownHandler(event)
         {
@@ -2262,7 +2262,7 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
         }
 
         /**
-         * @param {?Event} e
+         * @param {!Event} e
          * @this {WebInspector.StylePropertyTreeElementBase}
          */
         function swatchClick(e)
@@ -2530,7 +2530,7 @@ WebInspector.StylePropertyTreeElement.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     toggleEnabled: function(event)
     {
@@ -3181,7 +3181,7 @@ WebInspector.StylePropertyTreeElement.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      * @return {boolean}
      */
     isEventWithinDisclosureTriangle: function(event)
@@ -3214,7 +3214,7 @@ WebInspector.StylesSidebarPane.CSSPropertyPrompt = function(cssCompletions, side
 
 WebInspector.StylesSidebarPane.CSSPropertyPrompt.prototype = {
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     onKeyDown: function(event)
     {
@@ -3261,7 +3261,7 @@ WebInspector.StylesSidebarPane.CSSPropertyPrompt.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      * @return {boolean}
      */
     _handleNameOrValueUpDown: function(event)

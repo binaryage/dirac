@@ -100,7 +100,7 @@ WebInspector.MediaQueryInspector.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _onRulerDecorationClicked: function(event)
     {
@@ -124,7 +124,7 @@ WebInspector.MediaQueryInspector.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _onAnimationEnd: function(event)
     {
@@ -156,7 +156,7 @@ WebInspector.MediaQueryInspector.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _onMediaQueryClicked: function(event)
     {
@@ -190,7 +190,7 @@ WebInspector.MediaQueryInspector.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _onContextMenu: function(event)
     {

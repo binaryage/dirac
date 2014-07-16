@@ -128,7 +128,7 @@ WebInspector.LayerTreeOutline.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _onMouseMove: function(event)
     {
@@ -148,7 +148,7 @@ WebInspector.LayerTreeOutline.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _onContextMenu: function(event)
     {
