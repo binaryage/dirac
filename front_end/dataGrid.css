@@ -67,7 +67,7 @@
 
 .data-grid tr.filler {
     display: table-row !important;
-    height: auto !important;
+    height: 0;
 }
 
 .data-grid tr.filler td {

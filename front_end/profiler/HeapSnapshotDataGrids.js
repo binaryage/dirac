@@ -326,12 +326,8 @@ WebInspector.HeapSnapshotViewportDataGrid = function(dataDisplayDelegate, column
      * @type {?WebInspector.HeapSnapshotGridNode}
      */
     this._nodeToHighlightAfterScroll = null;
-    this._topPadding = new WebInspector.HeapSnapshotPaddingNode();
     this._topPaddingHeight = 0;
-    this.dataTableBody.insertBefore(this._topPadding.element, this.dataTableBody.firstChild);
-    this._bottomPadding = new WebInspector.HeapSnapshotPaddingNode();
     this._bottomPaddingHeight = 0;
-    this.dataTableBody.insertBefore(this._bottomPadding.element, this.dataTableBody.lastChild);
 }
 
 WebInspector.HeapSnapshotViewportDataGrid.prototype = {
@@ -380,8 +376,7 @@ WebInspector.HeapSnapshotViewportDataGrid.prototype = {
 
         this._addVisibleNodes(this.rootNode(), scrollTop, scrollTop + viewPortHeight, pathToReveal || null);
 
-        this._topPadding.setHeight(this._topPaddingHeight);
-        this._bottomPadding.setHeight(this._bottomPaddingHeight);
+        this.setVerticalPadding(this._topPaddingHeight, this._bottomPaddingHeight);
 
         if (selectedNode) {
             // Keep selection even if the node is not in the current viewport.
@@ -467,15 +462,6 @@ WebInspector.HeapSnapshotViewportDataGrid.prototype = {
         for (var i = 0; i < children.length; i++)
             result += this._nodeHeight(children[i]);
         return result;
-    },
-
-    /**
-     * @override
-     * @return {?Element}
-     */
-    defaultAttachLocation: function()
-    {
-        return this._bottomPadding.element;
     },
 
     /**
@@ -577,30 +563,6 @@ WebInspector.HeapSnapshotViewportDataGrid.prototype = {
 
     __proto__: WebInspector.HeapSnapshotSortableDataGrid.prototype
 }
-
-/**
- * @constructor
- */
-WebInspector.HeapSnapshotPaddingNode = function()
-{
-    this.element = document.createElement("tr");
-    this.element.classList.add("revealed");
-    this.setHeight(0);
-}
-
-WebInspector.HeapSnapshotPaddingNode.prototype = {
-   setHeight: function(height)
-   {
-       this.element.style.height = height + "px";
-   },
-   removeFromTable: function()
-   {
-        var parent = this.element.parentNode;
-        if (parent)
-            parent.removeChild(this.element);
-   }
-}
-
 
 /**
  * @constructor

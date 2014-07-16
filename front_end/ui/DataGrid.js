@@ -72,8 +72,9 @@ WebInspector.DataGrid = function(columnsArray, editCallback, deleteCallback, ref
     this._headerTableColumnGroup = document.createElement("colgroup");
     this._dataTableColumnGroup = document.createElement("colgroup");
 
-    this._fillerRow = document.createElement("tr");
-    this._fillerRow.className = "filler";
+    this._topFillerRow = document.createElementWithClass("tr", "filler");
+    this._bottomFillerRow = document.createElementWithClass("tr", "filler");
+    this._bottomFillerRow.style.height = "auto";
 
     this._columnsArray = columnsArray;
     this._visibleColumnsArray = columnsArray;
@@ -113,7 +114,8 @@ WebInspector.DataGrid = function(columnsArray, editCallback, deleteCallback, ref
     this.headerTableBody.appendChild(this._headerRow);
 
     this._dataTable.appendChild(this._dataTableColumnGroup);
-    this.dataTableBody.appendChild(this._fillerRow);
+    this.dataTableBody.appendChild(this._topFillerRow);
+    this.dataTableBody.appendChild(this._bottomFillerRow);
 
     this._refreshHeader();
 
@@ -272,7 +274,8 @@ WebInspector.DataGrid.prototype = {
         this._headerTableColumnGroup.removeChildren();
         this._dataTableColumnGroup.removeChildren();
         this._headerRow.removeChildren();
-        this._fillerRow.removeChildren();
+        this._topFillerRow.removeChildren();
+        this._bottomFillerRow.removeChildren();
 
         for (var i = 0; i < this._visibleColumnsArray.length; ++i) {
             var column = this._visibleColumnsArray[i];
@@ -284,13 +287,26 @@ WebInspector.DataGrid.prototype = {
                 dataColumn.style.width = column.width;
             }
             this._headerRow.appendChild(this._headerTableHeaders[columnIdentifier]);
-            this._fillerRow.createChild("td", columnIdentifier + "-column");
+            this._topFillerRow.createChild("td", columnIdentifier + "-column");
+            this._bottomFillerRow.createChild("td", columnIdentifier + "-column");
         }
 
         this._headerRow.createChild("th", "corner");
-        this._fillerRow.createChild("td", "corner");
+        this._topFillerRow.createChild("td", "corner");
+        this._bottomFillerRow.createChild("td", "corner");
         this._headerTableColumnGroup.createChild("col", "corner");
         this._dataTableColumnGroup.createChild("col", "corner");
+    },
+
+    /**
+     * @param {number} top
+     * @param {number} bottom
+     * @protected
+     */
+    setVerticalPadding: function(top, bottom)
+    {
+        this._topFillerRow.style.height = top + "px";
+        this._bottomFillerRow.style.height = bottom + "px";
     },
 
     /**
@@ -846,14 +862,13 @@ WebInspector.DataGrid.prototype = {
         tbodyParent.removeChild(tbody);
 
         var childNodes = tbody.childNodes;
-        var fillerRow = childNodes[childNodes.length - 1];
-
-        var sortedRows = Array.prototype.slice.call(childNodes, 0, childNodes.length - 1);
+        var sortedRows = Array.prototype.slice.call(childNodes, 1, childNodes.length - 1);
         sortedRows.sort(comparatorWrapper);
         var sortedRowsLength = sortedRows.length;
 
         this._rootNode.children = [];
         tbody.removeChildren();
+        tbody.appendChild(this._topFillerRow);
         var previousSiblingNode = null;
         for (var i = 0; i < sortedRowsLength; ++i) {
             var row = sortedRows[i];
@@ -868,7 +883,7 @@ WebInspector.DataGrid.prototype = {
         if (previousSiblingNode)
             previousSiblingNode.nextSibling = null;
 
-        tbody.appendChild(fillerRow);
+        tbody.appendChild(this._bottomFillerRow);
         tbodyParent.appendChild(tbody);
     },
 
@@ -1194,14 +1209,6 @@ WebInspector.DataGrid.prototype = {
         this._currentResizer = null;
         this._saveColumnWeights();
         this.dispatchEventToListeners(WebInspector.DataGrid.Events.ColumnsResized);
-    },
-
-    /**
-     * @return {?Element}
-     */
-    defaultAttachLocation: function()
-    {
-        return this.dataTableBody.firstChild;
     },
 
     ColumnResizePadding: 24,
@@ -1807,11 +1814,8 @@ WebInspector.DataGridNode.prototype = {
 
         var nextNode = null;
         var previousNode = this.traversePreviousNode(true, true);
-        if (previousNode && previousNode.element.parentNode && previousNode.element.nextSibling)
-            nextNode = previousNode.element.nextSibling;
-        if (!nextNode)
-            nextNode = this.dataGrid.defaultAttachLocation();
-        this.dataGrid.dataTableBody.insertBefore(this.element, nextNode);
+        var previousElement = previousNode ? previousNode.element : this.dataGrid._topFillerRow;
+        this.dataGrid.dataTableBody.insertBefore(this.element, previousElement.nextSibling);
 
         if (this.expanded)
             for (var i = 0; i < this.children.length; ++i)
