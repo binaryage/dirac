@@ -910,6 +910,7 @@ WebInspector.DOMModel.Events = {
     AttrRemoved: "AttrRemoved",
     CharacterDataModified: "CharacterDataModified",
     NodeInserted: "NodeInserted",
+    NodeInspected: "NodeInspected",
     NodeRemoved: "NodeRemoved",
     DocumentUpdated: "DocumentUpdated",
     ChildNodeCountUpdated: "ChildNodeCountUpdated",
@@ -1315,7 +1316,7 @@ WebInspector.DOMModel.prototype = {
      */
     _inspectNodeRequested: function(nodeId)
     {
-        WebInspector.Revealer.reveal(this.nodeForId(nodeId))
+        this.dispatchEventToListeners(WebInspector.DOMModel.Events.NodeInspected, this.nodeForId(nodeId));
     },
 
     /**

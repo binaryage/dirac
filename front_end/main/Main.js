@@ -361,6 +361,7 @@ WebInspector.Main.prototype = {
         new WebInspector.RenderingOptions();
         new WebInspector.Main.PauseListener();
         new WebInspector.Main.WarningErrorCounter();
+        new WebInspector.Main.InspectedNodeRevealer();
 
         this._addMainEventListeners(document);
 
@@ -913,5 +914,40 @@ WebInspector.Main.PauseListener.prototype = {
         WebInspector.context.setFlavor(WebInspector.Target, debuggerModel.target());
         WebInspector.targetManager.unobserveTargets(this);
         WebInspector.inspectorView.showPanel("sources");
+    }
+}
+
+/**
+ * @constructor
+ * @implements {WebInspector.TargetManager.Observer}
+ */
+WebInspector.Main.InspectedNodeRevealer = function()
+{
+    WebInspector.targetManager.observeTargets(this);
+}
+
+WebInspector.Main.InspectedNodeRevealer.prototype = {
+    /**
+     * @param {!WebInspector.Target} target
+     */
+    targetAdded: function(target)
+    {
+        target.domModel.addEventListener(WebInspector.DOMModel.Events.NodeInspected, this._inspectNode, this);
+    },
+
+    /**
+     * @param {!WebInspector.Target} target
+     */
+    targetRemoved: function(target)
+    {
+        target.domModel.removeEventListener(WebInspector.DOMModel.Events.NodeInspected, this._inspectNode, this);
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _inspectNode: function(event)
+    {
+        WebInspector.Revealer.reveal(/** @type {!WebInspector.DOMNode} */ (event.data));
     }
 }

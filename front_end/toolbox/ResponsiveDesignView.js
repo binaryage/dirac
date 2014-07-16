@@ -611,7 +611,7 @@ WebInspector.ResponsiveDesignView.prototype = {
 
     _showEmulationInDrawer: function()
     {
-        WebInspector.overridesSupport.reveal();
+        WebInspector.Revealer.reveal(WebInspector.overridesSupport);
     },
 
     /**

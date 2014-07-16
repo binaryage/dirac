@@ -823,11 +823,6 @@ WebInspector.OverridesSupport.prototype = {
         return conditions.throughput !== WebInspector.OverridesSupport.NetworkThroughputUnlimitedValue;
     },
 
-    reveal: function()
-    {
-        WebInspector.Revealer.reveal(this);
-    },
-
     __proto__: WebInspector.Object.prototype
 }
 
