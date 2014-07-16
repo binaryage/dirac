@@ -49,6 +49,7 @@
             'front_end/TestController.js',
             'front_end/dialog.css',
             'front_end/inspector.css',
+            'front_end/inspectorStyle.css',
             'front_end/inspectorSyntaxHighlight.css',
             'front_end/popover.css',
             'front_end/sidebarPane.css',

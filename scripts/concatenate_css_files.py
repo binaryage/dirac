@@ -29,83 +29,56 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-# This script concatenates in place CSS files in the order specified
-# using <link> tags in a given 'order.html' file.
+# This script concatenates CSS files in the order specified
+# as @import url(...) in the input stylesheet.
 
-from __future__ import with_statement
-
-from HTMLParser import HTMLParser
 from cStringIO import StringIO
 import os.path
+import re
 import sys
 
 
-class OrderedCSSFilesExtractor(HTMLParser):
-
-    def __init__(self, order_html):
-        HTMLParser.__init__(self)
-        self.ordered_css_files = []
-        self.feed(order_html)
-
-    def handle_starttag(self, tag, attrs):
-        if tag == 'link':
-            attrs_dict = dict(attrs)
-            if ('type' in attrs_dict and attrs_dict['type'] == 'text/css' and
-                'href' in attrs_dict):
-                self.ordered_css_files.append(attrs_dict['href'])
+import_regex = re.compile(r"@import\s*\url\(\s*\"([^\"]+)\"\s*\)")
 
 
-class PathExpander:
-
-    def __init__(self, paths):
-        self.paths = paths
-
-    def expand(self, filename):
-        last_path = None
-        expanded_name = None
-        for path in self.paths:
-            fname = "%s/%s" % (path, filename)
-            if (os.access(fname, os.F_OK)):
-                if (last_path != None):
-                    raise Exception('Ambiguous file %s: found in %s and %s' %
-                                    (filename, last_path, path))
-                expanded_name = fname
-                last_path = path
-        return expanded_name
+def extract_css_files(stylesheet_name):
+    result = []
+    line_number = 1
+    with open(stylesheet_name, 'r') as input:
+        for line in input.readlines():
+            match = re.search(import_regex, line)
+            if match:
+                result.append((match.group(1), line_number))
+            line_number += 1
+    return result
 
 
 def main(argv):
 
-    if len(argv) < 3:
-        print('usage: %s order.html input_source_dir_1 input_source_dir_2 ... '
-              'output_file' % argv[0])
+    if len(argv) != 3:
+        print('usage: %s input.css output.css' % argv[0])
         return 1
 
-    output_file_name = argv.pop()
-    input_order_file_name = argv[1]
-    with open(input_order_file_name, 'r') as order_html:
-        extractor = OrderedCSSFilesExtractor(order_html.read())
-
-    expander = PathExpander(argv[2:])
+    input_stylesheet_name = argv[1]
+    output_file_name = argv[2]
+    input_directory = os.path.dirname(input_stylesheet_name)
     output = StringIO()
 
-    for input_file_name in extractor.ordered_css_files:
-        full_path = expander.expand(input_file_name)
-        if (full_path is None):
-            raise Exception('File %s referenced in %s not found on any source paths, '
+    for input_file_name, line_number in extract_css_files(input_stylesheet_name):
+        full_path = os.path.join(input_directory, input_file_name)
+        if not os.path.isfile(full_path):
+            raise Exception('File %s referenced in %s:%d was not found, '
                             'check source tree for consistency' %
-                            (input_file_name, input_order_file_name))
+                            (input_file_name, input_stylesheet_name, line_number))
         output.write('/* %s */\n\n' % input_file_name)
-        input_file = open(full_path, 'r')
-        output.write(input_file.read())
-        output.write('\n')
-        input_file.close()
+        with open(full_path, 'r') as input_file:
+            output.write(input_file.read())
+            output.write('\n')
 
     if os.path.exists(output_file_name):
         os.remove(output_file_name);
-    output_file = open(output_file_name, 'w')
-    output_file.write(output.getvalue())
-    output_file.close()
+    with open(output_file_name, 'w') as output_file:
+        output_file.write(output.getvalue())
     output.close()
 
     # Touch output file directory to make sure that Xcode will copy

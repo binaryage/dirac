@@ -854,15 +854,15 @@
                     'actions': [{
                         'action_name': 'concatenate_devtools_css',
                         'script_name': 'scripts/concatenate_css_files.py',
-                        'input_page': 'front_end/inspector.html',
+                        'input_stylesheet': 'front_end/inspector.css',
                         'inputs': [
                             '<@(_script_name)',
-                            '<@(_input_page)',
-                            '<@(all_devtools_files)',
+                            '<@(_input_stylesheet)',
+                            '<@(devtools_core_base_files)',
                         ],
                         'search_path': [ 'front_end' ],
                         'outputs': ['<(PRODUCT_DIR)/resources/inspector/inspector.css'],
-                        'action': ['python', '<@(_script_name)', '<@(_input_page)', '<@(_search_path)', '<@(_outputs)'],
+                        'action': ['python', '<@(_script_name)', '<@(_input_stylesheet)', '<@(_outputs)'],
                     }],
                     'copies': [{
                         'destination': '<(PRODUCT_DIR)/resources/inspector',

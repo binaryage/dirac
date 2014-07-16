@@ -30,31 +30,6 @@ devtools_extensions_js_files = gypi_values.devtools_extensions_js_files -
   [ "<@(devtools_extension_api_files)" ] +
   gypi_values.devtools_extension_api_files
 
-devtools_modules_js_files =
-  gypi_values.devtools_console_js_files +
-  gypi_values.devtools_devices_js_files +
-  gypi_values.devtools_elements_js_files +
-  devtools_extensions_js_files +
-  gypi_values.devtools_resources_js_files +
-  gypi_values.devtools_network_js_files +
-  gypi_values.devtools_source_frame_js_files +
-  gypi_values.devtools_sources_js_files +
-  gypi_values.devtools_timeline_js_files +
-  gypi_values.devtools_profiler_js_files +
-  gypi_values.devtools_audits_js_files +
-  gypi_values.devtools_layers_js_files +
-  gypi_values.devtools_heap_snapshot_worker_js_files +
-  gypi_values.devtools_temp_storage_shared_worker_js_files +
-  gypi_values.devtools_script_formatter_worker_js_files +
-  gypi_values.devtools_uglify_files
-
-all_devtools_files =
-  devtools_core_js_files +
-  devtools_modules_js_files +
-  gypi_values.devtools_cm_css_files +
-  gypi_values.devtools_cm_js_files +
-  gypi_values.devtools_module_json_files
-
 #-------------------------------------------------------------------------------
 
 visibility = "//third_party/WebKit/*"
@@ -369,13 +344,11 @@ action("concatenated_module_descriptors") {
 action("concatenated_devtools_css") {
   script = "scripts/concatenate_css_files.py"
 
-  input_page = "front_end/inspector.html"
-  inputs = [ input_page ] + all_devtools_files
-  search_path = [ "front_end" ]
+  input_stylesheet = "front_end/inspector.css"
+  inputs = [ input_stylesheet ] + devtools_core_base_files
 
   outputs = [ "$root_out_dir/resources/inspector/inspector.css" ]
 
-  args = [ rebase_path(input_page, root_build_dir) ] +
-    rebase_path(search_path, root_build_dir) +
+  args = [ rebase_path(input_stylesheet, root_build_dir) ] +
     rebase_path(outputs, root_build_dir)
 }
