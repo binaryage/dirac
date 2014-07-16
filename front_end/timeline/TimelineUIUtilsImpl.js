@@ -78,7 +78,7 @@ WebInspector.TimelineUIUtilsImpl.prototype = {
      */
     titleForRecord: function(record)
     {
-        return WebInspector.TimelineUIUtilsImpl.recordTitle(record);
+        return WebInspector.TimelineUIUtilsImpl._recordTitle(record);
     },
 
     /**
@@ -138,7 +138,7 @@ WebInspector.TimelineUIUtilsImpl.prototype = {
      */
     testContentMatching: function(record, regExp)
     {
-        var tokens = [WebInspector.TimelineUIUtilsImpl.recordTitle(record)];
+        var tokens = [WebInspector.TimelineUIUtilsImpl._recordTitle(record)];
         var data = record.data();
         for (var key in data)
             tokens.push(data[key])
@@ -280,18 +280,19 @@ WebInspector.TimelineUIUtilsImpl.recordStyle = function(record)
  * @param {!WebInspector.TimelineModel.Record} record
  * @return {string}
  */
-WebInspector.TimelineUIUtilsImpl.recordTitle = function(record)
+WebInspector.TimelineUIUtilsImpl._recordTitle = function(record)
 {
     var recordData = record.data();
     if (record.type() === WebInspector.TimelineModel.RecordType.TimeStamp)
         return recordData["message"];
     if (record.type() === WebInspector.TimelineModel.RecordType.JSFrame)
         return recordData["functionName"];
+    var title = WebInspector.TimelineUIUtilsImpl.recordStyle(record).title;
     if (WebInspector.TimelineUIUtilsImpl.isEventDivider(record)) {
         var startTime = Number.millisToString(record.startTime() - record._model.minimumRecordTime());
-        return WebInspector.UIString("%s at %s", WebInspector.TimelineUIUtilsImpl.recordStyle(record).title, startTime, true);
+        return WebInspector.UIString("%s at %s", title, startTime);
     }
-    return WebInspector.TimelineUIUtilsImpl.recordStyle(record).title;
+    return title;
 }
 
 /**

@@ -759,4 +759,12 @@ WebInspector.TracingTimelineModel.TraceEventRecord.prototype = {
         this._children.push(child);
         child.parent = this;
     },
+
+    /**
+     * @return {!WebInspector.TimelineModel}
+     */
+    timelineModel: function()
+    {
+        return this._model;
+    }
 }

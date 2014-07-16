@@ -72,7 +72,7 @@ WebInspector.TracingTimelineUIUtils.prototype = {
      */
     titleForRecord: function(record)
     {
-        return WebInspector.TracingTimelineUIUtils.styleForTraceEvent(record.traceEvent().name).title;
+        return WebInspector.TracingTimelineUIUtils._recordTitle(/** @type {!WebInspector.TracingTimelineModel.TraceEventRecord} */(record));
     },
 
     /**
@@ -292,6 +292,23 @@ WebInspector.TracingTimelineUIUtils.styleForTraceEvent = function(name)
         eventStyles[name] = result;
     }
     return result;
+}
+
+/**
+ * @param {!WebInspector.TracingTimelineModel.TraceEventRecord} record
+ * @return {string}
+ */
+WebInspector.TracingTimelineUIUtils._recordTitle = function(record)
+{
+    var event = record.traceEvent();
+    if (event.name === WebInspector.TracingTimelineModel.RecordType.TimeStamp)
+        return event.args.data["message"];
+    var title = WebInspector.TracingTimelineUIUtils.eventStyle(event).title;
+    if (WebInspector.TracingTimelineUIUtils.isEventDivider(record)) {
+        var startTime = Number.millisToString(record.startTime() - record.timelineModel().minimumRecordTime());
+        return WebInspector.UIString("%s at %s", title, startTime);
+    }
+    return title;
 }
 
 /**
