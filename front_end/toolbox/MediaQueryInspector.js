@@ -27,7 +27,6 @@ WebInspector.MediaQueryInspector = function()
     WebInspector.targetManager.observeTargets(this);
 
     WebInspector.zoomManager.addEventListener(WebInspector.ZoomManager.Events.ZoomChanged, this._renderMediaQueries.bind(this), this);
-    this._scheduleMediaQueriesUpdate();
 }
 
 /**
@@ -153,6 +152,7 @@ WebInspector.MediaQueryInspector.prototype = {
     setEnabled: function(enabled)
     {
         this._enabled = enabled;
+        this._scheduleMediaQueriesUpdate();
     },
 
     /**
