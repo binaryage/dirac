@@ -1278,18 +1278,22 @@ WebInspector.DataGridNode.prototype = {
             this._element.classList.add("revealed");
 
         this.createCells();
-        this._element.createChild("td", "corner");
 
         return this._element;
     },
 
+    /**
+     * @protected
+     */
     createCells: function()
     {
+        this._element.removeChildren();
         var columnsArray = this.dataGrid._visibleColumnsArray;
         for (var i = 0; i < columnsArray.length; ++i) {
             var cell = this.createCell(columnsArray[i].identifier);
             this._element.appendChild(cell);
         }
+        this._element.createChild("td", "corner");
     },
 
     get data()
@@ -1418,12 +1422,11 @@ WebInspector.DataGridNode.prototype = {
 
     refresh: function()
     {
-        if (!this._element || !this.dataGrid)
+        if (!this.dataGrid)
+            delete this._element;
+        if (!this._element)
             return;
-
-        this._element.removeChildren();
         this.createCells();
-        this._element.createChild("td", "corner");
     },
 
     /**
