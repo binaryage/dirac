@@ -30,13 +30,9 @@
 
 /**
  * @constructor
- * @extends {WebInspector.SDKObject}
- * @param {!WebInspector.Target} target
  */
-WebInspector.TimelineFrameModelBase = function(target)
+WebInspector.TimelineFrameModelBase = function()
 {
-    WebInspector.SDKObject.call(this, target);
-
     this.reset();
 }
 
@@ -207,19 +203,16 @@ WebInspector.TimelineFrameModelBase.prototype = {
                 return result;
         }
         return null;
-    },
-
-    __proto__: WebInspector.SDKObject.prototype
+    }
 }
 
 /**
  * @constructor
- * @param {!WebInspector.Target} target
  * @extends {WebInspector.TimelineFrameModelBase}
  */
-WebInspector.TimelineFrameModel = function(target)
+WebInspector.TimelineFrameModel = function()
 {
-    WebInspector.TimelineFrameModelBase.call(this, target);
+    WebInspector.TimelineFrameModelBase.call(this);
 }
 
 WebInspector.TimelineFrameModel._mainFrameMarkers = [
@@ -312,7 +305,7 @@ WebInspector.TimelineFrameModel.prototype = {
     {
         var recordTypes = WebInspector.TimelineModel.RecordType;
         if (record.type() === recordTypes.UpdateLayerTree && record.data()["layerTree"])
-            this.handleLayerTreeSnapshot(new WebInspector.DeferredAgentLayerTree(this.target().weakReference(), record.data()["layerTree"]));
+            this.handleLayerTreeSnapshot(new WebInspector.DeferredAgentLayerTree(record.target(), record.data()["layerTree"]));
         if (!this._hasThreadedCompositing) {
             if (record.type() === recordTypes.BeginFrame)
                 this._startMainThreadFrame(record.startTime());
@@ -356,12 +349,11 @@ WebInspector.TimelineFrameModel.prototype = {
 
 /**
  * @constructor
- * @param {!WebInspector.Target} target
  * @extends {WebInspector.TimelineFrameModelBase}
  */
-WebInspector.TracingTimelineFrameModel = function(target)
+WebInspector.TracingTimelineFrameModel = function()
 {
-    WebInspector.TimelineFrameModelBase.call(this, target);
+    WebInspector.TimelineFrameModelBase.call(this);
 }
 
 WebInspector.TracingTimelineFrameModel._mainFrameMarkers = [
@@ -415,9 +407,8 @@ WebInspector.TracingTimelineFrameModel.prototype = {
     _addBackgroundTraceEvent: function(event)
     {
         var eventNames = WebInspector.TracingTimelineModel.RecordType;
-
         if (event.phase === WebInspector.TracingModel.Phase.SnapshotObject && event.name === eventNames.LayerTreeHostImplSnapshot && parseInt(event.id, 0) === this._layerTreeId) {
-            this.handleLayerTreeSnapshot(new WebInspector.DeferredTracingLayerTree(this.target().weakReference(), event.args["snapshot"]["active_tree"]["root_layer"], event.args["snapshot"]["device_viewport_size"]));
+            this.handleLayerTreeSnapshot(new WebInspector.DeferredTracingLayerTree(event.thread.target(), event.args["snapshot"]["active_tree"]["root_layer"], event.args["snapshot"]["device_viewport_size"]));
             return;
         }
         if (this._lastFrame && event.selfTime)

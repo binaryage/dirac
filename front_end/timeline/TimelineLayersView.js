@@ -47,14 +47,13 @@ WebInspector.TimelineLayersView.prototype = {
     {
         var layerTree;
 
-        this._weakTarget = this._deferredLayerTree.weakTarget();
+        this._target = this._deferredLayerTree.target();
         var originalTiles = this._paintTiles;
         var tilesReadyBarrier = new CallbackBarrier();
         this._deferredLayerTree.resolve(tilesReadyBarrier.createCallback(onLayersReady));
-        var target = this._weakTarget.get();
-        if (target) {
+        if (this._target) {
             for (var i = 0; this._paints && i < this._paints.length; ++i)
-                WebInspector.PaintProfilerSnapshot.load(target, this._paints[i].picture, tilesReadyBarrier.createCallback(onSnapshotLoaded.bind(this, this._paints[i])));
+                WebInspector.PaintProfilerSnapshot.load(this._target, this._paints[i].picture, tilesReadyBarrier.createCallback(onSnapshotLoaded.bind(this, this._paints[i])));
         }
         tilesReadyBarrier.callWhenDone(onLayersAndTilesReady.bind(this));
 
@@ -128,9 +127,8 @@ WebInspector.TimelineLayersView.prototype = {
             node.highlightForTwoSeconds();
             return;
         }
-        var target = this._weakTarget.get();
-        if (target)
-            target.domModel.hideDOMNodeHighlight();
+        if (this._target)
+            this._target.domModel.hideDOMNodeHighlight();
 
     },
 

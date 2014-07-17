@@ -261,11 +261,11 @@ WebInspector.TimelinePanel.prototype = {
         if (this._lazyFrameModel)
             return this._lazyFrameModel;
         if (this._tracingModel) {
-            var tracingFrameModel = new WebInspector.TracingTimelineFrameModel(this._model.target());
+            var tracingFrameModel = new WebInspector.TracingTimelineFrameModel();
             tracingFrameModel.addTraceEvents(this._tracingTimelineModel.inspectedTargetEvents(), this._tracingModel.sessionId() || "");
             this._lazyFrameModel = tracingFrameModel;
         } else {
-            var frameModel = new WebInspector.TimelineFrameModel(this._model.target());
+            var frameModel = new WebInspector.TimelineFrameModel();
             frameModel.setMergeRecords(!WebInspector.experimentsSettings.timelineNoLiveUpdate.isEnabled() || !this._recordingInProgress);
             frameModel.addRecords(this._model.records());
             this._lazyFrameModel = frameModel;

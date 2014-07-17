@@ -49,7 +49,7 @@ WebInspector.TracingLayerPayload;
 WebInspector.LayerTreeModel = function(target)
 {
     WebInspector.SDKObject.call(this, target);
-    InspectorBackend.registerLayerTreeDispatcher(new WebInspector.LayerTreeDispatcher(this));
+    target.registerLayerTreeDispatcher(new WebInspector.LayerTreeDispatcher(this));
     target.domModel.addEventListener(WebInspector.DOMModel.Events.DocumentUpdated, this._onDocumentUpdated, this);
     /** @type {?WebInspector.LayerTreeBase} */
     this._layerTree = null;
@@ -74,7 +74,7 @@ WebInspector.LayerTreeModel.prototype = {
             return;
         this._enabled = false;
         this._layerTree = null;
-        LayerTreeAgent.disable();
+        this.target().layerTreeAgent().disable();
     },
 
     enable: function()
@@ -82,9 +82,9 @@ WebInspector.LayerTreeModel.prototype = {
         if (this._enabled)
             return;
         this._enabled = true;
-        this._layerTree = new WebInspector.AgentLayerTree(this.target().weakReference());
+        this._layerTree = new WebInspector.AgentLayerTree(this.target());
         this._lastPaintRectByLayerId = {};
-        LayerTreeAgent.enable();
+        this.target().layerTreeAgent().enable();
     },
 
     /**
@@ -163,11 +163,11 @@ WebInspector.LayerTreeModel.prototype = {
 
 /**
   * @constructor
-  * @param {!WeakReference.<!WebInspector.Target>} weakTarget
+  * @param {?WebInspector.Target} target
   */
-WebInspector.LayerTreeBase = function(weakTarget)
+WebInspector.LayerTreeBase = function(target)
 {
-    this._weakTarget = weakTarget;
+    this._target = target;
     this._layersById = {};
     this._backendNodeIdToNodeId = {};
     this._reset();
@@ -226,13 +226,12 @@ WebInspector.LayerTreeBase.prototype = {
      */
     _resolveBackendNodeIds: function(requestedNodeIds, callback)
     {
-        var target = this._weakTarget.get();
-        if (!requestedNodeIds.length || !target) {
+        if (!requestedNodeIds.length || !this._target) {
             callback();
             return;
         }
 
-        target.domModel.pushNodesByBackendIdsToFrontend(requestedNodeIds, populateBackendNodeIdMap.bind(this));
+        this._target.domModel.pushNodesByBackendIdsToFrontend(requestedNodeIds, populateBackendNodeIdMap.bind(this));
 
         /**
          * @this {WebInspector.LayerTreeBase}
@@ -273,19 +272,18 @@ WebInspector.LayerTreeBase.prototype = {
      */
     _nodeForId: function(id)
     {
-        var target = this._weakTarget.get();
-        return target ? target.domModel.nodeForId(id) : null;
+        return this._target ? this._target.domModel.nodeForId(id) : null;
     }
 };
 
 /**
   * @constructor
   * @extends {WebInspector.LayerTreeBase}
-  * @param {!WeakReference.<!WebInspector.Target>} weakTarget
+  * @param {?WebInspector.Target} target
   */
-WebInspector.TracingLayerTree = function(weakTarget)
+WebInspector.TracingLayerTree = function(target)
 {
-    WebInspector.LayerTreeBase.call(this, weakTarget);
+    WebInspector.LayerTreeBase.call(this, target);
 }
 
 WebInspector.TracingLayerTree.prototype = {
@@ -357,12 +355,12 @@ WebInspector.TracingLayerTree.prototype = {
 
 /**
   * @constructor
-  * @param {!WeakReference.<!WebInspector.Target>} weakTarget
+  * @param {?WebInspector.Target} target
   * @extends {WebInspector.LayerTreeBase}
   */
-WebInspector.AgentLayerTree = function(weakTarget)
+WebInspector.AgentLayerTree = function(target)
 {
-    WebInspector.LayerTreeBase.call(this, weakTarget);
+    WebInspector.LayerTreeBase.call(this, target);
 }
 
 WebInspector.AgentLayerTree.prototype = {
@@ -417,7 +415,7 @@ WebInspector.AgentLayerTree.prototype = {
             if (layer)
                 layer._reset(layers[i]);
             else
-                layer = new WebInspector.AgentLayer(this._weakTarget, layers[i]);
+                layer = new WebInspector.AgentLayer(this._target, layers[i]);
             this._layersById[layerId] = layer;
             if (layers[i].backendNodeId) {
                 layer._setNode(this._nodeForId(this._backendNodeIdToNodeId[layers[i].backendNodeId]));
@@ -560,12 +558,12 @@ WebInspector.Layer.prototype = {
 /**
  * @constructor
  * @implements {WebInspector.Layer}
- * @param {!WeakReference.<!WebInspector.Target>} weakTarget
+ * @param {?WebInspector.Target} target
  * @param {!LayerTreeAgent.Layer} layerPayload
  */
-WebInspector.AgentLayer = function(weakTarget, layerPayload)
+WebInspector.AgentLayer = function(target, layerPayload)
 {
-    this._weakTarget = weakTarget;
+    this._target = target;
     this._reset(layerPayload);
 }
 
@@ -746,8 +744,13 @@ WebInspector.AgentLayer.prototype = {
      */
     requestCompositingReasons: function(callback)
     {
+        if (!this._target) {
+            callback([]);
+            return;
+        }
+
         var wrappedCallback = InspectorBackend.wrapClientCallback(callback, "LayerTreeAgent.reasonsForCompositingLayer(): ", undefined, []);
-        LayerTreeAgent.compositingReasons(this.id(), wrappedCallback);
+        this._target.layerTreeAgent().compositingReasons(this.id(), wrappedCallback);
     },
 
     /**
@@ -755,8 +758,13 @@ WebInspector.AgentLayer.prototype = {
      */
     requestSnapshot: function(callback)
     {
-        var wrappedCallback = InspectorBackend.wrapClientCallback(callback, "LayerTreeAgent.makeSnapshot(): ", WebInspector.PaintProfilerSnapshot.bind(null, this._weakTarget));
-        LayerTreeAgent.makeSnapshot(this.id(), wrappedCallback);
+        if (!this._target) {
+            callback();
+            return;
+        }
+
+        var wrappedCallback = InspectorBackend.wrapClientCallback(callback, "LayerTreeAgent.makeSnapshot(): ", WebInspector.PaintProfilerSnapshot.bind(null, this._target));
+        this._target.layerTreeAgent().makeSnapshot(this.id(), wrappedCallback);
     },
 
     /**
@@ -1093,11 +1101,11 @@ WebInspector.TracingLayer.prototype = {
 
 /**
  * @constructor
- * @param {!WeakReference.<!WebInspector.Target>} weakTarget
+ * @param {?WebInspector.Target} target
  */
-WebInspector.DeferredLayerTree = function(weakTarget)
+WebInspector.DeferredLayerTree = function(target)
 {
-    this._weakTarget = weakTarget;
+    this._target = target;
 }
 
 WebInspector.DeferredLayerTree.prototype = {
@@ -1107,23 +1115,23 @@ WebInspector.DeferredLayerTree.prototype = {
     resolve: function(callback) { },
 
     /**
-     * @return {!WeakReference.<!WebInspector.Target>}
+     * @return {?WebInspector.Target}
      */
-    weakTarget: function()
+    target: function()
     {
-        return this._weakTarget;
+        return this._target;
     }
 };
 
 /**
  * @constructor
  * @extends {WebInspector.DeferredLayerTree}
- * @param {!WeakReference.<!WebInspector.Target>} weakTarget
+ * @param {?WebInspector.Target} target
  * @param {!Array.<!LayerTreeAgent.Layer>} layers
  */
-WebInspector.DeferredAgentLayerTree = function(weakTarget, layers)
+WebInspector.DeferredAgentLayerTree = function(target, layers)
 {
-    WebInspector.DeferredLayerTree.call(this, weakTarget);
+    WebInspector.DeferredLayerTree.call(this, target);
     this._layers = layers;
 }
 
@@ -1133,7 +1141,7 @@ WebInspector.DeferredAgentLayerTree.prototype = {
      */
     resolve: function(callback)
     {
-        var result = new WebInspector.AgentLayerTree(this._weakTarget);
+        var result = new WebInspector.AgentLayerTree(this._target);
         result.setLayers(this._layers, callback.bind(null, result));
     },
 
@@ -1143,13 +1151,13 @@ WebInspector.DeferredAgentLayerTree.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.DeferredLayerTree}
- * @param {!WeakReference.<!WebInspector.Target>} weakTarget
+ * @param {?WebInspector.Target} target
  * @param {!WebInspector.TracingLayerPayload} root
  * @param {!Object} viewportSize
  */
-WebInspector.DeferredTracingLayerTree = function(weakTarget, root, viewportSize)
+WebInspector.DeferredTracingLayerTree = function(target, root, viewportSize)
 {
-    WebInspector.DeferredLayerTree.call(this, weakTarget);
+    WebInspector.DeferredLayerTree.call(this, target);
     this._root = root;
     this._viewportSize = viewportSize;
 }
@@ -1160,7 +1168,7 @@ WebInspector.DeferredTracingLayerTree.prototype = {
      */
     resolve: function(callback)
     {
-        var result = new WebInspector.TracingLayerTree(this._weakTarget);
+        var result = new WebInspector.TracingLayerTree(this._target);
         result.setViewportSize(this._viewportSize);
         result.setLayers(this._root, callback.bind(null, result));
     },

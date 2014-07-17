@@ -467,6 +467,16 @@ WebInspector.TracingModel.Thread = function(process, id)
 }
 
 WebInspector.TracingModel.Thread.prototype = {
+
+    /**
+     * @return {?WebInspector.Target}
+     */
+    target: function()
+    {
+        //FIXME: correctly specify target
+        return WebInspector.targetManager.targets()[0];
+    },
+
     /**
      * @param {!WebInspector.TracingModel.EventPayload} payload
      * @return {?WebInspector.TracingModel.Event} event

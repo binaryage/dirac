@@ -117,12 +117,10 @@ WebInspector.TimelineTracingView.prototype = {
         contentHelper.appendTextRow(WebInspector.UIString("Duration"), Number.millisToString(record.duration, true));
         if (!Object.isEmpty(record.args))
             contentHelper.appendElementRow(WebInspector.UIString("Arguments"), this._formatArguments(record.args));
-        /**
-         * @this {WebInspector.TimelineTracingView}
-         */
+
         function reveal()
         {
-            WebInspector.Revealer.reveal(new WebInspector.DeferredTracingLayerTree(this._tracingModel.target().weakReference(), record.args["snapshot"]["active_tree"]["root_layer"], record.args["snapshot"]["device_viewport_size"]));
+            WebInspector.Revealer.reveal(new WebInspector.DeferredTracingLayerTree(record.thread.target(), record.args["snapshot"]["active_tree"]["root_layer"], record.args["snapshot"]["device_viewport_size"]));
         }
         /**
          * @param {!Node=} node
@@ -143,7 +141,7 @@ WebInspector.TimelineTracingView.prototype = {
             var link = document.createElement("span");
             link.classList.add("revealable-link");
             link.textContent = "show";
-            link.addEventListener("click", reveal.bind(this), false);
+            link.addEventListener("click", reveal, false);
             contentHelper.appendElementRow(WebInspector.UIString("Layer tree"), link);
             // Fall-through intended.
         default:
