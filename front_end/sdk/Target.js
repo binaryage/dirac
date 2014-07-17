@@ -18,6 +18,7 @@ WebInspector.Target = function(name, connection, callback)
     this._weakReference = new WeakReference(this);
     this._name = name;
     this._connection = connection;
+    connection.addEventListener(InspectorBackendClass.Connection.Events.Disconnected, this._onDisconnect, this);
     this._id = WebInspector.Target._nextId++;
 
     /** @type {!Object.<string, boolean>} */
@@ -199,7 +200,13 @@ WebInspector.Target.prototype = {
         return this.hasCapability(WebInspector.Target.Capabilities.canScreencast);
     },
 
-    dispose: function()
+    _onDisconnect: function()
+    {
+        WebInspector.targetManager.removeTarget(this);
+        this._dispose();
+    },
+
+    _dispose: function()
     {
         this._weakReference.clear();
         this.debuggerModel.dispose();
@@ -301,7 +308,6 @@ WebInspector.TargetManager.prototype = {
     removeTarget: function(target)
     {
         this._targets.remove(target);
-        target.dispose();
         var copy = this._observers.slice();
         for (var i = 0; i < copy.length; ++i)
             copy[i].targetRemoved(target);

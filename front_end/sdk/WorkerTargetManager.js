@@ -13,11 +13,6 @@ WebInspector.WorkerTargetManager = function(mainTarget, targetManager)
     this._mainTarget = mainTarget;
     this._targetManager = targetManager;
     mainTarget.workerManager.addEventListener(WebInspector.WorkerManager.Events.WorkerAdded, this._onWorkerAdded, this);
-    mainTarget.workerManager.addEventListener(WebInspector.WorkerManager.Events.WorkerRemoved, this._onWorkerRemoved, this);
-    mainTarget.workerManager.addEventListener(WebInspector.WorkerManager.Events.WorkersCleared, this._onWorkersCleared, this);
-
-    /** @type {!Object.<string, !WebInspector.Target>} */
-    this._workerTargetById = {};
 }
 
 WebInspector.WorkerTargetManager.prototype = {
@@ -36,38 +31,9 @@ WebInspector.WorkerTargetManager.prototype = {
          */
         function onConnectionReady(connection)
         {
-            this._targetManager.createTarget(event.data.url, connection, targetCreated.bind(this))
+            this._targetManager.createTarget(event.data.url, connection)
         }
-
-        /**
-         * @this {WebInspector.WorkerTargetManager}
-         * @param {!WebInspector.Target} target
-         */
-        function targetCreated(target)
-        {
-            this._workerTargetById[String(data.workerId)] = target;
-        }
-    },
-
-    /**
-     * @param {!WebInspector.Event} event
-     */
-    _onWorkerRemoved: function(event)
-    {
-        var workerId = String(event.data);
-        var target = this._workerTargetById[workerId];
-        delete this._workerTargetById[workerId];
-        this._targetManager.removeTarget(target);
-    },
-
-    _onWorkersCleared: function()
-    {
-        var targets = Object.values(this._workerTargetById);
-        for (var i = 0; i < targets.length; ++i)
-            this._targetManager.removeTarget(targets[i]);
-        this._workerTargetById = [];
     }
-
 }
 
 /**
@@ -124,6 +90,7 @@ WebInspector.WorkerConnection.prototype = {
         this._target.workerManager.removeEventListener(WebInspector.WorkerManager.Events.MessageFromWorker, this._dispatchMessageFromWorker, this);
         this._target.workerManager.removeEventListener(WebInspector.WorkerManager.Events.WorkerRemoved, this._onWorkerRemoved, this);
         this._target.workerManager.removeEventListener(WebInspector.WorkerManager.Events.WorkersCleared, this._close, this);
+        this.connectionClosed("worker_terminated");
     },
 
     __proto__: InspectorBackendClass.Connection.prototype

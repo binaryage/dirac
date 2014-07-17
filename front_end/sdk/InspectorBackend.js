@@ -41,6 +41,8 @@ function InspectorBackendClass()
     this._initProtocolAgentsConstructor();
 }
 
+InspectorBackendClass._DevToolsErrorCode = -32000;
+
 InspectorBackendClass.prototype = {
 
     _initProtocolAgentsConstructor: function()
@@ -340,6 +342,7 @@ InspectorBackendClass.Connection = function()
     this._dispatchers = {};
     this._callbacks = {};
     this._initialize(InspectorBackend._agentPrototypes, InspectorBackend._dispatcherPrototypes);
+    this._isConnected = true;
 }
 
 InspectorBackendClass.Connection.Events = {
@@ -407,6 +410,11 @@ InspectorBackendClass.Connection.prototype = {
      */
     _wrapCallbackAndSendMessageObject: function(domain, method, params, callback)
     {
+        if (!this._isConnected && callback) {
+            this._dispatchConnectionErrorResponse(domain, method, callback);
+            return;
+        }
+
         var messageObject = {};
 
         var messageId = this.nextMessageId();
@@ -483,7 +491,7 @@ InspectorBackendClass.Connection.prototype = {
             if (InspectorBackendClass.Options.dumpInspectorTimeStats)
                 processingStartTime = Date.now();
 
-            this.agent(callback.domain).dispatchResponse(messageObject.id, messageObject, callback.methodName, callback);
+            this.agent(callback.domain).dispatchResponse(messageObject, callback.methodName, callback);
             --this._pendingResponsesCount;
             delete this._callbacks[messageObject.id];
 
@@ -502,7 +510,6 @@ InspectorBackendClass.Connection.prototype = {
             }
 
             this._dispatchers[domainName].dispatch(method[1], messageObject);
-
         }
 
     },
@@ -532,23 +539,48 @@ InspectorBackendClass.Connection.prototype = {
 
         if (!this._pendingResponsesCount) {
             var scripts = this._scripts;
-            this._scripts = []
+            this._scripts = [];
             for (var id = 0; id < scripts.length; ++id)
                 scripts[id].call(this);
         }
     },
 
-    /**
-     * @param {string} reason
-     */
-    fireDisconnected: function(reason)
-    {
-        this.dispatchEventToListeners(InspectorBackendClass.Connection.Events.Disconnected, {reason: reason});
-    },
-
     _dumpProtocolMessage: function(message)
     {
         console.log(message);
+    },
+
+    /**
+     * @protected
+     * @param {string} reason
+     */
+    connectionClosed: function(reason)
+    {
+        this._isConnected = false;
+        this._runPendingCallbacks();
+        this.dispatchEventToListeners(InspectorBackendClass.Connection.Events.Disconnected, {reason: reason});
+    },
+
+    _runPendingCallbacks: function()
+    {
+        var keys = Object.keys(this._callbacks).map(function(num) {return parseInt(num, 10)});
+        for (var i = 0; i < keys.length; ++i) {
+            var callback = this._callbacks[keys[i]];
+            this._dispatchConnectionErrorResponse(callback.domain, callback.methodName, callback)
+        }
+        this._callbacks = {};
+    },
+
+    /**
+     * @param {string} domain
+     * @param {string} methodName
+     * @param {!function(*)} callback
+     */
+    _dispatchConnectionErrorResponse: function(domain, methodName, callback)
+    {
+        var error = { message: "Connection is closed", code:  InspectorBackendClass._DevToolsErrorCode, data: null};
+        var messageObject = {error: error};
+        setTimeout(InspectorBackendClass.AgentPrototype.prototype.dispatchResponse.bind(this.agent(domain), messageObject, methodName, callback), 0);
     },
 
     __proto__: WebInspector.Object.prototype
@@ -600,7 +632,7 @@ InspectorBackendClass.WebSocketConnection = function(url, onConnectionReady)
     this._socket.onmessage = this._onMessage.bind(this);
     this._socket.onerror = this._onError.bind(this);
     this._socket.onopen = onConnectionReady.bind(null, this);
-    this._socket.onclose = this.fireDisconnected.bind(this, "websocket_closed");
+    this._socket.onclose = this.connectionClosed.bind(this, "websocket_closed");
 }
 
 /**
@@ -791,14 +823,13 @@ InspectorBackendClass.AgentPrototype.prototype = {
     },
 
     /**
-     * @param {number} messageId
      * @param {!Object} messageObject
      * @param {string} methodName
      * @param {function(!Array.<*>)} callback
      */
-    dispatchResponse: function(messageId, messageObject, methodName, callback)
+    dispatchResponse: function(messageObject, methodName, callback)
     {
-        if (messageObject.error && messageObject.error.code !== -32000 && !InspectorBackendClass.Options.suppressRequestErrors)
+        if (messageObject.error && messageObject.error.code !== InspectorBackendClass._DevToolsErrorCode && !InspectorBackendClass.Options.suppressRequestErrors)
             console.error("Request with id = " + messageObject.id + " failed. " + JSON.stringify(messageObject.error));
 
         var argumentsArray = [];
