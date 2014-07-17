@@ -809,6 +809,10 @@ WebInspector.NetworkLogView.prototype = {
         if (this._calculator)
             this._calculator.reset();
 
+        var nodes = this._nodesByRequestId.values();
+        for (var i = 0; i < nodes.length; ++i)
+            nodes[i]._dispose();
+
         this._nodesByRequestId.clear();
         this._staleRequestIds = {};
         this._resetSuggestionBuilder();
@@ -2556,6 +2560,12 @@ WebInspector.NetworkDataGridNode.prototype = {
 
     wasDetached: function()
     {
+        if (this._linkifiedInitiatorAnchor)
+            this._linkifiedInitiatorAnchor.remove();
+    },
+
+    _dispose: function()
+    {
         this._linkifier.reset();
     },
 
@@ -2738,9 +2748,11 @@ WebInspector.NetworkDataGridNode.prototype = {
             break;
 
         case WebInspector.NetworkRequest.InitiatorType.Script:
-            var urlElement = this._linkifier.linkifyLocation(request.target(), initiator.url, initiator.lineNumber - 1, initiator.columnNumber - 1);
-            urlElement.title = "";
-            cell.appendChild(urlElement);
+            if (!this._linkifiedInitiatorAnchor) {
+                this._linkifiedInitiatorAnchor = this._linkifier.linkifyLocation(request.target(), initiator.url, initiator.lineNumber - 1, initiator.columnNumber - 1);
+                this._linkifiedInitiatorAnchor.title = "";
+            }
+            cell.appendChild(this._linkifiedInitiatorAnchor);
             this._appendSubtitle(cell, WebInspector.UIString("Script"));
             cell.classList.add("network-script-initiated");
             cell.request = request;
