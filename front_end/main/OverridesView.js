@@ -39,11 +39,6 @@ WebInspector.OverridesView = function()
     this.registerRequiredCSS("helpScreen.css");
     this.element.classList.add("overrides-view");
 
-    if (!WebInspector.overridesSupport.canEmulate()) {
-        this.element.createChild("div", "overrides-splash-screen").createTextChild(WebInspector.UIString("Emulation is not available."));
-        return;
-    }
-
     this._tabbedPane = new WebInspector.TabbedPane();
     this._tabbedPane.shrinkableTabs = false;
     this._tabbedPane.verticalTabLayout = true;
@@ -69,6 +64,9 @@ WebInspector.OverridesView = function()
     }
 
     this._splashScreenElement = this.element.createChild("div", "overrides-splash-screen");
+    this._unavailableSplashScreenElement = this.element.createChild("div", "overrides-splash-screen");
+    this._unavailableSplashScreenElement.createTextChild(WebInspector.UIString("Emulation is not available."));
+
     if (WebInspector.overridesSupport.responsiveDesignAvailable()) {
         this._splashScreenElement.createTextChild(WebInspector.UIString("Emulation is currently disabled. Toggle "));
         var toggleEmulationButton = new WebInspector.StatusBarButton("", "emulation-status-bar-item");
@@ -85,8 +83,8 @@ WebInspector.OverridesView = function()
     this._overridesWarningUpdated();
 
     WebInspector.overridesSupport.addEventListener(WebInspector.OverridesSupport.Events.OverridesWarningUpdated, this._overridesWarningUpdated, this);
-    WebInspector.overridesSupport.addEventListener(WebInspector.OverridesSupport.Events.EmulationStateChanged, this._emulationEnabledChanged, this);
-    this._emulationEnabledChanged();
+    WebInspector.overridesSupport.addEventListener(WebInspector.OverridesSupport.Events.EmulationStateChanged, this._emulationStateChanged, this);
+    this._emulationStateChanged();
 }
 
 WebInspector.OverridesView.prototype = {
@@ -110,8 +108,9 @@ WebInspector.OverridesView.prototype = {
         WebInspector.overridesSupport.setEmulationEnabled(!WebInspector.overridesSupport.emulationEnabled());
     },
 
-    _emulationEnabledChanged: function()
+    _emulationStateChanged: function()
     {
+        this._unavailableSplashScreenElement.classList.toggle("hidden", WebInspector.overridesSupport.canEmulate());
         this._tabbedPane.element.classList.toggle("hidden", !WebInspector.overridesSupport.emulationEnabled());
         this._splashScreenElement.classList.toggle("hidden", WebInspector.overridesSupport.emulationEnabled());
     },

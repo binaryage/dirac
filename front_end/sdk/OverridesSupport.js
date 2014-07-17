@@ -776,7 +776,6 @@ WebInspector.OverridesSupport.prototype = {
      */
     targetAdded: function(target)
     {
-        // FIXME: adapt this to multiple targets.
         if (this._target)
             return;
         this._target = target;
@@ -786,6 +785,7 @@ WebInspector.OverridesSupport.prototype = {
             delete this._applyInitialOverridesOnTargetAdded;
             this.applyInitialOverrides();
         }
+        this.dispatchEventToListeners(WebInspector.OverridesSupport.Events.EmulationStateChanged);
     },
 
     swapDimensions: function()
@@ -801,9 +801,11 @@ WebInspector.OverridesSupport.prototype = {
      */
     targetRemoved: function(target)
     {
-        // FIXME: adapt this to multiple targets.
-        if (target === this._target)
+        if (target === this._target) {
             target.resourceTreeModel.removeEventListener(WebInspector.ResourceTreeModel.EventTypes.MainFrameNavigated, this._onMainFrameNavigated, this);
+            delete this._target;
+            this.dispatchEventToListeners(WebInspector.OverridesSupport.Events.EmulationStateChanged);
+        }
     },
 
     /**
