@@ -216,17 +216,23 @@ WebInspector.PaintProfilerCommandLogView = function()
     this.setMinimumSize(100, 25);
     this.element.classList.add("outline-disclosure");
     var sidebarTreeElement = this.element.createChild("ol", "sidebar-tree");
+    sidebarTreeElement.addEventListener("mousemove", this._onMouseMove.bind(this), false);
+    sidebarTreeElement.addEventListener("mouseout", this._onMouseMove.bind(this), false);
+    sidebarTreeElement.addEventListener("contextmenu", this._onContextMenu.bind(this), true);
     this.sidebarTree = new TreeOutline(sidebarTreeElement);
     this._popoverHelper = new WebInspector.ObjectPopoverHelper(this.element, this._getHoverAnchor.bind(this), this._resolveObjectForPopover.bind(this), undefined, true);
+
     this._reset();
 }
 
 WebInspector.PaintProfilerCommandLogView.prototype = {
     /**
+     * @param {?WebInspector.Target} target
      * @param {!Array.<!WebInspector.PaintProfilerLogItem>=} log
      */
-    setCommandLog: function(log)
+    setCommandLog: function(target, log)
     {
+        this._target = target;
         this._log = log;
         this.updateWindow();
     },
@@ -237,12 +243,11 @@ WebInspector.PaintProfilerCommandLogView.prototype = {
      */
     updateWindow: function(stepLeft, stepRight)
     {
-        var log = this._log;
         stepLeft = stepLeft || 0;
-        stepRight = stepRight || log.length - 1;
+        stepRight = stepRight || this._log.length - 1;
         this.sidebarTree.removeChildren();
         for (var i = stepLeft; i <= stepRight; ++i) {
-            var node = new WebInspector.LogTreeElement(log[i]);
+            var node = new WebInspector.LogTreeElement(this, this._log[i]);
             this.sidebarTree.appendChild(node);
         }
     },
@@ -275,17 +280,53 @@ WebInspector.PaintProfilerCommandLogView.prototype = {
         showCallback(WebInspector.RemoteObject.fromLocalObject(obj), false);
     },
 
+    /**
+     * @param {?Event} event
+     */
+    _onMouseMove: function(event)
+    {
+        var node = this.sidebarTree.treeElementFromPoint(event.pageX, event.pageY);
+        if (node === this._lastHoveredNode)
+            return;
+        if (this._lastHoveredNode)
+            this._lastHoveredNode.setHovered(false);
+        this._lastHoveredNode = node;
+        if (this._lastHoveredNode)
+            this._lastHoveredNode.setHovered(true);
+    },
+
+    /**
+     * @param {?Event} event
+     */
+    _onContextMenu: function(event)
+    {
+        if (!this._target)
+            return;
+        var node = this.sidebarTree.treeElementFromPoint(event.pageX, event.pageY);
+        if (!node || !node.representedObject)
+            return;
+        var logItem = /** @type {!WebInspector.PaintProfilerLogItem} */ (node.representedObject);
+        if (!logItem.nodeId())
+            return;
+        var contextMenu = new WebInspector.ContextMenu(event);
+        var domNode = new WebInspector.DeferredDOMNode(this._target, logItem.nodeId());
+        contextMenu.appendApplicableItems(domNode);
+        contextMenu.show();
+    },
+
     __proto__: WebInspector.VBox.prototype
 };
 
 /**
   * @constructor
-  * @param {!Object} logItem
+  * @param {!WebInspector.PaintProfilerCommandLogView} ownerView
+  * @param {!WebInspector.PaintProfilerLogItem} logItem
   * @extends {TreeElement}
   */
-WebInspector.LogTreeElement = function(logItem)
+WebInspector.LogTreeElement = function(ownerView, logItem)
 {
     TreeElement.call(this, "", logItem);
+    this._ownerView = ownerView;
     this._update();
 }
 
@@ -345,6 +386,28 @@ WebInspector.LogTreeElement.prototype = {
     setHovered: function(hovered)
     {
         this.listItemElement.classList.toggle("hovered", hovered);
+        var target = this._ownerView._target;
+        if (!target)
+            return;
+        if (!hovered) {
+            target.domModel.hideDOMNodeHighlight();
+            return;
+        }
+        var logItem = /** @type {!WebInspector.PaintProfilerLogItem} */ (this.representedObject);
+        if (!logItem)
+            return;
+        var backendNodeId = logItem.nodeId();
+        if (!backendNodeId)
+            return;
+        new WebInspector.DeferredDOMNode(target, backendNodeId).resolve(highlightNode);
+        /**
+         * @param {?WebInspector.DOMNode} node
+         */
+        function highlightNode(node)
+        {
+            if (node)
+                node.highlight();
+        }
     },
 
     __proto__: TreeElement.prototype

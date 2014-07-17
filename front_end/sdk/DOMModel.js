@@ -860,6 +860,40 @@ WebInspector.DOMNode.prototype = {
 }
 
 /**
+ * @param {!WebInspector.Target} target
+ * @param {number} backendNodeId
+ * @constructor
+ */
+WebInspector.DeferredDOMNode = function(target, backendNodeId)
+{
+    this._target = target;
+    this._backendNodeId = backendNodeId;
+}
+
+WebInspector.DeferredDOMNode.prototype = {
+    /**
+     * @param {function(?WebInspector.DOMNode)} callback
+     */
+    resolve: function(callback)
+    {
+        this._target.domModel.pushNodesByBackendIdsToFrontend([this._backendNodeId], onGotNode.bind(this));
+
+        /**
+         * @param {?Array.<number>} nodeIds
+         * @this {WebInspector.DeferredDOMNode}
+         */
+        function onGotNode(nodeIds)
+        {
+            if (!nodeIds || !nodeIds[0]) {
+                callback(null);
+                return;
+            }
+            callback(this._target.domModel.nodeForId(nodeIds[0]));
+        }
+    }
+}
+
+/**
  * @extends {WebInspector.DOMNode}
  * @constructor
  * @param {!WebInspector.DOMModel} domModel

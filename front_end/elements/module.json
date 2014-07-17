@@ -9,7 +9,7 @@
         },
         {
             "type": "@WebInspector.ContextMenu.Provider",
-            "contextTypes": ["WebInspector.RemoteObject", "WebInspector.DOMNode"],
+            "contextTypes": ["WebInspector.RemoteObject", "WebInspector.DOMNode", "WebInspector.DeferredDOMNode"],
             "className": "WebInspector.ElementsPanel.ContextMenuProvider"
         },
         {
@@ -19,7 +19,7 @@
         },
         {
             "type": "@WebInspector.Revealer",
-            "contextTypes": ["WebInspector.DOMNode"],
+            "contextTypes": ["WebInspector.DOMNode", "WebInspector.DeferredDOMNode" ],
             "className": "WebInspector.ElementsPanel.DOMNodeRevealer"
         },
         {

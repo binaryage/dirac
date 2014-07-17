@@ -1240,7 +1240,8 @@ WebInspector.ElementsPanel.prototype = {
     appendApplicableItems: function(event, contextMenu, object)
     {
         if (!(object instanceof WebInspector.RemoteObject && (/** @type {!WebInspector.RemoteObject} */ (object)).isNode())
-            && !(object instanceof WebInspector.DOMNode)) {
+            && !(object instanceof WebInspector.DOMNode)
+            && !(object instanceof WebInspector.DeferredDOMNode)) {
             return;
         }
         // Skip adding "Reveal..." menu item for our own tree outline.
@@ -1439,7 +1440,21 @@ WebInspector.ElementsPanel.DOMNodeRevealer.prototype = {
             WebInspector.inspectElementModeController.disable();
         }
 
-        /** @type {!WebInspector.ElementsPanel} */ (WebInspector.inspectorView.panel("elements")).revealAndSelectNode(/** @type {!WebInspector.DOMNode} */ (node));
+        var panel = /** @type {!WebInspector.ElementsPanel} */ (WebInspector.inspectorView.panel("elements"));
+        if (node instanceof WebInspector.DOMNode) {
+            panel.revealAndSelectNode(/** @type {!WebInspector.DOMNode} */ (node));
+        } else if (node instanceof WebInspector.DeferredDOMNode) {
+            (/** @type {!WebInspector.DeferredDOMNode} */ (node)).resolve(onNodeResolved);
+        }
+
+        /**
+         * @param {?WebInspector.DOMNode} resolvedNode
+         */
+        function onNodeResolved(resolvedNode)
+        {
+            if (resolvedNode)
+                panel.revealAndSelectNode(resolvedNode);
+        }
     }
 }
 

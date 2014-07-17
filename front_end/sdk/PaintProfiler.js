@@ -106,6 +106,14 @@ WebInspector.PaintProfilerSnapshot.prototype = {
     },
 
     /**
+     * @return {?WebInspector.Target}
+     */
+    target: function()
+    {
+        return this._weakTarget.get();
+    },
+
+    /**
      * @param {?number} firstStep
      * @param {?number} lastStep
      * @param {?number} scale
@@ -181,4 +189,17 @@ WebInspector.PaintProfilerLogItem = function(rawEntry, commandIndex, annotations
     this.params = rawEntry.params;
     this.annotations = annotations;
     this.commandIndex = commandIndex;
+}
+
+WebInspector.PaintProfilerLogItem.prototype = {
+    /**
+     * @return {number}
+     */
+    nodeId: function()
+    {
+        if (!this.annotations)
+            return 0;
+        var inspectorId = this.annotations["INSPECTOR_ID"];
+        return Number(inspectorId);
+    }
 }
