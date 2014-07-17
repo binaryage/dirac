@@ -158,7 +158,7 @@ WebInspector.SourcesSearchScope.prototype = {
         files = files.sort(String.naturalOrderComparator);
         files = files.intersectOrdered(filesMathingFileQuery, String.naturalOrderComparator);
         var dirtyFiles = this._projectFilesMatchingFileQuery(project, this._searchConfig, true);
-        files = files.mergeOrdered(dirtyFiles);
+        files = files.mergeOrdered(dirtyFiles, String.naturalOrderComparator);
 
         if (!files.length) {
             progress.done();
