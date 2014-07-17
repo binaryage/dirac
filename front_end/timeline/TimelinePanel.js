@@ -75,8 +75,7 @@ WebInspector.TimelinePanel = function()
     this._windowEndTime = Infinity;
 
     // Create model.
-    if (WebInspector.experimentsSettings.timelineTracingMode.isEnabled() ||
-        WebInspector.experimentsSettings.timelineOnTraceEvents.isEnabled()) {
+    if (WebInspector.experimentsSettings.timelineOnTraceEvents.isEnabled()) {
         this._tracingModel = new WebInspector.TracingModel(WebInspector.targetManager.activeTarget());
         this._tracingModel.addEventListener(WebInspector.TracingModel.Events.BufferUsage, this._onTracingBufferUsage, this);
 
@@ -365,13 +364,7 @@ WebInspector.TimelinePanel.prototype = {
             this._capturePowerSetting.addChangeListener(this._onModeChanged, this);
         }
 
-        if (WebInspector.experimentsSettings.timelineTracingMode.isEnabled()) {
-            this._captureTracingSetting = WebInspector.settings.createSetting("timelineCaptureTracing", false);
-            topPaneSidebarElement.appendChild(this._createSettingCheckbox(WebInspector.UIString("Capture tracing"),
-                                                                          this._captureTracingSetting,
-                                                                          WebInspector.UIString("Capture tracing information")));
-            this._captureTracingSetting.addChangeListener(this._onModeChanged, this);
-        } else if (WebInspector.experimentsSettings.timelineOnTraceEvents.isEnabled()) {
+        if (WebInspector.experimentsSettings.timelineOnTraceEvents.isEnabled()) {
             this._captureLayersAndPicturesSetting = WebInspector.settings.createSetting("timelineCaptureLayersAndPictures", false);
             topPaneSidebarElement.appendChild(this._createSettingCheckbox(WebInspector.UIString("Capture pictures"),
                                                                           this._captureLayersAndPicturesSetting,
@@ -409,7 +402,7 @@ WebInspector.TimelinePanel.prototype = {
         this._statusBarButtons.push(framesToggleButton);
         panelStatusBarElement.appendChild(framesToggleButton.element);
 
-        if (WebInspector.experimentsSettings.timelineFlameChart.isEnabled()) {
+        if (WebInspector.experimentsSettings.timelineOnTraceEvents.isEnabled()) {
             var flameChartToggleButton = new WebInspector.StatusBarButton(WebInspector.UIString("Tracing mode"), "timeline-flame-chart-status-bar-item");
             flameChartToggleButton.toggled = this._flameChartEnabledSetting.get();
             flameChartToggleButton.addEventListener("click", this._flameChartEnabledChanged.bind(this, flameChartToggleButton));
@@ -651,7 +644,7 @@ WebInspector.TimelinePanel.prototype = {
         else
             this._overviewControls.push(new WebInspector.TimelineEventOverview(this._model, this._uiUtils));
 
-        if (WebInspector.experimentsSettings.timelineFlameChart.isEnabled() && this._flameChartEnabledSetting.get()) {
+        if (WebInspector.experimentsSettings.timelineOnTraceEvents.isEnabled() && this._flameChartEnabledSetting.get()) {
             var tracingTimelineModel = WebInspector.experimentsSettings.timelineOnTraceEvents.isEnabled() ? this._tracingTimelineModel : null;
             this._addModeView(new WebInspector.TimelineFlameChart(this, this._model, tracingTimelineModel, this._frameModel(), this._uiUtils));
         } else {

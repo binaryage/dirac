@@ -96,8 +96,6 @@ WebInspector.TracingTimelineModel.RecordType = {
     PictureSnapshot: "cc::Picture"
 };
 
-WebInspector.TracingTimelineModel.defaultTracingCategoryFilter = "-*,disabled-by-default-cc.debug,disabled-by-default-devtools.timeline,disabled-by-default-devtools.timeline.frame";
-
 WebInspector.TracingTimelineModel.prototype = {
     /**
      * @param {boolean} captureStacks
@@ -110,21 +108,16 @@ WebInspector.TracingTimelineModel.prototype = {
         {
             return "disabled-by-default-" + category;
         }
-        var categories;
-        if (WebInspector.experimentsSettings.timelineTracingMode.isEnabled()) {
-            categories = WebInspector.TracingTimelineModel.defaultTracingCategoryFilter;
-        } else {
-            var categoriesArray = ["-*", disabledByDefault("devtools.timeline"), disabledByDefault("devtools.timeline.frame")];
-            if (captureStacks)
-                categoriesArray.push(disabledByDefault("devtools.timeline.stack"));
-            if (capturePictures) {
-                categoriesArray = categoriesArray.concat([
-                    disabledByDefault("devtools.timeline.layers"),
-                    disabledByDefault("devtools.timeline.picture"),
-                    disabledByDefault("blink.graphics_context_annotations")]);
-            }
-            categories = categoriesArray.join(",");
+        var categoriesArray = ["-*", disabledByDefault("devtools.timeline"), disabledByDefault("devtools.timeline.frame")];
+        if (captureStacks)
+            categoriesArray.push(disabledByDefault("devtools.timeline.stack"));
+        if (capturePictures) {
+            categoriesArray = categoriesArray.concat([
+                disabledByDefault("devtools.timeline.layers"),
+                disabledByDefault("devtools.timeline.picture"),
+                disabledByDefault("blink.graphics_context_annotations")]);
         }
+        var categories = categoriesArray.join(",");
         this._startRecordingWithCategories(categories);
     },
 
