@@ -34,7 +34,6 @@ WebInspector.SourcesSearchScope = function()
 {
     // FIXME: Add title once it is used by search controller.
     this._searchId = 0;
-    this._workspace = WebInspector.workspace;
 }
 
 WebInspector.SourcesSearchScope.prototype = {
@@ -86,7 +85,7 @@ WebInspector.SourcesSearchScope.prototype = {
             return WebInspector.settings.searchInContentScripts.get() || project.type() !== WebInspector.projectTypes.ContentScripts;
         }
 
-        return this._workspace.projects().filter(filterOutServiceProjects).filter(filterOutContentScriptsIfNeeded);
+        return WebInspector.workspace.projects().filter(filterOutServiceProjects).filter(filterOutContentScriptsIfNeeded);
     },
 
     /**
