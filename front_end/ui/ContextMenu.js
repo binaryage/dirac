@@ -233,7 +233,7 @@ WebInspector.ContextMenu.prototype = {
 
         if (menuObject.length) {
             WebInspector._contextMenu = this;
-            if (WebInspector.ContextMenu._useSoftMenu || InspectorFrontendHost.isStub()) {
+            if (WebInspector.ContextMenu._useSoftMenu || InspectorFrontendHost.isHostedMode()) {
                 var softMenu = new WebInspector.SoftContextMenu(menuObject, this._itemSelected.bind(this));
                 softMenu.show(this._event.x, this._event.y);
             } else {

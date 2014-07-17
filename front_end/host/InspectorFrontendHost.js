@@ -281,7 +281,7 @@ InspectorFrontendHostAPI.prototype = {
     /**
      * @return {boolean}
      */
-    isStub: function() { }
+    isHostedMode: function() { }
 }
 
 /**
@@ -589,7 +589,7 @@ WebInspector.InspectorFrontendHostStub.prototype = {
     /**
      * @return {boolean}
      */
-    isStub: function()
+    isHostedMode: function()
     {
         return true;
     }

@@ -254,7 +254,7 @@ WebInspector.Main.prototype = {
             return;
         }
 
-        if (!InspectorFrontendHost.isStub()) {
+        if (!InspectorFrontendHost.isHostedMode()) {
             this._connectionEstablished(new InspectorBackendClass.MainConnection());
             return;
         }
@@ -724,7 +724,7 @@ WebInspector.Main.ZoomInActionDelegate.prototype = {
      */
     handleAction: function()
     {
-        if (InspectorFrontendHost.isStub())
+        if (InspectorFrontendHost.isHostedMode())
             return false;
 
         InspectorFrontendHost.zoomIn();
@@ -746,7 +746,7 @@ WebInspector.Main.ZoomOutActionDelegate.prototype = {
      */
     handleAction: function()
     {
-        if (InspectorFrontendHost.isStub())
+        if (InspectorFrontendHost.isHostedMode())
             return false;
 
         InspectorFrontendHost.zoomOut();
@@ -768,7 +768,7 @@ WebInspector.Main.ZoomResetActionDelegate.prototype = {
      */
     handleAction: function()
     {
-        if (InspectorFrontendHost.isStub())
+        if (InspectorFrontendHost.isHostedMode())
             return false;
 
         InspectorFrontendHost.resetZoom();
