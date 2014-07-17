@@ -145,7 +145,7 @@ WebInspector.LiveEditSupport.logDetailedError = function(error, errorData, conte
     if (compileError) {
         var location = contextScript ? WebInspector.UIString(" at %s:%d:%d", contextScript.sourceURL, compileError.lineNumber, compileError.columnNumber) : "";
         var message = WebInspector.UIString("LiveEdit compile failed: %s%s", compileError.message, location);
-        WebInspector.console.addErrorMessage(message);
+        WebInspector.console.error(message);
     } else {
         WebInspector.console.addMessage(WebInspector.UIString("Unknown LiveEdit error: %s; %s", JSON.stringify(errorData), error), warningLevel);
     }
@@ -153,5 +153,5 @@ WebInspector.LiveEditSupport.logDetailedError = function(error, errorData, conte
 
 WebInspector.LiveEditSupport.logSuccess = function()
 {
-    WebInspector.console.addMessage(WebInspector.UIString("Recompilation and update succeeded."), WebInspector.Console.MessageLevel.Log);
+    WebInspector.console.log(WebInspector.UIString("Recompilation and update succeeded."));
 }

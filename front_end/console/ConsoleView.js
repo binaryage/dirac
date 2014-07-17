@@ -141,6 +141,21 @@ WebInspector.ConsoleView = function(hideContextSelector)
 
     this._registerWithMessageSink();
     WebInspector.targetManager.observeTargets(this);
+    WebInspector.multitargetConsoleModel.addEventListener(WebInspector.ConsoleModel.Events.ConsoleCleared, this._consoleCleared, this);
+    WebInspector.multitargetConsoleModel.addEventListener(WebInspector.ConsoleModel.Events.MessageAdded, this._onConsoleMessageAdded, this);
+    WebInspector.multitargetConsoleModel.addEventListener(WebInspector.ConsoleModel.Events.CommandEvaluated, this._commandEvaluated, this);
+    /**
+     * @param {!WebInspector.ConsoleMessage} message
+     * @this {WebInspector.ConsoleView}
+     */
+    function appendMessage(message)
+    {
+         var viewMessage = this._createViewMessage(message);
+         this._consoleMessageAdded(viewMessage);
+    }
+
+    WebInspector.multitargetConsoleModel.messages().forEach(appendMessage, this);
+
     WebInspector.context.addFlavorChangeListener(WebInspector.ExecutionContext, this._executionContextChangedExternally, this);
 }
 
@@ -184,22 +199,7 @@ WebInspector.ConsoleView.prototype = {
      */
     targetAdded: function(target)
     {
-        /**
-         * @param {!WebInspector.ConsoleMessage} message
-         * @this {WebInspector.ConsoleView}
-         */
-        function appendMessage(message)
-        {
-             var viewMessage = this._createViewMessage(message);
-             this._consoleMessageAdded(viewMessage);
-        }
-
-        target.consoleModel.addEventListener(WebInspector.ConsoleModel.Events.MessageAdded, this._onConsoleMessageAdded, this);
-        target.consoleModel.addEventListener(WebInspector.ConsoleModel.Events.ConsoleCleared, this._consoleCleared, this);
-        target.consoleModel.addEventListener(WebInspector.ConsoleModel.Events.CommandEvaluated, this._commandEvaluated, this);
-        target.consoleModel.messages.forEach(appendMessage, this);
         this._viewport.invalidate();
-
         target.runtimeModel.executionContexts().forEach(this._executionContextCreated, this);
         target.runtimeModel.addEventListener(WebInspector.RuntimeModel.Events.ExecutionContextCreated, this._onExecutionContextCreated, this);
         target.runtimeModel.addEventListener(WebInspector.RuntimeModel.Events.ExecutionContextDestroyed, this._onExecutionContextDestroyed, this);
@@ -211,9 +211,6 @@ WebInspector.ConsoleView.prototype = {
     targetRemoved: function(target)
     {
         this._clearExecutionContextsForTarget(target);
-        target.consoleModel.removeEventListener(WebInspector.ConsoleModel.Events.MessageAdded, this._onConsoleMessageAdded, this);
-        target.consoleModel.removeEventListener(WebInspector.ConsoleModel.Events.ConsoleCleared, this._consoleCleared, this);
-        target.consoleModel.removeEventListener(WebInspector.ConsoleModel.Events.CommandEvaluated, this._commandEvaluated, this);
         target.runtimeModel.removeEventListener(WebInspector.RuntimeModel.Events.ExecutionContextCreated, this._onExecutionContextCreated, this);
         target.runtimeModel.removeEventListener(WebInspector.RuntimeModel.Events.ExecutionContextDestroyed, this._onExecutionContextDestroyed, this);
     },
@@ -740,7 +737,9 @@ WebInspector.ConsoleView.prototype = {
 
     _requestClearMessages: function()
     {
-        WebInspector.consoleModel.requestClearMessages();
+        var targets = WebInspector.targetManager.targets();
+        for (var i = 0; i < targets.length; ++i)
+            targets[i].consoleModel.requestClearMessages();
     },
 
     _promptKeyDown: function(event)
@@ -1220,7 +1219,7 @@ WebInspector.ConsoleView.ShowConsoleActionDelegate.prototype = {
      */
     handleAction: function()
     {
-        WebInspector.consoleModel.show();
+        WebInspector.console.show();
         return true;
     }
 }

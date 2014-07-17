@@ -141,7 +141,7 @@ WebInspector.SASSSourceMapping.prototype = {
 
         var etagMessage = this._headerValue("etag", headers) ? ", \"ETag\" response header found instead" : "";
         var message = String.sprintf("The \"Last-Modified\" response header is missing or invalid for %s%s. The CSS auto-reload functionality will not work correctly.", url, etagMessage);
-        this._cssModel.target().consoleModel.log(message);
+        WebInspector.console.log(message);
         return null;
     },
 
@@ -242,7 +242,7 @@ WebInspector.SASSSourceMapping.prototype = {
     {
         var cssUISourceCode = this._workspace.uiSourceCodeForURL(cssURL);
         if (!cssUISourceCode) {
-            WebInspector.console.addMessage(WebInspector.UIString("%s resource missing. Please reload the page.", cssURL), WebInspector.Console.MessageLevel.Warning);
+            WebInspector.console.warn(WebInspector.UIString("%s resource missing. Please reload the page.", cssURL));
             callback(cssURL, sassURL, true);
             return;
         }

@@ -44,7 +44,7 @@ WebInspector.LayersPanel = function()
     this.sidebarElement().classList.add("outline-disclosure");
     this.sidebarTree.element.classList.remove("sidebar-tree");
 
-    this._target = /** @type {!WebInspector.Target} */ (WebInspector.targetManager.activeTarget());
+    this._target = /** @type {!WebInspector.Target} */ (WebInspector.targetManager.mainTarget());
     this._model = new WebInspector.LayerTreeModel(this._target);
     this._model.addEventListener(WebInspector.LayerTreeModel.Events.LayerTreeChanged, this._onLayerTreeUpdated, this);
     this._model.addEventListener(WebInspector.LayerTreeModel.Events.LayerPainted, this._onLayerPainted, this);

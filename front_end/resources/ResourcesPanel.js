@@ -144,7 +144,7 @@ WebInspector.ResourcesPanel.prototype = {
     _initialize: function()
     {
         if (!this._initialized && this.isShowing() && this._cachedResourcesWereLoaded) {
-            var target = /** @type {!WebInspector.Target} */ (WebInspector.targetManager.activeTarget());
+            var target = /** @type {!WebInspector.Target} */ (WebInspector.targetManager.mainTarget());
             this._populateResourceTree();
             this._populateDOMStorageTree();
             this._populateApplicationCacheTree(target);
@@ -939,7 +939,7 @@ WebInspector.StorageCategoryTreeElement = function(storagePanel, categoryName, s
     this._expandedSettingKey = "resources" + settingsKey + "Expanded";
     WebInspector.settings[this._expandedSettingKey] = WebInspector.settings.createSetting(this._expandedSettingKey, settingsKey === "Frames");
     this._categoryName = categoryName;
-    this._target = /** @type {!WebInspector.Target} */ (WebInspector.targetManager.activeTarget());
+    this._target = /** @type {!WebInspector.Target} */ (WebInspector.targetManager.mainTarget());
 }
 
 WebInspector.StorageCategoryTreeElement.prototype = {

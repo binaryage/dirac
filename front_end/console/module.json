@@ -16,7 +16,7 @@
         },
         {
             "type": "@WebInspector.Revealer",
-            "contextTypes": ["WebInspector.ConsoleModel"],
+            "contextTypes": ["WebInspector.Console"],
             "className": "WebInspector.ConsolePanel.ConsoleRevealer"
         },
         {

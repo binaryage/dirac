@@ -400,7 +400,7 @@ WebInspector.InspectorFrontendHostStub.prototype = {
      */
     copyText: function(text)
     {
-        WebInspector.console.addErrorMessage("Clipboard is not enabled in hosted mode. Please inspect using chrome://inspect", true);
+        WebInspector.console.error("Clipboard is not enabled in hosted mode. Please inspect using chrome://inspect");
     },
 
     /**
@@ -418,7 +418,7 @@ WebInspector.InspectorFrontendHostStub.prototype = {
      */
     save: function(url, content, forceSaveAs)
     {
-        WebInspector.console.addErrorMessage("Saving files is not enabled in hosted mode. Please inspect using chrome://inspect", true);
+        WebInspector.console.error("Saving files is not enabled in hosted mode. Please inspect using chrome://inspect");
         this.events.dispatchEventToListeners(InspectorFrontendHostAPI.Events.CanceledSaveURL, url);
     },
 
@@ -428,7 +428,7 @@ WebInspector.InspectorFrontendHostStub.prototype = {
      */
     append: function(url, content)
     {
-        WebInspector.console.addErrorMessage("Saving files is not enabled in hosted mode. Please inspect using chrome://inspect", true);
+        WebInspector.console.error("Saving files is not enabled in hosted mode. Please inspect using chrome://inspect");
     },
 
     /**

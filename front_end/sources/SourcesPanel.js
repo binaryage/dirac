@@ -1066,7 +1066,7 @@ WebInspector.SourcesPanel.prototype = {
                 message += " " + result.description;
                 result.release();
             }
-            target.consoleModel.showErrorMessage(message);
+            WebInspector.console.error(message);
         }
     },
 

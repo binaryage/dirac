@@ -101,9 +101,6 @@ WebInspector.Target.prototype = {
     {
         /** @type {!WebInspector.ConsoleModel} */
         this.consoleModel = new WebInspector.ConsoleModel(this);
-        // This and similar lines are needed for compatibility.
-        if (!WebInspector.consoleModel)
-            WebInspector.consoleModel = this.consoleModel;
 
         /** @type {!WebInspector.NetworkManager} */
         this.networkManager = new WebInspector.NetworkManager(this);
@@ -324,7 +321,7 @@ WebInspector.TargetManager.prototype = {
     /**
      * @return {?WebInspector.Target}
      */
-    activeTarget: function()
+    mainTarget: function()
     {
         return this._targets[0];
     }

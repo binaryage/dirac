@@ -612,12 +612,12 @@ WebInspector.ProfilesPanel.prototype = {
                     continue;
                 extensions.push(extension);
             }
-            WebInspector.console.addErrorMessage(WebInspector.UIString("Can't load file. Only files with extensions '%s' can be loaded.", extensions.join("', '")));
+            WebInspector.console.error(WebInspector.UIString("Can't load file. Only files with extensions '%s' can be loaded.", extensions.join("', '")));
             return;
         }
 
         if (!!profileType.profileBeingRecorded()) {
-            WebInspector.console.addErrorMessage(WebInspector.UIString("Can't load profile while another profile is recording."));
+            WebInspector.console.error(WebInspector.UIString("Can't load profile while another profile is recording."));
             return;
         }
 

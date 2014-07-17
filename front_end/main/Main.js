@@ -216,6 +216,7 @@ WebInspector.Main.prototype = {
         WebInspector.ContextMenu.initialize();
         WebInspector.dockController = new WebInspector.DockController(canDock);
         WebInspector.overridesSupport = new WebInspector.OverridesSupport(canDock);
+        WebInspector.multitargetConsoleModel = new WebInspector.MultitargetConsoleModel();
 
         WebInspector.shortcutsScreen = new WebInspector.ShortcutsScreen();
         // set order of some sections explicitly
@@ -296,7 +297,6 @@ WebInspector.Main.prototype = {
             WebInspector.setToolbarColors(/** @type {string} */ (event.data["backgroundColor"]), /** @type {string} */ (event.data["color"]));
         }
         WebInspector.ContextMenu.initialize();
-
         WebInspector.targetManager.createTarget(WebInspector.UIString("Main"), connection, this._mainTargetCreated.bind(this));
         WebInspector.isolatedFileSystemManager = new WebInspector.IsolatedFileSystemManager();
         WebInspector.workspace = new WebInspector.Workspace(WebInspector.isolatedFileSystemManager.mapping());
@@ -368,7 +368,7 @@ WebInspector.Main.prototype = {
         var errorWarningCount = document.getElementById("error-warning-count");
         function showConsole()
         {
-            WebInspector.consoleModel.show();
+            WebInspector.console.show();
         }
         errorWarningCount.addEventListener("click", showConsole, false);
 
@@ -414,7 +414,7 @@ WebInspector.Main.prototype = {
         {
             var message = /** @type {!WebInspector.Console.Message} */ (event.data);
             if (message.show)
-                WebInspector.consoleModel.show();
+                WebInspector.console.show();
         }
     },
 
@@ -835,33 +835,14 @@ WebInspector.panel = function(name)
 
 /**
  * @constructor
- * @implements {WebInspector.TargetManager.Observer}
  */
 WebInspector.Main.WarningErrorCounter = function()
 {
-    WebInspector.targetManager.observeTargets(this);
+    WebInspector.multitargetConsoleModel.addEventListener(WebInspector.ConsoleModel.Events.ConsoleCleared, this._updateErrorAndWarningCounts, this);
+    WebInspector.multitargetConsoleModel.addEventListener(WebInspector.ConsoleModel.Events.MessageAdded, this._updateErrorAndWarningCounts, this);
 }
 
 WebInspector.Main.WarningErrorCounter.prototype = {
-    /**
-     * @param {!WebInspector.Target} target
-     */
-    targetAdded: function(target)
-    {
-        target.consoleModel.addEventListener(WebInspector.ConsoleModel.Events.ConsoleCleared, this._updateErrorAndWarningCounts, this);
-        target.consoleModel.addEventListener(WebInspector.ConsoleModel.Events.MessageAdded, this._updateErrorAndWarningCounts, this);
-        this._updateErrorAndWarningCounts();
-    },
-
-    /**
-     * @param {!WebInspector.Target} target
-     */
-    targetRemoved: function(target)
-    {
-        target.consoleModel.removeEventListener(WebInspector.ConsoleModel.Events.ConsoleCleared, this._updateErrorAndWarningCounts, this);
-        target.consoleModel.removeEventListener(WebInspector.ConsoleModel.Events.MessageAdded, this._updateErrorAndWarningCounts, this);
-    },
-
     _updateErrorAndWarningCounts: function()
     {
         var errors = 0;

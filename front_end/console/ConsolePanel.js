@@ -133,9 +133,6 @@ WebInspector.ConsolePanel.ConsoleRevealer.prototype = {
      */
     reveal: function(object)
     {
-        if (!(object instanceof WebInspector.ConsoleModel))
-            return;
-
         var consoleView = WebInspector.ConsolePanel._view();
         if (consoleView.isShowing()) {
             consoleView.focus();

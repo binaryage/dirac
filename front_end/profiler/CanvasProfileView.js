@@ -639,7 +639,7 @@ WebInspector.CanvasProfileType = function()
     this._frameSelector.element.title = WebInspector.UIString("Frame containing the canvases to capture.");
     this._frameSelector.element.classList.add("hidden");
 
-    this._target = /** @type {!WebInspector.Target} */ (WebInspector.targetManager.activeTarget());
+    this._target = /** @type {!WebInspector.Target} */ (WebInspector.targetManager.mainTarget());
     this._target.resourceTreeModel.frames().forEach(this._addFrame, this);
     this._target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.FrameAdded, this._frameAdded, this);
     this._target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.FrameDetached, this._frameRemoved, this);

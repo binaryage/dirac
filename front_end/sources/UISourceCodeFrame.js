@@ -124,7 +124,7 @@ WebInspector.UISourceCodeFrame.prototype = {
     _didEditContent: function(error)
     {
         if (error) {
-            WebInspector.console.addErrorMessage(error, true);
+            WebInspector.console.error(error);
             return;
         }
     },

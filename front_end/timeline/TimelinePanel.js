@@ -76,7 +76,7 @@ WebInspector.TimelinePanel = function()
 
     // Create model.
     if (WebInspector.experimentsSettings.timelineOnTraceEvents.isEnabled()) {
-        this._tracingModel = new WebInspector.TracingModel(WebInspector.targetManager.activeTarget());
+        this._tracingModel = new WebInspector.TracingModel(WebInspector.targetManager.mainTarget());
         this._tracingModel.addEventListener(WebInspector.TracingModel.Events.BufferUsage, this._onTracingBufferUsage, this);
 
         this._uiUtils = new WebInspector.TracingTimelineUIUtils();

@@ -38,7 +38,7 @@ WebInspector.ConsoleModel = function(target)
     WebInspector.SDKObject.call(this, target);
 
     /** @type {!Array.<!WebInspector.ConsoleMessage>} */
-    this.messages = [];
+    this._messages = [];
     this.warnings = 0;
     this.errors = 0;
     this._consoleAgent = target.consoleAgent();
@@ -80,49 +80,17 @@ WebInspector.ConsoleModel.prototype = {
 
     /**
      * @param {!WebInspector.ConsoleMessage} msg
-     * @param {boolean=} isFromBackend
      */
-    addMessage: function(msg, isFromBackend)
+    addMessage: function(msg)
     {
-        if (isFromBackend && WebInspector.NetworkManager.hasDevToolsRequestHeader(msg.request))
+        if (WebInspector.NetworkManager.hasDevToolsRequestHeader(msg.request))
             return;
 
-        msg.index = this.messages.length;
-        this.messages.push(msg);
+        msg.index = this._messages.length;
+        this._messages.push(msg);
         this._incrementErrorWarningCount(msg);
 
         this.dispatchEventToListeners(WebInspector.ConsoleModel.Events.MessageAdded, msg);
-    },
-
-    show: function()
-    {
-        WebInspector.Revealer.reveal(this);
-    },
-
-    /**
-     * @param {string} messageText
-     * @param {!WebInspector.ConsoleMessage.MessageLevel=} messageLevel
-     * @param {boolean=} showConsole
-     */
-    log: function(messageText, messageLevel, showConsole)
-    {
-        var message = new WebInspector.ConsoleMessage(
-            this.target(),
-            WebInspector.ConsoleMessage.MessageSource.Other,
-            messageLevel || WebInspector.ConsoleMessage.MessageLevel.Debug,
-            messageText);
-
-        this.addMessage(message);
-        if (showConsole)
-            this.show();
-    },
-
-    /**
-     * @param {string} error
-     */
-    showErrorMessage: function(error)
-    {
-        this.log(error, WebInspector.ConsoleMessage.MessageLevel.Error, true);
     },
 
     /**
@@ -140,15 +108,23 @@ WebInspector.ConsoleModel.prototype = {
         }
     },
 
+    /**
+     * @return {!Array.<!WebInspector.ConsoleMessage>}
+     */
+    messages: function()
+    {
+        return this._messages;
+    },
+
     requestClearMessages: function()
     {
         this._consoleAgent.clearMessages();
-        this.clearMessages();
+        this._messagesCleared();
     },
 
-    clearMessages: function()
+    _messagesCleared: function()
     {
-        this.messages = [];
+        this._messages = [];
         this.errors = 0;
         this.warnings = 0;
         this.dispatchEventToListeners(WebInspector.ConsoleModel.Events.ConsoleCleared);
@@ -181,7 +157,7 @@ WebInspector.ConsoleModel.evaluateCommandInConsole = function(executionContext, 
         if (!result)
             return;
 
-        this.show();
+        WebInspector.console.show();
         this.dispatchEventToListeners(WebInspector.ConsoleModel.Events.CommandEvaluated, {result: result, wasThrown: wasThrown, text: text, commandMessage: commandMessage});
     }
 
@@ -473,7 +449,7 @@ WebInspector.ConsoleDispatcher.prototype = {
             this._console._enablingConsole,
             payload.executionContextId,
             payload.asyncStackTrace);
-        this._console.addMessage(consoleMessage, true);
+        this._console.addMessage(consoleMessage);
     },
 
     /**
@@ -486,11 +462,84 @@ WebInspector.ConsoleDispatcher.prototype = {
     messagesCleared: function()
     {
         if (!WebInspector.settings.preserveConsoleLog.get())
-            this._console.clearMessages();
+            this._console._messagesCleared();
     }
 }
 
 /**
- * @type {!WebInspector.ConsoleModel}
+ * @constructor
+ * @extends {WebInspector.Object}
+ * @implements {WebInspector.TargetManager.Observer}
  */
-WebInspector.consoleModel;
+WebInspector.MultitargetConsoleModel = function()
+{
+    WebInspector.targetManager.observeTargets(this);
+}
+
+WebInspector.MultitargetConsoleModel.prototype = {
+    /**
+     * @param {!WebInspector.Target} target
+     */
+    targetAdded: function(target)
+    {
+        if (!this._mainTarget) {
+            this._mainTarget = target;
+            target.consoleModel.addEventListener(WebInspector.ConsoleModel.Events.ConsoleCleared, this._consoleCleared, this);
+        }
+        target.consoleModel.addEventListener(WebInspector.ConsoleModel.Events.MessageAdded, this._consoleMessageAdded, this);
+        target.consoleModel.addEventListener(WebInspector.ConsoleModel.Events.CommandEvaluated, this._commandEvaluated, this);
+    },
+
+    /**
+     * @param {!WebInspector.Target} target
+     */
+    targetRemoved: function(target)
+    {
+        if (this._mainTarget === target) {
+            delete this._mainTarget;
+            target.consoleModel.removeEventListener(WebInspector.ConsoleModel.Events.ConsoleCleared, this._consoleCleared, this);
+        }
+        target.consoleModel.removeEventListener(WebInspector.ConsoleModel.Events.MessageAdded, this._consoleMessageAdded, this);
+        target.consoleModel.removeEventListener(WebInspector.ConsoleModel.Events.CommandEvaluated, this._commandEvaluated, this);
+    },
+
+    /**
+     * @return {!Array.<!WebInspector.ConsoleMessage>}
+     */
+    messages: function()
+    {
+        var targets = WebInspector.targetManager.targets();
+        var result = [];
+        for (var i = 0; i < targets.length; ++i)
+            result = result.concat(targets[i].consoleModel.messages());
+        return result;
+    },
+
+    _consoleCleared: function()
+    {
+        this.dispatchEventToListeners(WebInspector.ConsoleModel.Events.ConsoleCleared);
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _consoleMessageAdded: function(event)
+    {
+        this.dispatchEventToListeners(WebInspector.ConsoleModel.Events.MessageAdded, event.data);
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _commandEvaluated: function(event)
+    {
+        this.dispatchEventToListeners(WebInspector.ConsoleModel.Events.CommandEvaluated, event.data);
+    },
+
+    __proto__: WebInspector.Object.prototype
+}
+
+/**
+ * @type {!WebInspector.MultitargetConsoleModel}
+ */
+WebInspector.multitargetConsoleModel;

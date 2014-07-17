@@ -43,7 +43,26 @@ WebInspector.Console.Message = function(text, level, timestamp, show)
     this.show = show;
 }
 
+/**
+ * @interface
+ */
+WebInspector.Console.UIDelegate = function()
+{
+}
+
+WebInspector.Console.UIDelegate.prototype = {
+    showConsole: function() { }
+}
+
 WebInspector.Console.prototype = {
+    /**
+     * @param {!WebInspector.Console.UIDelegate} uiDelegate
+     */
+    setUIDelegate: function(uiDelegate)
+    {
+        this._uiDelegate = uiDelegate;
+    },
+
     /**
      * @param {string} text
      * @param {!WebInspector.Console.MessageLevel} level
@@ -58,11 +77,26 @@ WebInspector.Console.prototype = {
 
     /**
      * @param {string} text
-     * @param {boolean=} show
      */
-    addErrorMessage: function(text, show)
+    log: function(text)
     {
-        this.addMessage(text, WebInspector.Console.MessageLevel.Error, show);
+        this.addMessage(text, WebInspector.Console.MessageLevel.Log);
+    },
+
+    /**
+     * @param {string} text
+     */
+    warn: function(text)
+    {
+        this.addMessage(text, WebInspector.Console.MessageLevel.Warning);
+    },
+
+    /**
+     * @param {string} text
+     */
+    error: function(text)
+    {
+        this.addMessage(text, WebInspector.Console.MessageLevel.Error, true);
     },
 
     /**
@@ -71,6 +105,12 @@ WebInspector.Console.prototype = {
     messages: function()
     {
         return this._messages;
+    },
+
+    show: function()
+    {
+        if (this._uiDelegate)
+            this._uiDelegate.showConsole();
     },
 
     __proto__: WebInspector.Object.prototype

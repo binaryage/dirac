@@ -159,7 +159,7 @@ WebInspector.CompilerScriptMapping.prototype = {
                 if (uiSourceCode)
                     this._bindUISourceCode(uiSourceCode);
                 else
-                    this._target.consoleModel.showErrorMessage(WebInspector.UIString("Failed to locate workspace file mapped to URL %s from source map %s", sourceURL, sourceMap.url()));
+                    WebInspector.console.error(WebInspector.UIString("Failed to locate workspace file mapped to URL %s from source map %s", sourceURL, sourceMap.url()));
             }
             script.updateLocations();
         }

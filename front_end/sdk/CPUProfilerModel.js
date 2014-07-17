@@ -59,7 +59,7 @@ WebInspector.CPUProfilerModel.prototype = {
         function didChangeInterval(error)
         {
             if (error)
-                WebInspector.console.addErrorMessage(error, true);
+                WebInspector.console.error(error);
         }
     },
 

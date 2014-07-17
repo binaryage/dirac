@@ -4,6 +4,7 @@
 
 /**
  * @constructor
+ * @implements {WebInspector.Console.UIDelegate}
  */
 WebInspector.App = function()
 {
@@ -14,6 +15,7 @@ WebInspector.App = function()
         WebInspector.overridesSupport.addEventListener(WebInspector.OverridesSupport.Events.EmulationStateChanged, this._emulationEnabledChanged, this);
         WebInspector.overridesSupport.addEventListener(WebInspector.OverridesSupport.Events.OverridesWarningUpdated, this._overridesWarningUpdated, this);
     }
+    WebInspector.console.setUIDelegate(this);
 };
 
 WebInspector.App.prototype = {
@@ -53,6 +55,11 @@ WebInspector.App.prototype = {
         if (!WebInspector.overridesSupport.responsiveDesignAvailable() && WebInspector.overridesSupport.emulationEnabled())
             WebInspector.inspectorView.showViewInDrawer("emulation", true);
         this._overridesWarningUpdated();
+    },
+
+    showConsole: function()
+    {
+        WebInspector.Revealer.reveal(WebInspector.console);
     }
 };
 

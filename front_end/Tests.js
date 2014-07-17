@@ -497,19 +497,19 @@ TestSuite.prototype.testNetworkTiming = function()
 
 TestSuite.prototype.testConsoleOnNavigateBack = function()
 {
-    if (WebInspector.consoleModel.messages.length === 1)
+    if (WebInspector.multitargetConsoleModel.messages().length === 1)
         firstConsoleMessageReceived.call(this);
     else
-        WebInspector.consoleModel.addEventListener(WebInspector.ConsoleModel.Events.MessageAdded, firstConsoleMessageReceived, this);
+        WebInspector.multitargetConsoleModel.addEventListener(WebInspector.ConsoleModel.Events.MessageAdded, firstConsoleMessageReceived, this);
 
     function firstConsoleMessageReceived() {
-        WebInspector.consoleModel.removeEventListener(WebInspector.ConsoleModel.Events.MessageAdded, firstConsoleMessageReceived, this);
+        WebInspector.multitargetConsoleModel.removeEventListener(WebInspector.ConsoleModel.Events.MessageAdded, firstConsoleMessageReceived, this);
         this.evaluateInConsole_("clickLink();", didClickLink.bind(this));
     }
 
     function didClickLink() {
         // Check that there are no new messages(command is not a message).
-        this.assertEquals(3, WebInspector.consoleModel.messages.length);
+        this.assertEquals(3, WebInspector.multitargetConsoleModel.messages().length);
         this.evaluateInConsole_("history.back();", didNavigateBack.bind(this));
     }
 
@@ -520,7 +520,7 @@ TestSuite.prototype.testConsoleOnNavigateBack = function()
     }
 
     function didCompleteNavigation() {
-        this.assertEquals(7, WebInspector.consoleModel.messages.length);
+        this.assertEquals(7, WebInspector.multitargetConsoleModel.messages().length);
         this.releaseControl();
     }
 
@@ -597,7 +597,7 @@ TestSuite.prototype.testTimelineFrames = function()
 
 TestSuite.prototype.enableTouchEmulation = function()
 {
-    WebInspector.targetManager.activeTarget().domModel.emulateTouchEventObjects(true);
+    WebInspector.targetManager.mainTarget().domModel.emulateTouchEventObjects(true);
 };
 
 // Regression test for http://webk.it/97466
@@ -765,7 +765,7 @@ TestSuite.prototype.stopTimeline = function()
 
 TestSuite.prototype.waitForTestResultsInConsole = function()
 {
-    var messages = WebInspector.consoleModel.messages;
+    var messages = WebInspector.multitargetConsoleModel.messages();
     for (var i = 0; i < messages.length; ++i) {
         var text = messages[i].messageText;
         if (text === "PASS")
@@ -783,13 +783,13 @@ TestSuite.prototype.waitForTestResultsInConsole = function()
             this.fail(text);
     }
 
-    WebInspector.consoleModel.addEventListener(WebInspector.ConsoleModel.Events.MessageAdded, onConsoleMessage, this);
+    WebInspector.multitargetConsoleModel.addEventListener(WebInspector.ConsoleModel.Events.MessageAdded, onConsoleMessage, this);
     this.takeControl();
 };
 
 TestSuite.prototype.checkLogAndErrorMessages = function()
 {
-    var messages = WebInspector.consoleModel.messages;
+    var messages = WebInspector.multitargetConsoleModel.messages();
 
     var matchesCount = 0;
     function validMessage(message)
@@ -828,7 +828,7 @@ TestSuite.prototype.checkLogAndErrorMessages = function()
             this.fail(message.text + ":" + messages[i].level);
     }
 
-    WebInspector.consoleModel.addEventListener(WebInspector.ConsoleModel.Events.MessageAdded, onConsoleMessage, this);
+    WebInspector.multitargetConsoleModel.addEventListener(WebInspector.ConsoleModel.Events.MessageAdded, onConsoleMessage, this);
     this.takeControl();
 };
 
@@ -878,7 +878,7 @@ TestSuite.prototype.evaluateInConsole_ = function(code, callback)
 {
     function innerEvaluate()
     {
-        WebInspector.consoleModel.show();
+        WebInspector.console.show();
         var consoleView = WebInspector.ConsolePanel._view();
         consoleView._prompt.text = code;
         consoleView._promptElement.dispatchEvent(TestSuite.createKeyEvent("Enter"));

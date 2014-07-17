@@ -378,7 +378,7 @@ WebInspector.StyleFile.prototype = {
     _styleContentSet: function(finishCallback, error)
     {
         if (error)
-            this._mapping._cssModel.target().consoleModel.showErrorMessage(error);
+            WebInspector.console.error(error);
         finishCallback();
     },
 
