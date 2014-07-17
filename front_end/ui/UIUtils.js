@@ -163,7 +163,7 @@ WebInspector.GlassPane.prototype = {
 }
 
 /**
- * @type {!Array.<!WebInspector.View>}
+ * @type {!Array.<!WebInspector.View|!WebInspector.Dialog>}
  */
 WebInspector.GlassPane.DefaultFocusedViewStack = [];
 

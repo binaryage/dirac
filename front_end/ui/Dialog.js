@@ -87,6 +87,11 @@ WebInspector.Dialog.hide = function()
 }
 
 WebInspector.Dialog.prototype = {
+    focus: function()
+    {
+        this._element.focus();
+    },
+
     _hide: function()
     {
         if (this._isHiding)
