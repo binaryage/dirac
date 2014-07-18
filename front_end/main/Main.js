@@ -588,25 +588,21 @@ WebInspector.Main.prototype = {
         }
 
         if (object.type === "function") {
-            /**
-             * @param {?Protocol.Error} error
-             * @param {!DebuggerAgent.FunctionDetails} response
-             */
             object.functionDetails(didGetDetails);
             return;
         }
 
         /**
-         * @param {?DebuggerAgent.FunctionDetails} response
+         * @param {?WebInspector.DebuggerModel.FunctionDetails} response
          */
         function didGetDetails(response)
         {
             object.release();
 
-            if (!response)
+            if (!response || !response.location)
                 return;
 
-            WebInspector.Revealer.reveal(WebInspector.DebuggerModel.Location.fromPayload(object.target(), response.location).toUILocation());
+            WebInspector.Revealer.reveal(response.location.toUILocation());
         }
 
         if (hints.copyToClipboard)

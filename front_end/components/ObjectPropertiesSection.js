@@ -622,7 +622,7 @@ WebInspector.FunctionScopeMainTreeElement.prototype = {
             return;
 
         /**
-         * @param {?DebuggerAgent.FunctionDetails} response
+         * @param {?WebInspector.DebuggerModel.FunctionDetails} response
          * @this {WebInspector.FunctionScopeMainTreeElement}
          */
         function didGetDetails(response)

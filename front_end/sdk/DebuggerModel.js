@@ -63,6 +63,9 @@ WebInspector.DebuggerModel = function(target)
     this._applySkipStackFrameSettings();
 }
 
+/** @typedef {{location: ?WebInspector.DebuggerModel.Location, functionName: string, scopeChain: (Array.<!DebuggerAgent.Scope>|null)}} */
+WebInspector.DebuggerModel.FunctionDetails;
+
 /**
  * Keep these in sync with WebCore::ScriptDebugServer
  *
@@ -682,7 +685,7 @@ WebInspector.DebuggerModel.prototype = {
     },
 
     /**
-     * @param {!WebInspector.DebuggerModel.Location|!DebuggerAgent.Location} rawLocation
+     * @param {!WebInspector.DebuggerModel.Location} rawLocation
      * @return {?WebInspector.UILocation}
      */
     rawLocationToUILocation: function(rawLocation)
@@ -717,15 +720,16 @@ WebInspector.DebuggerModel.prototype = {
 
     /**
      * @param {!WebInspector.RemoteObject} remoteObject
-     * @param {function(?DebuggerAgent.FunctionDetails)} callback
+     * @param {function(?WebInspector.DebuggerModel.FunctionDetails)} callback
      */
     functionDetails: function(remoteObject, callback)
     {
-        this._agent.getFunctionDetails(remoteObject.objectId, didGetDetails);
+        this._agent.getFunctionDetails(remoteObject.objectId, didGetDetails.bind(this));
 
         /**
          * @param {?Protocol.Error} error
          * @param {!DebuggerAgent.FunctionDetails} response
+         * @this {WebInspector.DebuggerModel}
          */
         function didGetDetails(error, response)
         {
@@ -734,7 +738,10 @@ WebInspector.DebuggerModel.prototype = {
                 callback(null);
                 return;
             }
-            callback(response);
+            var location = response.location;
+            var script = this.scriptForId(location.scriptId);
+            var rawLocation = script ? this.createRawLocation(script, location.lineNumber + 1, location.columnNumber + 1) : null;
+            callback({location: rawLocation, functionName: response.functionName, scopeChain: response.scopeChain || null});
         }
     },
 

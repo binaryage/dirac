@@ -65,7 +65,7 @@ WebInspector.ObjectPopoverHelper.prototype = {
          * @param {!WebInspector.Target} target
          * @param {!Element} anchorElement
          * @param {!Element} popoverContentElement
-         * @param {?DebuggerAgent.FunctionDetails} response
+         * @param {?WebInspector.DebuggerModel.FunctionDetails} response
          * @this {WebInspector.ObjectPopoverHelper}
          */
         function didGetDetails(target, anchorElement, popoverContentElement, response)
@@ -80,9 +80,12 @@ WebInspector.ObjectPopoverHelper.prototype = {
             var functionName = title.createChild("span", "function-name");
             functionName.textContent = response.functionName || WebInspector.UIString("(anonymous function)");
 
-            this._linkifier = new WebInspector.Linkifier();
-            var rawLocation = WebInspector.DebuggerModel.Location.fromPayload(target, response.location);
-            var link = this._linkifier.linkifyRawLocation(rawLocation, "function-location-link");
+            var rawLocation = response.location;
+            var link;
+            if (rawLocation) {
+                this._linkifier = new WebInspector.Linkifier();
+                link = this._linkifier.linkifyRawLocation(rawLocation, "function-location-link");
+            }
             if (link)
                 title.appendChild(link);
 

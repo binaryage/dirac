@@ -131,7 +131,7 @@ WebInspector.RemoteObject.prototype = {
     },
 
     /**
-     * @param {function(?DebuggerAgent.FunctionDetails)} callback
+     * @param {function(?WebInspector.DebuggerModel.FunctionDetails)} callback
      */
     functionDetails: function(callback)
     {
@@ -590,7 +590,7 @@ WebInspector.RemoteObjectImpl.prototype = {
     },
 
     /**
-     * @param {function(?DebuggerAgent.FunctionDetails)} callback
+     * @param {function(?WebInspector.DebuggerModel.FunctionDetails)} callback
      */
     functionDetails: function(callback)
     {

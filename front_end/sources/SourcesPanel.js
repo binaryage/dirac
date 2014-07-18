@@ -1051,27 +1051,24 @@ WebInspector.SourcesPanel.prototype = {
      */
     _showFunctionDefinition: function(remoteObject)
     {
-        var target = remoteObject.target();
+        var debuggerModel = remoteObject.target().debuggerModel;
 
         /**
-         * @param {?Protocol.Error} error
-         * @param {!DebuggerAgent.FunctionDetails} response
+         * @param {?WebInspector.DebuggerModel.FunctionDetails} response
          * @this {WebInspector.SourcesPanel}
          */
-        function didGetFunctionDetails(error, response)
+        function didGetFunctionDetails(response)
         {
-            if (error) {
-                console.error(error);
+            if (!response || !response.location)
                 return;
-            }
 
-            var uiLocation = target.debuggerModel.rawLocationToUILocation(response.location);
+            var uiLocation = debuggerModel.rawLocationToUILocation(response.location);
             if (!uiLocation)
                 return;
 
             this.showUILocation(uiLocation, true);
         }
-        target.debuggerAgent().getFunctionDetails(remoteObject.objectId, didGetFunctionDetails.bind(this));
+        debuggerModel.functionDetails(remoteObject, didGetFunctionDetails.bind(this));
     },
 
     showGoToSourceDialog: function()

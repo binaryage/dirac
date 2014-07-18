@@ -803,26 +803,21 @@ WebInspector.ConsoleView.prototype = {
         result.functionDetails(didGetDetails);
 
         /**
-         * @param {?DebuggerAgent.FunctionDetails} response
+         * @param {?WebInspector.DebuggerModel.FunctionDetails} response
          */
         function didGetDetails(response)
         {
-            if (!response) {
+            if (!response || !response.location) {
                 addMessage();
                 return;
             }
 
             var url;
-            var lineNumber;
-            var columnNumber;
             var script = target.debuggerModel.scriptForId(response.location.scriptId);
-            if (script && script.sourceURL) {
+            if (script && script.sourceURL)
                 url = script.sourceURL;
-                lineNumber = response.location.lineNumber + 1;
-                columnNumber = response.location.columnNumber + 1;
-            }
             // FIXME: this should be using live location.
-            addMessage(url, lineNumber, columnNumber);
+            addMessage(url, response.location.lineNumber, response.location.columnNumber);
         }
     },
 
