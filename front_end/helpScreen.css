@@ -150,7 +150,9 @@ body.platform-mac .help-key-cell {
 }
 
 .help-cell {
-    display: inline;
+    display: inline-block;
+    width: 200px;
+    vertical-align: middle;
 }
 
 .help-section-title {
