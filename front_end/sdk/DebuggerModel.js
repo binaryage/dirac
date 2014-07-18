@@ -30,12 +30,12 @@
 
 /**
  * @constructor
- * @extends {WebInspector.SDKObject}
+ * @extends {WebInspector.SDKModel}
  * @param {!WebInspector.Target} target
  */
 WebInspector.DebuggerModel = function(target)
 {
-    WebInspector.SDKObject.call(this, target);
+    WebInspector.SDKModel.call(this, WebInspector.DebuggerModel, target);
 
     target.registerDebuggerDispatcher(new WebInspector.DebuggerDispatcher(this));
     this._agent = target.debuggerAgent();
@@ -766,7 +766,7 @@ WebInspector.DebuggerModel.prototype = {
         WebInspector.settings.enableAsyncStackTraces.removeChangeListener(this._asyncStackTracesStateChanged, this);
     },
 
-    __proto__: WebInspector.SDKObject.prototype
+    __proto__: WebInspector.SDKModel.prototype
 }
 
 WebInspector.DebuggerEventTypes = {

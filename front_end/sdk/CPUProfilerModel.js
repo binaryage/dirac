@@ -28,13 +28,13 @@
 
 /**
  * @constructor
- * @extends {WebInspector.SDKObject}
+ * @extends {WebInspector.SDKModel}
  * @param {!WebInspector.Target} target
  * @implements {ProfilerAgent.Dispatcher}
  */
 WebInspector.CPUProfilerModel = function(target)
 {
-    WebInspector.SDKObject.call(this, target);
+    WebInspector.SDKModel.call(this, WebInspector.CPUProfilerModel, target);
     this._isRecording = false;
     target.registerProfilerDispatcher(this);
     target.profilerAgent().enable();
@@ -122,7 +122,7 @@ WebInspector.CPUProfilerModel.prototype = {
     },
 
 
-    __proto__: WebInspector.SDKObject.prototype
+    __proto__: WebInspector.SDKModel.prototype
 }
 
 /**

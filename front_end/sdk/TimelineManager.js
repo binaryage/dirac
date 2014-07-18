@@ -30,12 +30,12 @@
 
 /**
  * @constructor
- * @extends {WebInspector.SDKObject}
+ * @extends {WebInspector.SDKModel}
  * @param {!WebInspector.Target} target
  */
 WebInspector.TimelineManager = function(target)
 {
-    WebInspector.SDKObject.call(this, target);
+    WebInspector.SDKModel.call(this, WebInspector.TimelineManager, target);
     this._dispatcher = new WebInspector.TimelineDispatcher(this);
     this._enablementCount = 0;
     this._jsProfilerStarted = false;
@@ -160,7 +160,7 @@ WebInspector.TimelineManager.prototype = {
         }
     },
 
-    __proto__: WebInspector.SDKObject.prototype
+    __proto__: WebInspector.SDKModel.prototype
 }
 
 /**

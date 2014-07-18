@@ -914,11 +914,11 @@ WebInspector.DOMDocument.prototype = {
 
 /**
  * @constructor
- * @extends {WebInspector.SDKObject}
+ * @extends {WebInspector.SDKModel}
  * @param {!WebInspector.Target} target
  */
 WebInspector.DOMModel = function(target) {
-    WebInspector.SDKObject.call(this, target);
+    WebInspector.SDKModel.call(this, WebInspector.DOMModel, target);
 
     this._agent = target.domAgent();
 
@@ -1690,7 +1690,7 @@ WebInspector.DOMModel.prototype = {
         }
     },
 
-    __proto__: WebInspector.SDKObject.prototype
+    __proto__: WebInspector.SDKModel.prototype
 }
 
 /**

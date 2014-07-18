@@ -1012,6 +1012,9 @@ WebInspector.HeapSnapshotProfileType = function(id, title)
 {
     WebInspector.ProfileType.call(this, id || WebInspector.HeapSnapshotProfileType.TypeId, title || WebInspector.UIString("Take Heap Snapshot"));
     WebInspector.targetManager.observeTargets(this);
+    WebInspector.targetManager.addModelListener(WebInspector.HeapProfilerModel, WebInspector.HeapProfilerModel.Events.ResetProfiles, this._resetProfiles, this);
+    WebInspector.targetManager.addModelListener(WebInspector.HeapProfilerModel, WebInspector.HeapProfilerModel.Events.AddHeapSnapshotChunk, this._addHeapSnapshotChunk, this);
+    WebInspector.targetManager.addModelListener(WebInspector.HeapProfilerModel, WebInspector.HeapProfilerModel.Events.ReportHeapSnapshotProgress, this._reportHeapSnapshotProgress, this);
 }
 
 WebInspector.HeapSnapshotProfileType.TypeId = "HEAP";
@@ -1024,9 +1027,6 @@ WebInspector.HeapSnapshotProfileType.prototype = {
     targetAdded: function(target)
     {
         target.heapProfilerModel.enable();
-        target.heapProfilerModel.addEventListener(WebInspector.HeapProfilerModel.Events.ResetProfiles, this._resetProfiles, this);
-        target.heapProfilerModel.addEventListener(WebInspector.HeapProfilerModel.Events.AddHeapSnapshotChunk, this._addHeapSnapshotChunk, this);
-        target.heapProfilerModel.addEventListener(WebInspector.HeapProfilerModel.Events.ReportHeapSnapshotProgress, this._reportHeapSnapshotProgress, this);
     },
 
     /**
@@ -1034,9 +1034,6 @@ WebInspector.HeapSnapshotProfileType.prototype = {
      */
     targetRemoved: function(target)
     {
-        target.heapProfilerModel.removeEventListener(WebInspector.HeapProfilerModel.Events.ResetProfiles, this._resetProfiles, this);
-        target.heapProfilerModel.removeEventListener(WebInspector.HeapProfilerModel.Events.AddHeapSnapshotChunk, this._addHeapSnapshotChunk, this);
-        target.heapProfilerModel.removeEventListener(WebInspector.HeapProfilerModel.Events.ReportHeapSnapshotProgress, this._reportHeapSnapshotProgress, this);
     },
 
     /**

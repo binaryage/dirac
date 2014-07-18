@@ -666,14 +666,12 @@ WebInspector.ExtensionServer.prototype = {
 
     _initExtensions: function()
     {
-        this._registerAutosubscriptionHandler(WebInspector.extensionAPI.Events.ConsoleMessageAdded,
-            WebInspector.multitargetConsoleModel, WebInspector.ConsoleModel.Events.MessageAdded, this._notifyConsoleMessageAdded);
-        this._registerAutosubscriptionHandler(WebInspector.extensionAPI.Events.NetworkRequestFinished,
-            WebInspector.networkManager, WebInspector.NetworkManager.EventTypes.RequestFinished, this._notifyRequestFinished);
+        this._registerAutosubscriptionTargetManagerHandler(WebInspector.extensionAPI.Events.ConsoleMessageAdded,
+            WebInspector.ConsoleModel, WebInspector.ConsoleModel.Events.MessageAdded, this._notifyConsoleMessageAdded);
         this._registerAutosubscriptionHandler(WebInspector.extensionAPI.Events.ResourceAdded,
-            WebInspector.workspace,
-            WebInspector.Workspace.Events.UISourceCodeAdded,
-            this._notifyResourceAdded);
+            WebInspector.workspace, WebInspector.Workspace.Events.UISourceCodeAdded, this._notifyResourceAdded);
+        this._registerAutosubscriptionTargetManagerHandler(WebInspector.extensionAPI.Events.NetworkRequestFinished,
+            WebInspector.NetworkManager, WebInspector.NetworkManager.EventTypes.RequestFinished, this._notifyRequestFinished);
 
         /**
          * @this {WebInspector.ExtensionServer}
@@ -871,11 +869,30 @@ WebInspector.ExtensionServer.prototype = {
         this._subscriptionStopHandlers[eventTopic] = onUnsubscribeLast;
     },
 
+    /**
+     * @param {string} eventTopic
+     * @param {!Object} eventTarget
+     * @param {string} frontendEventType
+     * @param {function(!WebInspector.Event)} handler
+     */
     _registerAutosubscriptionHandler: function(eventTopic, eventTarget, frontendEventType, handler)
     {
         this._registerSubscriptionHandler(eventTopic,
             eventTarget.addEventListener.bind(eventTarget, frontendEventType, handler, this),
             eventTarget.removeEventListener.bind(eventTarget, frontendEventType, handler, this));
+    },
+
+    /**
+     * @param {string} eventTopic
+     * @param {!Function} modelClass
+     * @param {string} frontendEventType
+     * @param {function(!WebInspector.Event)} handler
+     */
+    _registerAutosubscriptionTargetManagerHandler: function(eventTopic, modelClass, frontendEventType, handler)
+    {
+        this._registerSubscriptionHandler(eventTopic,
+            WebInspector.targetManager.addModelListener.bind(WebInspector.targetManager, modelClass, frontendEventType, handler, this),
+            WebInspector.targetManager.removeModelListener.bind(WebInspector.targetManager, modelClass, frontendEventType, handler, this));
     },
 
     _registerResourceContentCommittedHandler: function(handler)

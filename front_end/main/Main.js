@@ -858,72 +858,34 @@ WebInspector.Main.WarningErrorCounter.prototype = {
 
 /**
  * @constructor
- * @implements {WebInspector.TargetManager.Observer}
  */
 WebInspector.Main.PauseListener = function()
 {
-    WebInspector.targetManager.observeTargets(this);
+    WebInspector.targetManager.addModelListener(WebInspector.DebuggerModel, WebInspector.DebuggerModel.Events.DebuggerPaused, this._debuggerPaused, this);
 }
 
 WebInspector.Main.PauseListener.prototype = {
-    /**
-     * @param {!WebInspector.Target} target
-     */
-    targetAdded: function(target)
-    {
-        target.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.DebuggerPaused, this._debuggerPaused, this);
-    },
-
-    /**
-     * @param {!WebInspector.Target} target
-     */
-    targetRemoved: function(target)
-    {
-        target.debuggerModel.removeEventListener(WebInspector.DebuggerModel.Events.DebuggerPaused, this._debuggerPaused, this);
-    },
-
     /**
      * @param {!WebInspector.Event} event
      */
     _debuggerPaused: function(event)
     {
-        var targets = WebInspector.targetManager.targets();
-        for (var i = 0; i < targets.length; ++i)
-            targets[i].debuggerModel.removeEventListener(WebInspector.DebuggerModel.Events.DebuggerPaused, this._debuggerPaused, this);
-
+        WebInspector.targetManager.removeModelListener(WebInspector.DebuggerModel, WebInspector.DebuggerModel.Events.DebuggerPaused, this._debuggerPaused, this);
         var debuggerModel = /** @type {!WebInspector.DebuggerModel} */ (event.target);
         WebInspector.context.setFlavor(WebInspector.Target, debuggerModel.target());
-        WebInspector.targetManager.unobserveTargets(this);
         WebInspector.inspectorView.showPanel("sources");
     }
 }
 
 /**
  * @constructor
- * @implements {WebInspector.TargetManager.Observer}
  */
 WebInspector.Main.InspectedNodeRevealer = function()
 {
-    WebInspector.targetManager.observeTargets(this);
+    WebInspector.targetManager.addModelListener(WebInspector.DOMModel, WebInspector.DOMModel.Events.NodeInspected, this._inspectNode, this);
 }
 
 WebInspector.Main.InspectedNodeRevealer.prototype = {
-    /**
-     * @param {!WebInspector.Target} target
-     */
-    targetAdded: function(target)
-    {
-        target.domModel.addEventListener(WebInspector.DOMModel.Events.NodeInspected, this._inspectNode, this);
-    },
-
-    /**
-     * @param {!WebInspector.Target} target
-     */
-    targetRemoved: function(target)
-    {
-        target.domModel.removeEventListener(WebInspector.DOMModel.Events.NodeInspected, this._inspectNode, this);
-    },
-
     /**
      * @param {!WebInspector.Event} event
      */

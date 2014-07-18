@@ -134,12 +134,12 @@ WebInspector.Database.prototype = {
 
 /**
  * @constructor
- * @extends {WebInspector.SDKObject}
+ * @extends {WebInspector.SDKModel}
  * @param {!WebInspector.Target} target
  */
 WebInspector.DatabaseModel = function(target)
 {
-    WebInspector.SDKObject.call(this, target);
+    WebInspector.SDKModel.call(this, WebInspector.DatabaseModel, target);
 
     this._databases = [];
     target.registerDatabaseDispatcher(new WebInspector.DatabaseDispatcher(this));
@@ -181,7 +181,7 @@ WebInspector.DatabaseModel.prototype = {
         this.dispatchEventToListeners(WebInspector.DatabaseModel.Events.DatabaseAdded, database);
     },
 
-    __proto__: WebInspector.SDKObject.prototype
+    __proto__: WebInspector.SDKModel.prototype
 }
 
 /**

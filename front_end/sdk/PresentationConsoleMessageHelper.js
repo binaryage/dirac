@@ -30,7 +30,6 @@
 
 /**
  * @constructor
- * @implements {WebInspector.TargetManager.Observer}
  * @param {!WebInspector.Workspace} workspace
  */
 WebInspector.PresentationConsoleMessageHelper = function(workspace)
@@ -42,33 +41,15 @@ WebInspector.PresentationConsoleMessageHelper = function(workspace)
     this._presentationConsoleMessages = [];
     this._workspace = workspace;
 
-    WebInspector.targetManager.observeTargets(this);
     WebInspector.multitargetConsoleModel.addEventListener(WebInspector.ConsoleModel.Events.ConsoleCleared, this._consoleCleared, this);
     WebInspector.multitargetConsoleModel.addEventListener(WebInspector.ConsoleModel.Events.MessageAdded, this._onConsoleMessageAdded, this);
     WebInspector.multitargetConsoleModel.messages().forEach(this._consoleMessageAdded, this);
+    WebInspector.targetManager.addModelListener(WebInspector.DebuggerModel, WebInspector.DebuggerModel.Events.ParsedScriptSource, this._parsedScriptSource, this);
+    WebInspector.targetManager.addModelListener(WebInspector.DebuggerModel, WebInspector.DebuggerModel.Events.FailedToParseScriptSource, this._parsedScriptSource, this);
+    WebInspector.targetManager.addModelListener(WebInspector.DebuggerModel, WebInspector.DebuggerModel.Events.GlobalObjectCleared, this._debuggerReset, this);
 }
 
 WebInspector.PresentationConsoleMessageHelper.prototype = {
-    /**
-     * @param {!WebInspector.Target} target
-     */
-    targetAdded: function(target)
-    {
-        target.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.ParsedScriptSource, this._parsedScriptSource, this);
-        target.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.FailedToParseScriptSource, this._parsedScriptSource, this);
-        target.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.GlobalObjectCleared, this._debuggerReset, this);
-    },
-
-    /**
-     * @param {!WebInspector.Target} target
-     */
-    targetRemoved: function(target)
-    {
-        target.debuggerModel.removeEventListener(WebInspector.DebuggerModel.Events.ParsedScriptSource, this._parsedScriptSource, this);
-        target.debuggerModel.removeEventListener(WebInspector.DebuggerModel.Events.FailedToParseScriptSource, this._parsedScriptSource, this);
-        target.debuggerModel.removeEventListener(WebInspector.DebuggerModel.Events.GlobalObjectCleared, this._debuggerReset, this);
-    },
-
     /**
      * @param {!WebInspector.Event} event
      */

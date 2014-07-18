@@ -115,6 +115,8 @@ WebInspector.ElementsPanel = function()
     this._targetToTreeOutline = new Map();
     WebInspector.targetManager.observeTargets(this);
     WebInspector.settings.showUAShadowDOM.addChangeListener(this._showUAShadowDOMChanged.bind(this));
+    WebInspector.targetManager.addModelListener(WebInspector.DOMModel, WebInspector.DOMModel.Events.DocumentUpdated, this._documentUpdatedEvent, this);
+    WebInspector.targetManager.addModelListener(WebInspector.DOMModel, WebInspector.CSSStyleModel.Events.ModelWasEnabled, this._updateSidebars, this);
 }
 
 WebInspector.ElementsPanel.prototype = {
@@ -130,9 +132,6 @@ WebInspector.ElementsPanel.prototype = {
         this._treeOutlines.push(treeOutline);
         this._targetToTreeOutline.put(target, treeOutline);
 
-        target.domModel.addEventListener(WebInspector.DOMModel.Events.DocumentUpdated, this._documentUpdatedEvent, this);
-        target.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.ModelWasEnabled, this._updateSidebars, this);
-
         // Perform attach if necessary.
         if (this.isShowing())
             this.wasShown();
@@ -147,9 +146,6 @@ WebInspector.ElementsPanel.prototype = {
         treeOutline.unwireFromDOMModel();
         this._treeOutlines.remove(treeOutline);
         treeOutline.element.remove();
-
-        target.domModel.removeEventListener(WebInspector.DOMModel.Events.DocumentUpdated, this._documentUpdatedEvent, this);
-        target.cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.ModelWasEnabled, this._updateSidebars, this);
     },
 
     /**

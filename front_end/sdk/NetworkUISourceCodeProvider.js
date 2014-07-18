@@ -30,7 +30,6 @@
 
 /**
  * @constructor
- * @implements {WebInspector.TargetManager.Observer}
  * @param {!WebInspector.NetworkWorkspaceBinding} networkWorkspaceBinding
  * @param {!WebInspector.Workspace} workspace
  */
@@ -38,36 +37,15 @@ WebInspector.NetworkUISourceCodeProvider = function(networkWorkspaceBinding, wor
 {
     this._networkWorkspaceBinding = networkWorkspaceBinding;
     this._workspace = workspace;
-    WebInspector.targetManager.observeTargets(this);
     this._processedURLs = {};
+    WebInspector.targetManager.addModelListener(WebInspector.ResourceTreeModel, WebInspector.ResourceTreeModel.EventTypes.ResourceAdded, this._resourceAdded, this);
+    WebInspector.targetManager.addModelListener(WebInspector.ResourceTreeModel, WebInspector.ResourceTreeModel.EventTypes.MainFrameNavigated, this._mainFrameNavigated, this);
+    WebInspector.targetManager.addModelListener(WebInspector.DebuggerModel, WebInspector.DebuggerModel.Events.ParsedScriptSource, this._parsedScriptSource, this);
+    WebInspector.targetManager.addModelListener(WebInspector.DebuggerModel, WebInspector.DebuggerModel.Events.FailedToParseScriptSource, this._parsedScriptSource, this);
+    WebInspector.targetManager.addModelListener(WebInspector.CSSStyleModel, WebInspector.CSSStyleModel.Events.StyleSheetAdded, this._styleSheetAdded, this);
 }
 
 WebInspector.NetworkUISourceCodeProvider.prototype = {
-    /**
-     * @param {!WebInspector.Target} target
-     */
-    targetAdded: function(target)
-    {
-        target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.ResourceAdded, this._resourceAdded, this);
-        target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.MainFrameNavigated, this._mainFrameNavigated, this);
-        target.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.ParsedScriptSource, this._parsedScriptSource, this);
-        target.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.FailedToParseScriptSource, this._parsedScriptSource, this);
-        target.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetAdded, this._styleSheetAdded, this);
-    },
-
-    /**
-     * @param {!WebInspector.Target} target
-     */
-    targetRemoved: function(target)
-    {
-        // FIXME: add workspace cleanup here.
-        target.resourceTreeModel.removeEventListener(WebInspector.ResourceTreeModel.EventTypes.ResourceAdded, this._resourceAdded, this);
-        target.resourceTreeModel.removeEventListener(WebInspector.ResourceTreeModel.EventTypes.MainFrameNavigated, this._mainFrameNavigated, this);
-        target.debuggerModel.removeEventListener(WebInspector.DebuggerModel.Events.ParsedScriptSource, this._parsedScriptSource, this);
-        target.debuggerModel.removeEventListener(WebInspector.DebuggerModel.Events.FailedToParseScriptSource, this._parsedScriptSource, this);
-        target.cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.StyleSheetAdded, this._styleSheetAdded, this);
-    },
-
     /**
      * @param {!WebInspector.Target} target
      */

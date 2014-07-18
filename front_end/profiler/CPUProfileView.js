@@ -490,7 +490,6 @@ WebInspector.CPUProfileView.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.ProfileType}
- * @implements {WebInspector.TargetManager.Observer}
  */
 WebInspector.CPUProfileType = function()
 {
@@ -501,30 +500,13 @@ WebInspector.CPUProfileType = function()
     this._anonymousConsoleProfileIdToTitle = {};
 
     WebInspector.CPUProfileType.instance = this;
-    WebInspector.targetManager.observeTargets(this);
+    WebInspector.targetManager.addModelListener(WebInspector.CPUProfilerModel, WebInspector.CPUProfilerModel.EventTypes.ConsoleProfileStarted, this._consoleProfileStarted, this);
+    WebInspector.targetManager.addModelListener(WebInspector.CPUProfilerModel, WebInspector.CPUProfilerModel.EventTypes.ConsoleProfileFinished, this._consoleProfileFinished, this);
 }
 
 WebInspector.CPUProfileType.TypeId = "CPU";
 
 WebInspector.CPUProfileType.prototype = {
-    /**
-     * @param {!WebInspector.Target} target
-     */
-    targetAdded: function(target)
-    {
-        target.cpuProfilerModel.addEventListener(WebInspector.CPUProfilerModel.EventTypes.ConsoleProfileStarted, this._consoleProfileStarted, this);
-        target.cpuProfilerModel.addEventListener(WebInspector.CPUProfilerModel.EventTypes.ConsoleProfileFinished, this._consoleProfileFinished, this);
-    },
-
-    /**
-     * @param {!WebInspector.Target} target
-     */
-    targetRemoved: function(target)
-    {
-        target.cpuProfilerModel.removeEventListener(WebInspector.CPUProfilerModel.EventTypes.ConsoleProfileStarted, this._consoleProfileStarted, this);
-        target.cpuProfilerModel.removeEventListener(WebInspector.CPUProfilerModel.EventTypes.ConsoleProfileFinished, this._consoleProfileFinished, this);
-    },
-
     /**
      * @override
      * @return {string}

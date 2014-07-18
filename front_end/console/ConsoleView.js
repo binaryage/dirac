@@ -144,6 +144,9 @@ WebInspector.ConsoleView = function(hideContextSelector)
     WebInspector.multitargetConsoleModel.addEventListener(WebInspector.ConsoleModel.Events.ConsoleCleared, this._consoleCleared, this);
     WebInspector.multitargetConsoleModel.addEventListener(WebInspector.ConsoleModel.Events.MessageAdded, this._onConsoleMessageAdded, this);
     WebInspector.multitargetConsoleModel.addEventListener(WebInspector.ConsoleModel.Events.CommandEvaluated, this._commandEvaluated, this);
+    WebInspector.targetManager.addModelListener(WebInspector.RuntimeModel, WebInspector.RuntimeModel.Events.ExecutionContextCreated, this._onExecutionContextCreated, this);
+    WebInspector.targetManager.addModelListener(WebInspector.RuntimeModel, WebInspector.RuntimeModel.Events.ExecutionContextDestroyed, this._onExecutionContextDestroyed, this);
+
     /**
      * @param {!WebInspector.ConsoleMessage} message
      * @this {WebInspector.ConsoleView}
@@ -201,8 +204,6 @@ WebInspector.ConsoleView.prototype = {
     {
         this._viewport.invalidate();
         target.runtimeModel.executionContexts().forEach(this._executionContextCreated, this);
-        target.runtimeModel.addEventListener(WebInspector.RuntimeModel.Events.ExecutionContextCreated, this._onExecutionContextCreated, this);
-        target.runtimeModel.addEventListener(WebInspector.RuntimeModel.Events.ExecutionContextDestroyed, this._onExecutionContextDestroyed, this);
     },
 
     /**
@@ -211,8 +212,6 @@ WebInspector.ConsoleView.prototype = {
     targetRemoved: function(target)
     {
         this._clearExecutionContextsForTarget(target);
-        target.runtimeModel.removeEventListener(WebInspector.RuntimeModel.Events.ExecutionContextCreated, this._onExecutionContextCreated, this);
-        target.runtimeModel.removeEventListener(WebInspector.RuntimeModel.Events.ExecutionContextDestroyed, this._onExecutionContextDestroyed, this);
     },
 
     _registerWithMessageSink: function()
