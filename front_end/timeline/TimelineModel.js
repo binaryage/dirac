@@ -30,12 +30,11 @@
 
 /**
  * @constructor
- * @extends {WebInspector.SDKObject}
- * @param {!WebInspector.Target} target
+ * @extends {WebInspector.Object}
  */
-WebInspector.TimelineModel = function(target)
+WebInspector.TimelineModel = function()
 {
-    WebInspector.SDKObject.call(this, target);
+    WebInspector.Object.call(this);
     this._filters = [];
 }
 
@@ -331,7 +330,7 @@ WebInspector.TimelineModel.prototype = {
         return this._eventDividerRecords;
     },
 
-    __proto__: WebInspector.SDKObject.prototype
+    __proto__: WebInspector.Object.prototype
 }
 
 /**

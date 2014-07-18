@@ -656,10 +656,7 @@ WebInspector.ProfilesPanel.prototype = {
     {
         if (WebInspector.experimentsSettings.disableAgentsWhenProfile.isEnabled())
             WebInspector.inspectorView.setCurrentPanelLocked(toggled);
-        var isAcquiredInSomeTarget = false;
-        var targets = WebInspector.targetManager.targets();
-        for (var i = 0; i < targets.length; ++i)
-            isAcquiredInSomeTarget = isAcquiredInSomeTarget || targets[i].profilingLock.isAcquired();
+        var isAcquiredInSomeTarget = WebInspector.targetManager.targets().some(function(target) { return target.profilingLock.isAcquired(); });
         var enable = toggled || !isAcquiredInSomeTarget;
         this.recordButton.setEnabled(enable);
         this.recordButton.toggled = toggled;

@@ -92,7 +92,7 @@ WebInspector.TracingTimelineUIUtils.prototype = {
      */
     buildDetailsNode: function(record, linkifier, loadedFromFile)
     {
-        return WebInspector.TracingTimelineUIUtils.buildDetailsNodeForTraceEvent(record.traceEvent(), linkifier, loadedFromFile, record.target());
+        return WebInspector.TracingTimelineUIUtils.buildDetailsNodeForTraceEvent(record.traceEvent(), linkifier);
     },
 
     /**
@@ -107,7 +107,7 @@ WebInspector.TracingTimelineUIUtils.prototype = {
         if (!(model instanceof WebInspector.TracingTimelineModel))
             throw new Error("Illegal argument.");
         var tracingTimelineModel = /** @type {!WebInspector.TracingTimelineModel} */ (model);
-        WebInspector.TracingTimelineUIUtils.buildTraceEventDetails(record.traceEvent(), tracingTimelineModel, linkifier, callback, loadedFromFile, record.target());
+        WebInspector.TracingTimelineUIUtils.buildTraceEventDetails(record.traceEvent(), tracingTimelineModel, linkifier, callback, loadedFromFile);
     },
 
     /**
@@ -320,14 +320,12 @@ WebInspector.TracingTimelineUIUtils.isEventDivider = function(record)
 /**
  * @param {!WebInspector.TracingModel.Event} event
  * @param {!WebInspector.Linkifier} linkifier
- * @param {boolean} loadedFromFile
- * @param {!WebInspector.Target} target
  * @return {?Node}
  */
-WebInspector.TracingTimelineUIUtils.buildDetailsNodeForTraceEvent = function(event, linkifier, loadedFromFile, target)
+WebInspector.TracingTimelineUIUtils.buildDetailsNodeForTraceEvent = function(event, linkifier)
 {
     var recordType = WebInspector.TracingTimelineModel.RecordType;
-
+    var target = event.thread.target();
     var details;
     var detailsText;
     var eventData = event.args.data;
@@ -431,21 +429,11 @@ WebInspector.TracingTimelineUIUtils.buildDetailsNodeForTraceEvent = function(eve
      */
     function linkifyLocation(scriptId, url, lineNumber, columnNumber)
     {
-        if (!loadedFromFile && scriptId !== "0") {
-            var location = new WebInspector.DebuggerModel.Location(
-                target,
-                scriptId,
-                lineNumber - 1,
-                (columnNumber || 1) - 1);
-            return linkifier.linkifyRawLocation(location, "timeline-details");
-        }
-
         if (!url)
             return null;
 
         // FIXME(62725): stack trace line/column numbers are one-based.
-        columnNumber = columnNumber ? columnNumber - 1 : 0;
-        return linkifier.linkifyLocation(target, url, lineNumber - 1, columnNumber, "timeline-details");
+        return linkifier.linkifyLocationByScriptId(target, scriptId, url, lineNumber - 1, (columnNumber ||1) - 1, "timeline-details");
     }
 
     /**
@@ -479,17 +467,21 @@ WebInspector.TracingTimelineUIUtils.buildDetailsNodeForTraceEvent = function(eve
  * @param {!WebInspector.Linkifier} linkifier
  * @param {function(!DocumentFragment)} callback
  * @param {boolean} loadedFromFile
- * @param {!WebInspector.Target} target
  */
-WebInspector.TracingTimelineUIUtils.buildTraceEventDetails = function(event, model, linkifier, callback, loadedFromFile, target)
+WebInspector.TracingTimelineUIUtils.buildTraceEventDetails = function(event, model, linkifier, callback, loadedFromFile)
 {
+    var target = event.thread.target();
+    //FIXME: support here nullable target
+    if (!target)
+        return;
+
     var relatedNode = null;
     var barrier = new CallbackBarrier();
     if (!event.previewElement) {
         if (event.imageURL)
             WebInspector.DOMPresentationUtils.buildImagePreviewContents(target, event.imageURL, false, barrier.createCallback(saveImage));
         else if (event.picture)
-            WebInspector.TracingTimelineUIUtils.buildPicturePreviewContent(model.target(), event.picture, barrier.createCallback(saveImage));
+            WebInspector.TracingTimelineUIUtils.buildPicturePreviewContent(target, event.picture, barrier.createCallback(saveImage));
     }
     if (event.backendNodeId)
         target.domModel.pushNodesByBackendIdsToFrontend([event.backendNodeId], barrier.createCallback(setRelatedNode));
@@ -514,7 +506,7 @@ WebInspector.TracingTimelineUIUtils.buildTraceEventDetails = function(event, mod
 
     function callbackWrapper()
     {
-        callback(WebInspector.TracingTimelineUIUtils._buildTraceEventDetailsSynchronously(event, model, linkifier, relatedNode, loadedFromFile, target));
+        callback(WebInspector.TracingTimelineUIUtils._buildTraceEventDetailsSynchronously(event, model, linkifier, relatedNode, loadedFromFile, /** @type {!WebInspector.Target} */ (target)));
     }
 }
 
@@ -651,7 +643,7 @@ WebInspector.TracingTimelineUIUtils._buildTraceEventDetailsSynchronously = funct
         contentHelper.appendTextRow(WebInspector.UIString("Callback Function"), eventData["callbackName"]);
         break;
     default:
-        var detailsNode = WebInspector.TracingTimelineUIUtils.buildDetailsNodeForTraceEvent(event, linkifier, loadedFromFile, target);
+        var detailsNode = WebInspector.TracingTimelineUIUtils.buildDetailsNodeForTraceEvent(event, linkifier);
         if (detailsNode)
             contentHelper.appendElementRow(WebInspector.UIString("Details"), detailsNode);
         break;

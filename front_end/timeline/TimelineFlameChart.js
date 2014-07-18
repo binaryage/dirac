@@ -33,14 +33,12 @@
  * @implements {WebInspector.FlameChartDataProvider}
  * @param {!WebInspector.TracingTimelineModel} model
  * @param {!WebInspector.TimelineFrameModelBase} frameModel
- * @param {!WebInspector.Target} target
  */
-WebInspector.TimelineFlameChartDataProvider = function(model, frameModel, target)
+WebInspector.TimelineFlameChartDataProvider = function(model, frameModel)
 {
     WebInspector.FlameChartDataProvider.call(this);
     this._model = model;
     this._frameModel = frameModel;
-    this._target = target;
     this._font = "12px " + WebInspector.fontFamily();
     this._linkifier = new WebInspector.Linkifier();
     this._entryIndexToTitle = {};
@@ -95,7 +93,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
         if (event) {
             var name = WebInspector.TracingTimelineUIUtils.styleForTraceEvent(event.name).title;
             // TODO(yurys): support event dividers
-            var details = WebInspector.TracingTimelineUIUtils.buildDetailsNodeForTraceEvent(event, this._linkifier, false, this._target);
+            var details = WebInspector.TracingTimelineUIUtils.buildDetailsNodeForTraceEvent(event, this._linkifier);
             if (event.name === WebInspector.TracingTimelineModel.RecordType.JSFrame && details)
                 return details.textContent;
             return details ? WebInspector.UIString("%s (%s)", name, details.textContent) : name;
@@ -490,7 +488,7 @@ WebInspector.TimelineFlameChart = function(delegate, tracingModel, frameModel)
     this.registerRequiredCSS("flameChart.css");
     this._delegate = delegate;
     this._model = tracingModel;
-    this._dataProvider = new WebInspector.TimelineFlameChartDataProvider(tracingModel, frameModel, tracingModel.target())
+    this._dataProvider = new WebInspector.TimelineFlameChartDataProvider(tracingModel, frameModel)
     this._mainView = new WebInspector.FlameChart(this._dataProvider, this, true);
     this._mainView.show(this.element);
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStarted, this._onRecordingStarted, this);

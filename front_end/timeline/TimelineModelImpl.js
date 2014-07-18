@@ -9,7 +9,8 @@
  */
 WebInspector.TimelineModelImpl = function(timelineManager)
 {
-    WebInspector.TimelineModel.call(this, timelineManager.target());
+    WebInspector.TimelineModel.call(this);
+    this._target = timelineManager.target();
     this._timelineManager = timelineManager;
     this._filters = [];
     this._bindings = new WebInspector.TimelineModelImpl.InterRecordBindings();
@@ -395,7 +396,7 @@ WebInspector.TimelineModel.RecordImpl.prototype = {
      */
     target: function()
     {
-        return this._model.target();
+        return this._model._target;
     },
 
     /**

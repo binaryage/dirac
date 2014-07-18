@@ -36,14 +36,14 @@ WebInspector.TimelinePaintProfilerView.prototype = {
     },
 
     /**
-     * @param {!WeakReference.<!WebInspector.Target>} weakTarget
+     * @param {?WebInspector.Target} target
      * @param {string} encodedPicture
      */
-    setPicture: function(weakTarget, encodedPicture)
+    setPicture: function(target, encodedPicture)
     {
         this._disposeSnapshot();
         this._picture = encodedPicture;
-        this._weakTarget = weakTarget;
+        this._target = target;
         if (this.isShowing())
             this._update();
         else
@@ -52,10 +52,9 @@ WebInspector.TimelinePaintProfilerView.prototype = {
 
     _update: function()
     {
-        var target = this._weakTarget.get();
-        if (!target)
+        if (!this._target)
             return;
-        WebInspector.PaintProfilerSnapshot.load(target, this._picture, onSnapshotLoaded.bind(this));
+        WebInspector.PaintProfilerSnapshot.load(this._target, this._picture, onSnapshotLoaded.bind(this));
         /**
          * @param {?WebInspector.PaintProfilerSnapshot} snapshot
          * @this WebInspector.TimelinePaintProfilerView

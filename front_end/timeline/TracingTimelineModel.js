@@ -10,7 +10,7 @@
  */
 WebInspector.TracingTimelineModel = function(tracingModel, recordFilter)
 {
-    WebInspector.TimelineModel.call(this, tracingModel.target());
+    WebInspector.TimelineModel.call(this);
     this._tracingModel = tracingModel;
     this._inspectedTargetEvents = [];
     this._recordFilter = recordFilter;
@@ -610,7 +610,8 @@ WebInspector.TracingTimelineModel.TraceEventRecord.prototype = {
      */
     target: function()
     {
-        return this._model.target();
+        //FIXME: get it from this._event
+        return WebInspector.targetManager.targets()[0];
     },
 
     /**
