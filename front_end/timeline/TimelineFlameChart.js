@@ -163,9 +163,11 @@ WebInspector.TracingBasedTimelineFlameChartDataProvider.prototype = {
     {
         var maxStackDepth = 0;
         var openEvents = [];
-        var heights = [];
+        var levels = [];
+        var jsHeights = [];
         var headerAppended = false;
         var level = 0;
+        var jsStackHeight = 0;
         for (var i = 0; i < events.length; ++i) {
             var e = events[i];
             if (!e.endTime && e.phase !== WebInspector.TracingModel.Phase.Instant)
@@ -174,19 +176,22 @@ WebInspector.TracingBasedTimelineFlameChartDataProvider.prototype = {
                 continue;
             while (openEvents.length && openEvents.peekLast().endTime <= e.startTime) {
                 openEvents.pop();
-                level = heights.pop();
+                level = levels.pop();
+                jsStackHeight = jsHeights.pop();
             }
             if (!headerAppended) {
                 this._appendHeaderRecord(headerName, this._currentLevel);
                 ++level;
                 headerAppended = true;
             }
-            var height = this._processEvent(e, this._currentLevel + level);
+            var jsHeightDelta = this._processEvent(e, this._currentLevel + level, jsStackHeight);
             if (e.endTime) {
                 openEvents.push(e);
-                heights.push(level)
+                jsHeights.push(jsStackHeight);
+                levels.push(level);
             }
-            level += height;
+            level += 1 + jsHeightDelta;
+            jsStackHeight += jsHeightDelta;
             maxStackDepth = Math.max(maxStackDepth, level);
         }
         this._currentLevel += maxStackDepth;
@@ -194,14 +199,15 @@ WebInspector.TracingBasedTimelineFlameChartDataProvider.prototype = {
 
     /**
      * @param {!WebInspector.TracingModel.Event} event
-     * @param {number} baseLevel
+     * @param {number} level
+     * @param {number} jsStackHeight
      * @return {number}
      */
-    _processEvent: function(event, baseLevel)
+    _processEvent: function(event, level, jsStackHeight)
     {
-        var level = baseLevel;
+        var jsHeightDelta = 0;
         if (event.stackTrace && WebInspector.experimentsSettings.timelineJSCPUProfile.isEnabled()) {
-            for (var i = event.stackTrace.length - 1; i >= 0; --i) {
+            for (var i = event.stackTrace.length - 1; i >= jsStackHeight; --i) {
                 var payload = /** @type {!WebInspector.TracingModel.EventPayload} */ ({
                     ph: WebInspector.TracingModel.Phase.Complete,
                     cat: WebInspector.TracingModel.DevToolsMetadataEventCategory,
@@ -215,9 +221,10 @@ WebInspector.TracingBasedTimelineFlameChartDataProvider.prototype = {
                 var jsFrameEvent = new WebInspector.TracingModel.Event(payload, 0, event.thread);
                 this._appendEvent(jsFrameEvent, level++);
             }
+            jsHeightDelta = event.stackTrace.length - jsStackHeight;
         }
-        this._appendEvent(event, level++)
-        return level - baseLevel;
+        this._appendEvent(event, level)
+        return jsHeightDelta;
     },
 
     /**
