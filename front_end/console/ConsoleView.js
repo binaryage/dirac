@@ -775,8 +775,9 @@ WebInspector.ConsoleView.prototype = {
      * @param {?WebInspector.RemoteObject} result
      * @param {boolean} wasThrown
      * @param {!WebInspector.ConsoleMessage} originatingConsoleMessage
+     * @param {?DebuggerAgent.ExceptionDetails=} exceptionDetails
      */
-    _printResult: function(result, wasThrown, originatingConsoleMessage)
+    _printResult: function(result, wasThrown, originatingConsoleMessage, exceptionDetails)
     {
         if (!result)
             return;
@@ -790,7 +791,11 @@ WebInspector.ConsoleView.prototype = {
         function addMessage(url, lineNumber, columnNumber)
         {
             var level = wasThrown ? WebInspector.ConsoleMessage.MessageLevel.Error : WebInspector.ConsoleMessage.MessageLevel.Log;
-            var message = new WebInspector.ConsoleMessage(target, WebInspector.ConsoleMessage.MessageSource.JS, level, "", WebInspector.ConsoleMessage.MessageType.Result, url, lineNumber, columnNumber, undefined, [result]);
+            var message;
+            if (!wasThrown)
+                message = new WebInspector.ConsoleMessage(target, WebInspector.ConsoleMessage.MessageSource.JS, level, "", WebInspector.ConsoleMessage.MessageType.Result, url, lineNumber, columnNumber, undefined, [result]);
+            else
+                message = new WebInspector.ConsoleMessage(target, WebInspector.ConsoleMessage.MessageSource.JS, level, exceptionDetails.text, WebInspector.ConsoleMessage.MessageType.Result, exceptionDetails.url, exceptionDetails.line, exceptionDetails.column, undefined, [WebInspector.UIString("Uncaught"), result], exceptionDetails.stackTrace);
             message.setOriginatingMessage(originatingConsoleMessage);
             target.consoleModel.addMessage(message);
         }
@@ -842,7 +847,7 @@ WebInspector.ConsoleView.prototype = {
         var data = /**{{result: ?WebInspector.RemoteObject, wasThrown: boolean, text: string, commandMessage: !WebInspector.ConsoleMessage}} */ (event.data);
         this._prompt.pushHistoryItem(data.text);
         WebInspector.settings.consoleHistory.set(this._prompt.historyData.slice(-30));
-        this._printResult(data.result, data.wasThrown, data.commandMessage);
+        this._printResult(data.result, data.wasThrown, data.commandMessage, data.exceptionDetails);
     },
 
     /**

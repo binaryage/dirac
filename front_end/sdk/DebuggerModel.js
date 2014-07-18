@@ -619,23 +619,24 @@ WebInspector.DebuggerModel.prototype = {
      * @param {boolean} doNotPauseOnExceptionsAndMuteConsole
      * @param {boolean} returnByValue
      * @param {boolean} generatePreview
-     * @param {function(?WebInspector.RemoteObject, boolean, ?RuntimeAgent.RemoteObject=)} callback
+     * @param {function(?WebInspector.RemoteObject, boolean, ?RuntimeAgent.RemoteObject=, ?DebuggerAgent.ExceptionDetails=)} callback
      */
     evaluateOnSelectedCallFrame: function(code, objectGroup, includeCommandLineAPI, doNotPauseOnExceptionsAndMuteConsole, returnByValue, generatePreview, callback)
     {
         /**
          * @param {?RuntimeAgent.RemoteObject} result
          * @param {boolean=} wasThrown
+         * @param {?DebuggerAgent.ExceptionDetails=} exceptionDetails
          * @this {WebInspector.DebuggerModel}
          */
-        function didEvaluate(result, wasThrown)
+        function didEvaluate(result, wasThrown, exceptionDetails)
         {
             if (!result)
                 callback(null, false);
             else if (returnByValue)
-                callback(null, !!wasThrown, wasThrown ? null : result);
+                callback(null, !!wasThrown, wasThrown ? null : result, exceptionDetails);
             else
-                callback(this.target().runtimeModel.createRemoteObject(result), !!wasThrown);
+                callback(this.target().runtimeModel.createRemoteObject(result), !!wasThrown, undefined, exceptionDetails);
 
             if (objectGroup === "console")
                 this.dispatchEventToListeners(WebInspector.DebuggerModel.Events.ConsoleCommandEvaluatedInSelectedCallFrame);
@@ -1060,7 +1061,7 @@ WebInspector.DebuggerModel.CallFrame.prototype = {
      * @param {boolean} doNotPauseOnExceptionsAndMuteConsole
      * @param {boolean} returnByValue
      * @param {boolean} generatePreview
-     * @param {function(?RuntimeAgent.RemoteObject, boolean=)=} callback
+     * @param {function(?RuntimeAgent.RemoteObject, boolean=, ?DebuggerAgent.ExceptionDetails=)} callback
      */
     evaluate: function(code, objectGroup, includeCommandLineAPI, doNotPauseOnExceptionsAndMuteConsole, returnByValue, generatePreview, callback)
     {
@@ -1068,15 +1069,16 @@ WebInspector.DebuggerModel.CallFrame.prototype = {
          * @param {?Protocol.Error} error
          * @param {!RuntimeAgent.RemoteObject} result
          * @param {boolean=} wasThrown
+         * @param {?DebuggerAgent.ExceptionDetails=} exceptionDetails
          */
-        function didEvaluateOnCallFrame(error, result, wasThrown)
+        function didEvaluateOnCallFrame(error, result, wasThrown, exceptionDetails)
         {
             if (error) {
                 console.error(error);
                 callback(null, false);
                 return;
             }
-            callback(result, wasThrown);
+            callback(result, wasThrown, exceptionDetails);
         }
         this._debuggerAgent.evaluateOnCallFrame(this._payload.callFrameId, code, objectGroup, includeCommandLineAPI, doNotPauseOnExceptionsAndMuteConsole, returnByValue, generatePreview, didEvaluateOnCallFrame);
     },
