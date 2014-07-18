@@ -509,8 +509,6 @@ WebInspector.ViewportControl.prototype = {
      */
     _textOffsetInNode: function(itemElement, container, offset)
     {
-        if (!offset)
-            return 0;
         var chars = 0;
         var node = itemElement;
         while ((node = node.traverseNextTextNode()) && node !== container)
