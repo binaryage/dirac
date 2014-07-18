@@ -102,10 +102,9 @@ WebInspector.TimelineUIUtils.prototype = {
     /**
      * @param {!WebInspector.TimelineModel.Record} record
      * @param {!WebInspector.Linkifier} linkifier
-     * @param {boolean} loadedFromFile
      * @return {?Node}
      */
-    buildDetailsNode: function(record, linkifier, loadedFromFile)
+    buildDetailsNode: function(record, linkifier)
     {
         throw new Error("Not implemented.");
     },
@@ -114,9 +113,8 @@ WebInspector.TimelineUIUtils.prototype = {
      * @param {!WebInspector.TimelineModel} model
      * @param {!WebInspector.Linkifier} linkifier
      * @param {function(!DocumentFragment)} callback
-     * @param {boolean} loadedFromFile
      */
-    generateDetailsContent: function(record, model, linkifier, callback, loadedFromFile)
+    generateDetailsContent: function(record, model, linkifier, callback)
     {
         throw new Error("Not implemented.");
     },

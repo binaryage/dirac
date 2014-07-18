@@ -352,7 +352,7 @@ WebInspector.TimelineModel.Record.prototype = {
     initiator: function() { },
 
     /**
-     * @return {!WebInspector.Target}
+     * @return {?WebInspector.Target}
      */
     target: function() { },
 

@@ -1035,7 +1035,7 @@ WebInspector.TimelinePanel.prototype = {
             var record = /** @type {!WebInspector.TimelineModel.Record} */ (this._selection.object());
             if (this._tracingTimelineModel) {
                 var event = record.traceEvent();
-                this._uiUtils.generateDetailsContent(record, this._model, this._detailsLinkifier, this._appendDetailsTabsForTraceEventAndShowDetails.bind(this, event), this._model.loadedFromFile());
+                this._uiUtils.generateDetailsContent(record, this._model, this._detailsLinkifier, this._appendDetailsTabsForTraceEventAndShowDetails.bind(this, event));
                 break;
             }
             var title = this._uiUtils.titleForRecord(record);
@@ -1043,7 +1043,7 @@ WebInspector.TimelinePanel.prototype = {
             break;
         case WebInspector.TimelineSelection.Type.TraceEvent:
             var event = /** @type {!WebInspector.TracingModel.Event} */ (this._selection.object());
-            WebInspector.TracingTimelineUIUtils.buildTraceEventDetails(event, this._tracingTimelineModel, this._detailsLinkifier, this._appendDetailsTabsForTraceEventAndShowDetails.bind(this, event), false);
+            WebInspector.TracingTimelineUIUtils.buildTraceEventDetails(event, this._tracingTimelineModel, this._detailsLinkifier, this._appendDetailsTabsForTraceEventAndShowDetails.bind(this, event));
             break;
         case WebInspector.TimelineSelection.Type.Frame:
             var frame = /** @type {!WebInspector.TimelineFrame} */ (this._selection.object());

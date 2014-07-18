@@ -837,21 +837,24 @@ WebInspector.TimelineView.prototype = {
         var record = presentationRecord.record();
         if (this._highlightedQuadRecord === record)
             return true;
-        this._highlightedQuadRecord = record;
 
         var quad = this._uiUtils.highlightQuadForRecord(record);
-        if (!quad)
+        var target = record.target();
+        if (!quad || !target)
             return false;
-        record.target().domAgent().highlightQuad(quad, WebInspector.Color.PageHighlight.Content.toProtocolRGBA(), WebInspector.Color.PageHighlight.ContentOutline.toProtocolRGBA());
+        this._highlightedQuadRecord = record;
+        target.domAgent().highlightQuad(quad, WebInspector.Color.PageHighlight.Content.toProtocolRGBA(), WebInspector.Color.PageHighlight.ContentOutline.toProtocolRGBA());
         return true;
     },
 
     _hideQuadHighlight: function()
     {
-        if (this._highlightedQuadRecord) {
-            this._highlightedQuadRecord.target().domAgent().hideHighlight();
+        var target = this._highlightedQuadRecord ? this._highlightedQuadRecord.target() : null;
+        if (target)
+            target.domAgent().hideHighlight();
+
+        if (this._highlightedQuadRecord)
             delete this._highlightedQuadRecord;
-        }
     },
 
     /**
@@ -1081,7 +1084,7 @@ WebInspector.TimelineRecordListRow.prototype = {
         if (presentationRecord.coalesced()) {
             this._dataElement.createTextChild(WebInspector.UIString("× %d", presentationRecord.presentationChildren().length));
         } else {
-            var detailsNode = uiUtils.buildDetailsNode(record, this._linkifier, loadedFromFile);
+            var detailsNode = uiUtils.buildDetailsNode(record, this._linkifier);
             if (detailsNode) {
                 this._dataElement.createTextChild("(");
                 this._dataElement.appendChild(detailsNode);

@@ -606,12 +606,11 @@ WebInspector.TracingTimelineModel.TraceEventRecord.prototype = {
     },
 
     /**
-     * @return {!WebInspector.Target}
+     * @return {?WebInspector.Target}
      */
     target: function()
     {
-        //FIXME: get it from this._event
-        return WebInspector.targetManager.targets()[0];
+        return this._event.thread.target();
     },
 
     /**
