@@ -350,7 +350,7 @@ WebInspector.ViewportControl.prototype = {
 
     refresh: function()
     {
-        if (!this.element.clientHeight)
+        if (!this._visibleHeight())
             return;  // Do nothing for invisible controls.
 
         var itemCount = this._provider.itemCount();
@@ -372,7 +372,7 @@ WebInspector.ViewportControl.prototype = {
         var shouldRestoreSelection = this._updateSelectionModel(selection);
 
         var visibleFrom = this.element.scrollTop;
-        var clientHeight = this.element.clientHeight;
+        var visibleHeight = this._visibleHeight();
         var shouldStickToBottom = this._stickToBottom && this.element.isScrolledToBottom();
         var isInvalidating = !this._cumulativeHeights;
 
@@ -389,11 +389,11 @@ WebInspector.ViewportControl.prototype = {
         var oldLastVisibleIndex = this._lastVisibleIndex;
         if (shouldStickToBottom) {
             this._lastVisibleIndex = itemCount - 1;
-            this._firstVisibleIndex = Math.max(itemCount - Math.ceil(clientHeight / this._provider.minimumRowHeight()), 0);
+            this._firstVisibleIndex = Math.max(itemCount - Math.ceil(visibleHeight / this._provider.minimumRowHeight()), 0);
         } else {
             this._firstVisibleIndex = Math.max(Array.prototype.lowerBound.call(this._cumulativeHeights, visibleFrom + 1), 0);
             // Proactively render more rows in case some of them will be collapsed without triggering refresh. @see crbug.com/390169
-            this._lastVisibleIndex = this._firstVisibleIndex + Math.ceil(clientHeight / this._provider.minimumRowHeight()) - 1;
+            this._lastVisibleIndex = this._firstVisibleIndex + Math.ceil(visibleHeight / this._provider.minimumRowHeight()) - 1;
             this._lastVisibleIndex = Math.min(this._lastVisibleIndex, itemCount - 1);
         }
         var topGapHeight = this._cumulativeHeights[this._firstVisibleIndex - 1] || 0;
@@ -586,7 +586,16 @@ WebInspector.ViewportControl.prototype = {
     forceScrollItemToBeLast: function(index)
     {
         this._rebuildCumulativeHeightsIfNeeded();
-        this.element.scrollTop = this._cumulativeHeights[index] - this.element.clientHeight;
+        this.element.scrollTop = this._cumulativeHeights[index] - this._visibleHeight();
         this.refresh();
+    },
+
+    /**
+     * @return {number}
+     */
+    _visibleHeight: function()
+    {
+        // Use offsetHeight instead of clientHeight to avoid being affected by horizontal scroll.
+        return this.element.offsetHeight;
     }
 }
