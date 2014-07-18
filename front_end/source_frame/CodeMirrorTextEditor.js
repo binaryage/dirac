@@ -2021,7 +2021,7 @@ WebInspector.CodeMirrorTextEditor.AutocompleteController.prototype = {
         for (var changeIndex = 0; changeIndex < changes.length; ++changeIndex) {
             var changeObject = changes[changeIndex];
             singleCharInput = (changeObject.origin === "+input" && changeObject.text.length === 1 && changeObject.text[0].length === 1) ||
-                (changeObject.origin === "+delete" && changeObject.removed.length === 1 && changeObject.removed[0].length === 1);
+                (this._suggestBox && changeObject.origin === "+delete" && changeObject.removed.length === 1 && changeObject.removed[0].length === 1);
 
             var editInfo = this._textEditor._changeObjectToEditOperation(changeObject);
             for (var i = editInfo.newRange.startLine; i <= editInfo.newRange.endLine; ++i)
