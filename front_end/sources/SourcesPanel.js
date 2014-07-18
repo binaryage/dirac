@@ -72,7 +72,6 @@ WebInspector.SourcesPanel = function(workspaceForTest)
 
     this._workspace = workspaceForTest || WebInspector.workspace;
 
-    var helpSection = WebInspector.shortcutsScreen.section(WebInspector.UIString("Sources Panel"));
     this.debugToolbar = this._createDebugToolbar();
     this._debugToolbarDrawer = this._createDebugToolbarDrawer();
     this._targetsToolbar = new WebInspector.TargetsToolbar();
