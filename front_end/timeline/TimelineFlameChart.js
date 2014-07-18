@@ -35,7 +35,7 @@
  * @param {!WebInspector.TimelineFrameModelBase} frameModel
  * @param {!WebInspector.Target} target
  */
-WebInspector.TracingBasedTimelineFlameChartDataProvider = function(model, frameModel, target)
+WebInspector.TimelineFlameChartDataProvider = function(model, frameModel, target)
 {
     WebInspector.FlameChartDataProvider.call(this);
     this._model = model;
@@ -49,9 +49,9 @@ WebInspector.TracingBasedTimelineFlameChartDataProvider = function(model, frameM
     this.addFilter(new WebInspector.TracingTimelineModel.ExclusiveEventNameFilter([WebInspector.TracingTimelineModel.RecordType.Program]));
 }
 
-WebInspector.TracingBasedTimelineFlameChartDataProvider.InstantEventVisibleDurationMs = 0.01;
+WebInspector.TimelineFlameChartDataProvider.InstantEventVisibleDurationMs = 0.01;
 
-WebInspector.TracingBasedTimelineFlameChartDataProvider.prototype = {
+WebInspector.TimelineFlameChartDataProvider.prototype = {
     /**
      * @return {number}
      */
@@ -296,7 +296,7 @@ WebInspector.TracingBasedTimelineFlameChartDataProvider.prototype = {
         if (!event)
             return "#555";
         if (event.name === WebInspector.TracingTimelineModel.RecordType.JSFrame)
-            return WebInspector.TracingBasedTimelineFlameChartDataProvider.jsFrameColorGenerator().colorForID(event.args.data["functionName"]);
+            return WebInspector.TimelineFlameChartDataProvider.jsFrameColorGenerator().colorForID(event.args.data["functionName"]);
         var style = WebInspector.TracingTimelineUIUtils.styleForTraceEvent(event.name);
         return style.category.fillColorStop1;
     },
@@ -374,7 +374,7 @@ WebInspector.TracingBasedTimelineFlameChartDataProvider.prototype = {
             return null;
         return {
             startTime: event.startTime,
-            endTime: event.endTime || event.startTime + WebInspector.TracingBasedTimelineFlameChartDataProvider.InstantEventVisibleDurationMs
+            endTime: event.endTime || event.startTime + WebInspector.TimelineFlameChartDataProvider.InstantEventVisibleDurationMs
         }
     },
 
@@ -418,7 +418,7 @@ WebInspector.TracingBasedTimelineFlameChartDataProvider.prototype = {
         var index = this._entryEvents.length;
         this._entryEvents.push(event);
         this._timelineData.entryLevels[index] = level;
-        this._timelineData.entryTotalTimes[index] = event.duration || WebInspector.TracingBasedTimelineFlameChartDataProvider.InstantEventVisibleDurationMs;
+        this._timelineData.entryTotalTimes[index] = event.duration || WebInspector.TimelineFlameChartDataProvider.InstantEventVisibleDurationMs;
         this._timelineData.entryStartTimes[index] = event.startTime;
     },
 
@@ -460,18 +460,18 @@ WebInspector.TracingBasedTimelineFlameChartDataProvider.prototype = {
 /**
  * @return {!WebInspector.FlameChart.ColorGenerator}
  */
-WebInspector.TracingBasedTimelineFlameChartDataProvider.jsFrameColorGenerator = function()
+WebInspector.TimelineFlameChartDataProvider.jsFrameColorGenerator = function()
 {
-    if (!WebInspector.TracingBasedTimelineFlameChartDataProvider._jsFrameColorGenerator) {
+    if (!WebInspector.TimelineFlameChartDataProvider._jsFrameColorGenerator) {
         var hueSpace = { min: 30, max: 55, count: 5 };
         var satSpace = { min: 70, max: 100, count: 6 };
         var colorGenerator = new WebInspector.FlameChart.ColorGenerator(hueSpace, satSpace, 50);
         colorGenerator.setColorForID("(idle)", "hsl(0, 0%, 60%)");
         colorGenerator.setColorForID("(program)", "hsl(0, 0%, 60%)");
         colorGenerator.setColorForID("(garbage collector)", "hsl(0, 0%, 60%)");
-        WebInspector.TracingBasedTimelineFlameChartDataProvider._jsFrameColorGenerator = colorGenerator;
+        WebInspector.TimelineFlameChartDataProvider._jsFrameColorGenerator = colorGenerator;
     }
-    return WebInspector.TracingBasedTimelineFlameChartDataProvider._jsFrameColorGenerator;
+    return WebInspector.TimelineFlameChartDataProvider._jsFrameColorGenerator;
 }
 
 /**
@@ -490,7 +490,7 @@ WebInspector.TimelineFlameChart = function(delegate, tracingModel, frameModel)
     this.registerRequiredCSS("flameChart.css");
     this._delegate = delegate;
     this._model = tracingModel;
-    this._dataProvider = new WebInspector.TracingBasedTimelineFlameChartDataProvider(tracingModel, frameModel, tracingModel.target())
+    this._dataProvider = new WebInspector.TimelineFlameChartDataProvider(tracingModel, frameModel, tracingModel.target())
     this._mainView = new WebInspector.FlameChart(this._dataProvider, this, true);
     this._mainView.show(this.element);
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStarted, this._onRecordingStarted, this);
