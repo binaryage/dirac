@@ -166,14 +166,6 @@ WebInspector.TimelineUIUtils.prototype = {
     hiddenEmptyRecordsFilter: function()
     {
         return null;
-    },
-    /**
-     * @param {!WebInspector.TimelineModel} model
-     * @return {!WebInspector.TimelineModel.Record}
-     */
-    createProgramRecord: function(model)
-    {
-        throw new Error("Not implemented.");
     }
 }
 

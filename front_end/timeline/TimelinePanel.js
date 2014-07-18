@@ -48,7 +48,6 @@ importScript("TimelineFlameChart.js");
 importScript("TimelineUIUtils.js");
 importScript("TimelineUIUtilsImpl.js");
 importScript("TimelineView.js");
-importScript("TimelineTracingView.js");
 importScript("TimelineLayersView.js");
 importScript("TimelinePaintProfilerView.js");
 importScript("TracingModel.js");
@@ -644,12 +643,10 @@ WebInspector.TimelinePanel.prototype = {
         else
             this._overviewControls.push(new WebInspector.TimelineEventOverview(this._model, this._uiUtils));
 
-        if (WebInspector.experimentsSettings.timelineOnTraceEvents.isEnabled() && this._flameChartEnabledSetting.get()) {
-            var tracingTimelineModel = WebInspector.experimentsSettings.timelineOnTraceEvents.isEnabled() ? this._tracingTimelineModel : null;
-            this._addModeView(new WebInspector.TimelineFlameChart(this, this._model, tracingTimelineModel, this._frameModel(), this._uiUtils));
-        } else {
+        if (this._tracingTimelineModel && this._flameChartEnabledSetting.get())
+            this._addModeView(new WebInspector.TimelineFlameChart(this, this._tracingTimelineModel, this._frameModel()));
+        else
             this._addModeView(this._timelineView());
-        }
 
         if (this._captureMemorySetting.get()) {
             if (!isFrameMode)  // Frame mode skews time, don't render aux overviews.
@@ -662,9 +659,6 @@ WebInspector.TimelinePanel.prototype = {
                 this._overviewControls.push(new WebInspector.TimelinePowerOverview(this._model));
             this._addModeView(new WebInspector.TimelinePowerGraph(this, this._model));
         }
-
-        if (this._captureTracingSetting && this._captureTracingSetting.get())
-            this._addModeView(new WebInspector.TimelineTracingView(this, this._tracingModel, this._model));
 
         if (this._lazyTimelineView)
             this._lazyTimelineView.setFrameModel(isFrameMode ? this._frameModel() : null);

@@ -176,16 +176,6 @@ WebInspector.TimelineUIUtilsImpl.prototype = {
         return new WebInspector.TimelineRecordHiddenTypeFilter(hiddenRecords);
     },
 
-    /**
-     * @param {!WebInspector.TimelineModel} model
-     * @return {!WebInspector.TimelineModel.Record}
-     */
-    createProgramRecord: function(model)
-    {
-        var payloadEvent = { type: WebInspector.TimelineModel.RecordType.Program };
-        return new WebInspector.TimelineModel.RecordImpl(model, /** @type {!TimelineAgent.TimelineEvent} */ (payloadEvent), null);
-    },
-
     __proto__: WebInspector.TimelineUIUtils.prototype
 }
 

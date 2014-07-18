@@ -325,7 +325,6 @@
             "timeline/TimelineUIUtilsImpl.js",
             "timeline/TimelineView.js",
             "timeline/TimelinePaintProfilerView.js",
-            "timeline/TimelineTracingView.js",
             "timeline/TimelineLayersView.js",
             "timeline/TracingModel.js",
             "timeline/TracingTimelineUIUtils.js",
