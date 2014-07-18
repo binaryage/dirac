@@ -38,14 +38,10 @@ WebInspector.Spectrum = function()
     this.element.classList.add("spectrum-container");
     this.element.tabIndex = 0;
 
-    var topElement = this.element.createChild("div", "spectrum-top");
-    topElement.createChild("div", "spectrum-fill");
-
-    var topInnerElement = topElement.createChild("div", "spectrum-top-inner fill");
-    this._draggerElement = topInnerElement.createChild("div", "spectrum-color");
+    this._draggerElement = this.element.createChild("div", "spectrum-color");
     this._dragHelperElement = this._draggerElement.createChild("div", "spectrum-sat fill").createChild("div", "spectrum-val fill").createChild("div", "spectrum-dragger");
 
-    this._sliderElement = topInnerElement.createChild("div", "spectrum-hue");
+    this._sliderElement = this.element.createChild("div", "spectrum-hue");
     this.slideHelper = this._sliderElement.createChild("div", "spectrum-slider");
 
     var rangeContainer = this.element.createChild("div", "spectrum-range-container");
@@ -59,7 +55,7 @@ WebInspector.Spectrum = function()
     this._alphaElement.addEventListener("input", alphaDrag.bind(this), false);
     this._alphaElement.addEventListener("change", alphaDrag.bind(this), false);
 
-    var displayContainer = this.element.createChild("div");
+    var displayContainer = this.element.createChild("div", "spectrum-text");
     var swatchElement = displayContainer.createChild("span", "swatch");
     this._swatchInnerElement = swatchElement.createChild("span", "swatch-inner");
     this._displayElement = displayContainer.createChild("span", "source-code spectrum-display-value");

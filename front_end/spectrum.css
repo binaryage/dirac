@@ -1,14 +1,7 @@
 /* https://github.com/bgrins/spectrum */
 .spectrum-container {
-    position: absolute;
-    top: 0;
-    left: 0;
-    display: inline-block;
-    background: rgba(230, 230, 230, 1) !important;
-    border: 1px solid #646464;
-    padding: 10px;
-    width: 220px;
-    z-index: 10;
+    width: 205px;
+    height: 220px;
     -webkit-user-select: none;
 }
 
@@ -20,25 +13,25 @@
 
 .spectrum-color {
     position: absolute;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    right: 40px;
+    top: 5px;
+    left: 5px;
+    width: 158px;
+    height: 158px;
+    outline: 1px solid #bbb;
 }
 
 .spectrum-display-value {
     -webkit-user-select: text;
-    position: relative;
-    left: 2px;
-    top: -6px;
+    display: inline-block;
+    padding-left: 2px;
 }
 
 .spectrum-hue {
     position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 170px;
+    top: 5px;
+    right: 5px;
+    width: 28px;
+    height: 158px;
     -webkit-box-reflect: right -28px;
 }
 
@@ -48,8 +41,19 @@
 }
 
 .spectrum-range-container {
-    position: relative;
-    padding-bottom: 5px;
+    position: absolute;
+    bottom: 28px;
+    left: 5px;
+    display: flex;
+    align-items: center;
+}
+
+.spectrum-text {
+    position: absolute;
+    bottom: 5px;
+    left: 5px;
+    display: flex;
+    align-items: center;
 }
 
 .spectrum-range-container * {
@@ -60,13 +64,6 @@
 .spectrum-range-container label {
     display: inline-block;
     padding-right: 4px;
-}
-
-.spectrum-range-container input {
-    position: absolute;
-    left: 15px;
-    right: 40px;
-    margin: 3px 0 0 0;
 }
 
 .spectrum-dragger,

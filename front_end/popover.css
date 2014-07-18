@@ -33,7 +33,7 @@
     width: 19px;
     height: 19px;
     margin-left: 15px;
-    margin-top: -25px;
+    margin-top: -24px;
     top: 0;
     left: 0;
 }
@@ -43,7 +43,7 @@
 }
 
 .popover.top-right-arrow .arrow {
-    right: 25px;
+    right: 24px;
     left: auto;
 }
 
@@ -51,7 +51,7 @@
     top: auto;
     bottom: 0;
     margin-top: 0;
-    margin-bottom: -25px;
+    margin-bottom: -24px;
     background-position: 0 -19px;
 }
 
@@ -61,14 +61,14 @@
     top: auto;
     bottom: 0;
     margin-top: 0;
-    margin-bottom: -25px;
+    margin-bottom: -24px;
     background-position: 0 -19px;
 }
 
 .popover.left-top-arrow .arrow {
     top: 0;
     margin-top: 15px;
-    margin-left: -25px;
+    margin-left: -24px;
     background-position: 0 -38px;
 }
 
@@ -76,7 +76,7 @@
     top: auto;
     bottom: 0;
     margin-bottom: 15px;
-    margin-left: -25px;
+    margin-left: -24px;
     background-position: 0 -38px;
 }
 
@@ -85,7 +85,7 @@
     left: auto;
     top: 0;
     margin-top: 15px;
-    margin-right: -25px;
+    margin-right: -24px;
     background-position: 0 -57px;
 }
 
@@ -95,6 +95,6 @@
     top: auto;
     bottom: 0;
     margin-bottom: 15px;
-    margin-right: -25px;
+    margin-right: -24px;
     background-position: 0 -57px;
 }

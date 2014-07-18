@@ -553,8 +553,6 @@
             'front_end/Images/thumbHoverHoriz.png',
             'front_end/Images/thumbHoverVert.png',
             'front_end/Images/toolbarItemSelected.png',
-            'front_end/Images/trackHoriz.png',
-            'front_end/Images/trackVert.png',
         ],
         'devtools_layers_js_files': [
             'front_end/layers/LayersPanel.js',

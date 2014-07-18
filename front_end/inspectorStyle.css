@@ -2383,7 +2383,7 @@ body.inactive .sidebar-tree-item.selected {
 }
 
 .source-frame-popover-tree {
-    border-top: 1px solid rgb(194, 194, 147);
+    border-top: 1px solid rgb(184, 184, 184);
     overflow: auto;
     position: absolute;
     top: 15px;
@@ -2837,28 +2837,13 @@ button.record-profile-status-bar-item.toggled-on .glyph:not(.shadow) {
     -webkit-border-image: url(Images/thumbActiveVert.png) 11 0 11 0;
 }
 
-.custom-popup-vertical-scroll ::-webkit-scrollbar-track-piece:vertical:start {
-    margin-top: 5px;
-}
-
-.custom-popup-vertical-scroll ::-webkit-scrollbar-track-piece:vertical:end {
-    margin-bottom: 5px;
-}
-
-.custom-popup-vertical-scroll ::-webkit-scrollbar-track-piece:vertical:end:corner-present {
-    margin-bottom: 4px;
-}
-
 .custom-popup-vertical-scroll ::-webkit-scrollbar-track-piece:vertical:decrement {
-    -webkit-border-image: url(Images/trackVert.png) 11 0 11 0;
-    border-color: transparent;
-    border-width: 11px 0 0 0;
 }
 
-.custom-popup-vertical-scroll ::-webkit-scrollbar-track-piece:vertical:increment {
-    -webkit-border-image: url(Images/trackVert.png) 11 0 11 0;
-    border-color: transparent;
-    border-width: 0 0 11px 0;
+.custom-popup-vertical-scroll ::-webkit-scrollbar-track:vertical {
+    background: linear-gradient(to right, rgb(80, 80, 80), rgb(192, 192, 192) 25%, rgb(192, 192, 192));
+    border-radius: 5px;
+    margin: 5px;
 }
 
 .console-context {
