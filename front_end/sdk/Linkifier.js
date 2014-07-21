@@ -196,19 +196,32 @@ WebInspector.Linkifier.prototype = {
     },
 
     /**
-     * @param {?CSSAgent.StyleSheetId} styleSheetId
      * @param {!WebInspector.CSSLocation} rawLocation
      * @param {string=} classes
      * @return {?Element}
      */
-    linkifyCSSLocation: function(styleSheetId, rawLocation, classes)
+    linkifyCSSLocation: function(rawLocation, classes)
     {
         var anchor = this._createAnchor(classes);
-        var liveLocation = rawLocation.createLiveLocation(styleSheetId, this._updateAnchor.bind(this, anchor));
+        var liveLocation = rawLocation.createLiveLocation(this._updateAnchor.bind(this, anchor));
         if (!liveLocation)
             return null;
         this._liveLocationsByTarget.get(rawLocation.target()).push({anchor: anchor, location: liveLocation});
         return anchor;
+    },
+
+    /**
+     * @param {!WebInspector.CSSMedia} media
+     * @return {?Element}
+     */
+    linkifyMedia: function(media)
+    {
+        var location = media.rawLocation();
+        if (location)
+            return this.linkifyCSSLocation(location);
+
+        // The "linkedStylesheet" case.
+        return WebInspector.linkifyResourceAsNode(media.sourceURL, undefined, "subtitle", media.sourceURL);
     },
 
     /**

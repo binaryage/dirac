@@ -262,8 +262,8 @@ WebInspector.ConsoleViewMessage.prototype = {
         columnNumber = columnNumber ? columnNumber - 1 : 0;
         if (this._message.source === WebInspector.ConsoleMessage.MessageSource.CSS) {
             var headerIds = target.cssModel.styleSheetIdsForURL(url);
-            var cssLocation = new WebInspector.CSSLocation(target, url, lineNumber, columnNumber);
-            return this._linkifier.linkifyCSSLocation(headerIds[0] || null, cssLocation, "console-message-url");
+            var cssLocation = new WebInspector.CSSLocation(target, headerIds[0] || null, url, lineNumber, columnNumber);
+            return this._linkifier.linkifyCSSLocation(cssLocation, "console-message-url");
         }
 
         return this._linkifier.linkifyLocation(target, url, lineNumber, columnNumber, "console-message-url");
