@@ -94,13 +94,13 @@ WebInspector.ScreencastView.prototype = {
         WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.ScreencastFrame, this._screencastFrame, this);
         WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.ScreencastVisibilityChanged, this._screencastVisibilityChanged, this);
 
-        WebInspector.timelineManager.addEventListener(WebInspector.TimelineManager.EventTypes.TimelineStarted, this._onTimeline.bind(this, true), this);
-        WebInspector.timelineManager.addEventListener(WebInspector.TimelineManager.EventTypes.TimelineStopped, this._onTimeline.bind(this, false), this);
-        this._timelineActive = WebInspector.timelineManager.isStarted();
+        WebInspector.targetManager.addModelListener(WebInspector.TimelineManager, WebInspector.TimelineManager.EventTypes.TimelineStarted, this._onTimeline.bind(this), this);
+        WebInspector.targetManager.addModelListener(WebInspector.TimelineManager, WebInspector.TimelineManager.EventTypes.TimelineStopped, this._onTimeline.bind(this), this);
+        this._timelineActive = this._isTimelineActive();
 
-        WebInspector.cpuProfilerModel.addEventListener(WebInspector.CPUProfilerModel.EventTypes.ProfileStarted, this._onProfiler.bind(this, true), this);
-        WebInspector.cpuProfilerModel.addEventListener(WebInspector.CPUProfilerModel.EventTypes.ProfileStopped, this._onProfiler.bind(this, false), this);
-        this._profilerActive = WebInspector.cpuProfilerModel.isRecordingProfile();
+        WebInspector.targetManager.addModelListener(WebInspector.CPUProfilerModel, WebInspector.CPUProfilerModel.EventTypes.ProfileStarted, this._onProfiler.bind(this), this);
+        WebInspector.targetManager.addModelListener(WebInspector.CPUProfilerModel, WebInspector.CPUProfilerModel.EventTypes.ProfileStopped, this._onProfiler.bind(this), this);
+        this._profilerActive = this._isProfilerActive();
 
         this._updateGlasspane();
     },
@@ -188,13 +188,9 @@ WebInspector.ScreencastView.prototype = {
         this._updateGlasspane();
     },
 
-    /**
-     * @param {boolean} on
-     * @private
-     */
-    _onTimeline: function(on)
+    _onTimeline: function()
     {
-        this._timelineActive = on;
+        this._timelineActive = this._isTimelineActive();
         if (this._timelineActive)
             this._stopCasting();
         else
@@ -203,12 +199,11 @@ WebInspector.ScreencastView.prototype = {
     },
 
     /**
-     * @param {boolean} on
      * @param {!WebInspector.Event} event
-     * @private
      */
-    _onProfiler: function(on, event) {
-        this._profilerActive = on;
+    _onProfiler: function(event)
+    {
+        this._profilerActive = this._isProfilerActive();
         if (this._profilerActive)
             this._stopCasting();
         else
@@ -921,6 +916,16 @@ WebInspector.ScreencastView.prototype = {
         this._navigationUrl.focus();
         this._navigationUrl.select();
         return true;
+    },
+
+    _isTimelineActive: function()
+    {
+        return WebInspector.targetManager.targets().some(function(target){ return target.timelineManager.isStarted();});
+    },
+
+    _isProfilerActive: function()
+    {
+        return WebInspector.targetManager.targets().some(function(target){ return target.cpuProfilerModel.isRecordingProfile();});
     },
 
   __proto__: WebInspector.VBox.prototype
