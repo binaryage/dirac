@@ -46,6 +46,16 @@
     font-weight: bold;
 }
 
+.flame-chart-marker-highlight-element {
+    position: absolute;
+    top: 0;
+    height: 20px;
+    width: 4px;
+    margin: 0 -2px;
+    content: "";
+    display: block;
+}
+
 .flame-chart-highlight-element {
     background-color: black;
     position: absolute;

@@ -116,12 +116,35 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
         return null;
     },
 
+    /**
+     * @override
+     * @param {number} index
+     * @return {string}
+     */
+    markerColor: function(index)
+    {
+        var event = this._markerEvents[index];
+        return WebInspector.TracingTimelineUIUtils.markerEventColor(event.name);
+    },
+
+    /**
+     * @override
+     * @param {number} index
+     * @return {string}
+     */
+    markerTitle: function(index)
+    {
+        var event = this._markerEvents[index];
+        return WebInspector.TracingTimelineUIUtils.eventTitle(event, this._model);
+    },
+
     reset: function()
     {
         this._timelineData = null;
         /** @type {!Array.<!WebInspector.TracingModel.Event>} */
         this._entryEvents = [];
         this._entryIndexToTitle = {};
+        this._markerEvents = [];
     },
 
     /**
@@ -132,14 +155,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
         if (this._timelineData)
             return this._timelineData;
 
-        /**
-         * @type {?WebInspector.FlameChart.TimelineData}
-         */
-        this._timelineData = {
-            entryLevels: [],
-            entryTotalTimes: [],
-            entryStartTimes: []
-        };
+        this._timelineData = new WebInspector.FlameChart.TimelineData([], [], []);
 
         this._minimumBoundary = this._model.minimumRecordTime();
         this._timeSpan = Math.max(this._model.maximumRecordTime() - this._minimumBoundary, 1000);
@@ -168,8 +184,13 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
         var jsStackHeight = 0;
         for (var i = 0; i < events.length; ++i) {
             var e = events[i];
-            if (!e.endTime && e.phase !== WebInspector.TracingModel.Phase.Instant)
+            // FIXME: clean up once phase name is unified between Blink and Chromium.
+            if (!e.endTime && e.phase !== WebInspector.TracingModel.Phase.Instant && e.phase !== "I")
                 continue;
+            if (WebInspector.TracingTimelineUIUtils.isMarkerEvent(e)) {
+                this._markerEvents.push(e);
+                this._timelineData.markerTimestamps.push(e.startTime);
+            }
             if (!this._isVisible(e))
                 continue;
             while (openEvents.length && openEvents.peekLast().endTime <= e.startTime) {
@@ -183,14 +204,14 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
                 headerAppended = true;
             }
             var jsHeightDelta = this._processEvent(e, this._currentLevel + level, jsStackHeight);
+            maxStackDepth = Math.max(maxStackDepth, level + 1 + jsHeightDelta);
             if (e.endTime) {
                 openEvents.push(e);
                 jsHeights.push(jsStackHeight);
                 levels.push(level);
+                level += 1 + jsHeightDelta;
             }
-            level += 1 + jsHeightDelta;
             jsStackHeight += jsHeightDelta;
-            maxStackDepth = Math.max(maxStackDepth, level);
         }
         this._currentLevel += maxStackDepth;
     },

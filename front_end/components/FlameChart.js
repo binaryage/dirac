@@ -68,6 +68,7 @@ WebInspector.FlameChart = function(dataProvider, flameChartDelegate, isTopDown)
     this._vScrollElement.addEventListener("scroll", this.scheduleUpdate.bind(this), false);
 
     this._entryInfo = this.element.createChild("div", "profile-entry-info");
+    this._markerHighlighElement = this.element.createChild("div", "flame-chart-marker-highlight-element");
     this._highlightElement = this.element.createChild("div", "flame-chart-highlight-element");
     this._selectedElement = this.element.createChild("div", "flame-chart-selected-element");
 
@@ -84,6 +85,7 @@ WebInspector.FlameChart = function(dataProvider, flameChartDelegate, isTopDown)
     this._paddingLeft = this._dataProvider.paddingLeft();
     this._markerPadding = 2;
     this._markerRadius = this._barHeight / 2 - this._markerPadding;
+    this._highlightedMarkerIndex = -1;
     this._highlightedEntryIndex = -1;
     this._selectedEntryIndex = -1;
     this._textWidth = {};
@@ -98,13 +100,20 @@ WebInspector.FlameChartDataProvider = function()
 {
 }
 
-/** @typedef {!{
-        entryLevels: (!Array.<number>|!Uint8Array),
-        entryTotalTimes: (!Array.<number>|!Float32Array),
-        entryStartTimes: (!Array.<number>|!Float64Array)
-    }}
+/**
+ * @constructor
+ * @param {!Array.<number>|!Uint8Array} entryLevels
+ * @param {!Array.<number>|!Float32Array} entryTotalTimes
+ * @param {!Array.<number>|!Float64Array} entryStartTimes
  */
-WebInspector.FlameChart.TimelineData;
+WebInspector.FlameChart.TimelineData = function(entryLevels, entryTotalTimes, entryStartTimes)
+{
+    this.entryLevels = entryLevels;
+    this.entryTotalTimes = entryTotalTimes;
+    this.entryStartTimes = entryStartTimes;
+    /** @type {!Array.<number>} */
+    this.markerTimestamps = [];
+}
 
 WebInspector.FlameChartDataProvider.prototype = {
     /**
@@ -118,6 +127,18 @@ WebInspector.FlameChartDataProvider.prototype = {
      * @return {?Array.<number>}
      */
     dividerOffsets: function(startTime, endTime) { },
+
+    /**
+     * @param {number} index
+     * @return {string}
+     */
+    markerColor: function(index) { },
+
+    /**
+     * @param {number} index
+     * @return {string}
+     */
+    markerTitle: function(index) { },
 
     /**
      * @return {number}
@@ -455,6 +476,13 @@ WebInspector.FlameChart.prototype = {
     {
         if (this._isDragging)
             return;
+
+        var inDividersBar = event.offsetY < WebInspector.FlameChart.DividersBarHeight;
+        this._highlightedMarkerIndex = inDividersBar ? this._markerIndexAtPosition(event.offsetX) : -1;
+        this._updateMarkerHighlight();
+        if (inDividersBar)
+            return;
+
         var entryIndex = this._coordinatesToEntryIndex(event.offsetX, event.offsetY);
 
         if (this._highlightedEntryIndex === entryIndex)
@@ -562,6 +590,11 @@ WebInspector.FlameChart.prototype = {
         if (!entryIndexes || !entryIndexes.length)
             return -1;
 
+        /**
+         * @param {number} time
+         * @param {number} entryIndex
+         * @return {number}
+         */
         function comparator(time, entryIndex)
         {
             return time - entryStartTimes[entryIndex];
@@ -596,6 +629,42 @@ WebInspector.FlameChart.prototype = {
         if (checkEntryHit.call(this, entryIndex))
             return entryIndex;
         return -1;
+    },
+
+    /**
+     * @param {number} x
+     * @return {number}
+     */
+    _markerIndexAtPosition: function(x)
+    {
+        var markers = this._timelineData().markerTimestamps;
+        if (!markers)
+            return -1;
+        var accurracyOffsetPx = 1;
+        var time = this._cursorTime(x);
+        var leftTime = this._cursorTime(x - accurracyOffsetPx);
+        var rightTime = this._cursorTime(x + accurracyOffsetPx);
+
+        /**
+         * @param {number} time
+         * @param {number} markerTimestamp
+         * @return {number}
+         */
+        function comparator(time, markerTimestamp)
+        {
+            return time - markerTimestamp;
+        }
+        var left = markers.lowerBound(leftTime, comparator);
+        var markerIndex = -1;
+        var distance = Infinity;
+        for (var i = left; i < markers.length && markers[i] < rightTime; i++) {
+            var nextDistance = Math.abs(markers[i] - time);
+            if (nextDistance < distance) {
+                markerIndex = i;
+                distance = nextDistance;
+            }
+        }
+        return markerIndex;
     },
 
     /**
@@ -746,9 +815,62 @@ WebInspector.FlameChart.prototype = {
 
         var offsets = this._dataProvider.dividerOffsets(this._calculator.minimumBoundary(), this._calculator.maximumBoundary());
         WebInspector.TimelineGrid.drawCanvasGrid(this._canvas, this._calculator, offsets);
+        this._drawMarkers();
 
         this._updateElementPosition(this._highlightElement, this._highlightedEntryIndex);
         this._updateElementPosition(this._selectedElement, this._selectedEntryIndex);
+        this._updateMarkerHighlight();
+    },
+
+    _drawMarkers: function()
+    {
+        var markerTimestamps = this._timelineData().markerTimestamps;
+        /**
+         * @param {number} time
+         * @param {number} markerTimestamp
+         * @return {number}
+         */
+        function compare(time, markerTimestamp)
+        {
+            return time - markerTimestamp;
+        }
+        var left = markerTimestamps.lowerBound(this._calculator.minimumBoundary(), compare);
+        var rightBoundary = this._calculator.maximumBoundary();
+
+        var context = this._canvas.getContext("2d");
+        context.save();
+        var ratio = window.devicePixelRatio;
+        context.scale(ratio, ratio);
+        var height = WebInspector.FlameChart.DividersBarHeight - 1;
+        context.lineWidth = 2;
+        for (var i = left; i < markerTimestamps.length; i++) {
+            var timestamp = markerTimestamps[i];
+            if (timestamp > rightBoundary)
+                break;
+            var position = this._calculator.computePosition(timestamp);
+            context.strokeStyle = this._dataProvider.markerColor(i);
+            context.beginPath();
+            context.moveTo(position, 0);
+            context.lineTo(position, height);
+            context.stroke();
+        }
+        context.restore();
+    },
+
+    _updateMarkerHighlight: function()
+    {
+        var element = this._markerHighlighElement;
+        if (element.parentElement)
+            element.remove();
+        var markerIndex = this._highlightedMarkerIndex;
+        if (markerIndex === -1)
+            return;
+        var barX = this._timeToPosition(this._timelineData().markerTimestamps[markerIndex]);
+        element.title = this._dataProvider.markerTitle(markerIndex);
+        var style = element.style;
+        style.left = barX + "px";
+        style.backgroundColor = this._dataProvider.markerColor(markerIndex);
+        this.element.appendChild(element);
     },
 
     /**
@@ -953,6 +1075,7 @@ WebInspector.FlameChart.prototype = {
 
     reset: function()
     {
+        this._highlightedMarkerIndex = -1;
         this._highlightedEntryIndex = -1;
         this._selectedEntryIndex = -1;
         this._textWidth = {};

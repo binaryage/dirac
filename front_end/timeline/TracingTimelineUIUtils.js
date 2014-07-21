@@ -45,7 +45,7 @@ WebInspector.TracingTimelineUIUtils.prototype = {
      */
     isEventDivider: function(record)
     {
-        return WebInspector.TracingTimelineUIUtils.isEventDivider(record);
+        return WebInspector.TracingTimelineUIUtils.isMarkerEvent(record.traceEvent());
     },
 
     /**
@@ -72,7 +72,8 @@ WebInspector.TracingTimelineUIUtils.prototype = {
      */
     titleForRecord: function(record)
     {
-        return WebInspector.TracingTimelineUIUtils._recordTitle(/** @type {!WebInspector.TracingTimelineModel.TraceEventRecord} */(record));
+        var event = record.traceEvent();
+        return WebInspector.TracingTimelineUIUtils.eventTitle(event, record.timelineModel());
     },
 
     /**
@@ -212,7 +213,7 @@ WebInspector.TracingTimelineUIUtils._initEventStyles = function()
     eventStyles[recordTypes.Layout] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Layout"), categories["rendering"]);
     eventStyles[recordTypes.PaintSetup] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Paint Setup"), categories["painting"]);
     eventStyles[recordTypes.UpdateLayer] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Update Layer"), categories["painting"], true);
-    eventStyles[recordTypes.UpdateLayerTree] = { title: WebInspector.UIString("Update Layer Tree"), category: categories["rendering"] };
+    eventStyles[recordTypes.UpdateLayerTree] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Update Layer Tree"), categories["rendering"], true);
     eventStyles[recordTypes.Paint] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Paint"), categories["painting"]);
     eventStyles[recordTypes.Rasterize] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Paint"), categories["painting"]);
     eventStyles[recordTypes.RasterTask] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Paint"), categories["painting"]);
@@ -283,36 +284,61 @@ WebInspector.TracingTimelineUIUtils.styleForTraceEvent = function(name)
 }
 
 /**
- * @param {!WebInspector.TracingTimelineModel.TraceEventRecord} record
+ * @param {string} eventName
  * @return {string}
  */
-WebInspector.TracingTimelineUIUtils._recordTitle = function(record)
+WebInspector.TracingTimelineUIUtils.markerEventColor = function(eventName)
 {
-    var event = record.traceEvent();
+    var red = "rgb(255, 0, 0)";
+    var blue = "rgb(0, 0, 255)";
+    var orange = "rgb(255, 178, 23)";
+    var green = "rgb(0, 130, 0)";
+
+    var recordTypes = WebInspector.TracingTimelineModel.RecordType;
+    switch (eventName) {
+    case recordTypes.MarkDOMContent: return blue;
+    case recordTypes.MarkLoad: return red;
+    case recordTypes.MarkFirstPaint: return green;
+    case recordTypes.TimeStamp: return orange;
+    }
+    return green;
+}
+
+/**
+ * @param {!WebInspector.TracingModel.Event} event
+ * @param {!WebInspector.TimelineModel} model
+ * @return {string}
+ */
+WebInspector.TracingTimelineUIUtils.eventTitle = function(event, model)
+{
     if (event.name === WebInspector.TracingTimelineModel.RecordType.TimeStamp)
         return event.args.data["message"];
     var title = WebInspector.TracingTimelineUIUtils.eventStyle(event).title;
-    if (WebInspector.TracingTimelineUIUtils.isEventDivider(record)) {
-        var startTime = Number.millisToString(record.startTime() - record.timelineModel().minimumRecordTime());
+    if (WebInspector.TracingTimelineUIUtils.isMarkerEvent(event)) {
+        var startTime = Number.millisToString(event.startTime - model.minimumRecordTime());
         return WebInspector.UIString("%s at %s", title, startTime);
     }
     return title;
 }
 
 /**
- * @param {!WebInspector.TimelineModel.Record} record
+ * @param {!WebInspector.TracingModel.Event} event
  * @return {boolean}
  */
-WebInspector.TracingTimelineUIUtils.isEventDivider = function(record)
+WebInspector.TracingTimelineUIUtils.isMarkerEvent = function(event)
 {
     var recordTypes = WebInspector.TracingTimelineModel.RecordType;
-    if (record.type() === recordTypes.TimeStamp)
+    switch (event.name) {
+    case recordTypes.TimeStamp:
         return true;
-    if (record.type() === recordTypes.MarkFirstPaint)
+    case recordTypes.MarkFirstPaint:
         return true;
-    if (record.type() === recordTypes.MarkDOMContent || record.type() === recordTypes.MarkLoad)
-        return record.data()["isMainFrame"];
-    return false;
+    case recordTypes.MarkDOMContent:
+    case recordTypes.MarkLoad:
+        return event.args.data["isMainFrame"];
+    default:
+        return false;
+    }
 }
 
 /**

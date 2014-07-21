@@ -111,6 +111,24 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
     },
 
     /**
+     * @param {number} index
+     * @return {string}
+     */
+    markerColor: function(index)
+    {
+        throw new Error("Unreachable.");
+    },
+
+    /**
+     * @param {number} index
+     * @return {string}
+     */
+    markerTitle: function(index)
+    {
+        throw new Error("Unreachable.");
+    },
+
+    /**
      * @return {?WebInspector.FlameChart.TimelineData}
      */
     _calculateTimelineData: function()
@@ -172,12 +190,7 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
 
         this._maxStackDepth = maxDepth;
 
-        /** @type {!WebInspector.FlameChart.TimelineData} */
-        this._timelineData = {
-            entryLevels: entryLevels,
-            entryTotalTimes: entryTotalTimes,
-            entryStartTimes: entryStartTimes,
-        };
+        this._timelineData = new WebInspector.FlameChart.TimelineData(entryLevels, entryTotalTimes, entryStartTimes);
 
         /** @type {!Array.<!ProfilerAgent.CPUProfileNode>} */
         this._entryNodes = entryNodes;

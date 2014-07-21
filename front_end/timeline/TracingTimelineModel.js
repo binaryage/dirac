@@ -239,7 +239,7 @@ WebInspector.TracingTimelineModel.prototype = {
                     this._addTopLevelRecord(top);
             }
             var record = new WebInspector.TracingTimelineModel.TraceEventRecord(this, event);
-            if (WebInspector.TracingTimelineUIUtils.isEventDivider(record))
+            if (WebInspector.TracingTimelineUIUtils.isMarkerEvent(event))
                 this._eventDividerRecords.push(record);
             if (!this._recordFilter.accept(record))
                 continue;
