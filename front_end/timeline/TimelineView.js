@@ -582,7 +582,7 @@ WebInspector.TimelineView.prototype = {
                     this._graphRowsElement.appendChild(graphRowElement);
                 }
 
-                listRowElement.row.update(record, visibleTop, this._model.loadedFromFile(), this._uiUtils);
+                listRowElement.row.update(record, visibleTop, this._uiUtils);
                 graphRowElement.row.update(record, this._calculator, this._expandOffset, i, this._uiUtils);
                 if (this._lastSelectedRecord === record) {
                     listRowElement.row.renderAsSelected(true);
@@ -1055,10 +1055,9 @@ WebInspector.TimelineRecordListRow.prototype = {
     /**
      * @param {!WebInspector.TimelinePresentationModel.Record} presentationRecord
      * @param {number} offset
-     * @param {boolean} loadedFromFile
      * @param {!WebInspector.TimelineUIUtils} uiUtils
      */
-    update: function(presentationRecord, offset, loadedFromFile, uiUtils)
+    update: function(presentationRecord, offset, uiUtils)
     {
         this._record = presentationRecord;
         var record = presentationRecord.record();

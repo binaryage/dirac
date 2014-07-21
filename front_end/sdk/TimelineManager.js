@@ -73,10 +73,10 @@ WebInspector.TimelineManager.prototype = {
         if (WebInspector.experimentsSettings.timelineJSCPUProfile.isEnabled() && maxCallStackDepth) {
             this._configureCpuProfilerSamplingInterval();
             this._jsProfilerStarted = true;
-            ProfilerAgent.start();
+            this.target().profilerAgent().start();
         }
         if (this._enablementCount === 1)
-            TimelineAgent.start(maxCallStackDepth, bufferEvents, liveEvents, includeCounters, includeGPUEvents, callback);
+            this.target().timelineAgent().start(maxCallStackDepth, bufferEvents, liveEvents, includeCounters, includeGPUEvents, callback);
         else if (callback)
             callback(null);
     },
@@ -97,11 +97,11 @@ WebInspector.TimelineManager.prototype = {
         var callbackBarrier = new CallbackBarrier();
 
         if (this._jsProfilerStarted) {
-            ProfilerAgent.stop(callbackBarrier.createCallback(profilerCallback));
+            this.target().profilerAgent().stop(callbackBarrier.createCallback(profilerCallback));
             this._jsProfilerStarted = false;
         }
         if (!this._enablementCount)
-            TimelineAgent.stop(callbackBarrier.createCallback(this._processBufferedEvents.bind(this, timelineCallback)));
+            this.target().timelineAgent().stop(callbackBarrier.createCallback(this._processBufferedEvents.bind(this, timelineCallback)));
 
         callbackBarrier.callWhenDone(allDoneCallback.bind(this));
 
@@ -151,7 +151,7 @@ WebInspector.TimelineManager.prototype = {
     _configureCpuProfilerSamplingInterval: function()
     {
         var intervalUs = WebInspector.settings.highResolutionCpuProfiling.get() ? 100 : 1000;
-        ProfilerAgent.setSamplingInterval(intervalUs, didChangeInterval);
+        this.target().profilerAgent().setSamplingInterval(intervalUs, didChangeInterval);
 
         function didChangeInterval(error)
         {

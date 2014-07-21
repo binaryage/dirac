@@ -84,7 +84,7 @@ WebInspector.TimelinePanel = function()
         this._model = this._tracingTimelineModel;
     } else {
         this._uiUtils = new WebInspector.TimelineUIUtilsImpl();
-        this._model = new WebInspector.TimelineModelImpl(WebInspector.timelineManager);
+        this._model = new WebInspector.TimelineModelImpl();
     }
 
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStarted, this._onRecordingStarted, this);
@@ -1040,7 +1040,7 @@ WebInspector.TimelinePanel.prototype = {
                 break;
             }
             var title = this._uiUtils.titleForRecord(record);
-            this._uiUtils.generateDetailsContent(record, this._model, this._detailsLinkifier, this.showInDetails.bind(this, title), this._model.loadedFromFile());
+            this._uiUtils.generateDetailsContent(record, this._model, this._detailsLinkifier, this.showInDetails.bind(this, title));
             break;
         case WebInspector.TimelineSelection.Type.TraceEvent:
             var event = /** @type {!WebInspector.TracingModel.Event} */ (this._selection.object());

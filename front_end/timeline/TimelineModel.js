@@ -157,14 +157,6 @@ WebInspector.TimelineModel.prototype = {
     },
 
     /**
-     * @return {boolean}
-     */
-    loadedFromFile: function()
-    {
-        return false;
-    },
-
-    /**
      * @param {?function(!WebInspector.TimelineModel.Record)|?function(!WebInspector.TimelineModel.Record,number)} preOrderCallback
      * @param {function(!WebInspector.TimelineModel.Record)|function(!WebInspector.TimelineModel.Record,number)=} postOrderCallback
      */
@@ -263,7 +255,6 @@ WebInspector.TimelineModel.prototype = {
 
     reset: function()
     {
-        this._loadedFromFile = false;
         this._records = [];
         this._minimumRecordTime = 0;
         this._maximumRecordTime = 0;
