@@ -16,6 +16,7 @@ WebInspector.TimelineLayersView = function()
     this._layers3DView = new WebInspector.Layers3DView();
     this._layers3DView.addEventListener(WebInspector.Layers3DView.Events.ObjectSelected, this._onObjectSelected, this);
     this._layers3DView.addEventListener(WebInspector.Layers3DView.Events.ObjectHovered, this._onObjectHovered, this);
+    this._layers3DView.addEventListener(WebInspector.Layers3DView.Events.JumpToPaintEventRequested, this._jumpToPaintEvent, this);
     this._layers3DView.show(this.element);
 }
 
@@ -40,6 +41,44 @@ WebInspector.TimelineLayersView.prototype = {
         if (this._updateWhenVisible) {
             this._updateWhenVisible = false;
             this._update();
+        }
+    },
+
+    /**
+     * @param {!WebInspector.TimelineModel} model
+     * @param {!WebInspector.TimelineModeViewDelegate} delegate
+     */
+    setTimelineModelAndDelegate: function(model, delegate)
+    {
+        this._model = model;
+        this._delegate = delegate;
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _jumpToPaintEvent: function(event)
+    {
+        var traceEvent = event.data;
+        var eventRecord;
+
+        /**
+         * @param {!WebInspector.TimelineModel.Record} record
+         * @return {boolean}
+         */
+        function findRecordWithEvent(record)
+        {
+            if (record.traceEvent() === traceEvent) {
+                eventRecord = record;
+                return true;
+            }
+            return false;
+        }
+
+        this._model.forAllRecords(findRecordWithEvent);
+        if (eventRecord) {
+            var selection = WebInspector.TimelineSelection.fromRecord(eventRecord);
+            this._delegate.select(selection);
         }
     },
 
@@ -79,7 +118,7 @@ WebInspector.TimelineLayersView.prototype = {
                 snapshot.dispose();
                 return;
             }
-            this._paintTiles.push({layerId: paintEvent.layerId, rect: paintEvent.rect, snapshot: snapshot});
+            this._paintTiles.push({layerId: paintEvent.layerId, rect: paintEvent.rect, snapshot: snapshot, traceEvent: paintEvent.traceEvent});
         }
 
         /**

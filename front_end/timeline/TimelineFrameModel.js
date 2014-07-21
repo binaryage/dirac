@@ -456,7 +456,7 @@ WebInspector.TracingTimelineFrameModel.prototype = {
             return;
         if (event.name === eventNames.Paint && event.args["data"]["layerId"] && event.picture) {
             /** @type {!WebInspector.LayerPaintEvent} */
-            var paintEvent = {layerId: event.args["data"]["layerId"], picture: event.picture, rect: event.layerRect};
+            var paintEvent = {layerId: event.args["data"]["layerId"], picture: event.picture, rect: event.layerRect, traceEvent: event};
             this._framePendingCommit.paints.push(paintEvent);
         }
 
@@ -579,7 +579,7 @@ WebInspector.TimelineFrame.prototype = {
 }
 
 /**
- * @typedef {!{layerId: string, rect: !Array.<number>, picture: string}}
+ * @typedef {!{layerId: string, rect: !Array.<number>, picture: string, traceEvent: !WebInspector.TracingModel.Event}}
  */
 WebInspector.LayerPaintEvent;
 

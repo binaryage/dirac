@@ -305,6 +305,7 @@ WebInspector.TimelinePanel.prototype = {
         if (this._lazyLayersView)
             return this._lazyLayersView;
         this._lazyLayersView = new WebInspector.TimelineLayersView();
+        this._lazyLayersView.setTimelineModelAndDelegate(this._model, this);
         return this._lazyLayersView;
     },
 
