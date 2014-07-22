@@ -2898,10 +2898,7 @@
             },
             {
                 "name": "stop",
-                "description": "Stops capturing instrumentation events.",
-                "returns": [
-                    { "name": "events", "type": "array", "items": { "$ref": "TimelineEvent" }, "optional": true, "hidden": true, "description": "Timeline event record data." }
-                ]
+                "description": "Stops capturing instrumentation events."
             }
         ],
         "events": [
@@ -2930,7 +2927,8 @@
             {
                 "name": "stopped",
                 "parameters": [
-                    { "name": "consoleTimeline", "type": "boolean", "optional": true, "description": "If specified, identifies that timeline was started using console.timeline() call." }
+                    { "name": "consoleTimeline", "type": "boolean", "optional": true, "description": "If specified, identifies that timeline was started using console.timeline() call." },
+                    { "name": "events", "type": "array", "items": { "$ref": "TimelineEvent" }, "optional": true, "hidden": true, "description": "Timeline event record data." }
                 ],
                 "description": "Fired when timeline is stopped.",
                 "hidden": true

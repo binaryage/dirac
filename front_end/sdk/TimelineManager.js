@@ -101,7 +101,8 @@ WebInspector.TimelineManager.prototype = {
             this._jsProfilerStarted = false;
         }
         if (!this._enablementCount)
-            this.target().timelineAgent().stop(callbackBarrier.createCallback(this._processBufferedEvents.bind(this, timelineCallback)));
+            this.target().timelineAgent().stop(callbackBarrier.createCallback(timelineCallback));
+            TimelineAgent.stop(callbackBarrier.createCallback(timelineCallback));
 
         callbackBarrier.callWhenDone(allDoneCallback.bind(this));
 
@@ -134,18 +135,14 @@ WebInspector.TimelineManager.prototype = {
     },
 
     /**
-     * @param {function(?Protocol.Error)|undefined} callback
-     * @param {?Protocol.Error} error
      * @param {!Array.<!TimelineAgent.TimelineEvent>=} events
      */
-    _processBufferedEvents: function(callback, error, events)
+    _processBufferedEvents: function(events)
     {
         if (events) {
             for (var i = 0; i < events.length; ++i)
                 this._dispatcher.eventRecorded(events[i]);
         }
-        if (callback)
-            callback(error);
     },
 
     _configureCpuProfilerSamplingInterval: function()
@@ -205,11 +202,13 @@ WebInspector.TimelineDispatcher.prototype = {
 
     /**
      * @param {boolean=} consoleTimeline
+     * @param {!Array.<!TimelineAgent.TimelineEvent>=} events
      */
-    stopped: function(consoleTimeline)
+    stopped: function(consoleTimeline, events)
     {
         this._started = false;
         this._manager.dispatchEventToListeners(WebInspector.TimelineManager.EventTypes.TimelineStopped, consoleTimeline);
+        this._manager._processBufferedEvents(events);
     },
 
     /**
