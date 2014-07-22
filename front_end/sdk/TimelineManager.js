@@ -219,8 +219,3 @@ WebInspector.TimelineDispatcher.prototype = {
         this._manager.dispatchEventToListeners(WebInspector.TimelineManager.EventTypes.TimelineProgress, count);
     }
 }
-
-/**
- * @type {!WebInspector.TimelineManager}
- */
-WebInspector.timelineManager;

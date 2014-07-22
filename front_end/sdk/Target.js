@@ -146,8 +146,6 @@ WebInspector.Target.prototype = {
 
         /** @type {!WebInspector.TimelineManager} */
         this.timelineManager = new WebInspector.TimelineManager(this);
-        if (!WebInspector.timelineManager)
-            WebInspector.timelineManager = this.timelineManager;
 
         /** @type {!WebInspector.DatabaseModel} */
         this.databaseModel = new WebInspector.DatabaseModel(this);

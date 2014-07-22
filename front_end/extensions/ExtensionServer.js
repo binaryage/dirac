@@ -703,9 +703,10 @@ WebInspector.ExtensionServer.prototype = {
          */
         function onTimelineSubscriptionStarted()
         {
-            WebInspector.timelineManager.addEventListener(WebInspector.TimelineManager.EventTypes.TimelineEventRecorded,
+            var mainTarget = WebInspector.targetManager.mainTarget();
+            mainTarget.timelineManager.addEventListener(WebInspector.TimelineManager.EventTypes.TimelineEventRecorded,
                 this._notifyTimelineEventRecorded, this);
-            WebInspector.timelineManager.start();
+            mainTarget.timelineManager.start();
         }
 
         /**
@@ -713,8 +714,9 @@ WebInspector.ExtensionServer.prototype = {
          */
         function onTimelineSubscriptionStopped()
         {
-            WebInspector.timelineManager.stop(function() {});
-            WebInspector.timelineManager.removeEventListener(WebInspector.TimelineManager.EventTypes.TimelineEventRecorded,
+            var mainTarget = WebInspector.targetManager.mainTarget();
+            mainTarget.timelineManager.stop(function() {});
+            mainTarget.timelineManager.removeEventListener(WebInspector.TimelineManager.EventTypes.TimelineEventRecorded,
                 this._notifyTimelineEventRecorded, this);
         }
 

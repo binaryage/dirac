@@ -554,114 +554,11 @@ TestSuite.prototype.testPauseInSharedWorkerInitialization = function()
     this.takeControl();
 };
 
-/**
- * Tests that timeline receives frame signals.
- */
-TestSuite.prototype.testTimelineFrames = function()
-{
-    var test = this;
-
-    function step1()
-    {
-        test.recordTimeline(onTimelineRecorded);
-        test.evaluateInConsole_("runTest()", function(){});
-    }
-
-    function onTimelineRecorded(records)
-    {
-        var frameCount = 0;
-        var recordsInFrame = {};
-
-        for (var i = 0; i < records.length; ++i) {
-            var record = records[i];
-            if (record.type() !== "BeginFrame") {
-                recordsInFrame[record.type()] = (recordsInFrame[record.type()] || 0) + 1;
-                continue;
-            }
-            if (!frameCount++)
-                continue;
-
-            test.assertHasKey(recordsInFrame, "FireAnimationFrame");
-            test.assertHasKey(recordsInFrame, "Layout");
-            test.assertHasKey(recordsInFrame, "RecalculateStyles");
-            test.assertHasKey(recordsInFrame, "Paint");
-            recordsInFrame = {};
-        }
-        test.assertTrue(frameCount >= 5, "Not enough frames");
-        test.releaseControl();
-    }
-
-    step1();
-    test.takeControl();
-}
-
 TestSuite.prototype.enableTouchEmulation = function()
 {
     WebInspector.targetManager.mainTarget().domModel.emulateTouchEventObjects(true);
 };
 
-// Regression test for http://webk.it/97466
-TestSuite.prototype.testPageOverlayUpdate = function()
-{
-    var test = this;
-    WebInspector.inspectorView.panel("elements");
-
-    function populatePage()
-    {
-        var div1 = document.createElement("div");
-        div1.id = "div1";
-        // Force accelerated compositing.
-        div1.style.webkitTransform = "translateZ(0)";
-        document.body.appendChild(div1);
-        var div2 = document.createElement("div");
-        div2.id = "div2";
-        document.body.appendChild(div2);
-    }
-
-    function step1()
-    {
-        test.evaluateInConsole_(populatePage.toString() + "; populatePage();" +
-                                "inspect(document.getElementById('div1'))", function() {});
-        WebInspector.notifications.addEventListener(WebInspector.NotificationService.Events.SelectedNodeChanged, step2);
-    }
-
-    function step2()
-    {
-        WebInspector.notifications.removeEventListener(WebInspector.NotificationService.Events.SelectedNodeChanged, step2);
-        test.recordTimeline(onTimelineRecorded);
-        setTimeout(step3, 500);
-    }
-
-    function step3()
-    {
-        test.evaluateInConsole_("inspect(document.getElementById('div2'))", function() {});
-        WebInspector.notifications.addEventListener(WebInspector.NotificationService.Events.SelectedNodeChanged, step4);
-    }
-
-    function step4()
-    {
-        WebInspector.notifications.removeEventListener(WebInspector.NotificationService.Events.SelectedNodeChanged, step4);
-        test.stopTimeline();
-    }
-
-    function onTimelineRecorded(records)
-    {
-        var types = {};
-        for (var i = 0; i < records.length; ++i)
-            types[records[i].type] = (types[records[i].type] || 0) + 1;
-
-        var frameCount = types["BeginFrame"];
-        // There should be at least two updates caused by selection of nodes.
-        test.assertTrue(frameCount >= 2, "Not enough DevTools overlay updates");
-        // We normally expect up to 3 frames, but allow for a bit more in case
-        // of some unexpected invalidations.
-        test.assertTrue(frameCount < 6, "Too many updates caused by DevTools overlay");
-        test.releaseControl();
-    }
-
-    step1();
-    this.takeControl();
-}
 
 // Regression test for crbug.com/370035.
 TestSuite.prototype.testDeviceMetricsOverrides = function()
@@ -721,47 +618,6 @@ TestSuite.prototype.testDeviceMetricsOverrides = function()
     step1();
     test.takeControl();
 };
-
-    /**
- * Records timeline till console.timeStamp("ready"), invokes callback with resulting records.
- * @param {function(!Array.<!Object>)} callback
- */
-TestSuite.prototype.recordTimeline = function(callback)
-{
-    var records = [];
-    var dispatchOnRecordType = {}
-
-    WebInspector.timelineManager.addEventListener(WebInspector.TimelineManager.EventTypes.TimelineEventRecorded, addRecord);
-    WebInspector.timelineManager.start();
-
-    function addRecord(event)
-    {
-        innerAddRecord(event.data);
-    }
-
-    function innerAddRecord(record)
-    {
-        records.push(record);
-        if (record.type() === "TimeStamp" && record.data().message === "ready")
-            done();
-
-        if (record.children())
-            record.children().forEach(innerAddRecord);
-    }
-
-    function done()
-    {
-        WebInspector.timelineManager.stop();
-        WebInspector.timelineManager.removeEventListener(WebInspector.TimelineManager.EventTypes.TimelineEventRecorded, addRecord);
-        callback(records);
-    }
-}
-
-
-TestSuite.prototype.stopTimeline = function()
-{
-    this.evaluateInConsole_("console.timeStamp('ready')", function() {});
-}
 
 TestSuite.prototype.waitForTestResultsInConsole = function()
 {
