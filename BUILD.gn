@@ -91,7 +91,7 @@ action("generate_devtools_grd") {
     "$root_out_dir/resources/inspector/profiler/ProfilesPanel.js",
     "$root_out_dir/resources/inspector/audits/AuditsPanel.js",
     "$root_out_dir/resources/inspector/layers/LayersPanel.js",
-    "$root_out_dir/resources/inspector/profiler/heap_snapshot_worker/HeapSnapshotWorker.js",
+    "$root_out_dir/resources/inspector/heap_snapshot_worker/HeapSnapshotWorker.js",
     "$root_out_dir/resources/inspector/script_formatter_worker/ScriptFormatterWorker.js",
     "$root_out_dir/resources/inspector/temp_storage_shared_worker/TempStorageSharedWorker.js",
     "$root_out_dir/resources/inspector/devices/DevicesView.js",
@@ -314,9 +314,9 @@ inline_js_imports("build_timeline_module") {
 }
 
 inline_js_imports("build_heap_snapshot_worker_module") {
-  input = "front_end/profiler/heap_snapshot_worker/HeapSnapshotWorker.js"
+  input = "front_end/heap_snapshot_worker/HeapSnapshotWorker.js"
   imported_files = gypi_values.devtools_heap_snapshot_worker_js_files
-  output = "$root_out_dir/resources/inspector/profiler/heap_snapshot_worker/HeapSnapshotWorker.js"
+  output = "$root_out_dir/resources/inspector/heap_snapshot_worker/HeapSnapshotWorker.js"
 }
 
 inline_js_imports("build_script_formatter_worker_module") {

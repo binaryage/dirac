@@ -139,7 +139,7 @@
                             '<(PRODUCT_DIR)/resources/inspector/profiler/ProfilesPanel.js',
                             '<(PRODUCT_DIR)/resources/inspector/audits/AuditsPanel.js',
                             '<(PRODUCT_DIR)/resources/inspector/layers/LayersPanel.js',
-                            '<(PRODUCT_DIR)/resources/inspector/profiler/heap_snapshot_worker/HeapSnapshotWorker.js',
+                            '<(PRODUCT_DIR)/resources/inspector/heap_snapshot_worker/HeapSnapshotWorker.js',
                             '<(PRODUCT_DIR)/resources/inspector/script_formatter_worker/ScriptFormatterWorker.js',
                             '<(PRODUCT_DIR)/resources/inspector/temp_storage_shared_worker/TempStorageSharedWorker.js',
                             '<(PRODUCT_DIR)/resources/inspector/devices/DevicesView.js',
@@ -724,20 +724,20 @@
                     'actions': [{
                         'action_name': 'build_heap_snapshot_worker_module',
                         'script_name': 'scripts/inline_js_imports.py',
-                        'input_file': 'front_end/profiler/heap_snapshot_worker/HeapSnapshotWorker.js',
+                        'input_file': 'front_end/heap_snapshot_worker/HeapSnapshotWorker.js',
                         'inputs': [
                             '<@(_script_name)',
                             '<@(_input_file)',
                             '<@(devtools_heap_snapshot_worker_js_files)',
                         ],
-                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/profiler/heap_snapshot_worker/HeapSnapshotWorker.js'],
+                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/heap_snapshot_worker/HeapSnapshotWorker.js'],
                         'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
                     }],
                 },
                 { # Debug
                     'copies': [
                         {
-                            'destination': '<(PRODUCT_DIR)/resources/inspector/profiler/heap_snapshot_worker',
+                            'destination': '<(PRODUCT_DIR)/resources/inspector/heap_snapshot_worker',
                             'files': [
                                 '<@(devtools_heap_snapshot_worker_js_files)',
                             ],

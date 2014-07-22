@@ -14,6 +14,7 @@
             "common/Progress.js",
             "common/Settings.js",
             "common/TextRange.js",
+            "common/TextUtils.js",
             "common/Throttler.js",
             "common/UIString.js",
             "common/utilities.js",
@@ -127,7 +128,6 @@
             "ui/TabbedPane.js",
             "ui/TextEditor.js",
             "ui/TextPrompt.js",
-            "ui/TextUtils.js",
             "ui/UIUtils.js",
             "ui/View.js",
             "ui/ViewportControl.js",
@@ -418,16 +418,16 @@
         "standalone": true,
         "dependencies": [],
         "sources": [
+            "common/TextUtils.js",
             "common/UIString.js",
             "common/utilities.js",
-            "profiler/HeapSnapshotCommon.js",
-            "profiler/heap_snapshot_worker/AllocationProfile.js",
-            "profiler/heap_snapshot_worker/HeapSnapshot.js",
-            "profiler/heap_snapshot_worker/HeapSnapshotLoader.js",
-            "profiler/heap_snapshot_worker/HeapSnapshotWorker.js",
-            "profiler/heap_snapshot_worker/HeapSnapshotWorkerDispatcher.js",
-            "profiler/heap_snapshot_worker/JSHeapSnapshot.js",
-            "ui/TextUtils.js"
+            "heap_snapshot_worker/AllocationProfile.js",
+            "heap_snapshot_worker/HeapSnapshot.js",
+            "heap_snapshot_worker/HeapSnapshotLoader.js",
+            "heap_snapshot_worker/HeapSnapshotWorker.js",
+            "heap_snapshot_worker/HeapSnapshotWorkerDispatcher.js",
+            "heap_snapshot_worker/JSHeapSnapshot.js",
+            "profiler/HeapSnapshotCommon.js"
         ]
     },
     {

@@ -40,7 +40,7 @@ WebInspector.HeapSnapshotWorkerProxy = function(eventHandler)
     this._nextCallId = 1;
     this._callbacks = [];
     this._previousCallbacks = [];
-    this._worker = new Worker("profiler/heap_snapshot_worker/HeapSnapshotWorker.js");
+    this._worker = new Worker("heap_snapshot_worker/HeapSnapshotWorker.js");
     this._worker.onmessage = this._messageReceived.bind(this);
 }
 
