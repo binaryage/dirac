@@ -364,7 +364,7 @@ WebInspector.NetworkLogView.prototype = {
         this._dataGrid = new WebInspector.DataGrid(columns);
         this._updateColumns();
         this._dataGrid.setName("networkLog");
-        this._dataGrid.resizeMethod = WebInspector.DataGrid.ResizeMethod.Last;
+        this._dataGrid.setResizeMethod(WebInspector.DataGrid.ResizeMethod.Last);
         this._dataGrid.element.classList.add("network-log-grid");
         this._dataGrid.element.addEventListener("contextmenu", this._contextMenu.bind(this), true);
         this._dataGrid.show(this.element);

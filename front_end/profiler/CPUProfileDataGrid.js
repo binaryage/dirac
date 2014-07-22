@@ -245,11 +245,6 @@ WebInspector.ProfileDataGridNode.prototype = {
         return this.totalTime / this.tree.totalTime * 100.0;
     },
 
-    get _parent()
-    {
-        return this.parent !== this.dataGrid ? this.parent : this.tree;
-    },
-
     populate: function()
     {
         WebInspector.ProfileDataGridNode.populate(this);
