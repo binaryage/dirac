@@ -764,8 +764,7 @@ WebInspector.BreakpointManager.TargetBreakpoint.prototype = {
 
         var lineNumber = this._breakpoint._lineNumber;
         var columnNumber = this._breakpoint._columnNumber;
-        var rawLocation = uiSourceCode.uiLocationToRawLocation(this.target(), lineNumber, columnNumber);
-        var debuggerModelLocation = /** @type {!WebInspector.DebuggerModel.Location} */ (rawLocation);
+        var debuggerModelLocation = WebInspector.debuggerWorkspaceBinding.uiLocationToRawLocation(this.target(), uiSourceCode, lineNumber, columnNumber);
         var condition = this._breakpoint.condition();
         if (debuggerModelLocation)
             this.target().debuggerModel.setBreakpointByScriptLocation(debuggerModelLocation, condition, this._didSetBreakpointInDebugger.bind(this));
@@ -826,15 +825,14 @@ WebInspector.BreakpointManager.TargetBreakpoint.prototype = {
      */
     _addResolvedLocation: function(location)
     {
-        var script = location.script();
-        var uiLocation = script.rawLocationToUILocation(location.lineNumber, location.columnNumber);
+        var uiLocation = WebInspector.debuggerWorkspaceBinding.rawLocationToUILocation(location);
         var breakpoint = this._breakpoint._breakpointManager.findBreakpoint(uiLocation.uiSourceCode, uiLocation.lineNumber, uiLocation.columnNumber);
-        if (breakpoint && breakpoint != this._breakpoint) {
+        if (breakpoint && breakpoint !== this._breakpoint) {
             // location clash
             this._breakpoint.remove();
             return false;
         }
-        this._liveLocations.push(location.createLiveLocation(this._locationUpdated.bind(this, location)));
+        this._liveLocations.push(WebInspector.debuggerWorkspaceBinding.createLiveLocation(location, this._locationUpdated.bind(this, location)));
         return true;
     },
 

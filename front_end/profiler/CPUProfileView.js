@@ -378,7 +378,8 @@ WebInspector.CPUProfileView.prototype = {
         var script = target.debuggerModel.scriptForId(node.scriptId)
         if (!script)
             return;
-        WebInspector.Revealer.reveal(script.rawLocationToUILocation(node.lineNumber));
+        var location = /** @type {!WebInspector.DebuggerModel.Location} */ (script.target().debuggerModel.createRawLocation(script, node.lineNumber, 0));
+        WebInspector.Revealer.reveal(WebInspector.debuggerWorkspaceBinding.rawLocationToUILocation(location));
     },
 
     _changeView: function()

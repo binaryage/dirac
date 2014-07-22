@@ -535,7 +535,7 @@ WebInspector.MediaQueryInspector.MediaQueryUIModel.prototype = {
      */
     uiLocation: function()
     {
-        return this._cssMedia.uiLocation();
+        return WebInspector.cssWorkspaceBinding.rawLocationToUILocation(this._cssMedia.rawLocation());
     },
 
     /**

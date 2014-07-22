@@ -1548,8 +1548,9 @@ WebInspector.StylePropertiesSection.prototype = {
     {
         if (WebInspector.KeyboardShortcut.eventHasCtrlOrMeta(event) && this.navigable && event.target.classList.contains("simple-selector")) {
             var index = event.target._selectorIndex;
-            var styleSheetHeader = this._parentPane._target.cssModel.styleSheetHeaderForId(this.rule.styleSheetId);
-            var uiLocation = styleSheetHeader.rawLocationToUILocation(this.rule.lineNumberInSource(index), this.rule.columnNumberInSource(index));
+            var target = this._parentPane._target;
+            var rawLocation = new WebInspector.CSSLocation(target, this.rule.styleSheetId, this.rule.sourceURL, this.rule.lineNumberInSource(index), this.rule.columnNumberInSource(index));
+            var uiLocation = WebInspector.cssWorkspaceBinding.rawLocationToUILocation(rawLocation);
             WebInspector.Revealer.reveal(uiLocation);
             return;
         }
@@ -2642,7 +2643,7 @@ WebInspector.StylePropertyTreeElement.prototype = {
     {
         console.assert(this.section().navigable);
         var propertyNameClicked = element === this.nameElement;
-        WebInspector.Revealer.reveal(this.property.uiLocation(propertyNameClicked));
+        WebInspector.Revealer.reveal(WebInspector.cssWorkspaceBinding.propertyUILocation(this.property, propertyNameClicked));
     },
 
     /**

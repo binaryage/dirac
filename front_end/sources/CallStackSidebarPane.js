@@ -349,7 +349,7 @@ WebInspector.CallStackSidebarPane.prototype = {
 WebInspector.CallStackSidebarPane.Placard = function(callFrame, asyncPlacard)
 {
     WebInspector.Placard.call(this, callFrame.functionName || WebInspector.UIString("(anonymous function)"), "");
-    callFrame.createLiveLocation(this._update.bind(this));
+    WebInspector.debuggerWorkspaceBinding.createCallFrameLiveLocation(callFrame, this._update.bind(this));
     this._callFrame = callFrame;
     this._asyncPlacard = asyncPlacard;
 }

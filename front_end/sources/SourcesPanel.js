@@ -312,7 +312,7 @@ WebInspector.SourcesPanel.prototype = {
             this.sidebarPanes.callstack.setStatus(WebInspector.UIString("Paused on a debugged function"));
         else {
             if (details.callFrames.length)
-                details.callFrames[0].createLiveLocation(didGetUILocation.bind(this));
+                WebInspector.debuggerWorkspaceBinding.createCallFrameLiveLocation(details.callFrames[0], didGetUILocation.bind(this));
             else
                 console.warn("ScriptsPanel paused, but callFrames.length is zero."); // TODO remove this once we understand this case better
         }
@@ -450,7 +450,7 @@ WebInspector.SourcesPanel.prototype = {
         this.sidebarPanes.scopechain.update(callFrame);
         this.sidebarPanes.watchExpressions.refreshExpressions();
         this.sidebarPanes.callstack.setSelectedCallFrame(callFrame);
-        callFrame.createLiveLocation(this._executionLineChanged.bind(this));
+        WebInspector.debuggerWorkspaceBinding.createCallFrameLiveLocation(callFrame, this._executionLineChanged.bind(this));
     },
 
     /**
@@ -1062,11 +1062,13 @@ WebInspector.SourcesPanel.prototype = {
             if (!response || !response.location)
                 return;
 
-            var uiLocation = debuggerModel.rawLocationToUILocation(response.location);
-            if (!uiLocation)
+            var location = response.location;
+            if (!location)
                 return;
 
-            this.showUILocation(uiLocation, true);
+            var uiLocation = WebInspector.debuggerWorkspaceBinding.rawLocationToUILocation(location);
+            if (uiLocation)
+                this.showUILocation(uiLocation, true);
         }
         debuggerModel.functionDetails(remoteObject, didGetFunctionDetails.bind(this));
     },

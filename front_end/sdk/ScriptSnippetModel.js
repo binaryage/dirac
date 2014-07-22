@@ -534,7 +534,8 @@ WebInspector.SnippetScriptMapping.prototype = {
         if (!script)
             return;
 
-        var scriptUISourceCode = script.rawLocationToUILocation(0, 0).uiSourceCode;
+        var rawLocation = /** @type {!WebInspector.DebuggerModel.Location} */ (script.target().debuggerModel.createRawLocation(script, 0, 0));
+        var scriptUISourceCode = WebInspector.debuggerWorkspaceBinding.rawLocationToUILocation(rawLocation).uiSourceCode;
         if (scriptUISourceCode)
             this._scriptSnippetModel._restoreBreakpoints(scriptUISourceCode, breakpointLocations);
     },

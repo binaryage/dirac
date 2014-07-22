@@ -298,6 +298,8 @@ WebInspector.Main.prototype = {
         }
         WebInspector.ContextMenu.initialize();
         WebInspector.targetManager.createTarget(WebInspector.UIString("Main"), connection, this._mainTargetCreated.bind(this));
+        WebInspector.cssWorkspaceBinding = new WebInspector.CSSWorkspaceBinding();
+        WebInspector.debuggerWorkspaceBinding = new WebInspector.DebuggerWorkspaceBinding();
         WebInspector.isolatedFileSystemManager = new WebInspector.IsolatedFileSystemManager();
         WebInspector.workspace = new WebInspector.Workspace(WebInspector.isolatedFileSystemManager.mapping());
         WebInspector.networkWorkspaceBinding = new WebInspector.NetworkWorkspaceBinding(WebInspector.workspace);
@@ -602,7 +604,8 @@ WebInspector.Main.prototype = {
             if (!response || !response.location)
                 return;
 
-            WebInspector.Revealer.reveal(response.location.toUILocation());
+            var location = WebInspector.DebuggerModel.Location.fromPayload(object.target(), response.location);
+            WebInspector.Revealer.reveal(WebInspector.debuggerWorkspaceBinding.rawLocationToUILocation(response.location));
         }
 
         if (hints.copyToClipboard)

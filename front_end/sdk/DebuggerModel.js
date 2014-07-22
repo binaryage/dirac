@@ -918,14 +918,6 @@ WebInspector.DebuggerModel.Location.prototype = {
         return this._debuggerModel.createLiveLocation(this, updateDelegate);
     },
 
-    /**
-     * @return {?WebInspector.UILocation}
-     */
-    toUILocation: function()
-    {
-        return this._debuggerModel.rawLocationToUILocation(this);
-    },
-
     continueToLocation: function()
     {
         this._debuggerModel._agent.continueToLocation(this.payload());
@@ -1107,7 +1099,7 @@ WebInspector.DebuggerModel.CallFrame.prototype = {
 
     /**
      * @param {function(!WebInspector.UILocation):(boolean|undefined)} updateDelegate
-     * @return {!WebInspector.LiveLocation}
+     * @return {!WebInspector.Script.Location}
      */
     createLiveLocation: function(updateDelegate)
     {

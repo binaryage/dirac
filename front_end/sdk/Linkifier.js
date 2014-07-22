@@ -190,7 +190,7 @@ WebInspector.Linkifier.prototype = {
         if (!script)
             return null;
         var anchor = this._createAnchor(classes);
-        var liveLocation = rawLocation.createLiveLocation(this._updateAnchor.bind(this, anchor));
+        var liveLocation = WebInspector.debuggerWorkspaceBinding.createLiveLocation(rawLocation, this._updateAnchor.bind(this, anchor));
         this._liveLocationsByTarget.get(rawLocation.target()).push({anchor: anchor, location: liveLocation});
         return anchor;
     },
@@ -203,7 +203,7 @@ WebInspector.Linkifier.prototype = {
     linkifyCSSLocation: function(rawLocation, classes)
     {
         var anchor = this._createAnchor(classes);
-        var liveLocation = rawLocation.createLiveLocation(this._updateAnchor.bind(this, anchor));
+        var liveLocation = WebInspector.cssWorkspaceBinding.createLiveLocation(rawLocation, this._updateAnchor.bind(this, anchor));
         if (!liveLocation)
             return null;
         this._liveLocationsByTarget.get(rawLocation.target()).push({anchor: anchor, location: liveLocation});
@@ -361,6 +361,7 @@ WebInspector.Linkifier.liveLocationText = function(target, scriptId, lineNumber,
     var script = target.debuggerModel.scriptForId(scriptId);
     if (!script)
         return "";
-    var uiLocation = script.rawLocationToUILocation(lineNumber, columnNumber);
+    var location = /** @type {!WebInspector.DebuggerModel.Location} */ (target.debuggerModel.createRawLocation(script, lineNumber, columnNumber || 0));
+    var uiLocation = /** @type {!WebInspector.UILocation} */ (WebInspector.debuggerWorkspaceBinding.rawLocationToUILocation(location));
     return uiLocation.linkText();
 }

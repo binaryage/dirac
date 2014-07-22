@@ -750,20 +750,12 @@ WebInspector.CSSLocation = function(target, styleSheetId, url, lineNumber, colum
 WebInspector.CSSLocation.prototype = {
     /**
      * @param {function(!WebInspector.UILocation):(boolean|undefined)} updateDelegate
-     * @return {?WebInspector.LiveLocation}
+     * @return {!WebInspector.LiveLocation}
      */
     createLiveLocation: function(updateDelegate)
     {
         var header = this._styleSheetId ? this._cssModel.styleSheetHeaderForId(this._styleSheetId) : null;
         return new WebInspector.CSSStyleModel.LiveLocation(this._cssModel, header, this, updateDelegate);
-    },
-
-    /**
-     * @return {?WebInspector.UILocation}
-     */
-    toUILocation: function()
-    {
-        return this._cssModel.rawLocationToUILocation(this);
     },
 
     __proto__: WebInspector.SDKObject.prototype
@@ -847,6 +839,14 @@ WebInspector.CSSStyleDeclaration.parseComputedStylePayload = function(cssModel, 
 }
 
 WebInspector.CSSStyleDeclaration.prototype = {
+    /**
+     * @return {!WebInspector.Target}
+     */
+    target: function()
+    {
+        return this._cssModel.target();
+    },
+
     /**
      * @param {string} styleSheetId
      * @param {!WebInspector.TextRange} oldRange
@@ -1354,27 +1354,6 @@ WebInspector.CSSProperty.prototype = {
             this.setText("/* " + this.text + " */", true, true, userCallback);
         else
             this.setText(this.text.substring(2, this.text.length - 2).trim(), true, true, userCallback);
-    },
-
-    /**
-     * @param {boolean} forName
-     * @return {?WebInspector.UILocation}
-     */
-    uiLocation: function(forName)
-    {
-        if (!this.range || !this.ownerStyle || !this.ownerStyle.parentRule || !this.ownerStyle.styleSheetId)
-            return null;
-
-        var url = this.ownerStyle.parentRule.resourceURL();
-        if (!url)
-            return null;
-
-        var range = this.range;
-        var line = forName ? range.startLine : range.endLine;
-        // End of range is exclusive, so subtract 1 from the end offset.
-        var column = forName ? range.startColumn : range.endColumn - (this.text && this.text.endsWith(";") ? 2 : 1);
-        var rawLocation = new WebInspector.CSSLocation(this.ownerStyle._cssModel.target(), this.ownerStyle.styleSheetId, url, line, column);
-        return rawLocation.toUILocation();
     }
 }
 
@@ -1544,7 +1523,6 @@ WebInspector.CSSMedia.prototype = {
     {
         if (!this.header() || typeof this.lineNumberInSource() === "undefined")
             return null;
-
         var lineNumber = Number(this.lineNumberInSource());
         return new WebInspector.CSSLocation(this._cssModel.target(), this.header().id, this.sourceURL, lineNumber, this.columnNumberInSource());
     },

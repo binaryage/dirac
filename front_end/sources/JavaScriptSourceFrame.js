@@ -908,7 +908,7 @@ WebInspector.JavaScriptSourceFrame.prototype = {
         var executionContext = WebInspector.context.flavor(WebInspector.ExecutionContext);
         if (!executionContext)
             return;
-        var rawLocation = /** @type {!WebInspector.DebuggerModel.Location} */ (this._uiSourceCode.uiLocationToRawLocation(executionContext.target(), lineNumber, 0));
+        var rawLocation = WebInspector.debuggerWorkspaceBinding.uiLocationToRawLocation(executionContext.target(), this._uiSourceCode, lineNumber, 0);
         this._scriptsPanel.continueToLocation(rawLocation);
     },
 
