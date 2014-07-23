@@ -494,6 +494,8 @@ WebInspector.Main.prototype = {
         var toggleConsoleLabel = WebInspector.UIString("Show console");
         section.addKey(shortcut.makeDescriptor(shortcut.Keys.Tilde, shortcut.Modifiers.Ctrl), toggleConsoleLabel);
         section.addKey(shortcut.makeDescriptor(shortcut.Keys.Esc), WebInspector.UIString("Toggle drawer"));
+        if (WebInspector.overridesSupport.responsiveDesignAvailable())
+            section.addKey(shortcut.makeDescriptor("M", shortcut.Modifiers.CtrlOrMeta | shortcut.Modifiers.Shift), WebInspector.UIString("Toggle device mode"));
         section.addKey(shortcut.makeDescriptor("f", shortcut.Modifiers.CtrlOrMeta), WebInspector.UIString("Search"));
 
         var advancedSearchShortcutModifier = WebInspector.isMac()

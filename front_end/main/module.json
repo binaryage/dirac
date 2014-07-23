@@ -116,6 +116,21 @@
             ]
         },
         {
+            "type": "@WebInspector.ActionDelegate",
+            "actionId": "main.toggle-device-mode",
+            "className": "WebInspector.AdvancedApp.ToggleDeviceModeActionDelegate",
+            "bindings": [
+                {
+                    "platform": "windows,linux",
+                    "shortcut": "Shift+Ctrl+M"
+                },
+                {
+                    "platform": "mac",
+                    "shortcut": "Shift+Meta+M"
+                }
+            ]
+        },
+        {
             "type": "drawer-view",
             "name": "emulation",
             "title": "Emulation",
@@ -143,7 +158,7 @@
         },
         {
             "type": "@WebInspector.StatusBarButton.Provider",
-            "className": "WebInspector.App.EmulationButtonProvider",
+            "className": "WebInspector.AdvancedApp.EmulationButtonProvider",
             "order": 1,
             "location": "toolbar-left"
         },
