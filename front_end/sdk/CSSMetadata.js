@@ -172,8 +172,7 @@ WebInspector.CSSMetadata._distanceProperties = [
 WebInspector.CSSMetadata._colorAwareProperties = [
     "background", "background-color", "background-image", "border", "border-color", "border-top", "border-right", "border-bottom",
     "border-left", "border-top-color", "border-right-color", "border-bottom-color", "border-left-color", "box-shadow", "color",
-    "fill", "outline", "outline-color", "stroke", "text-line-through-color", "text-overline-color",
-    "text-shadow", "text-underline-color", "-webkit-box-shadow", "-webkit-column-rule-color",
+    "fill", "outline", "outline-color", "stroke", "text-shadow", "-webkit-box-shadow", "-webkit-column-rule-color",
     "-webkit-text-decoration-color", "-webkit-text-emphasis", "-webkit-text-emphasis-color"
 ].keySet();
 
@@ -195,9 +194,6 @@ WebInspector.CSSMetadata._propertyDataMap = {
     ] },
     "clear": { values: [
         "none", "left", "right", "both"
-    ] },
-    "text-underline-mode": { values: [
-        "continuous", "skip-white-space"
     ] },
     "overflow-x": { values: [
         "hidden", "auto", "visible", "overlay", "scroll"
@@ -227,12 +223,6 @@ WebInspector.CSSMetadata._propertyDataMap = {
         "normal", "wider", "narrower", "ultra-condensed", "extra-condensed", "condensed", "semi-condensed",
         "semi-expanded", "expanded", "extra-expanded", "ultra-expanded"
     ] },
-    "text-underline-style": { values: [
-        "none", "dotted", "dashed", "solid", "double", "dot-dash", "dot-dot-dash", "wave"
-    ] },
-    "text-overline-mode": { values: [
-        "continuous", "skip-white-space"
-    ] },
     "-webkit-background-composite": { values: [
         "highlight", "clear", "copy", "source-over", "source-in", "source-out", "source-atop", "destination-over",
         "destination-in", "destination-out", "destination-atop", "xor", "plus-darker", "plus-lighter"
@@ -246,9 +236,6 @@ WebInspector.CSSMetadata._propertyDataMap = {
     "-webkit-writing-mode": { values: [
         "lr", "rl", "tb", "lr-tb", "rl-tb", "tb-rl", "horizontal-tb", "vertical-rl", "vertical-lr", "horizontal-bt"
     ] },
-    "text-line-through-mode": { values: [
-        "continuous", "skip-white-space"
-    ] },
     "border-collapse": { values: [
         "collapse", "separate"
     ] },
@@ -260,9 +247,6 @@ WebInspector.CSSMetadata._propertyDataMap = {
     ] },
     "outline-color": { values: [
         "invert"
-    ] },
-    "text-line-through-style": { values: [
-        "none", "dotted", "dashed", "solid", "double", "dot-dash", "dot-dot-dash", "wave"
     ] },
     "outline-style": { values: [
         "none", "hidden", "inset", "groove", "ridge", "outset", "dotted", "dashed", "solid", "double"
@@ -337,9 +321,6 @@ WebInspector.CSSMetadata._propertyDataMap = {
     "margin-before-collapse": { values: [
         "collapse", "separate", "discard"
     ] },
-    "text-overline-width": { values: [
-        "normal", "medium", "auto", "thick", "thin"
-    ] },
     "text-transform": { values: [
         "none", "capitalize", "uppercase", "lowercase"
     ] },
@@ -412,9 +393,6 @@ WebInspector.CSSMetadata._propertyDataMap = {
     "outline-width": { values: [
         "medium", "thick", "thin"
     ] },
-    "text-line-through-width": { values: [
-        "normal", "medium", "auto", "thick", "thin"
-    ] },
     "box-align": { values: [
         "baseline", "center", "stretch", "start", "end"
     ] },
@@ -475,9 +453,6 @@ WebInspector.CSSMetadata._propertyDataMap = {
     "zoom": { values: [
         "normal", "document", "reset"
     ] },
-    "text-overline-style": { values: [
-        "none", "dotted", "dashed", "solid", "double", "dot-dash", "dot-dot-dash", "wave"
-    ] },
     "max-width": { values: [
         "none"
     ] },
@@ -517,9 +492,6 @@ WebInspector.CSSMetadata._propertyDataMap = {
     ] },
     "white-space": { values: [
         "normal", "nowrap", "pre", "pre-line", "pre-wrap"
-    ] },
-    "text-underline-width": { values: [
-        "normal", "medium", "auto", "thick", "thin"
     ] },
     "box-lines": { values: [
         "single", "multiple"
