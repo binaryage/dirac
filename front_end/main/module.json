@@ -150,28 +150,46 @@
             "className": "WebInspector.OverridesView.Revealer"
         },
         {
-            "type": "@WebInspector.StatusBarButton.Provider",
+            "type": "@WebInspector.StatusBarItem.Provider",
             "className": "WebInspector.InspectElementModeController.ToggleButtonProvider",
             "location": "toolbar-left",
             "order": 0,
             "actionId": "main.toggle-element-search"
         },
         {
-            "type": "@WebInspector.StatusBarButton.Provider",
+            "type": "@WebInspector.StatusBarItem.Provider",
             "className": "WebInspector.AdvancedApp.EmulationButtonProvider",
             "order": 1,
             "location": "toolbar-left"
         },
         {
-            "type": "@WebInspector.StatusBarButton.Provider",
-            "className": "WebInspector.DockController.ButtonProvider",
+            "type": "@WebInspector.StatusBarItem.Provider",
+            "className": "WebInspector.AdvancedApp.DeviceCounter",
+            "order": 0,
+            "location": "toolbar-right"
+        },
+        {
+            "type": "@WebInspector.StatusBarItem.Provider",
+            "className": "WebInspector.Main.WarningErrorCounter",
             "order": 1,
             "location": "toolbar-right"
         },
         {
-            "type": "@WebInspector.StatusBarButton.Provider",
-            "className": "WebInspector.ScreencastApp.StatusBarButtonProvider",
+            "type": "@WebInspector.StatusBarItem.Provider",
+            "className": "WebInspector.InspectorView.ToggleDrawerButtonProvider",
             "order": 2,
+            "location": "toolbar-right"
+        },
+        {
+            "type": "@WebInspector.StatusBarItem.Provider",
+            "className": "WebInspector.DockController.ButtonProvider",
+            "order": 4,
+            "location": "toolbar-right"
+        },
+        {
+            "type": "@WebInspector.StatusBarItem.Provider",
+            "className": "WebInspector.ScreencastApp.StatusBarButtonProvider",
+            "order": 5,
             "location": "toolbar-right"
         },
         {

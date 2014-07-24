@@ -50,7 +50,7 @@ WebInspector.Main = function()
 WebInspector.Main.prototype = {
     _createGlobalStatusBarItems: function()
     {
-        var extensions = WebInspector.moduleManager.extensions(WebInspector.StatusBarButton.Provider);
+        var extensions = WebInspector.moduleManager.extensions(WebInspector.StatusBarItem.Provider);
 
         /**
          * @param {!WebInspector.ModuleManager.Extension} left
@@ -62,31 +62,31 @@ WebInspector.Main.prototype = {
         }
         extensions.sort(orderComparator);
         extensions.forEach(function(extension) {
-            var button;
+            var item;
             switch (extension.descriptor()["location"]) {
             case "toolbar-left":
-                button = createButton(extension);
-                if (button)
-                    WebInspector.inspectorView.appendToLeftToolbar(button);
+                item = createItem(extension);
+                if (item)
+                    WebInspector.inspectorView.appendToLeftToolbar(item);
                 break;
             case "toolbar-right":
-                button = createButton(extension);
-                if (button)
-                    WebInspector.inspectorView.appendToRightToolbar(button);
+                item = createItem(extension);
+                if (item)
+                    WebInspector.inspectorView.appendToRightToolbar(item);
                 break;
             }
-            if (button && extension.descriptor()["actionId"]) {
-                button.addEventListener("click", function() {
+            if (item && extension.descriptor()["actionId"]) {
+                item.addEventListener("click", function() {
                     WebInspector.actionRegistry.execute(extension.descriptor()["actionId"]);
                 });
             }
         });
 
-        function createButton(extension)
+        function createItem(extension)
         {
             var descriptor = extension.descriptor();
             if (descriptor.className)
-                return extension.instance().button();
+                return extension.instance().item();
             return new WebInspector.StatusBarButton(WebInspector.UIString(descriptor["title"]), descriptor["elementClass"]);
         }
     },
@@ -362,17 +362,9 @@ WebInspector.Main.prototype = {
         new WebInspector.CSSStyleSheetMapping(WebInspector.cssModel, WebInspector.workspace, WebInspector.networkWorkspaceBinding);
         new WebInspector.RenderingOptions();
         new WebInspector.Main.PauseListener();
-        new WebInspector.Main.WarningErrorCounter();
         new WebInspector.Main.InspectedNodeRevealer();
 
         this._addMainEventListeners(document);
-
-        var errorWarningCount = document.getElementById("error-warning-count");
-        function showConsole()
-        {
-            WebInspector.console.show();
-        }
-        errorWarningCount.addEventListener("click", showConsole, false);
 
         WebInspector.extensionServerProxy.setFrontendReady();
 
@@ -836,9 +828,18 @@ WebInspector.panel = function(name)
 
 /**
  * @constructor
+ * @implements {WebInspector.StatusBarItem.Provider}
  */
 WebInspector.Main.WarningErrorCounter = function()
 {
+    this._counter = new WebInspector.StatusBarCounter(["error-icon-small", "warning-icon-small"]);
+    this._counter.addEventListener("click", showConsole);
+
+    function showConsole()
+    {
+        WebInspector.console.show();
+    }
+
     WebInspector.multitargetConsoleModel.addEventListener(WebInspector.ConsoleModel.Events.ConsoleCleared, this._updateErrorAndWarningCounts, this);
     WebInspector.multitargetConsoleModel.addEventListener(WebInspector.ConsoleModel.Events.MessageAdded, this._updateErrorAndWarningCounts, this);
 }
@@ -853,7 +854,17 @@ WebInspector.Main.WarningErrorCounter.prototype = {
             errors = errors + targets[i].consoleModel.errors;
             warnings = warnings + targets[i].consoleModel.warnings;
         }
-        WebInspector.inspectorView.setErrorAndWarningCounts(errors, warnings);
+        this._counter.setCounter("error-icon-small", errors, WebInspector.UIString(errors > 1 ? "%d errors" : "%d error", errors));
+        this._counter.setCounter("warning-icon-small", warnings, WebInspector.UIString(warnings > 1 ? "%d warnings" : "%d warning", warnings));
+        WebInspector.inspectorView.toolbarItemResized();
+    },
+
+    /**
+     * @return {?WebInspector.StatusBarItem}
+     */
+    item: function()
+    {
+        return this._counter;
     }
 }
 

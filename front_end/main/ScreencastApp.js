@@ -78,7 +78,7 @@ WebInspector.ScreencastApp.prototype = {
 
 /**
  * @constructor
- * @implements {WebInspector.StatusBarButton.Provider}
+ * @implements {WebInspector.StatusBarItem.Provider}
  */
 WebInspector.ScreencastApp.StatusBarButtonProvider = function()
 {
@@ -86,9 +86,9 @@ WebInspector.ScreencastApp.StatusBarButtonProvider = function()
 
 WebInspector.ScreencastApp.StatusBarButtonProvider.prototype = {
     /**
-     * @return {?WebInspector.StatusBarButton}
+     * @return {?WebInspector.StatusBarItem}
      */
-    button: function()
+    item: function()
     {
         if (!(WebInspector.app instanceof WebInspector.ScreencastApp))
             return null;
