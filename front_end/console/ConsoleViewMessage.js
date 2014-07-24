@@ -279,10 +279,7 @@ WebInspector.ConsoleViewMessage.prototype = {
         var target = this._target();
         if (!this._linkifier || !target)
             return null;
-        // FIXME(62725): stack trace line/column numbers are one-based.
-        var lineNumber = callFrame.lineNumber ? callFrame.lineNumber - 1 : 0;
-        var columnNumber = callFrame.columnNumber ? callFrame.columnNumber - 1 : 0;
-        var rawLocation = new WebInspector.DebuggerModel.Location(target, callFrame.scriptId, lineNumber, columnNumber);
+        var rawLocation = this._target().debuggerModel.createRawLocationByConsoleCallFrame(callFrame);
         return this._linkifier.linkifyRawLocation(rawLocation, "console-message-url");
     },
 
