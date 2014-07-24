@@ -48,6 +48,7 @@ WebInspector.TimelineFlameChartDataProvider = function(model, frameModel)
 }
 
 WebInspector.TimelineFlameChartDataProvider.InstantEventVisibleDurationMs = 0.01;
+WebInspector.TimelineFlameChartDataProvider.JSFrameCoalsceThresholdMs = 1.1;
 
 WebInspector.TimelineFlameChartDataProvider.prototype = {
     /**
@@ -213,38 +214,49 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
      */
     _generateJSFrameEvents: function(events)
     {
+        function equalFrames(frame1, frame2)
+        {
+            return frame1.scriptId === frame2.scriptId && frame1.functionName === frame2.functionName;
+        }
+        function eventEndTime(e)
+        {
+            return e.endTime || e.startTime + WebInspector.TimelineFlameChartDataProvider.InstantEventVisibleDurationMs;
+        }
         var jsFrameEvents = [];
-        var stackEndTime = [ Infinity ];
-        var stackNumFrames = [ 0 ];
+        var stackTraceOpenEvents = [];
+        var coalesceThresholdMs = WebInspector.TimelineFlameChartDataProvider.JSFrameCoalsceThresholdMs;
         for (var i = 0; i < events.length; ++i) {
             var e = events[i];
-            if (!e.stackTrace)
+            if (!e.stackTrace || !this._isVisible(e))
                 continue;
-            while (stackEndTime.peekLast() <= e.startTime) {
-                stackEndTime.pop();
-                stackNumFrames.pop();
-            }
+            while (stackTraceOpenEvents.length && eventEndTime(stackTraceOpenEvents.peekLast()) + coalesceThresholdMs <= e.startTime)
+                stackTraceOpenEvents.pop();
             var numFrames = e.stackTrace.length;
-            if (numFrames <= stackNumFrames.peekLast())
-                continue;
-            for (var j = stackNumFrames.peekLast(); j < numFrames; ++j) {
+            for (var j = 0; j < numFrames && j < stackTraceOpenEvents.length; ++j) {
+                var frame = e.stackTrace[numFrames - 1 - j];
+                if (!equalFrames(frame, stackTraceOpenEvents[j].args.data))
+                    break;
+                stackTraceOpenEvents[j].endTime = Math.max(stackTraceOpenEvents[j].endTime, eventEndTime(e));
+                stackTraceOpenEvents[j].duration = stackTraceOpenEvents[j].endTime - stackTraceOpenEvents[j].startTime;
+            }
+            stackTraceOpenEvents.length = j;
+            var timestampUs = e.startTime * 1000;
+            var durationUs = (e.duration || WebInspector.TimelineFlameChartDataProvider.InstantEventVisibleDurationMs) * 1000;
+            for (; j < numFrames; ++j) {
                 var frame = e.stackTrace[numFrames - 1 - j];
                 var payload = /** @type {!WebInspector.TracingModel.EventPayload} */ ({
                     ph: e.phase,
                     cat: WebInspector.TracingModel.DevToolsMetadataEventCategory,
                     name: WebInspector.TracingTimelineModel.RecordType.JSFrame,
-                    ts: e.startTime * 1000,
-                    dur: e.duration * 1000,
+                    ts: timestampUs,
+                    dur: durationUs,
                     args: {
                         data: frame
                     }
                 });
                 var jsFrameEvent = new WebInspector.TracingModel.Event(payload, 0, e.thread);
+                stackTraceOpenEvents.push(jsFrameEvent);
                 jsFrameEvents.push(jsFrameEvent);
-            }
-            if (e.endTime) {
-                stackEndTime.push(e.endTime);
-                stackNumFrames.push(numFrames);
             }
         }
         return jsFrameEvents;
