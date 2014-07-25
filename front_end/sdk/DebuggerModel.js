@@ -577,18 +577,6 @@ WebInspector.DebuggerModel.prototype = {
     },
 
     /**
-     * @param {!ConsoleAgent.CallFrame} callFrame
-     * @return {!WebInspector.DebuggerModel.Location}
-     */
-    createRawLocationByConsoleCallFrame: function(callFrame)
-    {
-        // FIXME(62725): console stack trace line/column numbers are one-based.
-        var lineNumber = callFrame.lineNumber ? callFrame.lineNumber - 1 : 0;
-        var columnNumber = callFrame.columnNumber ? callFrame.columnNumber - 1 : 0;
-        return new WebInspector.DebuggerModel.Location(this.target(), callFrame.scriptId, lineNumber, columnNumber);
-    },
-
-    /**
      * @return {boolean}
      */
     isPaused: function()

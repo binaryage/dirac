@@ -1016,11 +1016,10 @@ WebInspector.NetworkLogView.prototype = {
         var framesTable = document.createElement("table");
         for (var i = 0; i < stackTrace.length; ++i) {
             var stackFrame = stackTrace[i];
-            var rawLocation = request.target().debuggerModel.createRawLocationByConsoleCallFrame(stackFrame);
             var row = document.createElement("tr");
             row.createChild("td").textContent = stackFrame.functionName || WebInspector.UIString("(anonymous function)");
             row.createChild("td").textContent = " @ ";
-            row.createChild("td").appendChild(this._linkifier.linkifyRawLocation(rawLocation));
+            row.createChild("td").appendChild(this._linkifier.linkifyLocation(request.target(), stackFrame.url, stackFrame.lineNumber - 1, stackFrame.columnNumber - 1));
             framesTable.appendChild(row);
         }
         return framesTable;
