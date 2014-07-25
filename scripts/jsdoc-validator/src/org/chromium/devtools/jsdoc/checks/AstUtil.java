@@ -23,11 +23,6 @@ public class AstUtil {
      */
     static Node getFunctionNameNode(Node node) {
         Preconditions.checkState(node.isFunction());
-        Node funNameNode = node.getFirstChild();
-        // Don't return the name node for anonymous functions
-        if (!funNameNode.getString().isEmpty()) {
-            return funNameNode;
-        }
 
         Node parent = node.getParent();
         if (parent != null) {
@@ -36,8 +31,7 @@ public class AstUtil {
                 // var name = function() ...
                 // var name2 = function name1() ...
                 return parent;
-            // FIXME: Perhaps, the setter and getter cases should be handled, too,
-            // but this breaks tests.
+            // FIXME: Enable the setter and getter checks.
             // case Token.SETTER_DEF:
             // case Token.GETTER_DEF:
             case Token.STRING_KEY:
@@ -45,15 +39,17 @@ public class AstUtil {
             case Token.NUMBER:
                 return parent;
             case Token.ASSIGN:
-                if (parent.getLastChild() == node &&
-                        parent.getFirstChild().getType() == Token.NAME) {
-                    return parent.getFirstChild();
-                }
-                return null;
+                int nameType = parent.getFirstChild().getType();
+                // We only consider these types of name nodes as acceptable.
+                return nameType == Token.NAME || nameType == Token.GETPROP
+                    ? parent.getFirstChild()
+                    : null;
             case Token.VAR:
                 return parent.getFirstChild();
             default:
-                return null;
+                Node funNameNode = node.getFirstChild();
+                // Don't return the name node for anonymous functions
+                return funNameNode.getString().isEmpty() ? null : funNameNode;
             }
         }
 

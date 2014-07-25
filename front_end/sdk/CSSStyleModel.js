@@ -1371,6 +1371,7 @@ WebInspector.CSSMediaQueryExpression = function(payload)
 
 /**
  * @param {!CSSAgent.MediaQueryExpression} payload
+ * @return {!WebInspector.CSSMediaQueryExpression}
  */
 WebInspector.CSSMediaQueryExpression.parsePayload = function(payload)
 {

@@ -202,6 +202,14 @@ DerivedBadSuperCall = function() {
 var BadSetSubclass = function()
     ^
 
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/proto.js:135: ERROR - No __proto__ assigned for type NS.BadSubClass having @extends
+ * @extends {Base}
+             ^
+
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/proto.js:137: ERROR - Type NS.BadSubClass extends Base but does not properly invoke its constructor
+NS.BadSubClass = function() {}
+^
+
 /usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/this.js:19: ERROR - @this annotation is required for functions referencing 'this'
         function badInnerCallback() {
                  ^
@@ -330,4 +338,4 @@ var BadSetSubclass = function()
         function callbackNotReferencingThisAnnotated()
                  ^
 
-Total errors: 83
+Total errors: 85

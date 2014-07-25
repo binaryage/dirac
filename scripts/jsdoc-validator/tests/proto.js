@@ -127,3 +127,11 @@ var BadSetSubclass = function()
 
 BadSetSubclass.prototype = {
 }
+
+var NS = {};
+
+/**
+ * @constructor
+ * @extends {Base}
+ */
+NS.BadSubClass = function() {}

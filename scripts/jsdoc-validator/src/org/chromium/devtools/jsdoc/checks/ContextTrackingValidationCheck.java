@@ -1,6 +1,5 @@
 package org.chromium.devtools.jsdoc.checks;
 
-import com.google.javascript.jscomp.NodeUtil;
 import com.google.javascript.rhino.JSDocInfo;
 import com.google.javascript.rhino.Node;
 import com.google.javascript.rhino.Token;
@@ -79,7 +78,8 @@ public class ContextTrackingValidationCheck extends ValidationCheck {
         TypeRecord parentType = state.getCurrentFunctionRecord() == null
                 ? state.getCurrentTypeRecord()
                 : null;
-        String functionName = NodeUtil.getNearestFunctionName(node);
+        Node nameNode = AstUtil.getFunctionNameNode(node);
+        String functionName = nameNode == null ? null : state.getNodeText(nameNode);
         FunctionRecord functionRecord = new FunctionRecord(
                 node,
                 functionName,
