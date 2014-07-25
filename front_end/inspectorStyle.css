@@ -2803,13 +2803,13 @@ button.record-profile-status-bar-item.toggled-on .glyph:not(.shadow) {
 }
 
 .custom-popup-horizontal-scroll ::-webkit-scrollbar-track-piece:horizontal:decrement {
-    -webkit-border-image: url(Images/trackHoriz.png) 0 11 0 11;
+    -webkit-border-image: url(Images/thumbHoriz.png) 0 11 0 11;
     border-color: transparent;
     border-width: 0 0 0 11px;
 }
 
 .custom-popup-horizontal-scroll ::-webkit-scrollbar-track-piece:horizontal:increment {
-    -webkit-border-image: url(Images/trackHoriz.png) 0 11 0 11;
+    -webkit-border-image: url(Images/thumbHoriz.png) 0 11 0 11;
     border-color: transparent;
     border-width: 0 11px 0 0;
 }
