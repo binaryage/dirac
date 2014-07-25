@@ -11,11 +11,11 @@
             ]
         },
         {
-            "type": "@WebInspector.StatusBarItem.Provider",
+            "type": "@WebInspector.StatusBarButton.Provider",
             "actionId": "settings.show",
             "location": "toolbar-right",
             "title": "Settings",
-            "order": 3,
+            "order": 0,
             "elementClass": "settings-status-bar-item"
         },
         {

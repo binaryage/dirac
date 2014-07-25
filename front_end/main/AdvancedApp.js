@@ -200,49 +200,6 @@ WebInspector.AdvancedApp.prototype = {
 
 /**
  * @constructor
- * @implements {WebInspector.StatusBarItem.Provider}
- */
-WebInspector.AdvancedApp.DeviceCounter = function()
-{
-    if (!WebInspector.experimentsSettings.devicesPanel.isEnabled() || !(WebInspector.app instanceof WebInspector.AdvancedApp)) {
-        this._counter = null;
-        return;
-    }
-
-    this._counter = new WebInspector.StatusBarCounter(["device-icon-small"]);
-    this._counter.addEventListener("click", showDevices);
-
-    function showDevices()
-    {
-        WebInspector.inspectorView.showViewInDrawer("devices", true);
-    }
-
-    InspectorFrontendHost.setDeviceCountUpdatesEnabled(true);
-    InspectorFrontendHost.events.addEventListener(InspectorFrontendHostAPI.Events.DeviceCountUpdated, this._onDeviceCountUpdated, this);
-}
-
-WebInspector.AdvancedApp.DeviceCounter.prototype = {
-    /**
-     * @param {!WebInspector.Event} event
-     */
-    _onDeviceCountUpdated: function(event)
-    {
-        var count = /** @type {number} */ (event.data);
-        this._counter.setCounter("device-icon-small", count, WebInspector.UIString(count > 1 ? "%d devices found" : "%d device found", count));
-        WebInspector.inspectorView.toolbarItemResized();
-    },
-
-    /**
-     * @return {?WebInspector.StatusBarItem}
-     */
-    item: function()
-    {
-        return this._counter;
-    }
-}
-
-/**
- * @constructor
  */
 WebInspector.Toolbox = function()
 {
@@ -271,7 +228,7 @@ WebInspector.Toolbox = function()
 
 /**
  * @constructor
- * @implements {WebInspector.StatusBarItem.Provider}
+ * @implements {WebInspector.StatusBarButton.Provider}
  */
 WebInspector.AdvancedApp.EmulationButtonProvider = function()
 {
@@ -279,9 +236,9 @@ WebInspector.AdvancedApp.EmulationButtonProvider = function()
 
 WebInspector.AdvancedApp.EmulationButtonProvider.prototype = {
     /**
-     * @return {?WebInspector.StatusBarItem}
+     * @return {?WebInspector.StatusBarButton}
      */
-    item: function()
+    button: function()
     {
         if (!(WebInspector.app instanceof WebInspector.AdvancedApp))
             return null;

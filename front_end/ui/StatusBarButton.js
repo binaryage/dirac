@@ -79,84 +79,6 @@ WebInspector.StatusBarItem.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.StatusBarItem}
- * @param {!Array.<string>} counters
- * @param {string=} className
- */
-WebInspector.StatusBarCounter = function(counters, className)
-{
-    WebInspector.StatusBarItem.call(this, "div");
-    this.element.className = "status-bar-item status-bar-counter hidden";
-    if (className)
-        this.element.classList.add(className);
-    this.element.addEventListener("click", this._clicked.bind(this), false);
-    /** @type {!Array.<!{element: !Element, counter: string, value: number, title: string}>} */
-    this._counters = [];
-    for (var i = 0; i < counters.length; ++i) {
-        var element = this.element.createChild("span", "status-bar-counter-item");
-        element.createChild("div", counters[i]);
-        element.createChild("span");
-        this._counters.push({counter: counters[i], element: element, value: 0, title: ""});
-    }
-    this._update();
-}
-
-WebInspector.StatusBarCounter.prototype = {
-    /**
-     * @param {string} counter
-     * @param {number} value
-     * @param {string} title
-     */
-    setCounter: function(counter, value, title)
-    {
-        for (var i = 0; i < this._counters.length; ++i) {
-            if (this._counters[i].counter === counter) {
-                this._counters[i].value = value;
-                this._counters[i].title = title;
-                this._update();
-                return;
-            }
-        }
-    },
-
-    _update: function()
-    {
-        var total = 0;
-        var title = "";
-        for (var i = 0; i < this._counters.length; ++i) {
-            var counter = this._counters[i];
-            var value = counter.value;
-            if (!counter.value) {
-                counter.element.classList.add("hidden");
-                continue;
-            }
-            counter.element.classList.remove("hidden");
-            counter.element.classList.toggle("status-bar-counter-item-first", !total);
-            counter.element.querySelector("span").textContent = value;
-            total += value;
-            if (counter.title) {
-                if (title)
-                    title += ", ";
-                title += counter.title;
-            }
-        }
-        this.element.classList.toggle("hidden", !total);
-        this.element.title = title;
-    },
-
-    /**
-     * @param {!Event} event
-     */
-    _clicked: function(event)
-    {
-        this.dispatchEventToListeners("click");
-    },
-
-    __proto__: WebInspector.StatusBarItem.prototype
-}
-
-/**
- * @constructor
- * @extends {WebInspector.StatusBarItem}
  * @param {string} text
  * @param {string=} className
  */
@@ -504,15 +426,15 @@ WebInspector.StatusBarButton.prototype = {
 /**
  * @interface
  */
-WebInspector.StatusBarItem.Provider = function()
+WebInspector.StatusBarButton.Provider = function()
 {
 }
 
-WebInspector.StatusBarItem.Provider.prototype = {
+WebInspector.StatusBarButton.Provider.prototype = {
     /**
-     * @return {?WebInspector.StatusBarItem}
+     * @return {?WebInspector.StatusBarButton}
      */
-    item: function() {}
+    button: function() {}
 }
 
 /**

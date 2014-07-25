@@ -164,7 +164,7 @@ WebInspector.DockController.prototype = {
 
 /**
  * @constructor
- * @implements {WebInspector.StatusBarItem.Provider}
+ * @implements {WebInspector.StatusBarButton.Provider}
  */
 WebInspector.DockController.ButtonProvider = function()
 {
@@ -172,9 +172,9 @@ WebInspector.DockController.ButtonProvider = function()
 
 WebInspector.DockController.ButtonProvider.prototype = {
     /**
-     * @return {?WebInspector.StatusBarItem}
+     * @return {?WebInspector.StatusBarButton}
      */
-    item: function()
+    button: function()
     {
         if (!WebInspector.dockController.canDock())
             return null;
