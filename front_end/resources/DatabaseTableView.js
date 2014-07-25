@@ -71,7 +71,7 @@ WebInspector.DatabaseTableView.prototype = {
         this.detachChildViews();
         this.element.removeChildren();
 
-        var dataGrid = WebInspector.DataGrid.createSortableDataGrid(columnNames, values);
+        var dataGrid = WebInspector.SortableDataGrid.create(columnNames, values);
         if (!dataGrid) {
             this._emptyView = new WebInspector.EmptyView(WebInspector.UIString("The “%s”\ntable is empty.", this.tableName));
             this._emptyView.show(this.element);

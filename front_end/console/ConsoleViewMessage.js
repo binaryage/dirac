@@ -644,7 +644,7 @@ WebInspector.ConsoleViewMessage.prototype = {
         }
 
         columnNames.unshift(WebInspector.UIString("(index)"));
-        var dataGrid = WebInspector.DataGrid.createSortableDataGrid(columnNames, flatValues);
+        var dataGrid = WebInspector.SortableDataGrid.create(columnNames, flatValues);
         dataGrid.renderInline();
         this._dataGrids.push(dataGrid);
         this._dataGridParents.put(dataGrid, dataGridContainer);

@@ -143,7 +143,7 @@ WebInspector.DatabaseQueryView.prototype = {
 
     _queryFinished: function(query, columnNames, values)
     {
-        var dataGrid = WebInspector.DataGrid.createSortableDataGrid(columnNames, values);
+        var dataGrid = WebInspector.SortableDataGrid.create(columnNames, values);
         var trimmedQuery = query.trim();
 
         if (dataGrid) {

@@ -170,6 +170,7 @@
             'front_end/ui/ShortcutRegistry.js',
             'front_end/ui/ShowMoreDataGridNode.js',
             'front_end/ui/SoftContextMenu.js',
+            'front_end/ui/SortableDataGrid.js',
             'front_end/ui/SplitView.js',
             'front_end/ui/StackView.js',
             'front_end/ui/StatusBarButton.js',

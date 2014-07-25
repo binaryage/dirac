@@ -121,6 +121,7 @@
             "ui/ShortcutRegistry.js",
             "ui/ShowMoreDataGridNode.js",
             "ui/SoftContextMenu.js",
+            "ui/SortableDataGrid.js",
             "ui/SplitView.js",
             "ui/StackView.js",
             "ui/StatusBarButton.js",

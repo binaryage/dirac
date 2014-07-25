@@ -30,7 +30,7 @@
 
 /**
  * @constructor
- * @extends {WebInspector.DataGrid}
+ * @extends {WebInspector.SortableDataGrid}
  */
 WebInspector.DirectoryContentView = function()
 {
@@ -43,7 +43,7 @@ WebInspector.DirectoryContentView = function()
         {id: indexes.ModificationTime, title: WebInspector.UIString("Modification Time"), sortable: true, width: "25%"}
     ];
 
-    WebInspector.DataGrid.call(this, columns);
+    WebInspector.SortableDataGrid.call(this, columns);
     this.addEventListener(WebInspector.DataGrid.Events.SortingChanged, this._sort, this);
 }
 
@@ -75,12 +75,12 @@ WebInspector.DirectoryContentView.prototype = {
         this.sortNodes(WebInspector.DirectoryContentView.Node.comparator(column), !this.isSortOrderAscending());
     },
 
-    __proto__: WebInspector.DataGrid.prototype
+    __proto__: WebInspector.SortableDataGrid.prototype
 }
 
 /**
  * @constructor
- * @extends {WebInspector.DataGridNode}
+ * @extends {WebInspector.SortableDataGridNode}
  * @param {!WebInspector.FileSystemModel.Entry} entry
  */
 WebInspector.DirectoryContentView.Node = function(entry)
@@ -93,7 +93,7 @@ WebInspector.DirectoryContentView.Node = function(entry)
     data[indexes.Size] = "";
     data[indexes.ModificationTime] = "";
 
-    WebInspector.DataGridNode.call(this, data);
+    WebInspector.SortableDataGridNode.call(this, data);
     this._entry = entry;
     this._metadata = null;
 
@@ -131,7 +131,7 @@ WebInspector.DirectoryContentView.Node.comparator = function(column)
             return isDirectoryCompare(x, y) || modificationTimeCompare(x, y) || nameCompare(x, y);
         };
     default:
-        return WebInspector.DataGrid.TrivialComparator;
+        return WebInspector.SortableDataGrid.TrivialComparator;
     }
 
     function isDirectoryCompare(x, y)
@@ -183,5 +183,5 @@ WebInspector.DirectoryContentView.Node.prototype = {
         this.data = data;
     },
 
-    __proto__: WebInspector.DataGridNode.prototype
+    __proto__: WebInspector.SortableDataGridNode.prototype
 }

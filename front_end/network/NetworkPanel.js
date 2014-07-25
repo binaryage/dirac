@@ -361,7 +361,7 @@ WebInspector.NetworkLogView.prototype = {
             sort: WebInspector.DataGrid.Order.Ascending
         });
 
-        this._dataGrid = new WebInspector.DataGrid(columns);
+        this._dataGrid = new WebInspector.SortableDataGrid(columns);
         this._updateColumns();
         this._dataGrid.setName("networkLog");
         this._dataGrid.setResizeMethod(WebInspector.DataGrid.ResizeMethod.Last);
@@ -2478,13 +2478,13 @@ WebInspector.NetworkTransferDurationCalculator.prototype = {
 
 /**
  * @constructor
- * @extends {WebInspector.DataGridNode}
+ * @extends {WebInspector.SortableDataGridNode}
  * @param {!WebInspector.NetworkLogView} parentView
  * @param {!WebInspector.NetworkRequest} request
  */
 WebInspector.NetworkDataGridNode = function(parentView, request)
 {
-    WebInspector.DataGridNode.call(this, {});
+    WebInspector.SortableDataGridNode.call(this, {});
     this._parentView = parentView;
     this._request = request;
     this._linkifier = new WebInspector.Linkifier();
@@ -2508,7 +2508,7 @@ WebInspector.NetworkDataGridNode.prototype = {
             element.classList.add(typeClassName);
         }
 
-        WebInspector.DataGridNode.prototype.createCells.call(this);
+        WebInspector.SortableDataGridNode.prototype.createCells.call(this);
 
         this.refreshGraph(this._parentView.calculator);
     },
@@ -2570,7 +2570,7 @@ WebInspector.NetworkDataGridNode.prototype = {
     select: function()
     {
         this._parentView.dispatchEventToListeners(WebInspector.NetworkLogView.EventTypes.RequestSelected, this._request);
-        WebInspector.DataGridNode.prototype.select.apply(this, arguments);
+        WebInspector.SortableDataGridNode.prototype.select.apply(this, arguments);
 
         WebInspector.notifications.dispatchEventToListeners(WebInspector.UserMetrics.UserAction, {
             action: WebInspector.UserMetrics.UserActionNames.NetworkRequestSelected,
@@ -2897,7 +2897,7 @@ WebInspector.NetworkDataGridNode.prototype = {
         }
     },
 
-    __proto__: WebInspector.DataGridNode.prototype
+    __proto__: WebInspector.SortableDataGridNode.prototype
 }
 
 /**
