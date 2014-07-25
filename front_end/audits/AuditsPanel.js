@@ -267,9 +267,6 @@ WebInspector.AuditRule.Severity = {
     Severe: "severe"
 }
 
-/**
- * @enum {number}
- */
 WebInspector.AuditRule.SeverityOrder = {
     "info": 3,
     "warning": 2,
