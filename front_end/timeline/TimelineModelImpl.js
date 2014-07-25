@@ -166,6 +166,7 @@ WebInspector.TimelineModelImpl.prototype = {
         if (cpuProfile)
             WebInspector.TimelineJSProfileProcessor.mergeJSProfileIntoTimeline(this, cpuProfile);
         this.dispatchEventToListeners(WebInspector.TimelineModel.Events.RecordingStopped);
+        this._currentTarget = null;
     },
 
     /**
@@ -262,7 +263,6 @@ WebInspector.TimelineModelImpl.prototype = {
 
     reset: function()
     {
-        this._currentTarget = null;
         this._payloads = [];
         this._stringPool = {};
         this._bindings._reset();
