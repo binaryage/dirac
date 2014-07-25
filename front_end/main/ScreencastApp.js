@@ -40,7 +40,7 @@ WebInspector.ScreencastApp.prototype = {
      */
     presentUI: function(mainTarget)
     {
-        if (mainTarget.hasCapability(WebInspector.Target.Capabilities.canScreencast)) {
+        if (mainTarget.hasCapability(WebInspector.Target.Capabilities.CanScreencast)) {
             this._screencastView = new WebInspector.ScreencastView(mainTarget);
             this._screencastView.show(this._rootSplitView.mainElement());
             this._screencastView.initialize();
