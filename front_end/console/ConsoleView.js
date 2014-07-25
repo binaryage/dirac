@@ -112,8 +112,7 @@ WebInspector.ConsoleView = function(hideContextSelector)
     this._showAllMessagesCheckbox.inputElement.checked = true;
     this._showAllMessagesCheckbox.inputElement.addEventListener("change", this._updateMessageList.bind(this), false);
 
-    if (!WebInspector.experimentsSettings.workersInMainWindow.isEnabled())
-        this._showAllMessagesCheckbox.element.classList.add("hidden");
+    this._showAllMessagesCheckbox.element.classList.add("hidden");
 
     statusBarElement.appendChild(this._showAllMessagesCheckbox.element);
 
@@ -204,6 +203,8 @@ WebInspector.ConsoleView.prototype = {
     {
         this._viewport.invalidate();
         target.runtimeModel.executionContexts().forEach(this._executionContextCreated, this);
+        if (WebInspector.targetManager.targets().length > 1)
+            this._showAllMessagesCheckbox.element.classList.toggle("hidden", false);
     },
 
     /**
