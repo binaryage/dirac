@@ -93,7 +93,7 @@ WebInspector.InspectElementModeController.ToggleSearchActionDelegate.prototype =
 
 /**
  * @constructor
- * @implements {WebInspector.StatusBarButton.Provider}
+ * @implements {WebInspector.StatusBarItem.Provider}
  */
 WebInspector.InspectElementModeController.ToggleButtonProvider = function()
 {
@@ -101,9 +101,9 @@ WebInspector.InspectElementModeController.ToggleButtonProvider = function()
 
 WebInspector.InspectElementModeController.ToggleButtonProvider.prototype = {
     /**
-     * @return {?WebInspector.StatusBarButton}
+     * @return {?WebInspector.StatusBarItem}
      */
-    button: function()
+    item: function()
     {
         if (!WebInspector.inspectElementModeController)
             return null;

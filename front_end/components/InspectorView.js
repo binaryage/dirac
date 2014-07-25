@@ -61,23 +61,10 @@ WebInspector.InspectorView = function()
     this._rightToolbarElement = this._toolbarElement.createChild("div", "toolbar-controls-right");
     this._toolbarItems = [];
 
-    if (WebInspector.experimentsSettings.devicesPanel.isEnabled()) {
-        this._remoteDeviceCountElement = this._rightToolbarElement.createChild("div", "hidden");
-        this._remoteDeviceCountElement.addEventListener("click", this.showViewInDrawer.bind(this, "devices", true), false);
-        this._remoteDeviceCountElement.id = "remote-device-count";
-        InspectorFrontendHost.setDeviceCountUpdatesEnabled(true);
-        InspectorFrontendHost.events.addEventListener(InspectorFrontendHostAPI.Events.DeviceCountUpdated, this._onDeviceCountUpdated, this);
-    }
-
-    this._errorWarningCountElement = this._rightToolbarElement.createChild("div", "hidden");
-    this._errorWarningCountElement.id = "error-warning-count";
-
     this._closeButtonToolbarItem = document.createElementWithClass("div", "toolbar-close-button-item");
     var closeButtonElement = this._closeButtonToolbarItem.createChild("div", "close-button");
     closeButtonElement.addEventListener("click", InspectorFrontendHost.closeWindow.bind(InspectorFrontendHost), true);
     this._rightToolbarElement.appendChild(this._closeButtonToolbarItem);
-
-    this.appendToRightToolbar(this._drawer.toggleButton());
 
     this._panels = {};
     // Used by tests.
@@ -98,10 +85,6 @@ WebInspector.InspectorView = function()
 
     InspectorFrontendHost.events.addEventListener(InspectorFrontendHostAPI.Events.ShowConsole, this.showPanel.bind(this, "console"));
 };
-
-WebInspector.InspectorView.Events = {
-    DeviceCountChanged: "DeviceCountChanged"
-}
 
 WebInspector.InspectorView.prototype = {
     _loadPanelDesciptors: function()
@@ -452,53 +435,8 @@ WebInspector.InspectorView.prototype = {
         return this._tabbedPane.headerElement();
     },
 
-    _createImagedCounterElementIfNeeded: function(parent, count, id, styleName)
+    toolbarItemResized: function()
     {
-        if (!count)
-            return;
-
-        var imageElement = parent.createChild("div", styleName);
-        var counterElement = parent.createChild("span");
-        counterElement.id = id;
-        counterElement.textContent = count;
-    },
-
-    /**
-     * @param {number} errors
-     * @param {number} warnings
-     */
-    setErrorAndWarningCounts: function(errors, warnings)
-    {
-        if (this._errors === errors && this._warnings === warnings)
-            return;
-        this._errors = errors;
-        this._warnings = warnings;
-        this._errorWarningCountElement.classList.toggle("hidden", !errors && !warnings);
-        this._errorWarningCountElement.removeChildren();
-
-        this._createImagedCounterElementIfNeeded(this._errorWarningCountElement, errors, "error-count", "error-icon-small");
-        this._createImagedCounterElementIfNeeded(this._errorWarningCountElement, warnings, "warning-count", "warning-icon-small");
-
-        var errorString = errors ?  WebInspector.UIString("%d error%s", errors, errors > 1 ? "s" : "") : "";
-        var warningString = warnings ?  WebInspector.UIString("%d warning%s", warnings, warnings > 1 ? "s" : "") : "";
-        var commaString = errors && warnings ? ", " : "";
-        this._errorWarningCountElement.title = errorString + commaString + warningString;
-        this._tabbedPane.headerResized();
-    },
-
-    /**
-     * @param {!WebInspector.Event} event
-     */
-    _onDeviceCountUpdated: function(event)
-    {
-        var count = /** @type {number} */ (event.data);
-        if (count === this.deviceCount_)
-            return;
-        this.deviceCount_ = count;
-        this._remoteDeviceCountElement.classList.toggle("hidden", !count);
-        this._remoteDeviceCountElement.removeChildren();
-        this._createImagedCounterElementIfNeeded(this._remoteDeviceCountElement, count, "device-count", "device-icon-small");
-        this._remoteDeviceCountElement.title = WebInspector.UIString(((count > 1) ? "%d devices found" : "%d device found"), count);
         this._tabbedPane.headerResized();
     },
 
@@ -530,6 +468,24 @@ WebInspector.InspectorView.DrawerToggleActionDelegate.prototype = {
         }
         WebInspector.inspectorView.showDrawer();
         return true;
+    }
+}
+
+/**
+ * @constructor
+ * @implements {WebInspector.StatusBarItem.Provider}
+ */
+WebInspector.InspectorView.ToggleDrawerButtonProvider = function()
+{
+}
+
+WebInspector.InspectorView.ToggleDrawerButtonProvider.prototype = {
+    /**
+     * @return {?WebInspector.StatusBarItem}
+     */
+    item: function()
+    {
+        return WebInspector.inspectorView._drawer.toggleButton();
     }
 }
 
