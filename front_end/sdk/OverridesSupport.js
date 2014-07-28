@@ -811,14 +811,6 @@ WebInspector.OverridesSupport.prototype = {
     /**
      * @return {boolean}
      */
-    hasTouchInputs: function()
-    {
-        return !!this._target && this._target.hasCapability(WebInspector.Target.Capabilities.HasTouchInputs);
-    },
-
-    /**
-     * @return {boolean}
-     */
     networkThroughputIsLimited: function()
     {
         var conditions = this.settings.networkConditions.get();

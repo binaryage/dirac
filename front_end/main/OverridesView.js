@@ -439,15 +439,15 @@ WebInspector.OverridesView.NetworkTab.prototype = {
  */
 WebInspector.OverridesView.SensorsTab = function()
 {
-    var settings = [WebInspector.overridesSupport.settings.overrideGeolocation, WebInspector.overridesSupport.settings.overrideDeviceOrientation];
-    if (!WebInspector.overridesSupport.hasTouchInputs())
-        settings.push(WebInspector.overridesSupport.settings.emulateTouch);
-    WebInspector.OverridesView.Tab.call(this, "sensors", WebInspector.UIString("Sensors"), settings);
+    WebInspector.OverridesView.Tab.call(this, "sensors", WebInspector.UIString("Sensors"), [
+        WebInspector.overridesSupport.settings.overrideGeolocation,
+        WebInspector.overridesSupport.settings.overrideDeviceOrientation,
+        WebInspector.overridesSupport.settings.emulateTouch
+    ]);
 
     this.element.classList.add("overrides-sensors");
     this.registerRequiredCSS("accelerometer.css");
-    if (!WebInspector.overridesSupport.hasTouchInputs())
-        this.element.appendChild(this._createSettingCheckbox(WebInspector.UIString("Emulate touch screen"), WebInspector.overridesSupport.settings.emulateTouch, undefined));
+    this.element.appendChild(this._createSettingCheckbox(WebInspector.UIString("Emulate touch screen"), WebInspector.overridesSupport.settings.emulateTouch, undefined));
     this._appendGeolocationOverrideControl();
     this._apendDeviceOrientationOverrideControl();
 }
