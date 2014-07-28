@@ -112,12 +112,12 @@
     display: block;
 }
 
-.resource-headers-view .outline-disclosure .parent {
+.resource-headers-view .outline-disclosure > .parent {
     -webkit-user-select: none;
     font-weight: bold;
 }
 
-.resource-headers-view .outline-disclosure .parent .section * {
+.resource-headers-view .outline-disclosure > .parent > .section {
     font-weight: normal;
 }
 
