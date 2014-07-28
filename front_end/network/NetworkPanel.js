@@ -1770,7 +1770,6 @@ WebInspector.NetworkPanel = function()
 {
     WebInspector.Panel.call(this, "network");
     this.registerRequiredCSS("networkPanel.css");
-    this._injectStyles();
 
     this._panelStatusBarElement = this.element.createChild("div", "panel-status-bar");
     this._filterBar = new WebInspector.FilterBar();
@@ -2083,26 +2082,6 @@ WebInspector.NetworkPanel.prototype = {
             return;
 
         appendRevealItem.call(this, request);
-    },
-
-    _injectStyles: function()
-    {
-        var style = document.createElement("style");
-        var rules = [];
-
-        var columns = WebInspector.NetworkLogView._defaultColumnsVisibility;
-
-        var hideSelectors = [];
-        var bgSelectors = [];
-        for (var columnId in columns) {
-            hideSelectors.push("#network-container .hide-" + columnId + "-column ." + columnId + "-column");
-            bgSelectors.push(".network-log-grid.data-grid td." + columnId + "-column");
-        }
-        rules.push(hideSelectors.join(", ") + "{border-left: 0 none transparent;}");
-        rules.push(bgSelectors.join(", ") + "{background-color: rgba(0, 0, 0, 0.07);}");
-
-        style.textContent = rules.join("\n");
-        document.head.appendChild(style);
     },
 
     __proto__: WebInspector.Panel.prototype
