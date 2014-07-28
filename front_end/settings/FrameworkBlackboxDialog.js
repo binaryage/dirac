@@ -29,19 +29,22 @@ WebInspector.FrameworkBlackboxDialog = function()
     var section = contents.createChild("div", "section");
     var container = section.createChild("div", "settings-list-container");
 
+    this._blackboxLabel = WebInspector.UIString("Blackbox");
+    this._disabledLabel = WebInspector.UIString("Disabled");
+
     var column1 = { id: "pattern", placeholder: "/framework\\.js$" };
-    var column2 = { id: "value", options: [WebInspector.UIString("Blackbox")] };
+    var column2 = { id: "value", options: [this._blackboxLabel, this._disabledLabel] };
 
     this._patternsList = new WebInspector.EditableSettingsList([column1, column2], this._patternValuesProvider.bind(this), this._patternValidate.bind(this), this._patternEdit.bind(this));
     this._patternsList.element.classList.add("blackbox-patterns-list");
     this._patternsList.addEventListener(WebInspector.SettingsList.Events.Removed, this._patternRemovedFromList.bind(this));
     container.appendChild(this._patternsList.element);
 
-    /** @type {!Object.<string, boolean>} */
-    this._entries = {};
+    /** @type {!StringMap.<string>} */
+    this._entries = new StringMap();
     var patterns = WebInspector.settings.skipStackFramesPattern.getAsArray();
     for (var i = 0; i < patterns.length; ++i)
-        this._addPattern(patterns[i]);
+        this._addPattern(patterns[i].pattern, patterns[i].disabled);
 
     this.element.tabIndex = 0;
 }
@@ -108,7 +111,7 @@ WebInspector.FrameworkBlackboxDialog.prototype = {
         case "pattern":
             return itemId;
         case "value":
-            return WebInspector.UIString("Blackbox");
+            return /** @type {string} */ (this._entries.get(itemId));
         default:
             console.assert("Should not be reached.");
         }
@@ -123,9 +126,10 @@ WebInspector.FrameworkBlackboxDialog.prototype = {
     _patternValidate: function(itemId, data)
     {
         var regex;
+        var oldPattern = itemId;
         var newPattern = data["pattern"];
         try {
-            if (newPattern && !this._entries[newPattern])
+            if (newPattern && (oldPattern === newPattern || !this._entries.contains(newPattern)))
                 regex = new RegExp(newPattern);
         } catch (e) {
         }
@@ -142,21 +146,32 @@ WebInspector.FrameworkBlackboxDialog.prototype = {
         var newPattern = data["pattern"];
         if (!newPattern)
             return;
+        var disabled = (data["value"] === this._disabledLabel);
 
         var patterns = WebInspector.settings.skipStackFramesPattern.getAsArray();
-        var pos = oldPattern ? patterns.indexOf(oldPattern) : -1;
-        if (pos === -1)
-            patterns.push(newPattern);
-        else
-            patterns[pos] = newPattern;
+        for (var i = 0; i <= patterns.length; ++i) {
+            if (i === patterns.length) {
+                patterns.push({ pattern: newPattern, disabled: disabled });
+                break;
+            }
+            if (patterns[i].pattern === oldPattern) {
+                patterns[i] = { pattern: newPattern, disabled: disabled };
+                break;
+            }
+        }
         WebInspector.settings.skipStackFramesPattern.setAsArray(patterns);
+
+        if (oldPattern && oldPattern === newPattern) {
+            this._entries.put(newPattern, disabled ? this._disabledLabel : this._blackboxLabel)
+            this._patternsList.refreshItem(newPattern);
+            return;
+        }
 
         if (oldPattern) {
             this._patternsList.removeItem(oldPattern);
-            delete this._entries[oldPattern];
+            this._entries.remove(oldPattern);
         }
-        this._addPattern(newPattern);
-        this._patternsList.selectItem(newPattern);
+        this._addPattern(newPattern, disabled);
     },
 
     /**
@@ -167,21 +182,27 @@ WebInspector.FrameworkBlackboxDialog.prototype = {
         var pattern = /** @type{?string} */ (event.data);
         if (!pattern)
             return;
-        delete this._entries[pattern];
+        this._entries.remove(pattern);
 
         var patterns = WebInspector.settings.skipStackFramesPattern.getAsArray();
-        patterns.remove(pattern);
+        for (var i = 0; i < patterns.length; ++i) {
+            if (patterns[i].pattern === pattern) {
+                patterns.splice(i, 1);
+                break;
+            }
+        }
         WebInspector.settings.skipStackFramesPattern.setAsArray(patterns);
     },
 
     /**
      * @param {string} pattern
+     * @param {boolean=} disabled
      */
-    _addPattern: function(pattern)
+    _addPattern: function(pattern, disabled)
     {
-        if (!pattern || this._entries[pattern])
+        if (!pattern || this._entries.contains(pattern))
             return;
-        this._entries[pattern] = true;
+        this._entries.put(pattern, disabled ? this._disabledLabel : this._blackboxLabel);
         this._patternsList.addItem(pattern, null);
         this._resize();
     },

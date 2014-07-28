@@ -695,7 +695,7 @@ WebInspector.SettingsList = function(columns, itemRenderer)
     this.element.tabIndex = -1;
     this._itemRenderer = itemRenderer;
     /** @type {!Object.<?string, !Element>} */
-    this._listItems = {};
+    this._listItems = { __proto__: null };
     /** @type {!Array.<?string>} */
     this._ids = [];
     this._columns = columns;
@@ -763,7 +763,8 @@ WebInspector.SettingsList.prototype = {
      */
     removeItem: function(id)
     {
-        this._listItems[id].remove();
+        if (this._listItems[id])
+            this._listItems[id].remove();
         delete this._listItems[id];
         this._ids.remove(id);
         if (id === this._selectedId) {
@@ -892,6 +893,30 @@ WebInspector.EditableSettingsList.prototype = {
         var listItem = WebInspector.SettingsList.prototype.addItem.call(this, itemId, beforeId);
         listItem.classList.add("editable");
         return listItem;
+    },
+
+    /**
+     * @param {?string} itemId
+     */
+    refreshItem: function(itemId)
+    {
+        if (!itemId)
+            return;
+        var listItem = this._listItems[itemId];
+        if (!listItem)
+            return;
+        for (var i = 0; i < this._columns.length; ++i) {
+            var column = this._columns[i];
+            var columnId = column.id;
+
+            var value = this._valuesProvider(itemId, columnId);
+            var textElement = this._textElements[itemId][columnId];
+            textElement.textContent = value;
+            textElement.title = value;
+
+            var editElement = this._editInputElements[itemId][columnId];
+            this._setEditElementValue(editElement, value || "");
+        }
     },
 
     /**
