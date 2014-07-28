@@ -528,14 +528,30 @@ WebInspector.Main.prototype = {
 
     _documentCanCopy: function(event)
     {
-        if (WebInspector.inspectorView.currentPanel() && WebInspector.inspectorView.currentPanel()["handleCopyEvent"])
+        var panel = WebInspector.inspectorView.currentPanel();
+        if (panel && panel["handleCopyEvent"])
             event.preventDefault();
     },
 
     _documentCopy: function(event)
     {
-        if (WebInspector.inspectorView.currentPanel() && WebInspector.inspectorView.currentPanel()["handleCopyEvent"])
-            WebInspector.inspectorView.currentPanel()["handleCopyEvent"](event);
+        var panel = WebInspector.inspectorView.currentPanel();
+        if (panel && panel["handleCopyEvent"])
+            panel["handleCopyEvent"](event);
+    },
+
+    _documentCut: function(event)
+    {
+        var panel = WebInspector.inspectorView.currentPanel();
+        if (panel && panel["handleCutEvent"])
+            panel["handleCutEvent"](event);
+    },
+
+    _documentPaste: function(event)
+    {
+        var panel = WebInspector.inspectorView.currentPanel();
+        if (panel && panel["handlePasteEvent"])
+            panel["handlePasteEvent"](event);
     },
 
     _contextMenuEventFired: function(event)
@@ -549,6 +565,8 @@ WebInspector.Main.prototype = {
         doc.addEventListener("keydown", this._postDocumentKeyDown.bind(this), false);
         doc.addEventListener("beforecopy", this._documentCanCopy.bind(this), true);
         doc.addEventListener("copy", this._documentCopy.bind(this), false);
+        doc.addEventListener("cut", this._documentCut.bind(this), false);
+        doc.addEventListener("paste", this._documentPaste.bind(this), false);
         doc.addEventListener("contextmenu", this._contextMenuEventFired.bind(this), true);
         doc.addEventListener("click", this._documentClick.bind(this), false);
     },

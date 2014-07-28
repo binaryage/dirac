@@ -2294,11 +2294,24 @@
                 "description": "Returns attributes for the specified node."
             },
             {
+                "name": "copyTo",
+                "parameters": [
+                    { "name": "nodeId", "$ref": "NodeId", "description": "Id of the node to copy." },
+                    { "name": "targetNodeId", "$ref": "NodeId", "description": "Id of the element to drop the copy into." },
+                    { "name": "insertBeforeNodeId", "$ref": "NodeId", "optional": true, "description": "Drop the copy before this node (if absent, the copy becomes the last child of <code>targetNodeId</code>)." }
+                ],
+                "returns": [
+                    { "name": "nodeId", "$ref": "NodeId", "description": "Id of the node clone." }
+                ],
+                "description": "Creates a deep copy of the specified node and places it into the target container before the given anchor.",
+                "hidden": true
+            },
+            {
                 "name": "moveTo",
                 "parameters": [
-                    { "name": "nodeId", "$ref": "NodeId", "description": "Id of the node to drop." },
-                    { "name": "targetNodeId", "$ref": "NodeId", "description": "Id of the element to drop into." },
-                    { "name": "insertBeforeNodeId", "$ref": "NodeId", "optional": true, "description": "Drop node before given one." }
+                    { "name": "nodeId", "$ref": "NodeId", "description": "Id of the node to move." },
+                    { "name": "targetNodeId", "$ref": "NodeId", "description": "Id of the element to drop the moved node into." },
+                    { "name": "insertBeforeNodeId", "$ref": "NodeId", "optional": true, "description": "Drop node before this one (if absent, the moved node becomes the last child of <code>targetNodeId</code>)." }
                 ],
                 "returns": [
                     { "name": "nodeId", "$ref": "NodeId", "description": "New id of the moved node." }

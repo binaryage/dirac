@@ -456,12 +456,17 @@ WebInspector.DOMNode.prototype = {
         this._agent.removeNode(this.id, this._domModel._markRevision(this, callback));
     },
 
-    copyNode: function()
+    /**
+     * @param {function(?string)=} callback
+     */
+    copyNode: function(callback)
     {
         function copy(error, text)
         {
             if (!error)
                 InspectorFrontendHost.copyText(text);
+            if (callback)
+                callback(error ? null : text);
         }
         this._agent.getOuterHTML(this.id, copy);
     },
@@ -702,6 +707,16 @@ WebInspector.DOMNode.prototype = {
             this._attributes.remove(attr);
             delete this._attributesMap[name];
         }
+    },
+
+    /**
+     * @param {!WebInspector.DOMNode} targetNode
+     * @param {?WebInspector.DOMNode} anchorNode
+     * @param {function(?Protocol.Error, !DOMAgent.NodeId=)=} callback
+     */
+    copyTo: function(targetNode, anchorNode, callback)
+    {
+        this._agent.copyTo(this.id, targetNode.id, anchorNode ? anchorNode.id : undefined, this._domModel._markRevision(this, callback));
     },
 
     /**

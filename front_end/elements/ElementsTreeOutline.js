@@ -71,6 +71,9 @@ WebInspector.ElementsTreeOutline = function(target, omitRootDOMNode, selectEnabl
     this._createNodeDecorators();
 }
 
+/** @typedef {{node: !WebInspector.DOMNode, isCut: boolean}} */
+WebInspector.ElementsTreeOutline.ClipboardData;
+
 /**
  * @enum {string}
  */
@@ -144,6 +147,148 @@ WebInspector.ElementsTreeOutline.prototype = {
         if (this._elementsTreeUpdater)
             this._elementsTreeUpdater.dispose();
     },
+
+    /**
+     * @param {?WebInspector.ElementsTreeOutline.ClipboardData} data
+     */
+    _setClipboardData: function(data)
+    {
+        if (this._clipboardNodeData) {
+            var treeElement = this.findTreeElement(this._clipboardNodeData.node);
+            if (treeElement)
+                treeElement.setInClipboard(false);
+            delete this._clipboardNodeData;
+        }
+
+        if (data) {
+            var treeElement = this.findTreeElement(data.node);
+            if (treeElement)
+                treeElement.setInClipboard(true);
+            this._clipboardNodeData = data;
+        }
+    },
+
+    /**
+     * @param {!WebInspector.DOMNode} removedNode
+     */
+    _resetClipboardIfNeeded: function(removedNode)
+    {
+        if (this._clipboardNodeData && this._clipboardNodeData.node === removedNode)
+            this._setClipboardData(null);
+    },
+
+    /**
+     * @param {boolean} isCut
+     * @param {!Event} event
+     */
+    handleCopyOrCutKeyboardEvent: function(isCut, event)
+    {
+        this._setClipboardData(null);
+
+        // Do not interfere with text editing.
+        var currentFocusElement = WebInspector.currentFocusElement();
+        if (currentFocusElement && WebInspector.isBeingEdited(currentFocusElement))
+            return;
+
+        var targetNode = this.selectedDOMNode();
+        if (!targetNode)
+            return;
+
+        event.clipboardData.clearData();
+        event.preventDefault();
+
+        this._performCopyOrCut(isCut, targetNode);
+    },
+
+    /**
+     * @param {boolean} isCut
+     * @param {?WebInspector.DOMNode} node
+     */
+    _performCopyOrCut: function(isCut, node)
+    {
+        if (isCut && (node.isShadowRoot() || node.ancestorUserAgentShadowRoot()))
+            return;
+
+        node.copyNode();
+        this._setClipboardData({ node: node, isCut: isCut });
+    },
+
+    /**
+     * @param {!WebInspector.DOMNode} targetNode
+     * @return {boolean}
+     */
+    _canPaste: function(targetNode)
+    {
+        if (targetNode.isShadowRoot() || targetNode.ancestorUserAgentShadowRoot())
+            return false;
+
+        if (!this._clipboardNodeData)
+            return false;
+
+        var node = this._clipboardNodeData.node;
+        if (this._clipboardNodeData.isCut && (node === targetNode || node.isAncestor(targetNode)))
+            return false;
+
+        if (targetNode.target() !== node.target())
+            return false;
+        return true;
+    },
+
+    /**
+     * @param {!WebInspector.DOMNode} targetNode
+     */
+    _pasteNode: function(targetNode)
+    {
+        if (this._canPaste(targetNode))
+            this._performPaste(targetNode);
+    },
+
+    /**
+     * @param {!Event} event
+     */
+    handlePasteKeyboardEvent: function(event)
+    {
+        // Do not interfere with text editing.
+        var currentFocusElement = WebInspector.currentFocusElement();
+        if (currentFocusElement && WebInspector.isBeingEdited(currentFocusElement))
+            return;
+
+        var targetNode = this.selectedDOMNode();
+        if (!targetNode || !this._canPaste(targetNode))
+            return;
+
+        event.preventDefault();
+        this._performPaste(targetNode);
+    },
+
+    /**
+     * @param {!WebInspector.DOMNode} targetNode
+     */
+    _performPaste: function(targetNode)
+    {
+        if (this._clipboardNodeData.isCut) {
+            this._clipboardNodeData.node.moveTo(targetNode, null, expandCallback.bind(this));
+            this._setClipboardData(null);
+        } else {
+            this._clipboardNodeData.node.copyTo(targetNode, null, expandCallback.bind(this));
+        }
+
+        /**
+         * @param {?Protocol.Error} error
+         * @param {!DOMAgent.NodeId} nodeId
+         * @this {WebInspector.ElementsTreeOutline}
+         */
+        function expandCallback(error, nodeId)
+        {
+            if (error)
+                return;
+            var pastedNode = this._domModel.nodeForId(nodeId);
+            if (!pastedNode)
+                return;
+            this.selectDOMNode(pastedNode);
+        }
+    },
+
     /**
      * @param {boolean} visible
      */
@@ -613,7 +758,7 @@ WebInspector.ElementsTreeOutline.prototype = {
             treeElement._populateTagContextMenu(contextMenu, event);
         } else if (commentNode) {
             contextMenu.appendSeparator();
-            treeElement._populateNodeContextMenu(contextMenu, textNode);
+            treeElement._populateNodeContextMenu(contextMenu);
         } else if (isPseudoElement) {
             treeElement._populateScrollIntoView(contextMenu);
         } else if (treeElement._node.isShadowRoot()) {
@@ -918,6 +1063,17 @@ WebInspector.ElementsTreeElement.prototype = {
             for (var i = (this._highlightResult.length - 1); i >= 0; --i)
                 updateEntryHide(this._highlightResult[i]);
         }
+    },
+
+    /**
+     * @param {boolean} inClipboard
+     */
+    setInClipboard: function(inClipboard)
+    {
+        if (this._inClipboard === inClipboard)
+            return;
+        this._inClipboard = inClipboard;
+        this.listItemElement.classList.toggle("in-clipboard", inClipboard);
     },
 
     get hovered()
@@ -1453,14 +1609,19 @@ WebInspector.ElementsTreeElement.prototype = {
         if (isEditable && !this._editing)
             contextMenu.appendItem(WebInspector.UIString("Edit as HTML"), openTagElement._editAsHTML.bind(openTagElement));
         var isShadowRoot = this.representedObject.isShadowRoot();
-        if (!isShadowRoot)
-            contextMenu.appendItem(WebInspector.UIString("Copy as HTML"), this._copyHTML.bind(this));
 
         // Place it here so that all "Copy"-ing items stick together.
         if (this.representedObject.nodeType() === Node.ELEMENT_NODE)
             contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Copy CSS path" : "Copy CSS Path"), this._copyCSSPath.bind(this));
         if (!isShadowRoot)
             contextMenu.appendItem(WebInspector.UIString("Copy XPath"), this._copyXPath.bind(this));
+        if (!isShadowRoot) {
+            var treeOutline = this.treeOutline;
+            contextMenu.appendItem(WebInspector.UIString("Copy"), treeOutline._performCopyOrCut.bind(treeOutline, false, this.representedObject));
+            contextMenu.appendItem(WebInspector.UIString("Cut"), treeOutline._performCopyOrCut.bind(treeOutline, true, this.representedObject), !this.hasEditableNode());
+            contextMenu.appendItem(WebInspector.UIString("Paste"), treeOutline._pasteNode.bind(treeOutline, this.representedObject), !treeOutline._canPaste(this.representedObject));
+        }
+
         if (isEditable)
             contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Delete node" : "Delete Node"), this.remove.bind(this));
     },
@@ -2347,11 +2508,6 @@ WebInspector.ElementsTreeElement.prototype = {
         node.getOuterHTML(this._startEditingAsHTML.bind(this, commitChange));
     },
 
-    _copyHTML: function()
-    {
-        this._node.copyNode();
-    },
-
     _copyCSSPath: function()
     {
         InspectorFrontendHost.copyText(WebInspector.DOMPresentationUtils.cssPath(this._node, true));
@@ -2551,6 +2707,7 @@ WebInspector.ElementsTreeUpdater.prototype = {
 
     _nodeRemoved: function(event)
     {
+        this._treeOutline._resetClipboardIfNeeded(event.data.node);
         this._nodeModified(event.data.node, false, event.data.parent);
     },
 
@@ -2635,6 +2792,7 @@ WebInspector.ElementsTreeUpdater.prototype = {
         this._treeOutline.selectDOMNode(null, false);
         this._domModel.hideDOMNodeHighlight();
         this._recentlyModifiedNodes.clear();
+        delete this._treeOutline._clipboardNodeData;
     }
 }
 

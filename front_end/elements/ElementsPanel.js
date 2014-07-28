@@ -250,7 +250,7 @@ WebInspector.ElementsPanel.prototype = {
         if (!node || !node.target().cssModel.forcePseudoState(node, pseudoClass, enable))
             return;
 
-        this._targetToTreeOutline.get(node.target()).updateOpenCloseTags(node);
+        this._treeOutlineForNode(node).updateOpenCloseTags(node);
         this._metricsPaneEdited();
         this._stylesPaneEdited();
 
@@ -454,8 +454,7 @@ WebInspector.ElementsPanel.prototype = {
         if (!selectedNode)
             return;
 
-        var treeOutline = this._targetToTreeOutline.get(selectedNode.target());
-        var treeElement = treeOutline.findTreeElement(selectedNode);
+        var treeElement = this._treeElementForNode(selectedNode);
         if (treeElement)
             treeElement.updateSelection(); // Recalculate selection highlight dimensions.
     },
@@ -617,8 +616,7 @@ WebInspector.ElementsPanel.prototype = {
 
         this._searchableView.updateCurrentMatchIndex(index);
 
-        var treeOutline = this._targetToTreeOutline.get(searchResult.target);
-        var treeElement = treeOutline.findTreeElement(searchResult.node);
+        var treeElement = this._treeElementForNode(searchResult.node);
         if (treeElement) {
             treeElement.highlightSearchResults(this._searchQuery);
             treeElement.reveal();
@@ -1193,18 +1191,55 @@ WebInspector.ElementsPanel.prototype = {
         treeOutline.handleShortcut(event);
     },
 
+    /**
+     * @param {?WebInspector.DOMNode} node
+     * @return {?WebInspector.ElementsTreeOutline}
+     */
+    _treeOutlineForNode: function(node)
+    {
+        if (!node)
+            return null;
+        return this._targetToTreeOutline.get(node.target()) || null;
+    },
+
+    /**
+     * @param {!WebInspector.DOMNode} node
+     * @return {?WebInspector.ElementsTreeElement}
+     */
+    _treeElementForNode: function(node)
+    {
+        var treeOutline = this._treeOutlineForNode(node);
+        return /** @type {?WebInspector.ElementsTreeElement} */ (treeOutline.findTreeElement(node));
+    },
+
+    /**
+     * @param {!Event} event
+     */
     handleCopyEvent: function(event)
     {
-        var currentFocusElement = WebInspector.currentFocusElement();
-        if (currentFocusElement && WebInspector.isBeingEdited(currentFocusElement))
-            return;
+        var treeOutline = this._treeOutlineForNode(this.selectedDOMNode());
+        if (treeOutline)
+            treeOutline.handleCopyOrCutKeyboardEvent(false, event);
+    },
 
-        // Don't prevent the normal copy if the user has a selection.
-        if (!window.getSelection().isCollapsed)
-            return;
-        event.clipboardData.clearData();
-        event.preventDefault();
-        this.selectedDOMNode().copyNode();
+    /**
+     * @param {!Event} event
+     */
+    handleCutEvent: function(event)
+    {
+        var treeOutline = this._treeOutlineForNode(this.selectedDOMNode());
+        if (treeOutline)
+            treeOutline.handleCopyOrCutKeyboardEvent(true, event);
+    },
+
+    /**
+     * @param {!Event} event
+     */
+    handlePasteEvent: function(event)
+    {
+        var treeOutline = this._treeOutlineForNode(this.selectedDOMNode());
+        if (treeOutline)
+            treeOutline.handlePasteKeyboardEvent(event);
     },
 
     /**

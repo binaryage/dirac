@@ -1353,6 +1353,10 @@ iframe.panel.extension {
     background-color: rgb(212, 212, 212);
 }
 
+.outline-disclosure li.in-clipboard .highlight {
+    outline: 1px dotted darkgrey;
+}
+
 .outline-disclosure li.elements-drag-over .selection {
     display: block;
     margin-top: -2px;
