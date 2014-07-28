@@ -186,7 +186,7 @@ WebInspector.SourcesPanel.prototype = {
      */
     defaultFocusedElement: function()
     {
-        return this._sourcesView.defaultFocusedElement() || this._navigator.view.defaultFocusedElement();
+        return this._sourcesView.defaultFocusedElement();
     },
 
     /**
