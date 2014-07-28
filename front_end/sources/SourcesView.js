@@ -611,8 +611,10 @@ WebInspector.SourcesView.prototype = {
         case WebInspector.resourceTypes.Stylesheet:
             WebInspector.StyleSheetOutlineDialog.show(this, uiSourceCode, this.showSourceLocation.bind(this, uiSourceCode));
             return true;
+        default:
+            // We don't want default browser shortcut to be executed, so pretend to handle this event.
+            return true;
         }
-        return false;
     },
 
     /**
