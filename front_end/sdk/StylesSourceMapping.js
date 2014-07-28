@@ -110,7 +110,7 @@ WebInspector.StylesSourceMapping.prototype = {
         if (!url)
             return;
 
-        header.pushSourceMapping(this);
+        WebInspector.cssWorkspaceBinding.pushSourceMapping(header, this);
         var map = this._urlToHeadersByFrameId[url];
         if (!map) {
             map = /** @type {!StringMap.<!StringMap.<!WebInspector.CSSStyleSheetHeader>>} */ (new StringMap());
@@ -187,7 +187,7 @@ WebInspector.StylesSourceMapping.prototype = {
             return;
         var url = uiSourceCode.url;
         this._styleFiles.put(uiSourceCode, new WebInspector.StyleFile(uiSourceCode, this));
-        header.updateLocations();
+        WebInspector.cssWorkspaceBinding.updateLocations(header);
     },
 
     /**

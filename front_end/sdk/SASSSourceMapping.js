@@ -419,7 +419,7 @@ WebInspector.SASSSourceMapping.prototype = {
         var completeSourceMapURL = WebInspector.ParsedURL.completeURL(sourceURL, header.sourceMapURL);
         if (completeSourceMapURL)
             delete this._sourceMapByURL[completeSourceMapURL];
-        header.updateLocations();
+        WebInspector.cssWorkspaceBinding.updateLocations(header);
     },
 
     /**
@@ -445,7 +445,7 @@ WebInspector.SASSSourceMapping.prototype = {
             this._sourceMapByStyleSheetURL[sourceURL] = sourceMap;
             for (var i = 0; i < headersWithSameSourceURL.length; ++i) {
                 if (forceRebind)
-                    headersWithSameSourceURL[i].updateLocations();
+                    WebInspector.cssWorkspaceBinding.updateLocations(headersWithSameSourceURL[i]);
                 else
                     this._bindUISourceCode(headersWithSameSourceURL[i], sourceMap);
             }
@@ -519,7 +519,7 @@ WebInspector.SASSSourceMapping.prototype = {
      */
     _bindUISourceCode: function(header, sourceMap)
     {
-        header.pushSourceMapping(this);
+        WebInspector.cssWorkspaceBinding.pushSourceMapping(header, this);
         var rawURL = header.sourceURL;
         var sources = sourceMap.sources();
         for (var i = 0; i < sources.length; ++i) {
@@ -604,7 +604,7 @@ WebInspector.SASSSourceMapping.prototype = {
             for (var j = 0; j < ids.length; ++j) {
                 var header = this._cssModel.styleSheetHeaderForId(ids[j]);
                 console.assert(header);
-                header.updateLocations();
+                WebInspector.cssWorkspaceBinding.updateLocations(/** @type {!WebInspector.CSSStyleSheetHeader} */ (header));
             }
         }
     },

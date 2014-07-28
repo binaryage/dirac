@@ -90,7 +90,6 @@
             'front_end/sdk/CSSMetadata.js',
             'front_end/sdk/CSSParser.js',
             'front_end/sdk/CSSStyleModel.js',
-            'front_end/sdk/CSSStyleSheetMapping.js',
             'front_end/sdk/CSSWorkspaceBinding.js',
             'front_end/sdk/BreakpointManager.js',
             'front_end/sdk/DOMModel.js',
