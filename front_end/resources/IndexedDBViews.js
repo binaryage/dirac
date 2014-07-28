@@ -330,7 +330,7 @@ WebInspector.IDBDataView.prototype = {
             this._pageForwardButton.disabled = !hasMore;
         }
 
-        var idbKeyRange = key ? window.webkitIDBKeyRange.lowerBound(key) : null;
+        var idbKeyRange = key ? window.IDBKeyRange.lowerBound(key) : null;
         if (this._isIndex)
             this._model.loadIndexData(this._databaseId, this._objectStore.name, this._index.name, idbKeyRange, skipCount, pageSize, callback.bind(this));
         else
@@ -427,4 +427,3 @@ WebInspector.IDBDataGridNode.prototype = {
 
     __proto__: WebInspector.DataGridNode.prototype
 }
-
