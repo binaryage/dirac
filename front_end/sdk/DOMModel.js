@@ -1559,9 +1559,11 @@ WebInspector.DOMModel.prototype = {
         if (mode === "all" || mode === "margin")
             highlightConfig.marginColor = WebInspector.Color.PageHighlight.Margin.toProtocolRGBA();
 
-        if (mode === "all")
+        if (mode === "all") {
             highlightConfig.eventTargetColor = WebInspector.Color.PageHighlight.EventTarget.toProtocolRGBA();
-
+            highlightConfig.shapeColor = WebInspector.Color.PageHighlight.Shape.toProtocolRGBA();
+            highlightConfig.shapeMarginColor = WebInspector.Color.PageHighlight.ShapeMargin.toProtocolRGBA();
+        }
         return highlightConfig;
     },
 

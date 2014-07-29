@@ -627,7 +627,9 @@ WebInspector.Color.PageHighlight = {
     BorderLight: WebInspector.Color.fromRGBA([255, 229, 153, .5]),
     Margin: WebInspector.Color.fromRGBA([246, 178, 107, .66]),
     MarginLight: WebInspector.Color.fromRGBA([246, 178, 107, .5]),
-    EventTarget: WebInspector.Color.fromRGBA([255, 196, 196, .66])
+    EventTarget: WebInspector.Color.fromRGBA([255, 196, 196, .66]),
+    Shape: WebInspector.Color.fromRGBA([96, 82, 177, 0.8]),
+    ShapeMargin: WebInspector.Color.fromRGBA([96, 82, 127, .6])
 }
 
 WebInspector.Color.Format = {
