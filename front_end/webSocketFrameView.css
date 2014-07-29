@@ -1,0 +1,59 @@
+/*
+ * Copyright (c) 2014 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+.websocket-frame-view {
+    -webkit-user-select: text;
+}
+
+.websocket-frame-view,
+.websocket-frame-view .data-grid {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border: none;
+}
+
+.websocket-frame-view .data-grid .data {
+    background-image: none;
+}
+
+.websocket-frame-view td {
+    padding-top: 3px;
+    padding-bottom: 3px;
+    border-top: 1px solid rgb(240, 240, 240);
+}
+
+.websocket-frame-view-row-outcoming {
+    background-color: rgb(226, 247, 218);
+}
+
+.websocket-frame-view-row-outcoming:not(.selected) td {
+    border-left-color: rgb(177, 209, 165);
+}
+
+.websocket-frame-view-row-outcoming:not(.selected) td, .websocket-frame-view-row-outcoming:not(.selected) + tr td {
+    border-top-color: rgb(199, 236, 185);
+}
+
+.websocket-frame-view-row-opcode {
+    background-color: rgb(255, 255, 232);
+    color: rgb(170, 111, 71);
+}
+
+.websocket-frame-view-row-opcode td {
+    border-color: rgb(211, 187, 171);
+}
+
+.websocket-frame-view-row-opcode td, .websocket-frame-view-row-opcode + tr td {
+    border-top-color: rgb(248, 240, 210);
+}
+
+.websocket-frame-view-row-error {
+    background-color: rgb(255, 237, 237);
+    color: rgb(182, 0, 0);
+}

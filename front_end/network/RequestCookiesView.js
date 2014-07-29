@@ -36,7 +36,8 @@
 WebInspector.RequestCookiesView = function(request)
 {
     WebInspector.VBox.call(this);
-    this.element.classList.add("resource-cookies-view");
+    this.registerRequiredCSS("requestCookiesView.css");
+    this.element.classList.add("request-cookies-view");
 
     this._request = request;
 }

@@ -23,7 +23,8 @@
 WebInspector.ResourceWebSocketFrameView = function(resource)
 {
     WebInspector.VBox.call(this);
-    this.element.classList.add("resource-websocket");
+    this.registerRequiredCSS("webSocketFrameView.css");
+    this.element.classList.add("websocket-frame-view");
     this.resource = resource;
     this.element.removeChildren();
 
@@ -95,7 +96,7 @@ WebInspector.ResourceWebSocketFrameView.prototype = {
         this._dataGrid.rootNode().appendChild(node);
 
         if (rowClass)
-            node.element.classList.add("resource-websocket-row-" + rowClass);
+            node.element.classList.add("websocket-frame-view-row-" + rowClass);
     },
 
     refresh: function()
