@@ -43,11 +43,10 @@ WebInspector.TimelineOverviewPane = function(model, uiUtils)
     this._eventDividers = [];
 
     this._model = model;
+    this._overviewCalculator = new WebInspector.TimelineOverviewCalculator();
 
     this._overviewGrid = new WebInspector.OverviewGrid("timeline");
     this.element.appendChild(this._overviewGrid.element);
-
-    this._overviewCalculator = new WebInspector.TimelineOverviewCalculator();
 
     model.addEventListener(WebInspector.TimelineModel.Events.RecordsCleared, this._reset, this);
     this._overviewGrid.addEventListener(WebInspector.OverviewGrid.Events.WindowChanged, this._onWindowChanged, this);
@@ -92,7 +91,11 @@ WebInspector.TimelineOverviewPane.prototype = {
     {
         delete this._refreshTimeout;
 
-        this._overviewCalculator._setWindow(this._model.minimumRecordTime(), this._model.maximumRecordTime());
+        if (this._model.isEmpty())
+            this._overviewCalculator._setWindow(0, 1000);
+        else
+            this._overviewCalculator._setWindow(this._model.minimumRecordTime(), this._model.maximumRecordTime());
+
         this._overviewCalculator._setDisplayWindow(0, this._overviewGrid.clientWidth());
         for (var i = 0; i < this._overviewControls.length; ++i)
             this._overviewControls[i].update();

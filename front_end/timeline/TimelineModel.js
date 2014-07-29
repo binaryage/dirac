@@ -284,6 +284,14 @@ WebInspector.TimelineModel.prototype = {
     },
 
     /**
+     * @return {boolean}
+     */
+    isEmpty: function()
+    {
+        return this.minimumRecordTime() === 0 && this.maximumRecordTime() === 0;
+    },
+
+    /**
      * @param {!WebInspector.TimelineModel.Record} record
      */
     _updateBoundaries: function(record)

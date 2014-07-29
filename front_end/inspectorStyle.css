@@ -436,8 +436,7 @@ body.undocked .toolbar-item .close-button {
 }
 
 .panel-status-bar label {
-    margin: auto 0;
-    margin-right: 20px;
+    margin: auto 0 auto 5px;
     display: flex;
     white-space: nowrap;
     overflow: hidden;

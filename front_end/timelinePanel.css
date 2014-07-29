@@ -37,16 +37,6 @@
     pointer-events: none;
 }
 
-#timeline-overview-panel .split-view-sidebar > label {
-    margin: 6px 0 3px 5px;
-    height: auto;
-    display: flex;
-}
-
-#timeline-overview-panel .split-view-sidebar > label > input {
-    margin-right: 6px;
-}
-
 .timeline-records-title, .timeline-records-list {
     background-color: rgb(236, 236, 236);
 }
@@ -282,7 +272,7 @@
 }
 
 #timeline-overview-pane {
-    flex: none;
+    flex: auto;
     position: relative;
     overflow: hidden;
 }
