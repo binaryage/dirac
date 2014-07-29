@@ -185,6 +185,10 @@ WebInspector.ElementsTreeOutline.prototype = {
     {
         this._setClipboardData(null);
 
+        // Don't prevent the normal copy if the user has a selection.
+        if (!window.getSelection().isCollapsed)
+            return;
+
         // Do not interfere with text editing.
         var currentFocusElement = WebInspector.currentFocusElement();
         if (currentFocusElement && WebInspector.isBeingEdited(currentFocusElement))
