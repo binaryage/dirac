@@ -71,10 +71,7 @@ WebInspector.CSSWorkspaceBinding.prototype = {
     _mainFrameCreatedOrNavigated: function(event)
     {
         var target = /** @type {!WebInspector.ResourceTreeModel} */ (event.target).target();
-        var info = this._targetToTargetInfo.remove(target);
-        if (info)
-            info._dispose();
-        this._targetToTargetInfo.put(target, new WebInspector.CSSWorkspaceBinding.TargetInfo(target, WebInspector.workspace, WebInspector.networkWorkspaceBinding));
+        this._targetToTargetInfo.get(target)._reset();
     },
 
     /**
@@ -234,8 +231,14 @@ WebInspector.CSSWorkspaceBinding.TargetInfo.prototype = {
 
     _dispose: function()
     {
+        this._reset();
         this._target.cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.StyleSheetAdded, this._styleSheetAdded, this);
         this._target.cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.StyleSheetRemoved, this._styleSheetRemoved, this);
+    },
+
+    _reset: function()
+    {
+        this._headerInfoById.clear();
     }
 }
 
