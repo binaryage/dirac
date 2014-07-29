@@ -84,7 +84,7 @@ WebInspector.DataGrid = function(columnsArray, editCallback, deleteCallback, ref
     this._topFillerRow = document.createElementWithClass("tr", "filler");
     /** @type {!Element} */
     this._bottomFillerRow = document.createElementWithClass("tr", "filler");
-    this._bottomFillerRow.style.height = "auto";
+    this.setVerticalPadding(0, 0);
 
     /** @type {!Array.<!WebInspector.DataGrid.ColumnDescriptor>} */
     this._columnsArray = columnsArray;
@@ -214,7 +214,10 @@ WebInspector.DataGrid.prototype = {
     setVerticalPadding: function(top, bottom)
     {
         this._topFillerRow.style.height = top + "px";
-        this._bottomFillerRow.style.height = bottom + "px";
+        if (top || bottom)
+            this._bottomFillerRow.style.height = bottom + "px";
+        else
+            this._bottomFillerRow.style.height = "auto";
     },
 
     /**
