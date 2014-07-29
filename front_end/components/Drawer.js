@@ -41,12 +41,6 @@ WebInspector.Drawer = function(splitView)
     splitView.hideDefaultResizer();
     this.show(splitView.sidebarElement());
 
-    this._drawerEditorSplitView = new WebInspector.SplitView(true, true, "editorInDrawerSplitViewState", 0.5, 0.5);
-    this._drawerEditorSplitView.hideSidebar();
-    this._drawerEditorSplitView.addEventListener(WebInspector.SplitView.Events.ShowModeChanged, this._drawerEditorSplitViewShowModeChanged, this);
-    this._drawerEditorShownSetting = WebInspector.settings.createSetting("drawerEditorShown", true);
-    this._drawerEditorSplitView.show(this.element);
-
     this._toggleDrawerButton = new WebInspector.StatusBarButton(WebInspector.UIString("Show drawer."), "console-status-bar-item");
     this._toggleDrawerButton.addEventListener("click", this.toggle, this);
 
@@ -56,14 +50,9 @@ WebInspector.Drawer = function(splitView)
     this._tabbedPane.addEventListener(WebInspector.TabbedPane.EventTypes.TabSelected, this._tabSelected, this);
     new WebInspector.ExtensibleTabbedPaneController(this._tabbedPane, "drawer-view");
 
-    this._toggleDrawerEditorButton = this._drawerEditorSplitView.createShowHideSidebarButton("editor in drawer", "drawer-editor-show-hide-button");
-    this._tabbedPane.element.appendChild(this._toggleDrawerEditorButton.element);
-    if (!WebInspector.experimentsSettings.editorInDrawer.isEnabled())
-        this.setDrawerEditorAvailable(false);
-
     splitView.installResizer(this._tabbedPane.headerElement());
     this._lastSelectedViewSetting = WebInspector.settings.createSetting("WebInspector.Drawer.lastSelectedView", "console");
-    this._tabbedPane.show(this._drawerEditorSplitView.mainElement());
+    this._tabbedPane.show(this.element);
 }
 
 WebInspector.Drawer.prototype = {
@@ -127,7 +116,6 @@ WebInspector.Drawer.prototype = {
         this.showView(this._lastSelectedViewSetting.get());
         this._toggleDrawerButton.toggled = true;
         this._toggleDrawerButton.title = WebInspector.UIString("Hide drawer.");
-        this._ensureDrawerEditorExistsIfNeeded();
     },
 
     willHide: function()
@@ -201,79 +189,9 @@ WebInspector.Drawer.prototype = {
         return this._tabbedPane.selectedTabId;
     },
 
-    /**
-     * @param {!WebInspector.Event} event
-     */
-    _drawerEditorSplitViewShowModeChanged: function(event)
-    {
-        var mode = /** @type {string} */ (event.data);
-        var shown = mode === WebInspector.SplitView.ShowMode.Both;
-
-        if (this._isHidingDrawerEditor)
-            return;
-
-        this._drawerEditorShownSetting.set(shown);
-
-        if (!shown)
-            return;
-
-        this._ensureDrawerEditor();
-        this._drawerEditor.view().show(this._drawerEditorSplitView.sidebarElement());
-    },
-
     initialPanelShown: function()
     {
         this._initialPanelWasShown = true;
-        this._ensureDrawerEditorExistsIfNeeded();
-    },
-
-    _ensureDrawerEditorExistsIfNeeded: function()
-    {
-        if (!this._initialPanelWasShown || !this.isShowing() || !this._drawerEditorShownSetting.get() || !WebInspector.experimentsSettings.editorInDrawer.isEnabled())
-            return;
-        this._ensureDrawerEditor();
-    },
-
-    _ensureDrawerEditor: function()
-    {
-        if (this._drawerEditor)
-            return;
-        this._drawerEditor = WebInspector.moduleManager.instance(WebInspector.DrawerEditor);
-        this._drawerEditor.installedIntoDrawer();
-    },
-
-    /**
-     * @param {boolean} available
-     */
-    setDrawerEditorAvailable: function(available)
-    {
-        if (!WebInspector.experimentsSettings.editorInDrawer.isEnabled())
-            available = false;
-        this._toggleDrawerEditorButton.element.classList.toggle("hidden", !available);
-    },
-
-    showDrawerEditor: function()
-    {
-        if (!WebInspector.experimentsSettings.editorInDrawer.isEnabled())
-            return;
-
-        this._splitView.showBoth();
-        this._drawerEditorSplitView.showBoth();
-    },
-
-    hideDrawerEditor: function()
-    {
-        this._isHidingDrawerEditor = true;
-        this._drawerEditorSplitView.hideSidebar();
-        this._isHidingDrawerEditor = false;
-    },
-
-    /**
-     * @return {boolean}
-     */
-    isDrawerEditorShown: function()
-    {
-        return this._drawerEditorShownSetting.get();
     },
 
     __proto__: WebInspector.VBox.prototype
@@ -314,20 +232,4 @@ WebInspector.Drawer.SingletonViewFactory.prototype = {
             this._instance = /** @type {!WebInspector.View} */(new this._constructor());
         return this._instance;
     }
-}
-
-/**
- * @interface
- */
-WebInspector.DrawerEditor = function()
-{
-}
-
-WebInspector.DrawerEditor.prototype = {
-    /**
-     * @return {!WebInspector.View}
-     */
-    view: function() { },
-
-    installedIntoDrawer: function() { },
 }

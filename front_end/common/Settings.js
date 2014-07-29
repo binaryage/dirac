@@ -294,7 +294,6 @@ WebInspector.ExperimentsSettings = function(experimentsEnabled)
     this.devicesPanel = this._createExperiment("devicesPanel", "Devices panel");
     this.disableAgentsWhenProfile = this._createExperiment("disableAgentsWhenProfile", "Disable other agents and UI when profiler is active", true);
     this.dockToLeft = this._createExperiment("dockToLeft", "Dock to left", true);
-    this.editorInDrawer = this._createExperiment("showEditorInDrawer", "Editor in drawer", true);
     this.fileSystemInspection = this._createExperiment("fileSystemInspection", "FileSystem inspection");
     this.frameworksDebuggingSupport = this._createExperiment("frameworksDebuggingSupport", "JavaScript frameworks debugging");
     this.gpuTimeline = this._createExperiment("gpuTimeline", "GPU data on timeline", true);
@@ -597,7 +596,6 @@ WebInspector.VersionController.prototype = {
             "sourcesPanelNavigatorSplitViewState": "sourcesPanelNavigatorSplitViewState",
             "elementsPanelSplitViewState": "elementsPanelSplitViewState",
             "canvasProfileViewReplaySplitViewState": "canvasProfileViewReplaySplitViewState",
-            "editorInDrawerSplitViewState": "editorInDrawerSplitViewState",
             "stylesPaneSplitViewState": "stylesPaneSplitViewState",
             "sourcesPanelDebuggerSidebarSplitViewState": "sourcesPanelDebuggerSidebarSplitViewState"
         };

@@ -67,8 +67,6 @@ WebInspector.SourcesPanel = function(workspaceForTest)
     this.registerRequiredCSS("sourcesPanel.css");
     new WebInspector.UpgradeFileSystemDropTarget(this.element);
 
-    WebInspector.settings.showEditorInDrawer = WebInspector.settings.createSetting("showEditorInDrawer", true);
-
     this._workspace = workspaceForTest || WebInspector.workspace;
 
     this.debugToolbar = this._createDebugToolbar();
@@ -98,13 +96,7 @@ WebInspector.SourcesPanel = function(workspaceForTest)
     this._sourcesView.addEventListener(WebInspector.SourcesView.Events.EditorSelected, this._editorSelected.bind(this));
     this._sourcesView.addEventListener(WebInspector.SourcesView.Events.EditorClosed, this._editorClosed.bind(this));
     this._sourcesView.registerShortcuts(this.registerShortcuts.bind(this));
-
-    if (WebInspector.experimentsSettings.editorInDrawer.isEnabled()) {
-        this._drawerEditorView = new WebInspector.SourcesPanel.DrawerEditorView();
-        this._sourcesView.show(this._drawerEditorView.element);
-    } else {
-        this._sourcesView.show(this.editorView.mainElement());
-    }
+    this._sourcesView.show(this.editorView.mainElement());
 
     this._debugSidebarResizeWidgetElement = document.createElementWithClass("div", "resizer-widget");
     this._debugSidebarResizeWidgetElement.id = "scripts-debug-sidebar-resizer-widget";
@@ -197,33 +189,15 @@ WebInspector.SourcesPanel.prototype = {
         return this._paused;
     },
 
-    /**
-     * @return {!WebInspector.SourcesPanel.DrawerEditor}
-     */
-    _drawerEditor: function()
-    {
-        var drawerEditorInstance = WebInspector.moduleManager.instance(WebInspector.DrawerEditor);
-        console.assert(drawerEditorInstance instanceof WebInspector.SourcesPanel.DrawerEditor, "WebInspector.DrawerEditor module instance does not use WebInspector.SourcesPanel.DrawerEditor as an implementation. ");
-        return /** @type {!WebInspector.SourcesPanel.DrawerEditor} */ (drawerEditorInstance);
-    },
-
     wasShown: function()
     {
         WebInspector.context.setFlavor(WebInspector.SourcesPanel, this);
-        if (WebInspector.experimentsSettings.editorInDrawer.isEnabled()) {
-            this._drawerEditor()._panelWasShown();
-            this._sourcesView.show(this.editorView.mainElement());
-        }
         WebInspector.Panel.prototype.wasShown.call(this);
     },
 
     willHide: function()
     {
         WebInspector.Panel.prototype.willHide.call(this);
-        if (WebInspector.experimentsSettings.editorInDrawer.isEnabled()) {
-            this._drawerEditor()._panelWillHide();
-            this._sourcesView.show(this._drawerEditorView.element);
-        }
         WebInspector.context.setFlavor(WebInspector.SourcesPanel, null);
     },
 
@@ -380,11 +354,7 @@ WebInspector.SourcesPanel.prototype = {
     {
         if (this._sourcesView.isShowing())
             return;
-
-        if (this._shouldShowEditorInDrawer() && !forceShowInPanel)
-            this._drawerEditor()._show();
-        else
-            WebInspector.inspectorView.showPanel("sources");
+        WebInspector.inspectorView.showPanel("sources");
     },
 
     /**
@@ -394,14 +364,6 @@ WebInspector.SourcesPanel.prototype = {
     showUILocation: function(uiLocation, forceShowInPanel)
     {
         this.showUISourceCode(uiLocation.uiSourceCode, uiLocation.lineNumber, uiLocation.columnNumber, forceShowInPanel);
-    },
-
-    /**
-     * @return {boolean}
-     */
-    _shouldShowEditorInDrawer: function()
-    {
-        return WebInspector.experimentsSettings.editorInDrawer.isEnabled() && WebInspector.settings.showEditorInDrawer.get() && WebInspector.inspectorView.isDrawerEditorShown();
     },
 
     /**
@@ -1235,66 +1197,6 @@ WebInspector.UpgradeFileSystemDropTarget.prototype = {
         delete this._dragMaskElement;
     }
 }
-
-/**
- * @constructor
- * @implements {WebInspector.DrawerEditor}
- */
-WebInspector.SourcesPanel.DrawerEditor = function()
-{
-    this._panel = WebInspector.inspectorView.panel("sources");
-}
-
-WebInspector.SourcesPanel.DrawerEditor.prototype = {
-    /**
-     * @return {!WebInspector.View}
-     */
-    view: function()
-    {
-        return this._panel._drawerEditorView;
-    },
-
-    installedIntoDrawer: function()
-    {
-        if (this._panel.isShowing())
-            this._panelWasShown();
-        else
-            this._panelWillHide();
-    },
-
-    _panelWasShown: function()
-    {
-        WebInspector.inspectorView.setDrawerEditorAvailable(false);
-        WebInspector.inspectorView.hideDrawerEditor();
-    },
-
-    _panelWillHide: function()
-    {
-        WebInspector.inspectorView.setDrawerEditorAvailable(true);
-        if (WebInspector.inspectorView.isDrawerEditorShown())
-            WebInspector.inspectorView.showDrawerEditor();
-    },
-
-    _show: function()
-    {
-        WebInspector.inspectorView.showDrawerEditor();
-    },
-}
-
-/**
- * @constructor
- * @extends {WebInspector.VBox}
- */
-WebInspector.SourcesPanel.DrawerEditorView = function()
-{
-    WebInspector.VBox.call(this);
-    this.element.id = "drawer-editor-view";
-}
-
-WebInspector.SourcesPanel.DrawerEditorView.prototype = {
-    __proto__: WebInspector.VBox.prototype
-}
-
 
 /**
  * @constructor

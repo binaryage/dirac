@@ -198,32 +198,6 @@ WebInspector.InspectorView.prototype = {
         this._drawer.initialPanelShown();
     },
 
-    showDrawerEditor: function()
-    {
-        this._drawer.showDrawerEditor();
-    },
-
-    /**
-     * @return {boolean}
-     */
-    isDrawerEditorShown: function()
-    {
-        return this._drawer.isDrawerEditorShown();
-    },
-
-    hideDrawerEditor: function()
-    {
-        this._drawer.hideDrawerEditor();
-    },
-
-    /**
-     * @param {boolean} available
-     */
-    setDrawerEditorAvailable: function(available)
-    {
-        this._drawer.setDrawerEditorAvailable(available);
-    },
-
     _tabSelected: function()
     {
         var panelName = this._tabbedPane.selectedTabId;
