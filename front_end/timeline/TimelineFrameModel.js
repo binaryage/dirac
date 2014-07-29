@@ -38,6 +38,13 @@ WebInspector.TimelineFrameModelBase = function()
 
 WebInspector.TimelineFrameModelBase.prototype = {
     /**
+     * @param {boolean} value
+     */
+    setMergeRecords: function(value)
+    {
+    },
+
+    /**
      * @return {!Array.<!WebInspector.TimelineFrame>}
      */
     frames: function()
