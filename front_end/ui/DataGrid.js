@@ -1378,7 +1378,7 @@ WebInspector.DataGridNode.prototype = {
 
         child.parent = this;
         child.dataGrid = this.dataGrid;
-        child._recalculateSiblings(index);
+        child.recalculateSiblings(index);
 
         child._depth = undefined;
         child._revealed = undefined;
@@ -1449,8 +1449,9 @@ WebInspector.DataGridNode.prototype = {
 
     /**
      * @param {number} myIndex
+     * @protected
      */
-    _recalculateSiblings: function(myIndex)
+    recalculateSiblings: function(myIndex)
     {
         if (!this.parent)
             return;

@@ -188,7 +188,7 @@ WebInspector.ProfileDataGridNode.prototype = {
                     children.sort(comparator);
 
                     for (var childIndex = 0; childIndex < childCount; ++childIndex)
-                        children[childIndex]._recalculateSiblings(childIndex);
+                        children[childIndex].recalculateSiblings(childIndex);
 
                     gridNodeGroups.push(children);
                 }
