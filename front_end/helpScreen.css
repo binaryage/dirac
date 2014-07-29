@@ -638,6 +638,11 @@ select.list-column-editor {
     width: 100%;
 }
 
+.settings-tab .settings-list .settings-list-item.disabled .settings-list-column-pattern .list-column-text {
+    color: #666;
+    text-decoration: line-through;
+}
+
 .settings-dialog {
     border-radius: 3px;
     box-shadow: 0 4px 23px 5px rgba(0, 0, 0, 0.2), 0 2px 6px rgba(0,0,0,0.15);

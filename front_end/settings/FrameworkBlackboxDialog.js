@@ -163,6 +163,7 @@ WebInspector.FrameworkBlackboxDialog.prototype = {
 
         if (oldPattern && oldPattern === newPattern) {
             this._entries.put(newPattern, disabled ? this._disabledLabel : this._blackboxLabel)
+            this._patternsList.itemForId(oldPattern).classList.toggle("disabled", disabled);
             this._patternsList.refreshItem(newPattern);
             return;
         }
@@ -203,7 +204,8 @@ WebInspector.FrameworkBlackboxDialog.prototype = {
         if (!pattern || this._entries.contains(pattern))
             return;
         this._entries.put(pattern, disabled ? this._disabledLabel : this._blackboxLabel);
-        this._patternsList.addItem(pattern, null);
+        var listItem = this._patternsList.addItem(pattern, null);
+        listItem.classList.toggle("disabled", disabled);
         this._resize();
     },
 
