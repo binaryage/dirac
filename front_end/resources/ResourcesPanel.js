@@ -1213,7 +1213,7 @@ WebInspector.FrameResourceTreeElement.prototype = {
     _setBubbleText: function(x)
     {
         if (!this._bubbleElement)
-            this._bubbleElement = this._statusElement.createChild("div", "bubble");
+            this._bubbleElement = this._statusElement.createChild("div", "bubble-repeat-count");
         this._bubbleElement.textContent = x;
     },
 

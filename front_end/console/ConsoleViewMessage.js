@@ -1110,7 +1110,7 @@ WebInspector.ConsoleViewMessage.prototype = {
 
         if (!this._repeatCountElement) {
             this._repeatCountElement = document.createElement("span");
-            this._repeatCountElement.className = "bubble";
+            this._repeatCountElement.className = "bubble-repeat-count";
 
             this._element.insertBefore(this._repeatCountElement, this._element.firstChild);
             this._element.classList.add("repeated-message");

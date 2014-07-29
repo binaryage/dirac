@@ -938,23 +938,26 @@ body.platform-linux .source-code {
     background-color: rgba(0, 0, 0, 0.05);
 }
 
-.console-message .bubble {
+.bubble-repeat-count {
     display: inline-block;
     height: 14px;
     background-color: rgb(128, 151, 189);
     vertical-align: middle;
     white-space: nowrap;
     padding: 1px 4px;
-    margin-top: -1px;
-    margin-right: 4px;
-    margin-left: -18px;
     text-align: left;
     font-size: 11px;
     line-height: normal;
     font-weight: bold;
     text-shadow: none;
     color: white;
+    margin-top: -1px;
     border-radius: 7px;
+}
+
+.console-message .bubble-repeat-count {
+    margin-right: 4px;
+    margin-left: -18px;
 }
 
 .console-message-text {
@@ -2142,38 +2145,20 @@ li .status:empty {
     display: none;
 }
 
-li .status .bubble {
-    display: inline-block;
-    height: 14px;
-    min-width: 16px;
-    margin-top: 1px;
-    background-color: rgb(128, 151, 189);
-    vertical-align: middle;
-    white-space: nowrap;
-    padding: 1px 4px;
-    text-align: center;
-    font-size: 11px;
-    line-height: normal;
-    font-weight: bold;
-    text-shadow: none;
-    color: white;
-    border-radius: 7px;
-}
-
-li .status .bubble:empty {
+li .status .bubble-repeat-count:empty {
     display: none;
 }
 
-li.selected .status .bubble {
+li.selected .status .bubble-repeat-count {
     background-color: white !important;
     color: rgb(132, 154, 190) !important;
 }
 
-:focus li.selected .status .bubble {
+:focus li.selected .status .bubble-repeat-count {
     color: rgb(36, 98, 172) !important;
 }
 
-body.inactive li.selected .status .bubble {
+body.inactive li.selected .status .bubble-repeat-count {
     color: rgb(159, 159, 159) !important;
 }
 
@@ -2260,18 +2245,18 @@ body.inactive .sidebar-tree-item.selected {
     color: white;
 }
 
-.bubble.debug,
-.console-debug-level .bubble {
+.bubble-repeat-count.debug,
+.console-debug-level .bubble-repeat-count {
     background-color: rgb(0, 0, 255) !important;
 }
 
-.bubble.warning,
-.console-warning-level .bubble {
+.bubble-repeat-count.warning,
+.console-warning-level .bubble-repeat-count {
     background-color: rgb(232, 164, 0) !important;
 }
 
-.bubble.error,
-.console-error-level .bubble {
+.bubble-repeat-count.error,
+.console-error-level .bubble-repeat-count {
     background-color: rgb(216, 35, 35) !important;
 }
 
