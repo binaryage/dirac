@@ -213,7 +213,12 @@ WebInspector.OverridesView.DeviceTab.prototype = {
 
         var deviceModelElement = fieldsetElement.createChild("p", "overrides-device-model-section");
         deviceModelElement.createChild("span").textContent = WebInspector.UIString("Model:");
-        deviceModelElement.appendChild(WebInspector.OverridesUI.createDeviceSelect(document, this._showTitleDialog.bind(this)));
+
+        var deviceSelectElement = WebInspector.OverridesUI.createDeviceSelect(document, this._showTitleDialog.bind(this));
+        var buttons = deviceSelectElement.querySelectorAll("button");
+        for (var i = 0; i < buttons.length; ++i)
+            buttons[i].classList.add("settings-tab-text-button");
+        deviceModelElement.appendChild(deviceSelectElement);
 
         var emulateResolutionCheckbox = WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Emulate screen resolution"), WebInspector.overridesSupport.settings.emulateResolution, true);
         fieldsetElement.appendChild(emulateResolutionCheckbox);

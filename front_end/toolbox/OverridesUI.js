@@ -16,11 +16,11 @@ WebInspector.OverridesUI.createDeviceSelect = function(document, titleProvider)
     var deviceSelectElement = p.createChild("select");
     deviceSelectElement.addEventListener("change", deviceSelected, false);
 
-    var saveButton = p.createChild("button", "save-device-button");
+    var saveButton = p.createChild("button");
     saveButton.textContent = WebInspector.UIString("Save as");
     saveButton.addEventListener("click", saveClicked, false);
 
-    var removeButton = p.createChild("button", "remove-device-button");
+    var removeButton = p.createChild("button");
     removeButton.textContent = WebInspector.UIString("Remove");
     removeButton.addEventListener("click", removeClicked, false);
 
