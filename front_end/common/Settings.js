@@ -303,7 +303,6 @@ WebInspector.ExperimentsSettings = function(experimentsEnabled)
     this.timelineOnTraceEvents = this._createExperiment("timelineOnTraceEvents", "Timeline on trace events", true);
     this.timelinePowerProfiler = this._createExperiment("timelinePowerProfiler", "Timeline power profiler");
     this.timelineJSCPUProfile = this._createExperiment("timelineJSCPUProfile", "Timeline with JS sampling");
-    this.timelineNoLiveUpdate = this._createExperiment("timelineNoLiveUpdate", "Timeline w/o live update", true);
     this.workersInMainWindow = this._createExperiment("workersInMainWindow", "Workers in main window", true);
 
     this._cleanUpSetting();

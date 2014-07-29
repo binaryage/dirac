@@ -280,7 +280,6 @@ WebInspector.TimelinePanel.prototype = {
             this._lazyFrameModel = tracingFrameModel;
         } else {
             var frameModel = new WebInspector.TimelineFrameModel();
-            frameModel.setMergeRecords(!WebInspector.experimentsSettings.timelineNoLiveUpdate.isEnabled() || !this._recordingInProgress);
             frameModel.addRecords(this._model.records());
             this._lazyFrameModel = frameModel;
         }
@@ -706,7 +705,7 @@ WebInspector.TimelinePanel.prototype = {
     {
         this._userInitiatedRecording = userInitiated;
         this._model.startRecording(this._captureStacksSetting.get(), this._captureMemorySetting.get(), this._captureLayersAndPicturesSetting && this._captureLayersAndPicturesSetting.get());
-        if (WebInspector.experimentsSettings.timelineNoLiveUpdate.isEnabled() && this._lazyFrameModel)
+        if (this._lazyFrameModel)
             this._lazyFrameModel.setMergeRecords(false);
 
         for (var i = 0; i < this._overviewControls.length; ++i)
@@ -802,8 +801,7 @@ WebInspector.TimelinePanel.prototype = {
     _onRecordingStarted: function()
     {
         this._updateToggleTimelineButton(true);
-        if (WebInspector.experimentsSettings.timelineNoLiveUpdate.isEnabled())
-            this._updateProgress(WebInspector.UIString("%d events collected", 0));
+        this._updateProgress(WebInspector.UIString("%d events collected", 0));
     },
 
     _recordingInProgress: function()
@@ -816,8 +814,6 @@ WebInspector.TimelinePanel.prototype = {
      */
     _onRecordingProgress: function(event)
     {
-        if (!WebInspector.experimentsSettings.timelineNoLiveUpdate.isEnabled())
-            return;
         this._updateProgress(WebInspector.UIString("%d events collected", event.data));
     },
 
@@ -858,12 +854,11 @@ WebInspector.TimelinePanel.prototype = {
         this._stopPending = false;
         this._updateToggleTimelineButton(false);
         if (this._lazyFrameModel) {
+            this._lazyFrameModel.reset();
             if (this._tracingTimelineModel) {
-                this._lazyFrameModel.reset();
                 this._lazyFrameModel.addTraceEvents(this._tracingTimelineModel.inspectedTargetEvents(), this._tracingModel.sessionId());
                 this._overviewPane.update();
-            } else if (WebInspector.experimentsSettings.timelineNoLiveUpdate.isEnabled()) {
-                this._lazyFrameModel.reset();
+            } else {
                 this._lazyFrameModel.addRecords(this._model.records());
             }
         }

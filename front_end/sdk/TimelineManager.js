@@ -46,6 +46,7 @@ WebInspector.TimelineManager.EventTypes = {
     TimelineStarted: "TimelineStarted",
     TimelineStopped: "TimelineStopped",
     TimelineEventRecorded: "TimelineEventRecorded",
+    TimelineAllEventsReceived: "TimelineAllEventsReceived",
     TimelineProgress: "TimelineProgress"
 }
 
@@ -60,13 +61,12 @@ WebInspector.TimelineManager.prototype = {
 
     /**
      * @param {number=} maxCallStackDepth
-     * @param {boolean=} bufferEvents
      * @param {string=} liveEvents
      * @param {boolean=} includeCounters
      * @param {boolean=} includeGPUEvents
      * @param {function(?Protocol.Error)=} callback
      */
-    start: function(maxCallStackDepth, bufferEvents, liveEvents, includeCounters, includeGPUEvents, callback)
+    start: function(maxCallStackDepth, liveEvents, includeCounters, includeGPUEvents, callback)
     {
         this._enablementCount++;
         this.target().profilingLock.acquire();
@@ -76,7 +76,7 @@ WebInspector.TimelineManager.prototype = {
             this.target().profilerAgent().start();
         }
         if (this._enablementCount === 1)
-            this.target().timelineAgent().start(maxCallStackDepth, bufferEvents, liveEvents, includeCounters, includeGPUEvents, callback);
+            this.target().timelineAgent().start(maxCallStackDepth, true, liveEvents, includeCounters, includeGPUEvents, callback);
         else if (callback)
             callback(null);
     },
@@ -102,7 +102,6 @@ WebInspector.TimelineManager.prototype = {
         }
         if (!this._enablementCount)
             this.target().timelineAgent().stop(callbackBarrier.createCallback(timelineCallback));
-            TimelineAgent.stop(callbackBarrier.createCallback(timelineCallback));
 
         callbackBarrier.callWhenDone(allDoneCallback.bind(this));
 
@@ -135,14 +134,17 @@ WebInspector.TimelineManager.prototype = {
     },
 
     /**
+     * @param {boolean=} consoleTimeline
      * @param {!Array.<!TimelineAgent.TimelineEvent>=} events
      */
-    _processBufferedEvents: function(events)
+    _stopped: function(consoleTimeline, events)
     {
+        this.dispatchEventToListeners(WebInspector.TimelineManager.EventTypes.TimelineStopped, consoleTimeline);
         if (events) {
             for (var i = 0; i < events.length; ++i)
                 this._dispatcher.eventRecorded(events[i]);
         }
+        this.dispatchEventToListeners(WebInspector.TimelineManager.EventTypes.TimelineAllEventsReceived, 0);
     },
 
     _configureCpuProfilerSamplingInterval: function()
@@ -207,8 +209,7 @@ WebInspector.TimelineDispatcher.prototype = {
     stopped: function(consoleTimeline, events)
     {
         this._started = false;
-        this._manager.dispatchEventToListeners(WebInspector.TimelineManager.EventTypes.TimelineStopped, consoleTimeline);
-        this._manager._processBufferedEvents(events);
+        this._manager._stopped(consoleTimeline, events);
     },
 
     /**
