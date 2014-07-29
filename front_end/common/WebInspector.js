@@ -8,10 +8,6 @@ self.WebInspector = {
     _queryParamsObject: {}
 }
 
-WebInspector.Events = {
-    InspectorLoaded: "InspectorLoaded"
-}
-
 /**
  * @param {string} name
  * @return {?string}

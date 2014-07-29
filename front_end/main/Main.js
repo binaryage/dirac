@@ -374,6 +374,7 @@ WebInspector.Main.prototype = {
             console.timeStamp("Main.inspectorAgentEnableCallback");
             WebInspector.app.presentUI(mainTarget);
             console.timeStamp("Main.inspectorAgentEnableCallbackPresentUI");
+            WebInspector.notifications.dispatchEventToListeners(WebInspector.NotificationService.Events.InspectorUILoadedForTests);
         }
 
         WebInspector.actionRegistry = new WebInspector.ActionRegistry();
@@ -384,7 +385,6 @@ WebInspector.Main.prototype = {
 
         this._loadCompletedForWorkers();
         InspectorFrontendAPI.loadCompleted();
-        WebInspector.notifications.dispatchEventToListeners(WebInspector.NotificationService.Events.InspectorLoaded);
     },
 
     _registerForwardedShortcuts: function()

@@ -885,12 +885,7 @@ function runTests()
         new TestSuite().runTest(name);
 }
 
-var oldLoadCompleted = InspectorFrontendAPI.loadCompleted;
-InspectorFrontendAPI.loadCompleted = function()
-{
-    oldLoadCompleted.call(InspectorFrontendAPI);
-    runTests();
-}
+WebInspector.notifications.addEventListener(WebInspector.NotificationService.Events.InspectorUILoadedForTests, runTests);
 
 })();
 
