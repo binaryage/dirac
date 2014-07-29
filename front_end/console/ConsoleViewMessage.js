@@ -1080,7 +1080,7 @@ WebInspector.ConsoleViewMessage.prototype = {
             if (!asyncTrace.callFrames || !asyncTrace.callFrames.length)
                 break;
             var content = document.createElementWithClass("div", "stacktrace-entry");
-            var description = asyncTrace.description ? asyncTrace.description + " " + WebInspector.UIString("(async)") : WebInspector.UIString("Async Call");
+            var description = WebInspector.asyncStackTraceLabel(asyncTrace.description);
             content.createChild("span", "console-message-text source-code console-async-trace-text").textContent = description;
             parentTreeElement.appendChild(new TreeElement(content));
             appendStackTrace.call(this, asyncTrace.callFrames);

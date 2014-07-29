@@ -71,11 +71,7 @@ WebInspector.CallStackSidebarPane.prototype = {
         var topStackHidden = (this._hiddenPlacards === this.placards.length);
 
         while (asyncStackTrace) {
-            var title = asyncStackTrace.description;
-            if (title)
-                title += " " + WebInspector.UIString("(async)");
-            else
-                title = WebInspector.UIString("Async Call");
+            var title = WebInspector.asyncStackTraceLabel(asyncStackTrace.description);
             var asyncPlacard = new WebInspector.Placard(title, "");
             asyncPlacard.element.addEventListener("click", this._selectNextVisiblePlacard.bind(this, this.placards.length, false), false);
             asyncPlacard.element.addEventListener("contextmenu", this._asyncPlacardContextMenu.bind(this, this.placards.length), true);

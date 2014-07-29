@@ -207,11 +207,11 @@ WebInspector.ConsoleMessage = function(target, source, level, messageText, type,
 
     if (this.request) {
         this.stackTrace = this.request.initiator.stackTrace;
+        this.asyncStackTrace = this.request.initiator.asyncStackTrace;
         if (this.request.initiator && this.request.initiator.url) {
             this.url = this.request.initiator.url;
             this.line = this.request.initiator.lineNumber;
         }
-        this.asyncStackTrace = undefined;
     }
 }
 

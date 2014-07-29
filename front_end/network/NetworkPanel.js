@@ -1031,17 +1031,40 @@ WebInspector.NetworkLogView.prototype = {
      */
     _generateScriptInitiatedPopoverContent: function(request)
     {
-        var stackTrace = request.initiator.stackTrace;
         var framesTable = document.createElement("table");
-        for (var i = 0; i < stackTrace.length; ++i) {
-            var stackFrame = stackTrace[i];
-            var rawLocation = request.target().debuggerModel.createRawLocationByConsoleCallFrame(stackFrame);
-            var row = document.createElement("tr");
-            row.createChild("td").textContent = stackFrame.functionName || WebInspector.UIString("(anonymous function)");
-            row.createChild("td").textContent = " @ ";
-            row.createChild("td").appendChild(this._linkifier.linkifyRawLocation(rawLocation));
-            framesTable.appendChild(row);
+
+        /**
+         * @param {!Array.<!ConsoleAgent.CallFrame>} stackTrace
+         * @this {WebInspector.NetworkLogView}
+         */
+        function appendStackTrace(stackTrace)
+        {
+            for (var i = 0; i < stackTrace.length; ++i) {
+                var stackFrame = stackTrace[i];
+                var rawLocation = request.target().debuggerModel.createRawLocationByConsoleCallFrame(stackFrame);
+                var row = document.createElement("tr");
+                row.createChild("td").textContent = stackFrame.functionName || WebInspector.UIString("(anonymous function)");
+                row.createChild("td").textContent = " @ ";
+                row.createChild("td").appendChild(this._linkifier.linkifyRawLocation(rawLocation));
+                framesTable.appendChild(row);
+            }
         }
+
+        appendStackTrace.call(this, request.initiator.stackTrace);
+
+        var asyncStackTrace = request.initiator.asyncStackTrace;
+        while (asyncStackTrace) {
+            var callFrames = asyncStackTrace.callFrames;
+            if (!callFrames || !callFrames.length)
+                break;
+            var row = framesTable.createChild("tr");
+            row.createChild("td", "network-async-trace-description").textContent = WebInspector.asyncStackTraceLabel(asyncStackTrace.description);
+            row.createChild("td");
+            row.createChild("td");
+            appendStackTrace.call(this, callFrames);
+            asyncStackTrace = asyncStackTrace.asyncStackTrace;
+        }
+
         return framesTable;
     },
 

@@ -530,6 +530,17 @@ WebInspector.anotherProfilerActiveLabel = function()
     return WebInspector.UIString("Another profiler is already active");
 }
 
+/**
+ * @param {string|undefined} description
+ * @return {string}
+ */
+WebInspector.asyncStackTraceLabel = function(description)
+{
+    if (description)
+        return description + " " + WebInspector.UIString("(async)");
+    return WebInspector.UIString("Async Call");
+}
+
 WebInspector.installPortStyles = function()
 {
     var platform = WebInspector.platform();

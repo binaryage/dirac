@@ -259,6 +259,11 @@
     max-height: 11px;
 }
 
+.network-async-trace-description {
+    padding: 3px 0 1px 0;
+    font-style: italic;
+}
+
 /* Graph styles */
 
 .network-graph-side {
