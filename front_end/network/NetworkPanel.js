@@ -83,6 +83,9 @@ WebInspector.NetworkLogView = function(filterBar, coulmnsVisibilitySetting)
     this._initializeView();
     this._recordButton.toggled = true;
 
+    /** @type {number} */
+    this._rowHeight = 0;
+
     WebInspector.targetManager.observeTargets(this);
     WebInspector.targetManager.addModelListener(WebInspector.NetworkManager, WebInspector.NetworkManager.EventTypes.RequestStarted, this._onRequestStarted, this);
     WebInspector.targetManager.addModelListener(WebInspector.NetworkManager, WebInspector.NetworkManager.EventTypes.RequestUpdated, this._onRequestUpdated, this);
@@ -192,8 +195,7 @@ WebInspector.NetworkLogView.prototype = {
         this._createTimelineGrid();
         this._summaryBarElement = this.element.createChild("div", "network-summary-bar");
 
-        if (!this.usesLargeRows())
-            this._setLargerRequests(false);
+        this._updateRowsSize();
 
         this._popoverHelper = new WebInspector.PopoverHelper(this.element, this._getPopoverAnchor.bind(this), this._showPopover.bind(this), this._onHidePopover.bind(this));
         // Enable faster hint.
@@ -968,25 +970,26 @@ WebInspector.NetworkLogView.prototype = {
     _toggleLargerRequests: function()
     {
         WebInspector.settings.resourcesLargeRows.set(!WebInspector.settings.resourcesLargeRows.get());
-        this._setLargerRequests(WebInspector.settings.resourcesLargeRows.get());
+        this._updateRowsSize();
     },
 
     /**
-     * @param {boolean} enabled
+     * @return {number}
      */
-    _setLargerRequests: function(enabled)
+    rowHeight: function()
     {
-        this._largerRequestsButton.toggled = enabled;
-        if (!enabled) {
-            this._largerRequestsButton.title = WebInspector.UIString("Use large resource rows.");
-            this._dataGrid.element.classList.add("small");
-            this._timelineGrid.element.classList.add("small");
-        } else {
-            this._largerRequestsButton.title = WebInspector.UIString("Use small resource rows.");
-            this._dataGrid.element.classList.remove("small");
-            this._timelineGrid.element.classList.remove("small");
-        }
-        this.dispatchEventToListeners(WebInspector.NetworkLogView.EventTypes.RowSizeChanged, { largeRows: enabled });
+        return this._rowHeight;
+    },
+
+    _updateRowsSize: function()
+    {
+        var largeRows = this.usesLargeRows();
+        this._largerRequestsButton.toggled = largeRows;
+        this._rowHeight = largeRows ? 41 : 21;
+        this._largerRequestsButton.title = WebInspector.UIString(largeRows ? "Use small resource rows." : "Use large resource rows.");
+        this._dataGrid.element.classList.toggle("small", !largeRows);
+        this._timelineGrid.element.classList.toggle("small", !largeRows);
+        this.dispatchEventToListeners(WebInspector.NetworkLogView.EventTypes.RowSizeChanged, { largeRows: largeRows });
     },
 
     /**
@@ -2515,6 +2518,14 @@ WebInspector.NetworkDataGridNode = function(parentView, request)
 }
 
 WebInspector.NetworkDataGridNode.prototype = {
+    /**
+     * @override
+     * @return {number}
+     */
+    nodeSelfHeight: function() {
+        return this._parentView.rowHeight();
+    },
+
     /** override */
     createCells: function()
     {
