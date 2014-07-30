@@ -35,15 +35,15 @@
  */
 WebInspector.PieChart = function(totalValue, formatter)
 {
-    const shadowOffset = 0.04;
+    var shadowSize = WebInspector.PieChart._ShadowSizePercent;
     this.element = document.createElementWithClass("div", "pie-chart");
     var svg = this._createSVGChild(this.element, "svg");
-    svg.setAttribute("width", "100%");
-    svg.setAttribute("height", (100 * (1 + shadowOffset)) + "%");
+    svg.setAttribute("width", (100 * (1 + 2 * shadowSize)) + "%");
+    svg.setAttribute("height", (100 * (1 + 2 * shadowSize)) + "%");
     this._group = this._createSVGChild(svg, "g");
     var shadow = this._createSVGChild(this._group, "circle");
-    shadow.setAttribute("r", 1);
-    shadow.setAttribute("cy", shadowOffset);
+    shadow.setAttribute("r", 1 + shadowSize);
+    shadow.setAttribute("cy", shadowSize);
     shadow.setAttribute("fill", "hsl(0,0%,70%)");
     var background = this._createSVGChild(this._group, "circle");
     background.setAttribute("r", 1);
@@ -57,6 +57,8 @@ WebInspector.PieChart = function(totalValue, formatter)
     this._lastAngle = -Math.PI/2;
     this.setSize(100);
 }
+
+WebInspector.PieChart._ShadowSizePercent = 0.02;
 
 WebInspector.PieChart.prototype = {
     /**
@@ -72,7 +74,7 @@ WebInspector.PieChart.prototype = {
      */
     setSize: function(value)
     {
-        this._group.setAttribute("transform", "scale(" + (value / 2) + ") translate(1,1)");
+        this._group.setAttribute("transform", "scale(" + (value / 2) + ") translate(" + (1 + WebInspector.PieChart._ShadowSizePercent) + ",1)");
         var size = value + "px";
         this.element.style.width = size;
         this.element.style.height = size;
