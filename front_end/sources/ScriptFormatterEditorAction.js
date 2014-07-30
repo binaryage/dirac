@@ -88,7 +88,7 @@ WebInspector.FormatterScriptMapping.FormatData = function(projectId, path, mappi
     this.projectId = projectId;
     this.path = path;
     this.mapping = mapping;
-    this.scripts= scripts;
+    this.scripts = scripts;
 }
 
 /**
@@ -152,6 +152,9 @@ WebInspector.ScriptFormatterEditorAction = function()
     /** @type {!Map.<!WebInspector.UISourceCode, !WebInspector.FormatterScriptMapping.FormatData>} */
     this._formatData = new Map();
 
+    /** @type {!StringSet} */
+    this._pathsToFormatOnLoad = new StringSet();
+
     /** @type {!Map.<!WebInspector.Target, !WebInspector.FormatterScriptMapping>} */
     this._scriptMappingByTarget = new Map();
     this._workspace = WebInspector.workspace;
@@ -185,6 +188,10 @@ WebInspector.ScriptFormatterEditorAction.prototype = {
     {
         var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (event.data);
         this._updateButton(uiSourceCode);
+
+        var path = uiSourceCode.project().id() + ":" + uiSourceCode.path();
+        if (this._isFormatableScript(uiSourceCode) && uiSourceCode.url && this._pathsToFormatOnLoad.contains(path) && !this._formattedPaths.get(path))
+            this._formatUISourceCodeScript(uiSourceCode);
     },
 
     /**
@@ -288,7 +295,9 @@ WebInspector.ScriptFormatterEditorAction.prototype = {
             return;
 
         this._formatData.remove(formattedUISourceCode);
-        this._formattedPaths.remove(formatData.projectId + ":" + formatData.path);
+        var path = formatData.projectId + ":" + formatData.path;
+        this._formattedPaths.remove(path);
+        this._pathsToFormatOnLoad.remove(path);
         for (var i = 0; i < formatData.scripts.length; ++i) {
             this._uiSourceCodes.remove(formatData.scripts[i]);
             formatData.scripts[i].popSourceMapping();
@@ -366,9 +375,9 @@ WebInspector.ScriptFormatterEditorAction.prototype = {
      */
     _formatUISourceCodeScript: function(uiSourceCode)
     {
-        var path = this._formattedPaths.get(uiSourceCode.project().id() + ":" + uiSourceCode.path());
-        if (path) {
-            var uiSourceCodePath = path;
+        var formattedPath = this._formattedPaths.get(uiSourceCode.project().id() + ":" + uiSourceCode.path());
+        if (formattedPath) {
+            var uiSourceCodePath = formattedPath;
             var formattedUISourceCode = this._workspace.uiSourceCode(this._projectId, uiSourceCodePath);
             var formatData = formattedUISourceCode ? this._formatData.get(formattedUISourceCode) : null;
             if (formatData)
@@ -396,19 +405,19 @@ WebInspector.ScriptFormatterEditorAction.prototype = {
         function innerCallback(formattedContent, formatterMapping)
         {
             var scripts = this._scriptsForUISourceCode(uiSourceCode);
-            if (!scripts.length)
-                return;
-
             var name;
             if (uiSourceCode.contentType() === WebInspector.resourceTypes.Document)
                 name = uiSourceCode.displayName();
             else
-                name = uiSourceCode.name() || scripts[0].scriptId;
-            path = this._projectDelegate._addFormatted(name, uiSourceCode.url, uiSourceCode.contentType(), formattedContent);
-            var formattedUISourceCode = /** @type {!WebInspector.UISourceCode} */ (this._workspace.uiSourceCode(this._projectId, path));
+                name = uiSourceCode.name() || (scripts.length ? scripts[0].scriptId : "");
+
+            formattedPath = this._projectDelegate._addFormatted(name, uiSourceCode.url, uiSourceCode.contentType(), formattedContent);
+            var formattedUISourceCode = /** @type {!WebInspector.UISourceCode} */ (this._workspace.uiSourceCode(this._projectId, formattedPath));
             var formatData = new WebInspector.FormatterScriptMapping.FormatData(uiSourceCode.project().id(), uiSourceCode.path(), formatterMapping, scripts);
             this._formatData.put(formattedUISourceCode, formatData);
-            this._formattedPaths.put(uiSourceCode.project().id() + ":" + uiSourceCode.path(), path);
+            var path = uiSourceCode.project().id() + ":" + uiSourceCode.path();
+            this._formattedPaths.put(path, formattedPath);
+            this._pathsToFormatOnLoad.add(path);
             for (var i = 0; i < scripts.length; ++i) {
                 this._uiSourceCodes.put(scripts[i], formattedUISourceCode);
                 var scriptMapping = /** @type {!WebInspector.FormatterScriptMapping} */(this._scriptMappingByTarget.get(scripts[i].target()));
