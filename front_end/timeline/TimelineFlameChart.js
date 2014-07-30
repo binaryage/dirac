@@ -159,7 +159,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
         this._timelineData = new WebInspector.FlameChart.TimelineData([], [], []);
 
         this._minimumBoundary = this._model.minimumRecordTime();
-        this._timeSpan = Math.max(this._model.maximumRecordTime() - this._minimumBoundary, 1000);
+        this._timeSpan = this._model.isEmpty() ?  1000 : this._model.maximumRecordTime() - this._minimumBoundary;
         this._currentLevel = 0;
         this._appendThreadTimelineData(WebInspector.UIString("Main Thread"), this._model.mainThreadEvents());
         var threads = this._model.virtualThreads();
