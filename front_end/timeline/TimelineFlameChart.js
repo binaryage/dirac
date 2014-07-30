@@ -179,8 +179,11 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
         var maxStackDepth = 0;
         var openEvents = [];
         var headerAppended = false;
-        var jsFrameEvents = this._generateJSFrameEvents(traceEvents);
-        var events = jsFrameEvents.mergeOrdered(traceEvents, WebInspector.TracingModel.Event.orderedCompareStartTime);
+        var events = traceEvents;
+        if (WebInspector.experimentsSettings.timelineJSCPUProfile.isEnabled()) {
+            var jsFrameEvents = this._generateJSFrameEvents(traceEvents);
+            events = jsFrameEvents.mergeOrdered(traceEvents, WebInspector.TracingModel.Event.orderedCompareStartTime);
+        }
         for (var i = 0; i < events.length; ++i) {
             var e = events[i];
             // FIXME: clean up once phase name is unified between Blink and Chromium.
