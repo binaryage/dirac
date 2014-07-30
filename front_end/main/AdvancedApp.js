@@ -255,6 +255,7 @@ WebInspector.Toolbox = function()
     WebInspector.experimentsSettings = window.opener.WebInspector.experimentsSettings;
     WebInspector.targetManager = window.opener.WebInspector.targetManager;
     WebInspector.workspace = window.opener.WebInspector.workspace;
+    WebInspector.cssWorkspaceBinding = window.opener.WebInspector.cssWorkspaceBinding;
     WebInspector.Revealer = window.opener.WebInspector.Revealer;
     WebInspector.ContextMenu = window.opener.WebInspector.ContextMenu;
     WebInspector.installPortStyles();
