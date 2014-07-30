@@ -23,6 +23,15 @@ WebInspector.CPUProfileDataModel = function(profile)
     this._calculateTimes(profile);
 }
 
+/**
+ * @param {string} name
+ * @return {string}
+ */
+WebInspector.CPUProfileDataModel.beautifyFunctionName = function(name)
+{
+    return name || WebInspector.UIString("(anonymous function)");
+}
+
 WebInspector.CPUProfileDataModel.prototype = {
     /**
      * @param {!ProfilerAgent.CPUProfile} profile
