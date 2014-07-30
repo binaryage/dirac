@@ -252,20 +252,6 @@ WebInspector.DebuggerModel.prototype = {
     },
 
     /**
-     * @param {!WebInspector.DebuggerModel.Location} rawLocation
-     * @param {string} condition
-     * @param {function(?DebuggerAgent.BreakpointId, !Array.<!WebInspector.DebuggerModel.Location>):void=} callback
-     */
-    setBreakpointByScriptLocation: function(rawLocation, condition, callback)
-    {
-        var script = rawLocation.script();
-        if (script.sourceURL)
-            this.setBreakpointByURL(script.sourceURL, rawLocation.lineNumber, rawLocation.columnNumber, condition, callback);
-        else
-            this.setBreakpointBySourceId(rawLocation, condition, callback);
-    },
-
-    /**
      * @param {string} url
      * @param {number} lineNumber
      * @param {number=} columnNumber
