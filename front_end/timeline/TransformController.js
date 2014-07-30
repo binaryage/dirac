@@ -185,18 +185,12 @@ WebInspector.TransformController.prototype = {
      */
     _onMouseWheel: function(event)
     {
-        if (!event.altKey) {
-            /** @const */
-            var zoomFactor = 1.1;
-            /** @const */
-            var mouseWheelZoomSpeed = 1 / 120;
-            var scaleFactor = Math.pow(zoomFactor, event.wheelDeltaY * mouseWheelZoomSpeed);
-            this._onScale(scaleFactor, event.clientX - this.element.totalOffsetLeft(), event.clientY - this.element.totalOffsetTop());
-        } else {
-            /** @const */
-            var moveFactor = 1 / 20;
-            this._onPan(event.wheelDeltaX * moveFactor, event.wheelDeltaY * moveFactor);
-        }
+        /** @const */
+        var zoomFactor = 1.1;
+        /** @const */
+        var mouseWheelZoomSpeed = 1 / 120;
+        var scaleFactor = Math.pow(zoomFactor, event.wheelDeltaY * mouseWheelZoomSpeed);
+        this._onScale(scaleFactor, event.clientX - this.element.totalOffsetLeft(), event.clientY - this.element.totalOffsetTop());
     },
 
     /**
@@ -206,13 +200,13 @@ WebInspector.TransformController.prototype = {
     {
         if (event.which !== 1 || typeof this._originX !== "number")
             return;
-        if (this._disableRotate) {
+        if (event.shiftKey) {
+            this._onRotate(this._oldRotateX + (this._originY - event.clientY) / this.element.clientHeight * 180, this._oldRotateY - (this._originX - event.clientX) / this.element.clientWidth * 180);
+        } else {
             this._onPan(event.clientX - this._originX, event.clientY - this._originY);
             this._originX = event.clientX;
             this._originY = event.clientY;
-            return;
         }
-        this._onRotate(this._oldRotateX + (this._originY - event.clientY) / this.element.clientHeight * 180, this._oldRotateY - (this._originX - event.clientX) / this.element.clientWidth * 180);
     },
 
     /**

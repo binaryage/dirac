@@ -520,34 +520,42 @@ WebInspector.ShortcutsScreen.LayersPanelShortcuts = {
     ],
 
     PanUp: [
-        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Up, WebInspector.KeyboardShortcut.Modifiers.Shift)
+        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Up),
+        WebInspector.KeyboardShortcut.makeDescriptor("w")
     ],
 
     PanDown: [
-        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Down, WebInspector.KeyboardShortcut.Modifiers.Shift)
+        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Down),
+        WebInspector.KeyboardShortcut.makeDescriptor("s")
     ],
 
     PanLeft: [
-        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Left, WebInspector.KeyboardShortcut.Modifiers.Shift)
+        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Left),
+        WebInspector.KeyboardShortcut.makeDescriptor("a")
     ],
 
     PanRight: [
-        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Right, WebInspector.KeyboardShortcut.Modifiers.Shift)
+        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Right),
+        WebInspector.KeyboardShortcut.makeDescriptor("d")
     ],
 
     RotateCWX: [
-        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Up),
+        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Up, WebInspector.KeyboardShortcut.Modifiers.Shift),
+        WebInspector.KeyboardShortcut.makeDescriptor("w", WebInspector.KeyboardShortcut.Modifiers.Shift)
     ],
 
     RotateCCWX: [
-        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Down),
+        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Down, WebInspector.KeyboardShortcut.Modifiers.Shift),
+        WebInspector.KeyboardShortcut.makeDescriptor("s", WebInspector.KeyboardShortcut.Modifiers.Shift)
     ],
 
     RotateCWY: [
-        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Left),
+        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Left, WebInspector.KeyboardShortcut.Modifiers.Shift),
+        WebInspector.KeyboardShortcut.makeDescriptor("a", WebInspector.KeyboardShortcut.Modifiers.Shift)
     ],
 
     RotateCCWY: [
-        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Right),
+        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Right, WebInspector.KeyboardShortcut.Modifiers.Shift),
+        WebInspector.KeyboardShortcut.makeDescriptor("d", WebInspector.KeyboardShortcut.Modifiers.Shift)
     ]
 }
