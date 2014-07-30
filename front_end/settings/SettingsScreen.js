@@ -694,8 +694,8 @@ WebInspector.SettingsList = function(columns, itemRenderer)
     this.element = document.createElementWithClass("div", "settings-list");
     this.element.tabIndex = -1;
     this._itemRenderer = itemRenderer;
-    /** @type {!Object.<?string, !Element>} */
-    this._listItems = { __proto__: null };
+    /** @type {!StringMap.<!Element>} */
+    this._listItems = new StringMap();
     /** @type {!Array.<?string>} */
     this._ids = [];
     this._columns = columns;
@@ -718,7 +718,7 @@ WebInspector.SettingsList.prototype = {
         var listItem = document.createElementWithClass("div", "settings-list-item");
         listItem._id = itemId;
         if (typeof beforeId !== "undefined")
-            this.element.insertBefore(listItem, this._listItems[beforeId]);
+            this.element.insertBefore(listItem, this.itemForId(beforeId));
         else
             this.element.appendChild(listItem);
 
@@ -737,7 +737,7 @@ WebInspector.SettingsList.prototype = {
         listItemContents.addEventListener("dblclick", this._onDoubleClick.bind(this, itemId), false);
         listItemContents.appendChild(removeItemButton);
 
-        this._listItems[itemId] = listItem;
+        this._listItems.put(itemId || "", listItem);
         if (typeof beforeId !== "undefined")
             this._ids.splice(this._ids.indexOf(beforeId), 0, itemId);
         else
@@ -763,9 +763,9 @@ WebInspector.SettingsList.prototype = {
      */
     removeItem: function(id)
     {
-        if (this._listItems[id])
-            this._listItems[id].remove();
-        delete this._listItems[id];
+        var listItem = this._listItems.remove(id || "");
+        if (listItem)
+            listItem.remove();
         this._ids.remove(id);
         if (id === this._selectedId) {
             delete this._selectedId;
@@ -803,16 +803,16 @@ WebInspector.SettingsList.prototype = {
      */
     selectedItem: function()
     {
-        return this._selectedId ? this._listItems[this._selectedId] : null;
+        return this._selectedId ? this.itemForId(this._selectedId) : null;
     },
 
     /**
-     * @param {string} itemId
-     * @return {!Element}
+     * @param {?string} itemId
+     * @return {?Element}
      */
     itemForId: function(itemId)
     {
-        return this._listItems[itemId];
+        return this._listItems.get(itemId || "") || null;
     },
 
     /**
@@ -831,11 +831,11 @@ WebInspector.SettingsList.prototype = {
     selectItem: function(id, event)
     {
         if (typeof this._selectedId !== "undefined")
-            this._listItems[this._selectedId].classList.remove("selected");
+            this.itemForId(this._selectedId).classList.remove("selected");
 
         this._selectedId = id;
         if (typeof this._selectedId !== "undefined")
-            this._listItems[this._selectedId].classList.add("selected");
+            this.itemForId(this._selectedId).classList.add("selected");
 
         this.dispatchEventToListeners(WebInspector.SettingsList.Events.Selected, id);
         if (event)
@@ -871,12 +871,12 @@ WebInspector.EditableSettingsList = function(columns, valuesProvider, validateHa
     this._valuesProvider = valuesProvider;
     this._validateHandler = validateHandler;
     this._editHandler = editHandler;
-    /** @type {!Object.<string, (!HTMLInputElement|!HTMLSelectElement)>} */
-    this._addInputElements = {};
-    /** @type {!Object.<string, !Object.<string, (!HTMLInputElement|!HTMLSelectElement)>>} */
-    this._editInputElements = {};
-    /** @type {!Object.<string, !Object.<string, !HTMLSpanElement>>} */
-    this._textElements = {};
+    /** @type {!StringMap.<(!HTMLInputElement|!HTMLSelectElement)>} */
+    this._addInputElements = new StringMap();
+    /** @type {!StringMap.<!StringMap.<(!HTMLInputElement|!HTMLSelectElement)>>} */
+    this._editInputElements = new StringMap();
+    /** @type {!StringMap.<!StringMap.<!HTMLSpanElement>>} */
+    this._textElements = new StringMap();
 
     this._addMappingItem = this.addItem(null);
     this._addMappingItem.classList.add("item-editing", "add-list-item");
@@ -902,7 +902,7 @@ WebInspector.EditableSettingsList.prototype = {
     {
         if (!itemId)
             return;
-        var listItem = this._listItems[itemId];
+        var listItem = this.itemForId(itemId);
         if (!listItem)
             return;
         for (var i = 0; i < this._columns.length; ++i) {
@@ -910,11 +910,11 @@ WebInspector.EditableSettingsList.prototype = {
             var columnId = column.id;
 
             var value = this._valuesProvider(itemId, columnId);
-            var textElement = this._textElements[itemId][columnId];
+            var textElement = this._textElements.get(itemId).get(columnId);
             textElement.textContent = value;
             textElement.title = value;
 
-            var editElement = this._editInputElements[itemId][columnId];
+            var editElement = this._editInputElements.get(itemId).get(columnId);
             this._setEditElementValue(editElement, value || "");
         }
     },
@@ -933,10 +933,10 @@ WebInspector.EditableSettingsList.prototype = {
         }
         var validItemId = itemId;
 
-        if (!this._editInputElements[itemId])
-            this._editInputElements[itemId] = {};
-        if (!this._textElements[itemId])
-            this._textElements[itemId] = {};
+        if (!this._editInputElements.contains(itemId))
+            this._editInputElements.put(itemId, new StringMap());
+        if (!this._textElements.contains(itemId))
+            this._textElements.put(itemId, new StringMap());
 
         var value = this._valuesProvider(itemId, columnId);
 
@@ -944,7 +944,7 @@ WebInspector.EditableSettingsList.prototype = {
         textElement.textContent = value;
         textElement.title = value;
         columnElement.addEventListener("click", rowClicked.bind(this), false);
-        this._textElements[itemId][columnId] = textElement;
+        this._textElements.get(itemId).put(columnId, textElement);
 
         this._createEditElement(columnElement, column, itemId, value);
 
@@ -961,7 +961,7 @@ WebInspector.EditableSettingsList.prototype = {
             this._editingId = validItemId;
             var listItem = this.itemForId(validItemId);
             listItem.classList.add("item-editing");
-            var editElement = event.target.editElement || this._editInputElements[validItemId][this.columns()[0]];
+            var editElement = event.target.editElement || this._editInputElements.get(validItemId).get(this.columns()[0]);
             editElement.focus();
             if (editElement.select)
                 editElement.select();
@@ -996,9 +996,9 @@ WebInspector.EditableSettingsList.prototype = {
         }
 
         if (itemId === null)
-            this._addInputElements[column.id] = editElement;
+            this._addInputElements.put(column.id, editElement);
         else
-            this._editInputElements[itemId][column.id] = editElement;
+            this._editInputElements.get(itemId).put(column.id, editElement);
 
         this._setEditElementValue(editElement, value || "");
         columnElement.editElement = editElement;
@@ -1006,11 +1006,13 @@ WebInspector.EditableSettingsList.prototype = {
     },
 
     /**
-     * @param {!Element} editElement
+     * @param {!HTMLInputElement|!HTMLSelectElement|undefined} editElement
      * @param {string} value
      */
     _setEditElementValue: function(editElement, value)
     {
+        if (!editElement)
+            return;
         if (editElement instanceof HTMLSelectElement) {
             var options = editElement.options;
             for (var i = 0; i < options.length; ++i)
@@ -1027,22 +1029,22 @@ WebInspector.EditableSettingsList.prototype = {
     _data: function(itemId)
     {
         var inputElements = this._inputElements(itemId);
-        var data = {};
+        var data = { __proto__: null };
         var columns = this.columns();
         for (var i = 0; i < columns.length; ++i)
-            data[columns[i]] = inputElements[columns[i]].value;
+            data[columns[i]] = inputElements.get(columns[i]).value;
         return data;
     },
 
     /**
      * @param {?string} itemId
-     * @return {?Object.<string, !HTMLInputElement>}
+     * @return {?StringMap.<(!HTMLInputElement|!HTMLSelectElement)>}
      */
     _inputElements: function(itemId)
     {
         if (!itemId)
             return this._addInputElements;
-        return this._editInputElements[itemId] || null;
+        return this._editInputElements.get(itemId) || null;
     },
 
     /**
@@ -1056,7 +1058,7 @@ WebInspector.EditableSettingsList.prototype = {
         var columns = this.columns();
         for (var i = 0; i < columns.length; ++i) {
             var columnId = columns[i];
-            var inputElement = this._inputElements(itemId)[columnId];
+            var inputElement = this._inputElements(itemId).get(columnId);
             if (hasChanges && errorColumns.indexOf(columnId) !== -1)
                 inputElement.classList.add("editable-item-error");
             else
@@ -1074,8 +1076,8 @@ WebInspector.EditableSettingsList.prototype = {
         var columns = this.columns();
         for (var i = 0; i < columns.length; ++i) {
             var columnId = columns[i];
-            var oldValue = itemId ? this._textElements[itemId][columnId].textContent : "";
-            var newValue = this._inputElements(itemId)[columnId].value;
+            var oldValue = itemId ? this._textElements.get(itemId).get(columnId).textContent : "";
+            var newValue = this._inputElements(itemId).get(columnId).value;
             if (oldValue !== newValue)
                 return true;
         }
@@ -1093,7 +1095,7 @@ WebInspector.EditableSettingsList.prototype = {
             return;
         }
 
-        var inputElements = Object.values(this._editInputElements[itemId]);
+        var inputElements = this._editInputElements.get(itemId).values();
         if (inputElements.indexOf(event.relatedTarget) !== -1)
             return;
 
@@ -1108,8 +1110,8 @@ WebInspector.EditableSettingsList.prototype = {
             var columns = this.columns();
             for (var i = 0; i < columns.length; ++i) {
                 var columnId = columns[i];
-                var editElement = this._editInputElements[itemId][columnId];
-                this._setEditElementValue(editElement, this._textElements[itemId][columnId].textContent);
+                var editElement = this._editInputElements.get(itemId).get(columnId);
+                this._setEditElementValue(editElement, this._textElements.get(itemId).get(columnId).textContent);
                 editElement.classList.remove("editable-item-error");
             }
             return;
@@ -1122,7 +1124,7 @@ WebInspector.EditableSettingsList.prototype = {
      */
     _onAddMappingInputBlur: function(event)
     {
-        var inputElements = Object.values(this._addInputElements);
+        var inputElements = this._addInputElements.values();
         if (inputElements.indexOf(event.relatedTarget) !== -1)
             return;
 
@@ -1136,7 +1138,7 @@ WebInspector.EditableSettingsList.prototype = {
         var columns = this.columns();
         for (var i = 0; i < columns.length; ++i) {
             var columnId = columns[i];
-            var editElement = this._addInputElements[columnId];
+            var editElement = this._addInputElements.get(columnId);
             this._setEditElementValue(editElement, "");
         }
     },
