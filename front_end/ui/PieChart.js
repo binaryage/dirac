@@ -30,10 +30,10 @@
 
 /**
  * @constructor
- * @param {number=} totalValue
+ * @param {number} size
  * @param {function(number):string=} formatter
  */
-WebInspector.PieChart = function(totalValue, formatter)
+WebInspector.PieChart = function(size, formatter)
 {
     var shadowSize = WebInspector.PieChart._ShadowSizePercent;
     this.element = document.createElementWithClass("div", "pie-chart");
@@ -48,31 +48,37 @@ WebInspector.PieChart = function(totalValue, formatter)
     var background = this._createSVGChild(this._group, "circle");
     background.setAttribute("r", 1);
     background.setAttribute("fill", "hsl(0,0%,92%)");
-    if (totalValue) {
-        var totalString = formatter ? formatter(totalValue) : totalValue;
-        this._totalElement = this.element.createChild("div", "pie-chart-foreground");
-        this._totalElement.textContent = totalString;
-        this._totalValue = totalValue;
-    }
+    this._totalElement = this.element.createChild("div", "pie-chart-foreground");
+    this._formatter = formatter;
+    this._slices = [];
     this._lastAngle = -Math.PI/2;
-    this.setSize(100);
+    this._setSize(size);
 }
 
 WebInspector.PieChart._ShadowSizePercent = 0.02;
 
 WebInspector.PieChart.prototype = {
     /**
-     * @param {number} value
+     * @param {number} totalValue
      */
-    setTotal: function(value)
+    setTotal: function(totalValue)
     {
-        this._totalValue = value;
+        for (var i = 0; i < this._slices.length; ++i)
+            this._slices[i].remove();
+        this._slices = [];
+        this._totalValue = totalValue;
+        var totalString;
+        if (totalValue)
+            totalString = this._formatter ? this._formatter(totalValue) : totalValue;
+        else
+            totalString = "";
+        this._totalElement.textContent = totalString;
     },
 
     /**
      * @param {number} value
      */
-    setSize: function(value)
+    _setSize: function(value)
     {
         this._group.setAttribute("transform", "scale(" + (value / 2) + ") translate(" + (1 + WebInspector.PieChart._ShadowSizePercent) + ",1)");
         var size = value + "px";
@@ -101,6 +107,7 @@ WebInspector.PieChart.prototype = {
         var largeArc = sliceAngle > Math.PI ? 1 : 0;
         path.setAttribute("d", "M0,0 L" + x1 + "," + y1 + " A1,1,0," + largeArc + ",1," + x2 + "," + y2 + " Z");
         path.setAttribute("fill", color);
+        this._slices.push(path);
     },
 
     /**

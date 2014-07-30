@@ -252,7 +252,8 @@ WebInspector.TimelineUIUtils.generatePieChart = function(aggregatedStats, selfCa
     {
         return Number.millisToString(value, true);
     }
-    var pieChart = new WebInspector.PieChart(total, formatter);
+    var pieChart = new WebInspector.PieChart(100, formatter);
+    pieChart.setTotal(total);
     element.appendChild(pieChart.element);
     var footerElement = element.createChild("div", "timeline-aggregated-info-legend");
 

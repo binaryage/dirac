@@ -77,27 +77,36 @@
     background-color: rgba(100, 100, 100, 0.2);
 }
 
-.paint-profiler-view canvas {
-    z-index: 200;
-    opacity: 0.8;
-    background-color: white;
+.paint-profiler-canvas-container {
+    flex: auto;
+    position: relative;
 }
 
-.paint-profiler-view {
+.paint-profiler-overview {
+    background-color: rgb(244, 244, 244);
+}
+
+.paint-profiler-pie-chart {
+    width: 60px;
+    height: 60px;
+    padding: 2px;
     overflow: hidden;
 }
 
-.paint-profiler-view .overview-grid-dividers-background,
-.paint-profiler-view .overview-grid-window {
+.paint-profiler-canvas-container canvas {
+    z-index: 200;
+    background-color: white;
+    opacity: 0.95;
+    height: 100%;
+    width: 100%;
+}
+
+.paint-profiler-canvas-container .overview-grid-dividers-background,
+.paint-profiler-canvas-container .overview-grid-window {
     bottom: 0;
     height: auto;
 }
 
-.paint-profiler-view .overview-grid-window-resizer {
+.paint-profiler-canvas-container .overview-grid-window-resizer {
     z-index: 2000;
-}
-
-.paint-profiler-view canvas {
-    height: 100%;
-    width: 100%;
 }

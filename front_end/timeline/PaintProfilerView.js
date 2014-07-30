@@ -36,17 +36,20 @@
 WebInspector.PaintProfilerView = function(showImageCallback)
 {
     WebInspector.HBox.call(this);
-    this.element.classList.add("paint-profiler-view");
+    this.element.classList.add("paint-profiler-overview", "hbox");
+    this._canvasContainer = this.element.createChild("div", "paint-profiler-canvas-container");
+    this._pieChart = new WebInspector.PieChart(55, this._formatPieChartTime.bind(this));
+    this.element.createChild("div", "paint-profiler-pie-chart").appendChild(this._pieChart.element);
 
     this._showImageCallback = showImageCallback;
 
-    this._canvas = this.element.createChild("canvas", "fill");
+    this._canvas = this._canvasContainer.createChild("canvas", "fill");
     this._context = this._canvas.getContext("2d");
-    this._selectionWindow = new WebInspector.OverviewGrid.Window(this.element, this.element);
+    this._selectionWindow = new WebInspector.OverviewGrid.Window(this._canvasContainer);
     this._selectionWindow.addEventListener(WebInspector.OverviewGrid.Events.WindowChanged, this._onWindowChanged, this);
 
     this._innerBarWidth = 4 * window.devicePixelRatio;
-    this._minBarHeight = 4 * window.devicePixelRatio;
+    this._minBarHeight = window.devicePixelRatio;
     this._barPaddingWidth = 2 * window.devicePixelRatio;
     this._outerBarWidth = this._innerBarWidth + this._barPaddingWidth;
 
@@ -93,8 +96,8 @@ WebInspector.PaintProfilerView.prototype = {
 
     _update: function()
     {
-        this._canvas.width = this.element.clientWidth * window.devicePixelRatio;
-        this._canvas.height = this.element.clientHeight * window.devicePixelRatio;
+        this._canvas.width = this._canvasContainer.clientWidth * window.devicePixelRatio;
+        this._canvas.height = this._canvasContainer.clientHeight * window.devicePixelRatio;
         this._samplesPerBar = 0;
         if (!this._profiles || !this._profiles.length)
             return;
@@ -165,10 +168,38 @@ WebInspector.PaintProfilerView.prototype = {
 
     _onWindowChanged: function()
     {
+        this.dispatchEventToListeners(WebInspector.PaintProfilerView.Events.WindowChanged);
+
+        // Update pie chart
+        var window = this.windowBoundaries();
+        var totalTime = 0;
+        var timeByCategory = {};
+        for (var i = window.left; i <= window.right; ++i) {
+            var logEntry = this._log[i];
+            var category = WebInspector.PaintProfilerView._categoryForLogItem(logEntry);
+            timeByCategory[category.color] = timeByCategory[category.color] || 0;
+            for (var j = 0; j < this._profiles.length; ++j) {
+                var time = this._profiles[j][logEntry.commandIndex];
+                totalTime += time;
+                timeByCategory[category.color] += time;
+            }
+        }
+        this._pieChart.setTotal(totalTime / this._profiles.length);
+        for (var color in timeByCategory)
+          this._pieChart.addSlice(timeByCategory[color] / this._profiles.length, color);
+
         if (this._updateImageTimer)
             return;
         this._updateImageTimer = setTimeout(this._updateImage.bind(this), 100);
-        this.dispatchEventToListeners(WebInspector.PaintProfilerView.Events.WindowChanged);
+    },
+
+    /**
+     * @param {number} value
+     * @return {string}
+     */
+    _formatPieChartTime: function(value)
+    {
+        return Number.millisToString(value * 1000, true);
     },
 
     /**
@@ -180,10 +211,10 @@ WebInspector.PaintProfilerView.prototype = {
         var screenRight = this._selectionWindow.windowRight * this._canvas.width;
         var barLeft = Math.floor((screenLeft - this._barPaddingWidth) / this._outerBarWidth);
         var barRight = Math.floor((screenRight - this._barPaddingWidth + this._innerBarWidth)/ this._outerBarWidth);
-        var stepLeft = Math.max(0, barLeft * this._samplesPerBar);
-        var stepRight = Math.min(barRight * this._samplesPerBar, this._log.length - 1);
+        var stepLeft = Number.constrain(barLeft * this._samplesPerBar, 0, this._log.length - 1);
+        var stepRight = Number.constrain(barRight * this._samplesPerBar, 0, this._log.length - 1);
 
-        return {left: stepLeft, right: stepRight};
+        return { left: stepLeft, right: stepRight };
     },
 
     _updateImage: function()
@@ -421,10 +452,10 @@ WebInspector.PaintProfilerView.categories = function()
     if (WebInspector.PaintProfilerView._categories)
         return WebInspector.PaintProfilerView._categories;
     WebInspector.PaintProfilerView._categories = {
-        shapes: new WebInspector.PaintProfilerCategory("shapes", WebInspector.UIString("Shapes"), "rgba(255, 0, 0, 0.7)"),
-        bitmap: new WebInspector.PaintProfilerCategory("bitmap", WebInspector.UIString("Bitmap"), "rgba(0, 255, 0, 0.7)"),
-        text: new WebInspector.PaintProfilerCategory("text", WebInspector.UIString("Text"), "rgba(0, 0, 255, 0.7)"),
-        misc: new WebInspector.PaintProfilerCategory("misc", WebInspector.UIString("Misc"), "rgba(100, 0, 100, 0.7)")
+        shapes: new WebInspector.PaintProfilerCategory("shapes", WebInspector.UIString("Shapes"), "rgb(255, 161, 129)"),
+        bitmap: new WebInspector.PaintProfilerCategory("bitmap", WebInspector.UIString("Bitmap"), "rgb(136, 196, 255)"),
+        text: new WebInspector.PaintProfilerCategory("text", WebInspector.UIString("Text"), "rgb(180, 255, 137)"),
+        misc: new WebInspector.PaintProfilerCategory("misc", WebInspector.UIString("Misc"), "rgb(206, 160, 255)")
     };
     return WebInspector.PaintProfilerView._categories;
 };
