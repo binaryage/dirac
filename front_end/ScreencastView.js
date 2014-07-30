@@ -71,6 +71,7 @@ WebInspector.ScreencastView.prototype = {
         this._canvasElement.addEventListener("keydown", this._handleKeyEvent.bind(this), false);
         this._canvasElement.addEventListener("keyup", this._handleKeyEvent.bind(this), false);
         this._canvasElement.addEventListener("keypress", this._handleKeyEvent.bind(this), false);
+        this._canvasElement.addEventListener("blur", this._handleBlurEvent.bind(this), false);
 
         this._titleElement = this._canvasContainerElement.createChild("div", "screencast-element-title monospace hidden");
         this._tagNameElement = this._titleElement.createChild("span", "screencast-tag-name");
@@ -241,7 +242,7 @@ WebInspector.ScreencastView.prototype = {
             return;
 
         if (!this._inspectModeConfig || event.type === "mousewheel") {
-            this._simulateTouchGestureForMouseEvent(event);
+            this._simulateTouchForMouseEvent(event);
             event.preventDefault();
             if (event.type === "mousedown")
                 this._canvasElement.focus();
@@ -309,161 +310,44 @@ WebInspector.ScreencastView.prototype = {
     /**
      * @param {!Event} event
      */
-    _simulateTouchGestureForMouseEvent: function(event)
+    _simulateTouchForMouseEvent: function(event)
     {
-        var convertedPosition = this._convertIntoScreenSpace(event);
-        var zoomedPosition = this._zoomIntoScreenSpace(event);
-        var timeStamp = event.timeStamp / 1000;
+        const buttons = {0: "none", 1: "left", 2: "middle", 3: "right"};
+        const types = {"mousedown" : "mousePressed", "mouseup": "mouseReleased", "mousemove": "mouseMoved", "mousewheel": "mouseWheel"};
+        if (!(event.type in types) || !(event.which in buttons))
+            return;
+        if (event.type !== "mousewheel" && buttons[event.which] === "none")
+            return;
 
-        /**
-         * @this {!WebInspector.ScreencastView}
-         */
-        function clearPinch()
-        {
-            delete this._lastPinchAnchor;
-            delete this._lastPinchZoomedY;
-            delete this._lastPinchScale;
+        if (event.type === "mousedown" || typeof this._eventScreenOffsetTop === "undefined")
+            this._eventScreenOffsetTop = this._screenOffsetTop;
+
+        var modifiers = (event.altKey ? 1 : 0) | (event.ctrlKey ? 2 : 0) | (event.metaKey ? 4 : 0) | (event.shiftKey ? 8 : 0);
+
+        var convertedPosition = this._zoomIntoScreenSpace(event);
+        convertedPosition.y = Math.round(convertedPosition.y - this._eventScreenOffsetTop);
+        var params = {type: types[event.type], x: convertedPosition.x, y: convertedPosition.y, modifiers: modifiers, timestamp: event.timeStamp / 1000, button: buttons[event.which], clickCount: 0};
+        if (event.type === "mousewheel") {
+            params.deltaX = event.wheelDeltaX / this._screenZoom;
+            params.deltaY = event.wheelDeltaY / this._screenZoom;
+        } else {
+            this._eventParams = params;
         }
+        if (event.type === "mouseup")
+            delete this._eventScreenOffsetTop;
+        InputAgent.invoke_emulateTouchFromMouseEvent(params);
+    },
 
-        /**
-         * @this {!WebInspector.ScreencastView}
-         */
-        function clearScroll()
-        {
-            delete this._lastScrollZoomedPosition;
-        }
-
-        /**
-         * @this {!WebInspector.ScreencastView}
-         */
-        function scrollBegin()
-        {
-            InputAgent.dispatchGestureEvent("scrollBegin", convertedPosition.x, convertedPosition.y, timeStamp);
-            this._lastScrollZoomedPosition = zoomedPosition;
-            clearPinch.call(this);
-        }
-
-        /**
-         * @this {!WebInspector.ScreencastView}
-         */
-        function scrollUpdate()
-        {
-            var dx = this._lastScrollZoomedPosition ? zoomedPosition.x - this._lastScrollZoomedPosition.x : 0;
-            var dy = this._lastScrollZoomedPosition ? zoomedPosition.y - this._lastScrollZoomedPosition.y : 0;
-            if (dx || dy) {
-                InputAgent.dispatchGestureEvent("scrollUpdate", convertedPosition.x, convertedPosition.y, timeStamp, dx, dy);
-                this._lastScrollZoomedPosition = zoomedPosition;
-            }
-        }
-
-        /**
-         * @this {!WebInspector.ScreencastView}
-         */
-        function scrollEnd()
-        {
-            if (this._lastScrollZoomedPosition) {
-                InputAgent.dispatchGestureEvent("scrollEnd", convertedPosition.x, convertedPosition.y, timeStamp);
-                clearScroll.call(this);
-                return true;
-            }
-            return false;
-        }
-
-        /**
-         * @this {!WebInspector.ScreencastView}
-         */
-        function pinchBegin()
-        {
-            InputAgent.dispatchGestureEvent("pinchBegin", convertedPosition.x, convertedPosition.y, timeStamp);
-            this._lastPinchAnchor = convertedPosition;
-            this._lastPinchZoomedY = zoomedPosition.y;
-            this._lastPinchScale = 1;
-            clearScroll.call(this);
-        }
-
-        /**
-         * @this {!WebInspector.ScreencastView}
-         */
-        function pinchUpdate()
-        {
-            var dy = this._lastPinchZoomedY ? this._lastPinchZoomedY - zoomedPosition.y : 0;
-            if (dy) {
-                var scale = Math.exp(dy * 0.002);
-                InputAgent.dispatchGestureEvent("pinchUpdate", this._lastPinchAnchor.x, this._lastPinchAnchor.y, timeStamp, 0, 0, scale / this._lastPinchScale);
-                this._lastPinchScale = scale;
-            }
-        }
-
-        /**
-         * @this {!WebInspector.ScreencastView}
-         */
-        function pinchEnd()
-        {
-            if (this._lastPinchAnchor) {
-                InputAgent.dispatchGestureEvent("pinchEnd", this._lastPinchAnchor.x, this._lastPinchAnchor.y, timeStamp);
-                clearPinch.call(this);
-                return true;
-            }
-            return false;
-        }
-
-        switch (event.which) {
-        case 1: // Left
-            if (event.type === "mousedown") {
-                if (event.shiftKey) {
-                    pinchBegin.call(this);
-                } else {
-                    scrollBegin.call(this);
-                }
-            } else if (event.type === "mousemove") {
-                if (event.shiftKey) {
-                    if (scrollEnd.call(this))
-                        pinchBegin.call(this);
-                    pinchUpdate.call(this);
-                } else {
-                    if (pinchEnd.call(this))
-                        scrollBegin.call(this);
-                    scrollUpdate.call(this);
-                }
-            } else if (event.type === "mouseup") {
-                pinchEnd.call(this);
-                scrollEnd.call(this);
-            } else if (event.type === "mousewheel") {
-                if (!this._lastPinchAnchor && !this._lastScrollZoomedPosition) {
-                    if (event.shiftKey) {
-                        var factor = 1.1;
-                        var scale = event.wheelDeltaY < 0 ? 1 / factor : factor;
-                        InputAgent.dispatchGestureEvent("pinchBegin", convertedPosition.x, convertedPosition.y, timeStamp);
-                        InputAgent.dispatchGestureEvent("pinchUpdate", convertedPosition.x, convertedPosition.y, timeStamp, 0, 0, scale);
-                        InputAgent.dispatchGestureEvent("pinchEnd", convertedPosition.x, convertedPosition.y, timeStamp);
-                    } else {
-                        InputAgent.dispatchGestureEvent("scrollBegin", convertedPosition.x, convertedPosition.y, timeStamp);
-                        InputAgent.dispatchGestureEvent("scrollUpdate", convertedPosition.x, convertedPosition.y, timeStamp, event.wheelDeltaX, event.wheelDeltaY);
-                        InputAgent.dispatchGestureEvent("scrollEnd", convertedPosition.x, convertedPosition.y, timeStamp);
-                    }
-                }
-            } else if (event.type === "click") {
-                if (!event.shiftKey) {
-                    InputAgent.dispatchMouseEvent("mousePressed", convertedPosition.x, convertedPosition.y, 0, timeStamp, "left", 1, true);
-                    InputAgent.dispatchMouseEvent("mouseReleased", convertedPosition.x, convertedPosition.y, 0, timeStamp, "left", 1, true);
-                    // FIXME: migrate to tap once it dispatches clicks again.
-                    // InputAgent.dispatchGestureEvent("tapDown", x, y, timeStamp);
-                    // InputAgent.dispatchGestureEvent("tap", x, y, timeStamp);
-                }
-            }
-            break;
-
-        case 2: // Middle
-            if (event.type === "mousedown") {
-                InputAgent.dispatchGestureEvent("tapDown", convertedPosition.x, convertedPosition.y, timeStamp);
-            } else if (event.type === "mouseup") {
-                InputAgent.dispatchGestureEvent("tap", convertedPosition.x, convertedPosition.y, timeStamp);
-            }
-            break;
-
-        case 3: // Right
-        case 0: // None
-        default:
+    /**
+     * @param {!Event} event
+     */
+    _handleBlurEvent: function(event)
+    {
+        if (typeof this._eventScreenOffsetTop !== "undefined") {
+            var params = this._eventParams;
+            delete this._eventParams;
+            params.type = "mouseReleased";
+            InputAgent.invoke_emulateTouchFromMouseEvent(params);
         }
     },
 
