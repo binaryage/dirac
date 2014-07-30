@@ -209,6 +209,14 @@ WebInspector.Target.prototype = {
         this.cpuProfilerModel.dispose();
     },
 
+    /**
+     * @return {boolean}
+     */
+    isDetached: function()
+    {
+        return this._connection.isClosed();
+    },
+
     __proto__: Protocol.Agents.prototype
 }
 

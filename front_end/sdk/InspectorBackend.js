@@ -583,6 +583,14 @@ InspectorBackendClass.Connection.prototype = {
         setTimeout(InspectorBackendClass.AgentPrototype.prototype.dispatchResponse.bind(this.agent(domain), messageObject, methodName, callback), 0);
     },
 
+    /**
+     * @return {boolean}
+     */
+    isClosed: function()
+    {
+        return !this._isConnected;
+    },
+
     __proto__: WebInspector.Object.prototype
 
 }

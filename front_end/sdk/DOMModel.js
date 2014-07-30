@@ -1854,6 +1854,12 @@ WebInspector.DOMModel.EventListener = function(target, payload)
 {
     WebInspector.SDKObject.call(this, target);
     this._payload = payload;
+    var sourceName = this._payload.sourceName;
+    if (!sourceName) {
+        var script = target.debuggerModel.scriptForId(payload.location.scriptId);
+        sourceName = script ? script.contentURL() : "";
+    }
+    this._sourceName = sourceName;
 }
 
 WebInspector.DOMModel.EventListener.prototype = {
@@ -1887,6 +1893,14 @@ WebInspector.DOMModel.EventListener.prototype = {
     handler: function()
     {
         return this._payload.handler ? this.target().runtimeModel.createRemoteObject(this._payload.handler) : null;
+    },
+
+    /**
+     * @return {string}
+     */
+    sourceName: function()
+    {
+        return this._sourceName;
     },
 
     __proto__: WebInspector.SDKObject.prototype

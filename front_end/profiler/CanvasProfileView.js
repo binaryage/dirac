@@ -486,7 +486,7 @@ WebInspector.CanvasProfileView.prototype = {
             // FIXME(62725): stack trace line/column numbers are one-based.
             var lineNumber = Math.max(0, call.lineNumber - 1) || 0;
             var columnNumber = Math.max(0, call.columnNumber - 1) || 0;
-            data[2] = this._linkifier.linkifyLocation(this.profile.target(), call.sourceURL, lineNumber, columnNumber);
+            data[2] = this._linkifier.linkifyScriptLocation(this.profile.target(), null, call.sourceURL, lineNumber, columnNumber);
         }
 
         callViewElement.createChild("span", "canvas-function-name").textContent = call.functionName || "context." + call.property;

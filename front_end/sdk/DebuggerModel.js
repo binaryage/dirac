@@ -63,7 +63,7 @@ WebInspector.DebuggerModel = function(target)
     this._applySkipStackFrameSettings();
 }
 
-/** @typedef {{location: ?WebInspector.DebuggerModel.Location, functionName: string, scopeChain: (Array.<!DebuggerAgent.Scope>|null)}} */
+/** @typedef {{location: ?WebInspector.DebuggerModel.Location, sourceURL: ?string, functionName: string, scopeChain: (Array.<!DebuggerAgent.Scope>|null)}} */
 WebInspector.DebuggerModel.FunctionDetails;
 
 /**
@@ -550,7 +550,7 @@ WebInspector.DebuggerModel.prototype = {
     },
 
     /**
-     * @param {!DebuggerAgent.ScriptId} scriptId
+     * @param {?DebuggerAgent.ScriptId} scriptId
      * @param {string} sourceUrl
      * @param {number} lineNumber
      * @param {number} columnNumber
@@ -558,20 +558,8 @@ WebInspector.DebuggerModel.prototype = {
      */
     createRawLocationByScriptId: function(scriptId, sourceUrl, lineNumber, columnNumber)
     {
-        var script = this.scriptForId(scriptId);
+        var script = scriptId ? this.scriptForId(scriptId) : null;
         return script ? this.createRawLocation(script, lineNumber, columnNumber) : this.createRawLocationByURL(sourceUrl, lineNumber, columnNumber);
-    },
-
-    /**
-     * @param {!ConsoleAgent.CallFrame} callFrame
-     * @return {!WebInspector.DebuggerModel.Location}
-     */
-    createRawLocationByConsoleCallFrame: function(callFrame)
-    {
-        // FIXME(62725): console stack trace line/column numbers are one-based.
-        var lineNumber = callFrame.lineNumber ? callFrame.lineNumber - 1 : 0;
-        var columnNumber = callFrame.columnNumber ? callFrame.columnNumber - 1 : 0;
-        return new WebInspector.DebuggerModel.Location(this.target(), callFrame.scriptId, lineNumber, columnNumber);
     },
 
     /**
@@ -740,7 +728,8 @@ WebInspector.DebuggerModel.prototype = {
             var location = response.location;
             var script = this.scriptForId(location.scriptId);
             var rawLocation = script ? this.createRawLocation(script, location.lineNumber + 1, location.columnNumber + 1) : null;
-            callback({location: rawLocation, functionName: response.functionName, scopeChain: response.scopeChain || null});
+            var sourceURL = script ? script.contentURL() : null;
+            callback({location: rawLocation, sourceURL: sourceURL, functionName: response.functionName, scopeChain: response.scopeChain || null});
         }
     },
 

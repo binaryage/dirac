@@ -1490,7 +1490,7 @@ WebInspector.AllocationGridNode.prototype = {
         var target = this._dataGrid.target();
         if (allocationNode.scriptId) {
             var linkifier = this._dataGrid._linkifier;
-            var urlElement = linkifier.linkifyLocationByScriptId(target, String(allocationNode.scriptId), allocationNode.scriptName, allocationNode.line - 1, allocationNode.column - 1, "profile-node-file");
+            var urlElement = linkifier.linkifyScriptLocation(target, String(allocationNode.scriptId), allocationNode.scriptName, allocationNode.line - 1, allocationNode.column - 1, "profile-node-file");
             urlElement.style.maxWidth = "75%";
             cell.insertBefore(urlElement, cell.firstChild);
         }

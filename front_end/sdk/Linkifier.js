@@ -51,6 +51,7 @@ WebInspector.LinkifierFormatter.prototype = {
 WebInspector.Linkifier = function(formatter)
 {
     this._formatter = formatter || new WebInspector.Linkifier.DefaultFormatter(WebInspector.Linkifier.MaxLengthForDisplayedURLs);
+    /** @type {!Map.<!WebInspector.Target, !Array.<{anchor: !Element, location: !WebInspector.LiveLocation}>>}*/
     this._liveLocationsByTarget = new Map();
     WebInspector.targetManager.observeTargets(this);
 }
@@ -142,57 +143,50 @@ WebInspector.Linkifier.prototype = {
 
     /**
      * @param {?WebInspector.Target} target
-     * @param {string} scriptId
+     * @param {?string} scriptId
      * @param {string} sourceURL
      * @param {number} lineNumber
      * @param {number=} columnNumber
      * @param {string=} classes
-     * @return {?Element}
+     * @return {!Element}
      */
-    linkifyLocationByScriptId: function(target, scriptId, sourceURL, lineNumber, columnNumber, classes)
+    linkifyScriptLocation: function(target, scriptId, sourceURL, lineNumber, columnNumber, classes)
     {
-        var rawLocation = target ? target.debuggerModel.createRawLocationByScriptId(scriptId, sourceURL, lineNumber, columnNumber || 0) : null;
+        var rawLocation = target && !target.isDetached() ? target.debuggerModel.createRawLocationByScriptId(scriptId, sourceURL, lineNumber, columnNumber || 0) : null;
         var fallbackAnchor = WebInspector.linkifyResourceAsNode(sourceURL, lineNumber, classes);
         if (!rawLocation)
             return fallbackAnchor;
 
-        var anchor = this.linkifyRawLocation(rawLocation, classes);
+        var anchor = this._createAnchor(classes);
+        var liveLocation = rawLocation.createLiveLocation(this._updateAnchor.bind(this, anchor));
+        this._liveLocationsByTarget.get(rawLocation.target()).push({anchor: anchor, location: liveLocation});
         anchor.__fallbackAnchor = fallbackAnchor;
         return anchor;
-
-    },
-
-    /**
-     * @param {!WebInspector.Target} target
-     * @param {string} sourceURL
-     * @param {number} lineNumber
-     * @param {number=} columnNumber
-     * @param {string=} classes
-     * @return {?Element}
-     */
-    linkifyLocation: function(target, sourceURL, lineNumber, columnNumber, classes)
-    {
-        var rawLocation = target.debuggerModel.createRawLocationByURL(sourceURL, lineNumber, columnNumber || 0);
-        if (!rawLocation)
-            return WebInspector.linkifyResourceAsNode(sourceURL, lineNumber, classes);
-        return this.linkifyRawLocation(rawLocation, classes);
     },
 
     /**
      * @param {!WebInspector.DebuggerModel.Location} rawLocation
+     * @param {string} fallbackUrl
      * @param {string=} classes
-     * @return {?Element}
+     * @return {!Element}
      */
-    linkifyRawLocation: function(rawLocation, classes)
+    linkifyRawLocation: function(rawLocation, fallbackUrl, classes)
     {
-        // FIXME: this check should not be here.
-        var script = rawLocation.target().debuggerModel.scriptForId(rawLocation.scriptId);
-        if (!script)
-            return null;
-        var anchor = this._createAnchor(classes);
-        var liveLocation = WebInspector.debuggerWorkspaceBinding.createLiveLocation(rawLocation, this._updateAnchor.bind(this, anchor));
-        this._liveLocationsByTarget.get(rawLocation.target()).push({anchor: anchor, location: liveLocation});
-        return anchor;
+        return this.linkifyScriptLocation(rawLocation.target(), rawLocation.scriptId, fallbackUrl, rawLocation.lineNumber, rawLocation.columnNumber, classes);
+    },
+
+    /**
+     * @param {?WebInspector.Target} target
+     * @param {!ConsoleAgent.CallFrame} callFrame
+     * @param {string=} classes
+     * @return {!Element}
+     */
+    linkifyConsoleCallFrame: function(target, callFrame, classes)
+    {
+        // FIXME(62725): console stack trace line/column numbers are one-based.
+        var lineNumber = callFrame.lineNumber ? callFrame.lineNumber - 1 : 0;
+        var columnNumber = callFrame.columnNumber ? callFrame.columnNumber - 1 : 0;
+        return this.linkifyScriptLocation(target, callFrame.scriptId, callFrame.url, lineNumber, columnNumber, classes);
     },
 
     /**

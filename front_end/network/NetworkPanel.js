@@ -1044,11 +1044,10 @@ WebInspector.NetworkLogView.prototype = {
         {
             for (var i = 0; i < stackTrace.length; ++i) {
                 var stackFrame = stackTrace[i];
-                var rawLocation = request.target().debuggerModel.createRawLocationByConsoleCallFrame(stackFrame);
                 var row = document.createElement("tr");
                 row.createChild("td").textContent = stackFrame.functionName || WebInspector.UIString("(anonymous function)");
                 row.createChild("td").textContent = " @ ";
-                row.createChild("td").appendChild(this._linkifier.linkifyRawLocation(rawLocation));
+                row.createChild("td").appendChild(this._linkifier.linkifyConsoleCallFrame(request.target(), stackFrame));
                 framesTable.appendChild(row);
             }
         }
@@ -2774,7 +2773,7 @@ WebInspector.NetworkDataGridNode.prototype = {
 
         case WebInspector.NetworkRequest.InitiatorType.Script:
             if (!this._linkifiedInitiatorAnchor) {
-                this._linkifiedInitiatorAnchor = this._linkifier.linkifyLocation(request.target(), initiator.url, initiator.lineNumber - 1, initiator.columnNumber - 1);
+                this._linkifiedInitiatorAnchor = this._linkifier.linkifyScriptLocation(request.target(), null, initiator.url, initiator.lineNumber - 1, initiator.columnNumber - 1);
                 this._linkifiedInitiatorAnchor.title = "";
             }
             cell.appendChild(this._linkifiedInitiatorAnchor);

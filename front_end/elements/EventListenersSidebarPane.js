@@ -267,7 +267,8 @@ WebInspector.EventListenerBar.prototype = {
     _setFunctionSubtitle: function(linkifier)
     {
         this.subtitleElement.removeChildren();
-        this.subtitleElement.appendChild(linkifier.linkifyRawLocation(this._eventListener.location()));
+        var link = linkifier.linkifyRawLocation(this._eventListener.location(), this._eventListener.sourceName());
+        this.subtitleElement.appendChild(link);
     },
 
     __proto__: WebInspector.ObjectPropertiesSection.prototype

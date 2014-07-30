@@ -410,15 +410,7 @@ WebInspector.TimelineUIUtilsImpl.buildDetailsNode = function(record, linkifier)
 
         // FIXME(62725): stack trace line/column numbers are one-based.
         columnNumber = columnNumber ? columnNumber - 1 : 0;
-        return linkifier.linkifyLocationByScriptId(record.target(), scriptId, url, lineNumber - 1, columnNumber, "timeline-details");
-    }
-
-    /**
-     * @param {!ConsoleAgent.CallFrame} callFrame
-     */
-    function linkifyCallFrame(callFrame)
-    {
-        return linkifyLocation(callFrame.scriptId, callFrame.url, callFrame.lineNumber, callFrame.columnNumber);
+        return linkifier.linkifyScriptLocation(record.target(), scriptId, url, lineNumber - 1, columnNumber, "timeline-details");
     }
 
     /**
@@ -427,9 +419,9 @@ WebInspector.TimelineUIUtilsImpl.buildDetailsNode = function(record, linkifier)
     function linkifyTopCallFrame()
     {
         if (record.stackTrace())
-            return linkifyCallFrame(record.stackTrace()[0]);
+            return linkifier.linkifyConsoleCallFrame(record.target(), record.stackTrace()[0], "timeline-details");
         if (record.callSiteStackTrace())
-            return linkifyCallFrame(record.callSiteStackTrace()[0]);
+            return linkifier.linkifyConsoleCallFrame(record.target(), record.callSiteStackTrace()[0], "timeline-details");
         return null;
     }
 }

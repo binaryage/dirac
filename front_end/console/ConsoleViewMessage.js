@@ -266,7 +266,7 @@ WebInspector.ConsoleViewMessage.prototype = {
             return this._linkifier.linkifyCSSLocation(cssLocation, "console-message-url");
         }
 
-        return this._linkifier.linkifyLocation(target, url, lineNumber, columnNumber, "console-message-url");
+        return this._linkifier.linkifyScriptLocation(target, null, url, lineNumber, columnNumber, "console-message-url");
     },
 
     /**
@@ -277,10 +277,10 @@ WebInspector.ConsoleViewMessage.prototype = {
     {
         console.assert(this._linkifier);
         var target = this._target();
-        if (!this._linkifier || !target)
+        if (!this._linkifier)
             return null;
-        var rawLocation = this._target().debuggerModel.createRawLocationByConsoleCallFrame(callFrame);
-        return this._linkifier.linkifyRawLocation(rawLocation, "console-message-url");
+
+        return this._linkifier.linkifyConsoleCallFrame(target, callFrame, "console-message-url");
     },
 
     /**

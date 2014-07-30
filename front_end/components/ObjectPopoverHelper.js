@@ -81,16 +81,14 @@ WebInspector.ObjectPopoverHelper.prototype = {
             functionName.textContent = response.functionName || WebInspector.UIString("(anonymous function)");
 
             var rawLocation = response.location;
-            var link;
-            if (rawLocation) {
+            var sourceURL = response.sourceURL;
+            if (rawLocation && sourceURL) {
                 this._linkifier = new WebInspector.Linkifier();
-                link = this._linkifier.linkifyRawLocation(rawLocation, "function-location-link");
-            }
-            if (link)
+                var link = this._linkifier.linkifyRawLocation(rawLocation, sourceURL, "function-location-link");
                 title.appendChild(link);
+            }
 
             container.appendChild(popoverContentElement);
-
             popover.show(container, anchorElement);
         }
 

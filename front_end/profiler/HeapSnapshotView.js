@@ -2169,7 +2169,7 @@ WebInspector.HeapAllocationStackView.prototype = {
             var name = frameDiv.createChild("div");
             name.textContent = frame.functionName;
             if (frame.scriptId) {
-                var urlElement = this._linkifier.linkifyLocationByScriptId(this._weakTarget.get(), String(frame.scriptId), frame.scriptName, frame.line - 1, frame.column - 1);
+                var urlElement = this._linkifier.linkifyScriptLocation(this._weakTarget.get(), String(frame.scriptId), frame.scriptName, frame.line - 1, frame.column - 1);
                 frameDiv.appendChild(urlElement);
             }
         }

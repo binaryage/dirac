@@ -457,15 +457,7 @@ WebInspector.TracingTimelineUIUtils.buildDetailsNodeForTraceEvent = function(eve
             return null;
 
         // FIXME(62725): stack trace line/column numbers are one-based.
-        return linkifier.linkifyLocationByScriptId(target, scriptId, url, lineNumber - 1, (columnNumber ||1) - 1, "timeline-details");
-    }
-
-    /**
-     * @param {!ConsoleAgent.CallFrame} callFrame
-     */
-    function linkifyCallFrame(callFrame)
-    {
-        return linkifyLocation(callFrame.scriptId, callFrame.url, callFrame.lineNumber, callFrame.columnNumber);
+        return linkifier.linkifyScriptLocation(target, scriptId, url, lineNumber - 1, (columnNumber ||1) - 1, "timeline-details");
     }
 
     /**
@@ -481,7 +473,7 @@ WebInspector.TracingTimelineUIUtils.buildDetailsNodeForTraceEvent = function(eve
         }
         if (!stackTrace || !stackTrace.length)
             return null;
-        return linkifyCallFrame(stackTrace[0]);
+        return linkifier.linkifyConsoleCallFrame(target, stackTrace[0], "timeline-details");
     }
 }
 
