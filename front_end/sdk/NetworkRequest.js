@@ -59,6 +59,7 @@ WebInspector.NetworkRequest = function(target, requestId, url, documentURL, fram
     this._type = WebInspector.resourceTypes.Other;
     this._contentEncoded = false;
     this._pendingContentCallbacks = [];
+    /** @type {!Array.<!WebInspector.NetworkRequest.WebSocketFrame>} */
     this._frames = [];
 
     this._responseHeaderValues = {};
@@ -84,6 +85,16 @@ WebInspector.NetworkRequest.InitiatorType = {
 
 /** @typedef {!{name: string, value: string}} */
 WebInspector.NetworkRequest.NameValue;
+
+/** @enum {string} */
+WebInspector.NetworkRequest.WebSocketFrameType = {
+    Send: "send",
+    Receive: "receive",
+    Error: "error"
+}
+
+/** @typedef {!{type: WebInspector.NetworkRequest.WebSocketFrameType, time: number, text: string, opCode: number, mask: boolean}} */
+WebInspector.NetworkRequest.WebSocketFrame;
 
 WebInspector.NetworkRequest.prototype = {
     /**
@@ -945,20 +956,11 @@ WebInspector.NetworkRequest.prototype = {
     },
 
     /**
-     * @return {!Array.<!Object>}
+     * @return {!Array.<!WebInspector.NetworkRequest.WebSocketFrame>}
      */
     frames: function()
     {
         return this._frames;
-    },
-
-    /**
-     * @param {number} position
-     * @return {!Object|undefined}
-     */
-    frame: function(position)
-    {
-        return this._frames[position];
     },
 
     /**
@@ -967,7 +969,7 @@ WebInspector.NetworkRequest.prototype = {
      */
     addFrameError: function(errorMessage, time)
     {
-        this._pushFrame({errorMessage: errorMessage, time: time});
+        this._frames.push({ type: WebInspector.NetworkRequest.WebSocketFrameType.Error, text: errorMessage, time: time, opCode: -1, mask: false });
     },
 
     /**
@@ -977,20 +979,8 @@ WebInspector.NetworkRequest.prototype = {
      */
     addFrame: function(response, time, sent)
     {
-        response.time = time;
-        if (sent)
-            response.sent = sent;
-        this._pushFrame(response);
-    },
-
-    /**
-     * @param {!Object} frameOrError
-     */
-    _pushFrame: function(frameOrError)
-    {
-        if (this._frames.length >= 100)
-            this._frames.splice(0, 10);
-        this._frames.push(frameOrError);
+        var type = sent ? WebInspector.NetworkRequest.WebSocketFrameType.Send : WebInspector.NetworkRequest.WebSocketFrameType.Receive;
+        this._frames.push({ type: type, text: response.payloadData, time: time, opCode: response.opcode, mask: response.mask });
     },
 
     __proto__: WebInspector.SDKObject.prototype
