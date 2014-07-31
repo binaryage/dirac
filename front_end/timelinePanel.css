@@ -82,10 +82,6 @@
     overflow-x: hidden;
 }
 
-.timeline-records-view {
-    overflow: hidden !important;
-}
-
 .timeline-details-split {
     flex: auto;
 }
