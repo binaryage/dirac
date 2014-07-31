@@ -14,7 +14,8 @@ WebInspector.TracingTimelineModel = function(tracingModel, recordFilter)
     this._tracingModel = tracingModel;
     this._inspectedTargetEvents = [];
     this._recordFilter = recordFilter;
-
+    this._tracingModel.addEventListener(WebInspector.TracingModel.Events.TracingStarted, this._onTracingStarted, this);
+    this._tracingModel.addEventListener(WebInspector.TracingModel.Events.TracingComplete, this._onTracingComplete, this);
     this.reset();
 }
 
@@ -123,7 +124,7 @@ WebInspector.TracingTimelineModel.prototype = {
 
     stopRecording: function()
     {
-        this._tracingModel.stop(this._didStopRecordingTraceEvents.bind(this));
+        this._tracingModel.stop();
     },
 
     /**
@@ -132,10 +133,9 @@ WebInspector.TracingTimelineModel.prototype = {
      */
     setEventsForTest: function(sessionId, events)
     {
-        this.reset();
-        this._didStartRecordingTraceEvents();
+        this._onTracingStarted();
         this._tracingModel.setEventsForTest(sessionId, events);
-        this._didStopRecordingTraceEvents();
+        this._onTracingComplete();
     },
 
     /**
@@ -144,15 +144,16 @@ WebInspector.TracingTimelineModel.prototype = {
     _startRecordingWithCategories: function(categories)
     {
         this.reset();
-        this._tracingModel.start(categories, "", this._didStartRecordingTraceEvents.bind(this));
+        this._tracingModel.start(categories, "");
     },
 
-    _didStartRecordingTraceEvents: function()
+    _onTracingStarted: function()
     {
+        this.reset();
         this.dispatchEventToListeners(WebInspector.TimelineModel.Events.RecordingStarted);
     },
 
-    _didStopRecordingTraceEvents: function()
+    _onTracingComplete: function()
     {
         var events = this._tracingModel.devtoolsMetadataEvents();
         events.sort(WebInspector.TracingModel.Event.compareStartTime);

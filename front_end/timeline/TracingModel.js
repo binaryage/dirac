@@ -17,7 +17,10 @@ WebInspector.TracingModel = function(target)
 }
 
 WebInspector.TracingModel.Events = {
-    "BufferUsage": "BufferUsage"
+    "BufferUsage": "BufferUsage",
+    "TracingStarted": "TracingStarted",
+    "TracingStopped": "TracingStopped",
+    "TracingComplete": "TracingComplete"
 }
 
 /** @typedef {!{
@@ -92,32 +95,15 @@ WebInspector.TracingModel.prototype = {
         this.target().profilingLock.acquire();
         this.reset();
         var bufferUsageReportingIntervalMs = 500;
-        /**
-         * @param {?string} error
-         * @param {string} sessionId
-         * @this {WebInspector.TracingModel}
-         */
-        function callbackWrapper(error, sessionId)
-        {
-            this._sessionId = sessionId;
-            if (callback)
-                callback(error);
-        }
-        TracingAgent.start(categoryFilter, options, bufferUsageReportingIntervalMs, callbackWrapper.bind(this));
+        TracingAgent.start(categoryFilter, options, bufferUsageReportingIntervalMs, callback);
         this._active = true;
     },
 
-    /**
-     * @param {function()} callback
-     */
-    stop: function(callback)
+    stop: function()
     {
-        if (!this._active) {
-            callback();
+        if (!this._active)
             return;
-        }
-        this._pendingStopCallback = callback;
-        TracingAgent.end();
+        TracingAgent.end(this._onStop.bind(this));
         this.target().profilingLock.release();
     },
 
@@ -138,7 +124,6 @@ WebInspector.TracingModel.prototype = {
         this.reset();
         this._sessionId = sessionId;
         this._eventsCollected(events);
-        this._tracingComplete();
     },
 
     /**
@@ -161,10 +146,24 @@ WebInspector.TracingModel.prototype = {
     _tracingComplete: function()
     {
         this._active = false;
-        if (!this._pendingStopCallback)
-            return;
-        this._pendingStopCallback();
-        this._pendingStopCallback = null;
+        this.dispatchEventToListeners(WebInspector.TracingModel.Events.TracingComplete);
+    },
+
+    /**
+     * @param {string} sessionId
+     */
+    _tracingStarted: function(sessionId)
+    {
+        this.reset();
+        this._active = true;
+        this._sessionId = sessionId;
+        this.dispatchEventToListeners(WebInspector.TracingModel.Events.TracingStarted);
+    },
+
+    _onStop: function()
+    {
+        this.dispatchEventToListeners(WebInspector.TracingModel.Events.TracingStopped);
+        this._active = false;
     },
 
     reset: function()
@@ -579,5 +578,19 @@ WebInspector.TracingDispatcher.prototype = {
     tracingComplete: function()
     {
         this._tracingModel._tracingComplete();
+    },
+
+    /**
+     * @param {boolean} consoleTimeline
+     * @param {string} sessionId
+     */
+    started: function(consoleTimeline, sessionId)
+    {
+        this._tracingModel._tracingStarted(sessionId);
+    },
+
+    stopped: function()
+    {
+        this._tracingModel._onStop();
     }
 }

@@ -976,6 +976,13 @@
                     { "name": "heapObjectId", "type": "integer" }
                 ],
                 "hidden": true
+            },
+            {
+                "name": "setTracingBasedTimeline",
+                "parameters": [
+                    { "name": "enabled", "type": "boolean", "description": "Switch console.timeline to tracing based." }
+                ],
+                "hidden": true
             }
         ],
         "events": [
@@ -4188,15 +4195,12 @@
                     { "name": "options", "type": "string", "description": "Tracing options" },
                     { "name": "bufferUsageReportingInterval", "type": "number", "optional": true, "description": "If set, the agent will issue bufferUsage events at this interval, specified in milliseconds" }
                 ],
-                "returns": [
-                    { "name": "sessionId", "type": "string", "description": "A system-unique identifier of the tracing session that allows associating of some of the trace events with the inspected page" }
-                ],
                 "handlers": ["browser", "renderer", "frontend"]
             },
             {
                 "name": "end",
                 "description": "Stop trace events collection.",
-                "handlers": ["browser", "frontend"]
+                "handlers": ["browser", "renderer", "frontend"]
             },
             {
                 "name": "getCategories",
@@ -4208,6 +4212,22 @@
             }
         ],
         "events": [
+            {
+                "name": "started",
+                "parameters": [
+                    { "name": "consoleTimeline", "type": "boolean", "description": "If specified, identifies that tracing was started using console.timeline() call." },
+                    { "name": "sessionId", "type": "string", "description": "A system-unique identifier of the tracing session that allows associating of some of the trace events with the inspected page" }
+                ],
+                "description": "Fired when tracing is started.",
+                "handlers": ["renderer", "browser", "frontend"],
+                "hidden": true
+            },
+            {
+                "name": "stopped",
+                "description": "Fired when tracing is stopped.",
+                "handlers": ["renderer", "browser", "frontend"],
+                "hidden": true
+            },
             {
                 "name": "dataCollected",
                 "parameters": [
