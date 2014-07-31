@@ -38,7 +38,7 @@
     background: white;
 }
 
-.profile-view .data-grid tr:not(.filler):hover td {
+.profile-view .data-grid tr:hover td:not(.bottom-filler-td) {
     background-color: rgba(0, 0, 0, 0.1);
 }
 

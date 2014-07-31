@@ -81,9 +81,9 @@ WebInspector.DataGrid = function(columnsArray, editCallback, deleteCallback, ref
     this._dataTableColumnGroup = document.createElement("colgroup");
 
     /** @type {!Element} */
-    this._topFillerRow = document.createElementWithClass("tr", "filler");
+    this._topFillerRow = document.createElementWithClass("tr", "revealed");
     /** @type {!Element} */
-    this._bottomFillerRow = document.createElementWithClass("tr", "filler");
+    this._bottomFillerRow = document.createElementWithClass("tr", "revealed");
     this.setVerticalPadding(0, 0);
 
     /** @type {!Array.<!WebInspector.DataGrid.ColumnDescriptor>} */
@@ -195,13 +195,13 @@ WebInspector.DataGrid.prototype = {
                 dataColumn.style.width = column.width;
             }
             this._headerRow.appendChild(this._headerTableHeaders[columnIdentifier]);
-            this._topFillerRow.createChild("td", columnIdentifier + "-column");
-            this._bottomFillerRow.createChild("td", columnIdentifier + "-column");
+            this._topFillerRow.createChild("td", "top-filler-td");
+            this._bottomFillerRow.createChild("td", "bottom-filler-td");
         }
 
         this._headerRow.createChild("th", "corner");
-        this._topFillerRow.createChild("td", "corner");
-        this._bottomFillerRow.createChild("td", "corner");
+        this._topFillerRow.createChild("td", "corner").classList.add("top-filler-td");
+        this._bottomFillerRow.createChild("td", "corner").classList.add("bottom-filler-td");
         this._headerTableColumnGroup.createChild("col", "corner");
         this._dataTableColumnGroup.createChild("col", "corner");
     },

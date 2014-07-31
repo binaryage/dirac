@@ -107,11 +107,11 @@
     display: none;
 }
 
-.network-log-grid.data-grid tr.filler {
+.network-log-grid.data-grid .bottom-filler-td {
     background-color: white;
 }
 
-.network-log-grid.data-grid tr:not(.filler) td.name-column {
+.network-log-grid.data-grid .name-column {
     cursor: pointer;
 }
 

@@ -65,12 +65,8 @@
     border-left: 0 none transparent !important;
 }
 
-.data-grid tr.filler {
-    display: table-row !important;
-    height: 0;
-}
-
-.data-grid tr.filler td {
+.data-grid .top-filler-td,
+.data-grid .bottom-filler-td {
     height: auto !important;
     padding: 0 !important;
 }
