@@ -62,10 +62,6 @@
     background: inherit;
 }
 
-.network.panel:not(.viewing-resource) .sidebar-resizer-vertical {
-    display: none;
-}
-
 .network.panel .data-grid th.sort-descending,
 .network.panel .data-grid th.sort-ascending {
     background: white;

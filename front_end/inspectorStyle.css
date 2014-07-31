@@ -1972,14 +1972,6 @@ button.show-all-nodes:active {
     height: 100%;
 }
 
-.sidebar-resizer-vertical {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    width: 5px;
-    z-index: 500;
-}
-
 .sidebar-tree,
 .sidebar-tree .children {
     position: relative;
