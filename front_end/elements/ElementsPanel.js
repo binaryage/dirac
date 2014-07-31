@@ -628,7 +628,7 @@ WebInspector.ElementsPanel.prototype = {
 
     _hideSearchHighlights: function()
     {
-        if (!this._searchResults || this._currentSearchResultIndex < 0)
+        if (!this._searchResults || !this._searchResults.length || this._currentSearchResultIndex < 0)
             return;
         var searchResult = this._searchResults[this._currentSearchResultIndex];
         if (!searchResult.node)
