@@ -322,6 +322,7 @@ WebInspector.FileSystemWorkspaceBinding.FileSystem.prototype = {
             var slash = filePath.lastIndexOf("/");
             var parentPath = filePath.substring(0, slash);
             filePath = parentPath + "/" + validNewName;
+            filePath = filePath.substr(1);
             var newURL = this._workspace.urlForPath(this._fileSystem.path(), filePath);
             var extension = this._extensionForPath(validNewName);
             var newOriginURL = this._fileSystemURL + filePath
