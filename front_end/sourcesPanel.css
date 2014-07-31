@@ -173,24 +173,6 @@
     font-weight: bold;
 }
 
-.workers-list > li {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    margin-left: 1em;
-    font-size: 12px;
-}
-
-a.worker-item {
-    color: rgb(33%, 33%, 33%);
-    cursor: pointer;
-    text-decoration: none;
-}
-
-a.worker-item:hover {
-    color: rgb(15%, 15%, 15%);
-}
-
 .panel.sources .sidebar-pane-stack {
     overflow: auto;
 }

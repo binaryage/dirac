@@ -2375,12 +2375,6 @@ body.inactive .sidebar-tree-item.selected {
     background-color: rgb(255, 255, 194);
 }
 
-.workers-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-}
-
 .resource-content-unavailable {
     color: rgb(50%, 50%, 50%);
     font-style: italic;
