@@ -330,7 +330,7 @@ WebInspector.JavaScriptSourceFrame.prototype = {
         if (this._uiSourceCode.project().type() === WebInspector.projectTypes.Network && WebInspector.settings.jsSourceMapsEnabled.get()) {
             if (this._scriptFileForTarget.size()) {
                 var scriptFile = this._scriptFileForTarget.values()[0];
-                var addSourceMapURLLabel = WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Add source map" : "Add Source Map");
+                var addSourceMapURLLabel = WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Add source map\u2026" : "Add Source Map\u2026");
                 contextMenu.appendItem(addSourceMapURLLabel, addSourceMapURL.bind(this, scriptFile));
                 contextMenu.appendSeparator();
             }

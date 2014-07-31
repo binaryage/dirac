@@ -1,22 +1,25 @@
-.filtered-item-list-dialog > input {
-    font-size: 11px;
-    width: 100%;
-    height: 24px;
+.filtered-item-list-dialog {
+    display: flex;
+    flex-direction: column;
+}
+
+.filtered-item-list-dialog > input[type=text] {
+    flex: 0 0 36px;
+    border: 0;
+    box-shadow: rgb(140, 140, 140) 0 1px 2px;
+    margin: 0 !important;
+    padding-left: 6px !important;
 }
 
 .filtered-item-list-dialog > div.container {
-    position: absolute;
-    top: 38px;
-    bottom: 10px;
-    left: 10px;
-    right: 10px;
+    flex: auto;
     overflow-y: auto;
-    border: 1px solid rgb(187, 187, 187);
-    background-color: white;
+    margin-top: 5px;
+    background: white;
 }
 
 .filtered-item-list-dialog-item {
-    padding: 2px;
+    padding: 6px;
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
@@ -24,7 +27,7 @@
 }
 
 .filtered-item-list-dialog-item.selected {
-    background-color: rgb(224, 224, 224);
+    background-color: rgb(238, 238, 238);
 }
 
 .filtered-item-list-dialog-item span.highlight {

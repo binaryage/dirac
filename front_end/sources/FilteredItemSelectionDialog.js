@@ -54,7 +54,6 @@ WebInspector.FilteredItemSelectionDialog = function(delegate)
 
     this._filteredItems = [];
     this._viewportControl = new WebInspector.ViewportControl(this);
-    this._viewportControl.element.classList.add("fill");
     this._itemElementsContainer = this._viewportControl.element;
     this._itemElementsContainer.classList.add("container");
     this._itemElementsContainer.classList.add("monospace");

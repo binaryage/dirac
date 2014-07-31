@@ -208,10 +208,8 @@
     height: 20px;
 }
 
-.custom-device-title-dialog input {
-    margin: 0 5px;
-    line-height: 18px;
-    padding: 0 2px;
+.custom-device-title-dialog {
+    padding: 10px;
 }
 
 /* Media tab */
