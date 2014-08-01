@@ -5,12 +5,6 @@
     -webkit-user-select: none;
 }
 
-.spectrum-top {
-    position: relative;
-    width: 100%;
-    display: inline-block;
-}
-
 .spectrum-color {
     position: absolute;
     top: 5px;
@@ -33,11 +27,6 @@
     width: 28px;
     height: 158px;
     -webkit-box-reflect: right -28px;
-}
-
-.spectrum-fill {
-    /* Same as spectrum-color width to force aspect ratio. */
-    margin-top: 150px;
 }
 
 .spectrum-range-container {
