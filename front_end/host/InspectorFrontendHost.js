@@ -637,6 +637,8 @@ function InspectorFrontendAPIImpl()
 {
     this._isLoaded = false;
     this._pendingCommands = [];
+    this._debugFrontend = !!WebInspector.queryParam("debugFrontend");
+    this._debugCalls = [];
 
     var descriptors = InspectorFrontendHostAPI.EventDescriptors;
     for (var i = 0; i < descriptors.length; ++i)
@@ -662,23 +664,44 @@ InspectorFrontendAPIImpl.prototype = {
     _dispatch: function(name, signature, runOnceLoaded)
     {
         var params = Array.prototype.slice.call(arguments, 3);
-        if (runOnceLoaded)
-            this._runOnceLoaded(dispatchAfterLoad);
-        else
-            dispatchAfterLoad();
 
-        function dispatchAfterLoad()
-        {
-            // Single argument methods get dispatched with the param.
-            if (signature.length < 2) {
-                InspectorFrontendHost.events.dispatchEventToListeners(name, params[0]);
-                return;
-            }
-            var data = {};
-            for (var i = 0; i < signature.length; ++i)
-                data[signature[i]] = params[i];
-            InspectorFrontendHost.events.dispatchEventToListeners(name, data);
+        if (this._debugFrontend) {
+            this._debugCalls.push(innerDispatch.bind(this));
+            if (this._debugCalls.length === 1)
+                window.setTimeout(this._onDebugTimeout.bind(this), 0);
+        } else {
+            innerDispatch.call(this);
         }
+
+        /**
+         * @this {!InspectorFrontendAPIImpl}
+         */
+        function innerDispatch()
+        {
+            if (runOnceLoaded)
+                this._runOnceLoaded(dispatchAfterLoad);
+            else
+                dispatchAfterLoad();
+
+            function dispatchAfterLoad()
+            {
+                // Single argument methods get dispatched with the param.
+                if (signature.length < 2) {
+                    InspectorFrontendHost.events.dispatchEventToListeners(name, params[0]);
+                    return;
+                }
+                var data = {};
+                for (var i = 0; i < signature.length; ++i)
+                    data[signature[i]] = params[i];
+                InspectorFrontendHost.events.dispatchEventToListeners(name, data);
+            }
+        }
+    },
+
+    _onDebugTimeout: function()
+    {
+        while (this._debugCalls.length)
+            this._debugCalls.shift()();
     },
 
     /**
