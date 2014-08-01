@@ -151,18 +151,6 @@
     white-space: nowrap;
 }
 
-.overrides-device-value {
-    padding-left: 10px;
-    color: gray;
-}
-
-.overrides-device-value-label {
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    margin-top: 10px;
-}
-
 .overrides-device button {
     margin: 0 3px;
 }
