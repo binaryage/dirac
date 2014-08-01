@@ -27,10 +27,6 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-.resources.panel .sidebar-resizer-vertical {
-    top: 23px;
-}
-
 .resources.panel .sidebar {
     padding-left: 0;
     z-index: 10;
