@@ -419,10 +419,6 @@ body.undocked.platform-mac.inactive .toolbar-colors {
     background-position: -160px -96px;
 }
 
-body.undocked .toolbar-item .close-button {
-    display: none;
-}
-
 .panel-status-bar {
     border-top: none;
     display: flex;
@@ -1319,18 +1315,6 @@ iframe.extension {
 iframe.panel.extension {
     display: block;
     height: 100%;
-}
-
-.webkit-line-gutter-backdrop {
-    /* Keep this in sync with view-source.css (.webkit-line-gutter-backdrop) */
-    width: 31px;
-    background-color: rgb(240, 240, 240);
-    border-right: 1px solid rgb(187, 187, 187);
-    position: absolute;
-    z-index: -1;
-    left: 0;
-    top: 0;
-    height: 100%
 }
 
 .outline-disclosure li.hovered:not(.selected) .selection {

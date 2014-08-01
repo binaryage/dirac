@@ -314,10 +314,6 @@
     margin-right: 5px;
 }
 
-.network-graph-label.waiting-right {
-    margin-left: 5px;
-}
-
 .network-graph-label.before {
     color: rgba(0, 0, 0, 0.7);
     text-shadow: none;
@@ -361,8 +357,7 @@
     background: linear-gradient(0deg, hsl(0, 0%, 73%), hsl(0, 0%, 78%));
 }
 
-.network-graph-bar.waiting,
-.network-graph-bar.waiting-right {
+.network-graph-bar.waiting {
     opacity: 0.35;
 }
 
@@ -566,12 +561,6 @@
 
 .network-timeline-grid .resources-dividers-label-bar .resources-divider:first-child {
     background-color: transparent;
-}
-
-/* Filters */
-
-.network-log-grid.data-grid table.data tr.revealed.filtered-out {
-    display: none;
 }
 
 #network-container {

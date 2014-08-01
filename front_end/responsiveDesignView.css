@@ -422,10 +422,6 @@ body.platform-mac .responsive-design-toolbar select {
     margin: 2px 0 2px 0;
 }
 
-.media-inspector-min-width-label-container {
-    position: relative;
-}
-
 .media-inspector-marker {
     position: absolute;
     top: 0px;

@@ -1343,7 +1343,7 @@ WebInspector.DatabaseTreeElement.prototype = {
  */
 WebInspector.DatabaseTableTreeElement = function(storagePanel, database, tableName)
 {
-    WebInspector.BaseStorageTreeElement.call(this, storagePanel, null, tableName, ["database-storage-tree-item"]);
+    WebInspector.BaseStorageTreeElement.call(this, storagePanel, null, tableName, ["database-table-storage-tree-item"]);
     this._database = database;
     this._tableName = tableName;
 }
