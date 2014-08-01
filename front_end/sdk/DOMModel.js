@@ -1414,9 +1414,8 @@ WebInspector.DOMModel.prototype = {
              */
             function callback(error, searchId, resultsCount)
             {
-                if (error)
-                    return;
-                this._searchId = searchId;
+                if (!error)
+                    this._searchId = searchId;
                 resolve(error ? 0 : resultsCount);
             }
         }
