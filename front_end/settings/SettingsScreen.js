@@ -482,21 +482,6 @@ WebInspector.WorkspaceSettingsTab.prototype = {
     },
 
     /**
-     * @param {function(!Event)} handler
-     * @return {!Element}
-     */
-    _createRemoveButton: function(handler)
-    {
-        var removeButton = document.createElementWithClass("button", "button remove-item-button");
-        removeButton.value = WebInspector.UIString("Remove");
-        if (handler)
-            removeButton.addEventListener("click", handler, false);
-        else
-            removeButton.disabled = true;
-        return removeButton;
-    },
-
-    /**
      * @param {!Element} columnElement
      * @param {{id: string, placeholder: (string|undefined), options: (!Array.<string>|undefined)}} column
      * @param {?string} id
@@ -848,8 +833,7 @@ WebInspector.SettingsList.prototype = {
      */
     _createRemoveButton: function(handler)
     {
-        var removeButton = document.createElementWithClass("button", "remove-item-button");
-        removeButton.value = WebInspector.UIString("Remove");
+        var removeButton = document.createElementWithClass("div", "remove-item-button");
         removeButton.addEventListener("click", handler, false);
         return removeButton;
     },
