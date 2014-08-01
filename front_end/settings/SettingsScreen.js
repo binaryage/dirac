@@ -635,7 +635,7 @@ WebInspector.SettingsController = function()
     /** @type {?WebInspector.SettingsScreen} */
     this._settingsScreen;
 
-    window.addEventListener("resize", this._resize.bind(this), true);
+    window.addEventListener("resize", this._resize.bind(this), false);
 }
 
 WebInspector.SettingsController.prototype = {

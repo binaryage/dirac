@@ -211,7 +211,7 @@ WebInspector.Main.prototype = {
         }
 
         var canDock = !!WebInspector.queryParam("can_dock");
-        WebInspector.zoomManager = new WebInspector.ZoomManager();
+        WebInspector.zoomManager = new WebInspector.ZoomManager(InspectorFrontendHost);
         WebInspector.inspectorView = new WebInspector.InspectorView();
         WebInspector.ContextMenu.initialize();
         WebInspector.dockController = new WebInspector.DockController(canDock);

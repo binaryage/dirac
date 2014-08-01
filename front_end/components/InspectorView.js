@@ -473,7 +473,7 @@ WebInspector.RootView = function()
     this.markAsRoot();
     this.element.classList.add("root-view");
     this.element.setAttribute("spellcheck", false);
-    window.addEventListener("resize", this.doResize.bind(this), true);
+    window.addEventListener("resize", this.doResize.bind(this), false);
     this._onScrollBound = this._onScroll.bind(this);
 };
 

@@ -249,7 +249,7 @@ WebInspector.Toolbox = function()
     if (!window.opener)
         return;
 
-    WebInspector.zoomManager = window.opener.WebInspector.zoomManager;
+    WebInspector.zoomManager = new WebInspector.ZoomManager(window.opener.InspectorFrontendHost);
     WebInspector.overridesSupport = window.opener.WebInspector.overridesSupport;
     WebInspector.settings = window.opener.WebInspector.settings;
     WebInspector.experimentsSettings = window.opener.WebInspector.experimentsSettings;
