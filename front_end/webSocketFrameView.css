@@ -25,32 +25,21 @@
 .websocket-frame-view td {
     padding-top: 3px;
     padding-bottom: 3px;
-    border-top: 1px solid rgb(240, 240, 240);
+    border-bottom: 1px solid #aaa;
+}
+
+.websocket-frame-view .top-filler-td,
+.websocket-frame-view .bottom-filler-td {
+    border-bottom: none;
 }
 
 .websocket-frame-view-row-outcoming {
     background-color: rgb(226, 247, 218);
 }
 
-.websocket-frame-view-row-outcoming:not(.selected) td {
-    border-left-color: rgb(177, 209, 165);
-}
-
-.websocket-frame-view-row-outcoming:not(.selected) td, .websocket-frame-view-row-outcoming:not(.selected) + tr td {
-    border-top-color: rgb(199, 236, 185);
-}
-
 .websocket-frame-view-row-opcode {
     background-color: rgb(255, 255, 232);
     color: rgb(170, 111, 71);
-}
-
-.websocket-frame-view-row-opcode td {
-    border-color: rgb(211, 187, 171);
-}
-
-.websocket-frame-view-row-opcode td, .websocket-frame-view-row-opcode + tr td {
-    border-top-color: rgb(248, 240, 210);
 }
 
 .websocket-frame-view-row-error {
