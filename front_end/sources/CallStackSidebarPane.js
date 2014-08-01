@@ -37,6 +37,7 @@ WebInspector.CallStackSidebarPane = function()
     asyncCheckbox.classList.add("scripts-callstack-async");
     asyncCheckbox.addEventListener("click", consumeEvent, false);
     WebInspector.settings.enableAsyncStackTraces.addChangeListener(this._asyncStackTracesStateChanged, this);
+    WebInspector.settings.skipStackFramesPattern.addChangeListener(this._blackboxingStateChanged, this);
 }
 
 WebInspector.CallStackSidebarPane.Events = {
@@ -154,6 +155,10 @@ WebInspector.CallStackSidebarPane.prototype = {
             contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Restart frame" : "Restart Frame"), this._restartFrame.bind(this, placard));
 
         contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Copy stack trace" : "Copy Stack Trace"), this._copyStackTrace.bind(this));
+
+        contextMenu.appendSeparator();
+        this.appendBlackboxURLContextMenuItems(contextMenu, placard._callFrame.script.sourceURL);
+
         contextMenu.show();
     },
 
@@ -170,6 +175,75 @@ WebInspector.CallStackSidebarPane.prototype = {
                 break;
             }
         }
+    },
+
+    /**
+     * @param {!WebInspector.ContextMenu} contextMenu
+     * @param {string} url
+     */
+    appendBlackboxURLContextMenuItems: function(contextMenu, url)
+    {
+        if (!WebInspector.experimentsSettings.frameworksDebuggingSupport.isEnabled())
+            return;
+        if (!url)
+            return;
+        var regex = WebInspector.settings.skipStackFramesPattern.asRegExp();
+        var blackboxed = regex ? regex.test(url) : false;
+        if (blackboxed)
+            contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Stop blackboxing" : "Stop Blackboxing"), this._handleContextMenuBlackboxURL.bind(this, url, false));
+        else
+            contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Blackbox script" : "Blackbox Script"), this._handleContextMenuBlackboxURL.bind(this, url, true));
+    },
+
+    /**
+     * @param {string} url
+     * @param {boolean} blackbox
+     */
+    _handleContextMenuBlackboxURL: function(url, blackbox)
+    {
+        var regexPatterns = WebInspector.settings.skipStackFramesPattern.getAsArray();
+        if (blackbox) {
+            var name = new WebInspector.ParsedURL(url).lastPathComponent;
+            var regexValue = "/" + name.escapeForRegExp() + (url.endsWith(name) ? "$" : "\\b");
+            var found = false;
+            for (var i = 0; i < regexPatterns.length; ++i) {
+                var item = regexPatterns[i];
+                if (item.pattern === regexValue) {
+                    item.disabled = false;
+                    found = true;
+                    break;
+                }
+            }
+            if (!found)
+                regexPatterns.push({ pattern: regexValue });
+            WebInspector.settings.skipStackFramesPattern.setAsArray(regexPatterns);
+        } else {
+            for (var i = 0; i < regexPatterns.length; ++i) {
+                var item = regexPatterns[i];
+                if (item.disabled)
+                    continue;
+                try {
+                    var regex = new RegExp(item.pattern);
+                    if (regex.test(url))
+                        item.disabled = true;
+                } catch (e) {
+                }
+            }
+            WebInspector.settings.skipStackFramesPattern.setAsArray(regexPatterns);
+        }
+    },
+
+    _blackboxingStateChanged: function()
+    {
+        if (!this._target)
+            return;
+        var details = this._target.debuggerModel.debuggerPausedDetails();
+        if (!details)
+            return;
+        this.update(details);
+        var selectedCallFrame = this._target.debuggerModel.selectedCallFrame();
+        if (selectedCallFrame)
+            this.setSelectedCallFrame(selectedCallFrame);
     },
 
     /**
