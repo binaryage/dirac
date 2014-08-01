@@ -106,14 +106,6 @@ iframe.view {
     background-color: rgba(0, 0, 0, 0.1);
 }
 
-.resources-event-divider-padding {
-    position: absolute;
-    width: 8px;
-    top: 0;
-    bottom: 0;
-    pointer-events: auto;
-}
-
 .resources-event-divider {
     position: absolute;
     width: 2px;
