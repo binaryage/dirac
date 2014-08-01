@@ -64,37 +64,3 @@
     margin-bottom: -24px;
     background-position: 0 -19px;
 }
-
-.popover.left-top-arrow .arrow {
-    top: 0;
-    margin-top: 15px;
-    margin-left: -24px;
-    background-position: 0 -38px;
-}
-
-.popover.left-bottom-arrow .arrow {
-    top: auto;
-    bottom: 0;
-    margin-bottom: 15px;
-    margin-left: -24px;
-    background-position: 0 -38px;
-}
-
-.popover.right-top-arrow .arrow {
-    right: 0;
-    left: auto;
-    top: 0;
-    margin-top: 15px;
-    margin-right: -24px;
-    background-position: 0 -57px;
-}
-
-.popover.right-bottom-arrow .arrow {
-    right: 0;
-    left: auto;
-    top: auto;
-    bottom: 0;
-    margin-bottom: 15px;
-    margin-right: -24px;
-    background-position: 0 -57px;
-}
