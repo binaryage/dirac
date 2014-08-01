@@ -261,7 +261,7 @@ WebInspector.TracingModel.Event = function(payload, level, thread)
     this.phase = payload.ph;
     this.level = level;
 
-    if (payload.dur)
+    if (typeof payload.dur === "number")
         this._setEndTime((payload.ts + payload.dur) / 1000);
 
     if (payload.id)
@@ -306,7 +306,7 @@ WebInspector.TracingModel.Event.prototype = {
     _complete: function(payload)
     {
         if (this.name !== payload.name) {
-            console.assert(false, "Open/close event mismatch: " + this.name + " vs. " + payload.name);
+            console.assert(false, "Open/close event mismatch: " + this.name + " vs. " + payload.name + " at " + (payload.ts / 1000));
             return;
         }
         if (payload.args) {
@@ -495,17 +495,25 @@ WebInspector.TracingModel.Thread.prototype = {
      */
     addEvent: function(payload)
     {
-        for (var top = this._stack.peekLast(); top && top.endTime && top.endTime <= payload.ts / 1000;) {
+        var timestamp = payload.ts / 1000;
+        for (var top = this._stack.peekLast(); top;) {
+            // For B/E pairs, ignore time and look for top matching B event,
+            // otherwise, only pop event if it's definitely is in the past.
+            if (payload.ph === WebInspector.TracingModel.Phase.End) {
+                if (payload.name === top.name) {
+                    top._complete(payload);
+                    this._stack.pop();
+                    return null;
+                }
+            } else if (top.phase === WebInspector.TracingModel.Phase.Begin || (top.endTime && (top.endTime > timestamp))) {
+                break;
+            }
             this._stack.pop();
             top = this._stack.peekLast();
         }
-        if (payload.ph === WebInspector.TracingModel.Phase.End) {
-            var openEvent = this._stack.pop();
-            // Quietly ignore unbalanced close events, they're legit (we could have missed start one).
-            if (openEvent)
-                openEvent._complete(payload);
+        // Quietly ignore unbalanced close events, they're legit (we could have missed start one).
+        if (payload.ph === WebInspector.TracingModel.Phase.End)
             return null;
-        }
 
         var event = new WebInspector.TracingModel.Event(payload, this._stack.length, this);
         if (payload.ph === WebInspector.TracingModel.Phase.Begin || payload.ph === WebInspector.TracingModel.Phase.Complete) {
