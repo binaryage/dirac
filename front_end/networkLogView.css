@@ -103,10 +103,6 @@
     color: inherit;
 }
 
-.network-log-grid.data-grid tr.offscreen > td > div {
-    display: none;
-}
-
 .network-log-grid.data-grid .bottom-filler-td {
     background-color: white;
 }
