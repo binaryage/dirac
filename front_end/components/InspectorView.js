@@ -474,7 +474,6 @@ WebInspector.RootView = function()
     this.element.classList.add("root-view");
     this.element.setAttribute("spellcheck", false);
     window.addEventListener("resize", this.doResize.bind(this), false);
-    this._onScrollBound = this._onScroll.bind(this);
 };
 
 WebInspector.RootView.prototype = {
@@ -484,31 +483,15 @@ WebInspector.RootView.prototype = {
         this.show(document.body);
     },
 
-    _onScroll: function()
-    {
-        // If we didn't have enough space at the start, we may have wrong scroll offsets.
-        if (document.body.scrollTop !== 0)
-            document.body.scrollTop = 0;
-        if (document.body.scrollLeft !== 0)
-            document.body.scrollLeft = 0;
-    },
-
     doResize: function()
     {
         var size = this.constraints().minimum;
         var zoom = WebInspector.zoomManager.zoomFactor();
         var right = Math.min(0, window.innerWidth - size.width / zoom);
-        this.element.style.right = right + "px";
+        this.element.style.marginRight = right + "px";
         var bottom = Math.min(0, window.innerHeight - size.height / zoom);
-        this.element.style.bottom = bottom + "px";
-
-        if (window.innerWidth < size.width || window.innerHeight < size.height)
-            window.addEventListener("scroll", this._onScrollBound, false);
-        else
-            window.removeEventListener("scroll", this._onScrollBound, false);
-
+        this.element.style.marginBottom = bottom + "px";
         WebInspector.VBox.prototype.doResize.call(this);
-        this._onScroll();
     },
 
     __proto__: WebInspector.VBox.prototype
