@@ -131,7 +131,7 @@ body.platform-mac .settings-tab .help-block {
 
 .settings-tab .field-error-message {
     color: DarkRed;
-    height: 0px; // Avoid changing element height when content is set.
+    height: 0px; /* Avoid changing element height when content is set. */
 }
 
 .help-line {

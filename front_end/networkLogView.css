@@ -194,18 +194,18 @@
 }
 
 .network-log-grid.data-grid .network-type-media .icon {
-    content: url(Images/resourcePlainIcon.png); // FIXME: media icon
+    content: url(Images/resourcePlainIcon.png); /* FIXME: media icon */
 }
 
 .network-log-grid.data-grid.small .network-type-media .icon {
-    content: url(Images/resourcePlainIconSmall.png); // FIXME: media icon
+    content: url(Images/resourcePlainIconSmall.png); /* FIXME: media icon */
 }
 .network-log-grid.data-grid .network-type-texttrack .icon {
-    content: url(Images/resourcePlainIcon.png); // FIXME: vtt icon
+    content: url(Images/resourcePlainIcon.png); /* FIXME: vtt icon */
 }
 
 .network-log-grid.data-grid.small .network-type-texttrack .icon {
-    content: url(Images/resourcePlainIconSmall.png); // FIXME: vtt icon
+    content: url(Images/resourcePlainIconSmall.png); /* FIXME: vtt icon */
 }
 
 .network-log-grid.data-grid .network-type-image .icon {
