@@ -140,6 +140,7 @@
             'front_end/sdk/TempFile.js',
             'front_end/sdk/TimelineManager.js',
             'front_end/sdk/UISourceCode.js',
+            'front_end/sdk/WikiParser.js',
             'front_end/sdk/WorkerManager.js',
             'front_end/sdk/WorkerTargetManager.js',
             'front_end/sdk/Workspace.js',

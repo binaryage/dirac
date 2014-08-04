@@ -90,7 +90,8 @@
             "sdk/Workspace.js",
             "sdk/WorkspaceController.js",
             "sdk/PaintProfiler.js",
-            "sdk/HeapProfilerModel.js"
+            "sdk/HeapProfilerModel.js",
+            "sdk/WikiParser.js"
         ]
     },
     {
