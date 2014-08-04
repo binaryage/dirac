@@ -718,6 +718,7 @@ WebInspector.BreakpointManager.TargetBreakpoint = function(target, breakpoint, d
     target.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.DebuggerWasEnabled, this._scheduleUpdateInDebugger, this);
     this._hasPendingUpdate = false;
     this._isUpdating = false;
+    this._cancelCallback = false;
     this._currentState = null;
     if (target.debuggerModel.debuggerEnabled())
         this._scheduleUpdateInDebugger();
@@ -752,6 +753,7 @@ WebInspector.BreakpointManager.TargetBreakpoint.prototype = {
             this._hasPendingUpdate = true;
             return;
         }
+
         this._isUpdating = true;
         this._updateInDebugger(this._didUpdateInDebugger.bind(this));
     },
@@ -846,6 +848,12 @@ WebInspector.BreakpointManager.TargetBreakpoint.prototype = {
      */
     _didSetBreakpointInDebugger: function(callback, breakpointId, locations)
     {
+        if (this._cancelCallback) {
+            this._cancelCallback = false;
+            callback();
+            return;
+        }
+
         if (!breakpointId) {
             this._breakpoint.remove(true);
             callback();
@@ -866,6 +874,12 @@ WebInspector.BreakpointManager.TargetBreakpoint.prototype = {
      */
     _didRemoveFromDebugger: function(callback)
     {
+        if (this._cancelCallback) {
+            this._cancelCallback = false;
+            callback();
+            return;
+        }
+
         this._resetLocations();
         this.target().debuggerModel.removeBreakpointListener(this._debuggerId, this._breakpointResolved, this);
         delete this._debuggerId;
@@ -910,7 +924,11 @@ WebInspector.BreakpointManager.TargetBreakpoint.prototype = {
 
     _cleanUpAfterDebuggerIsGone: function()
     {
+        if (this._isUpdating)
+            this._cancelCallback = true;
+
         this._resetLocations();
+        this._currentState = null;
         if (this._debuggerId)
             this._didRemoveFromDebugger(function() {});
     },

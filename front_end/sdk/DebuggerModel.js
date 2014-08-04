@@ -112,8 +112,11 @@ WebInspector.DebuggerModel.prototype = {
     {
         if (this._debuggerEnabled)
             return;
-
-        this._agent.enable(this._debuggerWasEnabled.bind(this));
+        this._agent.enable();
+        this._debuggerEnabled = true;
+        this._pauseOnExceptionStateChanged();
+        this._asyncStackTracesStateChanged();
+        this.dispatchEventToListeners(WebInspector.DebuggerModel.Events.DebuggerWasEnabled);
     },
 
     disableDebugger: function()
@@ -121,7 +124,10 @@ WebInspector.DebuggerModel.prototype = {
         if (!this._debuggerEnabled)
             return;
 
-        this._agent.disable(this._debuggerWasDisabled.bind(this));
+        this._agent.disable();
+        this._debuggerEnabled = false;
+        this._isPausing = false;
+        this.dispatchEventToListeners(WebInspector.DebuggerModel.Events.DebuggerWasDisabled);
     },
 
     /**
@@ -147,14 +153,6 @@ WebInspector.DebuggerModel.prototype = {
         this._agent.setSkipAllPauses(true, true);
         // If reload happens before the timeout, the flag will be already unset and the timeout callback won't change anything.
         this._skipAllPausesTimeout = setTimeout(this.skipAllPauses.bind(this, false), timeout);
-    },
-
-    _debuggerWasEnabled: function()
-    {
-        this._debuggerEnabled = true;
-        this._pauseOnExceptionStateChanged();
-        this._asyncStackTracesStateChanged();
-        this.dispatchEventToListeners(WebInspector.DebuggerModel.Events.DebuggerWasEnabled);
     },
 
     _pauseOnExceptionStateChanged: function()
@@ -186,13 +184,6 @@ WebInspector.DebuggerModel.prototype = {
         const maxAsyncStackChainDepth = 4;
         var enabled = WebInspector.settings.enableAsyncStackTraces.get() && !this.target().profilingLock.isAcquired();
         this._agent.setAsyncCallStackDepth(enabled ? maxAsyncStackChainDepth : 0);
-    },
-
-    _debuggerWasDisabled: function()
-    {
-        this._debuggerEnabled = false;
-        this._isPausing = false;
-        this.dispatchEventToListeners(WebInspector.DebuggerModel.Events.DebuggerWasDisabled);
     },
 
     stepInto: function()
