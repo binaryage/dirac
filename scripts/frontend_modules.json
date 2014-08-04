@@ -44,7 +44,6 @@
             "sdk/DOMStorage.js",
             "sdk/Database.js",
             "sdk/DebuggerModel.js",
-            "sdk/DebuggerScriptMapping.js",
             "sdk/DebuggerWorkspaceBinding.js",
             "sdk/FileManager.js",
             "sdk/FileSystemMapping.js",

@@ -34,14 +34,17 @@
  * @param {!WebInspector.DebuggerModel} debuggerModel
  * @param {!WebInspector.Workspace} workspace
  * @param {!WebInspector.NetworkWorkspaceBinding} networkWorkspaceBinding
+ * @param {!WebInspector.DebuggerWorkspaceBinding} debuggerWorkspaceBinding
  */
-WebInspector.CompilerScriptMapping = function(debuggerModel, workspace, networkWorkspaceBinding)
+WebInspector.CompilerScriptMapping = function(debuggerModel, workspace, networkWorkspaceBinding, debuggerWorkspaceBinding)
 {
     this._target = debuggerModel.target();
     this._debuggerModel = debuggerModel;
     this._workspace = workspace;
     this._workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, this._uiSourceCodeAddedToWorkspace, this);
     this._networkWorkspaceBinding = networkWorkspaceBinding;
+    this._debuggerWorkspaceBinding = debuggerWorkspaceBinding;
+
     /** @type {!Object.<string, !WebInspector.SourceMap>} */
     this._sourceMapForSourceMapURL = {};
     /** @type {!Object.<string, !Array.<function(?WebInspector.SourceMap)>>} */
@@ -106,7 +109,7 @@ WebInspector.CompilerScriptMapping.prototype = {
      */
     addScript: function(script)
     {
-        script.pushSourceMapping(this);
+        this._debuggerWorkspaceBinding.pushSourceMapping(script, this);
         script.addEventListener(WebInspector.Script.Events.SourceMapURLAdded, this._sourceMapURLAdded.bind(this));
         this._processScript(script);
     },
@@ -138,7 +141,7 @@ WebInspector.CompilerScriptMapping.prototype = {
 
             if (this._scriptForSourceMap.get(sourceMap)) {
                 this._sourceMapForScriptId[script.scriptId] = sourceMap;
-                script.updateLocations();
+                this._debuggerWorkspaceBinding.updateLocations(script);
                 return;
             }
 
@@ -161,7 +164,7 @@ WebInspector.CompilerScriptMapping.prototype = {
                 else
                     WebInspector.console.error(WebInspector.UIString("Failed to locate workspace file mapped to URL %s from source map %s", sourceURL, sourceMap.url()));
             }
-            script.updateLocations();
+            this._debuggerWorkspaceBinding.updateLocations(script);
         }
     },
 

@@ -298,15 +298,15 @@ WebInspector.Main.prototype = {
         }
         WebInspector.ContextMenu.initialize();
         WebInspector.targetManager.createTarget(WebInspector.UIString("Main"), connection, this._mainTargetCreated.bind(this));
-        WebInspector.cssWorkspaceBinding = new WebInspector.CSSWorkspaceBinding();
-        WebInspector.debuggerWorkspaceBinding = new WebInspector.DebuggerWorkspaceBinding();
         WebInspector.isolatedFileSystemManager = new WebInspector.IsolatedFileSystemManager();
         WebInspector.workspace = new WebInspector.Workspace(WebInspector.isolatedFileSystemManager.mapping());
         WebInspector.networkWorkspaceBinding = new WebInspector.NetworkWorkspaceBinding(WebInspector.workspace);
         new WebInspector.NetworkUISourceCodeProvider(WebInspector.networkWorkspaceBinding, WebInspector.workspace);
         new WebInspector.PresentationConsoleMessageHelper(WebInspector.workspace);
+        WebInspector.cssWorkspaceBinding = new WebInspector.CSSWorkspaceBinding();
+        WebInspector.debuggerWorkspaceBinding = new WebInspector.DebuggerWorkspaceBinding(WebInspector.targetManager, WebInspector.workspace, WebInspector.networkWorkspaceBinding);
         WebInspector.fileSystemWorkspaceBinding = new WebInspector.FileSystemWorkspaceBinding(WebInspector.isolatedFileSystemManager, WebInspector.workspace);
-        WebInspector.breakpointManager = new WebInspector.BreakpointManager(WebInspector.settings.breakpoints, WebInspector.workspace, WebInspector.targetManager);
+        WebInspector.breakpointManager = new WebInspector.BreakpointManager(WebInspector.settings.breakpoints, WebInspector.workspace, WebInspector.targetManager, WebInspector.debuggerWorkspaceBinding);
         WebInspector.scriptSnippetModel = new WebInspector.ScriptSnippetModel(WebInspector.workspace);
         this._executionContextSelector = new WebInspector.ExecutionContextSelector();
 

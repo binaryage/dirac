@@ -35,12 +35,14 @@
  * @param {!WebInspector.Setting} breakpointStorage
  * @param {!WebInspector.Workspace} workspace
  * @param {!WebInspector.TargetManager} targetManager
+ * @param {!WebInspector.DebuggerWorkspaceBinding} debuggerWorkspaceBinding
  */
-WebInspector.BreakpointManager = function(breakpointStorage, workspace, targetManager)
+WebInspector.BreakpointManager = function(breakpointStorage, workspace, targetManager, debuggerWorkspaceBinding)
 {
     this._storage = new WebInspector.BreakpointManager.Storage(this, breakpointStorage);
     this._workspace = workspace;
     this._targetManager = targetManager;
+    this._debuggerWorkspaceBinding = debuggerWorkspaceBinding;
 
     this._breakpointsActive = true;
     this._breakpointsForUISourceCode = new Map();
@@ -487,7 +489,7 @@ WebInspector.BreakpointManager.Breakpoint.prototype = {
      */
     targetAdded: function(target)
     {
-        this._targetBreakpoints.put(target, new WebInspector.BreakpointManager.TargetBreakpoint(target, this));
+        this._targetBreakpoints.put(target, new WebInspector.BreakpointManager.TargetBreakpoint(target, this, this._breakpointManager._debuggerWorkspaceBinding));
     },
 
     /**
@@ -699,12 +701,15 @@ WebInspector.BreakpointManager.Breakpoint.prototype = {
  * @extends {WebInspector.SDKObject}
  * @param {!WebInspector.Target} target
  * @param {!WebInspector.BreakpointManager.Breakpoint} breakpoint
+ * @param {!WebInspector.DebuggerWorkspaceBinding} debuggerWorkspaceBinding
  */
-WebInspector.BreakpointManager.TargetBreakpoint = function(target, breakpoint)
+WebInspector.BreakpointManager.TargetBreakpoint = function(target, breakpoint, debuggerWorkspaceBinding)
 {
     WebInspector.SDKObject.call(this, target);
     this._breakpoint = breakpoint;
-    /** @type {!Array.<!WebInspector.Script.Location>} */
+    this._debuggerWorkspaceBinding = debuggerWorkspaceBinding;
+
+    /** @type {!Array.<!WebInspector.DebuggerWorkspaceBinding.Location>} */
     this._liveLocations = [];
 
     /** @type {!Object.<string, !WebInspector.UILocation>} */
@@ -773,14 +778,23 @@ WebInspector.BreakpointManager.TargetBreakpoint.prototype = {
 
     },
 
+    /**
+     * @param {function()} callback
+     */
     _updateInDebugger: function(callback)
     {
+        if (this.target().isDetached()) {
+            this._cleanUpAfterDebuggerIsGone();
+            callback();
+            return;
+        }
+
         var uiSourceCode = this._breakpoint.uiSourceCode();
         var lineNumber = this._breakpoint._lineNumber;
         var columnNumber = this._breakpoint._columnNumber;
         var condition = this._breakpoint.condition();
 
-        var debuggerLocation = uiSourceCode ? WebInspector.debuggerWorkspaceBinding.uiLocationToRawLocation(this.target(), uiSourceCode, lineNumber, columnNumber) : null;
+        var debuggerLocation = uiSourceCode ? this._debuggerWorkspaceBinding.uiLocationToRawLocation(this.target(), uiSourceCode, lineNumber, columnNumber) : null;
         var newState;
         if (this._breakpoint._isRemoved || !this._breakpoint.enabled() || this._scriptDiverged())
             newState = null;
@@ -883,14 +897,14 @@ WebInspector.BreakpointManager.TargetBreakpoint.prototype = {
      */
     _addResolvedLocation: function(location)
     {
-        var uiLocation = WebInspector.debuggerWorkspaceBinding.rawLocationToUILocation(location);
+        var uiLocation = this._debuggerWorkspaceBinding.rawLocationToUILocation(location);
         var breakpoint = this._breakpoint._breakpointManager.findBreakpoint(uiLocation.uiSourceCode, uiLocation.lineNumber, uiLocation.columnNumber);
         if (breakpoint && breakpoint !== this._breakpoint) {
             // location clash
             this._breakpoint.remove();
             return false;
         }
-        this._liveLocations.push(WebInspector.debuggerWorkspaceBinding.createLiveLocation(location, this._locationUpdated.bind(this, location)));
+        this._liveLocations.push(this._debuggerWorkspaceBinding.createLiveLocation(location, this._locationUpdated.bind(this, location)));
         return true;
     },
 

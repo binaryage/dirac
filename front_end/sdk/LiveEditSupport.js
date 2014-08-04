@@ -33,11 +33,13 @@
  * @extends {WebInspector.SDKObject}
  * @param {!WebInspector.Target} target
  * @param {!WebInspector.Workspace} workspace
+ * @param {!WebInspector.DebuggerWorkspaceBinding} debuggerWorkspaceBinding
  */
-WebInspector.LiveEditSupport = function(target, workspace)
+WebInspector.LiveEditSupport = function(target, workspace, debuggerWorkspaceBinding)
 {
     WebInspector.SDKObject.call(this, target);
     this._workspace = workspace;
+    this._debuggerWorkspaceBinding = debuggerWorkspaceBinding;
     this._projectId = "liveedit:" + target.id();
     this._projectDelegate = new WebInspector.DebuggerProjectDelegate(workspace, this._projectId, WebInspector.projectTypes.LiveEdit);
     target.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.GlobalObjectCleared, this._debuggerReset, this);
@@ -51,8 +53,8 @@ WebInspector.LiveEditSupport.prototype = {
      */
     uiSourceCodeForLiveEdit: function(uiSourceCode)
     {
-        var debuggerModelLocation = WebInspector.debuggerWorkspaceBinding.uiLocationToRawLocation(this.target(), uiSourceCode, 0, 0);
-        var uiLocation = WebInspector.debuggerWorkspaceBinding.rawLocationToUILocation(debuggerModelLocation);
+        var debuggerModelLocation = this._debuggerWorkspaceBinding.uiLocationToRawLocation(this.target(), uiSourceCode, 0, 0);
+        var uiLocation = this._debuggerWorkspaceBinding.rawLocationToUILocation(debuggerModelLocation);
 
         // FIXME: Support live editing of scripts mapped to some file.
         if (uiLocation.uiSourceCode !== uiSourceCode)
@@ -124,8 +126,7 @@ WebInspector.LiveEditSupport.liveEditSupportForUISourceCode = function(uiSourceC
             break;
         }
     }
-    var mapping = WebInspector.DebuggerScriptMapping.registry.instance(target);
-    return mapping ? mapping.liveEditSupport() : null;
+    return target ? WebInspector.debuggerWorkspaceBinding.liveEditSupport(target) : null;
 }
 
 /**

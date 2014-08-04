@@ -158,7 +158,7 @@ WebInspector.Linkifier.prototype = {
             return fallbackAnchor;
 
         var anchor = this._createAnchor(classes);
-        var liveLocation = rawLocation.createLiveLocation(this._updateAnchor.bind(this, anchor));
+        var liveLocation = WebInspector.debuggerWorkspaceBinding.createLiveLocation(rawLocation, this._updateAnchor.bind(this, anchor));
         this._liveLocationsByTarget.get(rawLocation.target()).push({anchor: anchor, location: liveLocation});
         anchor.__fallbackAnchor = fallbackAnchor;
         return anchor;

@@ -96,7 +96,6 @@
             'front_end/sdk/DOMStorage.js',
             'front_end/sdk/Database.js',
             'front_end/sdk/DebuggerModel.js',
-            'front_end/sdk/DebuggerScriptMapping.js',
             'front_end/sdk/DebuggerWorkspaceBinding.js',
             'front_end/sdk/DefaultScriptMapping.js',
             'front_end/sdk/FileManager.js',

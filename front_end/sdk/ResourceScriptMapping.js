@@ -33,13 +33,15 @@
  * @implements {WebInspector.ScriptSourceMapping}
  * @param {!WebInspector.DebuggerModel} debuggerModel
  * @param {!WebInspector.Workspace} workspace
+ * @param {!WebInspector.DebuggerWorkspaceBinding} debuggerWorkspaceBinding
  */
-WebInspector.ResourceScriptMapping = function(debuggerModel, workspace)
+WebInspector.ResourceScriptMapping = function(debuggerModel, workspace, debuggerWorkspaceBinding)
 {
     this._target = debuggerModel.target();
     this._debuggerModel = debuggerModel;
     this._workspace = workspace;
     this._workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, this._uiSourceCodeAddedToWorkspace, this);
+    this._debuggerWorkspaceBinding = debuggerWorkspaceBinding;
     this._boundURLs = new StringSet();
 
     debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.GlobalObjectCleared, this._debuggerReset, this);
@@ -83,7 +85,7 @@ WebInspector.ResourceScriptMapping.prototype = {
     {
         if (script.isAnonymousScript())
             return;
-        script.pushSourceMapping(this);
+        this._debuggerWorkspaceBinding.pushSourceMapping(script, this);
 
         var uiSourceCode = this._workspaceUISourceCodeForScript(script);
         if (!uiSourceCode)
@@ -134,7 +136,7 @@ WebInspector.ResourceScriptMapping.prototype = {
         if (!scripts.length)
             return;
         for (var i = 0; i < scripts.length; ++i)
-            scripts[i].updateLocations();
+            this._debuggerWorkspaceBinding.updateLocations(scripts[i]);
     },
 
     /**
@@ -146,7 +148,7 @@ WebInspector.ResourceScriptMapping.prototype = {
         if (!scripts.length)
             return;
         for (var i = 0; i < scripts.length; ++i)
-            scripts[i].updateLocations();
+            this._debuggerWorkspaceBinding.updateLocations(scripts[i]);
     },
 
     /**
@@ -181,7 +183,7 @@ WebInspector.ResourceScriptMapping.prototype = {
         var scriptFile = new WebInspector.ResourceScriptFile(this, uiSourceCode, scripts);
         uiSourceCode.setScriptFileForTarget(this._target, scriptFile);
         for (var i = 0; i < scripts.length; ++i)
-            scripts[i].updateLocations();
+            this._debuggerWorkspaceBinding.updateLocations(scripts[i]);
         uiSourceCode.setSourceMappingForTarget(this._target, this);
         this._boundURLs.add(uiSourceCode.url);
     },

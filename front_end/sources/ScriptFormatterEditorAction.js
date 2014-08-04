@@ -300,7 +300,7 @@ WebInspector.ScriptFormatterEditorAction.prototype = {
         this._pathsToFormatOnLoad.remove(path);
         for (var i = 0; i < formatData.scripts.length; ++i) {
             this._uiSourceCodes.remove(formatData.scripts[i]);
-            formatData.scripts[i].popSourceMapping();
+            WebInspector.debuggerWorkspaceBinding.popSourceMapping(formatData.scripts[i]);
         }
         this._projectDelegate._removeFormatted(formattedUISourceCode.path());
     },
@@ -421,7 +421,7 @@ WebInspector.ScriptFormatterEditorAction.prototype = {
             for (var i = 0; i < scripts.length; ++i) {
                 this._uiSourceCodes.put(scripts[i], formattedUISourceCode);
                 var scriptMapping = /** @type {!WebInspector.FormatterScriptMapping} */(this._scriptMappingByTarget.get(scripts[i].target()));
-                scripts[i].pushSourceMapping(scriptMapping);
+                WebInspector.debuggerWorkspaceBinding.pushSourceMapping(scripts[i], scriptMapping);
             }
 
             var targets = WebInspector.targetManager.targets();
