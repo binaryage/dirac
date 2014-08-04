@@ -104,7 +104,7 @@ WebInspector.UISourceCodeFrame.prototype = {
             return;
 
         this._muteSourceCodeEvents = true;
-        this._uiSourceCode.commitWorkingCopy(this._didEditContent.bind(this));
+        this._uiSourceCode.commitWorkingCopy();
         delete this._muteSourceCodeEvents;
     },
 
@@ -119,14 +119,6 @@ WebInspector.UISourceCodeFrame.prototype = {
         else
             this._uiSourceCode.setWorkingCopyGetter(this._textEditor.text.bind(this._textEditor));
         delete this._muteSourceCodeEvents;
-    },
-
-    _didEditContent: function(error)
-    {
-        if (error) {
-            WebInspector.console.error(error);
-            return;
-        }
     },
 
     /**

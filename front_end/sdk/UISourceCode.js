@@ -409,12 +409,12 @@ WebInspector.UISourceCode.prototype = {
     save: function(forceSaveAs)
     {
         if (this.project().type() === WebInspector.projectTypes.FileSystem || this.project().type() === WebInspector.projectTypes.Snippets) {
-            this.commitWorkingCopy(function() { });
+            this.commitWorkingCopy();
             return;
         }
         if (this.isDirty()) {
             this._saveURLWithFileManager(forceSaveAs, this.workingCopy());
-            this.commitWorkingCopy(function() { });
+            this.commitWorkingCopy();
             return;
         }
         this.requestContent(this._saveURLWithFileManager.bind(this, forceSaveAs));
@@ -529,18 +529,10 @@ WebInspector.UISourceCode.prototype = {
         delete this._workingCopyGetter;
     },
 
-    /**
-     * @param {function(?string)} callback
-     */
-    commitWorkingCopy: function(callback)
+    commitWorkingCopy: function()
     {
-        if (!this.isDirty()) {
-            callback(null);
-            return;
-        }
-
-        this._commitContent(this.workingCopy(), true);
-        callback(null);
+        if (this.isDirty())
+            this._commitContent(this.workingCopy(), true);
     },
 
     /**

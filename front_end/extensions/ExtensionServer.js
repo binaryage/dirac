@@ -564,9 +564,8 @@ WebInspector.ExtensionServer.prototype = {
         }
         uiSourceCode.setWorkingCopy(message.content);
         if (message.commit)
-            uiSourceCode.commitWorkingCopy(callbackWrapper.bind(this));
-        else
-            callbackWrapper.call(this, null);
+            uiSourceCode.commitWorkingCopy();
+        callbackWrapper.call(this, null);
     },
 
     _requestId: function(request)
