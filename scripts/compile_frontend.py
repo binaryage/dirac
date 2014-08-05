@@ -59,6 +59,12 @@ generate_protocol_externs.generate_protocol_externs(protocol_externs_file, path.
 jsmodule_name_prefix = "jsmodule_"
 js_modules_name = "frontend_modules.json"
 
+
+def error_excepthook(exctype, value, traceback):
+    print "ERROR:"
+    sys.__excepthook__(exctype, value, traceback)
+sys.excepthook = error_excepthook
+
 try:
     with open(path.join(scripts_path, js_modules_name), "rt") as js_modules_file:
         modules = json.loads(js_modules_file.read())
