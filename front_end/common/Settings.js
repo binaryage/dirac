@@ -297,7 +297,6 @@ WebInspector.ExperimentsSettings = function(experimentsEnabled)
     this.fileSystemInspection = this._createExperiment("fileSystemInspection", "FileSystem inspection");
     this.frameworksDebuggingSupport = this._createExperiment("frameworksDebuggingSupport", "JavaScript frameworks debugging");
     this.gpuTimeline = this._createExperiment("gpuTimeline", "GPU data on timeline", true);
-    this.heapSnapshotStatistics = this._createExperiment("heapSnapshotStatistics", "Heap snapshot statistics", true);
     this.layersPanel = this._createExperiment("layersPanel", "Layers panel");
     this.timelineOnTraceEvents = this._createExperiment("timelineOnTraceEvents", "Timeline on trace events");
     this.timelinePowerProfiler = this._createExperiment("timelinePowerProfiler", "Timeline power profiler");

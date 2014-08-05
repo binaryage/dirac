@@ -128,8 +128,7 @@ WebInspector.HeapSnapshotView = function(dataDisplayDelegate, profile)
     this._perspectives.push(new WebInspector.HeapSnapshotView.ContainmentPerspective());
     if (this._allocationView)
         this._perspectives.push(new WebInspector.HeapSnapshotView.AllocationPerspective());
-    if (WebInspector.experimentsSettings.heapSnapshotStatistics.isEnabled())
-        this._perspectives.push(new WebInspector.HeapSnapshotView.StatisticsPerspective());
+    this._perspectives.push(new WebInspector.HeapSnapshotView.StatisticsPerspective());
 
     this._perspectiveSelect = new WebInspector.StatusBarComboBox(this._onSelectedPerspectiveChanged.bind(this));
     for (var i = 0; i < this._perspectives.length; ++i)
