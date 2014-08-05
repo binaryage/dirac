@@ -504,45 +504,6 @@ WebInspector.ProfilesPanel = function()
     WebInspector.targetManager.observeTargets(this);
 }
 
-/**
- * @constructor
- */
-WebInspector.ProfileTypeRegistry = function() {
-    this._profileTypes = [];
-
-    this.cpuProfileType = new WebInspector.CPUProfileType();
-    this._addProfileType(this.cpuProfileType);
-    this.heapSnapshotProfileType = new WebInspector.HeapSnapshotProfileType();
-    this._addProfileType(this.heapSnapshotProfileType);
-    this.trackingHeapSnapshotProfileType = new WebInspector.TrackingHeapSnapshotProfileType();
-    this._addProfileType(this.trackingHeapSnapshotProfileType);
-
-    if (!WebInspector.isWorkerFrontend() && WebInspector.experimentsSettings.canvasInspection.isEnabled()) {
-        this.canvasProfileType = new WebInspector.CanvasProfileType();
-        this._addProfileType(this.canvasProfileType);
-    }
-}
-
-WebInspector.ProfileTypeRegistry.prototype = {
-    /**
-     * @param {!WebInspector.ProfileType} profileType
-     */
-    _addProfileType: function(profileType)
-    {
-        this._profileTypes.push(profileType);
-    },
-
-    /**
-     * @return {!Array.<!WebInspector.ProfileType>}
-     */
-    profileTypes: function()
-    {
-        return this._profileTypes;
-    }
-}
-
-
-
 WebInspector.ProfilesPanel.prototype = {
     /**
      * @param {!WebInspector.Target} target
@@ -1365,5 +1326,4 @@ importScript("HeapSnapshotView.js");
 importScript("ProfileLauncherView.js");
 importScript("CanvasProfileView.js");
 importScript("CanvasReplayStateView.js");
-
-WebInspector.ProfileTypeRegistry.instance = new WebInspector.ProfileTypeRegistry();
+importScript("ProfileTypeRegistry.js");

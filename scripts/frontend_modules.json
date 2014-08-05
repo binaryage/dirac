@@ -409,6 +409,7 @@
             "profiler/HeapSnapshotView.js",
             "profiler/ProfilesPanel.js",
             "profiler/ProfileLauncherView.js",
+            "profiler/ProfileTypeRegistry.js",
             "profiler/CanvasProfileView.js",
             "profiler/CanvasReplayStateView.js"
         ]

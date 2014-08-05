@@ -429,6 +429,7 @@
             'front_end/profiler/HeapSnapshotView.js',
             'front_end/profiler/ProfilesPanel.js',
             'front_end/profiler/ProfileLauncherView.js',
+            'front_end/profiler/ProfileTypeRegistry.js',
             'front_end/profiler/CanvasProfileView.js',
             'front_end/profiler/CanvasReplayStateView.js',
         ],
