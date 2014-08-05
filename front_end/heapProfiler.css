@@ -133,10 +133,6 @@
     color: gray;
 }
 
-table.heap-snapshot-help {
-    border-spacing: 12px 2px;
-}
-
 .cycled-ancessor-node {
     opacity: 0.6;
 }

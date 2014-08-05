@@ -498,7 +498,6 @@
             'front_end/UglifyJS/parse-js.js',
         ],
         'devtools_image_files': [
-            'front_end/Images/addIcon.png',
             'front_end/Images/applicationCache.png',
             'front_end/Images/back.png',
             'front_end/Images/breakpoint.png',
@@ -526,7 +525,6 @@
             'front_end/Images/paneElementStateButtons.png',
             'front_end/Images/paneFilterButtons.png',
             'front_end/Images/paneRefreshButtons.png',
-            'front_end/Images/paneSettingsButtons.png',
             'front_end/Images/popoverArrows.png',
             'front_end/Images/popoverBackground.png',
             'front_end/Images/profileGroupIcon.png',

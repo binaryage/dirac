@@ -691,10 +691,6 @@
     background-position: -46px 0;
 }
 
-.panel.elements .sidebar-pane-toolbar > select.select-settings {
-    background-image: url(Images/paneSettingsButtons.png);
-}
-
 .panel.elements .sidebar-pane-toolbar > select.select-filter {
     background-image: url(Images/paneFilterButtons.png);
 }
