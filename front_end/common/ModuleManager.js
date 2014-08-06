@@ -480,8 +480,23 @@ WebInspector.Revealer.reveal = function(revealable, lineNumber)
 WebInspector.Revealer.prototype = {
     /**
      * @param {!Object} object
+     * @param {number=} lineNumber
      */
-    reveal: function(object) {}
+    reveal: function(object, lineNumber) {}
+}
+
+/**
+ * @interface
+ */
+WebInspector.NodeRemoteObjectInspector = function()
+{
+}
+
+WebInspector.NodeRemoteObjectInspector.prototype = {
+    /**
+     * @param {!Object} object
+     */
+    inspectNodeObject: function(object) {}
 }
 
 /**

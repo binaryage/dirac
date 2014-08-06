@@ -28,6 +28,11 @@
             "className": "WebInspector.ElementsPanel.NodeRemoteObjectRevealer"
         },
         {
+            "type": "@WebInspector.NodeRemoteObjectInspector",
+            "contextTypes": ["WebInspector.RemoteObject"],
+            "className": "WebInspector.ElementsPanel.NodeRemoteObjectInspector"
+        },
+        {
             "type": "ui-setting",
             "section": "Elements",
             "title": "Color format",

@@ -40,12 +40,12 @@
             '<@(devtools_ui_js_files)',
             '<@(devtools_components_js_files)',
             '<@(devtools_host_js_files)',
+            '<@(devtools_screencast_js_files)',
             '<@(devtools_toolbox_js_files)',
         ],
         'devtools_core_base_files': [
             'front_end/inspector.html',
             'front_end/Tests.js',
-            'front_end/ScreencastView.js',
             'front_end/TestController.js',
             'front_end/dialog.css',
             'front_end/inspector.css',
@@ -214,6 +214,9 @@
             'front_end/host/InspectorFrontendHost.js',
             'front_end/host/Platform.js',
             'front_end/host/UserMetrics.js',
+        ],
+        'devtools_screencast_js_files': [
+            'front_end/screencast/ScreencastView.js',
         ],
         'devtools_toolbox_js_files': [
             'front_end/toolbox/InspectedPagePlaceholder.js',

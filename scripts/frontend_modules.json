@@ -170,7 +170,7 @@
         "name": "screencast",
         "dependencies": ["components"],
         "sources": [
-            "ScreencastView.js"
+            "screencast/ScreencastView.js"
         ]
     },
     {
@@ -454,11 +454,8 @@
     {
         "name": "main",
         "dependencies": [
-            "elements",
             "host",
             "screencast",
-            "settings",
-            "sources",
             "sdk",
             "toolbox"
         ],

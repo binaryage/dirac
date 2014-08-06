@@ -24,6 +24,7 @@ devtools_core_js_files =
   gypi_values.devtools_ui_js_files +
   gypi_values.devtools_components_js_files +
   gypi_values.devtools_host_js_files +
+  gypi_values.devtools_screencast_js_files +
   gypi_values.devtools_toolbox_js_files
 
 devtools_extensions_js_files = gypi_values.devtools_extensions_js_files -

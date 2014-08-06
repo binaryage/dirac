@@ -580,24 +580,10 @@ WebInspector.Main.prototype = {
     {
         var object = WebInspector.runtimeModel.createRemoteObject(payload);
         if (object.isNode()) {
-            object.pushNodeToFrontend(callback);
-            var elementsPanel = /** @type {!WebInspector.ElementsPanel} */ (WebInspector.inspectorView.panel("elements"));
-            elementsPanel.omitDefaultSelection();
-            WebInspector.inspectorView.setCurrentPanel(elementsPanel);
+            var nodeObjectInspector = WebInspector.moduleManager.instance(WebInspector.NodeRemoteObjectInspector, object);
+            if (nodeObjectInspector)
+                nodeObjectInspector.inspectNodeObject(object);
             return;
-        }
-
-        /**
-         * @param {!WebInspector.DOMNode} node
-         */
-        function callback(node)
-        {
-            elementsPanel.stopOmittingDefaultSelection();
-            WebInspector.Revealer.reveal(node);
-            if (!WebInspector.inspectorView.drawerVisible() && !WebInspector._notFirstInspectElement)
-                InspectorFrontendHost.inspectElementCompleted();
-            WebInspector._notFirstInspectElement = true;
-            object.release();
         }
 
         if (object.type === "function") {
@@ -615,7 +601,6 @@ WebInspector.Main.prototype = {
             if (!response || !response.location)
                 return;
 
-            var location = WebInspector.DebuggerModel.Location.fromPayload(object.target(), response.location);
             WebInspector.Revealer.reveal(WebInspector.debuggerWorkspaceBinding.rawLocationToUILocation(response.location));
         }
 

@@ -1474,11 +1474,10 @@ WebInspector.ElementsPanel.DOMNodeRevealer.prototype = {
         }
 
         var panel = /** @type {!WebInspector.ElementsPanel} */ (WebInspector.inspectorView.panel("elements"));
-        if (node instanceof WebInspector.DOMNode) {
+        if (node instanceof WebInspector.DOMNode)
             panel.revealAndSelectNode(/** @type {!WebInspector.DOMNode} */ (node));
-        } else if (node instanceof WebInspector.DeferredDOMNode) {
+        else if (node instanceof WebInspector.DeferredDOMNode)
             (/** @type {!WebInspector.DeferredDOMNode} */ (node)).resolve(onNodeResolved);
-        }
 
         /**
          * @param {?WebInspector.DOMNode} resolvedNode
@@ -1528,6 +1527,72 @@ WebInspector.ElementsPanel.NodeRemoteObjectRevealer.prototype = {
             }
             if (!remoteObject || remoteObject.description !== "#text" || !remoteObject.isNode())
                 return;
+            remoteObject.callFunction(parentElement, undefined, revealElement);
+        }
+
+        /**
+         * @suppressReceiverCheck
+         * @this {Element}
+         */
+        function parentElement()
+        {
+            return this.parentElement;
+        }
+    }
+}
+
+/**
+ * @constructor
+ */
+WebInspector.ElementsPanel.NodeRemoteObjectInspector = function()
+{
+}
+
+WebInspector.ElementsPanel.NodeRemoteObjectInspector.prototype = {
+    /**
+     * @param {!Object} object
+     */
+    inspectNodeObject: function(object)
+    {
+        var remoteObject = /** @type {!WebInspector.RemoteObject} */ (object);
+        if (!remoteObject.isNode()) {
+            remoteObject.release();
+            return;
+        }
+        var elementsPanel = /** @type {!WebInspector.ElementsPanel} */ (WebInspector.inspectorView.panel("elements"));
+        revealElement(remoteObject);
+
+        /**
+         * @param {?WebInspector.RemoteObject} remoteObject
+         */
+        function revealElement(remoteObject)
+        {
+            if (!remoteObject)
+                return;
+            remoteObject.pushNodeToFrontend(selectNode.bind(null, remoteObject));
+            elementsPanel.omitDefaultSelection();
+            WebInspector.inspectorView.setCurrentPanel(elementsPanel);
+        }
+
+        /**
+         * @param {!WebInspector.RemoteObject} remoteObject
+         * @param {?WebInspector.DOMNode} node
+         */
+        function selectNode(remoteObject, node)
+        {
+            elementsPanel.stopOmittingDefaultSelection();
+            if (node) {
+                WebInspector.Revealer.reveal(node);
+                if (!WebInspector._notFirstInspectElement && !WebInspector.inspectorView.drawerVisible())
+                    InspectorFrontendHost.inspectElementCompleted();
+                WebInspector._notFirstInspectElement = true;
+                remoteObject.release();
+                return;
+            }
+            if (remoteObject.description !== "#text" || !remoteObject.isNode()) {
+                remoteObject.release();
+                return;
+            }
             remoteObject.callFunction(parentElement, undefined, revealElement);
         }
 
