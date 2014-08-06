@@ -2527,7 +2527,7 @@ body.platform-mac .search-drawer-header input[type="search"].search-config-searc
     -webkit-mask-position: -288px 0;
 }
 
-button.record-cpu-profile-status-bar-item.toggled-on .glyph:not(.shadow) {
+button.record-profile-status-bar-item.toggled-on .glyph:not(.shadow) {
     -webkit-mask-position: -288px -24px;
     background-color: rgb(216, 0, 0) !important;
 }
