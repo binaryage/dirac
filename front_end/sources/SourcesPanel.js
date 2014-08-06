@@ -911,7 +911,7 @@ WebInspector.SourcesPanel.prototype = {
             contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Local modifications\u2026" : "Local Modifications\u2026"), this._showLocalHistory.bind(this, uiSourceCode));
         this._appendUISourceCodeMappingItems(contextMenu, uiSourceCode);
 
-        if (uiSourceCode.contentType() === WebInspector.resourceTypes.Script)
+        if (uiSourceCode.contentType() === WebInspector.resourceTypes.Script && project.type() !== WebInspector.projectTypes.Snippets)
             this.sidebarPanes.callstack.appendBlackboxURLContextMenuItems(contextMenu, uiSourceCode.url);
 
         if (!event.target.isSelfOrDescendant(this.editorView.sidebarElement())) {

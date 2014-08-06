@@ -156,8 +156,11 @@ WebInspector.CallStackSidebarPane.prototype = {
 
         contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Copy stack trace" : "Copy Stack Trace"), this._copyStackTrace.bind(this));
 
-        contextMenu.appendSeparator();
-        this.appendBlackboxURLContextMenuItems(contextMenu, placard._callFrame.script.sourceURL);
+        var script = placard._callFrame.script;
+        if (!script.isSnippet()) {
+            contextMenu.appendSeparator();
+            this.appendBlackboxURLContextMenuItems(contextMenu, script.sourceURL);
+        }
 
         contextMenu.show();
     },
