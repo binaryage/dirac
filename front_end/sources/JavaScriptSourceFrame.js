@@ -182,6 +182,7 @@ WebInspector.JavaScriptSourceFrame.prototype = {
         var textSelection = this.textEditor.selection();
         if (textSelection && !textSelection.isEmpty())
             this._innerAddToWatch(this.textEditor.copyRange(textSelection));
+        return true;
     },
 
     /**
@@ -199,7 +200,7 @@ WebInspector.JavaScriptSourceFrame.prototype = {
     {
         var selection = this.textEditor.selection();
         if (!selection || selection.isEmpty())
-            return false;
+            return true;
         this._evaluateInConsole(this.textEditor.copyRange(selection));
         return true;
     },

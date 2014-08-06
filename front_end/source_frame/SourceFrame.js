@@ -118,7 +118,7 @@ WebInspector.SourceFrame.Events = {
 WebInspector.SourceFrame.prototype = {
     /**
      * @param {number} key
-     * @param {function()} handler
+     * @param {function():boolean} handler
      */
     addShortcut: function(key, handler)
     {
