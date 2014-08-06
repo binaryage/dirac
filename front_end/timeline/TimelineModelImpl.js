@@ -227,18 +227,6 @@ WebInspector.TimelineModelImpl.prototype = {
         fileReader.start(loader);
     },
 
-    /**
-     * @param {string} url
-     * @param {!WebInspector.Progress} progress
-     */
-    loadFromURL: function(url, progress)
-    {
-        var delegate = new WebInspector.TimelineModelLoadFromFileDelegate(this, progress);
-        var urlReader = new WebInspector.ChunkedXHRReader(url, delegate);
-        var loader = new WebInspector.TimelineModelLoader(this, urlReader, progress);
-        urlReader.start(loader);
-    },
-
     _createFileReader: function(file, delegate)
     {
         return new WebInspector.ChunkedFileReader(file, WebInspector.TimelineModelImpl.TransferChunkLengthBytes, delegate);

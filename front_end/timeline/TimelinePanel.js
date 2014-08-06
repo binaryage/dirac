@@ -584,17 +584,6 @@ WebInspector.TimelinePanel.prototype = {
         this._createFileSelector();
     },
 
-    /**
-     * @param {string} url
-     */
-    loadFromURL: function(url)
-    {
-        var progressIndicator = this._prepareToLoadTimeline();
-        if (!progressIndicator)
-            return;
-        this._model.loadFromURL(url, progressIndicator);
-    },
-
     _refreshViews: function()
     {
         for (var i = 0; i < this._currentViews.length; ++i) {
