@@ -140,7 +140,6 @@
             'front_end/sdk/TempFile.js',
             'front_end/sdk/TimelineManager.js',
             'front_end/sdk/UISourceCode.js',
-            'front_end/sdk/WikiParser.js',
             'front_end/sdk/WorkerManager.js',
             'front_end/sdk/WorkerTargetManager.js',
             'front_end/sdk/Workspace.js',
@@ -250,6 +249,7 @@
             'front_end/source_frame/module.json',
             'front_end/sources/module.json',
             'front_end/timeline/module.json',
+            'front_end/documentation/module.json',
         ],
         'all_devtools_files': [
             '<@(devtools_core_js_files)',
@@ -437,6 +437,9 @@
             'front_end/profiler/CanvasProfileView.js',
             'front_end/profiler/CanvasReplayStateView.js',
         ],
+        'devtools_documentation_js_files': [
+            'front_end/documentation/WikiParser.js',
+        ],
         'devtools_heap_snapshot_worker_js_files': [
             'front_end/common/TextUtils.js',
             'front_end/common/UIString.js',
@@ -498,6 +501,7 @@
             '<@(devtools_temp_storage_shared_worker_js_files)',
             '<@(devtools_script_formatter_worker_js_files)',
             '<@(devtools_uglify_files)',
+            '<@(devtools_documentation_js_files)',
         ],
         'devtools_uglify_files': [
             'front_end/UglifyJS/parse-js.js',

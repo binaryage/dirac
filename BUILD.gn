@@ -289,6 +289,12 @@ inline_js_imports("build_resources_module") {
   output = "$root_out_dir/resources/inspector/resources/ResourcesPanel.js"
 }
 
+inline_js_imports("build_documentation_module") {
+  input = "front_end/documentation/WikiParser.js"
+  imported_files = gypi_values.devtools_documentation_js_files
+  output = "$root_out_dir/resources/inspector/documentation/WikiParser.js"
+}
+
 inline_js_imports("build_settings_module") {
   input = "front_end/settings/SettingsScreen.js"
   imported_files = gypi_values.devtools_settings_js_files

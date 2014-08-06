@@ -60,6 +60,7 @@
                 'build_heap_snapshot_worker_module',
                 'build_script_formatter_worker_module',
                 'build_temp_storage_shared_worker_module',
+                'build_documentation_module',
             ],
             'conditions': [
                 ['debug_devtools==0', {
@@ -841,6 +842,36 @@
                             'files': [
                                 '<@(devtools_layers_js_files)',
                                 'front_end/layers/module.json',
+                            ],
+                        }
+                    ]
+                }]
+            ]
+        },
+        {
+            'target_name': 'build_documentation_module',
+            'type': 'none',
+            'conditions': [
+                ['debug_devtools==0', { # Release
+                    'actions': [{
+                        'action_name': 'build_documentation_module',
+                        'script_name': 'scripts/inline_js_imports.py',
+                        'input_file': 'front_end/documentation/WikiParser.js',
+                        'inputs': [
+                            '<@(_script_name)',
+                            '<@(devtools_documentation_js_files)',
+                        ],
+                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/documentation/WikiParser.js'],
+                        'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
+                    }],
+                },
+                { # Debug
+                    'copies': [
+                        {
+                            'destination': '<(PRODUCT_DIR)/resources/inspector/documentation',
+                            'files': [
+                                '<@(devtools_documentation_js_files)',
+                                'front_end/documentation/module.json',
                             ],
                         }
                     ]

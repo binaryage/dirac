@@ -90,8 +90,7 @@
             "sdk/Workspace.js",
             "sdk/WorkspaceController.js",
             "sdk/PaintProfiler.js",
-            "sdk/HeapProfilerModel.js",
-            "sdk/WikiParser.js"
+            "sdk/HeapProfilerModel.js"
         ]
     },
     {
@@ -497,5 +496,12 @@
             "main"
         ],
         "sources": []
+    },
+    {
+        "name": "documentation",
+        "dependencies": [],
+        "sources": [
+            "documentation/WikiParser.js"
+        ]
     }
 ]
