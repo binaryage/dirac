@@ -2157,7 +2157,8 @@
             {
                 "name": "performSearch",
                 "parameters": [
-                    { "name": "query", "type": "string", "description": "Plain text or query selector or XPath search query." }
+                    { "name": "query", "type": "string", "description": "Plain text or query selector or XPath search query." },
+                    { "name": "includeUserAgentShadowDOM", "type": "boolean", "optional": true, "description": "True to search in user agent shadow DOM.", "hidden": true }
                 ],
                 "returns": [
                     { "name": "searchId", "type": "string", "description": "Unique search session identifier." },

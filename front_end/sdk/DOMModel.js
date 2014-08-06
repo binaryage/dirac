@@ -1370,9 +1370,10 @@ WebInspector.DOMModel.prototype = {
 
     /**
      * @param {string} query
+     * @param {boolean} includeUserAgentShadowDOM
      * @param {function(number)} searchCallback
      */
-    performSearch: function(query, searchCallback)
+    performSearch: function(query, includeUserAgentShadowDOM, searchCallback)
     {
         this.cancelSearch();
 
@@ -1387,14 +1388,15 @@ WebInspector.DOMModel.prototype = {
             this._searchId = searchId;
             searchCallback(resultsCount);
         }
-        this._agent.performSearch(query, callback.bind(this));
+        this._agent.performSearch(query, includeUserAgentShadowDOM, callback.bind(this));
     },
 
     /**
      * @param {string} query
+     * @param {boolean} includeUserAgentShadowDOM
      * @return {!Promise.<number>}
      */
-    performSearchPromise: function(query)
+    performSearchPromise: function(query, includeUserAgentShadowDOM)
     {
         return new Promise(performSearch.bind(this));
 
@@ -1404,7 +1406,7 @@ WebInspector.DOMModel.prototype = {
          */
         function performSearch(resolve)
         {
-            this._agent.performSearch(query, callback.bind(this));
+            this._agent.performSearch(query, includeUserAgentShadowDOM, callback.bind(this));
 
             /**
              * @param {?Protocol.Error} error

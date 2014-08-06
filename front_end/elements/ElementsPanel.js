@@ -407,7 +407,7 @@ WebInspector.ElementsPanel.prototype = {
         var targets = WebInspector.targetManager.targets();
         var promises = [];
         for (var i = 0; i < targets.length; ++i)
-            promises.push(targets[i].domModel.performSearchPromise(whitespaceTrimmedQuery));
+            promises.push(targets[i].domModel.performSearchPromise(whitespaceTrimmedQuery, WebInspector.settings.showUAShadowDOM.get()));
         Promise.all(promises).then(resultCountCallback.bind(this));
 
         /**
