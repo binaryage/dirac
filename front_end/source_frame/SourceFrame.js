@@ -71,8 +71,7 @@ WebInspector.SourceFrame = function(contentProvider)
     this._searchResults = [];
 
     this._messages = [];
-    this._rowMessages = {};
-    this._messageBubbles = {};
+    this._rowMessageBuckets = {};
 
     this._textEditor.setReadOnly(!this.canEditSource());
 
@@ -80,6 +79,9 @@ WebInspector.SourceFrame = function(contentProvider)
     this.element.addEventListener("keydown", this._handleKeyDown.bind(this), false);
 
     this._sourcePosition = new WebInspector.StatusBarText("", "source-frame-cursor-position");
+
+    this._errorPopoverHelper = new WebInspector.PopoverHelper(this.element, this._getErrorAnchor.bind(this), this._showErrorPopover.bind(this));
+    this._errorPopoverHelper.setTimeout(100, 100);
 }
 
 /**
@@ -117,6 +119,33 @@ WebInspector.SourceFrame.Events = {
 
 WebInspector.SourceFrame.prototype = {
     /**
+     * @param {!Element} target
+     * @param {!Event} event
+     * @return {(!Element|undefined)}
+     */
+    _getErrorAnchor: function(target, event)
+    {
+        var element = target.enclosingNodeOrSelfWithClass("text-editor-line-decoration-icon")
+            || target.enclosingNodeOrSelfWithClass("text-editor-line-decoration-wave");
+        if (!element)
+            return;
+        this._errorWavePopoverAnchor = new AnchorBox(event.clientX, event.clientY, 1, 1);
+        return element;
+    },
+
+    /**
+     * @param {!Element} anchor
+     * @param {!WebInspector.Popover} popover
+     */
+    _showErrorPopover: function(anchor, popover)
+    {
+        var messageBucket = anchor.enclosingNodeOrSelfWithClass("text-editor-line-decoration")._messageBucket;
+        var messagesOutline = messageBucket.messagesDescription();
+        var popoverAnchor = anchor.enclosingNodeOrSelfWithClass("text-editor-line-decoration-icon") ? anchor : this._errorWavePopoverAnchor;
+        popover.show(messagesOutline, popoverAnchor);
+    },
+
+    /**
      * @param {number} key
      * @param {function():boolean} handler
      */
@@ -130,6 +159,10 @@ WebInspector.SourceFrame.prototype = {
         this._ensureContentLoaded();
         this._textEditor.show(this.element);
         this._editorAttached = true;
+        for (var line in this._rowMessageBuckets) {
+            var bucket = this._rowMessageBuckets[line];
+            bucket._updateDecorationPosition();
+        }
         this._wasShownOrLoaded();
     },
 
@@ -207,15 +240,13 @@ WebInspector.SourceFrame.prototype = {
 
     clearMessages: function()
     {
-        for (var line in this._messageBubbles) {
-            var bubble = this._messageBubbles[line];
-            var lineNumber = parseInt(line, 10);
-            this._textEditor.removeDecoration(lineNumber, bubble);
+        for (var line in this._rowMessageBuckets) {
+            var bubble = this._rowMessageBuckets[line];
+            bubble.detachFromEditor();
         }
 
         this._messages = [];
-        this._rowMessages = {};
-        this._messageBubbles = {};
+        this._rowMessageBuckets = {};
     },
 
     /**
@@ -388,13 +419,10 @@ WebInspector.SourceFrame.prototype = {
 
     _setTextEditorDecorations: function()
     {
-        this._rowMessages = {};
-        this._messageBubbles = {};
+        this._rowMessageBuckets = {};
 
         this._textEditor.beginUpdates();
-
         this._addExistingMessagesToSource();
-
         this._textEditor.endUpdates();
     },
 
@@ -631,75 +659,19 @@ WebInspector.SourceFrame.prototype = {
 
     /**
      * @param {number} lineNumber
-     * @param {!WebInspector.ConsoleMessage} msg
+     * @param {!WebInspector.ConsoleMessage} consoleMessage
      */
-    addMessageToSource: function(lineNumber, msg)
+    addMessageToSource: function(lineNumber, consoleMessage)
     {
         if (lineNumber >= this._textEditor.linesCount)
             lineNumber = this._textEditor.linesCount - 1;
         if (lineNumber < 0)
             lineNumber = 0;
 
-        var rowMessages = this._rowMessages[lineNumber];
-        if (!rowMessages) {
-            rowMessages = [];
-            this._rowMessages[lineNumber] = rowMessages;
-        }
-
-        for (var i = 0; i < rowMessages.length; ++i) {
-            if (rowMessages[i].consoleMessage.isEqual(msg)) {
-                rowMessages[i].repeatCount++;
-                this._updateMessageRepeatCount(rowMessages[i]);
-                return;
-            }
-        }
-
-        var rowMessage = { consoleMessage: msg };
-        rowMessages.push(rowMessage);
-
-        this._textEditor.beginUpdates();
-        var messageBubbleElement = this._messageBubbles[lineNumber];
-        if (!messageBubbleElement) {
-            messageBubbleElement = document.createElementWithClass("div", "webkit-html-message-bubble");
-            this._messageBubbles[lineNumber] = messageBubbleElement;
-            this._textEditor.addDecoration(lineNumber, messageBubbleElement);
-        }
-
-        var imageElement = document.createElement("div");
-        switch (msg.level) {
-            case WebInspector.ConsoleMessage.MessageLevel.Error:
-                messageBubbleElement.classList.add("webkit-html-error-message");
-                imageElement.className = "error-icon-small";
-                break;
-            case WebInspector.ConsoleMessage.MessageLevel.Warning:
-                messageBubbleElement.classList.add("webkit-html-warning-message");
-                imageElement.className = "warning-icon-small";
-                break;
-        }
-
-        // Create the image element in the Inspector's document so we can use relative image URLs.
-        var messageLineElement = messageBubbleElement.createChild("div", "webkit-html-message-line");
-        messageLineElement.appendChild(imageElement);
-        messageLineElement.createTextChild(msg.messageText);
-
-        rowMessage.element = messageLineElement;
-        rowMessage.repeatCount = 1;
-        this._updateMessageRepeatCount(rowMessage);
-        this._textEditor.endUpdates();
-    },
-
-    _updateMessageRepeatCount: function(rowMessage)
-    {
-        if (rowMessage.repeatCount < 2)
-            return;
-
-        if (!rowMessage.repeatCountElement) {
-            var repeatCountElement = document.createElement("span");
-            rowMessage.element.appendChild(repeatCountElement);
-            rowMessage.repeatCountElement = repeatCountElement;
-        }
-
-        rowMessage.repeatCountElement.textContent = WebInspector.UIString(" (repeated %d times)", rowMessage.repeatCount);
+        if (!this._rowMessageBuckets[lineNumber])
+            this._rowMessageBuckets[lineNumber] = new WebInspector.SourceFrame.RowMessageBucket(this, this._textEditor, lineNumber);
+        var messageBucket = this._rowMessageBuckets[lineNumber];
+        messageBucket.addMessage(consoleMessage);
     },
 
     /**
@@ -713,23 +685,13 @@ WebInspector.SourceFrame.prototype = {
         if (lineNumber < 0)
             lineNumber = 0;
 
-        var rowMessages = this._rowMessages[lineNumber];
-        for (var i = 0; rowMessages && i < rowMessages.length; ++i) {
-            var rowMessage = rowMessages[i];
-            if (rowMessage.consoleMessage !== msg)
-                continue;
-
-            var messageLineElement = rowMessage.element;
-            var messageBubbleElement = messageLineElement.parentElement;
-            messageBubbleElement.removeChild(messageLineElement);
-            rowMessages.remove(rowMessage);
-            if (!rowMessages.length)
-                delete this._rowMessages[lineNumber];
-            if (!messageBubbleElement.childElementCount) {
-                this._textEditor.removeDecoration(lineNumber, messageBubbleElement);
-                delete this._messageBubbles[lineNumber];
-            }
-            break;
+        var messageBucket = this._rowMessageBuckets[lineNumber];
+        if (!messageBucket)
+            return;
+        messageBucket.removeMessage(msg);
+        if (!messageBucket.uniqueMessagesCount()) {
+            messageBucket.detachFromEditor();
+            delete this._rowMessageBuckets[lineNumber];
         }
     },
 
@@ -818,6 +780,201 @@ WebInspector.SourceFrame.prototype = {
     __proto__: WebInspector.VBox.prototype
 }
 
+WebInspector.SourceFrame._iconClassPerLevel = {};
+WebInspector.SourceFrame._iconClassPerLevel[WebInspector.ConsoleMessage.MessageLevel.Error] = "error-icon-small";
+WebInspector.SourceFrame._iconClassPerLevel[WebInspector.ConsoleMessage.MessageLevel.Warning] = "warning-icon-small";
+
+WebInspector.SourceFrame._lineClassPerLevel = {};
+WebInspector.SourceFrame._lineClassPerLevel[WebInspector.ConsoleMessage.MessageLevel.Error] = "text-editor-line-with-error";
+WebInspector.SourceFrame._lineClassPerLevel[WebInspector.ConsoleMessage.MessageLevel.Warning] = "text-editor-line-with-warning";
+
+/**
+ * @constructor
+ * @param {!WebInspector.ConsoleMessage} consoleMessage
+ */
+WebInspector.SourceFrame.RowMessage = function(consoleMessage)
+{
+    this._consoleMessage = consoleMessage;
+    this._repeatCount = 1;
+    this.element = document.createElementWithClass("div", "text-editor-row-message");
+    this._icon = this.element.createChild("span", "text-editor-row-message-icon");
+    this._icon.classList.add(WebInspector.SourceFrame._iconClassPerLevel[consoleMessage.level]);
+    this._repeatCountElement = this.element.createChild("span", "bubble-repeat-count hidden error");
+    this.element.createTextChild(this._consoleMessage.messageText);
+}
+
+WebInspector.SourceFrame.RowMessage.prototype = {
+    /**
+     * @return {!WebInspector.ConsoleMessage}
+     */
+    consoleMessage: function()
+    {
+        return this._consoleMessage;
+    },
+
+    /**
+     * @return {number}
+     */
+    repeatCount: function()
+    {
+        return this._repeatCount;
+    },
+
+    setRepeatCount: function(repeatCount)
+    {
+        if (this._repeatCount === repeatCount)
+            return;
+        this._repeatCount = repeatCount;
+        this._updateMessageRepeatCount();
+    },
+
+    _updateMessageRepeatCount: function()
+    {
+        this._repeatCountElement.textContent = this._repeatCount;
+        var showRepeatCount = this._repeatCount > 1;
+        this._repeatCountElement.classList.toggle("hidden", !showRepeatCount);
+        this._icon.classList.toggle("hidden", showRepeatCount);
+    }
+}
+
+/**
+ * @constructor
+ * @param {!WebInspector.SourceFrame} sourceFrame
+ * @param {!WebInspector.TextEditor} textEditor
+ * @param {number} lineNumber
+ */
+WebInspector.SourceFrame.RowMessageBucket = function(sourceFrame, textEditor, lineNumber)
+{
+    this._sourceFrame = sourceFrame;
+    this._textEditor = textEditor;
+    this._lineHandle = textEditor.textEditorPositionHandle(lineNumber, 0);
+    this._decoration = document.createElementWithClass("div", "text-editor-line-decoration");
+    this._decoration._messageBucket = this;
+    this._wave = this._decoration.createChild("div", "text-editor-line-decoration-wave");
+    this._icon = this._wave.createChild("div", "text-editor-line-decoration-icon");
+
+    this._textEditor.addDecoration(lineNumber, this._decoration);
+
+    this._messagesDescriptionElement = document.createElementWithClass("div", "text-editor-messages-description-container");
+    /** @type {!Array.<!WebInspector.SourceFrame.RowMessage>} */
+    this._messages = [];
+
+    this._updateDecorationPosition();
+
+    this._level = null;
+}
+
+WebInspector.SourceFrame.RowMessageBucket.prototype = {
+    _updateDecorationPosition: function()
+    {
+        if (!this._sourceFrame._isEditorShowing())
+            return;
+        var position = this._lineHandle.resolve();
+        if (!position)
+            return;
+        var lineNumber = position.lineNumber;
+        var lineText = this._textEditor.line(lineNumber);
+        var lineIndent = WebInspector.TextUtils.lineIndent(lineText).length;
+        var base = this._textEditor.cursorPositionToCoordinates(lineNumber, 0);
+        var start = this._textEditor.cursorPositionToCoordinates(lineNumber, lineIndent);
+        var end = this._textEditor.cursorPositionToCoordinates(lineNumber, lineText.length);
+        this._wave.style.left = (start.x - base.x) + "px";
+        this._wave.style.width = (end.x - start.x) + "px";
+    },
+
+    /**
+     * @return {!Element}
+     */
+    messagesDescription: function()
+    {
+        this._messagesDescriptionElement.removeChildren();
+        for (var i = 0; i < this._messages.length; ++i) {
+            this._messagesDescriptionElement.appendChild(this._messages[i].element);
+        }
+        return this._messagesDescriptionElement;
+    },
+
+    detachFromEditor: function()
+    {
+        var position = this._lineHandle.resolve();
+        if (!position)
+            return;
+        var lineNumber = position.lineNumber;
+        if (this._level)
+            this._textEditor.toggleLineClass(lineNumber, WebInspector.SourceFrame._lineClassPerLevel[this._level], false);
+        this._textEditor.removeDecoration(lineNumber, this._decoration);
+    },
+
+    /**
+     * @return {number}
+     */
+    uniqueMessagesCount: function()
+    {
+        return this._messages.length;
+    },
+
+    /**
+     * @param {!WebInspector.ConsoleMessage} consoleMessage
+     */
+    addMessage: function(consoleMessage)
+    {
+        for (var i = 0; i < this._messages.length; ++i) {
+            var message = this._messages[i];
+            if (message.consoleMessage().isEqual(consoleMessage)) {
+                message.setRepeatCount(message.repeatCount() + 1);
+                return;
+            }
+        }
+
+        var rowMessage = new WebInspector.SourceFrame.RowMessage(consoleMessage);
+        this._messages.push(rowMessage);
+        this._updateBucketLevel();
+    },
+
+    /**
+     * @param {!WebInspector.ConsoleMessage} consoleMessage
+     */
+    removeMessage: function(consoleMessage)
+    {
+        for (var i = 0; i < this._messages.length; ++i) {
+            var rowMessage = this._messages[i];
+            if (!rowMessage.consoleMessage().isEqual(consoleMessage))
+                continue;
+            rowMessage.setRepeatCount(rowMessage.repeatCount() - 1);
+            if (!rowMessage.repeatCount())
+                this._messages.splice(i, 1);
+            this._updateBucketLevel();
+            return;
+        }
+    },
+
+    _updateBucketLevel: function()
+    {
+        if (!this._messages.length)
+            return;
+        var position = this._lineHandle.resolve();
+        if (!position)
+            return;
+
+        var lineNumber = position.lineNumber;
+        var maxMessage = null;
+        for (var i = 0; i < this._messages.length; ++i) {
+            var message = this._messages[i].consoleMessage();;
+            if (!maxMessage || WebInspector.ConsoleMessage.messageLevelComparator(maxMessage, message) < 0)
+                maxMessage = message;
+        }
+
+        if (this._level) {
+            this._textEditor.toggleLineClass(lineNumber, WebInspector.SourceFrame._lineClassPerLevel[this._level], false);
+            this._icon.classList.toggle(WebInspector.SourceFrame._iconClassPerLevel[this._level], false);
+        }
+        this._level = maxMessage.level;
+        if (!this._level)
+            return;
+        this._textEditor.toggleLineClass(lineNumber, WebInspector.SourceFrame._lineClassPerLevel[this._level], true);
+        this._icon.classList.toggle(WebInspector.SourceFrame._iconClassPerLevel[this._level], true);
+    }
+}
 
 /**
  * @implements {WebInspector.TextEditorDelegate}

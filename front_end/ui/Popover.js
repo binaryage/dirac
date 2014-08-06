@@ -245,13 +245,21 @@ WebInspector.PopoverHelper = function(panelElement, getAnchor, showPopover, onHi
     panelElement.addEventListener("mousedown", this._mouseDown.bind(this), false);
     panelElement.addEventListener("mousemove", this._mouseMove.bind(this), false);
     panelElement.addEventListener("mouseout", this._mouseOut.bind(this), false);
-    this.setTimeout(1000);
+    this.setTimeout(1000, 500);
 }
 
 WebInspector.PopoverHelper.prototype = {
-    setTimeout: function(timeout)
+    /**
+     * @param {number} timeout
+     * @param {number=} hideTimeout
+     */
+    setTimeout: function(timeout, hideTimeout)
     {
         this._timeout = timeout;
+        if (typeof hideTimeout === "number")
+            this._hideTimeout = hideTimeout;
+        else
+            this._hideTimeout = timeout / 2;
     },
 
     /**
@@ -305,7 +313,7 @@ WebInspector.PopoverHelper.prototype = {
 
     _startHidePopoverTimer: function()
     {
-        // User has 500ms (this._timeout / 2) to reach the popup.
+        // User has 500ms (this._hideTimeout) to reach the popup.
         if (!this._popover || this._hidePopoverTimer)
             return;
 
@@ -317,7 +325,7 @@ WebInspector.PopoverHelper.prototype = {
             this._hidePopover();
             delete this._hidePopoverTimer;
         }
-        this._hidePopoverTimer = setTimeout(doHide.bind(this), this._timeout / 2);
+        this._hidePopoverTimer = setTimeout(doHide.bind(this), this._hideTimeout);
     },
 
     _handleMouseAction: function(event, isMouseDown)
