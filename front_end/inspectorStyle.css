@@ -2027,8 +2027,7 @@ body.inactive li.selected .status .bubble-repeat-count {
 
 .sidebar-tree.small .sidebar-tree-item,
 .sidebar-tree .children.small .sidebar-tree-item,
-.sidebar-tree-item.small,
-.small .resources-graph-side {
+.sidebar-tree-item.small {
     height: 20px;
 }
 
