@@ -421,7 +421,7 @@ WebInspector.StylesSidebarPane.prototype = {
         if (this._computedStylePane.isShowing())
             this._target.cssModel.getComputedStyleAsync(node.id, computedCallback);
         this._target.cssModel.getInlineStylesAsync(node.id, inlineCallback);
-        this._target.cssModel.getMatchedStylesAsync(node.id, true, true, stylesCallback.bind(this));
+        this._target.cssModel.getMatchedStylesAsync(node.id, false, false, stylesCallback.bind(this));
     },
 
     /**

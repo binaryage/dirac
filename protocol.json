@@ -2706,8 +2706,8 @@
                 "name": "getMatchedStylesForNode",
                 "parameters": [
                     { "name": "nodeId", "$ref": "DOM.NodeId" },
-                    { "name": "includePseudo", "type": "boolean", "optional": true, "description": "Whether to include pseudo styles (default: true)." },
-                    { "name": "includeInherited", "type": "boolean", "optional": true, "description": "Whether to include inherited styles (default: true)." }
+                    { "name": "excludePseudo", "type": "boolean", "optional": true, "description": "Whether to exclude pseudo styles (default: false)." },
+                    { "name": "excludeInherited", "type": "boolean", "optional": true, "description": "Whether to exclude inherited styles (default: false)." }
                 ],
                 "returns": [
                     { "name": "matchedCSSRules", "type": "array", "items": { "$ref": "RuleMatch" }, "optional": true, "description": "CSS rules matching this node, from all applicable stylesheets." },

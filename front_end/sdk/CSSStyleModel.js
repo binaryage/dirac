@@ -130,11 +130,11 @@ WebInspector.CSSStyleModel.prototype = {
 
     /**
      * @param {!DOMAgent.NodeId} nodeId
-     * @param {boolean} needPseudo
-     * @param {boolean} needInherited
+     * @param {boolean} excludePseudo
+     * @param {boolean} excludeInherited
      * @param {function(?*)} userCallback
      */
-    getMatchedStylesAsync: function(nodeId, needPseudo, needInherited, userCallback)
+    getMatchedStylesAsync: function(nodeId, excludePseudo, excludeInherited, userCallback)
     {
         /**
          * @param {function(?*)} userCallback
@@ -180,7 +180,7 @@ WebInspector.CSSStyleModel.prototype = {
                 userCallback(result);
         }
 
-        this._agent.getMatchedStylesForNode(nodeId, needPseudo, needInherited, callback.bind(this, userCallback));
+        this._agent.getMatchedStylesForNode(nodeId, excludePseudo, excludeInherited, callback.bind(this, userCallback));
     },
 
     /**
