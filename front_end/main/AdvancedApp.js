@@ -22,7 +22,10 @@ WebInspector.AdvancedApp = function()
 WebInspector.AdvancedApp.prototype = {
     _toggleEmulationEnabled: function()
     {
-        WebInspector.overridesSupport.setEmulationEnabled(!this._toggleEmulationButton.toggled);
+        var enabled = !this._toggleEmulationButton.toggled;
+        if (enabled)
+            WebInspector.userMetrics.DeviceModeEnabled.record();
+        WebInspector.overridesSupport.setEmulationEnabled(enabled);
     },
 
     _emulationEnabledChanged: function()
