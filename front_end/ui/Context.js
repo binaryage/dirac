@@ -99,16 +99,16 @@ WebInspector.Context.prototype = {
     },
 
     /**
-     * @param {!Array.<!WebInspector.ModuleManager.Extension>} extensions
-     * @return {!Set.<!WebInspector.ModuleManager.Extension>}
+     * @param {!Array.<!Runtime.Extension>} extensions
+     * @return {!Set.<!Runtime.Extension>}
      */
     applicableExtensions: function(extensions)
     {
         var targetExtensionSet = new Set();
 
-        var availableFlavors = Set.fromArray(this.flavors());
+        var availableFlavors = this.flavors();
         extensions.forEach(function(extension) {
-            if (WebInspector.moduleManager.isExtensionApplicableToContextTypes(extension, availableFlavors))
+            if (self.runtime.isExtensionApplicableToContextTypes(extension, availableFlavors))
                 targetExtensionSet.add(extension);
         });
 

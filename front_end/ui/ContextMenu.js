@@ -295,10 +295,10 @@ WebInspector.ContextMenu.prototype = {
      */
     appendApplicableItems: function(target)
     {
-        WebInspector.moduleManager.extensions(WebInspector.ContextMenu.Provider, target).forEach(processProviders.bind(this));
+        self.runtime.extensions(WebInspector.ContextMenu.Provider, target).forEach(processProviders.bind(this));
 
         /**
-         * @param {!WebInspector.ModuleManager.Extension} extension
+         * @param {!Runtime.Extension} extension
          * @this {WebInspector.ContextMenu}
          */
         function processProviders(extension)

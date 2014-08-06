@@ -207,7 +207,7 @@ WebInspector.ExtensionAuditFormatters = {
         {
             if (!node)
                 return;
-            var renderer = WebInspector.moduleManager.instance(WebInspector.Renderer, node);
+            var renderer = self.runtime.instance(WebInspector.Renderer, node);
             if (renderer)
                 parentElement.appendChild(renderer.render(node));
             else

@@ -550,7 +550,7 @@ WebInspector.ConsoleViewMessage.prototype = {
                 this._formatParameterAsObject(object, elem, false);
                 return;
             }
-            var renderer = WebInspector.moduleManager.instance(WebInspector.Renderer, node);
+            var renderer = self.runtime.instance(WebInspector.Renderer, node);
             if (renderer)
                 elem.appendChild(renderer.render(node));
             else

@@ -46,7 +46,7 @@ WebInspector.SourcesView = function(workspace, sourcesPanel)
     {
         this._statusBarContainerElement.appendChild(EditorAction.button(this));
     }
-    var editorActions = /** @type {!Array.<!WebInspector.SourcesView.EditorAction>} */ (WebInspector.moduleManager.instances(WebInspector.SourcesView.EditorAction));
+    var editorActions = /** @type {!Array.<!WebInspector.SourcesView.EditorAction>} */ (self.runtime.instances(WebInspector.SourcesView.EditorAction));
     editorActions.forEach(appendButtonForExtension.bind(this));
 
     this._scriptViewStatusBarItemsContainer = this._statusBarContainerElement.createChild("div", "inline-block");

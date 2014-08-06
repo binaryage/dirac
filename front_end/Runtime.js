@@ -28,22 +28,78 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+var _importedScripts = {};
+
+/**
+ * @param {string} url
+ * @return {string}
+ */
+function loadResource(url)
+{
+    var xhr = new XMLHttpRequest();
+    xhr.open("GET", url, false);
+    try {
+        xhr.send(null);
+    } catch (e) {
+        console.error(url + " -> " + new Error().stack);
+        throw e;
+    }
+    return xhr.responseText;
+}
+
+/**
+ * This function behavior depends on the "debug_devtools" flag value.
+ * - In debug mode it loads scripts synchronously via xhr request.
+ * - In release mode every occurrence of "importScript" in the js files
+ *   that have been whitelisted in the build system gets replaced with
+ *   the script source code on the compilation phase.
+ *   The build system will throw an exception if it finds an importScript() call
+ *   in other files.
+ *
+ * To load scripts lazily in release mode call "loadScript" function.
+ * @param {string} scriptName
+ */
+function importScript(scriptName)
+{
+    var sourceURL = self._importScriptPathPrefix + scriptName;
+    if (_importedScripts[sourceURL])
+        return;
+    _importedScripts[sourceURL] = true;
+    var scriptSource = loadResource(sourceURL);
+    if (!scriptSource)
+        throw "empty response arrived for script '" + sourceURL + "'";
+    var oldPrefix = self._importScriptPathPrefix;
+    self._importScriptPathPrefix += scriptName.substring(0, scriptName.lastIndexOf("/") + 1);
+    try {
+        self.eval(scriptSource + "\n//# sourceURL=" + sourceURL);
+    } finally {
+        self._importScriptPathPrefix = oldPrefix;
+    }
+}
+
+(function() {
+    var baseUrl = location.origin + location.pathname;
+    self._importScriptPathPrefix = baseUrl.substring(0, baseUrl.lastIndexOf("/") + 1);
+})();
+
+var loadScript = importScript;
+
 /**
  * @constructor
- * @param {!Array.<!WebInspector.ModuleManager.ModuleDescriptor>} descriptors
+ * @param {!Array.<!Runtime.ModuleDescriptor>} descriptors
  */
-WebInspector.ModuleManager = function(descriptors)
+var Runtime = function(descriptors)
 {
     /**
-     * @type {!Array.<!WebInspector.ModuleManager.Module>}
+     * @type {!Array.<!Runtime.Module>}
      */
     this._modules = [];
     /**
-     * @type {!Object.<string, !WebInspector.ModuleManager.Module>}
+     * @type {!Object.<string, !Runtime.Module>}
      */
     this._modulesMap = {};
     /**
-     * @type {!Array.<!WebInspector.ModuleManager.Extension>}
+     * @type {!Array.<!Runtime.Extension>}
      */
     this._extensions = [];
 
@@ -53,14 +109,14 @@ WebInspector.ModuleManager = function(descriptors)
     this._cachedTypeClasses = {};
 
     /**
-     * @type {!Object.<string, !WebInspector.ModuleManager.ModuleDescriptor>}
+     * @type {!Object.<string, !Runtime.ModuleDescriptor>}
      */
     this._descriptorsMap = {};
     for (var i = 0; i < descriptors.length; ++i)
         this._descriptorsMap[descriptors[i]["name"]] = descriptors[i];
 }
 
-WebInspector.ModuleManager.prototype = {
+Runtime.prototype = {
     /**
      * @param {!Array.<string>} configuration
      */
@@ -79,11 +135,11 @@ WebInspector.ModuleManager.prototype = {
             var content = loadResource(moduleName + "/module.json");
             if (!content)
                 throw new Error("Module is not defined: " + moduleName + " " + new Error().stack);
-            var module = /** @type {!WebInspector.ModuleManager.ModuleDescriptor} */ (self.eval("(" + content + ")"));
+            var module = /** @type {!Runtime.ModuleDescriptor} */ (self.eval("(" + content + ")"));
             module["name"] = moduleName;
             this._descriptorsMap[moduleName] = module;
         }
-        var module = new WebInspector.ModuleManager.Module(this, this._descriptorsMap[moduleName]);
+        var module = new Runtime.Module(this, this._descriptorsMap[moduleName]);
         this._modules.push(module);
         this._modulesMap[moduleName] = module;
     },
@@ -97,7 +153,7 @@ WebInspector.ModuleManager.prototype = {
     },
 
     /**
-     * @param {!WebInspector.ModuleManager.Extension} extension
+     * @param {!Runtime.Extension} extension
      * @param {?function(function(new:Object)):boolean} predicate
      * @return {boolean}
      */
@@ -118,7 +174,7 @@ WebInspector.ModuleManager.prototype = {
     },
 
     /**
-     * @param {!WebInspector.ModuleManager.Extension} extension
+     * @param {!Runtime.Extension} extension
      * @param {?Object} context
      * @return {boolean}
      */
@@ -139,8 +195,8 @@ WebInspector.ModuleManager.prototype = {
     },
 
     /**
-     * @param {!WebInspector.ModuleManager.Extension} extension
-     * @param {!Set.<!Function>=} currentContextTypes
+     * @param {!Runtime.Extension} extension
+     * @param {!Array.<!Function>=} currentContextTypes
      * @return {boolean}
      */
     isExtensionApplicableToContextTypes: function(extension, currentContextTypes)
@@ -148,7 +204,13 @@ WebInspector.ModuleManager.prototype = {
         if (!extension.descriptor().contextTypes)
             return true;
 
-        return this._checkExtensionApplicability(extension, currentContextTypes ? isContextTypeKnown : null);
+        // FIXME: Remove this workaround once Set is available natively.
+        for (var i = 0; i < currentContextTypes.length; ++i)
+            currentContextTypes[i]["__applicable"] = true;
+        var result = this._checkExtensionApplicability(extension, currentContextTypes ? isContextTypeKnown : null);
+        for (var i = 0; i < currentContextTypes.length; ++i)
+            delete currentContextTypes[i]["__applicable"];
+        return result;
 
         /**
          * @param {!Function} targetType
@@ -156,19 +218,19 @@ WebInspector.ModuleManager.prototype = {
          */
         function isContextTypeKnown(targetType)
         {
-            return currentContextTypes.contains(targetType);
+            return !!targetType["__applicable"];
         }
     },
 
     /**
      * @param {*} type
      * @param {?Object=} context
-     * @return {!Array.<!WebInspector.ModuleManager.Extension>}
+     * @return {!Array.<!Runtime.Extension>}
      */
     extensions: function(type, context)
     {
         /**
-         * @param {!WebInspector.ModuleManager.Extension} extension
+         * @param {!Runtime.Extension} extension
          * @return {boolean}
          */
         function filter(extension)
@@ -183,7 +245,7 @@ WebInspector.ModuleManager.prototype = {
     /**
      * @param {*} type
      * @param {?Object=} context
-     * @return {?WebInspector.ModuleManager.Extension}
+     * @return {?Runtime.Extension}
      */
     extension: function(type, context)
     {
@@ -198,7 +260,7 @@ WebInspector.ModuleManager.prototype = {
     instances: function(type, context)
     {
         /**
-         * @param {!WebInspector.ModuleManager.Extension} extension
+         * @param {!Runtime.Extension} extension
          * @return {?Object}
          */
         function instantiate(extension)
@@ -247,7 +309,21 @@ WebInspector.ModuleManager.prototype = {
                 return -1;
             if (name2 in orderForName)
                 return 1;
-            return name1.compareTo(name2);
+            return compare(name1, name2);
+        }
+
+        /**
+         * @param {string} left
+         * @param {string} right
+         * @return {number}
+         */
+        function compare(left, right)
+        {
+            if (left > right)
+              return 1;
+            if (left < right)
+                return -1;
+            return 0;
         }
         return result;
     },
@@ -272,7 +348,7 @@ WebInspector.ModuleManager.prototype = {
 /**
  * @constructor
  */
-WebInspector.ModuleManager.ModuleDescriptor = function()
+Runtime.ModuleDescriptor = function()
 {
     /**
      * @type {string}
@@ -280,7 +356,7 @@ WebInspector.ModuleManager.ModuleDescriptor = function()
     this.name;
 
     /**
-     * @type {!Array.<!WebInspector.ModuleManager.ExtensionDescriptor>}
+     * @type {!Array.<!Runtime.ExtensionDescriptor>}
      */
     this.extensions;
 
@@ -298,7 +374,7 @@ WebInspector.ModuleManager.ModuleDescriptor = function()
 /**
  * @constructor
  */
-WebInspector.ModuleManager.ExtensionDescriptor = function()
+Runtime.ExtensionDescriptor = function()
 {
     /**
      * @type {string}
@@ -318,21 +394,21 @@ WebInspector.ModuleManager.ExtensionDescriptor = function()
 
 /**
  * @constructor
- * @param {!WebInspector.ModuleManager} manager
- * @param {!WebInspector.ModuleManager.ModuleDescriptor} descriptor
+ * @param {!Runtime} manager
+ * @param {!Runtime.ModuleDescriptor} descriptor
  */
-WebInspector.ModuleManager.Module = function(manager, descriptor)
+Runtime.Module = function(manager, descriptor)
 {
     this._manager = manager;
     this._descriptor = descriptor;
     this._name = descriptor.name;
-    var extensions = /** @type {?Array.<!WebInspector.ModuleManager.ExtensionDescriptor>}*/ (descriptor.extensions);
+    var extensions = /** @type {?Array.<!Runtime.ExtensionDescriptor>}*/ (descriptor.extensions);
     for (var i = 0; extensions && i < extensions.length; ++i)
-        this._manager._extensions.push(new WebInspector.ModuleManager.Extension(this, extensions[i]));
+        this._manager._extensions.push(new Runtime.Extension(this, extensions[i]));
     this._loaded = false;
 }
 
-WebInspector.ModuleManager.Module.prototype = {
+Runtime.Module.prototype = {
     /**
      * @return {string}
      */
@@ -368,16 +444,16 @@ WebInspector.ModuleManager.Module.prototype = {
 
 /**
  * @constructor
- * @param {!WebInspector.ModuleManager.Module} module
- * @param {!WebInspector.ModuleManager.ExtensionDescriptor} descriptor
+ * @param {!Runtime.Module} module
+ * @param {!Runtime.ExtensionDescriptor} descriptor
  */
-WebInspector.ModuleManager.Extension = function(module, descriptor)
+Runtime.Extension = function(module, descriptor)
 {
     this._module = module;
     this._descriptor = descriptor;
 
     this._type = descriptor.type;
-    this._hasTypeClass = !!this._type.startsWith("@");
+    this._hasTypeClass = this._type.charAt(0) === "@";
 
     /**
      * @type {?string}
@@ -385,7 +461,7 @@ WebInspector.ModuleManager.Extension = function(module, descriptor)
     this._className = descriptor.className || null;
 }
 
-WebInspector.ModuleManager.Extension.prototype = {
+Runtime.Extension.prototype = {
     /**
      * @return {!Object}
      */
@@ -395,7 +471,7 @@ WebInspector.ModuleManager.Extension.prototype = {
     },
 
     /**
-     * @return {!WebInspector.ModuleManager.Module}
+     * @return {!Runtime.Module}
      */
     module: function()
     {
@@ -443,63 +519,6 @@ WebInspector.ModuleManager.Extension.prototype = {
 }
 
 /**
- * @interface
+ * @type {!Runtime}
  */
-WebInspector.Renderer = function()
-{
-}
-
-WebInspector.Renderer.prototype = {
-    /**
-     * @param {!Object} object
-     * @return {?Element}
-     */
-    render: function(object) {}
-}
-
-/**
- * @interface
- */
-WebInspector.Revealer = function()
-{
-}
-
-/**
- * @param {?Object} revealable
- * @param {number=} lineNumber
- */
-WebInspector.Revealer.reveal = function(revealable, lineNumber)
-{
-    if (!revealable)
-        return;
-    var revealer = WebInspector.moduleManager.instance(WebInspector.Revealer, revealable);
-    if (revealer)
-        revealer.reveal(revealable, lineNumber);
-}
-
-WebInspector.Revealer.prototype = {
-    /**
-     * @param {!Object} object
-     * @param {number=} lineNumber
-     */
-    reveal: function(object, lineNumber) {}
-}
-
-/**
- * @interface
- */
-WebInspector.NodeRemoteObjectInspector = function()
-{
-}
-
-WebInspector.NodeRemoteObjectInspector.prototype = {
-    /**
-     * @param {!Object} object
-     */
-    inspectNodeObject: function(object) {}
-}
-
-/**
- * @type {!WebInspector.ModuleManager}
- */
-WebInspector.moduleManager;
+var runtime;

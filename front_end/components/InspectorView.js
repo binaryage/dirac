@@ -46,7 +46,7 @@ WebInspector.InspectorView = function()
     this._drawerSplitView.show(this.element);
 
     this._tabbedPane = new WebInspector.TabbedPane();
-    this._tabbedPane.setRetainTabOrder(true, WebInspector.moduleManager.orderComparator(WebInspector.Panel, "name", "order"));
+    this._tabbedPane.setRetainTabOrder(true, self.runtime.orderComparator(WebInspector.Panel, "name", "order"));
     this._tabbedPane.show(this._drawerSplitView.mainElement());
     this._drawer = new WebInspector.Drawer(this._drawerSplitView);
 
@@ -90,14 +90,14 @@ WebInspector.InspectorView.prototype = {
     _loadPanelDesciptors: function()
     {
         WebInspector.startBatchUpdate();
-        WebInspector.moduleManager.extensions(WebInspector.Panel).forEach(processPanelExtensions.bind(this));
+        self.runtime.extensions(WebInspector.Panel).forEach(processPanelExtensions.bind(this));
         /**
-         * @param {!WebInspector.ModuleManager.Extension} extension
+         * @param {!Runtime.Extension} extension
          * @this {!WebInspector.InspectorView}
          */
         function processPanelExtensions(extension)
         {
-            this.addPanel(new WebInspector.ModuleManagerExtensionPanelDescriptor(extension));
+            this.addPanel(new WebInspector.RuntimeExtensionPanelDescriptor(extension));
         }
         WebInspector.endBatchUpdate();
     },

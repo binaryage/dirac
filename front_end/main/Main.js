@@ -50,11 +50,11 @@ WebInspector.Main = function()
 WebInspector.Main.prototype = {
     _createGlobalStatusBarItems: function()
     {
-        var extensions = WebInspector.moduleManager.extensions(WebInspector.StatusBarItem.Provider);
+        var extensions = self.runtime.extensions(WebInspector.StatusBarItem.Provider);
 
         /**
-         * @param {!WebInspector.ModuleManager.Extension} left
-         * @param {!WebInspector.ModuleManager.Extension} right
+         * @param {!Runtime.Extension} left
+         * @param {!Runtime.Extension} right
          */
         function orderComparator(left, right)
         {
@@ -181,7 +181,7 @@ WebInspector.Main.prototype = {
     _createModuleManager: function()
     {
         console.timeStamp("Main._createModuleManager");
-        WebInspector.moduleManager = new WebInspector.ModuleManager(allDescriptors);
+        self.runtime = new Runtime(allDescriptors);
 
         // FIXME: define html-per-app, make configuration a part of the app.
         var configuration = ["main", "elements", "network", "sources", "timeline", "profiler", "resources", "audits", "console", "source_frame", "extensions", "settings"];
@@ -191,7 +191,7 @@ WebInspector.Main.prototype = {
             configuration.push("devices");
         if (WebInspector.isWorkerFrontend())
             configuration = ["main", "sources", "timeline", "profiler", "console", "source_frame"];
-        WebInspector.moduleManager.registerModules(configuration);
+        self.runtime.registerModules(configuration);
     },
 
     _createAppUI: function()
@@ -580,7 +580,7 @@ WebInspector.Main.prototype = {
     {
         var object = WebInspector.runtimeModel.createRemoteObject(payload);
         if (object.isNode()) {
-            var nodeObjectInspector = WebInspector.moduleManager.instance(WebInspector.NodeRemoteObjectInspector, object);
+            var nodeObjectInspector = runtime.instance(WebInspector.NodeRemoteObjectInspector, object);
             if (nodeObjectInspector)
                 nodeObjectInspector.inspectNodeObject(object);
             return;

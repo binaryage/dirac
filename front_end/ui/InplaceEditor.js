@@ -17,7 +17,7 @@ WebInspector.InplaceEditor = function()
 WebInspector.InplaceEditor.startEditing = function(element, config)
 {
     if (config.multiline)
-        return WebInspector.moduleManager.instance(WebInspector.InplaceEditor).startEditing(element, config);
+        return self.runtime.instance(WebInspector.InplaceEditor).startEditing(element, config);
 
     if (!WebInspector.InplaceEditor._defaultInstance)
         WebInspector.InplaceEditor._defaultInstance = new WebInspector.InplaceEditor();

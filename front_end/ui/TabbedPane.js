@@ -1116,7 +1116,7 @@ WebInspector.ExtensibleTabbedPaneController = function(tabbedPane, extensionPoin
     this._extensionPoint = extensionPoint;
     this._viewCallback = viewCallback;
 
-    this._tabbedPane.setRetainTabOrder(true, WebInspector.moduleManager.orderComparator(extensionPoint, "name", "order"));
+    this._tabbedPane.setRetainTabOrder(true, self.runtime.orderComparator(extensionPoint, "name", "order"));
     this._tabbedPane.addEventListener(WebInspector.TabbedPane.EventTypes.TabSelected, this._tabSelected, this);
     /** @type {!StringMap.<?WebInspector.View>} */
     this._views = new StringMap();
@@ -1127,7 +1127,7 @@ WebInspector.ExtensibleTabbedPaneController.prototype = {
     _initialize: function()
     {
         this._extensions = {};
-        var extensions = WebInspector.moduleManager.extensions(this._extensionPoint);
+        var extensions = self.runtime.extensions(this._extensionPoint);
 
         for (var i = 0; i < extensions.length; ++i) {
             var descriptor = extensions[i].descriptor();

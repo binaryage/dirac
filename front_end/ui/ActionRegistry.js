@@ -7,7 +7,7 @@
  */
 WebInspector.ActionRegistry = function()
 {
-    /** @type {!StringMap.<!WebInspector.ModuleManager.Extension>} */
+    /** @type {!StringMap.<!Runtime.Extension>} */
     this._actionsById = new StringMap();
     this._registerActions();
 }
@@ -15,10 +15,10 @@ WebInspector.ActionRegistry = function()
 WebInspector.ActionRegistry.prototype = {
     _registerActions: function()
     {
-        WebInspector.moduleManager.extensions(WebInspector.ActionDelegate).forEach(registerExtension, this);
+        self.runtime.extensions(WebInspector.ActionDelegate).forEach(registerExtension, this);
 
         /**
-         * @param {!WebInspector.ModuleManager.Extension} extension
+         * @param {!Runtime.Extension} extension
          * @this {WebInspector.ActionRegistry}
          */
         function registerExtension(extension)

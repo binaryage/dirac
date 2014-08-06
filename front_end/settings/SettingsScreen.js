@@ -236,11 +236,11 @@ WebInspector.GenericSettingsTab.prototype = {
         /** @const */
         var explicitSectionOrder = ["", "Appearance", "Elements", "Sources", "Profiler", "Console", "Extensions"];
 
-        var allExtensions = WebInspector.moduleManager.extensions("ui-setting");
+        var allExtensions = self.runtime.extensions("ui-setting");
 
-        /** @type {!StringMultimap.<!WebInspector.ModuleManager.Extension>} */
+        /** @type {!StringMultimap.<!Runtime.Extension>} */
         var extensionsBySectionId = new StringMultimap();
-        /** @type {!StringMultimap.<!WebInspector.ModuleManager.Extension>} */
+        /** @type {!StringMultimap.<!Runtime.Extension>} */
         var childSettingExtensionsByParentName = new StringMultimap();
 
         allExtensions.forEach(function(extension) {
@@ -270,8 +270,8 @@ WebInspector.GenericSettingsTab.prototype = {
 
     /**
      * @param {string} sectionName
-     * @param {!Array.<!WebInspector.ModuleManager.Extension>} extensions
-     * @param {!StringMultimap.<!WebInspector.ModuleManager.Extension>} childSettingExtensionsByParentName
+     * @param {!Array.<!Runtime.Extension>} extensions
+     * @param {!StringMultimap.<!Runtime.Extension>} childSettingExtensionsByParentName
      */
     _addSectionWithExtensionProvidedSettings: function(sectionName, extensions, childSettingExtensionsByParentName)
     {
@@ -281,7 +281,7 @@ WebInspector.GenericSettingsTab.prototype = {
 
         /**
          * @param {?Element} parentFieldset
-         * @param {!WebInspector.ModuleManager.Extension} extension
+         * @param {!Runtime.Extension} extension
          * @this {WebInspector.GenericSettingsTab}
          */
         function processSetting(parentFieldset, extension)

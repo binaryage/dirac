@@ -26,7 +26,7 @@ WebInspector.ExtensionServerProxy = function()
 WebInspector.ExtensionServerProxy._ensureExtensionServer = function()
 {
     if (!WebInspector.extensionServer)
-        WebInspector.extensionServer = WebInspector.moduleManager.instance(WebInspector.ExtensionServerAPI);
+        WebInspector.extensionServer = self.runtime.instance(WebInspector.ExtensionServerAPI);
 },
 
 WebInspector.ExtensionServerProxy.prototype = {

@@ -45,6 +45,7 @@
         ],
         'devtools_core_base_files': [
             'front_end/inspector.html',
+            'front_end/Runtime.js',
             'front_end/Tests.js',
             'front_end/TestController.js',
             'front_end/dialog.css',
@@ -63,7 +64,7 @@
             'front_end/common/Color.js',
             'front_end/common/Geometry.js',
             'front_end/common/Console.js',
-            'front_end/common/ModuleManager.js',
+            'front_end/common/ModuleExtensionInterfaces.js',
             'front_end/common/modules.js',
             'front_end/common/Object.js',
             'front_end/common/NotificationService.js',

@@ -215,17 +215,17 @@ WebInspector.PanelDescriptor.prototype = {
 
 /**
  * @constructor
- * @param {!WebInspector.ModuleManager.Extension} extension
+ * @param {!Runtime.Extension} extension
  * @implements {WebInspector.PanelDescriptor}
  */
-WebInspector.ModuleManagerExtensionPanelDescriptor = function(extension)
+WebInspector.RuntimeExtensionPanelDescriptor = function(extension)
 {
     this._name = extension.descriptor()["name"];
     this._title = WebInspector.UIString(extension.descriptor()["title"]);
     this._extension = extension;
 }
 
-WebInspector.ModuleManagerExtensionPanelDescriptor.prototype = {
+WebInspector.RuntimeExtensionPanelDescriptor.prototype = {
     /**
      * @return {string}
      */

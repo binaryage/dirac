@@ -176,11 +176,11 @@ WebInspector.ShortcutRegistry.prototype = {
     _registerBindings: function()
     {
         document.addEventListener("input", this._onInput.bind(this), true);
-        var extensions = WebInspector.moduleManager.extensions(WebInspector.ActionDelegate);
+        var extensions = self.runtime.extensions(WebInspector.ActionDelegate);
         extensions.forEach(registerExtension, this);
 
         /**
-         * @param {!WebInspector.ModuleManager.Extension} extension
+         * @param {!Runtime.Extension} extension
          * @this {WebInspector.ShortcutRegistry}
          */
         function registerExtension(extension)

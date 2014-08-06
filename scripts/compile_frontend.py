@@ -58,6 +58,7 @@ generate_protocol_externs.generate_protocol_externs(protocol_externs_file, path.
 
 jsmodule_name_prefix = "jsmodule_"
 js_modules_name = "frontend_modules.json"
+runtime_module_name = "_runtime"
 
 
 def error_excepthook(exctype, value, traceback):
@@ -251,6 +252,10 @@ print "Checking duplicate files across modules..."
 check_duplicate_files()
 
 
+def module_arg(module_name):
+    return " --module " + jsmodule_name_prefix + module_name
+
+
 def dump_module(name, recursively, processed_modules):
     if name in processed_modules:
         return ""
@@ -260,10 +265,10 @@ def dump_module(name, recursively, processed_modules):
     if recursively:
         for dependency in module["dependencies"]:
             command += dump_module(dependency, recursively, processed_modules)
-    command += " --module " + jsmodule_name_prefix + module["name"] + ":"
+    command += module_arg(module["name"]) + ":"
     command += str(len(module["sources"]))
     firstDependency = True
-    for dependency in module["dependencies"]:
+    for dependency in module["dependencies"] + [runtime_module_name]:
         if firstDependency:
             command += ":"
         else:
@@ -283,7 +288,8 @@ for module in modules:
     closure_args = common_closure_args
     closure_args += " --externs " + global_externs_file
     closure_args += " --externs " + protocol_externs_file
-    closure_args += dump_module(module["name"], True, {})
+    runtime_module = module_arg(runtime_module_name) + ":1 --js " + path.join(devtools_frontend_path, "Runtime.js")
+    closure_args += runtime_module + dump_module(module["name"], True, {})
     compiler_args_file.write("%s %s\n" % (module["name"], closure_args))
 
 compiler_args_file.close()

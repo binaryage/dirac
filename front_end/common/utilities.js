@@ -1669,62 +1669,6 @@ function loadXHR(url, async, callback)
     return null;
 }
 
-var _importedScripts = {};
-
-/**
- * @param {string} url
- * @return {string}
- */
-function loadResource(url)
-{
-    var xhr = new XMLHttpRequest();
-    xhr.open("GET", url, false);
-    try {
-        xhr.send(null);
-    } catch (e) {
-        console.error(url + " -> " + new Error().stack);
-        throw e;
-    }
-    return xhr.responseText;
-}
-
-/**
- * This function behavior depends on the "debug_devtools" flag value.
- * - In debug mode it loads scripts synchronously via xhr request.
- * - In release mode every occurrence of "importScript" in the js files
- *   that have been whitelisted in the build system gets replaced with
- *   the script source code on the compilation phase.
- *   The build system will throw an exception if it finds an importScript() call
- *   in other files.
- *
- * To load scripts lazily in release mode call "loadScript" function.
- * @param {string} scriptName
- */
-function importScript(scriptName)
-{
-    var sourceURL = self._importScriptPathPrefix + scriptName;
-    if (_importedScripts[sourceURL])
-        return;
-    _importedScripts[sourceURL] = true;
-    var scriptSource = loadResource(sourceURL);
-    if (!scriptSource)
-        throw "empty response arrived for script '" + sourceURL + "'";
-    var oldPrefix = self._importScriptPathPrefix;
-    self._importScriptPathPrefix += scriptName.substring(0, scriptName.lastIndexOf("/") + 1);
-    try {
-        self.eval(scriptSource + "\n//# sourceURL=" + sourceURL);
-    } finally {
-        self._importScriptPathPrefix = oldPrefix;
-    }
-}
-
-(function() {
-    var baseUrl = location.origin + location.pathname;
-    self._importScriptPathPrefix = baseUrl.substring(0, baseUrl.lastIndexOf("/") + 1);
-})();
-
-var loadScript = importScript;
-
 /**
  * @constructor
  */
