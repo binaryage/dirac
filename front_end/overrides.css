@@ -310,8 +310,8 @@
     margin: -4px 0;
 }
 
-.overrides-reset-button,
-.overrides-disable-button {
+#overrides-reset-button,
+#overrides-disable-button {
     margin: 9px 0 0 17px;
     display: block;
     width: 60px;

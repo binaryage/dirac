@@ -774,7 +774,7 @@ WebInspector.CanvasProfileType.prototype = {
         this._decorationElement.removeChildren();
         this._decorationElement.createChild("div", "warning-icon-small");
         this._decorationElement.appendChild(document.createTextNode(this._canvasAgentEnabled ? WebInspector.UIString("Canvas Profiler is enabled.") : WebInspector.UIString("Canvas Profiler is disabled.")));
-        var button = this._decorationElement.createChild("button");
+        var button = this._decorationElement.createChild("button", "text-button");
         button.type = "button";
         button.textContent = this._canvasAgentEnabled ? WebInspector.UIString("Disable") : WebInspector.UIString("Enable");
         button.addEventListener("click", this._onProfilerEnableButtonClick.bind(this, !this._canvasAgentEnabled), false);

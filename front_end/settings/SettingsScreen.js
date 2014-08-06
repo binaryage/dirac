@@ -217,7 +217,7 @@ WebInspector.GenericSettingsTab = function()
 
     this._populateSectionsFromExtensions();
 
-    var restoreDefaults = this._appendSection().createChild("input", "settings-tab-text-button");
+    var restoreDefaults = this._appendSection().createChild("input", "text-button");
     restoreDefaults.type = "button";
     restoreDefaults.value = WebInspector.UIString("Restore defaults and reload");
     restoreDefaults.addEventListener("click", restoreAndReload, false);
@@ -363,7 +363,7 @@ WebInspector.SettingsScreen.SkipStackFramePatternSettingDelegate.prototype = {
      */
     settingElement: function()
     {
-        var button = document.createElementWithClass("input", "settings-tab-text-button");
+        var button = document.createElementWithClass("input", "text-button");
         button.type = "button";
         button.value = WebInspector.manageBlackboxingButtonLabel();
         button.title = WebInspector.UIString("Skip stepping through sources with particular names");
@@ -397,12 +397,12 @@ WebInspector.WorkspaceSettingsTab = function()
     this._fileSystemsListContainer = this._fileSystemsSection.createChild("p", "settings-list-container");
 
     this._addFileSystemRowElement = this._fileSystemsSection.createChild("div");
-    var addFileSystemButton = this._addFileSystemRowElement.createChild("input", "settings-tab-text-button");
+    var addFileSystemButton = this._addFileSystemRowElement.createChild("input", "text-button");
     addFileSystemButton.type = "button";
     addFileSystemButton.value = WebInspector.UIString("Add folder\u2026");
     addFileSystemButton.addEventListener("click", this._addFileSystemClicked.bind(this), false);
 
-    this._editFileSystemButton = this._addFileSystemRowElement.createChild("input", "settings-tab-text-button");
+    this._editFileSystemButton = this._addFileSystemRowElement.createChild("input", "text-button");
     this._editFileSystemButton.type = "button";
     this._editFileSystemButton.value = WebInspector.UIString("Folder options\u2026");
     this._editFileSystemButton.addEventListener("click", this._editFileSystemClicked.bind(this), false);
