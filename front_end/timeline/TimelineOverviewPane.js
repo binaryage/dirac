@@ -40,8 +40,6 @@ WebInspector.TimelineOverviewPane = function(model, uiUtils)
     this._uiUtils = uiUtils;
     this.element.id = "timeline-overview-pane";
 
-    this._eventDividers = [];
-
     this._model = model;
     this._overviewCalculator = new WebInspector.TimelineOverviewCalculator();
 
@@ -102,11 +100,12 @@ WebInspector.TimelineOverviewPane.prototype = {
         this._overviewGrid.updateDividers(this._overviewCalculator);
         this._updateEventDividers();
         this._updateWindow();
+        this._scheduleRefresh();
     },
 
     _updateEventDividers: function()
     {
-        var records = this._eventDividers;
+        var records = this._model.eventDividerRecords();
         this._overviewGrid.removeEventDividers();
         var dividers = [];
         for (var i = 0; i < records.length; ++i) {
@@ -123,28 +122,11 @@ WebInspector.TimelineOverviewPane.prototype = {
         this._overviewGrid.addEventDividers(dividers);
     },
 
-    /**
-     * @param {!WebInspector.TimelineModel.Record} record
-     */
-    addRecord: function(record)
-    {
-        var eventDividers = this._eventDividers;
-        var uiUtils = this._uiUtils;
-        function addEventDividers(record)
-        {
-            if (uiUtils.isEventDivider(record))
-                eventDividers.push(record);
-        }
-        WebInspector.TimelineModel.forAllRecords([record], addEventDividers);
-        this._scheduleRefresh();
-    },
-
     _reset: function()
     {
         this._overviewCalculator.reset();
         this._overviewGrid.reset();
         this._overviewGrid.setResizeEnabled(false);
-        this._eventDividers = [];
         this._overviewGrid.updateDividers(this._overviewCalculator);
         for (var i = 0; i < this._overviewControls.length; ++i)
             this._overviewControls[i].reset();

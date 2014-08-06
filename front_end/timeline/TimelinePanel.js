@@ -870,7 +870,6 @@ WebInspector.TimelinePanel.prototype = {
             this._lazyFrameModel.addRecord(record);
         for (var i = 0; i < this._currentViews.length; ++i)
             this._currentViews[i].addRecord(record);
-        this._overviewPane.addRecord(record);
         this._updateSearchHighlight(false, true);
     },
 
