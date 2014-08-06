@@ -93,7 +93,7 @@ WebInspector.NetworkUISourceCodeProvider.prototype = {
     _styleSheetAdded: function(event)
     {
         var header = /** @type {!WebInspector.CSSStyleSheetHeader} */ (event.data);
-        if ((!header.hasSourceURL || header.isInline) && header.origin !== "inspector")
+        if (header.isInline && header.origin !== "inspector")
             return;
 
         this._addFile(header.resourceURL(), header, false);
