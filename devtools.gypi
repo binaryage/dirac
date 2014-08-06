@@ -79,6 +79,7 @@
         ],
         'devtools_sdk_js_files': [
             'front_end/sdk/ApplicationCacheModel.js',
+            'front_end/sdk/BlackboxSupport.js',
             'front_end/sdk/CompilerScriptMapping.js',
             'front_end/sdk/ConsoleModel.js',
             'front_end/sdk/ContentProvider.js',

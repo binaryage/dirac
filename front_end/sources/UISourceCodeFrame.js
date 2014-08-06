@@ -175,6 +175,21 @@ WebInspector.UISourceCodeFrame.prototype = {
         contextMenu.appendSeparator();
     },
 
+    /**
+     * @param {!Array.<!WebInspector.UISourceCodeFrame.Infobar|undefined>} infobars
+     */
+    attachInfobars: function(infobars)
+    {
+        for (var i = infobars.length - 1; i >= 0; --i) {
+            var infobar = infobars[i];
+            if (!infobar)
+                continue;
+            this.element.insertBefore(infobar.element, this.element.children[0]);
+            infobar._attached(this);
+        }
+        this.doResize();
+    },
+
     dispose: function()
     {
         WebInspector.settings.textEditorAutocompletion.removeChangeListener(this._enableAutocompletionIfNeeded, this);
@@ -183,4 +198,70 @@ WebInspector.UISourceCodeFrame.prototype = {
     },
 
     __proto__: WebInspector.SourceFrame.prototype
+}
+
+/**
+ * @constructor
+ * @param {string} message
+ */
+WebInspector.UISourceCodeFrame.Infobar = function(message)
+{
+    this.element = document.createElementWithClass("div", "source-frame-infobar");
+    this._mainRow = this.element.createChild("div", "source-frame-infobar-main-row");
+    this._detailsContainer = this.element.createChild("span", "source-frame-infobar-details-container");
+
+    this._mainRow.createChild("span", "source-frame-infobar-warning-icon");
+    this._mainRow.createChild("span", "source-frame-infobar-row-message").textContent = message;
+
+    this._toggleElement = this._mainRow.createChild("div", "source-frame-infobar-toggle source-frame-infobar-link");
+    this._toggleElement.addEventListener("click", this._onToggleDetails.bind(this), false);
+    this._updateToggleElement();
+}
+
+WebInspector.UISourceCodeFrame.Infobar.prototype = {
+    _onResize: function()
+    {
+        if (this._uiSourceCodeFrame)
+            this._uiSourceCodeFrame.doResize();
+    },
+
+    _onToggleDetails: function()
+    {
+        this._toggled = !this._toggled;
+        this._updateToggleElement();
+        this._onResize();
+    },
+
+    _updateToggleElement: function()
+    {
+        this._toggleElement.textContent = this._toggled ? WebInspector.UIString("less") : WebInspector.UIString("more");
+        this._detailsContainer.classList.toggle("hidden", !this._toggled);
+    },
+
+    /**
+     * @param {!WebInspector.UISourceCodeFrame} uiSourceCodeFrame
+     */
+    _attached: function(uiSourceCodeFrame)
+    {
+        this._uiSourceCodeFrame = uiSourceCodeFrame;
+    },
+
+    /**
+     * @param {string=} message
+     * @return {!Element}
+     */
+    createDetailsRowMessage: function(message)
+    {
+        var infobarDetailsRow = this._detailsContainer.createChild("div", "source-frame-infobar-details-row");
+        var detailsRowMessage = infobarDetailsRow.createChild("span", "source-frame-infobar-row-message");
+        detailsRowMessage.textContent = message || "";
+        return detailsRowMessage;
+    },
+
+    dispose: function()
+    {
+        this.element.remove();
+        this._onResize();
+        delete this._uiSourceCodeFrame;
+    }
 }

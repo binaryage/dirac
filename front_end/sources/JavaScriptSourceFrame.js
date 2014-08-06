@@ -45,7 +45,7 @@ WebInspector.JavaScriptSourceFrame = function(scriptsPanel, uiSourceCode)
         this.element.classList.add("source-frame-debugger-script");
 
     this._popoverHelper = new WebInspector.ObjectPopoverHelper(this.textEditor.element,
-            this._getPopoverAnchor.bind(this), this._resolveObjectForPopover.bind(this), this._onHidePopover.bind(this), true);
+        this._getPopoverAnchor.bind(this), this._resolveObjectForPopover.bind(this), this._onHidePopover.bind(this), true);
 
     this.textEditor.element.addEventListener("keydown", this._onKeyDown.bind(this), true);
 
@@ -60,6 +60,7 @@ WebInspector.JavaScriptSourceFrame = function(scriptsPanel, uiSourceCode)
     this._uiSourceCode.addEventListener(WebInspector.UISourceCode.Events.SourceMappingChanged, this._onSourceMappingChanged, this);
     this._uiSourceCode.addEventListener(WebInspector.UISourceCode.Events.WorkingCopyChanged, this._workingCopyChanged, this);
     this._uiSourceCode.addEventListener(WebInspector.UISourceCode.Events.WorkingCopyCommitted, this._workingCopyCommitted, this);
+    this._uiSourceCode.addEventListener(WebInspector.UISourceCode.Events.TitleChanged, this._showBlackboxInfobarIfNeeded, this);
 
     /** @type {!Map.<!WebInspector.Target, !WebInspector.ResourceScriptFile>}*/
     this._scriptFileForTarget = new Map();
@@ -70,29 +71,15 @@ WebInspector.JavaScriptSourceFrame = function(scriptsPanel, uiSourceCode)
         if (scriptFile)
             this._updateScriptFile(targets[i]);
     }
+
+    WebInspector.settings.skipStackFramesPattern.addChangeListener(this._showBlackboxInfobarIfNeeded, this);
+    this._showBlackboxInfobarIfNeeded();
 }
 
 WebInspector.JavaScriptSourceFrame.prototype = {
-    /**
-     * @param {!Element} infobarElement
-     */
-    _showInfobar: function(infobarElement)
+    _updateInfobars: function()
     {
-        if (this._infobarElement)
-            this._infobarElement.remove();
-        this._infobarElement = infobarElement;
-        this._infobarElement.classList.add("java-script-source-frame-infobar");
-        this.element.insertBefore(this._infobarElement, this.element.children[0]);
-        this.doResize();
-    },
-
-    /**
-     * @param {!Element} infobarElement
-     */
-    _hideInfobar: function(infobarElement)
-    {
-        infobarElement.remove();
-        this.doResize();
+        this.attachInfobars([this._blackboxInfobar, this._divergedInfobar]);
     },
 
     _showDivergedInfobar: function()
@@ -100,83 +87,81 @@ WebInspector.JavaScriptSourceFrame.prototype = {
         if (this._uiSourceCode.contentType() !== WebInspector.resourceTypes.Script)
             return;
 
-        this._divergedInfobarElement = document.createElement("div");
-        var infobarMainRow = this._divergedInfobarElement.createChild("div", "java-script-source-frame-infobar-main-row");
-        var infobarDetailsContainer = this._divergedInfobarElement.createChild("span", "java-script-source-frame-infobar-details-container");
+        if (this._divergedInfobar)
+            this._divergedInfobar.dispose();
 
-        infobarMainRow.createChild("span", "java-script-source-frame-infobar-warning-icon");
-        var infobarMessage = infobarMainRow.createChild("span", "java-script-source-frame-infobar-row-message");
-        infobarMessage.textContent = WebInspector.UIString("Workspace mapping mismatch");
+        var infobar = new WebInspector.UISourceCodeFrame.Infobar(WebInspector.UIString("Workspace mapping mismatch"));
+        this._divergedInfobar = infobar;
 
-        /**
-         * @this {WebInspector.JavaScriptSourceFrame}
-         */
-        function updateDetailsVisibility()
-        {
-            detailsToggleElement.textContent = detailsToggleElement._toggled ? WebInspector.UIString("less") : WebInspector.UIString("more");
-            infobarDetailsContainer.classList.toggle("hidden", !detailsToggleElement._toggled);
-            this.doResize();
-        }
-
-        /**
-         * @this {WebInspector.JavaScriptSourceFrame}
-         */
-        function toggleDetails()
-        {
-            detailsToggleElement._toggled = !detailsToggleElement._toggled;
-            updateDetailsVisibility.call(this);
-        }
-
-        infobarMainRow.appendChild(document.createTextNode("\u00a0"));
-        var detailsToggleElement = infobarMainRow.createChild("div", "java-script-source-frame-infobar-toggle");
-        detailsToggleElement.addEventListener("click", toggleDetails.bind(this), false);
-        updateDetailsVisibility.call(this);
-
-        function createDetailsRowMessage()
-        {
-            var infobarDetailsRow = infobarDetailsContainer.createChild("div", "java-script-source-frame-infobar-details-row");
-            return infobarDetailsRow.createChild("span", "java-script-source-frame-infobar-row-message");
-        }
-
-        var infobarDetailsRowMessage;
-
-        infobarDetailsRowMessage = createDetailsRowMessage();
-        infobarDetailsRowMessage.appendChild(document.createTextNode(WebInspector.UIString("The content of this file on the file system:\u00a0")));
         var fileURL = this._uiSourceCode.originURL();
-        infobarDetailsRowMessage.appendChild(WebInspector.linkifyURLAsNode(fileURL, fileURL, "java-script-source-frame-infobar-details-url", true, fileURL));
+        infobar.createDetailsRowMessage(WebInspector.UIString("The content of this file on the file system:\u00a0")).appendChild(
+            WebInspector.linkifyURLAsNode(fileURL, fileURL, "source-frame-infobar-details-url", true, fileURL));
 
-        infobarDetailsRowMessage = createDetailsRowMessage();
-        infobarDetailsRowMessage.appendChild(document.createTextNode(WebInspector.UIString("does not match the loaded script:\u00a0")));
         var scriptURL = this._uiSourceCode.url;
-        infobarDetailsRowMessage.appendChild(WebInspector.linkifyURLAsNode(scriptURL, scriptURL, "java-script-source-frame-infobar-details-url", true, scriptURL));
+        infobar.createDetailsRowMessage(WebInspector.UIString("does not match the loaded script:\u00a0")).appendChild(
+            WebInspector.linkifyURLAsNode(scriptURL, scriptURL, "source-frame-infobar-details-url", true, scriptURL));
 
-        // Add an empty row
-        createDetailsRowMessage();
-
-        createDetailsRowMessage().textContent = WebInspector.UIString("Possible solutions are:");;
-
-        function createDetailsRowMessageAction(title)
-        {
-            infobarDetailsRowMessage = createDetailsRowMessage();
-            infobarDetailsRowMessage.appendChild(document.createTextNode(" - "));
-            infobarDetailsRowMessage.appendChild(document.createTextNode(title));
-        }
+        infobar.createDetailsRowMessage();
+        infobar.createDetailsRowMessage(WebInspector.UIString("Possible solutions are:"));
 
         if (WebInspector.settings.cacheDisabled.get())
-            createDetailsRowMessageAction(WebInspector.UIString("Reload inspected page"));
+            infobar.createDetailsRowMessage(" - ").createTextChild(WebInspector.UIString("Reload inspected page"));
         else
-            createDetailsRowMessageAction(WebInspector.UIString("Check \"Disable cache\" in settings and reload inspected page (recommended setup for authoring and debugging)"));
-        createDetailsRowMessageAction(WebInspector.UIString("Check that your file and script are both loaded from the correct source and their contents match."));
+            infobar.createDetailsRowMessage(" - ").createTextChild(WebInspector.UIString("Check \"Disable cache\" in settings and reload inspected page (recommended setup for authoring and debugging)"));
+        infobar.createDetailsRowMessage(" - ").createTextChild(WebInspector.UIString("Check that your file and script are both loaded from the correct source and their contents match"));
 
-        this._showInfobar(this._divergedInfobarElement);
+        this._updateInfobars();
     },
 
     _hideDivergedInfobar: function()
     {
-        if (!this._divergedInfobarElement)
+        if (!this._divergedInfobar)
             return;
-        this._hideInfobar(this._divergedInfobarElement);
-        delete this._divergedInfobarElement;
+        this._divergedInfobar.dispose();
+        delete this._divergedInfobar;
+    },
+
+    _showBlackboxInfobarIfNeeded: function()
+    {
+        if (!WebInspector.experimentsSettings.frameworksDebuggingSupport.isEnabled())
+            return;
+        if (this._uiSourceCode.contentType() !== WebInspector.resourceTypes.Script)
+            return;
+        var url = this._uiSourceCode.url;
+        if (!WebInspector.BlackboxSupport.isBlackboxedURL(url)) {
+            this._hideBlackboxInfobar();
+            return;
+        }
+
+        if (this._blackboxInfobar)
+            this._blackboxInfobar.dispose();
+
+        var infobar = new WebInspector.UISourceCodeFrame.Infobar(WebInspector.UIString("This script is blackboxed in debugger"));
+        this._blackboxInfobar = infobar;
+
+        infobar.createDetailsRowMessage(WebInspector.UIString("Debugger will skip stepping through this script, and will not stop on exceptions"));
+        infobar.createDetailsRowMessage();
+        infobar.createDetailsRowMessage(WebInspector.UIString("Possible ways to cancel this behavior are:"));
+
+        infobar.createDetailsRowMessage(" - ").createTextChild(WebInspector.UIString("Press \"%s\" button in settings", WebInspector.manageBlackboxingButtonLabel()));
+        var unblackboxLink = infobar.createDetailsRowMessage(" - ").createChild("span", "source-frame-infobar-link");
+        unblackboxLink.textContent = WebInspector.UIString("Unblackbox this script");
+        unblackboxLink.addEventListener("click", unblackbox, false);
+
+        function unblackbox()
+        {
+            WebInspector.BlackboxSupport.unblackboxURL(url);
+        }
+
+        this._updateInfobars();
+    },
+
+    _hideBlackboxInfobar: function()
+    {
+        if (!this._blackboxInfobar)
+            return;
+        this._blackboxInfobar.dispose();
+        delete this._blackboxInfobar;
     },
 
     _registerShortcuts: function()
@@ -439,7 +424,7 @@ WebInspector.JavaScriptSourceFrame.prototype = {
         for (var i = 0; i < scriptFiles.length; ++i)
             hasDivergedScript = hasDivergedScript || scriptFiles[i].hasDivergedFromVM();
 
-        if (this._divergedInfobarElement) {
+        if (this._divergedInfobar) {
             if (!hasDivergedScript || this._hasCommittedLiveEdit)
                 this._hideDivergedInfobar();
         } else {
@@ -922,6 +907,8 @@ WebInspector.JavaScriptSourceFrame.prototype = {
         this._uiSourceCode.removeEventListener(WebInspector.UISourceCode.Events.SourceMappingChanged, this._onSourceMappingChanged, this);
         this._uiSourceCode.removeEventListener(WebInspector.UISourceCode.Events.WorkingCopyChanged, this._workingCopyChanged, this);
         this._uiSourceCode.removeEventListener(WebInspector.UISourceCode.Events.WorkingCopyCommitted, this._workingCopyCommitted, this);
+        this._uiSourceCode.removeEventListener(WebInspector.UISourceCode.Events.TitleChanged, this._showBlackboxInfobarIfNeeded, this);
+        WebInspector.settings.skipStackFramesPattern.removeChangeListener(this._showBlackboxInfobarIfNeeded, this);
         WebInspector.UISourceCodeFrame.prototype.dispose.call(this);
     },
 

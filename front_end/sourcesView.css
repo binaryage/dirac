@@ -97,15 +97,16 @@ button.status-bar-item.scripts-navigator-show-hide-button {
     display: none;
 }
 
-#sources-panel-sources-view .java-script-source-frame-infobar {
+#sources-panel-sources-view .source-frame-infobar {
     border-bottom: 1px solid rgb(187, 187, 187);
     display: flex;
     flex-direction: column;
     flex: 0 1 auto;
     background-color: rgb(255, 255, 194);
+    -webkit-user-select: text;
 }
 
-#sources-panel-sources-view .java-script-source-frame-infobar-warning-icon {
+#sources-panel-sources-view .source-frame-infobar-warning-icon {
     background-image: url(Images/statusbarButtonGlyphs.png);
     background-size: 320px 144px;
     background-position: -202px -107px;
@@ -116,39 +117,45 @@ button.status-bar-item.scripts-navigator-show-hide-button {
     margin-top: 1px;
 }
 
-#sources-panel-sources-view .java-script-source-frame-infobar-main-row {
+#sources-panel-sources-view .source-frame-infobar-main-row {
     display: flex;
     flex: 0 0 17px;
     overflow: hidden;
     margin: 5px 10px 0px;
 }
 
-#sources-panel-sources-view .java-script-source-frame-infobar-details-container {
+#sources-panel-sources-view .source-frame-infobar-details-container {
     display: flex;
     flex-direction: column;
     padding: 5px 0;
 }
 
-#sources-panel-sources-view .java-script-source-frame-infobar-details-row {
+#sources-panel-sources-view .source-frame-infobar-details-row {
     display: flex;
     flex: 0 0 15px;
     margin: auto 10px;
 }
 
-#sources-panel-sources-view .java-script-source-frame-infobar-row-message {
+#sources-panel-sources-view .source-frame-infobar-row-message {
     flex: 0 1 auto;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
-#sources-panel-sources-view .java-script-source-frame-infobar-toggle {
+#sources-panel-sources-view .source-frame-infobar-toggle {
     flex: auto;
-    text-decoration: underline;
-    color: rgb(50, 50, 200);
+    padding: 0 4px;
+    -webkit-user-select: none;
 }
 
-#sources-panel-sources-view .java-script-source-frame-infobar-details-url {
+#sources-panel-sources-view .source-frame-infobar-link {
+    text-decoration: underline;
+    color: rgb(50, 50, 200);
+    cursor: pointer;
+}
+
+#sources-panel-sources-view .source-frame-infobar-details-url {
     flex: 0 1000 auto;
     color: rgb(50, 50, 200);
 }

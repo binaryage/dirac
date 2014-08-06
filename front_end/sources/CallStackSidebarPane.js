@@ -187,8 +187,7 @@ WebInspector.CallStackSidebarPane.prototype = {
             return;
         if (!url)
             return;
-        var regex = WebInspector.settings.skipStackFramesPattern.asRegExp();
-        var blackboxed = regex ? regex.test(url) : false;
+        var blackboxed = WebInspector.BlackboxSupport.isBlackboxedURL(url);
         if (blackboxed)
             contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Stop blackboxing" : "Stop Blackboxing"), this._handleContextMenuBlackboxURL.bind(this, url, false));
         else
@@ -201,36 +200,10 @@ WebInspector.CallStackSidebarPane.prototype = {
      */
     _handleContextMenuBlackboxURL: function(url, blackbox)
     {
-        var regexPatterns = WebInspector.settings.skipStackFramesPattern.getAsArray();
-        if (blackbox) {
-            var name = new WebInspector.ParsedURL(url).lastPathComponent;
-            var regexValue = "/" + name.escapeForRegExp() + (url.endsWith(name) ? "$" : "\\b");
-            var found = false;
-            for (var i = 0; i < regexPatterns.length; ++i) {
-                var item = regexPatterns[i];
-                if (item.pattern === regexValue) {
-                    item.disabled = false;
-                    found = true;
-                    break;
-                }
-            }
-            if (!found)
-                regexPatterns.push({ pattern: regexValue });
-            WebInspector.settings.skipStackFramesPattern.setAsArray(regexPatterns);
-        } else {
-            for (var i = 0; i < regexPatterns.length; ++i) {
-                var item = regexPatterns[i];
-                if (item.disabled)
-                    continue;
-                try {
-                    var regex = new RegExp(item.pattern);
-                    if (regex.test(url))
-                        item.disabled = true;
-                } catch (e) {
-                }
-            }
-            WebInspector.settings.skipStackFramesPattern.setAsArray(regexPatterns);
-        }
+        if (blackbox)
+            WebInspector.BlackboxSupport.blackboxURL(url);
+        else
+            WebInspector.BlackboxSupport.unblackboxURL(url);
     },
 
     _blackboxingStateChanged: function()

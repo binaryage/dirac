@@ -27,6 +27,7 @@
         "sources": [
             "sdk/Target.js",
             "sdk/ApplicationCacheModel.js",
+            "sdk/BlackboxSupport.js",
             "sdk/CompilerScriptMapping.js",
             "sdk/ConsoleModel.js",
             "sdk/ContentProvider.js",

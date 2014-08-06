@@ -541,6 +541,14 @@ WebInspector.asyncStackTraceLabel = function(description)
     return WebInspector.UIString("Async Call");
 }
 
+/**
+ * @return {string}
+ */
+WebInspector.manageBlackboxingButtonLabel = function()
+{
+    return WebInspector.UIString("Manage framework blackboxing...");
+}
+
 WebInspector.installPortStyles = function()
 {
     var platform = WebInspector.platform();

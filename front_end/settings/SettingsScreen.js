@@ -365,7 +365,7 @@ WebInspector.SettingsScreen.SkipStackFramePatternSettingDelegate.prototype = {
     {
         var button = document.createElementWithClass("input", "settings-tab-text-button");
         button.type = "button";
-        button.value = WebInspector.UIString("Manage framework blackboxing...");
+        button.value = WebInspector.manageBlackboxingButtonLabel();
         button.title = WebInspector.UIString("Skip stepping through sources with particular names");
         button.addEventListener("click", this._onManageButtonClick.bind(this), false);
         return button;
