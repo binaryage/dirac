@@ -146,6 +146,7 @@
                             '<(PRODUCT_DIR)/resources/inspector/devices/DevicesView.js',
                             '<(PRODUCT_DIR)/resources/inspector/inspector.css',
                             '<(PRODUCT_DIR)/resources/inspector/devtools_extension_api.js',
+                            '<(PRODUCT_DIR)/resources/inspector/documentation/DocumentationView.js',
                             '<@(devtools_standalone_files)',
                             '<@(devtools_cm_css_files)',
                         ],
@@ -856,12 +857,12 @@
                     'actions': [{
                         'action_name': 'build_documentation_module',
                         'script_name': 'scripts/inline_js_imports.py',
-                        'input_file': 'front_end/documentation/WikiParser.js',
+                        'input_file': 'front_end/documentation/DocumentationView.js',
                         'inputs': [
                             '<@(_script_name)',
                             '<@(devtools_documentation_js_files)',
                         ],
-                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/documentation/WikiParser.js'],
+                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/documentation/DocumentationView.js'],
                         'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
                     }],
                 },

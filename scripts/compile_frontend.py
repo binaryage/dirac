@@ -89,6 +89,7 @@ allowed_import_statements_files = [
     "layers/LayersPanel.js",
     "extensions/ExtensionServer.js",
     "source_frame/SourceFrame.js",
+    "documentation/DocumentationView.js",
 ]
 
 type_checked_jsdoc_tags_list = ["param", "return", "type", "enum"]

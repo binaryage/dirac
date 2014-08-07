@@ -500,8 +500,11 @@
     },
     {
         "name": "documentation",
-        "dependencies": [],
+        "dependencies": ["common"],
         "sources": [
+            "documentation/DocumentationView.js",
+            "documentation/CSSArticle.js",
+            "documentation/JSArticle.js",
             "documentation/WikiParser.js"
         ]
     }
