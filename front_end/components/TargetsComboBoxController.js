@@ -5,13 +5,15 @@
 /**
  * @constructor
  * @implements {WebInspector.TargetManager.Observer}
+ * @param {!Element} selectElement
+ * @param {!Element} elementToHide
  */
-WebInspector.TargetsToolbar = function()
+WebInspector.TargetsComboBoxController = function(selectElement, elementToHide)
 {
-    this.element = document.createElementWithClass("div", "status-bar scripts-debug-toolbar targets-toolbar hidden");
-    this._comboBox = new WebInspector.StatusBarComboBox(this._onComboBoxSelectionChange.bind(this));
-    this.element.appendChild(this._comboBox.element);
-
+    elementToHide.classList.add("hidden");
+    selectElement.addEventListener("change", this._onComboBoxSelectionChange.bind(this), false);
+    this._selectElement = selectElement;
+    this._elementToHide = elementToHide;
     /** @type {!Map.<!WebInspector.Target, !Element>} */
     this._targetToOption = new Map();
     if (!WebInspector.experimentsSettings.workersInMainWindow.isEnabled())
@@ -21,18 +23,19 @@ WebInspector.TargetsToolbar = function()
     WebInspector.targetManager.observeTargets(this);
 }
 
-WebInspector.TargetsToolbar.prototype = {
+WebInspector.TargetsComboBoxController.prototype = {
 
     /**
      * @param {!WebInspector.Target} target
      */
     targetAdded: function(target)
     {
-        var option = this._comboBox.createOption(target.name());
+        var option = this._selectElement.createChild("option");
+        option.text = target.name();
         option.__target = target;
         this._targetToOption.put(target, option);
         if (WebInspector.context.flavor(WebInspector.Target) === target)
-            this._comboBox.select(option);
+            this._selectElement.selectedIndex = Array.prototype.indexOf.call(/** @type {?} */ (this._selectElement), option);
 
         this._updateVisibility();
     },
@@ -43,13 +46,13 @@ WebInspector.TargetsToolbar.prototype = {
     targetRemoved: function(target)
     {
         var option = this._targetToOption.remove(target);
-        this._comboBox.removeOption(option);
+        this._selectElement.removeChild(option);
         this._updateVisibility();
     },
 
     _onComboBoxSelectionChange: function()
     {
-        var selectedOption = this._comboBox.selectedOption();
+        var selectedOption = this._selectElement[this._selectElement.selectedIndex];
         if (!selectedOption)
             return;
 
@@ -58,8 +61,8 @@ WebInspector.TargetsToolbar.prototype = {
 
     _updateVisibility: function()
     {
-        var hidden = this._comboBox.size() === 1;
-        this.element.classList.toggle("hidden", hidden);
+        var hidden = this._selectElement.childElementCount === 1;
+        this._elementToHide.classList.toggle("hidden", hidden);
     },
 
     /**
@@ -70,8 +73,16 @@ WebInspector.TargetsToolbar.prototype = {
         var target = /** @type {?WebInspector.Target} */ (event.data);
         if (target) {
             var option = /** @type {!Element} */ (this._targetToOption.get(target));
-            this._comboBox.select(option);
+            this._select(option);
         }
+    },
+
+    /**
+     * @param {!Element} option
+     */
+    _select: function(option)
+    {
+        this._selectElement.selectedIndex = Array.prototype.indexOf.call(/** @type {?} */ (this._selectElement), option);
     }
 
 }

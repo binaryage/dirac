@@ -163,7 +163,8 @@
             "components/Section.js",
             "components/ShortcutsScreen.js",
             "components/TimelineGrid.js",
-            "components/WorkerFrontendManager.js"
+            "components/WorkerFrontendManager.js",
+            "components/TargetsComboBoxController.js"
         ]
     },
     {
@@ -289,8 +290,7 @@
             "sources/TabbedEditorContainer.js",
             "sources/UISourceCodeFrame.js",
             "sources/WatchExpressionsSidebarPane.js",
-            "sources/WorkersSidebarPane.js",
-            "sources/TargetsToolbar.js"
+            "sources/WorkersSidebarPane.js"
         ]
     },
     {

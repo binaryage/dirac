@@ -44,7 +44,6 @@ importScript("StyleSheetOutlineDialog.js");
 importScript("TabbedEditorContainer.js");
 importScript("WatchExpressionsSidebarPane.js");
 importScript("WorkersSidebarPane.js");
-importScript("TargetsToolbar.js");
 importScript("ScriptFormatterEditorAction.js");
 importScript("InplaceFormatterEditorAction.js");
 importScript("ScriptFormatter.js");
@@ -71,7 +70,9 @@ WebInspector.SourcesPanel = function(workspaceForTest)
 
     this.debugToolbar = this._createDebugToolbar();
     this._debugToolbarDrawer = this._createDebugToolbarDrawer();
-    this._targetsToolbar = new WebInspector.TargetsToolbar();
+    this._targetsToolbar = new WebInspector.StatusBarComboBox(null, "targets-select");
+    this._targetsToolbar.element.id = "targets-toolbar";
+    this._targetsComboBoxController = new WebInspector.TargetsComboBoxController(this._targetsToolbar.selectElement(), this._targetsToolbar.element);
 
     const initialDebugSidebarWidth = 225;
     this._splitView = new WebInspector.SplitView(true, true, "sourcesPanelSplitViewState", initialDebugSidebarWidth);

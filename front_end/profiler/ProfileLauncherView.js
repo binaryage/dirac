@@ -31,6 +31,7 @@
 /**
  * @constructor
  * @extends {WebInspector.VBox}
+ * @implements {WebInspector.TargetManager.Observer}
  * @param {!WebInspector.ProfilesPanel} profilesPanel
  */
 WebInspector.ProfileLauncherView = function(profilesPanel)
@@ -44,17 +45,42 @@ WebInspector.ProfileLauncherView = function(profilesPanel)
 
     this._contentElement = this.element.createChild("div", "profile-launcher-view-content");
     this._innerContentElement = this._contentElement.createChild("div");
-
+    var targetSpan = this._contentElement.createChild("span");
+    var selectTargetText = targetSpan.createChild("span");
+    selectTargetText.textContent = WebInspector.UIString("Target:");
+    var targetsSelect = targetSpan.createChild("select", "chrome-select");
+    new WebInspector.TargetsComboBoxController(targetsSelect, targetSpan);
     this._controlButton = this._contentElement.createChild("button", "text-button control-profiling");
     this._controlButton.addEventListener("click", this._controlButtonClicked.bind(this), false);
     this._recordButtonEnabled = true;
-
     this._loadButton = this._contentElement.createChild("button", "text-button load-profile");
     this._loadButton.textContent = WebInspector.UIString("Load");
     this._loadButton.addEventListener("click", this._loadButtonClicked.bind(this), false);
+    WebInspector.targetManager.observeTargets(this);
 }
 
 WebInspector.ProfileLauncherView.prototype = {
+    /**
+     * @param {!WebInspector.Target} target
+     */
+    targetAdded: function(target)
+    {
+        this._updateLoadButtonLayout();
+    },
+
+    /**
+     * @param {!WebInspector.Target} target
+     */
+    targetRemoved: function(target)
+    {
+        this._updateLoadButtonLayout();
+    },
+
+    _updateLoadButtonLayout: function()
+    {
+        this._loadButton.classList.toggle("multi-target", WebInspector.targetManager.targets().length > 1);
+    },
+
     /**
      * @param {!WebInspector.ProfileType} profileType
      */
