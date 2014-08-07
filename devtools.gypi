@@ -164,6 +164,7 @@
             'front_end/ui/Popover.js',
             'front_end/ui/ProgressIndicator.js',
             'front_end/ui/ResizerWidget.js',
+            'front_end/ui/RootView.js',
             'front_end/ui/SettingsUI.js',
             'front_end/ui/SidebarPane.js',
             'front_end/ui/SidebarTreeElement.js',

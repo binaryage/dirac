@@ -114,6 +114,7 @@
             "ui/Popover.js",
             "ui/ProgressIndicator.js",
             "ui/ResizerWidget.js",
+            "ui/RootView.js",
             "ui/SettingsUI.js",
             "ui/SidebarPane.js",
             "ui/SidebarTreeElement.js",
