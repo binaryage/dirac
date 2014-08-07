@@ -2682,6 +2682,9 @@ WebInspector.ElementsTreeUpdater.prototype = {
         this._recentlyModifiedNodes.add(node);
     },
 
+    /**
+     * @param {!WebInspector.Event} event
+     */
     _documentUpdated: function(event)
     {
         var inspectedRootDocument = event.data;
@@ -2694,30 +2697,52 @@ WebInspector.ElementsTreeUpdater.prototype = {
         this._treeOutline.rootDOMNode = inspectedRootDocument;
     },
 
+    /**
+     * @param {!WebInspector.Event} event
+     */
     _attributesUpdated: function(event)
     {
-        this._nodeModified(event.data.node);
+        var node = /** @type {!WebInspector.DOMNode} */ (event.data.node);
+        this._nodeModified(node);
     },
 
+    /**
+     * @param {!WebInspector.Event} event
+     */
     _characterDataModified: function(event)
     {
-        this._nodeModified(event.data);
+        var node = /** @type {!WebInspector.DOMNode} */ (event.data);
+        this._nodeModified(node);
     },
 
+    /**
+     * @param {!WebInspector.Event} event
+     */
     _nodeInserted: function(event)
     {
-        this._parentNodeModified(event.data.parentNode);
+        var node = /** @type {!WebInspector.DOMNode} */ (event.data);
+        var parentNode = /** @type {!WebInspector.DOMNode} */ (node.parentNode);
+        this._parentNodeModified(parentNode);
     },
 
+    /**
+     * @param {!WebInspector.Event} event
+     */
     _nodeRemoved: function(event)
     {
-        this._treeOutline._resetClipboardIfNeeded(event.data.node);
-        this._parentNodeModified(event.data.parent);
+        var node = /** @type {!WebInspector.DOMNode} */ (event.data.node);
+        var parentNode = /** @type {!WebInspector.DOMNode} */ (event.data.parent);
+        this._treeOutline._resetClipboardIfNeeded(node);
+        this._parentNodeModified(parentNode);
     },
 
+    /**
+     * @param {!WebInspector.Event} event
+     */
     _childNodeCountUpdated: function(event)
     {
-        var treeElement = this._treeOutline.findTreeElement(event.data);
+        var node = /** @type {!WebInspector.DOMNode} */ (event.data);
+        var treeElement = this._treeOutline.findTreeElement(node);
         if (treeElement) {
             var oldHasChildren = treeElement.hasChildren;
             treeElement._updateHasChildren();
