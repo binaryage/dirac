@@ -429,8 +429,10 @@ WebInspector.OverridesView.NetworkTab.prototype = {
     _createUserAgentSection: function()
     {
         var fieldsetElement = this.element.createChild("fieldset");
-        var userAgentInput = WebInspector.SettingsUI.createSettingInputField("Spoof user agent:", WebInspector.overridesSupport.settings.userAgent, false, 0, "", undefined, false, false, WebInspector.UIString("no override"));
-        fieldsetElement.appendChild(userAgentInput);
+        fieldsetElement.createChild("label").textContent = WebInspector.UIString("Spoof user agent:");
+        var selectAndInput = WebInspector.OverridesUI.createUserAgentSelectAndInput(document);
+        fieldsetElement.appendChild(selectAndInput.select);
+        fieldsetElement.appendChild(selectAndInput.input);
 
         WebInspector.overridesSupport.settings.userAgent.addChangeListener(this.updateActiveState, this);
     },
