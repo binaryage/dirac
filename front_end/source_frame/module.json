@@ -11,7 +11,7 @@
         {
             "type": "ui-setting",
             "section": "Sources",
-            "title": "Default indentation",
+            "title": "Default indentation:",
             "settingName": "textEditorIndent",
             "settingType": "select",
             "options": [

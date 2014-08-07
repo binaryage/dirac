@@ -235,18 +235,6 @@ body.platform-mac .help-key {
     margin-right: 7px;
 }
 
-.help-content select {
-    background-color: rgb(64, 64, 64);
-    color: white;
-    border-color: black;
-    padding: 0 4px;
-}
-
-.help-content select:disabled {
-    background-color: rgb(32, 32, 32);
-    color: graytext;
-}
-
 .help-content option {
     background-color: #EEEEEE;
     color: #222;
@@ -397,15 +385,7 @@ body.platform-mac .help-key {
 }
 
 .settings-tab select {
-    background-color: #FAFAFA;
-    border-color: rgb(213, 213, 213);
-    border-radius: 2px;
-    color: inherit;
-    padding: 0 4px;
-}
-
-.settings-tab select:disabled {
-    background-color: rgb(221, 221, 221);
+    margin-left: 10px;
 }
 
 #workspace-tab-content .settings-tab.help-content.help-container {

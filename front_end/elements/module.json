@@ -35,7 +35,7 @@
         {
             "type": "ui-setting",
             "section": "Elements",
-            "title": "Color format",
+            "title": "Color format:",
             "settingName": "colorFormat",
             "settingType": "select",
             "options": [

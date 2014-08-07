@@ -184,7 +184,7 @@ WebInspector.SettingsTab.prototype = {
         var p = document.createElement("p");
         p.createChild("label").textContent = name;
 
-        var select = p.createChild("select");
+        var select = p.createChild("select", "chrome-select");
         var settingValue = setting.get();
 
         for (var i = 0; i < options.length; ++i) {
@@ -963,7 +963,7 @@ WebInspector.EditableSettingsList.prototype = {
     {
         var options = column.options;
         if (options) {
-            var editElement = /** @type {!HTMLSelectElement} */ (columnElement.createChild("select", "list-column-editor"));
+            var editElement = /** @type {!HTMLSelectElement} */ (columnElement.createChild("select", "chrome-select list-column-editor"));
             for (var i = 0; i < options.length; ++i) {
                 var option = editElement.createChild("option");
                 option.value = options[i];
