@@ -218,6 +218,26 @@ WebInspector.TracingTimelineModel.prototype = {
         return this._virtualThreads;
     },
 
+    /**
+     * @param {!WebInspector.ChunkedFileReader} fileReader
+     * @param {!WebInspector.Progress} progress
+     * @return {!WebInspector.OutputStream}
+     */
+    createLoader: function(fileReader, progress)
+    {
+        return new WebInspector.TracingModelLoader(this, fileReader, progress);
+    },
+
+    /**
+     * @param {!WebInspector.OutputStream} stream
+     */
+    writeToStream: function(stream)
+    {
+        var saver = new WebInspector.TracingTimelineSaver(stream);
+        var events = this._tracingModel.rawEvents();
+        saver.save(events);
+    },
+
     reset: function()
     {
         this._virtualThreads = {};
@@ -760,5 +780,127 @@ WebInspector.TracingTimelineModel.TraceEventRecord.prototype = {
     timelineModel: function()
     {
         return this._model;
+    }
+}
+
+
+
+/**
+ * @constructor
+ * @implements {WebInspector.OutputStream}
+ * @param {!WebInspector.TracingTimelineModel} model
+ * @param {!{cancel: function()}} reader
+ * @param {!WebInspector.Progress} progress
+ */
+WebInspector.TracingModelLoader = function(model, reader, progress)
+{
+    this._model = model;
+    this._reader = reader;
+    this._progress = progress;
+    this._buffer = "";
+    this._firstChunk = true;
+    this._loader = new WebInspector.TracingModel.Loader(model._tracingModel);
+}
+
+WebInspector.TracingModelLoader.prototype = {
+    /**
+     * @param {string} chunk
+     */
+    write: function(chunk)
+    {
+        var data = this._buffer + chunk;
+        var lastIndex = 0;
+        var index;
+        do {
+            index = lastIndex;
+            lastIndex = WebInspector.TextUtils.findBalancedCurlyBrackets(data, index);
+        } while (lastIndex !== -1)
+
+        var json = data.slice(0, index) + "]";
+        this._buffer = data.slice(index);
+
+        if (!index)
+            return;
+
+        if (this._firstChunk) {
+            this._firstChunk = false;
+            this._model.reset();
+        } else {
+            var commaIndex = json.indexOf(",");
+            if (commaIndex !== -1)
+                json = json.slice(commaIndex + 1);
+            json = "[" + json;
+        }
+
+        var items;
+        try {
+            items = /** @type {!Array.<!WebInspector.TracingModel.EventPayload>} */ (JSON.parse(json));
+        } catch (e) {
+            WebInspector.console.error("Malformed timeline data.");
+            this._model.reset();
+            this._reader.cancel();
+            this._progress.done();
+            return;
+        }
+
+        this._loader.loadNextChunk(items);
+    },
+
+    close: function()
+    {
+        this._loader.finish();
+    }
+}
+
+/**
+ * @constructor
+ * @param {!WebInspector.OutputStream} stream
+ */
+WebInspector.TracingTimelineSaver = function(stream)
+{
+    this._stream = stream;
+}
+
+WebInspector.TracingTimelineSaver.prototype = {
+    /**
+     * @param {!Array.<*>} payloads
+     */
+    save: function(payloads)
+    {
+        this._payloads = payloads;
+        this._recordIndex = 0;
+        this._writeNextChunk(this._stream);
+    },
+
+    _writeNextChunk: function(stream)
+    {
+        const separator = ",\n";
+        var data = [];
+        var length = 0;
+
+        if (this._recordIndex === 0)
+            data.push("[");
+        while (this._recordIndex < this._payloads.length) {
+            var item = JSON.stringify(this._payloads[this._recordIndex]);
+            var itemLength = item.length + separator.length;
+            if (length + itemLength > WebInspector.TimelineModelImpl.TransferChunkLengthBytes)
+                break;
+            length += itemLength;
+            if (this._recordIndex > 0)
+                data.push(separator);
+            data.push(item);
+            ++this._recordIndex;
+        }
+        if (this._recordIndex === this._payloads.length)
+            data.push("]");
+        stream.write(data.join(""), this._didWriteNextChunk.bind(this, stream));
+    },
+
+    _didWriteNextChunk: function(stream)
+    {
+        if (this._recordIndex === this._payloads.length)
+            stream.close();
+        else
+            this._writeNextChunk(stream);
     }
 }

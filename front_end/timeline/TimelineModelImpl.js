@@ -216,45 +216,22 @@ WebInspector.TimelineModelImpl.prototype = {
     },
 
     /**
-     * @param {!Blob} file
+     * @param {!WebInspector.ChunkedFileReader} fileReader
      * @param {!WebInspector.Progress} progress
+     * @return {!WebInspector.OutputStream}
      */
-    loadFromFile: function(file, progress)
+    createLoader: function(fileReader, progress)
     {
-        var delegate = new WebInspector.TimelineModelLoadFromFileDelegate(this, progress);
-        var fileReader = this._createFileReader(file, delegate);
-        var loader = new WebInspector.TimelineModelLoader(this, fileReader, progress);
-        fileReader.start(loader);
+        return new WebInspector.TimelineModelLoader(this, fileReader, progress);
     },
 
-    _createFileReader: function(file, delegate)
+    /**
+     * @param {!WebInspector.OutputStream} stream
+     */
+    writeToStream: function(stream)
     {
-        return new WebInspector.ChunkedFileReader(file, WebInspector.TimelineModelImpl.TransferChunkLengthBytes, delegate);
-    },
-
-    _createFileWriter: function()
-    {
-        return new WebInspector.FileOutputStream();
-    },
-
-    saveToFile: function()
-    {
-        var now = new Date();
-        var fileName = "TimelineRawData-" + now.toISO8601Compact() + ".json";
-        var stream = this._createFileWriter();
-
-        /**
-         * @param {boolean} accepted
-         * @this {WebInspector.TimelineModelImpl}
-         */
-        function callback(accepted)
-        {
-            if (!accepted)
-                return;
-            var saver = new WebInspector.TimelineSaver(stream);
-            saver.save(this._payloads, window.navigator.appVersion);
-        }
-        stream.open(fileName, callback.bind(this));
+        var saver = new WebInspector.TimelineSaver(stream);
+        saver.save(this._payloads, window.navigator.appVersion);
     },
 
     reset: function()
@@ -582,9 +559,13 @@ WebInspector.TimelineModelLoader.prototype = {
         if (!index)
             return;
 
-        // Prepending "0" to turn string into valid JSON.
-        if (!this._firstChunk)
+        if (this._firstChunk) {
+            this._firstChunk = false;
+            this._model.reset();
+        } else {
+            // Prepending "0" to turn string into valid JSON.
             json = "[0" + json;
+        }
 
         var items;
         try {
@@ -597,12 +578,6 @@ WebInspector.TimelineModelLoader.prototype = {
             return;
         }
 
-        if (this._firstChunk) {
-            this._version = items[0];
-            this._firstChunk = false;
-            this._model.reset();
-        }
-
         // Skip 0-th element - it is either version or 0.
         for (var i = 1, size = items.length; i < size; ++i)
             this._model._addRecord(items[i]);
@@ -610,71 +585,6 @@ WebInspector.TimelineModelLoader.prototype = {
 
     close: function()
     {
-    }
-}
-
-/**
- * @constructor
- * @implements {WebInspector.OutputStreamDelegate}
- * @param {!WebInspector.TimelineModel} model
- * @param {!WebInspector.Progress} progress
- */
-WebInspector.TimelineModelLoadFromFileDelegate = function(model, progress)
-{
-    this._model = model;
-    this._progress = progress;
-}
-
-WebInspector.TimelineModelLoadFromFileDelegate.prototype = {
-    onTransferStarted: function()
-    {
-        this._progress.setTitle(WebInspector.UIString("Loading\u2026"));
-    },
-
-    /**
-     * @param {!WebInspector.ChunkedReader} reader
-     */
-    onChunkTransferred: function(reader)
-    {
-        if (this._progress.isCanceled()) {
-            reader.cancel();
-            this._progress.done();
-            this._model.reset();
-            return;
-        }
-
-        var totalSize = reader.fileSize();
-        if (totalSize) {
-            this._progress.setTotalWork(totalSize);
-            this._progress.setWorked(reader.loadedSize());
-        }
-    },
-
-    onTransferFinished: function()
-    {
-        this._progress.done();
-    },
-
-    /**
-     * @param {!WebInspector.ChunkedReader} reader
-     * @param {!Event} event
-     */
-    onError: function(reader, event)
-    {
-        this._progress.done();
-        this._model.reset();
-        switch (event.target.error.code) {
-        case FileError.NOT_FOUND_ERR:
-            WebInspector.console.error(WebInspector.UIString("File \"%s\" not found.", reader.fileName()));
-            break;
-        case FileError.NOT_READABLE_ERR:
-            WebInspector.console.error(WebInspector.UIString("File \"%s\" is not readable", reader.fileName()));
-            break;
-        case FileError.ABORT_ERR:
-            break;
-        default:
-            WebInspector.console.error(WebInspector.UIString("An error occurred while reading the file \"%s\"", reader.fileName()));
-        }
     }
 }
 

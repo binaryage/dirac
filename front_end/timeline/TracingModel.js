@@ -139,8 +139,10 @@ WebInspector.TracingModel.prototype = {
      */
     _eventsCollected: function(events)
     {
-        for (var i = 0; i < events.length; ++i)
+        for (var i = 0; i < events.length; ++i) {
             this._addEvent(events[i]);
+            this._rawEvents.push(events[i]);
+        }
     },
 
     _tracingComplete: function()
@@ -173,6 +175,15 @@ WebInspector.TracingModel.prototype = {
         this._maximumRecordTime = 0;
         this._sessionId = null;
         this._devtoolsMetadataEvents = [];
+        this._rawEvents = [];
+    },
+
+    /**
+      * @return {!Array.<!WebInspector.TracingModel.EventPayload>}
+      */
+    rawEvents: function()
+    {
+        return this._rawEvents;
     },
 
     /**
@@ -246,6 +257,54 @@ WebInspector.TracingModel.prototype = {
     __proto__: WebInspector.SDKObject.prototype
 }
 
+
+/**
+ * @constructor
+ * @param {!WebInspector.TracingModel} tracingModel
+ */
+WebInspector.TracingModel.Loader = function(tracingModel)
+{
+    this._tracingModel = tracingModel;
+    this._events = [];
+    this._sessionIdFound = false;
+}
+
+WebInspector.TracingModel.Loader.prototype = {
+    /**
+     * @param {!Array.<!WebInspector.TracingModel.EventPayload>} events
+     */
+    loadNextChunk: function(events) {
+        if (this._sessionIdFound) {
+            this._tracingModel._eventsCollected(events);
+            return;
+        }
+
+        var sessionId = null;
+        for (var i = 0, length = events.length; i < length; i++) {
+            var event = events[i];
+            this._events.push(event);
+
+            if (event.name === WebInspector.TracingModel.DevToolsMetadataEvent.TracingStartedInPage &&
+                event.cat.indexOf(WebInspector.TracingModel.DevToolsMetadataEventCategory) !== -1 &&
+                !this._sessionIdFound) {
+                sessionId = event.args["sessionId"];
+                this._sessionIdFound = true;
+            }
+        }
+
+        if (this._sessionIdFound) {
+            this._tracingModel._tracingStarted(sessionId);
+            this._tracingModel._eventsCollected(this._events);
+        }
+    },
+
+    finish: function()
+    {
+        this._tracingModel._tracingComplete();
+    }
+}
+
+
 /**
  * @constructor
  * @param {!WebInspector.TracingModel.EventPayload} payload
@@ -257,7 +316,12 @@ WebInspector.TracingModel.Event = function(payload, level, thread)
     this.name = payload.name;
     this.category = payload.cat;
     this.startTime = payload.ts / 1000;
-    this.args = payload.args;
+    if (payload.args) {
+        // Create a new object to avoid modifying original payload which may be saved to file.
+        this.args = {};
+        for (var name in payload.args)
+            this.args[name] = payload.args[name];
+    }
     this.phase = payload.ph;
     this.level = level;
 

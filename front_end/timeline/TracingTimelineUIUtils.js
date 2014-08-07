@@ -312,7 +312,7 @@ WebInspector.TracingTimelineUIUtils.markerEventColor = function(eventName)
 WebInspector.TracingTimelineUIUtils.eventTitle = function(event, model)
 {
     if (event.name === WebInspector.TracingTimelineModel.RecordType.TimeStamp)
-        return event.args.data["message"];
+        return event.args["data"]["message"];
     var title = WebInspector.TracingTimelineUIUtils.eventStyle(event).title;
     if (WebInspector.TracingTimelineUIUtils.isMarkerEvent(event)) {
         var startTime = Number.millisToString(event.startTime - model.minimumRecordTime());
@@ -335,7 +335,7 @@ WebInspector.TracingTimelineUIUtils.isMarkerEvent = function(event)
         return true;
     case recordTypes.MarkDOMContent:
     case recordTypes.MarkLoad:
-        return event.args.data["isMainFrame"];
+        return event.args["data"]["isMainFrame"];
     default:
         return false;
     }
@@ -352,7 +352,7 @@ WebInspector.TracingTimelineUIUtils.buildDetailsNodeForTraceEvent = function(eve
     var target = event.thread.target();
     var details;
     var detailsText;
-    var eventData = event.args.data;
+    var eventData = event.args["data"];
     switch (event.name) {
     case recordType.GCEvent:
         var delta = event.args["usedHeapSizeBefore"] - event.args["usedHeapSizeAfter"];
@@ -411,7 +411,7 @@ WebInspector.TracingTimelineUIUtils.buildDetailsNodeForTraceEvent = function(eve
     case recordType.ResourceFinish:
         var initiator = event.initiator;
         if (initiator) {
-            var url = initiator.args.data["url"];
+            var url = initiator.args["data"]["url"];
             if (url)
                 detailsText = WebInspector.displayNameForURL(url);
         }
@@ -548,7 +548,7 @@ WebInspector.TracingTimelineUIUtils._buildTraceEventDetailsSynchronously = funct
     var contentHelper = new WebInspector.TimelineDetailsContentHelper(event.thread.target(), linkifier, true);
     contentHelper.appendTextRow(WebInspector.UIString("Self Time"), Number.millisToString(event.selfTime, true));
     contentHelper.appendTextRow(WebInspector.UIString("Start Time"), Number.millisToString((event.startTime - model.minimumRecordTime())));
-    var eventData = event.args.data;
+    var eventData = event.args["data"];
     var initiator = event.initiator;
 
     switch (event.name) {
@@ -580,7 +580,7 @@ WebInspector.TracingTimelineUIUtils._buildTraceEventDetailsSynchronously = funct
     case recordTypes.ResourceReceiveResponse:
     case recordTypes.ResourceReceivedData:
     case recordTypes.ResourceFinish:
-        var url = (event.name === recordTypes.ResourceSendRequest) ? eventData["url"] : initiator.args.data["url"];
+        var url = (event.name === recordTypes.ResourceSendRequest) ? eventData["url"] : initiator.args["data"]["url"];
         if (url)
             contentHelper.appendElementRow(WebInspector.UIString("Resource"), WebInspector.linkifyResourceAsNode(url));
         if (eventData["requestMethod"])
@@ -640,7 +640,7 @@ WebInspector.TracingTimelineUIUtils._buildTraceEventDetailsSynchronously = funct
     case recordTypes.WebSocketSendHandshakeRequest:
     case recordTypes.WebSocketReceiveHandshakeResponse:
     case recordTypes.WebSocketDestroy:
-        var initiatorData = initiator ? initiator.args.data : eventData;
+        var initiatorData = initiator ? initiator.args["data"] : eventData;
         if (typeof initiatorData["webSocketURL"] !== "undefined")
             contentHelper.appendTextRow(WebInspector.UIString("URL"), initiatorData["webSocketURL"]);
         if (typeof initiatorData["webSocketProtocol"] !== "undefined")
