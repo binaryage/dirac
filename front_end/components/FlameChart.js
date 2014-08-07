@@ -58,9 +58,12 @@ WebInspector.FlameChart = function(dataProvider, flameChartDelegate, isTopDown)
     this._calculator = new WebInspector.FlameChart.Calculator();
 
     this._canvas = this.element.createChild("canvas");
+    this._canvas.tabIndex = 1;
+    this.setDefaultFocusedElement(this._canvas);
     this._canvas.addEventListener("mousemove", this._onMouseMove.bind(this), false);
     this._canvas.addEventListener("mousewheel", this._onMouseWheel.bind(this), false);
     this._canvas.addEventListener("click", this._onClick.bind(this), false);
+    this._canvas.addEventListener("keydown", this._onKeyDown.bind(this), false);
     WebInspector.installDragHandle(this._canvas, this._startCanvasDragging.bind(this), this._canvasDragging.bind(this), this._endCanvasDragging.bind(this), "move", null);
 
     this._vScrollElement = this.element.createChild("div", "flame-chart-v-scroll");
@@ -474,6 +477,8 @@ WebInspector.FlameChart.prototype = {
      */
     _onMouseMove: function(event)
     {
+        this._lastMouseOffsetX = event.offsetX;
+
         if (this._isDragging)
             return;
 
@@ -510,6 +515,7 @@ WebInspector.FlameChart.prototype = {
 
     _onClick: function()
     {
+        this.focus();
         // onClick comes after dragStart and dragEnd events.
         // So if there was drag (mouse move) in the middle of that events
         // we skip the click. Otherwise we jump to the sources.
@@ -527,8 +533,6 @@ WebInspector.FlameChart.prototype = {
     _onMouseWheel: function(e)
     {
         var scrollIsThere = this._totalHeight > this._offsetHeight;
-        var windowLeft = this._timeWindowLeft ? this._timeWindowLeft : this._dataProvider.minimumBoundary();
-        var windowRight = this._timeWindowRight !== Infinity ? this._timeWindowRight : this._dataProvider.minimumBoundary() + this._dataProvider.totalTime();
 
         var panHorizontally = Math.abs(e.wheelDeltaX) > Math.abs(e.wheelDeltaY) && !e.shiftKey;
         var panVertically = scrollIsThere && ((e.wheelDeltaY && !e.shiftKey) || (Math.abs(e.wheelDeltaX) === 120 && !e.shiftKey));
@@ -536,22 +540,79 @@ WebInspector.FlameChart.prototype = {
             this._vScrollElement.scrollTop -= e.wheelDeltaY / 120 * this._offsetHeight / 8;
         } else if (panHorizontally) {
             var shift = -e.wheelDeltaX * this._pixelToTime;
-            shift = Number.constrain(shift, this._minimumBoundary - windowLeft, this._totalTime + this._minimumBoundary - windowRight);
-            windowLeft += shift;
-            windowRight += shift;
+            this._handlePanGesture(shift);
         } else {  // Zoom.
             const mouseWheelZoomSpeed = 1 / 120;
-            var zoom = Math.pow(1.2, -(e.wheelDeltaY || e.wheelDeltaX) * mouseWheelZoomSpeed) - 1;
-            var cursorTime = this._cursorTime(e.offsetX);
-            windowLeft += (windowLeft - cursorTime) * zoom;
-            windowRight += (windowRight - cursorTime) * zoom;
+            this._handleZoomGesture(Math.pow(1.2, -(e.wheelDeltaY || e.wheelDeltaX) * mouseWheelZoomSpeed) - 1);
         }
-        windowLeft = Number.constrain(windowLeft, this._minimumBoundary, this._totalTime + this._minimumBoundary);
-        windowRight = Number.constrain(windowRight, this._minimumBoundary, this._totalTime + this._minimumBoundary);
-        this._flameChartDelegate.requestWindowTimes(windowLeft, windowRight);
 
         // Block swipe gesture.
         e.consume(true);
+    },
+
+    /**
+     * @param {!Event} e
+     */
+    _onKeyDown: function(e)
+    {
+        var multiplier = e.shiftKey ? 4 : 1;
+        if (e.keyCode === "A".charCodeAt(0)) {
+            this._handlePanGesture(-20 * this._pixelToTime * multiplier);
+            e.consume(true);
+        } else if (e.keyCode === "D".charCodeAt(0)) {
+            this._handlePanGesture(20 * this._pixelToTime * multiplier);
+            e.consume(true);
+        } else if (e.keyCode === "W".charCodeAt(0)) {
+            this._handleZoomGesture(-0.2 * multiplier);
+            e.consume(true);
+        } else if (e.keyCode === "S".charCodeAt(0)) {
+            this._handleZoomGesture(0.2 * multiplier);
+            e.consume(true);
+        }
+    },
+
+    /**
+     * @param {number} zoom
+     */
+    _handleZoomGesture: function(zoom)
+    {
+        var bounds = this._windowForGesture();
+        var cursorTime = this._cursorTime(this._lastMouseOffsetX);
+        bounds.left += (bounds.left - cursorTime) * zoom;
+        bounds.right += (bounds.right - cursorTime) * zoom;
+        this._requestWindowTimes(bounds);
+    },
+
+    /**
+     * @param {number} shift
+     */
+    _handlePanGesture: function(shift)
+    {
+        var bounds = this._windowForGesture();
+        shift = Number.constrain(shift, this._minimumBoundary - bounds.left, this._totalTime + this._minimumBoundary - bounds.right);
+        bounds.left += shift;
+        bounds.right += shift;
+        this._requestWindowTimes(bounds);
+    },
+
+    /**
+     * @return {{left: number, right: number}}
+     */
+    _windowForGesture: function()
+    {
+        var windowLeft = this._timeWindowLeft ? this._timeWindowLeft : this._dataProvider.minimumBoundary();
+        var windowRight = this._timeWindowRight !== Infinity ? this._timeWindowRight : this._dataProvider.minimumBoundary() + this._dataProvider.totalTime();
+        return {left: windowLeft, right: windowRight};
+    },
+
+    /**
+     * @param {{left: number, right: number}} bounds
+     */
+    _requestWindowTimes: function(bounds)
+    {
+        bounds.left = Number.constrain(bounds.left, this._minimumBoundary, this._totalTime + this._minimumBoundary);
+        bounds.right = Number.constrain(bounds.right, this._minimumBoundary, this._totalTime + this._minimumBoundary);
+        this._flameChartDelegate.requestWindowTimes(bounds.left, bounds.right);
     },
 
     /**

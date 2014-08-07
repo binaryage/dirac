@@ -656,7 +656,6 @@ WebInspector.TimelineFlameChart.prototype = {
         this._mainView.scheduleUpdate();
     },
 
-
     /**
      * @return {!WebInspector.View}
      */

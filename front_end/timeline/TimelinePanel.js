@@ -484,14 +484,6 @@ WebInspector.TimelinePanel.prototype = {
         this._categoryFilter.notifyFilterChanged();
     },
 
-    /**
-     * @return {!Element}
-     */
-    defaultFocusedElement: function()
-    {
-        return this.element;
-    },
-
     _onFiltersToggled: function(event)
     {
         var toggled = /** @type {boolean} */ (event.data);
