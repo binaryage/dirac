@@ -144,6 +144,7 @@ WebInspector.ConsoleModel.evaluateCommandInConsole = function(executionContext, 
     var target = executionContext.target();
 
     var commandMessage = new WebInspector.ConsoleMessage(target, WebInspector.ConsoleMessage.MessageSource.JS, null, text, WebInspector.ConsoleMessage.MessageType.Command);
+    commandMessage.setExecutionContextId(executionContext.id);
     target.consoleModel.addMessage(commandMessage);
 
     /**
@@ -230,6 +231,15 @@ WebInspector.ConsoleMessage.prototype = {
     setOriginatingMessage: function(originatingMessage)
     {
         this._originatingConsoleMessage = originatingMessage;
+        this.executionContextId = originatingMessage.executionContextId;
+    },
+
+    /**
+     * @param {!RuntimeAgent.ExecutionContextId} executionContextId
+     */
+    setExecutionContextId: function(executionContextId)
+    {
+        this.executionContextId = executionContextId;
     },
 
     /**

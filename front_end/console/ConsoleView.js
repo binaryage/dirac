@@ -1015,8 +1015,13 @@ WebInspector.ConsoleViewFilter.prototype = {
         if (!message.target())
             return true;
 
-        if (!this._view._showAllMessagesCheckbox.checked() && executionContext && (message.target() !== executionContext.target() || message.executionContextId !== executionContext.id))
-            return false;
+        if (!this._view._showAllMessagesCheckbox.checked() && executionContext) {
+            if (message.target() !== executionContext.target())
+                return false;
+            if (message.executionContextId  && message.executionContextId !== executionContext.id) {
+                return false;
+            }
+        }
 
         if (viewMessage.consoleMessage().isGroupMessage())
             return true;
