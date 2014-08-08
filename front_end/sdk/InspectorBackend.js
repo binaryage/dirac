@@ -591,6 +591,14 @@ InspectorBackendClass.Connection.prototype = {
         return !this._isConnected;
     },
 
+    /**
+     * @param {!Array.<string>} domains
+     */
+    suppressErrorsForDomains: function(domains)
+    {
+        domains.forEach(function(domain) { this._agents[domain].suppressErrorLogging(); }, this);
+    },
+
     __proto__: WebInspector.Object.prototype
 
 }
@@ -724,6 +732,7 @@ InspectorBackendClass.AgentPrototype = function(domain)
     this._replyArgs = {};
     this._hasErrorData = {};
     this._domain = domain;
+    this._suppressErrorLogging = false;
 }
 
 InspectorBackendClass.AgentPrototype.prototype = {
@@ -837,7 +846,7 @@ InspectorBackendClass.AgentPrototype.prototype = {
      */
     dispatchResponse: function(messageObject, methodName, callback)
     {
-        if (messageObject.error && messageObject.error.code !== InspectorBackendClass._DevToolsErrorCode && !InspectorBackendClass.Options.suppressRequestErrors)
+        if (messageObject.error && messageObject.error.code !== InspectorBackendClass._DevToolsErrorCode && !InspectorBackendClass.Options.suppressRequestErrors && !this._suppressErrorLogging)
             console.error("Request with id = " + messageObject.id + " failed. " + JSON.stringify(messageObject.error));
 
         var argumentsArray = [];
@@ -853,6 +862,11 @@ InspectorBackendClass.AgentPrototype.prototype = {
         }
 
         callback.apply(null, argumentsArray);
+    },
+
+    suppressErrorLogging: function()
+    {
+        this._suppressErrorLogging = true;
     }
 }
 

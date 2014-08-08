@@ -87,7 +87,9 @@ WebInspector.ResourceTreeModel.prototype = {
     _processCachedResources: function(error, mainFramePayload)
     {
         if (error) {
-            console.error(JSON.stringify(error));
+            //FIXME: remove resourceTreeModel from worker
+            if (!this.target().isWorkerTarget())
+                console.error(JSON.stringify(error));
             return;
         }
 
