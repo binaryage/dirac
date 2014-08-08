@@ -42,18 +42,26 @@
     text-align: center;
     background-color: black;
     overflow: hidden;
-    padding: 5px 5px 10px 5px;
+    padding: 0;
     color: white;
 }
 
-.canvas-replay-image {
-    zoom: 100;
-    height: auto;
-    width: auto;
-    max-width: 100%;
-    max-height: 100%;
-    margin: auto;
-    display: block;
+.canvas-replay-image-parent {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    right: 5px;
+    bottom: 10px;
+}
+
+.canvas-replay-image-parent > span {
+    display: inline-block;
+    height: 100%;
+    vertical-align: middle;
+}
+
+.canvas-replay-image-parent > img {
+    vertical-align: middle;
 }
 
 .canvas-debug-info {

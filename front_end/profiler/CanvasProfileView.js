@@ -50,14 +50,15 @@ WebInspector.CanvasProfileView = function(profile)
     this._imageSplitView = new WebInspector.SplitView(false, true, "canvasProfileViewSplitViewState", 300);
     this._imageSplitView.show(this._replayInfoSplitView.mainElement());
 
-    var replayImageContainerView = new WebInspector.VBox();
+    var replayImageContainerView = new WebInspector.VBoxWithResizeCallback(this._onReplayImageResize.bind(this));
     replayImageContainerView.setMinimumSize(50, 28);
     replayImageContainerView.show(this._imageSplitView.mainElement());
 
-    // NOTE: The replayImageContainer can NOT be a flex div (e.g. VBox or SplitView elements)!
-    var replayImageContainer = replayImageContainerView.element.createChild("div");
+    var replayImageContainer = replayImageContainerView.element;
     replayImageContainer.id = "canvas-replay-image-container";
-    this._replayImageElement = replayImageContainer.createChild("img", "canvas-replay-image");
+    var replayImageParent = replayImageContainer.createChild("div", "canvas-replay-image-parent");
+    replayImageParent.createChild("span"); // Helps to align the image vertically.
+    this._replayImageElement = replayImageParent.createChild("img");
     this._debugInfoElement = replayImageContainer.createChild("div", "canvas-debug-info hidden");
     this._spinnerIcon = replayImageContainer.createChild("div", "spinner-icon small hidden");
 
@@ -127,6 +128,13 @@ WebInspector.CanvasProfileView.prototype = {
     get profile()
     {
         return this._profile;
+    },
+
+    _onReplayImageResize: function()
+    {
+        var parent = this._replayImageElement.parentElement;
+        this._replayImageElement.style.maxWidth = parent.clientWidth + "px";
+        this._replayImageElement.style.maxHeight = parent.clientHeight + "px";
     },
 
     /**
