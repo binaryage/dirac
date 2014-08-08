@@ -159,6 +159,8 @@ WebInspector.SidebarPaneStack = function()
     WebInspector.View.call(this);
     this.setMinimumSize(25, 0);
     this.element.className = "sidebar-pane-stack"; // Override
+    /** @type {!Map.<!WebInspector.SidebarPane, !WebInspector.SidebarPaneTitle>} */
+    this._titleByPane = new Map();
 }
 
 WebInspector.SidebarPaneStack.prototype = {
@@ -167,7 +169,21 @@ WebInspector.SidebarPaneStack.prototype = {
      */
     addPane: function(pane)
     {
-        new WebInspector.SidebarPaneTitle(this.element, pane);
+        this._titleByPane.put(pane, new WebInspector.SidebarPaneTitle(this.element, pane));
+    },
+
+    /**
+     * @param {!WebInspector.SidebarPane} pane
+     * @param {boolean} hide
+     */
+    togglePaneHidden: function(pane, hide)
+    {
+        var title = this._titleByPane.get(pane);
+        if (!title)
+            return;
+
+        title.element.classList.toggle("hidden", hide);
+        pane.element.classList.toggle("hidden", hide);
     },
 
     __proto__: WebInspector.View.prototype

@@ -390,6 +390,7 @@
             'front_end/sources/SourcesView.js',
             'front_end/sources/StyleSheetOutlineDialog.js',
             'front_end/sources/TabbedEditorContainer.js',
+            'front_end/sources/ThreadsSidebarPane.js',
             'front_end/sources/UISourceCodeFrame.js',
             'front_end/sources/WatchExpressionsSidebarPane.js',
             'front_end/sources/WorkersSidebarPane.js',
