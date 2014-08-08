@@ -404,7 +404,8 @@ WebInspector.TimelinePanel.prototype = {
                                                                           WebInspector.UIString("Capture power information")));
             this._capturePowerSetting.addChangeListener(this._onModeChanged, this);
         }
-        if (WebInspector.experimentsSettings.timelineOnTraceEvents.isEnabled()) {
+        if (WebInspector.experimentsSettings.timelineOnTraceEvents.isEnabled() &&
+            WebInspector.experimentsSettings.paintProfiler.isEnabled()) {
             this._captureLayersAndPicturesSetting = WebInspector.settings.createSetting("timelineCaptureLayersAndPictures", false);
             panelStatusBarElement.appendChild(this._createSettingCheckbox(WebInspector.UIString("Paint"),
                                                                           this._captureLayersAndPicturesSetting,
@@ -1011,7 +1012,7 @@ WebInspector.TimelinePanel.prototype = {
         case WebInspector.TimelineSelection.Type.Frame:
             var frame = /** @type {!WebInspector.TimelineFrame} */ (this._selection.object());
             this.showInDetails(WebInspector.UIString("Frame Statistics"), WebInspector.TimelineUIUtils.generateDetailsContentForFrame(this._lazyFrameModel, frame));
-            if (frame.layerTree) {
+            if (frame.layerTree && WebInspector.experimentsSettings.paintProfiler.isEnabled()) {
                 var layersView = this._layersView();
                 layersView.showLayerTree(frame.layerTree, frame.paints);
                 this._detailsView.appendTab("layers", WebInspector.UIString("Layers"), layersView);
@@ -1028,7 +1029,7 @@ WebInspector.TimelinePanel.prototype = {
     {
         var title = WebInspector.TracingTimelineUIUtils.styleForTraceEvent(event.name).title;
         this.showInDetails(title, content);
-        if (event.picture) {
+        if (event.picture && WebInspector.experimentsSettings.paintProfiler.isEnabled()) {
             var paintProfilerView = this._paintProfilerView();
             paintProfilerView.setPicture(event.thread.target(), event.picture);
             this._detailsView.appendTab("paintProfiler", WebInspector.UIString("Paint Profiler"), paintProfilerView);
