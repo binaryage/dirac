@@ -196,7 +196,8 @@ WebInspector.ConsoleViewMessage.prototype = {
         }
 
         if (consoleMessage.source !== WebInspector.ConsoleMessage.MessageSource.Network || consoleMessage.request) {
-            var callFrame = this._callFrameAnchorFromStackTrace(consoleMessage.stackTrace);
+            var useBlackboxing = (consoleMessage.source === WebInspector.ConsoleMessage.MessageSource.ConsoleAPI);
+            var callFrame = this._callFrameAnchorFromStackTrace(consoleMessage.stackTrace, useBlackboxing);
             if (callFrame)
                 this._anchorElement = this._linkifyCallFrame(callFrame);
             else if (consoleMessage.url && consoleMessage.url !== "undefined")
@@ -285,21 +286,20 @@ WebInspector.ConsoleViewMessage.prototype = {
 
     /**
      * @param {?Array.<!ConsoleAgent.CallFrame>} stackTrace
+     * @param {boolean} useBlackboxing
      * @return {?ConsoleAgent.CallFrame}
      */
-    _callFrameAnchorFromStackTrace: function(stackTrace)
+    _callFrameAnchorFromStackTrace: function(stackTrace, useBlackboxing)
     {
         if (!stackTrace || !stackTrace.length)
             return null;
         var callFrame = stackTrace[0].scriptId ? stackTrace[0] : null;
+        if (!useBlackboxing)
+            return callFrame;
         if (!WebInspector.experimentsSettings.frameworksDebuggingSupport.isEnabled())
             return callFrame;
-        var regex = WebInspector.settings.skipStackFramesPattern.asRegExp();
-        if (!regex)
-            return callFrame;
         for (var i = 0; i < stackTrace.length; ++i) {
-            var script = this._target().debuggerModel.scriptForId(stackTrace[i].scriptId);
-            if (!script || !regex.test(script.sourceURL))
+            if (!WebInspector.BlackboxSupport.isBlackboxedURL(stackTrace[i].url))
                 return stackTrace[i].scriptId ? stackTrace[i] : null;
         }
         return callFrame;
@@ -1063,10 +1063,10 @@ WebInspector.ConsoleViewMessage.prototype = {
                 content.createChild("span", "console-message-text source-code").textContent = functionName;
 
                 if (frame.scriptId) {
-                    content.createTextChild(" ");
                     var urlElement = this._linkifyCallFrame(frame);
                     if (!urlElement)
                         continue;
+                    content.createTextChild(" ");
                     content.appendChild(urlElement);
                 }
 

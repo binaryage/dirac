@@ -159,7 +159,7 @@ WebInspector.Linkifier.prototype = {
 
         var anchor = this._createAnchor(classes);
         var liveLocation = WebInspector.debuggerWorkspaceBinding.createLiveLocation(rawLocation, this._updateAnchor.bind(this, anchor));
-        this._liveLocationsByTarget.get(rawLocation.target()).push({anchor: anchor, location: liveLocation});
+        this._liveLocationsByTarget.get(rawLocation.target()).push({ anchor: anchor, location: liveLocation });
         anchor.__fallbackAnchor = fallbackAnchor;
         return anchor;
     },
@@ -186,7 +186,10 @@ WebInspector.Linkifier.prototype = {
         // FIXME(62725): console stack trace line/column numbers are one-based.
         var lineNumber = callFrame.lineNumber ? callFrame.lineNumber - 1 : 0;
         var columnNumber = callFrame.columnNumber ? callFrame.columnNumber - 1 : 0;
-        return this.linkifyScriptLocation(target, callFrame.scriptId, callFrame.url, lineNumber, columnNumber, classes);
+        var anchor = this.linkifyScriptLocation(target, callFrame.scriptId, callFrame.url, lineNumber, columnNumber, classes);
+        if (WebInspector.experimentsSettings.frameworksDebuggingSupport.isEnabled() && WebInspector.BlackboxSupport.isBlackboxedURL(callFrame.url))
+            anchor.classList.add("webkit-html-blackbox-link");
+        return anchor;
     },
 
     /**
@@ -200,7 +203,7 @@ WebInspector.Linkifier.prototype = {
         var liveLocation = WebInspector.cssWorkspaceBinding.createLiveLocation(rawLocation, this._updateAnchor.bind(this, anchor));
         if (!liveLocation)
             return null;
-        this._liveLocationsByTarget.get(rawLocation.target()).push({anchor: anchor, location: liveLocation});
+        this._liveLocationsByTarget.get(rawLocation.target()).push({ anchor: anchor, location: liveLocation });
         return anchor;
     },
 

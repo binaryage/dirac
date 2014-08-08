@@ -891,6 +891,10 @@ body.platform-linux .source-code {
     background-color: rgba(0, 0, 0, 0.05);
 }
 
+.stacktrace-entry .webkit-html-blackbox-link {
+    opacity: 0.6;
+}
+
 .bubble-repeat-count {
     display: inline-block;
     height: 14px;

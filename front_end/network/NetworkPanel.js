@@ -1034,7 +1034,7 @@ WebInspector.NetworkLogView.prototype = {
      */
     _generateScriptInitiatedPopoverContent: function(request)
     {
-        var framesTable = document.createElement("table");
+        var framesTable = document.createElementWithClass("table", "network-stack-trace");
 
         /**
          * @param {!Array.<!ConsoleAgent.CallFrame>} stackTrace
