@@ -528,6 +528,8 @@
             'front_end/Images/databaseTable.png',
             'front_end/Images/deleteIcon.png',
             'front_end/Images/domain.png',
+            'front_end/Images/errorWave.png',
+            'front_end/Images/errorWave_2x.png',
             'front_end/Images/forward.png',
             'front_end/Images/fileSystem.png',
             'front_end/Images/frame.png',
