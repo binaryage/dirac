@@ -37,14 +37,20 @@ def validate_injected_script(fileName):
     lines = f.readlines()
     f.close()
 
-    array_proto_functions = "|".join(["concat", "every", "filter", "forEach", "indexOf", "join", "lastIndexOf", "map", "pop", "push", "reduce", "reduceRight", "reverse", "shift", "slice", "some", "sort", "splice", "toLocaleString", "toString", "unshift"])
+    proto_functions = "|".join([
+        # Array.prototype.*
+        "concat", "every", "filter", "forEach", "indexOf", "join", "lastIndexOf", "map", "pop",
+        "push", "reduce", "reduceRight", "reverse", "shift", "slice", "some", "sort", "splice", "toLocaleString", "toString", "unshift",
+        # Function.prototype.*
+        "apply", "bind", "call", "isGenerator", "toSource",
+    ])
 
     # Black list:
-    # - Function.prototype.bind()
     # - Object.prototype.toString()
     # - Array.prototype.*
+    # - Function.prototype.*
     # - Math.*
-    black_list_call_regex = re.compile(r"\bMath\.\w+\(|\.(bind|toString|" + array_proto_functions + r")\(")
+    black_list_call_regex = re.compile(r"\bMath\.\w+\(|\.(toString|" + proto_functions + r")\(")
 
     errors_found = False
     for i, line in enumerate(lines):
