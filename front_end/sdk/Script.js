@@ -247,16 +247,5 @@ WebInspector.Script.prototype = {
         return !!this.sourceURL && this.sourceURL.startsWith(WebInspector.Script.snippetSourceURLPrefix);
     },
 
-    /**
-     * @return {boolean}
-     */
-    isFramework: function()
-    {
-        if (!WebInspector.experimentsSettings.frameworksDebuggingSupport.isEnabled())
-            return false;
-        var regex = WebInspector.settings.skipStackFramesPattern.asRegExp();
-        return regex ? regex.test(this.sourceURL) : false;
-    },
-
     __proto__: WebInspector.SDKObject.prototype
 }

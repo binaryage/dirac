@@ -21,7 +21,6 @@
         {
             "type": "ui-setting",
             "section": "Sources",
-            "experiment": "frameworksDebuggingSupport",
             "settingType": "custom",
             "className": "WebInspector.SettingsScreen.SkipStackFramePatternSettingDelegate"
         }

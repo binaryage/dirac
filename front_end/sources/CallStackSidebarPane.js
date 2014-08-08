@@ -114,7 +114,7 @@ WebInspector.CallStackSidebarPane.prototype = {
             this.placards.push(placard);
             this.bodyElement.appendChild(placard.element);
 
-            if (callFrame.script.isFramework()) {
+            if (WebInspector.BlackboxSupport.isBlackboxedURL(callFrame.script.sourceURL)) {
                 placard.setHidden(true);
                 placard.element.classList.add("dimmed");
                 ++this._hiddenPlacards;
@@ -186,8 +186,6 @@ WebInspector.CallStackSidebarPane.prototype = {
      */
     appendBlackboxURLContextMenuItems: function(contextMenu, url)
     {
-        if (!WebInspector.experimentsSettings.frameworksDebuggingSupport.isEnabled())
-            return;
         if (!url)
             return;
         var blackboxed = WebInspector.BlackboxSupport.isBlackboxedURL(url);

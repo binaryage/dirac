@@ -666,8 +666,6 @@ WebInspector.DebuggerModel.prototype = {
 
     _applySkipStackFrameSettings: function()
     {
-        if (!WebInspector.experimentsSettings.frameworksDebuggingSupport.isEnabled())
-            return;
         this._agent.skipStackFrames(WebInspector.settings.skipStackFramesPattern.get());
     },
 

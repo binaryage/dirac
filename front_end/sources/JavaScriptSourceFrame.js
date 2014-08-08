@@ -123,8 +123,6 @@ WebInspector.JavaScriptSourceFrame.prototype = {
 
     _showBlackboxInfobarIfNeeded: function()
     {
-        if (!WebInspector.experimentsSettings.frameworksDebuggingSupport.isEnabled())
-            return;
         if (this._uiSourceCode.contentType() !== WebInspector.resourceTypes.Script)
             return;
         var url = this._uiSourceCode.url;

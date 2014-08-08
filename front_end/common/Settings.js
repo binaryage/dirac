@@ -295,7 +295,6 @@ WebInspector.ExperimentsSettings = function(experimentsEnabled)
     this.disableAgentsWhenProfile = this._createExperiment("disableAgentsWhenProfile", "Disable other agents and UI when profiler is active", true);
     this.dockToLeft = this._createExperiment("dockToLeft", "Dock to left", true);
     this.fileSystemInspection = this._createExperiment("fileSystemInspection", "FileSystem inspection");
-    this.frameworksDebuggingSupport = this._createExperiment("frameworksDebuggingSupport", "JavaScript frameworks debugging");
     this.gpuTimeline = this._createExperiment("gpuTimeline", "GPU data on timeline", true);
     this.layersPanel = this._createExperiment("layersPanel", "Layers panel");
     this.timelineOnTraceEvents = this._createExperiment("timelineOnTraceEvents", "Timeline on trace events");

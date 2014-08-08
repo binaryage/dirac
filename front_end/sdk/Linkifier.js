@@ -187,7 +187,7 @@ WebInspector.Linkifier.prototype = {
         var lineNumber = callFrame.lineNumber ? callFrame.lineNumber - 1 : 0;
         var columnNumber = callFrame.columnNumber ? callFrame.columnNumber - 1 : 0;
         var anchor = this.linkifyScriptLocation(target, callFrame.scriptId, callFrame.url, lineNumber, columnNumber, classes);
-        if (WebInspector.experimentsSettings.frameworksDebuggingSupport.isEnabled() && WebInspector.BlackboxSupport.isBlackboxedURL(callFrame.url))
+        if (WebInspector.BlackboxSupport.isBlackboxedURL(callFrame.url))
             anchor.classList.add("webkit-html-blackbox-link");
         return anchor;
     },
