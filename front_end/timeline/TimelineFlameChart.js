@@ -367,13 +367,17 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
         var frame = this._entryIndexToFrame[entryIndex];
         if (frame) {
             context.save();
+
             context.translate(0.5, 0.5);
 
             context.beginPath();
             context.moveTo(barX, barY);
             context.lineTo(barX, context.canvas.height);
-            context.strokeStyle = "rgba(100, 100, 100, 0.6)";
+            context.strokeStyle = "rgba(100, 100, 100, 0.4)";
+            context.setLineDash([5]);
             context.stroke();
+            context.setLineDash([]);
+
 
             var padding = 4 * window.devicePixelRatio;
             barX += padding;

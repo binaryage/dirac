@@ -275,7 +275,7 @@ WebInspector.TimelineFrameOverview.prototype = {
         var y0 = Math.floor(windowHeight - frame.duration * scale) + 0.5;
         var y1 = windowHeight + 0.5;
 
-        this._context.strokeStyle = "rgba(90, 90, 90, 0.3)";
+        this._context.strokeStyle = "rgba(90, 90, 90, 0.2)";
         this._context.beginPath();
         this._context.moveTo(x, y1);
         this._context.lineTo(x, y0);

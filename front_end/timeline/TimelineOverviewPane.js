@@ -100,7 +100,6 @@ WebInspector.TimelineOverviewPane.prototype = {
         this._overviewGrid.updateDividers(this._overviewCalculator);
         this._updateEventDividers();
         this._updateWindow();
-        this._scheduleRefresh();
     },
 
     _updateEventDividers: function()

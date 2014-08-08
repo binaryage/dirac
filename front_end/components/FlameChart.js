@@ -421,9 +421,35 @@ WebInspector.FlameChart.prototype = {
      */
     setWindowTimes: function(startTime, endTime)
     {
+        if (this._muteAnimation || this._timeWindowLeft === 0 || this._timeWindowRight === Infinity) {
+            // Initial setup.
+            this._timeWindowLeft = startTime;
+            this._timeWindowRight = endTime;
+            this.scheduleUpdate();
+            return;
+        }
+
+        if (this._cancelWindowTimesAnimation)
+            this._cancelWindowTimesAnimation();
+        this._cancelWindowTimesAnimation = WebInspector.animateFunction(this._animateWindowTimes.bind(this),
+            [{from: this._timeWindowLeft, to: startTime}, {from: this._timeWindowRight, to: endTime}], 5,
+            this._animationCompleted.bind(this));
+    },
+
+    /**
+     * @param {number} startTime
+     * @param {number} endTime
+     */
+    _animateWindowTimes: function(startTime, endTime)
+    {
         this._timeWindowLeft = startTime;
         this._timeWindowRight = endTime;
-        this.scheduleUpdate();
+        this.update();
+    },
+
+    _animationCompleted: function()
+    {
+        delete this._cancelWindowTimesAnimation;
     },
 
     /**
@@ -451,19 +477,13 @@ WebInspector.FlameChart.prototype = {
     _canvasDragging: function(event)
     {
         var pixelShift = this._dragStartPointX - event.pageX;
+        this._dragStartPointX = event.pageX;
+        this._muteAnimation = true;
+        this._handlePanGesture(pixelShift * this._pixelToTime);
+        this._muteAnimation = false;
+
         var pixelScroll = this._dragStartPointY - event.pageY;
         this._vScrollElement.scrollTop = this._dragStartScrollTop + pixelScroll;
-        var windowShift = pixelShift / this._totalPixels;
-        var windowTime = this._windowWidth * this._totalTime;
-        var timeShift = windowTime * pixelShift / this._pixelWindowWidth;
-        timeShift = Number.constrain(
-            timeShift,
-            this._minimumBoundary - this._dragStartWindowLeft,
-            this._minimumBoundary + this._totalTime - this._dragStartWindowRight
-        );
-        var windowLeft = this._dragStartWindowLeft + timeShift;
-        var windowRight = this._dragStartWindowRight + timeShift;
-        this._flameChartDelegate.requestWindowTimes(windowLeft, windowRight);
         this._maxDragOffset = Math.max(this._maxDragOffset, Math.abs(pixelShift));
     },
 
@@ -540,7 +560,9 @@ WebInspector.FlameChart.prototype = {
             this._vScrollElement.scrollTop -= e.wheelDeltaY / 120 * this._offsetHeight / 8;
         } else if (panHorizontally) {
             var shift = -e.wheelDeltaX * this._pixelToTime;
+            this._muteAnimation = true;
             this._handlePanGesture(shift);
+            this._muteAnimation = false;
         } else {  // Zoom.
             const mouseWheelZoomSpeed = 1 / 120;
             this._handleZoomGesture(Math.pow(1.2, -(e.wheelDeltaY || e.wheelDeltaX) * mouseWheelZoomSpeed) - 1);
@@ -555,18 +577,19 @@ WebInspector.FlameChart.prototype = {
      */
     _onKeyDown: function(e)
     {
-        var multiplier = e.shiftKey ? 4 : 1;
+        var zoomMultiplier = e.shiftKey ? 0.8 : 0.3;
+        var panMultiplier = e.shiftKey ? 320 : 80;
         if (e.keyCode === "A".charCodeAt(0)) {
-            this._handlePanGesture(-20 * this._pixelToTime * multiplier);
+            this._handlePanGesture(-panMultiplier * this._pixelToTime);
             e.consume(true);
         } else if (e.keyCode === "D".charCodeAt(0)) {
-            this._handlePanGesture(20 * this._pixelToTime * multiplier);
+            this._handlePanGesture(panMultiplier * this._pixelToTime);
             e.consume(true);
         } else if (e.keyCode === "W".charCodeAt(0)) {
-            this._handleZoomGesture(-0.2 * multiplier);
+            this._handleZoomGesture(-zoomMultiplier);
             e.consume(true);
         } else if (e.keyCode === "S".charCodeAt(0)) {
-            this._handleZoomGesture(0.2 * multiplier);
+            this._handleZoomGesture(zoomMultiplier);
             e.consume(true);
         }
     },
@@ -1118,7 +1141,7 @@ WebInspector.FlameChart.prototype = {
 
     scheduleUpdate: function()
     {
-        if (this._updateTimerId)
+        if (this._updateTimerId || this._cancelWindowTimesAnimation)
             return;
         this._updateTimerId = requestAnimationFrame(this.update.bind(this));
     },

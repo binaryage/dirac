@@ -916,6 +916,51 @@ WebInspector.invokeOnceAfterBatchUpdate = function(object, method)
     WebInspector._postUpdateHandlers.add(object, method);
 }
 
+/**
+ * @param {!Function} func
+ * @param {!Array.<{from:number, to:number}>} params
+ * @param {number} frames
+ * @param {function()=} animationComplete
+ * @return {function()}
+ */
+WebInspector.animateFunction = function(func, params, frames, animationComplete)
+{
+    var values = new Array(params.length);
+    var deltas = new Array(params.length);
+    for (var i = 0; i < params.length; ++i) {
+        values[i] = params[i].from;
+        deltas[i] = (params[i].to - params[i].from) / frames;
+    }
+
+    var raf = requestAnimationFrame(animationStep);
+
+    var framesLeft = frames;
+
+    function animationStep()
+    {
+        if (--framesLeft < 0) {
+            if (animationComplete)
+                animationComplete();
+            return;
+        }
+        for (var i = 0; i < params.length; ++i) {
+            if (params[i].to > params[i].from)
+                values[i] = Number.constrain(values[i] + deltas[i], params[i].from, params[i].to);
+            else
+                values[i] = Number.constrain(values[i] + deltas[i], params[i].to, params[i].from);
+        }
+        func.apply(null, values);
+        raf = window.requestAnimationFrame(animationStep);
+    }
+
+    function cancelAnimation()
+    {
+        window.cancelAnimationFrame(raf);
+    }
+
+    return cancelAnimation;
+}
+
 ;(function() {
 
 function windowLoaded()
