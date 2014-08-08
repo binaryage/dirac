@@ -365,7 +365,7 @@ WebInspector.CanvasReplayStateView.prototype = {
                 parent.appendChild(childNode);
                 var oldChildrenItem = oldChildren[childNode.name] || {};
                 var oldChildNode = oldChildrenItem.node;
-                if (!oldChildNode || oldChildNode.element.textContent !== childNode.element.textContent)
+                if (!oldChildNode || oldChildNode.element().textContent !== childNode.element().textContent)
                     nodesToHighlight.push(childNode);
                 appendResourceStateDescriptors.call(this, descriptor.values, childNode, oldChildrenItem.children);
             }
@@ -385,13 +385,13 @@ WebInspector.CanvasReplayStateView.prototype = {
     _updateDataGridHighlights: function(nodes)
     {
         for (var i = 0, n = this._highlightedGridNodes.length; i < n; ++i)
-            this._highlightedGridNodes[i].element.classList.remove("canvas-grid-node-highlighted");
+            this._highlightedGridNodes[i].element().classList.remove("canvas-grid-node-highlighted");
 
         this._highlightedGridNodes = nodes;
 
         for (var i = 0, n = this._highlightedGridNodes.length; i < n; ++i) {
             var node = this._highlightedGridNodes[i];
-            WebInspector.runCSSAnimationOnce(node.element, "canvas-grid-node-highlighted");
+            WebInspector.runCSSAnimationOnce(node.element(), "canvas-grid-node-highlighted");
             node.reveal();
         }
     },

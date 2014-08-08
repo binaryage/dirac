@@ -1128,13 +1128,13 @@ WebInspector.DataGridNode.prototype = {
     /** @type {boolean} */
     _isRoot: false,
 
-    get element()
+    /**
+     * @return {!Element}
+     */
+    element: function()
     {
         if (this._element)
             return this._element;
-
-        if (!this.dataGrid)
-            return null;
 
         this._element = document.createElement("tr");
         this._element._dataGridNode = this;
@@ -1550,7 +1550,7 @@ WebInspector.DataGridNode.prototype = {
             currentAncestor = currentAncestor.parent;
         }
 
-        this.element.scrollIntoViewIfNeeded(false);
+        this.element().scrollIntoViewIfNeeded(false);
     },
 
     /**
@@ -1692,8 +1692,8 @@ WebInspector.DataGridNode.prototype = {
 
         var nextNode = null;
         var previousNode = this.traversePreviousNode(true, true);
-        var previousElement = previousNode ? previousNode.element : this.dataGrid._topFillerRow;
-        this.dataGrid.dataTableBody.insertBefore(this.element, previousElement.nextSibling);
+        var previousElement = previousNode ? previousNode.element() : this.dataGrid._topFillerRow;
+        this.dataGrid.dataTableBody.insertBefore(this.element(), previousElement.nextSibling);
 
         if (this.expanded)
             for (var i = 0; i < this.children.length; ++i)

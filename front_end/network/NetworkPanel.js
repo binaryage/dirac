@@ -1527,7 +1527,7 @@ WebInspector.NetworkLogView.prototype = {
     _removeAllNodeHighlights: function()
     {
         if (this._highlightedNode) {
-            this._highlightedNode.element.classList.remove("highlighted-row");
+            this._highlightedNode.element().classList.remove("highlighted-row");
             delete this._highlightedNode;
         }
     },
@@ -1537,7 +1537,7 @@ WebInspector.NetworkLogView.prototype = {
      */
     _highlightNode: function(node)
     {
-        WebInspector.runCSSAnimationOnce(node.element, "highlighted-row");
+        WebInspector.runCSSAnimationOnce(node.element(), "highlighted-row");
         this._highlightedNode = node;
     },
 

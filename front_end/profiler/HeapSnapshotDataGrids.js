@@ -171,7 +171,7 @@ WebInspector.HeapSnapshotSortableDataGrid.prototype = {
         var prevNode = this._highlightedNode;
         this._clearCurrentHighlight();
         this._highlightedNode = node;
-        WebInspector.runCSSAnimationOnce(this._highlightedNode.element, "highlighted-row");
+        WebInspector.runCSSAnimationOnce(this._highlightedNode.element(), "highlighted-row");
     },
 
     nodeWasDetached: function(node)
@@ -184,7 +184,7 @@ WebInspector.HeapSnapshotSortableDataGrid.prototype = {
     {
         if (!this._highlightedNode)
             return
-        this._highlightedNode.element.classList.remove("highlighted-row");
+        this._highlightedNode.element().classList.remove("highlighted-row");
         this._highlightedNode = null;
     },
 
@@ -523,11 +523,11 @@ WebInspector.HeapSnapshotViewportDataGrid.prototype = {
      */
     highlightNode: function(node)
     {
-        if (this._isScrolledIntoView(node.element)) {
+        if (this._isScrolledIntoView(node.element())) {
             this.updateVisibleNodes(true);
             WebInspector.HeapSnapshotSortableDataGrid.prototype.highlightNode.call(this, node);
         } else {
-            node.element.scrollIntoViewIfNeeded(true);
+            node.element().scrollIntoViewIfNeeded(true);
             this._nodeToHighlightAfterScroll = node;
         }
     },
