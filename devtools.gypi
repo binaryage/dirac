@@ -441,10 +441,11 @@
             'front_end/profiler/CanvasReplayStateView.js',
         ],
         'devtools_documentation_js_files': [
-            'front_end/documentation/DocumentationView.js',
-            'front_end/documentation/WikiParser.js',
-            'front_end/documentation/JSArticle.js',
             'front_end/documentation/CSSArticle.js',
+            'front_end/documentation/DocumentationURLProvider.js',
+            'front_end/documentation/DocumentationView.js',
+            'front_end/documentation/JSArticle.js',
+            'front_end/documentation/WikiParser.js',
         ],
         'devtools_heap_snapshot_worker_js_files': [
             'front_end/common/TextUtils.js',

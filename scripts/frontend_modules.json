@@ -503,8 +503,9 @@
         "name": "documentation",
         "dependencies": ["common"],
         "sources": [
-            "documentation/DocumentationView.js",
             "documentation/CSSArticle.js",
+            "documentation/DocumentationURLProvider.js",
+            "documentation/DocumentationView.js",
             "documentation/JSArticle.js",
             "documentation/WikiParser.js"
         ]

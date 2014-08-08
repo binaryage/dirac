@@ -5,3 +5,4 @@
 importScript("WikiParser.js");
 importScript("JSArticle.js");
 importScript("CSSArticle.js");
+importScript("DocumentationURLProvider.js");
