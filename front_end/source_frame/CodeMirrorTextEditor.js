@@ -955,6 +955,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
             this._delegate.populateLineGutterContextMenu(contextMenu, parseInt(target.textContent, 10) - 1);
         else
             this._delegate.populateTextAreaContextMenu(contextMenu, 0);
+        contextMenu.appendApplicableItems(this);
         contextMenu.show();
     },
 

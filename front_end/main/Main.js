@@ -189,6 +189,8 @@ WebInspector.Main.prototype = {
             configuration.push("layers");
         if (WebInspector.experimentsSettings.devicesPanel.isEnabled() && !!WebInspector.queryParam("can_dock"))
             configuration.push("devices");
+        if (WebInspector.experimentsSettings.documentation.isEnabled())
+            configuration.push("documentation");
         if (WebInspector.isWorkerFrontend())
             configuration = ["main", "sources", "timeline", "profiler", "console", "source_frame"];
         self.runtime.registerModules(configuration);

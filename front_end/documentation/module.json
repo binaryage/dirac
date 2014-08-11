@@ -1,3 +1,10 @@
 {
+    "extensions": [
+        {
+            "type": "@WebInspector.ContextMenu.Provider",
+            "contextTypes": [ "WebInspector.CodeMirrorTextEditor" ],
+            "className": "WebInspector.DocumentationView.ContextMenuProvider"
+        }
+    ],
     "scripts": [ "DocumentationView.js" ]
 }
