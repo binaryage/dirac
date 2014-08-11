@@ -638,7 +638,6 @@ function InspectorFrontendAPIImpl()
     this._isLoaded = false;
     this._pendingCommands = [];
     this._debugFrontend = !!WebInspector.queryParam("debugFrontend");
-    this._debugCalls = [];
 
     var descriptors = InspectorFrontendHostAPI.EventDescriptors;
     for (var i = 0; i < descriptors.length; ++i)
@@ -665,13 +664,10 @@ InspectorFrontendAPIImpl.prototype = {
     {
         var params = Array.prototype.slice.call(arguments, 3);
 
-        if (this._debugFrontend) {
-            this._debugCalls.push(innerDispatch.bind(this));
-            if (this._debugCalls.length === 1)
-                window.setTimeout(this._onDebugTimeout.bind(this), 0);
-        } else {
+        if (this._debugFrontend)
+            setImmediate(innerDispatch.bind(this));
+        else
             innerDispatch.call(this);
-        }
 
         /**
          * @this {!InspectorFrontendAPIImpl}
@@ -696,12 +692,6 @@ InspectorFrontendAPIImpl.prototype = {
                 InspectorFrontendHost.events.dispatchEventToListeners(name, data);
             }
         }
-    },
-
-    _onDebugTimeout: function()
-    {
-        while (this._debugCalls.length)
-            this._debugCalls.shift()();
     },
 
     /**

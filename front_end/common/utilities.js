@@ -1747,3 +1747,19 @@ WeakReference.prototype = {
     }
 };
 
+/**
+ * @param {function()} callback
+ */
+self.setImmediate = (function() {
+    var callbacks = [];
+    function run() {
+        var cbList = callbacks.slice();
+        callbacks.length = 0;
+        cbList.forEach(function(callback) { callback(); });
+    };
+    return function setImmediate(callback) {
+        if (!callbacks.length)
+            new Promise(function(resolve,reject){ resolve(null);}).then(run);
+        callbacks.push(callback);
+    };
+})();

@@ -30,6 +30,12 @@
 
 // WebKit Web Facing API
 
+/**
+ * @param {!Object} object
+ * @param {!Function} callback
+ */
+Object.observe = function(object, callback) {}
+
 /** @type {boolean} */
 Event.prototype.isMetaOrCtrlForTest;
 
