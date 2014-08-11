@@ -1209,6 +1209,15 @@
                 "handlers": ["browser"]
             },
             {
+                "name": "canEmulateNetworkConditions",
+                "description": "Tells whether emulation of network conditions is supported.",
+                "returns": [
+                  { "name": "result", "type": "boolean", "description": "True if emulation of network conditions is supported." }
+                ],
+                "hidden": true,
+                "handlers": ["browser"]
+            },
+            {
                 "name": "emulateNetworkConditions",
                 "description": "Activates emulation of network conditions.",
                 "parameters": [
