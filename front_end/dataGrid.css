@@ -41,24 +41,16 @@
     -webkit-transform: translateZ(0);
 }
 
-.data-grid.inline {
-    border-left: none;
-}
-
 .data-grid.inline .header-container,
 .data-grid.inline .data-container {
     position: static;
 }
 
-.data-grid.inline col.corner,
-.data-grid.inline th.corner,
-.data-grid.inline td.corner {
+.data-grid.inline .corner {
     display: none;
 }
 
-.data-grid th.corner,
-.data-grid td.corner,
-.data-grid col.corner {
+.data-grid .corner {
     width: 14px;
     padding-right: 0;
     padding-left: 0;
@@ -104,26 +96,20 @@
     border-left: 1px solid #aaa;
 }
 
-.data-grid td {
-    height: 16px; /* Keep in sync with .data-grid table.data @ background-size */
-}
-
-.data-grid th {
-    height: auto;
-}
-
-.data-grid:not(.inline) th:first-child,
-.data-grid:not(.inline) td:first-child {
+.data-grid th:first-child,
+.data-grid td:first-child {
     border-left: none !important;
 }
 
 .data-grid td {
+    height: 16px; /* Keep in sync with .data-grid table.data @ background-size */
     vertical-align: top;
     padding: 1px 4px;
     -webkit-user-select: text;
 }
 
 .data-grid th {
+    height: auto;
     text-align: left;
     background-color: rgb(236, 236, 236);
     border-bottom: 1px solid #aaa;
@@ -136,10 +122,6 @@
 .data-grid th > div {
     white-space: nowrap;
     text-overflow: ellipsis;
-    overflow: hidden;
-}
-
-.data-grid th > div {
     overflow: hidden;
 }
 
