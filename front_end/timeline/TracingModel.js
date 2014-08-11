@@ -300,7 +300,10 @@ WebInspector.TracingModel.Loader.prototype = {
 
     finish: function()
     {
-        this._tracingModel._tracingComplete();
+        if (this._sessionIdFound)
+            this._tracingModel._tracingComplete();
+        else
+            WebInspector.console.error(WebInspector.UIString("Trace event %s not found while loading tracing model.", WebInspector.TracingModel.DevToolsMetadataEvent.TracingStartedInPage));
     }
 }
 

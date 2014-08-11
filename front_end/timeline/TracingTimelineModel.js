@@ -823,7 +823,6 @@ WebInspector.TracingModelLoader.prototype = {
             return;
 
         if (this._firstChunk) {
-            this._firstChunk = false;
             this._model.reset();
         } else {
             var commaIndex = json.indexOf(",");
@@ -836,14 +835,37 @@ WebInspector.TracingModelLoader.prototype = {
         try {
             items = /** @type {!Array.<!WebInspector.TracingModel.EventPayload>} */ (JSON.parse(json));
         } catch (e) {
-            WebInspector.console.error("Malformed timeline data.");
-            this._model.reset();
-            this._reader.cancel();
-            this._progress.done();
+            this._reportErrorAndCancelLoading("Malformed timeline data: " + e);
             return;
         }
 
-        this._loader.loadNextChunk(items);
+        if (this._firstChunk) {
+            this._firstChunk = false;
+            if (this._looksLikeAppVersion(items[0])) {
+                this._reportErrorAndCancelLoading("Old Timeline format is not supported.");
+                return;
+            }
+        }
+
+        try {
+            this._loader.loadNextChunk(items);
+        } catch(e) {
+            this._reportErrorAndCancelLoading("Malformed timeline data: " + e);
+            return;
+        }
+    },
+
+    _reportErrorAndCancelLoading: function(messsage)
+    {
+        WebInspector.console.error(messsage);
+        this._model.reset();
+        this._reader.cancel();
+        this._progress.done();
+    },
+
+    _looksLikeAppVersion: function(item)
+    {
+        return typeof item === "string" && item.indexOf("Chrome") !== -1;
     },
 
     close: function()
