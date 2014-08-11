@@ -30,6 +30,8 @@ WebInspector.Target = function(name, connection, callback)
     if (WebInspector.experimentsSettings.timelinePowerProfiler.isEnabled())
         this.powerAgent().canProfilePower(this._initializeCapability.bind(this, WebInspector.Target.Capabilities.CanProfilePower, null));
     this.workerAgent().canInspectWorkers(this._initializeCapability.bind(this, WebInspector.Target.Capabilities.CanInspectWorkers, this._loadedWithCapabilities.bind(this, callback)));
+    if (WebInspector.experimentsSettings.timelineOnTraceEvents.isEnabled())
+        this.consoleAgent().setTracingBasedTimeline(true);
 
     /** @type {!WebInspector.Lock} */
     this.profilingLock = new WebInspector.Lock();
