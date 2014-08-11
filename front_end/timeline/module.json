@@ -8,5 +8,32 @@
             "className": "WebInspector.TimelinePanel"
         }
     ],
-    "scripts": [ "TimelinePanel.js" ]
+    "scripts": [
+        "CountersGraph.js",
+        "Layers3DView.js",
+        "MemoryCountersGraph.js",
+        "TimelineModel.js",
+        "TimelineModelImpl.js",
+        "TimelineJSProfile.js",
+        "TimelineOverviewPane.js",
+        "TimelinePresentationModel.js",
+        "TracingTimelineModel.js",
+        "TimelineFrameModel.js",
+        "TimelineEventOverview.js",
+        "TimelineFrameOverview.js",
+        "TimelineMemoryOverview.js",
+        "TimelinePowerGraph.js",
+        "TimelinePowerOverview.js",
+        "TimelineFlameChart.js",
+        "TimelineUIUtils.js",
+        "TimelineUIUtilsImpl.js",
+        "TimelineView.js",
+        "TimelineLayersView.js",
+        "TimelinePaintProfilerView.js",
+        "TracingModel.js",
+        "TracingTimelineUIUtils.js",
+        "TransformController.js",
+        "PaintProfilerView.js",
+        "TimelinePanel.js"
+    ]
 }

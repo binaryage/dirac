@@ -18,6 +18,19 @@
             "className": "WebInspector.NetworkPanel.RequestRevealer"
         }
     ],
-    "dependencies": [ "source_frame" ],
-    "scripts": [ "NetworkPanel.js" ]
+    "dependencies": ["source_frame"],
+    "scripts": [
+        "HAREntry.js",
+        "RequestView.js",
+        "NetworkItemView.js",
+        "RequestCookiesView.js",
+        "RequestHeadersView.js",
+        "RequestHTMLView.js",
+        "RequestJSONView.js",
+        "RequestPreviewView.js",
+        "RequestResponseView.js",
+        "RequestTimingView.js",
+        "ResourceWebSocketFrameView.js",
+        "NetworkPanel.js"
+    ]
 }

@@ -25,5 +25,9 @@
             "className": "WebInspector.SettingsScreen.SkipStackFramePatternSettingDelegate"
         }
     ],
-    "scripts": [ "SettingsScreen.js" ]
+    "scripts": [
+        "EditFileSystemDialog.js",
+        "FrameworkBlackboxDialog.js",
+        "SettingsScreen.js"
+    ]
 }

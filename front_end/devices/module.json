@@ -9,5 +9,5 @@
             "className": "WebInspector.DevicesView"
         }
     ],
-    "scripts": [ "DevicesView.js" ]
+    "scripts": ["DevicesView.js"]
 }

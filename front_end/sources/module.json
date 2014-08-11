@@ -178,6 +178,35 @@
             "settingType": "checkbox"
         }
     ],
-    "dependencies": [ "source_frame" ],
-    "scripts": [ "SourcesPanel.js" ]
+    "dependencies": ["source_frame"],
+    "scripts": [
+        "jsdifflib.js",
+        "Placard.js",
+        "AddSourceMapURLDialog.js",
+        "BreakpointsSidebarPane.js",
+        "CallStackSidebarPane.js",
+        "SimpleHistoryManager.js",
+        "EditingLocationHistoryManager.js",
+        "FilePathScoreFunction.js",
+        "FilteredItemSelectionDialog.js",
+        "UISourceCodeFrame.js",
+        "JavaScriptSourceFrame.js",
+        "CSSSourceFrame.js",
+        "NavigatorView.js",
+        "RevisionHistoryView.js",
+        "ScopeChainSidebarPane.js",
+        "SourcesNavigator.js",
+        "StyleSheetOutlineDialog.js",
+        "TabbedEditorContainer.js",
+        "WatchExpressionsSidebarPane.js",
+        "WorkersSidebarPane.js",
+        "ScriptFormatterEditorAction.js",
+        "InplaceFormatterEditorAction.js",
+        "ScriptFormatter.js",
+        "SourcesView.js",
+        "AdvancedSearchView.js",
+        "FileBasedSearchResultsPane.js",
+        "SourcesSearchScope.js",
+        "SourcesPanel.js"
+    ]
 }

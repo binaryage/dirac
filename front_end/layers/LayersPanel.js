@@ -28,10 +28,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-importScript("LayerTreeOutline.js");
-importScript("LayerDetailsView.js");
-importScript("LayerPaintProfilerView.js");
-
 /**
  * @constructor
  * @extends {WebInspector.PanelWithSidebarTree}

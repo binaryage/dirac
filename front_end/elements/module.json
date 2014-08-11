@@ -39,10 +39,10 @@
             "settingName": "colorFormat",
             "settingType": "select",
             "options": [
-                [ "As authored", "original" ],
-                [ "HEX: #DAC0DE", "hex", true ],
-                [ "RGB: rgb(128, 255, 255)", "rgb", true ],
-                [ "HSL: hsl(300, 80%, 90%)", "hsl", true ]
+                ["As authored", "original"],
+                ["HEX: #DAC0DE", "hex", true],
+                ["RGB: rgb(128, 255, 255)", "rgb", true],
+                ["HSL: hsl(300, 80%, 90%)", "hsl", true]
             ]
         },
         {
@@ -74,5 +74,15 @@
             "settingType": "checkbox"
         }
     ],
-    "scripts": [ "ElementsPanel.js" ]
+    "scripts": [
+        "Spectrum.js",
+        "DOMSyntaxHighlighter.js",
+        "ElementsTreeOutline.js",
+        "EventListenersSidebarPane.js",
+        "MetricsSidebarPane.js",
+        "PlatformFontsSidebarPane.js",
+        "PropertiesSidebarPane.js",
+        "StylesSidebarPane.js",
+        "ElementsPanel.js"
+    ]
 }

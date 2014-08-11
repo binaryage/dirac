@@ -28,18 +28,6 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-importScript("HAREntry.js");
-importScript("RequestView.js");
-importScript("NetworkItemView.js");
-importScript("RequestCookiesView.js");
-importScript("RequestHeadersView.js");
-importScript("RequestHTMLView.js");
-importScript("RequestJSONView.js");
-importScript("RequestPreviewView.js");
-importScript("RequestResponseView.js");
-importScript("RequestTimingView.js");
-importScript("ResourceWebSocketFrameView.js");
-
 /**
  * @constructor
  * @implements {WebInspector.Searchable}
