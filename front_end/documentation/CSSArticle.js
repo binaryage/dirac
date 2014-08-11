@@ -13,8 +13,8 @@ WebInspector.CSSArticle = function()
     this.standardizationStatus;
     /** @type {string} */
     this.summary;
-    /** @type {!Object.<string, ?Array.<!Object.<string> > >} */
-    this.CSSproperties;
+    /** @type {!Object.<string, ?Array.<!Object.<string>>>} */
+    this.cssProperties;
 }
 
 /**
@@ -24,17 +24,17 @@ WebInspector.CSSArticle = function()
 WebInspector.CSSArticle.parse = function(wikiMarkupText)
 {
     var wikiParser = new WebInspector.WikiParser(wikiMarkupText);
-    var from = wikiParser.document();
+    var wikiDocument = wikiParser.document();
 
     var article = new WebInspector.CSSArticle();
-    if (typeof from["Page_Title"] !== "undefined")
-        article.pageTitle = from["Page_Title"];
-    if (typeof from["Standardization_Status"] !== "undefined")
-        article.standardizationStatus = from["Standardization_Status"];
-    if (typeof from["Summary_Section"] !== "undefined")
-        article.summary = from["Summary_Section"];
-    if (typeof from["CSS Property"] !== "undefined")
-        article.CSSproperties = from["CSS Property"];
+    if (typeof wikiDocument["Page_Title"] !== "undefined")
+        article.pageTitle = wikiDocument["Page_Title"];
+    if (typeof wikiDocument["Standardization_Status"] !== "undefined")
+        article.standardizationStatus = wikiDocument["Standardization_Status"];
+    if (typeof wikiDocument["Summary_Section"] !== "undefined")
+        article.summary = wikiDocument["Summary_Section"];
+    if (typeof wikiDocument["CSS Property"] !== "undefined")
+        article.cssProperties = wikiDocument["CSS Property"];
 
     return article;
 }

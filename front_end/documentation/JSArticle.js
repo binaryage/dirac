@@ -13,7 +13,7 @@ WebInspector.JSArticle = function()
     this.standardizationStatus;
     /** @type {string} */
     this.summary;
-    /** @type {!Object.<string, ?Array.<!Object.<string> > >} */
+    /** @type {!Object.<string, ?Array.<!Object.<string>>>} */
     this.methods;
     /** @type {string} */
     this.remarks;
@@ -26,19 +26,19 @@ WebInspector.JSArticle = function()
 WebInspector.JSArticle.parse = function(wikiMarkupText)
 {
     var wikiParser = new WebInspector.WikiParser(wikiMarkupText);
-    var from = wikiParser.document();
+    var wikiDocument = wikiParser.document();
 
     var article = new WebInspector.JSArticle();
-    if (typeof from["Page_Title"] !== "undefined" && from["Page_Title"] !== {})
-        article.pageTitle = from["Page_Title"];
-    if (typeof from["Standardization_Status"] !== "undefined")
-        article.standardizationStatus = from["Standardization_Status"];
-    if (typeof from["Summary_Section"] !== "undefined")
-        article.summary = from["Summary_Section"];
-    if (typeof from["API_Object_Method"] !== "undefined")
-        article.methods = from["API_Object_Method"];
-    if (typeof from["Remarks_Section"] !== "undefined")
-        article.remarks = from["Remarks_Section"];
+    if (typeof wikiDocument["Page_Title"] !== "undefined" && wikiDocument["Page_Title"] !== {})
+        article.pageTitle = wikiDocument["Page_Title"];
+    if (typeof wikiDocument["Standardization_Status"] !== "undefined")
+        article.standardizationStatus = wikiDocument["Standardization_Status"];
+    if (typeof wikiDocument["Summary_Section"] !== "undefined")
+        article.summary = wikiDocument["Summary_Section"];
+    if (typeof wikiDocument["API_Object_Method"] !== "undefined")
+        article.methods = wikiDocument["API_Object_Method"];
+    if (typeof wikiDocument["Remarks_Section"] !== "undefined")
+        article.remarks = wikiDocument["Remarks_Section"];
 
     return article;
 }

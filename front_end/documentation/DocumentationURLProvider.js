@@ -5,13 +5,15 @@
 /**
  * @constructor
  */
-WebInspector.DocumentationURLProvider = function() {}
+WebInspector.DocumentationURLProvider = function()
+{
+}
 
 /**
  * @const
  * @type {!Array.<!Object, string>}
  */
-WebInspector.DocumentationURLProvider._Sources = [
+WebInspector.DocumentationURLProvider._sources = [
     { source: window, url: "javascript/" },
     { source: window.Node.prototype, url: "dom/Node/" },
     { source: window.Object, url: "javascript/Object/" },
@@ -20,12 +22,12 @@ WebInspector.DocumentationURLProvider._Sources = [
     { source: window.String, url: "javascript/String/" },
     { source: window.Date, url: "javascript/Date/" },
     { source: window.JSON, url: "javascript/JSON/" }
-]
+];
 
 /**
  * @const
  */
-WebInspector.DocumentationURLProvider._URLFormat = "http://docs.webplatform.org/w/api.php?action=query&titles=%s%s&prop=revisions&rvprop=timestamp|content&format=json"
+WebInspector.DocumentationURLProvider._urlFormat = "http://docs.webplatform.org/w/api.php?action=query&titles=%s%s&prop=revisions&rvprop=timestamp|content&format=json"
 
 WebInspector.DocumentationURLProvider.prototype = {
     /**
@@ -34,10 +36,10 @@ WebInspector.DocumentationURLProvider.prototype = {
      */
     itemPath: function(searchTerm)
     {
-        for (var i = 0; i < WebInspector.DocumentationURLProvider._Sources.length; ++i) {
-            var sourceRef = WebInspector.DocumentationURLProvider._Sources[i];
+        for (var i = 0; i < WebInspector.DocumentationURLProvider._sources.length; ++i) {
+            var sourceRef = WebInspector.DocumentationURLProvider._sources[i];
             if (sourceRef.source[searchTerm] instanceof Function)
-                return String.sprintf(WebInspector.DocumentationURLProvider._URLFormat, sourceRef.url, searchTerm);
+                return String.sprintf(WebInspector.DocumentationURLProvider._urlFormat, sourceRef.url, searchTerm);
         }
         return null;
     }
