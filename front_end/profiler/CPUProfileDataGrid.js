@@ -70,7 +70,7 @@ WebInspector.ProfileDataGridNode.prototype = {
         if (this._deoptReason)
             cell.classList.add("not-optimized");
 
-        if (this.profileNode._searchMatchedFunctionColumn)
+        if (this._searchMatchedFunctionColumn)
             cell.classList.add("highlight");
 
         if (this.profileNode.scriptId !== "0") {

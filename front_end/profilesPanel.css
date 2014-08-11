@@ -38,6 +38,10 @@
     background: white;
 }
 
+.profile-view .data-grid tr:not(.selected) .highlight {
+    background-color: rgb(255, 230, 179);
+}
+
 .profile-view .data-grid tr:hover td:not(.bottom-filler-td) {
     background-color: rgba(0, 0, 0, 0.1);
 }
