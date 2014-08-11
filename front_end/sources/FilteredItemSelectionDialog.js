@@ -535,7 +535,7 @@ WebInspector.JavaScriptOutlineDialog = function(uiSourceCode, selectItemCallback
 
     this._functionItems = [];
     this._selectItemCallback = selectItemCallback;
-    this._outlineWorker = Runtime.startWorker("script_formatter_worker");
+    this._outlineWorker = new Worker("script_formatter_worker/ScriptFormatterWorker.js");
     this._outlineWorker.onmessage = this._didBuildOutlineChunk.bind(this);
     this._outlineWorker.postMessage({ method: "javaScriptOutline", params: { content: uiSourceCode.workingCopy() } });
 }

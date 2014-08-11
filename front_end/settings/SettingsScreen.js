@@ -28,6 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+importScript("EditFileSystemDialog.js");
+importScript("FrameworkBlackboxDialog.js");
+
 /**
  * @constructor
  * @param {!function()} onHide

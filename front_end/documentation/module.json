@@ -6,11 +6,5 @@
             "className": "WebInspector.DocumentationView.ContextMenuProvider"
         }
     ],
-    "scripts": [
-        "WikiParser.js",
-        "JSArticle.js",
-        "CSSArticle.js",
-        "DocumentationURLProvider.js",
-        "DocumentationView.js"
-    ]
+    "scripts": [ "DocumentationView.js" ]
 }

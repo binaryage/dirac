@@ -519,3 +519,11 @@ WebInspector.AuditRules = {};
  * @type {!Object.<string, function(new:WebInspector.AuditCategory)>}
  */
 WebInspector.AuditCategories = {};
+
+importScript("AuditCategory.js");
+importScript("AuditCategories.js");
+importScript("AuditController.js");
+importScript("AuditFormatters.js");
+importScript("AuditLauncherView.js");
+importScript("AuditResultView.js");
+importScript("AuditRules.js");

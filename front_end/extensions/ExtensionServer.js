@@ -28,6 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+
+importScript("ExtensionAPI.js");
+importScript("ExtensionRegistryStub.js");
+importScript("ExtensionAuditCategory.js");
+
 /**
  * @constructor
  * @implements {WebInspector.ExtensionServerAPI}
@@ -1095,3 +1100,6 @@ WebInspector.ExtensionStatus.Record;
 
 WebInspector.extensionAPI = {};
 defineCommonExtensionSymbols(WebInspector.extensionAPI);
+
+importScript("ExtensionPanel.js");
+importScript("ExtensionView.js");

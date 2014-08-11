@@ -13,11 +13,6 @@
             "className": "WebInspector.LayersPanel.LayerTreeRevealer"
         }
     ],
-    "dependencies": ["timeline"],
-    "scripts": [
-        "LayerTreeOutline.js",
-        "LayerDetailsView.js",
-        "LayerPaintProfilerView.js",
-        "LayersPanel.js"
-    ]
+    "dependencies": [ "timeline" ],
+    "scripts": [ "LayersPanel.js" ]
 }

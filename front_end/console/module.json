@@ -51,9 +51,5 @@
             "settingType": "checkbox"
         }
     ],
-    "scripts": [
-        "ConsoleViewMessage.js",
-        "ConsoleView.js",
-        "ConsolePanel.js"
-    ]
+    "scripts": [ "ConsolePanel.js" ]
 }

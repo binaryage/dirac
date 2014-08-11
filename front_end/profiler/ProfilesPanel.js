@@ -1311,3 +1311,19 @@ WebInspector.ProfilesSidebarTreeElement.prototype = {
 
     __proto__: WebInspector.SidebarTreeElement.prototype
 }
+
+
+importScript("CPUProfileDataGrid.js");
+importScript("CPUProfileBottomUpDataGrid.js");
+importScript("CPUProfileTopDownDataGrid.js");
+importScript("CPUProfileFlameChart.js");
+importScript("CPUProfileView.js");
+importScript("HeapSnapshotCommon.js");
+importScript("HeapSnapshotProxy.js");
+importScript("HeapSnapshotDataGrids.js");
+importScript("HeapSnapshotGridNodes.js");
+importScript("HeapSnapshotView.js");
+importScript("ProfileLauncherView.js");
+importScript("CanvasProfileView.js");
+importScript("CanvasReplayStateView.js");
+importScript("ProfileTypeRegistry.js");

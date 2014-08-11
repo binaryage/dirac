@@ -10,10 +10,6 @@ from os import path
 import errno
 import shutil
 import sys
-try:
-    import simplejson as json
-except ImportError:
-    import json
 
 
 def read_file(filename):
@@ -27,17 +23,9 @@ def build_modules(module_jsons):
         if not path.exists(json_filename):
             continue
         module_name = path.basename(path.dirname(json_filename))
-
-        # pylint: disable=E1103
-        module_json = json.loads(read_file(json_filename))
-        module_json['name'] = module_name
-
-        # Clear scripts, as they are not used at runtime
-        # (only the fact of their presence is important).
-        if module_json.get('scripts'):
-            module_json['scripts'] = []
-        result.append(module_json)
-    return json.dumps(result)
+        json = read_file(json_filename).replace('{', '{"name":"%s",' % module_name, 1)
+        result.append(json)
+    return ','.join(result)
 
 
 def main(argv):
@@ -46,7 +34,7 @@ def main(argv):
     module_jsons = argv[3:]
 
     with open(output_filename, 'w') as output_file:
-        output_file.write('var allDescriptors=%s;' % build_modules(module_jsons))
+        output_file.write('var allDescriptors=[%s];' % build_modules(module_jsons))
 
 
 if __name__ == '__main__':

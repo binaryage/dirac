@@ -75,7 +75,7 @@ def main(argv):
     output_script = re.sub(r'importScripts?\([\'"]([^\'"]+)[\'"]\)', replace, input_script)
     if re.search("importScripts?\(\"", output_script):
         raise Exception('Unresolved "importScript" statements found in "%s". '
-                        'Make sure you call "importScript" in module initializers only.' %
+                        'Make sure you call "importScript" in module heads only.' %
                         (output_file_name))
 
     if os.path.exists(output_file_name):

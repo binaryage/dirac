@@ -116,15 +116,6 @@ var Runtime = function(descriptors)
         this._descriptorsMap[descriptors[i]["name"]] = descriptors[i];
 }
 
-/**
- * @param {string} moduleName
- * @return {!Worker}
- */
-Runtime.startWorker = function(moduleName)
-{
-    return new Worker(moduleName + "/_module.js");
-}
-
 Runtime.prototype = {
     /**
      * @param {!Array.<string>} configuration
@@ -443,8 +434,9 @@ Runtime.Module.prototype = {
         var dependencies = this._descriptor.dependencies;
         for (var i = 0; dependencies && i < dependencies.length; ++i)
             this._manager.loadModule(dependencies[i]);
-        if (this._descriptor.scripts)
-            loadScript(this._name + "/_module.js");
+        var scripts = this._descriptor.scripts;
+        for (var i = 0; scripts && i < scripts.length; ++i)
+            loadScript(this._name + "/" + scripts[i]);
         this._isLoading = false;
         this._loaded = true;
     }

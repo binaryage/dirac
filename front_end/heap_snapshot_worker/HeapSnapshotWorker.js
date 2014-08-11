@@ -28,6 +28,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+WebInspector = {};
+
+importScripts("../common/UIString.js");
+importScripts("../common/utilities.js");
+importScripts("../common/TextUtils.js");
+importScripts("../profiler/HeapSnapshotCommon.js");
+importScripts("AllocationProfile.js");
+importScripts("HeapSnapshot.js");
+importScripts("HeapSnapshotLoader.js");
+importScripts("HeapSnapshotWorkerDispatcher.js");
+importScripts("JSHeapSnapshot.js");
+
 function postMessageWrapper(message)
 {
     postMessage(message);

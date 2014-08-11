@@ -28,6 +28,15 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+importScript("Spectrum.js");
+importScript("DOMSyntaxHighlighter.js");
+importScript("ElementsTreeOutline.js");
+importScript("EventListenersSidebarPane.js");
+importScript("MetricsSidebarPane.js");
+importScript("PlatformFontsSidebarPane.js");
+importScript("PropertiesSidebarPane.js");
+importScript("StylesSidebarPane.js");
+
 /**
  * @constructor
  * @implements {WebInspector.Searchable}
