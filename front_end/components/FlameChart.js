@@ -415,6 +415,16 @@ WebInspector.FlameChart.prototype = {
         return this._rawTimelineData;
     },
 
+    _cancelAnimation: function()
+    {
+        if (this._cancelWindowTimesAnimation) {
+            this._timeWindowLeft = this._pendingAnimationTimeLeft;
+            this._timeWindowRight = this._pendingAnimationTimeRight;
+            this._cancelWindowTimesAnimation();
+            delete this._cancelWindowTimesAnimation;
+        }
+    },
+
     /**
      * @param {number} startTime
      * @param {number} endTime
@@ -429,11 +439,12 @@ WebInspector.FlameChart.prototype = {
             return;
         }
 
-        if (this._cancelWindowTimesAnimation)
-            this._cancelWindowTimesAnimation();
+        this._cancelAnimation();
         this._cancelWindowTimesAnimation = WebInspector.animateFunction(this._animateWindowTimes.bind(this),
             [{from: this._timeWindowLeft, to: startTime}, {from: this._timeWindowRight, to: endTime}], 5,
             this._animationCompleted.bind(this));
+        this._pendingAnimationTimeLeft = startTime;
+        this._pendingAnimationTimeRight = endTime;
     },
 
     /**
@@ -599,6 +610,7 @@ WebInspector.FlameChart.prototype = {
      */
     _handleZoomGesture: function(zoom)
     {
+        this._cancelAnimation();
         var bounds = this._windowForGesture();
         var cursorTime = this._cursorTime(this._lastMouseOffsetX);
         bounds.left += (bounds.left - cursorTime) * zoom;
@@ -611,6 +623,7 @@ WebInspector.FlameChart.prototype = {
      */
     _handlePanGesture: function(shift)
     {
+        this._cancelAnimation();
         var bounds = this._windowForGesture();
         shift = Number.constrain(shift, this._minimumBoundary - bounds.left, this._totalTime + this._minimumBoundary - bounds.right);
         bounds.left += shift;
