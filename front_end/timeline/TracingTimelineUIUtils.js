@@ -713,6 +713,8 @@ WebInspector.TracingTimelineUIUtils._aggregatedStatsForTraceEvent = function(tot
                 break;
             if (!nextEvent.selfTime)
                 continue;
+            if (nextEvent.thread !== event.thread)
+                continue;
             if (i > index)
                 hasChildren = true;
             var category = WebInspector.TracingTimelineUIUtils.styleForTraceEvent(nextEvent.name).category.name;
