@@ -13,6 +13,17 @@
             "className": "WebInspector.ResourcesPanel.ResourceRevealer"
         }
     ],
-    "dependencies": [ "source_frame" ],
-    "scripts": [ "ResourcesPanel.js" ]
+    "dependencies": ["source_frame"],
+    "scripts": [
+        "ApplicationCacheItemsView.js",
+        "CookieItemsView.js",
+        "DOMStorageItemsView.js",
+        "DatabaseQueryView.js",
+        "DatabaseTableView.js",
+        "DirectoryContentView.js",
+        "IndexedDBViews.js",
+        "FileContentView.js",
+        "FileSystemView.js",
+        "ResourcesPanel.js"
+    ]
 }

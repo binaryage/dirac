@@ -28,27 +28,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-importScript("../cm/codemirror.js");
-importScript("../cm/css.js");
-importScript("../cm/javascript.js");
-importScript("../cm/xml.js");
-importScript("../cm/htmlmixed.js");
-
-importScript("../cm/matchbrackets.js");
-importScript("../cm/closebrackets.js");
-importScript("../cm/markselection.js");
-importScript("../cm/comment.js");
-importScript("../cm/overlay.js");
-
-importScript("../cm/htmlembedded.js");
-importScript("../cm/clike.js");
-importScript("../cm/coffeescript.js");
-importScript("../cm/php.js");
-importScript("../cm/python.js");
-importScript("../cm/shell.js");
-importScript("CodeMirrorUtils.js");
-importScript("CodeMirrorTextEditor.js");
-
 /**
  * @extends {WebInspector.VBox}
  * @constructor
@@ -1042,8 +1021,3 @@ WebInspector.TextEditorDelegateForSourceFrame.prototype = {
         this._sourceFrame.onJumpToPosition(from, to);
     }
 }
-
-importScript("GoToLineDialog.js");
-importScript("ResourceView.js");
-importScript("FontView.js");
-importScript("ImageView.js");

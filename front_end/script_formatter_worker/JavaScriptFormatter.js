@@ -986,7 +986,7 @@ FormatterWorker.JavaScriptTokensByType = {
  */
 FormatterWorker.JavaScriptTokenizer = function(content)
 {
-    this._readNextToken = parse.tokenizer(content);
+    this._readNextToken = tokenizerHolder.tokenizer(content);
     this._state = this._readNextToken.context();
 }
 

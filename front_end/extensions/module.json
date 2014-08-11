@@ -5,6 +5,13 @@
             "className": "WebInspector.ExtensionServer"
         }
     ],
-    "dependencies": [ "sources" ],
-    "scripts": [ "ExtensionServer.js" ]
+    "dependencies": ["sources"],
+    "scripts": [
+        "ExtensionAPI.js",
+        "ExtensionRegistryStub.js",
+        "ExtensionAuditCategory.js",
+        "ExtensionServer.js",
+        "ExtensionPanel.js",
+        "ExtensionView.js"
+    ]
 }

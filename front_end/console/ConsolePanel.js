@@ -26,9 +26,6 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-importScript("ConsoleViewMessage.js");
-importScript("ConsoleView.js");
-
 /**
  * @constructor
  * @extends {WebInspector.Panel}

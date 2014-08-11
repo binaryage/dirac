@@ -10,7 +10,7 @@
  */
 WebInspector.CSSParser = function()
 {
-    this._worker = new Worker("script_formatter_worker/ScriptFormatterWorker.js");
+    this._worker = Runtime.startWorker("script_formatter_worker");
     this._worker.onmessage = this._onRuleChunk.bind(this);
     this._rules = [];
 }

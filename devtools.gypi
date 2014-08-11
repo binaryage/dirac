@@ -303,6 +303,7 @@
 
         # Lazy-loaded modules.
         'devtools_audits_js_files': [
+            'front_end/audits/_module.js',
             'front_end/audits/AuditCategories.js',
             'front_end/audits/AuditCategory.js',
             'front_end/audits/AuditController.js',
@@ -313,14 +314,17 @@
             'front_end/audits/AuditsPanel.js',
         ],
         'devtools_console_js_files': [
+            'front_end/console/_module.js',
             'front_end/console/ConsolePanel.js',
             'front_end/console/ConsoleView.js',
             'front_end/console/ConsoleViewMessage.js',
         ],
         'devtools_devices_js_files': [
+            'front_end/devices/_module.js',
             'front_end/devices/DevicesView.js',
         ],
         'devtools_documentation_js_files': [
+            'front_end/documentation/_module.js',
             'front_end/documentation/CSSArticle.js',
             'front_end/documentation/DocumentationURLProvider.js',
             'front_end/documentation/DocumentationView.js',
@@ -328,6 +332,7 @@
             'front_end/documentation/WikiParser.js',
         ],
         'devtools_elements_js_files': [
+            'front_end/elements/_module.js',
             'front_end/elements/DOMSyntaxHighlighter.js',
             'front_end/elements/ElementsPanel.js',
             'front_end/elements/ElementsTreeOutline.js',
@@ -339,6 +344,7 @@
             'front_end/elements/StylesSidebarPane.js',
         ],
         'devtools_extensions_js_files': [
+            'front_end/extensions/_module.js',
             'front_end/extensions/ExtensionAuditCategory.js',
             'front_end/extensions/ExtensionPanel.js',
             'front_end/extensions/ExtensionRegistryStub.js',
@@ -350,6 +356,7 @@
             'front_end/common/TextUtils.js',
             'front_end/common/UIString.js',
             'front_end/common/utilities.js',
+            'front_end/heap_snapshot_worker/_module.js',
             'front_end/heap_snapshot_worker/AllocationProfile.js',
             'front_end/heap_snapshot_worker/HeapSnapshot.js',
             'front_end/heap_snapshot_worker/HeapSnapshotLoader.js',
@@ -359,12 +366,14 @@
             'front_end/profiler/HeapSnapshotCommon.js',
         ],
         'devtools_layers_js_files': [
+            'front_end/layers/_module.js',
             'front_end/layers/LayerDetailsView.js',
             'front_end/layers/LayerPaintProfilerView.js',
             'front_end/layers/LayersPanel.js',
             'front_end/layers/LayerTreeOutline.js',
         ],
         'devtools_network_js_files': [
+            'front_end/network/_module.js',
             'front_end/network/HAREntry.js',
             'front_end/network/NetworkItemView.js',
             'front_end/network/NetworkPanel.js',
@@ -379,6 +388,7 @@
             'front_end/network/ResourceWebSocketFrameView.js',
         ],
         'devtools_profiler_js_files': [
+            'front_end/profiler/_module.js',
             'front_end/profiler/CanvasProfileView.js',
             'front_end/profiler/CanvasReplayStateView.js',
             'front_end/profiler/CPUProfileBottomUpDataGrid.js',
@@ -396,6 +406,7 @@
             'front_end/profiler/ProfileTypeRegistry.js',
         ],
         'devtools_resources_js_files': [
+            'front_end/resources/_module.js',
             'front_end/resources/ApplicationCacheItemsView.js',
             'front_end/resources/CookieItemsView.js',
             'front_end/resources/DatabaseQueryView.js',
@@ -409,16 +420,19 @@
         ],
         'devtools_script_formatter_worker_js_files': [
             'front_end/common/utilities.js',
+            'front_end/script_formatter_worker/_module.js',
             'front_end/script_formatter_worker/CSSFormatter.js',
             'front_end/script_formatter_worker/JavaScriptFormatter.js',
             'front_end/script_formatter_worker/ScriptFormatterWorker.js',
         ],
         'devtools_settings_js_files': [
+            'front_end/settings/_module.js',
             'front_end/settings/EditFileSystemDialog.js',
             'front_end/settings/FrameworkBlackboxDialog.js',
             'front_end/settings/SettingsScreen.js',
         ],
         'devtools_source_frame_js_files': [
+            'front_end/source_frame/_module.js',
             'front_end/source_frame/CodeMirrorTextEditor.js',
             'front_end/source_frame/CodeMirrorUtils.js',
             'front_end/source_frame/FontView.js',
@@ -428,6 +442,7 @@
             'front_end/source_frame/SourceFrame.js',
         ],
         'devtools_sources_js_files': [
+            'front_end/sources/_module.js',
             'front_end/sources/AddSourceMapURLDialog.js',
             'front_end/sources/AdvancedSearchView.js',
             'front_end/sources/BreakpointsSidebarPane.js',
@@ -459,9 +474,11 @@
             'front_end/sources/WorkersSidebarPane.js',
         ],
         'devtools_temp_storage_shared_worker_js_files': [
+            'front_end/temp_storage_shared_worker/_module.js',
             'front_end/temp_storage_shared_worker/TempStorageSharedWorker.js',
         ],
         'devtools_timeline_js_files': [
+            'front_end/timeline/_module.js',
             'front_end/timeline/CountersGraph.js',
             'front_end/timeline/Layers3DView.js',
             'front_end/timeline/MemoryCountersGraph.js',

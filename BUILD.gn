@@ -81,22 +81,22 @@ action("generate_devtools_grd") {
   input_pages = [
     "$root_out_dir/resources/inspector/devtools.html",
     "$root_out_dir/resources/inspector/inspector.css",
-    "$root_out_dir/resources/inspector/audits/AuditsPanel.js",
-    "$root_out_dir/resources/inspector/console/ConsolePanel.js",
-    "$root_out_dir/resources/inspector/devices/DevicesView.js",
-    "$root_out_dir/resources/inspector/elements/ElementsPanel.js",
-    "$root_out_dir/resources/inspector/extensions/ExtensionServer.js",
-    "$root_out_dir/resources/inspector/heap_snapshot_worker/HeapSnapshotWorker.js",
-    "$root_out_dir/resources/inspector/layers/LayersPanel.js",
+    "$root_out_dir/resources/inspector/audits/_module.js",
+    "$root_out_dir/resources/inspector/console/_module.js",
+    "$root_out_dir/resources/inspector/devices/_module.js",
+    "$root_out_dir/resources/inspector/elements/_module.js",
+    "$root_out_dir/resources/inspector/extensions/_module.js",
+    "$root_out_dir/resources/inspector/heap_snapshot_worker/_module.js",
+    "$root_out_dir/resources/inspector/layers/_module.js",
     "$root_out_dir/resources/inspector/main/Main.js",
-    "$root_out_dir/resources/inspector/network/NetworkPanel.js",
-    "$root_out_dir/resources/inspector/profiler/ProfilesPanel.js",
-    "$root_out_dir/resources/inspector/resources/ResourcesPanel.js",
-    "$root_out_dir/resources/inspector/script_formatter_worker/ScriptFormatterWorker.js",
-    "$root_out_dir/resources/inspector/source_frame/SourceFrame.js",
-    "$root_out_dir/resources/inspector/sources/SourcesPanel.js",
-    "$root_out_dir/resources/inspector/temp_storage_shared_worker/TempStorageSharedWorker.js",
-    "$root_out_dir/resources/inspector/timeline/TimelinePanel.js",
+    "$root_out_dir/resources/inspector/network/_module.js",
+    "$root_out_dir/resources/inspector/profiler/_module.js",
+    "$root_out_dir/resources/inspector/resources/_module.js",
+    "$root_out_dir/resources/inspector/script_formatter_worker/_module.js",
+    "$root_out_dir/resources/inspector/source_frame/_module.js",
+    "$root_out_dir/resources/inspector/sources/_module.js",
+    "$root_out_dir/resources/inspector/temp_storage_shared_worker/_module.js",
+    "$root_out_dir/resources/inspector/timeline/_module.js",
     "$root_out_dir/resources/inspector/devtools_extension_api.js",
   ] + gypi_values.devtools_standalone_files + gypi_values.devtools_cm_css_files
 
@@ -182,37 +182,37 @@ action("frontend_protocol_sources") {
 }
 
 # Runs the inline_js_imports script.
-#  input: (String) The input .js file to read.
+#  module_name: (String) The JS module name to process.
 #  imported_files: (List of strings) The list of files the input depends on.
-#  output: (String) The .js file to write.
 template("inline_js_imports") {
-  assert(defined(invoker.input), target_name)
+  assert(defined(invoker.module_name), target_name)
   assert(defined(invoker.imported_files), target_name)
-  assert(defined(invoker.output), target_name)
 
   action(target_name) {
     script = "scripts/inline_js_imports.py"
+    module_name = invoker.module_name
 
-    inputs = [ invoker.input ] + invoker.imported_files
-    outputs = [ invoker.output ]
+    input = "front_end/" + module_name + "/_module.js"
+    inputs = [ input ] + invoker.imported_files
+
+    output = "$root_out_dir/resources/inspector/" + module_name + "/_module.js"
+    outputs = [ output ]
 
     args = [
-      rebase_path(invoker.input, root_build_dir),
-      rebase_path(invoker.output, root_build_dir),
+      rebase_path(input, root_build_dir),
+      rebase_path(output, root_build_dir),
     ]
   }
 }
 
 inline_js_imports("build_audits_module") {
-  input = "front_end/audits/AuditsPanel.js"
+  module_name = "audits"
   imported_files = gypi_values.devtools_audits_js_files
-  output = "$root_out_dir/resources/inspector/audits/AuditsPanel.js"
 }
 
 inline_js_imports("build_console_module") {
-  input = "front_end/console/ConsolePanel.js"
+  module_name = "console"
   imported_files = gypi_values.devtools_console_js_files
-  output = "$root_out_dir/resources/inspector/console/ConsolePanel.js"
 }
 
 action("build_core_module") {
@@ -248,94 +248,79 @@ action("build_core_module") {
 }
 
 inline_js_imports("build_devices_module") {
-  input = "front_end/devices/DevicesView.js"
+  module_name = "devices"
   imported_files = gypi_values.devtools_devices_js_files
-  output = "$root_out_dir/resources/inspector/devices/DevicesView.js"
 }
 
 inline_js_imports("build_documentation_module") {
-  input = "front_end/documentation/DocumentationView.js"
+  module_name = "documentation"
   imported_files = gypi_values.devtools_documentation_js_files
-  output = "$root_out_dir/resources/inspector/documentation/DocumentationView.js"
 }
 
 inline_js_imports("build_elements_module") {
-  input = "front_end/elements/ElementsPanel.js"
+  module_name = "elements"
   imported_files = gypi_values.devtools_elements_js_files
-  output = "$root_out_dir/resources/inspector/elements/ElementsPanel.js"
 }
 
 inline_js_imports("build_extensions_module") {
-  input = "front_end/extensions/ExtensionServer.js"
+  module_name = "extensions"
   imported_files = devtools_extensions_js_files
-  output = "$root_out_dir/resources/inspector/extensions/ExtensionServer.js"
 }
 
 inline_js_imports("build_heap_snapshot_worker_module") {
-  input = "front_end/heap_snapshot_worker/HeapSnapshotWorker.js"
+  module_name = "heap_snapshot_worker"
   imported_files = gypi_values.devtools_heap_snapshot_worker_js_files
-  output = "$root_out_dir/resources/inspector/heap_snapshot_worker/HeapSnapshotWorker.js"
 }
 
 inline_js_imports("build_layers_module") {
-  input = "front_end/layers/LayersPanel.js"
+  module_name = "layers"
   imported_files = gypi_values.devtools_layers_js_files
-  output = "$root_out_dir/resources/inspector/layers/LayersPanel.js"
 }
 
 inline_js_imports("build_network_module") {
-  input = "front_end/network/NetworkPanel.js"
+  module_name = "network"
   imported_files = gypi_values.devtools_network_js_files
-  output = "$root_out_dir/resources/inspector/network/NetworkPanel.js"
 }
 
 inline_js_imports("build_profiler_module") {
-  input = "front_end/profiler/ProfilesPanel.js"
+  module_name = "profiler"
   imported_files = gypi_values.devtools_profiler_js_files
-  output = "$root_out_dir/resources/inspector/profiler/ProfilesPanel.js"
 }
 
 inline_js_imports("build_resources_module") {
-  input = "front_end/resources/ResourcesPanel.js"
+  module_name = "resources"
   imported_files = gypi_values.devtools_resources_js_files
-  output = "$root_out_dir/resources/inspector/resources/ResourcesPanel.js"
 }
 
 inline_js_imports("build_script_formatter_worker_module") {
-  input = "front_end/script_formatter_worker/ScriptFormatterWorker.js"
+  module_name = "script_formatter_worker"
   imported_files = gypi_values.devtools_uglify_files
-  output = "$root_out_dir/resources/inspector/script_formatter_worker/ScriptFormatterWorker.js"
 }
 
 inline_js_imports("build_settings_module") {
-  input = "front_end/settings/SettingsScreen.js"
+  module_name = "settings"
   imported_files = gypi_values.devtools_settings_js_files
-  output = "$root_out_dir/resources/inspector/settings/SettingsScreen.js"
 }
 
 inline_js_imports("build_source_frame_module") {
-  input = "front_end/source_frame/SourceFrame.js"
+  module_name = "source_frame"
   imported_files = gypi_values.devtools_source_frame_js_files +
     gypi_values.devtools_cm_js_files
-  output = "$root_out_dir/resources/inspector/source_frame/SourceFrame.js"
 }
 
 inline_js_imports("build_sources_module") {
-  input = "front_end/sources/SourcesPanel.js"
+  module_name = "sources"
   imported_files = gypi_values.devtools_sources_js_files
-  output = "$root_out_dir/resources/inspector/sources/SourcesPanel.js"
 }
 
 inline_js_imports("build_temp_storage_shared_worker_module") {
-  input = "front_end/temp_storage_shared_worker/TempStorageSharedWorker.js"
+  module_name = "temp_storage_shared_worker"
   imported_files = gypi_values.devtools_temp_storage_shared_worker_js_files
-  output = "$root_out_dir/resources/inspector/temp_storage_shared_worker/TempStorageSharedWorker.js"
 }
 
 inline_js_imports("build_timeline_module") {
-  input = "front_end/timeline/TimelinePanel.js"
+  module_name = "timeline"
   imported_files = gypi_values.devtools_timeline_js_files
-  output = "$root_out_dir/resources/inspector/timeline/TimelinePanel.js"
 }
 
 action("concatenated_module_descriptors") {

@@ -34,5 +34,21 @@
             "settingType": "checkbox"
         }
     ],
-    "scripts": [ "ProfilesPanel.js" ]
+    "scripts": [
+        "ProfilesPanel.js",
+        "CPUProfileDataGrid.js",
+        "CPUProfileBottomUpDataGrid.js",
+        "CPUProfileTopDownDataGrid.js",
+        "CPUProfileFlameChart.js",
+        "CPUProfileView.js",
+        "HeapSnapshotCommon.js",
+        "HeapSnapshotProxy.js",
+        "HeapSnapshotDataGrids.js",
+        "HeapSnapshotGridNodes.js",
+        "HeapSnapshotView.js",
+        "ProfileLauncherView.js",
+        "CanvasProfileView.js",
+        "CanvasReplayStateView.js",
+        "ProfileTypeRegistry.js"
+    ]
 }

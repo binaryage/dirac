@@ -124,7 +124,7 @@ WebInspector.ScriptFormatter.prototype = {
     get _worker()
     {
         if (!this._cachedWorker) {
-            this._cachedWorker = new Worker("script_formatter_worker/ScriptFormatterWorker.js");
+            this._cachedWorker = Runtime.startWorker("script_formatter_worker");
             this._cachedWorker.onmessage = /** @type {function(this:Worker)} */ (this._didFormatContent.bind(this));
         }
         return this._cachedWorker;
