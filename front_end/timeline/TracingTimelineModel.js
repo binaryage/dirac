@@ -69,6 +69,7 @@ WebInspector.TracingTimelineModel.RecordType = {
     FunctionCall: "FunctionCall",
     GCEvent: "GCEvent",
     JSFrame: "JSFrame",
+    JSSample: "JSSample",
 
     UpdateCounters: "UpdateCounters",
 
@@ -110,8 +111,15 @@ WebInspector.TracingTimelineModel.prototype = {
             return "disabled-by-default-" + category;
         }
         var categoriesArray = ["-*", disabledByDefault("devtools.timeline"), disabledByDefault("devtools.timeline.frame")];
-        if (captureStacks)
+        if (captureStacks) {
             categoriesArray.push(disabledByDefault("devtools.timeline.stack"));
+            if (WebInspector.experimentsSettings.timelineJSCPUProfile.isEnabled()) {
+                this._jsProfilerStarted = true;
+                this._currentTarget = WebInspector.context.flavor(WebInspector.Target);
+                this._configureCpuProfilerSamplingInterval();
+                this._currentTarget.profilerAgent().start();
+            }
+        }
         if (capturePictures) {
             categoriesArray = categoriesArray.concat([
                 disabledByDefault("devtools.timeline.layers"),
@@ -124,6 +132,11 @@ WebInspector.TracingTimelineModel.prototype = {
 
     stopRecording: function()
     {
+        this._stopCallbackBarrier = new CallbackBarrier();
+        if (this._jsProfilerStarted) {
+            this._currentTarget.profilerAgent().stop(this._stopCallbackBarrier.createCallback(this._didStopRecordingJSSamples.bind(this)));
+            this._jsProfilerStarted = false;
+        }
         this._tracingModel.stop();
     },
 
@@ -136,6 +149,18 @@ WebInspector.TracingTimelineModel.prototype = {
         this._onTracingStarted();
         this._tracingModel.setEventsForTest(sessionId, events);
         this._onTracingComplete();
+    },
+
+    _configureCpuProfilerSamplingInterval: function()
+    {
+        var intervalUs = WebInspector.settings.highResolutionCpuProfiling.get() ? 100 : 1000;
+        this._currentTarget.profilerAgent().setSamplingInterval(intervalUs, didChangeInterval);
+
+        function didChangeInterval(error)
+        {
+            if (error)
+                WebInspector.console.error(error);
+        }
     },
 
     /**
@@ -155,6 +180,26 @@ WebInspector.TracingTimelineModel.prototype = {
 
     _onTracingComplete: function()
     {
+        if (this._stopCallbackBarrier)
+            this._stopCallbackBarrier.callWhenDone(this._didStopRecordingTraceEvents.bind(this));
+        else
+            this._didStopRecordingTraceEvents();
+    },
+
+    /**
+     * @param {?Protocol.Error} error
+     * @param {?ProfilerAgent.CPUProfile} cpuProfile
+     */
+    _didStopRecordingJSSamples: function(error, cpuProfile)
+    {
+        if (error)
+            WebInspector.console.error(error);
+        this._cpuProfile = cpuProfile;
+    },
+
+    _didStopRecordingTraceEvents: function()
+    {
+        this._stopCallbackBarrier = null;
         var events = this._tracingModel.devtoolsMetadataEvents();
         events.sort(WebInspector.TracingModel.Event.compareStartTime);
 
@@ -173,6 +218,13 @@ WebInspector.TracingTimelineModel.prototype = {
         this._resetProcessingState();
 
         this._inspectedTargetEvents.sort(WebInspector.TracingModel.Event.compareStartTime);
+
+        if (this._cpuProfile) {
+            var jsSamples = WebInspector.TimelineJSProfileProcessor.generateTracingEventsFromCpuProfile(this, this._cpuProfile);
+            this._inspectedTargetEvents = this._inspectedTargetEvents.mergeOrdered(jsSamples, WebInspector.TracingModel.Event.orderedCompareStartTime);
+            this._setMainThreadEvents(this.mainThreadEvents().mergeOrdered(jsSamples, WebInspector.TracingModel.Event.orderedCompareStartTime));
+            this._cpuProfile = null;
+        }
 
         this._buildTimelineRecords();
         this.dispatchEventToListeners(WebInspector.TimelineModel.Events.RecordingStopped);
@@ -208,6 +260,14 @@ WebInspector.TracingTimelineModel.prototype = {
     mainThreadEvents: function()
     {
         return this._virtualThreads[WebInspector.TimelineModel.MainThreadName] || [];
+    },
+
+    /**
+     * @param {!Array.<!WebInspector.TracingModel.Event>} events
+     */
+    _setMainThreadEvents: function(events)
+    {
+        this._virtualThreads[WebInspector.TimelineModel.MainThreadName] = events;
     },
 
     /**

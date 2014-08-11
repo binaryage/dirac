@@ -90,3 +90,45 @@ WebInspector.TimelineJSProfileProcessor.mergeJSProfileIntoTimeline = function(ti
 
     timelineModel.forAllRecords(processRecord);
 }
+
+/**
+ * @param {!WebInspector.TracingTimelineModel} timelineModel
+ * @param {!ProfilerAgent.CPUProfile} jsProfile
+ * @return {!Array.<!WebInspector.TracingModel.Event>}
+ */
+WebInspector.TimelineJSProfileProcessor.generateTracingEventsFromCpuProfile = function(timelineModel, jsProfile)
+{
+    if (!jsProfile.samples)
+        return [];
+    var jsProfileModel = new WebInspector.CPUProfileDataModel(jsProfile);
+    var idleNode = jsProfileModel.idleNode;
+    var programNode = jsProfileModel.programNode;
+    var gcNode = jsProfileModel.gcNode;
+    var samples = jsProfileModel.samples;
+    var timestamps = jsProfileModel.timestamps;
+    var jsEvents = [];
+    var mainThread = timelineModel.mainThreadEvents()[0].thread;
+    for (var i = 0; i < samples.length; ++i) {
+        var node = jsProfileModel.nodeByIndex(i);
+        if (node === programNode || node === gcNode || node === idleNode)
+            continue;
+        var stackTrace = node._stackTraceArray;
+        if (!stackTrace) {
+            stackTrace = /** @type {!ConsoleAgent.StackTrace} */ (new Array(node.depth + 1));
+            node._stackTraceArray = stackTrace;
+            for (var j = 0; node.parent; node = node.parent)
+                stackTrace[j++] = /** @type {!ConsoleAgent.CallFrame} */ (node);
+        }
+        var payload = /** @type {!WebInspector.TracingModel.EventPayload} */ ({
+            ph: WebInspector.TracingModel.Phase.Instant,
+            cat: WebInspector.TracingModel.DevToolsMetadataEventCategory,
+            name: WebInspector.TracingTimelineModel.RecordType.JSSample,
+            ts: timestamps[i] * 1000,
+            args: { }
+        });
+        var jsEvent = new WebInspector.TracingModel.Event(payload, 0, mainThread);
+        jsEvent.stackTrace = stackTrace;
+        jsEvents.push(jsEvent);
+    }
+    return jsEvents;
+}

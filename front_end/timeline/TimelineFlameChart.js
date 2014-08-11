@@ -237,12 +237,30 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
         {
             return e.endTime || e.startTime + WebInspector.TimelineFlameChartDataProvider.InstantEventVisibleDurationMs;
         }
+        function isJSInvocationEvent(e)
+        {
+            switch (e.name) {
+            case WebInspector.TracingTimelineModel.RecordType.FunctionCall:
+            case WebInspector.TracingTimelineModel.RecordType.EvaluateScript:
+                return true;
+            }
+            return false;
+        }
         var jsFrameEvents = [];
         var stackTraceOpenEvents = [];
+        var currentJSInvocationEndTime = 0;
         var coalesceThresholdMs = WebInspector.TimelineFlameChartDataProvider.JSFrameCoalsceThresholdMs;
         for (var i = 0; i < events.length; ++i) {
             var e = events[i];
-            if (!e.stackTrace || !this._isVisible(e))
+            if (e.startTime >= currentJSInvocationEndTime) {
+                stackTraceOpenEvents.length = 0;
+                currentJSInvocationEndTime = 0;
+            }
+            if (isJSInvocationEvent(e))
+                currentJSInvocationEndTime = e.endTime;
+            if (!currentJSInvocationEndTime)
+                continue;
+            if (!e.stackTrace)
                 continue;
             while (stackTraceOpenEvents.length && eventEndTime(stackTraceOpenEvents.peekLast()) + coalesceThresholdMs <= e.startTime)
                 stackTraceOpenEvents.pop();

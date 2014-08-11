@@ -293,5 +293,15 @@ WebInspector.CPUProfileDataModel.prototype = {
             closeFrameCallback(node.depth, node, start, duration, duration - stackChildrenDuration[stackTop]);
             --stackTop;
         }
+    },
+
+    /**
+     * @param {number} index
+     * @return {!ProfilerAgent.CPUProfileNode}
+     */
+    nodeByIndex: function(index)
+    {
+        return this._idToNode[this.samples[index]];
     }
+
 }
