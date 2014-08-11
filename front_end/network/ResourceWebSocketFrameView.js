@@ -36,6 +36,7 @@ WebInspector.ResourceWebSocketFrameView = function(request)
     ]
 
     this._dataGrid = new WebInspector.SortableDataGrid(columns, undefined, undefined, undefined, this._onContextMenu.bind(this));
+    this._dataGrid.setCellClass("websocket-frame-view-td");
     var comparator = /** @type {!WebInspector.SortableDataGrid.NodeComparator} */ (WebInspector.ResourceWebSocketFrameNodeTimeComparator);
     this._dataGrid.sortNodes(comparator, true);
 

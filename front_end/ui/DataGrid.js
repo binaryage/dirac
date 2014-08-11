@@ -93,6 +93,9 @@ WebInspector.DataGrid = function(columnsArray, editCallback, deleteCallback, ref
     /** @type {!Object.<string, !WebInspector.DataGrid.ColumnDescriptor>} */
     this._columns = {};
 
+    /** @type {?string} */
+    this._cellClass = null;
+
     for (var i = 0; i < columnsArray.length; ++i) {
         var column = columnsArray[i];
         var columnIdentifier = column.identifier = column.id || i;
@@ -177,6 +180,14 @@ WebInspector.DataGrid.Align = {
 }
 
 WebInspector.DataGrid.prototype = {
+    /**
+     * @param {string} cellClass
+     */
+    setCellClass: function(cellClass)
+    {
+        this._cellClass = cellClass;
+    },
+
     _refreshHeader: function()
     {
         this._headerTableColumnGroup.removeChildren();
@@ -1311,6 +1322,10 @@ WebInspector.DataGridNode.prototype = {
     {
         var cell = document.createElement("td");
         cell.className = columnIdentifier + "-column";
+        var cellClass = this.dataGrid._cellClass;
+        if (cellClass)
+            cell.classList.add(cellClass);
+
         cell.columnIdentifier_ = columnIdentifier;
 
         var alignment = this.dataGrid._columns[columnIdentifier].align;
