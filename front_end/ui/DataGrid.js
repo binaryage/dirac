@@ -1144,9 +1144,18 @@ WebInspector.DataGridNode.prototype = {
      */
     element: function()
     {
-        if (this._element)
-            return this._element;
+        if (!this._element) {
+            this.createElement();
+            this.createCells();
+        }
+        return /** @type {!Element} */ (this._element);
+    },
 
+    /**
+     * @protected
+     */
+    createElement: function()
+    {
         this._element = document.createElement("tr");
         this._element._dataGridNode = this;
 
@@ -1158,10 +1167,6 @@ WebInspector.DataGridNode.prototype = {
             this._element.classList.add("selected");
         if (this.revealed)
             this._element.classList.add("revealed");
-
-        this.createCells();
-
-        return this._element;
     },
 
     /**

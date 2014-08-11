@@ -132,6 +132,7 @@
             "ui/UIUtils.js",
             "ui/View.js",
             "ui/ViewportControl.js",
+            "ui/ViewportDataGrid.js",
             "ui/ZoomManager.js",
             "ui/treeoutline.js"
         ]

@@ -66,13 +66,13 @@ WebInspector.NetworkLogView = function(filterBar, coulmnsVisibilitySetting)
 
     this._allowPopover = true;
 
+    /** @type {number} */
+    this._rowHeight = 0;
+
     this._addFilters();
     this._resetSuggestionBuilder();
     this._initializeView();
     this._recordButton.toggled = true;
-
-    /** @type {number} */
-    this._rowHeight = 0;
 
     WebInspector.targetManager.observeTargets(this);
     WebInspector.targetManager.addModelListener(WebInspector.NetworkManager, WebInspector.NetworkManager.EventTypes.RequestStarted, this._onRequestStarted, this);

@@ -4,7 +4,7 @@
 
 /**
  * @constructor
- * @extends {WebInspector.DataGrid}
+ * @extends {WebInspector.ViewportDataGrid}
  * @param {!Array.<!WebInspector.DataGrid.ColumnDescriptor>} columnsArray
  * @param {function(!WebInspector.DataGridNode, string, string, string)=} editCallback
  * @param {function(!WebInspector.DataGridNode)=} deleteCallback
@@ -13,7 +13,7 @@
  */
 WebInspector.SortableDataGrid = function(columnsArray, editCallback, deleteCallback, refreshCallback, contextMenuCallback)
 {
-    WebInspector.DataGrid.call(this, columnsArray, editCallback, deleteCallback, refreshCallback, contextMenuCallback);
+    WebInspector.ViewportDataGrid.call(this, columnsArray, editCallback, deleteCallback, refreshCallback, contextMenuCallback);
     /** @type {!WebInspector.SortableDataGrid.NodeComparator} */
     this._sortingFunction = WebInspector.SortableDataGrid.TrivialComparator;
     this.setRootNode(new WebInspector.SortableDataGridNode());
@@ -146,63 +146,27 @@ WebInspector.SortableDataGrid.prototype = {
      */
     sortNodes: function(comparator, reverseMode)
     {
-        var sortingFunction = WebInspector.SortableDataGrid.Comparator.bind(null, comparator, reverseMode);
-        this._sortingFunction = sortingFunction;
-
-        /**
-         * @param {!Element} a
-         * @param {!Element} b
-         * @return {number}
-         */
-        function comparatorWrapper(a, b)
-        {
-            return sortingFunction(a._dataGridNode, b._dataGridNode);
-        }
-
-        var tbody = this.dataTableBody;
-        var tbodyParent = tbody.parentElement;
-        tbodyParent.removeChild(tbody);
-
-        var childNodes = tbody.childNodes;
-        var sortedRows = Array.prototype.slice.call(childNodes, 1, childNodes.length - 1);
-        sortedRows.sort(comparatorWrapper);
-        var sortedRowsLength = sortedRows.length;
-
-        var rootNode = this.rootNode();
-        rootNode.children = [];
-        tbody.removeChildren();
-        tbody.appendChild(this._topFillerRow);
-        var previousSiblingNode = null;
-        for (var i = 0; i < sortedRowsLength; ++i) {
-            var row = sortedRows[i];
-            var node = row._dataGridNode;
-            node.previousSibling = previousSiblingNode;
-            if (previousSiblingNode)
-                previousSiblingNode.nextSibling = node;
-            rootNode.children.push(node);
-            tbody.appendChild(row);
-            previousSiblingNode = node;
-        }
-        if (previousSiblingNode)
-            previousSiblingNode.nextSibling = null;
-
-        tbody.appendChild(this._bottomFillerRow);
-        tbodyParent.appendChild(tbody);
+        this._sortingFunction = WebInspector.SortableDataGrid.Comparator.bind(null, comparator, reverseMode);
+        var children = this._rootNode.children;
+        children.sort(this._sortingFunction);
+        for (var i = 0; i < children.length; ++i)
+            children[i].recalculateSiblings(i);
+        this.scheduleUpdate();
     },
 
-    __proto__: WebInspector.DataGrid.prototype
+    __proto__: WebInspector.ViewportDataGrid.prototype
 }
 
 /**
  * @constructor
- * @extends {WebInspector.DataGridNode}
+ * @extends {WebInspector.ViewportDataGridNode}
  * @param {?Object.<string, *>=} data
  */
 WebInspector.SortableDataGridNode = function(data)
 {
-    WebInspector.DataGridNode.call(this, data, false);
+    WebInspector.ViewportDataGridNode.call(this, data);
 }
 
 WebInspector.SortableDataGridNode.prototype = {
-    __proto__: WebInspector.DataGridNode.prototype
+    __proto__: WebInspector.ViewportDataGridNode.prototype
 }

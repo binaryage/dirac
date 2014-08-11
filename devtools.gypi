@@ -224,6 +224,7 @@
             'front_end/ui/UIUtils.js',
             'front_end/ui/View.js',
             'front_end/ui/ViewportControl.js',
+            'front_end/ui/ViewportDataGrid.js',
             'front_end/ui/ZoomManager.js',
             'front_end/ui/treeoutline.js',
         ],
