@@ -1874,7 +1874,7 @@ WebInspector.BlankStylePropertiesSection.prototype = {
         {
             var doesSelectorAffectSelectedNode = newRule.matchingSelectors.length > 0;
             var styleRule = { section: this, style: newRule.style, selectorText: newRule.selectorText, sourceURL: newRule.resourceURL(), rule: newRule };
-            this.makeNormal(styleRule);
+            this._makeNormal(styleRule);
 
             if (!doesSelectorAffectSelectedNode) {
                 this.noAffect = true;
@@ -1924,7 +1924,7 @@ WebInspector.BlankStylePropertiesSection.prototype = {
         this._parentPane.removeSection(this);
     },
 
-    makeNormal: function(styleRule)
+    _makeNormal: function(styleRule)
     {
         this.element.classList.remove("blank-section");
         this.styleRule = styleRule;
