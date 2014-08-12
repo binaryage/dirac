@@ -371,7 +371,8 @@ WebInspector.TimelinePanel.prototype = {
                                                                       this._captureMemorySetting,
                                                                       WebInspector.UIString("Capture memory information on every timeline event")));
         this._captureMemorySetting.addChangeListener(this._onModeChanged, this);
-        if (WebInspector.experimentsSettings.timelinePowerProfiler.isEnabled()) {
+        if (WebInspector.experimentsSettings.timelinePowerProfiler.isEnabled() &&
+            WebInspector.targetManager.mainTarget().hasCapability(WebInspector.Target.Capabilities.CanProfilePower)) {
             this._capturePowerSetting = WebInspector.settings.createSetting("timelineCapturePower", false);
             panelStatusBarElement.appendChild(this._createSettingCheckbox(WebInspector.UIString("Power"),
                                                                           this._capturePowerSetting,
@@ -612,7 +613,8 @@ WebInspector.TimelinePanel.prototype = {
             this._addModeView(new WebInspector.MemoryCountersGraph(this, this._model, this._uiUtils));
         }
 
-        if (this._capturePowerSetting && this._capturePowerSetting.get()) {
+        if (this._capturePowerSetting && this._capturePowerSetting.get() &&
+            WebInspector.targetManager.mainTarget().hasCapability(WebInspector.Target.Capabilities.CanProfilePower)) {
             if (!isFrameMode)  // Frame mode skews time, don't render aux overviews.
                 this._overviewControls.push(new WebInspector.TimelinePowerOverview(this._model));
             this._addModeView(new WebInspector.TimelinePowerGraph(this, this._model));
