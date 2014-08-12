@@ -87,8 +87,6 @@ WebInspector.TimelineOverviewPane.prototype = {
 
     update: function()
     {
-        delete this._refreshTimeout;
-
         if (this._model.isEmpty())
             this._overviewCalculator._setWindow(0, 1000);
         else
@@ -171,15 +169,6 @@ WebInspector.TimelineOverviewPane.prototype = {
         this._overviewGrid.setWindow(windowBoundaries.left, windowBoundaries.right);
         this._overviewGrid.setResizeEnabled(!!this._model.records().length);
         this._muteOnWindowChanged = false;
-    },
-
-    _scheduleRefresh: function()
-    {
-        if (this._refreshTimeout)
-            return;
-        if (!this.isShowing())
-            return;
-        this._refreshTimeout = setTimeout(this.update.bind(this), 300);
     },
 
     __proto__: WebInspector.VBox.prototype

@@ -798,18 +798,17 @@ WebInspector.TimelinePanel.prototype = {
         this._updateToggleTimelineButton(false);
         if (this._lazyFrameModel) {
             this._lazyFrameModel.reset();
-            if (this._tracingTimelineModel) {
+            if (this._tracingTimelineModel)
                 this._lazyFrameModel.addTraceEvents(this._tracingTimelineModel.inspectedTargetEvents(), this._tracingModel.sessionId());
-                this._overviewPane.update();
-            } else {
+            else
                 this._lazyFrameModel.addRecords(this._model.records());
-            }
         }
         if (this._tracingTimelineModel) {
             this.requestWindowTimes(this._tracingTimelineModel.minimumRecordTime(), this._tracingTimelineModel.maximumRecordTime());
             this._refreshViews();
         }
         this._hideProgressPane();
+        this._overviewPane.update();
     },
 
     _onRecordAdded: function(event)
