@@ -16,10 +16,15 @@ WebInspector.DocumentationURLProvider = function()
 WebInspector.DocumentationURLProvider._sources = [
     { source: window, url: "javascript/" },
     { source: window.Node.prototype, url: "dom/Node/" },
+    { source: window.Node, url: "dom/Node/" },
+    { source: window.Object.prototype, url: "javascript/Object/" },
     { source: window.Object, url: "javascript/Object/" },
     { source: window.Math, url: "javascript/Math/" },
+    { source: window.Array.prototype, url: "javascript/Array/" },
     { source: window.Array, url: "javascript/Array/" },
+    { source: window.String.prototype, url: "javascript/String/" },
     { source: window.String, url: "javascript/String/" },
+    { source: window.Date.prototype, url: "javascript/Date/" },
     { source: window.Date, url: "javascript/Date/" },
     { source: window.JSON, url: "javascript/JSON/" }
 ];
