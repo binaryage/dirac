@@ -87,6 +87,7 @@ WebInspector.TracingTimelineModel.RecordType = {
     CallStack: "CallStack",
     SetLayerTreeId: "SetLayerTreeId",
     TracingStartedInPage: "TracingStartedInPage",
+    TracingStartedInWorker: "TracingStartedInWorker",
 
     DecodeImage: "Decode Image",
     ResizeImage: "Resize Image",

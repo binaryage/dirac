@@ -74,6 +74,7 @@ WebInspector.TracingModel.FrameLifecycleEventCategory = "cc,devtools";
 
 WebInspector.TracingModel.DevToolsMetadataEvent = {
     TracingStartedInPage: "TracingStartedInPage",
+    TracingStartedInWorker: "TracingStartedInWorker",
 };
 
 WebInspector.TracingModel.prototype = {
