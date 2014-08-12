@@ -45,18 +45,14 @@ WebInspector.DocumentationView.ContextMenuProvider.prototype = {
         if (!(target instanceof WebInspector.CodeMirrorTextEditor))
             return;
         var textEditor = /** @type {!WebInspector.CodeMirrorTextEditor} */ (target);
-        contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Show documentation" : "Show Documentation"), this._showDocumentation.bind(this, textEditor));
-    },
-
-    /**
-     * @param {!WebInspector.CodeMirrorTextEditor} textEditor
-     */
-    _showDocumentation: function(textEditor)
-    {
         var selection = textEditor.selection();
-        if (!selection || selection.isEmpty())
+        if (!selection || selection.isEmpty() || selection.startLine !== selection.endLine)
             return;
         var selectedText = textEditor.copyRange(selection);
-        WebInspector.DocumentationView.showSearchTerm(selectedText);
+        var urlProvider = new WebInspector.DocumentationURLProvider();
+        var itemPath = urlProvider.itemPath(selectedText);
+        if (!itemPath)
+            return;
+        contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Show documentation" : "Show Documentation"), WebInspector.DocumentationView.showSearchTerm.bind(null, selectedText));
     }
 }
