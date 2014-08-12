@@ -132,13 +132,13 @@ Runtime.prototype = {
     registerModules: function(configuration)
     {
         for (var i = 0; i < configuration.length; ++i)
-            this.registerModule(configuration[i]);
+            this._registerModule(configuration[i]);
     },
 
     /**
      * @param {string} moduleName
      */
-    registerModule: function(moduleName)
+    _registerModule: function(moduleName)
     {
         if (!this._descriptorsMap[moduleName]) {
             var content = loadResource(moduleName + "/module.json");
