@@ -563,12 +563,11 @@ WebInspector.FlameChart.prototype = {
      */
     _onMouseWheel: function(e)
     {
-        var scrollIsThere = this._totalHeight > this._offsetHeight;
-
+        // Pan vertically when shift down only.
+        var panVertically = e.shiftKey && (e.wheelDeltaY || Math.abs(e.wheelDeltaX) === 120);
         var panHorizontally = Math.abs(e.wheelDeltaX) > Math.abs(e.wheelDeltaY) && !e.shiftKey;
-        var panVertically = scrollIsThere && ((e.wheelDeltaY && !e.shiftKey) || (Math.abs(e.wheelDeltaX) === 120 && !e.shiftKey));
         if (panVertically) {
-            this._vScrollElement.scrollTop -= e.wheelDeltaY / 120 * this._offsetHeight / 8;
+            this._vScrollElement.scrollTop -= (e.wheelDeltaY || e.wheelDeltaX) / 120 * this._offsetHeight / 8;
         } else if (panHorizontally) {
             var shift = -e.wheelDeltaX * this._pixelToTime;
             this._muteAnimation = true;
