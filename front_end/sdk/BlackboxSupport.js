@@ -8,12 +8,21 @@ WebInspector.BlackboxSupport = function()
 
 /**
  * @param {string} url
+ * @return {string}
+ */
+WebInspector.BlackboxSupport._urlToRegExpString = function(url)
+{
+    var name = new WebInspector.ParsedURL(url).lastPathComponent;
+    return "/" + name.escapeForRegExp() + (url.endsWith(name) ? "$" : "\\b");
+}
+
+/**
+ * @param {string} url
  */
 WebInspector.BlackboxSupport.blackboxURL = function(url)
 {
     var regexPatterns = WebInspector.settings.skipStackFramesPattern.getAsArray();
-    var name = new WebInspector.ParsedURL(url).lastPathComponent;
-    var regexValue = "/" + name.escapeForRegExp() + (url.endsWith(name) ? "$" : "\\b");
+    var regexValue = WebInspector.BlackboxSupport._urlToRegExpString(url);
     var found = false;
     for (var i = 0; i < regexPatterns.length; ++i) {
         var item = regexPatterns[i];
@@ -34,6 +43,10 @@ WebInspector.BlackboxSupport.blackboxURL = function(url)
 WebInspector.BlackboxSupport.unblackboxURL = function(url)
 {
     var regexPatterns = WebInspector.settings.skipStackFramesPattern.getAsArray();
+    var regexValue = WebInspector.BlackboxSupport._urlToRegExpString(url);
+    regexPatterns = regexPatterns.filter(function(item) {
+        return item.pattern !== regexValue;
+    });
     for (var i = 0; i < regexPatterns.length; ++i) {
         var item = regexPatterns[i];
         if (item.disabled)
