@@ -1356,7 +1356,7 @@ WebInspector.ElementsTreeElement.prototype = {
             var targetButtonIndex = expandedChildCount;
             if (!this.expandAllButtonElement) {
                 var button = document.createElement("button");
-                button.className = "show-all-nodes";
+                button.className = "text-button";
                 button.value = "";
                 var item = new TreeElement(button, null, false);
                 item.selectable = false;
