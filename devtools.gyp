@@ -239,7 +239,7 @@
                 # Input files for the script.
                 '../core/css/CSSPropertyNames.in',
                 '../core/css/SVGCSSPropertyNames.in',
-                '../core/css/CSSShorthands.in',
+                '../core/css/CSSProperties.in',
               ],
               'outputs': [
                 '<(blink_devtools_output_dir)/SupportedCSSProperties.js',

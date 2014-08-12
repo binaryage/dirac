@@ -159,7 +159,7 @@ action("supported_css_properties") {
   inputs = [
     "../core/css/CSSPropertyNames.in",
     "../core/css/SVGCSSPropertyNames.in",
-    "../core/css/CSSShorthands.in",
+    "../core/css/CSSProperties.in",
   ]
 
   outputs = [

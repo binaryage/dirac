@@ -59,14 +59,12 @@ def fillCSSShorthandsFromFile(fileName):
         lines = f.readlines()
     lines = filterCommentsAndEmptyLines(lines)
     for line in lines:
-        # Every line is:
-        #  <property-name>[ longhands=<longhand 1>;<longhand 2>;<longhand 3>,runtimeEnabledShorthand=<runtime flag name>]
-        # There might be a runtime flag declaration at the end of the list followed by a comma.
-        if "," in line:
-            line = line[:line.index(",")]
-        shorthand = line[:line.index(" ")]
-        longhands = line[line.index("=") + 1:].split(";")
-        cssProperties[shorthand] = longhands
+        # Format for shorthands is:
+        #  <property-name>[ longhands=<longhand 1>;<longhand 2>;<longhand 3>]
+        shorthand = line.partition(" ")[0]
+        longhands = line.partition("longhands=")[2].partition(",")[0]
+        if longhands:
+            cssProperties[shorthand] = longhands.split(";")
 
 fillPropertiesFromFile(sys.argv[1])
 fillPropertiesFromFile(sys.argv[2])
