@@ -98,6 +98,17 @@ WebInspector.TracingTimelineModel.RecordType = {
     PictureSnapshot: "cc::Picture"
 };
 
+/**
+ * @constructor
+ * @param {string} name
+ */
+WebInspector.TracingTimelineModel.VirtualThread = function(name)
+{
+    this.name = name;
+    /** @type {!Array.<!WebInspector.TracingModel.Event>} */
+    this.events = [];
+}
+
 WebInspector.TracingTimelineModel.prototype = {
     /**
      * @param {boolean} captureStacks
@@ -259,7 +270,7 @@ WebInspector.TracingTimelineModel.prototype = {
      */
     mainThreadEvents: function()
     {
-        return this._virtualThreads[WebInspector.TimelineModel.MainThreadName] || [];
+        return this._mainThreadEvents;
     },
 
     /**
@@ -267,11 +278,11 @@ WebInspector.TracingTimelineModel.prototype = {
      */
     _setMainThreadEvents: function(events)
     {
-        this._virtualThreads[WebInspector.TimelineModel.MainThreadName] = events;
+        this._mainThreadEvents = events;
     },
 
     /**
-     * @return {!Object.<string, !Array.<!WebInspector.TracingModel.Event>>}
+     * @return {!Array.<!WebInspector.TracingTimelineModel.VirtualThread>}
      */
     virtualThreads: function()
     {
@@ -300,7 +311,8 @@ WebInspector.TracingTimelineModel.prototype = {
 
     reset: function()
     {
-        this._virtualThreads = {};
+        this._virtualThreads = [];
+        this._mainThreadEvents = [];
         this._inspectedTargetEvents = [];
         WebInspector.TimelineModel.prototype.reset.call(this);
     },
@@ -375,18 +387,21 @@ WebInspector.TracingTimelineModel.prototype = {
         var length = events.length;
         var i = events.lowerBound(startTime, function (time, event) { return time - event.startTime });
 
+        var threadEvents;
+        if (thread === mainThread) {
+            threadEvents = this._mainThreadEvents;
+        } else {
+            var virtualThread = new WebInspector.TracingTimelineModel.VirtualThread(thread.name());
+            threadEvents = virtualThread.events;
+            this._virtualThreads.push(virtualThread);
+        }
+
         this._eventStack = [];
         for (; i < length; i++) {
             var event = events[i];
             if (endTime && event.startTime >= endTime)
                 break;
             this._processEvent(event);
-            var threadName = thread === mainThread ? WebInspector.TimelineModel.MainThreadName : thread.name();
-            var threadEvents = this._virtualThreads[threadName];
-            if (!threadEvents) {
-                threadEvents = [];
-                this._virtualThreads[threadName] = threadEvents;
-            }
             threadEvents.push(event);
             this._inspectedTargetEvents.push(event);
         }

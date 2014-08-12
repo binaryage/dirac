@@ -165,9 +165,9 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
         this._appendFrameBars(this._frameModel.frames());
         this._appendThreadTimelineData(WebInspector.UIString("Main Thread"), this._model.mainThreadEvents());
         var threads = this._model.virtualThreads();
-        for (var threadName in threads) {
-            if (threadName !== WebInspector.TimelineModel.MainThreadName)
-                this._appendThreadTimelineData(threadName, threads[threadName]);
+        for (var i = 0; i < threads.length; i++) {
+            var thread = threads[i];
+            this._appendThreadTimelineData(thread.name, thread.events);
         }
         return this._timelineData;
     },
