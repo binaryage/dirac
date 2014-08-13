@@ -177,10 +177,6 @@
     overflow: auto;
 }
 
-.targets-select {
-    width: 100%
-}
-
 #targets-toolbar {
     background: rgb(236, 236, 236);
     border-bottom: 1px solid rgb(189, 189, 189);
