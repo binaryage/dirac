@@ -95,7 +95,6 @@ WebInspector.BreakpointManager.prototype = {
      */
     targetRemoved: function(target) { },
 
-
     /**
      * @param {string} sourceFileId
      * @return {!StringMap.<!WebInspector.BreakpointManager.Breakpoint>}
@@ -775,7 +774,7 @@ WebInspector.BreakpointManager.TargetBreakpoint.prototype = {
         var uiSourceCode = this._breakpoint.uiSourceCode();
         if (!uiSourceCode)
             return false;
-        var scriptFile = uiSourceCode.scriptFileForTarget(this.target());
+        var scriptFile = this._debuggerWorkspaceBinding.scriptFile(uiSourceCode, this.target());
         return !!scriptFile && scriptFile.hasDivergedFromVM();
 
     },

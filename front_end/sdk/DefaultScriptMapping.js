@@ -87,7 +87,7 @@ WebInspector.DefaultScriptMapping.prototype = {
         }
         this._uiSourceCodeForScriptId[script.scriptId] = uiSourceCode;
         this._scriptIdForUISourceCode.put(uiSourceCode, script.scriptId);
-        uiSourceCode.setSourceMappingForTarget(this._debuggerModel.target(), this);
+        this._debuggerWorkspaceBinding.setSourceMapping(this._debuggerModel.target(), uiSourceCode, this);
         this._debuggerWorkspaceBinding.pushSourceMapping(script, this);
         script.addEventListener(WebInspector.Script.Events.ScriptEdited, this._scriptEdited.bind(this, script.scriptId));
     },

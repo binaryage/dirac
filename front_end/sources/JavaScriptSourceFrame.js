@@ -67,7 +67,7 @@ WebInspector.JavaScriptSourceFrame = function(scriptsPanel, uiSourceCode)
     this._registerShortcuts();
     var targets = WebInspector.targetManager.targets();
     for (var i = 0; i < targets.length; ++i) {
-        var scriptFile = uiSourceCode.scriptFileForTarget(targets[i]);
+        var scriptFile = WebInspector.debuggerWorkspaceBinding.scriptFile(uiSourceCode, targets[i]);
         if (scriptFile)
             this._updateScriptFile(targets[i]);
     }
@@ -286,6 +286,8 @@ WebInspector.JavaScriptSourceFrame.prototype = {
         function liveEdit(liveEditSupport)
         {
             var liveEditUISourceCode = liveEditSupport.uiSourceCodeForLiveEdit(this._uiSourceCode);
+            if (!liveEditUISourceCode)
+                return;
             WebInspector.Revealer.reveal(liveEditUISourceCode.uiLocation(lineNumber));
         }
 
@@ -767,7 +769,7 @@ WebInspector.JavaScriptSourceFrame.prototype = {
     {
         var linesCount = this.textEditor.linesCount;
         for (var i = 0; i < linesCount; ++i)
-            this.textEditor.toggleLineClass(i, "cm-line-without-source-mapping", !this._uiSourceCode.uiLineHasMapping(i));
+            this.textEditor.toggleLineClass(i, "cm-line-without-source-mapping", !WebInspector.debuggerWorkspaceBinding.uiLineHasMapping(this._uiSourceCode, i));
     },
 
     /**
@@ -776,7 +778,7 @@ WebInspector.JavaScriptSourceFrame.prototype = {
     _updateScriptFile: function(target)
     {
         var oldScriptFile = this._scriptFileForTarget.get(target);
-        var newScriptFile = this._uiSourceCode.scriptFileForTarget(target);
+        var newScriptFile = WebInspector.debuggerWorkspaceBinding.scriptFile(this._uiSourceCode, target);
         this._scriptFileForTarget.remove(target);
         if (oldScriptFile) {
             oldScriptFile.removeEventListener(WebInspector.ResourceScriptFile.Events.DidMergeToVM, this._didMergeToVM, this);
@@ -893,6 +895,8 @@ WebInspector.JavaScriptSourceFrame.prototype = {
         if (!executionContext)
             return;
         var rawLocation = WebInspector.debuggerWorkspaceBinding.uiLocationToRawLocation(executionContext.target(), this._uiSourceCode, lineNumber, 0);
+        if (!rawLocation)
+            return;
         this._scriptsPanel.continueToLocation(rawLocation);
     },
 

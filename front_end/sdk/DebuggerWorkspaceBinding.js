@@ -20,6 +20,7 @@ WebInspector.DebuggerWorkspaceBinding = function(targetManager, workspace, netwo
 
     targetManager.addModelListener(WebInspector.DebuggerModel, WebInspector.DebuggerModel.Events.GlobalObjectCleared, this._globalObjectCleared, this);
     targetManager.addModelListener(WebInspector.DebuggerModel, WebInspector.DebuggerModel.Events.DebuggerResumed, this._debuggerResumed, this);
+    workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeRemoved, this._uiSourceCodeRemoved, this);
 }
 
 WebInspector.DebuggerWorkspaceBinding.prototype = {
@@ -37,6 +38,17 @@ WebInspector.DebuggerWorkspaceBinding.prototype = {
     targetRemoved: function(target)
     {
         this._targetToData.remove(target)._dispose();
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _uiSourceCodeRemoved: function(event)
+    {
+        var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (event.data);
+        var targetDatas = this._targetToData.values();
+        for (var i = 0; i < targetDatas.length; ++i)
+            targetDatas[i]._uiSourceCodeRemoved(uiSourceCode);
     },
 
     /**
@@ -58,6 +70,18 @@ WebInspector.DebuggerWorkspaceBinding.prototype = {
         var info = this._infoForScript(script.target(), script.scriptId);
         console.assert(info);
         return info._popSourceMapping();
+    },
+
+    /**
+     * @param {!WebInspector.Target} target
+     * @param {!WebInspector.UISourceCode} uiSourceCode
+     * @param {?WebInspector.SourceMapping} sourceMapping
+     */
+    setSourceMapping: function(target, uiSourceCode, sourceMapping)
+    {
+        var data = this._targetToData.get(target);
+        if (data)
+            data._setSourceMapping(uiSourceCode, sourceMapping);
     },
 
     /**
@@ -114,11 +138,45 @@ WebInspector.DebuggerWorkspaceBinding.prototype = {
      * @param {!WebInspector.UISourceCode} uiSourceCode
      * @param {number} lineNumber
      * @param {number} columnNumber
-     * @return {!WebInspector.DebuggerModel.Location}
+     * @return {?WebInspector.DebuggerModel.Location}
      */
     uiLocationToRawLocation: function(target, uiSourceCode, lineNumber, columnNumber)
     {
-        return /** @type {!WebInspector.DebuggerModel.Location} */ (uiSourceCode.uiLocationToRawLocation(target, lineNumber, columnNumber));
+        var targetData = this._targetToData.get(target);
+        return targetData ? /** @type {?WebInspector.DebuggerModel.Location} */ (targetData._uiLocationToRawLocation(uiSourceCode, lineNumber, columnNumber)) : null;
+    },
+
+    /**
+     * @param {!WebInspector.UISourceCode} uiSourceCode
+     * @param {number} lineNumber
+     * @param {number} columnNumber
+     * @return {!Array.<!WebInspector.RawLocation>}
+     */
+    uiLocationToRawLocations: function(uiSourceCode, lineNumber, columnNumber)
+    {
+        var result = [];
+        var targetDatas = this._targetToData.values();
+        for (var i = 0; i < targetDatas.length; ++i) {
+            var rawLocation = targetDatas[i]._uiLocationToRawLocation(uiSourceCode, lineNumber, columnNumber);
+            if (rawLocation)
+                result.push(rawLocation);
+        }
+        return result;
+    },
+
+    /**
+     * @param {!WebInspector.UISourceCode} uiSourceCode
+     * @param {number} lineNumber
+     * @return {boolean}
+     */
+    uiLineHasMapping: function(uiSourceCode, lineNumber)
+    {
+        var targetDatas = this._targetToData.values();
+        for (var i = 0; i < targetDatas.length; ++i) {
+            if (!targetDatas[i]._uiLineHasMapping(uiSourceCode, lineNumber))
+                return false;
+        }
+        return true;
     },
 
     /**
@@ -129,6 +187,17 @@ WebInspector.DebuggerWorkspaceBinding.prototype = {
     {
         var targetData = this._targetToData.get(target);
         return targetData ? targetData._liveEditSupport : null;
+    },
+
+    /**
+     * @param {!WebInspector.UISourceCode} uiSourceCode
+     * @param {!WebInspector.Target} target
+     * @return {?WebInspector.ResourceScriptFile}
+     */
+    scriptFile: function(uiSourceCode, target)
+    {
+        var targetData = this._targetToData.get(target);
+        return targetData ? targetData._resourceMapping.scriptFile(uiSourceCode) : null;
     },
 
     /**
@@ -216,6 +285,8 @@ WebInspector.DebuggerWorkspaceBinding.prototype = {
  */
 WebInspector.DebuggerWorkspaceBinding.TargetData = function(target, debuggerWorkspaceBinding)
 {
+    this._target = target;
+
     /** @type {!StringMap.<!WebInspector.DebuggerWorkspaceBinding.ScriptInfo>} */
     this.scriptDataMap = new StringMap();
 
@@ -232,6 +303,9 @@ WebInspector.DebuggerWorkspaceBinding.TargetData = function(target, debuggerWork
 
     /** @type {!WebInspector.LiveEditSupport} */
     this._liveEditSupport = new WebInspector.LiveEditSupport(target, workspace, debuggerWorkspaceBinding);
+
+    /** @type {!Map.<!WebInspector.UISourceCode, !WebInspector.SourceMapping>} */
+    this._uiSourceCodeToSourceMapping = new Map();
 
     debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.ParsedScriptSource, this._parsedScriptSource, this);
     debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.FailedToParseScriptSource, this._parsedScriptSource, this);
@@ -257,11 +331,60 @@ WebInspector.DebuggerWorkspaceBinding.TargetData.prototype = {
             this._compilerMapping.addScript(script);
     },
 
+    /**
+     * @param {!WebInspector.UISourceCode} uiSourceCode
+     * @param {?WebInspector.SourceMapping} sourceMapping
+     */
+    _setSourceMapping: function(uiSourceCode, sourceMapping)
+    {
+        if (this._uiSourceCodeToSourceMapping.get(uiSourceCode) === sourceMapping)
+            return;
+
+        if (sourceMapping)
+            this._uiSourceCodeToSourceMapping.put(uiSourceCode, sourceMapping);
+        else
+            this._uiSourceCodeToSourceMapping.remove(uiSourceCode);
+
+        uiSourceCode.dispatchEventToListeners(WebInspector.UISourceCode.Events.SourceMappingChanged, {target: this._target, isIdentity: sourceMapping ? sourceMapping.isIdentity() : false});
+    },
+
+    /**
+     * @param {!WebInspector.UISourceCode} uiSourceCode
+     * @param {number} lineNumber
+     * @param {number} columnNumber
+     * @return {?WebInspector.RawLocation}
+     */
+    _uiLocationToRawLocation: function(uiSourceCode, lineNumber, columnNumber)
+    {
+        var sourceMapping = this._uiSourceCodeToSourceMapping.get(uiSourceCode);
+        return sourceMapping ? sourceMapping.uiLocationToRawLocation(uiSourceCode, lineNumber, columnNumber) : null;
+    },
+
+    /**
+     * @param {!WebInspector.UISourceCode} uiSourceCode
+     * @param {number} lineNumber
+     * @return {boolean}
+     */
+    _uiLineHasMapping: function(uiSourceCode, lineNumber)
+    {
+        var sourceMapping = this._uiSourceCodeToSourceMapping.get(uiSourceCode);
+        return sourceMapping ? sourceMapping.uiLineHasMapping(uiSourceCode, lineNumber) : true;
+    },
+
+    /**
+     * @param {!WebInspector.UISourceCode} uiSourceCode
+     */
+    _uiSourceCodeRemoved: function(uiSourceCode)
+    {
+        this._uiSourceCodeToSourceMapping.remove(uiSourceCode);
+    },
+
     _dispose: function()
     {
         this._compilerMapping.dispose();
         this._resourceMapping.dispose();
         this._defaultMapping.dispose();
+        this._uiSourceCodeToSourceMapping.clear();
     }
 }
 

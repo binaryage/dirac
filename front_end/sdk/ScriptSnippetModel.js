@@ -518,7 +518,7 @@ WebInspector.SnippetScriptMapping.prototype = {
             return;
 
         console.assert(!this._scriptForUISourceCode.get(uiSourceCode));
-        uiSourceCode.setSourceMappingForTarget(this._target, this);
+        WebInspector.debuggerWorkspaceBinding.setSourceMapping(this._target, uiSourceCode, this);
         this._uiSourceCodeForScriptId[script.scriptId] = uiSourceCode;
         this._scriptForUISourceCode.put(uiSourceCode, script);
         WebInspector.debuggerWorkspaceBinding.pushSourceMapping(script, this);

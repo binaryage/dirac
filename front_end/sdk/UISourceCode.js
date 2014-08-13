@@ -53,16 +53,6 @@ WebInspector.UISourceCode = function(project, parentPath, name, originURL, url, 
     /** @type {!Array.<!WebInspector.PresentationConsoleMessage>} */
     this._consoleMessages = [];
 
-    /**
-     * @type {!Map.<!WebInspector.Target, !WebInspector.SourceMapping>}
-     */
-    this._sourceMappingForTarget = new Map();
-
-    /**
-     * @type {!Map.<!WebInspector.Target, !WebInspector.ResourceScriptFile>}
-     */
-    this._scriptFileForTarget = new Map();
-
     /** @type {!Array.<!WebInspector.Revision>} */
     this.history = [];
 }
@@ -220,27 +210,6 @@ WebInspector.UISourceCode.prototype = {
     contentType: function()
     {
         return this._contentType;
-    },
-
-    /**
-     * @param {!WebInspector.Target} target
-     * @return {?WebInspector.ResourceScriptFile}
-     */
-    scriptFileForTarget: function(target)
-    {
-        return this._scriptFileForTarget.get(target) || null;
-    },
-
-    /**
-     * @param {!WebInspector.Target} target
-     * @param {?WebInspector.ResourceScriptFile} scriptFile
-     */
-    setScriptFileForTarget: function(target, scriptFile)
-    {
-        if (scriptFile)
-            this._scriptFileForTarget.put(target, scriptFile);
-        else
-            this._scriptFileForTarget.remove(target);
     },
 
     /**
@@ -606,52 +575,6 @@ WebInspector.UISourceCode.prototype = {
     },
 
     /**
-     * @param {!WebInspector.Target} target
-     * @param {number} lineNumber
-     * @param {number} columnNumber
-     * @return {?WebInspector.RawLocation}
-     */
-    uiLocationToRawLocation: function(target, lineNumber, columnNumber)
-    {
-        var sourceMapping = this._sourceMappingForTarget.get(target);
-        if (!sourceMapping)
-            return null;
-        return sourceMapping.uiLocationToRawLocation(this, lineNumber, columnNumber);
-    },
-
-    /**
-     * @param {number} lineNumber
-     * @param {number} columnNumber
-     * @return {!Array.<!WebInspector.RawLocation>}
-     */
-    uiLocationToRawLocations: function(lineNumber, columnNumber)
-    {
-        var result = [];
-        var sourceMappings = this._sourceMappingForTarget.values();
-        for (var i = 0; i < sourceMappings.length; ++i) {
-            var rawLocation = sourceMappings[i].uiLocationToRawLocation(this, lineNumber, columnNumber);
-            if (rawLocation)
-                result.push(rawLocation);
-        }
-        return result;
-    },
-
-    /**
-     * @param {number} lineNumber
-     * @return {boolean}
-     */
-    uiLineHasMapping: function(lineNumber)
-    {
-        var sourceMappings = this._sourceMappingForTarget.values();
-        for (var i = 0; i < sourceMappings.length; ++i) {
-            var sourceMapping = sourceMappings[i];
-            if (!sourceMappings[i].uiLineHasMapping(this, lineNumber))
-                return false;
-        }
-        return true;
-    },
-
-    /**
      * @return {!Array.<!WebInspector.PresentationConsoleMessage>}
      */
     consoleMessages: function()
@@ -684,31 +607,6 @@ WebInspector.UISourceCode.prototype = {
     },
 
     /**
-     * @return {boolean}
-     */
-    hasSourceMapping: function()
-    {
-        return !!this._sourceMappingForTarget.size();
-    },
-
-    /**
-     * @param {!WebInspector.Target} target
-     * @param {?WebInspector.SourceMapping} sourceMapping
-     */
-    setSourceMappingForTarget: function(target, sourceMapping)
-    {
-        if (this._sourceMappingForTarget.get(target) === sourceMapping)
-            return;
-
-        if (sourceMapping)
-            this._sourceMappingForTarget.put(target, sourceMapping);
-        else
-            this._sourceMappingForTarget.remove(target);
-
-        this.dispatchEventToListeners(WebInspector.UISourceCode.Events.SourceMappingChanged, {target: target, isIdentity: sourceMapping ? sourceMapping.isIdentity() : false});
-    },
-
-    /**
      * @param {number} lineNumber
      * @param {number=} columnNumber
      * @return {!WebInspector.UILocation}
@@ -737,23 +635,6 @@ WebInspector.UILocation = function(uiSourceCode, lineNumber, columnNumber)
 }
 
 WebInspector.UILocation.prototype = {
-    /**
-     * @param {!WebInspector.Target} target
-     * @return {?WebInspector.RawLocation}
-     */
-    uiLocationToRawLocation: function(target)
-    {
-        return this.uiSourceCode.uiLocationToRawLocation(target, this.lineNumber, this.columnNumber);
-    },
-
-    /**
-     * @return {!Array.<!WebInspector.RawLocation>}
-     */
-    uiLocationToRawLocations: function()
-    {
-        return this.uiSourceCode.uiLocationToRawLocations(this.lineNumber, this.columnNumber);
-    },
-
     /**
      * @return {string}
      */

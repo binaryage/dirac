@@ -49,11 +49,13 @@ WebInspector.LiveEditSupport = function(target, workspace, debuggerWorkspaceBind
 WebInspector.LiveEditSupport.prototype = {
     /**
      * @param {!WebInspector.UISourceCode} uiSourceCode
-     * @return {!WebInspector.UISourceCode}
+     * @return {?WebInspector.UISourceCode}
      */
     uiSourceCodeForLiveEdit: function(uiSourceCode)
     {
         var debuggerModelLocation = this._debuggerWorkspaceBinding.uiLocationToRawLocation(this.target(), uiSourceCode, 0, 0);
+        if (!debuggerModelLocation)
+            return null;
         var uiLocation = this._debuggerWorkspaceBinding.rawLocationToUILocation(debuggerModelLocation);
 
         // FIXME: Support live editing of scripts mapped to some file.

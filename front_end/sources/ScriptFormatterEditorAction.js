@@ -312,7 +312,7 @@ WebInspector.ScriptFormatterEditorAction.prototype = {
     {
         var uiSourceCodes = this._formatData.keys();
         for (var i = 0; i < uiSourceCodes.length; ++i) {
-            uiSourceCodes[i].setSourceMappingForTarget(target, null);
+            WebInspector.debuggerWorkspaceBinding.setSourceMapping(target, uiSourceCodes[i], null);
             var formatData = this._formatData.get(uiSourceCodes[i]);
             var scripts = [];
             for (var j = 0; j < formatData.scripts.length; ++j) {
@@ -364,7 +364,7 @@ WebInspector.ScriptFormatterEditorAction.prototype = {
             return scripts.filter(isInlineScript);
         }
         if (uiSourceCode.contentType() === WebInspector.resourceTypes.Script) {
-            var rawLocations = (uiSourceCode.uiLocationToRawLocations(0, 0));
+            var rawLocations = WebInspector.debuggerWorkspaceBinding.uiLocationToRawLocations(uiSourceCode, 0, 0);
             return rawLocations.map(function(rawLocation) { return rawLocation.script()});
         }
         return [];
@@ -427,7 +427,7 @@ WebInspector.ScriptFormatterEditorAction.prototype = {
             var targets = WebInspector.targetManager.targets();
             for (var i = 0; i < targets.length; ++i) {
                 var scriptMapping = /** @type {!WebInspector.FormatterScriptMapping} */(this._scriptMappingByTarget.get(targets[i]));
-                formattedUISourceCode.setSourceMappingForTarget(targets[i], scriptMapping);
+                WebInspector.debuggerWorkspaceBinding.setSourceMapping(targets[i], formattedUISourceCode, scriptMapping);
             }
             this._showIfNeeded(uiSourceCode, formattedUISourceCode, formatterMapping);
         }

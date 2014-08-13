@@ -196,7 +196,7 @@ WebInspector.CompilerScriptMapping.prototype = {
      */
     _bindUISourceCode: function(uiSourceCode)
     {
-        uiSourceCode.setSourceMappingForTarget(this._target, this);
+        this._debuggerWorkspaceBinding.setSourceMapping(this._target, uiSourceCode, this);
     },
 
     /**
@@ -204,7 +204,7 @@ WebInspector.CompilerScriptMapping.prototype = {
      */
     _unbindUISourceCode: function(uiSourceCode)
     {
-        uiSourceCode.setSourceMappingForTarget(this._target, null);
+        this._debuggerWorkspaceBinding.setSourceMapping(this._target, uiSourceCode, null);
     },
 
     /**
