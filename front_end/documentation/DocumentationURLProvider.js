@@ -26,7 +26,11 @@ WebInspector.DocumentationURLProvider._sources = [
     { source: window.String, url: "javascript/String/", name: "String" },
     { source: window.Date.prototype, url: "javascript/Date/", name: "Date.prototype" },
     { source: window.Date, url: "javascript/Date/", name: "Date" },
-    { source: window.JSON, url: "javascript/JSON/", name: "JSON" }
+    { source: window.JSON, url: "javascript/JSON/", name: "JSON" },
+    { source: window.Number, url: "javascript/Number/", name: "Number"},
+    { source: window.Number.prototype, url: "javascript/Number/", name: "Number.prototype"},
+    { source: window.Error.prototype, url: "javascript/Error/", name: "Error.prototype"},
+    { source: window.RegExp.prototype, url: "javascript/RegExp/", name: "RegExp.prototype"}
 ];
 
 /**
@@ -41,17 +45,25 @@ WebInspector.DocumentationURLProvider.prototype = {
      */
     itemDescriptors: function(searchTerm)
     {
-        var possibleProperties = [];
+        var descriptors = [];
         for (var i = 0; i < WebInspector.DocumentationURLProvider._sources.length; ++i) {
             var sourceRef = WebInspector.DocumentationURLProvider._sources[i];
-            if (sourceRef.source[searchTerm] instanceof Function) {
-                var property = {
-                    url: String.sprintf(WebInspector.DocumentationURLProvider._urlFormat, sourceRef.url, searchTerm),
-                    name: sourceRef.name
-                };
-                possibleProperties.push(property);
-            }
+            if (!sourceRef.source.hasOwnProperty(searchTerm))
+                continue;
+            descriptors.push(createDescriptor(searchTerm.toUpperCase() === searchTerm ? "constants" : searchTerm));
         }
-        return possibleProperties;
+        return descriptors;
+
+        /**
+         * @param {string} searchTerm
+         * @return {{url: string, name: string}}
+         */
+        function createDescriptor(searchTerm)
+        {
+            return {
+                url: String.sprintf(WebInspector.DocumentationURLProvider._urlFormat, sourceRef.url, searchTerm),
+                name: sourceRef.name
+            };
+        }
     }
 }
