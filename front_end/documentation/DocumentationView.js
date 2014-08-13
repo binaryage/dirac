@@ -12,9 +12,9 @@ WebInspector.DocumentationView = function()
 }
 
 /**
- * @param {string} searchTerm
+ * @param {string} url
  */
-WebInspector.DocumentationView.showSearchTerm = function(searchTerm)
+WebInspector.DocumentationView.showDocumentationURL = function(url)
 {
     if (!WebInspector.DocumentationView._view)
         WebInspector.DocumentationView._view = new WebInspector.DocumentationView();
@@ -50,9 +50,16 @@ WebInspector.DocumentationView.ContextMenuProvider.prototype = {
             return;
         var selectedText = textEditor.copyRange(selection);
         var urlProvider = new WebInspector.DocumentationURLProvider();
-        var itemPath = urlProvider.itemPath(selectedText);
-        if (!itemPath)
+        var possibleProperties = urlProvider.itemDescriptors(selectedText);
+        if (!possibleProperties.length)
             return;
-        contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Show documentation" : "Show Documentation"), WebInspector.DocumentationView.showSearchTerm.bind(null, selectedText));
+        if (possibleProperties.length === 1) {
+            var formatString = WebInspector.useLowerCaseMenuTitles() ? "Show documentation for %s.%s" : "Show Documentation for %s.%s";
+            contextMenu.appendItem(WebInspector.UIString(formatString, possibleProperties[0].name, selectedText), WebInspector.DocumentationView.showDocumentationURL.bind(null, possibleProperties[0].url));
+            return;
+        }
+        var subMenuItem = contextMenu.appendSubMenuItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Show documentation for..." : "Show Documentation for..."));
+        for (var i = 0; i < possibleProperties.length; ++i)
+            subMenuItem.appendItem(String.sprintf("%s.%s", possibleProperties[i].name, selectedText), WebInspector.DocumentationView.showDocumentationURL.bind(null, possibleProperties[i].url));
     }
 }
