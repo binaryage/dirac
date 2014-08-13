@@ -720,7 +720,9 @@ WebInspector.TimelinePanel.prototype = {
 
     _garbageCollectButtonClicked: function()
     {
-        HeapProfilerAgent.collectGarbage();
+        var targets = WebInspector.targetManager.targets();
+        for (var i = 0; i < targets.length; ++i)
+            targets[i].heapProfilerAgent().collectGarbage();
     },
 
     _onClearButtonClick: function()
