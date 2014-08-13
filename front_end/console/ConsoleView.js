@@ -89,7 +89,6 @@ WebInspector.ConsoleView = function(hideContextSelector)
     this._messagesElement.id = "console-messages";
     this._messagesElement.classList.add("monospace");
     this._messagesElement.addEventListener("click", this._messagesClicked.bind(this), true);
-    this._scrolledToBottom = true;
 
     this._viewportThrottler = new WebInspector.Throttler(50);
 
@@ -415,16 +414,10 @@ WebInspector.ConsoleView.prototype = {
         this._prompt.moveCaretToEndOfPrompt();
     },
 
-    storeScrollPositions: function()
-    {
-        WebInspector.View.prototype.storeScrollPositions.call(this);
-        this._scrolledToBottom = this._messagesElement.isScrolledToBottom();
-    },
-
     restoreScrollPositions: function()
     {
-        if (this._scrolledToBottom)
-            this._immediatelyScrollIntoView();
+        if (this._viewport.scrolledToBottom())
+            this._immediatelyScrollToBottom();
         else
             WebInspector.View.prototype.restoreScrollPositions.call(this);
     },
@@ -433,7 +426,8 @@ WebInspector.ConsoleView.prototype = {
     {
         this._scheduleViewportRefresh();
         this._prompt.hideSuggestBox();
-        this.restoreScrollPositions();
+        if (this._viewport.scrolledToBottom())
+            this._immediatelyScrollToBottom();
     },
 
     _scheduleViewportRefresh: function()
@@ -450,7 +444,7 @@ WebInspector.ConsoleView.prototype = {
         this._viewportThrottler.schedule(invalidateViewport.bind(this));
     },
 
-    _immediatelyScrollIntoView: function()
+    _immediatelyScrollToBottom: function()
     {
         // This will scroll viewport and trigger its refresh.
         this._promptElement.scrollIntoView(true);
@@ -568,7 +562,6 @@ WebInspector.ConsoleView.prototype = {
     {
         this._clearCurrentSearchResultHighlight();
         this._consoleMessages = [];
-        this._scrolledToBottom = true;
         this._updateMessageList();
 
         if (this._searchRegex)

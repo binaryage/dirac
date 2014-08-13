@@ -55,6 +55,7 @@ WebInspector.ViewportControl = function(provider)
     this._anchorSelection = null;
     this._headSelection = null;
     this._stickToBottom = false;
+    this._scrolledToBottom = true;
 }
 
 /**
@@ -132,6 +133,14 @@ WebInspector.StaticViewportElement.prototype = {
 }
 
 WebInspector.ViewportControl.prototype = {
+    /**
+     * @return {boolean}
+     */
+    scrolledToBottom: function()
+    {
+        return this._scrolledToBottom;
+    },
+
     /**
      * @param {boolean} value
      */
@@ -373,7 +382,7 @@ WebInspector.ViewportControl.prototype = {
 
         var visibleFrom = this.element.scrollTop;
         var visibleHeight = this._visibleHeight();
-        var shouldStickToBottom = this._stickToBottom && this.element.isScrolledToBottom();
+        this._scrolledToBottom = this.element.isScrolledToBottom();
         var isInvalidating = !this._cumulativeHeights;
 
         if (this._cumulativeHeights && itemCount !== this._cumulativeHeights.length)
@@ -387,6 +396,8 @@ WebInspector.ViewportControl.prototype = {
         this._rebuildCumulativeHeightsIfNeeded();
         var oldFirstVisibleIndex = this._firstVisibleIndex;
         var oldLastVisibleIndex = this._lastVisibleIndex;
+
+        var shouldStickToBottom = this._stickToBottom && this._scrolledToBottom;
         if (shouldStickToBottom) {
             this._lastVisibleIndex = itemCount - 1;
             this._firstVisibleIndex = Math.max(itemCount - Math.ceil(visibleHeight / this._provider.minimumRowHeight()), 0);
