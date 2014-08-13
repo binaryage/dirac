@@ -1176,11 +1176,9 @@ WebInspector.DataGridNode.prototype = {
     {
         this._element.removeChildren();
         var columnsArray = this.dataGrid._visibleColumnsArray;
-        for (var i = 0; i < columnsArray.length; ++i) {
-            var cell = this.createCell(columnsArray[i].identifier);
-            this._element.appendChild(cell);
-        }
-        this._element.createChild("td", "corner");
+        for (var i = 0; i < columnsArray.length; ++i)
+            this._element.appendChild(this.createCell(columnsArray[i].identifier));
+        this._element.appendChild(this._createTDWithClass("corner"));
     },
 
     get data()
@@ -1320,17 +1318,25 @@ WebInspector.DataGridNode.prototype = {
     },
 
     /**
+     * @param {string} className
+     * @return {!Element}
+     */
+    _createTDWithClass: function(className)
+    {
+        var cell = document.createElementWithClass("td", className);
+        var cellClass = this.dataGrid._cellClass;
+        if (cellClass)
+            cell.classList.add(cellClass);
+        return cell;
+    },
+
+    /**
      * @param {string} columnIdentifier
      * @return {!Element}
      */
     createTD: function(columnIdentifier)
     {
-        var cell = document.createElement("td");
-        cell.className = columnIdentifier + "-column";
-        var cellClass = this.dataGrid._cellClass;
-        if (cellClass)
-            cell.classList.add(cellClass);
-
+        var cell = this._createTDWithClass(columnIdentifier + "-column");
         cell.columnIdentifier_ = columnIdentifier;
 
         var alignment = this.dataGrid._columns[columnIdentifier].align;
