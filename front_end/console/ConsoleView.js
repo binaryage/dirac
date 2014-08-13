@@ -281,14 +281,16 @@ WebInspector.ConsoleView.prototype = {
      */
     _titleFor: function(executionContext)
     {
-        var result = executionContext.name;
-        if (executionContext.isMainWorldContext && executionContext.frameId) {
-            var frame = executionContext.target().resourceTreeModel.frameForId(executionContext.frameId);
-            result =  frame ? frame.displayName() : result;
-        }
-
-        if (!executionContext.isMainWorldContext)
-            result = "\u00a0\u00a0\u00a0\u00a0" + result;
+        var result;
+        if (executionContext.isMainWorldContext) {
+            if (executionContext.frameId) {
+                var frame = executionContext.target().resourceTreeModel.frameForId(executionContext.frameId);
+                result =  frame ? frame.displayName() : executionContext.name;
+            } else {
+                result = WebInspector.displayNameForURL(executionContext.name)
+            }
+        } else
+            result = "\u00a0\u00a0\u00a0\u00a0" + executionContext.name;
 
         var maxLength = 50;
         return result.trimMiddle(maxLength);
