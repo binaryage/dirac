@@ -28,11 +28,6 @@
     border-bottom: 1px solid #aaa;
 }
 
-.websocket-frame-view .top-filler-td,
-.websocket-frame-view .bottom-filler-td {
-    border-bottom: none;
-}
-
 .websocket-frame-view-row-outcoming {
     background-color: rgb(226, 247, 218);
 }

@@ -51,11 +51,6 @@
     display: block;
 }
 
-.network.panel .data-grid th.sort-descending,
-.network.panel .data-grid th.sort-ascending {
-    background: white;
-}
-
 #network-views .network-item-view .tabbed-pane-header {
     flex: 0 0 31px;
     padding-top: 8px;

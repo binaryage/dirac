@@ -71,11 +71,6 @@
 .network-log-grid.data-grid th {
     border-bottom: 1px solid rgb(205, 205, 205);
     border-left: 1px solid rgb(205, 205, 205);
-}
-
-.network-log-grid.data-grid th,
-.network-log-grid.data-grid th.sort-descending,
-.network-log-grid.data-grid th.sort-ascending {
     background: white;
 }
 
@@ -575,26 +570,4 @@
 /* Brief mode peculiarities. */
 #network-container.brief-mode .network-timeline-grid {
     display: none;
-}
-
-#network-container.brief-mode td,
-#network-container.brief-mode th {
-    border-left: none;
-}
-
-#network-container.brief-mode .network-log-grid.data-grid .data-grid-resizer {
-    display: none;
-}
-
-#network-container.brief-mode .network-timeline-grid {
-    display: none;
-}
-
-#network-container:not(.brief-mode) .data-grid tr.selected {
-    background-color: transparent;
-    color: #222;
-}
-
-#network-container.brief-mode .data-grid .data-container {
-    padding-right: 0;
 }
