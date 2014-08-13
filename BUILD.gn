@@ -157,8 +157,6 @@ action("supported_css_properties") {
   script = "scripts/generate_supported_css.py"
 
   inputs = [
-    "../core/css/CSSPropertyNames.in",
-    "../core/css/SVGCSSPropertyNames.in",
     "../core/css/CSSProperties.in",
   ]
 

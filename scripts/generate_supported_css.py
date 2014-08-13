@@ -34,49 +34,22 @@ except ImportError:
 
 import sys
 
-cssProperties = {}
 
+def properties_from_file(file_name):
+    properties = []
+    with open(file_name, "r") as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith("//") or "alias_for" in line:
+                continue
+            name = line.partition(" ")[0]
+            entry = {"name": name}
+            longhands = line.partition("longhands=")[2].partition(",")[0]
+            if longhands:
+                entry["longhands"] = longhands.split(";")
+            properties.append(entry)
+    return properties
 
-def filterCommentsAndEmptyLines(lines):
-    result = []
-    for line in lines:
-        if len(line.strip()) > 0 and line[:2] != "//":
-            result.append(line.strip())
-    return result
-
-
-def fillPropertiesFromFile(fileName):
-    with open(fileName, "r") as f:
-        lines = f.readlines()
-    lines = filterCommentsAndEmptyLines(lines)
-    for line in lines:
-        if not "alias_for" in line:
-            cssProperties[line] = []
-
-
-def fillCSSShorthandsFromFile(fileName):
-    with open(fileName, "r") as f:
-        lines = f.readlines()
-    lines = filterCommentsAndEmptyLines(lines)
-    for line in lines:
-        # Format for shorthands is:
-        #  <property-name>[ longhands=<longhand 1>;<longhand 2>;<longhand 3>]
-        shorthand = line.partition(" ")[0]
-        longhands = line.partition("longhands=")[2].partition(",")[0]
-        if longhands:
-            cssProperties[shorthand] = longhands.split(";")
-
-fillPropertiesFromFile(sys.argv[1])
-fillPropertiesFromFile(sys.argv[2])
-fillCSSShorthandsFromFile(sys.argv[3])
-
-# Reformat from map into list.
-reformat = []
-for name, longhands in cssProperties.items():
-    entry = {"name": name}
-    if len(longhands) > 0:
-        entry["longhands"] = longhands
-    reformat.append(entry)
-
-with open(sys.argv[4], "w") as f:
-    f.write("WebInspector.CSSMetadata.initializeWithSupportedProperties(%s);" % json.dumps(reformat))
+properties = properties_from_file(sys.argv[1])
+with open(sys.argv[2], "w") as f:
+    f.write("WebInspector.CSSMetadata.initializeWithSupportedProperties(%s);" % json.dumps(properties))

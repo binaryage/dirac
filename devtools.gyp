@@ -237,8 +237,6 @@
                 # The python script in action below.
                 'scripts/generate_supported_css.py',
                 # Input files for the script.
-                '../core/css/CSSPropertyNames.in',
-                '../core/css/SVGCSSPropertyNames.in',
                 '../core/css/CSSProperties.in',
               ],
               'outputs': [
