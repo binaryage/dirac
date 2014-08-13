@@ -47,7 +47,7 @@ WebInspector.StylesSidebarPane = function(computedStylePane, setPseudoClassCallb
     addButton.className = "pane-title-button add";
     addButton.id = "add-style-button-test-id";
     addButton.title = WebInspector.UIString("New Style Rule");
-    addButton.addEventListener("click", this._createNewRule.bind(this), false);
+    addButton.addEventListener("click", this._createNewRuleInViaInspectorStyleSheet.bind(this), false);
     this.titleElement.appendChild(addButton);
 
     this._computedStylePane = computedStylePane;
@@ -790,26 +790,54 @@ WebInspector.StylesSidebarPane.prototype = {
         }
     },
 
-    _createNewRule: function(event)
+    /**
+     * @param {?Event} event
+     */
+    _createNewRuleInViaInspectorStyleSheet: function(event)
     {
         event.consume();
-        this.expand();
-        this.addBlankSection().startEditingSelector();
+        var cssModel = this._target.cssModel;
+        cssModel.requestViaInspectorStylesheet(this._node, viaInspectorCallback.bind(this));
+
+        /**
+         * @param {?WebInspector.CSSStyleSheetHeader} styleSheetHeader
+         * @this {WebInspector.StylesSidebarPane}
+         */
+        function viaInspectorCallback(styleSheetHeader)
+        {
+            if (!styleSheetHeader)
+                return;
+            styleSheetHeader.requestContent(onViaInspectorContent.bind(this, styleSheetHeader.id));
+        }
+
+        /**
+         * @param {string} styleSheetId
+         * @param {string} text
+         * @this {WebInspector.StylesSidebarPane}
+         */
+        function onViaInspectorContent(styleSheetId, text)
+        {
+            var lines = text.split("\n");
+            var range = WebInspector.TextRange.createFromLocation(lines.length - 1, lines[lines.length - 1].length);
+            this._addBlankSection(this.sections[0][1], styleSheetId, range);
+        }
     },
 
     /**
-     * @return {!WebInspector.BlankStylePropertiesSection}
+     * @param {!WebInspector.StylePropertiesSection} insertAfterSection
+     * @param {string} styleSheetId
+     * @param {!WebInspector.TextRange} ruleLocation
      */
-    addBlankSection: function()
+    _addBlankSection: function(insertAfterSection, styleSheetId, ruleLocation)
     {
-        var blankSection = new WebInspector.BlankStylePropertiesSection(this, this._node ? WebInspector.DOMPresentationUtils.simpleSelector(this._node) : "");
+        this.expand();
+        var blankSection = new WebInspector.BlankStylePropertiesSection(this, this._node ? WebInspector.DOMPresentationUtils.simpleSelector(this._node) : "", styleSheetId, ruleLocation, insertAfterSection.rule);
 
-        var elementStyleSection = this.sections[0][1];
-        this._sectionsContainer.insertBefore(blankSection.element, elementStyleSection.element.nextSibling);
+        this._sectionsContainer.insertBefore(blankSection.element, insertAfterSection.element.nextSibling);
 
-        this.sections[0].splice(2, 0, blankSection);
-
-        return blankSection;
+        var index = this.sections[0].indexOf(insertAfterSection);
+        this.sections[0].splice(index + 1, 0, blankSection);
+        blankSection.startEditingSelector();
     },
 
     removeSection: function(section)
@@ -1108,6 +1136,11 @@ WebInspector.StylePropertiesSection = function(parentPane, styleRule, editable, 
     closeBrace.textContent = "}";
     this.element.appendChild(closeBrace);
 
+    if (this.editable && this.rule) {
+        var newRuleButton = closeBrace.createChild("div", "sidebar-pane-button-new-rule");
+        newRuleButton.addEventListener("click", this._onNewRuleClick.bind(this), false);
+    }
+
     this._selectorElement.addEventListener("click", this._handleSelectorClick.bind(this), false);
     this.element.addEventListener("mousedown", this._handleEmptySpaceMouseDown.bind(this), false);
     this.element.addEventListener("click", this._handleEmptySpaceClick.bind(this), false);
@@ -1146,6 +1179,16 @@ WebInspector.StylePropertiesSection = function(parentPane, styleRule, editable, 
 }
 
 WebInspector.StylePropertiesSection.prototype = {
+    /**
+     * @param {?Event} event
+     */
+    _onNewRuleClick: function(event)
+    {
+        event.consume();
+        var range = WebInspector.TextRange.createFromLocation(this.rule.style.range.endLine, this.rule.style.range.endColumn + 1);
+        this._parentPane._addBlankSection(this, this.rule.styleSheetId, range);
+    },
+
     /**
      * @param {!WebInspector.CSSRule} editedRule
      * @param {!WebInspector.TextRange} oldRange
@@ -1840,10 +1883,17 @@ WebInspector.ComputedStylePropertiesSection.prototype = {
  * @extends {WebInspector.StylePropertiesSection}
  * @param {!WebInspector.StylesSidebarPane} stylesPane
  * @param {string} defaultSelectorText
+ * @param {string} styleSheetId
+ * @param {!WebInspector.TextRange} ruleLocation
+ * @param {!WebInspector.CSSRule=} insertAfterRule
  */
-WebInspector.BlankStylePropertiesSection = function(stylesPane, defaultSelectorText)
+WebInspector.BlankStylePropertiesSection = function(stylesPane, defaultSelectorText, styleSheetId, ruleLocation, insertAfterRule)
 {
     WebInspector.StylePropertiesSection.call(this, stylesPane, {selectorText: defaultSelectorText, rule: {isViaInspector: true}}, true, false);
+    this._ruleLocation = ruleLocation;
+    this._styleSheetId = styleSheetId;
+    if (insertAfterRule)
+        this._createMediaList(insertAfterRule);
     this.element.classList.add("blank-section");
 }
 
@@ -1873,13 +1923,19 @@ WebInspector.BlankStylePropertiesSection.prototype = {
         function successCallback(newRule)
         {
             var doesSelectorAffectSelectedNode = newRule.matchingSelectors.length > 0;
-            var styleRule = { section: this, style: newRule.style, selectorText: newRule.selectorText, sourceURL: newRule.resourceURL(), rule: newRule };
+            var styleRule = { media: newRule.media, section: this, style: newRule.style, selectorText: newRule.selectorText, sourceURL: newRule.resourceURL(), rule: newRule };
             this._makeNormal(styleRule);
 
             if (!doesSelectorAffectSelectedNode) {
                 this.noAffect = true;
                 this.element.classList.add("no-affect");
             }
+
+            var ruleTextLines = ruleText.split("\n");
+            var startLine = this._ruleLocation.startLine;
+            var startColumn = this._ruleLocation.startColumn;
+            var newRange = new WebInspector.TextRange(startLine, startColumn, startLine + ruleTextLines.length - 1, startColumn + ruleTextLines[ruleTextLines.length - 1].length);
+            this._parentPane._styleSheetRuleEdited(newRule, this._ruleLocation, newRange);
 
             this._updateRuleOrigin();
             this.expand();
@@ -1896,20 +1952,9 @@ WebInspector.BlankStylePropertiesSection.prototype = {
         this._parentPane._userOperation = true;
 
         var cssModel = this._parentPane._target.cssModel;
-        cssModel.requestViaInspectorStylesheet(this._parentPane._node, viaInspectorCallback.bind(this));
-
-        /**
-         * @this {WebInspector.BlankStylePropertiesSection}
-         * @param {?WebInspector.CSSStyleSheetHeader} styleSheetHeader
-         */
-        function viaInspectorCallback(styleSheetHeader)
-        {
-            if (!styleSheetHeader) {
-                this.editingSelectorCancelled();
-                return;
-            }
-            cssModel.addRule(styleSheetHeader.id, this._parentPane._node, newContent, successCallback.bind(this), this.editingSelectorCancelled.bind(this));
-        }
+        var rulePrefix = this._ruleLocation.startLine === 0 && this._ruleLocation.startColumn === 0 ? "" : "\n\n";
+        var ruleText = rulePrefix + newContent + " {}";
+        cssModel.addRule(this._styleSheetId, this._parentPane._node, ruleText, this._ruleLocation, successCallback.bind(this), this.editingSelectorCancelled.bind(this));
     },
 
     editingSelectorCancelled: function()

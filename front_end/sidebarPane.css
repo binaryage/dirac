@@ -194,3 +194,20 @@
     color: #888;
     background-color: #FFFFC2;
 }
+
+.sidebar-pane-button-new-rule {
+    background-image: url(Images/paneAddButtons.png);
+    background-position: 0 0;
+    height: 16px;
+    width: 22px;
+    float: right;
+    visibility: hidden;
+}
+
+.styles-section.matched-styles:not(.read-only):hover .sidebar-pane-button-new-rule {
+    visibility: visible;
+}
+
+.sidebar-pane-button-new-rule:hover {
+    background-position: -23px 0;
+}

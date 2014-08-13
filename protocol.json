@@ -2814,13 +2814,14 @@
             {
                 "name": "addRule",
                 "parameters": [
-                    { "name": "styleSheetId", "$ref": "StyleSheetId" },
-                    { "name": "selector", "type": "string" }
+                    { "name": "styleSheetId", "$ref": "StyleSheetId", "description": "The css style sheet identifier where a new rule should be inserted." },
+                    { "name": "ruleText", "type": "string", "description": "The text of a new rule." },
+                    { "name": "location", "$ref": "SourceRange", "description": "Text position of a new rule in the target style sheet." }
                 ],
                 "returns": [
                     { "name": "rule", "$ref": "CSSRule", "description": "The newly created rule." }
                 ],
-                "description": "Creates a new empty rule with the given <code>selector</code> in a stylesheet with given <code>styleSheetId</code>."
+                "description": "Inserts a new rule with the given <code>ruleText</code> in a stylesheet with given <code>styleSheetId</code>, at the position specified by <code>location</code>."
             },
             {
                 "name": "forcePseudoState",

@@ -361,14 +361,15 @@ WebInspector.CSSStyleModel.prototype = {
     /**
      * @param {!CSSAgent.StyleSheetId} styleSheetId
      * @param {!WebInspector.DOMNode} node
-     * @param {string} selector
+     * @param {string} ruleText
+     * @param {!WebInspector.TextRange} ruleLocation
      * @param {function(!WebInspector.CSSRule)} successCallback
      * @param {function()} failureCallback
      */
-    addRule: function(styleSheetId, node, selector, successCallback, failureCallback)
+    addRule: function(styleSheetId, node, ruleText, ruleLocation, successCallback, failureCallback)
     {
         this._pendingCommandsMajorState.push(true);
-        this._agent.addRule(styleSheetId, selector, callback.bind(this));
+        this._agent.addRule(styleSheetId, ruleText, ruleLocation, callback.bind(this));
 
         /**
          * @param {?Protocol.Error} error
@@ -1499,7 +1500,7 @@ WebInspector.CSSStyleSheetHeader.prototype = {
 
     /**
      * @override
-     * @param {function(?string)} callback
+     * @param {function(string)} callback
      */
     requestContent: function(callback)
     {
