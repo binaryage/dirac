@@ -289,7 +289,6 @@
     position: absolute;
     top: 0;
     bottom: 0;
-    margin: auto -7px;
     height: 13px;
     line-height: 13px;
     font-size: 90%;
@@ -317,7 +316,7 @@
     color: rgba(0, 0, 0, 0.7);
     text-shadow: none;
     text-align: right;
-    margin-right: 2px;
+    margin-right: -2px;
 }
 
 .network-graph-label.before::after {
@@ -330,7 +329,7 @@
     color: rgba(0, 0, 0, 0.7);
     text-shadow: none;
     text-align: left;
-    margin-left: 2px;
+    margin-left: -1px;
 }
 
 .network-graph-label.after::before {
@@ -343,15 +342,12 @@
     position: absolute;
     top: 0;
     bottom: 0;
-    margin: auto -7px;
+    margin: auto -1px;
     height: 12px;
-    min-width: 14px;
+    min-width: 2px;
     opacity: 0.65;
     border-width: 1px;
     border-style: solid;
-    border-radius: 7px / 6px;
-    box-shadow: inset 0 1px 1px 0px rgba(255, 255, 255, 0.8);
-
     border-color: hsl(0, 0%, 65%);
     background: linear-gradient(0deg, hsl(0, 0%, 73%), hsl(0, 0%, 78%));
 }
@@ -365,9 +361,6 @@
 
 .network-graph-bar.cached {
     background: hsl(0, 0%, 90%);
-    box-shadow: inset 0 1px 1px 0px rgba(255, 255, 255, 0.8),
-                inset 0 0 0 2px hsl(0, 0%, 73%),
-                inset 0 1px 0 2px hsla(0, 0%, 76%, 0.85);
 }
 
 .network-graph-bar.document {
@@ -377,9 +370,6 @@
 
 .network-graph-bar.cached.document {
     background: hsl(215, 99%, 86%);
-    box-shadow: inset 0 1px 1px 0px rgba(255, 255, 255, 0.8),
-                inset 0 0 0 2px hsl(215, 71%, 61%),
-                inset 0 1px 0 2px hsla(215, 58%, 65%, 0.85);
 }
 
 .network-graph-bar.stylesheet {
@@ -389,9 +379,6 @@
 
 .network-graph-bar.cached.stylesheet {
     background: hsl(99, 100%, 86%);
-    box-shadow: inset 0 1px 1px 0px rgba(255, 255, 255, 0.8),
-                inset 0 0 0 2px hsl(99, 72%, 61%),
-                inset 0 1px 0 2px hsla(99, 59%, 65%, 0.85);
 }
 
 .network-graph-bar.image {
@@ -401,9 +388,6 @@
 
 .network-graph-bar.cached.image {
     background: hsl(272, 65%, 86%);
-    box-shadow: inset 0 1px 1px 0px rgba(255, 255, 255, 0.8),
-                inset 0 0 0 2px hsl(272, 47%, 61%),
-                inset 0 1px 0 2px hsla(273, 38%, 65%, 0.85);
 }
 
 .network-graph-bar.media {
@@ -413,9 +397,6 @@
 
 .network-graph-bar.cached.media {
     background: hsl(272, 65%, 86%);
-    box-shadow: inset 0 1px 1px 0px rgba(255, 255, 255, 0.8),
-                inset 0 0 0 2px hsl(272, 47%, 61%),
-                inset 0 1px 0 2px hsla(273, 38%, 65%, 0.85);
 }
 
 .network-graph-bar.font {
@@ -425,9 +406,6 @@
 
 .network-graph-bar.cached.font {
     background: hsl(8, 100%, 86%);
-    box-shadow: inset 0 1px 1px 0px rgba(255, 255, 255, 0.8),
-                inset 0 0 0 2px hsl(8, 72%, 61%),
-                inset 0 1px 0 2px hsla(8, 59%, 65%, 0.85);
 }
 
 .network-graph-bar.texttrack {
@@ -437,9 +415,6 @@
 
 .network-graph-bar.cached.texttrack {
     background: hsl(8, 100%, 86%);
-    box-shadow: inset 0 1px 1px 0px rgba(255, 255, 255, 0.8),
-                inset 0 0 0 2px hsl(8, 72%, 61%),
-                inset 0 1px 0 2px hsla(8, 59%, 65%, 0.85);
 }
 
 .network-graph-bar.script {
@@ -449,9 +424,6 @@
 
 .network-graph-bar.cached.script {
     background: hsl(31, 100%, 86%);
-    box-shadow: inset 0 1px 1px 0px rgba(255, 255, 255, 0.8),
-                inset 0 0 0 2px hsl(31, 78%, 61%),
-                inset 0 1px 0 2px hsla(31, 64%, 65%, 0.85);
 }
 
 .network-graph-bar.xhr {
@@ -461,9 +433,6 @@
 
 .network-graph-bar.cached.xhr {
     background: hsl(53, 100%, 86%);
-    box-shadow: inset 0 1px 1px 0px rgba(255, 255, 255, 0.8),
-                inset 0 0 0 2px hsl(53, 72%, 61%),
-                inset 0 1px 0 2px hsla(54, 59%, 65%, 0.85);
 }
 
 .network-graph-bar.websocket {
@@ -473,9 +442,6 @@
 
 .network-graph-bar.cached.websocket {
     background: hsl(0, 0%, 90%);
-    box-shadow: inset 0 1px 1px 0px rgba(255, 255, 255, 0.8),
-                inset 0 0 0 2px hsl(0, 0%, 73%),
-                inset 0 1px 0 2px hsla(0, 0%, 76%, 0.85);
 }
 
 .network-dim-cell {

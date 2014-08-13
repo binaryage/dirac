@@ -84,8 +84,6 @@
     left: 0;
     bottom: 0;
     margin: 6px;
-    font-weight: bold;
-    font-size: 11px;
     color: rgb(30%, 30%, 30%);
 }
 
@@ -93,40 +91,60 @@
     border-spacing: 21px 0;
 }
 
-.resource-timing-view .network-timing-bar {
-    opacity: 1;
+/* Network timing is shared between popover and network item view pane */
+
+.network-timing-table td {
+    padding: 2px 0;
 }
 
-.resource-timing-view .network-timing-bar.blocking,
-.resource-timing-view .network-timing-bar.proxy {
-    background-image: linear-gradient(to bottom, rgb(242, 242, 194), rgb(204, 204, 102));
-    border-left: 1px solid rgb(204, 204, 102);
+.network-timing-table td.caution {
+    font-weight: bold;
+    color: rgb(255, 128, 0);
+    padding: 2px 0;
 }
 
-.resource-timing-view .network-timing-bar.dns {
-    background-image: linear-gradient(to bottom, rgb(194, 242, 194), rgb(102, 204, 102));
-    border-left: 1px solid rgb(102, 204, 102);
+.network-timing-row {
+    position: relative;
+    height: 16px;
 }
 
-.resource-timing-view .network-timing-bar.connecting,
-.resource-timing-view .network-timing-bar.ssl {
-    background-image: linear-gradient(to bottom, rgb(194, 242, 242), rgb(102, 204, 204));
-    border-left: 1px solid rgb(102, 204, 204);
+.network-timing-bar {
+    position: absolute;
+    min-width: 1px;
+    top: 0;
+    bottom: 0;
 }
 
-.resource-timing-view .network-timing-bar.sending {
-    background-image: linear-gradient(to bottom, rgb(194, 194, 242), rgb(102, 102, 204));
-    border-left: 1px solid rgb(102, 102, 204);
+.network-timing-bar-title {
+    position: absolute;
+    color: #222;
+    top: 1px;
 }
 
-.resource-timing-view .network-timing-bar.waiting {
-    background-image: linear-gradient(to bottom, rgb(242, 194, 242), rgb(204, 102, 204));
-    border-left: 1px solid rgb(204, 102, 204);
+.network-timing-bar.blocking,
+.network-timing-bar.proxy {
+    background-color: rgb(205, 205, 205);
 }
 
-.resource-timing-view .network-timing-bar.receiving {
-    background-image: linear-gradient(to bottom, rgb(242, 194, 194), rgb(204, 102, 102));
-    border-left: 1px solid rgb(204, 102, 102);
+.network-timing-bar.dns {
+    background-color: rgb(31, 124, 131);
+}
+
+.network-timing-bar.connecting,
+.network-timing-bar.ssl {
+    background-color: rgb(229, 130, 38);
+}
+
+.network-timing-bar.sending {
+    background-color: rgb(95, 221, 95);
+}
+
+.network-timing-bar.waiting {
+    background-color: rgb(95, 221, 95);
+}
+
+.network-timing-bar.receiving {
+    background-color: rgb(65, 137, 215);
 }
 
 .resource-timing-view.visible {

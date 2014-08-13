@@ -180,38 +180,6 @@ iframe.view {
     margin-right: -2px;
 }
 
-/* Network timing is shared between popover and network item view pane */
-
-.network-timing-table td {
-    padding: 0;
-}
-
-.network-timing-table td.caution {
-    font-weight: bold;
-    color: rgb(255, 128, 0);
-    padding: 2px 0;
-}
-
-.network-timing-row {
-    position: relative;
-    height: 16px;
-}
-
-.network-timing-bar {
-    position: absolute;
-    background-color: red;
-    border-left: 1px solid red;
-    opacity: 0.4;
-    top: 0;
-    bottom: 0;
-}
-
-.network-timing-bar-title {
-    position: absolute;
-    color: #222;
-    top: 1px;
-}
-
 .highlighted-search-result {
     border-radius: 1px;
     padding: 1px;
