@@ -188,6 +188,7 @@
             'front_end/toolbox/MediaQueryInspector.js',
             'front_end/toolbox/OverridesUI.js',
             'front_end/toolbox/ResponsiveDesignView.js',
+            'front_end/toolbox/ToolboxDelegate.js',
         ],
         'devtools_ui_js_files': [
             'front_end/ui/ActionRegistry.js',
@@ -238,6 +239,7 @@
             'front_end/main/RenderingOptions.js',
             'front_end/main/ScreencastApp.js',
             'front_end/main/SimpleApp.js',
+            'front_end/main/Toolbox.js',
         ],
 
         'devtools_module_json_files': [

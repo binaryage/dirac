@@ -184,7 +184,8 @@
             "toolbox/InspectedPagePlaceholder.js",
             "toolbox/MediaQueryInspector.js",
             "toolbox/OverridesUI.js",
-            "toolbox/ResponsiveDesignView.js"
+            "toolbox/ResponsiveDesignView.js",
+            "toolbox/ToolboxDelegate.js"
         ]
     },
     {
@@ -466,11 +467,12 @@
             "main/AdvancedApp.js",
             "main/App.js",
             "main/HelpScreenUntilReload.js",
+            "main/Main.js",
             "main/OverridesView.js",
             "main/RenderingOptions.js",
             "main/ScreencastApp.js",
             "main/SimpleApp.js",
-            "main/Main.js"
+            "main/Toolbox.js"
         ]
     },
     {
