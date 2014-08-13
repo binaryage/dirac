@@ -62,6 +62,10 @@ runtime_module_name = "_runtime"
 module_initializer_name = "_module.js"
 
 
+def log_error(message):
+    print "ERROR: " + message
+
+
 def error_excepthook(exctype, value, traceback):
     print "ERROR:"
     sys.__excepthook__(exctype, value, traceback)
@@ -96,9 +100,6 @@ def run_in_shell(command_line):
 def hasErrors(output):
     return re.search(error_warning_regex, output) != None
 
-
-def log_error(message):
-    print "ERROR: " + message
 
 def verify_importScript_usage():
     errors_found = False
