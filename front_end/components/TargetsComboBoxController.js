@@ -16,8 +16,6 @@ WebInspector.TargetsComboBoxController = function(selectElement, elementToHide)
     this._elementToHide = elementToHide;
     /** @type {!Map.<!WebInspector.Target, !Element>} */
     this._targetToOption = new Map();
-    if (!WebInspector.experimentsSettings.workersInMainWindow.isEnabled())
-        return;
 
     WebInspector.context.addFlavorChangeListener(WebInspector.Target, this._targetChangedExternally, this);
     WebInspector.targetManager.observeTargets(this);

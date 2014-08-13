@@ -302,7 +302,6 @@ WebInspector.ExperimentsSettings = function(experimentsEnabled)
     this.paintProfiler = this._createExperiment("paintProfiler", "Paint profiler");
     this.timelinePowerProfiler = this._createExperiment("timelinePowerProfiler", "Timeline power profiler");
     this.timelineJSCPUProfile = this._createExperiment("timelineJSCPUProfile", "Timeline with JS sampling");
-    this.workersInMainWindow = this._createExperiment("workersInMainWindow", "Workers in main window", true);
 
     this._cleanUpSetting();
 }

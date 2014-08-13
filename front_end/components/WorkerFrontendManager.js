@@ -53,7 +53,7 @@ WebInspector.WorkerFrontendManager.prototype = {
     {
         var data = /** @type {{workerId: number, url: string, inspectorConnected: boolean}} */ (event.data);
 
-        if (data.inspectorConnected && !WebInspector.experimentsSettings.workersInMainWindow.isEnabled())
+        if (data.inspectorConnected)
             this._openInspectorWindow(data.workerId, true);
     },
 

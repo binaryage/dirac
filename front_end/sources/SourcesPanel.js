@@ -86,9 +86,6 @@ WebInspector.SourcesPanel = function(workspaceForTest)
     this.sidebarPanes.xhrBreakpoints = new WebInspector.XHRBreakpointsSidebarPane();
     this.sidebarPanes.eventListenerBreakpoints = new WebInspector.EventListenerBreakpointsSidebarPane();
 
-    if (!WebInspector.isWorkerFrontend() && !WebInspector.experimentsSettings.workersInMainWindow.isEnabled())
-        this.sidebarPanes.workerList = new WebInspector.WorkersSidebarPane();
-
     this._extensionSidebarPanes = [];
     this._installDebuggerSidebarController();
 

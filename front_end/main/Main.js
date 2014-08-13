@@ -326,14 +326,11 @@ WebInspector.Main.prototype = {
 
         this._registerShortcuts();
 
-        if (WebInspector.experimentsSettings.workersInMainWindow.isEnabled())
-            WebInspector.workerTargetManager = new WebInspector.WorkerTargetManager(mainTarget, WebInspector.targetManager);
+        WebInspector.workerTargetManager = new WebInspector.WorkerTargetManager(mainTarget, WebInspector.targetManager);
 
         InspectorBackend.registerInspectorDispatcher(this);
 
-        if (!WebInspector.isWorkerFrontend())
-            WebInspector.workerFrontendManager = new WebInspector.WorkerFrontendManager();
-        else
+        if (WebInspector.isWorkerFrontend())
             mainTarget.workerManager.addEventListener(WebInspector.WorkerManager.Events.WorkerDisconnected, onWorkerDisconnected);
 
         function onWorkerDisconnected()
