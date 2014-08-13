@@ -1138,6 +1138,7 @@ WebInspector.StylePropertiesSection = function(parentPane, styleRule, editable, 
 
     if (this.editable && this.rule) {
         var newRuleButton = closeBrace.createChild("div", "sidebar-pane-button-new-rule");
+        newRuleButton.title = WebInspector.UIString("Insert Style Rule");
         newRuleButton.addEventListener("click", this._onNewRuleClick.bind(this), false);
     }
 
@@ -1889,7 +1890,8 @@ WebInspector.ComputedStylePropertiesSection.prototype = {
  */
 WebInspector.BlankStylePropertiesSection = function(stylesPane, defaultSelectorText, styleSheetId, ruleLocation, insertAfterRule)
 {
-    WebInspector.StylePropertiesSection.call(this, stylesPane, {selectorText: defaultSelectorText, rule: {isViaInspector: true}}, true, false);
+    var styleSheetHeader = WebInspector.cssModel.styleSheetHeaderForId(styleSheetId);
+    WebInspector.StylePropertiesSection.call(this, stylesPane, {selectorText: defaultSelectorText, rule: {isViaInspector: styleSheetHeader.isViaInspector()}}, true, false);
     this._ruleLocation = ruleLocation;
     this._styleSheetId = styleSheetId;
     if (insertAfterRule)

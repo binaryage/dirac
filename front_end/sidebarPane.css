@@ -198,9 +198,11 @@
 .sidebar-pane-button-new-rule {
     background-image: url(Images/paneAddButtons.png);
     background-position: 0 0;
+    position: absolute;
     height: 16px;
     width: 22px;
-    float: right;
+    right: 0px;
+    bottom: 1px;
     visibility: hidden;
 }
 

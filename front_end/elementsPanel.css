@@ -191,6 +191,7 @@
     background-clip: padding;
     -webkit-user-select: text;
     border-bottom: 1px solid rgb(191, 191, 191);
+    position: relative;
 }
 
 .styles-pane .sidebar-separator {
