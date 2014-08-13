@@ -51,17 +51,6 @@
     display: block;
 }
 
-.network.panel .sidebar {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    width: auto;
-    border: none;
-    background: inherit;
-}
-
 .network.panel .data-grid th.sort-descending,
 .network.panel .data-grid th.sort-ascending {
     background: white;
