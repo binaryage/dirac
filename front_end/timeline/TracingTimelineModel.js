@@ -212,7 +212,8 @@ WebInspector.TracingTimelineModel.prototype = {
     _didStopRecordingTraceEvents: function()
     {
         this._stopCallbackBarrier = null;
-        var events = this._tracingModel.devtoolsMetadataEvents();
+        var events = this._tracingModel.devtoolsPageMetadataEvents();
+        var workerMetadataEvents = this._tracingModel.devtoolsWorkerMetadataEvents();
         events.sort(WebInspector.TracingModel.Event.compareStartTime);
 
         this._resetProcessingState();
@@ -225,7 +226,13 @@ WebInspector.TracingTimelineModel.prototype = {
             if (i + 1 < length)
                 endTime = events[i + 1].startTime;
 
-            process.sortedThreads().forEach(this._processThreadEvents.bind(this, startTime, endTime, event.thread));
+            var threads = process.sortedThreads();
+            for (var j = 0; j < threads.length; j++) {
+                var thread = threads[j];
+                if (thread.name() === "WebCore: Worker" && !workerMetadataEvents.some(function(e) { return e.thread === thread; }))
+                    continue;
+                this._processThreadEvents(startTime, endTime, event.thread, thread);
+            }
         }
         this._resetProcessingState();
 

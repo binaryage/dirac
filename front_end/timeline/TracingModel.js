@@ -81,9 +81,17 @@ WebInspector.TracingModel.prototype = {
     /**
      * @return {!Array.<!WebInspector.TracingModel.Event>}
      */
-    devtoolsMetadataEvents: function()
+    devtoolsPageMetadataEvents: function()
     {
-        return this._devtoolsMetadataEvents;
+        return this._devtoolsPageMetadataEvents;
+    },
+
+    /**
+     * @return {!Array.<!WebInspector.TracingModel.Event>}
+     */
+    devtoolsWorkerMetadataEvents: function()
+    {
+        return this._devtoolsWorkerMetadataEvents;
     },
 
     /**
@@ -175,7 +183,8 @@ WebInspector.TracingModel.prototype = {
         this._minimumRecordTime = 0;
         this._maximumRecordTime = 0;
         this._sessionId = null;
-        this._devtoolsMetadataEvents = [];
+        this._devtoolsPageMetadataEvents = [];
+        this._devtoolsWorkerMetadataEvents = [];
         this._rawEvents = [];
     },
 
@@ -212,7 +221,11 @@ WebInspector.TracingModel.prototype = {
             if (event && event.name === WebInspector.TracingModel.DevToolsMetadataEvent.TracingStartedInPage &&
                 event.category === WebInspector.TracingModel.DevToolsMetadataEventCategory &&
                 event.args["sessionId"] === this._sessionId)
-                this._devtoolsMetadataEvents.push(event);
+                this._devtoolsPageMetadataEvents.push(event);
+            if (event && event.name === WebInspector.TracingModel.DevToolsMetadataEvent.TracingStartedInWorker &&
+                event.category === WebInspector.TracingModel.DevToolsMetadataEventCategory &&
+                event.args["sessionId"] === this._sessionId)
+                this._devtoolsWorkerMetadataEvents.push(event);
             return;
         }
         switch (payload.name) {
