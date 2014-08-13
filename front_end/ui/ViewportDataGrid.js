@@ -15,12 +15,22 @@ WebInspector.ViewportDataGrid = function(columnsArray, editCallback, deleteCallb
 {
     WebInspector.DataGrid.call(this, columnsArray, editCallback, deleteCallback, refreshCallback, contextMenuCallback);
     this._scrollContainer.addEventListener("scroll", this._onScroll.bind(this), true);
+    this._scrollContainer.addEventListener("mousewheel", this._onWheel.bind(this), true);
     /** @type {!Array.<!WebInspector.ViewportDataGridNode>} */
     this._visibleNodes = [];
     /** @type {boolean} */
     this._updateScheduled = false;
     /** @type {boolean} */
     this._inline = false;
+
+    // Wheel target shouldn't be removed from DOM to preserve native kinetic scrolling.
+    /** @type {?Node} */
+    this._wheelTarget = null;
+
+    // Element that was hidden earlier, but hasn't been removed yet.
+    /** @type {?Node} */
+    this._hiddenWheelTarget = null;
+
     this.setRootNode(new WebInspector.ViewportDataGridNode());
 }
 
@@ -31,6 +41,14 @@ WebInspector.ViewportDataGrid.prototype = {
     onResize: function()
     {
         this.scheduleUpdate();
+    },
+
+    /**
+     * @param {?Event} event
+     */
+    _onWheel: function(event)
+    {
+        this._wheelTarget = event.target ? event.target.enclosingNodeOrSelfWithNodeName("tr") : null;
     },
 
     /**
@@ -100,15 +118,26 @@ WebInspector.ViewportDataGrid.prototype = {
         var visibleNodes = viewportState.visibleNodes;
         var visibleNodesSet = Set.fromArray(visibleNodes);
 
+        if (this._hiddenWheelTarget && this._hiddenWheelTarget !== this._wheelTarget) {
+            this._hiddenWheelTarget.remove();
+            this._hiddenWheelTarget = null;
+        }
+
         for (var i = 0; i < this._visibleNodes.length; ++i) {
             var oldNode = this._visibleNodes[i];
             if (!visibleNodesSet.contains(oldNode)) {
-                oldNode.element().remove();
+                var element = oldNode.element();
+                if (element === this._wheelTarget)
+                    this._hiddenWheelTarget = oldNode.abandonElement();
+                else
+                    element.remove();
                 oldNode.wasDetached();
             }
         }
 
         var previousElement = this._topFillerRow;
+        if (previousElement.nextSibling === this._hiddenWheelTarget)
+            previousElement = this._hiddenWheelTarget;
         var tBody = this.dataTableBody;
         for (var i = 0; i < visibleNodes.length; ++i) {
             var element = visibleNodes[i].element();
@@ -217,6 +246,18 @@ WebInspector.ViewportDataGridNode.prototype = {
             this._element = null;
         }
     },
+
+    /**
+     * @return {?Element}
+     */
+     abandonElement: function()
+     {
+        var result = this._element;
+        if (result)
+            result.style.display = "none";
+        this._element = null;
+        return result;
+     },
 
     __proto__: WebInspector.DataGridNode.prototype
 }
