@@ -1198,7 +1198,8 @@ WebInspector.ElementsTreeElement.prototype = {
 
     onpopulate: function()
     {
-        if (this.children.length || this._showInlineText() || this._elementCloseTag)
+        this.populated = true;
+        if (this.children.length || !this.hasChildren)
             return;
 
         this.updateChildren();
@@ -1209,8 +1210,9 @@ WebInspector.ElementsTreeElement.prototype = {
      */
     updateChildren: function(fullRefresh)
     {
-        if (this._elementCloseTag)
+        if (!this.hasChildren)
             return;
+        console.assert(!this._elementCloseTag);
         this._node.getChildNodes(this._updateChildren.bind(this, fullRefresh));
     },
 
@@ -1324,7 +1326,7 @@ WebInspector.ElementsTreeElement.prototype = {
         this._adjustCollapsedRange();
 
         var lastChild = this.children[this.children.length - 1];
-        if (this._node.nodeType() == Node.ELEMENT_NODE && (!lastChild || !lastChild._elementCloseTag))
+        if (this._node.nodeType() === Node.ELEMENT_NODE && this.hasChildren)
             this.insertChildElement(this._node, this.children.length, true);
 
         // We want to restore the original selection and tree scroll position after a full refresh, if possible.
@@ -2348,6 +2350,7 @@ WebInspector.ElementsTreeElement.prototype = {
                 // just show that text and the closing tag inline rather than
                 // create a subtree for them
                 if (showInlineText) {
+                    console.assert(!this.hasChildren);
                     var textNodeElement = info.titleDOM.createChild("span", "webkit-html-text-node");
                     var result = this._convertWhitespaceToEntities(node.firstChild.nodeValue());
                     textNodeElement.textContent = result.text;
@@ -2663,13 +2666,25 @@ WebInspector.ElementsTreeUpdater.prototype = {
     },
 
     /**
-     * @param {!WebInspector.DOMNode} parentNode
+     * @param {?WebInspector.DOMNode} parentNode
      */
     _parentNodeModified: function(parentNode)
     {
+        if (!parentNode)
+            return;
+        this._recentlyModifiedParentNodes.add(parentNode);
+
+        var treeElement = this._treeOutline.findTreeElement(parentNode);
+        if (treeElement) {
+            var oldHasChildren = treeElement.hasChildren;
+            var oldShowInlineText = treeElement._showInlineText();
+            treeElement._updateHasChildren();
+            if (treeElement.hasChildren !== oldHasChildren || oldShowInlineText || treeElement._showInlineText())
+                this._nodeModified(parentNode);
+        }
+
         if (this._treeOutline._visible)
             this._updateModifiedNodesSoon();
-        this._recentlyModifiedParentNodes.add(parentNode);
     },
 
     /**
@@ -2677,9 +2692,9 @@ WebInspector.ElementsTreeUpdater.prototype = {
      */
     _nodeModified: function(node)
     {
+        this._recentlyModifiedNodes.add(node);
         if (this._treeOutline._visible)
             this._updateModifiedNodesSoon();
-        this._recentlyModifiedNodes.add(node);
     },
 
     /**
@@ -2712,6 +2727,7 @@ WebInspector.ElementsTreeUpdater.prototype = {
     _characterDataModified: function(event)
     {
         var node = /** @type {!WebInspector.DOMNode} */ (event.data);
+        this._parentNodeModified(node.parentNode);
         this._nodeModified(node);
     },
 
@@ -2721,8 +2737,7 @@ WebInspector.ElementsTreeUpdater.prototype = {
     _nodeInserted: function(event)
     {
         var node = /** @type {!WebInspector.DOMNode} */ (event.data);
-        var parentNode = /** @type {!WebInspector.DOMNode} */ (node.parentNode);
-        this._parentNodeModified(parentNode);
+        this._parentNodeModified(node.parentNode);
     },
 
     /**
@@ -2742,13 +2757,7 @@ WebInspector.ElementsTreeUpdater.prototype = {
     _childNodeCountUpdated: function(event)
     {
         var node = /** @type {!WebInspector.DOMNode} */ (event.data);
-        var treeElement = this._treeOutline.findTreeElement(node);
-        if (treeElement) {
-            var oldHasChildren = treeElement.hasChildren;
-            treeElement._updateHasChildren();
-            if (treeElement.hasChildren !== oldHasChildren)
-                treeElement.updateTitle();
-        }
+        this._parentNodeModified(node);
     },
 
     _updateModifiedNodesSoon: function()
@@ -2787,7 +2796,7 @@ WebInspector.ElementsTreeUpdater.prototype = {
             var parentNodes = this._recentlyModifiedParentNodes.values();
             for (var i = 0, size = parentNodes.length; i < size; ++i) {
                 var parentNodeItem = this._treeOutline.findTreeElement(parentNodes[i]);
-                if (parentNodeItem)
+                if (parentNodeItem && parentNodeItem.populated)
                     parentNodeItem.updateChildren();
             }
         }
