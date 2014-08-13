@@ -164,53 +164,53 @@
     content: url(Images/resourcePlainIconSmall.png);
 }
 
-.network-log-grid.data-grid .network-type-script .icon {
+.network-log-grid.data-grid .icon.script {
     content: url(Images/resourceJSIcon.png);
 }
 
-.network-log-grid.data-grid.small .network-type-script .icon {
+.network-log-grid.data-grid.small .icon.script {
     content: url(Images/resourceDocumentIconSmall.png);
 }
 
-.network-log-grid.data-grid .network-type-document .icon {
+.network-log-grid.data-grid .icon.document {
     content: url(Images/resourceDocumentIcon.png);
 }
 
-.network-log-grid.data-grid.small .network-type-document .icon {
+.network-log-grid.data-grid.small .icon.document {
     content: url(Images/resourceDocumentIconSmall.png);
 }
 
-.network-log-grid.data-grid .network-type-stylesheet .icon {
+.network-log-grid.data-grid .icon.stylesheet {
     content: url(Images/resourceCSSIcon.png);
 }
 
-.network-log-grid.data-grid.small .network-type-stylesheet .icon {
+.network-log-grid.data-grid.small .icon.stylesheet {
     content: url(Images/resourceDocumentIconSmall.png);
 }
 
-.network-log-grid.data-grid .network-type-media .icon {
+.network-log-grid.data-grid .icon.media {
     content: url(Images/resourcePlainIcon.png); /* FIXME: media icon */
 }
 
-.network-log-grid.data-grid.small .network-type-media .icon {
+.network-log-grid.data-grid.small .icon.media {
     content: url(Images/resourcePlainIconSmall.png); /* FIXME: media icon */
 }
-.network-log-grid.data-grid .network-type-texttrack .icon {
+.network-log-grid.data-grid .icon.texttrack {
     content: url(Images/resourcePlainIcon.png); /* FIXME: vtt icon */
 }
 
-.network-log-grid.data-grid.small .network-type-texttrack .icon {
+.network-log-grid.data-grid.small .icon.texttrack {
     content: url(Images/resourcePlainIconSmall.png); /* FIXME: vtt icon */
 }
 
-.network-log-grid.data-grid .network-type-image .icon {
+.network-log-grid.data-grid .icon.image {
     position: relative;
     background-image: url(Images/resourcePlainIcon.png);
     background-repeat: no-repeat;
     content: "";
 }
 
-.network-log-grid.data-grid.small .network-type-image .icon {
+.network-log-grid.data-grid.small .icon.image {
     background-image: url(Images/resourcePlainIconSmall.png);
     content: "";
 }
@@ -370,108 +370,108 @@
                 inset 0 1px 0 2px hsla(0, 0%, 76%, 0.85);
 }
 
-.network-type-document .network-graph-bar {
+.network-graph-bar.document {
     border-color: hsl(215, 49%, 52%);
     background: linear-gradient(0deg, hsl(215, 72%, 61%), hsl(215, 100%, 69%));
 }
 
-.network-type-document.resource-cached .network-graph-bar {
+.network-graph-bar.cached.document {
     background: hsl(215, 99%, 86%);
     box-shadow: inset 0 1px 1px 0px rgba(255, 255, 255, 0.8),
                 inset 0 0 0 2px hsl(215, 71%, 61%),
                 inset 0 1px 0 2px hsla(215, 58%, 65%, 0.85);
 }
 
-.network-type-stylesheet .network-graph-bar {
+.network-graph-bar.stylesheet {
     border-color: hsl(99, 34%, 52%);
     background: linear-gradient(0deg, hsl(100, 50%, 61%), hsl(90, 50%, 64%));
 }
 
-.network-type-stylesheet.resource-cached .network-graph-bar {
+.network-graph-bar.cached.stylesheet {
     background: hsl(99, 100%, 86%);
     box-shadow: inset 0 1px 1px 0px rgba(255, 255, 255, 0.8),
                 inset 0 0 0 2px hsl(99, 72%, 61%),
                 inset 0 1px 0 2px hsla(99, 59%, 65%, 0.85);
 }
 
-.network-type-image .network-graph-bar {
+.network-graph-bar.image {
     border-color: hsl(272, 31%, 52%);
     background: linear-gradient(0deg, hsl(272, 46%, 61%), hsl(272, 64%, 69%));
 }
 
-.network-type-image.resource-cached .network-graph-bar {
+.network-graph-bar.cached.image {
     background: hsl(272, 65%, 86%);
     box-shadow: inset 0 1px 1px 0px rgba(255, 255, 255, 0.8),
                 inset 0 0 0 2px hsl(272, 47%, 61%),
                 inset 0 1px 0 2px hsla(273, 38%, 65%, 0.85);
 }
 
-.network-type-media .network-graph-bar {
+.network-graph-bar.media {
     border-color: hsl(272, 31%, 52%);
     background: linear-gradient(0deg, hsl(272, 46%, 61%), hsl(272, 64%, 69%));
 }
 
-.network-type-media.resource-cached .network-graph-bar {
+.network-graph-bar.cached.media {
     background: hsl(272, 65%, 86%);
     box-shadow: inset 0 1px 1px 0px rgba(255, 255, 255, 0.8),
                 inset 0 0 0 2px hsl(272, 47%, 61%),
                 inset 0 1px 0 2px hsla(273, 38%, 65%, 0.85);
 }
 
-.network-type-font .network-graph-bar {
+.network-graph-bar.font {
     border-color: hsl(8, 49%, 52%);
     background: linear-gradient(0deg, hsl(8, 72%, 61%), hsl(8, 100%, 69%));
 }
 
-.network-type-font.resource-cached .network-graph-bar {
+.network-graph-bar.cached.font {
     background: hsl(8, 100%, 86%);
     box-shadow: inset 0 1px 1px 0px rgba(255, 255, 255, 0.8),
                 inset 0 0 0 2px hsl(8, 72%, 61%),
                 inset 0 1px 0 2px hsla(8, 59%, 65%, 0.85);
 }
 
-.network-type-texttrack .network-graph-bar {
+.network-graph-bar.texttrack {
     border-color: hsl(8, 49%, 52%);
     background: linear-gradient(0deg, hsl(8, 72%, 61%), hsl(8, 100%, 69%));
 }
 
-.network-type-texttrack.resource-cached .network-graph-bar {
+.network-graph-bar.cached.texttrack {
     background: hsl(8, 100%, 86%);
     box-shadow: inset 0 1px 1px 0px rgba(255, 255, 255, 0.8),
                 inset 0 0 0 2px hsl(8, 72%, 61%),
                 inset 0 1px 0 2px hsla(8, 59%, 65%, 0.85);
 }
 
-.network-type-script .network-graph-bar {
+.network-graph-bar.script {
     border-color: hsl(31, 49%, 52%);
     background: linear-gradient(0deg, hsl(31, 72%, 61%), hsl(31, 100%, 69%));
 }
 
-.network-type-script.resource-cached .network-graph-bar {
+.network-graph-bar.cached.script {
     background: hsl(31, 100%, 86%);
     box-shadow: inset 0 1px 1px 0px rgba(255, 255, 255, 0.8),
                 inset 0 0 0 2px hsl(31, 78%, 61%),
                 inset 0 1px 0 2px hsla(31, 64%, 65%, 0.85);
 }
 
-.network-type-xhr .network-graph-bar {
+.network-graph-bar.xhr {
     border-color: hsl(53, 49%, 52%);
     background: linear-gradient(0deg, hsl(53, 72%, 61%), hsl(53, 100%, 69%));
 }
 
-.network-type-xhr.resource-cached .network-graph-bar {
+.network-graph-bar.cached.xhr {
     background: hsl(53, 100%, 86%);
     box-shadow: inset 0 1px 1px 0px rgba(255, 255, 255, 0.8),
                 inset 0 0 0 2px hsl(53, 72%, 61%),
                 inset 0 1px 0 2px hsla(54, 59%, 65%, 0.85);
 }
 
-.network-type-websocket .network-graph-bar {
+.network-graph-bar.websocket {
     border-color: hsl(0, 0%, 65%);
     background: linear-gradient(0deg, hsl(0, 0%, 73%), hsl(0, 0%, 78%));
 }
 
-.network-type-websocket.resource-cached .network-graph-bar {
+.network-graph-bar.cached.websocket {
     background: hsl(0, 0%, 90%);
     box-shadow: inset 0 1px 1px 0px rgba(255, 255, 255, 0.8),
                 inset 0 0 0 2px hsl(0, 0%, 73%),

@@ -156,13 +156,6 @@ Node.prototype.rangeBoundaryForOffset = function(offset)
     return { container: node, offset: offset };
 }
 
-Element.prototype.removeMatchingStyleClasses = function(classNameRegex)
-{
-    var regex = new RegExp("(^|\\s+)" + classNameRegex + "($|\\s+)");
-    if (regex.test(this.className))
-        this.className = this.className.replace(regex, " ");
-}
-
 /**
  * @param {number|undefined} x
  * @param {number|undefined} y

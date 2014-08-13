@@ -2519,15 +2519,7 @@ WebInspector.NetworkDataGridNode.prototype = {
         this._nameCell = null;
         this._timelineCell = null;
 
-        var element = this._element;
-        element.classList.toggle("network-error-row", this._isFailed());
-        element.classList.toggle("resource-cached", this._request.cached);
-        var typeClassName = "network-type-" + this._request.type.name();
-        if (!element.classList.contains(typeClassName)) {
-            element.removeMatchingStyleClasses("network-type-\\w+");
-            element.classList.add(typeClassName);
-        }
-
+        this._element.classList.toggle("network-error-row", this._isFailed());
         WebInspector.SortableDataGridNode.prototype.createCells.call(this);
 
         this.refreshGraph(this._parentView.calculator());
@@ -2630,28 +2622,24 @@ WebInspector.NetworkDataGridNode.prototype = {
 
         cell.className = "network-graph-side";
 
-        this._barAreaElement = document.createElement("div");
-        //    this._barAreaElement.className = "network-graph-bar-area hidden";
-        this._barAreaElement.className = "network-graph-bar-area";
+        this._barAreaElement = cell.createChild("div", "network-graph-bar-area");
         this._barAreaElement.request = this._request;
-        cell.appendChild(this._barAreaElement);
 
-        this._barLeftElement = document.createElement("div");
-        this._barLeftElement.className = "network-graph-bar waiting";
-        this._barAreaElement.appendChild(this._barLeftElement);
+        var type = this._request.type.name();
+        var cached = this._request.cached;
 
-        this._barRightElement = document.createElement("div");
-        this._barRightElement.className = "network-graph-bar";
-        this._barAreaElement.appendChild(this._barRightElement);
+        this._barLeftElement = this._barAreaElement.createChild("div", "network-graph-bar");
+        this._barLeftElement.classList.add(type, "waiting");
+        this._barLeftElement.classList.toggle("cached", cached);
 
+        this._barRightElement = this._barAreaElement.createChild("div", "network-graph-bar");
+        this._barRightElement.classList.add(type);
+        this._barRightElement.classList.toggle("cached", cached);
 
-        this._labelLeftElement = document.createElement("div");
-        this._labelLeftElement.className = "network-graph-label waiting";
-        this._barAreaElement.appendChild(this._labelLeftElement);
+        this._labelLeftElement = this._barAreaElement.createChild("div", "network-graph-label");
+        this._labelLeftElement.classList.add("waiting");
 
-        this._labelRightElement = document.createElement("div");
-        this._labelRightElement.className = "network-graph-label";
-        this._barAreaElement.appendChild(this._labelRightElement);
+        this._labelRightElement = this._barAreaElement.createChild("div", "network-graph-label");
 
         cell.addEventListener("mouseover", this._refreshLabelPositions.bind(this), false);
     },
@@ -2672,19 +2660,18 @@ WebInspector.NetworkDataGridNode.prototype = {
         this._nameCell = cell;
         cell.addEventListener("click", this._onClick.bind(this), false);
         cell.addEventListener("dblclick", this._openInNewTab.bind(this), false);
-
+        var iconElement;
         if (this._request.type === WebInspector.resourceTypes.Image) {
-            var previewImage = document.createElement("img");
-            previewImage.className = "image-network-icon-preview";
+            var previewImage = document.createElementWithClass("img", "image-network-icon-preview");
             this._request.populateImageSource(previewImage);
 
-            var iconElement = document.createElement("div");
-            iconElement.className = "icon";
+            iconElement = document.createElementWithClass("div", "icon");
             iconElement.appendChild(previewImage);
         } else {
-            var iconElement = document.createElement("img");
-            iconElement.className = "icon";
+            iconElement = document.createElementWithClass("img", "icon");
         }
+        iconElement.classList.add(this._request.type.name());
+
         cell.appendChild(iconElement);
         cell.appendChild(document.createTextNode(this._request.name()));
         this._appendSubtitle(cell, this._request.path());

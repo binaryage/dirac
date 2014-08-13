@@ -116,7 +116,7 @@ WebInspector.DataGrid = function(columnsArray, editCallback, deleteCallback, ref
         cell.appendChild(div);
 
         if (column.sort) {
-            cell.classList.add("sort-" + column.sort);
+            cell.classList.add(column.sort);
             this._sortColumnCell = cell;
         }
 
@@ -169,8 +169,8 @@ WebInspector.DataGrid.Events = {
 
 /** @enum {string} */
 WebInspector.DataGrid.Order = {
-    Ascending: "ascending",
-    Descending: "descending"
+    Ascending: "sort-ascending",
+    Descending: "sort-descending"
 }
 
 /** @enum {string} */
@@ -430,9 +430,9 @@ WebInspector.DataGrid.prototype = {
      */
     sortOrder: function()
     {
-        if (!this._sortColumnCell || this._sortColumnCell.classList.contains("sort-ascending"))
+        if (!this._sortColumnCell || this._sortColumnCell.classList.contains(WebInspector.DataGrid.Order.Ascending))
             return WebInspector.DataGrid.Order.Ascending;
-        if (this._sortColumnCell.classList.contains("sort-descending"))
+        if (this._sortColumnCell.classList.contains(WebInspector.DataGrid.Order.Descending))
             return WebInspector.DataGrid.Order.Descending;
         return null;
     },
@@ -442,7 +442,7 @@ WebInspector.DataGrid.prototype = {
      */
     isSortOrderAscending: function()
     {
-        return !this._sortColumnCell || this._sortColumnCell.classList.contains("sort-ascending");
+        return !this._sortColumnCell || this._sortColumnCell.classList.contains(WebInspector.DataGrid.Order.Ascending);
     },
 
     get headerTableBody()
@@ -875,10 +875,10 @@ WebInspector.DataGrid.prototype = {
             sortOrder = WebInspector.DataGrid.Order.Descending;
 
         if (this._sortColumnCell)
-            this._sortColumnCell.removeMatchingStyleClasses("sort-\\w+");
+            this._sortColumnCell.classList.remove(WebInspector.DataGrid.Order.Ascending, WebInspector.DataGrid.Order.Descending);
         this._sortColumnCell = cell;
 
-        cell.classList.add("sort-" + sortOrder);
+        cell.classList.add(sortOrder);
 
         this.dispatchEventToListeners(WebInspector.DataGrid.Events.SortingChanged);
     },
@@ -890,9 +890,9 @@ WebInspector.DataGrid.prototype = {
     markColumnAsSortedBy: function(columnIdentifier, sortOrder)
     {
         if (this._sortColumnCell)
-            this._sortColumnCell.removeMatchingStyleClasses("sort-\\w+");
+            this._sortColumnCell.classList.remove(WebInspector.DataGrid.Order.Ascending, WebInspector.DataGrid.Order.Descending);
         this._sortColumnCell = this._headerTableHeaders[columnIdentifier];
-        this._sortColumnCell.classList.add("sort-" + sortOrder);
+        this._sortColumnCell.classList.add(sortOrder);
     },
 
     /**
