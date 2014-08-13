@@ -120,7 +120,6 @@ WebInspector.ParsedURL.splitURL = function(url)
     return result;
 }
 
-
 /**
  * http://tools.ietf.org/html/rfc3986#section-5.2.4
  * @param {string} path

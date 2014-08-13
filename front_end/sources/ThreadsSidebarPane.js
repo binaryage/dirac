@@ -29,7 +29,7 @@ WebInspector.ThreadsSidebarPane.prototype = {
      */
     targetAdded: function(target)
     {
-        var placard = new WebInspector.Placard(WebInspector.displayNameForURL(target.name()), "");
+        var placard = new WebInspector.Placard(target.name(), "");
         placard.element.addEventListener("click", this._onPlacardClick.bind(this, placard), false);
         var currentTarget = WebInspector.context.flavor(WebInspector.Target);
         if (currentTarget === target)
@@ -76,7 +76,7 @@ WebInspector.ThreadsSidebarPane.prototype = {
     _updateDebuggerState: function(target)
     {
         var placard = this._targetsToPlacards.get(target);
-        placard.subtitle = target.debuggerModel.isPaused() ? WebInspector.UIString("Paused") : WebInspector.UIString("Running");
+        placard.subtitle = target.debuggerModel.isPaused() ? WebInspector.UIString("paused") : WebInspector.UIString("");
     },
 
     /**

@@ -38,7 +38,7 @@ WebInspector.WorkerTargetManager.prototype = {
          */
         function onConnectionReady(connection)
         {
-            this._targetManager.createTarget(data.url, connection, targetCreated)
+            this._targetManager.createTarget(WebInspector.UIString("Worker %s", data.url.asParsedURL().lastPathComponent), connection, targetCreated)
         }
 
         /**

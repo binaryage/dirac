@@ -1408,26 +1408,14 @@ iframe.panel.extension {
 
 .placard {
     position: relative;
-    border-top: 1px solid transparent;
     padding: 3px 8px 4px 18px;
     min-height: 18px;
     white-space: nowrap;
 }
 
-.placard:nth-of-type(2n) {
-    background-color: rgb(234, 243, 255);
-}
-
 .placard.selected {
-    border-top: 1px solid rgb(172, 172, 172);
-    background-image: linear-gradient(to bottom, rgb(182, 182, 182), rgb(162, 162, 162));
-    background-origin: padding-box;
+    background-color: rgb(212, 212, 212);
     background-clip: padding-box;
-}
-
-:focus .placard.selected {
-    border-top: 1px solid rgb(70, 103, 215);
-    background-image: linear-gradient(to bottom, rgb(92, 147, 213), rgb(56, 121, 217));
 }
 
 .placard .title {
@@ -1436,22 +1424,12 @@ iframe.panel.extension {
     white-space: normal;
 }
 
-.placard.selected .title {
-    color: white;
-    font-weight: bold;
-}
-
 .placard .subtitle {
     float: right;
-    font-size: 10px;
     margin-left: 5px;
     color: rgba(0, 0, 0, 0.7);
     text-overflow: ellipsis;
     overflow: hidden;
-}
-
-.placard.selected .subtitle {
-    color: rgba(255, 255, 255, 0.7);
 }
 
 .placard .subtitle a {

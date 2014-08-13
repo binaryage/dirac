@@ -404,7 +404,7 @@ WebInspector.CallStackSidebarPane.Placard.prototype = {
      */
     _update: function(uiLocation)
     {
-        this.subtitle = uiLocation.linkText().trimMiddle(100);
+        this.subtitle = uiLocation.linkText().trimMiddle(30);
     },
 
     __proto__: WebInspector.Placard.prototype
