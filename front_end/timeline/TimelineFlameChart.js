@@ -267,7 +267,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
             var numFrames = e.stackTrace.length;
             for (var j = 0; j < numFrames && j < stackTraceOpenEvents.length; ++j) {
                 var frame = e.stackTrace[numFrames - 1 - j];
-                if (!equalFrames(frame, stackTraceOpenEvents[j].args.data))
+                if (!equalFrames(frame, stackTraceOpenEvents[j].args["data"]))
                     break;
                 stackTraceOpenEvents[j].endTime = Math.max(stackTraceOpenEvents[j].endTime, eventEndTime(e));
                 stackTraceOpenEvents[j].duration = stackTraceOpenEvents[j].endTime - stackTraceOpenEvents[j].startTime;
@@ -364,7 +364,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
         if (!event)
             return this._entryIndexToFrame[entryIndex] ? "white" : "#555";
         if (event.name === WebInspector.TracingTimelineModel.RecordType.JSFrame)
-            return WebInspector.TimelineFlameChartDataProvider.jsFrameColorGenerator().colorForID(event.args.data["functionName"]);
+            return WebInspector.TimelineFlameChartDataProvider.jsFrameColorGenerator().colorForID(event.args["data"]["functionName"]);
         var style = WebInspector.TracingTimelineUIUtils.styleForTraceEvent(event.name);
         return style.category.fillColorStop1;
     },

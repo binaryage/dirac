@@ -441,45 +441,45 @@ WebInspector.TracingTimelineModel.prototype = {
         switch (event.name) {
         case recordTypes.CallStack:
             var lastMainThreadEvent = this.mainThreadEvents().peekLast();
-            if (lastMainThreadEvent && event.args.stack && event.args.stack.length)
-                lastMainThreadEvent.stackTrace = event.args.stack;
+            if (lastMainThreadEvent && event.args["stack"] && event.args["stack"].length)
+                lastMainThreadEvent.stackTrace = event.args["stack"];
             break;
 
         case recordTypes.ResourceSendRequest:
-            this._sendRequestEvents[event.args.data["requestId"]] = event;
-            event.imageURL = event.args.data["url"];
+            this._sendRequestEvents[event.args["data"]["requestId"]] = event;
+            event.imageURL = event.args["data"]["url"];
             break;
 
         case recordTypes.ResourceReceiveResponse:
         case recordTypes.ResourceReceivedData:
         case recordTypes.ResourceFinish:
-            event.initiator = this._sendRequestEvents[event.args.data["requestId"]];
+            event.initiator = this._sendRequestEvents[event.args["data"]["requestId"]];
             if (event.initiator)
                 event.imageURL = event.initiator.imageURL;
             break;
 
         case recordTypes.TimerInstall:
-            this._timerEvents[event.args.data["timerId"]] = event;
+            this._timerEvents[event.args["data"]["timerId"]] = event;
             break;
 
         case recordTypes.TimerFire:
-            event.initiator = this._timerEvents[event.args.data["timerId"]];
+            event.initiator = this._timerEvents[event.args["data"]["timerId"]];
             break;
 
         case recordTypes.RequestAnimationFrame:
-            this._requestAnimationFrameEvents[event.args.data["id"]] = event;
+            this._requestAnimationFrameEvents[event.args["data"]["id"]] = event;
             break;
 
         case recordTypes.FireAnimationFrame:
-            event.initiator = this._requestAnimationFrameEvents[event.args.data["id"]];
+            event.initiator = this._requestAnimationFrameEvents[event.args["data"]["id"]];
             break;
 
         case recordTypes.ScheduleStyleRecalculation:
-            this._lastScheduleStyleRecalculation[event.args.frame] = event;
+            this._lastScheduleStyleRecalculation[event.args["frame"]] = event;
             break;
 
         case recordTypes.RecalculateStyles:
-            event.initiator = this._lastScheduleStyleRecalculation[event.args.frame];
+            event.initiator = this._lastScheduleStyleRecalculation[event.args["frame"]];
             this._lastRecalculateStylesEvent = event;
             break;
 
@@ -487,7 +487,7 @@ WebInspector.TracingTimelineModel.prototype = {
             // Consider style recalculation as a reason for layout invalidation,
             // but only if we had no earlier layout invalidation records.
             var layoutInitator = event;
-            var frameId = event.args.frame;
+            var frameId = event.args["frame"];
             if (!this._layoutInvalidate[frameId] && this._lastRecalculateStylesEvent && this._lastRecalculateStylesEvent.endTime >  event.startTime)
                 layoutInitator = this._lastRecalculateStylesEvent.initiator;
             this._layoutInvalidate[frameId] = layoutInitator;
@@ -504,13 +504,13 @@ WebInspector.TracingTimelineModel.prototype = {
             break;
 
         case recordTypes.WebSocketCreate:
-            this._webSocketCreateEvents[event.args.data["identifier"]] = event;
+            this._webSocketCreateEvents[event.args["data"]["identifier"]] = event;
             break;
 
         case recordTypes.WebSocketSendHandshakeRequest:
         case recordTypes.WebSocketReceiveHandshakeResponse:
         case recordTypes.WebSocketDestroy:
-            event.initiator = this._webSocketCreateEvents[event.args.data["identifier"]];
+            event.initiator = this._webSocketCreateEvents[event.args["data"]["identifier"]];
             break;
 
         case recordTypes.EvaluateScript:
@@ -771,7 +771,7 @@ WebInspector.TracingTimelineModel.TraceEventRecord.prototype = {
      */
     data: function()
     {
-        return this._event.args.data;
+        return this._event.args["data"];
     },
 
     /**
@@ -795,7 +795,7 @@ WebInspector.TracingTimelineModel.TraceEventRecord.prototype = {
         case WebInspector.TracingTimelineModel.RecordType.Layout:
             return this._event.args["beginData"]["frameId"];
         default:
-            var data = this._event.args.data;
+            var data = this._event.args["data"];
             return (data && data["frame"]) || "";
         }
     },

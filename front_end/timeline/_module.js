@@ -23,7 +23,6 @@ importScript("TimelineUIUtilsImpl.js");
 importScript("TimelineView.js");
 importScript("TimelineLayersView.js");
 importScript("TimelinePaintProfilerView.js");
-importScript("TracingModel.js");
 importScript("TracingTimelineUIUtils.js");
 importScript("TransformController.js");
 importScript("PaintProfilerView.js");
