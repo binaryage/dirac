@@ -221,6 +221,7 @@ WebInspector.InspectorView.prototype = {
     {
         if (this._currentPanelLocked)
             return;
+        InspectorFrontendHost.bringToFront();
         if (this._currentPanel === x)
             return;
 

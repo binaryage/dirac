@@ -320,8 +320,6 @@ WebInspector.SourcesPanel.prototype = {
 
     _showEditor: function(forceShowInPanel)
     {
-        if (this._sourcesView.isShowing())
-            return;
         WebInspector.inspectorView.showPanel("sources");
     },
 
