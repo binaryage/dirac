@@ -393,6 +393,11 @@ WebInspector.TimelinePanel.prototype = {
         this._filtersContainer.appendChild(this._filterBar.filtersElement());
         this._filterBar.addEventListener(WebInspector.FilterBar.Events.FiltersToggled, this._onFiltersToggled, this);
         this._filterBar.setName("timelinePanel");
+        if (!WebInspector.experimentsSettings.timelineOnTraceEvents.isEnabled()) {
+            var targetsComboBox = new WebInspector.StatusBarComboBox(null);
+            panelStatusBarElement.appendChild(targetsComboBox.element);
+            new WebInspector.TargetsComboBoxController(targetsComboBox.selectElement(), targetsComboBox.element);
+        }
     },
 
     /**
