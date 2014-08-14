@@ -30,7 +30,7 @@
 
 /**
  * @constructor
- * @implements {WebInspector.ScriptSourceMapping}
+ * @implements {WebInspector.DebuggerSourceMapping}
  * @param {!WebInspector.DebuggerModel} debuggerModel
  * @param {!WebInspector.Workspace} workspace
  * @param {!WebInspector.NetworkWorkspaceBinding} networkWorkspaceBinding
@@ -60,7 +60,7 @@ WebInspector.CompilerScriptMapping = function(debuggerModel, workspace, networkW
 
 WebInspector.CompilerScriptMapping.prototype = {
     /**
-     * @param {!WebInspector.RawLocation} rawLocation
+     * @param {!WebInspector.DebuggerModel.Location} rawLocation
      * @return {?WebInspector.UILocation}
      */
     rawLocationToUILocation: function(rawLocation)

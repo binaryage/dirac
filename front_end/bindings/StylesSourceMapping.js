@@ -30,7 +30,7 @@
 
 /**
  * @constructor
- * @implements {WebInspector.SourceMapping}
+ * @implements {WebInspector.CSSSourceMapping}
  * @param {!WebInspector.CSSStyleModel} cssModel
  * @param {!WebInspector.Workspace} workspace
  */
@@ -52,7 +52,7 @@ WebInspector.StylesSourceMapping.MinorChangeUpdateTimeoutMs = 1000;
 
 WebInspector.StylesSourceMapping.prototype = {
     /**
-     * @param {!WebInspector.RawLocation} rawLocation
+     * @param {!WebInspector.CSSLocation} rawLocation
      * @return {?WebInspector.UILocation}
      */
     rawLocationToUILocation: function(rawLocation)
@@ -68,7 +68,7 @@ WebInspector.StylesSourceMapping.prototype = {
      * @param {!WebInspector.UISourceCode} uiSourceCode
      * @param {number} lineNumber
      * @param {number} columnNumber
-     * @return {!WebInspector.RawLocation}
+     * @return {!WebInspector.CSSLocation}
      */
     uiLocationToRawLocation: function(uiSourceCode, lineNumber, columnNumber)
     {

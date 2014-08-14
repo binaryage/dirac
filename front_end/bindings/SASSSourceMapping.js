@@ -30,7 +30,7 @@
 
 /**
  * @constructor
- * @implements {WebInspector.SourceMapping}
+ * @implements {WebInspector.CSSSourceMapping}
  * @param {!WebInspector.CSSStyleModel} cssModel
  * @param {!WebInspector.Workspace} workspace
  * @param {!WebInspector.NetworkWorkspaceBinding} networkWorkspaceBinding
@@ -533,17 +533,16 @@ WebInspector.SASSSourceMapping.prototype = {
     },
 
     /**
-     * @param {!WebInspector.RawLocation} rawLocation
+     * @param {!WebInspector.CSSLocation} rawLocation
      * @return {?WebInspector.UILocation}
      */
     rawLocationToUILocation: function(rawLocation)
     {
-        var location = /** @type WebInspector.CSSLocation */ (rawLocation);
         var entry;
-        var sourceMap = this._sourceMapByStyleSheetURL[location.url];
+        var sourceMap = this._sourceMapByStyleSheetURL[rawLocation.url];
         if (!sourceMap)
             return null;
-        entry = sourceMap.findEntry(location.lineNumber, location.columnNumber);
+        entry = sourceMap.findEntry(rawLocation.lineNumber, rawLocation.columnNumber);
         if (!entry || entry.length === 2)
             return null;
         var uiSourceCode = this._workspace.uiSourceCodeForURL(entry[2]);
@@ -556,7 +555,7 @@ WebInspector.SASSSourceMapping.prototype = {
      * @param {!WebInspector.UISourceCode} uiSourceCode
      * @param {number} lineNumber
      * @param {number} columnNumber
-     * @return {!WebInspector.RawLocation}
+     * @return {!WebInspector.CSSLocation}
      */
     uiLocationToRawLocation: function(uiSourceCode, lineNumber, columnNumber)
     {

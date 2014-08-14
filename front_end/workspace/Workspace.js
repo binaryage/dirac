@@ -29,6 +29,39 @@
  */
 
 /**
+ * @interface
+ */
+WebInspector.ProjectSearchConfig = function() {}
+
+WebInspector.ProjectSearchConfig.prototype = {
+    /**
+     * @return {string}
+     */
+    query: function() { },
+
+    /**
+     * @return {boolean}
+     */
+    ignoreCase: function() { },
+
+    /**
+     * @return {boolean}
+     */
+    isRegex: function() { },
+
+    /**
+     * @return {!Array.<string>}
+     */
+    queries: function() { },
+
+    /**
+     * @param {string} filePath
+     * @return {boolean}
+     */
+    filePathMatchesFileQuery: function(filePath) { }
+}
+
+/**
  * @constructor
  * @param {string} parentPath
  * @param {string} name
@@ -144,39 +177,6 @@ WebInspector.ProjectDelegate.prototype = {
      * @param {!WebInspector.Progress} progress
      */
     indexContent: function(progress) { }
-}
-
-/**
- * @interface
- */
-WebInspector.ProjectSearchConfig = function() {}
-
-WebInspector.ProjectSearchConfig.prototype = {
-    /**
-     * @return {string}
-     */
-    query: function() { },
-
-    /**
-     * @return {boolean}
-     */
-    ignoreCase: function() { },
-
-    /**
-     * @return {boolean}
-     */
-    isRegex: function() { },
-
-    /**
-     * @return {!Array.<string>}
-     */
-    queries: function() { },
-
-    /**
-     * @param {string} filePath
-     * @return {boolean}
-     */
-    filePathMatchesFileQuery: function(filePath) { }
 }
 
 /**

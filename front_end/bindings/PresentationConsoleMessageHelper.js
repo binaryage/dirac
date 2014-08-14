@@ -154,6 +154,7 @@ WebInspector.PresentationConsoleMessageHelper.prototype = {
 
 /**
  * @constructor
+ * @implements {WebInspector.PresentationMessage}
  * @param {!WebInspector.ConsoleMessage} message
  * @param {!WebInspector.DebuggerModel.Location} rawLocation
  */

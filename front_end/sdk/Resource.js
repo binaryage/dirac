@@ -64,6 +64,21 @@ WebInspector.Resource.Events = {
     MessagesCleared: "messages-cleared",
 }
 
+/**
+ * @param {?string} content
+ * @param {string} mimeType
+ * @param {boolean} contentEncoded
+ * @return {?string}
+ */
+WebInspector.Resource.contentAsDataURL = function(content, mimeType, contentEncoded)
+{
+    const maxDataUrlSize = 1024 * 1024;
+    if (content === null || content.length > maxDataUrlSize)
+        return null;
+
+    return "data:" + mimeType + (contentEncoded ? ";base64," : ",") + content;
+}
+
 WebInspector.Resource.prototype = {
     /**
      * @return {?WebInspector.NetworkRequest}
@@ -290,7 +305,7 @@ WebInspector.Resource.prototype = {
          */
         function onResourceContent(content)
         {
-            var imageSrc = WebInspector.contentAsDataURL(this._content, this.mimeType, this._contentEncoded);
+            var imageSrc = WebInspector.Resource.contentAsDataURL(this._content, this.mimeType, this._contentEncoded);
             if (imageSrc === null)
                 imageSrc = this.url;
             image.src = imageSrc;

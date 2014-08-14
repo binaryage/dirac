@@ -7,11 +7,14 @@
             "common/Color.js",
             "common/Geometry.js",
             "common/Console.js",
+            "common/ContentProvider.js",
             "common/NotificationService.js",
             "common/Object.js",
             "common/ParsedURL.js",
             "common/Progress.js",
+            "common/ResourceType.js",
             "common/Settings.js",
+            "common/StaticContentProvider.js",
             "common/TextRange.js",
             "common/TextUtils.js",
             "common/Throttler.js",
@@ -28,10 +31,7 @@
             "sdk/Target.js",
             "sdk/ApplicationCacheModel.js",
             "sdk/BlackboxSupport.js",
-            "sdk/CompilerScriptMapping.js",
             "sdk/ConsoleModel.js",
-            "sdk/ContentProvider.js",
-            "sdk/ContentProviderBasedProjectDelegate.js",
             "sdk/ContentProviders.js",
             "sdk/CookieParser.js",
             "sdk/CPUProfileDataModel.js",
@@ -39,59 +39,72 @@
             "sdk/CSSMetadata.js",
             "sdk/CSSParser.js",
             "sdk/CSSStyleModel.js",
-            "sdk/CSSWorkspaceBinding.js",
-            "sdk/BreakpointManager.js",
             "sdk/DOMModel.js",
             "sdk/DOMStorage.js",
             "sdk/Database.js",
             "sdk/DebuggerModel.js",
-            "sdk/DebuggerWorkspaceBinding.js",
-            "sdk/FileManager.js",
-            "sdk/FileSystemMapping.js",
             "sdk/FileSystemModel.js",
-            "sdk/FileSystemWorkspaceBinding.js",
-            "sdk/FileUtils.js",
             "sdk/IndexedDBModel.js",
             "sdk/InspectorBackend.js",
-            "sdk/IsolatedFileSystemManager.js",
-            "sdk/IsolatedFileSystem.js",
             "sdk/LayerTreeModel.js",
-            "sdk/Linkifier.js",
             "sdk/NetworkLog.js",
-            "sdk/NetworkUISourceCodeProvider.js",
             "sdk/OverridesSupport.js",
             "sdk/PowerProfiler.js",
-            "sdk/PresentationConsoleMessageHelper.js",
             "sdk/TracingModel.js",
             "sdk/WorkerManager.js",
             "sdk/WorkerTargetManager.js",
             "sdk/RuntimeModel.js",
-            "sdk/SASSSourceMapping.js",
             "sdk/Script.js",
-            "sdk/ScriptSnippetModel.js",
-            "sdk/SearchConfig.js",
-            "sdk/NetworkWorkspaceBinding.js",
             "sdk/SnippetStorage.js",
-            "sdk/SourceMapping.js",
-            "sdk/StylesSourceMapping.js",
-            "sdk/TempFile.js",
             "sdk/TimelineManager.js",
             "sdk/RemoteObject.js",
             "sdk/Resource.js",
-            "sdk/DefaultScriptMapping.js",
-            "sdk/ResourceScriptMapping.js",
-            "sdk/LiveEditSupport.js",
             "sdk/ResourceTreeModel.js",
-            "sdk/ResourceType.js",
-            "sdk/ResourceUtils.js",
             "sdk/SourceMap.js",
             "sdk/NetworkManager.js",
             "sdk/NetworkRequest.js",
-            "sdk/UISourceCode.js",
-            "sdk/Workspace.js",
-            "sdk/WorkspaceController.js",
             "sdk/PaintProfiler.js",
             "sdk/HeapProfilerModel.js"
+        ]
+    },
+    {
+        "name": "workspace",
+        "dependencies": ["common", "host"],
+        "sources": [
+            "workspace/FileManager.js",
+            "workspace/FileSystemMapping.js",
+            "workspace/FileSystemWorkspaceBinding.js",
+            "workspace/IsolatedFileSystem.js",
+            "workspace/IsolatedFileSystemManager.js",
+            "workspace/SearchConfig.js",
+            "workspace/UISourceCode.js",
+            "workspace/Workspace.js"
+        ]
+    },
+    {
+        "name": "bindings",
+        "dependencies": ["common", "host", "sdk", "workspace"],
+        "sources": [
+            "bindings/BreakpointManager.js",
+            "bindings/CompilerScriptMapping.js",
+            "bindings/ContentProviderBasedProjectDelegate.js",
+            "bindings/CSSWorkspaceBinding.js",
+            "bindings/DebuggerWorkspaceBinding.js",
+            "bindings/DefaultScriptMapping.js",
+            "bindings/FileUtils.js",
+            "bindings/Linkifier.js",
+            "bindings/LiveEditSupport.js",
+            "bindings/LiveLocation.js",
+            "bindings/NetworkUISourceCodeProvider.js",
+            "bindings/NetworkWorkspaceBinding.js",
+            "bindings/PresentationConsoleMessageHelper.js",
+            "bindings/ResourceScriptMapping.js",
+            "bindings/ResourceUtils.js",
+            "bindings/SASSSourceMapping.js",
+            "bindings/ScriptSnippetModel.js",
+            "bindings/StylesSourceMapping.js",
+            "bindings/TempFile.js",
+            "bindings/WorkspaceController.js"
         ]
     },
     {
@@ -140,7 +153,7 @@
     },
     {
         "name": "components",
-        "dependencies": ["sdk", "ui"],
+        "dependencies": ["ui", "bindings"],
         "sources": [
             "components/CookiesTable.js",
             "components/DOMBreakpointsSidebarPane.js",
@@ -179,7 +192,7 @@
     },
     {
         "name": "toolbox",
-        "dependencies": ["ui", "sdk"],
+        "dependencies": ["ui", "bindings"],
         "sources": [
             "toolbox/InspectedPagePlaceholder.js",
             "toolbox/MediaQueryInspector.js",
@@ -456,11 +469,22 @@
         ]
     },
     {
+        "name": "documentation",
+        "dependencies": ["common", "ui", "components", "source_frame"],
+        "sources": [
+            "documentation/CSSArticle.js",
+            "documentation/DocumentationURLProvider.js",
+            "documentation/DocumentationView.js",
+            "documentation/JSArticle.js",
+            "documentation/WikiParser.js"
+        ]
+    },
+    {
         "name": "main",
         "dependencies": [
             "host",
             "screencast",
-            "sdk",
+            "bindings",
             "toolbox"
         ],
         "sources": [
@@ -481,6 +505,7 @@
         "dependencies": [
             "common",
             "sdk",
+            "bindings",
             "ui",
             "components",
             "source_frame",
@@ -501,16 +526,5 @@
             "main"
         ],
         "sources": []
-    },
-    {
-        "name": "documentation",
-        "dependencies": ["common", "ui", "components", "source_frame"],
-        "sources": [
-            "documentation/CSSArticle.js",
-            "documentation/DocumentationURLProvider.js",
-            "documentation/DocumentationView.js",
-            "documentation/JSArticle.js",
-            "documentation/WikiParser.js"
-        ]
     }
 ]

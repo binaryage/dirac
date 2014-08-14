@@ -50,7 +50,7 @@ WebInspector.UISourceCode = function(project, parentPath, name, originURL, url, 
     this._contentType = contentType;
     /** @type {!Array.<function(?string)>} */
     this._requestContentCallbacks = [];
-    /** @type {!Array.<!WebInspector.PresentationConsoleMessage>} */
+    /** @type {!Array.<!WebInspector.PresentationMessage>} */
     this._consoleMessages = [];
 
     /** @type {!Array.<!WebInspector.Revision>} */
@@ -575,7 +575,7 @@ WebInspector.UISourceCode.prototype = {
     },
 
     /**
-     * @return {!Array.<!WebInspector.PresentationConsoleMessage>}
+     * @return {!Array.<!WebInspector.PresentationMessage>}
      */
     consoleMessages: function()
     {
@@ -583,7 +583,7 @@ WebInspector.UISourceCode.prototype = {
     },
 
     /**
-     * @param {!WebInspector.PresentationConsoleMessage} message
+     * @param {!WebInspector.PresentationMessage} message
      */
     consoleMessageAdded: function(message)
     {
@@ -592,7 +592,7 @@ WebInspector.UISourceCode.prototype = {
     },
 
     /**
-     * @param {!WebInspector.PresentationConsoleMessage} message
+     * @param {!WebInspector.PresentationMessage} message
      */
     consoleMessageRemoved: function(message)
     {
@@ -620,6 +620,11 @@ WebInspector.UISourceCode.prototype = {
 
     __proto__: WebInspector.Object.prototype
 }
+
+/**
+ * @interface
+ */
+WebInspector.PresentationMessage = function() {}
 
 /**
  * @constructor
@@ -653,56 +658,6 @@ WebInspector.UILocation.prototype = {
     {
         return this.uiSourceCode.uri() + ":" + this.lineNumber + ":" + this.columnNumber;
     },
-}
-
-/**
- * @interface
- */
-WebInspector.RawLocation = function()
-{
-}
-
-/**
- * @constructor
- * @param {!WebInspector.RawLocation} rawLocation
- * @param {function(!WebInspector.UILocation):(boolean|undefined)} updateDelegate
- */
-WebInspector.LiveLocation = function(rawLocation, updateDelegate)
-{
-    this._rawLocation = rawLocation;
-    this._updateDelegate = updateDelegate;
-}
-
-WebInspector.LiveLocation.prototype = {
-    update: function()
-    {
-        var uiLocation = this.uiLocation();
-        if (!uiLocation)
-            return;
-        if (this._updateDelegate(uiLocation))
-            this.dispose();
-    },
-
-    /**
-     * @return {!WebInspector.RawLocation}
-     */
-    rawLocation: function()
-    {
-        return this._rawLocation;
-    },
-
-    /**
-     * @return {!WebInspector.UILocation}
-     */
-    uiLocation: function()
-    {
-        throw "Not implemented";
-    },
-
-    dispose: function()
-    {
-        // Overridden by subclasses.
-    }
 }
 
 /**

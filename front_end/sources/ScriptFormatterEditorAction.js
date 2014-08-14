@@ -4,7 +4,7 @@
 
 /**
  * @constructor
- * @implements {WebInspector.SourceMapping}
+ * @implements {WebInspector.DebuggerSourceMapping}
  * @param {!WebInspector.Target} target
  * @param {!WebInspector.ScriptFormatterEditorAction} editorAction
  */
@@ -16,7 +16,7 @@ WebInspector.FormatterScriptMapping = function(target, editorAction)
 
 WebInspector.FormatterScriptMapping.prototype = {
     /**
-     * @param {!WebInspector.RawLocation} rawLocation
+     * @param {!WebInspector.DebuggerModel.Location} rawLocation
      * @return {?WebInspector.UILocation}
      */
     rawLocationToUILocation: function(rawLocation)

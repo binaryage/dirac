@@ -312,6 +312,18 @@
                             ],
                         },
                         {
+                            'destination': '<(PRODUCT_DIR)/resources/inspector/workspace',
+                            'files': [
+                                '<@(devtools_workspace_js_files)',
+                            ],
+                        },
+                        {
+                            'destination': '<(PRODUCT_DIR)/resources/inspector/bindings',
+                            'files': [
+                                '<@(devtools_bindings_js_files)',
+                            ],
+                        },
+                        {
                             'destination': '<(PRODUCT_DIR)/resources/inspector/ui',
                             'files': [
                                 '<@(devtools_ui_js_files)',

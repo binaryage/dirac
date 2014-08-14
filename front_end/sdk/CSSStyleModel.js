@@ -601,7 +601,6 @@ WebInspector.CSSStyleModel.prototype = {
 
 /**
  * @constructor
- * @implements {WebInspector.RawLocation}
  * @extends {WebInspector.SDKObject}
  * @param {!WebInspector.Target} target
  * @param {?CSSAgent.StyleSheetId} styleSheetId

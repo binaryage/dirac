@@ -53,7 +53,7 @@ WebInspector.DebuggerWorkspaceBinding.prototype = {
 
     /**
      * @param {!WebInspector.Script} script
-     * @param {!WebInspector.SourceMapping} sourceMapping
+     * @param {!WebInspector.DebuggerSourceMapping} sourceMapping
      */
     pushSourceMapping: function(script, sourceMapping)
     {
@@ -63,7 +63,7 @@ WebInspector.DebuggerWorkspaceBinding.prototype = {
 
     /**
      * @param {!WebInspector.Script} script
-     * @return {!WebInspector.SourceMapping}
+     * @return {!WebInspector.DebuggerSourceMapping}
      */
     popSourceMapping: function(script)
     {
@@ -75,7 +75,7 @@ WebInspector.DebuggerWorkspaceBinding.prototype = {
     /**
      * @param {!WebInspector.Target} target
      * @param {!WebInspector.UISourceCode} uiSourceCode
-     * @param {?WebInspector.SourceMapping} sourceMapping
+     * @param {?WebInspector.DebuggerSourceMapping} sourceMapping
      */
     setSourceMapping: function(target, uiSourceCode, sourceMapping)
     {
@@ -150,7 +150,7 @@ WebInspector.DebuggerWorkspaceBinding.prototype = {
      * @param {!WebInspector.UISourceCode} uiSourceCode
      * @param {number} lineNumber
      * @param {number} columnNumber
-     * @return {!Array.<!WebInspector.RawLocation>}
+     * @return {!Array.<!WebInspector.DebuggerModel.Location>}
      */
     uiLocationToRawLocations: function(uiSourceCode, lineNumber, columnNumber)
     {
@@ -304,7 +304,7 @@ WebInspector.DebuggerWorkspaceBinding.TargetData = function(target, debuggerWork
     /** @type {!WebInspector.LiveEditSupport} */
     this._liveEditSupport = new WebInspector.LiveEditSupport(target, workspace, debuggerWorkspaceBinding);
 
-    /** @type {!Map.<!WebInspector.UISourceCode, !WebInspector.SourceMapping>} */
+    /** @type {!Map.<!WebInspector.UISourceCode, !WebInspector.DebuggerSourceMapping>} */
     this._uiSourceCodeToSourceMapping = new Map();
 
     debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.ParsedScriptSource, this._parsedScriptSource, this);
@@ -333,7 +333,7 @@ WebInspector.DebuggerWorkspaceBinding.TargetData.prototype = {
 
     /**
      * @param {!WebInspector.UISourceCode} uiSourceCode
-     * @param {?WebInspector.SourceMapping} sourceMapping
+     * @param {?WebInspector.DebuggerSourceMapping} sourceMapping
      */
     _setSourceMapping: function(uiSourceCode, sourceMapping)
     {
@@ -352,7 +352,7 @@ WebInspector.DebuggerWorkspaceBinding.TargetData.prototype = {
      * @param {!WebInspector.UISourceCode} uiSourceCode
      * @param {number} lineNumber
      * @param {number} columnNumber
-     * @return {?WebInspector.RawLocation}
+     * @return {?WebInspector.DebuggerModel.Location}
      */
     _uiLocationToRawLocation: function(uiSourceCode, lineNumber, columnNumber)
     {
@@ -396,7 +396,7 @@ WebInspector.DebuggerWorkspaceBinding.ScriptInfo = function(script)
 {
     this._script = script;
 
-    /** @type {!Array.<!WebInspector.SourceMapping>} */
+    /** @type {!Array.<!WebInspector.DebuggerSourceMapping>} */
     this._sourceMappings = [];
 
     /** @type {!Set.<!WebInspector.LiveLocation>} */
@@ -405,7 +405,7 @@ WebInspector.DebuggerWorkspaceBinding.ScriptInfo = function(script)
 
 WebInspector.DebuggerWorkspaceBinding.ScriptInfo.prototype = {
     /**
-     * @param {!WebInspector.SourceMapping} sourceMapping
+     * @param {!WebInspector.DebuggerSourceMapping} sourceMapping
      */
     _pushSourceMapping: function(sourceMapping)
     {
@@ -414,7 +414,7 @@ WebInspector.DebuggerWorkspaceBinding.ScriptInfo.prototype = {
     },
 
     /**
-     * @return {!WebInspector.SourceMapping}
+     * @return {!WebInspector.DebuggerSourceMapping}
      */
     _popSourceMapping: function()
     {
@@ -472,8 +472,9 @@ WebInspector.DebuggerWorkspaceBinding.ScriptInfo.prototype = {
  */
 WebInspector.DebuggerWorkspaceBinding.Location = function(script, rawLocation, binding, updateDelegate)
 {
-    WebInspector.LiveLocation.call(this, rawLocation, updateDelegate);
+    WebInspector.LiveLocation.call(this, updateDelegate);
     this._script = script;
+    this._rawLocation = rawLocation;
     this._binding = binding;
 }
 
@@ -483,7 +484,7 @@ WebInspector.DebuggerWorkspaceBinding.Location.prototype = {
      */
     uiLocation: function()
     {
-        var debuggerModelLocation = /** @type {!WebInspector.DebuggerModel.Location} */ (this.rawLocation());
+        var debuggerModelLocation = this._rawLocation;
         return this._binding.rawLocationToUILocation(debuggerModelLocation);
     },
 
@@ -494,6 +495,41 @@ WebInspector.DebuggerWorkspaceBinding.Location.prototype = {
     },
 
     __proto__: WebInspector.LiveLocation.prototype
+}
+
+/**
+ * @interface
+ */
+WebInspector.DebuggerSourceMapping = function()
+{
+}
+
+WebInspector.DebuggerSourceMapping.prototype = {
+    /**
+     * @param {!WebInspector.DebuggerModel.Location} rawLocation
+     * @return {?WebInspector.UILocation}
+     */
+    rawLocationToUILocation: function(rawLocation) { },
+
+    /**
+     * @param {!WebInspector.UISourceCode} uiSourceCode
+     * @param {number} lineNumber
+     * @param {number} columnNumber
+     * @return {?WebInspector.DebuggerModel.Location}
+     */
+    uiLocationToRawLocation: function(uiSourceCode, lineNumber, columnNumber) { },
+
+    /**
+     * @return {boolean}
+     */
+    isIdentity: function() { },
+
+    /**
+     * @param {!WebInspector.UISourceCode} uiSourceCode
+     * @param {number} lineNumber
+     * @return {boolean}
+     */
+    uiLineHasMapping: function(uiSourceCode, lineNumber) { }
 }
 
 /**

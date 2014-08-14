@@ -67,7 +67,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <script type="text/javascript" src="ui/RootView.js"></script>
     <script type="text/javascript" src="ui/UIUtils.js"></script>
     <script type="text/javascript" src="components/HelpScreen.js"></script>
-    <script type="text/javascript" src="sdk/FileManager.js"></script>
+    <script type="text/javascript" src="workspace/FileManager.js"></script>
     <script type="text/javascript" src="ui/Checkbox.js"></script>
     <script type="text/javascript" src="ui/ContextMenu.js"></script>
     <script type="text/javascript" src="ui/SoftContextMenu.js"></script>
@@ -85,19 +85,21 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <script type="text/javascript" src="components/InspectorView.js"></script>
     <script type="text/javascript" src="components/TimelineGrid.js"></script>
     <script type="text/javascript" src="components/OverviewGrid.js"></script>
-    <script type="text/javascript" src="sdk/SearchConfig.js"></script>
-    <script type="text/javascript" src="sdk/ContentProvider.js"></script>
+    <script type="text/javascript" src="workspace/SearchConfig.js"></script>
+    <script type="text/javascript" src="common/ContentProvider.js"></script>
+    <script type="text/javascript" src="common/StaticContentProvider.js"></script>
     <script type="text/javascript" src="sdk/Resource.js"></script>
     <script type="text/javascript" src="sdk/NetworkRequest.js"></script>
-    <script type="text/javascript" src="sdk/UISourceCode.js"></script>
+    <script type="text/javascript" src="workspace/UISourceCode.js"></script>
     <script type="text/javascript" src="sdk/CSSStyleModel.js"></script>
-    <script type="text/javascript" src="sdk/CSSWorkspaceBinding.js"></script>
+    <script type="text/javascript" src="bindings/LiveLocation.js"></script>
+    <script type="text/javascript" src="bindings/CSSWorkspaceBinding.js"></script>
     <script type="text/javascript" src="sdk/CSSParser.js"></script>
     <script type="text/javascript" src="sdk/NetworkManager.js"></script>
     <script type="text/javascript" src="sdk/NetworkLog.js"></script>
     <script type="text/javascript" src="sdk/ResourceTreeModel.js"></script>
-    <script type="text/javascript" src="sdk/ResourceUtils.js"></script>
-    <script type="text/javascript" src="sdk/ResourceType.js"></script>
+    <script type="text/javascript" src="bindings/ResourceUtils.js"></script>
+    <script type="text/javascript" src="common/ResourceType.js"></script>
     <script type="text/javascript" src="sdk/TimelineManager.js"></script>
     <script type="text/javascript" src="sdk/TracingModel.js"></script>
     <script type="text/javascript" src="sdk/PowerProfiler.js"></script>
@@ -131,32 +133,31 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <script type="text/javascript" src="ui/SplitView.js"></script>
     <script type="text/javascript" src="ui/StackView.js"></script>
     <script type="text/javascript" src="ui/EmptyView.js"></script>
-    <script type="text/javascript" src="sdk/TempFile.js"></script>
+    <script type="text/javascript" src="bindings/TempFile.js"></script>
     <script type="text/javascript" src="sdk/FileSystemModel.js"></script>
-    <script type="text/javascript" src="sdk/FileUtils.js"></script>
+    <script type="text/javascript" src="bindings/FileUtils.js"></script>
     <script type="text/javascript" src="sdk/DebuggerModel.js"></script>
-    <script type="text/javascript" src="sdk/DebuggerWorkspaceBinding.js"></script>
+    <script type="text/javascript" src="bindings/DebuggerWorkspaceBinding.js"></script>
     <script type="text/javascript" src="sdk/SourceMap.js"></script>
-    <script type="text/javascript" src="sdk/SourceMapping.js"></script>
     <script type="text/javascript" src="sdk/LayerTreeModel.js"></script>
     <script type="text/javascript" src="sdk/Script.js"></script>
-    <script type="text/javascript" src="sdk/Linkifier.js"></script>
-    <script type="text/javascript" src="sdk/PresentationConsoleMessageHelper.js"></script>
-    <script type="text/javascript" src="sdk/FileSystemWorkspaceBinding.js"></script>
-    <script type="text/javascript" src="sdk/FileSystemMapping.js"></script>
-    <script type="text/javascript" src="sdk/IsolatedFileSystem.js"></script>
-    <script type="text/javascript" src="sdk/IsolatedFileSystemManager.js"></script>
-    <script type="text/javascript" src="sdk/Workspace.js"></script>
-    <script type="text/javascript" src="sdk/WorkspaceController.js"></script>
-    <script type="text/javascript" src="sdk/ContentProviderBasedProjectDelegate.js"></script>
-    <script type="text/javascript" src="sdk/NetworkWorkspaceBinding.js"></script>
-    <script type="text/javascript" src="sdk/BreakpointManager.js"></script>
+    <script type="text/javascript" src="bindings/Linkifier.js"></script>
+    <script type="text/javascript" src="bindings/PresentationConsoleMessageHelper.js"></script>
+    <script type="text/javascript" src="workspace/FileSystemWorkspaceBinding.js"></script>
+    <script type="text/javascript" src="workspace/FileSystemMapping.js"></script>
+    <script type="text/javascript" src="workspace/IsolatedFileSystem.js"></script>
+    <script type="text/javascript" src="workspace/IsolatedFileSystemManager.js"></script>
+    <script type="text/javascript" src="workspace/Workspace.js"></script>
+    <script type="text/javascript" src="bindings/WorkspaceController.js"></script>
+    <script type="text/javascript" src="bindings/ContentProviderBasedProjectDelegate.js"></script>
+    <script type="text/javascript" src="bindings/NetworkWorkspaceBinding.js"></script>
+    <script type="text/javascript" src="bindings/BreakpointManager.js"></script>
     <script type="text/javascript" src="sdk/ContentProviders.js"></script>
-    <script type="text/javascript" src="sdk/DefaultScriptMapping.js"></script>
-    <script type="text/javascript" src="sdk/ResourceScriptMapping.js"></script>
-    <script type="text/javascript" src="sdk/CompilerScriptMapping.js"></script>
-    <script type="text/javascript" src="sdk/LiveEditSupport.js"></script>
-    <script type="text/javascript" src="sdk/SASSSourceMapping.js"></script>
+    <script type="text/javascript" src="bindings/DefaultScriptMapping.js"></script>
+    <script type="text/javascript" src="bindings/ResourceScriptMapping.js"></script>
+    <script type="text/javascript" src="bindings/CompilerScriptMapping.js"></script>
+    <script type="text/javascript" src="bindings/LiveEditSupport.js"></script>
+    <script type="text/javascript" src="bindings/SASSSourceMapping.js"></script>
     <script type="text/javascript" src="sdk/DOMModel.js"></script>
     <script type="text/javascript" src="ui/ForwardedInputEventHandler.js"></script>
     <script type="text/javascript" src="TestController.js"></script>
@@ -173,10 +174,10 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <script type="text/javascript" src="sdk/RuntimeModel.js"></script>
     <script type="text/javascript" src="components/HandlerRegistry.js"></script>
     <script type="text/javascript" src="sdk/SnippetStorage.js"></script>
-    <script type="text/javascript" src="sdk/ScriptSnippetModel.js"></script>
+    <script type="text/javascript" src="bindings/ScriptSnippetModel.js"></script>
     <script type="text/javascript" src="ui/ProgressIndicator.js"></script>
-    <script type="text/javascript" src="sdk/StylesSourceMapping.js"></script>
-    <script type="text/javascript" src="sdk/NetworkUISourceCodeProvider.js"></script>
+    <script type="text/javascript" src="bindings/StylesSourceMapping.js"></script>
+    <script type="text/javascript" src="bindings/NetworkUISourceCodeProvider.js"></script>
     <script type="text/javascript" src="sdk/CPUProfileDataModel.js"></script>
     <script type="text/javascript" src="sdk/CPUProfilerModel.js"></script>
     <script type="text/javascript" src="ui/PieChart.js"></script>

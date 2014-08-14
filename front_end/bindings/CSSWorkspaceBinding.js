@@ -34,7 +34,7 @@ WebInspector.CSSWorkspaceBinding.prototype = {
 
     /**
      * @param {!WebInspector.CSSStyleSheetHeader} header
-     * @param {!WebInspector.SourceMapping} mapping
+     * @param {!WebInspector.CSSSourceMapping} mapping
      */
     pushSourceMapping: function(header, mapping)
     {
@@ -250,7 +250,7 @@ WebInspector.CSSWorkspaceBinding.HeaderInfo = function(header)
 {
     this._header = header;
 
-    /** @type {!Array.<!WebInspector.SourceMapping>} */
+    /** @type {!Array.<!WebInspector.CSSSourceMapping>} */
     this._sourceMappings = [];
 
     /** @type {!Set.<!WebInspector.LiveLocation>} */
@@ -297,7 +297,7 @@ WebInspector.CSSWorkspaceBinding.HeaderInfo.prototype = {
     },
 
     /**
-     * @param {!WebInspector.SourceMapping} sourceMapping
+     * @param {!WebInspector.CSSSourceMapping} sourceMapping
      */
     _pushSourceMapping: function(sourceMapping)
     {
@@ -316,8 +316,9 @@ WebInspector.CSSWorkspaceBinding.HeaderInfo.prototype = {
  */
 WebInspector.CSSWorkspaceBinding.LiveLocation = function(cssModel, header, rawLocation, updateDelegate)
 {
-    WebInspector.LiveLocation.call(this, rawLocation, updateDelegate);
+    WebInspector.LiveLocation.call(this, updateDelegate);
     this._cssModel = cssModel;
+    this._rawLocation = rawLocation;
     if (!header)
         this._clearStyleSheet();
     else
@@ -332,7 +333,7 @@ WebInspector.CSSWorkspaceBinding.LiveLocation.prototype = {
     {
         console.assert(!this._header);
         var header = /** @type {!WebInspector.CSSStyleSheetHeader} */ (event.data);
-        if (header.sourceURL && header.sourceURL === this.rawLocation().url)
+        if (header.sourceURL && header.sourceURL === this._rawLocation.url)
             this._setStyleSheet(header);
     },
 
@@ -372,7 +373,7 @@ WebInspector.CSSWorkspaceBinding.LiveLocation.prototype = {
      */
     uiLocation: function()
     {
-        var cssLocation = /** @type WebInspector.CSSLocation */ (this.rawLocation());
+        var cssLocation = this._rawLocation;
         if (this._header) {
             var headerInfo = WebInspector.cssWorkspaceBinding._headerInfo(this._header);
             return headerInfo._rawLocationToUILocation(cssLocation.lineNumber, cssLocation.columnNumber);
@@ -393,6 +394,41 @@ WebInspector.CSSWorkspaceBinding.LiveLocation.prototype = {
     },
 
     __proto__: WebInspector.LiveLocation.prototype
+}
+
+/**
+ * @interface
+ */
+WebInspector.CSSSourceMapping = function()
+{
+}
+
+WebInspector.CSSSourceMapping.prototype = {
+    /**
+     * @param {!WebInspector.CSSLocation} rawLocation
+     * @return {?WebInspector.UILocation}
+     */
+    rawLocationToUILocation: function(rawLocation) { },
+
+    /**
+     * @param {!WebInspector.UISourceCode} uiSourceCode
+     * @param {number} lineNumber
+     * @param {number} columnNumber
+     * @return {?WebInspector.CSSLocation}
+     */
+    uiLocationToRawLocation: function(uiSourceCode, lineNumber, columnNumber) { },
+
+    /**
+     * @return {boolean}
+     */
+    isIdentity: function() { },
+
+    /**
+     * @param {!WebInspector.UISourceCode} uiSourceCode
+     * @param {number} lineNumber
+     * @return {boolean}
+     */
+    uiLineHasMapping: function(uiSourceCode, lineNumber) { }
 }
 
 /**

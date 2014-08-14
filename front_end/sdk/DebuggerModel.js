@@ -817,7 +817,6 @@ WebInspector.DebuggerDispatcher.prototype = {
 
 /**
  * @constructor
- * @implements {WebInspector.RawLocation}
  * @extends {WebInspector.SDKObject}
  * @param {!WebInspector.Target} target
  * @param {string} scriptId
@@ -830,7 +829,7 @@ WebInspector.DebuggerModel.Location = function(target, scriptId, lineNumber, col
     this._debuggerModel = target.debuggerModel;
     this.scriptId = scriptId;
     this.lineNumber = lineNumber;
-    this.columnNumber = columnNumber;
+    this.columnNumber = columnNumber || 0;
 }
 
 /**

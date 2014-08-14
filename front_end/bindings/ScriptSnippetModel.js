@@ -398,7 +398,7 @@ WebInspector.ScriptSnippetModel.prototype = {
 
 /**
  * @constructor
- * @implements {WebInspector.ScriptSourceMapping}
+ * @implements {WebInspector.DebuggerSourceMapping}
  * @param {!WebInspector.Target} target
  * @param {!WebInspector.ScriptSnippetModel} scriptSnippetModel
  */
@@ -467,7 +467,7 @@ WebInspector.SnippetScriptMapping.prototype = {
     },
 
     /**
-     * @param {!WebInspector.RawLocation} rawLocation
+     * @param {!WebInspector.DebuggerModel.Location} rawLocation
      * @return {?WebInspector.UILocation}
      */
     rawLocationToUILocation: function(rawLocation)

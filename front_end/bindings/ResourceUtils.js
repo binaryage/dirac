@@ -227,18 +227,3 @@ WebInspector.linkifyRequestAsNode = function(request)
     anchor.requestId = request.requestId;
     return anchor;
 }
-
-/**
- * @param {?string} content
- * @param {string} mimeType
- * @param {boolean} contentEncoded
- * @return {?string}
- */
-WebInspector.contentAsDataURL = function(content, mimeType, contentEncoded)
-{
-    const maxDataUrlSize = 1024 * 1024;
-    if (content === null || content.length > maxDataUrlSize)
-        return null;
-
-    return "data:" + mimeType + (contentEncoded ? ";base64," : ",") + content;
-}
