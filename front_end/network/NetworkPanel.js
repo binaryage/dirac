@@ -191,7 +191,7 @@ WebInspector.NetworkLogView.prototype = {
 
         this._setCalculator(new WebInspector.NetworkTransferTimeCalculator());
 
-        this.switchToDetailedView();
+        this.switchViewMode(true);
     },
 
     /**
@@ -934,25 +934,25 @@ WebInspector.NetworkLogView.prototype = {
             this._appendRequest(requestsToPick[i]);
     },
 
-    switchToDetailedView: function()
+    /**
+     * @param {boolean} detailed
+     */
+    switchViewMode: function(detailed)
     {
-        if (!this._dataGrid)
+        if (this._detailedMode === detailed)
             return;
-        if (this._dataGrid.selectedNode)
-            this._dataGrid.selectedNode.selected = false;
+        this._detailedMode = detailed;
 
-        this.element.classList.remove("brief-mode");
-        this._detailedMode = true;
-        this._updateColumns();
-    },
+        if (detailed) {
+            if (this._dataGrid.selectedNode)
+                this._dataGrid.selectedNode.selected = false;
+        } else {
+            this._removeAllNodeHighlights();
+            this._popoverHelper.hidePopover();
+        }
 
-    switchToBriefView: function()
-    {
-        this.element.classList.add("brief-mode");
-        this._removeAllNodeHighlights();
-        this._detailedMode = false;
+        this.element.classList.toggle("brief-mode", !detailed);
         this._updateColumns();
-        this._popoverHelper.hidePopover();
     },
 
     _toggleLargerRequests: function()
@@ -1328,10 +1328,10 @@ WebInspector.NetworkLogView.prototype = {
         var pathMatched = request.path().match(regExp);
         if (!nameMatched && pathMatched && !this._largerRequestsButton.toggled)
             this._toggleLargerRequests();
+        if (reveal)
+            WebInspector.Revealer.reveal(request);
         var highlightedSubstringChanges = node._highlightMatchedSubstring(regExp);
         this._highlightedSubstringChanges.push(highlightedSubstringChanges);
-        if (reveal)
-            WebInspector.Revealer.reveal(node);
 
         this._currentMatchedRequestNode = node;
         this._currentMatchedRequestIndex = n;
@@ -1506,7 +1506,6 @@ WebInspector.NetworkLogView.prototype = {
 
         var node = this._nodesByRequestId.get(request.requestId);
         if (node) {
-            this._dataGrid.element.focus();
             node.reveal();
             this._highlightNode(node);
         }
@@ -2005,7 +2004,7 @@ WebInspector.NetworkPanel.prototype = {
             this._splitView.hideMain();
         }
 
-        this._networkLogView.switchToDetailedView();
+        this._networkLogView.switchViewMode(true);
         this._networkLogView.setAllowPopover(true);
         this._networkLogView._allowRequestSelection = false;
     },
@@ -2020,7 +2019,7 @@ WebInspector.NetworkPanel.prototype = {
         this._splitView.showBoth();
         this._networkLogView.setAllowPopover(false);
         this._networkLogView._allowRequestSelection = true;
-        this._networkLogView.switchToBriefView();
+        this._networkLogView.switchViewMode(false);
     },
 
     /**
@@ -2131,8 +2130,9 @@ WebInspector.NetworkPanel.RequestRevealer = function()
 WebInspector.NetworkPanel.RequestRevealer.prototype = {
     /**
      * @param {!Object} request
+     * @param {number=} lineNumber
      */
-    reveal: function(request)
+    reveal: function(request, lineNumber)
     {
         if (request instanceof WebInspector.NetworkRequest) {
             var panel = /** @type {?WebInspector.NetworkPanel} */ (WebInspector.inspectorView.showPanel("network"));
@@ -2595,8 +2595,10 @@ WebInspector.NetworkDataGridNode.prototype = {
      */
     _highlightMatchedSubstring: function(regexp)
     {
+        // Ensure element is created.
+        this.element();
         var domChanges = [];
-        var matchInfo = this._element.textContent.match(regexp);
+        var matchInfo = this._nameCell.textContent.match(regexp);
         if (matchInfo)
             WebInspector.highlightSearchResult(this._nameCell, matchInfo.index, matchInfo[0].length, domChanges);
         return domChanges;
