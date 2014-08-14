@@ -62,7 +62,8 @@ WebInspector.ViewportDataGrid.prototype = {
     /**
      * @protected
      */
-    scheduleUpdate: function() {
+    scheduleUpdate: function()
+    {
         if (this._updateScheduled)
             return;
         this._updateScheduled = true;
@@ -149,6 +150,28 @@ WebInspector.ViewportDataGrid.prototype = {
         this._visibleNodes = visibleNodes;
     },
 
+    /**
+     * @param {!WebInspector.ViewportDataGridNode} node
+     */
+    _revealViewportNode: function(node)
+    {
+        var nodes = this._rootNode.children;
+        var index = nodes.indexOf(node);
+        if (index === -1)
+            return;
+        var fromY = 0;
+        for (var i = 0; i < index; ++i)
+            fromY += nodes[i].nodeSelfHeight();
+        var toY = fromY + node.nodeSelfHeight();
+
+        var scrollTop = this._scrollContainer.scrollTop;
+        if (scrollTop > fromY)
+            scrollTop = fromY;
+        else if (scrollTop + this._scrollContainer.offsetHeight < toY)
+            scrollTop = toY - this._scrollContainer.offsetHeight;
+        this._scrollContainer.scrollTop = scrollTop;
+    },
+
     __proto__: WebInspector.DataGrid.prototype
 }
 
@@ -192,6 +215,7 @@ WebInspector.ViewportDataGridNode.prototype = {
      */
     insertChild: function(child, index)
     {
+        child.parent = this;
         child.dataGrid = this.dataGrid;
         this.children.splice(index, 0, child);
         child.recalculateSiblings(index);
@@ -258,6 +282,11 @@ WebInspector.ViewportDataGridNode.prototype = {
         this._element = null;
         return result;
      },
+
+    reveal: function()
+    {
+        this.dataGrid._revealViewportNode(this);
+    },
 
     __proto__: WebInspector.DataGridNode.prototype
 }
