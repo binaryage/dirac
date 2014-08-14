@@ -192,7 +192,7 @@ WebInspector.Main.prototype = {
         if (WebInspector.experimentsSettings.documentation.isEnabled())
             configuration.push("documentation");
         if (WebInspector.isWorkerFrontend())
-            configuration = ["main", "sources", "timeline", "profiler", "console", "source_frame"];
+            configuration = ["main", "sources", "timeline", "profiler", "console", "source_frame", "extensions"];
         self.runtime.registerModules(configuration);
     },
 
