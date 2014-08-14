@@ -355,10 +355,6 @@
     border: solid 1px;
 }
 
-.popover .timeline-aggregated-category.timeline-loading {
-    margin-left: 0;
-}
-
 .popover ul {
     margin: 0;
     padding: 0;

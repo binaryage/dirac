@@ -1796,10 +1796,6 @@ li.editing-sub-part .delete-button {
     background-image: linear-gradient(to bottom, rgb(194, 194, 194), rgb(239, 239, 239));
 }
 
-#console-messages.console-filter-top {
-    margin-top: 23px;
-}
-
 .console-warning-level.repeated-message,
 .console-error-level.repeated-message,
 .console-log-level.repeated-message,
@@ -1866,7 +1862,7 @@ li.editing-sub-part .delete-button {
     padding-left: 37px;
 }
 
-.sidebar-tree.some-expandable:not(.hide-disclosure-buttons) > .sidebar-tree-item:not(.parent) .icon {
+.sidebar-tree.some-expandable > .sidebar-tree-item:not(.parent) .icon {
     margin-left: 16px;
 }
 
