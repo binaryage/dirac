@@ -734,7 +734,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
             return null;
         return {
             startColumn: token.start,
-            endColumn: token.end - 1,
+            endColumn: token.end,
             type: token.type
         };
     },

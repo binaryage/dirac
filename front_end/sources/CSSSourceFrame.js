@@ -84,7 +84,7 @@ WebInspector.CSSSourceFrame.prototype = {
         if (token.type !== "css-number")
             return false;
 
-        var cssUnitRange = new WebInspector.TextRange(selection.startLine, token.startColumn, selection.startLine, token.endColumn + 1);
+        var cssUnitRange = new WebInspector.TextRange(selection.startLine, token.startColumn, selection.startLine, token.endColumn);
         var cssUnitText = this.textEditor.copyRange(cssUnitRange);
         var newUnitText = this._modifyUnit(cssUnitText, change);
         if (!newUnitText)

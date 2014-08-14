@@ -515,20 +515,20 @@ WebInspector.JavaScriptSourceFrame.prototype = {
             return;
         var lineNumber = textPosition.startLine;
         var line = this.textEditor.line(lineNumber);
-        var tokenContent = line.substring(token.startColumn, token.endColumn + 1);
+        var tokenContent = line.substring(token.startColumn, token.endColumn);
 
         var isIdentifier = token.type.startsWith("js-variable") || token.type.startsWith("js-property") || token.type == "js-def";
         if (!isIdentifier && (token.type !== "js-keyword" || tokenContent !== "this"))
             return;
 
         var leftCorner = this.textEditor.cursorPositionToCoordinates(lineNumber, token.startColumn);
-        var rightCorner = this.textEditor.cursorPositionToCoordinates(lineNumber, token.endColumn + 1);
+        var rightCorner = this.textEditor.cursorPositionToCoordinates(lineNumber, token.endColumn - 1);
         var anchorBox = new AnchorBox(leftCorner.x, leftCorner.y, rightCorner.x - leftCorner.x, leftCorner.height);
 
         anchorBox.highlight = {
             lineNumber: lineNumber,
             startColumn: token.startColumn,
-            endColumn: token.endColumn
+            endColumn: token.endColumn - 1
         };
 
         return anchorBox;
