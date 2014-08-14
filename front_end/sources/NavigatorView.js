@@ -524,7 +524,7 @@ WebInspector.SourcesNavigatorView.prototype = {
        var nodes = this._uiSourceCodeNodes.values();
        for (var i = 0; i < nodes.length; ++i) {
            var uiSourceCode = nodes[i].uiSourceCode();
-           if (uiSourceCode.url === WebInspector.resourceTreeModel.inspectedPageURL())
+           if (WebInspector.resourceTreeModel.inspectedPageURL() && uiSourceCode.url === WebInspector.resourceTreeModel.inspectedPageURL())
               this.revealUISourceCode(uiSourceCode, true);
        }
     },
