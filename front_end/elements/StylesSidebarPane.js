@@ -77,16 +77,9 @@ WebInspector.StylesSidebarPane = function(computedStylePane, setPseudoClassCallb
 // FIXME: find a way of generating this mapping or getting it from combination of RenderStyleConstants and CSSSelector.cpp at
 // runtime.
 WebInspector.StylesSidebarPane.PseudoIdNames = [
-    "", "first-line", "first-letter", "before", "after", "selection", "", "-webkit-scrollbar", "-webkit-file-upload-button",
-    "-webkit-input-placeholder", "-webkit-slider-thumb", "-webkit-search-cancel-button", "-webkit-search-decoration",
-    "-webkit-search-results-decoration", "-webkit-search-results-button", "-webkit-media-controls-panel",
-    "-webkit-media-controls-play-button", "-webkit-media-controls-mute-button", "-webkit-media-controls-timeline",
-    "-webkit-media-controls-timeline-container", "-webkit-media-controls-volume-slider",
-    "-webkit-media-controls-volume-slider-container", "-webkit-media-controls-current-time-display",
-    "-webkit-media-controls-time-remaining-display", "-webkit-media-controls-fullscreen-button",
-    "-webkit-media-controls-toggle-closed-captions-button", "-webkit-media-controls-status-display", "-webkit-scrollbar-thumb",
-    "-webkit-scrollbar-button", "-webkit-scrollbar-track", "-webkit-scrollbar-track-piece", "-webkit-scrollbar-corner",
-    "-webkit-resizer", "-webkit-inner-spin-button", "-webkit-outer-spin-button"
+    "", "first-line", "first-letter", "before", "after", "backdrop", "selection", "", "-webkit-scrollbar",
+    "-webkit-scrollbar-thumb", "-webkit-scrollbar-button", "-webkit-scrollbar-track", "-webkit-scrollbar-track-piece",
+    "-webkit-scrollbar-corner", "-webkit-resizer"
 ];
 
 WebInspector.StylesSidebarPane._colorRegex = /((?:rgb|hsl)a?\([^)]+\)|#[0-9a-fA-F]{6}|#[0-9a-fA-F]{3}|\b\w+\b(?!-))/g;
