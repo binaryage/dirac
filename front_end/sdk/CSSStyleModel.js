@@ -891,6 +891,39 @@ WebInspector.CSSStyleDeclaration.prototype = {
 
 /**
  * @constructor
+ * @param {!CSSAgent.Selector} payload
+ */
+WebInspector.CSSRuleSelector = function(payload)
+{
+    this.value = payload.value;
+    if (payload.range)
+        this.range = WebInspector.TextRange.fromObject(payload.range);
+}
+
+/**
+ * @param {!CSSAgent.Selector} payload
+ * @return {!WebInspector.CSSRuleSelector}
+ */
+WebInspector.CSSRuleSelector.parsePayload = function(payload)
+{
+    return new WebInspector.CSSRuleSelector(payload)
+}
+
+WebInspector.CSSRuleSelector.prototype = {
+    /**
+     * @param {!WebInspector.TextRange} oldRange
+     * @param {!WebInspector.TextRange} newRange
+     */
+    sourceStyleRuleEdited: function(oldRange, newRange)
+    {
+        if (!this.range)
+            return;
+        this.range = this.range.rebaseAfterTextEdit(oldRange, newRange);
+    }
+}
+
+/**
+ * @constructor
  * @param {!WebInspector.CSSStyleModel} cssModel
  * @param {!CSSAgent.CSSRule} payload
  * @param {!Array.<number>=} matchingSelectors
@@ -901,11 +934,12 @@ WebInspector.CSSRule = function(cssModel, payload, matchingSelectors)
     this.styleSheetId = payload.styleSheetId;
     if (matchingSelectors)
         this.matchingSelectors = matchingSelectors;
-    this.selectors = payload.selectorList.selectors;
-    for (var i = 0; i < this.selectors.length; ++i) {
-        var selector = this.selectors[i];
-        if (selector.range)
-            selector.range = WebInspector.TextRange.fromObject(selector.range);
+
+    /** @type {!Array.<!WebInspector.CSSRuleSelector>} */
+    this.selectors = [];
+    for (var i = 0; i < payload.selectorList.selectors.length; ++i) {
+        var selectorPayload = payload.selectorList.selectors[i];
+        this.selectors.push(WebInspector.CSSRuleSelector.parsePayload(selectorPayload));
     }
     this.selectorText = this.selectors.select("value").join(", ");
 
@@ -948,11 +982,8 @@ WebInspector.CSSRule.prototype = {
         if (this.styleSheetId === styleSheetId) {
             if (this.selectorRange)
                 this.selectorRange = this.selectorRange.rebaseAfterTextEdit(oldRange, newRange);
-            for (var i = 0; i < this.selectors.length; ++i) {
-                var selector = this.selectors[i];
-                if (selector.range)
-                    selector.range = selector.range.rebaseAfterTextEdit(oldRange, newRange);
-            }
+            for (var i = 0; i < this.selectors.length; ++i)
+                this.selectors[i].sourceStyleRuleEdited(oldRange, newRange);
         }
         if (this.media) {
             for (var i = 0; i < this.media.length; ++i)
