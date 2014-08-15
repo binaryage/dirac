@@ -1596,6 +1596,7 @@ WebInspector.StylePropertiesSection.prototype = {
             var rawLocation = new WebInspector.CSSLocation(target, this.rule.styleSheetId, this.rule.sourceURL, this.rule.lineNumberInSource(index), this.rule.columnNumberInSource(index));
             var uiLocation = WebInspector.cssWorkspaceBinding.rawLocationToUILocation(rawLocation);
             WebInspector.Revealer.reveal(uiLocation);
+            event.consume(true);
             return;
         }
         this._startEditingOnMouseEvent();
