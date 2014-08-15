@@ -66,7 +66,6 @@ function defineCommonExtensionSymbols(apiPrivate)
         PanelSearch: "panel-search-",
         ResourceAdded: "resource-added",
         ResourceContentCommitted: "resource-content-committed",
-        TimelineEventRecorded: "timeline-event-recorded",
         ViewShown: "view-shown-",
         ViewHidden: "view-hidden-"
     };
@@ -189,7 +188,6 @@ function InspectorExtensionAPI()
     this.panels = new Panels();
     this.network = new Network();
     defineDeprecatedProperty(this, "webInspector", "resources", "network");
-    this.timeline = new Timeline();
     this.console = new ConsoleAPI();
 }
 
@@ -442,7 +440,6 @@ var ExtensionSidebarPane = declareInterfaceClass(ExtensionSidebarPaneImpl);
 var PanelWithSidebar = declareInterfaceClass(PanelWithSidebarImpl);
 var Request = declareInterfaceClass(RequestImpl);
 var Resource = declareInterfaceClass(ResourceImpl);
-var Timeline = declareInterfaceClass(TimelineImpl);
 
 /**
  * @constructor
@@ -835,14 +832,6 @@ ResourceImpl.prototype = {
     {
         extensionServer.sendRequest({ command: commands.SetResourceContent, url: this._url, content: content, commit: commit }, callback);
     }
-}
-
-/**
- * @constructor
- */
-function TimelineImpl()
-{
-    this.onEventRecorded = new EventSink(events.TimelineEventRecorded);
 }
 
 var keyboardEventRequestQueue = [];
