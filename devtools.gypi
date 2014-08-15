@@ -67,6 +67,7 @@
             'front_end/common/Console.js',
             'front_end/common/ContentProvider.js',
             'front_end/common/Geometry.js',
+            'front_end/common/Lock.js',
             'front_end/common/ModuleExtensionInterfaces.js',
             'front_end/common/modules.js',
             'front_end/common/NotificationService.js',

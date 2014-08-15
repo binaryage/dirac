@@ -238,9 +238,9 @@ WebInspector.ProfileType.prototype = {
     setProfileBeingRecorded: function(profile)
     {
         if (this._profileBeingRecorded && this._profileBeingRecorded.target())
-            this._profileBeingRecorded.target().profilingLock.release();
+            WebInspector.profilingLock.release();
         if (profile && profile.target())
-            profile.target().profilingLock.acquire();
+            WebInspector.profilingLock.acquire();
         this._profileBeingRecorded = profile;
     },
 
@@ -440,7 +440,6 @@ WebInspector.ProfileHeader.prototype = {
  * @constructor
  * @implements {WebInspector.Searchable}
  * @implements {WebInspector.ProfileType.DataDisplayDelegate}
- * @implements {WebInspector.TargetManager.Observer}
  * @extends {WebInspector.PanelWithSidebarTree}
  */
 WebInspector.ProfilesPanel = function()
@@ -501,26 +500,10 @@ WebInspector.ProfilesPanel = function()
     this.element.addEventListener("contextmenu", this._handleContextMenuEvent.bind(this), true);
     this._registerShortcuts();
 
-    WebInspector.targetManager.observeTargets(this);
+    WebInspector.profilingLock.addEventListener(WebInspector.Lock.Events.StateChanged, this._onProfilingStateChanged, this);
 }
 
 WebInspector.ProfilesPanel.prototype = {
-    /**
-     * @param {!WebInspector.Target} target
-     */
-    targetAdded: function(target)
-    {
-        target.profilingLock.addEventListener(WebInspector.Lock.Events.StateChanged, this._onProfilingStateChanged, this);
-    },
-
-    /**
-     * @param {!WebInspector.Target} target
-     */
-    targetRemoved: function(target)
-    {
-        target.profilingLock.removeEventListener(WebInspector.Lock.Events.StateChanged, this._onProfilingStateChanged, this);
-    },
-
     /**
      * @return {!WebInspector.SearchableView}
      */
@@ -617,7 +600,7 @@ WebInspector.ProfilesPanel.prototype = {
     {
         if (WebInspector.experimentsSettings.disableAgentsWhenProfile.isEnabled())
             WebInspector.inspectorView.setCurrentPanelLocked(toggled);
-        var isAcquiredInSomeTarget = WebInspector.targetManager.targets().some(function(target) { return target.profilingLock.isAcquired(); });
+        var isAcquiredInSomeTarget = WebInspector.profilingLock.isAcquired();
         var enable = toggled || !isAcquiredInSomeTarget;
         this.recordButton.setEnabled(enable);
         this.recordButton.toggled = toggled;

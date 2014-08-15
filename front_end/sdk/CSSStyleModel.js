@@ -51,7 +51,7 @@ WebInspector.CSSStyleModel = function(target)
     this._styleSheetIdsForURL = new StringMap();
 
     if (WebInspector.experimentsSettings.disableAgentsWhenProfile.isEnabled())
-        target.profilingLock.addEventListener(WebInspector.Lock.Events.StateChanged, this._profilingStateChanged, this);
+        WebInspector.profilingLock.addEventListener(WebInspector.Lock.Events.StateChanged, this._profilingStateChanged, this);
 }
 
 WebInspector.CSSStyleModel.PseudoStatePropertyName = "pseudoState";
@@ -85,7 +85,7 @@ WebInspector.CSSStyleModel.MediaTypes = ["all", "braille", "embossed", "handheld
 WebInspector.CSSStyleModel.prototype = {
     _profilingStateChanged: function()
     {
-        if (this.target().profilingLock.isAcquired()) {
+        if (WebInspector.profilingLock.isAcquired()) {
             this._agent.disable();
             this._isEnabled = false;
             this._resetStyleSheets();
