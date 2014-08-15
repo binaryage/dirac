@@ -95,14 +95,7 @@ WebInspector.ScreencastView.prototype = {
         WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.ScreencastFrame, this._screencastFrame, this);
         WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.ScreencastVisibilityChanged, this._screencastVisibilityChanged, this);
 
-        WebInspector.targetManager.addModelListener(WebInspector.TimelineManager, WebInspector.TimelineManager.EventTypes.TimelineStarted, this._onTimeline.bind(this), this);
-        WebInspector.targetManager.addModelListener(WebInspector.TimelineManager, WebInspector.TimelineManager.EventTypes.TimelineStopped, this._onTimeline.bind(this), this);
-        this._timelineActive = this._isTimelineActive();
-
-        WebInspector.targetManager.addModelListener(WebInspector.CPUProfilerModel, WebInspector.CPUProfilerModel.EventTypes.ProfileStarted, this._onProfiler.bind(this), this);
-        WebInspector.targetManager.addModelListener(WebInspector.CPUProfilerModel, WebInspector.CPUProfilerModel.EventTypes.ProfileStopped, this._onProfiler.bind(this), this);
-        this._profilerActive = this._isProfilerActive();
-
+        WebInspector.profilingLock().addEventListener(WebInspector.Lock.Events.StateChanged, this._onProfilingStateChange, this);
         this._updateGlasspane();
     },
 
@@ -118,7 +111,7 @@ WebInspector.ScreencastView.prototype = {
 
     _startCasting: function()
     {
-        if (this._timelineActive || this._profilerActive)
+        if (WebInspector.profilingLock().isAcquired())
             return;
         if (this._isCasting)
             return;
@@ -189,23 +182,12 @@ WebInspector.ScreencastView.prototype = {
         this._updateGlasspane();
     },
 
-    _onTimeline: function()
-    {
-        this._timelineActive = this._isTimelineActive();
-        if (this._timelineActive)
-            this._stopCasting();
-        else
-            this._startCasting();
-        this._updateGlasspane();
-    },
-
     /**
      * @param {!WebInspector.Event} event
      */
-    _onProfiler: function(event)
+    _onProfilingStateChange: function(event)
     {
-        this._profilerActive = this._isProfilerActive();
-        if (this._profilerActive)
+        if (WebInspector.profilingLock().isAcquired())
             this._stopCasting();
         else
             this._startCasting();
@@ -217,11 +199,8 @@ WebInspector.ScreencastView.prototype = {
         if (this._targetInactive) {
             this._glassPaneElement.textContent = WebInspector.UIString("The tab is inactive");
             this._glassPaneElement.classList.remove("hidden");
-        } else if (this._timelineActive) {
-            this._glassPaneElement.textContent = WebInspector.UIString("Timeline is active");
-            this._glassPaneElement.classList.remove("hidden");
-        } else if (this._profilerActive) {
-            this._glassPaneElement.textContent = WebInspector.UIString("CPU profiler is active");
+        } else if (WebInspector.profilingLock().isAcquired()) {
+            this._glassPaneElement.textContent = WebInspector.UIString("Profiling in progress");
             this._glassPaneElement.classList.remove("hidden");
         } else {
             this._glassPaneElement.classList.add("hidden");
@@ -800,16 +779,6 @@ WebInspector.ScreencastView.prototype = {
         this._navigationUrl.focus();
         this._navigationUrl.select();
         return true;
-    },
-
-    _isTimelineActive: function()
-    {
-        return WebInspector.targetManager.targets().some(function(target){ return target.timelineManager.isStarted();});
-    },
-
-    _isProfilerActive: function()
-    {
-        return WebInspector.targetManager.targets().some(function(target){ return target.cpuProfilerModel.isRecordingProfile();});
     },
 
   __proto__: WebInspector.VBox.prototype
