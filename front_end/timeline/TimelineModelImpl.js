@@ -20,7 +20,6 @@ WebInspector.TimelineModelImpl = function()
     WebInspector.targetManager.addModelListener(WebInspector.TimelineManager, WebInspector.TimelineManager.EventTypes.TimelineEventRecorded, this._onRecordAdded, this);
     WebInspector.targetManager.addModelListener(WebInspector.TimelineManager, WebInspector.TimelineManager.EventTypes.TimelineStarted, this._onStarted, this);
     WebInspector.targetManager.addModelListener(WebInspector.TimelineManager, WebInspector.TimelineManager.EventTypes.TimelineStopped, this._onStopped, this);
-    WebInspector.targetManager.addModelListener(WebInspector.TimelineManager, WebInspector.TimelineManager.EventTypes.TimelineAllEventsReceived, this._onAllEventsReceived, this);
     WebInspector.targetManager.addModelListener(WebInspector.TimelineManager, WebInspector.TimelineManager.EventTypes.TimelineProgress, this._onProgress, this);
     WebInspector.targetManager.observeTargets(this);
 }
@@ -133,20 +132,16 @@ WebInspector.TimelineModelImpl.prototype = {
         // We were buffering events, discard those that got through, the real ones are coming!
         this.reset();
         this._currentTarget = timelineManager.target();
-        if (event.data) {
+
+        var events = /** @type {!Array.<!TimelineAgent.TimelineEvent>} */ (event.data.events);
+        for (var i = 0; i < events.length; ++i)
+            this._addRecord(events[i]);
+
+        if (event.data.consoleTimeline) {
             // Stopped from console.
             this._fireRecordingStopped(null, null);
         }
-    },
 
-    /**
-     * @param {!WebInspector.Event} event
-     */
-    _onAllEventsReceived: function(event)
-    {
-        var timelineManager = /** @type {!WebInspector.TimelineManager} */ (event.target);
-        if (timelineManager.target() !== this._currentTarget)
-            return;
         this._collectionEnabled = false;
     },
 

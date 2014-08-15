@@ -46,7 +46,6 @@ WebInspector.TimelineManager.EventTypes = {
     TimelineStarted: "TimelineStarted",
     TimelineStopped: "TimelineStopped",
     TimelineEventRecorded: "TimelineEventRecorded",
-    TimelineAllEventsReceived: "TimelineAllEventsReceived",
     TimelineProgress: "TimelineProgress"
 }
 
@@ -139,12 +138,11 @@ WebInspector.TimelineManager.prototype = {
      */
     _stopped: function(consoleTimeline, events)
     {
-        this.dispatchEventToListeners(WebInspector.TimelineManager.EventTypes.TimelineStopped, consoleTimeline);
-        if (events) {
-            for (var i = 0; i < events.length; ++i)
-                this._dispatcher.eventRecorded(events[i]);
-        }
-        this.dispatchEventToListeners(WebInspector.TimelineManager.EventTypes.TimelineAllEventsReceived, 0);
+        var data = {
+            consoleTimeline: consoleTimeline,
+            events: events || []
+        };
+        this.dispatchEventToListeners(WebInspector.TimelineManager.EventTypes.TimelineStopped, data);
     },
 
     _configureCpuProfilerSamplingInterval: function()
