@@ -291,6 +291,7 @@ WebInspector.ExperimentsSettings = function(experimentsEnabled)
     // Add currently running experiments here.
     this.applyCustomStylesheet = this._createExperiment("applyCustomStylesheet", "Allow custom UI themes");
     this.canvasInspection = this._createExperiment("canvasInspection ", "Canvas inspection");
+    this.colorPicker = this._createExperiment("colorPicker", "Color picker", true);
     this.devicesPanel = this._createExperiment("devicesPanel", "Devices panel");
     this.disableAgentsWhenProfile = this._createExperiment("disableAgentsWhenProfile", "Disable other agents and UI when profiler is active", true);
     this.dockToLeft = this._createExperiment("dockToLeft", "Dock to left", true);
@@ -298,8 +299,8 @@ WebInspector.ExperimentsSettings = function(experimentsEnabled)
     this.fileSystemInspection = this._createExperiment("fileSystemInspection", "FileSystem inspection");
     this.gpuTimeline = this._createExperiment("gpuTimeline", "GPU data on timeline", true);
     this.layersPanel = this._createExperiment("layersPanel", "Layers panel");
-    this.timelineOnTraceEvents = this._createExperiment("timelineOnTraceEvents", "Timeline on trace events");
     this.paintProfiler = this._createExperiment("paintProfiler", "Paint profiler");
+    this.timelineOnTraceEvents = this._createExperiment("timelineOnTraceEvents", "Timeline on trace events");
     this.timelinePowerProfiler = this._createExperiment("timelinePowerProfiler", "Timeline power profiler");
     this.timelineJSCPUProfile = this._createExperiment("timelineJSCPUProfile", "Timeline with JS sampling");
 

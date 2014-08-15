@@ -551,6 +551,15 @@
                 "description": "Queries more detailed quota and usage data than Storage API provides.",
                 "hidden": true,
                 "handlers": ["browser"]
+            },
+            {
+                "name": "setColorPickerEnabled",
+                "parameters": [
+                    { "name": "enabled", "type": "boolean", "description": "Shows / hides color picker" }
+                ],
+                "description": "Shows / hides color picker",
+                "hidden": true,
+                "handlers": ["browser"]
             }
         ],
         "events": [
@@ -672,6 +681,15 @@
                     { "name": "viewport", "$ref": "Viewport", "description": "Viewport description." }
                 ],
                 "hidden": true
+            },
+            {
+                "name": "colorPicked",
+                "description": "Fired when a color has been picked.",
+                "parameters": [
+                    { "name": "color", "type": "string", "description": "Color" }
+                ],
+                "hidden": true,
+                "handlers": ["browser"]
             }
         ]
     },

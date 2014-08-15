@@ -393,7 +393,7 @@ Date.prototype.toISO8601Compact = function()
 /**
  * @return {string}
  */
- Date.prototype.toConsoleTime = function()
+Date.prototype.toConsoleTime = function()
 {
     /**
      * @param {number} x

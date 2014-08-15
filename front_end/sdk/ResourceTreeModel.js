@@ -72,7 +72,8 @@ WebInspector.ResourceTreeModel.EventTypes = {
     SecurityOriginRemoved: "SecurityOriginRemoved",
     ScreencastFrame: "ScreencastFrame",
     ScreencastVisibilityChanged: "ScreencastVisibilityChanged",
-    ViewportChanged: "ViewportChanged"
+    ViewportChanged: "ViewportChanged",
+    ColorPicked: "ColorPicked"
 }
 
 WebInspector.ResourceTreeModel.prototype = {
@@ -822,6 +823,14 @@ WebInspector.PageDispatcher.prototype = {
     viewportChanged: function(viewport)
     {
         this._resourceTreeModel.dispatchEventToListeners(WebInspector.ResourceTreeModel.EventTypes.ViewportChanged, viewport);
+    },
+
+    /**
+     * @param {!DOMAgent.RGBA} color
+     */
+    colorPicked: function(color)
+    {
+        this._resourceTreeModel.dispatchEventToListeners(WebInspector.ResourceTreeModel.EventTypes.ColorPicked, color);
     }
 }
 
