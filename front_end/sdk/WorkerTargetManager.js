@@ -13,8 +13,10 @@ WebInspector.WorkerTargetManager = function(mainTarget, targetManager)
     this._mainTarget = mainTarget;
     this._targetManager = targetManager;
     mainTarget.workerManager.addEventListener(WebInspector.WorkerManager.Events.WorkerAdded, this._onWorkerAdded, this);
+    mainTarget.workerManager.addEventListener(WebInspector.WorkerManager.Events.WorkersCleared, this._onWorkersCleared, this);
     WebInspector.profilingLock().addEventListener(WebInspector.Lock.Events.StateChanged, this._onProfilingStateChanged, this);
     this._onProfilingStateChanged();
+    this._lastAnonymousTargetId = 0;
 }
 
 WebInspector.WorkerTargetManager.prototype = {
@@ -38,7 +40,9 @@ WebInspector.WorkerTargetManager.prototype = {
          */
         function onConnectionReady(connection)
         {
-            this._targetManager.createTarget(WebInspector.UIString("Worker %s", data.url.asParsedURL().lastPathComponent), connection, targetCreated)
+            var parsedURL = data.url.asParsedURL();
+            var workerId = parsedURL ? parsedURL.lastPathComponent : "#" + (++this._lastAnonymousTargetId);
+            this._targetManager.createTarget(WebInspector.UIString("Worker %s", workerId), connection, targetCreated);
         }
 
         /**
@@ -49,6 +53,11 @@ WebInspector.WorkerTargetManager.prototype = {
             if (data.inspectorConnected)
                 target.runtimeAgent().run();
         }
+    },
+
+    _onWorkersCleared: function()
+    {
+        this._lastAnonymousTargetId = 0;
     }
 }
 
