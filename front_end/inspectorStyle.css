@@ -1413,6 +1413,10 @@ iframe.panel.extension {
     white-space: nowrap;
 }
 
+.placard:nth-of-type(2n) {
+    background-color: rgb(234, 243, 255);
+}
+
 .placard.selected {
     background-color: rgb(212, 212, 212);
     background-clip: padding-box;
