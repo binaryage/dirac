@@ -472,7 +472,8 @@
                     { "name": "enabled", "type": "boolean", "description": "Whether the touch event emulation should be enabled." }
                 ],
                 "description": "Toggles mouse event-based touch event emulation.",
-                "hidden": true
+                "hidden": true,
+                "handlers": ["browser", "renderer"]
             },
             {
                 "name": "setEmulatedMedia",
