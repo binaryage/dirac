@@ -599,6 +599,7 @@
 }
 
 .sidebar-pane .style-panes-wrapper {
+    transform: translateZ(0);
     flex: 1;
     overflow-y: auto;
     position: relative;
