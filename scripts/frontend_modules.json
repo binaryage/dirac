@@ -8,7 +8,6 @@
             "common/Geometry.js",
             "common/Console.js",
             "common/ContentProvider.js",
-            "common/Lock.js",
             "common/NotificationService.js",
             "common/Object.js",
             "common/ParsedURL.js",

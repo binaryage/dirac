@@ -55,7 +55,7 @@ WebInspector.DebuggerModel = function(target)
     WebInspector.settings.pauseOnCaughtException.addChangeListener(this._pauseOnExceptionStateChanged, this);
 
     WebInspector.settings.enableAsyncStackTraces.addChangeListener(this._asyncStackTracesStateChanged, this);
-    WebInspector.profilingLock.addEventListener(WebInspector.Lock.Events.StateChanged, this._profilingStateChanged, this);
+    target.profilingLock.addEventListener(WebInspector.Lock.Events.StateChanged, this._profilingStateChanged, this);
 
     this.enableDebugger();
 
@@ -171,7 +171,7 @@ WebInspector.DebuggerModel.prototype = {
     _profilingStateChanged: function()
     {
         if (WebInspector.experimentsSettings.disableAgentsWhenProfile.isEnabled()) {
-            if (WebInspector.profilingLock.isAcquired())
+            if (this.target().profilingLock.isAcquired())
                 this.disableDebugger();
             else
                 this.enableDebugger();
@@ -182,7 +182,7 @@ WebInspector.DebuggerModel.prototype = {
     _asyncStackTracesStateChanged: function()
     {
         const maxAsyncStackChainDepth = 4;
-        var enabled = WebInspector.settings.enableAsyncStackTraces.get() && !WebInspector.profilingLock.isAcquired();
+        var enabled = WebInspector.settings.enableAsyncStackTraces.get() && !this.target().profilingLock.isAcquired();
         this._agent.setAsyncCallStackDepth(enabled ? maxAsyncStackChainDepth : 0);
     },
 

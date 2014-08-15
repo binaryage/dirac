@@ -949,7 +949,7 @@ WebInspector.DOMModel = function(target) {
     this._highlighter = this._defaultHighlighter;
 
     if (WebInspector.experimentsSettings.disableAgentsWhenProfile.isEnabled())
-        WebInspector.profilingLock.addEventListener(WebInspector.Lock.Events.StateChanged, this._profilingStateChanged, this);
+        target.profilingLock.addEventListener(WebInspector.Lock.Events.StateChanged, this._profilingStateChanged, this);
 
     this._agent.enable();
 }
@@ -970,7 +970,7 @@ WebInspector.DOMModel.Events = {
 WebInspector.DOMModel.prototype = {
     _profilingStateChanged: function()
     {
-        if (WebInspector.profilingLock.isAcquired())
+        if (this.target().profilingLock.isAcquired())
             this._agent.disable();
         else
             this._agent.enable();
