@@ -38,10 +38,15 @@ WebInspector.DocumentationURLProvider._sources = [
  */
 WebInspector.DocumentationURLProvider._urlFormat = "http://docs.webplatform.org/w/api.php?action=query&titles=%s%s&prop=revisions&rvprop=timestamp|content&format=json"
 
+/**
+ * @typedef {{url: string, name: string, searchItem: string}}
+ */
+WebInspector.DocumentationURLProvider.ItemDescriptor;
+
 WebInspector.DocumentationURLProvider.prototype = {
     /**
      * @param {string} searchTerm
-     * @return {!Array.<{url: string, name: string}>}
+     * @return {!Array.<!WebInspector.DocumentationURLProvider.ItemDescriptor>}
      */
     itemDescriptors: function(searchTerm)
     {
@@ -56,13 +61,14 @@ WebInspector.DocumentationURLProvider.prototype = {
 
         /**
          * @param {string} searchTerm
-         * @return {{url: string, name: string}}
+         * @return {!WebInspector.DocumentationURLProvider.ItemDescriptor}
          */
         function createDescriptor(searchTerm)
         {
             return {
                 url: String.sprintf(WebInspector.DocumentationURLProvider._urlFormat, sourceRef.url, searchTerm),
-                name: sourceRef.name
+                name: sourceRef.name,
+                searchItem: searchTerm
             };
         }
     }

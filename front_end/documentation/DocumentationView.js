@@ -45,21 +45,52 @@ WebInspector.DocumentationView.ContextMenuProvider.prototype = {
         if (!(target instanceof WebInspector.CodeMirrorTextEditor))
             return;
         var textEditor = /** @type {!WebInspector.CodeMirrorTextEditor} */ (target);
-        var selection = textEditor.selection();
-        if (!selection || selection.isEmpty() || selection.startLine !== selection.endLine)
-            return;
-        var selectedText = textEditor.copyRange(selection);
-        var urlProvider = new WebInspector.DocumentationURLProvider();
-        var descriptors = urlProvider.itemDescriptors(selectedText);
+        var descriptors = this._determineDescriptors(textEditor);
+
         if (!descriptors.length)
             return;
         if (descriptors.length === 1) {
             var formatString = WebInspector.useLowerCaseMenuTitles() ? "Show documentation for %s.%s" : "Show Documentation for %s.%s";
-            contextMenu.appendItem(WebInspector.UIString(formatString, descriptors[0].name, selectedText), WebInspector.DocumentationView.showDocumentationURL.bind(null, descriptors[0].url));
+            contextMenu.appendItem(WebInspector.UIString(formatString, descriptors[0].name, descriptors[0].searchItem), WebInspector.DocumentationView.showDocumentationURL.bind(null, descriptors[0].url));
             return;
         }
         var subMenuItem = contextMenu.appendSubMenuItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Show documentation for..." : "Show Documentation for..."));
         for (var i = 0; i < descriptors.length; ++i)
-            subMenuItem.appendItem(String.sprintf("%s.%s", descriptors[i].name, selectedText), WebInspector.DocumentationView.showDocumentationURL.bind(null, descriptors[i].url));
+            subMenuItem.appendItem(String.sprintf("%s.%s", descriptors[i].name, descriptors[i].searchItem), WebInspector.DocumentationView.showDocumentationURL.bind(null, descriptors[i].url));
+    },
+
+    /**
+     * @param {!WebInspector.CodeMirrorTextEditor} textEditor
+     * @return {!Array.<!WebInspector.DocumentationURLProvider.ItemDescriptor>}
+     */
+    _determineDescriptors: function(textEditor)
+    {
+        var urlProvider = new WebInspector.DocumentationURLProvider();
+        var textSelection = textEditor.selection().normalize();
+
+        if (!textSelection.isEmpty()) {
+            if (textSelection.startLine !== textSelection.endLine)
+                return [];
+            return urlProvider.itemDescriptors(textEditor.copyRange(textSelection));
+        }
+
+        var descriptors = computeDescriptors(textSelection.startColumn);
+        if (descriptors.length)
+            return descriptors;
+
+        return computeDescriptors(textSelection.startColumn - 1);
+
+        /**
+         * @param {number} column
+         * @return {!Array.<!WebInspector.DocumentationURLProvider.ItemDescriptor>}
+         */
+        function computeDescriptors(column)
+        {
+            var token = textEditor.tokenAtTextPosition(textSelection.startLine, column);
+            if (!token)
+                return [];
+            var tokenText = textEditor.line(textSelection.startLine).substring(token.startColumn, token.endColumn);
+            return urlProvider.itemDescriptors(tokenText);
+        }
     }
 }
