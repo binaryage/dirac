@@ -47,6 +47,39 @@ function loadResource(url)
     return xhr.responseText;
 }
 
+
+/**
+ * http://tools.ietf.org/html/rfc3986#section-5.2.4
+ * @param {string} path
+ * @return {string}
+ */
+function normalizePath(path)
+{
+    if (path.indexOf("..") === -1 && path.indexOf('.') === -1)
+        return path;
+
+    var normalizedSegments = [];
+    var segments = path.split("/");
+    for (var i = 0; i < segments.length; i++) {
+        var segment = segments[i];
+        if (segment === ".")
+            continue;
+        else if (segment === "..")
+            normalizedSegments.pop();
+        else if (segment)
+            normalizedSegments.push(segment);
+    }
+    var normalizedPath = normalizedSegments.join("/");
+    if (normalizedPath[normalizedPath.length - 1] === "/")
+        return normalizedPath;
+    if (path[0] === "/" && normalizedPath)
+        normalizedPath = "/" + normalizedPath;
+    if ((path[path.length - 1] === "/") || (segments[segments.length - 1] === ".") || (segments[segments.length - 1] === ".."))
+        normalizedPath = normalizedPath + "/";
+
+    return normalizedPath;
+}
+
 /**
  * This function behavior depends on the "debug_devtools" flag value.
  * - In debug mode it loads scripts synchronously via xhr request.
@@ -62,6 +95,8 @@ function loadResource(url)
 function importScript(scriptName)
 {
     var sourceURL = self._importScriptPathPrefix + scriptName;
+    var schemaIndex = sourceURL.indexOf("://") + 3;
+    sourceURL = sourceURL.substring(0, schemaIndex) + normalizePath(sourceURL.substring(schemaIndex));
     if (_importedScripts[sourceURL])
         return;
     _importedScripts[sourceURL] = true;
