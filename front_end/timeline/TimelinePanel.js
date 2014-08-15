@@ -34,7 +34,6 @@
  * @extends {WebInspector.Panel}
  * @implements {WebInspector.TimelineModeViewDelegate}
  * @implements {WebInspector.Searchable}
- * @implements {WebInspector.TargetManager.Observer}
  */
 WebInspector.TimelinePanel = function()
 {
@@ -124,6 +123,7 @@ WebInspector.TimelinePanel = function()
 
     this._onModeChanged();
     this._detailsSplitView.show(this.element);
+    WebInspector.profilingLock().addEventListener(WebInspector.Lock.Events.StateChanged, this._onProfilingStateChanged, this);
 }
 
 WebInspector.TimelinePanel.OverviewMode = {
@@ -138,22 +138,6 @@ WebInspector.TimelinePanel.headerHeight = 20;
 WebInspector.TimelinePanel.durationFilterPresetsMs = [0, 1, 15];
 
 WebInspector.TimelinePanel.prototype = {
-    /**
-     * @param {!WebInspector.Target} target
-     */
-    targetAdded: function(target)
-    {
-        target.profilingLock.addEventListener(WebInspector.Lock.Events.StateChanged, this._onProfilingStateChanged, this);
-    },
-
-    /**
-     * @param {!WebInspector.Target} target
-     */
-    targetRemoved: function(target)
-    {
-        target.profilingLock.removeEventListener(WebInspector.Lock.Events.StateChanged, this._onProfilingStateChanged, this);
-    },
-
     /**
      * @return {?WebInspector.SearchableView}
      */
@@ -690,7 +674,7 @@ WebInspector.TimelinePanel.prototype = {
      */
     _updateToggleTimelineButton: function(toggled)
     {
-        var isAcquiredInSomeTarget = WebInspector.targetManager.targets().some(function(target) { return target.profilingLock.isAcquired(); });
+        var isAcquiredInSomeTarget = WebInspector.profilingLock().isAcquired();
         this.toggleTimelineButton.toggled = toggled;
         if (toggled) {
             this.toggleTimelineButton.title = WebInspector.UIString("Stop");

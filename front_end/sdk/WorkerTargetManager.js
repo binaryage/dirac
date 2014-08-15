@@ -13,14 +13,14 @@ WebInspector.WorkerTargetManager = function(mainTarget, targetManager)
     this._mainTarget = mainTarget;
     this._targetManager = targetManager;
     mainTarget.workerManager.addEventListener(WebInspector.WorkerManager.Events.WorkerAdded, this._onWorkerAdded, this);
-    mainTarget.profilingLock.addEventListener(WebInspector.Lock.Events.StateChanged, this._onProfilingStateChanged, this);
+    WebInspector.profilingLock().addEventListener(WebInspector.Lock.Events.StateChanged, this._onProfilingStateChanged, this);
     this._onProfilingStateChanged();
 }
 
 WebInspector.WorkerTargetManager.prototype = {
     _onProfilingStateChanged: function()
     {
-        var acquired = this._mainTarget.profilingLock.isAcquired();
+        var acquired = WebInspector.profilingLock().isAcquired();
         this._mainTarget.workerAgent().setAutoconnectToWorkers(!acquired);
     },
 

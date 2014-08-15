@@ -101,7 +101,7 @@ WebInspector.TracingModel.prototype = {
      */
     start: function(categoryFilter, options, callback)
     {
-        this.target().profilingLock.acquire();
+        WebInspector.profilingLock().acquire();
         this.reset();
         var bufferUsageReportingIntervalMs = 500;
         TracingAgent.start(categoryFilter, options, bufferUsageReportingIntervalMs, callback);
@@ -113,7 +113,7 @@ WebInspector.TracingModel.prototype = {
         if (!this._active)
             return;
         TracingAgent.end(this._onStop.bind(this));
-        this.target().profilingLock.release();
+        WebInspector.profilingLock().release();
     },
 
     /**
