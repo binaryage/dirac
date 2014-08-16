@@ -357,6 +357,7 @@ WebInspector.MediaQueryInspector.prototype = {
         var thresholds = this._mediaQueryThresholds();
         for (var i = 0; i < thresholds.length; ++i) {
             var thresholdElement = this._rulerDecorationLayer.createChild("div", "media-inspector-threshold-serif");
+            thresholdElement.title = thresholds[i] + "px";
             thresholdElement._value = thresholds[i];
             thresholdElement.style.left = (thresholds[i] - this._offset) / zoomFactor + "px";
         }
