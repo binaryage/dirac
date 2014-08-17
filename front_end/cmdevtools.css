@@ -243,6 +243,7 @@
   border-top: 1px solid rgb(215, 215, 215);
   line-height: 1.2;
   white-space: nowrap;
+  display: flex;
 }
 
 .text-editor-row-message .bubble-repeat-count {
@@ -252,6 +253,7 @@
 
 .text-editor-row-message-icon {
   margin-right: 1ex;
+  margin-top: 2px;
 }
 
 .CodeMirror .text-editor-line-decoration-icon {

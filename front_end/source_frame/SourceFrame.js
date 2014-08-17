@@ -779,7 +779,12 @@ WebInspector.SourceFrame.RowMessage = function(consoleMessage)
     this._icon = this.element.createChild("span", "text-editor-row-message-icon");
     this._icon.classList.add(WebInspector.SourceFrame._iconClassPerLevel[consoleMessage.level]);
     this._repeatCountElement = this.element.createChild("span", "bubble-repeat-count hidden error");
-    this.element.createTextChild(this._consoleMessage.messageText);
+    var linesContainer = this.element.createChild("div", "text-editor-row-message-lines");
+    var lines = this._consoleMessage.messageText.split("\n");
+    for (var i = 0; i < lines.length; ++i) {
+        var messageLine = linesContainer.createChild("div");
+        messageLine.textContent = lines[i];
+    }
 }
 
 WebInspector.SourceFrame.RowMessage.prototype = {
