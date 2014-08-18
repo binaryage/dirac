@@ -83,13 +83,13 @@ WebInspector.ViewportDataGrid.prototype = {
     /**
      * @param {number} scrollHeight
      * @param {number} scrollTop
-     * @return {{topPadding: number, bottomPadding: number, visibleNodes: !Array.<!WebInspector.ViewportDataGridNode>}}
+     * @return {{topPadding: number, bottomPadding: number, visibleNodes: !Array.<!WebInspector.ViewportDataGridNode>, offset: number}}
      */
     _calculateVisibleNodes: function(scrollHeight, scrollTop)
     {
         var nodes = this._rootNode.children;
         if (this._inline)
-            return {topPadding: 0, bottomPadding: 0, visibleNodes: nodes};
+            return {topPadding: 0, bottomPadding: 0, visibleNodes: nodes, offset: 0};
 
         var size = nodes.length;
         var i = 0;
@@ -108,7 +108,7 @@ WebInspector.ViewportDataGrid.prototype = {
         for (; i < size; ++i)
             bottomPadding += nodes[i].nodeSelfHeight();
 
-        return {topPadding: topPadding, bottomPadding: bottomPadding, visibleNodes: nodes.slice(start, end)};
+        return {topPadding: topPadding, bottomPadding: bottomPadding, visibleNodes: nodes.slice(start, end), offset: start};
     },
 
     _update: function()
@@ -140,8 +140,10 @@ WebInspector.ViewportDataGrid.prototype = {
         if (previousElement.nextSibling === this._hiddenWheelTarget)
             previousElement = this._hiddenWheelTarget;
         var tBody = this.dataTableBody;
+        var offset = viewportState.offset;
         for (var i = 0; i < visibleNodes.length; ++i) {
             var element = visibleNodes[i].element();
+            element.classList.toggle("odd", (offset + i) % 2 === 0);
             tBody.insertBefore(element, previousElement.nextSibling);
             previousElement = element;
         }

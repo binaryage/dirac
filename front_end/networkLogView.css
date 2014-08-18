@@ -49,12 +49,11 @@
 }
 
 .network-log-grid.data-grid table.data {
-    background-size: 128px 82px;
-    background-image: linear-gradient(to bottom, white, white 50%, #eee 50%, #eee);
+    background: transparent;
 }
 
-.network-log-grid.data-grid.small table.data {
-    background-size: 128px 42px;
+.network-log-grid .odd {
+    background: #eee;
 }
 
 .network-log-grid.data-grid td {
@@ -96,10 +95,6 @@
     border: none;
     width: 100%;
     color: inherit;
-}
-
-.network-log-grid.data-grid .bottom-filler-td {
-    background-color: white;
 }
 
 .network-log-grid.data-grid .name-column {
