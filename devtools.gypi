@@ -421,6 +421,13 @@
             'front_end/resources/ResourcesPanel.js',
         ],
         'devtools_script_formatter_worker_js_files': [
+            'front_end/cm/css.js',
+            'front_end/cm/headlesscodemirror.js',
+            'front_end/cm/htmlmixed.js',
+            'front_end/cm/javascript.js',
+            'front_end/cm/xml.js',
+            'front_end/common/WebInspector.js',
+            'front_end/common/utilities.js',
             'front_end/common/utilities.js',
             'front_end/script_formatter_worker/CSSFormatter.js',
             'front_end/script_formatter_worker/JavaScriptFormatter.js',

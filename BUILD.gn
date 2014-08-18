@@ -292,7 +292,8 @@ concatenate_module_scripts("build_resources_module") {
 
 concatenate_module_scripts("build_script_formatter_worker_module") {
   module_name = "script_formatter_worker"
-  imported_files = gypi_values.devtools_uglify_files
+  imported_files = gypi_values.devtools_uglify_files +
+    gypi_values.devtools_script_formatter_worker_js_files
 }
 
 concatenate_module_scripts("build_settings_module") {
@@ -328,7 +329,8 @@ action("concatenated_module_descriptors") {
   inputs = [ input ] + gypi_values.devtools_module_json_files
   outputs = [ blink_devtools_output_dir + "Runtime.js" ]
 
-  args = rebase_path([ input ] + outputs + gypi_values.devtools_module_json_files, root_build_dir)
+  args = rebase_path([ input ] + outputs +
+    gypi_values.devtools_module_json_files, root_build_dir)
 }
 
 action("concatenated_devtools_css") {

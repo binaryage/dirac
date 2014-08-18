@@ -713,6 +713,7 @@
                         'inputs': [
                             '<@(_script_name)',
                             '<@(_input_file)',
+                            '<@(devtools_script_formatter_worker_js_files)',
                             '<@(devtools_uglify_files)'
                         ],
                         'outputs': ['<(PRODUCT_DIR)/resources/inspector/script_formatter_worker.js'],
@@ -724,6 +725,7 @@
                         {
                             'destination': '<(PRODUCT_DIR)/resources/inspector/script_formatter_worker',
                             'files': [
+                                # FIXME: This will excessively copy files from common/ and cm/ folders into worker folder, which is fine for the debug mode.
                                 '<@(devtools_script_formatter_worker_js_files)',
                                 'front_end/script_formatter_worker/module.json',
                             ],
