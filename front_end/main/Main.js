@@ -816,7 +816,7 @@ new WebInspector.Main();
 
 WebInspector.__defineGetter__("inspectedPageURL", function()
 {
-    return WebInspector.resourceTreeModel.inspectedPageURL();
+    return WebInspector.targetManager.inspectedPageURL();
 });
 
 /**

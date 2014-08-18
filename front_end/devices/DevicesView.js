@@ -165,7 +165,7 @@ WebInspector.DevicesView.prototype = {
                         var newPageButton = browserSection.createChild("button", "text-button");
                         newPageButton.textContent = WebInspector.UIString("Try here");
                         newPageButton.title = WebInspector.UIString("Inspect current page in this browser.");
-                        newPageButton.addEventListener("click", InspectorFrontendHost.openUrlOnRemoteDeviceAndInspect.bind(null, browser.id, WebInspector.resourceTreeModel.inspectedPageURL()), true);
+                        newPageButton.addEventListener("click", InspectorFrontendHost.openUrlOnRemoteDeviceAndInspect.bind(null, browser.id, WebInspector.targetManager.inspectedPageURL()), true);
                     }
                 }
 

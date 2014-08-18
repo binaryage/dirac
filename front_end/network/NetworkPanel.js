@@ -1238,7 +1238,7 @@ WebInspector.NetworkLogView.prototype = {
 
     _exportAll: function()
     {
-        var filename = WebInspector.resourceTreeModel.inspectedPageDomain() + ".har";
+        var filename = WebInspector.targetManager.inspectedPageDomain() + ".har";
         var stream = new WebInspector.FileOutputStream();
         stream.open(filename, openCallback.bind(this));
 

@@ -499,7 +499,7 @@ WebInspector.NavigatorView.prototype = {
 WebInspector.SourcesNavigatorView = function()
 {
     WebInspector.NavigatorView.call(this);
-    WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.InspectedURLChanged, this._inspectedURLChanged, this);
+    WebInspector.targetManager.addEventListener(WebInspector.ResourceTreeModel.EventTypes.InspectedURLChanged, this._inspectedURLChanged, this);
 }
 
 WebInspector.SourcesNavigatorView.prototype = {
@@ -524,7 +524,8 @@ WebInspector.SourcesNavigatorView.prototype = {
        var nodes = this._uiSourceCodeNodes.values();
        for (var i = 0; i < nodes.length; ++i) {
            var uiSourceCode = nodes[i].uiSourceCode();
-           if (WebInspector.resourceTreeModel.inspectedPageURL() && uiSourceCode.url === WebInspector.resourceTreeModel.inspectedPageURL())
+           var inspectedPageURL = WebInspector.targetManager.inspectedPageURL();
+           if (inspectedPageURL && uiSourceCode.url === inspectedPageURL)
               this.revealUISourceCode(uiSourceCode, true);
        }
     },
@@ -535,7 +536,7 @@ WebInspector.SourcesNavigatorView.prototype = {
     _addUISourceCode: function(uiSourceCode)
     {
         WebInspector.NavigatorView.prototype._addUISourceCode.call(this, uiSourceCode);
-        if (uiSourceCode.url === WebInspector.resourceTreeModel.inspectedPageURL())
+        if (uiSourceCode.url === WebInspector.targetManager.inspectedPageURL())
             this.revealUISourceCode(uiSourceCode, true);
      },
 
@@ -600,7 +601,7 @@ WebInspector.NavigatorTreeOutline._treeElementsCompare = function compare(treeEl
     {
         var type = treeElement.type();
         if (type === WebInspector.NavigatorTreeOutline.Types.Domain) {
-            if (treeElement.titleText === WebInspector.resourceTreeModel.inspectedPageDomain())
+            if (treeElement.titleText === WebInspector.targetManager.inspectedPageDomain())
                 return 1;
             return 2;
         }
