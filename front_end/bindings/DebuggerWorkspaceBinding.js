@@ -21,6 +21,7 @@ WebInspector.DebuggerWorkspaceBinding = function(targetManager, workspace, netwo
     targetManager.addModelListener(WebInspector.DebuggerModel, WebInspector.DebuggerModel.Events.GlobalObjectCleared, this._globalObjectCleared, this);
     targetManager.addModelListener(WebInspector.DebuggerModel, WebInspector.DebuggerModel.Events.DebuggerResumed, this._debuggerResumed, this);
     workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeRemoved, this._uiSourceCodeRemoved, this);
+    workspace.addEventListener(WebInspector.Workspace.Events.ProjectRemoved, this._projectRemoved, this);
 }
 
 WebInspector.DebuggerWorkspaceBinding.prototype = {
@@ -49,6 +50,20 @@ WebInspector.DebuggerWorkspaceBinding.prototype = {
         var targetDatas = this._targetToData.values();
         for (var i = 0; i < targetDatas.length; ++i)
             targetDatas[i]._uiSourceCodeRemoved(uiSourceCode);
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _projectRemoved: function(event)
+    {
+        var project = /** @type {!WebInspector.Project} */ (event.data);
+        var targetDatas = this._targetToData.values();
+        var uiSourceCodes = project.uiSourceCodes();
+        for (var i = 0; i < targetDatas.length; ++i) {
+            for (var j = 0; j < uiSourceCodes.length; ++j)
+                targetDatas[i]._uiSourceCodeRemoved(uiSourceCodes[j]);
+        }
     },
 
     /**

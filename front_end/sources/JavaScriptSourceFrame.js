@@ -54,9 +54,9 @@ WebInspector.JavaScriptSourceFrame = function(scriptsPanel, uiSourceCode)
     this._breakpointManager.addEventListener(WebInspector.BreakpointManager.Events.BreakpointAdded, this._breakpointAdded, this);
     this._breakpointManager.addEventListener(WebInspector.BreakpointManager.Events.BreakpointRemoved, this._breakpointRemoved, this);
 
-    this._uiSourceCode.addEventListener(WebInspector.UISourceCode.Events.ConsoleMessageAdded, this._consoleMessageAdded, this);
-    this._uiSourceCode.addEventListener(WebInspector.UISourceCode.Events.ConsoleMessageRemoved, this._consoleMessageRemoved, this);
-    this._uiSourceCode.addEventListener(WebInspector.UISourceCode.Events.ConsoleMessagesCleared, this._consoleMessagesCleared, this);
+    WebInspector.presentationConsoleMessageHelper.addConsoleMessageEventListener(WebInspector.PresentationConsoleMessageHelper.Events.ConsoleMessageAdded, this._uiSourceCode, this._consoleMessageAdded, this);
+    WebInspector.presentationConsoleMessageHelper.addConsoleMessageEventListener(WebInspector.PresentationConsoleMessageHelper.Events.ConsoleMessageRemoved, this._uiSourceCode, this._consoleMessageRemoved, this);
+    WebInspector.presentationConsoleMessageHelper.addConsoleMessageEventListener(WebInspector.PresentationConsoleMessageHelper.Events.ConsoleMessagesCleared, this._uiSourceCode, this._consoleMessagesCleared, this);
     this._uiSourceCode.addEventListener(WebInspector.UISourceCode.Events.SourceMappingChanged, this._onSourceMappingChanged, this);
     this._uiSourceCode.addEventListener(WebInspector.UISourceCode.Events.WorkingCopyChanged, this._workingCopyChanged, this);
     this._uiSourceCode.addEventListener(WebInspector.UISourceCode.Events.WorkingCopyCommitted, this._workingCopyCommitted, this);
@@ -809,7 +809,7 @@ WebInspector.JavaScriptSourceFrame.prototype = {
         for (var i = 0; i < breakpointLocations.length; ++i)
             this._breakpointAdded({data:breakpointLocations[i]});
 
-        var messages = this._uiSourceCode.consoleMessages();
+        var messages = WebInspector.presentationConsoleMessageHelper.consoleMessages(this._uiSourceCode);
         for (var i = 0; i < messages.length; ++i) {
             var message = messages[i];
             this.addMessageToSource(message.lineNumber, message.originalMessage);
@@ -904,9 +904,9 @@ WebInspector.JavaScriptSourceFrame.prototype = {
     {
         this._breakpointManager.removeEventListener(WebInspector.BreakpointManager.Events.BreakpointAdded, this._breakpointAdded, this);
         this._breakpointManager.removeEventListener(WebInspector.BreakpointManager.Events.BreakpointRemoved, this._breakpointRemoved, this);
-        this._uiSourceCode.removeEventListener(WebInspector.UISourceCode.Events.ConsoleMessageAdded, this._consoleMessageAdded, this);
-        this._uiSourceCode.removeEventListener(WebInspector.UISourceCode.Events.ConsoleMessageRemoved, this._consoleMessageRemoved, this);
-        this._uiSourceCode.removeEventListener(WebInspector.UISourceCode.Events.ConsoleMessagesCleared, this._consoleMessagesCleared, this);
+        WebInspector.presentationConsoleMessageHelper.removeConsoleMessageEventListener(WebInspector.PresentationConsoleMessageHelper.Events.ConsoleMessageAdded, this._uiSourceCode, this._consoleMessageAdded, this);
+        WebInspector.presentationConsoleMessageHelper.removeConsoleMessageEventListener(WebInspector.PresentationConsoleMessageHelper.Events.ConsoleMessageRemoved, this._uiSourceCode, this._consoleMessageRemoved, this);
+        WebInspector.presentationConsoleMessageHelper.removeConsoleMessageEventListener(WebInspector.PresentationConsoleMessageHelper.Events.ConsoleMessagesCleared, this._uiSourceCode, this._consoleMessagesCleared, this);
         this._uiSourceCode.removeEventListener(WebInspector.UISourceCode.Events.SourceMappingChanged, this._onSourceMappingChanged, this);
         this._uiSourceCode.removeEventListener(WebInspector.UISourceCode.Events.WorkingCopyChanged, this._workingCopyChanged, this);
         this._uiSourceCode.removeEventListener(WebInspector.UISourceCode.Events.WorkingCopyCommitted, this._workingCopyCommitted, this);

@@ -34,13 +34,22 @@
  */
 WebInspector.PresentationConsoleMessageHelper = function(workspace)
 {
-    /**
-     * @type {!Object.<string, !Array.<!WebInspector.ConsoleMessage>>}
-     */
-    this._pendingConsoleMessages = {};
-    this._presentationConsoleMessages = [];
     this._workspace = workspace;
 
+    /** @type {!Object.<string, !Array.<!WebInspector.ConsoleMessage>>} */
+    this._pendingConsoleMessages = {};
+
+    /** @type {!Array.<!WebInspector.PresentationConsoleMessage>} */
+    this._presentationConsoleMessages = [];
+
+    /** @type {!Map.<!WebInspector.UISourceCode, !Array.<!WebInspector.PresentationConsoleMessage>>} */
+    this._uiSourceCodeToMessages = new Map();
+
+    /** @type {!Map.<!WebInspector.UISourceCode, !WebInspector.Object>} */
+    this._uiSourceCodeToEventTarget = new Map();
+
+    workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeRemoved, this._uiSourceCodeRemoved, this);
+    workspace.addEventListener(WebInspector.Workspace.Events.ProjectRemoved, this._projectRemoved, this);
     WebInspector.multitargetConsoleModel.addEventListener(WebInspector.ConsoleModel.Events.ConsoleCleared, this._consoleCleared, this);
     WebInspector.multitargetConsoleModel.addEventListener(WebInspector.ConsoleModel.Events.MessageAdded, this._onConsoleMessageAdded, this);
     WebInspector.multitargetConsoleModel.messages().forEach(this._consoleMessageAdded, this);
@@ -49,7 +58,91 @@ WebInspector.PresentationConsoleMessageHelper = function(workspace)
     WebInspector.targetManager.addModelListener(WebInspector.DebuggerModel, WebInspector.DebuggerModel.Events.GlobalObjectCleared, this._debuggerReset, this);
 }
 
+/**
+ * @enum {string}
+ */
+WebInspector.PresentationConsoleMessageHelper.Events = {
+    ConsoleMessageAdded: "ConsoleMessageAdded",
+    ConsoleMessageRemoved: "ConsoleMessageRemoved",
+    ConsoleMessagesCleared: "ConsoleMessagesCleared",
+}
+
 WebInspector.PresentationConsoleMessageHelper.prototype = {
+    /**
+     * @param {!WebInspector.PresentationConsoleMessageHelper.Events} eventType
+     * @param {!WebInspector.UISourceCode} uiSourceCode
+     * @param {function(!WebInspector.Event)} listener
+     * @param {!Object=} thisObject
+     */
+    addConsoleMessageEventListener: function(eventType, uiSourceCode, listener, thisObject)
+    {
+        var target = this._uiSourceCodeToEventTarget.get(uiSourceCode);
+        if (!target) {
+            target = new WebInspector.Object();
+            this._uiSourceCodeToEventTarget.put(uiSourceCode, target);
+        }
+        target.addEventListener(eventType, listener, thisObject);
+    },
+
+    /**
+     * @param {!WebInspector.PresentationConsoleMessageHelper.Events} eventType
+     * @param {!WebInspector.UISourceCode} uiSourceCode
+     * @param {function(!WebInspector.Event)} listener
+     * @param {!Object=} thisObject
+     */
+    removeConsoleMessageEventListener: function(eventType, uiSourceCode, listener, thisObject)
+    {
+        var target = this._uiSourceCodeToEventTarget.get(uiSourceCode);
+        if (!target)
+            return;
+        target.removeEventListener(eventType, listener, thisObject);
+    },
+
+    /**
+     * @param {!WebInspector.UISourceCode} uiSourceCode
+     * @return {!Array.<!WebInspector.PresentationConsoleMessage>}
+     */
+    consoleMessages: function(uiSourceCode)
+    {
+        return this._uiSourceCodeToMessages.get(uiSourceCode) || [];
+    },
+
+    /**
+     * @param {!WebInspector.PresentationConsoleMessageHelper.Events} eventType
+     * @param {!WebInspector.UISourceCode} uiSourceCode
+     * @param {!WebInspector.PresentationConsoleMessage=} message
+     */
+    _dispatchConsoleEvent: function(eventType, uiSourceCode, message)
+    {
+        var target = this._uiSourceCodeToEventTarget.get(uiSourceCode);
+        if (!target)
+            return;
+        target.dispatchEventToListeners(eventType, message);
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _uiSourceCodeRemoved: function(event)
+    {
+        var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (event.data);
+        this._uiSourceCodeToEventTarget.remove(uiSourceCode);
+        this._uiSourceCodeToMessages.remove(uiSourceCode);
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _projectRemoved: function(event)
+    {
+        var project = /** @type {!WebInspector.Project} */ (event.data);
+        var uiSourceCodes = project.uiSourceCodes();
+        for (var i = 0; i < uiSourceCodes.length; ++i) {
+            this._uiSourceCodeToEventTarget.remove(uiSourceCodes[i]);
+            this._uiSourceCodeToMessages.remove(uiSourceCodes[i]);
+        }
+    },
+
     /**
      * @param {!WebInspector.Event} event
      */
@@ -134,15 +227,44 @@ WebInspector.PresentationConsoleMessageHelper.prototype = {
             delete this._pendingConsoleMessages[script.sourceURL];
     },
 
+    /**
+     * @param {!WebInspector.PresentationConsoleMessage} message
+     */
+    _presentationConsoleMessageAdded: function(message)
+    {
+        var uiSourceCode = message._uiLocation.uiSourceCode;
+        var messages = this._uiSourceCodeToMessages.get(uiSourceCode);
+        if (!messages) {
+            messages = [];
+            this._uiSourceCodeToMessages.put(uiSourceCode, messages);
+        }
+        messages.push(message);
+        this._dispatchConsoleEvent(WebInspector.PresentationConsoleMessageHelper.Events.ConsoleMessageAdded, uiSourceCode, message);
+    },
+
+    /**
+     * @param {!WebInspector.PresentationConsoleMessage} message
+     */
+    _presentationConsoleMessageRemoved: function(message)
+    {
+        var uiSourceCode = message._uiLocation.uiSourceCode;
+        var messages = this._uiSourceCodeToMessages.get(uiSourceCode);
+        if (!messages)
+            return;
+        messages.remove(message);
+        this._dispatchConsoleEvent(WebInspector.PresentationConsoleMessageHelper.Events.ConsoleMessageRemoved, uiSourceCode, message);
+    },
+
     _consoleCleared: function()
     {
         this._pendingConsoleMessages = {};
         for (var i = 0; i < this._presentationConsoleMessages.length; ++i)
             this._presentationConsoleMessages[i].dispose();
         this._presentationConsoleMessages = [];
-        var uiSourceCodes = this._workspace.uiSourceCodes();
-        for (var i = 0; i < uiSourceCodes.length; ++i)
-            uiSourceCodes[i].consoleMessagesCleared();
+        var targets = this._uiSourceCodeToEventTarget.values();
+        for (var i = 0; i < targets.length; ++i)
+            targets[i].dispatchEventToListeners(WebInspector.PresentationConsoleMessageHelper.Events.ConsoleMessagesCleared);
+        this._uiSourceCodeToMessages.clear();
     },
 
     _debuggerReset: function()
@@ -154,7 +276,6 @@ WebInspector.PresentationConsoleMessageHelper.prototype = {
 
 /**
  * @constructor
- * @implements {WebInspector.PresentationMessage}
  * @param {!WebInspector.ConsoleMessage} message
  * @param {!WebInspector.DebuggerModel.Location} rawLocation
  */
@@ -171,9 +292,9 @@ WebInspector.PresentationConsoleMessage.prototype = {
     _updateLocation: function(uiLocation)
     {
         if (this._uiLocation)
-            this._uiLocation.uiSourceCode.consoleMessageRemoved(this);
+            WebInspector.presentationConsoleMessageHelper._presentationConsoleMessageRemoved(this);
         this._uiLocation = uiLocation;
-        this._uiLocation.uiSourceCode.consoleMessageAdded(this);
+        WebInspector.presentationConsoleMessageHelper._presentationConsoleMessageAdded(this);
     },
 
     get lineNumber()
@@ -186,3 +307,6 @@ WebInspector.PresentationConsoleMessage.prototype = {
         this._liveLocation.dispose();
     }
 }
+
+/** @type {!WebInspector.PresentationConsoleMessageHelper} */
+WebInspector.presentationConsoleMessageHelper;

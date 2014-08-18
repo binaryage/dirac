@@ -50,21 +50,19 @@ WebInspector.UISourceCode = function(project, parentPath, name, originURL, url, 
     this._contentType = contentType;
     /** @type {!Array.<function(?string)>} */
     this._requestContentCallbacks = [];
-    /** @type {!Array.<!WebInspector.PresentationMessage>} */
-    this._consoleMessages = [];
 
     /** @type {!Array.<!WebInspector.Revision>} */
     this.history = [];
 }
 
+/**
+ * @enum {string}
+ */
 WebInspector.UISourceCode.Events = {
     WorkingCopyChanged: "WorkingCopyChanged",
     WorkingCopyCommitted: "WorkingCopyCommitted",
     TitleChanged: "TitleChanged",
     SavedStateUpdated: "SavedStateUpdated",
-    ConsoleMessageAdded: "ConsoleMessageAdded",
-    ConsoleMessageRemoved: "ConsoleMessageRemoved",
-    ConsoleMessagesCleared: "ConsoleMessagesCleared",
     SourceMappingChanged: "SourceMappingChanged",
 }
 
@@ -575,38 +573,6 @@ WebInspector.UISourceCode.prototype = {
     },
 
     /**
-     * @return {!Array.<!WebInspector.PresentationMessage>}
-     */
-    consoleMessages: function()
-    {
-        return this._consoleMessages;
-    },
-
-    /**
-     * @param {!WebInspector.PresentationMessage} message
-     */
-    consoleMessageAdded: function(message)
-    {
-        this._consoleMessages.push(message);
-        this.dispatchEventToListeners(WebInspector.UISourceCode.Events.ConsoleMessageAdded, message);
-    },
-
-    /**
-     * @param {!WebInspector.PresentationMessage} message
-     */
-    consoleMessageRemoved: function(message)
-    {
-        this._consoleMessages.remove(message);
-        this.dispatchEventToListeners(WebInspector.UISourceCode.Events.ConsoleMessageRemoved, message);
-    },
-
-    consoleMessagesCleared: function()
-    {
-        this._consoleMessages = [];
-        this.dispatchEventToListeners(WebInspector.UISourceCode.Events.ConsoleMessagesCleared);
-    },
-
-    /**
      * @param {number} lineNumber
      * @param {number=} columnNumber
      * @return {!WebInspector.UILocation}
@@ -620,11 +586,6 @@ WebInspector.UISourceCode.prototype = {
 
     __proto__: WebInspector.Object.prototype
 }
-
-/**
- * @interface
- */
-WebInspector.PresentationMessage = function() {}
 
 /**
  * @constructor
