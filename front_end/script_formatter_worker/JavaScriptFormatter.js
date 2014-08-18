@@ -41,6 +41,8 @@ FormatterWorker.JavaScriptFormatter = function(tokenizer, builder)
     this._nextToken = this._tokenizer.next();
 }
 
+FormatterWorker.JavaScriptFormatter._identifierRegex = /^[$A-Z_][0-9A-Z_$]*$/i;
+
 FormatterWorker.JavaScriptFormatter.prototype = {
     format: function()
     {
@@ -89,6 +91,13 @@ FormatterWorker.JavaScriptFormatter.prototype = {
         var next = this._next();
         if (next !== token)
             throw "Unexpected token: expected " + token + ", actual " + next;
+    },
+
+    _expectGeneralIdentifier: function()
+    {
+        var next = this._next();
+        if (next !== FormatterWorker.JavaScriptTokens.IDENTIFIER && !FormatterWorker.JavaScriptFormatter._identifierRegex.test(this._token.value))
+            throw "Unexpected token: expected javascript identifier, actual " + this._token.value;
     },
 
     _expectSemicolon: function()
@@ -522,7 +531,7 @@ FormatterWorker.JavaScriptFormatter.prototype = {
 
             case FormatterWorker.JavaScriptTokens.PERIOD:
                 this._consume(FormatterWorker.JavaScriptTokens.PERIOD);
-                this._expect(FormatterWorker.JavaScriptTokens.IDENTIFIER);
+                this._expectGeneralIdentifier();
                 break;
 
             default:
@@ -563,7 +572,7 @@ FormatterWorker.JavaScriptFormatter.prototype = {
 
             case FormatterWorker.JavaScriptTokens.PERIOD:
                 this._consume(FormatterWorker.JavaScriptTokens.PERIOD);
-                this._expect(FormatterWorker.JavaScriptTokens.IDENTIFIER);
+                this._expectGeneralIdentifier();
                 break;
 
             case FormatterWorker.JavaScriptTokens.LPAREN:
