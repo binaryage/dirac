@@ -374,10 +374,9 @@ WebInspector.SpectrumPopupHelper.prototype = {
 
         document.addEventListener("mousedown", this._hideProxy, false);
         window.addEventListener("resize", this._hideProxy, false);
-        if (WebInspector.experimentsSettings.colorPicker.isEnabled()) {
-            WebInspector.targetManager.addModelListener(WebInspector.ResourceTreeModel, WebInspector.ResourceTreeModel.EventTypes.ColorPicked, this._colorPicked, this);
-            PageAgent.setColorPickerEnabled(true);
-        }
+
+        WebInspector.targetManager.addModelListener(WebInspector.ResourceTreeModel, WebInspector.ResourceTreeModel.EventTypes.ColorPicked, this._colorPicked, this);
+        PageAgent.setColorPickerEnabled(true);
         return true;
     },
 
@@ -402,10 +401,8 @@ WebInspector.SpectrumPopupHelper.prototype = {
         document.removeEventListener("mousedown", this._hideProxy, false);
         window.removeEventListener("resize", this._hideProxy, false);
 
-        if (WebInspector.experimentsSettings.colorPicker.isEnabled()) {
-            PageAgent.setColorPickerEnabled(false);
-            WebInspector.targetManager.removeModelListener(WebInspector.ResourceTreeModel, WebInspector.ResourceTreeModel.EventTypes.ColorPicked, this._colorPicked, this);
-        }
+        PageAgent.setColorPickerEnabled(false);
+        WebInspector.targetManager.removeModelListener(WebInspector.ResourceTreeModel, WebInspector.ResourceTreeModel.EventTypes.ColorPicked, this._colorPicked, this);
 
         this.dispatchEventToListeners(WebInspector.SpectrumPopupHelper.Events.Hidden, !!commitEdit);
 
