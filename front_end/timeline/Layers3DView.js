@@ -651,7 +651,7 @@ WebInspector.Layers3DView.prototype = {
         var node = activeObject && activeObject.layer && activeObject.layer.nodeForSelfOrAncestor();
         var contextMenu = new WebInspector.ContextMenu(event);
         contextMenu.appendItem(WebInspector.UIString("Reset View"), this._transformController.resetAndNotify.bind(this._transformController), false);
-        if (activeObject.type() === WebInspector.Layers3DView.ActiveObject.Type.Tile)
+        if (activeObject && activeObject.type() === WebInspector.Layers3DView.ActiveObject.Type.Tile)
             contextMenu.appendItem(WebInspector.UIString("Jump to Paint Event"), this.dispatchEventToListeners.bind(this, WebInspector.Layers3DView.Events.JumpToPaintEventRequested, activeObject.traceEvent), false);
         if (node)
             contextMenu.appendApplicableItems(node);

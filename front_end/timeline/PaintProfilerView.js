@@ -245,13 +245,12 @@ WebInspector.PaintProfilerCommandLogView = function()
 {
     WebInspector.VBox.call(this);
     this.setMinimumSize(100, 25);
-    this.element.classList.add("outline-disclosure");
-    var sidebarTreeElement = this.element.createChild("ol", "sidebar-tree");
+    this.element.classList.add("outline-disclosure", "profiler-log-view", "section");
+    var sidebarTreeElement = this.element.createChild("ol", "sidebar-tree properties monospace");
     sidebarTreeElement.addEventListener("mousemove", this._onMouseMove.bind(this), false);
     sidebarTreeElement.addEventListener("mouseout", this._onMouseMove.bind(this), false);
     sidebarTreeElement.addEventListener("contextmenu", this._onContextMenu.bind(this), true);
     this.sidebarTree = new TreeOutline(sidebarTreeElement);
-    this._popoverHelper = new WebInspector.ObjectPopoverHelper(this.element, this._getHoverAnchor.bind(this), this._resolveObjectForPopover.bind(this), undefined, true);
 
     this._reset();
 }
@@ -269,6 +268,16 @@ WebInspector.PaintProfilerCommandLogView.prototype = {
     },
 
     /**
+      * @param {!TreeOutline} treeOutline
+      * @param {!WebInspector.PaintProfilerLogItem} logItem
+      */
+    _appendLogItem: function(treeOutline, logItem)
+    {
+        var treeElement = new WebInspector.LogTreeElement(this, logItem);
+        treeOutline.appendChild(treeElement);
+    },
+
+    /**
      * @param {number=} stepLeft
      * @param {number=} stepRight
      */
@@ -277,10 +286,8 @@ WebInspector.PaintProfilerCommandLogView.prototype = {
         stepLeft = stepLeft || 0;
         stepRight = stepRight || this._log.length - 1;
         this.sidebarTree.removeChildren();
-        for (var i = stepLeft; i <= stepRight; ++i) {
-            var node = new WebInspector.LogTreeElement(this, this._log[i]);
-            this.sidebarTree.appendChild(node);
-        }
+        for (var i = stepLeft; i <= stepRight; ++i)
+            this._appendLogItem(this.sidebarTree, this._log[i]);
     },
 
     _reset: function()
@@ -289,35 +296,12 @@ WebInspector.PaintProfilerCommandLogView.prototype = {
     },
 
     /**
-     * @param {!Element} target
-     * @return {!Element}
-     */
-    _getHoverAnchor: function(target)
-    {
-        return /** @type {!Element} */ (target.enclosingNodeOrSelfWithNodeName("span"));
-    },
-
-    /**
-     * @param {!Element} element
-     * @param {function(!WebInspector.RemoteObject, boolean, !Element=):undefined} showCallback
-     */
-    _resolveObjectForPopover: function(element, showCallback)
-    {
-        var liElement = element.enclosingNodeOrSelfWithNodeName("li");
-        var logItem = liElement.treeElement.representedObject;
-        var obj = {"method": logItem.method};
-        if (logItem.params)
-            obj.params = logItem.params;
-        showCallback(WebInspector.RemoteObject.fromLocalObject(obj), false);
-    },
-
-    /**
      * @param {?Event} event
      */
     _onMouseMove: function(event)
     {
         var node = this.sidebarTree.treeElementFromPoint(event.pageX, event.pageY);
-        if (node === this._lastHoveredNode)
+        if (node === this._lastHoveredNode || !(node instanceof WebInspector.LogTreeElement))
             return;
         if (this._lastHoveredNode)
             this._lastHoveredNode.setHovered(false);
@@ -334,7 +318,7 @@ WebInspector.PaintProfilerCommandLogView.prototype = {
         if (!this._target)
             return;
         var node = this.sidebarTree.treeElementFromPoint(event.pageX, event.pageY);
-        if (!node || !node.representedObject)
+        if (!node || !node.representedObject || !(node instanceof WebInspector.LogTreeElement))
             return;
         var logItem = /** @type {!WebInspector.PaintProfilerLogItem} */ (node.representedObject);
         if (!logItem.nodeId())
@@ -358,10 +342,25 @@ WebInspector.LogTreeElement = function(ownerView, logItem)
 {
     TreeElement.call(this, "", logItem);
     this._ownerView = ownerView;
-    this._update();
+    this._filled = false;
 }
 
 WebInspector.LogTreeElement.prototype = {
+    onattach: function()
+    {
+        this._update();
+        this.hasChildren = !!this.representedObject.params;
+    },
+
+    onexpand: function()
+    {
+        if (this._filled)
+            return;
+        this._filled = true;
+        for (var param in this.representedObject.params)
+            WebInspector.LogPropertyTreeElement._appendLogPropertyItem(this, param, this.representedObject.params[param]);
+    },
+
     /**
       * @param {!Object} param
       * @param {string} name
@@ -403,11 +402,7 @@ WebInspector.LogTreeElement.prototype = {
         var logItem = this.representedObject;
         var title = document.createDocumentFragment();
         title.createChild("div", "selection");
-        var span = title.createChild("span");
-        var textContent = logItem.method;
-        if (logItem.params)
-            textContent += "(" + this._paramsToString(logItem.params) + ")";
-        span.textContent = textContent;
+        title.createTextChild(logItem.method + "(" + this._paramsToString(logItem.params) + ")");
         this.title = title;
     },
 
@@ -443,6 +438,52 @@ WebInspector.LogTreeElement.prototype = {
 
     __proto__: TreeElement.prototype
 };
+
+/**
+  * @constructor
+  * @param {!{name: string, value}} property
+  * @extends {TreeElement}
+  */
+WebInspector.LogPropertyTreeElement = function(property)
+{
+    TreeElement.call(this, "", property);
+};
+
+/**
+  * @param {!TreeElement} element
+  * @param {string} name
+  * @param {*} value
+  */
+WebInspector.LogPropertyTreeElement._appendLogPropertyItem = function(element, name, value)
+{
+    var treeElement = new WebInspector.LogPropertyTreeElement({name: name, value: value});
+    element.appendChild(treeElement);
+    if (value && typeof value === "object") {
+        for (var property in value)
+            WebInspector.LogPropertyTreeElement._appendLogPropertyItem(treeElement, property, value[property]);
+    }
+};
+
+WebInspector.LogPropertyTreeElement.prototype = {
+    onattach: function()
+    {
+        var property = this.representedObject;
+        var title = document.createDocumentFragment();
+        title.createChild("div", "selection");
+        var nameElement = title.createChild("span", "name");
+        nameElement.textContent = property.name;
+        var separatorElement = title.createChild("span", "separator");
+        separatorElement.textContent = ": ";
+        if (property.value === null || typeof property.value !== "object") {
+            var valueElement = title.createChild("span", "value");
+            valueElement.textContent = JSON.stringify(property.value);
+            valueElement.classList.add("console-formatted-" + property.value === null ? "null" : typeof property.value);
+        }
+        this.title = title;
+    },
+
+    __proto__: TreeElement.prototype
+}
 
 /**
  * @return {!Object.<string, !WebInspector.PaintProfilerCategory>}
