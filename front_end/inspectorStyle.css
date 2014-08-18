@@ -27,6 +27,11 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+input[type="search"]:focus,
+input[type="text"]:focus {
+    outline: auto 5px -webkit-focus-ring-color;
+}
+
 input[type="checkbox"] {
     height: 12px;
     width: 12px;

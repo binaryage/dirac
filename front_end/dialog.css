@@ -42,3 +42,8 @@
     background-image: linear-gradient(to bottom, rgb(194, 194, 194), rgb(239, 239, 239));
 }
 
+.dialog input[type="search"]:focus,
+.dialog input[type="text"]:focus {
+    outline: none;
+}
+
