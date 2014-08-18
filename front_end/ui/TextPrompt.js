@@ -569,9 +569,6 @@ WebInspector.TextPrompt.prototype = {
      */
     _acceptSuggestionInternal: function(prefixAccepted)
     {
-        if (this._isAcceptingSuggestion)
-            return false;
-
         if (!this.autoCompleteElement || !this.autoCompleteElement.parentNode)
             return false;
 
