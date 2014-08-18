@@ -46,11 +46,11 @@ WebInspector.WorkerTargetManager.prototype = {
         }
 
         /**
-         * @param {!WebInspector.Target} target
+         * @param {?WebInspector.Target} target
          */
         function targetCreated(target)
         {
-            if (data.inspectorConnected)
+            if (target && data.inspectorConnected)
                 target.runtimeAgent().run();
         }
     },

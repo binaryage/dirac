@@ -9,7 +9,7 @@
  * @extends {Protocol.Agents}
  * @param {string} name
  * @param {!InspectorBackendClass.Connection} connection
- * @param {function(!WebInspector.Target)=} callback
+ * @param {function(?WebInspector.Target)=} callback
  */
 WebInspector.Target = function(name, connection, callback)
 {
@@ -96,10 +96,15 @@ WebInspector.Target.prototype = {
     },
 
     /**
-     * @param {function(!WebInspector.Target)=} callback
+     * @param {function(?WebInspector.Target)=} callback
      */
     _loadedWithCapabilities: function(callback)
     {
+        if (this._connection.isClosed()) {
+            callback(null);
+            return;
+        }
+
         /** @type {!WebInspector.ConsoleModel} */
         this.consoleModel = new WebInspector.ConsoleModel(this);
 
@@ -334,7 +339,7 @@ WebInspector.TargetManager.prototype = {
     /**
      * @param {string} name
      * @param {!InspectorBackendClass.Connection} connection
-     * @param {function(!WebInspector.Target)=} callback
+     * @param {function(?WebInspector.Target)=} callback
      */
     createTarget: function(name, connection, callback)
     {
@@ -342,11 +347,12 @@ WebInspector.TargetManager.prototype = {
 
         /**
          * @this {WebInspector.TargetManager}
-         * @param {!WebInspector.Target} newTarget
+         * @param {?WebInspector.Target} newTarget
          */
         function callbackWrapper(newTarget)
         {
-            this.addTarget(newTarget);
+            if (newTarget)
+                this.addTarget(newTarget);
             if (callback)
                 callback(newTarget);
         }

@@ -318,12 +318,13 @@ WebInspector.Main.prototype = {
     },
 
     /**
-     * @param {!WebInspector.Target} mainTarget
+     * @param {?WebInspector.Target} target
      */
-    _mainTargetCreated: function(mainTarget)
+    _mainTargetCreated: function(target)
     {
         console.timeStamp("Main._mainTargetCreated");
 
+        var mainTarget = /** @type {!WebInspector.Target} */(target);
         this._registerShortcuts();
 
         WebInspector.workerTargetManager = new WebInspector.WorkerTargetManager(mainTarget, WebInspector.targetManager);
