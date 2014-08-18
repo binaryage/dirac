@@ -181,7 +181,7 @@ WebInspector.Main.prototype = {
     _createModuleManager: function()
     {
         console.timeStamp("Main._createModuleManager");
-        self.runtime = new Runtime(allDescriptors);
+        self.runtime = new Runtime();
 
         // FIXME: define html-per-app, make configuration a part of the app.
         var configuration = ["main", "elements", "network", "sources", "timeline", "profiler", "resources", "audits", "console", "source_frame", "extensions", "settings"];

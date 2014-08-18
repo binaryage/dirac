@@ -3,7 +3,6 @@
         "name": "common",
         "dependencies": [],
         "sources": [
-            "common/modules.js",
             "common/Color.js",
             "common/Geometry.js",
             "common/Console.js",

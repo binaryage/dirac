@@ -87,7 +87,6 @@ invalid_type_regex = re.compile(r"@(?:" + type_checked_jsdoc_tags_or + r")\s*\{.
 
 invalid_type_designator_regex = re.compile(r"@(?:" + type_checked_jsdoc_tags_or + r")\s*.*(?<![{: ])([?!])=?\}")
 
-importscript_regex = re.compile(r"importScript\(\s*[\"']")
 error_warning_regex = re.compile(r"(?:WARNING|ERROR)")
 
 errors_found = False
@@ -99,26 +98,6 @@ def run_in_shell(command_line):
 
 def hasErrors(output):
     return re.search(error_warning_regex, output) != None
-
-
-def verify_importScript_usage():
-    errors_found = False
-    for module in modules:
-        for file_name in module["sources"]:
-            if path.basename(file_name) == module_initializer_name:
-                log_error("Module initializer (%s) may not be listed among module's scripts; found in '%s'" % (module_initializer_name, module["name"]))
-                errors_found = True
-                continue
-            try:
-                with open(path.join(devtools_frontend_path, file_name), "r") as sourceFile:
-                    source = sourceFile.read()
-                    if re.search(importscript_regex, source):
-                        log_error("importScript() call only allowed in module initializers (%s); found in %s" % (module_initializer_name, file_name))
-                        errors_found = True
-            except:
-                log_error("Failed to access %s" % file_name)
-                raise
-    return errors_found
 
 
 def dump_all_checked_files():
@@ -184,9 +163,6 @@ def check_java_path():
     print "Java executable: " + re.sub(r"\n$", "", javaPath)
 
 check_java_path()
-
-print "Verifying 'importScript' function usage..."
-errors_found |= verify_importScript_usage()
 
 modules_dir = tempfile.mkdtemp()
 common_closure_args = " --summary_detail_level 3 --jscomp_error visibility --compilation_level SIMPLE_OPTIMIZATIONS --warning_level VERBOSE --language_in ECMASCRIPT5 --accept_const_keyword --module_output_path_prefix %s/" % modules_dir

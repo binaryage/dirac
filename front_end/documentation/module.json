@@ -6,6 +6,7 @@
             "className": "WebInspector.DocumentationView.ContextMenuProvider"
         }
     ],
+    "dependencies": ["source_frame"],
     "scripts": [
         "WikiParser.js",
         "JSArticle.js",

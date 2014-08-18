@@ -81,22 +81,22 @@ action("generate_devtools_grd") {
   input_pages = [
     "$root_out_dir/resources/inspector/devtools.html",
     "$root_out_dir/resources/inspector/inspector.css",
-    "$root_out_dir/resources/inspector/audits/_module.js",
-    "$root_out_dir/resources/inspector/console/_module.js",
-    "$root_out_dir/resources/inspector/devices/_module.js",
-    "$root_out_dir/resources/inspector/elements/_module.js",
-    "$root_out_dir/resources/inspector/extensions/_module.js",
-    "$root_out_dir/resources/inspector/heap_snapshot_worker/_module.js",
-    "$root_out_dir/resources/inspector/layers/_module.js",
+    "$root_out_dir/resources/inspector/audits.js",
+    "$root_out_dir/resources/inspector/console.js",
+    "$root_out_dir/resources/inspector/devices.js",
+    "$root_out_dir/resources/inspector/elements.js",
+    "$root_out_dir/resources/inspector/extensions.js",
+    "$root_out_dir/resources/inspector/heap_snapshot_worker.js",
+    "$root_out_dir/resources/inspector/layers.js",
     "$root_out_dir/resources/inspector/main/Main.js",
-    "$root_out_dir/resources/inspector/network/_module.js",
-    "$root_out_dir/resources/inspector/profiler/_module.js",
-    "$root_out_dir/resources/inspector/resources/_module.js",
-    "$root_out_dir/resources/inspector/script_formatter_worker/_module.js",
-    "$root_out_dir/resources/inspector/source_frame/_module.js",
-    "$root_out_dir/resources/inspector/sources/_module.js",
-    "$root_out_dir/resources/inspector/temp_storage_shared_worker/_module.js",
-    "$root_out_dir/resources/inspector/timeline/_module.js",
+    "$root_out_dir/resources/inspector/network.js",
+    "$root_out_dir/resources/inspector/profiler.js",
+    "$root_out_dir/resources/inspector/resources.js",
+    "$root_out_dir/resources/inspector/script_formatter_worker.js",
+    "$root_out_dir/resources/inspector/source_frame.js",
+    "$root_out_dir/resources/inspector/sources.js",
+    "$root_out_dir/resources/inspector/temp_storage_shared_worker.js",
+    "$root_out_dir/resources/inspector/timeline.js",
     "$root_out_dir/resources/inspector/devtools_extension_api.js",
   ] + gypi_values.devtools_standalone_files + gypi_values.devtools_cm_css_files
 
@@ -179,21 +179,21 @@ action("frontend_protocol_sources") {
   ]
 }
 
-# Runs the inline_js_imports script.
+# Runs the concatenate_module_scripts script.
 #  module_name: (String) The JS module name to process.
 #  imported_files: (List of strings) The list of files the input depends on.
-template("inline_js_imports") {
+template("concatenate_module_scripts") {
   assert(defined(invoker.module_name), target_name)
   assert(defined(invoker.imported_files), target_name)
 
   action(target_name) {
-    script = "scripts/inline_js_imports.py"
+    script = "scripts/concatenate_module_scripts.py"
     module_name = invoker.module_name
 
-    input = "front_end/" + module_name + "/_module.js"
+    input = "front_end/" + module_name + "/module.json"
     inputs = [ input ] + invoker.imported_files
 
-    output = "$root_out_dir/resources/inspector/" + module_name + "/_module.js"
+    output = "$root_out_dir/resources/inspector/" + module_name + ".js"
     outputs = [ output ]
 
     args = [
@@ -203,12 +203,12 @@ template("inline_js_imports") {
   }
 }
 
-inline_js_imports("build_audits_module") {
+concatenate_module_scripts("build_audits_module") {
   module_name = "audits"
   imported_files = gypi_values.devtools_audits_js_files
 }
 
-inline_js_imports("build_console_module") {
+concatenate_module_scripts("build_console_module") {
   module_name = "console"
   imported_files = gypi_values.devtools_console_js_files
 }
@@ -218,9 +218,9 @@ action("build_core_module") {
   input_page = "front_end/inspector.html"
   inputs = [
     input_page,
+    blink_devtools_output_dir + "Runtime.js",
     blink_devtools_output_dir + "InspectorBackendCommands.js",
     blink_devtools_output_dir + "SupportedCSSProperties.js",
-    blink_devtools_output_dir + "common/modules.js",
   ] + devtools_core_js_files
 
   search_path = [
@@ -245,78 +245,78 @@ action("build_core_module") {
   ]
 }
 
-inline_js_imports("build_devices_module") {
+concatenate_module_scripts("build_devices_module") {
   module_name = "devices"
   imported_files = gypi_values.devtools_devices_js_files
 }
 
-inline_js_imports("build_documentation_module") {
+concatenate_module_scripts("build_documentation_module") {
   module_name = "documentation"
   imported_files = gypi_values.devtools_documentation_js_files
 }
 
-inline_js_imports("build_elements_module") {
+concatenate_module_scripts("build_elements_module") {
   module_name = "elements"
   imported_files = gypi_values.devtools_elements_js_files
 }
 
-inline_js_imports("build_extensions_module") {
+concatenate_module_scripts("build_extensions_module") {
   module_name = "extensions"
   imported_files = devtools_extensions_js_files
 }
 
-inline_js_imports("build_heap_snapshot_worker_module") {
+concatenate_module_scripts("build_heap_snapshot_worker_module") {
   module_name = "heap_snapshot_worker"
   imported_files = gypi_values.devtools_heap_snapshot_worker_js_files
 }
 
-inline_js_imports("build_layers_module") {
+concatenate_module_scripts("build_layers_module") {
   module_name = "layers"
   imported_files = gypi_values.devtools_layers_js_files
 }
 
-inline_js_imports("build_network_module") {
+concatenate_module_scripts("build_network_module") {
   module_name = "network"
   imported_files = gypi_values.devtools_network_js_files
 }
 
-inline_js_imports("build_profiler_module") {
+concatenate_module_scripts("build_profiler_module") {
   module_name = "profiler"
   imported_files = gypi_values.devtools_profiler_js_files
 }
 
-inline_js_imports("build_resources_module") {
+concatenate_module_scripts("build_resources_module") {
   module_name = "resources"
   imported_files = gypi_values.devtools_resources_js_files
 }
 
-inline_js_imports("build_script_formatter_worker_module") {
+concatenate_module_scripts("build_script_formatter_worker_module") {
   module_name = "script_formatter_worker"
   imported_files = gypi_values.devtools_uglify_files
 }
 
-inline_js_imports("build_settings_module") {
+concatenate_module_scripts("build_settings_module") {
   module_name = "settings"
   imported_files = gypi_values.devtools_settings_js_files
 }
 
-inline_js_imports("build_source_frame_module") {
+concatenate_module_scripts("build_source_frame_module") {
   module_name = "source_frame"
   imported_files = gypi_values.devtools_source_frame_js_files +
     gypi_values.devtools_cm_js_files
 }
 
-inline_js_imports("build_sources_module") {
+concatenate_module_scripts("build_sources_module") {
   module_name = "sources"
   imported_files = gypi_values.devtools_sources_js_files
 }
 
-inline_js_imports("build_temp_storage_shared_worker_module") {
+concatenate_module_scripts("build_temp_storage_shared_worker_module") {
   module_name = "temp_storage_shared_worker"
   imported_files = gypi_values.devtools_temp_storage_shared_worker_js_files
 }
 
-inline_js_imports("build_timeline_module") {
+concatenate_module_scripts("build_timeline_module") {
   module_name = "timeline"
   imported_files = gypi_values.devtools_timeline_js_files
 }
@@ -324,9 +324,9 @@ inline_js_imports("build_timeline_module") {
 action("concatenated_module_descriptors") {
   script = "scripts/concatenate_module_descriptors.py"
 
-  input = "front_end/common/modules.js"
+  input = "front_end/Runtime.js"
   inputs = [ input ] + gypi_values.devtools_module_json_files
-  outputs = [ blink_devtools_output_dir + "common/modules.js" ]
+  outputs = [ blink_devtools_output_dir + "Runtime.js" ]
 
   args = rebase_path([ input ] + outputs + gypi_values.devtools_module_json_files, root_build_dir)
 }

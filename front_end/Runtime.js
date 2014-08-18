@@ -28,7 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-var _importedScripts = {};
+// This gets all concatenated module descriptors in the release mode.
+var allDescriptors = [];
+var _loadedScripts = {};
 
 /**
  * @param {string} url
@@ -81,25 +83,16 @@ function normalizePath(path)
 }
 
 /**
- * This function behavior depends on the "debug_devtools" flag value.
- * - In debug mode it loads scripts synchronously via xhr request.
- * - In release mode every occurrence of "importScript" in the js files
- *   that have been whitelisted in the build system gets replaced with
- *   the script source code on the compilation phase.
- *   The build system will throw an exception if it finds an importScript() call
- *   in other files.
- *
- * To load scripts lazily in release mode call "loadScript" function.
  * @param {string} scriptName
  */
-function importScript(scriptName)
+function loadScript(scriptName)
 {
     var sourceURL = self._importScriptPathPrefix + scriptName;
     var schemaIndex = sourceURL.indexOf("://") + 3;
     sourceURL = sourceURL.substring(0, schemaIndex) + normalizePath(sourceURL.substring(schemaIndex));
-    if (_importedScripts[sourceURL])
+    if (_loadedScripts[sourceURL])
         return;
-    _importedScripts[sourceURL] = true;
+    _loadedScripts[sourceURL] = true;
     var scriptSource = loadResource(sourceURL);
     if (!scriptSource)
         throw "empty response arrived for script '" + sourceURL + "'";
@@ -117,13 +110,10 @@ function importScript(scriptName)
     self._importScriptPathPrefix = baseUrl.substring(0, baseUrl.lastIndexOf("/") + 1);
 })();
 
-var loadScript = importScript;
-
 /**
  * @constructor
- * @param {!Array.<!Runtime.ModuleDescriptor>} descriptors
  */
-var Runtime = function(descriptors)
+var Runtime = function()
 {
     /**
      * @type {!Array.<!Runtime.Module>}
@@ -147,8 +137,16 @@ var Runtime = function(descriptors)
      * @type {!Object.<string, !Runtime.ModuleDescriptor>}
      */
     this._descriptorsMap = {};
-    for (var i = 0; i < descriptors.length; ++i)
-        this._descriptorsMap[descriptors[i]["name"]] = descriptors[i];
+    for (var i = 0; i < allDescriptors.length; ++i)
+        this._descriptorsMap[allDescriptors[i]["name"]] = allDescriptors[i];
+}
+
+/**
+ * @return {boolean}
+ */
+Runtime.isReleaseMode = function()
+{
+    return !!allDescriptors.length;
 }
 
 /**
@@ -157,7 +155,47 @@ var Runtime = function(descriptors)
  */
 Runtime.startWorker = function(moduleName)
 {
-    return new Worker(moduleName + "/_module.js");
+    if (Runtime.isReleaseMode())
+        return new Worker(moduleName + ".js");
+
+    var content = loadResource(moduleName + "/module.json");
+    if (!content)
+        throw new Error("Worker is not defined: " + moduleName + " " + new Error().stack);
+    var message = [];
+    var scripts = JSON.parse(content)["scripts"];
+    for (var i = 0; i < scripts.length; ++i) {
+        var url = self._importScriptPathPrefix + moduleName + "/" + scripts[i];
+        var parts = url.split("://");
+        url = parts.length === 1 ? url : parts[0] + "://" + normalizePath(parts[1]);
+        message.push({
+            source: loadResource(moduleName + "/" + scripts[i]),
+            url: url
+        });
+    }
+
+    /**
+     * @suppress {checkTypes}
+     */
+    var loader = function() {
+        self.onmessage = function(event) {
+            self.onmessage = null;
+            var scripts = event.data;
+            for (var i = 0; i < scripts.length; ++i) {
+                var source = scripts[i]["source"];
+                self.eval(source + "\n//# sourceURL=" + scripts[i]["url"]);
+            }
+        };
+    };
+
+    var blob = new Blob(["(" + loader.toString() + ")()\n//# sourceURL=" + moduleName], { type: "text/javascript" });
+    var workerURL = window.URL.createObjectURL(blob);
+    try {
+        var worker = new Worker(workerURL);
+        worker.postMessage(message);
+        return worker;
+    } finally {
+        window.URL.revokeObjectURL(workerURL);
+    }
 }
 
 Runtime.prototype = {
@@ -478,8 +516,15 @@ Runtime.Module.prototype = {
         var dependencies = this._descriptor.dependencies;
         for (var i = 0; dependencies && i < dependencies.length; ++i)
             this._manager.loadModule(dependencies[i]);
-        if (this._descriptor.scripts)
-            loadScript(this._name + "/_module.js");
+        if (this._descriptor.scripts) {
+            if (Runtime.isReleaseMode()) {
+                loadScript(this._name + ".js");
+            } else {
+                var scripts = this._descriptor.scripts;
+                for (var i = 0; i < scripts.length; ++i)
+                    loadScript(this._name + "/" + scripts[i]);
+            }
+        }
         this._isLoading = false;
         this._loaded = true;
     }

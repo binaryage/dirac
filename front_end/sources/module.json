@@ -200,6 +200,7 @@
         "TabbedEditorContainer.js",
         "WatchExpressionsSidebarPane.js",
         "WorkersSidebarPane.js",
+        "ThreadsSidebarPane.js",
         "ScriptFormatterEditorAction.js",
         "InplaceFormatterEditorAction.js",
         "ScriptFormatter.js",

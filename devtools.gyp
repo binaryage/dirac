@@ -98,7 +98,7 @@
             'target_name': 'devtools_extension_api',
             'type': 'none',
             'actions': [{
-                'action_name': 'devtools_html',
+                'action_name': 'devtools_extension_api',
                 'script_name': 'scripts/generate_devtools_extension_api.py',
                 'inputs': [
                     '<@(_script_name)',
@@ -129,23 +129,23 @@
                             '<(PRODUCT_DIR)/resources/inspector/devtools.html',
                             '<(PRODUCT_DIR)/resources/inspector/inspector.css',
                             '<(PRODUCT_DIR)/resources/inspector/main/Main.js',
-                            '<(PRODUCT_DIR)/resources/inspector/audits/_module.js',
-                            '<(PRODUCT_DIR)/resources/inspector/console/_module.js',
-                            '<(PRODUCT_DIR)/resources/inspector/devices/_module.js',
-                            '<(PRODUCT_DIR)/resources/inspector/documentation/_module.js',
-                            '<(PRODUCT_DIR)/resources/inspector/elements/_module.js',
-                            '<(PRODUCT_DIR)/resources/inspector/extensions/_module.js',
-                            '<(PRODUCT_DIR)/resources/inspector/layers/_module.js',
-                            '<(PRODUCT_DIR)/resources/inspector/network/_module.js',
-                            '<(PRODUCT_DIR)/resources/inspector/profiler/_module.js',
-                            '<(PRODUCT_DIR)/resources/inspector/resources/_module.js',
-                            '<(PRODUCT_DIR)/resources/inspector/settings/_module.js',
-                            '<(PRODUCT_DIR)/resources/inspector/source_frame/_module.js',
-                            '<(PRODUCT_DIR)/resources/inspector/sources/_module.js',
-                            '<(PRODUCT_DIR)/resources/inspector/timeline/_module.js',
-                            '<(PRODUCT_DIR)/resources/inspector/heap_snapshot_worker/_module.js',
-                            '<(PRODUCT_DIR)/resources/inspector/script_formatter_worker/_module.js',
-                            '<(PRODUCT_DIR)/resources/inspector/temp_storage_shared_worker/_module.js',
+                            '<(PRODUCT_DIR)/resources/inspector/audits.js',
+                            '<(PRODUCT_DIR)/resources/inspector/console.js',
+                            '<(PRODUCT_DIR)/resources/inspector/devices.js',
+                            '<(PRODUCT_DIR)/resources/inspector/documentation.js',
+                            '<(PRODUCT_DIR)/resources/inspector/elements.js',
+                            '<(PRODUCT_DIR)/resources/inspector/extensions.js',
+                            '<(PRODUCT_DIR)/resources/inspector/layers.js',
+                            '<(PRODUCT_DIR)/resources/inspector/network.js',
+                            '<(PRODUCT_DIR)/resources/inspector/profiler.js',
+                            '<(PRODUCT_DIR)/resources/inspector/resources.js',
+                            '<(PRODUCT_DIR)/resources/inspector/settings.js',
+                            '<(PRODUCT_DIR)/resources/inspector/source_frame.js',
+                            '<(PRODUCT_DIR)/resources/inspector/sources.js',
+                            '<(PRODUCT_DIR)/resources/inspector/timeline.js',
+                            '<(PRODUCT_DIR)/resources/inspector/heap_snapshot_worker.js',
+                            '<(PRODUCT_DIR)/resources/inspector/script_formatter_worker.js',
+                            '<(PRODUCT_DIR)/resources/inspector/temp_storage_shared_worker.js',
                             '<(PRODUCT_DIR)/resources/inspector/devtools_extension_api.js',
                             '<@(devtools_standalone_files)',
                             '<@(devtools_cm_css_files)',
@@ -180,6 +180,7 @@
                         ],
                         'input_pages': [
                             '<@(all_devtools_files)',
+                            'front_end/Runtime.js',
                             '<(blink_devtools_output_dir)/InspectorBackendCommands.js',
                             '<(blink_devtools_output_dir)/SupportedCSSProperties.js',
                             '<(PRODUCT_DIR)/resources/inspector/devtools.html',
@@ -271,9 +272,9 @@
                             '<@(_script_name)',
                             '<@(_input_page)',
                             '<@(devtools_core_files)',
+                            '<(blink_devtools_output_dir)/Runtime.js',
                             '<(blink_devtools_output_dir)/InspectorBackendCommands.js',
                             '<(blink_devtools_output_dir)/SupportedCSSProperties.js',
-                            '<(blink_devtools_output_dir)/common/modules.js',
                         ],
                         'search_path': [
                             '<(blink_devtools_output_dir)',
@@ -289,6 +290,7 @@
                             'destination': '<(PRODUCT_DIR)/resources/inspector',
                             'files': [
                                 '<@(devtools_core_base_files)',
+                                'front_end/Runtime.js',
                                 '<(blink_devtools_output_dir)/InspectorBackendCommands.js',
                                 '<(blink_devtools_output_dir)/SupportedCSSProperties.js',
                             ],
@@ -365,13 +367,14 @@
                 ['debug_devtools==0', { # Release
                     'actions': [{
                         'action_name': 'build_audits_module',
-                        'script_name': 'scripts/inline_js_imports.py',
-                        'input_file': 'front_end/audits/_module.js',
+                        'script_name': 'scripts/concatenate_module_scripts.py',
+                        'input_file': 'front_end/audits/module.json',
                         'inputs': [
                             '<@(_script_name)',
+                            '<@(_input_file)',
                             '<@(devtools_audits_js_files)',
                         ],
-                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/audits/_module.js'],
+                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/audits.js'],
                         'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
                     }],
                 },
@@ -395,13 +398,14 @@
                 ['debug_devtools==0', { # Release
                     'actions': [{
                         'action_name': 'build_console_module',
-                        'script_name': 'scripts/inline_js_imports.py',
-                        'input_file': 'front_end/console/_module.js',
+                        'script_name': 'scripts/concatenate_module_scripts.py',
+                        'input_file': 'front_end/console/module.json',
                         'inputs': [
                             '<@(_script_name)',
+                            '<@(_input_file)',
                             '<@(devtools_console_js_files)',
                         ],
-                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/console/_module.js'],
+                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/console.js'],
                         'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
                     }],
                 },
@@ -425,13 +429,14 @@
                 ['debug_devtools==0', { # Release
                     'actions': [{
                         'action_name': 'build_devices_module',
-                        'script_name': 'scripts/inline_js_imports.py',
-                        'input_file': 'front_end/devices/_module.js',
+                        'script_name': 'scripts/concatenate_module_scripts.py',
+                        'input_file': 'front_end/devices/module.json',
                         'inputs': [
                             '<@(_script_name)',
+                            '<@(_input_file)',
                             '<@(devtools_devices_js_files)',
                         ],
-                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/devices/_module.js'],
+                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/devices.js'],
                         'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
                     }],
                 },
@@ -455,13 +460,14 @@
                 ['debug_devtools==0', { # Release
                     'actions': [{
                         'action_name': 'build_documentation_module',
-                        'script_name': 'scripts/inline_js_imports.py',
-                        'input_file': 'front_end/documentation/_module.js',
+                        'script_name': 'scripts/concatenate_module_scripts.py',
+                        'input_file': 'front_end/documentation/module.json',
                         'inputs': [
                             '<@(_script_name)',
+                            '<@(_input_file)',
                             '<@(devtools_documentation_js_files)',
                         ],
-                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/documentation/_module.js'],
+                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/documentation.js'],
                         'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
                     }],
                 },
@@ -485,13 +491,14 @@
                 ['debug_devtools==0', { # Release
                     'actions': [{
                         'action_name': 'build_elements_module',
-                        'script_name': 'scripts/inline_js_imports.py',
-                        'input_file': 'front_end/elements/_module.js',
+                        'script_name': 'scripts/concatenate_module_scripts.py',
+                        'input_file': 'front_end/elements/module.json',
                         'inputs': [
                             '<@(_script_name)',
+                            '<@(_input_file)',
                             '<@(devtools_elements_js_files)',
                         ],
-                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/elements/_module.js'],
+                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/elements.js'],
                         'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
                     }],
                 },
@@ -515,13 +522,14 @@
                 ['debug_devtools==0', { # Release
                     'actions': [{
                         'action_name': 'build_extensions_module',
-                        'script_name': 'scripts/inline_js_imports.py',
-                        'input_file': 'front_end/extensions/_module.js',
+                        'script_name': 'scripts/concatenate_module_scripts.py',
+                        'input_file': 'front_end/extensions/module.json',
                         'inputs': [
                             '<@(_script_name)',
+                            '<@(_input_file)',
                             '<@(devtools_extensions_js_files)',
                         ],
-                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/extensions/_module.js'],
+                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/extensions.js'],
                         'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
                     }],
                 },
@@ -545,14 +553,14 @@
                 ['debug_devtools==0', { # Release
                     'actions': [{
                         'action_name': 'build_heap_snapshot_worker_module',
-                        'script_name': 'scripts/inline_js_imports.py',
-                        'input_file': 'front_end/heap_snapshot_worker/_module.js',
+                        'script_name': 'scripts/concatenate_module_scripts.py',
+                        'input_file': 'front_end/heap_snapshot_worker/module.json',
                         'inputs': [
                             '<@(_script_name)',
                             '<@(_input_file)',
                             '<@(devtools_heap_snapshot_worker_js_files)',
                         ],
-                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/heap_snapshot_worker/_module.js'],
+                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/heap_snapshot_worker.js'],
                         'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
                     }],
                 },
@@ -562,6 +570,7 @@
                             'destination': '<(PRODUCT_DIR)/resources/inspector/heap_snapshot_worker',
                             'files': [
                                 '<@(devtools_heap_snapshot_worker_js_files)',
+                                'front_end/heap_snapshot_worker/module.json',
                             ],
                         }
                     ]
@@ -575,13 +584,14 @@
                 ['debug_devtools==0', { # Release
                     'actions': [{
                         'action_name': 'build_layers_module',
-                        'script_name': 'scripts/inline_js_imports.py',
-                        'input_file': 'front_end/layers/_module.js',
+                        'script_name': 'scripts/concatenate_module_scripts.py',
+                        'input_file': 'front_end/layers/module.json',
                         'inputs': [
                             '<@(_script_name)',
+                            '<@(_input_file)',
                             '<@(devtools_layers_js_files)',
                         ],
-                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/layers/_module.js'],
+                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/layers.js'],
                         'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
                     }],
                 },
@@ -605,13 +615,14 @@
                 ['debug_devtools==0', { # Release
                     'actions': [{
                         'action_name': 'build_network_module',
-                        'script_name': 'scripts/inline_js_imports.py',
-                        'input_file': 'front_end/network/_module.js',
+                        'script_name': 'scripts/concatenate_module_scripts.py',
+                        'input_file': 'front_end/network/module.json',
                         'inputs': [
                             '<@(_script_name)',
+                            '<@(_input_file)',
                             '<@(devtools_network_js_files)',
                         ],
-                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/network/_module.js'],
+                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/network.js'],
                         'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
                     }],
                 },
@@ -635,13 +646,14 @@
                 ['debug_devtools==0', { # Release
                     'actions': [{
                         'action_name': 'build_profiler_module',
-                        'script_name': 'scripts/inline_js_imports.py',
-                        'input_file': 'front_end/profiler/_module.js',
+                        'script_name': 'scripts/concatenate_module_scripts.py',
+                        'input_file': 'front_end/profiler/module.json',
                         'inputs': [
                             '<@(_script_name)',
+                            '<@(_input_file)',
                             '<@(devtools_profiler_js_files)',
                         ],
-                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/profiler/_module.js'],
+                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/profiler.js'],
                         'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
                     }],
                 },
@@ -665,13 +677,14 @@
                 ['debug_devtools==0', { # Release
                     'actions': [{
                         'action_name': 'build_resources_module',
-                        'script_name': 'scripts/inline_js_imports.py',
-                        'input_file': 'front_end/resources/_module.js',
+                        'script_name': 'scripts/concatenate_module_scripts.py',
+                        'input_file': 'front_end/resources/module.json',
                         'inputs': [
                             '<@(_script_name)',
+                            '<@(_input_file)',
                             '<@(devtools_resources_js_files)',
                         ],
-                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/resources/_module.js'],
+                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/resources.js'],
                         'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
                     }],
                 },
@@ -695,14 +708,14 @@
                 ['debug_devtools==0', { # Release
                     'actions': [{
                         'action_name': 'build_script_formatter_worker_module',
-                        'script_name': 'scripts/inline_js_imports.py',
-                        'input_file': 'front_end/script_formatter_worker/_module.js',
+                        'script_name': 'scripts/concatenate_module_scripts.py',
+                        'input_file': 'front_end/script_formatter_worker/module.json',
                         'inputs': [
                             '<@(_script_name)',
                             '<@(_input_file)',
                             '<@(devtools_uglify_files)'
                         ],
-                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/script_formatter_worker/_module.js'],
+                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/script_formatter_worker.js'],
                         'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
                     }],
                 },
@@ -712,6 +725,7 @@
                             'destination': '<(PRODUCT_DIR)/resources/inspector/script_formatter_worker',
                             'files': [
                                 '<@(devtools_script_formatter_worker_js_files)',
+                                'front_end/script_formatter_worker/module.json',
                             ],
                         },
                         {
@@ -731,13 +745,14 @@
                 ['debug_devtools==0', { # Release
                     'actions': [{
                         'action_name': 'build_settings_module',
-                        'script_name': 'scripts/inline_js_imports.py',
-                        'input_file': 'front_end/settings/_module.js',
+                        'script_name': 'scripts/concatenate_module_scripts.py',
+                        'input_file': 'front_end/settings/module.json',
                         'inputs': [
                             '<@(_script_name)',
+                            '<@(_input_file)',
                             '<@(devtools_settings_js_files)',
                         ],
-                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/settings/_module.js'],
+                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/settings.js'],
                         'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
                     }],
                 },
@@ -761,14 +776,15 @@
                 ['debug_devtools==0', { # Release
                     'actions': [{
                         'action_name': 'build_source_frame_module',
-                        'script_name': 'scripts/inline_js_imports.py',
-                        'input_file': 'front_end/source_frame/_module.js',
+                        'script_name': 'scripts/concatenate_module_scripts.py',
+                        'input_file': 'front_end/source_frame/module.json',
                         'inputs': [
                             '<@(_script_name)',
+                            '<@(_input_file)',
                             '<@(devtools_source_frame_js_files)',
                             '<@(devtools_cm_js_files)',
                         ],
-                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/source_frame/_module.js'],
+                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/source_frame.js'],
                         'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
                     }],
                     'copies': [
@@ -807,13 +823,14 @@
                 ['debug_devtools==0', { # Release
                     'actions': [{
                         'action_name': 'build_sources_module',
-                        'script_name': 'scripts/inline_js_imports.py',
-                        'input_file': 'front_end/sources/_module.js',
+                        'script_name': 'scripts/concatenate_module_scripts.py',
+                        'input_file': 'front_end/sources/module.json',
                         'inputs': [
                             '<@(_script_name)',
+                            '<@(_input_file)',
                             '<@(devtools_sources_js_files)',
                         ],
-                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/sources/_module.js'],
+                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/sources.js'],
                         'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
                     }],
                 },
@@ -837,13 +854,14 @@
                 ['debug_devtools==0', { # Release
                     'actions': [{
                         'action_name': 'build_temp_storage_shared_worker_module',
-                        'script_name': 'scripts/inline_js_imports.py',
-                        'input_file': 'front_end/temp_storage_shared_worker/_module.js',
+                        'script_name': 'scripts/concatenate_module_scripts.py',
+                        'input_file': 'front_end/temp_storage_shared_worker/module.json',
                         'inputs': [
                             '<@(_script_name)',
+                            '<@(_input_file)',
                             '<@(devtools_temp_storage_shared_worker_js_files)'
                         ],
-                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/temp_storage_shared_worker/_module.js'],
+                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/temp_storage_shared_worker.js'],
                         'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
                     }],
                 },
@@ -853,6 +871,7 @@
                             'destination': '<(PRODUCT_DIR)/resources/inspector/temp_storage_shared_worker',
                             'files': [
                                 '<@(devtools_temp_storage_shared_worker_js_files)',
+                                'front_end/temp_storage_shared_worker/module.json',
                             ],
                         }
                     ]
@@ -866,13 +885,14 @@
                 ['debug_devtools==0', { # Release
                     'actions': [{
                         'action_name': 'build_timeline_module',
-                        'script_name': 'scripts/inline_js_imports.py',
-                        'input_file': 'front_end/timeline/_module.js',
+                        'script_name': 'scripts/concatenate_module_scripts.py',
+                        'input_file': 'front_end/timeline/module.json',
                         'inputs': [
                             '<@(_script_name)',
+                            '<@(_input_file)',
                             '<@(devtools_timeline_js_files)',
                         ],
-                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/timeline/_module.js'],
+                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/timeline.js'],
                         'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
                     }],
                 },
@@ -925,13 +945,13 @@
                     'actions': [{
                         'action_name': 'concatenated_module_descriptors',
                         'script_name': 'scripts/concatenate_module_descriptors.py',
-                        'input_file': ['front_end/common/modules.js'],
+                        'input_file': ['front_end/Runtime.js'],
                         'inputs': [
                             '<@(_script_name)',
                             '<@(_input_file)',
                             '<@(devtools_module_json_files)',
                         ],
-                        'outputs': ['<(blink_devtools_output_dir)/common/modules.js'],
+                        'outputs': ['<(blink_devtools_output_dir)/Runtime.js'],
                         'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)', '<@(devtools_module_json_files)'],
                     }],
                 },

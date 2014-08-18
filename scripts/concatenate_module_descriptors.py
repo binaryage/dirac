@@ -4,10 +4,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Inlines all module.json files into modules.js."""
+"""Inlines all module.json files into "var allDescriptors" in Runtime.js."""
 
 from os import path
 import errno
+import os
+import re
 import shutil
 import sys
 try:
@@ -45,9 +47,11 @@ def main(argv):
     output_filename = argv[2]
     module_jsons = argv[3:]
 
+    output_contents = re.sub('var allDescriptors = \[\];', 'var allDescriptors = %s;' % build_modules(module_jsons).replace("\\", "\\\\"), read_file(input_filename), 1)
+    if (path.exists(output_filename)):
+        os.remove(output_filename)
     with open(output_filename, 'w') as output_file:
-        output_file.write('var allDescriptors=%s;' % build_modules(module_jsons))
-
+        output_file.write(output_contents)
 
 if __name__ == '__main__':
     sys.exit(main(sys.argv))
