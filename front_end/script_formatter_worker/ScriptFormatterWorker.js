@@ -143,7 +143,11 @@ FormatterWorker.javaScriptOutline = function(params)
      */
     function processToken(tokenValue, tokenType, column, newColumn)
     {
-        if (isJavaScriptIdentifier(tokenType)) {
+        if (tokenType === "property" && previousTokenType === "property" && (previousToken === "get" || previousToken === "set")) {
+            currentFunction = { line: i, column: column, name: previousToken + " " + tokenValue };
+            addedFunction = true;
+            previousIdentifier = null;
+        } else if (isJavaScriptIdentifier(tokenType)) {
             previousIdentifier = tokenValue;
             if (tokenValue && previousToken === "function") {
                 // A named function: "function f...".
