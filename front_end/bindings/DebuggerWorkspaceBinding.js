@@ -38,7 +38,9 @@ WebInspector.DebuggerWorkspaceBinding.prototype = {
      */
     targetRemoved: function(target)
     {
-        this._targetToData.remove(target)._dispose();
+        var targetData = this._targetToData.get(target);
+        targetData._dispose();
+        this._targetToData.remove(target);
     },
 
     /**
