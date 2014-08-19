@@ -1162,12 +1162,9 @@ WebInspector.ElementsPanel.prototype = {
             }
         }
 
-        var element = event.target.enclosingNodeOrSelfWithClass("elements-tree-outline");
-        if (!element)
-            return;
         var treeOutline = null;
         for (var i = 0; i < this._treeOutlines.length; ++i) {
-            if (this._treeOutlines[i].element === element)
+            if (this._treeOutlines[i].selectedDOMNode() === this._lastValidSelectedNode)
                 treeOutline = this._treeOutlines[i];
         }
         if (!treeOutline)
