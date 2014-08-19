@@ -139,25 +139,25 @@ WebInspector.RequestTimingView.createTimingTable = function(request)
     var scale = chartWidth / total;
 
     if (blocking > 0)
-        addRow(WebInspector.UIString("Blocking"), "blocking", 0, blocking);
+        addRow(WebInspector.UIString("Stalled"), "blocking", 0, blocking);
 
     if (timing.proxyStart !== -1)
-        addRow(WebInspector.UIString("Proxy"), "proxy", timing.proxyStart, timing.proxyEnd);
+        addRow(WebInspector.UIString("Proxy negotiation"), "proxy", timing.proxyStart, timing.proxyEnd);
 
     if (timing.dnsStart !== -1)
         addRow(WebInspector.UIString("DNS Lookup"), "dns", timing.dnsStart, timing.dnsEnd);
 
     if (timing.connectStart !== -1)
-        addRow(WebInspector.UIString("Connecting"), "connecting", timing.connectStart, timing.connectEnd);
+        addRow(WebInspector.UIString("Initial connection"), "connecting", timing.connectStart, timing.connectEnd);
 
     if (timing.sslStart !== -1)
         addRow(WebInspector.UIString("SSL"), "ssl", timing.sslStart, timing.sslEnd);
 
-    addRow(WebInspector.UIString("Sending"), "sending", timing.sendStart, timing.sendEnd);
-    addRow(WebInspector.UIString("Waiting"), "waiting", timing.sendEnd, timing.receiveHeadersEnd);
+    addRow(WebInspector.UIString("Request sent"), "sending", timing.sendStart, timing.sendEnd);
+    addRow(WebInspector.UIString("Waiting (TTFB)"), "waiting", timing.sendEnd, timing.receiveHeadersEnd);
 
     if (request.endTime !== -1)
-        addRow(WebInspector.UIString("Receiving"), "receiving", (request.responseReceivedTime - timing.requestTime) * 1000, total);
+        addRow(WebInspector.UIString("Content Download"), "receiving", (request.responseReceivedTime - timing.requestTime) * 1000, total);
 
     if (!request.finished) {
         var cell = tableElement.createChild("tr").createChild("td", "caution");
