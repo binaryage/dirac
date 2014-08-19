@@ -21,7 +21,7 @@ WebInspector.CSSWorkspaceBinding.prototype = {
      */
     targetAdded: function(target)
     {
-        this._targetToTargetInfo.put(target, new WebInspector.CSSWorkspaceBinding.TargetInfo(target, WebInspector.workspace, WebInspector.networkWorkspaceBinding));
+        this._targetToTargetInfo.set(target, new WebInspector.CSSWorkspaceBinding.TargetInfo(target, WebInspector.workspace, WebInspector.networkWorkspaceBinding));
     },
 
     /**
@@ -60,7 +60,7 @@ WebInspector.CSSWorkspaceBinding.prototype = {
         var targetInfo = this._targetToTargetInfo.get(header.target());
         if (!targetInfo) {
             targetInfo = new WebInspector.CSSWorkspaceBinding.TargetInfo(header.target(), WebInspector.workspace, WebInspector.networkWorkspaceBinding);
-            this._targetToTargetInfo.put(header.target(), targetInfo);
+            this._targetToTargetInfo.set(header.target(), targetInfo);
         }
         return targetInfo._ensureInfoForHeader(header);
     },
@@ -224,7 +224,7 @@ WebInspector.CSSWorkspaceBinding.TargetInfo.prototype = {
         var info = this._headerInfoById.get(header.id);
         if (!info) {
             info = new WebInspector.CSSWorkspaceBinding.HeaderInfo(header);
-            this._headerInfoById.put(header.id, info);
+            this._headerInfoById.set(header.id, info);
         }
         return info;
     },

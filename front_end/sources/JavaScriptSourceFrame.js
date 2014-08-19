@@ -314,7 +314,7 @@ WebInspector.JavaScriptSourceFrame.prototype = {
         WebInspector.UISourceCodeFrame.prototype.populateTextAreaContextMenu.call(this, contextMenu, lineNumber);
 
         if (this._uiSourceCode.project().type() === WebInspector.projectTypes.Network && WebInspector.settings.jsSourceMapsEnabled.get()) {
-            if (this._scriptFileForTarget.size()) {
+            if (this._scriptFileForTarget.size) {
                 var scriptFile = this._scriptFileForTarget.values()[0];
                 var addSourceMapURLLabel = WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Add source map\u2026" : "Add Source Map\u2026");
                 contextMenu.appendItem(addSourceMapURLLabel, addSourceMapURL.bind(this, scriptFile));
@@ -325,7 +325,7 @@ WebInspector.JavaScriptSourceFrame.prototype = {
 
     _workingCopyChanged: function(event)
     {
-        if (this._supportsEnabledBreakpointsWhileEditing() || this._scriptFileForTarget.size())
+        if (this._supportsEnabledBreakpointsWhileEditing() || this._scriptFileForTarget.size)
             return;
 
         if (this._uiSourceCode.isDirty())
@@ -339,7 +339,7 @@ WebInspector.JavaScriptSourceFrame.prototype = {
         if (this._supportsEnabledBreakpointsWhileEditing())
             return;
 
-        if (!this._scriptFileForTarget.size()) {
+        if (!this._scriptFileForTarget.size) {
             this._restoreBreakpointsAfterEditing();
             return;
         }
@@ -787,7 +787,7 @@ WebInspector.JavaScriptSourceFrame.prototype = {
                 this._restoreBreakpointsIfConsistentScripts();
         }
         if (newScriptFile)
-            this._scriptFileForTarget.put(target, newScriptFile);
+            this._scriptFileForTarget.set(target, newScriptFile);
 
         delete this._hasCommittedLiveEdit;
         this._updateDivergedInfobar();

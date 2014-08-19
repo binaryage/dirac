@@ -146,14 +146,14 @@ WebInspector.CompilerScriptMapping.prototype = {
             }
 
             this._sourceMapForScriptId[script.scriptId] = sourceMap;
-            this._scriptForSourceMap.put(sourceMap, script);
+            this._scriptForSourceMap.set(sourceMap, script);
 
             var sourceURLs = sourceMap.sources();
             for (var i = 0; i < sourceURLs.length; ++i) {
                 var sourceURL = sourceURLs[i];
                 if (this._sourceMapForURL.get(sourceURL))
                     continue;
-                this._sourceMapForURL.put(sourceURL, sourceMap);
+                this._sourceMapForURL.set(sourceURL, sourceMap);
                 if (!this._workspace.hasMappingForURL(sourceURL) && !this._workspace.uiSourceCodeForURL(sourceURL)) {
                     var contentProvider = sourceMap.sourceContentProvider(sourceURL, WebInspector.resourceTypes.Script);
                     this._networkWorkspaceBinding.addFileForURL(sourceURL, contentProvider, script.isContentScript());

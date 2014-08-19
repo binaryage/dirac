@@ -76,7 +76,7 @@ WebInspector.FileSystemWorkspaceBinding.prototype = {
     {
         var fileSystem = /** @type {!WebInspector.IsolatedFileSystem} */ (event.data);
         var boundFileSystem = new WebInspector.FileSystemWorkspaceBinding.FileSystem(this, fileSystem, this._workspace);
-        this._boundFileSystems.put(fileSystem.normalizedPath(), boundFileSystem);
+        this._boundFileSystems.set(fileSystem.normalizedPath(), boundFileSystem);
     },
 
     /**

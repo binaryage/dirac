@@ -26,7 +26,7 @@ WebInspector.ActionRegistry.prototype = {
             var actionId = extension.descriptor()["actionId"];
             console.assert(actionId);
             console.assert(!this._actionsById.get(actionId));
-            this._actionsById.put(actionId, extension);
+            this._actionsById.set(actionId, extension);
         }
     },
 

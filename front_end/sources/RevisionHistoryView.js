@@ -90,7 +90,7 @@ WebInspector.RevisionHistoryView.prototype = {
         if (i === this._treeOutline.children.length)
             this._treeOutline.appendChild(uiSourceCodeItem);
 
-        this._uiSourceCodeItems.put(uiSourceCode, uiSourceCodeItem);
+        this._uiSourceCodeItems.set(uiSourceCode, uiSourceCodeItem);
 
         var revisionCount = uiSourceCode.history.length;
         for (var i = revisionCount - 1; i >= 0; --i) {

@@ -169,7 +169,7 @@ WebInspector.SidebarPaneStack.prototype = {
      */
     addPane: function(pane)
     {
-        this._titleByPane.put(pane, new WebInspector.SidebarPaneTitle(this.element, pane));
+        this._titleByPane.set(pane, new WebInspector.SidebarPaneTitle(this.element, pane));
     },
 
     /**

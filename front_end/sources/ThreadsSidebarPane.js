@@ -35,8 +35,8 @@ WebInspector.ThreadsSidebarPane.prototype = {
         if (currentTarget === target)
             this._selectPlacard(placard);
 
-        this._targetsToPlacards.put(target, placard);
-        this._placardsToTargets.put(placard, target);
+        this._targetsToPlacards.set(target, placard);
+        this._placardsToTargets.set(placard, target);
         this.bodyElement.appendChild(placard.element);
         this._updateDebuggerState(target);
     },

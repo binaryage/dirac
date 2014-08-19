@@ -31,7 +31,7 @@ WebInspector.TargetsComboBoxController.prototype = {
         var option = this._selectElement.createChild("option");
         option.text = target.name();
         option.__target = target;
-        this._targetToOption.put(target, option);
+        this._targetToOption.set(target, option);
         if (WebInspector.context.flavor(WebInspector.Target) === target)
             this._selectElement.selectedIndex = Array.prototype.indexOf.call(/** @type {?} */ (this._selectElement), option);
 

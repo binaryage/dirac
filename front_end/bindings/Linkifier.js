@@ -118,7 +118,7 @@ WebInspector.Linkifier.prototype = {
      */
     targetAdded: function(target)
     {
-        this._liveLocationsByTarget.put(target, []);
+        this._liveLocationsByTarget.set(target, []);
     },
 
     /**

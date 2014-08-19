@@ -256,7 +256,7 @@ WebInspector.SDKObject.prototype = {
 WebInspector.SDKModel = function(modelClass, target)
 {
     WebInspector.SDKObject.call(this, target);
-    target._modelByConstructor.put(modelClass, this);
+    target._modelByConstructor.set(modelClass, this);
 }
 
 WebInspector.SDKModel.prototype = {

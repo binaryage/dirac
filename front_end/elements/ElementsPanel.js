@@ -121,7 +121,7 @@ WebInspector.ElementsPanel.prototype = {
         treeOutline.addEventListener(WebInspector.ElementsTreeOutline.Events.SelectedNodeChanged, this._selectedNodeChanged, this);
         treeOutline.addEventListener(WebInspector.ElementsTreeOutline.Events.ElementsTreeUpdated, this._updateBreadcrumbIfNeeded, this);
         this._treeOutlines.push(treeOutline);
-        this._targetToTreeOutline.put(target, treeOutline);
+        this._targetToTreeOutline.set(target, treeOutline);
 
         // Perform attach if necessary.
         if (this.isShowing())

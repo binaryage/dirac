@@ -167,7 +167,7 @@ WebInspector.ScriptFormatterEditorAction.prototype = {
      */
     targetAdded: function(target)
     {
-        this._scriptMappingByTarget.put(target, new WebInspector.FormatterScriptMapping(target, this));
+        this._scriptMappingByTarget.set(target, new WebInspector.FormatterScriptMapping(target, this));
         target.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.GlobalObjectCleared, this._debuggerReset, this);
     },
 
@@ -414,12 +414,12 @@ WebInspector.ScriptFormatterEditorAction.prototype = {
             formattedPath = this._projectDelegate._addFormatted(name, uiSourceCode.url, uiSourceCode.contentType(), formattedContent);
             var formattedUISourceCode = /** @type {!WebInspector.UISourceCode} */ (this._workspace.uiSourceCode(this._projectId, formattedPath));
             var formatData = new WebInspector.FormatterScriptMapping.FormatData(uiSourceCode.project().id(), uiSourceCode.path(), formatterMapping, scripts);
-            this._formatData.put(formattedUISourceCode, formatData);
+            this._formatData.set(formattedUISourceCode, formatData);
             var path = uiSourceCode.project().id() + ":" + uiSourceCode.path();
-            this._formattedPaths.put(path, formattedPath);
+            this._formattedPaths.set(path, formattedPath);
             this._pathsToFormatOnLoad.add(path);
             for (var i = 0; i < scripts.length; ++i) {
-                this._uiSourceCodes.put(scripts[i], formattedUISourceCode);
+                this._uiSourceCodes.set(scripts[i], formattedUISourceCode);
                 var scriptMapping = /** @type {!WebInspector.FormatterScriptMapping} */(this._scriptMappingByTarget.get(scripts[i].target()));
                 WebInspector.debuggerWorkspaceBinding.pushSourceMapping(scripts[i], scriptMapping);
             }

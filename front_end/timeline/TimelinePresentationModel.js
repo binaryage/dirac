@@ -113,7 +113,7 @@ WebInspector.TimelinePresentationModel.prototype = {
             parentRecord = coalescedRecord;
 
         var formattedRecord = new WebInspector.TimelinePresentationModel.ActualRecord(record, parentRecord);
-        this._recordToPresentationRecord.put(record, formattedRecord);
+        this._recordToPresentationRecord.set(record, formattedRecord);
 
         formattedRecord._collapsed = parentRecord === this._rootRecord;
         if (coalescingBucket)

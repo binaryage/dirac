@@ -496,7 +496,7 @@ WebInspector.DebuggerModel.prototype = {
         var scripts = this._scriptsBySourceURL.get(script.sourceURL);
         if (!scripts) {
             scripts = [];
-            this._scriptsBySourceURL.put(script.sourceURL, scripts);
+            this._scriptsBySourceURL.set(script.sourceURL, scripts);
         }
         scripts.push(script);
     },

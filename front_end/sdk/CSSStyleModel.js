@@ -480,10 +480,10 @@ WebInspector.CSSStyleModel.prototype = {
     {
         console.assert(!this._styleSheetIdToHeader.get(header.styleSheetId));
         var styleSheetHeader = new WebInspector.CSSStyleSheetHeader(this, header);
-        this._styleSheetIdToHeader.put(header.styleSheetId, styleSheetHeader);
+        this._styleSheetIdToHeader.set(header.styleSheetId, styleSheetHeader);
         var url = styleSheetHeader.resourceURL();
         if (!this._styleSheetIdsForURL.get(url))
-            this._styleSheetIdsForURL.put(url, {});
+            this._styleSheetIdsForURL.set(url, {});
         var frameIdToStyleSheetIds = this._styleSheetIdsForURL.get(url);
         var styleSheetIds = frameIdToStyleSheetIds[styleSheetHeader.frameId];
         if (!styleSheetIds) {

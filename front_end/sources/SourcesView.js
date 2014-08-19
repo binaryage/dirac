@@ -352,7 +352,7 @@ WebInspector.SourcesView.prototype = {
         break;
         }
         sourceFrame.setHighlighterType(uiSourceCode.highlighterType());
-        this._sourceFramesByUISourceCode.put(uiSourceCode, sourceFrame);
+        this._sourceFramesByUISourceCode.set(uiSourceCode, sourceFrame);
         this._historyManager.trackSourceFrameCursorJumps(sourceFrame);
         return sourceFrame;
     },
@@ -626,7 +626,7 @@ WebInspector.SourcesView.prototype = {
         /** @type {!Map.<!WebInspector.UISourceCode, number>} */
         var defaultScores = new Map();
         for (var i = 1; i < uiSourceCodes.length; ++i) // Skip current element
-            defaultScores.put(uiSourceCodes[i], uiSourceCodes.length - i);
+            defaultScores.set(uiSourceCodes[i], uiSourceCodes.length - i);
         WebInspector.OpenResourceDialog.show(this, this.element, query, defaultScores);
     },
 

@@ -76,7 +76,7 @@ WebInspector.RenderingOptions.prototype = {
      */
     _mapSettingToSetter: function(setting, setterName)
     {
-        this._setterNames.put(setting, setterName);
+        this._setterNames.set(setting, setterName);
         setting.addChangeListener(changeListener);
 
         function changeListener()

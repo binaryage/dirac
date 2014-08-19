@@ -132,7 +132,7 @@ WebInspector.ResourceScriptMapping.prototype = {
     _setScriptFile: function(uiSourceCode, scriptFile)
     {
         if (scriptFile)
-            this._uiSourceCodeToScriptFile.put(uiSourceCode, scriptFile);
+            this._uiSourceCodeToScriptFile.set(uiSourceCode, scriptFile);
         else
             this._uiSourceCodeToScriptFile.remove(uiSourceCode);
     },

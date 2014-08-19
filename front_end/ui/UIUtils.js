@@ -863,7 +863,7 @@ WebInspector.InvokeOnceHandlers.prototype = {
         var methods = this._handlers.get(object);
         if (!methods) {
             methods = new Set();
-            this._handlers.put(object, methods);
+            this._handlers.set(object, methods);
         }
         methods.add(method);
     },

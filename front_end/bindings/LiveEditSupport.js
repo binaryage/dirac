@@ -72,7 +72,7 @@ WebInspector.LiveEditSupport.prototype = {
 
         liveEditUISourceCode.addEventListener(WebInspector.UISourceCode.Events.WorkingCopyCommitted, this._workingCopyCommitted, this);
         this._uiSourceCodeForScriptId[script.scriptId] = liveEditUISourceCode;
-        this._scriptIdForUISourceCode.put(liveEditUISourceCode, script.scriptId);
+        this._scriptIdForUISourceCode.set(liveEditUISourceCode, script.scriptId);
         return liveEditUISourceCode;
     },
 

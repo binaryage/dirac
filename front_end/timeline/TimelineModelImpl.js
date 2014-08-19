@@ -496,7 +496,7 @@ WebInspector.TimelineModel.RecordImpl.prototype = {
     {
         if (!this._userObjects)
             this._userObjects = new StringMap();
-        this._userObjects.put(key, value);
+        this._userObjects.set(key, value);
     },
 
     /**

@@ -107,7 +107,7 @@ WebInspector.NavigatorView.prototype = {
         var projectNode = this._projectNode(uiSourceCode.project());
         var folderNode = this._folderNode(projectNode, uiSourceCode.parentPath());
         var uiSourceCodeNode = new WebInspector.NavigatorUISourceCodeTreeNode(this, uiSourceCode);
-        this._uiSourceCodeNodes.put(uiSourceCode, uiSourceCodeNode);
+        this._uiSourceCodeNodes.set(uiSourceCode, uiSourceCodeNode);
         folderNode.appendChild(uiSourceCodeNode);
     },
 
@@ -171,7 +171,7 @@ WebInspector.NavigatorView.prototype = {
         var subfolderNodes = this._subfolderNodes.get(projectNode);
         if (!subfolderNodes) {
             subfolderNodes = /** @type {!StringMap.<!WebInspector.NavigatorFolderTreeNode>} */ (new StringMap());
-            this._subfolderNodes.put(projectNode, subfolderNodes);
+            this._subfolderNodes.set(projectNode, subfolderNodes);
         }
 
         var folderNode = subfolderNodes.get(folderPath);
@@ -185,7 +185,7 @@ WebInspector.NavigatorView.prototype = {
 
         var name = folderPath.substring(index + 1);
         folderNode = new WebInspector.NavigatorFolderTreeNode(this, null, name, WebInspector.NavigatorTreeOutline.Types.Folder, folderPath, name);
-        subfolderNodes.put(folderPath, folderNode);
+        subfolderNodes.set(folderPath, folderNode);
         parentNode.appendChild(folderNode);
         return folderNode;
     },
@@ -1023,7 +1023,7 @@ WebInspector.NavigatorTreeNode.prototype = {
      */
     isEmpty: function()
     {
-        return !this._children.size();
+        return !this._children.size;
     },
 
     /**
@@ -1048,7 +1048,7 @@ WebInspector.NavigatorTreeNode.prototype = {
      */
     appendChild: function(node)
     {
-        this._children.put(node.id, node);
+        this._children.set(node.id, node);
         node.parent = this;
         this.didAddChild(node);
     },

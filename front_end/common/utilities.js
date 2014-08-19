@@ -1274,7 +1274,7 @@ Map.prototype = {
      * @param {K} key
      * @param {V} value
      */
-    put: function(key, value)
+    set: function(key, value)
     {
         var objectIdentifier = key.__identifier;
         if (!objectIdentifier) {
@@ -1343,7 +1343,7 @@ Map.prototype = {
      * @param {K} key
      * @return {boolean}
      */
-    contains: function(key)
+    has: function(key)
     {
         var entry = this._map[key.__identifier];
         return !!entry;
@@ -1352,7 +1352,7 @@ Map.prototype = {
     /**
      * @return {number}
      */
-    size: function()
+    get size()
     {
         return this._size;
     },
@@ -1380,7 +1380,7 @@ StringMap.prototype = {
      * @param {string} key
      * @param {T} value
      */
-    put: function(key, value)
+    set: function(key, value)
     {
         if (key === "__proto__") {
             if (!this._hasProtoKey) {
@@ -1459,7 +1459,7 @@ StringMap.prototype = {
      * @param {string} key
      * @return {boolean}
      */
-    contains: function(key)
+    has: function(key)
     {
         var result;
         if (key === "__proto__")
@@ -1470,7 +1470,7 @@ StringMap.prototype = {
     /**
      * @return {number}
      */
-    size: function()
+    get size()
     {
         return this._size;
     },
@@ -1499,7 +1499,7 @@ StringMultimap.prototype = {
      * @param {string} key
      * @param {T} value
      */
-    put: function(key, value)
+    set: function(key, value)
     {
         if (key === "__proto__") {
             if (!this._hasProtoKey) {
@@ -1591,7 +1591,7 @@ StringSet.prototype = {
      */
     add: function(value)
     {
-        this._map.put(value, true);
+        this._map.set(value, true);
     },
 
     /**
@@ -1617,7 +1617,7 @@ StringSet.prototype = {
      */
     contains: function(value)
     {
-        return this._map.contains(value);
+        return this._map.has(value);
     },
 
     /**
@@ -1625,7 +1625,7 @@ StringSet.prototype = {
      */
     size: function()
     {
-        return this._map.size();
+        return this._map.size;
     },
 
     clear: function()

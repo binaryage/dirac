@@ -316,7 +316,7 @@ WebInspector.ResourcesPanel.prototype = {
     _addDatabase: function(database)
     {
         var databaseTreeElement = new WebInspector.DatabaseTreeElement(this, database);
-        this._databaseTreeElements.put(database, databaseTreeElement);
+        this._databaseTreeElements.set(database, databaseTreeElement);
         this.databasesListTreeElement.appendChild(databaseTreeElement);
     },
 
@@ -352,7 +352,7 @@ WebInspector.ResourcesPanel.prototype = {
         console.assert(!this._domStorageTreeElements.get(domStorage));
 
         var domStorageTreeElement = new WebInspector.DOMStorageTreeElement(this, domStorage, (domStorage.isLocalStorage ? "local-storage" : "session-storage"));
-        this._domStorageTreeElements.put(domStorage, domStorageTreeElement);
+        this._domStorageTreeElements.set(domStorage, domStorageTreeElement);
         if (domStorage.isLocalStorage)
             this.localStorageListTreeElement.appendChild(domStorageTreeElement);
         else
@@ -478,7 +478,7 @@ WebInspector.ResourcesPanel.prototype = {
             var tableViews = this._databaseTableViews.get(database);
             if (!tableViews) {
                 tableViews = /** @type {!Object.<string, !WebInspector.DatabaseTableView>} */ ({});
-                this._databaseTableViews.put(database, tableViews);
+                this._databaseTableViews.set(database, tableViews);
             }
             view = tableViews[tableName];
             if (!view) {
@@ -489,7 +489,7 @@ WebInspector.ResourcesPanel.prototype = {
             view = this._databaseQueryViews.get(database);
             if (!view) {
                 view = new WebInspector.DatabaseQueryView(database);
-                this._databaseQueryViews.put(database, view);
+                this._databaseQueryViews.set(database, view);
                 view.addEventListener(WebInspector.DatabaseQueryView.Events.SchemaUpdated, this._updateDatabaseTables, this);
             }
         }
@@ -517,7 +517,7 @@ WebInspector.ResourcesPanel.prototype = {
         view = this._domStorageViews.get(domStorage);
         if (!view) {
             view = new WebInspector.DOMStorageItemsView(domStorage);
-            this._domStorageViews.put(domStorage, view);
+            this._domStorageViews.set(domStorage, view);
         }
 
         this._innerShowView(view);

@@ -59,7 +59,7 @@ WebInspector.SourcesNavigator.prototype = {
         var navigatorView = /** @type {!WebInspector.NavigatorView} */ (view);
         navigatorView.addEventListener(WebInspector.NavigatorView.Events.ItemSelected, this._sourceSelected, this);
         navigatorView.addEventListener(WebInspector.NavigatorView.Events.ItemRenamed, this._sourceRenamed, this);
-        this._navigatorViews.put(id, navigatorView);
+        this._navigatorViews.set(id, navigatorView);
         navigatorView.setWorkspace(this._workspace);
     },
 

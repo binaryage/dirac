@@ -170,7 +170,7 @@ WebInspector.TimelineView.prototype = {
             frameStrip.style.left = actualStart + "px";
             frameStrip.style.width = width + "px";
             frameStrip._frame = frame;
-            this._frameStripByFrame.put(frame, frameStrip);
+            this._frameStripByFrame.set(frame, frameStrip);
 
             const minWidthForFrameInfo = 60;
             if (width > minWidthForFrameInfo)

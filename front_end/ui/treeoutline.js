@@ -230,7 +230,7 @@ TreeOutline.prototype.removeChildren = function()
 TreeOutline.prototype._rememberTreeElement = function(element)
 {
     if (!this._treeElementsMap.get(element.representedObject))
-        this._treeElementsMap.put(element.representedObject, []);
+        this._treeElementsMap.set(element.representedObject, []);
 
     // check if the element is already known
     var elements = this._treeElementsMap.get(element.representedObject);
@@ -713,7 +713,7 @@ TreeElement.prototype.collapse = function()
     this.expanded = false;
 
     if (this.treeOutline)
-        this.treeOutline._expandedStateMap.put(this.representedObject, false);
+        this.treeOutline._expandedStateMap.set(this.representedObject, false);
 
     this.oncollapse();
 }
@@ -739,7 +739,7 @@ TreeElement.prototype.expand = function()
 
     this.expanded = true;
     if (this.treeOutline)
-        this.treeOutline._expandedStateMap.put(this.representedObject, true);
+        this.treeOutline._expandedStateMap.set(this.representedObject, true);
 
     if (this.treeOutline && (!this._childrenListNode || this._shouldRefreshChildren)) {
         if (this._childrenListNode && this._childrenListNode.parentNode)

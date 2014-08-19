@@ -95,7 +95,7 @@ WebInspector.LayerTreeOutline.prototype = {
         {
             if (seenLayers.get(layer))
                 console.assert(false, "Duplicate layer: " + layer.id());
-            seenLayers.put(layer, true);
+            seenLayers.set(layer, true);
             var node = this._treeOutline.getCachedTreeElement(layer);
             var parent = layer === layerTree.contentRoot() ? this._treeOutline : this._treeOutline.getCachedTreeElement(layer.parent());
             if (!parent)

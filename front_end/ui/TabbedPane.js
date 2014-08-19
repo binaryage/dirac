@@ -1178,10 +1178,10 @@ WebInspector.ExtensibleTabbedPaneController.prototype = {
      */
     _viewForId: function(id)
     {
-        if (this._views.contains(id))
+        if (this._views.has(id))
             return /** @type {!WebInspector.View} */ (this._views.get(id));
         var view = this._extensions[id] ? /** @type {!WebInspector.View} */ (this._extensions[id].instance()) : null;
-        this._views.put(id, view);
+        this._views.set(id, view);
         if (this._viewCallback && view)
             this._viewCallback(id, view);
         return view;

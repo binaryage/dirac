@@ -244,10 +244,10 @@ WebInspector.GenericSettingsTab.prototype = {
             var descriptor = extension.descriptor();
             var sectionName = descriptor["section"] || "";
             if (!sectionName && descriptor["parentSettingName"]) {
-                childSettingExtensionsByParentName.put(descriptor["parentSettingName"], extension);
+                childSettingExtensionsByParentName.set(descriptor["parentSettingName"], extension);
                 return;
             }
-            extensionsBySectionId.put(sectionName, extension);
+            extensionsBySectionId.set(sectionName, extension);
         });
 
         var sectionIds = extensionsBySectionId.keys();
@@ -719,7 +719,7 @@ WebInspector.SettingsList.prototype = {
         listItemContents.addEventListener("dblclick", this._onDoubleClick.bind(this, itemId), false);
         listItemContents.appendChild(removeItemButton);
 
-        this._listItems.put(itemId || "", listItem);
+        this._listItems.set(itemId || "", listItem);
         if (typeof beforeId !== "undefined")
             this._ids.splice(this._ids.indexOf(beforeId), 0, itemId);
         else
@@ -914,10 +914,10 @@ WebInspector.EditableSettingsList.prototype = {
         }
         var validItemId = itemId;
 
-        if (!this._editInputElements.contains(itemId))
-            this._editInputElements.put(itemId, new StringMap());
-        if (!this._textElements.contains(itemId))
-            this._textElements.put(itemId, new StringMap());
+        if (!this._editInputElements.has(itemId))
+            this._editInputElements.set(itemId, new StringMap());
+        if (!this._textElements.has(itemId))
+            this._textElements.set(itemId, new StringMap());
 
         var value = this._valuesProvider(itemId, columnId);
 
@@ -925,7 +925,7 @@ WebInspector.EditableSettingsList.prototype = {
         textElement.textContent = value;
         textElement.title = value;
         columnElement.addEventListener("click", rowClicked.bind(this), false);
-        this._textElements.get(itemId).put(columnId, textElement);
+        this._textElements.get(itemId).set(columnId, textElement);
 
         this._createEditElement(columnElement, column, itemId, value);
 
@@ -977,9 +977,9 @@ WebInspector.EditableSettingsList.prototype = {
         }
 
         if (itemId === null)
-            this._addInputElements.put(column.id, editElement);
+            this._addInputElements.set(column.id, editElement);
         else
-            this._editInputElements.get(itemId).put(column.id, editElement);
+            this._editInputElements.get(itemId).set(column.id, editElement);
 
         this._setEditElementValue(editElement, value || "");
         columnElement.editElement = editElement;

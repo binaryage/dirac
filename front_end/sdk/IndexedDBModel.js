@@ -313,7 +313,7 @@ WebInspector.IndexedDBModel.prototype = {
             if (!this._databaseNamesBySecurityOrigin[databaseId.securityOrigin])
                 return;
             var databaseModel = new WebInspector.IndexedDBModel.Database(databaseId, databaseWithObjectStores.version, databaseWithObjectStores.intVersion);
-            this._databases.put(databaseId, databaseModel);
+            this._databases.set(databaseId, databaseModel);
             for (var i = 0; i < databaseWithObjectStores.objectStores.length; ++i) {
                 var objectStore = databaseWithObjectStores.objectStores[i];
                 var objectStoreIDBKeyPath = WebInspector.IndexedDBModel.idbKeyPathFromKeyPath(objectStore.keyPath);

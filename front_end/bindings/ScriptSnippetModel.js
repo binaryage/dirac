@@ -60,7 +60,7 @@ WebInspector.ScriptSnippetModel.prototype = {
      */
     targetAdded: function(target)
     {
-        this._mappingForTarget.put(target, new WebInspector.SnippetScriptMapping(target, this));
+        this._mappingForTarget.set(target, new WebInspector.SnippetScriptMapping(target, this));
     },
 
     /**
@@ -135,7 +135,7 @@ WebInspector.ScriptSnippetModel.prototype = {
             return "";
         }
         uiSourceCode.addEventListener(WebInspector.UISourceCode.Events.WorkingCopyChanged, this._workingCopyChanged, this);
-        this._snippetIdForUISourceCode.put(uiSourceCode, snippet.id);
+        this._snippetIdForUISourceCode.set(uiSourceCode, snippet.id);
         var breakpointLocations = this._removeBreakpoints(uiSourceCode);
         this._restoreBreakpoints(uiSourceCode, breakpointLocations);
         this._uiSourceCodeForSnippetId[snippet.id] = uiSourceCode;
@@ -436,7 +436,7 @@ WebInspector.SnippetScriptMapping.prototype = {
      */
     _setEvaluationIndex: function(evaluationIndex, uiSourceCode)
     {
-        this._evaluationIndexForUISourceCode.put(uiSourceCode, evaluationIndex);
+        this._evaluationIndexForUISourceCode.set(uiSourceCode, evaluationIndex);
     },
 
     /**
@@ -520,7 +520,7 @@ WebInspector.SnippetScriptMapping.prototype = {
         console.assert(!this._scriptForUISourceCode.get(uiSourceCode));
         WebInspector.debuggerWorkspaceBinding.setSourceMapping(this._target, uiSourceCode, this);
         this._uiSourceCodeForScriptId[script.scriptId] = uiSourceCode;
-        this._scriptForUISourceCode.put(uiSourceCode, script);
+        this._scriptForUISourceCode.set(uiSourceCode, script);
         WebInspector.debuggerWorkspaceBinding.pushSourceMapping(script, this);
     },
 

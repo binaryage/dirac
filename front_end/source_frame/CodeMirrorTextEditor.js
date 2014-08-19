@@ -1032,7 +1032,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     addDecoration: function(lineNumber, element)
     {
         var widget = this._codeMirror.addLineWidget(lineNumber, element);
-        this._elementToWidget.put(element, widget);
+        this._elementToWidget.set(element, widget);
     },
 
     /**

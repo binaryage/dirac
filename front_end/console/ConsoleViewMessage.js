@@ -93,7 +93,7 @@ WebInspector.ConsoleViewMessage.prototype = {
     {
         for (var i = 0; this._dataGrids && i < this._dataGrids.length; ++i) {
             var dataGrid = this._dataGrids[i];
-            this._dataGridParents.put(dataGrid, dataGrid.element.parentElement);
+            this._dataGridParents.set(dataGrid, dataGrid.element.parentElement);
             dataGrid.detach();
         }
     },
@@ -645,7 +645,7 @@ WebInspector.ConsoleViewMessage.prototype = {
         var dataGrid = WebInspector.SortableDataGrid.create(columnNames, flatValues);
         dataGrid.renderInline();
         this._dataGrids.push(dataGrid);
-        this._dataGridParents.put(dataGrid, dataGridContainer);
+        this._dataGridParents.set(dataGrid, dataGridContainer);
         return element;
     },
 

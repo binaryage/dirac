@@ -313,7 +313,7 @@ WebInspector.ConsoleView.prototype = {
         var newOption = document.createElement("option");
         newOption.__executionContext = executionContext;
         newOption.text = this._titleFor(executionContext);
-        this._optionByExecutionContext.put(executionContext, newOption);
+        this._optionByExecutionContext.set(executionContext, newOption);
         var sameGroupExists = false;
         var options = this._executionContextSelector.selectElement().options;
         var insertBeforeOption = null;

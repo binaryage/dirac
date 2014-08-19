@@ -158,8 +158,8 @@ WebInspector.ShortcutRegistry.prototype = {
         var descriptor = WebInspector.KeyboardShortcut.makeDescriptorFromBindingShortcut(shortcut);
         if (!descriptor)
             return;
-        this._defaultActionToShortcut.put(actionId, descriptor);
-        this._defaultKeyToActions.put(String(descriptor.key), actionId);
+        this._defaultActionToShortcut.set(actionId, descriptor);
+        this._defaultKeyToActions.set(String(descriptor.key), actionId);
     },
 
     /**

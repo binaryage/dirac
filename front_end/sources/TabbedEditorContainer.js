@@ -376,7 +376,7 @@ WebInspector.TabbedEditorContainer.prototype = {
         var tooltip = this._tooltipForFile(uiSourceCode);
 
         var tabId = this._generateTabId();
-        this._tabIds.put(uiSourceCode, tabId);
+        this._tabIds.set(uiSourceCode, tabId);
         this._files[tabId] = uiSourceCode;
 
         var savedSelectionRange = this._history.selectionRange(uiSourceCode.uri());

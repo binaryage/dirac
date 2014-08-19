@@ -519,7 +519,7 @@ WebInspector.NetworkLogView.prototype = {
 
     _updateSummaryBar: function()
     {
-        var requestsNumber = this._nodesByRequestId.size();
+        var requestsNumber = this._nodesByRequestId.size;
 
         if (!requestsNumber) {
             if (this._summaryBarElement._isDisplayingWarning)
@@ -849,8 +849,8 @@ WebInspector.NetworkLogView.prototype = {
         // request and we need to update _nodesByRequestId and search results.
         var originalRequestNode = this._nodesByRequestId.get(request.requestId);
         if (originalRequestNode)
-            this._nodesByRequestId.put(originalRequestNode._request.requestId, originalRequestNode);
-        this._nodesByRequestId.put(request.requestId, node);
+            this._nodesByRequestId.set(originalRequestNode._request.requestId, originalRequestNode);
+        this._nodesByRequestId.set(request.requestId, node);
 
         // Pull all the redirects of the main request upon commit load.
         if (request.redirects) {

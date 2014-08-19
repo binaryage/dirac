@@ -104,7 +104,7 @@ WebInspector.BreakpointManager.prototype = {
         var result = new StringMap();
         var breakpoints = this._provisionalBreakpoints.get(sourceFileId).values();
         for (var i = 0; i < breakpoints.length; ++i)
-            result.put(breakpoints[i]._breakpointStorageId(), breakpoints[i]);
+            result.set(breakpoints[i]._breakpointStorageId(), breakpoints[i]);
         return result;
     },
 
@@ -134,7 +134,7 @@ WebInspector.BreakpointManager.prototype = {
             var provisionalBreakpoint = provisionalBreakpoints.get(itemStorageId);
             if (provisionalBreakpoint) {
                 if (!this._breakpointsForPrimaryUISourceCode.get(uiSourceCode))
-                    this._breakpointsForPrimaryUISourceCode.put(uiSourceCode, []);
+                    this._breakpointsForPrimaryUISourceCode.set(uiSourceCode, []);
                 this._breakpointsForPrimaryUISourceCode.get(uiSourceCode).push(provisionalBreakpoint);
                 provisionalBreakpoint._updateBreakpoint();
             } else {
@@ -190,7 +190,7 @@ WebInspector.BreakpointManager.prototype = {
         for (var i = 0; i < breakpoints.length; ++i) {
             breakpoints[i]._resetLocations();
             if (breakpoints[i].enabled())
-                this._provisionalBreakpoints.put(sourceFileId, breakpoints[i]);
+                this._provisionalBreakpoints.set(sourceFileId, breakpoints[i]);
         }
         uiSourceCode.removeEventListener(WebInspector.UISourceCode.Events.SourceMappingChanged, this._uiSourceCodeMappingChanged, this);
         this._breakpointsForPrimaryUISourceCode.remove(uiSourceCode);
@@ -230,7 +230,7 @@ WebInspector.BreakpointManager.prototype = {
         var sourceFileId = WebInspector.BreakpointManager._sourceFileId(uiSourceCode);
         breakpoint = new WebInspector.BreakpointManager.Breakpoint(this, projectId, path, sourceFileId, lineNumber, columnNumber, condition, enabled);
         if (!this._breakpointsForPrimaryUISourceCode.get(uiSourceCode))
-            this._breakpointsForPrimaryUISourceCode.put(uiSourceCode, []);
+            this._breakpointsForPrimaryUISourceCode.set(uiSourceCode, []);
         this._breakpointsForPrimaryUISourceCode.get(uiSourceCode).push(breakpoint);
         return breakpoint;
     },
@@ -376,17 +376,17 @@ WebInspector.BreakpointManager.prototype = {
         var breakpoints = this._breakpointsForUISourceCode.get(uiLocation.uiSourceCode);
         if (!breakpoints) {
             breakpoints = new StringMap();
-            this._breakpointsForUISourceCode.put(uiLocation.uiSourceCode, breakpoints);
+            this._breakpointsForUISourceCode.set(uiLocation.uiSourceCode, breakpoints);
         }
         var lineBreakpoints = breakpoints.get(String(uiLocation.lineNumber));
         if (!lineBreakpoints) {
             lineBreakpoints = new StringMap();
-            breakpoints.put(String(uiLocation.lineNumber), lineBreakpoints);
+            breakpoints.set(String(uiLocation.lineNumber), lineBreakpoints);
         }
         var columnBreakpoints = lineBreakpoints.get(String(uiLocation.columnNumber));
         if (!columnBreakpoints) {
             columnBreakpoints = [];
-            lineBreakpoints.put(String(uiLocation.columnNumber), columnBreakpoints);
+            lineBreakpoints.set(String(uiLocation.columnNumber), columnBreakpoints);
         }
         columnBreakpoints.push(breakpoint);
         this.dispatchEventToListeners(WebInspector.BreakpointManager.Events.BreakpointAdded, {breakpoint: breakpoint, uiLocation: uiLocation});
@@ -411,9 +411,9 @@ WebInspector.BreakpointManager.prototype = {
         columnBreakpoints.remove(breakpoint);
         if (!columnBreakpoints.length)
             lineBreakpoints.remove(String(uiLocation.columnNumber));
-        if (!lineBreakpoints.size())
+        if (!lineBreakpoints.size)
             breakpoints.remove(String(uiLocation.lineNumber));
-        if (!breakpoints.size())
+        if (!breakpoints.size)
             this._breakpointsForUISourceCode.remove(uiLocation.uiSourceCode);
         this.dispatchEventToListeners(WebInspector.BreakpointManager.Events.BreakpointRemoved, {breakpoint: breakpoint, uiLocation: uiLocation});
     },
@@ -488,7 +488,7 @@ WebInspector.BreakpointManager.Breakpoint.prototype = {
      */
     targetAdded: function(target)
     {
-        this._targetBreakpoints.put(target, new WebInspector.BreakpointManager.TargetBreakpoint(target, this, this._breakpointManager._debuggerWorkspaceBinding));
+        this._targetBreakpoints.set(target, new WebInspector.BreakpointManager.TargetBreakpoint(target, this, this._breakpointManager._debuggerWorkspaceBinding));
     },
 
     /**

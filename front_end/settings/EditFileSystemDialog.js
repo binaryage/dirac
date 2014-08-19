@@ -322,7 +322,7 @@ WebInspector.EditFileSystemDialog.prototype = {
      */
     _validateExcludedFolder: function(path, allowedPath)
     {
-        return !!path && (path === allowedPath || !this._excludedFolderEntries.contains(path));
+        return !!path && (path === allowedPath || !this._excludedFolderEntries.has(path));
     },
 
     /**
@@ -358,7 +358,7 @@ WebInspector.EditFileSystemDialog.prototype = {
         if (!fileSystemPath || this._fileSystemPath !== fileSystemPath)
             return;
         var path = entry.path;
-        this._excludedFolderEntries.put(path, entry);
+        this._excludedFolderEntries.set(path, entry);
         this._excludedFolderList.addItem(path, null);
         this._resize();
     },

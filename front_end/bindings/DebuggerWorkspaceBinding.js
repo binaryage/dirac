@@ -30,7 +30,7 @@ WebInspector.DebuggerWorkspaceBinding.prototype = {
      */
     targetAdded: function(target)
     {
-        this._targetToData.put(target, new WebInspector.DebuggerWorkspaceBinding.TargetData(target, this));
+        this._targetToData.set(target, new WebInspector.DebuggerWorkspaceBinding.TargetData(target, this));
     },
 
     /**
@@ -244,7 +244,7 @@ WebInspector.DebuggerWorkspaceBinding.prototype = {
         var info = scriptDataMap.get(script.scriptId);
         if (!info) {
             info = new WebInspector.DebuggerWorkspaceBinding.ScriptInfo(script);
-            scriptDataMap.put(script.scriptId, info);
+            scriptDataMap.set(script.scriptId, info);
         }
         return info;
     },
@@ -356,7 +356,7 @@ WebInspector.DebuggerWorkspaceBinding.TargetData.prototype = {
             return;
 
         if (sourceMapping)
-            this._uiSourceCodeToSourceMapping.put(uiSourceCode, sourceMapping);
+            this._uiSourceCodeToSourceMapping.set(uiSourceCode, sourceMapping);
         else
             this._uiSourceCodeToSourceMapping.remove(uiSourceCode);
 

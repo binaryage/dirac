@@ -30,7 +30,7 @@ WebInspector.Context.prototype = {
         if (value === flavorValue)
             return;
         if (flavorValue)
-            this._flavors.put(flavorType, flavorValue);
+            this._flavors.set(flavorType, flavorValue);
         else
             this._flavors.remove(flavorType);
 
@@ -60,7 +60,7 @@ WebInspector.Context.prototype = {
         var dispatcher = this._eventDispatchers.get(flavorType);
         if (!dispatcher) {
             dispatcher = new WebInspector.Object();
-            this._eventDispatchers.put(flavorType, dispatcher);
+            this._eventDispatchers.set(flavorType, dispatcher);
         }
         dispatcher.addEventListener(WebInspector.Context.Events.FlavorChanged, listener, thisObject);
     },

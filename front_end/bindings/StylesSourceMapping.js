@@ -119,9 +119,9 @@ WebInspector.StylesSourceMapping.prototype = {
         var headersById = map.get(header.frameId);
         if (!headersById) {
             headersById = /** @type {!StringMap.<!WebInspector.CSSStyleSheetHeader>} */ (new StringMap());
-            map.put(header.frameId, headersById);
+            map.set(header.frameId, headersById);
         }
-        headersById.put(header.id, header);
+        headersById.set(header.id, header);
         var uiSourceCode = this._workspace.uiSourceCodeForURL(url);
         if (uiSourceCode)
             this._bindUISourceCode(uiSourceCode, header);
@@ -142,9 +142,9 @@ WebInspector.StylesSourceMapping.prototype = {
         console.assert(headersById);
         headersById.remove(header.id);
 
-        if (!headersById.size()) {
+        if (!headersById.size) {
             map.remove(header.frameId);
-            if (!map.size()) {
+            if (!map.size) {
                 delete this._urlToHeadersByFrameId[url];
                 var uiSourceCode = this._workspace.uiSourceCodeForURL(url);
                 if (uiSourceCode)
@@ -186,7 +186,7 @@ WebInspector.StylesSourceMapping.prototype = {
         if (this._styleFiles.get(uiSourceCode) || header.isInline)
             return;
         var url = uiSourceCode.url;
-        this._styleFiles.put(uiSourceCode, new WebInspector.StyleFile(uiSourceCode, this));
+        this._styleFiles.set(uiSourceCode, new WebInspector.StyleFile(uiSourceCode, this));
         WebInspector.cssWorkspaceBinding.updateLocations(header);
     },
 

@@ -79,7 +79,7 @@ WebInspector.PresentationConsoleMessageHelper.prototype = {
         var target = this._uiSourceCodeToEventTarget.get(uiSourceCode);
         if (!target) {
             target = new WebInspector.Object();
-            this._uiSourceCodeToEventTarget.put(uiSourceCode, target);
+            this._uiSourceCodeToEventTarget.set(uiSourceCode, target);
         }
         target.addEventListener(eventType, listener, thisObject);
     },
@@ -236,7 +236,7 @@ WebInspector.PresentationConsoleMessageHelper.prototype = {
         var messages = this._uiSourceCodeToMessages.get(uiSourceCode);
         if (!messages) {
             messages = [];
-            this._uiSourceCodeToMessages.put(uiSourceCode, messages);
+            this._uiSourceCodeToMessages.set(uiSourceCode, messages);
         }
         messages.push(message);
         this._dispatchConsoleEvent(WebInspector.PresentationConsoleMessageHelper.Events.ConsoleMessageAdded, uiSourceCode, message);
