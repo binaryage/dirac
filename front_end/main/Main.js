@@ -660,9 +660,7 @@ WebInspector.Main.ReloadActionDelegate.prototype = {
      */
     handleAction: function()
     {
-        WebInspector.debuggerModel.skipAllPauses(true, true);
-        WebInspector.resourceTreeModel.reloadPage(false);
-        return true;
+        return WebInspector.Main._reloadPage(false);
     }
 }
 
@@ -680,9 +678,7 @@ WebInspector.Main.HardReloadActionDelegate.prototype = {
      */
     handleAction: function()
     {
-        WebInspector.debuggerModel.skipAllPauses(true, true);
-        WebInspector.resourceTreeModel.reloadPage(true);
-        return true;
+        return WebInspector.Main._reloadPage(true);
     }
 }
 
@@ -792,6 +788,22 @@ WebInspector.Main.ShortcutPanelSwitchSettingDelegate.prototype = {
     },
 
     __proto__: WebInspector.UISettingDelegate.prototype
+}
+
+/**
+ * @param {boolean} hard
+ * @return {boolean}
+ */
+WebInspector.Main._reloadPage = function(hard)
+{
+    if (!WebInspector.targetManager.hasTargets())
+        return false;
+
+    var targets = WebInspector.targetManager.targets();
+    for (var i = 0; i < targets.length; ++i)
+        targets[i].debuggerModel.skipAllPauses(true, true);
+    WebInspector.targetManager.reloadPage(hard);
+    return true;
 }
 
 /**

@@ -97,8 +97,8 @@ WebInspector.TimelinePanel = function()
     this._createFileSelector();
     this._registerShortcuts();
 
-    WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.WillReloadPage, this._willReloadPage, this);
-    WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.Load, this._loadEventFired, this);
+    WebInspector.targetManager.addEventListener(WebInspector.TargetManager.Events.WillReloadPage, this._willReloadPage, this);
+    WebInspector.targetManager.addEventListener(WebInspector.TargetManager.Events.Load, this._loadEventFired, this);
 
     // Create top level properties splitter.
     this._detailsSplitView = new WebInspector.SplitView(false, true, "timelinePanelDetailsSplitViewState");

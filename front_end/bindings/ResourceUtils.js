@@ -34,7 +34,13 @@
  */
 WebInspector.resourceForURL = function(url)
 {
-    return WebInspector.resourceTreeModel.resourceForURL(url);
+    var targets = WebInspector.targetManager.targets();
+    for (var i = 0; i < targets.length; ++i) {
+        var resource = targets[i].resourceTreeModel.resourceForURL(url);
+        if (resource)
+            return resource;
+    }
+    return null;
 }
 
 /**
@@ -42,7 +48,9 @@ WebInspector.resourceForURL = function(url)
  */
 WebInspector.forAllResources = function(callback)
 {
-     WebInspector.resourceTreeModel.forAllResources(callback);
+    var targets = WebInspector.targetManager.targets();
+    for (var i = 0; i < targets.length; ++i)
+        targets[i].resourceTreeModel.forAllResources(callback);
 }
 
 /**

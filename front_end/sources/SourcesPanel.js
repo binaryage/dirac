@@ -1291,7 +1291,7 @@ WebInspector.SourcesPanel.DisableJavaScriptSettingDelegate.prototype = {
         this._disableJSInfo = disableJSInfoParent.createChild("span", "object-info-state-note hidden");
         this._disableJSInfo.title = WebInspector.UIString("JavaScript is blocked on the inspected page (may be disabled in browser settings).");
 
-        WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.MainFrameNavigated, this._updateScriptDisabledCheckbox, this);
+        WebInspector.targetManager.addEventListener(WebInspector.TargetManager.Events.MainFrameNavigated, this._updateScriptDisabledCheckbox, this);
         this._updateScriptDisabledCheckbox();
         return disableJSElement;
     },

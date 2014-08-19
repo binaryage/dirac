@@ -199,7 +199,7 @@ WebInspector.ResourceTreeModel.prototype = {
             if (!frame.isMainFrame())
                 this._removeSecurityOrigin(frame.securityOrigin);
         }
-        removeOriginForFrame.call(this, WebInspector.resourceTreeModel.mainFrame);
+        removeOriginForFrame.call(this, mainFrame);
     },
 
     /**

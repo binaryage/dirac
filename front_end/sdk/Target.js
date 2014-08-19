@@ -269,6 +269,7 @@ WebInspector.SDKModel.prototype = {
  */
 WebInspector.TargetManager = function()
 {
+    WebInspector.Object.call(this);
     /** @type {!Array.<!WebInspector.Target>} */
     this._targets = [];
     /** @type {!Array.<!WebInspector.TargetManager.Observer>} */
@@ -278,7 +279,10 @@ WebInspector.TargetManager = function()
 }
 
 WebInspector.TargetManager.Events = {
-    InspectedURLChanged: "InspectedURLChanged"
+    InspectedURLChanged: "InspectedURLChanged",
+    MainFrameNavigated: "MainFrameNavigated",
+    Load: "Load",
+    WillReloadPage: "WillReloadPage",
 }
 
 WebInspector.TargetManager.prototype = {
@@ -307,9 +311,18 @@ WebInspector.TargetManager.prototype = {
     /**
      * @param {!WebInspector.Event} event
      */
-    _dispatchInspectedURLChanged: function(event)
+    _redispatchEvent: function(event)
     {
-        this.dispatchEventToListeners(WebInspector.TargetManager.Events.InspectedURLChanged, event.data);
+        this.dispatchEventToListeners(event.type, event.data);
+    },
+
+    /**
+     * @param {boolean=} ignoreCache
+     */
+    reloadPage: function(ignoreCache)
+    {
+        if (this._targets.length)
+            this._targets[0].resourceTreeModel.reloadPage(ignoreCache);
     },
 
     /**
@@ -399,9 +412,12 @@ WebInspector.TargetManager.prototype = {
     addTarget: function(target)
     {
         this._targets.push(target);
-        if (this._targets.length === 1)
-            target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.InspectedURLChanged, this._dispatchInspectedURLChanged, this);
-
+        if (this._targets.length === 1) {
+            target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.InspectedURLChanged, this._redispatchEvent, this);
+            target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.MainFrameNavigated, this._redispatchEvent, this);
+            target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.Load, this._redispatchEvent, this);
+            target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.WillReloadPage, this._redispatchEvent, this);
+        }
         var copy = this._observers.slice();
         for (var i = 0; i < copy.length; ++i)
             copy[i].targetAdded(target);
@@ -421,9 +437,12 @@ WebInspector.TargetManager.prototype = {
     removeTarget: function(target)
     {
         this._targets.remove(target);
-        if (this._targets.length === 0)
-            target.resourceTreeModel.removeEventListener(WebInspector.ResourceTreeModel.EventTypes.InspectedURLChanged, this._dispatchInspectedURLChanged, this);
-
+        if (this._targets.length === 0) {
+            target.resourceTreeModel.removeEventListener(WebInspector.ResourceTreeModel.EventTypes.InspectedURLChanged, this._redispatchEvent, this);
+            target.resourceTreeModel.removeEventListener(WebInspector.ResourceTreeModel.EventTypes.MainFrameNavigated, this._redispatchEvent, this);
+            target.resourceTreeModel.removeEventListener(WebInspector.ResourceTreeModel.EventTypes.Load, this._redispatchEvent, this);
+            target.resourceTreeModel.removeEventListener(WebInspector.ResourceTreeModel.EventTypes.WillReloadPage, this._redispatchEvent, this);
+        }
         var copy = this._observers.slice();
         for (var i = 0; i < copy.length; ++i)
             copy[i].targetRemoved(target);
@@ -435,6 +454,14 @@ WebInspector.TargetManager.prototype = {
                 model.removeEventListener(eventType, listeners[i].listener, listeners[i].thisObject);
             }
         }
+    },
+
+    /**
+     * @return {boolean}
+     */
+    hasTargets: function()
+    {
+        return !!this._targets.length;
     },
 
     /**
