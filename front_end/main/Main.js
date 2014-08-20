@@ -159,10 +159,8 @@ WebInspector.Main.prototype = {
         console.timeStamp("Main._loaded");
 
         // FIXME: Make toolbox a real app.
-        if (WebInspector.queryParam("toolbox")) {
-            new WebInspector.Toolbox();
+        if (WebInspector.queryParam("toolbox"))
             return;
-        }
 
         this._createSettings();
         this._createModuleManager();
