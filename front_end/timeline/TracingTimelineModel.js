@@ -60,6 +60,7 @@ WebInspector.TracingTimelineModel.RecordType = {
 
     TimeStamp: "TimeStamp",
     ConsoleTime: "ConsoleTime",
+    ConsoleTimeEnd: "ConsoleTimeEnd",
 
     ResourceSendRequest: "ResourceSendRequest",
     ResourceReceiveResponse: "ResourceReceiveResponse",
