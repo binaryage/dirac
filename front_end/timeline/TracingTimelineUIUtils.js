@@ -215,7 +215,6 @@ WebInspector.TracingTimelineUIUtils._initEventStyles = function()
     eventStyles[recordTypes.UpdateLayer] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Update Layer"), categories["painting"], true);
     eventStyles[recordTypes.UpdateLayerTree] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Update Layer Tree"), categories["rendering"]);
     eventStyles[recordTypes.Paint] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Paint"), categories["painting"]);
-    eventStyles[recordTypes.Rasterize] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Paint"), categories["painting"]);
     eventStyles[recordTypes.RasterTask] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Paint"), categories["painting"]);
     eventStyles[recordTypes.ScrollLayer] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Scroll"), categories["rendering"]);
     eventStyles[recordTypes.CompositeLayers] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Composite Layers"), categories["painting"]);
@@ -256,7 +255,7 @@ WebInspector.TracingTimelineUIUtils._initEventStyles = function()
 WebInspector.TracingTimelineUIUtils._coalescableRecordTypes = {};
 WebInspector.TracingTimelineUIUtils._coalescableRecordTypes[WebInspector.TracingTimelineModel.RecordType.Layout] = 1;
 WebInspector.TracingTimelineUIUtils._coalescableRecordTypes[WebInspector.TracingTimelineModel.RecordType.Paint] = 1;
-WebInspector.TracingTimelineUIUtils._coalescableRecordTypes[WebInspector.TracingTimelineModel.RecordType.Rasterize] = 1;
+WebInspector.TracingTimelineUIUtils._coalescableRecordTypes[WebInspector.TracingTimelineModel.RecordType.RasterTask] = 1;
 WebInspector.TracingTimelineUIUtils._coalescableRecordTypes[WebInspector.TracingTimelineModel.RecordType.DecodeImage] = 1;
 WebInspector.TracingTimelineUIUtils._coalescableRecordTypes[WebInspector.TracingTimelineModel.RecordType.ResizeImage] = 1;
 
