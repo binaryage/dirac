@@ -31,23 +31,21 @@
 
 /**
  * @constructor
- * @extends {WebInspector.SDKObject}
- * @param {!WebInspector.Target} target
  * @param {!WebInspector.AuditsPanel} auditsPanel
  */
-WebInspector.AuditController = function(target, auditsPanel)
+WebInspector.AuditController = function(auditsPanel)
 {
-    WebInspector.SDKObject.call(this, target);
     this._auditsPanel = auditsPanel;
-    this.target().resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.Load, this._didMainResourceLoad, this);
+    WebInspector.targetManager.addEventListener(WebInspector.TargetManager.Events.Load, this._didMainResourceLoad, this);
 }
 
 WebInspector.AuditController.prototype = {
     /**
+     * @param {!WebInspector.Target} target
      * @param {!Array.<!WebInspector.AuditCategory>} categories
      * @param {function(string, !Array.<!WebInspector.AuditCategoryResult>)} resultCallback
      */
-    _executeAudit: function(categories, resultCallback)
+    _executeAudit: function(target, categories, resultCallback)
     {
         this._progress.setTitle(WebInspector.UIString("Running audit"));
 
@@ -66,7 +64,7 @@ WebInspector.AuditController.prototype = {
         }
 
         var results = [];
-        var mainResourceURL = this.target().resourceTreeModel.inspectedPageURL();
+        var mainResourceURL = target.resourceTreeModel.inspectedPageURL();
         var categoriesDone = 0;
 
         /**
@@ -80,7 +78,7 @@ WebInspector.AuditController.prototype = {
             resultCallback(mainResourceURL, results)
         }
 
-        var requests = this.target().networkLog.requests.slice();
+        var requests = target.networkLog.requests.slice();
         var compositeProgress = new WebInspector.CompositeProgress(this._progress);
         var subprogresses = [];
         for (var i = 0; i < categories.length; ++i)
@@ -89,7 +87,7 @@ WebInspector.AuditController.prototype = {
             var category = categories[i];
             var result = new WebInspector.AuditCategoryResult(category);
             results.push(result);
-            category.run(this.target(), requests, ruleResultReadyCallback.bind(this, result), categoryDoneCallback.bind(this), subprogresses[i]);
+            category.run(target, requests, ruleResultReadyCallback.bind(this, result), categoryDoneCallback.bind(this), subprogresses[i]);
         }
     },
 
@@ -114,7 +112,8 @@ WebInspector.AuditController.prototype = {
      */
     initiateAudit: function(categoryIds, progress, runImmediately, startedCallback, finishedCallback)
     {
-        if (!categoryIds || !categoryIds.length)
+        var target = /** @type {!WebInspector.Target} */ (WebInspector.targetManager.mainTarget());
+        if (!categoryIds || !categoryIds.length || !target)
             return;
 
         this._progress = progress;
@@ -129,7 +128,7 @@ WebInspector.AuditController.prototype = {
         function startAuditWhenResourcesReady()
         {
             startedCallback();
-            this._executeAudit(categories, this._auditFinishedCallback.bind(this, finishedCallback));
+            this._executeAudit(target, categories, this._auditFinishedCallback.bind(this, finishedCallback));
         }
 
         if (runImmediately)
@@ -146,7 +145,7 @@ WebInspector.AuditController.prototype = {
     _reloadResources: function(callback)
     {
         this._pageReloadCallback = callback;
-        this.target().resourceTreeModel.reloadPage();
+        WebInspector.targetManager.reloadPage();
     },
 
     _didMainResourceLoad: function()
@@ -161,7 +160,5 @@ WebInspector.AuditController.prototype = {
     clearResults: function()
     {
         this._auditsPanel.clearResults();
-    },
-
-    __proto__: WebInspector.SDKObject.prototype
+    }
 }

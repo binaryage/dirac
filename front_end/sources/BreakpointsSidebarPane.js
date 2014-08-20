@@ -385,8 +385,11 @@ WebInspector.XHRBreakpointsSidebarPane.prototype = {
         }
         this.addListElement(element, currentElement);
         this._breakpointElements[url] = element;
-        if (enabled)
-            DOMDebuggerAgent.setXHRBreakpoint(url);
+        if (enabled) {
+            var targets = WebInspector.targetManager.targets();
+            for (var i = 0; i < targets.length; ++i)
+                targets[i].domdebuggerAgent().setXHRBreakpoint(url);
+        }
     },
 
     _removeBreakpoint: function(url)
@@ -397,8 +400,11 @@ WebInspector.XHRBreakpointsSidebarPane.prototype = {
 
         this.removeListElement(element);
         delete this._breakpointElements[url];
-        if (element._checkboxElement.checked)
-            DOMDebuggerAgent.removeXHRBreakpoint(url);
+        if (element._checkboxElement.checked) {
+            var targets = WebInspector.targetManager.targets();
+            for (var i = 0; i < targets.length; ++i)
+                targets[i].domdebuggerAgent().removeXHRBreakpoint(url);
+        }
     },
 
     _contextMenu: function(url, event)

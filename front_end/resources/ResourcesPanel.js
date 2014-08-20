@@ -31,6 +31,7 @@
 /**
  * @constructor
  * @extends {WebInspector.PanelWithSidebarTree}
+ * @implements {WebInspector.TargetManager.Observer}
  */
 WebInspector.ResourcesPanel = function(database)
 {
@@ -105,18 +106,48 @@ WebInspector.ResourcesPanel = function(database)
     }
     WebInspector.GoToLineDialog.install(this, sourceFrameGetter.bind(this));
 
-    if (WebInspector.resourceTreeModel.cachedResourcesLoaded())
-        this._cachedResourcesLoaded();
-
-    WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.Load, this._loadEventFired, this);
-    WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.CachedResourcesLoaded, this._cachedResourcesLoaded, this);
-    WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.WillLoadCachedResources, this._resetWithFrames, this);
-
-    WebInspector.databaseModel.databases().forEach(this._addDatabase.bind(this));
-    WebInspector.databaseModel.addEventListener(WebInspector.DatabaseModel.Events.DatabaseAdded, this._databaseAdded, this);
+    WebInspector.targetManager.observeTargets(this);
 }
 
 WebInspector.ResourcesPanel.prototype = {
+    /**
+     * @param {!WebInspector.Target} target
+     */
+    targetAdded: function(target)
+    {
+        if (this._target)
+            return;
+
+        if (target.resourceTreeModel.cachedResourcesLoaded())
+            this._cachedResourcesLoaded();
+
+        target.databaseModel.databases().forEach(this._addDatabase.bind(this));
+
+        target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.Load, this._loadEventFired, this);
+        target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.CachedResourcesLoaded, this._cachedResourcesLoaded, this);
+        target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.WillLoadCachedResources, this._resetWithFrames, this);
+        target.databaseModel.addEventListener(WebInspector.DatabaseModel.Events.DatabaseAdded, this._databaseAdded, this);
+
+        this._target = target;
+    },
+
+    /**
+     * @param {!WebInspector.Target} target
+     */
+    targetRemoved: function(target)
+    {
+        if (target !== this._target)
+            return;
+        delete this._target;
+
+        target.resourceTreeModel.removeEventListener(WebInspector.ResourceTreeModel.EventTypes.Load, this._loadEventFired, this);
+        target.resourceTreeModel.removeEventListener(WebInspector.ResourceTreeModel.EventTypes.CachedResourcesLoaded, this._cachedResourcesLoaded, this);
+        target.resourceTreeModel.removeEventListener(WebInspector.ResourceTreeModel.EventTypes.WillLoadCachedResources, this._resetWithFrames, this);
+        target.databaseModel.removeEventListener(WebInspector.DatabaseModel.Events.DatabaseAdded, this._databaseAdded, this);
+
+        this._resetWithFrames();
+    },
+
     /**
      * @return {boolean}
      */

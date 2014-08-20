@@ -106,7 +106,11 @@ WebInspector.WatchExpressionsSection = function()
 {
     this._watchObjectGroupId = "watch-group";
 
-    WebInspector.ObjectPropertiesSection.call(this, WebInspector.runtimeModel.createRemoteObjectFromPrimitiveValue(""));
+    // FIXME: watch expressions should not abuse object property section.
+    if (WebInspector.runtimeModel)
+        WebInspector.ObjectPropertiesSection.call(this, WebInspector.runtimeModel.createRemoteObjectFromPrimitiveValue(""));
+    else
+        WebInspector.ObjectPropertiesSection.call(this, /** @type {!WebInspector.RemoteObject}*/ ({}));
 
     this.treeElementConstructor = WebInspector.WatchedPropertyTreeElement;
     this._expandedExpressions = {};

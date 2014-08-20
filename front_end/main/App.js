@@ -4,33 +4,14 @@
 
 /**
  * @constructor
- * @implements {WebInspector.Console.UIDelegate}
  */
 WebInspector.App = function()
 {
-    WebInspector.console.setUIDelegate(this);
 };
 
 WebInspector.App.prototype = {
-    createRootView: function()
+    presentUI: function()
     {
-    },
-
-    /**
-     * @param {!WebInspector.Target} mainTarget
-     */
-    presentUI: function(mainTarget)
-    {
-        WebInspector.inspectorView.showInitialPanel();
-
-        WebInspector.overridesSupport.applyInitialOverrides();
-        if (!WebInspector.overridesSupport.responsiveDesignAvailable() && WebInspector.overridesSupport.emulationEnabled())
-            WebInspector.inspectorView.showViewInDrawer("emulation", true);
-    },
-
-    showConsole: function()
-    {
-        WebInspector.Revealer.reveal(WebInspector.console);
     }
 };
 

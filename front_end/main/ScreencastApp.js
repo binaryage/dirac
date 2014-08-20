@@ -5,6 +5,7 @@
 /**
  * @constructor
  * @extends {WebInspector.App}
+ * @implements {WebInspector.TargetManager.Observer}
  */
 WebInspector.ScreencastApp = function()
 {
@@ -20,10 +21,11 @@ WebInspector.ScreencastApp = function()
         this._currentScreencastState,
         lastScreencastState,
         this._onStatusBarButtonStateChanged.bind(this));
+    WebInspector.targetManager.observeTargets(this);
 };
 
 WebInspector.ScreencastApp.prototype = {
-    createRootView: function()
+    presentUI: function()
     {
         var rootView = new WebInspector.RootView();
 
@@ -32,16 +34,20 @@ WebInspector.ScreencastApp.prototype = {
         this._rootSplitView.hideMain();
 
         WebInspector.inspectorView.show(this._rootSplitView.sidebarElement());
+        WebInspector.inspectorView.showInitialPanel();
         rootView.attachToBody();
     },
 
     /**
-     * @param {!WebInspector.Target} mainTarget
+     * @param {!WebInspector.Target} target
      */
-    presentUI: function(mainTarget)
+    targetAdded: function(target)
     {
-        if (mainTarget.hasCapability(WebInspector.Target.Capabilities.CanScreencast)) {
-            this._screencastView = new WebInspector.ScreencastView(mainTarget);
+        if (this._target)
+            return;
+        this._target = target;
+        if (target.hasCapability(WebInspector.Target.Capabilities.CanScreencast)) {
+            this._screencastView = new WebInspector.ScreencastView(target);
             this._screencastView.show(this._rootSplitView.mainElement());
             this._screencastView.initialize();
             this._onStatusBarButtonStateChanged(this._currentScreencastState.get());
@@ -49,7 +55,22 @@ WebInspector.ScreencastApp.prototype = {
             this._onStatusBarButtonStateChanged("disabled");
             this._toggleScreencastButton.setEnabled(false);
         }
-        WebInspector.App.prototype.presentUI.call(this, mainTarget);
+    },
+
+    /**
+     * @param {!WebInspector.Target} target
+     */
+    targetRemoved: function(target)
+    {
+        if (this._target === target) {
+            delete this._target;
+            if (!this._screencastView)
+                return;
+            this._onStatusBarButtonStateChanged("disabled");
+            this._toggleScreencastButton.setEnabled(false);
+            this._screencastView.detach();
+            delete this._screencastView;
+        }
     },
 
     /**

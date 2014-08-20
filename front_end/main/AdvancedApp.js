@@ -44,7 +44,7 @@ WebInspector.AdvancedApp.prototype = {
         this._toggleEmulationButton.element.classList.toggle("warning", !!message);
     },
 
-    createRootView: function()
+    presentUI: function()
     {
         var rootView = new WebInspector.RootView();
 
@@ -63,18 +63,12 @@ WebInspector.AdvancedApp.prototype = {
         WebInspector.dockController.addEventListener(WebInspector.DockController.Events.AfterDockSideChanged, this._onAfterDockSideChange, this);
         this._onDockSideChange();
 
+        this._overridesWarningUpdated();
+
+        WebInspector.inspectorView.showInitialPanel();
         console.timeStamp("AdvancedApp.attachToBody");
         rootView.attachToBody();
         this._inspectedPagePlaceholder.update();
-    },
-
-    /**
-     * @param {!WebInspector.Target} mainTarget
-     */
-    presentUI: function(mainTarget)
-    {
-        WebInspector.App.prototype.presentUI.call(this, mainTarget);
-        this._overridesWarningUpdated();
     },
 
     /**

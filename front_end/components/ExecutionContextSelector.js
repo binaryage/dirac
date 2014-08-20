@@ -23,8 +23,12 @@ WebInspector.ExecutionContextSelector.prototype = {
      */
     targetAdded: function(target)
     {
-        if (!WebInspector.context.flavor(WebInspector.Target))
-            WebInspector.context.setFlavor(WebInspector.Target, target);
+        // Defer selecting default target since we need all clients to get their
+        // targetAdded notifications first.
+        setImmediate(function() {
+            if (!WebInspector.context.flavor(WebInspector.Target))
+                WebInspector.context.setFlavor(WebInspector.Target, target);
+        });
     },
 
     /**

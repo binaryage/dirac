@@ -282,7 +282,7 @@ WebInspector.TargetManager.Events = {
     InspectedURLChanged: "InspectedURLChanged",
     MainFrameNavigated: "MainFrameNavigated",
     Load: "Load",
-    WillReloadPage: "WillReloadPage",
+    WillReloadPage: "WillReloadPage"
 }
 
 WebInspector.TargetManager.prototype = {

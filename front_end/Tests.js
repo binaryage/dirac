@@ -885,7 +885,7 @@ function runTests()
         new TestSuite().runTest(name);
 }
 
-WebInspector.notifications.addEventListener(WebInspector.NotificationService.Events.InspectorUILoadedForTests, runTests);
+WebInspector.notifications.addEventListener(WebInspector.NotificationService.Events.InspectorAgentEnabledForTests, runTests);
 
 })();
 
