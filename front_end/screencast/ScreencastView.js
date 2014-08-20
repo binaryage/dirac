@@ -720,7 +720,7 @@ WebInspector.ScreencastView.prototype = {
         this._navigationProgressBar = new WebInspector.ScreencastView.ProgressTracker(this._navigationBar.createChild("div", "progress"));
 
         this._requestNavigationHistory();
-        WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.InspectedURLChanged, this._requestNavigationHistory, this);
+        WebInspector.targetManager.addEventListener(WebInspector.TargetManager.Events.InspectedURLChanged, this._requestNavigationHistory, this);
     },
 
     _navigateToHistoryEntry: function(offset)

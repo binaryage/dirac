@@ -499,7 +499,7 @@ WebInspector.NavigatorView.prototype = {
 WebInspector.SourcesNavigatorView = function()
 {
     WebInspector.NavigatorView.call(this);
-    WebInspector.targetManager.addEventListener(WebInspector.ResourceTreeModel.EventTypes.InspectedURLChanged, this._inspectedURLChanged, this);
+    WebInspector.targetManager.addEventListener(WebInspector.TargetManager.Events.InspectedURLChanged, this._inspectedURLChanged, this);
 }
 
 WebInspector.SourcesNavigatorView.prototype = {

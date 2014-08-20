@@ -692,7 +692,7 @@ WebInspector.ExtensionServer.prototype = {
             this._notifySourceFrameSelectionChanged);
         this._registerResourceContentCommittedHandler(this._notifyUISourceCodeContentCommitted);
 
-        WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.InspectedURLChanged,
+        WebInspector.targetManager.addEventListener(WebInspector.TargetManager.Events.InspectedURLChanged,
             this._inspectedURLChanged, this);
 
         InspectorExtensionRegistry.getExtensionsAsync();
