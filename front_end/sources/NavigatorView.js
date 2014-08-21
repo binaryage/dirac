@@ -536,7 +536,8 @@ WebInspector.SourcesNavigatorView.prototype = {
     _addUISourceCode: function(uiSourceCode)
     {
         WebInspector.NavigatorView.prototype._addUISourceCode.call(this, uiSourceCode);
-        if (uiSourceCode.url === WebInspector.targetManager.inspectedPageURL())
+        var inspectedPageURL = WebInspector.targetManager.inspectedPageURL();
+        if (inspectedPageURL && uiSourceCode.url === inspectedPageURL)
             this.revealUISourceCode(uiSourceCode, true);
      },
 
