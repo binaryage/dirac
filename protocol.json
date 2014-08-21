@@ -45,16 +45,6 @@
                 "name": "targetCrashed",
                 "description": "Fired when debugging target has crashed",
                 "handlers": ["browser"]
-            },
-            {
-                "name": "interstitialShown",
-                "description": "Fired when interstitial page was shown",
-                "handlers": ["browser"]
-            },
-            {
-                "name": "interstitialHidden",
-                "description": "Fired when interstitial page was hidden",
-                "handlers": ["browser"]
             }
         ]
     },
