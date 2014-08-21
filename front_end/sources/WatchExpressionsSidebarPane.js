@@ -100,19 +100,15 @@ WebInspector.WatchExpressionsSidebarPane.prototype = {
 
 /**
  * @constructor
- * @extends {WebInspector.ObjectPropertiesSection}
+ * @extends {WebInspector.PropertiesSection}
  */
 WebInspector.WatchExpressionsSection = function()
 {
     this._watchObjectGroupId = "watch-group";
 
-    // FIXME: watch expressions should not abuse object property section.
-    if (WebInspector.runtimeModel)
-        WebInspector.ObjectPropertiesSection.call(this, WebInspector.runtimeModel.createRemoteObjectFromPrimitiveValue(""));
-    else
-        WebInspector.ObjectPropertiesSection.call(this, /** @type {!WebInspector.RemoteObject}*/ ({}));
-
+    WebInspector.PropertiesSection.call(this, "");
     this.treeElementConstructor = WebInspector.WatchedPropertyTreeElement;
+    this.skipProto = false;
     this._expandedExpressions = {};
     this._expandedProperties = {};
 
@@ -170,7 +166,7 @@ WebInspector.WatchExpressionsSection.prototype = {
             properties.push(property);
 
             if (properties.length == propertyCount) {
-                this.updateProperties(properties, [], WebInspector.WatchExpressionTreeElement, WebInspector.WatchExpressionsSection.CompareProperties);
+                this.updateProperties(properties);
 
                 // check to see if we just added a new watch expression,
                 // which will always be the last property
@@ -226,6 +222,26 @@ WebInspector.WatchExpressionsSection.prototype = {
         // with no expressions, and expanded tree, we get some extra vertical
         // white space
         this.expanded = (propertyCount != 0);
+    },
+
+
+    /**
+     * @param {!Array.<!WebInspector.RemoteObjectProperty>} properties
+     */
+    updateProperties: function(properties)
+    {
+        this.propertiesTreeOutline.removeChildren();
+        WebInspector.ObjectPropertyTreeElement.populateWithProperties(this.propertiesTreeOutline, properties, [],
+            WebInspector.WatchExpressionTreeElement, WebInspector.WatchExpressionsSection.CompareProperties, false, null);
+
+        this.propertiesForTest = properties;
+
+        if (!this.propertiesTreeOutline.children.length) {
+            var title = document.createElementWithClass("div", "info");
+            title.textContent = WebInspector.UIString("No Properties");
+            var infoElement = new TreeElement(title, null, false);
+            this.propertiesTreeOutline.appendChild(infoElement);
+        }
     },
 
     addExpression: function(expression)
@@ -341,7 +357,7 @@ WebInspector.WatchExpressionsSection.prototype = {
         contextMenu.show();
     },
 
-    __proto__: WebInspector.ObjectPropertiesSection.prototype
+    __proto__: WebInspector.PropertiesSection.prototype
 }
 
 /**
