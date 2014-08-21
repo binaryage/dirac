@@ -125,7 +125,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
     markerColor: function(index)
     {
         var event = this._markerEvents[index];
-        return WebInspector.TracingTimelineUIUtils.markerEventColor(event.name);
+        return WebInspector.TracingTimelineUIUtils.markerEventColor(event);
     },
 
     /**
@@ -188,13 +188,13 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
         }
         for (var i = 0; i < events.length; ++i) {
             var e = events[i];
-            // FIXME: clean up once phase name is unified between Blink and Chromium.
-            if (!e.endTime && e.phase !== WebInspector.TracingModel.Phase.Instant && e.phase !== "I")
-                continue;
             if (WebInspector.TracingTimelineUIUtils.isMarkerEvent(e)) {
                 this._markerEvents.push(e);
                 this._timelineData.markerTimestamps.push(e.startTime);
             }
+            // FIXME: clean up once phase name is unified between Blink and Chromium.
+            if (!e.endTime && e.phase !== WebInspector.TracingModel.Phase.Instant && e.phase !== "I")
+                continue;
             if (!this._isVisible(e))
                 continue;
             while (openEvents.length && openEvents.peekLast().endTime <= e.startTime)

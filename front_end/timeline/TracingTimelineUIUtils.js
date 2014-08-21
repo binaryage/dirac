@@ -229,7 +229,7 @@ WebInspector.TracingTimelineUIUtils._initEventStyles = function()
     eventStyles[recordTypes.MarkDOMContent] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("DOMContentLoaded event"), categories["scripting"], true);
     eventStyles[recordTypes.MarkFirstPaint] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("First paint"), categories["painting"], true);
     eventStyles[recordTypes.TimeStamp] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Stamp"), categories["scripting"]);
-    eventStyles[recordTypes.ConsoleTime] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Console Time"), categories["scripting"]);
+    eventStyles[recordTypes.ConsoleTime] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Console Time"), categories["scripting"], true);
     eventStyles[recordTypes.ResourceSendRequest] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Send Request"), categories["loading"]);
     eventStyles[recordTypes.ResourceReceiveResponse] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Receive Response"), categories["loading"]);
     eventStyles[recordTypes.ResourceFinish] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Finish Loading"), categories["loading"]);
@@ -283,17 +283,21 @@ WebInspector.TracingTimelineUIUtils.styleForTraceEvent = function(name)
 }
 
 /**
- * @param {string} eventName
+ * @param {!WebInspector.TracingModel.Event} event
  * @return {string}
  */
-WebInspector.TracingTimelineUIUtils.markerEventColor = function(eventName)
+WebInspector.TracingTimelineUIUtils.markerEventColor = function(event)
 {
     var red = "rgb(255, 0, 0)";
     var blue = "rgb(0, 0, 255)";
     var orange = "rgb(255, 178, 23)";
     var green = "rgb(0, 130, 0)";
 
+    if (event.category === WebInspector.TracingModel.ConsoleEventCategory)
+        return orange;
+
     var recordTypes = WebInspector.TracingTimelineModel.RecordType;
+    var eventName = event.name;
     switch (eventName) {
     case recordTypes.MarkDOMContent: return blue;
     case recordTypes.MarkLoad: return red;
@@ -310,6 +314,11 @@ WebInspector.TracingTimelineUIUtils.markerEventColor = function(eventName)
  */
 WebInspector.TracingTimelineUIUtils.eventTitle = function(event, model)
 {
+    if (event.category === WebInspector.TracingModel.ConsoleEventCategory) {
+        var titleTemplate =  WebInspector.UIString(event.phase === WebInspector.TracingModel.Phase.AsyncBegin ? "Console Time: %s" : "Console Time End: %s");
+        return WebInspector.UIString(titleTemplate, event.name);
+    }
+
     if (event.name === WebInspector.TracingTimelineModel.RecordType.TimeStamp)
         return event.args["data"]["message"];
     var title = WebInspector.TracingTimelineUIUtils.eventStyle(event).title;
@@ -326,10 +335,12 @@ WebInspector.TracingTimelineUIUtils.eventTitle = function(event, model)
  */
 WebInspector.TracingTimelineUIUtils.isMarkerEvent = function(event)
 {
+    if (event.category === WebInspector.TracingModel.ConsoleEventCategory)
+        return true;
+
     var recordTypes = WebInspector.TracingTimelineModel.RecordType;
     switch (event.name) {
     case recordTypes.TimeStamp:
-        return true;
     case recordTypes.MarkFirstPaint:
         return true;
     case recordTypes.MarkDOMContent:
@@ -415,9 +426,6 @@ WebInspector.TracingTimelineUIUtils.buildDetailsNodeForTraceEvent = function(eve
                 detailsText = WebInspector.displayNameForURL(url);
         }
         break;
-    case recordType.ConsoleTime:
-        detailsText = eventData["message"];
-        break;
     case recordType.EmbedderCallback:
         detailsText = eventData["callbackName"];
         break;
@@ -432,7 +440,10 @@ WebInspector.TracingTimelineUIUtils.buildDetailsNodeForTraceEvent = function(eve
         break;
 
     default:
-        details = linkifyTopCallFrame();
+        if (event.category === WebInspector.TracingModel.ConsoleEventCategory)
+            detailsText = event.name;
+        else
+            details = linkifyTopCallFrame();
         break;
     }
 
@@ -778,7 +789,7 @@ WebInspector.TracingTimelineUIUtils._createEventDivider = function(recordType, t
         eventDivider.className += " resources-red-divider";
     else if (recordType === recordTypes.MarkFirstPaint)
         eventDivider.className += " resources-green-divider";
-    else if (recordType === recordTypes.TimeStamp)
+    else if (recordType === recordTypes.TimeStamp || recordType === recordTypes.ConsoleTime)
         eventDivider.className += " resources-orange-divider";
     else if (recordType === recordTypes.BeginFrame)
         eventDivider.className += " timeline-frame-divider";

@@ -122,7 +122,12 @@ WebInspector.TracingTimelineModel.prototype = {
         {
             return "disabled-by-default-" + category;
         }
-        var categoriesArray = ["-*", disabledByDefault("devtools.timeline"), disabledByDefault("devtools.timeline.frame")];
+        var categoriesArray = [
+            "-*",
+            disabledByDefault("devtools.timeline"),
+            disabledByDefault("devtools.timeline.frame"),
+            WebInspector.TracingModel.ConsoleEventCategory
+        ];
         if (captureStacks) {
             categoriesArray.push(disabledByDefault("devtools.timeline.stack"));
             if (WebInspector.experimentsSettings.timelineJSCPUProfile.isEnabled()) {
@@ -779,6 +784,8 @@ WebInspector.TracingTimelineModel.TraceEventRecord.prototype = {
      */
     type: function()
     {
+        if (this._event.category === WebInspector.TracingModel.ConsoleEventCategory)
+            return WebInspector.TracingTimelineModel.RecordType.ConsoleTime;
         return this._event.name;
     },
 

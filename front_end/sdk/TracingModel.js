@@ -70,6 +70,8 @@ WebInspector.TracingModel.MetadataEvent = {
 
 WebInspector.TracingModel.DevToolsMetadataEventCategory = "disabled-by-default-devtools.timeline";
 
+WebInspector.TracingModel.ConsoleEventCategory = "blink.console";
+
 WebInspector.TracingModel.FrameLifecycleEventCategory = "cc,devtools";
 
 WebInspector.TracingModel.DevToolsMetadataEvent = {
