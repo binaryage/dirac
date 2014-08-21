@@ -203,7 +203,9 @@ WebInspector.NetworkDispatcher.prototype = {
         if (response.remoteIPAddress)
             networkRequest.setRemoteAddress(response.remoteIPAddress, response.remotePort || -1);
 
-        if (response.fromDiskCache)
+        if (response.fromServiceWorker)
+            networkRequest.fetchedViaServiceWorker = true;
+        else if (response.fromDiskCache)
             networkRequest.cached = true;
         else
             networkRequest.timing = response.timing;

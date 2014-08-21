@@ -2361,7 +2361,9 @@ WebInspector.NetworkTimeCalculator.prototype = {
         else if (rightLabel)
             var tooltip = WebInspector.UIString("%s download", rightLabel);
 
-        if (request.cached)
+        if (request.fetchedViaServiceWorker)
+            tooltip = WebInspector.UIString("%s (from ServiceWorker)", tooltip);
+        else if (request.cached)
             tooltip = WebInspector.UIString("%s (from cache)", tooltip);
         return {left: leftLabel, right: rightLabel, tooltip: tooltip};
     },
@@ -2771,7 +2773,10 @@ WebInspector.NetworkDataGridNode.prototype = {
      */
     _renderSizeCell: function(cell)
     {
-        if (this._request.cached) {
+        if (this._request.fetchedViaServiceWorker) {
+            cell.setTextAndTitle(WebInspector.UIString("(from ServiceWorker)"));
+            cell.classList.add("network-dim-cell");
+        } else if (this._request.cached) {
             cell.setTextAndTitle(WebInspector.UIString("(from cache)"));
             cell.classList.add("network-dim-cell");
         } else {

@@ -361,6 +361,19 @@ WebInspector.NetworkRequest.prototype = {
     },
 
     /**
+     * @return {boolean}
+     */
+    get fetchedViaServiceWorker()
+    {
+        return this._fetchedViaServiceWorker;
+    },
+
+    set fetchedViaServiceWorker(x)
+    {
+        this._fetchedViaServiceWorker = x;
+    },
+
+    /**
      * @return {!NetworkAgent.ResourceTiming|undefined}
      */
     get timing()
