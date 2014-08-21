@@ -63,6 +63,7 @@ WebInspector.ResponsiveDesignView = function(inspectedPagePlaceholder)
 
     WebInspector.zoomManager.addEventListener(WebInspector.ZoomManager.Events.ZoomChanged, this._onZoomChanged, this);
     WebInspector.overridesSupport.addEventListener(WebInspector.OverridesSupport.Events.EmulationStateChanged, this._emulationEnabledChanged, this);
+    this._mediaInspector.addEventListener(WebInspector.MediaQueryInspector.Events.CountUpdated, this._updateMediaQueryInspectorButton, this);
     this._mediaInspector.addEventListener(WebInspector.MediaQueryInspector.Events.HeightUpdated, this.onResize, this);
     WebInspector.targetManager.observeTargets(this);
 
@@ -499,8 +500,9 @@ WebInspector.ResponsiveDesignView.prototype = {
         resetButton.addEventListener("click", WebInspector.overridesSupport.reset, WebInspector.overridesSupport);
 
         // Media Query Inspector.
-        this._toggleMediaInspectorButton = new WebInspector.StatusBarButton(WebInspector.UIString("Media queries."), "responsive-design-toggle-media-inspector");
+        this._toggleMediaInspectorButton = new WebInspector.StatusBarButton(WebInspector.UIString("Media queries not found"), "responsive-design-toggle-media-inspector");
         this._toggleMediaInspectorButton.toggled = WebInspector.settings.showMediaQueryInspector.get();
+        this._toggleMediaInspectorButton.setEnabled(false);
         this._toggleMediaInspectorButton.addEventListener("click", this._onToggleMediaInspectorButtonClick, this);
         WebInspector.settings.showMediaQueryInspector.addChangeListener(this._updateMediaQueryInspector, this);
         buttonsSection.appendChild(this._toggleMediaInspectorButton.element);
@@ -596,6 +598,17 @@ WebInspector.ResponsiveDesignView.prototype = {
         else
             this._mediaInspector.show(this._mediaInspectorContainer);
         this.onResize();
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _updateMediaQueryInspectorButton: function(event)
+    {
+        var count = /** @type {number} */ (event.data);
+        this._toggleMediaInspectorButton.setEnabled(!!count);
+        this._toggleMediaInspectorButton.title = !count ? WebInspector.UIString("Media queries not found") :
+            WebInspector.UIString((count === 1 ? "%d media query found" : "%d media queries found"), count);
     },
 
     _overridesWarningUpdated: function()
