@@ -151,6 +151,25 @@ Runtime.isReleaseMode = function()
 
 /**
  * @param {string} moduleName
+ * @param {string} workerName
+ * @return {!SharedWorker}
+ */
+Runtime.startSharedWorker = function(moduleName, workerName)
+{
+    if (Runtime.isReleaseMode())
+        return new SharedWorker(moduleName + ".js", workerName);
+
+    var content = loadResource(moduleName + "/module.json");
+    if (!content)
+        throw new Error("Worker is not defined: " + moduleName + " " + new Error().stack);
+    var scripts = JSON.parse(content)["scripts"];
+    if (scripts.length !== 1)
+        throw Error("Runtime.startSharedWorker supports modules with only one script!");
+    return new SharedWorker(moduleName + "/" + scripts[0], workerName);
+}
+
+/**
+ * @param {string} moduleName
  * @return {!Worker}
  */
 Runtime.startWorker = function(moduleName)
