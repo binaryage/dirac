@@ -107,7 +107,7 @@ WebInspector.ElementsPanel = function()
     WebInspector.targetManager.observeTargets(this);
     WebInspector.settings.showUAShadowDOM.addChangeListener(this._showUAShadowDOMChanged.bind(this));
     WebInspector.targetManager.addModelListener(WebInspector.DOMModel, WebInspector.DOMModel.Events.DocumentUpdated, this._documentUpdatedEvent, this);
-    WebInspector.targetManager.addModelListener(WebInspector.DOMModel, WebInspector.CSSStyleModel.Events.ModelWasEnabled, this._updateSidebars, this);
+    WebInspector.targetManager.addModelListener(WebInspector.CSSStyleModel, WebInspector.CSSStyleModel.Events.ModelWasEnabled, this._updateSidebars, this);
 }
 
 WebInspector.ElementsPanel.prototype = {
