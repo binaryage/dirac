@@ -192,8 +192,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
                 this._markerEvents.push(e);
                 this._timelineData.markerTimestamps.push(e.startTime);
             }
-            // FIXME: clean up once phase name is unified between Blink and Chromium.
-            if (!e.endTime && e.phase !== WebInspector.TracingModel.Phase.Instant && e.phase !== "I")
+            if (!e.endTime && e.phase !== WebInspector.TracingModel.Phase.Instant)
                 continue;
             if (!this._isVisible(e))
                 continue;

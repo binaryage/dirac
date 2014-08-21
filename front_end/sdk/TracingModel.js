@@ -45,7 +45,7 @@ WebInspector.TracingModel.Phase = {
     Begin: "B",
     End: "E",
     Complete: "X",
-    Instant: "i",
+    Instant: "I",
     AsyncBegin: "S",
     AsyncStepInto: "T",
     AsyncStepPast: "p",
