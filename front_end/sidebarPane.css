@@ -83,6 +83,7 @@
     background-clip: padding;
     margin-top: -1px;
     white-space: nowrap;
+    overflow: hidden;
 }
 
 .sidebar-pane-title:active {
