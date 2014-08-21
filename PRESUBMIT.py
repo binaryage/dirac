@@ -42,6 +42,7 @@ def _CompileDevtoolsFrontend(input_api, output_api):
         return []
     local_paths = [f.LocalPath() for f in input_api.AffectedFiles()]
     if (any("devtools/front_end" in path for path in local_paths) or
+        any("protocol.json" in path for path in local_paths) or
         any("InjectedScriptSource.js" in path for path in local_paths) or
         any("InjectedScriptCanvasModuleSource.js" in path for path in local_paths)):
         lint_path = input_api.os_path.join(input_api.PresubmitLocalPath(),
