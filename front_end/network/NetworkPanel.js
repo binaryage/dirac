@@ -87,11 +87,26 @@ WebInspector.NetworkLogView = function(filterBar, coulmnsVisibilitySetting)
 
 WebInspector.NetworkLogView.HTTPSchemas = {"http": true, "https": true, "ws": true, "wss": true};
 WebInspector.NetworkLogView._responseHeaderColumns = ["Cache-Control", "Connection", "Content-Encoding", "Content-Length", "ETag", "Keep-Alive", "Last-Modified", "Server", "Vary"];
-WebInspector.NetworkLogView._defaultColumnsVisibility = {
+WebInspector.NetworkLogView.defaultColumnsVisibility = {
     method: true, status: true, scheme: false, domain: false, remoteAddress: false, type: true, initiator: true, cookies: false, setCookies: false, size: true, time: true,
     "Cache-Control": false, "Connection": false, "Content-Encoding": false, "Content-Length": false, "ETag": false, "Keep-Alive": false, "Last-Modified": false, "Server": false, "Vary": false
 };
 WebInspector.NetworkLogView._defaultRefreshDelay = 500;
+
+/** @enum {string} */
+WebInspector.NetworkLogView.FilterType = {
+    Domain: "Domain",
+    HasResponseHeader: "HasResponseHeader",
+    Method: "Method",
+    MimeType: "MimeType",
+    SetCookieDomain: "SetCookieDomain",
+    SetCookieName: "SetCookieName",
+    SetCookieValue: "SetCookieValue",
+    StatusCode: "StatusCode"
+};
+
+/** @type {!Array.<string>} */
+WebInspector.NetworkLogView._searchKeys = Object.values(WebInspector.NetworkLogView.FilterType);
 
 /** @type {!Object.<string, string>} */
 WebInspector.NetworkLogView._columnTitles = {
@@ -137,6 +152,14 @@ WebInspector.NetworkLogView.prototype = {
     {
     },
 
+    /**
+     * @return {boolean}
+     */
+    allowRequestSelection: function()
+    {
+        return this._allowRequestSelection;
+    },
+
     _addFilters: function()
     {
         this._textFilterUI = new WebInspector.TextFilterUI();
@@ -160,7 +183,7 @@ WebInspector.NetworkLogView.prototype = {
 
     _resetSuggestionBuilder: function()
     {
-        this._suggestionBuilder = new WebInspector.FilterSuggestionBuilder(WebInspector.NetworkPanel._searchKeys);
+        this._suggestionBuilder = new WebInspector.FilterSuggestionBuilder(WebInspector.NetworkLogView._searchKeys);
         this._textFilterUI.setSuggestionBuilder(this._suggestionBuilder);
     },
 
@@ -541,7 +564,7 @@ WebInspector.NetworkLogView.prototype = {
         var maxTime = -1;
         var nodes = this._nodesByRequestId.values();
         for (var i = 0; i < nodes.length; ++i) {
-            var request = nodes[i]._request;
+            var request = nodes[i].request();
             var requestTransferSize = request.transferSize;
             transferSize += requestTransferSize;
             if (!nodes[i]._isFilteredOut) {
@@ -767,7 +790,7 @@ WebInspector.NetworkLogView.prototype = {
 
         for (var i = 0; i < nodesToInsert.length; ++i) {
             var node = nodesToInsert[i];
-            var request = node._request;
+            var request = node.request();
             node.refresh();
             dataGrid.insertChild(node);
             node._isMatchingSearchQuery = this._matchRequest(request);
@@ -811,7 +834,7 @@ WebInspector.NetworkLogView.prototype = {
 
         var nodes = this._nodesByRequestId.values();
         for (var i = 0; i < nodes.length; ++i)
-            nodes[i]._dispose();
+            nodes[i].dispose();
 
         this._nodesByRequestId.clear();
         this._staleRequestIds = {};
@@ -849,7 +872,7 @@ WebInspector.NetworkLogView.prototype = {
         // request and we need to update _nodesByRequestId and search results.
         var originalRequestNode = this._nodesByRequestId.get(request.requestId);
         if (originalRequestNode)
-            this._nodesByRequestId.set(originalRequestNode._request.requestId, originalRequestNode);
+            this._nodesByRequestId.set(originalRequestNode.request().requestId, originalRequestNode);
         this._nodesByRequestId.set(request.requestId, node);
 
         // Pull all the redirects of the main request upon commit load.
@@ -878,20 +901,20 @@ WebInspector.NetworkLogView.prototype = {
         if (!this._nodesByRequestId.get(request.requestId))
             return;
 
-        this._suggestionBuilder.addItem(WebInspector.NetworkPanel.FilterType.Domain, request.domain);
-        this._suggestionBuilder.addItem(WebInspector.NetworkPanel.FilterType.Method, request.requestMethod);
-        this._suggestionBuilder.addItem(WebInspector.NetworkPanel.FilterType.MimeType, request.mimeType);
-        this._suggestionBuilder.addItem(WebInspector.NetworkPanel.FilterType.StatusCode, "" + request.statusCode);
+        this._suggestionBuilder.addItem(WebInspector.NetworkLogView.FilterType.Domain, request.domain);
+        this._suggestionBuilder.addItem(WebInspector.NetworkLogView.FilterType.Method, request.requestMethod);
+        this._suggestionBuilder.addItem(WebInspector.NetworkLogView.FilterType.MimeType, request.mimeType);
+        this._suggestionBuilder.addItem(WebInspector.NetworkLogView.FilterType.StatusCode, "" + request.statusCode);
 
         var responseHeaders = request.responseHeaders;
         for (var i = 0, l = responseHeaders.length; i < l; ++i)
-            this._suggestionBuilder.addItem(WebInspector.NetworkPanel.FilterType.HasResponseHeader, responseHeaders[i].name);
+            this._suggestionBuilder.addItem(WebInspector.NetworkLogView.FilterType.HasResponseHeader, responseHeaders[i].name);
         var cookies = request.responseCookies;
         for (var i = 0, l = cookies ? cookies.length : 0; i < l; ++i) {
             var cookie = cookies[i];
-            this._suggestionBuilder.addItem(WebInspector.NetworkPanel.FilterType.SetCookieDomain, cookie.domain());
-            this._suggestionBuilder.addItem(WebInspector.NetworkPanel.FilterType.SetCookieName, cookie.name());
-            this._suggestionBuilder.addItem(WebInspector.NetworkPanel.FilterType.SetCookieValue, cookie.value());
+            this._suggestionBuilder.addItem(WebInspector.NetworkLogView.FilterType.SetCookieDomain, cookie.domain());
+            this._suggestionBuilder.addItem(WebInspector.NetworkLogView.FilterType.SetCookieName, cookie.name());
+            this._suggestionBuilder.addItem(WebInspector.NetworkLogView.FilterType.SetCookieValue, cookie.value());
         }
 
         this._staleRequestIds[request.requestId] = true;
@@ -1123,7 +1146,7 @@ WebInspector.NetworkLogView.prototype = {
         }
 
         var gridNode = this._dataGrid.dataGridNodeFromNode(event.target);
-        var request = gridNode && gridNode._request;
+        var request = gridNode && gridNode.request();
 
         /**
          * @param {string} url
@@ -1173,7 +1196,7 @@ WebInspector.NetworkLogView.prototype = {
 
     _harRequests: function()
     {
-        var requests = this._nodesByRequestId.values().map(function(node) { return node._request; });
+        var requests = this._nodesByRequestId.values().map(function(node) { return node.request(); });
         var httpRequests = requests.filter(WebInspector.NetworkLogView.HTTPRequestsFilter);
         httpRequests = httpRequests.filter(WebInspector.NetworkLogView.FinishedRequestsFilter);
         return httpRequests.filter(WebInspector.NetworkLogView.NonDevToolsRequestsFilter);
@@ -1322,7 +1345,7 @@ WebInspector.NetworkLogView.prototype = {
             return;
         }
 
-        var request = node._request;
+        var request = node.request();
         var regExp = this._searchRegExp;
         var nameMatched = request.name().match(regExp);
         var pathMatched = request.path().match(regExp);
@@ -1330,7 +1353,7 @@ WebInspector.NetworkLogView.prototype = {
             this._toggleLargerRequests();
         if (reveal)
             WebInspector.Revealer.reveal(request);
-        var highlightedSubstringChanges = node._highlightMatchedSubstring(regExp);
+        var highlightedSubstringChanges = node.highlightMatchedSubstring(regExp);
         this._highlightedSubstringChanges.push(highlightedSubstringChanges);
 
         this._currentMatchedRequestNode = node;
@@ -1352,7 +1375,7 @@ WebInspector.NetworkLogView.prototype = {
         /** @type {!Array.<!WebInspector.NetworkDataGridNode>} */
         var nodes = this._dataGrid.rootNode().children;
         for (var i = 0; i < nodes.length; ++i)
-            nodes[i]._isMatchingSearchQuery = this._matchRequest(nodes[i]._request);
+            nodes[i]._isMatchingSearchQuery = this._matchRequest(nodes[i].request());
         var newMatchedRequestIndex = this._updateMatchCountAndFindMatchIndex(currentMatchedRequestNode);
         if (!newMatchedRequestIndex && jumpBackwards)
             newMatchedRequestIndex = this._matchedRequestCount - 1;
@@ -1398,7 +1421,7 @@ WebInspector.NetworkLogView.prototype = {
      */
     _applyFilter: function(node)
     {
-        var request = node._request;
+        var request = node.request();
         if (!this._resourceTypeFilterUI.accept(request.type.name()))
             return false;
         if (this._dataURLFilterUI.checked() && request.parsedURL.isDataURL())
@@ -1418,7 +1441,7 @@ WebInspector.NetworkLogView.prototype = {
         var parsedQuery = this._suggestionBuilder.parseQuery(query);
         this._filters = parsedQuery.text.map(this._createTextFilter);
         for (var key in parsedQuery.filters) {
-            var filterType = /** @type {!WebInspector.NetworkPanel.FilterType} */ (key);
+            var filterType = /** @type {!WebInspector.NetworkLogView.FilterType} */ (key);
             this._filters.push(this._createFilter(filterType, parsedQuery.filters[key]));
         }
     },
@@ -1434,34 +1457,34 @@ WebInspector.NetworkLogView.prototype = {
     },
 
     /**
-     * @param {!WebInspector.NetworkPanel.FilterType} type
+     * @param {!WebInspector.NetworkLogView.FilterType} type
      * @param {string} value
      * @return {!WebInspector.NetworkLogView.Filter}
      */
     _createFilter: function(type, value) {
         switch (type) {
-        case WebInspector.NetworkPanel.FilterType.Domain:
+        case WebInspector.NetworkLogView.FilterType.Domain:
             return WebInspector.NetworkLogView._requestDomainFilter.bind(null, value);
 
-        case WebInspector.NetworkPanel.FilterType.HasResponseHeader:
+        case WebInspector.NetworkLogView.FilterType.HasResponseHeader:
             return WebInspector.NetworkLogView._requestResponseHeaderFilter.bind(null, value);
 
-        case WebInspector.NetworkPanel.FilterType.Method:
+        case WebInspector.NetworkLogView.FilterType.Method:
             return WebInspector.NetworkLogView._requestMethodFilter.bind(null, value);
 
-        case WebInspector.NetworkPanel.FilterType.MimeType:
+        case WebInspector.NetworkLogView.FilterType.MimeType:
             return WebInspector.NetworkLogView._requestMimeTypeFilter.bind(null, value);
 
-        case WebInspector.NetworkPanel.FilterType.SetCookieDomain:
+        case WebInspector.NetworkLogView.FilterType.SetCookieDomain:
             return WebInspector.NetworkLogView._requestSetCookieDomainFilter.bind(null, value);
 
-        case WebInspector.NetworkPanel.FilterType.SetCookieName:
+        case WebInspector.NetworkLogView.FilterType.SetCookieName:
             return WebInspector.NetworkLogView._requestSetCookieNameFilter.bind(null, value);
 
-        case WebInspector.NetworkPanel.FilterType.SetCookieValue:
+        case WebInspector.NetworkLogView.FilterType.SetCookieValue:
             return WebInspector.NetworkLogView._requestSetCookieValueFilter.bind(null, value);
 
-        case WebInspector.NetworkPanel.FilterType.StatusCode:
+        case WebInspector.NetworkLogView.FilterType.StatusCode:
             return WebInspector.NetworkLogView._statusCodeFilter.bind(null, value);
         }
         return this._createTextFilter(type + ":" + value);
@@ -1798,7 +1821,7 @@ WebInspector.NetworkPanel = function()
     this._splitView.show(this._contentsElement);
     this._splitView.hideMain();
 
-    var defaultColumnsVisibility = WebInspector.NetworkLogView._defaultColumnsVisibility;
+    var defaultColumnsVisibility = WebInspector.NetworkLogView.defaultColumnsVisibility;
     var networkLogColumnsVisibilitySetting = WebInspector.settings.createSetting("networkLogColumnsVisibility", defaultColumnsVisibility);
     var savedColumnsVisibility = networkLogColumnsVisibilitySetting.get();
     var columnsVisibility = {};
@@ -1806,6 +1829,7 @@ WebInspector.NetworkPanel = function()
         columnsVisibility[columnId] = savedColumnsVisibility.hasOwnProperty(columnId) ? savedColumnsVisibility[columnId] : defaultColumnsVisibility[columnId];
     networkLogColumnsVisibilitySetting.set(columnsVisibility);
 
+    /** @type {!WebInspector.NetworkLogView} */
     this._networkLogView = new WebInspector.NetworkLogView(this._filterBar, networkLogColumnsVisibilitySetting);
     this._networkLogView.show(this._splitView.sidebarElement());
 
@@ -1842,21 +1866,6 @@ WebInspector.NetworkPanel = function()
     WebInspector.GoToLineDialog.install(this, sourceFrameGetter.bind(this));
 }
 
-/** @enum {string} */
-WebInspector.NetworkPanel.FilterType = {
-    Domain: "Domain",
-    HasResponseHeader: "HasResponseHeader",
-    Method: "Method",
-    MimeType: "MimeType",
-    SetCookieDomain: "SetCookieDomain",
-    SetCookieName: "SetCookieName",
-    SetCookieValue: "SetCookieValue",
-    StatusCode: "StatusCode"
-};
-
-/** @type {!Array.<string>} */
-WebInspector.NetworkPanel._searchKeys = Object.values(WebInspector.NetworkPanel.FilterType);
-
 WebInspector.NetworkPanel.prototype = {
     /**
      * @param {!WebInspector.Event} event
@@ -1883,12 +1892,6 @@ WebInspector.NetworkPanel.prototype = {
     searchableView: function()
     {
         return this._searchableView;
-    },
-
-    // FIXME: only used by the layout tests, should not be exposed.
-    _reset: function()
-    {
-        this._networkLogView._reset();
     },
 
     /**
@@ -2508,6 +2511,14 @@ WebInspector.NetworkDataGridNode = function(parentView, request)
 
 WebInspector.NetworkDataGridNode.prototype = {
     /**
+     * @return {!WebInspector.NetworkRequest}
+     */
+    request: function()
+    {
+        return this._request;
+    },
+
+    /**
      * @override
      * @return {number}
      */
@@ -2570,14 +2581,14 @@ WebInspector.NetworkDataGridNode.prototype = {
             this._linkifiedInitiatorAnchor.remove();
     },
 
-    _dispose: function()
+    dispose: function()
     {
         this._linkifier.reset();
     },
 
     _onClick: function()
     {
-        if (!this._parentView._allowRequestSelection)
+        if (!this._parentView.allowRequestSelection())
             this.select();
     },
 
@@ -2594,8 +2605,9 @@ WebInspector.NetworkDataGridNode.prototype = {
 
     /**
      * @param {!RegExp=} regexp
+     * @return {!Array.<!Object>}
      */
-    _highlightMatchedSubstring: function(regexp)
+    highlightMatchedSubstring: function(regexp)
     {
         // Ensure element is created.
         this.element();
@@ -2613,7 +2625,7 @@ WebInspector.NetworkDataGridNode.prototype = {
 
     get selectable()
     {
-        return this._parentView._allowRequestSelection;
+        return this._parentView.allowRequestSelection();
     },
 
     /**
