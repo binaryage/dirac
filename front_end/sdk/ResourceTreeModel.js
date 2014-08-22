@@ -741,11 +741,19 @@ WebInspector.PageDispatcher = function(resourceTreeModel)
 }
 
 WebInspector.PageDispatcher.prototype = {
+    /**
+     * @override
+     * @param {number} time
+     */
     domContentEventFired: function(time)
     {
         this._resourceTreeModel.dispatchEventToListeners(WebInspector.ResourceTreeModel.EventTypes.DOMContentLoaded, time);
     },
 
+    /**
+     * @override
+     * @param {number} time
+     */
     loadEventFired: function(time)
     {
         this._resourceTreeModel.dispatchEventToListeners(WebInspector.ResourceTreeModel.EventTypes.Load, time);
