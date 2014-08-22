@@ -45,16 +45,6 @@
                 "name": "targetCrashed",
                 "description": "Fired when debugging target has crashed",
                 "handlers": ["browser"]
-            },
-            {
-                "name": "interstitialShown",
-                "description": "Fired when interstitial page was shown",
-                "handlers": ["browser"]
-            },
-            {
-                "name": "interstitialHidden",
-                "description": "Fired when interstitial page was hidden",
-                "handlers": ["browser"]
             }
         ]
     },
@@ -235,7 +225,8 @@
         "commands": [
             {
                 "name": "enable",
-                "description": "Enables page domain notifications."
+                "description": "Enables page domain notifications.",
+                "handlers": ["browser", "renderer"]
             },
             {
                 "name": "disable",
@@ -698,6 +689,18 @@
                 "parameters": [
                     { "name": "color", "$ref": "DOM.RGBA", "description": "RGBA of the picked color." }
                 ],
+                "hidden": true,
+                "handlers": ["browser"]
+            },
+            {
+                "name": "interstitialShown",
+                "description": "Fired when interstitial page was shown",
+                "hidden": true,
+                "handlers": ["browser"]
+            },
+            {
+                "name": "interstitialHidden",
+                "description": "Fired when interstitial page was hidden",
                 "hidden": true,
                 "handlers": ["browser"]
             }

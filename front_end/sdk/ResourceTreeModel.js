@@ -839,6 +839,16 @@ WebInspector.PageDispatcher.prototype = {
     colorPicked: function(color)
     {
         this._resourceTreeModel.dispatchEventToListeners(WebInspector.ResourceTreeModel.EventTypes.ColorPicked, color);
+    },
+
+    interstitialShown: function()
+    {
+        // Frontend is not interested in interstitials.
+    },
+
+    interstitialHidden: function()
+    {
+        // Frontend is not interested in interstitials.
     }
 }
 

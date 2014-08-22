@@ -632,22 +632,6 @@ WebInspector.Main.prototype = {
     evaluateForTestInFrontend: function(callId, script)
     {
         WebInspector.evaluateForTestInFrontend(callId, script);
-    },
-
-    /**
-     * @override
-     */
-    interstitialShown: function()
-    {
-        // Frontend is not interested in interstitials.
-    },
-
-    /**
-     * @override
-     */
-    interstitialHidden: function()
-    {
-        // Frontend is not interested in interstitials.
     }
 }
 
