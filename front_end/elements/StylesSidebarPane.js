@@ -85,6 +85,14 @@ WebInspector.StylesSidebarPane.PseudoIdNames = [
 WebInspector.StylesSidebarPane._colorRegex = /((?:rgb|hsl)a?\([^)]+\)|#[0-9a-fA-F]{6}|#[0-9a-fA-F]{3}|\b\w+\b(?!-))/g;
 
 /**
+ * @enum {string}
+ */
+WebInspector.StylesSidebarPane.Events = {
+    SelectorEditingStarted: "SelectorEditingStarted",
+    SelectorEditingEnded: "SelectorEditingEnded"
+};
+
+/**
  * @param {!WebInspector.CSSProperty} property
  * @return {!Element}
  */
@@ -155,6 +163,40 @@ WebInspector.StylesSidebarPane._ignoreErrorsForProperty = function(property) {
 }
 
 WebInspector.StylesSidebarPane.prototype = {
+    /**
+     * @param {!WebInspector.DOMNode} node
+     */
+    updateEditingSelectorForNode: function(node)
+    {
+        var selectorText = WebInspector.DOMPresentationUtils.simpleSelector(node);
+        if (!selectorText)
+            return;
+        this._editingSelectorSection.setSelectorText(selectorText);
+    },
+
+    /**
+     * @return {boolean}
+     */
+    isEditingSelector: function()
+    {
+        return !!this._editingSelectorSection;
+    },
+
+    /**
+     * @param {!WebInspector.StylePropertiesSection} section
+     */
+    _startEditingSelector: function(section)
+    {
+        this._editingSelectorSection = section;
+        this.dispatchEventToListeners(WebInspector.StylesSidebarPane.Events.SelectorEditingStarted);
+    },
+
+    _finishEditingSelector: function()
+    {
+        delete this._editingSelectorSection;
+        this.dispatchEventToListeners(WebInspector.StylesSidebarPane.Events.SelectorEditingEnded);
+    },
+
     /**
      * @param {!WebInspector.CSSRule} editedRule
      * @param {!WebInspector.TextRange} oldRange
@@ -1643,11 +1685,37 @@ WebInspector.StylePropertiesSection.prototype = {
         element.scrollIntoViewIfNeeded(false);
         element.textContent = element.textContent; // Reset selector marks in group.
 
-        var config = new WebInspector.InplaceEditor.Config(this.editingSelectorCommitted.bind(this), this.editingSelectorCancelled.bind(this));
+        var config = new WebInspector.InplaceEditor.Config(this.editingSelectorCommitted.bind(this), this.editingSelectorCancelled.bind(this), undefined, this._editingSelectorBlurHandler.bind(this));
         WebInspector.InplaceEditor.startEditing(this._selectorElement, config);
 
         window.getSelection().setBaseAndExtent(element, 0, element, 1);
         this._parentPane._isEditingStyle = true;
+        this._parentPane._startEditingSelector(this);
+    },
+
+    /**
+     * @param {string} text
+     */
+    setSelectorText: function(text)
+    {
+        this._selectorElement.textContent = text;
+        window.getSelection().setBaseAndExtent(this._selectorElement, 0, this._selectorElement, 1);
+    },
+
+    /**
+     * @param {!Element} editor
+     * @param {!Event} blurEvent
+     * @return {boolean}
+     */
+    _editingSelectorBlurHandler: function(editor, blurEvent)
+    {
+        if (!blurEvent.relatedTarget)
+            return true;
+        var elementTreeOutline = blurEvent.relatedTarget.enclosingNodeOrSelfWithClass("elements-tree-outline");
+        if (!elementTreeOutline)
+            return true;
+        editor.focus();
+        return false;
     },
 
     _moveEditorFromSelector: function(moveDirection)
@@ -1738,6 +1806,7 @@ WebInspector.StylePropertiesSection.prototype = {
     _editingSelectorEnded: function()
     {
         delete this._parentPane._isEditingStyle;
+        this._parentPane._finishEditingSelector();
     },
 
     editingSelectorCancelled: function()

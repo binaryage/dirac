@@ -52,6 +52,7 @@ WebInspector.ElementsTreeOutline = function(target, omitRootDOMNode, selectEnabl
     this.element.addEventListener("drop", this._ondrop.bind(this), false);
     this.element.addEventListener("dragend", this._ondragend.bind(this), false);
     this.element.addEventListener("keydown", this._onkeydown.bind(this), false);
+    this.element.addEventListener("webkitAnimationEnd", this._onAnimationEnd.bind(this), false);
 
     TreeOutline.call(this, this.element);
 
@@ -64,6 +65,7 @@ WebInspector.ElementsTreeOutline = function(target, omitRootDOMNode, selectEnabl
     this._eventSupport = new WebInspector.Object();
 
     this._visible = false;
+    this._pickNodeMode = false;
 
     this.element.addEventListener("contextmenu", this._contextMenuEventFired.bind(this), true);
     this._contextMenuCallback = contextMenuCallback;
@@ -78,6 +80,7 @@ WebInspector.ElementsTreeOutline.ClipboardData;
  * @enum {string}
  */
 WebInspector.ElementsTreeOutline.Events = {
+    NodePicked: "NodePicked",
     SelectedNodeChanged: "SelectedNodeChanged",
     ElementsTreeUpdated: "ElementsTreeUpdated"
 }
@@ -105,6 +108,41 @@ WebInspector.ElementsTreeOutline.MappedCharToEntity = {
 }
 
 WebInspector.ElementsTreeOutline.prototype = {
+    /**
+     * @param {!Event} event
+     */
+    _onAnimationEnd: function(event)
+    {
+        event.target.classList.remove("elements-tree-element-pick-node-1");
+        event.target.classList.remove("elements-tree-element-pick-node-2");
+    },
+
+    /**
+     * @param {boolean} value
+     */
+    setPickNodeMode: function(value)
+    {
+        this._pickNodeMode = value;
+        this.element.classList.toggle("pick-node-mode", value);
+    },
+
+    /**
+     * @param {!Element} element
+     * @param {?WebInspector.DOMNode} node
+     */
+    _handlePickNode: function(element, node)
+    {
+        if (!this._pickNodeMode)
+            return true;
+
+        this._eventSupport.dispatchEventToListeners(WebInspector.ElementsTreeOutline.Events.NodePicked, node);
+        var hasRunningAnimation = element.classList.contains("elements-tree-element-pick-node-1") || element.classList.contains("elements-tree-element-pick-node-2");
+        element.classList.toggle("elements-tree-element-pick-node-1");
+        if (hasRunningAnimation)
+            element.classList.toggle("elements-tree-element-pick-node-2");
+        return false;
+    },
+
     /**
      * @return {!WebInspector.Target}
      */
@@ -1428,6 +1466,18 @@ WebInspector.ElementsTreeElement.prototype = {
     },
 
     /**
+     * @param {boolean=} omitFocus
+     * @param {boolean=} selectedByUser
+     * @return {boolean}
+     */
+    select: function(omitFocus, selectedByUser)
+    {
+        if (!this.treeOutline._handlePickNode(this.title, this._node))
+            return false;
+        return TreeElement.prototype.select.call(this, omitFocus, selectedByUser);
+    },
+
+    /**
      * @override
      * @param {boolean=} selectedByUser
      * @return {boolean}
@@ -1497,7 +1547,7 @@ WebInspector.ElementsTreeElement.prototype = {
         if (this._editing || this._elementCloseTag)
             return false;
 
-        if (this._startEditingTarget(event.target))
+        if (this._startEditingTarget(/** @type {!Element} */(event.target)))
             return false;
 
         if (this.hasChildren && !this.expanded)
@@ -1528,12 +1578,19 @@ WebInspector.ElementsTreeElement.prototype = {
         this.updateSelection();
     },
 
+    /**
+     * @param {!Element} eventTarget
+     * @return {boolean}
+     */
     _startEditingTarget: function(eventTarget)
     {
         if (this.treeOutline.selectedDOMNode() != this._node)
-            return;
+            return false;
 
         if (this._node.nodeType() != Node.ELEMENT_NODE && this._node.nodeType() != Node.TEXT_NODE)
+            return false;
+
+        if (this.treeOutline._pickNodeMode)
             return false;
 
         var textNode = eventTarget.enclosingNodeOrSelfWithClass("webkit-html-text-node");

@@ -70,6 +70,8 @@ WebInspector.ElementsPanel = function()
     this.sidebarPanes.platformFonts = new WebInspector.PlatformFontsSidebarPane();
     this.sidebarPanes.computedStyle = new WebInspector.ComputedStyleSidebarPane();
     this.sidebarPanes.styles = new WebInspector.StylesSidebarPane(this.sidebarPanes.computedStyle, this._setPseudoClassForNode.bind(this));
+    this.sidebarPanes.styles.addEventListener(WebInspector.StylesSidebarPane.Events.SelectorEditingStarted, this._onEditingSelectorStarted.bind(this));
+    this.sidebarPanes.styles.addEventListener(WebInspector.StylesSidebarPane.Events.SelectorEditingEnded, this._onEditingSelectorEnded.bind(this));
 
     this._matchedStylesFilterBoxContainer = document.createElement("div");
     this._matchedStylesFilterBoxContainer.className = "sidebar-pane-filter-box";
@@ -111,6 +113,18 @@ WebInspector.ElementsPanel = function()
 }
 
 WebInspector.ElementsPanel.prototype = {
+    _onEditingSelectorStarted: function()
+    {
+        for (var i = 0; i < this._treeOutlines.length; ++i)
+            this._treeOutlines[i].setPickNodeMode(true);
+    },
+
+    _onEditingSelectorEnded: function()
+    {
+        for (var i = 0; i < this._treeOutlines.length; ++i)
+            this._treeOutlines[i].setPickNodeMode(false);
+    },
+
     /**
      * @param {!WebInspector.Target} target
      */
@@ -119,6 +133,7 @@ WebInspector.ElementsPanel.prototype = {
         var treeOutline = new WebInspector.ElementsTreeOutline(target, true, true, this._populateContextMenu.bind(this), this._setPseudoClassForNode.bind(this));
         treeOutline.wireToDOMModel();
         treeOutline.addEventListener(WebInspector.ElementsTreeOutline.Events.SelectedNodeChanged, this._selectedNodeChanged, this);
+        treeOutline.addEventListener(WebInspector.ElementsTreeOutline.Events.NodePicked, this._onNodePicked, this);
         treeOutline.addEventListener(WebInspector.ElementsTreeOutline.Events.ElementsTreeUpdated, this._updateBreadcrumbIfNeeded, this);
         this._treeOutlines.push(treeOutline);
         this._targetToTreeOutline.set(target, treeOutline);
@@ -251,6 +266,16 @@ WebInspector.ElementsPanel.prototype = {
             enabled: enable,
             state: pseudoClass
         });
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _onNodePicked: function(event)
+    {
+        if (!this.sidebarPanes.styles.isEditingSelector())
+            return;
+        this.sidebarPanes.styles.updateEditingSelectorForNode(/** @type {!WebInspector.DOMNode} */(event.data));
     },
 
     /**
@@ -428,6 +453,8 @@ WebInspector.ElementsPanel.prototype = {
 
     _contextMenuEventFired: function(event)
     {
+        if (this.sidebarPanes.styles.isEditingSelector())
+            return;
         var contextMenu = new WebInspector.ContextMenu(event);
         for (var i = 0; i < this._treeOutlines.length; ++i)
             this._treeOutlines[i].populateContextMenu(contextMenu, event);

@@ -110,6 +110,8 @@ WebInspector.InplaceEditor.prototype = {
          * @param {!Event=} e
          */
         function blurEventListener(e) {
+            if (config.blurHandler && !config.blurHandler(element, e))
+                return;
             if (!isMultiline || !e || !e.relatedTarget || !e.relatedTarget.isSelfOrDescendant(element))
                 editingCommitted.call(element);
         }
@@ -203,13 +205,15 @@ WebInspector.InplaceEditor.prototype = {
  * @param {function(!Element,string,string,T,string)} commitHandler
  * @param {function(!Element,T)} cancelHandler
  * @param {T=} context
+ * @param {function(!Element,!Event):boolean=} blurHandler
  * @template T
  */
-WebInspector.InplaceEditor.Config = function(commitHandler, cancelHandler, context)
+WebInspector.InplaceEditor.Config = function(commitHandler, cancelHandler, context, blurHandler)
 {
     this.commitHandler = commitHandler;
     this.cancelHandler = cancelHandler
     this.context = context;
+    this.blurHandler = blurHandler;
 
     /**
      * Handles the "paste" event, return values are the same as those for customFinishHandler
