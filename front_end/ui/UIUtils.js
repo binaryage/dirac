@@ -404,6 +404,24 @@ Number.preciseMillisToString = function(ms, precision)
   return WebInspector.UIString(format, ms);
 }
 
+/** @type {!WebInspector.UIStringFormat} */
+WebInspector._subMillisFormat = new WebInspector.UIStringFormat("%.3f\u2009ms");
+
+/** @type {!WebInspector.UIStringFormat} */
+WebInspector._millisFormat = new WebInspector.UIStringFormat("%.0f\u2009ms");
+
+/** @type {!WebInspector.UIStringFormat} */
+WebInspector._secondsFormat = new WebInspector.UIStringFormat("%.2f\u2009s");
+
+/** @type {!WebInspector.UIStringFormat} */
+WebInspector._minutesFormat = new WebInspector.UIStringFormat("%.1f\u2009min");
+
+/** @type {!WebInspector.UIStringFormat} */
+WebInspector._hoursFormat = new WebInspector.UIStringFormat("%.1f\u2009hrs");
+
+/** @type {!WebInspector.UIStringFormat} */
+WebInspector._daysFormat = new WebInspector.UIStringFormat("%.1f\u2009days");
+
 /**
  * @param {number} ms
  * @param {boolean=} higherResolution
@@ -418,24 +436,24 @@ Number.millisToString = function(ms, higherResolution)
         return "0";
 
     if (higherResolution && ms < 1000)
-        return WebInspector.UIString("%.3f\u2009ms", ms);
+        return WebInspector._subMillisFormat.format(ms);
     else if (ms < 1000)
-        return WebInspector.UIString("%.0f\u2009ms", ms);
+        return WebInspector._millisFormat.format(ms);
 
     var seconds = ms / 1000;
     if (seconds < 60)
-        return WebInspector.UIString("%.2f\u2009s", seconds);
+        return WebInspector._secondsFormat.format(seconds);
 
     var minutes = seconds / 60;
     if (minutes < 60)
-        return WebInspector.UIString("%.1f\u2009min", minutes);
+        return WebInspector._minutesFormat.format(minutes);
 
     var hours = minutes / 60;
     if (hours < 24)
-        return WebInspector.UIString("%.1f\u2009hrs", hours);
+        return WebInspector._hoursFormat.format(hours);
 
     var days = hours / 24;
-    return WebInspector.UIString("%.1f\u2009days", days);
+    return WebInspector._daysFormat.format(days);
 }
 
 /**
@@ -495,11 +513,11 @@ WebInspector.useLowerCaseMenuTitles = function()
 
 /**
  * @param {string} format
- * @param {?Array.<string>} substitutions
+ * @param {?ArrayLike} substitutions
  * @param {!Object.<string, function(string, ...):*>} formatters
  * @param {string} initialValue
  * @param {function(string, string): ?} append
- * @return {!{formattedResult: string, unusedSubstitutions: ?Array.<string>}};
+ * @return {!{formattedResult: string, unusedSubstitutions: ?ArrayLike}};
  */
 WebInspector.formatLocalized = function(format, substitutions, formatters, initialValue, append)
 {

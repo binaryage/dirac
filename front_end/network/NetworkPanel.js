@@ -2278,6 +2278,21 @@ WebInspector.NetworkTimeCalculator = function(startAtZero)
     this.startAtZero = startAtZero;
 }
 
+/** @type {!WebInspector.UIStringFormat} */
+WebInspector.NetworkTimeCalculator._latencyDownloadTotalFormat = new WebInspector.UIStringFormat("%s latency, %s download (%s total)");
+
+/** @type {!WebInspector.UIStringFormat} */
+WebInspector.NetworkTimeCalculator._latencyFormat = new WebInspector.UIStringFormat("%s latency");
+
+/** @type {!WebInspector.UIStringFormat} */
+WebInspector.NetworkTimeCalculator._downloadFormat = new WebInspector.UIStringFormat("%s download");
+
+/** @type {!WebInspector.UIStringFormat} */
+WebInspector.NetworkTimeCalculator._fromServiceWorkerFormat = new WebInspector.UIStringFormat("%s (from ServiceWorker)");
+
+/** @type {!WebInspector.UIStringFormat} */
+WebInspector.NetworkTimeCalculator._fromCacheFormat = new WebInspector.UIStringFormat("%s (from cache)");
+
 WebInspector.NetworkTimeCalculator.prototype = {
     /**
      * @param {!WebInspector.NetworkRequest} request
@@ -2358,16 +2373,16 @@ WebInspector.NetworkTimeCalculator.prototype = {
 
         if (hasLatency && rightLabel) {
             var total = Number.secondsToString(request.duration);
-            var tooltip = WebInspector.UIString("%s latency, %s download (%s total)", leftLabel, rightLabel, total);
+            var tooltip = WebInspector.NetworkTimeCalculator._latencyDownloadTotalFormat.format(leftLabel, rightLabel, total);
         } else if (hasLatency)
-            var tooltip = WebInspector.UIString("%s latency", leftLabel);
+            var tooltip = WebInspector.NetworkTimeCalculator._latencyFormat.format(leftLabel);
         else if (rightLabel)
-            var tooltip = WebInspector.UIString("%s download", rightLabel);
+            var tooltip = WebInspector.NetworkTimeCalculator._downloadFormat.format(rightLabel);
 
         if (request.fetchedViaServiceWorker)
-            tooltip = WebInspector.UIString("%s (from ServiceWorker)", tooltip);
+            tooltip = WebInspector.NetworkTimeCalculator._fromServiceWorkerFormat.format(tooltip);
         else if (request.cached)
-            tooltip = WebInspector.UIString("%s (from cache)", tooltip);
+            tooltip = WebInspector.NetworkTimeCalculator._fromCacheFormat.format(tooltip);
         return {left: leftLabel, right: rightLabel, tooltip: tooltip};
     },
 

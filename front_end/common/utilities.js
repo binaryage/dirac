@@ -27,6 +27,9 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+/** @typedef {Array|NodeList|Arguments|{length: number}} */
+var ArrayLike;
+
 /**
  * @param {!Object} obj
  * @return {boolean}
@@ -1009,21 +1012,22 @@ String.vsprintf = function(format, substitutions)
 
 /**
  * @param {string} format
- * @param {?Array.<string>} substitutions
+ * @param {?ArrayLike} substitutions
  * @param {!Object.<string, function(string, ...):string>} formatters
  * @param {!T} initialValue
  * @param {function(T, string): T|undefined} append
- * @return {!{formattedResult: T, unusedSubstitutions: ?Array.<string>}};
+ * @param {!Array.<!Object>=} tokenizedFormat
+ * @return {!{formattedResult: T, unusedSubstitutions: ?ArrayLike}};
  * @template T
  */
-String.format = function(format, substitutions, formatters, initialValue, append)
+String.format = function(format, substitutions, formatters, initialValue, append, tokenizedFormat)
 {
     if (!format || !substitutions || !substitutions.length)
         return { formattedResult: append(initialValue, format), unusedSubstitutions: substitutions };
 
     function prettyFunctionName()
     {
-        return "String.format(\"" + format + "\", \"" + substitutions.join("\", \"") + "\")";
+        return "String.format(\"" + format + "\", \"" + Array.prototype.join.call(substitutions, "\", \"") + "\")";
     }
 
     function warn(msg)
@@ -1037,7 +1041,7 @@ String.format = function(format, substitutions, formatters, initialValue, append
     }
 
     var result = initialValue;
-    var tokens = String.tokenizeFormatString(format, formatters);
+    var tokens = tokenizedFormat || String.tokenizeFormatString(format, formatters);
     var usedSubstitutionIndexes = {};
 
     for (var i = 0; i < tokens.length; ++i) {
