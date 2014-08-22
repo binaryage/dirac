@@ -364,6 +364,18 @@ WebInspector.TabbedPane.prototype = {
     },
 
     /**
+     * @param {string} id
+     * @param {string} className
+     * @param {boolean=} force
+     */
+    toggleTabClass: function(id, className, force)
+    {
+        var tab = this._tabsById[id];
+        if (tab._toggleClass(className, force))
+            this._updateTabElements();
+    },
+
+    /**
      * @param {!WebInspector.Event} event
      */
     _zoomChanged: function(event)
@@ -828,6 +840,22 @@ WebInspector.TabbedPaneTab.prototype = {
             this._iconElement.remove();
         if (this._iconClass && this._tabElement)
             this._iconElement = this._createIconElement(this._tabElement, this._titleElement);
+        delete this._measuredWidth;
+        return true;
+    },
+
+    /**
+     * @param {string} className
+     * @param {boolean=} force
+     * @return {boolean}
+     */
+    _toggleClass: function(className, force)
+    {
+        var element = this.tabElement;
+        var hasClass = element.classList.contains(className);
+        if (hasClass === force)
+            return false;
+        element.classList.toggle(className, force);
         delete this._measuredWidth;
         return true;
     },

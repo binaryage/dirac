@@ -158,7 +158,7 @@ WebInspector.OverridesView.Tab.prototype = {
             active = this._settings[i].get();
         for (var i = 0; !active && i < this._predicates.length; ++i)
             active = this._predicates[i]();
-        this._tabbedPane.element.classList.toggle("overrides-activate-" + this._id, active);
+        this._tabbedPane.toggleTabClass(this._id, "overrides-activate", active);
     },
 
     /**

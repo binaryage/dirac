@@ -1151,12 +1151,15 @@ WebInspector.TimelineDetailsView.prototype = {
     },
 
     /**
+     * @override
      * @param {string} id
      * @param {string} tabTitle
      * @param {!WebInspector.View} view
      * @param {string=} tabTooltip
+     * @param {boolean=} userGesture
+     * @param {boolean=} isCloseable
      */
-    appendTab: function(id, tabTitle, view, tabTooltip)
+    appendTab: function(id, tabTitle, view, tabTooltip, userGesture, isCloseable)
     {
         WebInspector.TabbedPane.prototype.appendTab.call(this, id, tabTitle, view, tabTooltip);
         if (this._lastUserSelectedTabId === id)
