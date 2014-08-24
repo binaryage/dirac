@@ -81,6 +81,13 @@ WebInspector.InspectorView = function()
     this._closeBracketIdentifiers = ["U+005D", "U+00DD"].keySet();
     this._lastActivePanelSetting = WebInspector.settings.createSetting("lastActivePanel", "elements");
 
+    // FIXME(399531): enable timelineOnTraceEvents experiment when running layout tests under inspector/tracing/. This code
+    // should be removed along with the old Timeline implementation once we move tracing based Timeline out of experimental.
+    if ("tracing" === this._lastActivePanelSetting.get()) {
+        WebInspector.experimentsSettings.timelineOnTraceEvents.setEnabled(true);
+        this._lastActivePanelSetting.set("timeline");
+    }
+
     this._loadPanelDesciptors();
 
     InspectorFrontendHost.events.addEventListener(InspectorFrontendHostAPI.Events.ShowConsole, this.showPanel.bind(this, "console"));
