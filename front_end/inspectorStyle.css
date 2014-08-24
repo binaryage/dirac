@@ -922,10 +922,6 @@ body.platform-linux .source-code {
     margin-left: -18px;
 }
 
-.console-message-text {
-    white-space: pre-wrap;
-}
-
 .console-async-trace-text {
     margin-left: -10px;
     font-style: italic;
@@ -1343,6 +1339,10 @@ iframe.panel.extension {
     font-family: monospace;
     font-size: 11px !important;
     white-space: pre-wrap;
+}
+
+.console-message-text {
+    white-space: pre;
 }
 
 .outline-disclosure li {

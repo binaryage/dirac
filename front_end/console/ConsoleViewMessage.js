@@ -206,8 +206,8 @@ WebInspector.ConsoleViewMessage.prototype = {
 
         this._formattedMessage.appendChild(this._messageElement);
         if (this._anchorElement) {
-            this._formattedMessage.appendChild(document.createTextNode(" "));
-            this._formattedMessage.appendChild(this._anchorElement);
+            this._formattedMessage.insertBefore(document.createTextNode(" "), this._formattedMessage.firstChild);
+            this._formattedMessage.insertBefore(this._anchorElement, this._formattedMessage.firstChild);
         }
 
         var dumpStackTrace = !!consoleMessage.stackTrace && consoleMessage.stackTrace.length && (consoleMessage.source === WebInspector.ConsoleMessage.MessageSource.Network || consoleMessage.level === WebInspector.ConsoleMessage.MessageLevel.Error || consoleMessage.type === WebInspector.ConsoleMessage.MessageType.Trace);
@@ -1058,16 +1058,15 @@ WebInspector.ConsoleViewMessage.prototype = {
 
                 var content = document.createElementWithClass("div", "stacktrace-entry");
                 var functionName = frame.functionName || WebInspector.UIString("(anonymous function)");
-                content.createChild("span", "console-message-text source-code").textContent = functionName;
-
                 if (frame.scriptId) {
                     var urlElement = this._linkifyCallFrame(frame);
                     if (!urlElement)
                         continue;
-                    content.createTextChild(" ");
                     content.appendChild(urlElement);
+                    content.createTextChild(" ");
                 }
 
+                content.createChild("span", "console-message-text source-code").textContent = functionName;
                 parentTreeElement.appendChild(new TreeElement(content));
             }
         }
