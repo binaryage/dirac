@@ -119,14 +119,8 @@ WebInspector.TimelineJSProfileProcessor.generateTracingEventsFromCpuProfile = fu
             for (var j = 0; node.parent; node = node.parent)
                 stackTrace[j++] = /** @type {!ConsoleAgent.CallFrame} */ (node);
         }
-        var payload = /** @type {!WebInspector.TracingModel.EventPayload} */ ({
-            ph: WebInspector.TracingModel.Phase.Instant,
-            cat: WebInspector.TracingModel.DevToolsMetadataEventCategory,
-            name: WebInspector.TracingTimelineModel.RecordType.JSSample,
-            ts: timestamps[i] * 1000,
-            args: { }
-        });
-        var jsEvent = new WebInspector.TracingModel.Event(payload, 0, mainThread);
+        var jsEvent = new WebInspector.TracingModel.Event(WebInspector.TracingModel.DevToolsMetadataEventCategory, WebInspector.TracingTimelineModel.RecordType.JSSample,
+            WebInspector.TracingModel.Phase.Instant, timestamps[i], mainThread);
         jsEvent.stackTrace = stackTrace;
         jsEvents.push(jsEvent);
     }

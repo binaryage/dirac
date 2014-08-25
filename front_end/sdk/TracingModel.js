@@ -153,9 +153,9 @@ WebInspector.TracingModel.prototype = {
      */
     setEventsForTest: function(sessionId, events)
     {
-        this.reset();
-        this._sessionId = sessionId;
+        this._tracingStarted(sessionId);
         this._eventsCollected(events);
+        this._tracingComplete();
     },
 
     /**
@@ -310,7 +310,8 @@ WebInspector.TracingModel.Loader.prototype = {
     /**
      * @param {!Array.<!WebInspector.TracingModel.EventPayload>} events
      */
-    loadNextChunk: function(events) {
+    loadNextChunk: function(events)
+    {
         if (this._sessionIdFound) {
             this._tracingModel._eventsCollected(events);
             return;
@@ -347,30 +348,18 @@ WebInspector.TracingModel.Loader.prototype = {
 
 /**
  * @constructor
- * @param {!WebInspector.TracingModel.EventPayload} payload
- * @param {number} level
+ * @param {string} category
+ * @param {string} name
+ * @param {string} phase
+ * @param {number} startTime
  * @param {?WebInspector.TracingModel.Thread} thread
  */
-WebInspector.TracingModel.Event = function(payload, level, thread)
+WebInspector.TracingModel.Event = function(category, name, phase, startTime, thread)
 {
-    this.name = payload.name;
-    this.category = payload.cat;
-    this.startTime = payload.ts / 1000;
-    if (payload.args) {
-        // Create a new object to avoid modifying original payload which may be saved to file.
-        this.args = {};
-        for (var name in payload.args)
-            this.args[name] = payload.args[name];
-    }
-    this.phase = payload.ph;
-    this.level = level;
-
-    if (typeof payload.dur === "number")
-        this._setEndTime((payload.ts + payload.dur) / 1000);
-
-    if (payload.id)
-        this.id = payload.id;
-
+    this.category = category;
+    this.name = name;
+    this.phase = phase;
+    this.startTime = startTime;
     this.thread = thread;
 
     /** @type {?string} */
@@ -390,11 +379,28 @@ WebInspector.TracingModel.Event = function(payload, level, thread)
     this.selfTime = 0;
 }
 
+/**
+ * @param {!WebInspector.TracingModel.EventPayload} payload
+ * @param {?WebInspector.TracingModel.Thread} thread
+ * @return {!WebInspector.TracingModel.Event}
+ */
+WebInspector.TracingModel.Event.fromPayload = function(payload, thread)
+{
+    var event = new WebInspector.TracingModel.Event(payload.cat, payload.name, payload.ph, payload.ts / 1000, thread);
+    if (payload.args)
+        event.addArgs(payload.args);
+    if (typeof payload.dur === "number")
+        event.setEndTime((payload.ts + payload.dur) / 1000);
+    if (payload.id)
+        event.id = payload.id;
+    return event;
+}
+
 WebInspector.TracingModel.Event.prototype = {
     /**
      * @param {number} endTime
      */
-    _setEndTime: function(endTime)
+    setEndTime: function(endTime)
     {
         if (endTime < this.startTime) {
             console.assert(false, "Event out of order: " + this.name);
@@ -402,6 +408,20 @@ WebInspector.TracingModel.Event.prototype = {
         }
         this.endTime = endTime;
         this.duration = endTime - this.startTime;
+    },
+
+    /**
+     * @param {!Object} args
+     */
+    addArgs: function(args)
+    {
+        // Create a new object to avoid modifying original payload which may be saved to file.
+        this.args = this.args || {};
+        for (var name in args) {
+            if (name in this.args)
+                console.error("Same argument name (" + name +  ") is used for begin and end phases of " + this.name);
+            this.args[name] = args[name];
+        }
     },
 
     /**
@@ -413,14 +433,9 @@ WebInspector.TracingModel.Event.prototype = {
             console.assert(false, "Open/close event mismatch: " + this.name + " vs. " + payload.name + " at " + (payload.ts / 1000));
             return;
         }
-        if (payload.args) {
-            for (var name in payload.args) {
-                if (name in this.args)
-                    console.error("Same argument name (" + name +  ") is used for begin and end phases of " + this.name);
-                this.args[name] = payload.args[name];
-            }
-        }
-        this._setEndTime(payload.ts / 1000);
+        if (payload.args)
+            this.addArgs(payload.args);
+        this.setEndTime(payload.ts / 1000);
     }
 }
 
@@ -579,7 +594,6 @@ WebInspector.TracingModel.Thread = function(process, id)
     this._setName("Thread " + id);
     this._events = [];
     this._stack = [];
-    this._maxStackDepth = 0;
 }
 
 WebInspector.TracingModel.Thread.prototype = {
@@ -600,31 +614,20 @@ WebInspector.TracingModel.Thread.prototype = {
     addEvent: function(payload)
     {
         var timestamp = payload.ts / 1000;
-        for (var top = this._stack.peekLast(); top;) {
-            // For B/E pairs, ignore time and look for top matching B event,
-            // otherwise, only pop event if it's definitely is in the past.
-            if (payload.ph === WebInspector.TracingModel.Phase.End) {
-                if (payload.name === top.name) {
-                    top._complete(payload);
-                    this._stack.pop();
-                    return null;
-                }
-            } else if (top.phase === WebInspector.TracingModel.Phase.Begin || (top.endTime && (top.endTime > timestamp))) {
-                break;
-            }
-            this._stack.pop();
-            top = this._stack.peekLast();
-        }
-        // Quietly ignore unbalanced close events, they're legit (we could have missed start one).
-        if (payload.ph === WebInspector.TracingModel.Phase.End)
+        if (payload.ph === WebInspector.TracingModel.Phase.End) {
+            // Quietly ignore unbalanced close events, they're legit (we could have missed start one).
+            if (!this._stack.length)
+                return null;
+            var top = this._stack.pop();
+            if (top.name !== payload.name || top.category !== payload.cat)
+                console.error("B/E events mismatch at " + top.startTime + " (" + top.name + ") vs. " + timestamp + " (" + payload.name + ")");
+            else
+                top._complete(payload);
             return null;
-
-        var event = new WebInspector.TracingModel.Event(payload, this._stack.length, this);
-        if (payload.ph === WebInspector.TracingModel.Phase.Begin || payload.ph === WebInspector.TracingModel.Phase.Complete) {
-            this._stack.push(event);
-            if (this._maxStackDepth < this._stack.length)
-                this._maxStackDepth = this._stack.length;
         }
+        var event = WebInspector.TracingModel.Event.fromPayload(payload, this);
+        if (payload.ph === WebInspector.TracingModel.Phase.Begin)
+            this._stack.push(event);
         if (this._events.length && this._events.peekLast().startTime > event.startTime)
             console.assert(false, "Event is our of order: " + event.name);
         this._events.push(event);
@@ -645,15 +648,6 @@ WebInspector.TracingModel.Thread.prototype = {
     events: function()
     {
         return this._events;
-    },
-
-    /**
-     * @return {number}
-     */
-    maxStackDepth: function()
-    {
-        // Reserve one for non-container events.
-        return this._maxStackDepth + 1;
     },
 
     __proto__: WebInspector.TracingModel.NamedObject.prototype

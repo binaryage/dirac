@@ -272,21 +272,13 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
                 stackTraceOpenEvents[j].duration = stackTraceOpenEvents[j].endTime - stackTraceOpenEvents[j].startTime;
             }
             stackTraceOpenEvents.length = j;
-            var timestampUs = e.startTime * 1000;
-            var durationUs = (e.duration || WebInspector.TimelineFlameChartDataProvider.InstantEventVisibleDurationMs) * 1000;
+            var duration = (e.duration || WebInspector.TimelineFlameChartDataProvider.InstantEventVisibleDurationMs);
             for (; j < numFrames; ++j) {
                 var frame = e.stackTrace[numFrames - 1 - j];
-                var payload = /** @type {!WebInspector.TracingModel.EventPayload} */ ({
-                    ph: e.phase,
-                    cat: WebInspector.TracingModel.DevToolsMetadataEventCategory,
-                    name: WebInspector.TracingTimelineModel.RecordType.JSFrame,
-                    ts: timestampUs,
-                    dur: durationUs,
-                    args: {
-                        data: frame
-                    }
-                });
-                var jsFrameEvent = new WebInspector.TracingModel.Event(payload, 0, e.thread);
+                var jsFrameEvent = new WebInspector.TracingModel.Event(WebInspector.TracingModel.DevToolsMetadataEventCategory, WebInspector.TracingTimelineModel.RecordType.JSFrame,
+                    e.phase, e.startTime, e.thread);
+                jsFrameEvent.addArgs({data: frame});
+                jsFrameEvent.setEndTime(e.startTime + duration);
                 stackTraceOpenEvents.push(jsFrameEvent);
                 jsFrameEvents.push(jsFrameEvent);
             }

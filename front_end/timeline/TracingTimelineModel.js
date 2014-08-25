@@ -163,9 +163,7 @@ WebInspector.TracingTimelineModel.prototype = {
      */
     setEventsForTest: function(sessionId, events)
     {
-        this._onTracingStarted();
         this._tracingModel.setEventsForTest(sessionId, events);
-        this._onTracingComplete();
     },
 
     _configureCpuProfilerSamplingInterval: function()
