@@ -2703,13 +2703,16 @@
                     { "name": "parentStyleSheetId", "$ref": "StyleSheetId", "optional": true, "description": "Identifier of the stylesheet containing this object (if exists)." },
                     { "name": "mediaList", "type": "array", "items": { "$ref": "MediaQuery" }, "optional": true, "hidden": true, "description": "Array of media queries." }
                 ],
-                "description": "CSS media query descriptor."
+                "description": "CSS media rule descriptor."
             },
             {
                 "id": "MediaQuery",
-                "type": "array",
-                "items": { "$ref": "MediaQueryExpression" },
-                "description": "An array of media query expressions.",
+                "type": "object",
+                "properties": [
+                    { "name": "expressions", "type": "array", "items": { "$ref": "MediaQueryExpression" }, "description": "Array of media query expressions." },
+                    { "name": "active", "type": "boolean", "description": "Whether the media query condition is satisfied." }
+                ],
+                "description": "Media query descriptor.",
                 "hidden": true
             },
             {
@@ -2721,7 +2724,7 @@
                     { "name": "feature", "type": "string", "description": "Media query expression feature."},
                     { "name": "computedLength", "type": "number", "optional": true, "description": "Computed length of media query expression (if applicable)."}
                 ],
-                "description": "Media query expression data.",
+                "description": "Media query expression descriptor.",
                 "hidden": true
             },
             {

@@ -1330,8 +1330,8 @@ WebInspector.CSSMedia = function(cssModel, payload)
         for (var i = 0; i < payload.mediaList.length; ++i) {
             var mediaQueryPayload = payload.mediaList[i];
             var mediaQueryExpressions = [];
-            for (var j = 0; j < mediaQueryPayload.length; ++j)
-                mediaQueryExpressions.push(WebInspector.CSSMediaQueryExpression.parsePayload(mediaQueryPayload[j]));
+            for (var j = 0; j < mediaQueryPayload.expressions.length; ++j)
+                mediaQueryExpressions.push(WebInspector.CSSMediaQueryExpression.parsePayload(mediaQueryPayload.expressions[j]));
             this.mediaList.push(mediaQueryExpressions);
         }
     }
