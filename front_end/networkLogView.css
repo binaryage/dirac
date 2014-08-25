@@ -341,15 +341,14 @@
     margin: auto -1px;
     height: 12px;
     min-width: 2px;
-    opacity: 0.65;
     border-width: 1px;
     border-style: solid;
-    border-color: hsl(0, 0%, 65%);
-    background: linear-gradient(0deg, hsl(0, 0%, 73%), hsl(0, 0%, 78%));
+    border-color: hsl(0, 0%, 60%);
+    background: linear-gradient(0deg, hsl(0, 0%, 65%), hsl(0, 0%, 80%));
 }
 
 .network-graph-bar.waiting {
-    opacity: 0.35;
+    opacity: 0.5;
 }
 
 /* Resource categories */
@@ -360,84 +359,84 @@
 }
 
 .network-graph-bar.document {
-    border-color: hsl(215, 49%, 52%);
-    background: linear-gradient(0deg, hsl(215, 72%, 61%), hsl(215, 100%, 69%));
+    border-color: hsl(215, 49%, 60%);
+    background: linear-gradient(0deg, hsl(215, 72%, 65%), hsl(215, 100%, 80%));
 }
 
 .network-graph-bar.cached.document {
-    background: hsl(215, 99%, 86%);
+    background: hsl(215, 99%, 80%);
 }
 
 .network-graph-bar.stylesheet {
-    border-color: hsl(99, 34%, 52%);
-    background: linear-gradient(0deg, hsl(100, 50%, 61%), hsl(90, 50%, 64%));
+    border-color: hsl(99, 34%, 60%);
+    background: linear-gradient(0deg, hsl(100, 50%, 65%), hsl(90, 50%, 80%));
 }
 
 .network-graph-bar.cached.stylesheet {
-    background: hsl(99, 100%, 86%);
+    background: hsl(99, 100%, 80%);
 }
 
 .network-graph-bar.image {
-    border-color: hsl(272, 31%, 52%);
-    background: linear-gradient(0deg, hsl(272, 46%, 61%), hsl(272, 64%, 69%));
+    border-color: hsl(272, 31%, 60%);
+    background: linear-gradient(0deg, hsl(272, 46%, 65%), hsl(272, 64%, 80%));
 }
 
 .network-graph-bar.cached.image {
-    background: hsl(272, 65%, 86%);
+    background: hsl(272, 65%, 80%);
 }
 
 .network-graph-bar.media {
-    border-color: hsl(272, 31%, 52%);
-    background: linear-gradient(0deg, hsl(272, 46%, 61%), hsl(272, 64%, 69%));
+    border-color: hsl(272, 31%, 60%);
+    background: linear-gradient(0deg, hsl(272, 46%, 65%), hsl(272, 64%, 80%));
 }
 
 .network-graph-bar.cached.media {
-    background: hsl(272, 65%, 86%);
+    background: hsl(272, 65%, 80%);
 }
 
 .network-graph-bar.font {
-    border-color: hsl(8, 49%, 52%);
-    background: linear-gradient(0deg, hsl(8, 72%, 61%), hsl(8, 100%, 69%));
+    border-color: hsl(8, 49%, 60%);
+    background: linear-gradient(0deg, hsl(8, 72%, 65%), hsl(8, 100%, 80%));
 }
 
 .network-graph-bar.cached.font {
-    background: hsl(8, 100%, 86%);
+    background: hsl(8, 100%, 80%);
 }
 
 .network-graph-bar.texttrack {
-    border-color: hsl(8, 49%, 52%);
-    background: linear-gradient(0deg, hsl(8, 72%, 61%), hsl(8, 100%, 69%));
+    border-color: hsl(8, 49%, 60%);
+    background: linear-gradient(0deg, hsl(8, 72%, 65%), hsl(8, 100%, 80%));
 }
 
 .network-graph-bar.cached.texttrack {
-    background: hsl(8, 100%, 86%);
+    background: hsl(8, 100%, 80%);
 }
 
 .network-graph-bar.script {
-    border-color: hsl(31, 49%, 52%);
-    background: linear-gradient(0deg, hsl(31, 72%, 61%), hsl(31, 100%, 69%));
+    border-color: hsl(31, 49%, 60%);
+    background: linear-gradient(0deg, hsl(31, 72%, 65%), hsl(31, 100%, 80%));
 }
 
 .network-graph-bar.cached.script {
-    background: hsl(31, 100%, 86%);
+    background: hsl(31, 100%, 80%);
 }
 
 .network-graph-bar.xhr {
-    border-color: hsl(53, 49%, 52%);
-    background: linear-gradient(0deg, hsl(53, 72%, 61%), hsl(53, 100%, 69%));
+    border-color: hsl(53, 49%, 60%);
+    background: linear-gradient(0deg, hsl(53, 72%, 65%), hsl(53, 100%, 80%));
 }
 
 .network-graph-bar.cached.xhr {
-    background: hsl(53, 100%, 86%);
+    background: hsl(53, 100%, 80%);
 }
 
 .network-graph-bar.websocket {
-    border-color: hsl(0, 0%, 65%);
-    background: linear-gradient(0deg, hsl(0, 0%, 73%), hsl(0, 0%, 78%));
+    border-color: hsl(0, 0%, 60%);
+    background: linear-gradient(0deg, hsl(0, 0%, 65%), hsl(0, 0%, 80%));
 }
 
 .network-graph-bar.cached.websocket {
-    background: hsl(0, 0%, 90%);
+    background: hsl(0, 0%, 80%);
 }
 
 .network-dim-cell {
