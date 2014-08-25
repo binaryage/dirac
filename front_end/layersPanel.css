@@ -111,11 +111,6 @@
     z-index: 2000;
 }
 
-.paint-profiler-view canvas {
-    height: 100%;
-    width: 100%;
-}
-
 .profiler-log-view .console-formatted-string {
     white-space: nowrap;
 }
