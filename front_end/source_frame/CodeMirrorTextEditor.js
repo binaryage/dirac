@@ -2349,7 +2349,7 @@ WebInspector.CodeMirrorTextEditor.SelectNextOccurrenceController.prototype = {
         var regexSource = textToFind.escapeForRegExp();
         if (fullWord)
             regexSource = "\\b" + regexSource + "\\b";
-        var wordRegex = new RegExp(regexSource, "gi");
+        var wordRegex = new RegExp(regexSource, "g");
         var currentLineText = this._codeMirror.getLine(range.startLine);
 
         findWordInLine(wordRegex, range.startLine, currentLineText, range.endColumn, currentLineText.length);
