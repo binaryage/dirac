@@ -503,8 +503,7 @@ body.platform-mac .help-key {
     background-color: pink;
 }
 
-input.list-column-editor,
-select.list-column-editor {
+input.list-column-editor {
     border: 1px solid rgb(213, 213, 213);
     border-radius: 2px;
     color: #444444;
@@ -512,6 +511,7 @@ select.list-column-editor {
 }
 select.list-column-editor {
     padding: 2px;
+    margin-left: 0px;
 }
 
 .settings-tab .settings-list .settings-list-item .file-system-path {
