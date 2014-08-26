@@ -273,8 +273,8 @@ WebInspector.MediaQueryInspector.prototype = {
             if (!cssMedia.mediaList)
                 continue;
             for (var j = 0; j < cssMedia.mediaList.length; ++j) {
-                var mediaQueryExpressions = cssMedia.mediaList[j];
-                var queryModel = WebInspector.MediaQueryInspector.MediaQueryUIModel.createFromMediaExpressions(cssMedia, mediaQueryExpressions);
+                var mediaQuery = cssMedia.mediaList[j];
+                var queryModel = WebInspector.MediaQueryInspector.MediaQueryUIModel.createFromMediaQuery(cssMedia, mediaQuery);
                 if (queryModel)
                     queryModels.push(queryModel);
             }
@@ -317,8 +317,10 @@ WebInspector.MediaQueryInspector.prototype = {
                 continue;
             if (lastMarker && lastMarker.model.dimensionsEqual(model)) {
                 lastMarker.locations.push(model.uiLocation());
+                lastMarker.active = lastMarker.active || model.active();
             } else {
                 lastMarker = {
+                    active: model.active(),
                     model: model,
                     locations: [ model.uiLocation() ]
                 };
@@ -334,6 +336,8 @@ WebInspector.MediaQueryInspector.prototype = {
             var bar = this._createElementFromMediaQueryModel(marker.model);
             bar._model = marker.model;
             bar._locations = marker.locations;
+            bar.classList.toggle("media-inspector-marker-inactive", !marker.active);
+
             this.element.appendChild(bar);
         }
         this.element.scrollTop = scrollTop;
@@ -426,12 +430,14 @@ WebInspector.MediaQueryInspector.prototype = {
  * @param {!WebInspector.CSSMedia} cssMedia
  * @param {?WebInspector.CSSMediaQueryExpression} minWidthExpression
  * @param {?WebInspector.CSSMediaQueryExpression} maxWidthExpression
+ * @param {boolean} active
  */
-WebInspector.MediaQueryInspector.MediaQueryUIModel = function(cssMedia, minWidthExpression, maxWidthExpression)
+WebInspector.MediaQueryInspector.MediaQueryUIModel = function(cssMedia, minWidthExpression, maxWidthExpression, active)
 {
     this._cssMedia = cssMedia;
     this._minWidthExpression = minWidthExpression;
     this._maxWidthExpression = maxWidthExpression;
+    this._active = active;
     if (maxWidthExpression && !minWidthExpression)
         this._section = WebInspector.MediaQueryInspector.Section.Max;
     else if (minWidthExpression && maxWidthExpression)
@@ -442,17 +448,18 @@ WebInspector.MediaQueryInspector.MediaQueryUIModel = function(cssMedia, minWidth
 
 /**
  * @param {!WebInspector.CSSMedia} cssMedia
- * @param {!Array.<!WebInspector.CSSMediaQueryExpression>} mediaQueryExpressions
+ * @param {!WebInspector.CSSMediaQuery} mediaQuery
  * @return {?WebInspector.MediaQueryInspector.MediaQueryUIModel}
  */
-WebInspector.MediaQueryInspector.MediaQueryUIModel.createFromMediaExpressions = function(cssMedia, mediaQueryExpressions)
+WebInspector.MediaQueryInspector.MediaQueryUIModel.createFromMediaQuery = function(cssMedia, mediaQuery)
 {
     var maxWidthExpression = null;
     var maxWidthPixels = Number.MAX_VALUE;
     var minWidthExpression = null;
     var minWidthPixels = Number.MIN_VALUE;
-    for (var i = 0; i < mediaQueryExpressions.length; ++i) {
-        var expression = mediaQueryExpressions[i];
+    var expressions = mediaQuery.expressions();
+    for (var i = 0; i < expressions.length; ++i) {
+        var expression = expressions[i];
         var feature = expression.feature();
         if (feature.indexOf("width") === -1)
             continue;
@@ -468,7 +475,7 @@ WebInspector.MediaQueryInspector.MediaQueryUIModel.createFromMediaExpressions = 
     if (minWidthPixels > maxWidthPixels || (!maxWidthExpression && !minWidthExpression))
         return null;
 
-    return new WebInspector.MediaQueryInspector.MediaQueryUIModel(cssMedia, minWidthExpression, maxWidthExpression);
+    return new WebInspector.MediaQueryInspector.MediaQueryUIModel(cssMedia, minWidthExpression, maxWidthExpression, mediaQuery.active());
 }
 
 WebInspector.MediaQueryInspector.MediaQueryUIModel.prototype = {
@@ -509,6 +516,8 @@ WebInspector.MediaQueryInspector.MediaQueryUIModel.prototype = {
                 return 1;
             if (!myLocation && otherLocation)
                 return -1;
+            if (this.active() !== other.active())
+                return this.active() ? -1 : 1;
             return myLocation.uiSourceCode.uri().compareTo(otherLocation.uiSourceCode.uri()) || myLocation.lineNumber - otherLocation.lineNumber || myLocation.columnNumber - otherLocation.columnNumber;
         }
         if (this.section() === WebInspector.MediaQueryInspector.Section.Max)
@@ -556,5 +565,13 @@ WebInspector.MediaQueryInspector.MediaQueryUIModel.prototype = {
     maxWidthExpression: function()
     {
         return this._maxWidthExpression;
+    },
+
+    /**
+     * @return {boolean}
+     */
+    active: function()
+    {
+        return this._active;
     }
 }

@@ -429,6 +429,10 @@ body.platform-mac .responsive-design-toolbar select {
     white-space: nowrap;
 }
 
+.media-inspector-marker-inactive {
+    -webkit-filter: brightness(75%);
+}
+
 .media-inspector-marker-container:hover {
     background-color: rgb(32, 32, 32);
 }
