@@ -248,7 +248,7 @@ body.inactive .profile-launcher-view-content button.running:not(.status-bar-item
     pointer-events: none;
 }
 
-select.chrome-select {
+.profiles.panel select.chrome-select {
     font-size: 12px;
     width: 150px;
     margin-left: 10px;
