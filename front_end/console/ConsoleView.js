@@ -33,9 +33,8 @@
  * @implements {WebInspector.Searchable}
  * @implements {WebInspector.TargetManager.Observer}
  * @implements {WebInspector.ViewportControl.Provider}
- * @param {boolean} hideContextSelector
  */
-WebInspector.ConsoleView = function(hideContextSelector)
+WebInspector.ConsoleView = function()
 {
     WebInspector.VBox.call(this);
     this.registerRequiredCSS("filter.css");
@@ -62,9 +61,6 @@ WebInspector.ConsoleView = function(hideContextSelector)
 
     this._filter = new WebInspector.ConsoleViewFilter(this);
     this._filter.addEventListener(WebInspector.ConsoleViewFilter.Events.FilterChanged, this._updateMessageList.bind(this));
-
-    if (hideContextSelector)
-        this._executionContextSelector.element.classList.add("hidden");
 
     this._filterBar = new WebInspector.FilterBar();
 
