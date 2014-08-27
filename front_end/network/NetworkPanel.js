@@ -2823,10 +2823,10 @@ WebInspector.NetworkDataGridNode.prototype = {
         this._barAreaElement.classList.remove("hidden");
 
         this._barLeftElement.style.setProperty("left", percentages.start + "%");
-        this._barRightElement.style.setProperty("right", (100 - percentages.end) + "%");
+        this._barLeftElement.style.setProperty("right", (100 - percentages.middle) + "%");
 
-        this._barLeftElement.style.setProperty("right", (100 - percentages.end) + "%");
         this._barRightElement.style.setProperty("left", percentages.middle + "%");
+        this._barRightElement.style.setProperty("right", (100 - percentages.end) + "%");
 
         var labels = calculator.computeBarGraphLabels(this._request);
         this._labelLeftElement.textContent = labels.left;
