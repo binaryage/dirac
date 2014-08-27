@@ -147,6 +147,7 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
     this._codeMirror.on("beforeSelectionChange", this._beforeSelectionChange.bind(this));
     this._codeMirror.on("scroll", this._scroll.bind(this));
     this._codeMirror.on("focus", this._focus.bind(this));
+    this._codeMirror.on("keyHandled", this._onKeyHandled.bind(this));
     this.element.addEventListener("contextmenu", this._contextMenu.bind(this), false);
     /**
      * @this {WebInspector.CodeMirrorTextEditor}
@@ -326,6 +327,11 @@ WebInspector.CodeMirrorTextEditor.MaximumNumberOfWhitespacesPerSingleSpan = 16;
 WebInspector.CodeMirrorTextEditor.MaxEditableTextSize = 1024 * 1024 * 10;
 
 WebInspector.CodeMirrorTextEditor.prototype = {
+    _onKeyHandled: function()
+    {
+        WebInspector.shortcutRegistry.dismissPendingShortcutAction();
+    },
+
     _onAutoAppendedSpaces: function()
     {
         this._autoAppendedSpaces = this._autoAppendedSpaces || [];
