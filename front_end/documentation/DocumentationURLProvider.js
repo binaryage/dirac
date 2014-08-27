@@ -7,41 +7,154 @@
  */
 WebInspector.DocumentationURLProvider = function()
 {
+    this._gapFromIndex = 0;
+    this._gapFrom = WebInspector.DocumentationURLProvider._gapFromList[0];
+    this._state = WebInspector.DocumentationURLProvider.DownloadStates.NotStarted;
+    /** @type {!StringMap.<!Array.<!WebInspector.DocumentationURLProvider.ItemDescriptor>>} */
+    this._articleList = new StringMap();
+}
+
+/**
+ * @enum {string}
+ */
+WebInspector.DocumentationURLProvider.DownloadStates = {
+    NotStarted: "NotStarted",
+    InProgress: "InProgress",
+    Finished: "Finished",
+    Failed: "Failed"
+}
+
+/**
+ * @return {!WebInspector.DocumentationURLProvider}
+ */
+WebInspector.DocumentationURLProvider.instance = function()
+{
+    if (!WebInspector.DocumentationURLProvider._instance)
+        WebInspector.DocumentationURLProvider._instance = new WebInspector.DocumentationURLProvider();
+    return WebInspector.DocumentationURLProvider._instance;
+}
+
+/**
+ * @constructor
+ * @param {!WebInspector.DocumentationURLProvider.DocumentationSource} sourceRef
+ * @param {string} searchTerm
+ */
+WebInspector.DocumentationURLProvider.ItemDescriptor = function(sourceRef, searchTerm)
+{
+    this._url = String.sprintf(WebInspector.DocumentationURLProvider._articleUrlFormat, sourceRef.url(), searchTerm);
+    this._name = sourceRef.name();
+    this._searchItem = searchTerm;
+}
+
+WebInspector.DocumentationURLProvider.ItemDescriptor.prototype = {
+    /**
+     * @return {string}
+     */
+    url: function()
+    {
+        return this._url;
+    },
+
+    /**
+     * @return {string}
+     */
+    name: function()
+    {
+        return this._name;
+    },
+
+    /**
+     * @return {string}
+     */
+    searchItem: function()
+    {
+        return this._searchItem;
+    }
+}
+
+/**
+ * @constructor
+ * FIXME: source parameter is not annotated property due to crbug.com/407097
+ * @param {*} source
+ * @param {string} url
+ * @param {string} name
+ * @see crbug.com/407097
+ */
+WebInspector.DocumentationURLProvider.DocumentationSource = function(source, url, name)
+{
+    this._source = source;
+    this._url = url;
+    this._name = name;
+}
+
+WebInspector.DocumentationURLProvider.DocumentationSource.prototype = {
+    /**
+     * @return {*}
+     */
+    source: function()
+    {
+        return this._source;
+    },
+
+    /**
+     * @return {string}
+     */
+    url: function()
+    {
+        return this._url;
+    },
+
+    /**
+     * @return {string}
+     */
+    name: function()
+    {
+        return this._name;
+    }
 }
 
 /**
  * @const
- * @type {!Array.<{source: !Object, url: string, name: string}>}
+ * type {!Array.<!WebInspector.DocumentationURLProvider.DocumentationSource>}
  */
 WebInspector.DocumentationURLProvider._sources = [
-    { source: window, url: "javascript/", name: "Global" },
-    { source: window.Node.prototype, url: "dom/Node/", name: "Node.prototype" },
-    { source: window.Node, url: "dom/Node/", name: "Node" },
-    { source: window.Object.prototype, url: "javascript/Object/", name: "Object.prototype" },
-    { source: window.Object, url: "javascript/Object/", name: "Object" },
-    { source: window.Math, url: "javascript/Math/", name: "Math" },
-    { source: window.Array.prototype, url: "javascript/Array/", name: "Array.prototype" },
-    { source: window.Array, url: "javascript/Array/", name: "Array" },
-    { source: window.String.prototype, url: "javascript/String/", name: "String.prototype" },
-    { source: window.String, url: "javascript/String/", name: "String" },
-    { source: window.Date.prototype, url: "javascript/Date/", name: "Date.prototype" },
-    { source: window.Date, url: "javascript/Date/", name: "Date" },
-    { source: window.JSON, url: "javascript/JSON/", name: "JSON" },
-    { source: window.Number, url: "javascript/Number/", name: "Number"},
-    { source: window.Number.prototype, url: "javascript/Number/", name: "Number.prototype"},
-    { source: window.Error.prototype, url: "javascript/Error/", name: "Error.prototype"},
-    { source: window.RegExp.prototype, url: "javascript/RegExp/", name: "RegExp.prototype"}
+    new WebInspector.DocumentationURLProvider.DocumentationSource(window, "javascript/","Global"),
+    new WebInspector.DocumentationURLProvider.DocumentationSource(Node.prototype, "dom/Node/", "Node.prototype"),
+    new WebInspector.DocumentationURLProvider.DocumentationSource(window.Node, "dom/Node/", "Node"),
+    new WebInspector.DocumentationURLProvider.DocumentationSource(window.Object.prototype, "javascript/Object/", "Object.prototype"),
+    new WebInspector.DocumentationURLProvider.DocumentationSource(window.Object, "javascript/Object/", "Object"),
+    new WebInspector.DocumentationURLProvider.DocumentationSource(window.Math, "javascript/Math/", "Math"),
+    new WebInspector.DocumentationURLProvider.DocumentationSource(window.Array.prototype, "javascript/Array/", "Array.prototype"),
+    new WebInspector.DocumentationURLProvider.DocumentationSource(window.Array, "javascript/Array/", "Array"),
+    new WebInspector.DocumentationURLProvider.DocumentationSource(window.String.prototype, "javascript/String/","String.prototype"),
+    new WebInspector.DocumentationURLProvider.DocumentationSource(window.String, "javascript/String/", "String"),
+    new WebInspector.DocumentationURLProvider.DocumentationSource(window.Date.prototype, "javascript/Date/", "Date.prototype"),
+    new WebInspector.DocumentationURLProvider.DocumentationSource(window.Date, "javascript/Date/", "Date"),
+    new WebInspector.DocumentationURLProvider.DocumentationSource(window.JSON, "javascript/JSON/", "JSON"),
+    new WebInspector.DocumentationURLProvider.DocumentationSource(window.Number, "javascript/Number/", "Number"),
+    new WebInspector.DocumentationURLProvider.DocumentationSource(window.Number.prototype, "javascript/Number/", "Number.prototype"),
+    new WebInspector.DocumentationURLProvider.DocumentationSource(window.Error.prototype, "javascript/Error/", "Error.prototype"),
+    new WebInspector.DocumentationURLProvider.DocumentationSource(window.RegExp.prototype, "javascript/RegExp/", "RegExp.prototype"),
+    new WebInspector.DocumentationURLProvider.DocumentationSource(window.Function.prototype, "javascript/Function/", "Function.prototype")
 ];
 
 /**
  * @const
  */
-WebInspector.DocumentationURLProvider._urlFormat = "http://docs.webplatform.org/w/api.php?action=query&titles=%s%s&prop=revisions&rvprop=timestamp|content&format=json"
+WebInspector.DocumentationURLProvider._articleUrlFormat = "http://docs.webplatform.org/w/api.php?action=query&titles=%s%s&prop=revisions&rvprop=timestamp|content&format=json";
 
 /**
- * @typedef {{url: string, name: string, searchItem: string}}
+ * @const
  */
-WebInspector.DocumentationURLProvider.ItemDescriptor;
+WebInspector.DocumentationURLProvider._articleListUrlFormat = "http://docs.webplatform.org/w/api.php?action=query&generator=allpages&gaplimit=500&gapfrom=%s&format=json";
+
+/**
+ * @const
+ */
+WebInspector.DocumentationURLProvider._gapFromList = [
+    "dom/Node/",
+    "javascript/"
+];
 
 WebInspector.DocumentationURLProvider.prototype = {
     /**
@@ -50,26 +163,89 @@ WebInspector.DocumentationURLProvider.prototype = {
      */
     itemDescriptors: function(searchTerm)
     {
+        if (this._state === WebInspector.DocumentationURLProvider.DownloadStates.Finished)
+            return this._articleList.get(searchTerm) || [];
+        // If download of available articles list is not finished yet, use approximate method.
+        if (this._state === WebInspector.DocumentationURLProvider.DownloadStates.NotStarted)
+            this._loadArticleList();
+
         var descriptors = [];
-        for (var i = 0; i < WebInspector.DocumentationURLProvider._sources.length; ++i) {
-            var sourceRef = WebInspector.DocumentationURLProvider._sources[i];
-            if (!sourceRef.source.hasOwnProperty(searchTerm))
+        var sources = WebInspector.DocumentationURLProvider._sources;
+        var propertyName = searchTerm.toUpperCase() === searchTerm ? "constants" : searchTerm;
+        for (var i = 0; i < sources.length; ++i) {
+            if (!sources[i].source().hasOwnProperty(propertyName))
                 continue;
-            descriptors.push(createDescriptor(searchTerm.toUpperCase() === searchTerm ? "constants" : searchTerm));
+            descriptors.push(new WebInspector.DocumentationURLProvider.ItemDescriptor(sources[i], propertyName));
         }
         return descriptors;
+    },
+
+    _loadArticleList: function()
+    {
+        this._state = WebInspector.DocumentationURLProvider.DownloadStates.InProgress;
+
+        var gapFromList = WebInspector.DocumentationURLProvider._gapFromList;
+        if (this._gapFromIndex >= gapFromList.length)
+            return;
+        if (!this._gapFrom.startsWith(gapFromList[this._gapFromIndex])) {
+            ++this._gapFromIndex;
+            if (this._gapFromIndex === gapFromList.length) {
+                this._state = WebInspector.DocumentationURLProvider.DownloadStates.Finished;
+                return;
+            }
+            this._gapFrom = gapFromList[this._gapFromIndex];
+        }
+        var url = String.sprintf(WebInspector.DocumentationURLProvider._articleListUrlFormat, this._gapFrom);
+        loadXHR(url).then(processData.bind(this), resetDownload.bind(this));
 
         /**
-         * @param {string} searchTerm
-         * @return {!WebInspector.DocumentationURLProvider.ItemDescriptor}
+         * @param {?string} responseText
+         * @this {!WebInspector.DocumentationURLProvider}
          */
-        function createDescriptor(searchTerm)
+        function processData(responseText)
         {
-            return {
-                url: String.sprintf(WebInspector.DocumentationURLProvider._urlFormat, sourceRef.url, searchTerm),
-                name: sourceRef.name,
-                searchItem: searchTerm
-            };
+            if (!responseText) {
+                resetDownload.call(this);
+                return;
+            }
+            var json = JSON.parse(responseText);
+            this._gapFrom = json["query-continue"]["allpages"]["gapcontinue"];
+            var pages = json["query"]["pages"];
+            for (var article in pages)
+                this._addDescriptorToList(pages[article]["title"]);
+            this._loadArticleList();
+        }
+
+        /**
+         * @this {!WebInspector.DocumentationURLProvider}
+         */
+        function resetDownload()
+        {
+            WebInspector.console.error("Documentation article list download failed");
+            this._state = WebInspector.DocumentationURLProvider.DownloadStates.Failed;
+        }
+    },
+
+    /**
+     * @param {string} itemPath
+     */
+    _addDescriptorToList: function(itemPath)
+    {
+        var lastSlashIndex = itemPath.lastIndexOf("/");
+        if (lastSlashIndex === -1)
+            return;
+        var sourceName = itemPath.substring(0, lastSlashIndex + 1);
+        // There are some properties which have several words in their name.
+        // In article list they are written through gap, while in URL they are written through underscore.
+        // We are creating URL for current property, so we have to replace all the gaps with underscores.
+        var propertyName = itemPath.substring(lastSlashIndex + 1).replace(" ", "_");
+        var sources = WebInspector.DocumentationURLProvider._sources;
+        for (var i = 0; i < sources.length; ++i) {
+            if (sources[i].url() !== sourceName || !sources[i].source().hasOwnProperty(propertyName))
+                continue;
+            var descriptors = this._articleList.get(propertyName) || [];
+            descriptors.push(new WebInspector.DocumentationURLProvider.ItemDescriptor(sources[i], propertyName));
+            this._articleList.set(propertyName, descriptors);
         }
     }
 }

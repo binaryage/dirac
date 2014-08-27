@@ -1640,37 +1640,32 @@ StringSet.prototype = {
 
 /**
  * @param {string} url
- * @param {boolean=} async
- * @param {function(?string)=} callback
- * @return {?string}
+ * @return {!Promise.<string>}
  */
-function loadXHR(url, async, callback)
+function loadXHR(url)
 {
-    function onReadyStateChanged()
-    {
-        if (xhr.readyState !== XMLHttpRequest.DONE)
-            return;
+    return new Promise(load);
 
-        if (xhr.status === 200) {
-            callback(xhr.responseText);
-            return;
+    function load(successCallback, failureCallback)
+    {
+        function onReadyStateChanged()
+        {
+            if (xhr.readyState !== XMLHttpRequest.DONE)
+                return;
+            if (xhr.status !== 200) {
+                xhr.onreadystatechange = null;
+                failureCallback(new Error(xhr.status));
+                return;
+            }
+            xhr.onreadystatechange = null;
+            successCallback(xhr.responseText);
         }
 
-        callback(null);
-   }
-
-    var xhr = new XMLHttpRequest();
-    xhr.open("GET", url, async);
-    if (async)
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", url, true);
         xhr.onreadystatechange = onReadyStateChanged;
-    xhr.send(null);
-
-    if (!async) {
-        if (xhr.status === 200)
-            return xhr.responseText;
-        return null;
+        xhr.send(null);
     }
-    return null;
 }
 
 /**

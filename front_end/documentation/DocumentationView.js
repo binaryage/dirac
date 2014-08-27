@@ -13,8 +13,9 @@ WebInspector.DocumentationView = function()
 
 /**
  * @param {string} url
+ * @param {!Error=} error
  */
-WebInspector.DocumentationView.showDocumentationURL = function(url)
+WebInspector.DocumentationView.showDocumentationURL = function(url, error)
 {
     if (!WebInspector.DocumentationView._view)
         WebInspector.DocumentationView._view = new WebInspector.DocumentationView();
@@ -51,12 +52,12 @@ WebInspector.DocumentationView.ContextMenuProvider.prototype = {
             return;
         if (descriptors.length === 1) {
             var formatString = WebInspector.useLowerCaseMenuTitles() ? "Show documentation for %s.%s" : "Show Documentation for %s.%s";
-            contextMenu.appendItem(WebInspector.UIString(formatString, descriptors[0].name, descriptors[0].searchItem), WebInspector.DocumentationView.showDocumentationURL.bind(null, descriptors[0].url));
+            contextMenu.appendItem(WebInspector.UIString(formatString, descriptors[0].name(), descriptors[0].searchItem()), WebInspector.DocumentationView.showDocumentationURL.bind(null, descriptors[0].url()));
             return;
         }
         var subMenuItem = contextMenu.appendSubMenuItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Show documentation for..." : "Show Documentation for..."));
         for (var i = 0; i < descriptors.length; ++i)
-            subMenuItem.appendItem(String.sprintf("%s.%s", descriptors[i].name, descriptors[i].searchItem), WebInspector.DocumentationView.showDocumentationURL.bind(null, descriptors[i].url));
+            subMenuItem.appendItem(String.sprintf("%s.%s", descriptors[i].name(), descriptors[i].searchItem()), WebInspector.DocumentationView.showDocumentationURL.bind(null, descriptors[i].url()));
     },
 
     /**
@@ -65,7 +66,7 @@ WebInspector.DocumentationView.ContextMenuProvider.prototype = {
      */
     _determineDescriptors: function(textEditor)
     {
-        var urlProvider = new WebInspector.DocumentationURLProvider();
+        var urlProvider = WebInspector.DocumentationURLProvider.instance();
         var textSelection = textEditor.selection().normalize();
 
         if (!textSelection.isEmpty()) {
