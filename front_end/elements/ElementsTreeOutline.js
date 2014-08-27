@@ -771,7 +771,7 @@ WebInspector.ElementsTreeOutline.prototype = {
     _contextMenuEventFired: function(event)
     {
         var treeElement = this._treeElementFromEvent(event);
-        if (!treeElement)
+        if (!treeElement || treeElement.treeOutline !== this)
             return;
 
         var contextMenu = new WebInspector.ContextMenu(event);
@@ -782,7 +782,7 @@ WebInspector.ElementsTreeOutline.prototype = {
     populateContextMenu: function(contextMenu, event)
     {
         var treeElement = this._treeElementFromEvent(event);
-        if (!treeElement)
+        if (!treeElement || treeElement.treeOutline !== this)
             return;
 
         var isPseudoElement = !!treeElement._node.pseudoType();
