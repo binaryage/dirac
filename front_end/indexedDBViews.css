@@ -56,8 +56,13 @@
 
 .indexed-db-data-view .data-view-toolbar {
     position: relative;
-    margin-top: -1px;
+    border-top: none;
     height: 24px;
+    padding: 1px;
+}
+
+.indexed-db-data-view .data-grid-container {
+    top: 24px;
 }
 
 .indexed-db-data-view .data-view-toolbar .back-button img {
@@ -69,14 +74,9 @@
 }
 
 .indexed-db-data-view .data-view-toolbar .key-input {
-    font-size: 10px;
-    margin-top: 3px;
-    margin-left: 3px;
+    font-size: 11px;
+    margin: auto 0;
     width: 200px;
-}
-
-.indexed-db-data-view .data-grid-container {
-    top: 23px;
 }
 
 .indexed-db-data-view .data-grid {
@@ -100,21 +100,16 @@
     border: 0;
 }
 
-.indexed-db-data-view .data-grid .data-container td {
-    height: 18px;
+.indexed-db-data-view .section,
+.indexed-db-data-view .section > .header,
+.indexed-db-data-view .section > .header .title {
+    margin: 0;
+    min-height: inherit;
+    line-height: inherit;
 }
 
-.indexed-db-data-view .data-grid .data-container td.value-column,
-.indexed-db-data-view .data-grid .data-container td.key-column,
-.indexed-db-data-view .data-grid .data-container td.primaryKey-column {
-    padding: 0;
-}
-
-.indexed-db-data-view .data-grid .data-container td.value-column div.primitive-value,
-.indexed-db-data-view .data-grid .data-container td.key-column div.primitive-value,
-.indexed-db-data-view .data-grid .data-container td.primaryKey-column div.primitive-value {
-    padding-left: 5px;
-    margin-top: 1px;
+.indexed-db-data-view .primitive-value {
+    padding-top: 1px;
 }
 
 .indexed-db-data-view .data-grid .data-container td .section .header .title {
