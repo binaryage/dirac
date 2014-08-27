@@ -136,6 +136,14 @@ WebInspector.RemoteObject.prototype = {
     functionDetails: function(callback)
     {
         callback(null);
+    },
+
+    /**
+     * @param {function(?Array.<!DebuggerAgent.CollectionEntry>)} callback
+     */
+    collectionEntries: function(callback)
+    {
+        callback(null);
     }
 }
 
@@ -597,6 +605,33 @@ WebInspector.RemoteObjectImpl.prototype = {
         this._target.debuggerModel.functionDetails(this, callback)
     },
 
+    /**
+     * @param {function(?Array.<!DebuggerAgent.CollectionEntry>)} callback
+     */
+    collectionEntries: function(callback)
+    {
+        if (!this._objectId) {
+            callback(null);
+            return;
+        }
+
+        this._target.debuggerAgent().getCollectionEntries(this._objectId, didGetCollectionEntries);
+
+        /**
+         * @param {?Protocol.Error} error
+         * @param {?Array.<!DebuggerAgent.CollectionEntry>} response
+         */
+        function didGetCollectionEntries(error, response)
+        {
+            if (error) {
+                console.error(error);
+                callback(null);
+                return;
+            }
+            callback(response);
+        }
+    },
+
     __proto__: WebInspector.RemoteObject.prototype
 };
 
@@ -959,14 +994,17 @@ WebInspector.LocalJSONObject.prototype = {
 
         /**
          * @param {string} propName
-         * @this {WebInspector.LocalJSONObject}
+         * @return {!WebInspector.RemoteObjectProperty}
          */
         function buildProperty(propName)
         {
-            return new WebInspector.RemoteObjectProperty(propName, new WebInspector.LocalJSONObject(this._value[propName]));
+            var propValue = value[propName];
+            if (!(propValue instanceof WebInspector.RemoteObject))
+                propValue = WebInspector.RemoteObject.fromLocalObject(propValue);
+            return new WebInspector.RemoteObjectProperty(propName, propValue);
         }
         if (!this._cachedChildren)
-            this._cachedChildren = Object.keys(value).map(buildProperty.bind(this));
+            this._cachedChildren = Object.keys(value).map(buildProperty);
         return this._cachedChildren;
     },
 
@@ -994,7 +1032,7 @@ WebInspector.LocalJSONObject.prototype = {
     callFunction: function(functionDeclaration, args, callback)
     {
         var target = /** @type {?Object} */ (this._value);
-        var rawArgs = args ? args.map(function(arg) {return arg.value;}) : [];
+        var rawArgs = args ? args.map(function(arg) { return arg.value; }) : [];
 
         var result;
         var wasThrown = false;
@@ -1017,7 +1055,7 @@ WebInspector.LocalJSONObject.prototype = {
     callFunctionJSON: function(functionDeclaration, args, callback)
     {
         var target = /** @type {?Object} */ (this._value);
-        var rawArgs = args ? args.map(function(arg) {return arg.value;}) : [];
+        var rawArgs = args ? args.map(function(arg) { return arg.value; }) : [];
 
         var result;
         try {
