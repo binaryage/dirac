@@ -158,12 +158,11 @@ WebInspector.TracingTimelineModel.prototype = {
     },
 
     /**
-     * @param {string} sessionId
      * @param {!Array.<!WebInspector.TracingModel.EventPayload>} events
      */
-    setEventsForTest: function(sessionId, events)
+    setEventsForTest: function(events)
     {
-        this._tracingModel.setEventsForTest(sessionId, events);
+        this._tracingModel.setEventsForTest(events);
     },
 
     _configureCpuProfilerSamplingInterval: function()
@@ -217,7 +216,6 @@ WebInspector.TracingTimelineModel.prototype = {
         this._stopCallbackBarrier = null;
         var events = this._tracingModel.devtoolsPageMetadataEvents();
         var workerMetadataEvents = this._tracingModel.devtoolsWorkerMetadataEvents();
-        events.sort(WebInspector.TracingModel.Event.compareStartTime);
 
         this._resetProcessingState();
         for (var i = 0, length = events.length; i < length; i++) {

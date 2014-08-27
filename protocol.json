@@ -4254,10 +4254,6 @@
         "events": [
             {
                 "name": "started",
-                "parameters": [
-                    { "name": "consoleTimeline", "type": "boolean", "description": "If specified, identifies that tracing was started using console.timeline() call." },
-                    { "name": "sessionId", "type": "string", "description": "A system-unique identifier of the tracing session that allows associating of some of the trace events with the inspected page" }
-                ],
                 "description": "Fired when tracing is started.",
                 "handlers": ["renderer", "browser", "frontend"],
                 "hidden": true

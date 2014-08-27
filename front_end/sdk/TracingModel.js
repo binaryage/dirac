@@ -148,12 +148,11 @@ WebInspector.TracingModel.prototype = {
     },
 
     /**
-     * @param {string} sessionId
      * @param {!Array.<!WebInspector.TracingModel.EventPayload>} events
      */
-    setEventsForTest: function(sessionId, events)
+    setEventsForTest: function(events)
     {
-        this._tracingStarted(sessionId);
+        this._tracingStarted();
         this._eventsCollected(events);
         this._tracingComplete();
     },
@@ -179,18 +178,16 @@ WebInspector.TracingModel.prototype = {
 
     _tracingComplete: function()
     {
+        this._processMetadataEvents();
         this._active = false;
         this.dispatchEventToListeners(WebInspector.TracingModel.Events.TracingComplete);
     },
 
-    /**
-     * @param {string} sessionId
-     */
-    _tracingStarted: function(sessionId)
+    _tracingStarted: function()
     {
         this.reset();
         this._active = true;
-        this._sessionId = sessionId;
+        this._sessionId = null;
         this.dispatchEventToListeners(WebInspector.TracingModel.Events.TracingStarted);
     },
 
@@ -242,13 +239,13 @@ WebInspector.TracingModel.prototype = {
             if (payload.ph === WebInspector.TracingModel.Phase.SnapshotObject)
                 process.addObject(event);
             if (event && event.name === WebInspector.TracingModel.DevToolsMetadataEvent.TracingStartedInPage &&
-                event.category === WebInspector.TracingModel.DevToolsMetadataEventCategory &&
-                event.args["sessionId"] === this._sessionId)
+                event.category === WebInspector.TracingModel.DevToolsMetadataEventCategory) {
                 this._devtoolsPageMetadataEvents.push(event);
+            }
             if (event && event.name === WebInspector.TracingModel.DevToolsMetadataEvent.TracingStartedInWorker &&
-                event.category === WebInspector.TracingModel.DevToolsMetadataEventCategory &&
-                event.args["sessionId"] === this._sessionId)
+                event.category === WebInspector.TracingModel.DevToolsMetadataEventCategory) {
                 this._devtoolsWorkerMetadataEvents.push(event);
+            }
             return;
         }
         switch (payload.name) {
@@ -265,6 +262,33 @@ WebInspector.TracingModel.prototype = {
             thread._setName(payload.args["name"]);
             break;
         }
+    },
+
+    _processMetadataEvents: function()
+    {
+        this._devtoolsPageMetadataEvents.sort(WebInspector.TracingModel.Event.compareStartTime);
+        if (!this._devtoolsPageMetadataEvents.length) {
+            WebInspector.console.error(WebInspector.TracingModel.DevToolsMetadataEvent.TracingStartedInPage + " event not found.");
+            return;
+        }
+        var sessionId = this._devtoolsPageMetadataEvents[0].args["sessionId"];
+        this._sessionId = sessionId;
+
+        var mismatchingIds = {};
+        function checkSessionId(event)
+        {
+            var id = event.args["sessionId"];
+            if (id === sessionId)
+                return true;
+            mismatchingIds[id] = true;
+            return false;
+        }
+        this._devtoolsPageMetadataEvents = this._devtoolsPageMetadataEvents.filter(checkSessionId);
+        this._devtoolsWorkerMetadataEvents = this._devtoolsWorkerMetadataEvents.filter(checkSessionId);
+
+        var idList = Object.keys(mismatchingIds);
+        if (idList.length)
+            WebInspector.console.error("Timeline recording was started in more than one page simulaniously. Session id mismatch: " + this._sessionId + " and " + idList + ".");
     },
 
     /**
@@ -302,8 +326,7 @@ WebInspector.TracingModel.prototype = {
 WebInspector.TracingModel.Loader = function(tracingModel)
 {
     this._tracingModel = tracingModel;
-    this._events = [];
-    this._sessionIdFound = false;
+    this._firstChunkReceived = false;
 }
 
 WebInspector.TracingModel.Loader.prototype = {
@@ -312,36 +335,16 @@ WebInspector.TracingModel.Loader.prototype = {
      */
     loadNextChunk: function(events)
     {
-        if (this._sessionIdFound) {
-            this._tracingModel._eventsCollected(events);
-            return;
+        if (!this._firstChunkReceived) {
+            this._tracingModel._tracingStarted();
+            this._firstChunkReceived = true;
         }
-
-        var sessionId = null;
-        for (var i = 0, length = events.length; i < length; i++) {
-            var event = events[i];
-            this._events.push(event);
-
-            if (event.name === WebInspector.TracingModel.DevToolsMetadataEvent.TracingStartedInPage &&
-                event.cat.indexOf(WebInspector.TracingModel.DevToolsMetadataEventCategory) !== -1 &&
-                !this._sessionIdFound) {
-                sessionId = event.args["sessionId"];
-                this._sessionIdFound = true;
-            }
-        }
-
-        if (this._sessionIdFound) {
-            this._tracingModel._tracingStarted(sessionId);
-            this._tracingModel._eventsCollected(this._events);
-        }
+        this._tracingModel._eventsCollected(events);
     },
 
     finish: function()
     {
-        if (this._sessionIdFound)
-            this._tracingModel._tracingComplete();
-        else
-            WebInspector.console.error(WebInspector.UIString("Trace event %s not found while loading tracing model.", WebInspector.TracingModel.DevToolsMetadataEvent.TracingStartedInPage));
+        this._tracingModel._tracingComplete();
     }
 }
 
@@ -686,13 +689,9 @@ WebInspector.TracingDispatcher.prototype = {
         this._tracingModel._tracingComplete();
     },
 
-    /**
-     * @param {boolean} consoleTimeline
-     * @param {string} sessionId
-     */
-    started: function(consoleTimeline, sessionId)
+    started: function()
     {
-        this._tracingModel._tracingStarted(sessionId);
+        this._tracingModel._tracingStarted();
     },
 
     stopped: function()
