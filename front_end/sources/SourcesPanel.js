@@ -1059,8 +1059,6 @@ WebInspector.SourcesPanel.prototype = {
             sidebarPaneStack.addPane(this.sidebarPanes.domBreakpoints);
             sidebarPaneStack.addPane(this.sidebarPanes.xhrBreakpoints);
             sidebarPaneStack.addPane(this.sidebarPanes.eventListenerBreakpoints);
-            if (this.sidebarPanes.workerList)
-                sidebarPaneStack.addPane(this.sidebarPanes.workerList);
 
             var tabbedPane = new WebInspector.SidebarTabbedPane();
             tabbedPane.show(splitView.sidebarElement());

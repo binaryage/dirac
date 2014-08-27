@@ -108,7 +108,6 @@
             'front_end/components/ShortcutsScreen.js',
             'front_end/components/TargetsComboBoxController.js',
             'front_end/components/TimelineGrid.js',
-            'front_end/components/WorkerFrontendManager.js',
         ],
         'devtools_host_js_files': [
             'front_end/host/InspectorFrontendHost.js',
@@ -476,7 +475,6 @@
             'front_end/sources/ThreadsSidebarPane.js',
             'front_end/sources/UISourceCodeFrame.js',
             'front_end/sources/WatchExpressionsSidebarPane.js',
-            'front_end/sources/WorkersSidebarPane.js',
         ],
         'devtools_temp_storage_shared_worker_js_files': [
             'front_end/temp_storage_shared_worker/TempStorageSharedWorker.js',
