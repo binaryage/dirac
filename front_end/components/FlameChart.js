@@ -587,6 +587,8 @@ WebInspector.FlameChart.prototype = {
      */
     _onKeyDown: function(e)
     {
+        if (e.altKey || e.ctrlKey || e.metaKey)
+            return;
         var zoomMultiplier = e.shiftKey ? 0.8 : 0.3;
         var panMultiplier = e.shiftKey ? 320 : 80;
         if (e.keyCode === "A".charCodeAt(0)) {
