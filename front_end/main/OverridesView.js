@@ -113,7 +113,7 @@ WebInspector.OverridesView.prototype = {
     {
         this._unavailableSplashScreenElement.classList.toggle("hidden", WebInspector.overridesSupport.canEmulate());
         this._tabbedPane.element.classList.toggle("hidden", !WebInspector.overridesSupport.emulationEnabled());
-        this._splashScreenElement.classList.toggle("hidden", WebInspector.overridesSupport.emulationEnabled());
+        this._splashScreenElement.classList.toggle("hidden", WebInspector.overridesSupport.emulationEnabled() || !WebInspector.overridesSupport.canEmulate());
     },
 
     __proto__: WebInspector.VBox.prototype
