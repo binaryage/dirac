@@ -198,7 +198,9 @@
                     { "name": "scrollY", "type": "number", "description": "Y scroll offset in CSS pixels." },
                     { "name": "contentsWidth", "type": "number", "description": "Contents width in CSS pixels." },
                     { "name": "contentsHeight", "type": "number", "description": "Contents height in CSS pixels." },
-                    { "name": "pageScaleFactor", "type": "number", "description": "Page scale factor." }
+                    { "name": "pageScaleFactor", "type": "number", "description": "Page scale factor." },
+                    { "name": "minimumPageScaleFactor", "type": "number", "description": "Minimum page scale factor." },
+                    { "name": "maximumPageScaleFactor", "type": "number", "description": "Maximum page scale factor." }
                 ],
                 "hidden": true
             },
@@ -377,6 +379,14 @@
             {
                 "name": "resetScrollAndPageScaleFactor",
                 "description": "Requests that scroll offsets and page scale factor are reset to initial values.",
+                "hidden": true
+            },
+            {
+                "name": "setPageScaleFactor",
+                "description": "Sets a specified page scale factor.",
+                "parameters": [
+                    { "name": "pageScaleFactor", "type": "number", "description": "Page scale factor." }
+                ],
                 "hidden": true
             },
             {

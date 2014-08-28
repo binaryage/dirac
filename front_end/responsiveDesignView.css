@@ -50,6 +50,61 @@
     transform: rotate(90deg);
 }
 
+.responsive-design-page-scale-container {
+    position: absolute !important;
+    bottom: 0;
+    right: 0;
+    padding: 10px;
+    background-color: rgba(0, 0, 0, 0.3);
+    align-items: center;
+}
+
+.responsive-design-page-scale-label {
+    display: block;
+    height: 20px;
+    margin: 2px 0;
+    padding-top: 3px;
+    color: white;
+    cursor: default !important;
+}
+
+.responsive-design-page-scale-container .responsive-design-page-scale-button.status-bar-item {
+    display: block;
+    width: 18px;
+    height: 18px;
+    border: 1px solid transparent;
+    border-radius: 2px;
+}
+
+.responsive-design-page-scale-container .responsive-design-page-scale-button.status-bar-item:not(:disabled):hover {
+    box-shadow: rgb(255, 255, 255) 0 0 3px;
+}
+
+.responsive-design-page-scale-container .responsive-design-page-scale-button.status-bar-item > .glyph {
+    background-color: rgb(180, 180, 180);
+    -webkit-mask-image: url(Images/responsiveDesign.png);
+    -webkit-mask-size: 112px 16px;
+    opacity: 1;
+}
+
+.responsive-design-page-scale-container .status-bar-item .glyph.shadow {
+    background-color: black !important;
+}
+
+@media (-webkit-min-device-pixel-ratio: 1.5) {
+    .responsive-design-page-scale-container .responsive-design-page-scale-button.status-bar-item > .glyph {
+        -webkit-mask-image: url(Images/responsiveDesign_2x.png);
+    }
+} /* media */
+
+.responsive-design-page-scale-increase > .glyph {
+    -webkit-mask-position: -81px 1px;
+}
+
+.responsive-design-page-scale-decrease > .glyph {
+    -webkit-mask-position: -97px 1px;
+}
+
 /* Toolbar */
 
 .responsive-design-toolbar {
@@ -206,7 +261,7 @@ body.platform-mac .responsive-design-toolbar select {
 .responsive-design-icon.status-bar-item > .glyph {
     background-color: rgb(180, 180, 180);
     -webkit-mask-image: url(Images/responsiveDesign.png);
-    -webkit-mask-size: 64px 16px;
+    -webkit-mask-size: 112px 16px;
 }
 
 .responsive-design-icon.status-bar-item {
@@ -310,7 +365,7 @@ body.platform-mac .responsive-design-toolbar select {
 }
 
 .responsive-design-section-device select {
-    width: 180px;
+    width: 185px;
 }
 
 .responsive-design-section-device input[type='text'],
@@ -330,7 +385,7 @@ body.platform-mac .responsive-design-toolbar select {
 /* Network section */
 
 .responsive-design-section-network select {
-    width: 180px;
+    width: 185px;
 }
 
 .responsive-design-section-network input[type='text'] {

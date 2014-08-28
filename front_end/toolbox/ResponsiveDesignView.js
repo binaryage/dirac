@@ -53,13 +53,29 @@ WebInspector.ResponsiveDesignView = function(inspectedPagePlaceholder)
     this._heightSlider.createChild("div", "responsive-design-thumb-handle");
     this._createResizer(this._heightSlider, true);
 
+    // Page scale controls.
+    this._pageScaleContainer = this._canvasContainer.element.createChild("div", "vbox responsive-design-page-scale-container");
+    this._pageScaleContainer.style.width = WebInspector.ResponsiveDesignView.PageScaleContainerWidth + "px";
+    this._pageScaleContainer.style.height = WebInspector.ResponsiveDesignView.PageScaleContainerHeight + "px";
+    this._increasePageScaleButton = new WebInspector.StatusBarButton(WebInspector.UIString(""), "responsive-design-page-scale-button responsive-design-page-scale-increase");
+    this._increasePageScaleButton.element.tabIndex = -1;
+    this._increasePageScaleButton.addEventListener("click", this._pageScaleButtonClicked.bind(this, true), this);
+    this._pageScaleContainer.appendChild(this._increasePageScaleButton.element);
+    this._pageScaleLabel = this._pageScaleContainer.createChild("label", "responsive-design-page-scale-label");
+    this._pageScaleLabel.title = WebInspector.UIString("For a simpler way to change the current page scale, hold down Shift and drag with your mouse.");
+    this._decreasePageScaleButton = new WebInspector.StatusBarButton(WebInspector.UIString(""), "responsive-design-page-scale-button responsive-design-page-scale-decrease");
+    this._decreasePageScaleButton.element.tabIndex = -1;
+    this._decreasePageScaleButton.addEventListener("click", this._pageScaleButtonClicked.bind(this, false), this);
+    this._pageScaleContainer.appendChild(this._decreasePageScaleButton.element);
+
     this._inspectedPagePlaceholder = inspectedPagePlaceholder;
     inspectedPagePlaceholder.show(this.element);
 
     this._enabled = false;
-    this._viewport = { scrollX: 0, scrollY: 0, contentsWidth: 0, contentsHeight: 0, pageScaleFactor: 1 };
+    this._viewport = { scrollX: 0, scrollY: 0, contentsWidth: 0, contentsHeight: 0, pageScaleFactor: 1, minimumPageScaleFactor: 1, maximumPageScaleFactor: 1 };
     this._drawContentsSize = true;
     this._viewportChangedThrottler = new WebInspector.Throttler(0);
+    this._pageScaleFactorThrottler = new WebInspector.Throttler(50);
 
     WebInspector.zoomManager.addEventListener(WebInspector.ZoomManager.Events.ZoomChanged, this._onZoomChanged, this);
     WebInspector.overridesSupport.addEventListener(WebInspector.OverridesSupport.Events.EmulationStateChanged, this._emulationEnabledChanged, this);
@@ -74,6 +90,8 @@ WebInspector.ResponsiveDesignView = function(inspectedPagePlaceholder)
 // Measured in DIP.
 WebInspector.ResponsiveDesignView.SliderWidth = 19;
 WebInspector.ResponsiveDesignView.RulerWidth = 22;
+WebInspector.ResponsiveDesignView.PageScaleContainerWidth = 40;
+WebInspector.ResponsiveDesignView.PageScaleContainerHeight = 80;
 
 WebInspector.ResponsiveDesignView.prototype = {
 
@@ -431,20 +449,34 @@ WebInspector.ResponsiveDesignView.prototype = {
             this._widthSliderContainer.style.marginRight = "-" + cssSliderWidth;
         }
 
-        var cssWidth = this._dipWidth ? (this._dipWidth / zoomFactor + "px") : (availableDip.width / zoomFactor + "px");
-        var cssHeight = this._dipHeight ? (this._dipHeight / zoomFactor + "px") : (availableDip.height / zoomFactor + "px");
+        var cssWidth = (this._dipWidth ? this._dipWidth : availableDip.width) / zoomFactor;
+        var cssHeight = (this._dipHeight ? this._dipHeight : availableDip.height) / zoomFactor;
         if (this._cachedCssWidth !== cssWidth || this._cachedCssHeight !== cssHeight) {
-            this._slidersContainer.style.width = cssWidth;
-            this._slidersContainer.style.height = cssHeight;
+            this._slidersContainer.style.width = cssWidth + "px";
+            this._slidersContainer.style.height = cssHeight + "px";
             this._inspectedPagePlaceholder.onResize();
         }
+
+        var pageScaleVisible = cssWidth + WebInspector.ResponsiveDesignView.PageScaleContainerWidth + WebInspector.ResponsiveDesignView.RulerWidth <= rect.width ||
+            cssHeight + WebInspector.ResponsiveDesignView.PageScaleContainerHeight + WebInspector.ResponsiveDesignView.RulerWidth <= rect.height;
+        this._pageScaleContainer.classList.toggle("hidden", !pageScaleVisible);
 
         var viewportChanged = !this._cachedViewport
             || this._cachedViewport.scrollX !== this._viewport.scrollX || this._cachedViewport.scrollY !== this._viewport.scrollY
             || this._cachedViewport.contentsWidth !== this._viewport.contentsWidth || this._cachedViewport.contentsHeight !== this._viewport.contentsHeight
-            || this._cachedViewport.pageScaleFactor !== this._viewport.pageScaleFactor;
+            || this._cachedViewport.pageScaleFactor !== this._viewport.pageScaleFactor
+            || this._cachedViewport.minimumPageScaleFactor !== this._viewport.minimumPageScaleFactor
+            || this._cachedViewport.maximumPageScaleFactor !== this._viewport.maximumPageScaleFactor;
         if (viewportChanged || this._drawContentsSize !== this._cachedDrawContentsSize || this._cachedScale !== this._scale || this._cachedCssCanvasWidth !== cssCanvasWidth || this._cachedCssCanvasHeight !== cssCanvasHeight || this._cachedZoomFactor !== zoomFactor)
             this._drawCanvas(cssCanvasWidth, cssCanvasHeight);
+
+        if (viewportChanged) {
+            this._pageScaleLabel.textContent = WebInspector.UIString("%.1f", this._viewport.pageScaleFactor);
+            this._decreasePageScaleButton.title = WebInspector.UIString("Scale down (minimum %.1f)", this._viewport.minimumPageScaleFactor);
+            this._decreasePageScaleButton.setEnabled(this._viewport.pageScaleFactor > this._viewport.minimumPageScaleFactor);
+            this._increasePageScaleButton.title = WebInspector.UIString("Scale up (maximum %.1f)", this._viewport.maximumPageScaleFactor);
+            this._increasePageScaleButton.setEnabled(this._viewport.pageScaleFactor < this._viewport.maximumPageScaleFactor);
+        }
 
         this._cachedScale = this._scale;
         this._cachedCssCanvasWidth = cssCanvasWidth;
@@ -635,6 +667,10 @@ WebInspector.ResponsiveDesignView.prototype = {
         var viewport = /** @type {?PageAgent.Viewport} */ (event.data);
         if (viewport) {
             this._viewport = viewport;
+            this._viewport.minimumPageScaleFactor = Math.max(0.1, this._viewport.minimumPageScaleFactor);
+            this._viewport.minimumPageScaleFactor = Math.min(this._viewport.minimumPageScaleFactor, this._viewport.pageScaleFactor);
+            this._viewport.maximumPageScaleFactor = Math.min(10, this._viewport.maximumPageScaleFactor);
+            this._viewport.maximumPageScaleFactor = Math.max(this._viewport.maximumPageScaleFactor, this._viewport.pageScaleFactor);
             this._viewportChangedThrottler.schedule(this._updateUIThrottled.bind(this));
         }
     },
@@ -646,6 +682,31 @@ WebInspector.ResponsiveDesignView.prototype = {
     {
         this._updateUI();
         finishCallback();
+    },
+
+    /**
+     * @param {boolean} increase
+     * @param {!WebInspector.Event} event
+     */
+    _pageScaleButtonClicked: function(increase, event)
+    {
+        this._pageScaleFactorThrottler.schedule(updatePageScaleFactor.bind(this));
+
+        /**
+         * @param {!WebInspector.Throttler.FinishCallback} finishCallback
+         * @this {WebInspector.ResponsiveDesignView}
+         */
+        function updatePageScaleFactor(finishCallback)
+        {
+            if (this._target && this._viewport) {
+                var value = this._viewport.pageScaleFactor;
+                value = increase ? value * 1.1 : value / 1.1;
+                value = Math.min(this._viewport.maximumPageScaleFactor, value);
+                value = Math.max(this._viewport.minimumPageScaleFactor, value)
+                this._target.pageAgent().setPageScaleFactor(value);
+            }
+            finishCallback();
+        }
     },
 
     __proto__: WebInspector.VBox.prototype
