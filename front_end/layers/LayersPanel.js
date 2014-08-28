@@ -31,19 +31,18 @@
 /**
  * @constructor
  * @extends {WebInspector.PanelWithSidebarTree}
+ * @implements {WebInspector.TargetManager.Observer}
  */
 WebInspector.LayersPanel = function()
 {
     WebInspector.PanelWithSidebarTree.call(this, "layers", 225);
     this.registerRequiredCSS("layersPanel.css");
+    this._target = null;
 
     this.sidebarElement().classList.add("outline-disclosure");
     this.sidebarTree.element.classList.remove("sidebar-tree");
 
-    this._target = /** @type {!WebInspector.Target} */ (WebInspector.targetManager.mainTarget());
-    this._model = new WebInspector.LayerTreeModel(this._target);
-    this._model.addEventListener(WebInspector.LayerTreeModel.Events.LayerTreeChanged, this._onLayerTreeUpdated, this);
-    this._model.addEventListener(WebInspector.LayerTreeModel.Events.LayerPainted, this._onLayerPainted, this);
+    WebInspector.targetManager.observeTargets(this);
     this._currentlySelectedLayer = null;
     this._currentlyHoveredLayer = null;
 
@@ -81,13 +80,42 @@ WebInspector.LayersPanel.prototype = {
     {
         WebInspector.Panel.prototype.wasShown.call(this);
         this.sidebarTree.element.focus();
-        this._model.enable();
+        if (this._target)
+            this._target.layerTreeModel.enable();
     },
 
     willHide: function()
     {
-        this._model.disable();
+        if (this._target)
+            this._target.layerTreeModel.disable();
         WebInspector.Panel.prototype.willHide.call(this);
+    },
+
+    /**
+     * @param {!WebInspector.Target} target
+     */
+    targetAdded: function(target)
+    {
+        if (this._target)
+            return;
+        this._target = target;
+        this._target.layerTreeModel.addEventListener(WebInspector.LayerTreeModel.Events.LayerTreeChanged, this._onLayerTreeUpdated, this);
+        this._target.layerTreeModel.addEventListener(WebInspector.LayerTreeModel.Events.LayerPainted, this._onLayerPainted, this);
+        if (this.isShowing())
+            this._target.layerTreeModel.enable();
+    },
+
+    /**
+     * @param {!WebInspector.Target} target
+     */
+    targetRemoved: function(target)
+    {
+        if (this._target !== target)
+            return;
+        this._target.layerTreeModel.removeEventListener(WebInspector.LayerTreeModel.Events.LayerTreeChanged, this._onLayerTreeUpdated, this);
+        this._target.layerTreeModel.removeEventListener(WebInspector.LayerTreeModel.Events.LayerPainted, this._onLayerPainted, this);
+        this._target.layerTreeModel.disable();
+        this._target = null;
     },
 
     /**
@@ -95,20 +123,20 @@ WebInspector.LayersPanel.prototype = {
      */
     _showLayerTree: function(deferredLayerTree)
     {
-        deferredLayerTree.resolve(onLayersReady.bind(this));
-        /**
-         * @param {!WebInspector.LayerTreeBase} layerTree
-         * @this {WebInspector.LayersPanel} this
-         */
-        function onLayersReady(layerTree)
-        {
-            this._model.setLayerTree(layerTree);
-        }
+        deferredLayerTree.resolve(this._setLayerTree.bind(this));
     },
 
     _onLayerTreeUpdated: function()
     {
-        var layerTree = this._model.layerTree();
+        if (this._target)
+            this._setLayerTree(this._target.layerTreeModel.layerTree());
+    },
+
+    /**
+     * @param {?WebInspector.LayerTreeBase} layerTree
+     */
+    _setLayerTree: function(layerTree)
+    {
         this._layers3DView.setLayerTree(layerTree);
         this._layerTreeOutline.update(layerTree);
         if (this._currentlySelectedLayer && (!layerTree || !layerTree.layerById(this._currentlySelectedLayer.layer.id())))
@@ -123,7 +151,9 @@ WebInspector.LayersPanel.prototype = {
      */
     _onLayerPainted: function(event)
     {
-        this._layers3DView.setLayerTree(this._model.layerTree());
+        if (!this._target)
+            return;
+        this._layers3DView.setLayerTree(this._target.layerTreeModel.layerTree());
         if (this._currentlySelectedLayer && this._currentlySelectedLayer.layer === event.data)
             this._layerDetailsView.update();
     },
@@ -168,7 +198,7 @@ WebInspector.LayersPanel.prototype = {
         var node = layer ? layer.nodeForSelfOrAncestor() : null;
         if (node)
             node.highlightForTwoSeconds();
-        else
+        else if (this._target)
             this._target.domModel.hideDOMNodeHighlight();
         this._layerTreeOutline.selectLayer(layer);
         this._layers3DView.selectObject(activeObject);
@@ -187,7 +217,7 @@ WebInspector.LayersPanel.prototype = {
         var node = layer ? layer.nodeForSelfOrAncestor() : null;
         if (node)
             node.highlight();
-        else
+        else if (this._target)
             this._target.domModel.hideDOMNodeHighlight();
         this._layerTreeOutline.hoverLayer(layer);
         this._layers3DView.hoverObject(activeObject);

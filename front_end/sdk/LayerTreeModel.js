@@ -44,11 +44,11 @@ WebInspector.TracingLayerPayload;
 
 /**
   * @constructor
-  * @extends {WebInspector.SDKObject}
+  * @extends {WebInspector.SDKModel}
   */
 WebInspector.LayerTreeModel = function(target)
 {
-    WebInspector.SDKObject.call(this, target);
+    WebInspector.SDKModel.call(this, WebInspector.LayerTreeModel, target);
     target.registerLayerTreeDispatcher(new WebInspector.LayerTreeDispatcher(this));
     target.domModel.addEventListener(WebInspector.DOMModel.Events.DocumentUpdated, this._onDocumentUpdated, this);
     /** @type {?WebInspector.LayerTreeBase} */
@@ -158,7 +158,7 @@ WebInspector.LayerTreeModel.prototype = {
         this.enable();
     },
 
-    __proto__: WebInspector.SDKObject.prototype
+    __proto__: WebInspector.SDKModel.prototype
 }
 
 /**

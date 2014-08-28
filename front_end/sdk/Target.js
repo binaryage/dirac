@@ -171,6 +171,9 @@ WebInspector.Target.prototype = {
         /** @type {!WebInspector.IndexedDBModel} */
         this.indexedDBModel = new WebInspector.IndexedDBModel(this);
 
+        /** @type {!WebInspector.LayerTreeModel} */
+        this.layerTreeModel = new WebInspector.LayerTreeModel(this);
+
         if (callback)
             callback(this);
     },
