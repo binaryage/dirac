@@ -19,6 +19,7 @@ WebInspector.MediaQueryInspector = function()
     this._translateZero = 0;
     this._offset = 0;
     this._scale = 1;
+    this._lastReportedCount = 0;
 
     this._rulerDecorationLayer = document.createElementWithClass("div", "fill");
     this._rulerDecorationLayer.classList.add("media-inspector-ruler-decoration");
@@ -306,8 +307,6 @@ WebInspector.MediaQueryInspector.prototype = {
         if (!this._cachedQueryModels)
             return;
         this._renderRulerDecorations();
-        if (!this.isShowing())
-            return;
 
         var markers = [];
         var lastMarker = null;
@@ -327,7 +326,16 @@ WebInspector.MediaQueryInspector.prototype = {
                 markers.push(lastMarker);
             }
         }
-        var countChanges = this.element.children.length !== markers.length;
+
+        if (markers.length !== this._lastReportedCount) {
+            this._lastReportedCount = markers.length;
+            this.dispatchEventToListeners(WebInspector.MediaQueryInspector.Events.CountUpdated, markers.length);
+        }
+
+        if (!this.isShowing())
+            return;
+
+        var heightChanges = this.element.children.length !== markers.length;
 
         var scrollTop = this.element.scrollTop;
         this.element.removeChildren();
@@ -342,10 +350,8 @@ WebInspector.MediaQueryInspector.prototype = {
         }
         this.element.scrollTop = scrollTop;
         this.element.classList.toggle("media-inspector-view-empty", !this.element.children.length);
-        if (countChanges) {
-            this.dispatchEventToListeners(WebInspector.MediaQueryInspector.Events.CountUpdated, markers.length);
+        if (heightChanges)
             this.dispatchEventToListeners(WebInspector.MediaQueryInspector.Events.HeightUpdated);
-        }
     },
 
     /**
