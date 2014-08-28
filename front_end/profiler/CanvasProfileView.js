@@ -624,6 +624,7 @@ WebInspector.CanvasProfileView.prototype = {
 
 /**
  * @constructor
+ * @implements {WebInspector.TargetManager.Observer}
  * @extends {WebInspector.ProfileType}
  */
 WebInspector.CanvasProfileType = function()
@@ -647,12 +648,9 @@ WebInspector.CanvasProfileType = function()
     this._frameSelector.element.title = WebInspector.UIString("Frame containing the canvases to capture.");
     this._frameSelector.element.classList.add("hidden");
 
-    this._target = /** @type {!WebInspector.Target} */ (WebInspector.targetManager.mainTarget());
-    this._target.resourceTreeModel.frames().forEach(this._addFrame, this);
-    this._target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.FrameAdded, this._frameAdded, this);
-    this._target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.FrameDetached, this._frameRemoved, this);
+    this._target = null;
+    WebInspector.targetManager.observeTargets(this);
 
-    this._dispatcher = new WebInspector.CanvasDispatcher(this);
     this._canvasAgentEnabled = false;
 
     this._decorationElement = document.createElement("div");
@@ -663,6 +661,34 @@ WebInspector.CanvasProfileType = function()
 WebInspector.CanvasProfileType.TypeId = "CANVAS_PROFILE";
 
 WebInspector.CanvasProfileType.prototype = {
+    /**
+     * @override
+     * @param {!WebInspector.Target} target
+     */
+    targetAdded: function(target)
+    {
+        if (this._target || target !== WebInspector.targetManager.mainTarget())
+            return;
+        this._target = target;
+        this._target.resourceTreeModel.frames().forEach(this._addFrame, this);
+        this._target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.FrameAdded, this._frameAdded, this);
+        this._target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.FrameDetached, this._frameRemoved, this);
+        new WebInspector.CanvasDispatcher(this._target, this);
+    },
+
+    /**
+     * @override
+     * @param {!WebInspector.Target} target
+     */
+    targetRemoved: function(target)
+    {
+        if (this._target !== target)
+            return;
+        this._target = null;
+        this._target.resourceTreeModel.removeEventListener(WebInspector.ResourceTreeModel.EventTypes.FrameAdded, this._frameAdded, this);
+        this._target.resourceTreeModel.removeEventListener(WebInspector.ResourceTreeModel.EventTypes.FrameDetached, this._frameRemoved, this);
+    },
+
     get statusBarItems()
     {
         return [this._capturingModeSelector.element, this._frameSelector.element];
@@ -788,6 +814,9 @@ WebInspector.CanvasProfileType.prototype = {
         button.addEventListener("click", this._onProfilerEnableButtonClick.bind(this, !this._canvasAgentEnabled), false);
 
         var target = this._target;
+        if (!target)
+            return;
+
         /**
          * @param {?Protocol.Error} error
          * @param {boolean} result
@@ -800,7 +829,7 @@ WebInspector.CanvasProfileType.prototype = {
 
         if (forcePageReload) {
             if (this._canvasAgentEnabled) {
-                CanvasAgent.hasUninstrumentedCanvases(hasUninstrumentedCanvasesCallback);
+                target.canvasAgent().hasUninstrumentedCanvases(hasUninstrumentedCanvasesCallback);
             } else {
                 for (var frameId in this._framesWithCanvases) {
                     if (this._framesWithCanvases.hasOwnProperty(frameId)) {
@@ -966,12 +995,13 @@ WebInspector.CanvasProfileType.prototype = {
 /**
  * @constructor
  * @implements {CanvasAgent.Dispatcher}
+ * @param {!WebInspector.Target} target
  * @param {!WebInspector.CanvasProfileType} profileType
  */
-WebInspector.CanvasDispatcher = function(profileType)
+WebInspector.CanvasDispatcher = function(target, profileType)
 {
     this._profileType = profileType;
-    InspectorBackend.registerCanvasDispatcher(this);
+    target.registerCanvasDispatcher(this);
 }
 
 WebInspector.CanvasDispatcher.prototype = {
@@ -996,7 +1026,7 @@ WebInspector.CanvasDispatcher.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.ProfileHeader}
- * @param {!WebInspector.Target} target
+ * @param {?WebInspector.Target} target
  * @param {!WebInspector.CanvasProfileType} type
  * @param {!CanvasAgent.TraceLogId=} traceLogId
  * @param {!PageAgent.FrameId=} frameId
