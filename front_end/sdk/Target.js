@@ -168,6 +168,9 @@ WebInspector.Target.prototype = {
         /** @type {!WebInspector.HeapProfilerModel} */
         this.heapProfilerModel = new WebInspector.HeapProfilerModel(this);
 
+        /** @type {!WebInspector.IndexedDBModel} */
+        this.indexedDBModel = new WebInspector.IndexedDBModel(this);
+
         if (callback)
             callback(this);
     },

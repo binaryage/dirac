@@ -1402,7 +1402,18 @@ WebInspector.IndexedDBTreeElement = function(storagePanel)
 WebInspector.IndexedDBTreeElement.prototype = {
     _initialize: function()
     {
-        this._createIndexedDBModel();
+        WebInspector.targetManager.addModelListener(WebInspector.IndexedDBModel, WebInspector.IndexedDBModel.EventTypes.DatabaseAdded, this._indexedDBAdded, this);
+        WebInspector.targetManager.addModelListener(WebInspector.IndexedDBModel, WebInspector.IndexedDBModel.EventTypes.DatabaseRemoved, this._indexedDBRemoved, this);
+        WebInspector.targetManager.addModelListener(WebInspector.IndexedDBModel, WebInspector.IndexedDBModel.EventTypes.DatabaseLoaded, this._indexedDBLoaded, this);
+        /** @type {!Array.<!WebInspector.IDBDatabaseTreeElement>} */
+        this._idbDatabaseTreeElements = [];
+
+        var targets = WebInspector.targetManager.targets();
+        for (var i = 0; i < targets.length; ++i) {
+            var databases = targets[i].indexedDBModel.databases();
+            for (var j = 0; j < databases.length; ++j)
+                this._addIndexedDB(targets[i].indexedDBModel, databases[j]);
+        }
     },
 
     onattach: function()
@@ -1418,23 +1429,11 @@ WebInspector.IndexedDBTreeElement.prototype = {
         contextMenu.show();
     },
 
-    _createIndexedDBModel: function()
-    {
-        this._indexedDBModel = new WebInspector.IndexedDBModel(this.target());
-        this._idbDatabaseTreeElements = [];
-        this._indexedDBModel.addEventListener(WebInspector.IndexedDBModel.EventTypes.DatabaseAdded, this._indexedDBAdded, this);
-        this._indexedDBModel.addEventListener(WebInspector.IndexedDBModel.EventTypes.DatabaseRemoved, this._indexedDBRemoved, this);
-        this._indexedDBModel.addEventListener(WebInspector.IndexedDBModel.EventTypes.DatabaseLoaded, this._indexedDBLoaded, this);
-    },
-
     refreshIndexedDB: function()
     {
-        if (!this._indexedDBModel) {
-            this._createIndexedDBModel();
-            return;
-        }
-
-        this._indexedDBModel.refreshDatabaseNames();
+        var targets = WebInspector.targetManager.targets();
+        for (var i = 0; i < targets.length; ++i)
+            targets[i].indexedDBModel.refreshDatabaseNames();
     },
 
     /**
@@ -1443,12 +1442,20 @@ WebInspector.IndexedDBTreeElement.prototype = {
     _indexedDBAdded: function(event)
     {
         var databaseId = /** @type {!WebInspector.IndexedDBModel.DatabaseId} */ (event.data);
+        var model = /** @type {!WebInspector.IndexedDBModel} */ (event.target);
+        this._addIndexedDB(model, databaseId);
+    },
 
-        var idbDatabaseTreeElement = new WebInspector.IDBDatabaseTreeElement(this._storagePanel, this._indexedDBModel, databaseId);
+    /**
+     * @param {!WebInspector.IndexedDBModel} model
+     * @param {!WebInspector.IndexedDBModel.DatabaseId} databaseId
+     */
+    _addIndexedDB: function(model, databaseId)
+    {
+        var idbDatabaseTreeElement = new WebInspector.IDBDatabaseTreeElement(this._storagePanel, model, databaseId);
         this._idbDatabaseTreeElements.push(idbDatabaseTreeElement);
         this.appendChild(idbDatabaseTreeElement);
-
-        this._indexedDBModel.refreshDatabase(databaseId);
+        model.refreshDatabase(databaseId);
     },
 
     /**
@@ -1457,8 +1464,9 @@ WebInspector.IndexedDBTreeElement.prototype = {
     _indexedDBRemoved: function(event)
     {
         var databaseId = /** @type {!WebInspector.IndexedDBModel.DatabaseId} */ (event.data);
+        var model = /** @type {!WebInspector.IndexedDBModel} */ (event.target);
 
-        var idbDatabaseTreeElement = this._idbDatabaseTreeElement(databaseId)
+        var idbDatabaseTreeElement = this._idbDatabaseTreeElement(model, databaseId)
         if (!idbDatabaseTreeElement)
             return;
 
@@ -1473,8 +1481,9 @@ WebInspector.IndexedDBTreeElement.prototype = {
     _indexedDBLoaded: function(event)
     {
         var database = /** @type {!WebInspector.IndexedDBModel.Database} */ (event.data);
+        var model = /** @type {!WebInspector.IndexedDBModel} */ (event.target);
 
-        var idbDatabaseTreeElement = this._idbDatabaseTreeElement(database.databaseId)
+        var idbDatabaseTreeElement = this._idbDatabaseTreeElement(model, database.databaseId)
         if (!idbDatabaseTreeElement)
             return;
 
@@ -1483,13 +1492,14 @@ WebInspector.IndexedDBTreeElement.prototype = {
 
     /**
      * @param {!WebInspector.IndexedDBModel.DatabaseId} databaseId
+     * @param {!WebInspector.IndexedDBModel} model
      * @return {?WebInspector.IDBDatabaseTreeElement}
      */
-    _idbDatabaseTreeElement: function(databaseId)
+    _idbDatabaseTreeElement: function(model, databaseId)
     {
         var index = -1;
         for (var i = 0; i < this._idbDatabaseTreeElements.length; ++i) {
-            if (this._idbDatabaseTreeElements[i]._databaseId.equals(databaseId)) {
+            if (this._idbDatabaseTreeElements[i]._databaseId.equals(databaseId) && this._idbDatabaseTreeElements[i]._model === model) {
                 index = i;
                 break;
             }

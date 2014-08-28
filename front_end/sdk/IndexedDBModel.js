@@ -30,11 +30,11 @@
 
 /**
  * @constructor
- * @extends {WebInspector.SDKObject}
+ * @extends {WebInspector.SDKModel}
  */
 WebInspector.IndexedDBModel = function(target)
 {
-    WebInspector.SDKObject.call(this, target);
+    WebInspector.SDKModel.call(this, WebInspector.IndexedDBModel, target);
     this._agent = target.indexedDBAgent();
     this._agent.enable();
 
@@ -249,6 +249,21 @@ WebInspector.IndexedDBModel.prototype = {
     },
 
     /**
+     * @return {!Array.<!WebInspector.IndexedDBModel.DatabaseId>}
+     */
+    databases: function()
+    {
+        var result = [];
+        for (var securityOrigin in this._databaseNamesBySecurityOrigin) {
+            var databaseNames = this._databaseNamesBySecurityOrigin[securityOrigin];
+            for (var i = 0; i < databaseNames.length; ++i) {
+                result.push(new WebInspector.IndexedDBModel.DatabaseId(securityOrigin, databaseNames[i]));
+            }
+        }
+        return result;
+    },
+
+    /**
      * @param {string} securityOrigin
      * @param {string} databaseName
      */
@@ -401,7 +416,7 @@ WebInspector.IndexedDBModel.prototype = {
         this._agent.requestData(databaseId.securityOrigin, databaseName, objectStoreName, indexName, skipCount, pageSize, keyRange ? keyRange : undefined, innerCallback.bind(this));
     },
 
-    __proto__: WebInspector.SDKObject.prototype
+    __proto__: WebInspector.SDKModel.prototype
 }
 
 /**
