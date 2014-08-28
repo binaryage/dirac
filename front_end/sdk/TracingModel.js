@@ -125,10 +125,11 @@ WebInspector.TracingModel.prototype = {
     start: function(categoryFilter, options, callback)
     {
         WebInspector.profilingLock().acquire();
+        this._shouldReleaseLock = true;
         this.reset();
         var bufferUsageReportingIntervalMs = 500;
         TracingAgent.start(categoryFilter, options, bufferUsageReportingIntervalMs, callback);
-        this._active = true;
+        this._tracingStarted();
     },
 
     stop: function()
@@ -136,7 +137,10 @@ WebInspector.TracingModel.prototype = {
         if (!this._active)
             return;
         TracingAgent.end(this._onStop.bind(this));
-        WebInspector.profilingLock().release();
+        if (this._shouldReleaseLock) {
+            this._shouldReleaseLock = false;
+            WebInspector.profilingLock().release();
+        }
     },
 
     /**
@@ -170,6 +174,7 @@ WebInspector.TracingModel.prototype = {
      */
     _eventsCollected: function(events)
     {
+        this._onStop();
         for (var i = 0; i < events.length; ++i) {
             this._addEvent(events[i]);
             this._rawEvents.push(events[i]);
@@ -185,6 +190,9 @@ WebInspector.TracingModel.prototype = {
 
     _tracingStarted: function()
     {
+        // FIXME(398787): remove once Tracing.started event is sent from browser.
+        if (this._active)
+            return;
         this.reset();
         this._active = true;
         this._sessionId = null;
@@ -193,6 +201,8 @@ WebInspector.TracingModel.prototype = {
 
     _onStop: function()
     {
+        if (!this._active)
+            return;
         this.dispatchEventToListeners(WebInspector.TracingModel.Events.TracingStopped);
         this._active = false;
     },
