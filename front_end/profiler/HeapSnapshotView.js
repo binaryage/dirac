@@ -2081,9 +2081,18 @@ WebInspector.HeapSnapshotStatisticsView = function()
 {
     WebInspector.VBox.call(this);
     this.setMinimumSize(50, 25);
-    this._pieChart = new WebInspector.PieChart(150);
+    this._pieChart = new WebInspector.PieChart(150, WebInspector.HeapSnapshotStatisticsView._valueFormatter);
     this.element.appendChild(this._pieChart.element);
     this._labels = this.element.createChild("div", "heap-snapshot-stats-legend");
+}
+
+/**
+ * @param {number} value
+ * @return {string}
+ */
+WebInspector.HeapSnapshotStatisticsView._valueFormatter = function(value)
+{
+    return WebInspector.UIString("%s KB", Number.withThousandsSeparator(Math.round(value / 1024)));
 }
 
 WebInspector.HeapSnapshotStatisticsView.prototype = {
@@ -2114,7 +2123,7 @@ WebInspector.HeapSnapshotStatisticsView.prototype = {
         else
             swatchDiv.classList.add("heap-snapshot-stats-empty-swatch");
         nameDiv.textContent = name;
-        sizeDiv.textContent = WebInspector.UIString("%s KB", Number.withThousandsSeparator(Math.round(value / 1024)));
+        sizeDiv.textContent = WebInspector.HeapSnapshotStatisticsView._valueFormatter(value);
     },
 
     __proto__: WebInspector.VBox.prototype
