@@ -501,8 +501,7 @@ WebInspector.ConsoleViewMessage.prototype = {
      */
     _renderPropertyPreview: function(type, subtype, description)
     {
-        var span = document.createElement("span");
-        span.className = "console-formatted-" + type;
+        var span = document.createElementWithClass("span", "console-formatted-" + (subtype || type));
 
         if (type === "function") {
             span.textContent = "function";
@@ -510,7 +509,6 @@ WebInspector.ConsoleViewMessage.prototype = {
         }
 
         if (type === "object" && subtype === "regexp") {
-            span.classList.add("console-formatted-string");
             span.textContent = description;
             return span;
         }
