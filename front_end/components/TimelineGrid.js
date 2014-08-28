@@ -49,14 +49,14 @@ WebInspector.TimelineGrid = function()
 
 /**
  * @param {!WebInspector.TimelineGrid.Calculator} calculator
- * @param {number} clientWidth
  * @return {!{offsets: !Array.<number>, precision: number}}
  */
-WebInspector.TimelineGrid.calculateDividerOffsets = function(calculator, clientWidth)
+WebInspector.TimelineGrid.calculateDividerOffsets = function(calculator)
 {
     const minGridSlicePx = 64; // minimal distance between grid lines.
     const gridFreeZoneAtLeftPx = 50;
 
+    var clientWidth = calculator.computePosition(calculator.maximumBoundary());
     var dividersCount = clientWidth / minGridSlicePx;
     var gridSliceTime = calculator.boundarySpan() / dividersCount;
     var pixelsPerTime = clientWidth / calculator.boundarySpan();
@@ -113,7 +113,7 @@ WebInspector.TimelineGrid.drawCanvasGrid = function(canvas, calculator, dividerO
     var height = canvas.height / window.devicePixelRatio;
     var precision = 0;
     if (!dividerOffsets) {
-        var dividersData = WebInspector.TimelineGrid.calculateDividerOffsets(calculator, width);
+        var dividersData = WebInspector.TimelineGrid.calculateDividerOffsets(calculator);
         dividerOffsets = dividersData.offsets;
         precision = dividersData.precision;
     }
@@ -182,7 +182,7 @@ WebInspector.TimelineGrid.prototype = {
     {
         var precision = 0;
         if (!dividerOffsets) {
-            var dividersData = WebInspector.TimelineGrid.calculateDividerOffsets(calculator, this._dividersElement.clientWidth);
+            var dividersData = WebInspector.TimelineGrid.calculateDividerOffsets(calculator);
             dividerOffsets = dividersData.offsets;
             precision = dividersData.precision;
             printDeltas = false;
