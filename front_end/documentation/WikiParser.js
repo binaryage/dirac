@@ -11,31 +11,160 @@ WebInspector.WikiParser = function(wikiMarkupText)
     this._position = 0;
     this._wikiMarkupText = wikiMarkupText;
     this._document = this._parse();
+    /** @type {?WebInspector.WikiParser.Tokenizer} */
+    this._tokenizer;
 }
 
 /**
  * @package
- * @enum {number}
+ * @enum {string}
  */
 WebInspector.WikiParser.State = {
-    Error: 0,
-    FirstOpen: 1,
-    SecondOpen: 2,
-    Title: 3,
-    PropertyName: 4,
-    PropertyValue: 5,
-    FirstClose: 6,
-    SecondClose: 7
+    Error: "Error",
+    FirstOpen: "FirstOpen",
+    SecondOpen: "SecondOpen",
+    Title: "Title",
+    PropertyName: "PropertyName",
+    PropertyValue: "PropertyValue",
+    FirstClose: "FirstClose",
+    SecondClose: "SecondClose"
 }
 
 /**
  * @package
- * @enum {number}
+ * @enum {string}
+ */
+WebInspector.WikiParser.LinkStates = {
+    Error: "Error",
+    LinkUrl: "LinkUrl",
+    LinkName: "LinkName"
+}
+
+/**
+ * @package
+ * @enum {string}
+ */
+WebInspector.WikiParser.HtmlStates = {
+    Error: "Error",
+    Entry: "Entry",
+    InsideTag: "InsideTag",
+    Exit: "Exit"
+}
+
+/**
+ * @package
+ * @enum {string}
  */
 WebInspector.WikiParser.ValueState = {
-    Error: 0,
-    Outside: 1,
-    InsideSquare: 2,
+    Error: "Error",
+    Outside: "Outside",
+    InsideSquare: "InsideSquare"
+}
+
+/**
+ * @package
+ * @enum {string}
+ */
+WebInspector.WikiParser.TokenType = {
+    TripleQuotes: "TripleQuotes",
+    OpeningBrackets: "OpeningBrackets",
+    OpeningCodeTag: "OpeningCodeTag",
+    ClosingBrackets: "ClosingBrackets",
+    ClosingCodeTag: "ClosingCodeTag",
+    Bullet: "Bullet",
+    Text: "Text",
+    VerticalLine: "VerticalLine",
+    LineEnd: "LineEnd",
+    CodeBlock: "CodeBlock"
+}
+
+/**
+ * @constructor
+ * @param {string} result
+ * @param {!WebInspector.WikiParser.TokenType} type
+ */
+WebInspector.WikiParser.Token = function(result, type)
+{
+    this._value = result;
+    this._type = type;
+}
+
+WebInspector.WikiParser.Token.prototype = {
+    /**
+     * @return {string}
+     */
+    value: function()
+    {
+        return this._value;
+    },
+
+    /**
+     * @return {!WebInspector.WikiParser.TokenType}
+     */
+    type: function()
+    {
+        return this._type;
+    }
+}
+
+/**
+ * @constructor
+ * @param {string} str
+ */
+WebInspector.WikiParser.Tokenizer = function(str)
+{
+    this._text = str;
+}
+
+WebInspector.WikiParser.Tokenizer.prototype = {
+    /**
+     * @return {!WebInspector.WikiParser.Token}
+     */
+    _nextToken: function()
+    {
+        if (WebInspector.WikiParser.newLineWithSpace.test(this._text)) {
+            var result = WebInspector.WikiParser.newLineWithSpace.exec(this._text);
+            var begin = result.index + result[0].length;
+            var end = this._text.length;
+            var lineEnd = WebInspector.WikiParser.newLineWithoutSpace.exec(this._text);
+            if (lineEnd)
+                end = lineEnd.index;
+            var token = this._text.substring(begin, end).replace(/\n */g, "\n");
+            this._text = this._text.substring(end + 1);
+            return new WebInspector.WikiParser.Token(token, WebInspector.WikiParser.TokenType.CodeBlock);
+        }
+
+        for (var i = 0; i < WebInspector.WikiParser._tokenDescriptors.length; ++i) {
+            var result = WebInspector.WikiParser._tokenDescriptors[i].regex.exec(this._text);
+            if (result) {
+                this._text = this._text.substring(result.index + result[0].length);
+                return new WebInspector.WikiParser.Token(result[0], WebInspector.WikiParser._tokenDescriptors[i].type);
+            }
+        }
+
+        for (var lastIndex = 0; lastIndex < this._text.length; ++lastIndex) {
+            var testString = this._text.substring(lastIndex);
+            for (var i = 0; i < WebInspector.WikiParser._tokenDescriptors.length; ++i) {
+                if (WebInspector.WikiParser._tokenDescriptors[i].regex.test(testString)) {
+                    var token = this._text.substring(0, lastIndex);
+                    this._text = this._text.substring(lastIndex);
+                    return new WebInspector.WikiParser.Token(token, WebInspector.WikiParser.TokenType.Text);
+                }
+            }
+        }
+
+        var token = this._text;
+        this._text = "";
+        return new WebInspector.WikiParser.Token(token, WebInspector.WikiParser.TokenType.Text);
+    },
+
+    /**
+     * @return {boolean}
+     */
+    _hasMoreTokens: function()
+    {
+        return !!this._text.length;
+    }
 }
 
 WebInspector.WikiParser.prototype = {
@@ -235,10 +364,424 @@ WebInspector.WikiParser.prototype = {
 
     /**
      * @param {string} str
+     * @return {?WebInspector.WikiParser.Block}
+     */
+    parseString: function(str)
+    {
+        this._tokenizer = new WebInspector.WikiParser.Tokenizer(str);
+        var children = [];
+        var blockChildren = [];
+        var text = "";
+        var self = this;
+
+        function processSimpleText()
+        {
+            var currentText = self._deleteTrailingSpaces(text);
+            if (!currentText.length)
+                return;
+            var simpleText = new WebInspector.WikiParser.PlainText(currentText, false);
+            blockChildren.push(simpleText);
+            text = "";
+        }
+
+        function processBlock()
+        {
+            if (blockChildren.length) {
+                children.push(new WebInspector.WikiParser.Block(blockChildren, false));
+                blockChildren = [];
+            }
+        }
+        while (this._tokenizer._hasMoreTokens()) {
+            var token = this._tokenizer._nextToken();
+            switch (token.type()) {
+            case WebInspector.WikiParser.TokenType.TripleQuotes:
+                processSimpleText();
+                var highlightText = this._parseHighlight();
+                blockChildren.push(highlightText)
+                break;
+            case WebInspector.WikiParser.TokenType.OpeningBrackets:
+                processSimpleText();
+                var link = this._parseLink();
+                blockChildren.push(link);
+                break;
+            case WebInspector.WikiParser.TokenType.OpeningCodeTag:
+                processSimpleText();
+                var code = this._parseCode();
+                blockChildren.push(code);
+                break;
+            case WebInspector.WikiParser.TokenType.Bullet:
+                processSimpleText();
+                processBlock();
+                var bulletText = this._parseBullet();
+                children.push(bulletText);
+                break;
+            case WebInspector.WikiParser.TokenType.CodeBlock:
+                processSimpleText();
+                processBlock();
+                var code = new WebInspector.WikiParser.CodeBlock(token.value());
+                children.push(code);
+                break;
+            case WebInspector.WikiParser.TokenType.LineEnd:
+                processSimpleText();
+                processBlock();
+                break;
+            case WebInspector.WikiParser.TokenType.VerticalLine:
+            case WebInspector.WikiParser.TokenType.Text:
+                text += token.value();
+                break;
+            default:
+                return null;
+            }
+        }
+
+        processSimpleText();
+        processBlock();
+
+        return new WebInspector.WikiParser.Block(children, false);
+    },
+
+    /**
+     * @return {!WebInspector.WikiParser.Link}
+     */
+    _parseLink: function()
+    {
+        var url = "";
+        var children = [];
+        while (this._tokenizer._hasMoreTokens()) {
+            var token = this._tokenizer._nextToken();
+            switch (token.type()) {
+            case WebInspector.WikiParser.TokenType.ClosingBrackets:
+                return new WebInspector.WikiParser.Link(url, children);
+            case WebInspector.WikiParser.TokenType.VerticalLine:
+                children.push(this._parseLinkName());
+                return new WebInspector.WikiParser.Link(url, children);
+            default:
+                url += token.value();
+            }
+        }
+
+        return new WebInspector.WikiParser.Link(url, children);
+    },
+
+    /**
+     * @return {!WebInspector.WikiParser.Inline}
+     */
+    _parseLinkName: function()
+    {
+        var children = [];
+        while (this._tokenizer._hasMoreTokens()) {
+            var token = this._tokenizer._nextToken();
+            switch (token.type()) {
+            case WebInspector.WikiParser.TokenType.ClosingBrackets:
+                return new WebInspector.WikiParser.Inline(WebInspector.WikiParser.ArticleElement.Type.Inline, children);
+            case WebInspector.WikiParser.TokenType.OpeningCodeTag:
+                children.push(this._parseCode());
+                break;
+            default:
+                children.push(new WebInspector.WikiParser.PlainText(token.value(), false));
+                break;
+            }
+        }
+
+        return new WebInspector.WikiParser.Inline(WebInspector.WikiParser.ArticleElement.Type.Inline, children);
+    },
+
+    /**
+     * @return {!WebInspector.WikiParser.Inline}
+     */
+    _parseCode : function()
+    {
+        var children = [];
+        var text = "";
+        while (this._tokenizer._hasMoreTokens()) {
+            var token = this._tokenizer._nextToken();
+            switch (token.type()) {
+            case WebInspector.WikiParser.TokenType.ClosingCodeTag:
+                text = this._deleteTrailingSpaces(text);
+                if (text.length) {
+                    var simpleText = new WebInspector.WikiParser.PlainText(text, false);
+                    children.push(simpleText);
+                    text = "";
+                }
+                var code = new WebInspector.WikiParser.Inline(WebInspector.WikiParser.ArticleElement.Type.Code, children);
+                return code;
+            case WebInspector.WikiParser.TokenType.OpeningBrackets:
+                var link = this._parseLink();
+                children.push(link);
+                break;
+            default:
+                text += token.value();
+            }
+        }
+
+        text = this._deleteTrailingSpaces(text);
+        if (text.length)
+            children.push(new WebInspector.WikiParser.PlainText(text, false));
+
+        return new WebInspector.WikiParser.Inline(WebInspector.WikiParser.ArticleElement.Type.Code, children);
+    },
+
+    /**
+     * @return {!WebInspector.WikiParser.Block}
+     */
+    _parseBullet: function()
+    {
+        var children = [];
+        while (this._tokenizer._hasMoreTokens()) {
+            var token = this._tokenizer._nextToken()
+            switch (token.type()) {
+            case WebInspector.WikiParser.TokenType.OpeningBrackets:
+                children.push(this._parseLink());
+                break;
+            case WebInspector.WikiParser.TokenType.OpeningCodeTag:
+                children.push(this._parseCode());
+                break;
+            case WebInspector.WikiParser.TokenType.LineEnd:
+                return new WebInspector.WikiParser.Block(children, true);
+            default:
+                var text = this._deleteTrailingSpaces(token.value());
+                if (text.length) {
+                    var simpleText = new WebInspector.WikiParser.PlainText(text, false);
+                    children.push(simpleText);
+                    text = "";
+                }
+            }
+        }
+
+        return new WebInspector.WikiParser.Block(children, true);
+    },
+
+    /**
+     * @return {!WebInspector.WikiParser.PlainText}
+     */
+    _parseHighlight: function()
+    {
+        var text = "";
+        while (this._tokenizer._hasMoreTokens()) {
+            var token = this._tokenizer._nextToken()
+            switch (token.type()) {
+            case WebInspector.WikiParser.TokenType.TripleQuotes:
+                text = this._deleteTrailingSpaces(text);
+                return new WebInspector.WikiParser.PlainText(text, true);
+            default:
+                text += token.value();
+            }
+        }
+        return new WebInspector.WikiParser.PlainText(text, true);
+    },
+
+    /**
+     * @param {string} str
      * @return {string}
      */
     _deleteTrailingSpaces: function(str)
     {
-        return str.replace(/\s*$/gm, "");
+        return str.replace(/[\n\r]*$/gm, "");
     }
+}
+
+WebInspector.WikiParser.oneOpeningBracket = /^\n*\[[^\[]/;
+WebInspector.WikiParser.twoOpeningBrackets = /^\n*\[\[/;
+WebInspector.WikiParser.oneClosingBracket = /^\n*\][^\]]/;
+WebInspector.WikiParser.twoClosingBrackets = /^\n*\]\]/;
+WebInspector.WikiParser.tripleQuotes = /^\n*'''/;
+WebInspector.WikiParser.openingCodeTag = /^<\s*code\s*>/;
+WebInspector.WikiParser.closingCodeTag = /^<\s*\/\s*code\s*>/;
+WebInspector.WikiParser.closingBullet = /^\*/;
+WebInspector.WikiParser.lineEnd = /^\n/;
+WebInspector.WikiParser.verticalLine = /^\|/;
+WebInspector.WikiParser.newLineWithSpace = /^\n /;
+WebInspector.WikiParser.newLineWithoutSpace = /\n[^ ]/;
+
+/**
+ * @constructor
+ * @param {!RegExp} regex
+ * @param {!WebInspector.WikiParser.TokenType} type
+ */
+WebInspector.WikiParser.TokenDesciptor = function(regex, type)
+{
+    this.regex = regex;
+    this.type = type;
+}
+
+WebInspector.WikiParser._tokenDescriptors = [
+    new WebInspector.WikiParser.TokenDesciptor(WebInspector.WikiParser.newLineWithSpace, WebInspector.WikiParser.TokenType.CodeBlock),
+    new WebInspector.WikiParser.TokenDesciptor(WebInspector.WikiParser.tripleQuotes, WebInspector.WikiParser.TokenType.TripleQuotes),
+    new WebInspector.WikiParser.TokenDesciptor(WebInspector.WikiParser.oneOpeningBracket, WebInspector.WikiParser.TokenType.OpeningBrackets),
+    new WebInspector.WikiParser.TokenDesciptor(WebInspector.WikiParser.twoOpeningBrackets, WebInspector.WikiParser.TokenType.OpeningBrackets),
+    new WebInspector.WikiParser.TokenDesciptor(WebInspector.WikiParser.oneClosingBracket, WebInspector.WikiParser.TokenType.ClosingBrackets),
+    new WebInspector.WikiParser.TokenDesciptor(WebInspector.WikiParser.twoClosingBrackets, WebInspector.WikiParser.TokenType.ClosingBrackets),
+    new WebInspector.WikiParser.TokenDesciptor(WebInspector.WikiParser.openingCodeTag, WebInspector.WikiParser.TokenType.OpeningCodeTag),
+    new WebInspector.WikiParser.TokenDesciptor(WebInspector.WikiParser.closingCodeTag, WebInspector.WikiParser.TokenType.ClosingCodeTag),
+    new WebInspector.WikiParser.TokenDesciptor(WebInspector.WikiParser.closingBullet, WebInspector.WikiParser.TokenType.Bullet),
+    new WebInspector.WikiParser.TokenDesciptor(WebInspector.WikiParser.verticalLine, WebInspector.WikiParser.TokenType.VerticalLine),
+    new WebInspector.WikiParser.TokenDesciptor(WebInspector.WikiParser.lineEnd, WebInspector.WikiParser.TokenType.LineEnd)
+];
+
+/**
+ * @constructor
+ * @param {!WebInspector.WikiParser.ArticleElement.Type} type
+ */
+WebInspector.WikiParser.ArticleElement = function(type)
+{
+    this._type = type;
+}
+
+WebInspector.WikiParser.ArticleElement.prototype = {
+    /**
+     * @return {!WebInspector.WikiParser.ArticleElement.Type}
+     */
+    type: function()
+    {
+        return this._type;
+    }
+}
+
+/**
+ * @enum {string}
+ */
+WebInspector.WikiParser.ArticleElement.Type = {
+    PlainText: "PlainText",
+    Link: "Link",
+    Code: "Code",
+    Block: "Block",
+    CodeBlock: "CodeBlock",
+    Inline: "Inline"
+};
+
+/**
+ * @constructor
+ * @extends {WebInspector.WikiParser.ArticleElement}
+ * @param {string} text
+ * @param {boolean} highlight
+ */
+WebInspector.WikiParser.PlainText = function(text, highlight)
+{
+    WebInspector.WikiParser.ArticleElement.call(this, WebInspector.WikiParser.ArticleElement.Type.PlainText);
+    this._text = text;
+    this._isHighlighted = highlight;
+}
+
+WebInspector.WikiParser.PlainText.prototype = {
+    /**
+     * @return {string}
+     */
+    text : function()
+    {
+        return this._text;
+    },
+
+    /**
+     * @return {boolean}
+     */
+    isHighlighted: function()
+    {
+        return this._isHighlighted;
+    },
+
+    __proto__: WebInspector.WikiParser.ArticleElement.prototype
+}
+
+/**
+ * @constructor
+ * @extends {WebInspector.WikiParser.ArticleElement}
+ * @param {!Array.<!WebInspector.WikiParser.ArticleElement>} children
+ * @param {boolean} hasBullet
+ */
+WebInspector.WikiParser.Block = function(children, hasBullet)
+{
+    WebInspector.WikiParser.ArticleElement.call(this, WebInspector.WikiParser.ArticleElement.Type.Block);
+    this._children = children;
+    this._hasBullet = hasBullet
+}
+
+WebInspector.WikiParser.Block.prototype = {
+    /**
+     * @return {!Array.<!WebInspector.WikiParser.ArticleElement>}
+     */
+    children: function()
+    {
+        return this._children;
+    },
+
+    /**
+     * @return {boolean}
+     */
+    hasBullet: function()
+    {
+        return this._hasBullet;
+    },
+
+    __proto__: WebInspector.WikiParser.ArticleElement.prototype
+}
+
+/**
+ * @constructor
+ * @extends {WebInspector.WikiParser.ArticleElement}
+ * @param {string} text
+ */
+WebInspector.WikiParser.CodeBlock = function(text)
+{
+    WebInspector.WikiParser.ArticleElement.call(this, WebInspector.WikiParser.ArticleElement.Type.CodeBlock);
+    this._code = text;
+}
+
+WebInspector.WikiParser.CodeBlock.prototype = {
+    /**
+     * @return {string}
+     */
+    code: function()
+    {
+        return this._code;
+    },
+
+    __proto__: WebInspector.WikiParser.ArticleElement.prototype
+}
+
+/**
+ * @constructor
+ * @extends {WebInspector.WikiParser.ArticleElement}
+ * @param {!WebInspector.WikiParser.ArticleElement.Type} type
+ * @param {!Array.<!WebInspector.WikiParser.ArticleElement>} children
+ */
+WebInspector.WikiParser.Inline = function(type, children)
+{
+    WebInspector.WikiParser.ArticleElement.call(this, type)
+    this._children = children;
+}
+
+WebInspector.WikiParser.Inline.prototype = {
+    /**
+     * @return {!Array.<!WebInspector.WikiParser.ArticleElement>}
+     */
+    children: function()
+    {
+        return this._children;
+    },
+
+    __proto__: WebInspector.WikiParser.ArticleElement.prototype
+}
+
+/**
+ * @constructor
+ * @extends {WebInspector.WikiParser.Inline}
+ * @param {string} url
+ * @param {!Array.<!WebInspector.WikiParser.ArticleElement>} children
+ */
+WebInspector.WikiParser.Link = function(url, children)
+{
+    WebInspector.WikiParser.Inline.call(this, WebInspector.WikiParser.ArticleElement.Type.Link, children);
+    this._url = url;
+}
+
+WebInspector.WikiParser.Link.prototype = {
+    /**
+     * @return {string}
+     */
+    url : function()
+    {
+        return this._url;
+    },
+
+    __proto__: WebInspector.WikiParser.Inline.prototype
 }

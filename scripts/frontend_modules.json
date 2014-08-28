@@ -471,7 +471,6 @@
         "name": "documentation",
         "dependencies": ["common", "ui", "components", "source_frame"],
         "sources": [
-            "documentation/CSSArticle.js",
             "documentation/DocumentationURLProvider.js",
             "documentation/DocumentationView.js",
             "documentation/JSArticle.js",

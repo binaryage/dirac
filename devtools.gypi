@@ -333,7 +333,6 @@
             'front_end/devices/DevicesView.js',
         ],
         'devtools_documentation_js_files': [
-            'front_end/documentation/CSSArticle.js',
             'front_end/documentation/DocumentationURLProvider.js',
             'front_end/documentation/DocumentationView.js',
             'front_end/documentation/JSArticle.js',
