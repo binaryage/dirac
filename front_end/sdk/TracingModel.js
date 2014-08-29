@@ -190,7 +190,6 @@ WebInspector.TracingModel.prototype = {
 
     _tracingStarted: function()
     {
-        // FIXME(398787): remove once Tracing.started event is sent from browser.
         if (this._active)
             return;
         this.reset();
@@ -702,10 +701,5 @@ WebInspector.TracingDispatcher.prototype = {
     started: function()
     {
         this._tracingModel._tracingStarted();
-    },
-
-    stopped: function()
-    {
-        this._tracingModel._onStop();
     }
 }
