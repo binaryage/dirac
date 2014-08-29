@@ -27,6 +27,7 @@ WebInspector.Target = function(name, connection, callback)
     /** @type {!Object.<string, boolean>} */
     this._capabilities = {};
     this.pageAgent().canScreencast(this._initializeCapability.bind(this, WebInspector.Target.Capabilities.CanScreencast, null));
+    this.pageAgent().canEmulate(this._initializeCapability.bind(this, WebInspector.Target.Capabilities.CanEmulate, null));
     if (WebInspector.experimentsSettings.timelinePowerProfiler.isEnabled())
         this.powerAgent().canProfilePower(this._initializeCapability.bind(this, WebInspector.Target.Capabilities.CanProfilePower, null));
     this.workerAgent().canInspectWorkers(this._initializeCapability.bind(this, WebInspector.Target.Capabilities.CanInspectWorkers, this._loadedWithCapabilities.bind(this, callback)));
@@ -41,7 +42,8 @@ WebInspector.Target.Capabilities = {
     CanScreencast: "CanScreencast",
     HasTouchInputs: "HasTouchInputs",
     CanProfilePower: "CanProfilePower",
-    CanInspectWorkers: "CanInspectWorkers"
+    CanInspectWorkers: "CanInspectWorkers",
+    CanEmulate: "CanEmulate"
 }
 
 WebInspector.Target._nextId = 1;
@@ -199,10 +201,9 @@ WebInspector.Target.prototype = {
     /**
      * @return {boolean}
      */
-    isMobile: function()
+    canEmulate: function()
     {
-        // FIXME: either add a separate capability or rename CanScreencast to IsMobile.
-        return this.hasCapability(WebInspector.Target.Capabilities.CanScreencast);
+        return this.hasCapability(WebInspector.Target.Capabilities.CanEmulate);
     },
 
     _onDisconnect: function()

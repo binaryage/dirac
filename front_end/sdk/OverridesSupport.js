@@ -283,7 +283,7 @@ WebInspector.OverridesSupport.prototype = {
      */
     canEmulate: function()
     {
-        return !!this._target && !this._target.isMobile();
+        return !!this._target && this._target.canEmulate();
     },
 
     /**
