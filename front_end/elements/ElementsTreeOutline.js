@@ -640,7 +640,7 @@ WebInspector.ElementsTreeOutline.prototype = {
         if (treeElement._node.nodeName() === "BODY" || treeElement._node.nodeName() === "HEAD")
             return false;
 
-        event.dataTransfer.setData("text/plain", treeElement.listItemElement.textContent);
+        event.dataTransfer.setData("text/plain", treeElement.listItemElement.textContent.replace(/\u200b/g, ""));
         event.dataTransfer.effectAllowed = "copyMove";
         this._treeElementBeingDragged = treeElement;
 
