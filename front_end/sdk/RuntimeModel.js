@@ -67,7 +67,7 @@ WebInspector.RuntimeModel.prototype = {
      */
     _executionContextCreated: function(context)
     {
-        var executionContext = new WebInspector.ExecutionContext(this.target(), context.id, context.name, context.isPageContext, context.frameId);
+        var executionContext = new WebInspector.ExecutionContext(this.target(), context.id, context.name, context.origin, context.isPageContext, context.frameId);
         this._executionContextById[executionContext.id] = executionContext;
         this.dispatchEventToListeners(WebInspector.RuntimeModel.Events.ExecutionContextCreated, executionContext);
     },
@@ -166,14 +166,16 @@ WebInspector.RuntimeDispatcher.prototype = {
  * @param {!WebInspector.Target} target
  * @param {number|undefined} id
  * @param {string} name
+ * @param {string} origin
  * @param {boolean} isPageContext
  * @param {string=} frameId
  */
-WebInspector.ExecutionContext = function(target, id, name, isPageContext, frameId)
+WebInspector.ExecutionContext = function(target, id, name, origin, isPageContext, frameId)
 {
     WebInspector.SDKObject.call(this, target);
     this.id = id;
-    this.name = (isPageContext && !name) ? "<page context>" : name;
+    this.name = name;
+    this.origin = origin;
     this.isMainWorldContext = isPageContext;
     this._debuggerModel = target.debuggerModel;
     this.frameId = frameId;

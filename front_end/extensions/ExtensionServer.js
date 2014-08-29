@@ -962,7 +962,7 @@ WebInspector.ExtensionServer.prototype = {
             if (contextSecurityOrigin) {
                 for (var i = 0; i < executionContexts.length; ++i) {
                     var executionContext = executionContexts[i];
-                    if (executionContext.frameId === frame.id && executionContext.name === contextSecurityOrigin && !executionContext.isMainWorldContext)
+                    if (executionContext.frameId === frame.id && executionContext.origin === contextSecurityOrigin && !executionContext.isMainWorldContext)
                         context = executionContext;
 
                 }

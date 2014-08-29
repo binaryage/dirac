@@ -820,6 +820,7 @@
                 "properties": [
                     { "name": "id", "$ref": "ExecutionContextId", "description": "Unique id of the execution context. It can be used to specify in which execution context script evaluation should be performed." },
                     { "name": "isPageContext", "type": "boolean", "description": "True if this is a context where inpspected web page scripts run. False if it is a content script isolated context.", "hidden": true },
+                    { "name": "origin", "type": "string", "description": "Execution context origin.", "hidden": true},
                     { "name": "name", "type": "string", "description": "Human readable name describing given context.", "hidden": true},
                     { "name": "frameId", "$ref": "Page.FrameId", "description": "Id of the owning frame." }
                 ]

@@ -281,12 +281,12 @@ WebInspector.ConsoleView.prototype = {
         if (executionContext.isMainWorldContext) {
             if (executionContext.frameId) {
                 var frame = executionContext.target().resourceTreeModel.frameForId(executionContext.frameId);
-                result =  frame ? frame.displayName() : executionContext.name;
+                result =  frame ? frame.displayName() : (executionContext.origin || executionContext.name);
             } else {
-                result = WebInspector.displayNameForURL(executionContext.name)
+                result = WebInspector.displayNameForURL(executionContext.origin) || executionContext.name;
             }
         } else
-            result = "\u00a0\u00a0\u00a0\u00a0" + executionContext.name;
+            result = "\u00a0\u00a0\u00a0\u00a0" + (executionContext.name || executionContext.origin);
 
         var maxLength = 50;
         return result.trimMiddle(maxLength);
