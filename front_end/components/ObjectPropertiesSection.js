@@ -776,6 +776,8 @@ WebInspector.ScopeTreeElement.prototype = {
 WebInspector.ArrayGroupingTreeElement = function(object, fromIndex, toIndex, propertyCount)
 {
     TreeElement.call(this, String.sprintf("[%d \u2026 %d]", fromIndex, toIndex), undefined, true);
+    this.toggleOnClick = true;
+    this.selectable = false;
     this._fromIndex = fromIndex;
     this._toIndex = toIndex;
     this._object = object;
