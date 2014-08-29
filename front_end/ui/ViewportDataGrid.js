@@ -142,7 +142,9 @@ WebInspector.ViewportDataGrid.prototype = {
         var tBody = this.dataTableBody;
         var offset = viewportState.offset;
         for (var i = 0; i < visibleNodes.length; ++i) {
-            var element = visibleNodes[i].element();
+            var node = visibleNodes[i];
+            var element = node.element();
+            node.willAttach();
             element.classList.toggle("odd", (offset + i) % 2 === 0);
             tBody.insertBefore(element, previousElement.nextSibling);
             previousElement = element;
@@ -261,11 +263,25 @@ WebInspector.ViewportDataGridNode.prototype = {
     },
 
     /**
+     * @protected
+     */
+    willAttach: function() { },
+
+    /**
+     * @protected
+     * @return {boolean}
+     */
+    attached: function()
+    {
+        return !!(this._element && this._element.parentElement);
+    },
+
+    /**
      * @override
      */
     refresh: function()
     {
-        if (this._element && this._element.parentElement) {
+        if (this.attached()) {
             this._stale = true;
             this.dataGrid.scheduleUpdate();
         } else {

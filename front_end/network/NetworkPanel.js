@@ -2498,6 +2498,7 @@ WebInspector.NetworkDataGridNode = function(parentView, request)
     this._linkifier = new WebInspector.Linkifier();
     this._isFilteredOut = true;
     this._isMatchingSearchQuery = false;
+    this._staleGraph = true;
 }
 
 WebInspector.NetworkDataGridNode.prototype = {
@@ -2526,7 +2527,7 @@ WebInspector.NetworkDataGridNode.prototype = {
         this._element.classList.toggle("network-error-row", this._isFailed());
         WebInspector.SortableDataGridNode.prototype.createCells.call(this);
 
-        this.refreshGraph();
+        this._updateGraph();
     },
 
     /**
@@ -2564,6 +2565,16 @@ WebInspector.NetworkDataGridNode.prototype = {
     _arrayLength: function(array)
     {
         return array ? "" + array.length : "";
+    },
+
+    /**
+     * @override
+     * @protected
+     */
+    willAttach: function()
+    {
+        if (this._staleGraph)
+            this._updateGraph();
     },
 
     wasDetached: function()
@@ -2818,9 +2829,14 @@ WebInspector.NetworkDataGridNode.prototype = {
 
     refreshGraph: function()
     {
-        if (!this._timelineCell)
-            return;
+        this._staleGraph = true;
+        if (this.attached())
+            this.dataGrid.scheduleUpdate();
+    },
 
+    _updateGraph: function()
+    {
+        this._staleGraph = false;
         var calculator = this._parentView.calculator();
         var percentages = calculator.computeBarGraphPercentages(this._request);
         this._percentages = percentages;
