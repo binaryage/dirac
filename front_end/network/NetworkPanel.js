@@ -204,6 +204,7 @@ WebInspector.NetworkLogView.prototype = {
         this.element.id = "network-container";
 
         this._createSortingFunctions();
+        this._createCalculators();
         this._createTable();
         this._createTimelineGrid();
         this._summaryBarElement = this.element.createChild("div", "network-summary-bar");
@@ -213,8 +214,6 @@ WebInspector.NetworkLogView.prototype = {
         this._popoverHelper = new WebInspector.PopoverHelper(this.element, this._getPopoverAnchor.bind(this), this._showPopover.bind(this), this._onHidePopover.bind(this));
         // Enable faster hint.
         this._popoverHelper.setTimeout(100);
-
-        this._setCalculator(new WebInspector.NetworkTransferTimeCalculator());
 
         this.switchViewMode(true);
     },
@@ -479,17 +478,25 @@ WebInspector.NetworkLogView.prototype = {
         this._sortingFunctions.responseTime = WebInspector.NetworkDataGridNode.RequestPropertyComparator.bind(null, "responseReceivedTime", false);
         this._sortingFunctions.duration = WebInspector.NetworkDataGridNode.RequestPropertyComparator.bind(null, "duration", true);
         this._sortingFunctions.latency = WebInspector.NetworkDataGridNode.RequestPropertyComparator.bind(null, "latency", true);
+    },
 
-        var timeCalculator = new WebInspector.NetworkTransferTimeCalculator();
-        var durationCalculator = new WebInspector.NetworkTransferDurationCalculator();
+    _createCalculators: function()
+    {
+        /** @type {!WebInspector.NetworkTransferTimeCalculator} */
+        this._timeCalculator = new WebInspector.NetworkTransferTimeCalculator();
+        /** @type {!WebInspector.NetworkTransferDurationCalculator} */
+        this._durationCalculator = new WebInspector.NetworkTransferDurationCalculator();
 
+        /** @type {!Object.<string, !WebInspector.NetworkTimeCalculator>} */
         this._calculators = {};
-        this._calculators.timeline = timeCalculator;
-        this._calculators.startTime = timeCalculator;
-        this._calculators.endTime = timeCalculator;
-        this._calculators.responseTime = timeCalculator;
-        this._calculators.duration = durationCalculator;
-        this._calculators.latency = durationCalculator;
+        this._calculators.timeline = this._timeCalculator;
+        this._calculators.startTime = this._timeCalculator;
+        this._calculators.endTime = this._timeCalculator;
+        this._calculators.responseTime = this._timeCalculator;
+        this._calculators.duration = this._durationCalculator;
+        this._calculators.latency = this._durationCalculator;
+
+        this._calculator = this._timeCalculator;
     },
 
     _sortItems: function()
@@ -524,15 +531,10 @@ WebInspector.NetworkLogView.prototype = {
         var selectedOption = this._timelineSortSelector[selectedIndex];
         var value = selectedOption.value;
 
+        this._setCalculator(this._calculators[value]);
         var sortingFunction = this._sortingFunctions[value];
         this._dataGrid.sortNodes(sortingFunction);
         this._highlightNthMatchedRequestForSearch(this._updateMatchCountAndFindMatchIndex(this._currentMatchedRequestNode), false);
-        var calculator = this._calculators[value];
-        this._setCalculator(calculator);
-        if (calculator.startAtZero)
-            this._timelineGrid.hideEventDividers();
-        else
-            this._timelineGrid.showEventDividers();
         this._dataGrid.markColumnAsSortedBy("timeline", WebInspector.DataGrid.Order.Ascending);
     },
 
@@ -695,6 +697,11 @@ WebInspector.NetworkLogView.prototype = {
         this._calculator = x;
         this._calculator.reset();
 
+        if (this._calculator.startAtZero)
+            this._timelineGrid.hideEventDividers();
+        else
+            this._timelineGrid.showEventDividers();
+
         this._invalidateAllItems();
         this.refresh();
     },
@@ -804,7 +811,7 @@ WebInspector.NetworkLogView.prototype = {
             this._updateDividersIfNeeded();
             var nodes = this._nodesByRequestId.values();
             for (var i = 0; i < nodes.length; ++i)
-                nodes[i].refreshGraph(calculator);
+                nodes[i].refreshGraph();
         }
 
         this._staleRequestIds = {};
@@ -2519,7 +2526,7 @@ WebInspector.NetworkDataGridNode.prototype = {
         this._element.classList.toggle("network-error-row", this._isFailed());
         WebInspector.SortableDataGridNode.prototype.createCells.call(this);
 
-        this.refreshGraph(this._parentView.calculator());
+        this.refreshGraph();
     },
 
     /**
@@ -2809,14 +2816,12 @@ WebInspector.NetworkDataGridNode.prototype = {
         cellElement.appendChild(subtitleElement);
     },
 
-    /**
-     * @param {!WebInspector.NetworkTimeCalculator} calculator
-     */
-    refreshGraph: function(calculator)
+    refreshGraph: function()
     {
         if (!this._timelineCell)
             return;
 
+        var calculator = this._parentView.calculator();
         var percentages = calculator.computeBarGraphPercentages(this._request);
         this._percentages = percentages;
 
