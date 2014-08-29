@@ -196,12 +196,16 @@ WebInspector.ConsoleViewMessage.prototype = {
         }
 
         if (consoleMessage.source !== WebInspector.ConsoleMessage.MessageSource.Network || consoleMessage.request) {
-            var useBlackboxing = (consoleMessage.source === WebInspector.ConsoleMessage.MessageSource.ConsoleAPI);
-            var callFrame = this._callFrameAnchorFromStackTrace(consoleMessage.stackTrace, useBlackboxing);
-            if (callFrame)
-                this._anchorElement = this._linkifyCallFrame(callFrame);
-            else if (consoleMessage.url && consoleMessage.url !== "undefined")
-                this._anchorElement = this._linkifyLocation(consoleMessage.url, consoleMessage.line, consoleMessage.column);
+            if (consoleMessage.scriptId) {
+                this._anchorElement = this._linkifyScriptId(consoleMessage.scriptId, consoleMessage.url, consoleMessage.line, consoleMessage.column);
+            } else {
+                var useBlackboxing = (consoleMessage.source === WebInspector.ConsoleMessage.MessageSource.ConsoleAPI);
+                var callFrame = this._callFrameAnchorFromStackTrace(consoleMessage.stackTrace, useBlackboxing);
+                if (callFrame)
+                    this._anchorElement = this._linkifyCallFrame(callFrame);
+                else if (consoleMessage.url && consoleMessage.url !== "undefined")
+                    this._anchorElement = this._linkifyLocation(consoleMessage.url, consoleMessage.line, consoleMessage.column);
+            }
         }
 
         this._formattedMessage.appendChild(this._messageElement);
@@ -282,6 +286,25 @@ WebInspector.ConsoleViewMessage.prototype = {
             return null;
 
         return this._linkifier.linkifyConsoleCallFrame(target, callFrame, "console-message-url");
+    },
+
+    /**
+     * @param {string} scriptId
+     * @param {string} url
+     * @param {number} lineNumber
+     * @param {number} columnNumber
+     * @return {?Element}
+     */
+    _linkifyScriptId: function(scriptId, url, lineNumber, columnNumber)
+    {
+        console.assert(this._linkifier);
+        var target = this._target();
+        if (!this._linkifier || !target)
+            return null;
+        // FIXME(62725): stack trace line/column numbers are one-based.
+        lineNumber = lineNumber ? lineNumber - 1 : 0;
+        columnNumber = columnNumber ? columnNumber - 1 : 0;
+        return this._linkifier.linkifyScriptLocation(target, scriptId, url, lineNumber, columnNumber, "console-message-url");
     },
 
     /**

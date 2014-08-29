@@ -951,6 +951,7 @@
                     { "name": "level", "type": "string", "enum": ["log", "warning", "error", "debug", "info"], "description": "Message severity." },
                     { "name": "text", "type": "string", "description": "Message text." },
                     { "name": "type", "type": "string", "optional": true, "enum": ["log", "dir", "dirxml", "table", "trace", "clear", "startGroup", "startGroupCollapsed", "endGroup", "assert", "profile", "profileEnd"], "description": "Console message type." },
+                    { "name": "scriptId", "type": "string", "optional": true, "description": "Script ID of the message origin." },
                     { "name": "url", "type": "string", "optional": true, "description": "URL of the message origin." },
                     { "name": "line", "type": "integer", "optional": true, "description": "Line number in the resource that generated this message." },
                     { "name": "column", "type": "integer", "optional": true, "description": "Column number in the resource that generated this message." },
