@@ -51,8 +51,8 @@ WebInspector.KeyboardShortcut.Modifiers = {
     },
     get ShiftOrOption()
     {
-        // Shift on Mac, Alt on other platforms
-        return WebInspector.isMac() ? this.Shift : this.Alt;
+        // Option on Mac, Shift on other platforms
+        return WebInspector.isMac() ? this.Alt : this.Shift;
     }
 };
 
