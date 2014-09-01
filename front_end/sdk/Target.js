@@ -14,8 +14,6 @@
 WebInspector.Target = function(name, connection, callback)
 {
     Protocol.Agents.call(this, connection.agentsMap());
-    /** @type {!WeakReference.<!WebInspector.Target>} */
-    this._weakReference = new WeakReference(this);
     this._name = name;
     this._connection = connection;
     connection.addEventListener(InspectorBackendClass.Connection.Events.Disconnected, this._onDisconnect, this);
@@ -65,14 +63,6 @@ WebInspector.Target.prototype = {
     name: function()
     {
         return this._name;
-    },
-
-    /**
-     * @return {!WeakReference.<!WebInspector.Target>}
-     */
-    weakReference: function()
-    {
-       return this._weakReference;
     },
 
     /**
@@ -214,7 +204,6 @@ WebInspector.Target.prototype = {
 
     _dispose: function()
     {
-        this._weakReference.clear();
         this.debuggerModel.dispose();
         this.networkManager.dispose();
         this.cpuProfilerModel.dispose();

@@ -76,11 +76,11 @@ WebInspector.HeapSnapshotView = function(dataDisplayDelegate, profile)
     if (profile._hasAllocationStacks) {
         this._allocationView = new WebInspector.VBox();
         this._allocationView.setMinimumSize(50, 25);
-        this._allocationDataGrid = new WebInspector.AllocationDataGrid(profile.weakTarget() , dataDisplayDelegate);
+        this._allocationDataGrid = new WebInspector.AllocationDataGrid(profile.target() , dataDisplayDelegate);
         this._allocationDataGrid.addEventListener(WebInspector.DataGrid.Events.SelectedNode, this._onSelectAllocationNode, this);
         this._allocationDataGrid.show(this._allocationView.element);
 
-        this._allocationStackView = new WebInspector.HeapAllocationStackView(profile.weakTarget());
+        this._allocationStackView = new WebInspector.HeapAllocationStackView(profile.target());
         this._allocationStackView.setMinimumSize(50, 25);
 
         this._tabbedPane = new WebInspector.TabbedPane();
@@ -2132,12 +2132,12 @@ WebInspector.HeapSnapshotStatisticsView.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.View}
- * @param {!WeakReference.<!WebInspector.Target>} weakTarget
+ * @param {?WebInspector.Target} target
  */
-WebInspector.HeapAllocationStackView = function(weakTarget)
+WebInspector.HeapAllocationStackView = function(target)
 {
     WebInspector.View.call(this);
-    this._weakTarget = weakTarget;;
+    this._target = target;;
     this._linkifier = new WebInspector.Linkifier();
 }
 
@@ -2176,7 +2176,7 @@ WebInspector.HeapAllocationStackView.prototype = {
             var name = frameDiv.createChild("div");
             name.textContent = frame.functionName;
             if (frame.scriptId) {
-                var urlElement = this._linkifier.linkifyScriptLocation(this._weakTarget.get(), String(frame.scriptId), frame.scriptName, frame.line - 1, frame.column - 1);
+                var urlElement = this._linkifier.linkifyScriptLocation(this._target, String(frame.scriptId), frame.scriptName, frame.line - 1, frame.column - 1);
                 frameDiv.appendChild(urlElement);
             }
         }

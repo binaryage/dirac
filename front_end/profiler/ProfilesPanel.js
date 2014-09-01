@@ -224,7 +224,6 @@ WebInspector.ProfileType.prototype = {
     },
 
     /**
-     * @nosideeffects
      * @return {?WebInspector.ProfileHeader}
      */
     profileBeingRecorded: function()
@@ -304,7 +303,7 @@ WebInspector.ProfileType.DataDisplayDelegate.prototype = {
  */
 WebInspector.ProfileHeader = function(target, profileType, title)
 {
-    this._weakTarget = target ? target.weakReference() : new WeakReference(null);
+    this._target = target;
     this._profileType = profileType;
     this.title = title;
     this.uid = profileType._nextProfileUid++;
@@ -335,15 +334,7 @@ WebInspector.ProfileHeader.prototype = {
      */
     target: function()
     {
-        return this._weakTarget.get();
-    },
-
-    /**
-     * @return {!WeakReference.<!WebInspector.Target>}
-     */
-    weakTarget: function()
-    {
-        return this._weakTarget;
+        return this._target;
     },
 
     /**

@@ -360,7 +360,7 @@ WebInspector.CPUProfileView.prototype = {
     {
         if (this._flameChart)
             return;
-        this._dataProvider = new WebInspector.CPUFlameChartDataProvider(this.profile, this._profileHeader.weakTarget());
+        this._dataProvider = new WebInspector.CPUFlameChartDataProvider(this.profile, this._profileHeader.target());
         this._flameChart = new WebInspector.CPUProfileFlameChart(this._dataProvider);
         this._flameChart.addEventListener(WebInspector.FlameChart.Events.EntrySelected, this._onEntrySelected.bind(this));
     },
