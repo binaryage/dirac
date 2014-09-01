@@ -937,7 +937,6 @@ WebInspector.EditableSettingsList.prototype = {
         {
             if (itemId === this._editingId)
                 return;
-            event.consume();
             console.assert(!this._editingId);
             this._editingId = validItemId;
             var listItem = this.itemForId(validItemId);
