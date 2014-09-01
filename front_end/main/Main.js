@@ -197,7 +197,7 @@ WebInspector.Main.prototype = {
         if (WebInspector.experimentsSettings.documentation.isEnabled())
             configuration.push("documentation");
         if (WebInspector.isWorkerFrontend())
-            configuration = ["main", "sources", "timeline", "profiler", "console", "source_frame", "extensions"];
+            configuration = ["main", "network", "sources", "timeline", "profiler", "resources", "console", "source_frame", "extensions", "settings"];
         self.runtime.registerModules(configuration);
     },
 
@@ -346,8 +346,10 @@ WebInspector.Main.prototype = {
 
         InspectorBackend.registerInspectorDispatcher(this);
 
-        if (WebInspector.isWorkerFrontend())
+        if (WebInspector.isWorkerFrontend()) {
+            mainTarget.runtimeAgent().run();
             mainTarget.workerManager.addEventListener(WebInspector.WorkerManager.Events.WorkerDisconnected, onWorkerDisconnected);
+        }
 
         function onWorkerDisconnected()
         {
