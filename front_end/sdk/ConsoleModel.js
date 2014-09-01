@@ -195,10 +195,14 @@ WebInspector.ConsoleMessage = function(target, source, level, messageText, type,
     this.level = level;
     this.messageText = messageText;
     this.type = type || WebInspector.ConsoleMessage.MessageType.Log;
-    this.url = url || null;
+    /** @type {string|undefined} */
+    this.url = url || undefined;
+    /** @type {number} */
     this.line = line || 0;
+    /** @type {number} */
     this.column = column || 0;
     this.parameters = parameters;
+    /** @type {!Array.<!ConsoleAgent.CallFrame>|undefined} */
     this.stackTrace = stackTrace;
     this.timestamp = timestamp || Date.now();
     this.isOutdated = isOutdated;
@@ -209,11 +213,14 @@ WebInspector.ConsoleMessage = function(target, source, level, messageText, type,
     this.request = requestId ? target.networkLog.requestForId(requestId) : null;
 
     if (this.request) {
-        this.stackTrace = this.request.initiator.stackTrace;
-        this.asyncStackTrace = this.request.initiator.asyncStackTrace;
-        if (this.request.initiator && this.request.initiator.url) {
-            this.url = this.request.initiator.url;
-            this.line = this.request.initiator.lineNumber;
+        var initiator = this.request.initiator();
+        if (initiator) {
+            this.stackTrace = initiator.stackTrace || undefined;
+            this.asyncStackTrace = initiator.asyncStackTrace;
+            if (initiator.url) {
+                this.url = initiator.url;
+                this.line = initiator.lineNumber || 0;
+            }
         }
     }
 }

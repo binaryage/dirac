@@ -38,8 +38,9 @@
  * @param {string} documentURL
  * @param {!PageAgent.FrameId} frameId
  * @param {!NetworkAgent.LoaderId} loaderId
+ * @param {?NetworkAgent.Initiator} initiator
  */
-WebInspector.NetworkRequest = function(target, requestId, url, documentURL, frameId, loaderId)
+WebInspector.NetworkRequest = function(target, requestId, url, documentURL, frameId, loaderId, initiator)
 {
     WebInspector.SDKObject.call(this, target);
 
@@ -48,6 +49,8 @@ WebInspector.NetworkRequest = function(target, requestId, url, documentURL, fram
     this._documentURL = documentURL;
     this._frameId = frameId;
     this._loaderId = loaderId;
+    /** @type {?NetworkAgent.Initiator} */
+    this._initiator = initiator;
     this._startTime = -1;
     this._endTime = -1;
 
@@ -933,6 +936,14 @@ WebInspector.NetworkRequest.prototype = {
     },
 
     /**
+     * @return {?NetworkAgent.Initiator}
+     */
+    initiator: function()
+    {
+        return this._initiator;
+    },
+
+    /**
      * @return {!{type: !WebInspector.NetworkRequest.InitiatorType, url: string, lineNumber: number, columnNumber: number}}
      */
     initiatorInfo: function()
@@ -944,17 +955,18 @@ WebInspector.NetworkRequest.prototype = {
         var url = "";
         var lineNumber = -Infinity;
         var columnNumber = -Infinity;
+        var initiator = this._initiator;
 
         if (this.redirectSource) {
             type = WebInspector.NetworkRequest.InitiatorType.Redirect;
             url = this.redirectSource.url;
-        } else if (this.initiator) {
-            if (this.initiator.type === NetworkAgent.InitiatorType.Parser) {
+        } else if (initiator) {
+            if (initiator.type === NetworkAgent.InitiatorType.Parser) {
                 type = WebInspector.NetworkRequest.InitiatorType.Parser;
-                url = this.initiator.url;
-                lineNumber = this.initiator.lineNumber;
-            } else if (this.initiator.type === NetworkAgent.InitiatorType.Script) {
-                var topFrame = this.initiator.stackTrace[0];
+                url = initiator.url ? initiator.url : url;
+                lineNumber = initiator.lineNumber ? initiator.lineNumber : lineNumber;
+            } else if (initiator.type === NetworkAgent.InitiatorType.Script) {
+                var topFrame = initiator.stackTrace[0];
                 if (topFrame.url) {
                     type = WebInspector.NetworkRequest.InitiatorType.Script;
                     url = topFrame.url;

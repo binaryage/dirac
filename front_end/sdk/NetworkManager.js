@@ -384,7 +384,8 @@ WebInspector.NetworkDispatcher.prototype = {
      */
     webSocketCreated: function(requestId, requestURL)
     {
-        var networkRequest = new WebInspector.NetworkRequest(this._manager._target, requestId, requestURL, "", "", "");
+        // FIXME: WebSocket MUST have initiator info.
+        var networkRequest = new WebInspector.NetworkRequest(this._manager._target, requestId, requestURL, "", "", "", null);
         networkRequest.type = WebInspector.resourceTypes.WebSocket;
         this._startNetworkRequest(networkRequest);
     },
@@ -510,7 +511,7 @@ WebInspector.NetworkDispatcher.prototype = {
             originalNetworkRequest.redirectSource = previousRedirects[previousRedirects.length - 1];
         this._finishNetworkRequest(originalNetworkRequest, time, -1);
         var newNetworkRequest = this._createNetworkRequest(requestId, originalNetworkRequest.frameId, originalNetworkRequest.loaderId,
-             redirectURL, originalNetworkRequest.documentURL, originalNetworkRequest.initiator);
+             redirectURL, originalNetworkRequest.documentURL, originalNetworkRequest.initiator());
         newNetworkRequest.redirects = previousRedirects.concat(originalNetworkRequest);
         return newNetworkRequest;
     },
@@ -564,12 +565,10 @@ WebInspector.NetworkDispatcher.prototype = {
      * @param {!NetworkAgent.LoaderId} loaderId
      * @param {string} url
      * @param {string} documentURL
-     * @param {!NetworkAgent.Initiator} initiator
+     * @param {?NetworkAgent.Initiator} initiator
      */
     _createNetworkRequest: function(requestId, frameId, loaderId, url, documentURL, initiator)
     {
-        var networkRequest = new WebInspector.NetworkRequest(this._manager._target, requestId, url, documentURL, frameId, loaderId);
-        networkRequest.initiator = initiator;
-        return networkRequest;
+        return new WebInspector.NetworkRequest(this._manager._target, requestId, url, documentURL, frameId, loaderId, initiator);
     }
 }

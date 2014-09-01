@@ -197,7 +197,7 @@ WebInspector.ConsoleViewMessage.prototype = {
 
         if (consoleMessage.source !== WebInspector.ConsoleMessage.MessageSource.Network || consoleMessage.request) {
             if (consoleMessage.scriptId) {
-                this._anchorElement = this._linkifyScriptId(consoleMessage.scriptId, consoleMessage.url, consoleMessage.line, consoleMessage.column);
+                this._anchorElement = this._linkifyScriptId(consoleMessage.scriptId, consoleMessage.url || "", consoleMessage.line, consoleMessage.column);
             } else {
                 var useBlackboxing = (consoleMessage.source === WebInspector.ConsoleMessage.MessageSource.ConsoleAPI);
                 var callFrame = this._callFrameAnchorFromStackTrace(consoleMessage.stackTrace, useBlackboxing);
@@ -308,7 +308,7 @@ WebInspector.ConsoleViewMessage.prototype = {
     },
 
     /**
-     * @param {?Array.<!ConsoleAgent.CallFrame>} stackTrace
+     * @param {?Array.<!ConsoleAgent.CallFrame>|undefined} stackTrace
      * @param {boolean} useBlackboxing
      * @return {?ConsoleAgent.CallFrame}
      */

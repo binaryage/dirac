@@ -1022,8 +1022,12 @@ WebInspector.NetworkLogView.prototype = {
         if (anchor && anchor.parentElement.request && anchor.parentElement.request.timing)
             return anchor;
         anchor = element.enclosingNodeOrSelfWithClass("network-script-initiated");
-        if (anchor && anchor.request && anchor.request.initiator)
-            return anchor;
+        if (anchor && anchor.request) {
+            var request = /** @type {!WebInspector.NetworkRequest} */ (anchor.request);
+            var initiator = anchor.request.initiator();
+            if (initiator && (initiator.stackTrace || initiator.asyncStackTrace))
+                return anchor;
+        }
     },
 
     /**
@@ -1069,9 +1073,12 @@ WebInspector.NetworkLogView.prototype = {
             }
         }
 
-        appendStackTrace.call(this, request.initiator.stackTrace);
+        // Initiator is not null, checked in _getPopoverAnchor.
+        var initiator = /** @type {!NetworkAgent.Initiator} */ (request.initiator());
+        if (initiator.stackTrace)
+            appendStackTrace.call(this, initiator.stackTrace);
 
-        var asyncStackTrace = request.initiator.asyncStackTrace;
+        var asyncStackTrace = initiator.asyncStackTrace;
         while (asyncStackTrace) {
             var callFrames = asyncStackTrace.callFrames;
             if (!callFrames || !callFrames.length)
