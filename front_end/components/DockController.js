@@ -68,7 +68,7 @@ WebInspector.DockController.prototype = {
         if (!this._canDock)
             return;
 
-        this._states = [WebInspector.DockController.State.DockedToBottom, WebInspector.DockController.State.Undocked, WebInspector.DockController.State.DockedToRight];
+        this._states = [WebInspector.DockController.State.DockedToRight, WebInspector.DockController.State.DockedToBottom, WebInspector.DockController.State.Undocked];
         this._titles = [WebInspector.UIString("Dock to main window."), WebInspector.UIString("Undock into separate window."), WebInspector.UIString("Dock to main window.")];
         if (WebInspector.experimentsSettings.dockToLeft.isEnabled()) {
             this._states.push(WebInspector.DockController.State.DockedToLeft);
