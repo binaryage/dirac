@@ -918,7 +918,7 @@ WebInspector.SourcesPanel.prototype = {
         if (!currentExecutionContext)
             return;
 
-        currentExecutionContext.evaluate("window", "", false, true, false, false, didGetGlobalObject.bind(null, currentExecutionContext.target()));
+        currentExecutionContext.evaluate("this", "", false, true, false, false, didGetGlobalObject.bind(null, currentExecutionContext.target()));
         /**
          * @param {!WebInspector.Target} target
          * @param {?WebInspector.RemoteObject} global
