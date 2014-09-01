@@ -135,28 +135,44 @@ WebInspector.ConsoleView = function()
 
     this._registerWithMessageSink();
     WebInspector.targetManager.observeTargets(this);
-    WebInspector.multitargetConsoleModel.addEventListener(WebInspector.ConsoleModel.Events.ConsoleCleared, this._consoleCleared, this);
-    WebInspector.multitargetConsoleModel.addEventListener(WebInspector.ConsoleModel.Events.MessageAdded, this._onConsoleMessageAdded, this);
-    WebInspector.multitargetConsoleModel.addEventListener(WebInspector.ConsoleModel.Events.CommandEvaluated, this._commandEvaluated, this);
     WebInspector.targetManager.addModelListener(WebInspector.RuntimeModel, WebInspector.RuntimeModel.Events.ExecutionContextCreated, this._onExecutionContextCreated, this);
     WebInspector.targetManager.addModelListener(WebInspector.RuntimeModel, WebInspector.RuntimeModel.Events.ExecutionContextDestroyed, this._onExecutionContextDestroyed, this);
-
-    /**
-     * @param {!WebInspector.ConsoleMessage} message
-     * @this {WebInspector.ConsoleView}
-     */
-    function appendMessage(message)
-    {
-         var viewMessage = this._createViewMessage(message);
-         this._consoleMessageAdded(viewMessage);
-    }
-
-    WebInspector.multitargetConsoleModel.messages().forEach(appendMessage, this);
+    this._initConsoleMessages();
 
     WebInspector.context.addFlavorChangeListener(WebInspector.ExecutionContext, this._executionContextChangedExternally, this);
 }
 
 WebInspector.ConsoleView.prototype = {
+    _initConsoleMessages: function()
+    {
+        var mainTarget = WebInspector.targetManager.mainTarget();
+        if (!mainTarget || !mainTarget.resourceTreeModel.cachedResourcesLoaded()) {
+            WebInspector.targetManager.addModelListener(WebInspector.ResourceTreeModel, WebInspector.ResourceTreeModel.EventTypes.CachedResourcesLoaded, this._onResourceTreeModelLoaded, this);
+            return;
+        }
+        this._fetchMultitargetMessages();
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _onResourceTreeModelLoaded: function(event)
+    {
+        var resourceTreeModel = event.target;
+        if (resourceTreeModel.target() !== WebInspector.targetManager.mainTarget())
+            return;
+        WebInspector.targetManager.removeModelListener(WebInspector.ResourceTreeModel, WebInspector.ResourceTreeModel.EventTypes.CachedResourcesLoaded, this._onResourceTreeModelLoaded, this);
+        this._fetchMultitargetMessages();
+    },
+
+    _fetchMultitargetMessages: function()
+    {
+        WebInspector.multitargetConsoleModel.addEventListener(WebInspector.ConsoleModel.Events.ConsoleCleared, this._consoleCleared, this);
+        WebInspector.multitargetConsoleModel.addEventListener(WebInspector.ConsoleModel.Events.MessageAdded, this._onConsoleMessageAdded, this);
+        WebInspector.multitargetConsoleModel.addEventListener(WebInspector.ConsoleModel.Events.CommandEvaluated, this._commandEvaluated, this);
+        WebInspector.multitargetConsoleModel.messages().forEach(this._addConsoleMessage, this);
+    },
+
     /**
      * @return {number}
      */

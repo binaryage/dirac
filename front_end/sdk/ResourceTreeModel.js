@@ -98,8 +98,8 @@ WebInspector.ResourceTreeModel.prototype = {
         this._inspectedPageURL = mainFramePayload.frame.url;
         this._addFramesRecursively(null, mainFramePayload);
         this._dispatchInspectedURLChanged();
-        this.dispatchEventToListeners(WebInspector.ResourceTreeModel.EventTypes.CachedResourcesLoaded);
         this._cachedResourcesProcessed = true;
+        this.dispatchEventToListeners(WebInspector.ResourceTreeModel.EventTypes.CachedResourcesLoaded);
     },
 
     /**
