@@ -2259,7 +2259,6 @@ WebInspector.ElementsTreeElement.prototype = {
          */
         function setValueWithEntities(element, value)
         {
-            var attrValueElement = element.createChild("span", "webkit-html-attribute-value");
             result = this._convertWhitespaceToEntities(value);
             highlightCount = result.entityRanges.length;
             value = result.text.replace(closingPunctuationRegex, replacer);
@@ -2267,8 +2266,8 @@ WebInspector.ElementsTreeElement.prototype = {
                 result.entityRanges[highlightIndex].offset += additionalHighlightOffset;
                 ++highlightIndex;
             }
-            attrValueElement.textContent = value;
-            WebInspector.highlightRangesWithStyleClass(attrValueElement, result.entityRanges, "webkit-html-entity-value");
+            element.textContent = value;
+            WebInspector.highlightRangesWithStyleClass(element, result.entityRanges, "webkit-html-entity-value");
         }
 
         var hasText = (forceValue || value.length > 0);
@@ -2279,22 +2278,47 @@ WebInspector.ElementsTreeElement.prototype = {
         if (hasText)
             attrSpanElement.appendChild(document.createTextNode("=\u200B\""));
 
-        if (linkify && (name === "src" || name === "href")) {
+        var attrValueElement = attrSpanElement.createChild("span", "webkit-html-attribute-value");
+
+        /**
+         * @this {WebInspector.ElementsTreeElement}
+         * @param {string} value
+         * @return {!Element}
+         */
+        function linkifyValue(value)
+        {
             var rewrittenHref = node.resolveURL(value);
             if (rewrittenHref === null) {
-                setValueWithEntities.call(this, attrSpanElement, value);
-            } else {
-                value = value.replace(closingPunctuationRegex, "$&\u200B");
-                if (value.startsWith("data:"))
-                    value = value.trimMiddle(60);
-                attrSpanElement.appendChild(linkify(rewrittenHref, value, "webkit-html-attribute-value", node.nodeName().toLowerCase() === "a"));
+                var span = document.createElement("span");
+                setValueWithEntities.call(this, span, value);
+                return span;
+            }
+            value = value.replace(closingPunctuationRegex, "$&\u200B");
+            if (value.startsWith("data:"))
+                value = value.trimMiddle(60);
+            return linkify(rewrittenHref, value, "", node.nodeName().toLowerCase() === "a");
+        }
+
+        if (linkify && (name === "src" || name === "href")) {
+            attrValueElement.appendChild(linkifyValue.call(this, value));
+        } else if (linkify && node.nodeName().toLowerCase() === "img" && name === "srcset") {
+            var sources = value.split(",");
+            for (var i = 0; i < sources.length; ++i) {
+                if (i > 0)
+                    attrValueElement.createTextChild(", ");
+                var source = sources[i].trim();
+                var indexOfSpace = source.indexOf(" ");
+                var url = source.substring(0, indexOfSpace);
+                var tail = source.substring(indexOfSpace);
+                attrValueElement.appendChild(linkifyValue.call(this, url));
+                attrValueElement.createTextChild(tail);
             }
         } else {
-            setValueWithEntities.call(this, attrSpanElement, value);
+            setValueWithEntities.call(this, attrValueElement, value);
         }
 
         if (hasText)
-            attrSpanElement.appendChild(document.createTextNode("\""));
+            attrSpanElement.createTextChild("\"");
     },
 
     /**
