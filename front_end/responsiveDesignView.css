@@ -113,7 +113,7 @@
     background: linear-gradient(to bottom, rgb(64, 64, 64), rgb(58, 58, 58));
     color: rgb(255, 255, 255);
     overflow: hidden;
-    border-bottom: 1px solid rgb(104, 104, 104);
+    border-bottom: 1px solid rgb(71, 71, 71);
 }
 
 .responsive-design-separator {
@@ -130,7 +130,7 @@
     white-space: nowrap;
     align-items: stretch;
     justify-content: flex-start;
-    padding: 0 10px;
+    padding: 4px 11px 0px 11px;
 }
 
 .responsive-design-section .status-bar-item .glyph.shadow {
@@ -158,7 +158,7 @@
     flex: none;
     width: 1px;
     background-color: rgb(43, 43, 43);
-    margin: 0 3px;
+    margin: 0 6px;
 }
 
 .responsive-design-suite > div:not(.responsive-design-suite-separator) {
@@ -247,11 +247,6 @@
     line-height: 16px;
 }
 
-body.platform-mac .responsive-design-toolbar select {
-    position: relative;
-    top: 1px;
-}
-
 .responsive-design-toolbar input:focus {
     background-color: rgb(81, 81, 81);
 }
@@ -269,7 +264,7 @@ body.platform-mac .responsive-design-toolbar select {
     width: 16px;
     height: 16px;
     position: relative;
-    top: 4px;
+    top: 3px;
 }
 
 .responsive-design-icon.status-bar-item:disabled .glyph {
@@ -310,6 +305,10 @@ body.platform-mac .responsive-design-toolbar select {
     border: 0;
 }
 
+.responsive-design-icon-swap {
+    margin-left: 1px;
+}
+
 .responsive-design-icon-swap.status-bar-item:hover > .glyph {
     background-color: rgb(255, 180, 0);
 }
@@ -321,7 +320,7 @@ body.platform-mac .responsive-design-toolbar select {
 /* Buttons section */
 
 .responsive-design-section-buttons {
-    padding: 0;
+    padding: 4px 0 0 0;
 }
 
 .responsive-design-section-buttons .status-bar-item {
@@ -391,6 +390,7 @@ body.platform-mac .responsive-design-toolbar select {
 .responsive-design-section-network input[type='text'] {
     width: 222px;
     margin-left: 5px;
+    text-overflow: ellipsis;
 }
 
 .responsive-design-section-network input[type='text'],
@@ -407,7 +407,7 @@ body.platform-mac .responsive-design-toolbar select {
 
 .responsive-design-warning {
     background-color: rgb(252, 234, 156);
-    color: #222;
+    color: rgb(34,34,34);
     position: absolute;
     left: 0;
     right: 0;
@@ -482,10 +482,15 @@ body.platform-mac .responsive-design-toolbar select {
     top: 0px;
     bottom: 0px;
     white-space: nowrap;
+    border-radius: 2px;
 }
 
 .media-inspector-marker-inactive {
     -webkit-filter: brightness(75%);
+}
+
+.media-inspector-marker-inactive:hover {
+    -webkit-filter: brightness(100%);
 }
 
 .media-inspector-marker-container:hover {
@@ -497,19 +502,21 @@ body.platform-mac .responsive-design-toolbar select {
 }
 
 .media-inspector-marker-container-max-width .media-inspector-marker {
-    background-color: rgba(111, 168, 220, 0.66);
-    border-right: 5px solid rgba(111, 168, 220, 0.86);
+    background: linear-gradient(to bottom, rgb(72,139,249), rgb(26,113,233));
+    border-right: 3px solid rgb(51,148,242);
+    border-radius: 0 2px 2px 0;
 }
 
 .media-inspector-marker-container-min-max-width .media-inspector-marker {
-    background-color: rgba(100, 200, 0, 0.66);
-    border-left: 5px solid rgba(100, 200, 0, 0.86);
-    border-right: 5px solid rgba(100, 200, 0, 0.86);
+    background: linear-gradient(to bottom, rgb(102,186,11), rgb(4,166,0));
+    border-left: 3px solid rgb(109,219,85);
+    border-right: 3px solid rgb(109,219,85);
 }
 
 .media-inspector-marker-container-min-width .media-inspector-marker {
-    background-color: rgba(225, 124, 0, 0.66);
-    border-left: 5px solid rgba(225, 124, 0, 0.86);
+    background: linear-gradient(to bottom, rgb(222,129,30), rgb(204,104,31));
+    border-left: 3px solid rgb(243,170,42);
+    border-radius: 2px 0 0 2px;
 }
 
 .media-inspector-marker-container:not(.media-inspector-marker-container-max-width) .media-inspector-max-label-filler,
