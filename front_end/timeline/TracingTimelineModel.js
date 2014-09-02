@@ -12,7 +12,6 @@ WebInspector.TracingTimelineModel = function(tracingModel, recordFilter)
 {
     WebInspector.TimelineModel.call(this);
     this._tracingModel = tracingModel;
-    this._inspectedTargetEvents = [];
     this._recordFilter = recordFilter;
     this._tracingModel.addEventListener(WebInspector.TracingModel.Events.TracingStarted, this._onTracingStarted, this);
     this._tracingModel.addEventListener(WebInspector.TracingModel.Events.TracingComplete, this._onTracingComplete, this);
@@ -108,6 +107,8 @@ WebInspector.TracingTimelineModel.VirtualThread = function(name)
     this.name = name;
     /** @type {!Array.<!WebInspector.TracingModel.Event>} */
     this.events = [];
+    /** @type {!Array.<!Array.<!WebInspector.TracingModel.Event>>} */
+    this.asyncEvents = [];
 }
 
 WebInspector.TracingTimelineModel.prototype = {
@@ -291,6 +292,14 @@ WebInspector.TracingTimelineModel.prototype = {
     },
 
     /**
+     * @return {!Array.<!Array.<!WebInspector.TracingModel.Event>>}
+     */
+    mainThreadAsyncEvents: function()
+    {
+        return this._mainThreadAsyncEvents;
+    },
+
+    /**
      * @return {!Array.<!WebInspector.TracingTimelineModel.VirtualThread>}
      */
     virtualThreads: function()
@@ -322,6 +331,7 @@ WebInspector.TracingTimelineModel.prototype = {
     {
         this._virtualThreads = [];
         this._mainThreadEvents = [];
+        this._mainThreadAsyncEvents = [];
         this._inspectedTargetEvents = [];
         WebInspector.TimelineModel.prototype.reset.call(this);
     },
@@ -334,12 +344,38 @@ WebInspector.TracingTimelineModel.prototype = {
             var event = mainThreadEvents[i];
             while (recordStack.length) {
                 var top = recordStack.peekLast();
-                if (top._event.endTime >= event.startTime)
+                // When we've got a not-yet-complete async event at the top of the stack,
+                // see if we can close it by a matching end event. If this doesn't happen
+                // before end of top-level event (presumably, a "Program"), pretend the
+                // async event never happened.
+                if (!top._event.endTime) {
+                    if (event.phase !== WebInspector.TracingModel.Phase.AsyncEnd && recordStack[0]._event.endTime >= event.startTime)
+                        break;
+                    if (event.phase === WebInspector.TracingModel.Phase.AsyncEnd) {
+                        if (top._event.name === event.name) {
+                            top.setEndTime(event.startTime);
+                            recordStack.pop();
+                        }
+                        break;
+                    }
+                    // Delete incomple async record from parent and adopt its children.
+                    recordStack.pop();
+                    var nextTop = recordStack.peekLast();
+                    var parentChildren = nextTop.children();
+                    var children = top.children();
+                    for (var j = 0; j < children.length; ++j)
+                        children[j].parent = nextTop;
+                    parentChildren.splice.apply(parentChildren, [parentChildren.indexOf(top), 1].concat(children));
+                    continue;
+                } else if (top._event.endTime >= event.startTime) {
                     break;
+                }
                 recordStack.pop();
                 if (!recordStack.length)
                     this._addTopLevelRecord(top);
             }
+            if (event.phase === WebInspector.TracingModel.Phase.AsyncEnd)
+                continue;
             var record = new WebInspector.TracingTimelineModel.TraceEventRecord(this, event);
             if (WebInspector.TracingTimelineUIUtils.isMarkerEvent(event))
                 this._eventDividerRecords.push(record);
@@ -348,7 +384,7 @@ WebInspector.TracingTimelineModel.prototype = {
             var parentRecord = recordStack.peekLast();
             if (parentRecord)
                 parentRecord._addChild(record);
-            if (event.endTime)
+            if (event.endTime || (event.phase === WebInspector.TracingModel.Phase.AsyncBegin && parentRecord))
                 recordStack.push(record);
         }
         if (recordStack.length)
@@ -399,9 +435,11 @@ WebInspector.TracingTimelineModel.prototype = {
         var threadEvents;
         if (thread === mainThread) {
             threadEvents = this._mainThreadEvents;
+            this._mainThreadAsyncEvents = this._mainThreadAsyncEvents.concat(thread.asyncEvents());
         } else {
             var virtualThread = new WebInspector.TracingTimelineModel.VirtualThread(thread.name());
             threadEvents = virtualThread.events;
+            virtualThread.asyncEvents = virtualThread.asyncEvents.concat(thread.asyncEvents());
             this._virtualThreads.push(virtualThread);
         }
 
@@ -649,7 +687,7 @@ WebInspector.TracingTimelineModel.InclusiveEventNameFilter.prototype = {
      */
     accept: function(event)
     {
-        return !!this._eventNames[event.name];
+        return event.category === WebInspector.TracingModel.ConsoleEventCategory || !!this._eventNames[event.name];
     },
     __proto__: WebInspector.TracingTimelineModel.EventNameFilter.prototype
 }
@@ -756,7 +794,7 @@ WebInspector.TracingTimelineModel.TraceEventRecord.prototype = {
      */
     endTime: function()
     {
-        return this._event.endTime || this._event.startTime;
+        return this._endTime || this._event.endTime || this._event.startTime;
     },
 
     /**
@@ -764,7 +802,7 @@ WebInspector.TracingTimelineModel.TraceEventRecord.prototype = {
      */
     setEndTime: function(endTime)
     {
-        throw new Error("Unsupported operation setEndTime");
+        this._endTime = endTime;
     },
 
     /**

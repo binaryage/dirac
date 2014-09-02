@@ -79,6 +79,16 @@ WebInspector.TracingModel.DevToolsMetadataEvent = {
     TracingStartedInWorker: "TracingStartedInWorker",
 };
 
+/**
+ * @param {string} phase
+ * @return {boolean}
+ */
+WebInspector.TracingModel.isAsyncPhase = function(phase)
+{
+    return phase === WebInspector.TracingModel.Phase.AsyncBegin || phase === WebInspector.TracingModel.Phase.AsyncEnd ||
+        phase === WebInspector.TracingModel.Phase.AsyncStepInto || phase === WebInspector.TracingModel.Phase.AsyncStepPast;
+}
+
 WebInspector.TracingModel.prototype = {
     /**
      * @param {!WebInspector.Target} target
@@ -185,6 +195,8 @@ WebInspector.TracingModel.prototype = {
     {
         this._processMetadataEvents();
         this._active = false;
+        for (var process in this._processById)
+            this._processById[process]._tracingComplete(this._maximumRecordTime);
         this.dispatchEventToListeners(WebInspector.TracingModel.Events.TracingComplete);
     },
 
@@ -235,18 +247,15 @@ WebInspector.TracingModel.prototype = {
             process = new WebInspector.TracingModel.Process(payload.pid);
             this._processById[payload.pid] = process;
         }
-        var thread = process.threadById(payload.tid);
         if (payload.ph !== WebInspector.TracingModel.Phase.Metadata) {
             var timestamp = payload.ts / 1000;
             // We do allow records for unrelated threads to arrive out-of-order,
             // so there's a chance we're getting records from the past.
             if (timestamp && (!this._minimumRecordTime || timestamp < this._minimumRecordTime))
                 this._minimumRecordTime = timestamp;
-            if (!this._maximumRecordTime || timestamp > this._maximumRecordTime)
-                this._maximumRecordTime = timestamp;
-            var event = thread.addEvent(payload);
-            if (payload.ph === WebInspector.TracingModel.Phase.SnapshotObject)
-                process.addObject(event);
+            var endTimeStamp = (payload.ts + (payload.dur || 0)) / 1000;
+            this._maximumRecordTime = Math.max(this._maximumRecordTime, endTimeStamp);
+            var event = process._addEvent(payload);
             if (event && event.name === WebInspector.TracingModel.DevToolsMetadataEvent.TracingStartedInPage &&
                 event.category === WebInspector.TracingModel.DevToolsMetadataEventCategory) {
                 this._devtoolsPageMetadataEvents.push(event);
@@ -265,10 +274,10 @@ WebInspector.TracingModel.prototype = {
             process._setName(payload.args["name"]);
             break;
         case WebInspector.TracingModel.MetadataEvent.ThreadSortIndex:
-            thread._setSortIndex(payload.args["sort_index"]);
+            process.threadById(payload.tid)._setSortIndex(payload.args["sort_index"]);
             break;
         case WebInspector.TracingModel.MetadataEvent.ThreadName:
-            thread._setName(payload.args["name"]);
+            process.threadById(payload.tid)._setName(payload.args["name"]);
             break;
         }
     },
@@ -373,6 +382,7 @@ WebInspector.TracingModel.Event = function(category, name, phase, startTime, thr
     this.phase = phase;
     this.startTime = startTime;
     this.thread = thread;
+    this.args = {};
 
     /** @type {?string} */
     this.warning = null;
@@ -401,6 +411,8 @@ WebInspector.TracingModel.Event.fromPayload = function(payload, thread)
     var event = new WebInspector.TracingModel.Event(payload.cat, payload.name, payload.ph, payload.ts / 1000, thread);
     if (payload.args)
         event.addArgs(payload.args);
+    else
+        console.error("Missing mandatory event argument 'args' at " + payload.ts / 1000);
     if (typeof payload.dur === "number")
         event.setEndTime((payload.ts + payload.dur) / 1000);
     if (payload.id)
@@ -427,8 +439,7 @@ WebInspector.TracingModel.Event.prototype = {
      */
     addArgs: function(args)
     {
-        // Create a new object to avoid modifying original payload which may be saved to file.
-        this.args = this.args || {};
+        // Shallow copy args to avoid modifying original payload which may be saved to file.
         for (var name in args) {
             if (name in this.args)
                 console.error("Same argument name (" + name +  ") is used for begin and end phases of " + this.name);
@@ -441,12 +452,10 @@ WebInspector.TracingModel.Event.prototype = {
      */
     _complete: function(payload)
     {
-        if (this.name !== payload.name) {
-            console.assert(false, "Open/close event mismatch: " + this.name + " vs. " + payload.name + " at " + (payload.ts / 1000));
-            return;
-        }
         if (payload.args)
             this.addArgs(payload.args);
+        else
+            console.error("Missing mandatory event argument 'args' at " + payload.ts / 1000);
         this.setEndTime(payload.ts / 1000);
     }
 }
@@ -535,6 +544,10 @@ WebInspector.TracingModel.Process = function(id)
     this._setName("Process " + id);
     this._threads = {};
     this._objects = {};
+    /** @type {!Array.<!WebInspector.TracingModel.EventPayload>} */
+    this._asyncEvents = [];
+    /** @type {!Object.<string, ?Array.<!WebInspector.TracingModel.Event>>} */
+    this._openAsyncEvents = [];
 }
 
 WebInspector.TracingModel.Process.prototype = {
@@ -553,11 +566,89 @@ WebInspector.TracingModel.Process.prototype = {
     },
 
     /**
-     * @param {!WebInspector.TracingModel.Event} event
+     * @param {!WebInspector.TracingModel.EventPayload} payload
+     * @return {?WebInspector.TracingModel.Event} event
      */
-    addObject: function(event)
+    _addEvent: function(payload)
     {
-        this.objectsByName(event.name).push(event);
+        var phase = WebInspector.TracingModel.Phase;
+        // Build async event when we've got events from all threads, so we can sort them and process in the chronological order.
+        // However, also add individual async events to the thread flow, so we can easily display them on the same chart as
+        // other events, should we choose so.
+        if (WebInspector.TracingModel.isAsyncPhase(payload.ph))
+            this._asyncEvents.push(payload);
+
+        var event = this.threadById(payload.tid)._addEvent(payload);
+        if (event && payload.ph === phase.SnapshotObject)
+            this.objectsByName(event.name).push(event);
+        return event;
+    },
+
+    /**
+     * @param {!number} lastEventTime
+     */
+    _tracingComplete: function(lastEventTime)
+    {
+        /**
+         * @param {!WebInspector.TracingModel.EventPayload} a
+         * @param {!WebInspector.TracingModel.EventPayload} b
+         */
+        function comparePayloadTimestamp(a, b)
+        {
+            return a.ts - b.ts;
+        }
+        this._asyncEvents.sort(comparePayloadTimestamp).forEach(this._addAsyncEvent, this);
+        for (var key in this._openAsyncEvents) {
+            var steps = this._openAsyncEvents[key];
+            if (!steps)
+                continue;
+            var startEvent = steps[0];
+            var syntheticEndEvent = new WebInspector.TracingModel.Event(startEvent.category, startEvent.name, WebInspector.TracingModel.Phase.AsyncEnd, lastEventTime, startEvent.thread);
+            steps.push(syntheticEndEvent);
+        }
+        this._asyncEvents = [];
+        this._openAsyncEvents = [];
+    },
+
+    /**
+     * @param {!WebInspector.TracingModel.EventPayload} payload
+     */
+    _addAsyncEvent: function(payload)
+    {
+        var phase = WebInspector.TracingModel.Phase;
+        var timestamp = payload.ts / 1000;
+        var key = payload.name + "." + payload.id;
+        var steps = this._openAsyncEvents[key];
+
+        var thread = this.threadById(payload.tid);
+        if (payload.ph === phase.AsyncBegin) {
+            if (steps) {
+                console.error("Event " + key + " at " + timestamp + " was already started at " + steps[0].startTime);
+                return;
+            }
+            steps = [WebInspector.TracingModel.Event.fromPayload(payload, thread)];
+            this._openAsyncEvents[key] = steps;
+            thread._addAsyncEventSteps(steps);
+            return;
+        }
+        if (!steps) {
+            console.error("Unexpected async event, phase " + payload.ph + " at " + timestamp);
+            return;
+        }
+        var newEvent = WebInspector.TracingModel.Event.fromPayload(payload, thread);
+        if (payload.ph === phase.AsyncEnd) {
+            steps.push(newEvent);
+            delete this._openAsyncEvents[key];
+        } else if (payload.ph === phase.AsyncStepInto || payload.ph === phase.AsyncStepPast) {
+            var lastPhase = steps.peekLast().phase;
+            if (lastPhase !== phase.AsyncBegin && lastPhase !== payload.ph) {
+                console.assert(false, "Async event step phase mismatch: " + lastPhase + " at " + steps.peekLast().startTime + " vs. " + payload.ph + " at " + timestamp);
+                return;
+            }
+            steps.push(newEvent);
+        } else {
+            console.assert(false, "Invalid async event phase");
+        }
     },
 
     /**
@@ -605,6 +696,8 @@ WebInspector.TracingModel.Thread = function(process, id)
     this._process = process;
     this._setName("Thread " + id);
     this._events = [];
+    this._asyncEvents = [];
+
     this._stack = [];
 }
 
@@ -623,7 +716,7 @@ WebInspector.TracingModel.Thread.prototype = {
      * @param {!WebInspector.TracingModel.EventPayload} payload
      * @return {?WebInspector.TracingModel.Event} event
      */
-    addEvent: function(payload)
+    _addEvent: function(payload)
     {
         var timestamp = payload.ts / 1000;
         if (payload.ph === WebInspector.TracingModel.Phase.End) {
@@ -647,6 +740,14 @@ WebInspector.TracingModel.Thread.prototype = {
     },
 
     /**
+     * @param {!Array.<!WebInspector.TracingModel.Event>} eventSteps
+     */
+    _addAsyncEventSteps: function(eventSteps)
+    {
+        this._asyncEvents.push(eventSteps);
+    },
+
+    /**
      * @return {!WebInspector.TracingModel.Process}
      */
     process: function()
@@ -660,6 +761,14 @@ WebInspector.TracingModel.Thread.prototype = {
     events: function()
     {
         return this._events;
+    },
+
+    /**
+     * @return {!Array.<!WebInspector.TracingModel.Event>}
+     */
+    asyncEvents: function()
+    {
+        return this._asyncEvents;
     },
 
     __proto__: WebInspector.TracingModel.NamedObject.prototype

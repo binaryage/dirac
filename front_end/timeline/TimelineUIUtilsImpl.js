@@ -230,7 +230,7 @@ WebInspector.TimelineUIUtils._initRecordStyles = function()
     recordStyles[recordTypes.MarkDOMContent] = { title: WebInspector.UIString("DOMContentLoaded event"), category: categories["scripting"] };
     recordStyles[recordTypes.MarkLoad] = { title: WebInspector.UIString("Load event"), category: categories["scripting"] };
     recordStyles[recordTypes.MarkFirstPaint] = { title: WebInspector.UIString("First paint"), category: categories["painting"] };
-    recordStyles[recordTypes.TimeStamp] = { title: WebInspector.UIString("Stamp"), category: categories["scripting"] };
+    recordStyles[recordTypes.TimeStamp] = { title: WebInspector.UIString("Timestamp"), category: categories["scripting"] };
     recordStyles[recordTypes.ConsoleTime] = { title: WebInspector.UIString("Console Time"), category: categories["scripting"] };
     recordStyles[recordTypes.RequestAnimationFrame] = { title: WebInspector.UIString("Request Animation Frame"), category: categories["scripting"] };
     recordStyles[recordTypes.CancelAnimationFrame] = { title: WebInspector.UIString("Cancel Animation Frame"), category: categories["scripting"] };
@@ -271,11 +271,11 @@ WebInspector.TimelineUIUtilsImpl.recordStyle = function(record)
 WebInspector.TimelineUIUtilsImpl._recordTitle = function(record)
 {
     var recordData = record.data();
-    if (record.type() === WebInspector.TimelineModel.RecordType.TimeStamp)
-        return recordData["message"];
+    var title = WebInspector.TimelineUIUtilsImpl.recordStyle(record).title;
+    if (record.type() === WebInspector.TimelineModel.RecordType.TimeStamp || record.type() === WebInspector.TimelineModel.RecordType.ConsoleTime)
+        return WebInspector.UIString("%s: %s", title, recordData["message"]);
     if (record.type() === WebInspector.TimelineModel.RecordType.JSFrame)
         return recordData["functionName"];
-    var title = WebInspector.TimelineUIUtilsImpl.recordStyle(record).title;
     if (WebInspector.TimelineUIUtilsImpl.isEventDivider(record)) {
         var startTime = Number.millisToString(record.startTime() - record._model.minimumRecordTime());
         return WebInspector.UIString("%s at %s", title, startTime);

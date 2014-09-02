@@ -82,7 +82,7 @@ WebInspector.TracingTimelineUIUtils.prototype = {
      */
     categoryForRecord: function(record)
     {
-        return WebInspector.TracingTimelineUIUtils.styleForTraceEvent(record.traceEvent().name).category;
+        return WebInspector.TracingTimelineUIUtils.eventStyle(record.traceEvent()).category;
     },
 
     /**
@@ -135,7 +135,7 @@ WebInspector.TracingTimelineUIUtils.prototype = {
     testContentMatching: function(record, regExp)
     {
         var traceEvent = record.traceEvent();
-        var title = WebInspector.TracingTimelineUIUtils.styleForTraceEvent(traceEvent.name).title;
+        var title = WebInspector.TracingTimelineUIUtils.eventStyle(traceEvent).title;
         var tokens = [title];
         for (var argName in traceEvent.args) {
             var argValue = traceEvent.args[argName];
@@ -228,8 +228,8 @@ WebInspector.TracingTimelineUIUtils._initEventStyles = function()
     eventStyles[recordTypes.MarkLoad] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Load event"), categories["scripting"], true);
     eventStyles[recordTypes.MarkDOMContent] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("DOMContentLoaded event"), categories["scripting"], true);
     eventStyles[recordTypes.MarkFirstPaint] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("First paint"), categories["painting"], true);
-    eventStyles[recordTypes.TimeStamp] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Stamp"), categories["scripting"]);
-    eventStyles[recordTypes.ConsoleTime] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Console Time"), categories["scripting"], true);
+    eventStyles[recordTypes.TimeStamp] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Timestamp"), categories["scripting"]);
+    eventStyles[recordTypes.ConsoleTime] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Console Time"), categories["scripting"]);
     eventStyles[recordTypes.ResourceSendRequest] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Send Request"), categories["loading"]);
     eventStyles[recordTypes.ResourceReceiveResponse] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Receive Response"), categories["loading"]);
     eventStyles[recordTypes.ResourceFinish] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Finish Loading"), categories["loading"]);
@@ -264,20 +264,14 @@ WebInspector.TracingTimelineUIUtils._coalescableRecordTypes[WebInspector.Tracing
  */
 WebInspector.TracingTimelineUIUtils.eventStyle = function(event)
 {
-    return WebInspector.TracingTimelineUIUtils.styleForTraceEvent(event.name);
-}
-
-/**
- * @param {string} name
- * @return {!{title: string, category: !WebInspector.TimelineCategory}}
- */
-WebInspector.TracingTimelineUIUtils.styleForTraceEvent = function(name)
-{
     var eventStyles = WebInspector.TracingTimelineUIUtils._initEventStyles();
-    var result = eventStyles[name];
+    if (event.category === WebInspector.TracingModel.ConsoleEventCategory)
+        return { title: event.name, category: WebInspector.TimelineUIUtils.categories()["scripting"] };
+
+    var result = eventStyles[event.name];
     if (!result) {
-        result = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Unknown: %s", name),  WebInspector.TimelineUIUtils.categories()["other"]);
-        eventStyles[name] = result;
+        result = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Unknown: %s", event.name),  WebInspector.TimelineUIUtils.categories()["other"]);
+        eventStyles[event.name] = result;
     }
     return result;
 }
@@ -314,14 +308,11 @@ WebInspector.TracingTimelineUIUtils.markerEventColor = function(event)
  */
 WebInspector.TracingTimelineUIUtils.eventTitle = function(event, model)
 {
-    if (event.category === WebInspector.TracingModel.ConsoleEventCategory) {
-        var titleTemplate =  WebInspector.UIString(event.phase === WebInspector.TracingModel.Phase.AsyncBegin ? "Console Time: %s" : "Console Time End: %s");
-        return WebInspector.UIString(titleTemplate, event.name);
-    }
-
-    if (event.name === WebInspector.TracingTimelineModel.RecordType.TimeStamp)
-        return event.args["data"]["message"];
     var title = WebInspector.TracingTimelineUIUtils.eventStyle(event).title;
+    if (event.category === WebInspector.TracingModel.ConsoleEventCategory)
+        return title;
+    if (event.name === WebInspector.TracingTimelineModel.RecordType.TimeStamp)
+        return WebInspector.UIString("%s: %s", title, event.args["data"]["message"]);
     if (WebInspector.TracingTimelineUIUtils.isMarkerEvent(event)) {
         var startTime = Number.millisToString(event.startTime - model.minimumRecordTime());
         return WebInspector.UIString("%s at %s", title, startTime);
@@ -335,9 +326,6 @@ WebInspector.TracingTimelineUIUtils.eventTitle = function(event, model)
  */
 WebInspector.TracingTimelineUIUtils.isMarkerEvent = function(event)
 {
-    if (event.category === WebInspector.TracingModel.ConsoleEventCategory)
-        return true;
-
     var recordTypes = WebInspector.TracingTimelineModel.RecordType;
     switch (event.name) {
     case recordTypes.TimeStamp:
@@ -441,7 +429,7 @@ WebInspector.TracingTimelineUIUtils.buildDetailsNodeForTraceEvent = function(eve
 
     default:
         if (event.category === WebInspector.TracingModel.ConsoleEventCategory)
-            detailsText = event.name;
+            detailsText = null;
         else
             details = linkifyTopCallFrame();
         break;
@@ -544,7 +532,7 @@ WebInspector.TracingTimelineUIUtils._buildTraceEventDetailsSynchronously = funct
     var stats = {};
     var hasChildren = WebInspector.TracingTimelineUIUtils._aggregatedStatsForTraceEvent(stats, model, event);
     var pieChart = hasChildren ?
-        WebInspector.TimelineUIUtils.generatePieChart(stats, WebInspector.TracingTimelineUIUtils.styleForTraceEvent(event.name).category, event.selfTime) :
+        WebInspector.TimelineUIUtils.generatePieChart(stats, WebInspector.TracingTimelineUIUtils.eventStyle(event).category, event.selfTime) :
         WebInspector.TimelineUIUtils.generatePieChart(stats);
     fragment.appendChild(pieChart);
 
@@ -644,7 +632,7 @@ WebInspector.TracingTimelineUIUtils._buildTraceEventDetailsSynchronously = funct
         relatedNodeLabel = WebInspector.UIString("Layout root");
         break;
     case recordTypes.ConsoleTime:
-        contentHelper.appendTextRow(WebInspector.UIString("Message"), eventData["message"]);
+        contentHelper.appendTextRow(WebInspector.UIString("Message"), event.name);
         break;
     case recordTypes.WebSocketCreate:
     case recordTypes.WebSocketSendHandshakeRequest:
@@ -714,6 +702,8 @@ WebInspector.TracingTimelineUIUtils._aggregatedStatsForTraceEvent = function(tot
         return startTime - e.startTime;
     }
     var index = events.binaryIndexOf(event.startTime, eventComparator);
+    if (index < 0)
+        return false;
     var hasChildren = false;
     var endTime = event.endTime;
     if (endTime) {
@@ -727,8 +717,8 @@ WebInspector.TracingTimelineUIUtils._aggregatedStatsForTraceEvent = function(tot
                 continue;
             if (i > index)
                 hasChildren = true;
-            var category = WebInspector.TracingTimelineUIUtils.styleForTraceEvent(nextEvent.name).category.name;
-            total[category] = (total[category] || 0) + nextEvent.selfTime;
+            var categoryName = WebInspector.TracingTimelineUIUtils.eventStyle(nextEvent).category.name;
+            total[categoryName] = (total[categoryName] || 0) + nextEvent.selfTime;
         }
     }
     return hasChildren;

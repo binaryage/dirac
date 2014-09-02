@@ -993,7 +993,7 @@ WebInspector.TimelinePanel.prototype = {
      */
     _appendDetailsTabsForTraceEventAndShowDetails: function(event, content)
     {
-        var title = WebInspector.TracingTimelineUIUtils.styleForTraceEvent(event.name).title;
+        var title = WebInspector.TracingTimelineUIUtils.eventStyle(event).title;
         this.showInDetails(title, content);
         if (event.picture && WebInspector.experimentsSettings.paintProfiler.isEnabled()) {
             var paintProfilerView = this._paintProfilerView();
