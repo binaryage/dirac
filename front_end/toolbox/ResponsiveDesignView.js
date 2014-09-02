@@ -510,7 +510,6 @@ WebInspector.ResponsiveDesignView.prototype = {
     {
         this._toolbarElement = this._responsiveDesignContainer.element.createChild("div", "responsive-design-toolbar");
         this._createButtonsSection();
-        this._toolbarElement.createChild("div", "responsive-design-separator");
         this._createDeviceSection();
         this._toolbarElement.createChild("div", "responsive-design-separator");
         this._createNetworkSection();
@@ -544,15 +543,16 @@ WebInspector.ResponsiveDesignView.prototype = {
     {
         var deviceSection = this._toolbarElement.createChild("div", "responsive-design-section responsive-design-section-device");
 
+        var separator = deviceSection.createChild("div", "responsive-design-section-decorator");
+
         // Device.
         var deviceElement = deviceSection.createChild("div", "responsive-design-suite responsive-design-suite-top").createChild("div");
+
         var fieldsetElement = deviceElement.createChild("fieldset");
         fieldsetElement.createChild("label").textContent = WebInspector.UIString("Device");
         var deviceSelectElement = WebInspector.OverridesUI.createDeviceSelect(document);
         fieldsetElement.appendChild(deviceSelectElement);
         deviceSelectElement.classList.add("responsive-design-device-select");
-
-        var separator = deviceSection.createChild("div", "responsive-design-section-separator");
 
         var detailsElement = deviceSection.createChild("div", "responsive-design-suite");
 
@@ -600,14 +600,14 @@ WebInspector.ResponsiveDesignView.prototype = {
     {
         var networkSection = this._toolbarElement.createChild("div", "responsive-design-section responsive-design-section-network");
 
+        var separator = networkSection.createChild("div", "responsive-design-section-decorator");
+
         // Bandwidth.
         var bandwidthElement = networkSection.createChild("div", "responsive-design-suite responsive-design-suite-top").createChild("div");
         var fieldsetElement = bandwidthElement.createChild("fieldset");
         var networkCheckbox = fieldsetElement.createChild("label");
         networkCheckbox.textContent = WebInspector.UIString("Network");
         fieldsetElement.appendChild(WebInspector.OverridesUI.createNetworkConditionsSelect(document));
-
-        var separator = networkSection.createChild("div", "responsive-design-section-separator");
 
         // User agent.
         var userAgentElement = networkSection.createChild("div", "responsive-design-suite").createChild("div");

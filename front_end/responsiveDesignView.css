@@ -110,7 +110,7 @@
 .responsive-design-toolbar {
     display: flex;
     flex: none;
-    background: linear-gradient(to bottom, rgb(64, 64, 64), rgb(58, 58, 58));
+    background: linear-gradient(to bottom, rgb(83, 81, 81), rgb(59, 59, 59));
     color: rgb(255, 255, 255);
     overflow: hidden;
     border-bottom: 1px solid rgb(71, 71, 71);
@@ -118,9 +118,9 @@
 
 .responsive-design-separator {
     flex: none;
-    width: 2px;
-    background-color: rgb(43, 43, 43);
-    margin: 2px;
+    width: 3px;
+    background-color: rgb(46, 46, 46);
+    border-right: 1px solid rgb(75, 75, 75);
 }
 
 .responsive-design-section {
@@ -130,7 +130,7 @@
     white-space: nowrap;
     align-items: stretch;
     justify-content: flex-start;
-    padding: 4px 11px 0px 11px;
+    padding-top: 1px;
 }
 
 .responsive-design-section .status-bar-item .glyph.shadow {
@@ -138,15 +138,17 @@
 }
 
 
-.responsive-design-section-separator {
+.responsive-design-section-decorator {
     height: 2px;
+    margin-left: -2px;
+    margin-right: -1px;
+    position: relative;
 }
 
 .responsive-design-suite {
     display: flex;
     flex-direction: row;
-    padding-top: 2px;
-    padding-bottom: 2px;
+    padding: 2px 11px;
     color: rgb(180, 180, 180);
 }
 
@@ -241,7 +243,7 @@
 
 .responsive-design-toolbar select {
     height: 18px;
-    background-color: rgb(81, 81, 81);
+    background-color: rgb(87, 87, 87);
     border: 0;
     margin-left: 10px;
     line-height: 16px;
@@ -321,6 +323,8 @@
 
 .responsive-design-section-buttons {
     padding: 4px 0 0 0;
+    background: rgb(17, 17, 17);
+    border-right: 2px solid rgb(0, 0, 0);
 }
 
 .responsive-design-section-buttons .status-bar-item {
@@ -359,8 +363,9 @@
 
 /* Device section */
 
-.responsive-design-section-device .responsive-design-section-separator {
+.responsive-design-section-device .responsive-design-section-decorator {
     background: linear-gradient(to bottom, rgb(255, 186, 68), rgb(255, 119, 0));
+    margin-left: 0;
 }
 
 .responsive-design-section-device select {
@@ -399,7 +404,7 @@
     color: rgb(65, 175, 255);
 }
 
-.responsive-design-section-network .responsive-design-section-separator {
+.responsive-design-section-network .responsive-design-section-decorator {
     background: linear-gradient(to bottom, rgb(77, 170, 243), rgb(0, 130, 255));
 }
 
@@ -407,7 +412,7 @@
 
 .responsive-design-warning {
     background-color: rgb(252, 234, 156);
-    color: rgb(34,34,34);
+    color: rgb(34, 34, 34);
     position: absolute;
     left: 0;
     right: 0;
@@ -456,8 +461,9 @@
 .view.media-inspector-view {
     overflow-y: auto;
     overflow-x: hidden;
-    background-color: rgb(0, 0, 0);
+    background-color: rgb(43, 43, 43);
     max-height: 100px;
+    box-shadow: inset 0px 5px 7px rgba(0, 0, 0, 0.7);
 }
 
 .media-inspector-view:not(.media-inspector-view-empty) {
@@ -494,7 +500,7 @@
 }
 
 .media-inspector-marker-container:hover {
-    background-color: rgb(32, 32, 32);
+    background-color: rgb(74, 74, 74);
 }
 
 .media-inspector-marker-container:hover .media-inspector-marker {
@@ -502,20 +508,20 @@
 }
 
 .media-inspector-marker-container-max-width .media-inspector-marker {
-    background: linear-gradient(to bottom, rgb(72,139,249), rgb(26,113,233));
-    border-right: 3px solid rgb(51,148,242);
+    background: linear-gradient(to bottom, rgb(72, 139, 249), rgb(26, 113, 233));
+    border-right: 3px solid rgb(51, 148, 242);
     border-radius: 0 2px 2px 0;
 }
 
 .media-inspector-marker-container-min-max-width .media-inspector-marker {
-    background: linear-gradient(to bottom, rgb(102,186,11), rgb(4,166,0));
-    border-left: 3px solid rgb(109,219,85);
-    border-right: 3px solid rgb(109,219,85);
+    background: linear-gradient(to bottom, rgb(102, 186, 11), rgb(4, 166, 0));
+    border-left: 3px solid rgb(109, 219, 85);
+    border-right: 3px solid rgb(109, 219, 85);
 }
 
 .media-inspector-marker-container-min-width .media-inspector-marker {
-    background: linear-gradient(to bottom, rgb(222,129,30), rgb(204,104,31));
-    border-left: 3px solid rgb(243,170,42);
+    background: linear-gradient(to bottom, rgb(222, 129, 30), rgb(204, 104, 31));
+    border-left: 3px solid rgb(243, 170, 42);
     border-radius: 2px 0 0 2px;
 }
 
