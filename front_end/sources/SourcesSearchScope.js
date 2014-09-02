@@ -36,6 +36,25 @@ WebInspector.SourcesSearchScope = function()
     this._searchId = 0;
 }
 
+/**
+ * @param {!WebInspector.UISourceCode} uiSourceCode1
+ * @param {!WebInspector.UISourceCode} uiSourceCode2
+ * @return {number}
+ */
+WebInspector.SourcesSearchScope._filesComparator = function(uiSourceCode1, uiSourceCode2)
+{
+    if (uiSourceCode1.isDirty() && !uiSourceCode2.isDirty())
+        return -1;
+    if (!uiSourceCode1.isDirty() && uiSourceCode2.isDirty())
+        return 1;
+    if (uiSourceCode1.url && !uiSourceCode2.url)
+        return -1;
+    if (!uiSourceCode1.url && uiSourceCode2.url)
+        return 1;
+    return String.naturalOrderComparator(uiSourceCode1.fullDisplayName(), uiSourceCode2.fullDisplayName());
+}
+
+
 WebInspector.SourcesSearchScope.prototype = {
     /**
      * @param {!WebInspector.Progress} progress
@@ -97,6 +116,7 @@ WebInspector.SourcesSearchScope.prototype = {
     performSearch: function(searchConfig, progress, searchResultCallback, searchFinishedCallback)
     {
         this.stopSearch();
+        this._searchResultCandidates = [];
         this._searchResultCallback = searchResultCallback;
         this._searchFinishedCallback = searchFinishedCallback;
         this._searchConfig = searchConfig;
@@ -104,18 +124,18 @@ WebInspector.SourcesSearchScope.prototype = {
         var projects = this._projects();
         var barrier = new CallbackBarrier();
         var compositeProgress = new WebInspector.CompositeProgress(progress);
+        var searchContentProgress = compositeProgress.createSubProgress();
+        var findMatchingFilesProgress = new WebInspector.CompositeProgress(compositeProgress.createSubProgress());
         for (var i = 0; i < projects.length; ++i) {
             var project = projects[i];
             var weight = project.uiSourceCodes().length;
-            var projectProgress = new WebInspector.CompositeProgress(compositeProgress.createSubProgress(weight));
-            var findMatchingFilesProgress = projectProgress.createSubProgress();
-            var searchContentProgress = projectProgress.createSubProgress();
+            var findMatchingFilesInProjectProgress = findMatchingFilesProgress.createSubProgress(weight);
             var barrierCallback = barrier.createCallback();
             var filesMathingFileQuery = this._projectFilesMatchingFileQuery(project, searchConfig);
-            var callback = this._processMatchingFilesForProject.bind(this, this._searchId, project, filesMathingFileQuery, searchContentProgress, barrierCallback);
-            project.findFilesMatchingSearchRequest(searchConfig, filesMathingFileQuery, findMatchingFilesProgress, callback);
+            var callback = this._processMatchingFilesForProject.bind(this, this._searchId, project, filesMathingFileQuery, barrierCallback);
+            project.findFilesMatchingSearchRequest(searchConfig, filesMathingFileQuery, findMatchingFilesInProjectProgress, callback);
         }
-        barrier.callWhenDone(this._searchFinishedCallback.bind(this, true));
+        barrier.callWhenDone(this._processMatchingFiles.bind(this, this._searchId, searchContentProgress, this._searchFinishedCallback.bind(this, true)));
     },
 
     /**
@@ -135,7 +155,7 @@ WebInspector.SourcesSearchScope.prototype = {
             if (this._searchConfig.filePathMatchesFileQuery(uiSourceCode.fullDisplayName()))
                 result.push(uiSourceCode.path());
         }
-        result = result.sort(String.naturalOrderComparator);
+        result.sort(String.naturalOrderComparator);
         return result;
     },
 
@@ -143,22 +163,45 @@ WebInspector.SourcesSearchScope.prototype = {
      * @param {number} searchId
      * @param {!WebInspector.Project} project
      * @param {!Array.<string>} filesMathingFileQuery
-     * @param {!WebInspector.Progress} progress
      * @param {function()} callback
      * @param {!Array.<string>} files
      */
-    _processMatchingFilesForProject: function(searchId, project, filesMathingFileQuery, progress, callback, files)
+    _processMatchingFilesForProject: function(searchId, project, filesMathingFileQuery, callback, files)
     {
         if (searchId !== this._searchId) {
             this._searchFinishedCallback(false);
             return;
         }
 
-        files = files.sort(String.naturalOrderComparator);
+        files.sort(String.naturalOrderComparator);
         files = files.intersectOrdered(filesMathingFileQuery, String.naturalOrderComparator);
         var dirtyFiles = this._projectFilesMatchingFileQuery(project, this._searchConfig, true);
         files = files.mergeOrdered(dirtyFiles, String.naturalOrderComparator);
 
+        var uiSourceCodes = [];
+        for (var i = 0; i < files.length; ++i) {
+            var uiSourceCode = project.uiSourceCode(files[i]);
+            if (uiSourceCode)
+                uiSourceCodes.push(uiSourceCode);
+        }
+        uiSourceCodes.sort(WebInspector.SourcesSearchScope._filesComparator);
+        this._searchResultCandidates = this._searchResultCandidates.mergeOrdered(uiSourceCodes, WebInspector.SourcesSearchScope._filesComparator);
+        callback();
+    },
+
+    /**
+     * @param {number} searchId
+     * @param {!WebInspector.Progress} progress
+     * @param {function()} callback
+     */
+    _processMatchingFiles: function(searchId, progress, callback)
+    {
+        if (searchId !== this._searchId) {
+            this._searchFinishedCallback(false);
+            return;
+        }
+
+        var files = this._searchResultCandidates;
         if (!files.length) {
             progress.done();
             callback();
@@ -175,20 +218,13 @@ WebInspector.SourcesSearchScope.prototype = {
             scheduleSearchInNextFileOrFinish.call(this);
 
         /**
-         * @param {string} path
+         * @param {!WebInspector.UISourceCode} uiSourceCode
          * @this {WebInspector.SourcesSearchScope}
          */
-        function searchInNextFile(path)
+        function searchInNextFile(uiSourceCode)
         {
-            var uiSourceCode = project.uiSourceCode(path);
-            if (!uiSourceCode) {
-                --callbacksLeft;
-                progress.worked(1);
-                scheduleSearchInNextFileOrFinish.call(this);
-                return;
-            }
             if (uiSourceCode.isDirty())
-                contentLoaded.call(this, uiSourceCode.path(), uiSourceCode.workingCopy());
+                contentLoaded.call(this, uiSourceCode, uiSourceCode.workingCopy());
             else
                 uiSourceCode.checkContentUpdated(contentUpdated.bind(this, uiSourceCode));
         }
@@ -199,7 +235,7 @@ WebInspector.SourcesSearchScope.prototype = {
          */
         function contentUpdated(uiSourceCode)
         {
-            uiSourceCode.requestContent(contentLoaded.bind(this, uiSourceCode.path()));
+            uiSourceCode.requestContent(contentLoaded.bind(this, uiSourceCode));
         }
 
         /**
@@ -217,16 +253,16 @@ WebInspector.SourcesSearchScope.prototype = {
             }
 
             ++callbacksLeft;
-            var path = files[fileIndex++];
-            setTimeout(searchInNextFile.bind(this, path), 0);
+            var uiSourceCode = files[fileIndex++];
+            setTimeout(searchInNextFile.bind(this, uiSourceCode), 0);
         }
 
         /**
-         * @param {string} path
+         * @param {!WebInspector.UISourceCode} uiSourceCode
          * @param {?string} content
          * @this {WebInspector.SourcesSearchScope}
          */
-        function contentLoaded(path, content)
+        function contentLoaded(uiSourceCode, content)
         {
             /**
              * @param {!WebInspector.ContentProvider.SearchMatch} a
@@ -246,8 +282,7 @@ WebInspector.SourcesSearchScope.prototype = {
                     matches = matches.mergeOrdered(nextMatches, matchesComparator);
                 }
             }
-            var uiSourceCode = project.uiSourceCode(path);
-            if (matches && uiSourceCode) {
+            if (matches) {
                 var searchResult = new WebInspector.FileBasedSearchResult(uiSourceCode, matches);
                 this._searchResultCallback(searchResult);
             }
