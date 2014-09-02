@@ -30,6 +30,8 @@ WebInspector.ViewportDataGrid = function(columnsArray, editCallback, deleteCallb
     // Element that was hidden earlier, but hasn't been removed yet.
     /** @type {?Node} */
     this._hiddenWheelTarget = null;
+    /** @type {number} */
+    this._lastScrollTop = 0;
 
     this.setRootNode(new WebInspector.ViewportDataGridNode());
 }
@@ -56,7 +58,8 @@ WebInspector.ViewportDataGrid.prototype = {
      */
     _onScroll: function(event)
     {
-        this.scheduleUpdate();
+        if (this._lastScrollTop !== this._scrollContainer.scrollTop)
+            this.scheduleUpdate();
     },
 
     /**
@@ -81,11 +84,11 @@ WebInspector.ViewportDataGrid.prototype = {
     },
 
     /**
-     * @param {number} scrollHeight
+     * @param {number} clientHeight
      * @param {number} scrollTop
      * @return {{topPadding: number, bottomPadding: number, visibleNodes: !Array.<!WebInspector.ViewportDataGridNode>, offset: number}}
      */
-    _calculateVisibleNodes: function(scrollHeight, scrollTop)
+    _calculateVisibleNodes: function(clientHeight, scrollTop)
     {
         var nodes = this._rootNode.children;
         if (this._inline)
@@ -100,7 +103,7 @@ WebInspector.ViewportDataGrid.prototype = {
         var start = i;
         var topPadding = y;
 
-        for (; i < size && y < scrollTop + scrollHeight; ++i)
+        for (; i < size && y < scrollTop + clientHeight; ++i)
             y += nodes[i].nodeSelfHeight();
         var end = i;
 
@@ -111,11 +114,29 @@ WebInspector.ViewportDataGrid.prototype = {
         return {topPadding: topPadding, bottomPadding: bottomPadding, visibleNodes: nodes.slice(start, end), offset: start};
     },
 
+    /**
+     * @return {number}
+     */
+    _contentHeight: function()
+    {
+        var nodes = this._rootNode.children;
+        var result = 0;
+        for (var i = 0, size = nodes.length; i < size; ++i)
+            result += nodes[i].nodeSelfHeight();
+        return result;
+    },
+
     _update: function()
     {
         this._updateScheduled = false;
 
-        var viewportState = this._calculateVisibleNodes(this._scrollContainer.offsetHeight, this._scrollContainer.scrollTop);
+        var clientHeight = this._scrollContainer.clientHeight;
+        var scrollTop = this._scrollContainer.scrollTop;
+        var currentScrollTop = scrollTop;
+        var maxScrollTop = Math.max(0, this._contentHeight() - clientHeight);
+        scrollTop = Math.min(maxScrollTop, scrollTop);
+
+        var viewportState = this._calculateVisibleNodes(clientHeight, scrollTop);
         var visibleNodes = viewportState.visibleNodes;
         var visibleNodesSet = Set.fromArray(visibleNodes);
 
@@ -151,6 +172,9 @@ WebInspector.ViewportDataGrid.prototype = {
         }
 
         this.setVerticalPadding(viewportState.topPadding, viewportState.bottomPadding);
+        this._lastScrollTop = scrollTop;
+        if (scrollTop !== currentScrollTop)
+            this._scrollContainer.scrollTop = scrollTop;
         this._visibleNodes = visibleNodes;
     },
 
