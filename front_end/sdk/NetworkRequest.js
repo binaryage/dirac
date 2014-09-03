@@ -868,14 +868,6 @@ WebInspector.NetworkRequest.prototype = {
     /**
      * @return {boolean}
      */
-    isPingRequest: function()
-    {
-        return "text/ping" === this.requestContentType();
-    },
-
-    /**
-     * @return {boolean}
-     */
     hasErrorStatusCode: function()
     {
         return this.statusCode >= 400;

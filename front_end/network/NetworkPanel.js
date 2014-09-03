@@ -2555,7 +2555,7 @@ WebInspector.NetworkDataGridNode.prototype = {
         case "remoteAddress": cell.setTextAndTitle(this._request.remoteAddress()); break;
         case "cookies": cell.setTextAndTitle(this._arrayLength(this._request.requestCookies)); break;
         case "setCookies": cell.setTextAndTitle(this._arrayLength(this._request.responseCookies)); break;
-        case "type": this._renderTypeCell(cell); break;
+        case "type": cell.setTextAndTitle(this._request.mimeType || this._request.requestContentType() || ""); break;
         case "initiator": this._renderInitiatorCell(cell); break;
         case "size": this._renderSizeCell(cell); break;
         case "time": this._renderTimeCell(cell); break;
@@ -2674,7 +2674,7 @@ WebInspector.NetworkDataGridNode.prototype = {
      */
     _isFailed: function()
     {
-        return !!this._request.failed || (this._request.statusCode >= 400);
+        return (this._request.failed && !this._request.statusCode) || (this._request.statusCode >= 400);
     },
 
     /**
@@ -2724,27 +2724,12 @@ WebInspector.NetworkDataGridNode.prototype = {
             cell.title = this._request.statusCode + " " + this._request.statusText;
         } else if (this._request.parsedURL.isDataURL()) {
             cell.setTextAndTitle(WebInspector.UIString("(data)"));
-        } else if (this._request.isPingRequest()) {
-            cell.setTextAndTitle(WebInspector.UIString("(ping)"));
         } else if (this._request.canceled) {
             cell.setTextAndTitle(WebInspector.UIString("(canceled)"));
         } else if (this._request.finished) {
             cell.setTextAndTitle(WebInspector.UIString("Finished"));
         } else {
             cell.setTextAndTitle(WebInspector.UIString("(pending)"));
-        }
-    },
-
-    /**
-     * @param {!Element} cell
-     */
-    _renderTypeCell: function(cell)
-    {
-        if (this._request.mimeType) {
-            cell.setTextAndTitle(this._request.mimeType);
-        } else {
-            cell.classList.toggle("network-dim-cell", !this._request.isPingRequest());
-            cell.setTextAndTitle(this._request.requestContentType() || "");
         }
     },
 
