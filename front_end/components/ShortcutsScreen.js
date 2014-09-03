@@ -67,7 +67,7 @@ WebInspector.ShortcutsScreen.prototype = {
         var view = new WebInspector.View();
 
         view.element.className = "settings-tab-container"; // Override
-        view.element.createChild("header").createChild("h3").appendChild(document.createTextNode(WebInspector.UIString("Shortcuts")));
+        view.element.createChild("header").createChild("h3").createTextChild(WebInspector.UIString("Shortcuts"));
         var scrollPane = view.element.createChild("div", "help-container-wrapper");
         var container = scrollPane.createChild("div");
         container.className = "help-content help-container";

@@ -555,7 +555,7 @@ WebInspector.NetworkLogView.prototype = {
             this._summaryBarElement.removeChildren();
             this._summaryBarElement.createChild("div", "warning-icon-small");
             var text = WebInspector.UIString("No requests captured. Reload the page to see detailed information on the network activity.");
-            this._summaryBarElement.appendChild(document.createTextNode(text));
+            this._summaryBarElement.createTextChild(text);
             this._summaryBarElement.title = text;
             return;
         }
@@ -2698,7 +2698,7 @@ WebInspector.NetworkDataGridNode.prototype = {
         iconElement.classList.add(this._request.type.name());
 
         cell.appendChild(iconElement);
-        cell.appendChild(document.createTextNode(this._request.name()));
+        cell.createTextChild(this._request.name());
         this._appendSubtitle(cell, this._request.path());
         cell.title = this._request.url;
     },
@@ -2713,13 +2713,13 @@ WebInspector.NetworkDataGridNode.prototype = {
         if (this._request.failed && !this._request.canceled) {
             var failText = WebInspector.UIString("(failed)");
             if (this._request.localizedFailDescription) {
-                cell.appendChild(document.createTextNode(failText));
+                cell.createTextChild(failText);
                 this._appendSubtitle(cell, this._request.localizedFailDescription);
                 cell.title = failText + " " + this._request.localizedFailDescription;
             } else
                 cell.setTextAndTitle(failText);
         } else if (this._request.statusCode) {
-            cell.appendChild(document.createTextNode("" + this._request.statusCode));
+            cell.createTextChild("" + this._request.statusCode);
             this._appendSubtitle(cell, this._request.statusText);
             cell.title = this._request.statusCode + " " + this._request.statusText;
         } else if (this._request.parsedURL.isDataURL()) {

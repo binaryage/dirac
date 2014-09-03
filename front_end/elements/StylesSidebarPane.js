@@ -765,7 +765,7 @@ WebInspector.StylesSidebarPane.prototype = {
                 separatorElement.className = "sidebar-separator";
                 if (styleRule.node) {
                     var link = WebInspector.DOMPresentationUtils.linkifyNodeReference(styleRule.node);
-                    separatorElement.appendChild(document.createTextNode(WebInspector.UIString("Inherited from") + " "));
+                    separatorElement.createTextChild(WebInspector.UIString("Inherited from") + " ");
                     separatorElement.appendChild(link);
                     if (!sections.inheritedPropertiesSeparatorElement)
                         sections.inheritedPropertiesSeparatorElement = separatorElement;
@@ -934,7 +934,7 @@ WebInspector.StylesSidebarPane.prototype = {
             input.addEventListener("click", clickListener.bind(this), false);
             inputs.push(input);
             label.appendChild(input);
-            label.appendChild(document.createTextNode(":" + state));
+            label.createTextChild(":" + state);
             td.appendChild(label);
             return td;
         }
@@ -1505,7 +1505,7 @@ WebInspector.StylePropertiesSection.prototype = {
         var currentMatch = 0;
         for (var i = 0; i < selectors.length ; ++i) {
             if (i)
-                fragment.appendChild(document.createTextNode(", "));
+                fragment.createTextChild(", ");
             var isSelectorMatching = matchingSelectors[currentMatch] === i;
             if (isSelectorMatching)
                 ++currentMatch;
@@ -1935,7 +1935,7 @@ WebInspector.ComputedStylePropertiesSection.prototype = {
                     var selector = fragment.createChild("span");
                     selector.style.color = "gray";
                     selector.textContent = section.styleRule.selectorText;
-                    fragment.appendChild(document.createTextNode(" - " + property.value + " "));
+                    fragment.createTextChild(" - " + property.value + " ");
                     var subtitle = fragment.createChild("span");
                     subtitle.style.float = "right";
                     subtitle.appendChild(section._createRuleOriginNode(section.rule));
@@ -2258,7 +2258,7 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
                     if (nextProcessor)
                         container.appendChild(nextProcessor(items[i]));
                     else
-                        container.appendChild(document.createTextNode(items[i]));
+                        container.createTextChild(items[i]);
                 } else {
                     var processedNode = processor(items[i]);
                     if (processedNode)
@@ -2281,7 +2281,7 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
             if (match)
                 hrefUrl = match[1];
             var container = document.createDocumentFragment();
-            container.appendChild(document.createTextNode("url("));
+            container.createTextChild("url(");
             if (this._styleRule.rule && this._styleRule.rule.resourceURL())
                 hrefUrl = WebInspector.ParsedURL.completeURL(this._styleRule.rule.resourceURL(), hrefUrl);
             else if (this.node())
@@ -2289,7 +2289,7 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
             var hasResource = hrefUrl && !!WebInspector.resourceForURL(hrefUrl);
             // FIXME: WebInspector.linkifyURLAsNode() should really use baseURI.
             container.appendChild(WebInspector.linkifyURLAsNode(hrefUrl || url, url, undefined, !hasResource));
-            container.appendChild(document.createTextNode(")"));
+            container.createTextChild(")");
             return container;
         }
 
@@ -2308,10 +2308,10 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
         if (this.disabled)
             this.listItemElement.createChild("span", "styles-clipboard-only").createTextChild("/* ");
         this.listItemElement.appendChild(nameElement);
-        this.listItemElement.appendChild(document.createTextNode(": "));
+        this.listItemElement.createTextChild(": ");
         this.listItemElement.appendChild(this._expandElement);
         this.listItemElement.appendChild(valueElement);
-        this.listItemElement.appendChild(document.createTextNode(";"));
+        this.listItemElement.createTextChild(";");
         if (this.disabled)
             this.listItemElement.createChild("span", "styles-clipboard-only").createTextChild(" */");
 

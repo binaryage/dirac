@@ -171,12 +171,12 @@ WebInspector.ConsoleViewMessage.prototype = {
                 if (consoleMessage.request) {
                     this._messageElement = document.createElement("span");
                     if (consoleMessage.level === WebInspector.ConsoleMessage.MessageLevel.Error) {
-                        this._messageElement.appendChild(document.createTextNode(consoleMessage.request.requestMethod + " "));
+                        this._messageElement.createTextChildren(consoleMessage.request.requestMethod, " ");
                         this._messageElement.appendChild(WebInspector.Linkifier.linkifyUsingRevealer(consoleMessage.request, consoleMessage.request.url, consoleMessage.request.url));
                         if (consoleMessage.request.failed)
-                            this._messageElement.appendChild(document.createTextNode(" " + consoleMessage.request.localizedFailDescription));
+                            this._messageElement.createTextChildren(" ", consoleMessage.request.localizedFailDescription);
                         else
-                            this._messageElement.appendChild(document.createTextNode(" " + consoleMessage.request.statusCode + " (" + consoleMessage.request.statusText + ")"));
+                            this._messageElement.createTextChildren(" ", String(consoleMessage.request.statusCode), " (", consoleMessage.request.statusText, ")");
                     } else {
                         var fragment = WebInspector.linkifyStringAsFragmentWithCustomLinkifier(consoleMessage.messageText, linkifyRequest.bind(consoleMessage));
                         this._messageElement.appendChild(fragment);
@@ -370,7 +370,7 @@ WebInspector.ConsoleViewMessage.prototype = {
             var result = this._formatWithSubstitutionString(parameters[0].description, parameters.slice(1), formattedResult);
             parameters = result.unusedSubstitutions;
             if (parameters.length)
-                formattedResult.appendChild(document.createTextNode(" "));
+                formattedResult.createTextChild(" ");
         }
 
         if (this._message.type === WebInspector.ConsoleMessage.MessageType.Table) {
@@ -386,7 +386,7 @@ WebInspector.ConsoleViewMessage.prototype = {
             else
                 formattedResult.appendChild(this._formatParameter(parameters[i], false, true));
             if (i < parameters.length - 1)
-                formattedResult.appendChild(document.createTextNode(" "));
+                formattedResult.createTextChild(" ");
         }
         return formattedResult;
     },
@@ -413,7 +413,7 @@ WebInspector.ConsoleViewMessage.prototype = {
      */
     _formatParameterAsValue: function(obj, elem)
     {
-        elem.appendChild(document.createTextNode(obj.description || ""));
+        elem.createTextChild(obj.description || "");
         if (obj.objectId)
             elem.addEventListener("contextmenu", this._contextMenuEventFired.bind(this, obj), false);
     },
@@ -709,7 +709,7 @@ WebInspector.ConsoleViewMessage.prototype = {
                 elements[name] = this._formatAsArrayEntry(property.value);
         }
 
-        elem.appendChild(document.createTextNode("["));
+        elem.createTextChild("[");
         var lastNonEmptyIndex = -1;
 
         function appendUndefined(elem, index)
@@ -728,17 +728,17 @@ WebInspector.ConsoleViewMessage.prototype = {
 
             if (i - lastNonEmptyIndex > 1) {
                 appendUndefined(elem, i);
-                elem.appendChild(document.createTextNode(", "));
+                elem.createTextChild(", ");
             }
 
             elem.appendChild(element);
             lastNonEmptyIndex = i;
             if (i < length - 1)
-                elem.appendChild(document.createTextNode(", "));
+                elem.createTextChild(", ");
         }
         appendUndefined(elem, length);
 
-        elem.appendChild(document.createTextNode("]"));
+        elem.createTextChild("]");
         elem.addEventListener("contextmenu", this._contextMenuEventFired.bind(this, array), false);
     },
 

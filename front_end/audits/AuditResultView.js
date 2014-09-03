@@ -106,7 +106,7 @@ WebInspector.AuditCategoryResultPane.prototype = {
             severityElement.className = "severity-" + severity;
             titleFragment.appendChild(severityElement);
         }
-        titleFragment.appendChild(document.createTextNode(title));
+        titleFragment.createTextChild(title);
 
         var treeElement = new TreeElement(titleFragment, null, !!result.children);
         parentTreeElement.appendChild(treeElement);

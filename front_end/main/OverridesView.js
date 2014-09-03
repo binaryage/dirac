@@ -229,13 +229,13 @@ WebInspector.OverridesView.DeviceTab.prototype = {
         var tableElement = resolutionFieldset.createChild("table", "nowrap");
         var rowElement = tableElement.createChild("tr");
         var cellElement = rowElement.createChild("td");
-        cellElement.appendChild(document.createTextNode(WebInspector.UIString("Resolution:")));
+        cellElement.createTextChild(WebInspector.UIString("Resolution:"));
         cellElement = rowElement.createChild("td");
 
         var widthOverrideInput = WebInspector.SettingsUI.createSettingInputField("", WebInspector.overridesSupport.settings.deviceWidth, true, 4, "80px", WebInspector.OverridesSupport.deviceSizeValidator, true, true, WebInspector.UIString("\u2013"));
         cellElement.appendChild(widthOverrideInput);
         this._swapDimensionsElement = cellElement.createChild("button", "overrides-swap");
-        this._swapDimensionsElement.appendChild(document.createTextNode(" \u21C4 ")); // RIGHTWARDS ARROW OVER LEFTWARDS ARROW.
+        this._swapDimensionsElement.createTextChild(" \u21C4 "); // RIGHTWARDS ARROW OVER LEFTWARDS ARROW.
         this._swapDimensionsElement.title = WebInspector.UIString("Swap dimensions");
         this._swapDimensionsElement.addEventListener("click", WebInspector.overridesSupport.swapDimensions.bind(WebInspector.overridesSupport), false);
         this._swapDimensionsElement.tabIndex = -1;
@@ -248,7 +248,7 @@ WebInspector.OverridesView.DeviceTab.prototype = {
 
         rowElement = tableElement.createChild("tr");
         rowElement.title = WebInspector.UIString("Ratio between a device's physical pixels and device-independent pixels.");
-        rowElement.createChild("td").appendChild(document.createTextNode(WebInspector.UIString("Device pixel ratio:")));
+        rowElement.createChild("td").createTextChild(WebInspector.UIString("Device pixel ratio:"));
         rowElement.createChild("td").appendChild(WebInspector.SettingsUI.createSettingInputField("", WebInspector.overridesSupport.settings.deviceScaleFactor, true, 4, "80px", WebInspector.OverridesSupport.deviceScaleFactorValidator, true, true, WebInspector.UIString("\u2013")));
 
         var mobileCheckbox = this._createSettingCheckbox(WebInspector.UIString("Emulate mobile"), WebInspector.overridesSupport.settings.emulateMobile);
@@ -515,10 +515,10 @@ WebInspector.OverridesView.SensorsTab.prototype = {
         var rowElement = tableElement.createChild("tr");
         var cellElement = rowElement.createChild("td");
         cellElement = rowElement.createChild("td");
-        cellElement.appendChild(document.createTextNode(WebInspector.UIString("Lat = ")));
+        cellElement.createTextChild(WebInspector.UIString("Lat = "));
         this._latitudeElement = WebInspector.SettingsUI.createInput(cellElement, "geolocation-override-latitude", String(geolocation.latitude), this._applyGeolocationUserInput.bind(this), true);
-        cellElement.appendChild(document.createTextNode(" , "));
-        cellElement.appendChild(document.createTextNode(WebInspector.UIString("Lon = ")));
+        cellElement.createTextChild(" , ");
+        cellElement.createTextChild(WebInspector.UIString("Lon = "));
         this._longitudeElement = WebInspector.SettingsUI.createInput(cellElement, "geolocation-override-longitude", String(geolocation.longitude), this._applyGeolocationUserInput.bind(this), true);
         rowElement = tableElement.createChild("tr");
         cellElement = rowElement.createChild("td");
@@ -529,7 +529,7 @@ WebInspector.OverridesView.SensorsTab.prototype = {
         geolocationErrorCheckboxElement.type = "checkbox";
         geolocationErrorCheckboxElement.checked = !geolocation || geolocation.error;
         geolocationErrorCheckboxElement.addEventListener("click", this._applyGeolocationUserInput.bind(this), false);
-        geolocationErrorLabelElement.appendChild(document.createTextNode(WebInspector.UIString("Emulate position unavailable")));
+        geolocationErrorLabelElement.createTextChild(WebInspector.UIString("Emulate position unavailable"));
         this._geolocationErrorElement = geolocationErrorCheckboxElement;
         cellElement.appendChild(geolocationErrorLabelElement);
 
@@ -596,7 +596,7 @@ WebInspector.OverridesView.SensorsTab.prototype = {
     _createAxisInput: function(parentElement, id, label, defaultText)
     {
         var div = parentElement.createChild("div", "accelerometer-axis-input-container");
-        div.appendChild(document.createTextNode(label));
+        div.createTextChild(label);
         return WebInspector.SettingsUI.createInput(div, id, defaultText, this._applyDeviceOrientationUserInput.bind(this), true);
     },
 

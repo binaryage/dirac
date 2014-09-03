@@ -46,7 +46,7 @@ WebInspector.DOMPresentationUtils.decorateNodeLabel = function(node, parentEleme
 
         var part = "#" + idAttribute;
         title += part;
-        idElement.appendChild(document.createTextNode(part));
+        idElement.createTextChild(part);
 
         // Mark the name as extra, since the ID is more important.
         nameElement.className = "extra";
@@ -67,7 +67,7 @@ WebInspector.DOMPresentationUtils.decorateNodeLabel = function(node, parentEleme
                 if (className && !(className in foundClasses)) {
                     var part = "." + className;
                     title += part;
-                    classesElement.appendChild(document.createTextNode(part));
+                    classesElement.createTextChild(part);
                     foundClasses[className] = true;
                 }
             }

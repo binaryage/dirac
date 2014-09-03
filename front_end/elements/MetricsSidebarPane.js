@@ -312,7 +312,7 @@ WebInspector.MetricsSidebarPane.prototype = {
                 heightElement.addEventListener("dblclick", this.startEditing.bind(this, heightElement, "height", "height", style), false);
 
                 boxElement.appendChild(widthElement);
-                boxElement.appendChild(document.createTextNode(" \u00D7 "));
+                boxElement.createTextChild(" \u00D7 ");
                 boxElement.appendChild(heightElement);
             } else {
                 var suffix = (name === "border" ? "-width" : "");

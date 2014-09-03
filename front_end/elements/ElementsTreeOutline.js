@@ -1570,9 +1570,9 @@ WebInspector.ElementsTreeElement.prototype = {
         else {
             var nodeName = tag.textContent.match(/^<(.*?)>$/)[1];
             tag.textContent = '';
-            tag.appendChild(document.createTextNode('<'+nodeName));
+            tag.createTextChild('<' + nodeName);
             tag.appendChild(node);
-            tag.appendChild(document.createTextNode('>'));
+            tag.createTextChild('>');
         }
 
         this.updateSelection();
@@ -2276,7 +2276,7 @@ WebInspector.ElementsTreeElement.prototype = {
         attrNameElement.textContent = name;
 
         if (hasText)
-            attrSpanElement.appendChild(document.createTextNode("=\u200B\""));
+            attrSpanElement.createTextChild("=\u200B\"");
 
         var attrValueElement = attrSpanElement.createChild("span", "webkit-html-attribute-value");
 
@@ -2329,7 +2329,7 @@ WebInspector.ElementsTreeElement.prototype = {
     {
         var pseudoElement = parentElement.createChild("span", "webkit-html-pseudo-element");
         pseudoElement.textContent = "::" + pseudoElementName;
-        parentElement.appendChild(document.createTextNode("\u200B"));
+        parentElement.createTextChild("\u200B");
     },
 
     /**
@@ -2346,19 +2346,19 @@ WebInspector.ElementsTreeElement.prototype = {
         if (isClosingTag && isDistinctTreeElement)
             classes.push("close");
         var tagElement = parentElement.createChild("span", classes.join(" "));
-        tagElement.appendChild(document.createTextNode("<"));
+        tagElement.createTextChild("<");
         var tagNameElement = tagElement.createChild("span", isClosingTag ? "" : "webkit-html-tag-name");
         tagNameElement.textContent = (isClosingTag ? "/" : "") + tagName;
         if (!isClosingTag && node.hasAttributes()) {
             var attributes = node.attributes();
             for (var i = 0; i < attributes.length; ++i) {
                 var attr = attributes[i];
-                tagElement.appendChild(document.createTextNode(" "));
+                tagElement.createTextChild(" ");
                 this._buildAttributeDOM(tagElement, attr.name, attr.value, false, node, linkify);
             }
         }
-        tagElement.appendChild(document.createTextNode(">"));
-        parentElement.appendChild(document.createTextNode("\u200B"));
+        tagElement.createTextChild(">");
+        parentElement.createTextChild("\u200B");
     },
 
     /**
@@ -2422,7 +2422,7 @@ WebInspector.ElementsTreeElement.prototype = {
                     if (this.hasChildren) {
                         var textNodeElement = info.titleDOM.createChild("span", "webkit-html-text-node bogus");
                         textNodeElement.textContent = "\u2026";
-                        info.titleDOM.appendChild(document.createTextNode("\u200B"));
+                        info.titleDOM.createTextChild("\u200B");
                     }
                     this._buildTagDOM(info.titleDOM, tagName, true, false);
                 }
@@ -2436,7 +2436,7 @@ WebInspector.ElementsTreeElement.prototype = {
                     var result = this._convertWhitespaceToEntities(node.firstChild.nodeValue());
                     textNodeElement.textContent = result.text;
                     WebInspector.highlightRangesWithStyleClass(textNodeElement, result.entityRanges, "webkit-html-entity-value");
-                    info.titleDOM.appendChild(document.createTextNode("\u200B"));
+                    info.titleDOM.createTextChild("\u200B");
                     this._buildTagDOM(info.titleDOM, tagName, true, false);
                     info.hasChildren = false;
                 }
@@ -2456,39 +2456,39 @@ WebInspector.ElementsTreeElement.prototype = {
                     var cssSyntaxHighlighter = new WebInspector.DOMSyntaxHighlighter("text/css", true);
                     cssSyntaxHighlighter.syntaxHighlightNode(newNode);
                 } else {
-                    info.titleDOM.appendChild(document.createTextNode("\""));
+                    info.titleDOM.createTextChild("\"");
                     var textNodeElement = info.titleDOM.createChild("span", "webkit-html-text-node");
                     var result = this._convertWhitespaceToEntities(node.nodeValue());
                     textNodeElement.textContent = result.text;
                     WebInspector.highlightRangesWithStyleClass(textNodeElement, result.entityRanges, "webkit-html-entity-value");
-                    info.titleDOM.appendChild(document.createTextNode("\""));
+                    info.titleDOM.createTextChild("\"");
                 }
                 break;
 
             case Node.COMMENT_NODE:
                 var commentElement = info.titleDOM.createChild("span", "webkit-html-comment");
-                commentElement.appendChild(document.createTextNode("<!--" + node.nodeValue() + "-->"));
+                commentElement.createTextChild("<!--" + node.nodeValue() + "-->");
                 break;
 
             case Node.DOCUMENT_TYPE_NODE:
                 var docTypeElement = info.titleDOM.createChild("span", "webkit-html-doctype");
-                docTypeElement.appendChild(document.createTextNode("<!DOCTYPE " + node.nodeName()));
+                docTypeElement.createTextChild("<!DOCTYPE " + node.nodeName());
                 if (node.publicId) {
-                    docTypeElement.appendChild(document.createTextNode(" PUBLIC \"" + node.publicId + "\""));
+                    docTypeElement.createTextChild(" PUBLIC \"" + node.publicId + "\"");
                     if (node.systemId)
-                        docTypeElement.appendChild(document.createTextNode(" \"" + node.systemId + "\""));
+                        docTypeElement.createTextChild(" \"" + node.systemId + "\"");
                 } else if (node.systemId)
-                    docTypeElement.appendChild(document.createTextNode(" SYSTEM \"" + node.systemId + "\""));
+                    docTypeElement.createTextChild(" SYSTEM \"" + node.systemId + "\"");
 
                 if (node.internalSubset)
-                    docTypeElement.appendChild(document.createTextNode(" [" + node.internalSubset + "]"));
+                    docTypeElement.createTextChild(" [" + node.internalSubset + "]");
 
-                docTypeElement.appendChild(document.createTextNode(">"));
+                docTypeElement.createTextChild(">");
                 break;
 
             case Node.CDATA_SECTION_NODE:
                 var cdataElement = info.titleDOM.createChild("span", "webkit-html-text-node");
-                cdataElement.appendChild(document.createTextNode("<![CDATA[" + node.nodeValue() + "]]>"));
+                cdataElement.createTextChild("<![CDATA[" + node.nodeValue() + "]]>");
                 break;
             case Node.DOCUMENT_FRAGMENT_NODE:
                 var fragmentElement = info.titleDOM.createChild("span", "webkit-html-fragment");
@@ -2502,7 +2502,7 @@ WebInspector.ElementsTreeElement.prototype = {
                 fragmentElement.textContent = node.nodeNameInCorrectCase().collapseWhitespace();
                 break;
             default:
-                info.titleDOM.appendChild(document.createTextNode(node.nodeNameInCorrectCase().collapseWhitespace()));
+                info.titleDOM.createTextChild(node.nodeNameInCorrectCase().collapseWhitespace());
         }
         return info;
     },

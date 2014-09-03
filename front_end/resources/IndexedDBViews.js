@@ -163,24 +163,24 @@ WebInspector.IDBDataView.prototype = {
     _keyColumnHeaderFragment: function(prefix, keyPath)
     {
         var keyColumnHeaderFragment = document.createDocumentFragment();
-        keyColumnHeaderFragment.appendChild(document.createTextNode(prefix));
+        keyColumnHeaderFragment.createTextChild(prefix);
         if (keyPath === null)
             return keyColumnHeaderFragment;
 
-        keyColumnHeaderFragment.appendChild(document.createTextNode(" (" + WebInspector.UIString("Key path: ")));
+        keyColumnHeaderFragment.createTextChild(" (" + WebInspector.UIString("Key path: "));
         if (keyPath instanceof Array) {
-            keyColumnHeaderFragment.appendChild(document.createTextNode("["));
+            keyColumnHeaderFragment.createTextChild("[");
             for (var i = 0; i < keyPath.length; ++i) {
                 if (i != 0)
-                    keyColumnHeaderFragment.appendChild(document.createTextNode(", "));
+                    keyColumnHeaderFragment.createTextChild(", ");
                 keyColumnHeaderFragment.appendChild(this._keyPathStringFragment(keyPath[i]));
             }
-            keyColumnHeaderFragment.appendChild(document.createTextNode("]"));
+            keyColumnHeaderFragment.createTextChild("]");
         } else {
             var keyPathString = /** @type {string} */ (keyPath);
             keyColumnHeaderFragment.appendChild(this._keyPathStringFragment(keyPathString));
         }
-        keyColumnHeaderFragment.appendChild(document.createTextNode(")"));
+        keyColumnHeaderFragment.createTextChild(")");
         return keyColumnHeaderFragment;
     },
 

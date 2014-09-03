@@ -49,7 +49,7 @@ WebInspector.DOMSyntaxHighlighter.prototype = {
         span.className = "cm-" + className;
         if (this._stripExtraWhitespace && className !== "whitespace")
             content = content.replace(/^[\n\r]*/, "").replace(/\s*$/, "");
-        span.appendChild(document.createTextNode(content));
+        span.createTextChild(content);
         return span;
     },
 
@@ -72,7 +72,7 @@ WebInspector.DOMSyntaxHighlighter.prototype = {
 
             if (column > plainTextStart) {
                 var plainText = line.substring(plainTextStart, column);
-                node.appendChild(document.createTextNode(plainText));
+                node.createTextChild(plainText);
             }
             node.appendChild(this.createSpan(token, tokenType));
             plainTextStart = newColumn;
@@ -85,10 +85,10 @@ WebInspector.DOMSyntaxHighlighter.prototype = {
             tokenize(line, processToken.bind(this));
             if (plainTextStart < line.length) {
                 var plainText = line.substring(plainTextStart, line.length);
-                node.appendChild(document.createTextNode(plainText));
+                node.createTextChild(plainText);
             }
             if (i < lines.length - 1)
-                node.appendChild(document.createElement("br"));
+                node.createChild("br");
         }
     }
 }

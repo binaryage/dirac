@@ -66,8 +66,8 @@ WebInspector.FontView.prototype = {
         var fontPreview = document.createElement("div");
         for (var i = 0; i < WebInspector.FontView._fontPreviewLines.length; ++i) {
             if (i > 0)
-                fontPreview.appendChild(document.createElement("br"));
-            fontPreview.appendChild(document.createTextNode(WebInspector.FontView._fontPreviewLines[i]));
+                fontPreview.createChild("br");
+            fontPreview.createTextChild(WebInspector.FontView._fontPreviewLines[i]);
         }
         this.fontPreviewElement = fontPreview.cloneNode(true);
         this.fontPreviewElement.style.setProperty("font-family", uniqueFontName);

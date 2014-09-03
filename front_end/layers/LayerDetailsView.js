@@ -184,7 +184,7 @@ WebInspector.LayerDetailsView.prototype = {
         var fragment = document.createDocumentFragment();
         for (var i = 0; i < compositingReasons.length; ++i) {
             if (i)
-                fragment.appendChild(document.createTextNode(","));
+                fragment.createTextChild(",");
             var span = document.createElement("span");
             span.title = WebInspector.LayerDetailsView.CompositingReasonDetail[compositingReasons[i]] || "";
             span.textContent = compositingReasons[i];

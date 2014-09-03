@@ -234,7 +234,7 @@ WebInspector.RequestHeadersView.prototype = {
         paramsTreeElement.removeChildren();
 
         paramsTreeElement.listItemElement.removeChildren();
-        paramsTreeElement.listItemElement.appendChild(document.createTextNode(title));
+        paramsTreeElement.listItemElement.createTextChild(title);
 
         var headerCount = document.createElement("span");
         headerCount.classList.add("header-count");
@@ -287,7 +287,7 @@ WebInspector.RequestHeadersView.prototype = {
 
         var listItem = this._requestPayloadTreeElement.listItemElement;
         listItem.removeChildren();
-        listItem.appendChild(document.createTextNode(this._requestPayloadTreeElement.title));
+        listItem.createTextChild(this._requestPayloadTreeElement.title);
 
         /**
          * @param {!Event} event

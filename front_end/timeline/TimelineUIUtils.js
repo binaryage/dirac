@@ -456,7 +456,7 @@ WebInspector.TimelinePopupContentHelper.prototype = {
     _createCell: function(content, styleName)
     {
         var text = document.createElement("label");
-        text.appendChild(document.createTextNode(content));
+        text.createTextChild(String(content));
         var cell = document.createElement("td");
         cell.className = "timeline-details";
         if (styleName)

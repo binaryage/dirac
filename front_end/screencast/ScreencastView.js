@@ -77,10 +77,10 @@ WebInspector.ScreencastView.prototype = {
         this._tagNameElement = this._titleElement.createChild("span", "screencast-tag-name");
         this._nodeIdElement = this._titleElement.createChild("span", "screencast-node-id");
         this._classNameElement = this._titleElement.createChild("span", "screencast-class-name");
-        this._titleElement.appendChild(document.createTextNode(" "));
+        this._titleElement.createTextChild(" ");
         this._nodeWidthElement = this._titleElement.createChild("span");
         this._titleElement.createChild("span", "screencast-px").textContent = "px";
-        this._titleElement.appendChild(document.createTextNode(" \u00D7 "));
+        this._titleElement.createTextChild(" \u00D7 ");
         this._nodeHeightElement = this._titleElement.createChild("span");
         this._titleElement.createChild("span", "screencast-px").textContent = "px";
 
