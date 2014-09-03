@@ -460,3 +460,8 @@ ErrorEvent.prototype.message;
 
 /** @type {boolean} */
 window.dispatchStandaloneTestRunnerMessages;
+
+/**
+ * @param {function()} onCatch
+ */
+Promise.prototype.catch = function(onCatch) {};

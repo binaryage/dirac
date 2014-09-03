@@ -34,7 +34,7 @@ WebInspector.JSArticle.Parameter = function(name, dataType, optional, descriptio
 {
     this.name = name;
     this.dataType = dataType;
-    this.optional = optional;
+    this.optional = optional.toUpperCase() === "YES";
     this.description = description;
 }
 
@@ -55,13 +55,13 @@ WebInspector.JSArticle.Example = function(language, code, liveUrl, description)
 
 /**
  * @constructor
- * @param {string} dataType
- * @param {string} returnValue
+ * @param {string} returnValueName
+ * @param {string} returnValueDescription
  */
-WebInspector.JSArticle.Method = function(dataType, returnValue)
+WebInspector.JSArticle.Method = function(returnValueName, returnValueDescription)
 {
-    this.dataType = dataType;
-    this.returnValue = returnValue;
+    this.returnValueName = returnValueName;
+    this.returnValueDescription = returnValueDescription;
 }
 
 /**
@@ -95,10 +95,10 @@ WebInspector.JSArticle.parse = function(wikiMarkupText)
         delete article.standardizationStatus;
     var apiObjectMethod = wikiDocument["API_Object_Method"];
     if (apiObjectMethod) {
-        var dataType = apiObjectMethod["Javascript_data_type"];
-        var returnValue = apiObjectMethod["Return_value_name"];
-        if (dataType && returnValue)
-            article.methods = new WebInspector.JSArticle.Method(dataType, returnValue);
+        var returnValueName = apiObjectMethod["Javascript_data_type"];
+        var returnValue = apiObjectMethod["Return_value_description"];
+        if (returnValueName && returnValue)
+            article.methods = new WebInspector.JSArticle.Method(returnValueName, returnValue);
     }
 
     var remarks = wikiDocument["Remarks_Section"] ? wikiDocument["Remarks_Section"]["Remarks"] : null;

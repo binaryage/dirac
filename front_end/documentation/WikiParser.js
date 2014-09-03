@@ -189,7 +189,8 @@ WebInspector.WikiParser.prototype = {
                       .replace(/&#60;/g, "<")
                       .replace(/&#62;/g, ">")
                       .replace(/{{=}}/g, "=")
-                      .replace(/{{!}}/g, "|");
+                      .replace(/{{!}}/g, "|")
+                      .replace(/&amp;/g, "&");
         while (this._position < this._wikiMarkupText.length) {
             var field = this._parseField();
             for (var key in field) {
@@ -580,9 +581,9 @@ WebInspector.WikiParser.prototype = {
     }
 }
 
-WebInspector.WikiParser.oneOpeningBracket = /^\n*\[[^\[]/;
-WebInspector.WikiParser.twoOpeningBrackets = /^\n*\[\[/;
-WebInspector.WikiParser.oneClosingBracket = /^\n*\][^\]]/;
+WebInspector.WikiParser.oneOpeningBracket = /^\n* \[[^\[]/;
+WebInspector.WikiParser.twoOpeningBrackets = /^\n* \[\[/;
+WebInspector.WikiParser.oneClosingBracket = /^\n*\][^\]] /;
 WebInspector.WikiParser.twoClosingBrackets = /^\n*\]\]/;
 WebInspector.WikiParser.tripleQuotes = /^\n*'''/;
 WebInspector.WikiParser.openingCodeTag = /^<\s*code\s*>/;
@@ -598,24 +599,24 @@ WebInspector.WikiParser.newLineWithoutSpace = /\n[^ ]/;
  * @param {!RegExp} regex
  * @param {!WebInspector.WikiParser.TokenType} type
  */
-WebInspector.WikiParser.TokenDesciptor = function(regex, type)
+WebInspector.WikiParser.TokenDescriptor = function(regex, type)
 {
     this.regex = regex;
     this.type = type;
 }
 
 WebInspector.WikiParser._tokenDescriptors = [
-    new WebInspector.WikiParser.TokenDesciptor(WebInspector.WikiParser.newLineWithSpace, WebInspector.WikiParser.TokenType.CodeBlock),
-    new WebInspector.WikiParser.TokenDesciptor(WebInspector.WikiParser.tripleQuotes, WebInspector.WikiParser.TokenType.TripleQuotes),
-    new WebInspector.WikiParser.TokenDesciptor(WebInspector.WikiParser.oneOpeningBracket, WebInspector.WikiParser.TokenType.OpeningBrackets),
-    new WebInspector.WikiParser.TokenDesciptor(WebInspector.WikiParser.twoOpeningBrackets, WebInspector.WikiParser.TokenType.OpeningBrackets),
-    new WebInspector.WikiParser.TokenDesciptor(WebInspector.WikiParser.oneClosingBracket, WebInspector.WikiParser.TokenType.ClosingBrackets),
-    new WebInspector.WikiParser.TokenDesciptor(WebInspector.WikiParser.twoClosingBrackets, WebInspector.WikiParser.TokenType.ClosingBrackets),
-    new WebInspector.WikiParser.TokenDesciptor(WebInspector.WikiParser.openingCodeTag, WebInspector.WikiParser.TokenType.OpeningCodeTag),
-    new WebInspector.WikiParser.TokenDesciptor(WebInspector.WikiParser.closingCodeTag, WebInspector.WikiParser.TokenType.ClosingCodeTag),
-    new WebInspector.WikiParser.TokenDesciptor(WebInspector.WikiParser.closingBullet, WebInspector.WikiParser.TokenType.Bullet),
-    new WebInspector.WikiParser.TokenDesciptor(WebInspector.WikiParser.verticalLine, WebInspector.WikiParser.TokenType.VerticalLine),
-    new WebInspector.WikiParser.TokenDesciptor(WebInspector.WikiParser.lineEnd, WebInspector.WikiParser.TokenType.LineEnd)
+    new WebInspector.WikiParser.TokenDescriptor(WebInspector.WikiParser.newLineWithSpace, WebInspector.WikiParser.TokenType.CodeBlock),
+    new WebInspector.WikiParser.TokenDescriptor(WebInspector.WikiParser.tripleQuotes, WebInspector.WikiParser.TokenType.TripleQuotes),
+    new WebInspector.WikiParser.TokenDescriptor(WebInspector.WikiParser.oneOpeningBracket, WebInspector.WikiParser.TokenType.OpeningBrackets),
+    new WebInspector.WikiParser.TokenDescriptor(WebInspector.WikiParser.twoOpeningBrackets, WebInspector.WikiParser.TokenType.OpeningBrackets),
+    new WebInspector.WikiParser.TokenDescriptor(WebInspector.WikiParser.oneClosingBracket, WebInspector.WikiParser.TokenType.ClosingBrackets),
+    new WebInspector.WikiParser.TokenDescriptor(WebInspector.WikiParser.twoClosingBrackets, WebInspector.WikiParser.TokenType.ClosingBrackets),
+    new WebInspector.WikiParser.TokenDescriptor(WebInspector.WikiParser.openingCodeTag, WebInspector.WikiParser.TokenType.OpeningCodeTag),
+    new WebInspector.WikiParser.TokenDescriptor(WebInspector.WikiParser.closingCodeTag, WebInspector.WikiParser.TokenType.ClosingCodeTag),
+    new WebInspector.WikiParser.TokenDescriptor(WebInspector.WikiParser.closingBullet, WebInspector.WikiParser.TokenType.Bullet),
+    new WebInspector.WikiParser.TokenDescriptor(WebInspector.WikiParser.verticalLine, WebInspector.WikiParser.TokenType.VerticalLine),
+    new WebInspector.WikiParser.TokenDescriptor(WebInspector.WikiParser.lineEnd, WebInspector.WikiParser.TokenType.LineEnd)
 ];
 
 /**

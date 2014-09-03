@@ -78,7 +78,6 @@ WebInspector.DocumentationURLProvider.ItemDescriptor.prototype = {
  * @param {*} source
  * @param {string} url
  * @param {string} name
- * @see crbug.com/407097
  */
 WebInspector.DocumentationURLProvider.DocumentationSource = function(source, url, name)
 {
@@ -115,27 +114,27 @@ WebInspector.DocumentationURLProvider.DocumentationSource.prototype = {
 
 /**
  * @const
- * type {!Array.<!WebInspector.DocumentationURLProvider.DocumentationSource>}
+ * @type {!Array.<!WebInspector.DocumentationURLProvider.DocumentationSource>}
  */
 WebInspector.DocumentationURLProvider._sources = [
     new WebInspector.DocumentationURLProvider.DocumentationSource(window, "javascript/","Global"),
     new WebInspector.DocumentationURLProvider.DocumentationSource(Node.prototype, "dom/Node/", "Node.prototype"),
-    new WebInspector.DocumentationURLProvider.DocumentationSource(window.Node, "dom/Node/", "Node"),
-    new WebInspector.DocumentationURLProvider.DocumentationSource(window.Object.prototype, "javascript/Object/", "Object.prototype"),
-    new WebInspector.DocumentationURLProvider.DocumentationSource(window.Object, "javascript/Object/", "Object"),
-    new WebInspector.DocumentationURLProvider.DocumentationSource(window.Math, "javascript/Math/", "Math"),
-    new WebInspector.DocumentationURLProvider.DocumentationSource(window.Array.prototype, "javascript/Array/", "Array.prototype"),
-    new WebInspector.DocumentationURLProvider.DocumentationSource(window.Array, "javascript/Array/", "Array"),
-    new WebInspector.DocumentationURLProvider.DocumentationSource(window.String.prototype, "javascript/String/","String.prototype"),
-    new WebInspector.DocumentationURLProvider.DocumentationSource(window.String, "javascript/String/", "String"),
-    new WebInspector.DocumentationURLProvider.DocumentationSource(window.Date.prototype, "javascript/Date/", "Date.prototype"),
-    new WebInspector.DocumentationURLProvider.DocumentationSource(window.Date, "javascript/Date/", "Date"),
-    new WebInspector.DocumentationURLProvider.DocumentationSource(window.JSON, "javascript/JSON/", "JSON"),
-    new WebInspector.DocumentationURLProvider.DocumentationSource(window.Number, "javascript/Number/", "Number"),
-    new WebInspector.DocumentationURLProvider.DocumentationSource(window.Number.prototype, "javascript/Number/", "Number.prototype"),
-    new WebInspector.DocumentationURLProvider.DocumentationSource(window.Error.prototype, "javascript/Error/", "Error.prototype"),
-    new WebInspector.DocumentationURLProvider.DocumentationSource(window.RegExp.prototype, "javascript/RegExp/", "RegExp.prototype"),
-    new WebInspector.DocumentationURLProvider.DocumentationSource(window.Function.prototype, "javascript/Function/", "Function.prototype")
+    new WebInspector.DocumentationURLProvider.DocumentationSource(Node, "dom/Node/", "Node"),
+    new WebInspector.DocumentationURLProvider.DocumentationSource(Object.prototype, "javascript/Object/", "Object.prototype"),
+    new WebInspector.DocumentationURLProvider.DocumentationSource(Object, "javascript/Object/", "Object"),
+    new WebInspector.DocumentationURLProvider.DocumentationSource(Math, "javascript/Math/", "Math"),
+    new WebInspector.DocumentationURLProvider.DocumentationSource(Array.prototype, "javascript/Array/", "Array.prototype"),
+    new WebInspector.DocumentationURLProvider.DocumentationSource(Array, "javascript/Array/", "Array"),
+    new WebInspector.DocumentationURLProvider.DocumentationSource(String.prototype, "javascript/String/","String.prototype"),
+    new WebInspector.DocumentationURLProvider.DocumentationSource(String, "javascript/String/", "String"),
+    new WebInspector.DocumentationURLProvider.DocumentationSource(Date.prototype, "javascript/Date/", "Date.prototype"),
+    new WebInspector.DocumentationURLProvider.DocumentationSource(Date, "javascript/Date/", "Date"),
+    new WebInspector.DocumentationURLProvider.DocumentationSource(JSON, "javascript/JSON/", "JSON"),
+    new WebInspector.DocumentationURLProvider.DocumentationSource(Number, "javascript/Number/", "Number"),
+    new WebInspector.DocumentationURLProvider.DocumentationSource(Number.prototype, "javascript/Number/", "Number.prototype"),
+    new WebInspector.DocumentationURLProvider.DocumentationSource(Error.prototype, "javascript/Error/", "Error.prototype"),
+    new WebInspector.DocumentationURLProvider.DocumentationSource(RegExp.prototype, "javascript/regular_expression/", "RegExp.prototype"),
+    new WebInspector.DocumentationURLProvider.DocumentationSource(Function.prototype, "javascript/Function/", "Function.prototype")
 ];
 
 /**

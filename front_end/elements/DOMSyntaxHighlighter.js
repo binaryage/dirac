@@ -30,6 +30,8 @@
 
 /**
  * @constructor
+ * @param {string} mimeType
+ * @param {boolean} stripExtraWhitespace
  */
 WebInspector.DOMSyntaxHighlighter = function(mimeType, stripExtraWhitespace)
 {
@@ -53,6 +55,9 @@ WebInspector.DOMSyntaxHighlighter.prototype = {
         return span;
     },
 
+    /**
+     * @param {!Element} node
+     */
     syntaxHighlightNode: function(node)
     {
         var lines = node.textContent.split("\n");
