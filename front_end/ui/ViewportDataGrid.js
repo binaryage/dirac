@@ -30,6 +30,11 @@ WebInspector.ViewportDataGrid = function(columnsArray, editCallback, deleteCallb
     // Element that was hidden earlier, but hasn't been removed yet.
     /** @type {?Node} */
     this._hiddenWheelTarget = null;
+
+    /** @type {boolean} */
+    this._stickToBottom = false;
+    /** @type {boolean} */
+    this._atBottom = true;
     /** @type {number} */
     this._lastScrollTop = 0;
 
@@ -42,7 +47,17 @@ WebInspector.ViewportDataGrid.prototype = {
      */
     onResize: function()
     {
+        if (this._stickToBottom && this._atBottom)
+            this._scrollContainer.scrollTop = this._scrollContainer.scrollHeight - this._scrollContainer.clientHeight;
         this.scheduleUpdate();
+    },
+
+    /**
+     * @param {boolean} stick
+     */
+    setStickToBottom: function(stick)
+    {
+        this._stickToBottom = stick;
     },
 
     /**
@@ -58,6 +73,7 @@ WebInspector.ViewportDataGrid.prototype = {
      */
     _onScroll: function(event)
     {
+        this._atBottom = this._scrollContainer.isScrolledToBottom();
         if (this._lastScrollTop !== this._scrollContainer.scrollTop)
             this.scheduleUpdate();
     },
@@ -134,7 +150,10 @@ WebInspector.ViewportDataGrid.prototype = {
         var scrollTop = this._scrollContainer.scrollTop;
         var currentScrollTop = scrollTop;
         var maxScrollTop = Math.max(0, this._contentHeight() - clientHeight);
+        if (this._stickToBottom && this._atBottom)
+            scrollTop = maxScrollTop;
         scrollTop = Math.min(maxScrollTop, scrollTop);
+        this._atBottom = scrollTop === maxScrollTop;
 
         var viewportState = this._calculateVisibleNodes(clientHeight, scrollTop);
         var visibleNodes = viewportState.visibleNodes;

@@ -693,19 +693,6 @@ WebInspector.DataGrid.prototype = {
         return this._scrollContainer;
     },
 
-    /**
-     * @return {boolean}
-     */
-    isScrolledToLastRow: function()
-    {
-        return this._scrollContainer.isScrolledToBottom();
-    },
-
-    scrollToLastRow: function()
-    {
-        this._scrollContainer.scrollTop = this._scrollContainer.scrollHeight - this._scrollContainer.offsetHeight;
-    },
-
     _positionResizers: function()
     {
         var headerTableColumns = this._headerTableColumnGroup.children;

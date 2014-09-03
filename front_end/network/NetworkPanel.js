@@ -386,6 +386,7 @@ WebInspector.NetworkLogView.prototype = {
         });
 
         this._dataGrid = new WebInspector.SortableDataGrid(columns);
+        this._dataGrid.setStickToBottom(true);
         this._updateColumns();
         this._dataGrid.setName("networkLog");
         this._dataGrid.setResizeMethod(WebInspector.DataGrid.ResizeMethod.Last);
@@ -772,7 +773,6 @@ WebInspector.NetworkLogView.prototype = {
         }
 
         this._removeAllNodeHighlights();
-        var wasScrolledToLastRow = this._dataGrid.isScrolledToLastRow();
         var boundariesChanged = false;
         var calculator = this.calculator();
         if (calculator.updateBoundariesForEventTime) {
@@ -816,8 +816,6 @@ WebInspector.NetworkLogView.prototype = {
 
         this._staleRequestIds = {};
         this._updateSummaryBar();
-        if (wasScrolledToLastRow)
-            this._dataGrid.scrollToLastRow();
     },
 
     _onRecordButtonClicked: function()
