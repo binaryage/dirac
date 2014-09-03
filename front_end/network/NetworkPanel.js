@@ -2836,6 +2836,8 @@ WebInspector.NetworkDataGridNode.prototype = {
 
     refreshGraph: function()
     {
+        if (!this._timelineCell)
+            return;
         this._staleGraph = true;
         if (this.attached())
             this.dataGrid.scheduleUpdate();
@@ -2844,6 +2846,9 @@ WebInspector.NetworkDataGridNode.prototype = {
     _updateGraph: function()
     {
         this._staleGraph = false;
+        if (!this._timelineCell)
+            return;
+
         var calculator = this._parentView.calculator();
         var percentages = calculator.computeBarGraphPercentages(this._request);
         this._percentages = percentages;
