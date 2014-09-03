@@ -190,13 +190,46 @@ WebInspector.Setting.prototype = {
         this._value = value;
         if (this._storage) {
             try {
-                this._storage[this._name] = JSON.stringify(value);
+                var settingString = JSON.stringify(value);
+                try {
+                    this._storage[this._name] = settingString;
+                } catch(e) {
+                    this._printSettingsSavingError(e.message, this._name, settingString);
+                }
             } catch(e) {
-                console.error("Error saving setting with name:" + this._name);
+                WebInspector.console.error("Cannot stringify setting with name: " + this._name + ", error: " + e.message);
             }
         }
         this._eventSupport.dispatchEventToListeners(this._name, value);
-    }
+    },
+
+    /**
+     * @param {string} message
+     * @param {string} name
+     * @param {string} value
+     */
+    _printSettingsSavingError: function(message, name, value)
+    {
+        var errorMessage = "Error saving setting with name: " + this._name + ", value length: " + value.length + ". Error: " + message;
+        console.error(errorMessage);
+        WebInspector.console.error(errorMessage);
+        WebInspector.console.log("Ten largest settings: ");
+
+        var sizes = { __proto__: null };
+        for (var key in this._storage)
+            sizes[key] = this._storage.getItem(key).length;
+        var keys = Object.keys(sizes);
+
+        function comparator(key1, key2)
+        {
+            return sizes[key2] - sizes[key1];
+        }
+
+        keys.sort(comparator);
+
+        for (var i = 0; i < 10 && i < keys.length; ++i)
+            WebInspector.console.log("Setting: '" + keys[i] + "', size: " + sizes[keys[i]]);
+    },
 }
 
 /**
@@ -453,7 +486,7 @@ WebInspector.VersionController = function()
 {
 }
 
-WebInspector.VersionController.currentVersion = 9;
+WebInspector.VersionController.currentVersion = 10;
 
 WebInspector.VersionController.prototype = {
     updateVersion: function()
@@ -666,6 +699,17 @@ WebInspector.VersionController.prototype = {
                 window.localStorage[settingName] = JSON.stringify(value);
             } catch(e) {
             }
+        }
+    },
+
+    _updateVersionFrom9To10: function()
+    {
+        if (!window.localStorage)
+            return;
+
+        for (var key in window.localStorage) {
+            if (key.startsWith("revision-history"))
+                window.localStorage.removeItem(key);
         }
     },
 
