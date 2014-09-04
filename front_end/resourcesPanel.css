@@ -189,6 +189,7 @@ li.selected .base-storage-tree-element-subtitle {
     border-bottom: 1px solid rgb(245, 245, 245);
     padding: 1px 22px 1px 24px;
     min-height: 16px;
+    flex-shrink: 0;
 }
 
 .database-user-query::before {
