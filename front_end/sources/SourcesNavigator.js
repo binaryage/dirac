@@ -39,7 +39,7 @@ WebInspector.SourcesNavigator = function(workspace)
     this._tabbedPane = new WebInspector.TabbedPane();
     this._tabbedPane.shrinkableTabs = true;
     this._tabbedPane.element.classList.add("navigator-tabbed-pane");
-    new WebInspector.ExtensibleTabbedPaneController(this._tabbedPane, "navigator-view", this._navigatorViewCreated.bind(this));
+    this._tabbedPaneController = new WebInspector.ExtensibleTabbedPaneController(this._tabbedPane, "navigator-view", this._navigatorViewCreated.bind(this));
     /** @type {!StringMap.<?WebInspector.NavigatorView>} */
     this._navigatorViews = new StringMap();
 }
@@ -77,9 +77,13 @@ WebInspector.SourcesNavigator.prototype = {
      */
     _navigatorViewIdForUISourceCode: function(uiSourceCode)
     {
-        var ids = this._navigatorViews.keys();
+        var ids = this._tabbedPaneController.viewIds();
         for (var i = 0; i < ids.length; ++i) {
             var id = ids[i]
+
+            // Force navigator view creation.
+            this._tabbedPaneController.viewForId(id);
+
             var navigatorView = this._navigatorViews.get(id);
             if (navigatorView.accept(uiSourceCode))
                 return id;
