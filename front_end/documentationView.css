@@ -32,14 +32,6 @@
     font-weight: bold;
 }
 
-.documentation-paragraph {
-    border-top: 4em;
-}
-
-.documentation-method-signature {
-    margin-bottom: 0.5em;
-}
-
 .documentation-parameter {
     margin-bottom: 1em;
 }
@@ -50,14 +42,6 @@
 
 .documentation-code-tag {
     font-weight: bold;
-}
-
-.documentation-method-text {
-    margin-right: 0.3em;
-}
-
-.documentation-parameter-data-type {
-    margin-right: 0.5em;
 }
 
 .documentation-parameter-optional {
