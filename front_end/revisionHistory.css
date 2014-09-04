@@ -88,3 +88,7 @@
 .revision-history-line-separator .webkit-line-number {
     color: transparent;
 }
+
+.revision-history-line {
+    white-space: nowrap;
+}

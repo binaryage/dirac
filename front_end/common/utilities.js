@@ -1150,6 +1150,15 @@ function countRegexMatches(regex, content)
 }
 
 /**
+ * @param {number} spacesCount
+ * @return {string}
+ */
+function spacesPadding(spacesCount)
+{
+    return Array(spacesCount).join("\u00a0");
+}
+
+/**
  * @param {number} value
  * @param {number} symbolsCount
  * @return {string}
@@ -1158,8 +1167,7 @@ function numberToStringWithSpacesPadding(value, symbolsCount)
 {
     var numberString = value.toString();
     var paddingLength = Math.max(0, symbolsCount - numberString.length);
-    var paddingString = Array(paddingLength + 1).join("\u00a0");
-    return paddingString + numberString;
+    return spacesPadding(paddingLength) + numberString;
 }
 
 /**

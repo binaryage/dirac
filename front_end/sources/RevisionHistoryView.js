@@ -314,7 +314,7 @@ WebInspector.RevisionHistoryTreeElement.prototype = {
 
         function appendLineNumber(lineNumber)
         {
-            var numberString = lineNumber !== null ? numberToStringWithSpacesPadding(lineNumber + 1, 4) : "    ";
+            var numberString = lineNumber !== null ? numberToStringWithSpacesPadding(lineNumber + 1, 4) : spacesPadding(4);
             var lineNumberSpan = document.createElement("span");
             lineNumberSpan.classList.add("webkit-line-number");
             lineNumberSpan.textContent = numberString;
@@ -328,7 +328,7 @@ WebInspector.RevisionHistoryTreeElement.prototype = {
         contentSpan.textContent = lineContent;
         child.listItemElement.appendChild(contentSpan);
         child.listItemElement.classList.add("revision-history-line");
-        child.listItemElement.classList.add("revision-history-line-" + changeType);
+        contentSpan.classList.add("revision-history-line-" + changeType);
     },
 
     allowRevert: function()
