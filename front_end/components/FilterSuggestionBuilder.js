@@ -64,16 +64,18 @@ WebInspector.FilterSuggestionBuilder.prototype = {
 
         var suggestions = [];
         if (valueDelimiterIndex === -1) {
+            var matcher = new RegExp("^" + prefix.escapeForRegExp(), "i");
             for (var j = 0; j < this._keys.length; ++j) {
-                if (this._keys[j].startsWith(prefix))
+                if (this._keys[j].match(matcher))
                     suggestions.push(this._keys[j] + ":");
             }
         } else {
             var key = prefix.substring(0, valueDelimiterIndex);
             var value = prefix.substring(valueDelimiterIndex + 1);
+            var matcher = new RegExp("^" + value.escapeForRegExp(), "i");
             var items = this._values(key);
             for (var i = 0; i < items.length; ++i) {
-                if (items[i].startsWith(value) && (items[i] !== value))
+                if (items[i].match(matcher) && (items[i] !== value))
                     suggestions.push(key + ":" + items[i]);
             }
         }
