@@ -90,7 +90,7 @@ WebInspector.NetworkLogView = function(filterBar, coulmnsVisibilitySetting)
 WebInspector.NetworkLogView.HTTPSchemas = {"http": true, "https": true, "ws": true, "wss": true};
 WebInspector.NetworkLogView._responseHeaderColumns = ["Cache-Control", "Connection", "Content-Encoding", "Content-Length", "ETag", "Keep-Alive", "Last-Modified", "Server", "Vary"];
 WebInspector.NetworkLogView.defaultColumnsVisibility = {
-    method: true, status: true, scheme: false, domain: false, remoteAddress: false, type: true, initiator: true, cookies: false, setCookies: false, size: true, time: true,
+    method: true, status: true, scheme: false, domain: false, remoteAddress: false, type: true, initiator: true, cookies: false, setCookies: false, size: true, time: true, connectionId: false,
     "Cache-Control": false, "Connection": false, "Content-Encoding": false, "Content-Length": false, "ETag": false, "Keep-Alive": false, "Last-Modified": false, "Server": false, "Vary": false
 };
 WebInspector.NetworkLogView._defaultRefreshDelay = 500;
@@ -125,6 +125,7 @@ WebInspector.NetworkLogView._columnTitles = {
     "setCookies": WebInspector.UIString("Set-Cookies"),
     "size": WebInspector.UIString("Size"),
     "time": WebInspector.UIString("Time"),
+    "connectionId": WebInspector.UIString("Connection Id"),
     "timeline": WebInspector.UIString("Timeline"),
 
     // Response header columns
@@ -364,6 +365,13 @@ WebInspector.NetworkLogView.prototype = {
             align: WebInspector.DataGrid.Align.Right
         });
 
+        columns.push({
+            id: "connectionId",
+            title: WebInspector.NetworkLogView._columnTitles["connectionId"],
+            sortable: true,
+            weight: 6
+        });
+
         var responseHeaderColumns = WebInspector.NetworkLogView._responseHeaderColumns;
         for (var i = 0; i < responseHeaderColumns.length; ++i) {
             var headerName = responseHeaderColumns[i];
@@ -474,6 +482,7 @@ WebInspector.NetworkLogView.prototype = {
         this._sortingFunctions.setCookies = WebInspector.NetworkDataGridNode.ResponseCookiesCountComparator;
         this._sortingFunctions.size = WebInspector.NetworkDataGridNode.SizeComparator;
         this._sortingFunctions.time = WebInspector.NetworkDataGridNode.RequestPropertyComparator.bind(null, "duration", false);
+        this._sortingFunctions.connectionId = WebInspector.NetworkDataGridNode.RequestPropertyComparator.bind(null, "connectionId", false);
         this._sortingFunctions.timeline = WebInspector.NetworkDataGridNode.RequestPropertyComparator.bind(null, "startTime", false);
         this._sortingFunctions.startTime = WebInspector.NetworkDataGridNode.RequestPropertyComparator.bind(null, "startTime", false);
         this._sortingFunctions.endTime = WebInspector.NetworkDataGridNode.RequestPropertyComparator.bind(null, "endTime", false);
@@ -2568,6 +2577,7 @@ WebInspector.NetworkDataGridNode.prototype = {
         case "remoteAddress": cell.setTextAndTitle(this._request.remoteAddress()); break;
         case "cookies": cell.setTextAndTitle(this._arrayLength(this._request.requestCookies)); break;
         case "setCookies": cell.setTextAndTitle(this._arrayLength(this._request.responseCookies)); break;
+        case "connectionId": cell.setTextAndTitle(this._request.connectionId); break;
         case "type": cell.setTextAndTitle(this._request.mimeType || this._request.requestContentType() || ""); break;
         case "initiator": this._renderInitiatorCell(cell); break;
         case "size": this._renderSizeCell(cell); break;
