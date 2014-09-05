@@ -5,8 +5,13 @@
  */
 
 .responsive-design {
-    overflow: hidden;
     position: relative;
+    background-color: rgb(0, 0, 0);
+    overflow: hidden;
+}
+
+.responsive-design-canvas {
+    pointer-events: none;
 }
 
 .responsive-design-sliders-container {
@@ -436,11 +441,10 @@
 
 .responsive-design-ruler-glasspane {
     position: absolute;
-    left: 0px;
-    right: 0px;
-    top: 0px;
+    left: 0;
+    right: 0;
+    top: 0;
     background-color: transparent;
-    overflow: hidden;
 }
 
 .responsive-design-toggle-media-inspector .glyph {
@@ -452,35 +456,19 @@
     background-color: rgb(105, 194, 236) !important;
 }
 
-/* media */
+/* Media query inspector */
 
 .responsive-design-media-container {
-    flex: none;
+    position: absolute;
+    right: 0;
 }
 
-.view.media-inspector-view {
-    overflow-y: auto;
-    overflow-x: hidden;
-    background-color: rgb(43, 43, 43);
-    max-height: 100px;
-    box-shadow: inset 0px 5px 7px rgba(0, 0, 0, 0.7);
-}
-
-.media-inspector-view:not(.media-inspector-view-empty) {
-    border-bottom: 1px solid rgb(104, 104, 104);
-}
-
-.media-inspector-view::-webkit-scrollbar {
-    background: rgb(54, 54, 54);
-}
-
-.media-inspector-view::-webkit-scrollbar-thumb {
-    background: rgb(94, 94, 94);
-}
+/* Media query bars */
 
 .media-inspector-marker-container {
     position: relative;
-    margin: 2px 0 2px 0;
+    height: 14px;
+    margin: 2px 0;
 }
 
 .media-inspector-marker {
@@ -492,87 +480,93 @@
 }
 
 .media-inspector-marker-inactive {
-    -webkit-filter: brightness(75%);
+    -webkit-filter: brightness(85%);
 }
 
-.media-inspector-marker-inactive:hover {
-    -webkit-filter: brightness(100%);
+.media-inspector-marker-highlight {
+    -webkit-filter: brightness(115%) !important;
 }
 
-.media-inspector-marker-container:hover {
-    background-color: rgb(74, 74, 74);
-}
-
-.media-inspector-marker-container:hover .media-inspector-marker {
-    -webkit-filter: brightness(125%);
-}
-
-.media-inspector-marker-container-max-width .media-inspector-marker {
+.media-inspector-marker-max-width {
     background: linear-gradient(to bottom, rgb(72, 139, 249), rgb(26, 113, 233));
-    border-right: 3px solid rgb(51, 148, 242);
+    box-shadow: rgb(0, 0, 0) 1px 0 1px;
     border-radius: 0 2px 2px 0;
 }
 
-.media-inspector-marker-container-min-max-width .media-inspector-marker {
+.media-inspector-marker-min-max-width {
     background: linear-gradient(to bottom, rgb(102, 186, 11), rgb(4, 166, 0));
-    border-left: 3px solid rgb(109, 219, 85);
-    border-right: 3px solid rgb(109, 219, 85);
+    box-shadow: rgb(0, 0, 0) -1px 0 1px, rgb(0, 0, 0) 1px 0 1px;
+    border-radius: 2px;
 }
 
-.media-inspector-marker-container-min-width .media-inspector-marker {
+.media-inspector-marker-min-width {
     background: linear-gradient(to bottom, rgb(222, 129, 30), rgb(204, 104, 31));
-    border-left: 3px solid rgb(243, 170, 42);
+    box-shadow: rgb(0, 0, 0) -1px 0 1px;
     border-radius: 2px 0 0 2px;
 }
 
-.media-inspector-marker-container:not(.media-inspector-marker-container-max-width) .media-inspector-max-label-filler,
-.media-inspector-marker-container:not(.media-inspector-marker-container-max-width) .media-inspector-min-label-filler {
-    min-width: 50px;
+.media-inspector-marker-under-highlighted {
+    background: transparent !important;
+    box-shadow: none !important;
 }
 
-.media-inspector-max-label-filler {
-    flex: auto;
+/* Media query labels */
+
+.media-inspector-marker:not(.media-inspector-marker-highlight) .media-inspector-marker-label-container {
+    display: none;
 }
 
-.media-inspector-min-label-filler {
-    display: flex;
-    justify-content: flex-end;
+.media-inspector-marker-label-container {
+    position: absolute;
+}
+
+.media-inspector-marker-label-container-left {
+    left: 0;
+}
+
+.media-inspector-marker-label-container-right {
+    right: 0;
+}
+
+.media-inspector-marker-serif {
+    position: absolute;
+    top: -60px;
+    bottom: -60px;
+    width: 1px;
+}
+
+.media-inspector-marker-max-width .media-inspector-marker-serif {
+    background-color: rgb(26, 113, 233);
+}
+
+.media-inspector-marker-min-max-width .media-inspector-marker-serif {
+    background-color: rgb(4, 166, 0);
+}
+
+.media-inspector-marker-min-width .media-inspector-marker-serif {
+    background-color: rgb(204, 104, 31);
 }
 
 .media-inspector-marker-label {
-    color: rgb(180, 180, 180);
-    position: relative;
-    text-shadow: 0px 0px 2px black;
-}
-
-.media-inspector-min-label {
-    padding-right: 11px;
-}
-
-.media-inspector-min-label::after {
+    color: rgb(230, 230, 230);
     position: absolute;
-    padding-left: 2px;
-    right: -1px;
-    height: 6px;
-    content: url(Images/graphLabelCalloutLeft.png);
-    -webkit-filter: invert(0.8);
-    box-sizing: border-box;
+    top: -1px;
+    bottom: 0;
+    font-size: 13px;
+    text-shadow: rgb(0, 0, 0) 1px 1px;
 }
 
-.media-inspector-max-label {
-    padding-left: 11px;
+.media-inspector-label-right {
+    right: 2px;
 }
 
-.media-inspector-max-label::before {
-    position: absolute;
-    padding-right: 2px;
-    left: -1px;
-    height: 6px;
-    content: url(Images/graphLabelCalloutRight.png);
-    -webkit-filter: invert(0.8);
+.media-inspector-label-left {
+    left: 2px;
 }
 
-.media-inspector-threshold-serif {
+/* Media query serifs on ruler */
+
+.media-inspector-threshold {
     position: absolute;
     top: 0px;
     bottom: 0px;
@@ -580,7 +574,7 @@
     margin-left: -2px;
 }
 
-.media-inspector-threshold-serif::before {
+.media-inspector-threshold::before {
     content: ".";
     color: transparent;
     position: absolute;
@@ -588,29 +582,10 @@
     right: 2px;
     top: 0px;
     bottom: 0px;
-    border-left: 1px solid rgba(225, 124, 0, 0.86);
     box-sizing: border-box;
+    border-left: 1px solid rgb(204, 104, 31);
 }
 
-.media-inspector-threshold-serif:hover {
-    background-color: rgba(225, 124, 0, 0.86);
-}
-
-.media-inspector-marker-highlight-1 {
-    -webkit-animation: media-inspector-animation-highlight-1 0.7s 1;
-}
-
-.media-inspector-marker-highlight-2 {
-    -webkit-animation: media-inspector-animation-highlight-2 0.7s 1;
-}
-
-
-@-webkit-keyframes media-inspector-animation-highlight-1 {
-    from { -webkit-filter: brightness(135%); }
-    to { -webkit-filter: brightness(100%); }
-}
-
-@-webkit-keyframes media-inspector-animation-highlight-2 {
-    from { -webkit-filter: brightness(135%); }
-    to { -webkit-filter: brightness(100%); }
+.media-inspector-threshold:hover {
+    background-color: rgb(204, 104, 31);
 }

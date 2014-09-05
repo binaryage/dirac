@@ -20,18 +20,15 @@ WebInspector.ResponsiveDesignView = function(inspectedPagePlaceholder)
 
     this._createToolbar();
 
-    this._mediaInspector = new WebInspector.MediaQueryInspector();
-    this._mediaInspectorContainer = this._responsiveDesignContainer.element.createChild("div", "responsive-design-media-container");
-    this._updateMediaQueryInspector();
-
     this._canvasContainer = new WebInspector.View();
     this._canvasContainer.element.classList.add("responsive-design");
     this._canvasContainer.show(this._responsiveDesignContainer.element);
 
-    this._canvas = this._canvasContainer.element.createChild("canvas", "fill");
+    this._mediaInspectorContainer = this._canvasContainer.element.createChild("div", "responsive-design-media-container");
+    this._mediaInspector = new WebInspector.MediaQueryInspector();
+    this._updateMediaQueryInspector();
 
-    this._rulerGlasspane = this._canvasContainer.element.createChild("div", "responsive-design-ruler-glasspane");
-    this._rulerGlasspane.appendChild(this._mediaInspector.rulerDecorationLayer());
+    this._canvas = this._canvasContainer.element.createChild("canvas", "fill responsive-design-canvas");
 
     this._warningMessage = this._canvasContainer.element.createChild("div", "responsive-design-warning hidden");
     this._warningMessage.createChild("div", "warning-icon-small");
@@ -89,7 +86,9 @@ WebInspector.ResponsiveDesignView = function(inspectedPagePlaceholder)
 
 // Measured in DIP.
 WebInspector.ResponsiveDesignView.SliderWidth = 19;
-WebInspector.ResponsiveDesignView.RulerWidth = 22;
+WebInspector.ResponsiveDesignView.RulerWidth = 34;
+WebInspector.ResponsiveDesignView.RulerHeight = 22;
+WebInspector.ResponsiveDesignView.RulerBottomHeight = 9;
 WebInspector.ResponsiveDesignView.PageScaleContainerWidth = 40;
 WebInspector.ResponsiveDesignView.PageScaleContainerHeight = 80;
 
@@ -127,6 +126,7 @@ WebInspector.ResponsiveDesignView.prototype = {
         delete this._cachedZoomFactor;
         delete this._cachedViewport;
         delete this._cachedDrawContentsSize;
+        delete this._cachedMediaInspectorHeight;
         delete this._availableSize;
     },
 
@@ -183,8 +183,11 @@ WebInspector.ResponsiveDesignView.prototype = {
         if (typeof this._availableSize === "undefined") {
             var zoomFactor = WebInspector.zoomManager.zoomFactor();
             var rect = this._canvasContainer.element.getBoundingClientRect();
+            var mediaInspectorHeight = this._mediaInspector.element.offsetHeight;
+            if (mediaInspectorHeight)
+                mediaInspectorHeight += WebInspector.ResponsiveDesignView.RulerBottomHeight;
             this._availableSize = new Size(Math.max(rect.width * zoomFactor - WebInspector.ResponsiveDesignView.RulerWidth, 1),
-                                           Math.max(rect.height * zoomFactor - WebInspector.ResponsiveDesignView.RulerWidth, 1));
+                                           Math.max(rect.height * zoomFactor - mediaInspectorHeight - WebInspector.ResponsiveDesignView.RulerHeight, 1));
         }
         return this._availableSize;
     },
@@ -254,8 +257,9 @@ WebInspector.ResponsiveDesignView.prototype = {
      * Canvas contains grid and rulers.
      * @param {number} cssCanvasWidth
      * @param {number} cssCanvasHeight
+     * @param {number} mediaInspectorHeight
      */
-    _drawCanvas: function(cssCanvasWidth, cssCanvasHeight)
+    _drawCanvas: function(cssCanvasWidth, cssCanvasHeight, mediaInspectorHeight)
     {
         if (!this._enabled)
             return;
@@ -268,6 +272,7 @@ WebInspector.ResponsiveDesignView.prototype = {
         var zoomFactor = WebInspector.zoomManager.zoomFactor();
         var dipCanvasWidth = cssCanvasWidth * zoomFactor;
         var dipCanvasHeight = cssCanvasHeight * zoomFactor;
+        var dipMediaInspectorHeight = mediaInspectorHeight * zoomFactor;
 
         var deviceScaleFactor = window.devicePixelRatio;
         canvas.width = deviceScaleFactor * cssCanvasWidth;
@@ -275,11 +280,11 @@ WebInspector.ResponsiveDesignView.prototype = {
         context.scale(canvas.width / dipCanvasWidth, canvas.height / dipCanvasHeight);
         context.font = "11px " + WebInspector.fontFamily();
 
-        const rulerBackgroundColor = "rgb(0, 0, 0)";
         const backgroundColor = "rgb(102, 102, 102)";
         const lightLineColor = "rgb(132, 132, 132)";
         const darkLineColor = "rgb(114, 114, 114)";
         const rulerColor = "rgb(125, 125, 125)";
+        const rulerOverlayColor = "rgba(255, 255, 255, 0.4)";
         const textColor = "rgb(186, 186, 186)";
         const contentsSizeColor = "rgba(0, 0, 0, 0.3)";
 
@@ -295,15 +300,14 @@ WebInspector.ResponsiveDesignView.prototype = {
         var rulerStepCount = 20;
 
         var rulerWidth = WebInspector.ResponsiveDesignView.RulerWidth;
+        var rulerHeight = WebInspector.ResponsiveDesignView.RulerHeight;
+        if (dipMediaInspectorHeight)
+            rulerHeight += WebInspector.ResponsiveDesignView.RulerBottomHeight + dipMediaInspectorHeight;
         var dipGridWidth = dipCanvasWidth - rulerWidth;
-        var dipGridHeight = dipCanvasHeight - rulerWidth;
+        var dipGridHeight = dipCanvasHeight - rulerHeight;
         var dipScrollX = this._viewport.scrollX * scale;
         var dipScrollY = this._viewport.scrollY * scale;
-        context.translate(rulerWidth, rulerWidth);
-
-        context.fillStyle = rulerBackgroundColor;
-        context.fillRect(-rulerWidth, -rulerWidth, dipGridWidth + rulerWidth, rulerWidth);
-        context.fillRect(-rulerWidth, 0, rulerWidth, dipGridHeight);
+        context.translate(rulerWidth, rulerHeight);
 
         context.fillStyle = backgroundColor;
         context.fillRect(0, 0, dipGridWidth, dipGridHeight);
@@ -313,52 +317,77 @@ WebInspector.ResponsiveDesignView.prototype = {
         context.fillStyle = textColor;
         context.lineWidth = 1;
 
-        // Draw vertical ruler.
+        // Draw horizontal ruler.
         context.save();
+        context.beginPath();
+        context.moveTo(0, -rulerHeight + WebInspector.ResponsiveDesignView.RulerHeight);
+        context.lineTo(dipGridWidth, -rulerHeight + WebInspector.ResponsiveDesignView.RulerHeight);
+        context.stroke();
+
         var minXIndex = Math.ceil(dipScrollX / rulerSubStep);
         var maxXIndex = Math.floor((dipScrollX + dipGridWidth) / rulerSubStep);
+        if (minXIndex) {
+            context.beginPath();
+            context.moveTo(0, -rulerHeight);
+            context.lineTo(0, 0);
+            context.stroke();
+        }
+
         context.translate(-dipScrollX, 0);
         for (var index = minXIndex; index <= maxXIndex; index++) {
             var x = index * rulerSubStep;
-            var y = -rulerWidth / 4;
-            if (!(index % (rulerStepCount / 4)))
-                y = -rulerWidth / 2;
-            if (!(index % (rulerStepCount / 2)))
-                y = -rulerWidth + 2;
+            var y = -WebInspector.ResponsiveDesignView.RulerHeight * 0.25;
+            var copyHeight = WebInspector.ResponsiveDesignView.RulerHeight * 0.25;
 
+            if (!(index % (rulerStepCount / 4)))
+                copyHeight = WebInspector.ResponsiveDesignView.RulerHeight * 0.5;
+            if (!(index % (rulerStepCount / 2))) {
+                context.strokeStyle = rulerOverlayColor;
+                y = -rulerHeight + WebInspector.ResponsiveDesignView.RulerHeight * 0.25;
+                copyHeight = 0;
+            }
             if (!(index % rulerStepCount)) {
                 context.save();
                 context.translate(x, 0);
-                context.fillText(Math.round(x / scale), 2, -rulerWidth / 2);
+                context.fillText(Math.round(x / scale), 2, -rulerHeight + 10);
                 context.restore();
-                y = -rulerWidth;
+                y = -rulerHeight;
             }
 
             context.beginPath();
             context.moveTo(x, y);
             context.lineTo(x, 0);
             context.stroke();
+            if (copyHeight) {
+                context.beginPath();
+                context.moveTo(x, -rulerHeight + WebInspector.ResponsiveDesignView.RulerHeight - copyHeight);
+                context.lineTo(x, -rulerHeight + WebInspector.ResponsiveDesignView.RulerHeight);
+                context.stroke();
+            }
+
+            if (!(index % (rulerStepCount / 2)))
+                context.strokeStyle = rulerColor;
         }
         context.restore();
 
-        // Draw horizontal ruler.
+        // Draw vertical ruler.
         context.save();
         var minYIndex = Math.ceil(dipScrollY / rulerSubStep);
         var maxYIndex = Math.floor((dipScrollY + dipGridHeight) / rulerSubStep);
         context.translate(0, -dipScrollY);
         for (var index = minYIndex; index <= maxYIndex; index++) {
             var y = index * rulerSubStep;
-            var x = -rulerWidth / 4;
+            var x = -rulerWidth * 0.25;
             if (!(index % (rulerStepCount / 4)))
-                x = -rulerWidth / 2;
+                x = -rulerWidth * 0.5;
             if (!(index % (rulerStepCount / 2)))
-                x = -rulerWidth + 2;
+                x = -rulerWidth * 0.75;
 
             if (!(index % rulerStepCount)) {
                 context.save();
                 context.translate(0, y);
                 context.rotate(-Math.PI / 2);
-                context.fillText(Math.round(y / scale), 2, -rulerWidth / 2);
+                context.fillText(Math.round(y / scale), 2, -rulerWidth + 10);
                 context.restore();
                 x = -rulerWidth;
             }
@@ -431,16 +460,20 @@ WebInspector.ResponsiveDesignView.prototype = {
         var availableDip = this._availableDipSize();
         var cssCanvasWidth = rect.width;
         var cssCanvasHeight = rect.height;
+        var mediaInspectorHeight = this._mediaInspector.isShowing() ? this._mediaInspector.element.offsetHeight : 0;
+        var rulerTotalHeight = WebInspector.ResponsiveDesignView.RulerHeight + (mediaInspectorHeight ? WebInspector.ResponsiveDesignView.RulerBottomHeight : 0);
 
-        this._mediaInspector.setAxisTransform(WebInspector.ResponsiveDesignView.RulerWidth / zoomFactor, this._viewport.scrollX, this._scale * this._viewport.pageScaleFactor);
+        this._mediaInspector.setAxisTransform(this._viewport.scrollX, this._scale * this._viewport.pageScaleFactor);
 
-        if (this._cachedZoomFactor !== zoomFactor) {
+        if (this._cachedZoomFactor !== zoomFactor || this._cachedMediaInspectorHeight !== mediaInspectorHeight) {
             var cssRulerWidth = WebInspector.ResponsiveDesignView.RulerWidth / zoomFactor + "px";
-            this._rulerGlasspane.style.height = cssRulerWidth;
-            this._rulerGlasspane.style.left = cssRulerWidth;
+            var cssRulerHeight = WebInspector.ResponsiveDesignView.RulerHeight / zoomFactor + "px";
+            var cssCanvasOffset = rulerTotalHeight / zoomFactor + mediaInspectorHeight + "px";
             this._slidersContainer.style.left = cssRulerWidth;
-            this._slidersContainer.style.top = cssRulerWidth;
-            this._warningMessage.style.height = cssRulerWidth;
+            this._slidersContainer.style.top = cssCanvasOffset;
+            this._warningMessage.style.height = cssRulerHeight;
+            this._mediaInspectorContainer.style.left = cssRulerWidth;
+            this._mediaInspectorContainer.style.top = cssRulerHeight;
 
             var cssSliderWidth = WebInspector.ResponsiveDesignView.SliderWidth / zoomFactor + "px";
             this._heightSliderContainer.style.flexBasis = cssSliderWidth;
@@ -457,8 +490,8 @@ WebInspector.ResponsiveDesignView.prototype = {
             this._inspectedPagePlaceholder.onResize();
         }
 
-        var pageScaleVisible = cssWidth + WebInspector.ResponsiveDesignView.PageScaleContainerWidth + WebInspector.ResponsiveDesignView.RulerWidth <= rect.width ||
-            cssHeight + WebInspector.ResponsiveDesignView.PageScaleContainerHeight + WebInspector.ResponsiveDesignView.RulerWidth <= rect.height;
+        var pageScaleVisible = cssWidth + WebInspector.ResponsiveDesignView.PageScaleContainerWidth + WebInspector.ResponsiveDesignView.RulerWidth / zoomFactor <= rect.width ||
+            cssHeight + WebInspector.ResponsiveDesignView.PageScaleContainerHeight + mediaInspectorHeight + rulerTotalHeight / zoomFactor  <= rect.height;
         this._pageScaleContainer.classList.toggle("hidden", !pageScaleVisible);
 
         var viewportChanged = !this._cachedViewport
@@ -467,8 +500,13 @@ WebInspector.ResponsiveDesignView.prototype = {
             || this._cachedViewport.pageScaleFactor !== this._viewport.pageScaleFactor
             || this._cachedViewport.minimumPageScaleFactor !== this._viewport.minimumPageScaleFactor
             || this._cachedViewport.maximumPageScaleFactor !== this._viewport.maximumPageScaleFactor;
-        if (viewportChanged || this._drawContentsSize !== this._cachedDrawContentsSize || this._cachedScale !== this._scale || this._cachedCssCanvasWidth !== cssCanvasWidth || this._cachedCssCanvasHeight !== cssCanvasHeight || this._cachedZoomFactor !== zoomFactor)
-            this._drawCanvas(cssCanvasWidth, cssCanvasHeight);
+
+        var canvasInvalidated = viewportChanged || this._drawContentsSize !== this._cachedDrawContentsSize || this._cachedScale !== this._scale ||
+            this._cachedCssCanvasWidth !== cssCanvasWidth || this._cachedCssCanvasHeight !== cssCanvasHeight || this._cachedZoomFactor !== zoomFactor ||
+            this._cachedMediaInspectorHeight !== mediaInspectorHeight;
+
+        if (canvasInvalidated)
+            this._drawCanvas(cssCanvasWidth, cssCanvasHeight, mediaInspectorHeight);
 
         if (viewportChanged) {
             this._pageScaleLabel.textContent = WebInspector.UIString("%.1f", this._viewport.pageScaleFactor);
@@ -486,6 +524,7 @@ WebInspector.ResponsiveDesignView.prototype = {
         this._cachedZoomFactor = zoomFactor;
         this._cachedViewport = this._viewport;
         this._cachedDrawContentsSize = this._drawContentsSize;
+        this._cachedMediaInspectorHeight = mediaInspectorHeight;
     },
 
     onResize: function()
