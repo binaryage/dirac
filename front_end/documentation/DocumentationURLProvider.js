@@ -233,11 +233,12 @@ WebInspector.DocumentationURLProvider.prototype = {
         var lastSlashIndex = itemPath.lastIndexOf("/");
         if (lastSlashIndex === -1)
             return;
-        var sourceName = itemPath.substring(0, lastSlashIndex + 1);
         // There are some properties which have several words in their name.
         // In article list they are written through gap, while in URL they are written through underscore.
         // We are creating URL for current property, so we have to replace all the gaps with underscores.
-        var propertyName = itemPath.substring(lastSlashIndex + 1).replace(" ", "_");
+        var correctedItemPath = itemPath.replace(" ", "_");
+        var sourceName = correctedItemPath.substring(0, lastSlashIndex + 1);
+        var propertyName = correctedItemPath.substring(lastSlashIndex + 1);
         var sources = WebInspector.DocumentationURLProvider._sources;
         for (var i = 0; i < sources.length; ++i) {
             if (sources[i].url() !== sourceName || !sources[i].source().hasOwnProperty(propertyName))

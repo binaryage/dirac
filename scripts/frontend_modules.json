@@ -120,6 +120,7 @@
             "ui/DataGrid.js",
             "ui/Dialog.js",
             "ui/DOMExtension.js",
+            "ui/DOMSyntaxHighlighter.js",
             "ui/DropDownMenu.js",
             "ui/EmptyView.js",
             "ui/ForwardedInputEventHandler.js",
@@ -218,7 +219,6 @@
         "name": "elements",
         "dependencies": ["components"],
         "sources": [
-            "elements/DOMSyntaxHighlighter.js",
             "elements/ElementsPanel.js",
             "elements/ElementsTreeOutline.js",
             "elements/EventListenersSidebarPane.js",

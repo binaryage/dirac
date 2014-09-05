@@ -205,6 +205,7 @@
             'front_end/ui/DataGrid.js',
             'front_end/ui/Dialog.js',
             'front_end/ui/DOMExtension.js',
+            'front_end/ui/DOMSyntaxHighlighter.js',
             'front_end/ui/DropDownMenu.js',
             'front_end/ui/EmptyView.js',
             'front_end/ui/ForwardedInputEventHandler.js',
@@ -340,7 +341,6 @@
             'front_end/documentation/WikiParser.js',
         ],
         'devtools_elements_js_files': [
-            'front_end/elements/DOMSyntaxHighlighter.js',
             'front_end/elements/ElementsPanel.js',
             'front_end/elements/ElementsTreeOutline.js',
             'front_end/elements/EventListenersSidebarPane.js',

@@ -26,6 +26,11 @@ WebInspector.DocumentationView.showDocumentationURL = function(url, searchItem)
     view.showDocumentation(url, searchItem);
 }
 
+WebInspector.DocumentationView._languageToMimeType = {
+    "javascript": "text/javascript",
+    "html": "text/html"
+};
+
 WebInspector.DocumentationView.prototype = {
     /**
      * @param {string} url
@@ -213,6 +218,10 @@ WebInspector.DocumentationView.Renderer.prototype = {
             var code = example.createChild("div", "documentation-example-code");
             code.classList.add("source-code");
             code.textContent = examples[i].code;
+            if (!examples[i].language)
+                continue;
+            var syntaxHighlighter = new WebInspector.DOMSyntaxHighlighter(WebInspector.DocumentationView._languageToMimeType[examples[i].language.toLowerCase()], true);
+            syntaxHighlighter.syntaxHighlightNode(code);
         }
     },
 
