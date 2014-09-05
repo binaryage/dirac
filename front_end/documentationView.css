@@ -7,20 +7,20 @@
 .documentation-example-code {
     border: 1px dotted black;
     border-radius: 6px;
-    padding: 1em;
-    margin-bottom: 1em;
+    padding: 10px;
+    margin-bottom: 10px;
 }
 
 .documentation-code {
     border: 1px dotted black;
     border-radius: 6px;
-    padding:1em;
-    margin-bottom: 1em;
+    padding: 10px;
+    margin-bottom: 10px;
 }
 
 .documentation-section-title {
     font-size: 120%;
-    padding-bottom: 0.4em;
+    padding-bottom: 4px;
     font-weight: bold;
 }
 
@@ -33,11 +33,11 @@
 }
 
 .documentation-parameter {
-    margin-bottom: 1em;
+    margin-left: 5px;
 }
 
 .documentation-section {
-    margin-bottom: 1.5em;
+    margin-bottom: 15px;
 }
 
 .documentation-code-tag {
@@ -45,50 +45,50 @@
 }
 
 .documentation-parameter-optional {
-    padding: 0.7ex;
+    padding: 6px;
     background-color: rgb(219, 234, 249);
     text-decoration: none;
-    margin-left: 1ex;
-    margin-top: -0.5ex;
+    margin-left: 10px;
+    margin-top: -5px;
     border-radius: 5px;
 }
 
 .documentation-parameter-data-type-value {
-    margin-right: 0.5em;
-    padding: 0.7ex;
+    margin-right: 5px;
+    padding: 6px;
     background-color: rgb(254, 254, 202);
     text-decoration: none;
-    margin-left: 1ex;
-    margin-top: -0.5ex;
+    margin-left: 10px;
+    margin-top: 5px;
     border-radius: 5px;
 }
 
 .documentation-parameter-name {
-    font-size: 115%;
+    font-size: 120%;
     font-style: italic;
 }
 
 .documentation-page-title {
     font-size: 160%;
     font-weight: bold;
-    padding-bottom: 0.7em;
+    padding-bottom: 7px;
 }
 
 .documentation-view {
     -webkit-user-select: text;
-    padding: 1em;
+    padding: 10px;
 }
 
 .documentation-example-description-section {
-    margin-bottom: 1em;
+    margin-bottom: 10px;
 }
 
 .documentation-example-link {
     float: right;
-    padding: 0.7ex;
+    padding: 6px;
     background-color: rgb(241, 246, 251);
     text-decoration: none;
-    margin-left: 1ex;
-    margin-top: -0.5ex;
+    margin-left: 10px;
+    margin-top: 5px;
     border-radius: 5px;
 }

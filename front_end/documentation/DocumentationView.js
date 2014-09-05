@@ -252,7 +252,7 @@ WebInspector.DocumentationView.Renderer.prototype = {
         default:
             console.error("Unknown ArticleElement type " + article.type());
         case elementTypes.Block:
-            element = document.createElement("p");
+            element = document.createElement(article.hasBullet() ? "li" : "p");
             break;
         }
 
