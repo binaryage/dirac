@@ -532,7 +532,7 @@ WebInspector.SourcesView.prototype = {
          */
         function searchResultsChanged()
         {
-            this._searchableView.cancelSearch();
+            this.performSearch(query, false, false);
         }
 
         this._searchView.performSearch(query, shouldJump, !!jumpBackwards, finishedCallback.bind(this), currentMatchChanged.bind(this), searchResultsChanged.bind(this));

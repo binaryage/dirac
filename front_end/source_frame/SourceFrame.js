@@ -323,7 +323,7 @@ WebInspector.SourceFrame.prototype = {
 
     onTextChanged: function(oldRange, newRange)
     {
-        if (this._searchResultsChangedCallback && !this._isReplacing)
+        if (this._searchResultsChangedCallback)
             this._searchResultsChangedCallback();
         this.clearMessages();
     },
@@ -564,11 +564,7 @@ WebInspector.SourceFrame.prototype = {
         if (!range)
             return;
         this._textEditor.highlightSearchResults(this._searchRegex, null);
-
-        this._isReplacing = true;
         var newRange = this._textEditor.editRange(range, text);
-        delete this._isReplacing;
-
         this._textEditor.setSelection(newRange.collapseToEnd());
     },
 
@@ -603,11 +599,9 @@ WebInspector.SourceFrame.prototype = {
         if (replacementLineEndings.length > 1)
             lastColumnNumber = replacementLineEndings[replacementLineCount - 1] - replacementLineEndings[replacementLineCount - 2] - 1;
 
-        this._isReplacing = true;
         this._textEditor.editRange(range, text);
         this._textEditor.revealPosition(lastLineNumber, lastColumnNumber);
         this._textEditor.setSelection(WebInspector.TextRange.createFromLocation(lastLineNumber, lastColumnNumber));
-        delete this._isReplacing;
     },
 
     _collectRegexMatches: function(regexObject)
