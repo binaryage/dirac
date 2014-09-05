@@ -101,6 +101,7 @@ WebInspector.NetworkLogView.FilterType = {
     HasResponseHeader: "HasResponseHeader",
     Method: "Method",
     MimeType: "MimeType",
+    Scheme: "Scheme",
     SetCookieDomain: "SetCookieDomain",
     SetCookieName: "SetCookieName",
     SetCookieValue: "SetCookieValue",
@@ -908,6 +909,7 @@ WebInspector.NetworkLogView.prototype = {
         this._suggestionBuilder.addItem(WebInspector.NetworkLogView.FilterType.Domain, request.domain);
         this._suggestionBuilder.addItem(WebInspector.NetworkLogView.FilterType.Method, request.requestMethod);
         this._suggestionBuilder.addItem(WebInspector.NetworkLogView.FilterType.MimeType, request.mimeType);
+        this._suggestionBuilder.addItem(WebInspector.NetworkLogView.FilterType.Scheme, "" + request.scheme);
         this._suggestionBuilder.addItem(WebInspector.NetworkLogView.FilterType.StatusCode, "" + request.statusCode);
 
         var responseHeaders = request.responseHeaders;
@@ -1486,6 +1488,9 @@ WebInspector.NetworkLogView.prototype = {
         case WebInspector.NetworkLogView.FilterType.MimeType:
             return WebInspector.NetworkLogView._requestMimeTypeFilter.bind(null, value);
 
+        case WebInspector.NetworkLogView.FilterType.Scheme:
+            return WebInspector.NetworkLogView._requestSchemeFilter.bind(null, value);
+
         case WebInspector.NetworkLogView.FilterType.SetCookieDomain:
             return WebInspector.NetworkLogView._requestSetCookieDomainFilter.bind(null, value);
 
@@ -1714,6 +1719,16 @@ WebInspector.NetworkLogView._requestMethodFilter = function(value, request)
 WebInspector.NetworkLogView._requestMimeTypeFilter = function(value, request)
 {
     return request.mimeType === value;
+}
+
+/**
+ * @param {string} value
+ * @param {!WebInspector.NetworkRequest} request
+ * @return {boolean}
+ */
+WebInspector.NetworkLogView._requestSchemeFilter = function(value, request)
+{
+    return request.scheme === value;
 }
 
 /**
