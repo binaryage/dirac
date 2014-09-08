@@ -33,7 +33,7 @@ devtools_extensions_js_files = gypi_values.devtools_extensions_js_files -
 
 #-------------------------------------------------------------------------------
 
-visibility = "//third_party/WebKit/*"
+visibility = [ "//third_party/WebKit/*" ]
 
 # Probably need to parameterize this. If we set it to true, there will be some
 # further work in the scripts below.
