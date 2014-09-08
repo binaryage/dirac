@@ -241,6 +241,9 @@ WebInspector.StatusBarButton = function(title, className, states)
     WebInspector.StatusBarItem.call(this, "button");
     this.element.className = className + " status-bar-item";
     this.element.addEventListener("click", this._clicked.bind(this), false);
+    this._longClickController = new WebInspector.LongClickController(this.element);
+    this._longClickController.addEventListener(WebInspector.LongClickController.Events.LongClick, this._onLongClick.bind(this));
+    this._longClickController.addEventListener(WebInspector.LongClickController.Events.LongPress, this._onLongPress.bind(this));
 
     this.glyph = this.element.createChild("div", "glyph");
     this.glyphShadow = this.element.createChild("div", "glyph shadow");
@@ -259,13 +262,26 @@ WebInspector.StatusBarButton = function(title, className, states)
 }
 
 WebInspector.StatusBarButton.prototype = {
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _onLongClick: function(event)
+    {
+        this.dispatchEventToListeners("longClickDown");
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _onLongPress: function(event)
+    {
+        this.dispatchEventToListeners("longPressDown");
+    },
+
     _clicked: function()
     {
         this.dispatchEventToListeners("click");
-        if (this._longClickInterval) {
-            clearInterval(this._longClickInterval);
-            delete this._longClickInterval;
-        }
+        this._longClickController.reset();
     },
 
     /**
@@ -274,10 +290,7 @@ WebInspector.StatusBarButton.prototype = {
     applyEnabledState: function()
     {
         this.element.disabled = !this._enabled;
-        if (this._longClickInterval) {
-            clearInterval(this._longClickInterval);
-            delete this._longClickInterval;
-        }
+        this._longClickController.reset();
     },
 
     /**
@@ -337,61 +350,12 @@ WebInspector.StatusBarButton.prototype = {
 
     makeLongClickEnabled: function()
     {
-        var boundMouseDown = mouseDown.bind(this);
-        var boundMouseUp = mouseUp.bind(this);
-
-        this.element.addEventListener("mousedown", boundMouseDown, false);
-        this.element.addEventListener("mouseout", boundMouseUp, false);
-        this.element.addEventListener("mouseup", boundMouseUp, false);
-
-        var longClicks = 0;
-
-        this._longClickData = { mouseUp: boundMouseUp, mouseDown: boundMouseDown };
-
-        /**
-         * @param {!Event} e
-         * @this {WebInspector.StatusBarButton}
-         */
-        function mouseDown(e)
-        {
-            if (e.which !== 1)
-                return;
-            longClicks = 0;
-            this._longClickInterval = setInterval(longClicked.bind(this), 200);
-        }
-
-        /**
-         * @param {!Event} e
-         * @this {WebInspector.StatusBarButton}
-         */
-        function mouseUp(e)
-        {
-            if (e.which !== 1)
-                return;
-            if (this._longClickInterval) {
-                clearInterval(this._longClickInterval);
-                delete this._longClickInterval;
-            }
-        }
-
-        /**
-         * @this {WebInspector.StatusBarButton}
-         */
-        function longClicked()
-        {
-            ++longClicks;
-            this.dispatchEventToListeners(longClicks === 1 ? "longClickDown" : "longClickPress");
-        }
+        this._longClickController.enable();
     },
 
     unmakeLongClickEnabled: function()
     {
-        if (!this._longClickData)
-            return;
-        this.element.removeEventListener("mousedown", this._longClickData.mouseDown, false);
-        this.element.removeEventListener("mouseout", this._longClickData.mouseUp, false);
-        this.element.removeEventListener("mouseup", this._longClickData.mouseUp, false);
-        delete this._longClickData;
+        this._longClickController.disable();
     },
 
     /**

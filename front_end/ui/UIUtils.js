@@ -979,6 +979,98 @@ WebInspector.animateFunction = function(func, params, frames, animationComplete)
     return cancelAnimation;
 }
 
+/**
+ * @constructor
+ * @extends {WebInspector.Object}
+ * @param {!Element} element
+ */
+WebInspector.LongClickController = function(element)
+{
+    this._element = element;
+}
+
+/**
+ * @enum {string}
+ */
+WebInspector.LongClickController.Events = {
+    LongClick: "LongClick",
+    LongPress: "LongPress"
+};
+
+WebInspector.LongClickController.prototype = {
+    reset: function()
+    {
+        if (this._longClickInterval) {
+            clearInterval(this._longClickInterval);
+            delete this._longClickInterval;
+        }
+    },
+
+    enable: function()
+    {
+        if (this._longClickData)
+            return;
+        var boundMouseDown = mouseDown.bind(this);
+        var boundMouseUp = mouseUp.bind(this);
+        var boundReset = this.reset.bind(this);
+
+        this._element.addEventListener("mousedown", boundMouseDown, false);
+        this._element.addEventListener("mouseout", boundReset, false);
+        this._element.addEventListener("mouseup", boundMouseUp, false);
+        this._element.addEventListener("click", boundReset, true);
+
+        var longClicks = 0;
+
+        this._longClickData = { mouseUp: boundMouseUp, mouseDown: boundMouseDown, reset: boundReset };
+
+        /**
+         * @param {!Event} e
+         * @this {WebInspector.LongClickController}
+         */
+        function mouseDown(e)
+        {
+            if (e.which !== 1)
+                return;
+            longClicks = 0;
+            this._longClickInterval = setInterval(longClicked.bind(this, e), 200);
+        }
+
+        /**
+         * @param {!Event} e
+         * @this {WebInspector.LongClickController}
+         */
+        function mouseUp(e)
+        {
+            if (e.which !== 1)
+                return;
+            this.reset();
+        }
+
+        /**
+         * @param {!Event} e
+         * @this {WebInspector.LongClickController}
+         */
+        function longClicked(e)
+        {
+            ++longClicks;
+            this.dispatchEventToListeners(longClicks === 1 ? WebInspector.LongClickController.Events.LongClick : WebInspector.LongClickController.Events.LongPress, e);
+        }
+    },
+
+    disable: function()
+    {
+        if (!this._longClickData)
+            return;
+        this._element.removeEventListener("mousedown", this._longClickData.mouseDown, false);
+        this._element.removeEventListener("mouseout", this._longClickData.reset, false);
+        this._element.removeEventListener("mouseup", this._longClickData.mouseUp, false);
+        this._element.addEventListener("click", this._longClickData.reset, true);
+        delete this._longClickData;
+    },
+
+    __proto__: WebInspector.Object.prototype
+}
+
 ;(function() {
 
 function windowLoaded()

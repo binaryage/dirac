@@ -163,6 +163,14 @@
 
 .sidebar-pane-toolbar > .pane-title-button.add {
     background-image: url(Images/paneAddButtons.png);
+    position: relative;
+}
+
+.sidebar-pane-toolbar > .pane-title-button.add .long-click-glyph {
+    background-color: rgba(135, 135, 135, 1);
+    -webkit-mask-image: url(Images/statusbarButtonGlyphs.png);
+    -webkit-mask-position: -298px -53px;
+    -webkit-mask-size: 320px 144px;
 }
 
 .sidebar-pane-toolbar > .pane-title-button.element-state {
