@@ -3396,7 +3396,8 @@
             {
                 "name": "skipStackFrames",
                 "parameters": [
-                    { "name": "script", "optional": true, "type": "string", "description": "Regular expression defining the scripts to ignore while stepping." }
+                    { "name": "script", "type": "string", "optional": true, "description": "Regular expression defining the scripts to ignore while stepping." },
+                    { "name": "skipContentScripts", "type": "boolean", "optional": true, "description": "True, if all content scripts should be ignored." }
                 ],
                 "hidden": true,
                 "description": "Makes backend skip steps in the sources with names matching given pattern. VM will try leave blacklisted scripts by performing 'step in' several times, finally resorting to 'step out' if unsuccessful."
