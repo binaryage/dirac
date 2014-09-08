@@ -439,14 +439,6 @@
     flex: none;
 }
 
-.responsive-design-ruler-glasspane {
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 0;
-    background-color: transparent;
-}
-
 .responsive-design-toggle-media-inspector .glyph {
     background-color: rgb(180, 180, 180);
     -webkit-mask-position: -128px -48px;
@@ -562,30 +554,4 @@
 
 .media-inspector-label-left {
     left: 2px;
-}
-
-/* Media query serifs on ruler */
-
-.media-inspector-threshold {
-    position: absolute;
-    top: 0px;
-    bottom: 0px;
-    width: 5px;
-    margin-left: -2px;
-}
-
-.media-inspector-threshold::before {
-    content: ".";
-    color: transparent;
-    position: absolute;
-    left: 2px;
-    right: 2px;
-    top: 0px;
-    bottom: 0px;
-    box-sizing: border-box;
-    border-left: 1px solid rgb(204, 104, 31);
-}
-
-.media-inspector-threshold:hover {
-    background-color: rgb(204, 104, 31);
 }
