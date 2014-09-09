@@ -217,7 +217,8 @@ WebInspector.DocumentationView.Renderer.prototype = {
                 liveUrl.href = examples[i].liveUrl;
                 liveUrl.textContent = WebInspector.UIString("Example");
             }
-            exampleDescription.appendChild(this._renderBlock(examples[i].description));
+            if (examples[i].description)
+                exampleDescription.appendChild(this._renderBlock(examples[i].description));
             var code = example.createChild("div", "documentation-code");
             code.classList.add("source-code");
             code.textContent = examples[i].code;

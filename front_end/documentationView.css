@@ -62,11 +62,12 @@
 }
 
 .documentation-example-description-section {
-    margin-bottom: 10px;
+    margin-bottom: 20px;
 }
 
 .documentation-example-link {
     float: right;
+    background-color: rgb(241, 246, 251);
 }
 
 .documentation-box {
