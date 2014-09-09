@@ -3127,6 +3127,18 @@
                 ],
                 "description": "Error data for setScriptSource command. compileError is a case type for uncompilable script source error.",
                 "hidden": true
+            },
+            {
+                "id": "PromiseDetails",
+                "type": "object",
+                "description": "Information about the promise.",
+                "properties": [
+                    { "name": "id", "type": "integer", "description": "Unique id of the promise." },
+                    { "name": "status", "type": "string", "enum": ["pending", "resolved", "rejected"], "description": "Status of the promise." },
+                    { "name": "parentId", "type": "integer", "optional": true, "description": "Id of the parent promise." },
+                    { "name": "callFrame", "$ref": "Console.CallFrame", "optional": true, "description": "Top call frame on promise creation."}
+                ],
+                "hidden": true
             }
         ],
         "commands": [
@@ -3409,6 +3421,24 @@
                 ],
                 "hidden": true,
                 "description": "Enables or disables async call stacks tracking."
+            },
+            {
+                "name": "enablePromiseTracker",
+                "hidden": true,
+                "description": "Enables promise tracking, information about <code>Promise</code>s created or updated will now be stored on the backend."
+            },
+            {
+                "name": "disablePromiseTracker",
+                "hidden": true,
+                "description": "Disables promise tracking."
+            },
+            {
+                "name": "getPromises",
+                "returns": [
+                    { "name": "promises", "type": "array", "items": { "$ref": "PromiseDetails" }, "description": "Information about stored promises." }
+                ],
+                "hidden": true,
+                "description": "Returns detailed information about all <code>Promise</code>s that were created or updated after the <code>enablePromiseTracker</code> command, and have not been garbage collected yet."
             }
         ],
         "events": [
