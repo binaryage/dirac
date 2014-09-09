@@ -21,6 +21,12 @@ WebInspector.Throttler.prototype = {
         this._isRunningProcess = false;
         if (this._process)
             this._innerSchedule(false);
+        this._processCompletedForTests();
+    },
+
+    _processCompletedForTests: function()
+    {
+        // For sniffing in tests.
     },
 
     _onTimeout: function()
