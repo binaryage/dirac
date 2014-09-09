@@ -5,7 +5,7 @@
  */
 
 .documentation-code {
-    border: 1px dotted black;
+    border: 1px solid gray;
     border-radius: 6px;
     padding: 10px;
     margin-bottom: 10px;
@@ -18,19 +18,26 @@
 }
 
 .documentation-link {
-    margin-left: 0.5em;
+    margin-left: 5px;
 }
 
 .documentation-highlighted-text {
     font-weight: bold;
 }
 
-.documentation-parameter {
-    margin-left: 5px;
+.documentation-view .documentation-method-signature.monospace {
+    font-size: 120% !important;
+    border: 1px solid gray;
+    border-radius: 6px;
+    padding: 10px;
 }
 
 .documentation-section {
     margin-bottom: 15px;
+}
+
+.documentation-section-content {
+    margin-left: 16px;
 }
 
 .documentation-code-tag {
@@ -67,11 +74,21 @@
 
 .documentation-example-link {
     float: right;
-    background-color: rgb(241, 246, 251);
+    background-color: rgb(219, 234, 249);
+}
+
+.documentation-example-link:visited {
+    color: rgb(109, 114, 255);
+}
+
+.documentation-text {
+    line-height: 1.5;
 }
 
 .documentation-box {
     padding: 6px;
+    padding-left: 10px;
+    padding-right: 10px;
     text-decoration: none;
     margin-left: 10px;
     margin-top: 5px;

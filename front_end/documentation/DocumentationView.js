@@ -102,8 +102,9 @@ WebInspector.DocumentationView.Renderer.prototype = {
     {
         this._createPageTitle(this._article.pageTitle, this._searchItem);
         this._createStandardizationStatus(this._article.standardizationStatus);
-        this._createTextSectionWithTitle("Summary", this._article.summary);
         this._createSignatureSection(this._article.parameters, this._article.methods);
+        this._createTextSectionWithTitle("Summary", this._article.summary);
+        this._createParametersSection(this._article.parameters);
         this._createReturnValueSection(this._article.methods);
         this._createExamplesSection(this._article.examples);
         this._createTextSectionWithTitle("Remarks", this._article.remarks);
@@ -148,6 +149,7 @@ WebInspector.DocumentationView.Renderer.prototype = {
         title.textContent = titleText;
         var text = this._renderBlock(article);
         text.classList.add("documentation-text");
+        text.classList.add("documentation-section-content");
         section.appendChild(text);
     },
 
@@ -157,13 +159,35 @@ WebInspector.DocumentationView.Renderer.prototype = {
      */
     _createSignatureSection: function(parameters, method)
     {
+        if (!method)
+            return;
+        var section = this._element.createChild("p", "documentation-section");
+        var signature = section.createChild("span", "documentation-method-signature documentation-section-content monospace");
+        var methodName = signature.createChild("span", "documentation-method-name");
+        methodName.textContent = this._searchItem.split(".").peekLast() + "(";
+        for (var i = 0; i < parameters.length; ++i) {
+            if (i > 0)
+                signature.createTextChild(", ")
+            var parameterType = signature.createChild("span", "documentation-parameter-data-type-value");
+            parameterType.textContent = parameters[i].dataType + (parameters[i].optional ? "=" : "");;
+        }
+        signature.createTextChild("): ");
+        var returnTypeElement = signature.createChild("span", "documentation-parameter-data-type-value");
+        returnTypeElement.textContent = method.returnValueName;
+    },
+
+    /**
+     * @param {!Array.<!WebInspector.JSArticle.Parameter>} parameters
+     */
+    _createParametersSection: function(parameters)
+    {
         if (!parameters.length)
             return;
         var section = this._element.createChild("div", "documentation-section");
         var title = section.createChild("div", "documentation-section-title");
         title.textContent = "Parameters";
         for (var i = 0; i < parameters.length; ++i) {
-            var parameter = section.createChild("div", "documentation-parameter");
+            var parameter = section.createChild("div", "documentation-parameter documentation-section-content");
             var header = parameter.createChild("div", "documentation-parameter-header");
             var name = header.createChild("span", "documentation-parameter-name");
             name.textContent = parameters[i].name;
@@ -186,13 +210,12 @@ WebInspector.DocumentationView.Renderer.prototype = {
     {
         if (!method)
             return;
-
         var section = this._element.createChild("div", "documentation-section");
         var title = section.createChild("div", "documentation-section-title");
         title.textContent = "Return Value";
-        var returnValueName = section.createChild("div", "documentation-return-value");
+        var returnValueName = section.createChild("div", "documentation-section-content documentation-return-value");
         returnValueName.textContent = WebInspector.UIString("Returns an object of type " + method.returnValueName + ".");
-        var returnValueDescription = section.createChild("div", "documentation-return-value");
+        var returnValueDescription = section.createChild("div", "documentation-section-content documentation-text");
         returnValueDescription.textContent = WebInspector.UIString(method.returnValueDescription);
     },
 
@@ -209,7 +232,7 @@ WebInspector.DocumentationView.Renderer.prototype = {
         title.textContent = "Examples";
 
         for (var i = 0; i < examples.length; ++i) {
-            var example = section.createChild("div", "documentation-example");
+            var example = section.createChild("div", "documentation-example documentation-section-content");
             var exampleDescription = example.createChild("div", "documentation-example-description-section");
             if (examples[i].liveUrl) {
                 var liveUrl = exampleDescription.createChild("a", "documentation-example-link");
@@ -217,10 +240,12 @@ WebInspector.DocumentationView.Renderer.prototype = {
                 liveUrl.href = examples[i].liveUrl;
                 liveUrl.textContent = WebInspector.UIString("Example");
             }
-            if (examples[i].description)
-                exampleDescription.appendChild(this._renderBlock(examples[i].description));
-            var code = example.createChild("div", "documentation-code");
-            code.classList.add("source-code");
+            if (examples[i].description) {
+                var description = this._renderBlock(examples[i].description);
+                description.classList.add("documentation-text");
+                exampleDescription.appendChild(description);
+            }
+            var code = example.createChild("div", "documentation-code source-code");
             code.textContent = examples[i].code;
             if (!examples[i].language)
                 continue;
@@ -252,8 +277,7 @@ WebInspector.DocumentationView.Renderer.prototype = {
             element = document.createElementWithClass("span", "documentation-code-tag");
             break;
         case elementTypes.CodeBlock:
-            element = document.createElementWithClass("pre", "documentation-code");
-            element.classList.add("source-code");
+            element = document.createElementWithClass("pre", "documentation-code source-code");
             element.textContent = article.code();
             break;
         case elementTypes.PlainText:
@@ -305,12 +329,15 @@ WebInspector.DocumentationView.ContextMenuProvider.prototype = {
             return;
         if (descriptors.length === 1) {
             var formatString = WebInspector.useLowerCaseMenuTitles() ? "Show documentation for %s.%s" : "Show Documentation for %s.%s";
-            contextMenu.appendItem(WebInspector.UIString(formatString, descriptors[0].name(), descriptors[0].searchItem()), WebInspector.DocumentationView.showDocumentationURL.bind(null, descriptors[0].url(), descriptors[0].searchItem()));
+            var methodName = String.sprintf("%s.%s", descriptors[0].name(), descriptors[0].searchItem());
+            contextMenu.appendItem(WebInspector.UIString(formatString, descriptors[0].name(), descriptors[0].searchItem()), WebInspector.DocumentationView.showDocumentationURL.bind(null, descriptors[0].url(), methodName));
             return;
         }
         var subMenuItem = contextMenu.appendSubMenuItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Show documentation for..." : "Show Documentation for..."));
-        for (var i = 0; i < descriptors.length; ++i)
-            subMenuItem.appendItem(String.sprintf("%s.%s", descriptors[i].name(), descriptors[i].searchItem()), WebInspector.DocumentationView.showDocumentationURL.bind(null, descriptors[i].url(), descriptors[i].searchItem()));
+        for (var i = 0; i < descriptors.length; ++i) {
+            var methodName = String.sprintf("%s.%s", descriptors[i].name(), descriptors[i].searchItem());
+            subMenuItem.appendItem(methodName, WebInspector.DocumentationView.showDocumentationURL.bind(null, descriptors[i].url(), methodName));
+        }
     },
 
     /**

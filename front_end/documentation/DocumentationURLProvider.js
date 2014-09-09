@@ -74,7 +74,7 @@ WebInspector.DocumentationURLProvider.ItemDescriptor.prototype = {
 
 /**
  * @constructor
- * FIXME: source parameter is not annotated property due to crbug.com/407097
+ * FIXME: source parameter is not annotated properly due to crbug.com/407097
  * @param {*} source
  * @param {string} url
  * @param {string} name
@@ -172,7 +172,7 @@ WebInspector.DocumentationURLProvider.prototype = {
         var sources = WebInspector.DocumentationURLProvider._sources;
         var propertyName = searchTerm.toUpperCase() === searchTerm ? "constants" : searchTerm;
         for (var i = 0; i < sources.length; ++i) {
-            if (!sources[i].source().hasOwnProperty(propertyName))
+            if (!sources[i].source().hasOwnProperty(searchTerm) || this._inheritedFromFunction(sources[i].source(), searchTerm))
                 continue;
             descriptors.push(new WebInspector.DocumentationURLProvider.ItemDescriptor(sources[i], propertyName));
         }
@@ -233,19 +233,29 @@ WebInspector.DocumentationURLProvider.prototype = {
         var lastSlashIndex = itemPath.lastIndexOf("/");
         if (lastSlashIndex === -1)
             return;
+        var sourceName = itemPath.substring(0, lastSlashIndex + 1);
         // There are some properties which have several words in their name.
         // In article list they are written through gap, while in URL they are written through underscore.
         // We are creating URL for current property, so we have to replace all the gaps with underscores.
-        var correctedItemPath = itemPath.replace(" ", "_");
-        var sourceName = correctedItemPath.substring(0, lastSlashIndex + 1);
-        var propertyName = correctedItemPath.substring(lastSlashIndex + 1);
+        var propertyName = itemPath.substring(lastSlashIndex + 1).replace(" ", "_");
         var sources = WebInspector.DocumentationURLProvider._sources;
         for (var i = 0; i < sources.length; ++i) {
-            if (sources[i].url() !== sourceName || !sources[i].source().hasOwnProperty(propertyName))
+            if (sources[i].url() !== sourceName || !sources[i].source().hasOwnProperty(propertyName) || this._inheritedFromFunction(sources[i].source(), propertyName))
                 continue;
             var descriptors = this._articleList.get(propertyName) || [];
             descriptors.push(new WebInspector.DocumentationURLProvider.ItemDescriptor(sources[i], propertyName));
             this._articleList.set(propertyName, descriptors);
         }
+    },
+
+    /**
+     * FIXME: object parameter is not annotated properly due to crbug.com/407097
+     * @param {*} object
+     * @param {string} propertyName
+     * @return {boolean}
+     */
+    _inheritedFromFunction: function(object, propertyName)
+    {
+        return (object instanceof Function && object.hasOwnProperty(propertyName) && Function.hasOwnProperty(propertyName));
     }
 }
