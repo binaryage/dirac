@@ -168,9 +168,11 @@ WebInspector.DocumentationView.Renderer.prototype = {
             var name = header.createChild("span", "documentation-parameter-name");
             name.textContent = parameters[i].name;
             var dataTypeValue = header.createChild("span", "documentation-parameter-data-type-value");
+            dataTypeValue.classList.add("documentation-box");
             dataTypeValue.textContent = parameters[i].dataType;
             if (parameters[i].optional) {
                 var optional = header.createChild("span", "documentation-parameter-optional");
+                optional.classList.add("documentation-box");
                 optional.textContent = WebInspector.UIString("Optional");
             }
             parameter.appendChild(this._renderBlock(parameters[i].description));
@@ -211,11 +213,12 @@ WebInspector.DocumentationView.Renderer.prototype = {
             var exampleDescription = example.createChild("div", "documentation-example-description-section");
             if (examples[i].liveUrl) {
                 var liveUrl = exampleDescription.createChild("a", "documentation-example-link");
+                liveUrl.classList.add("documentation-box");
                 liveUrl.href = examples[i].liveUrl;
                 liveUrl.textContent = WebInspector.UIString("Example");
             }
             exampleDescription.appendChild(this._renderBlock(examples[i].description));
-            var code = example.createChild("div", "documentation-example-code");
+            var code = example.createChild("div", "documentation-code");
             code.classList.add("source-code");
             code.textContent = examples[i].code;
             if (!examples[i].language)

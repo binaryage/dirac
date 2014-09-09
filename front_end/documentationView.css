@@ -4,13 +4,6 @@
  * found in the LICENSE file.
  */
 
-.documentation-example-code {
-    border: 1px dotted black;
-    border-radius: 6px;
-    padding: 10px;
-    margin-bottom: 10px;
-}
-
 .documentation-code {
     border: 1px dotted black;
     border-radius: 6px;
@@ -45,22 +38,11 @@
 }
 
 .documentation-parameter-optional {
-    padding: 6px;
     background-color: rgb(219, 234, 249);
-    text-decoration: none;
-    margin-left: 10px;
-    margin-top: -5px;
-    border-radius: 5px;
 }
 
 .documentation-parameter-data-type-value {
-    margin-right: 5px;
-    padding: 6px;
     background-color: rgb(254, 254, 202);
-    text-decoration: none;
-    margin-left: 10px;
-    margin-top: 5px;
-    border-radius: 5px;
 }
 
 .documentation-parameter-name {
@@ -85,8 +67,10 @@
 
 .documentation-example-link {
     float: right;
+}
+
+.documentation-box {
     padding: 6px;
-    background-color: rgb(241, 246, 251);
     text-decoration: none;
     margin-left: 10px;
     margin-top: 5px;
