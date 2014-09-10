@@ -58,8 +58,8 @@ WebInspector.HAREntry.prototype = {
             timings: this._buildTimings()
         };
 
-        if (this._request.connectionId)
-            entry.connection = String(this._request.connectionId);
+        if (this._request.connectionId !== "0")
+            entry.connection = this._request.connectionId;
         var page = this._request.target().networkLog.pageLoadForRequest(this._request);
         if (page)
             entry.pageref = "page_" + page.id;

@@ -68,6 +68,9 @@ WebInspector.NetworkRequest = function(target, requestId, url, documentURL, fram
     this._responseHeaderValues = {};
 
     this._remoteAddress = "";
+
+    /** @type {string} */
+    this.connectionId = "0";
 }
 
 WebInspector.NetworkRequest.Events = {

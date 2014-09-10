@@ -199,7 +199,7 @@ WebInspector.NetworkDispatcher.prototype = {
         }
 
         networkRequest.connectionReused = response.connectionReused;
-        networkRequest.connectionId = response.connectionId;
+        networkRequest.connectionId = String(response.connectionId);
         if (response.remoteIPAddress)
             networkRequest.setRemoteAddress(response.remoteIPAddress, response.remotePort || -1);
 
