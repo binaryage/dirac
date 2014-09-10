@@ -284,7 +284,7 @@ WebInspector.ResponsiveDesignView.prototype = {
         const lightLineColor = "rgb(132, 132, 132)";
         const darkLineColor = "rgb(114, 114, 114)";
         const rulerColor = "rgb(125, 125, 125)";
-        const rulerOverlayColor = "rgba(255, 255, 255, 0.4)";
+        const rulerOverlayColor = "rgba(255, 255, 255, 0.2)";
         const textColor = "rgb(186, 186, 186)";
         const contentsSizeColor = "rgba(0, 0, 0, 0.3)";
 
@@ -473,7 +473,7 @@ WebInspector.ResponsiveDesignView.prototype = {
             this._slidersContainer.style.top = cssCanvasOffset;
             this._warningMessage.style.height = cssRulerHeight;
             this._mediaInspectorContainer.style.left = cssRulerWidth;
-            this._mediaInspectorContainer.style.top = cssRulerHeight;
+            this._mediaInspectorContainer.style.marginTop = cssRulerHeight;
 
             var cssSliderWidth = WebInspector.ResponsiveDesignView.SliderWidth / zoomFactor + "px";
             this._heightSliderContainer.style.flexBasis = cssSliderWidth;

@@ -453,6 +453,11 @@
 .responsive-design-media-container {
     position: absolute;
     right: 0;
+    top: 0;
+    padding-bottom: 5px;
+    background-color: rgb(43, 43, 43);
+    box-shadow: inset 0px 5px 7px rgba(0, 0, 0, 0.7);
+    overflow: hidden;
 }
 
 /* Media query bars */
@@ -461,6 +466,11 @@
     position: relative;
     height: 14px;
     margin: 2px 0;
+    z-index: 1;
+}
+
+.media-inspector-marker-container:hover {
+    z-index: 2;
 }
 
 .media-inspector-marker {
@@ -472,7 +482,7 @@
 }
 
 .media-inspector-marker-inactive {
-    -webkit-filter: brightness(85%);
+    -webkit-filter: brightness(80%);
 }
 
 .media-inspector-marker-highlight {
@@ -480,26 +490,27 @@
 }
 
 .media-inspector-marker-max-width {
-    background: linear-gradient(to bottom, rgb(72, 139, 249), rgb(26, 113, 233));
-    box-shadow: rgb(0, 0, 0) 1px 0 1px;
+    background: linear-gradient(to left, rgba(255, 255, 255, 0.27), rgba(0,0,0,0) 30px), linear-gradient(to bottom, rgb(72, 139, 249), rgb(26, 113, 233));
     border-radius: 0 2px 2px 0;
+    border-right: 2px solid rgb(171, 207, 255);
 }
 
 .media-inspector-marker-min-max-width {
-    background: linear-gradient(to bottom, rgb(102, 186, 11), rgb(4, 166, 0));
-    box-shadow: rgb(0, 0, 0) -1px 0 1px, rgb(0, 0, 0) 1px 0 1px;
+    background: linear-gradient(to right, rgba(255, 255, 255, 0.27), rgba(0,0,0,0) 30px), linear-gradient(to left, rgba(255, 255, 255, 0.27), rgba(0,0,0,0) 30px), linear-gradient(to bottom, rgb(112, 174, 7), rgb(3, 131, 0));
     border-radius: 2px;
+    border-left: 2px solid rgb(80, 226, 40);
+    border-right: 2px solid rgb(80, 226, 40);
 }
 
 .media-inspector-marker-min-width {
-    background: linear-gradient(to bottom, rgb(222, 129, 30), rgb(204, 104, 31));
-    box-shadow: rgb(0, 0, 0) -1px 0 1px;
+    background: linear-gradient(to right, rgba(255, 255, 255, 0.27), rgba(0,0,0,0) 30px), linear-gradient(to bottom, rgb(222, 129, 30), rgb(204, 104, 31));
     border-radius: 2px 0 0 2px;
+    border-left: 2px solid rgb(255, 181, 142);
 }
 
 .media-inspector-marker-under-highlighted {
     background: transparent !important;
-    box-shadow: none !important;
+    border: none !important;
 }
 
 /* Media query labels */
@@ -513,11 +524,11 @@
 }
 
 .media-inspector-marker-label-container-left {
-    left: 0;
+    left: -2px;
 }
 
 .media-inspector-marker-label-container-right {
-    right: 0;
+    right: -2px;
 }
 
 .media-inspector-marker-serif {
@@ -542,16 +553,16 @@
 .media-inspector-marker-label {
     color: rgb(230, 230, 230);
     position: absolute;
-    top: -1px;
+    top: 1px;
     bottom: 0;
-    font-size: 13px;
-    text-shadow: rgb(0, 0, 0) 1px 1px;
+    font-size: 10px;
+    text-shadow: rgba(0, 0, 0, 0.6) 1px 1px;
 }
 
 .media-inspector-label-right {
-    right: 2px;
+    right: 4px;
 }
 
 .media-inspector-label-left {
-    left: 2px;
+    left: 4px;
 }
