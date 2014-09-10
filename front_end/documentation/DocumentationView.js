@@ -75,8 +75,10 @@ WebInspector.DocumentationView.prototype = {
     _createEmptyPage: function()
     {
         this.element.removeChildren();
-        var pageTitle = this.element.createChild("div", "documentation-page-title");
-        pageTitle.textContent = WebInspector.UIString("Documentation not available");
+        var emptyPage = this.element.createChild("div", "documentation-empty-page fill");
+        var pageTitle = emptyPage.createChild("div", "documentation-not-found");
+        pageTitle.textContent = "No documentation found.";
+        emptyPage.createChild("div", "documentation-empty-page-align");
     },
 
     __proto__: WebInspector.View.prototype

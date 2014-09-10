@@ -94,3 +94,23 @@
     margin-top: 5px;
     border-radius: 5px;
 }
+
+.documentation-not-found {
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    font-size: 24px;
+    font-weight: bold;
+    color: rgb(191, 191, 191);
+    flex-shrink: 0;
+    flex-grow: 2;
+}
+
+.documentation-empty-page {
+    display: flex;
+    flex-direction: column !important;
+}
+
+.documentation-empty-page-align {
+    flex-grow: 3;
+}
