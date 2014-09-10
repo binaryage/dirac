@@ -49,11 +49,12 @@ WebInspector.TimelinePanel = function()
 
     // Create model.
     if (WebInspector.experimentsSettings.timelineOnTraceEvents.isEnabled()) {
-        this._tracingModel = new WebInspector.TracingModel();
-        this._tracingModel.addEventListener(WebInspector.TracingModel.Events.BufferUsage, this._onTracingBufferUsage, this);
+        this._tracingManager = new WebInspector.TracingManager();
+        this._tracingManager.addEventListener(WebInspector.TracingManager.Events.BufferUsage, this._onTracingBufferUsage, this);
 
+        this._tracingModel = new WebInspector.TracingModel();
         this._uiUtils = new WebInspector.TracingTimelineUIUtils();
-        this._tracingTimelineModel = new WebInspector.TracingTimelineModel(this._tracingModel, this._uiUtils.hiddenRecordsFilter());
+        this._tracingTimelineModel = new WebInspector.TracingTimelineModel(this._tracingManager, this._tracingModel, this._uiUtils.hiddenRecordsFilter());
         this._model = this._tracingTimelineModel;
     } else {
         this._uiUtils = new WebInspector.TimelineUIUtilsImpl();

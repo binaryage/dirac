@@ -9,16 +9,17 @@
  * @extends {WebInspector.Object}
  * @implements {WebInspector.TargetManager.Observer}
  */
-WebInspector.TracingModel = function()
+WebInspector.TracingManager = function()
 {
-    this.reset();
+    WebInspector.Object.call(this);
     this._active = false;
     WebInspector.targetManager.observeTargets(this);
 }
 
-WebInspector.TracingModel.Events = {
+WebInspector.TracingManager.Events = {
     "BufferUsage": "BufferUsage",
     "TracingStarted": "TracingStarted",
+    "EventsCollected": "EventsCollected",
     "TracingStopped": "TracingStopped",
     "TracingComplete": "TracingComplete"
 }
@@ -36,7 +37,106 @@ WebInspector.TracingModel.Events = {
         s: string
     }}
  */
-WebInspector.TracingModel.EventPayload;
+WebInspector.TracingManager.EventPayload;
+
+
+WebInspector.TracingManager.prototype = {
+    /**
+     * @param {!WebInspector.Target} target
+     */
+    targetAdded: function(target)
+    {
+        if (this._target)
+            return;
+        this._target = target;
+        InspectorBackend.registerTracingDispatcher(new WebInspector.TracingDispatcher(this));
+    },
+
+    /**
+     * @param {!WebInspector.Target} target
+     */
+    targetRemoved: function(target)
+    {
+        if (this._target !== target)
+            return;
+        delete this._target;
+    },
+
+    /**
+     * @param {number} usage
+     */
+    _bufferUsage: function(usage)
+    {
+        this.dispatchEventToListeners(WebInspector.TracingManager.Events.BufferUsage, usage);
+    },
+
+    /**
+     * @param {!Array.<!WebInspector.TracingManager.EventPayload>} events
+     */
+    _eventsCollected: function(events)
+    {
+        this.dispatchEventToListeners(WebInspector.TracingManager.Events.EventsCollected, events);
+    },
+
+    _tracingComplete: function()
+    {
+        this.dispatchEventToListeners(WebInspector.TracingManager.Events.TracingComplete);
+    },
+
+    _tracingStarted: function()
+    {
+        if (this._active)
+            return;
+        this._active = true;
+        this.dispatchEventToListeners(WebInspector.TracingManager.Events.TracingStarted);
+    },
+
+    /**
+     * @param {string} categoryFilter
+     * @param {string} options
+     * @param {function(?string)=} callback
+     */
+    start: function(categoryFilter, options, callback)
+    {
+        if (this._active)
+            return;
+        WebInspector.profilingLock().acquire();
+        this._shouldReleaseLock = true;
+        var bufferUsageReportingIntervalMs = 500;
+        TracingAgent.start(categoryFilter, options, bufferUsageReportingIntervalMs, callback);
+        this._tracingStarted();
+        this._active = true;
+    },
+
+    stop: function()
+    {
+        if (!this._active)
+            return;
+        TracingAgent.end(this._onStop.bind(this));
+        if (this._shouldReleaseLock) {
+            this._shouldReleaseLock = false;
+            WebInspector.profilingLock().release();
+        }
+    },
+
+    _onStop: function()
+    {
+        if (!this._active)
+            return;
+        this.dispatchEventToListeners(WebInspector.TracingManager.Events.TracingStopped);
+        this._active = false;
+    },
+
+    __proto__: WebInspector.Object.prototype
+}
+
+/**
+ * @constructor
+ */
+WebInspector.TracingModel = function()
+{
+    this.reset();
+}
 
 /**
  * @enum {string}
@@ -91,27 +191,6 @@ WebInspector.TracingModel.isAsyncPhase = function(phase)
 
 WebInspector.TracingModel.prototype = {
     /**
-     * @param {!WebInspector.Target} target
-     */
-    targetAdded: function(target)
-    {
-        if (this._target)
-            return;
-        this._target = target;
-        InspectorBackend.registerTracingDispatcher(new WebInspector.TracingDispatcher(this));
-    },
-
-    /**
-     * @param {!WebInspector.Target} target
-     */
-    targetRemoved: function(target)
-    {
-        if (this._target !== target)
-            return;
-        delete this._target;
-    },
-
-    /**
      * @return {!Array.<!WebInspector.TracingModel.Event>}
      */
     devtoolsPageMetadataEvents: function()
@@ -128,32 +207,6 @@ WebInspector.TracingModel.prototype = {
     },
 
     /**
-     * @param {string} categoryFilter
-     * @param {string} options
-     * @param {function(?string)=} callback
-     */
-    start: function(categoryFilter, options, callback)
-    {
-        WebInspector.profilingLock().acquire();
-        this._shouldReleaseLock = true;
-        this.reset();
-        var bufferUsageReportingIntervalMs = 500;
-        TracingAgent.start(categoryFilter, options, bufferUsageReportingIntervalMs, callback);
-        this._tracingStarted();
-    },
-
-    stop: function()
-    {
-        if (!this._active)
-            return;
-        TracingAgent.end(this._onStop.bind(this));
-        if (this._shouldReleaseLock) {
-            this._shouldReleaseLock = false;
-            WebInspector.profilingLock().release();
-        }
-    },
-
-    /**
      * @return {?string}
      */
     sessionId: function()
@@ -162,60 +215,31 @@ WebInspector.TracingModel.prototype = {
     },
 
     /**
-     * @param {!Array.<!WebInspector.TracingModel.EventPayload>} events
+     * @param {!Array.<!WebInspector.TracingManager.EventPayload>} events
      */
     setEventsForTest: function(events)
     {
-        this._tracingStarted();
-        this._eventsCollected(events);
-        this._tracingComplete();
+        this.reset();
+        this.addEvents(events);
+        this.tracingComplete();
     },
 
     /**
-     * @param {number} usage
+     * @param {!Array.<!WebInspector.TracingManager.EventPayload>} events
      */
-    _bufferUsage: function(usage)
+    addEvents: function(events)
     {
-        this.dispatchEventToListeners(WebInspector.TracingModel.Events.BufferUsage, usage);
-    },
-
-    /**
-     * @param {!Array.<!WebInspector.TracingModel.EventPayload>} events
-     */
-    _eventsCollected: function(events)
-    {
-        this._onStop();
         for (var i = 0; i < events.length; ++i) {
             this._addEvent(events[i]);
             this._rawEvents.push(events[i]);
         }
     },
 
-    _tracingComplete: function()
+    tracingComplete: function()
     {
         this._processMetadataEvents();
-        this._active = false;
         for (var process in this._processById)
             this._processById[process]._tracingComplete(this._maximumRecordTime);
-        this.dispatchEventToListeners(WebInspector.TracingModel.Events.TracingComplete);
-    },
-
-    _tracingStarted: function()
-    {
-        if (this._active)
-            return;
-        this.reset();
-        this._active = true;
-        this._sessionId = null;
-        this.dispatchEventToListeners(WebInspector.TracingModel.Events.TracingStarted);
-    },
-
-    _onStop: function()
-    {
-        if (!this._active)
-            return;
-        this.dispatchEventToListeners(WebInspector.TracingModel.Events.TracingStopped);
-        this._active = false;
     },
 
     reset: function()
@@ -230,7 +254,7 @@ WebInspector.TracingModel.prototype = {
     },
 
     /**
-      * @return {!Array.<!WebInspector.TracingModel.EventPayload>}
+      * @return {!Array.<!WebInspector.TracingManager.EventPayload>}
       */
     rawEvents: function()
     {
@@ -238,7 +262,7 @@ WebInspector.TracingModel.prototype = {
     },
 
     /**
-      * @param {!WebInspector.TracingModel.EventPayload} payload
+      * @param {!WebInspector.TracingManager.EventPayload} payload
       */
     _addEvent: function(payload)
     {
@@ -331,9 +355,7 @@ WebInspector.TracingModel.prototype = {
     sortedProcesses: function()
     {
         return WebInspector.TracingModel.NamedObject._sort(Object.values(this._processById));
-    },
-
-    __proto__: WebInspector.Object.prototype
+    }
 }
 
 
@@ -349,20 +371,20 @@ WebInspector.TracingModel.Loader = function(tracingModel)
 
 WebInspector.TracingModel.Loader.prototype = {
     /**
-     * @param {!Array.<!WebInspector.TracingModel.EventPayload>} events
+     * @param {!Array.<!WebInspector.TracingManager.EventPayload>} events
      */
     loadNextChunk: function(events)
     {
         if (!this._firstChunkReceived) {
-            this._tracingModel._tracingStarted();
+            this._tracingModel.reset();
             this._firstChunkReceived = true;
         }
-        this._tracingModel._eventsCollected(events);
+        this._tracingModel.addEvents(events);
     },
 
     finish: function()
     {
-        this._tracingModel._tracingComplete();
+        this._tracingModel.tracingComplete();
     }
 }
 
@@ -402,7 +424,7 @@ WebInspector.TracingModel.Event = function(category, name, phase, startTime, thr
 }
 
 /**
- * @param {!WebInspector.TracingModel.EventPayload} payload
+ * @param {!WebInspector.TracingManager.EventPayload} payload
  * @param {?WebInspector.TracingModel.Thread} thread
  * @return {!WebInspector.TracingModel.Event}
  */
@@ -448,7 +470,7 @@ WebInspector.TracingModel.Event.prototype = {
     },
 
     /**
-     * @param {!WebInspector.TracingModel.EventPayload} payload
+     * @param {!WebInspector.TracingManager.EventPayload} payload
      */
     _complete: function(payload)
     {
@@ -544,7 +566,7 @@ WebInspector.TracingModel.Process = function(id)
     this._setName("Process " + id);
     this._threads = {};
     this._objects = {};
-    /** @type {!Array.<!WebInspector.TracingModel.EventPayload>} */
+    /** @type {!Array.<!WebInspector.TracingManager.EventPayload>} */
     this._asyncEvents = [];
     /** @type {!Object.<string, ?Array.<!WebInspector.TracingModel.Event>>} */
     this._openAsyncEvents = [];
@@ -566,7 +588,7 @@ WebInspector.TracingModel.Process.prototype = {
     },
 
     /**
-     * @param {!WebInspector.TracingModel.EventPayload} payload
+     * @param {!WebInspector.TracingManager.EventPayload} payload
      * @return {?WebInspector.TracingModel.Event} event
      */
     _addEvent: function(payload)
@@ -590,8 +612,8 @@ WebInspector.TracingModel.Process.prototype = {
     _tracingComplete: function(lastEventTime)
     {
         /**
-         * @param {!WebInspector.TracingModel.EventPayload} a
-         * @param {!WebInspector.TracingModel.EventPayload} b
+         * @param {!WebInspector.TracingManager.EventPayload} a
+         * @param {!WebInspector.TracingManager.EventPayload} b
          */
         function comparePayloadTimestamp(a, b)
         {
@@ -611,7 +633,7 @@ WebInspector.TracingModel.Process.prototype = {
     },
 
     /**
-     * @param {!WebInspector.TracingModel.EventPayload} payload
+     * @param {!WebInspector.TracingManager.EventPayload} payload
      */
     _addAsyncEvent: function(payload)
     {
@@ -713,7 +735,7 @@ WebInspector.TracingModel.Thread.prototype = {
     },
 
     /**
-     * @param {!WebInspector.TracingModel.EventPayload} payload
+     * @param {!WebInspector.TracingManager.EventPayload} payload
      * @return {?WebInspector.TracingModel.Event} event
      */
     _addEvent: function(payload)
@@ -778,11 +800,11 @@ WebInspector.TracingModel.Thread.prototype = {
 /**
  * @constructor
  * @implements {TracingAgent.Dispatcher}
- * @param {!WebInspector.TracingModel} tracingModel
+ * @param {!WebInspector.TracingManager} tracingManager
  */
-WebInspector.TracingDispatcher = function(tracingModel)
+WebInspector.TracingDispatcher = function(tracingManager)
 {
-    this._tracingModel = tracingModel;
+    this._tracingManager = tracingManager;
 }
 
 WebInspector.TracingDispatcher.prototype = {
@@ -791,24 +813,24 @@ WebInspector.TracingDispatcher.prototype = {
      */
     bufferUsage: function(usage)
     {
-        this._tracingModel._bufferUsage(usage);
+        this._tracingManager._bufferUsage(usage);
     },
 
     /**
-     * @param {!Array.<!WebInspector.TracingModel.EventPayload>} data
+     * @param {!Array.<!WebInspector.TracingManager.EventPayload>} data
      */
     dataCollected: function(data)
     {
-        this._tracingModel._eventsCollected(data);
+        this._tracingManager._eventsCollected(data);
     },
 
     tracingComplete: function()
     {
-        this._tracingModel._tracingComplete();
+        this._tracingManager._tracingComplete();
     },
 
     started: function()
     {
-        this._tracingModel._tracingStarted();
+        this._tracingManager._tracingStarted();
     }
 }

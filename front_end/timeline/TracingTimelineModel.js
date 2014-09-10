@@ -4,17 +4,21 @@
 
 /**
  * @constructor
+ * @param {!WebInspector.TracingManager} tracingManager
  * @param {!WebInspector.TracingModel} tracingModel
  * @param {!WebInspector.TimelineModel.Filter} recordFilter
  * @extends {WebInspector.TimelineModel}
  */
-WebInspector.TracingTimelineModel = function(tracingModel, recordFilter)
+WebInspector.TracingTimelineModel = function(tracingManager, tracingModel, recordFilter)
 {
     WebInspector.TimelineModel.call(this);
+
+    this._tracingManager = tracingManager;
     this._tracingModel = tracingModel;
     this._recordFilter = recordFilter;
-    this._tracingModel.addEventListener(WebInspector.TracingModel.Events.TracingStarted, this._onTracingStarted, this);
-    this._tracingModel.addEventListener(WebInspector.TracingModel.Events.TracingComplete, this._onTracingComplete, this);
+    this._tracingManager.addEventListener(WebInspector.TracingManager.Events.TracingStarted, this._onTracingStarted, this);
+    this._tracingManager.addEventListener(WebInspector.TracingManager.Events.EventsCollected, this._onEventsCollected, this);
+    this._tracingManager.addEventListener(WebInspector.TracingManager.Events.TracingComplete, this._onTracingComplete, this);
     this.reset();
 }
 
@@ -155,15 +159,17 @@ WebInspector.TracingTimelineModel.prototype = {
             this._currentTarget.profilerAgent().stop(this._stopCallbackBarrier.createCallback(this._didStopRecordingJSSamples.bind(this)));
             this._jsProfilerStarted = false;
         }
-        this._tracingModel.stop();
+        this._tracingManager.stop();
     },
 
     /**
-     * @param {!Array.<!WebInspector.TracingModel.EventPayload>} events
+     * @param {!Array.<!WebInspector.TracingManager.EventPayload>} events
      */
     setEventsForTest: function(events)
     {
-        this._tracingModel.setEventsForTest(events);
+        this._onTracingStarted();
+        this._tracingModel.addEvents(events);
+        this._onTracingComplete();
     },
 
     _configureCpuProfilerSamplingInterval: function()
@@ -183,18 +189,28 @@ WebInspector.TracingTimelineModel.prototype = {
      */
     _startRecordingWithCategories: function(categories)
     {
-        this.reset();
-        this._tracingModel.start(categories, "");
+        this._tracingManager.start(categories, "");
     },
 
     _onTracingStarted: function()
     {
         this.reset();
+        this._tracingModel.reset();
         this.dispatchEventToListeners(WebInspector.TimelineModel.Events.RecordingStarted);
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _onEventsCollected: function(event)
+    {
+        var traceEvents = /** @type {!Array.<!WebInspector.TracingManager.EventPayload>} */ (event.data);
+        this._tracingModel.addEvents(traceEvents);
     },
 
     _onTracingComplete: function()
     {
+        this._tracingModel.tracingComplete();
         if (this._stopCallbackBarrier)
             this._stopCallbackBarrier.callWhenDone(this._didStopRecordingTraceEvents.bind(this));
         else
@@ -947,7 +963,7 @@ WebInspector.TracingModelLoader.prototype = {
             return;
 
         if (this._firstChunk) {
-            this._model.reset();
+            this._model._onTracingStarted();
         } else {
             var commaIndex = json.indexOf(",");
             if (commaIndex !== -1)
@@ -957,7 +973,7 @@ WebInspector.TracingModelLoader.prototype = {
 
         var items;
         try {
-            items = /** @type {!Array.<!WebInspector.TracingModel.EventPayload>} */ (JSON.parse(json));
+            items = /** @type {!Array.<!WebInspector.TracingManager.EventPayload>} */ (JSON.parse(json));
         } catch (e) {
             this._reportErrorAndCancelLoading("Malformed timeline data: " + e);
             return;
@@ -982,6 +998,7 @@ WebInspector.TracingModelLoader.prototype = {
     _reportErrorAndCancelLoading: function(messsage)
     {
         WebInspector.console.error(messsage);
+        this._model._onTracingComplete();
         this._model.reset();
         this._reader.cancel();
         this._progress.done();
@@ -995,6 +1012,7 @@ WebInspector.TracingModelLoader.prototype = {
     close: function()
     {
         this._loader.finish();
+        this._model._onTracingComplete();
     }
 }
 
