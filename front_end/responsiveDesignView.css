@@ -439,6 +439,12 @@
     flex: none;
 }
 
+.responsive-design-warning .disable-warning {
+    margin-right: 5px;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
 .responsive-design-toggle-media-inspector .glyph {
     background-color: rgb(180, 180, 180);
     -webkit-mask-position: -128px -48px;

@@ -33,9 +33,13 @@ WebInspector.ResponsiveDesignView = function(inspectedPagePlaceholder)
     this._warningMessage = this._canvasContainer.element.createChild("div", "responsive-design-warning hidden");
     this._warningMessage.createChild("div", "warning-icon-small");
     this._warningMessage.createChild("span");
+    var warningDisableButton = this._warningMessage.createChild("div", "disable-warning");
+    warningDisableButton.textContent = WebInspector.UIString("Never show");
+    warningDisableButton.addEventListener("click", this._disableOverridesWarnings.bind(this), false);
     var warningCloseButton = this._warningMessage.createChild("div", "close-button");
     warningCloseButton.addEventListener("click", WebInspector.overridesSupport.clearWarningMessage.bind(WebInspector.overridesSupport), false);
     WebInspector.overridesSupport.addEventListener(WebInspector.OverridesSupport.Events.OverridesWarningUpdated, this._overridesWarningUpdated, this);
+    WebInspector.settings.disableOverridesWarning.addChangeListener(this._overridesWarningUpdated, this);
 
     this._slidersContainer = this._canvasContainer.element.createChild("div", "vbox responsive-design-sliders-container");
     var hbox = this._slidersContainer.createChild("div", "hbox flex-auto");
@@ -684,13 +688,19 @@ WebInspector.ResponsiveDesignView.prototype = {
 
     _overridesWarningUpdated: function()
     {
-        var message = WebInspector.overridesSupport.warningMessage();
-        if (this._warningMessage.querySelector("span").textContent === message)
+        var message = WebInspector.settings.disableOverridesWarning.get() ? "" : WebInspector.overridesSupport.warningMessage();
+        if (this._warning === message)
             return;
+        this._warning = message;
         this._warningMessage.classList.toggle("hidden", !message);
         this._warningMessage.querySelector("span").textContent = message;
         this._invalidateCache();
         this.onResize();
+    },
+
+    _disableOverridesWarnings: function()
+    {
+        WebInspector.settings.disableOverridesWarning.set(true);
     },
 
     _showEmulationInDrawer: function()
