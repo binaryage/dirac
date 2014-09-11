@@ -90,7 +90,7 @@ WebInspector.TracingTimelineModel.RecordType = {
     CallStack: "CallStack",
     SetLayerTreeId: "SetLayerTreeId",
     TracingStartedInPage: "TracingStartedInPage",
-    TracingStartedInWorker: "TracingStartedInWorker",
+    TracingSessionIdForWorker: "TracingSessionIdForWorker",
 
     DecodeImage: "Decode Image",
     ResizeImage: "Resize Image",
@@ -247,7 +247,7 @@ WebInspector.TracingTimelineModel.prototype = {
             var threads = process.sortedThreads();
             for (var j = 0; j < threads.length; j++) {
                 var thread = threads[j];
-                if (thread.name() === "WebCore: Worker" && !workerMetadataEvents.some(function(e) { return e.thread === thread; }))
+                if (thread.name() === "WebCore: Worker" && !workerMetadataEvents.some(function(e) { return e.args["data"]["workerThreadId"] === thread.id(); }))
                     continue;
                 this._processThreadEvents(startTime, endTime, event.thread, thread);
             }

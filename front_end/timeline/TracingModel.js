@@ -50,7 +50,7 @@ WebInspector.TracingModel.FrameLifecycleEventCategory = "cc,devtools";
 
 WebInspector.TracingModel.DevToolsMetadataEvent = {
     TracingStartedInPage: "TracingStartedInPage",
-    TracingStartedInWorker: "TracingStartedInWorker",
+    TracingSessionIdForWorker: "TracingSessionIdForWorker",
 };
 
 /**
@@ -158,7 +158,7 @@ WebInspector.TracingModel.prototype = {
                 event.category === WebInspector.TracingModel.DevToolsMetadataEventCategory) {
                 this._devtoolsPageMetadataEvents.push(event);
             }
-            if (event && event.name === WebInspector.TracingModel.DevToolsMetadataEvent.TracingStartedInWorker &&
+            if (event && event.name === WebInspector.TracingModel.DevToolsMetadataEvent.TracingSessionIdForWorker &&
                 event.category === WebInspector.TracingModel.DevToolsMetadataEventCategory) {
                 this._devtoolsWorkerMetadataEvents.push(event);
             }
@@ -193,7 +193,11 @@ WebInspector.TracingModel.prototype = {
         var mismatchingIds = {};
         function checkSessionId(event)
         {
-            var id = event.args["sessionId"];
+            var args = event.args;
+            // FIXME: put sessionId into args["data"] for TracingStartedInPage event.
+            if (args["data"])
+                args = args["data"];
+            var id = args["sessionId"];
             if (id === sessionId)
                 return true;
             mismatchingIds[id] = true;
@@ -593,6 +597,7 @@ WebInspector.TracingModel.Thread = function(process, id)
     this._setName("Thread " + id);
     this._events = [];
     this._asyncEvents = [];
+    this._id = id;
 
     this._stack = [];
 }
@@ -641,6 +646,14 @@ WebInspector.TracingModel.Thread.prototype = {
     _addAsyncEventSteps: function(eventSteps)
     {
         this._asyncEvents.push(eventSteps);
+    },
+
+    /**
+     * @return {number}
+     */
+    id: function()
+    {
+        return this._id;
     },
 
     /**
