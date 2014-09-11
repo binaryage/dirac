@@ -51,7 +51,7 @@
             "sdk/NetworkLog.js",
             "sdk/OverridesSupport.js",
             "sdk/PowerProfiler.js",
-            "sdk/TracingModel.js",
+            "sdk/TracingManager.js",
             "sdk/WorkerManager.js",
             "sdk/WorkerTargetManager.js",
             "sdk/RuntimeModel.js",
@@ -345,6 +345,7 @@
             "timeline/TimelineView.js",
             "timeline/TimelinePaintProfilerView.js",
             "timeline/TimelineLayersView.js",
+            "timeline/TracingModel.js",
             "timeline/TracingTimelineUIUtils.js",
             "timeline/TransformController.js"
         ]
