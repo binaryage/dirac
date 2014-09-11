@@ -103,6 +103,10 @@ WebInspector.ConsoleView = function()
     this._promptElement.id = "console-prompt";
     this._promptElement.spellcheck = false;
 
+    // FIXME: This is a workaround for the selection machinery bug. See crbug.com/410899
+    var selectAllFixer = this._messagesElement.createChild("div", "console-view-fix-select-all");
+    selectAllFixer.textContent = ".";
+
     this._showAllMessagesCheckbox = new WebInspector.StatusBarCheckbox(WebInspector.UIString("Show all messages"));
     this._showAllMessagesCheckbox.inputElement.checked = true;
     this._showAllMessagesCheckbox.inputElement.addEventListener("change", this._updateMessageList.bind(this), false);

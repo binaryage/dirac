@@ -820,6 +820,11 @@ body.platform-linux .source-code {
     -webkit-transform: translateZ(0);
 }
 
+.console-view-fix-select-all {
+    height: 0px;
+    overflow: hidden;
+}
+
 #console-prompt {
     clear: right;
     position: relative;
