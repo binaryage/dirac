@@ -22,6 +22,7 @@ WebInspector.DocumentationView.showDocumentationURL = function(url, searchItem)
     if (!WebInspector.DocumentationView._view)
         WebInspector.DocumentationView._view = new WebInspector.DocumentationView();
     var view = WebInspector.DocumentationView._view;
+    view.element.removeChildren();
     WebInspector.inspectorView.showCloseableViewInDrawer("documentation", WebInspector.UIString("Documentation"), view);
     view.showDocumentation(url, searchItem);
 }
@@ -61,14 +62,19 @@ WebInspector.DocumentationView.prototype = {
             return;
         }
         var wikiMarkupText = pages[wikiKeys[0]]["revisions"]["0"]["*"];
-        var article = WebInspector.JSArticle.parse(wikiMarkupText);
+        var article;
+        try {
+            article = WebInspector.JSArticle.parse(wikiMarkupText);
+        } catch (error) {
+            console.error("Article could not be parsed. " + error.message);
+        }
         if (!article) {
             this._createEmptyPage();
             return;
         }
 
-        var renderer = new WebInspector.DocumentationView.Renderer(article, searchItem);
         this.element.removeChildren();
+        var renderer = new WebInspector.DocumentationView.Renderer(article, searchItem);
         this.element.appendChild(renderer.renderJSArticle());
     },
 
@@ -171,7 +177,7 @@ WebInspector.DocumentationView.Renderer.prototype = {
             if (i > 0)
                 signature.createTextChild(", ")
             var parameterType = signature.createChild("span", "documentation-parameter-data-type-value");
-            parameterType.textContent = parameters[i].dataType + (parameters[i].optional ? "=" : "");;
+            parameterType.textContent = parameters[i].dataType + (parameters[i].optional ? "=" : "");
         }
         signature.createTextChild("): ");
         var returnTypeElement = signature.createChild("span", "documentation-parameter-data-type-value");
@@ -258,11 +264,11 @@ WebInspector.DocumentationView.Renderer.prototype = {
 
     /**
      * @param {!WebInspector.WikiParser.ArticleElement} article
-     * @return {!Element}
+     * @return {?Element}
      */
     _renderBlock: function(article)
     {
-        var element;
+        var element = null;
         var elementTypes = WebInspector.WikiParser.ArticleElement.Type;
 
         switch (article.type()) {
@@ -288,14 +294,17 @@ WebInspector.DocumentationView.Renderer.prototype = {
             if (article.isHighlighted())
                 element.classList.add("documentation-highlighted-text");
             break;
-        default:
-            console.error("Unknown ArticleElement type " + article.type());
         case elementTypes.Block:
             element = document.createElement(article.hasBullet() ? "li" : "p");
             break;
+        default:
+            console.error("Unknown ArticleElement type " + article.type());
+            return null;
         }
 
-        if (article instanceof WebInspector.WikiParser.Block || article instanceof WebInspector.WikiParser.Inline) {
+        if (article.type() === WebInspector.WikiParser.ArticleElement.Type.Block
+            || article.type() === WebInspector.WikiParser.ArticleElement.Type.Code
+            || article.type() === WebInspector.WikiParser.ArticleElement.Type.Inline) {
             for (var i = 0; i < article.children().length; ++i) {
                 var child = this._renderBlock(article.children()[i]);
                 if (child)
