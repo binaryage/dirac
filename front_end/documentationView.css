@@ -5,7 +5,7 @@
  */
 
 .documentation-code {
-    border: 1px solid gray;
+    border: 1px solid rgba(128, 128, 128, 0.4);
     border-radius: 6px;
     padding: 10px;
     margin-bottom: 10px;
@@ -13,8 +13,16 @@
 
 .documentation-section-title {
     font-size: 120%;
-    padding-bottom: 4px;
     font-weight: bold;
+    padding-top: 5px;
+}
+
+.documentation-section-content.documentation-return-value {
+    margin-top: 10px;
+}
+
+.documentation-parameter-header {
+    margin-top: 10px;
 }
 
 .documentation-link {
@@ -27,7 +35,7 @@
 
 .documentation-view .documentation-method-signature.monospace {
     font-size: 120% !important;
-    border: 1px solid gray;
+    border: 1px solid rgba(128, 128, 128, 0.4);
     border-radius: 6px;
     padding: 10px;
 }
