@@ -140,12 +140,17 @@ WebInspector.DocumentationURLProvider._sources = [
 /**
  * @const
  */
-WebInspector.DocumentationURLProvider._articleUrlFormat = "http://docs.webplatform.org/w/api.php?action=query&titles=%s%s&prop=revisions&rvprop=timestamp|content&format=json";
+WebInspector.DocumentationURLProvider.urlPrefix = "http://docs.webplatform.org";
 
 /**
  * @const
  */
-WebInspector.DocumentationURLProvider._articleListUrlFormat = "http://docs.webplatform.org/w/api.php?action=query&generator=allpages&gaplimit=500&gapfrom=%s&format=json";
+WebInspector.DocumentationURLProvider._articleUrlFormat = WebInspector.DocumentationURLProvider.urlPrefix + "/w/api.php?action=query&titles=%s%s&prop=revisions&rvprop=timestamp|content&format=json";
+
+/**
+ * @const
+ */
+WebInspector.DocumentationURLProvider._articleListUrlFormat = WebInspector.DocumentationURLProvider.urlPrefix + "/w/api.php?action=query&generator=allpages&gaplimit=500&gapfrom=%s&format=json";
 
 /**
  * @const
