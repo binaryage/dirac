@@ -149,6 +149,7 @@ WebInspector.CompilerScriptMapping.prototype = {
             this._scriptForSourceMap.set(sourceMap, script);
 
             var sourceURLs = sourceMap.sources();
+            var missingSources = [];
             for (var i = 0; i < sourceURLs.length; ++i) {
                 var sourceURL = sourceURLs[i];
                 if (this._sourceMapForURL.get(sourceURL))
@@ -159,11 +160,21 @@ WebInspector.CompilerScriptMapping.prototype = {
                     this._networkWorkspaceBinding.addFileForURL(sourceURL, contentProvider, script.isContentScript());
                 }
                 var uiSourceCode = this._workspace.uiSourceCodeForURL(sourceURL);
-                if (uiSourceCode)
+                if (uiSourceCode) {
                     this._bindUISourceCode(uiSourceCode);
-                else
-                    WebInspector.console.error(WebInspector.UIString("Failed to locate workspace file mapped to URL %s from source map %s", sourceURL, sourceMap.url()));
+                } else {
+                    if (missingSources.length < 3)
+                        missingSources.push(sourceURL);
+                    else if (missingSources.peekLast() !== "\u2026")
+                        missingSources.push("\u2026");
+                }
             }
+            if (missingSources.length) {
+                WebInspector.console.warn(
+                    WebInspector.UIString("Source map %s points to the files missing from the workspace: [%s]",
+                                          sourceMap.url(), missingSources.join(", ")));
+            }
+
             this._debuggerWorkspaceBinding.updateLocations(script);
         }
     },
