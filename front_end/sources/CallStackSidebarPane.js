@@ -114,7 +114,7 @@ WebInspector.CallStackSidebarPane.prototype = {
             this.placards.push(placard);
             this.bodyElement.appendChild(placard.element);
 
-            if (WebInspector.BlackboxSupport.isBlackboxedURL(callFrame.script.sourceURL)) {
+            if (WebInspector.BlackboxSupport.isBlackboxed(callFrame.script.sourceURL, callFrame.script.isContentScript())) {
                 placard.setHidden(true);
                 placard.element.classList.add("dimmed");
                 ++this._hiddenPlacards;
@@ -159,7 +159,7 @@ WebInspector.CallStackSidebarPane.prototype = {
         var script = placard._callFrame.script;
         if (!script.isSnippet()) {
             contextMenu.appendSeparator();
-            this.appendBlackboxURLContextMenuItems(contextMenu, script.sourceURL);
+            this.appendBlackboxURLContextMenuItems(contextMenu, script.sourceURL, script.isContentScript());
         }
 
         contextMenu.show();
@@ -183,28 +183,36 @@ WebInspector.CallStackSidebarPane.prototype = {
     /**
      * @param {!WebInspector.ContextMenu} contextMenu
      * @param {string} url
+     * @param {boolean} isContentScript
      */
-    appendBlackboxURLContextMenuItems: function(contextMenu, url)
+    appendBlackboxURLContextMenuItems: function(contextMenu, url, isContentScript)
     {
-        if (!url)
-            return;
-        var blackboxed = WebInspector.BlackboxSupport.isBlackboxedURL(url);
-        if (blackboxed)
-            contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Stop blackboxing" : "Stop Blackboxing"), this._handleContextMenuBlackboxURL.bind(this, url, false));
-        else
-            contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Blackbox script" : "Blackbox Script"), this._handleContextMenuBlackboxURL.bind(this, url, true));
+        var blackboxed = WebInspector.BlackboxSupport.isBlackboxed(url, isContentScript);
+        if (blackboxed) {
+            contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Stop blackboxing" : "Stop Blackboxing"), this._handleContextMenuBlackboxURL.bind(this, url, isContentScript, false));
+        } else {
+            if (WebInspector.BlackboxSupport.canBlackboxURL(url))
+                contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Blackbox script" : "Blackbox Script"), this._handleContextMenuBlackboxURL.bind(this, url, false, true));
+            if (isContentScript)
+                contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Blackbox all content scripts" : "Blackbox All Content Scripts"), this._handleContextMenuBlackboxURL.bind(this, url, true, true));
+        }
     },
 
     /**
      * @param {string} url
+     * @param {boolean} isContentScript
      * @param {boolean} blackbox
      */
-    _handleContextMenuBlackboxURL: function(url, blackbox)
+    _handleContextMenuBlackboxURL: function(url, isContentScript, blackbox)
     {
-        if (blackbox)
-            WebInspector.BlackboxSupport.blackboxURL(url);
-        else
-            WebInspector.BlackboxSupport.unblackboxURL(url);
+        if (blackbox) {
+            if (isContentScript)
+                WebInspector.settings.skipContentScripts.set(true);
+            else
+                WebInspector.BlackboxSupport.blackboxURL(url);
+        } else {
+            WebInspector.BlackboxSupport.unblackbox(url, isContentScript);
+        }
     },
 
     _blackboxingStateChanged: function()

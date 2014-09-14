@@ -82,6 +82,7 @@ WebInspector.Settings = function()
     this.shortcutPanelSwitch = this.createSetting("shortcutPanelSwitch", false);
     this.showWhitespacesInEditor = this.createSetting("showWhitespacesInEditor", false);
     this.skipStackFramesPattern = this.createRegExpSetting("skipStackFramesPattern", "");
+    this.skipContentScripts = this.createSetting("skipContentScripts", false);
     this.pauseOnExceptionEnabled = this.createSetting("pauseOnExceptionEnabled", false);
     this.pauseOnCaughtException = this.createSetting("pauseOnCaughtException", false);
     this.enableAsyncStackTraces = this.createSetting("enableAsyncStackTraces", false);

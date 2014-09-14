@@ -22,6 +22,9 @@ WebInspector.FrameworkBlackboxDialog = function()
 
     var contents = this.element.createChild("div", "contents");
 
+    var contentScriptsSection = contents.createChild("div", "blackbox-content-scripts");
+    contentScriptsSection.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Blackbox content scripts"), WebInspector.settings.skipContentScripts, true));
+
     var blockHeader = contents.createChild("div", "columns-header");
     blockHeader.createChild("span").textContent = WebInspector.UIString("URI pattern");
     blockHeader.createChild("span").textContent = WebInspector.UIString("Behavior");

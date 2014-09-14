@@ -878,7 +878,7 @@ WebInspector.SourcesPanel.prototype = {
         this._appendUISourceCodeMappingItems(contextMenu, uiSourceCode);
 
         if (uiSourceCode.contentType() === WebInspector.resourceTypes.Script && project.type() !== WebInspector.projectTypes.Snippets)
-            this.sidebarPanes.callstack.appendBlackboxURLContextMenuItems(contextMenu, uiSourceCode.url);
+            this.sidebarPanes.callstack.appendBlackboxURLContextMenuItems(contextMenu, uiSourceCode.url, project.type() === WebInspector.projectTypes.ContentScripts);
 
         if (!event.target.isSelfOrDescendant(this.editorView.sidebarElement())) {
             contextMenu.appendSeparator();

@@ -607,6 +607,11 @@ select.list-column-editor {
     margin-left: -7px
 }
 
+.blackbox-content-scripts {
+    padding: 0 0 14px 0;
+    margin-left: -4px;
+}
+
 .settings-dialog .done-button {
     float: right;
 }

@@ -2,9 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-WebInspector.BlackboxSupport = function()
-{
-}
+WebInspector.BlackboxSupport = {}
 
 /**
  * @param {string} url
@@ -12,8 +10,36 @@ WebInspector.BlackboxSupport = function()
  */
 WebInspector.BlackboxSupport._urlToRegExpString = function(url)
 {
-    var name = new WebInspector.ParsedURL(url).lastPathComponent;
-    return "/" + name.escapeForRegExp() + (url.endsWith(name) ? "$" : "\\b");
+    var parsedURL = new WebInspector.ParsedURL(url);
+    if (parsedURL.isAboutBlank() || parsedURL.isDataURL())
+        return "";
+    if (!parsedURL.isValid)
+        return "^" + url.escapeForRegExp() + "$";
+    var name = parsedURL.lastPathComponent;
+    if (name)
+        name = "/" + name;
+    else if (parsedURL.folderPathComponents)
+        name = parsedURL.folderPathComponents + "/";
+    if (!name)
+        return "";
+    var scheme = parsedURL.scheme;
+    var prefix = "";
+    if (scheme && scheme !== "http" && scheme !== "https") {
+        prefix = "^" + scheme + "://";
+        if (scheme === "chrome-extension")
+            prefix += parsedURL.host + "\\b";
+        prefix += ".*";
+    }
+    return prefix + name.escapeForRegExp() + (url.endsWith(name) ? "$" : "\\b");
+}
+
+/**
+ * @param {string} url
+ * @return {boolean}
+ */
+WebInspector.BlackboxSupport.canBlackboxURL = function(url)
+{
+    return !!WebInspector.BlackboxSupport._urlToRegExpString(url);
 }
 
 /**
@@ -23,6 +49,8 @@ WebInspector.BlackboxSupport.blackboxURL = function(url)
 {
     var regexPatterns = WebInspector.settings.skipStackFramesPattern.getAsArray();
     var regexValue = WebInspector.BlackboxSupport._urlToRegExpString(url);
+    if (!regexValue)
+        return;
     var found = false;
     for (var i = 0; i < regexPatterns.length; ++i) {
         var item = regexPatterns[i];
@@ -39,11 +67,17 @@ WebInspector.BlackboxSupport.blackboxURL = function(url)
 
 /**
  * @param {string} url
+ * @param {boolean} isContentScript
  */
-WebInspector.BlackboxSupport.unblackboxURL = function(url)
+WebInspector.BlackboxSupport.unblackbox = function(url, isContentScript)
 {
+    if (isContentScript)
+        WebInspector.settings.skipContentScripts.set(false);
+
     var regexPatterns = WebInspector.settings.skipStackFramesPattern.getAsArray();
     var regexValue = WebInspector.BlackboxSupport._urlToRegExpString(url);
+    if (!regexValue)
+        return;
     regexPatterns = regexPatterns.filter(function(item) {
         return item.pattern !== regexValue;
     });
@@ -69,4 +103,16 @@ WebInspector.BlackboxSupport.isBlackboxedURL = function(url)
 {
     var regex = WebInspector.settings.skipStackFramesPattern.asRegExp();
     return (url && regex) ? regex.test(url) : false;
+}
+
+/**
+ * @param {string} url
+ * @param {boolean} isContentScript
+ * @return {boolean}
+ */
+WebInspector.BlackboxSupport.isBlackboxed = function(url, isContentScript)
+{
+    if (isContentScript && WebInspector.settings.skipContentScripts.get())
+        return true;
+    return WebInspector.BlackboxSupport.isBlackboxedURL(url);
 }

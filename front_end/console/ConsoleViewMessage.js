@@ -319,8 +319,13 @@ WebInspector.ConsoleViewMessage.prototype = {
         var callFrame = stackTrace[0].scriptId ? stackTrace[0] : null;
         if (!useBlackboxing)
             return callFrame;
+        var target = this._target();
         for (var i = 0; i < stackTrace.length; ++i) {
-            if (!WebInspector.BlackboxSupport.isBlackboxedURL(stackTrace[i].url))
+            var script = target && target.debuggerModel.scriptForId(stackTrace[i].scriptId);
+            var blackboxed = script ?
+                WebInspector.BlackboxSupport.isBlackboxed(script.sourceURL, script.isContentScript()) :
+                WebInspector.BlackboxSupport.isBlackboxedURL(stackTrace[i].url);
+            if (!blackboxed)
                 return stackTrace[i].scriptId ? stackTrace[i] : null;
         }
         return callFrame;

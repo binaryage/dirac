@@ -73,6 +73,7 @@ WebInspector.JavaScriptSourceFrame = function(scriptsPanel, uiSourceCode)
     }
 
     WebInspector.settings.skipStackFramesPattern.addChangeListener(this._showBlackboxInfobarIfNeeded, this);
+    WebInspector.settings.skipContentScripts.addChangeListener(this._showBlackboxInfobarIfNeeded, this);
     this._showBlackboxInfobarIfNeeded();
 }
 
@@ -126,7 +127,8 @@ WebInspector.JavaScriptSourceFrame.prototype = {
         if (this._uiSourceCode.contentType() !== WebInspector.resourceTypes.Script)
             return;
         var url = this._uiSourceCode.url;
-        if (!WebInspector.BlackboxSupport.isBlackboxedURL(url)) {
+        var isContentScript = this._uiSourceCode.project().type() === WebInspector.projectTypes.ContentScripts;
+        if (!WebInspector.BlackboxSupport.isBlackboxed(url, isContentScript)) {
             this._hideBlackboxInfobar();
             return;
         }
@@ -148,7 +150,7 @@ WebInspector.JavaScriptSourceFrame.prototype = {
 
         function unblackbox()
         {
-            WebInspector.BlackboxSupport.unblackboxURL(url);
+            WebInspector.BlackboxSupport.unblackbox(url, isContentScript);
         }
 
         this._updateInfobars();
@@ -912,6 +914,7 @@ WebInspector.JavaScriptSourceFrame.prototype = {
         this._uiSourceCode.removeEventListener(WebInspector.UISourceCode.Events.WorkingCopyCommitted, this._workingCopyCommitted, this);
         this._uiSourceCode.removeEventListener(WebInspector.UISourceCode.Events.TitleChanged, this._showBlackboxInfobarIfNeeded, this);
         WebInspector.settings.skipStackFramesPattern.removeChangeListener(this._showBlackboxInfobarIfNeeded, this);
+        WebInspector.settings.skipContentScripts.removeChangeListener(this._showBlackboxInfobarIfNeeded, this);
         WebInspector.UISourceCodeFrame.prototype.dispose.call(this);
     },
 

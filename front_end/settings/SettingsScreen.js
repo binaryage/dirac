@@ -891,13 +891,34 @@ WebInspector.EditableSettingsList.prototype = {
             var columnId = column.id;
 
             var value = this._valuesProvider(itemId, columnId);
-            var textElement = this._textElements.get(itemId).get(columnId);
-            textElement.textContent = value;
-            textElement.title = value;
+            this._setTextElementContent(itemId, columnId, value);
 
             var editElement = this._editInputElements.get(itemId).get(columnId);
             this._setEditElementValue(editElement, value || "");
         }
+    },
+
+    /**
+     * @param {?string} itemId
+     * @param {string} columnId
+     */
+    _textElementContent: function(itemId, columnId)
+    {
+        if (!itemId)
+            return "";
+        return this._textElements.get(itemId).get(columnId).textContent.replace(/\u200B/g, "");
+    },
+
+    /**
+     * @param {string} itemId
+     * @param {string} columnId
+     * @param {string} text
+     */
+    _setTextElementContent: function(itemId, columnId, text)
+    {
+        var textElement = this._textElements.get(itemId).get(columnId);
+        textElement.textContent = text.replace(/.{4}/g, "$&\u200B");
+        textElement.title = text;
     },
 
     /**
@@ -922,10 +943,9 @@ WebInspector.EditableSettingsList.prototype = {
         var value = this._valuesProvider(itemId, columnId);
 
         var textElement = /** @type {!HTMLSpanElement} */ (columnElement.createChild("span", "list-column-text"));
-        textElement.textContent = value;
-        textElement.title = value;
         columnElement.addEventListener("click", rowClicked.bind(this), false);
         this._textElements.get(itemId).set(columnId, textElement);
+        this._setTextElementContent(itemId, columnId, value);
 
         this._createEditElement(columnElement, column, itemId, value);
 
@@ -1056,7 +1076,7 @@ WebInspector.EditableSettingsList.prototype = {
         var columns = this.columns();
         for (var i = 0; i < columns.length; ++i) {
             var columnId = columns[i];
-            var oldValue = itemId ? this._textElements.get(itemId).get(columnId).textContent : "";
+            var oldValue = this._textElementContent(itemId, columnId);
             var newValue = this._inputElements(itemId).get(columnId).value;
             if (oldValue !== newValue)
                 return true;
@@ -1091,7 +1111,7 @@ WebInspector.EditableSettingsList.prototype = {
             for (var i = 0; i < columns.length; ++i) {
                 var columnId = columns[i];
                 var editElement = this._editInputElements.get(itemId).get(columnId);
-                this._setEditElementValue(editElement, this._textElements.get(itemId).get(columnId).textContent);
+                this._setEditElementValue(editElement, this._textElementContent(itemId, columnId));
                 editElement.classList.remove("editable-item-error");
             }
             return;
