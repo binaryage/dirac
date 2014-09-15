@@ -1161,6 +1161,8 @@ ol.watch-expressions > li.hovered {
 }
 
 .console-formatted-object,
+.console-formatted-map,
+.console-formatted-set,
 .console-formatted-node,
 .console-formatted-array {
     position: relative;
@@ -1174,6 +1176,8 @@ ol.watch-expressions > li.hovered {
 }
 
 .console-formatted-object .section,
+.console-formatted-map .section,
+.console-formatted-set .section,
 .console-formatted-node .section,
 .console-formatted-array .section {
     position: static;
@@ -1184,6 +1188,8 @@ ol.watch-expressions > li.hovered {
 }
 
 .console-formatted-object .properties,
+.console-formatted-map .properties,
+.console-formatted-set .properties,
 .console-formatted-node .properties {
     padding-left: 0 !important;
 }
@@ -1740,7 +1746,7 @@ li.editing-sub-part .delete-button {
 
 .section .properties .name,
 .event-properties .name,
-.console-formatted-object .name {
+.console-object-preview .name {
     color: rgb(136, 19, 145);
 }
 

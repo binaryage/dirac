@@ -868,24 +868,31 @@ WebInspector.LocalJSONObject.prototype = {
 
         /**
          * @param {!WebInspector.RemoteObjectProperty} property
+         * @return {string}
+         * @this {WebInspector.LocalJSONObject}
          */
         function formatArrayItem(property)
         {
-            return property.value.description;
+            return this._formatValue(property.value);
         }
 
         /**
          * @param {!WebInspector.RemoteObjectProperty} property
+         * @return {string}
+         * @this {WebInspector.LocalJSONObject}
          */
         function formatObjectItem(property)
         {
-            return property.name + ":" + property.value.description;
+            var name = property.name;
+            if (/^\s|\s$|^$|\n/.test(name))
+                name = "\"" + name.replace(/\n/g, "\u21B5") + "\"";
+            return name + ": " + this._formatValue(property.value);
         }
 
         if (this.type === "object") {
             switch (this.subtype) {
             case "array":
-                this._cachedDescription = this._concatenate("[", "]", formatArrayItem);
+                this._cachedDescription = this._concatenate("[", "]", formatArrayItem.bind(this));
                 break;
             case "date":
                 this._cachedDescription = "" + this._value;
@@ -894,23 +901,38 @@ WebInspector.LocalJSONObject.prototype = {
                 this._cachedDescription = "null";
                 break;
             default:
-                this._cachedDescription = this._concatenate("{", "}", formatObjectItem);
+                this._cachedDescription = this._concatenate("{", "}", formatObjectItem.bind(this));
             }
-        } else
+        } else {
             this._cachedDescription = String(this._value);
+        }
 
         return this._cachedDescription;
     },
 
     /**
+     * @param {?WebInspector.RemoteObject} value
+     * @return {string}
+     */
+    _formatValue: function(value)
+    {
+        if (!value)
+            return "undefined";
+        var description = value.description || "";
+        if (value.type === "string")
+            return "\"" + description.replace(/\n/g, "\u21B5") + "\"";
+        return description;
+    },
+
+    /**
      * @param {string} prefix
      * @param {string} suffix
-     * @param {function (!WebInspector.RemoteObjectProperty)} formatProperty
+     * @param {function(!WebInspector.RemoteObjectProperty)} formatProperty
      * @return {string}
      */
     _concatenate: function(prefix, suffix, formatProperty)
     {
-        const previewChars = 100;
+        var previewChars = 100;
 
         var buffer = prefix;
         var children = this._children();
@@ -1068,4 +1090,30 @@ WebInspector.LocalJSONObject.prototype = {
     },
 
     __proto__: WebInspector.RemoteObject.prototype
+}
+
+/**
+ * @constructor
+ * @extends {WebInspector.LocalJSONObject}
+ * @param {*} value
+ */
+WebInspector.MapEntryLocalJSONObject = function(value)
+{
+    WebInspector.LocalJSONObject.call(this, value);
+}
+
+WebInspector.MapEntryLocalJSONObject.prototype = {
+    /**
+     * @return {string}
+     */
+    get description()
+    {
+        if (!this._cachedDescription) {
+            var children = this._children();
+            this._cachedDescription = "{" + this._formatValue(children[0].value) + " => " + this._formatValue(children[1].value) + "}";
+        }
+        return this._cachedDescription;
+    },
+
+    __proto__: WebInspector.LocalJSONObject.prototype
 }

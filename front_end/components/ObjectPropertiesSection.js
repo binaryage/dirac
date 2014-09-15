@@ -578,7 +578,7 @@ WebInspector.ObjectPropertyTreeElement.populateWithProperties = function(treeEle
 }
 
 /**
- * @param {!WebInspector.RemoteObject} object
+ * @param {?WebInspector.RemoteObject} object
  * @param {!Array.<string>} propertyPath
  * @param {function(?WebInspector.RemoteObject, boolean=)} callback
  * @return {!Element}
@@ -586,8 +586,11 @@ WebInspector.ObjectPropertyTreeElement.populateWithProperties = function(treeEle
 WebInspector.ObjectPropertyTreeElement.createRemoteObjectAccessorPropertySpan = function(object, propertyPath, callback)
 {
     var rootElement = document.createElement("span");
-    var element = rootElement.createChild("span", "properties-calculate-value-button");
+    var element = rootElement.createChild("span");
     element.textContent = WebInspector.UIString("(...)");
+    if (!object)
+        return rootElement;
+    element.classList.add("properties-calculate-value-button");
     element.title = WebInspector.UIString("Invoke property getter");
     element.addEventListener("click", onInvokeGetterClick, false);
 
@@ -721,10 +724,10 @@ WebInspector.CollectionEntriesMainTreeElement.prototype = {
             for (var i = 0; i < entries.length; ++i) {
                 var entry = entries[i];
                 if (entry.key) {
-                    entriesLocalObject.push({
+                    entriesLocalObject.push(new WebInspector.MapEntryLocalJSONObject({
                         key: runtimeModel.createRemoteObject(entry.key),
                         value: runtimeModel.createRemoteObject(entry.value)
-                    });
+                    }));
                 } else {
                     entriesLocalObject.push(runtimeModel.createRemoteObject(entry.value));
                 }
