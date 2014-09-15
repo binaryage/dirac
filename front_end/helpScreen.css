@@ -581,7 +581,8 @@ select.list-column-editor {
 .settings-dialog .contents {
     flex: 1 1 auto;
     padding: 0 17px;
-    overflow: auto;
+    overflow-x: hidden;
+    overflow-y: auto;
 }
 
 .settings-dialog .block-header {
