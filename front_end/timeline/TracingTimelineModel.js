@@ -356,6 +356,20 @@ WebInspector.TracingTimelineModel.prototype = {
     {
         var recordStack = [];
         var mainThreadEvents = this.mainThreadEvents();
+
+        /**
+         * @param {!WebInspector.TracingTimelineModel.TraceEventRecord} record
+         */
+        function copyChildrenToParent(record)
+        {
+            var parent = record.parent;
+            var parentChildren = parent.children();
+            var children = record.children();
+            for (var j = 0; j < children.length; ++j)
+                children[j].parent = parent;
+            parentChildren.splice.apply(parentChildren, [parentChildren.indexOf(record), 1].concat(children));
+        }
+
         for (var i = 0, size = mainThreadEvents.length; i < size; ++i) {
             var event = mainThreadEvents[i];
             while (recordStack.length) {
@@ -374,14 +388,9 @@ WebInspector.TracingTimelineModel.prototype = {
                         }
                         break;
                     }
-                    // Delete incomple async record from parent and adopt its children.
+                    // Delete incomplete async record from parent and adopt its children.
                     recordStack.pop();
-                    var nextTop = recordStack.peekLast();
-                    var parentChildren = nextTop.children();
-                    var children = top.children();
-                    for (var j = 0; j < children.length; ++j)
-                        children[j].parent = nextTop;
-                    parentChildren.splice.apply(parentChildren, [parentChildren.indexOf(top), 1].concat(children));
+                    copyChildrenToParent(top);
                     continue;
                 } else if (top._event.endTime >= event.startTime) {
                     break;
@@ -403,6 +412,16 @@ WebInspector.TracingTimelineModel.prototype = {
             if (event.endTime || (event.phase === WebInspector.TracingModel.Phase.AsyncBegin && parentRecord))
                 recordStack.push(record);
         }
+
+        // Close all remaining incomplete async events.
+        while (recordStack.length > 1) {
+            var top = recordStack.pop();
+            if (!top._event.endTime) {
+                // Delete incomplete async record from parent and adopt its children.
+                copyChildrenToParent(top);
+            }
+        }
+
         if (recordStack.length)
             this._addTopLevelRecord(recordStack[0]);
     },
