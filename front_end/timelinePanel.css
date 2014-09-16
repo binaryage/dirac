@@ -740,10 +740,14 @@
 .timeline-paint-profiler-view .outline-disclosure li {
     margin-top: 0;
     margin-bottom: 0;
-    padding: 1 1 1 14px;
+    padding: 1px 1px 1px 14px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+.timeline-paint-profiler-view .outline-disclosure ol.children {
+    padding-left: 12px;
 }
 
 .paint-profiler-image-view {
