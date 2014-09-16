@@ -496,6 +496,7 @@
             },
             {
                 "name": "captureScreenshot",
+                "async": true,
                 "description": "Capture page screenshot.",
                 "parameters": [],
                 "returns": [
@@ -561,6 +562,7 @@
             },
             {
                 "name": "queryUsageAndQuota",
+                "async": true,
                 "parameters": [
                     { "name": "securityOrigin", "type": "string", "description": "Security origin quota and usage requested for" }
                 ],
@@ -4098,11 +4100,11 @@
                     { "name": "type", "type": "string", "enum": ["mousePressed", "mouseReleased", "mouseMoved", "mouseWheel"], "description": "Type of the mouse event." },
                     { "name": "x", "type": "integer", "description": "X coordinate of the mouse pointer in DIP."},
                     { "name": "y", "type": "integer", "description": "Y coordinate of the mouse pointer in DIP."},
+                    { "name": "timestamp", "type": "number", "description": "Time at which the event occurred. Measured in UTC time in seconds since January 1, 1970." },
+                    { "name": "button", "type": "string", "enum": ["none", "left", "middle", "right"], "description": "Mouse button." },
                     { "name": "deltaX", "type": "number", "optional": true, "description": "X delta in DIP for mouse wheel event (default: 0)."},
                     { "name": "deltaY", "type": "number", "optional": true, "description": "Y delta in DIP for mouse wheel event (default: 0)."},
                     { "name": "modifiers", "type": "integer", "optional": true, "description": "Bit field representing pressed modifier keys. Alt=1, Ctrl=2, Meta/Command=4, Shift=8 (default: 0)." },
-                    { "name": "timestamp", "type": "number", "optional": true, "description": "Time at which the event occurred. Measured in UTC time in seconds since January 1, 1970 (default: current time)." },
-                    { "name": "button", "type": "string", "enum": ["none", "left", "middle", "right"], "optional": true, "description": "Mouse button (default: \"none\")." },
                     { "name": "clickCount", "type": "integer", "optional": true, "description": "Number of times the mouse button was clicked (default: 0)." }
                 ],
                 "description": "Emulates touch event from the mouse event parameters.",
@@ -4321,6 +4323,7 @@
             },
             {
                 "name": "getCategories",
+                "async": true,
                 "description": "Gets supported tracing categories.",
                 "returns": [
                     { "name": "categories", "type": "array", "items": { "type": "string" }, "description": "A list of supported tracing categories." }
