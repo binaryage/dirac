@@ -37,7 +37,7 @@
  */
 WebInspector.ObjectPropertiesSection = function(object, title, subtitle, emptyPlaceholder, ignoreHasOwnProperty, extraProperties, treeElementConstructor)
 {
-    this.emptyPlaceholder = (emptyPlaceholder || WebInspector.UIString("No Properties"));
+    this._emptyPlaceholder = emptyPlaceholder;
     this.object = object;
     this.ignoreHasOwnProperty = ignoreHasOwnProperty;
     this.extraProperties = extraProperties;
@@ -109,16 +109,9 @@ WebInspector.ObjectPropertiesSection.prototype = {
         WebInspector.ObjectPropertyTreeElement.populateWithProperties(this.propertiesTreeOutline,
             properties, internalProperties,
             rootTreeElementConstructor, rootPropertyComparer,
-            this.skipProto, this.object);
+            this.skipProto, this.object, this._emptyPlaceholder);
 
         this.propertiesForTest = properties;
-
-        if (!this.propertiesTreeOutline.children.length) {
-            var title = document.createElementWithClass("div", "info");
-            title.textContent = this.emptyPlaceholder;
-            var infoElement = new TreeElement(title, null, false);
-            this.propertiesTreeOutline.appendChild(infoElement);
-        }
     },
 
     __proto__: WebInspector.PropertiesSection.prototype
@@ -484,8 +477,9 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
 /**
  * @param {!TreeElement} treeElement
  * @param {!WebInspector.RemoteObject} value
+ * @param {string=} emptyPlaceholder
  */
-WebInspector.ObjectPropertyTreeElement.populate = function(treeElement, value) {
+WebInspector.ObjectPropertyTreeElement.populate = function(treeElement, value, emptyPlaceholder) {
     if (treeElement.children.length && !treeElement.shouldRefreshChildren)
         return;
 
@@ -506,7 +500,7 @@ WebInspector.ObjectPropertyTreeElement.populate = function(treeElement, value) {
             return;
         WebInspector.ObjectPropertyTreeElement.populateWithProperties(treeElement, properties, internalProperties,
             treeElement.treeOutline.section.treeElementConstructor, WebInspector.ObjectPropertiesSection.CompareProperties,
-            treeElement.treeOutline.section.skipProto, value);
+            treeElement.treeOutline.section.skipProto, value, emptyPlaceholder);
     }
 
     WebInspector.RemoteObject.loadFromObjectPerProto(value, callback);
@@ -520,8 +514,9 @@ WebInspector.ObjectPropertyTreeElement.populate = function(treeElement, value) {
  * @param {function (!WebInspector.RemoteObjectProperty, !WebInspector.RemoteObjectProperty): number} comparator
  * @param {boolean} skipProto
  * @param {?WebInspector.RemoteObject} value
+ * @param {?string=} emptyPlaceholder
  */
-WebInspector.ObjectPropertyTreeElement.populateWithProperties = function(treeElement, properties, internalProperties, treeElementConstructor, comparator, skipProto, value) {
+WebInspector.ObjectPropertyTreeElement.populateWithProperties = function(treeElement, properties, internalProperties, treeElementConstructor, comparator, skipProto, value, emptyPlaceholder) {
     properties.sort(comparator);
 
     for (var i = 0; i < properties.length; ++i) {
@@ -575,6 +570,22 @@ WebInspector.ObjectPropertyTreeElement.populateWithProperties = function(treeEle
             treeElement.appendChild(new treeElementConstructor(internalProperties[i]));
         }
     }
+
+    WebInspector.ObjectPropertyTreeElement._appendEmptyPlaceholderIfNeeded(treeElement, emptyPlaceholder);
+}
+
+/**
+ * @param {!TreeElement|!TreeOutline} treeElement
+ * @param {?string=} emptyPlaceholder
+ */
+WebInspector.ObjectPropertyTreeElement._appendEmptyPlaceholderIfNeeded = function(treeElement, emptyPlaceholder)
+{
+    if (treeElement.children.length)
+        return;
+    var title = document.createElementWithClass("div", "info");
+    title.textContent = emptyPlaceholder || WebInspector.UIString("No Properties");
+    var infoElement = new TreeElement(title, null, false);
+    treeElement.appendChild(infoElement);
 }
 
 /**
@@ -633,9 +644,7 @@ WebInspector.FunctionScopeMainTreeElement.prototype = {
                 return;
             this.removeChildren();
 
-            var scopeChain = response.scopeChain;
-            if (!scopeChain)
-                return;
+            var scopeChain = response.scopeChain || [];
             for (var i = 0; i < scopeChain.length; ++i) {
                 var scope = scopeChain[i];
                 var title = null;
@@ -678,11 +687,14 @@ WebInspector.FunctionScopeMainTreeElement.prototype = {
                 } else {
                     var scopeRef = new WebInspector.ScopeRef(i, undefined, this._remoteObject.objectId);
                     var remoteObject = runtimeModel.createScopeRemoteObject(scope.object, scopeRef);
-                    var scopeTreeElement = new WebInspector.ScopeTreeElement(title, null, remoteObject);
+                    var scopeTreeElement = new WebInspector.ScopeTreeElement(title, remoteObject);
                     this.appendChild(scopeTreeElement);
                 }
             }
+
+            WebInspector.ObjectPropertyTreeElement._appendEmptyPlaceholderIfNeeded(this, WebInspector.UIString("No Scopes"));
         }
+
         this._remoteObject.functionDetails(didGetDetails.bind(this));
     },
 
@@ -732,7 +744,7 @@ WebInspector.CollectionEntriesMainTreeElement.prototype = {
                     entriesLocalObject.push(runtimeModel.createRemoteObject(entry.value));
                 }
             }
-            WebInspector.ObjectPropertyTreeElement.populate(this, WebInspector.RemoteObject.fromLocalObject(entriesLocalObject));
+            WebInspector.ObjectPropertyTreeElement.populate(this, WebInspector.RemoteObject.fromLocalObject(entriesLocalObject), WebInspector.UIString("No Entries"));
             this.title = "<entries>[" + entriesLocalObject.length + "]";
         }
 
@@ -746,12 +758,10 @@ WebInspector.CollectionEntriesMainTreeElement.prototype = {
  * @constructor
  * @extends {TreeElement}
  * @param {string} title
- * @param {?string} subtitle
  * @param {!WebInspector.RemoteObject} remoteObject
  */
-WebInspector.ScopeTreeElement = function(title, subtitle, remoteObject)
+WebInspector.ScopeTreeElement = function(title, remoteObject)
 {
-    // TODO: use subtitle parameter.
     TreeElement.call(this, title, null, false);
     this.toggleOnClick = true;
     this.selectable = false;

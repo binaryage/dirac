@@ -235,13 +235,6 @@ WebInspector.WatchExpressionsSection.prototype = {
             WebInspector.WatchExpressionTreeElement, WebInspector.WatchExpressionsSection.CompareProperties, false, null);
 
         this.propertiesForTest = properties;
-
-        if (!this.propertiesTreeOutline.children.length) {
-            var title = document.createElementWithClass("div", "info");
-            title.textContent = WebInspector.UIString("No Properties");
-            var infoElement = new TreeElement(title, null, false);
-            this.propertiesTreeOutline.appendChild(infoElement);
-        }
     },
 
     addExpression: function(expression)
