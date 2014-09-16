@@ -1478,7 +1478,7 @@ WebInspector.HeapProfileHeader.prototype = {
         if (!this._wasDisposed)
             this._receiver.close(function() {});
         if (this._bufferedWriter) {
-            this._bufferedWriter.close(this._didWriteToTempFile.bind(this));
+            this._bufferedWriter.finishWriting(this._didWriteToTempFile.bind(this));
             this._bufferedWriter = null;
         }
     },
@@ -1550,8 +1550,8 @@ WebInspector.HeapProfileHeader.prototype = {
     transferChunk: function(chunk)
     {
         if (!this._bufferedWriter)
-            this._bufferedWriter = new WebInspector.BufferedTempFileWriter("heap-profiler", this.uid);
-        this._bufferedWriter.write(chunk);
+            this._bufferedWriter = new WebInspector.DeferredTempFile("heap-profiler", this.uid);
+        this._bufferedWriter.write([chunk]);
 
         ++this._totalNumberOfChunks;
         this._receiver.write(chunk, function() {});

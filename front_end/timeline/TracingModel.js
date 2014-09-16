@@ -103,10 +103,8 @@ WebInspector.TracingModel.prototype = {
      */
     addEvents: function(events)
     {
-        for (var i = 0; i < events.length; ++i) {
+        for (var i = 0; i < events.length; ++i)
             this._addEvent(events[i]);
-            this._rawEvents.push(events[i]);
-        }
     },
 
     tracingComplete: function()
@@ -114,6 +112,7 @@ WebInspector.TracingModel.prototype = {
         this._processMetadataEvents();
         for (var process in this._processById)
             this._processById[process]._tracingComplete(this._maximumRecordTime);
+        this._backingStorage.finishWriting(function() {});
     },
 
     reset: function()
@@ -124,15 +123,19 @@ WebInspector.TracingModel.prototype = {
         this._sessionId = null;
         this._devtoolsPageMetadataEvents = [];
         this._devtoolsWorkerMetadataEvents = [];
-        this._rawEvents = [];
+        if (this._backingStorage)
+            this._backingStorage.remove();
+        this._backingStorage = new WebInspector.DeferredTempFile("tracing", String(Date.now()));
+        this._storageOffset = 0;
     },
 
     /**
-      * @return {!Array.<!WebInspector.TracingManager.EventPayload>}
-      */
-    rawEvents: function()
+     * @param {!WebInspector.OutputStream} outputStream
+     * @param {!WebInspector.OutputStreamDelegate} delegate
+     */
+    writeToStream: function(outputStream, delegate)
     {
-        return this._rawEvents;
+        this._backingStorage.writeToOutputStream(outputStream, delegate);
     },
 
     /**
@@ -145,6 +148,17 @@ WebInspector.TracingModel.prototype = {
             process = new WebInspector.TracingModel.Process(payload.pid);
             this._processById[payload.pid] = process;
         }
+
+        var stringPayload = JSON.stringify(payload);
+        var startOffset = this._storageOffset;
+        if (startOffset) {
+            var recordDelimiter = ",\n";
+            stringPayload = recordDelimiter + stringPayload;
+            startOffset += recordDelimiter.length;
+        }
+        this._storageOffset += stringPayload.length;
+        this._backingStorage.write([stringPayload]);
+
         if (payload.ph !== WebInspector.TracingModel.Phase.Metadata) {
             var timestamp = payload.ts / 1000;
             // We do allow records for unrelated threads to arrive out-of-order,
@@ -154,11 +168,14 @@ WebInspector.TracingModel.prototype = {
             var endTimeStamp = (payload.ts + (payload.dur || 0)) / 1000;
             this._maximumRecordTime = Math.max(this._maximumRecordTime, endTimeStamp);
             var event = process._addEvent(payload);
-            if (event && event.name === WebInspector.TracingModel.DevToolsMetadataEvent.TracingStartedInPage &&
+            if (!event)
+                return;
+            event._setBackingStorage(this._backingStorage, startOffset, this._storageOffset);
+            if (event.name === WebInspector.TracingModel.DevToolsMetadataEvent.TracingStartedInPage &&
                 event.category === WebInspector.TracingModel.DevToolsMetadataEventCategory) {
                 this._devtoolsPageMetadataEvents.push(event);
             }
-            if (event && event.name === WebInspector.TracingModel.DevToolsMetadataEvent.TracingSessionIdForWorker &&
+            if (event.name === WebInspector.TracingModel.DevToolsMetadataEvent.TracingSessionIdForWorker &&
                 event.category === WebInspector.TracingModel.DevToolsMetadataEventCategory) {
                 this._devtoolsWorkerMetadataEvents.push(event);
             }
@@ -357,6 +374,15 @@ WebInspector.TracingModel.Event.prototype = {
         else
             console.error("Missing mandatory event argument 'args' at " + payload.ts / 1000);
         this.setEndTime(payload.ts / 1000);
+    },
+
+    /**
+     * @param {!WebInspector.DeferredTempFile} backingFile
+     * @param {number} startOffset
+     * @param {number} endOffset
+     */
+    _setBackingStorage: function(backingFile, startOffset, endOffset)
+    {
     }
 }
 
@@ -382,6 +408,90 @@ WebInspector.TracingModel.Event.orderedCompareStartTime = function (a, b)
     // startTime's are equal, so both events got placed into the result array.
     return a.startTime - b.startTime || -1;
 }
+
+/**
+ * @constructor
+ * @extends {WebInspector.TracingModel.Event}
+ * @param {string} category
+ * @param {string} name
+ * @param {number} startTime
+ * @param {?WebInspector.TracingModel.Thread} thread
+ */
+WebInspector.TracingModel.ObjectSnapshot = function(category, name, startTime, thread)
+{
+    WebInspector.TracingModel.Event.call(this, category, name, WebInspector.TracingModel.Phase.SnapshotObject, startTime, thread);
+}
+
+/**
+ * @param {!WebInspector.TracingManager.EventPayload} payload
+ * @param {?WebInspector.TracingModel.Thread} thread
+ * @return {!WebInspector.TracingModel.ObjectSnapshot}
+ */
+WebInspector.TracingModel.ObjectSnapshot.fromPayload = function(payload, thread)
+{
+    var snapshot = new WebInspector.TracingModel.ObjectSnapshot(payload.cat, payload.name, payload.ts / 1000, thread);
+    if (payload.id)
+        snapshot.id = payload.id;
+    if (!payload.args || !payload.args["snapshot"]) {
+        console.error("Missing mandatory 'snapshot' argument at " + payload.ts / 1000);
+        return snapshot;
+    }
+    if (payload.args)
+        snapshot.addArgs(payload.args);
+    return snapshot;
+}
+
+WebInspector.TracingModel.ObjectSnapshot.prototype = {
+   /**
+    * @param {function(?Object)} callback
+    */
+   requestObject: function(callback)
+   {
+       var snapshot = this.args["snapshot"];
+       if (snapshot) {
+           callback(snapshot);
+           return;
+       }
+       this._file.readRange(this._startOffset, this._endOffset, onRead);
+       /**
+        * @param {?string} result
+        */
+       function onRead(result)
+       {
+           if (!result) {
+               callback(null);
+               return;
+           }
+           var snapshot;
+           try {
+               var payload = JSON.parse(result);
+               snapshot = payload["args"]["snapshot"];
+           } catch (e) {
+               WebInspector.console.error("Malformed event data in backing storage");
+           }
+           callback(snapshot);
+       }
+    },
+
+    /**
+     * @param {!WebInspector.DeferredTempFile} backingFile
+     * @param {number} startOffset
+     * @param {number} endOffset
+     * @override
+     */
+    _setBackingStorage: function(backingFile, startOffset, endOffset)
+    {
+        if (endOffset - startOffset < 10000)
+            return;
+        this._file = backingFile;
+        this._startOffset = startOffset;
+        this._endOffset = endOffset;
+        this.args = {};
+    },
+
+    __proto__: WebInspector.TracingModel.Event.prototype
+}
+
 
 /**
  * @constructor
@@ -631,11 +741,13 @@ WebInspector.TracingModel.Thread.prototype = {
                 top._complete(payload);
             return null;
         }
-        var event = WebInspector.TracingModel.Event.fromPayload(payload, this);
+        var event = payload.ph === WebInspector.TracingModel.Phase.SnapshotObject
+            ? WebInspector.TracingModel.ObjectSnapshot.fromPayload(payload, this)
+            : WebInspector.TracingModel.Event.fromPayload(payload, this);
         if (payload.ph === WebInspector.TracingModel.Phase.Begin)
             this._stack.push(event);
         if (this._events.length && this._events.peekLast().startTime > event.startTime)
-            console.assert(false, "Event is our of order: " + event.name);
+            console.assert(false, "Event is out of order: " + event.name);
         this._events.push(event);
         return event;
     },

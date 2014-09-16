@@ -882,7 +882,7 @@ WebInspector.CPUProfileHeader.prototype = {
             tempFile.finishWriting();
             this._notifyTempFileReady();
         }
-        tempFile.write(serializedData, didWriteToTempFile.bind(this));
+        tempFile.write([serializedData], didWriteToTempFile.bind(this));
     },
 
     _notifyTempFileReady: function()

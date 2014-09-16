@@ -1150,34 +1150,6 @@ WebInspector.DeferredAgentLayerTree.prototype = {
 
 /**
  * @constructor
- * @extends {WebInspector.DeferredLayerTree}
- * @param {?WebInspector.Target} target
- * @param {!WebInspector.TracingLayerPayload} root
- * @param {!Object} viewportSize
- */
-WebInspector.DeferredTracingLayerTree = function(target, root, viewportSize)
-{
-    WebInspector.DeferredLayerTree.call(this, target);
-    this._root = root;
-    this._viewportSize = viewportSize;
-}
-
-WebInspector.DeferredTracingLayerTree.prototype = {
-    /**
-     * @param {function(!WebInspector.LayerTreeBase)} callback
-     */
-    resolve: function(callback)
-    {
-        var result = new WebInspector.TracingLayerTree(this._target);
-        result.setViewportSize(this._viewportSize);
-        result.setLayers(this._root, callback.bind(null, result));
-    },
-
-    __proto__: WebInspector.DeferredLayerTree.prototype
-};
-
-/**
- * @constructor
  * @implements {LayerTreeAgent.Dispatcher}
  * @param {!WebInspector.LayerTreeModel} layerTreeModel
  */

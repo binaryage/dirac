@@ -90,10 +90,8 @@ WebInspector.TimelineLayersView.prototype = {
         var originalTiles = this._paintTiles;
         var tilesReadyBarrier = new CallbackBarrier();
         this._deferredLayerTree.resolve(tilesReadyBarrier.createCallback(onLayersReady));
-        if (this._target) {
-            for (var i = 0; this._paints && i < this._paints.length; ++i)
-                WebInspector.PaintProfilerSnapshot.load(this._target, this._paints[i].picture, tilesReadyBarrier.createCallback(onSnapshotLoaded.bind(this, this._paints[i])));
-        }
+        for (var i = 0; this._paints && i < this._paints.length; ++i)
+            this._paints[i].loadPicture(tilesReadyBarrier.createCallback(onSnapshotLoaded.bind(this, this._paints[i])));
         tilesReadyBarrier.callWhenDone(onLayersAndTilesReady.bind(this));
 
         /**
@@ -106,19 +104,20 @@ WebInspector.TimelineLayersView.prototype = {
 
         /**
          * @param {!WebInspector.LayerPaintEvent} paintEvent
+         * @param {?Array.<number>} rect
          * @param {?WebInspector.PaintProfilerSnapshot} snapshot
          * @this {WebInspector.TimelineLayersView}
          */
-        function onSnapshotLoaded(paintEvent, snapshot)
+        function onSnapshotLoaded(paintEvent, rect, snapshot)
         {
-            if (!snapshot)
+            if (!rect || !snapshot)
                 return;
             // We're too late and there's a new generation of tiles being loaded.
             if (originalTiles !== this._paintTiles) {
                 snapshot.dispose();
                 return;
             }
-            this._paintTiles.push({layerId: paintEvent.layerId, rect: paintEvent.rect, snapshot: snapshot, traceEvent: paintEvent.traceEvent});
+            this._paintTiles.push({layerId: paintEvent.layerId(), rect: rect, snapshot: snapshot, traceEvent: paintEvent.event()});
         }
 
         /**

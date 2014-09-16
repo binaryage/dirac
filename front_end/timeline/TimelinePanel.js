@@ -996,10 +996,16 @@ WebInspector.TimelinePanel.prototype = {
     {
         var title = WebInspector.TracingTimelineUIUtils.eventStyle(event).title;
         this.showInDetails(title, content);
-        if (event.picture && WebInspector.experimentsSettings.paintProfiler.isEnabled()) {
-            var paintProfilerView = this._paintProfilerView();
-            paintProfilerView.setPicture(event.thread.target(), event.picture);
-            this._detailsView.appendTab("paintProfiler", WebInspector.UIString("Paint Profiler"), paintProfilerView);
+        if (!event.picture || !WebInspector.experimentsSettings.paintProfiler.isEnabled())
+            return;
+        var paintProfilerView = this._paintProfilerView();
+        this._detailsView.appendTab("paintProfiler", WebInspector.UIString("Paint Profiler"), paintProfilerView);
+        event.picture.requestObject(onGotObject);
+        function onGotObject(result)
+        {
+            if (!result || !result["skp64"])
+                return;
+            paintProfilerView.setPicture(event.thread.target(), result["skp64"]);
         }
     },
 

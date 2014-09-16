@@ -120,12 +120,12 @@ WebInspector.TempFile = function(dirPath, name, callback)
 
 WebInspector.TempFile.prototype = {
     /**
-     * @param {!string} data
+     * @param {!Array.<string>} strings
      * @param {!function(boolean)} callback
      */
-    write: function(data, callback)
+    write: function(strings, callback)
     {
-        var blob = new Blob([data], {type: 'text/plain'});
+        var blob = new Blob(strings, {type: 'text/plain'});
         this._writer.onerror = function(e)
         {
             WebInspector.console.error("Failed to write into a temp file: " + e.message);
@@ -148,13 +148,25 @@ WebInspector.TempFile.prototype = {
      */
     read: function(callback)
     {
+        this.readRange(undefined, undefined, callback);
+    },
+
+    /**
+     * @param {number|undefined} startOffset
+     * @param {number|undefined} endOffset
+     * @param {function(?string)} callback
+     */
+    readRange: function(startOffset, endOffset, callback)
+    {
         /**
-         * @param {!File} file
+         * @param {!Blob} file
          */
         function didGetFile(file)
         {
             var reader = new FileReader();
 
+            if (typeof startOffset === "number" || typeof endOffset === "number")
+                file = file.slice(/** @type {number} */ (startOffset), /** @type {number} */ (endOffset));
             /**
              * @this {FileReader}
              */
@@ -212,27 +224,29 @@ WebInspector.TempFile.prototype = {
  * @param {!string} dirPath
  * @param {!string} name
  */
-WebInspector.BufferedTempFileWriter = function(dirPath, name)
+WebInspector.DeferredTempFile = function(dirPath, name)
 {
     this._chunks = [];
     this._tempFile = null;
     this._isWriting = false;
     this._finishCallback = null;
-    this._isFinished = false;
+    this._finishedWriting = false;
+    this._callsPendingOpen = [];
+    this._pendingReads = [];
     new WebInspector.TempFile(dirPath, name, this._didCreateTempFile.bind(this));
 }
 
-WebInspector.BufferedTempFileWriter.prototype = {
+WebInspector.DeferredTempFile.prototype = {
     /**
-     * @param {!string} data
+     * @param {!Array.<string>} strings
      */
-    write: function(data)
+    write: function(strings)
     {
         if (!this._chunks)
             return;
         if (this._finishCallback)
             throw new Error("No writes are allowed after close.");
-        this._chunks.push(data);
+        this._chunks.push.apply(this._chunks, strings);
         if (this._tempFile && !this._isWriting)
             this._writeNextChunk();
     },
@@ -240,10 +254,10 @@ WebInspector.BufferedTempFileWriter.prototype = {
     /**
      * @param {!function(?WebInspector.TempFile)} callback
      */
-    close: function(callback)
+    finishWriting: function(callback)
     {
         this._finishCallback = callback;
-        if (this._isFinished)
+        if (this._finishedWriting)
             callback(this._tempFile);
         else if (!this._isWriting && !this._chunks.length)
             this._notifyFinished();
@@ -252,6 +266,10 @@ WebInspector.BufferedTempFileWriter.prototype = {
     _didCreateTempFile: function(tempFile)
     {
         this._tempFile = tempFile;
+        var callsPendingOpen = this._callsPendingOpen;
+        this._callsPendingOpen = null;
+        for (var i = 0; i < callsPendingOpen.length; ++i)
+            callsPendingOpen[i]();
         if (!tempFile) {
             this._chunks = null;
             this._notifyFinished();
@@ -263,17 +281,10 @@ WebInspector.BufferedTempFileWriter.prototype = {
 
     _writeNextChunk: function()
     {
-        var chunkSize = 0;
-        var endIndex = 0;
-        for (; endIndex < this._chunks.length; endIndex++) {
-            chunkSize += this._chunks[endIndex].length;
-            if (chunkSize > 10 * 1000 * 1000)
-                break;
-        }
-        var chunk = this._chunks.slice(0, endIndex + 1).join("");
-        this._chunks.splice(0, endIndex + 1);
+        var chunks = this._chunks;
+        this._chunks = [];
         this._isWriting = true;
-        this._tempFile.write(chunk, this._didWriteChunk.bind(this));
+        this._tempFile.write(chunks, this._didWriteChunk.bind(this));
     },
 
     _didWriteChunk: function(success)
@@ -293,11 +304,57 @@ WebInspector.BufferedTempFileWriter.prototype = {
 
     _notifyFinished: function()
     {
-        this._isFinished = true;
+        this._finishedWriting = true;
         if (this._tempFile)
             this._tempFile.finishWriting();
         if (this._finishCallback)
             this._finishCallback(this._tempFile);
+        var pendingReads = this._pendingReads;
+        for (var i = 0; i < this._pendingReads.length; ++i)
+            this._pendingReads[i]();
+        this._pendingReads = [];
+    },
+
+    /**
+     * @param {number|undefined} startOffset
+     * @param {number|undefined} endOffset
+     * @param {function(string?)} callback
+     */
+    readRange: function(startOffset, endOffset, callback)
+    {
+        if (!this._finishedWriting) {
+            this._pendingReads.push(this.readRange.bind(this, startOffset, endOffset, callback));
+            return;
+        }
+        if (!this._tempFile) {
+            callback(null);
+            return;
+        }
+        this._tempFile.readRange(startOffset, endOffset, callback);
+    },
+
+    /**
+     * @param {!WebInspector.OutputStream} outputStream
+     * @param {!WebInspector.OutputStreamDelegate} delegate
+     */
+    writeToOutputStream: function(outputStream, delegate)
+    {
+        if (this._callsPendingOpen) {
+            this._callsPendingOpen.push(this.writeToOutputStream.bind(this, outputStream, delegate));
+            return;
+        }
+        if (this._tempFile)
+            this._tempFile.writeToOutputSteam(outputStream, delegate);
+    },
+
+    remove: function()
+    {
+        if (this._callsPendingOpen) {
+            this._callsPendingOpen.push(this.remove.bind(this));
+            return;
+        }
+        if (this._tempFile)
+            this._tempFile.remove();
     }
 }
 

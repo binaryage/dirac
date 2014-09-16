@@ -490,7 +490,7 @@ WebInspector.TracingTimelineUIUtils.buildTraceEventDetails = function(event, mod
         if (event.imageURL)
             WebInspector.DOMPresentationUtils.buildImagePreviewContents(target, event.imageURL, false, barrier.createCallback(saveImage));
         else if (event.picture)
-            WebInspector.TracingTimelineUIUtils.buildPicturePreviewContent(target, event.picture, barrier.createCallback(saveImage));
+            WebInspector.TracingTimelineUIUtils.buildPicturePreviewContent(event, barrier.createCallback(saveImage));
     }
     if (event.backendNodeId && target)
         target.domModel.pushNodesByBackendIdsToFrontend([event.backendNodeId], barrier.createCallback(setRelatedNode));
@@ -725,17 +725,18 @@ WebInspector.TracingTimelineUIUtils._aggregatedStatsForTraceEvent = function(tot
 }
 
 /**
- * @param {!WebInspector.Target} target
- * @param {string} encodedPicture
+ * @param {!WebInspector.TracingModel.Event} event
  * @param {function(!Element=)} callback
  */
-WebInspector.TracingTimelineUIUtils.buildPicturePreviewContent = function(target, encodedPicture, callback)
+WebInspector.TracingTimelineUIUtils.buildPicturePreviewContent = function(event, callback)
 {
-    WebInspector.PaintProfilerSnapshot.load(target, encodedPicture, onSnapshotLoaded);
+
+    new WebInspector.LayerPaintEvent(event).loadPicture(onSnapshotLoaded);
     /**
+     * @param {?Array.<number>} rect
      * @param {?WebInspector.PaintProfilerSnapshot} snapshot
      */
-    function onSnapshotLoaded(snapshot)
+    function onSnapshotLoaded(rect, snapshot)
     {
         if (!snapshot) {
             callback();

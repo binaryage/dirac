@@ -339,8 +339,7 @@ WebInspector.TracingTimelineModel.prototype = {
     writeToStream: function(stream)
     {
         var saver = new WebInspector.TracingTimelineSaver(stream);
-        var events = this._tracingModel.rawEvents();
-        saver.save(events);
+        this._tracingModel.writeToStream(stream, saver);
     },
 
     reset: function()
@@ -614,10 +613,8 @@ WebInspector.TracingTimelineModel.prototype = {
             if (!layerUpdateEvent || layerUpdateEvent.args["layerTreeId"] !== this._inspectedTargetLayerTreeId)
                 break;
             var paintEvent = this._lastPaintForLayer[layerUpdateEvent.args["layerId"]];
-            if (!paintEvent || !event.args["snapshot"] || !event.args["snapshot"]["params"])
-                break;
-            paintEvent.picture = event.args["snapshot"]["skp64"];
-            paintEvent.layerRect = event.args["snapshot"]["params"]["layer_rect"];
+            if (paintEvent)
+                paintEvent.picture = event;
             break;
 
         case recordTypes.ScrollLayer:
@@ -1038,6 +1035,7 @@ WebInspector.TracingModelLoader.prototype = {
 /**
  * @constructor
  * @param {!WebInspector.OutputStream} stream
+ * @implements {WebInspector.OutputStreamDelegate}
  */
 WebInspector.TracingTimelineSaver = function(stream)
 {
@@ -1045,45 +1043,24 @@ WebInspector.TracingTimelineSaver = function(stream)
 }
 
 WebInspector.TracingTimelineSaver.prototype = {
+    onTransferStarted: function()
+    {
+        this._stream.write("[");
+    },
+
+    onTransferFinished: function()
+    {
+        this._stream.write("]");
+    },
+
     /**
-     * @param {!Array.<*>} payloads
+     * @param {!WebInspector.ChunkedReader} reader
      */
-    save: function(payloads)
-    {
-        this._payloads = payloads;
-        this._recordIndex = 0;
-        this._writeNextChunk(this._stream);
-    },
+    onChunkTransferred: function(reader) { },
 
-    _writeNextChunk: function(stream)
-    {
-        const separator = ",\n";
-        var data = [];
-        var length = 0;
-
-        if (this._recordIndex === 0)
-            data.push("[");
-        while (this._recordIndex < this._payloads.length) {
-            var item = JSON.stringify(this._payloads[this._recordIndex]);
-            var itemLength = item.length + separator.length;
-            if (length + itemLength > WebInspector.TimelineModelImpl.TransferChunkLengthBytes)
-                break;
-            length += itemLength;
-            if (this._recordIndex > 0)
-                data.push(separator);
-            data.push(item);
-            ++this._recordIndex;
-        }
-        if (this._recordIndex === this._payloads.length)
-            data.push("]");
-        stream.write(data.join(""), this._didWriteNextChunk.bind(this, stream));
-    },
-
-    _didWriteNextChunk: function(stream)
-    {
-        if (this._recordIndex === this._payloads.length)
-            stream.close();
-        else
-            this._writeNextChunk(stream);
-    }
+    /**
+     * @param {!WebInspector.ChunkedReader} reader
+     * @param {!Event} event
+     */
+    onError: function(reader, event) { },
 }
