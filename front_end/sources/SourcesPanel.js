@@ -73,6 +73,10 @@ WebInspector.SourcesPanel = function(workspaceForTest)
     this._updateDebugSidebarResizeWidget();
     this._splitView.installResizer(this._debugSidebarResizeWidgetElement);
 
+    // FIXME: This is a temporary solution which should be removed as soon as the documentation module is released from experiment.
+    if (WebInspector.experimentsSettings.isEnabled("documentation"))
+        self.runtime.loadModule("documentation");
+
     this.sidebarPanes = {};
     this.sidebarPanes.threads = new WebInspector.ThreadsSidebarPane();
     this.sidebarPanes.watchExpressions = new WebInspector.WatchExpressionsSidebarPane();

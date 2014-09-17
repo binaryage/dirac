@@ -472,7 +472,7 @@
         "name": "documentation",
         "dependencies": ["common", "ui", "components", "source_frame"],
         "sources": [
-            "documentation/DocumentationURLProvider.js",
+            "documentation/DocumentationCatalog.js",
             "documentation/DocumentationView.js",
             "documentation/JSArticle.js",
             "documentation/WikiParser.js"

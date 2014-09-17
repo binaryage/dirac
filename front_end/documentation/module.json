@@ -10,7 +10,7 @@
     "scripts": [
         "WikiParser.js",
         "JSArticle.js",
-        "DocumentationURLProvider.js",
+        "DocumentationCatalog.js",
         "DocumentationView.js"
     ]
 }

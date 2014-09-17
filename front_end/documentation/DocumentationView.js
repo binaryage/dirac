@@ -334,6 +334,12 @@ WebInspector.DocumentationView.ContextMenuProvider.prototype = {
     {
         if (!(target instanceof WebInspector.CodeMirrorTextEditor))
             return;
+        WebInspector.DocumentationCatalog.instance().startLoadingIfNeeded();
+        if (WebInspector.DocumentationCatalog.instance().isLoading()) {
+            var itemName = WebInspector.useLowerCaseMenuTitles() ? "Loading documentation..." : "Loading Documentation...";
+            contextMenu.appendItem(itemName, function() {}, true);
+            return;
+        }
         var textEditor = /** @type {!WebInspector.CodeMirrorTextEditor} */ (target);
         var descriptors = this._determineDescriptors(textEditor);
         if (!descriptors.length)
@@ -353,17 +359,17 @@ WebInspector.DocumentationView.ContextMenuProvider.prototype = {
 
     /**
      * @param {!WebInspector.CodeMirrorTextEditor} textEditor
-     * @return {!Array.<!WebInspector.DocumentationURLProvider.ItemDescriptor>}
+     * @return {!Array.<!WebInspector.DocumentationCatalog.ItemDescriptor>}
      */
     _determineDescriptors: function(textEditor)
     {
-        var urlProvider = WebInspector.DocumentationURLProvider.instance();
+        var catalog = WebInspector.DocumentationCatalog.instance();
         var textSelection = textEditor.selection().normalize();
 
         if (!textSelection.isEmpty()) {
             if (textSelection.startLine !== textSelection.endLine)
                 return [];
-            return urlProvider.itemDescriptors(textEditor.copyRange(textSelection));
+            return catalog.itemDescriptors(textEditor.copyRange(textSelection));
         }
 
         var descriptors = computeDescriptors(textSelection.startColumn);
@@ -374,7 +380,7 @@ WebInspector.DocumentationView.ContextMenuProvider.prototype = {
 
         /**
          * @param {number} column
-         * @return {!Array.<!WebInspector.DocumentationURLProvider.ItemDescriptor>}
+         * @return {!Array.<!WebInspector.DocumentationCatalog.ItemDescriptor>}
          */
         function computeDescriptors(column)
         {
@@ -382,7 +388,7 @@ WebInspector.DocumentationView.ContextMenuProvider.prototype = {
             if (!token)
                 return [];
             var tokenText = textEditor.line(textSelection.startLine).substring(token.startColumn, token.endColumn);
-            return urlProvider.itemDescriptors(tokenText);
+            return catalog.itemDescriptors(tokenText);
         }
     }
 }
