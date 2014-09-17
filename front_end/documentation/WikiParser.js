@@ -64,6 +64,7 @@ WebInspector.WikiParser.TokenType = {
     EqualSign: "EqualSign",
     EqualSignInCurlyBrackets: "EqualSignInCurlyBrackets",
     VerticalLine: "VerticalLine",
+    DoubleQuotes: "DoubleQuotes",
     TripleQuotes: "TripleQuotes",
     OpeningCodeTag: "OpeningCodeTag",
     ClosingCodeTag: "ClosingCodeTag",
@@ -239,6 +240,7 @@ WebInspector.WikiParser.twoOpeningSquareBrackets = /^\n*\[\[/;
 WebInspector.WikiParser.oneClosingBracket = /^\n*\]/;
 WebInspector.WikiParser.twoClosingBrackets = /^\n*\]\]/;
 WebInspector.WikiParser.tripleQuotes = /^\n*'''/;
+WebInspector.WikiParser.doubleQuotes = /^\n*''/;
 WebInspector.WikiParser.openingCodeTag = /^<code\s*>/;
 WebInspector.WikiParser.closingCodeTag = /^<\/code\s*>/;
 WebInspector.WikiParser.closingBullet = /^\*/;
@@ -273,6 +275,7 @@ WebInspector.WikiParser._tokenDescriptors = [
     new WebInspector.WikiParser.TokenDescriptor(WebInspector.WikiParser.oneClosingBracket, WebInspector.WikiParser.TokenType.ClosingBrackets),
     new WebInspector.WikiParser.TokenDescriptor(WebInspector.WikiParser.newLineWithSpace, WebInspector.WikiParser.TokenType.CodeBlock),
     new WebInspector.WikiParser.TokenDescriptor(WebInspector.WikiParser.tripleQuotes, WebInspector.WikiParser.TokenType.TripleQuotes),
+    new WebInspector.WikiParser.TokenDescriptor(WebInspector.WikiParser.doubleQuotes, WebInspector.WikiParser.TokenType.DoubleQuotes),
     new WebInspector.WikiParser.TokenDescriptor(WebInspector.WikiParser.openingCodeTag, WebInspector.WikiParser.TokenType.OpeningCodeTag),
     new WebInspector.WikiParser.TokenDescriptor(WebInspector.WikiParser.closingCodeTag, WebInspector.WikiParser.TokenType.ClosingCodeTag),
     new WebInspector.WikiParser.TokenDescriptor(WebInspector.WikiParser.closingBullet, WebInspector.WikiParser.TokenType.Bullet),
@@ -530,6 +533,11 @@ WebInspector.WikiParser.prototype = {
                 processSimpleText.call(this);
                 blockChildren.push(this._parseHighlight());
                 break;
+            case WebInspector.WikiParser.TokenType.DoubleQuotes:
+                this._tokenizer.nextToken();
+                processSimpleText.call(this);
+                blockChildren.push(this._parseItalics());
+                break;
             case WebInspector.WikiParser.TokenType.OpeningSquareBrackets:
                 processSimpleText.call(this);
                 blockChildren.push(this._parseLink());
@@ -764,16 +772,33 @@ WebInspector.WikiParser.prototype = {
     {
         var text = "";
         while (this._tokenizer.hasMoreTokens()) {
-            var token = this._tokenizer.nextToken()
-            switch (token.type()) {
-            case WebInspector.WikiParser.TokenType.TripleQuotes:
+            var token = this._tokenizer.nextToken();
+            if (token.type() === WebInspector.WikiParser.TokenType.TripleQuotes) {
                 text = this._deleteTrailingSpaces(text);
                 return new WebInspector.WikiParser.PlainText(text, true);
-            default:
+            } else {
                 text += token.value();
             }
         }
         return new WebInspector.WikiParser.PlainText(text, true);
+    },
+
+    /**
+     * @return {!WebInspector.WikiParser.PlainText}
+     */
+    _parseItalics: function()
+    {
+        var text = "";
+        while (this._tokenizer.hasMoreTokens) {
+            var token = this._tokenizer.nextToken();
+            if (token.type() === WebInspector.WikiParser.TokenType.DoubleQuotes) {
+                text = this._deleteTrailingSpaces(text);
+                return new WebInspector.WikiParser.PlainText(text, false, true);
+            } else {
+                text += token.value();
+            }
+        }
+        return new WebInspector.WikiParser.PlainText(text, false, true);
     },
 
     /**
@@ -877,12 +902,14 @@ WebInspector.WikiParser.ArticleElement.Type = {
  * @extends {WebInspector.WikiParser.ArticleElement}
  * @param {string} text
  * @param {boolean=} highlight
+ * @param {boolean=} italic
  */
-WebInspector.WikiParser.PlainText = function(text, highlight)
+WebInspector.WikiParser.PlainText = function(text, highlight, italic)
 {
     WebInspector.WikiParser.ArticleElement.call(this, WebInspector.WikiParser.ArticleElement.Type.PlainText);
     this._text = text.unescapeHTML();
     this._isHighlighted = highlight || false;
+    this._isItalic = italic || false;
 }
 
 WebInspector.WikiParser.PlainText.prototype = {
