@@ -102,11 +102,13 @@ WebInspector.JSArticle.parse = function(wikiMarkupText)
     article.remarks = wikiDocument["Remarks_Section"] ? wikiDocument["Remarks_Section"]["Remarks"] : null;
     article.summary = wikiDocument["Summary_Section"];
 
-    var examples = wikiDocument["Examples_Section"] ? wikiDocument["Examples_Section"]["Examples"] : [];
+    var examples = wikiDocument["Examples_Section"] && wikiDocument["Examples_Section"]["Examples"] ? wikiDocument["Examples_Section"]["Examples"] : [];
     if (!Array.isArray(examples) && typeof examples !== "undefined")
         examples = [examples];
 
     for (var i = 0; i < examples.length; ++i) {
+        if (!examples[i].values)
+            break;
         var language = examples[i].values["Language"];
         var code = examples[i].values["Code"];
         var liveUrl = examples[i].values["LiveURL"];
@@ -119,6 +121,8 @@ WebInspector.JSArticle.parse = function(wikiMarkupText)
         parameters = [parameters];
 
     for (var i = 0; i < parameters.length; ++i) {
+        if (!parameters[i].values)
+            break;
         var name = parameters[i].values["Name"];
         var dataType = parameters[i].values["Data type"];
         var optional = parameters[i].values["Optional"];
