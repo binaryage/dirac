@@ -113,8 +113,7 @@ WebInspector.DocumentationCatalog.prototype = {
         if (tokens.length === 1)
             return;
         var propertyName = tokens.pop();
-        var sourceToken = tokens.length === 1 ? "window" : tokens.pop();
-        var sourceName = this._buildSourceName(sourceToken, propertyName);
+        var sourceName = tokens.length === 1 ? "window" : tokens.pop();
         if (!sourceName)
             return;
         var descriptors = this._articleList.get(propertyName);
@@ -122,27 +121,9 @@ WebInspector.DocumentationCatalog.prototype = {
             descriptors = [];
             this._articleList.set(propertyName, descriptors);
         }
-        var sourcePath = tokens.join("/") + "/" + (sourceName === "window" ? "" : sourceToken + "/");
+        var sourcePath = tokens.join("/") + "/" + (sourceName === "window" ? "" : sourceName + "/");
         descriptors.push(new WebInspector.DocumentationCatalog.ItemDescriptor(sourcePath, sourceName, propertyName));
     },
-
-    /**
-     * @param {string} sourceName
-     * @param {string} propertyName
-     * @return {?string}
-     */
-    _buildSourceName: function(sourceName, propertyName)
-    {
-        var source = window[sourceName];
-        if (!source)
-            return null;
-        if (source.hasOwnProperty(propertyName) && !(source instanceof Function && Function.hasOwnProperty(propertyName)))
-            return sourceName;
-        source = source.prototype;
-        if (!source || !source.hasOwnProperty(propertyName))
-            return null;
-        return sourceName + ".prototype";
-    }
 }
 
 /**
