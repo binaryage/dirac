@@ -167,8 +167,6 @@ WebInspector.DocumentationView.Renderer.prototype = {
      */
     _createSignatureSection: function(parameters, method)
     {
-        if (!method)
-            return;
         var section = this._element.createChild("p", "documentation-section");
         var signature = section.createChild("span", "documentation-method-signature documentation-section-content monospace");
         var methodName = signature.createChild("span", "documentation-method-name");
@@ -179,7 +177,10 @@ WebInspector.DocumentationView.Renderer.prototype = {
             var parameterType = signature.createChild("span", "documentation-parameter-data-type-value");
             parameterType.textContent = parameters[i].dataType + (parameters[i].optional ? "=" : "");
         }
-        signature.createTextChild("): ");
+        signature.createTextChild(")");
+        if (!method)
+            return;
+        signature.createTextChild(": ");
         var returnTypeElement = signature.createChild("span", "documentation-parameter-data-type-value");
         returnTypeElement.textContent = method.returnValueName;
     },
