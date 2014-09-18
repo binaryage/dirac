@@ -841,7 +841,7 @@ WebInspector.HeapSnapshot = function(profile, progress)
     this._init();
 
     if (profile.snapshot.trace_function_count) {
-        this._progress.updateStatus("Buiding allocation statistics\u2026");
+        this._progress.updateStatus("Building allocation statistics\u2026");
         var nodes = this.nodes;
         var nodesLength = nodes.length;
         var nodeFieldCount = this._nodeFieldCount;
@@ -851,9 +851,8 @@ WebInspector.HeapSnapshot = function(profile, progress)
             node.nodeIndex = nodeIndex;
             var traceNodeId = node.traceNodeId();
             var stats = liveObjects[traceNodeId];
-            if (!stats) {
-                liveObjects[traceNodeId] = stats = { count: 0, size: 0, ids: []};
-            }
+            if (!stats)
+                liveObjects[traceNodeId] = stats = { count: 0, size: 0, ids: [] };
             stats.count++;
             stats.size += node.selfSize();
             stats.ids.push(node.id());
@@ -904,6 +903,7 @@ WebInspector.HeapSnapshot.prototype = {
         this._nodeFieldCount = meta.node_fields.length;
 
         this._nodeTypes = meta.node_types[this._nodeTypeOffset];
+        this._nodeArrayType = this._nodeTypes.indexOf("array");
         this._nodeHiddenType = this._nodeTypes.indexOf("hidden");
         this._nodeObjectType = this._nodeTypes.indexOf("object");
         this._nodeNativeType = this._nodeTypes.indexOf("native");
@@ -936,7 +936,7 @@ WebInspector.HeapSnapshot.prototype = {
         this._progress.updateStatus("Calculating node flags\u2026");
         this._calculateFlags();
         this._progress.updateStatus("Calculating distances\u2026");
-        this._calculateDistances();
+        this.calculateDistances();
         this._progress.updateStatus("Building postorder index\u2026");
         var result = this._buildPostOrderIndex();
         // Actually it is array that maps node ordinal number to dominator node ordinal number.
@@ -1241,7 +1241,10 @@ WebInspector.HeapSnapshot.prototype = {
         }
     },
 
-    _calculateDistances: function()
+    /**
+     * @param {function(!WebInspector.HeapSnapshotNode,!WebInspector.HeapSnapshotEdge):boolean=} filter
+     */
+    calculateDistances: function(filter)
     {
         var nodeFieldCount = this._nodeFieldCount;
         var nodeCount = this.nodeCount;
@@ -1267,20 +1270,21 @@ WebInspector.HeapSnapshot.prototype = {
         }
 
         this.forEachRoot(enqueueNode.bind(null, 1), true);
-        this._bfs(nodesToVisit, nodesToVisitLength, distances);
+        this._bfs(nodesToVisit, nodesToVisitLength, distances, filter);
 
         // bfs for the rest of objects
         nodesToVisitLength = 0;
         this.forEachRoot(enqueueNode.bind(null, WebInspector.HeapSnapshotCommon.baseSystemDistance), false);
-        this._bfs(nodesToVisit, nodesToVisitLength, distances);
+        this._bfs(nodesToVisit, nodesToVisitLength, distances, filter);
     },
 
     /**
      * @param {!Uint32Array} nodesToVisit
      * @param {!number} nodesToVisitLength
      * @param {!Int32Array} distances
+     * @param {function(!WebInspector.HeapSnapshotNode,!WebInspector.HeapSnapshotEdge):boolean=} filter
      */
-    _bfs: function(nodesToVisit, nodesToVisitLength, distances)
+    _bfs: function(nodesToVisit, nodesToVisitLength, distances, filter)
     {
         // Preload fields into local variables for better performance.
         var edgeFieldsCount = this._edgeFieldsCount;
@@ -1295,19 +1299,25 @@ WebInspector.HeapSnapshot.prototype = {
         var noDistance = this._noDistance;
 
         var index = 0;
+        var edge = this.createEdge(0);
+        var node = this.createNode(0);
         while (index < nodesToVisitLength) {
             var nodeIndex = nodesToVisit[index++]; // shift generates too much garbage.
             var nodeOrdinal = nodeIndex / nodeFieldCount;
             var distance = distances[nodeOrdinal] + 1;
             var firstEdgeIndex = firstEdgeIndexes[nodeOrdinal];
             var edgesEnd = firstEdgeIndexes[nodeOrdinal + 1];
+            node.nodeIndex = nodeIndex;
             for (var edgeIndex = firstEdgeIndex; edgeIndex < edgesEnd; edgeIndex += edgeFieldsCount) {
                 var edgeType = containmentEdges[edgeIndex + edgeTypeOffset];
-                if (edgeType == edgeWeakType)
+                if (edgeType === edgeWeakType)
                     continue;
                 var childNodeIndex = containmentEdges[edgeIndex + edgeToNodeOffset];
                 var childNodeOrdinal = childNodeIndex / nodeFieldCount;
                 if (distances[childNodeOrdinal] !== noDistance)
+                    continue;
+                edge.edgeIndex = edgeIndex;
+                if (filter && !filter(node, edge))
                     continue;
                 distances[childNodeOrdinal] = distance;
                 nodesToVisit[nodesToVisitLength++] = childNodeIndex;

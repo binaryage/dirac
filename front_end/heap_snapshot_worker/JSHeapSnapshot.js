@@ -140,6 +140,41 @@ WebInspector.JSHeapSnapshot.prototype = {
         this._markPageOwnedNodes();
     },
 
+    calculateDistances: function()
+    {
+        /**
+         * @param {!WebInspector.HeapSnapshotNode} node
+         * @param {!WebInspector.HeapSnapshotEdge} edge
+         * @return {boolean}
+         */
+        function filter(node, edge)
+        {
+            if (node.isHidden())
+                return edge.name() !== "sloppy_function_map" || node.rawName() !== "system / NativeContext";
+            if (node.isArray()) {
+                // DescriptorArrays are fixed arrays used to hold instance descriptors.
+                // The format of the these objects is:
+                //   [0]: Number of descriptors
+                //   [1]: Either Smi(0) if uninitialized, or a pointer to small fixed array:
+                //          [0]: pointer to fixed array with enum cache
+                //          [1]: either Smi(0) or pointer to fixed array with indices
+                //   [i*3+2]: i-th key
+                //   [i*3+3]: i-th type
+                //   [i*3+4]: i-th descriptor
+                // As long as maps may share descriptor arrays some of the descriptor
+                // links may not be valid for all the maps. We just skip
+                // all the descriptor links when calculating distances.
+                // For more details see http://crbug.com/413608
+                if (node.rawName() !== "(map descriptors)")
+                    return true;
+                var index = edge.name();
+                return index < 2 || (index % 3) !== 1;
+            }
+            return true;
+        }
+        WebInspector.HeapSnapshot.prototype.calculateDistances.call(this, filter);
+    },
+
     /**
      * @param {!WebInspector.HeapSnapshotNode} node
      * @return {!boolean}
@@ -460,6 +495,11 @@ WebInspector.JSHeapSnapshotNode.prototype = {
     /**
      * @return {string}
      */
+    rawName: WebInspector.HeapSnapshotNode.prototype.name,
+
+    /**
+     * @return {string}
+     */
     name: function()
     {
         var snapshot = this._snapshot;
@@ -471,9 +511,12 @@ WebInspector.JSHeapSnapshotNode.prototype = {
             }
             return string;
         }
-        return WebInspector.HeapSnapshotNode.prototype.name.call(this);
+        return this.rawName();
     },
 
+    /**
+     * @return {string}
+     */
     _consStringName: function()
     {
         var snapshot = this._snapshot;
@@ -568,6 +611,14 @@ WebInspector.JSHeapSnapshotNode.prototype = {
     isHidden: function()
     {
         return this._type() === this._snapshot._nodeHiddenType;
+    },
+
+    /**
+     * @return {boolean}
+     */
+    isArray: function()
+    {
+        return this._type() === this._snapshot._nodeArrayType;
     },
 
     /**
@@ -691,7 +742,7 @@ WebInspector.JSHeapSnapshotEdge.prototype = {
     },
 
     /**
-     * @return {string}
+     * @return {string|number}
      */
     name: function()
     {
@@ -726,21 +777,35 @@ WebInspector.JSHeapSnapshotEdge.prototype = {
         return "?" + name + "?";
     },
 
+    /**
+     * @return {boolean}
+     */
     _hasStringName: function()
     {
-        return !this.isElement() && !this.isHidden();
+        var type = this._type();
+        var snapshot = this._snapshot;
+        return type !== snapshot._edgeElementType && type !== snapshot._edgeHiddenType;
     },
 
+    /**
+     * @return {string|number}
+     */
     _name: function()
     {
         return this._hasStringName() ? this._snapshot.strings[this._nameOrIndex()] : this._nameOrIndex();
     },
 
+    /**
+     * @return {number}
+     */
     _nameOrIndex: function()
     {
         return this._edges[this.edgeIndex + this._snapshot._edgeNameOffset];
     },
 
+    /**
+     * @return {number}
+     */
     _type: function()
     {
         return this._edges[this.edgeIndex + this._snapshot._edgeTypeOffset];
