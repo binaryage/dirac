@@ -55,7 +55,11 @@ WebInspector.WikiParser.Value;
  */
 WebInspector.WikiParser.TokenType = {
     Text: "Text",
-    Table: "Table",
+    OpeningTable: "OpeningTable",
+    ClosingTable: "ClosingTable",
+    RowSeparator: "RowSeparator",
+    CellSeparator: "CellSeparator",
+    NameSeparator: "NameSeparator",
     OpeningCurlyBrackets: "OpeningCurlyBrackets",
     ClosingCurlyBrackets: "ClosingCurlyBrackets",
     Exclamation: "Exclamation",
@@ -229,7 +233,11 @@ WebInspector.WikiParser.Tokenizer.prototype = {
     }
 }
 
-WebInspector.WikiParser.table = /^{{{!}}/;
+WebInspector.WikiParser.openingTable = /^\n{{{!}}/;
+WebInspector.WikiParser.closingTable = /^\n{{!}}}/;
+WebInspector.WikiParser.cellSeparator = /^\n{{!}}/;
+WebInspector.WikiParser.rowSeparator = /^\n{{!}}-/;
+WebInspector.WikiParser.nameSeparator = /^\n!/;
 WebInspector.WikiParser.exclamation = /^{{!}}/;
 WebInspector.WikiParser.openingCurlyBrackets = /^{{/;
 WebInspector.WikiParser.equalSign = /^=/;
@@ -262,10 +270,15 @@ WebInspector.WikiParser.TokenDescriptor = function(regex, type)
 }
 
 WebInspector.WikiParser._tokenDescriptors = [
+    new WebInspector.WikiParser.TokenDescriptor(WebInspector.WikiParser.closingTable, WebInspector.WikiParser.TokenType.ClosingTable),
+    new WebInspector.WikiParser.TokenDescriptor(WebInspector.WikiParser.openingTable, WebInspector.WikiParser.TokenType.OpeningTable),
+    new WebInspector.WikiParser.TokenDescriptor(WebInspector.WikiParser.rowSeparator, WebInspector.WikiParser.TokenType.RowSeparator),
+    new WebInspector.WikiParser.TokenDescriptor(WebInspector.WikiParser.cellSeparator, WebInspector.WikiParser.TokenType.CellSeparator),
+    new WebInspector.WikiParser.TokenDescriptor(WebInspector.WikiParser.nameSeparator, WebInspector.WikiParser.TokenType.NameSeparator),
     new WebInspector.WikiParser.TokenDescriptor(WebInspector.WikiParser.exclamation, WebInspector.WikiParser.TokenType.Exclamation),
     new WebInspector.WikiParser.TokenDescriptor(WebInspector.WikiParser.equalSignInCurlyBrackets, WebInspector.WikiParser.TokenType.EqualSignInCurlyBrackets),
     new WebInspector.WikiParser.TokenDescriptor(WebInspector.WikiParser.equalSign, WebInspector.WikiParser.TokenType.EqualSign),
-    new WebInspector.WikiParser.TokenDescriptor(WebInspector.WikiParser.table, WebInspector.WikiParser.TokenType.Table),
+    new WebInspector.WikiParser.TokenDescriptor(WebInspector.WikiParser.openingTable, WebInspector.WikiParser.TokenType.OpeningTable),
     new WebInspector.WikiParser.TokenDescriptor(WebInspector.WikiParser.openingCurlyBrackets, WebInspector.WikiParser.TokenType.OpeningCurlyBrackets),
     new WebInspector.WikiParser.TokenDescriptor(WebInspector.WikiParser.verticalLine, WebInspector.WikiParser.TokenType.VerticalLine),
     new WebInspector.WikiParser.TokenDescriptor(WebInspector.WikiParser.closingCurlyBrackets, WebInspector.WikiParser.TokenType.ClosingCurlyBrackets),
@@ -521,6 +534,10 @@ WebInspector.WikiParser.prototype = {
         while (this._tokenizer.hasMoreTokens()) {
             var token = this._tokenizer.peekToken();
             switch (token.type()) {
+            case WebInspector.WikiParser.TokenType.RowSeparator:
+            case WebInspector.WikiParser.TokenType.NameSeparator:
+            case WebInspector.WikiParser.TokenType.CellSeparator:
+            case WebInspector.WikiParser.TokenType.ClosingTable:
             case WebInspector.WikiParser.TokenType.VerticalLine:
             case WebInspector.WikiParser.TokenType.ClosingCurlyBrackets:
                 if (token.type() === WebInspector.WikiParser.TokenType.VerticalLine)
@@ -573,10 +590,15 @@ WebInspector.WikiParser.prototype = {
                 this._tokenizer.nextToken();
                 text += "|";
                 break;
+            case WebInspector.WikiParser.TokenType.OpeningTable:
+                this._tokenizer.nextToken();
+                processSimpleText.call(this);
+                processBlock();
+                children.push(this._parseTable());
+                break;
             case WebInspector.WikiParser.TokenType.ClosingBrackets:
             case WebInspector.WikiParser.TokenType.Text:
             case WebInspector.WikiParser.TokenType.EqualSign:
-            case WebInspector.WikiParser.TokenType.Table:
                 this._tokenizer.nextToken();
                 text += token.value();
                 break;
@@ -826,6 +848,44 @@ WebInspector.WikiParser.prototype = {
     },
 
     /**
+     * @return {!WebInspector.WikiParser.Table}
+     */
+    _parseTable: function()
+    {
+        var columnNames = [];
+        var rows = [];
+        while (this._tokenizer.hasMoreTokens() && this._tokenizer.peekToken().type() !== WebInspector.WikiParser.TokenType.RowSeparator)
+            this._tokenizer.nextToken();
+        if (!this._tokenizer.hasMoreTokens())
+            throw new Error("Table could not be parsed");
+        this._tokenizer.nextToken();
+
+        while (this._tokenizer.peekToken().type() === WebInspector.WikiParser.TokenType.NameSeparator) {
+            this._tokenizer.nextToken();
+            columnNames.push(this._parseMarkupText());
+        }
+        while (this._tokenizer.peekToken().type() === WebInspector.WikiParser.TokenType.RowSeparator) {
+            this._tokenizer.nextToken();
+            var row = [];
+            while (this._tokenizer.peekToken().type() === WebInspector.WikiParser.TokenType.CellSeparator) {
+                this._tokenizer.nextToken();
+                row.push(this._parseMarkupText());
+            }
+            rows.push(row);
+        }
+
+        var token = this._tokenizer.nextToken();
+        if (token.type() !== WebInspector.WikiParser.TokenType.ClosingTable)
+            throw new Error("Table could not be parsed. {{!}}} expected; found " + token.value());
+
+        for (var i = 0; i < rows.length; ++i) {
+            if (rows[i].length !== columnNames.length)
+                throw new Error(String.sprintf("Table could not be parsed. Row %d has %d cells; expected %d.", i, rows[i].length, columnNames[i].length));
+        }
+        return new WebInspector.WikiParser.Table(columnNames, rows);
+    },
+
+    /**
      * @param {string} str
      * @return {string}
      */
@@ -894,9 +954,42 @@ WebInspector.WikiParser.ArticleElement.Type = {
     Code: "Code",
     Block: "Block",
     CodeBlock: "CodeBlock",
-    Inline: "Inline"
+    Inline: "Inline",
+    Table: "Table"
 };
 
+/**
+ * @constructor
+ * @extends {WebInspector.WikiParser.ArticleElement}
+ * @param {!Array.<!WebInspector.WikiParser.ArticleElement>} columnNames
+ * @param {!Array.<!Array.<!WebInspector.WikiParser.ArticleElement>>} rows
+ */
+WebInspector.WikiParser.Table = function(columnNames, rows)
+{
+    WebInspector.WikiParser.ArticleElement.call(this, WebInspector.WikiParser.ArticleElement.Type.Table);
+    this._columnNames = columnNames;
+    this._rows = rows;
+}
+
+WebInspector.WikiParser.Table.prototype = {
+    /**
+     * @return {!Array.<!WebInspector.WikiParser.ArticleElement>}
+     */
+    columnNames: function()
+    {
+        return this._columnNames;
+    },
+
+    /**
+     * @return {!Array.<!Array.<!WebInspector.WikiParser.ArticleElement>>}
+     */
+    rows: function()
+    {
+        return this._rows;
+    },
+
+    __proto__: WebInspector.WikiParser.ArticleElement.prototype
+}
 /**
  * @constructor
  * @extends {WebInspector.WikiParser.ArticleElement}
