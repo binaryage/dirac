@@ -1038,10 +1038,9 @@ WebInspector.ElementsTreeElement.InitialChildrenLimit = 500;
 
 // A union of HTML4 and HTML5-Draft elements that explicitly
 // or implicitly (for HTML5) forbid the closing tag.
-// FIXME: Revise once HTML5 Final is published.
 WebInspector.ElementsTreeElement.ForbiddenClosingTagElements = [
     "area", "base", "basefont", "br", "canvas", "col", "command", "embed", "frame",
-    "hr", "img", "input", "keygen", "link", "meta", "param", "source"
+    "hr", "img", "input", "keygen", "link", "menuitem", "meta", "param", "source", "track", "wbr"
 ].keySet();
 
 // These tags we do not allow editing their tag name.
