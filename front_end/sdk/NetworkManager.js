@@ -205,7 +205,8 @@ WebInspector.NetworkDispatcher.prototype = {
 
         if (response.fromServiceWorker)
             networkRequest.fetchedViaServiceWorker = true;
-        else if (response.fromDiskCache)
+
+        if (response.fromDiskCache)
             networkRequest.cached = true;
         else
             networkRequest.timing = response.timing;

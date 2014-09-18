@@ -131,6 +131,42 @@ WebInspector.RequestTimingView.createTimingTable = function(request)
         return undefined;
     }
 
+    function createCommunicationTimingTable()
+    {
+        if (blocking > 0)
+            addRow(WebInspector.UIString("Stalled"), "blocking", 0, blocking);
+
+        if (timing.proxyStart !== -1)
+            addRow(WebInspector.UIString("Proxy negotiation"), "proxy", timing.proxyStart, timing.proxyEnd);
+
+        if (timing.dnsStart !== -1)
+            addRow(WebInspector.UIString("DNS Lookup"), "dns", timing.dnsStart, timing.dnsEnd);
+
+        if (timing.connectStart !== -1)
+            addRow(WebInspector.UIString("Initial connection"), "connecting", timing.connectStart, timing.connectEnd);
+
+        if (timing.sslStart !== -1)
+            addRow(WebInspector.UIString("SSL"), "ssl", timing.sslStart, timing.sslEnd);
+
+        addRow(WebInspector.UIString("Request sent"), "sending", timing.sendStart, timing.sendEnd);
+        addRow(WebInspector.UIString("Waiting (TTFB)"), "waiting", timing.sendEnd, timing.receiveHeadersEnd);
+
+        if (request.endTime !== -1)
+            addRow(WebInspector.UIString("Content Download"), "receiving", (request.responseReceivedTime - timing.requestTime) * 1000, total);
+    }
+
+    function createServiceWorkerTimingTable()
+    {
+        addRow(WebInspector.UIString("Stalled"), "blocking", 0, timing.serviceWorkerFetchStart);
+
+        addRow(WebInspector.UIString("Request to ServiceWorker"), "serviceworker", timing.serviceWorkerFetchStart, timing.serviceWorkerFetchEnd);
+        addRow(WebInspector.UIString("ServiceWorker Preparation"), "serviceworker", timing.serviceWorkerFetchStart, timing.serviceWorkerFetchReady);
+        addRow(WebInspector.UIString("Waiting (TTFB)"), "waiting", timing.serviceWorkerFetchEnd, timing.receiveHeadersEnd);
+
+        if (request.endTime !== -1)
+            addRow(WebInspector.UIString("Content Download"), "receiving", (request.responseReceivedTime - timing.requestTime) * 1000, total);
+    }
+
     var timing = request.timing;
     var blocking = firstPositive([timing.dnsStart, timing.connectStart, timing.sendStart]);
     var endTime = firstPositive([request.endTime, request.responseReceivedTime, timing.requestTime]);
@@ -138,26 +174,10 @@ WebInspector.RequestTimingView.createTimingTable = function(request)
     const chartWidth = 200;
     var scale = chartWidth / total;
 
-    if (blocking > 0)
-        addRow(WebInspector.UIString("Stalled"), "blocking", 0, blocking);
-
-    if (timing.proxyStart !== -1)
-        addRow(WebInspector.UIString("Proxy negotiation"), "proxy", timing.proxyStart, timing.proxyEnd);
-
-    if (timing.dnsStart !== -1)
-        addRow(WebInspector.UIString("DNS Lookup"), "dns", timing.dnsStart, timing.dnsEnd);
-
-    if (timing.connectStart !== -1)
-        addRow(WebInspector.UIString("Initial connection"), "connecting", timing.connectStart, timing.connectEnd);
-
-    if (timing.sslStart !== -1)
-        addRow(WebInspector.UIString("SSL"), "ssl", timing.sslStart, timing.sslEnd);
-
-    addRow(WebInspector.UIString("Request sent"), "sending", timing.sendStart, timing.sendEnd);
-    addRow(WebInspector.UIString("Waiting (TTFB)"), "waiting", timing.sendEnd, timing.receiveHeadersEnd);
-
-    if (request.endTime !== -1)
-        addRow(WebInspector.UIString("Content Download"), "receiving", (request.responseReceivedTime - timing.requestTime) * 1000, total);
+    if (request.fetchedViaServiceWorker)
+        createServiceWorkerTimingTable();
+    else
+        createCommunicationTimingTable();
 
     if (!request.finished) {
         var cell = tableElement.createChild("tr").createChild("td", "caution");

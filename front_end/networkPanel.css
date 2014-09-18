@@ -132,7 +132,8 @@
 }
 
 .network-timing-bar.connecting,
-.network-timing-bar.ssl {
+.network-timing-bar.ssl,
+.network-timing-bar.serviceworker {
     background-color: rgb(229, 130, 38);
 }
 
