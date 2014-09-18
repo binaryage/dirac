@@ -42,17 +42,15 @@ WebInspector.ResponsiveDesignView = function(inspectedPagePlaceholder)
     WebInspector.settings.disableOverridesWarning.addChangeListener(this._overridesWarningUpdated, this);
 
     this._slidersContainer = this._canvasContainer.element.createChild("div", "vbox responsive-design-sliders-container");
-    var hbox = this._slidersContainer.createChild("div", "hbox flex-auto");
-    this._heightSliderContainer = this._slidersContainer.createChild("div", "hbox responsive-design-slider-height");
-    this._pageContainer = hbox.createChild("div", "vbox flex-auto");
-    this._widthSliderContainer = hbox.createChild("div", "vbox responsive-design-slider-width");
-
-    this._widthSlider = this._widthSliderContainer.createChild("div", "responsive-design-slider-thumb");
-    this._widthSlider.createChild("div", "responsive-design-thumb-handle");
-    this._createResizer(this._widthSlider, false);
-    this._heightSlider = this._heightSliderContainer.createChild("div", "responsive-design-slider-thumb");
-    this._heightSlider.createChild("div", "responsive-design-thumb-handle");
-    this._createResizer(this._heightSlider, true);
+    var genericDeviceOutline = this._slidersContainer.createChild("div", "responsive-design-generic-outline-container");
+    genericDeviceOutline.createChild("div", "responsive-design-generic-outline");
+    var widthSlider = this._slidersContainer.createChild("div", "responsive-design-slider-width");
+    widthSlider.createChild("div", "responsive-design-thumb-handle");
+    this._createResizer(widthSlider, false);
+    var heightSlider = this._slidersContainer.createChild("div", "responsive-design-slider-height");
+    heightSlider.createChild("div", "responsive-design-thumb-handle");
+    this._createResizer(heightSlider, true);
+    this._pageContainer = this._slidersContainer.createChild("div", "vbox flex-auto");
 
     // Page scale controls.
     this._pageScaleContainer = this._canvasContainer.element.createChild("div", "vbox responsive-design-page-scale-container");
@@ -89,7 +87,6 @@ WebInspector.ResponsiveDesignView = function(inspectedPagePlaceholder)
 };
 
 // Measured in DIP.
-WebInspector.ResponsiveDesignView.SliderWidth = 19;
 WebInspector.ResponsiveDesignView.RulerWidth = 34;
 WebInspector.ResponsiveDesignView.RulerHeight = 22;
 WebInspector.ResponsiveDesignView.RulerBottomHeight = 9;
@@ -478,12 +475,6 @@ WebInspector.ResponsiveDesignView.prototype = {
             this._warningMessage.style.height = cssRulerHeight;
             this._mediaInspectorContainer.style.left = cssRulerWidth;
             this._mediaInspectorContainer.style.marginTop = cssRulerHeight;
-
-            var cssSliderWidth = WebInspector.ResponsiveDesignView.SliderWidth / zoomFactor + "px";
-            this._heightSliderContainer.style.flexBasis = cssSliderWidth;
-            this._heightSliderContainer.style.marginBottom = "-" + cssSliderWidth;
-            this._widthSliderContainer.style.flexBasis = cssSliderWidth;
-            this._widthSliderContainer.style.marginRight = "-" + cssSliderWidth;
         }
 
         var cssWidth = (this._dipWidth ? this._dipWidth : availableDip.width) / zoomFactor;
