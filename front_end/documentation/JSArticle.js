@@ -62,7 +62,7 @@ WebInspector.JSArticle.Example = function(language, code, liveUrl, description)
 WebInspector.JSArticle.Method = function(returnValueName, returnValueDescription)
 {
     this.returnValueName = WebInspector.JSArticle.unfoldStringValue(returnValueName);
-    this.returnValueDescription = WebInspector.JSArticle.unfoldStringValue(returnValueDescription);
+    this.returnValueDescription = returnValueDescription;
 }
 
 /**
