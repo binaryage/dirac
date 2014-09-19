@@ -86,6 +86,15 @@ WebInspector.DocumentationCatalog.prototype = {
         return this._articleList.get(searchTerm) || [];
     },
 
+    /**
+     * @param {string} sourceName
+     * @return {!Array.<!WebInspector.DocumentationCatalog.ItemDescriptor>}
+     */
+    constantDescriptors: function(sourceName)
+    {
+        return [new WebInspector.DocumentationCatalog.ItemDescriptor("javascript/" + sourceName + "/", sourceName, "constants")]
+    },
+
     startLoadingIfNeeded: function()
     {
         if (this._loader._state === WebInspector.DocumentationCatalog.Loader.DownloadStates.NotStarted)
@@ -109,7 +118,7 @@ WebInspector.DocumentationCatalog.prototype = {
         // In article list they are written with whitespace, while in URL they are written with underscore.
         // We are creating URL for current property, so we have to replace all the whitespaces with underscores.
         var correctedItemPath = itemPath.replace(" ", "_");
-        var tokens = itemPath.split("/");
+        var tokens = correctedItemPath.split("/");
         if (tokens.length === 1)
             return;
         var propertyName = tokens.pop();

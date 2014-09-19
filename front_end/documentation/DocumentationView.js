@@ -370,30 +370,60 @@ WebInspector.DocumentationView.ContextMenuProvider.prototype = {
     {
         var catalog = WebInspector.DocumentationCatalog.instance();
         var textSelection = textEditor.selection().normalize();
+        var previousTokenText = findPreviousToken(textSelection);
 
         if (!textSelection.isEmpty()) {
             if (textSelection.startLine !== textSelection.endLine)
                 return [];
-            return catalog.itemDescriptors(textEditor.copyRange(textSelection));
+            return computeDescriptors(textSelection);
         }
 
-        var descriptors = computeDescriptors(textSelection.startColumn);
+        var descriptors = computeDescriptors(getTokenRangeByColumn(textSelection.startColumn));
         if (descriptors.length)
             return descriptors;
 
-        return computeDescriptors(textSelection.startColumn - 1);
+        return computeDescriptors(getTokenRangeByColumn(textSelection.startColumn - 1));
 
         /**
          * @param {number} column
-         * @return {!Array.<!WebInspector.DocumentationCatalog.ItemDescriptor>}
+         * @return {?WebInspector.TextRange}
          */
-        function computeDescriptors(column)
+        function getTokenRangeByColumn(column)
         {
             var token = textEditor.tokenAtTextPosition(textSelection.startLine, column);
             if (!token)
+                return null;
+            return new WebInspector.TextRange(textSelection.startLine, token.startColumn, textSelection.startLine, token.endColumn);
+        }
+
+        /**
+         * @param {?WebInspector.TextRange} textRange
+         * @return {!Array.<!WebInspector.DocumentationCatalog.ItemDescriptor>}
+         */
+        function computeDescriptors(textRange)
+        {
+            if (!textRange)
                 return [];
-            var tokenText = textEditor.line(textSelection.startLine).substring(token.startColumn, token.endColumn);
-            return catalog.itemDescriptors(tokenText);
+            var propertyName = textEditor.copyRange(textRange);
+            var descriptors = catalog.itemDescriptors(propertyName);
+            if (descriptors.length)
+                return descriptors;
+            if (propertyName.toUpperCase() !== propertyName || !previousTokenText || !window[previousTokenText] || !window[previousTokenText][propertyName])
+                return [];
+            return catalog.constantDescriptors(previousTokenText);
+        }
+
+        /**
+         * @param {!WebInspector.TextRange} textRange
+         * @return {?string}
+         */
+        function findPreviousToken(textRange)
+        {
+            var line = textEditor.line(textRange.startLine);
+            if (textRange.startColumn < 3 || line[textRange.startColumn - 1] !== ".")
+                return null;
+            var token = textEditor.tokenAtTextPosition(textRange.startLine, textRange.startColumn - 2);
+            return token ? line.substring(token.startColumn, token.endColumn) : null;
         }
     }
 }
