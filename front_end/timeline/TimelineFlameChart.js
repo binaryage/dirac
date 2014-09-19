@@ -42,6 +42,7 @@ WebInspector.TimelineFlameChartDataProvider = function(model, frameModel)
     this._frameModel = frameModel;
     this._font = "12px " + WebInspector.fontFamily();
     this._linkifier = new WebInspector.Linkifier();
+    this._captureStacksSetting = WebInspector.settings.createSetting("timelineCaptureStacks", true);
     this._filters = [];
     this.addFilter(WebInspector.TracingTimelineUIUtils.hiddenEventsFilter());
     this.addFilter(new WebInspector.TracingTimelineModel.ExclusiveEventNameFilter([WebInspector.TracingTimelineModel.RecordType.Program]));
@@ -183,8 +184,10 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
     {
         var levelCount = this._appendAsyncEvents(threadTitle, asyncEvents);
         if (WebInspector.experimentsSettings.timelineJSCPUProfile.isEnabled()) {
-            var jsFrameEvents = this._generateJSFrameEvents(syncEvents);
-            syncEvents = jsFrameEvents.mergeOrdered(syncEvents, WebInspector.TracingModel.Event.orderedCompareStartTime);
+            if (this._captureStacksSetting.get()) {
+                var jsFrameEvents = this._generateJSFrameEvents(syncEvents);
+                syncEvents = jsFrameEvents.mergeOrdered(syncEvents, WebInspector.TracingModel.Event.orderedCompareStartTime);
+            }
         }
         levelCount += this._appendSyncEvents(levelCount ? null : threadTitle, syncEvents);
         if (levelCount)

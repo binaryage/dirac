@@ -348,6 +348,7 @@ WebInspector.TimelinePanel.prototype = {
         }
 
         this._captureStacksSetting = WebInspector.settings.createSetting("timelineCaptureStacks", true);
+        this._captureStacksSetting.addChangeListener(this._refreshViews, this);
         panelStatusBarElement.appendChild(this._createSettingCheckbox(WebInspector.UIString("Stacks"),
                                                                       this._captureStacksSetting,
                                                                       WebInspector.UIString("Capture JavaScript stack on every timeline event")));
