@@ -1124,6 +1124,9 @@ WebInspector.TimelineDetailsView = function()
 {
     WebInspector.TabbedPane.call(this);
 
+    this._recordTitleElement = document.createElement("div");
+    this._recordTitleElement.classList.add("record-title");
+    this.headerElement().insertBefore(this._recordTitleElement, this.headerElement().firstChild)
     this._defaultDetailsView = new WebInspector.VBox();
     this._defaultDetailsView.element.classList.add("timeline-details-view");
     this._defaultDetailsContentElement = this._defaultDetailsView.element.createChild("div", "timeline-details-view-body");
@@ -1140,7 +1143,7 @@ WebInspector.TimelineDetailsView.prototype = {
      */
     setContent: function(title, node)
     {
-        this.changeTabTitle("default", WebInspector.UIString("Details: %s", title));
+        this._recordTitleElement.textContent = title;
         var otherTabs = this.otherTabs("default");
         for (var i = 0; i < otherTabs.length; ++i)
             this.closeTab(otherTabs[i]);
@@ -1169,7 +1172,7 @@ WebInspector.TimelineDetailsView.prototype = {
     appendTab: function(id, tabTitle, view, tabTooltip, userGesture, isCloseable)
     {
         WebInspector.TabbedPane.prototype.appendTab.call(this, id, tabTitle, view, tabTooltip);
-        if (this._lastUserSelectedTabId === id)
+        if (this._lastUserSelectedTabId !== this.selectedTabId)
             this.selectTab(id);
     },
 

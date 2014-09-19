@@ -91,6 +91,7 @@
     height: 60px;
     padding: 2px;
     overflow: hidden;
+    font-size: 10px;
 }
 
 .paint-profiler-canvas-container canvas {

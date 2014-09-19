@@ -605,6 +605,12 @@
     vertical-align: top;
 }
 
+.timeline-details .record-title {
+    float: left;
+    padding: 5px 10px 5px 10px;
+    font-weight: bold;
+}
+
 .timeline-details-title {
     border-bottom: 1px solid #B8B8B8;
     font-weight: bold;
