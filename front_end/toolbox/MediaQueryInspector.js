@@ -13,7 +13,7 @@ WebInspector.MediaQueryInspector = function()
     this.element.classList.add("media-inspector-view", "media-inspector-view-empty");
     this.element.addEventListener("click", this._onMediaQueryClicked.bind(this), false);
     this.element.addEventListener("contextmenu", this._onContextMenu.bind(this), false);
-    this._mediaThrottler = new WebInspector.Throttler(100);
+    this._mediaThrottler = new WebInspector.Throttler(0);
 
     this._offset = 0;
     this._scale = 1;
@@ -270,12 +270,8 @@ WebInspector.MediaQueryInspector.prototype = {
 
         var container = null;
         for (var i = 0; i < markers.length; ++i) {
-            if (!i || markers[i].model.section() !== markers[i - 1].model.section()) {
+            if (!i || markers[i].model.section() !== markers[i - 1].model.section())
                 container = this.element.createChild("div", "media-inspector-marker-container");
-                var handler = this._onMarkerContainerMouseMove.bind(this);
-                container.addEventListener("mousemove", handler, false);
-                container.addEventListener("mouseout", handler, false);
-            }
             var marker = markers[i];
             var bar = this._createElementFromMediaQueryModel(marker.model);
             bar._model = marker.model;
@@ -287,49 +283,6 @@ WebInspector.MediaQueryInspector.prototype = {
         this.element.classList.toggle("media-inspector-view-empty", !this.element.children.length);
         if (this.element.children.length !== oldChildrenCount)
             this.dispatchEventToListeners(WebInspector.MediaQueryInspector.Events.HeightUpdated);
-    },
-
-    /**
-     * @param {!Event} event
-     */
-    _onMarkerContainerMouseMove: function(event)
-    {
-        var mediaQueryMarkerContainer = event.target.enclosingNodeOrSelfWithClass("media-inspector-marker-container");
-        if (!mediaQueryMarkerContainer)
-            return;
-        var children = mediaQueryMarkerContainer.children;
-        if (!children.length)
-            return;
-        for (var i = children.length - 1; i >= 0; --i) {
-            if (children[i].containsEventPoint(event)) {
-                this._highlightMarkerInContainer(children[i], mediaQueryMarkerContainer);
-                return;
-            }
-        }
-        this._highlightMarkerInContainer(null, mediaQueryMarkerContainer);
-    },
-
-    /**
-     * @param {?Element} marker
-     * @param {!Element} container
-     */
-    _highlightMarkerInContainer: function(marker, container)
-    {
-        var children = container.children;
-        var found = !marker;
-        for (var i = children.length - 1; i >= 0; --i) {
-            if (found) {
-                children[i].classList.remove("media-inspector-marker-highlight");
-                children[i].classList.remove("media-inspector-marker-under-highlighted");
-            } else if (children[i] === marker) {
-                children[i].classList.add("media-inspector-marker-highlight");
-                children[i].classList.remove("media-inspector-marker-under-highlighted");
-                found = true;
-            } else {
-                children[i].classList.remove("media-inspector-marker-highlight");
-                children[i].classList.add("media-inspector-marker-under-highlighted");
-            }
-        }
     },
 
     /**
@@ -373,19 +326,18 @@ WebInspector.MediaQueryInspector.prototype = {
         if (typeof widthPixelValue === "number")
             markerElement.style.width = widthPixelValue + "px";
 
-        if (model.maxWidthExpression()) {
-            var labelClass = model.section() === WebInspector.MediaQueryInspector.Section.MinMax ? "media-inspector-label-left" : "media-inspector-label-right";
-            var labelContainer = markerElement.createChild("div", "media-inspector-marker-label-container media-inspector-marker-label-container-right");
-            labelContainer.createChild("div", "media-inspector-marker-serif");
-            labelContainer.createChild("span", "media-inspector-marker-label " + labelClass).textContent = model.maxWidthExpression().computedLength() + "px";
-        }
-
         if (model.minWidthExpression()) {
             var labelClass = model.section() === WebInspector.MediaQueryInspector.Section.MinMax ? "media-inspector-label-right" : "media-inspector-label-left";
             var labelContainer = markerElement.createChild("div", "media-inspector-marker-label-container media-inspector-marker-label-container-left");
-            labelContainer.createChild("div", "media-inspector-marker-serif");
-            labelContainer.createChild("span", "media-inspector-marker-label " + labelClass).textContent = model.minWidthExpression().computedLength() + "px";
+            labelContainer.createChild("span", "media-inspector-marker-label " + labelClass).textContent = model.minWidthExpression().value() + model.minWidthExpression().unit();
         }
+
+        if (model.maxWidthExpression()) {
+            var labelClass = model.section() === WebInspector.MediaQueryInspector.Section.MinMax ? "media-inspector-label-left" : "media-inspector-label-right";
+            var labelContainer = markerElement.createChild("div", "media-inspector-marker-label-container media-inspector-marker-label-container-right");
+            labelContainer.createChild("span", "media-inspector-marker-label " + labelClass).textContent = model.maxWidthExpression().value() + model.maxWidthExpression().unit();
+        }
+        markerElement.title = model.mediaText();
 
         return markerElement;
     },
