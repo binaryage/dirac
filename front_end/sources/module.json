@@ -208,5 +208,8 @@
         "FileBasedSearchResultsPane.js",
         "SourcesSearchScope.js",
         "SourcesPanel.js"
+    ],
+    "skip_compilation": [
+        "jsdifflib.js"
     ]
 }

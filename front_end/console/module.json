@@ -51,6 +51,9 @@
             "settingType": "checkbox"
         }
     ],
+    "dependencies": [
+        "components"
+    ],
     "scripts": [
         "ConsoleViewMessage.js",
         "ConsoleView.js",

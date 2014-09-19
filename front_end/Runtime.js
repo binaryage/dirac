@@ -137,6 +137,12 @@ var Runtime = function()
      * @type {!Object.<string, !Runtime.ModuleDescriptor>}
      */
     this._descriptorsMap = {};
+
+    /**
+     * @type {!Object.<string, boolean>}
+     */
+    this._coreModules = {};
+
     for (var i = 0; i < allDescriptors.length; ++i)
         this._descriptorsMap[allDescriptors[i]["name"]] = allDescriptors[i];
 }
@@ -220,9 +226,12 @@ Runtime.startWorker = function(moduleName)
 Runtime.prototype = {
     /**
      * @param {!Array.<string>} configuration
+     * @param {!Array.<string>} coreModules
      */
-    registerModules: function(configuration)
+    registerModules: function(configuration, coreModules)
     {
+        for (var i = 0; i < coreModules.length; ++i)
+            this._coreModules[coreModules[i]] = true;
         for (var i = 0; i < configuration.length; ++i)
             this._registerModule(configuration[i]);
     },
@@ -233,9 +242,17 @@ Runtime.prototype = {
     _registerModule: function(moduleName)
     {
         if (!this._descriptorsMap[moduleName]) {
-            var content = loadResource(moduleName + "/module.json");
+            var content;
+            // FIXME: This is a temp workaround to avoid core module loading attempts in the release mode.
+            // It should be removed when the new application loader is implemented.
+            if (!this._coreModules.hasOwnProperty(moduleName))
+                content = loadResource(moduleName + "/module.json");
+            else
+                content = "{}";
+
             if (!content)
                 throw new Error("Module is not defined: " + moduleName + " " + new Error().stack);
+
             var module = /** @type {!Runtime.ModuleDescriptor} */ (self.eval("(" + content + ")"));
             module["name"] = moduleName;
             this._descriptorsMap[moduleName] = module;
@@ -537,7 +554,10 @@ Runtime.Module.prototype = {
             this._manager.loadModule(dependencies[i]);
         if (this._descriptor.scripts) {
             if (Runtime.isReleaseMode()) {
-                loadScript(this._name + ".js");
+                // FIXME: This is a temp workaround to avoid core module loading attempts in the release mode.
+                // It should be removed when the new application loader is implemented.
+                if (!this._manager._coreModules.hasOwnProperty(this._name))
+                    loadScript(this._name + ".js");
             } else {
                 var scripts = this._descriptor.scripts;
                 for (var i = 0; i < scripts.length; ++i)

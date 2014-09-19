@@ -22,6 +22,9 @@
             ]
         }
     ],
+    "dependencies": [
+        "components"
+    ],
     "scripts": [
         "../cm/codemirror.js",
         "../cm/css.js",
@@ -48,5 +51,25 @@
         "ResourceView.js",
         "FontView.js",
         "ImageView.js"
+    ],
+    "skip_compilation": [
+        "../cm/codemirror.js",
+        "../cm/css.js",
+        "../cm/javascript.js",
+        "../cm/xml.js",
+        "../cm/htmlmixed.js",
+
+        "../cm/matchbrackets.js",
+        "../cm/closebrackets.js",
+        "../cm/markselection.js",
+        "../cm/comment.js",
+        "../cm/overlay.js",
+
+        "../cm/htmlembedded.js",
+        "../cm/clike.js",
+        "../cm/coffeescript.js",
+        "../cm/php.js",
+        "../cm/python.js",
+        "../cm/shell.js"
     ]
 }

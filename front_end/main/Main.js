@@ -187,9 +187,10 @@ WebInspector.Main.prototype = {
     {
         console.timeStamp("Main._createModuleManager");
         self.runtime = new Runtime();
+        var core = ["common", "host", "sdk", "ui", "components", "workspace", "bindings", "screencast", "toolbox", "main"];
 
         // FIXME: define html-per-app, make configuration a part of the app.
-        var configuration = ["main", "elements", "network", "sources", "timeline", "profiler", "resources", "audits", "console", "source_frame", "extensions", "settings"];
+        var configuration = core.concat(["elements", "network", "sources", "timeline", "profiler", "resources", "audits", "console", "source_frame", "extensions", "settings"]);
         if (WebInspector.experimentsSettings.layersPanel.isEnabled())
             configuration.push("layers");
         if (WebInspector.experimentsSettings.devicesPanel.isEnabled() && !!WebInspector.queryParam("can_dock"))
@@ -197,8 +198,8 @@ WebInspector.Main.prototype = {
         if (WebInspector.experimentsSettings.documentation.isEnabled())
             configuration.push("documentation");
         if (WebInspector.isWorkerFrontend())
-            configuration = ["main", "network", "sources", "timeline", "profiler", "resources", "console", "source_frame", "extensions", "settings"];
-        self.runtime.registerModules(configuration);
+            configuration = core.concat(["network", "sources", "timeline", "profiler", "resources", "console", "source_frame", "extensions", "settings"]);
+        self.runtime.registerModules(configuration, core);
     },
 
     _createAppUI: function()

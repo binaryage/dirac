@@ -224,5 +224,26 @@
             "settingType": "custom",
             "className": "WebInspector.HandlerRegistry.OpenAnchorLocationSettingDelegate"
         }
+    ],
+    "dependencies": [
+        "host",
+        "screencast",
+        "sdk",
+        "toolbox"
+    ],
+    "scripts": [
+        "HelpScreenUntilReload.js",
+        "App.js",
+        "AdvancedApp.js",
+        "OverridesView.js",
+        "RenderingOptions.js",
+        "ScreencastApp.js",
+        "SimpleApp.js",
+        "../TestController.js",
+        "../Tests.js",
+        "Main.js"
+    ],
+    "skip_compilation": [
+        "../Tests.js"
     ]
 }

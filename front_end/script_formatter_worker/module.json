@@ -11,5 +11,13 @@
         "../UglifyJS/parse-js.js",
         "JavaScriptFormatter.js",
         "CSSFormatter.js"
+    ],
+    "skip_compilation": [
+        "../cm/headlesscodemirror.js",
+        "../cm/css.js",
+        "../cm/javascript.js",
+        "../cm/xml.js",
+        "../cm/htmlmixed.js",
+        "../UglifyJS/parse-js.js"
     ]
 }

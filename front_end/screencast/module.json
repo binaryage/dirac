@@ -1,0 +1,8 @@
+{
+    "dependencies": [
+        "components"
+    ],
+    "scripts": [
+        "ScreencastView.js"
+    ]
+}

@@ -1,0 +1,33 @@
+{
+    "dependencies": [
+        "ui",
+        "bindings"
+    ],
+    "scripts": [
+        "CookiesTable.js",
+        "NativeBreakpointsSidebarPane.js",
+        "DOMBreakpointsSidebarPane.js",
+        "DOMPresentationUtils.js",
+        "Section.js",
+        "PropertiesSection.js",
+        "DockController.js",
+        "Drawer.js",
+        "Panel.js",
+        "ExecutionContextSelector.js",
+        "ExtensionServerProxy.js",
+        "FilterBar.js",
+        "FilterSuggestionBuilder.js",
+        "FlameChart.js",
+        "HandlerRegistry.js",
+        "HelpScreen.js",
+        "InspectElementModeController.js",
+        "InspectorView.js",
+        "ObjectPopoverHelper.js",
+        "ObjectPropertiesSection.js",
+        "OverviewGrid.js",
+        "SearchableView.js",
+        "ShortcutsScreen.js",
+        "TargetsComboBoxController.js",
+        "TimelineGrid.js"
+    ]
+}

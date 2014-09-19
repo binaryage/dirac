@@ -1,0 +1,13 @@
+{
+    "dependencies": ["common", "host"],
+    "scripts": [
+        "FileManager.js",
+        "FileSystemMapping.js",
+        "FileSystemWorkspaceBinding.js",
+        "IsolatedFileSystem.js",
+        "IsolatedFileSystemManager.js",
+        "SearchConfig.js",
+        "UISourceCode.js",
+        "Workspace.js"
+    ]
+}

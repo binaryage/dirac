@@ -1,0 +1,84 @@
+[
+    {
+        "name": "main"
+    },
+    {
+        "name": "components"
+    },
+    {
+        "name": "ui"
+    },
+    {
+        "name": "sdk"
+    },
+    {
+        "name": "host"
+    },
+    {
+        "name": "common"
+    },
+    {
+        "name": "toolbox"
+    },
+    {
+        "name": "screencast"
+    },
+    {
+        "name": "workspace"
+    },
+    {
+        "name": "bindings"
+    },
+    {
+        "name": "elements"
+    },
+    {
+        "name": "network"
+    },
+    {
+        "name": "sources"
+    },
+    {
+        "name": "timeline"
+    },
+    {
+        "name": "profiler"
+    },
+    {
+        "name": "resources"
+    },
+    {
+        "name": "audits"
+    },
+    {
+        "name": "console"
+    },
+    {
+        "name": "source_frame"
+    },
+    {
+        "name": "extensions"
+    },
+    {
+        "name": "settings"
+    },
+    {
+        "name": "documentation"
+    },
+    {
+        "name": "layers"
+    },
+    {
+        "name": "devices"
+    },
+
+    {
+        "name": "heap_snapshot_worker"
+    },
+    {
+        "name": "script_formatter_worker"
+    },
+    {
+        "name": "temp_storage_shared_worker"
+    }
+]

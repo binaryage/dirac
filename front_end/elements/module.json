@@ -74,6 +74,9 @@
             "settingType": "checkbox"
         }
     ],
+    "dependencies": [
+        "components"
+    ],
     "scripts": [
         "Spectrum.js",
         "ElementsTreeOutline.js",
