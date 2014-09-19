@@ -5,20 +5,15 @@
  */
 
 .documentation-code {
-    border: 1px solid rgba(128, 128, 128, 0.4);
-    border-radius: 6px;
-    padding: 10px;
-    margin-bottom: 10px;
-}
-
-.documentation-section-title {
-    font-size: 120%;
-    font-weight: bold;
-    padding-top: 5px;
-}
-
-.documentation-section-content.documentation-return-value {
-    margin-top: 10px;
+    padding: 15px;
+    margin: 2em 0;
+    word-wrap: break-word;
+    position: relative;
+    background-color: #f7f7f7;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15), 0 0 3px rgba(0, 0, 0, 0.15);
+    overflow-x: auto;
+    font-size: 0.95em;
+    line-height: 1.8em;
 }
 
 .documentation-parameter-header {
@@ -34,41 +29,73 @@
 }
 
 .documentation-view .documentation-method-signature.monospace {
-    font-size: 120% !important;
-    border: 1px solid rgba(128, 128, 128, 0.4);
-    border-radius: 6px;
-    padding: 10px;
+    font-size: 14px !important;
+    margin-bottom: 20px;
+}
+
+.documentation-parameter-data-type-value {
+    color: rgb(102, 0, 102);
+    margin: 0 0.5em;
 }
 
 .documentation-section {
     margin-bottom: 15px;
 }
 
-.documentation-section-content {
-    margin-left: 16px;
+.documentation-table {
+    font-size: 13px;
+    width: 100%;
+    border-collapse: collapse;
+    margin: 2em 0;
+    line-height: 1.5em;
+}
+
+.documentation-table-header {
+    padding: 1em 1.5em;
+    text-align: left;
+    vertical-align: top;
+    border: 1px solid #eee;
+    background: #fafafa;
+}
+
+.documentation-table-cell {
+    padding: 1em 1.5em;
+    text-align: left;
+    vertical-align: top;
+    border: 1px solid #eee;
+}
+
+.documentation-table-cell .documentation-paragraph:last-child {
+    margin-bottom: 0;
+}
+
+.documentation-table-row {
+    border-bottom: 1px solid #dbdbdb;
+}
+
+.documentation-description {
+    margin-left: 20px;
 }
 
 .documentation-code-tag {
     font-weight: bold;
 }
 
-.documentation-parameter-optional {
-    background-color: rgb(219, 234, 249);
-}
-
-.documentation-parameter-data-type-value {
-    background-color: rgb(254, 254, 202);
-}
-
-.documentation-parameter-name {
-    font-size: 120%;
-    font-style: italic;
-}
-
 .documentation-page-title {
-    font-size: 160%;
+    font-size: 16px;
     font-weight: bold;
-    padding-bottom: 7px;
+    margin-bottom: 0.53333em;
+}
+
+.documentation-title {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 0.53333em;
+    margin-top: 1em;
+}
+
+.documentation-paragraph {
+    margin-bottom: 0.7em;
 }
 
 .documentation-view {
@@ -80,27 +107,8 @@
     margin-bottom: 20px;
 }
 
-.documentation-example-link {
-    float: right;
-    background-color: rgb(219, 234, 249);
-}
-
-.documentation-example-link:visited {
-    color: rgb(109, 114, 255);
-}
-
 .documentation-text {
     line-height: 1.5;
-}
-
-.documentation-box {
-    padding: 6px;
-    padding-left: 10px;
-    padding-right: 10px;
-    text-decoration: none;
-    margin-left: 10px;
-    margin-top: 5px;
-    border-radius: 5px;
 }
 
 .documentation-not-found {

@@ -83,7 +83,7 @@ WebInspector.DocumentationView.prototype = {
         this.element.removeChildren();
         var emptyPage = this.element.createChild("div", "documentation-empty-page fill");
         var pageTitle = emptyPage.createChild("div", "documentation-not-found");
-        pageTitle.textContent = "No documentation found.";
+        pageTitle.textContent = WebInspector.UIString("No documentation found.");
         emptyPage.createChild("div", "documentation-empty-page-align");
     },
 
@@ -108,124 +108,107 @@ WebInspector.DocumentationView.Renderer.prototype = {
      */
     renderJSArticle: function()
     {
-        this._createPageTitle(this._article.pageTitle, this._searchItem);
-        this._createStandardizationStatus(this._article.standardizationStatus);
-        this._createSignatureSection(this._article.parameters, this._article.methods);
-        this._createTextSectionWithTitle("Summary", this._article.summary);
-        this._createParametersSection(this._article.parameters);
-        this._createReturnValueSection(this._article.methods);
-        this._createExamplesSection(this._article.examples);
-        this._createTextSectionWithTitle("Remarks", this._article.remarks);
+        this._element.appendChild(this._createPageTitle(this._article.pageTitle, this._searchItem));
+        var signatureElement = this._createSignatureSection(this._article.parameters, this._article.methods);
+        if (signatureElement)
+            this._element.appendChild(signatureElement);
 
+        var descriptionElement = this._element.createChild("div", "documentation-description");
+        var summarySection = this._article.summary ? this._renderBlock(this._article.summary) : null;
+        if (summarySection)
+            descriptionElement.appendChild(summarySection);
+        var parametersSection = this._createParametersSection(this._article.parameters);
+        if (parametersSection)
+            descriptionElement.appendChild(parametersSection);
+
+        var examplesSection = this._createExamplesSection(this._article.examples);
+        if (examplesSection) {
+            var examplesTitle = this._element.createChild("div", "documentation-title");
+            examplesTitle.textContent = WebInspector.UIString("Examples");
+            descriptionElement = this._element.createChild("div", "documentation-description");
+            descriptionElement.appendChild(examplesSection);
+        }
+
+        var remarksSection = this._article.remarks ? this._renderBlock(this._article.remarks) : null;
+        if (remarksSection) {
+            var remarksTitle = this._element.createChild("div", "documentation-title");
+            remarksTitle.textContent = WebInspector.UIString("Remarks");
+            descriptionElement = this._element.createChild("div", "documentation-description");
+            descriptionElement.appendChild(remarksSection);
+        }
         return this._element;
     },
 
     /**
      * @param {string} titleText
      * @param {string} searchItem
+     * @return {!Element}
      */
     _createPageTitle: function(titleText, searchItem)
     {
-        var pageTitle = this._element.createChild("div", "documentation-page-title");
+        var pageTitle = document.createElementWithClass("div", "documentation-page-title");
         if (titleText)
             pageTitle.textContent = titleText;
         else if (searchItem)
             pageTitle.textContent = searchItem;
-    },
-
-     /**
-     * @param {string} statusText
-     */
-    _createStandardizationStatus: function(statusText)
-    {
-        if (!statusText)
-            return;
-        var status = this._element.createChild("div", "documentation-status");
-        status.textContent = statusText;
-    },
-
-    /**
-     * @param {string} titleText
-     * @param {?WebInspector.WikiParser.Block} article
-     */
-    _createTextSectionWithTitle: function(titleText, article)
-    {
-        if (!article)
-            return;
-        var section = this._element.createChild("div", "documentation-section");
-        var title = section.createChild("div", "documentation-section-title");
-        title.textContent = titleText;
-        var text = this._renderBlock(article);
-        text.classList.add("documentation-text");
-        text.classList.add("documentation-section-content");
-        section.appendChild(text);
+        return pageTitle;
     },
 
     /**
      * @param {!Array.<!WebInspector.JSArticle.Parameter>} parameters
      * @param {?WebInspector.JSArticle.Method} method
+     * @return {?Element}
      */
     _createSignatureSection: function(parameters, method)
     {
-        var section = this._element.createChild("p", "documentation-section");
-        var signature = section.createChild("span", "documentation-method-signature documentation-section-content monospace");
+        if (!parameters.length && !method)
+            return null;
+        var signature = document.createElementWithClass("div", "documentation-method-signature monospace");
+        if (method && method.returnValueName) {
+            var returnTypeElement = signature.createChild("span", "documentation-parameter-data-type-value");
+            returnTypeElement.textContent = method.returnValueName;
+        }
         var methodName = signature.createChild("span", "documentation-method-name");
         methodName.textContent = this._searchItem.split(".").peekLast() + "(";
         for (var i = 0; i < parameters.length; ++i) {
             if (i > 0)
-                signature.createTextChild(", ")
+                signature.createTextChild(",")
             var parameterType = signature.createChild("span", "documentation-parameter-data-type-value");
-            parameterType.textContent = parameters[i].dataType + (parameters[i].optional ? "=" : "");
+            parameterType.textContent = parameters[i].dataType;
+            var parameterName = signature.createChild("span", "documentation-parameter-name");
+            parameterName.textContent = parameters[i].name;
         }
+
         signature.createTextChild(")");
-        if (!method)
-            return;
-        signature.createTextChild(": ");
-        var returnTypeElement = signature.createChild("span", "documentation-parameter-data-type-value");
-        returnTypeElement.textContent = method.returnValueName;
+        return signature;
     },
 
     /**
      * @param {!Array.<!WebInspector.JSArticle.Parameter>} parameters
+     * @return {?Element}
      */
     _createParametersSection: function(parameters)
     {
         if (!parameters.length)
-            return;
-        var section = this._element.createChild("div", "documentation-section");
-        var title = section.createChild("div", "documentation-section-title");
-        title.textContent = "Parameters";
+            return null;
+        var table = document.createElementWithClass("table", "documentation-table");
+        var tableBody = table.createChild("tbody");
+        var headerRow = tableBody.createChild("tr", "documentation-table-row");
+        var tableHeader = headerRow.createChild("th", "documentation-table-header");
+        tableHeader.textContent = WebInspector.UIString("Parameters");
+        tableHeader.colSpan = 3;
         for (var i = 0; i < parameters.length; ++i) {
-            var parameter = section.createChild("div", "documentation-parameter documentation-section-content");
-            var header = parameter.createChild("div", "documentation-parameter-header");
-            var name = header.createChild("span", "documentation-parameter-name");
-            name.textContent = parameters[i].name;
-            var dataTypeValue = header.createChild("span", "documentation-parameter-data-type-value");
-            dataTypeValue.classList.add("documentation-box");
-            dataTypeValue.textContent = parameters[i].dataType;
-            if (parameters[i].optional) {
-                var optional = header.createChild("span", "documentation-parameter-optional");
-                optional.classList.add("documentation-box");
-                optional.textContent = WebInspector.UIString("Optional");
-            }
-            parameter.appendChild(this._renderBlock(parameters[i].description));
+            var tableRow = tableBody.createChild("tr", "documentation-table-row");
+            var type = tableRow.createChild("td", "documentation-table-cell");
+            type.textContent = parameters[i].dataType;
+            var name = tableRow.createChild("td", "documentation-table-cell");
+            name.textContent = parameters[i].optional ? WebInspector.UIString("(optional)\n") : "";
+            name.textContent += parameters[i].name;
+            var description = tableRow.createChild("td", "documentation-table-cell");
+            if (parameters[i].description)
+                description.appendChild(this._renderBlock(/** @type {!WebInspector.WikiParser.Block} */(parameters[i].description)));
         }
-    },
-
-    /**
-     * @param {?WebInspector.JSArticle.Method} method
-     */
-    _createReturnValueSection: function(method)
-    {
-        if (!method)
-            return;
-        var section = this._element.createChild("div", "documentation-section");
-        var title = section.createChild("div", "documentation-section-title");
-        title.textContent = "Return Value";
-        var returnValueName = section.createChild("div", "documentation-section-content documentation-return-value");
-        returnValueName.textContent = WebInspector.UIString("Returns an object of type " + method.returnValueName + ".");
-        var returnValueDescription = section.createChild("div", "documentation-section-content documentation-text");
-        returnValueDescription.textContent = WebInspector.UIString(method.returnValueDescription);
+        return table;
     },
 
     /**
@@ -236,21 +219,13 @@ WebInspector.DocumentationView.Renderer.prototype = {
         if (!examples.length)
             return;
 
-        var section = this._element.createChild("div", "documentation-section");
-        var title = section.createChild("div", "documentation-section-title");
-        title.textContent = "Examples";
+        var section = document.createElementWithClass("div", "documentation-section");
 
         for (var i = 0; i < examples.length; ++i) {
-            var example = section.createChild("div", "documentation-example documentation-section-content");
+            var example = section.createChild("div", "documentation-example");
             var exampleDescription = example.createChild("div", "documentation-example-description-section");
-            if (examples[i].liveUrl) {
-                var liveUrl = exampleDescription.createChild("a", "documentation-example-link");
-                liveUrl.classList.add("documentation-box");
-                liveUrl.href = examples[i].liveUrl;
-                liveUrl.textContent = WebInspector.UIString("Example");
-            }
             if (examples[i].description) {
-                var description = this._renderBlock(examples[i].description);
+                var description = this._renderBlock(/** @type {!WebInspector.WikiParser.Block} */(examples[i].description));
                 description.classList.add("documentation-text");
                 exampleDescription.appendChild(description);
             }
@@ -261,15 +236,16 @@ WebInspector.DocumentationView.Renderer.prototype = {
             var syntaxHighlighter = new WebInspector.DOMSyntaxHighlighter(WebInspector.DocumentationView._languageToMimeType[examples[i].language.toLowerCase()], true);
             syntaxHighlighter.syntaxHighlightNode(code);
         }
+        return section;
     },
 
     /**
      * @param {!WebInspector.WikiParser.ArticleElement} article
-     * @return {?Element}
+     * @return {!Element}
      */
     _renderBlock: function(article)
     {
-        var element = null;
+        var element;
         var elementTypes = WebInspector.WikiParser.ArticleElement.Type;
 
         switch (article.type()) {
@@ -296,11 +272,14 @@ WebInspector.DocumentationView.Renderer.prototype = {
                 element.classList.add("documentation-highlighted-text");
             break;
         case elementTypes.Block:
-            element = document.createElement(article.hasBullet() ? "li" : "p");
+            element = document.createElement(article.hasBullet() ? "li" : "div");
+            if (!article.hasBullet())
+                element.classList.add("documentation-paragraph");
             break;
+        case elementTypes.Table:
+            return this._renderTable(/** @type {!WebInspector.WikiParser.Table} */(article));
         default:
-            console.error("Unknown ArticleElement type " + article.type());
-            return null;
+            throw new Error("Unknown ArticleElement type " + article.type());
         }
 
         if (article.type() === WebInspector.WikiParser.ArticleElement.Type.Block
@@ -314,6 +293,31 @@ WebInspector.DocumentationView.Renderer.prototype = {
         }
 
         return element;
+    },
+
+    /**
+     * @param {!WebInspector.WikiParser.Table} table
+     * @return {!Element}
+     */
+    _renderTable: function(table)
+    {
+        var tableElement = document.createElementWithClass("table", "documentation-table");
+        var tableBody = tableElement.createChild("tbody");
+        var headerRow = tableBody.createChild("tr", "documentation-table-row");
+        for (var i = 0; i < table.columnNames().length; ++i) {
+            var tableHeader = headerRow.createChild("th", "documentation-table-header");
+            tableHeader.appendChild(this._renderBlock(table.columnNames()[i]));
+        }
+        for (var i = 0; i < table.rows().length; ++i) {
+            var tableRow = tableBody.createChild("tr", "documentation-table-row");
+            var row = table.rows()[i];
+            for (var j = 0; j < row.length; ++j) {
+                var cell = tableRow.createChild("td", "documentation-table-cell");
+                cell.appendChild(this._renderBlock(row[j]));
+            }
+        }
+
+        return tableElement;
     }
 }
 
