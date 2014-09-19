@@ -76,11 +76,13 @@ WebInspector.RequestPreviewView.prototype = {
         return new WebInspector.EmptyView(message);
     },
 
+    /**
+     * @return {?WebInspector.RequestJSONView}
+     */
     _jsonView: function()
     {
-        var parsedJSON = WebInspector.RequestJSONView.parseJSON(this.request.content);
-        if (parsedJSON)
-            return new WebInspector.RequestJSONView(this.request, parsedJSON);
+        var parsedJSON = WebInspector.RequestJSONView.parseJSON(this.request.content || "");
+        return parsedJSON ? new WebInspector.RequestJSONView(this.request, parsedJSON) : null;
     },
 
     /**

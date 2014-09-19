@@ -56,7 +56,7 @@ WebInspector.ThreadsSidebarPane.prototype = {
      */
     _targetChanged: function(event)
     {
-        var newTarget = /** @type {?WebInspector.Target} */(event.data);
+        var newTarget = /** @type {!WebInspector.Target} */(event.data);
         var placard =  /** @type {!WebInspector.Placard} */ (this._targetsToPlacards.get(newTarget));
         this._selectPlacard(placard);
     },

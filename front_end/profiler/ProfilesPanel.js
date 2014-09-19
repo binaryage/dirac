@@ -1198,9 +1198,13 @@ WebInspector.ProfileSidebarTreeElement.prototype = {
         this.profile.removeEventListener(WebInspector.ProfileHeader.Events.ProfileReceived, this._onProfileReceived, this);
     },
 
+    /**
+     * @return {boolean}
+     */
     onselect: function()
     {
         this._dataDisplayDelegate.showProfile(this.profile);
+        return true;
     },
 
     /**
@@ -1250,10 +1254,15 @@ WebInspector.ProfileGroupSidebarTreeElement = function(dataDisplayDelegate, titl
 }
 
 WebInspector.ProfileGroupSidebarTreeElement.prototype = {
+    /**
+     * @return {boolean}
+     */
     onselect: function()
     {
-        if (this.children.length > 0)
+        var hasChildren = this.children.length > 0;
+        if (hasChildren)
             this._dataDisplayDelegate.showProfile(this.children[this.children.length - 1].profile);
+        return hasChildren;
     },
 
     __proto__: WebInspector.SidebarTreeElement.prototype
@@ -1273,9 +1282,13 @@ WebInspector.ProfilesSidebarTreeElement = function(panel)
 }
 
 WebInspector.ProfilesSidebarTreeElement.prototype = {
+    /**
+     * @return {boolean}
+     */
     onselect: function()
     {
         this._panel._showLauncherView();
+        return true;
     },
 
     get selectable()

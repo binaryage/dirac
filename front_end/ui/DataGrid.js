@@ -277,7 +277,7 @@ WebInspector.DataGrid.prototype = {
     _startEditingColumnOfDataGridNode: function(node, cellIndex)
     {
         this._editing = true;
-        /** @type {!WebInspector.DataGridNode} */
+        /** @type {?WebInspector.DataGridNode} */
         this._editingNode = node;
         this._editingNode.select();
 
@@ -1465,7 +1465,6 @@ WebInspector.DataGridNode.prototype = {
 
     /**
      * @param {number} myIndex
-     * @protected
      */
     recalculateSiblings: function(myIndex)
     {

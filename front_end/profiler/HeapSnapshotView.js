@@ -1476,7 +1476,7 @@ WebInspector.HeapProfileHeader.prototype = {
     _finishLoad: function()
     {
         if (!this._wasDisposed)
-            this._receiver.close(function() {});
+            this._receiver.close();
         if (this._bufferedWriter) {
             this._bufferedWriter.finishWriting(this._didWriteToTempFile.bind(this));
             this._bufferedWriter = null;
@@ -1550,7 +1550,7 @@ WebInspector.HeapProfileHeader.prototype = {
     transferChunk: function(chunk)
     {
         if (!this._bufferedWriter)
-            this._bufferedWriter = new WebInspector.DeferredTempFile("heap-profiler", this.uid);
+            this._bufferedWriter = new WebInspector.DeferredTempFile("heap-profiler", String(this.uid));
         this._bufferedWriter.write([chunk]);
 
         ++this._totalNumberOfChunks;
@@ -1572,7 +1572,7 @@ WebInspector.HeapProfileHeader.prototype = {
     notifySnapshotReceived: function()
     {
         for (var i = 0; i < this._loadCallbacks.length; i++)
-            this._loadCallbacks[i](this._snapshotProxy);
+            this._loadCallbacks[i](/** @type {!WebInspector.HeapSnapshotProxy} */ (this._snapshotProxy));
         this._loadCallbacks = null;
         this._profileType._snapshotReceived(this);
         if (this.canSaveToFile())
@@ -1590,7 +1590,7 @@ WebInspector.HeapProfileHeader.prototype = {
      */
     canSaveToFile: function()
     {
-        return !this.fromFile() && this._snapshotProxy;
+        return !this.fromFile() && !!this._snapshotProxy;
     },
 
     /**

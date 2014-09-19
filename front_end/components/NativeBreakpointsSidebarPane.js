@@ -50,13 +50,13 @@ WebInspector.NativeBreakpointsSidebarPane = function(title)
 WebInspector.NativeBreakpointsSidebarPane.prototype = {
     /**
      * @param {!Element} element
-     * @param {?Element=} beforeElement
+     * @param {?Node=} beforeNode
      * @protected
      */
-    addListElement: function(element, beforeElement)
+    addListElement: function(element, beforeNode)
     {
-        if (beforeElement) {
-            this.listElement.insertBefore(element, beforeElement);
+        if (beforeNode) {
+            this.listElement.insertBefore(element, beforeNode);
         } else {
             if (!this.listElement.firstChild) {
                 this.bodyElement.removeChild(this.emptyElement);

@@ -462,9 +462,13 @@ WebInspector.AuditsSidebarTreeElement.prototype = {
         WebInspector.SidebarTreeElement.prototype.onattach.call(this);
     },
 
+    /**
+     * @return {boolean}
+     */
     onselect: function()
     {
         this._panel.showLauncherView();
+        return true;
     },
 
     get selectable()
@@ -497,9 +501,13 @@ WebInspector.AuditResultSidebarTreeElement = function(panel, results, mainResour
 }
 
 WebInspector.AuditResultSidebarTreeElement.prototype = {
+    /**
+     * @return {boolean}
+     */
     onselect: function()
     {
         this._panel.showResults(this.results);
+        return true;
     },
 
     get selectable()

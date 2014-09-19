@@ -154,7 +154,7 @@ WebInspector.BottomUpProfileDataGridNode._sharedPopulate = function(container)
         } else {
             // If not, add it as a true ancestor.
             // In heavy mode, we take our visual identity from ancestor node...
-            child = new WebInspector.BottomUpProfileDataGridNode(ancestor, container.tree);
+            child = new WebInspector.BottomUpProfileDataGridNode(ancestor, /** @type {!WebInspector.TopDownProfileDataGridTree} */ (container.tree));
 
             if (ancestor !== focusNode) {
                 // But the actual statistics from the "root" node (bottom of the callstack).

@@ -84,7 +84,7 @@ WebInspector.ResourceView.nonSourceViewForResource = function(resource)
 /**
  * @extends {WebInspector.SourceFrame}
  * @constructor
- * @param {!WebInspector.Resource} resource
+ * @param {!WebInspector.ContentProvider} resource
  */
 WebInspector.ResourceSourceFrame = function(resource)
 {
@@ -109,7 +109,7 @@ WebInspector.ResourceSourceFrame.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.VBox}
- * @param {!WebInspector.Resource} resource
+ * @param {!WebInspector.ContentProvider} resource
  */
 WebInspector.ResourceSourceFrameFallback = function(resource)
 {

@@ -749,7 +749,7 @@ WebInspector.TabbedPane.prototype = {
      */
     _insertBefore: function(tab, index)
     {
-        this._tabsElement.insertBefore(tab._tabElement, this._tabsElement.childNodes[index]);
+        this._tabsElement.insertBefore(tab._tabElement || null, this._tabsElement.childNodes[index]);
         var oldIndex = this._tabs.indexOf(tab);
         this._tabs.splice(oldIndex, 1);
         if (oldIndex < index)
@@ -827,7 +827,7 @@ WebInspector.TabbedPaneTab.prototype = {
 
     /**
      * @param {string} iconClass
-     * @param {string} iconTooltip
+     * @param {string=} iconTooltip
      * @return {boolean}
      */
     _setIconClass: function(iconClass, iconTooltip)
