@@ -364,7 +364,7 @@ WebInspector.TracingTimelineUIUtils.buildDetailsNodeForTraceEvent = function(eve
         break;
     case recordType.JSFrame:
         details = linkifyLocation(eventData["scriptId"], eventData["url"], eventData["lineNumber"], eventData["columnNumber"]);
-        detailsText = eventData["functionName"];
+        detailsText = WebInspector.CPUProfileDataModel.beautifyFunctionName(eventData["functionName"]);
         break;
     case recordType.FireAnimationFrame:
         detailsText = eventData["id"];
