@@ -360,7 +360,11 @@ CodeMirror.prototype = {
     removeOverlay: function(spec) { },
     /** @param {*=} origin */
     replaceRange: function(code, from, to, origin) { },
-    replaceSelection: function(code, collapse, origin) { },
+    /**
+     * @param {string} replacement
+     * @param {string=} select
+     */
+    replaceSelection: function(replacement, select) { },
     /**
      * @param {!Array.<string>} textPerSelection
      */
