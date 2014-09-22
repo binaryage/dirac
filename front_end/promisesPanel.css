@@ -1,0 +1,18 @@
+/*
+ * Copyright 2014 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+.promises .data-grid {
+    flex: 1 1;
+}
+
+.promises .data-grid td {
+    white-space:pre;
+}
+
+.promise-tracker-controls {
+    margin-top: 5px;
+    margin-bottom: 5px;
+}

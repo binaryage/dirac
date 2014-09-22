@@ -197,6 +197,8 @@ WebInspector.Main.prototype = {
             configuration.push("devices");
         if (WebInspector.experimentsSettings.documentation.isEnabled())
             configuration.push("documentation");
+        if (WebInspector.experimentsSettings.promiseTracker.isEnabled())
+            configuration.push("promises");
         if (WebInspector.isWorkerFrontend())
             configuration = core.concat(["network", "sources", "timeline", "profiler", "resources", "console", "source_frame", "extensions", "settings"]);
         self.runtime.registerModules(configuration, core);

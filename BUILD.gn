@@ -51,6 +51,7 @@ group("devtools_frontend_resources") {
     ":build_layers_module",
     ":build_network_module",
     ":build_profiler_module",
+    ":build_promises_module",
     ":build_resources_module",
     ":build_script_formatter_worker_module",
     ":build_settings_module",
@@ -283,6 +284,11 @@ concatenate_module_scripts("build_network_module") {
 concatenate_module_scripts("build_profiler_module") {
   module_name = "profiler"
   imported_files = gypi_values.devtools_profiler_js_files
+}
+
+concatenate_module_scripts("build_promises_module") {
+  module_name = "promises"
+  imported_files = gypi_values.devtools_promises_js_files
 }
 
 concatenate_module_scripts("build_resources_module") {

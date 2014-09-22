@@ -54,6 +54,7 @@
                 'build_layers_module',
                 'build_network_module',
                 'build_profiler_module',
+                'build_promises_module',
                 'build_resources_module',
                 'build_script_formatter_worker_module',
                 'build_settings_module',
@@ -138,6 +139,7 @@
                             '<(PRODUCT_DIR)/resources/inspector/layers.js',
                             '<(PRODUCT_DIR)/resources/inspector/network.js',
                             '<(PRODUCT_DIR)/resources/inspector/profiler.js',
+                            '<(PRODUCT_DIR)/resources/inspector/promises.js',
                             '<(PRODUCT_DIR)/resources/inspector/resources.js',
                             '<(PRODUCT_DIR)/resources/inspector/settings.js',
                             '<(PRODUCT_DIR)/resources/inspector/source_frame.js',
@@ -664,6 +666,37 @@
                             'files': [
                                 '<@(devtools_profiler_js_files)',
                                 'front_end/profiler/module.json',
+                            ],
+                        }
+                    ]
+                }]
+            ]
+        },
+        {
+            'target_name': 'build_promises_module',
+            'type': 'none',
+            'conditions': [
+                ['debug_devtools==0', { # Release
+                    'actions': [{
+                        'action_name': 'build_promises_module',
+                        'script_name': 'scripts/concatenate_module_scripts.py',
+                        'input_file': 'front_end/promises/module.json',
+                        'inputs': [
+                            '<@(_script_name)',
+                            '<@(_input_file)',
+                            '<@(devtools_promises_js_files)',
+                        ],
+                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/promises.js'],
+                        'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
+                    }],
+                },
+                { # Debug
+                    'copies': [
+                        {
+                            'destination': '<(PRODUCT_DIR)/resources/inspector/promises',
+                            'files': [
+                                '<@(devtools_promises_js_files)',
+                                'front_end/promises/module.json',
                             ],
                         }
                     ]

@@ -264,6 +264,7 @@
             'front_end/main/module.json',
             'front_end/network/module.json',
             'front_end/profiler/module.json',
+            'front_end/promises/module.json',
             'front_end/resources/module.json',
             'front_end/screencast/module.json',
             'front_end/script_formatter_worker/module.json',
@@ -308,6 +309,7 @@
             'front_end/overrides.css',
             'front_end/panelEnablerView.css',
             'front_end/profilesPanel.css',
+            'front_end/promisesPanel.css',
             'front_end/requestCookiesView.css',
             'front_end/requestHeadersView.css',
             'front_end/resourcesPanel.css',
@@ -364,6 +366,9 @@
             'front_end/extensions/ExtensionServer.js',
             'front_end/extensions/ExtensionView.js',
             '<@(devtools_extension_api_files)',
+        ],
+        'devtools_promises_js_files': [
+            'front_end/promises/PromisesPanel.js',
         ],
         'devtools_heap_snapshot_worker_js_files': [
             'front_end/common/TextUtils.js',
@@ -553,6 +558,7 @@
             '<@(devtools_layers_js_files)',
             '<@(devtools_network_js_files)',
             '<@(devtools_profiler_js_files)',
+            '<@(devtools_promises_js_files)',
             '<@(devtools_resources_js_files)',
             '<@(devtools_script_formatter_worker_js_files)',
             '<@(devtools_source_frame_js_files)',
