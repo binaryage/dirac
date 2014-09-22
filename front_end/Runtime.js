@@ -245,7 +245,7 @@ Runtime.prototype = {
             var content;
             // FIXME: This is a temp workaround to avoid core module loading attempts in the release mode.
             // It should be removed when the new application loader is implemented.
-            if (!this._coreModules.hasOwnProperty(moduleName))
+            if (moduleName === "main" || !this._coreModules.hasOwnProperty(moduleName))
                 content = loadResource(moduleName + "/module.json");
             else
                 content = "{}";
@@ -524,6 +524,11 @@ Runtime.Module = function(manager, descriptor)
     for (var i = 0; extensions && i < extensions.length; ++i)
         this._manager._extensions.push(new Runtime.Extension(this, extensions[i]));
     this._loaded = false;
+
+    // FIXME: This is a temp workaround to avoid core module loading attempts in the release mode.
+    // It should be removed when the new application loader is implemented.
+    if (this._manager._coreModules.hasOwnProperty(this._name))
+        this._loaded = true;
 }
 
 Runtime.Module.prototype = {
@@ -554,10 +559,7 @@ Runtime.Module.prototype = {
             this._manager.loadModule(dependencies[i]);
         if (this._descriptor.scripts) {
             if (Runtime.isReleaseMode()) {
-                // FIXME: This is a temp workaround to avoid core module loading attempts in the release mode.
-                // It should be removed when the new application loader is implemented.
-                if (!this._manager._coreModules.hasOwnProperty(this._name))
-                    loadScript(this._name + ".js");
+                loadScript(this._name + ".js");
             } else {
                 var scripts = this._descriptor.scripts;
                 for (var i = 0; i < scripts.length; ++i)
