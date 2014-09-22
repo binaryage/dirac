@@ -133,12 +133,21 @@ WebInspector.MediaQueryInspector.prototype = {
             return;
 
         var locations = mediaQueryMarker._locations;
+        var uiLocations = new StringMap();
+        for (var i = 0; i < locations.length; ++i) {
+            var uiLocation = WebInspector.cssWorkspaceBinding.rawLocationToUILocation(locations[i]);
+            if (!uiLocation)
+                continue;
+            var descriptor = String.sprintf("%s:%d:%d", uiLocation.uiSourceCode.uri(), uiLocation.lineNumber + 1, uiLocation.columnNumber + 1);
+            uiLocations.set(descriptor, uiLocation);
+        }
+
+        var contextMenuItems = uiLocations.keys().sort();
         var contextMenu = new WebInspector.ContextMenu(event);
         var subMenuItem = contextMenu.appendSubMenuItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Reveal in source code" : "Reveal In Source Code"));
-        for (var i = 0; i < locations.length; ++i) {
-            var location = locations[i];
-            var title = String.sprintf("%s:%d:%d", location.uiSourceCode.uri(), location.lineNumber + 1, location.columnNumber + 1);
-            subMenuItem.appendItem(title, this._revealSourceLocation.bind(this, location));
+        for (var i = 0; i < contextMenuItems.length; ++i) {
+            var title = contextMenuItems[i];
+            subMenuItem.appendItem(title, this._revealSourceLocation.bind(this, /** @type {!WebInspector.UILocation} */(uiLocations.get(title))));
         }
         contextMenu.show();
     },
@@ -208,7 +217,7 @@ WebInspector.MediaQueryInspector.prototype = {
             for (var j = 0; j < cssMedia.mediaList.length; ++j) {
                 var mediaQuery = cssMedia.mediaList[j];
                 var queryModel = WebInspector.MediaQueryInspector.MediaQueryUIModel.createFromMediaQuery(cssMedia, mediaQuery);
-                if (queryModel && queryModel.uiLocation())
+                if (queryModel && queryModel.rawLocation())
                     queryModels.push(queryModel);
             }
         }
@@ -244,13 +253,13 @@ WebInspector.MediaQueryInspector.prototype = {
         for (var i = 0; i < this._cachedQueryModels.length; ++i) {
             var model = this._cachedQueryModels[i];
             if (lastMarker && lastMarker.model.dimensionsEqual(model)) {
-                lastMarker.locations.push(model.uiLocation());
+                lastMarker.locations.push(model.rawLocation());
                 lastMarker.active = lastMarker.active || model.active();
             } else {
                 lastMarker = {
                     active: model.active(),
                     model: model,
-                    locations: [ model.uiLocation() ]
+                    locations: [ model.rawLocation() ]
                 };
                 markers.push(lastMarker);
             }
@@ -428,8 +437,8 @@ WebInspector.MediaQueryInspector.MediaQueryUIModel.prototype = {
         if (this.section() !== other.section())
             return this.section() - other.section();
         if (this.dimensionsEqual(other)) {
-            var myLocation = this.uiLocation();
-            var otherLocation = other.uiLocation();
+            var myLocation = this.rawLocation();
+            var otherLocation = other.rawLocation();
             if (!myLocation && !otherLocation)
                 return this.mediaText().compareTo(other.mediaText());
             if (myLocation && !otherLocation)
@@ -438,7 +447,7 @@ WebInspector.MediaQueryInspector.MediaQueryUIModel.prototype = {
                 return -1;
             if (this.active() !== other.active())
                 return this.active() ? -1 : 1;
-            return myLocation.uiSourceCode.uri().compareTo(otherLocation.uiSourceCode.uri()) || myLocation.lineNumber - otherLocation.lineNumber || myLocation.columnNumber - otherLocation.columnNumber;
+            return myLocation.url.compareTo(otherLocation.url) || myLocation.lineNumber - otherLocation.lineNumber || myLocation.columnNumber - otherLocation.columnNumber;
         }
         if (this.section() === WebInspector.MediaQueryInspector.Section.Max)
             return other.maxWidthExpression().computedLength() - this.maxWidthExpression().computedLength();
@@ -464,11 +473,13 @@ WebInspector.MediaQueryInspector.MediaQueryUIModel.prototype = {
     },
 
     /**
-     * @return {?WebInspector.UILocation}
+     * @return {?WebInspector.CSSLocation}
      */
-    uiLocation: function()
+    rawLocation: function()
     {
-        return WebInspector.cssWorkspaceBinding.rawLocationToUILocation(this._cssMedia.rawLocation());
+        if (!this._rawLocation)
+            this._rawLocation = this._cssMedia.rawLocation();
+        return this._rawLocation;
     },
 
     /**
