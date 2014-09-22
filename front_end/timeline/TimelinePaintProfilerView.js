@@ -52,6 +52,8 @@ WebInspector.TimelinePaintProfilerView.prototype = {
 
     _update: function()
     {
+        this._logTreeView.setCommandLog(null, []);
+        this._paintProfilerView.setSnapshotAndLog(null, []);
         if (!this._target)
             return;
         WebInspector.PaintProfilerSnapshot.load(this._target, this._picture, onSnapshotLoaded.bind(this));

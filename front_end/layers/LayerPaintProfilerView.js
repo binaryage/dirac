@@ -26,6 +26,8 @@ WebInspector.LayerPaintProfilerView.prototype = {
      */
     profileLayer: function(layer)
     {
+        this._logTreeView.setCommandLog(null, []);
+        this._paintProfilerView.setSnapshotAndLog(null, []);
         layer.requestSnapshot(onSnapshotDone.bind(this));
 
         /**

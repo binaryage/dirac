@@ -38,6 +38,8 @@ WebInspector.PaintProfilerView = function(showImageCallback)
     WebInspector.HBox.call(this);
     this.element.classList.add("paint-profiler-overview", "hbox");
     this._canvasContainer = this.element.createChild("div", "paint-profiler-canvas-container");
+    this._progressBanner = this.element.createChild("div", "fill progress-banner hidden");
+    this._progressBanner.textContent = WebInspector.UIString("Profiling\u2026");
     this._pieChart = new WebInspector.PieChart(55, this._formatPieChartTime.bind(this));
     this.element.createChild("div", "paint-profiler-pie-chart").appendChild(this._pieChart.element);
 
@@ -81,6 +83,7 @@ WebInspector.PaintProfilerView.prototype = {
             this._update();
             return;
         }
+        this._progressBanner.classList.remove("hidden");
         snapshot.requestImage(null, null, 1, this._showImageCallback);
         snapshot.profile(onProfileDone.bind(this));
         /**
@@ -89,6 +92,7 @@ WebInspector.PaintProfilerView.prototype = {
          */
         function onProfileDone(profiles)
         {
+            this._progressBanner.classList.add("hidden");
             this._profiles = profiles;
             this._update();
         }
@@ -283,9 +287,11 @@ WebInspector.PaintProfilerCommandLogView.prototype = {
      */
     updateWindow: function(stepLeft, stepRight)
     {
+        this.sidebarTree.removeChildren();
+        if (!this._log)
+            return;
         stepLeft = stepLeft || 0;
         stepRight = stepRight || this._log.length - 1;
-        this.sidebarTree.removeChildren();
         for (var i = stepLeft; i <= stepRight; ++i)
             this._appendLogItem(this.sidebarTree, this._log[i]);
     },
