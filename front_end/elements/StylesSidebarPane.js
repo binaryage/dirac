@@ -489,6 +489,8 @@ WebInspector.StylesSidebarPane.prototype = {
                 this._rebuildUpdate();
                 return;
             }
+            if (matchedResult && this._node === node)
+                this._nodeStylesUpdatedForTest(node, true);
         }
 
         /**
@@ -624,7 +626,6 @@ WebInspector.StylesSidebarPane.prototype = {
 
         if (this._filterRegex)
             this._updateFilter(false);
-        this._nodeStylesUpdatedForTest(node, true);
     },
 
     _nodeStylesUpdatedForTest: function(node, rebuild)
@@ -1454,7 +1455,12 @@ WebInspector.StylePropertiesSection.prototype = {
         if (this._afterUpdate) {
             this._afterUpdate(this);
             delete this._afterUpdate;
+            this._afterUpdateFinishedForTest();
         }
+    },
+
+    _afterUpdateFinishedForTest: function()
+    {
     },
 
     onpopulate: function()
@@ -2655,6 +2661,7 @@ WebInspector.StylePropertyTreeElement = function(stylesPane, styleRule, style, p
     WebInspector.StylePropertyTreeElementBase.call(this, styleRule, style, property, inherited, overloaded, isShorthand);
     this._parentPane = stylesPane;
     this.isShorthand = isShorthand;
+    this._applyStyleThrottler = new WebInspector.Throttler(0);
 }
 
 WebInspector.StylePropertyTreeElement.prototype = {
@@ -2985,7 +2992,7 @@ WebInspector.StylePropertyTreeElement.prototype = {
         if (selectElement.parentElement)
             selectElement.parentElement.scrollIntoViewIfNeeded(false);
 
-        var applyItemCallback = !isEditingName ? this._applyFreeFlowStyleTextEdit.bind(this, true) : undefined;
+        var applyItemCallback = !isEditingName ? this._applyFreeFlowStyleTextEdit.bind(this) : undefined;
         this._prompt = new WebInspector.StylesSidebarPane.CSSPropertyPrompt(isEditingName ? WebInspector.CSSMetadata.cssPropertiesMetainfo : WebInspector.CSSMetadata.keywordsForProperty(this.nameElement.textContent), this, isEditingName);
         if (applyItemCallback) {
             this._prompt.addEventListener(WebInspector.TextPrompt.Events.ItemApplied, applyItemCallback, this);
@@ -3042,7 +3049,7 @@ WebInspector.StylePropertyTreeElement.prototype = {
         }
 
         if (!isEditingName)
-            this._applyFreeFlowStyleTextEdit(false);
+            this._applyFreeFlowStyleTextEdit();
     },
 
     editingNameValueKeyPress: function(context, event)
@@ -3073,36 +3080,21 @@ WebInspector.StylePropertyTreeElement.prototype = {
         }
     },
 
-    _applyFreeFlowStyleTextEdit: function(now)
+    _applyFreeFlowStyleTextEdit: function()
     {
-        if (this._applyFreeFlowStyleTextEditTimer)
-            clearTimeout(this._applyFreeFlowStyleTextEditTimer);
-
-        /**
-         * @this {WebInspector.StylePropertyTreeElement}
-         */
-        function apply()
-        {
-            var valueText = this.valueElement.textContent;
-            if (valueText.indexOf(";") === -1)
-                this.applyStyleText(this.nameElement.textContent + ": " + valueText, false, false, false);
-        }
-        if (now)
-            apply.call(this);
-        else
-            this._applyFreeFlowStyleTextEditTimer = setTimeout(apply.bind(this), 100);
+        var valueText = this.valueElement.textContent;
+        if (valueText.indexOf(";") === -1)
+            this.applyStyleText(this.nameElement.textContent + ": " + valueText, false, false, false);
     },
 
     kickFreeFlowStyleEditForTest: function()
     {
-        this._applyFreeFlowStyleTextEdit(true);
+        this._applyFreeFlowStyleTextEdit();
     },
 
     editingEnded: function(context)
     {
         this._resetMouseDownElement();
-        if (this._applyFreeFlowStyleTextEditTimer)
-            clearTimeout(this._applyFreeFlowStyleTextEditTimer);
 
         this.hasChildren = context.hasChildren;
         if (context.expanded)
@@ -3288,12 +3280,35 @@ WebInspector.StylePropertyTreeElement.prototype = {
     {
     },
 
+    /**
+     * @param {string} styleText
+     * @param {boolean} updateInterface
+     * @param {boolean} majorChange
+     * @param {boolean} isRevert
+     */
     applyStyleText: function(styleText, updateInterface, majorChange, isRevert)
     {
+        this._applyStyleThrottler.schedule(this._innerApplyStyleText.bind(this, styleText, updateInterface, majorChange, isRevert));
+    },
+
+    /**
+     * @param {string} styleText
+     * @param {boolean} updateInterface
+     * @param {boolean} majorChange
+     * @param {boolean} isRevert
+     * @param {!WebInspector.Throttler.FinishCallback} finishedCallback
+     */
+    _innerApplyStyleText: function(styleText, updateInterface, majorChange, isRevert, finishedCallback)
+    {
+        /**
+         * @param {!WebInspector.StylesSidebarPane} parentPane
+         * @param {boolean} updateInterface
+         */
         function userOperationFinishedCallback(parentPane, updateInterface)
         {
             if (updateInterface)
                 delete parentPane._userOperation;
+            finishedCallback();
         }
 
         // Leave a way to cancel editing after incremental changes.
@@ -3334,6 +3349,7 @@ WebInspector.StylePropertyTreeElement.prototype = {
                     this._revertStyleUponEditingCanceled(originalPropertyText);
                 }
                 userCallback();
+                this.styleTextAppliedForTest();
                 return;
             }
             this._applyNewStyle(newStyle);
@@ -3360,7 +3376,11 @@ WebInspector.StylePropertyTreeElement.prototype = {
         if (styleText.length && !/;\s*$/.test(styleText))
             styleText += ";";
         var overwriteProperty = !!(!this._newProperty || this._newPropertyInStyle);
-        this.property.setText(styleText, majorChange, overwriteProperty, callback.bind(this, userOperationFinishedCallback.bind(null, this._parentPane, updateInterface), this.originalPropertyText));
+        var boundCallback = callback.bind(this, userOperationFinishedCallback.bind(null, this._parentPane, updateInterface), this.originalPropertyText);
+        if (overwriteProperty && styleText === this.property.propertyText)
+            boundCallback.call(null, this.property.ownerStyle)
+        else
+            this.property.setText(styleText, majorChange, overwriteProperty, boundCallback);
     },
 
     /**
