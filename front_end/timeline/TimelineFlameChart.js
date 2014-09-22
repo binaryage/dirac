@@ -305,7 +305,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
 
         function onInstantEvent(e, top)
         {
-            if (e.name === WebInspector.TracingTimelineModel.RecordType.JSSample && (!top || !isJSInvocationEvent(top)))
+            if (e.name === WebInspector.TracingTimelineModel.RecordType.JSSample && top && !isJSInvocationEvent(top))
                 return;
             extractStackTrace(e);
         }
