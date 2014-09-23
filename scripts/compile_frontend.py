@@ -56,11 +56,20 @@ closure_runner_jar = path.join(scripts_path, 'compiler-runner', 'closure-runner.
 jsdoc_validator_jar = path.join(scripts_path, 'jsdoc-validator', 'jsdoc-validator.jar')
 java_exec = 'java -Xms1024m -server -XX:+TieredCompilation'
 
-generate_protocol_externs.generate_protocol_externs(protocol_externs_file, path.join(devtools_path, 'protocol.json'))
-
 jsmodule_name_prefix = 'jsmodule_'
 runtime_module_name = '_runtime'
-module_initializer_name = '_module.js'
+
+type_checked_jsdoc_tags_list = ['param', 'return', 'type', 'enum']
+type_checked_jsdoc_tags_or = '|'.join(type_checked_jsdoc_tags_list)
+
+# Basic regex for invalid JsDoc types: an object type name ([A-Z][A-Za-z0-9.]+[A-Za-z0-9]) not preceded by '!', '?', ':' (this, new), or '.' (object property).
+invalid_type_regex = re.compile(r'@(?:' + type_checked_jsdoc_tags_or + r')\s*\{.*(?<![!?:.A-Za-z0-9])([A-Z][A-Za-z0-9.]+[A-Za-z0-9])[^/]*\}')
+invalid_type_designator_regex = re.compile(r'@(?:' + type_checked_jsdoc_tags_or + r')\s*.*(?<![{: ])([?!])=?\}')
+error_warning_regex = re.compile(r'(?:WARNING|ERROR)')
+
+errors_found = False
+
+generate_protocol_externs.generate_protocol_externs(protocol_externs_file, path.join(devtools_path, 'protocol.json'))
 
 
 def log_error(message):
@@ -76,19 +85,6 @@ sys.excepthook = error_excepthook
 loader = modular_build.DescriptorLoader(devtools_frontend_path)
 descriptors = loader.load_application('devtools.json')
 modules_by_name = descriptors.modules
-
-type_checked_jsdoc_tags_list = ['param', 'return', 'type', 'enum']
-
-type_checked_jsdoc_tags_or = '|'.join(type_checked_jsdoc_tags_list)
-
-# Basic regex for invalid JsDoc types: an object type name ([A-Z][A-Za-z0-9.]+[A-Za-z0-9]) not preceded by '!', '?', ':' (this, new), or '.' (object property).
-invalid_type_regex = re.compile(r'@(?:' + type_checked_jsdoc_tags_or + r')\s*\{.*(?<![!?:.A-Za-z0-9])([A-Z][A-Za-z0-9.]+[A-Za-z0-9])[^/]*\}')
-
-invalid_type_designator_regex = re.compile(r'@(?:' + type_checked_jsdoc_tags_or + r')\s*.*(?<![{: ])([?!])=?\}')
-
-error_warning_regex = re.compile(r'(?:WARNING|ERROR)')
-
-errors_found = False
 
 
 def run_in_shell(command_line):
