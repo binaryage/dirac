@@ -851,9 +851,10 @@ body.platform-linux .source-code {
     padding: 1px 22px 1px 0;
     margin-left: 24px;
     min-height: 16px;
+    flex: auto;
 }
 
-.console-adjacent-user-command-result {
+.console-adjacent-user-command-result .console-user-command {
     border-bottom: none;
 }
 
@@ -1020,10 +1021,6 @@ body.platform-linux .source-code {
     width: 3px;
     height: 100%;
     box-sizing: border-box;
-}
-
-.console-message {
-    flex: 1 1 auto;
 }
 
 .console-error-level .console-message-text,
