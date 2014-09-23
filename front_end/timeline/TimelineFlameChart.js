@@ -433,18 +433,20 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
         if (!event)
             return this._entryIndexToFrame[entryIndex] ? "white" : "#555";
         if (event.name === WebInspector.TracingTimelineModel.RecordType.JSFrame)
-            return WebInspector.TimelineFlameChartDataProvider.jsFrameColorGenerator().colorForID(event.args["data"]["functionName"]);
-        var style = WebInspector.TracingTimelineUIUtils.eventStyle(event);
-        if (event.phase === WebInspector.TracingModel.Phase.AsyncBegin || event.phase === WebInspector.TracingModel.Phase.AsyncStepInto || event.phase === WebInspector.TracingModel.Phase.AsyncStepPast) {
-            var color = this._asyncColorByCategory[style.category.name];
+            return this._timelineData.entryLevels[entryIndex] % 2 ? "#efb320" : "#fcc02d";
+        var category = WebInspector.TracingTimelineUIUtils.eventStyle(event).category;
+        if (event.phase === WebInspector.TracingModel.Phase.AsyncBegin ||
+            event.phase === WebInspector.TracingModel.Phase.AsyncStepInto ||
+            event.phase === WebInspector.TracingModel.Phase.AsyncStepPast) {
+            var color = this._asyncColorByCategory[category.name];
             if (color)
                 return color;
-            var parsedColor = WebInspector.Color.parse(style.category.fillColorStop1);
+            var parsedColor = WebInspector.Color.parse(category.fillColorStop1);
             color = parsedColor.setAlpha(0.7).toString(WebInspector.Color.Format.RGBA) || "";
-            this._asyncColorByCategory[style.category.name] = color;
+            this._asyncColorByCategory[category.name] = color;
             return color;
         }
-        return style.category.fillColorStop1;
+        return category.fillColorStop1;
     },
 
     /**
@@ -702,23 +704,6 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
         }
         return -1;
     }
-}
-
-/**
- * @return {!WebInspector.FlameChart.ColorGenerator}
- */
-WebInspector.TimelineFlameChartDataProvider.jsFrameColorGenerator = function()
-{
-    if (!WebInspector.TimelineFlameChartDataProvider._jsFrameColorGenerator) {
-        var hueSpace = { min: 30, max: 55, count: 5 };
-        var satSpace = { min: 70, max: 100, count: 6 };
-        var colorGenerator = new WebInspector.FlameChart.ColorGenerator(hueSpace, satSpace, 50);
-        colorGenerator.setColorForID("(idle)", "hsl(0, 0%, 60%)");
-        colorGenerator.setColorForID("(program)", "hsl(0, 0%, 60%)");
-        colorGenerator.setColorForID("(garbage collector)", "hsl(0, 0%, 60%)");
-        WebInspector.TimelineFlameChartDataProvider._jsFrameColorGenerator = colorGenerator;
-    }
-    return WebInspector.TimelineFlameChartDataProvider._jsFrameColorGenerator;
 }
 
 /**
