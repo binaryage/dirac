@@ -71,6 +71,9 @@
     {
         "name": "devices"
     },
+    {
+        "name": "promises"
+    },
 
     {
         "name": "heap_snapshot_worker"

@@ -8,6 +8,10 @@
             "className": "WebInspector.PromisesPanel"
         }
     ],
+    "dependencies": [
+        "bindings",
+        "ui"
+    ],
     "scripts": [
         "PromisesPanel.js"
     ]
