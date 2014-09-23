@@ -633,7 +633,7 @@ WebInspector.TracingModel.Process.prototype = {
         var thread = this.threadById(payload.tid);
         if (payload.ph === phase.AsyncBegin) {
             if (steps) {
-                console.error("Event " + key + " at " + timestamp + " was already started at " + steps[0].startTime);
+                console.error("Event " + payload.name + " has already been started");
                 return;
             }
             steps = [WebInspector.TracingModel.Event.fromPayload(payload, thread)];
@@ -642,7 +642,7 @@ WebInspector.TracingModel.Process.prototype = {
             return;
         }
         if (!steps) {
-            console.error("Unexpected async event, phase " + payload.ph + " at " + timestamp);
+            console.error("Unexpected async event " + payload.name + ", phase " + payload.ph);
             return;
         }
         var newEvent = WebInspector.TracingModel.Event.fromPayload(payload, thread);
