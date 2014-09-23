@@ -148,6 +148,11 @@ var Runtime = function()
 }
 
 /**
+ * @type {!Object.<string, string>}
+ */
+Runtime._queryParamsObject = { __proto__: null };
+
+/**
  * @return {boolean}
  */
 Runtime.isReleaseMode = function()
@@ -221,6 +226,15 @@ Runtime.startWorker = function(moduleName)
     } finally {
         window.URL.revokeObjectURL(workerURL);
     }
+}
+
+/**
+ * @param {string} name
+ * @return {?string}
+ */
+Runtime.queryParam = function(name)
+{
+    return Runtime._queryParamsObject[name] || null;
 }
 
 Runtime.prototype = {
@@ -647,7 +661,29 @@ Runtime.Extension.prototype = {
     }
 }
 
-/**
- * @type {!Runtime}
- */
+{(function parseQueryParameters()
+{
+    var queryParams = location.search;
+    if (!queryParams)
+        return;
+    var params = queryParams.substring(1).split("&");
+    for (var i = 0; i < params.length; ++i) {
+        var pair = params[i].split("=");
+        Runtime._queryParamsObject[pair[0]] = pair[1];
+    }
+
+    // Patch settings from the URL param (for tests).
+    var settingsParam = Runtime.queryParam("settings");
+    if (settingsParam) {
+        try {
+            var settings = JSON.parse(window.decodeURI(settingsParam));
+            for (var key in settings)
+                window.localStorage[key] = settings[key];
+        } catch(e) {
+            // Ignore malformed settings.
+        }
+    }
+})();}
+
+/** @type {!Runtime} */
 var runtime;

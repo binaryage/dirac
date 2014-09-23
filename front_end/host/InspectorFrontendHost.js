@@ -637,7 +637,7 @@ function InspectorFrontendAPIImpl()
 {
     this._isLoaded = false;
     this._pendingCommands = [];
-    this._debugFrontend = !!WebInspector.queryParam("debugFrontend");
+    this._debugFrontend = !!Runtime.queryParam("debugFrontend");
 
     var descriptors = InspectorFrontendHostAPI.EventDescriptors;
     for (var i = 0; i < descriptors.length; ++i)

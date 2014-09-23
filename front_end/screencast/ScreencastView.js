@@ -699,7 +699,7 @@ WebInspector.ScreencastView.prototype = {
     _createNavigationBar: function()
     {
         this._navigationBar = this.element.createChild("div", "toolbar-background toolbar-colors screencast-navigation");
-        if (WebInspector.queryParam("hideNavigation"))
+        if (Runtime.queryParam("hideNavigation"))
             this._navigationBar.classList.add("hidden");
 
         this._navigationBack = this._navigationBar.createChild("button", "back");

@@ -101,7 +101,7 @@ WebInspector.Main.prototype = {
     _calculateWorkerInspectorTitle: function()
     {
         var expression = "location.href";
-        if (WebInspector.queryParam("isSharedWorker"))
+        if (Runtime.queryParam("isSharedWorker"))
             expression += " + (this.name ? ' (' + this.name + ')' : '')";
         RuntimeAgent.invoke_evaluate({expression:expression, doNotPauseOnExceptionsAndMuteConsole:true, returnByValue: true}, evalCallback);
 
@@ -125,7 +125,7 @@ WebInspector.Main.prototype = {
         // Make sure script execution of dedicated worker or service worker is
         // resumed and then paused on the first script statement in case we
         // autoattached to it.
-        if (WebInspector.queryParam("workerPaused")) {
+        if (Runtime.queryParam("workerPaused")) {
             pauseAndResume.call(this);
         } else{
             RuntimeAgent.isRunRequired(isRunRequiredCallback.bind(this));
@@ -166,7 +166,7 @@ WebInspector.Main.prototype = {
         console.timeStamp("Main._loaded");
 
         // FIXME: Make toolbox a real app.
-        if (WebInspector.queryParam("toolbox"))
+        if (Runtime.queryParam("toolbox"))
             return;
 
         this._createSettings();
@@ -177,7 +177,7 @@ WebInspector.Main.prototype = {
     _createSettings: function()
     {
         WebInspector.settings = new WebInspector.Settings();
-        WebInspector.experimentsSettings = new WebInspector.ExperimentsSettings(WebInspector.queryParam("experiments") !== null);
+        WebInspector.experimentsSettings = new WebInspector.ExperimentsSettings(Runtime.queryParam("experiments") !== null);
         // This setting is needed for backwards compatibility with Devtools CodeSchool extension. DO NOT REMOVE
         WebInspector.settings.pauseOnExceptionStateString = new WebInspector.PauseOnExceptionStateSetting();
         new WebInspector.VersionController().updateVersion();
@@ -193,7 +193,7 @@ WebInspector.Main.prototype = {
         var configuration = core.concat(["elements", "network", "sources", "timeline", "profiler", "resources", "audits", "console", "source_frame", "extensions", "settings"]);
         if (WebInspector.experimentsSettings.layersPanel.isEnabled())
             configuration.push("layers");
-        if (WebInspector.experimentsSettings.devicesPanel.isEnabled() && !!WebInspector.queryParam("can_dock"))
+        if (WebInspector.experimentsSettings.devicesPanel.isEnabled() && !!Runtime.queryParam("can_dock"))
             configuration.push("devices");
         if (WebInspector.experimentsSettings.documentation.isEnabled())
             configuration.push("documentation");
@@ -209,8 +209,8 @@ WebInspector.Main.prototype = {
         console.timeStamp("Main._createApp");
 
         WebInspector.installPortStyles();
-        if (WebInspector.queryParam("toolbarColor") && WebInspector.queryParam("textColor"))
-            WebInspector.setToolbarColors(WebInspector.queryParam("toolbarColor"), WebInspector.queryParam("textColor"));
+        if (Runtime.queryParam("toolbarColor") && Runtime.queryParam("textColor"))
+            WebInspector.setToolbarColors(Runtime.queryParam("toolbarColor"), Runtime.queryParam("textColor"));
         InspectorFrontendHost.events.addEventListener(InspectorFrontendHostAPI.Events.SetToolbarColors, updateToolbarColors);
         /**
          * @param {!WebInspector.Event} event
@@ -222,7 +222,7 @@ WebInspector.Main.prototype = {
 
         this._addMainEventListeners(document);
 
-        var canDock = !!WebInspector.queryParam("can_dock");
+        var canDock = !!Runtime.queryParam("can_dock");
         WebInspector.zoomManager = new WebInspector.ZoomManager(InspectorFrontendHost);
         WebInspector.inspectorView = new WebInspector.InspectorView();
         WebInspector.ContextMenu.initialize();
@@ -267,7 +267,7 @@ WebInspector.Main.prototype = {
 
         if (canDock)
             WebInspector.app = new WebInspector.AdvancedApp();
-        else if (WebInspector.queryParam("remoteFrontend"))
+        else if (Runtime.queryParam("remoteFrontend"))
             WebInspector.app = new WebInspector.ScreencastApp();
         else
             WebInspector.app = new WebInspector.SimpleApp();
@@ -293,14 +293,14 @@ WebInspector.Main.prototype = {
         console.timeStamp("Main._createConnection");
         InspectorBackend.loadFromJSONIfNeeded("../protocol.json");
 
-        var workerId = WebInspector.queryParam("dedicatedWorkerId");
+        var workerId = Runtime.queryParam("dedicatedWorkerId");
         if (workerId) {
             this._connectionEstablished(new WebInspector.ExternalWorkerConnection(workerId));
             return;
         }
 
-        if (WebInspector.queryParam("ws")) {
-            var ws = "ws://" + WebInspector.queryParam("ws");
+        if (Runtime.queryParam("ws")) {
+            var ws = "ws://" + Runtime.queryParam("ws");
             InspectorBackendClass.WebSocketConnection.Create(ws, this._connectionEstablished.bind(this));
             return;
         }
