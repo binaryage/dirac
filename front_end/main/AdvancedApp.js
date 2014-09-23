@@ -5,6 +5,7 @@
 /**
  * @constructor
  * @extends {WebInspector.App}
+ * @implements {WebInspector.ToolboxDelegate}
  */
 WebInspector.AdvancedApp = function()
 {

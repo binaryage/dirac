@@ -229,7 +229,8 @@
         "host",
         "screencast",
         "sdk",
-        "toolbox"
+        "toolbox",
+        "toolbox_bootstrap"
     ],
     "scripts": [
         "HelpScreenUntilReload.js",

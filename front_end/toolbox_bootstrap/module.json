@@ -1,0 +1,8 @@
+{
+    "dependencies": [
+        "toolbox"
+    ],
+    "scripts": [
+        "Toolbox.js"
+    ]
+}

@@ -42,6 +42,7 @@
             '<@(devtools_sdk_js_files)',
             '<@(devtools_workspace_js_files)',
             '<@(devtools_bindings_js_files)',
+            '<@(devtools_toolbox_bootstrap_js_files)',
             '<@(devtools_toolbox_js_files)',
             '<@(devtools_ui_js_files)',
         ],
@@ -189,6 +190,9 @@
             'front_end/bindings/TempFile.js',
             'front_end/bindings/WorkspaceController.js',
         ],
+        'devtools_toolbox_bootstrap_js_files': [
+            'front_end/toolbox_bootstrap/Toolbox.js',
+        ],
         'devtools_toolbox_js_files': [
             'front_end/toolbox/InspectedPagePlaceholder.js',
             'front_end/toolbox/MediaQueryInspector.js',
@@ -246,7 +250,6 @@
             'front_end/main/RenderingOptions.js',
             'front_end/main/ScreencastApp.js',
             'front_end/main/SimpleApp.js',
-            'front_end/main/Toolbox.js',
         ],
 
         'devtools_module_json_files': [
@@ -275,6 +278,7 @@
             'front_end/temp_storage_shared_worker/module.json',
             'front_end/timeline/module.json',
             'front_end/toolbox/module.json',
+            'front_end/toolbox_bootstrap/module.json',
             'front_end/ui/module.json',
         ],
         'all_devtools_files': [

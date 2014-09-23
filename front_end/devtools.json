@@ -21,6 +21,9 @@
         "name": "toolbox"
     },
     {
+        "name": "toolbox_bootstrap"
+    },
+    {
         "name": "screencast"
     },
     {

@@ -352,6 +352,12 @@
                             ],
                         },
                         {
+                            'destination': '<(PRODUCT_DIR)/resources/inspector/toolbox_bootstrap',
+                            'files': [
+                                '<@(devtools_toolbox_bootstrap_js_files)',
+                            ],
+                        },
+                        {
                             'destination': '<(PRODUCT_DIR)/resources/inspector/main',
                             'files': [
                                 '<@(devtools_main_js_files)',

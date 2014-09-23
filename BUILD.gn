@@ -25,7 +25,8 @@ devtools_core_js_files =
   gypi_values.devtools_components_js_files +
   gypi_values.devtools_host_js_files +
   gypi_values.devtools_screencast_js_files +
-  gypi_values.devtools_toolbox_js_files
+  gypi_values.devtools_toolbox_js_files +
+  gypi_values.devtools_toolbox_bootstrap_js_files
 
 devtools_extensions_js_files = gypi_values.devtools_extensions_js_files -
   [ "<@(devtools_extension_api_files)" ] +
@@ -45,6 +46,7 @@ group("devtools_frontend_resources") {
     ":build_console_module",
     ":build_core_module",
     ":build_devices_module",
+    ":build_documentation_module",
     ":build_elements_module",
     ":build_extensions_module",
     ":build_heap_snapshot_worker_module",
@@ -65,7 +67,7 @@ group("devtools_frontend_resources") {
     ":supported_css_properties",
   ]
 
-  if (debug_devtools) {
+  if (!debug_devtools) {
     deps += [ ":concatenated_devtools_css" ]
   }
 }
@@ -85,6 +87,7 @@ action("generate_devtools_grd") {
     "$root_out_dir/resources/inspector/audits.js",
     "$root_out_dir/resources/inspector/console.js",
     "$root_out_dir/resources/inspector/devices.js",
+    "$root_out_dir/resources/inspector/documentation.js",
     "$root_out_dir/resources/inspector/elements.js",
     "$root_out_dir/resources/inspector/extensions.js",
     "$root_out_dir/resources/inspector/heap_snapshot_worker.js",
@@ -111,7 +114,7 @@ action("generate_devtools_grd") {
 
   relative_path_dirs = [
     "$root_out_dir/resources/inspector",
-    "frontend",
+    "front_end",
   ]
 
   args = rebase_path(input_pages, root_build_dir) + [
