@@ -876,13 +876,14 @@ WebInspector.SourcesPanel.prototype = {
             return;
 
         var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (target);
-        var project = uiSourceCode.project();
-        if (project.type() !== WebInspector.projectTypes.FileSystem)
+        var projectType = uiSourceCode.project().type();
+        if (projectType !== WebInspector.projectTypes.FileSystem)
             contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Local modifications\u2026" : "Local Modifications\u2026"), this._showLocalHistory.bind(this, uiSourceCode));
         this._appendUISourceCodeMappingItems(contextMenu, uiSourceCode);
 
-        if (uiSourceCode.contentType() === WebInspector.resourceTypes.Script && project.type() !== WebInspector.projectTypes.Snippets)
-            this.sidebarPanes.callstack.appendBlackboxURLContextMenuItems(contextMenu, uiSourceCode.url, project.type() === WebInspector.projectTypes.ContentScripts);
+        var contentType = uiSourceCode.contentType();
+        if ((contentType === WebInspector.resourceTypes.Script || contentType === WebInspector.resourceTypes.Document) && projectType !== WebInspector.projectTypes.Snippets)
+            this.sidebarPanes.callstack.appendBlackboxURLContextMenuItems(contextMenu, uiSourceCode.url, projectType === WebInspector.projectTypes.ContentScripts);
 
         if (!event.target.isSelfOrDescendant(this.editorView.sidebarElement())) {
             contextMenu.appendSeparator();

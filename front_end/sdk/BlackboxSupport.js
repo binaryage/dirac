@@ -21,6 +21,8 @@ WebInspector.BlackboxSupport._urlToRegExpString = function(url)
     else if (parsedURL.folderPathComponents)
         name = parsedURL.folderPathComponents + "/";
     if (!name)
+        name = parsedURL.host;
+    if (!name)
         return "";
     var scheme = parsedURL.scheme;
     var prefix = "";

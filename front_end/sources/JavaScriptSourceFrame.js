@@ -124,10 +124,14 @@ WebInspector.JavaScriptSourceFrame.prototype = {
 
     _showBlackboxInfobarIfNeeded: function()
     {
-        if (this._uiSourceCode.contentType() !== WebInspector.resourceTypes.Script)
+        var contentType = this._uiSourceCode.contentType();
+        if (contentType !== WebInspector.resourceTypes.Script && contentType !== WebInspector.resourceTypes.Document)
+            return;
+        var projectType = this._uiSourceCode.project().type();
+        if (projectType === WebInspector.projectTypes.Snippets)
             return;
         var url = this._uiSourceCode.url;
-        var isContentScript = this._uiSourceCode.project().type() === WebInspector.projectTypes.ContentScripts;
+        var isContentScript = projectType === WebInspector.projectTypes.ContentScripts;
         if (!WebInspector.BlackboxSupport.isBlackboxed(url, isContentScript)) {
             this._hideBlackboxInfobar();
             return;
