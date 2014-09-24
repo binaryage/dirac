@@ -469,3 +469,14 @@ window.dispatchStandaloneTestRunnerMessages;
  * @param {function()} onCatch
  */
 Promise.prototype.catch = function(onCatch) {};
+
+// FIXME: Remove once ES6 is supported natively by JS compiler.
+
+/** @typedef {string} */
+var symbol;
+
+/**
+ * @param {string} description
+ * @return {symbol}
+ */
+function Symbol(description) {}

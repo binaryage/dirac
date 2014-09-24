@@ -402,7 +402,7 @@ WebInspector.SourcesView.prototype = {
 
     /**
      * @param {!WebInspector.UISourceCode} uiSourceCode
-     * @return {!WebInspector.SourceFrame}
+     * @return {!WebInspector.UISourceCodeFrame}
      */
     viewForFile: function(uiSourceCode)
     {

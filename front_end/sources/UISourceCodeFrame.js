@@ -202,21 +202,35 @@ WebInspector.UISourceCodeFrame.prototype = {
 
 /**
  * @constructor
+ * @param {!WebInspector.UISourceCodeFrame.Infobar.Level} level
  * @param {string} message
  */
-WebInspector.UISourceCodeFrame.Infobar = function(message)
+WebInspector.UISourceCodeFrame.Infobar = function(level, message)
 {
-    this.element = document.createElementWithClass("div", "source-frame-infobar");
+    this.element = document.createElementWithClass("div", "source-frame-infobar source-frame-infobar-" + level);
     this._mainRow = this.element.createChild("div", "source-frame-infobar-main-row");
     this._detailsContainer = this.element.createChild("span", "source-frame-infobar-details-container");
 
-    this._mainRow.createChild("span", "source-frame-infobar-warning-icon");
+    this._mainRow.createChild("span", "source-frame-infobar-icon");
     this._mainRow.createChild("span", "source-frame-infobar-row-message").textContent = message;
 
     this._toggleElement = this._mainRow.createChild("div", "source-frame-infobar-toggle source-frame-infobar-link");
     this._toggleElement.addEventListener("click", this._onToggleDetails.bind(this), false);
+
+    this._closeElement = this._mainRow.createChild("div", "close-button");
+    this._closeElement.addEventListener("click", this._onClose.bind(this), false);
+
     this._updateToggleElement();
 }
+
+/**
+ * @enum {string}
+ */
+WebInspector.UISourceCodeFrame.Infobar.Level = {
+    Info: "info",
+    Warning: "warning",
+    Error: "error",
+};
 
 WebInspector.UISourceCodeFrame.Infobar.prototype = {
     _onResize: function()
@@ -230,6 +244,11 @@ WebInspector.UISourceCodeFrame.Infobar.prototype = {
         this._toggled = !this._toggled;
         this._updateToggleElement();
         this._onResize();
+    },
+
+    _onClose: function()
+    {
+        this.dispose();
     },
 
     _updateToggleElement: function()
