@@ -38,36 +38,30 @@ WebInspector.EventListenersSidebarPane = function()
 
     this.sections = [];
 
-    var refreshButton = document.createElement("button");
-    refreshButton.className = "pane-title-button refresh";
+    var refreshButton = this.titleElement.createChild("button", "pane-title-button refresh");
     refreshButton.addEventListener("click", this._refreshButtonClicked.bind(this), false);
     refreshButton.title = WebInspector.UIString("Refresh");
-    this.titleElement.appendChild(refreshButton);
 
-    this.settingsSelectElement = document.createElement("select");
-    this.settingsSelectElement.className = "select-filter";
+    this.settingsSelectElement = this.titleElement.createChild("select", "select-filter");
 
-    var option = document.createElement("option");
+    var option = this.settingsSelectElement.createChild("option");
     option.value = "all";
     option.label = WebInspector.UIString("All Nodes");
-    this.settingsSelectElement.appendChild(option);
 
-    option = document.createElement("option");
+    option = this.settingsSelectElement.createChild("option");
     option.value = "selected";
     option.label = WebInspector.UIString("Selected Node Only");
-    this.settingsSelectElement.appendChild(option);
 
     var filter = WebInspector.settings.eventListenersFilter.get();
     if (filter === "all")
         this.settingsSelectElement[0].selected = true;
     else if (filter === "selected")
         this.settingsSelectElement[1].selected = true;
-    this.settingsSelectElement.addEventListener("click", function(event) { event.consume() }, false);
+    this.settingsSelectElement.addEventListener("click", consumeEvent, false);
     this.settingsSelectElement.addEventListener("change", this._changeSetting.bind(this), false);
 
-    this.titleElement.appendChild(this.settingsSelectElement);
-
     this._linkifier = new WebInspector.Linkifier();
+    this._refreshThrottler = new WebInspector.Throttler(0);
 }
 
 WebInspector.EventListenersSidebarPane._objectGroupName = "event-listeners-sidebar-pane";
@@ -78,21 +72,45 @@ WebInspector.EventListenersSidebarPane.prototype = {
      */
     update: function(node)
     {
-        RuntimeAgent.releaseObjectGroup(WebInspector.EventListenersSidebarPane._objectGroupName);
+        this._selectedNode = node;
+        this._refreshThrottler.schedule(this._refreshView.bind(this));
+    },
+
+    /**
+     * @param {!WebInspector.Throttler.FinishCallback} finishCallback
+     */
+    _refreshView: function(finishCallback)
+    {
+        if (this._lastRequestedNode) {
+            this._lastRequestedNode.target().runtimeAgent().releaseObjectGroup(WebInspector.EventListenersSidebarPane._objectGroupName);
+            delete this._lastRequestedNode;
+        }
+
         this._linkifier.reset();
 
         var body = this.bodyElement;
         body.removeChildren();
         this.sections = [];
 
-        var self = this;
+        var node = this._selectedNode;
+        if (!node) {
+            finishCallback();
+            return;
+        }
+
+        this._lastRequestedNode = node;
+        node.eventListeners(WebInspector.EventListenersSidebarPane._objectGroupName, callback.bind(this));
+
         /**
          * @param {?Array.<!WebInspector.DOMModel.EventListener>} eventListeners
+         * @this {WebInspector.EventListenersSidebarPane}
          */
         function callback(eventListeners)
         {
-            if (!eventListeners)
+            if (!eventListeners) {
+                finishCallback();
                 return;
+            }
 
             var selectedNodeOnly = "selected" === WebInspector.settings.eventListenersFilter.get();
             var sectionNames = [];
@@ -106,37 +124,26 @@ WebInspector.EventListenersSidebarPane.prototype = {
                 var type = eventListener.payload().type;
                 var section = sectionMap[type];
                 if (!section) {
-                    section = new WebInspector.EventListenersSection(type, node.id, self._linkifier);
+                    section = new WebInspector.EventListenersSection(type, node.id, this._linkifier);
                     sectionMap[type] = section;
                     sectionNames.push(type);
-                    self.sections.push(section);
+                    this.sections.push(section);
                 }
                 section.addListener(eventListener);
             }
 
             if (sectionNames.length === 0) {
-                var div = document.createElement("div");
-                div.className = "info";
-                div.textContent = WebInspector.UIString("No Event Listeners");
-                body.appendChild(div);
-                return;
+                body.createChild("div", "info").textContent = WebInspector.UIString("No Event Listeners");
+            } else {
+                sectionNames.sort();
+                for (var i = 0; i < sectionNames.length; ++i) {
+                    var section = sectionMap[sectionNames[i]];
+                    body.appendChild(section.element);
+                }
             }
 
-            sectionNames.sort();
-            for (var i = 0; i < sectionNames.length; ++i) {
-                var section = sectionMap[sectionNames[i]];
-                body.appendChild(section.element);
-            }
+            finishCallback();
         }
-
-        if (node)
-            node.eventListeners(WebInspector.EventListenersSidebarPane._objectGroupName, callback);
-        this._selectedNode = node;
-    },
-
-    willHide: function()
-    {
-        delete this._selectedNode;
     },
 
     _refreshButtonClicked: function()
@@ -162,7 +169,6 @@ WebInspector.EventListenersSidebarPane.prototype = {
  */
 WebInspector.EventListenersSection = function(title, nodeId, linkifier)
 {
-    this.eventListeners = [];
     this._nodeId = nodeId;
     this._linkifier = linkifier;
     WebInspector.PropertiesSection.call(this, title);
@@ -172,9 +178,7 @@ WebInspector.EventListenersSection = function(title, nodeId, linkifier)
     delete this.propertiesElement;
     delete this.propertiesTreeOutline;
 
-    this._eventBars = document.createElement("div");
-    this._eventBars.className = "event-bars";
-    this.element.appendChild(this._eventBars);
+    this._eventBars = this.element.createChild("div", "event-bars");
 }
 
 WebInspector.EventListenersSection.prototype = {
@@ -264,6 +268,9 @@ WebInspector.EventListenerBar.prototype = {
         this.titleElement.appendChild(WebInspector.DOMPresentationUtils.linkifyNodeReference(node));
     },
 
+    /**
+     * @param {!WebInspector.Linkifier} linkifier
+     */
     _setFunctionSubtitle: function(linkifier)
     {
         this.subtitleElement.removeChildren();
