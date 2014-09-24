@@ -781,3 +781,15 @@ li.child-editing .styles-clipboard-only {
     from { background-color: rgb(255, 210, 126); }
     to { background-color: inherit; }
 }
+
+.sidebar-separator {
+    background-color: rgb(230, 230, 230);
+    padding: 0 5px;
+    border-top: 1px solid rgb(189, 189, 189);
+    border-bottom: 1px solid rgb(189, 189, 189);
+    color: rgb(50, 50, 50);
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    line-height: 16px;
+}
