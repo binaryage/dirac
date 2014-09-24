@@ -312,7 +312,7 @@ WebInspector.SourcesPanel.prototype = {
 
     /**
      * @param {!WebInspector.UISourceCode} uiSourceCode
-     * @param {number=} lineNumber
+     * @param {number=} lineNumber 0-based
      * @param {number=} columnNumber
      * @param {boolean=} forceShowInPanel
      */

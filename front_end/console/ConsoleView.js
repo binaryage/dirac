@@ -828,13 +828,18 @@ WebInspector.ConsoleView.prototype = {
                 addMessage();
                 return;
             }
-
             var url;
+            var lineNumber;
+            var columnNumber;
             var script = target.debuggerModel.scriptForId(response.location.scriptId);
-            if (script && script.sourceURL)
+            if (script && script.sourceURL) {
                 url = script.sourceURL;
+                // FIXME(WK62725): Debugger line/column are 0-based, while console ones are 1-based.
+                lineNumber = response.location.lineNumber + 1;
+                columnNumber = response.location.columnNumber + 1;
+            }
             // FIXME: this should be using live location.
-            addMessage(url, response.location.lineNumber, response.location.columnNumber);
+            addMessage(url, lineNumber, columnNumber);
         }
     },
 

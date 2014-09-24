@@ -692,7 +692,7 @@ WebInspector.DebuggerModel.prototype = {
             }
             var location = response.location;
             var script = this.scriptForId(location.scriptId);
-            var rawLocation = script ? this.createRawLocation(script, location.lineNumber + 1, location.columnNumber + 1) : null;
+            var rawLocation = script ? this.createRawLocation(script, location.lineNumber, location.columnNumber || 0) : null;
             var sourceURL = script ? script.contentURL() : null;
             callback({location: rawLocation, sourceURL: sourceURL, functionName: response.functionName, scopeChain: response.scopeChain || null});
         }

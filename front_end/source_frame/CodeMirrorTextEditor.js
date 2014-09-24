@@ -1084,7 +1084,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     },
 
     /**
-     * @param {number} lineNumber
+     * @param {number} lineNumber 0-based
      * @param {number=} columnNumber
      * @param {boolean=} shouldHighlight
      */

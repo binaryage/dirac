@@ -229,7 +229,7 @@ WebInspector.SourceFrame.prototype = {
     },
 
     /**
-     * @param {number} line
+     * @param {number} line 0-based
      * @param {number=} column
      * @param {boolean=} shouldHighlight
      */
