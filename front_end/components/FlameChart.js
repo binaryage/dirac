@@ -249,12 +249,14 @@ WebInspector.FlameChart.Events = {
  * @param {!{min: number, max: number, count: number}|number=} hueSpace
  * @param {!{min: number, max: number, count: number}|number=} satSpace
  * @param {!{min: number, max: number, count: number}|number=} lightnessSpace
+ * @param {!{min: number, max: number, count: number}|number=} alphaSpace
  */
-WebInspector.FlameChart.ColorGenerator = function(hueSpace, satSpace, lightnessSpace)
+WebInspector.FlameChart.ColorGenerator = function(hueSpace, satSpace, lightnessSpace, alphaSpace)
 {
     this._hueSpace = hueSpace || { min: 0, max: 360, count: 20 };
     this._satSpace = satSpace || 67;
     this._lightnessSpace = lightnessSpace || 80;
+    this._alphaSpace = alphaSpace || 1;
     this._colors = {};
 }
 
@@ -292,7 +294,8 @@ WebInspector.FlameChart.ColorGenerator.prototype = {
         var h = this._indexToValueInSpace(hash, this._hueSpace);
         var s = this._indexToValueInSpace(hash, this._satSpace);
         var l = this._indexToValueInSpace(hash, this._lightnessSpace);
-        return "hsl(" + h + ", " + s + "%, " + l + "%)";
+        var a = this._indexToValueInSpace(hash, this._alphaSpace);
+        return "hsla(" + h + ", " + s + "%, " + l + "%, " + a + ")";
     },
 
     /**

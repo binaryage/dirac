@@ -51,6 +51,20 @@ WebInspector.TimelineFlameChartDataProvider = function(model, frameModel)
 WebInspector.TimelineFlameChartDataProvider.InstantEventVisibleDurationMs = 0.01;
 WebInspector.TimelineFlameChartDataProvider.JSFrameCoalesceThresholdMs = 1.1;
 
+/**
+ * @return {!WebInspector.FlameChart.ColorGenerator}
+ */
+WebInspector.TimelineFlameChartDataProvider.consoleEventsColorGenerator = function()
+{
+    if (!WebInspector.TimelineFlameChartDataProvider.consoleEventsColorGenerator._consoleEventsColorGenerator) {
+        var hueSpace = { min: 30, max: 55, count: 5 };
+        var satSpace = { min: 70, max: 100, count: 6 };
+        var colorGenerator = new WebInspector.FlameChart.ColorGenerator(hueSpace, satSpace, 50, 0.7);
+        WebInspector.TimelineFlameChartDataProvider.consoleEventsColorGenerator._consoleEventsColorGenerator = colorGenerator;
+    }
+    return WebInspector.TimelineFlameChartDataProvider.consoleEventsColorGenerator._consoleEventsColorGenerator;
+}
+
 WebInspector.TimelineFlameChartDataProvider.prototype = {
     /**
      * @return {number}
@@ -435,9 +449,9 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
         if (event.name === WebInspector.TracingTimelineModel.RecordType.JSFrame)
             return this._timelineData.entryLevels[entryIndex] % 2 ? "#efb320" : "#fcc02d";
         var category = WebInspector.TracingTimelineUIUtils.eventStyle(event).category;
-        if (event.phase === WebInspector.TracingModel.Phase.AsyncBegin ||
-            event.phase === WebInspector.TracingModel.Phase.AsyncStepInto ||
-            event.phase === WebInspector.TracingModel.Phase.AsyncStepPast) {
+        if (WebInspector.TracingModel.isAsyncPhase(event.phase)) {
+            if (event.category === WebInspector.TracingModel.ConsoleEventCategory)
+                return WebInspector.TimelineFlameChartDataProvider.consoleEventsColorGenerator().colorForID(event.name);
             var color = this._asyncColorByCategory[category.name];
             if (color)
                 return color;
