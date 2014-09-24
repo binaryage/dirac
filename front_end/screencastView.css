@@ -116,7 +116,14 @@
     display: flex;
     border: 1px solid #999;
     position: relative;
+    cursor: url(Images/touchCursor.png), default;
 }
+
+@media (-webkit-min-device-pixel-ratio: 1.5) {
+.screencast-canvas-container {
+    cursor: url(Images/touchCursor_2x.png), default;
+}
+} /* media */
 
 .screencast canvas {
     flex: auto;

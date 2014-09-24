@@ -533,13 +533,13 @@
                     { "name": "maxHeight", "type": "integer", "optional": true, "description": "Maximum screenshot height." }
                 ],
                 "hidden": true,
-                "handlers": ["browser"]
+                "handlers": ["browser", "renderer"]
             },
             {
                 "name": "stopScreencast",
                 "description": "Stops sending each frame in the <code>screencastFrame</code>.",
                 "hidden": true,
-                "handlers": ["browser"]
+                "handlers": ["browser", "renderer"]
             },
             {
                 "name": "handleJavaScriptDialog",

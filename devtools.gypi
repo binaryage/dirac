@@ -643,6 +643,8 @@
             'front_end/Images/thumbHoverVert.png',
             'front_end/Images/thumbVert.png',
             'front_end/Images/toolbarItemSelected.png',
+            'front_end/Images/touchCursor.png',
+            'front_end/Images/touchCursor_2x.png',
         ],
         'devtools_extension_api_files': [
             'front_end/extensions/ExtensionAPI.js',
