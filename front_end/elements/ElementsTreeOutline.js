@@ -34,10 +34,9 @@
  * @param {!WebInspector.Target} target
  * @param {boolean=} omitRootDOMNode
  * @param {boolean=} selectEnabled
- * @param {function(!WebInspector.ContextMenu, !WebInspector.DOMNode)=} contextMenuCallback
  * @param {function(!WebInspector.DOMNode, string, boolean)=} setPseudoClassCallback
  */
-WebInspector.ElementsTreeOutline = function(target, omitRootDOMNode, selectEnabled, contextMenuCallback, setPseudoClassCallback)
+WebInspector.ElementsTreeOutline = function(target, omitRootDOMNode, selectEnabled, setPseudoClassCallback)
 {
     this._target = target;
     this._domModel = target.domModel;
@@ -53,6 +52,7 @@ WebInspector.ElementsTreeOutline = function(target, omitRootDOMNode, selectEnabl
     this.element.addEventListener("dragend", this._ondragend.bind(this), false);
     this.element.addEventListener("keydown", this._onkeydown.bind(this), false);
     this.element.addEventListener("webkitAnimationEnd", this._onAnimationEnd.bind(this), false);
+    this.element.addEventListener("contextmenu", this._contextMenuEventFired.bind(this), false);
 
     TreeOutline.call(this, this.element);
 
@@ -67,8 +67,6 @@ WebInspector.ElementsTreeOutline = function(target, omitRootDOMNode, selectEnabl
     this._visible = false;
     this._pickNodeMode = false;
 
-    this.element.addEventListener("contextmenu", this._contextMenuEventFired.bind(this), true);
-    this._contextMenuCallback = contextMenuCallback;
     this._setPseudoClassCallback = setPseudoClassCallback;
     this._createNodeDecorators();
 }
@@ -771,19 +769,10 @@ WebInspector.ElementsTreeOutline.prototype = {
     _contextMenuEventFired: function(event)
     {
         var treeElement = this._treeElementFromEvent(event);
-        if (!treeElement || treeElement.treeOutline !== this)
+        if (!treeElement)
             return;
 
         var contextMenu = new WebInspector.ContextMenu(event);
-        contextMenu.appendApplicableItems(treeElement._node);
-        contextMenu.show();
-    },
-
-    populateContextMenu: function(contextMenu, event)
-    {
-        var treeElement = this._treeElementFromEvent(event);
-        if (!treeElement || treeElement.treeOutline !== this)
-            return;
 
         var isPseudoElement = !!treeElement._node.pseudoType();
         var isTag = treeElement._node.nodeType() === Node.ELEMENT_NODE && !isPseudoElement;
@@ -803,21 +792,16 @@ WebInspector.ElementsTreeOutline.prototype = {
             treeElement._populateNodeContextMenu(contextMenu);
         } else if (isPseudoElement) {
             treeElement._populateScrollIntoView(contextMenu);
-        } else if (treeElement._node.isShadowRoot()) {
-            this.treeOutline._populateContextMenu(contextMenu, treeElement._node);
         }
+
+        contextMenu.appendApplicableItems(treeElement._node);
+        contextMenu.show();
     },
 
     _updateModifiedNodes: function()
     {
         if (this._elementsTreeUpdater)
             this._elementsTreeUpdater._updateModifiedNodes();
-    },
-
-    _populateContextMenu: function(contextMenu, node)
-    {
-        if (this._contextMenuCallback)
-            this._contextMenuCallback(contextMenu, node);
     },
 
     handleShortcut: function(event)
@@ -1632,7 +1616,6 @@ WebInspector.ElementsTreeElement.prototype = {
             contextMenu.appendSeparator();
         }
         this._populateNodeContextMenu(contextMenu);
-        this.treeOutline._populateContextMenu(contextMenu, this._node);
         this._populateScrollIntoView(contextMenu);
     },
 
