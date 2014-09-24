@@ -36,18 +36,21 @@ WebInspector.Layers3DView = function()
 {
     WebInspector.VBox.call(this);
     this.element.classList.add("layers-3d-view");
+    this._emptyView = new WebInspector.EmptyView(WebInspector.UIString("Layer information is not yet available."));
+
+    this._transformController = new WebInspector.TransformController(this.element);
+    this._transformController.addEventListener(WebInspector.TransformController.Events.TransformChanged, this._update, this);
     this._initStatusBar();
-    this._emptyView = new WebInspector.EmptyView(WebInspector.UIString("Not in the composited mode.\nConsider forcing composited mode in Settings."));
+
     this._canvasElement = this.element.createChild("canvas");
     this._canvasElement.tabIndex = 0;
-    this._transformController = new WebInspector.TransformController(this._canvasElement);
-    this._transformController.addEventListener(WebInspector.TransformController.Events.TransformChanged, this._update, this);
     this._canvasElement.addEventListener("dblclick", this._onDoubleClick.bind(this), false);
     this._canvasElement.addEventListener("mousedown", this._onMouseDown.bind(this), false);
     this._canvasElement.addEventListener("mouseup", this._onMouseUp.bind(this), false);
     this._canvasElement.addEventListener("mouseout", this._onMouseMove.bind(this), false);
     this._canvasElement.addEventListener("mousemove", this._onMouseMove.bind(this), false);
     this._canvasElement.addEventListener("contextmenu", this._onContextMenu.bind(this), false);
+
     this._lastActiveObject = {};
     this._picturesForLayer = {};
     this._scrollRectQuadsForLayer = {};
@@ -637,6 +640,7 @@ WebInspector.Layers3DView.prototype = {
     _initStatusBar: function()
     {
         this._panelStatusBarElement = this.element.createChild("div", "panel-status-bar");
+        this._panelStatusBarElement.appendChild(this._transformController.controlPanelElement());
         this._showViewportSetting = this._createVisibilitySetting("Viewport", "showViewport", true, this._panelStatusBarElement);
         this._showSlowScrollRectsSetting = this._createVisibilitySetting("Slow scroll rects", "showSlowScrollRects", true, this._panelStatusBarElement);
         this._showPaintsSetting = this._createVisibilitySetting("Paints", "showPaints", true, this._panelStatusBarElement);

@@ -293,17 +293,13 @@ WebInspector.ShortcutsScreen.registerShortcuts = function()
     if (WebInspector.experimentsSettings.isEnabled("layersPanel")) {
         section = WebInspector.shortcutsScreen.section(WebInspector.UIString("Layers Panel"));
         section.addAlternateKeys(WebInspector.ShortcutsScreen.LayersPanelShortcuts.ResetView, WebInspector.UIString("Reset view"));
+        section.addAlternateKeys(WebInspector.ShortcutsScreen.LayersPanelShortcuts.PanMode, WebInspector.UIString("Switch to pan mode"));
+        section.addAlternateKeys(WebInspector.ShortcutsScreen.LayersPanelShortcuts.RotateMode, WebInspector.UIString("Switch to rotate mode"));
+        section.addAlternateKeys(WebInspector.ShortcutsScreen.LayersPanelShortcuts.TogglePanRotate, WebInspector.UIString("Temporarily toggle pan/rotate mode while held"));
         section.addAlternateKeys(WebInspector.ShortcutsScreen.LayersPanelShortcuts.ZoomIn, WebInspector.UIString("Zoom in"));
         section.addAlternateKeys(WebInspector.ShortcutsScreen.LayersPanelShortcuts.ZoomOut, WebInspector.UIString("Zoom out"));
-        var PanUpDown = WebInspector.ShortcutsScreen.LayersPanelShortcuts.PanUp.concat(WebInspector.ShortcutsScreen.LayersPanelShortcuts.PanDown);
-        section.addRelatedKeys(PanUpDown, WebInspector.UIString("Pan up/down"));
-        var PanLeftRight = WebInspector.ShortcutsScreen.LayersPanelShortcuts.PanLeft.concat(WebInspector.ShortcutsScreen.LayersPanelShortcuts.PanRight);
-        section.addRelatedKeys(PanLeftRight, WebInspector.UIString("Pan left/right"));
-        var rotate = WebInspector.ShortcutsScreen.LayersPanelShortcuts.RotateCWX
-            .concat(WebInspector.ShortcutsScreen.LayersPanelShortcuts.RotateCCWX)
-            .concat(WebInspector.ShortcutsScreen.LayersPanelShortcuts.RotateCWY)
-            .concat(WebInspector.ShortcutsScreen.LayersPanelShortcuts.RotateCCWY);
-        section.addRelatedKeys(rotate, WebInspector.UIString("Rotate"));
+        section.addRelatedKeys(WebInspector.ShortcutsScreen.LayersPanelShortcuts.Up.concat(WebInspector.ShortcutsScreen.LayersPanelShortcuts.Down), WebInspector.UIString("Pan or rotate up/down"));
+        section.addRelatedKeys(WebInspector.ShortcutsScreen.LayersPanelShortcuts.Left.concat(WebInspector.ShortcutsScreen.LayersPanelShortcuts.Right), WebInspector.UIString("Pan or rotate left/right"));
     }
 }
 
@@ -509,6 +505,18 @@ WebInspector.ShortcutsScreen.LayersPanelShortcuts = {
         WebInspector.KeyboardShortcut.makeDescriptor("0")
     ],
 
+    PanMode: [
+        WebInspector.KeyboardShortcut.makeDescriptor("x")
+    ],
+
+    RotateMode: [
+        WebInspector.KeyboardShortcut.makeDescriptor("v")
+    ],
+
+    TogglePanRotate: [
+        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Shift)
+    ],
+
     ZoomIn: [
         WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Plus, WebInspector.KeyboardShortcut.Modifiers.Shift),
         WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.NumpadPlus)
@@ -519,43 +527,23 @@ WebInspector.ShortcutsScreen.LayersPanelShortcuts = {
         WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.NumpadMinus)
     ],
 
-    PanUp: [
+    Up: [
         WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Up),
         WebInspector.KeyboardShortcut.makeDescriptor("w")
     ],
 
-    PanDown: [
+    Down: [
         WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Down),
         WebInspector.KeyboardShortcut.makeDescriptor("s")
     ],
 
-    PanLeft: [
+    Left: [
         WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Left),
         WebInspector.KeyboardShortcut.makeDescriptor("a")
     ],
 
-    PanRight: [
+    Right: [
         WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Right),
         WebInspector.KeyboardShortcut.makeDescriptor("d")
-    ],
-
-    RotateCWX: [
-        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Up, WebInspector.KeyboardShortcut.Modifiers.Shift),
-        WebInspector.KeyboardShortcut.makeDescriptor("w", WebInspector.KeyboardShortcut.Modifiers.Shift)
-    ],
-
-    RotateCCWX: [
-        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Down, WebInspector.KeyboardShortcut.Modifiers.Shift),
-        WebInspector.KeyboardShortcut.makeDescriptor("s", WebInspector.KeyboardShortcut.Modifiers.Shift)
-    ],
-
-    RotateCWY: [
-        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Left, WebInspector.KeyboardShortcut.Modifiers.Shift),
-        WebInspector.KeyboardShortcut.makeDescriptor("a", WebInspector.KeyboardShortcut.Modifiers.Shift)
-    ],
-
-    RotateCCWY: [
-        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Right, WebInspector.KeyboardShortcut.Modifiers.Shift),
-        WebInspector.KeyboardShortcut.makeDescriptor("d", WebInspector.KeyboardShortcut.Modifiers.Shift)
     ]
 }

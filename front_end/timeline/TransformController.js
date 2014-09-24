@@ -16,11 +16,33 @@ WebInspector.TransformController = function(element, disableRotate)
     this.element = element;
     this._registerShortcuts();
     element.addEventListener("keydown", this._onKeyDown.bind(this), false);
+    element.addEventListener("keyup", this._onKeyUp.bind(this), false);
     element.addEventListener("mousemove", this._onMouseMove.bind(this), false);
     element.addEventListener("mousedown", this._onMouseDown.bind(this), false);
     element.addEventListener("mouseup", this._onMouseUp.bind(this), false);
     element.addEventListener("mousewheel", this._onMouseWheel.bind(this), false);
     this._disableRotate = disableRotate;
+
+    this._controlPanelElement = document.createElement("div");
+    this._controlPanelElement.classList.add("transform-control-panel");
+
+    this._modeButtons = {};
+    if (!disableRotate) {
+        var panModeButton = new WebInspector.StatusBarButton(WebInspector.UIString("Pan mode (X)"), "transform-mode-pan");
+        panModeButton.addEventListener("click", this._setMode.bind(this, WebInspector.TransformController.Modes.Pan));
+        this._modeButtons[WebInspector.TransformController.Modes.Pan] = panModeButton;
+        this._controlPanelElement.appendChild(panModeButton.element);
+        var rotateModeButton = new WebInspector.StatusBarButton(WebInspector.UIString("Rotate mode (V)"), "transform-mode-rotate");
+        rotateModeButton.addEventListener("click", this._setMode.bind(this, WebInspector.TransformController.Modes.Rotate));
+        this._modeButtons[WebInspector.TransformController.Modes.Rotate] = rotateModeButton;
+        this._controlPanelElement.appendChild(rotateModeButton.element);
+    }
+    this._setMode(WebInspector.TransformController.Modes.Pan);
+
+    var resetButton = new WebInspector.StatusBarButton(WebInspector.UIString("Reset transform (0)"), "transform-reset");
+    resetButton.addEventListener("click", this.resetAndNotify.bind(this, undefined));
+    this._controlPanelElement.appendChild(resetButton.element);
+
     this._reset();
 }
 
@@ -31,12 +53,40 @@ WebInspector.TransformController.Events = {
     TransformChanged: "TransformChanged"
 }
 
+/**
+ * @enum {string}
+ */
+WebInspector.TransformController.Modes = {
+    Pan: "Pan",
+    Rotate: "Rotate",
+}
+
 WebInspector.TransformController.prototype = {
+    /**
+     * @return {!Element}
+     */
+    controlPanelElement: function()
+    {
+        return this._controlPanelElement;
+    },
+
     _onKeyDown: function(event)
     {
-        var shortcutKey = WebInspector.KeyboardShortcut.makeKeyFromEvent(event);
+        if (event.keyCode === WebInspector.KeyboardShortcut.Keys.Shift.code) {
+            this._toggleMode();
+            return;
+        }
+
+        var shortcutKey = WebInspector.KeyboardShortcut.makeKeyFromEventIgnoringModifiers(event);
         var handler = this._shortcuts[shortcutKey];
-        event.handled = handler && handler(event);
+        if (handler && handler(event))
+            event.consume();
+    },
+
+    _onKeyUp: function(event)
+    {
+        if (event.keyCode === WebInspector.KeyboardShortcut.Keys.Shift.code)
+            this._toggleMode();
     },
 
     _addShortcuts: function(keys, handler)
@@ -48,19 +98,15 @@ WebInspector.TransformController.prototype = {
     _registerShortcuts: function()
     {
         this._addShortcuts(WebInspector.ShortcutsScreen.LayersPanelShortcuts.ResetView, this.resetAndNotify.bind(this));
+        this._addShortcuts(WebInspector.ShortcutsScreen.LayersPanelShortcuts.PanMode, this._setMode.bind(this, WebInspector.TransformController.Modes.Pan));
+        this._addShortcuts(WebInspector.ShortcutsScreen.LayersPanelShortcuts.RotateMode, this._setMode.bind(this, WebInspector.TransformController.Modes.Rotate));
         var zoomFactor = 1.1;
         this._addShortcuts(WebInspector.ShortcutsScreen.LayersPanelShortcuts.ZoomIn, this._onKeyboardZoom.bind(this, zoomFactor));
         this._addShortcuts(WebInspector.ShortcutsScreen.LayersPanelShortcuts.ZoomOut, this._onKeyboardZoom.bind(this, 1 / zoomFactor));
-        var panDistanceInPixels = 6;
-        this._addShortcuts(WebInspector.ShortcutsScreen.LayersPanelShortcuts.PanUp, this._onPan.bind(this, 0, -panDistanceInPixels));
-        this._addShortcuts(WebInspector.ShortcutsScreen.LayersPanelShortcuts.PanDown, this._onPan.bind(this, 0, panDistanceInPixels));
-        this._addShortcuts(WebInspector.ShortcutsScreen.LayersPanelShortcuts.PanLeft, this._onPan.bind(this, -panDistanceInPixels, 0));
-        this._addShortcuts(WebInspector.ShortcutsScreen.LayersPanelShortcuts.PanRight, this._onPan.bind(this, panDistanceInPixels, 0));
-        var rotateDegrees = 5;
-        this._addShortcuts(WebInspector.ShortcutsScreen.LayersPanelShortcuts.RotateCWX, this._onKeyboardRotate.bind(this, rotateDegrees, 0));
-        this._addShortcuts(WebInspector.ShortcutsScreen.LayersPanelShortcuts.RotateCCWX, this._onKeyboardRotate.bind(this, -rotateDegrees, 0));
-        this._addShortcuts(WebInspector.ShortcutsScreen.LayersPanelShortcuts.RotateCWY, this._onKeyboardRotate.bind(this, 0, -rotateDegrees));
-        this._addShortcuts(WebInspector.ShortcutsScreen.LayersPanelShortcuts.RotateCCWY, this._onKeyboardRotate.bind(this, 0, rotateDegrees));
+        this._addShortcuts(WebInspector.ShortcutsScreen.LayersPanelShortcuts.Up, this._onKeyboardPanOrRotate.bind(this, 0, -1));
+        this._addShortcuts(WebInspector.ShortcutsScreen.LayersPanelShortcuts.Down, this._onKeyboardPanOrRotate.bind(this, 0, 1));
+        this._addShortcuts(WebInspector.ShortcutsScreen.LayersPanelShortcuts.Left, this._onKeyboardPanOrRotate.bind(this, -1, 0));
+        this._addShortcuts(WebInspector.ShortcutsScreen.LayersPanelShortcuts.Right, this._onKeyboardPanOrRotate.bind(this, 1, 0));
     },
 
     _postChangeEvent: function()
@@ -77,6 +123,29 @@ WebInspector.TransformController.prototype = {
         this._rotateY = 0;
     },
 
+    _toggleMode: function()
+    {
+        this._setMode(this._mode === WebInspector.TransformController.Modes.Pan ? WebInspector.TransformController.Modes.Rotate : WebInspector.TransformController.Modes.Pan);
+    },
+
+    /**
+     * @param {!WebInspector.TransformController.Modes} mode
+     */
+    _setMode: function(mode)
+    {
+        if (this._mode === mode)
+            return;
+        this._mode = mode;
+        this._updateModeButtons();
+        this.element.focus();
+    },
+
+    _updateModeButtons: function()
+    {
+        for (var mode in this._modeButtons)
+            this._modeButtons[mode].toggled = (mode === this._mode);
+    },
+
     /**
      * @param {!Event=} event
      */
@@ -86,6 +155,7 @@ WebInspector.TransformController.prototype = {
         this._postChangeEvent();
         if (event)
             event.preventDefault();
+        this.element.focus();
     },
 
     /**
@@ -172,12 +242,20 @@ WebInspector.TransformController.prototype = {
     },
 
     /**
-     * @param {number} rotateX
-     * @param {number} rotateY
+     * @param {number} xMultiplier
+     * @param {number} yMultiplier
      */
-    _onKeyboardRotate: function(rotateX, rotateY)
+    _onKeyboardPanOrRotate: function(xMultiplier, yMultiplier)
     {
-        this._onRotate(this._rotateX + rotateX, this._rotateY + rotateY);
+        var panStepInPixels = 6;
+        var rotateStepInDegrees = 5;
+
+        if (this._mode === WebInspector.TransformController.Modes.Rotate) {
+            // Sic! _onRotate treats X and Y as "rotate around X" and "rotate around Y", so swap X/Y multiplers.
+            this._onRotate(this._rotateX + yMultiplier * rotateStepInDegrees, this._rotateY + xMultiplier * rotateStepInDegrees);
+        } else {
+            this._onPan(xMultiplier * panStepInPixels, yMultiplier * panStepInPixels);
+        }
     },
 
     /**
@@ -200,7 +278,7 @@ WebInspector.TransformController.prototype = {
     {
         if (event.which !== 1 || typeof this._originX !== "number")
             return;
-        if (event.shiftKey) {
+        if (this._mode === WebInspector.TransformController.Modes.Rotate) {
             this._onRotate(this._oldRotateX + (this._originY - event.clientY) / this.element.clientHeight * 180, this._oldRotateY - (this._originX - event.clientX) / this.element.clientWidth * 180);
         } else {
             this._onPan(event.clientX - this._originX, event.clientY - this._originY);

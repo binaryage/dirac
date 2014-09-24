@@ -647,6 +647,8 @@
             'front_end/Images/toolbarItemSelected.png',
             'front_end/Images/touchCursor.png',
             'front_end/Images/touchCursor_2x.png',
+            'front_end/Images/transformControls.png',
+            'front_end/Images/transformControls_2x.png',
         ],
         'devtools_extension_api_files': [
             'front_end/extensions/ExtensionAPI.js',

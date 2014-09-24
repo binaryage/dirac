@@ -64,6 +64,7 @@ WebInspector.KeyboardShortcut.Keys = {
     Backspace: { code: 8, name: "\u21a4" },
     Tab: { code: 9, name: { mac: "\u21e5", other: "Tab" } },
     Enter: { code: 13, name: { mac: "\u21a9", other: "Enter" } },
+    Shift: { code: 16, name: { mac: "\u21e7", other: "Shift" } },
     Ctrl: { code: 17, name: "Ctrl" },
     Esc: { code: 27, name: { mac: "\u238b", other: "Esc" } },
     Space: { code: 32, name: "Space" },
@@ -156,12 +157,19 @@ WebInspector.KeyboardShortcut.makeKeyFromEvent = function(keyboardEvent)
     if (keyboardEvent.metaKey)
         modifiers |= WebInspector.KeyboardShortcut.Modifiers.Meta;
 
-    function keyCodeForEvent(keyboardEvent)
-    {
-        // Use either a real or a synthetic keyCode (for events originating from extensions).
-        return keyboardEvent.keyCode || keyboardEvent["__keyCode"];
-    }
-    return WebInspector.KeyboardShortcut._makeKeyFromCodeAndModifiers(keyCodeForEvent(keyboardEvent), modifiers);
+    // Use either a real or a synthetic keyCode (for events originating from extensions).
+    var keyCode = keyboardEvent.keyCode || keyboardEvent["__keyCode"];
+    return WebInspector.KeyboardShortcut._makeKeyFromCodeAndModifiers(keyCode, modifiers);
+}
+
+/**
+ * @param {?KeyboardEvent} keyboardEvent
+ * @return {number}
+ */
+WebInspector.KeyboardShortcut.makeKeyFromEventIgnoringModifiers = function(keyboardEvent)
+{
+    var keyCode = keyboardEvent.keyCode || keyboardEvent["__keyCode"];
+    return WebInspector.KeyboardShortcut._makeKeyFromCodeAndModifiers(keyCode, WebInspector.KeyboardShortcut.Modifiers.None);
 }
 
 /**
