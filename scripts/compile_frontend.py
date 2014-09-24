@@ -150,29 +150,29 @@ common_closure_args = ' --summary_detail_level 3 --jscomp_error visibility --com
 
 spawned_compiler_command = '%s -jar %s %s \\\n' % (java_exec, closure_compiler_jar, common_closure_args)
 
-standalone_modules_by_name = {}
+worker_modules_by_name = {}
 dependents_by_module_name = {}
 
-for name in modules_by_name:
-    module = modules_by_name[name]
-    if 'standalone' in module:
-        standalone_modules_by_name[name] = module
+for module_name in descriptors.application:
+    module = descriptors.modules[module_name]
+    if descriptors.application[module_name].get('type', None) == 'worker':
+        worker_modules_by_name[module_name] = module
     for dep in module.get('dependencies', []):
         list = dependents_by_module_name.get(dep)
         if not list:
             list = []
             dependents_by_module_name[dep] = list
-        list.append(name)
+        list.append(module_name)
 
 
-def verify_standalone_modules():
+def verify_worker_modules():
     for name in modules_by_name:
         for dependency in modules_by_name[name].get('dependencies', []):
-            if dependency in standalone_modules_by_name:
-                log_error('Standalone module "%s" may not be present among the dependencies of "%s"' % (dependency, name))
+            if dependency in worker_modules_by_name:
+                log_error('Module "%s" may not depend on the worker module "%s"' % (name, dependency))
                 errors_found = True
 
-verify_standalone_modules()
+verify_worker_modules()
 
 
 def check_duplicate_files():
@@ -189,8 +189,8 @@ def check_duplicate_files():
                 log_error('Duplicate use of %s in "%s" (previously seen in "%s")' % (source, name, referencing_module))
             seen_files[source] = name
 
-    for module_name in standalone_modules_by_name:
-        check_module(standalone_modules_by_name[module_name], {}, {})
+    for module_name in worker_modules_by_name:
+        check_module(worker_modules_by_name[module_name], {}, {})
 
 print 'Checking duplicate files across modules...'
 check_duplicate_files()

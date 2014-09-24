@@ -33,25 +33,31 @@
         # If debug_devtools is set to 1, JavaScript files for DevTools are
         # stored as is. Otherwise, a concatenated file is stored.
         'debug_devtools%': 0,
+        # This list should contain all "autostart" modules from all apps.
         'devtools_core_files': [
-            '<@(devtools_core_base_files)',
+            '<@(devtools_bindings_js_files)',
             '<@(devtools_common_js_files)',
             '<@(devtools_components_js_files)',
+            '<@(devtools_core_base_files)',
             '<@(devtools_host_js_files)',
             '<@(devtools_screencast_js_files)',
             '<@(devtools_sdk_js_files)',
-            '<@(devtools_workspace_js_files)',
-            '<@(devtools_bindings_js_files)',
             '<@(devtools_toolbox_bootstrap_js_files)',
             '<@(devtools_toolbox_js_files)',
             '<@(devtools_ui_js_files)',
+            '<@(devtools_workspace_js_files)',
         ],
         'devtools_core_base_files': [
-            'front_end/inspector.html',
+            'front_end/devtools.js',
+            'front_end/devtools.json',
+            'front_end/devtools.css',
+            'front_end/toolbox.js',
+            'front_end/toolbox.json',
+            'front_end/toolbox.css',
+            'front_end/Runtime.js',
             'front_end/Tests.js',
             'front_end/TestController.js',
             'front_end/dialog.css',
-            'front_end/inspector.css',
             'front_end/inspectorStyle.css',
             'front_end/inspectorSyntaxHighlight.css',
             'front_end/popover.css',
@@ -254,6 +260,7 @@
 
         'devtools_module_json_files': [
             'front_end/audits/module.json',
+            'front_end/bindings/module.json',
             'front_end/common/module.json',
             'front_end/components/module.json',
             'front_end/console/module.json',
@@ -280,6 +287,7 @@
             'front_end/toolbox/module.json',
             'front_end/toolbox_bootstrap/module.json',
             'front_end/ui/module.json',
+            'front_end/workspace/module.json',
         ],
         'all_devtools_files': [
             '<@(devtools_cm_css_files)',

@@ -113,8 +113,13 @@ def main(argv):
         if e.errno != errno.EEXIST:
             raise e
 
+    written_filenames = set()
     for filename in parsed_args.source_files:
         relative_filename = build_relative_filename(parsed_args.relative_path_dirs, filename)
+        # Avoid writing duplicate relative filenames.
+        if relative_filename in written_filenames:
+            continue
+        written_filenames.add(relative_filename)
         target_dir = os.path.join(output_directory, os.path.dirname(relative_filename))
         if not os.path.exists(target_dir):
             os.makedirs(target_dir)

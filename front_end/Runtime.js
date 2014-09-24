@@ -30,6 +30,7 @@
 
 // This gets all concatenated module descriptors in the release mode.
 var allDescriptors = [];
+var applicationDescriptor;
 var _loadedScripts = {};
 
 /**
@@ -106,7 +107,7 @@ function loadScript(scriptName)
 }
 
 (function() {
-    var baseUrl = location.origin + location.pathname;
+    var baseUrl = self.location ? self.location.origin + self.location.pathname : "";
     self._importScriptPathPrefix = baseUrl.substring(0, baseUrl.lastIndexOf("/") + 1);
 })();
 
@@ -137,11 +138,6 @@ var Runtime = function()
      * @type {!Object.<string, !Runtime.ModuleDescriptor>}
      */
     this._descriptorsMap = {};
-
-    /**
-     * @type {!Object.<string, boolean>}
-     */
-    this._coreModules = {};
 
     for (var i = 0; i < allDescriptors.length; ++i)
         this._descriptorsMap[allDescriptors[i]["name"]] = allDescriptors[i];
@@ -229,6 +225,69 @@ Runtime.startWorker = function(moduleName)
 }
 
 /**
+ * @param {string} appName
+ */
+Runtime.startApplication = function(appName)
+{
+    console.timeStamp("Runtime.startApplication");
+    var storedValue = self.localStorage && self.localStorage["experiments"] ? self.localStorage["experiments"] : "{}";
+    var experiments = {};
+    try {
+        experiments = JSON.parse(storedValue);
+    } catch (e) {
+        // Retain the {} |experiments| value.
+    }
+
+    var allDescriptorsByName = {};
+    for (var i = 0; Runtime.isReleaseMode() && i < allDescriptors.length; ++i) {
+        var d = allDescriptors[i];
+        allDescriptorsByName[d["name"]] = d;
+    }
+    var moduleDescriptors = applicationDescriptor || Runtime._parseJsonURL(appName + ".json");
+    var allModules = [];
+    var coreModuleNames = [];
+    moduleDescriptors.forEach(populateModules);
+
+    /**
+     * @param {!Object} desc
+     */
+    function populateModules(desc)
+    {
+        if (!isActive(desc))
+            return;
+        var name = desc.name;
+        var moduleJSON = allDescriptorsByName[name];
+        if (!moduleJSON) {
+            moduleJSON = Runtime._parseJsonURL(name + "/module.json");
+            moduleJSON["name"] = name;
+        }
+        allModules.push(moduleJSON);
+        if (desc["type"] === "autostart")
+            coreModuleNames.push(name);
+    }
+
+    /**
+     * @param {!Object} descriptor
+     * @return {boolean}
+     */
+    function isActive(descriptor)
+    {
+        var activatorExperiment = descriptor["experiment"];
+        if (activatorExperiment) {
+            var shouldBePresent = activatorExperiment.charAt(0) !== "!";
+            if (!shouldBePresent)
+                activatorExperiment = activatorExperiment.substr(1);
+            if (!!experiments[activatorExperiment] !== shouldBePresent)
+                return false;
+        }
+        return descriptor["type"] !== "worker";
+    }
+
+    Runtime._initializeApplication(allModules);
+    self.runtime.loadAutoStartModules(coreModuleNames);
+}
+
+/**
  * @param {string} name
  * @return {?string}
  */
@@ -237,15 +296,39 @@ Runtime.queryParam = function(name)
     return Runtime._queryParamsObject[name] || null;
 }
 
+/**
+ * @param {!Array.<!Runtime.ModuleDescriptor>} descriptors
+ */
+Runtime._initializeApplication = function(descriptors)
+{
+    self.runtime = new Runtime();
+    var names = [];
+    for (var i = 0; i < descriptors.length; ++i) {
+        var name = descriptors[i]["name"];
+        self.runtime._descriptorsMap[name] = descriptors[i];
+        names.push(name);
+    }
+    self.runtime._registerModules(names);
+}
+
+/**
+ * @param {string} url
+ * @return {*}
+ */
+Runtime._parseJsonURL = function(url)
+{
+    var json = loadResource(url);
+    if (!json)
+        throw new Error("Resource not found at " + url + " " + new Error().stack);
+    return JSON.parse(json);
+}
+
 Runtime.prototype = {
     /**
      * @param {!Array.<string>} configuration
-     * @param {!Array.<string>} coreModules
      */
-    registerModules: function(configuration, coreModules)
+    _registerModules: function(configuration)
     {
-        for (var i = 0; i < coreModules.length; ++i)
-            this._coreModules[coreModules[i]] = true;
         for (var i = 0; i < configuration.length; ++i)
             this._registerModule(configuration[i]);
     },
@@ -256,14 +339,7 @@ Runtime.prototype = {
     _registerModule: function(moduleName)
     {
         if (!this._descriptorsMap[moduleName]) {
-            var content;
-            // FIXME: This is a temp workaround to avoid core module loading attempts in the release mode.
-            // It should be removed when the new application loader is implemented.
-            if (moduleName === "main" || !this._coreModules.hasOwnProperty(moduleName))
-                content = loadResource(moduleName + "/module.json");
-            else
-                content = "{}";
-
+            var content = loadResource(moduleName + "/module.json");
             if (!content)
                 throw new Error("Module is not defined: " + moduleName + " " + new Error().stack);
 
@@ -282,6 +358,19 @@ Runtime.prototype = {
     loadModule: function(moduleName)
     {
         this._modulesMap[moduleName]._load();
+    },
+
+    /**
+     * @param {!Array.<string>} moduleNames
+     */
+    loadAutoStartModules: function(moduleNames)
+    {
+        for (var i = 0; i < moduleNames.length; ++i) {
+            if (Runtime.isReleaseMode())
+                self.runtime._modulesMap[moduleNames[i]]._loaded = true;
+            else
+                self.runtime.loadModule(moduleNames[i]);
+        }
     },
 
     /**
@@ -534,15 +623,10 @@ Runtime.Module = function(manager, descriptor)
     this._manager = manager;
     this._descriptor = descriptor;
     this._name = descriptor.name;
-    var extensions = /** @type {?Array.<!Runtime.ExtensionDescriptor>}*/ (descriptor.extensions);
+    var extensions = /** @type {?Array.<!Runtime.ExtensionDescriptor>} */ (descriptor.extensions);
     for (var i = 0; extensions && i < extensions.length; ++i)
         this._manager._extensions.push(new Runtime.Extension(this, extensions[i]));
     this._loaded = false;
-
-    // FIXME: This is a temp workaround to avoid core module loading attempts in the release mode.
-    // It should be removed when the new application loader is implemented.
-    if (this._manager._coreModules.hasOwnProperty(this._name))
-        this._loaded = true;
 }
 
 Runtime.Module.prototype = {

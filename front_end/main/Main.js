@@ -165,12 +165,7 @@ WebInspector.Main.prototype = {
     {
         console.timeStamp("Main._loaded");
 
-        // FIXME: Make toolbox a real app.
-        if (Runtime.queryParam("toolbox"))
-            return;
-
         this._createSettings();
-        this._createModuleManager();
         this._createAppUI();
     },
 
@@ -181,27 +176,6 @@ WebInspector.Main.prototype = {
         // This setting is needed for backwards compatibility with Devtools CodeSchool extension. DO NOT REMOVE
         WebInspector.settings.pauseOnExceptionStateString = new WebInspector.PauseOnExceptionStateSetting();
         new WebInspector.VersionController().updateVersion();
-    },
-
-    _createModuleManager: function()
-    {
-        console.timeStamp("Main._createModuleManager");
-        self.runtime = new Runtime();
-        var core = ["common", "host", "sdk", "ui", "components", "workspace", "bindings", "screencast", "toolbox", "main"];
-
-        // FIXME: define html-per-app, make configuration a part of the app.
-        var configuration = core.concat(["elements", "network", "sources", "timeline", "profiler", "resources", "audits", "console", "source_frame", "extensions", "settings"]);
-        if (WebInspector.experimentsSettings.layersPanel.isEnabled())
-            configuration.push("layers");
-        if (WebInspector.experimentsSettings.devicesPanel.isEnabled() && !!Runtime.queryParam("can_dock"))
-            configuration.push("devices");
-        if (WebInspector.experimentsSettings.documentation.isEnabled())
-            configuration.push("documentation");
-        if (WebInspector.experimentsSettings.promiseTracker.isEnabled())
-            configuration.push("promises");
-        if (WebInspector.isWorkerFrontend())
-            configuration = core.concat(["network", "sources", "timeline", "profiler", "resources", "console", "source_frame", "extensions", "settings"]);
-        self.runtime.registerModules(configuration, core);
     },
 
     _createAppUI: function()

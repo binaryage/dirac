@@ -29,7 +29,8 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-import os.path
+from os import path
+import os
 import sys
 
 
@@ -42,42 +43,32 @@ def generate_include_tag(resource_path):
         assert resource_path
 
 
-def write_devtools_html(inspector_file, devtools_file, debug):
-    for line in inspector_file:
+def write_app_input_html(app_input_file, app_output_file, application_name, debug):
+    for line in app_input_file:
         if not debug:
             if '<script ' in line or '<link ' in line:
                 continue
             if '</head>' in line:
-                devtools_file.write(generate_include_tag("inspector.css"))
-                devtools_file.write(generate_include_tag("main/Main.js"))
-        devtools_file.write(line)
+                app_output_file.write(generate_include_tag("%s.css" % application_name))
+                app_output_file.write(generate_include_tag("%s.js" % application_name))
+        app_output_file.write(line)
 
 
 def main(argv):
 
     if len(argv) < 4:
-        print('usage: %s inspector_html devtools_html debug' % argv[0])
+        print('usage: %s app_input_html generated_app_html debug' % argv[0])
         return 1
-
     # The first argument is ignored. We put 'web.gyp' in the inputs list
     # for this script, so every time the list of script gets changed, our html
     # file is rebuilt.
-    inspector_html_name = argv[1]
-    devtools_html_name = argv[2]
+    app_input_html_name = argv[1]
+    app_output_html_name = argv[2]
     debug = argv[3] != '0'
-    inspector_html = open(inspector_html_name, 'r')
-    devtools_html = open(devtools_html_name, 'w')
-
-    write_devtools_html(inspector_html, devtools_html, debug)
-
-    devtools_html.close()
-    inspector_html.close()
-
-    # Touch output file directory to make sure that Xcode will copy
-    # modified resource files.
-    if sys.platform == 'darwin':
-        output_dir_name = os.path.dirname(devtools_html_name)
-        os.utime(output_dir_name, None)
+    application_name = path.splitext(path.basename(app_input_html_name))[0]
+    with open(app_input_html_name, 'r') as app_input_html:
+        with open(app_output_html_name, 'w') as app_output_html:
+            write_app_input_html(app_input_html, app_output_html, application_name, debug)
 
 if __name__ == '__main__':
     sys.exit(main(sys.argv))

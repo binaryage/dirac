@@ -103,6 +103,22 @@ class Descriptors:
 
         return result
 
+    def sorted_dependencies_closure(self, module_name):
+        visited = set()
+
+        def sorted_deps_for_module(name):
+            result = []
+            desc = self.modules[name]
+            deps = desc.get('dependencies', [])
+            for dep in deps:
+                result += sorted_deps_for_module(dep)
+            if name not in visited:
+                result.append(name)
+                visited.add(name)
+            return result
+
+        return sorted_deps_for_module(module_name)
+
 
 class DescriptorLoader:
     def __init__(self, application_dir):
@@ -120,6 +136,11 @@ class DescriptorLoader:
             module_json_filename = path.join(self.application_dir, module_name, 'module.json')
             module_descriptors[module_name] = self._read_module_descriptor(module_name, application_descriptor_filename)
 
+        for module in module_descriptors.values():
+            deps = module.get('dependencies', [])
+            for dep in deps:
+                if dep not in application_descriptor:
+                    bail_error('Module "%s" (dependency of "%s") not listed in application descriptor %s' % (dep, module['name'], application_descriptor_filename))
         return Descriptors(self.application_dir, application_descriptor, module_descriptors, application_descriptor_json)
 
     def _read_module_descriptor(self, module_name, application_descriptor_filename):

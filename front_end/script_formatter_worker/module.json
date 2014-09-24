@@ -1,7 +1,6 @@
 {
     "scripts": [
         "../common/utilities.js",
-        "../common/WebInspector.js",
         "../cm/headlesscodemirror.js",
         "../cm/css.js",
         "../cm/javascript.js",

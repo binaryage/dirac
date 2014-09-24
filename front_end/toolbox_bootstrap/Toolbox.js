@@ -36,3 +36,7 @@ WebInspector.Toolbox = function()
     rootView.attachToBody();
     delegate.toolboxLoaded(this._responsiveDesignView, inspectedPagePlaceholder);
 }
+
+// FIXME: This stub is invoked from the backend and should be removed
+// once we migrate to the "pull" model for extensions retrieval.
+WebInspector.addExtensions = function() {}
