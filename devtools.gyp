@@ -111,6 +111,7 @@
             'type': 'none',
             'dependencies': [
                 'devtools_html',
+                'toolbox_html',
                 'devtools_extension_api',
                 'devtools_frontend_resources',
             ],
@@ -283,6 +284,7 @@
                 ['debug_devtools==0', { # Release
                     'dependencies': [
                         'devtools_html',
+                        'toolbox_html',
                         'supported_css_properties',
                         'frontend_protocol_sources',
                         'concatenated_module_descriptors',
@@ -1026,7 +1028,7 @@
                     'target_name': 'concatenated_toolbox_css',
                     'type': 'none',
                     'dependencies': [
-                        'devtools_html'
+                        'toolbox_html',
                     ],
                     'actions': [{
                         'action_name': 'concatenate_toolbox_css',

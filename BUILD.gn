@@ -42,6 +42,7 @@ group("devtools_frontend_resources") {
   deps = [
     ":copy_inspector_images",
     ":devtools_html",
+    ":toolbox_html",
     ":frontend_protocol_sources",
     ":supported_css_properties",
     ":build_applications",
@@ -114,6 +115,7 @@ action("generate_devtools_grd") {
 
   deps = [
     ":devtools_html",
+    ":toolbox_html",
     ":devtools_extension_api",
     ":devtools_frontend_resources",
   ]
@@ -264,6 +266,7 @@ action("build_applications") {
   if (!debug_devtools) {
     deps += [
       ":devtools_html",
+      ":toolbox_html",
       ":supported_css_properties",
       ":frontend_protocol_sources",
       ":concatenated_module_descriptors",
