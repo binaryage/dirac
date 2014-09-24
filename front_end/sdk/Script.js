@@ -247,5 +247,13 @@ WebInspector.Script.prototype = {
         return !!this.sourceURL && this.sourceURL.startsWith(WebInspector.Script.snippetSourceURLPrefix);
     },
 
+    /**
+     * @return {boolean}
+     */
+    isInlineScriptWithSourceURL: function()
+    {
+        return !!this.hasSourceURL && this.isInlineScript()
+    },
+
     __proto__: WebInspector.SDKObject.prototype
 }

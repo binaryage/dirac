@@ -76,7 +76,7 @@ WebInspector.NetworkUISourceCodeProvider.prototype = {
     _parsedScriptSource: function(event)
     {
         var script = /** @type {!WebInspector.Script} */ (event.data);
-        if (!script.sourceURL || script.isInlineScript() || script.isSnippet())
+        if (!script.sourceURL || (script.isInlineScript() && !script.hasSourceURL) || script.isSnippet())
             return;
         // Filter out embedder injected content scripts.
         if (script.isContentScript() && !script.hasSourceURL) {

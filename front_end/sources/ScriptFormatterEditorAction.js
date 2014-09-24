@@ -353,7 +353,7 @@ WebInspector.ScriptFormatterEditorAction.prototype = {
          */
         function isInlineScript(script)
         {
-            return script.isInlineScript();
+            return script.isInlineScript() && !script.hasSourceURL;
         }
 
         if (uiSourceCode.contentType() === WebInspector.resourceTypes.Document) {
