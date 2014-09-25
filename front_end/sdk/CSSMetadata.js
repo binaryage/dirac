@@ -384,7 +384,7 @@ WebInspector.CSSMetadata._propertyDataMap = {
         "over", "under"
     ] },
     "image-rendering": { values: [
-        "auto", "optimizeSpeed", "optimizeQuality", "pixelated"
+        "auto", "optimizeSpeed", "optimizeQuality"
     ] },
     "alignment-baseline": { values: [
         "baseline", "middle", "auto", "before-edge", "after-edge", "central", "text-before-edge", "text-after-edge",
