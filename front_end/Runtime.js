@@ -47,7 +47,8 @@ function loadResource(url)
         console.error(url + " -> " + new Error().stack);
         throw e;
     }
-    return xhr.responseText;
+    // xhr.status === 0 if loading from bundle.
+    return xhr.status < 400 ? xhr.responseText : "";
 }
 
 
@@ -95,8 +96,10 @@ function loadScript(scriptName)
         return;
     _loadedScripts[sourceURL] = true;
     var scriptSource = loadResource(sourceURL);
-    if (!scriptSource)
-        throw "empty response arrived for script '" + sourceURL + "'";
+    if (!scriptSource) {
+        console.error("Empty response arrived for script '" + sourceURL + "'");
+        return;
+    }
     var oldPrefix = self._importScriptPathPrefix;
     self._importScriptPathPrefix += scriptName.substring(0, scriptName.lastIndexOf("/") + 1);
     try {
