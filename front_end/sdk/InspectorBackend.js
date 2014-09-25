@@ -174,15 +174,6 @@ InspectorBackendClass.prototype = {
     },
 
     /**
-     * @param {string} domain
-     * @param {!Object} dispatcher
-     */
-    registerDomainDispatcher: function(domain, dispatcher)
-    {
-        this._connection.registerDispatcher(domain, dispatcher);
-    },
-
-    /**
      * @param {string} jsonUrl
      */
     loadFromJSONIfNeeded: function(jsonUrl)
@@ -324,8 +315,6 @@ InspectorBackendClass._generateCommands = function(schema) {
             }
             result.push("InspectorBackend.registerEvent(\"" + domain.domain + "." + event.name + "\", [" + paramsText.join(", ") + "]);");
         }
-
-        result.push("InspectorBackend.register" + domain.domain + "Dispatcher = InspectorBackend.registerDomainDispatcher.bind(InspectorBackend, \"" + domain.domain + "\");");
     }
     return result.join("\n");
 }

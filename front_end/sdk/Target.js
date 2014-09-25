@@ -137,7 +137,7 @@ WebInspector.Target.prototype = {
             WebInspector.workerManager = this.workerManager;
 
         if (this.hasCapability(WebInspector.Target.Capabilities.CanProfilePower))
-            WebInspector.powerProfiler = new WebInspector.PowerProfiler();
+            WebInspector.powerProfiler = new WebInspector.PowerProfiler(this);
 
         /** @type {!WebInspector.TimelineManager} */
         this.timelineManager = new WebInspector.TimelineManager(this);

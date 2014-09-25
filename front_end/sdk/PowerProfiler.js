@@ -5,12 +5,15 @@
 /**
  * @constructor
  * @extends {WebInspector.Object}
+ * @param {!WebInspector.Target} target
  */
-WebInspector.PowerProfiler = function()
+WebInspector.PowerProfiler = function(target)
 {
     WebInspector.Object.call(this);
     this._dispatcher = new WebInspector.PowerDispatcher(this);
-    PowerAgent.getAccuracyLevel(this._onAccuracyLevel.bind(this));
+    this._target = target;
+    target.registerPowerDispatcher(this._dispatcher);
+    target.powerAgent().getAccuracyLevel(this._onAccuracyLevel.bind(this));
 }
 
 WebInspector.PowerProfiler.EventTypes = {
@@ -18,15 +21,14 @@ WebInspector.PowerProfiler.EventTypes = {
 }
 
 WebInspector.PowerProfiler.prototype = {
-
     startProfile: function ()
     {
-        PowerAgent.start();
+        this._target.powerAgent().start();
     },
 
     stopProfile: function ()
     {
-        PowerAgent.end();
+        this._target.powerAgent().end();
     },
 
     /**
@@ -56,7 +58,6 @@ WebInspector.PowerProfiler.prototype = {
 WebInspector.PowerDispatcher = function(profiler)
 {
     this._profiler = profiler;
-    InspectorBackend.registerPowerDispatcher(this);
 }
 
 WebInspector.PowerDispatcher.prototype = {

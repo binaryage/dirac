@@ -340,7 +340,7 @@ WebInspector.Main.prototype = {
 
         WebInspector.workerTargetManager = new WebInspector.WorkerTargetManager(mainTarget, WebInspector.targetManager);
 
-        InspectorBackend.registerInspectorDispatcher(this);
+        mainTarget.registerInspectorDispatcher(this);
 
         if (WebInspector.isWorkerFrontend()) {
             mainTarget.runtimeAgent().run();

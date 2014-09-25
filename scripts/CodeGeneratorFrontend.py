@@ -188,7 +188,6 @@ class Generator:
             domain_name_lower = domain_name.lower()
 
             Generator.backend_js_domain_initializer_list.append("// %s.\n" % domain_name)
-            Generator.backend_js_domain_initializer_list.append("InspectorBackend.register%sDispatcher = InspectorBackend.registerDomainDispatcher.bind(InspectorBackend, \"%s\");\n" % (domain_name, domain_name))
 
             if "types" in json_domain:
                 for json_type in json_domain["types"]:

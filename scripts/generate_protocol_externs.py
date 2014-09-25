@@ -184,8 +184,6 @@ Protocol.Error;
                             output_file.write(" * @param {%s} %s\n" % (param_type(domain_name, param), param["name"]))
                     output_file.write(" */\n")
                 output_file.write("%sAgent.Dispatcher.prototype.%s = function(%s) {};\n" % (domain_name, event["name"], ", ".join(params)))
-        output_file.write("/**\n * @param {%sAgent.Dispatcher} dispatcher\n */\n" % domain_name)
-        output_file.write("InspectorBackend.register%sDispatcher = function(dispatcher) {}\n" % domain_name)
 
     output_file.write("\n/** @constructor\n * @param {!Object.<string, !Object>} agentsMap\n */\n")
     output_file.write("Protocol.Agents = function(agentsMap){this._agentsMap;};\n")

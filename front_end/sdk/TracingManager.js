@@ -48,7 +48,7 @@ WebInspector.TracingManager.prototype = {
         if (this._target)
             return;
         this._target = target;
-        InspectorBackend.registerTracingDispatcher(new WebInspector.TracingDispatcher(this));
+        target.registerTracingDispatcher(new WebInspector.TracingDispatcher(this));
     },
 
     /**
