@@ -365,8 +365,7 @@ WebInspector.TimelinePanel.prototype = {
                                                                           WebInspector.UIString("Capture power information")));
             this._capturePowerSetting.addChangeListener(this._onModeChanged, this);
         }
-        if (Runtime.experiments.isEnabled("timelineOnTraceEvents") &&
-            Runtime.experiments.isEnabled("paintProfiler")) {
+        if (Runtime.experiments.isEnabled("timelineOnTraceEvents")) {
             this._captureLayersAndPicturesSetting = WebInspector.settings.createSetting("timelineCaptureLayersAndPictures", false);
             panelStatusBarElement.appendChild(this._createSettingCheckbox(WebInspector.UIString("Paint"),
                                                                           this._captureLayersAndPicturesSetting,
@@ -979,8 +978,8 @@ WebInspector.TimelinePanel.prototype = {
             break;
         case WebInspector.TimelineSelection.Type.Frame:
             var frame = /** @type {!WebInspector.TimelineFrame} */ (this._selection.object());
-            this.showInDetails(WebInspector.UIString("Frame Statistics"), WebInspector.TimelineUIUtils.generateDetailsContentForFrame(this._lazyFrameModel, frame));
-            if (frame.layerTree && Runtime.experiments.isEnabled("paintProfiler")) {
+            this.showInDetails(WebInspector.UIString("Frame"), WebInspector.TimelineUIUtils.generateDetailsContentForFrame(this._lazyFrameModel, frame));
+            if (frame.layerTree) {
                 var layersView = this._layersView();
                 layersView.showLayerTree(frame.layerTree, frame.paints);
                 this._detailsView.appendTab("layers", WebInspector.UIString("Layers"), layersView);
@@ -997,7 +996,7 @@ WebInspector.TimelinePanel.prototype = {
     {
         var title = WebInspector.TracingTimelineUIUtils.eventStyle(event).title;
         this.showInDetails(title, content);
-        if (!event.picture || !Runtime.experiments.isEnabled("paintProfiler"))
+        if (!event.picture)
             return;
         var paintProfilerView = this._paintProfilerView();
         this._detailsView.appendTab("paintProfiler", WebInspector.UIString("Paint Profiler"), paintProfilerView);

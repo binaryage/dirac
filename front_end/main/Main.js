@@ -189,7 +189,6 @@ WebInspector.Main.prototype = {
         Runtime.experiments.register("fileSystemInspection", "FileSystem inspection");
         Runtime.experiments.register("gpuTimeline", "GPU data on timeline", true);
         Runtime.experiments.register("layersPanel", "Layers panel");
-        Runtime.experiments.register("paintProfiler", "Paint profiler");
         Runtime.experiments.register("promiseTracker", "Enable Promise inspection", true);
         Runtime.experiments.register("suggestUsingWorkspace", "Suggest using workspace", true);
         Runtime.experiments.register("timelineOnTraceEvents", "Timeline on trace events");
