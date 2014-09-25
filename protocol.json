@@ -3457,6 +3457,18 @@
                 ],
                 "hidden": true,
                 "description": "Returns detailed information about all <code>Promise</code>s that were created or updated after the <code>enablePromiseTracker</code> command, and have not been garbage collected yet."
+            },
+            {
+                "name": "getPromiseById",
+                "parameters": [
+                    { "name": "promiseId", "type": "integer" },
+                    { "name": "objectGroup", "type": "string", "optional": true, "description": "Symbolic group name that can be used to release multiple objects." }
+                ],
+                "returns": [
+                    { "name": "promise", "$ref": "Runtime.RemoteObject", "description": "Object wrapper for <code>Promise</code> with specified ID, if any." }
+                ],
+                "hidden": true,
+                "description": "Returns <code>Promise</code> with specified ID."
             }
         ],
         "events": [
