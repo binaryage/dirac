@@ -225,10 +225,9 @@
 
 .CodeMirror .text-editor-line-decoration-wave {
   position: absolute;
-  border-top-width: 3px;
   top: -2px;
   cursor: pointer;
-  height: 8px;
+  height: 4px;
 }
 
 .text-editor-messages-description-container {
@@ -274,6 +273,7 @@
 .CodeMirror .text-editor-line-decoration-wave {
   background-image: url(Images/errorWave.png);
   background-repeat: repeat-x;
+  background-size: contain;
 }
 
 @media (-webkit-min-device-pixel-ratio: 1.5) {

@@ -856,7 +856,9 @@ WebInspector.SourceFrame.RowMessageBucket.prototype = {
         var base = this._textEditor.cursorPositionToCoordinates(lineNumber, 0);
         var start = this._textEditor.cursorPositionToCoordinates(lineNumber, lineIndent);
         var end = this._textEditor.cursorPositionToCoordinates(lineNumber, lineText.length);
-        this._wave.style.left = (start.x - base.x) + "px";
+        /** @const */
+        var codeMirrorLinesLeftPadding = 4;
+        this._wave.style.left = (start.x - base.x + codeMirrorLinesLeftPadding) + "px";
         this._wave.style.width = (end.x - start.x) + "px";
     },
 
