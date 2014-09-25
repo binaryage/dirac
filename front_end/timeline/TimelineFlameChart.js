@@ -197,7 +197,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
     _appendThreadTimelineData: function(threadTitle, syncEvents, asyncEvents)
     {
         var levelCount = this._appendAsyncEvents(threadTitle, asyncEvents);
-        if (WebInspector.experimentsSettings.timelineJSCPUProfile.isEnabled()) {
+        if (Runtime.experiments.isEnabled("timelineJSCPUProfile")) {
             if (this._captureStacksSetting.get()) {
                 var jsFrameEvents = this._generateJSFrameEvents(syncEvents);
                 syncEvents = jsFrameEvents.mergeOrdered(syncEvents, WebInspector.TracingModel.Event.orderedCompareStartTime);

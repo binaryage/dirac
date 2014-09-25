@@ -948,7 +948,7 @@ WebInspector.DOMModel = function(target) {
     this._defaultHighlighter = new WebInspector.DefaultDOMNodeHighlighter(this._agent);
     this._highlighter = this._defaultHighlighter;
 
-    if (WebInspector.experimentsSettings.disableAgentsWhenProfile.isEnabled())
+    if (Runtime.experiments.isEnabled("disableAgentsWhenProfile"))
         WebInspector.profilingLock().addEventListener(WebInspector.Lock.Events.StateChanged, this._profilingStateChanged, this);
 
     this._agent.enable();

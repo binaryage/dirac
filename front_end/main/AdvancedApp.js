@@ -206,7 +206,7 @@ WebInspector.AdvancedApp.prototype = {
  */
 WebInspector.AdvancedApp.DeviceCounter = function()
 {
-    if (!WebInspector.experimentsSettings.devicesPanel.isEnabled() || !(WebInspector.app instanceof WebInspector.AdvancedApp)) {
+    if (!Runtime.experiments.isEnabled("devicesPanel") || !(WebInspector.app instanceof WebInspector.AdvancedApp)) {
         this._counter = null;
         return;
     }

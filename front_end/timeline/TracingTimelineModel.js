@@ -135,7 +135,7 @@ WebInspector.TracingTimelineModel.prototype = {
         ];
         if (captureStacks) {
             categoriesArray.push(disabledByDefault("devtools.timeline.stack"));
-            if (WebInspector.experimentsSettings.timelineJSCPUProfile.isEnabled()) {
+            if (Runtime.experiments.isEnabled("timelineJSCPUProfile")) {
                 this._jsProfilerStarted = true;
                 this._currentTarget = WebInspector.context.flavor(WebInspector.Target);
                 this._configureCpuProfilerSamplingInterval();

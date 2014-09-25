@@ -203,7 +203,7 @@ WebInspector.ExtensionServer.prototype = {
 
     _onApplyStyleSheet: function(message)
     {
-        if (!WebInspector.experimentsSettings.applyCustomStylesheet.isEnabled())
+        if (!Runtime.experiments.isEnabled("applyCustomStylesheet"))
             return;
         var styleSheet = document.createElement("style");
         styleSheet.textContent = message.styleSheet;

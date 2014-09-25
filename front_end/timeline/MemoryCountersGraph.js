@@ -45,7 +45,7 @@ WebInspector.MemoryCountersGraph = function(delegate, model, uiUtils)
     this._countersByName["documents"] = this.createCounter(WebInspector.UIString("Documents"), WebInspector.UIString("Documents: %d"), "hsl(0, 90%, 43%)");
     this._countersByName["nodes"] = this.createCounter(WebInspector.UIString("Nodes"), WebInspector.UIString("Nodes: %d"), "hsl(120, 90%, 43%)");
     this._countersByName["jsEventListeners"] = this.createCounter(WebInspector.UIString("Listeners"), WebInspector.UIString("Listeners: %d"), "hsl(38, 90%, 43%)");
-    if (WebInspector.experimentsSettings.gpuTimeline.isEnabled()) {
+    if (Runtime.experiments.isEnabled("gpuTimeline")) {
         this._gpuMemoryCounter = this.createCounter(WebInspector.UIString("GPU Memory"), WebInspector.UIString("GPU Memory [KB]: %d"), "hsl(300, 90%, 43%)");
         this._countersByName["gpuMemoryUsedKB"] = this._gpuMemoryCounter;
     }

@@ -172,10 +172,30 @@ WebInspector.Main.prototype = {
     _createSettings: function()
     {
         WebInspector.settings = new WebInspector.Settings();
-        WebInspector.experimentsSettings = new WebInspector.ExperimentsSettings(Runtime.queryParam("experiments") !== null);
+        this._initializeExperiments();
         // This setting is needed for backwards compatibility with Devtools CodeSchool extension. DO NOT REMOVE
         WebInspector.settings.pauseOnExceptionStateString = new WebInspector.PauseOnExceptionStateSetting();
         new WebInspector.VersionController().updateVersion();
+    },
+
+    _initializeExperiments: function()
+    {
+        Runtime.experiments.register("applyCustomStylesheet", "Allow custom UI themes");
+        Runtime.experiments.register("canvasInspection", "Canvas inspection");
+        Runtime.experiments.register("devicesPanel", "Devices panel");
+        Runtime.experiments.register("disableAgentsWhenProfile", "Disable other agents and UI when profiler is active", true);
+        Runtime.experiments.register("dockToLeft", "Dock to left", true);
+        Runtime.experiments.register("documentation", "JavaScript documentation", true);
+        Runtime.experiments.register("fileSystemInspection", "FileSystem inspection");
+        Runtime.experiments.register("gpuTimeline", "GPU data on timeline", true);
+        Runtime.experiments.register("layersPanel", "Layers panel");
+        Runtime.experiments.register("paintProfiler", "Paint profiler");
+        Runtime.experiments.register("promiseTracker", "Enable Promise inspection", true);
+        Runtime.experiments.register("suggestUsingWorkspace", "Suggest using workspace", true);
+        Runtime.experiments.register("timelineOnTraceEvents", "Timeline on trace events");
+        Runtime.experiments.register("timelinePowerProfiler", "Timeline power profiler");
+        Runtime.experiments.register("timelineJSCPUProfile", "Timeline with JS sampling");
+        Runtime.experiments.cleanUpStaleExperiments();
     },
 
     _createAppUI: function()

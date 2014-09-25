@@ -61,7 +61,7 @@ WebInspector.TimelineView = function(delegate, model, uiUtils)
 
     // Create gpu tasks containers.
     this._cpuBarsElement = this._headerElement.createChild("div", "timeline-utilization-strip");
-    if (WebInspector.experimentsSettings.gpuTimeline.isEnabled())
+    if (Runtime.experiments.isEnabled("gpuTimeline"))
         this._gpuBarsElement = this._headerElement.createChild("div", "timeline-utilization-strip gpu");
 
     this._popoverHelper = new WebInspector.PopoverHelper(this.element, this._getPopoverAnchor.bind(this), this._showPopover.bind(this));
@@ -616,7 +616,7 @@ WebInspector.TimelineView.prototype = {
     _refreshAllUtilizationBars: function()
     {
         this._refreshUtilizationBars(WebInspector.UIString("CPU"), this._model.mainThreadTasks(), this._cpuBarsElement);
-        if (WebInspector.experimentsSettings.gpuTimeline.isEnabled())
+        if (Runtime.experiments.isEnabled("gpuTimeline"))
             this._refreshUtilizationBars(WebInspector.UIString("GPU"), this._model.gpuThreadTasks(), this._gpuBarsElement);
     },
 

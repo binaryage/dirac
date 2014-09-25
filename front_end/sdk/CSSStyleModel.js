@@ -50,7 +50,7 @@ WebInspector.CSSStyleModel = function(target)
     /** @type {!StringMap.<!Object.<!PageAgent.FrameId, !Array.<!CSSAgent.StyleSheetId>>>} */
     this._styleSheetIdsForURL = new StringMap();
 
-    if (WebInspector.experimentsSettings.disableAgentsWhenProfile.isEnabled())
+    if (Runtime.experiments.isEnabled("disableAgentsWhenProfile"))
         WebInspector.profilingLock().addEventListener(WebInspector.Lock.Events.StateChanged, this._profilingStateChanged, this);
 }
 

@@ -69,7 +69,7 @@ WebInspector.TimelineManager.prototype = {
     {
         this._enablementCount++;
         WebInspector.profilingLock().acquire();
-        if (WebInspector.experimentsSettings.timelineJSCPUProfile.isEnabled() && maxCallStackDepth) {
+        if (Runtime.experiments.isEnabled("timelineJSCPUProfile") && maxCallStackDepth) {
             this._configureCpuProfilerSamplingInterval();
             this._jsProfilerStarted = true;
             this.target().profilerAgent().start();

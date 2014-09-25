@@ -74,7 +74,7 @@ WebInspector.SourcesPanel = function(workspaceForTest)
     this._splitView.installResizer(this._debugSidebarResizeWidgetElement);
 
     // FIXME: This is a temporary solution which should be removed as soon as the documentation module is released from experiment.
-    if (WebInspector.experimentsSettings.isEnabled("documentation"))
+    if (Runtime.experiments.isEnabled("documentation"))
         self.runtime.loadModule("documentation");
 
     this.sidebarPanes = {};
@@ -482,7 +482,7 @@ WebInspector.SourcesPanel.prototype = {
     {
         var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (event.data);
         this._editorChanged(uiSourceCode);
-        if (WebInspector.experimentsSettings.suggestUsingWorkspace.isEnabled()) {
+        if (Runtime.experiments.isEnabled("suggestUsingWorkspace")) {
             if (this._editorSelectedTimer)
                 clearTimeout(this._editorSelectedTimer);
             this._editorSelectedTimer = setTimeout(this._updateSuggestedMappingInfobar.bind(this, uiSourceCode), 3000);

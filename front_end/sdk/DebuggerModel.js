@@ -171,7 +171,7 @@ WebInspector.DebuggerModel.prototype = {
 
     _profilingStateChanged: function()
     {
-        if (WebInspector.experimentsSettings.disableAgentsWhenProfile.isEnabled()) {
+        if (Runtime.experiments.isEnabled("disableAgentsWhenProfile")) {
             if (WebInspector.profilingLock().isAcquired())
                 this.disableDebugger();
             else

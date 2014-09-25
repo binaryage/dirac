@@ -230,13 +230,7 @@ Runtime.startWorker = function(moduleName)
 Runtime.startApplication = function(appName)
 {
     console.timeStamp("Runtime.startApplication");
-    var storedValue = self.localStorage && self.localStorage["experiments"] ? self.localStorage["experiments"] : "{}";
-    var experiments = {};
-    try {
-        experiments = JSON.parse(storedValue);
-    } catch (e) {
-        // Retain the {} |experiments| value.
-    }
+    var experiments = Runtime._experimentsSetting();
 
     var allDescriptorsByName = {};
     for (var i = 0; Runtime.isReleaseMode() && i < allDescriptors.length; ++i) {
@@ -294,6 +288,19 @@ Runtime.startApplication = function(appName)
 Runtime.queryParam = function(name)
 {
     return Runtime._queryParamsObject[name] || null;
+}
+
+/**
+ * @return {!Object}
+ */
+Runtime._experimentsSetting = function()
+{
+    try {
+        return /** @type {!Object} */ (JSON.parse(self.localStorage && self.localStorage["experiments"] ? self.localStorage["experiments"] : "{}"));
+    } catch (e) {
+        console.error("Failed to parse localStorage['experiments']");
+        return {};
+    }
 }
 
 /**
@@ -457,6 +464,9 @@ Runtime.prototype = {
         function filter(extension)
         {
             if (extension._type !== type && extension._typeClass() !== type)
+                return false;
+            var activatorExperiment = extension.descriptor()["experiment"];
+            if (activatorExperiment && !Runtime.experiments.isEnabled(activatorExperiment))
                 return false;
             return !context || extension.isApplicable(context);
         }
@@ -745,6 +755,160 @@ Runtime.Extension.prototype = {
     }
 }
 
+/**
+ * @constructor
+ */
+Runtime.ExperimentsSupport = function()
+{
+    this._supportEnabled = Runtime.queryParam("experiments") !== null;
+    this._experiments = [];
+    this._experimentNames = {};
+    this._enabledTransiently = {};
+}
+
+Runtime.ExperimentsSupport.prototype = {
+    /**
+     * @return {!Array.<!Runtime.Experiment>}
+     */
+    allExperiments: function()
+    {
+        return this._experiments.slice();
+    },
+
+    /**
+     * @return {boolean}
+     */
+    supportEnabled: function()
+    {
+        return this._supportEnabled;
+    },
+
+    /**
+     * @param {!Object} value
+     */
+    _setExperimentsSetting: function(value)
+    {
+        if (!self.localStorage)
+            return;
+        self.localStorage["experiments"] = JSON.stringify(value);
+    },
+
+    /**
+     * @param {string} experimentName
+     * @param {string} experimentTitle
+     * @param {boolean=} hidden
+     */
+    register: function(experimentName, experimentTitle, hidden)
+    {
+        console.assert(!this._experimentNames[experimentName], "Duplicate registration of experiment " + experimentName);
+        this._experimentNames[experimentName] = true;
+        this._experiments.push(new Runtime.Experiment(this, experimentName, experimentTitle, !!hidden));
+    },
+
+    /**
+     * @param {string} experimentName
+     * @return {boolean}
+     */
+    isEnabled: function(experimentName)
+    {
+        this._checkExperiment(experimentName);
+
+        if (this._enabledTransiently[experimentName])
+            return true;
+        if (!this.supportEnabled())
+            return false;
+
+        return !!Runtime._experimentsSetting()[experimentName];
+    },
+
+    /**
+     * @param {string} experimentName
+     * @param {boolean} enabled
+     */
+    setEnabled: function(experimentName, enabled)
+    {
+        this._checkExperiment(experimentName);
+        if (!enabled)
+            delete this._enabledTransiently[experimentName];
+        var experimentsSetting = Runtime._experimentsSetting();
+        experimentsSetting[experimentName] = enabled;
+        this._setExperimentsSetting(experimentsSetting);
+    },
+
+    /**
+     * @param {!Array.<string>} experimentNames
+     */
+    setDefaultExperiments: function(experimentNames)
+    {
+        for (var i = 0; i < experimentNames.length; ++i) {
+            this._checkExperiment(experimentNames[i]);
+            this._enabledTransiently[experimentNames[i]] = true;
+        }
+    },
+
+    /**
+     * @param {string} experimentName
+     */
+    enableForTest: function(experimentName)
+    {
+        this._checkExperiment(experimentName);
+        this._enabledTransiently[experimentName] = true;
+    },
+
+    cleanUpStaleExperiments: function()
+    {
+        var experimentsSetting = Runtime._experimentsSetting();
+        var cleanedUpExperimentSetting = {};
+        for (var i = 0; i < this._experiments.length; ++i) {
+            var experimentName = this._experiments[i].name;
+            if (experimentsSetting[experimentName])
+                cleanedUpExperimentSetting[experimentName] = true;
+        }
+        this._setExperimentsSetting(cleanedUpExperimentSetting);
+    },
+
+    /**
+     * @param {string} experimentName
+     */
+    _checkExperiment: function(experimentName)
+    {
+        console.assert(this._experimentNames[experimentName], "Unknown experiment " + experimentName);
+    }
+}
+
+/**
+ * @constructor
+ * @param {!Runtime.ExperimentsSupport} experiments
+ * @param {string} name
+ * @param {string} title
+ * @param {boolean} hidden
+ */
+Runtime.Experiment = function(experiments, name, title, hidden)
+{
+    this.name = name;
+    this.title = title;
+    this.hidden = hidden;
+    this._experiments = experiments;
+}
+
+Runtime.Experiment.prototype = {
+    /**
+     * @return {boolean}
+     */
+    isEnabled: function()
+    {
+        return this._experiments.isEnabled(this.name);
+    },
+
+    /**
+     * @param {boolean} enabled
+     */
+    setEnabled: function(enabled)
+    {
+        this._experiments.setEnabled(this.name, enabled);
+    }
+}
+
 {(function parseQueryParameters()
 {
     var queryParams = location.search;
@@ -768,6 +932,9 @@ Runtime.Extension.prototype = {
         }
     }
 })();}
+
+// This must be constructed after the query parameters have been parsed.
+Runtime.experiments = new Runtime.ExperimentsSupport();
 
 /** @type {!Runtime} */
 var runtime;

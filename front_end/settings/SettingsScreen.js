@@ -49,7 +49,7 @@ WebInspector.SettingsScreen = function(onHide)
     this._tabbedPane.element.appendChild(this._createCloseButton());
     this._tabbedPane.appendTab(WebInspector.SettingsScreen.Tabs.General, WebInspector.UIString("General"), new WebInspector.GenericSettingsTab());
     this._tabbedPane.appendTab(WebInspector.SettingsScreen.Tabs.Workspace, WebInspector.UIString("Workspace"), new WebInspector.WorkspaceSettingsTab());
-    if (WebInspector.experimentsSettings.experimentsEnabled)
+    if (Runtime.experiments.supportEnabled())
         this._tabbedPane.appendTab(WebInspector.SettingsScreen.Tabs.Experiments, WebInspector.UIString("Experiments"), new WebInspector.ExperimentsSettingsTab());
     this._tabbedPane.appendTab(WebInspector.SettingsScreen.Tabs.Shortcuts, WebInspector.UIString("Shortcuts"), WebInspector.shortcutsScreen.createShortcutsTabView());
     this._tabbedPane.shrinkableTabs = false;
@@ -285,7 +285,7 @@ WebInspector.GenericSettingsTab.prototype = {
         {
             var descriptor = extension.descriptor();
             var experimentName = descriptor["experiment"];
-            if (experimentName && (!WebInspector.experimentsSettings[experimentName] || !WebInspector.experimentsSettings[experimentName].isEnabled()))
+            if (experimentName && !Runtime.experiments.isEnabled(experimentName))
                 return;
 
             var settingName = descriptor["settingName"];
@@ -561,7 +561,7 @@ WebInspector.ExperimentsSettingsTab = function()
 {
     WebInspector.SettingsTab.call(this, WebInspector.UIString("Experiments"), "experiments-tab-content");
 
-    var experiments = WebInspector.experimentsSettings.experiments;
+    var experiments = Runtime.experiments.allExperiments();
     if (experiments.length) {
         var experimentsSection = this._appendSection();
         experimentsSection.appendChild(this._createExperimentsWarningSubsection());

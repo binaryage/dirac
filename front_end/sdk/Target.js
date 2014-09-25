@@ -26,10 +26,10 @@ WebInspector.Target = function(name, connection, callback)
     this._capabilities = {};
     this.pageAgent().canScreencast(this._initializeCapability.bind(this, WebInspector.Target.Capabilities.CanScreencast, null));
     this.pageAgent().canEmulate(this._initializeCapability.bind(this, WebInspector.Target.Capabilities.CanEmulate, null));
-    if (WebInspector.experimentsSettings.timelinePowerProfiler.isEnabled())
+    if (Runtime.experiments.isEnabled("timelinePowerProfiler"))
         this.powerAgent().canProfilePower(this._initializeCapability.bind(this, WebInspector.Target.Capabilities.CanProfilePower, null));
     this.workerAgent().canInspectWorkers(this._initializeCapability.bind(this, WebInspector.Target.Capabilities.CanInspectWorkers, this._loadedWithCapabilities.bind(this, callback)));
-    if (WebInspector.experimentsSettings.timelineOnTraceEvents.isEnabled())
+    if (Runtime.experiments.isEnabled("timelineOnTraceEvents"))
         this.consoleAgent().setTracingBasedTimeline(true);
 }
 

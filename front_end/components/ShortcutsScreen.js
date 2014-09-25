@@ -290,7 +290,7 @@ WebInspector.ShortcutsScreen.registerShortcuts = function()
     section.addAlternateKeys(WebInspector.ShortcutsScreen.ProfilesPanelShortcuts.StartStopRecording, WebInspector.UIString("Start/stop recording"));
 
     // Layers panel
-    if (WebInspector.experimentsSettings.isEnabled("layersPanel")) {
+    if (Runtime.experiments.isEnabled("layersPanel")) {
         section = WebInspector.shortcutsScreen.section(WebInspector.UIString("Layers Panel"));
         section.addAlternateKeys(WebInspector.ShortcutsScreen.LayersPanelShortcuts.ResetView, WebInspector.UIString("Reset view"));
         section.addAlternateKeys(WebInspector.ShortcutsScreen.LayersPanelShortcuts.PanMode, WebInspector.UIString("Switch to pan mode"));
