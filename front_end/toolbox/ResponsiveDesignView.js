@@ -61,6 +61,7 @@ WebInspector.ResponsiveDesignView = function(inspectedPagePlaceholder)
 
     this._pageScaleLabel = this._pageScaleContainer.createChild("label", "responsive-design-page-scale-label");
     this._pageScaleLabel.title = WebInspector.UIString("For a simpler way to change the current page scale, hold down Shift and drag with your mouse.");
+    this._pageScaleLabel.addEventListener("dblclick", this._resetPageScale.bind(this), false);
 
     this._increasePageScaleButton = new WebInspector.StatusBarButton(WebInspector.UIString(""), "responsive-design-page-scale-button responsive-design-page-scale-increase");
     this._increasePageScaleButton.element.tabIndex = -1;
@@ -738,6 +739,22 @@ WebInspector.ResponsiveDesignView.prototype = {
                 value = Math.max(this._viewport.minimumPageScaleFactor, value)
                 this._target.pageAgent().setPageScaleFactor(value);
             }
+            finishCallback();
+        }
+    },
+
+    _resetPageScale: function()
+    {
+        this._pageScaleFactorThrottler.schedule(updatePageScaleFactor.bind(this));
+
+        /**
+         * @param {!WebInspector.Throttler.FinishCallback} finishCallback
+         * @this {WebInspector.ResponsiveDesignView}
+         */
+        function updatePageScaleFactor(finishCallback)
+        {
+            if (this._target && this._viewport && this._viewport.minimumPageScaleFactor <= 1 && this._viewport.maximumPageScaleFactor >= 1)
+                this._target.pageAgent().setPageScaleFactor(1);
             finishCallback();
         }
     },
