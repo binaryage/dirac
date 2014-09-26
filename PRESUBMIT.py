@@ -38,9 +38,16 @@ import sys
 
 
 def _CompileDevtoolsFrontend(input_api, output_api):
+    # FIXME: Make this run on other platforms as well.
     if not input_api.platform.startswith('linux'):
         return []
     local_paths = [f.LocalPath() for f in input_api.AffectedFiles()]
+
+    # FIXME: The compilation does not actually run if injected script-related files
+    # have changed, as they reside in core/inspector, which is not affected
+    # by this presubmit.
+    # Once this is fixed, InjectedScriptHost.idl and JavaScriptCallFrame.idl
+    # should be added to the list of triggers.
     if (any("devtools/front_end" in path for path in local_paths) or
         any("protocol.json" in path for path in local_paths) or
         any("InjectedScriptSource.js" in path for path in local_paths) or

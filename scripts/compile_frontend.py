@@ -30,6 +30,7 @@
 from modular_build import read_file, write_file
 import os
 import os.path as path
+import generate_injected_script_externs
 import generate_protocol_externs
 import modular_build
 import re
@@ -51,6 +52,10 @@ protocol_externs_file = path.join(devtools_frontend_path, 'protocol_externs.js')
 webgl_rendering_context_idl_path = path.join(path.dirname(devtools_path), 'core', 'html', 'canvas', 'WebGLRenderingContextBase.idl')
 injected_script_source_name = path.join(inspector_path, 'InjectedScriptSource.js')
 canvas_injected_script_source_name = path.join(inspector_path, 'InjectedScriptCanvasModuleSource.js')
+injected_script_externs_idl_names = [
+    path.join(inspector_path, 'InjectedScriptHost.idl'),
+    path.join(inspector_path, 'JavaScriptCallFrame.idl'),
+]
 closure_compiler_jar = path.join(scripts_path, 'closure', 'compiler.jar')
 closure_runner_jar = path.join(scripts_path, 'compiler-runner', 'closure-runner.jar')
 jsdoc_validator_jar = path.join(scripts_path, 'jsdoc-validator', 'jsdoc-validator.jar')
@@ -231,8 +236,6 @@ print 'Compiling frontend...'
 
 compiler_args_file = tempfile.NamedTemporaryFile(mode='wt', delete=False)
 try:
-    closure_runner_command = '%s -jar %s --compiler-args-file %s' % (java_exec, closure_runner_jar, compiler_args_file.name)
-
     for name in descriptors.sorted_modules():
         closure_args = common_closure_args
         closure_args += ' --externs ' + global_externs_file
@@ -243,6 +246,7 @@ try:
 finally:
     compiler_args_file.close()
 
+closure_runner_command = '%s -jar %s --compiler-args-file %s' % (java_exec, closure_runner_jar, compiler_args_file.name)
 modular_compiler_proc = run_in_shell(closure_runner_command)
 
 
@@ -271,8 +275,14 @@ unclosure_injected_script(injected_script_source_name, injectedScriptSourceTmpFi
 unclosure_injected_script(canvas_injected_script_source_name, injectedScriptCanvasModuleSourceTmpFile)
 
 print 'Compiling InjectedScriptSource.js and InjectedScriptCanvasModuleSource.js...'
+injected_script_externs_file = tempfile.NamedTemporaryFile(mode='wt', delete=False)
+try:
+    generate_injected_script_externs.generate_injected_script_externs(injected_script_externs_idl_names, injected_script_externs_file)
+finally:
+    injected_script_externs_file.close()
+
 command = spawned_compiler_command
-command += '    --externs ' + path.join(inspector_path, 'InjectedScriptExterns.js') + ' \\\n'
+command += '    --externs ' + injected_script_externs_file.name + ' \\\n'
 command += '    --externs ' + protocol_externs_file + ' \\\n'
 command += '    --module ' + jsmodule_name_prefix + 'injected_script' + ':1' + ' \\\n'
 command += '        --js ' + injectedScriptSourceTmpFile + ' \\\n'
@@ -371,5 +381,6 @@ if errors_found:
 os.remove(injectedScriptSourceTmpFile)
 os.remove(injectedScriptCanvasModuleSourceTmpFile)
 os.remove(compiler_args_file.name)
+os.remove(injected_script_externs_file.name)
 os.remove(protocol_externs_file)
 shutil.rmtree(modules_dir, True)
