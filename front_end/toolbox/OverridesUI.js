@@ -204,9 +204,10 @@ WebInspector.OverridesUI.createNetworkConditionsSelect = function(document)
     {
         var conditions = networkConditionsSetting.get();
         var presetIndex = presets.length - 1;
+        var kbps = 1024 / 8;
         for (var i = 0; i < presets.length; ++i) {
-            if (presets[i].throughput === conditions.throughput && presets[i].latency === conditions.latency) {
-                conditionsSelectElement.selectedIndex = i;
+            if (presets[i].throughput === conditions.throughput / kbps && presets[i].latency === conditions.latency) {
+                presetIndex = i;
                 break;
             }
         }
