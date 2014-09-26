@@ -238,6 +238,7 @@ WebInspector.Main.prototype = {
         WebInspector.fileSystemWorkspaceBinding = new WebInspector.FileSystemWorkspaceBinding(WebInspector.isolatedFileSystemManager, WebInspector.workspace);
         WebInspector.breakpointManager = new WebInspector.BreakpointManager(WebInspector.settings.breakpoints, WebInspector.workspace, WebInspector.targetManager, WebInspector.debuggerWorkspaceBinding);
         WebInspector.scriptSnippetModel = new WebInspector.ScriptSnippetModel(WebInspector.workspace);
+        new WebInspector.ContentScriptProjectDecorator();
         new WebInspector.ExecutionContextSelector();
 
         var autoselectPanel = WebInspector.UIString("a panel chosen automatically");

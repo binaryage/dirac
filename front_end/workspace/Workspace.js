@@ -95,6 +95,11 @@ WebInspector.ProjectDelegate.prototype = {
     displayName: function() { },
 
     /**
+     * @return {string}
+     */
+    url: function() { },
+
+    /**
      * @param {string} path
      * @param {function(?Date, ?number)} callback
      */
@@ -215,10 +220,11 @@ WebInspector.ProjectStore.prototype = {
 }
 
 /**
+ * @constructor
+ * @extends {WebInspector.Object}
  * @param {!WebInspector.Workspace} workspace
  * @param {string} projectId
  * @param {!WebInspector.ProjectDelegate} projectDelegate
- * @constructor
  */
 WebInspector.Project = function(workspace, projectId, projectDelegate)
 {
@@ -229,8 +235,16 @@ WebInspector.Project = function(workspace, projectId, projectDelegate)
     this._workspace = workspace;
     this._projectId = projectId;
     this._projectDelegate = projectDelegate;
+    this._url = this._projectDelegate.url();
     this._displayName = this._projectDelegate.displayName();
 }
+
+/**
+ * @enum {string}
+ */
+WebInspector.Project.Events = {
+    DisplayNameUpdated: "DisplayNameUpdated"
+};
 
 WebInspector.Project.prototype = {
     /**
@@ -255,6 +269,25 @@ WebInspector.Project.prototype = {
     displayName: function()
     {
         return this._displayName;
+    },
+
+    /**
+     * @param {string} displayName
+     */
+    setDisplayName: function(displayName)
+    {
+        if (this._displayName === displayName)
+            return;
+        this._displayName = displayName;
+        this.dispatchEventToListeners(WebInspector.Project.Events.DisplayNameUpdated);
+    },
+
+    /**
+     * @return {string}
+     */
+    url: function()
+    {
+        return this._url;
     },
 
     /**
@@ -519,7 +552,9 @@ WebInspector.Project.prototype = {
     indexContent: function(progress)
     {
         this._projectDelegate.indexContent(progress);
-    }
+    },
+
+    __proto__: WebInspector.Object.prototype
 }
 
 /**
@@ -553,6 +588,7 @@ WebInspector.Workspace.Events = {
     UISourceCodeAdded: "UISourceCodeAdded",
     UISourceCodeRemoved: "UISourceCodeRemoved",
     UISourceCodeContentCommitted: "UISourceCodeContentCommitted",
+    ProjectAdded: "ProjectAdded",
     ProjectRemoved: "ProjectRemoved"
 }
 
@@ -622,6 +658,7 @@ WebInspector.Workspace.prototype = {
         var project = new WebInspector.Project(this, projectId, projectDelegate);
         this._projects[projectId] = project;
         var projectStore = new WebInspector.ProjectStore(project);
+        this.dispatchEventToListeners(WebInspector.Workspace.Events.ProjectAdded, project);
         return projectStore;
     },
 

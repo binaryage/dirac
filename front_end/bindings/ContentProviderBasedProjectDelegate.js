@@ -64,6 +64,15 @@ WebInspector.ContentProviderBasedProjectDelegate.prototype = {
     },
 
     /**
+     * @return {string}
+     */
+    url: function()
+    {
+        // Overriddden by subclasses
+        return "";
+    },
+
+    /**
      * @param {string} path
      * @param {function(?Date, ?number)} callback
      */

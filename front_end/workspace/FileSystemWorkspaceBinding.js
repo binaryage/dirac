@@ -241,6 +241,15 @@ WebInspector.FileSystemWorkspaceBinding.FileSystem.prototype = {
     },
 
     /**
+     * @return {string}
+     */
+    url: function()
+    {
+        // Overriddden by subclasses
+        return "";
+    },
+
+    /**
      * @param {string} path
      * @return {string}
      */

@@ -76,6 +76,14 @@ WebInspector.NetworkProjectDelegate.prototype = {
     },
 
     /**
+     * @return {string}
+     */
+    url: function()
+    {
+        return this._name;
+    },
+
+    /**
      * @param {string} parentPath
      * @param {string} name
      * @param {string} url
