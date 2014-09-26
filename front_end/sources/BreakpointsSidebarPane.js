@@ -37,14 +37,10 @@ WebInspector.JavaScriptBreakpointsSidebarPane = function(breakpointManager, show
     this._breakpointManager = breakpointManager;
     this._showSourceLineDelegate = showSourceLineDelegate;
 
-    this.listElement = document.createElement("ol");
-    this.listElement.className = "breakpoint-list";
+    this.listElement = document.createElementWithClass("ol", "breakpoint-list");
 
-    this.emptyElement = document.createElement("div");
-    this.emptyElement.className = "info";
+    this.emptyElement = this.bodyElement.createChild("div", "info");
     this.emptyElement.textContent = WebInspector.UIString("No Breakpoints");
-
-    this.bodyElement.appendChild(this.emptyElement);
 
     this._items = new Map();
 
@@ -96,24 +92,18 @@ WebInspector.JavaScriptBreakpointsSidebarPane.prototype = {
      */
     _addBreakpoint: function(breakpoint, uiLocation)
     {
-        var element = document.createElement("li");
-        element.classList.add("cursor-pointer");
+        var element = document.createElementWithClass("li", "cursor-pointer");
         element.addEventListener("contextmenu", this._breakpointContextMenu.bind(this, breakpoint), true);
         element.addEventListener("click", this._breakpointClicked.bind(this, uiLocation), false);
 
-        var checkbox = document.createElement("input");
-        checkbox.className = "checkbox-elem";
+        var checkbox = element.createChild("input", "checkbox-elem");
         checkbox.type = "checkbox";
         checkbox.checked = breakpoint.enabled();
         checkbox.addEventListener("click", this._breakpointCheckboxClicked.bind(this, breakpoint), false);
-        element.appendChild(checkbox);
 
-        var labelElement = document.createTextNode(uiLocation.linkText());
-        element.appendChild(labelElement);
+        element.createTextChild(uiLocation.linkText());
 
-        var snippetElement = document.createElement("div");
-        snippetElement.className = "source-text monospace";
-        element.appendChild(snippetElement);
+        var snippetElement = element.createChild("div", "source-text monospace");
 
         /**
          * @param {?string} content
@@ -142,9 +132,7 @@ WebInspector.JavaScriptBreakpointsSidebarPane.prototype = {
         }
         this._addListElement(element, currentElement);
 
-        var breakpointItem = {};
-        breakpointItem.element = element;
-        breakpointItem.checkbox = checkbox;
+        var breakpointItem = { element: element, checkbox: checkbox };
         this._items.set(breakpoint, breakpointItem);
 
         this.expand();
@@ -299,11 +287,9 @@ WebInspector.XHRBreakpointsSidebarPane = function()
     // FIXME: Use StringMap.
     this._breakpointElements = { __proto__: null };
 
-    var addButton = document.createElement("button");
-    addButton.className = "pane-title-button add";
-    addButton.addEventListener("click", this._addButtonClicked.bind(this), false);
+    var addButton = this.titleElement.createChild("button", "pane-title-button add");
     addButton.title = WebInspector.UIString("Add XHR breakpoint");
-    this.titleElement.appendChild(addButton);
+    addButton.addEventListener("click", this._addButtonClicked.bind(this), false);
 
     this.emptyElement.addEventListener("contextmenu", this._emptyElementContextMenu.bind(this), true);
 
@@ -338,13 +324,11 @@ WebInspector.XHRBreakpointsSidebarPane.prototype = {
 
         this.expand();
 
-        var inputElementContainer = document.createElement("p");
-        inputElementContainer.className = "breakpoint-condition";
-        var inputElement = document.createElement("span");
+        var inputElementContainer = document.createElementWithClass("p", "breakpoint-condition");
         inputElementContainer.textContent = WebInspector.UIString("Break when URL contains:");
-        inputElement.className = "editing";
+
+        var inputElement = inputElementContainer.createChild("span", "editing");
         inputElement.id = "breakpoint-condition-input";
-        inputElementContainer.appendChild(inputElement);
         this.addListElement(inputElementContainer, /** @type {?Element} */ (this.listElement.firstChild));
 
         /**
@@ -383,22 +367,18 @@ WebInspector.XHRBreakpointsSidebarPane.prototype = {
         element._url = url;
         element.addEventListener("contextmenu", this._contextMenu.bind(this, url), true);
 
-        var checkboxElement = document.createElement("input");
-        checkboxElement.className = "checkbox-elem";
+        var checkboxElement = element.createChild("input", "checkbox-elem");
         checkboxElement.type = "checkbox";
         checkboxElement.checked = enabled;
         checkboxElement.addEventListener("click", this._checkboxClicked.bind(this, url), false);
         element._checkboxElement = checkboxElement;
-        element.appendChild(checkboxElement);
 
-        var labelElement = document.createElement("span");
+        var labelElement = element.createChild("span", "cursor-auto");
         if (!url)
             labelElement.textContent = WebInspector.UIString("Any XHR");
         else
             labelElement.textContent = WebInspector.UIString("URL contains \"%s\"", url);
-        labelElement.classList.add("cursor-auto");
         labelElement.addEventListener("dblclick", this._labelClicked.bind(this, url), false);
-        element.appendChild(labelElement);
 
         var currentElement = /** @type {?Element} */ (this.listElement.firstChild);
         while (currentElement) {
@@ -481,8 +461,7 @@ WebInspector.XHRBreakpointsSidebarPane.prototype = {
     _labelClicked: function(url)
     {
         var element = this._breakpointElements[url];
-        var inputElement = document.createElement("span");
-        inputElement.className = "breakpoint-condition editing";
+        var inputElement = document.createElementWithClass("span", "breakpoint-condition editing");
         inputElement.textContent = url;
         this.listElement.insertBefore(inputElement, element);
         element.classList.add("hidden");
@@ -559,12 +538,9 @@ WebInspector.EventListenerBreakpointsSidebarPane = function()
     WebInspector.SidebarPane.call(this, WebInspector.UIString("Event Listener Breakpoints"));
     this.registerRequiredCSS("breakpointsList.css");
 
-    this.categoriesElement = document.createElement("ol");
+    this.categoriesElement = this.bodyElement.createChild("ol", "properties-tree event-listener-breakpoints");
     this.categoriesElement.tabIndex = 0;
-    this.categoriesElement.classList.add("properties-tree");
-    this.categoriesElement.classList.add("event-listener-breakpoints");
     this.categoriesTreeOutline = new TreeOutline(this.categoriesElement);
-    this.bodyElement.appendChild(this.categoriesElement);
 
     this._categoryItems = [];
     // FIXME: uncomment following once inspector stops being drop targer in major ports.
@@ -580,6 +556,7 @@ WebInspector.EventListenerBreakpointsSidebarPane = function()
     this._createCategory(WebInspector.UIString("Load"), ["load", "beforeunload", "unload", "abort", "error", "hashchange", "popstate"]);
     this._createCategory(WebInspector.UIString("Media"), ["play", "pause", "playing", "canplay", "canplaythrough", "seeking", "seeked", "timeupdate", "ended", "ratechange", "durationchange", "volumechange", "loadstart", "progress", "suspend", "abort", "error", "emptied", "stalled", "loadedmetadata", "loadeddata", "waiting"], false, ["audio", "video"]);
     this._createCategory(WebInspector.UIString("Mouse"), ["click", "dblclick", "mousedown", "mouseup", "mouseover", "mousemove", "mouseout", "mousewheel", "wheel"]);
+    this._createCategory(WebInspector.UIString("Promise"), ["newPromise", "promiseResolved", "promiseRejected"], true);
     this._createCategory(WebInspector.UIString("Timer"), ["setTimer", "clearTimer", "timerFired"], true);
     this._createCategory(WebInspector.UIString("Touch"), ["touchstart", "touchmove", "touchend", "touchcancel"]);
     this._createCategory(WebInspector.UIString("XHR"), ["readystatechange", "load", "loadstart", "loadend", "abort", "error", "progress", "timeout"], false, ["XMLHttpRequest", "XMLHttpRequestUpload"]);
@@ -605,6 +582,9 @@ WebInspector.EventListenerBreakpointsSidebarPane.eventNameForUI = function(event
             "instrumentation:setTimer": WebInspector.UIString("Set Timer"),
             "instrumentation:clearTimer": WebInspector.UIString("Clear Timer"),
             "instrumentation:timerFired": WebInspector.UIString("Timer Fired"),
+            "instrumentation:newPromise": WebInspector.UIString("Promise Created"),
+            "instrumentation:promiseResolved": WebInspector.UIString("Promise Resolved"),
+            "instrumentation:promiseRejected": WebInspector.UIString("Promise Rejected"),
             "instrumentation:requestAnimationFrame": WebInspector.UIString("Request Animation Frame"),
             "instrumentation:cancelAnimationFrame": WebInspector.UIString("Cancel Animation Frame"),
             "instrumentation:animationFrameFired": WebInspector.UIString("Animation Frame Fired"),
@@ -702,10 +682,8 @@ WebInspector.EventListenerBreakpointsSidebarPane.prototype = {
      */
     _createCheckbox: function(labelNode)
     {
-        var checkbox = document.createElement("input");
-        checkbox.className = "checkbox-elem";
+        var checkbox = document.createElementWithClass("input", "checkbox-elem");
         checkbox.type = "checkbox";
-
         labelNode.insertBefore(checkbox, labelNode.firstChild);
         return checkbox;
     },
