@@ -167,7 +167,7 @@ Runtime.isReleaseMode = function()
 Runtime.startSharedWorker = function(moduleName, workerName)
 {
     if (Runtime.isReleaseMode())
-        return new SharedWorker(moduleName + ".js", workerName);
+        return new SharedWorker(moduleName + "_module.js", workerName);
 
     var content = loadResource(moduleName + "/module.json");
     if (!content)
@@ -185,7 +185,7 @@ Runtime.startSharedWorker = function(moduleName, workerName)
 Runtime.startWorker = function(moduleName)
 {
     if (Runtime.isReleaseMode())
-        return new Worker(moduleName + ".js");
+        return new Worker(moduleName + "_module.js");
 
     var content = loadResource(moduleName + "/module.json");
     if (!content)
@@ -670,7 +670,7 @@ Runtime.Module.prototype = {
             this._manager.loadModule(dependencies[i]);
         if (this._descriptor.scripts) {
             if (Runtime.isReleaseMode()) {
-                loadScript(this._name + ".js");
+                loadScript(this._name + "_module.js");
             } else {
                 var scripts = this._descriptor.scripts;
                 for (var i = 0; i < scripts.length; ++i)
