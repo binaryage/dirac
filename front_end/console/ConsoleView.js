@@ -141,12 +141,23 @@ WebInspector.ConsoleView = function()
     WebInspector.targetManager.observeTargets(this);
     WebInspector.targetManager.addModelListener(WebInspector.RuntimeModel, WebInspector.RuntimeModel.Events.ExecutionContextCreated, this._onExecutionContextCreated, this);
     WebInspector.targetManager.addModelListener(WebInspector.RuntimeModel, WebInspector.RuntimeModel.Events.ExecutionContextDestroyed, this._onExecutionContextDestroyed, this);
+    WebInspector.targetManager.addEventListener(WebInspector.TargetManager.Events.MainFrameNavigated, this._onMainFrameNavigated, this);
+
     this._initConsoleMessages();
 
     WebInspector.context.addFlavorChangeListener(WebInspector.ExecutionContext, this._executionContextChangedExternally, this);
 }
 
 WebInspector.ConsoleView.prototype = {
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _onMainFrameNavigated: function(event)
+    {
+        var frame = /** @type {!WebInspector.ResourceTreeFrame} */(event.data);
+        WebInspector.console.addMessage(WebInspector.UIString("Navigated to %s", frame.url));
+    },
+
     _initConsoleMessages: function()
     {
         var mainTarget = WebInspector.targetManager.mainTarget();
