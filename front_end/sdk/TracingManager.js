@@ -82,14 +82,6 @@ WebInspector.TracingManager.prototype = {
         this.dispatchEventToListeners(WebInspector.TracingManager.Events.TracingComplete);
     },
 
-    _tracingStarted: function()
-    {
-        if (this._active)
-            return;
-        this._active = true;
-        this.dispatchEventToListeners(WebInspector.TracingManager.Events.TracingStarted);
-    },
-
     /**
      * @param {string} categoryFilter
      * @param {string} options
@@ -103,8 +95,8 @@ WebInspector.TracingManager.prototype = {
         this._shouldReleaseLock = true;
         var bufferUsageReportingIntervalMs = 500;
         TracingAgent.start(categoryFilter, options, bufferUsageReportingIntervalMs, callback);
-        this._tracingStarted();
         this._active = true;
+        this.dispatchEventToListeners(WebInspector.TracingManager.Events.TracingStarted);
     },
 
     stop: function()
@@ -159,10 +151,5 @@ WebInspector.TracingDispatcher.prototype = {
     tracingComplete: function()
     {
         this._tracingManager._tracingComplete();
-    },
-
-    started: function()
-    {
-        this._tracingManager._tracingStarted();
     }
 }

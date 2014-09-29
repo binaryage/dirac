@@ -4348,12 +4348,6 @@
         ],
         "events": [
             {
-                "name": "started",
-                "description": "Fired when tracing is started.",
-                "handlers": ["browser", "frontend"],
-                "hidden": true
-            },
-            {
                 "name": "dataCollected",
                 "parameters": [
                     { "name": "value", "type": "array", "items": { "type": "object" } }
