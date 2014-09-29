@@ -79,6 +79,28 @@ WebInspector.Resource.contentAsDataURL = function(content, mimeType, contentEnco
     return "data:" + mimeType + (contentEncoded ? ";base64," : ",") + content;
 }
 
+/**
+ * @param {string} url
+ * @param {string} mimeType
+ * @param {!WebInspector.ContentProvider} contentProvider
+ * @param {!Element} image
+ */
+WebInspector.Resource.populateImageSource = function(url, mimeType, contentProvider, image)
+{
+    /**
+     * @param {?string} content
+     */
+    function onResourceContent(content)
+    {
+        var imageSrc = WebInspector.Resource.contentAsDataURL(content, mimeType, true);
+        if (imageSrc === null)
+            imageSrc = url;
+        image.src = imageSrc;
+    }
+
+    contentProvider.requestContent(onResourceContent);
+}
+
 WebInspector.Resource.prototype = {
     /**
      * @return {?WebInspector.NetworkRequest}
@@ -299,19 +321,7 @@ WebInspector.Resource.prototype = {
      */
     populateImageSource: function(image)
     {
-        /**
-         * @param {?string} content
-         * @this {WebInspector.Resource}
-         */
-        function onResourceContent(content)
-        {
-            var imageSrc = WebInspector.Resource.contentAsDataURL(this._content, this.mimeType, this._contentEncoded);
-            if (imageSrc === null)
-                imageSrc = this.url;
-            image.src = imageSrc;
-        }
-
-        this.requestContent(onResourceContent.bind(this));
+        WebInspector.Resource.populateImageSource(this._url, this._mimeType, this, image);
     },
 
     _requestFinished: function()
@@ -393,6 +403,19 @@ WebInspector.Resource.prototype = {
     isHidden: function()
     {
         return !!this._isHidden;
+    },
+
+
+    /**
+     * @return {boolean}
+     */
+    hasTextContent: function()
+    {
+        if (this._type.isTextType())
+            return true;
+        if (this._type === WebInspector.resourceTypes.Other)
+            return !!this._content && !this._contentEncoded;
+        return false;
     },
 
     __proto__: WebInspector.SDKObject.prototype

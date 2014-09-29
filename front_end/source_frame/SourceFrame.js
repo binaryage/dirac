@@ -37,7 +37,6 @@
 WebInspector.SourceFrame = function(contentProvider)
 {
     WebInspector.VBox.call(this);
-    this.element.classList.add("script-view");
 
     this._url = contentProvider.contentURL();
     this._contentProvider = contentProvider;
@@ -187,14 +186,6 @@ WebInspector.SourceFrame.prototype = {
     get loaded()
     {
         return this._loaded;
-    },
-
-    /**
-     * @return {boolean}
-     */
-    hasContent: function()
-    {
-        return true;
     },
 
     get textEditor()

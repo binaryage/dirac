@@ -42,14 +42,6 @@ WebInspector.RequestHTMLView = function(request, dataURL)
 }
 
 WebInspector.RequestHTMLView.prototype = {
-    /**
-     * @return {boolean}
-     */
-    hasContent: function()
-    {
-        return true;
-    },
-
     wasShown: function()
     {
         this._createIFrame();

@@ -474,13 +474,21 @@ WebInspector.ResourcesPanel.prototype = {
      */
     _resourceViewForResource: function(resource)
     {
-        if (WebInspector.ResourceView.hasTextContent(resource)) {
+        if (resource.hasTextContent()) {
             var treeElement = this._findTreeElementForResource(resource);
             if (!treeElement)
                 return null;
             return treeElement.sourceView();
         }
-        return WebInspector.ResourceView.nonSourceViewForResource(resource);
+
+        switch (resource.type) {
+        case WebInspector.resourceTypes.Image:
+            return new WebInspector.ImageView(resource.url, resource.mimeType, resource);
+        case WebInspector.resourceTypes.Font:
+            return new WebInspector.FontView(resource.url);
+        default:
+            return new WebInspector.EmptyView(resource.url);
+        }
     },
 
     /**

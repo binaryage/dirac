@@ -87,14 +87,6 @@ WebInspector.RequestJSONView.parseJSONP = function(text)
 }
 
 WebInspector.RequestJSONView.prototype = {
-    /**
-     * @return {boolean}
-     */
-    hasContent: function()
-    {
-        return true;
-    },
-
     wasShown: function()
     {
         this._initialize();

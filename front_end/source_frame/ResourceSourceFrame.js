@@ -28,60 +28,6 @@
  */
 
 /**
- * @extends {WebInspector.VBox}
- * @constructor
- */
-WebInspector.ResourceView = function(resource)
-{
-    WebInspector.VBox.call(this);
-    this.registerRequiredCSS("resourceView.css");
-
-    this.element.classList.add("resource-view");
-    this.resource = resource;
-}
-
-WebInspector.ResourceView.prototype = {
-    /**
-     * @return {boolean}
-     */
-    hasContent: function()
-    {
-        return false;
-    },
-
-    __proto__: WebInspector.VBox.prototype
-}
-
-/**
- * @param {!WebInspector.Resource} resource
- * @return {boolean}
- */
-WebInspector.ResourceView.hasTextContent = function(resource)
-{
-    if (resource.type.isTextType())
-        return true;
-    if (resource.type === WebInspector.resourceTypes.Other)
-        return !!resource.content && !resource.contentEncoded;
-    return false;
-}
-
-/**
- * @param {!WebInspector.Resource} resource
- * @return {!WebInspector.ResourceView}
- */
-WebInspector.ResourceView.nonSourceViewForResource = function(resource)
-{
-    switch (resource.type) {
-    case WebInspector.resourceTypes.Image:
-        return new WebInspector.ImageView(resource);
-    case WebInspector.resourceTypes.Font:
-        return new WebInspector.FontView(resource);
-    default:
-        return new WebInspector.ResourceView(resource);
-    }
-}
-
-/**
  * @extends {WebInspector.SourceFrame}
  * @constructor
  * @param {!WebInspector.ContentProvider} resource
@@ -114,9 +60,9 @@ WebInspector.ResourceSourceFrame.prototype = {
 WebInspector.ResourceSourceFrameFallback = function(resource)
 {
     WebInspector.VBox.call(this);
+    this.registerRequiredCSS("resourceSourceFrame.css");
     this._resource = resource;
-    this.element.classList.add("script-view");
-    this._content = this.element.createChild("div", "script-view-fallback monospace");
+    this._content = this.element.createChild("div", "resource-source-frame-fallback monospace");
 }
 
 WebInspector.ResourceSourceFrameFallback.prototype = {

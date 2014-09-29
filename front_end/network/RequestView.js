@@ -36,21 +36,12 @@
 WebInspector.RequestView = function(request)
 {
     WebInspector.VBox.call(this);
-    this.registerRequiredCSS("resourceView.css");
 
-    this.element.classList.add("resource-view");
+    this.element.classList.add("request-view");
     this.request = request;
 }
 
 WebInspector.RequestView.prototype = {
-    /**
-     * @return {boolean}
-     */
-    hasContent: function()
-    {
-        return false;
-    },
-
     __proto__: WebInspector.VBox.prototype
 }
 
@@ -75,9 +66,9 @@ WebInspector.RequestView.nonSourceViewForRequest = function(request)
 {
     switch (request.type) {
     case WebInspector.resourceTypes.Image:
-        return new WebInspector.ImageView(request);
+        return new WebInspector.ImageView(request.url, request.mimeType, request);
     case WebInspector.resourceTypes.Font:
-        return new WebInspector.FontView(request);
+        return new WebInspector.FontView(request.url);
     default:
         return new WebInspector.RequestView(request);
     }

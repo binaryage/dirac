@@ -2218,16 +2218,6 @@ body.inactive .sidebar-tree-item.selected {
     cursor: auto;
 }
 
-.resource-view.json {
-    padding: 5px;
-}
-
-.resource-view.html iframe {
-    width: 100%;
-    height: 100%;
-    position: absolute;
-}
-
 .soft-context-menu-glass-pane {
     position: absolute;
     top: 0;

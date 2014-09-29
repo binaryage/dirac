@@ -132,14 +132,6 @@ WebInspector.RequestContentView = function(request)
 
 WebInspector.RequestContentView.prototype = {
     /**
-     * @return {boolean}
-     */
-    hasContent: function()
-    {
-        return true;
-    },
-
-    /**
      * @return {!WebInspector.View}
      */
     get innerView()

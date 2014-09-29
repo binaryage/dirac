@@ -881,19 +881,7 @@ WebInspector.NetworkRequest.prototype = {
      */
     populateImageSource: function(image)
     {
-        /**
-         * @this {WebInspector.NetworkRequest}
-         * @param {?string} content
-         */
-        function onResourceContent(content)
-        {
-            var imageSrc = this.asDataURL();
-            if (imageSrc === null)
-                imageSrc = this.url;
-            image.src = imageSrc;
-        }
-
-        this.requestContent(onResourceContent.bind(this));
+        WebInspector.Resource.populateImageSource(this._url, this._mimeType, this, image);
     },
 
     /**
