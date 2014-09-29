@@ -37,17 +37,18 @@ WebInspector.SourcesView = function(workspace, sourcesPanel)
     this._historyManager = new WebInspector.EditingLocationHistoryManager(this, this.currentSourceFrame.bind(this));
 
     this._statusBarContainerElement = this.element.createChild("div", "sources-status-bar");
+    this._statusBarEditorActionsElement = this._statusBarContainerElement.createChild("div");
 
+    self.runtime.instancesPromise(WebInspector.SourcesView.EditorAction).then(appendButtonsForExtensions.bind(this));
     /**
+     * @param {!Array.<!WebInspector.SourcesView.EditorAction>} actions
      * @this {WebInspector.SourcesView}
-     * @param {!WebInspector.SourcesView.EditorAction} EditorAction
      */
-    function appendButtonForExtension(EditorAction)
+    function appendButtonsForExtensions(actions)
     {
-        this._statusBarContainerElement.appendChild(EditorAction.button(this));
+        for (var i = 0; i < actions.length; ++i)
+            this._statusBarEditorActionsElement.appendChild(actions[i].button(this));
     }
-    var editorActions = /** @type {!Array.<!WebInspector.SourcesView.EditorAction>} */ (self.runtime.instances(WebInspector.SourcesView.EditorAction));
-    editorActions.forEach(appendButtonForExtension.bind(this));
 
     this._scriptViewStatusBarItemsContainer = this._statusBarContainerElement.createChild("div", "inline-block");
     this._scriptViewStatusBarTextContainer = this._statusBarContainerElement.createChild("div", "hbox");

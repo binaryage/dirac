@@ -206,7 +206,7 @@ WebInspector.TabbedPane.prototype = {
             return this._tabOrderComparator(tab1.id, tab2.id);
         }
 
-        if (this._retainTabOrder && this._tabOrderComparator)
+        if (this._tabOrderComparator)
             this._tabs.splice(insertionIndexForObjectInListSortedByFunction(tab, this._tabs, comparator.bind(this)), 0, tab);
         else
             this._tabs.push(tab);
@@ -1143,8 +1143,9 @@ WebInspector.ExtensibleTabbedPaneController = function(tabbedPane, extensionPoin
     this._tabbedPane = tabbedPane;
     this._extensionPoint = extensionPoint;
     this._viewCallback = viewCallback;
+    this._tabOrders = {};
 
-    this._tabbedPane.setRetainTabOrder(true, self.runtime.orderComparator(extensionPoint, "name", "order"));
+    this._tabbedPane.setRetainTabOrder(true, this._tabOrderComparator.bind(this));
     this._tabbedPane.addEventListener(WebInspector.TabbedPane.EventTypes.TabSelected, this._tabSelected, this);
     /** @type {!StringMap.<?WebInspector.View>} */
     this._views = new StringMap();
@@ -1161,6 +1162,7 @@ WebInspector.ExtensibleTabbedPaneController.prototype = {
         for (var i = 0; i < extensions.length; ++i) {
             var descriptor = extensions[i].descriptor();
             var id = descriptor["name"];
+            this._tabOrders[id] = i;
             var title = WebInspector.UIString(descriptor["title"]);
             var settingName = descriptor["setting"];
             var setting = settingName ? /** @type {!WebInspector.Setting|undefined} */ (WebInspector.settings[settingName]) : null;
@@ -1223,5 +1225,15 @@ WebInspector.ExtensibleTabbedPaneController.prototype = {
         if (this._viewCallback && view)
             this._viewCallback(id, view);
         return view;
+    },
+
+    /**
+     * @param {string} id1
+     * @param {string} id2
+     * @return {number}
+     */
+    _tabOrderComparator: function(id1, id2)
+    {
+        return this._tabOrders[id2] = this._tabOrders[id1];
     }
 }

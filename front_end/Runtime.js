@@ -371,6 +371,15 @@ Runtime.prototype = {
     },
 
     /**
+     * @param {string} moduleName
+     * @return {!Promise.<undefined>}
+     */
+    loadModulePromise: function(moduleName)
+    {
+        return this._modulesMap[moduleName]._loadPromise();
+    },
+
+    /**
      * @param {!Array.<string>} moduleNames
      */
     loadAutoStartModules: function(moduleNames)
@@ -460,6 +469,8 @@ Runtime.prototype = {
      */
     extensions: function(type, context)
     {
+        return this._extensions.filter(filter).sort(orderComparator);
+
         /**
          * @param {!Runtime.Extension} extension
          * @return {boolean}
@@ -473,7 +484,18 @@ Runtime.prototype = {
                 return false;
             return !context || extension.isApplicable(context);
         }
-        return this._extensions.filter(filter);
+
+        /**
+         * @param {!Runtime.Extension} extension1
+         * @param {!Runtime.Extension} extension2
+         * @return {number}
+         */
+        function orderComparator(extension1, extension2)
+        {
+            var order1 = extension1.descriptor()["order"] || 0;
+            var order2 = extension2.descriptor()["order"] || 0;
+            return order1 - order2;
+        }
     },
 
     /**
@@ -489,19 +511,15 @@ Runtime.prototype = {
     /**
      * @param {*} type
      * @param {?Object=} context
-     * @return {!Array.<!Object>}
+     * @return {!Promise.<!Array.<!Object>>}
      */
-    instances: function(type, context)
+    instancesPromise: function(type, context)
     {
-        /**
-         * @param {!Runtime.Extension} extension
-         * @return {?Object}
-         */
-        function instantiate(extension)
-        {
-            return extension.instance();
-        }
-        return this.extensions(type, context).filter(instantiate).map(instantiate);
+        var extensions = this.extensions(type, context);
+        var promises = [];
+        for (var i = 0; i < extensions.length; ++i)
+            promises.push(extensions[i].instancePromise());
+        return Promise.some(promises);
     },
 
     /**
@@ -516,50 +534,16 @@ Runtime.prototype = {
     },
 
     /**
-     * @param {string|!Function} type
-     * @param {string} nameProperty
-     * @param {string} orderProperty
-     * @return {function(string, string):number}
+     * @param {*} type
+     * @param {?Object=} context
+     * @return {!Promise.<!Object>}
      */
-    orderComparator: function(type, nameProperty, orderProperty)
+    instancePromise: function(type, context)
     {
-        var extensions = this.extensions(type);
-        var orderForName = {};
-        for (var i = 0; i < extensions.length; ++i) {
-            var descriptor = extensions[i].descriptor();
-            orderForName[descriptor[nameProperty]] = descriptor[orderProperty];
-        }
-
-        /**
-         * @param {string} name1
-         * @param {string} name2
-         * @return {number}
-         */
-        function result(name1, name2)
-        {
-            if (name1 in orderForName && name2 in orderForName)
-                return orderForName[name1] - orderForName[name2];
-            if (name1 in orderForName)
-                return -1;
-            if (name2 in orderForName)
-                return 1;
-            return compare(name1, name2);
-        }
-
-        /**
-         * @param {string} left
-         * @param {string} right
-         * @return {number}
-         */
-        function compare(left, right)
-        {
-            if (left > right)
-              return 1;
-            if (left < right)
-                return -1;
-            return 0;
-        }
-        return result;
+        var extension = this.extension(type, context);
+        if (!extension)
+            return Promise.reject(new Error("No such extension: " + type + " in given context."));
+        return extension.instancePromise();
     },
 
     /**
@@ -668,17 +652,60 @@ Runtime.Module.prototype = {
         var dependencies = this._descriptor.dependencies;
         for (var i = 0; dependencies && i < dependencies.length; ++i)
             this._manager.loadModule(dependencies[i]);
-        if (this._descriptor.scripts) {
-            if (Runtime.isReleaseMode()) {
-                loadScript(this._name + "_module.js");
-            } else {
-                var scripts = this._descriptor.scripts;
-                for (var i = 0; i < scripts.length; ++i)
-                    loadScript(this._name + "/" + scripts[i]);
-            }
-        }
+        this._loadScripts();
         this._isLoading = false;
         this._loaded = true;
+    },
+
+    /**
+     * @return {!Promise.<undefined>}
+     */
+    _loadPromise: function()
+    {
+        if (this._loaded)
+            return Promise.resolve();
+
+        if (this._pendingLoadPromise)
+            return this._pendingLoadPromise;
+
+        if (this._isLoading)
+            throw new Error("Module " + this._name + " is loaded from itself");
+
+        this._isLoading = true;
+        var dependencies = this._descriptor.dependencies;
+        var dependencyPromises = [];
+        for (var i = 0; dependencies && i < dependencies.length; ++i)
+            dependencyPromises.push(this._manager._modulesMap[dependencies[i]]._loadPromise());
+        this._isLoading = false;
+
+        this._pendingLoadPromise = Promise.all(dependencyPromises)
+            .then(loadScripts.bind(this));
+
+        return this._pendingLoadPromise;
+
+        /**
+         * @this {Runtime.Module}
+         */
+        function loadScripts()
+        {
+            // FIXME: migrate to loadScriptAsync.
+            delete this._pendingLoadPromise;
+            this._loadScripts();
+            this._loaded = true;
+        }
+    },
+
+    _loadScripts: function()
+    {
+        if (!this._descriptor.scripts)
+            return;
+        if (Runtime.isReleaseMode()) {
+            loadScript(this._name + "_module.js");
+        } else {
+            var scripts = this._descriptor.scripts;
+            for (var i = 0; i < scripts.length; ++i)
+                loadScript(this._name + "/" + scripts[i]);
+        }
     }
 }
 
@@ -755,6 +782,35 @@ Runtime.Extension.prototype = {
             this._instance = new constructorFunction();
         }
         return this._instance;
+    },
+
+    /**
+     * @return {!Promise.<!Object>}
+     */
+    instancePromise: function()
+    {
+        if (!this._className)
+            return Promise.reject(new Error("No class name in extension"));
+        if (this._instance)
+            return Promise.resolve(this._instance);
+
+        return this._module._loadPromise().then(constructInstance.bind(this));
+
+        /**
+         * @this {Runtime.Extension}
+         * @return {!Object}
+         */
+        function constructInstance()
+        {
+            // FIXME: remove this check once instance() is removed.
+            if (this._instance)
+                return this._instance;
+            var constructorFunction = window.eval(/** @type {string} */ (this._className));
+            if (!(constructorFunction instanceof Function))
+                throw new Error("Constructor is not a function: " + this._className);
+            this._instance = new constructorFunction();
+            return this._instance;
+        }
     }
 }
 
@@ -935,6 +991,49 @@ Runtime.Experiment.prototype = {
         }
     }
 })();}
+
+/**
+ * @param {!Array.<!Promise.<T, !Error>>} promises
+ * @return {!Promise.<!Array.<T>>}
+ * @template T
+ */
+Promise.some = function(promises)
+{
+    var all = [];
+    var wasRejected = [];
+    for (var i = 0; i < promises.length; ++i) {
+        // Workaround closure compiler bug.
+        var handlerFunction = /** @type {function()} */ (handler.bind(null, i));
+        all.push(promises[i].catch(handlerFunction));
+    }
+
+    return Promise.all(all).then(filterOutFailuresResults);
+
+    /**
+     * @param {!Array.<T>} results
+     * @return {!Array.<T>}
+     * @template T
+     */
+    function filterOutFailuresResults(results)
+    {
+        var filtered = [];
+        for (var i = 0; i < results.length; ++i) {
+            if (!wasRejected[i])
+                filtered.push(results[i]);
+        }
+        return filtered;
+    }
+
+    /**
+     * @param {number} index
+     * @param {!Error} e
+     */
+    function handler(index, e)
+    {
+        wasRejected[index] = true;
+        console.error(e);
+    }
+}
 
 // This must be constructed after the query parameters have been parsed.
 Runtime.experiments = new Runtime.ExperimentsSupport();

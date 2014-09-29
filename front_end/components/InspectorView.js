@@ -46,7 +46,7 @@ WebInspector.InspectorView = function()
     this._drawerSplitView.show(this.element);
 
     this._tabbedPane = new WebInspector.TabbedPane();
-    this._tabbedPane.setRetainTabOrder(true, self.runtime.orderComparator(WebInspector.Panel, "name", "order"));
+    this._tabbedPane.setRetainTabOrder(true);
     this._tabbedPane.show(this._drawerSplitView.mainElement());
     this._drawer = new WebInspector.Drawer(this._drawerSplitView);
 
