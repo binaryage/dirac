@@ -1430,3 +1430,31 @@ WebInspector.TimelineTextFilter.prototype = {
 
     __proto__: WebInspector.TimelineModel.Filter.prototype
 }
+
+/**
+ * @return {!WebInspector.TimelinePanel}
+ */
+WebInspector.TimelinePanel._instance = function()
+{
+    if (!WebInspector.TimelinePanel._instanceObject)
+        WebInspector.TimelinePanel._instanceObject = new WebInspector.TimelinePanel();
+    return WebInspector.TimelinePanel._instanceObject;
+}
+
+/**
+ * @constructor
+ * @implements {WebInspector.PanelFactory}
+ */
+WebInspector.TimelinePanelFactory = function()
+{
+}
+
+WebInspector.TimelinePanelFactory.prototype = {
+    /**
+     * @return {!WebInspector.Panel}
+     */
+    createPanel: function()
+    {
+        return WebInspector.TimelinePanel._instance();
+    }
+}

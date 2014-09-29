@@ -140,3 +140,31 @@ WebInspector.ConsolePanel.ConsoleRevealer.prototype = {
         return Promise.resolve();
     }
 }
+
+/**
+ * @return {!WebInspector.ConsolePanel}
+ */
+WebInspector.ConsolePanel._instance = function()
+{
+    if (!WebInspector.ConsolePanel._instanceObject)
+        WebInspector.ConsolePanel._instanceObject = new WebInspector.ConsolePanel();
+    return WebInspector.ConsolePanel._instanceObject;
+}
+
+/**
+ * @constructor
+ * @implements {WebInspector.PanelFactory}
+ */
+WebInspector.ConsolePanelFactory = function()
+{
+}
+
+WebInspector.ConsolePanelFactory.prototype = {
+    /**
+     * @return {!WebInspector.Panel}
+     */
+    createPanel: function()
+    {
+        return WebInspector.ConsolePanel._instance();
+    }
+}

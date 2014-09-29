@@ -827,15 +827,6 @@ WebInspector.__defineGetter__("inspectedPageURL", function()
 });
 
 /**
- * @param {string} name
- * @return {?WebInspector.Panel}
- */
-WebInspector.panel = function(name)
-{
-    return WebInspector.inspectorView.panel(name);
-}
-
-/**
  * @constructor
  * @implements {WebInspector.StatusBarItem.Provider}
  */
@@ -892,9 +883,10 @@ WebInspector.Main.PauseListener.prototype = {
     _debuggerPaused: function(event)
     {
         WebInspector.targetManager.removeModelListener(WebInspector.DebuggerModel, WebInspector.DebuggerModel.Events.DebuggerPaused, this._debuggerPaused, this);
+        var debuggerPausedDetails = /** @type {!WebInspector.DebuggerPausedDetails} */ (event.data);
         var debuggerModel = /** @type {!WebInspector.DebuggerModel} */ (event.target);
         WebInspector.context.setFlavor(WebInspector.Target, debuggerModel.target());
-        WebInspector.inspectorView.showPanel("sources");
+        WebInspector.Revealer.reveal(debuggerPausedDetails);
     }
 }
 

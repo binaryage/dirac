@@ -1,11 +1,11 @@
 {
     "extensions": [
         {
-            "type": "@WebInspector.Panel",
+            "type": "@WebInspector.PanelFactory",
             "name": "profiles",
             "title": "Profiles",
             "order": 4,
-            "className": "WebInspector.ProfilesPanel"
+            "className": "WebInspector.ProfilesPanelFactory"
         },
         {
             "type": "@WebInspector.ContextMenu.Provider",

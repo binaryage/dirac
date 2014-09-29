@@ -1455,7 +1455,7 @@ WebInspector.ElementsPanel.ContextMenuProvider.prototype = {
      */
     appendApplicableItems: function(event, contextMenu, target)
     {
-        /** @type {!WebInspector.ElementsPanel} */ (WebInspector.inspectorView.panel("elements")).appendApplicableItems(event, contextMenu, target);
+        WebInspector.ElementsPanel.instance().appendApplicableItems(event, contextMenu, target);
     }
 }
 
@@ -1482,7 +1482,7 @@ WebInspector.ElementsPanel.DOMNodeRevealer.prototype = {
          */
         function revealPromise(resolve, reject)
         {
-            var panel = /** @type {!WebInspector.ElementsPanel} */ (WebInspector.inspectorView.panel("elements"));
+            var panel = WebInspector.ElementsPanel.instance();
             if (node instanceof WebInspector.DOMNode)
                 onNodeResolved(/** @type {!WebInspector.DOMNode} */ (node));
             else if (node instanceof WebInspector.DeferredDOMNode)
@@ -1505,5 +1505,33 @@ WebInspector.ElementsPanel.DOMNodeRevealer.prototype = {
                 reject(new Error("Could not resolve node to reveal."));
             }
         }
+    }
+}
+
+/**
+ * @return {!WebInspector.ElementsPanel}
+ */
+WebInspector.ElementsPanel.instance = function()
+{
+    if (!WebInspector.ElementsPanel._instanceObject)
+        WebInspector.ElementsPanel._instanceObject = new WebInspector.ElementsPanel();
+    return WebInspector.ElementsPanel._instanceObject;
+}
+
+/**
+ * @constructor
+ * @implements {WebInspector.PanelFactory}
+ */
+WebInspector.ElementsPanelFactory = function()
+{
+}
+
+WebInspector.ElementsPanelFactory.prototype = {
+    /**
+     * @return {!WebInspector.Panel}
+     */
+    createPanel: function()
+    {
+        return WebInspector.ElementsPanel.instance();
     }
 }

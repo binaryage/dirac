@@ -90,14 +90,14 @@ WebInspector.InspectorView = function()
 
     this._loadPanelDesciptors();
 
-    InspectorFrontendHost.events.addEventListener(InspectorFrontendHostAPI.Events.ShowConsole, this.showPanel.bind(this, "console"));
+    InspectorFrontendHost.events.addEventListener(InspectorFrontendHostAPI.Events.ShowConsole, this._showPanel.bind(this, "console"));
 };
 
 WebInspector.InspectorView.prototype = {
     _loadPanelDesciptors: function()
     {
         WebInspector.startBatchUpdate();
-        self.runtime.extensions(WebInspector.Panel).forEach(processPanelExtensions.bind(this));
+        self.runtime.extensions(WebInspector.PanelFactory).forEach(processPanelExtensions.bind(this));
         /**
          * @param {!Runtime.Extension} extension
          * @this {!WebInspector.InspectorView}
@@ -152,7 +152,7 @@ WebInspector.InspectorView.prototype = {
      * @param {string} panelName
      * @return {?WebInspector.Panel}
      */
-    panel: function(panelName)
+    _panel: function(panelName)
     {
         var panelDescriptor = this._panelDescriptors[panelName];
         var panelOrder = this._tabbedPane.allTabs();
@@ -177,14 +177,23 @@ WebInspector.InspectorView.prototype = {
 
     /**
      * @param {string} panelName
+     * @return {!Promise.<?WebInspector.Panel>}
+     */
+    showPanelPromise: function(panelName)
+    {
+        return Promise.resolve(this._showPanel(panelName));
+    },
+
+    /**
+     * @param {string} panelName
      * @return {?WebInspector.Panel}
      */
-    showPanel: function(panelName)
+    _showPanel: function(panelName)
     {
         if (this._currentPanelLocked)
             return this._currentPanel === this._panels[panelName] ? this._currentPanel : null;
 
-        var panel = this.panel(panelName);
+        var panel = this._panel(panelName);
         if (panel)
             this.setCurrentPanel(panel);
         return panel;
@@ -325,7 +334,7 @@ WebInspector.InspectorView.prototype = {
                 var panelName = this._tabbedPane.allTabs()[panelIndex];
                 if (panelName) {
                     if (!WebInspector.Dialog.currentInstance() && !this._currentPanelLocked)
-                        this.showPanel(panelName);
+                        this._showPanel(panelName);
                     event.consume(true);
                 }
                 return;
@@ -375,7 +384,7 @@ WebInspector.InspectorView.prototype = {
         var panelOrder = this._tabbedPane.allTabs();
         var index = panelOrder.indexOf(this.currentPanel().name);
         index = (index + panelOrder.length + direction) % panelOrder.length;
-        this.showPanel(panelOrder[index]);
+        this._showPanel(panelOrder[index]);
     },
 
     _moveInHistory: function(move)

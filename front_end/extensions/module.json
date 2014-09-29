@@ -7,9 +7,10 @@
     ],
     "dependencies": [
         "components",
-        "audits",
+        "elements",
+        "network",
         "sources",
-        "network"
+        "audits"
     ],
     "scripts": [
         "ExtensionAPI.js",

@@ -2153,7 +2153,7 @@ WebInspector.NetworkPanel.ContextMenuProvider.prototype = {
      */
     appendApplicableItems: function(event, contextMenu, target)
     {
-        WebInspector.inspectorView.panel("network").appendApplicableItems(event, contextMenu, target);
+        WebInspector.NetworkPanel._instance().appendApplicableItems(event, contextMenu, target);
     }
 }
 
@@ -2174,7 +2174,9 @@ WebInspector.NetworkPanel.RequestRevealer.prototype = {
     reveal: function(request, lineNumber)
     {
         if (request instanceof WebInspector.NetworkRequest) {
-            var panel = /** @type {?WebInspector.NetworkPanel} */ (WebInspector.inspectorView.showPanel("network"));
+
+            var panel = WebInspector.NetworkPanel._instance();
+            WebInspector.inspectorView.setCurrentPanel(panel);
             panel.revealAndHighlightRequest(request);
             return Promise.resolve();
         }
@@ -3077,4 +3079,32 @@ WebInspector.NetworkDataGridNode.RequestPropertyComparator = function(propertyNa
     if (bValue > aValue)
         return revert ? 1 : -1;
     return a._request.indentityCompare(b._request);
+}
+
+/**
+ * @return {!WebInspector.NetworkPanel}
+ */
+WebInspector.NetworkPanel._instance = function()
+{
+    if (!WebInspector.NetworkPanel._instanceObject)
+        WebInspector.NetworkPanel._instanceObject = new WebInspector.NetworkPanel();
+    return WebInspector.NetworkPanel._instanceObject;
+}
+
+/**
+ * @constructor
+ * @implements {WebInspector.PanelFactory}
+ */
+WebInspector.NetworkPanelFactory = function()
+{
+}
+
+WebInspector.NetworkPanelFactory.prototype = {
+    /**
+     * @return {!WebInspector.Panel}
+     */
+    createPanel: function()
+    {
+        return WebInspector.NetworkPanel._instance();
+    }
 }

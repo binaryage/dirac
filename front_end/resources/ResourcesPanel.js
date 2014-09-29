@@ -33,7 +33,7 @@
  * @extends {WebInspector.PanelWithSidebarTree}
  * @implements {WebInspector.TargetManager.Observer}
  */
-WebInspector.ResourcesPanel = function(database)
+WebInspector.ResourcesPanel = function()
 {
     WebInspector.PanelWithSidebarTree.call(this, "resources");
     this.registerRequiredCSS("resourcesPanel.css");
@@ -821,7 +821,9 @@ WebInspector.ResourcesPanel.ResourceRevealer.prototype = {
     reveal: function(resource, lineNumber)
     {
         if (resource instanceof WebInspector.Resource) {
-            var panel = /** @type {?WebInspector.ResourcesPanel} */ (WebInspector.inspectorView.showPanel("resources"));
+
+            var panel = WebInspector.ResourcesPanel._instance();
+            WebInspector.inspectorView.setCurrentPanel(panel);
             panel.showResource(resource, lineNumber);
             return Promise.resolve();
         }
@@ -2151,4 +2153,32 @@ WebInspector.StorageCategoryView.prototype = {
     },
 
     __proto__: WebInspector.VBox.prototype
+}
+
+/**
+ * @return {!WebInspector.ResourcesPanel}
+ */
+WebInspector.ResourcesPanel._instance = function()
+{
+    if (!WebInspector.ResourcesPanel._instanceObject)
+        WebInspector.ResourcesPanel._instanceObject = new WebInspector.ResourcesPanel();
+    return WebInspector.ResourcesPanel._instanceObject;
+}
+
+/**
+ * @constructor
+ * @implements {WebInspector.PanelFactory}
+ */
+WebInspector.ResourcesPanelFactory = function()
+{
+}
+
+WebInspector.ResourcesPanelFactory.prototype = {
+    /**
+     * @return {!WebInspector.Panel}
+     */
+    createPanel: function()
+    {
+        return WebInspector.ResourcesPanel._instance();
+    }
 }

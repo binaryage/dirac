@@ -518,6 +518,34 @@ WebInspector.AuditResultSidebarTreeElement.prototype = {
     __proto__: WebInspector.SidebarTreeElement.prototype
 }
 
+/**
+ * @return {!WebInspector.AuditsPanel}
+ */
+WebInspector.AuditsPanel.instance = function()
+{
+    if (!WebInspector.AuditsPanel._instanceObject)
+        WebInspector.AuditsPanel._instanceObject = new WebInspector.AuditsPanel();
+    return WebInspector.AuditsPanel._instanceObject;
+}
+
+/**
+ * @constructor
+ * @implements {WebInspector.PanelFactory}
+ */
+WebInspector.AuditsPanelFactory = function()
+{
+}
+
+WebInspector.AuditsPanelFactory.prototype = {
+    /**
+     * @return {!WebInspector.Panel}
+     */
+    createPanel: function()
+    {
+        return WebInspector.AuditsPanel.instance();
+    }
+}
+
 // Contributed audit rules should go into this namespace.
 WebInspector.AuditRules = {};
 

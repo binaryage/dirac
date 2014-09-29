@@ -1,11 +1,11 @@
 {
     "extensions": [
         {
-            "type": "@WebInspector.Panel",
+            "type": "@WebInspector.PanelFactory",
             "name": "timeline",
             "title": "Timeline",
             "order": 3,
-            "className": "WebInspector.TimelinePanel"
+            "className": "WebInspector.TimelinePanelFactory"
         }
     ],
     "dependencies": [

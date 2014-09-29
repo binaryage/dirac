@@ -214,6 +214,20 @@ WebInspector.PanelDescriptor.prototype = {
 }
 
 /**
+ * @interface
+ */
+WebInspector.PanelFactory = function()
+{
+}
+
+WebInspector.PanelFactory.prototype = {
+    /**
+     * @return {!WebInspector.Panel}
+     */
+    createPanel: function() { }
+}
+
+/**
  * @constructor
  * @param {!Runtime.Extension} extension
  * @implements {WebInspector.PanelDescriptor}
@@ -247,6 +261,6 @@ WebInspector.RuntimeExtensionPanelDescriptor.prototype = {
      */
     panel: function()
     {
-        return /** @type {!WebInspector.Panel} */ (this._extension.instance());
+        return /** @type {!WebInspector.PanelFactory} */ (this._extension.instance()).createPanel();
     }
 }

@@ -1142,7 +1142,7 @@ WebInspector.ProfilesPanel.ContextMenuProvider.prototype = {
      */
     appendApplicableItems: function(event, contextMenu, target)
     {
-        WebInspector.inspectorView.panel("profiles").appendApplicableItems(event, contextMenu, target);
+        WebInspector.ProfilesPanel._instance().appendApplicableItems(event, contextMenu, target);
     }
 }
 
@@ -1297,4 +1297,32 @@ WebInspector.ProfilesSidebarTreeElement.prototype = {
     },
 
     __proto__: WebInspector.SidebarTreeElement.prototype
+}
+
+/**
+ * @return {!WebInspector.ProfilesPanel}
+ */
+WebInspector.ProfilesPanel._instance = function()
+{
+    if (!WebInspector.ProfilesPanel._instanceObject)
+        WebInspector.ProfilesPanel._instanceObject = new WebInspector.ProfilesPanel();
+    return WebInspector.ProfilesPanel._instanceObject;
+}
+
+/**
+ * @constructor
+ * @implements {WebInspector.PanelFactory}
+ */
+WebInspector.ProfilesPanelFactory = function()
+{
+}
+
+WebInspector.ProfilesPanelFactory.prototype = {
+    /**
+     * @return {!WebInspector.Panel}
+     */
+    createPanel: function()
+    {
+        return WebInspector.ProfilesPanel._instance();
+    }
 }

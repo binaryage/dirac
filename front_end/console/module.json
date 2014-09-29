@@ -1,11 +1,11 @@
 {
     "extensions": [
         {
-            "type": "@WebInspector.Panel",
+            "type": "@WebInspector.PanelFactory",
             "name": "console",
             "title": "Console",
             "order": 20,
-            "className": "WebInspector.ConsolePanel"
+            "className": "WebInspector.ConsolePanelFactory"
         },
         {
             "type": "drawer-view",

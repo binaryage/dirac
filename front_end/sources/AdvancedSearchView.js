@@ -360,7 +360,7 @@ WebInspector.AdvancedSearchView.ToggleDrawerViewActionDelegate.prototype = {
             if (selection.rangeCount)
                 queryCandidate = selection.toString().replace(/\r?\n.*/, "");
 
-            WebInspector.inspectorView.showPanel("sources");
+            WebInspector.inspectorView.setCurrentPanel(WebInspector.SourcesPanel.instance());
             WebInspector.inspectorView.showViewInDrawer("sources.search");
             WebInspector.AdvancedSearchView._instance._toggle(queryCandidate);
         } else {

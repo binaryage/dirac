@@ -1512,7 +1512,8 @@ WebInspector.ElementsTreeElement.prototype = {
             return;
 
         if (this.treeOutline._showInElementsPanelEnabled) {
-            WebInspector.inspectorView.showPanel("elements");
+            var panel = WebInspector.ElementsPanel.instance();
+            WebInspector.inspectorView.setCurrentPanel(panel);
             this.treeOutline.selectDOMNode(this._node, true);
         }
 

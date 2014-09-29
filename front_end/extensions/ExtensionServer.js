@@ -227,8 +227,7 @@ WebInspector.ExtensionServer.prototype = {
 
     _onShowPanel: function(message)
     {
-        // Note: WebInspector.inspectorView.showPanel already sanitizes input.
-        WebInspector.inspectorView.showPanel(message.id);
+        WebInspector.inspectorView.showPanelPromise(message.id).done();
     },
 
     _onCreateStatusBarButton: function(message, port)
@@ -253,11 +252,9 @@ WebInspector.ExtensionServer.prototype = {
 
     _onCreateSidebarPane: function(message)
     {
-        var panel = WebInspector.inspectorView.panel(message.panel);
-        if (!panel)
+        if (message.panel !== "elements" && message.panel !== "sources")
             return this._status.E_NOTFOUND(message.panel);
-        if (!panel.addExtensionSidebarPane)
-            return this._status.E_NOTSUPPORTED();
+        var panel = message.panel === "elements" ? WebInspector.ElementsPanel.instance() : WebInspector.SourcesPanel.instance();
         var id = message.id;
         var sidebar = new WebInspector.ExtensionSidebarPane(message.title, id);
         this._clientObjects[id] = sidebar;
@@ -455,8 +452,6 @@ WebInspector.ExtensionServer.prototype = {
 
     _onGetHAR: function()
     {
-        // Wake up the "network" module for HAR operations.
-        WebInspector.inspectorView.panel("network");
         var requests = WebInspector.networkLog.requests;
         var harLog = (new WebInspector.HARLog(requests)).build();
         for (var i = 0; i < harLog.entries.length; ++i)
@@ -580,11 +575,10 @@ WebInspector.ExtensionServer.prototype = {
     _onAddAuditCategory: function(message, port)
     {
         var category = new WebInspector.ExtensionAuditCategory(port._extensionOrigin, message.id, message.displayName, message.resultCount);
-        if (WebInspector.inspectorView.panel("audits").getCategory(category.id))
+        if (WebInspector.AuditsPanel.instance().getCategory(category.id))
             return this._status.E_EXISTS(category.id);
         this._clientObjects[message.id] = category;
-        // FIXME: register module manager extension instead of waking up audits module.
-        WebInspector.inspectorView.panel("audits").addCategory(category);
+        WebInspector.AuditsPanel.instance().addCategory(category);
     },
 
     _onAddAuditResult: function(message)
@@ -703,7 +697,7 @@ WebInspector.ExtensionServer.prototype = {
      */
     _makeSourceSelection: function(textRange)
     {
-        var sourcesPanel = WebInspector.inspectorView.panel("sources");
+        var sourcesPanel = WebInspector.SourcesPanel.instance();
         var selection = {
             startLine: textRange.startLine,
             startColumn: textRange.startColumn,
@@ -741,8 +735,6 @@ WebInspector.ExtensionServer.prototype = {
     _notifyRequestFinished: function(event)
     {
         var request = /** @type {!WebInspector.NetworkRequest} */ (event.data);
-        // Wake up the "network" module for HAR operations.
-        WebInspector.inspectorView.panel("network");
         this._postNotification(WebInspector.extensionAPI.Events.NetworkRequestFinished, this._requestId(request), (new WebInspector.HAREntry(request)).build());
     },
 

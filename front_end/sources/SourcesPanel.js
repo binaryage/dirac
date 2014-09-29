@@ -326,7 +326,7 @@ WebInspector.SourcesPanel.prototype = {
 
     _showEditor: function(forceShowInPanel)
     {
-        WebInspector.inspectorView.showPanel("sources");
+        WebInspector.inspectorView.setCurrentPanel(this);
     },
 
     /**
@@ -1334,7 +1334,7 @@ WebInspector.SourcesPanel.ContextMenuProvider.prototype = {
      */
     appendApplicableItems: function(event, contextMenu, target)
     {
-        WebInspector.inspectorView.panel("sources").appendApplicableItems(event, contextMenu, target);
+        WebInspector.SourcesPanel.instance().appendApplicableItems(event, contextMenu, target);
     }
 }
 
@@ -1354,7 +1354,7 @@ WebInspector.SourcesPanel.UILocationRevealer.prototype = {
     reveal: function(uiLocation)
     {
         if (uiLocation instanceof WebInspector.UILocation) {
-            /** @type {!WebInspector.SourcesPanel} */ (WebInspector.inspectorView.panel("sources")).showUILocation(uiLocation);
+            WebInspector.SourcesPanel.instance().showUILocation(uiLocation);
             return Promise.resolve();
         }
         return Promise.rejectWithError("Internal error: not a ui location");
@@ -1377,10 +1377,30 @@ WebInspector.SourcesPanel.UISourceCodeRevealer.prototype = {
     reveal: function(uiSourceCode)
     {
         if (uiSourceCode instanceof WebInspector.UISourceCode) {
-            /** @type {!WebInspector.SourcesPanel} */ (WebInspector.inspectorView.panel("sources")).showUISourceCode(uiSourceCode);
+            WebInspector.SourcesPanel.instance().showUISourceCode(uiSourceCode);
             return Promise.resolve();
         }
         return Promise.rejectWithError("Internal error: not a ui source code");
+    }
+}
+
+/**
+ * @constructor
+ * @implements {WebInspector.Revealer}
+ */
+WebInspector.SourcesPanel.DebuggerPausedDetailsRevealer = function()
+{
+}
+
+WebInspector.SourcesPanel.DebuggerPausedDetailsRevealer.prototype = {
+    /**
+     * @param {!Object} object
+     * @return {!Promise}
+     */
+    reveal: function(object)
+    {
+        WebInspector.inspectorView.setCurrentPanel(WebInspector.SourcesPanel.instance());
+        return Promise.resolve();
     }
 }
 
@@ -1396,9 +1416,8 @@ WebInspector.SourcesPanel.ShowGoToSourceDialogActionDelegate.prototype = {
      */
     handleAction: function()
     {
-        var panel = /** @type {?WebInspector.SourcesPanel} */ (WebInspector.inspectorView.showPanel("sources"));
-        if (!panel)
-            return false;
+        var panel = WebInspector.SourcesPanel.instance();
+        WebInspector.inspectorView.setCurrentPanel(panel);
         panel.showGoToSourceDialog();
         return true;
     }
@@ -1480,10 +1499,37 @@ WebInspector.SourcesPanel.TogglePauseActionDelegate.prototype = {
      */
     handleAction: function()
     {
-        var panel = /** @type {?WebInspector.SourcesPanel} */ (WebInspector.inspectorView.showPanel("sources"));
-        if (!panel)
-            return false;
+        var panel = WebInspector.SourcesPanel.instance();
+        WebInspector.inspectorView.setCurrentPanel(panel);
         panel.togglePause();
         return true;
+    }
+}
+
+/**
+ * @return {!WebInspector.SourcesPanel}
+ */
+WebInspector.SourcesPanel.instance = function()
+{
+    if (!WebInspector.SourcesPanel._instanceObject)
+        WebInspector.SourcesPanel._instanceObject = new WebInspector.SourcesPanel();
+    return WebInspector.SourcesPanel._instanceObject;
+}
+
+/**
+ * @constructor
+ * @implements {WebInspector.PanelFactory}
+ */
+WebInspector.SourcesPanelFactory = function()
+{
+}
+
+WebInspector.SourcesPanelFactory.prototype = {
+    /**
+     * @return {!WebInspector.Panel}
+     */
+    createPanel: function()
+    {
+        return WebInspector.SourcesPanel.instance();
     }
 }
