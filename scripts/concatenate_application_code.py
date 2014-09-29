@@ -80,7 +80,7 @@ def concatenate_worker(module_name, descriptors, application_dir, output_dir, mi
     if not scripts:
         return
     worker_dir = path.join(application_dir, module_name)
-    output_file_path = path.join(output_dir, module_name, module_name + '.js')
+    output_file_path = path.join(output_dir, module_name + '_module.js')
 
     output = StringIO()
     output.write('/* Worker %s */\n' % module_name)
@@ -95,12 +95,6 @@ def concatenate_worker(module_name, descriptors, application_dir, output_dir, mi
         if scripts:
             output.write('\n/* Module %s */\n' % dep_name)
             modular_build.concatenate_scripts(scripts, path.join(application_dir, dep_name), output_dir, output)
-
-    output.write('\n/* Initialize worker */\n')
-    # Tell Runtime we are in the compiled mode.
-    output.write('allDescriptors = ')
-    output.write(json.dumps(dep_descriptors))
-    output.write(';\nRuntime.initializeWorker("%s");' % module_name)
 
     write_file(output_file_path, minify_if_needed(output.getvalue(), minify))
     output.close()

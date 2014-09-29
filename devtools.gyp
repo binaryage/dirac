@@ -46,6 +46,7 @@
             'conditions': [
                 ['debug_devtools==0', {
                     'dependencies': [
+                        'copy_standalone_css',
                         'concatenated_devtools_css',
                         'concatenated_toolbox_css',
                     ],
@@ -131,24 +132,24 @@
                             '<(PRODUCT_DIR)/resources/inspector/toolbox.css',
                             '<(PRODUCT_DIR)/resources/inspector/toolbox.html',
                             '<(PRODUCT_DIR)/resources/inspector/toolbox.js',
-                            '<(PRODUCT_DIR)/resources/inspector/audits.js',
-                            '<(PRODUCT_DIR)/resources/inspector/console.js',
-                            '<(PRODUCT_DIR)/resources/inspector/devices.js',
-                            '<(PRODUCT_DIR)/resources/inspector/documentation.js',
-                            '<(PRODUCT_DIR)/resources/inspector/elements.js',
-                            '<(PRODUCT_DIR)/resources/inspector/extensions.js',
-                            '<(PRODUCT_DIR)/resources/inspector/heap_snapshot_worker.js',
-                            '<(PRODUCT_DIR)/resources/inspector/layers.js',
-                            '<(PRODUCT_DIR)/resources/inspector/network.js',
-                            '<(PRODUCT_DIR)/resources/inspector/profiler.js',
-                            '<(PRODUCT_DIR)/resources/inspector/promises.js',
-                            '<(PRODUCT_DIR)/resources/inspector/resources.js',
-                            '<(PRODUCT_DIR)/resources/inspector/script_formatter_worker.js',
-                            '<(PRODUCT_DIR)/resources/inspector/settings.js',
-                            '<(PRODUCT_DIR)/resources/inspector/source_frame.js',
-                            '<(PRODUCT_DIR)/resources/inspector/sources.js',
-                            '<(PRODUCT_DIR)/resources/inspector/temp_storage_shared_worker.js',
-                            '<(PRODUCT_DIR)/resources/inspector/timeline.js',
+                            '<(PRODUCT_DIR)/resources/inspector/audits_module.js',
+                            '<(PRODUCT_DIR)/resources/inspector/console_module.js',
+                            '<(PRODUCT_DIR)/resources/inspector/devices_module.js',
+                            '<(PRODUCT_DIR)/resources/inspector/documentation_module.js',
+                            '<(PRODUCT_DIR)/resources/inspector/elements_module.js',
+                            '<(PRODUCT_DIR)/resources/inspector/extensions_module.js',
+                            '<(PRODUCT_DIR)/resources/inspector/heap_snapshot_worker_module.js',
+                            '<(PRODUCT_DIR)/resources/inspector/layers_module.js',
+                            '<(PRODUCT_DIR)/resources/inspector/network_module.js',
+                            '<(PRODUCT_DIR)/resources/inspector/profiler_module.js',
+                            '<(PRODUCT_DIR)/resources/inspector/promises_module.js',
+                            '<(PRODUCT_DIR)/resources/inspector/resources_module.js',
+                            '<(PRODUCT_DIR)/resources/inspector/script_formatter_worker_module.js',
+                            '<(PRODUCT_DIR)/resources/inspector/settings_module.js',
+                            '<(PRODUCT_DIR)/resources/inspector/source_frame_module.js',
+                            '<(PRODUCT_DIR)/resources/inspector/sources_module.js',
+                            '<(PRODUCT_DIR)/resources/inspector/temp_storage_shared_worker_module.js',
+                            '<(PRODUCT_DIR)/resources/inspector/timeline_module.js',
                             '<(PRODUCT_DIR)/resources/inspector/devtools_extension_api.js',
                             '<@(devtools_standalone_files)',
                             '<@(devtools_cm_css_files)',
@@ -319,9 +320,9 @@
                         'outputs': [
                             '<(_output_path)/devtools.js',
                             '<(_output_path)/toolbox.js',
-                            '<(_output_path)/heap_snapshot_worker/heap_snapshot_worker.js',
-                            '<(_output_path)/temp_storage_shared_worker/temp_storage_shared_worker.js',
-                            '<(_output_path)/script_formatter_worker/script_formatter_worker.js',
+                            '<(_output_path)/heap_snapshot_worker_module.js',
+                            '<(_output_path)/temp_storage_shared_worker_module.js',
+                            '<(_output_path)/script_formatter_worker_module.js',
                         ],
                         'action': ['python', '<@(_script_name)', 'devtools', 'toolbox', '--input_path', 'front_end', '--output_path', '<@(_output_path)', '--debug', '<@(debug_devtools)'],
                     }]
@@ -432,7 +433,7 @@
                             '<@(_input_file)',
                             '<@(devtools_audits_js_files)',
                         ],
-                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/audits.js'],
+                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/audits_module.js'],
                         'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
                     }],
                 },
@@ -463,7 +464,7 @@
                             '<@(_input_file)',
                             '<@(devtools_console_js_files)',
                         ],
-                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/console.js'],
+                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/console_module.js'],
                         'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
                     }],
                 },
@@ -494,7 +495,7 @@
                             '<@(_input_file)',
                             '<@(devtools_devices_js_files)',
                         ],
-                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/devices.js'],
+                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/devices_module.js'],
                         'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
                     }],
                 },
@@ -525,7 +526,7 @@
                             '<@(_input_file)',
                             '<@(devtools_documentation_js_files)',
                         ],
-                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/documentation.js'],
+                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/documentation_module.js'],
                         'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
                     }],
                 },
@@ -556,7 +557,7 @@
                             '<@(_input_file)',
                             '<@(devtools_elements_js_files)',
                         ],
-                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/elements.js'],
+                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/elements_module.js'],
                         'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
                     }],
                 },
@@ -587,7 +588,7 @@
                             '<@(_input_file)',
                             '<@(devtools_extensions_js_files)',
                         ],
-                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/extensions.js'],
+                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/extensions_module.js'],
                         'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
                     }],
                 },
@@ -609,18 +610,7 @@
             'type': 'none',
             'conditions': [
                 ['debug_devtools==0', { # Release
-                    'actions': [{
-                        'action_name': 'build_heap_snapshot_worker_module',
-                        'script_name': 'scripts/concatenate_module_scripts.py',
-                        'input_file': 'front_end/heap_snapshot_worker/module.json',
-                        'inputs': [
-                            '<@(_script_name)',
-                            '<@(_input_file)',
-                            '<@(devtools_heap_snapshot_worker_js_files)',
-                        ],
-                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/heap_snapshot_worker.js'],
-                        'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
-                    }],
+                    # Built by 'build_applications'.
                 },
                 { # Debug
                     'copies': [
@@ -649,7 +639,7 @@
                             '<@(_input_file)',
                             '<@(devtools_layers_js_files)',
                         ],
-                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/layers.js'],
+                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/layers_module.js'],
                         'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
                     }],
                 },
@@ -680,7 +670,7 @@
                             '<@(_input_file)',
                             '<@(devtools_network_js_files)',
                         ],
-                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/network.js'],
+                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/network_module.js'],
                         'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
                     }],
                 },
@@ -711,7 +701,7 @@
                             '<@(_input_file)',
                             '<@(devtools_profiler_js_files)',
                         ],
-                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/profiler.js'],
+                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/profiler_module.js'],
                         'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
                     }],
                 },
@@ -742,7 +732,7 @@
                             '<@(_input_file)',
                             '<@(devtools_promises_js_files)',
                         ],
-                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/promises.js'],
+                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/promises_module.js'],
                         'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
                     }],
                 },
@@ -773,7 +763,7 @@
                             '<@(_input_file)',
                             '<@(devtools_resources_js_files)',
                         ],
-                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/resources.js'],
+                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/resources_module.js'],
                         'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
                     }],
                 },
@@ -795,19 +785,7 @@
             'type': 'none',
             'conditions': [
                 ['debug_devtools==0', { # Release
-                    'actions': [{
-                        'action_name': 'build_script_formatter_worker_module',
-                        'script_name': 'scripts/concatenate_module_scripts.py',
-                        'input_file': 'front_end/script_formatter_worker/module.json',
-                        'inputs': [
-                            '<@(_script_name)',
-                            '<@(_input_file)',
-                            '<@(devtools_script_formatter_worker_js_files)',
-                            '<@(devtools_uglify_files)'
-                        ],
-                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/script_formatter_worker.js'],
-                        'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
-                    }],
+                    # Built by 'build_applications'.
                 },
                 { # Debug
                     'copies': [
@@ -843,7 +821,7 @@
                             '<@(_input_file)',
                             '<@(devtools_settings_js_files)',
                         ],
-                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/settings.js'],
+                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/settings_module.js'],
                         'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
                     }],
                 },
@@ -875,7 +853,7 @@
                             '<@(devtools_source_frame_js_files)',
                             '<@(devtools_cm_js_files)',
                         ],
-                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/source_frame.js'],
+                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/source_frame_module.js'],
                         'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
                     }],
                     'copies': [
@@ -921,7 +899,7 @@
                             '<@(_input_file)',
                             '<@(devtools_sources_js_files)',
                         ],
-                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/sources.js'],
+                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/sources_module.js'],
                         'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
                     }],
                 },
@@ -943,18 +921,7 @@
             'type': 'none',
             'conditions': [
                 ['debug_devtools==0', { # Release
-                    'actions': [{
-                        'action_name': 'build_temp_storage_shared_worker_module',
-                        'script_name': 'scripts/concatenate_module_scripts.py',
-                        'input_file': 'front_end/temp_storage_shared_worker/module.json',
-                        'inputs': [
-                            '<@(_script_name)',
-                            '<@(_input_file)',
-                            '<@(devtools_temp_storage_shared_worker_js_files)'
-                        ],
-                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/temp_storage_shared_worker.js'],
-                        'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
-                    }],
+                    # Built by 'build_applications'.
                 },
                 { # Debug
                     'copies': [
@@ -983,7 +950,7 @@
                             '<@(_input_file)',
                             '<@(devtools_timeline_js_files)',
                         ],
-                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/timeline.js'],
+                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/timeline_module.js'],
                         'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
                     }],
                 },
@@ -1004,6 +971,16 @@
     'conditions': [
         ['debug_devtools==0', {
             'targets': [
+                {
+                    'target_name': 'copy_standalone_css',
+                    'type': 'none',
+                    'copies': [{
+                        'destination': '<(PRODUCT_DIR)/resources/inspector',
+                        'files': [
+                            '<@(devtools_standalone_files)',
+                        ],
+                    }],
+                },
                 {
                     'target_name': 'concatenated_devtools_css',
                     'type': 'none',
