@@ -50,9 +50,12 @@ WebInspector.Main = function()
 }
 
 WebInspector.Main.prototype = {
+    /**
+     * @return {!Promise.<undefined>}
+     */
     showConsole: function()
     {
-        WebInspector.Revealer.reveal(WebInspector.console);
+        return WebInspector.Revealer.revealPromise(WebInspector.console);
     },
 
     _createGlobalStatusBarItems: function()
@@ -574,9 +577,7 @@ WebInspector.Main.prototype = {
     {
         var object = WebInspector.runtimeModel.createRemoteObject(payload);
         if (object.isNode()) {
-            var nodeObjectInspector = runtime.instance(WebInspector.NodeRemoteObjectInspector, object);
-            if (nodeObjectInspector)
-                nodeObjectInspector.inspectNodeObject(object);
+            WebInspector.Revealer.revealPromise(object).thenOrCatch(object.release.bind(object)).done();
             return;
         }
 

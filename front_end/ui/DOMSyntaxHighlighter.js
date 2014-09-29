@@ -60,8 +60,41 @@ WebInspector.DOMSyntaxHighlighter.prototype = {
      */
     syntaxHighlightNode: function(node)
     {
+        this.syntaxHighlightNodePromise(node).done();
+    },
+
+    /**
+     * @param {!Element} node
+     * @return {!Promise}
+     */
+    syntaxHighlightNodePromise: function(node)
+    {
         var lines = node.textContent.split("\n");
-        node.removeChildren();
+        var plainTextStart;
+        var line;
+
+        return self.runtime.instancePromise(WebInspector.TokenizerFactory).then(processTokens.bind(this));
+
+        /**
+         * @param {!WebInspector.TokenizerFactory} tokenizerFactory
+         * @this {WebInspector.DOMSyntaxHighlighter}
+         */
+        function processTokens(tokenizerFactory)
+        {
+            node.removeChildren();
+            var tokenize = tokenizerFactory.createTokenizer(this._mimeType);
+            for (var i = lines[0].length ? 0 : 1; i < lines.length; ++i) {
+                line = lines[i];
+                plainTextStart = 0;
+                tokenize(line, processToken.bind(this));
+                if (plainTextStart < line.length) {
+                    var plainText = line.substring(plainTextStart, line.length);
+                    node.createTextChild(plainText);
+                }
+                if (i < lines.length - 1)
+                    node.createChild("br");
+            }
+        }
 
         /**
          * @param {string} token
@@ -81,19 +114,6 @@ WebInspector.DOMSyntaxHighlighter.prototype = {
             }
             node.appendChild(this.createSpan(token, tokenType));
             plainTextStart = newColumn;
-        }
-
-        var tokenize = self.runtime.instance(WebInspector.TokenizerFactory).createTokenizer(this._mimeType);
-        for (var i = lines[0].length ? 0 : 1; i < lines.length; ++i) {
-            var line = lines[i];
-            var plainTextStart = 0;
-            tokenize(line, processToken.bind(this));
-            if (plainTextStart < line.length) {
-                var plainText = line.substring(plainTextStart, line.length);
-                node.createTextChild(plainText);
-            }
-            if (i < lines.length - 1)
-                node.createChild("br");
         }
     }
 }

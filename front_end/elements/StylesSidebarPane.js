@@ -1715,7 +1715,8 @@ WebInspector.StylePropertiesSection.prototype = {
             var target = this._parentPane._target;
             var rawLocation = new WebInspector.CSSLocation(target, this.rule.styleSheetId, this.rule.sourceURL, this.rule.lineNumberInSource(index), this.rule.columnNumberInSource(index));
             var uiLocation = WebInspector.cssWorkspaceBinding.rawLocationToUILocation(rawLocation);
-            WebInspector.Revealer.reveal(uiLocation);
+            if (uiLocation)
+                WebInspector.Revealer.reveal(uiLocation);
             event.consume(true);
             return;
         }
@@ -2859,7 +2860,9 @@ WebInspector.StylePropertyTreeElement.prototype = {
     {
         console.assert(this.section().navigable);
         var propertyNameClicked = element === this.nameElement;
-        WebInspector.Revealer.reveal(WebInspector.cssWorkspaceBinding.propertyUILocation(this.property, propertyNameClicked));
+        var uiLocation = WebInspector.cssWorkspaceBinding.propertyUILocation(this.property, propertyNameClicked);
+        if (uiLocation)
+            WebInspector.Revealer.reveal(uiLocation);
     },
 
     /**

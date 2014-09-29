@@ -235,16 +235,6 @@ WebInspector.ElementsPanel.prototype = {
         this._updateTreeOutlineVisibleWidth();
     },
 
-    omitDefaultSelection: function()
-    {
-        this._omitDefaultSelection = true;
-    },
-
-    stopOmittingDefaultSelection: function()
-    {
-        delete this._omitDefaultSelection;
-    },
-
     /**
      * @param {!WebInspector.DOMNode} node
      * @param {string} pseudoClass
@@ -1255,10 +1245,21 @@ WebInspector.ElementsPanel.prototype = {
      */
     revealAndSelectNode: function(node)
     {
+        if (WebInspector.inspectElementModeController && WebInspector.inspectElementModeController.enabled()) {
+            InspectorFrontendHost.bringToFront();
+            WebInspector.inspectElementModeController.disable();
+        }
+
+        this._omitDefaultSelection = true;
         WebInspector.inspectorView.setCurrentPanel(this);
         node = WebInspector.settings.showUAShadowDOM.get() ? node : this._leaveUserAgentShadowDOM(node);
         node.highlightForTwoSeconds();
         this.selectDOMNode(node, true);
+        delete this._omitDefaultSelection;
+
+        if (!this._notFirstInspectElement)
+            InspectorFrontendHost.inspectElementCompleted();
+        this._notFirstInspectElement = true;
     },
 
     /**
@@ -1469,144 +1470,40 @@ WebInspector.ElementsPanel.DOMNodeRevealer = function()
 WebInspector.ElementsPanel.DOMNodeRevealer.prototype = {
     /**
      * @param {!Object} node
+     * @return {!Promise}
      */
     reveal: function(node)
     {
-        if (WebInspector.inspectElementModeController && WebInspector.inspectElementModeController.enabled()) {
-            InspectorFrontendHost.bringToFront();
-            WebInspector.inspectElementModeController.disable();
-        }
-
-        var panel = /** @type {!WebInspector.ElementsPanel} */ (WebInspector.inspectorView.panel("elements"));
-        if (node instanceof WebInspector.DOMNode)
-            panel.revealAndSelectNode(/** @type {!WebInspector.DOMNode} */ (node));
-        else if (node instanceof WebInspector.DeferredDOMNode)
-            (/** @type {!WebInspector.DeferredDOMNode} */ (node)).resolve(onNodeResolved);
+        return new Promise(revealPromise);
 
         /**
-         * @param {?WebInspector.DOMNode} resolvedNode
+         * @param {function(undefined)} resolve
+         * @param {function(!Error)} reject
          */
-        function onNodeResolved(resolvedNode)
+        function revealPromise(resolve, reject)
         {
-            if (resolvedNode)
-                panel.revealAndSelectNode(resolvedNode);
-        }
-    }
-}
+            var panel = /** @type {!WebInspector.ElementsPanel} */ (WebInspector.inspectorView.panel("elements"));
+            if (node instanceof WebInspector.DOMNode)
+                onNodeResolved(/** @type {!WebInspector.DOMNode} */ (node));
+            else if (node instanceof WebInspector.DeferredDOMNode)
+                (/** @type {!WebInspector.DeferredDOMNode} */ (node)).resolve(onNodeResolved);
+            else if (node instanceof WebInspector.RemoteObject)
+                (/** @type {!WebInspector.RemoteObject} */ (node)).pushNodeToFrontend(onNodeResolved);
+            else
+                reject(new Error("Can't reveal a non-node."));
 
-/**
- * @constructor
- * @implements {WebInspector.Revealer}
- */
-WebInspector.ElementsPanel.NodeRemoteObjectRevealer = function()
-{
-}
-
-WebInspector.ElementsPanel.NodeRemoteObjectRevealer.prototype = {
-    /**
-     * @param {!Object} remoteObject
-     */
-    reveal: function(remoteObject)
-    {
-        revealElement(/** @type {!WebInspector.RemoteObject} */ (remoteObject));
-
-        /**
-         * @param {?WebInspector.RemoteObject} remoteObject
-         */
-        function revealElement(remoteObject)
-        {
-            if (remoteObject)
-                remoteObject.pushNodeToFrontend(selectNode.bind(null, remoteObject));
-        }
-
-        /**
-         * @param {?WebInspector.RemoteObject} remoteObject
-         * @param {?WebInspector.DOMNode} node
-         */
-        function selectNode(remoteObject, node)
-        {
-            if (node) {
-                WebInspector.Revealer.reveal(node);
-                return;
+            /**
+             * @param {?WebInspector.DOMNode} resolvedNode
+             */
+            function onNodeResolved(resolvedNode)
+            {
+                if (resolvedNode) {
+                    panel.revealAndSelectNode(resolvedNode);
+                    resolve(undefined);
+                    return;
+                }
+                reject(new Error("Could not resolve node to reveal."));
             }
-            if (!remoteObject || remoteObject.description !== "#text" || !remoteObject.isNode())
-                return;
-            remoteObject.callFunction(parentElement, undefined, revealElement);
-        }
-
-        /**
-         * @suppressReceiverCheck
-         * @this {Element}
-         */
-        function parentElement()
-        {
-            return this.parentElement;
-        }
-    }
-}
-
-/**
- * @constructor
- */
-WebInspector.ElementsPanel.NodeRemoteObjectInspector = function()
-{
-}
-
-WebInspector.ElementsPanel.NodeRemoteObjectInspector.prototype = {
-    /**
-     * @param {!Object} object
-     */
-    inspectNodeObject: function(object)
-    {
-        var remoteObject = /** @type {!WebInspector.RemoteObject} */ (object);
-        if (!remoteObject.isNode()) {
-            remoteObject.release();
-            return;
-        }
-        var elementsPanel = /** @type {!WebInspector.ElementsPanel} */ (WebInspector.inspectorView.panel("elements"));
-        revealElement(remoteObject);
-
-        /**
-         * @param {?WebInspector.RemoteObject} remoteObject
-         */
-        function revealElement(remoteObject)
-        {
-            if (!remoteObject)
-                return;
-            remoteObject.pushNodeToFrontend(selectNode.bind(null, remoteObject));
-            elementsPanel.omitDefaultSelection();
-            WebInspector.inspectorView.setCurrentPanel(elementsPanel);
-        }
-
-        /**
-         * @param {!WebInspector.RemoteObject} remoteObject
-         * @param {?WebInspector.DOMNode} node
-         */
-        function selectNode(remoteObject, node)
-        {
-            elementsPanel.stopOmittingDefaultSelection();
-            if (node) {
-                WebInspector.Revealer.reveal(node);
-                if (!WebInspector._notFirstInspectElement && !WebInspector.inspectorView.drawerVisible())
-                    InspectorFrontendHost.inspectElementCompleted();
-                WebInspector._notFirstInspectElement = true;
-                remoteObject.release();
-                return;
-            }
-            if (remoteObject.description !== "#text" || !remoteObject.isNode()) {
-                remoteObject.release();
-                return;
-            }
-            remoteObject.callFunction(parentElement, undefined, revealElement);
-        }
-
-        /**
-         * @suppressReceiverCheck
-         * @this {Element}
-         */
-        function parentElement()
-        {
-            return this.parentElement;
         }
     }
 }

@@ -127,14 +127,16 @@ WebInspector.ConsolePanel.ConsoleRevealer = function()
 WebInspector.ConsolePanel.ConsoleRevealer.prototype = {
     /**
      * @param {!Object} object
+     * @return {!Promise}
      */
     reveal: function(object)
     {
         var consoleView = WebInspector.ConsolePanel._view();
         if (consoleView.isShowing()) {
             consoleView.focus();
-            return;
+            return Promise.resolve();
         }
         WebInspector.inspectorView.showViewInDrawer("console");
+        return Promise.resolve();
     }
 }

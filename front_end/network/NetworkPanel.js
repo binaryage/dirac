@@ -2169,14 +2169,16 @@ WebInspector.NetworkPanel.RequestRevealer.prototype = {
     /**
      * @param {!Object} request
      * @param {number=} lineNumber
+     * @return {!Promise}
      */
     reveal: function(request, lineNumber)
     {
         if (request instanceof WebInspector.NetworkRequest) {
             var panel = /** @type {?WebInspector.NetworkPanel} */ (WebInspector.inspectorView.showPanel("network"));
-            if (panel)
-                panel.revealAndHighlightRequest(request);
+            panel.revealAndHighlightRequest(request);
+            return Promise.resolve();
         }
+        return Promise.rejectWithError("Internal error: not a network request");
     }
 }
 

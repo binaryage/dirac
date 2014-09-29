@@ -12,9 +12,29 @@ WebInspector.Renderer = function()
 WebInspector.Renderer.prototype = {
     /**
      * @param {!Object} object
-     * @return {?Element}
+     * @return {!Promise.<!Element>}
      */
     render: function(object) {}
+}
+
+/**
+ * @param {!Object} object
+ * @return {!Promise.<!Element>}
+ */
+WebInspector.Renderer.renderPromise = function(object)
+{
+    if (!object)
+        return Promise.rejectWithError("Can't render " + object);
+
+    return self.runtime.instancePromise(WebInspector.Renderer, object).then(render);
+
+    /**
+     * @param {!WebInspector.Renderer} renderer
+     */
+    function render(renderer)
+    {
+        return renderer.render(object);
+    }
 }
 
 /**
@@ -25,36 +45,41 @@ WebInspector.Revealer = function()
 }
 
 /**
- * @param {?Object} revealable
+ * @param {!Object} revealable
  * @param {number=} lineNumber
  */
 WebInspector.Revealer.reveal = function(revealable, lineNumber)
 {
+    WebInspector.Revealer.revealPromise(revealable, lineNumber).done();
+}
+
+/**
+ * @param {!Object} revealable
+ * @param {number=} lineNumber
+ * @return {!Promise}
+ */
+WebInspector.Revealer.revealPromise = function(revealable, lineNumber)
+{
     if (!revealable)
-        return;
-    var revealer = self.runtime.instance(WebInspector.Revealer, revealable);
-    if (revealer)
-        revealer.reveal(revealable, lineNumber);
+        return Promise.rejectWithError("Can't reveal " + revealable);
+
+    return self.runtime.instancePromise(WebInspector.Revealer, revealable).then(reveal);
+
+    /**
+     * @param {!WebInspector.Revealer} revealer
+     * @return {!Promise}
+     */
+    function reveal(revealer)
+    {
+        return revealer.reveal(revealable, lineNumber);
+    }
 }
 
 WebInspector.Revealer.prototype = {
     /**
      * @param {!Object} object
      * @param {number=} lineNumber
+     * @return {!Promise}
      */
     reveal: function(object, lineNumber) {}
-}
-
-/**
- * @interface
- */
-WebInspector.NodeRemoteObjectInspector = function()
-{
-}
-
-WebInspector.NodeRemoteObjectInspector.prototype = {
-    /**
-     * @param {!Object} object
-     */
-    inspectNodeObject: function(object) {}
 }

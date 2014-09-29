@@ -200,27 +200,23 @@ WebInspector.ExtensionAuditFormatters = {
     node: function(expression, evaluateOptions)
     {
         var parentElement = document.createElement("div");
-        /**
-         * @param {?WebInspector.DOMNode} node
-         */
-        function onNodeAvailable(node)
-        {
-            if (!node)
-                return;
-            var renderer = self.runtime.instance(WebInspector.Renderer, node);
-            if (renderer)
-                parentElement.appendChild(renderer.render(node));
-            else
-                console.error("No renderer for node found");
-        }
+        this.evaluate(expression, evaluateOptions, onEvaluate);
+
         /**
          * @param {!WebInspector.RemoteObject} remoteObject
          */
         function onEvaluate(remoteObject)
         {
-            remoteObject.pushNodeToFrontend(onNodeAvailable);
+            WebInspector.Renderer.renderPromise(remoteObject).then(appendRenderer).thenOrCatch(remoteObject.release.bind(remoteObject)).done();
+
+            /**
+             * @param {!Element} element
+             */
+            function appendRenderer(element)
+            {
+                parentElement.appendChild(element);
+            }
         }
-        this.evaluate(expression, evaluateOptions, onEvaluate);
         return parentElement;
     }
 }

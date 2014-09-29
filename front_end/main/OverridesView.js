@@ -730,9 +730,11 @@ WebInspector.OverridesView.Revealer = function()
 WebInspector.OverridesView.Revealer.prototype = {
     /**
      * @param {!Object} overridesSupport
+     * @return {!Promise}
      */
     reveal: function(overridesSupport)
     {
         WebInspector.inspectorView.showViewInDrawer("emulation");
+        return Promise.resolve();
     }
 }

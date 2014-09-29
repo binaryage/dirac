@@ -44,7 +44,7 @@ WebInspector.DocumentationView.prototype = {
             return;
         }
         loadXHR(url)
-            .then(this._createArticle.bind(this, searchItem), this._createEmptyPage.bind(this))
+            .then(this._createArticle.bind(this, searchItem))
             .catch(this._createEmptyPage.bind(this));
     },
 

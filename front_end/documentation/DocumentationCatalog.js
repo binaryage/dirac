@@ -174,7 +174,7 @@ WebInspector.DocumentationCatalog.Loader.prototype = {
         this._state = WebInspector.DocumentationCatalog.Loader.DownloadStates.InProgress;
         var url = String.sprintf(WebInspector.DocumentationCatalog._articleListURLFormat, this._section);
         var boundReset = this._resetDownload.bind(this);
-        loadXHR(url).then(this._processData.bind(this), boundReset).catch(boundReset);
+        loadXHR(url).then(this._processData.bind(this)).catch(boundReset);
     },
 
     /**

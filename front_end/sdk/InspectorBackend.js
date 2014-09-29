@@ -526,6 +526,17 @@ InspectorBackendClass.Connection.prototype = {
         if (script)
             this._scripts.push(script);
 
+        // Execute all promises.
+        setTimeout(function() {
+            if (!this._pendingResponsesCount)
+                this._executeAfterPendingDispatches();
+            else
+                this.runAfterPendingDispatches();
+        }.bind(this), 0);
+    },
+
+    _executeAfterPendingDispatches: function()
+    {
         if (!this._pendingResponsesCount) {
             var scripts = this._scripts;
             this._scripts = [];

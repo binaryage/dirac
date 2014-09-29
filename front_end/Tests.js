@@ -770,7 +770,6 @@ TestSuite.prototype.evaluateInConsole_ = function(code, callback)
 {
     function innerEvaluate()
     {
-        WebInspector.console.show();
         var consoleView = WebInspector.ConsolePanel._view();
         consoleView._prompt.text = code;
         consoleView._promptElement.dispatchEvent(TestSuite.createKeyEvent("Enter"));
@@ -786,7 +785,7 @@ TestSuite.prototype.evaluateInConsole_ = function(code, callback)
         return;
     }
 
-    innerEvaluate.call(this);
+    WebInspector.console.showPromise().then(innerEvaluate.bind(this));
 };
 
 /**

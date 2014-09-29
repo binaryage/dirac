@@ -14,23 +14,13 @@
         },
         {
             "type": "@WebInspector.Renderer",
-            "contextTypes": ["WebInspector.DOMNode"],
+            "contextTypes": ["WebInspector.DOMNode", "WebInspector.RemoteObject"],
             "className": "WebInspector.ElementsTreeOutline.Renderer"
         },
         {
             "type": "@WebInspector.Revealer",
-            "contextTypes": ["WebInspector.DOMNode", "WebInspector.DeferredDOMNode" ],
+            "contextTypes": ["WebInspector.DOMNode", "WebInspector.DeferredDOMNode", "WebInspector.RemoteObject" ],
             "className": "WebInspector.ElementsPanel.DOMNodeRevealer"
-        },
-        {
-            "type": "@WebInspector.Revealer",
-            "contextTypes": ["WebInspector.RemoteObject"],
-            "className": "WebInspector.ElementsPanel.NodeRemoteObjectRevealer"
-        },
-        {
-            "type": "@WebInspector.NodeRemoteObjectInspector",
-            "contextTypes": ["WebInspector.RemoteObject"],
-            "className": "WebInspector.ElementsPanel.NodeRemoteObjectInspector"
         },
         {
             "type": "ui-setting",

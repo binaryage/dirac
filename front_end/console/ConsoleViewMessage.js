@@ -601,25 +601,14 @@ WebInspector.ConsoleViewMessage.prototype = {
      */
     _formatParameterAsNode: function(object, elem)
     {
+        WebInspector.Renderer.renderPromise(object).then(appendRenderer).done();
         /**
-         * @param {!WebInspector.DOMNode} node
-         * @this {WebInspector.ConsoleViewMessage}
+         * @param {!Element} rendererElement
          */
-        function printNode(node)
+        function appendRenderer(rendererElement)
         {
-            if (!node) {
-                // Sometimes DOM is loaded after the sync message is being formatted, so we get no
-                // nodeId here. So we fall back to object formatting here.
-                this._formatParameterAsObject(object, elem, false);
-                return;
-            }
-            var renderer = self.runtime.instance(WebInspector.Renderer, node);
-            if (renderer)
-                elem.appendChild(renderer.render(node));
-            else
-                console.error("No renderer for node found");
+            elem.appendChild(rendererElement);
         }
-        object.pushNodeToFrontend(printNode.bind(this));
     },
 
     /**

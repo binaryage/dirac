@@ -2897,20 +2897,41 @@ WebInspector.ElementsTreeOutline.Renderer = function()
 WebInspector.ElementsTreeOutline.Renderer.prototype = {
     /**
      * @param {!Object} object
-     * @return {?Element}
+     * @return {!Promise.<!Element>}
      */
     render: function(object)
     {
-        if (!(object instanceof WebInspector.DOMNode))
-            return null;
-        var node = /** @type {!WebInspector.DOMNode} */ (object);
-        var treeOutline = new WebInspector.ElementsTreeOutline(node.target(), false, false);
-        treeOutline.rootDOMNode = node;
-        treeOutline.element.classList.add("outline-disclosure");
-        if (!treeOutline.children[0].hasChildren)
-            treeOutline.element.classList.add("single-node");
-        treeOutline.setVisible(true);
-        treeOutline.element.treeElementForTest = treeOutline.children[0];
-        return treeOutline.element;
+        return new Promise(renderPromise);
+
+        /**
+         * @param {function(!Element)} resolve
+         * @param {function(!Error)} reject
+         */
+        function renderPromise(resolve, reject)
+        {
+            if (object instanceof WebInspector.DOMNode)
+                onNodeResolved(/** @type {!WebInspector.DOMNode} */ (object));
+            else if (object instanceof WebInspector.DeferredDOMNode)
+                (/** @type {!WebInspector.DeferredDOMNode} */ (object)).resolve(onNodeResolved);
+            else if (object instanceof WebInspector.RemoteObject)
+                (/** @type {!WebInspector.RemoteObject} */ (object)).pushNodeToFrontend(onNodeResolved);
+            else
+                reject(new Error("Can't reveal not a node."));
+
+            /**
+             * @param {?WebInspector.DOMNode} node
+             */
+            function onNodeResolved(node)
+            {
+                var treeOutline = new WebInspector.ElementsTreeOutline(node.target(), false, false);
+                treeOutline.rootDOMNode = node;
+                treeOutline.element.classList.add("outline-disclosure");
+                if (!treeOutline.children[0].hasChildren)
+                    treeOutline.element.classList.add("single-node");
+                treeOutline.setVisible(true);
+                treeOutline.element.treeElementForTest = treeOutline.children[0];
+                resolve(treeOutline.element);
+            }
+        }
     }
 }

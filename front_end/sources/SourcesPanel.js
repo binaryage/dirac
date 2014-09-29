@@ -1349,11 +1349,15 @@ WebInspector.SourcesPanel.UILocationRevealer = function()
 WebInspector.SourcesPanel.UILocationRevealer.prototype = {
     /**
      * @param {!Object} uiLocation
+     * @return {!Promise}
      */
     reveal: function(uiLocation)
     {
-        if (uiLocation instanceof WebInspector.UILocation)
+        if (uiLocation instanceof WebInspector.UILocation) {
             /** @type {!WebInspector.SourcesPanel} */ (WebInspector.inspectorView.panel("sources")).showUILocation(uiLocation);
+            return Promise.resolve();
+        }
+        return Promise.rejectWithError("Internal error: not a ui location");
     }
 }
 
@@ -1368,11 +1372,15 @@ WebInspector.SourcesPanel.UISourceCodeRevealer = function()
 WebInspector.SourcesPanel.UISourceCodeRevealer.prototype = {
     /**
      * @param {!Object} uiSourceCode
+     * @return {!Promise}
      */
     reveal: function(uiSourceCode)
     {
-        if (uiSourceCode instanceof WebInspector.UISourceCode)
+        if (uiSourceCode instanceof WebInspector.UISourceCode) {
             /** @type {!WebInspector.SourcesPanel} */ (WebInspector.inspectorView.panel("sources")).showUISourceCode(uiSourceCode);
+            return Promise.resolve();
+        }
+        return Promise.rejectWithError("Internal error: not a ui source code");
     }
 }
 

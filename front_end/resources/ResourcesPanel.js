@@ -816,14 +816,16 @@ WebInspector.ResourcesPanel.ResourceRevealer.prototype = {
     /**
      * @param {!Object} resource
      * @param {number=} lineNumber
+     * @return {!Promise}
      */
     reveal: function(resource, lineNumber)
     {
         if (resource instanceof WebInspector.Resource) {
             var panel = /** @type {?WebInspector.ResourcesPanel} */ (WebInspector.inspectorView.showPanel("resources"));
-            if (panel)
-                panel.showResource(resource, lineNumber);
+            panel.showResource(resource, lineNumber);
+            return Promise.resolve();
         }
+        return Promise.rejectWithError("Internal error: not a resource");
     }
 }
 

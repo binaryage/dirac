@@ -152,18 +152,20 @@ WebInspector.ConsoleModel.evaluateCommandInConsole = function(executionContext, 
      * @param {boolean} wasThrown
      * @param {?RuntimeAgent.RemoteObject=} valueResult
      * @param {?DebuggerAgent.ExceptionDetails=} exceptionDetails
-     * @this {WebInspector.ConsoleModel}
      */
     function printResult(result, wasThrown, valueResult, exceptionDetails)
     {
         if (!result)
             return;
 
-        WebInspector.console.show();
-        this.dispatchEventToListeners(WebInspector.ConsoleModel.Events.CommandEvaluated, {result: result, wasThrown: wasThrown, text: text, commandMessage: commandMessage, exceptionDetails: exceptionDetails});
+        WebInspector.console.showPromise().then(reportUponEvaluation).done();
+        function reportUponEvaluation()
+        {
+            target.consoleModel.dispatchEventToListeners(WebInspector.ConsoleModel.Events.CommandEvaluated, {result: result, wasThrown: wasThrown, text: text, commandMessage: commandMessage, exceptionDetails: exceptionDetails});
+        }
     }
 
-    executionContext.evaluate(text, "console", useCommandLineAPI, false, false, true, printResult.bind(target.consoleModel));
+    executionContext.evaluate(text, "console", useCommandLineAPI, false, false, true, printResult);
 
     WebInspector.userMetrics.ConsoleEvaluated.record();
 }

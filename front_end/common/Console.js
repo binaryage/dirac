@@ -51,6 +51,9 @@ WebInspector.Console.UIDelegate = function()
 }
 
 WebInspector.Console.UIDelegate.prototype = {
+    /**
+     * @return {!Promise.<undefined>}
+     */
     showConsole: function() { }
 }
 
@@ -109,8 +112,17 @@ WebInspector.Console.prototype = {
 
     show: function()
     {
+        this.showPromise().done();
+    },
+
+    /**
+     * @return {!Promise.<undefined>}
+     */
+    showPromise: function()
+    {
         if (this._uiDelegate)
-            this._uiDelegate.showConsole();
+            return this._uiDelegate.showConsole();
+        return Promise.reject();
     },
 
     __proto__: WebInspector.Object.prototype

@@ -237,13 +237,14 @@ WebInspector.LayersPanel.LayerTreeRevealer = function()
 WebInspector.LayersPanel.LayerTreeRevealer.prototype = {
     /**
      * @param {!Object} snapshotData
+     * @return {!Promise}
      */
     reveal: function(snapshotData)
     {
         if (!(snapshotData instanceof WebInspector.DeferredLayerTree))
-            return;
+            return Promise.rejectWithError("Internal error: not a WebInspector.DeferredLayerTree");
         var panel = /** @type {?WebInspector.LayersPanel} */ (WebInspector.inspectorView.showPanel("layers"));
-        if (panel)
-            panel._showLayerTree(/** @type {!WebInspector.DeferredLayerTree} */ (snapshotData));
+        panel._showLayerTree(/** @type {!WebInspector.DeferredLayerTree} */ (snapshotData));
+        return Promise.resolve();
     }
 }
