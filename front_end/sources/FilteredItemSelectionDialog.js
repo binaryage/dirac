@@ -38,14 +38,10 @@ WebInspector.FilteredItemSelectionDialog = function(delegate)
 {
     WebInspector.DialogDelegate.call(this);
 
-    if (!WebInspector.FilteredItemSelectionDialog._stylesLoaded) {
-        WebInspector.View.createStyleElement("filteredItemSelectionDialog.css");
-        WebInspector.FilteredItemSelectionDialog._stylesLoaded = true;
-    }
-
     this.element = document.createElement("div");
     this.element.className = "filtered-item-list-dialog";
     this.element.addEventListener("keydown", this._onKeyDown.bind(this), false);
+    this.element.appendChild(WebInspector.View.createStyleElement("filteredItemSelectionDialog.css"));
 
     this._promptElement = this.element.createChild("input", "monospace");
     this._promptElement.addEventListener("input", this._onInput.bind(this), false);

@@ -44,6 +44,8 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
     this.registerRequiredCSS("cm/codemirror.css");
     this.registerRequiredCSS("cmdevtools.css");
 
+    this.element.appendChild(WebInspector.CodeMirrorUtils.createThemeStyle());
+
     this._codeMirror = new window.CodeMirror(this.element, {
         lineNumbers: true,
         gutters: ["CodeMirror-linenumbers"],
@@ -52,6 +54,8 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
         styleSelectedText: true,
         electricChars: false
     });
+    this._codeMirrorElement = this.element.lastElementChild;
+
     this._codeMirror._codeMirrorTextEditor = this;
 
     CodeMirror.keyMap["devtools-common"] = {
@@ -168,8 +172,8 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
     this.element.addEventListener("mousedown", updateAnticipateJumpFlag.bind(this, false), false);
 
     this.element.style.overflow = "hidden";
-    this.element.firstChild.classList.add("source-code");
-    this.element.firstChild.classList.add("fill");
+    this._codeMirrorElement.classList.add("source-code");
+    this._codeMirrorElement.classList.add("fill");
     this._elementToWidget = new Map();
     this._nestedUpdatesCounter = 0;
 
@@ -1141,7 +1145,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     {
         var scrollInfo = this._codeMirror.getScrollInfo();
         var newPaddingBottom;
-        var linesElement = this.element.firstElementChild.querySelector(".CodeMirror-lines");
+        var linesElement = this._codeMirrorElement.querySelector(".CodeMirror-lines");
         var lineCount = this._codeMirror.lineCount();
         if (lineCount <= 1)
             newPaddingBottom = 0;
@@ -2437,16 +2441,3 @@ WebInspector.CodeMirrorTextEditor._overrideModeWithPrefixedTokens = function(mod
 WebInspector.CodeMirrorTextEditor._overrideModeWithPrefixedTokens("css", "css-");
 WebInspector.CodeMirrorTextEditor._overrideModeWithPrefixedTokens("javascript", "js-");
 WebInspector.CodeMirrorTextEditor._overrideModeWithPrefixedTokens("xml", "xml-");
-
-(function() {
-    var backgroundColor = InspectorFrontendHost.getSelectionBackgroundColor();
-    var backgroundColorRule = backgroundColor ? ".CodeMirror .CodeMirror-selected { background-color: " + backgroundColor + ";}" : "";
-    var foregroundColor = InspectorFrontendHost.getSelectionForegroundColor();
-    var foregroundColorRule = foregroundColor ? ".CodeMirror .CodeMirror-selectedtext:not(.CodeMirror-persist-highlight) { color: " + foregroundColor + "!important;}" : "";
-    if (!foregroundColorRule && !backgroundColorRule)
-        return;
-
-    var style = document.createElement("style");
-    style.textContent = backgroundColorRule + foregroundColorRule;
-    document.head.appendChild(style);
-})();

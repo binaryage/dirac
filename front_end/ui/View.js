@@ -41,9 +41,7 @@ WebInspector.View = function()
     this._notificationDepth = 0;
 }
 
-WebInspector.View._cssFileToVisibleViewCount = {};
-WebInspector.View._cssFileToStyleElement = {};
-WebInspector.View._cssUnloadTimeout = 2000;
+WebInspector.View._cssFileToContent = {};
 
 WebInspector.View._buildSourceURL = function(cssFile)
 {
@@ -56,10 +54,14 @@ WebInspector.View._buildSourceURL = function(cssFile)
  */
 WebInspector.View.createStyleElement = function(cssFile)
 {
+    var content = WebInspector.View._cssFileToContent[cssFile];
+    if (!content) {
+        content = loadResource(cssFile) + WebInspector.View._buildSourceURL(cssFile)
+        WebInspector.View._cssFileToContent[cssFile] = content;
+    }
     var styleElement = document.createElement("style");
     styleElement.type = "text/css";
-    styleElement.textContent = loadResource(cssFile) + WebInspector.View._buildSourceURL(cssFile);
-    document.head.insertBefore(styleElement, document.head.firstChild);
+    styleElement.textContent = content;
     return styleElement;
 }
 
@@ -128,7 +130,6 @@ WebInspector.View.prototype = {
 
     _processWillShow: function()
     {
-        this._loadCSSIfNeeded();
         this._callOnVisibleChildren(this._processWillShow);
         this._isShowing = true;
     },
@@ -155,7 +156,6 @@ WebInspector.View.prototype = {
 
     _processWasHidden: function()
     {
-        this._disableCSSIfNeeded();
         this._callOnVisibleChildren(this._processWasHidden);
     },
 
@@ -349,55 +349,7 @@ WebInspector.View.prototype = {
 
     registerRequiredCSS: function(cssFile)
     {
-        this._cssFiles.push(cssFile);
-    },
-
-    _loadCSSIfNeeded: function()
-    {
-        for (var i = 0; i < this._cssFiles.length; ++i) {
-            var cssFile = this._cssFiles[i];
-
-            var viewsWithCSSFile = WebInspector.View._cssFileToVisibleViewCount[cssFile];
-            WebInspector.View._cssFileToVisibleViewCount[cssFile] = (viewsWithCSSFile || 0) + 1;
-            if (!viewsWithCSSFile)
-                this._doLoadCSS(cssFile);
-        }
-    },
-
-    _doLoadCSS: function(cssFile)
-    {
-        var styleElement = WebInspector.View._cssFileToStyleElement[cssFile];
-        if (styleElement) {
-            styleElement.disabled = false;
-            return;
-        }
-        styleElement = WebInspector.View.createStyleElement(cssFile);
-        WebInspector.View._cssFileToStyleElement[cssFile] = styleElement;
-    },
-
-    _disableCSSIfNeeded: function()
-    {
-        var scheduleUnload = !!WebInspector.View._cssUnloadTimer;
-
-        for (var i = 0; i < this._cssFiles.length; ++i) {
-            var cssFile = this._cssFiles[i];
-
-            if (!--WebInspector.View._cssFileToVisibleViewCount[cssFile])
-                scheduleUnload = true;
-        }
-
-        function doUnloadCSS()
-        {
-            delete WebInspector.View._cssUnloadTimer;
-
-            for (cssFile in WebInspector.View._cssFileToVisibleViewCount) {
-                if (WebInspector.View._cssFileToVisibleViewCount.hasOwnProperty(cssFile) && !WebInspector.View._cssFileToVisibleViewCount[cssFile])
-                    WebInspector.View._cssFileToStyleElement[cssFile].disabled = true;
-            }
-        }
-
-        if (scheduleUnload && !WebInspector.View._cssUnloadTimer)
-            WebInspector.View._cssUnloadTimer = setTimeout(doUnloadCSS, WebInspector.View._cssUnloadTimeout);
+        this.element.appendChild(WebInspector.View.createStyleElement(cssFile));
     },
 
     printViewHierarchy: function()
@@ -457,13 +409,11 @@ WebInspector.View.prototype = {
      */
     measurePreferredSize: function()
     {
-        this._loadCSSIfNeeded();
         WebInspector.View._originalAppendChild.call(document.body, this.element);
         this.element.positionAt(0, 0);
         var result = new Size(this.element.offsetWidth, this.element.offsetHeight);
         this.element.positionAt(undefined, undefined);
         WebInspector.View._originalRemoveChild.call(document.body, this.element);
-        this._disableCSSIfNeeded();
         return result;
     },
 

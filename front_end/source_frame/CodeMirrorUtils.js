@@ -167,8 +167,25 @@ WebInspector.CodeMirrorCSSLoadView = function()
     this.element.classList.add("hidden");
     this.registerRequiredCSS("cm/codemirror.css");
     this.registerRequiredCSS("cmdevtools.css");
+    this.element.appendChild(WebInspector.CodeMirrorUtils.createThemeStyle());
 }
 
 WebInspector.CodeMirrorCSSLoadView.prototype = {
     __proto__: WebInspector.VBox.prototype
+}
+
+
+/**
+ * @return {!Element}
+ */
+WebInspector.CodeMirrorUtils.createThemeStyle = function()
+{
+    var backgroundColor = InspectorFrontendHost.getSelectionBackgroundColor();
+    var backgroundColorRule = backgroundColor ? ".CodeMirror .CodeMirror-selected { background-color: " + backgroundColor + ";}" : "";
+    var foregroundColor = InspectorFrontendHost.getSelectionForegroundColor();
+    var foregroundColorRule = foregroundColor ? ".CodeMirror .CodeMirror-selectedtext:not(.CodeMirror-persist-highlight) { color: " + foregroundColor + "!important;}" : "";
+    var style = document.createElement("style");
+    if (foregroundColorRule || backgroundColorRule)
+        style.textContent = backgroundColorRule + foregroundColorRule;
+    return style;
 }

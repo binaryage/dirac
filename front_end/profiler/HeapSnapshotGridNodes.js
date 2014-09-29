@@ -403,6 +403,7 @@ WebInspector.HeapSnapshotGridNode.prototype = {
                         insertRetrievedChild.call(this, items[itemIndex++], insertionIndex++);
                         ++itemPosition;
                     }
+
                     // Merge with the next range.
                     if (nextRange && newEndOfRange === nextRange.from) {
                         range.to = nextRange.to;
