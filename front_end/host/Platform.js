@@ -165,5 +165,5 @@ WebInspector.monospaceFontFamily = function()
  */
 WebInspector.isWorkerFrontend = function()
 {
-    return !!Runtime.queryParam("dedicatedWorkerId") || !!Runtime.queryParam("isSharedWorker");
+    return !!Runtime.queryParam("isSharedWorker");
 }

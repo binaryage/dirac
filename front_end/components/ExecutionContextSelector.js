@@ -26,7 +26,9 @@ WebInspector.ExecutionContextSelector.prototype = {
         // Defer selecting default target since we need all clients to get their
         // targetAdded notifications first.
         setImmediate(function() {
-            if (!WebInspector.context.flavor(WebInspector.Target))
+            // FIXME(413886): Execution context for the main thread on the service/shared worker shadow page
+            // should never be sent to frontend. The worker forntend check below could be removed once this is fixed.
+            if (!WebInspector.context.flavor(WebInspector.Target) || WebInspector.isWorkerFrontend())
                 WebInspector.context.setFlavor(WebInspector.Target, target);
         });
     },

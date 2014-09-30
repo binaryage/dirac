@@ -101,69 +101,6 @@ WebInspector.Main.prototype = {
         }
     },
 
-    _calculateWorkerInspectorTitle: function()
-    {
-        var expression = "location.href";
-        if (Runtime.queryParam("isSharedWorker"))
-            expression += " + (this.name ? ' (' + this.name + ')' : '')";
-        RuntimeAgent.invoke_evaluate({expression:expression, doNotPauseOnExceptionsAndMuteConsole:true, returnByValue: true}, evalCallback);
-
-        /**
-         * @param {?Protocol.Error} error
-         * @param {!RuntimeAgent.RemoteObject} result
-         * @param {boolean=} wasThrown
-         */
-        function evalCallback(error, result, wasThrown)
-        {
-            if (error || wasThrown) {
-                console.error(error);
-                return;
-            }
-            InspectorFrontendHost.inspectedURLChanged(String(result.value));
-        }
-    },
-
-    _loadCompletedForWorkers: function()
-    {
-        // Make sure script execution of dedicated worker or service worker is
-        // resumed and then paused on the first script statement in case we
-        // autoattached to it.
-        if (Runtime.queryParam("workerPaused")) {
-            pauseAndResume.call(this);
-        } else{
-            RuntimeAgent.isRunRequired(isRunRequiredCallback.bind(this));
-        }
-
-        /**
-         * @this {WebInspector.Main}
-         */
-        function isRunRequiredCallback(error, result)
-        {
-            if (result) {
-                pauseAndResume.call(this);
-            } else if (WebInspector.isWorkerFrontend()) {
-                calculateTitle.call(this);
-            }
-        }
-
-        /**
-         * @this {WebInspector.Main}
-         */
-        function pauseAndResume()
-        {
-            DebuggerAgent.pause();
-            RuntimeAgent.run(calculateTitle.bind(this));
-        }
-
-        /**
-         * @this {WebInspector.Main}
-         */
-        function calculateTitle()
-        {
-            this._calculateWorkerInspectorTitle();
-        }
-    },
-
     _loaded: function()
     {
         console.timeStamp("Main._loaded");
@@ -290,12 +227,6 @@ WebInspector.Main.prototype = {
         console.timeStamp("Main._createConnection");
         InspectorBackend.loadFromJSONIfNeeded("../protocol.json");
 
-        var workerId = Runtime.queryParam("dedicatedWorkerId");
-        if (workerId) {
-            this._connectionEstablished(new WebInspector.ExternalWorkerConnection(workerId));
-            return;
-        }
-
         if (Runtime.queryParam("ws")) {
             var ws = "ws://" + Runtime.queryParam("ws");
             InspectorBackendClass.WebSocketConnection.Create(ws, this._connectionEstablished.bind(this));
@@ -380,8 +311,6 @@ WebInspector.Main.prototype = {
         WebInspector.overridesSupport.applyInitialOverrides();
         if (!WebInspector.overridesSupport.responsiveDesignAvailable() && WebInspector.overridesSupport.emulationEnabled())
             WebInspector.inspectorView.showViewInDrawer("emulation", true);
-
-        this._loadCompletedForWorkers();
     },
 
     _registerForwardedShortcuts: function()

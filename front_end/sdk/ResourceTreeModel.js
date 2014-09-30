@@ -440,7 +440,10 @@ WebInspector.ResourceTreeModel.prototype = {
         var frameResource = this._createResourceFromFramePayload(framePayload, framePayload.url, WebInspector.resourceTypes.Document, framePayload.mimeType);
         if (frame.isMainFrame())
             this._inspectedPageURL = frameResource.url;
-        frame.addResource(frameResource);
+        // FIXME(413891): This check could be removed once we stop to send frame tree for service/shared workers.
+        // This makes sure that the shadow page document resource does not hide the worker script resource (they have the same url).
+        if (!WebInspector.isWorkerFrontend())
+            frame.addResource(frameResource);
 
         for (var i = 0; frameTreePayload.childFrames && i < frameTreePayload.childFrames.length; ++i)
             this._addFramesRecursively(frame, frameTreePayload.childFrames[i]);
