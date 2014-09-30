@@ -43,7 +43,10 @@ WebInspector.TextPrompt = function(completions, stopCharacters)
     this._proxyElementDisplay = "inline-block";
     this._loadCompletions = completions;
     this._completionStopCharacters = stopCharacters || " =:[({;,!+-*/&|^<>.";
+    this._autocompletionTimeout = WebInspector.TextPrompt.DefaultAutocompletionTimeout;
 }
+
+WebInspector.TextPrompt.DefaultAutocompletionTimeout = 250;
 
 WebInspector.TextPrompt.Events = {
     ItemApplied: "text-prompt-item-applied",
@@ -51,6 +54,14 @@ WebInspector.TextPrompt.Events = {
 };
 
 WebInspector.TextPrompt.prototype = {
+    /**
+     * @param {number} timeout
+     */
+    setAutocompletionTimeout: function(timeout)
+    {
+        this._autocompletionTimeout = timeout;
+    },
+
     get proxyElement()
     {
         return this._proxyElement;
@@ -354,7 +365,7 @@ WebInspector.TextPrompt.prototype = {
     {
         var immediately = this.isSuggestBoxVisible() || force;
         if (!this._completeTimeout)
-            this._completeTimeout = setTimeout(this.complete.bind(this, force), immediately ? 0 : 250);
+            this._completeTimeout = setTimeout(this.complete.bind(this, force), immediately ? 0 : this._autocompletionTimeout);
     },
 
     /**
