@@ -513,7 +513,7 @@ WebInspector.UISourceCode.prototype = {
     /**
      * @return {string}
      */
-    highlighterType: function()
+    extension: function()
     {
         if (this._project.type() === WebInspector.projectTypes.Network)
             return this.contentType().canonicalMimeType();
@@ -522,8 +522,7 @@ WebInspector.UISourceCode.prototype = {
         var indexOfQuestionMark = extension.indexOf("?");
         if (indexOfQuestionMark !== -1)
             extension = extension.substr(0, indexOfQuestionMark);
-        var mimeType = WebInspector.ResourceType.mimeTypesForExtensions[extension.toLowerCase()];
-        return mimeType || this.contentType().canonicalMimeType();
+        return extension;
     },
 
     /**
@@ -544,8 +543,7 @@ WebInspector.UISourceCode.prototype = {
     {
         var content = this.content();
         if (content) {
-            var provider = new WebInspector.StaticContentProvider(this.contentType(), content);
-            provider.searchInContent(query, caseSensitive, isRegex, callback);
+            WebInspector.StaticContentProvider.searchInContent(content, query, caseSensitive, isRegex, callback);
             return;
         }
 

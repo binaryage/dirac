@@ -14,6 +14,24 @@ WebInspector.StaticContentProvider = function(contentType, content)
     this._contentType = contentType;
 }
 
+/**
+ * @param {string} content
+ * @param {string} query
+ * @param {boolean} caseSensitive
+ * @param {boolean} isRegex
+ * @param {function(!Array.<!WebInspector.ContentProvider.SearchMatch>)} callback
+ */
+WebInspector.StaticContentProvider.searchInContent = function(content, query, caseSensitive, isRegex, callback)
+{
+    function performSearch()
+    {
+        callback(WebInspector.ContentProvider.performSearchInContent(content, query, caseSensitive, isRegex));
+    }
+
+    // searchInContent should call back later.
+    setTimeout(performSearch.bind(null), 0);
+}
+
 WebInspector.StaticContentProvider.prototype = {
     /**
      * @return {string}
@@ -47,15 +65,6 @@ WebInspector.StaticContentProvider.prototype = {
      */
     searchInContent: function(query, caseSensitive, isRegex, callback)
     {
-        /**
-         * @this {WebInspector.StaticContentProvider}
-         */
-        function performSearch()
-        {
-            callback(WebInspector.ContentProvider.performSearchInContent(this._content, query, caseSensitive, isRegex));
-        }
-
-        // searchInContent should call back later.
-        self.setTimeout(performSearch.bind(this), 0);
+        WebInspector.StaticContentProvider.searchInContent(this._content, query, caseSensitive, isRegex, callback);
     }
 }

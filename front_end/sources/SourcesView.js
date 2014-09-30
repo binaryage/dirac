@@ -85,6 +85,16 @@ WebInspector.SourcesView.Events = {
     EditorSelected: "EditorSelected",
 }
 
+/**
+ * @param {!WebInspector.UISourceCode} uiSourceCode
+ * @return {string}
+ */
+WebInspector.SourcesView.uiSourceCodeHighlighterType = function(uiSourceCode)
+{
+    var mimeType = WebInspector.ResourceType.mimeTypesForExtensions[uiSourceCode.extension().toLowerCase()];
+    return mimeType || uiSourceCode.contentType().canonicalMimeType();
+}
+
 WebInspector.SourcesView.prototype = {
     /**
      * @param {function(!Array.<!WebInspector.KeyboardShortcut.Descriptor>, function(!Event=):boolean)} registerShortcutDelegate
@@ -352,7 +362,7 @@ WebInspector.SourcesView.prototype = {
             sourceFrame = new WebInspector.UISourceCodeFrame(uiSourceCode);
         break;
         }
-        sourceFrame.setHighlighterType(uiSourceCode.highlighterType());
+        sourceFrame.setHighlighterType(WebInspector.SourcesView.uiSourceCodeHighlighterType(uiSourceCode));
         this._sourceFramesByUISourceCode.set(uiSourceCode, sourceFrame);
         this._historyManager.trackSourceFrameCursorJumps(sourceFrame);
         return sourceFrame;
@@ -394,7 +404,7 @@ WebInspector.SourcesView.prototype = {
         if (!oldSourceFrame)
             return;
         if (this._sourceFrameMatchesUISourceCode(oldSourceFrame, uiSourceCode)) {
-            oldSourceFrame.setHighlighterType(uiSourceCode.highlighterType());
+            oldSourceFrame.setHighlighterType(WebInspector.SourcesView.uiSourceCodeHighlighterType(uiSourceCode));
         } else {
             this._editorContainer.removeUISourceCode(uiSourceCode);
             this._removeSourceFrame(uiSourceCode);
