@@ -50,7 +50,7 @@ WebInspector.LayerTreeModel = function(target)
 {
     WebInspector.SDKModel.call(this, WebInspector.LayerTreeModel, target);
     target.registerLayerTreeDispatcher(new WebInspector.LayerTreeDispatcher(this));
-    target.domModel.addEventListener(WebInspector.DOMModel.Events.DocumentUpdated, this._onDocumentUpdated, this);
+    WebInspector.targetManager.addEventListener(WebInspector.TargetManager.Events.MainFrameNavigated, this._onMainFrameNavigated, this);
     /** @type {?WebInspector.LayerTreeBase} */
     this._layerTree = null;
 }
@@ -82,6 +82,11 @@ WebInspector.LayerTreeModel.prototype = {
         if (this._enabled)
             return;
         this._enabled = true;
+        this._forceEnable();
+    },
+
+    _forceEnable: function()
+    {
         this._layerTree = new WebInspector.AgentLayerTree(this.target());
         this._lastPaintRectByLayerId = {};
         this.target().layerTreeAgent().enable();
@@ -150,12 +155,10 @@ WebInspector.LayerTreeModel.prototype = {
         this.dispatchEventToListeners(WebInspector.LayerTreeModel.Events.LayerPainted, layer);
     },
 
-    _onDocumentUpdated: function()
+    _onMainFrameNavigated: function()
     {
-        if (!this._enabled)
-            return;
-        this.disable();
-        this.enable();
+        if (this._enabled)
+            this._forceEnable();
     },
 
     __proto__: WebInspector.SDKModel.prototype
