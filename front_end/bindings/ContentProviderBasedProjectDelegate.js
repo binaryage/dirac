@@ -313,16 +313,17 @@ WebInspector.ContentProviderBasedProjectDelegate.prototype = {
     /**
      * @param {string} parentPath
      * @param {string} name
+     * @param {string} originURL
      * @param {string} url
      * @param {!WebInspector.ContentProvider} contentProvider
      * @return {string}
      */
-    addContentProvider: function(parentPath, name, url, contentProvider)
+    addContentProvider: function(parentPath, name, originURL, url, contentProvider)
     {
         var path = parentPath ? parentPath + "/" + name : name;
         if (this._contentProviders[path])
             return path;
-        var fileDescriptor = new WebInspector.FileDescriptor(parentPath, name, url, url, contentProvider.contentType());
+        var fileDescriptor = new WebInspector.FileDescriptor(parentPath, name, originURL, url, contentProvider.contentType());
         this._contentProviders[path] = contentProvider;
         this._projectStore.addFile(fileDescriptor);
         return path;

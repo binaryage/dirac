@@ -178,7 +178,7 @@ WebInspector.DebuggerProjectDelegate.prototype = {
         var splitURL = WebInspector.ParsedURL.splitURL(script.sourceURL);
         var name = splitURL[splitURL.length - 1];
         name = "VM" + script.scriptId + (name ? " " + name : "");
-        return this.addContentProvider("", name, script.sourceURL, contentProvider);
+        return this.addContentProvider("", name, script.sourceURL, script.sourceURL, contentProvider);
     },
 
     __proto__: WebInspector.ContentProviderBasedProjectDelegate.prototype
