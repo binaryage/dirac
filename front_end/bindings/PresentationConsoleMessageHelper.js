@@ -271,8 +271,7 @@ WebInspector.PresentationConsoleMessageHelper.prototype = {
 
     _debuggerReset: function()
     {
-        this._pendingConsoleMessages = {};
-        this._presentationConsoleMessages = [];
+        this._consoleCleared();
     }
 }
 
