@@ -353,7 +353,14 @@ WebInspector.IsolatedFileSystem.prototype = {
          */
         function readerLoadEnd()
         {
-            callback(/** @type {string} */ (this.result));
+            /** @type {?string} */
+            var string = null;
+            try {
+                string = /** @type {string} */ (this.result);
+            } catch (e) {
+                console.error("Can't read file: " + path + ": " + e);
+            }
+            callback(string);
         }
 
         /**
