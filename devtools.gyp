@@ -288,7 +288,6 @@
                         'toolbox_html',
                         'supported_css_properties',
                         'frontend_protocol_sources',
-                        'concatenated_module_descriptors',
                     ],
                     'actions': [{
                         'action_name': 'build_applications',
@@ -312,7 +311,6 @@
                             '<@(_app_loader_names)',
                             '<@(devtools_core_files)',
                             '<@(devtools_module_json_files)',
-                            '<(PRODUCT_DIR)/resources/inspector/Runtime.js',
                             '<(PRODUCT_DIR)/resources/inspector/InspectorBackendCommands.js',
                             '<(PRODUCT_DIR)/resources/inspector/SupportedCSSProperties.js',
                         ],
@@ -335,7 +333,6 @@
                             'destination': '<(_app_target)',
                             'files': [
                                 '<@(devtools_core_base_files)',
-                                'front_end/Runtime.js',
                             ],
                         },
                         {
@@ -1019,22 +1016,6 @@
                         'search_path': [ 'front_end' ],
                         'outputs': ['<(PRODUCT_DIR)/resources/inspector/toolbox.css'],
                         'action': ['python', '<@(_script_name)', '<@(_input_stylesheet)', '<@(_outputs)'],
-                    }],
-                },
-                {
-                    'target_name': 'concatenated_module_descriptors',
-                    'type': 'none',
-                    'actions': [{
-                        'action_name': 'concatenated_module_descriptors',
-                        'script_name': 'scripts/concatenate_module_descriptors.py',
-                        'input_file': ['front_end/Runtime.js'],
-                        'inputs': [
-                            '<@(_script_name)',
-                            '<@(_input_file)',
-                            '<@(devtools_module_json_files)',
-                        ],
-                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/Runtime.js'],
-                        'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)', '<@(devtools_module_json_files)'],
                     }],
                 },
             ],

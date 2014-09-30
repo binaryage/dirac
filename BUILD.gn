@@ -209,7 +209,6 @@ action("build_applications") {
   ]
 
   generated_inputs = [
-    "$root_out_dir/resources/inspector/Runtime.js",
     "$root_out_dir/resources/inspector/InspectorBackendCommands.js",
     "$root_out_dir/resources/inspector/SupportedCSSProperties.js",
   ]
@@ -269,7 +268,6 @@ action("build_applications") {
       ":toolbox_html",
       ":supported_css_properties",
       ":frontend_protocol_sources",
-      ":concatenated_module_descriptors",
     ]
   }
 }
@@ -384,17 +382,6 @@ concatenate_module_scripts("build_sources_module") {
 concatenate_module_scripts("build_timeline_module") {
   module_name = "timeline"
   imported_files = gypi_values.devtools_timeline_js_files
-}
-
-action("concatenated_module_descriptors") {
-  script = "scripts/concatenate_module_descriptors.py"
-
-  input = "front_end/Runtime.js"
-  inputs = [ input ] + gypi_values.devtools_module_json_files
-  outputs = [ "$root_out_dir/resources/inspector/Runtime.js" ]
-
-  args = rebase_path([ input ] + outputs +
-    gypi_values.devtools_module_json_files, root_build_dir)
 }
 
 template("concatenate_css") {

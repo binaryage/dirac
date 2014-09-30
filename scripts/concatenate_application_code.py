@@ -13,8 +13,10 @@ Also concatenates all workers' dependencies into individual worker loader script
 from cStringIO import StringIO
 from os import path
 from modular_build import read_file, write_file, bail_error
+import copy
 import modular_build
 import os
+import re
 import sys
 
 try:
@@ -57,16 +59,15 @@ def concatenate_autostart_modules(descriptors, application_dir, output_dir, outp
 def concatenate_application_script(application_name, descriptors, application_dir, output_dir, minify):
     application_loader_name = application_name + '.js'
     output = StringIO()
+    runtime_contents = read_file(path.join(application_dir, 'Runtime.js'))
+    runtime_contents = re.sub('var allDescriptors = \[\];', 'var allDescriptors = %s;' % release_module_descriptors(descriptors.modules).replace("\\", "\\\\"), runtime_contents, 1)
     output.write('/* Runtime.js */\n')
-    output.write(read_file(path.join(application_dir, 'Runtime.js')))
+    output.write(runtime_contents)
     output.write('\n/* Autostart modules */\n')
     concatenate_autostart_modules(descriptors, application_dir, output_dir, output)
     output.write('/* Application descriptor %s */\n' % (application_name + '.json'))
     output.write('applicationDescriptor = ')
     output.write(descriptors.application_json)
-    output.write(';\n/* Module descriptors */\n')
-    output.write('allDescriptors = ')
-    output.write(json.dumps(descriptors.modules.values()))
     output.write(';\n/* Application loader */\n')
     output.write(read_file(path.join(application_dir, application_loader_name)))
 
@@ -84,8 +85,6 @@ def concatenate_worker(module_name, descriptors, application_dir, output_dir, mi
 
     output = StringIO()
     output.write('/* Worker %s */\n' % module_name)
-    output.write('/* Runtime.js */\n')
-    output.write(read_file(path.join(application_dir, 'Runtime.js')))
     dependencies = descriptors.sorted_dependencies_closure(module_name)
     dep_descriptors = []
     for dep_name in dependencies:
@@ -98,6 +97,18 @@ def concatenate_worker(module_name, descriptors, application_dir, output_dir, mi
 
     write_file(output_file_path, minify_if_needed(output.getvalue(), minify))
     output.close()
+
+
+def release_module_descriptors(module_descriptors):
+    result = []
+    for name in module_descriptors:
+        module = copy.copy(module_descriptors[name])
+        # Clear scripts, as they are not used at runtime
+        # (only the fact of their presence is important).
+        if module.get('scripts'):
+            module['scripts'] = []
+        result.append(module)
+    return json.dumps(result)
 
 
 def build_application(application_name, loader, application_dir, output_dir, minify):
