@@ -144,28 +144,6 @@ WebInspector.InspectorView.prototype = {
      * @param {string} panelName
      * @return {?WebInspector.Panel}
      */
-    _panel: function(panelName)
-    {
-        return this._panels[panelName];
-    },
-
-    /**
-     * @param {string} panelName
-     * @return {?WebInspector.Panel}
-     */
-    _showPanel: function(panelName)
-    {
-        var panel = this._panels[panelName];
-        if (!panel)
-            throw new Error("Can't show panel " + panelName + " - it is not yet loaded")
-        this.setCurrentPanel(panel);
-        return panel;
-    },
-
-    /**
-     * @param {string} panelName
-     * @return {?WebInspector.Panel}
-     */
     _loadPanel: function(panelName)
     {
         var panelDescriptor = this._panelDescriptors[panelName];
