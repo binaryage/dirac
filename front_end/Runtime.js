@@ -815,9 +815,15 @@ Runtime.ExperimentsSupport.prototype = {
     /**
      * @return {!Array.<!Runtime.Experiment>}
      */
-    allExperiments: function()
+    allConfigurableExperiments: function()
     {
-        return this._experiments.slice();
+        var result = [];
+        for (var i = 0; i < this._experiments.length; i++) {
+            var experiment = this._experiments[i];
+            if (!this._enabledTransiently[experiment.name])
+                result.push(experiment);
+        }
+        return result;
     },
 
     /**
@@ -873,8 +879,6 @@ Runtime.ExperimentsSupport.prototype = {
     setEnabled: function(experimentName, enabled)
     {
         this._checkExperiment(experimentName);
-        if (!enabled)
-            delete this._enabledTransiently[experimentName];
         var experimentsSetting = Runtime._experimentsSetting();
         experimentsSetting[experimentName] = enabled;
         this._setExperimentsSetting(experimentsSetting);

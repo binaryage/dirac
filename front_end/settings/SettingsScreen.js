@@ -561,7 +561,7 @@ WebInspector.ExperimentsSettingsTab = function()
 {
     WebInspector.SettingsTab.call(this, WebInspector.UIString("Experiments"), "experiments-tab-content");
 
-    var experiments = Runtime.experiments.allExperiments();
+    var experiments = Runtime.experiments.allConfigurableExperiments();
     if (experiments.length) {
         var experimentsSection = this._appendSection();
         experimentsSection.appendChild(this._createExperimentsWarningSubsection());
