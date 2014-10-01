@@ -1303,6 +1303,7 @@ WebInspector.CSSMediaQueryExpression = function(payload)
     this._value = payload.value;
     this._unit = payload.unit;
     this._feature = payload.feature;
+    this._valueRange = payload.valueRange ? WebInspector.TextRange.fromObject(payload.valueRange) : null;
     this._computedLength = payload.computedLength || null;
 }
 
@@ -1338,6 +1339,14 @@ WebInspector.CSSMediaQueryExpression.prototype = {
     feature: function()
     {
         return this._feature;
+    },
+
+    /**
+     * @return {?WebInspector.TextRange}
+     */
+    valueRange: function()
+    {
+        return this._valueRange;
     },
 
     /**

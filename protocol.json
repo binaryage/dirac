@@ -2761,6 +2761,7 @@
                     { "name": "value", "type": "number", "description": "Media query expression value."},
                     { "name": "unit", "type": "string", "description": "Media query expression units."},
                     { "name": "feature", "type": "string", "description": "Media query expression feature."},
+                    { "name": "valueRange", "$ref": "SourceRange", "optional": true, "description": "The associated range of the value text in the enclosing stylesheet (if available)." },
                     { "name": "computedLength", "type": "number", "optional": true, "description": "Computed length of media query expression (if applicable)."}
                 ],
                 "description": "Media query expression descriptor.",
