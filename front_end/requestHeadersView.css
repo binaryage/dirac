@@ -79,3 +79,9 @@
     word-break: break-all;
     margin-top: 1px;
 }
+
+.resource-status-image {
+    margin-top: -2px;
+    margin-right: 3px;
+    vertical-align: middle;
+}
