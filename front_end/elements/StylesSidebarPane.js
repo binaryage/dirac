@@ -2117,6 +2117,17 @@ WebInspector.BlankStylePropertiesSection.prototype = {
             delete this._parentPane._userOperation;
             this._editingSelectorEnded();
             this._markSelectorMatches();
+
+            this._finishedAddingRuleForTest();
+        }
+
+        /**
+         * @this {WebInspector.StylePropertiesSection}
+         */
+        function failureCallback()
+        {
+            this.editingSelectorCancelled();
+            this._finishedAddingRuleForTest();
         }
 
         if (newContent)
@@ -2125,8 +2136,10 @@ WebInspector.BlankStylePropertiesSection.prototype = {
 
         var cssModel = this._parentPane._target.cssModel;
         var ruleText = this._rulePrefix() + newContent + " {}";
-        cssModel.addRule(this._styleSheetId, this._parentPane._node, ruleText, this._ruleLocation, successCallback.bind(this), this.editingSelectorCancelled.bind(this));
+        cssModel.addRule(this._styleSheetId, this._parentPane._node, ruleText, this._ruleLocation, successCallback.bind(this), failureCallback.bind(this));
     },
+
+    _finishedAddingRuleForTest: function() { },
 
     editingSelectorCancelled: function()
     {
