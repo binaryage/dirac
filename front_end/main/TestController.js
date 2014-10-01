@@ -35,15 +35,11 @@ WebInspector.evaluateForTestInFrontend = function(callId, script)
 
     function invokeMethod()
     {
-        var message;
         try {
             script = script + "//# sourceURL=evaluateInWebInspector" + callId + ".js";
-            var result = window.eval(script);
-            message = typeof result === "undefined" ? "\"<undefined>\"" : JSON.stringify(result);
+            window.eval(script);
         } catch (e) {
-            message = e.toString();
         }
-        RuntimeAgent.evaluate("didEvaluateForTestInFrontend(" + callId + ", " + message + ")", "test");
     }
     InspectorBackend.connection().runAfterPendingDispatches(invokeMethod);
 }
