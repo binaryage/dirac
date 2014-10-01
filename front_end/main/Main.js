@@ -144,6 +144,8 @@ WebInspector.Main.prototype = {
                 Runtime.experiments.enableForTest("layersPanel");
             if (testPath.indexOf("tracing/") !== -1)
                 Runtime.experiments.enableForTest("timelineOnTraceEvents");
+        } else {
+            Runtime.experiments.setDefaultExperiments(["timelineOnTraceEvents"]);
         }
     },
 
