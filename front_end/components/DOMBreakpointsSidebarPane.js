@@ -78,7 +78,7 @@ WebInspector.DOMBreakpointsSidebarPane.prototype = {
         var nodeBreakpoints = {};
         for (var id in this._breakpointElements) {
             var element = this._breakpointElements[id];
-            if (element._node === node)
+            if (element._node === node && element._checkboxElement.checked)
                 nodeBreakpoints[element._type] = true;
         }
 
@@ -190,6 +190,9 @@ WebInspector.DOMBreakpointsSidebarPane.prototype = {
         this._saveBreakpoints();
     },
 
+    /**
+     * @param {!WebInspector.DOMNode} node
+     */
     _removeBreakpointsForNode: function(node)
     {
         for (var id in this._breakpointElements) {
@@ -199,12 +202,32 @@ WebInspector.DOMBreakpointsSidebarPane.prototype = {
         }
     },
 
+    /**
+     * @param {!WebInspector.DOMNode} node
+     * @param {string} type
+     * @param {boolean} enabled
+     */
     _setBreakpoint: function(node, type, enabled)
     {
         var breakpointId = this._createBreakpointId(node.id, type);
-        if (breakpointId in this._breakpointElements)
-            return;
+        var breakpointElement = this._breakpointElements[breakpointId];
+        if (!breakpointElement) {
+            breakpointElement = this._createBreakpointElement(node, type, enabled);
+            this._breakpointElements[breakpointId] = breakpointElement;
+        } else {
+            breakpointElement._checkboxElement.checked = enabled;
+        }
+        if (enabled)
+            DOMDebuggerAgent.setDOMBreakpoint(node.id, type);
+    },
 
+    /**
+     * @param {!WebInspector.DOMNode} node
+     * @param {string} type
+     * @param {boolean} enabled
+     */
+    _createBreakpointElement: function(node, type, enabled)
+    {
         var element = document.createElement("li");
         element._node = node;
         element._type = type;
@@ -237,9 +260,7 @@ WebInspector.DOMBreakpointsSidebarPane.prototype = {
             currentElement = currentElement.nextSibling;
         }
         this.addListElement(element, currentElement);
-        this._breakpointElements[breakpointId] = element;
-        if (enabled)
-            DOMDebuggerAgent.setDOMBreakpoint(node.id, type);
+        return element;
     },
 
     _removeAllBreakpoints: function()
@@ -251,6 +272,10 @@ WebInspector.DOMBreakpointsSidebarPane.prototype = {
         this._saveBreakpoints();
     },
 
+    /**
+     * @param {!WebInspector.DOMNode} node
+     * @param {string} type
+     */
     _removeBreakpoint: function(node, type)
     {
         var breakpointId = this._createBreakpointId(node.id, type);
@@ -264,6 +289,11 @@ WebInspector.DOMBreakpointsSidebarPane.prototype = {
             DOMDebuggerAgent.removeDOMBreakpoint(node.id, type);
     },
 
+    /**
+     * @param {!WebInspector.DOMNode} node
+     * @param {string} type
+     * @param {!Event} event
+     */
     _contextMenu: function(node, type, event)
     {
         var contextMenu = new WebInspector.ContextMenu(event);
@@ -281,6 +311,11 @@ WebInspector.DOMBreakpointsSidebarPane.prototype = {
         contextMenu.show();
     },
 
+    /**
+     * @param {!WebInspector.DOMNode} node
+     * @param {string} type
+     * @param {!Event} event
+     */
     _checkboxClicked: function(node, type, event)
     {
         if (event.target.checked)
@@ -309,6 +344,10 @@ WebInspector.DOMBreakpointsSidebarPane.prototype = {
         }
     },
 
+    /**
+     * @param {number} nodeId
+     * @param {string} type
+     */
     _createBreakpointId: function(nodeId, type)
     {
         return nodeId + ":" + type;
