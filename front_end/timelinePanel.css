@@ -206,7 +206,8 @@
     width: 7px;
     height: 7px;
     border-radius: 1px;
-    border: solid 1px;
+    border-style: solid;
+    border-width: 1px;
     display: inline-block;
 }
 
