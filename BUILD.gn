@@ -32,6 +32,34 @@ devtools_extensions_js_files = gypi_values.devtools_extensions_js_files -
   [ "<@(devtools_extension_api_files)" ] +
   gypi_values.devtools_extension_api_files
 
+devtools_modules_js_files =
+  gypi_values.devtools_audits_js_files +
+  gypi_values.devtools_console_js_files +
+  gypi_values.devtools_devices_js_files +
+  gypi_values.devtools_documentation_js_files +
+  gypi_values.devtools_elements_js_files +
+  devtools_extensions_js_files +
+  gypi_values.devtools_heap_snapshot_worker_js_files +
+  gypi_values.devtools_layers_js_files +
+  gypi_values.devtools_network_js_files +
+  gypi_values.devtools_profiler_js_files +
+  gypi_values.devtools_promises_js_files +
+  gypi_values.devtools_resources_js_files +
+  gypi_values.devtools_script_formatter_worker_js_files +
+  gypi_values.devtools_settings_js_files +
+  gypi_values.devtools_source_frame_js_files +
+  gypi_values.devtools_sources_js_files +
+  gypi_values.devtools_temp_storage_shared_worker_js_files +
+  gypi_values.devtools_timeline_js_files
+
+all_devtools_files =
+  gypi_values.devtools_cm_css_files +
+  gypi_values.devtools_cm_js_files +
+  devtools_core_files +
+  gypi_values.devtools_module_json_files +
+  devtools_modules_js_files +
+  gypi_values.devtools_uglify_files
+
 #-------------------------------------------------------------------------------
 
 visibility = [ "//third_party/WebKit/*" ]
@@ -198,33 +226,35 @@ action("build_applications") {
       "scripts/concatenate_application_code.py",
   ]
 
-  app_descriptor_names = [
-      "front_end/devtools.json",
-      "front_end/toolbox.json",
-  ]
-
-  app_loader_names = [
-      "front_end/devtools.js",
-      "front_end/toolbox.js",
-  ]
-
   generated_inputs = [
     "$root_out_dir/resources/inspector/InspectorBackendCommands.js",
     "$root_out_dir/resources/inspector/SupportedCSSProperties.js",
   ]
 
-  inputs =
-    helper_scripts + app_descriptor_names + app_loader_names +
-    devtools_core_files + gypi_values.devtools_module_json_files +
-    generated_inputs
+  inputs = helper_scripts + all_devtools_files + generated_inputs
 
   output_path = "$root_out_dir/resources/inspector/"
   outputs = [
     output_path + "devtools.js",
     output_path + "toolbox.js",
+    output_path + "audits_module.js",
+    output_path + "console_module.js",
+    output_path + "devices_module.js",
+    output_path + "documentation_module.js",
+    output_path + "elements_module.js",
+    output_path + "extensions_module.js",
     output_path + "heap_snapshot_worker_module.js",
-    output_path + "temp_storage_shared_worker_module.js",
+    output_path + "layers_module.js",
+    output_path + "network_module.js",
+    output_path + "profiler_module.js",
+    output_path + "promises_module.js",
+    output_path + "resources_module.js",
     output_path + "script_formatter_worker_module.js",
+    output_path + "settings_module.js",
+    output_path + "source_frame_module.js",
+    output_path + "sources_module.js",
+    output_path + "temp_storage_shared_worker_module.js",
+    output_path + "timeline_module.js",
   ]
 
   if (debug_devtools) {
@@ -244,23 +274,7 @@ action("build_applications") {
     "--debug", debug_flag
   ]
 
-  deps = [
-    ":build_audits_module",
-    ":build_console_module",
-    ":build_devices_module",
-    ":build_documentation_module",
-    ":build_elements_module",
-    ":build_extensions_module",
-    ":build_layers_module",
-    ":build_network_module",
-    ":build_profiler_module",
-    ":build_promises_module",
-    ":build_resources_module",
-    ":build_settings_module",
-    ":build_source_frame_module",
-    ":build_sources_module",
-    ":build_timeline_module",
-  ]
+  deps = []
 
   if (!debug_devtools) {
     deps += [
@@ -270,118 +284,6 @@ action("build_applications") {
       ":frontend_protocol_sources",
     ]
   }
-}
-
-# Runs the concatenate_module_scripts script.
-#  module_name: (String) The JS module name to process.
-#  imported_files: (List of strings) The list of files the input depends on.
-template("concatenate_module_scripts") {
-  assert(defined(invoker.module_name), target_name)
-  assert(defined(invoker.imported_files), target_name)
-
-  action(target_name) {
-    script = "scripts/concatenate_module_scripts.py"
-    module_name = invoker.module_name
-
-    input = "front_end/" + module_name + "/module.json"
-    inputs = [ input ] + invoker.imported_files
-
-    output = "$root_out_dir/resources/inspector/" + module_name + "_module.js"
-    outputs = [ output ]
-
-    args = [
-      rebase_path(input, root_build_dir),
-      rebase_path(output, root_build_dir),
-    ]
-  }
-}
-
-concatenate_module_scripts("build_audits_module") {
-  module_name = "audits"
-  imported_files = gypi_values.devtools_audits_js_files
-}
-
-concatenate_module_scripts("build_console_module") {
-  module_name = "console"
-  imported_files = gypi_values.devtools_console_js_files
-}
-
-concatenate_module_scripts("build_devices_module") {
-  module_name = "devices"
-  imported_files = gypi_values.devtools_devices_js_files
-}
-
-concatenate_module_scripts("build_documentation_module") {
-  module_name = "documentation"
-  imported_files = gypi_values.devtools_documentation_js_files
-}
-
-concatenate_module_scripts("build_elements_module") {
-  module_name = "elements"
-  imported_files = gypi_values.devtools_elements_js_files
-}
-
-concatenate_module_scripts("build_extensions_module") {
-  module_name = "extensions"
-  imported_files = devtools_extensions_js_files
-}
-
-concatenate_module_scripts("build_layers_module") {
-  module_name = "layers"
-  imported_files = gypi_values.devtools_layers_js_files
-}
-
-concatenate_module_scripts("build_network_module") {
-  module_name = "network"
-  imported_files = gypi_values.devtools_network_js_files
-}
-
-concatenate_module_scripts("build_profiler_module") {
-  module_name = "profiler"
-  imported_files = gypi_values.devtools_profiler_js_files
-}
-
-concatenate_module_scripts("build_promises_module") {
-  module_name = "promises"
-  imported_files = gypi_values.devtools_promises_js_files
-}
-
-concatenate_module_scripts("build_resources_module") {
-  module_name = "resources"
-  imported_files = gypi_values.devtools_resources_js_files
-}
-
-concatenate_module_scripts("build_settings_module") {
-  module_name = "settings"
-  imported_files = gypi_values.devtools_settings_js_files
-}
-
-group("build_source_frame_module") {
-  concatenate_module_scripts("concatenate_source_frame_module") {
-    module_name = "source_frame"
-    imported_files = gypi_values.devtools_source_frame_js_files +
-      gypi_values.devtools_cm_js_files
-  }
-
-  copy("copy_codemirror_files") {
-    sources = gypi_values.devtools_cm_css_files
-    outputs = [ "$root_out_dir/resources/inspector/cm/{{source_file_part}}" ]
-  }
-
-  deps = [
-    ":concatenate_source_frame_module",
-    ":copy_codemirror_files",
-  ]
-}
-
-concatenate_module_scripts("build_sources_module") {
-  module_name = "sources"
-  imported_files = gypi_values.devtools_sources_js_files
-}
-
-concatenate_module_scripts("build_timeline_module") {
-  module_name = "timeline"
-  imported_files = gypi_values.devtools_timeline_js_files
 }
 
 template("concatenate_css") {
@@ -402,15 +304,22 @@ template("concatenate_css") {
   }
 }
 
-copy("copy_standalone_css") {
-    sources = gypi_values.devtools_standalone_files
-    outputs = [ "$root_out_dir/resources/inspector/{{source_file_part}}" ]
-}
-
 concatenate_css("concatenated_devtools_css") {
   app_name = "devtools"
 }
 
 concatenate_css("concatenated_toolbox_css") {
   app_name = "toolbox"
+}
+
+copy("copy_codemirror_css") {
+  sources = gypi_values.devtools_cm_css_files
+  outputs = [ "$root_out_dir/resources/inspector/cm/{{source_file_part}}" ]
+}
+
+copy("copy_standalone_css") {
+    sources = gypi_values.devtools_standalone_files
+    outputs = [ "$root_out_dir/resources/inspector/{{source_file_part}}" ]
+
+    deps = [ ":copy_codemirror_css" ]
 }

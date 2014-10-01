@@ -38,6 +38,10 @@ def minify_if_needed(javascript, minify):
     return rjsmin.jsmin(javascript) if minify else javascript
 
 
+def concatenated_module_filename(module_name, output_dir):
+    return path.join(output_dir, module_name + '_module.js')
+
+
 def concatenate_autostart_modules(descriptors, application_dir, output_dir, output):
     non_autostart = set()
     sorted_module_names = descriptors.sorted_modules()
@@ -75,13 +79,25 @@ def concatenate_application_script(application_name, descriptors, application_di
     output.close()
 
 
+def concatenate_dynamic_module(module_name, descriptors, application_dir, output_dir, minify):
+    scripts = descriptors.modules[module_name].get('scripts')
+    if not scripts:
+        return
+    module_dir = path.join(application_dir, module_name)
+    output = StringIO()
+    modular_build.concatenate_scripts(scripts, module_dir, output_dir, output)
+    output_file_path = concatenated_module_filename(module_name, output_dir)
+    write_file(output_file_path, minify_if_needed(output.getvalue(), minify))
+    output.close()
+
+
 def concatenate_worker(module_name, descriptors, application_dir, output_dir, minify):
     descriptor = descriptors.modules[module_name]
     scripts = descriptor.get('scripts')
     if not scripts:
         return
     worker_dir = path.join(application_dir, module_name)
-    output_file_path = path.join(output_dir, module_name + '_module.js')
+    output_file_path = concatenated_module_filename(module_name, output_dir)
 
     output = StringIO()
     output.write('/* Worker %s */\n' % module_name)
@@ -114,5 +130,7 @@ def release_module_descriptors(module_descriptors):
 def build_application(application_name, loader, application_dir, output_dir, minify):
     descriptors = loader.load_application(application_name + '.json')
     concatenate_application_script(application_name, descriptors, application_dir, output_dir, minify)
+    for module in filter(lambda desc: not desc.get('type'), descriptors.application.values()):
+        concatenate_dynamic_module(module['name'], descriptors, application_dir, output_dir, minify)
     for module in filter(lambda desc: desc.get('type') == 'worker', descriptors.application.values()):
         concatenate_worker(module['name'], descriptors, application_dir, output_dir, minify)
