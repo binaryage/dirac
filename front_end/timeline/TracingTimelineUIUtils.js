@@ -721,6 +721,15 @@ WebInspector.TracingTimelineUIUtils._aggregatedStatsForTraceEvent = function(tot
             total[categoryName] = (total[categoryName] || 0) + nextEvent.selfTime;
         }
     }
+    if (event.isAsync()) {
+        if (event.endTime) {
+            var aggregatedTotal = 0;
+            for (var categoryName in total)
+                aggregatedTotal += total[categoryName];
+            total["idle"] = Math.max(0, event.endTime - event.startTime - aggregatedTotal);
+        }
+        return false;
+    }
     return hasChildren;
 }
 

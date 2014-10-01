@@ -365,6 +365,22 @@ WebInspector.TracingModel.Event.prototype = {
     },
 
     /**
+     * @return {boolean}
+     */
+    isAsync: function()
+    {
+        var phase = WebInspector.TracingModel.Phase;
+        switch (this.phase) {
+        case phase.AsyncBegin:
+        case phase.AsyncEnd:
+        case phase.AsyncStepInto:
+        case phase.AsyncStepPast:
+            return true;
+        }
+        return false;
+    },
+
+    /**
      * @param {!WebInspector.TracingManager.EventPayload} payload
      */
     _complete: function(payload)
@@ -595,9 +611,9 @@ WebInspector.TracingModel.Process.prototype = {
     },
 
     /**
-     * @param {!number} lastEventTime
+     * @param {!number} lastEventTimeMs
      */
-    _tracingComplete: function(lastEventTime)
+    _tracingComplete: function(lastEventTimeMs)
     {
         /**
          * @param {!WebInspector.TracingManager.EventPayload} a
@@ -613,8 +629,9 @@ WebInspector.TracingModel.Process.prototype = {
             if (!steps)
                 continue;
             var startEvent = steps[0];
-            var syntheticEndEvent = new WebInspector.TracingModel.Event(startEvent.category, startEvent.name, WebInspector.TracingModel.Phase.AsyncEnd, lastEventTime, startEvent.thread);
+            var syntheticEndEvent = new WebInspector.TracingModel.Event(startEvent.category, startEvent.name, WebInspector.TracingModel.Phase.AsyncEnd, lastEventTimeMs, startEvent.thread);
             steps.push(syntheticEndEvent);
+            startEvent.setEndTime(lastEventTimeMs)
         }
         this._asyncEvents = [];
         this._openAsyncEvents = [];
@@ -648,6 +665,7 @@ WebInspector.TracingModel.Process.prototype = {
         var newEvent = WebInspector.TracingModel.Event.fromPayload(payload, thread);
         if (payload.ph === phase.AsyncEnd) {
             steps.push(newEvent);
+            steps[0].setEndTime(timestamp);
             delete this._openAsyncEvents[key];
         } else if (payload.ph === phase.AsyncStepInto || payload.ph === phase.AsyncStepPast) {
             var lastPhase = steps.peekLast().phase;
