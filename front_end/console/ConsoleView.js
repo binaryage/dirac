@@ -472,7 +472,12 @@ WebInspector.ConsoleView.prototype = {
          */
         function invalidateViewport(finishCallback)
         {
-            this._viewport.invalidate();
+            if (this._needsFullUpdate) {
+                this._updateMessageList();
+                delete this._needsFullUpdate;
+            } else {
+                this._viewport.invalidate();
+            }
             finishCallback();
         }
         this._viewportThrottler.schedule(invalidateViewport.bind(this));
@@ -491,40 +496,6 @@ WebInspector.ConsoleView.prototype = {
     },
 
     /**
-     * @param {!WebInspector.ConsoleViewMessage} viewMessage
-     */
-    _consoleMessageAdded: function(viewMessage)
-    {
-        /**
-         * @param {!WebInspector.ConsoleViewMessage} viewMessage1
-         * @param {!WebInspector.ConsoleViewMessage} viewMessage2
-         * @return {number}
-         */
-        function compareTimestamps(viewMessage1, viewMessage2)
-        {
-            return WebInspector.ConsoleMessage.timestampComparator(viewMessage1.consoleMessage(), viewMessage2.consoleMessage());
-        }
-        var insertAt = insertionIndexForObjectInListSortedByFunction(viewMessage, this._consoleMessages, compareTimestamps, true);
-        this._consoleMessages.splice(insertAt, 0, viewMessage);
-
-        var message = viewMessage.consoleMessage();
-        if (this._urlToMessageCount[message.url])
-            this._urlToMessageCount[message.url]++;
-        else
-            this._urlToMessageCount[message.url] = 1;
-
-        if (this._tryToCollapseMessages(viewMessage, this._visibleViewMessages.peekLast()))
-            return;
-
-        if (this._filter.shouldBeVisible(viewMessage))
-            this._showConsoleMessage(viewMessage)
-        else {
-            this._hiddenByFilterCount++;
-            this._updateFilterStatus();
-        }
-    },
-
-    /**
      * @param {!WebInspector.Event} event
      */
     _onConsoleMessageAdded: function(event)
@@ -538,16 +509,57 @@ WebInspector.ConsoleView.prototype = {
      */
     _addConsoleMessage: function(message)
     {
+        /**
+         * @param {!WebInspector.ConsoleViewMessage} viewMessage1
+         * @param {!WebInspector.ConsoleViewMessage} viewMessage2
+         * @return {number}
+         */
+        function compareTimestamps(viewMessage1, viewMessage2)
+        {
+            return WebInspector.ConsoleMessage.timestampComparator(viewMessage1.consoleMessage(), viewMessage2.consoleMessage());
+        }
+
+        if (message.type === WebInspector.ConsoleMessage.MessageType.Command || message.type === WebInspector.ConsoleMessage.MessageType.Result)
+            message.timestamp = this._consoleMessages.length ? this._consoleMessages.peekLast().consoleMessage().timestamp : 0;
         var viewMessage = this._createViewMessage(message);
-        this._consoleMessageAdded(viewMessage);
+        var insertAt = insertionIndexForObjectInListSortedByFunction(viewMessage, this._consoleMessages, compareTimestamps, true);
+        var insertedInMiddle = insertAt < this._consoleMessages.length;
+        this._consoleMessages.splice(insertAt, 0, viewMessage);
+
+        if (this._urlToMessageCount[message.url])
+            ++this._urlToMessageCount[message.url];
+        else
+            this._urlToMessageCount[message.url] = 1;
+
+        if (!insertedInMiddle) {
+            this._appendMessageToEnd(viewMessage)
+            this._updateFilterStatus();
+        } else {
+            this._needsFullUpdate = true;
+        }
+
         this._scheduleViewportRefresh();
+        this._consoleMessageAddedForTest(viewMessage);
     },
 
     /**
      * @param {!WebInspector.ConsoleViewMessage} viewMessage
      */
-    _showConsoleMessage: function(viewMessage)
+    _consoleMessageAddedForTest: function(viewMessage) { },
+
+    /**
+     * @param {!WebInspector.ConsoleViewMessage} viewMessage
+     */
+    _appendMessageToEnd: function(viewMessage)
     {
+        if (!this._filter.shouldBeVisible(viewMessage)) {
+            this._hiddenByFilterCount++;
+            return;
+        }
+
+        if (this._tryToCollapseMessages(viewMessage, this._visibleViewMessages.peekLast()))
+            return;
+
         var lastMessage = this._visibleViewMessages.peekLast();
         if (viewMessage.consoleMessage().type === WebInspector.ConsoleMessage.MessageType.EndGroup) {
             if (lastMessage && !this._currentGroup.messagesHidden())
@@ -679,15 +691,8 @@ WebInspector.ConsoleView.prototype = {
             this._visibleViewMessages[i].resetIncrementRepeatCount();
         }
         this._visibleViewMessages = [];
-        for (var i = 0; i < this._consoleMessages.length; ++i) {
-            var viewMessage = this._consoleMessages[i];
-            if (this._tryToCollapseMessages(viewMessage, this._visibleViewMessages.peekLast()))
-                continue;
-            if (this._filter.shouldBeVisible(viewMessage))
-                this._showConsoleMessage(viewMessage);
-            else
-                this._hiddenByFilterCount++;
-        }
+        for (var i = 0; i < this._consoleMessages.length; ++i)
+            this._appendMessageToEnd(this._consoleMessages[i]);
         this._updateFilterStatus();
         this._viewport.invalidate();
     },
@@ -1190,6 +1195,7 @@ WebInspector.ConsoleCommandResult.prototype = {
     {
         var element = WebInspector.ConsoleViewMessage.prototype.contentElement.call(this);
         element.classList.add("console-user-command-result");
+        this.updateTimestamp(false);
         return element;
     },
 

@@ -1012,6 +1012,8 @@ WebInspector.ConsoleViewMessage.prototype = {
 
     resetCloseGroupDecorationCount: function()
     {
+        if (!this._closeGroupDecorationCount)
+            return;
         this._closeGroupDecorationCount = 0;
         this._updateCloseGroupDecorations();
     },
