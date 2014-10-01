@@ -141,6 +141,11 @@ WebInspector.ConsolePanel.ConsoleRevealer.prototype = {
     }
 }
 
+WebInspector.ConsolePanel.show = function()
+{
+    WebInspector.inspectorView.setCurrentPanel(WebInspector.ConsolePanel._instance());
+}
+
 /**
  * @return {!WebInspector.ConsolePanel}
  */

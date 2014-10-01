@@ -12,6 +12,7 @@
         "bindings",
         "ui"
     ],
+    "experiment": "promiseTracker",
     "scripts": [
         "PromisesPanel.js"
     ]

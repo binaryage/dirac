@@ -1431,6 +1431,11 @@ WebInspector.TimelineTextFilter.prototype = {
     __proto__: WebInspector.TimelineModel.Filter.prototype
 }
 
+WebInspector.TimelinePanel.show = function()
+{
+    WebInspector.inspectorView.setCurrentPanel(WebInspector.TimelinePanel._instance());
+}
+
 /**
  * @return {!WebInspector.TimelinePanel}
  */

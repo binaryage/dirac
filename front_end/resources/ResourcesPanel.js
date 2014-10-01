@@ -2155,6 +2155,11 @@ WebInspector.StorageCategoryView.prototype = {
     __proto__: WebInspector.VBox.prototype
 }
 
+WebInspector.ResourcesPanel.show = function()
+{
+    WebInspector.inspectorView.setCurrentPanel(WebInspector.ResourcesPanel._instance());
+}
+
 /**
  * @return {!WebInspector.ResourcesPanel}
  */

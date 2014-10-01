@@ -250,7 +250,7 @@ Runtime.startApplication = function(appName)
      */
     function populateModules(desc)
     {
-        if (!isActive(desc))
+        if (desc["type"] === "worker")
             return;
         var name = desc.name;
         var moduleJSON = allDescriptorsByName[name];
@@ -261,23 +261,6 @@ Runtime.startApplication = function(appName)
         allModules.push(moduleJSON);
         if (desc["type"] === "autostart")
             coreModuleNames.push(name);
-    }
-
-    /**
-     * @param {!Object} descriptor
-     * @return {boolean}
-     */
-    function isActive(descriptor)
-    {
-        var activatorExperiment = descriptor["experiment"];
-        if (activatorExperiment) {
-            var shouldBePresent = activatorExperiment.charAt(0) !== "!";
-            if (!shouldBePresent)
-                activatorExperiment = activatorExperiment.substr(1);
-            if (!!experiments[activatorExperiment] !== shouldBePresent)
-                return false;
-        }
-        return descriptor["type"] !== "worker";
     }
 
     Runtime._initializeApplication(allModules);
@@ -480,6 +463,9 @@ Runtime.prototype = {
             if (extension._type !== type && extension._typeClass() !== type)
                 return false;
             var activatorExperiment = extension.descriptor()["experiment"];
+            if (activatorExperiment && !Runtime.experiments.isEnabled(activatorExperiment))
+                return false;
+            activatorExperiment = extension._module._descriptor["experiment"];
             if (activatorExperiment && !Runtime.experiments.isEnabled(activatorExperiment))
                 return false;
             return !context || extension.isApplicable(context);

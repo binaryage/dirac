@@ -1299,6 +1299,11 @@ WebInspector.ProfilesSidebarTreeElement.prototype = {
     __proto__: WebInspector.SidebarTreeElement.prototype
 }
 
+WebInspector.ProfilesPanel.show = function()
+{
+    WebInspector.inspectorView.setCurrentPanel(WebInspector.ProfilesPanel._instance());
+}
+
 /**
  * @return {!WebInspector.ProfilesPanel}
  */

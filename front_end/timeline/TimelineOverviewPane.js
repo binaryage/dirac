@@ -87,6 +87,9 @@ WebInspector.TimelineOverviewPane.prototype = {
 
     update: function()
     {
+        if (!this.isShowing())
+            return;
+
         if (this._model.isEmpty())
             this._overviewCalculator._setWindow(0, 1000);
         else

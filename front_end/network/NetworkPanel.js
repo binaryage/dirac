@@ -3081,6 +3081,11 @@ WebInspector.NetworkDataGridNode.RequestPropertyComparator = function(propertyNa
     return a._request.indentityCompare(b._request);
 }
 
+WebInspector.NetworkPanel.show = function()
+{
+    WebInspector.inspectorView.setCurrentPanel(WebInspector.NetworkPanel._instance());
+}
+
 /**
  * @return {!WebInspector.NetworkPanel}
  */

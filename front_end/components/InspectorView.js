@@ -81,16 +81,8 @@ WebInspector.InspectorView = function()
     this._closeBracketIdentifiers = ["U+005D", "U+00DD"].keySet();
     this._lastActivePanelSetting = WebInspector.settings.createSetting("lastActivePanel", "elements");
 
-    // FIXME(399531): enable timelineOnTraceEvents experiment when running layout tests under inspector/tracing/. This code
-    // should be removed along with the old Timeline implementation once we move tracing based Timeline out of experimental.
-    if ("tracing" === this._lastActivePanelSetting.get()) {
-        Runtime.experiments.setEnabled("timelineOnTraceEvents", true);
-        this._lastActivePanelSetting.set("timeline");
-    }
-
+    InspectorFrontendHost.events.addEventListener(InspectorFrontendHostAPI.Events.ShowConsole, this._loadAndShowPanel.bind(this, "console"));
     this._loadPanelDesciptors();
-
-    InspectorFrontendHost.events.addEventListener(InspectorFrontendHostAPI.Events.ShowConsole, this._showPanel.bind(this, "console"));
 };
 
 WebInspector.InspectorView.prototype = {
@@ -154,6 +146,28 @@ WebInspector.InspectorView.prototype = {
      */
     _panel: function(panelName)
     {
+        return this._panels[panelName];
+    },
+
+    /**
+     * @param {string} panelName
+     * @return {?WebInspector.Panel}
+     */
+    _showPanel: function(panelName)
+    {
+        var panel = this._panels[panelName];
+        if (!panel)
+            throw new Error("Can't show panel " + panelName + " - it is not yet loaded")
+        this.setCurrentPanel(panel);
+        return panel;
+    },
+
+    /**
+     * @param {string} panelName
+     * @return {?WebInspector.Panel}
+     */
+    _loadPanel: function(panelName)
+    {
         var panelDescriptor = this._panelDescriptors[panelName];
         var panelOrder = this._tabbedPane.allTabs();
         if (!panelDescriptor && panelOrder.length)
@@ -181,19 +195,19 @@ WebInspector.InspectorView.prototype = {
      */
     showPanelPromise: function(panelName)
     {
-        return Promise.resolve(this._showPanel(panelName));
+        return Promise.resolve(this._loadAndShowPanel(panelName));
     },
 
     /**
      * @param {string} panelName
      * @return {?WebInspector.Panel}
      */
-    _showPanel: function(panelName)
+    _loadAndShowPanel: function(panelName)
     {
         if (this._currentPanelLocked)
             return this._currentPanel === this._panels[panelName] ? this._currentPanel : null;
 
-        var panel = this._panel(panelName);
+        var panel = this._loadPanel(panelName);
         if (panel)
             this.setCurrentPanel(panel);
         return panel;
@@ -209,9 +223,26 @@ WebInspector.InspectorView.prototype = {
 
     showInitialPanel: function()
     {
+        if (InspectorFrontendHost.isUnderTest())
+            return;
+        this._showInitialPanel();
+    },
+
+    _showInitialPanel: function()
+    {
         this._tabbedPane.addEventListener(WebInspector.TabbedPane.EventTypes.TabSelected, this._tabSelected, this);
         this._tabSelected();
         this._drawer.initialPanelShown();
+    },
+
+    /**
+     * @param {string} panelName
+     */
+    showInitialPanelForTest: function(panelName)
+    {
+        this._tabbedPane.selectTab(panelName);
+        this._lastActivePanelSetting.set(panelName);
+        this._showInitialPanel();
     },
 
     _tabSelected: function()
@@ -334,7 +365,7 @@ WebInspector.InspectorView.prototype = {
                 var panelName = this._tabbedPane.allTabs()[panelIndex];
                 if (panelName) {
                     if (!WebInspector.Dialog.currentInstance() && !this._currentPanelLocked)
-                        this._showPanel(panelName);
+                        this._loadAndShowPanel(panelName);
                     event.consume(true);
                 }
                 return;
@@ -384,7 +415,7 @@ WebInspector.InspectorView.prototype = {
         var panelOrder = this._tabbedPane.allTabs();
         var index = panelOrder.indexOf(this.currentPanel().name);
         index = (index + panelOrder.length + direction) % panelOrder.length;
-        this._showPanel(panelOrder[index]);
+        this._loadAndShowPanel(panelOrder[index]);
     },
 
     _moveInHistory: function(move)

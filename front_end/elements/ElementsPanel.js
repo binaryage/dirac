@@ -1508,6 +1508,11 @@ WebInspector.ElementsPanel.DOMNodeRevealer.prototype = {
     }
 }
 
+WebInspector.ElementsPanel.show = function()
+{
+    WebInspector.inspectorView.setCurrentPanel(WebInspector.ElementsPanel.instance());
+}
+
 /**
  * @return {!WebInspector.ElementsPanel}
  */

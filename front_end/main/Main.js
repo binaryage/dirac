@@ -113,6 +113,7 @@ WebInspector.Main.prototype = {
     {
         WebInspector.settings = new WebInspector.Settings();
         this._initializeExperiments();
+
         // This setting is needed for backwards compatibility with Devtools CodeSchool extension. DO NOT REMOVE
         WebInspector.settings.pauseOnExceptionStateString = new WebInspector.PauseOnExceptionStateSetting();
         new WebInspector.VersionController().updateVersion();
@@ -135,6 +136,15 @@ WebInspector.Main.prototype = {
         Runtime.experiments.register("timelinePowerProfiler", "Timeline power profiler");
         Runtime.experiments.register("timelineJSCPUProfile", "Timeline with JS sampling");
         Runtime.experiments.cleanUpStaleExperiments();
+
+        if (InspectorFrontendHost.isUnderTest()) {
+            // Enable experiments for testing.
+            var testPath = WebInspector.settings.testPath.get();
+            if (testPath.indexOf("layers/") !== -1)
+                Runtime.experiments.enableForTest("layersPanel");
+            if (testPath.indexOf("tracing/") !== -1)
+                Runtime.experiments.enableForTest("timelineOnTraceEvents");
+        }
     },
 
     _createAppUI: function()

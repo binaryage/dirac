@@ -7,6 +7,7 @@
         }
     ],
     "dependencies": ["source_frame"],
+    "experiment": "documentation",
     "scripts": [
         "WikiParser.js",
         "JSArticle.js",

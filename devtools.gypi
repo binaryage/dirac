@@ -56,8 +56,6 @@
             'front_end/toolbox.json',
             'front_end/toolbox.css',
             'front_end/Runtime.js',
-            'front_end/Tests.js',
-            'front_end/TestController.js',
             'front_end/dialog.css',
             'front_end/inspectorStyle.css',
             'front_end/popover.css',
@@ -256,8 +254,9 @@
             'front_end/main/RenderingOptions.js',
             'front_end/main/ScreencastApp.js',
             'front_end/main/SimpleApp.js',
+            'front_end/main/Tests.js',
+            'front_end/main/TestController.js',
         ],
-
         'devtools_module_json_files': [
             'front_end/audits/module.json',
             'front_end/bindings/module.json',

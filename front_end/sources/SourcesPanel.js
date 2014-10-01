@@ -1507,6 +1507,11 @@ WebInspector.SourcesPanel.TogglePauseActionDelegate.prototype = {
     }
 }
 
+WebInspector.SourcesPanel.show = function()
+{
+    WebInspector.inspectorView.setCurrentPanel(WebInspector.SourcesPanel.instance());
+}
+
 /**
  * @return {!WebInspector.SourcesPanel}
  */
