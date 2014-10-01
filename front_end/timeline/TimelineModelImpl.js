@@ -139,7 +139,7 @@ WebInspector.TimelineModelImpl.prototype = {
 
         if (event.data.consoleTimeline) {
             // Stopped from console.
-            this._fireRecordingStopped(null, null);
+            this._fireRecordingStopped(null);
         }
 
         this._collectionEnabled = false;
@@ -163,12 +163,9 @@ WebInspector.TimelineModelImpl.prototype = {
 
     /**
      * @param {?Protocol.Error} error
-     * @param {?ProfilerAgent.CPUProfile} cpuProfile
      */
-    _fireRecordingStopped: function(error, cpuProfile)
+    _fireRecordingStopped: function(error)
     {
-        if (cpuProfile)
-            WebInspector.TimelineJSProfileProcessor.mergeJSProfileIntoTimeline(this, cpuProfile);
         this.dispatchEventToListeners(WebInspector.TimelineModel.Events.RecordingStopped);
     },
 

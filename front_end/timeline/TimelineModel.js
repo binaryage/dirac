@@ -86,7 +86,6 @@ WebInspector.TimelineModel.RecordType = {
 
     FunctionCall: "FunctionCall",
     GCEvent: "GCEvent",
-    JSFrame: "JSFrame",
 
     UpdateCounters: "UpdateCounters",
 
