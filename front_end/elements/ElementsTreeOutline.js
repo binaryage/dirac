@@ -131,14 +131,14 @@ WebInspector.ElementsTreeOutline.prototype = {
     _handlePickNode: function(element, node)
     {
         if (!this._pickNodeMode)
-            return true;
+            return false;
 
         this._eventSupport.dispatchEventToListeners(WebInspector.ElementsTreeOutline.Events.NodePicked, node);
         var hasRunningAnimation = element.classList.contains("elements-tree-element-pick-node-1") || element.classList.contains("elements-tree-element-pick-node-2");
         element.classList.toggle("elements-tree-element-pick-node-1");
         if (hasRunningAnimation)
             element.classList.toggle("elements-tree-element-pick-node-2");
-        return false;
+        return true;
     },
 
     /**
@@ -1455,8 +1455,8 @@ WebInspector.ElementsTreeElement.prototype = {
      */
     select: function(omitFocus, selectedByUser)
     {
-        if (!this.treeOutline._handlePickNode(this.title, this._node))
-            return false;
+        if (this.treeOutline._handlePickNode(this.title, this._node))
+            return true;
         return TreeElement.prototype.select.call(this, omitFocus, selectedByUser);
     },
 
