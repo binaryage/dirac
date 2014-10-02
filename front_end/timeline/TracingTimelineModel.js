@@ -99,7 +99,11 @@ WebInspector.TracingTimelineModel.RecordType = {
 
     LazyPixelRef: "LazyPixelRef",
     LayerTreeHostImplSnapshot: "cc::LayerTreeHostImpl",
-    PictureSnapshot: "cc::Picture"
+    PictureSnapshot: "cc::Picture",
+
+    // CpuProfile is a virtual event created on frontend to support
+    // serialization of CPU Profiles within tracing timeline data.
+    CpuProfile: "CpuProfile"
 };
 
 /**
@@ -154,8 +158,8 @@ WebInspector.TracingTimelineModel.prototype = {
 
     stopRecording: function()
     {
-        this._stopCallbackBarrier = new CallbackBarrier();
         if (this._jsProfilerStarted) {
+            this._stopCallbackBarrier = new CallbackBarrier();
             this._currentTarget.profilerAgent().stop(this._stopCallbackBarrier.createCallback(this._didStopRecordingJSSamples.bind(this)));
             this._jsProfilerStarted = false;
         }
@@ -210,7 +214,6 @@ WebInspector.TracingTimelineModel.prototype = {
 
     _onTracingComplete: function()
     {
-        this._tracingModel.tracingComplete();
         if (this._stopCallbackBarrier)
             this._stopCallbackBarrier.callWhenDone(this._didStopRecordingTraceEvents.bind(this));
         else
@@ -225,12 +228,19 @@ WebInspector.TracingTimelineModel.prototype = {
     {
         if (error)
             WebInspector.console.error(error);
-        this._cpuProfile = cpuProfile;
+        this._recordedCpuProfile = cpuProfile;
     },
 
     _didStopRecordingTraceEvents: function()
     {
         this._stopCallbackBarrier = null;
+
+        if (this._recordedCpuProfile) {
+            this._injectCpuProfileEvent(this._recordedCpuProfile);
+            this._recordedCpuProfile = null;
+        }
+        this._tracingModel.tracingComplete();
+
         var events = this._tracingModel.devtoolsPageMetadataEvents();
         var workerMetadataEvents = this._tracingModel.devtoolsWorkerMetadataEvents();
 
@@ -257,14 +267,41 @@ WebInspector.TracingTimelineModel.prototype = {
         this._inspectedTargetEvents.sort(WebInspector.TracingModel.Event.compareStartTime);
 
         if (this._cpuProfile) {
-            var jsSamples = WebInspector.TimelineJSProfileProcessor.generateTracingEventsFromCpuProfile(this, this._cpuProfile);
-            this._inspectedTargetEvents = this._inspectedTargetEvents.mergeOrdered(jsSamples, WebInspector.TracingModel.Event.orderedCompareStartTime);
-            this._setMainThreadEvents(this.mainThreadEvents().mergeOrdered(jsSamples, WebInspector.TracingModel.Event.orderedCompareStartTime));
+            this._processCpuProfile(this._cpuProfile);
             this._cpuProfile = null;
         }
-
         this._buildTimelineRecords();
         this.dispatchEventToListeners(WebInspector.TimelineModel.Events.RecordingStopped);
+    },
+
+    /**
+     * @param {!ProfilerAgent.CPUProfile} cpuProfile
+     */
+    _injectCpuProfileEvent: function(cpuProfile)
+    {
+        var metaEvent = this._tracingModel.devtoolsPageMetadataEvents().peekLast();
+        if (!metaEvent)
+            return;
+        var cpuProfileEvent = /** @type {!WebInspector.TracingManager.EventPayload} */ ({
+            cat: WebInspector.TracingModel.DevToolsMetadataEventCategory,
+            ph: WebInspector.TracingModel.Phase.Instant,
+            ts: this._tracingModel.maximumRecordTime() * 1000,
+            pid: metaEvent.thread.process().id(),
+            tid: metaEvent.thread.id(),
+            name: WebInspector.TracingTimelineModel.RecordType.CpuProfile,
+            args: { data: { cpuProfile: cpuProfile } }
+        });
+        this._tracingModel.addEvents([cpuProfileEvent]);
+    },
+
+    /**
+     * @param {!ProfilerAgent.CPUProfile} cpuProfile
+     */
+    _processCpuProfile: function(cpuProfile)
+    {
+        var jsSamples = WebInspector.TimelineJSProfileProcessor.generateTracingEventsFromCpuProfile(this, cpuProfile);
+        this._inspectedTargetEvents = this._inspectedTargetEvents.mergeOrdered(jsSamples, WebInspector.TracingModel.Event.orderedCompareStartTime);
+        this._setMainThreadEvents(this.mainThreadEvents().mergeOrdered(jsSamples, WebInspector.TracingModel.Event.orderedCompareStartTime));
     },
 
     /**
@@ -552,6 +589,10 @@ WebInspector.TracingTimelineModel.prototype = {
             var lastMainThreadEvent = this.mainThreadEvents().peekLast();
             if (lastMainThreadEvent && event.args["stack"] && event.args["stack"].length)
                 lastMainThreadEvent.stackTrace = event.args["stack"];
+            break;
+
+        case recordTypes.CpuProfile:
+            this._cpuProfile = event.args["data"]["cpuProfile"];
             break;
 
         case recordTypes.ResourceSendRequest:

@@ -568,6 +568,7 @@ WebInspector.TracingModel.Process = function(id)
 {
     WebInspector.TracingModel.NamedObject.call(this);
     this._setName("Process " + id);
+    this._id = id;
     this._threads = {};
     this._objects = {};
     /** @type {!Array.<!WebInspector.TracingManager.EventPayload>} */
@@ -577,6 +578,14 @@ WebInspector.TracingModel.Process = function(id)
 }
 
 WebInspector.TracingModel.Process.prototype = {
+    /**
+     * @return {number}
+     */
+    id: function()
+    {
+        return this._id;
+    },
+
     /**
      * @param {number} id
      * @return {!WebInspector.TracingModel.Thread}
