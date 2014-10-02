@@ -83,11 +83,7 @@ WebInspector.AdvancedApp.prototype = {
         if (this._toolboxWindow)
             return;
 
-        // FIXME: Remove toolbox=true and fix the check in DevToolsWindow::WebContentsCreated().
-        var toolbox = (window.location.search ? "&" : "?") + "toolbox=true";
-        var hash = window.location.hash;
-        var url = window.location.href.replace(hash, "") + toolbox + hash;
-        url = url.replace("devtools.html", "toolbox.html");
+        var url = window.location.href.replace("devtools.html", "toolbox.html");
         this._toolboxWindow = window.open(url, undefined);
     },
 

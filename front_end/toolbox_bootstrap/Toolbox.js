@@ -14,7 +14,7 @@ window.addEventListener("DOMContentLoaded", windowLoaded, false);
  */
 WebInspector.Toolbox = function()
 {
-    if (!window.opener || !Runtime.queryParam("toolbox"))
+    if (!window.opener)
         return;
 
     WebInspector.zoomManager = new WebInspector.ZoomManager(window.opener.InspectorFrontendHost);
