@@ -353,8 +353,42 @@ WebInspector.TracingTimelineModel.prototype = {
 
     _buildTimelineRecords: function()
     {
+        var topLevelRecords = this._buildTimelineRecordsForThread(this.mainThreadEvents());
+
+        /**
+         * @param {!WebInspector.TracingTimelineModel.TraceEventRecord} a
+         * @param {!WebInspector.TracingTimelineModel.TraceEventRecord} b
+         * @return {number}
+         */
+        function compareRecordStartTime(a, b)
+        {
+            // Never return 0 as otherwise equal records would be merged.
+            return (a.startTime() <= b.startTime()) ? -1 : +1;
+        }
+
+        /**
+         * @param {!WebInspector.TracingTimelineModel.VirtualThread} virtualThread
+         * @this {!WebInspector.TracingTimelineModel}
+         */
+        function processVirtualThreadEvents(virtualThread)
+        {
+            var threadRecords = this._buildTimelineRecordsForThread(virtualThread.events);
+            topLevelRecords = topLevelRecords.mergeOrdered(threadRecords, compareRecordStartTime);
+        }
+        this.virtualThreads().forEach(processVirtualThreadEvents.bind(this));
+
+        for (var i = 0; i < topLevelRecords.length; i++)
+            this._addTopLevelRecord(topLevelRecords[i]);
+    },
+
+    /**
+     * @param {!Array.<!WebInspector.TracingModel.Event>} threadEvents
+     * @return {!Array.<!WebInspector.TracingTimelineModel.TraceEventRecord>}
+     */
+    _buildTimelineRecordsForThread: function(threadEvents)
+    {
         var recordStack = [];
-        var mainThreadEvents = this.mainThreadEvents();
+        var topLevelRecords = [];
 
         /**
          * @param {!WebInspector.TracingTimelineModel.TraceEventRecord} record
@@ -369,8 +403,8 @@ WebInspector.TracingTimelineModel.prototype = {
             parentChildren.splice.apply(parentChildren, [parentChildren.indexOf(record), 1].concat(children));
         }
 
-        for (var i = 0, size = mainThreadEvents.length; i < size; ++i) {
-            var event = mainThreadEvents[i];
+        for (var i = 0, size = threadEvents.length; i < size; ++i) {
+            var event = threadEvents[i];
             while (recordStack.length) {
                 var top = recordStack.peekLast();
                 // When we've got a not-yet-complete async event at the top of the stack,
@@ -396,7 +430,7 @@ WebInspector.TracingTimelineModel.prototype = {
                 }
                 recordStack.pop();
                 if (!recordStack.length)
-                    this._addTopLevelRecord(top);
+                    topLevelRecords.push(top);
             }
             if (event.phase === WebInspector.TracingModel.Phase.AsyncEnd)
                 continue;
@@ -422,7 +456,9 @@ WebInspector.TracingTimelineModel.prototype = {
         }
 
         if (recordStack.length)
-            this._addTopLevelRecord(recordStack[0]);
+            topLevelRecords.push(recordStack[0]);
+
+        return topLevelRecords;
     },
 
     /**
@@ -817,8 +853,9 @@ WebInspector.TracingTimelineModel.TraceEventRecord.prototype = {
      */
     thread: function()
     {
-        // FIXME: Should return the actual thread name.
-        return WebInspector.TimelineModel.MainThreadName;
+        if (this._event.thread.name() === "CrRendererMain")
+            return WebInspector.TimelineModel.MainThreadName;
+        return this._event.thread.name();
     },
 
     /**
