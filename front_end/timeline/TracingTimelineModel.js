@@ -605,8 +605,11 @@ WebInspector.TracingTimelineModel.prototype = {
         case recordTypes.Layout:
             var frameId = event.args["beginData"]["frame"];
             event.initiator = this._layoutInvalidate[frameId];
-            event.backendNodeId = event.args["endData"]["rootNode"];
-            event.highlightQuad =  event.args["endData"]["root"];
+            // In case we have no closing Layout event, endData is not available.
+            if (event.args["endData"]) {
+                event.backendNodeId = event.args["endData"]["rootNode"];
+                event.highlightQuad =  event.args["endData"]["root"];
+            }
             this._layoutInvalidate[frameId] = null;
             if (this._currentScriptEvent)
                 event.warning = WebInspector.UIString("Forced synchronous layout is a possible performance bottleneck.");
