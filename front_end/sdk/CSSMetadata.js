@@ -528,7 +528,7 @@ WebInspector.CSSMetadata._propertyDataMap = {
         "from-image", "snap"
     ] },
     "box-sizing": { values: [
-        "content-box", "padding-box", "border-box"
+        "content-box", "border-box"
     ] },
     "clip": { values: [
         "auto"
