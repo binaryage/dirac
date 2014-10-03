@@ -31,7 +31,8 @@ WebInspector.PromisesPanel = function()
     var columns = [
         { id: "promiseId", title: WebInspector.UIString("Promise ID"), disclosure: true },
         { id: "status", title: WebInspector.UIString("Status") },
-        { id: "location", title: WebInspector.UIString("Location") }
+        { id: "location", title: WebInspector.UIString("Location") },
+        { id: "tts", title: WebInspector.UIString("Time to settle") }
     ];
     this._dataGrid = new WebInspector.DataGrid(columns);
     this._dataGrid.element.addEventListener("contextmenu", this._contextMenu.bind(this));
@@ -74,15 +75,9 @@ WebInspector.PromisesPanel.prototype = {
      * @return {number}
      */
     _comparePromises: function(p1, p2) {
-        if (p1.parentId < p2.parentId)
-            return -1
-        if (p1.parentId > p2.parentId)
-            return 1
-        if (p1.id < p2.id)
-            return -1;
-        if (p1.id > p2.id)
-            return 1;
-        return 0;
+        var t1 = p1.creationTime || 0;
+        var t2 = p2.creationTime || 0;
+        return t1 - t2;
     },
 
     _updateData: function()
@@ -107,6 +102,8 @@ WebInspector.PromisesPanel.prototype = {
                 };
                 if (promise.callFrame)
                     data.location = this._linkifier.linkifyConsoleCallFrame(this._target, promise.callFrame);
+                if (promise.creationTime && promise.settlementTime && promise.settlementTime >= promise.creationTime)
+                    data.tts = Number.millisToString(promise.settlementTime - promise.creationTime, true);
                 var node = new WebInspector.DataGridNode(data, false);
                 nodesToInsert[promise.id] = { node: node, parentId: promise.parentId };
             }
