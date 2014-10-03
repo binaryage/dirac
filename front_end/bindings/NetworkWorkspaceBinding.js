@@ -152,6 +152,17 @@ WebInspector.NetworkWorkspaceBinding.prototype = {
         return uiSourceCode;
     },
 
+    /**
+     * @param {string} url
+     */
+    removeFileForURL: function(url)
+    {
+        var splitURL = WebInspector.ParsedURL.splitURL(url);
+        var projectName = splitURL[0];
+        var projectDelegate = this._projectDelegates[projectName];
+        projectDelegate.removeFile(url);
+    },
+
     reset: function()
     {
         for (var projectId in this._projectDelegates)

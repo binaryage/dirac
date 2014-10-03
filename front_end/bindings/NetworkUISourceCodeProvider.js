@@ -43,6 +43,7 @@ WebInspector.NetworkUISourceCodeProvider = function(networkWorkspaceBinding, wor
     WebInspector.targetManager.addModelListener(WebInspector.DebuggerModel, WebInspector.DebuggerModel.Events.ParsedScriptSource, this._parsedScriptSource, this);
     WebInspector.targetManager.addModelListener(WebInspector.DebuggerModel, WebInspector.DebuggerModel.Events.FailedToParseScriptSource, this._parsedScriptSource, this);
     WebInspector.targetManager.addModelListener(WebInspector.CSSStyleModel, WebInspector.CSSStyleModel.Events.StyleSheetAdded, this._styleSheetAdded, this);
+    WebInspector.targetManager.addModelListener(WebInspector.CSSStyleModel, WebInspector.CSSStyleModel.Events.StyleSheetRemoved, this._styleSheetRemoved, this);
 }
 
 WebInspector.NetworkUISourceCodeProvider.prototype = {
@@ -102,6 +103,18 @@ WebInspector.NetworkUISourceCodeProvider.prototype = {
     /**
      * @param {!WebInspector.Event} event
      */
+    _styleSheetRemoved: function(event)
+    {
+        var header = /** @type {!WebInspector.CSSStyleSheetHeader} */ (event.data);
+        if (header.isInline && header.origin !== "inspector")
+            return;
+
+        this._removeFile(header.resourceURL());
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
     _resourceAdded: function(event)
     {
         var resource = /** @type {!WebInspector.Resource} */ (event.data);
@@ -135,6 +148,17 @@ WebInspector.NetworkUISourceCodeProvider.prototype = {
             return;
         this._processedURLs[url] = true;
         this._networkWorkspaceBinding.addFileForURL(url, contentProvider, isContentScript);
+    },
+
+    /**
+     * @param {string} url
+     */
+    _removeFile: function(url)
+    {
+        if (!this._processedURLs[url])
+            return;
+        this._processedURLs[url] = false;
+        this._networkWorkspaceBinding.removeFileForURL(url);
     },
 
     /**
