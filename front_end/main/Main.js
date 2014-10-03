@@ -60,44 +60,51 @@ WebInspector.Main.prototype = {
 
     _createGlobalStatusBarItems: function()
     {
-        var extensions = self.runtime.extensions(WebInspector.StatusBarItem.Provider);
+        var extensions = self.runtime.extensions(WebInspector.StatusBarItem.Provider).forEach(appendToolbarItem);
 
         /**
-         * @param {!Runtime.Extension} left
-         * @param {!Runtime.Extension} right
+         * @param {!Runtime.Extension} extension
          */
-        function orderComparator(left, right)
-        {
-            return left.descriptor()["order"] - right.descriptor()["order"];
-        }
-        extensions.sort(orderComparator);
-        extensions.forEach(function(extension) {
-            var item;
-            switch (extension.descriptor()["location"]) {
-            case "toolbar-left":
-                item = createItem(extension);
-                if (item)
-                    WebInspector.inspectorView.appendToLeftToolbar(item);
-                break;
-            case "toolbar-right":
-                item = createItem(extension);
-                if (item)
-                    WebInspector.inspectorView.appendToRightToolbar(item);
-                break;
-            }
-            if (item && extension.descriptor()["actionId"]) {
-                item.addEventListener("click", function() {
-                    WebInspector.actionRegistry.execute(extension.descriptor()["actionId"]);
-                });
-            }
-        });
-
-        function createItem(extension)
+        function appendToolbarItem(extension)
         {
             var descriptor = extension.descriptor();
-            if (descriptor.className)
-                return extension.instance().item();
-            return new WebInspector.StatusBarButton(WebInspector.UIString(descriptor["title"]), descriptor["elementClass"]);
+            if (!descriptor.className) {
+                var item = new WebInspector.StatusBarButton(WebInspector.UIString(descriptor["title"]), descriptor["elementClass"]);
+                attachActionHandler(item);
+                return item;
+            }
+
+            return extension.instancePromise().then(appendItem).done();
+
+            /**
+             * @param {!Object} provider
+             */
+            function appendItem(provider)
+            {
+                var item = /** @type {!WebInspector.StatusBarItem.Provider} */ (provider).item();
+                if (!item)
+                    return;
+
+                if (extension.descriptor()["location"] === "toolbar-left")
+                    WebInspector.inspectorView.appendToLeftToolbar(item);
+                else if (extension.descriptor()["location"] === "toolbar-right")
+                    WebInspector.inspectorView.appendToRightToolbar(item);
+                attachActionHandler(item);
+            }
+
+            /**
+             * @param {!Object} item
+             */
+            function attachActionHandler(item)
+            {
+                if (extension.descriptor()["actionId"])
+                    /** @type {!WebInspector.StatusBarButton} */ (item).addEventListener("click", handler);
+            }
+
+            function handler()
+            {
+                WebInspector.actionRegistry.execute(extension.descriptor()["actionId"]);
+            }
         }
     },
 

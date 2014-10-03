@@ -56,7 +56,16 @@ WebInspector.ActionRegistry.prototype = {
     {
         var extension = this._actionsById.get(actionId);
         console.assert(extension, "No action found for actionId '" + actionId + "'");
-        return extension.instance().handleAction(WebInspector.context);
+        extension.instancePromise().then(handleAction).done();
+        return !!extension;
+
+        /**
+         * @param {!Object} actionDelegate
+         */
+        function handleAction(actionDelegate)
+        {
+            /** @type {!WebInspector.ActionDelegate} */(actionDelegate).handleAction(WebInspector.context);
+        }
     }
 }
 

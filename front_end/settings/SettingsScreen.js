@@ -288,19 +288,15 @@ WebInspector.GenericSettingsTab.prototype = {
             if (experimentName && !Runtime.experiments.isEnabled(experimentName))
                 return;
 
+            if (descriptor["settingType"] === "custom") {
+                extension.instancePromise().then(appendSettingControl).done();
+                return;
+            }
+
+            var uiTitle = WebInspector.UIString(descriptor["title"]);
             var settingName = descriptor["settingName"];
             var setting = WebInspector.settings[settingName];
-            var instance = extension.instance();
-            var settingControl;
-            if (instance && descriptor["settingType"] === "custom") {
-                settingControl = instance.settingElement();
-                if (!settingControl)
-                    return;
-            }
-            if (!settingControl) {
-                var uiTitle = WebInspector.UIString(descriptor["title"]);
-                settingControl = createSettingControl.call(this, uiTitle, setting, descriptor, instance);
-            }
+            var settingControl = createSettingControl.call(this, uiTitle, setting, descriptor);
             if (settingName) {
                 var childSettings = childSettingExtensionsByParentName.get(settingName);
                 if (childSettings.size()) {
@@ -309,19 +305,25 @@ WebInspector.GenericSettingsTab.prototype = {
                     childSettings.values().forEach(function(item) { processSetting.call(this, fieldSet, item); }, this);
                 }
             }
-            var containerElement = parentFieldset || sectionElement;
-            containerElement.appendChild(settingControl);
+            appendSettingControl(settingControl);
+
+            /**
+             * @param {!Object} settingControl
+             */
+            function appendSettingControl(settingControl)
+            {
+                (parentFieldset || sectionElement).appendChild(/** @type {!Element} */ (settingControl));
+            }
         }
 
         /**
          * @param {string} uiTitle
          * @param {!WebInspector.Setting} setting
          * @param {!Object} descriptor
-         * @param {?Object} instance
          * @return {!Element}
          * @this {WebInspector.GenericSettingsTab}
          */
-        function createSettingControl(uiTitle, setting, descriptor, instance)
+        function createSettingControl(uiTitle, setting, descriptor)
         {
             switch (descriptor["settingType"]) {
             case "checkbox":
