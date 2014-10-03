@@ -1855,12 +1855,15 @@ WebInspector.StylePropertiesSection.prototype = {
         {
             delete this._parentPane._userOperation;
             this._moveEditorFromSelector(direction);
+            this._editingSelectorCommittedForTest();
         }
 
         // This gets deleted in finishOperationAndMoveEditor(), which is called both on success and failure.
         this._parentPane._userOperation = true;
         this._parentPane._target.cssModel.setRuleSelector(this.rule, selectedNode ? selectedNode.id : 0, newContent, successCallback.bind(this), finishOperationAndMoveEditor.bind(this, moveDirection));
     },
+
+    _editingSelectorCommittedForTest: function() { },
 
     _updateRuleOrigin: function()
     {
@@ -2118,7 +2121,7 @@ WebInspector.BlankStylePropertiesSection.prototype = {
             this._editingSelectorEnded();
             this._markSelectorMatches();
 
-            this._finishedAddingRuleForTest();
+            this._editingSelectorCommittedForTest();
         }
 
         /**
@@ -2127,7 +2130,7 @@ WebInspector.BlankStylePropertiesSection.prototype = {
         function failureCallback()
         {
             this.editingSelectorCancelled();
-            this._finishedAddingRuleForTest();
+            this._editingSelectorCommittedForTest();
         }
 
         if (newContent)
@@ -2138,8 +2141,6 @@ WebInspector.BlankStylePropertiesSection.prototype = {
         var ruleText = this._rulePrefix() + newContent + " {}";
         cssModel.addRule(this._styleSheetId, this._parentPane._node, ruleText, this._ruleLocation, successCallback.bind(this), failureCallback.bind(this));
     },
-
-    _finishedAddingRuleForTest: function() { },
 
     editingSelectorCancelled: function()
     {
@@ -2765,6 +2766,7 @@ WebInspector.StylePropertyTreeElement.prototype = {
                 section._parentPane.dispatchEventToListeners("style property toggled");
 
             this._updatePane();
+            this.styleTextAppliedForTest();
         }
 
         this._parentPane._userOperation = true;
