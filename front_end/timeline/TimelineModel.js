@@ -307,7 +307,7 @@ WebInspector.TimelineModel.prototype = {
      */
     minimumRecordTime: function()
     {
-        return this._minimumRecordTime;
+        throw new Error("Not implemented.");
     },
 
     /**
@@ -315,7 +315,7 @@ WebInspector.TimelineModel.prototype = {
      */
     maximumRecordTime: function()
     {
-        return this._maximumRecordTime;
+        throw new Error("Not implemented.");
     },
 
     /**
@@ -324,20 +324,6 @@ WebInspector.TimelineModel.prototype = {
     isEmpty: function()
     {
         return this.minimumRecordTime() === 0 && this.maximumRecordTime() === 0;
-    },
-
-    /**
-     * @param {!WebInspector.TimelineModel.Record} record
-     */
-    _updateBoundaries: function(record)
-    {
-        var startTime = record.startTime();
-        var endTime = record.endTime();
-
-        if (!this._minimumRecordTime || startTime < this._minimumRecordTime)
-            this._minimumRecordTime = startTime;
-        if (endTime > this._maximumRecordTime)
-            this._maximumRecordTime = endTime;
     },
 
     /**

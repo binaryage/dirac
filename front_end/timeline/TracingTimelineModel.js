@@ -503,7 +503,6 @@ WebInspector.TracingTimelineModel.prototype = {
      */
     _addTopLevelRecord: function(record)
     {
-        this._updateBoundaries(record);
         this._records.push(record);
         if (record.type() === WebInspector.TracingTimelineModel.RecordType.Program)
             this._mainThreadTasks.push(record);

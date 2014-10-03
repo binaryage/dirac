@@ -233,7 +233,39 @@ WebInspector.TimelineModelImpl.prototype = {
         this._payloads = [];
         this._stringPool = {};
         this._bindings._reset();
+        this._minimumRecordTime = 0;
+        this._maximumRecordTime = 0;
         WebInspector.TimelineModel.prototype.reset.call(this);
+    },
+
+    /**
+     * @return {number}
+     */
+    minimumRecordTime: function()
+    {
+        return this._minimumRecordTime;
+    },
+
+    /**
+     * @return {number}
+     */
+    maximumRecordTime: function()
+    {
+        return this._maximumRecordTime;
+    },
+
+    /**
+     * @param {!WebInspector.TimelineModel.Record} record
+     */
+    _updateBoundaries: function(record)
+    {
+        var startTime = record.startTime();
+        var endTime = record.endTime();
+
+        if (!this._minimumRecordTime || startTime < this._minimumRecordTime)
+            this._minimumRecordTime = startTime;
+        if (endTime > this._maximumRecordTime)
+            this._maximumRecordTime = endTime;
     },
 
     /**
