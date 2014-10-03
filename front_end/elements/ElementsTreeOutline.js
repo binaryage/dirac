@@ -1663,13 +1663,15 @@ WebInspector.ElementsTreeElement.prototype = {
             contextMenu.appendItem(WebInspector.UIString("Copy XPath"), this._copyXPath.bind(this));
         if (!isShadowRoot) {
             var treeOutline = this.treeOutline;
-            contextMenu.appendItem(WebInspector.UIString("Copy"), treeOutline._performCopyOrCut.bind(treeOutline, false, this.representedObject));
+            contextMenu.appendSeparator();
             contextMenu.appendItem(WebInspector.UIString("Cut"), treeOutline._performCopyOrCut.bind(treeOutline, true, this.representedObject), !this.hasEditableNode());
+            contextMenu.appendItem(WebInspector.UIString("Copy"), treeOutline._performCopyOrCut.bind(treeOutline, false, this.representedObject));
             contextMenu.appendItem(WebInspector.UIString("Paste"), treeOutline._pasteNode.bind(treeOutline, this.representedObject), !treeOutline._canPaste(this.representedObject));
         }
 
         if (isEditable)
-            contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Delete node" : "Delete Node"), this.remove.bind(this));
+            contextMenu.appendItem(WebInspector.UIString("Delete"), this.remove.bind(this));
+        contextMenu.appendSeparator();
     },
 
     _startEditing: function()
