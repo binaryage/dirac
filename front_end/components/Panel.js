@@ -208,7 +208,7 @@ WebInspector.PanelDescriptor.prototype = {
     title: function() {},
 
     /**
-     * @return {!WebInspector.Panel}
+     * @return {!Promise.<!WebInspector.Panel>}
      */
     panel: function() {}
 }
@@ -257,10 +257,19 @@ WebInspector.RuntimeExtensionPanelDescriptor.prototype = {
     },
 
     /**
-     * @return {!WebInspector.Panel}
+     * @return {!Promise.<!WebInspector.Panel>}
      */
     panel: function()
     {
-        return /** @type {!WebInspector.PanelFactory} */ (this._extension.instance()).createPanel();
+        return this._extension.instancePromise().then(createPanel);
+
+        /**
+         * @param {!Object} panelFactory
+         * @return {!WebInspector.Panel}
+         */
+        function createPanel(panelFactory)
+        {
+            return /** @type {!WebInspector.PanelFactory} */ (panelFactory).createPanel();
+        }
     }
 }

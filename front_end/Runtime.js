@@ -640,7 +640,6 @@ Runtime.Module.prototype = {
             this._manager.loadModule(dependencies[i]);
         this._loadScripts();
         this._isLoading = false;
-        this._loaded = true;
     },
 
     /**
@@ -654,15 +653,10 @@ Runtime.Module.prototype = {
         if (this._pendingLoadPromise)
             return this._pendingLoadPromise;
 
-        if (this._isLoading)
-            throw new Error("Module " + this._name + " is loaded from itself");
-
-        this._isLoading = true;
         var dependencies = this._descriptor.dependencies;
         var dependencyPromises = [];
         for (var i = 0; dependencies && i < dependencies.length; ++i)
             dependencyPromises.push(this._manager._modulesMap[dependencies[i]]._loadPromise());
-        this._isLoading = false;
 
         this._pendingLoadPromise = Promise.all(dependencyPromises)
             .then(loadScripts.bind(this));
@@ -677,14 +671,17 @@ Runtime.Module.prototype = {
             // FIXME: migrate to loadScriptAsync.
             delete this._pendingLoadPromise;
             this._loadScripts();
-            this._loaded = true;
         }
     },
 
     _loadScripts: function()
     {
-        if (!this._descriptor.scripts)
+        if (this._loaded)
             return;
+        if (!this._descriptor.scripts) {
+            this._loaded = true;
+            return;
+        }
         if (Runtime.isReleaseMode()) {
             loadScript(this._name + "_module.js");
         } else {
@@ -692,6 +689,7 @@ Runtime.Module.prototype = {
             for (var i = 0; i < scripts.length; ++i)
                 loadScript(this._name + "/" + scripts[i]);
         }
+        this._loaded = true;
     }
 }
 

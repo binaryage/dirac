@@ -93,10 +93,6 @@ fieldset[disabled] label:hover input {
     display: inline-block;
 }
 
-.hidden {
-    display: none !important;
-}
-
 .white-background {
     background-color: white;
 }

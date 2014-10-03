@@ -74,15 +74,26 @@ WebInspector.InspectorView = function()
     this._historyIterator = -1;
     document.addEventListener("keydown", this._keyDown.bind(this), false);
     document.addEventListener("keypress", this._keyPress.bind(this), false);
+    /** @type {!Object.<string, !WebInspector.PanelDescriptor>} */
     this._panelDescriptors = {};
+    /** @type {!Object.<string, !Promise.<!WebInspector.Panel> >} */
+    this._panelPromises = {};
 
     // Windows and Mac have two different definitions of '[' and ']', so accept both of each.
     this._openBracketIdentifiers = ["U+005B", "U+00DB"].keySet();
     this._closeBracketIdentifiers = ["U+005D", "U+00DD"].keySet();
     this._lastActivePanelSetting = WebInspector.settings.createSetting("lastActivePanel", "elements");
 
-    InspectorFrontendHost.events.addEventListener(InspectorFrontendHostAPI.Events.ShowConsole, this._loadAndShowPanel.bind(this, "console"));
+    InspectorFrontendHost.events.addEventListener(InspectorFrontendHostAPI.Events.ShowConsole, showConsole.bind(this));
     this._loadPanelDesciptors();
+
+    /**
+     * @this {WebInspector.InspectorView}
+     */
+    function showConsole()
+    {
+        this.showPanel("console").done();
+    }
 };
 
 WebInspector.InspectorView.prototype = {
@@ -142,18 +153,35 @@ WebInspector.InspectorView.prototype = {
 
     /**
      * @param {string} panelName
-     * @return {?WebInspector.Panel}
+     * @return {!Promise.<!WebInspector.Panel>}
      */
-    _loadPanel: function(panelName)
+    panel: function(panelName)
     {
         var panelDescriptor = this._panelDescriptors[panelName];
-        var panelOrder = this._tabbedPane.allTabs();
-        if (!panelDescriptor && panelOrder.length)
-            panelDescriptor = this._panelDescriptors[panelOrder[0]];
-        var panel = panelDescriptor ? panelDescriptor.panel() : null;
-        if (panel)
+        if (!panelDescriptor)
+            return Promise.rejectWithError("Can't load panel without the descriptor: " + panelName);
+
+        var promise = this._panelPromises[panelName];
+        if (promise)
+            return promise;
+
+        promise = panelDescriptor.panel();
+        this._panelPromises[panelName] = promise;
+
+        promise.then(cachePanel.bind(this));
+
+        /**
+         * @param {!WebInspector.Panel} panel
+         * @return {!WebInspector.Panel}
+         * @this {WebInspector.InspectorView}
+         */
+        function cachePanel(panel)
+        {
+            delete this._panelPromises[panelName];
             this._panels[panelName] = panel;
-        return panel;
+            return panel;
+        }
+        return promise;
     },
 
     /**
@@ -169,26 +197,14 @@ WebInspector.InspectorView.prototype = {
 
     /**
      * @param {string} panelName
-     * @return {!Promise.<?WebInspector.Panel>}
+     * @return {!Promise.<!WebInspector.Panel>}
      */
-    showPanelPromise: function(panelName)
-    {
-        return Promise.resolve(this._loadAndShowPanel(panelName));
-    },
-
-    /**
-     * @param {string} panelName
-     * @return {?WebInspector.Panel}
-     */
-    _loadAndShowPanel: function(panelName)
+    showPanel: function(panelName)
     {
         if (this._currentPanelLocked)
-            return this._currentPanel === this._panels[panelName] ? this._currentPanel : null;
+            return this._currentPanel === this._panels[panelName] ? Promise.resolve(this._currentPanel) : Promise.rejectWithError("Current panel locked");
 
-        var panel = this._loadPanel(panelName);
-        if (panel)
-            this.setCurrentPanel(panel);
-        return panel;
+        return this.panel(panelName).then(this.setCurrentPanel.bind(this));
     },
 
     /**
@@ -218,9 +234,9 @@ WebInspector.InspectorView.prototype = {
      */
     showInitialPanelForTest: function(panelName)
     {
-        this._tabbedPane.selectTab(panelName);
-        this._lastActivePanelSetting.set(panelName);
-        this._showInitialPanel();
+        this._tabbedPane.addEventListener(WebInspector.TabbedPane.EventTypes.TabSelected, this._tabSelected, this);
+        this.setCurrentPanel(this._panels[panelName]);
+        this._drawer.initialPanelShown();
     },
 
     _tabSelected: function()
@@ -228,30 +244,37 @@ WebInspector.InspectorView.prototype = {
         var panelName = this._tabbedPane.selectedTabId;
         if (!panelName)
             return;
-        var panel = this._panelDescriptors[this._tabbedPane.selectedTabId].panel();
-        this._panels[panelName] = panel;
-        this._tabbedPane.changeTabView(panelName, panel);
+
+        this.showPanel(panelName).done();
+    },
+
+    /**
+     * @param {!WebInspector.Panel} panel
+     * @return {!WebInspector.Panel}
+     */
+    setCurrentPanel: function(panel)
+    {
+        if (this._currentPanelLocked) {
+            console.error("Current panel is locked");
+            return this._currentPanel;
+        }
+        InspectorFrontendHost.bringToFront();
+        if (this._currentPanel === panel)
+            return panel;
 
         this._currentPanel = panel;
+        if (!this._panels[panel.name])
+            this._panels[panel.name] = panel;
+        this._tabbedPane.changeTabView(panel.name, panel);
+        this._tabbedPane.removeEventListener(WebInspector.TabbedPane.EventTypes.TabSelected, this._tabSelected, this);
+        this._tabbedPane.selectTab(panel.name);
+        this._tabbedPane.addEventListener(WebInspector.TabbedPane.EventTypes.TabSelected, this._tabSelected, this);
+
         this._lastActivePanelSetting.set(panel.name);
         this._pushToHistory(panel.name);
         WebInspector.userMetrics.panelShown(panel.name);
         panel.focus();
-    },
-
-    /**
-     * @param {!WebInspector.Panel} x
-     */
-    setCurrentPanel: function(x)
-    {
-        if (this._currentPanelLocked)
-            return;
-        InspectorFrontendHost.bringToFront();
-        if (this._currentPanel === x)
-            return;
-
-        this._tabbedPane.changeTabView(x.name, x);
-        this._tabbedPane.selectTab(x.name);
+        return panel;
     },
 
     /**
@@ -343,7 +366,7 @@ WebInspector.InspectorView.prototype = {
                 var panelName = this._tabbedPane.allTabs()[panelIndex];
                 if (panelName) {
                     if (!WebInspector.Dialog.currentInstance() && !this._currentPanelLocked)
-                        this._loadAndShowPanel(panelName);
+                        this.showPanel(panelName).done();
                     event.consume(true);
                 }
                 return;
@@ -388,14 +411,20 @@ WebInspector.InspectorView.prototype = {
             event.consume(true)
     },
 
+    /**
+     * @param {number} direction
+     */
     _changePanelInDirection: function(direction)
     {
         var panelOrder = this._tabbedPane.allTabs();
         var index = panelOrder.indexOf(this.currentPanel().name);
         index = (index + panelOrder.length + direction) % panelOrder.length;
-        this._loadAndShowPanel(panelOrder[index]);
+        this.showPanel(panelOrder[index]).done();
     },
 
+    /**
+     * @param {number} move
+     */
     _moveInHistory: function(move)
     {
         var newIndex = this._historyIterator + move;
