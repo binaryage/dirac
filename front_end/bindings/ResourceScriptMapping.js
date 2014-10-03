@@ -70,7 +70,7 @@ WebInspector.ResourceScriptMapping.prototype = {
         var columnNumber = debuggerModelLocation.columnNumber || 0;
         if (script.isInlineScriptWithSourceURL() && !lineNumber && columnNumber)
             columnNumber -= script.columnOffset;
-        return uiSourceCode.uiLocation(debuggerModelLocation.lineNumber, debuggerModelLocation.columnNumber || 0);
+        return uiSourceCode.uiLocation(lineNumber, columnNumber);
     },
 
     /**
