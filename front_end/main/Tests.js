@@ -185,7 +185,10 @@ TestSuite.prototype.runTest = function(testName)
  */
 TestSuite.prototype.showPanel = function(panelName)
 {
-    return WebInspector.inspectorView.showPanel(panelName);
+    // Open Scripts panel.
+    var button = document.getElementById("tab-" + panelName);
+    button.selectTabForTest();
+    this.assertEquals(WebInspector.panels[panelName], WebInspector.inspectorView.currentPanel());
 };
 
 
@@ -265,14 +268,13 @@ TestSuite.prototype.waitForThrottler = function(throttler, callback)
  */
 TestSuite.prototype.testShowScriptsTab = function()
 {
+    this.showPanel("sources");
     var test = this;
-    this.showPanel("sources").then(function() {
-        // There should be at least main page script.
-        this._waitUntilScriptsAreParsed(["debugger_test_page.html"],
-            function() {
-                test.releaseControl();
-            });
-    }.bind(this));
+    // There should be at least main page script.
+    this._waitUntilScriptsAreParsed(["debugger_test_page.html"],
+        function() {
+            test.releaseControl();
+        });
     // Wait until all scripts are added to the debugger.
     this.takeControl();
 };
@@ -286,22 +288,21 @@ TestSuite.prototype.testShowScriptsTab = function()
 TestSuite.prototype.testScriptsTabIsPopulatedOnInspectedPageRefresh = function()
 {
     var test = this;
+    this.assertEquals(WebInspector.panels.elements, WebInspector.inspectorView.currentPanel(), "Elements panel should be current one.");
+
     WebInspector.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.GlobalObjectCleared, waitUntilScriptIsParsed);
 
-    this.showPanel("elements").then(function() {
-        // Reload inspected page. It will reset the debugger agent.
-        test.evaluateInConsole_("window.location.reload(true);", function(resultText) {});
-    });
+    // Reload inspected page. It will reset the debugger agent.
+    test.evaluateInConsole_("window.location.reload(true);", function(resultText) {});
 
     function waitUntilScriptIsParsed()
     {
         WebInspector.debuggerModel.removeEventListener(WebInspector.DebuggerModel.Events.GlobalObjectCleared, waitUntilScriptIsParsed);
-        test.showPanel("sources").then(function() {
-            test._waitUntilScriptsAreParsed(["debugger_test_page.html"],
-                function() {
-                    test.releaseControl();
-                });
-        });
+        test.showPanel("sources");
+        test._waitUntilScriptsAreParsed(["debugger_test_page.html"],
+            function() {
+                test.releaseControl();
+            });
     }
 
     // Wait until all scripts are added to the debugger.
@@ -314,14 +315,14 @@ TestSuite.prototype.testScriptsTabIsPopulatedOnInspectedPageRefresh = function()
  */
 TestSuite.prototype.testContentScriptIsPresent = function()
 {
+    this.showPanel("sources");
     var test = this;
-    this.showPanel("sources").then(function() {
-        test._waitUntilScriptsAreParsed(
-            ["page_with_content_script.html", "simple_content_script.js"],
-            function() {
-                test.releaseControl();
-            });
-    });
+
+    test._waitUntilScriptsAreParsed(
+        ["page_with_content_script.html", "simple_content_script.js"],
+        function() {
+          test.releaseControl();
+        });
 
     // Wait until all scripts are added to the debugger.
     this.takeControl();
@@ -341,16 +342,16 @@ TestSuite.prototype.testNoScriptDuplicatesOnPanelSwitch = function()
     var expectedScriptsCount = 2;
     var parsedScripts = [];
 
+    this.showPanel("sources");
+
     function switchToElementsTab() {
-        test.showPanel("elements").then(function() {
-            setTimeout(switchToScriptsTab, 0);
-        });
+        test.showPanel("elements");
+        setTimeout(switchToScriptsTab, 0);
     }
 
     function switchToScriptsTab() {
-        test.showPanel("sources").then(function() {
-            setTimeout(checkScriptsPanel, 0);
-        });
+        test.showPanel("sources");
+        setTimeout(checkScriptsPanel, 0);
     }
 
     function checkScriptsPanel() {
@@ -368,14 +369,13 @@ TestSuite.prototype.testNoScriptDuplicatesOnPanelSwitch = function()
         }
     }
 
-    this.showPanel("sources").then(function() {
-        test._waitUntilScriptsAreParsed(
-            ["debugger_test_page.html"],
-            function() {
-                checkNoDuplicates();
-                setTimeout(switchToElementsTab, 0);
-            });
-    });
+    test._waitUntilScriptsAreParsed(
+        ["debugger_test_page.html"],
+        function() {
+            checkNoDuplicates();
+            setTimeout(switchToElementsTab, 0);
+        });
+
 
     // Wait until all scripts are added to the debugger.
     this.takeControl();
@@ -386,15 +386,13 @@ TestSuite.prototype.testNoScriptDuplicatesOnPanelSwitch = function()
 // frontend is being loaded.
 TestSuite.prototype.testPauseWhenLoadingDevTools = function()
 {
+    this.showPanel("sources");
+
+    // Script execution can already be paused.
     if (WebInspector.debuggerModel.debuggerPausedDetails)
         return;
 
-    this.showPanel("sources").then(function() {
-        // Script execution can already be paused.
-
-        this._waitForScriptPause(this.releaseControl.bind(this));
-    }.bind(this));
-
+    this._waitForScriptPause(this.releaseControl.bind(this));
     this.takeControl();
 };
 
@@ -403,11 +401,11 @@ TestSuite.prototype.testPauseWhenLoadingDevTools = function()
 // is already running.
 TestSuite.prototype.testPauseWhenScriptIsRunning = function()
 {
-    this.showPanel("sources").then(function() {
-        this.evaluateInConsole_(
-            'setTimeout("handleClick()", 0)',
-            didEvaluateInConsole.bind(this));
-    }.bind(this));
+    this.showPanel("sources");
+
+    this.evaluateInConsole_(
+        'setTimeout("handleClick()" , 0)',
+        didEvaluateInConsole.bind(this));
 
     function didEvaluateInConsole(resultText) {
         this.assertTrue(!isNaN(resultText), "Failed to get timer id: " + resultText);

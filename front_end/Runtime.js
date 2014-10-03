@@ -606,8 +606,6 @@ Runtime.Module = function(manager, descriptor)
     this._manager = manager;
     this._descriptor = descriptor;
     this._name = descriptor.name;
-    /** @type {!Object.<string, ?Object>} */
-    this._instanceMap = {};
     var extensions = /** @type {?Array.<!Runtime.ExtensionDescriptor>} */ (descriptor.extensions);
     for (var i = 0; extensions && i < extensions.length; ++i)
         this._manager._extensions.push(new Runtime.Extension(this, extensions[i]));
@@ -642,6 +640,7 @@ Runtime.Module.prototype = {
             this._manager.loadModule(dependencies[i]);
         this._loadScripts();
         this._isLoading = false;
+        this._loaded = true;
     },
 
     /**
@@ -655,10 +654,15 @@ Runtime.Module.prototype = {
         if (this._pendingLoadPromise)
             return this._pendingLoadPromise;
 
+        if (this._isLoading)
+            throw new Error("Module " + this._name + " is loaded from itself");
+
+        this._isLoading = true;
         var dependencies = this._descriptor.dependencies;
         var dependencyPromises = [];
         for (var i = 0; dependencies && i < dependencies.length; ++i)
             dependencyPromises.push(this._manager._modulesMap[dependencies[i]]._loadPromise());
+        this._isLoading = false;
 
         this._pendingLoadPromise = Promise.all(dependencyPromises)
             .then(loadScripts.bind(this));
@@ -673,17 +677,14 @@ Runtime.Module.prototype = {
             // FIXME: migrate to loadScriptAsync.
             delete this._pendingLoadPromise;
             this._loadScripts();
+            this._loaded = true;
         }
     },
 
     _loadScripts: function()
     {
-        if (this._loaded)
+        if (!this._descriptor.scripts)
             return;
-        if (!this._descriptor.scripts) {
-            this._loaded = true;
-            return;
-        }
         if (Runtime.isReleaseMode()) {
             loadScript(this._name + "_module.js");
         } else {
@@ -691,27 +692,6 @@ Runtime.Module.prototype = {
             for (var i = 0; i < scripts.length; ++i)
                 loadScript(this._name + "/" + scripts[i]);
         }
-        this._loaded = true;
-    },
-
-    /**
-     * @param {string} className
-     * @return {?Object}
-     */
-    _instance: function(className)
-    {
-        if (className in this._instanceMap)
-            return this._instanceMap[className];
-
-        var constructorFunction = window.eval(className);
-        if (!(constructorFunction instanceof Function)) {
-            this._instanceMap[className] = null;
-            return null;
-        }
-
-        var instance = new constructorFunction();
-        this._instanceMap[className] = instance;
-        return instance;
     }
 }
 
@@ -777,8 +757,17 @@ Runtime.Extension.prototype = {
     {
         if (!this._className)
             return null;
-        this._module._load();
-        return this._module._instance(this._className);
+
+        if (!this._instance) {
+            this._module._load();
+
+            var constructorFunction = window.eval(this._className);
+            if (!(constructorFunction instanceof Function))
+                return null;
+
+            this._instance = new constructorFunction();
+        }
+        return this._instance;
     },
 
     /**
@@ -788,22 +777,25 @@ Runtime.Extension.prototype = {
     {
         if (!this._className)
             return Promise.reject(new Error("No class name in extension"));
-        var className = this._className;
         if (this._instance)
             return Promise.resolve(this._instance);
 
         return this._module._loadPromise().then(constructInstance.bind(this));
 
         /**
-         * @return {!Object}
          * @this {Runtime.Extension}
+         * @return {!Object}
          */
         function constructInstance()
         {
-            var result = this._module._instance(className);
-            if (!result)
-                return Promise.reject("Could not instantiate: " + className);
-            return result;
+            // FIXME: remove this check once instance() is removed.
+            if (this._instance)
+                return this._instance;
+            var constructorFunction = window.eval(/** @type {string} */ (this._className));
+            if (!(constructorFunction instanceof Function))
+                throw new Error("Constructor is not a function: " + this._className);
+            this._instance = new constructorFunction();
+            return this._instance;
         }
     }
 }

@@ -73,29 +73,36 @@ WebInspector.SourcesNavigator.prototype = {
 
     /**
      * @param {!WebInspector.UISourceCode} uiSourceCode
+     * @return {string|null}
+     */
+    _navigatorViewIdForUISourceCode: function(uiSourceCode)
+    {
+        var ids = this._tabbedPaneController.viewIds();
+        for (var i = 0; i < ids.length; ++i) {
+            var id = ids[i]
+
+            // Force navigator view creation.
+            this._tabbedPaneController.viewForId(id);
+
+            var navigatorView = this._navigatorViews.get(id);
+            if (navigatorView.accept(uiSourceCode))
+                return id;
+        }
+        return null;
+    },
+
+    /**
+     * @param {!WebInspector.UISourceCode} uiSourceCode
      */
     revealUISourceCode: function(uiSourceCode)
     {
-        var ids = this._tabbedPaneController.viewIds();
-        var promises = [];
-        for (var i = 0; i < ids.length; ++i)
-            promises.push(this._tabbedPaneController.viewForId(ids[i]));
-        Promise.all(promises).then(filterNavigators.bind(this)).done();
-
-        /**
-         * @param {!Array.<!Object>} objects
-         * @this {WebInspector.SourcesNavigator}
-         */
-        function filterNavigators(objects)
-        {
-            for (var i = 0; i < objects.length; ++i) {
-                var navigatorView = /** @type {!WebInspector.NavigatorView} */ (objects[i]);
-                if (navigatorView.accept(uiSourceCode)) {
-                    this._tabbedPane.selectTab(ids[i]);
-                    navigatorView.revealUISourceCode(uiSourceCode, true);
-                }
-            }
-        }
+        var id = this._navigatorViewIdForUISourceCode(uiSourceCode);
+        if (!id)
+            return;
+        var navigatorView = this._navigatorViews.get(id);
+        console.assert(navigatorView);
+        navigatorView.revealUISourceCode(uiSourceCode, true);
+        this._tabbedPane.selectTab(id);
     },
 
     /**

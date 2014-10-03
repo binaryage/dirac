@@ -220,35 +220,24 @@ WebInspector.ExtensionServer.prototype = {
 
         var page = this._expandResourcePath(port._extensionOrigin, message.page);
         var panelDescriptor = new WebInspector.ExtensionServerPanelDescriptor(id, message.title, new WebInspector.ExtensionPanel(id, page));
-        this._clientObjects[id] = panelDescriptor;
+        this._clientObjects[id] = panelDescriptor.panel();
         WebInspector.inspectorView.addPanel(panelDescriptor);
         return this._status.OK();
     },
 
     _onShowPanel: function(message)
     {
-        WebInspector.inspectorView.showPanel(message.id).done();
+        WebInspector.inspectorView.showPanelPromise(message.id).done();
     },
 
     _onCreateStatusBarButton: function(message, port)
     {
-        var panelDescriptor = this._clientObjects[message.panel];
-        if (!panelDescriptor || !(panelDescriptor instanceof WebInspector.ExtensionServerPanelDescriptor))
+        var panel = this._clientObjects[message.panel];
+        if (!panel || !(panel instanceof WebInspector.ExtensionPanel))
             return this._status.E_NOTFOUND(message.panel);
-
         var button = new WebInspector.ExtensionButton(message.id, this._expandResourcePath(port._extensionOrigin, message.icon), message.tooltip, message.disabled);
         this._clientObjects[message.id] = button;
-
-        panelDescriptor.panel().then(appendButton).done();
-
-        /**
-         * @param {!WebInspector.Panel} panel
-         */
-        function appendButton(panel)
-        {
-            /** @type {!WebInspector.ExtensionPanel} panel*/ (panel).addStatusBarItem(button.element);
-        }
-
+        panel.addStatusBarItem(button.element);
         return this._status.OK();
     },
 
@@ -1022,11 +1011,11 @@ WebInspector.ExtensionServerPanelDescriptor.prototype = {
     },
 
     /**
-     * @return {!Promise.<!WebInspector.Panel>}
+     * @return {!WebInspector.Panel}
      */
     panel: function()
     {
-        return Promise.resolve(this._panel);
+        return this._panel;
     }
 }
 

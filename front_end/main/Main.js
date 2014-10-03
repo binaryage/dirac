@@ -147,7 +147,7 @@ WebInspector.Main.prototype = {
         if (InspectorFrontendHost.isUnderTest()) {
             // Enable experiments for testing.
             var testPath = WebInspector.settings.testPath.get();
-            if (testPath.indexOf("timeline/") !== -1 || testPath.indexOf("layers/") !== -1)
+            if (testPath.indexOf("layers/") !== -1)
                 Runtime.experiments.enableForTest("layersPanel");
             if (testPath.indexOf("tracing/") !== -1)
                 Runtime.experiments.enableForTest("timelineOnTraceEvents");
