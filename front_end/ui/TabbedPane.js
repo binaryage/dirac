@@ -1144,6 +1144,8 @@ WebInspector.ExtensibleTabbedPaneController = function(tabbedPane, extensionPoin
     this._extensionPoint = extensionPoint;
     this._viewCallback = viewCallback;
     this._tabOrders = {};
+    /** @type {!Object.<string, !Promise.<!WebInspector.View>>} */
+    this._promiseForId = {};
 
     this._tabbedPane.setRetainTabOrder(true, this._tabOrderComparator.bind(this));
     this._tabbedPane.addEventListener(WebInspector.TabbedPane.EventTypes.TabSelected, this._tabSelected, this);
@@ -1199,9 +1201,7 @@ WebInspector.ExtensibleTabbedPaneController.prototype = {
         var tabId = this._tabbedPane.selectedTabId;
         if (!tabId)
             return;
-        var view = this.viewForId(tabId);
-        if (view)
-            this._tabbedPane.changeTabView(tabId, view);
+        this.viewForId(tabId).then(this._tabbedPane.changeTabView.bind(this._tabbedPane, tabId)).done();
     },
 
     /**
@@ -1214,17 +1214,34 @@ WebInspector.ExtensibleTabbedPaneController.prototype = {
 
     /**
      * @param {string} id
-     * @return {?WebInspector.View}
+     * @return {!Promise.<!WebInspector.View>}
      */
     viewForId: function(id)
     {
         if (this._views.has(id))
-            return /** @type {!WebInspector.View} */ (this._views.get(id));
-        var view = this._extensions.has(id) ? /** @type {!WebInspector.View} */ (this._extensions.get(id).instance()) : null;
-        this._views.set(id, view);
-        if (this._viewCallback && view)
-            this._viewCallback(id, view);
-        return view;
+            return Promise.resolve(/** @type {!WebInspector.View} */ (this._views.get(id)));
+        if (!this._extensions.has(id))
+            return Promise.rejectWithError("No view registered for given type and id: " + this._extensionPoint + ", " + id);
+        if (this._promiseForId[id])
+            return this._promiseForId[id];
+
+        var promise = this._extensions.get(id).instancePromise();
+        this._promiseForId[id] = /** @type {!Promise.<!WebInspector.View>} */ (promise);
+        return promise.then(cacheView.bind(this));
+
+        /**
+         * @param {!Object} object
+         * @this {WebInspector.ExtensibleTabbedPaneController}
+         */
+        function cacheView(object)
+        {
+            var view = /** @type {!WebInspector.View} */ (object);
+            delete this._promiseForId[id];
+            this._views.set(id, view);
+            if (this._viewCallback && view)
+                this._viewCallback(id, view);
+            return view;
+        }
     },
 
     /**
