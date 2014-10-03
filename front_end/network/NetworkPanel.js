@@ -2556,6 +2556,7 @@ WebInspector.NetworkDataGridNode.prototype = {
     {
         this._nameCell = null;
         this._timelineCell = null;
+        this._initiatorCell = null;
 
         this._element.classList.toggle("network-error-row", this._isFailed());
         WebInspector.SortableDataGridNode.prototype.createCells.call(this);
@@ -2609,6 +2610,8 @@ WebInspector.NetworkDataGridNode.prototype = {
     {
         if (this._staleGraph)
             this._updateGraph();
+        if (this._initiatorCell && this._request.initiatorInfo().type === WebInspector.NetworkRequest.InitiatorType.Script)
+            this._initiatorCell.insertBefore(this._linkifiedInitiatorAnchor, this._initiatorCell.firstChild);
     },
 
     wasDetached: function()
@@ -2765,6 +2768,7 @@ WebInspector.NetworkDataGridNode.prototype = {
      */
     _renderInitiatorCell: function(cell)
     {
+        this._initiatorCell = cell;
         var request = this._request;
         var initiator = request.initiatorInfo();
 
