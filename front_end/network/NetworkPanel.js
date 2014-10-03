@@ -99,6 +99,7 @@ WebInspector.NetworkLogView._defaultRefreshDelay = 500;
 WebInspector.NetworkLogView.FilterType = {
     Domain: "Domain",
     HasResponseHeader: "HasResponseHeader",
+    Is: "Is",
     Method: "Method",
     MimeType: "MimeType",
     Scheme: "Scheme",
@@ -106,6 +107,11 @@ WebInspector.NetworkLogView.FilterType = {
     SetCookieName: "SetCookieName",
     SetCookieValue: "SetCookieValue",
     StatusCode: "StatusCode"
+};
+
+/** @enum {string} */
+WebInspector.NetworkLogView.IsFilterType = {
+    Running: "running"
 };
 
 /** @type {!Array.<string>} */
@@ -188,6 +194,7 @@ WebInspector.NetworkLogView.prototype = {
     _resetSuggestionBuilder: function()
     {
         this._suggestionBuilder = new WebInspector.FilterSuggestionBuilder(WebInspector.NetworkLogView._searchKeys);
+        this._suggestionBuilder.addItem(WebInspector.NetworkLogView.FilterType.Is, WebInspector.NetworkLogView.IsFilterType.Running);
         this._textFilterUI.setSuggestionBuilder(this._suggestionBuilder);
     },
 
@@ -1491,6 +1498,11 @@ WebInspector.NetworkLogView.prototype = {
         case WebInspector.NetworkLogView.FilterType.HasResponseHeader:
             return WebInspector.NetworkLogView._requestResponseHeaderFilter.bind(null, value);
 
+        case WebInspector.NetworkLogView.FilterType.Is:
+            if (value.toLowerCase() === WebInspector.NetworkLogView.IsFilterType.Running)
+                return WebInspector.NetworkLogView._runningRequestFilter;
+            break;
+
         case WebInspector.NetworkLogView.FilterType.Method:
             return WebInspector.NetworkLogView._requestMethodFilter.bind(null, value);
 
@@ -1698,6 +1710,15 @@ WebInspector.NetworkLogView._requestNameOrPathFilter = function(regex, request)
 WebInspector.NetworkLogView._requestDomainFilter = function(value, request)
 {
     return request.domain === value;
+}
+
+/**
+ * @param {!WebInspector.NetworkRequest} request
+ * @return {boolean}
+ */
+WebInspector.NetworkLogView._runningRequestFilter = function(request)
+{
+    return !request.finished;
 }
 
 /**
