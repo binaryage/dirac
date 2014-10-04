@@ -356,7 +356,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         if (!token || token.type.indexOf("string") === -1)
             return CodeMirror.Pass;
         var line = this.line(selection.startLine);
-        var tokenValue = line.substring(token.startColumn, token.endColumn + 1);
+        var tokenValue = line.substring(token.startColumn, token.endColumn);
         if (tokenValue[0] === tokenValue[tokenValue.length - 1] && (tokenValue[0] === "'" || tokenValue[0] === "\""))
             return CodeMirror.Pass;
         this._codeMirror.replaceSelection(quoteCharacter);
