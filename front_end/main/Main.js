@@ -60,50 +60,61 @@ WebInspector.Main.prototype = {
 
     _createGlobalStatusBarItems: function()
     {
-        var extensions = self.runtime.extensions(WebInspector.StatusBarItem.Provider).forEach(appendToolbarItem);
+        var extensions = self.runtime.extensions(WebInspector.StatusBarItem.Provider);
+        var promises = [];
+        for (var i = 0; i < extensions.length; ++i)
+            promises.push(resolveItem(extensions[i]));
+        Promise.all(promises).then(appendItemsInOrder).done();
 
         /**
          * @param {!Runtime.Extension} extension
+         * @return {!Promise.<?WebInspector.StatusBarItem>}
          */
-        function appendToolbarItem(extension)
+        function resolveItem(extension)
         {
             var descriptor = extension.descriptor();
-            if (!descriptor.className) {
-                var item = new WebInspector.StatusBarButton(WebInspector.UIString(descriptor["title"]), descriptor["elementClass"]);
-                attachActionHandler(item);
-                return item;
-            }
-
-            return extension.instancePromise().then(appendItem).done();
+            if (!descriptor.className)
+                return Promise.resolve(new WebInspector.StatusBarButton(WebInspector.UIString(descriptor["title"]), descriptor["elementClass"])).then(attachHandler);
+            return extension.instancePromise().then(fetchItemFromProvider).then(attachHandler);
 
             /**
              * @param {!Object} provider
              */
-            function appendItem(provider)
+            function fetchItemFromProvider(provider)
             {
-                var item = /** @type {!WebInspector.StatusBarItem.Provider} */ (provider).item();
-                if (!item)
-                    return;
-
-                if (extension.descriptor()["location"] === "toolbar-left")
-                    WebInspector.inspectorView.appendToLeftToolbar(item);
-                else if (extension.descriptor()["location"] === "toolbar-right")
-                    WebInspector.inspectorView.appendToRightToolbar(item);
-                attachActionHandler(item);
+                return /** @type {!WebInspector.StatusBarItem.Provider} */ (provider).item();
             }
 
             /**
-             * @param {!Object} item
+             * @param {?WebInspector.StatusBarItem} item
+             * @return {?WebInspector.StatusBarItem} item
              */
-            function attachActionHandler(item)
+            function attachHandler(item)
             {
-                if (extension.descriptor()["actionId"])
-                    /** @type {!WebInspector.StatusBarButton} */ (item).addEventListener("click", handler);
+                if (extension.descriptor()["actionId"] && item)
+                    item.addEventListener("click", handler);
+                return item;
             }
 
             function handler()
             {
                 WebInspector.actionRegistry.execute(extension.descriptor()["actionId"]);
+            }
+        }
+
+        /**
+         * @param {!Array.<?WebInspector.StatusBarItem>} items
+         */
+        function appendItemsInOrder(items)
+        {
+            for (var i = 0; i < items.length; ++i) {
+                var item = items[i];
+                if (!item)
+                    continue;
+                if (extensions[i].descriptor()["location"] === "toolbar-left")
+                    WebInspector.inspectorView.appendToLeftToolbar(item);
+                else if (extensions[i].descriptor()["location"] === "toolbar-right")
+                    WebInspector.inspectorView.appendToRightToolbar(item);
             }
         }
     },
