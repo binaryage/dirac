@@ -289,7 +289,7 @@ WebInspector.GenericSettingsTab.prototype = {
                 return;
 
             if (descriptor["settingType"] === "custom") {
-                extension.instancePromise().then(appendSettingControl).done();
+                extension.instancePromise().then(appendCustomSetting).done();
                 return;
             }
 
@@ -305,12 +305,23 @@ WebInspector.GenericSettingsTab.prototype = {
                     childSettings.values().forEach(function(item) { processSetting.call(this, fieldSet, item); }, this);
                 }
             }
-            appendSettingControl(settingControl);
+            appendAsChild(settingControl);
+
+            /**
+             * @param {!Object} object
+             */
+            function appendCustomSetting(object)
+            {
+                var uiSettingDelegate = /** @type {!WebInspector.UISettingDelegate} */ (object);
+                var element = uiSettingDelegate.settingElement();
+                if (element)
+                    appendAsChild(element);
+            }
 
             /**
              * @param {!Object} settingControl
              */
-            function appendSettingControl(settingControl)
+            function appendAsChild(settingControl)
             {
                 (parentFieldset || sectionElement).appendChild(/** @type {!Element} */ (settingControl));
             }
