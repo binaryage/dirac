@@ -52,6 +52,10 @@ WebInspector.AdvancedSearchView = function()
     WebInspector.AdvancedSearchView._instance = this;
     /** @type {!WebInspector.SearchScope} */
     this._searchScope = new WebInspector.SourcesSearchScope();
+    if (WebInspector.AdvancedSearchView._pendingQuery) {
+        this._toggle(WebInspector.AdvancedSearchView._pendingQuery);
+        delete WebInspector.AdvancedSearchView._pendingQuery;
+    }
 }
 
 WebInspector.AdvancedSearchView.prototype = {
@@ -362,7 +366,10 @@ WebInspector.AdvancedSearchView.ToggleDrawerViewActionDelegate.prototype = {
 
             WebInspector.inspectorView.setCurrentPanel(WebInspector.SourcesPanel.instance());
             WebInspector.inspectorView.showViewInDrawer("sources.search");
-            WebInspector.AdvancedSearchView._instance._toggle(queryCandidate);
+            if (WebInspector.AdvancedSearchView._instance)
+                WebInspector.AdvancedSearchView._instance._toggle(queryCandidate);
+            else
+                WebInspector.AdvancedSearchView._pendingQuery = queryCandidate;
         } else {
             WebInspector.inspectorView.closeDrawer();
         }

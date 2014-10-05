@@ -63,15 +63,18 @@ WebInspector.Revealer.revealPromise = function(revealable, lineNumber)
     if (!revealable)
         return Promise.rejectWithError("Can't reveal " + revealable);
 
-    return self.runtime.instancePromise(WebInspector.Revealer, revealable).then(reveal);
+    return self.runtime.instancesPromise(WebInspector.Revealer, revealable).then(reveal);
 
     /**
-     * @param {!WebInspector.Revealer} revealer
+     * @param {!Array.<!WebInspector.Revealer>} revealers
      * @return {!Promise}
      */
-    function reveal(revealer)
+    function reveal(revealers)
     {
-        return revealer.reveal(revealable, lineNumber);
+        var promises = [];
+        for (var i = 0; i < revealers.length; ++i)
+            promises.push(revealers[i].reveal(revealable, lineNumber));
+        return Promise.race(promises);
     }
 }
 
