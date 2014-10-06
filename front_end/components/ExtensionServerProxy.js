@@ -23,12 +23,6 @@ WebInspector.ExtensionServerProxy = function()
 {
 }
 
-WebInspector.ExtensionServerProxy._ensureExtensionServer = function()
-{
-    if (!WebInspector.extensionServer)
-        WebInspector.extensionServer = self.runtime.instance(WebInspector.ExtensionServerAPI);
-},
-
 WebInspector.ExtensionServerProxy.prototype = {
     setFrontendReady: function()
     {
@@ -50,9 +44,23 @@ WebInspector.ExtensionServerProxy.prototype = {
     {
         if (!this._frontendReady || !this._pendingExtensions)
             return;
-        WebInspector.ExtensionServerProxy._ensureExtensionServer();
-        WebInspector.extensionServer.addExtensions(this._pendingExtensions);
-        delete this._pendingExtensions;
+
+        self.runtime.instancePromise(WebInspector.ExtensionServerAPI).then(pushExtensions.bind(this)).done();
+
+        /**
+         * @param {!Object} object
+         * @this {WebInspector.ExtensionServerProxy}
+         */
+        function pushExtensions(object)
+        {
+            this._extensionServer = /** @type {!WebInspector.ExtensionServerAPI} */ (object);
+
+            if (WebInspector.extensionServerProxy._overridePlatformExtensionAPIForTest)
+                window.buildPlatformExtensionAPI = WebInspector.extensionServerProxy._overridePlatformExtensionAPIForTest;
+
+            this._extensionServer.addExtensions(this._pendingExtensions);
+            delete this._pendingExtensions;
+        }
     }
 }
 
