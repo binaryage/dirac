@@ -37,6 +37,10 @@ WebInspector.Main = function()
 {
     var boundListener = windowLoaded.bind(this);
     WebInspector.console.setUIDelegate(this);
+    if (document.readyState === "complete") {
+        this._loaded();
+        return;
+    }
 
     /**
      * @this {WebInspector.Main}
@@ -162,6 +166,8 @@ WebInspector.Main.prototype = {
                 Runtime.experiments.enableForTest("layersPanel");
             if (testPath.indexOf("tracing/") !== -1)
                 Runtime.experiments.enableForTest("timelineOnTraceEvents");
+            if (testPath.indexOf("documentation/") !== -1)
+                Runtime.experiments.enableForTest("documentation");
         } else {
             Runtime.experiments.setDefaultExperiments(["timelineOnTraceEvents"]);
         }
@@ -775,8 +781,6 @@ WebInspector.Main._addWebSocketTarget = function(ws)
     new InspectorBackendClass.WebSocketConnection(ws, callback);
 }
 
-new WebInspector.Main();
-
 // These methods are added for backwards compatibility with Devtools CodeSchool extension.
 // DO NOT REMOVE
 
@@ -866,3 +870,5 @@ WebInspector.Main.InspectedNodeRevealer.prototype = {
         WebInspector.Revealer.reveal(/** @type {!WebInspector.DOMNode} */ (event.data));
     }
 }
+
+new WebInspector.Main();

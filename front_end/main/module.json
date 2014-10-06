@@ -235,13 +235,13 @@
         "HelpScreenUntilReload.js",
         "App.js",
         "AdvancedApp.js",
-        "Main.js",
         "OverridesView.js",
         "RenderingOptions.js",
         "ScreencastApp.js",
         "SimpleApp.js",
         "TestController.js",
-        "Tests.js"
+        "Tests.js",
+        "Main.js"
     ],
     "skip_compilation": [
         "Tests.js"

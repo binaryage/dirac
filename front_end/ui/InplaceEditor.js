@@ -7,7 +7,7 @@
  */
 WebInspector.InplaceEditor = function()
 {
-};
+}
 
 /**
  * @param {!Element} element
@@ -16,9 +16,6 @@ WebInspector.InplaceEditor = function()
  */
 WebInspector.InplaceEditor.startEditing = function(element, config)
 {
-    if (config.multiline)
-        return self.runtime.instance(WebInspector.InplaceEditor).startEditing(element, config);
-
     if (!WebInspector.InplaceEditor._defaultInstance)
         WebInspector.InplaceEditor._defaultInstance = new WebInspector.InplaceEditor();
     return WebInspector.InplaceEditor._defaultInstance.startEditing(element, config);
@@ -249,7 +246,6 @@ WebInspector.InplaceEditor.Config.prototype = {
      */
     setMultilineOptions: function(initialValue, mode, theme, lineWrapping, smartIndent)
     {
-        this.multiline = true;
         this.initialValue = initialValue;
         this.mode = mode;
         this.theme = theme;

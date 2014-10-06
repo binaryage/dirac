@@ -72,9 +72,15 @@ WebInspector.CPUProfilerModel.prototype = {
     consoleProfileFinished: function(id, scriptLocation, cpuProfile, title)
     {
         // Make sure ProfilesPanel is initialized and CPUProfileType is created.
-        self.runtime.loadModule("profiler");
-        var debuggerLocation = WebInspector.DebuggerModel.Location.fromPayload(this.target(), scriptLocation);
-        this.dispatchEventToListeners(WebInspector.CPUProfilerModel.EventTypes.ConsoleProfileFinished, {protocolId: id, scriptLocation: debuggerLocation, cpuProfile: cpuProfile, title: title});
+        self.runtime.loadModulePromise("profiler").then(dispatchEvent.bind(this)).done();
+        /**
+         * @this {WebInspector.CPUProfilerModel}
+         */
+        function dispatchEvent()
+        {
+            var debuggerLocation = WebInspector.DebuggerModel.Location.fromPayload(this.target(), scriptLocation);
+            this.dispatchEventToListeners(WebInspector.CPUProfilerModel.EventTypes.ConsoleProfileFinished, {protocolId: id, scriptLocation: debuggerLocation, cpuProfile: cpuProfile, title: title});
+        }
     },
 
     /**
@@ -85,9 +91,15 @@ WebInspector.CPUProfilerModel.prototype = {
     consoleProfileStarted: function(id, scriptLocation, title)
     {
         // Make sure ProfilesPanel is initialized and CPUProfileType is created.
-        self.runtime.loadModule("profiler");
-        var debuggerLocation = WebInspector.DebuggerModel.Location.fromPayload(this.target(), scriptLocation)
-        this.dispatchEventToListeners(WebInspector.CPUProfilerModel.EventTypes.ConsoleProfileStarted, {protocolId: id, scriptLocation: debuggerLocation, title: title});
+        self.runtime.loadModulePromise("profiler").then(dispatchEvent.bind(this)).done();
+        /**
+         * @this {WebInspector.CPUProfilerModel}
+         */
+        function dispatchEvent()
+        {
+            var debuggerLocation = WebInspector.DebuggerModel.Location.fromPayload(this.target(), scriptLocation)
+            this.dispatchEventToListeners(WebInspector.CPUProfilerModel.EventTypes.ConsoleProfileStarted, {protocolId: id, scriptLocation: debuggerLocation, title: title});
+        }
     },
 
     /**
