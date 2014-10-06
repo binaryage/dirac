@@ -31,13 +31,15 @@
 /**
  * @constructor
  * @implements {WebInspector.AuditCategory}
+ * @param {!WebInspector.ExtensionServer} server
  * @param {string} extensionOrigin
  * @param {string} id
  * @param {string} displayName
  * @param {number=} ruleCount
  */
-WebInspector.ExtensionAuditCategory = function(extensionOrigin, id, displayName, ruleCount)
+WebInspector.ExtensionAuditCategory = function(server, extensionOrigin, id, displayName, ruleCount)
 {
+    this._server = server;
     this._extensionOrigin = extensionOrigin;
     this._id = id;
     this._displayName = displayName;
@@ -72,7 +74,7 @@ WebInspector.ExtensionAuditCategory.prototype = {
     run: function(target, requests, ruleResultCallback, categoryDoneCallback, progress)
     {
         var results = new WebInspector.ExtensionAuditCategoryResults(this, target, ruleResultCallback, categoryDoneCallback, progress);
-        WebInspector.extensionServer.startAuditRun(this, results);
+        this._server.startAuditRun(this, results);
     }
 }
 
@@ -101,7 +103,7 @@ WebInspector.ExtensionAuditCategoryResults = function(category, target, ruleResu
 WebInspector.ExtensionAuditCategoryResults.prototype = {
     done: function()
     {
-        WebInspector.extensionServer.stopAuditRun(this);
+        this._category._server.stopAuditRun(this);
         this._progress.done();
         this._categoryDoneCallback();
     },
@@ -165,7 +167,7 @@ WebInspector.ExtensionAuditCategoryResults.prototype = {
             var object = this._target.runtimeModel.createRemoteObject(result);
             callback(object);
         }
-        WebInspector.extensionServer.evaluate(expression, false, false, evaluateOptions, this._category._extensionOrigin, onEvaluate.bind(this));
+        this._category._server.evaluate(expression, false, false, evaluateOptions, this._category._extensionOrigin, onEvaluate.bind(this));
     }
 }
 

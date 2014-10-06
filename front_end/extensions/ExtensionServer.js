@@ -89,21 +89,36 @@ WebInspector.ExtensionServer.prototype = {
         return !!Object.keys(this._registeredExtensions).length;
     },
 
+    /**
+     * @param {string} panelId
+     * @param {string} action
+     * @param {string=} searchString
+     */
     notifySearchAction: function(panelId, action, searchString)
     {
         this._postNotification(WebInspector.extensionAPI.Events.PanelSearch + panelId, action, searchString);
     },
 
+    /**
+     * @param {string} identifier
+     * @param {number=} frameIndex
+     */
     notifyViewShown: function(identifier, frameIndex)
     {
         this._postNotification(WebInspector.extensionAPI.Events.ViewShown + identifier, frameIndex);
     },
 
+    /**
+     * @param {string} identifier
+     */
     notifyViewHidden: function(identifier)
     {
         this._postNotification(WebInspector.extensionAPI.Events.ViewHidden + identifier);
     },
 
+    /**
+     * @param {string} identifier
+     */
     notifyButtonClicked: function(identifier)
     {
         this._postNotification(WebInspector.extensionAPI.Events.ButtonClicked + identifier);
@@ -116,15 +131,23 @@ WebInspector.ExtensionServer.prototype = {
         this._postNotification(WebInspector.extensionAPI.Events.InspectedURLChanged, url);
     },
 
-    startAuditRun: function(category, auditRun)
+
+    /**
+     * @param {!WebInspector.ExtensionAuditCategory} category
+     * @param {!WebInspector.ExtensionAuditCategoryResults} auditResults
+     */
+    startAuditRun: function(category, auditResults)
     {
-        this._clientObjects[auditRun.id] = auditRun;
-        this._postNotification("audit-started-" + category.id, auditRun.id);
+        this._clientObjects[auditResults.id] = auditResults;
+        this._postNotification("audit-started-" + category.id, auditResults.id);
     },
 
-    stopAuditRun: function(auditRun)
+    /**
+     * @param {!WebInspector.ExtensionAuditCategoryResults} auditResults
+     */
+    stopAuditRun: function(auditResults)
     {
-        delete this._clientObjects[auditRun.id];
+        delete this._clientObjects[auditResults.id];
     },
 
     /**
@@ -219,7 +242,7 @@ WebInspector.ExtensionServer.prototype = {
             return this._status.E_EXISTS(id);
 
         var page = this._expandResourcePath(port._extensionOrigin, message.page);
-        var panelDescriptor = new WebInspector.ExtensionServerPanelDescriptor(id, message.title, new WebInspector.ExtensionPanel(id, page));
+        var panelDescriptor = new WebInspector.ExtensionServerPanelDescriptor(id, message.title, new WebInspector.ExtensionPanel(this, id, page));
         this._clientObjects[id] = panelDescriptor;
         WebInspector.inspectorView.addPanel(panelDescriptor);
         return this._status.OK();
@@ -235,8 +258,7 @@ WebInspector.ExtensionServer.prototype = {
         var panelDescriptor = this._clientObjects[message.panel];
         if (!panelDescriptor || !(panelDescriptor instanceof WebInspector.ExtensionServerPanelDescriptor))
             return this._status.E_NOTFOUND(message.panel);
-
-        var button = new WebInspector.ExtensionButton(message.id, this._expandResourcePath(port._extensionOrigin, message.icon), message.tooltip, message.disabled);
+        var button = new WebInspector.ExtensionButton(this, message.id, this._expandResourcePath(port._extensionOrigin, message.icon), message.tooltip, message.disabled);
         this._clientObjects[message.id] = button;
 
         panelDescriptor.panel().then(appendButton).done();
@@ -267,7 +289,7 @@ WebInspector.ExtensionServer.prototype = {
             return this._status.E_NOTFOUND(message.panel);
         var panel = message.panel === "elements" ? WebInspector.ElementsPanel.instance() : WebInspector.SourcesPanel.instance();
         var id = message.id;
-        var sidebar = new WebInspector.ExtensionSidebarPane(message.title, id);
+        var sidebar = new WebInspector.ExtensionSidebarPane(this, message.title, id);
         this._clientObjects[id] = sidebar;
         panel.addExtensionSidebarPane(id, sidebar);
 
@@ -585,7 +607,7 @@ WebInspector.ExtensionServer.prototype = {
 
     _onAddAuditCategory: function(message, port)
     {
-        var category = new WebInspector.ExtensionAuditCategory(port._extensionOrigin, message.id, message.displayName, message.resultCount);
+        var category = new WebInspector.ExtensionAuditCategory(this, port._extensionOrigin, message.id, message.displayName, message.resultCount);
         if (WebInspector.AuditsPanel.instance().getCategory(category.id))
             return this._status.E_EXISTS(category.id);
         this._clientObjects[message.id] = category;
