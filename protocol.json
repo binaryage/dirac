@@ -4326,18 +4326,20 @@
         "commands": [
             {
                 "name": "start",
+                "async": true,
                 "description": "Start trace events collection.",
                 "parameters": [
                     { "name": "categories", "type": "string", "description": "Category/tag filter" },
                     { "name": "options", "type": "string", "description": "Tracing options" },
                     { "name": "bufferUsageReportingInterval", "type": "number", "optional": true, "description": "If set, the agent will issue bufferUsage events at this interval, specified in milliseconds" }
                 ],
-                "handlers": ["browser", "renderer", "frontend"]
+                "handlers": ["browser", "renderer"]
             },
             {
                 "name": "end",
+                "async": true,
                 "description": "Stop trace events collection.",
-                "handlers": ["browser", "renderer", "frontend"]
+                "handlers": ["browser", "renderer"]
             },
             {
                 "name": "getCategories",
@@ -4346,7 +4348,7 @@
                 "returns": [
                     { "name": "categories", "type": "array", "items": { "type": "string" }, "description": "A list of supported tracing categories." }
                 ],
-                "handlers": ["browser", "frontend"]
+                "handlers": ["browser"]
             }
         ],
         "events": [
@@ -4356,19 +4358,19 @@
                     { "name": "value", "type": "array", "items": { "type": "object" } }
                 ],
                 "description": "Contains an bucket of collected trace events. When tracing is stopped collected events will be send as a sequence of dataCollected events followed by tracingComplete event.",
-                "handlers": ["browser", "frontend"]
+                "handlers": ["browser"]
             },
             {
                 "name": "tracingComplete",
                 "description": "Signals that tracing is stopped and there is no trace buffers pending flush, all data were delivered via dataCollected events.",
-                "handlers": ["browser", "frontend"]
+                "handlers": ["browser"]
             },
             {
                 "name": "bufferUsage",
                 "parameters": [
                     { "name": "value", "type": "number", "description": "A number in range [0..1] that indicates the used size of event buffer as a fraction of its total size." }
                 ],
-                "handlers": ["browser", "frontend"]
+                "handlers": ["browser"]
             }
         ]
     },
