@@ -5,14 +5,51 @@
  */
 
 .promises .data-grid {
+    border: none;
     flex: 1 1;
 }
 
-.promises .data-grid td {
-    white-space:pre;
+.promises .data-grid .odd {
+    background-color: #eee;
 }
 
-.promise-tracker-controls {
-    margin-top: 5px;
-    margin-bottom: 5px;
+.promises .data-grid .header-container {
+    height: 30px;
+}
+
+.promises .data-grid .data-container {
+    top: 30px;
+}
+
+.promises .data-grid table.data {
+    background: transparent;
+}
+
+.promises .data-grid th {
+    border-bottom: none;
+    border-left: 1px solid rgb(205, 205, 205);
+    background-color: white;
+}
+
+.promises .data-grid td {
+    line-height: 17px;
+    height: 24px;
+    vertical-align: middle;
+    border-bottom: 1px solid rgb(205, 205, 205);
+    border-left: 1px solid rgb(205, 205, 205);
+}
+
+.promises .status {
+    border-radius: 25px;
+    width: 54px;
+    text-align: center;
+    color: white;
+}
+
+.promises .status.rejected {
+    background-color: #f66;
+}
+
+.promises .status.resolved {
+    background-color: #696;
 }

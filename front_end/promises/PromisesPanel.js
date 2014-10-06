@@ -12,26 +12,27 @@ WebInspector.PromisesPanel = function()
     this.registerRequiredCSS("promisesPanel.css");
     this.element.classList.add("promises");
 
-    var buttonsBar = this.element.createChild("div");
-    var enableButton = buttonsBar.createChild("button");
-    enableButton.textContent = WebInspector.UIString("Enable Promises tracking");
-    enableButton.addEventListener("click", this._enableButtonClicked.bind(this));
-    var disableButton = buttonsBar.createChild("button");
-    disableButton.textContent = WebInspector.UIString("Disable Promises tracking");
-    disableButton.addEventListener("click", this._disableButtonClicked.bind(this));
-    var refreshButton = buttonsBar.createChild("button");
-    refreshButton.textContent = WebInspector.UIString("Refresh");
-    refreshButton.addEventListener("click", this._refreshButtonClicked.bind(this));
-    var clearButton = buttonsBar.createChild("button");
-    clearButton.textContent = WebInspector.UIString("Clear");
+    var statusBar = this.element.createChild("div", "panel-status-bar");
+    this._recordButton = new WebInspector.StatusBarButton(WebInspector.UIString("Record Promises"), "record-profile-status-bar-item");
+    this._recordButton.addEventListener("click", this._recordButtonClicked.bind(this));
+    statusBar.appendChild(this._recordButton.element);
+    var clearButton = new WebInspector.StatusBarButton(WebInspector.UIString("Clear"), "clear-status-bar-item");
     clearButton.addEventListener("click", this._clearButtonClicked.bind(this));
+    statusBar.appendChild(clearButton.element);
+    this._refreshButton = new WebInspector.StatusBarButton(WebInspector.UIString("Refresh"), "refresh-storage-status-bar-item");
+    this._refreshButton.addEventListener("click", this._refreshButtonClicked.bind(this));
+    this._refreshButton.setEnabled(false);
+    statusBar.appendChild(this._refreshButton.element);
+    this._liveCheckbox = new WebInspector.StatusBarCheckbox(WebInspector.UIString("Live"));
+    this._liveCheckbox.element.title = WebInspector.UIString("Live Recording");
+    this._liveCheckbox.inputElement.disabled = true;
+    statusBar.appendChild(this._liveCheckbox.element);
 
     this._dataGridContainer = new WebInspector.VBox();
     this._dataGridContainer.show(this.element);
     var columns = [
-        { id: "promiseId", title: WebInspector.UIString("Promise ID"), disclosure: true },
+        { id: "location", title: WebInspector.UIString("Location"), disclosure: true },
         { id: "status", title: WebInspector.UIString("Status") },
-        { id: "location", title: WebInspector.UIString("Location") },
         { id: "tts", title: WebInspector.UIString("Time to settle") }
     ];
     this._dataGrid = new WebInspector.DataGrid(columns);
@@ -42,6 +43,17 @@ WebInspector.PromisesPanel = function()
 }
 
 WebInspector.PromisesPanel.prototype = {
+    _recordButtonClicked: function(event)
+    {
+        var recording = !this._recordButton.toggled;
+        this._recordButton.toggled = recording;
+        this._refreshButton.setEnabled(recording);
+        if (recording)
+            this._enablePromiseTracker();
+        else
+            this._disablePromiseTracker();
+    },
+
     _refreshButtonClicked: function(event)
     {
         this._updateData();
@@ -52,7 +64,7 @@ WebInspector.PromisesPanel.prototype = {
         this._clear();
     },
 
-    _enableButtonClicked: function(event)
+    _enablePromiseTracker: function()
     {
         var mainTarget = WebInspector.targetManager.mainTarget();
         if (mainTarget) {
@@ -61,12 +73,13 @@ WebInspector.PromisesPanel.prototype = {
         }
     },
 
-    _disableButtonClicked: function(event)
+    _disablePromiseTracker: function()
     {
         if (this._target) {
             this._target.debuggerAgent().disablePromiseTracker();
             delete this._target;
         }
+        this._clear();
     },
 
     /**
@@ -96,9 +109,12 @@ WebInspector.PromisesPanel.prototype = {
             var nodesToInsert = { __proto__: null };
             for (var i = 0; i < promiseData.length; i++) {
                 var promise = promiseData[i];
+                var status = document.createElementWithClass("div", "status");
+                status.classList.add(promise.status);
+                status.createTextChild(promise.status);
                 var data = {
                     promiseId: promise.id,
-                    status: promise.status
+                    status: status
                 };
                 if (promise.callFrame)
                     data.location = this._linkifier.linkifyConsoleCallFrame(this._target, promise.callFrame);
@@ -115,6 +131,7 @@ WebInspector.PromisesPanel.prototype = {
                 var parentId = nodesToInsert[id].parentId;
                 var parentNode = (parentId && nodesToInsert[parentId]) ? nodesToInsert[parentId].node : rootNode;
                 parentNode.appendChild(node);
+                parentNode.expanded = true;
             }
         }
 
