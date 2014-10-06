@@ -258,6 +258,8 @@ WebInspector.InspectorView.prototype = {
             console.error("Current panel is locked");
             return this._currentPanel;
         }
+        InspectorFrontendHost.bringToFront();
+
         if (this._currentPanel === panel)
             return panel;
 
