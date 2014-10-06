@@ -4,6 +4,10 @@
  * found in the LICENSE file.
  */
 
+.image-view {
+    overflow: auto;
+}
+
 .image-view > * {
     flex: none;
 }
