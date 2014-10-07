@@ -95,6 +95,8 @@ InspectorFrontendHostAPI.prototype = {
      */
     append: function(url, content) { },
 
+    loadCompleted: function() { },
+
     /**
      * @param {number} requestId
      * @param {string} fileSystemPath
@@ -329,6 +331,10 @@ WebInspector.InspectorFrontendHostStub.prototype = {
     port: function()
     {
         return "unknown";
+    },
+
+    loadCompleted: function()
+    {
     },
 
     bringToFront: function()

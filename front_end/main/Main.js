@@ -252,7 +252,11 @@ WebInspector.Main.prototype = {
         this._createGlobalStatusBarItems();
 
         WebInspector.extensionServerProxy.setFrontendReady();
+
+        // FIXME: Remove once the upstream counterpart has landed.
         InspectorFrontendAPI.loadCompleted();
+
+        InspectorFrontendHost.loadCompleted();
 
         // Give UI cycles to repaint, then proceed with creating connection.
         setTimeout(this._createConnection.bind(this), 0);
