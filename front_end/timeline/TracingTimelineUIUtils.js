@@ -702,8 +702,6 @@ WebInspector.TracingTimelineUIUtils._aggregatedStatsForTraceEvent = function(tot
         return startTime - e.startTime;
     }
     var index = events.binaryIndexOf(event.startTime, eventComparator);
-    if (index < 0)
-        return false;
     var hasChildren = false;
     var endTime = event.endTime;
     if (endTime) {
@@ -721,7 +719,7 @@ WebInspector.TracingTimelineUIUtils._aggregatedStatsForTraceEvent = function(tot
             total[categoryName] = (total[categoryName] || 0) + nextEvent.selfTime;
         }
     }
-    if (event.isAsync()) {
+    if (WebInspector.TracingModel.isAsyncPhase(event.phase)) {
         if (event.endTime) {
             var aggregatedTotal = 0;
             for (var categoryName in total)

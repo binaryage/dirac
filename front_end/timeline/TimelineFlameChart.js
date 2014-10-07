@@ -227,6 +227,8 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
             }
             if (!e.endTime && e.phase !== WebInspector.TracingModel.Phase.Instant)
                 continue;
+            if (WebInspector.TracingModel.isAsyncPhase(e.phase))
+                continue;
             if (!this._isVisible(e))
                 continue;
             while (openEvents.length && openEvents.peekLast().endTime <= e.startTime)
@@ -264,9 +266,17 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
             }
             var level;
             for (level = 0; level < lastUsedTimeByLevel.length && lastUsedTimeByLevel[level] > e.startTime; ++level) {}
-            this._appendAsyncEventSteps(eventSteps[i], this._currentLevel + level);
+            if (WebInspector.TracingModel.isNestableAsyncPhase(e.phase))
+                this._appendEvent(e, this._currentLevel + level);
+            else
+                this._appendAsyncEventSteps(eventSteps[i], this._currentLevel + level);
             var lastStep = eventSteps[i].peekLast();
-            lastUsedTimeByLevel[level] = lastStep.phase === WebInspector.TracingModel.Phase.AsyncEnd ? lastStep.startTime : Infinity;
+            if (lastStep.phase === WebInspector.TracingModel.Phase.AsyncEnd || lastStep.phase === WebInspector.TracingModel.Phase.NestableAsyncInstant)
+                lastUsedTimeByLevel[level] = lastStep.startTime;
+            else if (lastStep.phase === WebInspector.TracingModel.Phase.NestableAsyncBegin && lastStep.endTime)
+                lastUsedTimeByLevel[level] = lastStep.endTime;
+            else
+                lastUsedTimeByLevel[level] = Infinity;
         }
         this._currentLevel += lastUsedTimeByLevel.length;
         return lastUsedTimeByLevel.length;

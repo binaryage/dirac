@@ -24,6 +24,9 @@ WebInspector.TracingModel.Phase = {
     AsyncStepInto: "T",
     AsyncStepPast: "p",
     AsyncEnd: "F",
+    NestableAsyncBegin: "b",
+    NestableAsyncEnd: "e",
+    NestableAsyncInstant: "i",
     FlowBegin: "s",
     FlowStep: "t",
     FlowEnd: "f",
@@ -53,14 +56,44 @@ WebInspector.TracingModel.DevToolsMetadataEvent = {
     TracingSessionIdForWorker: "TracingSessionIdForWorker",
 };
 
+WebInspector.TracingModel._nestableAsyncEventsString =
+    WebInspector.TracingModel.Phase.NestableAsyncBegin +
+    WebInspector.TracingModel.Phase.NestableAsyncEnd +
+    WebInspector.TracingModel.Phase.NestableAsyncInstant;
+
+WebInspector.TracingModel._legacyAsyncEventsString =
+    WebInspector.TracingModel.Phase.AsyncBegin +
+    WebInspector.TracingModel.Phase.AsyncEnd +
+    WebInspector.TracingModel.Phase.AsyncStepInto +
+    WebInspector.TracingModel.Phase.AsyncStepPast;
+
+WebInspector.TracingModel._asyncEventsString = WebInspector.TracingModel._nestableAsyncEventsString + WebInspector.TracingModel._legacyAsyncEventsString;
+
+/**
+ * @param {string} phase
+ * @return {boolean}
+ */
+WebInspector.TracingModel.isNestableAsyncPhase = function(phase)
+{
+    return WebInspector.TracingModel._nestableAsyncEventsString.indexOf(phase) >= 0;
+}
+
+/**
+ * @param {string} phase
+ * @return {boolean}
+ */
+WebInspector.TracingModel.isAsyncBeginPhase = function(phase)
+{
+    return phase === WebInspector.TracingModel.Phase.AsyncBegin || phase === WebInspector.TracingModel.Phase.NestableAsyncBegin;
+}
+
 /**
  * @param {string} phase
  * @return {boolean}
  */
 WebInspector.TracingModel.isAsyncPhase = function(phase)
 {
-    return phase === WebInspector.TracingModel.Phase.AsyncBegin || phase === WebInspector.TracingModel.Phase.AsyncEnd ||
-        phase === WebInspector.TracingModel.Phase.AsyncStepInto || phase === WebInspector.TracingModel.Phase.AsyncStepPast;
+    return WebInspector.TracingModel._asyncEventsString.indexOf(phase) >= 0;
 }
 
 WebInspector.TracingModel.prototype = {
@@ -365,22 +398,6 @@ WebInspector.TracingModel.Event.prototype = {
     },
 
     /**
-     * @return {boolean}
-     */
-    isAsync: function()
-    {
-        var phase = WebInspector.TracingModel.Phase;
-        switch (this.phase) {
-        case phase.AsyncBegin:
-        case phase.AsyncEnd:
-        case phase.AsyncStepInto:
-        case phase.AsyncStepPast:
-            return true;
-        }
-        return false;
-    },
-
-    /**
      * @param {!WebInspector.TracingManager.EventPayload} payload
      */
     _complete: function(payload)
@@ -571,10 +588,12 @@ WebInspector.TracingModel.Process = function(id)
     this._id = id;
     this._threads = {};
     this._objects = {};
-    /** @type {!Array.<!WebInspector.TracingManager.EventPayload>} */
+    /** @type {!Array.<!WebInspector.TracingModel.Event>} */
     this._asyncEvents = [];
     /** @type {!Object.<string, ?Array.<!WebInspector.TracingModel.Event>>} */
-    this._openAsyncEvents = [];
+    this._openAsyncEvents = {};
+    /** @type {!Object.<string, !Array.<!WebInspector.TracingModel.Event>>} */
+    this._openNestableAsyncEvents = {};
 }
 
 WebInspector.TracingModel.Process.prototype = {
@@ -607,14 +626,16 @@ WebInspector.TracingModel.Process.prototype = {
     _addEvent: function(payload)
     {
         var phase = WebInspector.TracingModel.Phase;
-        // Build async event when we've got events from all threads, so we can sort them and process in the chronological order.
-        // However, also add individual async events to the thread flow, so we can easily display them on the same chart as
-        // other events, should we choose so.
-        if (WebInspector.TracingModel.isAsyncPhase(payload.ph))
-            this._asyncEvents.push(payload);
 
         var event = this.threadById(payload.tid)._addEvent(payload);
-        if (event && payload.ph === phase.SnapshotObject)
+        if (!event)
+            return null;
+        // Build async event when we've got events from all threads, so we can sort them and process in the chronological order.
+        // However, also add individual async events to the thread flow (above), so we can easily display them on the same chart as
+        // other events, should we choose so.
+        if (WebInspector.TracingModel.isAsyncPhase(payload.ph))
+            this._asyncEvents.push(event);
+        if (payload.ph === phase.SnapshotObject)
             this.objectsByName(event.name).push(event);
         return event;
     },
@@ -624,15 +645,15 @@ WebInspector.TracingModel.Process.prototype = {
      */
     _tracingComplete: function(lastEventTimeMs)
     {
-        /**
-         * @param {!WebInspector.TracingManager.EventPayload} a
-         * @param {!WebInspector.TracingManager.EventPayload} b
-         */
-        function comparePayloadTimestamp(a, b)
-        {
-            return a.ts - b.ts;
+        this._asyncEvents.sort(WebInspector.TracingModel.Event.compareStartTime);
+        for (var i = 0; i < this._asyncEvents.length; ++i) {
+            var event = this._asyncEvents[i];
+            if (WebInspector.TracingModel.isNestableAsyncPhase(event.phase))
+                this._addNestableAsyncEvent(event);
+            else
+                this._addAsyncEvent(event);
         }
-        this._asyncEvents.sort(comparePayloadTimestamp).forEach(this._addAsyncEvent, this);
+
         for (var key in this._openAsyncEvents) {
             var steps = this._openAsyncEvents[key];
             if (!steps)
@@ -642,47 +663,82 @@ WebInspector.TracingModel.Process.prototype = {
             steps.push(syntheticEndEvent);
             startEvent.setEndTime(lastEventTimeMs)
         }
+        for (var key in this._openNestableAsyncEvents) {
+            var openEvents = this._openNestableAsyncEvents[key];
+            while (openEvents.length)
+                openEvents.pop().setEndTime(lastEventTimeMs);
+        }
         this._asyncEvents = [];
-        this._openAsyncEvents = [];
+        this._openAsyncEvents = {};
+        this._openNestableAsyncEvents = {};
     },
 
     /**
-     * @param {!WebInspector.TracingManager.EventPayload} payload
+     * @param {!WebInspector.TracingModel.Event} event
      */
-    _addAsyncEvent: function(payload)
+    _addNestableAsyncEvent: function(event)
     {
         var phase = WebInspector.TracingModel.Phase;
-        var timestamp = payload.ts / 1000;
-        var key = payload.name + "." + payload.id;
+        var key = event.category + "." + event.id;
+        var openEventsStack = this._openNestableAsyncEvents[key];
+
+        switch (event.phase) {
+        case phase.NestableAsyncBegin:
+            if (!openEventsStack) {
+                openEventsStack = [];
+                this._openNestableAsyncEvents[key] = openEventsStack;
+            }
+            openEventsStack.push(event);
+            // fall-through intended
+        case phase.NestableAsyncInstant:
+            event.thread._addAsyncEventSteps([event]);
+            break;
+        case phase.NestableAsyncEnd:
+            if (!openEventsStack)
+                break;
+            var top = openEventsStack.pop();
+            if (top.name !== event.name) {
+                console.error("Begin/end event mismatch for nestable async event, " + top.name + " vs. " + event.name);
+                break;
+            }
+            top.setEndTime(event.startTime);
+        }
+    },
+
+    /**
+     * @param {!WebInspector.TracingModel.Event} event
+     */
+    _addAsyncEvent: function(event)
+    {
+        var phase = WebInspector.TracingModel.Phase;
+        var key = event.category + "." + event.name + "." + event.id;
         var steps = this._openAsyncEvents[key];
 
-        var thread = this.threadById(payload.tid);
-        if (payload.ph === phase.AsyncBegin) {
+        if (event.phase === phase.AsyncBegin) {
             if (steps) {
-                console.error("Event " + payload.name + " has already been started");
+                console.error("Event " + event.name + " has already been started");
                 return;
             }
-            steps = [WebInspector.TracingModel.Event.fromPayload(payload, thread)];
+            steps = [event];
             this._openAsyncEvents[key] = steps;
-            thread._addAsyncEventSteps(steps);
+            event.thread._addAsyncEventSteps(steps);
             return;
         }
         if (!steps) {
-            console.error("Unexpected async event " + payload.name + ", phase " + payload.ph);
+            console.error("Unexpected async event " + event.name + ", phase " + event.phase);
             return;
         }
-        var newEvent = WebInspector.TracingModel.Event.fromPayload(payload, thread);
-        if (payload.ph === phase.AsyncEnd) {
-            steps.push(newEvent);
-            steps[0].setEndTime(timestamp);
+        if (event.phase === phase.AsyncEnd) {
+            steps.push(event);
+            steps[0].setEndTime(event.startTime);
             delete this._openAsyncEvents[key];
-        } else if (payload.ph === phase.AsyncStepInto || payload.ph === phase.AsyncStepPast) {
+        } else if (event.phase === phase.AsyncStepInto || event.phase === phase.AsyncStepPast) {
             var lastPhase = steps.peekLast().phase;
-            if (lastPhase !== phase.AsyncBegin && lastPhase !== payload.ph) {
-                console.assert(false, "Async event step phase mismatch: " + lastPhase + " at " + steps.peekLast().startTime + " vs. " + payload.ph + " at " + timestamp);
+            if (lastPhase !== phase.AsyncBegin && lastPhase !== event.phase) {
+                console.assert(false, "Async event step phase mismatch: " + lastPhase + " at " + steps.peekLast().startTime + " vs. " + event.phase + " at " + event.startTime);
                 return;
             }
-            steps.push(newEvent);
+            steps.push(event);
         } else {
             console.assert(false, "Invalid async event phase");
         }
@@ -740,7 +796,6 @@ WebInspector.TracingModel.Thread = function(process, id)
 }
 
 WebInspector.TracingModel.Thread.prototype = {
-
     /**
      * @return {?WebInspector.Target}
      */

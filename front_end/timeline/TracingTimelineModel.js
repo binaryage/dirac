@@ -427,69 +427,28 @@ WebInspector.TracingTimelineModel.prototype = {
         var recordStack = [];
         var topLevelRecords = [];
 
-        /**
-         * @param {!WebInspector.TracingTimelineModel.TraceEventRecord} record
-         */
-        function copyChildrenToParent(record)
-        {
-            var parent = record.parent;
-            var parentChildren = parent.children();
-            var children = record.children();
-            for (var j = 0; j < children.length; ++j)
-                children[j].parent = parent;
-            parentChildren.splice.apply(parentChildren, [parentChildren.indexOf(record), 1].concat(children));
-        }
-
         for (var i = 0, size = threadEvents.length; i < size; ++i) {
             var event = threadEvents[i];
-            while (recordStack.length) {
-                var top = recordStack.peekLast();
-                // When we've got a not-yet-complete async event at the top of the stack,
-                // see if we can close it by a matching end event. If this doesn't happen
-                // before end of top-level event (presumably, a "Program"), pretend the
-                // async event never happened.
-                if (!top._event.endTime) {
-                    if (event.phase !== WebInspector.TracingModel.Phase.AsyncEnd && recordStack[0]._event.endTime >= event.startTime)
-                        break;
-                    if (event.phase === WebInspector.TracingModel.Phase.AsyncEnd) {
-                        if (top._event.name === event.name) {
-                            top.setEndTime(event.startTime);
-                            recordStack.pop();
-                        }
-                        break;
-                    }
-                    // Delete incomplete async record from parent and adopt its children.
-                    recordStack.pop();
-                    copyChildrenToParent(top);
-                    continue;
-                } else if (top._event.endTime >= event.startTime) {
-                    break;
-                }
+            for (var top = recordStack.peekLast(); top && top._event.endTime <= event.startTime; top = recordStack.peekLast()) {
                 recordStack.pop();
                 if (!recordStack.length)
                     topLevelRecords.push(top);
             }
-            if (event.phase === WebInspector.TracingModel.Phase.AsyncEnd)
+            if (event.phase === WebInspector.TracingModel.Phase.AsyncEnd || event.phase === WebInspector.TracingModel.Phase.NestableAsyncEnd)
+                continue;
+            var parentRecord = recordStack.peekLast();
+            // Maintain the back-end logic of old timeline, skip console.time() / console.timeEnd() that are not properly nested.
+            if (WebInspector.TracingModel.isAsyncBeginPhase(event.phase) && parentRecord && event.endTime > parentRecord._event.endTime)
                 continue;
             var record = new WebInspector.TracingTimelineModel.TraceEventRecord(this, event);
             if (WebInspector.TracingTimelineUIUtils.isMarkerEvent(event))
                 this._eventDividerRecords.push(record);
             if (!this._recordFilter.accept(record))
                 continue;
-            var parentRecord = recordStack.peekLast();
             if (parentRecord)
                 parentRecord._addChild(record);
-            if (event.endTime || (event.phase === WebInspector.TracingModel.Phase.AsyncBegin && parentRecord))
+            if (event.endTime)
                 recordStack.push(record);
-        }
-
-        // Close all remaining incomplete async events.
-        while (recordStack.length > 1) {
-            var top = recordStack.pop();
-            if (!top._event.endTime) {
-                // Delete incomplete async record from parent and adopt its children.
-                copyChildrenToParent(top);
-            }
         }
 
         if (recordStack.length)
