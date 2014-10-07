@@ -296,21 +296,20 @@ body.undocked.platform-mac.inactive .toolbar-colors {
 
 .toolbar-search-control {
     display: -webkit-flex;
-    width: 253px;
     position: relative;
     background-color: white;
-    border: 1px solid rgb(163, 163, 163);
-    height: 20px;
-    border-radius: 2px;
-    margin-left: 1px;
 }
 
 .toolbar-replace-control {
+    margin: auto 0;
+}
+
+.toolbar-search-control, .toolbar-replace-control {
     border: 1px solid rgb(163, 163, 163);
     height: 20px;
     border-radius: 2px;
-    width: 100%;
-    margin: auto 0;
+    width: 253px;
+    margin-left: 1px;
 }
 
 .toolbar-search-navigation.enabled:active {

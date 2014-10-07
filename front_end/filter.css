@@ -30,7 +30,7 @@
 
 .filter-text-filter {
     display: flex;
-    margin-left: 2px;
+    margin-left: 1px;
     margin-right: 2px;
     flex: 0 1 120px;
     min-width: 40px;
