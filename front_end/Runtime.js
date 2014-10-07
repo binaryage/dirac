@@ -51,6 +51,40 @@ function loadResource(url)
     return xhr.status < 400 ? xhr.responseText : "";
 }
 
+/**
+ * @param {string} url
+ * @return {!Promise.<string>}
+ */
+function loadResourcePromise(url)
+{
+    return new Promise(load);
+
+    /**
+     * @param {function(?)} fulfill
+     * @param {function(*)} reject
+     */
+    function load(fulfill, reject)
+    {
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", url, true);
+        xhr.onreadystatechange = onreadystatechange;
+
+        /**
+         * @param {Event} e
+         */
+        function onreadystatechange(e)
+        {
+            if(xhr.readyState !== 4)
+                return;
+
+            if ([0, 200, 304].indexOf(xhr.status) === -1)  // Testing harness file:/// results in 0.
+                reject(new Error("While loading from url " + url + " server responded with a status of " + xhr.status));
+            else
+                fulfill(e.target.response);
+        }
+        xhr.send(null);
+    }
+}
 
 /**
  * http://tools.ietf.org/html/rfc3986#section-5.2.4
@@ -86,26 +120,26 @@ function normalizePath(path)
 
 /**
  * @param {string} scriptName
+ * @return {!Promise.<undefined>}
  */
-function loadScript(scriptName)
+function loadScriptPromise(scriptName)
 {
     var sourceURL = self._importScriptPathPrefix + scriptName;
     var schemaIndex = sourceURL.indexOf("://") + 3;
     sourceURL = sourceURL.substring(0, schemaIndex) + normalizePath(sourceURL.substring(schemaIndex));
     if (_loadedScripts[sourceURL])
-        return;
+        return Promise.resolve(undefined);
     _loadedScripts[sourceURL] = true;
-    var scriptSource = loadResource(sourceURL);
-    if (!scriptSource) {
-        console.error("Empty response arrived for script '" + sourceURL + "'");
-        return;
-    }
-    var oldPrefix = self._importScriptPathPrefix;
-    self._importScriptPathPrefix += scriptName.substring(0, scriptName.lastIndexOf("/") + 1);
-    try {
+    return loadResourcePromise(sourceURL).then(evaluateScript);
+
+    /**
+     * @param {string} scriptSource
+     */
+    function evaluateScript(scriptSource)
+    {
+        if (!scriptSource)
+            return Promise.rejectWithError("Empty response arrived for script '" + sourceURL + "'");
         self.eval(scriptSource + "\n//# sourceURL=" + sourceURL);
-    } finally {
-        self._importScriptPathPrefix = oldPrefix;
     }
 }
 
@@ -116,8 +150,10 @@ function loadScript(scriptName)
 
 /**
  * @constructor
+ * @param {!Array.<!Runtime.ModuleDescriptor>} descriptors
+ * @param {!Array.<string>=} coreModuleNames
  */
-var Runtime = function()
+function Runtime(descriptors, coreModuleNames)
 {
     /**
      * @type {!Array.<!Runtime.Module>}
@@ -142,8 +178,10 @@ var Runtime = function()
      */
     this._descriptorsMap = {};
 
-    for (var i = 0; i < allDescriptors.length; ++i)
-        this._descriptorsMap[allDescriptors[i]["name"]] = allDescriptors[i];
+    for (var i = 0; i < descriptors.length; ++i)
+        this._registerModule(descriptors[i]);
+    if (coreModuleNames)
+        this._loadAutoStartModules(coreModuleNames).done();
 }
 
 /**
@@ -240,31 +278,47 @@ Runtime.startApplication = function(appName)
         var d = allDescriptors[i];
         allDescriptorsByName[d["name"]] = d;
     }
-    var moduleDescriptors = applicationDescriptor || Runtime._parseJsonURL(appName + ".json");
-    var allModules = [];
-    var coreModuleNames = [];
-    moduleDescriptors.forEach(populateModules);
+
+    var applicationPromise;
+    if (applicationDescriptor)
+        applicationPromise = Promise.resolve(applicationDescriptor);
+    else
+        applicationPromise = loadResourcePromise(appName + ".json").then(JSON.parse.bind(JSON));
+
+    applicationPromise.then(parseModuleDescriptors);
 
     /**
-     * @param {!Object} desc
+     * @param {!Array.<!Object>} configuration
      */
-    function populateModules(desc)
+    function parseModuleDescriptors(configuration)
     {
-        if (desc["type"] === "worker")
-            return;
-        var name = desc.name;
-        var moduleJSON = allDescriptorsByName[name];
-        if (!moduleJSON) {
-            moduleJSON = Runtime._parseJsonURL(name + "/module.json");
-            moduleJSON["name"] = name;
+        var moduleJSONPromises = [];
+        var coreModuleNames = [];
+        for (var i = 0; i < configuration.length; ++i) {
+            var descriptor = configuration[i];
+            if (descriptor["type"] === "worker")
+                continue;
+            var name = descriptor["name"];
+            var moduleJSON = allDescriptorsByName[name];
+            if (moduleJSON)
+                moduleJSONPromises.push(Promise.resolve(moduleJSON));
+            else
+                moduleJSONPromises.push(loadResourcePromise(name + "/module.json").then(JSON.parse.bind(JSON)));
+            if (descriptor["type"] === "autostart")
+                coreModuleNames.push(name);
         }
-        allModules.push(moduleJSON);
-        if (desc["type"] === "autostart")
-            coreModuleNames.push(name);
-    }
 
-    Runtime._initializeApplication(allModules);
-    self.runtime.loadAutoStartModules(coreModuleNames);
+        Promise.all(moduleJSONPromises).then(instantiateRuntime).done();
+        /**
+         * @param {!Array.<!Object>} moduleDescriptors
+         */
+        function instantiateRuntime(moduleDescriptors)
+        {
+            for (var i = 0; i < moduleDescriptors.length; ++i)
+                moduleDescriptors[i]["name"] = configuration[i]["name"];
+            self.runtime = new Runtime(moduleDescriptors, coreModuleNames);
+        }
+    }
 }
 
 /**
@@ -289,68 +343,16 @@ Runtime._experimentsSetting = function()
     }
 }
 
-/**
- * @param {!Array.<!Runtime.ModuleDescriptor>} descriptors
- */
-Runtime._initializeApplication = function(descriptors)
-{
-    self.runtime = new Runtime();
-    var names = [];
-    for (var i = 0; i < descriptors.length; ++i) {
-        var name = descriptors[i]["name"];
-        self.runtime._descriptorsMap[name] = descriptors[i];
-        names.push(name);
-    }
-    self.runtime._registerModules(names);
-}
-
-/**
- * @param {string} url
- * @return {*}
- */
-Runtime._parseJsonURL = function(url)
-{
-    var json = loadResource(url);
-    if (!json)
-        throw new Error("Resource not found at " + url + " " + new Error().stack);
-    return JSON.parse(json);
-}
-
 Runtime.prototype = {
-    /**
-     * @param {!Array.<string>} configuration
-     */
-    _registerModules: function(configuration)
-    {
-        for (var i = 0; i < configuration.length; ++i)
-            this._registerModule(configuration[i]);
-    },
 
     /**
-     * @param {string} moduleName
+     * @param {!Runtime.ModuleDescriptor} descriptor
      */
-    _registerModule: function(moduleName)
+    _registerModule: function(descriptor)
     {
-        if (!this._descriptorsMap[moduleName]) {
-            var content = loadResource(moduleName + "/module.json");
-            if (!content)
-                throw new Error("Module is not defined: " + moduleName + " " + new Error().stack);
-
-            var module = /** @type {!Runtime.ModuleDescriptor} */ (self.eval("(" + content + ")"));
-            module["name"] = moduleName;
-            this._descriptorsMap[moduleName] = module;
-        }
-        var module = new Runtime.Module(this, this._descriptorsMap[moduleName]);
+        var module = new Runtime.Module(this, descriptor);
         this._modules.push(module);
-        this._modulesMap[moduleName] = module;
-    },
-
-    /**
-     * @param {string} moduleName
-     */
-    loadModule: function(moduleName)
-    {
-        this._modulesMap[moduleName]._load();
+        this._modulesMap[descriptor["name"]] = module;
     },
 
     /**
@@ -364,15 +366,18 @@ Runtime.prototype = {
 
     /**
      * @param {!Array.<string>} moduleNames
+     * @return {!Promise.<undefined>}
      */
-    loadAutoStartModules: function(moduleNames)
+    _loadAutoStartModules: function(moduleNames)
     {
+        var promises = [];
         for (var i = 0; i < moduleNames.length; ++i) {
             if (Runtime.isReleaseMode())
-                self.runtime._modulesMap[moduleNames[i]]._loaded = true;
+                this._modulesMap[moduleNames[i]]._loaded = true;
             else
-                self.runtime.loadModule(moduleNames[i]);
+                promises.push(this.loadModulePromise(moduleNames[i]));
         }
+        return Promise.all(promises);
     },
 
     /**
@@ -511,17 +516,6 @@ Runtime.prototype = {
     /**
      * @param {*} type
      * @param {?Object=} context
-     * @return {?Object}
-     */
-    instance: function(type, context)
-    {
-        var extension = this.extension(type, context);
-        return extension ? extension.instance() : null;
-    },
-
-    /**
-     * @param {*} type
-     * @param {?Object=} context
      * @return {!Promise.<!Object>}
      */
     instancePromise: function(type, context)
@@ -623,27 +617,6 @@ Runtime.Module.prototype = {
         return this._name;
     },
 
-    _load: function()
-    {
-        if (this._loaded)
-            return;
-
-        if (this._isLoading) {
-            var oldStackTraceLimit = Error.stackTraceLimit;
-            Error.stackTraceLimit = 50;
-            console.assert(false, "Module " + this._name + " is loaded from itself: " + new Error().stack);
-            Error.stackTraceLimit = oldStackTraceLimit;
-            return;
-        }
-
-        this._isLoading = true;
-        var dependencies = this._descriptor.dependencies;
-        for (var i = 0; dependencies && i < dependencies.length; ++i)
-            this._manager.loadModule(dependencies[i]);
-        this._loadScripts();
-        this._isLoading = false;
-    },
-
     /**
      * @return {!Promise.<undefined>}
      */
@@ -661,37 +634,45 @@ Runtime.Module.prototype = {
             dependencyPromises.push(this._manager._modulesMap[dependencies[i]]._loadPromise());
 
         this._pendingLoadPromise = Promise.all(dependencyPromises)
-            .then(loadScripts.bind(this));
+            .then(this._loadScripts.bind(this))
+            .then(markAsLoaded.bind(this));
 
         return this._pendingLoadPromise;
 
         /**
          * @this {Runtime.Module}
          */
-        function loadScripts()
+        function markAsLoaded()
         {
-            // FIXME: migrate to loadScriptAsync.
             delete this._pendingLoadPromise;
-            this._loadScripts();
+            this._loaded = true;
         }
     },
 
+    /**
+     * @return {!Promise.<undefined>}
+     */
     _loadScripts: function()
     {
-        if (this._loaded)
-            return;
-        if (!this._descriptor.scripts) {
-            this._loaded = true;
-            return;
+        if (!this._descriptor.scripts)
+            return Promise.resolve(undefined);
+
+        if (Runtime.isReleaseMode())
+            return loadScriptPromise(this._name + "_module.js");
+
+        // Scripts must be loaded sequentially.
+        var scripts = this._descriptor.scripts.slice();
+        return loadSequentially.call(this);
+
+        /**
+         * @return {!Promise.<undefined>}
+         * @this {Runtime.Module}
+         */
+        function loadSequentially()
+        {
+            var script = scripts.shift();
+            return script ? loadScriptPromise(this._name + "/" + script).catch(console.error.bind(console)).then(loadSequentially.bind(this)) : Promise.resolve(undefined);
         }
-        if (Runtime.isReleaseMode()) {
-            loadScript(this._name + "_module.js");
-        } else {
-            var scripts = this._descriptor.scripts;
-            for (var i = 0; i < scripts.length; ++i)
-                loadScript(this._name + "/" + scripts[i]);
-        }
-        this._loaded = true;
     },
 
     /**
@@ -768,17 +749,6 @@ Runtime.Extension.prototype = {
     isApplicable: function(context)
     {
         return this._module._manager.isExtensionApplicableToContext(this, context);
-    },
-
-    /**
-     * @return {?Object}
-     */
-    instance: function()
-    {
-        if (!this._className)
-            return null;
-        this._module._load();
-        return this._module._instance(this._className);
     },
 
     /**
@@ -989,6 +959,38 @@ Runtime.Experiment.prototype = {
         }
     }
 })();}
+
+/**
+ * @param {string} error
+ * @return {!Promise}
+ */
+Promise.rejectWithError = function(error)
+{
+    return Promise.reject(new Error(error));
+}
+
+/**
+ * @param {function()} callback
+ * @return {!Promise}
+ */
+Promise.prototype.thenOrCatch = function(callback)
+{
+    return this.then(callback, reject);
+
+    /**
+     * @param {*} e
+     */
+    function reject(e)
+    {
+        console.error(e);
+        callback();
+    }
+}
+
+Promise.prototype.done = function()
+{
+    this.catch(console.error.bind(console));
+}
 
 /**
  * @param {!Array.<!Promise.<T, !Error>>} promises

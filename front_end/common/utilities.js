@@ -1752,35 +1752,3 @@ self.setImmediate = function(callback)
     Promise.resolve().then(callback).catch(console.error.bind(console));
     return 0;
 }
-
-/**
- * @param {string} error
- * @return {!Promise}
- */
-Promise.rejectWithError = function(error)
-{
-    return Promise.reject(new Error(error));
-}
-
-Promise.prototype.done = function()
-{
-    this.catch(console.error.bind(console));
-}
-
-/**
- * @param {function()} callback
- * @return {!Promise}
- */
-Promise.prototype.thenOrCatch = function(callback)
-{
-    return this.then(callback, reject);
-
-    /**
-     * @param {*} e
-     */
-    function reject(e)
-    {
-        console.error(e);
-        callback();
-    }
-}
