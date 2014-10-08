@@ -196,15 +196,35 @@ WebInspector.InspectorView.prototype = {
     },
 
     /**
+     * The returned Promise is resolved with null if another showPanel()
+     * gets called while this.panel(panelName) Promise is in flight.
+     *
      * @param {string} panelName
-     * @return {!Promise.<!WebInspector.Panel>}
+     * @return {!Promise.<?WebInspector.Panel>}
      */
     showPanel: function(panelName)
     {
         if (this._currentPanelLocked)
             return this._currentPanel === this._panels[panelName] ? Promise.resolve(this._currentPanel) : Promise.rejectWithError("Current panel locked");
 
-        return this.panel(panelName).then(this.setCurrentPanel.bind(this));
+        this._panelForShowPromise = this.panel(panelName);
+        return this._panelForShowPromise.then(setCurrentPanelIfNecessary.bind(this, this._panelForShowPromise));
+
+        /**
+         * @param {!Promise.<!WebInspector.Panel>} panelPromise
+         * @param {!WebInspector.Panel} panel
+         * @return {?WebInspector.Panel}
+         * @this {WebInspector.InspectorView}
+         */
+        function setCurrentPanelIfNecessary(panelPromise, panel)
+        {
+            if (this._panelForShowPromise !== panelPromise)
+                return null;
+
+            delete this._panelForShowPromise;
+            this.setCurrentPanel(panel);
+            return panel;
+        }
     },
 
     /**
