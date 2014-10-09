@@ -2935,6 +2935,10 @@ WebInspector.ElementsTreeOutline.Renderer.prototype = {
              */
             function onNodeResolved(node)
             {
+                if (!node) {
+                    reject(new Error("Could not resolve node."));
+                    return;
+                }
                 var treeOutline = new WebInspector.ElementsTreeOutline(node.target(), false, false);
                 treeOutline.rootDOMNode = node;
                 treeOutline.element.classList.add("outline-disclosure");
