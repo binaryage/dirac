@@ -812,7 +812,7 @@ body.platform-linux .source-code {
     word-wrap: break-word;
     -webkit-user-select: text;
     border-top: 1px solid rgb(230, 230, 230);
-    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
 }
 
 .console-view-fix-select-all {
@@ -1956,8 +1956,8 @@ li.editing-sub-part .delete-button {
 }
 
 @-webkit-keyframes spinner-animation {
-    from { -webkit-transform: rotate(0); }
-    to { -webkit-transform: rotate(360deg); }
+    from { transform: rotate(0); }
+    to { transform: rotate(360deg); }
 }
 
 li .status {

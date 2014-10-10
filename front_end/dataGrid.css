@@ -30,7 +30,7 @@
     top: 17px;
     bottom: 0;
     overflow-y: overlay;
-    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
 }
 
 .data-grid.inline .header-container,

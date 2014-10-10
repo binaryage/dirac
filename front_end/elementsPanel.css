@@ -31,7 +31,7 @@
     flex: 1 1;
     overflow: auto;
     padding-left: 0;
-    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
 }
 
 #elements-crumbs {
@@ -46,7 +46,7 @@
 #elements-content > ol {
     display: inline-block;
     min-height: 100%;
-    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
 }
 
 .elements-tree-outline.pick-node-mode {

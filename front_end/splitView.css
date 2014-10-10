@@ -139,20 +139,20 @@
 
 .split-view button.top-sidebar-show-hide-button.toggled-show > .glyph {
     -webkit-mask-position: -168px -76px; /* |> */
-    -webkit-transform: rotate(90deg);
+    transform: rotate(90deg);
 }
 
 .split-view button.top-sidebar-show-hide-button.toggled-hide > .glyph {
     -webkit-mask-position: -199px -76px; /* |< */
-    -webkit-transform: rotate(90deg);
+    transform: rotate(90deg);
 }
 
 .split-view button.bottom-sidebar-show-hide-button.toggled-show > .glyph {
     -webkit-mask-position: -296px -76px; /* <| */
-    -webkit-transform: rotate(90deg);
+    transform: rotate(90deg);
 }
 
 .split-view button.bottom-sidebar-show-hide-button.toggled-hide > .glyph {
     -webkit-mask-position: -264px -76px; /* >| */
-    -webkit-transform: rotate(90deg);
+    transform: rotate(90deg);
 }

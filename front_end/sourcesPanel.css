@@ -128,7 +128,7 @@
 }
 
 .panel.sources .split-view #scripts-debug-sidebar-resizer-widget.ns-resizer-widget {
-    -webkit-transform: rotate(90deg);
+    transform: rotate(90deg);
     right: 17px;
     bottom: 4px;
     top: auto;

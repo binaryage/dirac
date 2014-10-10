@@ -284,5 +284,5 @@
 
 /** @see crbug.com/358161 */
 .CodeMirror .CodeMirror-vscrollbar, .CodeMirror .CodeMirror-hscrollbar {
-  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
 }
