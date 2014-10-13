@@ -143,11 +143,11 @@ WebInspector.TimelineModel.forAllRecords = function(recordsArray, preOrderCallba
 
 WebInspector.TimelineModel.prototype = {
     /**
-     * @param {boolean} captureStacks
+     * @param {boolean} captureCauses
      * @param {boolean} captureMemory
      * @param {boolean} capturePictures
      */
-    startRecording: function(captureStacks, captureMemory, capturePictures)
+    startRecording: function(captureCauses, captureMemory, capturePictures)
     {
     },
 

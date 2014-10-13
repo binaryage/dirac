@@ -538,9 +538,7 @@ WebInspector.TracingTimelineUIUtils._buildTraceEventDetailsSynchronously = funct
 
     var recordTypes = WebInspector.TracingTimelineModel.RecordType;
 
-    // The messages may vary per event.name;
-    var callSiteStackTraceLabel;
-    var callStackLabel;
+    // This message may vary per event.name;
     var relatedNodeLabel;
 
     var contentHelper = new WebInspector.TimelineDetailsContentHelper(event.thread.target(), linkifier, true);
@@ -555,9 +553,6 @@ WebInspector.TracingTimelineUIUtils._buildTraceEventDetailsSynchronously = funct
         contentHelper.appendTextRow(WebInspector.UIString("Collected"), Number.bytesToString(delta));
         break;
     case recordTypes.TimerFire:
-        callSiteStackTraceLabel = WebInspector.UIString("Timer installed");
-        // Fall-through intended.
-
     case recordTypes.TimerInstall:
     case recordTypes.TimerRemove:
         contentHelper.appendTextRow(WebInspector.UIString("Timer ID"), eventData["timerId"]);
@@ -567,7 +562,6 @@ WebInspector.TracingTimelineUIUtils._buildTraceEventDetailsSynchronously = funct
         }
         break;
     case recordTypes.FireAnimationFrame:
-        callSiteStackTraceLabel = WebInspector.UIString("Animation frame requested");
         contentHelper.appendTextRow(WebInspector.UIString("Callback ID"), eventData["id"]);
         break;
     case recordTypes.FunctionCall:
@@ -619,7 +613,6 @@ WebInspector.TracingTimelineUIUtils._buildTraceEventDetailsSynchronously = funct
         break;
     case recordTypes.RecalculateStyles: // We don't want to see default details.
         contentHelper.appendTextRow(WebInspector.UIString("Elements affected"), event.args["elementCount"]);
-        callStackLabel = WebInspector.UIString("Styles recalculation forced");
         break;
     case recordTypes.Layout:
         var beginData = event.args["beginData"];
@@ -627,8 +620,6 @@ WebInspector.TracingTimelineUIUtils._buildTraceEventDetailsSynchronously = funct
         contentHelper.appendTextRow(WebInspector.UIString("Layout tree size"), beginData["totalObjects"]);
         contentHelper.appendTextRow(WebInspector.UIString("Layout scope"),
                                     beginData["partialLayout"] ? WebInspector.UIString("Partial") : WebInspector.UIString("Whole document"));
-        callSiteStackTraceLabel = WebInspector.UIString("Layout invalidated");
-        callStackLabel = WebInspector.UIString("Layout forced");
         relatedNodeLabel = WebInspector.UIString("Layout root");
         break;
     case recordTypes.ConsoleTime:
@@ -662,15 +653,6 @@ WebInspector.TracingTimelineUIUtils._buildTraceEventDetailsSynchronously = funct
     if (eventData && eventData["scriptName"] && event.name !== recordTypes.FunctionCall)
         contentHelper.appendLocationRow(WebInspector.UIString("Function Call"), eventData["scriptName"], eventData["scriptLine"]);
 
-    if (initiator) {
-        var callSiteStackTrace = initiator.stackTrace;
-        if (callSiteStackTrace)
-            contentHelper.appendStackTrace(callSiteStackTraceLabel || WebInspector.UIString("Call Site stack"), callSiteStackTrace);
-    }
-    var eventStackTrace = event.stackTrace;
-    if (eventStackTrace)
-        contentHelper.appendStackTrace(callStackLabel || WebInspector.UIString("Call Stack"), eventStackTrace);
-
     var warning = event.warning;
     if (warning) {
         var div = document.createElement("div");
@@ -679,8 +661,49 @@ WebInspector.TracingTimelineUIUtils._buildTraceEventDetailsSynchronously = funct
     }
     if (event.previewElement)
         contentHelper.appendElementRow(WebInspector.UIString("Preview"), event.previewElement);
+
+    if (event.stackTrace || (event.initiator && event.initiator.stackTrace))
+        WebInspector.TracingTimelineUIUtils._generateCauses(event, contentHelper);
+
     fragment.appendChild(contentHelper.element);
     return fragment;
+}
+
+/**
+ * @param {!WebInspector.TracingModel.Event} event
+ * @param {!WebInspector.TimelineDetailsContentHelper} contentHelper
+ */
+WebInspector.TracingTimelineUIUtils._generateCauses = function(event, contentHelper)
+{
+    var recordTypes = WebInspector.TracingTimelineModel.RecordType;
+
+    var callSiteStackLabel;
+    var stackLabel;
+
+    switch (event.name) {
+    case recordTypes.TimerFire:
+        callSiteStackLabel = WebInspector.UIString("Timer installed");
+        break;
+    case recordTypes.FireAnimationFrame:
+        callSiteStackLabel = WebInspector.UIString("Animation frame requested");
+        break;
+    case recordTypes.RecalculateStyles:
+        stackLabel = WebInspector.UIString("Stack when style recalculation was forced");
+        break;
+    case recordTypes.Layout:
+        callSiteStackLabel = WebInspector.UIString("First layout invalidation");
+        stackLabel = WebInspector.UIString("Stack when layout was forced");
+        break;
+    }
+
+    // Direct cause.
+    if (event.stackTrace)
+        contentHelper.appendStackTrace(stackLabel || WebInspector.UIString("Stack when this event occurred"), event.stackTrace);
+
+    // Indirect cause / invalidation.
+    var initiator = event.initiator;
+    if (initiator && initiator.stackTrace)
+        contentHelper.appendStackTrace(callSiteStackLabel || WebInspector.UIString("Stack when first invalidated"), initiator.stackTrace);
 }
 
 /**

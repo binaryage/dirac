@@ -42,11 +42,11 @@ WebInspector.TimelineModelImpl.prototype = {
     },
 
     /**
-     * @param {boolean} captureStacks
+     * @param {boolean} captureCauses
      * @param {boolean} captureMemory
      * @param {boolean} capturePictures
      */
-    startRecording: function(captureStacks, captureMemory, capturePictures)
+    startRecording: function(captureCauses, captureMemory, capturePictures)
     {
         console.assert(!capturePictures, "Legacy timeline does not support capturing pictures");
         this.reset();
@@ -54,7 +54,7 @@ WebInspector.TimelineModelImpl.prototype = {
         console.assert(this._currentTarget);
 
         this._clientInitiatedRecording = true;
-        var maxStackFrames = captureStacks ? 30 : 0;
+        var maxStackFrames = captureCauses ? 30 : 0;
         var includeGPUEvents = Runtime.experiments.isEnabled("gpuTimeline");
         var liveEvents = [ WebInspector.TimelineModel.RecordType.BeginFrame,
                            WebInspector.TimelineModel.RecordType.DrawFrame,

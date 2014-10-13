@@ -121,11 +121,11 @@ WebInspector.TracingTimelineModel.VirtualThread = function(name)
 
 WebInspector.TracingTimelineModel.prototype = {
     /**
-     * @param {boolean} captureStacks
+     * @param {boolean} captureCauses
      * @param {boolean} captureMemory
      * @param {boolean} capturePictures
      */
-    startRecording: function(captureStacks, captureMemory, capturePictures)
+    startRecording: function(captureCauses, captureMemory, capturePictures)
     {
         function disabledByDefault(category)
         {
@@ -137,7 +137,7 @@ WebInspector.TracingTimelineModel.prototype = {
             disabledByDefault("devtools.timeline.frame"),
             WebInspector.TracingModel.ConsoleEventCategory
         ];
-        if (captureStacks) {
+        if (captureCauses) {
             categoriesArray.push(disabledByDefault("devtools.timeline.stack"));
             if (Runtime.experiments.isEnabled("timelineJSCPUProfile")) {
                 this._jsProfilerStarted = true;

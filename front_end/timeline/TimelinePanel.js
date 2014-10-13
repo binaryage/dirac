@@ -347,11 +347,11 @@ WebInspector.TimelinePanel.prototype = {
             panelStatusBarElement.appendChild(flameChartToggleButton.element);
         }
 
-        this._captureStacksSetting = WebInspector.settings.createSetting("timelineCaptureStacks", true);
-        this._captureStacksSetting.addChangeListener(this._refreshViews, this);
-        panelStatusBarElement.appendChild(this._createSettingCheckbox(WebInspector.UIString("Stacks"),
-                                                                      this._captureStacksSetting,
-                                                                      WebInspector.UIString("Capture JavaScript stack on every timeline event")));
+        this._captureCausesSetting = WebInspector.settings.createSetting("timelineCaptureCauses", true);
+        this._captureCausesSetting.addChangeListener(this._refreshViews, this);
+        panelStatusBarElement.appendChild(this._createSettingCheckbox(WebInspector.UIString("Causes"),
+                                                                      this._captureCausesSetting,
+                                                                      WebInspector.UIString("Capture causes for timeline events (e.g., stack traces)")));
         this._captureMemorySetting = WebInspector.settings.createSetting("timelineCaptureMemory", false);
         panelStatusBarElement.appendChild(this._createSettingCheckbox(WebInspector.UIString("Memory"),
                                                                       this._captureMemorySetting,
@@ -639,7 +639,7 @@ WebInspector.TimelinePanel.prototype = {
     _startRecording: function(userInitiated)
     {
         this._userInitiatedRecording = userInitiated;
-        this._model.startRecording(this._captureStacksSetting.get(), this._captureMemorySetting.get(), this._captureLayersAndPicturesSetting && this._captureLayersAndPicturesSetting.get());
+        this._model.startRecording(this._captureCausesSetting.get(), this._captureMemorySetting.get(), this._captureLayersAndPicturesSetting && this._captureLayersAndPicturesSetting.get());
         if (this._lazyFrameModel)
             this._lazyFrameModel.setMergeRecords(false);
 
