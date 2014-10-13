@@ -253,9 +253,6 @@ WebInspector.Main.prototype = {
 
         WebInspector.extensionServerProxy.setFrontendReady();
 
-        // FIXME: Remove once the upstream counterpart has landed.
-        InspectorFrontendAPI.loadCompleted();
-
         InspectorFrontendHost.loadCompleted();
 
         // Give UI cycles to repaint, then proceed with creating connection.

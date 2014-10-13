@@ -70,20 +70,20 @@ InspectorFrontendHostAPI.EventDescriptors = [
     [InspectorFrontendHostAPI.Events.DeviceCountUpdated, ["count"]],
     [InspectorFrontendHostAPI.Events.DevicesUpdated, ["devices"]],
     [InspectorFrontendHostAPI.Events.DispatchMessage, ["messageObject"]],
-    [InspectorFrontendHostAPI.Events.EnterInspectElementMode, [], true],
+    [InspectorFrontendHostAPI.Events.EnterInspectElementMode, []],
     [InspectorFrontendHostAPI.Events.FileSystemsLoaded, ["fileSystems"]],
     [InspectorFrontendHostAPI.Events.FileSystemRemoved, ["fileSystemPath"]],
     [InspectorFrontendHostAPI.Events.FileSystemAdded, ["errorMessage", "fileSystem"]],
     [InspectorFrontendHostAPI.Events.IndexingTotalWorkCalculated, ["requestId", "fileSystemPath", "totalWork"]],
     [InspectorFrontendHostAPI.Events.IndexingWorked, ["requestId", "fileSystemPath", "worked"]],
     [InspectorFrontendHostAPI.Events.IndexingDone, ["requestId", "fileSystemPath"]],
-    [InspectorFrontendHostAPI.Events.KeyEventUnhandled, ["event"], true],
-    [InspectorFrontendHostAPI.Events.RevealSourceLine, ["url", "lineNumber", "columnNumber"], true],
+    [InspectorFrontendHostAPI.Events.KeyEventUnhandled, ["event"]],
+    [InspectorFrontendHostAPI.Events.RevealSourceLine, ["url", "lineNumber", "columnNumber"]],
     [InspectorFrontendHostAPI.Events.SavedURL, ["url"]],
     [InspectorFrontendHostAPI.Events.SearchCompleted, ["requestId", "fileSystemPath", "files"]],
     [InspectorFrontendHostAPI.Events.SetToolbarColors, ["backgroundColor", "color"]],
     [InspectorFrontendHostAPI.Events.SetUseSoftMenu, ["useSoftMenu"]],
-    [InspectorFrontendHostAPI.Events.ShowConsole, [], true]
+    [InspectorFrontendHostAPI.Events.ShowConsole, []]
 ];
 
 InspectorFrontendHostAPI.prototype = {
@@ -248,7 +248,7 @@ InspectorFrontendHostAPI.prototype = {
 
     /**
      * @param {boolean} isDocked
-     * @param {!function()} callback
+     * @param {function()} callback
      */
     setIsDocked: function(isDocked, callback) { },
 
@@ -349,7 +349,7 @@ WebInspector.InspectorFrontendHostStub.prototype = {
 
     /**
      * @param {boolean} isDocked
-     * @param {!function()} callback
+     * @param {function()} callback
      */
     setIsDocked: function(isDocked, callback)
     {
@@ -641,8 +641,6 @@ var InspectorFrontendHost = window.InspectorFrontendHost || null;
  */
 function InspectorFrontendAPIImpl()
 {
-    this._isLoaded = false;
-    this._pendingCommands = [];
     this._debugFrontend = !!Runtime.queryParam("debugFrontend");
 
     var descriptors = InspectorFrontendHostAPI.EventDescriptors;
@@ -651,16 +649,6 @@ function InspectorFrontendAPIImpl()
 }
 
 InspectorFrontendAPIImpl.prototype = {
-    loadCompleted: function()
-    {
-        this._isLoaded = true;
-        for (var i = 0; i < this._pendingCommands.length; ++i)
-            this._pendingCommands[i]();
-        this._pendingCommands = [];
-        if (window.opener)
-            window.opener.postMessage(["loadCompleted"], "*");
-    },
-
     /**
      * @param {string} name
      * @param {!Array.<string>} signature
@@ -671,45 +659,22 @@ InspectorFrontendAPIImpl.prototype = {
         var params = Array.prototype.slice.call(arguments, 3);
 
         if (this._debugFrontend)
-            setImmediate(innerDispatch.bind(this));
+            setImmediate(innerDispatch);
         else
-            innerDispatch.call(this);
+            innerDispatch();
 
-        /**
-         * @this {!InspectorFrontendAPIImpl}
-         */
         function innerDispatch()
         {
-            if (runOnceLoaded)
-                this._runOnceLoaded(dispatchAfterLoad);
-            else
-                dispatchAfterLoad();
-
-            function dispatchAfterLoad()
-            {
-                // Single argument methods get dispatched with the param.
-                if (signature.length < 2) {
-                    InspectorFrontendHost.events.dispatchEventToListeners(name, params[0]);
-                    return;
-                }
-                var data = {};
-                for (var i = 0; i < signature.length; ++i)
-                    data[signature[i]] = params[i];
-                InspectorFrontendHost.events.dispatchEventToListeners(name, data);
+            // Single argument methods get dispatched with the param.
+            if (signature.length < 2) {
+                InspectorFrontendHost.events.dispatchEventToListeners(name, params[0]);
+                return;
             }
+            var data = {};
+            for (var i = 0; i < signature.length; ++i)
+                data[signature[i]] = params[i];
+            InspectorFrontendHost.events.dispatchEventToListeners(name, data);
         }
-    },
-
-    /**
-     * @param {function()} command
-     */
-    _runOnceLoaded: function(command)
-    {
-        if (this._isLoaded) {
-            command();
-            return;
-        }
-        this._pendingCommands.push(command);
     },
 
     /**
