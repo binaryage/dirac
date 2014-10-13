@@ -2,13 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-function windowLoaded()
-{
-    window.removeEventListener("DOMContentLoaded", windowLoaded, false);
-    new WebInspector.Toolbox();
-}
-window.addEventListener("DOMContentLoaded", windowLoaded, false);
-
 /**
  * @constructor
  */
@@ -40,3 +33,14 @@ WebInspector.Toolbox = function()
 // FIXME: This stub is invoked from the backend and should be removed
 // once we migrate to the "pull" model for extensions retrieval.
 WebInspector.addExtensions = function() {}
+
+function windowLoaded()
+{
+    window.removeEventListener("DOMContentLoaded", windowLoaded, false);
+    new WebInspector.Toolbox();
+}
+
+if (document.readyState === "complete")
+    new WebInspector.Toolbox();
+else
+    window.addEventListener("DOMContentLoaded", windowLoaded, false);
