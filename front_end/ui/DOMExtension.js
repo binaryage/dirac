@@ -308,7 +308,7 @@ Element.prototype.containsEventPoint = function(event)
  */
 Node.prototype.enclosingNodeOrSelfWithNodeNameInArray = function(nameArray)
 {
-    for (var node = this; node && node !== this.ownerDocument; node = node.parentNode) {
+    for (var node = this; node && node !== this.ownerDocument; node = node.parentNodeOrShadowHost()) {
         for (var i = 0; i < nameArray.length; ++i) {
             if (node.nodeName.toLowerCase() === nameArray[i].toLowerCase())
                 return node;
@@ -333,11 +333,34 @@ Node.prototype.enclosingNodeOrSelfWithNodeName = function(nodeName)
  */
 Node.prototype.enclosingNodeOrSelfWithClass = function(className, stayWithin)
 {
-    for (var node = this; node && node !== stayWithin && node !== this.ownerDocument; node = node.parentNode) {
+    for (var node = this; node && node !== stayWithin && node !== this.ownerDocument; node = node.parentNodeOrShadowHost()) {
         if (node.nodeType === Node.ELEMENT_NODE && node.classList.contains(className))
             return /** @type {!Element} */ (node);
     }
     return null;
+}
+
+/**
+ * @return {?Element}
+ */
+Node.prototype.parentElementOrShadowHost = function()
+{
+    var node = this.parentNode;
+    if (!node)
+        return null;
+    if (node.nodeType === Node.ELEMENT_NODE)
+        return /** @type {!Element} */ (node);
+    if (node.nodeType === Node.DOCUMENT_FRAGMENT_NODE)
+        return /** @type {!Element} */ (node.host);
+    return null;
+}
+
+/**
+ * @return {?Node}
+ */
+Node.prototype.parentNodeOrShadowHost = function()
+{
+    return this.parentNode || this.host || null;
 }
 
 /**
@@ -626,7 +649,7 @@ Element.prototype.selectionLeftOffset = function()
             node = node.previousSibling;
             leftOffset += node.textContent.length;
         }
-        node = node.parentNode;
+        node = node.parentNodeOrShadowHost();
     }
 
     return leftOffset;
@@ -641,11 +664,11 @@ Node.prototype.isAncestor = function(node)
     if (!node)
         return false;
 
-    var currentNode = node.parentNode;
+    var currentNode = node.parentNodeOrShadowHost();
     while (currentNode) {
         if (this === currentNode)
             return true;
-        currentNode = currentNode.parentNode;
+        currentNode = currentNode.parentNodeOrShadowHost();
     }
     return false;
 }
@@ -695,8 +718,8 @@ Node.prototype.traverseNextNode = function(stayWithin)
         return node;
 
     node = this;
-    while (node && !node.nextSibling && (!stayWithin || !node.parentNode || node.parentNode !== stayWithin))
-        node = node.parentNode;
+    while (node && !node.nextSibling && (!stayWithin || !node.parentNodeOrShadowHost() || node.parentNodeOrShadowHost() !== stayWithin))
+        node = node.parentNodeOrShadowHost();
     if (!node)
         return null;
 
@@ -716,7 +739,7 @@ Node.prototype.traversePreviousNode = function(stayWithin)
         node = node.lastChild;
     if (node)
         return node;
-    return this.parentNode;
+    return this.parentNodeOrShadowHost();
 }
 
 /**
@@ -738,6 +761,30 @@ Node.prototype.setTextContentTruncatedIfNeeded = function(text, placeholder)
 
     this.textContent = text;
     return false;
+}
+
+/**
+ * @return {?Node}
+ */
+Event.prototype.elementFromPoint = function()
+{
+    var node = this.target;
+    while (node && node.nodeType !== Node.DOCUMENT_FRAGMENT_NODE && node.nodeType !== Node.DOCUMENT_NODE)
+        node = node.parentNode;
+    return node ? node.elementFromPoint(this.pageX, this.pageY) : null;
+}
+
+/**
+ * @param {number} x
+ * @param {number} y
+ * @return {?Node}
+ */
+Document.prototype.deepElementFromPoint = function(x, y)
+{
+    var node = this.elementFromPoint(x, y);
+    while (node && node.shadowRoot)
+        node = node.shadowRoot.elementFromPoint(x, y);
+    return node;
 }
 
 /**

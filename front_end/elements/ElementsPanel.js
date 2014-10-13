@@ -51,8 +51,7 @@ WebInspector.ElementsPanel = function()
 
     this.contentElement = stackElement.createChild("div");
     this.contentElement.id = "elements-content";
-    this.contentElement.classList.add("outline-disclosure");
-    this.contentElement.classList.add("source-code");
+    this.contentElement.classList.add("outline-disclosure", "source-code");
     if (!WebInspector.settings.domWordWrap.get())
         this.contentElement.classList.add("nowrap");
     WebInspector.settings.domWordWrap.addChangeListener(this._domWordWrapSettingChanged.bind(this));
@@ -692,7 +691,7 @@ WebInspector.ElementsPanel.prototype = {
 
     _mouseMovedInCrumbs: function(event)
     {
-        var nodeUnderMouse = document.elementFromPoint(event.pageX, event.pageY);
+        var nodeUnderMouse = event.elementFromPoint();
         var crumbElement = nodeUnderMouse.enclosingNodeOrSelfWithClass("crumb");
         var node = /** @type {?WebInspector.DOMNode} */ (crumbElement ? crumbElement.representedObject : null);
         if (node)
@@ -701,7 +700,7 @@ WebInspector.ElementsPanel.prototype = {
 
     _mouseMovedOutOfCrumbs: function(event)
     {
-        var nodeUnderMouse = document.elementFromPoint(event.pageX, event.pageY);
+        var nodeUnderMouse = event.elementFromPoint();
         if (nodeUnderMouse && nodeUnderMouse.isDescendant(this.crumbsElement))
             return;
 

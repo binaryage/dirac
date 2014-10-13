@@ -306,7 +306,7 @@ WebInspector.PaintProfilerCommandLogView.prototype = {
      */
     _onMouseMove: function(event)
     {
-        var node = this.sidebarTree.treeElementFromPoint(event.pageX, event.pageY);
+        var node = this.sidebarTree.treeElementFromEvent(event);
         if (node === this._lastHoveredNode || !(node instanceof WebInspector.LogTreeElement))
             return;
         if (this._lastHoveredNode)
@@ -317,13 +317,13 @@ WebInspector.PaintProfilerCommandLogView.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!Event} event
      */
     _onContextMenu: function(event)
     {
         if (!this._target)
             return;
-        var node = this.sidebarTree.treeElementFromPoint(event.pageX, event.pageY);
+        var node = this.sidebarTree.treeElementFromEvent(event);
         if (!node || !node.representedObject || !(node instanceof WebInspector.LogTreeElement))
             return;
         var logItem = /** @type {!WebInspector.PaintProfilerLogItem} */ (node.representedObject);

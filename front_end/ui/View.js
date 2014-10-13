@@ -213,7 +213,7 @@ WebInspector.View.prototype = {
 
             var currentParent = parentElement;
             while (currentParent && !currentParent.__view)
-                currentParent = currentParent.parentElement;
+                currentParent = currentParent.parentElementOrShadowHost();
 
             if (currentParent) {
                 this._parentView = currentParent.__view;
@@ -495,7 +495,7 @@ WebInspector.View._incrementViewCounter = function(parentElement, childElement)
 
     while (parentElement) {
         parentElement.__viewCounter = (parentElement.__viewCounter || 0) + count;
-        parentElement = parentElement.parentElement;
+        parentElement = parentElement.parentElementOrShadowHost();
     }
 }
 
@@ -507,7 +507,7 @@ WebInspector.View._decrementViewCounter = function(parentElement, childElement)
 
     while (parentElement) {
         parentElement.__viewCounter -= count;
-        parentElement = parentElement.parentElement;
+        parentElement = parentElement.parentElementOrShadowHost();
     }
 }
 

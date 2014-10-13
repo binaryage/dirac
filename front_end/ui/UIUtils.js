@@ -185,7 +185,7 @@ WebInspector.isBeingEdited = function(node)
     while (element) {
         if (element.__editing)
             return true;
-        element = element.parentElement;
+        element = element.parentElementOrShadowHost();
     }
     return false;
 }

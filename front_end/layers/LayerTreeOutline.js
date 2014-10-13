@@ -132,7 +132,7 @@ WebInspector.LayerTreeOutline.prototype = {
      */
     _onMouseMove: function(event)
     {
-        var node = this._treeOutline.treeElementFromPoint(event.pageX, event.pageY);
+        var node = this._treeOutline.treeElementFromEvent(event);
         if (node === this._lastHoveredNode)
             return;
         this.dispatchEventToListeners(WebInspector.LayerTreeOutline.Events.LayerHovered, node && node.representedObject ? {layer: node.representedObject} : null);
@@ -152,7 +152,7 @@ WebInspector.LayerTreeOutline.prototype = {
      */
     _onContextMenu: function(event)
     {
-        var node = this._treeOutline.treeElementFromPoint(event.pageX, event.pageY);
+        var node = this._treeOutline.treeElementFromEvent(event);
         if (!node || !node.representedObject)
             return;
         var layer = /** @type {!WebInspector.Layer} */ (node.representedObject);

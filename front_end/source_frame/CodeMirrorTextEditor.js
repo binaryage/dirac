@@ -750,7 +750,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
      */
     coordinatesToCursorPosition: function(x, y)
     {
-        var element = document.elementFromPoint(x, y);
+        var element = document.deepElementFromPoint(x, y);
         if (!element || !element.isSelfOrDescendant(this._codeMirror.getWrapperElement()))
             return null;
         var gutterBox = this._codeMirror.getGutterElement().boxInWindow();

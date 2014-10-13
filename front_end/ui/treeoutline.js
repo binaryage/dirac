@@ -323,7 +323,7 @@ TreeOutline.prototype.findTreeElement = function(representedObject, getParent)
  */
 TreeOutline.prototype.treeElementFromPoint = function(x, y)
 {
-    var node = this._childrenListNode.ownerDocument.elementFromPoint(x, y);
+    var node = this._childrenListNode.ownerDocument.deepElementFromPoint(x, y);
     if (!node)
         return null;
 
@@ -331,6 +331,15 @@ TreeOutline.prototype.treeElementFromPoint = function(x, y)
     if (listNode)
         return listNode.parentTreeElement || listNode.treeElement;
     return null;
+}
+
+/**
+ * @param {?Event} event
+ * @return {?TreeElement}
+ */
+TreeOutline.prototype.treeElementFromEvent = function(event)
+{
+    return event ? this.treeElementFromPoint(event.pageX, event.pageY) : null;
 }
 
 TreeOutline.prototype._treeKeyDown = function(event)
