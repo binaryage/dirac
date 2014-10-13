@@ -3127,6 +3127,7 @@
                 "properties": [
                     { "name": "text", "type": "string", "description": "Exception text." },
                     { "name": "url", "type": "string", "optional": true, "description": "URL of the message origin." },
+                    { "name": "scriptId", "type": "string", "optional": true, "description": "Script ID of the message origin." },
                     { "name": "line", "type": "integer", "optional": true, "description": "Line number in the resource that generated this message." },
                     { "name": "column", "type": "integer", "optional": true, "description": "Column number in the resource that generated this message." },
                     { "name": "stackTrace", "$ref": "Console.StackTrace", "optional": true, "description": "JavaScript stack trace for assertions and error messages." }
