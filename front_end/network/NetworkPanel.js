@@ -74,7 +74,7 @@ WebInspector.NetworkLogView = function(filterBar, coulmnsVisibilitySetting)
     this._addFilters();
     this._resetSuggestionBuilder();
     this._initializeView();
-    this._recordButton.toggled = true;
+    this._toggleRecordButton(true);
 
     WebInspector.targetManager.observeTargets(this);
     WebInspector.targetManager.addModelListener(WebInspector.NetworkManager, WebInspector.NetworkManager.EventTypes.RequestStarted, this._onRequestStarted, this);
@@ -726,7 +726,7 @@ WebInspector.NetworkLogView.prototype = {
 
     _createStatusbarButtons: function()
     {
-        this._recordButton = new WebInspector.StatusBarButton(WebInspector.UIString("Record Network Log"), "record-profile-status-bar-item");
+        this._recordButton = new WebInspector.StatusBarButton("", "record-profile-status-bar-item");
         this._recordButton.addEventListener("click", this._onRecordButtonClicked, this);
 
         this._clearButton = new WebInspector.StatusBarButton(WebInspector.UIString("Clear"), "clear-status-bar-item");
@@ -839,7 +839,16 @@ WebInspector.NetworkLogView.prototype = {
     {
         if (!this._recordButton.toggled)
             this._reset();
-        this._recordButton.toggled = !this._recordButton.toggled;
+        this._toggleRecordButton(!this._recordButton.toggled);
+    },
+
+    /**
+     * @param {boolean} toggled
+     */
+    _toggleRecordButton: function(toggled)
+    {
+        this._recordButton.toggled = toggled;
+        this._recordButton.title = toggled ? WebInspector.UIString("Stop Recording Network Log") : WebInspector.UIString("Record Network Log");
     },
 
     _reset: function()
