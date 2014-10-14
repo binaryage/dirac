@@ -87,11 +87,18 @@
     color: rgb(30%, 30%, 30%);
 }
 
-.resource-timing-view table {
-    border-spacing: 21px 0;
+/* Network timing is shared between popover and network item view pane */
+
+.network-timing-table {
+    width: 328px;
+    border-spacing: 0;
+    padding-left: 4px;
+    padding-right: 4px;
 }
 
-/* Network timing is shared between popover and network item view pane */
+.network-timing-table col.labels {
+    width: 120px;
+}
 
 .network-timing-table td {
     padding: 2px 0;
@@ -120,6 +127,10 @@
     color: #222;
     padding: 0 3px;
     line-height: 15px;
+}
+
+.network-timing-bar.total {
+    border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .network-timing-bar.blocking,
@@ -151,6 +162,10 @@
 
 .resource-timing-view.visible {
     display: block;
+}
+
+.resource-timing-view .network-timing-table {
+    width: 100%;
 }
 
 .panel.network .split-view {

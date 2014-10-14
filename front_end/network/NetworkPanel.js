@@ -1062,10 +1062,13 @@ WebInspector.NetworkLogView.prototype = {
     _showPopover: function(anchor, popover)
     {
         var content;
-        if (anchor.classList.contains("network-script-initiated"))
+        if (anchor.classList.contains("network-script-initiated")) {
             content = this._generateScriptInitiatedPopoverContent(anchor.request);
-        else
+            popover.setCanShrink(true);
+        } else {
             content = WebInspector.RequestTimingView.createTimingTable(anchor.parentElement.request);
+            popover.setCanShrink(false);
+        }
         popover.show(content, anchor);
     },
 
