@@ -447,18 +447,18 @@
             },
             {
                 "name": "setGeolocationOverride",
-                "description": "Overrides the Geolocation Position or Error.",
+                "description": "Overrides the Geolocation Position or Error. Omitting any of the parameters emulates position unavailable.",
                 "parameters": [
                     { "name": "latitude", "type": "number", "optional": true, "description": "Mock latitude"},
                     { "name": "longitude", "type": "number", "optional": true, "description": "Mock longitude"},
                     { "name": "accuracy", "type": "number", "optional": true, "description": "Mock accuracy"}
                 ],
-                "redirect": "Geolocation"
+                "handlers": ["browser"]
             },
             {
                 "name": "clearGeolocationOverride",
                 "description": "Clears the overriden Geolocation Position and Error.",
-                "redirect": "Geolocation"
+                "handlers": ["browser"]
             },
             {
                 "name": "setDeviceOrientationOverride",
@@ -4280,25 +4280,6 @@
                     { "name": "layerId", "$ref": "LayerId", "description": "The id of the painted layer." },
                     { "name": "clip", "$ref": "DOM.Rect", "description": "Clip rectangle." }
                 ]
-            }
-        ]
-    },
-    {
-        "domain": "Geolocation",
-        "hidden": true,
-        "commands": [
-            {
-                "name": "setGeolocationOverride",
-                "description": "Overrides the Geolocation Position or Error.",
-                "parameters": [
-                    { "name": "latitude", "type": "number", "optional": true, "description": "Mock latitude"},
-                    { "name": "longitude", "type": "number", "optional": true, "description": "Mock longitude"},
-                    { "name": "accuracy", "type": "number", "optional": true, "description": "Mock accuracy"}
-                ]
-            },
-            {
-                "name": "clearGeolocationOverride",
-                "description": "Clears the overriden Geolocation Position and Error."
             }
         ]
     },

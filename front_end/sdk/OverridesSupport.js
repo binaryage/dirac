@@ -178,7 +178,7 @@ WebInspector.OverridesSupport.GeolocationPosition.parseUserInput = function(lati
 
 WebInspector.OverridesSupport.GeolocationPosition.clearGeolocationOverride = function()
 {
-    GeolocationAgent.clearGeolocationOverride();
+    PageAgent.clearGeolocationOverride();
 }
 
 /**
@@ -646,14 +646,14 @@ WebInspector.OverridesSupport.prototype = {
     _geolocationPositionChanged: function()
     {
         if (!this.emulationEnabled() || !this.settings.overrideGeolocation.get()) {
-            GeolocationAgent.clearGeolocationOverride();
+            PageAgent.clearGeolocationOverride();
             return;
         }
         var geolocation = WebInspector.OverridesSupport.GeolocationPosition.parseSetting(this.settings.geolocationOverride.get());
         if (geolocation.error)
-            GeolocationAgent.setGeolocationOverride();
+            PageAgent.setGeolocationOverride();
         else
-            GeolocationAgent.setGeolocationOverride(geolocation.latitude, geolocation.longitude, 150);
+            PageAgent.setGeolocationOverride(geolocation.latitude, geolocation.longitude, 150);
     },
 
     _deviceOrientationChanged: function()
