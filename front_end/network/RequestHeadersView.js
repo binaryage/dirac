@@ -402,7 +402,7 @@ WebInspector.RequestHeadersView.prototype = {
             if (this._request.fetchedViaServiceWorker) {
                 statusText += " " + WebInspector.UIString("(from ServiceWorker)");
                 statusTextElement.classList.add("status-from-cache");
-            } else if (this._request.cached) {
+            } else if (this._request.cached()) {
                 statusText += " " + WebInspector.UIString("(from cache)");
                 statusTextElement.classList.add("status-from-cache");
             }

@@ -2420,7 +2420,7 @@ WebInspector.NetworkTimeCalculator.prototype = {
 
         if (request.fetchedViaServiceWorker)
             tooltip = WebInspector.NetworkTimeCalculator._fromServiceWorkerFormat.format(tooltip);
-        else if (request.cached)
+        else if (request.cached())
             tooltip = WebInspector.NetworkTimeCalculator._fromCacheFormat.format(tooltip);
         return {left: leftLabel, right: rightLabel, tooltip: tooltip};
     },
@@ -2716,7 +2716,7 @@ WebInspector.NetworkDataGridNode.prototype = {
         this._barAreaElement.request = this._request;
 
         var type = this._request.type.name();
-        var cached = this._request.cached;
+        var cached = this._request.cached();
 
         this._barLeftElement = this._barAreaElement.createChild("div", "network-graph-bar");
         this._barLeftElement.classList.add(type, "waiting");
@@ -2782,7 +2782,7 @@ WebInspector.NetworkDataGridNode.prototype = {
      */
     _renderStatusCell: function(cell)
     {
-        cell.classList.toggle("network-dim-cell", !this._isFailed() && (this._request.cached || !this._request.statusCode));
+        cell.classList.toggle("network-dim-cell", !this._isFailed() && (this._request.cached() || !this._request.statusCode));
 
         if (this._request.failed && !this._request.canceled) {
             var failText = WebInspector.UIString("(failed)");
@@ -2857,7 +2857,7 @@ WebInspector.NetworkDataGridNode.prototype = {
         if (this._request.fetchedViaServiceWorker) {
             cell.setTextAndTitle(WebInspector.UIString("(from ServiceWorker)"));
             cell.classList.add("network-dim-cell");
-        } else if (this._request.cached) {
+        } else if (this._request.cached()) {
             cell.setTextAndTitle(WebInspector.UIString("(from cache)"));
             cell.classList.add("network-dim-cell");
         } else {
@@ -3045,9 +3045,9 @@ WebInspector.NetworkDataGridNode.RemoteAddressComparator = function(a, b)
  */
 WebInspector.NetworkDataGridNode.SizeComparator = function(a, b)
 {
-    if (b._request.cached && !a._request.cached)
+    if (b._request.cached() && !a._request.cached())
         return 1;
-    if (a._request.cached && !b._request.cached)
+    if (a._request.cached() && !b._request.cached())
         return -1;
     return (a._request.transferSize - b._request.transferSize) || a._request.indentityCompare(b._request);
 }

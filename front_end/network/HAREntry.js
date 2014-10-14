@@ -237,7 +237,7 @@ WebInspector.HAREntry.prototype = {
      */
     get responseBodySize()
     {
-        if (this._request.cached || this._request.statusCode === 304)
+        if (this._request.cached() || this._request.statusCode === 304)
             return 0;
         if (!this._request.responseHeadersText)
             return -1;
@@ -249,7 +249,7 @@ WebInspector.HAREntry.prototype = {
      */
     get responseCompression()
     {
-        if (this._request.cached || this._request.statusCode === 304 || this._request.statusCode === 206)
+        if (this._request.cached() || this._request.statusCode === 304 || this._request.statusCode === 206)
             return;
         if (!this._request.responseHeadersText)
             return;

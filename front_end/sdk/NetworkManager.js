@@ -207,9 +207,8 @@ WebInspector.NetworkDispatcher.prototype = {
             networkRequest.fetchedViaServiceWorker = true;
 
         if (response.fromDiskCache)
-            networkRequest.cached = true;
-        else
-            networkRequest.timing = response.timing;
+            networkRequest.setFromDiskCache();
+        networkRequest.timing = response.timing;
 
         if (!this._mimeTypeIsConsistentWithType(networkRequest)) {
             var consoleModel = this._manager._target.consoleModel;
@@ -292,7 +291,7 @@ WebInspector.NetworkDispatcher.prototype = {
         if (!networkRequest)
             return;
 
-        networkRequest.cached = true;
+        networkRequest.setFromMemoryCache();
     },
 
     /**

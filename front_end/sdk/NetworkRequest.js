@@ -354,16 +354,20 @@ WebInspector.NetworkRequest.prototype = {
     /**
      * @return {boolean}
      */
-    get cached()
+    cached: function()
     {
-        return !!this._cached && !this._transferSize;
+        return (!!this._fromMemoryCache || !!this._fromDiskCache) && !this._transferSize;
     },
 
-    set cached(x)
+    setFromMemoryCache: function()
     {
-        this._cached = x;
-        if (x)
-            delete this._timing;
+        this._fromMemoryCache = true;
+        delete this._timing;
+    },
+
+    setFromDiskCache: function()
+    {
+        this._fromDiskCache = true;
     },
 
     /**
@@ -389,7 +393,7 @@ WebInspector.NetworkRequest.prototype = {
 
     set timing(x)
     {
-        if (x && !this._cached) {
+        if (x && !this._fromMemoryCache) {
             // Take startTime and responseReceivedTime from timing data for better accuracy.
             // Timing's requestTime is a baseline in seconds, rest of the numbers there are ticks in millis.
             this._startTime = x.requestTime;
