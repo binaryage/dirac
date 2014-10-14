@@ -1952,15 +1952,15 @@ WebInspector.ElementsTreeElement.prototype = {
 
         var config = new WebInspector.InplaceEditor.Config(commit.bind(this), dispose.bind(this));
         config.setMultilineOptions(initialValue, { name: "xml", htmlMode: true }, "web-inspector-html", WebInspector.settings.domWordWrap.get(), true);
-        self.runtime.instancePromise(WebInspector.InplaceEditor).then(markAsBeingEdited.bind(this)).done();
+        WebInspector.InplaceEditor.startMultilineEditing(this._htmlEditElement, config).then(markAsBeingEdited.bind(this)).done();
 
         /**
-         * @param {!WebInspector.InplaceEditor} inplaceEditor
+         * @param {!Object} controller
          * @this {WebInspector.ElementsTreeElement}
          */
-        function markAsBeingEdited(inplaceEditor)
+        function markAsBeingEdited(controller)
         {
-            this._editing = /** @type {!WebInspector.InplaceEditor} */ (inplaceEditor).startEditing(this._htmlEditElement, config);
+            this._editing = /** @type {!WebInspector.InplaceEditor.Controller} */ (controller);
             this._editing.setWidth(this.treeOutline._visibleWidth);
             this.treeOutline._multilineEditing = this._editing;
         }
