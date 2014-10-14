@@ -502,6 +502,7 @@
             'front_end/sources/ThreadsSidebarPane.js',
             'front_end/sources/UISourceCodeFrame.js',
             'front_end/sources/WatchExpressionsSidebarPane.js',
+            'front_end/sources/WorkspaceMappingTip.js',
         ],
         'devtools_temp_storage_shared_worker_js_files': [
             'front_end/temp_storage_shared_worker/TempStorageSharedWorker.js',

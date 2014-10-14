@@ -212,7 +212,8 @@
         "AdvancedSearchView.js",
         "FileBasedSearchResultsPane.js",
         "SourcesSearchScope.js",
-        "SourcesPanel.js"
+        "SourcesPanel.js",
+        "WorkspaceMappingTip.js"
     ],
     "skip_compilation": [
         "jsdifflib.js"
