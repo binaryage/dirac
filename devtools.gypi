@@ -50,9 +50,12 @@
         ],
         'devtools_core_base_files': [
             'front_end/devtools.js',
+            'front_end/toolbox.js',
+            '<@(devtools_core_base_non_generated_files)',
+        ],
+        'devtools_core_base_non_generated_files': [
             'front_end/devtools.json',
             'front_end/devtools.css',
-            'front_end/toolbox.js',
             'front_end/toolbox.json',
             'front_end/toolbox.css',
             'front_end/Runtime.js',

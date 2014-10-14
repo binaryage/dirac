@@ -37,8 +37,6 @@
             'target_name': 'devtools_frontend_resources',
             'type': 'none',
             'dependencies': [
-                'devtools_html',
-                'toolbox_html',
                 'supported_css_properties',
                 'frontend_protocol_sources',
                 'build_applications',
@@ -62,38 +60,6 @@
             ],
         },
         {
-            'target_name': 'devtools_html',
-            'type': 'none',
-            'sources': ['front_end/devtools.html'],
-            'actions': [{
-                'action_name': 'devtools_html',
-                'script_name': 'scripts/generate_devtools_html.py',
-                'input_page': 'front_end/devtools.html',
-                'inputs': [
-                    '<@(_script_name)',
-                    '<@(_input_page)',
-                ],
-                'outputs': ['<(PRODUCT_DIR)/resources/inspector/devtools.html'],
-                'action': ['python', '<@(_script_name)', '<@(_input_page)', '<@(_outputs)', '<@(debug_devtools)'],
-            }],
-        },
-        {
-            'target_name': 'toolbox_html',
-            'type': 'none',
-            'sources': ['front_end/toolbox.html'],
-            'actions': [{
-                'action_name': 'toolbox_html',
-                'script_name': 'scripts/generate_devtools_html.py',
-                'input_page': 'front_end/toolbox.html',
-                'inputs': [
-                    '<@(_script_name)',
-                    '<@(_input_page)',
-                ],
-                'outputs': ['<(PRODUCT_DIR)/resources/inspector/toolbox.html'],
-                'action': ['python', '<@(_script_name)', '<@(_input_page)', '<@(_outputs)', '<@(debug_devtools)'],
-            }],
-        },
-        {
             'target_name': 'devtools_extension_api',
             'type': 'none',
             'actions': [{
@@ -111,8 +77,6 @@
             'target_name': 'generate_devtools_grd',
             'type': 'none',
             'dependencies': [
-                'devtools_html',
-                'toolbox_html',
                 'devtools_extension_api',
                 'devtools_frontend_resources',
             ],
@@ -261,32 +225,33 @@
         {
             'target_name': 'build_applications',
             'type': 'none',
-            'conditions': [
-                ['debug_devtools==0', { # Release
-                    'dependencies': [
-                        'devtools_html',
-                        'toolbox_html',
-                        'supported_css_properties',
-                        'frontend_protocol_sources',
-                    ],
-                    'actions': [{
-                        'action_name': 'build_applications',
-                        'script_name': 'scripts/build_applications.py',
-                        'helper_scripts': [
-                            'scripts/modular_build.py',
-                            'scripts/concatenate_application_code.py',
-                        ],
-                        'inputs': [
-                            '<@(_script_name)',
-                            '<@(_helper_scripts)',
-                            '<@(all_devtools_files)',
-                            '<(PRODUCT_DIR)/resources/inspector/InspectorBackendCommands.js',
-                            '<(PRODUCT_DIR)/resources/inspector/SupportedCSSProperties.js',
-                        ],
-                        'output_path': '<(PRODUCT_DIR)/resources/inspector/',
+            'dependencies': [
+                'supported_css_properties',
+                'frontend_protocol_sources',
+            ],
+            'output_path': '<(PRODUCT_DIR)/resources/inspector/',
+            'actions': [{
+                'action_name': 'build_applications',
+                'script_name': 'scripts/build_applications.py',
+                'helper_scripts': [
+                    'scripts/modular_build.py',
+                    'scripts/concatenate_application_code.py',
+                ],
+                'inputs': [
+                    '<@(_script_name)',
+                    '<@(_helper_scripts)',
+                    '<@(all_devtools_files)',
+                    '<(_output_path)/InspectorBackendCommands.js',
+                    '<(_output_path)/SupportedCSSProperties.js',
+                ],
+                'action': ['python', '<@(_script_name)', 'devtools', 'toolbox', '--input_path', 'front_end', '--output_path', '<@(_output_path)', '--debug', '<@(debug_devtools)'],
+                'conditions': [
+                    ['debug_devtools==0', { # Release
                         'outputs': [
                             '<(_output_path)/devtools.js',
+                            '<(_output_path)/devtools.html',
                             '<(_output_path)/toolbox.js',
+                            '<(_output_path)/toolbox.html',
                             '<(_output_path)/audits_module.js',
                             '<(_output_path)/console_module.js',
                             '<(_output_path)/devices_module.js',
@@ -306,236 +271,40 @@
                             '<(_output_path)/temp_storage_shared_worker_module.js',
                             '<(_output_path)/timeline_module.js',
                         ],
-                        'action': ['python', '<@(_script_name)', 'devtools', 'toolbox', '--input_path', 'front_end', '--output_path', '<@(_output_path)', '--debug', '<@(debug_devtools)'],
+                    },
+                    { # Debug
+                        'outputs': [
+                            '<(_output_path)/devtools.html',
+                            '<(_output_path)/toolbox.html',
+                        ]
                     }]
+                ]
+            }],
+            'conditions': [
+                ['debug_devtools==0', { # Release
                 },
                 { # Debug
-                  # Copy Runtime.js and all modules of all applications here.
-                    'app_target': '<(PRODUCT_DIR)/resources/inspector',
+                  # Copy runtime core and non-module directories here.
                     'copies': [
                         {
-                            'destination': '<(_app_target)',
+                            'destination': '<(_output_path)',
                             'files': [
-                                '<@(devtools_core_base_files)',
+                                '<@(devtools_core_base_non_generated_files)',
                             ],
                         },
                         {
-                            'destination': '<(_app_target)/common',
-                            'files': [
-                                '<@(devtools_common_js_files)',
-                                'front_end/common/module.json',
-                            ],
-                        },
-                        {
-                            'destination': '<(_app_target)/components',
-                            'files': [
-                                '<@(devtools_components_js_files)',
-                                'front_end/components/module.json',
-                            ],
-                        },
-                        {
-                            'destination': '<(_app_target)/sdk',
-                            'files': [
-                                '<@(devtools_sdk_js_files)',
-                                'front_end/sdk/module.json',
-                            ],
-                        },
-                        {
-                            'destination': '<(_app_target)/workspace',
-                            'files': [
-                                '<@(devtools_workspace_js_files)',
-                                'front_end/workspace/module.json',
-                            ],
-                        },
-                        {
-                            'destination': '<(_app_target)/bindings',
-                            'files': [
-                                '<@(devtools_bindings_js_files)',
-                                'front_end/bindings/module.json',
-                            ],
-                        },
-                        {
-                            'destination': '<(_app_target)/ui',
-                            'files': [
-                                '<@(devtools_ui_js_files)',
-                                'front_end/ui/module.json',
-                            ],
-                        },
-                        {
-                            'destination': '<(_app_target)/host',
-                            'files': [
-                                '<@(devtools_host_js_files)',
-                                'front_end/host/module.json',
-                            ],
-                        },
-                        {
-                            'destination': '<(_app_target)/screencast',
-                            'files': [
-                                '<@(devtools_screencast_js_files)',
-                                'front_end/screencast/module.json',
-                            ],
-                        },
-                        {
-                            'destination': '<(_app_target)/toolbox',
-                            'files': [
-                                '<@(devtools_toolbox_js_files)',
-                                'front_end/toolbox/module.json',
-                            ],
-                        },
-                        {
-                            'destination': '<(_app_target)/toolbox_bootstrap',
-                            'files': [
-                                '<@(devtools_toolbox_bootstrap_js_files)',
-                                'front_end/toolbox_bootstrap/module.json',
-                            ],
-                        },
-                        {
-                            'destination': '<(_app_target)/main',
-                            'files': [
-                                '<@(devtools_main_js_files)',
-                                'front_end/main/module.json',
-                            ],
-                        },
-                        {
-                            'destination': '<(_app_target)/audits',
-                            'files': [
-                                '<@(devtools_audits_js_files)',
-                                'front_end/audits/module.json',
-                            ],
-                        },
-                        {
-                            'destination': '<(_app_target)/console',
-                            'files': [
-                                '<@(devtools_console_js_files)',
-                                'front_end/console/module.json',
-                            ],
-                        },
-                        {
-                            'destination': '<(_app_target)/devices',
-                            'files': [
-                                '<@(devtools_devices_js_files)',
-                                'front_end/devices/module.json',
-                            ],
-                        },
-                        {
-                            'destination': '<(_app_target)/documentation',
-                            'files': [
-                                '<@(devtools_documentation_js_files)',
-                                'front_end/documentation/module.json',
-                            ],
-                        },
-                        {
-                            'destination': '<(_app_target)/elements',
-                            'files': [
-                                '<@(devtools_elements_js_files)',
-                                'front_end/elements/module.json',
-                            ],
-                        },
-                        {
-                            'destination': '<(_app_target)/extensions',
-                            'files': [
-                                '<@(devtools_extensions_js_files)',
-                                'front_end/extensions/module.json',
-                            ],
-                        },
-                        {
-                            'destination': '<(_app_target)/heap_snapshot_worker',
-                            'files': [
-                                '<@(devtools_heap_snapshot_worker_js_files)',
-                                'front_end/heap_snapshot_worker/module.json',
-                            ],
-                        },
-                        {
-                            'destination': '<(_app_target)/layers',
-                            'files': [
-                                '<@(devtools_layers_js_files)',
-                                'front_end/layers/module.json',
-                            ],
-                        },
-                        {
-                            'destination': '<(_app_target)/network',
-                            'files': [
-                                '<@(devtools_network_js_files)',
-                                'front_end/network/module.json',
-                            ],
-                        },
-                        {
-                            'destination': '<(_app_target)/profiler',
-                            'files': [
-                                '<@(devtools_profiler_js_files)',
-                                'front_end/profiler/module.json',
-                            ],
-                        },
-                        {
-                            'destination': '<(_app_target)/promises',
-                            'files': [
-                                '<@(devtools_promises_js_files)',
-                                'front_end/promises/module.json',
-                            ],
-                        },
-                        {
-                            'destination': '<(_app_target)/resources',
-                            'files': [
-                                '<@(devtools_resources_js_files)',
-                                'front_end/resources/module.json',
-                            ],
-                        },
-                        {
-                            'destination': '<(_app_target)/script_formatter_worker',
-                            'files': [
-                                # FIXME: This will excessively copy files from common/ and cm/ folders into worker folder, which is fine for the debug mode.
-                                '<@(devtools_script_formatter_worker_js_files)',
-                                'front_end/script_formatter_worker/module.json',
-                            ],
-                        },
-                        {
-                            'destination': '<(_app_target)/UglifyJS',
+                            'destination': '<(_output_path)/UglifyJS',
                             'files': [
                                 '<@(devtools_uglify_files)',
                             ],
                         },
                         {
-                            'destination': '<(_app_target)/settings',
-                            'files': [
-                                '<@(devtools_settings_js_files)',
-                                'front_end/settings/module.json',
-                            ],
-                        },
-                        {
-                            'destination': '<(_app_target)/source_frame',
-                            'files': [
-                                '<@(devtools_source_frame_js_files)',
-                                'front_end/source_frame/module.json',
-                            ],
-                        },
-                        {
-                            'destination': '<(_app_target)/cm',
+                            'destination': '<(_output_path)/cm',
                             'files': [
                                 '<@(devtools_cm_js_files)',
                                 '<@(devtools_cm_css_files)',
                             ],
                         },
-                        {
-                            'destination': '<(_app_target)/sources',
-                            'files': [
-                                '<@(devtools_sources_js_files)',
-                                'front_end/sources/module.json',
-                            ],
-                        },
-                        {
-                            'destination': '<(_app_target)/temp_storage_shared_worker',
-                            'files': [
-                                '<@(devtools_temp_storage_shared_worker_js_files)',
-                                'front_end/temp_storage_shared_worker/module.json',
-                            ],
-                        },
-                        {
-                            'destination': '<(_app_target)/timeline',
-                            'files': [
-                                '<@(devtools_timeline_js_files)',
-                                'front_end/timeline/module.json',
-                            ],
-                        }
                     ]
                 }]
             ]
@@ -563,9 +332,6 @@
                 {
                     'target_name': 'concatenated_devtools_css',
                     'type': 'none',
-                    'dependencies': [
-                        'devtools_html',
-                    ],
                     'actions': [{
                         'action_name': 'concatenate_devtools_css',
                         'script_name': 'scripts/concatenate_css_files.py',
@@ -583,9 +349,6 @@
                 {
                     'target_name': 'concatenated_toolbox_css',
                     'type': 'none',
-                    'dependencies': [
-                        'toolbox_html',
-                    ],
                     'actions': [{
                         'action_name': 'concatenate_toolbox_css',
                         'script_name': 'scripts/concatenate_css_files.py',
