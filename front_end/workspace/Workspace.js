@@ -732,7 +732,7 @@ WebInspector.Workspace.prototype = {
      */
     _networkUISourceCodeForURL: function(url)
     {
-        var splitURL = WebInspector.ParsedURL.splitURL(url);
+        var splitURL = WebInspector.ParsedURL.splitURLIntoPathComponents(url);
         var projectId = splitURL[0];
         var project = this.project(projectId);
         return project ? project.uiSourceCode(splitURL.slice(1).join("/")) : null;
@@ -744,7 +744,7 @@ WebInspector.Workspace.prototype = {
      */
     _contentScriptUISourceCodeForURL: function(url)
     {
-        var splitURL = WebInspector.ParsedURL.splitURL(url);
+        var splitURL = WebInspector.ParsedURL.splitURLIntoPathComponents(url);
         var projectId = "contentscripts:" + splitURL[0];
         var project = this.project(projectId);
         return project ? project.uiSourceCode(splitURL.slice(1).join("/")) : null;

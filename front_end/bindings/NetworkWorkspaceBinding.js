@@ -135,15 +135,15 @@ WebInspector.NetworkWorkspaceBinding.prototype = {
      */
     addFileForURL: function(url, contentProvider, isContentScript)
     {
-        var splitURL = WebInspector.ParsedURL.splitURL(url);
+        var splitURL = WebInspector.ParsedURL.splitURLIntoPathComponents(url);
         var projectName = splitURL[0];
         var parentPath = splitURL.slice(1, -1).join("/");
         try {
-            parentPath = decodeURI(parentPath);
+            parentPath = parentPath;
         } catch (e) { }
         var name = splitURL.peekLast() || "";
         try {
-            name = decodeURI(name);
+            name = name;
         } catch (e) { }
         var projectDelegate = this._projectDelegate(projectName, isContentScript || false);
         var path = projectDelegate.addFile(parentPath, name, url, contentProvider);
@@ -157,7 +157,7 @@ WebInspector.NetworkWorkspaceBinding.prototype = {
      */
     removeFileForURL: function(url)
     {
-        var splitURL = WebInspector.ParsedURL.splitURL(url);
+        var splitURL = WebInspector.ParsedURL.splitURLIntoPathComponents(url);
         var projectName = splitURL[0];
         var projectDelegate = this._projectDelegates[projectName];
         projectDelegate.removeFile(url);

@@ -90,9 +90,9 @@ WebInspector.ParsedURL = function(url)
  * @param {string} url
  * @return {!Array.<string>}
  */
-WebInspector.ParsedURL.splitURL = function(url)
+WebInspector.ParsedURL.splitURLIntoPathComponents = function(url)
 {
-    var parsedURL = new WebInspector.ParsedURL(url);
+    var parsedURL = new WebInspector.ParsedURL(decodeURI(url));
     var origin;
     var folderPath;
     var name;
