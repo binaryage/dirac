@@ -65,6 +65,12 @@ def hardlink_or_copy_dir(src, dest):
                 shutil.copy(src_name, dest_name)
 
 
+def safe_copy(src, dest):
+    if path.exists(dest):
+        os.remove(dest)
+    shutil.copy(src, dest)
+
+
 class AppBuilder:
     def __init__(self, application_name, descriptors, application_dir, output_dir):
         self.application_name = application_name
@@ -209,7 +215,8 @@ class DebugBuilder(AppBuilder):
 
     def build_app(self):
         self._build_html()
-        shutil.copy(join(self.application_dir, self.app_file('js')), self.output_dir)
+        js_name = self.app_file('js')
+        safe_copy(join(self.application_dir, js_name), join(self.output_dir, js_name))
         for module_name in self.descriptors.modules:
             module = self.descriptors.modules[module_name]
             input_module_dir = join(self.application_dir, module_name)
@@ -218,7 +225,7 @@ class DebugBuilder(AppBuilder):
 
     def _build_html(self):
         html_name = self.app_file('html')
-        shutil.copy(join(self.application_dir, html_name), join(self.output_dir, html_name))
+        safe_copy(join(self.application_dir, html_name), join(self.output_dir, html_name))
 
 
 def build_application(application_name, loader, application_dir, output_dir, release_mode):
