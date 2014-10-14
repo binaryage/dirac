@@ -151,5 +151,6 @@ WebInspector.WorkspaceMappingTip.prototype = {
         rowElement.createTextChild(".");
         uiSourceCode[WebInspector.WorkspaceMappingTip._infobarSymbol] = infobar;
         uiSourceCodeFrame.attachInfobars([infobar]);
+        WebInspector.runCSSAnimationOnce(infobar.element, "source-frame-infobar-animation");
     }
 }

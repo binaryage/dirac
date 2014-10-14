@@ -730,13 +730,13 @@ WebInspector.runCSSAnimationOnce = function(element, className)
     function animationEndCallback()
     {
         element.classList.remove(className);
-        element.removeEventListener("animationend", animationEndCallback, false);
+        element.removeEventListener("webkitAnimationEnd", animationEndCallback, false);
     }
 
     if (element.classList.contains(className))
         element.classList.remove(className);
 
-    element.addEventListener("animationend", animationEndCallback, false);
+    element.addEventListener("webkitAnimationEnd", animationEndCallback, false);
     element.classList.add(className);
 }
 

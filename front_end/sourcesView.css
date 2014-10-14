@@ -116,9 +116,11 @@ button.status-bar-item.scripts-navigator-show-hide-button {
 
 .source-frame-infobar {
     margin-top: 0;
-    -webkit-animation: source-frame-infobar-reveal 0.1s;
 }
 
+.source-frame-infobar-animation {
+    -webkit-animation: source-frame-infobar-reveal 0.1s;
+}
 @-webkit-keyframes source-frame-infobar-reveal {
     from { margin-top: -24px; }
     to { margin-top: 0; }
