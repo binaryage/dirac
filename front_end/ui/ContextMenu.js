@@ -197,8 +197,9 @@ WebInspector.ContextSubMenuItem.prototype = {
  * @constructor
  * @extends {WebInspector.ContextSubMenuItem}
  * @param {!Event} event
+ * @param {!Window=} opt_window
  */
-WebInspector.ContextMenu = function(event)
+WebInspector.ContextMenu = function(event, opt_window)
 {
     WebInspector.ContextSubMenuItem.call(this, this, "");
     /** @type {!Array.<!Promise.<!WebInspector.ContextMenu.Provider> >} */
@@ -210,6 +211,7 @@ WebInspector.ContextMenu = function(event)
     this._y = event.y;
     this._handlers = {};
     this._id = 0;
+    this._window = opt_window || window;
 }
 
 WebInspector.ContextMenu.initialize = function()
@@ -278,7 +280,7 @@ WebInspector.ContextMenu.prototype = {
                 var softMenu = new WebInspector.SoftContextMenu(menuObject, this._itemSelected.bind(this));
                 softMenu.show(this._x, this._y);
             } else {
-                InspectorFrontendHost.showContextMenuAtPoint(this._x, this._y, menuObject);
+                InspectorFrontendHost.showContextMenuAtPoint(this._x, this._y, menuObject, this._window);
                 InspectorFrontendHost.events.addEventListener(InspectorFrontendHostAPI.Events.ContextMenuCleared, this._menuCleared, this);
                 InspectorFrontendHost.events.addEventListener(InspectorFrontendHostAPI.Events.ContextMenuItemSelected, this._onItemSelected, this);
             }

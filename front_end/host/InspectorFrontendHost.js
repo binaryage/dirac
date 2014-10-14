@@ -31,6 +31,10 @@
 /** @interface */
 function InspectorFrontendHostAPI()
 {
+    /**
+     * @type {!WebInspector.EventTarget}
+     */
+    this.events;
 }
 
 /** @typedef {{type:string, id:(number|undefined),
@@ -272,8 +276,9 @@ InspectorFrontendHostAPI.prototype = {
      * @param {number} x
      * @param {number} y
      * @param {!Array.<!InspectorFrontendHostAPI.ContextMenuDescriptor>} items
+     * @param {!Window} window
      */
-    showContextMenuAtPoint: function(x, y, items) { },
+    showContextMenuAtPoint: function(x, y, items, window) { },
 
     /**
      * @return {boolean}
@@ -586,8 +591,9 @@ WebInspector.InspectorFrontendHostStub.prototype = {
      * @param {number} x
      * @param {number} y
      * @param {!Array.<!InspectorFrontendHostAPI.ContextMenuDescriptor>} items
+     * @param {!Window} window
      */
-    showContextMenuAtPoint: function(x, y, items)
+    showContextMenuAtPoint: function(x, y, items, window)
     {
         throw "Soft context menu should be used";
     },
