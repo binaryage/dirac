@@ -2564,6 +2564,8 @@ WebInspector.NetworkDataGridNode = function(parentView, request)
     this._staleGraph = true;
 }
 
+WebInspector.NetworkDataGridNode._hoveredRowSymbol = Symbol("hoveredRow");
+
 WebInspector.NetworkDataGridNode.prototype = {
     /**
      * @return {!WebInspector.NetworkRequest}
@@ -2726,7 +2728,16 @@ WebInspector.NetworkDataGridNode.prototype = {
 
         this._labelRightElement = this._barAreaElement.createChild("div", "network-graph-label");
 
-        cell.addEventListener("mouseover", this._refreshLabelPositions.bind(this), false);
+        cell.addEventListener("mouseover", this._onMouseOver.bind(this), false);
+    },
+
+    /**
+     * @param {!Event} event
+     */
+    _onMouseOver: function(event)
+    {
+        this._refreshLabelPositions();
+        this._parentView[WebInspector.NetworkDataGridNode._hoveredRowSymbol] = this;
     },
 
     /**
@@ -2916,6 +2927,9 @@ WebInspector.NetworkDataGridNode.prototype = {
         this._labelLeftElement.title = tooltip;
         this._labelRightElement.title = tooltip;
         this._barRightElement.title = tooltip;
+
+        if (this._parentView[WebInspector.NetworkDataGridNode._hoveredRowSymbol] === this)
+            this._refreshLabelPositions();
     },
 
     _refreshLabelPositions: function()
