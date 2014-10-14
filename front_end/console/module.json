@@ -32,6 +32,13 @@
         {
             "type": "ui-setting",
             "section": "Console",
+            "title": "Hide network messages",
+            "settingName": "hideNetworkMessages",
+            "settingType": "checkbox"
+        },
+        {
+            "type": "ui-setting",
+            "section": "Console",
             "title": "Log XMLHttpRequests",
             "settingName": "monitoringXHREnabled",
             "settingType": "checkbox"

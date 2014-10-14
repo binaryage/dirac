@@ -1000,6 +1000,9 @@ WebInspector.ConsoleViewFilter.prototype = {
         this._levelFilterUI = new WebInspector.NamedBitSetFilterUI(levels, WebInspector.settings.messageLevelFilters);
         this._levelFilterUI.addEventListener(WebInspector.FilterUI.Events.FilterChanged, this._filterChanged, this);
         filterBar.addFilter(this._levelFilterUI);
+        this._hideNetworkMessagesCheckbox = new WebInspector.CheckboxFilterUI("hide-network-messages", WebInspector.UIString("Hide network messages"), true, WebInspector.settings.hideNetworkMessages);
+        this._hideNetworkMessagesCheckbox.addEventListener(WebInspector.FilterUI.Events.FilterChanged, this._filterChanged.bind(this), this);
+        filterBar.addFilter(this._hideNetworkMessagesCheckbox);
     },
 
     _textFilterChanged: function(event)
@@ -1060,6 +1063,9 @@ WebInspector.ConsoleViewFilter.prototype = {
             }
         }
 
+        if (WebInspector.settings.hideNetworkMessages.get() && viewMessage.consoleMessage().source === WebInspector.ConsoleMessage.MessageSource.Network)
+            return false;
+
         if (viewMessage.consoleMessage().isGroupMessage())
             return true;
 
@@ -1087,6 +1093,7 @@ WebInspector.ConsoleViewFilter.prototype = {
         WebInspector.settings.messageURLFilters.set(this._messageURLFilters);
         WebInspector.settings.messageLevelFilters.set({});
         this._view._showAllMessagesCheckbox.inputElement.checked = true;
+        this._hideNetworkMessagesCheckbox.setState(false);
         this._textFilterUI.setValue("");
         this._filterChanged();
     },

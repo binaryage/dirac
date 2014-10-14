@@ -721,7 +721,10 @@ WebInspector.CheckboxFilterUI.prototype = {
     setState: function(state)
     {
         this._checked = state;
-        this._update();
+        if (this._setting)
+            this._setting.set(state);
+        else
+            this._update();
     },
 
     _update: function()

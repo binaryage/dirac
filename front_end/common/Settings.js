@@ -42,6 +42,7 @@ WebInspector.Settings = function()
     this.eventListenersFilter = this.createSetting("eventListenersFilter", "all");
     this.lastViewedScriptFile = this.createSetting("lastViewedScriptFile", "application");
     this.monitoringXHREnabled = this.createSetting("monitoringXHREnabled", false);
+    this.hideNetworkMessages = this.createSetting("hideNetworkMessages", false);
     this.preserveConsoleLog = this.createSetting("preserveConsoleLog", false);
     this.consoleTimestampsEnabled = this.createSetting("consoleTimestampsEnabled", false);
     this.resourcesLargeRows = this.createSetting("resourcesLargeRows", true);
