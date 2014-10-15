@@ -772,6 +772,7 @@ TestSuite.prototype.evaluateInConsole_ = function(code, callback)
 {
     function innerEvaluate()
     {
+        WebInspector.context.removeFlavorChangeListener(WebInspector.ExecutionContext, showConsoleAndEvaluate, this);
         var consoleView = WebInspector.ConsolePanel._view();
         consoleView._prompt.text = code;
         consoleView._promptElement.dispatchEvent(TestSuite.createKeyEvent("Enter"));
@@ -782,12 +783,16 @@ TestSuite.prototype.evaluateInConsole_ = function(code, callback)
             }.bind(this));
     }
 
-    if (!WebInspector.context.flavor(WebInspector.ExecutionContext)) {
-        WebInspector.context.addFlavorChangeListener(WebInspector.ExecutionContext, innerEvaluate, this);
-        return;
+    function showConsoleAndEvaluate()
+    {
+        WebInspector.console.showPromise().then(innerEvaluate.bind(this));
     }
 
-    WebInspector.console.showPromise().then(innerEvaluate.bind(this));
+    if (!WebInspector.context.flavor(WebInspector.ExecutionContext)) {
+        WebInspector.context.addFlavorChangeListener(WebInspector.ExecutionContext, showConsoleAndEvaluate, this);
+        return;
+    }
+    showConsoleAndEvaluate.call(this);
 };
 
 /**
