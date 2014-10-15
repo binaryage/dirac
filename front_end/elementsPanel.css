@@ -30,7 +30,7 @@
 #elements-content {
     flex: 1 1;
     overflow: auto;
-    padding-left: 0;
+    padding: 2px 0 0 0;
     transform: translateZ(0);
 }
 
@@ -41,55 +41,6 @@
     overflow: hidden;
     height: 19px;
     width: 100%;
-}
-
-#elements-content > ol {
-    display: inline-block;
-    min-height: 100%;
-    transform: translateZ(0);
-}
-
-.elements-tree-outline.pick-node-mode {
-    cursor: pointer;
-}
-
-#elements-content .editing {
-    margin-left: 8px;
-}
-
-#elements-content .elements-gutter-decoration {
-    position: absolute;
-    left: 1px;
-    margin-top: 2px;
-    height: 8px;
-    width: 8px;
-    border-radius: 4px;
-    border: 1px solid orange;
-    background-color: orange;
-}
-
-#elements-content .elements-gutter-decoration.elements-has-decorated-children {
-    opacity: 0.5;
-}
-
-#elements-content .CodeMirror {
-    /* Consistent with the .editing class in inspectorStyle.css */
-    box-shadow: rgba(0, 0, 0, .5) 3px 3px 4px;
-    outline: 1px solid rgb(66%, 66%, 66%) !important;
-    background-color: white;
-}
-
-#elements-content .CodeMirror pre {
-    padding: 0;
-}
-
-#elements-content .CodeMirror-lines {
-    padding: 0;
-}
-
-.elements-tree-editor {
-    -webkit-user-select: text;
-    -webkit-user-modify: read-write-plaintext-only;
 }
 
 .metrics {
@@ -495,12 +446,6 @@
     display: block;
 }
 
-.add-attribute {
-    margin-left: 1px;
-    margin-right: 1px;
-    white-space: nowrap;
-}
-
 .section .event-bars {
     display: none;
 }
@@ -758,28 +703,6 @@ li.child-editing .styles-clipboard-only {
 
 .crumbs .crumb:hover {
     background-color: rgb(216, 216, 216);
-}
-
-.elements-tree-element-pick-node-1 {
-    border-radius: 3px;
-    padding: 1px 0 1px 0;
-    -webkit-animation: elements-tree-element-pick-node-animation-1 0.5s 1;
-}
-
-.elements-tree-element-pick-node-2 {
-    border-radius: 3px;
-    padding: 1px 0 1px 0;
-    -webkit-animation: elements-tree-element-pick-node-animation-2 0.5s 1;
-}
-
-@-webkit-keyframes elements-tree-element-pick-node-animation-1 {
-    from { background-color: rgb(255, 210, 126); }
-    to { background-color: inherit; }
-}
-
-@-webkit-keyframes elements-tree-element-pick-node-animation-2 {
-    from { background-color: rgb(255, 210, 126); }
-    to { background-color: inherit; }
 }
 
 .sidebar-separator {

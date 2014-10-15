@@ -762,30 +762,6 @@ div.resizer-widget {
     cursor: default;
 }
 
-body.platform-mac .monospace,
-body.platform-mac .source-code {
-    font-size: 11px !important;
-    font-family: Menlo, monospace;
-}
-
-body.platform-mac.platform-mac-tiger .monospace,
-body.platform-mac.platform-mac-tiger .source-code {
-    font-size: 10px !important;
-    font-family: Monaco, monospace;
-}
-
-body.platform-windows .monospace,
-body.platform-windows .source-code {
-    font-size: 12px !important;
-    font-family: Consolas, Lucida Console, monospace;
-}
-
-body.platform-linux .monospace,
-body.platform-linux .source-code {
-    font-size: 11px !important;
-    font-family: dejavu sans mono, monospace;
-}
-
 .console-view {
     background-color: white;
     overflow: hidden;
@@ -1336,12 +1312,6 @@ iframe.panel.extension {
     list-style-type: none;
     -webkit-padding-start: 12px;
     margin: 0;
-}
-
-.source-code {
-    font-family: monospace;
-    font-size: 11px !important;
-    white-space: pre-wrap;
 }
 
 .console-message-text {

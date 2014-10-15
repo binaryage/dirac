@@ -10,7 +10,7 @@ WebInspector.RootView = function()
 {
     WebInspector.VBox.call(this);
     this.markAsRoot();
-    this.element.classList.add("root-view");
+    this.element.classList.add("root-view", "component-root");
     this.element.setAttribute("spellcheck", false);
     window.addEventListener("resize", this.doResize.bind(this), false);
 }

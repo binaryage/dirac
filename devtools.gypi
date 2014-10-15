@@ -308,6 +308,7 @@
             'front_end/dataGrid.css',
             'front_end/devicesView.css',
             'front_end/documentationView.css',
+            'front_end/elementsTreeOutline.css',
             'front_end/elementsPanel.css',
             'front_end/filter.css',
             'front_end/filteredItemSelectionDialog.css',

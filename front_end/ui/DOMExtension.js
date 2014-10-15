@@ -656,6 +656,22 @@ Element.prototype.selectionLeftOffset = function()
 }
 
 /**
+ * @return {string}
+ */
+Node.prototype.deepTextContent = function()
+{
+    var node = this.traverseNextTextNode(this);
+    var result = [];
+    var nonTextTags = { "STYLE": 1, "SCRIPT": 1 };
+    while (node) {
+        if (!nonTextTags[node.parentElement.nodeName])
+            result.push(node.textContent);
+        node = node.traverseNextTextNode(this);
+    }
+    return result.join("");
+}
+
+/**
  * @param {?Node} node
  * @return {boolean}
  */
@@ -706,14 +722,16 @@ Node.prototype.isSelfOrDescendant = function(node)
  */
 Node.prototype.traverseNextNode = function(stayWithin)
 {
-    var node = this.firstChild;
-    if (node)
-        return node;
+    if (this.firstChild)
+        return this.firstChild;
+
+    if (this.shadowRoot)
+        return this.shadowRoot;
 
     if (stayWithin && this === stayWithin)
         return null;
 
-    node = this.nextSibling;
+    var node = this.nextSibling;
     if (node)
         return node;
 

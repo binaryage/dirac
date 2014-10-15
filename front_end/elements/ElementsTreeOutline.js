@@ -40,21 +40,27 @@ WebInspector.ElementsTreeOutline = function(target, omitRootDOMNode, selectEnabl
 {
     this._target = target;
     this._domModel = target.domModel;
-    this.element = document.createElement("ol");
-    this.element.className = "elements-tree-outline";
-    this.element.addEventListener("mousedown", this._onmousedown.bind(this), false);
-    this.element.addEventListener("mousemove", this._onmousemove.bind(this), false);
-    this.element.addEventListener("mouseout", this._onmouseout.bind(this), false);
-    this.element.addEventListener("dragstart", this._ondragstart.bind(this), false);
-    this.element.addEventListener("dragover", this._ondragover.bind(this), false);
-    this.element.addEventListener("dragleave", this._ondragleave.bind(this), false);
-    this.element.addEventListener("drop", this._ondrop.bind(this), false);
-    this.element.addEventListener("dragend", this._ondragend.bind(this), false);
-    this.element.addEventListener("keydown", this._onkeydown.bind(this), false);
-    this.element.addEventListener("webkitAnimationEnd", this._onAnimationEnd.bind(this), false);
-    this.element.addEventListener("contextmenu", this._contextMenuEventFired.bind(this), false);
+    var element = document.createElement("div");
 
-    TreeOutline.call(this, this.element);
+    this._shadowRoot = element.createShadowRoot();
+    this._shadowRoot.appendChild(WebInspector.View.createStyleElement("elementsTreeOutline.css"));
+
+    var outlineDisclosureElement = this._shadowRoot.createChild("div", "component-root outline-disclosure source-code");
+    this._element = outlineDisclosureElement.createChild("ol", "elements-tree-outline");
+    this._element.addEventListener("mousedown", this._onmousedown.bind(this), false);
+    this._element.addEventListener("mousemove", this._onmousemove.bind(this), false);
+    this._element.addEventListener("mouseout", this._onmouseout.bind(this), false);
+    this._element.addEventListener("dragstart", this._ondragstart.bind(this), false);
+    this._element.addEventListener("dragover", this._ondragover.bind(this), false);
+    this._element.addEventListener("dragleave", this._ondragleave.bind(this), false);
+    this._element.addEventListener("drop", this._ondrop.bind(this), false);
+    this._element.addEventListener("dragend", this._ondragend.bind(this), false);
+    this._element.addEventListener("keydown", this._onkeydown.bind(this), false);
+    this._element.addEventListener("webkitAnimationEnd", this._onAnimationEnd.bind(this), false);
+    this._element.addEventListener("contextmenu", this._contextMenuEventFired.bind(this), false);
+
+    TreeOutline.call(this, this._element);
+    this.element = element;
 
     this._includeRootDOMNode = !omitRootDOMNode;
     this._selectEnabled = selectEnabled;
@@ -121,7 +127,7 @@ WebInspector.ElementsTreeOutline.prototype = {
     setPickNodeMode: function(value)
     {
         this._pickNodeMode = value;
-        this.element.classList.toggle("pick-node-mode", value);
+        this._element.classList.toggle("pick-node-mode", value);
     },
 
     /**
@@ -551,7 +557,7 @@ WebInspector.ElementsTreeOutline.prototype = {
      */
     _treeElementFromEvent: function(event)
     {
-        var scrollContainer = this.element.parentElement;
+        var scrollContainer = this._element.parentElement;
 
         // We choose this X coordinate based on the knowledge that our list
         // items extend at least to the right edge of the outer <ol> container.
@@ -609,8 +615,8 @@ WebInspector.ElementsTreeOutline.prototype = {
 
     _onmouseout: function(event)
     {
-        var nodeUnderMouse = document.elementFromPoint(event.pageX, event.pageY);
-        if (nodeUnderMouse && nodeUnderMouse.isDescendant(this.element))
+        var nodeUnderMouse = event.elementFromPoint();
+        if (nodeUnderMouse && nodeUnderMouse.isDescendant(this._element))
             return;
 
         if (this._previousHoveredElement) {
@@ -773,7 +779,6 @@ WebInspector.ElementsTreeOutline.prototype = {
             return;
 
         var contextMenu = new WebInspector.ContextMenu(event);
-
         var isPseudoElement = !!treeElement._node.pseudoType();
         var isTag = treeElement._node.nodeType() === Node.ELEMENT_NODE && !isPseudoElement;
         var textNode = event.target.enclosingNodeOrSelfWithClass("webkit-html-text-node");
@@ -1947,7 +1952,7 @@ WebInspector.ElementsTreeElement.prototype = {
 
             this.treeOutline.childrenListElement.parentElement.removeEventListener("mousedown", consume, false);
             this.updateSelection();
-            this.treeOutline.element.focus();
+            this.treeOutline._element.focus();
         }
 
         var config = new WebInspector.InplaceEditor.Config(commit.bind(this), dispose.bind(this));
@@ -2854,7 +2859,7 @@ WebInspector.ElementsTreeUpdater.prototype = {
         if (hidePanelWhileUpdating) {
             var treeOutlineContainerElement = this._treeOutline.element.parentNode;
             var originalScrollTop = treeOutlineContainerElement ? treeOutlineContainerElement.scrollTop : 0;
-            this._treeOutline.element.classList.add("hidden");
+            this._treeOutline._element.classList.add("hidden");
         }
 
         if (this._treeOutline._rootDOMNode && this._recentlyModifiedParentNodes.contains(this._treeOutline._rootDOMNode)) {
@@ -2877,7 +2882,7 @@ WebInspector.ElementsTreeUpdater.prototype = {
         }
 
         if (hidePanelWhileUpdating) {
-            this._treeOutline.element.classList.remove("hidden");
+            this._treeOutline._element.classList.remove("hidden");
             if (originalScrollTop)
                 treeOutlineContainerElement.scrollTop = originalScrollTop;
             this._treeOutline.updateSelection();
@@ -2941,9 +2946,8 @@ WebInspector.ElementsTreeOutline.Renderer.prototype = {
                 }
                 var treeOutline = new WebInspector.ElementsTreeOutline(node.target(), false, false);
                 treeOutline.rootDOMNode = node;
-                treeOutline.element.classList.add("outline-disclosure");
                 if (!treeOutline.children[0].hasChildren)
-                    treeOutline.element.classList.add("single-node");
+                    treeOutline._element.classList.add("single-node");
                 treeOutline.setVisible(true);
                 treeOutline.element.treeElementForTest = treeOutline.children[0];
                 resolve(treeOutline.element);
