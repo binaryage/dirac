@@ -68,6 +68,7 @@ WebInspector.View.createStyleElement = function(cssFile)
 WebInspector.View.prototype = {
     markAsRoot: function()
     {
+        this.element.classList.add("component-root");
         WebInspector.View.__assert(!this.element.parentElement, "Attempt to mark as root attached node");
         this._isRoot = true;
     },

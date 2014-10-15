@@ -37,7 +37,7 @@ WebInspector.Popover = function(popoverHelper)
 {
     WebInspector.View.call(this);
     this.markAsRoot();
-    this.element.className = "popover custom-popup-vertical-scroll custom-popup-horizontal-scroll"; // Override
+    this.element.className = WebInspector.Popover._classNamePrefix; // Override
     this._containerElement = document.createElementWithClass("div", "fill popover-container");
 
     this._popupArrowElement = this.element.createChild("div", "arrow");
@@ -46,6 +46,8 @@ WebInspector.Popover = function(popoverHelper)
     this._popoverHelper = popoverHelper;
     this._hideBound = this.hide.bind(this);
 }
+
+WebInspector.Popover._classNamePrefix = "popover component-root custom-popup-vertical-scroll custom-popup-horizontal-scroll";
 
 WebInspector.Popover.prototype = {
     /**
@@ -218,7 +220,7 @@ WebInspector.Popover.prototype = {
             this._popupArrowElement.style.left += anchorBox.width / 2;
         }
 
-        this.element.className = "popover custom-popup-vertical-scroll custom-popup-horizontal-scroll " + verticalAlignment + "-" + horizontalAlignment + "-arrow";
+        this.element.className = WebInspector.Popover._classNamePrefix + " " + verticalAlignment + "-" + horizontalAlignment + "-arrow";
         this.element.positionAt(newElementPosition.x - borderWidth, newElementPosition.y - borderWidth, container);
         this.element.style.width = newElementPosition.width + borderWidth * 2 + "px";
         this.element.style.height = newElementPosition.height + borderWidth * 2 + "px";
