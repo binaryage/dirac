@@ -1481,9 +1481,12 @@ WebInspector.NetworkLogView.prototype = {
     {
         var parsedQuery = this._suggestionBuilder.parseQuery(query);
         this._filters = parsedQuery.text.map(this._createTextFilter);
-        for (var key in parsedQuery.filters) {
-            var filterType = /** @type {!WebInspector.NetworkLogView.FilterType} */ (key);
-            this._filters.push(this._createFilter(filterType, parsedQuery.filters[key]));
+        var filters = parsedQuery.filters;
+        var n = parsedQuery.filters.length;
+        for (var i = 0; i < n; ++i) {
+            var filter = parsedQuery.filters[i];
+            var filterType = /** @type {!WebInspector.NetworkLogView.FilterType} */ (filter.type);
+            this._filters.push(this._createFilter(filterType, filter.data, filter.negative));
         }
     },
 
@@ -1500,9 +1503,26 @@ WebInspector.NetworkLogView.prototype = {
     /**
      * @param {!WebInspector.NetworkLogView.FilterType} type
      * @param {string} value
+     * @param {boolean} negative
      * @return {!WebInspector.NetworkLogView.Filter}
      */
-    _createFilter: function(type, value) {
+    _createFilter: function(type, value, negative)
+    {
+        var filter = this._createSpecialFilter(type, value);
+        if (!filter)
+            return this._createTextFilter((negative ? "-" : "") + type + ":" + value);
+        if (negative)
+            return WebInspector.NetworkLogView._negativeFilter.bind(null, filter);
+        return filter;
+    },
+
+    /**
+     * @param {!WebInspector.NetworkLogView.FilterType} type
+     * @param {string} value
+     * @return {?WebInspector.NetworkLogView.Filter}
+     */
+    _createSpecialFilter: function(type, value)
+    {
         switch (type) {
         case WebInspector.NetworkLogView.FilterType.Domain:
             return WebInspector.NetworkLogView._requestDomainFilter.bind(null, value);
@@ -1536,7 +1556,7 @@ WebInspector.NetworkLogView.prototype = {
         case WebInspector.NetworkLogView.FilterType.StatusCode:
             return WebInspector.NetworkLogView._statusCodeFilter.bind(null, value);
         }
-        return this._createTextFilter(type + ":" + value);
+        return null;
     },
 
     _filterRequests: function()
@@ -1703,6 +1723,16 @@ WebInspector.NetworkLogView.prototype = {
 
 /** @typedef {function(!WebInspector.NetworkRequest): boolean} */
 WebInspector.NetworkLogView.Filter;
+
+/**
+ * @param {!WebInspector.NetworkLogView.Filter} filter
+ * @param {!WebInspector.NetworkRequest} request
+ * @return {boolean}
+ */
+WebInspector.NetworkLogView._negativeFilter = function(filter, request)
+{
+    return !filter(request);
+}
 
 /**
  * @param {!RegExp} regex
