@@ -127,6 +127,7 @@ WebInspector.Main.prototype = {
     {
         console.timeStamp("Main._loaded");
 
+        WebInspector.initializeUIUtils();
         this._createSettings();
         this._createAppUI();
     },

@@ -1071,17 +1071,10 @@ WebInspector.LongClickController.prototype = {
     __proto__: WebInspector.Object.prototype
 }
 
-;(function() {
-
-function windowLoaded()
+WebInspector.initializeUIUtils = function()
 {
     window.addEventListener("focus", WebInspector._windowFocused, false);
     window.addEventListener("blur", WebInspector._windowBlurred, false);
     document.addEventListener("focus", WebInspector._focusChanged, true);
     document.addEventListener("blur", WebInspector._documentBlurred, true);
-    window.removeEventListener("DOMContentLoaded", windowLoaded, false);
 }
-
-window.addEventListener("DOMContentLoaded", windowLoaded, false);
-
-})();
