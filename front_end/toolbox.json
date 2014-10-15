@@ -4,11 +4,27 @@
         "type": "autostart"
     },
     {
+        "name": "sdk",
+        "type": "autostart"
+    },
+    {
         "name": "host",
         "type": "autostart"
     },
     {
         "name": "common",
+        "type": "autostart"
+    },
+    {
+        "name": "toolbox",
+        "type": "autostart"
+    },
+    {
+        "name": "bindings",
+        "type": "autostart"
+    },
+    {
+        "name": "workspace",
         "type": "autostart"
     },
     {

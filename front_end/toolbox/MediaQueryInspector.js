@@ -143,7 +143,7 @@ WebInspector.MediaQueryInspector.prototype = {
         }
 
         var contextMenuItems = uiLocations.keys().sort();
-        var contextMenu = new WebInspector.ContextMenu(event, this.element.ownerDocument.defaultView);
+        var contextMenu = new WebInspector.ContextMenu(event);
         var subMenuItem = contextMenu.appendSubMenuItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Reveal in source code" : "Reveal In Source Code"));
         for (var i = 0; i < contextMenuItems.length; ++i) {
             var title = contextMenuItems[i];

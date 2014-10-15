@@ -88,24 +88,14 @@ WebInspector.AdvancedApp.prototype = {
     },
 
     /**
-     * @param {!Element} rootElement
-     * @override
+     * @param {!WebInspector.ResponsiveDesignView} responsiveDesignView
+     * @param {!WebInspector.InspectedPagePlaceholder} placeholder
      */
-    toolboxLoaded: function(rootElement)
+    toolboxLoaded: function(responsiveDesignView, placeholder)
     {
-        var inspectedPagePlaceholder = new WebInspector.InspectedPagePlaceholder();
-        inspectedPagePlaceholder.addEventListener(WebInspector.InspectedPagePlaceholder.Events.Update, this._onSetInspectedPageBounds.bind(this, true));
-        this._toolboxResponsiveDesignView = new WebInspector.ResponsiveDesignView(inspectedPagePlaceholder);
-        this._toolboxResponsiveDesignView.show(rootElement);
+        this._toolboxResponsiveDesignView = responsiveDesignView;
+        placeholder.addEventListener(WebInspector.InspectedPagePlaceholder.Events.Update, this._onSetInspectedPageBounds.bind(this, true));
         this._updatePageResizer();
-    },
-
-    /**
-     * @return {!InspectorFrontendHostAPI}
-     */
-    inspectorFrontendHost: function()
-    {
-        return window.InspectorFrontendHost;
     },
 
     _updatePageResizer: function()

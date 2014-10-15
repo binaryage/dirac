@@ -1,8 +1,6 @@
 {
     "dependencies": [
-        "ui",
-        "host",
-        "common"
+        "toolbox"
     ],
     "scripts": [
         "Toolbox.js"
