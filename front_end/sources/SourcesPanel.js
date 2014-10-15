@@ -245,15 +245,17 @@ WebInspector.SourcesPanel.prototype = {
         } else if (details.reason === WebInspector.DebuggerModel.BreakReason.XHR) {
             this.sidebarPanes.xhrBreakpoints.highlightBreakpoint(details.auxData["breakpointURL"]);
             this.sidebarPanes.callstack.setStatus(WebInspector.UIString("Paused on a XMLHttpRequest."));
-        } else if (details.reason === WebInspector.DebuggerModel.BreakReason.Exception)
+        } else if (details.reason === WebInspector.DebuggerModel.BreakReason.Exception) {
             this.sidebarPanes.callstack.setStatus(WebInspector.UIString("Paused on exception: '%s'.", details.auxData["description"]));
-        else if (details.reason === WebInspector.DebuggerModel.BreakReason.Assert)
+        } else if (details.reason === WebInspector.DebuggerModel.BreakReason.PromiseRejection) {
+            this.sidebarPanes.callstack.setStatus(WebInspector.UIString("Paused on promise rejection: '%s'.", details.auxData["description"]));
+        } else if (details.reason === WebInspector.DebuggerModel.BreakReason.Assert) {
             this.sidebarPanes.callstack.setStatus(WebInspector.UIString("Paused on assertion."));
-        else if (details.reason === WebInspector.DebuggerModel.BreakReason.CSPViolation)
+        } else if (details.reason === WebInspector.DebuggerModel.BreakReason.CSPViolation) {
             this.sidebarPanes.callstack.setStatus(WebInspector.UIString("Paused on a script blocked due to Content Security Policy directive: \"%s\".", details.auxData["directiveText"]));
-        else if (details.reason === WebInspector.DebuggerModel.BreakReason.DebugCommand)
+        } else if (details.reason === WebInspector.DebuggerModel.BreakReason.DebugCommand) {
             this.sidebarPanes.callstack.setStatus(WebInspector.UIString("Paused on a debugged function"));
-        else {
+        } else {
             if (details.callFrames.length)
                 WebInspector.debuggerWorkspaceBinding.createCallFrameLiveLocation(details.callFrames[0], didGetUILocation.bind(this));
             else

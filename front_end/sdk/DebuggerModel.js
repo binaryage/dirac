@@ -95,6 +95,7 @@ WebInspector.DebuggerModel.BreakReason = {
     EventListener: "EventListener",
     XHR: "XHR",
     Exception: "exception",
+    PromiseRejection: "promiseRejection",
     Assert: "assert",
     CSPViolation: "CSPViolation",
     DebugCommand: "debugCommand"
@@ -1097,7 +1098,7 @@ WebInspector.DebuggerPausedDetails.prototype = {
      */
     exception: function()
     {
-        if (this.reason !== WebInspector.DebuggerModel.BreakReason.Exception)
+        if (this.reason !== WebInspector.DebuggerModel.BreakReason.Exception && this.reason !== WebInspector.DebuggerModel.BreakReason.PromiseRejection)
             return null;
         return this.target().runtimeModel.createRemoteObject(/** @type {!RuntimeAgent.RemoteObject} */(this.auxData));
     },
