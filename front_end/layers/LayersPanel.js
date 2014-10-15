@@ -37,6 +37,7 @@ WebInspector.LayersPanel = function()
 {
     WebInspector.PanelWithSidebarTree.call(this, "layers", 225);
     this.registerRequiredCSS("layersPanel.css");
+    this.registerRequiredCSS("timelinePanel.css");
     this._target = null;
 
     this.sidebarElement().classList.add("outline-disclosure");
