@@ -27,7 +27,6 @@ WebInspector.ResourceWebSocketFrameView = function(request)
     this.registerRequiredCSS("webSocketFrameView.css");
     this.element.classList.add("websocket-frame-view");
     this._request = request;
-    this.element.removeChildren();
 
     var columns = [
         {id: "data", title: WebInspector.UIString("Data"), sortable: false, weight: 88, longText: true},
