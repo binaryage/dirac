@@ -363,9 +363,9 @@ WebInspector.UISourceCode.prototype = {
          */
         function callback(accepted)
         {
-            if (!accepted)
-                return;
-            this._savedWithFileManager = true;
+            this._savedWithFileManager = accepted;
+            if (accepted)
+                this._hasCommittedChanges = false;
             this.dispatchEventToListeners(WebInspector.UISourceCode.Events.SavedStateUpdated);
         }
     },
