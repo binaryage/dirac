@@ -611,6 +611,7 @@ InspectorBackendClass.MainConnection = function()
 {
     InspectorBackendClass.Connection.call(this);
     InspectorFrontendHost.events.addEventListener(InspectorFrontendHostAPI.Events.DispatchMessage, this._dispatchMessage, this);
+    InspectorFrontendHost.events.addEventListener(InspectorFrontendHostAPI.Events.DispatchMessageChunk, this._dispatchMessageChunk, this);
 }
 
 InspectorBackendClass.MainConnection.prototype = {
@@ -629,7 +630,26 @@ InspectorBackendClass.MainConnection.prototype = {
      */
     _dispatchMessage: function(event)
     {
-        this.dispatch(/** @type {!Object|string} */ (event.data));
+        this.dispatch(/** @type {string} */ (event.data));
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _dispatchMessageChunk: function(event)
+    {
+        var messageChunk = /** @type {string} */ (event.data["messageChunk"]);
+        var messageSize = /** @type {number} */ (event.data["messageSize"]);
+        if (messageSize) {
+            this._messageBuffer = "";
+            this._messageSize = messageSize;
+        }
+        this._messageBuffer += messageChunk;
+        if (this._messageBuffer.length === this._messageSize) {
+            this.dispatch(this._messageBuffer);
+            this._messageBuffer = "";
+            this._messageSize = 0;
+        }
     },
 
     __proto__: InspectorBackendClass.Connection.prototype
