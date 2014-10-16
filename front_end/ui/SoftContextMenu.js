@@ -49,6 +49,7 @@ WebInspector.SoftContextMenu.prototype = {
 
         // Create context menu.
         this._contextMenuElement = document.createElementWithClass("div", "soft-context-menu");
+        this._contextMenuElement.classList.add("component-root");
         this._contextMenuElement.tabIndex = 0;
         this._contextMenuElement.style.top = y + "px";
         this._contextMenuElement.style.left = x + "px";
