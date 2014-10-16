@@ -79,6 +79,7 @@ WebInspector.NetworkRequest.Events = {
     RemoteAddressChanged: "RemoteAddressChanged",
     RequestHeadersChanged: "RequestHeadersChanged",
     ResponseHeadersChanged: "ResponseHeadersChanged",
+    WebsocketFrameAdded: "WebsocketFrameAdded",
 }
 
 /** @enum {string} */
@@ -981,7 +982,7 @@ WebInspector.NetworkRequest.prototype = {
      */
     addFrameError: function(errorMessage, time)
     {
-        this._frames.push({ type: WebInspector.NetworkRequest.WebSocketFrameType.Error, text: errorMessage, time: time, opCode: -1, mask: false });
+        this._addFrame({ type: WebInspector.NetworkRequest.WebSocketFrameType.Error, text: errorMessage, time: time, opCode: -1, mask: false });
     },
 
     /**
@@ -992,7 +993,16 @@ WebInspector.NetworkRequest.prototype = {
     addFrame: function(response, time, sent)
     {
         var type = sent ? WebInspector.NetworkRequest.WebSocketFrameType.Send : WebInspector.NetworkRequest.WebSocketFrameType.Receive;
-        this._frames.push({ type: type, text: response.payloadData, time: time, opCode: response.opcode, mask: response.mask });
+        this._addFrame({ type: type, text: response.payloadData, time: time, opCode: response.opcode, mask: response.mask });
+    },
+
+    /**
+     * @param {!WebInspector.NetworkRequest.WebSocketFrame} frame
+     */
+    _addFrame: function(frame)
+    {
+        this._frames.push(frame);
+        this.dispatchEventToListeners(WebInspector.NetworkRequest.Events.WebsocketFrameAdded, frame);
     },
 
     __proto__: WebInspector.SDKObject.prototype

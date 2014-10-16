@@ -2612,7 +2612,8 @@ WebInspector.NetworkDataGridNode.prototype = {
      * @override
      * @return {number}
      */
-    nodeSelfHeight: function() {
+    nodeSelfHeight: function()
+    {
         return this._parentView.rowHeight();
     },
 
