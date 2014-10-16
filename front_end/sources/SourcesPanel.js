@@ -708,7 +708,7 @@ WebInspector.SourcesPanel.prototype = {
     /**
      * @param {string} buttonId
      * @param {string} buttonTitle
-     * @param {function(!Event=):boolean} handler
+     * @param {function(!Event=)} handler
      * @param {!Array.<!WebInspector.KeyboardShortcut.Descriptor>} shortcuts
      * @return {!WebInspector.StatusBarButton}
      */
@@ -730,12 +730,9 @@ WebInspector.SourcesPanel.prototype = {
      */
     _createButtonAndRegisterShortcutsForAction: function(buttonId, buttonTitle, actionId)
     {
-        /**
-         * @return {boolean}
-         */
         function handler()
         {
-            return WebInspector.actionRegistry.execute(actionId);
+            WebInspector.actionRegistry.execute(actionId);
         }
         var shortcuts = WebInspector.shortcutRegistry.shortcutDescriptorsForAction(actionId);
         return this._createButtonAndRegisterShortcuts(buttonId, buttonTitle, handler, shortcuts);

@@ -92,18 +92,41 @@ WebInspector.ShortcutRegistry.prototype = {
         var keyModifiers = key >> 8;
         var actionIds = this.applicableActions(key);
         if (WebInspector.GlassPane.DefaultFocusedViewStack.length > 1) {
-            if (actionIds.length && !isPossiblyInputKey())
+            if (event && actionIds.length && !isPossiblyInputKey())
                 event.consume(true);
             return;
         }
 
-        for (var i = 0; i < actionIds.length; ++i) {
-            if (!isPossiblyInputKey()) {
-                if (handler.call(this, actionIds[i]))
-                    break;
-            } else {
-                this._pendingActionTimer = setTimeout(handler.bind(this, actionIds[i]), 0);
-                break;
+        if (!isPossiblyInputKey())
+            processActionIdsSequentially.call(this);
+        else
+            this._pendingActionTimer = setTimeout(processActionIdsSequentially.bind(this), 0);
+
+        /**
+         * @this {WebInspector.ShortcutRegistry}
+         */
+        function processActionIdsSequentially()
+        {
+            delete this._pendingActionTimer;
+            var actionId = actionIds.shift();
+            if (!actionId)
+                return;
+
+            this._actionRegistry.execute(actionId).then(continueIfNecessary.bind(this));
+
+            /**
+             * @this {WebInspector.ShortcutRegistry}
+             */
+            function continueIfNecessary(result)
+            {
+                // Note that this is a best effort solution - lazily loaded modules won't have a chance to
+                // consume platform event.
+                if (result) {
+                    if (event)
+                        event.consume(true);
+                    return;
+                }
+                processActionIdsSequentially.call(this);
             }
         }
 
@@ -132,20 +155,6 @@ WebInspector.ShortcutRegistry.prototype = {
         function hasModifier(mod)
         {
             return !!(keyModifiers & mod);
-        }
-
-        /**
-         * @param {string} actionId
-         * @return {boolean}
-         * @this {WebInspector.ShortcutRegistry}
-         */
-        function handler(actionId)
-        {
-            var result = this._actionRegistry.execute(actionId);
-            if (result && event)
-                event.consume(true);
-            delete this._pendingActionTimer;
-            return result;
         }
     },
 
