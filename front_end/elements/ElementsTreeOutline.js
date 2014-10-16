@@ -1460,6 +1460,8 @@ WebInspector.ElementsTreeElement.prototype = {
      */
     select: function(omitFocus, selectedByUser)
     {
+        if (this._editing)
+            return false;
         if (this.treeOutline._handlePickNode(this.title, this._node))
             return true;
         return TreeElement.prototype.select.call(this, omitFocus, selectedByUser);
