@@ -1743,6 +1743,7 @@ li.editing-sub-part .delete-button {
     position: relative;
     top: 1px;
     display: inline-block;
+    line-height: 1px;
     background-image: url(Images/checker.png);
     -webkit-user-select: none;
 }
