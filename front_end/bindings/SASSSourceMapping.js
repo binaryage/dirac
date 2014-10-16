@@ -37,7 +37,7 @@
  */
 WebInspector.SASSSourceMapping = function(cssModel, workspace, networkWorkspaceBinding)
 {
-    this.pollPeriodMs = 5000;
+    this.pollPeriodMs = 30 * 1000;
     this.pollIntervalMs = 200;
 
     this._cssModel = cssModel;
@@ -221,16 +221,32 @@ WebInspector.SASSSourceMapping.prototype = {
         if (!pollData)
             return;
 
-        if (stopPolling || (now = new Date().getTime()) > pollData.deadlineMs) {
-            delete pollData.dataByURL[cssURL];
-            if (!Object.keys(pollData.dataByURL).length)
-                delete this._pollDataForSASSURL[sassURL];
+        if (stopPolling) {
+            this._stopPolling(cssURL, sassURL);
+            return;
+        }
+
+        if ((now = new Date().getTime()) > pollData.deadlineMs) {
+            WebInspector.console.warn(WebInspector.UIString("%s hasn't been updated in %d seconds.", cssURL, this.pollPeriodMs / 1000));
+            this._stopPolling(cssURL, sassURL);
             return;
         }
         var nextPoll = this.pollIntervalMs + pollData.dataByURL[cssURL].previousPoll;
         var remainingTimeoutMs = Math.max(0, nextPoll - now);
         pollData.dataByURL[cssURL].previousPoll = now + remainingTimeoutMs;
         pollData.dataByURL[cssURL].timer = setTimeout(this._reloadCSS.bind(this, cssURL, sassURL, this._pollCallback.bind(this)), remainingTimeoutMs);
+    },
+
+    /**
+     * @param {string} cssURL
+     * @param {string} sassURL
+     */
+    _stopPolling: function(cssURL, sassURL)
+    {
+        var pollData = this._pollDataForSASSURL[sassURL];
+        delete pollData.dataByURL[cssURL];
+        if (!Object.keys(pollData.dataByURL).length)
+            delete this._pollDataForSASSURL[sassURL];
     },
 
     /**
