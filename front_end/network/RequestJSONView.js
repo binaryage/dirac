@@ -41,23 +41,118 @@ WebInspector.RequestJSONView = function(request, parsedJSON)
     this.element.classList.add("json");
 }
 
+// "false", "true", "null", ",", "{", "}", "[", "]", number, double-quoted string.
+WebInspector.RequestJSONView._jsonToken = new RegExp('(?:false|true|null|[,\\{\\}\\[\\]]|(?:-?\\b(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?(?:[eE][+-]?[0-9]+)?\\b)|(?:\"(?:[^\\0-\\x08\\x0a-\\x1f\"\\\\]|\\\\(?:[\"/\\\\bfnrt]|u[0-9A-Fa-f]{4}))*\"))', 'g');
+
+// Escaped unicode char.
+WebInspector.RequestJSONView._escapedUnicode = new RegExp('\\\\(?:([^u])|u(.{4}))', 'g');
+
+// Map from escaped char to its literal value.
+WebInspector.RequestJSONView._standardEscapes = {'"': '"', '/': '/', '\\': '\\', 'b': '\b', 'f': '\f', 'n': '\n', 'r': '\r', 't': '\t'};
+
+/**
+ * @param {string} full
+ * @param {string} standard
+ * @param {string} unicode
+ * @return {string}
+ */
+WebInspector.RequestJSONView._unescape = function(full, standard, unicode)
+{
+    return standard ? WebInspector.RequestJSONView._standardEscapes[standard] : String.fromCharCode(parseInt(unicode, 16));
+}
+
+/**
+ * @param {string} text
+ * @return {string}
+ */
+WebInspector.RequestJSONView._unescapeString = function(text)
+{
+    return text.indexOf("\\") === -1 ? text : text.replace(WebInspector.RequestJSONView._escapedUnicode, WebInspector.RequestJSONView._unescape);
+}
+
+/**
+ * @return {*}
+ */
+WebInspector.RequestJSONView._buildObjectFromJSON = function(text)
+{
+    var regExp = WebInspector.RequestJSONView._jsonToken;
+    regExp.lastIndex = 0;
+    var result = [];
+    var tip = result;
+    var stack = [];
+    var key = undefined;
+    var token = undefined;
+    var lastToken = undefined;
+    while (true) {
+        var match = regExp.exec(text);
+        if (match === null)
+            break;
+        lastToken = token;
+        token = match[0];
+        var code = token.charCodeAt(0);
+        if ((code === 0x5b) || (code === 0x7b)) { // [ or {
+            var newTip = (code === 0x5b) ? [] : {};
+            tip[key || tip.length] = newTip;
+            stack.push(tip);
+            tip = newTip;
+        } else if ((code === 0x5d) || (code === 0x7d)) { // ] or }
+            tip = stack.pop();
+            if (!tip)
+                break;
+        } else if (code === 0x2C) { // ,
+            if ((tip instanceof Array) && (lastToken === undefined || lastToken === "[" || lastToken === ","))
+                tip[tip.length] = undefined;
+        } else if (code === 0x22) { // "
+            token = WebInspector.RequestJSONView._unescapeString(token.substring(1, token.length - 1));
+            if (!key) {
+                if (tip instanceof Array) {
+                  key = tip.length;
+                } else {
+                    key = token || "";
+                    continue;
+                }
+            }
+            tip[key] = token;
+        } else if (code === 0x66) { // f
+            tip[key || tip.length] = false;
+        } else if (code === 0x6e) { // n
+            tip[key || tip.length] = null;
+        } else if (code === 0x74) { // t
+            tip[key || tip.length] = true;
+        } else { // sign or digit
+            tip[key || tip.length] = +(token);
+        }
+        key = undefined;
+    }
+    return (result.length > 1) ? result : result[0];
+}
+
 /**
  * @param {string} text
  * @return {?WebInspector.ParsedJSON}
  */
 WebInspector.RequestJSONView.parseJSON = function(text)
 {
-    var prefix = "";
-
-    // Trim while(1), for(;;), weird numbers, etc. We need JSON start.
-    var start = /[{[]/.exec(text);
-    if (start && start.index) {
-        prefix = text.substring(0, start.index);
-        text = text.substring(start.index);
+    // Trim stubs like "while(1)", "for(;;)", weird numbers, etc. We need JSON start.
+    var inner = WebInspector.RequestJSONView._findBrackets(text, "{", "}");
+    var inner2 = WebInspector.RequestJSONView._findBrackets(text, "[", "]");
+    inner = inner2.length > inner.length ? inner2 : inner;
+    var inner3 = WebInspector.RequestJSONView._findBrackets(text, "(", ")");
+    if (inner3.length - 2 > inner.length) {
+        inner = inner3;
+        ++inner.start;
+        --inner.end;
     }
+    if (inner.length === -1)
+        return null;
+
+
+    var prefix = text.substring(0, inner.start);
+    var suffix = text.substring(inner.end + 1);
+    text = text.substring(inner.start, inner.end + 1);
 
     try {
-        return new WebInspector.ParsedJSON(JSON.parse(text), prefix, "");
+        return new WebInspector.ParsedJSON(WebInspector.RequestJSONView._buildObjectFromJSON(text), prefix, suffix);
     } catch (e) {
         return null;
     }
@@ -65,25 +160,18 @@ WebInspector.RequestJSONView.parseJSON = function(text)
 
 /**
  * @param {string} text
- * @return {?WebInspector.ParsedJSON}
+ * @param {string} open
+ * @param {string} close
+ * @return {{start: number, end: number, length: number}}
  */
-WebInspector.RequestJSONView.parseJSONP = function(text)
+WebInspector.RequestJSONView._findBrackets = function(text, open, close)
 {
-    // Taking everything between first and last parentheses
-    var start = text.indexOf("(");
-    var end = text.lastIndexOf(")");
+    var start = text.indexOf(open);
+    var end = text.lastIndexOf(close);
+    var length = end - start - 1;
     if (start == -1 || end == -1 || end < start)
-        return null;
-
-    var prefix = text.substring(0, start + 1);
-    var suffix = text.substring(end);
-    text = text.substring(start + 1, end);
-
-    try {
-        return new WebInspector.ParsedJSON(JSON.parse(text), prefix, suffix);
-    } catch (e) {
-        return null;
-    }
+        length = -1;
+    return {start: start, end: end, length: length};
 }
 
 WebInspector.RequestJSONView.prototype = {
