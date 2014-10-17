@@ -1349,8 +1349,9 @@ WebInspector.SourcesPanel.DisableJavaScriptSettingDelegate.prototype = {
             var disabled = forbidden || (status === "disabled");
 
             this._disableJSInfo.classList.toggle("hidden", !forbidden);
-            this._disableJSCheckbox.checked = disabled;
             this._disableJSCheckbox.disabled = forbidden;
+            if (!forbidden && WebInspector.settings.javaScriptDisabled.get() !== disabled)
+                WebInspector.settings.javaScriptDisabled.set(disabled);
         }
     },
 
