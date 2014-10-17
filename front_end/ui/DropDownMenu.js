@@ -8,7 +8,7 @@
  */
 WebInspector.DropDownMenu = function()
 {
-    this.element = document.createElementWithClass("select", "drop-down-menu");
+    this.element = createElementWithClass("select", "drop-down-menu");
     this.element.addEventListener("mousedown", this._onBeforeMouseDown.bind(this), true);
     this.element.addEventListener("mousedown", consumeEvent, false);
     this.element.addEventListener("change", this._onChange.bind(this), false);

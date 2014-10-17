@@ -1052,7 +1052,7 @@ WebInspector.FlameChart.prototype = {
 
     _buildEntryInfo: function(entryInfo)
     {
-        var infoTable = document.createElementWithClass("table", "info-table");
+        var infoTable = createElementWithClass("table", "info-table");
         for (var i = 0; i < entryInfo.length; ++i) {
             var row = infoTable.createChild("tr");
             row.createChild("td", "title").textContent = entryInfo[i].title;

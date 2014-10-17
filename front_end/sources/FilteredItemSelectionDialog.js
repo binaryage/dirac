@@ -38,7 +38,7 @@ WebInspector.FilteredItemSelectionDialog = function(delegate)
 {
     WebInspector.DialogDelegate.call(this);
 
-    this.element = document.createElement("div");
+    this.element = createElement("div");
     this.element.className = "filtered-item-list-dialog";
     this.element.addEventListener("keydown", this._onKeyDown.bind(this), false);
     this.element.appendChild(WebInspector.View.createStyleElement("filteredItemSelectionDialog.css"));
@@ -139,7 +139,7 @@ WebInspector.FilteredItemSelectionDialog.prototype = {
      */
     _createItemElement: function(index)
     {
-        var itemElement = document.createElement("div");
+        var itemElement = createElement("div");
         itemElement.className = "filtered-item-list-dialog-item " + (this._renderAsTwoRows ? "two-rows" : "one-row");
         itemElement._titleElement = itemElement.createChild("div", "filtered-item-list-dialog-title");
         itemElement._subtitleElement = itemElement.createChild("div", "filtered-item-list-dialog-subtitle");

@@ -439,7 +439,7 @@ WebInspector.TracingTimelineUIUtils.buildDetailsNodeForTraceEvent = function(eve
         if (details)
             details.textContent = detailsText;
         else
-            details = document.createTextNode(detailsText);
+            details = createTextNode(detailsText);
     }
     return details;
 
@@ -528,7 +528,7 @@ WebInspector.TracingTimelineUIUtils.buildTraceEventDetails = function(event, mod
  */
 WebInspector.TracingTimelineUIUtils._buildTraceEventDetailsSynchronously = function(event, model, linkifier, relatedNode)
 {
-    var fragment = document.createDocumentFragment();
+    var fragment = createDocumentFragment();
     var stats = {};
     var hasChildren = WebInspector.TracingTimelineUIUtils._aggregatedStatsForTraceEvent(stats, model, event);
     var pieChart = hasChildren ?
@@ -655,7 +655,7 @@ WebInspector.TracingTimelineUIUtils._buildTraceEventDetailsSynchronously = funct
 
     var warning = event.warning;
     if (warning) {
-        var div = document.createElement("div");
+        var div = createElement("div");
         div.textContent = warning;
         contentHelper.appendElementRow(WebInspector.UIString("Warning"), div);
     }
@@ -785,7 +785,7 @@ WebInspector.TracingTimelineUIUtils.buildPicturePreviewContent = function(event,
             callback();
             return;
         }
-        var container = document.createElement("div");
+        var container = createElement("div");
         container.className = "image-preview-container";
         var img = container.createChild("img");
         img.src = imageURL;
@@ -800,7 +800,7 @@ WebInspector.TracingTimelineUIUtils.buildPicturePreviewContent = function(event,
  */
 WebInspector.TracingTimelineUIUtils._createEventDivider = function(recordType, title)
 {
-    var eventDivider = document.createElement("div");
+    var eventDivider = createElement("div");
     eventDivider.className = "resources-event-divider";
     var recordTypes = WebInspector.TracingTimelineModel.RecordType;
 

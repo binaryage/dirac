@@ -34,17 +34,17 @@
  */
 WebInspector.Section = function(title, subtitle)
 {
-    this.element = document.createElement("div");
+    this.element = createElement("div");
     this.element.className = "section";
     this.element._section = this;
 
-    this.headerElement = document.createElement("div");
+    this.headerElement = createElement("div");
     this.headerElement.className = "header";
 
-    this.titleElement = document.createElement("div");
+    this.titleElement = createElement("div");
     this.titleElement.className = "title";
 
-    this.subtitleElement = document.createElement("div");
+    this.subtitleElement = createElement("div");
     this.subtitleElement.className = "subtitle";
 
     this.headerElement.appendChild(this.subtitleElement);

@@ -45,7 +45,7 @@ WebInspector.ScopeChainSidebarPane.prototype = {
         this.bodyElement.removeChildren();
 
         if (!callFrame) {
-            var infoElement = document.createElement("div");
+            var infoElement = createElement("div");
             infoElement.className = "info";
             infoElement.textContent = WebInspector.UIString("Not Paused");
             this.bodyElement.appendChild(infoElement);

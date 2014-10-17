@@ -84,11 +84,11 @@ WebInspector.SidebarTreeElement = function(className, title, subtitle, represent
     TreeElement.call(this, "", representedObject, hasChildren);
 
     if (hasChildren)
-        this.disclosureButton = document.createElementWithClass("button", "disclosure-button");
+        this.disclosureButton = createElementWithClass("button", "disclosure-button");
 
-    this.iconElement = document.createElementWithClass("div", "icon");
-    this.statusElement = document.createElementWithClass("div", "status");
-    this.titlesElement = document.createElementWithClass("div", "titles");
+    this.iconElement = createElementWithClass("div", "icon");
+    this.statusElement = createElementWithClass("div", "status");
+    this.titlesElement = createElementWithClass("div", "titles");
 
     this.titleContainer = this.titlesElement.createChild("span", "title-container");
     this.titleElement = this.titleContainer.createChild("span", "title");

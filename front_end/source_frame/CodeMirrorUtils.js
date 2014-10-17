@@ -184,7 +184,7 @@ WebInspector.CodeMirrorUtils.createThemeStyle = function()
     var backgroundColorRule = backgroundColor ? ".CodeMirror .CodeMirror-selected { background-color: " + backgroundColor + ";}" : "";
     var foregroundColor = InspectorFrontendHost.getSelectionForegroundColor();
     var foregroundColorRule = foregroundColor ? ".CodeMirror .CodeMirror-selectedtext:not(.CodeMirror-persist-highlight) { color: " + foregroundColor + "!important;}" : "";
-    var style = document.createElement("style");
+    var style = createElement("style");
     if (foregroundColorRule || backgroundColorRule)
         style.textContent = backgroundColorRule + foregroundColorRule;
     return style;

@@ -228,7 +228,7 @@ WebInspector.ExtensionServer.prototype = {
     {
         if (!Runtime.experiments.isEnabled("applyCustomStylesheet"))
             return;
-        var styleSheet = document.createElement("style");
+        var styleSheet = createElement("style");
         styleSheet.textContent = message.styleSheet;
         document.head.appendChild(styleSheet);
     },
@@ -805,7 +805,7 @@ WebInspector.ExtensionServer.prototype = {
                 InspectorFrontendHost.setInjectedScriptForOrigin(extensionOrigin, buildExtensionAPIInjectedScript(extensionInfo));
                 this._registeredExtensions[extensionOrigin] = { name: name };
             }
-            var iframe = document.createElement("iframe");
+            var iframe = createElement("iframe");
             iframe.src = startPage;
             iframe.style.display = "none";
             document.body.appendChild(iframe);

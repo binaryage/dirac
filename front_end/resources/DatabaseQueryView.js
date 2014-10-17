@@ -38,9 +38,9 @@ WebInspector.DatabaseQueryView = function(database)
     this.element.classList.add("monospace");
     this.element.addEventListener("selectstart", this._selectStart.bind(this), false);
 
-    this._promptElement = document.createElement("div");
+    this._promptElement = createElement("div");
     this._promptElement.className = "database-query-prompt";
-    this._promptElement.appendChild(document.createElement("br"));
+    this._promptElement.appendChild(createElement("br"));
     this._promptElement.addEventListener("keydown", this._promptKeyDown.bind(this), true);
     this.element.appendChild(this._promptElement);
 
@@ -188,16 +188,16 @@ WebInspector.DatabaseQueryView.prototype = {
 
     _appendQueryResult: function(query)
     {
-        var element = document.createElement("div");
+        var element = createElement("div");
         element.className = "database-user-query";
         this.element.insertBefore(element, this._prompt.proxyElement);
 
-        var commandTextElement = document.createElement("span");
+        var commandTextElement = createElement("span");
         commandTextElement.className = "database-query-text";
         commandTextElement.textContent = query;
         element.appendChild(commandTextElement);
 
-        var resultElement = document.createElement("div");
+        var resultElement = createElement("div");
         resultElement.className = "database-query-result";
         element.appendChild(resultElement);
         return resultElement;

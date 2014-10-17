@@ -760,7 +760,7 @@ WebInspector.SourceFrame.RowMessage = function(consoleMessage)
 {
     this._consoleMessage = consoleMessage;
     this._repeatCount = 1;
-    this.element = document.createElementWithClass("div", "text-editor-row-message");
+    this.element = createElementWithClass("div", "text-editor-row-message");
     this._icon = this.element.createChild("span", "text-editor-row-message-icon");
     this._icon.classList.add(WebInspector.SourceFrame._iconClassPerLevel[consoleMessage.level]);
     this._repeatCountElement = this.element.createChild("span", "bubble-repeat-count hidden error");
@@ -817,14 +817,14 @@ WebInspector.SourceFrame.RowMessageBucket = function(sourceFrame, textEditor, li
     this._sourceFrame = sourceFrame;
     this._textEditor = textEditor;
     this._lineHandle = textEditor.textEditorPositionHandle(lineNumber, 0);
-    this._decoration = document.createElementWithClass("div", "text-editor-line-decoration");
+    this._decoration = createElementWithClass("div", "text-editor-line-decoration");
     this._decoration._messageBucket = this;
     this._wave = this._decoration.createChild("div", "text-editor-line-decoration-wave");
     this._icon = this._wave.createChild("div", "text-editor-line-decoration-icon");
 
     this._textEditor.addDecoration(lineNumber, this._decoration);
 
-    this._messagesDescriptionElement = document.createElementWithClass("div", "text-editor-messages-description-container");
+    this._messagesDescriptionElement = createElementWithClass("div", "text-editor-messages-description-container");
     /** @type {!Array.<!WebInspector.SourceFrame.RowMessage>} */
     this._messages = [];
 

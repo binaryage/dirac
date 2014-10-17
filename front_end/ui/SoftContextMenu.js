@@ -48,7 +48,7 @@ WebInspector.SoftContextMenu.prototype = {
         this._time = new Date().getTime();
 
         // Create context menu.
-        this._contextMenuElement = document.createElementWithClass("div", "soft-context-menu");
+        this._contextMenuElement = createElementWithClass("div", "soft-context-menu");
         this._contextMenuElement.tabIndex = 0;
         this._contextMenuElement.style.top = y + "px";
         this._contextMenuElement.style.left = x + "px";
@@ -61,7 +61,7 @@ WebInspector.SoftContextMenu.prototype = {
 
         // Install glass pane capturing events.
         if (!this._parentMenu) {
-            this._glassPaneElement = document.createElementWithClass("div", "soft-context-menu-glass-pane");
+            this._glassPaneElement = createElementWithClass("div", "soft-context-menu-glass-pane");
             this._glassPaneElement.tabIndex = 0;
             this._glassPaneElement.addEventListener("mouseup", this._glassPaneMouseUp.bind(this), false);
             this._glassPaneElement.appendChild(this._contextMenuElement);
@@ -95,7 +95,7 @@ WebInspector.SoftContextMenu.prototype = {
         if (item.type === "subMenu")
             return this._createSubMenu(item);
 
-        var menuItemElement = document.createElementWithClass("div", "soft-context-menu-item");
+        var menuItemElement = createElementWithClass("div", "soft-context-menu-item");
         var checkMarkElement = menuItemElement.createChild("span", "soft-context-menu-item-checkmark");
         checkMarkElement.textContent = "\u2713 "; // Checkmark Unicode symbol
         if (!item.checked)
@@ -116,7 +116,7 @@ WebInspector.SoftContextMenu.prototype = {
 
     _createSubMenu: function(item)
     {
-        var menuItemElement = document.createElementWithClass("div", "soft-context-menu-item");
+        var menuItemElement = createElementWithClass("div", "soft-context-menu-item");
         menuItemElement._subItems = item.subItems;
 
         // Occupy the same space on the left in all items.
@@ -141,7 +141,7 @@ WebInspector.SoftContextMenu.prototype = {
 
     _createSeparator: function()
     {
-        var separatorElement = document.createElementWithClass("div", "soft-context-menu-separator");
+        var separatorElement = createElementWithClass("div", "soft-context-menu-separator");
         separatorElement._isSeparator = true;
         separatorElement.addEventListener("mouseover", this._hideSubMenu.bind(this), false);
         separatorElement.createChild("div", "separator-line");

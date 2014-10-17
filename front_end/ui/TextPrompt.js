@@ -414,7 +414,7 @@ WebInspector.TextPrompt.prototype = {
     _boxForAnchorAtStart: function(selection, textRange)
     {
         var rangeCopy = selection.getRangeAt(0).cloneRange();
-        var anchorElement = document.createElement("span");
+        var anchorElement = createElement("span");
         anchorElement.textContent = "\u200B";
         textRange.insertNode(anchorElement);
         var box = anchorElement.boxInWindow(window);
@@ -490,10 +490,10 @@ WebInspector.TextPrompt.prototype = {
             this._element.normalize();
             var finalSelectionRange = document.createRange();
 
-            var prefixTextNode = document.createTextNode(prefixText);
+            var prefixTextNode = createTextNode(prefixText);
             fullWordRange.insertNode(prefixTextNode);
 
-            this.autoCompleteElement = document.createElementWithClass("span", "auto-complete-text");
+            this.autoCompleteElement = createElementWithClass("span", "auto-complete-text");
             this.autoCompleteElement.textContent = suffixText;
 
             prefixTextNode.parentNode.insertBefore(this.autoCompleteElement, prefixTextNode.nextSibling);
@@ -545,7 +545,7 @@ WebInspector.TextPrompt.prototype = {
         this._userEnteredRange.deleteContents();
         this._element.normalize();
         var finalSelectionRange = document.createRange();
-        var completionTextNode = document.createTextNode(completionText);
+        var completionTextNode = createTextNode(completionText);
         this._userEnteredRange.insertNode(completionTextNode);
         if (this.autoCompleteElement) {
             this.autoCompleteElement.remove();
@@ -584,7 +584,7 @@ WebInspector.TextPrompt.prototype = {
             return false;
 
         var text = this.autoCompleteElement.textContent;
-        var textNode = document.createTextNode(text);
+        var textNode = createTextNode(text);
         this.autoCompleteElement.parentNode.replaceChild(textNode, this.autoCompleteElement);
         delete this.autoCompleteElement;
 

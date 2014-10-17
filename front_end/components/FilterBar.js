@@ -35,7 +35,7 @@
 WebInspector.FilterBar = function()
 {
     this._filtersShown = false;
-    this._element = document.createElement("div");
+    this._element = createElement("div");
     this._element.className = "hbox";
 
     this._filterButton = new WebInspector.StatusBarButton(WebInspector.UIString("Filter"), "filters-toggle", 3);
@@ -205,7 +205,7 @@ WebInspector.TextFilterUI = function(supportRegex)
     this._supportRegex = !!supportRegex;
     this._regex = null;
 
-    this._filterElement = document.createElement("div");
+    this._filterElement = createElement("div");
     this._filterElement.className = "filter-text-filter";
 
     this._filterInputElement = /** @type {!HTMLInputElement} */ (this._filterElement.createChild("input", "search-replace toolbar-replace-control"));
@@ -462,7 +462,7 @@ WebInspector.TextFilterUI.SuggestionBuilder.prototype = {
  */
 WebInspector.NamedBitSetFilterUI = function(items, setting)
 {
-    this._filtersElement = document.createElement("div");
+    this._filtersElement = createElement("div");
     this._filtersElement.className = "filter-bitset-filter status-bar-item";
     this._filtersElement.title = WebInspector.UIString("Use %s Click to select multiple types.", WebInspector.KeyboardShortcut.shortcutToString("", WebInspector.KeyboardShortcut.Modifiers.CtrlOrMeta));
 
@@ -592,14 +592,14 @@ WebInspector.NamedBitSetFilterUI.prototype = {
  */
 WebInspector.ComboBoxFilterUI = function(options)
 {
-    this._filterElement = document.createElement("div");
+    this._filterElement = createElement("div");
     this._filterElement.className = "filter-combobox-filter";
 
     this._options = options;
     this._filterComboBox = new WebInspector.StatusBarComboBox(this._filterChanged.bind(this));
     for (var i = 0; i < options.length; ++i) {
         var filterOption = options[i];
-        var option = document.createElement("option");
+        var option = createElement("option");
         option.text = filterOption.label;
         option.title = filterOption.title;
         this._filterComboBox.addOption(option);
@@ -675,7 +675,7 @@ WebInspector.ComboBoxFilterUI.prototype = {
  */
 WebInspector.CheckboxFilterUI = function(className, title, activeWhenChecked, setting)
 {
-    this._filterElement = document.createElement("div");
+    this._filterElement = createElement("div");
     this._filterElement.classList.add("filter-checkbox-filter", "filter-checkbox-filter-" + className);
     this._activeWhenChecked = !!activeWhenChecked;
     this._createCheckbox(title);

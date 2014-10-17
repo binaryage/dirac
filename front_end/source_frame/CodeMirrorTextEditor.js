@@ -695,7 +695,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
             var rule = classBase + i + "::before { content: '" + spaceChars + "';}\n";
             rules += rule;
         }
-        var style = document.createElement("style");
+        var style = createElement("style");
         style.textContent = rules;
         document.head.appendChild(style);
     },

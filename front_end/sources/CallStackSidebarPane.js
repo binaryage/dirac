@@ -85,7 +85,7 @@ WebInspector.CallStackSidebarPane.prototype = {
         if (topStackHidden)
             this._revealHiddenPlacards();
         if (this._hiddenPlacards) {
-            var element = document.createElementWithClass("div", "hidden-placards-message");
+            var element = createElementWithClass("div", "hidden-placards-message");
             if (this._hiddenPlacards === 1)
                 element.textContent = WebInspector.UIString("1 stack frame is hidden (black-boxed).");
             else

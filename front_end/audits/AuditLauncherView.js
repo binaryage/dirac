@@ -46,7 +46,7 @@ WebInspector.AuditLauncherView = function(auditController)
     this.element.classList.add("audit-launcher-view");
     this.element.classList.add("panel-enabler-view");
 
-    this._contentElement = document.createElement("div");
+    this._contentElement = createElement("div");
     this._contentElement.className = "audit-launcher-view-content";
     this.element.appendChild(this._contentElement);
     this._boundCategoryClickListener = this._categoryClicked.bind(this);
@@ -55,7 +55,7 @@ WebInspector.AuditLauncherView = function(auditController)
 
     this._sortedCategories = [];
 
-    this._headerElement = document.createElement("h1");
+    this._headerElement = createElement("h1");
     this._headerElement.className = "no-audits";
     this._headerElement.textContent = WebInspector.UIString("No audits to run");
     this._contentElement.appendChild(this._headerElement);
@@ -228,10 +228,10 @@ WebInspector.AuditLauncherView.prototype = {
      */
     _createCategoryElement: function(title, id)
     {
-        var labelElement = document.createElement("label");
+        var labelElement = createElement("label");
         labelElement.id = this._categoryIdPrefix + id;
 
-        var element = document.createElement("input");
+        var element = createElement("input");
         element.type = "checkbox";
         if (id !== "")
             element.addEventListener("click", this._boundCategoryClickListener, false);
@@ -244,7 +244,7 @@ WebInspector.AuditLauncherView.prototype = {
 
     _createLauncherUI: function()
     {
-        this._headerElement = document.createElement("h1");
+        this._headerElement = createElement("h1");
         this._headerElement.textContent = WebInspector.UIString("Select audits to run");
 
         for (var child = 0; child < this._contentElement.children.length; ++child)
@@ -279,7 +279,7 @@ WebInspector.AuditLauncherView.prototype = {
         this._auditPresentStateElement.name = "audit-mode";
         this._auditPresentStateElement.type = "radio";
         this._auditPresentStateElement.checked = true;
-        this._auditPresentStateLabelElement = document.createTextNode(WebInspector.UIString("Audit Present State"));
+        this._auditPresentStateLabelElement = createTextNode(WebInspector.UIString("Audit Present State"));
         labelElement.appendChild(this._auditPresentStateLabelElement);
 
         labelElement = this._buttonContainerElement.createChild("label");

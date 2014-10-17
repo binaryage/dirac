@@ -31,7 +31,7 @@
  */
 WebInspector.Placard = function(title, subtitle)
 {
-    this.element = document.createElementWithClass("div", "placard");
+    this.element = createElementWithClass("div", "placard");
     this.element.placard = this;
 
     this.subtitleElement = this.element.createChild("div", "subtitle");

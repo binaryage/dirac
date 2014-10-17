@@ -189,7 +189,7 @@ WebInspector.ShortcutsSection.prototype = {
      */
     _createSpan: function(className, textContent)
     {
-        var node = document.createElement("span");
+        var node = createElement("span");
         node.className = className;
         node.textContent = textContent;
         return node;
@@ -202,7 +202,7 @@ WebInspector.ShortcutsSection.prototype = {
      */
     _joinNodes: function(nodes, delimiter)
     {
-        var result = document.createDocumentFragment();
+        var result = createDocumentFragment();
         for (var i = 0; i < nodes.length; ++i) {
             if (i > 0)
                 result.appendChild(delimiter.cloneNode(true));

@@ -62,7 +62,7 @@ WebInspector.SuggestBox = function(suggestBoxDelegate, maxItemsHeight)
     this._maxItemsHeight = maxItemsHeight;
     this._bodyElement = document.body;
     this._maybeHideBound = this._maybeHide.bind(this);
-    this._element = document.createElementWithClass("div", "suggest-box");
+    this._element = createElementWithClass("div", "suggest-box");
     this._element.addEventListener("mousedown", this._onBoxMouseDown.bind(this), true);
 }
 
@@ -243,7 +243,7 @@ WebInspector.SuggestBox.prototype = {
      */
     _createItemElement: function(prefix, text)
     {
-        var element = document.createElementWithClass("div", "suggest-box-content-item source-code");
+        var element = createElementWithClass("div", "suggest-box-content-item source-code");
         element.tabIndex = -1;
         if (prefix && prefix.length && !text.indexOf(prefix)) {
             element.createChild("span", "prefix").textContent = prefix;
@@ -413,7 +413,7 @@ WebInspector.SuggestBox.prototype = {
  */
 WebInspector.SuggestBox.Overlay = function()
 {
-    this.element = document.createElementWithClass("div", "suggest-box-overlay");
+    this.element = createElementWithClass("div", "suggest-box-overlay");
     this._resize();
     document.body.appendChild(this.element);
 }

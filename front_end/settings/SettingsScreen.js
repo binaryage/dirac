@@ -43,7 +43,7 @@ WebInspector.SettingsScreen = function(onHide)
 
     this._tabbedPane = new WebInspector.TabbedPane();
     this._tabbedPane.element.classList.add("help-window-main");
-    var settingsLabelElement = document.createElementWithClass("div", "help-window-label");
+    var settingsLabelElement = createElementWithClass("div", "help-window-label");
     settingsLabelElement.createTextChild(WebInspector.UIString("Settings"));
     this._tabbedPane.element.insertBefore(settingsLabelElement, this._tabbedPane.element.firstChild);
     this._tabbedPane.element.appendChild(this._createCloseButton());
@@ -178,7 +178,7 @@ WebInspector.SettingsTab.prototype = {
 
     _createSelectSetting: function(name, options, setting)
     {
-        var p = document.createElement("p");
+        var p = createElement("p");
         p.createChild("label").textContent = name;
 
         var select = p.createChild("select", "chrome-select");
@@ -373,7 +373,7 @@ WebInspector.SettingsScreen.SkipStackFramePatternSettingDelegate.prototype = {
      */
     settingElement: function()
     {
-        var button = document.createElementWithClass("input", "text-button");
+        var button = createElementWithClass("input", "text-button");
         button.type = "button";
         button.value = WebInspector.manageBlackboxingButtonLabel();
         button.title = WebInspector.UIString("Skip stepping through sources with particular names");
@@ -589,7 +589,7 @@ WebInspector.ExperimentsSettingsTab.prototype = {
      */
     _createExperimentsWarningSubsection: function()
     {
-        var subsection = document.createElement("div");
+        var subsection = createElement("div");
         var warning = subsection.createChild("span", "settings-experiments-warning-subsection-warning");
         warning.textContent = WebInspector.UIString("WARNING:");
         subsection.createTextChild(" ");
@@ -600,7 +600,7 @@ WebInspector.ExperimentsSettingsTab.prototype = {
 
     _createExperimentCheckbox: function(experiment)
     {
-        var input = document.createElement("input");
+        var input = createElement("input");
         input.type = "checkbox";
         input.name = experiment.name;
         input.checked = experiment.isEnabled();
@@ -610,7 +610,7 @@ WebInspector.ExperimentsSettingsTab.prototype = {
         }
         input.addEventListener("click", listener, false);
 
-        var p = document.createElement("p");
+        var p = createElement("p");
         p.className = experiment.hidden && !experiment.isEnabled() ? "settings-experiment-hidden" : "";
         var label = p.createChild("label");
         label.appendChild(input);
@@ -686,7 +686,7 @@ WebInspector.SettingsController.SettingsScreenActionDelegate.prototype = {
  */
 WebInspector.SettingsList = function(columns, itemRenderer)
 {
-    this.element = document.createElementWithClass("div", "settings-list");
+    this.element = createElementWithClass("div", "settings-list");
     this.element.tabIndex = -1;
     this._itemRenderer = itemRenderer;
     /** @type {!StringMap.<!Element>} */
@@ -710,7 +710,7 @@ WebInspector.SettingsList.prototype = {
      */
     addItem: function(itemId, beforeId)
     {
-        var listItem = document.createElementWithClass("div", "settings-list-item");
+        var listItem = createElementWithClass("div", "settings-list-item");
         listItem._id = itemId;
         if (typeof beforeId !== "undefined")
             this.element.insertBefore(listItem, this.itemForId(beforeId));
@@ -843,7 +843,7 @@ WebInspector.SettingsList.prototype = {
      */
     _createRemoveButton: function(handler)
     {
-        var removeButton = document.createElementWithClass("div", "remove-item-button");
+        var removeButton = createElementWithClass("div", "remove-item-button");
         removeButton.addEventListener("click", handler, false);
         return removeButton;
     },

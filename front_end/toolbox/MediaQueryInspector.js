@@ -321,7 +321,7 @@ WebInspector.MediaQueryInspector.prototype = {
             "media-inspector-marker-min-max-width",
             "media-inspector-marker-min-width"
         ];
-        var markerElement = document.createElementWithClass("div", "media-inspector-marker");
+        var markerElement = createElementWithClass("div", "media-inspector-marker");
         var leftPixelValue = minWidthValue ? (minWidthValue - this._offset) / zoomFactor : 0;
         markerElement.style.left = leftPixelValue + "px";
         markerElement.classList.add(styleClassPerSection[model.section()]);

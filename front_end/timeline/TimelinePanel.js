@@ -150,7 +150,7 @@ WebInspector.TimelinePanel.prototype = {
     {
         if (!WebInspector.TimelinePanel._categoryStylesInitialized) {
             WebInspector.TimelinePanel._categoryStylesInitialized = true;
-            var style = document.createElement("style");
+            var style = createElement("style");
             var categories = WebInspector.TimelineUIUtils.categories();
             style.textContent = Object.values(categories).map(WebInspector.TimelineUIUtils.createStyleRuleForCategory).join("\n");
             document.head.appendChild(style);
@@ -302,7 +302,7 @@ WebInspector.TimelinePanel.prototype = {
         if (!this._recordingOptionUIControls)
             this._recordingOptionUIControls = [];
 
-        var checkboxElement = document.createElement("input");
+        var checkboxElement = createElement("input");
         var labelElement = WebInspector.SettingsUI.createSettingCheckbox(name, setting, true, checkboxElement, tooltip);
         this._recordingOptionUIControls.push({ "label": labelElement, "checkbox": checkboxElement });
         return labelElement;
@@ -1077,7 +1077,7 @@ WebInspector.TimelinePanel.prototype = {
             aggregatedTotal += aggregatedStats[categoryName];
         aggregatedStats["idle"] = Math.max(0, endTime - startTime - aggregatedTotal);
 
-        var pieChartContainer = document.createElement("div");
+        var pieChartContainer = createElement("div");
         pieChartContainer.classList.add("vbox", "timeline-range-summary");
         var startOffset = startTime - this._model.minimumRecordTime();
         var endOffset = endTime - this._model.minimumRecordTime();
@@ -1131,7 +1131,7 @@ WebInspector.TimelineDetailsView = function()
 {
     WebInspector.TabbedPane.call(this);
 
-    this._recordTitleElement = document.createElement("div");
+    this._recordTitleElement = createElement("div");
     this._recordTitleElement.classList.add("record-title");
     this.headerElement().insertBefore(this._recordTitleElement, this.headerElement().firstChild)
     this._defaultDetailsView = new WebInspector.VBox();

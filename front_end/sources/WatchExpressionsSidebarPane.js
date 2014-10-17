@@ -39,13 +39,13 @@ WebInspector.WatchExpressionsSidebarPane = function()
     this.section = new WebInspector.WatchExpressionsSection();
     this.bodyElement.appendChild(this.section.element);
 
-    var refreshButton = document.createElement("button");
+    var refreshButton = createElement("button");
     refreshButton.className = "pane-title-button refresh";
     refreshButton.addEventListener("click", this._refreshButtonClicked.bind(this), false);
     refreshButton.title = WebInspector.UIString("Refresh");
     this.titleElement.appendChild(refreshButton);
 
-    var addButton = document.createElement("button");
+    var addButton = createElement("button");
     addButton.className = "pane-title-button add";
     addButton.addEventListener("click", this._addButtonClicked.bind(this), false);
     this.titleElement.appendChild(addButton);
@@ -112,7 +112,7 @@ WebInspector.WatchExpressionsSection = function()
     this._expandedExpressions = {};
     this._expandedProperties = {};
 
-    this.emptyElement = document.createElement("div");
+    this.emptyElement = createElement("div");
     this.emptyElement.className = "info";
     this.emptyElement.textContent = WebInspector.UIString("No Watch Expressions");
 
@@ -413,7 +413,7 @@ WebInspector.WatchExpressionTreeElement.prototype = {
         } else
             this.listItemElement.classList.remove("dimmed");
 
-        var deleteButton = document.createElement("input");
+        var deleteButton = createElement("input");
         deleteButton.type = "button";
         deleteButton.title = WebInspector.UIString("Delete watch expression.");
         deleteButton.classList.add("enabled-button");

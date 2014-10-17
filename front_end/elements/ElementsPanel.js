@@ -70,9 +70,9 @@ WebInspector.ElementsPanel = function()
     this.sidebarPanes.styles.addEventListener(WebInspector.StylesSidebarPane.Events.SelectorEditingStarted, this._onEditingSelectorStarted.bind(this));
     this.sidebarPanes.styles.addEventListener(WebInspector.StylesSidebarPane.Events.SelectorEditingEnded, this._onEditingSelectorEnded.bind(this));
 
-    this._matchedStylesFilterBoxContainer = document.createElement("div");
+    this._matchedStylesFilterBoxContainer = createElement("div");
     this._matchedStylesFilterBoxContainer.className = "sidebar-pane-filter-box";
-    this._computedStylesFilterBoxContainer = document.createElement("div");
+    this._computedStylesFilterBoxContainer = createElement("div");
     this._computedStylesFilterBoxContainer.className = "sidebar-pane-filter-box";
     this.sidebarPanes.styles.setFilterBoxContainers(this._matchedStylesFilterBoxContainer, this._computedStylesFilterBoxContainer);
 
@@ -774,7 +774,7 @@ WebInspector.ElementsPanel.prototype = {
             if (current.nodeType() === Node.DOCUMENT_NODE)
                 continue;
 
-            crumb = document.createElement("span");
+            crumb = createElement("span");
             crumb.className = "crumb";
             crumb.representedObject = current;
             crumb.addEventListener("mousedown", selectCrumbFunction, false);
@@ -809,7 +809,7 @@ WebInspector.ElementsPanel.prototype = {
             }
 
             if (!crumb.childNodes.length) {
-                var nameElement = document.createElement("span");
+                var nameElement = createElement("span");
                 nameElement.textContent = crumbTitle;
                 crumb.appendChild(nameElement);
                 crumb.title = crumbTitle;
@@ -1340,9 +1340,9 @@ WebInspector.ElementsPanel.prototype = {
         computedPane.bodyElement.classList.add("metrics-and-computed");
         this.sidebarPanes.computedStyle.setExpandCallback(expandComputed);
 
-        var matchedStylePanesWrapper = document.createElement("div");
+        var matchedStylePanesWrapper = createElement("div");
         matchedStylePanesWrapper.className = "style-panes-wrapper";
-        var computedStylePanesWrapper = document.createElement("div");
+        var computedStylePanesWrapper = createElement("div");
         computedStylePanesWrapper.className = "style-panes-wrapper";
 
         /**

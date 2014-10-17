@@ -509,7 +509,7 @@ WebInspector.CanvasReplayStateView.prototype = {
             if (typeof nameElement === "string")
                 nameElement += "[" + descriptor.values.length + "]";
             else {
-                var element = document.createElement("span");
+                var element = createElement("span");
                 element.appendChild(nameElement);
                 element.createTextChild("[" + descriptor.values.length + "]");
                 nameElement = element;

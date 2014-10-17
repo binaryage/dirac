@@ -427,12 +427,12 @@ WebInspector.AuditRuleResult.prototype = {
     addFormatted: function(format, vararg)
     {
         var substitutions = Array.prototype.slice.call(arguments, 1);
-        var fragment = document.createDocumentFragment();
+        var fragment = createDocumentFragment();
 
         function append(a, b)
         {
             if (!(b instanceof Node))
-                b = document.createTextNode(b);
+                b = createTextNode(b);
             a.appendChild(b);
             return a;
         }

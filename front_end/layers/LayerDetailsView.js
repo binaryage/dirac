@@ -181,11 +181,11 @@ WebInspector.LayerDetailsView.prototype = {
             this._compositingReasonsCell.textContent = "n/a";
             return;
         }
-        var fragment = document.createDocumentFragment();
+        var fragment = createDocumentFragment();
         for (var i = 0; i < compositingReasons.length; ++i) {
             if (i)
                 fragment.createTextChild(",");
-            var span = document.createElement("span");
+            var span = createElement("span");
             span.title = WebInspector.LayerDetailsView.CompositingReasonDetail[compositingReasons[i]] || "";
             span.textContent = compositingReasons[i];
             fragment.appendChild(span);

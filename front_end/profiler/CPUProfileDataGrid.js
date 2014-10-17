@@ -94,15 +94,15 @@ WebInspector.ProfileDataGridNode.prototype = {
         if (columnIdentifier !== "self" && columnIdentifier !== "total")
             return null;
 
-        var cell = document.createElement("td");
+        var cell = createElement("td");
         cell.className = "numeric-column";
-        var div = document.createElement("div");
-        var valueSpan = document.createElement("span");
+        var div = createElement("div");
+        var valueSpan = createElement("span");
         valueSpan.textContent = this.data[columnIdentifier];
         div.appendChild(valueSpan);
         var percentColumn = columnIdentifier + "-percent";
         if (percentColumn in this.data) {
-            var percentSpan = document.createElement("span");
+            var percentSpan = createElement("span");
             percentSpan.className = "percent-column";
             percentSpan.textContent = this.data[percentColumn];
             div.appendChild(percentSpan);
@@ -125,7 +125,7 @@ WebInspector.ProfileDataGridNode.prototype = {
 
         var functionName;
         if (this._deoptReason) {
-            var content = document.createDocumentFragment();
+            var content = createDocumentFragment();
             var marker = content.createChild("span", "profile-warn-marker");
             marker.title = WebInspector.UIString("Not optimized: %s", this._deoptReason);
             content.createTextChild(this.functionName);

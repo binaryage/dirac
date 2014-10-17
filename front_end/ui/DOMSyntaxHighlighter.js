@@ -47,7 +47,7 @@ WebInspector.DOMSyntaxHighlighter.prototype = {
      */
     createSpan: function(content, className)
     {
-        var span = document.createElement("span");
+        var span = createElement("span");
         span.className = "cm-" + className;
         if (this._stripExtraWhitespace && className !== "whitespace")
             content = content.replace(/^[\n\r]*/, "").replace(/\s*$/, "");

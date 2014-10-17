@@ -446,7 +446,7 @@ WebInspector.SpectrumPopupHelper.prototype = {
  */
 WebInspector.ColorSwatch = function(readOnly)
 {
-    this.element = document.createElementWithClass("span", "swatch");
+    this.element = createElementWithClass("span", "swatch");
     this._swatchInnerElement = this.element.createChild("span", "swatch-inner");
     var shiftClickMessage = WebInspector.UIString("Shift-click to change color format.");
     this.element.title = readOnly ? shiftClickMessage : String.sprintf("%s\n%s", WebInspector.UIString("Click to open a colorpicker."), shiftClickMessage);

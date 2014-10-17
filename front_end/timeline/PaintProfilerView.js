@@ -406,7 +406,7 @@ WebInspector.LogTreeElement.prototype = {
     _update: function()
     {
         var logItem = this.representedObject;
-        var title = document.createDocumentFragment();
+        var title = createDocumentFragment();
         title.createChild("div", "selection");
         title.createTextChild(logItem.method + "(" + this._paramsToString(logItem.params) + ")");
         this.title = title;
@@ -474,7 +474,7 @@ WebInspector.LogPropertyTreeElement.prototype = {
     onattach: function()
     {
         var property = this.representedObject;
-        var title = document.createDocumentFragment();
+        var title = createDocumentFragment();
         title.createChild("div", "selection");
         var nameElement = title.createChild("span", "name");
         nameElement.textContent = property.name;

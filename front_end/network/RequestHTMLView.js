@@ -57,7 +57,7 @@ WebInspector.RequestHTMLView.prototype = {
         // We need to create iframe again each time because contentDocument
         // is deleted when iframe is removed from its parent.
         this.element.removeChildren();
-        var iframe = document.createElement("iframe");
+        var iframe = createElement("iframe");
         iframe.setAttribute("sandbox", ""); // Forbid to run JavaScript and set unique origin.
         iframe.setAttribute("src", this._dataURL);
         this.element.appendChild(iframe);

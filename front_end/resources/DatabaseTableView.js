@@ -86,7 +86,7 @@ WebInspector.DatabaseTableView.prototype = {
         this.detachChildViews();
         this.element.removeChildren();
 
-        var errorMsgElement = document.createElement("div");
+        var errorMsgElement = createElement("div");
         errorMsgElement.className = "storage-table-error";
         errorMsgElement.textContent = WebInspector.UIString("An error occurred trying to\nread the “%s” table.", this.tableName);
         this.element.appendChild(errorMsgElement);

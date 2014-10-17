@@ -34,7 +34,7 @@
  */
 WebInspector.OverviewGrid = function(prefix)
 {
-    this.element = document.createElement("div");
+    this.element = createElement("div");
     this.element.id = prefix + "-overview-container";
 
     this._grid = new WebInspector.TimelineGrid();
@@ -452,7 +452,7 @@ WebInspector.OverviewGrid.WindowSelector = function(parent, position)
 {
     this._startPosition = position;
     this._width = parent.offsetWidth;
-    this._windowSelector = document.createElement("div");
+    this._windowSelector = createElement("div");
     this._windowSelector.className = "overview-grid-window-selector";
     this._windowSelector.style.left = this._startPosition + "px";
     this._windowSelector.style.right = this._width - this._startPosition + "px";

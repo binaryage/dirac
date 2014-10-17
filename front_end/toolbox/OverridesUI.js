@@ -11,7 +11,7 @@ WebInspector.OverridesUI = {}
  */
 WebInspector.OverridesUI.createDeviceSelect = function(document, titleProvider)
 {
-    var p = document.createElement("p");
+    var p = createElement("p");
 
     var deviceSelectElement = p.createChild("select");
     deviceSelectElement.addEventListener("change", deviceSelected, false);
@@ -160,7 +160,7 @@ WebInspector.OverridesUI.createDeviceSelect = function(document, titleProvider)
 WebInspector.OverridesUI.createNetworkConditionsSelect = function(document)
 {
     var networkConditionsSetting = WebInspector.overridesSupport.settings.networkConditions;
-    var conditionsSelectElement = document.createElement("select");
+    var conditionsSelectElement = createElement("select");
     var presets = WebInspector.OverridesUI._networkConditionsPresets;
     for (var i = 0; i < presets.length; ++i) {
         var preset = presets[i];
@@ -229,12 +229,12 @@ WebInspector.OverridesUI.createUserAgentSelectAndInput = function(document)
     const customOverride = {title: WebInspector.UIString("Other"), value: "Other"};
     var userAgents = [noOverride].concat(WebInspector.OverridesUI._userAgents).concat([customOverride]);
 
-    var userAgentSelectElement = document.createElement("select");
+    var userAgentSelectElement = createElement("select");
     for (var i = 0; i < userAgents.length; ++i)
         userAgentSelectElement.add(new Option(userAgents[i].title, userAgents[i].value));
     userAgentSelectElement.selectedIndex = 0;
 
-    var otherUserAgentElement = document.createElement("input");
+    var otherUserAgentElement = createElement("input");
     otherUserAgentElement.type = "text";
     otherUserAgentElement.value = userAgentSetting.get();
     otherUserAgentElement.title = userAgentSetting.get();

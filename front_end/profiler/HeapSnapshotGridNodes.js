@@ -243,16 +243,16 @@ WebInspector.HeapSnapshotGridNode.prototype = {
      */
     _createValueCell: function(columnIdentifier)
     {
-        var cell = document.createElement("td");
+        var cell = createElement("td");
         cell.className = "numeric-column";
         if (this.dataGrid.snapshot.totalSize !== 0) {
-            var div = document.createElement("div");
-            var valueSpan = document.createElement("span");
+            var div = createElement("div");
+            var valueSpan = createElement("span");
             valueSpan.textContent = this.data[columnIdentifier];
             div.appendChild(valueSpan);
             var percentColumn = columnIdentifier + "-percent";
             if (percentColumn in this.data) {
-                var percentSpan = document.createElement("span");
+                var percentSpan = createElement("span");
                 percentSpan.className = "percent-column";
                 percentSpan.textContent = this.data[percentColumn];
                 div.appendChild(percentSpan);
@@ -596,20 +596,20 @@ WebInspector.HeapSnapshotGenericObjectNode.prototype = {
 
     _createObjectCellWithValue: function(valueStyle, value)
     {
-        var cell = document.createElement("td");
+        var cell = createElement("td");
         cell.className = "object-column";
-        var div = document.createElement("div");
+        var div = createElement("div");
         div.className = "source-code event-properties";
         div.style.overflow = "visible";
 
         this._prefixObjectCell(div);
 
-        var valueSpan = document.createElement("span");
+        var valueSpan = createElement("span");
         valueSpan.className = "value console-formatted-" + valueStyle;
         valueSpan.textContent = value;
         div.appendChild(valueSpan);
 
-        var idSpan = document.createElement("span");
+        var idSpan = createElement("span");
         idSpan.className = "console-formatted-id";
         idSpan.textContent = " @" + this.snapshotNodeId;
         div.appendChild(idSpan);
@@ -810,12 +810,12 @@ WebInspector.HeapSnapshotObjectNode.prototype = {
         if (this._cycledWithAncestorGridNode)
             div.className += " cycled-ancessor-node";
 
-        var nameSpan = document.createElement("span");
+        var nameSpan = createElement("span");
         nameSpan.className = nameClass;
         nameSpan.textContent = name;
         div.appendChild(nameSpan);
 
-        var separatorSpan = document.createElement("span");
+        var separatorSpan = createElement("span");
         separatorSpan.className = "grayed";
         separatorSpan.textContent = this._edgeNodeSeparator();
         div.appendChild(separatorSpan);

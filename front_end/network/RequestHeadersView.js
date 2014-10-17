@@ -41,7 +41,7 @@ WebInspector.RequestHeadersView = function(request)
 
     this._request = request;
 
-    this._headersListElement = document.createElement("ol");
+    this._headersListElement = createElement("ol");
     this._headersListElement.className = "outline-disclosure";
     this.element.appendChild(this._headersListElement);
 
@@ -131,7 +131,7 @@ WebInspector.RequestHeadersView.prototype = {
      */
     _formatHeader: function(name, value)
     {
-        var fragment = document.createDocumentFragment();
+        var fragment = createDocumentFragment();
         fragment.createChild("div", "header-name").textContent = name + ":";
         fragment.createChild("div", "header-value source-code").textContent = value;
 
@@ -158,7 +158,7 @@ WebInspector.RequestHeadersView.prototype = {
                 }
             }
         }
-        var div = document.createElement("div");
+        var div = createElement("div");
         div.className = className;
         if (errorDecoding)
             div.createChild("span", "error-message").textContent = WebInspector.UIString("(unable to decode value)");
@@ -211,7 +211,7 @@ WebInspector.RequestHeadersView.prototype = {
      */
     _populateTreeElementWithSourceText: function(treeElement, sourceText)
     {
-        var sourceTextElement = document.createElement("span");
+        var sourceTextElement = createElement("span");
         sourceTextElement.classList.add("header-value");
         sourceTextElement.classList.add("source-code");
         sourceTextElement.textContent = String(sourceText || "").trim();
@@ -235,7 +235,7 @@ WebInspector.RequestHeadersView.prototype = {
         paramsTreeElement.listItemElement.removeChildren();
         paramsTreeElement.listItemElement.createTextChild(title);
 
-        var headerCount = document.createElement("span");
+        var headerCount = createElement("span");
         headerCount.classList.add("header-count");
         headerCount.textContent = WebInspector.UIString(" (%d)", params.length);
         paramsTreeElement.listItemElement.appendChild(headerCount);
@@ -263,7 +263,7 @@ WebInspector.RequestHeadersView.prototype = {
         paramsTreeElement.listItemElement.appendChild(toggleButton);
 
         for (var i = 0; i < params.length; ++i) {
-            var paramNameValue = document.createDocumentFragment();
+            var paramNameValue = createDocumentFragment();
             var name = this._formatParameter(params[i].name + ":", "header-name", this._decodeRequestParameters);
             var value = this._formatParameter(params[i].value, "header-value source-code", this._decodeRequestParameters);
             paramNameValue.appendChild(name);
@@ -382,7 +382,7 @@ WebInspector.RequestHeadersView.prototype = {
         statusCodeElement.hidden = !this._request.statusCode;
 
         if (this._request.statusCode) {
-            var statusCodeFragment = document.createDocumentFragment();
+            var statusCodeFragment = createDocumentFragment();
             statusCodeFragment.createChild("div", "header-name").textContent = WebInspector.UIString("Status Code") + ":";
 
             var statusCodeImage = statusCodeFragment.createChild("div", "resource-status-image");
@@ -441,7 +441,7 @@ WebInspector.RequestHeadersView.prototype = {
 
         if (provisionalHeaders) {
             var cautionText = WebInspector.UIString("Provisional headers are shown");
-            var cautionFragment = document.createDocumentFragment();
+            var cautionFragment = createDocumentFragment();
             cautionFragment.createChild("div", "warning-icon-small");
             cautionFragment.createChild("div", "caution").textContent = cautionText;
             var cautionTreeElement = new TreeElement(cautionFragment);
@@ -502,7 +502,7 @@ WebInspector.RequestHeadersView.prototype = {
      */
     _createToggleButton: function(title)
     {
-        var button = document.createElement("span");
+        var button = createElement("span");
         button.classList.add("header-toggle");
         button.textContent = title;
         return button;

@@ -210,7 +210,7 @@ WebInspector.HandlerRegistry.EventTypes = {
 WebInspector.HandlerSelector = function(handlerRegistry)
 {
     this._handlerRegistry = handlerRegistry;
-    this.element = document.createElementWithClass("select", "chrome-select");
+    this.element = createElementWithClass("select", "chrome-select");
     this.element.addEventListener("change", this._onChange.bind(this), false);
     this._update();
     this._handlerRegistry.addEventListener(WebInspector.HandlerRegistry.EventTypes.HandlersUpdated, this._update.bind(this));
@@ -225,7 +225,7 @@ WebInspector.HandlerSelector.prototype =
         var activeHandler = this._handlerRegistry.activeHandler;
 
         for (var i = 0; i < names.length; ++i) {
-            var option = document.createElement("option");
+            var option = createElement("option");
             option.textContent = names[i];
             option.selected = activeHandler === names[i];
             this.element.appendChild(option);

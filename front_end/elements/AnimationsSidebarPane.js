@@ -11,7 +11,7 @@ WebInspector.AnimationsSidebarPane = function(stylesPane)
     WebInspector.SidebarPane.call(this, WebInspector.UIString("Animations"));
     this._stylesPane = stylesPane;
 
-    this._emptyElement = document.createElement("div");
+    this._emptyElement = createElement("div");
     this._emptyElement.className = "info";
     this._emptyElement.textContent = WebInspector.UIString("No Animations");
 
@@ -66,10 +66,10 @@ WebInspector.AnimationsSidebarPane.prototype = {
 WebInspector.AnimationSection = function(parentPane, animationPlayer)
 {
     this._parentPane = parentPane;
-    this.propertiesSection = document.createElement("div");
+    this.propertiesSection = createElement("div");
     this._setAnimationPlayer(animationPlayer);
 
-    this.element = document.createElement("div");
+    this.element = createElement("div");
     this.element.className = "styles-section";
 
     this._updateThrottler = new WebInspector.Throttler(WebInspector.AnimationSection.updateTimeout);
@@ -121,7 +121,7 @@ WebInspector.AnimationSection.prototype = {
 
         var iterationDuration = this.player.source().duration();
         var iterationCount = this.player.source().iterationCount();
-        var slider = document.createElement("input");
+        var slider = createElement("input");
         slider.type = "range";
         slider.min = 0;
         slider.step = 0.01;
@@ -176,7 +176,7 @@ WebInspector.AnimationSection.prototype = {
 
         this.currentTimeSlider = this._createCurrentTimeSlider();
 
-        var controls = document.createElement("div");
+        var controls = createElement("div");
         controls.appendChild(this._pauseButton.element);
         controls.appendChild(this.currentTimeSlider);
 

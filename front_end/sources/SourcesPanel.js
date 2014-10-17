@@ -67,7 +67,7 @@ WebInspector.SourcesPanel = function(workspaceForTest)
     this._sourcesView.registerShortcuts(this.registerShortcuts.bind(this));
     this._sourcesView.show(this.editorView.mainElement());
 
-    this._debugSidebarResizeWidgetElement = document.createElementWithClass("div", "resizer-widget");
+    this._debugSidebarResizeWidgetElement = createElementWithClass("div", "resizer-widget");
     this._debugSidebarResizeWidgetElement.id = "scripts-debug-sidebar-resizer-widget";
     this._splitView.addEventListener(WebInspector.SplitView.Events.ShowModeChanged, this._updateDebugSidebarResizeWidget, this);
     this._updateDebugSidebarResizeWidget();
@@ -628,7 +628,7 @@ WebInspector.SourcesPanel.prototype = {
 
     _createDebugToolbar: function()
     {
-        var debugToolbar = document.createElementWithClass("div", "scripts-debug-toolbar");
+        var debugToolbar = createElementWithClass("div", "scripts-debug-toolbar");
 
         var title, handler;
         var platformSpecificModifier = WebInspector.KeyboardShortcut.Modifiers.CtrlOrMeta;
@@ -683,7 +683,7 @@ WebInspector.SourcesPanel.prototype = {
 
     _createDebugToolbarDrawer: function()
     {
-        var debugToolbarDrawer = document.createElementWithClass("div", "scripts-debug-toolbar-drawer");
+        var debugToolbarDrawer = createElementWithClass("div", "scripts-debug-toolbar-drawer");
 
         var label = WebInspector.UIString("Pause On Caught Exceptions");
         var setting = WebInspector.settings.pauseOnCaughtException;

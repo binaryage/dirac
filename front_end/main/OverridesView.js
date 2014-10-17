@@ -209,7 +209,7 @@ WebInspector.OverridesView.DeviceTab = function()
 WebInspector.OverridesView.DeviceTab.prototype = {
     _createDeviceElement: function()
     {
-        var fieldsetElement = document.createElement("fieldset");
+        var fieldsetElement = createElement("fieldset");
         fieldsetElement.id = "metrics-override-section";
 
         var deviceModelElement = fieldsetElement.createChild("p", "overrides-device-model-section");
@@ -280,7 +280,7 @@ WebInspector.OverridesView.DeviceTab.CustomDeviceTitleDialog = function(callback
 {
     WebInspector.DialogDelegate.call(this);
 
-    this.element = document.createElementWithClass("div", "custom-device-title-dialog");
+    this.element = createElementWithClass("div", "custom-device-title-dialog");
     this.element.createChild("label").textContent = WebInspector.UIString("Save as: ");
 
     this._input = this.element.createChild("input");
@@ -362,7 +362,7 @@ WebInspector.OverridesView.MediaTab.prototype = {
                 // "all" is not a device-specific media type.
                 continue;
             }
-            var option = document.createElement("option");
+            var option = createElement("option");
             option.text = mediaType;
             option.value = mediaType;
             mediaSelectElement.add(option);
@@ -371,7 +371,7 @@ WebInspector.OverridesView.MediaTab.prototype = {
         }
 
         mediaSelectElement.addEventListener("change", this._emulateMediaChanged.bind(this, mediaSelectElement), false);
-        var fragment = document.createDocumentFragment();
+        var fragment = createDocumentFragment();
         fragment.appendChild(checkbox);
         fragment.appendChild(fieldsetElement);
         this.element.appendChild(fragment);
@@ -523,7 +523,7 @@ WebInspector.OverridesView.SensorsTab.prototype = {
         rowElement = tableElement.createChild("tr");
         cellElement = rowElement.createChild("td");
         cellElement.colSpan = 2;
-        var geolocationErrorLabelElement = document.createElement("label");
+        var geolocationErrorLabelElement = createElement("label");
         var geolocationErrorCheckboxElement = geolocationErrorLabelElement.createChild("input");
         geolocationErrorCheckboxElement.id = "geolocation-error";
         geolocationErrorCheckboxElement.type = "checkbox";

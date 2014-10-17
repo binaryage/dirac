@@ -88,7 +88,7 @@ WebInspector.ConsoleView = function()
 
     this._viewportThrottler = new WebInspector.Throttler(50);
 
-    this._filterStatusMessageElement = document.createElementWithClass("div", "console-message");
+    this._filterStatusMessageElement = createElementWithClass("div", "console-message");
     this._messagesElement.insertBefore(this._filterStatusMessageElement, this._messagesElement.firstChild);
     this._filterStatusTextElement = this._filterStatusMessageElement.createChild("span", "console-info");
     this._filterStatusMessageElement.createTextChild(" ");
@@ -342,7 +342,7 @@ WebInspector.ConsoleView.prototype = {
         if (WebInspector.isWorkerFrontend() && executionContext.target() === WebInspector.targetManager.mainTarget())
             return;
 
-        var newOption = document.createElement("option");
+        var newOption = createElement("option");
         newOption.__executionContext = executionContext;
         newOption.text = this._titleFor(executionContext);
         this._optionByExecutionContext.set(executionContext, newOption);
@@ -1154,7 +1154,7 @@ WebInspector.ConsoleCommand.prototype = {
     contentElement: function()
     {
         if (!this._element) {
-            this._element = document.createElementWithClass("div", "console-user-command");
+            this._element = createElementWithClass("div", "console-user-command");
             this._element.message = this;
 
             this._formatCommand();
@@ -1165,7 +1165,7 @@ WebInspector.ConsoleCommand.prototype = {
 
     _formatCommand: function()
     {
-        this._formattedCommand = document.createElementWithClass("span", "console-message-text source-code");
+        this._formattedCommand = createElementWithClass("span", "console-message-text source-code");
         this._formattedCommand.textContent = this.text;
     },
 

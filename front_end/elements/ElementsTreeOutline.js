@@ -40,7 +40,7 @@ WebInspector.ElementsTreeOutline = function(target, omitRootDOMNode, selectEnabl
 {
     this._target = target;
     this._domModel = target.domModel;
-    var element = document.createElement("div");
+    var element = createElement("div");
 
     this._shadowRoot = element.createShadowRoot();
     this._shadowRoot.appendChild(WebInspector.View.createStyleElement("elementsTreeOutline.css"));
@@ -1192,7 +1192,7 @@ WebInspector.ElementsTreeElement.prototype = {
         }
 
         if (!this.selectionElement) {
-            this.selectionElement = document.createElement("div");
+            this.selectionElement = createElement("div");
             this.selectionElement.className = "selection selected";
             listItemElement.insertBefore(this.selectionElement, listItemElement.firstChild);
         }
@@ -1383,7 +1383,7 @@ WebInspector.ElementsTreeElement.prototype = {
         if (childNodeCount > this.expandedChildCount) {
             var targetButtonIndex = expandedChildCount;
             if (!this.expandAllButtonElement) {
-                var button = document.createElement("button");
+                var button = createElement("button");
                 button.className = "text-button";
                 button.value = "";
                 var item = new TreeElement(button, null, false);
@@ -1708,7 +1708,7 @@ WebInspector.ElementsTreeElement.prototype = {
     {
         // Cannot just convert the textual html into an element without
         // a parent node. Use a temporary span container for the HTML.
-        var container = document.createElement("span");
+        var container = createElement("span");
         this._buildAttributeDOM(container, " ", "");
         var attr = container.firstElementChild;
         attr.style.marginLeft = "2px"; // overrides the .editing margin rule
@@ -1902,7 +1902,7 @@ WebInspector.ElementsTreeElement.prototype = {
 
         initialValue = this._convertWhitespaceToEntities(initialValue).text;
 
-        this._htmlEditElement = document.createElement("div");
+        this._htmlEditElement = createElement("div");
         this._htmlEditElement.className = "source-code elements-tree-editor";
 
         // Hide header items.
@@ -2165,7 +2165,7 @@ WebInspector.ElementsTreeElement.prototype = {
             var nodeInfo = this._nodeTitleInfo(WebInspector.linkifyURLAsNode);
             if (nodeInfo.shadowRoot)
                 this.listItemElement.classList.add("shadow-root");
-            var highlightElement = document.createElement("span");
+            var highlightElement = createElement("span");
             highlightElement.className = "highlight";
             highlightElement.appendChild(nodeInfo.titleDOM);
             this.title = highlightElement;
@@ -2206,7 +2206,7 @@ WebInspector.ElementsTreeElement.prototype = {
         if (!decoratorMessages.length && !parentDecoratorMessages.length)
             return null;
 
-        var decoratorElement = document.createElement("div");
+        var decoratorElement = createElement("div");
         decoratorElement.classList.add("elements-gutter-decoration");
         if (!decoratorMessages.length)
             decoratorElement.classList.add("elements-has-decorated-children");
@@ -2290,7 +2290,7 @@ WebInspector.ElementsTreeElement.prototype = {
         {
             var rewrittenHref = node.resolveURL(value);
             if (rewrittenHref === null) {
-                var span = document.createElement("span");
+                var span = createElement("span");
                 setValueWithEntities.call(this, span, value);
                 return span;
             }
@@ -2394,7 +2394,7 @@ WebInspector.ElementsTreeElement.prototype = {
     _nodeTitleInfo: function(linkify)
     {
         var node = this._node;
-        var info = {titleDOM: document.createDocumentFragment(), hasChildren: this.hasChildren};
+        var info = {titleDOM: createDocumentFragment(), hasChildren: this.hasChildren};
 
         switch (node.nodeType()) {
             case Node.ATTRIBUTE_NODE:

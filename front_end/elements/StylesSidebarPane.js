@@ -37,13 +37,13 @@ WebInspector.StylesSidebarPane = function(computedStylePane, setPseudoClassCallb
 {
     WebInspector.SidebarPane.call(this, WebInspector.UIString("Styles"));
 
-    this._elementStateButton = document.createElement("button");
+    this._elementStateButton = createElement("button");
     this._elementStateButton.className = "pane-title-button element-state";
     this._elementStateButton.title = WebInspector.UIString("Toggle Element State");
     this._elementStateButton.addEventListener("click", this._toggleElementStatePane.bind(this), false);
     this.titleElement.appendChild(this._elementStateButton);
 
-    var addButton = document.createElement("button");
+    var addButton = createElement("button");
     addButton.className = "pane-title-button add";
     addButton.id = "add-style-button-test-id";
     addButton.title = WebInspector.UIString("New Style Rule");
@@ -64,7 +64,7 @@ WebInspector.StylesSidebarPane = function(computedStylePane, setPseudoClassCallb
 
     this._createElementStatePane();
     this.bodyElement.appendChild(this._elementStatePane);
-    this._sectionsContainer = document.createElement("div");
+    this._sectionsContainer = createElement("div");
     this.bodyElement.appendChild(this._sectionsContainer);
 
     this._spectrumHelper = new WebInspector.SpectrumPopupHelper();
@@ -103,7 +103,7 @@ WebInspector.StylesSidebarPane.Events = {
  */
 WebInspector.StylesSidebarPane.createExclamationMark = function(property)
 {
-    var exclamationElement = document.createElement("div");
+    var exclamationElement = createElement("div");
     exclamationElement.className = "exclamation-mark" + (WebInspector.StylesSidebarPane._ignoreErrorsForProperty(property) ? "" : " warning-icon-small");
     exclamationElement.title = WebInspector.CSSMetadata.cssPropertiesMetainfo.keySet()[property.name.toLowerCase()] ? WebInspector.UIString("Invalid property value.") : WebInspector.UIString("Unknown property name.");
     return exclamationElement;
@@ -813,7 +813,7 @@ WebInspector.StylesSidebarPane.prototype = {
         for (var i = 0; i < styleRules.length; ++i) {
             var styleRule = styleRules[i];
             if (styleRule.isStyleSeparator) {
-                var separatorElement = document.createElement("div");
+                var separatorElement = createElement("div");
                 if (styleRule.isPlaceholder) {
                     separatorElement.className = "styles-sidebar-placeholder";
                     this._sectionsContainer.insertBefore(separatorElement, anchorElement);
@@ -955,9 +955,9 @@ WebInspector.StylesSidebarPane.prototype = {
 
     _createElementStatePane: function()
     {
-        this._elementStatePane = document.createElement("div");
+        this._elementStatePane = createElement("div");
         this._elementStatePane.className = "styles-element-state-pane source-code";
-        var table = document.createElement("table");
+        var table = createElement("table");
 
         var inputs = [];
         this._elementStatePane.inputs = inputs;
@@ -981,9 +981,9 @@ WebInspector.StylesSidebarPane.prototype = {
          */
         function createCheckbox(state)
         {
-            var td = document.createElement("td");
-            var label = document.createElement("label");
-            var input = document.createElement("input");
+            var td = createElement("td");
+            var label = createElement("label");
+            var input = createElement("input");
             input.type = "checkbox";
             input.state = state;
             input.addEventListener("click", clickListener.bind(this), false);
@@ -1020,7 +1020,7 @@ WebInspector.StylesSidebarPane.prototype = {
      */
     _createPropertyFilterElement: function(isComputedStyleFilter, filterCallback)
     {
-        var input = document.createElement("input");
+        var input = createElement("input");
         input.type = "text";
         input.placeholder = isComputedStyleFilter ? WebInspector.UIString("Filter") : WebInspector.UIString("Find in Styles");
         var boundSearchHandler = searchHandler.bind(this);
@@ -1211,18 +1211,18 @@ WebInspector.StylePropertiesSection = function(parentPane, styleRule, editable, 
     // We don't really use properties' disclosure.
     this.propertiesElement.classList.remove("properties-tree");
 
-    var selectorContainer = document.createElement("div");
-    this._selectorElement = document.createElement("span");
+    var selectorContainer = createElement("div");
+    this._selectorElement = createElement("span");
     this._selectorElement.textContent = styleRule.selectorText;
     selectorContainer.appendChild(this._selectorElement);
 
-    var openBrace = document.createElement("span");
+    var openBrace = createElement("span");
     openBrace.textContent = " {";
     selectorContainer.appendChild(openBrace);
     selectorContainer.addEventListener("mousedown", this._handleEmptySpaceMouseDown.bind(this), false);
     selectorContainer.addEventListener("click", this._handleSelectorContainerClick.bind(this), false);
 
-    var closeBrace = document.createElement("div");
+    var closeBrace = createElement("div");
     closeBrace.textContent = "}";
     this.element.appendChild(closeBrace);
 
@@ -1250,7 +1250,7 @@ WebInspector.StylePropertiesSection = function(parentPane, styleRule, editable, 
 
     this._usedProperties = styleRule.usedProperties;
 
-    this._selectorRefElement = document.createElement("div");
+    this._selectorRefElement = createElement("div");
     this._selectorRefElement.className = "subtitle";
     this._mediaListElement = this.titleElement.createChild("div", "media-list");
     this._updateMediaList();
@@ -1561,7 +1561,7 @@ WebInspector.StylePropertiesSection.prototype = {
             return;
 
         var selectors = rule.selectors;
-        var fragment = document.createDocumentFragment();
+        var fragment = createDocumentFragment();
         var currentMatch = 0;
         for (var i = 0; i < selectors.length ; ++i) {
             if (i)
@@ -1570,7 +1570,7 @@ WebInspector.StylePropertiesSection.prototype = {
             if (isSelectorMatching)
                 ++currentMatch;
             var matchingSelectorClass = isSelectorMatching ? " selector-matches" : "";
-            var selectorElement = document.createElement("span");
+            var selectorElement = createElement("span");
             selectorElement.className = "simple-selector" + matchingSelectorClass;
             if (rule.styleSheetId)
                 selectorElement._selectorIndex = i;
@@ -1636,7 +1636,7 @@ WebInspector.StylePropertiesSection.prototype = {
     _createRuleOriginNode: function(rule, ruleLocation)
     {
         if (!rule)
-            return document.createTextNode("");
+            return createTextNode("");
 
         if (!ruleLocation) {
             var firstMatchingIndex = rule.matchingSelectors && rule.matchingSelectors.length ? rule.matchingSelectors[0] : 0;
@@ -1647,12 +1647,12 @@ WebInspector.StylePropertiesSection.prototype = {
             return this._linkifyRuleLocation(rule.styleSheetId, ruleLocation);
 
         if (rule.isUserAgent)
-            return document.createTextNode(WebInspector.UIString("user agent stylesheet"));
+            return createTextNode(WebInspector.UIString("user agent stylesheet"));
         if (rule.isUser)
-            return document.createTextNode(WebInspector.UIString("user stylesheet"));
+            return createTextNode(WebInspector.UIString("user stylesheet"));
         if (rule.isViaInspector)
-            return document.createTextNode(WebInspector.UIString("via inspector"));
-        return document.createTextNode("");
+            return createTextNode(WebInspector.UIString("via inspector"));
+        return createTextNode("");
     },
 
     /**
@@ -1999,7 +1999,7 @@ WebInspector.ComputedStylePropertiesSection.prototype = {
 
                 var treeElement = this._propertyTreeElements[property.name.toLowerCase()];
                 if (treeElement) {
-                    var fragment = document.createDocumentFragment();
+                    var fragment = createDocumentFragment();
                     var selector = fragment.createChild("span");
                     selector.style.color = "gray";
                     selector.textContent = section.styleRule.selectorText;
@@ -2304,16 +2304,16 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
 
         this.updateState();
 
-        var nameElement = document.createElement("span");
+        var nameElement = createElement("span");
         nameElement.className = "webkit-css-property";
         nameElement.textContent = this.name;
         nameElement.title = this.property.propertyText;
         this.nameElement = nameElement;
 
-        this._expandElement = document.createElement("span");
+        this._expandElement = createElement("span");
         this._expandElement.className = "expand-element";
 
-        var valueElement = document.createElement("span");
+        var valueElement = createElement("span");
         valueElement.className = "value";
         this.valueElement = valueElement;
 
@@ -2326,7 +2326,7 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
          */
         function processValue(regex, processor, nextProcessor, valueText)
         {
-            var container = document.createDocumentFragment();
+            var container = createDocumentFragment();
 
             var items = valueText.replace(regex, "\0$1\0").split("\0");
             for (var i = 0; i < items.length; ++i) {
@@ -2356,7 +2356,7 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
             var match = hrefUrl.match(/['"]?([^'"]+)/);
             if (match)
                 hrefUrl = match[1];
-            var container = document.createDocumentFragment();
+            var container = createDocumentFragment();
             container.createTextChild("url(");
             if (this._styleRule.rule && this._styleRule.rule.resourceURL())
                 hrefUrl = WebInspector.ParsedURL.completeURL(this._styleRule.rule.resourceURL(), hrefUrl);
@@ -2422,7 +2422,7 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
 
         // We can be called with valid non-color values of |text| (like 'none' from border style)
         if (!color)
-            return document.createTextNode(text);
+            return createTextNode(text);
 
         var format = WebInspector.StylesSidebarPane._colorFormat(color);
         var spectrumHelper = this.editablePane() && this.editablePane()._spectrumHelper;
@@ -2507,7 +2507,7 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
             }
         }
 
-        var colorValueElement = document.createElement("span");
+        var colorValueElement = createElement("span");
         if (format === WebInspector.Color.Format.Original)
             colorValueElement.textContent = text;
         else
@@ -2571,7 +2571,7 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
             colorValueElement.textContent = currentValue;
         }
 
-        var container = document.createElement("nobr");
+        var container = createElement("nobr");
         container.appendChild(colorSwatch.element);
         container.appendChild(colorValueElement);
         return container;
@@ -2836,7 +2836,7 @@ WebInspector.StylePropertyTreeElement.prototype = {
         WebInspector.StylePropertyTreeElementBase.prototype.updateTitle.call(this);
 
         if (this.parsedOk && this.section() && this.parent.root) {
-            var enabledCheckboxElement = document.createElement("input");
+            var enabledCheckboxElement = createElement("input");
             enabledCheckboxElement.className = "enabled-button";
             enabledCheckboxElement.type = "checkbox";
             enabledCheckboxElement.checked = !this.disabled;

@@ -59,7 +59,7 @@ WebInspector.AuditResultView.prototype = {
 WebInspector.AuditCategoryResultPane = function(categoryResult)
 {
     WebInspector.SidebarPane.call(this, categoryResult.title);
-    var treeOutlineElement = document.createElement("ol");
+    var treeOutlineElement = createElement("ol");
     this.bodyElement.classList.add("audit-result-tree");
     this.bodyElement.appendChild(treeOutlineElement);
 
@@ -100,9 +100,9 @@ WebInspector.AuditCategoryResultPane.prototype = {
                 title = String.sprintf("%s (%d)", title, result.violationCount);
         }
 
-        var titleFragment = document.createDocumentFragment();
+        var titleFragment = createDocumentFragment();
         if (severity) {
-            var severityElement = document.createElement("div");
+            var severityElement = createElement("div");
             severityElement.className = "severity-" + severity;
             titleFragment.appendChild(severityElement);
         }

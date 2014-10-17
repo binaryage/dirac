@@ -44,16 +44,16 @@ WebInspector.ShowMoreDataGridNode = function(callback, startPosition, endPositio
     this._endPosition = endPosition;
     this._chunkSize = chunkSize;
 
-    this.showNext = document.createElement("button");
+    this.showNext = createElement("button");
     this.showNext.setAttribute("type", "button");
     this.showNext.addEventListener("click", this._showNextChunk.bind(this), false);
     this.showNext.textContent = WebInspector.UIString("Show %d before", this._chunkSize);
 
-    this.showAll = document.createElement("button");
+    this.showAll = createElement("button");
     this.showAll.setAttribute("type", "button");
     this.showAll.addEventListener("click", this._showAll.bind(this), false);
 
-    this.showLast = document.createElement("button");
+    this.showLast = createElement("button");
     this.showLast.setAttribute("type", "button");
     this.showLast.addEventListener("click", this._showLastChunk.bind(this), false);
     this.showLast.textContent = WebInspector.UIString("Show %d after", this._chunkSize);

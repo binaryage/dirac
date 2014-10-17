@@ -525,7 +525,7 @@ WebInspector.CountersGraph.CounterUI.prototype = {
  */
 WebInspector.SwatchCheckbox = function(title, color)
 {
-    this.element = document.createElement("div");
+    this.element = createElement("div");
     this._swatch = this.element.createChild("div", "swatch");
     this.element.createChild("span", "title").textContent = title;
     this._color = color;

@@ -667,7 +667,7 @@ WebInspector.JavaScriptSourceFrame.prototype = {
 
     _createConditionElement: function(lineNumber)
     {
-        var conditionElement = document.createElementWithClass("div", "source-frame-breakpoint-condition");
+        var conditionElement = createElementWithClass("div", "source-frame-breakpoint-condition");
 
         var labelElement = conditionElement.createChild("label", "source-frame-breakpoint-message");
         labelElement.htmlFor = "source-frame-breakpoint-condition";

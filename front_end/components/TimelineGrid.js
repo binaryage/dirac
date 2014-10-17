@@ -33,11 +33,11 @@
  */
 WebInspector.TimelineGrid = function()
 {
-    this.element = document.createElement("div");
+    this.element = createElement("div");
 
     this._dividersElement = this.element.createChild("div", "resources-dividers");
 
-    this._gridHeaderElement = document.createElement("div");
+    this._gridHeaderElement = createElement("div");
     this._gridHeaderElement.id = "timeline-grid-header";
     this._eventDividersElement = this._gridHeaderElement.createChild("div", "resources-event-dividers");
     this._dividersLabelBarElement = this._gridHeaderElement.createChild("div", "resources-dividers-label-bar");
@@ -199,13 +199,13 @@ WebInspector.TimelineGrid.prototype = {
         var lastTime = 0;
         for (var i = 0; i < dividerOffsets.length; ++i) {
             if (!divider) {
-                divider = document.createElement("div");
+                divider = createElement("div");
                 divider.className = "resources-divider";
                 this._dividersElement.appendChild(divider);
 
-                dividerLabelBar = document.createElement("div");
+                dividerLabelBar = createElement("div");
                 dividerLabelBar.className = "resources-divider";
-                var label = document.createElement("div");
+                var label = createElement("div");
                 label.className = "resources-divider-label";
                 dividerLabelBar._labelElement = label;
                 dividerLabelBar.appendChild(label);

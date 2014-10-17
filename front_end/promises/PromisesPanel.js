@@ -109,7 +109,7 @@ WebInspector.PromisesPanel.prototype = {
             var nodesToInsert = { __proto__: null };
             for (var i = 0; i < promiseData.length; i++) {
                 var promise = promiseData[i];
-                var status = document.createElementWithClass("div", "status");
+                var status = createElementWithClass("div", "status");
                 status.classList.add(promise.status);
                 status.createTextChild(promise.status);
                 var data = {

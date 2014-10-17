@@ -37,7 +37,7 @@ WebInspector.JavaScriptBreakpointsSidebarPane = function(breakpointManager, show
     this._breakpointManager = breakpointManager;
     this._showSourceLineDelegate = showSourceLineDelegate;
 
-    this.listElement = document.createElementWithClass("ol", "breakpoint-list");
+    this.listElement = createElementWithClass("ol", "breakpoint-list");
 
     this.emptyElement = this.bodyElement.createChild("div", "info");
     this.emptyElement.textContent = WebInspector.UIString("No Breakpoints");
@@ -92,7 +92,7 @@ WebInspector.JavaScriptBreakpointsSidebarPane.prototype = {
      */
     _addBreakpoint: function(breakpoint, uiLocation)
     {
-        var element = document.createElementWithClass("li", "cursor-pointer");
+        var element = createElementWithClass("li", "cursor-pointer");
         element.addEventListener("contextmenu", this._breakpointContextMenu.bind(this, breakpoint), true);
         element.addEventListener("click", this._breakpointClicked.bind(this, uiLocation), false);
 
@@ -324,7 +324,7 @@ WebInspector.XHRBreakpointsSidebarPane.prototype = {
 
         this.expand();
 
-        var inputElementContainer = document.createElementWithClass("p", "breakpoint-condition");
+        var inputElementContainer = createElementWithClass("p", "breakpoint-condition");
         inputElementContainer.textContent = WebInspector.UIString("Break when URL contains:");
 
         var inputElement = inputElementContainer.createChild("span", "editing");
@@ -363,7 +363,7 @@ WebInspector.XHRBreakpointsSidebarPane.prototype = {
         if (url in this._breakpointElements)
             return;
 
-        var element = document.createElement("li");
+        var element = createElement("li");
         element._url = url;
         element.addEventListener("contextmenu", this._contextMenu.bind(this, url), true);
 
@@ -461,7 +461,7 @@ WebInspector.XHRBreakpointsSidebarPane.prototype = {
     _labelClicked: function(url)
     {
         var element = this._breakpointElements[url];
-        var inputElement = document.createElementWithClass("span", "breakpoint-condition editing");
+        var inputElement = createElementWithClass("span", "breakpoint-condition editing");
         inputElement.textContent = url;
         this.listElement.insertBefore(inputElement, element);
         element.classList.add("hidden");
@@ -625,7 +625,7 @@ WebInspector.EventListenerBreakpointsSidebarPane.prototype = {
      */
     _createCategory: function(name, eventNames, isInstrumentationEvent, targetNames)
     {
-        var labelNode = document.createElement("label");
+        var labelNode = createElement("label");
         labelNode.textContent = name;
 
         var categoryItem = {};
@@ -646,7 +646,7 @@ WebInspector.EventListenerBreakpointsSidebarPane.prototype = {
             var breakpointItem = {};
             var title = WebInspector.EventListenerBreakpointsSidebarPane.eventNameForUI(eventName);
 
-            labelNode = document.createElement("label");
+            labelNode = createElement("label");
             labelNode.textContent = title;
 
             breakpointItem.element = new TreeElement(labelNode);
@@ -682,7 +682,7 @@ WebInspector.EventListenerBreakpointsSidebarPane.prototype = {
      */
     _createCheckbox: function(labelNode)
     {
-        var checkbox = document.createElementWithClass("input", "checkbox-elem");
+        var checkbox = createElementWithClass("input", "checkbox-elem");
         checkbox.type = "checkbox";
         labelNode.insertBefore(checkbox, labelNode.firstChild);
         return checkbox;

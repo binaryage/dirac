@@ -98,7 +98,7 @@ WebInspector.DocumentationView.prototype = {
 WebInspector.DocumentationView.Renderer = function(article, searchItem)
 {
     this._searchItem = searchItem;
-    this._element = document.createElement("div");
+    this._element = createElement("div");
     this._article = article;
 }
 
@@ -146,7 +146,7 @@ WebInspector.DocumentationView.Renderer.prototype = {
      */
     _createPageTitle: function(titleText, searchItem)
     {
-        var pageTitle = document.createElementWithClass("div", "documentation-page-title");
+        var pageTitle = createElementWithClass("div", "documentation-page-title");
         if (titleText)
             pageTitle.textContent = titleText;
         else if (searchItem)
@@ -163,7 +163,7 @@ WebInspector.DocumentationView.Renderer.prototype = {
     {
         if (!parameters.length && !method)
             return null;
-        var signature = document.createElementWithClass("div", "documentation-method-signature monospace");
+        var signature = createElementWithClass("div", "documentation-method-signature monospace");
         if (method && method.returnValueName) {
             var returnTypeElement = signature.createChild("span", "documentation-parameter-data-type-value");
             returnTypeElement.textContent = method.returnValueName;
@@ -191,7 +191,7 @@ WebInspector.DocumentationView.Renderer.prototype = {
     {
         if (!parameters.length)
             return null;
-        var table = document.createElementWithClass("table", "documentation-table");
+        var table = createElementWithClass("table", "documentation-table");
         var tableBody = table.createChild("tbody");
         var headerRow = tableBody.createChild("tr", "documentation-table-row");
         var tableHeader = headerRow.createChild("th", "documentation-table-header");
@@ -219,7 +219,7 @@ WebInspector.DocumentationView.Renderer.prototype = {
         if (!examples.length)
             return;
 
-        var section = document.createElementWithClass("div", "documentation-section");
+        var section = createElementWithClass("div", "documentation-section");
 
         for (var i = 0; i < examples.length; ++i) {
             var example = section.createChild("div", "documentation-example");
@@ -250,29 +250,29 @@ WebInspector.DocumentationView.Renderer.prototype = {
 
         switch (article.type()) {
         case elementTypes.Inline:
-            element = document.createElement("span");
+            element = createElement("span");
             break;
         case elementTypes.Link:
-            element = document.createElementWithClass("a", "documentation-link");
+            element = createElementWithClass("a", "documentation-link");
             element.href = article.url();
             if (!article.children().length)
                 element.textContent = article.url();
             break;
         case elementTypes.Code:
-            element = document.createElementWithClass("span", "documentation-code-tag");
+            element = createElementWithClass("span", "documentation-code-tag");
             break;
         case elementTypes.CodeBlock:
-            element = document.createElementWithClass("pre", "documentation-code source-code");
+            element = createElementWithClass("pre", "documentation-code source-code");
             element.textContent = article.code();
             break;
         case elementTypes.PlainText:
-            element = document.createElement("span");
+            element = createElement("span");
             element.textContent = article.text();
             if (article.isHighlighted())
                 element.classList.add("documentation-highlighted-text");
             break;
         case elementTypes.Block:
-            element = document.createElement(article.hasBullet() ? "li" : "div");
+            element = createElement(article.hasBullet() ? "li" : "div");
             if (!article.hasBullet())
                 element.classList.add("documentation-paragraph");
             break;
@@ -301,7 +301,7 @@ WebInspector.DocumentationView.Renderer.prototype = {
      */
     _renderTable: function(table)
     {
-        var tableElement = document.createElementWithClass("table", "documentation-table");
+        var tableElement = createElementWithClass("table", "documentation-table");
         var tableBody = tableElement.createChild("tbody");
         var headerRow = tableBody.createChild("tr", "documentation-table-row");
         for (var i = 0; i < table.columnNames().length; ++i) {

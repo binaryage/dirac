@@ -37,7 +37,7 @@ WebInspector.PlatformFontsSidebarPane = function()
     WebInspector.SidebarPane.call(this, WebInspector.UIString("Fonts"));
     this.element.classList.add("platform-fonts");
 
-    this._sectionTitle = document.createElementWithClass("div", "sidebar-separator");
+    this._sectionTitle = createElementWithClass("div", "sidebar-separator");
     this.element.insertBefore(this._sectionTitle, this.bodyElement);
     this._sectionTitle.textContent = WebInspector.UIString("Rendered Fonts");
     this._fontStatsSection = this.bodyElement.createChild("div", "stats-section");

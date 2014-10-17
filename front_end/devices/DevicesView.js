@@ -147,7 +147,7 @@ WebInspector.DevicesView.prototype = {
                 var incompatibleVersion = browser.hasOwnProperty("compatibleVersion") && !browser.compatibleVersion;
                 var browserSection = deviceSection.querySelector("#" + sanitizeForId(browser.id));
                 if (!browserSection) {
-                    browserSection = document.createElementWithClass("div", "browser");
+                    browserSection = createElementWithClass("div", "browser");
                     browserSection.id = sanitizeForId(browser.id);
                     insertChildSortedById(deviceSection, browserSection);
 

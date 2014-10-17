@@ -145,7 +145,7 @@ WebInspector._elementDragEnd = function(event)
  */
 WebInspector.GlassPane = function()
 {
-    this.element = document.createElement("div");
+    this.element = createElement("div");
     this.element.style.cssText = "position:absolute;top:0;bottom:0;left:0;right:0;background-color:transparent;z-index:1000;";
     this.element.id = "glass-pane";
     document.body.appendChild(this.element);
@@ -369,7 +369,7 @@ WebInspector.handleElementValueModifications = function(event, element, finishHa
     }
 
     if (replacementString) {
-        var replacementTextNode = document.createTextNode(replacementString);
+        var replacementTextNode = createTextNode(replacementString);
 
         wordRange.deleteContents();
         wordRange.insertNode(replacementTextNode);
@@ -668,7 +668,7 @@ WebInspector.restoreFocusFromElement = function(element)
 WebInspector.setToolbarColors = function(backgroundColor, color)
 {
     if (!WebInspector._themeStyleElement) {
-        WebInspector._themeStyleElement = document.createElement("style");
+        WebInspector._themeStyleElement = createElement("style");
         document.head.appendChild(WebInspector._themeStyleElement);
     }
     var parsedColor = WebInspector.Color.parse(color);

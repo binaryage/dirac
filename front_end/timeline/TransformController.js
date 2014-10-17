@@ -23,7 +23,7 @@ WebInspector.TransformController = function(element, disableRotate)
     element.addEventListener("mousewheel", this._onMouseWheel.bind(this), false);
     this._disableRotate = disableRotate;
 
-    this._controlPanelElement = document.createElement("div");
+    this._controlPanelElement = createElement("div");
     this._controlPanelElement.classList.add("transform-control-panel");
 
     this._modeButtons = {};

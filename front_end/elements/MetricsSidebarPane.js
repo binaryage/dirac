@@ -192,7 +192,7 @@ WebInspector.MetricsSidebarPane.prototype = {
     _updateMetrics: function(style)
     {
         // Updating with computed style.
-        var metricsElement = document.createElement("div");
+        var metricsElement = createElement("div");
         metricsElement.className = "metrics";
         var self = this;
 
@@ -214,7 +214,7 @@ WebInspector.MetricsSidebarPane.prototype = {
             value = value.replace(/px$/, "");
             value = Number.toFixedIfFloating(value);
 
-            var element = document.createElement("div");
+            var element = createElement("div");
             element.className = side;
             element.textContent = value;
             element.addEventListener("dblclick", this.startEditing.bind(this, element, name, propertyName, style), false);
@@ -294,7 +294,7 @@ WebInspector.MetricsSidebarPane.prototype = {
             if (name === "position" && noPositionType[style.getPropertyValue("position")])
                 continue;
 
-            var boxElement = document.createElement("div");
+            var boxElement = createElement("div");
             boxElement.className = name;
             boxElement._backgroundColor = boxColors[i].toString(WebInspector.Color.Format.RGBA);
             boxElement._name = name;
@@ -303,11 +303,11 @@ WebInspector.MetricsSidebarPane.prototype = {
             this._boxElements.push(boxElement);
 
             if (name === "content") {
-                var widthElement = document.createElement("span");
+                var widthElement = createElement("span");
                 widthElement.textContent = getContentAreaWidthPx(style);
                 widthElement.addEventListener("dblclick", this.startEditing.bind(this, widthElement, "width", "width", style), false);
 
-                var heightElement = document.createElement("span");
+                var heightElement = createElement("span");
                 heightElement.textContent = getContentAreaHeightPx(style);
                 heightElement.addEventListener("dblclick", this.startEditing.bind(this, heightElement, "height", "height", style), false);
 
@@ -317,20 +317,20 @@ WebInspector.MetricsSidebarPane.prototype = {
             } else {
                 var suffix = (name === "border" ? "-width" : "");
 
-                var labelElement = document.createElement("div");
+                var labelElement = createElement("div");
                 labelElement.className = "label";
                 labelElement.textContent = boxLabels[i];
                 boxElement.appendChild(labelElement);
 
                 boxElement.appendChild(createBoxPartElement.call(this, style, name, "top", suffix));
-                boxElement.appendChild(document.createElement("br"));
+                boxElement.appendChild(createElement("br"));
                 boxElement.appendChild(createBoxPartElement.call(this, style, name, "left", suffix));
 
                 if (previousBox)
                     boxElement.appendChild(previousBox);
 
                 boxElement.appendChild(createBoxPartElement.call(this, style, name, "right", suffix));
-                boxElement.appendChild(document.createElement("br"));
+                boxElement.appendChild(createElement("br"));
                 boxElement.appendChild(createBoxPartElement.call(this, style, name, "bottom", suffix));
             }
 

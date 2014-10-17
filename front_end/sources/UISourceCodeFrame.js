@@ -216,7 +216,7 @@ WebInspector.UISourceCodeFrame.prototype = {
  */
 WebInspector.UISourceCodeFrame.Infobar = function(level, message)
 {
-    this.element = document.createElementWithClass("div", "source-frame-infobar source-frame-infobar-" + level);
+    this.element = createElementWithClass("div", "source-frame-infobar source-frame-infobar-" + level);
     this._mainRow = this.element.createChild("div", "source-frame-infobar-main-row");
     this._detailsContainer = this.element.createChild("span", "source-frame-infobar-details-container");
 

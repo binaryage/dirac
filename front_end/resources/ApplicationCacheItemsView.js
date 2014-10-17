@@ -41,16 +41,16 @@ WebInspector.ApplicationCacheItemsView = function(model, frameId)
     this.deleteButton.visible = false;
     this.deleteButton.addEventListener("click", this._deleteButtonClicked, this);
 
-    this.connectivityIcon = document.createElement("div");
-    this.connectivityMessage = document.createElement("span");
+    this.connectivityIcon = createElement("div");
+    this.connectivityMessage = createElement("span");
     this.connectivityMessage.className = "storage-application-cache-connectivity";
     this.connectivityMessage.textContent = "";
 
-    this.divider = document.createElement("span");
+    this.divider = createElement("span");
     this.divider.className = "status-bar-item status-bar-divider";
 
-    this.statusIcon = document.createElement("div");
-    this.statusMessage = document.createElement("span");
+    this.statusIcon = createElement("div");
+    this.statusMessage = createElement("span");
     this.statusMessage.className = "storage-application-cache-status";
     this.statusMessage.textContent = "";
 

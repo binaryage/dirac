@@ -188,7 +188,7 @@ WebInspector.MultiProfileLauncherView.prototype = {
     {
         var labelElement = this._profileTypeSelectorForm.createChild("label");
         labelElement.textContent = profileType.name;
-        var optionElement = document.createElement("input");
+        var optionElement = createElement("input");
         labelElement.insertBefore(optionElement, labelElement.firstChild);
         this._typeIdToOptionElement[profileType.id] = optionElement;
         optionElement._profileType = profileType;

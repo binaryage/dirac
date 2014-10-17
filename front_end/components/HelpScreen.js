@@ -60,7 +60,7 @@ WebInspector.HelpScreen._visibleScreen = null;
 WebInspector.HelpScreen.prototype = {
     _createCloseButton: function()
     {
-        var closeButton = document.createElement("div");
+        var closeButton = createElement("div");
         closeButton.className = "help-close-button close-button-gray";
         closeButton.addEventListener("click", this.hide.bind(this), false);
         return closeButton;

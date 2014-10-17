@@ -38,7 +38,7 @@ WebInspector.Popover = function(popoverHelper)
     WebInspector.View.call(this);
     this.markAsRoot();
     this.element.className = WebInspector.Popover._classNamePrefix; // Override
-    this._containerElement = document.createElementWithClass("div", "fill popover-container");
+    this._containerElement = createElementWithClass("div", "fill popover-container");
 
     this._popupArrowElement = this.element.createChild("div", "arrow");
     this._contentDiv = this.element.createChild("div", "content");

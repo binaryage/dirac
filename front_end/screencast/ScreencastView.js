@@ -681,7 +681,7 @@ WebInspector.ScreencastView.prototype = {
      */
     _createCheckerboardPattern: function(context)
     {
-        var pattern = /** @type {!HTMLCanvasElement} */(document.createElement("canvas"));
+        var pattern = /** @type {!HTMLCanvasElement} */(createElement("canvas"));
         const size = 32;
         pattern.width = size * 2;
         pattern.height = size * 2;

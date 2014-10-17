@@ -38,7 +38,7 @@ WebInspector.PropertiesSection = function(title, subtitle)
     WebInspector.Section.call(this, title, subtitle);
 
     this.headerElement.classList.add("monospace");
-    this.propertiesElement = document.createElement("ol");
+    this.propertiesElement = createElement("ol");
     this.propertiesElement.className = "properties properties-tree monospace";
     this.propertiesTreeOutline = new TreeOutline(this.propertiesElement, true);
     this.propertiesTreeOutline.setFocusable(false);

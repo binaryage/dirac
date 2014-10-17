@@ -1206,13 +1206,13 @@ WebInspector.FrameResourceTreeElement.prototype = {
         WebInspector.BaseStorageTreeElement.prototype.onattach.call(this);
 
         if (this._resource.type === WebInspector.resourceTypes.Image) {
-            var iconElement = document.createElementWithClass("div", "icon");
+            var iconElement = createElementWithClass("div", "icon");
             var previewImage = iconElement.createChild("img", "image-resource-icon-preview");
             this._resource.populateImageSource(previewImage);
             this.listItemElement.replaceChild(iconElement, this.imageElement);
         }
 
-        this._statusElement = document.createElementWithClass("div", "status");
+        this._statusElement = createElementWithClass("div", "status");
         this.listItemElement.insertBefore(this._statusElement, this.titleElement);
 
         this.listItemElement.draggable = true;

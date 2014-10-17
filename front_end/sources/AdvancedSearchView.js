@@ -325,7 +325,7 @@ WebInspector.AdvancedSearchView.prototype = {
 WebInspector.SearchResultsPane = function(searchConfig)
 {
     this._searchConfig = searchConfig;
-    this.element = document.createElement("div");
+    this.element = createElement("div");
 }
 
 WebInspector.SearchResultsPane.prototype = {

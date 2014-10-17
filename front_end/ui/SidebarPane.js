@@ -36,7 +36,7 @@ WebInspector.SidebarPane = function(title)
     this.setMinimumSize(25, 0);
     this.element.className = "sidebar-pane"; // Override
 
-    this.titleElement = document.createElementWithClass("div", "sidebar-pane-toolbar");
+    this.titleElement = createElementWithClass("div", "sidebar-pane-toolbar");
     this.bodyElement = this.element.createChild("div", "body");
     this._title = title;
     this._expandCallback = null;

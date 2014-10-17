@@ -40,12 +40,12 @@ WebInspector.SettingsUI = {}
  */
 WebInspector.SettingsUI.createSettingCheckbox = function(name, setting, omitParagraphElement, inputElement, tooltip)
 {
-    var input = inputElement || document.createElement("input");
+    var input = inputElement || createElement("input");
     input.type = "checkbox";
     input.name = name;
     WebInspector.SettingsUI.bindCheckbox(input, setting);
 
-    var label = document.createElement("label");
+    var label = createElement("label");
     label.appendChild(input);
     label.createTextChild(name);
     if (tooltip)
@@ -54,7 +54,7 @@ WebInspector.SettingsUI.createSettingCheckbox = function(name, setting, omitPara
     if (omitParagraphElement)
         return label;
 
-    var p = document.createElement("p");
+    var p = createElement("p");
     p.appendChild(label);
     return p;
 }
@@ -95,7 +95,7 @@ WebInspector.SettingsUI.bindCheckbox = function(input, setting)
  */
 WebInspector.SettingsUI.createSettingInputField = function(label, setting, numeric, maxLength, width, validatorCallback, instant, clearForZero, placeholder)
 {
-    var p = document.createElement("p");
+    var p = createElement("p");
     var labelElement = p.createChild("label");
     labelElement.textContent = label;
     var inputElement = p.createChild("input");
@@ -207,7 +207,7 @@ WebInspector.SettingsUI.createSettingInputField = function(label, setting, numer
  */
 WebInspector.SettingsUI.createCustomSetting = function(name, element)
 {
-    var p = document.createElement("p");
+    var p = createElement("p");
     var fieldsetElement = p.createChild("fieldset");
     fieldsetElement.createChild("label").textContent = name;
     fieldsetElement.appendChild(element);
@@ -220,7 +220,7 @@ WebInspector.SettingsUI.createCustomSetting = function(name, element)
  */
 WebInspector.SettingsUI.createSettingFieldset = function(setting)
 {
-    var fieldset = document.createElement("fieldset");
+    var fieldset = createElement("fieldset");
     fieldset.disabled = !setting.get();
     setting.addChangeListener(settingChanged);
     return fieldset;

@@ -181,7 +181,7 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
 
     update: function()
     {
-        this.nameElement = document.createElementWithClass("span", "name");
+        this.nameElement = createElementWithClass("span", "name");
         var name = this.property.name;
         if (/^\s|\s$|^$|\n/.test(name))
             this.nameElement.createTextChildren("\"", name.replace(/\n/g, "\u21B5"), "\"");
@@ -194,11 +194,11 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
         if (this.property.symbol)
             this.nameElement.addEventListener("contextmenu", this._contextMenuFired.bind(this, this.property.symbol), false);
 
-        var separatorElement = document.createElementWithClass("span", "separator");
+        var separatorElement = createElementWithClass("span", "separator");
         separatorElement.textContent = ": ";
 
         if (this.property.value) {
-            this.valueElement = document.createElementWithClass("span", "value");
+            this.valueElement = createElementWithClass("span", "value");
             var type = this.property.value.type;
             var subtype = this.property.value.subtype;
             var description = this.property.value.description;
@@ -224,7 +224,7 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
             }
             this.valueElement.setTextContentTruncatedIfNeeded(valueText || "");
             if (prefix)
-                this.valueElement.insertBefore(document.createTextNode(prefix), this.valueElement.firstChild);
+                this.valueElement.insertBefore(createTextNode(prefix), this.valueElement.firstChild);
             if (suffix)
                 this.valueElement.createTextChild(suffix);
 
@@ -249,7 +249,7 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
             if (this.property.getter) {
                 this.valueElement = WebInspector.ObjectPropertyTreeElement.createRemoteObjectAccessorPropertySpan(this.property.parentObject, [this.property.name], this._onInvokeGetterClick.bind(this));
             } else {
-                this.valueElement = document.createElementWithClass("span", "console-formatted-undefined");
+                this.valueElement = createElementWithClass("span", "console-formatted-undefined");
                 this.valueElement.textContent = WebInspector.UIString("<unreadable>");
                 this.valueElement.title = WebInspector.UIString("No property getter");
             }
@@ -582,7 +582,7 @@ WebInspector.ObjectPropertyTreeElement._appendEmptyPlaceholderIfNeeded = functio
 {
     if (treeElement.children.length)
         return;
-    var title = document.createElementWithClass("div", "info");
+    var title = createElementWithClass("div", "info");
     title.textContent = emptyPlaceholder || WebInspector.UIString("No Properties");
     var infoElement = new TreeElement(title, null, false);
     treeElement.appendChild(infoElement);
@@ -596,7 +596,7 @@ WebInspector.ObjectPropertyTreeElement._appendEmptyPlaceholderIfNeeded = functio
  */
 WebInspector.ObjectPropertyTreeElement.createRemoteObjectAccessorPropertySpan = function(object, propertyPath, callback)
 {
-    var rootElement = document.createElement("span");
+    var rootElement = createElement("span");
     var element = rootElement.createChild("span");
     element.textContent = WebInspector.UIString("(...)");
     if (!object)

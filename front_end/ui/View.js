@@ -30,7 +30,7 @@
  */
 WebInspector.View = function()
 {
-    this.element = document.createElementWithClass("div", "view");
+    this.element = createElementWithClass("div", "view");
     this.element.__view = this;
     this._visible = true;
     this._isRoot = false;
@@ -59,7 +59,7 @@ WebInspector.View.createStyleElement = function(cssFile)
         content = loadResource(cssFile) + WebInspector.View._buildSourceURL(cssFile)
         WebInspector.View._cssFileToContent[cssFile] = content;
     }
-    var styleElement = document.createElement("style");
+    var styleElement = createElement("style");
     styleElement.type = "text/css";
     styleElement.textContent = content;
     return styleElement;

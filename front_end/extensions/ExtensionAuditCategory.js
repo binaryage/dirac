@@ -181,7 +181,7 @@ WebInspector.ExtensionAuditFormatters = {
      */
     object: function(expression, title, evaluateOptions)
     {
-        var parentElement = document.createElement("div");
+        var parentElement = createElement("div");
         function onEvaluate(remoteObject)
         {
             var section = new WebInspector.ObjectPropertiesSection(remoteObject, title);
@@ -201,7 +201,7 @@ WebInspector.ExtensionAuditFormatters = {
      */
     node: function(expression, evaluateOptions)
     {
-        var parentElement = document.createElement("div");
+        var parentElement = createElement("div");
         this.evaluate(expression, evaluateOptions, onEvaluate);
 
         /**

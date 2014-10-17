@@ -118,7 +118,7 @@ WebInspector.ExtensionPanel.prototype = {
 WebInspector.ExtensionButton = function(server, id, iconURL, tooltip, disabled)
 {
     this._id = id;
-    this.element = document.createElement("button");
+    this.element = createElement("button");
     this.element.className = "status-bar-item extension";
     this.element.addEventListener("click", server.notifyButtonClicked.bind(server, this._id), false);
     this.update(iconURL, tooltip, disabled);

@@ -150,7 +150,7 @@ WebInspector.TimelineView.prototype = {
             this._frameContainer.removeChildren();
         } else {
             const frameContainerBorderWidth = 1;
-            this._frameContainer = document.createElementWithClass("div", "fill timeline-frame-container");
+            this._frameContainer = createElementWithClass("div", "fill timeline-frame-container");
             this._frameContainer.style.height = WebInspector.TimelinePanel.rowHeight + frameContainerBorderWidth + "px";
             this._frameContainer.addEventListener("dblclick", this._onFrameDoubleClicked.bind(this), false);
             this._frameContainer.addEventListener("click", this._onFrameClicked.bind(this), false);
@@ -164,7 +164,7 @@ WebInspector.TimelineView.prototype = {
             var frameStart = this._calculator.computePosition(frame.startTime);
             var frameEnd = this._calculator.computePosition(frame.endTime);
 
-            var frameStrip = document.createElementWithClass("div", "timeline-frame-strip");
+            var frameStrip = createElementWithClass("div", "timeline-frame-strip");
             var actualStart = Math.max(frameStart, 0);
             var width = frameEnd - actualStart;
             frameStrip.style.left = actualStart + "px";
@@ -1030,7 +1030,7 @@ WebInspector.TimelineCalculator.prototype = {
  */
 WebInspector.TimelineRecordListRow = function(linkifier, selectRecord, scheduleRefresh)
 {
-    this.element = document.createElement("div");
+    this.element = createElement("div");
     this.element.row = this;
     this.element.style.cursor = "pointer";
     this.element.addEventListener("click", this._onClick.bind(this), false);
@@ -1163,7 +1163,7 @@ WebInspector.TimelineRecordListRow.prototype = {
  */
 WebInspector.TimelineRecordGraphRow = function(graphContainer, selectRecord, scheduleRefresh)
 {
-    this.element = document.createElement("div");
+    this.element = createElement("div");
     this.element.row = this;
     this.element.addEventListener("mouseover", this._onMouseOver.bind(this), false);
     this.element.addEventListener("mouseout", this._onMouseOut.bind(this), false);

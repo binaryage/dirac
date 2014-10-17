@@ -185,7 +185,7 @@ WebInspector.LayerTreeElement = function(tree, layer)
 WebInspector.LayerTreeElement.prototype = {
     onattach: function()
     {
-        var selection = document.createElement("div");
+        var selection = createElement("div");
         selection.className = "selection";
         this.listItemElement.insertBefore(selection, this.listItemElement.firstChild);
     },
@@ -194,7 +194,7 @@ WebInspector.LayerTreeElement.prototype = {
     {
         var layer = /** @type {!WebInspector.Layer} */ (this.representedObject);
         var node = layer.nodeForSelfOrAncestor();
-        var title = document.createDocumentFragment();
+        var title = createDocumentFragment();
         title.createChild("div", "selection");
         title.createTextChild(node ? WebInspector.DOMPresentationUtils.simpleSelector(node) : "#" + layer.id());
         var details = title.createChild("span", "dimmed");

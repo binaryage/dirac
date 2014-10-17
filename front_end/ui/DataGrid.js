@@ -41,14 +41,14 @@ WebInspector.DataGrid = function(columnsArray, editCallback, deleteCallback, ref
     this.element.tabIndex = 0;
     this.element.addEventListener("keydown", this._keyDown.bind(this), false);
 
-    var headerContainer = document.createElementWithClass("div", "header-container");
+    var headerContainer = createElementWithClass("div", "header-container");
     /** @type {!Element} */
     this._headerTable = headerContainer.createChild("table", "header");
     /** @type {!Object.<string, !Element>} */
     this._headerTableHeaders = {};
 
     /** @type {!Element} */
-    this._scrollContainer = document.createElementWithClass("div", "data-container");
+    this._scrollContainer = createElementWithClass("div", "data-container");
     /** @type {!Element} */
     this._dataTable = this._scrollContainer.createChild("table", "data");
 
@@ -74,16 +74,16 @@ WebInspector.DataGrid = function(columnsArray, editCallback, deleteCallback, ref
     this.element.appendChild(this._scrollContainer);
 
     /** @type {!Element} */
-    this._headerRow = document.createElement("tr");
+    this._headerRow = createElement("tr");
     /** @type {!Element} */
-    this._headerTableColumnGroup = document.createElement("colgroup");
+    this._headerTableColumnGroup = createElement("colgroup");
     /** @type {!Element} */
-    this._dataTableColumnGroup = document.createElement("colgroup");
+    this._dataTableColumnGroup = createElement("colgroup");
 
     /** @type {!Element} */
-    this._topFillerRow = document.createElementWithClass("tr", "revealed");
+    this._topFillerRow = createElementWithClass("tr", "revealed");
     /** @type {!Element} */
-    this._bottomFillerRow = document.createElementWithClass("tr", "revealed");
+    this._bottomFillerRow = createElementWithClass("tr", "revealed");
     this.setVerticalPadding(0, 0);
 
     /** @type {!Array.<!WebInspector.DataGrid.ColumnDescriptor>} */
@@ -103,12 +103,12 @@ WebInspector.DataGrid = function(columnsArray, editCallback, deleteCallback, ref
         if (column.disclosure)
             this.disclosureColumnIdentifier = columnIdentifier;
 
-        var cell = document.createElement("th");
+        var cell = createElement("th");
         cell.className = columnIdentifier + "-column";
         cell.columnIdentifier = columnIdentifier;
         this._headerTableHeaders[columnIdentifier] = cell;
 
-        var div = document.createElement("div");
+        var div = createElement("div");
         if (column.titleDOMFragment)
             div.appendChild(column.titleDOMFragment);
         else
@@ -716,7 +716,7 @@ WebInspector.DataGrid.prototype = {
             if (!resizer) {
                 // This is the first call to updateWidth, so the resizers need
                 // to be created.
-                resizer = document.createElement("div");
+                resizer = createElement("div");
                 resizer.__index = i;
                 resizer.classList.add("data-grid-resizer");
                 // This resizer is associated with the column to its right.
@@ -1143,7 +1143,7 @@ WebInspector.DataGridNode.prototype = {
      */
     createElement: function()
     {
-        this._element = document.createElement("tr");
+        this._element = createElement("tr");
         this._element._dataGridNode = this;
 
         if (this.hasChildren)
@@ -1310,7 +1310,7 @@ WebInspector.DataGridNode.prototype = {
      */
     _createTDWithClass: function(className)
     {
-        var cell = document.createElementWithClass("td", className);
+        var cell = createElementWithClass("td", className);
         var cellClass = this.dataGrid._cellClass;
         if (cellClass)
             cell.classList.add(cellClass);

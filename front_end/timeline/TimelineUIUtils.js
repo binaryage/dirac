@@ -220,13 +220,13 @@ WebInspector.TimelineUIUtils.generateMainThreadBarPopupContent = function(model,
  */
 WebInspector.TimelineUIUtils._generateAggregatedInfo = function(aggregatedStats)
 {
-    var cell = document.createElement("span");
+    var cell = createElement("span");
     cell.className = "timeline-aggregated-info";
     for (var index in aggregatedStats) {
-        var label = document.createElement("div");
+        var label = createElement("div");
         label.className = "timeline-aggregated-category timeline-" + index;
         cell.appendChild(label);
-        var text = document.createElement("span");
+        var text = createElement("span");
         text.textContent = Number.millisToString(aggregatedStats[index], true);
         cell.appendChild(text);
     }
@@ -241,7 +241,7 @@ WebInspector.TimelineUIUtils._generateAggregatedInfo = function(aggregatedStats)
  */
 WebInspector.TimelineUIUtils.generatePieChart = function(aggregatedStats, selfCategory, selfTime)
 {
-    var element = document.createElement("div");
+    var element = createElement("div");
     element.className = "timeline-aggregated-info";
 
     var total = 0;
@@ -432,10 +432,10 @@ WebInspector.TimelineCategory.prototype = {
  */
 WebInspector.TimelinePopupContentHelper = function(title)
 {
-    this._contentTable = document.createElement("table");
+    this._contentTable = createElement("table");
     var titleCell = this._createCell(WebInspector.UIString("%s - Details", title), "timeline-details-title");
     titleCell.colSpan = 2;
-    var titleRow = document.createElement("tr");
+    var titleRow = createElement("tr");
     titleRow.appendChild(titleCell);
     this._contentTable.appendChild(titleRow);
 }
@@ -455,9 +455,9 @@ WebInspector.TimelinePopupContentHelper.prototype = {
      */
     _createCell: function(content, styleName)
     {
-        var text = document.createElement("label");
+        var text = createElement("label");
         text.createTextChild(String(content));
-        var cell = document.createElement("td");
+        var cell = createElement("td");
         cell.className = "timeline-details";
         if (styleName)
             cell.className += " " + styleName;
@@ -471,7 +471,7 @@ WebInspector.TimelinePopupContentHelper.prototype = {
      */
     appendTextRow: function(title, content)
     {
-        var row = document.createElement("tr");
+        var row = createElement("tr");
         row.appendChild(this._createCell(title, "timeline-details-row-title"));
         row.appendChild(this._createCell(content, "timeline-details-row-data"));
         this._contentTable.appendChild(row);
@@ -483,10 +483,10 @@ WebInspector.TimelinePopupContentHelper.prototype = {
      */
     appendElementRow: function(title, content)
     {
-        var row = document.createElement("tr");
+        var row = createElement("tr");
         var titleCell = this._createCell(title, "timeline-details-row-title");
         row.appendChild(titleCell);
-        var cell = document.createElement("td");
+        var cell = createElement("td");
         cell.className = "details";
         if (content instanceof Node)
             cell.appendChild(content);
@@ -507,7 +507,7 @@ WebInspector.TimelineDetailsContentHelper = function(target, linkifier, monospac
 {
     this._linkifier = linkifier;
     this._target = target;
-    this.element = document.createElement("div");
+    this.element = createElement("div");
     this.element.className = "timeline-details-view-block";
     this._monospaceValues = monospaceValues;
 }

@@ -398,6 +398,24 @@ Element.prototype.isInsertionCaretInside = function()
 }
 
 /**
+ * @param {string} tagName
+ * @return {!Element}
+ */
+function createElement(tagName)
+{
+    return document.createElement(tagName);
+}
+
+/**
+ * @param {number|string} data
+ * @return {!Text}
+ */
+function createTextNode(data)
+{
+    return document.createTextNode(data);
+}
+
+/**
  * @param {string} elementName
  * @param {string=} className
  * @return {!Element}
@@ -408,6 +426,24 @@ Document.prototype.createElementWithClass = function(elementName, className)
     if (className)
         element.className = className;
     return element;
+}
+
+/**
+ * @param {string} elementName
+ * @param {string=} className
+ * @return {!Element}
+ */
+function createElementWithClass(elementName, className)
+{
+    return document.createElementWithClass(elementName, className);
+}
+
+/**
+ * @return {!DocumentFragment}
+ */
+function createDocumentFragment()
+{
+    return document.createDocumentFragment();
 }
 
 /**

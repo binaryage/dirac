@@ -70,7 +70,7 @@ WebInspector.IDBDatabaseView.prototype = {
      */
     _formatHeader: function(name, value)
     {
-        var fragment = document.createDocumentFragment();
+        var fragment = createDocumentFragment();
         fragment.createChild("div", "attribute-name").textContent = name + ":";
         fragment.createChild("div", "attribute-value source-code").textContent = value;
 
@@ -162,7 +162,7 @@ WebInspector.IDBDataView.prototype = {
      */
     _keyColumnHeaderFragment: function(prefix, keyPath)
     {
-        var keyColumnHeaderFragment = document.createDocumentFragment();
+        var keyColumnHeaderFragment = createDocumentFragment();
         keyColumnHeaderFragment.createTextChild(prefix);
         if (keyPath === null)
             return keyColumnHeaderFragment;
@@ -190,7 +190,7 @@ WebInspector.IDBDataView.prototype = {
      */
     _keyPathStringFragment: function(keyPathString)
     {
-        var keyPathStringFragment = document.createDocumentFragment();
+        var keyPathStringFragment = createDocumentFragment();
         keyPathStringFragment.createTextChild("\"");
         var keyPathSpan = keyPathStringFragment.createChild("span", "source-code console-formatted-string");
         keyPathSpan.textContent = keyPathString;
@@ -203,7 +203,7 @@ WebInspector.IDBDataView.prototype = {
      */
     _createEditorToolbar: function()
     {
-        var editorToolbar = document.createElement("div");
+        var editorToolbar = createElement("div");
         editorToolbar.classList.add("status-bar");
         editorToolbar.classList.add("data-view-toolbar");
 
@@ -211,7 +211,7 @@ WebInspector.IDBDataView.prototype = {
         this._pageBackButton.classList.add("status-bar-item");
         this._pageBackButton.title = WebInspector.UIString("Show previous page.");
         this._pageBackButton.disabled = true;
-        this._pageBackButton.appendChild(document.createElement("img"));
+        this._pageBackButton.appendChild(createElement("img"));
         this._pageBackButton.addEventListener("click", this._pageBackButtonClicked.bind(this), false);
         editorToolbar.appendChild(this._pageBackButton);
 
@@ -219,7 +219,7 @@ WebInspector.IDBDataView.prototype = {
         this._pageForwardButton.classList.add("status-bar-item");
         this._pageForwardButton.title = WebInspector.UIString("Show next page.");
         this._pageForwardButton.disabled = true;
-        this._pageForwardButton.appendChild(document.createElement("img"));
+        this._pageForwardButton.appendChild(createElement("img"));
         this._pageForwardButton.addEventListener("click", this._pageForwardButtonClicked.bind(this), false);
         editorToolbar.appendChild(this._pageForwardButton);
 

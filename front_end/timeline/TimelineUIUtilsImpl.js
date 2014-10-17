@@ -391,7 +391,7 @@ WebInspector.TimelineUIUtilsImpl.buildDetailsNode = function(record, linkifier)
     }
 
     if (!details && detailsText)
-        details = document.createTextNode(detailsText);
+        details = createTextNode(detailsText);
     return details;
 
     /**
@@ -496,7 +496,7 @@ WebInspector.TimelineUIUtilsImpl.generateDetailsContent = function(record, model
  */
 WebInspector.TimelineUIUtilsImpl._generateDetailsContentSynchronously = function(record, model, linkifier, imagePreviewElement, relatedNode)
 {
-    var fragment = document.createDocumentFragment();
+    var fragment = createDocumentFragment();
     var aggregatedStats = {};
     WebInspector.TimelineUIUtilsImpl.aggregateTimeForRecord(aggregatedStats, record);
     if (record.children().length)
@@ -643,7 +643,7 @@ WebInspector.TimelineUIUtilsImpl._generateDetailsContentSynchronously = function
         contentHelper.appendStackTrace(callStackLabel || WebInspector.UIString("Call Stack"), recordStackTrace);
 
     if (record.warnings()) {
-        var ul = document.createElement("ul");
+        var ul = createElement("ul");
         for (var i = 0; i < record.warnings().length; ++i)
             ul.createChild("li").textContent = record.warnings()[i];
         contentHelper.appendElementRow(WebInspector.UIString("Warning"), ul);
@@ -659,7 +659,7 @@ WebInspector.TimelineUIUtilsImpl._generateDetailsContentSynchronously = function
  */
 WebInspector.TimelineUIUtilsImpl._createEventDivider = function(recordType, title)
 {
-    var eventDivider = document.createElement("div");
+    var eventDivider = createElement("div");
     eventDivider.className = "resources-event-divider";
     var recordTypes = WebInspector.TimelineModel.RecordType;
 

@@ -89,7 +89,7 @@ WebInspector.RequestTimingView.prototype = {
  */
 WebInspector.RequestTimingView.createTimingTable = function(request)
 {
-    var tableElement = document.createElementWithClass("table", "network-timing-table");
+    var tableElement = createElementWithClass("table", "network-timing-table");
     tableElement.createChild("colgroup").createChild("col", "labels");
 
     /**

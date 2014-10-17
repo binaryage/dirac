@@ -62,7 +62,7 @@ WebInspector.ImageView.prototype = {
         this._container = this.element.createChild("div", "info");
         this._container.createChild("h1", "title").textContent = this._parsedURL.displayName;
 
-        var infoListElement = document.createElementWithClass("dl", "infoList");
+        var infoListElement = createElementWithClass("dl", "infoList");
 
         WebInspector.Resource.populateImageSource(this._url, this._mimeType, this._contentProvider, imagePreviewElement);
         this._contentProvider.requestContent(onContentAvailable.bind(this));

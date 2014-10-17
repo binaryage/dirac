@@ -51,7 +51,7 @@ WebInspector.InspectorView = function()
     this._drawer = new WebInspector.Drawer(this._drawerSplitView);
 
     // Patch tabbed pane header with toolbar actions.
-    this._toolbarElement = document.createElement("div");
+    this._toolbarElement = createElement("div");
     this._toolbarElement.className = "toolbar toolbar-background toolbar-colors";
     var headerElement = this._tabbedPane.headerElement();
     headerElement.parentElement.insertBefore(this._toolbarElement, headerElement);
@@ -61,7 +61,7 @@ WebInspector.InspectorView = function()
     this._rightToolbarElement = this._toolbarElement.createChild("div", "toolbar-controls-right");
     this._toolbarItems = [];
 
-    this._closeButtonToolbarItem = document.createElementWithClass("div", "toolbar-close-button-item");
+    this._closeButtonToolbarItem = createElementWithClass("div", "toolbar-close-button-item");
     var closeButtonElement = this._closeButtonToolbarItem.createChild("div", "close-button");
     closeButtonElement.addEventListener("click", InspectorFrontendHost.closeWindow.bind(InspectorFrontendHost), true);
     this._rightToolbarElement.appendChild(this._closeButtonToolbarItem);

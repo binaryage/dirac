@@ -394,7 +394,7 @@ WebInspector.NetworkLogView.prototype = {
 
         columns.push({
             id: "timeline",
-            titleDOMFragment: document.createDocumentFragment(),
+            titleDOMFragment: createDocumentFragment(),
             title: WebInspector.NetworkLogView._columnTitles["timeline"],
             sortable: false,
             weight: 40,
@@ -425,7 +425,7 @@ WebInspector.NetworkLogView.prototype = {
      */
     _makeHeaderFragment: function(title, subtitle)
     {
-        var fragment = document.createDocumentFragment();
+        var fragment = createDocumentFragment();
         fragment.createTextChild(title);
         var subtitleDiv = fragment.createChild("div", "network-header-subtitle");
         subtitleDiv.createTextChild(subtitle);
@@ -434,34 +434,34 @@ WebInspector.NetworkLogView.prototype = {
 
     _patchTimelineHeader: function()
     {
-        var timelineSorting = document.createElement("select");
+        var timelineSorting = createElement("select");
 
-        var option = document.createElement("option");
+        var option = createElement("option");
         option.value = "startTime";
         option.label = WebInspector.UIString("Timeline");
         timelineSorting.appendChild(option);
 
-        option = document.createElement("option");
+        option = createElement("option");
         option.value = "startTime";
         option.label = WebInspector.UIString("Start Time");
         timelineSorting.appendChild(option);
 
-        option = document.createElement("option");
+        option = createElement("option");
         option.value = "responseTime";
         option.label = WebInspector.UIString("Response Time");
         timelineSorting.appendChild(option);
 
-        option = document.createElement("option");
+        option = createElement("option");
         option.value = "endTime";
         option.label = WebInspector.UIString("End Time");
         timelineSorting.appendChild(option);
 
-        option = document.createElement("option");
+        option = createElement("option");
         option.value = "duration";
         option.label = WebInspector.UIString("Duration");
         timelineSorting.appendChild(option);
 
-        option = document.createElement("option");
+        option = createElement("option");
         option.value = "latency";
         option.label = WebInspector.UIString("Latency");
         timelineSorting.appendChild(option);
@@ -558,7 +558,7 @@ WebInspector.NetworkLogView.prototype = {
 
     _createStatusBarItems: function()
     {
-        this._progressBarContainer = document.createElement("div");
+        this._progressBarContainer = createElement("div");
         this._progressBarContainer.className = "status-bar-item";
     },
 
@@ -657,10 +657,10 @@ WebInspector.NetworkLogView.prototype = {
         if (this._mainRequestLoadTime !== -1) {
             var percent = calculator.computePercentageFromEventTime(this._mainRequestLoadTime);
 
-            var loadDivider = document.createElement("div");
+            var loadDivider = createElement("div");
             loadDivider.className = "network-event-divider network-red-divider";
 
-            var loadDividerPadding = document.createElement("div");
+            var loadDividerPadding = createElement("div");
             loadDividerPadding.className = "network-event-divider-padding";
             loadDividerPadding.title = WebInspector.UIString("Load event");
             loadDividerPadding.appendChild(loadDivider);
@@ -671,10 +671,10 @@ WebInspector.NetworkLogView.prototype = {
         if (this._mainRequestDOMContentLoadedTime !== -1) {
             var percent = calculator.computePercentageFromEventTime(this._mainRequestDOMContentLoadedTime);
 
-            var domContentLoadedDivider = document.createElement("div");
+            var domContentLoadedDivider = createElement("div");
             domContentLoadedDivider.className = "network-event-divider network-blue-divider";
 
-            var domContentLoadedDividerPadding = document.createElement("div");
+            var domContentLoadedDividerPadding = createElement("div");
             domContentLoadedDividerPadding.className = "network-event-divider-padding";
             domContentLoadedDividerPadding.title = WebInspector.UIString("DOMContentLoaded event");
             domContentLoadedDividerPadding.appendChild(domContentLoadedDivider);
@@ -1083,7 +1083,7 @@ WebInspector.NetworkLogView.prototype = {
      */
     _generateScriptInitiatedPopoverContent: function(request)
     {
-        var framesTable = document.createElementWithClass("table", "network-stack-trace");
+        var framesTable = createElementWithClass("table", "network-stack-trace");
 
         /**
          * @param {!Array.<!ConsoleAgent.CallFrame>} stackTrace
@@ -1093,7 +1093,7 @@ WebInspector.NetworkLogView.prototype = {
         {
             for (var i = 0; i < stackTrace.length; ++i) {
                 var stackFrame = stackTrace[i];
-                var row = document.createElement("tr");
+                var row = createElement("tr");
                 row.createChild("td").textContent = stackFrame.functionName || WebInspector.UIString("(anonymous function)");
                 row.createChild("td").textContent = " @ ";
                 row.createChild("td").appendChild(this._linkifier.linkifyConsoleCallFrame(request.target(), stackFrame));
@@ -2792,13 +2792,13 @@ WebInspector.NetworkDataGridNode.prototype = {
         cell.addEventListener("dblclick", this._openInNewTab.bind(this), false);
         var iconElement;
         if (this._request.type === WebInspector.resourceTypes.Image) {
-            var previewImage = document.createElementWithClass("img", "image-network-icon-preview");
+            var previewImage = createElementWithClass("img", "image-network-icon-preview");
             this._request.populateImageSource(previewImage);
 
-            iconElement = document.createElementWithClass("div", "icon");
+            iconElement = createElementWithClass("div", "icon");
             iconElement.appendChild(previewImage);
         } else {
-            iconElement = document.createElementWithClass("img", "icon");
+            iconElement = createElementWithClass("img", "icon");
         }
         iconElement.classList.add(this._request.type.name());
 
@@ -2919,7 +2919,7 @@ WebInspector.NetworkDataGridNode.prototype = {
      */
     _appendSubtitle: function(cellElement, subtitleText)
     {
-        var subtitleElement = document.createElement("div");
+        var subtitleElement = createElement("div");
         subtitleElement.className = "network-cell-subtitle";
         subtitleElement.textContent = subtitleText;
         cellElement.appendChild(subtitleElement);

@@ -449,17 +449,17 @@ WebInspector.ProfilesPanel = function()
     this.profilesItemTreeElement = new WebInspector.ProfilesSidebarTreeElement(this);
     this.sidebarTree.appendChild(this.profilesItemTreeElement);
 
-    this.profileViews = document.createElement("div");
+    this.profileViews = createElement("div");
     this.profileViews.id = "profile-views";
     this.profileViews.classList.add("vbox");
     this._searchableView.element.appendChild(this.profileViews);
 
-    var statusBarContainer = document.createElementWithClass("div", "profiles-status-bar");
+    var statusBarContainer = createElementWithClass("div", "profiles-status-bar");
     mainView.element.insertBefore(statusBarContainer, mainView.element.firstChild);
     this._statusBarElement = statusBarContainer.createChild("div", "status-bar");
 
     this.sidebarElement().classList.add("profiles-sidebar-tree-box");
-    var statusBarContainerLeft = document.createElementWithClass("div", "profiles-status-bar");
+    var statusBarContainerLeft = createElementWithClass("div", "profiles-status-bar");
     this.sidebarElement().insertBefore(statusBarContainerLeft, this.sidebarElement().firstChild);
     this._statusBarButtons = statusBarContainerLeft.createChild("div", "status-bar");
 

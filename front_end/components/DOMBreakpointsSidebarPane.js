@@ -160,7 +160,7 @@ WebInspector.DOMBreakpointsSidebarPane.prototype = {
         } else
             message = "Paused on a \"%s\" breakpoint set on %s.";
 
-        var element = document.createElement("span");
+        var element = createElement("span");
         var formatters = {
             s: function(substitution)
             {
@@ -170,7 +170,7 @@ WebInspector.DOMBreakpointsSidebarPane.prototype = {
         function append(a, b)
         {
             if (typeof b === "string")
-                b = document.createTextNode(b);
+                b = createTextNode(b);
             element.appendChild(b);
         }
         WebInspector.formatLocalized(message, substitutions, formatters, "", append);
@@ -228,12 +228,12 @@ WebInspector.DOMBreakpointsSidebarPane.prototype = {
      */
     _createBreakpointElement: function(node, type, enabled)
     {
-        var element = document.createElement("li");
+        var element = createElement("li");
         element._node = node;
         element._type = type;
         element.addEventListener("contextmenu", this._contextMenu.bind(this, node, type), true);
 
-        var checkboxElement = document.createElement("input");
+        var checkboxElement = createElement("input");
         checkboxElement.className = "checkbox-elem";
         checkboxElement.type = "checkbox";
         checkboxElement.checked = enabled;
@@ -241,14 +241,14 @@ WebInspector.DOMBreakpointsSidebarPane.prototype = {
         element._checkboxElement = checkboxElement;
         element.appendChild(checkboxElement);
 
-        var labelElement = document.createElement("span");
+        var labelElement = createElement("span");
         element.appendChild(labelElement);
 
         var linkifiedNode = WebInspector.DOMPresentationUtils.linkifyNodeReference(node);
         linkifiedNode.classList.add("monospace");
         labelElement.appendChild(linkifiedNode);
 
-        var description = document.createElement("div");
+        var description = createElement("div");
         description.className = "source-text";
         description.textContent = this._breakpointTypeLabels[type];
         labelElement.appendChild(description);

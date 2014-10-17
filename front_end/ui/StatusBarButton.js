@@ -35,7 +35,7 @@
  */
 WebInspector.StatusBarItem = function(elementType)
 {
-    this.element = document.createElement(elementType);
+    this.element = createElement(elementType);
     this._enabled = true;
     this._visible = true;
 }

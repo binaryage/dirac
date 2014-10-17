@@ -484,7 +484,7 @@ WebInspector.CanvasProfileView.prototype = {
      */
     _createCallNode: function(index, call)
     {
-        var callViewElement = document.createElement("div");
+        var callViewElement = createElement("div");
 
         var data = {};
         data[0] = index + 1;
@@ -653,7 +653,7 @@ WebInspector.CanvasProfileType = function()
 
     this._canvasAgentEnabled = false;
 
-    this._decorationElement = document.createElement("div");
+    this._decorationElement = createElement("div");
     this._decorationElement.className = "profile-canvas-decoration";
     this._updateDecorationElement();
 }
@@ -890,7 +890,7 @@ WebInspector.CanvasProfileType.prototype = {
     _addFrame: function(frame)
     {
         var frameId = frame.id;
-        var option = document.createElement("option");
+        var option = createElement("option");
         option.text = frame.displayName();
         option.title = frame.url;
         option.value = frameId;
@@ -1148,7 +1148,7 @@ WebInspector.CanvasProfileDataGridHelper = {
     {
         if (callArgument.enumName)
             return WebInspector.CanvasProfileDataGridHelper.createEnumValueElement(callArgument.enumName, +callArgument.description);
-        var element = document.createElement("span");
+        var element = createElement("span");
         element.className = "canvas-call-argument";
         var description = callArgument.description;
         if (callArgument.type === "string") {
@@ -1184,7 +1184,7 @@ WebInspector.CanvasProfileDataGridHelper = {
      */
     createEnumValueElement: function(enumName, enumValue)
     {
-        var element = document.createElement("span");
+        var element = createElement("span");
         element.className = "canvas-call-argument canvas-formatted-number";
         element.textContent = enumName;
         element.__evalResult = WebInspector.runtimeModel.createRemoteObjectFromPrimitiveValue(enumValue);

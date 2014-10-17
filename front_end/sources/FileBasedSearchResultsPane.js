@@ -15,7 +15,7 @@ WebInspector.FileBasedSearchResultsPane = function(searchConfig)
 
     this.element.id = "search-results-pane-file-based";
 
-    this._treeOutlineElement = document.createElement("ol");
+    this._treeOutlineElement = createElement("ol");
     this._treeOutlineElement.className = "search-results-outline-disclosure";
     this.element.appendChild(this._treeOutlineElement);
     this._treeOutline = new TreeOutline(this._treeOutlineElement);
@@ -102,12 +102,12 @@ WebInspector.FileBasedSearchResultsPane.FileTreeElement.prototype = {
     {
         this.listItemElement.classList.add("search-result");
 
-        var fileNameSpan = document.createElement("span");
+        var fileNameSpan = createElement("span");
         fileNameSpan.className = "search-result-file-name";
         fileNameSpan.textContent = this._searchResult.uiSourceCode.fullDisplayName();
         this.listItemElement.appendChild(fileNameSpan);
 
-        var matchesCountSpan = document.createElement("span");
+        var matchesCountSpan = createElement("span");
         matchesCountSpan.className = "search-result-matches-count";
 
         var searchMatchesCount = this._searchResult.searchMatches.length;
@@ -146,7 +146,7 @@ WebInspector.FileBasedSearchResultsPane.FileTreeElement.prototype = {
             var anchor = this._createAnchor(uiSourceCode, lineNumber, matchRanges[0].offset);
 
             var numberString = numberToStringWithSpacesPadding(lineNumber + 1, 4);
-            var lineNumberSpan = document.createElement("span");
+            var lineNumberSpan = createElement("span");
             lineNumberSpan.classList.add("search-match-line-number");
             lineNumberSpan.textContent = numberString;
             anchor.appendChild(lineNumberSpan);
@@ -192,7 +192,7 @@ WebInspector.FileBasedSearchResultsPane.FileTreeElement.prototype = {
      */
     _createContentSpan: function(lineContent, matchRanges)
     {
-        var contentSpan = document.createElement("span");
+        var contentSpan = createElement("span");
         contentSpan.className = "search-match-content";
         contentSpan.textContent = lineContent;
         WebInspector.highlightRangesWithStyleClass(contentSpan, matchRanges, "highlighted-match");
