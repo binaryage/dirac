@@ -153,8 +153,9 @@ WebInspector.NetworkWorkspaceBinding.prototype = {
     {
         var splitURL = WebInspector.ParsedURL.splitURLIntoPathComponents(url);
         var projectName = splitURL[0];
+        var path = splitURL.slice(1).join("/");
         var projectDelegate = this._projectDelegates[projectName];
-        projectDelegate.removeFile(url);
+        projectDelegate.removeFile(path);
     },
 
     reset: function()
