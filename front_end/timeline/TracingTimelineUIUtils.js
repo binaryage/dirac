@@ -531,8 +531,19 @@ WebInspector.TracingTimelineUIUtils._buildTraceEventDetailsSynchronously = funct
     var fragment = createDocumentFragment();
     var stats = {};
     var hasChildren = WebInspector.TracingTimelineUIUtils._aggregatedStatsForTraceEvent(stats, model, event);
+
+    var selfTime = event.selfTime;
+    var selfCategory = WebInspector.TracingTimelineUIUtils.eventStyle(event).category;
+    // JSFrame events have 0 selfTime so we need to work around this below and add the event's time to scripting category.
+    if (event.name === WebInspector.TracingTimelineModel.RecordType.JSFrame && !event.selfTime && event.duration) {
+        selfTime = event.duration;
+        for (var categoryName in stats)
+            selfTime -= stats[categoryName];
+        stats[selfCategory.name] = selfTime + (stats[selfCategory.name] || 0);
+    }
+
     var pieChart = hasChildren ?
-        WebInspector.TimelineUIUtils.generatePieChart(stats, WebInspector.TracingTimelineUIUtils.eventStyle(event).category, event.selfTime) :
+        WebInspector.TimelineUIUtils.generatePieChart(stats, selfCategory, selfTime) :
         WebInspector.TimelineUIUtils.generatePieChart(stats);
     fragment.appendChild(pieChart);
 
