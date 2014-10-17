@@ -92,7 +92,11 @@ WebInspector.ParsedURL = function(url)
  */
 WebInspector.ParsedURL.splitURLIntoPathComponents = function(url)
 {
-    var parsedURL = new WebInspector.ParsedURL(decodeURI(url));
+    var decodedURL = url;
+    try {
+        decodedURL = decodeURI(url);
+    } catch (e) { }
+    var parsedURL = new WebInspector.ParsedURL(decodedURL);
     var origin;
     var folderPath;
     var name;
