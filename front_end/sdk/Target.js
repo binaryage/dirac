@@ -166,6 +166,9 @@ WebInspector.Target.prototype = {
         /** @type {!WebInspector.LayerTreeModel} */
         this.layerTreeModel = new WebInspector.LayerTreeModel(this);
 
+        /** @type {!WebInspector.AnimationModel} */
+        this.animationModel = new WebInspector.AnimationModel(this);
+
         if (callback)
             callback(this);
     },

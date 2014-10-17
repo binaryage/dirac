@@ -125,6 +125,7 @@
             'front_end/screencast/ScreencastView.js',
         ],
         'devtools_sdk_js_files': [
+            'front_end/sdk/AnimationModel.js',
             'front_end/sdk/ApplicationCacheModel.js',
             'front_end/sdk/BlackboxSupport.js',
             'front_end/sdk/ConsoleModel.js',
@@ -370,6 +371,7 @@
             'front_end/documentation/WikiParser.js',
         ],
         'devtools_elements_js_files': [
+            'front_end/elements/AnimationsSidebarPane.js',
             'front_end/elements/ElementsPanel.js',
             'front_end/elements/ElementsTreeOutline.js',
             'front_end/elements/EventListenersSidebarPane.js',

@@ -4411,5 +4411,104 @@
                 "handlers": ["browser", "frontend"]
             }
         ]
+    },
+    {
+        "domain": "Animation",
+        "hidden": true,
+        "types": [
+            {
+                "id": "AnimationPlayer",
+                "type": "object",
+                "hidden": true,
+                "properties": [
+                    { "name": "id", "type": "string", "description": "<code>AnimationPlayer</code>'s id." },
+                    { "name": "pausedState", "type": "boolean", "hidden": "true", "description": "<code>AnimationPlayer</code>'s internal paused state." },
+                    { "name": "playState", "type": "string", "description": "<code>AnimationPlayer</code>'s play state." },
+                    { "name": "playbackRate", "type": "number", "description": "<code>AnimationPlayer</code>'s playback rate." },
+                    { "name": "startTime", "type": "number", "description": "<code>AnimationPlayer</code>'s start time." },
+                    { "name": "currentTime", "type": "number", "description": "<code>AnimationPlayer</code>'s current time." },
+                    { "name": "source", "$ref": "AnimationNode", "description": "<code>AnimationPlayer</code>'s source animation node." }
+                ],
+                "description": "AnimationPlayer instance."
+            },
+            {
+                "id": "AnimationNode",
+                "type": "object",
+                "hidden": true,
+                "properties": [
+                    { "name": "startDelay", "type": "number", "description": "<code>AnimationNode</code>'s start delay." },
+                    { "name": "playbackRate", "type": "number", "description": "<code>AnimationNode</code>'s playbackRate." },
+                    { "name": "iterationStart", "type": "number", "description": "<code>AnimationNode</code>'s iteration start." },
+                    { "name": "iterationCount", "type": "number", "description": "<code>AnimationNode</code>'s iteration count." },
+                    { "name": "duration", "type": "number", "description": "<code>AnimationNode</code>'s iteration duration." },
+                    { "name": "direction", "type": "number", "description": "<code>AnimationNode</code>'s playback direction." },
+                    { "name": "fillMode", "type": "number", "description": "<code>AnimationNode</code>'s fill mode." },
+                    { "name": "timeFraction", "type": "number", "description": "<code>AnimationNode</code>'s time fraction." },
+                    { "name": "name", "type": "string", "description": "<code>AnimationNode</code> name."}
+                ],
+                "description": "AnimationNode instance"
+            }
+        ],
+        "commands": [
+            {
+                "name": "getAnimationPlayersForNode",
+                "parameters": [
+                    { "name": "nodeId", "$ref": "DOM.NodeId", "description": "Id of the node to get animation players for." }
+                ],
+                "returns": [
+                    { "name": "animationPlayers", "type": "array", "items": { "$ref": "AnimationPlayer" }, "description": "Array of animation players." }
+                ],
+                "description": "Returns animation players relevant to the node.",
+                "hidden": true
+            },
+            {
+                "name": "pauseAnimationPlayer",
+                "parameters": [
+                    { "name": "id", "type": "string", "description": "Id of the animation player." }
+                ],
+                "returns": [
+                    { "name": "animationPlayer", "$ref": "AnimationPlayer", "description": "Animation Player with current time set." }
+                ],
+                "description": "Pauses animations relevant to the node.",
+                "hidden": true
+            },
+            {
+                "name": "playAnimationPlayer",
+                "parameters": [
+                    { "name": "id", "type": "string", "description": "Id of the animation player." }
+                ],
+                "returns": [
+                    { "name": "animationPlayer", "$ref": "AnimationPlayer", "description": "Animation Player with current time set." }
+                ],
+                "description": "Plays animations relevant to the node.",
+                "hidden": true
+            },
+            {
+                "name": "setAnimationPlayerCurrentTime",
+                "parameters": [
+                    { "name": "id", "type": "string", "description": "Id of the animation player." },
+                    { "name": "currentTime", "type": "number", "description": "Current time to set animation to"}
+                ],
+                "returns": [
+                    { "name": "animationPlayer", "$ref": "AnimationPlayer", "description": "Animation Player with current time set." }
+                ],
+                "description": "Sets the current time on given AnimationPlayer.",
+                "hidden": true
+            },
+            {
+                "name": "getAnimationPlayerState",
+                "parameters": [
+                    { "name": "id", "type": "string", "description": "Id of the animation player." }
+                ],
+                "returns": [
+                    { "name": "currentTime", "type": "number", "description": "Current time of the animation player." },
+                    { "name": "isRunning", "type": "boolean", "description": "If the animation player is still running." }
+                ],
+                "description": "Gets the state of an AnimationPlayer.",
+                "hidden": true
+            }
+        ],
+        "events": [
+        ]
     }]
 }

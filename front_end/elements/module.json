@@ -75,6 +75,7 @@
         "PlatformFontsSidebarPane.js",
         "PropertiesSidebarPane.js",
         "StylesSidebarPane.js",
-        "ElementsPanel.js"
+        "ElementsPanel.js",
+        "AnimationsSidebarPane.js"
     ]
 }

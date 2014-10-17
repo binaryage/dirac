@@ -80,12 +80,14 @@ WebInspector.ElementsPanel = function()
     this.sidebarPanes.properties = new WebInspector.PropertiesSidebarPane();
     this.sidebarPanes.domBreakpoints = WebInspector.domBreakpointsSidebarPane.createProxy(this);
     this.sidebarPanes.eventListeners = new WebInspector.EventListenersSidebarPane();
+    this.sidebarPanes.animations = new WebInspector.AnimationsSidebarPane(this.sidebarPanes.styles);
 
     this.sidebarPanes.styles.addEventListener(WebInspector.SidebarPane.EventTypes.wasShown, this.updateStyles.bind(this, false));
     this.sidebarPanes.metrics.addEventListener(WebInspector.SidebarPane.EventTypes.wasShown, this.updateMetrics.bind(this));
     this.sidebarPanes.platformFonts.addEventListener(WebInspector.SidebarPane.EventTypes.wasShown, this.updatePlatformFonts.bind(this));
     this.sidebarPanes.properties.addEventListener(WebInspector.SidebarPane.EventTypes.wasShown, this.updateProperties.bind(this));
     this.sidebarPanes.eventListeners.addEventListener(WebInspector.SidebarPane.EventTypes.wasShown, this.updateEventListeners.bind(this));
+    this.sidebarPanes.animations.addEventListener(WebInspector.SidebarPane.EventTypes.wasShown, this.updateAnimations.bind(this));
 
     this.sidebarPanes.styles.addEventListener("style edited", this._stylesPaneEdited, this);
     this.sidebarPanes.styles.addEventListener("style property toggled", this._stylesPaneEdited, this);
@@ -300,6 +302,7 @@ WebInspector.ElementsPanel.prototype = {
         this.updatePlatformFonts();
         this.updateProperties();
         this.updateEventListeners();
+        this.updateAnimations();
     },
 
     _reset: function()
@@ -1133,6 +1136,15 @@ WebInspector.ElementsPanel.prototype = {
         eventListenersSidebarPane.needsUpdate = false;
     },
 
+    updateAnimations: function()
+    {
+        var animationsSidebarPane = this.sidebarPanes.animations;
+        if (!animationsSidebarPane.isShowing())
+            return;
+
+        animationsSidebarPane.update(this.selectedDOMNode());
+    },
+
     /**
      * @param {!KeyboardEvent} event
      */
@@ -1415,6 +1427,8 @@ WebInspector.ElementsPanel.prototype = {
         this.sidebarPaneView.addPane(this.sidebarPanes.eventListeners);
         this.sidebarPaneView.addPane(this.sidebarPanes.domBreakpoints);
         this.sidebarPaneView.addPane(this.sidebarPanes.properties);
+        if (Runtime.experiments.isEnabled("animationInspection"))
+            this.sidebarPaneView.addPane(this.sidebarPanes.animations);
         this._extensionSidebarPanesContainer = this.sidebarPaneView;
 
         for (var i = 0; i < this._extensionSidebarPanes.length; ++i)

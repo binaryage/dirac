@@ -716,3 +716,11 @@ li.child-editing .styles-clipboard-only {
     overflow: hidden;
     line-height: 16px;
 }
+
+.animation-pause .glyph {
+    -webkit-mask-position: -32px -72px;
+}
+
+.animation-pause.toggled-on .glyph {
+    -webkit-mask-position: 0 -72px;
+}
