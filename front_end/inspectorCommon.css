@@ -10,6 +10,7 @@ body {
     margin: 0;
 }
 
+body,
 body /deep/ .component-root {
     cursor: default;
     font-family: Lucida Grande, sans-serif;
@@ -19,16 +20,19 @@ body /deep/ .component-root {
     color: #222;
 }
 
+body.platform-linux,
 body.platform-linux /deep/ .component-root {
     color: rgb(48, 57, 66);
     font-family: Ubuntu, Arial, sans-serif;
 }
 
+body.platform-mac,
 body.platform-mac /deep/ .component-root {
     color: rgb(48, 57, 66);
     font-family: 'Lucida Grande', sans-serif;
 }
 
+body.platform-windows,
 body.platform-windows /deep/ .component-root {
     font-family: 'Segoe UI', Tahoma, sans-serif;
 }
