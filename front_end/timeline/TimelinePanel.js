@@ -351,6 +351,13 @@ WebInspector.TimelinePanel.prototype = {
         panelStatusBarElement.appendChild(this._createSettingCheckbox(WebInspector.UIString("Causes"),
                                                                       this._captureCausesSetting,
                                                                       WebInspector.UIString("Capture causes for timeline events (e.g., stack traces)")));
+        if (Runtime.experiments.isEnabled("timelineJSCPUProfile")) {
+            this._enableJSSamplingSettingSetting = WebInspector.settings.createSetting("timelineEnableJSSampling", false);
+            this._enableJSSamplingSettingSetting.addChangeListener(this._refreshViews, this);
+            panelStatusBarElement.appendChild(this._createSettingCheckbox(WebInspector.UIString("Sampling"),
+                                                                          this._enableJSSamplingSettingSetting,
+                                                                          WebInspector.UIString("Enable JavaScript sampling profiler")));
+        }
         this._captureMemorySetting = WebInspector.settings.createSetting("timelineCaptureMemory", false);
         panelStatusBarElement.appendChild(this._createSettingCheckbox(WebInspector.UIString("Memory"),
                                                                       this._captureMemorySetting,
@@ -638,7 +645,8 @@ WebInspector.TimelinePanel.prototype = {
     _startRecording: function(userInitiated)
     {
         this._userInitiatedRecording = userInitiated;
-        this._model.startRecording(this._captureCausesSetting.get(), this._captureMemorySetting.get(), this._captureLayersAndPicturesSetting && this._captureLayersAndPicturesSetting.get());
+        var enableJSSampling = this._enableJSSamplingSettingSetting && this._enableJSSamplingSettingSetting.get();
+        this._model.startRecording(this._captureCausesSetting.get(), enableJSSampling, this._captureMemorySetting.get(), this._captureLayersAndPicturesSetting && this._captureLayersAndPicturesSetting.get());
         if (this._lazyFrameModel)
             this._lazyFrameModel.setMergeRecords(false);
 

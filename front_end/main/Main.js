@@ -171,7 +171,7 @@ WebInspector.Main.prototype = {
             if (testPath.indexOf("documentation/") !== -1)
                 Runtime.experiments.enableForTest("documentation");
         } else {
-            Runtime.experiments.setDefaultExperiments(["timelineOnTraceEvents"]);
+            Runtime.experiments.setDefaultExperiments(["timelineOnTraceEvents", "timelineJSCPUProfile"]);
         }
     },
 

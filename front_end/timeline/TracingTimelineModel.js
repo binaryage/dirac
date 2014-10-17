@@ -122,10 +122,11 @@ WebInspector.TracingTimelineModel.VirtualThread = function(name)
 WebInspector.TracingTimelineModel.prototype = {
     /**
      * @param {boolean} captureCauses
+     * @param {boolean} enableJSSampling
      * @param {boolean} captureMemory
      * @param {boolean} capturePictures
      */
-    startRecording: function(captureCauses, captureMemory, capturePictures)
+    startRecording: function(captureCauses, enableJSSampling, captureMemory, capturePictures)
     {
         function disabledByDefault(category)
         {
@@ -137,15 +138,15 @@ WebInspector.TracingTimelineModel.prototype = {
             disabledByDefault("devtools.timeline.frame"),
             WebInspector.TracingModel.ConsoleEventCategory
         ];
-        if (captureCauses) {
+        if (captureCauses || enableJSSampling)
             categoriesArray.push(disabledByDefault("devtools.timeline.stack"));
-            if (Runtime.experiments.isEnabled("timelineJSCPUProfile")) {
-                this._jsProfilerStarted = true;
-                this._currentTarget = WebInspector.context.flavor(WebInspector.Target);
-                this._configureCpuProfilerSamplingInterval();
-                this._currentTarget.profilerAgent().start();
-            }
+        if (enableJSSampling) {
+            this._jsProfilerStarted = true;
+            this._currentTarget = WebInspector.context.flavor(WebInspector.Target);
+            this._configureCpuProfilerSamplingInterval();
+            this._currentTarget.profilerAgent().start();
         }
+
         if (capturePictures) {
             categoriesArray = categoriesArray.concat([
                 disabledByDefault("devtools.timeline.layers"),

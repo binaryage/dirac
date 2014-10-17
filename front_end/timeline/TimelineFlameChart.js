@@ -42,7 +42,8 @@ WebInspector.TimelineFlameChartDataProvider = function(model, frameModel)
     this._frameModel = frameModel;
     this._font = "12px " + WebInspector.fontFamily();
     this._linkifier = new WebInspector.Linkifier();
-    this._captureCausesSetting = WebInspector.settings.createSetting("timelineCaptureCauses", true);
+    if (Runtime.experiments.isEnabled("timelineJSCPUProfile"))
+        this._enableJSSamplingSettingSetting = WebInspector.settings.createSetting("timelineEnableJSSampling", false);
     this._filters = [];
     this.addFilter(WebInspector.TracingTimelineUIUtils.hiddenEventsFilter());
     this.addFilter(new WebInspector.TracingTimelineModel.ExclusiveEventNameFilter([WebInspector.TracingTimelineModel.RecordType.Program]));
@@ -197,11 +198,9 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
     _appendThreadTimelineData: function(threadTitle, syncEvents, asyncEvents)
     {
         var levelCount = this._appendAsyncEvents(threadTitle, asyncEvents);
-        if (Runtime.experiments.isEnabled("timelineJSCPUProfile")) {
-            if (this._captureCausesSetting.get()) {
-                var jsFrameEvents = this._generateJSFrameEvents(syncEvents);
-                syncEvents = jsFrameEvents.mergeOrdered(syncEvents, WebInspector.TracingModel.Event.orderedCompareStartTime);
-            }
+        if (this._enableJSSamplingSettingSetting && this._enableJSSamplingSettingSetting.get()) {
+            var jsFrameEvents = this._generateJSFrameEvents(syncEvents);
+            syncEvents = jsFrameEvents.mergeOrdered(syncEvents, WebInspector.TracingModel.Event.orderedCompareStartTime);
         }
         levelCount += this._appendSyncEvents(levelCount ? null : threadTitle, syncEvents);
         if (levelCount)
