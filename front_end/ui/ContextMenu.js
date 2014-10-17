@@ -224,6 +224,24 @@ WebInspector.ContextMenu.initialize = function()
     }
 }
 
+/**
+ * @param {!Document} doc
+ */
+WebInspector.ContextMenu.installHandler = function(doc)
+{
+    doc.body.addEventListener("contextmenu", handler, false);
+
+    /**
+     * @param {!Event} event
+     */
+    function handler(event)
+    {
+        var contextMenu = new WebInspector.ContextMenu(event);
+        contextMenu.appendApplicableItems(/** @type {!Object} */ (event.target));
+        contextMenu.show();
+    }
+}
+
 WebInspector.ContextMenu.prototype = {
     /**
      * @return {number}

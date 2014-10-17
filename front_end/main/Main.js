@@ -197,6 +197,7 @@ WebInspector.Main.prototype = {
         WebInspector.zoomManager = new WebInspector.ZoomManager(InspectorFrontendHost);
         WebInspector.inspectorView = new WebInspector.InspectorView();
         WebInspector.ContextMenu.initialize();
+        WebInspector.ContextMenu.installHandler(document);
         WebInspector.dockController = new WebInspector.DockController(canDock);
         WebInspector.overridesSupport = new WebInspector.OverridesSupport(canDock);
         WebInspector.multitargetConsoleModel = new WebInspector.MultitargetConsoleModel();

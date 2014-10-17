@@ -19,6 +19,7 @@ WebInspector.Toolbox = function()
     WebInspector.cssWorkspaceBinding = window.opener.WebInspector.cssWorkspaceBinding;
     WebInspector.Revealer = window.opener.WebInspector.Revealer;
     WebInspector.ContextMenu = window.opener.WebInspector.ContextMenu;
+    WebInspector.ContextMenu.installHandler(document);
     WebInspector.installPortStyles();
 
     var delegate = /** @type {!WebInspector.ToolboxDelegate} */ (window.opener.WebInspector["app"]);
