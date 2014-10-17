@@ -47,7 +47,6 @@ WebInspector.Dialog = function(relativeToElement, delegate)
 
     this._element = this._glassPane.element.createChild("div");
     this._element.tabIndex = 0;
-    this._element.classList.add("component-root");
     this._element.addEventListener("focus", this._onFocus.bind(this), false);
     this._element.addEventListener("keydown", this._onKeyDown.bind(this), false);
     this._closeKeys = [
