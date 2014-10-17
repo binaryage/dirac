@@ -81,7 +81,7 @@ WebInspector.TempFile = function(dirPath, name, callback)
         function didTruncate(e)
         {
             this._writer = writer;
-            writer.onwrite = null;
+            writer.onwriteend = null;
             writer.onerror = null;
             callback(this);
         }
@@ -93,7 +93,7 @@ WebInspector.TempFile = function(dirPath, name, callback)
         }
 
         if (writer.length) {
-            writer.onwrite = didTruncate.bind(this);
+            writer.onwriteend = didTruncate.bind(this);
             writer.onerror = onTruncateError;
             writer.truncate(0);
         } else {
@@ -128,10 +128,10 @@ WebInspector.TempFile.prototype = {
         var blob = new Blob(strings, {type: 'text/plain'});
         this._writer.onerror = function(e)
         {
-            WebInspector.console.error("Failed to write into a temp file: " + e.message);
+            WebInspector.console.error("Failed to write into a temp file: " + e.target.error.message);
             callback(false);
         }
-        this._writer.onwrite = function(e)
+        this._writer.onwriteend = function(e)
         {
             callback(true);
         }
