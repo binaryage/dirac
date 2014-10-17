@@ -58,6 +58,8 @@ WebInspector.Layers3DView = function()
     this._layerTree = null;
     this._textureManager = new WebInspector.LayerTextureManager();
     this._textureManager.addEventListener(WebInspector.LayerTextureManager.Events.TextureUpdated, this._update, this);
+    /** @type Array.<!WebGLTexture|undefined> */
+    this._chromeTextures = [];
 
     WebInspector.settings.showPaintRects.addChangeListener(this._update, this);
 }
@@ -84,6 +86,15 @@ WebInspector.Layers3DView.Events = {
     ObjectSelected: "ObjectSelected",
     LayerSnapshotRequested: "LayerSnapshotRequested",
     JumpToPaintEventRequested: "JumpToPaintEventRequested"
+}
+
+/**
+ * @enum {number}
+ */
+WebInspector.Layers3DView.ChromeTexture = {
+    Left: 0,
+    Middle: 1,
+    Right: 2
 }
 
 /**
@@ -124,11 +135,13 @@ WebInspector.Layers3DView.BackgroundColor = [0, 0, 0, 0];
 WebInspector.Layers3DView.HoveredBorderColor = [0, 0, 255, 1];
 WebInspector.Layers3DView.SelectedBorderColor = [0, 255, 0, 1];
 WebInspector.Layers3DView.BorderColor = [0, 0, 0, 1];
+WebInspector.Layers3DView.ViewportBorderColor = [160, 160, 160, 1];
 WebInspector.Layers3DView.ScrollRectBackgroundColor = [178, 0, 0, 0.4];
 WebInspector.Layers3DView.SelectedScrollRectBackgroundColor = [178, 0, 0, 0.6];
 WebInspector.Layers3DView.ScrollRectBorderColor = [178, 0, 0, 1];
 WebInspector.Layers3DView.BorderWidth = 1;
 WebInspector.Layers3DView.SelectedBorderWidth = 2;
+WebInspector.Layers3DView.ViewportBorderWidth = 3;
 
 WebInspector.Layers3DView.LayerSpacing = 20;
 WebInspector.Layers3DView.ScrollRectSpacing = 4;
@@ -158,15 +171,18 @@ WebInspector.Layers3DView.prototype = {
      */
     showImageForLayer: function(layer, imageURL)
     {
-        this._textureManager.createTexture(onTextureCreated.bind(this), imageURL);
+        if (imageURL)
+            this._textureManager.createTexture(onTextureCreated.bind(this), imageURL);
+        else
+            onTextureCreated.call(this, null);
 
         /**
          * @this {WebInspector.Layers3DView}
-         * @param {!WebGLTexture} texture
+         * @param {?WebGLTexture} texture
          */
         function onTextureCreated(texture)
         {
-            this._layerTexture = {layerId: layer.id(), texture: texture};
+            this._layerTexture = texture ? {layerId: layer.id(), texture: texture} : null;
             this._update();
         }
     },
@@ -300,7 +316,7 @@ WebInspector.Layers3DView.prototype = {
         this._pMatrix = new WebKitCSSMatrix().scale(1, -1, -1).translate(-1, -1, 0)
             .scale(2 / this._canvasElement.width, 2 / this._canvasElement.height, 1 / 1000000).multiply(projectionMatrix);
         this._gl.uniformMatrix4fv(this._shaderProgram.pMatrixUniform, false, this._arrayFromMatrix(this._pMatrix));
-        this._textureScale = Math.min(1, Math.max(projectionMatrix.m11, projectionMatrix.m22));
+        this._scale = Math.max(projectionMatrix.m11, projectionMatrix.m22);
     },
 
     _initWhiteTexture: function()
@@ -311,6 +327,22 @@ WebInspector.Layers3DView.prototype = {
         this._gl.texImage2D(this._gl.TEXTURE_2D, 0, this._gl.RGBA, 1, 1, 0, this._gl.RGBA, this._gl.UNSIGNED_BYTE, whitePixel);
     },
 
+    _initChromeTextures: function()
+    {
+        /**
+         * @this {WebInspector.Layers3DView}
+         * @param {!WebInspector.Layers3DView.ChromeTexture} index
+         * @param {?WebGLTexture} value
+         */
+        function saveChromeTexture(index, value)
+        {
+            this._chromeTextures[index] = value || undefined;
+        }
+        this._textureManager.createTexture(saveChromeTexture.bind(this, WebInspector.Layers3DView.ChromeTexture.Left), "Images/chromeLeft.png");
+        this._textureManager.createTexture(saveChromeTexture.bind(this, WebInspector.Layers3DView.ChromeTexture.Middle), "Images/chromeMiddle.png");
+        this._textureManager.createTexture(saveChromeTexture.bind(this, WebInspector.Layers3DView.ChromeTexture.Right), "Images/chromeRight.png");
+    },
+
     _initGLIfNecessary: function()
     {
         if (this._gl)
@@ -318,6 +350,7 @@ WebInspector.Layers3DView.prototype = {
         this._gl = this._initGL(this._canvasElement);
         this._initShaders();
         this._initWhiteTexture();
+        this._initChromeTextures();
         this._textureManager.setContext(this._gl);
         return this._gl;
     },
@@ -459,18 +492,6 @@ WebInspector.Layers3DView.prototype = {
         }
     },
 
-    _calculateViewportRect: function()
-    {
-        var rect = new WebInspector.Layers3DView.Rectangle(null);
-        var viewport = this._layerTree.viewportSize();
-        var depth = (this._maxDepth + 1) * WebInspector.Layers3DView.LayerSpacing;
-        var vertices = [0, 0, depth, viewport.width, 0, depth, viewport.width, viewport.height, depth, 0, viewport.height, depth];
-        rect.vertices = vertices;
-        rect.borderColor = [0, 0, 0, 1];
-        rect.lineWidth = 3;
-        this._rects.push(rect);
-    },
-
     _calculateRects: function()
     {
         this._rects = [];
@@ -486,9 +507,6 @@ WebInspector.Layers3DView.prototype = {
             else
                 this._layerTree.forEachLayer(this._calculateLayerTileRects.bind(this));
         }
-
-        if (this._layerTree.viewportSize() && this._showViewportSetting.get())
-            this._calculateViewportRect();
     },
 
     /**
@@ -521,14 +539,13 @@ WebInspector.Layers3DView.prototype = {
 
     /**
      * @param {!Array.<number>} vertices
-     * @param {boolean} isBorder
+     * @param {number} mode
      * @param {!Array.<number>=} color
      * @param {!Object=} texture
      */
-    _drawRectangle: function(vertices, isBorder, color, texture)
+    _drawRectangle: function(vertices, mode, color, texture)
     {
         var gl = this._gl;
-        var glMode = isBorder ? gl.LINE_LOOP : gl.TRIANGLE_FAN;
         var white = [255, 255, 255, 1];
         this._setVertexAttribute(this._shaderProgram.vertexPositionAttribute, vertices, 3);
         this._setVertexAttribute(this._shaderProgram.textureCoordAttribute, [0, 1, 1, 1, 1, 0, 0, 0], 2);
@@ -543,8 +560,49 @@ WebInspector.Layers3DView.prototype = {
             gl.bindTexture(gl.TEXTURE_2D, this._whiteTexture);
         }
 
-        var numberOfVertices = 4;
-        gl.drawArrays(glMode, 0, numberOfVertices);
+        var numberOfVertices = vertices.length / 3;
+        gl.drawArrays(mode, 0, numberOfVertices);
+    },
+
+    /**
+     * @param {!Array.<number>} vertices
+     * @param {!WebGLTexture} texture
+     */
+    _drawTexture: function(vertices, texture)
+    {
+        this._drawRectangle(vertices, this._gl.TRIANGLE_FAN, undefined, texture);
+    },
+
+    _drawViewportAndChrome: function()
+    {
+        var viewport = this._layerTree.viewportSize();
+        if (!viewport)
+            return;
+
+        var drawChrome = this._showChromeSetting.get() && this._chromeTextures.length >= 3 && this._chromeTextures.indexOf(undefined) < 0;
+        var z = (this._maxDepth + 1) * WebInspector.Layers3DView.LayerSpacing;
+        var borderWidth = Math.round(WebInspector.Layers3DView.ViewportBorderWidth * this._scale);
+        var vertices = [viewport.width, 0, z, viewport.width, viewport.height, z, 0, viewport.height, z, 0, 0, z];
+        this._gl.lineWidth(borderWidth);
+        this._drawRectangle(vertices, drawChrome ? this._gl.LINE_STRIP : this._gl.LINE_LOOP, WebInspector.Layers3DView.ViewportBorderColor);
+
+        if (!drawChrome)
+            return;
+
+        var borderAdjustment = WebInspector.Layers3DView.ViewportBorderWidth / 2;
+        var viewportWidth = this._layerTree.viewportSize().width + 2 * borderAdjustment;
+        var chromeHeight = this._chromeTextures[0].image.naturalHeight;
+        var middleFragmentWidth = viewportWidth - this._chromeTextures[0].image.naturalWidth - this._chromeTextures[2].image.naturalWidth;
+        var x = -borderAdjustment;
+        var y = -chromeHeight;
+        for (var i = 0; i < this._chromeTextures.length; ++i) {
+            var width = i === WebInspector.Layers3DView.ChromeTexture.Middle ? middleFragmentWidth : this._chromeTextures[i].image.naturalWidth;
+            if (width < 0 || x + width > viewportWidth)
+                break;
+            vertices = [x, y, z, x + width, y, z, x + width, y + chromeHeight, z, x, y + chromeHeight, z];
+            this._drawTexture(vertices, /** @type {!WebGLTexture} */ (this._chromeTextures[i]));
+            x += width;
+        }
     },
 
     /**
@@ -554,12 +612,12 @@ WebInspector.Layers3DView.prototype = {
     {
         var vertices = rect.vertices;
         if (rect.texture)
-            this._drawRectangle(vertices, false, undefined, rect.texture);
+            this._drawTexture(vertices, rect.texture);
         else if (rect.fillColor)
-            this._drawRectangle(vertices, false, rect.fillColor);
+            this._drawRectangle(vertices, this._gl.TRIANGLE_FAN, rect.fillColor);
         this._gl.lineWidth(rect.lineWidth);
         if (rect.borderColor)
-            this._drawRectangle(vertices, true, rect.borderColor);
+            this._drawRectangle(vertices, this._gl.LINE_LOOP, rect.borderColor);
     },
 
     _update: function()
@@ -580,12 +638,13 @@ WebInspector.Layers3DView.prototype = {
         this._initProjectionMatrix();
         this._calculateDepths();
 
-        this._textureManager.setScale(this._textureScale);
+        this._textureManager.setScale(Math.min(1, this._scale));
         gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
         this._calculateRects();
         this._rects.forEach(this._drawViewRect.bind(this));
+        this._drawViewportAndChrome();
     },
 
     /**
@@ -641,7 +700,7 @@ WebInspector.Layers3DView.prototype = {
     {
         this._panelStatusBarElement = this.element.createChild("div", "panel-status-bar");
         this._panelStatusBarElement.appendChild(this._transformController.controlPanelElement());
-        this._showViewportSetting = this._createVisibilitySetting("Viewport", "showViewport", true, this._panelStatusBarElement);
+        this._showChromeSetting = this._createVisibilitySetting("Chrome", "showChrome", true, this._panelStatusBarElement);
         this._showSlowScrollRectsSetting = this._createVisibilitySetting("Slow scroll rects", "showSlowScrollRects", true, this._panelStatusBarElement);
         this._showPaintsSetting = this._createVisibilitySetting("Paints", "showPaints", true, this._panelStatusBarElement);
     },
@@ -816,12 +875,13 @@ WebInspector.LayerTextureManager.prototype = {
          */
         function onGotImage(imageURL)
         {
-            this.createTexture(onTextureCreated.bind(this), imageURL);
+            if (imageURL)
+                this.createTexture(onTextureCreated.bind(this), imageURL);
         }
 
         /**
          * @this {WebInspector.LayerTextureManager}
-         * @param {!WebGLTexture} texture
+         * @param {?WebGLTexture} texture
          */
         function onTextureCreated(texture)
         {
@@ -831,13 +891,14 @@ WebInspector.LayerTextureManager.prototype = {
     },
 
     /**
-     * @param {!function(!WebGLTexture)} textureCreatedCallback
-     * @param {string=} imageURL
+     * @param {function(?WebGLTexture)} textureCreatedCallback
+     * @param {string} imageURL
      */
     createTexture: function(textureCreatedCallback, imageURL)
     {
         var image = new Image();
         image.addEventListener("load", onImageLoaded.bind(this), false);
+        image.addEventListener("error", onImageError, false);
         image.src = imageURL;
 
         /**
@@ -846,6 +907,11 @@ WebInspector.LayerTextureManager.prototype = {
         function onImageLoaded()
         {
             textureCreatedCallback(this._createTextureForImage(image));
+        }
+
+        function onImageError()
+        {
+            textureCreatedCallback(null);
         }
     },
 

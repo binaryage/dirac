@@ -746,6 +746,7 @@
 
 .layers-3d-view {
     overflow: hidden;
+    -webkit-user-select: none;
 }
 
 .layers-3d-view canvas {
