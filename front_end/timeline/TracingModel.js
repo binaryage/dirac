@@ -321,16 +321,21 @@ WebInspector.TracingModel.Loader.prototype = {
  * @constructor
  * @param {string} category
  * @param {string} name
- * @param {string} phase
+ * @param {!WebInspector.TracingModel.Phase} phase
  * @param {number} startTime
- * @param {?WebInspector.TracingModel.Thread} thread
+ * @param {!WebInspector.TracingModel.Thread} thread
  */
 WebInspector.TracingModel.Event = function(category, name, phase, startTime, thread)
 {
+    /** @type {string} */
     this.category = category;
+    /** @type {string} */
     this.name = name;
+    /** @type {!WebInspector.TracingModel.Phase} */
     this.phase = phase;
+    /** @type {number} */
     this.startTime = startTime;
+    /** @type {!WebInspector.TracingModel.Thread} */
     this.thread = thread;
     this.args = {};
 
@@ -353,12 +358,12 @@ WebInspector.TracingModel.Event = function(category, name, phase, startTime, thr
 
 /**
  * @param {!WebInspector.TracingManager.EventPayload} payload
- * @param {?WebInspector.TracingModel.Thread} thread
+ * @param {!WebInspector.TracingModel.Thread} thread
  * @return {!WebInspector.TracingModel.Event}
  */
 WebInspector.TracingModel.Event.fromPayload = function(payload, thread)
 {
-    var event = new WebInspector.TracingModel.Event(payload.cat, payload.name, payload.ph, payload.ts / 1000, thread);
+    var event = new WebInspector.TracingModel.Event(payload.cat, payload.name, /** @type {!WebInspector.TracingModel.Phase} */ (payload.ph), payload.ts / 1000, thread);
     if (payload.args)
         event.addArgs(payload.args);
     else
@@ -448,7 +453,7 @@ WebInspector.TracingModel.Event.orderedCompareStartTime = function (a, b)
  * @param {string} category
  * @param {string} name
  * @param {number} startTime
- * @param {?WebInspector.TracingModel.Thread} thread
+ * @param {!WebInspector.TracingModel.Thread} thread
  */
 WebInspector.TracingModel.ObjectSnapshot = function(category, name, startTime, thread)
 {
@@ -457,7 +462,7 @@ WebInspector.TracingModel.ObjectSnapshot = function(category, name, startTime, t
 
 /**
  * @param {!WebInspector.TracingManager.EventPayload} payload
- * @param {?WebInspector.TracingModel.Thread} thread
+ * @param {!WebInspector.TracingModel.Thread} thread
  * @return {!WebInspector.TracingModel.ObjectSnapshot}
  */
 WebInspector.TracingModel.ObjectSnapshot.fromPayload = function(payload, thread)

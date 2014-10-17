@@ -659,7 +659,7 @@ WebInspector.LayerPaintEvent.prototype = {
          */
         function onGotObject(result)
         {
-            if (!result || !result["skp64"]) {
+            if (!result || !result["skp64"] || !target) {
                 callback(null, null);
                 return;
             }
