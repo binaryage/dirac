@@ -163,6 +163,7 @@ WebInspector.Main.prototype = {
 
         if (InspectorFrontendHost.isUnderTest()) {
             // Enable experiments for testing.
+            Runtime.experiments.enableForTest("disableAgentsWhenProfile");
             var testPath = WebInspector.settings.testPath.get();
             if (testPath.indexOf("timeline/") !== -1 || testPath.indexOf("layers/") !== -1)
                 Runtime.experiments.enableForTest("layersPanel");
@@ -171,7 +172,11 @@ WebInspector.Main.prototype = {
             if (testPath.indexOf("documentation/") !== -1)
                 Runtime.experiments.enableForTest("documentation");
         } else {
-            Runtime.experiments.setDefaultExperiments(["timelineOnTraceEvents", "timelineJSCPUProfile"]);
+            Runtime.experiments.setDefaultExperiments([
+                "timelineOnTraceEvents",
+                "disableAgentsWhenProfile",
+                "timelineJSCPUProfile",
+            ]);
         }
     },
 

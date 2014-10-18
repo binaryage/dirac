@@ -94,6 +94,8 @@ WebInspector.InspectorView = function()
     {
         this.showPanel("console").done();
     }
+
+    WebInspector.targetManager.addEventListener(WebInspector.TargetManager.Events.SuspendStateChanged, this._onSuspendStateChanged.bind(this));
 };
 
 WebInspector.InspectorView.prototype = {
@@ -185,14 +187,14 @@ WebInspector.InspectorView.prototype = {
     },
 
     /**
-     * @param {boolean} locked
+     * @param {!WebInspector.Event} event
      */
-    setCurrentPanelLocked: function(locked)
+    _onSuspendStateChanged: function(event)
     {
-        this._currentPanelLocked = locked;
-        this._tabbedPane.setCurrentTabLocked(locked);
+        this._currentPanelLocked = WebInspector.targetManager.allTargetsSuspended();
+        this._tabbedPane.setCurrentTabLocked(this._currentPanelLocked);
         for (var i = 0; i < this._toolbarItems.length; ++i)
-            this._toolbarItems[i].setEnabled(!locked);
+            this._toolbarItems[i].setEnabled(!this._currentPanelLocked);
     },
 
     /**

@@ -145,7 +145,6 @@
             'front_end/sdk/IndexedDBModel.js',
             'front_end/sdk/InspectorBackend.js',
             'front_end/sdk/LayerTreeModel.js',
-            'front_end/sdk/Locks.js',
             'front_end/sdk/NetworkLog.js',
             'front_end/sdk/NetworkManager.js',
             'front_end/sdk/NetworkRequest.js',

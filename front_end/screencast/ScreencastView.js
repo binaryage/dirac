@@ -95,7 +95,7 @@ WebInspector.ScreencastView.prototype = {
         WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.ScreencastFrame, this._screencastFrame, this);
         WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.ScreencastVisibilityChanged, this._screencastVisibilityChanged, this);
 
-        WebInspector.profilingLock().addEventListener(WebInspector.Lock.Events.StateChanged, this._onProfilingStateChange, this);
+        WebInspector.targetManager.addEventListener(WebInspector.TargetManager.Events.SuspendStateChanged, this._onSuspendStateChange, this);
         this._updateGlasspane();
     },
 
@@ -111,7 +111,7 @@ WebInspector.ScreencastView.prototype = {
 
     _startCasting: function()
     {
-        if (WebInspector.profilingLock().isAcquired())
+        if (WebInspector.targetManager.allTargetsSuspended())
             return;
         if (this._isCasting)
             return;
@@ -185,9 +185,9 @@ WebInspector.ScreencastView.prototype = {
     /**
      * @param {!WebInspector.Event} event
      */
-    _onProfilingStateChange: function(event)
+    _onSuspendStateChange: function(event)
     {
-        if (WebInspector.profilingLock().isAcquired())
+        if (WebInspector.targetManager.allTargetsSuspended())
             this._stopCasting();
         else
             this._startCasting();
@@ -199,7 +199,7 @@ WebInspector.ScreencastView.prototype = {
         if (this._targetInactive) {
             this._glassPaneElement.textContent = WebInspector.UIString("The tab is inactive");
             this._glassPaneElement.classList.remove("hidden");
-        } else if (WebInspector.profilingLock().isAcquired()) {
+        } else if (WebInspector.targetManager.allTargetsSuspended()) {
             this._glassPaneElement.textContent = WebInspector.UIString("Profiling in progress");
             this._glassPaneElement.classList.remove("hidden");
         } else {

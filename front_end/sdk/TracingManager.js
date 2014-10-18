@@ -91,8 +91,7 @@ WebInspector.TracingManager.prototype = {
     {
         if (this._active)
             return;
-        WebInspector.profilingLock().acquire();
-        this._shouldReleaseLock = true;
+        WebInspector.targetManager.suspendAllTargets();
         var bufferUsageReportingIntervalMs = 500;
         TracingAgent.start(categoryFilter, options, bufferUsageReportingIntervalMs, callback);
         this._active = true;
@@ -104,10 +103,7 @@ WebInspector.TracingManager.prototype = {
         if (!this._active)
             return;
         TracingAgent.end(this._onStop.bind(this));
-        if (this._shouldReleaseLock) {
-            this._shouldReleaseLock = false;
-            WebInspector.profilingLock().release();
-        }
+        WebInspector.targetManager.resumeAllTargets();
     },
 
     _onStop: function()

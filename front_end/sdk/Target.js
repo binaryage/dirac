@@ -47,6 +47,27 @@ WebInspector.Target.Capabilities = {
 WebInspector.Target._nextId = 1;
 
 WebInspector.Target.prototype = {
+    suspend: function()
+    {
+        if (!Runtime.experiments.isEnabled("disableAgentsWhenProfile")) {
+            this.debuggerModel.asyncStackTracesStateChanged();
+            return;
+        }
+        this.debuggerModel.suspendModel();
+        this.cssModel.suspendModel();
+        this.domModel.suspendModel();
+    },
+
+    resume: function()
+    {
+        if (Runtime.experiments.isEnabled("disableAgentsWhenProfile")) {
+            this.domModel.resumeModel();
+            this.cssModel.resumeModel();
+            this.debuggerModel.resumeModel();
+        } else {
+            this.debuggerModel.asyncStackTracesStateChanged();
+        }
+    },
 
     /**
      * @return {number}
@@ -275,16 +296,53 @@ WebInspector.TargetManager = function()
     this._observers = [];
     /** @type {!Object.<string, !Array.<{modelClass: !Function, thisObject: (!Object|undefined), listener: function(!WebInspector.Event)}>>} */
     this._modelListeners = {};
+    /** @type {boolean} */
+    this._allTargetsSuspended = false;
 }
 
 WebInspector.TargetManager.Events = {
     InspectedURLChanged: "InspectedURLChanged",
     MainFrameNavigated: "MainFrameNavigated",
     Load: "Load",
-    WillReloadPage: "WillReloadPage"
+    WillReloadPage: "WillReloadPage",
+    SuspendStateChanged: "SuspendStateChanged"
 }
 
 WebInspector.TargetManager.prototype = {
+    suspendAllTargets: function()
+    {
+        console.assert(!this._allTargetsSuspended);
+        if (this._allTargetsSuspended)
+            return;
+        this._allTargetsSuspended = true;
+        this._targets.forEach(function(target)
+        {
+            target.suspend();
+        });
+        this.dispatchEventToListeners(WebInspector.TargetManager.Events.SuspendStateChanged);
+    },
+
+    resumeAllTargets: function()
+    {
+        console.assert(this._allTargetsSuspended);
+        if (!this._allTargetsSuspended)
+            return;
+        this._allTargetsSuspended = false;
+        this._targets.forEach(function(target)
+        {
+            target.resume();
+        });
+        this.dispatchEventToListeners(WebInspector.TargetManager.Events.SuspendStateChanged);
+    },
+
+    /**
+     * @return {boolean}
+     */
+    allTargetsSuspended: function()
+    {
+        return this._allTargetsSuspended;
+    },
+
     /**
      * @return {string}
      */

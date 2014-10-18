@@ -53,14 +53,12 @@ WebInspector.DebuggerModel = function(target)
     this._isPausing = false;
     WebInspector.settings.pauseOnExceptionEnabled.addChangeListener(this._pauseOnExceptionStateChanged, this);
     WebInspector.settings.pauseOnCaughtException.addChangeListener(this._pauseOnExceptionStateChanged, this);
-
-    WebInspector.settings.enableAsyncStackTraces.addChangeListener(this._asyncStackTracesStateChanged, this);
-    WebInspector.profilingLock().addEventListener(WebInspector.Lock.Events.StateChanged, this._profilingStateChanged, this);
+    WebInspector.settings.enableAsyncStackTraces.addChangeListener(this.asyncStackTracesStateChanged, this);
+    WebInspector.settings.skipStackFramesPattern.addChangeListener(this._applySkipStackFrameSettings, this);
+    WebInspector.settings.skipContentScripts.addChangeListener(this._applySkipStackFrameSettings, this);
 
     this.enableDebugger();
 
-    WebInspector.settings.skipStackFramesPattern.addChangeListener(this._applySkipStackFrameSettings, this);
-    WebInspector.settings.skipContentScripts.addChangeListener(this._applySkipStackFrameSettings, this);
     this._applySkipStackFrameSettings();
 }
 
@@ -117,7 +115,7 @@ WebInspector.DebuggerModel.prototype = {
         this._agent.enable();
         this._debuggerEnabled = true;
         this._pauseOnExceptionStateChanged();
-        this._asyncStackTracesStateChanged();
+        this.asyncStackTracesStateChanged();
         this.dispatchEventToListeners(WebInspector.DebuggerModel.Events.DebuggerWasEnabled);
     },
 
@@ -129,6 +127,7 @@ WebInspector.DebuggerModel.prototype = {
         this._agent.disable();
         this._debuggerEnabled = false;
         this._isPausing = false;
+        this.asyncStackTracesStateChanged();
         this.dispatchEventToListeners(WebInspector.DebuggerModel.Events.DebuggerWasDisabled);
     },
 
@@ -170,21 +169,20 @@ WebInspector.DebuggerModel.prototype = {
         this._agent.setPauseOnExceptions(state);
     },
 
-    _profilingStateChanged: function()
+    suspendModel: function()
     {
-        if (Runtime.experiments.isEnabled("disableAgentsWhenProfile")) {
-            if (WebInspector.profilingLock().isAcquired())
-                this.disableDebugger();
-            else
-                this.enableDebugger();
-        }
-        this._asyncStackTracesStateChanged();
+        this.disableDebugger();
     },
 
-    _asyncStackTracesStateChanged: function()
+    resumeModel: function()
+    {
+        this.enableDebugger();
+    },
+
+    asyncStackTracesStateChanged: function()
     {
         const maxAsyncStackChainDepth = 4;
-        var enabled = WebInspector.settings.enableAsyncStackTraces.get() && !WebInspector.profilingLock().isAcquired();
+        var enabled = WebInspector.settings.enableAsyncStackTraces.get() && !WebInspector.targetManager.allTargetsSuspended();
         this._agent.setAsyncCallStackDepth(enabled ? maxAsyncStackChainDepth : 0);
     },
 
@@ -725,7 +723,7 @@ WebInspector.DebuggerModel.prototype = {
         WebInspector.settings.pauseOnCaughtException.removeChangeListener(this._pauseOnExceptionStateChanged, this);
         WebInspector.settings.skipStackFramesPattern.removeChangeListener(this._applySkipStackFrameSettings, this);
         WebInspector.settings.skipContentScripts.removeChangeListener(this._applySkipStackFrameSettings, this);
-        WebInspector.settings.enableAsyncStackTraces.removeChangeListener(this._asyncStackTracesStateChanged, this);
+        WebInspector.settings.enableAsyncStackTraces.removeChangeListener(this.asyncStackTracesStateChanged, this);
     },
 
     __proto__: WebInspector.SDKModel.prototype

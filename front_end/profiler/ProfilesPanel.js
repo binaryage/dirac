@@ -237,9 +237,9 @@ WebInspector.ProfileType.prototype = {
     setProfileBeingRecorded: function(profile)
     {
         if (this._profileBeingRecorded && this._profileBeingRecorded.target())
-            WebInspector.profilingLock().release();
+            WebInspector.targetManager.resumeAllTargets();
         if (profile && profile.target())
-            WebInspector.profilingLock().acquire();
+            WebInspector.targetManager.suspendAllTargets();
         this._profileBeingRecorded = profile;
     },
 
@@ -491,7 +491,7 @@ WebInspector.ProfilesPanel = function()
     this.element.addEventListener("contextmenu", this._handleContextMenuEvent.bind(this), true);
     this._registerShortcuts();
 
-    WebInspector.profilingLock().addEventListener(WebInspector.Lock.Events.StateChanged, this._onProfilingStateChanged, this);
+    WebInspector.targetManager.addEventListener(WebInspector.TargetManager.Events.SuspendStateChanged, this._onSuspendStateChanged, this);
 }
 
 WebInspector.ProfilesPanel.prototype = {
@@ -579,7 +579,7 @@ WebInspector.ProfilesPanel.prototype = {
         return true;
     },
 
-    _onProfilingStateChanged: function()
+    _onSuspendStateChanged: function()
     {
         this._updateRecordButton(this.recordButton.toggled);
     },
@@ -589,10 +589,7 @@ WebInspector.ProfilesPanel.prototype = {
      */
     _updateRecordButton: function(toggled)
     {
-        if (Runtime.experiments.isEnabled("disableAgentsWhenProfile"))
-            WebInspector.inspectorView.setCurrentPanelLocked(toggled);
-        var isAcquiredInSomeTarget = WebInspector.profilingLock().isAcquired();
-        var enable = toggled || !isAcquiredInSomeTarget;
+        var enable = toggled || !WebInspector.targetManager.allTargetsSuspended();
         this.recordButton.setEnabled(enable);
         this.recordButton.toggled = toggled;
         if (enable)

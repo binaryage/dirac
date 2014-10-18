@@ -67,7 +67,7 @@ WebInspector.TimelineManager.prototype = {
     start: function(maxCallStackDepth, liveEvents, includeCounters, includeGPUEvents, callback)
     {
         this._enablementCount++;
-        WebInspector.profilingLock().acquire();
+        WebInspector.targetManager.suspendAllTargets();
         if (this._enablementCount === 1)
             this.target().timelineAgent().start(maxCallStackDepth, true, liveEvents, includeCounters, includeGPUEvents, callback);
         else if (callback)
@@ -93,7 +93,7 @@ WebInspector.TimelineManager.prototype = {
          */
         function allDoneCallback(error)
         {
-            WebInspector.profilingLock().release();
+            WebInspector.targetManager.resumeAllTargets();
             callback(error);
         }
     },

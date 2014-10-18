@@ -14,17 +14,19 @@ WebInspector.WorkerTargetManager = function(mainTarget, targetManager)
     this._targetManager = targetManager;
     mainTarget.workerManager.addEventListener(WebInspector.WorkerManager.Events.WorkerAdded, this._onWorkerAdded, this);
     mainTarget.workerManager.addEventListener(WebInspector.WorkerManager.Events.WorkersCleared, this._onWorkersCleared, this);
-    WebInspector.profilingLock().addEventListener(WebInspector.Lock.Events.StateChanged, this._onProfilingStateChanged, this);
-    this._onProfilingStateChanged();
+    WebInspector.targetManager.addEventListener(WebInspector.TargetManager.Events.SuspendStateChanged, this._onSuspendStateChanged, this);
+    this._onSuspendStateChanged();
     this._lastAnonymousTargetId = 0;
     this._shouldPauseWorkerOnStart = WebInspector.isWorkerFrontend();
 }
 
 WebInspector.WorkerTargetManager.prototype = {
-    _onProfilingStateChanged: function()
+    _onSuspendStateChanged: function()
     {
-        var acquired = WebInspector.profilingLock().isAcquired();
-        this._mainTarget.workerAgent().setAutoconnectToWorkers(!acquired);
+        // FIXME: the logic needs to be extended and cover the case when a worker was started after disabling autoconnect
+        // and still alive after enabling autoconnect.
+        var suspended = WebInspector.targetManager.allTargetsSuspended();
+        this._mainTarget.workerAgent().setAutoconnectToWorkers(!suspended);
     },
 
     /**

@@ -123,7 +123,7 @@ WebInspector.TimelinePanel = function()
 
     this._onModeChanged();
     this._detailsSplitView.show(this.element);
-    WebInspector.profilingLock().addEventListener(WebInspector.Lock.Events.StateChanged, this._onProfilingStateChanged, this);
+    WebInspector.targetManager.addEventListener(WebInspector.TargetManager.Events.SuspendStateChanged, this._onSuspendStateChanged, this);
 }
 
 WebInspector.TimelinePanel.OverviewMode = {
@@ -636,7 +636,6 @@ WebInspector.TimelinePanel.prototype = {
             uiControl.label.classList.toggle("dimmed", !enabled);
         }
         this._recordingOptionUIControls.forEach(handler);
-        WebInspector.inspectorView.setCurrentPanelLocked(!enabled);
     },
 
     /**
@@ -672,7 +671,7 @@ WebInspector.TimelinePanel.prototype = {
         this._setUIControlsEnabled(true);
     },
 
-    _onProfilingStateChanged: function()
+    _onSuspendStateChanged: function()
     {
         this._updateToggleTimelineButton(this.toggleTimelineButton.toggled);
     },
@@ -682,7 +681,6 @@ WebInspector.TimelinePanel.prototype = {
      */
     _updateToggleTimelineButton: function(toggled)
     {
-        var isAcquiredInSomeTarget = WebInspector.profilingLock().isAcquired();
         this.toggleTimelineButton.toggled = toggled;
         if (toggled) {
             this.toggleTimelineButton.title = WebInspector.UIString("Stop");
@@ -690,7 +688,7 @@ WebInspector.TimelinePanel.prototype = {
         } else if (this._stopPending) {
             this.toggleTimelineButton.title = WebInspector.UIString("Stop pending");
             this.toggleTimelineButton.setEnabled(false);
-        } else if (isAcquiredInSomeTarget) {
+        } else if (WebInspector.targetManager.allTargetsSuspended()) {
             this.toggleTimelineButton.title = WebInspector.anotherProfilerActiveLabel();
             this.toggleTimelineButton.setEnabled(false);
         } else {

@@ -25,7 +25,6 @@
         "FileSystemModel.js",
         "IndexedDBModel.js",
         "LayerTreeModel.js",
-        "Locks.js",
         "NetworkLog.js",
         "OverridesSupport.js",
         "PowerProfiler.js",

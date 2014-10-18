@@ -62,7 +62,6 @@ WebInspector.AuditLauncherView = function(auditController)
 
     WebInspector.targetManager.addModelListener(WebInspector.NetworkManager, WebInspector.NetworkManager.EventTypes.RequestStarted, this._onRequestStarted, this);
     WebInspector.targetManager.addModelListener(WebInspector.NetworkManager, WebInspector.NetworkManager.EventTypes.RequestFinished, this._onRequestFinished, this);
-    WebInspector.profilingLock().addEventListener(WebInspector.Lock.Events.StateChanged, this._updateButton, this);
 
     var defaultSelectedAuditCategory = {};
     defaultSelectedAuditCategory[WebInspector.AuditLauncherView.AllCategoriesKey] = true;
@@ -141,13 +140,10 @@ WebInspector.AuditLauncherView.prototype = {
         this._auditRunning = auditRunning;
         this._updateButton();
         this._toggleUIComponents(this._auditRunning);
-        if (this._auditRunning) {
-            WebInspector.profilingLock().acquire();
+        if (this._auditRunning)
             this._startAudit();
-        } else {
+        else
             this._stopAudit();
-            WebInspector.profilingLock().release();
-        }
     },
 
     _startAudit: function()
@@ -324,10 +320,8 @@ WebInspector.AuditLauncherView.prototype = {
 
     _updateButton: function()
     {
-        var enable = this._auditRunning || (this._currentCategoriesCount && !WebInspector.profilingLock().isAcquired());
         this._launchButton.textContent = this._auditRunning ? WebInspector.UIString("Stop") : WebInspector.UIString("Run");
-        this._launchButton.disabled = !enable;
-        this._launchButton.title = enable ? "" : WebInspector.anotherProfilerActiveLabel();
+        this._launchButton.disabled = !this._currentCategoriesCount;
     },
 
     __proto__: WebInspector.VBox.prototype

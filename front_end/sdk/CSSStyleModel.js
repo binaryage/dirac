@@ -49,9 +49,6 @@ WebInspector.CSSStyleModel = function(target)
     this._styleSheetIdToHeader = new StringMap();
     /** @type {!StringMap.<!Object.<!PageAgent.FrameId, !Array.<!CSSAgent.StyleSheetId>>>} */
     this._styleSheetIdsForURL = new StringMap();
-
-    if (Runtime.experiments.isEnabled("disableAgentsWhenProfile"))
-        WebInspector.profilingLock().addEventListener(WebInspector.Lock.Events.StateChanged, this._profilingStateChanged, this);
 }
 
 WebInspector.CSSStyleModel.PseudoStatePropertyName = "pseudoState";
@@ -83,15 +80,16 @@ WebInspector.CSSStyleModel.Events = {
 WebInspector.CSSStyleModel.MediaTypes = ["all", "braille", "embossed", "handheld", "print", "projection", "screen", "speech", "tty", "tv"];
 
 WebInspector.CSSStyleModel.prototype = {
-    _profilingStateChanged: function()
+    suspendModel: function()
     {
-        if (WebInspector.profilingLock().isAcquired()) {
-            this._agent.disable();
-            this._isEnabled = false;
-            this._resetStyleSheets();
-        } else {
-            this._agent.enable(this._wasEnabled.bind(this));
-        }
+        this._agent.disable();
+        this._isEnabled = false;
+        this._resetStyleSheets();
+    },
+
+    resumeModel: function()
+    {
+        this._agent.enable(this._wasEnabled.bind(this));
     },
 
     /**

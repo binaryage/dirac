@@ -948,9 +948,6 @@ WebInspector.DOMModel = function(target) {
     this._defaultHighlighter = new WebInspector.DefaultDOMNodeHighlighter(this._agent);
     this._highlighter = this._defaultHighlighter;
 
-    if (Runtime.experiments.isEnabled("disableAgentsWhenProfile"))
-        WebInspector.profilingLock().addEventListener(WebInspector.Lock.Events.StateChanged, this._profilingStateChanged, this);
-
     this._agent.enable();
 }
 
@@ -968,12 +965,14 @@ WebInspector.DOMModel.Events = {
 }
 
 WebInspector.DOMModel.prototype = {
-    _profilingStateChanged: function()
+    suspendModel: function()
     {
-        if (WebInspector.profilingLock().isAcquired())
-            this._agent.disable();
-        else
-            this._agent.enable();
+        this._agent.disable();
+    },
+
+    resumeModel: function()
+    {
+        this._agent.enable();
     },
 
     /**
