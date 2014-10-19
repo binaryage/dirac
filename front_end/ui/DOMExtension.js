@@ -827,12 +827,21 @@ Node.prototype.setTextContentTruncatedIfNeeded = function(text, placeholder)
 /**
  * @return {?Node}
  */
-Event.prototype.elementFromPoint = function()
+Event.prototype.deepElementFromPoint = function()
 {
+    // 1. climb to the component root.
     var node = this.target;
     while (node && node.nodeType !== Node.DOCUMENT_FRAGMENT_NODE && node.nodeType !== Node.DOCUMENT_NODE)
         node = node.parentNode;
-    return node ? node.elementFromPoint(this.pageX, this.pageY) : null;
+
+    if (!node)
+        return null;
+
+    // 2. Find deepest node by coordinates.
+    node = node.elementFromPoint(this.pageX, this.pageY);
+    while (node && node.shadowRoot)
+        node = node.shadowRoot.elementFromPoint(this.pageX, this.pageY);
+    return node;
 }
 
 /**

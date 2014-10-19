@@ -257,3 +257,7 @@ body.inactive button.text-button, .text-button:disabled {
 .pick-node-mode {
     cursor: pointer;
 }
+
+.webkit-html-attribute-value a {
+    cursor: default !important;
+}

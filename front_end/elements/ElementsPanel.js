@@ -693,7 +693,7 @@ WebInspector.ElementsPanel.prototype = {
 
     _mouseMovedInCrumbs: function(event)
     {
-        var nodeUnderMouse = event.elementFromPoint();
+        var nodeUnderMouse = event.deepElementFromPoint();
         var crumbElement = nodeUnderMouse.enclosingNodeOrSelfWithClass("crumb");
         var node = /** @type {?WebInspector.DOMNode} */ (crumbElement ? crumbElement.representedObject : null);
         if (node)
@@ -702,7 +702,7 @@ WebInspector.ElementsPanel.prototype = {
 
     _mouseMovedOutOfCrumbs: function(event)
     {
-        var nodeUnderMouse = event.elementFromPoint();
+        var nodeUnderMouse = event.deepElementFromPoint();
         if (nodeUnderMouse && nodeUnderMouse.isDescendant(this.crumbsElement))
             return;
 

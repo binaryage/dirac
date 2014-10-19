@@ -615,7 +615,7 @@ WebInspector.ElementsTreeOutline.prototype = {
 
     _onmouseout: function(event)
     {
-        var nodeUnderMouse = event.elementFromPoint();
+        var nodeUnderMouse = event.deepElementFromPoint();
         if (nodeUnderMouse && nodeUnderMouse.isDescendant(this._element))
             return;
 
@@ -2298,7 +2298,9 @@ WebInspector.ElementsTreeElement.prototype = {
             value = value.replace(closingPunctuationRegex, "$&\u200B");
             if (value.startsWith("data:"))
                 value = value.trimMiddle(60);
-            return linkify(rewrittenHref, value, "", node.nodeName().toLowerCase() === "a");
+            var anchor = linkify(rewrittenHref, value, "", node.nodeName().toLowerCase() === "a");
+            anchor.preventFollow = true;
+            return anchor;
         }
 
         if (linkify && (name === "src" || name === "href")) {

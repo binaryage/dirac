@@ -770,7 +770,7 @@ WebInspector.ResourcesPanel.prototype = {
 
     _onmousemove: function(event)
     {
-        var nodeUnderMouse = event.elementFromPoint();
+        var nodeUnderMouse = event.deepElementFromPoint();
         if (!nodeUnderMouse)
             return;
 

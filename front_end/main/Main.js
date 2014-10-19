@@ -384,12 +384,16 @@ WebInspector.Main.prototype = {
 
     _documentClick: function(event)
     {
-        var anchor = event.target.enclosingNodeOrSelfWithNodeName("a");
+        var target = event.deepElementFromPoint();
+        var anchor = target.enclosingNodeOrSelfWithNodeName("a");
         if (!anchor || !anchor.href)
             return;
 
         // Prevent the link from navigating, since we don't do any navigation by following links normally.
         event.consume(true);
+
+        if (anchor.preventFollow)
+            return;
 
         if (anchor.target === "_blank") {
             InspectorFrontendHost.openInNewTab(anchor.href);
@@ -398,7 +402,7 @@ WebInspector.Main.prototype = {
 
         function followLink()
         {
-            if (WebInspector.isBeingEdited(event.target))
+            if (WebInspector.isBeingEdited(target))
                 return;
             if (WebInspector.openAnchorLocationRegistry.dispatch({ url: anchor.href, lineNumber: anchor.lineNumber}))
                 return;
