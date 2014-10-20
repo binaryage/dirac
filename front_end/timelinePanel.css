@@ -785,6 +785,11 @@
     flex: 1 1;
 }
 
+.transform-control-panel {
+    white-space: nowrap;
+    flex: none;
+}
+
 .transform-control-panel .status-bar-item > .glyph {
     -webkit-mask-image: url(Images/transformControls.png);
     -webkit-mask-size: 96px 24px;
@@ -881,4 +886,11 @@
 .paint-profiler-image-view img {
     border: solid 1px black;
     -webkit-transform-origin: 0px 0px;
+}
+
+.layer-details-view ul {
+    list-style: none;
+    -webkit-padding-start: 0;
+    -webkit-margin-before: 0;
+    -webkit-margin-after: 0;
 }

@@ -37,7 +37,8 @@
         layer_quad: Array.<number>,
         draws_content: number,
         transform: Array.<number>,
-        owner_node: number
+        owner_node: number,
+        compositing_reasons: Array.<string>
     }}
 */
 WebInspector.TracingLayerPayload;
@@ -886,6 +887,7 @@ WebInspector.TracingLayer.prototype = {
         this._parent = null;
         this._quad = payload.layer_quad || [];
         this._createScrollRects(payload);
+        this._compositingReasons = payload.compositing_reasons || [];
     },
 
     /**
@@ -1088,8 +1090,7 @@ WebInspector.TracingLayer.prototype = {
      */
     requestCompositingReasons: function(callback)
     {
-        var wrappedCallback = InspectorBackend.wrapClientCallback(callback, "LayerTreeAgent.reasonsForCompositingLayer(): ", undefined, []);
-        LayerTreeAgent.compositingReasons(this.id(), wrappedCallback);
+        callback(this._compositingReasons);
     },
 
     /**

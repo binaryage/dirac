@@ -88,7 +88,7 @@ WebInspector.LayerDetailsView.CompositingReasonDetail = {
 
 WebInspector.LayerDetailsView.prototype = {
     /**
-     * @param {!WebInspector.Layers3DView.ActiveObject} activeObject
+     * @param {?WebInspector.Layers3DView.ActiveObject} activeObject
      */
     setObject: function(activeObject)
     {
@@ -181,17 +181,15 @@ WebInspector.LayerDetailsView.prototype = {
             this._compositingReasonsCell.textContent = "n/a";
             return;
         }
-        var fragment = createDocumentFragment();
-        for (var i = 0; i < compositingReasons.length; ++i) {
-            if (i)
-                fragment.createTextChild(",");
-            var span = createElement("span");
-            span.title = WebInspector.LayerDetailsView.CompositingReasonDetail[compositingReasons[i]] || "";
-            span.textContent = compositingReasons[i];
-            fragment.appendChild(span);
-        }
         this._compositingReasonsCell.removeChildren();
-        this._compositingReasonsCell.appendChild(fragment);
+        var list = this._compositingReasonsCell.createChild("ul");
+        for (var i = 0; i < compositingReasons.length; ++i) {
+            var text = WebInspector.LayerDetailsView.CompositingReasonDetail[compositingReasons[i]] || compositingReasons[i];
+            // If the text is more than one word but does not terminate with period, add the period.
+            if (/\s.*[^.]$/.test(text))
+                text += ".";
+            list.createChild("li").textContent = text;
+        }
     },
 
     __proto__: WebInspector.VBox.prototype

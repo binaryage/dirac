@@ -404,7 +404,6 @@
             'front_end/profiler/HeapSnapshotCommon.js',
         ],
         'devtools_layers_js_files': [
-            'front_end/layers/LayerDetailsView.js',
             'front_end/layers/LayerPaintProfilerView.js',
             'front_end/layers/LayersPanel.js',
         ],
@@ -512,6 +511,7 @@
         ],
         'devtools_timeline_js_files': [
             'front_end/timeline/CountersGraph.js',
+            'front_end/timeline/LayerDetailsView.js',
             'front_end/timeline/LayerTreeOutline.js',
             'front_end/timeline/Layers3DView.js',
             'front_end/timeline/MemoryCountersGraph.js',

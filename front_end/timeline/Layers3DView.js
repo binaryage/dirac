@@ -581,7 +581,7 @@ WebInspector.Layers3DView.prototype = {
 
         var drawChrome = this._showChromeSetting.get() && this._chromeTextures.length >= 3 && this._chromeTextures.indexOf(undefined) < 0;
         var z = (this._maxDepth + 1) * WebInspector.Layers3DView.LayerSpacing;
-        var borderWidth = Math.round(WebInspector.Layers3DView.ViewportBorderWidth * this._scale);
+        var borderWidth = Math.ceil(WebInspector.Layers3DView.ViewportBorderWidth * this._scale);
         var vertices = [viewport.width, 0, z, viewport.width, viewport.height, z, 0, viewport.height, z, 0, 0, z];
         this._gl.lineWidth(borderWidth);
         this._drawRectangle(vertices, drawChrome ? this._gl.LINE_STRIP : this._gl.LINE_LOOP, WebInspector.Layers3DView.ViewportBorderColor);

@@ -13,6 +13,7 @@
     ],
     "scripts": [
         "CountersGraph.js",
+        "LayerDetailsView.js",
         "LayerTreeOutline.js",
         "Layers3DView.js",
         "MemoryCountersGraph.js",

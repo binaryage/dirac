@@ -11,6 +11,8 @@
 WebInspector.TimelineLayersView = function()
 {
     WebInspector.SplitView.call(this, true, false, "timelineLayersView");
+    this._rightSplitView = new WebInspector.SplitView(true, true, "timelineLayersViewDetails");
+    this._rightSplitView.show(this.mainElement());
 
     this._paintTiles = [];
 
@@ -25,7 +27,10 @@ WebInspector.TimelineLayersView = function()
     this._layers3DView.addEventListener(WebInspector.Layers3DView.Events.ObjectSelected, this._onObjectSelected, this);
     this._layers3DView.addEventListener(WebInspector.Layers3DView.Events.ObjectHovered, this._onObjectHovered, this);
     this._layers3DView.addEventListener(WebInspector.Layers3DView.Events.JumpToPaintEventRequested, this._jumpToPaintEvent, this);
-    this._layers3DView.show(this.mainElement());
+    this._layers3DView.show(this._rightSplitView.mainElement());
+
+    this._layerDetailsView = new WebInspector.LayerDetailsView();
+    this._layerDetailsView.show(this._rightSplitView.sidebarElement());
 }
 
 WebInspector.TimelineLayersView.prototype = {
@@ -151,6 +156,7 @@ WebInspector.TimelineLayersView.prototype = {
         this._toggleNodeHighlight(layer ? layer.nodeForSelfOrAncestor() : null);
         this._layerTreeOutline.selectLayer(layer);
         this._layers3DView.selectObject(activeObject);
+        this._layerDetailsView.setObject(activeObject);
     },
 
     /**
