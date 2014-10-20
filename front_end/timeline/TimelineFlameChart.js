@@ -742,7 +742,6 @@ WebInspector.TimelineFlameChart = function(delegate, tracingModel, frameModel)
 {
     WebInspector.VBox.call(this);
     this.element.classList.add("timeline-flamechart");
-    this.registerRequiredCSS("flameChart.css");
     this._delegate = delegate;
     this._model = tracingModel;
     this._dataProvider = new WebInspector.TimelineFlameChartDataProvider(tracingModel, frameModel)

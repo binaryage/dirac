@@ -1746,11 +1746,10 @@ WebInspector.SaveSnapshotOutputStreamDelegate.prototype = {
 WebInspector.HeapTrackingOverviewGrid = function(heapProfileHeader)
 {
     WebInspector.VBox.call(this);
-    this.registerRequiredCSS("flameChart.css");
     this.element.id = "heap-recording-view";
     this.element.classList.add("heap-tracking-overview");
 
-    this._overviewContainer = this.element.createChild("div", "overview-container");
+    this._overviewContainer = this.element.createChild("div", "heap-overview-container");
     this._overviewGrid = new WebInspector.OverviewGrid("heap-recording");
     this._overviewGrid.element.classList.add("fill");
 
