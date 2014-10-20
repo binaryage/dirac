@@ -26,11 +26,9 @@ WebInspector.WorkspaceMappingTip.prototype = {
     _editorSelected: function(event)
     {
         var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (event.data);
-        if (Runtime.experiments.isEnabled("suggestUsingWorkspace")) {
-            if (this._editorSelectedTimer)
-                clearTimeout(this._editorSelectedTimer);
-            this._editorSelectedTimer = setTimeout(this._updateSuggestedMappingInfobar.bind(this, uiSourceCode), 3000);
-        }
+        if (this._editorSelectedTimer)
+            clearTimeout(this._editorSelectedTimer);
+        this._editorSelectedTimer = setTimeout(this._updateSuggestedMappingInfobar.bind(this, uiSourceCode), 3000);
     },
 
     /**
@@ -52,7 +50,7 @@ WebInspector.WorkspaceMappingTip.prototype = {
                 return;
         }
 
-        var networkProjects = this._workspace.projectsForType(WebInspector.projectTypes.FileSystem);
+        var networkProjects = this._workspace.projectsForType(WebInspector.projectTypes.Network);
         networkProjects = networkProjects.concat(this._workspace.projectsForType(WebInspector.projectTypes.ContentScripts));
         for (var i = 0; i < networkProjects.length; ++i) {
             var name = uiSourceCode.name();

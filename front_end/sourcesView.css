@@ -134,6 +134,7 @@ button.status-bar-item.scripts-navigator-show-hide-button {
     margin-right: 4px;
     display: inline-block;
     margin-top: 1px;
+    flex: none;
 }
 
 .source-frame-infobar-info .source-frame-infobar-icon {
@@ -150,7 +151,7 @@ button.status-bar-item.scripts-navigator-show-hide-button {
 
 .source-frame-infobar-main-row {
     display: flex;
-    flex: 0 0 17px;
+    min-height: 17px;
     overflow: hidden;
     margin: 5px 10px 0px;
 }
@@ -169,10 +170,15 @@ button.status-bar-item.scripts-navigator-show-hide-button {
 
 .source-frame-infobar-row-message {
     flex: 0 1 auto;
+    margin-bottom: 4px;
+}
+
+.source-frame-infobar-main-row .close-button {
+    flex: none;
 }
 
 .source-frame-infobar-toggle {
-    flex: auto;
+    flex: 1 0 auto;
     padding: 0 4px;
     -webkit-user-select: none;
 }
