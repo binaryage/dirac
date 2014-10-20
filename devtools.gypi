@@ -320,7 +320,6 @@
             'front_end/indexedDBViews.css',
             'front_end/inspectorCommon.css',
             'front_end/inspectorSyntaxHighlight.css',
-            'front_end/layersPanel.css',
             'front_end/navigatorView.css',
             'front_end/networkLogView.css',
             'front_end/networkPanel.css',
@@ -408,7 +407,6 @@
             'front_end/layers/LayerDetailsView.js',
             'front_end/layers/LayerPaintProfilerView.js',
             'front_end/layers/LayersPanel.js',
-            'front_end/layers/LayerTreeOutline.js',
         ],
         'devtools_network_js_files': [
             'front_end/network/NetworkItemView.js',
@@ -514,6 +512,7 @@
         ],
         'devtools_timeline_js_files': [
             'front_end/timeline/CountersGraph.js',
+            'front_end/timeline/LayerTreeOutline.js',
             'front_end/timeline/Layers3DView.js',
             'front_end/timeline/MemoryCountersGraph.js',
             'front_end/timeline/PaintProfilerView.js',

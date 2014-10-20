@@ -744,6 +744,38 @@
     align-items: center;
 }
 
+.layer-tree.outline-disclosure {
+    z-index: 10;
+}
+
+.layer-tree.outline-disclosure > ol,
+.profiler-log-view > ol {
+    margin-left: -12px;
+}
+
+.layer-tree.outline-disclosure ol.children,
+.profiler-log-view ol.children {
+    padding-left: 12px;
+}
+
+.layer-tree.outline-disclosure li,
+.profiler-log-view li {
+    margin-top: 0;
+    margin-bottom: 0;
+    padding: 1 1 1 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.timeline-paint-profiler-view .outline-disclosure ol.children {
+    padding-left: 12px;
+}
+
+.layer-tree.outline-disclosure .dimmed {
+    opacity: 0.6;
+}
+
 .layers-3d-view {
     overflow: hidden;
     -webkit-user-select: none;
@@ -840,19 +872,6 @@
 
 .profiler-log-view.section .properties {
     display: block;
-}
-
-.timeline-paint-profiler-view .outline-disclosure li {
-    margin-top: 0;
-    margin-bottom: 0;
-    padding: 1px 1px 1px 14px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.timeline-paint-profiler-view .outline-disclosure ol.children {
-    padding-left: 12px;
 }
 
 .paint-profiler-image-view {
