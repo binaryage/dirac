@@ -31,6 +31,7 @@
 """Creates a grd file for packaging the inspector files."""
 
 from __future__ import with_statement
+from os import path
 
 import errno
 import os
@@ -66,10 +67,14 @@ class ParsedArgs:
 
 
 def parse_args(argv):
+    static_files_list_position = argv.index('--static_files_list')
     relative_path_dirs_position = argv.index('--relative_path_dirs')
     images_position = argv.index('--images')
     output_position = argv.index('--output')
-    source_files = argv[:relative_path_dirs_position]
+    static_files_list_path = argv[static_files_list_position + 1]
+    source_files = argv[:static_files_list_position]
+    with open(static_files_list_path, 'r') as static_list_file:
+        source_files.extend([line.rstrip('\n') for line in static_list_file.readlines()])
     relative_path_dirs = argv[relative_path_dirs_position + 1:images_position]
     image_dirs = argv[images_position + 1:output_position]
     return ParsedArgs(source_files, relative_path_dirs, image_dirs, argv[output_position + 1])
@@ -98,17 +103,17 @@ def build_relative_filename(relative_path_dirs, filename):
         index = filename.find(relative_path_dir)
         if index == 0:
             return filename[len(relative_path_dir) + 1:]
-    return os.path.basename(filename)
+    return path.basename(filename)
 
 
 def main(argv):
     parsed_args = parse_args(argv[1:])
 
     doc = minidom.parseString(kGrdTemplate)
-    output_directory = os.path.dirname(parsed_args.output_filename)
+    output_directory = path.dirname(parsed_args.output_filename)
 
     try:
-        os.makedirs(os.path.join(output_directory, 'Images'))
+        os.makedirs(path.join(output_directory, 'Images'))
     except OSError, e:
         if e.errno != errno.EEXIST:
             raise e
@@ -120,8 +125,8 @@ def main(argv):
         if relative_filename in written_filenames:
             continue
         written_filenames.add(relative_filename)
-        target_dir = os.path.join(output_directory, os.path.dirname(relative_filename))
-        if not os.path.exists(target_dir):
+        target_dir = path.join(output_directory, path.dirname(relative_filename))
+        if not path.exists(target_dir):
             os.makedirs(target_dir)
         shutil.copy(filename, target_dir)
         add_file_to_grd(doc, relative_filename)
@@ -130,9 +135,9 @@ def main(argv):
         for filename in os.listdir(dirname):
             if not filename.endswith('.png') and not filename.endswith('.gif'):
                 continue
-            shutil.copy(os.path.join(dirname, filename),
-                        os.path.join(output_directory, 'Images'))
-            add_file_to_grd(doc, os.path.join('Images', filename))
+            shutil.copy(path.join(dirname, filename),
+                        path.join(output_directory, 'Images'))
+            add_file_to_grd(doc, path.join('Images', filename))
 
     with open(parsed_args.output_filename, 'w') as output_file:
         output_file.write(doc.toxml(encoding='UTF-8'))

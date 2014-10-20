@@ -89,7 +89,12 @@
                             '<(PRODUCT_DIR)/resources/inspector',
                             'front_end'
                         ],
-                        'input_pages': [
+                        'static_files': [
+                            '<@(devtools_standalone_files)',
+                            '<@(devtools_cm_css_files)',
+                        ],
+                        'devtools_static_files_list': '<|(devtools_static_grd_files.tmp <@(_static_files))',
+                        'generated_files': [
                             '<(PRODUCT_DIR)/resources/inspector/devtools.css',
                             '<(PRODUCT_DIR)/resources/inspector/devtools.html',
                             '<(PRODUCT_DIR)/resources/inspector/devtools.js',
@@ -114,22 +119,19 @@
                             '<(PRODUCT_DIR)/resources/inspector/temp_storage_shared_worker_module.js',
                             '<(PRODUCT_DIR)/resources/inspector/timeline_module.js',
                             '<(PRODUCT_DIR)/resources/inspector/devtools_extension_api.js',
-                            '<@(devtools_standalone_files)',
-                            '<@(devtools_cm_css_files)',
-                        ],
-                        'images': [
-                            '<@(devtools_image_files)',
                         ],
                         'inputs': [
                             '<@(_script_name)',
-                            '<@(_input_pages)',
-                            '<@(_images)',
+                            '<@(_static_files)',
+                            '<@(_generated_files)',
+                            '<@(devtools_image_files)',
+                            '<(_devtools_static_files_list)',
                         ],
                         'images_path': [
                             'front_end/Images',
                         ],
                         'outputs': ['<(SHARED_INTERMEDIATE_DIR)/devtools/devtools_resources.grd'],
-                        'action': ['python', '<@(_script_name)', '<@(_input_pages)', '--relative_path_dirs', '<@(_relative_path_dirs)', '--images', '<@(_images_path)', '--output', '<@(_outputs)'],
+                        'action': ['python', '<@(_script_name)', '<@(_generated_files)', '--static_files_list', '<(_devtools_static_files_list)', '--relative_path_dirs', '<@(_relative_path_dirs)', '--images', '<@(_images_path)', '--output', '<@(_outputs)'],
                     }],
                 },
                 {
@@ -144,28 +146,30 @@
                             'front_end',
                             '<(PRODUCT_DIR)/resources/inspector',
                         ],
-                        'input_pages': [
+                        'static_files': [
                             '<@(all_devtools_files)',
                             'front_end/Runtime.js',
+                        ],
+                        'devtools_static_files_list': '<|(devtools_static_grd_files.tmp <@(_static_files))',
+                        'generated_files': [
                             '<(PRODUCT_DIR)/resources/inspector/InspectorBackendCommands.js',
                             '<(PRODUCT_DIR)/resources/inspector/SupportedCSSProperties.js',
                             '<(PRODUCT_DIR)/resources/inspector/devtools.html',
                             '<(PRODUCT_DIR)/resources/inspector/toolbox.html',
                         ],
-                        'images': [
-                            '<@(devtools_image_files)',
-                        ],
                         'inputs': [
                             '<@(_script_name)',
-                            '<@(_input_pages)',
-                            '<@(_images)',
+                            '<@(_static_files)',
+                            '<@(_generated_files)',
+                            '<@(devtools_image_files)',
+                            '<(_devtools_static_files_list)',
                         ],
                         'images_path': [
                             'front_end/Images',
                         ],
                         # Note that other files are put under /devtools directory, together with declared devtools_resources.grd
                         'outputs': ['<(SHARED_INTERMEDIATE_DIR)/devtools/devtools_resources.grd'],
-                        'action': ['python', '<@(_script_name)', '<@(_input_pages)', '--relative_path_dirs', '<@(_relative_path_dirs)', '--images', '<@(_images_path)', '--output', '<@(_outputs)'],
+                        'action': ['python', '<@(_script_name)', '<@(_generated_files)', '--static_files_list', '<(_devtools_static_files_list)', '--relative_path_dirs', '<@(_relative_path_dirs)', '--images', '<@(_images_path)', '--output', '<@(_outputs)'],
                     }],
                 }],
             ],

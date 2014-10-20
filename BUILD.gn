@@ -109,16 +109,19 @@ action("generate_devtools_grd") {
   script = "scripts/generate_devtools_grd.py"
 
   deps = [ ":devtools_frontend_resources" ]
+  static_files_list = "$target_gen_dir/devtools_static_grd_files.tmp"
+  inputs = [ static_files_list ]
 
   if (debug_devtools) {
     # Debug: all files are picked as-is.
-    input_pages = all_devtools_files + generated_scripts + [
+    generated_files = generated_scripts + [
       resources_out_dir + "devtools.html",
       resources_out_dir + "toolbox.html",
     ]
+    static_files = all_devtools_files + [ "front_end/Runtime.js" ]
   } else {
     # Release: pick compiled files and lazy-loaded CSS.
-    input_pages = [
+    generated_files = [
       resources_out_dir + "devtools.css",
       resources_out_dir + "devtools.html",
       resources_out_dir + "devtools.js",
@@ -130,7 +133,6 @@ action("generate_devtools_grd") {
       resources_out_dir + "devices_module.js",
       resources_out_dir + "documentation_module.js",
       resources_out_dir + "elements_module.js",
-      resources_out_dir + "extensions_module.js",
       resources_out_dir + "heap_snapshot_worker_module.js",
       resources_out_dir + "layers_module.js",
       resources_out_dir + "network_module.js",
@@ -145,14 +147,15 @@ action("generate_devtools_grd") {
       resources_out_dir + "timeline_module.js",
       resources_out_dir + "devtools_extension_api.js",
     ]
-    input_pages += gypi_values.devtools_standalone_files +
+    static_files = gypi_values.devtools_standalone_files +
       gypi_values.devtools_cm_css_files
   }
 
+  write_file(static_files_list, rebase_path(static_files, root_build_dir))
   images = gypi_values.devtools_image_files
   images_path = "front_end/Images"
 
-  inputs = input_pages + images
+  inputs += generated_files + images
 
   outfile = "$root_gen_dir/devtools/devtools_resources.grd"
   outputs = [ outfile ]
@@ -162,7 +165,9 @@ action("generate_devtools_grd") {
     "front_end",
   ]
 
-  args = rebase_path(input_pages, root_build_dir) + [
+  args = rebase_path(generated_files, root_build_dir) +
+    rebase_path(generated_files, root_build_dir) + [
+    "--static_files_list", rebase_path(static_files_list, root_build_dir),
     "--relative_path_dirs" ] +
     rebase_path(relative_path_dirs, root_build_dir) + [
     "--images", rebase_path(images_path, root_build_dir),
@@ -230,7 +235,6 @@ action("build_applications") {
       resources_out_dir + "devices_module.js",
       resources_out_dir + "documentation_module.js",
       resources_out_dir + "elements_module.js",
-      resources_out_dir + "extensions_module.js",
       resources_out_dir + "heap_snapshot_worker_module.js",
       resources_out_dir + "layers_module.js",
       resources_out_dir + "network_module.js",
