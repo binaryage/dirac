@@ -145,18 +145,36 @@ WebInspector.ExtensionButton.prototype = {
  * @constructor
  * @extends {WebInspector.SidebarPane}
  * @param {!WebInspector.ExtensionServer} server
+ * @param {string} panelName
  * @param {string} title
  * @param {string} id
  */
-WebInspector.ExtensionSidebarPane = function(server, title, id)
+WebInspector.ExtensionSidebarPane = function(server, panelName, title, id)
 {
     WebInspector.SidebarPane.call(this, title);
     this.setHideOnDetach();
+    this._panelName = panelName;
     this._server = server;
     this._id = id;
 }
 
 WebInspector.ExtensionSidebarPane.prototype = {
+    /**
+     * @return {string}
+     */
+    id: function()
+    {
+        return this._id;
+    },
+
+    /**
+     * @return {string}
+     */
+    panelName: function()
+    {
+        return this._panelName;
+    },
+
     /**
      * @param {!Object} object
      * @param {string} title

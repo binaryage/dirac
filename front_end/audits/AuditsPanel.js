@@ -55,6 +55,13 @@ WebInspector.AuditsPanel = function()
     this._launcherView = new WebInspector.AuditLauncherView(this._auditController);
     for (var id in this.categoriesById)
         this._launcherView.addCategory(this.categoriesById[id]);
+
+    var extensionCategories = WebInspector.extensionServer.auditCategories();
+    for (var i = 0; i < extensionCategories.length; ++i) {
+        var category = extensionCategories[i];
+        this.addCategory(new WebInspector.AuditExtensionCategory(category.extensionOrigin, category.id, category.displayName, category.ruleCount));
+    }
+    WebInspector.extensionServer.addEventListener(WebInspector.ExtensionServer.Events.AuditCategoryAdded, this._extensionAuditCategoryAdded, this);
 }
 
 WebInspector.AuditsPanel.prototype = {
@@ -166,6 +173,15 @@ WebInspector.AuditsPanel.prototype = {
     {
         this.auditsItemTreeElement.revealAndSelect();
         this.auditResultsTreeElement.removeChildren();
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _extensionAuditCategoryAdded: function(event)
+    {
+        var category = /** @type {!WebInspector.ExtensionAuditCategory} */ (event.data);
+        this.addCategory(new WebInspector.AuditExtensionCategory(category.extensionOrigin, category.id, category.displayName, category.ruleCount));
     },
 
     __proto__: WebInspector.PanelWithSidebarTree.prototype

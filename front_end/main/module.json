@@ -226,6 +226,7 @@
         }
     ],
     "dependencies": [
+        "extensions",
         "host",
         "screencast",
         "sdk",

@@ -23,6 +23,7 @@
         "Database.js",
         "DebuggerModel.js",
         "FileSystemModel.js",
+        "HAREntry.js",
         "IndexedDBModel.js",
         "LayerTreeModel.js",
         "NetworkLog.js",

@@ -38,7 +38,6 @@ WebInspector.ElementsPanel = function()
 {
     WebInspector.Panel.call(this, "elements");
     this.registerRequiredCSS("elementsPanel.css");
-    this.setHideOnDetach();
 
     this._splitView = new WebInspector.SplitView(true, true, "elementsPanelSplitViewState", 325, 325);
     this._splitView.addEventListener(WebInspector.SplitView.Events.SidebarSizeChanged, this._updateTreeOutlineVisibleWidth.bind(this));
@@ -92,7 +91,6 @@ WebInspector.ElementsPanel = function()
     this.sidebarPanes.styles.addEventListener("style edited", this._stylesPaneEdited, this);
     this.sidebarPanes.styles.addEventListener("style property toggled", this._stylesPaneEdited, this);
     this.sidebarPanes.metrics.addEventListener("metrics edited", this._metricsPaneEdited, this);
-    this._extensionSidebarPanes = [];
 
     WebInspector.dockController.addEventListener(WebInspector.DockController.Events.DockSideChanged, this._dockSideChanged.bind(this));
     WebInspector.settings.splitVerticallyWhenDockedToRight.addChangeListener(this._dockSideChanged.bind(this));
@@ -109,6 +107,7 @@ WebInspector.ElementsPanel = function()
     WebInspector.settings.showUAShadowDOM.addChangeListener(this._showUAShadowDOMChanged.bind(this));
     WebInspector.targetManager.addModelListener(WebInspector.DOMModel, WebInspector.DOMModel.Events.DocumentUpdated, this._documentUpdatedEvent, this);
     WebInspector.targetManager.addModelListener(WebInspector.CSSStyleModel, WebInspector.CSSStyleModel.Events.ModelWasEnabled, this._updateSidebars, this);
+    WebInspector.extensionServer.addEventListener(WebInspector.ExtensionServer.Events.SidebarPaneAdded, this._extensionSidebarPaneAdded, this);
 }
 
 WebInspector.ElementsPanel.prototype = {
@@ -1431,21 +1430,32 @@ WebInspector.ElementsPanel.prototype = {
             this.sidebarPaneView.addPane(this.sidebarPanes.animations);
         this._extensionSidebarPanesContainer = this.sidebarPaneView;
 
-        for (var i = 0; i < this._extensionSidebarPanes.length; ++i)
-            this._extensionSidebarPanesContainer.addPane(this._extensionSidebarPanes[i]);
+        var extensionSidebarPanes = WebInspector.extensionServer.sidebarPanes();
+        for (var i = 0; i < extensionSidebarPanes.length; ++i)
+            this._addExtensionSidebarPane(extensionSidebarPanes[i]);
 
         this.sidebarPaneView.show(this._splitView.sidebarElement());
         this.sidebarPanes.styles.expand();
     },
 
     /**
-     * @param {string} id
-     * @param {!WebInspector.SidebarPane} pane
+     * @param {!WebInspector.Event} event
      */
-    addExtensionSidebarPane: function(id, pane)
+    _extensionSidebarPaneAdded: function(event)
     {
-        this._extensionSidebarPanes.push(pane);
-        this._extensionSidebarPanesContainer.addPane(pane);
+        var pane = /** @type {!WebInspector.ExtensionSidebarPane} */ (event.data);
+        this._addExtensionSidebarPane(pane);
+    },
+
+    /**
+     * @param {!WebInspector.ExtensionSidebarPane} pane
+     */
+    _addExtensionSidebarPane: function(pane)
+    {
+        if (pane.panelName() === this.name) {
+            this.setHideOnDetach();
+            this._extensionSidebarPanesContainer.addPane(pane);
+        }
     },
 
     __proto__: WebInspector.Panel.prototype

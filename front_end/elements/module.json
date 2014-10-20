@@ -65,7 +65,8 @@
         }
     ],
     "dependencies": [
-        "components"
+        "components",
+        "extensions"
     ],
     "scripts": [
         "Spectrum.js",

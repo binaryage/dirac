@@ -30,7 +30,7 @@
 
 /**
  * @constructor
- * @implements {WebInspector.ExtensionServerAPI}
+ * @extends {WebInspector.Object}
  */
 WebInspector.ExtensionServer = function()
 {
@@ -44,6 +44,10 @@ WebInspector.ExtensionServer = function()
     this._lastRequestId = 0;
     this._registeredExtensions = {};
     this._status = new WebInspector.ExtensionStatus();
+    /** @type {!Array.<!WebInspector.ExtensionSidebarPane>} */
+    this._sidebarPanes = [];
+    /** @type {!Array.<!WebInspector.ExtensionAuditCategory>} */
+    this._auditCategories = [];
 
     var commands = WebInspector.extensionAPI.Commands;
 
@@ -78,6 +82,11 @@ WebInspector.ExtensionServer = function()
     window.addEventListener("message", this._onWindowMessage.bind(this), false);
 
     this._initExtensions();
+}
+
+WebInspector.ExtensionServer.Events = {
+    SidebarPaneAdded: "SidebarPaneAdded",
+    AuditCategoryAdded: "AuditCategoryAdded"
 }
 
 WebInspector.ExtensionServer.prototype = {
@@ -133,13 +142,13 @@ WebInspector.ExtensionServer.prototype = {
 
 
     /**
-     * @param {!WebInspector.ExtensionAuditCategory} category
+     * @param {string} categoryId
      * @param {!WebInspector.ExtensionAuditCategoryResults} auditResults
      */
-    startAuditRun: function(category, auditResults)
+    startAuditRun: function(categoryId, auditResults)
     {
-        this._clientObjects[auditResults.id] = auditResults;
-        this._postNotification("audit-started-" + category.id, auditResults.id);
+        this._clientObjects[auditResults.id()] = auditResults;
+        this._postNotification("audit-started-" + categoryId, auditResults.id());
     },
 
     /**
@@ -147,7 +156,7 @@ WebInspector.ExtensionServer.prototype = {
      */
     stopAuditRun: function(auditResults)
     {
-        delete this._clientObjects[auditResults.id];
+        delete this._clientObjects[auditResults.id()];
     },
 
     /**
@@ -287,13 +296,21 @@ WebInspector.ExtensionServer.prototype = {
     {
         if (message.panel !== "elements" && message.panel !== "sources")
             return this._status.E_NOTFOUND(message.panel);
-        var panel = message.panel === "elements" ? WebInspector.ElementsPanel.instance() : WebInspector.SourcesPanel.instance();
         var id = message.id;
-        var sidebar = new WebInspector.ExtensionSidebarPane(this, message.title, id);
+        var sidebar = new WebInspector.ExtensionSidebarPane(this, message.panel, message.title, id);
+        this._sidebarPanes.push(sidebar);
         this._clientObjects[id] = sidebar;
-        panel.addExtensionSidebarPane(id, sidebar);
+        this.dispatchEventToListeners(WebInspector.ExtensionServer.Events.SidebarPaneAdded, sidebar);
 
         return this._status.OK();
+    },
+
+    /**
+     * @return {!Array.<!WebInspector.ExtensionSidebarPane>}
+     */
+    sidebarPanes: function()
+    {
+        return this._sidebarPanes;
     },
 
     _onSetSidebarHeight: function(message)
@@ -607,16 +624,23 @@ WebInspector.ExtensionServer.prototype = {
 
     _onAddAuditCategory: function(message, port)
     {
-        var category = new WebInspector.ExtensionAuditCategory(this, port._extensionOrigin, message.id, message.displayName, message.resultCount);
-        if (WebInspector.AuditsPanel.instance().getCategory(category.id))
-            return this._status.E_EXISTS(category.id);
+        var category = new WebInspector.ExtensionAuditCategory(port._extensionOrigin, message.id, message.displayName, message.resultCount);
         this._clientObjects[message.id] = category;
-        WebInspector.AuditsPanel.instance().addCategory(category);
+        this._auditCategories.push(category);
+        this.dispatchEventToListeners(WebInspector.ExtensionServer.Events.AuditCategoryAdded, category);
+    },
+
+    /**
+     * @return {!Array.<!WebInspector.ExtensionAuditCategory>}
+     */
+    auditCategories: function()
+    {
+        return this._auditCategories;
     },
 
     _onAddAuditResult: function(message)
     {
-        var auditResult = this._clientObjects[message.resultId];
+        var auditResult = /** {!WebInspector.ExtensionAuditCategoryResults} */ (this._clientObjects[message.resultId]);
         if (!auditResult)
             return this._status.E_NOTFOUND(message.resultId);
         try {
@@ -629,7 +653,7 @@ WebInspector.ExtensionServer.prototype = {
 
     _onUpdateAuditProgress: function(message)
     {
-        var auditResult = this._clientObjects[message.resultId];
+        var auditResult = /** {!WebInspector.ExtensionAuditCategoryResults} */ (this._clientObjects[message.resultId]);
         if (!auditResult)
             return this._status.E_NOTFOUND(message.resultId);
         auditResult.updateProgress(Math.min(Math.max(0, message.progress), 1));
@@ -637,7 +661,7 @@ WebInspector.ExtensionServer.prototype = {
 
     _onStopAuditCategoryRun: function(message)
     {
-        var auditRun = this._clientObjects[message.resultId];
+        var auditRun = /** {!WebInspector.ExtensionAuditCategoryResults} */ (this._clientObjects[message.resultId]);
         if (!auditRun)
             return this._status.E_NOTFOUND(message.resultId);
         auditRun.done();
@@ -712,39 +736,12 @@ WebInspector.ExtensionServer.prototype = {
 
         this._registerSubscriptionHandler(WebInspector.extensionAPI.Events.PanelObjectSelected + "elements",
             onElementsSubscriptionStarted.bind(this), onElementsSubscriptionStopped.bind(this));
-
-        this._registerAutosubscriptionHandler(WebInspector.extensionAPI.Events.PanelObjectSelected + "sources",
-            WebInspector.notifications,
-            WebInspector.SourceFrame.Events.SelectionChanged,
-            this._notifySourceFrameSelectionChanged);
         this._registerResourceContentCommittedHandler(this._notifyUISourceCodeContentCommitted);
 
         WebInspector.targetManager.addEventListener(WebInspector.TargetManager.Events.InspectedURLChanged,
             this._inspectedURLChanged, this);
 
         InspectorExtensionRegistry.getExtensionsAsync();
-    },
-
-    /**
-     * @param {!WebInspector.TextRange} textRange
-     */
-    _makeSourceSelection: function(textRange)
-    {
-        var sourcesPanel = WebInspector.SourcesPanel.instance();
-        var selection = {
-            startLine: textRange.startLine,
-            startColumn: textRange.startColumn,
-            endLine: textRange.endLine,
-            endColumn: textRange.endColumn,
-            url: sourcesPanel.sourcesView().currentUISourceCode().uri()
-        };
-
-        return selection;
-    },
-
-    _notifySourceFrameSelectionChanged: function(event)
-    {
-        this._postNotification(WebInspector.extensionAPI.Events.PanelObjectSelected + "sources", this._makeSourceSelection(event.data));
     },
 
     _notifyConsoleMessageAdded: function(event)
@@ -779,7 +776,7 @@ WebInspector.ExtensionServer.prototype = {
     /**
      * @param {!Array.<!ExtensionDescriptor>} extensionInfos
      */
-    addExtensions: function(extensionInfos)
+    _addExtensions: function(extensionInfos)
     {
         extensionInfos.forEach(this._addExtension, this);
     },
@@ -1009,7 +1006,9 @@ WebInspector.ExtensionServer.prototype = {
             contextId = context.id;
         }
         RuntimeAgent.evaluate(expression, "extension", exposeCommandLineAPI, true, contextId, returnByValue, false, callback);
-    }
+    },
+
+    __proto__: WebInspector.Object.prototype
 }
 
 /**
@@ -1090,3 +1089,15 @@ WebInspector.ExtensionStatus.Record;
 
 WebInspector.extensionAPI = {};
 defineCommonExtensionSymbols(WebInspector.extensionAPI);
+
+WebInspector.addExtensions = function(extensions)
+{
+    if (WebInspector.extensionServer._overridePlatformExtensionAPIForTest)
+        window.buildPlatformExtensionAPI = WebInspector.extensionServer._overridePlatformExtensionAPIForTest;
+    WebInspector.extensionServer._addExtensions(extensions);
+}
+
+WebInspector.setInspectedTabId = function(tabId)
+{
+    WebInspector._inspectedTabId = tabId;
+}

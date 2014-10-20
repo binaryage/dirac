@@ -108,6 +108,7 @@ WebInspector.SourcesPanel = function(workspaceForTest)
     WebInspector.targetManager.addModelListener(WebInspector.DebuggerModel, WebInspector.DebuggerModel.Events.GlobalObjectCleared, this._debuggerReset, this);
     WebInspector.targetManager.observeTargets(this);
     new WebInspector.WorkspaceMappingTip(this, this._workspace);
+    WebInspector.extensionServer.addEventListener(WebInspector.ExtensionServer.Events.SidebarPaneAdded, this._extensionSidebarPaneAdded, this);
 }
 
 WebInspector.SourcesPanel.minToolbarWidth = 215;
@@ -1069,8 +1070,10 @@ WebInspector.SourcesPanel.prototype = {
 
             this.sidebarPaneView = splitView;
         }
-        for (var i = 0; i < this._extensionSidebarPanes.length; ++i)
-            this._extensionSidebarPanesContainer.addPane(this._extensionSidebarPanes[i]);
+
+        var extensionSidebarPanes = WebInspector.extensionServer.sidebarPanes();
+        for (var i = 0; i < extensionSidebarPanes.length; ++i)
+            this._addExtensionSidebarPane(extensionSidebarPanes[i]);
 
         this.sidebarPaneView.show(this._splitView.sidebarElement());
         this.sidebarPanes.threads.expand();
@@ -1084,14 +1087,23 @@ WebInspector.SourcesPanel.prototype = {
     },
 
     /**
-     * @param {string} id
-     * @param {!WebInspector.SidebarPane} pane
+     * @param {!WebInspector.Event} event
      */
-    addExtensionSidebarPane: function(id, pane)
+    _extensionSidebarPaneAdded: function(event)
     {
-        this._extensionSidebarPanes.push(pane);
-        this._extensionSidebarPanesContainer.addPane(pane);
-        this.setHideOnDetach();
+        var pane = /** @type {!WebInspector.ExtensionSidebarPane} */ (event.data);
+        this._addExtensionSidebarPane(pane);
+    },
+
+    /**
+     * @param {!WebInspector.ExtensionSidebarPane} pane
+     */
+    _addExtensionSidebarPane: function(pane)
+    {
+        if (pane.panelName() === this.name) {
+            this.setHideOnDetach();
+            this._extensionSidebarPanesContainer.addPane(pane);
+        }
     },
 
     /**

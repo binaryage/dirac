@@ -9,7 +9,8 @@
         }
     ],
     "dependencies": [
-        "components"
+        "components",
+        "extensions"
     ],
     "scripts": [
         "AuditsPanel.js",
@@ -19,6 +20,7 @@
         "AuditFormatters.js",
         "AuditLauncherView.js",
         "AuditResultView.js",
-        "AuditRules.js"
+        "AuditRules.js",
+        "AuditExtensionCategory.js"
     ]
 }

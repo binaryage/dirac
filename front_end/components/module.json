@@ -14,7 +14,6 @@
         "Drawer.js",
         "Panel.js",
         "ExecutionContextSelector.js",
-        "ExtensionServerProxy.js",
         "FilterBar.js",
         "FilterSuggestionBuilder.js",
         "FlameChart.js",

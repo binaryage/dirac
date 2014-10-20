@@ -183,7 +183,10 @@
             "settingType": "checkbox"
         }
     ],
-    "dependencies": ["source_frame"],
+    "dependencies": [
+        "source_frame",
+        "extensions"
+    ],
     "scripts": [
         "jsdifflib.js",
         "Placard.js",
