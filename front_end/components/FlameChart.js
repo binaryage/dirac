@@ -434,7 +434,7 @@ WebInspector.FlameChart.prototype = {
      */
     setWindowTimes: function(startTime, endTime)
     {
-        if (this._muteAnimation || this._timeWindowLeft === 0 || this._timeWindowRight === Infinity) {
+        if (this._muteAnimation || this._timeWindowLeft === 0 || this._timeWindowRight === Infinity || (startTime === 0 && endTime === Infinity)) {
             // Initial setup.
             this._timeWindowLeft = startTime;
             this._timeWindowRight = endTime;
