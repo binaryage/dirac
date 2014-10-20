@@ -2346,6 +2346,20 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
         }
 
         /**
+         * @param {string} value
+         * @return {!RegExp}
+         */
+        function urlRegex(value)
+        {
+            // Heuristically choose between single-quoted, double-quoted or plain URL regex.
+            if (/url\(\s*'.*\s*'\s*\)/.test(value))
+                return /url\(\s*('.+')\s*\)/g;
+            if (/url\(\s*".*\s*"\s*\)/.test(value))
+                return /url\(\s*(".+")\s*\)/g;
+            return /url\(\s*([^)]+)\s*\)/g;
+        }
+
+        /**
          * @param {string} url
          * @return {!Node}
          * @this {WebInspector.StylePropertyTreeElementBase}
@@ -2371,7 +2385,7 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
 
         if (value) {
             var colorProcessor = processValue.bind(null, WebInspector.StylesSidebarPane._colorRegex, this._processColor.bind(this, nameElement, valueElement), null);
-            valueElement.appendChild(processValue(/url\(\s*([^)]+)\s*\)/g, linkifyURL.bind(this), WebInspector.CSSMetadata.isColorAwareProperty(this.name) && this.parsedOk ? colorProcessor : null, value));
+            valueElement.appendChild(processValue(urlRegex(value), linkifyURL.bind(this), WebInspector.CSSMetadata.isColorAwareProperty(this.name) && this.parsedOk ? colorProcessor : null, value));
         }
 
         this.listItemElement.removeChildren();
