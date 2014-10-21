@@ -219,9 +219,9 @@ WebInspector.StyleValueDelimiters = " \xA0\t\n\"':;,/()";
 
 
 /**
-  * @param {!Event} event
-  * @return {?string}
-  */
+ * @param {!Event} event
+ * @return {?string}
+ */
 WebInspector._valueModificationDirection = function(event)
 {
     var direction = null;
@@ -313,12 +313,12 @@ WebInspector._modifiedFloatNumber = function(number, event)
 }
 
 /**
-  * @param {!Event} event
-  * @param {!Element} element
-  * @param {function(string,string)=} finishHandler
-  * @param {function(string)=} suggestionHandler
-  * @param {function(string, number, string):string=} customNumberHandler
-  * @return {boolean}
+ * @param {!Event} event
+ * @param {!Element} element
+ * @param {function(string,string)=} finishHandler
+ * @param {function(string)=} suggestionHandler
+ * @param {function(string, number, string):string=} customNumberHandler
+ * @return {boolean}
  */
 WebInspector.handleElementValueModifications = function(event, element, finishHandler, suggestionHandler, customNumberHandler)
 {
@@ -399,9 +399,9 @@ WebInspector.handleElementValueModifications = function(event, element, finishHa
  */
 Number.preciseMillisToString = function(ms, precision)
 {
-  precision = precision || 0;
-  var format = "%." + precision + "f\u2009ms";
-  return WebInspector.UIString(format, ms);
+    precision = precision || 0;
+    var format = "%." + precision + "f\u2009ms";
+    return WebInspector.UIString(format, ms);
 }
 
 /** @type {!WebInspector.UIStringFormat} */

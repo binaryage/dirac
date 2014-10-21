@@ -560,6 +560,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         var tabRegex = /^\t+/;
         var tabLines = 0;
         var indents = {};
+        var maxScanLines = 1000;
         function processLine(lineHandle)
         {
             var text = lineHandle.text;
@@ -576,14 +577,14 @@ WebInspector.CodeMirrorTextEditor.prototype = {
                 return;
             indents[i] = 1 + (indents[i] || 0);
         }
-        this._codeMirror.eachLine(0, 1000, processLine);
+        this._codeMirror.eachLine(0, maxScanLines, processLine);
 
-        var onePercentFilterThreshold = this.linesCount / 100;
-        if (tabLines && tabLines > onePercentFilterThreshold)
+        var linesCountPerIndentThreshold = 3 * Math.min(maxScanLines, this.linesCount) / 100;
+        if (tabLines && tabLines > linesCountPerIndentThreshold)
             return "\t";
         var minimumIndent = Infinity;
         for (var i in indents) {
-            if (indents[i] < onePercentFilterThreshold)
+            if (indents[i] < linesCountPerIndentThreshold)
                 continue;
             var indent = parseInt(i, 10);
             if (minimumIndent > indent)
