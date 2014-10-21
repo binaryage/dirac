@@ -596,16 +596,17 @@ WebInspector.SourcesView.prototype = {
     },
 
     /**
+     * @param {!WebInspector.SearchableView.SearchConfig} searchConfig
      * @param {string} replacement
      */
-    replaceSelectionWith: function(replacement)
+    replaceSelectionWith: function(searchConfig, replacement)
     {
         var sourceFrame = this.currentSourceFrame();
         if (!sourceFrame) {
             console.assert(sourceFrame);
             return;
         }
-        sourceFrame.replaceSelectionWith(replacement);
+        sourceFrame.replaceSelectionWith(searchConfig, replacement);
     },
 
     /**

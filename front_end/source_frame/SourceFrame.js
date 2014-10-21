@@ -89,6 +89,20 @@ WebInspector.SourceFrame.createSearchRegex = function(query, modifiers)
     return regex;
 }
 
+/**
+ * @param {!WebInspector.SearchableView.SearchConfig} searchConfig
+ * @param {boolean=} global
+ * @return {!RegExp}
+ */
+WebInspector.SourceFrame._createSearchRegexForConfig = function(searchConfig, global)
+{
+    var modifiers = searchConfig.caseSensitive ? "" : "i";
+    if (global)
+        modifiers += "g";
+    var query = searchConfig.isRegex ? "/" + searchConfig.query + "/" : searchConfig.query;
+    return WebInspector.SourceFrame.createSearchRegex(query, modifiers);
+}
+
 WebInspector.SourceFrame.Events = {
     ScrollChanged: "ScrollChanged",
     SelectionChanged: "SelectionChanged",
@@ -396,14 +410,18 @@ WebInspector.SourceFrame.prototype = {
         this._textEditor.endUpdates();
     },
 
+    /**
+     * @param {!WebInspector.SearchableView.SearchConfig} searchConfig
+     * @param {boolean} shouldJump
+     * @param {boolean} jumpBackwards
+     * @param {function(!WebInspector.View, number)} searchFinishedCallback
+     */
     _doFindSearchMatches: function(searchConfig, shouldJump, jumpBackwards, searchFinishedCallback)
     {
         this._currentSearchResultIndex = -1;
         this._searchResults = [];
 
-        var modifiers = searchConfig.caseSensitive ? "" : "i";
-        var query = searchConfig.isRegex ? "/" + searchConfig.query + "/" : searchConfig.query;
-        var regex = WebInspector.SourceFrame.createSearchRegex(query, modifiers);
+        var regex = WebInspector.SourceFrame._createSearchRegexForConfig(searchConfig);
         this._searchRegex = regex;
         this._searchResults = this._collectRegexMatches(regex);
         if (!this._searchResults.length)
@@ -546,15 +564,25 @@ WebInspector.SourceFrame.prototype = {
     },
 
     /**
+     * @param {!WebInspector.SearchableView.SearchConfig} searchConfig
      * @param {string} replacement
      */
-    replaceSelectionWith: function(replacement)
+    replaceSelectionWith: function(searchConfig, replacement)
     {
         var range = this._searchResults[this._currentSearchResultIndex];
         if (!range)
             return;
         this._textEditor.highlightSearchResults(this._searchRegex, null);
-        var newRange = this._textEditor.editRange(range, replacement);
+
+        var oldText = this._textEditor.copyRange(range);
+        var regex = WebInspector.SourceFrame._createSearchRegexForConfig(searchConfig);
+        var text;
+        if (regex.__fromRegExpQuery)
+            text = oldText.replace(regex, replacement);
+        else
+            text = oldText.replace(regex, function() { return replacement; });
+
+        var newRange = this._textEditor.editRange(range, text);
         this._textEditor.setSelection(newRange.collapseToEnd());
     },
 
@@ -569,9 +597,7 @@ WebInspector.SourceFrame.prototype = {
         var text = this._textEditor.text();
         var range = this._textEditor.range();
 
-        var modifiers = searchConfig.caseSensitive ? "" : "i";
-        var query = searchConfig.isRegex ? "/" + searchConfig.query + "/" : searchConfig.query;
-        var regex = WebInspector.SourceFrame.createSearchRegex(query, "g" + modifiers);
+        var regex = WebInspector.SourceFrame._createSearchRegexForConfig(searchConfig, true);
         if (regex.__fromRegExpQuery)
             text = text.replace(regex, replacement);
         else

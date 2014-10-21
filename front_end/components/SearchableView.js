@@ -609,7 +609,8 @@ WebInspector.SearchableView.prototype = {
 
     _replace: function()
     {
-        /** @type {!WebInspector.Replaceable} */ (this._searchProvider).replaceSelectionWith(this._replaceInputElement.value);
+        var searchConfig = this._currentSearchConfig();
+        /** @type {!WebInspector.Replaceable} */ (this._searchProvider).replaceSelectionWith(searchConfig, this._replaceInputElement.value);
         delete this._currentQuery;
         this._performSearch(true, true);
     },
@@ -674,9 +675,10 @@ WebInspector.Replaceable = function()
 
 WebInspector.Replaceable.prototype = {
     /**
+     * @param {!WebInspector.SearchableView.SearchConfig} searchConfig
      * @param {string} replacement
      */
-    replaceSelectionWith: function(replacement) { },
+    replaceSelectionWith: function(searchConfig, replacement) { },
 
     /**
      * @param {!WebInspector.SearchableView.SearchConfig} searchConfig
