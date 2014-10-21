@@ -925,14 +925,6 @@ WebInspector.DebuggerModel.CallFrame.prototype = {
     /**
      * @return {string}
      */
-    get type()
-    {
-        return this._payload.type;
-    },
-
-    /**
-     * @return {string}
-     */
     get id()
     {
         return this._payload.callFrameId;
