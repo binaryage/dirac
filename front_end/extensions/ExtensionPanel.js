@@ -85,12 +85,13 @@ WebInspector.ExtensionPanel.prototype = {
     },
 
     /**
-     * @param {string} query
+     * @param {!WebInspector.SearchableView.SearchConfig} searchConfig
      * @param {boolean} shouldJump
      * @param {boolean=} jumpBackwards
      */
-    performSearch: function(query, shouldJump, jumpBackwards)
+    performSearch: function(searchConfig, shouldJump, jumpBackwards)
     {
+        var query = searchConfig.query;
         this._server.notifySearchAction(this.name, WebInspector.extensionAPI.panels.SearchAction.PerformSearch, query);
     },
 
@@ -102,6 +103,22 @@ WebInspector.ExtensionPanel.prototype = {
     jumpToPreviousSearchResult: function()
     {
         this._server.notifySearchAction(this.name, WebInspector.extensionAPI.panels.SearchAction.PreviousSearchResult);
+    },
+
+    /**
+     * @return {boolean}
+     */
+    supportsCaseSensitiveSearch: function()
+    {
+        return false;
+    },
+
+    /**
+     * @return {boolean}
+     */
+    supportsRegexSearch: function()
+    {
+        return false;
     },
 
     __proto__: WebInspector.Panel.prototype

@@ -394,12 +394,13 @@ WebInspector.ElementsPanel.prototype = {
     },
 
     /**
-     * @param {string} query
+     * @param {!WebInspector.SearchableView.SearchConfig} searchConfig
      * @param {boolean} shouldJump
      * @param {boolean=} jumpBackwards
      */
-    performSearch: function(query, shouldJump, jumpBackwards)
+    performSearch: function(searchConfig, shouldJump, jumpBackwards)
     {
+        var query = searchConfig.query;
         // Call searchCanceled since it will reset everything we need before doing a new search.
         this.searchCanceled();
 
@@ -574,6 +575,22 @@ WebInspector.ElementsPanel.prototype = {
         if (!this._searchResults)
             return;
         this._jumpToSearchResult(this._currentSearchResultIndex - 1);
+    },
+
+    /**
+     * @return {boolean}
+     */
+    supportsCaseSensitiveSearch: function()
+    {
+        return false;
+    },
+
+    /**
+     * @return {boolean}
+     */
+    supportsRegexSearch: function()
+    {
+        return false;
     },
 
     _highlightCurrentSearchResult: function()

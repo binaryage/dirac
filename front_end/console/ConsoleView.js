@@ -905,12 +905,13 @@ WebInspector.ConsoleView.prototype = {
     },
 
     /**
-     * @param {string} query
+     * @param {!WebInspector.SearchableView.SearchConfig} searchConfig
      * @param {boolean} shouldJump
      * @param {boolean=} jumpBackwards
      */
-    performSearch: function(query, shouldJump, jumpBackwards)
+    performSearch: function(searchConfig, shouldJump, jumpBackwards)
     {
+        var query = searchConfig.query;
         this.searchCanceled();
         this._searchableView.updateSearchMatchesCount(0);
         this._searchRegex = createPlainTextSearchRegex(query, "gi");
@@ -940,6 +941,22 @@ WebInspector.ConsoleView.prototype = {
         if (!this._searchResults || !this._searchResults.length)
             return;
         this._jumpToSearchResult(this._currentSearchResultIndex - 1);
+    },
+
+    /**
+     * @return {boolean}
+     */
+    supportsCaseSensitiveSearch: function()
+    {
+        return false;
+    },
+
+    /**
+     * @return {boolean}
+     */
+    supportsRegexSearch: function()
+    {
+        return false;
     },
 
     _clearCurrentSearchResultHighlight: function()

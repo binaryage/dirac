@@ -277,11 +277,28 @@ body.undocked.platform-mac.inactive .toolbar-colors {
     opacity: 1.0;
 }
 
-.toolbar-search label {
-    margin: auto 0;
+.toolbar-search .status-bar-item {
+    height: 20px;
+    width: 16px;
 }
 
-.toolbar-search button {
+.toolbar-search .search-settings-prefix {
+    margin-left: 2px;
+}
+
+.toolbar-search .status-bar-item.case-sensitive-search.toggled-on .status-bar-button-text {
+    color: rgb(94, 146, 233);
+}
+
+.toolbar-search .status-bar-item.regex-search.toggled-on .status-bar-button-text {
+    color: rgb(94, 146, 233);
+}
+
+.toolbar-search .status-bar-item.regex-search.toggled-on {
+    color: rgb(66, 129, 235);
+}
+
+.toolbar-search button.search-action-button {
     border: 1px solid rgb(163, 163, 163);
     border-radius: 8px;
     margin: 0;
@@ -290,7 +307,7 @@ body.undocked.platform-mac.inactive .toolbar-colors {
     height: 20px;
 }
 
-.toolbar-search button:active {
+.toolbar-search button.search-action-button:active {
     background-image: linear-gradient(rgb(185, 185, 185), rgb(156, 156, 156));
 }
 
@@ -460,11 +477,9 @@ body.undocked.platform-mac.inactive .toolbar-colors {
     z-index: 1;
 }
 
-.glyph.shadow {
-    top: 0;
-    bottom: 0;
-    background-color: white;
-    z-index: 0;
+.status-bar-item .status-bar-button-text {
+    font-weight: bold;
+    color: rgba(97, 97, 97, 1);
 }
 
 .long-click-glyph {

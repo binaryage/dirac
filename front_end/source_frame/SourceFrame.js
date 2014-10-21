@@ -82,9 +82,9 @@ WebInspector.SourceFrame.createSearchRegex = function(query, modifiers)
         // Silent catch.
     }
 
-    // Otherwise just do case-insensitive search.
+    // Otherwise just do a plain text search.
     if (!regex)
-        regex = createPlainTextSearchRegex(query, "i" + modifiers);
+        regex = createPlainTextSearchRegex(query, modifiers);
 
     return regex;
 }
@@ -396,46 +396,45 @@ WebInspector.SourceFrame.prototype = {
         this._textEditor.endUpdates();
     },
 
+    _doFindSearchMatches: function(searchConfig, shouldJump, jumpBackwards, searchFinishedCallback)
+    {
+        this._currentSearchResultIndex = -1;
+        this._searchResults = [];
+
+        var modifiers = searchConfig.caseSensitive ? "" : "i";
+        var query = searchConfig.isRegex ? "/" + searchConfig.query + "/" : searchConfig.query;
+        var regex = WebInspector.SourceFrame.createSearchRegex(query, modifiers);
+        this._searchRegex = regex;
+        this._searchResults = this._collectRegexMatches(regex);
+        if (!this._searchResults.length)
+            this._textEditor.cancelSearchResultsHighlight();
+        else if (shouldJump && jumpBackwards)
+            this.jumpToPreviousSearchResult();
+        else if (shouldJump)
+            this.jumpToNextSearchResult();
+        else
+            this._textEditor.highlightSearchResults(regex, null);
+        searchFinishedCallback(this, this._searchResults.length);
+    },
+
     /**
-     * @param {string} query
+     * @param {!WebInspector.SearchableView.SearchConfig} searchConfig
      * @param {boolean} shouldJump
      * @param {boolean} jumpBackwards
-     * @param {function(!WebInspector.View, number)} callback
+     * @param {function(!WebInspector.View, number)} searchFinishedCallback
      * @param {function(number)} currentMatchChangedCallback
      * @param {function()} searchResultsChangedCallback
      */
-    performSearch: function(query, shouldJump, jumpBackwards, callback, currentMatchChangedCallback, searchResultsChangedCallback)
+    performSearch: function(searchConfig, shouldJump, jumpBackwards, searchFinishedCallback, currentMatchChangedCallback, searchResultsChangedCallback)
     {
-        /**
-         * @param {string} query
-         * @this {WebInspector.SourceFrame}
-         */
-        function doFindSearchMatches(query)
-        {
-            this._currentSearchResultIndex = -1;
-            this._searchResults = [];
-
-            var regex = WebInspector.SourceFrame.createSearchRegex(query);
-            this._searchRegex = regex;
-            this._searchResults = this._collectRegexMatches(regex);
-            if (!this._searchResults.length)
-                this._textEditor.cancelSearchResultsHighlight();
-            else if (shouldJump && jumpBackwards)
-                this.jumpToPreviousSearchResult();
-            else if (shouldJump)
-                this.jumpToNextSearchResult();
-            else
-                this._textEditor.highlightSearchResults(regex, null);
-            callback(this, this._searchResults.length);
-        }
-
         this._resetSearch();
         this._currentSearchMatchChangedCallback = currentMatchChangedCallback;
         this._searchResultsChangedCallback = searchResultsChangedCallback;
+        var searchFunction = this._doFindSearchMatches.bind(this, searchConfig, shouldJump, jumpBackwards, searchFinishedCallback);
         if (this.loaded)
-            doFindSearchMatches.call(this, query);
+            searchFunction.call(this);
         else
-            this._delayedFindSearchMatches = doFindSearchMatches.bind(this, query);
+            this._delayedFindSearchMatches = searchFunction;
 
         this._ensureContentLoaded();
     },
@@ -547,29 +546,32 @@ WebInspector.SourceFrame.prototype = {
     },
 
     /**
-     * @param {string} text
+     * @param {string} replacement
      */
-    replaceSelectionWith: function(text)
+    replaceSelectionWith: function(replacement)
     {
         var range = this._searchResults[this._currentSearchResultIndex];
         if (!range)
             return;
         this._textEditor.highlightSearchResults(this._searchRegex, null);
-        var newRange = this._textEditor.editRange(range, text);
+        var newRange = this._textEditor.editRange(range, replacement);
         this._textEditor.setSelection(newRange.collapseToEnd());
     },
 
     /**
-     * @param {string} query
+     * @param {!WebInspector.SearchableView.SearchConfig} searchConfig
      * @param {string} replacement
      */
-    replaceAllWith: function(query, replacement)
+    replaceAllWith: function(searchConfig, replacement)
     {
         this._resetCurrentSearchResultIndex();
 
         var text = this._textEditor.text();
         var range = this._textEditor.range();
-        var regex = WebInspector.SourceFrame.createSearchRegex(query, "g");
+
+        var modifiers = searchConfig.caseSensitive ? "" : "i";
+        var query = searchConfig.isRegex ? "/" + searchConfig.query + "/" : searchConfig.query;
+        var regex = WebInspector.SourceFrame.createSearchRegex(query, "g" + modifiers);
         if (regex.__fromRegExpQuery)
             text = text.replace(regex, replacement);
         else
@@ -604,10 +606,11 @@ WebInspector.SourceFrame.prototype = {
             do {
                 var match = regexObject.exec(line);
                 if (match) {
+                    var matchEndIndex = match.index + Math.max(match[0].length, 1);
                     if (match[0].length)
-                        ranges.push(new WebInspector.TextRange(i, offset + match.index, i, offset + match.index + match[0].length));
-                    offset += match.index + 1;
-                    line = line.substring(match.index + 1);
+                        ranges.push(new WebInspector.TextRange(i, offset + match.index, i, offset + matchEndIndex));
+                    offset += matchEndIndex;
+                    line = line.substring(matchEndIndex);
                 }
             } while (match && line);
         }

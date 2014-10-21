@@ -1403,12 +1403,13 @@ WebInspector.NetworkLogView.prototype = {
     },
 
     /**
-     * @param {string} query
+     * @param {!WebInspector.SearchableView.SearchConfig} searchConfig
      * @param {boolean} shouldJump
      * @param {boolean=} jumpBackwards
      */
-    performSearch: function(query, shouldJump, jumpBackwards)
+    performSearch: function(searchConfig, shouldJump, jumpBackwards)
     {
+        var query = searchConfig.query;
         var currentMatchedRequestNode = this._currentMatchedRequestNode;
         this._clearSearchMatchedList();
         this._searchRegExp = createPlainTextSearchRegex(query, "i");
@@ -1421,6 +1422,22 @@ WebInspector.NetworkLogView.prototype = {
         if (!newMatchedRequestIndex && jumpBackwards)
             newMatchedRequestIndex = this._matchedRequestCount - 1;
         this._highlightNthMatchedRequestForSearch(newMatchedRequestIndex, shouldJump);
+    },
+
+    /**
+     * @return {boolean}
+     */
+    supportsCaseSensitiveSearch: function()
+    {
+        return false;
+    },
+
+    /**
+     * @return {boolean}
+     */
+    supportsRegexSearch: function()
+    {
+        return false;
     },
 
     /**
@@ -2124,18 +2141,34 @@ WebInspector.NetworkPanel.prototype = {
     },
 
     /**
-     * @param {string} query
+     * @param {!WebInspector.SearchableView.SearchConfig} searchConfig
      * @param {boolean} shouldJump
      * @param {boolean=} jumpBackwards
      */
-    performSearch: function(query, shouldJump, jumpBackwards)
+    performSearch: function(searchConfig, shouldJump, jumpBackwards)
     {
-        this._networkLogView.performSearch(query, shouldJump, jumpBackwards);
+        this._networkLogView.performSearch(searchConfig, shouldJump, jumpBackwards);
     },
 
     jumpToPreviousSearchResult: function()
     {
         this._networkLogView.jumpToPreviousSearchResult();
+    },
+
+    /**
+     * @return {boolean}
+     */
+    supportsCaseSensitiveSearch: function()
+    {
+        return false;
+    },
+
+    /**
+     * @return {boolean}
+     */
+    supportsRegexSearch: function()
+    {
+        return false;
     },
 
     jumpToNextSearchResult: function()

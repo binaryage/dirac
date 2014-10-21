@@ -71,21 +71,6 @@ WebInspector.Panel.prototype = {
     },
 
     /**
-     * @param {string} text
-     */
-    replaceSelectionWith: function(text)
-    {
-    },
-
-    /**
-     * @param {string} query
-     * @param {string} text
-     */
-    replaceAllWith: function(query, text)
-    {
-    },
-
-    /**
      * @return {!Array.<!Element>}
      */
     elementsToRestoreScrollPositionsFor: function()

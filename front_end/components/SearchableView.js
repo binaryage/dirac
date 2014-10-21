@@ -33,12 +33,15 @@
  * @constructor
  * @extends {WebInspector.VBox}
  * @param {!WebInspector.Searchable} searchable
+ * @param {string=} settingName
  */
-WebInspector.SearchableView = function(searchable)
+WebInspector.SearchableView = function(searchable, settingName)
 {
     WebInspector.VBox.call(this);
 
     this._searchProvider = searchable;
+    this._settingName = settingName;
+
     this.element.addEventListener("keydown", this._onKeyDown.bind(this), false);
 
     this._footerElementContainer = this.element.createChild("div", "search-bar status-bar hidden");
@@ -49,6 +52,28 @@ WebInspector.SearchableView = function(searchable)
 
     this._firstRowElement = this._footerElement.createChild("tr");
     this._secondRowElement = this._footerElement.createChild("tr", "hidden");
+
+    if (this._searchProvider.supportsCaseSensitiveSearch() || this._searchProvider.supportsRegexSearch()) {
+        var searchSettingsPrefixColumn = this._firstRowElement.createChild("td");
+        searchSettingsPrefixColumn.createChild("div", "search-settings-prefix")
+        this._secondRowElement.createChild("td");
+    }
+
+    if (this._searchProvider.supportsCaseSensitiveSearch()) {
+        var caseSensitiveColumn = this._firstRowElement.createChild("td");
+        this._caseSensitiveButton = new WebInspector.StatusBarTextButton(WebInspector.UIString("Case sensitive"), "case-sensitive-search", "Aa", 2);
+        this._caseSensitiveButton.addEventListener("click", this._toggleCaseSensitiveSearch, this);
+        caseSensitiveColumn.appendChild(this._caseSensitiveButton.element);
+        this._secondRowElement.createChild("td");
+    }
+
+    if (this._searchProvider.supportsRegexSearch()) {
+        var regexColumn = this._firstRowElement.createChild("td");
+        this._regexButton = new WebInspector.StatusBarTextButton(WebInspector.UIString("Regex"), "regex-search", ".*", 2);
+        this._regexButton.addEventListener("click", this._toggleRegexSearch, this);
+        regexColumn.appendChild(this._regexButton.element);
+        this._secondRowElement.createChild("td");
+    }
 
     // Column 1
     var searchControlElementColumn = this._firstRowElement.createChild("td");
@@ -79,24 +104,24 @@ WebInspector.SearchableView = function(searchable)
     this._replaceInputElement.placeholder = WebInspector.UIString("Replace");
 
     // Column 2
-    this._findButtonElement = this._firstRowElement.createChild("td").createChild("button", "hidden");
+    this._findButtonElement = this._firstRowElement.createChild("td").createChild("button", "search-action-button hidden");
     this._findButtonElement.textContent = WebInspector.UIString("Find");
     this._findButtonElement.tabIndex = -1;
     this._findButtonElement.addEventListener("click", this._onFindClick.bind(this), false);
 
-    this._replaceButtonElement = this._secondRowElement.createChild("td").createChild("button");
+    this._replaceButtonElement = this._secondRowElement.createChild("td").createChild("button", "search-action-button");
     this._replaceButtonElement.textContent = WebInspector.UIString("Replace");
     this._replaceButtonElement.disabled = true;
     this._replaceButtonElement.tabIndex = -1;
     this._replaceButtonElement.addEventListener("click", this._replace.bind(this), false);
 
     // Column 3
-    this._prevButtonElement = this._firstRowElement.createChild("td").createChild("button", "hidden");
+    this._prevButtonElement = this._firstRowElement.createChild("td").createChild("button", "search-action-button hidden");
     this._prevButtonElement.textContent = WebInspector.UIString("Previous");
     this._prevButtonElement.tabIndex = -1;
     this._prevButtonElement.addEventListener("click", this._onPreviousClick.bind(this), false);
 
-    this._replaceAllButtonElement = this._secondRowElement.createChild("td").createChild("button");
+    this._replaceAllButtonElement = this._secondRowElement.createChild("td").createChild("button", "search-action-button");
     this._replaceAllButtonElement.textContent = WebInspector.UIString("Replace All");
     this._replaceAllButtonElement.addEventListener("click", this._replaceAll.bind(this), false);
 
@@ -115,13 +140,14 @@ WebInspector.SearchableView = function(searchable)
     this._replaceLabelElement.setAttribute("for", replaceCheckboxId);
 
     // Column 5
-    var cancelButtonElement = this._firstRowElement.createChild("td").createChild("button");
+    var cancelButtonElement = this._firstRowElement.createChild("td").createChild("button", "search-action-button");
     cancelButtonElement.textContent = WebInspector.UIString("Cancel");
     cancelButtonElement.tabIndex = -1;
     cancelButtonElement.addEventListener("click", this.closeSearch.bind(this), false);
     this._minimalSearchQuerySize = 3;
 
     this._registerShortcuts();
+    this._loadSetting();
 }
 
 WebInspector.SearchableView._lastUniqueId = 0;
@@ -177,6 +203,52 @@ WebInspector.SearchableView.findPreviousShortcuts = function()
 }
 
 WebInspector.SearchableView.prototype = {
+    _toggleCaseSensitiveSearch: function()
+    {
+        this._caseSensitiveButton.toggled = !this._caseSensitiveButton.toggled;
+        this._saveSetting();
+        this._performSearch(true, true);
+    },
+
+    _toggleRegexSearch: function()
+    {
+        this._regexButton.toggled = !this._regexButton.toggled;
+        this._saveSetting();
+        this._performSearch(true, true);
+    },
+
+    /**
+     * @return {?WebInspector.Setting}
+     */
+    _setting: function()
+    {
+        if (!this._settingName)
+            return null;
+        if (!WebInspector.settings[this._settingName])
+            WebInspector.settings[this._settingName] = WebInspector.settings.createSetting(this._settingName, {});
+        return WebInspector.settings[this._settingName];
+    },
+
+    _saveSetting: function()
+    {
+        var setting = this._setting();
+        if (!setting)
+            return;
+        var settingValue = setting.get() || {};
+        settingValue.caseSensitive = this._caseSensitiveButton.toggled;
+        settingValue.isRegex = this._regexButton.toggled;
+        setting.set(settingValue);
+    },
+
+    _loadSetting: function()
+    {
+        var settingValue = this._setting() ? (this._setting().get() || {}) : {};
+        if (this._searchProvider.supportsCaseSensitiveSearch())
+            this._caseSensitiveButton.toggled = !!settingValue.caseSensitive;
+        if (this._searchProvider.supportsRegexSearch())
+            this._regexButton.toggled = !!settingValue.isRegex;
+    },
+
     /**
      * @return {!Element}
      */
@@ -502,8 +574,21 @@ WebInspector.SearchableView.prototype = {
 
         this._currentQuery = query;
         this._searchProvider.currentQuery = query;
-        this._searchProvider.performSearch(query, shouldJump, jumpBackwards);
+
+        var searchConfig = this._currentSearchConfig();
+        this._searchProvider.performSearch(searchConfig, shouldJump, jumpBackwards);
     },
+
+    /**
+     * @return {!WebInspector.SearchableView.SearchConfig}
+     */
+    _currentSearchConfig: function()
+    {
+        var query = this._searchInputElement.value;
+        var caseSensitive = this._caseSensitiveButton ? this._caseSensitiveButton.toggled : false;
+        var isRegex = this._regexButton ? this._regexButton.toggled : false;
+        return new WebInspector.SearchableView.SearchConfig(query, caseSensitive, isRegex);
+     },
 
     _updateSecondRowVisibility: function()
     {
@@ -531,7 +616,8 @@ WebInspector.SearchableView.prototype = {
 
     _replaceAll: function()
     {
-        /** @type {!WebInspector.Replaceable} */ (this._searchProvider).replaceAllWith(this._searchInputElement.value, this._replaceInputElement.value);
+        var searchConfig = this._currentSearchConfig();
+        /** @type {!WebInspector.Replaceable} */ (this._searchProvider).replaceAllWith(searchConfig, this._replaceInputElement.value);
     },
 
     _onInput: function(event)
@@ -558,15 +644,25 @@ WebInspector.Searchable.prototype = {
     searchCanceled: function() { },
 
     /**
-     * @param {string} query
+     * @param {!WebInspector.SearchableView.SearchConfig} searchConfig
      * @param {boolean} shouldJump
      * @param {boolean=} jumpBackwards
      */
-    performSearch: function(query, shouldJump, jumpBackwards) { },
+    performSearch: function(searchConfig, shouldJump, jumpBackwards) { },
 
     jumpToNextSearchResult: function() { },
 
-    jumpToPreviousSearchResult: function() { }
+    jumpToPreviousSearchResult: function() { },
+
+    /**
+     * @return {boolean}
+     */
+    supportsCaseSensitiveSearch: function() { },
+
+    /**
+     * @return {boolean}
+     */
+    supportsRegexSearch: function() { }
 }
 
 /**
@@ -578,13 +674,26 @@ WebInspector.Replaceable = function()
 
 WebInspector.Replaceable.prototype = {
     /**
-     * @param {string} text
-     */
-    replaceSelectionWith: function(text) { },
-
-    /**
-     * @param {string} query
      * @param {string} replacement
      */
-    replaceAllWith: function(query, replacement) { }
+    replaceSelectionWith: function(replacement) { },
+
+    /**
+     * @param {!WebInspector.SearchableView.SearchConfig} searchConfig
+     * @param {string} replacement
+     */
+    replaceAllWith: function(searchConfig, replacement) { }
+}
+
+/**
+ * @constructor
+ * @param {string} query
+ * @param {boolean} caseSensitive
+ * @param {boolean} isRegex
+ */
+WebInspector.SearchableView.SearchConfig = function(query, caseSensitive, isRegex)
+{
+    this.query = query;
+    this.caseSensitive = caseSensitive;
+    this.isRegex = isRegex;
 }
