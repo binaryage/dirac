@@ -85,8 +85,9 @@ WebInspector.displayNameForURL = function(url)
     if (!parsedURL)
         return url;
 
-    var displayName = url.trimURL(parsedURL.host);
-    return displayName === "/" ? parsedURL.host + "/" : displayName;
+    var domain = parsedURL.host + (parsedURL.port ? (":" + parsedURL.port) : "");
+    var displayName = url.trimURL(domain);
+    return displayName === "/" ? domain + "/" : displayName;
 }
 
 /**
@@ -112,7 +113,8 @@ WebInspector.linkifyStringAsFragmentWithCustomLinkifier = function(string, linki
 
         var title = linkString;
         var realURL = (linkString.startsWith("www.") ? "http://" + linkString : linkString);
-        var lineColumnMatch = lineColumnRegEx.exec(realURL);
+        var parsedURL = new WebInspector.ParsedURL(realURL);
+        var lineColumnMatch = lineColumnRegEx.exec(parsedURL.lastPathComponent);
         var lineNumber;
         var columnNumber;
         if (lineColumnMatch) {
@@ -135,35 +137,6 @@ WebInspector.linkifyStringAsFragmentWithCustomLinkifier = function(string, linki
         container.appendChild(document.createTextNode(string));
 
     return container;
-}
-
-/**
- * @param {string} string
- * @return {!DocumentFragment}
- */
-WebInspector.linkifyStringAsFragment = function(string)
-{
-    /**
-     * @param {string} title
-     * @param {string} url
-     * @param {number=} lineNumber
-     * @param {number=} columnNumber
-     * @return {!Node}
-     */
-    function linkifier(title, url, lineNumber, columnNumber)
-    {
-        var isExternal = !WebInspector.resourceForURL(url) && !WebInspector.workspace.uiSourceCodeForURL(url);
-        var urlNode = WebInspector.linkifyURLAsNode(url, title, undefined, isExternal);
-        if (typeof lineNumber !== "undefined") {
-            urlNode.lineNumber = lineNumber;
-            if (typeof columnNumber !== "undefined")
-                urlNode.columnNumber = columnNumber;
-        }
-
-        return urlNode;
-    }
-
-    return WebInspector.linkifyStringAsFragmentWithCustomLinkifier(string, linkifier);
 }
 
 /**
@@ -200,28 +173,34 @@ WebInspector.linkifyURLAsNode = function(url, linkText, classes, isExternal, too
 /**
  * @param {string} url
  * @param {number=} lineNumber
+ * @param {number=} columnNumber
  * @return {string}
  */
-WebInspector.formatLinkText = function(url, lineNumber)
+WebInspector.formatLinkText = function(url, lineNumber, columnNumber)
 {
     var text = url ? WebInspector.displayNameForURL(url) : WebInspector.UIString("(program)");
     if (typeof lineNumber === "number")
         text += ":" + (lineNumber + 1);
+    if ((typeof columnNumber === "number") && columnNumber)
+        text += ":" + (columnNumber + 1);
     return text;
 }
 
 /**
  * @param {string} url
  * @param {number=} lineNumber
+ * @param {number=} columnNumber
  * @param {string=} classes
  * @param {string=} tooltipText
  * @return {!Element}
  */
-WebInspector.linkifyResourceAsNode = function(url, lineNumber, classes, tooltipText)
+WebInspector.linkifyResourceAsNode = function(url, lineNumber, columnNumber, classes, tooltipText)
 {
-    var linkText = WebInspector.formatLinkText(url, lineNumber);
-    var anchor = WebInspector.linkifyURLAsNode(url, linkText, classes, false, tooltipText);
+    var isExternal = !WebInspector.resourceForURL(url) && !WebInspector.workspace.uiSourceCodeForURL(url);
+    var linkText = WebInspector.formatLinkText(url, lineNumber, columnNumber);
+    var anchor = WebInspector.linkifyURLAsNode(url, linkText, classes, isExternal, tooltipText);
     anchor.lineNumber = lineNumber;
+    anchor.columnNumber = columnNumber;
     return anchor;
 }
 
