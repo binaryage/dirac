@@ -41,8 +41,6 @@ WebInspector.View = function()
     this._notificationDepth = 0;
 }
 
-WebInspector.View._cssFileToContent = {};
-
 WebInspector.View._buildSourceURL = function(cssFile)
 {
     return "\n/*# sourceURL=" + WebInspector.ParsedURL.completeURL(window.location.href, cssFile) + " */";
@@ -54,10 +52,12 @@ WebInspector.View._buildSourceURL = function(cssFile)
  */
 WebInspector.View.createStyleElement = function(cssFile)
 {
-    var content = WebInspector.View._cssFileToContent[cssFile];
+    var content = Runtime.cachedResources[cssFile];
     if (!content) {
-        content = loadResource(cssFile) + WebInspector.View._buildSourceURL(cssFile)
-        WebInspector.View._cssFileToContent[cssFile] = content;
+        if (Runtime.isReleaseMode())
+            console.error(cssFile + " not preloaded, loading from the remote. Check module.json");
+        content = loadResource(cssFile) + WebInspector.View._buildSourceURL(cssFile);
+        Runtime.cachedResources[cssFile] = content;
     }
     var styleElement = createElement("style");
     styleElement.type = "text/css";

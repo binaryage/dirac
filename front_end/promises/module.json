@@ -15,5 +15,8 @@
     "experiment": "promiseTracker",
     "scripts": [
         "PromisesPanel.js"
+    ],
+    "stylesheets": [
+        "promisesPanel.css"
     ]
 }

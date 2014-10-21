@@ -246,5 +246,9 @@
     ],
     "skip_compilation": [
         "Tests.js"
+    ],
+    "stylesheets": [
+        "accelerometer.css",
+        "overrides.css"
     ]
 }

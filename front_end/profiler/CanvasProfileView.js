@@ -36,7 +36,7 @@
 WebInspector.CanvasProfileView = function(profile)
 {
     WebInspector.VBox.call(this);
-    this.registerRequiredCSS("canvasProfiler.css");
+    this.registerRequiredCSS("profiler/canvasProfiler.css");
     this.element.classList.add("canvas-profile-view");
 
     this._profile = profile;

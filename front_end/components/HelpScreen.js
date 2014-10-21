@@ -37,7 +37,7 @@ WebInspector.HelpScreen = function(title)
 {
     WebInspector.VBox.call(this);
     this.markAsRoot();
-    this.registerRequiredCSS("helpScreen.css");
+    this.registerRequiredCSS("components/helpScreen.css");
 
     this.element.classList.add("help-window-outer");
     this.element.addEventListener("keydown", this._onKeyDown.bind(this), false);

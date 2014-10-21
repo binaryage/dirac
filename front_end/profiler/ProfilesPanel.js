@@ -438,9 +438,9 @@ WebInspector.ProfileHeader.prototype = {
 WebInspector.ProfilesPanel = function()
 {
     WebInspector.PanelWithSidebarTree.call(this, "profiles");
-    this.registerRequiredCSS("panelEnablerView.css");
-    this.registerRequiredCSS("heapProfiler.css");
-    this.registerRequiredCSS("profilesPanel.css");
+    this.registerRequiredCSS("components/panelEnablerView.css");
+    this.registerRequiredCSS("profiler/heapProfiler.css");
+    this.registerRequiredCSS("profiler/profilesPanel.css");
 
     this._searchableView = new WebInspector.SearchableView(this);
 

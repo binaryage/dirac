@@ -36,7 +36,7 @@
 WebInspector.ImageView = function(url, mimeType, contentProvider)
 {
     WebInspector.VBox.call(this);
-    this.registerRequiredCSS("imageView.css");
+    this.registerRequiredCSS("source_frame/imageView.css");
     this.element.classList.add("image-view");
     this._url = url;
     this._parsedURL = new WebInspector.ParsedURL(url);

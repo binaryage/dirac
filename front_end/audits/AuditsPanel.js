@@ -35,8 +35,8 @@
 WebInspector.AuditsPanel = function()
 {
     WebInspector.PanelWithSidebarTree.call(this, "audits");
-    this.registerRequiredCSS("panelEnablerView.css");
-    this.registerRequiredCSS("auditsPanel.css");
+    this.registerRequiredCSS("components/panelEnablerView.css");
+    this.registerRequiredCSS("audits/auditsPanel.css");
 
     this.auditsTreeElement = new WebInspector.SidebarSectionTreeElement("", {}, true);
     this.sidebarTree.appendChild(this.auditsTreeElement);

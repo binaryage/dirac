@@ -71,6 +71,7 @@ type_checked_jsdoc_tags_or = '|'.join(type_checked_jsdoc_tags_list)
 invalid_type_regex = re.compile(r'@(?:' + type_checked_jsdoc_tags_or + r')\s*\{.*(?<![!?:.A-Za-z0-9])([A-Z][A-Za-z0-9.]+[A-Za-z0-9])[^/]*\}')
 invalid_type_designator_regex = re.compile(r'@(?:' + type_checked_jsdoc_tags_or + r')\s*.*(?<![{: ])([?!])=?\}')
 error_warning_regex = re.compile(r'(?:WARNING|ERROR)')
+loaded_css_regex = re.compile(r'(?:registerRequiredCSS|WebInspector\.View\.createStyleElement)\s*\(\s*"(.+)"\s*\)')
 
 errors_found = False
 
@@ -126,6 +127,7 @@ def verify_jsdoc_line(fileName, lineIndex, line):
     def print_error(message, errorPosition):
         print '%s:%s: ERROR - %s\n%s\n%s\n' % (fileName, lineIndex, message, line, ' ' * errorPosition + '^')
 
+    known_css = {}
     errors_found = False
     match = re.search(invalid_type_regex, line)
     if match:
@@ -133,9 +135,20 @@ def verify_jsdoc_line(fileName, lineIndex, line):
         errors_found = True
 
     match = re.search(invalid_type_designator_regex, line)
-    if (match):
+    if match:
         print_error('Type nullability indicator misplaced, should precede type', match.start(1))
         errors_found = True
+
+    match = re.search(loaded_css_regex, line)
+    if match:
+        file = path.join(devtools_frontend_path, match.group(1))
+        exists = known_css.get(file)
+        if exists is None:
+            exists = path.isfile(file)
+            known_css[file] = exists
+        if not exists:
+            print_error('Dynamically loaded CSS stylesheet is missing in the source tree', match.start(1))
+            errors_found = True
     return errors_found
 
 

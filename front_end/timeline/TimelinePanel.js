@@ -38,8 +38,8 @@
 WebInspector.TimelinePanel = function()
 {
     WebInspector.Panel.call(this, "timeline");
-    this.registerRequiredCSS("timelinePanel.css");
-    this.registerRequiredCSS("filter.css");
+    this.registerRequiredCSS("timeline/timelinePanel.css");
+    this.registerRequiredCSS("ui/filter.css");
     this.element.addEventListener("contextmenu", this._contextMenu.bind(this), false);
 
     this._detailsLinkifier = new WebInspector.Linkifier();

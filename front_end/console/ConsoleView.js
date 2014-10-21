@@ -37,7 +37,7 @@
 WebInspector.ConsoleView = function()
 {
     WebInspector.VBox.call(this);
-    this.registerRequiredCSS("filter.css");
+    this.registerRequiredCSS("ui/filter.css");
 
     this._searchableView = new WebInspector.SearchableView(this);
     this._searchableView.setMinimalSearchQuerySize(0);

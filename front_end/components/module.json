@@ -28,5 +28,12 @@
         "ShortcutsScreen.js",
         "TargetsComboBoxController.js",
         "TimelineGrid.js"
+    ],
+    "stylesheets": [
+        "breakpointsList.css",
+        "flameChart.css",
+        "helpScreen.css",
+        "overviewGrid.css",
+        "panelEnablerView.css"
     ]
 }

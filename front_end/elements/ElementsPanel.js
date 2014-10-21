@@ -37,7 +37,7 @@
 WebInspector.ElementsPanel = function()
 {
     WebInspector.Panel.call(this, "elements");
-    this.registerRequiredCSS("elementsPanel.css");
+    this.registerRequiredCSS("elements/elementsPanel.css");
 
     this._splitView = new WebInspector.SplitView(true, true, "elementsPanelSplitViewState", 325, 325);
     this._splitView.addEventListener(WebInspector.SplitView.Events.SidebarSizeChanged, this._updateTreeOutlineVisibleWidth.bind(this));

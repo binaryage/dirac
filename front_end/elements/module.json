@@ -78,5 +78,10 @@
         "StylesSidebarPane.js",
         "ElementsPanel.js",
         "AnimationsSidebarPane.js"
+    ],
+    "stylesheets": [
+        "elementsPanel.css",
+        "elementsTreeOutline.css",
+        "spectrum.css"
     ]
 }

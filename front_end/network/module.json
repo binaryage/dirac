@@ -31,5 +31,12 @@
         "RequestTimingView.js",
         "ResourceWebSocketFrameView.js",
         "NetworkPanel.js"
+    ],
+    "stylesheets": [
+        "networkLogView.css",
+        "networkPanel.css",
+        "requestCookiesView.css",
+        "requestHeadersView.css",
+        "webSocketFrameView.css"
     ]
 }

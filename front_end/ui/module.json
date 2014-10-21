@@ -43,5 +43,10 @@
         "UIUtils.js",
         "ViewportControl.js",
         "ZoomManager.js"
+    ],
+    "stylesheets": [
+        "dataGrid.css",
+        "filter.css",
+        "pieChart.css"
     ]
 }

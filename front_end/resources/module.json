@@ -25,5 +25,9 @@
         "FileContentView.js",
         "FileSystemView.js",
         "ResourcesPanel.js"
+    ],
+    "stylesheets": [
+        "indexedDBViews.css",
+        "resourcesPanel.css"
     ]
 }

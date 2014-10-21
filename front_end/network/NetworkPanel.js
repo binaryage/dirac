@@ -39,8 +39,8 @@
 WebInspector.NetworkLogView = function(filterBar, coulmnsVisibilitySetting)
 {
     WebInspector.VBox.call(this);
-    this.registerRequiredCSS("networkLogView.css");
-    this.registerRequiredCSS("filter.css");
+    this.registerRequiredCSS("network/networkLogView.css");
+    this.registerRequiredCSS("ui/filter.css");
 
     this._filterBar = filterBar;
     this._coulmnsVisibilitySetting = coulmnsVisibilitySetting;
@@ -1919,7 +1919,7 @@ WebInspector.NetworkLogView.EventTypes = {
 WebInspector.NetworkPanel = function()
 {
     WebInspector.Panel.call(this, "network");
-    this.registerRequiredCSS("networkPanel.css");
+    this.registerRequiredCSS("network/networkPanel.css");
 
     this._panelStatusBarElement = this.element.createChild("div", "panel-status-bar");
     this._filterBar = new WebInspector.FilterBar();

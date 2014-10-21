@@ -13,5 +13,8 @@
         "JSArticle.js",
         "DocumentationCatalog.js",
         "DocumentationView.js"
+    ],
+    "stylesheets": [
+        "documentationView.css"
     ]
 }

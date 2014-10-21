@@ -33,7 +33,7 @@
 WebInspector.NavigatorView = function()
 {
     WebInspector.VBox.call(this);
-    this.registerRequiredCSS("navigatorView.css");
+    this.registerRequiredCSS("sources/navigatorView.css");
 
     this.element.classList.add("navigator-container");
     var scriptsOutlineElement = this.element.createChild("div", "outline-disclosure navigator");

@@ -4,5 +4,8 @@
     ],
     "scripts": [
         "ScreencastView.js"
+    ],
+    "stylesheets": [
+        "screencastView.css"
     ]
 }

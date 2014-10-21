@@ -40,7 +40,7 @@ WebInspector.ScreencastView = function(target)
     this._target = target;
 
     this.setMinimumSize(150, 150);
-    this.registerRequiredCSS("screencastView.css");
+    this.registerRequiredCSS("screencast/screencastView.css");
 };
 
 WebInspector.ScreencastView._bordersSize = 44;

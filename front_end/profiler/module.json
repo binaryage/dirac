@@ -53,5 +53,10 @@
         "CanvasProfileView.js",
         "CanvasReplayStateView.js",
         "ProfileTypeRegistry.js"
+    ],
+    "stylesheets": [
+        "canvasProfiler.css",
+        "heapProfiler.css",
+        "profilesPanel.css"
     ]
 }

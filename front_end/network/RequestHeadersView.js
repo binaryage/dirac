@@ -36,7 +36,7 @@
 WebInspector.RequestHeadersView = function(request)
 {
     WebInspector.VBox.call(this);
-    this.registerRequiredCSS("requestHeadersView.css");
+    this.registerRequiredCSS("network/requestHeadersView.css");
     this.element.classList.add("request-headers-view");
 
     this._request = request;

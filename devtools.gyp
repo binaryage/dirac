@@ -44,7 +44,6 @@
             'conditions': [
                 ['debug_devtools==0', {
                     'dependencies': [
-                        'copy_standalone_css',
                         'concatenated_devtools_css',
                         'concatenated_toolbox_css',
                     ],
@@ -90,8 +89,7 @@
                             'front_end'
                         ],
                         'static_files': [
-                            '<@(devtools_standalone_files)',
-                            '<@(devtools_cm_css_files)',
+                            # Intentionally empty. Should get rebuilt when switching from debug_devtools==1.
                         ],
                         'devtools_static_files_list': '<|(devtools_static_grd_files.tmp <@(_static_files))',
                         'generated_files': [
@@ -244,6 +242,8 @@
                     '<@(_script_name)',
                     '<@(_helper_scripts)',
                     '<@(all_devtools_files)',
+                    'front_end/devtools.html',
+                    'front_end/toolbox.html',
                     '<(_output_path)/InspectorBackendCommands.js',
                     '<(_output_path)/SupportedCSSProperties.js',
                 ],
@@ -251,10 +251,10 @@
                 'conditions': [
                     ['debug_devtools==0', { # Release
                         'outputs': [
-                            '<(_output_path)/devtools.js',
                             '<(_output_path)/devtools.html',
-                            '<(_output_path)/toolbox.js',
+                            '<(_output_path)/devtools.js',
                             '<(_output_path)/toolbox.html',
+                            '<(_output_path)/toolbox.js',
                             '<(_output_path)/audits_module.js',
                             '<(_output_path)/console_module.js',
                             '<(_output_path)/devices_module.js',
@@ -291,7 +291,8 @@
                         {
                             'destination': '<(_output_path)',
                             'files': [
-                                '<@(devtools_core_base_non_generated_files)',
+                                '<@(devtools_core_base_files)',
+                                '<@(devtools_core_css_files)',
                             ],
                         },
                         {
@@ -315,22 +316,6 @@
     'conditions': [
         ['debug_devtools==0', {
             'targets': [
-                {
-                    'target_name': 'copy_standalone_css',
-                    'type': 'none',
-                    'copies': [{
-                        'destination': '<(PRODUCT_DIR)/resources/inspector',
-                        'files': [
-                            '<@(devtools_standalone_files)',
-                        ],
-                    },
-                    {
-                        'destination': '<(PRODUCT_DIR)/resources/inspector/cm',
-                        'files': [
-                            '<@(devtools_cm_css_files)',
-                        ],
-                    }],
-                },
                 {
                     'target_name': 'concatenated_devtools_css',
                     'type': 'none',

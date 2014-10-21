@@ -190,6 +190,11 @@ function Runtime(descriptors, coreModuleNames)
 Runtime._queryParamsObject = { __proto__: null };
 
 /**
+ * @type {!Object.<string, string>}
+ */
+Runtime.cachedResources = { __proto__: null };
+
+/**
  * @return {boolean}
  */
 Runtime.isReleaseMode = function()

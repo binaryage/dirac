@@ -33,12 +33,16 @@ except ImportError:
 
 rjsmin_path = path.abspath(join(
     path.dirname(__file__),
-    "..",
-    "..",
-    "build",
-    "scripts"))
+    '..',
+    '..',
+    'build',
+    'scripts'))
 sys.path.append(rjsmin_path)
 import rjsmin
+
+
+def css_source_url(url):
+    return '\n/*# sourceURL=' + url + ' */'
 
 
 def minify_js(javascript):
@@ -47,6 +51,15 @@ def minify_js(javascript):
 
 def concatenated_module_filename(module_name, output_dir):
     return join(output_dir, module_name + '_module.js')
+
+
+def hardlink_or_copy_file(src, dest, safe=False):
+    if safe and path.exists(dest):
+        os.remove(dest)
+    if hasattr(os, 'link'):
+        os.link(src, dest)
+    else:
+        shutil.copy(src, dest)
 
 
 def hardlink_or_copy_dir(src, dest):
@@ -59,16 +72,7 @@ def hardlink_or_copy_dir(src, dest):
         for name in files:
             src_name = join(src_dir, name)
             dest_name = join(dest_dir, name)
-            if hasattr(os, 'link'):
-                os.link(src_name, dest_name)
-            else:
-                shutil.copy(src_name, dest_name)
-
-
-def safe_copy(src, dest):
-    if path.exists(dest):
-        os.remove(dest)
-    shutil.copy(src, dest)
+            hardlink_or_copy_file(src_name, dest_name)
 
 
 class AppBuilder:
@@ -80,6 +84,19 @@ class AppBuilder:
 
     def app_file(self, extension):
         return self.application_name + '.' + extension
+
+    def core_css_names(self):
+        result = []
+        for module in self.descriptors.sorted_modules():
+            if self.descriptors.application[module].get('type') != 'autostart':
+                continue
+
+            stylesheets = self.descriptors.modules[module].get('stylesheets')
+            if not stylesheets:
+                continue
+            for css_name in stylesheets:
+                result.append(path.join(module, css_name))
+        return result
 
 
 # Outputs:
@@ -106,8 +123,8 @@ class ReleaseBuilder(AppBuilder):
                 if '<script ' in line or '<link ' in line:
                     continue
                 if '</head>' in line:
-                    output.write(self._generate_include_tag("%s.css" % self.application_name))
-                    output.write(self._generate_include_tag("%s.js" % self.application_name))
+                    output.write(self._generate_include_tag(self.app_file('css')))
+                    output.write(self._generate_include_tag(self.app_file('js')))
                 output.write(line)
 
         write_file(join(self.output_dir, html_name), output.getvalue())
@@ -140,6 +157,17 @@ class ReleaseBuilder(AppBuilder):
             result.append(module)
         return json.dumps(result)
 
+    def _write_module_css_styles(self, css_names, output):
+        for css_name in css_names:
+            css_name = path.normpath(css_name).replace('\\', '/')
+            output.write('Runtime.cachedResources["%s"] = "' % css_name)
+            css_content = read_file(path.join(self.application_dir, css_name)) + css_source_url(css_name)
+            css_content = css_content.replace('\\', '\\\\')
+            css_content = css_content.replace('\n', '\\n')
+            css_content = css_content.replace('"', '\\"')
+            output.write(css_content)
+            output.write('";\n')
+
     def _concatenate_autostart_modules(self, output):
         non_autostart = set()
         sorted_module_names = self.descriptors.sorted_modules()
@@ -158,9 +186,8 @@ class ReleaseBuilder(AppBuilder):
                 non_autostart.add(name)
 
     def _concatenate_application_script(self, output):
-        application_loader_name = self.app_file('js')
         runtime_contents = read_file(join(self.application_dir, 'Runtime.js'))
-        runtime_contents = re.sub('var allDescriptors = \[\];', 'var allDescriptors = %s;' % self._release_module_descriptors().replace("\\", "\\\\"), runtime_contents, 1)
+        runtime_contents = re.sub('var allDescriptors = \[\];', 'var allDescriptors = %s;' % self._release_module_descriptors().replace('\\', '\\\\'), runtime_contents, 1)
         output.write('/* Runtime.js */\n')
         output.write(runtime_contents)
         output.write('\n/* Autostart modules */\n')
@@ -168,17 +195,23 @@ class ReleaseBuilder(AppBuilder):
         output.write('/* Application descriptor %s */\n' % self.app_file('json'))
         output.write('applicationDescriptor = ')
         output.write(self.descriptors.application_json)
+        output.write(';\n/* Core CSS */\n')
+        self._write_module_css_styles(self.core_css_names(), output)
         output.write('\n/* Application loader */\n')
-        output.write(read_file(join(self.application_dir, application_loader_name)))
+        output.write(read_file(join(self.application_dir, self.app_file('js'))))
 
     def _concatenate_dynamic_module(self, module_name):
         module = self.descriptors.modules[module_name]
         scripts = module.get('scripts')
-        if not scripts:
+        stylesheets = self.descriptors.module_stylesheets(module_name)
+        if not scripts and not stylesheets:
             return
         module_dir = join(self.application_dir, module_name)
         output = StringIO()
-        modular_build.concatenate_scripts(scripts, module_dir, self.output_dir, output)
+        if scripts:
+            modular_build.concatenate_scripts(scripts, module_dir, self.output_dir, output)
+        if stylesheets:
+            self._write_module_css_styles(stylesheets, output)
         output_file_path = concatenated_module_filename(module_name, self.output_dir)
         write_file(output_file_path, minify_js(output.getvalue()))
         output.close()
@@ -216,7 +249,7 @@ class DebugBuilder(AppBuilder):
     def build_app(self):
         self._build_html()
         js_name = self.app_file('js')
-        safe_copy(join(self.application_dir, js_name), join(self.output_dir, js_name))
+        hardlink_or_copy_file(join(self.application_dir, js_name), join(self.output_dir, js_name), True)
         for module_name in self.descriptors.modules:
             module = self.descriptors.modules[module_name]
             input_module_dir = join(self.application_dir, module_name)
@@ -225,7 +258,7 @@ class DebugBuilder(AppBuilder):
 
     def _build_html(self):
         html_name = self.app_file('html')
-        safe_copy(join(self.application_dir, html_name), join(self.output_dir, html_name))
+        hardlink_or_copy_file(join(self.application_dir, html_name), join(self.output_dir, html_name), True)
 
 
 def build_application(application_name, loader, application_dir, output_dir, release_mode):

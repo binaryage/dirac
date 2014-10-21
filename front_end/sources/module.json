@@ -220,5 +220,12 @@
     ],
     "skip_compilation": [
         "jsdifflib.js"
+    ],
+    "stylesheets": [
+        "filteredItemSelectionDialog.css",
+        "navigatorView.css",
+        "revisionHistory.css",
+        "sourcesPanel.css",
+        "sourcesView.css"
     ]
 }

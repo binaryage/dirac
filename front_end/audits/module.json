@@ -22,5 +22,8 @@
         "AuditResultView.js",
         "AuditRules.js",
         "AuditExtensionCategory.js"
+    ],
+    "stylesheets": [
+        "auditsPanel.css"
     ]
 }

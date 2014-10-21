@@ -71,5 +71,12 @@
         "../cm/php.js",
         "../cm/python.js",
         "../cm/shell.js"
+    ],
+    "stylesheets": [
+        "../cm/codemirror.css",
+        "cmdevtools.css",
+        "fontView.css",
+        "imageView.css",
+        "resourceSourceFrame.css"
     ]
 }

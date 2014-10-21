@@ -49,6 +49,7 @@ class Descriptors:
         self.application = application_descriptor
         self.modules = module_descriptors
         self.application_json = application_json
+        self._cached_sorted_modules = None
 
     def all_compiled_files(self):
         files = {}
@@ -69,7 +70,13 @@ class Descriptors:
                 files.append(script)
         return files
 
+    def module_stylesheets(self, name):
+        return [name + '/' + css for css in self.modules[name].get('stylesheets', [])]
+
     def sorted_modules(self):
+        if self._cached_sorted_modules:
+            return self._cached_sorted_modules
+
         result = []
         unvisited_modules = set(self.modules)
         temp_modules = set()
@@ -101,6 +108,7 @@ class Descriptors:
                 # failure[0] can never be None
                 bail_error('Unknown module "%s" encountered in dependencies of "%s"' % (failure[1], failure[0]))
 
+        self._cached_sorted_modules = result
         return result
 
     def sorted_dependencies_closure(self, module_name):

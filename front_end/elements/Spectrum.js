@@ -33,7 +33,7 @@
 WebInspector.Spectrum = function()
 {
     WebInspector.VBox.call(this);
-    this.registerRequiredCSS("spectrum.css");
+    this.registerRequiredCSS("elements/spectrum.css");
 
     this.element.classList.add("spectrum-container");
     this.element.tabIndex = 0;

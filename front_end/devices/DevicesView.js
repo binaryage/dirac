@@ -11,7 +11,7 @@
 WebInspector.DevicesView = function()
 {
     WebInspector.VBox.call(this);
-    this.registerRequiredCSS("devicesView.css");
+    this.registerRequiredCSS("devices/devicesView.css");
     this.element.classList.add("devices");
     this._devicesHelp = this.element.createChild("div");
     this._devicesHelp.innerHTML = WebInspector.UIString("No devices detected. \

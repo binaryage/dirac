@@ -36,7 +36,7 @@
 WebInspector.IDBDatabaseView = function(database)
 {
     WebInspector.VBox.call(this);
-    this.registerRequiredCSS("indexedDBViews.css");
+    this.registerRequiredCSS("resources/indexedDBViews.css");
 
     this.element.classList.add("indexed-db-database-view");
 
@@ -109,7 +109,7 @@ WebInspector.IDBDatabaseView.prototype = {
 WebInspector.IDBDataView = function(model, databaseId, objectStore, index)
 {
     WebInspector.VBox.call(this);
-    this.registerRequiredCSS("indexedDBViews.css");
+    this.registerRequiredCSS("resources/indexedDBViews.css");
 
     this._model = model;
     this._databaseId = databaseId;

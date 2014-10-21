@@ -166,7 +166,7 @@ WebInspector.CodeMirrorCSSLoadView = function()
     WebInspector.VBox.call(this);
     this.element.classList.add("hidden");
     this.registerRequiredCSS("cm/codemirror.css");
-    this.registerRequiredCSS("cmdevtools.css");
+    this.registerRequiredCSS("source_frame/cmdevtools.css");
     this.element.appendChild(WebInspector.CodeMirrorUtils.createThemeStyle());
 }
 

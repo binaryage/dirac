@@ -60,7 +60,7 @@ WebInspector.ResourceSourceFrame.prototype = {
 WebInspector.ResourceSourceFrameFallback = function(resource)
 {
     WebInspector.VBox.call(this);
-    this.registerRequiredCSS("resourceSourceFrame.css");
+    this.registerRequiredCSS("source_frame/resourceSourceFrame.css");
     this._resource = resource;
     this._content = this.element.createChild("div", "resource-source-frame-fallback monospace");
 }

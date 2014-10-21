@@ -34,7 +34,7 @@
 WebInspector.FontView = function(url)
 {
     WebInspector.VBox.call(this);
-    this.registerRequiredCSS("fontView.css");
+    this.registerRequiredCSS("source_frame/fontView.css");
     this.element.classList.add("font-view");
     this._url = url
 }

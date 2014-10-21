@@ -95,7 +95,7 @@ WebInspector.RenderingOptions.prototype = {
 WebInspector.RenderingOptions.View = function()
 {
     WebInspector.VBox.call(this);
-    this.registerRequiredCSS("helpScreen.css");
+    this.registerRequiredCSS("components/helpScreen.css");
     this.element.classList.add("help-indent-labels");
 
     var div = this.element.createChild("div", "settings-tab help-content help-container help-no-columns");

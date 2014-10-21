@@ -36,7 +36,7 @@
 WebInspector.CanvasReplayStateView = function(traceLogPlayer)
 {
     WebInspector.VBox.call(this);
-    this.registerRequiredCSS("canvasProfiler.css");
+    this.registerRequiredCSS("profiler/canvasProfiler.css");
     this.element.classList.add("canvas-replay-state-view");
     this._traceLogPlayer = traceLogPlayer;
 

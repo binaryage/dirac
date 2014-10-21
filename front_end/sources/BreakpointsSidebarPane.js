@@ -32,7 +32,7 @@
 WebInspector.JavaScriptBreakpointsSidebarPane = function(breakpointManager, showSourceLineDelegate)
 {
     WebInspector.SidebarPane.call(this, WebInspector.UIString("Breakpoints"));
-    this.registerRequiredCSS("breakpointsList.css");
+    this.registerRequiredCSS("components/breakpointsList.css");
 
     this._breakpointManager = breakpointManager;
     this._showSourceLineDelegate = showSourceLineDelegate;
@@ -536,7 +536,7 @@ WebInspector.XHRBreakpointsSidebarPane.prototype = {
 WebInspector.EventListenerBreakpointsSidebarPane = function()
 {
     WebInspector.SidebarPane.call(this, WebInspector.UIString("Event Listener Breakpoints"));
-    this.registerRequiredCSS("breakpointsList.css");
+    this.registerRequiredCSS("components/breakpointsList.css");
 
     this.categoriesElement = this.bodyElement.createChild("ol", "properties-tree event-listener-breakpoints");
     this.categoriesElement.tabIndex = 0;

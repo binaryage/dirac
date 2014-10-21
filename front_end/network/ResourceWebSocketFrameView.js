@@ -24,7 +24,7 @@
 WebInspector.ResourceWebSocketFrameView = function(request)
 {
     WebInspector.VBox.call(this);
-    this.registerRequiredCSS("webSocketFrameView.css");
+    this.registerRequiredCSS("network/webSocketFrameView.css");
     this.element.classList.add("websocket-frame-view");
     this._request = request;
 

@@ -36,7 +36,7 @@
 WebInspector.ResourcesPanel = function()
 {
     WebInspector.PanelWithSidebarTree.call(this, "resources");
-    this.registerRequiredCSS("resourcesPanel.css");
+    this.registerRequiredCSS("resources/resourcesPanel.css");
 
     WebInspector.settings.resourcesLastSelectedItem = WebInspector.settings.createSetting("resourcesLastSelectedItem", {});
 

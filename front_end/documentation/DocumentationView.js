@@ -10,7 +10,7 @@ WebInspector.DocumentationView = function()
 {
     WebInspector.View.call(this);
     this.element.classList.add("documentation-view");
-    this.registerRequiredCSS("documentationView.css");
+    this.registerRequiredCSS("documentation/documentationView.css");
 }
 
 /**

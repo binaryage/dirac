@@ -40,5 +40,8 @@
         "TransformController.js",
         "PaintProfilerView.js",
         "TimelinePanel.js"
+    ],
+    "stylesheets": [
+        "timelinePanel.css"
     ]
 }

@@ -9,7 +9,7 @@
 WebInspector.PromisesPanel = function()
 {
     WebInspector.VBox.call(this);
-    this.registerRequiredCSS("promisesPanel.css");
+    this.registerRequiredCSS("promises/promisesPanel.css");
     this.element.classList.add("promises");
 
     var statusBar = this.element.createChild("div", "panel-status-bar");
