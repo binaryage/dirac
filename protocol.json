@@ -1051,6 +1051,14 @@
                     { "name": "enabled", "type": "boolean", "description": "Switch console.timeline to tracing based." }
                 ],
                 "hidden": true
+            },
+            {
+                "name": "setLastEvaluationResult",
+                "parameters": [
+                    { "name": "objectId", "$ref": "Runtime.RemoteObjectId", "description": "Identifier of the object to set as last evaluation result." }
+                ],
+                "hidden": true,
+                "description": "Sets last evaluation result in console. Can be accessed via <code>$_</code> command line API."
             }
         ],
         "events": [

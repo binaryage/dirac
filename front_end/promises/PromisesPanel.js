@@ -179,6 +179,7 @@ WebInspector.PromisesPanel.prototype = {
             if (!this._target)
                 return;
 
+            this._target.consoleAgent().setLastEvaluationResult(promise.objectId);
             var message = new WebInspector.ConsoleMessage(this._target,
                                                           WebInspector.ConsoleMessage.MessageSource.Other,
                                                           WebInspector.ConsoleMessage.MessageLevel.Log,
