@@ -940,12 +940,7 @@ WebInspector.ConsoleViewMessage.prototype = {
         if (!this._formattedMessage)
             return;
 
-        var highlightedMessage = this._formattedMessage;
-        delete this._formattedMessage;
-        delete this._anchorElement;
-        delete this._messageElement;
-        this._formatMessage();
-        this._element.replaceChild(this._formattedMessage, highlightedMessage);
+        WebInspector.removeSearchResultsHighlight(this._formattedMessage);
     },
 
     highlightSearchResults: function(regexObject)
