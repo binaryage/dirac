@@ -4311,8 +4311,8 @@
                 "async": true,
                 "description": "Start trace events collection.",
                 "parameters": [
-                    { "name": "categories", "type": "string", "description": "Category/tag filter" },
-                    { "name": "options", "type": "string", "description": "Tracing options" },
+                    { "name": "categories", "type": "string", "optional": true, "description": "Category/tag filter" },
+                    { "name": "options", "type": "string", "optional": true, "description": "Tracing options" },
                     { "name": "bufferUsageReportingInterval", "type": "number", "optional": true, "description": "If set, the agent will issue bufferUsage events at this interval, specified in milliseconds" }
                 ],
                 "handlers": ["browser", "renderer"]
