@@ -222,11 +222,21 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
             } else if (type !== "object" || subtype !== "node") {
                 valueText = description;
             }
-            this.valueElement.setTextContentTruncatedIfNeeded(valueText || "");
-            if (prefix)
-                this.valueElement.insertBefore(createTextNode(prefix), this.valueElement.firstChild);
-            if (suffix)
-                this.valueElement.createTextChild(suffix);
+            if (type !== "number" || valueText.indexOf("e") === -1) {
+                this.valueElement.setTextContentTruncatedIfNeeded(valueText || "");
+                if (prefix)
+                    this.valueElement.insertBefore(createTextNode(prefix), this.valueElement.firstChild);
+                if (suffix)
+                    this.valueElement.createTextChild(suffix);
+            } else {
+                var numberParts = valueText.split("e");
+                var mantissa = this.valueElement.createChild("span", "scientific-notation-mantissa");
+                mantissa.textContent = numberParts[0];
+                var exponent = this.valueElement.createChild("span", "scientific-notation-exponent");
+                exponent.textContent = "e" + numberParts[1];
+                this.valueElement.classList.add("scientific-notation-number");
+                this.listItemElement.classList.add("hbox");
+            }
 
             if (this.property.wasThrown)
                 this.valueElement.classList.add("error");

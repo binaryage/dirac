@@ -1182,6 +1182,21 @@ ol.watch-expressions > li.hovered {
     color: rgb(28, 0, 207);
 }
 
+.scientific-notation-exponent {
+    flex-shrink: 0;
+}
+
+.scientific-notation-mantissa {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex-shrink: 1;
+    min-width: 1ex;
+}
+
+.scientific-notation-number {
+    display: flex !important;
+}
+
 .console-formatted-string,
 .console-formatted-regexp,
 .console-formatted-symbol {
@@ -1725,6 +1740,11 @@ li.editing-sub-part .delete-button {
 .event-properties .name,
 .console-object-preview .name {
     color: rgb(136, 19, 145);
+    flex-shrink: 0;
+}
+
+.section .properties .separator {
+    flex-shrink: 0;
 }
 
 .section .properties .dimmed {
