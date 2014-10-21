@@ -35,8 +35,7 @@ WebInspector.PromisesPanel = function()
         { id: "status", title: WebInspector.UIString("Status") },
         { id: "tts", title: WebInspector.UIString("Time to settle") }
     ];
-    this._dataGrid = new WebInspector.DataGrid(columns);
-    this._dataGrid.element.addEventListener("contextmenu", this._contextMenu.bind(this));
+    this._dataGrid = new WebInspector.DataGrid(columns, undefined, undefined, undefined, this._onContextMenu.bind(this));
     this._dataGrid.show(this._dataGridContainer.element);
 
     this._linkifier = new WebInspector.Linkifier();
@@ -146,13 +145,15 @@ WebInspector.PromisesPanel.prototype = {
         this._linkifier.reset();
     },
 
-    _contextMenu: function(event)
+    /**
+     * @param {!WebInspector.ContextMenu} contextMenu
+     * @param {!WebInspector.DataGridNode} node
+     */
+    _onContextMenu: function(contextMenu, node)
     {
-        var gridNode = this._dataGrid.dataGridNodeFromNode(event.target);
-        if (!gridNode || !this._target)
+        if (!this._target)
             return;
-        var contextMenu = new WebInspector.ContextMenu(event);
-        var promiseId = gridNode.data.promiseId;
+        var promiseId = node.data.promiseId;
 
         contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Show in console" : "Show In Console"), showPromiseInConsole.bind(this));
         contextMenu.show();
