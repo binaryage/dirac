@@ -341,7 +341,7 @@ WebInspector.TimelinePanel.prototype = {
         if (Runtime.experiments.isEnabled("timelineOnTraceEvents")) {
             this._flameChartToggleButton = new WebInspector.StatusBarButton(WebInspector.UIString("Flame chart view. (Use WASD or time selection to navigate)"), "timeline-flame-chart-status-bar-item");
             this._flameChartToggleButton.toggled = this._flameChartEnabledSetting.get();
-            this._flameChartToggleButton.addEventListener("click", this._flameChartEnabledChanged.bind(this, this._flameChartToggleButton));
+            this._flameChartToggleButton.addEventListener("click", this._flameChartEnabledChanged.bind(this));
             this._statusBarButtons.push(this._flameChartToggleButton);
             panelStatusBarElement.appendChild(this._flameChartToggleButton.element);
         }
