@@ -313,13 +313,13 @@ WebInspector.TimelinePanel.prototype = {
         var panelStatusBarElement = this.element.createChild("div", "panel-status-bar");
         this._statusBarButtons = /** @type {!Array.<!WebInspector.StatusBarItem>} */ ([]);
 
-        this.toggleTimelineButton = new WebInspector.StatusBarButton("", "record-profile-status-bar-item");
+        this.toggleTimelineButton = new WebInspector.StatusBarButton("Record timeline", "record-profile-status-bar-item");
         this.toggleTimelineButton.addEventListener("click", this._toggleTimelineButtonClicked, this);
         this._statusBarButtons.push(this.toggleTimelineButton);
         panelStatusBarElement.appendChild(this.toggleTimelineButton.element);
         this._updateToggleTimelineButton(false);
 
-        var clearButton = new WebInspector.StatusBarButton(WebInspector.UIString("Clear"), "clear-status-bar-item");
+        var clearButton = new WebInspector.StatusBarButton(WebInspector.UIString("Clear recording"), "clear-status-bar-item");
         clearButton.addEventListener("click", this._onClearButtonClick, this);
         this._statusBarButtons.push(clearButton);
         panelStatusBarElement.appendChild(clearButton.element);
@@ -327,19 +327,19 @@ WebInspector.TimelinePanel.prototype = {
         this._filterBar = this._createFilterBar();
         panelStatusBarElement.appendChild(this._filterBar.filterButton().element);
 
-        var garbageCollectButton = new WebInspector.StatusBarButton(WebInspector.UIString("Collect Garbage"), "timeline-garbage-collect-status-bar-item");
+        var garbageCollectButton = new WebInspector.StatusBarButton(WebInspector.UIString("Collect garbage"), "timeline-garbage-collect-status-bar-item");
         garbageCollectButton.addEventListener("click", this._garbageCollectButtonClicked, this);
         this._statusBarButtons.push(garbageCollectButton);
         panelStatusBarElement.appendChild(garbageCollectButton.element);
 
-        var framesToggleButton = new WebInspector.StatusBarButton(WebInspector.UIString("Frames mode"), "timeline-frames-status-bar-item");
+        var framesToggleButton = new WebInspector.StatusBarButton(WebInspector.UIString("Frames view. (Activity split into frames)"), "timeline-frames-status-bar-item");
         framesToggleButton.toggled = this._overviewModeSetting.get() === WebInspector.TimelinePanel.OverviewMode.Frames;
         framesToggleButton.addEventListener("click", this._overviewModeChanged.bind(this, framesToggleButton));
         this._statusBarButtons.push(framesToggleButton);
         panelStatusBarElement.appendChild(framesToggleButton.element);
 
         if (Runtime.experiments.isEnabled("timelineOnTraceEvents")) {
-            var flameChartToggleButton = new WebInspector.StatusBarButton(WebInspector.UIString("Tracing mode"), "timeline-flame-chart-status-bar-item");
+            var flameChartToggleButton = new WebInspector.StatusBarButton(WebInspector.UIString("Flame chart view. (Use WASD or time selection to navigate)"), "timeline-flame-chart-status-bar-item");
             flameChartToggleButton.toggled = this._flameChartEnabledSetting.get();
             flameChartToggleButton.addEventListener("click", this._flameChartEnabledChanged.bind(this, flameChartToggleButton));
             this._statusBarButtons.push(flameChartToggleButton);
@@ -350,13 +350,13 @@ WebInspector.TimelinePanel.prototype = {
         this._captureCausesSetting.addChangeListener(this._refreshViews, this);
         panelStatusBarElement.appendChild(this._createSettingCheckbox(WebInspector.UIString("Causes"),
                                                                       this._captureCausesSetting,
-                                                                      WebInspector.UIString("Capture causes for timeline events (e.g., stack traces)")));
+                                                                      WebInspector.UIString("Capture causes (e.g., stack traces) for timeline events. (Has performance overhead)")));
         if (Runtime.experiments.isEnabled("timelineJSCPUProfile")) {
             this._enableJSSamplingSettingSetting = WebInspector.settings.createSetting("timelineEnableJSSampling", false);
             this._enableJSSamplingSettingSetting.addChangeListener(this._refreshViews, this);
-            panelStatusBarElement.appendChild(this._createSettingCheckbox(WebInspector.UIString("Sampling"),
+            panelStatusBarElement.appendChild(this._createSettingCheckbox(WebInspector.UIString("JS Profiler"),
                                                                           this._enableJSSamplingSettingSetting,
-                                                                          WebInspector.UIString("Enable JavaScript sampling profiler")));
+                                                                          WebInspector.UIString("Enable JavaScript sampling profiler. (Has performance overhead)")));
         }
         this._captureMemorySetting = WebInspector.settings.createSetting("timelineCaptureMemory", false);
         panelStatusBarElement.appendChild(this._createSettingCheckbox(WebInspector.UIString("Memory"),
@@ -375,7 +375,7 @@ WebInspector.TimelinePanel.prototype = {
             this._captureLayersAndPicturesSetting = WebInspector.settings.createSetting("timelineCaptureLayersAndPictures", false);
             panelStatusBarElement.appendChild(this._createSettingCheckbox(WebInspector.UIString("Paint"),
                                                                           this._captureLayersAndPicturesSetting,
-                                                                          WebInspector.UIString("Capture graphics layer positions and painted pictures")));
+                                                                          WebInspector.UIString("Capture graphics layer positions and painted pictures.  (Has performance overhead)")));
         }
 
         this._miscStatusBarItems = panelStatusBarElement.createChild("div", "status-bar-item");
