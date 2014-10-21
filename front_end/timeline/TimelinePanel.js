@@ -82,8 +82,8 @@ WebInspector.TimelinePanel = function()
     /** @type {!Array.<!WebInspector.TimelineModeView>} */
     this._currentViews = [];
 
-    this._overviewModeSetting = WebInspector.settings.createSetting("timelineOverviewMode", WebInspector.TimelinePanel.OverviewMode.Events);
-    this._flameChartEnabledSetting = WebInspector.settings.createSetting("timelineFlameChartEnabled", false);
+    this._overviewModeSetting = WebInspector.settings.createSetting("timelineOverviewMode", Runtime.experiments.isEnabled("timelineOnTraceEvents") ? WebInspector.TimelinePanel.OverviewMode.Frames : WebInspector.TimelinePanel.OverviewMode.Events);
+    this._flameChartEnabledSetting = WebInspector.settings.createSetting("timelineFlameChartEnabled", true);
     this._createStatusBarItems();
 
     var topPaneElement = this.element.createChild("div", "hbox");
@@ -339,11 +339,11 @@ WebInspector.TimelinePanel.prototype = {
         panelStatusBarElement.appendChild(framesToggleButton.element);
 
         if (Runtime.experiments.isEnabled("timelineOnTraceEvents")) {
-            var flameChartToggleButton = new WebInspector.StatusBarButton(WebInspector.UIString("Flame chart view. (Use WASD or time selection to navigate)"), "timeline-flame-chart-status-bar-item");
-            flameChartToggleButton.toggled = this._flameChartEnabledSetting.get();
-            flameChartToggleButton.addEventListener("click", this._flameChartEnabledChanged.bind(this, flameChartToggleButton));
-            this._statusBarButtons.push(flameChartToggleButton);
-            panelStatusBarElement.appendChild(flameChartToggleButton.element);
+            this._flameChartToggleButton = new WebInspector.StatusBarButton(WebInspector.UIString("Flame chart view. (Use WASD or time selection to navigate)"), "timeline-flame-chart-status-bar-item");
+            this._flameChartToggleButton.toggled = this._flameChartEnabledSetting.get();
+            this._flameChartToggleButton.addEventListener("click", this._flameChartEnabledChanged.bind(this, this._flameChartToggleButton));
+            this._statusBarButtons.push(this._flameChartToggleButton);
+            panelStatusBarElement.appendChild(this._flameChartToggleButton.element);
         }
 
         this._captureCausesSetting = WebInspector.settings.createSetting("timelineCaptureCauses", true);
@@ -573,15 +573,12 @@ WebInspector.TimelinePanel.prototype = {
         this._onModeChanged();
     },
 
-    /**
-     * @param {!WebInspector.StatusBarButton} button
-     */
-    _flameChartEnabledChanged: function(button)
+    _flameChartEnabledChanged: function()
     {
         var oldValue = this._flameChartEnabledSetting.get();
         var newValue = !oldValue;
         this._flameChartEnabledSetting.set(newValue);
-        button.toggled = newValue;
+        this._flameChartToggleButton.toggled = newValue;
         this._onModeChanged();
     },
 
