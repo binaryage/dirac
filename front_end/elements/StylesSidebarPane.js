@@ -61,6 +61,7 @@ WebInspector.StylesSidebarPane = function(computedStylePane, setPseudoClassCallb
     this.element.addEventListener("contextmenu", this._contextMenuEventFired.bind(this), true);
     WebInspector.settings.colorFormat.addChangeListener(this._colorFormatSettingChanged.bind(this));
     WebInspector.settings.showUserAgentStyles.addChangeListener(this._showUserAgentStylesSettingChanged.bind(this));
+    WebInspector.settings.showInheritedComputedStyleProperties.addChangeListener(this._showInheritedComputedStyleChanged.bind(this));
 
     this._createElementStatePane();
     this.bodyElement.appendChild(this._elementStatePane);
@@ -168,6 +169,17 @@ WebInspector.StylesSidebarPane._ignoreErrorsForProperty = function(property) {
 }
 
 WebInspector.StylesSidebarPane.prototype = {
+    _showInheritedComputedStyleChanged: function()
+    {
+        if (!this.sections || !this.sections[0])
+            return;
+        for (var i = 0; i < this.sections[0].length; ++i) {
+            var section = this.sections[0][i];
+            if (section instanceof WebInspector.ComputedStylePropertiesSection)
+                section.onShowInheritedChanged();
+        }
+    },
+
     /**
      * @param {!WebInspector.Event} event
      */
@@ -1902,19 +1914,8 @@ WebInspector.ComputedStylePropertiesSection = function(stylesPane, styleRule, us
     this._hasFreshContent = false;
     this.element.className = "styles-section monospace read-only computed-style";
 
-    var showInheritedCheckbox = WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Show inherited properties"), WebInspector.settings.showInheritedComputedStyleProperties, true);
-    showInheritedCheckbox.classList.add("checkbox-with-label");
-    this.headerElement.appendChild(showInheritedCheckbox);
-    WebInspector.settings.showInheritedComputedStyleProperties.addChangeListener(showInheritedChanged.bind(this));
-    showInheritedChanged.call(this);
-
-    /**
-     * @this {WebInspector.ComputedStylePropertiesSection}
-     */
-    function showInheritedChanged()
-    {
-        this.element.classList.toggle("styles-show-inherited", WebInspector.settings.showInheritedComputedStyleProperties.get());
-    }
+    this.headerElement.appendChild(WebInspector.ComputedStylePropertiesSection._showInheritedCheckbox());
+    this.onShowInheritedChanged();
 
     this._stylesPane = stylesPane;
     this.styleRule = styleRule;
@@ -1925,7 +1926,24 @@ WebInspector.ComputedStylePropertiesSection = function(stylesPane, styleRule, us
     this._expandedPropertyNames = {};
 }
 
+/**
+ * @return {!Element}
+ */
+WebInspector.ComputedStylePropertiesSection._showInheritedCheckbox = function()
+{
+    if (!WebInspector.ComputedStylePropertiesSection._showInheritedCheckboxElement) {
+        WebInspector.ComputedStylePropertiesSection._showInheritedCheckboxElement = WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Show inherited properties"), WebInspector.settings.showInheritedComputedStyleProperties, true);
+        WebInspector.ComputedStylePropertiesSection._showInheritedCheckboxElement.classList.add("checkbox-with-label");
+    }
+    return WebInspector.ComputedStylePropertiesSection._showInheritedCheckboxElement;
+}
+
 WebInspector.ComputedStylePropertiesSection.prototype = {
+    onShowInheritedChanged: function()
+    {
+        this.element.classList.toggle("styles-show-inherited", WebInspector.settings.showInheritedComputedStyleProperties.get());
+    },
+
     collapse: function(dontRememberState)
     {
         // Overriding with empty body.
