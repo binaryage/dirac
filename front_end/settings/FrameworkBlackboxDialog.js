@@ -54,8 +54,9 @@ WebInspector.FrameworkBlackboxDialog = function()
 
 WebInspector.FrameworkBlackboxDialog.show = function(element)
 {
-    WebInspector.Dialog.show(element, new WebInspector.FrameworkBlackboxDialog());
-    var glassPane = document.getElementById("glass-pane");
+    var dialog = new WebInspector.FrameworkBlackboxDialog();
+    WebInspector.Dialog.show(element, dialog);
+    var glassPane = dialog.element.ownerDocument.getElementById("glass-pane");
     glassPane.classList.add("settings-glass-pane");
 }
 

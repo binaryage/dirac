@@ -354,6 +354,8 @@ WebInspector.AdvancedSearchView.ToggleDrawerViewActionDelegate = function()
 WebInspector.AdvancedSearchView.ToggleDrawerViewActionDelegate.prototype = {
     /**
      * @return {boolean}
+     * // FIXME: remove this suppression.
+     * @suppressGlobalPropertiesCheck
      */
     handleAction: function()
     {

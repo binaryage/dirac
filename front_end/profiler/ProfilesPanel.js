@@ -28,6 +28,7 @@
  * @extends {WebInspector.Object}
  * @param {string} id
  * @param {string} name
+ * @suppressGlobalPropertiesCheck
  */
 WebInspector.ProfileType = function(id, name)
 {
@@ -40,7 +41,8 @@ WebInspector.ProfileType = function(id, name)
     this._profileBeingRecorded = null;
     this._nextProfileUid = 1;
 
-    window.addEventListener("unload", this._clearTempStorage.bind(this), false);
+    if (!window.opener)
+        window.addEventListener("unload", this._clearTempStorage.bind(this), false);
 }
 
 /**

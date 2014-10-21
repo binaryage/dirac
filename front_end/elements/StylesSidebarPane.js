@@ -74,8 +74,8 @@ WebInspector.StylesSidebarPane = function(computedStylePane, setPseudoClassCallb
     this.element.classList.add("styles-pane");
     this.element.classList.toggle("show-user-styles", WebInspector.settings.showUserAgentStyles.get());
     this.element.addEventListener("mousemove", this._mouseMovedOverElement.bind(this), false);
-    document.body.addEventListener("keydown", this._keyDown.bind(this), false);
-    document.body.addEventListener("keyup", this._keyUp.bind(this), false);
+    this._keyDownBound = this._keyDown.bind(this);
+    this._keyUpBound = this._keyUp.bind(this);
 }
 
 // Keep in sync with RenderStyleConstants.h PseudoId enum. Array below contains pseudo id names for corresponding enum indexes.
@@ -1091,10 +1091,20 @@ WebInspector.StylesSidebarPane.prototype = {
         this.element.classList.toggle("show-user-styles", showStyles);
     },
 
+    wasShown: function()
+    {
+        WebInspector.SidebarPane.prototype.wasShown.call(this);
+        this.element.ownerDocument.body.addEventListener("keydown", this._keyDownBound, false);
+        this.element.ownerDocument.body.addEventListener("keyup", this._keyUpBound, false);
+    },
+
     willHide: function()
     {
+        this.element.ownerDocument.body.removeEventListener("keydown", this._keyDownBound, false);
+        this.element.ownerDocument.body.removeEventListener("keyup", this._keyUpBound, false);
         this._spectrumHelper.hide();
         this._discardElementUnderMouse();
+        WebInspector.SidebarPane.prototype.willHide.call(this);
     },
 
     _discardElementUnderMouse: function()

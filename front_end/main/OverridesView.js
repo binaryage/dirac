@@ -215,7 +215,7 @@ WebInspector.OverridesView.DeviceTab.prototype = {
         var deviceModelElement = fieldsetElement.createChild("p", "overrides-device-model-section");
         deviceModelElement.createChild("span").textContent = WebInspector.UIString("Model:");
 
-        var deviceSelectElement = WebInspector.OverridesUI.createDeviceSelect(document, this._showTitleDialog.bind(this));
+        var deviceSelectElement = WebInspector.OverridesUI.createDeviceSelect(this._showTitleDialog.bind(this));
         var buttons = deviceSelectElement.querySelectorAll("button");
         for (var i = 0; i < buttons.length; ++i)
             buttons[i].classList.add("text-button");
@@ -413,7 +413,7 @@ WebInspector.OverridesView.NetworkTab.prototype = {
         var fieldsetElement = this.element.createChild("fieldset");
         fieldsetElement.createChild("span").textContent = WebInspector.UIString("Limit network throughput:");
         fieldsetElement.createChild("br");
-        fieldsetElement.appendChild(WebInspector.OverridesUI.createNetworkConditionsSelect(document));
+        fieldsetElement.appendChild(WebInspector.OverridesUI.createNetworkConditionsSelect());
 
         WebInspector.overridesSupport.settings.networkConditions.addChangeListener(this.updateActiveState, this);
     },
@@ -430,7 +430,7 @@ WebInspector.OverridesView.NetworkTab.prototype = {
     {
         var fieldsetElement = this.element.createChild("fieldset");
         fieldsetElement.createChild("label").textContent = WebInspector.UIString("Spoof user agent:");
-        var selectAndInput = WebInspector.OverridesUI.createUserAgentSelectAndInput(document);
+        var selectAndInput = WebInspector.OverridesUI.createUserAgentSelectAndInput();
         fieldsetElement.appendChild(selectAndInput.select);
         fieldsetElement.appendChild(selectAndInput.input);
 

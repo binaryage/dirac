@@ -131,7 +131,6 @@ WebInspector.Spectrum.Events = {
  */
 WebInspector.Spectrum.draggable = function(element, onmove, onstart, onstop) {
 
-    var doc = document;
     var dragging;
     var offset;
     var scrollOffset;
@@ -180,10 +179,10 @@ WebInspector.Spectrum.draggable = function(element, onmove, onstart, onstop) {
             scrollOffset = element.scrollOffset();
             offset = element.totalOffset();
 
-            doc.addEventListener("selectstart", consume, false);
-            doc.addEventListener("dragstart", consume, false);
-            doc.addEventListener("mousemove", move, false);
-            doc.addEventListener("mouseup", stop, false);
+            element.ownerDocument.addEventListener("selectstart", consume, false);
+            element.ownerDocument.addEventListener("dragstart", consume, false);
+            element.ownerDocument.addEventListener("mousemove", move, false);
+            element.ownerDocument.addEventListener("mouseup", stop, false);
 
             move(mouseEvent);
             consume(mouseEvent);
@@ -196,10 +195,10 @@ WebInspector.Spectrum.draggable = function(element, onmove, onstart, onstop) {
     function stop(e)
     {
         if (dragging) {
-            doc.removeEventListener("selectstart", consume, false);
-            doc.removeEventListener("dragstart", consume, false);
-            doc.removeEventListener("mousemove", move, false);
-            doc.removeEventListener("mouseup", stop, false);
+            element.ownerDocument.removeEventListener("selectstart", consume, false);
+            element.ownerDocument.removeEventListener("dragstart", consume, false);
+            element.ownerDocument.removeEventListener("mousemove", move, false);
+            element.ownerDocument.removeEventListener("mouseup", stop, false);
 
             if (onstop)
                 onstop(element, /** @type {!MouseEvent} */ (e));
@@ -372,8 +371,9 @@ WebInspector.SpectrumPopupHelper.prototype = {
         this._spectrum._originalFormat = format !== WebInspector.Color.Format.Original ? format : color.format();
         this.reposition(element);
 
+        var document = this._popover.element.ownerDocument;
         document.addEventListener("mousedown", this._hideProxy, false);
-        window.addEventListener("resize", this._hideProxy, false);
+        document.defaultView.addEventListener("resize", this._hideProxy, false);
 
         WebInspector.targetManager.addModelListener(WebInspector.ResourceTreeModel, WebInspector.ResourceTreeModel.EventTypes.ColorPicked, this._colorPicked, this);
         PageAgent.setColorPickerEnabled(true);
@@ -395,11 +395,12 @@ WebInspector.SpectrumPopupHelper.prototype = {
     {
         if (this._isHidden)
             return;
+        var document = this._popover.element.ownerDocument;
         this._isHidden = true;
         this._popover.hide();
 
         document.removeEventListener("mousedown", this._hideProxy, false);
-        window.removeEventListener("resize", this._hideProxy, false);
+        document.defaultView.removeEventListener("resize", this._hideProxy, false);
 
         PageAgent.setColorPickerEnabled(false);
         WebInspector.targetManager.removeModelListener(WebInspector.ResourceTreeModel, WebInspector.ResourceTreeModel.EventTypes.ColorPicked, this._colorPicked, this);

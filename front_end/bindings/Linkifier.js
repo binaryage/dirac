@@ -84,6 +84,8 @@ WebInspector.Linkifier.handleLink = function(url, lineNumber)
  * @param {string=} title
  * @param {string=} classes
  * @return {!Element}
+ * // FIXME: remove this suppression (crbug.com/425498).
+ * @suppressGlobalPropertiesCheck
  */
 WebInspector.Linkifier.linkifyUsingRevealer = function(revealable, text, fallbackHref, fallbackLineNumber, title, classes)
 {
@@ -228,6 +230,8 @@ WebInspector.Linkifier.prototype = {
     /**
      * @param {string=} classes
      * @return {!Element}
+     * // FIXME: remove this suppression (crbug.com/425498).
+     * @suppressGlobalPropertiesCheck
      */
     _createAnchor: function(classes)
     {

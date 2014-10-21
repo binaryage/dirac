@@ -30,10 +30,12 @@
 
 /**
  * @constructor
+ * @suppressGlobalPropertiesCheck
  */
 WebInspector.WorkspaceController = function(workspace)
 {
     this._workspace = workspace;
+    // Only for main window.
     window.addEventListener("focus", this._windowFocused.bind(this), false);
     this._fileSystemRefreshThrottler = new WebInspector.Throttler(1000);
 }

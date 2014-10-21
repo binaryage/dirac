@@ -578,7 +578,7 @@ WebInspector.ResponsiveDesignView.prototype = {
 
         var fieldsetElement = deviceElement.createChild("fieldset");
         fieldsetElement.createChild("label").textContent = WebInspector.UIString("Device");
-        var deviceSelectElement = WebInspector.OverridesUI.createDeviceSelect(document);
+        var deviceSelectElement = WebInspector.OverridesUI.createDeviceSelect();
         fieldsetElement.appendChild(deviceSelectElement);
         deviceSelectElement.classList.add("responsive-design-device-select");
 
@@ -635,7 +635,7 @@ WebInspector.ResponsiveDesignView.prototype = {
         var fieldsetElement = bandwidthElement.createChild("fieldset");
         var networkCheckbox = fieldsetElement.createChild("label");
         networkCheckbox.textContent = WebInspector.UIString("Network");
-        fieldsetElement.appendChild(WebInspector.OverridesUI.createNetworkConditionsSelect(document));
+        fieldsetElement.appendChild(WebInspector.OverridesUI.createNetworkConditionsSelect());
 
         // User agent.
         var userAgentElement = networkSection.createChild("div", "responsive-design-suite").createChild("div");

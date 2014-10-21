@@ -5,11 +5,10 @@
 WebInspector.OverridesUI = {}
 
 /**
- * @param {!Document} document
  * @param {!function(!function(string))=} titleProvider
  * @return {!Element}
  */
-WebInspector.OverridesUI.createDeviceSelect = function(document, titleProvider)
+WebInspector.OverridesUI.createDeviceSelect = function(titleProvider)
 {
     var p = createElement("p");
 
@@ -154,10 +153,9 @@ WebInspector.OverridesUI.createDeviceSelect = function(document, titleProvider)
 }
 
 /**
- * @param {!Document} document
  * @return {!Element}
  */
-WebInspector.OverridesUI.createNetworkConditionsSelect = function(document)
+WebInspector.OverridesUI.createNetworkConditionsSelect = function()
 {
     var networkConditionsSetting = WebInspector.overridesSupport.settings.networkConditions;
     var conditionsSelectElement = createElement("select");
@@ -219,10 +217,9 @@ WebInspector.OverridesUI.createNetworkConditionsSelect = function(document)
 }
 
 /**
- * @param {!Document} document
  * @return {{select: !Element, input: !Element}}
  */
-WebInspector.OverridesUI.createUserAgentSelectAndInput = function(document)
+WebInspector.OverridesUI.createUserAgentSelectAndInput = function()
 {
     var userAgentSetting = WebInspector.overridesSupport.settings.userAgent;
     const noOverride = {title: WebInspector.UIString("No override"), value: ""};

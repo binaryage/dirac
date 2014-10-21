@@ -62,14 +62,14 @@ WebInspector.UISourceCodeFrame.prototype = {
     {
         WebInspector.SourceFrame.prototype.wasShown.call(this);
         this._boundWindowFocused = this._windowFocused.bind(this);
-        window.addEventListener("focus", this._boundWindowFocused, false);
+        this.element.ownerDocument.defaultView.addEventListener("focus", this._boundWindowFocused, false);
         this._checkContentUpdated();
     },
 
     willHide: function()
     {
         WebInspector.SourceFrame.prototype.willHide.call(this);
-        window.removeEventListener("focus", this._boundWindowFocused, false);
+        this.element.ownerDocument.defaultView.removeEventListener("focus", this._boundWindowFocused, false);
         delete this._boundWindowFocused;
         this._uiSourceCode.removeWorkingCopyGetter();
     },

@@ -55,7 +55,7 @@ WebInspector.FontView.prototype = {
 
         this.fontStyleElement = createElement("style");
         this.fontStyleElement.textContent = "@font-face { font-family: \"" + uniqueFontName + "\"; src: url(" + this._url + "); }";
-        document.head.appendChild(this.fontStyleElement);
+        this.element.ownerDocument.head.appendChild(this.fontStyleElement);
 
         var fontPreview = createElement("div");
         for (var i = 0; i < WebInspector.FontView._fontPreviewLines.length; ++i) {

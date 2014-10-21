@@ -106,6 +106,7 @@ function defineCommonExtensionSymbols(apiPrivate)
 /**
  * @param {number} injectedScriptId
  * @return {!Object}
+ * @suppressGlobalPropertiesCheck
  */
 function injectedExtensionAPI(injectedScriptId)
 {

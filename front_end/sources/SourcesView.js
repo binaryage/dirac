@@ -10,6 +10,7 @@
  * @extends {WebInspector.VBox}
  * @param {!WebInspector.Workspace} workspace
  * @param {!WebInspector.SourcesPanel} sourcesPanel
+ * @suppressGlobalPropertiesCheck
  */
 WebInspector.SourcesView = function(workspace, sourcesPanel)
 {
@@ -74,7 +75,8 @@ WebInspector.SourcesView = function(workspace, sourcesPanel)
         for (var i = 0; i < unsavedSourceCodes.length; ++i)
             WebInspector.Revealer.reveal(unsavedSourceCodes[i]);
     }
-    window.addEventListener("beforeunload", handleBeforeUnload, true);
+    if (!window.opener)
+        window.addEventListener("beforeunload", handleBeforeUnload, true);
 
     this._shortcuts = {};
     this.element.addEventListener("keydown", this._handleKeyDown.bind(this), false);

@@ -128,9 +128,13 @@ WebInspector.DockController.prototype = {
         this.dispatchEventToListeners(WebInspector.DockController.Events.AfterDockSideChanged, eventData);
     },
 
+    /**
+     * @private // FIXME: this is a workaround for validator bug (crbug.com/425506).
+     * @suppressGlobalPropertiesCheck
+     */
     _updateUI: function()
     {
-        var body = document.body;
+        var body = document.body;  // Only for main window.
         switch (this._dockSide) {
         case WebInspector.DockController.State.DockedToBottom:
             body.classList.remove("undocked");

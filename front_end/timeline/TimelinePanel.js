@@ -153,7 +153,7 @@ WebInspector.TimelinePanel.prototype = {
             var style = createElement("style");
             var categories = WebInspector.TimelineUIUtils.categories();
             style.textContent = Object.values(categories).map(WebInspector.TimelineUIUtils.createStyleRuleForCategory).join("\n");
-            document.head.appendChild(style);
+            this.element.ownerDocument.head.appendChild(style);
         }
     },
 

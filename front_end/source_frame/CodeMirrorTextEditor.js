@@ -681,6 +681,11 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         this._codeMirror.redo();
     },
 
+    /**
+     * @private // FIXME: this is a workaround for validator bug (crbug.com/425506).
+     * // FIXME: remove this suppression.
+     * @suppressGlobalPropertiesCheck
+     */
     _setupWhitespaceHighlight: function()
     {
         if (WebInspector.CodeMirrorTextEditor._whitespaceStyleInjected || !WebInspector.settings.showWhitespacesInEditor.get())
@@ -747,6 +752,8 @@ WebInspector.CodeMirrorTextEditor.prototype = {
      * @param {number} x
      * @param {number} y
      * @return {?WebInspector.TextRange}
+     * // FIXME: remove this suppression.
+     * @suppressGlobalPropertiesCheck
      */
     coordinatesToCursorPosition: function(x, y)
     {

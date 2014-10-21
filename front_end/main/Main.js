@@ -32,6 +32,7 @@
  * @constructor
  * @implements {InspectorAgent.Dispatcher}
  * @implements {WebInspector.Console.UIDelegate}
+ * @suppressGlobalPropertiesCheck
  */
 WebInspector.Main = function()
 {
@@ -43,6 +44,7 @@ WebInspector.Main = function()
     }
 
     /**
+     * @suppressGlobalPropertiesCheck
      * @this {WebInspector.Main}
      */
     function windowLoaded()
@@ -196,7 +198,7 @@ WebInspector.Main.prototype = {
             WebInspector.setToolbarColors(/** @type {string} */ (event.data["backgroundColor"]), /** @type {string} */ (event.data["color"]));
         }
 
-        this._addMainEventListeners(document);
+        this._addMainEventListeners();
 
         var canDock = !!Runtime.queryParam("can_dock");
         WebInspector.zoomManager = new WebInspector.ZoomManager(InspectorFrontendHost);
@@ -535,15 +537,19 @@ WebInspector.Main.prototype = {
             event.preventDefault();
     },
 
-    _addMainEventListeners: function(doc)
+    /**
+     * @private // FIXME: this is a workaround for validator bug (crbug.com/425506).
+     * @suppressGlobalPropertiesCheck
+     */
+    _addMainEventListeners: function()
     {
-        doc.addEventListener("keydown", this._postDocumentKeyDown.bind(this), false);
-        doc.addEventListener("beforecopy", this._documentCanCopy.bind(this), true);
-        doc.addEventListener("copy", this._documentCopy.bind(this), false);
-        doc.addEventListener("cut", this._documentCut.bind(this), false);
-        doc.addEventListener("paste", this._documentPaste.bind(this), false);
-        doc.addEventListener("contextmenu", this._contextMenuEventFired.bind(this), true);
-        doc.addEventListener("click", this._documentClick.bind(this), false);
+        document.addEventListener("keydown", this._postDocumentKeyDown.bind(this), false);
+        document.addEventListener("beforecopy", this._documentCanCopy.bind(this), true);
+        document.addEventListener("copy", this._documentCopy.bind(this), false);
+        document.addEventListener("cut", this._documentCut.bind(this), false);
+        document.addEventListener("paste", this._documentPaste.bind(this), false);
+        document.addEventListener("contextmenu", this._contextMenuEventFired.bind(this), true);
+        document.addEventListener("click", this._documentClick.bind(this), false);
     },
 
     /**

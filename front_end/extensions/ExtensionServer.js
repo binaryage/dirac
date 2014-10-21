@@ -31,6 +31,7 @@
 /**
  * @constructor
  * @extends {WebInspector.Object}
+ * @suppressGlobalPropertiesCheck
  */
 WebInspector.ExtensionServer = function()
 {
@@ -79,7 +80,7 @@ WebInspector.ExtensionServer = function()
     this._registerHandler(commands.Unsubscribe, this._onUnsubscribe.bind(this));
     this._registerHandler(commands.UpdateButton, this._onUpdateButton.bind(this));
     this._registerHandler(commands.UpdateAuditProgress, this._onUpdateAuditProgress.bind(this));
-    window.addEventListener("message", this._onWindowMessage.bind(this), false);
+    window.addEventListener("message", this._onWindowMessage.bind(this), false);  // Only for main window.
 
     this._initExtensions();
 }
@@ -233,6 +234,10 @@ WebInspector.ExtensionServer.prototype = {
         NetworkAgent.setExtraHTTPHeaders(allHeaders);
     },
 
+    /**
+     * @param {*} message
+     * @suppressGlobalPropertiesCheck
+     */
     _onApplyStyleSheet: function(message)
     {
         if (!Runtime.experiments.isEnabled("applyCustomStylesheet"))
@@ -672,6 +677,10 @@ WebInspector.ExtensionServer.prototype = {
         const Esc = "U+001B";
         message.entries.forEach(handleEventEntry);
 
+        /**
+         * @param {*} entry
+         * @suppressGlobalPropertiesCheck
+         */
         function handleEventEntry(entry)
         {
             if (!entry.ctrlKey && !entry.altKey && !entry.metaKey && !/^F\d+$/.test(entry.keyIdentifier) && entry.keyIdentifier !== Esc)
@@ -783,6 +792,7 @@ WebInspector.ExtensionServer.prototype = {
 
     /**
      * @param {!ExtensionDescriptor} extensionInfo
+     * @suppressGlobalPropertiesCheck
      */
     _addExtension: function(extensionInfo)
     {
@@ -805,7 +815,7 @@ WebInspector.ExtensionServer.prototype = {
             var iframe = createElement("iframe");
             iframe.src = startPage;
             iframe.style.display = "none";
-            document.body.appendChild(iframe);
+            document.body.appendChild(iframe);  // Only for main window.
         } catch (e) {
             console.error("Failed to initialize extension " + startPage + ":" + e);
             return false;

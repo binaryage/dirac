@@ -94,6 +94,8 @@ WebInspector.displayNameForURL = function(url)
  * @param {string} string
  * @param {function(string,string,number=,number=):!Node} linkifier
  * @return {!DocumentFragment}
+ * // FIXME: remove this suppression (crbug.com/425498).
+ * @suppressGlobalPropertiesCheck
  */
 WebInspector.linkifyStringAsFragmentWithCustomLinkifier = function(string, linkifier)
 {
@@ -146,6 +148,8 @@ WebInspector.linkifyStringAsFragmentWithCustomLinkifier = function(string, linki
  * @param {boolean=} isExternal
  * @param {string=} tooltipText
  * @return {!Element}
+ * // FIXME: remove this suppression (crbug.com/425498).
+ * @suppressGlobalPropertiesCheck
  */
 WebInspector.linkifyURLAsNode = function(url, linkText, classes, isExternal, tooltipText)
 {

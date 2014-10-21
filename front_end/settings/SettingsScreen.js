@@ -629,13 +629,14 @@ WebInspector.SettingsController = function()
 {
     /** @type {?WebInspector.SettingsScreen} */
     this._settingsScreen;
-
-    window.addEventListener("resize", this._resize.bind(this), false);
+    this._resizeBound = this._resize.bind(this);
 }
 
 WebInspector.SettingsController.prototype = {
     _onHideSettingsScreen: function()
     {
+        var window = this._settingsScreen.element.ownerDocument.defaultView;
+        window.removeEventListener("resize", this._resizeBound, false);
         delete this._settingsScreenVisible;
     },
 
@@ -652,6 +653,8 @@ WebInspector.SettingsController.prototype = {
 
         this._settingsScreen.showModal();
         this._settingsScreenVisible = true;
+        var window = this._settingsScreen.element.ownerDocument.defaultView;
+        window.addEventListener("resize", this._resizeBound, false);
     },
 
     _resize: function()

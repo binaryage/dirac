@@ -901,6 +901,7 @@ WebInspector.ElementsTreeOutline.prototype = {
 
             /**
              * @param {?string} pseudoType
+             * @suppressGlobalPropertiesCheck
              * @suppressReceiverCheck
              * @this {!Element}
              */
@@ -1182,7 +1183,7 @@ WebInspector.ElementsTreeElement.prototype = {
             return;
 
         if (!this._readyToUpdateSelection) {
-            if (document.body.offsetWidth > 0)
+            if (listItemElement.ownerDocument.body.offsetWidth > 0)
                 this._readyToUpdateSelection = true;
             else {
                 // The stylesheet hasn't loaded yet or the window is closed,

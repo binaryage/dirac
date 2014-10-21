@@ -101,7 +101,7 @@ WebInspector.InspectedPagePlaceholder.prototype = {
     {
         var zoomFactor = WebInspector.zoomManager.zoomFactor();
         var rect = this.element.getBoundingClientRect();
-        var bodyRect = document.body.getBoundingClientRect();
+        var bodyRect = this.element.ownerDocument.body.getBoundingClientRect();
 
         var left = Math.max(rect.left * zoomFactor + this._margins.left, bodyRect.left * zoomFactor);
         var top = Math.max(rect.top * zoomFactor + this._margins.top, bodyRect.top * zoomFactor);

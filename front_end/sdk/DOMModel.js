@@ -1595,6 +1595,10 @@ WebInspector.DOMModel.prototype = {
      */
     emulateTouchEventObjects: function(emulationEnabled)
     {
+        /**
+         * @public // FIXME: this is a workaround for validator bug (crbug.com/425506).
+         * @suppressGlobalPropertiesCheck
+         */
         const injectedFunction = function() {
             const touchEvents = ["ontouchstart", "ontouchend", "ontouchmove", "ontouchcancel"];
             var recepients = [window.__proto__, document.__proto__];

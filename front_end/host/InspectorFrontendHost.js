@@ -397,6 +397,7 @@ WebInspector.InspectorFrontendHostStub.prototype = {
 
     /**
      * @param {string} url
+     * @suppressGlobalPropertiesCheck
      */
     inspectedURLChanged: function(url)
     {

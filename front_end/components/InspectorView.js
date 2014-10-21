@@ -72,8 +72,8 @@ WebInspector.InspectorView = function()
 
     this._history = [];
     this._historyIterator = -1;
-    document.addEventListener("keydown", this._keyDown.bind(this), false);
-    document.addEventListener("keypress", this._keyPress.bind(this), false);
+    this._keyDownBound = this._keyDown.bind(this);
+    this._keyPressBound = this._keyPress.bind(this);
     /** @type {!Object.<string, !WebInspector.PanelDescriptor>} */
     this._panelDescriptors = {};
     /** @type {!Object.<string, !Promise.<!WebInspector.Panel> >} */
@@ -99,6 +99,18 @@ WebInspector.InspectorView = function()
 };
 
 WebInspector.InspectorView.prototype = {
+    wasShown: function()
+    {
+        this.element.ownerDocument.addEventListener("keydown", this._keyDownBound, false);
+        this.element.ownerDocument.addEventListener("keypress", this._keyPressBound, false);
+    },
+
+    willHide: function()
+    {
+        this.element.ownerDocument.removeEventListener("keydown", this._keyDownBound, false);
+        this.element.ownerDocument.removeEventListener("keypress", this._keyPressBound, false);
+    },
+
     _loadPanelDesciptors: function()
     {
         WebInspector.startBatchUpdate();
