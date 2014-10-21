@@ -46,18 +46,18 @@ devtools_path = os.path.dirname(scripts_path)
 blink_source_path = os.path.dirname(devtools_path)
 blink_path = os.path.dirname(blink_source_path)
 chromium_src_path = os.path.dirname(os.path.dirname(blink_path))
-devtools_frontend_path = devtools_path + "/front_end"
-images_path = devtools_frontend_path + "/Images"
-image_sources_path = images_path + "/src"
+devtools_frontend_path = os.path.join(devtools_path, "front_end")
+images_path = os.path.join(devtools_frontend_path, "Images")
+image_sources_path = os.path.join(images_path, "src")
 hashes_file_name = "optimize_png.hashes"
-hashes_file_path = image_sources_path + "/" + hashes_file_name
+hashes_file_path = os.path.join(image_sources_path, hashes_file_name)
 
 file_names = os.listdir(image_sources_path)
-svg_file_paths = [image_sources_path + "/" + file_name for file_name in file_names if file_name.endswith(".svg")]
+svg_file_paths = [os.path.join(image_sources_path, file_name) for file_name in file_names if file_name.endswith(".svg")]
 svg_file_paths_to_optimize = devtools_file_hashes.files_with_invalid_hashes(hashes_file_path, svg_file_paths)
-svg_file_names = [re.sub(".svg$", "", re.sub(".*/", "", file_path)) for file_path in svg_file_paths_to_optimize]
+svg_file_names = [re.sub(".svg$", "", os.path.basename(file_path)) for file_path in svg_file_paths_to_optimize]
 
-optimize_script_path = "tools/resources/optimize-png-files.sh"
+optimize_script_path = os.path.join("tools", "resources", "optimize-png-files.sh")
 
 
 def check_installed(app_name, package, how_to):
@@ -78,7 +78,7 @@ check_installed("pngout", None, "Utility can be downloaded here: http://www.jono
 
 
 def optimize_png(file_name):
-    png_full_path = images_path + "/" + file_name + ".png"
+    png_full_path = os.path.join(images_path, file_name + ".png")
     optimize_command = "bash %s -o2 %s" % (optimize_script_path, png_full_path)
     proc = subprocess.Popen(optimize_command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True, cwd=chromium_src_path)
     return proc
