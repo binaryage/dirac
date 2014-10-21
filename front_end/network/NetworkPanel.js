@@ -3252,9 +3252,9 @@ WebInspector.HARWriter.prototype = {
             var content = requests[i].content;
             if (typeof content === "undefined" && requests[i].finished) {
                 ++this._pendingRequests;
-                requests[i].requestContent(this._onContentAvailable.bind(this, entries[i]));
+                requests[i].requestContent(this._onContentAvailable.bind(this, entries[i], requests[i]));
             } else if (content !== null)
-                entries[i].response.content.text = content;
+                this._setEntryContent(entries[i], requests[i]);
         }
         var compositeProgress = new WebInspector.CompositeProgress(progress);
         this._writeProgress = compositeProgress.createSubProgress();
@@ -3268,12 +3268,24 @@ WebInspector.HARWriter.prototype = {
 
     /**
      * @param {!Object} entry
+     * @param {!WebInspector.NetworkRequest} request
+     */
+    _setEntryContent: function(entry, request)
+    {
+        if (request.content !== null)
+            entry.response.content.text = request.content;
+        if (request.contentEncoded)
+            entry.response.content.encoding = "base64";
+    },
+
+    /**
+     * @param {!Object} entry
+     * @param {!WebInspector.NetworkRequest} request
      * @param {?string} content
      */
-    _onContentAvailable: function(entry, content)
+    _onContentAvailable: function(entry, request, content)
     {
-        if (content !== null)
-            entry.response.content.text = content;
+        this._setEntryContent(entry, request);
         if (this._requestsProgress)
             this._requestsProgress.worked();
         if (!--this._pendingRequests) {
