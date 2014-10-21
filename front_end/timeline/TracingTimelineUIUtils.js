@@ -486,14 +486,16 @@ WebInspector.TracingTimelineUIUtils.buildTraceEventDetails = function(event, mod
     var target = event.thread.target();
     var relatedNode = null;
     var barrier = new CallbackBarrier();
-    if (!event.previewElement && target) {
+    if (!event.previewElement) {
         if (event.imageURL)
             WebInspector.DOMPresentationUtils.buildImagePreviewContents(target, event.imageURL, false, barrier.createCallback(saveImage));
         else if (event.picture)
             WebInspector.TracingTimelineUIUtils.buildPicturePreviewContent(event, barrier.createCallback(saveImage));
     }
-    if (event.backendNodeId && target)
+    if (event.backendNodeId)
         target.domModel.pushNodesByBackendIdsToFrontend([event.backendNodeId], barrier.createCallback(setRelatedNode));
+    if (event.invalidationTrackingEvents)
+        WebInspector.TracingTimelineUIUtils._pushInvalidationNodeIdsToFrontend(event, barrier.createCallback(updateInvalidationNodeIds));
     barrier.callWhenDone(callbackWrapper);
 
     /**
@@ -511,6 +513,31 @@ WebInspector.TracingTimelineUIUtils.buildTraceEventDetails = function(event, mod
     {
         if (nodeIds)
             relatedNode = target.domModel.nodeForId(nodeIds[0]);
+    }
+
+    /**
+     * @param {?Array.<!DOMAgent.NodeId>} frontendNodeIds
+     */
+    function updateInvalidationNodeIds(frontendNodeIds, backendNodeIds)
+    {
+        if (!frontendNodeIds)
+            return;
+        if (frontendNodeIds.length !== backendNodeIds.length) {
+            console.error("Did not resolve the correct number of invalidation node ids.");
+            return;
+        }
+
+        var backendToFrontendNodeIdMap = {};
+        backendNodeIds.forEach(function(backendNodeId, index) {
+            backendToFrontendNodeIdMap[backendNodeId] = frontendNodeIds[index];
+        });
+
+        if (event.nodeId)
+            event.frontendNodeId = backendToFrontendNodeIdMap[event.nodeId];
+        event.invalidationTrackingEvents.forEach(function(invalidation) {
+            if (invalidation.nodeId)
+                invalidation.frontendNodeId = backendToFrontendNodeIdMap[invalidation.nodeId];
+        });
     }
 
     function callbackWrapper()
@@ -673,7 +700,7 @@ WebInspector.TracingTimelineUIUtils._buildTraceEventDetailsSynchronously = funct
     if (event.previewElement)
         contentHelper.appendElementRow(WebInspector.UIString("Preview"), event.previewElement);
 
-    if (event.stackTrace || (event.initiator && event.initiator.stackTrace))
+    if (event.stackTrace || (event.initiator && event.initiator.stackTrace) || event.invalidationTrackingEvents)
         WebInspector.TracingTimelineUIUtils._generateCauses(event, contentHelper);
 
     fragment.appendChild(contentHelper.element);
@@ -690,6 +717,7 @@ WebInspector.TracingTimelineUIUtils._generateCauses = function(event, contentHel
 
     var callSiteStackLabel;
     var stackLabel;
+    var initiator = event.initiator;
 
     switch (event.name) {
     case recordTypes.TimerFire:
@@ -711,10 +739,119 @@ WebInspector.TracingTimelineUIUtils._generateCauses = function(event, contentHel
     if (event.stackTrace)
         contentHelper.appendStackTrace(stackLabel || WebInspector.UIString("Stack when this event occurred"), event.stackTrace);
 
-    // Indirect cause / invalidation.
-    var initiator = event.initiator;
-    if (initiator && initiator.stackTrace)
+    // Indirect causes.
+    if (event.invalidationTrackingEvents) { // Full invalidation tracking (experimental).
+        WebInspector.TracingTimelineUIUtils._generateInvalidations(event, contentHelper);
+    } else if (initiator && initiator.stackTrace) { // Partial invalidation tracking.
         contentHelper.appendStackTrace(callSiteStackLabel || WebInspector.UIString("Stack when first invalidated"), initiator.stackTrace);
+    }
+}
+
+/**
+ * @param {!WebInspector.TracingModel.Event} event
+ * @param {!WebInspector.TimelineDetailsContentHelper} contentHelper
+ */
+WebInspector.TracingTimelineUIUtils._generateInvalidations = function(event, contentHelper)
+{
+    if (!event.invalidationTrackingEvents)
+        return;
+
+    var target = event.thread.target();
+    var invalidations = {};
+    event.invalidationTrackingEvents.forEach(function(invalidation) {
+        if (!invalidations[invalidation.type])
+            invalidations[invalidation.type] = [invalidation];
+        else
+            invalidations[invalidation.type].push(invalidation);
+    });
+
+    Object.keys(invalidations).forEach(function(type) {
+        WebInspector.TracingTimelineUIUtils._generateInvalidationsForType(
+            type, target, invalidations[type], contentHelper);
+    });
+}
+
+/**
+ * @param {string} type
+ * @param {?WebInspector.Target} target
+ * @param {!Object} invalidationEvents
+ * @param {!WebInspector.TimelineDetailsContentHelper} contentHelper
+ */
+WebInspector.TracingTimelineUIUtils._generateInvalidationsForType = function(type, target, invalidationEvents, contentHelper)
+{
+    var title;
+    switch (type) {
+    case WebInspector.TracingTimelineModel.RecordType.StyleRecalcInvalidationTracking:
+        title = WebInspector.UIString("Style invalidations");
+        break;
+    case WebInspector.TracingTimelineModel.RecordType.LayoutInvalidationTracking:
+        title = WebInspector.UIString("Layout invalidations");
+        break;
+    default:
+        title = WebInspector.UIString("Other invalidations");
+        break;
+    }
+
+    var detailsNode = document.createElement("div");
+    detailsNode.className = "timeline-details-view-row";
+    var titleElement = detailsNode.createChild("span", "timeline-details-view-row-title");
+    titleElement.textContent = WebInspector.UIString("%s: ", title);
+    var eventsList = detailsNode.createChild("ol");
+    invalidationEvents.forEach(appendInvalidations);
+
+    contentHelper.element.appendChild(detailsNode);
+
+
+    function appendInvalidations(invalidation, index)
+    {
+        var row = eventsList.createChild("li");
+        var nodeRow = row.createChild("div");
+        var node = target.domModel.nodeForId(invalidation.frontendNodeId);
+        if (node)
+            nodeRow.appendChild(WebInspector.DOMPresentationUtils.linkifyNodeReference(node));
+        else if (invalidation.nodeName)
+            nodeRow.textContent = WebInspector.UIString("[ %s ]", invalidation.nodeName);
+        else
+            nodeRow.textContent = WebInspector.UIString("[ unknown node ]");
+
+        if (invalidation.reason) {
+            var reasonRow = row.createChild("div");
+            var reason = invalidation.reason;
+            // We should clean up invalidation strings so they are consistent: crbug.com/424451.
+            if (!invalidation.reason.endsWith("."))
+                reason += ".";
+            reasonRow.textContent = WebInspector.UIString("Reason: %s", reason);
+        }
+
+        if (invalidation.stackTrace)
+            contentHelper.createChildStackTraceElement(row, invalidation.stackTrace);
+    }
+}
+
+/**
+ * @param {!WebInspector.TracingModel.Event} event
+ * @param {function(!Array.<number>, !Array.<number>)} callback
+ */
+WebInspector.TracingTimelineUIUtils._pushInvalidationNodeIdsToFrontend = function(event, callback)
+{
+    var backendNodeIds = [];
+
+    var dedupedNodeIds = {};
+    if (event.nodeId) {
+        backendNodeIds.push(event.nodeId);
+        dedupedNodeIds[event.nodeId] = true;
+    }
+    event.invalidationTrackingEvents.forEach(function(invalidation) {
+        if (invalidation.nodeId && !dedupedNodeIds[invalidation.nodeId]) {
+            backendNodeIds.push(invalidation.nodeId);
+            dedupedNodeIds[invalidation.nodeId] = true;
+        }
+    });
+
+    var target = event.thread.target();
+    target.domModel.pushNodesByBackendIdsToFrontend(backendNodeIds, function(frontendNodeIds) {
+        callback(frontendNodeIds, backendNodeIds);
+    });
 }
 
 /**

@@ -47,6 +47,11 @@ WebInspector.TracingTimelineModel.RecordType = {
     ScrollLayer: "ScrollLayer",
     CompositeLayers: "CompositeLayers",
 
+    StyleRecalcInvalidationTracking: "StyleRecalcInvalidationTracking",
+    LayoutInvalidationTracking: "LayoutInvalidationTracking",
+    LayerInvalidationTracking: "LayerInvalidationTracking",
+    PaintInvalidationTracking: "PaintInvalidationTracking",
+
     ParseHTML: "ParseHTML",
 
     TimerInstall: "TimerInstall",
@@ -146,7 +151,8 @@ WebInspector.TracingTimelineModel.prototype = {
             this._configureCpuProfilerSamplingInterval();
             this._currentTarget.profilerAgent().start();
         }
-
+        if (Runtime.experiments.isEnabled("timelineInvalidationTracking"))
+            categoriesArray.push(disabledByDefault("devtools.timeline.invalidationTracking"));
         if (capturePictures) {
             categoriesArray = categoriesArray.concat([
                 disabledByDefault("devtools.timeline.layers"),
@@ -476,6 +482,7 @@ WebInspector.TracingTimelineModel.prototype = {
         this._sendRequestEvents = {};
         this._timerEvents = {};
         this._requestAnimationFrameEvents = {};
+        this._invalidationTracker = new WebInspector.InvalidationTracker();
         this._layoutInvalidate = {};
         this._lastScheduleStyleRecalculation = {};
         this._webSocketCreateEvents = {};
@@ -592,6 +599,13 @@ WebInspector.TracingTimelineModel.prototype = {
             this._lastRecalculateStylesEvent = event;
             break;
 
+        case recordTypes.StyleRecalcInvalidationTracking:
+        case recordTypes.LayoutInvalidationTracking:
+        case recordTypes.LayerInvalidationTracking:
+        case recordTypes.PaintInvalidationTracking:
+            this._invalidationTracker.addInvalidation(event);
+            break;
+
         case recordTypes.InvalidateLayout:
             // Consider style recalculation as a reason for layout invalidation,
             // but only if we had no earlier layout invalidation records.
@@ -636,6 +650,7 @@ WebInspector.TracingTimelineModel.prototype = {
             break;
 
         case recordTypes.Paint:
+            this._invalidationTracker.didPaint(event);
             event.highlightQuad = event.args["data"]["clip"];
             event.backendNodeId = event.args["data"]["nodeId"];
             var layerUpdateEvent = this._findAncestorEvent(recordTypes.UpdateLayer);
@@ -1103,4 +1118,107 @@ WebInspector.TracingTimelineSaver.prototype = {
      * @param {!Event} event
      */
     onError: function(reader, event) { },
+}
+
+/**
+ * @constructor
+ * @param {!Event} event
+ */
+WebInspector.InvalidationTrackingEvent = function(event)
+{
+    this.type = event.name;
+    this.frameId = event.args["data"]["frame"];
+    this.nodeId = event.args["data"]["nodeId"];
+    this.nodeName = event.args["data"]["nodeName"];
+    this.paintId = event.args["data"]["paintId"];
+    this.reason = event.args["data"]["reason"];
+    this.stackTrace = event.args["data"]["stackTrace"];
+}
+
+/**
+ * @constructor
+ */
+WebInspector.InvalidationTracker = function()
+{
+    this._initializePerFrameState();
+}
+
+WebInspector.InvalidationTracker.prototype = {
+    /**
+     * @param {!Event} event
+     */
+    addInvalidation: function(event)
+    {
+        var invalidation = new WebInspector.InvalidationTrackingEvent(event);
+
+        this._startNewFrameIfNeeded();
+        if (!invalidation.nodeId && !invalidation.paintId) {
+            console.error("Invalidation lacks node information.");
+            console.error(invalidation);
+        }
+
+        // Record the paintIds for style recalc or layout invalidations.
+        // FIXME: This O(n^2) loop could be optimized with a map.
+        var recordTypes = WebInspector.TracingTimelineModel.RecordType;
+        if (invalidation.type == recordTypes.PaintInvalidationTracking)
+            this._invalidationEvents.forEach(updatePaintId);
+        else
+            this._invalidationEvents.push(invalidation);
+
+        function updatePaintId(invalidationToUpdate)
+        {
+            if (invalidationToUpdate.nodeId !== invalidation.nodeId)
+                return;
+            if (invalidationToUpdate.type === recordTypes.StyleRecalcInvalidationTracking
+                    || invalidationToUpdate.type === recordTypes.LayoutInvalidationTracking) {
+                invalidationToUpdate.paintId = invalidation.paintId;
+            }
+        }
+    },
+
+    /**
+     * @param {!Event} paintEvent
+     */
+    didPaint: function(paintEvent)
+    {
+        this._didPaint = true;
+
+        // If a paint doesn't have a corresponding graphics layer id, it paints
+        // into its parent so add an effectivePaintId to these events.
+        var layerId = paintEvent.args["data"]["layerId"];
+        if (layerId)
+            this._lastPaintWithLayer = paintEvent;
+        if (!this._lastPaintWithLayer) {
+            console.error("Failed to find the paint container for a paint event.");
+            return;
+        }
+
+        var effectivePaintId = this._lastPaintWithLayer.args["data"]["nodeId"];
+        var frameId = paintEvent.args["data"]["frame"];
+        this._invalidationEvents.forEach(recordInvalidationForPaint);
+
+        function recordInvalidationForPaint(invalidation)
+        {
+            if (invalidation.paintId === effectivePaintId && invalidation.frameId === frameId) {
+                if (!paintEvent.invalidationTrackingEvents)
+                    paintEvent.invalidationTrackingEvents = [];
+                paintEvent.invalidationTrackingEvents.push(invalidation);
+            }
+        }
+    },
+
+    _startNewFrameIfNeeded: function()
+    {
+        if (!this._didPaint)
+            return;
+
+        this._initializePerFrameState();
+    },
+
+    _initializePerFrameState: function()
+    {
+        this._invalidationEvents = [];
+        this._lastPaintWithLayer = undefined;
+        this._didPaint = false;
+    }
 }

@@ -562,8 +562,16 @@ WebInspector.TimelineDetailsContentHelper.prototype = {
 
         var rowElement = this.element.createChild("div", "timeline-details-view-row");
         rowElement.createChild("span", "timeline-details-view-row-title").textContent = WebInspector.UIString("%s: ", title);
-        var stackTraceElement = rowElement.createChild("div", "timeline-details-view-row-stack-trace monospace");
+        this.createChildStackTraceElement(rowElement, stackTrace);
+    },
 
+    /**
+     * @param {!Element} parentElement
+     * @param {!Array.<!ConsoleAgent.CallFrame>} stackTrace
+     */
+    createChildStackTraceElement: function(parentElement, stackTrace)
+    {
+        var stackTraceElement = parentElement.createChild("div", "timeline-details-view-row-stack-trace monospace");
         for (var i = 0; i < stackTrace.length; ++i) {
             var stackFrame = stackTrace[i];
             var row = stackTraceElement.createChild("div");

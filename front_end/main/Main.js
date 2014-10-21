@@ -158,6 +158,7 @@ WebInspector.Main.prototype = {
         Runtime.experiments.register("timelineOnTraceEvents", "Timeline on trace events");
         Runtime.experiments.register("timelinePowerProfiler", "Timeline power profiler");
         Runtime.experiments.register("timelineJSCPUProfile", "Timeline with JS sampling");
+        Runtime.experiments.register("timelineInvalidationTracking", "Timeline with full invalidation tracking.");
         Runtime.experiments.cleanUpStaleExperiments();
 
         if (InspectorFrontendHost.isUnderTest()) {
