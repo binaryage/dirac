@@ -1122,7 +1122,7 @@ WebInspector.TracingTimelineSaver.prototype = {
 
 /**
  * @constructor
- * @param {!Event} event
+ * @param {!WebInspector.TracingModel.Event} event
  */
 WebInspector.InvalidationTrackingEvent = function(event)
 {
@@ -1145,7 +1145,7 @@ WebInspector.InvalidationTracker = function()
 
 WebInspector.InvalidationTracker.prototype = {
     /**
-     * @param {!Event} event
+     * @param {!WebInspector.TracingModel.Event} event
      */
     addInvalidation: function(event)
     {
@@ -1177,7 +1177,7 @@ WebInspector.InvalidationTracker.prototype = {
     },
 
     /**
-     * @param {!Event} paintEvent
+     * @param {!WebInspector.TracingModel.Event} paintEvent
      */
     didPaint: function(paintEvent)
     {

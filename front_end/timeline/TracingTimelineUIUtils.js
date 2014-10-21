@@ -487,12 +487,12 @@ WebInspector.TracingTimelineUIUtils.buildTraceEventDetails = function(event, mod
     var relatedNode = null;
     var barrier = new CallbackBarrier();
     if (!event.previewElement) {
-        if (event.imageURL)
+        if (event.imageURL && target)
             WebInspector.DOMPresentationUtils.buildImagePreviewContents(target, event.imageURL, false, barrier.createCallback(saveImage));
         else if (event.picture)
             WebInspector.TracingTimelineUIUtils.buildPicturePreviewContent(event, barrier.createCallback(saveImage));
     }
-    if (event.backendNodeId)
+    if (event.backendNodeId && target)
         target.domModel.pushNodesByBackendIdsToFrontend([event.backendNodeId], barrier.createCallback(setRelatedNode));
     if (event.invalidationTrackingEvents)
         WebInspector.TracingTimelineUIUtils._pushInvalidationNodeIdsToFrontend(event, barrier.createCallback(updateInvalidationNodeIds));
@@ -517,6 +517,7 @@ WebInspector.TracingTimelineUIUtils.buildTraceEventDetails = function(event, mod
 
     /**
      * @param {?Array.<!DOMAgent.NodeId>} frontendNodeIds
+     * @param {?Array.<!DOMAgent.NodeId>} backendNodeIds
      */
     function updateInvalidationNodeIds(frontendNodeIds, backendNodeIds)
     {
@@ -830,7 +831,7 @@ WebInspector.TracingTimelineUIUtils._generateInvalidationsForType = function(typ
 
 /**
  * @param {!WebInspector.TracingModel.Event} event
- * @param {function(!Array.<number>, !Array.<number>)} callback
+ * @param {function(?Array.<number>, ?Array.<number>)} callback
  */
 WebInspector.TracingTimelineUIUtils._pushInvalidationNodeIdsToFrontend = function(event, callback)
 {
