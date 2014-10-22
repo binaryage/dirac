@@ -793,8 +793,7 @@ WebInspector.TracingTimelineUIUtils._generateInvalidationsForType = function(typ
         break;
     }
 
-    var detailsNode = document.createElement("div");
-    detailsNode.className = "timeline-details-view-row";
+    var detailsNode = createElementWithClass("div", "timeline-details-view-row");
     var titleElement = detailsNode.createChild("span", "timeline-details-view-row-title");
     titleElement.textContent = WebInspector.UIString("%s: ", title);
     var eventsList = detailsNode.createChild("ol");

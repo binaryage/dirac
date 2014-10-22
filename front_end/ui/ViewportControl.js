@@ -230,6 +230,7 @@ WebInspector.ViewportControl.prototype = {
 
     /**
      * @param {?Selection} selection
+     * @suppressGlobalPropertiesCheck
      */
     _isSelectionBackwards: function(selection)
     {

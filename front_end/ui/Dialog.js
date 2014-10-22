@@ -38,7 +38,7 @@ WebInspector.Dialog = function(relativeToElement, delegate)
     this._delegate = delegate;
     this._relativeToElement = relativeToElement;
 
-    this._glassPane = new WebInspector.GlassPane();
+    this._glassPane = new WebInspector.GlassPane(/** @type {!Document} */ (relativeToElement.ownerDocument));
     WebInspector.GlassPane.DefaultFocusedViewStack.push(this);
 
     // Install glass pane capturing events.

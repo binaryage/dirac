@@ -282,7 +282,7 @@ Constraints.prototype.addHeight = function(value)
  */
 Element.prototype.measurePreferredSize = function(containerElement)
 {
-    containerElement = containerElement || document.body;
+    containerElement = containerElement || this.ownerDocument.body;
     containerElement.appendChild(this);
     var fakingComponentRoot = false;
     if (!this.classList.contains("component-root")) {
@@ -400,6 +400,7 @@ Element.prototype.isInsertionCaretInside = function()
 /**
  * @param {string} tagName
  * @return {!Element}
+ * @suppressGlobalPropertiesCheck
  */
 function createElement(tagName)
 {
@@ -409,6 +410,7 @@ function createElement(tagName)
 /**
  * @param {number|string} data
  * @return {!Text}
+ * @suppressGlobalPropertiesCheck
  */
 function createTextNode(data)
 {
@@ -432,6 +434,7 @@ Document.prototype.createElementWithClass = function(elementName, className)
  * @param {string} elementName
  * @param {string=} className
  * @return {!Element}
+ * @suppressGlobalPropertiesCheck
  */
 function createElementWithClass(elementName, className)
 {
@@ -440,6 +443,7 @@ function createElementWithClass(elementName, className)
 
 /**
  * @return {!DocumentFragment}
+ * @suppressGlobalPropertiesCheck
  */
 function createDocumentFragment()
 {

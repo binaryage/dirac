@@ -129,7 +129,6 @@ WebInspector.Main.prototype = {
     {
         console.timeStamp("Main._loaded");
 
-        WebInspector.initializeUIUtils();
         this._createSettings();
         this._createAppUI();
     },
@@ -182,26 +181,32 @@ WebInspector.Main.prototype = {
         }
     },
 
+    /**
+     * @private // FIXME: this is a workaround for validator bug (http://crbug.com/425506).
+     * @suppressGlobalPropertiesCheck
+     */
     _createAppUI: function()
     {
         console.timeStamp("Main._createApp");
 
-        WebInspector.installPortStyles();
+        WebInspector.initializeUIUtils(window);
+        WebInspector.installPortStyles(document);
         if (Runtime.queryParam("toolbarColor") && Runtime.queryParam("textColor"))
-            WebInspector.setToolbarColors(Runtime.queryParam("toolbarColor"), Runtime.queryParam("textColor"));
+            WebInspector.setToolbarColors(document, /** @type {string} */ (Runtime.queryParam("toolbarColor")), /** @type {string} */ (Runtime.queryParam("textColor")));
         InspectorFrontendHost.events.addEventListener(InspectorFrontendHostAPI.Events.SetToolbarColors, updateToolbarColors);
         /**
          * @param {!WebInspector.Event} event
+         * @suppressGlobalPropertiesCheck
          */
         function updateToolbarColors(event)
         {
-            WebInspector.setToolbarColors(/** @type {string} */ (event.data["backgroundColor"]), /** @type {string} */ (event.data["color"]));
+            WebInspector.setToolbarColors(document, /** @type {string} */ (event.data["backgroundColor"]), /** @type {string} */ (event.data["color"]));
         }
 
-        this._addMainEventListeners();
+        this._addMainEventListeners(document);
 
         var canDock = !!Runtime.queryParam("can_dock");
-        WebInspector.zoomManager = new WebInspector.ZoomManager(InspectorFrontendHost);
+        WebInspector.zoomManager = new WebInspector.ZoomManager(window, InspectorFrontendHost);
         WebInspector.inspectorView = new WebInspector.InspectorView();
         WebInspector.ContextMenu.initialize();
         WebInspector.ContextMenu.installHandler(document);
@@ -242,7 +247,7 @@ WebInspector.Main.prototype = {
         WebInspector.domBreakpointsSidebarPane = new WebInspector.DOMBreakpointsSidebarPane();
 
         WebInspector.actionRegistry = new WebInspector.ActionRegistry();
-        WebInspector.shortcutRegistry = new WebInspector.ShortcutRegistry(WebInspector.actionRegistry);
+        WebInspector.shortcutRegistry = new WebInspector.ShortcutRegistry(WebInspector.actionRegistry, document);
         WebInspector.ShortcutsScreen.registerShortcuts();
         this._registerForwardedShortcuts();
         this._registerMessageSinkListener();
@@ -538,10 +543,9 @@ WebInspector.Main.prototype = {
     },
 
     /**
-     * @private // FIXME: this is a workaround for validator bug (crbug.com/425506).
-     * @suppressGlobalPropertiesCheck
+     * @param {!Document} document
      */
-    _addMainEventListeners: function()
+    _addMainEventListeners: function(document)
     {
         document.addEventListener("keydown", this._postDocumentKeyDown.bind(this), false);
         document.addEventListener("beforecopy", this._documentCanCopy.bind(this), true);

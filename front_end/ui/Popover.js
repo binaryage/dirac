@@ -92,6 +92,9 @@ WebInspector.Popover.prototype = {
             WebInspector.Popover._popover.hide();
         WebInspector.Popover._popover = this;
 
+        var document = anchor instanceof Element ? anchor.ownerDocument : contentElement.ownerDocument;
+        var window = document.defaultView;
+
         // Temporarily attach in order to measure preferred dimensions.
         var preferredSize = view ? view.measurePreferredSize() : this.contentElement.measurePreferredSize();
         preferredWidth = preferredWidth || preferredSize.width;
@@ -116,7 +119,7 @@ WebInspector.Popover.prototype = {
 
     hide: function()
     {
-        window.removeEventListener("resize", this._hideBound, false);
+        this._containerElement.ownerDocument.defaultView.removeEventListener("resize", this._hideBound, false);
         this.detach();
         this._containerElement.remove();
         delete WebInspector.Popover._popover;

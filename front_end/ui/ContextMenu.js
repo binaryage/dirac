@@ -294,7 +294,7 @@ WebInspector.ContextMenu.prototype = {
             WebInspector._contextMenu = this;
             if (WebInspector.ContextMenu._useSoftMenu || InspectorFrontendHost.isHostedMode()) {
                 var softMenu = new WebInspector.SoftContextMenu(menuObject, this._itemSelected.bind(this));
-                softMenu.show(this._x, this._y);
+                softMenu.show(this._event.target.ownerDocument, this._x, this._y);
             } else {
                 InspectorFrontendHost.showContextMenuAtPoint(this._x, this._y, menuObject);
                 InspectorFrontendHost.events.addEventListener(InspectorFrontendHostAPI.Events.ContextMenuCleared, this._menuCleared, this);

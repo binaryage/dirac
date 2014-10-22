@@ -398,9 +398,10 @@ WebInspector.StatusBarButtonBase.prototype = {
         mainButtonClone.state = this.state;
         buttons.push(mainButtonClone);
 
+        var document = this.element.ownerDocument;
         document.documentElement.addEventListener("mouseup", mouseUp, false);
 
-        var optionsGlassPane = new WebInspector.GlassPane();
+        var optionsGlassPane = new WebInspector.GlassPane(document);
         var optionsBarElement = optionsGlassPane.element.createChild("div", "alternate-status-bar-buttons-bar");
         const buttonHeight = 23;
 

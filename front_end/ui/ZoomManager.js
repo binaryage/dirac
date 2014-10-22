@@ -5,9 +5,10 @@
 /**
  * @constructor
  * @extends {WebInspector.Object}
+ * @param {!Window} window
  * @param {!InspectorFrontendHostAPI} frontendHost
  */
-WebInspector.ZoomManager = function(frontendHost)
+WebInspector.ZoomManager = function(window, frontendHost)
 {
     this._frontendHost = frontendHost;
     this._zoomFactor = this._frontendHost.zoomFactor();

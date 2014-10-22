@@ -445,6 +445,15 @@ WebInspector.TextPrompt.prototype = {
     },
 
     /**
+     * @return {?Range}
+     * @suppressGlobalPropertiesCheck
+     */
+    _createRange: function()
+    {
+        return document.createRange();
+    },
+
+    /**
      * @param {!Selection} selection
      * @param {!Range} originalWordPrefixRange
      * @param {boolean} reverse
@@ -461,7 +470,7 @@ WebInspector.TextPrompt.prototype = {
 
         var selectionRange = selection.getRangeAt(0);
 
-        var fullWordRange = document.createRange();
+        var fullWordRange = this._createRange();
         fullWordRange.setStart(originalWordPrefixRange.startContainer, originalWordPrefixRange.startOffset);
         fullWordRange.setEnd(selectionRange.endContainer, selectionRange.endOffset);
 
@@ -488,7 +497,7 @@ WebInspector.TextPrompt.prototype = {
             var suffixText = completionText.substring(wordPrefixLength);
             this._userEnteredRange.deleteContents();
             this._element.normalize();
-            var finalSelectionRange = document.createRange();
+            var finalSelectionRange = this._createRange();
 
             var prefixTextNode = createTextNode(prefixText);
             fullWordRange.insertNode(prefixTextNode);
@@ -544,7 +553,7 @@ WebInspector.TextPrompt.prototype = {
 
         this._userEnteredRange.deleteContents();
         this._element.normalize();
-        var finalSelectionRange = document.createRange();
+        var finalSelectionRange = this._createRange();
         var completionTextNode = createTextNode(completionText);
         this._userEnteredRange.insertNode(completionTextNode);
         if (this.autoCompleteElement) {
@@ -588,7 +597,7 @@ WebInspector.TextPrompt.prototype = {
         this.autoCompleteElement.parentNode.replaceChild(textNode, this.autoCompleteElement);
         delete this.autoCompleteElement;
 
-        var finalSelectionRange = document.createRange();
+        var finalSelectionRange = this._createRange();
         finalSelectionRange.setStart(textNode, text.length);
         finalSelectionRange.setEnd(textNode, text.length);
 
@@ -711,7 +720,7 @@ WebInspector.TextPrompt.prototype = {
     moveCaretToEndOfPrompt: function()
     {
         var selection = window.getSelection();
-        var selectionRange = document.createRange();
+        var selectionRange = this._createRange();
 
         var offset = this._element.childNodes.length;
         selectionRange.setStart(this._element, offset);
@@ -895,7 +904,7 @@ WebInspector.TextPromptWithHistory.prototype = {
                     this.moveCaretToEndOfPrompt();
                 else {
                     var selection = window.getSelection();
-                    var selectionRange = document.createRange();
+                    var selectionRange = this._createRange();
 
                     selectionRange.setStart(this._element.firstChild, firstNewlineIndex);
                     selectionRange.setEnd(this._element.firstChild, firstNewlineIndex);

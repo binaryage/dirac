@@ -5,15 +5,16 @@
 /**
  * @constructor
  * @param {!WebInspector.ActionRegistry} actionRegistry
+ * @param {!Document} document
  */
-WebInspector.ShortcutRegistry = function(actionRegistry)
+WebInspector.ShortcutRegistry = function(actionRegistry, document)
 {
     this._actionRegistry = actionRegistry;
     /** @type {!StringMultimap.<string>} */
     this._defaultKeyToActions = new StringMultimap();
     /** @type {!StringMultimap.<!WebInspector.KeyboardShortcut.Descriptor>} */
     this._defaultActionToShortcut = new StringMultimap();
-    this._registerBindings();
+    this._registerBindings(document);
 }
 
 WebInspector.ShortcutRegistry.prototype = {
@@ -179,7 +180,10 @@ WebInspector.ShortcutRegistry.prototype = {
         }
     },
 
-    _registerBindings: function()
+    /**
+     * @param {!Document} document
+     */
+    _registerBindings: function(document)
     {
         document.addEventListener("input", this.dismissPendingShortcutAction.bind(this), true);
         var extensions = self.runtime.extensions(WebInspector.ActionDelegate);

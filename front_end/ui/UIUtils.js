@@ -85,8 +85,9 @@ WebInspector.elementDragStart = function(elementDragStart, elementDrag, elementD
 
 WebInspector._mouseOutWhileDragging = function()
 {
+    var document = WebInspector._mouseOutWhileDraggingTargetDocument;
     WebInspector._unregisterMouseOutWhileDragging();
-    WebInspector._elementDraggingGlassPane = new WebInspector.GlassPane();
+    WebInspector._elementDraggingGlassPane = new WebInspector.GlassPane(document);
 }
 
 WebInspector._unregisterMouseOutWhileDragging = function()
@@ -142,8 +143,9 @@ WebInspector._elementDragEnd = function(event)
 
 /**
  * @constructor
+ * @param {!Document} document
  */
-WebInspector.GlassPane = function()
+WebInspector.GlassPane = function(document)
 {
     this.element = createElement("div");
     this.element.style.cssText = "position:absolute;top:0;bottom:0;left:0;right:0;background-color:transparent;z-index:1000;";
@@ -322,6 +324,15 @@ WebInspector._modifiedFloatNumber = function(number, event)
  */
 WebInspector.handleElementValueModifications = function(event, element, finishHandler, suggestionHandler, customNumberHandler)
 {
+    /**
+     * @return {?Range}
+     * @suppressGlobalPropertiesCheck
+     */
+    function createRange()
+    {
+        return document.createRange();
+    }
+
     var arrowKeyOrMouseWheelEvent = (event.keyIdentifier === "Up" || event.keyIdentifier === "Down" || event.type === "mousewheel");
     var pageKeyPressed = (event.keyIdentifier === "PageUp" || event.keyIdentifier === "PageDown");
     if (!arrowKeyOrMouseWheelEvent && !pageKeyPressed)
@@ -374,7 +385,7 @@ WebInspector.handleElementValueModifications = function(event, element, finishHa
         wordRange.deleteContents();
         wordRange.insertNode(replacementTextNode);
 
-        var finalSelectionRange = document.createRange();
+        var finalSelectionRange = createRange();
         finalSelectionRange.setStart(replacementTextNode, 0);
         finalSelectionRange.setEnd(replacementTextNode, replacementString.length);
 
@@ -567,7 +578,10 @@ WebInspector.manageBlackboxingButtonLabel = function()
     return WebInspector.UIString("Manage framework blackboxing...");
 }
 
-WebInspector.installPortStyles = function()
+/**
+ * @param {!Document} document
+ */
+WebInspector.installPortStyles = function(document)
 {
     var platform = WebInspector.platform();
     document.body.classList.add("platform-" + platform);
@@ -578,13 +592,21 @@ WebInspector.installPortStyles = function()
     document.body.classList.add("port-" + port);
 }
 
-WebInspector._windowFocused = function(event)
+/**
+ * @param {!Document} document
+ * @param {!Event} event
+ */
+WebInspector._windowFocused = function(document, event)
 {
     if (event.target.document.nodeType === Node.DOCUMENT_NODE)
         document.body.classList.remove("inactive");
 }
 
-WebInspector._windowBlurred = function(event)
+/**
+ * @param {!Document} document
+ * @param {!Event} event
+ */
+WebInspector._windowBlurred = function(document, event)
 {
     if (event.target.document.nodeType === Node.DOCUMENT_NODE)
         document.body.classList.add("inactive");
@@ -611,7 +633,11 @@ WebInspector._focusChanged = function(event)
     WebInspector.setCurrentFocusElement(event.target);
 }
 
-WebInspector._documentBlurred = function(event)
+/**
+ * @param {!Document} document
+ * @param {!Event} event
+ */
+WebInspector._documentBlurred = function(document, event)
 {
     // We want to know when currentFocusElement loses focus to nowhere.
     // This is the case when event.relatedTarget is null (no element is being focused)
@@ -665,7 +691,12 @@ WebInspector.restoreFocusFromElement = function(element)
         WebInspector.setCurrentFocusElement(WebInspector.previousFocusElement());
 }
 
-WebInspector.setToolbarColors = function(backgroundColor, color)
+/**
+ * @param {!Document} document
+ * @param {string} backgroundColor
+ * @param {string} color
+ */
+WebInspector.setToolbarColors = function(document, backgroundColor, color)
 {
     if (!WebInspector._themeStyleElement) {
         WebInspector._themeStyleElement = createElement("style");
@@ -729,7 +760,7 @@ WebInspector.removeSearchResultsHighlight = function(element)
     var highlightBits = element.querySelectorAll(".highlighted-search-result");
     for (var i = 0; i < highlightBits.length; ++i) {
         var span = highlightBits[i];
-        span.parentElement.replaceChild(document.createTextNode(span.textContent), span);
+        span.parentElement.replaceChild(createTextNode(span.textContent), span);
     }
 }
 
@@ -1083,10 +1114,13 @@ WebInspector.LongClickController.prototype = {
     __proto__: WebInspector.Object.prototype
 }
 
-WebInspector.initializeUIUtils = function()
+/**
+ * @param {!Window} window
+ */
+WebInspector.initializeUIUtils = function(window)
 {
-    window.addEventListener("focus", WebInspector._windowFocused, false);
-    window.addEventListener("blur", WebInspector._windowBlurred, false);
-    document.addEventListener("focus", WebInspector._focusChanged, true);
-    document.addEventListener("blur", WebInspector._documentBlurred, true);
+    window.addEventListener("focus", WebInspector._windowFocused.bind(WebInspector, window.document), false);
+    window.addEventListener("blur", WebInspector._windowBlurred.bind(WebInspector, window.document), false);
+    window.document.addEventListener("focus", WebInspector._focusChanged, true);
+    window.document.addEventListener("blur", WebInspector._documentBlurred.bind(WebInspector, window.document), true);
 }

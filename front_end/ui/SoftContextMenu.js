@@ -38,11 +38,13 @@ WebInspector.SoftContextMenu = function(items, itemSelectedCallback, parentMenu)
 
 WebInspector.SoftContextMenu.prototype = {
     /**
+     * @param {!Document} document
      * @param {number} x
      * @param {number} y
      */
-    show: function(x, y)
+    show: function(document, x, y)
     {
+        this._document = document;
         this._x = x;
         this._y = y;
         this._time = new Date().getTime();
@@ -190,7 +192,7 @@ WebInspector.SoftContextMenu.prototype = {
             return;
 
         this._subMenu = new WebInspector.SoftContextMenu(menuItemElement._subItems, this._itemSelectedCallback, this);
-        this._subMenu.show(this._x + menuItemElement.offsetWidth - 3, this._y + menuItemElement.offsetTop - 1);
+        this._subMenu.show(this._document, this._x + menuItemElement.offsetWidth - 3, this._y + menuItemElement.offsetTop - 1);
     },
 
     _hideSubMenu: function()
@@ -315,7 +317,7 @@ WebInspector.SoftContextMenu.prototype = {
             var glassPane = this._glassPaneElement;
             delete this._glassPaneElement;
             // This can re-enter discardMenu due to blur.
-            document.body.removeChild(glassPane);
+            this._document.body.removeChild(glassPane);
             if (this._parentMenu) {
                 delete this._parentMenu._subMenu;
                 if (closeParentMenus)

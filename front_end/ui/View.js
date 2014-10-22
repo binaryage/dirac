@@ -390,7 +390,7 @@ WebInspector.View.prototype = {
     focus: function()
     {
         var element = this.defaultFocusedElement();
-        if (!element || element.isAncestor(document.activeElement))
+        if (!element || element.isAncestor(this.element.ownerDocument.activeElement))
             return;
 
         WebInspector.setCurrentFocusElement(element);
@@ -401,7 +401,7 @@ WebInspector.View.prototype = {
      */
     hasFocus: function()
     {
-        var activeElement = document.activeElement;
+        var activeElement = this.element.ownerDocument.activeElement;
         return activeElement && activeElement.isSelfOrDescendant(this.element);
     },
 
@@ -410,6 +410,7 @@ WebInspector.View.prototype = {
      */
     measurePreferredSize: function()
     {
+        var document = this.element.ownerDocument;
         WebInspector.View._originalAppendChild.call(document.body, this.element);
         this.element.positionAt(0, 0);
         var result = new Size(this.element.offsetWidth, this.element.offsetHeight);

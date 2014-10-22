@@ -5,6 +5,7 @@
 /**
  * @constructor
  * @extends {WebInspector.VBox}
+ * @suppressGlobalPropertiesCheck
  */
 WebInspector.RootView = function()
 {
@@ -12,10 +13,15 @@ WebInspector.RootView = function()
     this.markAsRoot();
     this.element.classList.add("root-view");
     this.element.setAttribute("spellcheck", false);
+    // This view is not designed to change owner document.
     window.addEventListener("resize", this.doResize.bind(this), false);
 }
 
 WebInspector.RootView.prototype = {
+    /**
+     * @public // FIXME: this is a workaround for validator bug (http://crbug.com/425506).
+     * @suppressGlobalPropertiesCheck
+     */
     attachToBody: function()
     {
         this.doResize();

@@ -114,6 +114,7 @@ WebInspector.PieChart.prototype = {
      * @param {!Element} parent
      * @param {string} childType
      * @return {!Element}
+     * @suppressGlobalPropertiesCheck
      */
     _createSVGChild: function(parent, childType)
     {

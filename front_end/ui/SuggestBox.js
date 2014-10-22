@@ -60,7 +60,6 @@ WebInspector.SuggestBox = function(suggestBoxDelegate, maxItemsHeight)
     this._selectedIndex = -1;
     this._selectedElement = null;
     this._maxItemsHeight = maxItemsHeight;
-    this._bodyElement = document.body;
     this._maybeHideBound = this._maybeHide.bind(this);
     this._element = createElementWithClass("div", "suggest-box");
     this._element.addEventListener("mousedown", this._onBoxMouseDown.bind(this), true);
@@ -138,11 +137,17 @@ WebInspector.SuggestBox.prototype = {
             this._hideTimeoutId = window.setTimeout(this.hide.bind(this), 0);
     },
 
+    /**
+     * @private // FIXME: this is a workaround for validator bug (http://crbug.com/425506).
+     * // FIXME: make SuggestBox work for multiple documents.
+     * @suppressGlobalPropertiesCheck
+     */
     _show: function()
     {
         if (this.visible())
             return;
         this._overlay = new WebInspector.SuggestBox.Overlay();
+        this._bodyElement = document.body;
         this._bodyElement.addEventListener("mousedown", this._maybeHideBound, true);
 
         this._leftSpacerElement = this._overlay.element.createChild("div", "suggest-box-left-spacer");
@@ -158,6 +163,7 @@ WebInspector.SuggestBox.prototype = {
             return;
 
         this._bodyElement.removeEventListener("mousedown", this._maybeHideBound, true);
+        delete this._bodyElement;
         this._element.remove();
         this._overlay.dispose();
         delete this._overlay;
@@ -410,6 +416,8 @@ WebInspector.SuggestBox.prototype = {
 
 /**
  * @constructor
+ * // FIXME: make SuggestBox work for multiple documents.
+ * @suppressGlobalPropertiesCheck
  */
 WebInspector.SuggestBox.Overlay = function()
 {

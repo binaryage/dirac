@@ -10,7 +10,8 @@ WebInspector.Toolbox = function()
     if (!window.opener)
         return;
 
-    WebInspector.zoomManager = new WebInspector.ZoomManager(window.opener.InspectorFrontendHost);
+    WebInspector.initializeUIUtils(window);
+    WebInspector.zoomManager = new WebInspector.ZoomManager(window, window.opener.InspectorFrontendHost);
     WebInspector.overridesSupport = window.opener.WebInspector.overridesSupport;
     WebInspector.settings = window.opener.WebInspector.settings;
     WebInspector.experimentsSettings = window.opener.WebInspector.experimentsSettings;
@@ -20,7 +21,7 @@ WebInspector.Toolbox = function()
     WebInspector.Revealer = window.opener.WebInspector.Revealer;
     WebInspector.ContextMenu = window.opener.WebInspector.ContextMenu;
     WebInspector.ContextMenu.installHandler(document);
-    WebInspector.installPortStyles();
+    WebInspector.installPortStyles(document);
 
     var delegate = /** @type {!WebInspector.ToolboxDelegate} */ (window.opener.WebInspector["app"]);
     var rootView = new WebInspector.RootView();
