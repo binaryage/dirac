@@ -595,6 +595,7 @@ WebInspector.TracingTimelineModel.prototype = {
             break;
 
         case recordTypes.RecalculateStyles:
+            this._invalidationTracker.didRecalcStyle(event);
             event.initiator = this._lastScheduleStyleRecalculation[event.args["frame"]];
             this._lastRecalculateStylesEvent = event;
             break;
@@ -1177,6 +1178,25 @@ WebInspector.InvalidationTracker.prototype = {
     },
 
     /**
+     * @param {!WebInspector.TracingModel.Event} styleRecalcEvent
+     */
+    didRecalcStyle: function(styleRecalcEvent)
+    {
+        var recalcFrameId = styleRecalcEvent.args["frame"];
+        var index = this._lastStyleRecalcEventIndex;
+        var invalidationCount = this._invalidationEvents.length;
+        for (; index < invalidationCount; index++) {
+            var invalidation = this._invalidationEvents[index];
+            if (invalidation.type !== WebInspector.TracingTimelineModel.RecordType.StyleRecalcInvalidationTracking)
+                continue;
+            if (invalidation.frameId === recalcFrameId)
+                this._addInvalidationTrackingEvent(styleRecalcEvent, invalidation);
+        }
+
+        this._lastStyleRecalcEventIndex = invalidationCount;
+    },
+
+    /**
      * @param {!WebInspector.TracingModel.Event} paintEvent
      */
     didPaint: function(paintEvent)
@@ -1195,16 +1215,25 @@ WebInspector.InvalidationTracker.prototype = {
 
         var effectivePaintId = this._lastPaintWithLayer.args["data"]["nodeId"];
         var frameId = paintEvent.args["data"]["frame"];
-        this._invalidationEvents.forEach(recordInvalidationForPaint);
+        this._invalidationEvents.forEach(recordInvalidationForPaint.bind(this));
 
         function recordInvalidationForPaint(invalidation)
         {
-            if (invalidation.paintId === effectivePaintId && invalidation.frameId === frameId) {
-                if (!paintEvent.invalidationTrackingEvents)
-                    paintEvent.invalidationTrackingEvents = [];
-                paintEvent.invalidationTrackingEvents.push(invalidation);
-            }
+            if (invalidation.paintId === effectivePaintId && invalidation.frameId === frameId)
+                this._addInvalidationTrackingEvent(paintEvent, invalidation);
         }
+    },
+
+    /**
+     * @param {!WebInspector.TracingModel.Event} event
+     * @param {!WebInspector.InvalidationTrackingEvent} invalidation
+     */
+    _addInvalidationTrackingEvent: function(event, invalidation)
+    {
+        if (!event.invalidationTrackingEvents)
+            event.invalidationTrackingEvents = [ invalidation ];
+        else
+            event.invalidationTrackingEvents.push(invalidation);
     },
 
     _startNewFrameIfNeeded: function()
@@ -1218,6 +1247,7 @@ WebInspector.InvalidationTracker.prototype = {
     _initializePerFrameState: function()
     {
         this._invalidationEvents = [];
+        this._lastStyleRecalcEventIndex = 0;
         this._lastPaintWithLayer = undefined;
         this._didPaint = false;
     }
