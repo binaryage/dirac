@@ -1,5 +1,6 @@
 package org.chromium.devtools.jsdoc.checks;
 
+import com.google.javascript.jscomp.NodeUtil;
 import com.google.javascript.rhino.JSDocInfo;
 import com.google.javascript.rhino.Node;
 import com.google.javascript.rhino.Token;
@@ -22,6 +23,7 @@ public class ContextTrackingValidationCheck extends ValidationCheck {
         registerClient(new ProtoFollowsExtendsChecker());
         registerClient(new MethodAnnotationChecker());
         registerClient(new FunctionReceiverChecker());
+        registerClient(new DisallowedGlobalPropertiesChecker());
     }
 
     @Override
@@ -83,6 +85,7 @@ public class ContextTrackingValidationCheck extends ValidationCheck {
         FunctionRecord functionRecord = new FunctionRecord(
                 node,
                 functionName,
+                getFunctionParameterNames(node),
                 parentType,
                 state.getCurrentFunctionRecord());
         state.pushFunctionRecord(functionRecord);
@@ -126,6 +129,17 @@ public class ContextTrackingValidationCheck extends ValidationCheck {
     private String getAssignedTypeName(Node assignment) {
         Node node = AstUtil.getAssignedTypeNameNode(assignment);
         return getNodeText(node);
+    }
+
+    private List<String> getFunctionParameterNames(Node functionNode) {
+        List<String> parameterNames = new ArrayList<String>();
+        Node parametersNode = NodeUtil.getFunctionParameters(functionNode);
+        for (int i = 0, childCount = parametersNode.getChildCount(); i < childCount; ++i) {
+            Node paramNode = parametersNode.getChildAtIndex(i);
+            String paramName = state.getContext().getNodeText(paramNode);
+            parameterNames.add(paramName);
+        }
+        return parameterNames;
     }
 
     private boolean rememberTypeRecordIfNeeded(String typeName, JSDocInfo info) {

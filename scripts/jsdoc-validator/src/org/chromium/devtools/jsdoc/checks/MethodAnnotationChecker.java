@@ -40,39 +40,37 @@ public final class MethodAnnotationChecker extends ContextTrackingChecker {
     }
 
     private void handleFunction(Node functionNode) {
-        Node parametersNode = NodeUtil.getFunctionParameters(functionNode);
-        int actualParamCount = parametersNode.getChildCount();
-        if (actualParamCount == 0) {
+        FunctionRecord function = getState().getCurrentFunctionRecord();
+        if (function == null || function.parameterNames.size() == 0) {
             return;
         }
-        JSDocInfo jsDocInfo = NodeUtil.getBestJSDocInfo(functionNode);
-        String[] nonAnnotatedParams = getNonAnnotatedParamData(parametersNode, jsDocInfo);
-        if (nonAnnotatedParams.length > 0 && actualParamCount != nonAnnotatedParams.length) {
-            reportErrorAtOffset(jsDocInfo.getOriginalCommentPosition(),
+        String[] nonAnnotatedParams = getNonAnnotatedParamData(function);
+        if (nonAnnotatedParams.length > 0
+            && function.parameterNames.size() != nonAnnotatedParams.length) {
+            reportErrorAtOffset(function.info.getOriginalCommentPosition(),
                     String.format(
                             "No @param JSDoc tag found for parameters: [%s]",
                             Joiner.on(',').join(nonAnnotatedParams)));
         }
     }
 
-    private String[] getNonAnnotatedParamData(Node params, JSDocInfo info) {
-        if (info == null) {
+    private String[] getNonAnnotatedParamData(FunctionRecord function) {
+        if (function.info == null) {
             return new String[0];
         }
         Set<String> formalParamNames = new HashSet<>();
-        for (int i = 0, childCount = params.getChildCount(); i < childCount; ++i) {
-            Node paramNode = params.getChildAtIndex(i);
-            String paramName = getContext().getNodeText(paramNode);
+        for (int i = 0; i < function.parameterNames.size(); ++i) {
+            String paramName = function.parameterNames.get(i);
             if (!formalParamNames.add(paramName)) {
-                reportErrorAtNodeStart(paramNode,
+                reportErrorAtNodeStart(function.functionNode,
                         String.format("Duplicate function argument name: %s", paramName));
             }
         }
-        Matcher m = PARAM_PATTERN.matcher(info.getOriginalCommentString());
+        Matcher m = PARAM_PATTERN.matcher(function.info.getOriginalCommentString());
         while (m.find()) {
             String paramType = m.group(1);
             if (paramType == null) {
-                reportErrorAtOffset(info.getOriginalCommentPosition() + m.start(2),
+                reportErrorAtOffset(function.info.getOriginalCommentPosition() + m.start(2),
                         String.format(
                                 "Invalid @param annotation found -"
                                 + " should be \"@param {<type>} paramName\""));

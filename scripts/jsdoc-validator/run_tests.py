@@ -55,6 +55,7 @@ def main():
             return
 
     result = run_and_communicate(validator_command, "Error running validator: %d")
+    result = result.replace(script_path, "")  # pylint: disable=E1103
     if need_dump:
         print result
         return
