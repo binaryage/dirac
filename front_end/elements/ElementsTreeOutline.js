@@ -45,8 +45,8 @@ WebInspector.ElementsTreeOutline = function(target, omitRootDOMNode, selectEnabl
     this._shadowRoot = element.createShadowRoot();
     this._shadowRoot.appendChild(WebInspector.View.createStyleElement("elements/elementsTreeOutline.css"));
 
-    var outlineDisclosureElement = this._shadowRoot.createChild("div", "component-root outline-disclosure source-code");
-    this._element = outlineDisclosureElement.createChild("ol", "elements-tree-outline");
+    var outlineDisclosureElement = this._shadowRoot.createChild("div", "component-root outline-disclosure");
+    this._element = outlineDisclosureElement.createChild("ol", "elements-tree-outline source-code");
     this._element.addEventListener("mousedown", this._onmousedown.bind(this), false);
     this._element.addEventListener("mousemove", this._onmousemove.bind(this), false);
     this._element.addEventListener("mouseleave", this._onmouseleave.bind(this), false);
@@ -112,6 +112,14 @@ WebInspector.ElementsTreeOutline.MappedCharToEntity = {
 }
 
 WebInspector.ElementsTreeOutline.prototype = {
+    /**
+     * @param {boolean} wrap
+     */
+    setWordWrap: function(wrap)
+    {
+        this._element.classList.toggle("nowrap", !wrap);
+    },
+
     /**
      * @param {!Event} event
      */

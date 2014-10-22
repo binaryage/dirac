@@ -50,8 +50,9 @@ WebInspector.ElementsPanel = function()
 
     this.contentElement = stackElement.createChild("div");
     this.contentElement.id = "elements-content";
-    if (!WebInspector.settings.domWordWrap.get())
-        this.contentElement.classList.add("nowrap");
+    // FIXME: crbug.com/425984
+    if (WebInspector.settings.domWordWrap.get())
+        this.contentElement.classList.add("elements-wrap");
     WebInspector.settings.domWordWrap.addChangeListener(this._domWordWrapSettingChanged.bind(this));
 
     this._splitView.sidebarElement().addEventListener("contextmenu", this._sidebarContextMenuEventFired.bind(this), false);
@@ -129,6 +130,7 @@ WebInspector.ElementsPanel.prototype = {
     targetAdded: function(target)
     {
         var treeOutline = new WebInspector.ElementsTreeOutline(target, true, true, this._setPseudoClassForNode.bind(this));
+        treeOutline.setWordWrap(WebInspector.settings.domWordWrap.get());
         treeOutline.wireToDOMModel();
         treeOutline.addEventListener(WebInspector.ElementsTreeOutline.Events.SelectedNodeChanged, this._selectedNodeChanged, this);
         treeOutline.addEventListener(WebInspector.ElementsTreeOutline.Events.NodePicked, this._onNodePicked, this);
@@ -443,10 +445,10 @@ WebInspector.ElementsPanel.prototype = {
 
     _domWordWrapSettingChanged: function(event)
     {
-        if (event.data)
-            this.contentElement.classList.remove("nowrap");
-        else
-            this.contentElement.classList.add("nowrap");
+        // FIXME: crbug.com/425984
+        this.contentElement.classList.toggle("elements-wrap", event.data);
+        for (var i = 0; i < this._treeOutlines.length; ++i)
+            this._treeOutlines[i].setWordWrap(/** @type {boolean} */ (event.data));
 
         var selectedNode = this.selectedDOMNode();
         if (!selectedNode)

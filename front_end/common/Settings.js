@@ -38,7 +38,7 @@ WebInspector.Settings = function()
 
     this.colorFormat = this.createSetting("colorFormat", "original");
     this.consoleHistory = this.createSetting("consoleHistory", []);
-    this.domWordWrap = this.createSetting("domWordWrap", true);
+    this.domWordWrap = this.createSetting("domWordWrap", false);
     this.eventListenersFilter = this.createSetting("eventListenersFilter", "all");
     this.lastViewedScriptFile = this.createSetting("lastViewedScriptFile", "application");
     this.monitoringXHREnabled = this.createSetting("monitoringXHREnabled", false);

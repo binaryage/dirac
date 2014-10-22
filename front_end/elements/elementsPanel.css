@@ -34,6 +34,10 @@
     transform: translateZ(0);
 }
 
+#elements-content.elements-wrap {
+    overflow-x: hidden;
+}
+
 #elements-crumbs {
     flex: 0 0 19px;
     background-color: white;
