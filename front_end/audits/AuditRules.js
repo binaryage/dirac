@@ -53,7 +53,7 @@ WebInspector.AuditRules.getDomainToResourcesMap = function(requests, types, need
     var domainToResourcesMap = {};
     for (var i = 0, size = requests.length; i < size; ++i) {
         var request = requests[i];
-        if (types && types.indexOf(request.type) === -1)
+        if (types && types.indexOf(request.resourceType()) === -1)
             continue;
         var parsedURL = request.url.asParsedURL();
         if (!parsedURL)
@@ -134,7 +134,7 @@ WebInspector.AuditRules.GzipRule.prototype = {
      */
     _shouldCompress: function(request)
     {
-        return request.type.isTextType() && request.parsedURL.host && request.resourceSize !== undefined && request.resourceSize > 150;
+        return request.resourceType().isTextType() && request.parsedURL.host && request.resourceSize !== undefined && request.resourceSize > 150;
     },
 
     __proto__: WebInspector.AuditRule.prototype
@@ -414,7 +414,7 @@ WebInspector.AuditRules.UnusedCssRule.prototype = {
                         continue;
 
                     var resource = WebInspector.resourceForURL(styleSheet.sourceURL);
-                    var isInlineBlock = resource && resource.request && resource.request.type === WebInspector.resourceTypes.Document;
+                    var isInlineBlock = resource && resource.request && resource.request.resourceType() === WebInspector.resourceTypes.Document;
                     var url = !isInlineBlock ? WebInspector.AuditRuleResult.linkifyDisplayName(styleSheet.sourceURL) : WebInspector.UIString("Inline block #%d", ++inlineBlockOrdinal);
                     var pctUnused = Math.round(100 * unusedRules.length / styleSheet.rules.length);
                     if (!summary)
@@ -677,7 +677,7 @@ WebInspector.AuditRules.CacheControlRule.prototype = {
      */
     isCompressible: function(request)
     {
-        return request.type.isTextType();
+        return request.resourceType().isTextType();
     },
 
     /**

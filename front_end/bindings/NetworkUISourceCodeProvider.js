@@ -197,7 +197,7 @@ WebInspector.NetworkUISourceCodeProvider.FallbackResource.prototype = {
      */
     contentType: function()
     {
-        return this._resource.contentType();
+        return this._resource.resourceType();
     },
 
     /**
@@ -217,9 +217,10 @@ WebInspector.NetworkUISourceCodeProvider.FallbackResource.prototype = {
             }
 
             var contentProvider;
-            if (this._resource.type === WebInspector.resourceTypes.Document)
+            var type = this._resource.resourceType();
+            if (type === WebInspector.resourceTypes.Document)
                 contentProvider = new WebInspector.ConcatenatedScriptsContentProvider(scripts);
-            else if (this._resource.type === WebInspector.resourceTypes.Script)
+            else if (type === WebInspector.resourceTypes.Script)
                 contentProvider = scripts[0];
 
             console.assert(contentProvider, "Resource content request failed. " + this._resource.url);

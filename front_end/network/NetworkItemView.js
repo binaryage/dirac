@@ -43,7 +43,7 @@ WebInspector.NetworkItemView = function(request)
 
     this.addEventListener(WebInspector.TabbedPane.EventTypes.TabSelected, this._tabSelected, this);
 
-    if (request.type === WebInspector.resourceTypes.WebSocket) {
+    if (request.resourceType() === WebInspector.resourceTypes.WebSocket) {
         var frameView = new WebInspector.ResourceWebSocketFrameView(request);
         this.appendTab("webSocketFrames", WebInspector.UIString("Frames"), frameView);
     } else {

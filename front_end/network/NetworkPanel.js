@@ -1218,7 +1218,7 @@ WebInspector.NetworkLogView.prototype = {
         contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Clear browser cache" : "Clear Browser Cache"), this._clearBrowserCache.bind(this));
         contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Clear browser cookies" : "Clear Browser Cookies"), this._clearBrowserCookies.bind(this));
 
-        if (request && request.type === WebInspector.resourceTypes.XHR) {
+        if (request && request.resourceType() === WebInspector.resourceTypes.XHR) {
             contextMenu.appendSeparator();
             contextMenu.appendItem(WebInspector.UIString("Replay XHR"), this._replayXHR.bind(this, request.requestId));
             contextMenu.appendSeparator();
@@ -1480,7 +1480,7 @@ WebInspector.NetworkLogView.prototype = {
     _applyFilter: function(node)
     {
         var request = node.request();
-        if (!this._resourceTypeFilterUI.accept(request.type.name()))
+        if (!this._resourceTypeFilterUI.accept(request.resourceType().name()))
             return false;
         if (this._dataURLFilterUI.checked() && request.parsedURL.isDataURL())
             return false;
@@ -2779,7 +2779,7 @@ WebInspector.NetworkDataGridNode.prototype = {
         this._barAreaElement = cell.createChild("div", "network-graph-bar-area");
         this._barAreaElement.request = this._request;
 
-        var type = this._request.type.name();
+        var type = this._request.resourceType().name();
         var cached = this._request.cached();
 
         this._barLeftElement = this._barAreaElement.createChild("div", "network-graph-bar");
@@ -2824,7 +2824,7 @@ WebInspector.NetworkDataGridNode.prototype = {
         cell.addEventListener("click", this._onClick.bind(this), false);
         cell.addEventListener("dblclick", this._openInNewTab.bind(this), false);
         var iconElement;
-        if (this._request.type === WebInspector.resourceTypes.Image) {
+        if (this._request.resourceType() === WebInspector.resourceTypes.Image) {
             var previewImage = createElementWithClass("img", "image-network-icon-preview");
             this._request.populateImageSource(previewImage);
 
@@ -2833,7 +2833,7 @@ WebInspector.NetworkDataGridNode.prototype = {
         } else {
             iconElement = createElementWithClass("img", "icon");
         }
-        iconElement.classList.add(this._request.type.name());
+        iconElement.classList.add(this._request.resourceType().name());
 
         cell.appendChild(iconElement);
         cell.createTextChild(this._request.name());

@@ -59,7 +59,8 @@ WebInspector.NetworkRequest = function(target, requestId, url, documentURL, fram
     this.requestMethod = "";
     this.requestTime = 0;
 
-    this._type = WebInspector.resourceTypes.Other;
+    /** @type {!WebInspector.ResourceType} */
+    this._resourceType = WebInspector.resourceTypes.Other;
     this._contentEncoded = false;
     this._pendingContentCallbacks = [];
     /** @type {!Array.<!WebInspector.NetworkRequest.WebSocketFrame>} */
@@ -487,14 +488,17 @@ WebInspector.NetworkRequest.prototype = {
     /**
      * @return {!WebInspector.ResourceType}
      */
-    get type()
+    resourceType: function()
     {
-        return this._type;
+        return this._resourceType;
     },
 
-    set type(x)
+    /**
+     * @param {!WebInspector.ResourceType} resourceType
+     */
+    setResourceType: function(resourceType)
     {
-        this._type = x;
+        this._resourceType = resourceType;
     },
 
     /**
@@ -822,7 +826,7 @@ WebInspector.NetworkRequest.prototype = {
      */
     contentType: function()
     {
-        return this._type;
+        return this._resourceType;
     },
 
     /**
@@ -833,7 +837,7 @@ WebInspector.NetworkRequest.prototype = {
         // We do not support content retrieval for WebSockets at the moment.
         // Since WebSockets are potentially long-living, fail requests immediately
         // to prevent caller blocking until resource is marked as finished.
-        if (this.type === WebInspector.resourceTypes.WebSocket) {
+        if (this._resourceType === WebInspector.resourceTypes.WebSocket) {
             callback(null);
             return;
         }

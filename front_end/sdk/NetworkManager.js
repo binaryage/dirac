@@ -214,7 +214,7 @@ WebInspector.NetworkDispatcher.prototype = {
             var consoleModel = this._manager._target.consoleModel;
             consoleModel.addMessage(new WebInspector.ConsoleMessage(consoleModel.target(), WebInspector.ConsoleMessage.MessageSource.Network,
                 WebInspector.ConsoleMessage.MessageLevel.Log,
-                WebInspector.UIString("Resource interpreted as %s but transferred with MIME type %s: \"%s\".", networkRequest.type.title(), networkRequest.mimeType, networkRequest.url),
+                WebInspector.UIString("Resource interpreted as %s but transferred with MIME type %s: \"%s\".", networkRequest.resourceType().title(), networkRequest.mimeType, networkRequest.url),
                 WebInspector.ConsoleMessage.MessageType.Log,
                 "",
                 0,
@@ -238,18 +238,19 @@ WebInspector.NetworkDispatcher.prototype = {
         if (networkRequest.hasErrorStatusCode() || networkRequest.statusCode === 304 || networkRequest.statusCode === 204)
             return true;
 
-        if (typeof networkRequest.type === "undefined"
-            || networkRequest.type === WebInspector.resourceTypes.Other
-            || networkRequest.type === WebInspector.resourceTypes.Media
-            || networkRequest.type === WebInspector.resourceTypes.XHR
-            || networkRequest.type === WebInspector.resourceTypes.WebSocket)
+        var resourceType = networkRequest.resourceType();
+        if (resourceType === undefined
+            || resourceType === WebInspector.resourceTypes.Other
+            || resourceType === WebInspector.resourceTypes.Media
+            || resourceType === WebInspector.resourceTypes.XHR
+            || resourceType === WebInspector.resourceTypes.WebSocket)
             return true;
 
         if (!networkRequest.mimeType)
             return true; // Might be not known for cached resources with null responses.
 
         if (networkRequest.mimeType in WebInspector.NetworkManager._MIMETypes)
-            return networkRequest.type.name() in WebInspector.NetworkManager._MIMETypes[networkRequest.mimeType];
+            return resourceType.name() in WebInspector.NetworkManager._MIMETypes[networkRequest.mimeType];
 
         return false;
     },
@@ -318,7 +319,7 @@ WebInspector.NetworkDispatcher.prototype = {
         }
 
         networkRequest.responseReceivedTime = time;
-        networkRequest.type = WebInspector.resourceTypes[resourceType];
+        networkRequest.setResourceType(WebInspector.resourceTypes[resourceType]);
 
         this._updateNetworkRequestWithResponse(networkRequest, response);
 
@@ -372,7 +373,7 @@ WebInspector.NetworkDispatcher.prototype = {
             return;
 
         networkRequest.failed = true;
-        networkRequest.type = WebInspector.resourceTypes[resourceType];
+        networkRequest.setResourceType(WebInspector.resourceTypes[resourceType]);
         networkRequest.canceled = canceled;
         networkRequest.localizedFailDescription = localizedDescription;
         this._finishNetworkRequest(networkRequest, time, -1);
@@ -386,7 +387,7 @@ WebInspector.NetworkDispatcher.prototype = {
     {
         // FIXME: WebSocket MUST have initiator info.
         var networkRequest = new WebInspector.NetworkRequest(this._manager._target, requestId, requestURL, "", "", "", null);
-        networkRequest.type = WebInspector.resourceTypes.WebSocket;
+        networkRequest.setResourceType(WebInspector.resourceTypes.WebSocket);
         this._startNetworkRequest(networkRequest);
     },
 

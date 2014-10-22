@@ -657,7 +657,7 @@ WebInspector.ConsoleView.prototype = {
         contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Clear console" : "Clear Console"), this._requestClearMessages.bind(this));
 
         var request = consoleMessage ? consoleMessage.request : null;
-        if (request && request.type === WebInspector.resourceTypes.XHR) {
+        if (request && request.resourceType() === WebInspector.resourceTypes.XHR) {
             contextMenu.appendSeparator();
             contextMenu.appendItem(WebInspector.UIString("Replay XHR"), NetworkAgent.replayXHR.bind(null, request.requestId));
         }

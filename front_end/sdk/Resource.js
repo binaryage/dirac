@@ -164,9 +164,9 @@ WebInspector.Resource.prototype = {
     /**
      * @return {!WebInspector.ResourceType}
      */
-    get type()
+    resourceType: function()
     {
-        return this._request ? this._request.type : this._type;
+        return this._request ? this._request.resourceType() : this._type;
     },
 
     /**
@@ -262,7 +262,7 @@ WebInspector.Resource.prototype = {
      */
     contentType: function()
     {
-        return this.type;
+        return this.resourceType();
     },
 
     /**
@@ -285,7 +285,7 @@ WebInspector.Resource.prototype = {
      */
     canonicalMimeType: function()
     {
-        return this.type.canonicalMimeType() || this.mimeType;
+        return this.resourceType().canonicalMimeType() || this.mimeType;
     },
 
     /**
@@ -305,7 +305,7 @@ WebInspector.Resource.prototype = {
             callback(searchMatches || []);
         }
 
-        if (this.type === WebInspector.resourceTypes.Document) {
+        if (this.resourceType() === WebInspector.resourceTypes.Document) {
             callback([]);
             return;
         }

@@ -292,7 +292,7 @@ WebInspector.ResourceTreeModel.prototype = {
             return;
 
         var request = /** @type {!WebInspector.NetworkRequest} */ (event.data);
-        if (request.failed || request.type === WebInspector.resourceTypes.XHR)
+        if (request.failed || request.resourceType() === WebInspector.resourceTypes.XHR)
             return;
 
         var frame = this._frames[request.frameId];
@@ -664,7 +664,7 @@ WebInspector.ResourceTreeFrame.prototype = {
             // Already in the tree, we just got an extra update.
             return resource;
         }
-        resource = new WebInspector.Resource(this.target(), request, request.url, request.documentURL, request.frameId, request.loaderId, request.type, request.mimeType);
+        resource = new WebInspector.Resource(this.target(), request, request.url, request.documentURL, request.frameId, request.loaderId, request.resourceType(), request.mimeType);
         this._resourcesMap[resource.url] = resource;
         this._model.dispatchEventToListeners(WebInspector.ResourceTreeModel.EventTypes.ResourceAdded, resource);
         return resource;

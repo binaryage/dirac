@@ -53,7 +53,7 @@ WebInspector.RequestResponseView.prototype = {
         }
 
         var sourceFrame = new WebInspector.ResourceSourceFrame(contentProvider);
-        sourceFrame.setHighlighterType(this.request.type.canonicalMimeType() || this.request.mimeType);
+        sourceFrame.setHighlighterType(this.request.resourceType().canonicalMimeType() || this.request.mimeType);
         this._sourceView = sourceFrame;
         return this._sourceView;
     },
@@ -119,7 +119,7 @@ WebInspector.RequestResponseView.ContentProvider.prototype = {
      */
     contentType: function()
     {
-        return this._request.contentType();
+        return this._request.resourceType();
     },
 
     /**

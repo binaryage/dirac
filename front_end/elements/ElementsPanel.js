@@ -487,7 +487,7 @@ WebInspector.ElementsPanel.prototype = {
                 continue;
 
             var resource = this._treeOutlines[i].target().resourceTreeModel.resourceForURL(anchor.href);
-            if (!resource || resource.type !== WebInspector.resourceTypes.Image)
+            if (!resource || resource.resourceType() !== WebInspector.resourceTypes.Image)
                 return;
             anchor.removeAttribute("title");
             return anchor;
