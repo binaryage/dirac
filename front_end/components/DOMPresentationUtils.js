@@ -105,7 +105,7 @@ WebInspector.DOMPresentationUtils.linkifyNodeReference = function(node)
 
     link.addEventListener("click", WebInspector.Revealer.reveal.bind(WebInspector.Revealer, node, undefined), false);
     link.addEventListener("mouseover", node.highlight.bind(node, undefined, undefined), false);
-    link.addEventListener("mouseout", node.domModel().hideDOMNodeHighlight.bind(node.domModel()), false);
+    link.addEventListener("mouseleave", node.domModel().hideDOMNodeHighlight.bind(node.domModel()), false);
 
     return link;
 }

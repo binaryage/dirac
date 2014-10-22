@@ -246,8 +246,8 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
             this.valueElement.addEventListener("contextmenu", this._contextMenuFired.bind(this, this.property.value), false);
             if (type === "object" && subtype === "node" && description) {
                 WebInspector.DOMPresentationUtils.createSpansForNodeTitle(this.valueElement, description);
-                this.valueElement.addEventListener("mousemove", this._mouseMove.bind(this, this.property.value), false);
-                this.valueElement.addEventListener("mouseout", this._mouseOut.bind(this, this.property.value), false);
+                this.valueElement.addEventListener("mousemove", this._mouseMove.bind(this), false);
+                this.valueElement.addEventListener("mouseleave", this._mouseLeave.bind(this), false);
             } else {
                 this.valueElement.title = description || "";
             }
@@ -288,7 +288,7 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
         this.property.value.highlightAsDOMNode();
     },
 
-    _mouseOut: function(event)
+    _mouseLeave: function(event)
     {
         this.property.value.hideDOMNodeHighlight();
     },

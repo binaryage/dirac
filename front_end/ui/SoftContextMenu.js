@@ -44,6 +44,11 @@ WebInspector.SoftContextMenu.prototype = {
      */
     show: function(document, x, y)
     {
+        if (this._contextMenuElement)
+            this._discardMenu(true);
+        if (!this._items.length)
+            return;
+
         this._document = document;
         this._x = x;
         this._y = y;
@@ -110,7 +115,7 @@ WebInspector.SoftContextMenu.prototype = {
 
         // Manually manage hover highlight since :hover does not work in case of click-and-hold menu invocation.
         menuItemElement.addEventListener("mouseover", this._menuItemMouseOver.bind(this), false);
-        menuItemElement.addEventListener("mouseout", this._menuItemMouseOut.bind(this), false);
+        menuItemElement.addEventListener("mouseleave", this._menuItemMouseLeave.bind(this), false);
 
         menuItemElement._actionId = item.id;
         return menuItemElement;
@@ -136,7 +141,7 @@ WebInspector.SoftContextMenu.prototype = {
 
         // Manually manage hover highlight since :hover does not work in case of click-and-hold menu invocation.
         menuItemElement.addEventListener("mouseover", this._menuItemMouseOver.bind(this), false);
-        menuItemElement.addEventListener("mouseout", this._menuItemMouseOut.bind(this), false);
+        menuItemElement.addEventListener("mouseleave", this._menuItemMouseLeave.bind(this), false);
 
         return menuItemElement;
     },
@@ -208,7 +213,7 @@ WebInspector.SoftContextMenu.prototype = {
         this._highlightMenuItem(event.target);
     },
 
-    _menuItemMouseOut: function(event)
+    _menuItemMouseLeave: function(event)
     {
         if (!this._subMenu || !event.relatedTarget) {
             this._highlightMenuItem(null);
@@ -216,7 +221,7 @@ WebInspector.SoftContextMenu.prototype = {
         }
 
         var relatedTarget = event.relatedTarget;
-        if (this._contextMenuElement.isSelfOrAncestor(relatedTarget) || relatedTarget.classList.contains("soft-context-menu-glass-pane"))
+        if (relatedTarget.classList.contains("soft-context-menu-glass-pane"))
             this._highlightMenuItem(null);
     },
 

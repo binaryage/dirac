@@ -47,7 +47,7 @@ WebInspector.Layers3DView = function()
     this._canvasElement.addEventListener("dblclick", this._onDoubleClick.bind(this), false);
     this._canvasElement.addEventListener("mousedown", this._onMouseDown.bind(this), false);
     this._canvasElement.addEventListener("mouseup", this._onMouseUp.bind(this), false);
-    this._canvasElement.addEventListener("mouseout", this._onMouseMove.bind(this), false);
+    this._canvasElement.addEventListener("mouseleave", this._onMouseMove.bind(this), false);
     this._canvasElement.addEventListener("mousemove", this._onMouseMove.bind(this), false);
     this._canvasElement.addEventListener("contextmenu", this._onContextMenu.bind(this), false);
 

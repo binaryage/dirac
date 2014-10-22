@@ -124,7 +124,7 @@ WebInspector.WatchExpressionsSection = function()
     this.propertiesElement.classList.add("watch-expressions");
 
     this.element.addEventListener("mousemove", this._mouseMove.bind(this), true);
-    this.element.addEventListener("mouseout", this._mouseOut.bind(this), true);
+    this.element.addEventListener("mouseleave", this._mouseLeave.bind(this), true);
     this.element.addEventListener("dblclick", this._sectionDoubleClick.bind(this), false);
     this.emptyElement.addEventListener("contextmenu", this._emptyElementContextMenu.bind(this), false);
 }
@@ -311,7 +311,7 @@ WebInspector.WatchExpressionsSection.prototype = {
             this._updateHoveredElement(e.pageY);
     },
 
-    _mouseOut: function()
+    _mouseLeave: function()
     {
         if (this._hoveredElement) {
             this._hoveredElement.classList.remove("hovered");

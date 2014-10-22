@@ -91,7 +91,7 @@ WebInspector.ResourcesPanel = function()
     this._domains = {};
 
     this.sidebarElement().addEventListener("mousemove", this._onmousemove.bind(this), false);
-    this.sidebarElement().addEventListener("mouseout", this._onmouseout.bind(this), false);
+    this.sidebarElement().addEventListener("mouseleave", this._onmouseleave.bind(this), false);
 
     /**
      * @this {WebInspector.ResourcesPanel}
@@ -793,7 +793,7 @@ WebInspector.ResourcesPanel.prototype = {
         }
     },
 
-    _onmouseout: function(event)
+    _onmouseleave: function(event)
     {
         if (this._previousHoveredElement) {
             this._previousHoveredElement.hovered = false;

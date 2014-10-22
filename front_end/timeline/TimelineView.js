@@ -67,7 +67,7 @@ WebInspector.TimelineView = function(delegate, model, uiUtils)
     this._popoverHelper = new WebInspector.PopoverHelper(this.element, this._getPopoverAnchor.bind(this), this._showPopover.bind(this));
 
     this.element.addEventListener("mousemove", this._mouseMove.bind(this), false);
-    this.element.addEventListener("mouseout", this._mouseOut.bind(this), false);
+    this.element.addEventListener("mouseleave", this._mouseLeave.bind(this), false);
     this.element.addEventListener("keydown", this._keyDown.bind(this), false);
 
     this._expandOffset = 15;
@@ -722,7 +722,7 @@ WebInspector.TimelineView.prototype = {
             return anchor;
     },
 
-    _mouseOut: function()
+    _mouseLeave: function()
     {
         this._hideQuadHighlight();
     },
@@ -1035,7 +1035,7 @@ WebInspector.TimelineRecordListRow = function(linkifier, selectRecord, scheduleR
     this.element.style.cursor = "pointer";
     this.element.addEventListener("click", this._onClick.bind(this), false);
     this.element.addEventListener("mouseover", this._onMouseOver.bind(this), false);
-    this.element.addEventListener("mouseout", this._onMouseOut.bind(this), false);
+    this.element.addEventListener("mouseleave", this._onMouseLeave.bind(this), false);
     this._linkifier = linkifier;
 
     // Warning is float right block, it goes first.
@@ -1147,11 +1147,11 @@ WebInspector.TimelineRecordListRow.prototype = {
     /**
      * @param {!Event} event
      */
-    _onMouseOut: function(event)
+    _onMouseLeave: function(event)
     {
         this.element.classList.remove("hovered");
-    if (this._record.graphRow())
-        this._record.graphRow().element.classList.remove("hovered");
+        if (this._record.graphRow())
+            this._record.graphRow().element.classList.remove("hovered");
     }
 }
 
@@ -1166,7 +1166,7 @@ WebInspector.TimelineRecordGraphRow = function(graphContainer, selectRecord, sch
     this.element = createElement("div");
     this.element.row = this;
     this.element.addEventListener("mouseover", this._onMouseOver.bind(this), false);
-    this.element.addEventListener("mouseout", this._onMouseOut.bind(this), false);
+    this.element.addEventListener("mouseleave", this._onMouseLeave.bind(this), false);
     this.element.addEventListener("click", this._onClick.bind(this), false);
 
     this._barAreaElement = this.element.createChild("div", "timeline-graph-bar-area");
@@ -1246,7 +1246,7 @@ WebInspector.TimelineRecordGraphRow.prototype = {
     /**
      * @param {!Event} event
      */
-    _onMouseOut: function(event)
+    _onMouseLeave: function(event)
     {
         this.element.classList.remove("hovered");
         if (this._record.listRow())
