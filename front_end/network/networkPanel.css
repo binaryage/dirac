@@ -178,6 +178,11 @@
     padding-right: 4px;
 }
 
+.network-filters-header .filter-text-filter {
+    flex-grow: 1;
+    max-width: 312px;
+}
+
 .request-view.json {
     padding: 5px;
 }
