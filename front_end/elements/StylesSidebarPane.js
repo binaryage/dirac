@@ -547,7 +547,7 @@ WebInspector.StylesSidebarPane.prototype = {
 
     _styleSheetOrMediaQueryResultChanged: function()
     {
-        if (this._userOperation || this._isEditingStyle)
+        if (this._userOperation || this._isEditingStyle || !this.isShowing())
             return;
 
         this._rebuildUpdate();
