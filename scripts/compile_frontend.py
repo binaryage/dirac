@@ -88,8 +88,9 @@ def error_excepthook(exctype, value, traceback):
 sys.excepthook = error_excepthook
 
 
+application_descriptors = ['devtools.json', 'toolbox.json']
 loader = modular_build.DescriptorLoader(devtools_frontend_path)
-descriptors = loader.load_application('devtools.json')
+descriptors = loader.load_applications(application_descriptors)
 modules_by_name = descriptors.modules
 
 

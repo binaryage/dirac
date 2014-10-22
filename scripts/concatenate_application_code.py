@@ -194,7 +194,7 @@ class ReleaseBuilder(AppBuilder):
         self._concatenate_autostart_modules(output)
         output.write('/* Application descriptor %s */\n' % self.app_file('json'))
         output.write('applicationDescriptor = ')
-        output.write(self.descriptors.application_json)
+        output.write(self.descriptors.application_json())
         output.write(';\n/* Core CSS */\n')
         self._write_module_css_styles(self.core_css_names(), output)
         output.write('\n/* Application loader */\n')

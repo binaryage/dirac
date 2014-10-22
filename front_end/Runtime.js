@@ -319,7 +319,7 @@ Runtime.startApplication = function(appName)
          */
         function instantiateRuntime(moduleDescriptors)
         {
-            for (var i = 0; i < moduleDescriptors.length; ++i)
+            for (var i = 0; !Runtime.isReleaseMode() && i < moduleDescriptors.length; ++i)
                 moduleDescriptors[i]["name"] = configuration[i]["name"];
             self.runtime = new Runtime(moduleDescriptors, coreModuleNames);
         }
