@@ -598,13 +598,21 @@ WebInspector.ConsoleViewMessage.prototype = {
      */
     _formatParameterAsNode: function(object, elem)
     {
-        WebInspector.Renderer.renderPromise(object).then(appendRenderer).done();
+        WebInspector.Renderer.renderPromise(object).then(appendRenderer, failedToRender.bind(this)).done();
         /**
          * @param {!Element} rendererElement
          */
         function appendRenderer(rendererElement)
         {
             elem.appendChild(rendererElement);
+        }
+
+        /**
+         * @this {WebInspector.ConsoleViewMessage}
+         */
+        function failedToRender()
+        {
+            this._formatParameterAsObject(object, elem, false);
         }
     },
 
