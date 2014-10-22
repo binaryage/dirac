@@ -1558,6 +1558,7 @@ WebInspector.HeapSnapshot.prototype = {
         var edgeTypeOffset = this._edgeTypeOffset;
         var edgeToNodeOffset = this._edgeToNodeOffset;
         var edgeShortcutType = this._edgeShortcutType;
+        var edgeWeakType = this._edgeWeakType;
         var firstEdgeIndexes = this._firstEdgeIndexes;
         var containmentEdges = this.containmentEdges;
         var containmentEdgesLength = this.containmentEdges.length;
@@ -1611,6 +1612,8 @@ WebInspector.HeapSnapshot.prototype = {
                 for (var retainerIndex = beginRetainerIndex; retainerIndex < endRetainerIndex; ++retainerIndex) {
                     var retainerEdgeIndex = retainingEdges[retainerIndex];
                     var retainerEdgeType = containmentEdges[retainerEdgeIndex + edgeTypeOffset];
+                    if (retainerEdgeType === edgeWeakType)
+                        continue;
                     var retainerNodeIndex = retainingNodes[retainerIndex];
                     if (retainerNodeIndex !== rootNodeIndex && retainerEdgeType === edgeShortcutType)
                         continue;
