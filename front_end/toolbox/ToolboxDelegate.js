@@ -9,8 +9,12 @@ WebInspector.ToolboxDelegate = function() {}
 
 WebInspector.ToolboxDelegate.prototype = {
     /**
-     * @param {!WebInspector.ResponsiveDesignView} responsiveDesignView
-     * @param {!WebInspector.InspectedPagePlaceholder} placeholder
+     * @param {!Element} rootElement
      */
-    toolboxLoaded: function(responsiveDesignView, placeholder) {}
+    toolboxLoaded: function(rootElement) {},
+
+    /**
+     * @return {!InspectorFrontendHostAPI}
+     */
+    inspectorFrontendHost: function() {}
 }
