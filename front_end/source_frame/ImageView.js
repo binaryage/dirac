@@ -93,9 +93,13 @@ WebInspector.ImageView.prototype = {
         this._imagePreviewElement = imagePreviewElement;
     },
 
+    /**
+     * @param {?string} content
+     * @return {number}
+     */
     _base64ToSize: function(content)
     {
-        if (!content.length)
+        if (!content || !content.length)
             return 0;
         var size = (content.length || 0) * 3 / 4;
         if (content.length > 0 && content[content.length - 1] === "=")
