@@ -49,7 +49,7 @@ WebInspector.ElementsTreeOutline = function(target, omitRootDOMNode, selectEnabl
     this._element = outlineDisclosureElement.createChild("ol", "elements-tree-outline");
     this._element.addEventListener("mousedown", this._onmousedown.bind(this), false);
     this._element.addEventListener("mousemove", this._onmousemove.bind(this), false);
-    this._element.addEventListener("mouseout", this._onmouseout.bind(this), false);
+    this._element.addEventListener("mouseleave", this._onmouseleave.bind(this), false);
     this._element.addEventListener("dragstart", this._ondragstart.bind(this), false);
     this._element.addEventListener("dragover", this._ondragover.bind(this), false);
     this._element.addEventListener("dragleave", this._ondragleave.bind(this), false);
@@ -232,8 +232,7 @@ WebInspector.ElementsTreeOutline.prototype = {
             return;
 
         // Do not interfere with text editing.
-        var currentFocusElement = WebInspector.currentFocusElement();
-        if (currentFocusElement && WebInspector.isBeingEdited(currentFocusElement))
+        if (WebInspector.isEditing())
             return;
 
         var targetNode = this.selectedDOMNode();
@@ -295,8 +294,7 @@ WebInspector.ElementsTreeOutline.prototype = {
     handlePasteKeyboardEvent: function(event)
     {
         // Do not interfere with text editing.
-        var currentFocusElement = WebInspector.currentFocusElement();
-        if (currentFocusElement && WebInspector.isBeingEdited(currentFocusElement))
+        if (WebInspector.isEditing())
             return;
 
         var targetNode = this.selectedDOMNode();
@@ -613,12 +611,8 @@ WebInspector.ElementsTreeOutline.prototype = {
             this._domModel.hideDOMNodeHighlight();
     },
 
-    _onmouseout: function(event)
+    _onmouseleave: function(event)
     {
-        var nodeUnderMouse = event.deepElementFromPoint();
-        if (nodeUnderMouse && nodeUnderMouse.isDescendant(this._element))
-            return;
-
         if (this._previousHoveredElement) {
             this._previousHoveredElement.hovered = false;
             delete this._previousHoveredElement;

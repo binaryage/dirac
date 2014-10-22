@@ -92,16 +92,21 @@ WebInspector.ShortcutRegistry.prototype = {
     {
         var keyModifiers = key >> 8;
         var actionIds = this.applicableActions(key);
+        if (!actionIds.length)
+            return;
         if (WebInspector.GlassPane.DefaultFocusedViewStack.length > 1) {
-            if (event && actionIds.length && !isPossiblyInputKey())
+            if (event && !isPossiblyInputKey())
                 event.consume(true);
             return;
         }
 
-        if (!isPossiblyInputKey())
+        if (!isPossiblyInputKey()) {
+            if (event)
+                event.consume(true);
             processActionIdsSequentially.call(this);
-        else
+        } else {
             this._pendingActionTimer = setTimeout(processActionIdsSequentially.bind(this), 0);
+        }
 
         /**
          * @this {WebInspector.ShortcutRegistry}
@@ -120,13 +125,8 @@ WebInspector.ShortcutRegistry.prototype = {
              */
             function continueIfNecessary(result)
             {
-                // Note that this is a best effort solution - lazily loaded modules won't have a chance to
-                // consume platform event.
-                if (result) {
-                    if (event)
-                        event.consume(true);
+                if (result)
                     return;
-                }
                 processActionIdsSequentially.call(this);
             }
         }
@@ -136,7 +136,7 @@ WebInspector.ShortcutRegistry.prototype = {
          */
         function isPossiblyInputKey()
         {
-            if (!event || !WebInspector.isBeingEdited(/** @type {!Node} */ (event.target)) || /^F\d+|Control|Shift|Alt|Meta|Win|U\+001B$/.test(keyIdentifier))
+            if (!event || !WebInspector.isEditing() || /^F\d+|Control|Shift|Alt|Meta|Win|U\+001B$/.test(keyIdentifier))
                 return false;
 
             if (!keyModifiers)

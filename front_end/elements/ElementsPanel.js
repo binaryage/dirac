@@ -60,7 +60,7 @@ WebInspector.ElementsPanel = function()
     crumbsContainer.id = "elements-crumbs";
     this.crumbsElement = crumbsContainer.createChild("div", "crumbs");
     this.crumbsElement.addEventListener("mousemove", this._mouseMovedInCrumbs.bind(this), false);
-    this.crumbsElement.addEventListener("mouseout", this._mouseMovedOutOfCrumbs.bind(this), false);
+    this.crumbsElement.addEventListener("mouseleave", this._mouseMovedOutOfCrumbs.bind(this), false);
 
     this.sidebarPanes = {};
     this.sidebarPanes.platformFonts = new WebInspector.PlatformFontsSidebarPane();
@@ -709,7 +709,7 @@ WebInspector.ElementsPanel.prototype = {
 
     _mouseMovedInCrumbs: function(event)
     {
-        var nodeUnderMouse = event.deepElementFromPoint();
+        var nodeUnderMouse = event.target;
         var crumbElement = nodeUnderMouse.enclosingNodeOrSelfWithClass("crumb");
         var node = /** @type {?WebInspector.DOMNode} */ (crumbElement ? crumbElement.representedObject : null);
         if (node)
@@ -718,10 +718,6 @@ WebInspector.ElementsPanel.prototype = {
 
     _mouseMovedOutOfCrumbs: function(event)
     {
-        var nodeUnderMouse = event.deepElementFromPoint();
-        if (nodeUnderMouse && nodeUnderMouse.isDescendant(this.crumbsElement))
-            return;
-
         for (var i = 0; i < this._treeOutlines.length; ++i)
             this._treeOutlines[i].domModel().hideDOMNodeHighlight();
     },

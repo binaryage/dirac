@@ -48,17 +48,17 @@ WebInspector.WorkspaceMappingTip.prototype = {
             var hasMappings = !!uiSourceCode.url;
             if (hasMappings)
                 return;
-        }
 
-        var networkProjects = this._workspace.projectsForType(WebInspector.projectTypes.Network);
-        networkProjects = networkProjects.concat(this._workspace.projectsForType(WebInspector.projectTypes.ContentScripts));
-        for (var i = 0; i < networkProjects.length; ++i) {
-            var name = uiSourceCode.name();
-            var networkUiSourceCodes = networkProjects[i].uiSourceCodes();
-            for (var j = 0; j < networkUiSourceCodes.length; ++j) {
-                if (networkUiSourceCodes[j].name() === name) {
-                    this._createMappingInfobar(uiSourceCode, false);
-                    return;
+            var networkProjects = this._workspace.projectsForType(WebInspector.projectTypes.Network);
+            networkProjects = networkProjects.concat(this._workspace.projectsForType(WebInspector.projectTypes.ContentScripts));
+            for (var i = 0; i < networkProjects.length; ++i) {
+                var name = uiSourceCode.name();
+                var networkUiSourceCodes = networkProjects[i].uiSourceCodes();
+                for (var j = 0; j < networkUiSourceCodes.length; ++j) {
+                    if (networkUiSourceCodes[j].name() === name) {
+                        this._createMappingInfobar(uiSourceCode, false);
+                        return;
+                    }
                 }
             }
         }

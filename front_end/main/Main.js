@@ -391,7 +391,12 @@ WebInspector.Main.prototype = {
 
     _documentClick: function(event)
     {
-        var target = event.deepElementFromPoint();
+        var target = event.target;
+        if (target.shadowRoot)
+            target = event.deepElementFromPoint();
+        if (!target)
+            return;
+
         var anchor = target.enclosingNodeOrSelfWithNodeName("a");
         if (!anchor || !anchor.href)
             return;

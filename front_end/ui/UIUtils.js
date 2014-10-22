@@ -193,6 +193,20 @@ WebInspector.isBeingEdited = function(node)
 }
 
 /**
+ * @return {boolean}
+ */
+WebInspector.isEditing = function()
+{
+    if (WebInspector.__editingCount)
+        return true;
+
+    var element = WebInspector.currentFocusElement();
+    if (!element)
+        return false;
+    return element.classList.contains("text-prompt") || element.nodeName === "INPUT" || element.nodeName === "TEXTAREA";
+}
+
+/**
  * @param {!Element} element
  * @param {boolean} value
  * @return {boolean}
@@ -628,9 +642,16 @@ WebInspector.currentFocusElement = function()
     return WebInspector._currentFocusElement;
 }
 
-WebInspector._focusChanged = function(event)
+/**
+ * @param {!Document} document
+ * @param {!Event} event
+ */
+WebInspector._focusChanged = function(document, event)
 {
-    WebInspector.setCurrentFocusElement(event.target);
+    var node = document.activeElement;
+    while (node && node.shadowRoot)
+        node = node.shadowRoot.activeElement;
+    WebInspector.setCurrentFocusElement(node);
 }
 
 /**
@@ -1121,6 +1142,6 @@ WebInspector.initializeUIUtils = function(window)
 {
     window.addEventListener("focus", WebInspector._windowFocused.bind(WebInspector, window.document), false);
     window.addEventListener("blur", WebInspector._windowBlurred.bind(WebInspector, window.document), false);
-    window.document.addEventListener("focus", WebInspector._focusChanged, true);
+    window.document.addEventListener("focus", WebInspector._focusChanged.bind(WebInspector, window.document), true);
     window.document.addEventListener("blur", WebInspector._documentBlurred.bind(WebInspector, window.document), true);
 }
