@@ -32,8 +32,6 @@ See http://dev.chromium.org/developers/how-tos/depottools/presubmit-scripts
 for more details about the presubmit API built into gcl.
 """
 
-import os
-import re
 import sys
 
 
@@ -48,7 +46,8 @@ def _CompileDevtoolsFrontend(input_api, output_api):
     # by this presubmit.
     # Once this is fixed, InjectedScriptHost.idl and JavaScriptCallFrame.idl
     # should be added to the list of triggers.
-    if (any("devtools/front_end" in path for path in local_paths) or
+    devtools_front_end = input_api.os_path.join("devtools", "front_end")
+    if (any(devtools_front_end in path for path in local_paths) or
         any("protocol.json" in path for path in local_paths) or
         any("InjectedScriptSource.js" in path for path in local_paths) or
         any("InjectedScriptCanvasModuleSource.js" in path for path in local_paths)):
@@ -75,14 +74,15 @@ def _CheckConvertSVGToPNGHashes(input_api, output_api):
         sys.path = original_sys_path
 
     absolute_local_paths = [af.AbsoluteLocalPath() for af in input_api.AffectedFiles(include_deletes=False)]
-    image_source_file_paths = [path for path in absolute_local_paths if "devtools/front_end/Images/src" in path and path.endswith(".svg")]
+    images_src_path = input_api.os_path.join("devtools", "front_end", "Images", "src")
+    image_source_file_paths = [path for path in absolute_local_paths if images_src_path in path and path.endswith(".svg")]
     image_sources_path = input_api.os_path.join(input_api.PresubmitLocalPath(), "front_end", "Images", "src")
     hashes_file_name = "svg2png.hashes"
-    hashes_file_path = image_sources_path + "/" + hashes_file_name
+    hashes_file_path = input_api.os_path.join(image_sources_path, hashes_file_name)
     invalid_hash_file_paths = devtools_file_hashes.files_with_invalid_hashes(hashes_file_path, image_source_file_paths)
     if len(invalid_hash_file_paths) == 0:
         return []
-    invalid_hash_file_names = [re.sub(".*/", "", file_path) for file_path in invalid_hash_file_paths]
+    invalid_hash_file_names = [input_api.os_path.basename(file_path) for file_path in invalid_hash_file_paths]
     file_paths_str = ", ".join(invalid_hash_file_names)
     error_message = "The following SVG files should be converted to PNG using convert_svg_images_png.py script before uploading: \n  - %s" % file_paths_str
     return [output_api.PresubmitError(error_message)]
@@ -100,14 +100,15 @@ def _CheckOptimizePNGHashes(input_api, output_api):
         sys.path = original_sys_path
 
     absolute_local_paths = [af.AbsoluteLocalPath() for af in input_api.AffectedFiles(include_deletes=False)]
-    image_source_file_paths = [path for path in absolute_local_paths if "devtools/front_end/Images/src" in path and path.endswith(".svg")]
+    images_src_path = input_api.os_path.join("devtools", "front_end", "Images", "src")
+    image_source_file_paths = [path for path in absolute_local_paths if images_src_path in path and path.endswith(".svg")]
     image_sources_path = input_api.os_path.join(input_api.PresubmitLocalPath(), "front_end", "Images", "src")
     hashes_file_name = "optimize_png.hashes"
-    hashes_file_path = image_sources_path + "/" + hashes_file_name
+    hashes_file_path = input_api.os_path.join(image_sources_path, hashes_file_name)
     invalid_hash_file_paths = devtools_file_hashes.files_with_invalid_hashes(hashes_file_path, image_source_file_paths)
     if len(invalid_hash_file_paths) == 0:
         return []
-    invalid_hash_file_names = [re.sub(".*/", "", file_path) for file_path in invalid_hash_file_paths]
+    invalid_hash_file_names = [input_api.os_path.basename(file_path) for file_path in invalid_hash_file_paths]
     file_paths_str = ", ".join(invalid_hash_file_names)
     error_message = "The following PNG files should be optimized using optimize_png_images.py script before uploading: \n  - %s" % file_paths_str
     return [output_api.PresubmitError(error_message)]

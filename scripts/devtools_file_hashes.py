@@ -28,7 +28,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import hashlib
-import re
+import os.path
 
 try:
     import json
@@ -65,7 +65,7 @@ def files_with_invalid_hashes(hash_file_path, file_paths):
     hashes = load_hashes(hash_file_path)
     result = []
     for file_path in file_paths:
-        file_name = re.sub(".*/", "", file_path)
+        file_name = os.path.basename(file_path)
         if calculate_file_hash(file_path) != hashes.get(file_name, ""):
             result.append(file_path)
     return result
@@ -74,6 +74,6 @@ def files_with_invalid_hashes(hash_file_path, file_paths):
 def update_file_hashes(hash_file_path, file_paths):
     hashes = {}
     for file_path in file_paths:
-        file_name = re.sub(".*/", "", file_path)
+        file_name = os.path.basename(file_path)
         hashes[file_name] = calculate_file_hash(file_path)
     save_hashes(hash_file_path, hashes)

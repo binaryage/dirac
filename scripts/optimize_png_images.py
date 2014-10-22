@@ -28,11 +28,8 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import devtools_file_hashes
-import glob
-import hashlib
 import os
 import os.path
-import re
 import subprocess
 import sys
 
@@ -55,7 +52,7 @@ hashes_file_path = os.path.join(image_sources_path, hashes_file_name)
 file_names = os.listdir(image_sources_path)
 svg_file_paths = [os.path.join(image_sources_path, file_name) for file_name in file_names if file_name.endswith(".svg")]
 svg_file_paths_to_optimize = devtools_file_hashes.files_with_invalid_hashes(hashes_file_path, svg_file_paths)
-svg_file_names = [re.sub(".svg$", "", os.path.basename(file_path)) for file_path in svg_file_paths_to_optimize]
+svg_file_names = [os.path.basename(file_path) for file_path in svg_file_paths_to_optimize]
 
 optimize_script_path = os.path.join("tools", "resources", "optimize-png-files.sh")
 
@@ -91,7 +88,7 @@ else:
 
 processes = {}
 for file_name in svg_file_names:
-    name = re.sub(".svg$", "", file_name)
+    name = os.path.splitext(file_name)[0]
     name2x = name + "_2x"
     processes[name] = optimize_png(name)
     processes[name2x] = optimize_png(name2x)
