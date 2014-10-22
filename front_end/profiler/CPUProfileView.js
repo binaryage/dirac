@@ -88,6 +88,14 @@ WebInspector.CPUProfileView._TypeTree = "Tree";
 WebInspector.CPUProfileView._TypeHeavy = "Heavy";
 
 WebInspector.CPUProfileView.prototype = {
+    focus: function()
+    {
+        if (this._flameChart)
+            this._flameChart.focus();
+        else
+            WebInspector.View.prototype.focus.call(this);
+    },
+
     /**
      * @return {?WebInspector.Target}
      */

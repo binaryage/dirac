@@ -388,6 +388,11 @@ WebInspector.CPUProfileFlameChart = function(dataProvider)
 }
 
 WebInspector.CPUProfileFlameChart.prototype = {
+    focus: function()
+    {
+        this._mainPane.focus();
+    },
+
     /**
      * @param {!WebInspector.Event} event
      */
