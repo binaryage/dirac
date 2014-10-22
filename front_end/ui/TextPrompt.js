@@ -134,6 +134,7 @@ WebInspector.TextPrompt.prototype = {
         this._element.addEventListener("mousewheel", this._boundOnMouseWheel, false);
         this._element.addEventListener("selectstart", this._boundSelectStart, false);
         this._element.addEventListener("blur", this._boundRemoveSuggestionAids, false);
+        this._element.ownerDocument.defaultView.addEventListener("resize", this._boundRemoveSuggestionAids, false);
 
         if (this._suggestBoxEnabled)
             this._suggestBox = new WebInspector.SuggestBox(this);
@@ -184,6 +185,7 @@ WebInspector.TextPrompt.prototype = {
         this._element.removeEventListener("input", this._boundOnInput, false);
         this._element.removeEventListener("selectstart", this._boundSelectStart, false);
         this._element.removeEventListener("blur", this._boundRemoveSuggestionAids, false);
+        this._element.ownerDocument.defaultView.removeEventListener("resize", this._boundRemoveSuggestionAids, false);
         if (this._isEditing)
             this._stopEditing();
         if (this._suggestBox)
