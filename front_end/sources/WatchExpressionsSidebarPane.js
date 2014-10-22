@@ -435,6 +435,8 @@ WebInspector.WatchExpressionTreeElement.prototype = {
         }
         if (this.treeOutline.section.watchExpressions.length > 1)
             contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Delete all watch expressions" : "Delete All Watch Expressions"), this._deleteAllButtonClicked.bind(this));
+        if (!this.isEditing() && (this.property.value.type === "number" || this.property.value.type === "string"))
+            contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Copy value" : "Copy Value"), this._copyValueButtonClicked.bind(this));
     },
 
     _contextMenu: function(event)
@@ -452,6 +454,11 @@ WebInspector.WatchExpressionTreeElement.prototype = {
     _deleteButtonClicked: function()
     {
         this.treeOutline.section.updateExpression(this, null);
+    },
+
+    _copyValueButtonClicked: function()
+    {
+        InspectorFrontendHost.copyText(this.valueElement.textContent);
     },
 
     /**
