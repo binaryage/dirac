@@ -40,3 +40,17 @@ body.platform-mac .flame-chart-v-scroll {
     right: 0;
     bottom: 0;
 }
+
+.flame-chart-selection-overlay {
+    position: absolute;
+    z-index: 100;
+    background-color: rgba(56, 121, 217, 0.3);
+    border-color: rgb(16, 81, 177);
+    border-width: 1px;
+    border-style: solid;
+    pointer-events:none;
+}
+
+.flame-chart-selection-overlay .time-span {
+    white-space: nowrap;
+}
