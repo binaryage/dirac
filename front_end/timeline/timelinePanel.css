@@ -750,26 +750,22 @@
 
 .layer-tree.outline-disclosure > ol,
 .profiler-log-view > ol {
-    margin-left: -12px;
+    margin-left: -12px
 }
 
 .layer-tree.outline-disclosure ol.children,
 .profiler-log-view ol.children {
-    padding-left: 12px;
+    margin-left: -14px;
+    padding-left: 22px;
 }
 
 .layer-tree.outline-disclosure li,
 .profiler-log-view li {
     margin-top: 0;
     margin-bottom: 0;
-    padding: 1 1 1 14px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-}
-
-.timeline-paint-profiler-view .outline-disclosure ol.children {
-    padding-left: 12px;
 }
 
 .layer-tree.outline-disclosure .dimmed {
@@ -853,6 +849,22 @@
     font-size: 10px;
 }
 
+.profiler-log-view.outline-disclosure,
+.layer-tree.outline-disclosure {
+    font-size: 12px;
+    line-height: 14px;
+}
+
+.profiler-log-view.outline-disclosure li .selection,
+.layer-tree.outline-disclosure li .selection {
+    height: 14px;
+}
+
+.profiler-log-view.outline-disclosure li.parent::before,
+.layer-tree.outline-disclosure li.parent::before  {
+    top: 1px;
+}
+
 .paint-profiler-canvas-container canvas {
     z-index: 200;
     background-color: white;
@@ -877,6 +889,7 @@
 
 .profiler-log-view.section .properties {
     display: block;
+    padding-right: 0px !important;
 }
 
 .paint-profiler-image-view {
