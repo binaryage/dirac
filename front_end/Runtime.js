@@ -987,14 +987,27 @@ Promise.prototype.thenOrCatch = function(callback)
      */
     function reject(e)
     {
-        console.error(e);
+        if (e instanceof Error)
+            console.error(e.stack);
+        else
+            console.error(e);
         callback();
     }
 }
 
 Promise.prototype.done = function()
 {
-    this.catch(console.error.bind(console));
+    /**
+     * @param {*} e
+     */
+    function reportError(e)
+    {
+        if (e instanceof Error)
+            console.error(e.stack);
+        else
+            console.error(e);
+    }
+    this.catch(reportError);
 }
 
 /**

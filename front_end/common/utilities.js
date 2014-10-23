@@ -1749,6 +1749,6 @@ function suppressUnused(value)
  */
 self.setImmediate = function(callback)
 {
-    Promise.resolve().then(callback).catch(console.error.bind(console));
+    Promise.resolve().then(callback).done();
     return 0;
 }
