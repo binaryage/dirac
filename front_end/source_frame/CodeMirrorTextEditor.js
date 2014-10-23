@@ -1070,6 +1070,8 @@ WebInspector.CodeMirrorTextEditor.prototype = {
      */
     toggleLineClass: function(lineNumber, className, toggled)
     {
+        if (this.hasLineClass(lineNumber, className) === toggled)
+            return;
         var lineHandle = this._codeMirror.getLineHandle(lineNumber);
         if (!lineHandle)
             return;
@@ -1077,6 +1079,19 @@ WebInspector.CodeMirrorTextEditor.prototype = {
             this._codeMirror.addLineClass(lineHandle, "wrap", className);
         else
             this._codeMirror.removeLineClass(lineHandle, "wrap", className);
+    },
+
+    /**
+     * @param {number} lineNumber
+     * @param {string} className
+     * @return {boolean}
+     */
+    hasLineClass: function(lineNumber, className)
+    {
+        var lineInfo = this._codeMirror.lineInfo(lineNumber);
+        var wrapClass = lineInfo.wrapClass || "";
+        var classNames = wrapClass.split(" ");
+        return classNames.indexOf(className) !== -1
     },
 
     /**

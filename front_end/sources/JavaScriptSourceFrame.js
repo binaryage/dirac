@@ -774,8 +774,13 @@ WebInspector.JavaScriptSourceFrame.prototype = {
     _updateLinesWithoutMappingHighlight: function()
     {
         var linesCount = this.textEditor.linesCount;
-        for (var i = 0; i < linesCount; ++i)
-            this.textEditor.toggleLineClass(i, "cm-line-without-source-mapping", !WebInspector.debuggerWorkspaceBinding.uiLineHasMapping(this._uiSourceCode, i));
+        for (var i = 0; i < linesCount; ++i) {
+            var lineHasMapping = WebInspector.debuggerWorkspaceBinding.uiLineHasMapping(this._uiSourceCode, i);
+            if (!lineHasMapping)
+                this._hasLineWithoutMapping = true;
+            if (this._hasLineWithoutMapping)
+                this.textEditor.toggleLineClass(i, "cm-line-without-source-mapping", !lineHasMapping);
+        }
     },
 
     /**
