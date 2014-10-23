@@ -618,6 +618,7 @@ WebInspector.TracingTimelineModel.prototype = {
             break;
 
         case recordTypes.Layout:
+            this._invalidationTracker.didLayout(event);
             var frameId = event.args["beginData"]["frame"];
             event.initiator = this._layoutInvalidate[frameId];
             // In case we have no closing Layout event, endData is not available.
@@ -1197,6 +1198,25 @@ WebInspector.InvalidationTracker.prototype = {
     },
 
     /**
+     * @param {!WebInspector.TracingModel.Event} layoutEvent
+     */
+    didLayout: function(layoutEvent)
+    {
+        var layoutFrameId = layoutEvent.args["beginData"]["frame"];
+        var index = this._lastLayoutEventIndex;
+        var invalidationCount = this._invalidationEvents.length;
+        for (; index < invalidationCount; index++) {
+            var invalidation = this._invalidationEvents[index];
+            if (invalidation.type !== WebInspector.TracingTimelineModel.RecordType.LayoutInvalidationTracking)
+                continue;
+            if (invalidation.frameId === layoutFrameId)
+                this._addInvalidationTrackingEvent(layoutEvent, invalidation);
+        }
+
+        this._lastLayoutEventIndex = invalidationCount;
+    },
+
+    /**
      * @param {!WebInspector.TracingModel.Event} paintEvent
      */
     didPaint: function(paintEvent)
@@ -1253,6 +1273,7 @@ WebInspector.InvalidationTracker.prototype = {
         /** @type {!Array.<!WebInspector.InvalidationTrackingEvent>} */
         this._invalidationEvents = [];
         this._lastStyleRecalcEventIndex = 0;
+        this._lastLayoutEventIndex = 0;
         this._lastPaintWithLayer = undefined;
         this._didPaint = false;
     }
