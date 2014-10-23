@@ -124,6 +124,7 @@
         'devtools_host_js_files': [
             'front_end/host/InspectorFrontendHost.js',
             'front_end/host/Platform.js',
+            'front_end/host/ToolboxHost.js',
             'front_end/host/UserMetrics.js',
         ],
         'devtools_screencast_js_files': [
@@ -213,7 +214,6 @@
             'front_end/toolbox/MediaQueryInspector.js',
             'front_end/toolbox/OverridesUI.js',
             'front_end/toolbox/ResponsiveDesignView.js',
-            'front_end/toolbox/ToolboxDelegate.js',
         ],
         'devtools_ui_js_files': [
             'front_end/ui/dataGrid.css',

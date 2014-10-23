@@ -5,9 +5,9 @@
 /**
  * @interface
  */
-WebInspector.ToolboxDelegate = function() {}
+WebInspector.ToolboxHost = function() {}
 
-WebInspector.ToolboxDelegate.prototype = {
+WebInspector.ToolboxHost.prototype = {
     /**
      * @param {!Element} rootElement
      */

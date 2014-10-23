@@ -4,13 +4,14 @@
 
 /**
  * @constructor
+ * @suppressGlobalPropertiesCheck
  */
 WebInspector.Toolbox = function()
 {
     if (!window.opener)
         return;
 
-    var delegate = /** @type {!WebInspector.ToolboxDelegate} */ (window.opener.WebInspector["app"]);
+    var delegate = /** @type {!WebInspector.ToolboxHost} */ (window.opener.WebInspector["app"]);
 
     WebInspector.initializeUIUtils(window);
     WebInspector.zoomManager = new WebInspector.ZoomManager(window, delegate.inspectorFrontendHost());
@@ -26,13 +27,25 @@ WebInspector.Toolbox = function()
 // once we migrate to the "pull" model for extensions retrieval.
 WebInspector.addExtensions = function() {}
 
+/**
+ * FIXME: Remove FIXME once http://crbug.com/425506 is fixed.
+ * @suppressGlobalPropertiesCheck
+ */
 function windowLoaded()
 {
     window.removeEventListener("DOMContentLoaded", windowLoaded, false);
     new WebInspector.Toolbox();
 }
 
-if (document.readyState === "complete")
-    new WebInspector.Toolbox();
-else
-    window.addEventListener("DOMContentLoaded", windowLoaded, false);
+/**
+ * FIXME: Remove FIXME once http://crbug.com/425506 is fixed.
+ * @suppressGlobalPropertiesCheck
+ */
+function initToolbox()
+{
+    if (document.readyState === "complete")
+        new WebInspector.Toolbox();
+    else
+        window.addEventListener("DOMContentLoaded", windowLoaded, false);
+}
+initToolbox();

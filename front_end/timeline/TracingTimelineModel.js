@@ -1217,6 +1217,10 @@ WebInspector.InvalidationTracker.prototype = {
         var frameId = paintEvent.args["data"]["frame"];
         this._invalidationEvents.forEach(recordInvalidationForPaint.bind(this));
 
+        /**
+         * @param {!WebInspector.InvalidationTrackingEvent} invalidation
+         * @this {WebInspector.InvalidationTracker}
+         */
         function recordInvalidationForPaint(invalidation)
         {
             if (invalidation.paintId === effectivePaintId && invalidation.frameId === frameId)
@@ -1246,6 +1250,7 @@ WebInspector.InvalidationTracker.prototype = {
 
     _initializePerFrameState: function()
     {
+        /** @type {!Array.<!WebInspector.InvalidationTrackingEvent>} */
         this._invalidationEvents = [];
         this._lastStyleRecalcEventIndex = 0;
         this._lastPaintWithLayer = undefined;

@@ -5,6 +5,7 @@
     "scripts": [
         "InspectorFrontendHost.js",
         "Platform.js",
+        "ToolboxHost.js",
         "UserMetrics.js"
     ]
 }

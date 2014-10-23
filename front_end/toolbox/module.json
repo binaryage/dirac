@@ -4,7 +4,6 @@
         "bindings"
     ],
     "scripts": [
-        "ToolboxDelegate.js",
         "OverridesUI.js",
         "InspectedPagePlaceholder.js",
         "MediaQueryInspector.js",
