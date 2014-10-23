@@ -143,6 +143,11 @@ WebInspector.AuditRules.GzipRule.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.AuditRule}
+ * @param {string} id
+ * @param {string} name
+ * @param {!WebInspector.ResourceType} type
+ * @param {string} resourceTypeName
+ * @param {boolean} allowedPerDomain
  */
 WebInspector.AuditRules.CombineExternalResourcesRule = function(id, name, type, resourceTypeName, allowedPerDomain)
 {
