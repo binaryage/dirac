@@ -14,12 +14,12 @@ WebInspector.TransformController = function(element, disableRotate)
 {
     this._shortcuts = {};
     this.element = element;
+    if (this.element.tabIndex < 0)
+        this.element.tabIndex = 0;
     this._registerShortcuts();
+    WebInspector.installDragHandle(element, this._onDragStart.bind(this), this._onDrag.bind(this), this._onDragEnd.bind(this), "move", null);
     element.addEventListener("keydown", this._onKeyDown.bind(this), false);
     element.addEventListener("keyup", this._onKeyUp.bind(this), false);
-    element.addEventListener("mousemove", this._onMouseMove.bind(this), false);
-    element.addEventListener("mousedown", this._onMouseDown.bind(this), false);
-    element.addEventListener("mouseup", this._onMouseUp.bind(this), false);
     element.addEventListener("mousewheel", this._onMouseWheel.bind(this), false);
     this._disableRotate = disableRotate;
 
@@ -274,10 +274,8 @@ WebInspector.TransformController.prototype = {
     /**
      * @param {!Event} event
      */
-    _onMouseMove: function(event)
+    _onDrag: function(event)
     {
-        if (event.which !== 1 || typeof this._originX !== "number")
-            return;
         if (this._mode === WebInspector.TransformController.Modes.Rotate) {
             this._onRotate(this._oldRotateX + (this._originY - event.clientY) / this.element.clientHeight * 180, this._oldRotateY - (this._originX - event.clientX) / this.element.clientWidth * 180);
         } else {
@@ -288,42 +286,24 @@ WebInspector.TransformController.prototype = {
     },
 
     /**
-     * @param {!Event} event
+     * @param {!MouseEvent} event
      */
-    _setReferencePoint: function(event)
+    _onDragStart: function(event)
     {
+        this.element.focus();
         this._originX = event.clientX;
         this._originY = event.clientY;
         this._oldRotateX = this._rotateX;
         this._oldRotateY = this._rotateY;
+        return true;
     },
 
-    _resetReferencePoint: function()
+    _onDragEnd: function()
     {
         delete this._originX;
         delete this._originY;
         delete this._oldRotateX;
         delete this._oldRotateY;
-    },
-
-    /**
-     * @param {!Event} event
-     */
-    _onMouseDown: function(event)
-    {
-        if (event.which !== 1)
-            return;
-        this._setReferencePoint(event);
-    },
-
-    /**
-     * @param {!Event} event
-     */
-    _onMouseUp: function(event)
-    {
-        if (event.which !== 1)
-            return;
-        this._resetReferencePoint();
     },
 
     __proto__: WebInspector.Object.prototype
