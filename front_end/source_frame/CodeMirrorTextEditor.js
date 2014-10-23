@@ -555,6 +555,11 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         this._codeMirror.refresh();
     },
 
+    willHide: function()
+    {
+        delete this._editorSizeInSync;
+    },
+
     _guessIndentationLevel: function()
     {
         var tabRegex = /^\t+/;
@@ -1182,6 +1187,11 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     {
         this._autocompleteController.finishAutocomplete();
         this._resizeEditor();
+        this._editorSizeInSync = true;
+        if (this._selectionSetScheduled) {
+            delete this._selectionSetScheduled;
+            this.setSelection(this._lastSelection);
+        }
     },
 
     /**
@@ -1387,6 +1397,10 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     setSelection: function(textRange)
     {
         this._lastSelection = textRange;
+        if (!this._editorSizeInSync) {
+            this._selectionSetScheduled = true;
+            return;
+        }
         var pos = WebInspector.CodeMirrorUtils.toPos(textRange);
         this._codeMirror.setSelection(pos.start, pos.end);
     },

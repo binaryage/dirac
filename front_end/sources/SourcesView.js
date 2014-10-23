@@ -480,7 +480,7 @@ WebInspector.SourcesView.prototype = {
             this._historyManager.pushNewState();
 
         this._searchableView.setReplaceable(!!sourceFrame && sourceFrame.canEditSource());
-        this._searchableView.resetSearch();
+        this._searchableView.refreshSearch();
 
         this.dispatchEventToListeners(WebInspector.SourcesView.Events.EditorSelected, uiSourceCode);
     },

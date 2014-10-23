@@ -490,7 +490,7 @@ WebInspector.SourceFrame.prototype = {
             return;
         this._textEditor.cancelSearchResultsHighlight();
         if (range)
-            this._textEditor.setSelection(range);
+            this.setSelection(range);
     },
 
     /**

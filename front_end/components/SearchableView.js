@@ -207,14 +207,14 @@ WebInspector.SearchableView.prototype = {
     {
         this._caseSensitiveButton.toggled = !this._caseSensitiveButton.toggled;
         this._saveSetting();
-        this._performSearch(true, true);
+        this._performSearch(false, true);
     },
 
     _toggleRegexSearch: function()
     {
         this._regexButton.toggled = !this._regexButton.toggled;
         this._saveSetting();
-        this._performSearch(true, true);
+        this._performSearch(false, true);
     },
 
     /**
@@ -363,6 +363,14 @@ WebInspector.SearchableView.prototype = {
         this._clearSearch();
         this._updateReplaceVisibility();
         this._matchesElement.textContent = "";
+    },
+
+    refreshSearch: function()
+    {
+        if (!this._searchIsVisible)
+            return;
+        this.resetSearch();
+        this._performSearch(false, false);
     },
 
     /**
