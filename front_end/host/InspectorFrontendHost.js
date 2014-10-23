@@ -296,9 +296,20 @@ InspectorFrontendHostAPI.prototype = {
 /**
  * @constructor
  * @implements {InspectorFrontendHostAPI}
+ * @suppressGlobalPropertiesCheck
  */
 WebInspector.InspectorFrontendHostStub = function()
 {
+    /**
+     * @param {!Event} event
+     */
+    function stopEventPropagation(event)
+    {
+        // Let browser handle Ctrl+/Ctrl- shortcuts in hosted mode.
+        if (event.ctrlKey && (event.keyCode === 187 || event.keyCode === 189))
+            event.stopPropagation();
+    }
+    document.addEventListener("keydown", stopEventPropagation, true);
 }
 
 WebInspector.InspectorFrontendHostStub.prototype = {
