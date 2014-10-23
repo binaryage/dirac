@@ -207,9 +207,6 @@ WebInspector.CSSMetadata._propertyDataMap = {
     "border-bottom-width": { values: [
         "medium", "thick", "thin"
     ] },
-    "marquee-speed": { values: [
-        "normal", "slow", "fast"
-    ] },
     "margin-top-collapse": { values: [
         "collapse", "separate", "discard"
     ] },
@@ -272,9 +269,6 @@ WebInspector.CSSMetadata._propertyDataMap = {
     ] },
     "direction": { values: [
         "ltr", "rtl"
-    ] },
-    "marquee-direction": { values: [
-        "left", "right", "auto", "reverse", "forwards", "backwards", "ahead", "up", "down"
     ] },
     "enable-background": { values: [
         "accumulate", "new"
@@ -487,9 +481,6 @@ WebInspector.CSSMetadata._propertyDataMap = {
     "vertical-align": { values: [
         "baseline", "middle", "sub", "super", "text-top", "text-bottom", "top", "bottom", "-webkit-baseline-middle"
     ] },
-    "marquee-style": { values: [
-        "none", "scroll", "slide", "alternate"
-    ] },
     "white-space": { values: [
         "normal", "nowrap", "pre", "pre-line", "pre-wrap"
     ] },
@@ -504,9 +495,6 @@ WebInspector.CSSMetadata._propertyDataMap = {
     ] },
     "margin": { values: [
         "auto"
-    ] },
-    "marquee-repetition": { values: [
-        "infinite"
     ] },
     "margin-right": { values: [
         "auto"
