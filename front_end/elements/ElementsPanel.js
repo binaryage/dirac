@@ -48,8 +48,8 @@ WebInspector.ElementsPanel = function()
     this._searchableView.show(this._splitView.mainElement());
     var stackElement = this._searchableView.element;
 
-    this.contentElement = stackElement.createChild("div");
-    this.contentElement.id = "elements-content";
+    this._contentElement = stackElement.createChild("div");
+    this._contentElement.id = "elements-content";
     // FIXME: crbug.com/425984
     if (WebInspector.settings.domWordWrap.get())
         this.contentElement.classList.add("elements-wrap");
@@ -198,8 +198,8 @@ WebInspector.ElementsPanel.prototype = {
         for (var i = 0; i < this._treeOutlines.length; ++i) {
             var treeOutline = this._treeOutlines[i];
             // Attach heavy component lazily
-            if (treeOutline.element.parentElement !== this.contentElement)
-                this.contentElement.appendChild(treeOutline.element);
+            if (treeOutline.element.parentElement !== this._contentElement)
+                this._contentElement.appendChild(treeOutline.element);
         }
         WebInspector.Panel.prototype.wasShown.call(this);
         this.updateBreadcrumb();
@@ -225,7 +225,7 @@ WebInspector.ElementsPanel.prototype = {
             treeOutline.domModel().hideDOMNodeHighlight();
             treeOutline.setVisible(false);
             // Detach heavy component on hide
-            this.contentElement.removeChild(treeOutline.element);
+            this._contentElement.removeChild(treeOutline.element);
         }
         this._popoverHelper.hidePopover();
         WebInspector.Panel.prototype.willHide.call(this);
@@ -446,7 +446,7 @@ WebInspector.ElementsPanel.prototype = {
     _domWordWrapSettingChanged: function(event)
     {
         // FIXME: crbug.com/425984
-        this.contentElement.classList.toggle("elements-wrap", event.data);
+        this._contentElement.classList.toggle("elements-wrap", event.data);
         for (var i = 0; i < this._treeOutlines.length; ++i)
             this._treeOutlines[i].setWordWrap(/** @type {boolean} */ (event.data));
 
@@ -870,7 +870,7 @@ WebInspector.ElementsPanel.prototype = {
         }
 
         // Layout 1: Measure total and normal crumb sizes
-        var contentElementWidth = this.contentElement.offsetWidth;
+        var contentElementWidth = this._contentElement.offsetWidth;
         var normalSizes = [];
         for (var i = 0; i < crumbs.childNodes.length; ++i) {
             var crumb = crumbs.childNodes[i];

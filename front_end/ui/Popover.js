@@ -38,6 +38,7 @@ WebInspector.Popover = function(popoverHelper)
     WebInspector.View.call(this);
     this.markAsRoot();
     this.element.className = WebInspector.Popover._classNamePrefix; // Override
+    WebInspector.installComponentRootStyles(this.element);
     this._containerElement = createElementWithClass("div", "fill popover-container");
 
     this._popupArrowElement = this.element.createChild("div", "arrow");
@@ -47,7 +48,7 @@ WebInspector.Popover = function(popoverHelper)
     this._hideBound = this.hide.bind(this);
 }
 
-WebInspector.Popover._classNamePrefix = "popover component-root custom-popup-vertical-scroll custom-popup-horizontal-scroll";
+WebInspector.Popover._classNamePrefix = "popover custom-popup-vertical-scroll custom-popup-horizontal-scroll";
 
 WebInspector.Popover.prototype = {
     /**
@@ -85,7 +86,7 @@ WebInspector.Popover.prototype = {
     {
         if (this._disposed)
             return;
-        this.contentElement = contentElement;
+        this._contentElement = contentElement;
 
         // This should not happen, but we hide previous popup to be on the safe side.
         if (WebInspector.Popover._popover)
@@ -96,7 +97,7 @@ WebInspector.Popover.prototype = {
         var window = document.defaultView;
 
         // Temporarily attach in order to measure preferred dimensions.
-        var preferredSize = view ? view.measurePreferredSize() : this.contentElement.measurePreferredSize();
+        var preferredSize = view ? view.measurePreferredSize() : this._contentElement.measurePreferredSize();
         preferredWidth = preferredWidth || preferredSize.width;
         preferredHeight = preferredHeight || preferredSize.height;
 
@@ -107,7 +108,7 @@ WebInspector.Popover.prototype = {
         if (view)
             view.show(this._contentDiv);
         else
-            this._contentDiv.appendChild(this.contentElement);
+            this._contentDiv.appendChild(this._contentElement);
 
         this._positionElement(anchor, preferredWidth, preferredHeight, arrowDirection);
 
@@ -224,6 +225,7 @@ WebInspector.Popover.prototype = {
         }
 
         this.element.className = WebInspector.Popover._classNamePrefix + " " + verticalAlignment + "-" + horizontalAlignment + "-arrow";
+        WebInspector.installComponentRootStyles(this.element);
         this.element.positionAt(newElementPosition.x - borderWidth, newElementPosition.y - borderWidth, container);
         this.element.style.width = newElementPosition.width + borderWidth * 2 + "px";
         this.element.style.height = newElementPosition.height + borderWidth * 2 + "px";

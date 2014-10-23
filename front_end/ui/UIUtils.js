@@ -593,17 +593,24 @@ WebInspector.manageBlackboxingButtonLabel = function()
 }
 
 /**
- * @param {!Document} document
+ * @param {!Element} element
+ * @return {boolean}
  */
-WebInspector.installPortStyles = function(document)
+WebInspector.installComponentRootStyles = function(element)
 {
-    var platform = WebInspector.platform();
-    document.body.classList.add("platform-" + platform);
-    var flavor = WebInspector.platformFlavor();
-    if (flavor)
-        document.body.classList.add("platform-" + flavor);
-    var port = WebInspector.port();
-    document.body.classList.add("port-" + port);
+    var wasInstalled = element.classList.contains("component-root");
+    if (wasInstalled)
+        return false;
+    element.classList.add("component-root", "platform-" + WebInspector.platform());
+    return true;
+}
+
+/**
+ * @param {!Element} element
+ */
+WebInspector.uninstallComponentRootStyles = function(element)
+{
+    var wasInstalled = element.classList.remove("component-root", "platform-" + WebInspector.platform());
 }
 
 /**

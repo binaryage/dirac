@@ -58,55 +58,6 @@ WebInspector.isWin = function()
     return WebInspector._isWin;
 }
 
-WebInspector.PlatformFlavor = {
-    WindowsVista: "windows-vista",
-    MacTiger: "mac-tiger",
-    MacLeopard: "mac-leopard",
-    MacSnowLeopard: "mac-snowleopard",
-    MacLion: "mac-lion"
-}
-
-/**
- * @return {string}
- */
-WebInspector.platformFlavor = function()
-{
-    function detectFlavor()
-    {
-        const userAgent = navigator.userAgent;
-
-        if (WebInspector.platform() === "windows") {
-            var match = userAgent.match(/Windows NT (\d+)\.(?:\d+)/);
-            if (match && match[1] >= 6)
-                return WebInspector.PlatformFlavor.WindowsVista;
-            return null;
-        } else if (WebInspector.platform() === "mac") {
-            var match = userAgent.match(/Mac OS X\s*(?:(\d+)_(\d+))?/);
-            if (!match || match[1] != 10)
-                return WebInspector.PlatformFlavor.MacSnowLeopard;
-            switch (Number(match[2])) {
-                case 4:
-                    return WebInspector.PlatformFlavor.MacTiger;
-                case 5:
-                    return WebInspector.PlatformFlavor.MacLeopard;
-                case 6:
-                    return WebInspector.PlatformFlavor.MacSnowLeopard;
-                case 7:
-                    return WebInspector.PlatformFlavor.MacLion;
-                case 8: // Matches the default version
-                case 9: // Matches the default version
-                default:
-                    return "";
-            }
-        }
-    }
-
-    if (!WebInspector._platformFlavor)
-        WebInspector._platformFlavor = detectFlavor();
-
-    return WebInspector._platformFlavor;
-}
-
 /**
  * @return {string}
  */

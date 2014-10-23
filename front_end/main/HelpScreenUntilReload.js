@@ -37,7 +37,7 @@
 WebInspector.HelpScreenUntilReload = function(title, message)
 {
     WebInspector.HelpScreen.call(this, title);
-    var p = this.contentElement.createChild("p");
+    var p = this.helpContentElement.createChild("p");
     p.classList.add("help-section");
     p.textContent = message;
     WebInspector.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.GlobalObjectCleared, this.hide, this);

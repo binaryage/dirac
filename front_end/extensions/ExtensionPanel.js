@@ -47,7 +47,7 @@ WebInspector.ExtensionPanel = function(server, id, pageURL)
     this._searchableView = new WebInspector.SearchableView(this);
     this._searchableView.show(this.element);
 
-    var extensionView = new WebInspector.ExtensionView(server, id, pageURL, "extension panel");
+    var extensionView = new WebInspector.ExtensionView(server, id, pageURL, "extension");
     extensionView.show(this._searchableView.element);
     this.setDefaultFocusedElement(extensionView.defaultFocusedElement());
 }

@@ -16,7 +16,6 @@ WebInspector.Toolbox = function()
     WebInspector.initializeUIUtils(window);
     WebInspector.zoomManager = new WebInspector.ZoomManager(window, delegate.inspectorFrontendHost());
     WebInspector.ContextMenu.installHandler(document);
-    WebInspector.installPortStyles(document);
 
     var rootView = new WebInspector.RootView();
     delegate.toolboxLoaded(rootView.element);

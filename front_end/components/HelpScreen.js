@@ -47,7 +47,7 @@ WebInspector.HelpScreen = function(title)
         var mainWindow = this.element.createChild("div", "help-window-main");
         var captionWindow = mainWindow.createChild("div", "help-window-caption");
         captionWindow.appendChild(this._createCloseButton());
-        this.contentElement = mainWindow.createChild("div", "help-content");
+        this.helpContentElement = mainWindow.createChild("div", "help-content");
         captionWindow.createChild("h1", "help-window-title").textContent = title;
     }
 }
@@ -123,7 +123,7 @@ WebInspector.HelpScreen.prototype = {
 WebInspector.RemoteDebuggingTerminatedScreen = function(reason)
 {
     WebInspector.HelpScreen.call(this, WebInspector.UIString("Detached from the target"));
-    var p = this.contentElement.createChild("p");
+    var p = this.helpContentElement.createChild("p");
     p.classList.add("help-section");
     p.createChild("span").textContent = WebInspector.UIString("Remote debugging has been terminated with reason: ");
     p.createChild("span", "error-message").textContent = reason;
@@ -142,7 +142,7 @@ WebInspector.RemoteDebuggingTerminatedScreen.prototype = {
 WebInspector.WorkerTerminatedScreen = function()
 {
     WebInspector.HelpScreen.call(this, WebInspector.UIString("Inspected worker terminated"));
-    var p = this.contentElement.createChild("p");
+    var p = this.helpContentElement.createChild("p");
     p.classList.add("help-section");
     p.textContent = WebInspector.UIString("Inspected worker has terminated. Once it restarts we will attach to it automatically.");
 }

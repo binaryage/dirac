@@ -239,15 +239,6 @@ body.inactive .profile-launcher-view-content button.running:not(.status-bar-item
     margin: 0 0 0 10px !important;
 }
 
-.profile-entry-info {
-    position: absolute;
-    bottom: 20px;
-    left: 20px;
-    height: 120px;
-    background-color: rgba(255, 255, 255, 0.7);
-    pointer-events: none;
-}
-
 .profiles.panel select.chrome-select {
     font-size: 12px;
     width: 150px;

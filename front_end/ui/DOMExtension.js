@@ -284,17 +284,13 @@ Element.prototype.measurePreferredSize = function(containerElement)
 {
     containerElement = containerElement || this.ownerDocument.body;
     containerElement.appendChild(this);
-    var fakingComponentRoot = false;
-    if (!this.classList.contains("component-root")) {
-        fakingComponentRoot = true;
-        this.classList.add("component-root");
-    }
+    var fakingComponentRoot = WebInspector.installComponentRootStyles(this);
     this.positionAt(0, 0);
     var result = new Size(this.offsetWidth, this.offsetHeight);
     this.positionAt(undefined, undefined);
     this.remove();
     if (fakingComponentRoot)
-        this.classList.remove("component-root");
+        WebInspector.uninstallComponentRootStyles(this);
     return result;
 }
 

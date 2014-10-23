@@ -83,11 +83,11 @@ body.dock-to-bottom .help-content {
     margin-bottom: 8px;
 }
 
-body.platform-mac .help-window-main .tabbed-pane-header-contents {
+.platform-mac .help-window-main .tabbed-pane-header-contents {
     margin-left: 27px;
 }
 
-body.platform-mac .help-window-main .help-window-title {
+.platform-mac .help-window-main .help-window-title {
     margin-left: 18px;
 }
 
@@ -97,11 +97,11 @@ body.platform-mac .help-window-main .help-window-title {
     -webkit-column-width: 470px;
 }
 
-body.platform-mac .settings-tab .help-container {
+.platform-mac .settings-tab .help-container {
     -webkit-column-width: 430px;
 }
 
-body.platform-mac .help-container {
+.platform-mac .help-container {
     -webkit-column-width: 361px;
 }
 
@@ -116,7 +116,7 @@ body.platform-mac .help-container {
     -webkit-column-break-inside: avoid;
 }
 
-body.platform-mac .settings-tab .help-block {
+.platform-mac .settings-tab .help-block {
     width: 430px;
 }
 
@@ -145,7 +145,7 @@ body.platform-mac .settings-tab .help-block {
     text-align: right;
 }
 
-body.platform-mac .help-key-cell {
+.platform-mac .help-key-cell {
     width: 151px;
 }
 
@@ -174,7 +174,7 @@ body.platform-mac .help-key-cell {
     white-space: nowrap;
 }
 
-body.platform-mac .help-key {
+.platform-mac .help-key {
     font-family: Lucida Grande, sans-serif;
 }
 

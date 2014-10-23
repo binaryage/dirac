@@ -33,7 +33,7 @@
     overflow-x: hidden;
 }
 
-body.platform-mac .flame-chart-v-scroll {
+.platform-mac .flame-chart-v-scroll {
     position: absolute;
     width: 14px;
     top: 0;
@@ -53,4 +53,13 @@ body.platform-mac .flame-chart-v-scroll {
 
 .flame-chart-selection-overlay .time-span {
     white-space: nowrap;
+}
+
+.flame-chart-entry-info {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    height: 120px;
+    background-color: rgba(255, 255, 255, 0.7);
+    pointer-events: none;
 }

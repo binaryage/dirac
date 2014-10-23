@@ -27,10 +27,19 @@
 /**
  * @constructor
  * @extends {WebInspector.Object}
+ * @param {boolean=} isWebComponent
  */
-WebInspector.View = function()
+WebInspector.View = function(isWebComponent)
 {
-    this.element = createElementWithClass("div", "view");
+    this.contentElement = createElementWithClass("div", "view");
+    if (isWebComponent) {
+        WebInspector.installComponentRootStyles(this.contentElement);
+        this.element = createElementWithClass("div", "vbox flex-auto");
+        this._shadowRoot = this.element.createShadowRoot();
+        this._shadowRoot.appendChild(this.contentElement);
+    } else {
+        this.element = this.contentElement;
+    }
     this.element.__view = this;
     this._visible = true;
     this._isRoot = false;
@@ -68,7 +77,7 @@ WebInspector.View.createStyleElement = function(cssFile)
 WebInspector.View.prototype = {
     markAsRoot: function()
     {
-        this.element.classList.add("component-root");
+        WebInspector.installComponentRootStyles(this.element);
         WebInspector.View.__assert(!this.element.parentElement, "Attempt to mark as root attached node");
         this._isRoot = true;
     },
@@ -524,11 +533,12 @@ WebInspector.View.__assert = function(condition, message)
 /**
  * @constructor
  * @extends {WebInspector.View}
+ * @param {boolean=} isWebComponent
  */
-WebInspector.VBox = function()
+WebInspector.VBox = function(isWebComponent)
 {
-    WebInspector.View.call(this);
-    this.element.classList.add("vbox");
+    WebInspector.View.call(this, isWebComponent);
+    this.contentElement.classList.add("vbox");
 };
 
 WebInspector.VBox.prototype = {
@@ -560,11 +570,12 @@ WebInspector.VBox.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.View}
+ * @param {boolean=} isWebComponent
  */
-WebInspector.HBox = function()
+WebInspector.HBox = function(isWebComponent)
 {
-    WebInspector.View.call(this);
-    this.element.classList.add("hbox");
+    WebInspector.View.call(this, isWebComponent);
+    this.contentElement.classList.add("hbox");
 };
 
 WebInspector.HBox.prototype = {

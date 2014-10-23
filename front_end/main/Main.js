@@ -190,7 +190,8 @@ WebInspector.Main.prototype = {
         console.timeStamp("Main._createApp");
 
         WebInspector.initializeUIUtils(window);
-        WebInspector.installPortStyles(document);
+        WebInspector.installComponentRootStyles(/** @type {!Element} */ (document.body));
+
         if (Runtime.queryParam("toolbarColor") && Runtime.queryParam("textColor"))
             WebInspector.setToolbarColors(document, /** @type {string} */ (Runtime.queryParam("toolbarColor")), /** @type {string} */ (Runtime.queryParam("textColor")));
         InspectorFrontendHost.events.addEventListener(InspectorFrontendHostAPI.Events.SetToolbarColors, updateToolbarColors);

@@ -50,15 +50,15 @@ WebInspector.FlameChartDelegate.prototype = {
  */
 WebInspector.FlameChart = function(dataProvider, flameChartDelegate, isTopDown)
 {
-    WebInspector.HBox.call(this);
-    this.registerRequiredCSS("components/flameChart.css");
-    this.element.classList.add("flame-chart-main-pane");
+    WebInspector.HBox.call(this, true);
+    this.contentElement.appendChild(WebInspector.View.createStyleElement("components/flameChart.css"));
+    this.contentElement.classList.add("flame-chart-main-pane");
     this._flameChartDelegate = flameChartDelegate;
     this._isTopDown = isTopDown;
 
     this._calculator = new WebInspector.FlameChart.Calculator();
 
-    this._canvas = this.element.createChild("canvas");
+    this._canvas = this.contentElement.createChild("canvas");
     this._canvas.tabIndex = 1;
     this.setDefaultFocusedElement(this._canvas);
     this._canvas.addEventListener("mousemove", this._onMouseMove.bind(this), false);
@@ -67,15 +67,15 @@ WebInspector.FlameChart = function(dataProvider, flameChartDelegate, isTopDown)
     this._canvas.addEventListener("keydown", this._onKeyDown.bind(this), false);
     WebInspector.installDragHandle(this._canvas, this._startCanvasDragging.bind(this), this._canvasDragging.bind(this), this._endCanvasDragging.bind(this), "move", null);
 
-    this._vScrollElement = this.element.createChild("div", "flame-chart-v-scroll");
+    this._vScrollElement = this.contentElement.createChild("div", "flame-chart-v-scroll");
     this._vScrollContent = this._vScrollElement.createChild("div");
     this._vScrollElement.addEventListener("scroll", this.scheduleUpdate.bind(this), false);
 
-    this._entryInfo = this.element.createChild("div", "profile-entry-info");
-    this._markerHighlighElement = this.element.createChild("div", "flame-chart-marker-highlight-element");
-    this._highlightElement = this.element.createChild("div", "flame-chart-highlight-element");
-    this._selectedElement = this.element.createChild("div", "flame-chart-selected-element");
-    this._selectionOverlay = this.element.createChild("div", "flame-chart-selection-overlay hidden");
+    this._entryInfo = this.contentElement.createChild("div", "flame-chart-entry-info");
+    this._markerHighlighElement = this.contentElement.createChild("div", "flame-chart-marker-highlight-element");
+    this._highlightElement = this.contentElement.createChild("div", "flame-chart-highlight-element");
+    this._selectedElement = this.contentElement.createChild("div", "flame-chart-selected-element");
+    this._selectionOverlay = this.contentElement.createChild("div", "flame-chart-selection-overlay hidden");
     this._selectedTimeSpanLabel = this._selectionOverlay.createChild("div", "time-span");
 
     this._dataProvider = dataProvider;
@@ -1033,7 +1033,7 @@ WebInspector.FlameChart.prototype = {
         var style = element.style;
         style.left = barX + "px";
         style.backgroundColor = this._dataProvider.markerColor(markerIndex);
-        this.element.appendChild(element);
+        this.contentElement.appendChild(element);
     },
 
     /**
@@ -1095,7 +1095,7 @@ WebInspector.FlameChart.prototype = {
         style.top = barY + "px";
         style.width = barWidth + "px";
         style.height = this._barHeight + "px";
-        this.element.appendChild(element);
+        this.contentElement.appendChild(element);
     },
 
     /**
@@ -1214,8 +1214,8 @@ WebInspector.FlameChart.prototype = {
     {
         var showScroll = this._totalHeight > this._offsetHeight;
         this._vScrollElement.classList.toggle("hidden", !showScroll);
-        this._offsetWidth = this.element.offsetWidth - (WebInspector.isMac() ? 0 : this._vScrollElement.offsetWidth);
-        this._offsetHeight = this.element.offsetHeight;
+        this._offsetWidth = this.contentElement.offsetWidth - (WebInspector.isMac() ? 0 : this._vScrollElement.offsetWidth);
+        this._offsetHeight = this.contentElement.offsetHeight;
     },
 
     scheduleUpdate: function()
