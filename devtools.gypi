@@ -365,8 +365,8 @@
             '<@(devtools_extension_api_files)',
         ],
         'devtools_promises_js_files': [
-            'front_end/promises/promisesPanel.css',
-            'front_end/promises/PromisesPanel.js',
+            'front_end/promises/promisePane.css',
+            'front_end/promises/PromisePane.js',
         ],
         'devtools_heap_snapshot_worker_js_files': [
             'front_end/common/TextUtils.js',

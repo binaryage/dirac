@@ -5,7 +5,7 @@
             "name": "promises",
             "title": "Promises",
             "order": "30",
-            "className": "WebInspector.PromisesPanel"
+            "className": "WebInspector.PromisePane"
         }
     ],
     "dependencies": [
@@ -14,9 +14,9 @@
     ],
     "experiment": "promiseTracker",
     "scripts": [
-        "PromisesPanel.js"
+        "PromisePane.js"
     ],
     "stylesheets": [
-        "promisesPanel.css"
+        "promisePane.css"
     ]
 }

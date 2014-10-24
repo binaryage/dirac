@@ -6,10 +6,10 @@
  * @constructor
  * @extends {WebInspector.VBox}
  */
-WebInspector.PromisesPanel = function()
+WebInspector.PromisePane = function()
 {
     WebInspector.VBox.call(this);
-    this.registerRequiredCSS("promises/promisesPanel.css");
+    this.registerRequiredCSS("promises/promisePane.css");
     this.element.classList.add("promises");
 
     var statusBar = this.element.createChild("div", "panel-status-bar");
@@ -41,7 +41,7 @@ WebInspector.PromisesPanel = function()
     this._linkifier = new WebInspector.Linkifier();
 }
 
-WebInspector.PromisesPanel.prototype = {
+WebInspector.PromisePane.prototype = {
     _recordButtonClicked: function(event)
     {
         var recording = !this._recordButton.toggled;
@@ -97,7 +97,7 @@ WebInspector.PromisesPanel.prototype = {
         /**
          * @param {?Protocol.Error} error
          * @param {?Array.<!DebuggerAgent.PromiseDetails>} promiseData
-         * @this {WebInspector.PromisesPanel}
+         * @this {WebInspector.PromisePane}
          */
         function callback(error, promiseData)
         {
@@ -159,7 +159,7 @@ WebInspector.PromisesPanel.prototype = {
         contextMenu.show();
 
         /**
-         * @this {WebInspector.PromisesPanel}
+         * @this {WebInspector.PromisePane}
          */
         function showPromiseInConsole()
         {
@@ -170,7 +170,7 @@ WebInspector.PromisesPanel.prototype = {
         /**
          * @param {?Protocol.Error} error
          * @param {?RuntimeAgent.RemoteObject} promise
-         * @this {WebInspector.PromisesPanel}
+         * @this {WebInspector.PromisePane}
          */
         function didGetPromiseById(error, promise)
         {
@@ -198,4 +198,3 @@ WebInspector.PromisesPanel.prototype = {
 
     __proto__: WebInspector.VBox.prototype
 }
-
