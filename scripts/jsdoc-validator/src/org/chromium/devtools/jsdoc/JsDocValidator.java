@@ -4,6 +4,10 @@
 
 package org.chromium.devtools.jsdoc;
 
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -17,14 +21,43 @@ import java.util.concurrent.Future;
 
 public class JsDocValidator {
 
+    private static final String FILES_LIST_NAME = "--files-list-name";
+
     private void run(String[] args) {
-        int threadCount = Math.min(args.length, Runtime.getRuntime().availableProcessors());
+        if (args.length == 0) {
+            System.err.println("At least 1 argument is expected");
+            System.exit(1);
+        }
+        String[] files;
+        if (FILES_LIST_NAME.equals(args[0])) {
+            files = readFileNames(args);
+        } else {
+            files = args;
+        }
+        int threadCount = Math.min(files.length, Runtime.getRuntime().availableProcessors());
         ExecutorService executor = Executors.newFixedThreadPool(threadCount);
         try {
-            runWithExecutor(args, executor);
+            runWithExecutor(files, executor);
         } finally {
             executor.shutdown();
         }
+    }
+
+    private String[] readFileNames(String[] args) {
+      if (args.length != 2) {
+          System.err.println("A single file name is expected to follow " + FILES_LIST_NAME);
+          System.exit(1);
+      }
+      try {
+          List<String> list = Files.readAllLines(
+              FileSystems.getDefault().getPath(args[1]), Charset.forName("UTF-8"));
+          return list.toArray(new String[list.size()]);
+      } catch (IOException e) {
+          System.err.println("Unable to read list file " + args[1]);
+          e.printStackTrace();
+          System.exit(1);
+          return new String[0];
+      }
     }
 
     private void runWithExecutor(String[] args, ExecutorService executor) {

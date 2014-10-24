@@ -103,7 +103,12 @@ def hasErrors(output):
 
 
 def verify_jsdoc_extra(additional_files):
-    return run_in_shell('%s -jar %s %s' % (java_exec, jsdoc_validator_jar, ' '.join(descriptors.all_compiled_files() + additional_files)))
+    file_list = tempfile.NamedTemporaryFile(mode='wt', delete=False)
+    try:
+        file_list.write('\n'.join(descriptors.all_compiled_files() + additional_files))
+    finally:
+        file_list.close()
+    return run_in_shell('%s -jar %s --files-list-name %s' % (java_exec, jsdoc_validator_jar, file_list.name)), file_list
 
 
 def verify_jsdoc(additional_files):
@@ -309,7 +314,7 @@ injectedScriptCompileProc = run_in_shell(command)
 print 'Verifying JSDoc comments...'
 additional_jsdoc_check_files = [injectedScriptSourceTmpFile, injectedScriptCanvasModuleSourceTmpFile]
 errors_found |= verify_jsdoc(additional_jsdoc_check_files)
-jsdocValidatorProc = verify_jsdoc_extra(additional_jsdoc_check_files)
+jsdocValidatorProc, jsdocValidatorFileList = verify_jsdoc_extra(additional_jsdoc_check_files)
 
 print 'Checking generated code in InjectedScriptCanvasModuleSource.js...'
 check_injected_webgl_calls_command = '%s/check_injected_webgl_calls_info.py %s %s' % (scripts_path, webgl_rendering_context_idl_path, canvas_injected_script_source_name)
@@ -325,6 +330,8 @@ print
 if jsdocValidatorOut:
     print ('JSDoc validator output:\n%s' % jsdocValidatorOut)
     errors_found = True
+
+os.remove(jsdocValidatorFileList.name)
 
 (moduleCompileOut, _) = modular_compiler_proc.communicate()
 print 'Modular compilation output:'
