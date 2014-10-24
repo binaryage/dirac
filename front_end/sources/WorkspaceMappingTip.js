@@ -113,10 +113,9 @@ WebInspector.WorkspaceMappingTip.prototype = {
         var infobar = new WebInspector.UISourceCodeFrame.Infobar(WebInspector.UISourceCodeFrame.Infobar.Level.Info, title);
         infobar.createDetailsRowMessage(WebInspector.UIString("You can map files in your workspace to the ones loaded over the network. As a result, changes made in DevTools will be persisted to disk."));
         infobar.createDetailsRowMessage(WebInspector.UIString("Use context menu to establish the mapping at any time."));
-        var actionLink = infobar.createDetailsRowMessage("").createChild("a");
-        actionLink.href = "";
+        var actionLink = WebInspector.createAnchor("", WebInspector.UIString("Establish the mapping now..."), true);
         actionLink.onclick = this._establishTheMapping.bind(this, uiSourceCode);
-        actionLink.textContent = WebInspector.UIString("Establish the mapping now...");
+        infobar.createDetailsRowMessage("").appendChild(actionLink);
         this._appendInfobar(uiSourceCode, infobar);
     },
 
@@ -143,9 +142,7 @@ WebInspector.WorkspaceMappingTip.prototype = {
 
         infobar.createDetailsRowMessage("").createChild("br");
         var rowElement = infobar.createDetailsRowMessage(WebInspector.UIString("For more information on workspaces, refer to the "));
-        var a = rowElement.createChild("a");
-        a.textContent = "workspaces documentation";
-        a.href = "https://developer.chrome.com/devtools/docs/workspaces";
+        rowElement.appendChild(WebInspector.createDocumentationAnchor("workspaces", WebInspector.UIString("workspaces documentation")));
         rowElement.createTextChild(".");
         uiSourceCode[WebInspector.WorkspaceMappingTip._infobarSymbol] = infobar;
         uiSourceCodeFrame.attachInfobars([infobar]);

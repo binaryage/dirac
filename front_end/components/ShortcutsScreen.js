@@ -75,10 +75,7 @@ WebInspector.ShortcutsScreen.prototype = {
             orderedSections[i].renderSection(container);
 
         var note = scrollPane.createChild("p", "help-footnote");
-        var noteLink = note.createChild("a");
-        noteLink.href = "https://developers.google.com/chrome-developer-tools/docs/shortcuts";
-        noteLink.target = "_blank";
-        noteLink.createTextChild(WebInspector.UIString("Full list of keyboard shortcuts and gestures"));
+        note.appendChild(WebInspector.createDocumentationAnchor("shortcuts", WebInspector.UIString("Full list of keyboard shortcuts and gestures")));
 
         return view;
     }

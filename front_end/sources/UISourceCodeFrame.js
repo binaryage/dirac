@@ -223,7 +223,7 @@ WebInspector.UISourceCodeFrame.Infobar = function(level, message)
     this._mainRow.createChild("span", "source-frame-infobar-icon");
     this._mainRow.createChild("span", "source-frame-infobar-row-message").textContent = message;
 
-    this._toggleElement = this._mainRow.createChild("div", "source-frame-infobar-toggle source-frame-infobar-link");
+    this._toggleElement = this._mainRow.createChild("div", "source-frame-infobar-toggle link");
     this._toggleElement.addEventListener("click", this._onToggleDetails.bind(this), false);
 
     this._closeElement = this._mainRow.createChild("div", "close-button");

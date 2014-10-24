@@ -171,5 +171,9 @@ WebInspector.RequestTimingView.createTimingTable = function(request)
         cell.createTextChild(WebInspector.UIString("CAUTION: request is not finished yet!"));
     }
 
+    var note = tableElement.createChild("tr").createChild("td", "footnote");
+    note.colSpan = 2;
+    note.appendChild(WebInspector.createDocumentationAnchor("network#resource-network-timing", WebInspector.UIString("Explanation of resource timing")));
+
     return tableElement;
 }

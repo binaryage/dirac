@@ -1173,6 +1173,41 @@ WebInspector.LongClickController.prototype = {
 }
 
 /**
+ * @param {string} url
+ * @param {string=} linkText
+ * @param {boolean=} isInternal
+ * @return {!Element}
+ */
+WebInspector.createAnchor = function(url, linkText, isInternal)
+{
+    var anchor = createElementWithClass("a", "link");
+    var href = sanitizeHref(url);
+
+    if (href)
+        anchor.href = href;
+    anchor.title = url;
+
+    if (!linkText)
+        linkText = url;
+    anchor.textContent = linkText;
+
+    if (!isInternal)
+        anchor.setAttribute("target", "_blank");
+
+    return anchor;
+}
+
+/**
+ * @param {string} article
+ * @param {string} title
+ * @return {!Element}
+ */
+WebInspector.createDocumentationAnchor = function(article, title)
+{
+    return WebInspector.createAnchor("https://developer.chrome.com/devtools/docs/" + article, title);
+}
+
+/**
  * @param {!Window} window
  */
 WebInspector.initializeUIUtils = function(window)

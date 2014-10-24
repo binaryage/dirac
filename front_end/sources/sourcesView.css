@@ -183,13 +183,6 @@ button.status-bar-item.scripts-navigator-show-hide-button {
     -webkit-user-select: none;
 }
 
-.source-frame-infobar-link {
-    text-decoration: underline;
-    color: rgb(50, 50, 200);
-    cursor: pointer;
-}
-
 .source-frame-infobar-details-url {
     flex: 0 1000 auto;
-    color: rgb(50, 50, 200);
 }

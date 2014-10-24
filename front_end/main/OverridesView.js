@@ -200,10 +200,7 @@ WebInspector.OverridesView.DeviceTab = function()
     this.element.appendChild(this._createDeviceElement());
 
     var footnote = this.element.createChild("p", "help-footnote");
-    var footnoteLink = footnote.createChild("a");
-    footnoteLink.href = "https://developers.google.com/chrome-developer-tools/docs/mobile-emulation";
-    footnoteLink.target = "_blank";
-    footnoteLink.createTextChild(WebInspector.UIString("More information about screen emulation"));
+    footnote.appendChild(WebInspector.createDocumentationAnchor("device-mode", WebInspector.UIString("More information about screen emulation")));
 }
 
 WebInspector.OverridesView.DeviceTab.prototype = {

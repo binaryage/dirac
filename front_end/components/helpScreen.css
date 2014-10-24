@@ -16,10 +16,6 @@
     border-radius: 10px;
 }
 
-.help-window-main a {
-    color: rgb(17, 85, 204);
-}
-
 .help-window-caption {
     border-bottom: solid 1px rgb(153, 153, 153);
     margin: 0 8px;

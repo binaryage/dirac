@@ -110,6 +110,10 @@
     padding: 2px 0;
 }
 
+.network-timing-table .footnote {
+    border-top: 1px solid #eee;
+}
+
 .network-timing-row {
     position: relative;
     height: 15px;

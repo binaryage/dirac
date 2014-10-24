@@ -253,10 +253,7 @@ WebInspector.DocumentationView.Renderer.prototype = {
             element = createElement("span");
             break;
         case elementTypes.Link:
-            element = createElementWithClass("a", "documentation-link");
-            element.href = article.url();
-            if (!article.children().length)
-                element.textContent = article.url();
+            element = WebInspector.createAnchor(article.url(), article.children().length ? "" : article.url(), true);
             break;
         case elementTypes.Code:
             element = createElementWithClass("span", "documentation-code-tag");

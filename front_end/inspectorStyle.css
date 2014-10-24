@@ -2826,3 +2826,9 @@ body.inactive select.chrome-select,
     white-space: nowrap;
     pointer-events: none;
 }
+
+.link {
+    cursor: pointer;
+    text-decoration: underline;
+    color: rgb(17, 85, 204);
+}

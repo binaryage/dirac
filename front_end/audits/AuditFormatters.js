@@ -77,13 +77,7 @@ WebInspector.AuditFormatters.Registry = {
      */
     url: function(url, displayText, allowExternalNavigation)
     {
-        var a = createElement("a");
-        a.href = sanitizeHref(url);
-        a.title = url;
-        a.textContent = displayText || url;
-        if (allowExternalNavigation)
-            a.target = "_blank";
-        return a;
+        return WebInspector.createAnchor(url, displayText, !allowExternalNavigation);
     },
 
     /**
