@@ -82,7 +82,7 @@ WebInspector.elementDragStart = function(elementDragStart, elementDrag, elementD
     if (typeof cursor === "string") {
         WebInspector._restoreCursorAfterDrag = restoreCursor.bind(null, targetElement.style.cursor);
         targetElement.style.cursor = cursor;
-        document.body.style.cursor = cursor;
+        targetDocument.body.style.cursor = cursor;
     }
     function restoreCursor(oldCursor)
     {
