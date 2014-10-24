@@ -179,6 +179,8 @@ WebInspector.NetworkLogView.prototype = {
         var types = [];
         for (var typeId in WebInspector.resourceTypes) {
             var resourceType = WebInspector.resourceTypes[typeId];
+            if (resourceType === WebInspector.resourceTypes.TextTrack)
+                continue;
             types.push({name: resourceType.name(), label: resourceType.categoryTitle()});
         }
         this._resourceTypeFilterUI = new WebInspector.NamedBitSetFilterUI(types, WebInspector.settings.networkResourceTypeFilters);
@@ -1480,7 +1482,10 @@ WebInspector.NetworkLogView.prototype = {
     _applyFilter: function(node)
     {
         var request = node.request();
-        if (!this._resourceTypeFilterUI.accept(request.resourceType().name()))
+        var resourceType = request.resourceType();
+        if (resourceType === WebInspector.resourceTypes.TextTrack)
+            resourceType = WebInspector.resourceTypes.Other;
+        if (!this._resourceTypeFilterUI.accept(resourceType.name()))
             return false;
         if (this._dataURLFilterUI.checked() && request.parsedURL.isDataURL())
             return false;
