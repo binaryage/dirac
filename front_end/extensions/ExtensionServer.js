@@ -560,8 +560,13 @@ WebInspector.ExtensionServer.prototype = {
          */
         function onContentAvailable(content)
         {
+            var contentEncoded = false;
+            if (contentProvider instanceof WebInspector.Resource)
+                contentEncoded = contentProvider.contentEncoded;
+            if (contentProvider instanceof WebInspector.NetworkRequest)
+                contentEncoded = contentProvider.contentEncoded;
             var response = {
-                encoding: (content === null) || contentProvider.contentType().isTextType() ? "" : "base64",
+                encoding: contentEncoded && content ? "base64" : "",
                 content: content
             };
             this._dispatchCallback(message.requestId, port, response);
