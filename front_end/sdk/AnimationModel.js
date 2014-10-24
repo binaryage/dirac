@@ -183,6 +183,8 @@ WebInspector.AnimationModel.AnimationNode = function(target, payload)
 {
     WebInspector.SDKObject.call(this, target);
     this._payload = payload;
+    if (payload.keyframesRule)
+        this._keyframesRule = new WebInspector.AnimationModel.KeyframesRule(target, payload.keyframesRule);
 }
 
 WebInspector.AnimationModel.AnimationNode.prototype = {
@@ -256,6 +258,92 @@ WebInspector.AnimationModel.AnimationNode.prototype = {
     name: function()
     {
         return this._payload.name;
+    },
+
+    /**
+     * @return {?WebInspector.AnimationModel.KeyframesRule}
+     */
+    keyframesRule: function()
+    {
+        return this._keyframesRule;
+    },
+
+    __proto__: WebInspector.SDKObject.prototype
+}
+
+/**
+ * @constructor
+ * @extends {WebInspector.SDKObject}
+ * @param {!WebInspector.Target} target
+ * @param {!AnimationAgent.KeyframesRule} payload
+ */
+WebInspector.AnimationModel.KeyframesRule = function(target, payload)
+{
+    WebInspector.SDKObject.call(this, target);
+    this._payload = payload;
+    this._keyframes = this._payload.keyframes.map(function (keyframeStyle) {
+        return new WebInspector.AnimationModel.KeyframeStyle(target, keyframeStyle);
+    });
+}
+
+WebInspector.AnimationModel.KeyframesRule.prototype = {
+    /**
+     * @param {!Array.<!AnimationAgent.KeyframeStyle>} payload
+     */
+    _setKeyframesPayload: function(payload)
+    {
+        this._keyframes = payload.map(function (keyframeStyle) {
+            return new WebInspector.AnimationModel.KeyframeStyle(this._target, keyframeStyle);
+        });
+    },
+
+    /**
+     * @return {string|undefined}
+     */
+    name: function()
+    {
+        return this._payload.name;
+    },
+
+    /**
+     * @return {!Array.<!WebInspector.AnimationModel.KeyframeStyle>}
+     */
+    keyframes: function()
+    {
+        return this._keyframes;
+    },
+
+    __proto__: WebInspector.SDKObject.prototype
+}
+
+/**
+ * @constructor
+ * @extends {WebInspector.SDKObject}
+ * @param {!WebInspector.Target} target
+ * @param {!AnimationAgent.KeyframeStyle} payload
+ */
+WebInspector.AnimationModel.KeyframeStyle = function(target, payload)
+{
+    WebInspector.SDKObject.call(this, target);
+    this._payload = payload;
+    this._style = WebInspector.CSSStyleDeclaration.parsePayload(this.target().cssModel, payload.style);
+}
+
+WebInspector.AnimationModel.KeyframeStyle.prototype = {
+    /**
+     * @return {string}
+     */
+    offset: function()
+    {
+        return this._payload.offset;
+    },
+
+    /**
+     * @return {!WebInspector.CSSStyleDeclaration}
+     */
+    style: function()
+    {
+        return this._style;
     },
 
     __proto__: WebInspector.SDKObject.prototype

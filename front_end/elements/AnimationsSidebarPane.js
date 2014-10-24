@@ -44,8 +44,21 @@ WebInspector.AnimationsSidebarPane.prototype = {
                 var id = player.source().name() ? player.source().name() : player.id();
                 separatorElement.createTextChild(WebInspector.UIString("Animation") + " " + id);
                 this.bodyElement.appendChild(this._animationSections[i].element);
+
+                if (player.source().keyframesRule()) {
+                    var keyframes = player.source().keyframesRule().keyframes();
+                    for (var j = 0; j < keyframes.length; j++) {
+                        var inlineStyle = { selectorText: keyframes[j].offset(), style: keyframes[j].style(), isAttribute: true };
+                        var section = new WebInspector.StylePropertiesSection(this._stylesPane, inlineStyle, true, false);
+                        section.expanded = true;
+                        this.bodyElement.appendChild(section.element);
+                    }
+                }
             }
         }
+
+        if (!node)
+            return;
 
         if (this._selectedNode === node) {
             for (var i = 0; i < this._animationSections.length; ++i)

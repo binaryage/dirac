@@ -4452,9 +4452,28 @@
                     { "name": "direction", "type": "number", "description": "<code>AnimationNode</code>'s playback direction." },
                     { "name": "fillMode", "type": "number", "description": "<code>AnimationNode</code>'s fill mode." },
                     { "name": "timeFraction", "type": "number", "description": "<code>AnimationNode</code>'s time fraction." },
-                    { "name": "name", "type": "string", "description": "<code>AnimationNode</code> name."}
+                    { "name": "name", "type": "string", "description": "<code>AnimationNode</code>'s name." },
+                    { "name": "keyframesRule", "$ref": "KeyframesRule", "optional": true, "description": "<code>AnimationNode</code>'s keyframes." }
                 ],
                 "description": "AnimationNode instance"
+            },
+            {
+                "id": "KeyframesRule",
+                "type": "object",
+                "properties": [
+                    { "name": "name", "type": "string", "optional": true, "description": "CSS keyframed animation's name." },
+                    { "name": "keyframes", "type": "array", "items": { "$ref": "KeyframeStyle" }, "description": "List of animation keyframes." }
+                ],
+                "description": "Keyframes Rule"
+            },
+            {
+                "id": "KeyframeStyle",
+                "type": "object",
+                "properties": [
+                    { "name": "offset", "type": "string", "description": "Keyframe's time offset." },
+                    { "name": "style", "$ref": "CSS.CSSStyle", "description": "Keyframe's associated CSS style declaration." }
+                ],
+                "description": "Keyframe Style"
             }
         ],
         "commands": [
