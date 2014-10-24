@@ -817,10 +817,7 @@ WebInspector.TracingTimelineUIUtils._generateInvalidationsForType = function(typ
         if (invalidation.reason) {
             var reasonRow = row.createChild("div");
             var reason = invalidation.reason;
-            // We should clean up invalidation strings so they are consistent: crbug.com/424451.
-            if (!invalidation.reason.endsWith("."))
-                reason += ".";
-            reasonRow.textContent = WebInspector.UIString("Reason: %s", reason);
+            reasonRow.textContent = WebInspector.UIString("Reason: %s.", reason);
         }
 
         if (invalidation.stackTrace)
