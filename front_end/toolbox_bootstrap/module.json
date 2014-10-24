@@ -1,6 +1,5 @@
 {
     "dependencies": [
-        "ui",
         "host",
         "common"
     ],

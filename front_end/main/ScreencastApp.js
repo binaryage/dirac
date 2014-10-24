@@ -25,7 +25,11 @@ WebInspector.ScreencastApp = function()
 };
 
 WebInspector.ScreencastApp.prototype = {
-    presentUI: function()
+    /**
+     * @param {!Document} document
+     * @override
+     */
+    presentUI: function(document)
     {
         var rootView = new WebInspector.RootView();
 
@@ -35,7 +39,7 @@ WebInspector.ScreencastApp.prototype = {
 
         WebInspector.inspectorView.show(this._rootSplitView.sidebarElement());
         WebInspector.inspectorView.showInitialPanel();
-        rootView.attachToBody();
+        rootView.attachToDocument(document);
     },
 
     /**

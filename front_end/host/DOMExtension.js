@@ -277,24 +277,6 @@ Constraints.prototype.addHeight = function(value)
 }
 
 /**
- * @param {?Element=} containerElement
- * @return {!Size}
- */
-Element.prototype.measurePreferredSize = function(containerElement)
-{
-    containerElement = containerElement || this.ownerDocument.body;
-    containerElement.appendChild(this);
-    var fakingComponentRoot = WebInspector.installComponentRootStyles(this);
-    this.positionAt(0, 0);
-    var result = new Size(this.offsetWidth, this.offsetHeight);
-    this.positionAt(undefined, undefined);
-    this.remove();
-    if (fakingComponentRoot)
-        WebInspector.uninstallComponentRootStyles(this);
-    return result;
-}
-
-/**
  * @param {!Event} event
  * @return {boolean}
  */

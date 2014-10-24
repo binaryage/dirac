@@ -9,12 +9,7 @@ WebInspector.ToolboxHost = function() {}
 
 WebInspector.ToolboxHost.prototype = {
     /**
-     * @param {!Element} rootElement
+     * @param {!Document} document
      */
-    toolboxLoaded: function(rootElement) {},
-
-    /**
-     * @return {!InspectorFrontendHostAPI}
-     */
-    inspectorFrontendHost: function() {}
+    toolboxLoaded: function(document) {}
 }

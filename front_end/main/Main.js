@@ -263,7 +263,7 @@ WebInspector.Main.prototype = {
         // It is important to kick controller lifetime after apps are instantiated.
         WebInspector.dockController.initialize();
         console.timeStamp("Main._presentUI");
-        WebInspector.app.presentUI();
+        WebInspector.app.presentUI(document);
 
         if (!WebInspector.isWorkerFrontend())
             WebInspector.inspectElementModeController = new WebInspector.InspectElementModeController();

@@ -12,12 +12,16 @@ WebInspector.SimpleApp = function()
 };
 
 WebInspector.SimpleApp.prototype = {
-    presentUI: function()
+    /**
+     * @param {!Document} document
+     * @override
+     */
+    presentUI: function(document)
     {
         var rootView = new WebInspector.RootView();
         WebInspector.inspectorView.show(rootView.element);
         WebInspector.inspectorView.showInitialPanel();
-        rootView.attachToBody();
+        rootView.attachToDocument(document);
     },
 
     __proto__: WebInspector.App.prototype

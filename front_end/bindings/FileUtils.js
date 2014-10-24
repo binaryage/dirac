@@ -198,11 +198,9 @@ WebInspector.ChunkedFileReader.prototype = {
 /**
  * @param {function(!File)} callback
  * @return {!Node}
- * // FIXME: remove this suppression (crbug.com/425498).
- * @suppressGlobalPropertiesCheck
  */
 WebInspector.createFileSelectorElement = function(callback) {
-    var fileSelectorElement = document.createElement("input");
+    var fileSelectorElement = createElement("input");
     fileSelectorElement.type = "file";
     fileSelectorElement.style.display = "none";
     fileSelectorElement.setAttribute("tabindex", -1);

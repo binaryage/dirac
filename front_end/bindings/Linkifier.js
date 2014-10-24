@@ -84,12 +84,10 @@ WebInspector.Linkifier.handleLink = function(url, lineNumber)
  * @param {string=} title
  * @param {string=} classes
  * @return {!Element}
- * // FIXME: remove this suppression (crbug.com/425498).
- * @suppressGlobalPropertiesCheck
  */
 WebInspector.Linkifier.linkifyUsingRevealer = function(revealable, text, fallbackHref, fallbackLineNumber, title, classes)
 {
-    var a = document.createElement("a");
+    var a = createElement("a");
     a.className = (classes || "") + " webkit-html-resource-link";
     a.textContent = text.trimMiddle(WebInspector.Linkifier.MaxLengthForDisplayedURLs);
     a.title = title || text;
@@ -230,12 +228,10 @@ WebInspector.Linkifier.prototype = {
     /**
      * @param {string=} classes
      * @return {!Element}
-     * // FIXME: remove this suppression (crbug.com/425498).
-     * @suppressGlobalPropertiesCheck
      */
     _createAnchor: function(classes)
     {
-        var anchor = document.createElement("a");
+        var anchor = createElement("a");
         anchor.className = (classes || "") + " webkit-html-resource-link";
 
         /**

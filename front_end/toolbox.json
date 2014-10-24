@@ -1,9 +1,5 @@
 [
     {
-        "name": "ui",
-        "type": "autostart"
-    },
-    {
         "name": "host",
         "type": "autostart"
     },

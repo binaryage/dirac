@@ -122,6 +122,7 @@
             'front_end/components/TimelineGrid.js',
         ],
         'devtools_host_js_files': [
+            'front_end/host/DOMExtension.js',
             'front_end/host/InspectorFrontendHost.js',
             'front_end/host/Platform.js',
             'front_end/host/ToolboxHost.js',
@@ -226,7 +227,6 @@
             'front_end/ui/ContextMenu.js',
             'front_end/ui/DataGrid.js',
             'front_end/ui/Dialog.js',
-            'front_end/ui/DOMExtension.js',
             'front_end/ui/DOMSyntaxHighlighter.js',
             'front_end/ui/DropDownMenu.js',
             'front_end/ui/EmptyView.js',

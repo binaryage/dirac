@@ -10,7 +10,10 @@ WebInspector.App = function()
 };
 
 WebInspector.App.prototype = {
-    presentUI: function()
+    /**
+     * @param {!Document} document
+     */
+    presentUI: function(document)
     {
     }
 };

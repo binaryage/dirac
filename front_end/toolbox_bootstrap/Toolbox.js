@@ -11,15 +11,8 @@ WebInspector.Toolbox = function()
     if (!window.opener)
         return;
 
-    var delegate = /** @type {!WebInspector.ToolboxHost} */ (window.opener.WebInspector["app"]);
-
-    WebInspector.initializeUIUtils(window);
-    WebInspector.zoomManager = new WebInspector.ZoomManager(window, delegate.inspectorFrontendHost());
-    WebInspector.ContextMenu.installHandler(document);
-
-    var rootView = new WebInspector.RootView();
-    delegate.toolboxLoaded(rootView.element);
-    rootView.attachToBody();
+    var host = /** @type {!WebInspector.ToolboxHost} */ (window.opener.WebInspector["app"]);
+    host.toolboxLoaded(document);
 }
 
 // FIXME: This stub is invoked from the backend and should be removed

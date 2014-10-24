@@ -359,7 +359,7 @@ WebInspector.FilteredItemSelectionDialog.prototype = {
         if (!this._rowHeight) {
             var delegateIndex = this._filteredItems[index];
             var element = this._createItemElement(delegateIndex);
-            this._rowHeight = element.measurePreferredSize(this._viewportControl.contentElement()).height;
+            this._rowHeight = WebInspector.measurePreferredSize(element, this._viewportControl.contentElement()).height;
         }
         return this._rowHeight;
     },
