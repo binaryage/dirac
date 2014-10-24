@@ -78,8 +78,18 @@ WebInspector.elementDragStart = function(elementDragStart, elementDrag, elementD
     targetDocument.addEventListener("mouseup", WebInspector._elementDragEnd, true);
     targetDocument.addEventListener("mouseout", WebInspector._mouseOutWhileDragging, true);
 
-    targetDocument.body.style.cursor = cursor;
-
+    var targetElement = /** @type {!Element} */ (event.target);
+    if (typeof cursor === "string") {
+        WebInspector._restoreCursorAfterDrag = restoreCursor.bind(null, targetElement.style.cursor);
+        targetElement.style.cursor = cursor;
+        document.body.style.cursor = cursor;
+    }
+    function restoreCursor(oldCursor)
+    {
+        targetDocument.body.style.removeProperty("cursor");
+        targetElement.style.cursor = oldCursor;
+        WebInspector._restoreCursorAfterDrag = null;
+    }
     event.preventDefault();
 }
 
@@ -117,7 +127,8 @@ WebInspector._cancelDragEvents = function(event)
     targetDocument.removeEventListener("mouseup", WebInspector._elementDragEnd, true);
     WebInspector._unregisterMouseOutWhileDragging();
 
-    targetDocument.body.style.removeProperty("cursor");
+    if (WebInspector._restoreCursorAfterDrag)
+        WebInspector._restoreCursorAfterDrag();
 
     if (WebInspector._elementDraggingGlassPane)
         WebInspector._elementDraggingGlassPane.dispose();
