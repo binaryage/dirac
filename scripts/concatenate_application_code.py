@@ -152,8 +152,12 @@ class ReleaseBuilder(AppBuilder):
             module = copy.copy(module_descriptors[name])
             # Clear scripts, as they are not used at runtime
             # (only the fact of their presence is important).
-            if module.get('scripts'):
+            stylesheets = module.get('stylesheets', None)
+            if module.get('scripts') or stylesheets:
                 module['scripts'] = []
+            # Stylesheets list is not used at runtime.
+            if stylesheets is not None:
+                del module['stylesheets']
             result.append(module)
         return json.dumps(result)
 
