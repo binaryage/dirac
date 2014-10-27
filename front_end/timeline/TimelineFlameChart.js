@@ -500,7 +500,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
             context.setLineDash([]);
 
 
-            var padding = 4 * window.devicePixelRatio;
+            var padding = 4;
             barX += padding;
             barWidth -= 2 * padding;
             barY += padding;

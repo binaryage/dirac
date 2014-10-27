@@ -189,7 +189,8 @@ WebInspector.TracingModel.prototype = {
             stringPayload = recordDelimiter + stringPayload;
             startOffset += recordDelimiter.length;
         }
-        this._storageOffset += stringPayload.length;
+        var blob = new Blob([stringPayload]);
+        this._storageOffset += blob.size;
         this._backingStorage.write([stringPayload]);
 
         if (payload.ph !== WebInspector.TracingModel.Phase.Metadata) {
