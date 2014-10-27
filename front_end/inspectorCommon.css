@@ -10,8 +10,7 @@ body {
     margin: 0;
 }
 
-body.component-root,
-body /deep/ .component-root {
+html /deep/ .component-root {
     cursor: default;
     font-family: Lucida Grande, sans-serif;
     font-size: 12px;
@@ -20,43 +19,34 @@ body /deep/ .component-root {
     color: #222;
 }
 
-body.platform-linux,
-body /deep/ .platform-linux {
+html /deep/ .platform-linux {
     color: rgb(48, 57, 66);
     font-family: Ubuntu, Arial, sans-serif;
 }
 
-body.platform-mac,
-body /deep/ .platform-mac {
+html /deep/ .platform-mac {
     color: rgb(48, 57, 66);
     font-family: 'Lucida Grande', sans-serif;
 }
 
-body.platform-windows,
-body /deep/ .platform-windows {
+html /deep/ .platform-windows {
     font-family: 'Segoe UI', Tahoma, sans-serif;
 }
 
-body.platform-mac .monospace,
-body.platform-mac .source-code
-body /deep/ .platform-mac .monospace,
-body /deep/ .platform-mac .source-code {
+html /deep/ .platform-mac .monospace,
+html /deep/ .platform-mac .source-code {
     font-size: 11px !important;
     font-family: Menlo, monospace;
 }
 
-body.platform-windows .monospace,
-body.platform-windows .source-code
-body /deep/ .platform-windows .monospace,
-body /deep/ .platform-windows .source-code {
+html /deep/ .platform-windows .monospace,
+html /deep/ .platform-windows .source-code {
     font-size: 12px !important;
     font-family: Consolas, Lucida Console, monospace;
 }
 
-body.platform-linux .monospace,
-body.platform-linux .source-code
-body /deep/ .platform-linux .monospace,
-body /deep/ .platform-linux .source-code {
+html /deep/ .platform-linux .monospace,
+html /deep/ .platform-linux .source-code {
     font-size: 11px !important;
     font-family: dejavu sans mono, monospace;
 }

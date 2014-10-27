@@ -913,7 +913,14 @@ WebInspector.ElementsTreeOutline.prototype = {
                 const classNamePrefix = "__web-inspector-hide";
                 const classNameSuffix = "-shortcut__";
                 const styleTagId = "__web-inspector-hide-shortcut-style__";
-                const styleRules = ".__web-inspector-hide-shortcut__, .__web-inspector-hide-shortcut__ * { visibility: hidden !important; } .__web-inspector-hidebefore-shortcut__::before { visibility: hidden !important; } .__web-inspector-hideafter-shortcut__::after { visibility: hidden !important; }";
+                var selectors = [];
+                selectors.push("html /deep/ .__web-inspector-hide-shortcut__");
+                selectors.push("html /deep/ .__web-inspector-hide-shortcut__ /deep/ *");
+                selectors.push("html /deep/ .__web-inspector-hidebefore-shortcut__::before");
+                selectors.push("html /deep/ .__web-inspector-hideafter-shortcut__::after");
+                var selector = selectors.join(", ");
+                var ruleBody = "    visibility: hidden !important;";
+                var rule = "\n" + selector + "\n{\n" + ruleBody + "\n}\n";
 
                 var className = classNamePrefix + (pseudoType || "") + classNameSuffix;
                 this.classList.toggle(className);
@@ -925,7 +932,7 @@ WebInspector.ElementsTreeOutline.prototype = {
                 style = document.createElement("style");
                 style.id = styleTagId;
                 style.type = "text/css";
-                style.textContent = styleRules;
+                style.textContent = rule;
                 document.head.appendChild(style);
             }
 
