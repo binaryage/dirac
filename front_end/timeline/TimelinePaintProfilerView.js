@@ -115,26 +115,34 @@ WebInspector.TimelinePaintImageView = function()
 WebInspector.TimelinePaintImageView.prototype = {
     onResize: function()
     {
-        this._updateImagePosition();
+        if (this._imageElement.src)
+            this._updateImagePosition();
     },
 
     _updateImagePosition: function()
     {
-        var width = this._imageElement.width;
-        var height = this._imageElement.height;
+        var width = this._imageElement.naturalWidth;
+        var height = this._imageElement.naturalHeight;
+        var clientWidth = this.element.clientWidth;
+        var clientHeight = this.element.clientHeight;
 
-        var paddingFactor = 1.1;
-        var scaleX = this.element.clientWidth / width / paddingFactor;
-        var scaleY = this.element.clientHeight / height / paddingFactor;
+        var paddingFraction = 0.1;
+        var paddingX = clientWidth * paddingFraction;
+        var paddingY = clientHeight * paddingFraction;
+        var scaleX = (clientWidth - paddingX) / width;
+        var scaleY = (clientHeight - paddingY) / height;
         var scale = Math.min(scaleX, scaleY);
 
+        this._transformController.setScaleConstraints(0.5, 10 / scale);
         var matrix = new WebKitCSSMatrix()
-            .translate(this._transformController.offsetX(), this._transformController.offsetY())
             .scale(this._transformController.scale(), this._transformController.scale())
-            .translate(this.element.clientWidth / 2, this.element.clientHeight / 2)
+            .translate(clientWidth / 2, clientHeight / 2)
             .scale(scale, scale)
             .translate(-width / 2, -height / 2);
-
+        var bounds = WebInspector.Geometry.boundsForTransformedPoints(matrix, [0, 0, 0, width, height, 0]);
+        this._transformController.clampOffsets(paddingX - bounds.maxX, clientWidth - paddingX - bounds.minX,
+            paddingY - bounds.maxY, clientHeight - paddingY - bounds.minY);
+        matrix = new WebKitCSSMatrix().translate(this._transformController.offsetX(), this._transformController.offsetY()).multiply(matrix);
         this._imageElement.style.webkitTransform = matrix.toString();
     },
 

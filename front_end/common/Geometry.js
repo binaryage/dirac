@@ -170,6 +170,28 @@ WebInspector.Geometry.radToDeg = function(rad)
     return rad * 180 / Math.PI;
 }
 
+/**
+ * @param {!CSSMatrix} matrix
+ * @param {!Array.<number>} points
+ * @param {{minX: number, maxX: number, minY: number, maxY: number}=} aggregateBounds
+ * @return {!{minX: number, maxX: number, minY: number, maxY: number}}
+ */
+WebInspector.Geometry.boundsForTransformedPoints = function(matrix, points, aggregateBounds)
+{
+    if (!aggregateBounds)
+        aggregateBounds = {minX: Infinity, maxX: -Infinity, minY: Infinity, maxY: -Infinity};
+    if (points.length % 3)
+        console.assert("Invalid size of points array");
+    for (var p = 0; p < points.length; p += 3) {
+        var vector = new WebInspector.Geometry.Vector(points[p], points[p + 1], points[p + 2]);
+        vector = WebInspector.Geometry.multiplyVectorByMatrixAndNormalize(vector, matrix);
+        aggregateBounds.minX = Math.min(aggregateBounds.minX, vector.x);
+        aggregateBounds.maxX = Math.max(aggregateBounds.maxX, vector.x);
+        aggregateBounds.minY = Math.min(aggregateBounds.minY, vector.y);
+        aggregateBounds.maxY = Math.max(aggregateBounds.maxY, vector.y);
+    }
+    return aggregateBounds;
+}
 
 /**
  * @constructor

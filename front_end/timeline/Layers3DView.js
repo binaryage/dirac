@@ -278,27 +278,43 @@ WebInspector.Layers3DView.prototype = {
         this._gl.viewportHeight = this._canvasElement.height;
     },
 
-    /**
-     * @return {!CSSMatrix}
-     */
-    _calculateProjectionMatrix: function()
+    _updateTransformAndConstraints: function()
     {
-        var scaleFactorForMargins = 1.2;
+        var paddingFraction = 0.1;
         var viewport = this._layerTree.viewportSize();
-        var baseWidth = viewport ? viewport.width : this._layerTree.contentRoot().width();
-        var baseHeight = viewport ? viewport.height : this._layerTree.contentRoot().height();
+        var root = this._layerTree.contentRoot();
+        var baseWidth = viewport ? viewport.width : root.width();
+        var baseHeight = viewport ? viewport.height : root.height();
         var canvasWidth = this._canvasElement.width;
         var canvasHeight = this._canvasElement.height;
-        var scaleX = canvasWidth / baseWidth / scaleFactorForMargins;
-        var scaleY = canvasHeight / baseHeight / scaleFactorForMargins;
+        var paddingX = canvasWidth * paddingFraction;
+        var paddingY = canvasHeight * paddingFraction;
+        var scaleX = (canvasWidth - 2 * paddingX) / baseWidth;
+        var scaleY = (canvasHeight - 2 * paddingY) / baseHeight;
         var viewScale = Math.min(scaleX, scaleY);
+        var minScaleConstraint = Math.min(baseWidth / root.width(), baseHeight / root.height()) / 2;
+        this._transformController.setScaleConstraints(minScaleConstraint, 10 / viewScale); // 1/viewScale is 1:1 in terms of pixels, so allow zooming to 10x of native size
         var scale = this._transformController.scale();
-        var offsetX = this._transformController.offsetX() * window.devicePixelRatio;
-        var offsetY = this._transformController.offsetY() * window.devicePixelRatio;
         var rotateX = this._transformController.rotateX();
         var rotateY = this._transformController.rotateY();
-        return new WebKitCSSMatrix().translate(offsetX, offsetY, 0).scale(scale, scale, scale).translate(canvasWidth / 2, canvasHeight / 2, 0)
+        this._scale = scale * viewScale;
+        var scaleAndRotationMatrix = new WebKitCSSMatrix().scale(scale, scale, scale).translate(canvasWidth / 2, canvasHeight / 2, 0)
             .rotate(rotateX, rotateY, 0).scale(viewScale, viewScale, viewScale).translate(-baseWidth / 2, -baseHeight / 2, 0);
+
+        var bounds;
+        for (var i = 0; i < this._rects.length; ++i)
+            bounds = WebInspector.Geometry.boundsForTransformedPoints(scaleAndRotationMatrix, this._rects[i].vertices, bounds);
+
+        this._transformController.clampOffsets((paddingX - bounds.maxX) / window.devicePixelRatio, (canvasWidth - paddingX - bounds.minX) / window.devicePixelRatio,
+                                               (paddingY - bounds.maxY) / window.devicePixelRatio, (canvasHeight - paddingY - bounds.minY) / window.devicePixelRatio);
+        var offsetX = this._transformController.offsetX() * window.devicePixelRatio;
+        var offsetY = this._transformController.offsetY() * window.devicePixelRatio;
+        // Multiply to translation matrix on the right rather than translate (which would implicitly multiply on the left).
+        this._projectionMatrix = new WebKitCSSMatrix().translate(offsetX, offsetY, 0).multiply(scaleAndRotationMatrix);
+
+        var glProjectionMatrix = new WebKitCSSMatrix().scale(1, -1, -1).translate(-1, -1, 0)
+            .scale(2 / this._canvasElement.width, 2 / this._canvasElement.height, 1 / 1000000).multiply(this._projectionMatrix);
+        this._gl.uniformMatrix4fv(this._shaderProgram.pMatrixUniform, false, this._arrayFromMatrix(glProjectionMatrix));
     },
 
     /**
@@ -308,15 +324,6 @@ WebInspector.Layers3DView.prototype = {
     _arrayFromMatrix: function(m)
     {
         return new Float32Array([m.m11, m.m12, m.m13, m.m14, m.m21, m.m22, m.m23, m.m24, m.m31, m.m32, m.m33, m.m34, m.m41, m.m42, m.m43, m.m44]);
-    },
-
-    _initProjectionMatrix: function()
-    {
-        var projectionMatrix = this._calculateProjectionMatrix();
-        this._pMatrix = new WebKitCSSMatrix().scale(1, -1, -1).translate(-1, -1, 0)
-            .scale(2 / this._canvasElement.width, 2 / this._canvasElement.height, 1 / 1000000).multiply(projectionMatrix);
-        this._gl.uniformMatrix4fv(this._shaderProgram.pMatrixUniform, false, this._arrayFromMatrix(this._pMatrix));
-        this._scale = Math.max(projectionMatrix.m11, projectionMatrix.m22);
     },
 
     _initWhiteTexture: function()
@@ -635,14 +642,14 @@ WebInspector.Layers3DView.prototype = {
 
         var gl = this._initGLIfNecessary();
         this._resizeCanvas();
-        this._initProjectionMatrix();
         this._calculateDepths();
+        this._calculateRects();
+        this._updateTransformAndConstraints();
 
-        this._textureManager.setScale(Math.min(1, this._scale));
+        this._textureManager.setScale(Number.constrain(0.1, 1, this._scale));
         gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-        this._calculateRects();
         this._rects.forEach(this._drawViewRect.bind(this));
         this._drawViewportAndChrome();
     },
@@ -657,7 +664,7 @@ WebInspector.Layers3DView.prototype = {
             return null;
         var closestIntersectionPoint = Infinity;
         var closestObject = null;
-        var projectionMatrix = new WebKitCSSMatrix().scale(1, -1, -1).translate(-1, -1, 0).multiply(this._calculateProjectionMatrix());
+        var projectionMatrix = new WebKitCSSMatrix().scale(1, -1, -1).translate(-1, -1, 0).multiply(this._projectionMatrix);
         var x0 = (event.clientX - this._canvasElement.totalOffsetLeft()) * window.devicePixelRatio;
         var y0 = -(event.clientY - this._canvasElement.totalOffsetTop()) * window.devicePixelRatio;
 

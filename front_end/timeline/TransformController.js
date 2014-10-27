@@ -22,6 +22,8 @@ WebInspector.TransformController = function(element, disableRotate)
     element.addEventListener("keyup", this._onKeyUp.bind(this), false);
     element.addEventListener("mousewheel", this._onMouseWheel.bind(this), false);
     this._disableRotate = disableRotate;
+    this._minScale = 0;
+    this._maxScale = Infinity;
 
     this._controlPanelElement = createElement("div");
     this._controlPanelElement.classList.add("transform-control-panel");
@@ -159,6 +161,29 @@ WebInspector.TransformController.prototype = {
     },
 
     /**
+     * @param {number} minScale
+     * @param {number} maxScale
+     */
+    setScaleConstraints: function(minScale, maxScale)
+    {
+        this._minScale = minScale;
+        this._maxScale = maxScale;
+        this._scale = Number.constrain(this._scale, minScale, maxScale);
+    },
+
+    /**
+     * @param {number} minX
+     * @param {number} maxX
+     * @param {number} minY
+     * @param {number} maxY
+     */
+    clampOffsets: function(minX, maxX, minY, maxY)
+    {
+        this._offsetX = Number.constrain(this._offsetX, minX, maxX);
+        this._offsetY = Number.constrain(this._offsetY, minY, maxY);
+    },
+
+    /**
      * @return {number}
      */
     scale: function()
@@ -205,6 +230,7 @@ WebInspector.TransformController.prototype = {
      */
     _onScale: function(scaleFactor, x, y)
     {
+        scaleFactor = Number.constrain(this._scale * scaleFactor, this._minScale, this._maxScale) / this._scale;
         this._scale *= scaleFactor;
         this._offsetX -= (x - this._offsetX) * (scaleFactor - 1);
         this._offsetY -= (y - this._offsetY) * (scaleFactor - 1);
