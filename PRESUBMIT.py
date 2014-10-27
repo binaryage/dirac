@@ -34,11 +34,9 @@ for more details about the presubmit API built into gcl.
 
 import sys
 
+compile_note = "Be sure to run your patch by the compile_frontend.py script prior to committing!"
 
 def _CompileDevtoolsFrontend(input_api, output_api):
-    # FIXME: Make this run on other platforms as well.
-    if not input_api.platform.startswith('linux'):
-        return []
     local_paths = [f.LocalPath() for f in input_api.AffectedFiles()]
 
     # FIXME: The compilation does not actually run if injected script-related files
@@ -49,6 +47,7 @@ def _CompileDevtoolsFrontend(input_api, output_api):
     devtools_front_end = input_api.os_path.join("devtools", "front_end")
     if (any(devtools_front_end in path for path in local_paths) or
         any("protocol.json" in path for path in local_paths) or
+        any("compile_frontend.py" in path for path in local_paths) or
         any("InjectedScriptSource.js" in path for path in local_paths) or
         any("InjectedScriptCanvasModuleSource.js" in path for path in local_paths)):
         lint_path = input_api.os_path.join(input_api.PresubmitLocalPath(),
@@ -57,8 +56,10 @@ def _CompileDevtoolsFrontend(input_api, output_api):
             [input_api.python_executable, lint_path],
             stdout=input_api.subprocess.PIPE,
             stderr=input_api.subprocess.STDOUT).communicate()
-        if "WARNING" in out or "ERROR" in out:
+        if "ERROR" in out or "WARNING" in out:
             return [output_api.PresubmitError(out)]
+        if "NOTE" in out:
+            return [output_api.PresubmitPromptWarning(out + compile_note)]
     return []
 
 
