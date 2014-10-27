@@ -63,7 +63,7 @@ WebInspector.DatabaseTableView.prototype = {
 
     update: function()
     {
-        this.database.executeSql("SELECT * FROM \"" + this._escapeTableName(this.tableName) + "\"", this._queryFinished.bind(this), this._queryError.bind(this));
+        this.database.executeSql("SELECT rowid, * FROM \"" + this._escapeTableName(this.tableName) + "\"", this._queryFinished.bind(this), this._queryError.bind(this));
     },
 
     _queryFinished: function(columnNames, values)
