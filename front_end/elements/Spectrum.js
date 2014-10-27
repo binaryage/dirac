@@ -32,19 +32,17 @@
  */
 WebInspector.Spectrum = function()
 {
-    WebInspector.VBox.call(this);
-    this.registerRequiredCSS("elements/spectrum.css");
+    WebInspector.VBox.call(this, true);
+    this.contentElement.appendChild(WebInspector.View.createStyleElement("elements/spectrum.css"));
+    this.contentElement.tabIndex = 0;
 
-    this.element.classList.add("spectrum-container");
-    this.element.tabIndex = 0;
-
-    this._draggerElement = this.element.createChild("div", "spectrum-color");
+    this._draggerElement = this.contentElement.createChild("div", "spectrum-color");
     this._dragHelperElement = this._draggerElement.createChild("div", "spectrum-sat fill").createChild("div", "spectrum-val fill").createChild("div", "spectrum-dragger");
 
-    this._sliderElement = this.element.createChild("div", "spectrum-hue");
+    this._sliderElement = this.contentElement.createChild("div", "spectrum-hue");
     this.slideHelper = this._sliderElement.createChild("div", "spectrum-slider");
 
-    var rangeContainer = this.element.createChild("div", "spectrum-range-container");
+    var rangeContainer = this.contentElement.createChild("div", "spectrum-range-container");
     var alphaLabel = rangeContainer.createChild("label");
     alphaLabel.textContent = WebInspector.UIString("\u03B1:");
 
@@ -55,7 +53,7 @@ WebInspector.Spectrum = function()
     this._alphaElement.addEventListener("input", alphaDrag.bind(this), false);
     this._alphaElement.addEventListener("change", alphaDrag.bind(this), false);
 
-    var displayContainer = this.element.createChild("div", "spectrum-text");
+    var displayContainer = this.contentElement.createChild("div", "spectrum-text");
     var swatchElement = displayContainer.createChild("span", "swatch");
     this._swatchInnerElement = swatchElement.createChild("span", "swatch-inner");
     this._displayElement = displayContainer.createChild("span", "source-code spectrum-display-value");
@@ -316,7 +314,7 @@ WebInspector.Spectrum.prototype = {
 WebInspector.SpectrumPopupHelper = function()
 {
     this._spectrum = new WebInspector.Spectrum();
-    this._spectrum.element.addEventListener("keydown", this._onKeyDown.bind(this), false);
+    this._spectrum.contentElement.addEventListener("keydown", this._onKeyDown.bind(this), false);
 
     this._popover = new WebInspector.Popover();
     this._popover.setCanShrink(false);
@@ -385,7 +383,7 @@ WebInspector.SpectrumPopupHelper.prototype = {
         if (!this._previousFocusElement)
             this._previousFocusElement = WebInspector.currentFocusElement();
         this._popover.showView(this._spectrum, element);
-        WebInspector.setCurrentFocusElement(this._spectrum.element);
+        WebInspector.setCurrentFocusElement(this._spectrum.contentElement);
     },
 
     /**

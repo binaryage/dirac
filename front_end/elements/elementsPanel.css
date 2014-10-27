@@ -728,3 +728,14 @@ li.child-editing .styles-clipboard-only {
 .animation-pause.toggled-on .glyph {
     -webkit-mask-position: 0 -72px;
 }
+
+.swatch-inner {
+    width: 100%;
+    height: 100%;
+    display: inline-block;
+    border: 1px solid rgba(128, 128, 128, 0.6);
+}
+
+.swatch-inner:hover {
+    border: 1px solid rgba(64, 64, 64, 0.8);
+}

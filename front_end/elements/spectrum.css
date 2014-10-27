@@ -1,5 +1,5 @@
 /* https://github.com/bgrins/spectrum */
-.spectrum-container {
+:host {
     width: 205px;
     height: 220px;
     -webkit-user-select: none;
@@ -94,8 +94,19 @@
     right: -1px;
 }
 
-.spectrum-container .swatch {
+.swatch {
     width: 20px;
     height:20px;
     margin: 0;
+}
+
+.swatch-inner {
+    width: 100%;
+    height: 100%;
+    display: inline-block;
+    border: 1px solid rgba(128, 128, 128, 0.6);
+}
+
+.swatch-inner:hover {
+    border: 1px solid rgba(64, 64, 64, 0.8);
 }

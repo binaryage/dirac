@@ -1763,17 +1763,6 @@ li.editing-sub-part .delete-button {
     -webkit-user-select: none;
 }
 
-.swatch-inner {
-    width: 100%;
-    height: 100%;
-    display: inline-block;
-    border: 1px solid rgba(128, 128, 128, 0.6);
-}
-
-.swatch-inner:hover {
-    border: 1px solid rgba(64, 64, 64, 0.8);
-}
-
 .sidebar {
     overflow-x: hidden;
     background-color: rgb(232, 232, 232);
