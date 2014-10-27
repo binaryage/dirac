@@ -907,3 +907,7 @@
     -webkit-margin-before: 0;
     -webkit-margin-after: 0;
 }
+
+.timeline-layers-view .split-view-contents-first {
+    background-color: rgb(232, 232, 232);
+}

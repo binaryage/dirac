@@ -90,6 +90,7 @@ WebInspector.Settings = function()
     this.showMediaQueryInspector = this.createSetting("showMediaQueryInspector", false);
     this.disableOverridesWarning = this.createSetting("disableOverridesWarning", false);
     this.testPath = this.createSetting("testPath", "");
+    this.frameViewerHideChromeWindow = this.createSetting("frameViewerHideChromeWindow", false);
 
     // Rendering options
     this.showPaintRects = this.createSetting("showPaintRects", false);
