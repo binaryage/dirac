@@ -800,6 +800,16 @@ WebInspector.HeapSnapshotProgress.prototype = {
     },
 
     /**
+     * @param {string} error
+     */
+    reportProblem: function(error)
+    {
+        // May be undefined in tests.
+        if (this._dispatcher)
+            this._dispatcher.sendEvent(WebInspector.HeapSnapshotProgressEvent.BrokenSnapshot, error);
+    },
+
+    /**
      * @param {string} text
      */
     _sendUpdateEvent: function(text)
@@ -807,6 +817,36 @@ WebInspector.HeapSnapshotProgress.prototype = {
         // May be undefined in tests.
         if (this._dispatcher)
             this._dispatcher.sendEvent(WebInspector.HeapSnapshotProgressEvent.Update, text);
+    }
+}
+
+
+/**
+ * @param {string} title
+ * @constructor
+ */
+WebInspector.HeapSnapshotProblemReport = function(title)
+{
+    this._errors = [title];
+}
+
+WebInspector.HeapSnapshotProblemReport.prototype = {
+    /**
+     * @param {string} error
+     */
+    addError: function(error)
+    {
+        if (this._errors.length > 100)
+            return;
+        this._errors.push(error);
+    },
+
+    /**
+     * @return {string}
+     */
+    toString: function()
+    {
+        return this._errors.join("\n  ");
     }
 }
 
@@ -1528,7 +1568,7 @@ WebInspector.HeapSnapshot.prototype = {
 
             if (postOrderIndex === nodeCount || iteration > 1)
                 break;
-            console.log("Error: Corrupted snapshot. " + (nodeCount - postOrderIndex) + " nodes are unreachable from the root:");
+            var errors = new WebInspector.HeapSnapshotProblemReport("Error: Corrupted snapshot. " + (nodeCount - postOrderIndex) + " nodes are unreachable from the root:");
             var dumpNode = this.rootNode();
             // Remove root from the result (last node in the array) and put it at the bottom of the stack so that it is
             // visited after all orphan nodes and their subgraphs.
@@ -1544,17 +1584,18 @@ WebInspector.HeapSnapshot.prototype = {
                         stackNodes[++stackTop] = i;
                         stackCurrentEdge[stackTop] = firstEdgeIndexes[i];
                         visited[i] = 1;
-                        console.log(dumpNode.name() + " @" + dumpNode.id() + " - node has only weak retainers.");
+                        errors.addError(dumpNode.name() + " @" + dumpNode.id() + " - node has only weak retainers.");
                     } else {
-                        console.log(dumpNode.name() + " @" + dumpNode.id());
+                        errors.addError(dumpNode.name() + " @" + dumpNode.id());
                     }
                 }
             }
+            this._progress.reportProblem(errors.toString());
         }
 
         // If we already processed all orphan nodes that have only weak retainers and still have some orphans...
         if (postOrderIndex !== nodeCount) {
-            console.log("Error: Still found " + (nodeCount - postOrderIndex) + " unreachable nodes:");
+            var errors = new WebInspector.HeapSnapshotProblemReport("Error: Still found " + (nodeCount - postOrderIndex) + " unreachable nodes:");
             var dumpNode = this.rootNode();
             // Remove root from the result (last node in the array) and put it at the bottom of the stack so that it is
             // visited after all orphan nodes and their subgraphs.
@@ -1563,13 +1604,14 @@ WebInspector.HeapSnapshot.prototype = {
                 if (visited[i])
                     continue;
                 dumpNode.nodeIndex = i * nodeFieldCount;
-                console.log(dumpNode.name() + " @" + dumpNode.id());
+                errors.addError(dumpNode.name() + " @" + dumpNode.id());
                 // Fix it by giving the node a postorder index anyway.
                 nodeOrdinal2PostOrderIndex[i] = postOrderIndex;
                 postOrderIndex2NodeOrdinal[postOrderIndex++] = i;
             }
             nodeOrdinal2PostOrderIndex[rootNodeOrdinal] = postOrderIndex;
             postOrderIndex2NodeOrdinal[postOrderIndex++] = rootNodeOrdinal;
+            this._progress.reportProblem(errors.toString());
         }
 
         return {postOrderIndex2NodeOrdinal: postOrderIndex2NodeOrdinal, nodeOrdinal2PostOrderIndex: nodeOrdinal2PostOrderIndex};

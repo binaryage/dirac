@@ -29,7 +29,8 @@
  */
 
 WebInspector.HeapSnapshotProgressEvent = {
-    Update: "ProgressUpdate"
+    Update: "ProgressUpdate",
+    BrokenSnapshot: "BrokenSnapshot"
 };
 
 WebInspector.HeapSnapshotCommon = {

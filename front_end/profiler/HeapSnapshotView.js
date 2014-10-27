@@ -1520,6 +1520,12 @@ WebInspector.HeapProfileHeader.prototype = {
      */
     _handleWorkerEvent: function(eventName, data)
     {
+        if (WebInspector.HeapSnapshotProgressEvent.BrokenSnapshot === eventName) {
+            var error = /** @type {string} */ (data);
+            WebInspector.console.error(error);
+            return;
+        }
+
         if (WebInspector.HeapSnapshotProgressEvent.Update !== eventName)
             return;
         var subtitle = /** @type {string} */ (data);
