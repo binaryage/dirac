@@ -920,13 +920,12 @@ WebInspector.SourcesPanel.prototype = {
         if (!currentExecutionContext)
             return;
 
-        currentExecutionContext.evaluate("this", "", false, true, false, false, didGetGlobalObject.bind(null, currentExecutionContext.target()));
+        currentExecutionContext.globalObject("", false, false, didGetGlobalObject);
         /**
-         * @param {!WebInspector.Target} target
          * @param {?WebInspector.RemoteObject} global
          * @param {boolean=} wasThrown
          */
-        function didGetGlobalObject(target, global, wasThrown)
+        function didGetGlobalObject(global, wasThrown)
         {
             /**
              * @suppressReceiverCheck
@@ -944,7 +943,7 @@ WebInspector.SourcesPanel.prototype = {
             }
 
             if (wasThrown || !global)
-                failedToSave(target, global);
+                failedToSave(global);
             else
                 global.callFunction(remoteFunction, [WebInspector.RemoteObject.toCallArgument(remoteObject)], didSave.bind(null, global));
         }
@@ -956,19 +955,17 @@ WebInspector.SourcesPanel.prototype = {
          */
         function didSave(global, result, wasThrown)
         {
-            var currentExecutionContext = WebInspector.context.flavor(WebInspector.ExecutionContext);
             global.release();
-            if (!currentExecutionContext || wasThrown || !result || result.type !== "string")
-                failedToSave(global.target(), result);
+            if (wasThrown || !result || result.type !== "string")
+                failedToSave(result);
             else
                 WebInspector.ConsoleModel.evaluateCommandInConsole(currentExecutionContext, result.value);
         }
 
         /**
-         * @param {!WebInspector.Target} target
          * @param {?WebInspector.RemoteObject} result
          */
-        function failedToSave(target, result)
+        function failedToSave(result)
         {
             var message = WebInspector.UIString("Failed to save to temp variable.");
             if (result) {

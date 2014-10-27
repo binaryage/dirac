@@ -197,7 +197,6 @@ WebInspector.ExecutionContext.comparator = function(a, b)
 }
 
 WebInspector.ExecutionContext.prototype = {
-
     /**
      * @param {string} expression
      * @param {string} objectGroup
@@ -209,12 +208,36 @@ WebInspector.ExecutionContext.prototype = {
      */
     evaluate: function(expression, objectGroup, includeCommandLineAPI, doNotPauseOnExceptionsAndMuteConsole, returnByValue, generatePreview, callback)
     {
-        //FIXME: It will be moved to separate ExecutionContext
+        // FIXME: It will be moved to separate ExecutionContext.
         if (this._debuggerModel.selectedCallFrame()) {
             this._debuggerModel.evaluateOnSelectedCallFrame(expression, objectGroup, includeCommandLineAPI, doNotPauseOnExceptionsAndMuteConsole, returnByValue, generatePreview, callback);
             return;
         }
+        this._evaluateGlobal.apply(this, arguments);
+    },
 
+    /**
+     * @param {string} objectGroup
+     * @param {boolean} returnByValue
+     * @param {boolean} generatePreview
+     * @param {function(?WebInspector.RemoteObject, boolean, ?RuntimeAgent.RemoteObject=, ?DebuggerAgent.ExceptionDetails=)} callback
+     */
+    globalObject: function(objectGroup, returnByValue, generatePreview, callback)
+    {
+        this._evaluateGlobal("this", objectGroup, false, true, returnByValue, generatePreview, callback);
+    },
+
+    /**
+     * @param {string} expression
+     * @param {string} objectGroup
+     * @param {boolean} includeCommandLineAPI
+     * @param {boolean} doNotPauseOnExceptionsAndMuteConsole
+     * @param {boolean} returnByValue
+     * @param {boolean} generatePreview
+     * @param {function(?WebInspector.RemoteObject, boolean, ?RuntimeAgent.RemoteObject=, ?DebuggerAgent.ExceptionDetails=)} callback
+     */
+    _evaluateGlobal: function(expression, objectGroup, includeCommandLineAPI, doNotPauseOnExceptionsAndMuteConsole, returnByValue, generatePreview, callback)
+    {
         if (!expression) {
             // There is no expression, so the completion should happen against global properties.
             expression = "this";
