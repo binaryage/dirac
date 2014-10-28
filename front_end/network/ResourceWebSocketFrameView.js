@@ -18,18 +18,18 @@
 
 /**
  * @constructor
- * @extends {WebInspector.VBox}
+ * @extends {WebInspector.SplitView}
  * @param {!WebInspector.NetworkRequest} request
  */
 WebInspector.ResourceWebSocketFrameView = function(request)
 {
-    WebInspector.VBox.call(this);
+    WebInspector.SplitView.call(this, false, true, "resourceWebSocketFrameViewSplitViewState");
     this.registerRequiredCSS("network/webSocketFrameView.css");
     this.element.classList.add("websocket-frame-view");
     this._request = request;
 
     var columns = [
-        {id: "data", title: WebInspector.UIString("Data"), sortable: false, weight: 88, longText: true},
+        {id: "data", title: WebInspector.UIString("Data"), sortable: false, weight: 88},
         {id: "length", title: WebInspector.UIString("Length"), sortable: false, align: WebInspector.DataGrid.Align.Right, weight: 5},
         {id: "time", title: WebInspector.UIString("Time"), sortable: true, weight: 7}
     ]
@@ -43,7 +43,11 @@ WebInspector.ResourceWebSocketFrameView = function(request)
     this._dataGrid.addEventListener(WebInspector.DataGrid.Events.SortingChanged, this._sortItems, this);
 
     this._dataGrid.setName("ResourceWebSocketFrameView");
-    this._dataGrid.show(this.element);
+    this._dataGrid.addEventListener(WebInspector.DataGrid.Events.SelectedNode, this._onFrameSelected, this);
+    this._dataGrid.show(this.mainElement());
+
+    this._messageView = new WebInspector.EmptyView("Select frame to browse its content.");
+    this._messageView.show(this.sidebarElement());
 }
 
 /** @enum {number} */
@@ -103,6 +107,20 @@ WebInspector.ResourceWebSocketFrameView.prototype = {
         this._dataGrid.insertChild(new WebInspector.ResourceWebSocketFrameNode(frame));
     },
 
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _onFrameSelected: function(event)
+    {
+        var selectedNode = /** @type {!WebInspector.ResourceWebSocketFrameNode} */ (event.target.selectedNode);
+        if (this._messageView)
+            this._messageView.detach();
+        if (this._dataView)
+            this._dataView.detach();
+        this._dataView = new WebInspector.ResourceSourceFrame(selectedNode.contentProvider());
+        this._dataView.show(this.sidebarElement());
+    },
+
     refresh: function()
     {
         this._dataGrid.rootNode().removeChildren();
@@ -133,7 +151,7 @@ WebInspector.ResourceWebSocketFrameView.prototype = {
         this._dataGrid.sortNodes(this._timeComparator, !this._dataGrid.isSortOrderAscending());
     },
 
-    __proto__: WebInspector.VBox.prototype
+    __proto__: WebInspector.SplitView.prototype
 }
 
 /**
@@ -173,6 +191,14 @@ WebInspector.ResourceWebSocketFrameNode.prototype = {
     nodeSelfHeight: function()
     {
         return 17;
+    },
+
+    /**
+     * @return {!WebInspector.ContentProvider}
+     */
+    contentProvider: function()
+    {
+        return new WebInspector.StaticContentProvider(WebInspector.resourceTypes.WebSocket, this._dataText);
     },
 
     __proto__: WebInspector.SortableDataGridNode.prototype
