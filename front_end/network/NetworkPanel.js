@@ -1222,19 +1222,11 @@ WebInspector.NetworkLogView.prototype = {
 
         if (request && request.resourceType() === WebInspector.resourceTypes.XHR) {
             contextMenu.appendSeparator();
-            contextMenu.appendItem(WebInspector.UIString("Replay XHR"), this._replayXHR.bind(this, request.requestId));
+            contextMenu.appendItem(WebInspector.UIString("Replay XHR"), request.replayXHR.bind(request));
             contextMenu.appendSeparator();
         }
 
         contextMenu.show();
-    },
-
-    /**
-     * @param {string} requestId
-     */
-    _replayXHR: function(requestId)
-    {
-        NetworkAgent.replayXHR(requestId);
     },
 
     _harRequests: function()

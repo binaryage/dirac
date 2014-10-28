@@ -659,7 +659,7 @@ WebInspector.ConsoleView.prototype = {
         var request = consoleMessage ? consoleMessage.request : null;
         if (request && request.resourceType() === WebInspector.resourceTypes.XHR) {
             contextMenu.appendSeparator();
-            contextMenu.appendItem(WebInspector.UIString("Replay XHR"), NetworkAgent.replayXHR.bind(null, request.requestId));
+            contextMenu.appendItem(WebInspector.UIString("Replay XHR"), request.replayXHR.bind(request));
         }
 
         contextMenu.show();

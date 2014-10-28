@@ -1009,5 +1009,10 @@ WebInspector.NetworkRequest.prototype = {
         this.dispatchEventToListeners(WebInspector.NetworkRequest.Events.WebsocketFrameAdded, frame);
     },
 
+    replayXHR: function()
+    {
+        this.target().networkAgent().replayXHR(this.requestId);
+    },
+
     __proto__: WebInspector.SDKObject.prototype
 }
