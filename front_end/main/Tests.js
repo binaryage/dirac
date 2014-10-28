@@ -583,9 +583,32 @@ TestSuite.prototype.testSharedWorker = function()
 };
 
 
-TestSuite.prototype.testPauseInSharedWorkerInitialization = function()
+TestSuite.prototype.testPauseInSharedWorkerInitialization1 = function()
 {
-    if (WebInspector.debuggerModel.debuggerPausedDetails)
+    // Make sure the worker is loaded.
+    function isReady()
+    {
+        return WebInspector.targetManager.targets().length == 2;
+    }
+
+    if (isReady())
+        return;
+    this.takeControl();
+    this.addSniffer(WebInspector.TargetManager.prototype, "addTarget", targetAdded.bind(this));
+
+    function targetAdded()
+    {
+        if (isReady()) {
+            this.releaseControl();
+            return;
+        }
+        this.addSniffer(WebInspector.TargetManager.prototype, "addTarget", targetAdded.bind(this));
+    }
+};
+
+TestSuite.prototype.testPauseInSharedWorkerInitialization2 = function()
+{
+    if (WebInspector.debuggerModel.isPaused())
         return;
     this._waitForScriptPause(this.releaseControl.bind(this));
     this.takeControl();
@@ -826,11 +849,7 @@ TestSuite.prototype._scriptsAreParsed = function(expected)
  */
 TestSuite.prototype._waitForScriptPause = function(callback)
 {
-    function pauseListener(event) {
-        WebInspector.debuggerModel.removeEventListener(WebInspector.DebuggerModel.Events.DebuggerPaused, pauseListener, this);
-        callback();
-    }
-    WebInspector.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.DebuggerPaused, pauseListener, this);
+    this.addSniffer(WebInspector.DebuggerModel.prototype, "_pausedScript", callback);
 };
 
 
