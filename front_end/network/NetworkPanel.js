@@ -224,7 +224,7 @@ WebInspector.NetworkLogView.prototype = {
 
         this._popoverHelper = new WebInspector.PopoverHelper(this.element, this._getPopoverAnchor.bind(this), this._showPopover.bind(this), this._onHidePopover.bind(this));
         // Enable faster hint.
-        this._popoverHelper.setTimeout(100);
+        this._popoverHelper.setTimeout(250, 250);
 
         this.switchViewMode(true);
     },
