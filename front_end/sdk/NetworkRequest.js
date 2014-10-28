@@ -898,7 +898,10 @@ WebInspector.NetworkRequest.prototype = {
      */
     asDataURL: function()
     {
-        return WebInspector.Resource.contentAsDataURL(this._content, this.mimeType, this._contentEncoded);
+        var content = this._content;
+        if (!this._contentEncoded)
+            content = window.btoa(content);
+        return WebInspector.Resource.contentAsDataURL(content, this.mimeType, true);
     },
 
     _innerRequestContent: function()
