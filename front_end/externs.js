@@ -480,3 +480,60 @@ var symbol;
  * @return {symbol}
  */
 function Symbol(description) {}
+
+/**
+ * @interface
+ * @template T
+ */
+var Iterator = function() { }
+
+Iterator.prototype = {
+    /**
+     * @return {{done: boolean, value: (T|undefined)}}
+     */
+    next: function() { }
+}
+
+/**
+ * @constructor
+ * @template K, V
+ */
+var Map = function() { }
+
+Map.prototype = {
+    /**
+     * @param {K} key
+     * @param {V} value
+     */
+    set: function(key, value) { },
+
+    /**
+     * @param {K} key
+     * @return {boolean}
+     */
+    delete: function(key) { },
+
+    /**
+     * @return {!Iterator.<K>}
+     */
+    keys: function() { },
+
+    /**
+     * @return {!Iterator.<V>}
+     */
+    values: function() { },
+
+    /**
+     * @param {K} key
+     * @return {V}
+     */
+    get: function(key) { },
+
+    /**
+     * @param {K} key
+     * @return {boolean}
+     */
+    has: function(key) { },
+
+    clear: function() { }
+}

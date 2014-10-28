@@ -1285,109 +1285,47 @@ Set.prototype = {
 }
 
 /**
- * @constructor
- * @template K,V
+ * @param {!Iterator.<T>} iterator
+ * @return {!Array.<T>}
+ * @template T
  */
-var Map = function()
+function iteratorToArray(iterator)
 {
-    /** @type {!Object.<string, !Array.<K|V>>} */
-    this._map = {};
-    this._size = 0;
+    var values = [];
+    for (var iteratorValue = iterator.next(); !iteratorValue.done; iteratorValue = iterator.next())
+        values.push(iteratorValue.value);
+    return values;
 }
 
-Map.prototype = {
-    /**
-     * @param {K} key
-     * @param {V} value
-     */
-    set: function(key, value)
-    {
-        var objectIdentifier = key.__identifier;
-        if (!objectIdentifier) {
-            objectIdentifier = createObjectIdentifier();
-            key.__identifier = objectIdentifier;
-        }
-        if (!this._map[objectIdentifier])
-            ++this._size;
-        this._map[objectIdentifier] = [key, value];
-    },
+/**
+ * @return {T}
+ * @template T
+ */
+Map.prototype.remove = function(key)
+{
+    var value = this.get(key);
+    this.delete(key);
+    return value;
+}
 
-    /**
-     * @param {K} key
-     * @return {V}
-     */
-    remove: function(key)
-    {
-        var result = this._map[key.__identifier];
-        if (!result)
-            return undefined;
-        --this._size;
-        delete this._map[key.__identifier];
-        return result[1];
-    },
+/**
+ * @return {!Array.<V>}
+ * @template K, V
+ * @this {Map.<K, V>}
+ */
+Map.prototype.valuesArray = function()
+{
+    return iteratorToArray(this.values());
+}
 
-    /**
-     * @return {!Array.<K>}
-     */
-    keysArray: function()
-    {
-        return this._list(0);
-    },
-
-    /**
-     * @return {!Array.<V>}
-     */
-    valuesArray: function()
-    {
-        return this._list(1);
-    },
-
-    /**
-     * @param {number} index
-     * @return {!Array.<K|V>}
-     */
-    _list: function(index)
-    {
-        var result = new Array(this._size);
-        var i = 0;
-        for (var objectIdentifier in this._map)
-            result[i++] = this._map[objectIdentifier][index];
-        return result;
-    },
-
-    /**
-     * @param {K} key
-     * @return {V|undefined}
-     */
-    get: function(key)
-    {
-        var entry = this._map[key.__identifier];
-        return entry ? entry[1] : undefined;
-    },
-
-    /**
-     * @param {K} key
-     * @return {boolean}
-     */
-    has: function(key)
-    {
-        var entry = this._map[key.__identifier];
-        return !!entry;
-    },
-
-    /**
-     * @return {number}
-     */
-    get size()
-    {
-        return this._size;
-    },
-
-    clear: function()
-    {
-        this._map = {};
-        this._size = 0;
-    }
+/**
+ * @return {!Array.<K>}
+ * @template K, V
+ * @this {Map.<K, V>}
+ */
+Map.prototype.keysArray = function()
+{
+    return iteratorToArray(this.keys());
 }
 
 /**
