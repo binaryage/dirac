@@ -343,10 +343,12 @@
             'front_end/documentation/WikiParser.js',
         ],
         'devtools_elements_js_files': [
+            'front_end/elements/breadcrumbs.css',
             'front_end/elements/elementsPanel.css',
             'front_end/elements/elementsTreeOutline.css',
             'front_end/elements/spectrum.css',
             'front_end/elements/AnimationsSidebarPane.js',
+            'front_end/elements/ElementsBreadcrumbs.js',
             'front_end/elements/ElementsPanel.js',
             'front_end/elements/ElementsTreeOutline.js',
             'front_end/elements/EventListenersSidebarPane.js',
