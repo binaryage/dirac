@@ -828,6 +828,8 @@ TreeElement.prototype.reveal = function()
         currentAncestor = currentAncestor.parent;
     }
 
+    this.listItemElement.scrollIntoViewIfNeeded();
+
     this.onreveal();
 }
 

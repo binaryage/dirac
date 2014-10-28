@@ -540,6 +540,14 @@ WebInspector.CPUProfileFlameChart.OverviewPane.prototype = {
     },
 
     /**
+     * @param {number} startTime
+     * @param {number} endTime
+     */
+    updateBoxSelection: function(startTime, endTime)
+    {
+    },
+
+    /**
      * @param {!number} timeLeft
      * @param {!number} timeRight
      */

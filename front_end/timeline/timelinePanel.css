@@ -761,11 +761,11 @@
 
 .layer-tree.outline-disclosure li,
 .profiler-log-view li {
-    margin-top: 0;
-    margin-bottom: 0;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    height: 15px;
+    line-height: 15px;
 }
 
 .layer-tree.outline-disclosure .dimmed {
@@ -855,11 +855,6 @@
     line-height: 14px;
 }
 
-.profiler-log-view.outline-disclosure li .selection,
-.layer-tree.outline-disclosure li .selection {
-    height: 14px;
-}
-
 .profiler-log-view.outline-disclosure li.parent::before,
 .layer-tree.outline-disclosure li.parent::before  {
     top: 1px;
@@ -910,4 +905,9 @@
 
 .timeline-layers-view .split-view-contents-first {
     background-color: rgb(232, 232, 232);
+}
+
+.timeline-paint-profiler-log-split .split-view-contents-first {
+    background-color: rgb(232, 232, 232);
+    z-index: 0;
 }

@@ -98,8 +98,10 @@ WebInspector.LayerTreeOutline.prototype = {
             seenLayers.set(layer, true);
             var node = this._treeOutline.getCachedTreeElement(layer);
             var parent = layer === layerTree.contentRoot() ? this._treeOutline : this._treeOutline.getCachedTreeElement(layer.parent());
-            if (!parent)
+            if (!parent) {
                 console.assert(false, "Parent is not in the tree");
+                return;
+            }
             if (!node) {
                 node = new WebInspector.LayerTreeElement(this, layer);
                 parent.appendChild(node);
@@ -125,6 +127,8 @@ WebInspector.LayerTreeOutline.prototype = {
                 node = nextNode;
             }
         }
+        if (this._treeOutline.children[0])
+            this._treeOutline.children[0].expand();
     },
 
     /**

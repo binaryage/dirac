@@ -12,12 +12,12 @@ WebInspector.TimelineLayersView = function()
 {
     WebInspector.SplitView.call(this, true, false, "timelineLayersView");
     this.element.classList.add("timeline-layers-view");
-    this._leftSplitView = new WebInspector.SplitView(false, false, "timelineLayersViewDetails");
+    this._leftSplitView = new WebInspector.SplitView(false, true, "timelineLayersViewDetails");
     this._leftSplitView.show(this.sidebarElement());
 
     this._paintTiles = [];
 
-    var sidebarTreeContainerElement = this._leftSplitView.sidebarElement();
+    var sidebarTreeContainerElement = this._leftSplitView.mainElement();
     sidebarTreeContainerElement.classList.add("outline-disclosure", "layer-tree");
     var sidebarTreeElement = sidebarTreeContainerElement.createChild("ol");
     var treeOutline = new TreeOutline(sidebarTreeElement);
@@ -32,7 +32,7 @@ WebInspector.TimelineLayersView = function()
     this._layers3DView.show(this.mainElement());
 
     this._layerDetailsView = new WebInspector.LayerDetailsView();
-    this._layerDetailsView.show(this._leftSplitView.mainElement());
+    this._layerDetailsView.show(this._leftSplitView.sidebarElement());
 }
 
 WebInspector.TimelineLayersView.prototype = {

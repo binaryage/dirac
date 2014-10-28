@@ -768,6 +768,15 @@ WebInspector.TimelineFlameChart.prototype = {
     },
 
     /**
+     * @param {number} startTime
+     * @param {number} endTime
+     */
+    updateBoxSelection: function(startTime, endTime)
+    {
+        this._delegate.select(WebInspector.TimelineSelection.fromRange(startTime, endTime));
+    },
+
+    /**
      * @param {?RegExp} textFilter
      */
     refreshRecords: function(textFilter)

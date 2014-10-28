@@ -38,7 +38,13 @@ WebInspector.FlameChartDelegate.prototype = {
      * @param {number} startTime
      * @param {number} endTime
      */
-    requestWindowTimes: function(startTime, endTime) { }
+    requestWindowTimes: function(startTime, endTime) { },
+
+    /**
+     * @param {number} startTime
+     * @param {number} endTime
+     */
+    updateBoxSelection: function(startTime, endTime) { }
 }
 
 /**
@@ -566,6 +572,12 @@ WebInspector.FlameChart.prototype = {
 
         var timeSpan = selectionWidth * this._pixelToTime;
         this._selectedTimeSpanLabel.textContent =  Number.preciseMillisToString(timeSpan, 2);
+        var start = this._cursorTime(this._selectionStartX);
+        var end = this._cursorTime(x);
+        if (end > start)
+            this._flameChartDelegate.updateBoxSelection(start, end);
+        else
+            this._flameChartDelegate.updateBoxSelection(end, start);
     },
 
     /**

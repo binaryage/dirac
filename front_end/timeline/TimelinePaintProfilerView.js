@@ -14,6 +14,7 @@ WebInspector.TimelinePaintProfilerView = function()
     this.setSidebarSize(60);
     this.setResizable(false);
     this._logAndImageSplitView = new WebInspector.SplitView(true, false);
+    this._logAndImageSplitView.element.classList.add("timeline-paint-profiler-log-split");
     this._logAndImageSplitView.show(this.mainElement());
     this._imageView = new WebInspector.TimelinePaintImageView();
     this._imageView.show(this._logAndImageSplitView.mainElement());

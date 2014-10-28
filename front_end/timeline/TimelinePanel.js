@@ -554,7 +554,7 @@ WebInspector.TimelinePanel.prototype = {
             var view = this._currentViews[i];
             view.refreshRecords(this._textFilter._regex);
         }
-        this._updateSelectedRangeStats();
+        this._updateSelectionDetails();
     },
 
     /**
@@ -618,7 +618,8 @@ WebInspector.TimelinePanel.prototype = {
 
         this._overviewPane.setOverviewControls(this._overviewControls);
         this.doResize();
-        this._updateSelectedRangeStats();
+        this._selection = null;
+        this._updateSelectionDetails();
 
         this._stackView.show(this._searchableView.element);
     },
@@ -734,7 +735,8 @@ WebInspector.TimelinePanel.prototype = {
             this._currentViews[i].reset();
         for (var i = 0; i < this._overviewControls.length; ++i)
             this._overviewControls[i].reset();
-        this._updateSelectedRangeStats();
+        this._selection = null;
+        this._updateSelectionDetails();
     },
 
     _onRecordingStarted: function()
@@ -976,10 +978,9 @@ WebInspector.TimelinePanel.prototype = {
 
     _updateSelectionDetails: function()
     {
-        if (!this._selection) {
-            this._updateSelectedRangeStats();
-            return;
-        }
+        if (!this._selection)
+            this._selection = WebInspector.TimelineSelection.fromRange(this._windowStartTime, this._windowEndTime);
+
         switch (this._selection.type()) {
         case WebInspector.TimelineSelection.Type.Record:
             var record = /** @type {!WebInspector.TimelineModel.Record} */ (this._selection.object());
@@ -1003,6 +1004,9 @@ WebInspector.TimelinePanel.prototype = {
                 layersView.showLayerTree(frame.layerTree, frame.paints);
                 this._detailsView.appendTab("layers", WebInspector.UIString("Layers"), layersView);
             }
+            break;
+        case WebInspector.TimelineSelection.Type.Range:
+            this._updateSelectedRangeStats(this._selection._startTime, this._selection._endTime);
             break;
         }
     },
@@ -1028,13 +1032,12 @@ WebInspector.TimelinePanel.prototype = {
         }
     },
 
-    _updateSelectedRangeStats: function()
+    /**
+     * @param {number} startTime
+     * @param {number} endTime
+     */
+    _updateSelectedRangeStats: function(startTime, endTime)
     {
-        if (this._selection)
-            return;
-
-        var startTime = this._windowStartTime;
-        var endTime = this._windowEndTime;
         var uiUtils = this._uiUtils;
 
         // Return early in case 0 selection window.
@@ -1143,9 +1146,6 @@ WebInspector.TimelineDetailsView = function()
 {
     WebInspector.TabbedPane.call(this);
 
-    this._recordTitleElement = createElement("div");
-    this._recordTitleElement.classList.add("record-title");
-    this.headerElement().insertBefore(this._recordTitleElement, this.headerElement().firstChild)
     this._defaultDetailsView = new WebInspector.VBox();
     this._defaultDetailsView.element.classList.add("timeline-details-view");
     this._defaultDetailsContentElement = this._defaultDetailsView.element.createChild("div", "timeline-details-view-body");
@@ -1162,7 +1162,7 @@ WebInspector.TimelineDetailsView.prototype = {
      */
     setContent: function(title, node)
     {
-        this._recordTitleElement.textContent = title;
+        this.changeTabTitle("default", WebInspector.UIString("Details - %s", title));
         var otherTabs = this.otherTabs("default");
         for (var i = 0; i < otherTabs.length; ++i)
             this.closeTab(otherTabs[i]);
@@ -1220,6 +1220,7 @@ WebInspector.TimelineSelection.Type = {
     Record: "Record",
     Frame: "Frame",
     TraceEvent: "TraceEvent",
+    Range: "Range"
 };
 
 /**
@@ -1255,6 +1256,20 @@ WebInspector.TimelineSelection.fromTraceEvent = function(event)
     var selection = new WebInspector.TimelineSelection();
     selection._type = WebInspector.TimelineSelection.Type.TraceEvent;
     selection._object = event;
+    return selection;
+}
+
+/**
+ * @param {number} startTime
+ * @param {number} endTime
+ * @return {!WebInspector.TimelineSelection}
+ */
+WebInspector.TimelineSelection.fromRange = function(startTime, endTime)
+{
+    var selection = new WebInspector.TimelineSelection();
+    selection._type = WebInspector.TimelineSelection.Type.Range;
+    selection._startTime = startTime;
+    selection._endTime = endTime;
     return selection;
 }
 
