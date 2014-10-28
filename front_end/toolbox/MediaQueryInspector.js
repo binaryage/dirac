@@ -133,7 +133,7 @@ WebInspector.MediaQueryInspector.prototype = {
             return;
 
         var locations = mediaQueryMarker._locations;
-        var uiLocations = new StringMap();
+        var uiLocations = new Map();
         for (var i = 0; i < locations.length; ++i) {
             var uiLocation = WebInspector.cssWorkspaceBinding.rawLocationToUILocation(locations[i]);
             if (!uiLocation)

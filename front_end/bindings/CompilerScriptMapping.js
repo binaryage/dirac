@@ -53,8 +53,8 @@ WebInspector.CompilerScriptMapping = function(debuggerModel, workspace, networkW
     this._sourceMapForScriptId = {};
     /** @type {!Map.<!WebInspector.SourceMap, !WebInspector.Script>} */
     this._scriptForSourceMap = new Map();
-    /** @type {!StringMap.<!WebInspector.SourceMap>} */
-    this._sourceMapForURL = new StringMap();
+    /** @type {!Map.<string, !WebInspector.SourceMap>} */
+    this._sourceMapForURL = new Map();
     debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.GlobalObjectCleared, this._debuggerReset, this);
 }
 

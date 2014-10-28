@@ -113,12 +113,12 @@ WebInspector.StylesSourceMapping.prototype = {
         WebInspector.cssWorkspaceBinding.pushSourceMapping(header, this);
         var map = this._urlToHeadersByFrameId[url];
         if (!map) {
-            map = /** @type {!StringMap.<!StringMap.<!WebInspector.CSSStyleSheetHeader>>} */ (new StringMap());
+            map = /** @type {!Map.<string, !Map.<string, !WebInspector.CSSStyleSheetHeader>>} */ (new Map());
             this._urlToHeadersByFrameId[url] = map;
         }
         var headersById = map.get(header.frameId);
         if (!headersById) {
-            headersById = /** @type {!StringMap.<!WebInspector.CSSStyleSheetHeader>} */ (new StringMap());
+            headersById = /** @type {!Map.<string, !WebInspector.CSSStyleSheetHeader>} */ (new Map());
             map.set(header.frameId, headersById);
         }
         headersById.set(header.id, header);
@@ -212,7 +212,7 @@ WebInspector.StylesSourceMapping.prototype = {
 
     _initialize: function()
     {
-        /** @type {!Object.<string, !StringMap.<!StringMap.<!WebInspector.CSSStyleSheetHeader>>>} */
+        /** @type {!Object.<string, !Map.<string, !Map.<string, !WebInspector.CSSStyleSheetHeader>>>} */
         this._urlToHeadersByFrameId = {};
         /** @type {!Map.<!WebInspector.UISourceCode, !WebInspector.StyleFile>} */
         this._styleFiles = new Map();

@@ -44,7 +44,7 @@ WebInspector.NavigatorView = function()
 
     /** @type {!Map.<!WebInspector.UISourceCode, !WebInspector.NavigatorUISourceCodeTreeNode>} */
     this._uiSourceCodeNodes = new Map();
-    /** @type {!Map.<!WebInspector.NavigatorTreeNode, !StringMap.<!WebInspector.NavigatorFolderTreeNode>>} */
+    /** @type {!Map.<!WebInspector.NavigatorTreeNode, !Map.<string, !WebInspector.NavigatorFolderTreeNode>>} */
     this._subfolderNodes = new Map();
 
     this._rootNode = new WebInspector.NavigatorRootTreeNode(this);
@@ -194,7 +194,7 @@ WebInspector.NavigatorView.prototype = {
 
         var subfolderNodes = this._subfolderNodes.get(projectNode);
         if (!subfolderNodes) {
-            subfolderNodes = /** @type {!StringMap.<!WebInspector.NavigatorFolderTreeNode>} */ (new StringMap());
+            subfolderNodes = /** @type {!Map.<string, !WebInspector.NavigatorFolderTreeNode>} */ (new Map());
             this._subfolderNodes.set(projectNode, subfolderNodes);
         }
 
@@ -975,8 +975,8 @@ WebInspector.NavigatorSourceTreeElement.prototype = {
 WebInspector.NavigatorTreeNode = function(id)
 {
     this.id = id;
-    /** @type {!StringMap.<!WebInspector.NavigatorTreeNode>} */
-    this._children = new StringMap();
+    /** @type {!Map.<string, !WebInspector.NavigatorTreeNode>} */
+    this._children = new Map();
 }
 
 WebInspector.NavigatorTreeNode.prototype = {

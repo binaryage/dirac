@@ -97,11 +97,11 @@ WebInspector.BreakpointManager.prototype = {
 
     /**
      * @param {string} sourceFileId
-     * @return {!StringMap.<!WebInspector.BreakpointManager.Breakpoint>}
+     * @return {!Map.<string, !WebInspector.BreakpointManager.Breakpoint>}
      */
     _provisionalBreakpointsForSourceFileId: function(sourceFileId)
     {
-        var result = new StringMap();
+        var result = new Map();
         var breakpoints = this._provisionalBreakpoints.get(sourceFileId).valuesArray();
         for (var i = 0; i < breakpoints.length; ++i)
             result.set(breakpoints[i]._breakpointStorageId(), breakpoints[i]);
@@ -375,12 +375,12 @@ WebInspector.BreakpointManager.prototype = {
     {
         var breakpoints = this._breakpointsForUISourceCode.get(uiLocation.uiSourceCode);
         if (!breakpoints) {
-            breakpoints = new StringMap();
+            breakpoints = new Map();
             this._breakpointsForUISourceCode.set(uiLocation.uiSourceCode, breakpoints);
         }
         var lineBreakpoints = breakpoints.get(String(uiLocation.lineNumber));
         if (!lineBreakpoints) {
-            lineBreakpoints = new StringMap();
+            lineBreakpoints = new Map();
             breakpoints.set(String(uiLocation.lineNumber), lineBreakpoints);
         }
         var columnBreakpoints = lineBreakpoints.get(String(uiLocation.columnNumber));

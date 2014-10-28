@@ -45,10 +45,10 @@ WebInspector.CSSStyleModel = function(target)
     target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.MainFrameNavigated, this._mainFrameNavigated, this);
     target.registerCSSDispatcher(new WebInspector.CSSDispatcher(this));
     this._agent.enable(this._wasEnabled.bind(this));
-    /** @type {!StringMap.<!WebInspector.CSSStyleSheetHeader>} */
-    this._styleSheetIdToHeader = new StringMap();
-    /** @type {!StringMap.<!Object.<!PageAgent.FrameId, !Array.<!CSSAgent.StyleSheetId>>>} */
-    this._styleSheetIdsForURL = new StringMap();
+    /** @type {!Map.<string, !WebInspector.CSSStyleSheetHeader>} */
+    this._styleSheetIdToHeader = new Map();
+    /** @type {!Map.<string, !Object.<!PageAgent.FrameId, !Array.<!CSSAgent.StyleSheetId>>>} */
+    this._styleSheetIdsForURL = new Map();
 }
 
 WebInspector.CSSStyleModel.PseudoStatePropertyName = "pseudoState";

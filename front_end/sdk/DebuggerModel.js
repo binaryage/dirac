@@ -44,8 +44,8 @@ WebInspector.DebuggerModel = function(target)
     this._debuggerPausedDetails = null;
     /** @type {!Object.<string, !WebInspector.Script>} */
     this._scripts = {};
-    /** @type {!StringMap.<!Array.<!WebInspector.Script>>} */
-    this._scriptsBySourceURL = new StringMap();
+    /** @type {!Map.<string, !Array.<!WebInspector.Script>>} */
+    this._scriptsBySourceURL = new Map();
 
     /** @type {!WebInspector.Object} */
     this._breakpointResolvedEventTarget = new WebInspector.Object();

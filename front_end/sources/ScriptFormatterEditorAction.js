@@ -147,8 +147,8 @@ WebInspector.ScriptFormatterEditorAction = function()
 
     /** @type {!Map.<!WebInspector.Script, !WebInspector.UISourceCode>} */
     this._uiSourceCodes = new Map();
-    /** @type {!StringMap.<string>} */
-    this._formattedPaths = new StringMap();
+    /** @type {!Map.<string, string>} */
+    this._formattedPaths = new Map();
     /** @type {!Map.<!WebInspector.UISourceCode, !WebInspector.FormatterScriptMapping.FormatData>} */
     this._formatData = new Map();
 

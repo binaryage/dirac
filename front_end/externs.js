@@ -535,5 +535,10 @@ Map.prototype = {
      */
     has: function(key) { },
 
-    clear: function() { }
+    clear: function() { },
+
+    /**
+     * @return {number}
+     */
+    get size() { }
 }

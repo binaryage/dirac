@@ -182,8 +182,8 @@ WebInspector.CSSWorkspaceBinding.TargetInfo = function(target, workspace, networ
     this._stylesSourceMapping = new WebInspector.StylesSourceMapping(cssModel, workspace);
     this._sassSourceMapping = new WebInspector.SASSSourceMapping(cssModel, workspace, networkWorkspaceBinding);
 
-    /** @type {!StringMap.<!WebInspector.CSSWorkspaceBinding.HeaderInfo>} */
-    this._headerInfoById = new StringMap();
+    /** @type {!Map.<string, !WebInspector.CSSWorkspaceBinding.HeaderInfo>} */
+    this._headerInfoById = new Map();
 
     cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetAdded, this._styleSheetAdded, this);
     cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetRemoved, this._styleSheetRemoved, this);

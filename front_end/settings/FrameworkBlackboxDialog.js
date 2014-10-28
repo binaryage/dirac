@@ -43,8 +43,8 @@ WebInspector.FrameworkBlackboxDialog = function()
     this._patternsList.addEventListener(WebInspector.SettingsList.Events.Removed, this._patternRemovedFromList.bind(this));
     container.appendChild(this._patternsList.element);
 
-    /** @type {!StringMap.<string>} */
-    this._entries = new StringMap();
+    /** @type {!Map.<string, string>} */
+    this._entries = new Map();
     var patterns = WebInspector.settings.skipStackFramesPattern.getAsArray();
     for (var i = 0; i < patterns.length; ++i)
         this._addPattern(patterns[i].pattern, patterns[i].disabled);

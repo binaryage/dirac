@@ -39,8 +39,8 @@ WebInspector.FileSystemWorkspaceBinding = function(isolatedFileSystemManager, wo
     this._workspace = workspace;
     this._isolatedFileSystemManager.addEventListener(WebInspector.IsolatedFileSystemManager.Events.FileSystemAdded, this._fileSystemAdded, this);
     this._isolatedFileSystemManager.addEventListener(WebInspector.IsolatedFileSystemManager.Events.FileSystemRemoved, this._fileSystemRemoved, this);
-    /** @type {!StringMap.<!WebInspector.FileSystemWorkspaceBinding.FileSystem>} */
-    this._boundFileSystems = new StringMap();
+    /** @type {!Map.<string, !WebInspector.FileSystemWorkspaceBinding.FileSystem>} */
+    this._boundFileSystems = new Map();
 
     /** @type {!Object.<number, function(!Array.<string>)>} */
     this._callbacks = {};

@@ -40,8 +40,8 @@ WebInspector.SourcesNavigator = function(workspace)
     this._tabbedPane.shrinkableTabs = true;
     this._tabbedPane.element.classList.add("navigator-tabbed-pane");
     this._tabbedPaneController = new WebInspector.ExtensibleTabbedPaneController(this._tabbedPane, "navigator-view", this._navigatorViewCreated.bind(this));
-    /** @type {!StringMap.<?WebInspector.NavigatorView>} */
-    this._navigatorViews = new StringMap();
+    /** @type {!Map.<string, ?WebInspector.NavigatorView>} */
+    this._navigatorViews = new Map();
 }
 
 WebInspector.SourcesNavigator.Events = {

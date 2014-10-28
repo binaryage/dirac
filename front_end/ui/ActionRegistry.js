@@ -7,8 +7,8 @@
  */
 WebInspector.ActionRegistry = function()
 {
-    /** @type {!StringMap.<!Runtime.Extension>} */
-    this._actionsById = new StringMap();
+    /** @type {!Map.<string, !Runtime.Extension>} */
+    this._actionsById = new Map();
     this._registerActions();
 }
 

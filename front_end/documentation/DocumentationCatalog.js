@@ -7,8 +7,8 @@
  */
 WebInspector.DocumentationCatalog = function()
 {
-    /** @type {!StringMap.<!Array.<!WebInspector.DocumentationCatalog.ItemDescriptor>>} */
-    this._articleList = new StringMap();
+    /** @type {!Map.<string, !Array.<!WebInspector.DocumentationCatalog.ItemDescriptor>>} */
+    this._articleList = new Map();
     this._loader = new WebInspector.DocumentationCatalog.Loader(this);
 }
 

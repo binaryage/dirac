@@ -304,8 +304,8 @@ WebInspector.DebuggerWorkspaceBinding.TargetData = function(target, debuggerWork
 {
     this._target = target;
 
-    /** @type {!StringMap.<!WebInspector.DebuggerWorkspaceBinding.ScriptInfo>} */
-    this.scriptDataMap = new StringMap();
+    /** @type {!Map.<string, !WebInspector.DebuggerWorkspaceBinding.ScriptInfo>} */
+    this.scriptDataMap = new Map();
 
     /** @type {!Set.<!WebInspector.DebuggerWorkspaceBinding.Location>} */
     this.callFrameLocations = new Set();

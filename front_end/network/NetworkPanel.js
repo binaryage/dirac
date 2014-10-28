@@ -45,8 +45,8 @@ WebInspector.NetworkLogView = function(filterBar, coulmnsVisibilitySetting)
     this._filterBar = filterBar;
     this._coulmnsVisibilitySetting = coulmnsVisibilitySetting;
     this._allowRequestSelection = false;
-    /** @type {!StringMap.<!WebInspector.NetworkDataGridNode>} */
-    this._nodesByRequestId = new StringMap();
+    /** @type {!Map.<string, !WebInspector.NetworkDataGridNode>} */
+    this._nodesByRequestId = new Map();
     /** @type {!Object.<string, boolean>} */
     this._staleRequestIds = {};
     /** @type {number} */

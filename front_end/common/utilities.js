@@ -1332,130 +1332,10 @@ Map.prototype.keysArray = function()
  * @constructor
  * @template T
  */
-var StringMap = function()
-{
-    /** @type {!Object.<string, T>} */
-    this._map = {};
-    this._size = 0;
-}
-
-StringMap.prototype = {
-    /**
-     * @param {string} key
-     * @param {T} value
-     */
-    set: function(key, value)
-    {
-        if (key === "__proto__") {
-            if (!this._hasProtoKey) {
-                ++this._size;
-                this._hasProtoKey = true;
-            }
-            /** @type {T} */
-            this._protoValue = value;
-            return;
-        }
-        if (!Object.prototype.hasOwnProperty.call(this._map, key))
-            ++this._size;
-        this._map[key] = value;
-    },
-
-    /**
-     * @param {string} key
-     * @return {T|undefined}
-     */
-    remove: function(key)
-    {
-        var result;
-        if (key === "__proto__") {
-            if (!this._hasProtoKey)
-                return undefined;
-            --this._size;
-            delete this._hasProtoKey;
-            result = this._protoValue;
-            delete this._protoValue;
-            return result;
-        }
-        if (!Object.prototype.hasOwnProperty.call(this._map, key))
-            return undefined;
-        --this._size;
-        result = this._map[key];
-        delete this._map[key];
-        return result;
-    },
-
-    /**
-     * @return {!Array.<string>}
-     */
-    keysArray: function()
-    {
-        var result = Object.keys(this._map) || [];
-        if (this._hasProtoKey)
-            result.push("__proto__");
-        return result;
-    },
-
-    /**
-     * @return {!Array.<T>}
-     */
-    valuesArray: function()
-    {
-        var result = Object.values(this._map);
-        if (this._hasProtoKey)
-            result.push(this._protoValue);
-        return result;
-    },
-
-    /**
-     * @param {string} key
-     * @return {T|undefined}
-     */
-    get: function(key)
-    {
-        if (key === "__proto__")
-            return this._protoValue;
-        if (!Object.prototype.hasOwnProperty.call(this._map, key))
-            return undefined;
-        return this._map[key];
-    },
-
-    /**
-     * @param {string} key
-     * @return {boolean}
-     */
-    has: function(key)
-    {
-        var result;
-        if (key === "__proto__")
-            return this._hasProtoKey;
-        return Object.prototype.hasOwnProperty.call(this._map, key);
-    },
-
-    /**
-     * @return {number}
-     */
-    get size()
-    {
-        return this._size;
-    },
-
-    clear: function()
-    {
-        this._map = {};
-        this._size = 0;
-        delete this._hasProtoKey;
-        delete this._protoValue;
-    }
-}
-
-/**
- * @constructor
- * @extends {StringMap.<Set.<!T>>}
- * @template T
- */
 var StringMultimap = function()
 {
-    StringMap.call(this);
+    /** @type {!Map.<string, !Set.<!T>>} */
+    this._map = new Map();
 }
 
 StringMultimap.prototype = {
@@ -1465,21 +1345,12 @@ StringMultimap.prototype = {
      */
     set: function(key, value)
     {
-        if (key === "__proto__") {
-            if (!this._hasProtoKey) {
-                ++this._size;
-                this._hasProtoKey = true;
-                /** @type {!Set.<T>} */
-                this._protoValue = new Set();
-            }
-            this._protoValue.add(value);
-            return;
+        var set = this._map.get(key);
+        if (!set) {
+            set = new Set();
+            this._map.set(key, set);
         }
-        if (!Object.prototype.hasOwnProperty.call(this._map, key)) {
-            ++this._size;
-            this._map[key] = new Set();
-        }
-        this._map[key].add(value);
+        set.add(value);
     },
 
     /**
@@ -1488,7 +1359,7 @@ StringMultimap.prototype = {
      */
     get: function(key)
     {
-        var result = StringMap.prototype.get.call(this, key);
+        var result = this._map.get(key);
         if (!result)
             result = new Set();
         return result;
@@ -1503,7 +1374,7 @@ StringMultimap.prototype = {
         var values = this.get(key);
         values.remove(value);
         if (!values.size())
-            StringMap.prototype.remove.call(this, key)
+            this._map.remove(key)
     },
 
     /**
@@ -1511,7 +1382,15 @@ StringMultimap.prototype = {
      */
     removeAll: function(key)
     {
-        StringMap.prototype.remove.call(this, key);
+        this._map.remove(key)
+    },
+
+    /**
+     * @return {!Array.<string>}
+     */
+    keysArray: function()
+    {
+        return this._map.keysArray();
     },
 
     /**
@@ -1526,7 +1405,10 @@ StringMultimap.prototype = {
         return result;
     },
 
-    __proto__: StringMap.prototype
+    clear: function()
+    {
+        this._map.clear();
+    }
 }
 
 /**
@@ -1534,8 +1416,8 @@ StringMultimap.prototype = {
  */
 var StringSet = function()
 {
-    /** @type {!StringMap.<boolean>} */
-    this._map = new StringMap();
+    /** @type {!Map.<string, boolean>} */
+    this._map = new Map();
 }
 
 /**

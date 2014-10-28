@@ -692,8 +692,8 @@ WebInspector.SettingsList = function(columns, itemRenderer)
     this.element = createElementWithClass("div", "settings-list");
     this.element.tabIndex = -1;
     this._itemRenderer = itemRenderer;
-    /** @type {!StringMap.<!Element>} */
-    this._listItems = new StringMap();
+    /** @type {!Map.<string, !Element>} */
+    this._listItems = new Map();
     /** @type {!Array.<?string>} */
     this._ids = [];
     this._columns = columns;
@@ -868,12 +868,12 @@ WebInspector.EditableSettingsList = function(columns, valuesProvider, validateHa
     this._valuesProvider = valuesProvider;
     this._validateHandler = validateHandler;
     this._editHandler = editHandler;
-    /** @type {!StringMap.<(!HTMLInputElement|!HTMLSelectElement)>} */
-    this._addInputElements = new StringMap();
-    /** @type {!StringMap.<!StringMap.<(!HTMLInputElement|!HTMLSelectElement)>>} */
-    this._editInputElements = new StringMap();
-    /** @type {!StringMap.<!StringMap.<!HTMLSpanElement>>} */
-    this._textElements = new StringMap();
+    /** @type {!Map.<string, (!HTMLInputElement|!HTMLSelectElement)>} */
+    this._addInputElements = new Map();
+    /** @type {!Map.<string, !Map.<string, (!HTMLInputElement|!HTMLSelectElement)>>} */
+    this._editInputElements = new Map();
+    /** @type {!Map.<string, !Map.<string, !HTMLSpanElement>>} */
+    this._textElements = new Map();
 
     this._addMappingItem = this.addItem(null);
     this._addMappingItem.classList.add("item-editing", "add-list-item");
@@ -952,9 +952,9 @@ WebInspector.EditableSettingsList.prototype = {
         var validItemId = itemId;
 
         if (!this._editInputElements.has(itemId))
-            this._editInputElements.set(itemId, new StringMap());
+            this._editInputElements.set(itemId, new Map());
         if (!this._textElements.has(itemId))
-            this._textElements.set(itemId, new StringMap());
+            this._textElements.set(itemId, new Map());
 
         var value = this._valuesProvider(itemId, columnId);
 
@@ -1054,7 +1054,7 @@ WebInspector.EditableSettingsList.prototype = {
 
     /**
      * @param {?string} itemId
-     * @return {?StringMap.<(!HTMLInputElement|!HTMLSelectElement)>}
+     * @return {?Map.<string, (!HTMLInputElement|!HTMLSelectElement)>}
      */
     _inputElements: function(itemId)
     {

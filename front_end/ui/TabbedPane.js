@@ -1149,16 +1149,16 @@ WebInspector.ExtensibleTabbedPaneController = function(tabbedPane, extensionPoin
 
     this._tabbedPane.setRetainTabOrder(true, this._tabOrderComparator.bind(this));
     this._tabbedPane.addEventListener(WebInspector.TabbedPane.EventTypes.TabSelected, this._tabSelected, this);
-    /** @type {!StringMap.<?WebInspector.View>} */
-    this._views = new StringMap();
+    /** @type {!Map.<string, ?WebInspector.View>} */
+    this._views = new Map();
     this._initialize();
 }
 
 WebInspector.ExtensibleTabbedPaneController.prototype = {
     _initialize: function()
     {
-        /** @type {!StringMap.<!Runtime.Extension>} */
-        this._extensions = new StringMap();
+        /** @type {!Map.<string, !Runtime.Extension>} */
+        this._extensions = new Map();
         var extensions = self.runtime.extensions(this._extensionPoint);
 
         for (var i = 0; i < extensions.length; ++i) {

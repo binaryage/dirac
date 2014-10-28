@@ -524,7 +524,7 @@ WebInspector.TimelineModel.RecordImpl.prototype = {
     setUserObject: function(key, value)
     {
         if (!this._userObjects)
-            this._userObjects = new StringMap();
+            this._userObjects = new Map();
         this._userObjects.set(key, value);
     },
 

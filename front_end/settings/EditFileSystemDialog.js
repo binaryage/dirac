@@ -83,7 +83,7 @@ WebInspector.EditFileSystemDialog = function(fileSystemPath)
     this._excludedFolderList.addEventListener(WebInspector.SettingsList.Events.Removed, this._excludedFolderRemovedfromList.bind(this));
     this._excludedFolderList.element.classList.add("excluded-folders-list");
     this._excludedFolderListContainer.appendChild(this._excludedFolderList.element);
-    this._excludedFolderEntries = new StringMap();
+    this._excludedFolderEntries = new Map();
     for (var i = 0; i < excludedFolderEntries.length; ++i)
         this._addExcludedFolderRow(excludedFolderEntries[i]);
 
