@@ -1990,17 +1990,14 @@ WebInspector.CodeMirrorTextEditor.AutocompleteController = function(textEditor, 
     this._changes = this._changes.bind(this);
     this._beforeChange = this._beforeChange.bind(this);
     this._blur = this._blur.bind(this);
-    this._codeMirror.on("scroll", this._onScroll);
-    this._codeMirror.on("cursorActivity", this._onCursorActivity);
+
     this._codeMirror.on("changes", this._changes);
-    this._codeMirror.on("beforeChange", this._beforeChange);
-    this._codeMirror.on("blur", this._blur);
 
     this._additionalWordChars = WebInspector.CodeMirrorTextEditor._NoAdditionalWordChars;
     this._enabled = true;
 
     this._dictionary = dictionary;
-    this._addTextToCompletionDictionary(this._textEditor.text());
+    this._initialized = false;
 }
 
 WebInspector.CodeMirrorTextEditor.AutocompleteController.Dummy = new WebInspector.CodeMirrorTextEditor.DummyAutocompleteController();
@@ -2008,11 +2005,25 @@ WebInspector.CodeMirrorTextEditor._NoAdditionalWordChars = {};
 WebInspector.CodeMirrorTextEditor._CSSAdditionalWordChars = { ".": true, "-": true };
 
 WebInspector.CodeMirrorTextEditor.AutocompleteController.prototype = {
+    _initializeIfNeeded: function()
+    {
+        if (this._initialized)
+            return;
+        this._initialized = true;
+        this._codeMirror.on("scroll", this._onScroll);
+        this._codeMirror.on("cursorActivity", this._onCursorActivity);
+        this._codeMirror.on("beforeChange", this._beforeChange);
+        this._codeMirror.on("blur", this._blur);
+        this._addTextToCompletionDictionary(this._textEditor.text());
+    },
+
     dispose: function()
     {
+        this._codeMirror.off("changes", this._changes);
+        if (!this._initialized)
+            return;
         this._codeMirror.off("scroll", this._onScroll);
         this._codeMirror.off("cursorActivity", this._onCursorActivity);
-        this._codeMirror.off("changes", this._changes);
         this._codeMirror.off("beforeChange", this._beforeChange);
         this._codeMirror.off("blur", this._blur);
     },
@@ -2067,7 +2078,7 @@ WebInspector.CodeMirrorTextEditor.AutocompleteController.prototype = {
      */
     _addTextToCompletionDictionary: function(text)
     {
-        if (!this._enabled)
+        if (!this._enabled || !this._initialized)
             return;
         var words = WebInspector.TextUtils.textToWords(text, this._isWordChar.bind(this));
         for (var i = 0; i < words.length; ++i) {
@@ -2081,7 +2092,7 @@ WebInspector.CodeMirrorTextEditor.AutocompleteController.prototype = {
      */
     _removeTextFromCompletionDictionary: function(text)
     {
-        if (!this._enabled)
+        if (!this._enabled || !this._initialized)
             return;
         var words = WebInspector.TextUtils.textToWords(text, this._isWordChar.bind(this));
         for (var i = 0; i < words.length; ++i) {
@@ -2172,6 +2183,7 @@ WebInspector.CodeMirrorTextEditor.AutocompleteController.prototype = {
 
     autocomplete: function()
     {
+        this._initializeIfNeeded();
         var dictionary = this._dictionary;
         if (this._codeMirror.somethingSelected()) {
             this.finishAutocomplete();
