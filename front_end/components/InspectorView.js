@@ -235,7 +235,6 @@ WebInspector.InspectorView.prototype = {
             if (this._panelForShowPromise !== panelPromise)
                 return null;
 
-            delete this._panelForShowPromise;
             this.setCurrentPanel(panel);
             return panel;
         }
@@ -288,6 +287,8 @@ WebInspector.InspectorView.prototype = {
      */
     setCurrentPanel: function(panel)
     {
+        delete this._panelForShowPromise;
+
         if (this._currentPanelLocked) {
             console.error("Current panel is locked");
             return this._currentPanel;
