@@ -2870,7 +2870,7 @@ WebInspector.ElementsTreeUpdater.prototype = {
             delete this._updateModifiedNodesTimeout;
         }
 
-        var updatedNodes = this._recentlyModifiedNodes.values().concat(this._recentlyModifiedParentNodes.values());
+        var updatedNodes = this._recentlyModifiedNodes.valuesArray().concat(this._recentlyModifiedParentNodes.valuesArray());
         var hidePanelWhileUpdating = updatedNodes.length > 10;
         if (hidePanelWhileUpdating) {
             var treeOutlineContainerElement = this._treeOutline.element.parentNode;
@@ -2882,14 +2882,14 @@ WebInspector.ElementsTreeUpdater.prototype = {
             // Document's children have changed, perform total update.
             this._treeOutline.update();
         } else {
-            var nodes = this._recentlyModifiedNodes.values();
+            var nodes = this._recentlyModifiedNodes.valuesArray();
             for (var i = 0, size = nodes.length; i < size; ++i) {
                 var nodeItem = this._treeOutline.findTreeElement(nodes[i]);
                 if (nodeItem)
                     nodeItem.updateTitle();
             }
 
-            var parentNodes = this._recentlyModifiedParentNodes.values();
+            var parentNodes = this._recentlyModifiedParentNodes.valuesArray();
             for (var i = 0, size = parentNodes.length; i < size; ++i) {
                 var parentNodeItem = this._treeOutline.findTreeElement(parentNodes[i]);
                 if (parentNodeItem && parentNodeItem.populated)

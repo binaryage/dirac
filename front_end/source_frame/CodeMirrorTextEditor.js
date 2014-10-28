@@ -1284,7 +1284,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         if (hasOneLine !== this._hasOneLine)
             this._resizeEditor();
         this._hasOneLine = hasOneLine;
-        var widgets = this._elementToWidget.values();
+        var widgets = this._elementToWidget.valuesArray();
         for (var i = 0; i < widgets.length; ++i)
             this._codeMirror.removeLineWidget(widgets[i]);
         this._elementToWidget.clear();

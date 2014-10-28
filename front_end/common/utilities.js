@@ -1251,7 +1251,7 @@ Set.prototype = {
     /**
      * @return {!Array.<!T>}
      */
-    values: function()
+    valuesArray: function()
     {
         var result = new Array(this._size);
         var i = 0;
@@ -1329,7 +1329,7 @@ Map.prototype = {
     /**
      * @return {!Array.<K>}
      */
-    keys: function()
+    keysArray: function()
     {
         return this._list(0);
     },
@@ -1337,7 +1337,7 @@ Map.prototype = {
     /**
      * @return {!Array.<V>}
      */
-    values: function()
+    valuesArray: function()
     {
         return this._list(1);
     },
@@ -1449,7 +1449,7 @@ StringMap.prototype = {
     /**
      * @return {!Array.<string>}
      */
-    keys: function()
+    keysArray: function()
     {
         var result = Object.keys(this._map) || [];
         if (this._hasProtoKey)
@@ -1460,7 +1460,7 @@ StringMap.prototype = {
     /**
      * @return {!Array.<T>}
      */
-    values: function()
+    valuesArray: function()
     {
         var result = Object.values(this._map);
         if (this._hasProtoKey)
@@ -1579,12 +1579,12 @@ StringMultimap.prototype = {
     /**
      * @return {!Array.<!T>}
      */
-    values: function()
+    valuesArray: function()
     {
         var result = [];
-        var keys = this.keys();
+        var keys = this.keysArray();
         for (var i = 0; i < keys.length; ++i)
-            result.pushAll(this.get(keys[i]).values());
+            result.pushAll(this.get(keys[i]).valuesArray());
         return result;
     },
 
@@ -1632,9 +1632,9 @@ StringSet.prototype = {
     /**
      * @return {!Array.<string>}
      */
-    values: function()
+    valuesArray: function()
     {
-        return this._map.keys();
+        return this._map.keysArray();
     },
 
     /**

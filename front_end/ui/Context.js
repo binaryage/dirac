@@ -95,7 +95,7 @@ WebInspector.Context.prototype = {
      */
     flavors: function()
     {
-        return this._flavors.keys();
+        return this._flavors.keysArray();
     },
 
     /**

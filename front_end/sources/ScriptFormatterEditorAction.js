@@ -310,7 +310,7 @@ WebInspector.ScriptFormatterEditorAction.prototype = {
      */
     _cleanForTarget: function(target)
     {
-        var uiSourceCodes = this._formatData.keys();
+        var uiSourceCodes = this._formatData.keysArray();
         for (var i = 0; i < uiSourceCodes.length; ++i) {
             WebInspector.debuggerWorkspaceBinding.setSourceMapping(target, uiSourceCodes[i], null);
             var formatData = this._formatData.get(uiSourceCodes[i]);

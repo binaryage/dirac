@@ -193,7 +193,7 @@ WebInspector.TimelinePresentationModel.prototype = {
      */
     setTextFilter: function(textFilter)
     {
-        var records = this._recordToPresentationRecord.values();
+        var records = this._recordToPresentationRecord.valuesArray();
         for (var i = 0; i < records.length; ++i)
             records[i]._expandedOrCollapsedWhileFiltered = false;
         this._textFilter = textFilter;

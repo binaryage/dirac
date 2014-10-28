@@ -252,7 +252,7 @@ WebInspector.ResourceScriptMapping.prototype = {
 
     _debuggerReset: function()
     {
-        var boundURLs = this._boundURLs.values();
+        var boundURLs = this._boundURLs.valuesArray();
         for (var i = 0; i < boundURLs.length; ++i)
         {
             var uiSourceCode = this._workspace.uiSourceCodeForURL(boundURLs[i]);

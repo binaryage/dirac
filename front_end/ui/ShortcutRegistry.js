@@ -35,11 +35,11 @@ WebInspector.ShortcutRegistry.prototype = {
     {
         var result = new StringSet();
         var defaults = this._defaultActionsForKey(key);
-        defaults.values().forEach(function(actionId) {
+        defaults.valuesArray().forEach(function(actionId) {
             result.add(actionId);
         }, this);
 
-        return result.values();
+        return result.valuesArray();
     },
 
     /**
@@ -57,7 +57,7 @@ WebInspector.ShortcutRegistry.prototype = {
      */
     shortcutDescriptorsForAction: function(actionId)
     {
-        return this._defaultActionToShortcut.get(actionId).values();
+        return this._defaultActionToShortcut.get(actionId).valuesArray();
     },
 
     /**

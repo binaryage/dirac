@@ -253,7 +253,7 @@ WebInspector.Linkifier.prototype = {
 
     reset: function()
     {
-        var keys = this._liveLocationsByTarget.keys();
+        var keys = this._liveLocationsByTarget.keysArray();
         for (var i = 0; i < keys.length; ++i) {
             var target = keys[i];
             this.targetRemoved(target);

@@ -277,7 +277,7 @@ WebInspector.CSSWorkspaceBinding.HeaderInfo.prototype = {
 
     _updateLocations: function()
     {
-        var items = this._locations.values();
+        var items = this._locations.valuesArray();
         for (var i = 0; i < items.length; ++i)
             items[i].update();
     },

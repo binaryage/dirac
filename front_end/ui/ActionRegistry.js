@@ -43,7 +43,7 @@ WebInspector.ActionRegistry.prototype = {
            if (extension)
                extensions.push(extension);
         }, this);
-        return context.applicableExtensions(extensions).values().map(function(extension) {
+        return context.applicableExtensions(extensions).valuesArray().map(function(extension) {
             return extension.descriptor()["actionId"];
         });
     },

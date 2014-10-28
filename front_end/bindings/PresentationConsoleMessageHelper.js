@@ -263,7 +263,7 @@ WebInspector.PresentationConsoleMessageHelper.prototype = {
         for (var i = 0; i < this._presentationConsoleMessages.length; ++i)
             this._presentationConsoleMessages[i].dispose();
         this._presentationConsoleMessages = [];
-        var targets = this._uiSourceCodeToEventTarget.values();
+        var targets = this._uiSourceCodeToEventTarget.valuesArray();
         for (var i = 0; i < targets.length; ++i)
             targets[i].dispatchEventToListeners(WebInspector.PresentationConsoleMessageHelper.Events.ConsoleMessagesCleared);
         this._uiSourceCodeToMessages.clear();

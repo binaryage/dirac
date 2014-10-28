@@ -586,7 +586,7 @@ WebInspector.NetworkLogView.prototype = {
         var selectedTransferSize = 0;
         var baseTime = -1;
         var maxTime = -1;
-        var nodes = this._nodesByRequestId.values();
+        var nodes = this._nodesByRequestId.valuesArray();
         for (var i = 0; i < nodes.length; ++i) {
             var request = nodes[i].request();
             var requestTransferSize = request.transferSize;
@@ -693,7 +693,7 @@ WebInspector.NetworkLogView.prototype = {
 
     _invalidateAllItems: function()
     {
-        var requestIds = this._nodesByRequestId.keys();
+        var requestIds = this._nodesByRequestId.keysArray();
         for (var i = 0; i < requestIds.length; ++i)
             this._staleRequestIds[requestIds[i]] = true;
     },
@@ -828,7 +828,7 @@ WebInspector.NetworkLogView.prototype = {
         if (boundariesChanged) {
             // The boundaries changed, so all item graphs are stale.
             this._updateDividersIfNeeded();
-            var nodes = this._nodesByRequestId.values();
+            var nodes = this._nodesByRequestId.valuesArray();
             for (var i = 0; i < nodes.length; ++i)
                 nodes[i].refreshGraph();
         }
@@ -864,7 +864,7 @@ WebInspector.NetworkLogView.prototype = {
         if (this._calculator)
             this._calculator.reset();
 
-        var nodes = this._nodesByRequestId.values();
+        var nodes = this._nodesByRequestId.valuesArray();
         for (var i = 0; i < nodes.length; ++i)
             nodes[i].dispose();
 
@@ -1239,7 +1239,7 @@ WebInspector.NetworkLogView.prototype = {
 
     _harRequests: function()
     {
-        var requests = this._nodesByRequestId.values().map(function(node) { return node.request(); });
+        var requests = this._nodesByRequestId.valuesArray().map(function(node) { return node.request(); });
         var httpRequests = requests.filter(WebInspector.NetworkLogView.HTTPRequestsFilter);
         httpRequests = httpRequests.filter(WebInspector.NetworkLogView.FinishedRequestsFilter);
         return httpRequests.filter(WebInspector.NetworkLogView.NonDevToolsRequestsFilter);

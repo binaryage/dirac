@@ -1209,7 +1209,7 @@ WebInspector.ExtensibleTabbedPaneController.prototype = {
      */
     viewIds: function()
     {
-        return this._extensions.keys();
+        return this._extensions.keysArray();
     },
 
     /**

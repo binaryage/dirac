@@ -211,7 +211,7 @@ WebInspector.CSSStyleModel.prototype = {
      */
     allStyleSheets: function()
     {
-        var values = this._styleSheetIdToHeader.values();
+        var values = this._styleSheetIdToHeader.valuesArray();
         /**
          * @param {!WebInspector.CSSStyleSheetHeader} a
          * @param {!WebInspector.CSSStyleSheetHeader} b
@@ -394,7 +394,7 @@ WebInspector.CSSStyleModel.prototype = {
     requestViaInspectorStylesheet: function(node, callback)
     {
         var frameId = node.frameId() || this.target().resourceTreeModel.mainFrame.id;
-        var headers = this._styleSheetIdToHeader.values();
+        var headers = this._styleSheetIdToHeader.valuesArray();
         for (var i = 0; i < headers.length; ++i) {
             var styleSheetHeader = headers[i];
             if (styleSheetHeader.frameId === frameId && styleSheetHeader.isViaInspector()) {
@@ -440,7 +440,7 @@ WebInspector.CSSStyleModel.prototype = {
      */
     styleSheetHeaders: function()
     {
-        return this._styleSheetIdToHeader.values();
+        return this._styleSheetIdToHeader.valuesArray();
     },
 
     /**
@@ -587,7 +587,7 @@ WebInspector.CSSStyleModel.prototype = {
 
     _resetStyleSheets: function()
     {
-        var headers = this._styleSheetIdToHeader.values();
+        var headers = this._styleSheetIdToHeader.valuesArray();
         this._styleSheetIdsForURL.clear();
         this._styleSheetIdToHeader.clear();
         for (var i = 0; i < headers.length; ++i)

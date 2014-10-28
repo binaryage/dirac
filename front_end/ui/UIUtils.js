@@ -997,10 +997,10 @@ WebInspector.InvokeOnceHandlers.prototype = {
     {
         var handlers = this._handlers;
         this._handlers = null;
-        var keys = handlers.keys();
+        var keys = handlers.keysArray();
         for (var i = 0; i < keys.length; ++i) {
             var object = keys[i];
-            var methods = handlers.get(object).values();
+            var methods = handlers.get(object).valuesArray();
             for (var j = 0; j < methods.length; ++j)
                 methods[j].call(object);
         }

@@ -214,7 +214,7 @@ WebInspector.ResourcesPanel.prototype = {
     _reset: function()
     {
         this._domains = {};
-        var queryViews = this._databaseQueryViews.values();
+        var queryViews = this._databaseQueryViews.valuesArray();
         for (var i = 0; i < queryViews.length; ++i)
             queryViews[i].removeEventListener(WebInspector.DatabaseQueryView.Events.SchemaUpdated, this._updateDatabaseTables, this);
         this._databaseTableViews.clear();

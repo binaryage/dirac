@@ -250,18 +250,18 @@ WebInspector.GenericSettingsTab.prototype = {
             extensionsBySectionId.set(sectionName, extension);
         });
 
-        var sectionIds = extensionsBySectionId.keys();
+        var sectionIds = extensionsBySectionId.keysArray();
         var explicitlyOrderedSections = explicitSectionOrder.keySet();
         for (var i = 0; i < explicitSectionOrder.length; ++i) {
             var extensions = extensionsBySectionId.get(explicitSectionOrder[i]);
             if (!extensions.size())
                 continue;
-            this._addSectionWithExtensionProvidedSettings(explicitSectionOrder[i], extensions.values(), childSettingExtensionsByParentName);
+            this._addSectionWithExtensionProvidedSettings(explicitSectionOrder[i], extensions.valuesArray(), childSettingExtensionsByParentName);
         }
         for (var i = 0; i < sectionIds.length; ++i) {
             if (explicitlyOrderedSections[sectionIds[i]])
                 continue;
-            this._addSectionWithExtensionProvidedSettings(sectionIds[i], extensionsBySectionId.get(sectionIds[i]).values(), childSettingExtensionsByParentName);
+            this._addSectionWithExtensionProvidedSettings(sectionIds[i], extensionsBySectionId.get(sectionIds[i]).valuesArray(), childSettingExtensionsByParentName);
         }
     },
 
@@ -302,7 +302,7 @@ WebInspector.GenericSettingsTab.prototype = {
                 if (childSettings.size()) {
                     var fieldSet = WebInspector.SettingsUI.createSettingFieldset(setting);
                     settingControl.appendChild(fieldSet);
-                    childSettings.values().forEach(function(item) { processSetting.call(this, fieldSet, item); }, this);
+                    childSettings.valuesArray().forEach(function(item) { processSetting.call(this, fieldSet, item); }, this);
                 }
             }
             appendAsChild(settingControl);
@@ -1111,7 +1111,7 @@ WebInspector.EditableSettingsList.prototype = {
             return;
         }
 
-        var inputElements = this._editInputElements.get(itemId).values();
+        var inputElements = this._editInputElements.get(itemId).valuesArray();
         if (inputElements.indexOf(event.relatedTarget) !== -1)
             return;
 
@@ -1140,7 +1140,7 @@ WebInspector.EditableSettingsList.prototype = {
      */
     _onAddMappingInputBlur: function(event)
     {
-        var inputElements = this._addInputElements.values();
+        var inputElements = this._addInputElements.valuesArray();
         if (inputElements.indexOf(event.relatedTarget) !== -1)
             return;
 

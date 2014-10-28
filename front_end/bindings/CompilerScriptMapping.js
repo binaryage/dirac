@@ -301,7 +301,7 @@ WebInspector.CompilerScriptMapping.prototype = {
             this._unbindUISourceCode(uiSourceCode);
         }
 
-        this._sourceMapForURL.keys().forEach(unbindUISourceCodeForURL.bind(this));
+        this._sourceMapForURL.keysArray().forEach(unbindUISourceCodeForURL.bind(this));
 
         this._sourceMapForSourceMapURL = {};
         this._pendingSourceMapLoadingCallbacks = {};

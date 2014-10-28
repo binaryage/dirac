@@ -194,7 +194,7 @@ WebInspector.JavaScriptBreakpointsSidebarPane.prototype = {
      */
     _breakpointContextMenu: function(breakpoint, event)
     {
-        var breakpoints = this._items.values();
+        var breakpoints = this._items.valuesArray();
         var contextMenu = new WebInspector.ContextMenu(event);
         contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Remove breakpoint" : "Remove Breakpoint"), breakpoint.remove.bind(breakpoint));
         if (breakpoints.length > 1) {

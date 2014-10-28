@@ -285,7 +285,7 @@ WebInspector.NavigatorView.prototype = {
 
     reset: function()
     {
-        var nodes = this._uiSourceCodeNodes.values();
+        var nodes = this._uiSourceCodeNodes.valuesArray();
         for (var i = 0; i < nodes.length; ++i)
             nodes[i].dispose();
 
@@ -545,7 +545,7 @@ WebInspector.SourcesNavigatorView.prototype = {
      */
     _inspectedURLChanged: function(event)
     {
-       var nodes = this._uiSourceCodeNodes.values();
+       var nodes = this._uiSourceCodeNodes.valuesArray();
        for (var i = 0; i < nodes.length; ++i) {
            var uiSourceCode = nodes[i].uiSourceCode();
            var inspectedPageURL = WebInspector.targetManager.inspectedPageURL();
@@ -1068,7 +1068,7 @@ WebInspector.NavigatorTreeNode.prototype = {
      */
     children: function()
     {
-        return this._children.values();
+        return this._children.valuesArray();
     },
 
     /**

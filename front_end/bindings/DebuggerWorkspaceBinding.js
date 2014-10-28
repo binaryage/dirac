@@ -49,7 +49,7 @@ WebInspector.DebuggerWorkspaceBinding.prototype = {
     _uiSourceCodeRemoved: function(event)
     {
         var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (event.data);
-        var targetDatas = this._targetToData.values();
+        var targetDatas = this._targetToData.valuesArray();
         for (var i = 0; i < targetDatas.length; ++i)
             targetDatas[i]._uiSourceCodeRemoved(uiSourceCode);
     },
@@ -60,7 +60,7 @@ WebInspector.DebuggerWorkspaceBinding.prototype = {
     _projectRemoved: function(event)
     {
         var project = /** @type {!WebInspector.Project} */ (event.data);
-        var targetDatas = this._targetToData.values();
+        var targetDatas = this._targetToData.valuesArray();
         var uiSourceCodes = project.uiSourceCodes();
         for (var i = 0; i < targetDatas.length; ++i) {
             for (var j = 0; j < uiSourceCodes.length; ++j)
@@ -172,7 +172,7 @@ WebInspector.DebuggerWorkspaceBinding.prototype = {
     uiLocationToRawLocations: function(uiSourceCode, lineNumber, columnNumber)
     {
         var result = [];
-        var targetDatas = this._targetToData.values();
+        var targetDatas = this._targetToData.valuesArray();
         for (var i = 0; i < targetDatas.length; ++i) {
             var rawLocation = targetDatas[i]._uiLocationToRawLocation(uiSourceCode, lineNumber, columnNumber);
             if (rawLocation)
@@ -188,7 +188,7 @@ WebInspector.DebuggerWorkspaceBinding.prototype = {
      */
     uiLineHasMapping: function(uiSourceCode, lineNumber)
     {
-        var targetDatas = this._targetToData.values();
+        var targetDatas = this._targetToData.valuesArray();
         for (var i = 0; i < targetDatas.length; ++i) {
             if (!targetDatas[i]._uiLineHasMapping(uiSourceCode, lineNumber))
                 return false;
@@ -232,7 +232,7 @@ WebInspector.DebuggerWorkspaceBinding.prototype = {
     _reset: function(target)
     {
         var targetData = this._targetToData.get(target);
-        targetData.callFrameLocations.values().forEach(function(location) { location.dispose(); });
+        targetData.callFrameLocations.valuesArray().forEach(function(location) { location.dispose(); });
         targetData.callFrameLocations.clear();
     },
 
@@ -459,7 +459,7 @@ WebInspector.DebuggerWorkspaceBinding.ScriptInfo.prototype = {
 
     _updateLocations: function()
     {
-        var items = this._locations.values();
+        var items = this._locations.valuesArray();
         for (var i = 0; i < items.length; ++i)
             items[i].update();
     },

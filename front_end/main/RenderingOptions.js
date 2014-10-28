@@ -53,7 +53,7 @@ WebInspector.RenderingOptions.prototype = {
      */
     targetAdded: function(target)
     {
-        var settings = this._setterNames.keys();
+        var settings = this._setterNames.keysArray();
         for (var i = 0; i < settings.length; ++i) {
             var setting = settings[i];
             if (setting.get()) {

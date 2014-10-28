@@ -174,7 +174,7 @@ WebInspector.StylesSourceMapping.prototype = {
         var url = uiSourceCode.url;
         if (!url || !this._urlToHeadersByFrameId[url])
             return;
-        this._bindUISourceCode(uiSourceCode, this._urlToHeadersByFrameId[url].values()[0].values()[0]);
+        this._bindUISourceCode(uiSourceCode, this._urlToHeadersByFrameId[url].valuesArray()[0].valuesArray()[0]);
     },
 
     /**
