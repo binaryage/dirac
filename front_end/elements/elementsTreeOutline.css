@@ -5,6 +5,7 @@
  */
 
 .outline-disclosure {
+    display: inline-block;
     line-height: normal;
 }
 
@@ -262,10 +263,10 @@ body.inactive button.text-button, .text-button:disabled {
     cursor: default !important;
 }
 
-.nowrap {
+.nowrap, .nowrap .li {
     white-space: pre !important;
 }
 
-.nowrap .outline-disclosure li {
+.outline-disclosure .nowrap li {
     word-wrap: normal;
 }

@@ -52,7 +52,7 @@ WebInspector.ElementsPanel = function()
     this._contentElement.id = "elements-content";
     // FIXME: crbug.com/425984
     if (WebInspector.settings.domWordWrap.get())
-        this.contentElement.classList.add("elements-wrap");
+        this._contentElement.classList.add("elements-wrap");
     WebInspector.settings.domWordWrap.addChangeListener(this._domWordWrapSettingChanged.bind(this));
 
     this._splitView.sidebarElement().addEventListener("contextmenu", this._sidebarContextMenuEventFired.bind(this), false);

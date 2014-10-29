@@ -564,7 +564,7 @@ WebInspector.ElementsTreeOutline.prototype = {
      */
     _treeElementFromEvent: function(event)
     {
-        var scrollContainer = this._element.parentElement;
+        var scrollContainer = this.element.parentElement;
 
         // We choose this X coordinate based on the knowledge that our list
         // items extend at least to the right edge of the outer <ol> container.
