@@ -92,10 +92,8 @@ WebInspector.TimelineLayersView.prototype = {
         }
 
         this._model.forAllRecords(findRecordWithEvent);
-        if (eventRecord) {
-            var selection = WebInspector.TimelineSelection.fromRecord(eventRecord);
-            this._delegate.select(selection, WebInspector.TimelinePanel.DetailsTab.PaintProfiler);
-        }
+        if (eventRecord)
+            this._delegate.showNestedRecordDetails(eventRecord);
     },
 
     _update: function()

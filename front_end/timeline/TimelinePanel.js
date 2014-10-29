@@ -1025,10 +1025,21 @@ WebInspector.TimelinePanel.prototype = {
     _appendDetailsTabsForTraceEventAndShowDetails: function(event, content)
     {
         this.showInDetails(content);
+        this._showEventInPaintProfiler(event);
+    },
+
+    /**
+     * @param {!WebInspector.TracingModel.Event} event
+     * @param {boolean=} isCloseable
+     */
+    _showEventInPaintProfiler: function(event, isCloseable)
+    {
         if (!event.picture)
             return;
         var paintProfilerView = this._paintProfilerView();
-        this._detailsView.appendTab(WebInspector.TimelinePanel.DetailsTab.PaintProfiler, WebInspector.UIString("Paint Profiler"), paintProfilerView);
+        if (!this._detailsView.hasTab(WebInspector.TimelinePanel.DetailsTab.PaintProfiler))
+            this._detailsView.appendTab(WebInspector.TimelinePanel.DetailsTab.PaintProfiler, WebInspector.UIString("Paint Profiler"), paintProfilerView, undefined, undefined, isCloseable);
+        this._detailsView.selectTab(WebInspector.TimelinePanel.DetailsTab.PaintProfiler, true);
         event.picture.requestObject(onGotObject);
         function onGotObject(result)
         {
@@ -1136,6 +1147,17 @@ WebInspector.TimelinePanel.prototype = {
     },
 
     /**
+     * @param {!WebInspector.TimelineModel.Record} record
+     */
+    showNestedRecordDetails: function(record)
+    {
+        if (!this._tracingTimelineModel)
+            return;
+        var event = record.traceEvent();
+        this._showEventInPaintProfiler(event, true);
+    },
+
+    /**
      * @param {!Node} node
      */
     showInDetails: function(node)
@@ -1187,7 +1209,7 @@ WebInspector.TimelineDetailsView.prototype = {
      */
     appendTab: function(id, tabTitle, view, tabTooltip, userGesture, isCloseable)
     {
-        WebInspector.TabbedPane.prototype.appendTab.call(this, id, tabTitle, view, tabTooltip);
+        WebInspector.TabbedPane.prototype.appendTab.call(this, id, tabTitle, view, tabTooltip, userGesture, isCloseable);
         if (this._preferredTabId !== this.selectedTabId)
             this.selectTab(id);
     },
@@ -1364,6 +1386,11 @@ WebInspector.TimelineModeViewDelegate.prototype = {
      * @param {!WebInspector.TimelinePanel.DetailsTab=} preferredTab
      */
     select: function(selection, preferredTab) {},
+
+    /**
+     * @param {!WebInspector.TimelineModel.Record} record
+     */
+    showNestedRecordDetails: function(record) {},
 
     /**
      * @param {!Node} node
