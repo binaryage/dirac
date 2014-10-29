@@ -28,7 +28,7 @@ WebInspector.TimelineLayersView = function()
     this._layers3DView = new WebInspector.Layers3DView();
     this._layers3DView.addEventListener(WebInspector.Layers3DView.Events.ObjectSelected, this._onObjectSelected, this);
     this._layers3DView.addEventListener(WebInspector.Layers3DView.Events.ObjectHovered, this._onObjectHovered, this);
-    this._layers3DView.addEventListener(WebInspector.Layers3DView.Events.JumpToPaintEventRequested, this._jumpToPaintEvent, this);
+    this._layers3DView.addEventListener(WebInspector.Layers3DView.Events.PaintProfilerRequested, this._jumpToPaintEvent, this);
     this._layers3DView.show(this.mainElement());
 
     this._layerDetailsView = new WebInspector.LayerDetailsView();
@@ -93,7 +93,7 @@ WebInspector.TimelineLayersView.prototype = {
         this._model.forAllRecords(findRecordWithEvent);
         if (eventRecord) {
             var selection = WebInspector.TimelineSelection.fromRecord(eventRecord);
-            this._delegate.select(selection);
+            this._delegate.select(selection, WebInspector.TimelinePanel.DetailsTab.PaintProfiler);
         }
     },
 

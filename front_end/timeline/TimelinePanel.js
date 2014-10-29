@@ -131,6 +131,15 @@ WebInspector.TimelinePanel.OverviewMode = {
     Frames: "Frames"
 };
 
+/**
+ * @enum {string}
+ */
+WebInspector.TimelinePanel.DetailsTab = {
+    Details: "Details",
+    PaintProfiler: "PaintProfiler",
+    LayerViewer: "LayerViewer"
+};
+
 // Define row and header height, should be in sync with styles for timeline graphs.
 WebInspector.TimelinePanel.rowHeight = 18;
 WebInspector.TimelinePanel.headerHeight = 20;
@@ -1002,7 +1011,7 @@ WebInspector.TimelinePanel.prototype = {
             if (frame.layerTree) {
                 var layersView = this._layersView();
                 layersView.showLayerTree(frame.layerTree, frame.paints);
-                this._detailsView.appendTab("layers", WebInspector.UIString("Layers"), layersView);
+                this._detailsView.appendTab(WebInspector.TimelinePanel.DetailsTab.LayerViewer, WebInspector.UIString("Layers"), layersView);
             }
             break;
         case WebInspector.TimelineSelection.Type.Range:
@@ -1022,7 +1031,7 @@ WebInspector.TimelinePanel.prototype = {
         if (!event.picture)
             return;
         var paintProfilerView = this._paintProfilerView();
-        this._detailsView.appendTab("paintProfiler", WebInspector.UIString("Paint Profiler"), paintProfilerView);
+        this._detailsView.appendTab(WebInspector.TimelinePanel.DetailsTab.PaintProfiler, WebInspector.UIString("Paint Profiler"), paintProfilerView);
         event.picture.requestObject(onGotObject);
         function onGotObject(result)
         {
@@ -1113,11 +1122,14 @@ WebInspector.TimelinePanel.prototype = {
 
     /**
      * @param {?WebInspector.TimelineSelection} selection
+     * @param {!WebInspector.TimelinePanel.DetailsTab=} preferredTab
      */
-    select: function(selection)
+    select: function(selection, preferredTab)
     {
         this._detailsLinkifier.reset();
         this._selection = selection;
+        if (preferredTab)
+            this._detailsView.setPreferredTab(preferredTab);
 
         for (var i = 0; i < this._currentViews.length; ++i) {
             var view = this._currentViews[i];
@@ -1150,7 +1162,7 @@ WebInspector.TimelineDetailsView = function()
     this._defaultDetailsView.element.classList.add("timeline-details-view");
     this._defaultDetailsContentElement = this._defaultDetailsView.element.createChild("div", "timeline-details-view-body");
 
-    this.appendTab("default", WebInspector.UIString("Details"), this._defaultDetailsView);
+    this.appendTab(WebInspector.TimelinePanel.DetailsTab.Details, WebInspector.UIString("Details"), this._defaultDetailsView);
 
     this.addEventListener(WebInspector.TabbedPane.EventTypes.TabSelected, this._tabSelected, this);
 }
@@ -1162,8 +1174,8 @@ WebInspector.TimelineDetailsView.prototype = {
      */
     setContent: function(title, node)
     {
-        this.changeTabTitle("default", WebInspector.UIString("Details - %s", title));
-        var otherTabs = this.otherTabs("default");
+        this.changeTabTitle(WebInspector.TimelinePanel.DetailsTab.Details, WebInspector.UIString("Details - %s", title));
+        var otherTabs = this.otherTabs(WebInspector.TimelinePanel.DetailsTab.Details);
         for (var i = 0; i < otherTabs.length; ++i)
             this.closeTab(otherTabs[i]);
         this._defaultDetailsContentElement.removeChildren();
@@ -1191,16 +1203,23 @@ WebInspector.TimelineDetailsView.prototype = {
     appendTab: function(id, tabTitle, view, tabTooltip, userGesture, isCloseable)
     {
         WebInspector.TabbedPane.prototype.appendTab.call(this, id, tabTitle, view, tabTooltip);
-        if (this._lastUserSelectedTabId !== this.selectedTabId)
+        if (this._preferredTabId !== this.selectedTabId)
             this.selectTab(id);
+    },
+
+    /**
+     * @param {!WebInspector.TimelinePanel.DetailsTab} tabId
+     */
+    setPreferredTab: function(tabId)
+    {
+        this._preferredTabId = tabId;
     },
 
     _tabSelected: function(event)
     {
         if (!event.data.isUserGesture)
             return;
-
-        this._lastUserSelectedTabId = event.data.tabId;
+        this.setPreferredTab(event.data.tabId);
     },
 
     __proto__: WebInspector.TabbedPane.prototype
@@ -1357,8 +1376,9 @@ WebInspector.TimelineModeViewDelegate.prototype = {
 
     /**
      * @param {?WebInspector.TimelineSelection} selection
+     * @param {!WebInspector.TimelinePanel.DetailsTab=} preferredTab
      */
-    select: function(selection) {},
+    select: function(selection, preferredTab) {},
 
     /**
      * @param {string} title

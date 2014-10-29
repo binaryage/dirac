@@ -85,7 +85,7 @@ WebInspector.Layers3DView.Events = {
     ObjectHovered: "ObjectHovered",
     ObjectSelected: "ObjectSelected",
     LayerSnapshotRequested: "LayerSnapshotRequested",
-    JumpToPaintEventRequested: "JumpToPaintEventRequested"
+    PaintProfilerRequested: "PaintProfilerRequested"
 }
 
 /**
@@ -722,7 +722,7 @@ WebInspector.Layers3DView.prototype = {
         var contextMenu = new WebInspector.ContextMenu(event);
         contextMenu.appendItem(WebInspector.UIString("Reset View"), this._transformController.resetAndNotify.bind(this._transformController), false);
         if (activeObject && activeObject.type() === WebInspector.Layers3DView.ActiveObject.Type.Tile)
-            contextMenu.appendItem(WebInspector.UIString("Jump to Paint Event"), this.dispatchEventToListeners.bind(this, WebInspector.Layers3DView.Events.JumpToPaintEventRequested, activeObject.traceEvent), false);
+            contextMenu.appendItem(WebInspector.UIString("Show Paint Profiler"), this.dispatchEventToListeners.bind(this, WebInspector.Layers3DView.Events.PaintProfilerRequested, activeObject.traceEvent), false);
         if (node)
             contextMenu.appendApplicableItems(node);
         contextMenu.show();
@@ -767,7 +767,7 @@ WebInspector.Layers3DView.prototype = {
         var object = this._activeObjectFromEventPoint(event);
         if (object) {
             if (object.type() == WebInspector.Layers3DView.ActiveObject.Type.Tile)
-                this.dispatchEventToListeners(WebInspector.Layers3DView.Events.JumpToPaintEventRequested, object.traceEvent);
+                this.dispatchEventToListeners(WebInspector.Layers3DView.Events.PaintProfilerRequested, object.traceEvent);
             else if (object.layer)
                 this.dispatchEventToListeners(WebInspector.Layers3DView.Events.LayerSnapshotRequested, object.layer);
         }
