@@ -217,32 +217,13 @@ WebInspector.TimelineUIUtils.generateMainThreadBarPopupContent = function(model,
 
 /**
  * @param {!Object} aggregatedStats
- */
-WebInspector.TimelineUIUtils._generateAggregatedInfo = function(aggregatedStats)
-{
-    var cell = createElement("span");
-    cell.className = "timeline-aggregated-info";
-    for (var index in aggregatedStats) {
-        var label = createElement("div");
-        label.className = "timeline-aggregated-category timeline-" + index;
-        cell.appendChild(label);
-        var text = createElement("span");
-        text.textContent = Number.millisToString(aggregatedStats[index], true);
-        cell.appendChild(text);
-    }
-    return cell;
-}
-
-/**
- * @param {!Object} aggregatedStats
  * @param {!WebInspector.TimelineCategory=} selfCategory
  * @param {number=} selfTime
  * @return {!Element}
  */
 WebInspector.TimelineUIUtils.generatePieChart = function(aggregatedStats, selfCategory, selfTime)
 {
-    var element = createElement("div");
-    element.className = "timeline-aggregated-info";
+    var element = createElementWithClass("div", "timeline-details-view-pie-chart hbox");
 
     var total = 0;
     for (var categoryName in aggregatedStats)
@@ -255,13 +236,15 @@ WebInspector.TimelineUIUtils.generatePieChart = function(aggregatedStats, selfCa
     var pieChart = new WebInspector.PieChart(100, formatter);
     pieChart.setTotal(total);
     element.appendChild(pieChart.element);
-    var footerElement = element.createChild("div", "timeline-aggregated-info-legend");
+    var footerElement = element.createChild("div", "timeline-aggregated-info timeline-aggregated-info-legend");
+    var rowElement = footerElement.createChild("div");
+    rowElement.createTextChild(formatter(total));
 
     // In case of self time, first add self, then children of the same category.
     if (selfCategory && selfTime) {
         // Self.
         pieChart.addSlice(selfTime, selfCategory.fillColorStop1);
-        var rowElement = footerElement.createChild("div");
+        rowElement = footerElement.createChild("div");
         rowElement.createChild("div", "timeline-aggregated-category timeline-" + selfCategory.name);
         rowElement.createTextChild(WebInspector.UIString("%s %s (Self)", formatter(selfTime), selfCategory.title));
 
@@ -285,7 +268,7 @@ WebInspector.TimelineUIUtils.generatePieChart = function(aggregatedStats, selfCa
          if (!value)
              continue;
          pieChart.addSlice(value, category.fillColorStop0);
-         var rowElement = footerElement.createChild("div");
+         rowElement = footerElement.createChild("div");
          rowElement.createChild("div", "timeline-aggregated-category timeline-" + category.name);
          rowElement.createTextChild(WebInspector.UIString("%s %s", formatter(value), category.title));
     }
@@ -299,15 +282,15 @@ WebInspector.TimelineUIUtils.generatePieChart = function(aggregatedStats, selfCa
  */
 WebInspector.TimelineUIUtils.generateDetailsContentForFrame = function(frameModel, frame)
 {
-    var contentHelper = new WebInspector.TimelineDetailsContentHelper(null, null, true);
     var durationInMillis = frame.endTime - frame.startTime;
     var durationText = WebInspector.UIString("%s (at %s)", Number.millisToString(frame.endTime - frame.startTime, true),
         Number.millisToString(frame.startTimeOffset, true));
+    var pieChart = WebInspector.TimelineUIUtils.generatePieChart(frame.timeByCategory);
+    var contentHelper = new WebInspector.TimelineDetailsContentHelper(null, null, true);
     contentHelper.appendTextRow(WebInspector.UIString("Duration"), durationText);
     contentHelper.appendTextRow(WebInspector.UIString("FPS"), Math.floor(1000 / durationInMillis));
     contentHelper.appendTextRow(WebInspector.UIString("CPU time"), Number.millisToString(frame.cpuTime, true));
-    contentHelper.appendElementRow(WebInspector.UIString("Aggregated Time"),
-        WebInspector.TimelineUIUtils._generateAggregatedInfo(frame.timeByCategory));
+    contentHelper.appendElementRow(WebInspector.UIString("Aggregated Time"), pieChart);
     if (Runtime.experiments.isEnabled("layersPanel") && frame.layerTree) {
         contentHelper.appendElementRow(WebInspector.UIString("Layer tree"),
                                        WebInspector.Linkifier.linkifyUsingRevealer(frame.layerTree, WebInspector.UIString("show")));
@@ -520,8 +503,8 @@ WebInspector.TimelineDetailsContentHelper.prototype = {
     appendTextRow: function(title, value)
     {
         var rowElement = this.element.createChild("div", "timeline-details-view-row");
-        rowElement.createChild("span", "timeline-details-view-row-title").textContent = WebInspector.UIString("%s: ", title);
-        rowElement.createChild("span", "timeline-details-view-row-value" + (this._monospaceValues ? " monospace" : "")).textContent = value;
+        rowElement.createChild("div", "timeline-details-view-row-title").textContent = title;
+        rowElement.createChild("div", "timeline-details-view-row-value" + (this._monospaceValues ? " monospace" : "")).textContent = value;
     },
 
     /**
@@ -531,8 +514,8 @@ WebInspector.TimelineDetailsContentHelper.prototype = {
     appendElementRow: function(title, content)
     {
         var rowElement = this.element.createChild("div", "timeline-details-view-row");
-        rowElement.createChild("span", "timeline-details-view-row-title").textContent = WebInspector.UIString("%s: ", title);
-        var valueElement = rowElement.createChild("span", "timeline-details-view-row-details" + (this._monospaceValues ? " monospace" : ""));
+        rowElement.createChild("div", "timeline-details-view-row-title").textContent = title;
+        var valueElement = rowElement.createChild("div", "timeline-details-view-row-value timeline-details-view-row-details" + (this._monospaceValues ? " monospace" : ""));
         if (content instanceof Node)
             valueElement.appendChild(content);
         else
@@ -561,7 +544,7 @@ WebInspector.TimelineDetailsContentHelper.prototype = {
             return;
 
         var rowElement = this.element.createChild("div", "timeline-details-view-row");
-        rowElement.createChild("span", "timeline-details-view-row-title").textContent = WebInspector.UIString("%s: ", title);
+        rowElement.createChild("div", "timeline-details-view-row-title").textContent = title;
         this.createChildStackTraceElement(rowElement, stackTrace);
     },
 
@@ -571,7 +554,7 @@ WebInspector.TimelineDetailsContentHelper.prototype = {
      */
     createChildStackTraceElement: function(parentElement, stackTrace)
     {
-        var stackTraceElement = parentElement.createChild("div", "timeline-details-view-row-stack-trace monospace");
+        var stackTraceElement = parentElement.createChild("div", "timeline-details-view-row-value timeline-details-view-row-stack-trace monospace");
         for (var i = 0; i < stackTrace.length; ++i) {
             var stackFrame = stackTrace[i];
             var row = stackTraceElement.createChild("div");

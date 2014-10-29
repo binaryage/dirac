@@ -347,9 +347,13 @@ WebInspector.TimelineView.prototype = {
             for (var category in aggregatedStats)
                 idle -= aggregatedStats[category];
             aggregatedStats["idle"] = idle;
+
+            var contentHelper = new WebInspector.TimelineDetailsContentHelper(null, null, true);
             var pieChart = WebInspector.TimelineUIUtils.generatePieChart(aggregatedStats);
             var title = this._uiUtils.titleForRecord(presentationRecord.record());
-            this._delegate.showInDetails(title, pieChart);
+            contentHelper.appendTextRow(WebInspector.UIString("Type"), title);
+            contentHelper.appendElementRow(WebInspector.UIString("Aggregated Time"), pieChart);
+            this._delegate.showInDetails(contentHelper.element);
             return;
         }
         this._delegate.select(WebInspector.TimelineSelection.fromRecord(presentationRecord.record()));

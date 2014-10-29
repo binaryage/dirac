@@ -28,7 +28,7 @@
 }
 
 .filtered-item-list-dialog-item.selected {
-    background-color: rgb(238, 238, 238);
+    background-color: #eee;
 }
 
 .filtered-item-list-dialog-item span.highlight {

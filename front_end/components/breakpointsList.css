@@ -56,7 +56,7 @@ ol.breakpoint-list {
 }
 
 .breakpoints-list-deactivated {
-    background-color: rgb(245, 245, 245);
+    background-color: #eee;
     opacity: 0.3;
 }
 

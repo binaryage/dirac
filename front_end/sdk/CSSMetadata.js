@@ -108,7 +108,7 @@ WebInspector.CSSMetadata.InheritedProperties = [
     "empty-cells", "font-family", "font-size", "font-style", "font-variant", "font-weight", "font", "letter-spacing",
     "line-height", "list-style-image", "list-style-position", "list-style-type", "list-style", "orphans", "overflow-wrap", "pitch-range",
     "pitch", "quotes", "resize", "richness", "speak-header", "speak-numeral", "speak-punctuation", "speak", "speech-rate", "stress",
-    "text-align", "text-indent", "text-transform", "text-shadow", "visibility", "voice-family", "volume", "white-space", "widows",
+    "text-align", "text-indent", "text-transform", "text-shadow", "-webkit-user-select", "visibility", "voice-family", "volume", "white-space", "widows",
     "word-spacing", "word-wrap", "zoom"
 ].keySet();
 

@@ -12,14 +12,15 @@ WebInspector.TimelineLayersView = function()
 {
     WebInspector.SplitView.call(this, true, false, "timelineLayersView");
     this.element.classList.add("timeline-layers-view");
-    this._leftSplitView = new WebInspector.SplitView(false, true, "timelineLayersViewDetails");
-    this._leftSplitView.show(this.sidebarElement());
+    this._rightSplitView = new WebInspector.SplitView(true, true, "timelineLayersViewDetails");
+    this._rightSplitView.element.classList.add("timeline-layers-view-properties");
+    this._rightSplitView.show(this.mainElement());
 
     this._paintTiles = [];
 
-    var sidebarTreeContainerElement = this._leftSplitView.mainElement();
-    sidebarTreeContainerElement.classList.add("outline-disclosure", "layer-tree");
-    var sidebarTreeElement = sidebarTreeContainerElement.createChild("ol");
+    this.sidebarElement().classList.add("outline-disclosure", "layer-tree");
+    var sidebarTreeElement = this.sidebarElement().createChild("ol");
+
     var treeOutline = new TreeOutline(sidebarTreeElement);
     this._layerTreeOutline = new WebInspector.LayerTreeOutline(treeOutline);
     this._layerTreeOutline.addEventListener(WebInspector.LayerTreeOutline.Events.LayerSelected, this._onObjectSelected, this);
@@ -29,10 +30,10 @@ WebInspector.TimelineLayersView = function()
     this._layers3DView.addEventListener(WebInspector.Layers3DView.Events.ObjectSelected, this._onObjectSelected, this);
     this._layers3DView.addEventListener(WebInspector.Layers3DView.Events.ObjectHovered, this._onObjectHovered, this);
     this._layers3DView.addEventListener(WebInspector.Layers3DView.Events.PaintProfilerRequested, this._jumpToPaintEvent, this);
-    this._layers3DView.show(this.mainElement());
+    this._layers3DView.show(this._rightSplitView.mainElement());
 
     this._layerDetailsView = new WebInspector.LayerDetailsView();
-    this._layerDetailsView.show(this._leftSplitView.sidebarElement());
+    this._layerDetailsView.show(this._rightSplitView.sidebarElement());
 }
 
 WebInspector.TimelineLayersView.prototype = {

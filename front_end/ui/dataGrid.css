@@ -103,7 +103,7 @@
 .data-grid th {
     height: auto;
     text-align: left;
-    background-color: rgb(236, 236, 236);
+    background-color: #eee;
     border-bottom: 1px solid #aaa;
     font-weight: normal;
     vertical-align: middle;

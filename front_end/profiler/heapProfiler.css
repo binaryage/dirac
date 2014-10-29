@@ -101,7 +101,7 @@
 
 .heap-snapshot-view .heap-snapshot-view-resizer {
     background-image: url(Images/statusbarResizerVertical.png);
-    background-color: rgb(236, 236, 236);
+    background-color: #eee;
     border-bottom: 1px solid rgb(179, 179, 179);
     background-repeat: no-repeat;
     background-position: right center, center;
@@ -121,7 +121,7 @@
 }
 
 .heap-snapshot-view .heap-object-details-header {
-    background-color: rgb(236, 236, 236);
+    background-color: #eee;
 }
 
 .heap-snapshot-view tr:not(.selected) td.object-column span.highlight {

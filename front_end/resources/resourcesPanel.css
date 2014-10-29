@@ -88,7 +88,7 @@ body.inactive .resources.panel .sidebar li.selected .selection {
     left: 0;
     right: 0;
     height: 23px;
-    background-color: rgb(236, 236, 236);
+    background-color: #eee;
 }
 
 li.selected .base-storage-tree-element-subtitle {

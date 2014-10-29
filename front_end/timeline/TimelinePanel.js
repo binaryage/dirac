@@ -175,7 +175,6 @@ WebInspector.TimelinePanel.prototype = {
         else
             vertically = !WebInspector.settings.splitVerticallyWhenDockedToRight.get();
         this._detailsSplitView.setVertical(vertically);
-        this._detailsView.setVertical(vertically);
     },
 
     /**
@@ -998,8 +997,7 @@ WebInspector.TimelinePanel.prototype = {
                 this._uiUtils.generateDetailsContent(record, this._model, this._detailsLinkifier, this._appendDetailsTabsForTraceEventAndShowDetails.bind(this, event));
                 break;
             }
-            var title = this._uiUtils.titleForRecord(record);
-            this._uiUtils.generateDetailsContent(record, this._model, this._detailsLinkifier, this.showInDetails.bind(this, title));
+            this._uiUtils.generateDetailsContent(record, this._model, this._detailsLinkifier, this.showInDetails.bind(this));
             break;
         case WebInspector.TimelineSelection.Type.TraceEvent:
             var event = /** @type {!WebInspector.TracingModel.Event} */ (this._selection.object());
@@ -1007,7 +1005,7 @@ WebInspector.TimelinePanel.prototype = {
             break;
         case WebInspector.TimelineSelection.Type.Frame:
             var frame = /** @type {!WebInspector.TimelineFrame} */ (this._selection.object());
-            this.showInDetails(WebInspector.UIString("Frame"), WebInspector.TimelineUIUtils.generateDetailsContentForFrame(this._lazyFrameModel, frame));
+            this.showInDetails(WebInspector.TimelineUIUtils.generateDetailsContentForFrame(this._lazyFrameModel, frame));
             if (frame.layerTree) {
                 var layersView = this._layersView();
                 layersView.showLayerTree(frame.layerTree, frame.paints);
@@ -1026,8 +1024,7 @@ WebInspector.TimelinePanel.prototype = {
      */
     _appendDetailsTabsForTraceEventAndShowDetails: function(event, content)
     {
-        var title = WebInspector.TracingTimelineUIUtils.eventStyle(event).title;
-        this.showInDetails(title, content);
+        this.showInDetails(content);
         if (!event.picture)
             return;
         var paintProfilerView = this._paintProfilerView();
@@ -1101,23 +1098,23 @@ WebInspector.TimelinePanel.prototype = {
             aggregatedTotal += aggregatedStats[categoryName];
         aggregatedStats["idle"] = Math.max(0, endTime - startTime - aggregatedTotal);
 
-        var pieChartContainer = createElement("div");
-        pieChartContainer.classList.add("vbox", "timeline-range-summary");
+        var contentHelper = new WebInspector.TimelineDetailsContentHelper(null, null, true);
+        var pieChart = WebInspector.TimelineUIUtils.generatePieChart(aggregatedStats);
+
         var startOffset = startTime - this._model.minimumRecordTime();
         var endOffset = endTime - this._model.minimumRecordTime();
-        var title = WebInspector.UIString("Range: %s \u2013 %s", Number.millisToString(startOffset), Number.millisToString(endOffset));
+        contentHelper.appendTextRow(WebInspector.UIString("Range"), WebInspector.UIString("%s \u2013 %s", Number.millisToString(startOffset), Number.millisToString(endOffset)));
+        contentHelper.appendElementRow(WebInspector.UIString("Aggregated Time"), pieChart);
 
         for (var i = 0; i < this._overviewControls.length; ++i) {
             if (this._overviewControls[i] instanceof WebInspector.TimelinePowerOverview) {
                 var energy = this._overviewControls[i].calculateEnergy(startTime, endTime);
-                title += WebInspector.UIString("  Energy: %.2f Joules", energy);
-                title += WebInspector.UIString("  Accuracy: %s", WebInspector.powerProfiler.getAccuracyLevel());
+                contentHelper.appendTextRow(WebInspector.UIString("Energy"), WebInspector.UIString("%.2f Joules", energy));
+                contentHelper.appendTextRow(WebInspector.UIString("Accuracy"), WebInspector.powerProfiler.getAccuracyLevel());
                 break;
             }
         }
-        pieChartContainer.createChild("div").textContent = title;
-        pieChartContainer.appendChild(WebInspector.TimelineUIUtils.generatePieChart(aggregatedStats));
-        this.showInDetails(WebInspector.UIString("Selected Range"), pieChartContainer);
+        this.showInDetails(contentHelper.element);
     },
 
     /**
@@ -1139,12 +1136,11 @@ WebInspector.TimelinePanel.prototype = {
     },
 
     /**
-     * @param {string} title
      * @param {!Node} node
      */
-    showInDetails: function(title, node)
+    showInDetails: function(node)
     {
-        this._detailsView.setContent(title, node);
+        this._detailsView.setContent(node);
     },
 
     __proto__: WebInspector.Panel.prototype
@@ -1160,7 +1156,7 @@ WebInspector.TimelineDetailsView = function()
 
     this._defaultDetailsView = new WebInspector.VBox();
     this._defaultDetailsView.element.classList.add("timeline-details-view");
-    this._defaultDetailsContentElement = this._defaultDetailsView.element.createChild("div", "timeline-details-view-body");
+    this._defaultDetailsContentElement = this._defaultDetailsView.element.createChild("div", "timeline-details-view-body vbox");
 
     this.appendTab(WebInspector.TimelinePanel.DetailsTab.Details, WebInspector.UIString("Details"), this._defaultDetailsView);
 
@@ -1169,26 +1165,15 @@ WebInspector.TimelineDetailsView = function()
 
 WebInspector.TimelineDetailsView.prototype = {
     /**
-     * @param {string} title
      * @param {!Node} node
      */
-    setContent: function(title, node)
+    setContent: function(node)
     {
-        this.changeTabTitle(WebInspector.TimelinePanel.DetailsTab.Details, WebInspector.UIString("Details - %s", title));
         var otherTabs = this.otherTabs(WebInspector.TimelinePanel.DetailsTab.Details);
         for (var i = 0; i < otherTabs.length; ++i)
             this.closeTab(otherTabs[i]);
         this._defaultDetailsContentElement.removeChildren();
         this._defaultDetailsContentElement.appendChild(node);
-    },
-
-    /**
-     * @param {boolean} vertical
-     */
-    setVertical: function(vertical)
-    {
-        this._defaultDetailsContentElement.classList.toggle("hbox", !vertical);
-        this._defaultDetailsContentElement.classList.toggle("vbox", vertical);
     },
 
     /**
@@ -1381,10 +1366,9 @@ WebInspector.TimelineModeViewDelegate.prototype = {
     select: function(selection, preferredTab) {},
 
     /**
-     * @param {string} title
      * @param {!Node} node
      */
-    showInDetails: function(title, node) {},
+    showInDetails: function(node) {},
 }
 
 /**

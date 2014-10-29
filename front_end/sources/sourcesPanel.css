@@ -39,7 +39,7 @@
     position: absolute;
     top: 0;
     width: 100%;
-    background-color: rgb(236, 236, 236);
+    background-color: #eee;
     overflow: hidden;
     white-space: nowrap;
 }
@@ -151,7 +151,7 @@
 }
 
 .panel.sources .navigator-tabbed-pane .tabbed-pane-header {
-    background-color: rgb(236, 236, 236);
+    background-color: #eee;
 }
 
 .function-location-link {

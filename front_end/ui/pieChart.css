@@ -6,6 +6,7 @@
 
 .pie-chart {
     position: relative;
+    margin-right: 8px;
 }
 
 .pie-chart-foreground {

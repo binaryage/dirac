@@ -153,12 +153,12 @@ WebInspector.LayerDetailsView.prototype = {
     {
         this._tableElement = this.element.createChild("table");
         this._tbodyElement = this._tableElement.createChild("tbody");
-        this._positionCell = this._createRow(WebInspector.UIString("Position in parent:"));
-        this._sizeCell = this._createRow(WebInspector.UIString("Size:"));
-        this._compositingReasonsCell = this._createRow(WebInspector.UIString("Compositing Reasons:"));
-        this._memoryEstimateCell = this._createRow(WebInspector.UIString("Memory estimate:"));
-        this._paintCountCell = this._createRow(WebInspector.UIString("Paint count:"));
-        this._scrollRectsCell = this._createRow(WebInspector.UIString("Slow scroll regions:"));
+        this._positionCell = this._createRow(WebInspector.UIString("Position in parent"));
+        this._sizeCell = this._createRow(WebInspector.UIString("Size"));
+        this._compositingReasonsCell = this._createRow(WebInspector.UIString("Compositing Reasons"));
+        this._memoryEstimateCell = this._createRow(WebInspector.UIString("Memory estimate"));
+        this._paintCountCell = this._createRow(WebInspector.UIString("Paint count"));
+        this._scrollRectsCell = this._createRow(WebInspector.UIString("Slow scroll regions"));
     },
 
     /**

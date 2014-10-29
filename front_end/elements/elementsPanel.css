@@ -170,7 +170,7 @@
 }
 
 .styles-section.read-only:not(.computed-style) {
-    background-color: rgb(240, 240, 240);
+    background-color: #eee;
 }
 
 .styles-section .properties li.not-parsed-ok {
@@ -670,10 +670,10 @@ li.child-editing .styles-clipboard-only {
 }
 
 .sidebar-separator {
-    background-color: rgb(230, 230, 230);
+    background-color: #ddd;
     padding: 0 5px;
-    border-top: 1px solid rgb(189, 189, 189);
-    border-bottom: 1px solid rgb(189, 189, 189);
+    border-top: 1px solid #ccc;
+    border-bottom: 1px solid #ccc;
     color: rgb(50, 50, 50);
     white-space: nowrap;
     text-overflow: ellipsis;

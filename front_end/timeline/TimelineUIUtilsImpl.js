@@ -497,13 +497,6 @@ WebInspector.TimelineUIUtilsImpl.generateDetailsContent = function(record, model
 WebInspector.TimelineUIUtilsImpl._generateDetailsContentSynchronously = function(record, model, linkifier, imagePreviewElement, relatedNode)
 {
     var fragment = createDocumentFragment();
-    var aggregatedStats = {};
-    WebInspector.TimelineUIUtilsImpl.aggregateTimeForRecord(aggregatedStats, record);
-    if (record.children().length)
-        fragment.appendChild(WebInspector.TimelineUIUtils.generatePieChart(aggregatedStats, WebInspector.TimelineUIUtilsImpl.recordStyle(record).category, record.selfTime()));
-    else
-        fragment.appendChild(WebInspector.TimelineUIUtils.generatePieChart(aggregatedStats));
-
     const recordTypes = WebInspector.TimelineModel.RecordType;
 
     // The messages may vary per record.type();
@@ -649,6 +642,14 @@ WebInspector.TimelineUIUtilsImpl._generateDetailsContentSynchronously = function
         contentHelper.appendElementRow(WebInspector.UIString("Warning"), ul);
     }
     fragment.appendChild(contentHelper.element);
+
+    var aggregatedStats = {};
+    WebInspector.TimelineUIUtilsImpl.aggregateTimeForRecord(aggregatedStats, record);
+    if (record.children().length)
+        fragment.appendChild(WebInspector.TimelineUIUtils.generatePieChart(aggregatedStats, WebInspector.TimelineUIUtilsImpl.recordStyle(record).category, record.selfTime()));
+    else
+        fragment.appendChild(WebInspector.TimelineUIUtils.generatePieChart(aggregatedStats));
+
     return fragment;
 }
 

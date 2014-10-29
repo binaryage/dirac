@@ -547,7 +547,7 @@
 }
 
 .media-inspector-marker-label {
-    color: rgb(230, 230, 230);
+    color: #eee;
     position: absolute;
     top: 1px;
     bottom: 0;

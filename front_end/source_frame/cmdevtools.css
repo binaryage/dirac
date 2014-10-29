@@ -30,7 +30,7 @@
 
 .CodeMirror .CodeMirror-gutters {
   border-right: 1px solid rgb(187, 187, 187);
-  background-color: rgb(240, 240, 240);
+  background-color: #eee;
 }
 
 .CodeMirror .CodeMirror-linenumber {
@@ -69,7 +69,7 @@
 }
 
 .cm-line-without-source-mapping {
-  background-color: rgb(243, 243, 243);
+  background-color: #eee;
 }
 
 .cm-breakpoint.cm-breakpoint-conditional .CodeMirror-linenumber {

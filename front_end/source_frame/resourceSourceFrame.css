@@ -5,7 +5,7 @@
  */
 
 .resource-source-frame-fallback {
-    background-color: rgb(240, 240, 240);
+    background-color: #eee;
     word-wrap: break-word;
     white-space: pre-wrap;
     -webkit-user-select: text;

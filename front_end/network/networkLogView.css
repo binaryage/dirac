@@ -37,7 +37,7 @@
     flex: 0 0 19px;
     padding-left: 5px;
     line-height: 18px;
-    background-color: rgb(236, 236, 236);
+    background-color: #eee;
     border-top: 1px solid #ccc;
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -59,7 +59,7 @@
 .network-log-grid.data-grid td {
     line-height: 17px;
     height: 41px;
-    border-left: 1px solid rgb(210, 210, 210);
+    border-left: 1px solid #e1e1e1;
     vertical-align: middle;
 }
 
