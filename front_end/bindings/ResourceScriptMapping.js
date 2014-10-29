@@ -43,7 +43,8 @@ WebInspector.ResourceScriptMapping = function(debuggerModel, workspace, debugger
     this._workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, this._uiSourceCodeAdded, this);
     this._workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeRemoved, this._uiSourceCodeRemoved, this);
     this._debuggerWorkspaceBinding = debuggerWorkspaceBinding;
-    this._boundURLs = new StringSet();
+    /** @type {!Set.<string>} */
+    this._boundURLs = new Set();
 
     /** @type {!Map.<!WebInspector.UISourceCode, !WebInspector.ResourceScriptFile>} */
     this._uiSourceCodeToScriptFile = new Map();

@@ -1185,25 +1185,16 @@ function numberToStringWithSpacesPadding(value, symbolsCount)
 }
 
 /**
- * @return {string}
- */
-var createObjectIdentifier = function()
-{
-    // It has to be string for better performance.
-    return "_" + ++createObjectIdentifier._last;
-}
-
-createObjectIdentifier._last = 0;
-
-/**
- * @constructor
+ * @param {!Iterator.<T>} iterator
+ * @return {!Array.<T>}
  * @template T
  */
-var Set = function()
+Array.from = function(iterator)
 {
-    /** @type {!Object.<string, !T>} */
-    this._set = {};
-    this._size = 0;
+    var values = [];
+    for (var iteratorValue = iterator.next(); !iteratorValue.done; iteratorValue = iterator.next())
+        values.push(iteratorValue.value);
+    return values;
 }
 
 /**
@@ -1213,89 +1204,19 @@ var Set = function()
  */
 Set.fromArray = function(array)
 {
-    var result = new Set();
-    array.forEach(function(item) { result.add(item); });
-    return result;
-}
-
-Set.prototype = {
-    /**
-     * @param {!T} item
-     */
-    add: function(item)
-    {
-        var objectIdentifier = item.__identifier;
-        if (!objectIdentifier) {
-            objectIdentifier = createObjectIdentifier();
-            item.__identifier = objectIdentifier;
-        }
-        if (!this._set[objectIdentifier])
-            ++this._size;
-        this._set[objectIdentifier] = item;
-    },
-
-    /**
-     * @param {!T} item
-     * @return {boolean}
-     */
-    remove: function(item)
-    {
-        if (this._set[item.__identifier]) {
-            --this._size;
-            delete this._set[item.__identifier];
-            return true;
-        }
-        return false;
-    },
-
-    /**
-     * @return {!Array.<!T>}
-     */
-    valuesArray: function()
-    {
-        var result = new Array(this._size);
-        var i = 0;
-        for (var objectIdentifier in this._set)
-            result[i++] = this._set[objectIdentifier];
-        return result;
-    },
-
-    /**
-     * @param {!T} item
-     * @return {boolean}
-     */
-    contains: function(item)
-    {
-        return !!this._set[item.__identifier];
-    },
-
-    /**
-     * @return {number}
-     */
-    size: function()
-    {
-        return this._size;
-    },
-
-    clear: function()
-    {
-        this._set = {};
-        this._size = 0;
-    }
+    return new Set(array);
 }
 
 /**
- * @param {!Iterator.<T>} iterator
  * @return {!Array.<T>}
  * @template T
  */
-function iteratorToArray(iterator)
+Set.prototype.valuesArray = function()
 {
-    var values = [];
-    for (var iteratorValue = iterator.next(); !iteratorValue.done; iteratorValue = iterator.next())
-        values.push(iteratorValue.value);
-    return values;
+    return Array.from(this.values());
 }
+
+Set.prototype.remove = Set.prototype.delete;
 
 /**
  * @return {T}
@@ -1315,7 +1236,7 @@ Map.prototype.remove = function(key)
  */
 Map.prototype.valuesArray = function()
 {
-    return iteratorToArray(this.values());
+    return Array.from(this.values());
 }
 
 /**
@@ -1325,7 +1246,7 @@ Map.prototype.valuesArray = function()
  */
 Map.prototype.keysArray = function()
 {
-    return iteratorToArray(this.keys());
+    return Array.from(this.keys());
 }
 
 /**
@@ -1373,7 +1294,7 @@ StringMultimap.prototype = {
     {
         var values = this.get(key);
         values.remove(value);
-        if (!values.size())
+        if (!values.size)
             this._map.remove(key)
     },
 
@@ -1403,75 +1324,6 @@ StringMultimap.prototype = {
         for (var i = 0; i < keys.length; ++i)
             result.pushAll(this.get(keys[i]).valuesArray());
         return result;
-    },
-
-    clear: function()
-    {
-        this._map.clear();
-    }
-}
-
-/**
- * @constructor
- */
-var StringSet = function()
-{
-    /** @type {!Map.<string, boolean>} */
-    this._map = new Map();
-}
-
-/**
- * @param {!Array.<string>} array
- * @return {!StringSet}
- */
-StringSet.fromArray = function(array)
-{
-    var result = new StringSet();
-    array.forEach(function(item) { result.add(item); });
-    return result;
-}
-
-StringSet.prototype = {
-    /**
-     * @param {string} value
-     */
-    add: function(value)
-    {
-        this._map.set(value, true);
-    },
-
-    /**
-     * @param {string} value
-     * @return {boolean}
-     */
-    remove: function(value)
-    {
-        return !!this._map.remove(value);
-    },
-
-    /**
-     * @return {!Array.<string>}
-     */
-    valuesArray: function()
-    {
-        return this._map.keysArray();
-    },
-
-    /**
-     * @param {string} value
-     * @return {boolean}
-     */
-    contains: function(value)
-    {
-        return this._map.has(value);
-    },
-
-    /**
-     * @return {number}
-     */
-    size: function()
-    {
-        return this._map.size;
     },
 
     clear: function()

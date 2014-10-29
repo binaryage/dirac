@@ -167,7 +167,7 @@ WebInspector.ViewportDataGrid.prototype = {
 
         for (var i = 0; i < this._visibleNodes.length; ++i) {
             var oldNode = this._visibleNodes[i];
-            if (!visibleNodesSet.contains(oldNode)) {
+            if (!visibleNodesSet.has(oldNode)) {
                 var element = oldNode.element();
                 if (element === this._wheelTarget)
                     this._hiddenWheelTarget = oldNode.abandonElement();

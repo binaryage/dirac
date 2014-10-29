@@ -542,3 +542,41 @@ Map.prototype = {
      */
     get size() { }
 }
+
+/**
+ * @constructor
+ * @param {!Array.<V>=} iterable
+ * @template V
+ */
+var Set = function(iterable) { }
+
+Set.prototype = {
+    /**
+     * @param {V} value
+     */
+    add: function(value) { },
+
+    /**
+     * @param {V} value
+     * @return {boolean}
+     */
+    delete: function(value) { },
+
+    /**
+     * @return {!Iterator.<V>}
+     */
+    values: function() { },
+
+    /**
+     * @param {V} value
+     * @return {boolean}
+     */
+    has: function(value) { },
+
+    clear: function() { },
+
+    /**
+     * @return {number}
+     */
+    get size() { }
+}

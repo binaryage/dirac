@@ -254,7 +254,7 @@ WebInspector.GenericSettingsTab.prototype = {
         var explicitlyOrderedSections = explicitSectionOrder.keySet();
         for (var i = 0; i < explicitSectionOrder.length; ++i) {
             var extensions = extensionsBySectionId.get(explicitSectionOrder[i]);
-            if (!extensions.size())
+            if (!extensions.size)
                 continue;
             this._addSectionWithExtensionProvidedSettings(explicitSectionOrder[i], extensions.valuesArray(), childSettingExtensionsByParentName);
         }
@@ -299,7 +299,7 @@ WebInspector.GenericSettingsTab.prototype = {
             var settingControl = createSettingControl.call(this, uiTitle, setting, descriptor);
             if (settingName) {
                 var childSettings = childSettingExtensionsByParentName.get(settingName);
-                if (childSettings.size()) {
+                if (childSettings.size) {
                     var fieldSet = WebInspector.SettingsUI.createSettingFieldset(setting);
                     settingControl.appendChild(fieldSet);
                     childSettings.valuesArray().forEach(function(item) { processSetting.call(this, fieldSet, item); }, this);

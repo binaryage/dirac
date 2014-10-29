@@ -2878,7 +2878,7 @@ WebInspector.ElementsTreeUpdater.prototype = {
             this._treeOutline._element.classList.add("hidden");
         }
 
-        if (this._treeOutline._rootDOMNode && this._recentlyModifiedParentNodes.contains(this._treeOutline._rootDOMNode)) {
+        if (this._treeOutline._rootDOMNode && this._recentlyModifiedParentNodes.has(this._treeOutline._rootDOMNode)) {
             // Document's children have changed, perform total update.
             this._treeOutline.update();
         } else {
