@@ -74,7 +74,7 @@ function loadResourcePromise(url)
          */
         function onreadystatechange(e)
         {
-            if(xhr.readyState !== 4)
+            if (xhr.readyState !== 4)
                 return;
 
             if ([0, 200, 304].indexOf(xhr.status) === -1)  // Testing harness file:/// results in 0.
@@ -119,24 +119,38 @@ function normalizePath(path)
 }
 
 /**
- * @param {string} scriptName
+ * @param {!Array.<string>} scriptNames
  * @return {!Promise.<undefined>}
  */
-function loadScriptPromise(scriptName)
+function loadScriptsPromise(scriptNames)
 {
-    var sourceURL = self._importScriptPathPrefix + scriptName;
-    var schemaIndex = sourceURL.indexOf("://") + 3;
-    sourceURL = sourceURL.substring(0, schemaIndex) + normalizePath(sourceURL.substring(schemaIndex));
-    if (_loadedScripts[sourceURL])
-        return Promise.resolve(undefined);
-    _loadedScripts[sourceURL] = true;
-    return loadResourcePromise(sourceURL).then(evaluateScript);
+    /** @type {!Array.<!Promise.<string>>} */
+    var promises = [];
+    /** @type {!Array.<string>} */
+    var urls = [];
+    for (var i = 0; i < scriptNames.length; ++i) {
+        var scriptName = scriptNames[i];
+        var sourceURL = self._importScriptPathPrefix + scriptName;
+        var schemaIndex = sourceURL.indexOf("://") + 3;
+        sourceURL = sourceURL.substring(0, schemaIndex) + normalizePath(sourceURL.substring(schemaIndex));
+        if (_loadedScripts[sourceURL])
+            continue;
+        urls.push(sourceURL);
+        promises.push(loadResourcePromise(sourceURL));
+    }
+    var result = Promise.resolve();
+    for (var i = 0; i < promises.length; ++i)
+        result = result.then(Promise.resolve.bind(null, promises[i])).thenOrCatch(evaluateScript.bind(null, urls[i]));
+    return result;
 
     /**
-     * @param {string} scriptSource
+     * @param {string} sourceURL
+     * @param {?} scriptSource
+     * FIXME: The scriptSource type should be string, but it does not pass Closure compilation.
      */
-    function evaluateScript(scriptSource)
+    function evaluateScript(sourceURL, scriptSource)
     {
+        _loadedScripts[sourceURL] = true;
         if (!scriptSource)
             return Promise.rejectWithError("Empty response arrived for script '" + sourceURL + "'");
         self.eval(scriptSource + "\n//# sourceURL=" + sourceURL);
@@ -663,20 +677,17 @@ Runtime.Module.prototype = {
             return Promise.resolve(undefined);
 
         if (Runtime.isReleaseMode())
-            return loadScriptPromise(this._name + "_module.js");
+            return loadScriptsPromise([this._name + "_module.js"]);
 
-        // Scripts must be loaded sequentially.
-        var scripts = this._descriptor.scripts.slice();
-        return loadSequentially.call(this);
+        return loadScriptsPromise(this._descriptor.scripts.map(modularizeURL, this)).catch(console.error.bind(console));
 
         /**
-         * @return {!Promise.<undefined>}
+         * @param {string} scriptName
          * @this {Runtime.Module}
          */
-        function loadSequentially()
+        function modularizeURL(scriptName)
         {
-            var script = scripts.shift();
-            return script ? loadScriptPromise(this._name + "/" + script).catch(console.error.bind(console)).then(loadSequentially.bind(this)) : Promise.resolve(undefined);
+            return this._name + "/" + scriptName;
         }
     },
 
@@ -975,7 +986,7 @@ Promise.rejectWithError = function(error)
 }
 
 /**
- * @param {function()} callback
+ * @param {function(?)} callback
  * @return {!Promise}
  */
 Promise.prototype.thenOrCatch = function(callback)
@@ -991,7 +1002,7 @@ Promise.prototype.thenOrCatch = function(callback)
             console.error(e.stack);
         else
             console.error(e);
-        callback();
+        callback(undefined);
     }
 }
 
