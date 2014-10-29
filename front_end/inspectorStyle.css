@@ -222,10 +222,6 @@ body.undocked.platform-mac.inactive .toolbar-colors {
     outline: none;
 }
 
-#search-input-field {
-    height: 18px;
-}
-
 .toolbar-search {
     border-spacing: 1px;
 }
@@ -236,10 +232,12 @@ body.undocked.platform-mac.inactive .toolbar-colors {
 
 .toolbar-search td > span {
     display: flex;
+    align-items: baseline;
+    line-height: 17px;
 }
 
 .toolbar-search-navigation-controls {
-    vertical-align: top;
+    align-self: stretch;
     background-image: linear-gradient(rgb(228, 228, 228), rgb(206, 206, 206));
 }
 
@@ -297,8 +295,10 @@ body.undocked.platform-mac.inactive .toolbar-colors {
     background-color: white;
 }
 
-.toolbar-replace-control {
-    margin: auto 0;
+.toolbar-replace-control,
+#search-input-field {
+    padding-top: 1px;
+    line-height: 17px;
 }
 
 .toolbar-search-control, .toolbar-replace-control {
@@ -333,10 +333,9 @@ body.undocked.platform-mac.inactive .toolbar-colors {
 
 .search-results-matches {
     display: inline-block;
-    min-height: 10px;
     text-align: right;
     font-size: 11px;
-    padding: 1px 4px;
+    padding: 0 4px;
     color: rgb(165, 165, 165);
 }
 
