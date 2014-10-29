@@ -141,7 +141,7 @@ WebInspector.Popover.prototype = {
     setCanShrink: function(canShrink)
     {
         this._hasFixedHeight = !canShrink;
-        this._contentDiv.classList.add("fixed-height");
+        this._contentDiv.classList.toggle("fixed-height", this._hasFixedHeight);
     },
 
     /**
