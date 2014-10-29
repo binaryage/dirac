@@ -5,6 +5,7 @@
  */
 
 .outline-disclosure {
+    width: 100%;
     display: inline-block;
     line-height: normal;
 }
