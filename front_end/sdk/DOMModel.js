@@ -189,7 +189,7 @@ WebInspector.DOMNode.prototype = {
      */
     templateContent: function()
     {
-        return this._templateContent;
+        return this._templateContent || null;
     },
 
     /**
@@ -197,7 +197,7 @@ WebInspector.DOMNode.prototype = {
      */
     importedDocument: function()
     {
-        return this._importedDocument;
+        return this._importedDocument || null;
     },
 
     /**
@@ -1596,7 +1596,6 @@ WebInspector.DOMModel.prototype = {
     emulateTouchEventObjects: function(emulationEnabled)
     {
         /**
-         * @public // FIXME: this is a workaround for validator bug (crbug.com/425506).
          * @suppressGlobalPropertiesCheck
          */
         const injectedFunction = function() {

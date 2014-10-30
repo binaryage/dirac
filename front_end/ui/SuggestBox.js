@@ -138,7 +138,6 @@ WebInspector.SuggestBox.prototype = {
     },
 
     /**
-     * @private // FIXME: this is a workaround for validator bug (http://crbug.com/425506).
      * // FIXME: make SuggestBox work for multiple documents.
      * @suppressGlobalPropertiesCheck
      */

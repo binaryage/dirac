@@ -20,7 +20,6 @@ WebInspector.Toolbox = function()
 WebInspector.addExtensions = function() {}
 
 /**
- * FIXME: Remove FIXME once http://crbug.com/425506 is fixed.
  * @suppressGlobalPropertiesCheck
  */
 function windowLoaded()
@@ -30,7 +29,6 @@ function windowLoaded()
 }
 
 /**
- * FIXME: Remove FIXME once http://crbug.com/425506 is fixed.
  * @suppressGlobalPropertiesCheck
  */
 function initToolbox()

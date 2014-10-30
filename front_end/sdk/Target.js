@@ -534,7 +534,7 @@ WebInspector.TargetManager.prototype = {
      */
     mainTarget: function()
     {
-        return this._targets[0];
+        return this._targets[0] || null;
     },
 
     __proto__: WebInspector.Object.prototype

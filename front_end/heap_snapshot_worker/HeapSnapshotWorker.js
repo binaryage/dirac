@@ -41,7 +41,7 @@ var dispatcher = new WebInspector.HeapSnapshotWorkerDispatcher(this, postMessage
  */
 function installMessageEventListener(listener)
 {
-    addEventListener("message", listener, false);
+    self.addEventListener("message", listener, false);
 }
 
 installMessageEventListener(dispatcher.dispatchMessage.bind(dispatcher));

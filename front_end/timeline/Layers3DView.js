@@ -106,29 +106,29 @@ WebInspector.Layers3DView.ScrollRectTitles = {
     WheelEventHandler: WebInspector.UIString("mousewheel event listener")
 }
 
-WebInspector.Layers3DView.FragmentShader = "\
-    precision mediump float;\
-    varying vec4 vColor;\
-    varying vec2 vTextureCoord;\
-    uniform sampler2D uSampler;\
-    void main(void)\
-    {\
-        gl_FragColor = texture2D(uSampler, vec2(vTextureCoord.s, vTextureCoord.t)) * vColor;\
-    }";
+WebInspector.Layers3DView.FragmentShader = "" +
+    "precision mediump float;\n" +
+    "varying vec4 vColor;\n" +
+    "varying vec2 vTextureCoord;\n" +
+    "uniform sampler2D uSampler;\n" +
+    "void main(void)\n" +
+    "{\n" +
+    "    gl_FragColor = texture2D(uSampler, vec2(vTextureCoord.s, vTextureCoord.t)) * vColor;\n" +
+    "}";
 
-WebInspector.Layers3DView.VertexShader = "\
-    attribute vec3 aVertexPosition;\
-    attribute vec2 aTextureCoord;\
-    attribute vec4 aVertexColor;\
-    uniform mat4 uPMatrix;\
-    varying vec2 vTextureCoord;\
-    varying vec4 vColor;\
-    void main(void)\
-    {\
-        gl_Position = uPMatrix * vec4(aVertexPosition, 1.0);\
-        vColor = aVertexColor;\
-        vTextureCoord = aTextureCoord;\
-    }";
+WebInspector.Layers3DView.VertexShader = "" +
+    "attribute vec3 aVertexPosition;\n" +
+    "attribute vec2 aTextureCoord;\n" +
+    "attribute vec4 aVertexColor;\n" +
+    "uniform mat4 uPMatrix;\n" +
+    "varying vec2 vTextureCoord;\n" +
+    "varying vec4 vColor;\n" +
+    "void main(void)\n" +
+    "{\n" +
+        "gl_Position = uPMatrix * vec4(aVertexPosition, 1.0);\n" +
+        "vColor = aVertexColor;\n" +
+        "vTextureCoord = aTextureCoord;\n" +
+    "}";
 
 WebInspector.Layers3DView.SelectedBackgroundColor = [20, 40, 110, 0.66];
 WebInspector.Layers3DView.BackgroundColor = [0, 0, 0, 0];

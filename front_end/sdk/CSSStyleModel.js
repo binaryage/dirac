@@ -1038,7 +1038,7 @@ WebInspector.CSSRule.prototype = {
 
     /**
      * @param {number} index
-     * @return {?WebInspector.CSSLocation}
+     * @return {!WebInspector.CSSLocation}
      */
     rawSelectorLocation: function(index)
     {

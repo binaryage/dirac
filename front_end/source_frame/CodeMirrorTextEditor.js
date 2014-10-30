@@ -688,7 +688,6 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     },
 
     /**
-     * @private // FIXME: this is a workaround for validator bug (crbug.com/425506).
      * // FIXME: remove this suppression.
      * @suppressGlobalPropertiesCheck
      */

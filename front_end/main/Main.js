@@ -184,7 +184,6 @@ WebInspector.Main.prototype = {
     },
 
     /**
-     * @private // FIXME: this is a workaround for validator bug (http://crbug.com/425506).
      * @suppressGlobalPropertiesCheck
      */
     _createAppUI: function()

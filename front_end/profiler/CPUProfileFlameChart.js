@@ -129,7 +129,7 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
     },
 
     /**
-     * @return {?WebInspector.FlameChart.TimelineData}
+     * @return {!WebInspector.FlameChart.TimelineData}
      */
     _calculateTimelineData: function()
     {
@@ -259,7 +259,7 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
 
     /**
      * @param {number} entryIndex
-     * @return {?string}
+     * @return {string}
      */
     entryTitle: function(entryIndex)
     {

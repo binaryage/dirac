@@ -45,13 +45,6 @@ Event.prototype.isMetaOrCtrlForTest;
 KeyboardEvent.DOM_KEY_LOCATION_NUMPAD;
 
 /**
- * @param {string} eventName
- * @param {!Function} listener
- * @param {boolean=} capturing
- */
-function addEventListener(eventName, listener, capturing) {}
-
-/**
  * @param {!T} value
  * @param {boolean=} onlyFirst
  * @this {Array.<T>}
@@ -453,22 +446,8 @@ CodeMirror.keyMap;
 /** @type {{scrollLeft: number, scrollTop: number}} */
 CodeMirror.doc;
 
-/**
- * @constructor
- * @extends {Event}
- */
-function ErrorEvent() {}
-
-/** @type {string} */
-ErrorEvent.prototype.message;
-
 /** @type {boolean} */
 window.dispatchStandaloneTestRunnerMessages;
-
-/**
- * @param {function(*)} onCatch
- */
-Promise.prototype.catch = function(onCatch) {};
 
 // FIXME: Remove once ES6 is supported natively by JS compiler.
 

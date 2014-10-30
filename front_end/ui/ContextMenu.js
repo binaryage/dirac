@@ -201,9 +201,9 @@ WebInspector.ContextSubMenuItem.prototype = {
 WebInspector.ContextMenu = function(event)
 {
     WebInspector.ContextSubMenuItem.call(this, this, "");
-    /** @type {!Array.<!Promise.<!WebInspector.ContextMenu.Provider> >} */
+    /** @type {!Array.<!Promise.<!Array.<!WebInspector.ContextMenu.Provider>>>} */
     this._pendingPromises = [];
-    /** @type {!Array.<!Promise.<!Object> >} */
+    /** @type {!Array.<!Promise.<!Object>>} */
     this._pendingTargets = [];
     this._event = event;
     this._x = event.x;

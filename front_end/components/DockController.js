@@ -129,7 +129,6 @@ WebInspector.DockController.prototype = {
     },
 
     /**
-     * @private // FIXME: this is a workaround for validator bug (crbug.com/425506).
      * @suppressGlobalPropertiesCheck
      */
     _updateUI: function()

@@ -235,7 +235,7 @@ closure_runner_jar = to_platform_path(path.join(scripts_path, 'compiler-runner',
 jsdoc_validator_jar = to_platform_path(path.join(scripts_path, 'jsdoc-validator', 'jsdoc-validator.jar'))
 
 modules_dir = tempfile.mkdtemp()
-common_closure_args = ' --summary_detail_level 3 --jscomp_error visibility --compilation_level SIMPLE_OPTIMIZATIONS --warning_level VERBOSE --language_in ECMASCRIPT5 --accept_const_keyword --module_output_path_prefix %s' % to_platform_path_exact(modules_dir + path.sep)
+common_closure_args = ' --summary_detail_level 3 --jscomp_error visibility --compilation_level SIMPLE_OPTIMIZATIONS --warning_level VERBOSE --language_in=ES6_STRICT --language_out=ES5_STRICT --accept_const_keyword --module_output_path_prefix %s' % to_platform_path_exact(modules_dir + path.sep)
 
 worker_modules_by_name = {}
 dependents_by_module_name = {}

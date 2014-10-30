@@ -17,11 +17,18 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Callable;
 
 public class FileCheckerCallable implements Callable<ValidatorContext> {
 
+    private static Set<String> EXTRA_ANNOTATIONS = new HashSet<>(Arrays.asList(
+        "suppressReceiverCheck",
+        "suppressGlobalPropertiesCheck"
+    ));
     private final String fileName;
 
     public FileCheckerCallable(String fileName) {
@@ -51,7 +58,8 @@ public class FileCheckerCallable implements Callable<ValidatorContext> {
     }
 
     private static Node parseScript(final ValidatorContext context) {
-        Config config = ParserRunner.createConfig(true, LanguageMode.ECMASCRIPT5_STRICT, true);
+        Config config = ParserRunner.createConfig(
+            true, LanguageMode.ECMASCRIPT5_STRICT, true, EXTRA_ANNOTATIONS);
         ErrorReporter errorReporter = new ErrorReporter() {
             @Override
             public void warning(String message, String sourceName, int line, int lineOffset) {

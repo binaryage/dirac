@@ -746,19 +746,19 @@ WebInspector.setToolbarColors = function(document, backgroundColor, color)
     var prefix = WebInspector.isMac() ? "body:not(.undocked)" : "";
     WebInspector._themeStyleElement.textContent =
         String.sprintf(
-            "%s .toolbar-colors {\
-                 background-image: none !important;\
-                 background-color: %s !important;\
-                 color: %s !important;\
-             }", prefix, backgroundColor, color) +
+            "%s .toolbar-colors {" +
+            "    background-image: none !important;" +
+            "    background-color: %s !important;" +
+            "    color: %s !important;" +
+            "}", prefix, backgroundColor, color) +
         String.sprintf(
-             "%s .toolbar-colors button.status-bar-item .glyph, %s .toolbar-colors button.status-bar-item .long-click-glyph {\
-                 background-color: %s;\
-             }", prefix, prefix, color) +
+             "%s .toolbar-colors button.status-bar-item .glyph, %s .toolbar-colors button.status-bar-item .long-click-glyph {" +
+             "   background-color: %s;" +
+             "}", prefix, prefix, color) +
         String.sprintf(
-             "%s .toolbar-colors button.status-bar-item .glyph.shadow, %s .toolbar-colors button.status-bar-item .long-click-glyph.shadow {\
-                 background-color: %s;\
-             }", prefix, prefix, shadowColor);
+             "%s .toolbar-colors button.status-bar-item .glyph.shadow, %s .toolbar-colors button.status-bar-item .long-click-glyph.shadow {" +
+             "   background-color: %s;" +
+             "}", prefix, prefix, shadowColor);
 }
 
 WebInspector.resetToolbarColors = function()

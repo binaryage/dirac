@@ -120,7 +120,7 @@ function normalizePath(path)
 
 /**
  * @param {!Array.<string>} scriptNames
- * @return {!Promise.<undefined>}
+ * @return {!Promise.<?>}
  */
 function loadScriptsPromise(scriptNames)
 {
@@ -145,8 +145,7 @@ function loadScriptsPromise(scriptNames)
 
     /**
      * @param {string} sourceURL
-     * @param {?} scriptSource
-     * FIXME: The scriptSource type should be string, but it does not pass Closure compilation.
+     * @param {string|undefined} scriptSource
      */
     function evaluateScript(sourceURL, scriptSource)
     {
@@ -290,7 +289,6 @@ Runtime.startWorker = function(moduleName)
 Runtime.startApplication = function(appName)
 {
     console.timeStamp("Runtime.startApplication");
-    var experiments = Runtime._experimentsSetting();
 
     var allDescriptorsByName = {};
     for (var i = 0; Runtime.isReleaseMode() && i < allDescriptors.length; ++i) {
@@ -385,7 +383,7 @@ Runtime.prototype = {
 
     /**
      * @param {!Array.<string>} moduleNames
-     * @return {!Promise.<undefined>}
+     * @return {!Promise.<!Array.<*>>}
      */
     _loadAutoStartModules: function(moduleNames)
     {
@@ -558,7 +556,7 @@ Runtime.prototype = {
             if (object)
                 this._cachedTypeClasses[typeName] = /** @type function(new:Object) */(object);
         }
-        return this._cachedTypeClasses[typeName];
+        return this._cachedTypeClasses[typeName] || null;
     }
 }
 
@@ -978,7 +976,8 @@ Runtime.Experiment.prototype = {
 
 /**
  * @param {string} error
- * @return {!Promise}
+ * @return {!Promise.<T>}
+ * @template T
  */
 Promise.rejectWithError = function(error)
 {
@@ -986,8 +985,9 @@ Promise.rejectWithError = function(error)
 }
 
 /**
- * @param {function(?)} callback
- * @return {!Promise}
+ * @param {function((T|undefined))} callback
+ * @return {!Promise.<T>}
+ * @template T
  */
 Promise.prototype.thenOrCatch = function(callback)
 {

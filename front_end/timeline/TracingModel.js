@@ -808,7 +808,7 @@ WebInspector.TracingModel.Thread.prototype = {
     target: function()
     {
         //FIXME: correctly specify target
-        return WebInspector.targetManager.targets()[0];
+        return WebInspector.targetManager.targets()[0] || null;
     },
 
     /**
