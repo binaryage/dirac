@@ -361,6 +361,8 @@ WebInspector.Main.prototype = {
         {
             console.timeStamp("Main.inspectorAgentEnableCallback");
             WebInspector.notifications.dispatchEventToListeners(WebInspector.NotificationService.Events.InspectorAgentEnabledForTests);
+            // Asynchronously run the extensions.
+            setTimeout(function() { WebInspector.extensionServer.initializeExtensions(); }, 0);
         }
 
         WebInspector.overridesSupport.applyInitialOverrides();

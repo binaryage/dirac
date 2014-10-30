@@ -91,6 +91,15 @@ WebInspector.ExtensionServer.Events = {
 }
 
 WebInspector.ExtensionServer.prototype = {
+    initializeExtensions: function()
+    {
+        this._initializeCommandIssued = true;
+        if (this._pendingExtensionInfos) {
+            this._addExtensions(this._pendingExtensionInfos);
+            delete this._pendingExtensionInfos;
+        }
+    },
+
     /**
      * @return {boolean}
      */
@@ -792,7 +801,10 @@ WebInspector.ExtensionServer.prototype = {
      */
     _addExtensions: function(extensionInfos)
     {
-        extensionInfos.forEach(this._addExtension, this);
+        if (this._initializeCommandIssued)
+            extensionInfos.forEach(this._addExtension, this);
+        else
+            this._pendingExtensionInfos = extensionInfos;
     },
 
     /**
