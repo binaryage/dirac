@@ -491,14 +491,19 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
 
             context.translate(0.5, 0.5);
 
-            context.beginPath();
-            context.moveTo(barX, barY);
-            context.lineTo(barX, context.canvas.height);
-            context.strokeStyle = "rgba(100, 100, 100, 0.4)";
-            context.setLineDash([5]);
-            context.stroke();
-            context.setLineDash([]);
-
+            // Only paint starting with certain zoom.
+            var scale = barWidth / (frame.endTime - frame.startTime);
+            if (scale > 4) {
+                context.beginPath();
+                context.lineWidth = 3;
+                context.moveTo(barX, barY);
+                context.lineTo(barX, context.canvas.height);
+                context.strokeStyle = "rgba(100, 100, 100, 0.4)";
+                context.setLineDash([3]);
+                context.stroke();
+                context.setLineDash([]);
+                context.lineWidth = 1;
+            }
 
             var padding = 4;
             barX += padding;
