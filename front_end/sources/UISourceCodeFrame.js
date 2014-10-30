@@ -213,8 +213,9 @@ WebInspector.UISourceCodeFrame.prototype = {
  * @constructor
  * @param {!WebInspector.UISourceCodeFrame.Infobar.Level} level
  * @param {string} message
+ * @param {function()=} onDispose
  */
-WebInspector.UISourceCodeFrame.Infobar = function(level, message)
+WebInspector.UISourceCodeFrame.Infobar = function(level, message, onDispose)
 {
     this.element = createElementWithClass("div", "source-frame-infobar source-frame-infobar-" + level);
     this._mainRow = this.element.createChild("div", "source-frame-infobar-main-row");
@@ -228,6 +229,7 @@ WebInspector.UISourceCodeFrame.Infobar = function(level, message)
 
     this._closeElement = this._mainRow.createChild("div", "close-button");
     this._closeElement.addEventListener("click", this._onClose.bind(this), false);
+    this._onDispose = onDispose;
 
     this._updateToggleElement();
 }
@@ -291,5 +293,7 @@ WebInspector.UISourceCodeFrame.Infobar.prototype = {
         this.element.remove();
         this._onResize();
         delete this._uiSourceCodeFrame;
+        if (this._onDispose)
+            this._onDispose();
     }
 }

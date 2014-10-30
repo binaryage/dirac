@@ -165,7 +165,7 @@ button.status-bar-item.scripts-navigator-show-hide-button {
 .source-frame-infobar-details-row {
     display: flex;
     flex: none;
-    margin: 3px 10px;
+    margin: 0px 10px;
 }
 
 .source-frame-infobar-row-message {
