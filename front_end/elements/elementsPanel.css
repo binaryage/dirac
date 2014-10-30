@@ -442,14 +442,6 @@
     cursor: text;
 }
 
-.body .styles-section .properties .inherited {
-    display: none;
-}
-
-.styles-section.styles-show-inherited .properties .inherited {
-    display: block;
-}
-
 .section .event-bars {
     display: none;
 }

@@ -171,13 +171,7 @@ WebInspector.StylesSidebarPane._ignoreErrorsForProperty = function(property) {
 WebInspector.StylesSidebarPane.prototype = {
     _showInheritedComputedStyleChanged: function()
     {
-        if (!this.sections || !this.sections[0])
-            return;
-        for (var i = 0; i < this.sections[0].length; ++i) {
-            var section = this.sections[0][i];
-            if (section instanceof WebInspector.ComputedStylePropertiesSection)
-                section.onShowInheritedChanged();
-        }
+        this.update(this._node);
     },
 
     /**
@@ -1307,9 +1301,6 @@ WebInspector.StylePropertiesSection = function(parentPane, styleRule, editable, 
     this.titleElement.appendChild(selectorContainer);
     this._selectorContainer = selectorContainer;
 
-    if (isInherited)
-        this.element.classList.add("styles-show-inherited"); // This one is related to inherited rules, not computed style.
-
     if (this.navigable)
         this.element.classList.add("navigable");
 
@@ -1939,7 +1930,6 @@ WebInspector.ComputedStylePropertiesSection = function(stylesPane, styleRule, us
     this.element.className = "styles-section monospace read-only computed-style";
 
     this.headerElement.appendChild(WebInspector.ComputedStylePropertiesSection._showInheritedCheckbox());
-    this.onShowInheritedChanged();
 
     this._stylesPane = stylesPane;
     this.styleRule = styleRule;
@@ -1964,11 +1954,6 @@ WebInspector.ComputedStylePropertiesSection._showInheritedCheckbox = function()
 }
 
 WebInspector.ComputedStylePropertiesSection.prototype = {
-    onShowInheritedChanged: function()
-    {
-        this.element.classList.toggle("styles-show-inherited", WebInspector.settings.showInheritedComputedStyleProperties.get());
-    },
-
     collapse: function(dontRememberState)
     {
         // Overriding with empty body.
@@ -2017,9 +2002,12 @@ WebInspector.ComputedStylePropertiesSection.prototype = {
         uniqueProperties.sort(sorter);
 
         this._propertyTreeElements = {};
+        var showInherited = WebInspector.settings.showInheritedComputedStyleProperties.get();
         for (var i = 0; i < uniqueProperties.length; ++i) {
             var property = uniqueProperties[i];
             var inherited = this._isPropertyInherited(property.name);
+            if (!showInherited && inherited)
+                continue;
             var item = new WebInspector.ComputedStylePropertyTreeElement(this._stylesPane, this.styleRule, style, property, inherited);
             this.propertiesTreeOutline.appendChild(item);
             this._propertyTreeElements[property.name] = item;
