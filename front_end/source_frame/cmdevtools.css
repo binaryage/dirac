@@ -42,7 +42,7 @@
 }
 
 .cm-highlight {
-  -webkit-animation: "fadeout" 2s 0s;
+  -webkit-animation: fadeout 2s 0s;
 }
 @-webkit-keyframes fadeout {
     from {background-color: rgb(255, 255, 120); }
@@ -50,7 +50,7 @@
 }
 
 .cm-highlight.cm-execution-line {
-  -webkit-animation: "fadeout-execution-line" 1s 0s;
+  -webkit-animation: fadeout-execution-line 1s 0s;
 }
 @-webkit-keyframes fadeout-execution-line {
     from {background-color: rgb(121, 141, 254); }

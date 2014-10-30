@@ -217,7 +217,7 @@ body.inactive .profile-launcher-view-content button.running:not(.status-bar-item
 }
 
 .highlighted-row {
-    -webkit-animation: "row_highlight" 2s 0s;
+    -webkit-animation: row_highlight 2s 0s;
 }
 
 @-webkit-keyframes row_highlight {

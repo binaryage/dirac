@@ -132,7 +132,7 @@
 }
 
 .network-log-grid tr.highlighted-row {
-    -webkit-animation: "network-row-highlight-fadeout" 2s 0s;
+    -webkit-animation: network-row-highlight-fadeout 2s 0s;
 }
 
 @-webkit-keyframes network-row-highlight-fadeout {

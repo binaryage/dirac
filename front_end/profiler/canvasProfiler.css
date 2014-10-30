@@ -182,12 +182,12 @@
 }
 
 .canvas-replay-state-view .data-grid .data-container tr:nth-child(odd).canvas-grid-node-highlighted {
-    -webkit-animation: "fadeout-odd" 2s 0s;
+    -webkit-animation: fadeout-odd 2s 0s;
     background-color: rgb(255, 255, 175);
 }
 
 .canvas-replay-state-view .data-grid .data-container tr:nth-child(even).canvas-grid-node-highlighted {
-    -webkit-animation: "fadeout-even" 2s 0s;
+    -webkit-animation: fadeout-even 2s 0s;
     background-color: rgb(235, 235, 120);
 }
 
