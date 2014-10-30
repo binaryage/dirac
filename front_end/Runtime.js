@@ -679,7 +679,7 @@ Runtime.Module.prototype = {
         if (Runtime.isReleaseMode())
             return loadScriptsPromise([this._name + "_module.js"]);
 
-        return loadScriptsPromise(this._descriptor.scripts.map(modularizeURL, this)).catch(console.error.bind(console));
+        return loadScriptsPromise(this._descriptor.scripts.map(modularizeURL, this)).catchAndReport();
 
         /**
          * @param {string} scriptName
@@ -991,34 +991,37 @@ Promise.rejectWithError = function(error)
  */
 Promise.prototype.thenOrCatch = function(callback)
 {
-    return this.then(callback, reject);
+    return this.then(callback, reject.bind(this));
 
     /**
      * @param {*} e
      */
     function reject(e)
     {
-        if (e instanceof Error)
-            console.error(e.stack);
-        else
-            console.error(e);
+        this._reportError(e);
         callback(undefined);
     }
 }
 
 Promise.prototype.done = function()
 {
-    /**
-     * @param {*} e
-     */
-    function reportError(e)
-    {
-        if (e instanceof Error)
-            console.error(e.stack);
-        else
-            console.error(e);
-    }
-    this.catch(reportError);
+    this.catchAndReport();
+}
+
+Promise.prototype.catchAndReport = function()
+{
+    return this.catch(this._reportError.bind(this));
+}
+
+/**
+ * @param {*} e
+ */
+Promise.prototype._reportError = function(e)
+{
+    if (e instanceof Error)
+        console.error(e.stack);
+    else
+        console.error(e);
 }
 
 /**
@@ -1032,7 +1035,7 @@ Promise.some = function(promises)
     var wasRejected = [];
     for (var i = 0; i < promises.length; ++i) {
         // Workaround closure compiler bug.
-        var handlerFunction = /** @type {function()} */ (handler.bind(null, i));
+        var handlerFunction = /** @type {function()} */ (handler.bind(promises[i], i));
         all.push(promises[i].catch(handlerFunction));
     }
 
@@ -1054,13 +1057,14 @@ Promise.some = function(promises)
     }
 
     /**
+     * @this {!Promise}
      * @param {number} index
      * @param {!Error} e
      */
     function handler(index, e)
     {
         wasRejected[index] = true;
-        console.error(e);
+        this._reportError(e);
     }
 }
 
