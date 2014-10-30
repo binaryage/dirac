@@ -1023,17 +1023,6 @@ WebInspector.TextEditorDelegateForSourceFrame.prototype = {
     },
 
     /**
-     * @param {string} hrefValue
-     * @param {boolean} isExternal
-     * @return {!Element}
-     */
-    createLink: function(hrefValue, isExternal)
-    {
-        var targetLocation = WebInspector.ParsedURL.completeURL(this._sourceFrame._url, hrefValue);
-        return WebInspector.linkifyURLAsNode(targetLocation || hrefValue, hrefValue, undefined, isExternal);
-    },
-
-    /**
      * @param {?WebInspector.TextRange} from
      * @param {?WebInspector.TextRange} to
      */

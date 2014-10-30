@@ -96,11 +96,11 @@ WebInspector.JavaScriptSourceFrame.prototype = {
 
         var fileURL = this._uiSourceCode.originURL();
         infobar.createDetailsRowMessage(WebInspector.UIString("The content of this file on the file system:\u00a0")).appendChild(
-            WebInspector.linkifyURLAsNode(fileURL, fileURL, "source-frame-infobar-details-url", true, fileURL));
+            WebInspector.createExternalAnchor(fileURL, fileURL, "source-frame-infobar-details-url"));
 
         var scriptURL = this._uiSourceCode.url;
         infobar.createDetailsRowMessage(WebInspector.UIString("does not match the loaded script:\u00a0")).appendChild(
-            WebInspector.linkifyURLAsNode(scriptURL, scriptURL, "source-frame-infobar-details-url", true, scriptURL));
+            WebInspector.createExternalAnchor(scriptURL, scriptURL, "source-frame-infobar-details-url"));
 
         infobar.createDetailsRowMessage();
         infobar.createDetailsRowMessage(WebInspector.UIString("Possible solutions are:"));

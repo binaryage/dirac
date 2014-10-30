@@ -72,12 +72,11 @@ WebInspector.AuditFormatters.Registry = {
     /**
      * @param {string} url
      * @param {string=} displayText
-     * @param {boolean=} allowExternalNavigation
      * @return {!Element}
      */
-    url: function(url, displayText, allowExternalNavigation)
+    url: function(url, displayText)
     {
-        return WebInspector.createAnchor(url, displayText, !allowExternalNavigation);
+        return WebInspector.createExternalAnchor(url, displayText);
     },
 
     /**

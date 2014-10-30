@@ -241,8 +241,8 @@ WebInspector.Linkifier.prototype = {
         {
             if (!anchor.__uiLocation)
                 return;
-            event.stopImmediatePropagation();
-            event.preventDefault();
+
+            event.consume(true);
             if (WebInspector.Linkifier.handleLink(anchor.__uiLocation.uiSourceCode.url, anchor.__uiLocation.lineNumber))
                 return;
             WebInspector.Revealer.reveal(anchor.__uiLocation);

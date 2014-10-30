@@ -92,10 +92,10 @@ WebInspector.WorkspaceMappingTip.prototype = {
      */
     _createWorkspaceInfobar: function(uiSourceCode)
     {
-            var infobar = new WebInspector.UISourceCodeFrame.Infobar(WebInspector.UISourceCodeFrame.Infobar.Level.Info, WebInspector.UIString("Serving from the file system? Add your files into the workspace."));
-            infobar.createDetailsRowMessage(WebInspector.UIString("If you add files into your DevTools workspace, your changes will be persisted to disk."));
-            infobar.createDetailsRowMessage(WebInspector.UIString("To add a folder into the workspace, drag and drop it into the Sources panel."));
-            this._appendInfobar(uiSourceCode, infobar);
+        var infobar = new WebInspector.UISourceCodeFrame.Infobar(WebInspector.UISourceCodeFrame.Infobar.Level.Info, WebInspector.UIString("Serving from the file system? Add your files into the workspace."));
+        infobar.createDetailsRowMessage(WebInspector.UIString("If you add files into your DevTools workspace, your changes will be persisted to disk."));
+        infobar.createDetailsRowMessage(WebInspector.UIString("To add a folder into the workspace, drag and drop it into the Sources panel."));
+        this._appendInfobar(uiSourceCode, infobar);
     },
 
     /**
@@ -113,9 +113,10 @@ WebInspector.WorkspaceMappingTip.prototype = {
         var infobar = new WebInspector.UISourceCodeFrame.Infobar(WebInspector.UISourceCodeFrame.Infobar.Level.Info, title);
         infobar.createDetailsRowMessage(WebInspector.UIString("You can map files in your workspace to the ones loaded over the network. As a result, changes made in DevTools will be persisted to disk."));
         infobar.createDetailsRowMessage(WebInspector.UIString("Use context menu to establish the mapping at any time."));
-        var actionLink = WebInspector.createAnchor("", WebInspector.UIString("Establish the mapping now..."), true);
-        actionLink.onclick = this._establishTheMapping.bind(this, uiSourceCode);
-        infobar.createDetailsRowMessage("").appendChild(actionLink);
+        var anchor = createElementWithClass("a", "link");
+        anchor.textContent = WebInspector.UIString("Establish the mapping now...");
+        anchor.addEventListener("click", this._establishTheMapping.bind(this, uiSourceCode), false);
+        infobar.createDetailsRowMessage("").appendChild(anchor);
         this._appendInfobar(uiSourceCode, infobar);
     },
 

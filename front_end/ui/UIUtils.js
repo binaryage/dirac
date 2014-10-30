@@ -1175,10 +1175,10 @@ WebInspector.LongClickController.prototype = {
 /**
  * @param {string} url
  * @param {string=} linkText
- * @param {boolean=} isInternal
+ * @param {string=} classes
  * @return {!Element}
  */
-WebInspector.createAnchor = function(url, linkText, isInternal)
+WebInspector.createExternalAnchor = function(url, linkText, classes)
 {
     var anchor = createElementWithClass("a", "link");
     var href = sanitizeHref(url);
@@ -1189,10 +1189,21 @@ WebInspector.createAnchor = function(url, linkText, isInternal)
 
     if (!linkText)
         linkText = url;
-    anchor.textContent = linkText;
 
-    if (!isInternal)
-        anchor.setAttribute("target", "_blank");
+    anchor.className = classes;
+    anchor.textContent = linkText;
+    anchor.setAttribute("target", "_blank");
+
+    /**
+     * @param {!Event} event
+     */
+    function clickHandler(event)
+    {
+        event.consume(true);
+        InspectorFrontendHost.openInNewTab(anchor.href);
+    }
+
+    anchor.addEventListener("click", clickHandler, false);
 
     return anchor;
 }
@@ -1204,7 +1215,7 @@ WebInspector.createAnchor = function(url, linkText, isInternal)
  */
 WebInspector.createDocumentationAnchor = function(article, title)
 {
-    return WebInspector.createAnchor("https://developer.chrome.com/devtools/docs/" + article, title);
+    return WebInspector.createExternalAnchor("https://developer.chrome.com/devtools/docs/" + article, title);
 }
 
 /**

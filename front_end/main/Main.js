@@ -412,11 +412,6 @@ WebInspector.Main.prototype = {
         if (anchor.preventFollow)
             return;
 
-        if (anchor.target === "_blank") {
-            InspectorFrontendHost.openInNewTab(anchor.href);
-            return;
-        }
-
         function followLink()
         {
             if (WebInspector.isBeingEdited(target))

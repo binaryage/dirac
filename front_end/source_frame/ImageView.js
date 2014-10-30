@@ -87,7 +87,7 @@ WebInspector.ImageView.prototype = {
                 infoListElement.createChild("dd").textContent = imageProperties[i].value;
             }
             infoListElement.createChild("dt").textContent = WebInspector.UIString("URL");
-            infoListElement.createChild("dd").appendChild(WebInspector.linkifyURLAsNode(this._url, undefined, undefined, true /* externalResource */));
+            infoListElement.createChild("dd").appendChild(WebInspector.createExternalAnchor(this._url));
             this._container.appendChild(infoListElement);
         }
         this._imagePreviewElement = imagePreviewElement;
