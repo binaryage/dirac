@@ -145,15 +145,15 @@ WebInspector.Linkifier.prototype = {
      * @param {?WebInspector.Target} target
      * @param {?string} scriptId
      * @param {string} sourceURL
-     * @param {number=} lineNumber
+     * @param {number} lineNumber
      * @param {number=} columnNumber
      * @param {string=} classes
      * @return {!Element}
      */
     linkifyScriptLocation: function(target, scriptId, sourceURL, lineNumber, columnNumber, classes)
     {
-        var rawLocation = target && !target.isDetached() ? target.debuggerModel.createRawLocationByScriptId(scriptId, sourceURL, lineNumber || 0, columnNumber || 0) : null;
-        var fallbackAnchor = WebInspector.linkifyResourceAsNode(sourceURL, lineNumber, columnNumber, classes);
+        var rawLocation = target && !target.isDetached() ? target.debuggerModel.createRawLocationByScriptId(scriptId, sourceURL, lineNumber, columnNumber || 0) : null;
+        var fallbackAnchor = WebInspector.linkifyResourceAsNode(sourceURL, lineNumber, classes);
         if (!rawLocation)
             return fallbackAnchor;
 
@@ -201,12 +201,14 @@ WebInspector.Linkifier.prototype = {
     /**
      * @param {!WebInspector.CSSLocation} rawLocation
      * @param {string=} classes
-     * @return {!Element}
+     * @return {?Element}
      */
     linkifyCSSLocation: function(rawLocation, classes)
     {
         var anchor = this._createAnchor(classes);
         var liveLocation = WebInspector.cssWorkspaceBinding.createLiveLocation(rawLocation, this._updateAnchor.bind(this, anchor));
+        if (!liveLocation)
+            return null;
         this._liveLocationsByTarget.get(rawLocation.target()).push({ anchor: anchor, location: liveLocation });
         return anchor;
     },
@@ -222,7 +224,7 @@ WebInspector.Linkifier.prototype = {
             return this.linkifyCSSLocation(location);
 
         // The "linkedStylesheet" case.
-        return WebInspector.linkifyResourceAsNode(media.sourceURL, undefined, undefined, "subtitle", media.sourceURL);
+        return WebInspector.linkifyResourceAsNode(media.sourceURL, undefined, "subtitle", media.sourceURL);
     },
 
     /**
@@ -269,29 +271,6 @@ WebInspector.Linkifier.prototype = {
     {
         anchor.__uiLocation = uiLocation;
         this._formatter.formatLiveAnchor(anchor, uiLocation);
-    },
-
-    /**
-     * @param {?WebInspector.Target} target
-     * @param {string} string
-     * @return {!DocumentFragment}
-     */
-    linkifyStringAsFragment: function(target, string)
-    {
-        /**
-         * @param {string} title
-         * @param {string} url
-         * @param {number=} lineNumber
-         * @param {number=} columnNumber
-         * @return {!Node}
-         * @this {WebInspector.Linkifier}
-         */
-        function linkify(title, url, lineNumber, columnNumber)
-        {
-            return this.linkifyScriptLocation(target, null, url, lineNumber, columnNumber);
-        }
-
-        return WebInspector.linkifyStringAsFragmentWithCustomLinkifier(string, linkify.bind(this));
     }
 }
 

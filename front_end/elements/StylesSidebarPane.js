@@ -1701,12 +1701,25 @@ WebInspector.StylePropertiesSection.prototype = {
      */
     _linkifyRuleLocation: function(styleSheetId, ruleLocation)
     {
+        /**
+         * @param {string} url
+         * @param {number} line
+         */
+        function linkifyUncopyable(url, line)
+        {
+            var link = WebInspector.linkifyResourceAsNode(url, line, "", url + ":" + (line + 1));
+            link.classList.add("webkit-html-resource-link");
+            link.setAttribute("data-uncopyable", link.textContent);
+            link.textContent = "";
+            return link;
+        }
+
         var styleSheetHeader = this._parentPane._target.cssModel.styleSheetHeaderForId(styleSheetId);
         var sourceURL = styleSheetHeader.resourceURL();
         var lineNumber = styleSheetHeader.lineNumberInSource(ruleLocation.startLine);
         var columnNumber = styleSheetHeader.columnNumberInSource(ruleLocation.startLine, ruleLocation.startColumn);
         var matchingSelectorLocation = new WebInspector.CSSLocation(this._parentPane._target, styleSheetId, sourceURL, lineNumber, columnNumber);
-        return this._parentPane._linkifier.linkifyCSSLocation(matchingSelectorLocation);
+        return this._parentPane._linkifier.linkifyCSSLocation(matchingSelectorLocation) || linkifyUncopyable(sourceURL, 0);
     },
 
     _handleEmptySpaceMouseDown: function()

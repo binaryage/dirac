@@ -32,7 +32,7 @@
  * @constructor
  * @implements {WebInspector.ViewportElement}
  * @param {!WebInspector.ConsoleMessage} consoleMessage
- * @param {!WebInspector.Linkifier} linkifier
+ * @param {?WebInspector.Linkifier} linkifier
  * @param {number} nestingLevel
  */
 WebInspector.ConsoleViewMessage = function(consoleMessage, linkifier, nestingLevel)
@@ -260,8 +260,9 @@ WebInspector.ConsoleViewMessage.prototype = {
      */
     _linkifyLocation: function(url, lineNumber, columnNumber)
     {
+        console.assert(this._linkifier);
         var target = this._target();
-        if (!target)
+        if (!this._linkifier || !target)
             return null;
         // FIXME(62725): stack trace line/column numbers are one-based.
         lineNumber = lineNumber ? lineNumber - 1 : 0;
@@ -281,6 +282,7 @@ WebInspector.ConsoleViewMessage.prototype = {
      */
     _linkifyCallFrame: function(callFrame)
     {
+        console.assert(this._linkifier);
         var target = this._target();
         if (!this._linkifier)
             return null;
@@ -297,8 +299,9 @@ WebInspector.ConsoleViewMessage.prototype = {
      */
     _linkifyScriptId: function(scriptId, url, lineNumber, columnNumber)
     {
+        console.assert(this._linkifier);
         var target = this._target();
-        if (!target)
+        if (!this._linkifier || !target)
             return null;
         // FIXME(62725): stack trace line/column numbers are one-based.
         lineNumber = lineNumber ? lineNumber - 1 : 0;
@@ -386,7 +389,7 @@ WebInspector.ConsoleViewMessage.prototype = {
         for (var i = 0; i < parameters.length; ++i) {
             // Inline strings when formatting.
             if (shouldFormatMessage && parameters[i].type === "string")
-                formattedResult.appendChild(this._linkifier.linkifyStringAsFragment(this._target(), parameters[i].description));
+                formattedResult.appendChild(WebInspector.linkifyStringAsFragment(parameters[i].description));
             else
                 formattedResult.appendChild(this._formatParameter(parameters[i], false, true));
             if (i < parameters.length - 1)
@@ -716,7 +719,7 @@ WebInspector.ConsoleViewMessage.prototype = {
     {
         var span = createElement("span");
         span.className = "console-formatted-string source-code";
-        span.appendChild(this._linkifier.linkifyStringAsFragment(this._target(), output.description || ""));
+        span.appendChild(WebInspector.linkifyStringAsFragment(output.description || ""));
 
         // Make black quotes.
         elem.classList.remove("console-formatted-string");
@@ -918,15 +921,12 @@ WebInspector.ConsoleViewMessage.prototype = {
 
         formatters._ = bypassFormatter;
 
-        /**
-         * @this {WebInspector.ConsoleViewMessage}
-         */
         function append(a, b)
         {
             if (b instanceof Node)
                 a.appendChild(b);
             else if (typeof b !== "undefined") {
-                var toAppend = this._linkifier.linkifyStringAsFragment(this._target(), String(b));
+                var toAppend = WebInspector.linkifyStringAsFragment(String(b));
                 if (currentStyle) {
                     var wrapper = createElement('span');
                     for (var key in currentStyle)
@@ -940,7 +940,7 @@ WebInspector.ConsoleViewMessage.prototype = {
         }
 
         // String.format does treat formattedResult like a Builder, result is an object.
-        return String.format(format, parameters, formatters, formattedResult, append.bind(this));
+        return String.format(format, parameters, formatters, formattedResult, append);
     },
 
     clearHighlight: function()
@@ -1278,7 +1278,7 @@ WebInspector.ConsoleViewMessage.prototype = {
  * @constructor
  * @extends {WebInspector.ConsoleViewMessage}
  * @param {!WebInspector.ConsoleMessage} consoleMessage
- * @param {!WebInspector.Linkifier} linkifier
+ * @param {?WebInspector.Linkifier} linkifier
  * @param {number} nestingLevel
  */
 WebInspector.ConsoleGroupViewMessage = function(consoleMessage, linkifier, nestingLevel)
