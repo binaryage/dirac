@@ -264,8 +264,9 @@ WebInspector.NetworkDispatcher.prototype = {
      * @param {!NetworkAgent.Timestamp} time
      * @param {!NetworkAgent.Initiator} initiator
      * @param {!NetworkAgent.Response=} redirectResponse
+     * @param {!PageAgent.ResourceType=} resourceType
      */
-    requestWillBeSent: function(requestId, frameId, loaderId, documentURL, request, time, initiator, redirectResponse)
+    requestWillBeSent: function(requestId, frameId, loaderId, documentURL, request, time, initiator, redirectResponse, resourceType)
     {
         var networkRequest = this._inflightRequestsById[requestId];
         if (networkRequest) {
@@ -279,6 +280,7 @@ WebInspector.NetworkDispatcher.prototype = {
         networkRequest.hasNetworkData = true;
         this._updateNetworkRequestWithRequest(networkRequest, request);
         networkRequest.startTime = time;
+        networkRequest.setResourceType(WebInspector.resourceTypes[resourceType]);
 
         this._startNetworkRequest(networkRequest);
     },
