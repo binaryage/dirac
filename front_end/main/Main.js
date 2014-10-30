@@ -172,6 +172,8 @@ WebInspector.Main.prototype = {
                 Runtime.experiments.enableForTest("timelineOnTraceEvents");
             if (testPath.indexOf("documentation/") !== -1)
                 Runtime.experiments.enableForTest("documentation");
+            if (testPath.indexOf("elements/") !== -1)
+                Runtime.experiments.enableForTest("animationInspection");
         } else {
             Runtime.experiments.setDefaultExperiments([
                 "timelineOnTraceEvents",

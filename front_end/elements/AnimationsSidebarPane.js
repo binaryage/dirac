@@ -41,15 +41,14 @@ WebInspector.AnimationsSidebarPane.prototype = {
                 var player = animationPlayers[i];
                 this._animationSections[i] = new WebInspector.AnimationSection(this, player);
                 var separatorElement = this.bodyElement.createChild("div", "sidebar-separator");
-                var id = player.source().name() ? player.source().name() : player.id();
-                separatorElement.createTextChild(WebInspector.UIString("Animation") + " " + id);
+                separatorElement.createTextChild(WebInspector.UIString("Animation") + " " + player.name());
                 this.bodyElement.appendChild(this._animationSections[i].element);
 
                 if (player.source().keyframesRule()) {
                     var keyframes = player.source().keyframesRule().keyframes();
                     for (var j = 0; j < keyframes.length; j++) {
-                        var inlineStyle = { selectorText: keyframes[j].offset(), style: keyframes[j].style(), isAttribute: true };
-                        var section = new WebInspector.StylePropertiesSection(this._stylesPane, inlineStyle, true, false);
+                        var style = { selectorText: keyframes[j].offset(), style: keyframes[j].style(), isAttribute: true };
+                        var section = new WebInspector.StylePropertiesSection(this._stylesPane, style, true, false);
                         section.expanded = true;
                         this.bodyElement.appendChild(section.element);
                     }
@@ -66,7 +65,7 @@ WebInspector.AnimationsSidebarPane.prototype = {
             return;
         }
         this._selectedNode = node;
-        node.target().animationModel.animationPlayers(node.id, animationPlayersCallback.bind(this));
+        node.target().animationModel.getAnimationPlayers(node.id, animationPlayersCallback.bind(this));
     },
     __proto__: WebInspector.SidebarPane.prototype
 }
