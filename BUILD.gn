@@ -19,6 +19,7 @@ devtools_core_files =
   gypi_values.devtools_components_js_files +
   gypi_values.devtools_host_js_files +
   gypi_values.devtools_main_js_files +
+  gypi_values.devtools_platform_js_files +
   gypi_values.devtools_screencast_js_files +
   gypi_values.devtools_sdk_js_files +
   gypi_values.devtools_toolbox_js_files +

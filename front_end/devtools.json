@@ -1,4 +1,5 @@
 [
+    { "name": "platform", "type": "autostart" },
     { "name": "main", "type": "autostart" },
     { "name": "components", "type": "autostart" },
     { "name": "ui", "type": "autostart" },

@@ -10,6 +10,7 @@
     ],
     "dependencies": [
         "bindings",
+        "platform",
         "ui"
     ],
     "experiment": "promiseTracker",

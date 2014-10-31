@@ -228,6 +228,7 @@
     "dependencies": [
         "extensions",
         "host",
+        "platform",
         "screencast",
         "sdk",
         "toolbox"
