@@ -282,7 +282,7 @@ WebInspector.Layers3DView.prototype = {
     {
         var paddingFraction = 0.1;
         var viewport = this._layerTree.viewportSize();
-        var root = this._layerTree.contentRoot();
+        var root = this._layerTree.contentRoot() || this._layerTree.root();
         var baseWidth = viewport ? viewport.width : root.width();
         var baseHeight = viewport ? viewport.height : root.height();
         var canvasWidth = this._canvasElement.width;
@@ -370,7 +370,7 @@ WebInspector.Layers3DView.prototype = {
         var root = this._layerTree.root();
         var queue = [root];
         this._depthByLayerId[root.id()] = 0;
-        this._isVisible[root.id()] = false;
+        this._isVisible[root.id()] = this._layerTree.root() === root;
         while (queue.length > 0) {
             var layer = queue.shift();
             var children = layer.children();
@@ -633,8 +633,7 @@ WebInspector.Layers3DView.prototype = {
             this._needsUpdate = true;
             return;
         }
-        var contentRoot = this._layerTree && this._layerTree.contentRoot();
-        if (!contentRoot || !this._layerTree.root()) {
+        if (!this._layerTree || !this._layerTree.root()) {
             this._emptyView.show(this.element);
             return;
         }

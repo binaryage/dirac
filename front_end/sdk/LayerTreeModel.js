@@ -327,11 +327,13 @@ WebInspector.TracingLayerTree.prototype = {
         else
             layer = new WebInspector.TracingLayer(payload);
         this._layersById[payload.layer_id] = layer;
-        if (!this._contentRoot && payload.draws_content)
-            this._contentRoot = layer;
+        if (payload.owner_node) {
+            if (!this._contentRoot && payload.draws_content)
+                this._contentRoot = layer;
 
-        if (payload.owner_node && this._backendNodeIdToNodeId[payload.owner_node])
-            layer._setNode(this._nodeForId(this._backendNodeIdToNodeId[payload.owner_node]));
+            if (this._backendNodeIdToNodeId[payload.owner_node])
+                layer._setNode(this._nodeForId(this._backendNodeIdToNodeId[payload.owner_node]));
+        }
 
         for (var i = 0; payload.children && i < payload.children.length; ++i)
             layer.addChild(this._innerSetLayers(oldLayersById, payload.children[i]));
