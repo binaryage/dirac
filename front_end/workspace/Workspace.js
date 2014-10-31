@@ -228,8 +228,8 @@ WebInspector.ProjectStore.prototype = {
  */
 WebInspector.Project = function(workspace, projectId, projectDelegate)
 {
-    /** @type {!Object.<string, !{uiSourceCode: !WebInspector.UISourceCode, index: number}>} */
-    this._uiSourceCodesMap = {};
+    /** @type {!Map.<string, !{uiSourceCode: !WebInspector.UISourceCode, index: number}>} */
+    this._uiSourceCodesMap = new Map();
     /** @type {!Array.<!WebInspector.UISourceCode>} */
     this._uiSourceCodesList = [];
     this._workspace = workspace;
@@ -310,7 +310,7 @@ WebInspector.Project.prototype = {
 
         uiSourceCode = new WebInspector.UISourceCode(this, fileDescriptor.parentPath, fileDescriptor.name, fileDescriptor.originURL, fileDescriptor.url, fileDescriptor.contentType);
 
-        this._uiSourceCodesMap[path] = {uiSourceCode: uiSourceCode, index: this._uiSourceCodesList.length};
+        this._uiSourceCodesMap.set(path, {uiSourceCode: uiSourceCode, index: this._uiSourceCodesList.length});
         this._uiSourceCodesList.push(uiSourceCode);
         this._workspace.dispatchEventToListeners(WebInspector.Workspace.Events.UISourceCodeAdded, uiSourceCode);
     },
@@ -324,20 +324,20 @@ WebInspector.Project.prototype = {
         if (!uiSourceCode)
             return;
 
-        var entry = this._uiSourceCodesMap[path];
+        var entry = this._uiSourceCodesMap.get(path);
         var movedUISourceCode = this._uiSourceCodesList[this._uiSourceCodesList.length - 1];
         this._uiSourceCodesList[entry.index] = movedUISourceCode;
-        var movedEntry = this._uiSourceCodesMap[movedUISourceCode.path()];
+        var movedEntry = this._uiSourceCodesMap.get(movedUISourceCode.path());
         movedEntry.index = entry.index;
         this._uiSourceCodesList.splice(this._uiSourceCodesList.length - 1, 1);
-        delete this._uiSourceCodesMap[path];
+        this._uiSourceCodesMap.delete(path);
         this._workspace.dispatchEventToListeners(WebInspector.Workspace.Events.UISourceCodeRemoved, entry.uiSourceCode);
     },
 
     _remove: function()
     {
         this._workspace.dispatchEventToListeners(WebInspector.Workspace.Events.ProjectRemoved, this);
-        this._uiSourceCodesMap = {};
+        this._uiSourceCodesMap = new Map();
         this._uiSourceCodesList = [];
     },
 
@@ -355,7 +355,7 @@ WebInspector.Project.prototype = {
      */
     uiSourceCode: function(path)
     {
-        var entry = this._uiSourceCodesMap[path];
+        var entry = this._uiSourceCodesMap.get(path);
         return entry ? entry.uiSourceCode : null;
     },
 
@@ -465,8 +465,8 @@ WebInspector.Project.prototype = {
             }
             var oldPath = uiSourceCode.path();
             var newPath = uiSourceCode.parentPath() ? uiSourceCode.parentPath() + "/" + newName : newName;
-            this._uiSourceCodesMap[newPath] = this._uiSourceCodesMap[oldPath];
-            delete this._uiSourceCodesMap[oldPath];
+            this._uiSourceCodesMap.set(newPath, this._uiSourceCodesMap.get(oldPath));
+            this._uiSourceCodesMap.delete(oldPath);
             callback(true, newName, newURL, newOriginURL, newContentType);
         }
     },

@@ -459,9 +459,8 @@ WebInspector.DebuggerWorkspaceBinding.ScriptInfo.prototype = {
 
     _updateLocations: function()
     {
-        var items = this._locations.valuesArray();
-        for (var i = 0; i < items.length; ++i)
-            items[i].update();
+        for (var location of this._locations)
+            location.update();
     },
 
     /**

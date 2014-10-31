@@ -55,7 +55,7 @@ WebInspector.DefaultScriptMapping.prototype = {
     {
         var debuggerModelLocation = /** @type {!WebInspector.DebuggerModel.Location} */ (rawLocation);
         var script = debuggerModelLocation.script();
-        var uiSourceCode = this._uiSourceCodeForScriptId[script.scriptId];
+        var uiSourceCode = this._uiSourceCodeForScriptId.get(script.scriptId);
         var lineNumber = debuggerModelLocation.lineNumber - (script.isInlineScriptWithSourceURL() ? script.lineOffset : 0);
         var columnNumber = debuggerModelLocation.columnNumber || 0;
         if (script.isInlineScriptWithSourceURL() && !lineNumber && columnNumber)
@@ -85,15 +85,14 @@ WebInspector.DefaultScriptMapping.prototype = {
     {
         var path = this._projectDelegate.addScript(script);
         var uiSourceCode = this._workspace.uiSourceCode(this._projectId, path);
-        if (!uiSourceCode) {
-            console.assert(uiSourceCode);
-            return;
-        }
-        this._uiSourceCodeForScriptId[script.scriptId] = uiSourceCode;
+        console.assert(uiSourceCode);
+        uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (uiSourceCode);
+
+        this._uiSourceCodeForScriptId.set(script.scriptId, uiSourceCode);
         this._scriptIdForUISourceCode.set(uiSourceCode, script.scriptId);
         this._debuggerWorkspaceBinding.setSourceMapping(this._debuggerModel.target(), uiSourceCode, this);
         this._debuggerWorkspaceBinding.pushSourceMapping(script, this);
-        script.addEventListener(WebInspector.Script.Events.ScriptEdited, this._scriptEdited.bind(this, script.scriptId));
+        script.addEventListener(WebInspector.Script.Events.ScriptEdited, this._scriptEdited, this);
     },
 
     /**
@@ -115,19 +114,19 @@ WebInspector.DefaultScriptMapping.prototype = {
     },
 
     /**
-     * @param {string} scriptId
      * @param {!WebInspector.Event} event
      */
-    _scriptEdited: function(scriptId, event)
+    _scriptEdited: function(event)
     {
+        var script = /** @type {!WebInspector.Script} */(event.target);
         var content = /** @type {string} */(event.data);
-        this._uiSourceCodeForScriptId[scriptId].addRevision(content);
+        this._uiSourceCodeForScriptId.get(script.scriptId).addRevision(content);
     },
 
     _debuggerReset: function()
     {
-        /** @type {!Object.<string, !WebInspector.UISourceCode>} */
-        this._uiSourceCodeForScriptId = {};
+        /** @type {!Map.<string, !WebInspector.UISourceCode>} */
+        this._uiSourceCodeForScriptId = new Map();
         this._scriptIdForUISourceCode = new Map();
         this._projectDelegate.reset();
     },

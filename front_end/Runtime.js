@@ -1084,6 +1084,17 @@ Promise.some = function(promises)
     }
 }
 
+// FIXME: This performance optimization should be moved to blink so that all developers could enjoy it.
+// console is retrieved with V8Window.getAttribute method which is slow. Here we copy it to a js variable for faster access.
+console = console;
+console.__originalAssert = console.assert;
+console.assert = function(value, message)
+{
+    if (value)
+        return;
+    console.__originalAssert(value, message);
+}
+
 // This must be constructed after the query parameters have been parsed.
 Runtime.experiments = new Runtime.ExperimentsSupport();
 

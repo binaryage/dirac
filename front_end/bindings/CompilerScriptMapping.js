@@ -109,8 +109,10 @@ WebInspector.CompilerScriptMapping.prototype = {
      */
     addScript: function(script)
     {
-        this._debuggerWorkspaceBinding.pushSourceMapping(script, this);
-        script.addEventListener(WebInspector.Script.Events.SourceMapURLAdded, this._sourceMapURLAdded.bind(this));
+        if (!script.sourceMapURL) {
+            script.addEventListener(WebInspector.Script.Events.SourceMapURLAdded, this._sourceMapURLAdded.bind(this));
+            return;
+        }
         this._processScript(script);
     },
 
@@ -120,6 +122,8 @@ WebInspector.CompilerScriptMapping.prototype = {
     _sourceMapURLAdded: function(event)
     {
         var script = /** @type {!WebInspector.Script} */ (event.target);
+        if (!script.sourceMapURL)
+            return;
         this._processScript(script);
     },
 
@@ -128,7 +132,8 @@ WebInspector.CompilerScriptMapping.prototype = {
      */
     _processScript: function(script)
     {
-        this.loadSourceMapForScript(script, sourceMapLoaded.bind(this));
+        this._debuggerWorkspaceBinding.pushSourceMapping(script, this);
+        this._loadSourceMapForScript(script, sourceMapLoaded.bind(this));
 
         /**
          * @param {?WebInspector.SourceMap} sourceMap
@@ -233,20 +238,20 @@ WebInspector.CompilerScriptMapping.prototype = {
      * @param {!WebInspector.Script} script
      * @param {function(?WebInspector.SourceMap)} callback
      */
-    loadSourceMapForScript: function(script, callback)
+    _loadSourceMapForScript: function(script, callback)
     {
         // script.sourceURL can be a random string, but is generally an absolute path -> complete it to inspected page url for
         // relative links.
-        if (!script.sourceMapURL) {
-            callback(null);
-            return;
-        }
         var scriptURL = WebInspector.ParsedURL.completeURL(script.target().resourceTreeModel.inspectedPageURL(), script.sourceURL);
         if (!scriptURL) {
             callback(null);
             return;
         }
-        var sourceMapURL = WebInspector.ParsedURL.completeURL(scriptURL, script.sourceMapURL);
+
+        console.assert(script.sourceMapURL);
+        var scriptSourceMapURL = /** @type {string} */ (script.sourceMapURL);
+
+        var sourceMapURL = WebInspector.ParsedURL.completeURL(scriptURL, scriptSourceMapURL);
         if (!sourceMapURL) {
             callback(null);
             return;

@@ -522,9 +522,11 @@ Map.prototype = {
     get size() { }
 }
 
+// FIXME: $jscomp.Iterable hack below should be removed once transpilation is not required for closure compiler ES6
 /**
  * @constructor
  * @param {!Array.<V>=} iterable
+ * @implements $jscomp.Iterable.<V>
  * @template V
  */
 var Set = function(iterable) { }
@@ -557,5 +559,8 @@ Set.prototype = {
     /**
      * @return {number}
      */
-    get size() { }
+    get size() { },
+
+    // FIXME: This should be removed once transpilation is not required for closure compiler ES6
+    $$iterator: function() { }
 }

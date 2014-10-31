@@ -88,14 +88,24 @@ WebInspector.ParsedURL = function(url)
 
 /**
  * @param {string} url
- * @return {!Array.<string>}
+ * @return {string}
  */
-WebInspector.ParsedURL.splitURLIntoPathComponents = function(url)
+WebInspector.ParsedURL._decodeIfPossible = function(url)
 {
     var decodedURL = url;
     try {
         decodedURL = decodeURI(url);
     } catch (e) { }
+    return decodedURL;
+}
+
+/**
+ * @param {string} url
+ * @return {!Array.<string>}
+ */
+WebInspector.ParsedURL.splitURLIntoPathComponents = function(url)
+{
+    var decodedURL = WebInspector.ParsedURL._decodeIfPossible(url);
     var parsedURL = new WebInspector.ParsedURL(decodedURL);
     var origin;
     var folderPath;
