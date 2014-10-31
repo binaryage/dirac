@@ -106,6 +106,8 @@ WebInspector.FlameChart = function(dataProvider, flameChartDelegate, isTopDown)
 
 WebInspector.FlameChart.DividersBarHeight = 20;
 
+WebInspector.FlameChart.MinimalTimeWindowMs = 0.01;
+
 /**
  * @interface
  */
@@ -732,6 +734,8 @@ WebInspector.FlameChart.prototype = {
     {
         bounds.left = Number.constrain(bounds.left, this._minimumBoundary, this._totalTime + this._minimumBoundary);
         bounds.right = Number.constrain(bounds.right, this._minimumBoundary, this._totalTime + this._minimumBoundary);
+        if (bounds.right - bounds.left < WebInspector.FlameChart.MinimalTimeWindowMs)
+            return;
         this._flameChartDelegate.requestWindowTimes(bounds.left, bounds.right);
     },
 
