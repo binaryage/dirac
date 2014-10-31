@@ -201,14 +201,12 @@ WebInspector.Linkifier.prototype = {
     /**
      * @param {!WebInspector.CSSLocation} rawLocation
      * @param {string=} classes
-     * @return {?Element}
+     * @return {!Element}
      */
     linkifyCSSLocation: function(rawLocation, classes)
     {
         var anchor = this._createAnchor(classes);
         var liveLocation = WebInspector.cssWorkspaceBinding.createLiveLocation(rawLocation, this._updateAnchor.bind(this, anchor));
-        if (!liveLocation)
-            return null;
         this._liveLocationsByTarget.get(rawLocation.target()).push({ anchor: anchor, location: liveLocation });
         return anchor;
     },

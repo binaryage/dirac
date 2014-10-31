@@ -32,7 +32,7 @@
  * @constructor
  * @implements {WebInspector.ViewportElement}
  * @param {!WebInspector.ConsoleMessage} consoleMessage
- * @param {?WebInspector.Linkifier} linkifier
+ * @param {!WebInspector.Linkifier} linkifier
  * @param {number} nestingLevel
  */
 WebInspector.ConsoleViewMessage = function(consoleMessage, linkifier, nestingLevel)
@@ -260,9 +260,8 @@ WebInspector.ConsoleViewMessage.prototype = {
      */
     _linkifyLocation: function(url, lineNumber, columnNumber)
     {
-        console.assert(this._linkifier);
         var target = this._target();
-        if (!this._linkifier || !target)
+        if (!target)
             return null;
         // FIXME(62725): stack trace line/column numbers are one-based.
         lineNumber = lineNumber ? lineNumber - 1 : 0;
@@ -282,11 +281,7 @@ WebInspector.ConsoleViewMessage.prototype = {
      */
     _linkifyCallFrame: function(callFrame)
     {
-        console.assert(this._linkifier);
         var target = this._target();
-        if (!this._linkifier)
-            return null;
-
         return this._linkifier.linkifyConsoleCallFrame(target, callFrame, "console-message-url");
     },
 
@@ -299,9 +294,8 @@ WebInspector.ConsoleViewMessage.prototype = {
      */
     _linkifyScriptId: function(scriptId, url, lineNumber, columnNumber)
     {
-        console.assert(this._linkifier);
         var target = this._target();
-        if (!this._linkifier || !target)
+        if (!target)
             return null;
         // FIXME(62725): stack trace line/column numbers are one-based.
         lineNumber = lineNumber ? lineNumber - 1 : 0;
@@ -1278,7 +1272,7 @@ WebInspector.ConsoleViewMessage.prototype = {
  * @constructor
  * @extends {WebInspector.ConsoleViewMessage}
  * @param {!WebInspector.ConsoleMessage} consoleMessage
- * @param {?WebInspector.Linkifier} linkifier
+ * @param {!WebInspector.Linkifier} linkifier
  * @param {number} nestingLevel
  */
 WebInspector.ConsoleGroupViewMessage = function(consoleMessage, linkifier, nestingLevel)

@@ -593,7 +593,7 @@ WebInspector.ConsoleView.prototype = {
         var nestingLevel = this._currentGroup.nestingLevel();
         switch (message.type) {
         case WebInspector.ConsoleMessage.MessageType.Command:
-            return new WebInspector.ConsoleCommand(message, nestingLevel);
+            return new WebInspector.ConsoleCommand(message, this._linkifier, nestingLevel);
         case WebInspector.ConsoleMessage.MessageType.Result:
             return new WebInspector.ConsoleCommandResult(message, this._linkifier, nestingLevel);
         case WebInspector.ConsoleMessage.MessageType.StartGroupCollapsed:
@@ -1123,11 +1123,12 @@ WebInspector.ConsoleViewFilter.prototype = {
  * @constructor
  * @extends {WebInspector.ConsoleViewMessage}
  * @param {!WebInspector.ConsoleMessage} message
+ * @param {!WebInspector.Linkifier} linkifier
  * @param {number} nestingLevel
  */
-WebInspector.ConsoleCommand = function(message, nestingLevel)
+WebInspector.ConsoleCommand = function(message, linkifier, nestingLevel)
 {
-    WebInspector.ConsoleViewMessage.call(this, message, null, nestingLevel);
+    WebInspector.ConsoleViewMessage.call(this, message, linkifier, nestingLevel);
 }
 
 WebInspector.ConsoleCommand.prototype = {
