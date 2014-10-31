@@ -151,7 +151,7 @@ WebInspector.TracingTimelineModel.prototype = {
             this._configureCpuProfilerSamplingInterval();
             this._currentTarget.profilerAgent().start();
         }
-        if (Runtime.experiments.isEnabled("timelineInvalidationTracking"))
+        if (captureCauses && Runtime.experiments.isEnabled("timelineInvalidationTracking"))
             categoriesArray.push(disabledByDefault("devtools.timeline.invalidationTracking"));
         if (capturePictures) {
             categoriesArray = categoriesArray.concat([
