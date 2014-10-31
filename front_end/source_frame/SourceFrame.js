@@ -532,22 +532,6 @@ WebInspector.SourceFrame.prototype = {
         this.jumpToSearchResult(currentIndex - 1);
     },
 
-    /**
-     * @return {boolean}
-     */
-    showingFirstSearchResult: function()
-    {
-        return this._searchResults.length &&  this._currentSearchResultIndex === 0;
-    },
-
-    /**
-     * @return {boolean}
-     */
-    showingLastSearchResult: function()
-    {
-        return this._searchResults.length && this._currentSearchResultIndex === (this._searchResults.length - 1);
-    },
-
     get currentSearchResultIndex()
     {
         return this._currentSearchResultIndex;

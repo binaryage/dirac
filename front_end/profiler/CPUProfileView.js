@@ -332,22 +332,6 @@ WebInspector.CPUProfileView.prototype = {
     },
 
     /**
-     * @return {boolean}
-     */
-    showingFirstSearchResult: function()
-    {
-        return (this._currentSearchResultIndex === 0);
-    },
-
-    /**
-     * @return {boolean}
-     */
-    showingLastSearchResult: function()
-    {
-        return (this._searchResults && this._currentSearchResultIndex === (this._searchResults.length - 1));
-    },
-
-    /**
      * @return {number}
      */
     currentSearchResultIndex: function() {
