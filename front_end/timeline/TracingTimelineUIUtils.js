@@ -365,6 +365,8 @@ WebInspector.TracingTimelineUIUtils.buildDetailsNodeForTraceEvent = function(eve
     case recordType.JSFrame:
         details = linkifyLocation(eventData["scriptId"], eventData["url"], eventData["lineNumber"], eventData["columnNumber"]);
         detailsText = WebInspector.CPUProfileDataModel.beautifyFunctionName(eventData["functionName"]);
+        if (details && detailsText)
+            details.textContent = detailsText;
         break;
     case recordType.FireAnimationFrame:
         detailsText = eventData["id"];
@@ -435,12 +437,8 @@ WebInspector.TracingTimelineUIUtils.buildDetailsNodeForTraceEvent = function(eve
         break;
     }
 
-    if (detailsText) {
-        if (details)
-            details.textContent = detailsText;
-        else
-            details = createTextNode(detailsText);
-    }
+    if (!details && detailsText)
+        details = createTextNode(detailsText);
     return details;
 
     /**

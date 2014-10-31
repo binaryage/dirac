@@ -141,6 +141,8 @@ WebInspector.TimelineModel.forAllRecords = function(recordsArray, preOrderCallba
     return processRecords(recordsArray, 0);
 }
 
+WebInspector.TimelineModel.TransferChunkLengthBytes = 5000000;
+
 WebInspector.TimelineModel.prototype = {
     /**
      * @param {boolean} captureCauses
@@ -253,7 +255,7 @@ WebInspector.TimelineModel.prototype = {
 
     _createFileReader: function(file, delegate)
     {
-        return new WebInspector.ChunkedFileReader(file, WebInspector.TimelineModelImpl.TransferChunkLengthBytes, delegate);
+        return new WebInspector.ChunkedFileReader(file, WebInspector.TimelineModel.TransferChunkLengthBytes, delegate);
     },
 
     _createFileWriter: function()
