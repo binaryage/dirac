@@ -120,7 +120,7 @@ function normalizePath(path)
 
 /**
  * @param {!Array.<string>} scriptNames
- * @return {!Promise.<?>}
+ * @return {!Promise.<undefined>}
  */
 function loadScriptsPromise(scriptNames)
 {
@@ -128,6 +128,8 @@ function loadScriptsPromise(scriptNames)
     var promises = [];
     /** @type {!Array.<string>} */
     var urls = [];
+    var sources = new Array(scriptNames.length);
+    var scriptToEval = 0;
     for (var i = 0; i < scriptNames.length; ++i) {
         var scriptName = scriptNames[i];
         var sourceURL = self._importScriptPathPrefix + scriptName;
@@ -136,22 +138,36 @@ function loadScriptsPromise(scriptNames)
         if (_loadedScripts[sourceURL])
             continue;
         urls.push(sourceURL);
-        promises.push(loadResourcePromise(sourceURL));
+        promises.push(loadResourcePromise(sourceURL).thenOrCatch(scriptSourceLoaded.bind(null, i)));
     }
-    var result = Promise.resolve();
-    for (var i = 0; i < promises.length; ++i)
-        result = result.then(Promise.resolve.bind(null, promises[i])).thenOrCatch(evaluateScript.bind(null, urls[i]));
-    return result;
+    return Promise.all(promises).then(undefined);
+
+    /**
+     * @param {number} scriptNumber
+     * @param {string=} scriptSource
+     */
+    function scriptSourceLoaded(scriptNumber, scriptSource)
+    {
+        sources[scriptNumber] = scriptSource || "";
+        // Eval scripts as fast as possible.
+        while (typeof sources[scriptToEval] !== "undefined") {
+            evaluateScript(urls[scriptToEval], sources[scriptToEval]);
+            ++scriptToEval;
+        }
+    }
 
     /**
      * @param {string} sourceURL
-     * @param {string|undefined} scriptSource
+     * @param {string=} scriptSource
      */
     function evaluateScript(sourceURL, scriptSource)
     {
         _loadedScripts[sourceURL] = true;
-        if (!scriptSource)
-            return Promise.rejectWithError("Empty response arrived for script '" + sourceURL + "'");
+        if (!scriptSource) {
+            // Do not reject, as this is normal in the hosted mode.
+            console.error("Empty response arrived for script '" + sourceURL + "'");
+            return;
+        }
         self.eval(scriptSource + "\n//# sourceURL=" + sourceURL);
     }
 }
