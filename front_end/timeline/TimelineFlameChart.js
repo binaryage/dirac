@@ -866,6 +866,15 @@ WebInspector.TimelineFlameChart.prototype = {
      */
     highlightSearchResult: function(record, regex, selectRecord)
     {
+        if (!record) {
+            this._delegate.select(null);
+            return;
+        }
+        var traceEvent = record.traceEvent();
+        var entryIndex = this._dataProvider._entryEvents.indexOf(traceEvent);
+        var timelineSelection = this._dataProvider.createSelection(entryIndex);
+        if (timelineSelection)
+            this._delegate.select(timelineSelection);
     },
 
     /**
