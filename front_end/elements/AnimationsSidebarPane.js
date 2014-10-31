@@ -4,25 +4,28 @@
 
 /**
  * @constructor
- * @extends {WebInspector.SidebarPane}
+ * @extends {WebInspector.ElementsSidebarPane}
  */
 WebInspector.AnimationsSidebarPane = function(stylesPane)
 {
-    WebInspector.SidebarPane.call(this, WebInspector.UIString("Animations"));
+    WebInspector.ElementsSidebarPane.call(this, WebInspector.UIString("Animations"));
     this._stylesPane = stylesPane;
 
     this._emptyElement = createElement("div");
     this._emptyElement.className = "info";
     this._emptyElement.textContent = WebInspector.UIString("No Animations");
 
+    this._animationSections = [];
+
     this.bodyElement.appendChild(this._emptyElement);
 }
 
 WebInspector.AnimationsSidebarPane.prototype = {
     /**
-     * @param {?WebInspector.DOMNode} node
+     * @param {!WebInspector.Throttler.FinishCallback} finishCallback
+     * @protected
      */
-    update: function(node)
+    doUpdate: function(finishCallback)
     {
         /**
          * @param {?Array.<!WebInspector.AnimationModel.AnimationPlayer>} animationPlayers
@@ -34,6 +37,7 @@ WebInspector.AnimationsSidebarPane.prototype = {
             this._animationSections = [];
             if (!animationPlayers || !animationPlayers.length) {
                 this.bodyElement.appendChild(this._emptyElement);
+                finishCallback();
                 return;
             }
 
@@ -54,20 +58,15 @@ WebInspector.AnimationsSidebarPane.prototype = {
                     }
                 }
             }
+            finishCallback();
         }
 
-        if (!node)
+        if (!this.node())
             return;
-
-        if (this._selectedNode === node) {
-            for (var i = 0; i < this._animationSections.length; ++i)
-                this._animationSections[i].updateCurrentTime();
-            return;
-        }
-        this._selectedNode = node;
-        node.target().animationModel.getAnimationPlayers(node.id, animationPlayersCallback.bind(this));
+        this.node().target().animationModel.getAnimationPlayers(this.node().id, animationPlayersCallback.bind(this));
     },
-    __proto__: WebInspector.SidebarPane.prototype
+
+    __proto__: WebInspector.ElementsSidebarPane.prototype
 }
 
 /**

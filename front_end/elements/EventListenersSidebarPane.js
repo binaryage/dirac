@@ -29,17 +29,17 @@
 
 /**
  * @constructor
- * @extends {WebInspector.SidebarPane}
+ * @extends {WebInspector.ElementsSidebarPane}
  */
 WebInspector.EventListenersSidebarPane = function()
 {
-    WebInspector.SidebarPane.call(this, WebInspector.UIString("Event Listeners"));
+    WebInspector.ElementsSidebarPane.call(this, WebInspector.UIString("Event Listeners"));
     this.bodyElement.classList.add("events-pane");
 
     this.sections = [];
 
     var refreshButton = this.titleElement.createChild("button", "pane-title-button refresh");
-    refreshButton.addEventListener("click", this._refreshButtonClicked.bind(this), false);
+    refreshButton.addEventListener("click", this.update.bind(this), false);
     refreshButton.title = WebInspector.UIString("Refresh");
 
     this.settingsSelectElement = this.titleElement.createChild("select", "select-filter");
@@ -61,25 +61,16 @@ WebInspector.EventListenersSidebarPane = function()
     this.settingsSelectElement.addEventListener("change", this._changeSetting.bind(this), false);
 
     this._linkifier = new WebInspector.Linkifier();
-    this._refreshThrottler = new WebInspector.Throttler(0);
 }
 
 WebInspector.EventListenersSidebarPane._objectGroupName = "event-listeners-sidebar-pane";
 
 WebInspector.EventListenersSidebarPane.prototype = {
     /**
-     * @param {?WebInspector.DOMNode} node
-     */
-    update: function(node)
-    {
-        this._selectedNode = node;
-        this._refreshThrottler.schedule(this._refreshView.bind(this));
-    },
-
-    /**
      * @param {!WebInspector.Throttler.FinishCallback} finishCallback
+     * @protected
      */
-    _refreshView: function(finishCallback)
+    doUpdate: function(finishCallback)
     {
         if (this._lastRequestedNode) {
             this._lastRequestedNode.target().runtimeAgent().releaseObjectGroup(WebInspector.EventListenersSidebarPane._objectGroupName);
@@ -92,7 +83,7 @@ WebInspector.EventListenersSidebarPane.prototype = {
         body.removeChildren();
         this.sections = [];
 
-        var node = this._selectedNode;
+        var node = this.node();
         if (!node) {
             finishCallback();
             return;
@@ -114,7 +105,7 @@ WebInspector.EventListenersSidebarPane.prototype = {
         }
 
         var body = this.bodyElement;
-        var node = this._selectedNode;
+        var node = this.node();
         var selectedNodeOnly = "selected" === WebInspector.settings.eventListenersFilter.get();
         var sectionNames = [];
         var sectionMap = {};
@@ -148,21 +139,14 @@ WebInspector.EventListenersSidebarPane.prototype = {
         finishCallback();
     },
 
-    _refreshButtonClicked: function()
-    {
-        if (!this._selectedNode)
-            return;
-        this.update(this._selectedNode);
-    },
-
     _changeSetting: function()
     {
         var selectedOption = this.settingsSelectElement[this.settingsSelectElement.selectedIndex];
         WebInspector.settings.eventListenersFilter.set(selectedOption.value);
-        this.update(this._selectedNode);
+        this.update();
     },
 
-    __proto__: WebInspector.SidebarPane.prototype
+    __proto__: WebInspector.ElementsSidebarPane.prototype
 }
 
 /**

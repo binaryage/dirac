@@ -30,11 +30,11 @@
 
 /**
  * @constructor
- * @extends {WebInspector.SidebarPane}
+ * @extends {WebInspector.ElementsSidebarPane}
  */
 WebInspector.PlatformFontsSidebarPane = function()
 {
-    WebInspector.SidebarPane.call(this, WebInspector.UIString("Fonts"));
+    WebInspector.ElementsSidebarPane.call(this, WebInspector.UIString("Fonts"));
     this.element.classList.add("platform-fonts");
 
     this._sectionTitle = createElementWithClass("div", "sidebar-separator");
@@ -44,25 +44,13 @@ WebInspector.PlatformFontsSidebarPane = function()
 }
 
 WebInspector.PlatformFontsSidebarPane.prototype = {
-    _onNodeChange: function()
-    {
-        if (this._innerUpdateTimeout)
-            return;
-        this._innerUpdateTimeout = setTimeout(this._innerUpdate.bind(this), 100);
-    },
-
     /**
      * @param {?WebInspector.DOMNode} node
      */
-    update: function(node)
+    setNode: function(node)
     {
-        if (!node) {
-            delete this._node;
-            return;
-        }
-        this._node = node;
+        WebInspector.ElementsSidebarPane.prototype.setNode.call(this, node);
         this._updateTarget(node.target());
-        this._innerUpdate();
     },
 
     /**
@@ -73,43 +61,56 @@ WebInspector.PlatformFontsSidebarPane.prototype = {
         if (this._target === target)
             return;
         if (this._target) {
-            this._target.domModel.removeEventListener(WebInspector.DOMModel.Events.AttrModified, this._onNodeChange, this);
-            this._target.domModel.removeEventListener(WebInspector.DOMModel.Events.AttrRemoved, this._onNodeChange, this);
-            this._target.domModel.removeEventListener(WebInspector.DOMModel.Events.CharacterDataModified, this._onNodeChange, this);
+            this._target.cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.StyleSheetAdded, this.update, this);
+            this._target.cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.StyleSheetRemoved, this.update, this);
+            this._target.cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.StyleSheetChanged, this.update, this);
+            this._target.cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.MediaQueryResultChanged, this.update, this);
+            this._target.domModel.removeEventListener(WebInspector.DOMModel.Events.AttrModified, this.update, this);
+            this._target.domModel.removeEventListener(WebInspector.DOMModel.Events.AttrRemoved, this.update, this);
+            this._target.domModel.removeEventListener(WebInspector.DOMModel.Events.CharacterDataModified, this.update, this);
         }
         this._target = target;
-        this._target.domModel.addEventListener(WebInspector.DOMModel.Events.AttrModified, this._onNodeChange, this);
-        this._target.domModel.addEventListener(WebInspector.DOMModel.Events.AttrRemoved, this._onNodeChange, this);
-        this._target.domModel.addEventListener(WebInspector.DOMModel.Events.CharacterDataModified, this._onNodeChange, this);
+        this._target.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetAdded, this.update, this);
+        this._target.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetRemoved, this.update, this);
+        this._target.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetChanged, this.update, this);
+        this._target.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.MediaQueryResultChanged, this.update, this);
+        this._target.domModel.addEventListener(WebInspector.DOMModel.Events.AttrModified, this.update, this);
+        this._target.domModel.addEventListener(WebInspector.DOMModel.Events.AttrRemoved, this.update, this);
+        this._target.domModel.addEventListener(WebInspector.DOMModel.Events.CharacterDataModified, this.update, this);
     },
 
-    _innerUpdate: function()
+    /**
+     * @param {!WebInspector.Throttler.FinishCallback} finishedCallback
+     * @protected
+     */
+    doUpdate: function(finishedCallback)
     {
-        if (this._innerUpdateTimeout) {
-            clearTimeout(this._innerUpdateTimeout);
-            delete this._innerUpdateTimeout;
-        }
-        if (!this._node)
+        if (!this.node())
             return;
-        this._target.cssModel.getPlatformFontsForNode(this._node.id, this._refreshUI.bind(this, this._node));
+        this._target.cssModel.getPlatformFontsForNode(this.node().id, this._refreshUI.bind(this, /** @type {!WebInspector.DOMNode} */ (this.node()), finishedCallback));
     },
 
     /**
      * @param {!WebInspector.DOMNode} node
+     * @param {!WebInspector.Throttler.FinishCallback} finishedCallback
      * @param {?string} cssFamilyName
      * @param {?Array.<!CSSAgent.PlatformFontUsage>} platformFonts
      */
-    _refreshUI: function(node, cssFamilyName, platformFonts)
+    _refreshUI: function(node, finishedCallback, cssFamilyName, platformFonts)
     {
-        if (this._node !== node)
+        if (this.node() !== node) {
+            finishedCallback();
             return;
+        }
 
         this._fontStatsSection.removeChildren();
 
         var isEmptySection = !platformFonts || !platformFonts.length;
         this._sectionTitle.classList.toggle("hidden", isEmptySection);
-        if (isEmptySection)
+        if (isEmptySection) {
+            finishedCallback();
             return;
+        }
         platformFonts.sort(function (a, b) {
             return b.glyphCount - a.glyphCount;
         });
@@ -126,7 +127,8 @@ WebInspector.PlatformFontsSidebarPane.prototype = {
             var usage = platformFonts[i].glyphCount;
             fontUsageElement.textContent = usage === 1 ? WebInspector.UIString("%d glyph", usage) : WebInspector.UIString("%d glyphs", usage);
         }
+        finishedCallback();
     },
 
-    __proto__: WebInspector.SidebarPane.prototype
+    __proto__: WebInspector.ElementsSidebarPane.prototype
 }

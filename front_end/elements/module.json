@@ -71,6 +71,7 @@
     "scripts": [
         "Spectrum.js",
         "ElementsBreadcrumbs.js",
+        "ElementsSidebarPane.js",
         "ElementsTreeOutline.js",
         "EventListenersSidebarPane.js",
         "MetricsSidebarPane.js",

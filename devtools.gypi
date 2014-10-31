@@ -350,6 +350,7 @@
             'front_end/elements/AnimationsSidebarPane.js',
             'front_end/elements/ElementsBreadcrumbs.js',
             'front_end/elements/ElementsPanel.js',
+            'front_end/elements/ElementsSidebarPane.js',
             'front_end/elements/ElementsTreeOutline.js',
             'front_end/elements/EventListenersSidebarPane.js',
             'front_end/elements/MetricsSidebarPane.js',

@@ -29,43 +29,33 @@
 
 /**
  * @constructor
- * @extends {WebInspector.SidebarPane}
+ * @extends {WebInspector.ElementsSidebarPane}
  */
 WebInspector.PropertiesSidebarPane = function()
 {
-    WebInspector.SidebarPane.call(this, WebInspector.UIString("Properties"));
+    WebInspector.ElementsSidebarPane.call(this, WebInspector.UIString("Properties"));
 
     WebInspector.targetManager.addModelListener(WebInspector.DOMModel, WebInspector.DOMModel.Events.AttrModified, this._onNodeChange, this);
     WebInspector.targetManager.addModelListener(WebInspector.DOMModel, WebInspector.DOMModel.Events.AttrRemoved, this._onNodeChange, this);
     WebInspector.targetManager.addModelListener(WebInspector.DOMModel, WebInspector.DOMModel.Events.CharacterDataModified, this._onNodeChange, this);
     WebInspector.targetManager.addModelListener(WebInspector.DOMModel, WebInspector.DOMModel.Events.ChildNodeCountUpdated, this._onNodeChange, this);
-
-    this._refreshThrottler = new WebInspector.Throttler(0);
 }
 
 WebInspector.PropertiesSidebarPane._objectGroupName = "properties-sidebar-pane";
 
 WebInspector.PropertiesSidebarPane.prototype = {
     /**
-     * @param {?WebInspector.DOMNode} node
-     */
-    update: function(node)
-    {
-        this._node = node;
-        this._refreshThrottler.schedule(this._refreshView.bind(this));
-    },
-
-    /**
      * @param {!WebInspector.Throttler.FinishCallback} finishCallback
+     * @protected
      */
-    _refreshView: function(finishCallback)
+    doUpdate: function(finishCallback)
     {
         if (this._lastRequestedNode) {
             this._lastRequestedNode.target().runtimeAgent().releaseObjectGroup(WebInspector.PropertiesSidebarPane._objectGroupName);
             delete this._lastRequestedNode;
         }
 
-        var node = this._node;
+        var node = this.node();
         if (!node) {
             this.bodyElement.removeChildren();
             this.sections = [];
@@ -164,14 +154,14 @@ WebInspector.PropertiesSidebarPane.prototype = {
      */
     _onNodeChange: function(event)
     {
-        if (!this._node)
+        if (!this.node())
             return;
         var data = event.data;
         var node = /** @type {!WebInspector.DOMNode} */ (data instanceof WebInspector.DOMNode ? data : data.node);
-        if (this._node !== node)
+        if (this.node() !== node)
             return;
-        this.update(this._node);
+        this.update();
     },
 
-    __proto__: WebInspector.SidebarPane.prototype
+    __proto__: WebInspector.ElementsSidebarPane.prototype
 }

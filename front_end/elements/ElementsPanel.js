@@ -82,17 +82,6 @@ WebInspector.ElementsPanel = function()
     this.sidebarPanes.eventListeners = new WebInspector.EventListenersSidebarPane();
     this.sidebarPanes.animations = new WebInspector.AnimationsSidebarPane(this.sidebarPanes.styles);
 
-    this.sidebarPanes.styles.addEventListener(WebInspector.SidebarPane.EventTypes.wasShown, this.updateStyles.bind(this, false));
-    this.sidebarPanes.metrics.addEventListener(WebInspector.SidebarPane.EventTypes.wasShown, this.updateMetrics.bind(this));
-    this.sidebarPanes.platformFonts.addEventListener(WebInspector.SidebarPane.EventTypes.wasShown, this.updatePlatformFonts.bind(this));
-    this.sidebarPanes.properties.addEventListener(WebInspector.SidebarPane.EventTypes.wasShown, this.updateProperties.bind(this));
-    this.sidebarPanes.eventListeners.addEventListener(WebInspector.SidebarPane.EventTypes.wasShown, this.updateEventListeners.bind(this));
-    this.sidebarPanes.animations.addEventListener(WebInspector.SidebarPane.EventTypes.wasShown, this.updateAnimations.bind(this));
-
-    this.sidebarPanes.styles.addEventListener("style edited", this._stylesPaneEdited, this);
-    this.sidebarPanes.styles.addEventListener("style property toggled", this._stylesPaneEdited, this);
-    this.sidebarPanes.metrics.addEventListener("metrics edited", this._metricsPaneEdited, this);
-
     WebInspector.dockController.addEventListener(WebInspector.DockController.Events.DockSideChanged, this._dockSideChanged.bind(this));
     WebInspector.settings.splitVerticallyWhenDockedToRight.addChangeListener(this._dockSideChanged.bind(this));
     this._dockSideChanged();
@@ -247,8 +236,8 @@ WebInspector.ElementsPanel.prototype = {
             return;
 
         this._treeOutlineForNode(node).updateOpenCloseTags(node);
-        this._metricsPaneEdited();
-        this._stylesPaneEdited();
+
+        this._updateCSSSidebars();
 
         WebInspector.notifications.dispatchEventToListeners(WebInspector.UserMetrics.UserAction, {
             action: WebInspector.UserMetrics.UserActionNames.ForcedElementState,
@@ -295,15 +284,10 @@ WebInspector.ElementsPanel.prototype = {
 
     _updateSidebars: function()
     {
-        for (var pane in this.sidebarPanes)
-           this.sidebarPanes[pane].needsUpdate = true;
-
-        this.updateStyles(true);
-        this.updateMetrics();
-        this.updatePlatformFonts();
-        this.updateProperties();
-        this.updateEventListeners();
-        this.updateAnimations();
+        this._updateCSSSidebars();
+        this.sidebarPanes.properties.setNode(this.selectedDOMNode());
+        this.sidebarPanes.eventListeners.setNode(this.selectedDOMNode());
+        this.sidebarPanes.animations.setNode(this.selectedDOMNode());
     },
 
     _reset: function()
@@ -684,22 +668,6 @@ WebInspector.ElementsPanel.prototype = {
         this._breadcrumbs.updateNodes(nodes);
     },
 
-    _stylesPaneEdited: function()
-    {
-        // Once styles are edited, the Metrics pane should be updated.
-        this.sidebarPanes.metrics.needsUpdate = true;
-        this.updateMetrics();
-        this.sidebarPanes.platformFonts.needsUpdate = true;
-        this.updatePlatformFonts();
-    },
-
-    _metricsPaneEdited: function()
-    {
-        // Once metrics are edited, the Styles pane should be updated.
-        this.sidebarPanes.styles.needsUpdate = true;
-        this.updateStyles(true);
-    },
-
     /**
      * @param {!WebInspector.Event} event
      */
@@ -709,83 +677,15 @@ WebInspector.ElementsPanel.prototype = {
         this.selectDOMNode(node, true);
     },
 
-    /**
-     * @return {boolean}
-     */
-    _cssModelEnabledForSelectedNode: function()
+    _updateCSSSidebars: function()
     {
-        if (!this.selectedDOMNode())
-            return true;
-        return this.selectedDOMNode().target().cssModel.isEnabled();
-    },
-
-    /**
-     * @param {boolean=} forceUpdate
-     */
-    updateStyles: function(forceUpdate)
-    {
-        if (!this._cssModelEnabledForSelectedNode())
-            return;
-        var stylesSidebarPane = this.sidebarPanes.styles;
-        var computedStylePane = this.sidebarPanes.computedStyle;
-        if ((!stylesSidebarPane.isShowing() && !computedStylePane.isShowing()) || !stylesSidebarPane.needsUpdate)
+        var selectedDOMNode = this.selectedDOMNode();
+        if (!selectedDOMNode || !selectedDOMNode.target().cssModel.isEnabled())
             return;
 
-        stylesSidebarPane.update(this.selectedDOMNode(), forceUpdate);
-        stylesSidebarPane.needsUpdate = false;
-    },
-
-    updateMetrics: function()
-    {
-        if (!this._cssModelEnabledForSelectedNode())
-            return;
-        var metricsSidebarPane = this.sidebarPanes.metrics;
-        if (!metricsSidebarPane.isShowing() || !metricsSidebarPane.needsUpdate)
-            return;
-
-        metricsSidebarPane.update(this.selectedDOMNode());
-        metricsSidebarPane.needsUpdate = false;
-    },
-
-    updatePlatformFonts: function()
-    {
-        if (!this._cssModelEnabledForSelectedNode())
-            return;
-        var platformFontsSidebar = this.sidebarPanes.platformFonts;
-        if (!platformFontsSidebar.isShowing() || !platformFontsSidebar.needsUpdate)
-            return;
-
-        platformFontsSidebar.update(this.selectedDOMNode());
-        platformFontsSidebar.needsUpdate = false;
-    },
-
-    updateProperties: function()
-    {
-        var propertiesSidebarPane = this.sidebarPanes.properties;
-        if (!propertiesSidebarPane.isShowing() || !propertiesSidebarPane.needsUpdate)
-            return;
-
-        propertiesSidebarPane.update(this.selectedDOMNode());
-        propertiesSidebarPane.needsUpdate = false;
-    },
-
-    updateEventListeners: function()
-    {
-        var eventListenersSidebarPane = this.sidebarPanes.eventListeners;
-        if (!eventListenersSidebarPane.isShowing() || !eventListenersSidebarPane.needsUpdate)
-            return;
-
-        eventListenersSidebarPane.update(this.selectedDOMNode());
-        eventListenersSidebarPane.needsUpdate = false;
-    },
-
-    updateAnimations: function()
-    {
-        var animationsSidebarPane = this.sidebarPanes.animations;
-        if (!animationsSidebarPane.isShowing())
-            return;
-
-        animationsSidebarPane.update(this.selectedDOMNode());
+        this.sidebarPanes.styles.update(selectedDOMNode, true);
+        this.sidebarPanes.metrics.setNode(selectedDOMNode);
+        this.sidebarPanes.platformFonts.setNode(selectedDOMNode);
     },
 
     /**

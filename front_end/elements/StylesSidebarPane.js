@@ -364,12 +364,33 @@ WebInspector.StylesSidebarPane.prototype = {
         } else
             node = this._node;
 
+        this._scheduleUpdate(refresh);
+    },
+
+    /**
+     * @param {boolean=} refresh
+     */
+    _innerUpdate: function(refresh)
+    {
         this._updateForcedPseudoStateInputs();
 
         if (refresh)
             this._refreshUpdate();
         else
             this._rebuildUpdate();
+    },
+
+    /**
+     * @param {boolean=} refresh
+     */
+    _scheduleUpdate: function(refresh)
+    {
+        if (!this.isShowing() && !this._computedStylePane.isShowing()) {
+            this._updateCallbackWhenVisible = this._innerUpdate.bind(this, refresh);
+            return;
+        }
+
+        this._innerUpdate(refresh);
     },
 
     /**
@@ -567,10 +588,9 @@ WebInspector.StylesSidebarPane.prototype = {
 
     _styleSheetOrMediaQueryResultChanged: function()
     {
-        if (this._userOperation || this._isEditingStyle || !this.isShowing())
+        if (this._userOperation || this._isEditingStyle)
             return;
-
-        this._rebuildUpdate();
+        this._scheduleUpdate();
     },
 
     _frameResized: function()
@@ -1116,6 +1136,10 @@ WebInspector.StylesSidebarPane.prototype = {
         WebInspector.SidebarPane.prototype.wasShown.call(this);
         this.element.ownerDocument.body.addEventListener("keydown", this._keyDownBound, false);
         this.element.ownerDocument.body.addEventListener("keyup", this._keyUpBound, false);
+        if (this._updateCallbackWhenVisible) {
+            this._updateCallbackWhenVisible.call(null);
+            delete this._updateCallbackWhenVisible;
+        }
     },
 
     willHide: function()
@@ -1926,7 +1950,6 @@ WebInspector.StylePropertiesSection.prototype = {
 WebInspector.ComputedStylePropertiesSection = function(stylesPane, styleRule, usedProperties, animationProperties)
 {
     WebInspector.PropertiesSection.call(this, "");
-    this._hasFreshContent = false;
     this.element.className = "styles-section monospace read-only computed-style";
 
     this.headerElement.appendChild(WebInspector.ComputedStylePropertiesSection._showInheritedCheckbox());
@@ -2821,8 +2844,6 @@ WebInspector.StylePropertyTreeElement.prototype = {
             this._applyNewStyle(newStyle);
 
             var section = this.section();
-            if (section && section._parentPane)
-                section._parentPane.dispatchEventToListeners("style property toggled");
 
             this._updatePane();
             this.styleTextAppliedForTest();
@@ -3456,8 +3477,6 @@ WebInspector.StylePropertyTreeElement.prototype = {
                 this._newPropertyInStyle = true;
 
             this.property = newStyle.propertyAt(this.property.index);
-            if (section && section._parentPane)
-                section._parentPane.dispatchEventToListeners("style edited");
 
             if (updateInterface && currentNode === this.node()) {
                 this._updatePane(userCallback);

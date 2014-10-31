@@ -29,6 +29,7 @@
 /**
  * @constructor
  * @extends {WebInspector.View}
+ * @param {string} title
  */
 WebInspector.SidebarPane = function(title)
 {
