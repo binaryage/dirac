@@ -100,6 +100,7 @@ WebInspector.FlameChart = function(dataProvider, flameChartDelegate, isTopDown)
     this._highlightedMarkerIndex = -1;
     this._highlightedEntryIndex = -1;
     this._selectedEntryIndex = -1;
+    this._rawTimelineDataLength = 0;
     this._textWidth = {};
 }
 
@@ -587,6 +588,9 @@ WebInspector.FlameChart.prototype = {
     {
         this._lastMouseOffsetX = event.offsetX;
 
+        if (!this._enabled())
+            return;
+
         if (this._isDragging)
             return;
 
@@ -640,6 +644,8 @@ WebInspector.FlameChart.prototype = {
      */
     _onMouseWheel: function(e)
     {
+        if (!this._enabled())
+            return;
         // Pan vertically when shift down only.
         var panVertically = e.shiftKey && (e.wheelDeltaY || Math.abs(e.wheelDeltaX) === 120);
         var panHorizontally = Math.abs(e.wheelDeltaX) > Math.abs(e.wheelDeltaY) && !e.shiftKey;
@@ -1255,6 +1261,11 @@ WebInspector.FlameChart.prototype = {
         this._selectedEntryIndex = -1;
         this._textWidth = {};
         this.update();
+    },
+
+    _enabled: function()
+    {
+        return this._rawTimelineDataLength !== 0;
     },
 
     __proto__: WebInspector.HBox.prototype

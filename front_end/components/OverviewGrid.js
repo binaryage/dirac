@@ -396,6 +396,8 @@ WebInspector.OverviewGrid.Window.prototype = {
      */
     _onMouseWheel: function(event)
     {
+        if (!this._enabled)
+            return;
         if (typeof event.wheelDeltaY === "number" && event.wheelDeltaY) {
             const zoomFactor = 1.1;
             const mouseWheelZoomSpeed = 1 / 120;
