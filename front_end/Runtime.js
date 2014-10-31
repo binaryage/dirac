@@ -457,7 +457,7 @@ Runtime.prototype = {
 
     /**
      * @param {!Runtime.Extension} extension
-     * @param {!Array.<!Function>=} currentContextTypes
+     * @param {!Set.<!Function>=} currentContextTypes
      * @return {boolean}
      */
     isExtensionApplicableToContextTypes: function(extension, currentContextTypes)
@@ -465,13 +465,7 @@ Runtime.prototype = {
         if (!extension.descriptor().contextTypes)
             return true;
 
-        // FIXME: Remove this workaround once Set is available natively.
-        for (var i = 0; i < currentContextTypes.length; ++i)
-            currentContextTypes[i]["__applicable"] = true;
-        var result = this._checkExtensionApplicability(extension, currentContextTypes ? isContextTypeKnown : null);
-        for (var i = 0; i < currentContextTypes.length; ++i)
-            delete currentContextTypes[i]["__applicable"];
-        return result;
+        return this._checkExtensionApplicability(extension, currentContextTypes ? isContextTypeKnown : null);
 
         /**
          * @param {!Function} targetType
@@ -479,7 +473,7 @@ Runtime.prototype = {
          */
         function isContextTypeKnown(targetType)
         {
-            return !!targetType["__applicable"];
+            return currentContextTypes.has(targetType);
         }
     },
 

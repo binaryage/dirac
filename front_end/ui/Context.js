@@ -91,11 +91,11 @@ WebInspector.Context.prototype = {
     },
 
     /**
-     * @return {!Array.<function(new:Object, ...)>}
+     * @return {!Set.<function(new:Object, ...)>}
      */
     flavors: function()
     {
-        return this._flavors.keysArray();
+        return new Set(this._flavors.keys());
     },
 
     /**

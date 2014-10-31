@@ -525,8 +525,8 @@ Map.prototype = {
 // FIXME: $jscomp.Iterable hack below should be removed once transpilation is not required for closure compiler ES6
 /**
  * @constructor
- * @param {!Array.<V>=} iterable
  * @implements $jscomp.Iterable.<V>
+ * @param {!Array.<V>|!Iterator.<V>=} iterable
  * @template V
  */
 var Set = function(iterable) { }
