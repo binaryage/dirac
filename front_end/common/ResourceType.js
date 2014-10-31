@@ -167,6 +167,9 @@ WebInspector.ResourceType.mimeTypesForExtensions = {
     // Java
     "java": "text/x-java",
 
+    // Less
+    "less": "text/x-less",
+
     // PHP
     "php": "text/x-php",
     "phtml": "application/x-httpd-php",
