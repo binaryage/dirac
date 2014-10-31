@@ -361,7 +361,6 @@ WebInspector.TimelinePanel.prototype = {
                                                                       WebInspector.UIString("Capture causes (e.g., stack traces) for timeline events. (Has performance overhead)")));
         if (Runtime.experiments.isEnabled("timelineJSCPUProfile")) {
             this._enableJSSamplingSettingSetting = WebInspector.settings.createSetting("timelineEnableJSSampling", false);
-            this._enableJSSamplingSettingSetting.addChangeListener(this._refreshViews, this);
             panelStatusBarElement.appendChild(this._createSettingCheckbox(WebInspector.UIString("JS Profiler"),
                                                                           this._enableJSSamplingSettingSetting,
                                                                           WebInspector.UIString("Enable JavaScript sampling profiler. (Has performance overhead)")));
