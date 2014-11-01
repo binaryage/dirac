@@ -1,6 +1,10 @@
 [
     {
-        "name": "platform",
+        "name": "host",
+        "type": "autostart"
+    },
+    {
+        "name": "common",
         "type": "autostart"
     },
     {

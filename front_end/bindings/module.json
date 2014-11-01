@@ -1,5 +1,5 @@
 {
-    "dependencies": ["sdk", "platform", "workspace"],
+    "dependencies": ["sdk", "workspace"],
     "scripts": [
         "LiveLocation.js",
         "CompilerScriptMapping.js",

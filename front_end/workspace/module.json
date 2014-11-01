@@ -1,5 +1,5 @@
 {
-    "dependencies": ["common", "host", "platform"],
+    "dependencies": ["common", "host"],
     "scripts": [
         "FileManager.js",
         "FileSystemMapping.js",

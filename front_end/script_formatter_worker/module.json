@@ -1,7 +1,6 @@
 {
     "scripts": [
-        "../platform/Promise.js",
-        "../platform/utilities.js",
+        "../common/utilities.js",
         "../cm/headlesscodemirror.js",
         "../cm/css.js",
         "../cm/javascript.js",

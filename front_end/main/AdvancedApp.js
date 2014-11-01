@@ -5,6 +5,7 @@
 /**
  * @constructor
  * @extends {WebInspector.App}
+ * @implements {WebInspector.ToolboxHost}
  */
 WebInspector.AdvancedApp = function()
 {
@@ -92,6 +93,7 @@ WebInspector.AdvancedApp.prototype = {
 
     /**
      * @param {!Document} toolboxDocument
+     * @override
      */
     toolboxLoaded: function(toolboxDocument)
     {

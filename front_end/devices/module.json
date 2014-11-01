@@ -10,7 +10,6 @@
         }
     ],
     "dependencies": [
-        "platform",
         "sdk",
         "ui"
     ],

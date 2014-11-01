@@ -41,7 +41,6 @@
             '<@(devtools_core_base_files)',
             '<@(devtools_host_js_files)',
             '<@(devtools_main_js_files)',
-            '<@(devtools_platform_js_files)',
             '<@(devtools_screencast_js_files)',
             '<@(devtools_sdk_js_files)',
             '<@(devtools_toolbox_bootstrap_js_files)',
@@ -88,6 +87,7 @@
             'front_end/common/TextUtils.js',
             'front_end/common/Throttler.js',
             'front_end/common/UIString.js',
+            'front_end/common/utilities.js',
             'front_end/common/WebInspector.js',
         ],
         'devtools_components_js_files': [
@@ -122,8 +122,10 @@
             'front_end/components/TimelineGrid.js',
         ],
         'devtools_host_js_files': [
+            'front_end/host/DOMExtension.js',
             'front_end/host/InspectorFrontendHost.js',
             'front_end/host/Platform.js',
+            'front_end/host/ToolboxHost.js',
             'front_end/host/UserMetrics.js',
         ],
         'devtools_screencast_js_files': [
@@ -203,11 +205,6 @@
             'front_end/bindings/StylesSourceMapping.js',
             'front_end/bindings/TempFile.js',
             'front_end/bindings/WorkspaceController.js',
-        ],
-        'devtools_platform_js_files': [
-            'front_end/platform/DOMExtension.js',
-            'front_end/platform/Promise.js',
-            'front_end/platform/utilities.js',
         ],
         'devtools_toolbox_bootstrap_js_files': [
             'front_end/toolbox_bootstrap/Toolbox.js',
@@ -377,14 +374,13 @@
         'devtools_heap_snapshot_worker_js_files': [
             'front_end/common/TextUtils.js',
             'front_end/common/UIString.js',
+            'front_end/common/utilities.js',
             'front_end/heap_snapshot_worker/AllocationProfile.js',
             'front_end/heap_snapshot_worker/HeapSnapshot.js',
             'front_end/heap_snapshot_worker/HeapSnapshotLoader.js',
             'front_end/heap_snapshot_worker/HeapSnapshotWorker.js',
             'front_end/heap_snapshot_worker/HeapSnapshotWorkerDispatcher.js',
             'front_end/heap_snapshot_worker/JSHeapSnapshot.js',
-            'front_end/platform/Promise.js',
-            'front_end/platform/utilities.js',
             'front_end/profiler/HeapSnapshotCommon.js',
         ],
         'devtools_layers_js_files': [
@@ -450,8 +446,7 @@
             'front_end/cm/javascript.js',
             'front_end/cm/xml.js',
             'front_end/common/WebInspector.js',
-            'front_end/platform/Promise.js',
-            'front_end/platform/utilities.js',
+            'front_end/common/utilities.js',
             'front_end/script_formatter_worker/CSSFormatter.js',
             'front_end/script_formatter_worker/JavaScriptFormatter.js',
             'front_end/script_formatter_worker/ScriptFormatterWorker.js',

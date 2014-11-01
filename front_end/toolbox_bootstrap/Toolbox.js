@@ -2,23 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// FIXME: This stub is invoked from the backend and should be removed
-// once we migrate to the "pull" model for extensions retrieval.
-WebInspector = {};
-WebInspector.addExtensions = function() {};
-
-(function()
-{
-
 /**
+ * @constructor
  * @suppressGlobalPropertiesCheck
  */
-function toolboxLoaded()
+WebInspector.Toolbox = function()
 {
     if (!window.opener)
         return;
-    window.opener.WebInspector["app"]["toolboxLoaded"](document);
+
+    var host = /** @type {!WebInspector.ToolboxHost} */ (window.opener.WebInspector["app"]);
+    host.toolboxLoaded(document);
 }
+
+// FIXME: This stub is invoked from the backend and should be removed
+// once we migrate to the "pull" model for extensions retrieval.
+WebInspector.addExtensions = function() {}
 
 /**
  * @suppressGlobalPropertiesCheck
@@ -26,7 +25,7 @@ function toolboxLoaded()
 function windowLoaded()
 {
     window.removeEventListener("DOMContentLoaded", windowLoaded, false);
-    toolboxLoaded();
+    new WebInspector.Toolbox();
 }
 
 /**
@@ -35,10 +34,8 @@ function windowLoaded()
 function initToolbox()
 {
     if (document.readyState === "complete")
-        toolboxLoaded();
+        new WebInspector.Toolbox();
     else
         window.addEventListener("DOMContentLoaded", windowLoaded, false);
 }
 initToolbox();
-
-})();
