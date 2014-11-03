@@ -295,7 +295,8 @@ WebInspector.Project.prototype = {
      */
     isServiceProject: function()
     {
-        return this._projectDelegate.type() === WebInspector.projectTypes.Debugger || this._projectDelegate.type() === WebInspector.projectTypes.Formatter || this._projectDelegate.type() === WebInspector.projectTypes.LiveEdit;
+        return this._projectDelegate.type() === WebInspector.projectTypes.Debugger || this._projectDelegate.type() === WebInspector.projectTypes.Formatter || this._projectDelegate.type() === WebInspector.projectTypes.LiveEdit ||
+            this._projectDelegate.type() === WebInspector.projectTypes.Service;
     },
 
     /**
@@ -567,7 +568,8 @@ WebInspector.projectTypes = {
     Network: "network",
     Snippets: "snippets",
     FileSystem: "filesystem",
-    ContentScripts: "contentscripts"
+    ContentScripts: "contentscripts",
+    Service: "service"
 }
 
 /**
