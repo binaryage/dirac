@@ -166,7 +166,8 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
      */
     ondblclick: function(event)
     {
-        if ((this.property.writable || this.property.setter) && event.target.isSelfOrDescendant(this.valueElement))
+        var editableElement = this.elementAndValueToEdit().element;
+        if ((this.property.writable || this.property.setter) && event.target.isSelfOrDescendant(editableElement))
             this.startEditing(event);
         return false;
     },
