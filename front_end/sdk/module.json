@@ -1,7 +1,8 @@
 {
     "dependencies": [
         "common",
-        "host"
+        "host",
+        "platform"
     ],
     "scripts": [
         "InspectorBackend.js",

@@ -1,12 +1,11 @@
 {
     "dependencies": [
-        "common"
+        "common",
+        "platform"
     ],
     "scripts": [
-        "DOMExtension.js",
         "InspectorFrontendHost.js",
         "Platform.js",
-        "ToolboxHost.js",
         "UserMetrics.js"
     ]
 }

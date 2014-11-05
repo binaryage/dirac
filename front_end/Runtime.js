@@ -138,7 +138,7 @@ function loadScriptsPromise(scriptNames)
         if (_loadedScripts[sourceURL])
             continue;
         urls.push(sourceURL);
-        promises.push(loadResourcePromise(sourceURL).thenOrCatch(scriptSourceLoaded.bind(null, i)));
+        promises.push(loadResourcePromise(sourceURL).then(scriptSourceLoaded.bind(null, i), scriptSourceLoaded.bind(null, i, undefined)));
     }
     return Promise.all(promises).then(undefined);
 
@@ -210,7 +210,7 @@ function Runtime(descriptors, coreModuleNames)
     for (var i = 0; i < descriptors.length; ++i)
         this._registerModule(descriptors[i]);
     if (coreModuleNames)
-        this._loadAutoStartModules(coreModuleNames).done();
+        this._loadAutoStartModules(coreModuleNames).catch(Runtime._reportError);
 }
 
 /**
@@ -341,7 +341,7 @@ Runtime.startApplication = function(appName)
                 coreModuleNames.push(name);
         }
 
-        Promise.all(moduleJSONPromises).then(instantiateRuntime).done();
+        Promise.all(moduleJSONPromises).then(instantiateRuntime).catch(Runtime._reportError);
         /**
          * @param {!Array.<!Object>} moduleDescriptors
          */
@@ -374,6 +374,70 @@ Runtime._experimentsSetting = function()
         console.error("Failed to parse localStorage['experiments']");
         return {};
     }
+}
+
+/**
+ * @param {!Array.<!Promise.<T, !Error>>} promises
+ * @return {!Promise.<!Array.<T>>}
+ * @template T
+ */
+Runtime._some = function(promises)
+{
+    var all = [];
+    var wasRejected = [];
+    for (var i = 0; i < promises.length; ++i) {
+        // Workaround closure compiler bug.
+        var handlerFunction = /** @type {function()} */ (handler.bind(promises[i], i));
+        all.push(promises[i].catch(handlerFunction));
+    }
+
+    return Promise.all(all).then(filterOutFailuresResults);
+
+    /**
+     * @param {!Array.<T>} results
+     * @return {!Array.<T>}
+     * @template T
+     */
+    function filterOutFailuresResults(results)
+    {
+        var filtered = [];
+        for (var i = 0; i < results.length; ++i) {
+            if (!wasRejected[i])
+                filtered.push(results[i]);
+        }
+        return filtered;
+    }
+
+    /**
+     * @this {!Promise}
+     * @param {number} index
+     * @param {!Error} e
+     */
+    function handler(index, e)
+    {
+        wasRejected[index] = true;
+        console.error(e.stack);
+    }
+}
+
+Runtime._console = console;
+Runtime._originalAssert = console.assert;
+Runtime._assert = function(value, message)
+{
+    if (value)
+        return;
+    Runtime._originalAssert.call(Runtime._console, value, message);
+}
+
+/**
+ * @param {*} e
+ */
+Runtime._reportError = function(e)
+{
+    if (e instanceof Error)
+        console.error(e.stack);
+    else
+        console.error(e);
 }
 
 Runtime.prototype = {
@@ -537,7 +601,7 @@ Runtime.prototype = {
         var promises = [];
         for (var i = 0; i < extensions.length; ++i)
             promises.push(extensions[i].instancePromise());
-        return Promise.some(promises);
+        return Runtime._some(promises);
     },
 
     /**
@@ -687,7 +751,7 @@ Runtime.Module.prototype = {
         if (Runtime.isReleaseMode())
             return loadScriptsPromise([this._name + "_module.js"]);
 
-        return loadScriptsPromise(this._descriptor.scripts.map(modularizeURL, this)).catchAndReport();
+        return loadScriptsPromise(this._descriptor.scripts.map(modularizeURL, this)).catch(Runtime._reportError);
 
         /**
          * @param {string} scriptName
@@ -853,7 +917,7 @@ Runtime.ExperimentsSupport.prototype = {
      */
     register: function(experimentName, experimentTitle, hidden)
     {
-        console.assert(!this._experimentNames[experimentName], "Duplicate registration of experiment " + experimentName);
+        Runtime._assert(!this._experimentNames[experimentName], "Duplicate registration of experiment " + experimentName);
         this._experimentNames[experimentName] = true;
         this._experiments.push(new Runtime.Experiment(this, experimentName, experimentTitle, !!hidden));
     },
@@ -923,7 +987,7 @@ Runtime.ExperimentsSupport.prototype = {
      */
     _checkExperiment: function(experimentName)
     {
-        console.assert(this._experimentNames[experimentName], "Unknown experiment " + experimentName);
+        Runtime._assert(this._experimentNames[experimentName], "Unknown experiment " + experimentName);
     }
 }
 
@@ -984,110 +1048,6 @@ Runtime.Experiment.prototype = {
     }
 })();}
 
-/**
- * @param {string} error
- * @return {!Promise.<T>}
- * @template T
- */
-Promise.rejectWithError = function(error)
-{
-    return Promise.reject(new Error(error));
-}
-
-/**
- * @param {function((T|undefined))} callback
- * @return {!Promise.<T>}
- * @template T
- */
-Promise.prototype.thenOrCatch = function(callback)
-{
-    return this.then(callback, reject.bind(this));
-
-    /**
-     * @param {*} e
-     */
-    function reject(e)
-    {
-        this._reportError(e);
-        callback(undefined);
-    }
-}
-
-Promise.prototype.done = function()
-{
-    this.catchAndReport();
-}
-
-Promise.prototype.catchAndReport = function()
-{
-    return this.catch(this._reportError.bind(this));
-}
-
-/**
- * @param {*} e
- */
-Promise.prototype._reportError = function(e)
-{
-    if (e instanceof Error)
-        console.error(e.stack);
-    else
-        console.error(e);
-}
-
-/**
- * @param {!Array.<!Promise.<T, !Error>>} promises
- * @return {!Promise.<!Array.<T>>}
- * @template T
- */
-Promise.some = function(promises)
-{
-    var all = [];
-    var wasRejected = [];
-    for (var i = 0; i < promises.length; ++i) {
-        // Workaround closure compiler bug.
-        var handlerFunction = /** @type {function()} */ (handler.bind(promises[i], i));
-        all.push(promises[i].catch(handlerFunction));
-    }
-
-    return Promise.all(all).then(filterOutFailuresResults);
-
-    /**
-     * @param {!Array.<T>} results
-     * @return {!Array.<T>}
-     * @template T
-     */
-    function filterOutFailuresResults(results)
-    {
-        var filtered = [];
-        for (var i = 0; i < results.length; ++i) {
-            if (!wasRejected[i])
-                filtered.push(results[i]);
-        }
-        return filtered;
-    }
-
-    /**
-     * @this {!Promise}
-     * @param {number} index
-     * @param {!Error} e
-     */
-    function handler(index, e)
-    {
-        wasRejected[index] = true;
-        this._reportError(e);
-    }
-}
-
-// FIXME: This performance optimization should be moved to blink so that all developers could enjoy it.
-// console is retrieved with V8Window.getAttribute method which is slow. Here we copy it to a js variable for faster access.
-console = console;
-console.__originalAssert = console.assert;
-console.assert = function(value, message)
-{
-    if (value)
-        return;
-    console.__originalAssert(value, message);
-}
 
 // This must be constructed after the query parameters have been parsed.
 Runtime.experiments = new Runtime.ExperimentsSupport();

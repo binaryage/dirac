@@ -1,7 +1,8 @@
 {
     "dependencies": [
-        "ui",
-        "bindings"
+        "bindings",
+        "platform",
+        "ui"
     ],
     "scripts": [
         "OverridesUI.js",
