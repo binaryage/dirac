@@ -306,7 +306,8 @@ WebInspector.InspectorFrontendHostStub = function()
     function stopEventPropagation(event)
     {
         // Let browser handle Ctrl+/Ctrl- shortcuts in hosted mode.
-        if (event.ctrlKey && (event.keyCode === 187 || event.keyCode === 189))
+        var zoomModifier = WebInspector.isMac() ? event.metaKey : event.ctrlKey;
+        if (zoomModifier && (event.keyCode === 187 || event.keyCode === 189))
             event.stopPropagation();
     }
     document.addEventListener("keydown", stopEventPropagation, true);
