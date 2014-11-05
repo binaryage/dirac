@@ -266,9 +266,15 @@ WebInspector.StylesSidebarPane.prototype = {
      */
     _styleSheetRuleEdited: function(editedRule, oldRange, newRange)
     {
-        var styleRuleSections = this.sections[0];
-        for (var i = 1; i < styleRuleSections.length; ++i)
-            styleRuleSections[i]._styleSheetRuleEdited(editedRule, oldRange, newRange);
+        for (var pseudoId in this.sections) {
+            var styleRuleSections = this.sections[pseudoId];
+            for (var i = 0; i < styleRuleSections.length; ++i) {
+                var section = styleRuleSections[i];
+                if (section.computedStyle)
+                    continue;
+                section._styleSheetRuleEdited(editedRule, oldRange, newRange);
+            }
+        }
     },
 
     /**
