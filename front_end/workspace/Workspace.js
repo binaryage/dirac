@@ -600,11 +600,21 @@ WebInspector.Workspace.prototype = {
      */
     unsavedSourceCodes: function()
     {
+        /**
+         * @param {!WebInspector.UISourceCode} sourceCode
+         * @return {boolean}
+         */
         function filterUnsaved(sourceCode)
         {
             return sourceCode.isDirty();
         }
-        return this.uiSourceCodes().filter(filterUnsaved);
+
+        var unsavedSourceCodes = [];
+        var projects = this.projectsForType(WebInspector.projectTypes.FileSystem);
+        for (var i = 0; i < projects.length; ++i)
+            unsavedSourceCodes = unsavedSourceCodes.concat(projects[i].uiSourceCodes().filter(filterUnsaved));
+
+        return unsavedSourceCodes;
     },
 
     /**
