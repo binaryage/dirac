@@ -814,23 +814,19 @@ WebInspector.TimelinePanel.prototype = {
         }
         this._hideProgressPane();
         this._overviewPane.update();
-    },
-
-    _onRecordAdded: function(event)
-    {
-        this._addRecord(/** @type {!WebInspector.TimelineModel.Record} */(event.data));
+        this._updateSearchHighlight(false, true);
     },
 
     /**
-     * @param {!WebInspector.TimelineModel.Record} record
+     * @param {!WebInspector.Event} event
      */
-    _addRecord: function(record)
+    _onRecordAdded: function(event)
     {
+        var record = /** @type {!WebInspector.TimelineModel.Record} */ (event.data);
         if (this._lazyFrameModel && !this._tracingModel)
             this._lazyFrameModel.addRecord(record);
         for (var i = 0; i < this._currentViews.length; ++i)
             this._currentViews[i].addRecord(record);
-        this._updateSearchHighlight(false, true);
     },
 
     /**
