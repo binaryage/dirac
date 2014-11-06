@@ -728,6 +728,10 @@ WebInspector.ElementsPanel.prototype = {
         }
 
         treeOutline.handleShortcut(event);
+        if (event.handled)
+            return;
+
+        WebInspector.Panel.prototype.handleShortcut.call(this, event);
     },
 
     /**
