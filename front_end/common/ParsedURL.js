@@ -49,7 +49,7 @@ WebInspector.ParsedURL = function(url)
     // 3 - ?port
     // 4 - ?path
     // 5 - ?fragment
-    var match = url.match(/^([A-Za-z][A-Za-z0-9+.-]*):\/\/([^\/:]*)(?::([\d]+))?(?:(\/[^#]*)(?:#(.*))?)?$/i);
+    var match = url.match(/^([A-Za-z][A-Za-z0-9+.-]*):\/\/([^\s\/:]*)(?::([\d]+))?(?:(\/[^#]*)(?:#(.*))?)?$/i);
     if (match) {
         this.isValid = true;
         this.scheme = match[1].toLowerCase();
@@ -247,6 +247,30 @@ WebInspector.ParsedURL.prototype = {
     {
         return this.scheme === "data";
     }
+}
+
+/**
+ * @param {string} string
+ * @return {?{url: string, lineNumber: (number|undefined), columnNumber: (number|undefined)}}
+ */
+WebInspector.ParsedURL.splitLineAndColumn = function(string)
+{
+    var lineColumnRegEx = /:(\d+)(:(\d+))?$/;
+    var lineColumnMatch = lineColumnRegEx.exec(string);
+    var lineNumber;
+    var columnNumber;
+    if (!lineColumnMatch)
+        return null;
+
+    lineNumber = parseInt(lineColumnMatch[1], 10);
+    // Immediately convert line and column to 0-based numbers.
+    lineNumber = isNaN(lineNumber) ? undefined : lineNumber - 1;
+    if (typeof(lineColumnMatch[3]) === "string") {
+        columnNumber = parseInt(lineColumnMatch[3], 10);
+        columnNumber = isNaN(columnNumber) ? undefined : columnNumber - 1;
+    }
+
+    return { url: string.substring(0, string.length - lineColumnMatch[0].length), lineNumber: lineNumber, columnNumber: columnNumber};
 }
 
 /**

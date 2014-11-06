@@ -98,7 +98,6 @@ WebInspector.linkifyStringAsFragmentWithCustomLinkifier = function(string, linki
 {
     var container = createDocumentFragment();
     var linkStringRegEx = /(?:[a-zA-Z][a-zA-Z0-9+.-]{2,}:\/\/|data:|www\.)[\w$\-_+*'=\|\/\\(){}[\]^%@&#~,:;.!?]{2,}[\w$\-_+*=\|\/\\({^%@&#~]/;
-    var lineColumnRegEx = /:(\d+)(:(\d+))?$/;
 
     while (string) {
         var linkString = linkStringRegEx.exec(string);
@@ -112,21 +111,15 @@ WebInspector.linkifyStringAsFragmentWithCustomLinkifier = function(string, linki
 
         var title = linkString;
         var realURL = (linkString.startsWith("www.") ? "http://" + linkString : linkString);
-        var lineColumnMatch = lineColumnRegEx.exec(realURL);
-        var lineNumber;
-        var columnNumber;
-        if (lineColumnMatch) {
-            realURL = realURL.substring(0, realURL.length - lineColumnMatch[0].length);
-            lineNumber = parseInt(lineColumnMatch[1], 10);
-            // Immediately convert line and column to 0-based numbers.
-            lineNumber = isNaN(lineNumber) ? undefined : lineNumber - 1;
-            if (typeof(lineColumnMatch[3]) === "string") {
-                columnNumber = parseInt(lineColumnMatch[3], 10);
-                columnNumber = isNaN(columnNumber) ? undefined : columnNumber - 1;
-            }
-        }
+        var parsedURL = new WebInspector.ParsedURL(realURL);
+        var splitResult = WebInspector.ParsedURL.splitLineAndColumn(parsedURL.lastPathComponent);
+        var linkNode;
+        if (splitResult) {
+            var link = realURL.substring(0, realURL.length - parsedURL.lastPathComponent.length + splitResult.url.length);
+            linkNode = linkifier(title, link, splitResult.lineNumber, splitResult.columnNumber);
+        } else
+            linkNode = linkifier(title, realURL);
 
-        var linkNode = linkifier(title, realURL, lineNumber, columnNumber);
         container.appendChild(linkNode);
         string = string.substring(linkIndex + linkString.length, string.length);
     }
