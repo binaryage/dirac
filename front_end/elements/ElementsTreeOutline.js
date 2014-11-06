@@ -638,9 +638,6 @@ WebInspector.ElementsTreeOutline.prototype = {
             return false;
 
         var treeElement = this._treeElementFromEvent(event);
-        if (!treeElement)
-            return false;
-
         if (!this._isValidDragSourceOrTarget(treeElement))
             return false;
 
@@ -696,10 +693,11 @@ WebInspector.ElementsTreeOutline.prototype = {
         if (!treeElement)
             return false;
 
-        var node = treeElement.representedObject;
-        if (!(node instanceof WebInspector.DOMNode))
+        if (!(treeElement instanceof WebInspector.ElementsTreeElement))
             return false;
+        var elementsTreeElement = /** @type {!WebInspector.ElementsTreeElement} */ (treeElement);
 
+        var node = elementsTreeElement._node;
         if (!node.parentNode || node.parentNode.nodeType() !== Node.ELEMENT_NODE)
             return false;
 
@@ -1049,6 +1047,17 @@ WebInspector.ElementsTreeElement.EditTagBlacklist = [
 ].keySet();
 
 WebInspector.ElementsTreeElement.prototype = {
+    /**
+     * @return {!WebInspector.DOMNode}
+     */
+    node: function()
+    {
+        return this._node;
+    },
+
+    /**
+     * @param {string} searchQuery
+     */
     highlightSearchResults: function(searchQuery)
     {
         if (this._searchQuery !== searchQuery) {
@@ -1067,6 +1076,9 @@ WebInspector.ElementsTreeElement.prototype = {
         this._updateSearchHighlight(false);
     },
 
+    /**
+     * @param {boolean} show
+     */
     _updateSearchHighlight: function(show)
     {
         if (!this._highlightResult)
@@ -1563,7 +1575,7 @@ WebInspector.ElementsTreeElement.prototype = {
      */
     hasEditableNode: function()
     {
-        return !this.representedObject.isShadowRoot() && !this.representedObject.ancestorUserAgentShadowRoot();
+        return !this._node.isShadowRoot() && !this._node.ancestorUserAgentShadowRoot();
     },
 
     _insertInLastAttributePosition: function(tag, node)
@@ -1669,23 +1681,23 @@ WebInspector.ElementsTreeElement.prototype = {
     _populateNodeContextMenu: function(contextMenu)
     {
         // Add free-form node-related actions.
-        var openTagElement = this.treeOutline.getCachedTreeElement(this.representedObject) || this;
+        var openTagElement = this.treeOutline.getCachedTreeElement(this._node) || this;
         var isEditable = this.hasEditableNode();
         if (isEditable && !this._editing)
             contextMenu.appendItem(WebInspector.UIString("Edit as HTML"), openTagElement._editAsHTML.bind(openTagElement));
-        var isShadowRoot = this.representedObject.isShadowRoot();
+        var isShadowRoot = this._node.isShadowRoot();
 
         // Place it here so that all "Copy"-ing items stick together.
-        if (this.representedObject.nodeType() === Node.ELEMENT_NODE)
+        if (this._node.nodeType() === Node.ELEMENT_NODE)
             contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Copy CSS path" : "Copy CSS Path"), this._copyCSSPath.bind(this));
         if (!isShadowRoot)
             contextMenu.appendItem(WebInspector.UIString("Copy XPath"), this._copyXPath.bind(this));
         if (!isShadowRoot) {
             var treeOutline = this.treeOutline;
             contextMenu.appendSeparator();
-            contextMenu.appendItem(WebInspector.UIString("Cut"), treeOutline._performCopyOrCut.bind(treeOutline, true, this.representedObject), !this.hasEditableNode());
-            contextMenu.appendItem(WebInspector.UIString("Copy"), treeOutline._performCopyOrCut.bind(treeOutline, false, this.representedObject));
-            contextMenu.appendItem(WebInspector.UIString("Paste"), treeOutline._pasteNode.bind(treeOutline, this.representedObject), !treeOutline._canPaste(this.representedObject));
+            contextMenu.appendItem(WebInspector.UIString("Cut"), treeOutline._performCopyOrCut.bind(treeOutline, true, this._node), !this.hasEditableNode());
+            contextMenu.appendItem(WebInspector.UIString("Copy"), treeOutline._performCopyOrCut.bind(treeOutline, false, this._node));
+            contextMenu.appendItem(WebInspector.UIString("Paste"), treeOutline._pasteNode.bind(treeOutline, this._node), !treeOutline._canPaste(this._node));
         }
 
         if (isEditable)
@@ -1750,6 +1762,8 @@ WebInspector.ElementsTreeElement.prototype = {
 
     _startEditingAttribute: function(attribute, elementForSelection)
     {
+        console.assert(this.listItemElement.isAncestor(attribute));
+
         if (WebInspector.isBeingEdited(attribute))
             return true;
 
@@ -1774,12 +1788,8 @@ WebInspector.ElementsTreeElement.prototype = {
                 removeZeroWidthSpaceRecursive(child);
         }
 
-        var domNode;
-        var listItemElement = attribute.enclosingNodeOrSelfWithNodeName("li");
-        if (attributeName && attributeValueElement && listItemElement && listItemElement.treeElement)
-            domNode = listItemElement.treeElement.representedObject;
-        var attributeValue = domNode ? domNode.getAttribute(attributeName) : undefined;
-        if (typeof attributeValue !== "undefined")
+        var attributeValue = attributeName && attributeValueElement ? this._node.getAttribute(attributeName) : undefined;
+        if (attributeValue !== undefined)
             attributeValueElement.textContent = attributeValue;
 
         // Remove zero-width spaces that were added by nodeTitleInfo.

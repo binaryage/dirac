@@ -521,8 +521,9 @@ WebInspector.ElementsPanel.prototype = {
     {
         var listItem = anchor.enclosingNodeOrSelfWithNodeName("li");
         // We get here for CSS properties, too.
-        if (listItem && listItem.treeElement && listItem.treeElement.treeOutline instanceof WebInspector.ElementsTreeOutline) {
-            var node = /** @type {!WebInspector.DOMNode} */ (listItem.treeElement.representedObject);
+        if (listItem && listItem.treeElement && listItem.treeElement instanceof WebInspector.ElementsTreeElement) {
+            var elementsTreeElement = /** @type {!WebInspector.ElementsTreeElement} */ (listItem.treeElement);
+            var node = elementsTreeElement.node();
             this._loadDimensionsForNode(node, WebInspector.DOMPresentationUtils.buildImagePreviewContents.bind(WebInspector.DOMPresentationUtils, node.target(), anchor.href, true, showPopover));
         } else {
             var node = this.selectedDOMNode();
