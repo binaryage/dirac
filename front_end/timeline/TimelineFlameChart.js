@@ -848,7 +848,6 @@ WebInspector.TimelineFlameChart.prototype = {
     setWindowTimes: function(startTime, endTime)
     {
         this._mainView.setWindowTimes(startTime, endTime);
-        this._delegate.select(null);
     },
 
     /**
