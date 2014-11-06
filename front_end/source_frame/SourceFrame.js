@@ -424,6 +424,7 @@ WebInspector.SourceFrame.prototype = {
         var regex = WebInspector.SourceFrame._createSearchRegexForConfig(searchConfig);
         this._searchRegex = regex;
         this._searchResults = this._collectRegexMatches(regex);
+        searchFinishedCallback(this, this._searchResults.length);
         if (!this._searchResults.length)
             this._textEditor.cancelSearchResultsHighlight();
         else if (shouldJump && jumpBackwards)
@@ -432,7 +433,6 @@ WebInspector.SourceFrame.prototype = {
             this.jumpToNextSearchResult();
         else
             this._textEditor.highlightSearchResults(regex, null);
-        searchFinishedCallback(this, this._searchResults.length);
     },
 
     /**
