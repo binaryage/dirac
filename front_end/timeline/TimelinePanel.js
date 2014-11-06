@@ -981,14 +981,8 @@ WebInspector.TimelinePanel.prototype = {
 
     _updateSelectionDetails: function()
     {
-        if (!this._selection) {
-            if (this._tracingTimelineModel && this._flameChartEnabledSetting.get()) {
-                 this.showInDetails(this.element.ownerDocument.createElement("div"));
-                 return;
-            } else {
-                 this._selection = WebInspector.TimelineSelection.fromRange(this._windowStartTime, this._windowEndTime);
-            }
-        }
+        if (!this._selection)
+            this._selection = WebInspector.TimelineSelection.fromRange(this._windowStartTime, this._windowEndTime);
 
         switch (this._selection.type()) {
         case WebInspector.TimelineSelection.Type.Record:
