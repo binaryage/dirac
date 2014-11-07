@@ -129,6 +129,15 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
     },
 
     /**
+     * @param {number} index
+     * @return {boolean}
+     */
+    isTallMarker: function(index)
+    {
+        throw new Error("Unreachable.");
+    },
+
+    /**
      * @return {!WebInspector.FlameChart.TimelineData}
      */
     _calculateTimelineData: function()

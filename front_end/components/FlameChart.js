@@ -156,6 +156,12 @@ WebInspector.FlameChartDataProvider.prototype = {
     markerTitle: function(index) { },
 
     /**
+     * @param {number} index
+     * @return {boolean}
+     */
+    isTallMarker: function(index) { },
+
+    /**
      * @return {number}
      */
     minimumBoundary: function() { },
@@ -1038,6 +1044,17 @@ WebInspector.FlameChart.prototype = {
             context.moveTo(position, 0);
             context.lineTo(position, height);
             context.stroke();
+            if (this._dataProvider.isTallMarker(i)) {
+                context.save()
+                context.lineWidth = 0.5;
+                context.translate(0.5, 0.5);
+                context.beginPath();
+                context.moveTo(position, height);
+                context.setLineDash([10, 5]);
+                context.lineTo(position, this._canvas.height);
+                context.stroke();
+                context.restore();
+            }
         }
         context.restore();
     },

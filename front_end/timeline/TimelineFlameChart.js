@@ -156,6 +156,17 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
         return WebInspector.TracingTimelineUIUtils.eventTitle(event, this._model);
     },
 
+    /**
+     * @override
+     * @param {number} index
+     * @return {boolean}
+     */
+    isTallMarker: function(index)
+    {
+        var event = this._markerEvents[index];
+        return WebInspector.TracingTimelineUIUtils.isTallMarkerEvent(event);
+    },
+
     reset: function()
     {
         this._timelineData = null;

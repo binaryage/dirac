@@ -341,6 +341,15 @@ WebInspector.TracingTimelineUIUtils.isMarkerEvent = function(event)
 
 /**
  * @param {!WebInspector.TracingModel.Event} event
+ * @return {boolean}
+ */
+WebInspector.TracingTimelineUIUtils.isTallMarkerEvent = function(event)
+{
+    return event.name !== WebInspector.TracingTimelineModel.RecordType.TimeStamp;
+}
+
+/**
+ * @param {!WebInspector.TracingModel.Event} event
  * @param {!WebInspector.Linkifier} linkifier
  * @return {?Node}
  */
