@@ -602,10 +602,15 @@ WebInspector.TimelinePanel.prototype = {
         else
             this._overviewControls.push(new WebInspector.TimelineEventOverview(this._model, this._uiUtils));
 
-        if (this._tracingTimelineModel && this._flameChartEnabledSetting.get())
+        if (this._tracingTimelineModel && this._flameChartEnabledSetting.get()) {
+            this._filterBar.filterButton().setEnabled(false);
+            this._filtersContainer.classList.toggle("hidden", true);
             this._addModeView(new WebInspector.TimelineFlameChart(this, this._tracingTimelineModel, this._frameModel()));
-        else
+        } else {
+            this._filterBar.filterButton().setEnabled(true);
+            this._filtersContainer.classList.toggle("hidden", !this._filterBar.filtersToggled());
             this._addModeView(this._timelineView());
+        }
 
         if (this._captureMemorySetting.get()) {
             if (!isFrameMode)  // Frame mode skews time, don't render aux overviews.
