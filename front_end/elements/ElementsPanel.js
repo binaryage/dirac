@@ -204,7 +204,7 @@ WebInspector.ElementsPanel.prototype = {
                 else
                     treeOutline.domModel().requestDocument();
         }
-
+        WebInspector.context.setFlavor(WebInspector.ElementsPanel, this);
     },
 
     willHide: function()
@@ -218,6 +218,7 @@ WebInspector.ElementsPanel.prototype = {
         }
         this._popoverHelper.hidePopover();
         WebInspector.Panel.prototype.willHide.call(this);
+        WebInspector.context.setFlavor(WebInspector.ElementsPanel, null);
     },
 
     onResize: function()
@@ -689,44 +690,30 @@ WebInspector.ElementsPanel.prototype = {
         this.sidebarPanes.platformFonts.setNode(selectedDOMNode);
     },
 
+    _undo: function()
+    {
+        var treeOutline = this._treeOutlineForNode(this._lastValidSelectedNode);
+        if (!treeOutline || WebInspector.isEditing())
+            return;
+        treeOutline.target().domModel.undo(this._updateSidebars.bind(this));
+    },
+
+    _redo: function()
+    {
+        var treeOutline = this._treeOutlineForNode(this._lastValidSelectedNode);
+        if (!treeOutline || WebInspector.isEditing())
+            return;
+        treeOutline.target().domModel.redo(this._updateSidebars.bind(this));
+    },
+
     /**
      * @param {!KeyboardEvent} event
      */
     handleShortcut: function(event)
     {
-        /**
-         * @param {!WebInspector.ElementsTreeOutline} treeOutline
-         * @this {WebInspector.ElementsPanel}
-         */
-        function handleUndoRedo(treeOutline)
-        {
-            if (WebInspector.KeyboardShortcut.eventHasCtrlOrMeta(event) && !event.shiftKey && event.keyIdentifier === "U+005A") { // Z key
-                treeOutline.target().domModel.undo(this._updateSidebars.bind(this));
-                event.handled = true;
-                return;
-            }
-
-            var isRedoKey = WebInspector.isMac() ? event.metaKey && event.shiftKey && event.keyIdentifier === "U+005A" : // Z key
-                                                   event.ctrlKey && event.keyIdentifier === "U+0059"; // Y key
-            if (isRedoKey) {
-                treeOutline.target().domModel.redo(this._updateSidebars.bind(this));
-                event.handled = true;
-            }
-        }
-
-        var treeOutline = null;
-        for (var i = 0; i < this._treeOutlines.length; ++i) {
-            if (this._treeOutlines[i].selectedDOMNode() === this._lastValidSelectedNode)
-                treeOutline = this._treeOutlines[i];
-        }
+        var treeOutline = this._treeOutlineForNode(this._lastValidSelectedNode);
         if (!treeOutline)
             return;
-
-        if (!treeOutline.editing()) {
-            handleUndoRedo.call(this, treeOutline);
-            if (event.handled)
-                return;
-        }
 
         treeOutline.handleShortcut(event);
         if (event.handled)
@@ -1111,3 +1098,44 @@ WebInspector.ElementsPanelFactory.prototype = {
         return WebInspector.ElementsPanel.instance();
     }
 }
+
+/**
+ * @constructor
+ * @implements {WebInspector.ActionDelegate}
+ */
+WebInspector.ElementsPanel.UndoActionDelegate = function()
+{
+}
+
+WebInspector.ElementsPanel.UndoActionDelegate.prototype = {
+    /**
+     * @return {boolean}
+     */
+    handleAction: function()
+    {
+        var panel = WebInspector.ElementsPanel.instance();
+        panel._undo();
+        return true;
+    }
+}
+
+/**
+ * @constructor
+ * @implements {WebInspector.ActionDelegate}
+ */
+WebInspector.ElementsPanel.RedoActionDelegate = function()
+{
+}
+
+WebInspector.ElementsPanel.RedoActionDelegate.prototype = {
+    /**
+     * @return {boolean}
+     */
+    handleAction: function()
+    {
+        var panel = WebInspector.ElementsPanel.instance();
+        panel._redo();
+        return true;
+    }
+}
+
