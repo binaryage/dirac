@@ -1309,73 +1309,49 @@ WebInspector.ElementsTreeElement.prototype = {
             this.removeChildren();
         }
 
-        /**
-         * @this {WebInspector.ElementsTreeElement}
-         * @return {?WebInspector.ElementsTreeElement}
-         */
-        function updateChildrenOfNode()
-        {
-            var treeOutline = this.treeOutline;
-            var visibleChildren = this._visibleChildren();
-            var treeChildIndex = 0;
-            var elementToSelect = null;
+        // Remove any tree elements that no longer have this node as their parent and save
+        // all existing elements that could be reused. This also removes closing tag element.
+        var existingTreeElements = new Map();
+        for (var i = this.children.length - 1; i >= 0; --i) {
+            var existingTreeElement = this.children[i];
+            var existingNode = existingTreeElement._node;
+            // Skip expand all button.
+            if (!existingNode)
+                continue;
 
-            for (var i = 0; i < visibleChildren.length; ++i) {
-                var child = visibleChildren[i];
-                var currentTreeElement = this.children[treeChildIndex];
-                if (!currentTreeElement || currentTreeElement._node !== child) {
-                    // Find any existing element that is later in the children list.
-                    var existingTreeElement = null;
-                    for (var j = (treeChildIndex + 1), size = this.expandedChildCount; j < size; ++j) {
-                        if (this.children[j]._node === child) {
-                            existingTreeElement = this.children[j];
-                            break;
-                        }
-                    }
-
-                    if (existingTreeElement && existingTreeElement.parent === this) {
-                        // If an existing element was found and it has the same parent, just move it.
-                        this.moveChild(existingTreeElement, treeChildIndex);
-                    } else {
-                        // No existing element found, insert a new element.
-                        if (treeChildIndex < this.expandedChildrenLimit) {
-                            var newElement = this.insertChildElement(child, treeChildIndex);
-                            if (child === selectedNode)
-                                elementToSelect = newElement;
-                            if (this.expandedChildCount > this.expandedChildrenLimit)
-                                this.expandedChildrenLimit++;
-                        }
-                    }
-                }
-
-                ++treeChildIndex;
+            if (existingNode.parentNode === this._node) {
+                existingTreeElements.set(existingNode, existingTreeElement);
+                continue;
             }
-            return elementToSelect;
-        }
-
-        // Remove any tree elements that no longer have this node (or this node's contentDocument) as their parent.
-        for (var i = (this.children.length - 1); i >= 0; --i) {
-            var currentChild = this.children[i];
-            var currentNode = currentChild._node;
-            if (!currentNode)
-                continue;
-            var currentParentNode = currentNode.parentNode;
-
-            if (currentParentNode === this._node)
-                continue;
 
             var selectedTreeElement = this.treeOutline.selectedTreeElement;
-            if (selectedTreeElement && (selectedTreeElement === currentChild || selectedTreeElement.hasAncestor(currentChild)))
+            if (selectedTreeElement && (selectedTreeElement === existingTreeElement || selectedTreeElement.hasAncestor(existingTreeElement)))
                 this.select();
 
             this.removeChildAtIndex(i);
         }
 
-        var elementToSelect = updateChildrenOfNode.call(this);
+        var elementToSelect;
+        var visibleChildren = this._visibleChildren();
+        for (var i = 0; i < visibleChildren.length && i < this.expandedChildrenLimit; ++i) {
+            var child = visibleChildren[i];
+            if (existingTreeElements.has(child)) {
+                // If an existing element was found, just move it.
+                this.moveChild(existingTreeElements.get(child), i);
+            } else {
+                // No existing element found, insert a new element.
+                var newElement = this.insertChildElement(child, i);
+                if (child === selectedNode)
+                    elementToSelect = newElement;
+                // If a node was inserted in the middle of existing list dynamically we might need to increase the limit.
+                if (this.expandedChildCount > this.expandedChildrenLimit)
+                    this.expandedChildrenLimit++;
+            }
+        }
+
         this.updateTitle();
         this._adjustCollapsedRange();
 
-        var lastChild = this.children[this.children.length - 1];
         if (this._node.nodeType() === Node.ELEMENT_NODE && this.hasChildren)
             this.insertChildElement(this._node, this.children.length, true);
 
@@ -1394,8 +1370,8 @@ WebInspector.ElementsTreeElement.prototype = {
         var visibleChildren = this._visibleChildren();
         // Ensure precondition: only the tree elements for node children are found in the tree
         // (not the Expand All button or the closing tag).
-        if (this.expandAllButtonElement && this.expandAllButtonElement.__treeElement.parent)
-            this.removeChild(this.expandAllButtonElement.__treeElement);
+        if (this.expandAllButtonElement && this.expandAllButtonElement.parent)
+            this.removeChild(this.expandAllButtonElement);
 
         const childNodeCount = visibleChildren.length;
 
@@ -1410,16 +1386,15 @@ WebInspector.ElementsTreeElement.prototype = {
                 var button = createElement("button");
                 button.className = "text-button";
                 button.value = "";
-                var item = new TreeElement(button, null, false);
-                item.selectable = false;
-                item.expandAllButton = true;
-                this.insertChild(item, targetButtonIndex);
-                this.expandAllButtonElement = item.listItemElement.firstChild;
-                this.expandAllButtonElement.__treeElement = item;
-                this.expandAllButtonElement.addEventListener("click", this.handleLoadAllChildren.bind(this), false);
-            } else if (!this.expandAllButtonElement.__treeElement.parent)
-                this.insertChild(this.expandAllButtonElement.__treeElement, targetButtonIndex);
-            this.expandAllButtonElement.textContent = WebInspector.UIString("Show All Nodes (%d More)", childNodeCount - expandedChildCount);
+                button.addEventListener("click", this.handleLoadAllChildren.bind(this), false);
+                this.expandAllButtonElement = new TreeElement(button, null, false);
+                this.expandAllButtonElement.selectable = false;
+                this.expandAllButtonElement.expandAllButton = true;
+                this.expandAllButtonElement._button = button;
+                this.insertChild(this.expandAllButtonElement, targetButtonIndex);
+            } else if (!this.expandAllButtonElement.parent)
+                this.insertChild(this.expandAllButtonElement, targetButtonIndex);
+            this.expandAllButtonElement._button.textContent = WebInspector.UIString("Show All Nodes (%d More)", childNodeCount - expandedChildCount);
         } else if (this.expandAllButtonElement)
             delete this.expandAllButtonElement;
     },
