@@ -518,6 +518,16 @@ TreeElement.prototype = {
         return this._hasChildren;
     },
 
+    /**
+     * Used inside subclasses.
+     *
+     * @param {boolean} hasChildren
+     */
+    setHasChildren: function(hasChildren)
+    {
+        this.hasChildren = hasChildren;
+    },
+
     set hasChildren(x) {
         if (this._hasChildren === x)
             return;

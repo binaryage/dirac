@@ -1024,7 +1024,7 @@ WebInspector.ElementsTreeElement = function(node, elementCloseTag)
     this._node = node;
 
     this._elementCloseTag = elementCloseTag;
-    this._updateHasChildren();
+    this._updateChildrenDisplayMode();
 
     if (this._node.nodeType() == Node.ELEMENT_NODE && !elementCloseTag)
         this._canAddAttributes = true;
@@ -1045,6 +1045,13 @@ WebInspector.ElementsTreeElement.ForbiddenClosingTagElements = [
 WebInspector.ElementsTreeElement.EditTagBlacklist = [
     "html", "head", "body"
 ].keySet();
+
+/** @enum {number} */
+WebInspector.ElementsTreeElement.ChildrenDisplayMode = {
+    NoChildren: 0,
+    InlineText: 1,
+    HasChildren: 2
+}
 
 WebInspector.ElementsTreeElement.prototype = {
     /**
@@ -1248,7 +1255,7 @@ WebInspector.ElementsTreeElement.prototype = {
     onpopulate: function()
     {
         this.populated = true;
-        if (this.children.length || !this.hasChildren)
+        if (this.children.length || !this._hasChildTreeElements())
             return;
 
         this.updateChildren();
@@ -1259,7 +1266,7 @@ WebInspector.ElementsTreeElement.prototype = {
      */
     updateChildren: function(fullRefresh)
     {
-        if (!this.hasChildren)
+        if (!this._hasChildTreeElements())
             return;
         console.assert(!this._elementCloseTag);
         this._node.getChildNodes(this._updateChildren.bind(this, fullRefresh || false));
@@ -1352,7 +1359,7 @@ WebInspector.ElementsTreeElement.prototype = {
         this.updateTitle();
         this._adjustCollapsedRange();
 
-        if (this._node.nodeType() === Node.ELEMENT_NODE && this.hasChildren)
+        if (this._node.nodeType() === Node.ELEMENT_NODE && this._hasChildTreeElements())
             this.insertChildElement(this._node, this.children.length, true);
 
         // We want to restore the original selection and tree scroll position after a full refresh, if possible.
@@ -1540,7 +1547,7 @@ WebInspector.ElementsTreeElement.prototype = {
         if (this._startEditingTarget(/** @type {!Element} */(event.target)))
             return false;
 
-        if (this.hasChildren && !this.expanded)
+        if (this._hasChildTreeElements() && !this.expanded)
             this.expand();
         return false;
     },
@@ -2393,7 +2400,7 @@ WebInspector.ElementsTreeElement.prototype = {
     _nodeTitleInfo: function(linkify)
     {
         var node = this._node;
-        var info = {titleDOM: createDocumentFragment(), hasChildren: this.hasChildren};
+        var info = {titleDOM: createDocumentFragment(), hasChildren: this._hasChildTreeElements()};
 
         switch (node.nodeType()) {
             case Node.ATTRIBUTE_NODE:
@@ -2417,28 +2424,30 @@ WebInspector.ElementsTreeElement.prototype = {
 
                 this._buildTagDOM(info.titleDOM, tagName, false, false, linkify);
 
-                var showInlineText = this._showInlineText() && !this.hasChildren;
-                if (!this.expanded && !showInlineText && (this.treeOutline.isXMLMimeType || !WebInspector.ElementsTreeElement.ForbiddenClosingTagElements[tagName])) {
-                    if (this.hasChildren) {
+                switch (this._childrenDisplayMode) {
+                case WebInspector.ElementsTreeElement.ChildrenDisplayMode.HasChildren:
+                    if (!this.expanded) {
                         var textNodeElement = info.titleDOM.createChild("span", "webkit-html-text-node bogus");
                         textNodeElement.textContent = "\u2026";
                         info.titleDOM.createTextChild("\u200B");
+                        this._buildTagDOM(info.titleDOM, tagName, true, false);
                     }
-                    this._buildTagDOM(info.titleDOM, tagName, true, false);
-                }
+                    break;
 
-                // If this element only has a single child that is a text node,
-                // just show that text and the closing tag inline rather than
-                // create a subtree for them
-                if (showInlineText) {
-                    console.assert(!this.hasChildren);
+                case WebInspector.ElementsTreeElement.ChildrenDisplayMode.InlineText:
                     var textNodeElement = info.titleDOM.createChild("span", "webkit-html-text-node");
                     var result = this._convertWhitespaceToEntities(node.firstChild.nodeValue());
                     textNodeElement.textContent = result.text;
                     WebInspector.highlightRangesWithStyleClass(textNodeElement, result.entityRanges, "webkit-html-entity-value");
                     info.titleDOM.createTextChild("\u200B");
-                    this._buildTagDOM(info.titleDOM, tagName, true, false);
                     info.hasChildren = false;
+                    this._buildTagDOM(info.titleDOM, tagName, true, false);
+                    break;
+
+                case WebInspector.ElementsTreeElement.ChildrenDisplayMode.NoChildren:
+                    if (this.treeOutline.isXMLMimeType || !WebInspector.ElementsTreeElement.ForbiddenClosingTagElements[tagName])
+                        this._buildTagDOM(info.titleDOM, tagName, true, false);
+                    break;
                 }
                 break;
 
@@ -2505,24 +2514,6 @@ WebInspector.ElementsTreeElement.prototype = {
                 info.titleDOM.createTextChild(node.nodeNameInCorrectCase().collapseWhitespace());
         }
         return info;
-    },
-
-    /**
-     * @return {boolean}
-     */
-    _showInlineText: function()
-    {
-        if (this._node.importedDocument() || this._node.templateContent() || this._visibleShadowRoots().length > 0 || this._node.hasPseudoElements())
-            return false;
-        if (this._node.nodeType() !== Node.ELEMENT_NODE)
-            return false;
-        if (!this._node.firstChild || this._node.firstChild !== this._node.lastChild || this._node.firstChild.nodeType() !== Node.TEXT_NODE)
-            return false;
-        var textChild = this._node.firstChild;
-        var maxInlineTextChildLength = 80;
-        if (textChild.nodeValue().length < maxInlineTextChildLength)
-            return true;
-        return false;
     },
 
     remove: function()
@@ -2703,9 +2694,45 @@ WebInspector.ElementsTreeElement.prototype = {
         return childCount;
     },
 
-    _updateHasChildren: function()
+    /**
+     * @return {boolean}
+     */
+    _hasChildTreeElements: function()
     {
-        this.hasChildren = !this._elementCloseTag && !this._showInlineText() && this._visibleChildCount() > 0;
+        return this._childrenDisplayMode === WebInspector.ElementsTreeElement.ChildrenDisplayMode.HasChildren;
+    },
+
+    /**
+     * @return {boolean}
+     */
+    _canShowInlineText: function()
+    {
+        if (this._node.importedDocument() || this._node.templateContent() || this._visibleShadowRoots().length > 0 || this._node.hasPseudoElements())
+            return false;
+        if (this._node.nodeType() !== Node.ELEMENT_NODE)
+            return false;
+        if (!this._node.firstChild || this._node.firstChild !== this._node.lastChild || this._node.firstChild.nodeType() !== Node.TEXT_NODE)
+            return false;
+        var textChild = this._node.firstChild;
+        var maxInlineTextChildLength = 80;
+        if (textChild.nodeValue().length < maxInlineTextChildLength)
+            return true;
+        return false;
+    },
+
+    _updateChildrenDisplayMode: function()
+    {
+        var showInlineText = this._canShowInlineText();
+        var hasChildren = !this._elementCloseTag && this._visibleChildCount() > 0;
+
+        if (showInlineText)
+            this._childrenDisplayMode = WebInspector.ElementsTreeElement.ChildrenDisplayMode.InlineText;
+        else if (hasChildren)
+            this._childrenDisplayMode = WebInspector.ElementsTreeElement.ChildrenDisplayMode.HasChildren;
+        else
+            this._childrenDisplayMode = WebInspector.ElementsTreeElement.ChildrenDisplayMode.NoChildren;
+
+        this.setHasChildren(this._childrenDisplayMode === WebInspector.ElementsTreeElement.ChildrenDisplayMode.HasChildren);
     },
 
     __proto__: TreeElement.prototype
@@ -2757,10 +2784,9 @@ WebInspector.ElementsTreeUpdater.prototype = {
 
         var treeElement = this._treeOutline.findTreeElement(parentNode);
         if (treeElement) {
-            var oldHasChildren = treeElement.hasChildren;
-            var oldShowInlineText = treeElement._showInlineText();
-            treeElement._updateHasChildren();
-            if (treeElement.hasChildren !== oldHasChildren || oldShowInlineText || treeElement._showInlineText())
+            var oldDisplayMode = treeElement._childrenDisplayMode;
+            treeElement._updateChildrenDisplayMode();
+            if (treeElement._childrenDisplayMode !== oldDisplayMode)
                 this._nodeModified(parentNode);
         }
 
