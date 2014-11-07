@@ -1568,7 +1568,7 @@ WebInspector.HeapSnapshot.prototype = {
 
             if (postOrderIndex === nodeCount || iteration > 1)
                 break;
-            var errors = new WebInspector.HeapSnapshotProblemReport("Error: Corrupted snapshot. " + (nodeCount - postOrderIndex) + " nodes are unreachable from the root:");
+            var errors = new WebInspector.HeapSnapshotProblemReport("Heap snapshot: " + (nodeCount - postOrderIndex) + " nodes are unreachable from the root. Following nodes have only weak retainers:");
             var dumpNode = this.rootNode();
             // Remove root from the result (last node in the array) and put it at the bottom of the stack so that it is
             // visited after all orphan nodes and their subgraphs.
@@ -1584,18 +1584,16 @@ WebInspector.HeapSnapshot.prototype = {
                         stackNodes[++stackTop] = i;
                         stackCurrentEdge[stackTop] = firstEdgeIndexes[i];
                         visited[i] = 1;
-                        errors.addError(dumpNode.name() + " @" + dumpNode.id() + " - node has only weak retainers.");
-                    } else {
                         errors.addError(dumpNode.name() + " @" + dumpNode.id());
                     }
                 }
             }
-            this._progress.reportProblem(errors.toString());
+            console.warn(errors.toString());
         }
 
         // If we already processed all orphan nodes that have only weak retainers and still have some orphans...
         if (postOrderIndex !== nodeCount) {
-            var errors = new WebInspector.HeapSnapshotProblemReport("Error: Still found " + (nodeCount - postOrderIndex) + " unreachable nodes:");
+            var errors = new WebInspector.HeapSnapshotProblemReport("Still found " + (nodeCount - postOrderIndex) + " unreachable nodes in heap snapshot:");
             var dumpNode = this.rootNode();
             // Remove root from the result (last node in the array) and put it at the bottom of the stack so that it is
             // visited after all orphan nodes and their subgraphs.
@@ -1611,7 +1609,7 @@ WebInspector.HeapSnapshot.prototype = {
             }
             nodeOrdinal2PostOrderIndex[rootNodeOrdinal] = postOrderIndex;
             postOrderIndex2NodeOrdinal[postOrderIndex++] = rootNodeOrdinal;
-            this._progress.reportProblem(errors.toString());
+            console.warn(errors.toString());
         }
 
         return {postOrderIndex2NodeOrdinal: postOrderIndex2NodeOrdinal, nodeOrdinal2PostOrderIndex: nodeOrdinal2PostOrderIndex};
