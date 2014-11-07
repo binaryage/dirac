@@ -291,6 +291,7 @@
             'front_end/layers/module.json',
             'front_end/main/module.json',
             'front_end/network/module.json',
+            'front_end/platform/module.json',
             'front_end/profiler/module.json',
             'front_end/promises/module.json',
             'front_end/resources/module.json',
