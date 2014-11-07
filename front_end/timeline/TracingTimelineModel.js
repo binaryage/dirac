@@ -178,7 +178,7 @@ WebInspector.TracingTimelineModel.prototype = {
      */
     setEventsForTest: function(events)
     {
-        this._onTracingStarted();
+        this._startCollectingTraceEvents(false);
         this._tracingModel.addEvents(events);
         this._onTracingComplete();
     },
@@ -205,9 +205,17 @@ WebInspector.TracingTimelineModel.prototype = {
 
     _onTracingStarted: function()
     {
+        this._startCollectingTraceEvents(false);
+    },
+
+    /**
+     * @param {boolean} fromFile
+     */
+    _startCollectingTraceEvents: function(fromFile)
+    {
         this.reset();
         this._tracingModel.reset();
-        this.dispatchEventToListeners(WebInspector.TimelineModel.Events.RecordingStarted);
+        this.dispatchEventToListeners(WebInspector.TimelineModel.Events.RecordingStarted, { fromFile: fromFile });
     },
 
     /**
@@ -1046,7 +1054,7 @@ WebInspector.TracingModelLoader.prototype = {
             return;
 
         if (this._firstChunk) {
-            this._model._onTracingStarted();
+            this._model._startCollectingTraceEvents(true);
         } else {
             var commaIndex = json.indexOf(",");
             if (commaIndex !== -1)

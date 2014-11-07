@@ -481,8 +481,18 @@ WebInspector.TimelinePanel.prototype = {
             this._updateToggleTimelineButton(false);
             this._stopRecording();
         }
+
+        /**
+         * @this {!WebInspector.TimelinePanel}
+         */
+        function finishLoading()
+        {
+            this._setOperationInProgress(null);
+            this._updateToggleTimelineButton(false);
+            this._hideProgressPane();
+        }
         var progressIndicator = new WebInspector.ProgressIndicator();
-        progressIndicator.addEventListener(WebInspector.Progress.Events.Done, this._setOperationInProgress.bind(this, null));
+        progressIndicator.addEventListener(WebInspector.Progress.Events.Done, finishLoading.bind(this));
         this._setOperationInProgress(progressIndicator);
         return progressIndicator;
     },
@@ -751,10 +761,16 @@ WebInspector.TimelinePanel.prototype = {
         this._updateSelectionDetails();
     },
 
-    _onRecordingStarted: function()
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _onRecordingStarted: function(event)
     {
         this._updateToggleTimelineButton(true);
-        this._updateProgress(WebInspector.UIString("%d events collected", 0));
+        if (event.data && event.data.fromFile)
+            this._updateProgress(WebInspector.UIString("Loading from file..."));
+        else
+            this._updateProgress(WebInspector.UIString("%d events collected", 0));
     },
 
     _recordingInProgress: function()
