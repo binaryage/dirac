@@ -363,11 +363,18 @@ WebInspector.DeferredTempFile.prototype = {
  */
 WebInspector.TempStorageCleaner = function()
 {
-    this._worker = Runtime.startSharedWorker("temp_storage_shared_worker", "TempStorage");
-    this._worker.onerror = this._handleError.bind(this);
-    this._callbacks = [];
-    this._worker.port.onmessage = this._handleMessage.bind(this);
-    this._worker.port.onerror = this._handleError.bind(this);
+    try {
+        this._worker = Runtime.startSharedWorker("temp_storage_shared_worker", "TempStorageCleaner");
+        this._worker.onerror = this._handleError.bind(this);
+        this._callbacks = [];
+        this._worker.port.onmessage = this._handleMessage.bind(this);
+        this._worker.port.onerror = this._handleError.bind(this);
+    } catch (e) {
+        if (e.name === "URLMismatchError")
+            console.log("Shared worker wasn't started due to url difference. " + e);
+        else
+            throw e;
+    }
 }
 
 WebInspector.TempStorageCleaner.prototype = {
