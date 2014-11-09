@@ -339,7 +339,7 @@ WebInspector.SearchableView.prototype = {
     closeSearch: function()
     {
         this.cancelSearch();
-        if (WebInspector.currentFocusElement().isDescendant(this._footerElementContainer))
+        if (WebInspector.currentFocusElement() && WebInspector.currentFocusElement().isDescendant(this._footerElementContainer))
             this.focus();
     },
 

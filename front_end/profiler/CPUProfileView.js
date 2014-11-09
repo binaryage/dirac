@@ -26,6 +26,7 @@
 
 /**
  * @constructor
+ * @implements {WebInspector.Searchable}
  * @extends {WebInspector.VBox}
  * @param {!WebInspector.CPUProfileHeader} profileHeader
  */
@@ -33,6 +34,9 @@ WebInspector.CPUProfileView = function(profileHeader)
 {
     WebInspector.VBox.call(this);
     this.element.classList.add("cpu-profile-view");
+
+    this._searchableView = new WebInspector.SearchableView(this);
+    this._searchableView.show(this.element);
 
     this._viewType = WebInspector.settings.createSetting("cpuProfilerView", WebInspector.CPUProfileView._TypeHeavy);
 
@@ -43,7 +47,6 @@ WebInspector.CPUProfileView = function(profileHeader)
 
     this.dataGrid = new WebInspector.DataGrid(columns);
     this.dataGrid.addEventListener(WebInspector.DataGrid.Events.SortingChanged, this._sortProfile, this);
-    this.dataGrid.show(this.element);
 
     this.viewSelectComboBox = new WebInspector.StatusBarComboBox(this._changeView.bind(this));
 
@@ -86,6 +89,30 @@ WebInspector.CPUProfileView = function(profileHeader)
 WebInspector.CPUProfileView._TypeFlame = "Flame";
 WebInspector.CPUProfileView._TypeTree = "Tree";
 WebInspector.CPUProfileView._TypeHeavy = "Heavy";
+
+/**
+ * @interface
+ */
+WebInspector.CPUProfileView.Searchable = function()
+{
+}
+
+WebInspector.CPUProfileView.Searchable.prototype = {
+    jumpToNextSearchResult: function() {},
+    jumpToPreviousSearchResult: function() {},
+    searchCanceled: function() {},
+    /**
+     * @param {!WebInspector.SearchableView.SearchConfig} searchConfig
+     * @param {boolean} shouldJump
+     * @param {boolean=} jumpBackwards
+     * @return {number}
+     */
+    performSearch: function(searchConfig, shouldJump, jumpBackwards) {},
+    /**
+     * @return {number}
+     */
+    currentSearchResultIndex: function() {}
+}
 
 WebInspector.CPUProfileView.prototype = {
     focus: function()
@@ -170,182 +197,57 @@ WebInspector.CPUProfileView.prototype = {
         }
     },
 
+    /**
+     * @return {!WebInspector.SearchableView}
+     */
+    searchableView: function()
+    {
+        return this._searchableView;
+    },
+
+    /**
+     * @return {boolean}
+     */
+    supportsCaseSensitiveSearch: function()
+    {
+        return true;
+    },
+
+    /**
+     * @return {boolean}
+     */
+    supportsRegexSearch: function()
+    {
+        return false;
+    },
+
     searchCanceled: function()
     {
-        if (this._searchResults) {
-            for (var i = 0; i < this._searchResults.length; ++i) {
-                var profileNode = this._searchResults[i].profileNode;
-
-                delete profileNode._searchMatchedSelfColumn;
-                delete profileNode._searchMatchedTotalColumn;
-                delete profileNode._searchMatchedFunctionColumn;
-
-                profileNode.refresh();
-            }
-        }
-
-        delete this._searchFinishedCallback;
-        this._currentSearchResultIndex = -1;
-        this._searchResults = [];
+        this._searchableElement.searchCanceled();
     },
 
-    performSearch: function(query, finishedCallback)
+    /**
+     * @param {!WebInspector.SearchableView.SearchConfig} searchConfig
+     * @param {boolean} shouldJump
+     * @param {boolean=} jumpBackwards
+     */
+    performSearch: function(searchConfig, shouldJump, jumpBackwards)
     {
-        // Call searchCanceled since it will reset everything we need before doing a new search.
-        this.searchCanceled();
-
-        query = query.trim();
-
-        if (!query.length)
-            return;
-
-        this._searchFinishedCallback = finishedCallback;
-
-        var greaterThan = (query.startsWith(">"));
-        var lessThan = (query.startsWith("<"));
-        var equalTo = (query.startsWith("=") || ((greaterThan || lessThan) && query.indexOf("=") === 1));
-        var percentUnits = (query.lastIndexOf("%") === (query.length - 1));
-        var millisecondsUnits = (query.length > 2 && query.lastIndexOf("ms") === (query.length - 2));
-        var secondsUnits = (!millisecondsUnits && query.lastIndexOf("s") === (query.length - 1));
-
-        var queryNumber = parseFloat(query);
-        if (greaterThan || lessThan || equalTo) {
-            if (equalTo && (greaterThan || lessThan))
-                queryNumber = parseFloat(query.substring(2));
-            else
-                queryNumber = parseFloat(query.substring(1));
-        }
-
-        var queryNumberMilliseconds = (secondsUnits ? (queryNumber * 1000) : queryNumber);
-
-        // Make equalTo implicitly true if it wasn't specified there is no other operator.
-        if (!isNaN(queryNumber) && !(greaterThan || lessThan))
-            equalTo = true;
-
-        var matcher = createPlainTextSearchRegex(query, "i");
-
-        function matchesQuery(/*ProfileDataGridNode*/ profileDataGridNode)
-        {
-            delete profileDataGridNode._searchMatchedSelfColumn;
-            delete profileDataGridNode._searchMatchedTotalColumn;
-            delete profileDataGridNode._searchMatchedFunctionColumn;
-
-            if (percentUnits) {
-                if (lessThan) {
-                    if (profileDataGridNode.selfPercent < queryNumber)
-                        profileDataGridNode._searchMatchedSelfColumn = true;
-                    if (profileDataGridNode.totalPercent < queryNumber)
-                        profileDataGridNode._searchMatchedTotalColumn = true;
-                } else if (greaterThan) {
-                    if (profileDataGridNode.selfPercent > queryNumber)
-                        profileDataGridNode._searchMatchedSelfColumn = true;
-                    if (profileDataGridNode.totalPercent > queryNumber)
-                        profileDataGridNode._searchMatchedTotalColumn = true;
-                }
-
-                if (equalTo) {
-                    if (profileDataGridNode.selfPercent == queryNumber)
-                        profileDataGridNode._searchMatchedSelfColumn = true;
-                    if (profileDataGridNode.totalPercent == queryNumber)
-                        profileDataGridNode._searchMatchedTotalColumn = true;
-                }
-            } else if (millisecondsUnits || secondsUnits) {
-                if (lessThan) {
-                    if (profileDataGridNode.selfTime < queryNumberMilliseconds)
-                        profileDataGridNode._searchMatchedSelfColumn = true;
-                    if (profileDataGridNode.totalTime < queryNumberMilliseconds)
-                        profileDataGridNode._searchMatchedTotalColumn = true;
-                } else if (greaterThan) {
-                    if (profileDataGridNode.selfTime > queryNumberMilliseconds)
-                        profileDataGridNode._searchMatchedSelfColumn = true;
-                    if (profileDataGridNode.totalTime > queryNumberMilliseconds)
-                        profileDataGridNode._searchMatchedTotalColumn = true;
-                }
-
-                if (equalTo) {
-                    if (profileDataGridNode.selfTime == queryNumberMilliseconds)
-                        profileDataGridNode._searchMatchedSelfColumn = true;
-                    if (profileDataGridNode.totalTime == queryNumberMilliseconds)
-                        profileDataGridNode._searchMatchedTotalColumn = true;
-                }
-            }
-
-            if (profileDataGridNode.functionName.match(matcher) || (profileDataGridNode.url && profileDataGridNode.url.match(matcher)))
-                profileDataGridNode._searchMatchedFunctionColumn = true;
-
-            if (profileDataGridNode._searchMatchedSelfColumn ||
-                profileDataGridNode._searchMatchedTotalColumn ||
-                profileDataGridNode._searchMatchedFunctionColumn)
-            {
-                profileDataGridNode.refresh();
-                return true;
-            }
-
-            return false;
-        }
-
-        var current = this.profileDataGridTree.children[0];
-
-        while (current) {
-            if (matchesQuery(current)) {
-                this._searchResults.push({ profileNode: current });
-            }
-
-            current = current.traverseNextNode(false, null, false);
-        }
-
-        finishedCallback(this, this._searchResults.length);
-    },
-
-    jumpToFirstSearchResult: function()
-    {
-        if (!this._searchResults || !this._searchResults.length)
-            return;
-        this._currentSearchResultIndex = 0;
-        this._jumpToSearchResult(this._currentSearchResultIndex);
-    },
-
-    jumpToLastSearchResult: function()
-    {
-        if (!this._searchResults || !this._searchResults.length)
-            return;
-        this._currentSearchResultIndex = (this._searchResults.length - 1);
-        this._jumpToSearchResult(this._currentSearchResultIndex);
+        var matchesCount = this._searchableElement.performSearch(searchConfig, shouldJump, jumpBackwards);
+        this._searchableView.updateSearchMatchesCount(matchesCount);
+        this._searchableView.updateCurrentMatchIndex(this._searchableElement.currentSearchResultIndex());
     },
 
     jumpToNextSearchResult: function()
     {
-        if (!this._searchResults || !this._searchResults.length)
-            return;
-        if (++this._currentSearchResultIndex >= this._searchResults.length)
-            this._currentSearchResultIndex = 0;
-        this._jumpToSearchResult(this._currentSearchResultIndex);
+        this._searchableElement.jumpToNextSearchResult();
+        this._searchableView.updateCurrentMatchIndex(this._searchableElement.currentSearchResultIndex());
     },
 
     jumpToPreviousSearchResult: function()
     {
-        if (!this._searchResults || !this._searchResults.length)
-            return;
-        if (--this._currentSearchResultIndex < 0)
-            this._currentSearchResultIndex = (this._searchResults.length - 1);
-        this._jumpToSearchResult(this._currentSearchResultIndex);
-    },
-
-    /**
-     * @return {number}
-     */
-    currentSearchResultIndex: function() {
-        return this._currentSearchResultIndex;
-    },
-
-    _jumpToSearchResult: function(index)
-    {
-        var searchResult = this._searchResults[index];
-        if (!searchResult)
-            return;
-
-        var profileNode = searchResult.profileNode;
-        profileNode.revealAndSelect();
+        this._searchableElement.jumpToPreviousSearchResult();
+        this._searchableView.updateCurrentMatchIndex(this._searchableElement.currentSearchResultIndex());
     },
 
     _ensureFlameChartCreated: function()
@@ -379,40 +281,35 @@ WebInspector.CPUProfileView.prototype = {
         if (!this.profile)
             return;
 
-        switch (this.viewSelectComboBox.selectedOption().value) {
+        this._searchableView.closeSearch();
+
+        if (this._visibleView)
+            this._visibleView.detach();
+
+        this._viewType.set(this.viewSelectComboBox.selectedOption().value);
+        switch (this._viewType.get()) {
         case WebInspector.CPUProfileView._TypeFlame:
             this._ensureFlameChartCreated();
-            this.dataGrid.detach();
-            this._flameChart.show(this.element);
-            this._viewType.set(WebInspector.CPUProfileView._TypeFlame);
             this._statusBarButtonsElement.classList.toggle("hidden", true);
-            return;
+            this._visibleView = this._flameChart;
+            this._searchableElement = this._flameChart;
+            break;
         case WebInspector.CPUProfileView._TypeTree:
             this.profileDataGridTree = this._getTopDownProfileDataGridTree();
             this._sortProfile();
-            this._viewType.set(WebInspector.CPUProfileView._TypeTree);
+            this._visibleView = this.dataGrid;
+            this._searchableElement = this.profileDataGridTree;
             break;
         case WebInspector.CPUProfileView._TypeHeavy:
             this.profileDataGridTree = this._getBottomUpProfileDataGridTree();
             this._sortProfile();
-            this._viewType.set(WebInspector.CPUProfileView._TypeHeavy);
+            this._visibleView = this.dataGrid;
+            this._searchableElement = this.profileDataGridTree;
             break;
         }
 
-        this._statusBarButtonsElement.classList.toggle("hidden", false);
-
-        if (this._flameChart)
-            this._flameChart.detach();
-        this.dataGrid.show(this.element);
-
-        if (!this.currentQuery || !this._searchFinishedCallback || !this._searchResults)
-            return;
-
-        // The current search needs to be performed again. First negate out previous match
-        // count by calling the search finished callback with a negative number of matches.
-        // Then perform the search again the with same query and callback.
-        this._searchFinishedCallback(this, -this._searchResults.length);
-        this.performSearch(this.currentQuery, this._searchFinishedCallback);
+        this._statusBarButtonsElement.classList.toggle("hidden", this._viewType.get() === WebInspector.CPUProfileView._TypeFlame);
+        this._visibleView.show(this._searchableView.element);
     },
 
     _focusClicked: function(event)

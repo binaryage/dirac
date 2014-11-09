@@ -61,6 +61,14 @@ WebInspector.ProfileLauncherView = function(profilesPanel)
 
 WebInspector.ProfileLauncherView.prototype = {
     /**
+     * @return {?WebInspector.SearchableView}
+     */
+    searchableView: function()
+    {
+        return null;
+    },
+
+    /**
      * @param {!WebInspector.Target} target
      */
     targetAdded: function(target)

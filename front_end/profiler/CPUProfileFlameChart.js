@@ -379,6 +379,7 @@ WebInspector.CPUFlameChartDataProvider.colorGenerator = function()
 
 /**
  * @constructor
+ * @implements {WebInspector.CPUProfileView.Searchable}
  * @extends {WebInspector.VBox}
  * @param {!WebInspector.FlameChartDataProvider} dataProvider
  */
@@ -394,6 +395,8 @@ WebInspector.CPUProfileFlameChart = function(dataProvider)
     this._mainPane.show(this.element);
     this._mainPane.addEventListener(WebInspector.FlameChart.Events.EntrySelected, this._onEntrySelected, this);
     this._overviewPane.addEventListener(WebInspector.OverviewGrid.Events.WindowChanged, this._onWindowChanged, this);
+    this._dataProvider = dataProvider;
+    this._searchResults = [];
 }
 
 WebInspector.CPUProfileFlameChart.prototype = {
@@ -433,6 +436,62 @@ WebInspector.CPUProfileFlameChart.prototype = {
     {
         this._overviewPane.update();
         this._mainPane.update();
+    },
+
+    /**
+     * @param {!WebInspector.SearchableView.SearchConfig} searchConfig
+     * @param {boolean} shouldJump
+     * @param {boolean=} jumpBackwards
+     * @return {number}
+     */
+    performSearch: function(searchConfig, shouldJump, jumpBackwards)
+    {
+        var matcher = createPlainTextSearchRegex(searchConfig.query, searchConfig.caseSensitive ? "": "i");
+
+        var selectedEntryIndex = this._searchResultIndex !== -1 ? this._searchResults[this._searchResultIndex] : -1;
+        this._searchResults = [];
+        var entriesCount = this._dataProvider._entryNodes.length;
+        for(var index = 0; index < entriesCount; ++index) {
+            if (this._dataProvider.entryTitle(index).match(matcher))
+                this._searchResults.push(index);
+        }
+
+        if (this._searchResults.length) {
+            this._searchResultIndex = this._searchResults.indexOf(selectedEntryIndex);
+            if (this._searchResultIndex === -1)
+                this._searchResultIndex = jumpBackwards ? this._searchResults.length - 1 : 0;
+            this._mainPane.setSelectedEntry(this._searchResults[this._searchResultIndex]);
+        } else
+            this.searchCanceled();
+
+        return this._searchResults.length;
+    },
+
+    searchCanceled: function()
+    {
+        this._mainPane.setSelectedEntry(-1);
+        this._searchResults = [];
+        this._searchResultIndex = -1;
+    },
+
+    jumpToNextSearchResult: function()
+    {
+        this._searchResultIndex = (this._searchResultIndex + 1) % this._searchResults.length;
+        this._mainPane.setSelectedEntry(this._searchResults[this._searchResultIndex]);
+    },
+
+    jumpToPreviousSearchResult: function()
+    {
+        this._searchResultIndex = (this._searchResultIndex - 1 + this._searchResults.length) % this._searchResults.length;
+        this._mainPane.setSelectedEntry(this._searchResults[this._searchResultIndex]);
+    },
+
+    /**
+     * @return {number}
+     */
+    currentSearchResultIndex: function()
+    {
+        return this._searchResultIndex;
     },
 
     __proto__: WebInspector.VBox.prototype

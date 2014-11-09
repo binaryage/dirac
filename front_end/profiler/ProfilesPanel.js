@@ -431,7 +431,6 @@ WebInspector.ProfileHeader.prototype = {
 
 /**
  * @constructor
- * @implements {WebInspector.Searchable}
  * @implements {WebInspector.ProfileType.DataDisplayDelegate}
  * @extends {WebInspector.PanelWithSidebarTree}
  */
@@ -442,10 +441,7 @@ WebInspector.ProfilesPanel = function()
     this.registerRequiredCSS("profiler/heapProfiler.css");
     this.registerRequiredCSS("profiler/profilesPanel.css");
 
-    this._searchableView = new WebInspector.SearchableView(this);
-
     var mainView = new WebInspector.VBox();
-    this._searchableView.show(mainView.element);
     mainView.show(this.mainElement());
 
     this.profilesItemTreeElement = new WebInspector.ProfilesSidebarTreeElement(this);
@@ -455,7 +451,7 @@ WebInspector.ProfilesPanel = function()
     this.profileViews = createElement("div");
     this.profileViews.id = "profile-views";
     this.profileViews.classList.add("vbox");
-    this._searchableView.element.appendChild(this.profileViews);
+    mainView.element.appendChild(this.profileViews);
 
     var statusBarContainer = createElementWithClass("div", "profiles-status-bar");
     mainView.element.insertBefore(statusBarContainer, mainView.element.firstChild);
@@ -499,11 +495,11 @@ WebInspector.ProfilesPanel = function()
 
 WebInspector.ProfilesPanel.prototype = {
     /**
-     * @return {!WebInspector.SearchableView}
+     * @return {?WebInspector.SearchableView}
      */
     searchableView: function()
     {
-        return this._searchableView;
+        return this.visibleView.searchableView();
     },
 
     _createFileSelectorElement: function()
@@ -638,8 +634,6 @@ WebInspector.ProfilesPanel.prototype = {
             types[i]._reset();
 
         delete this.visibleView;
-        delete this.currentQuery;
-        this.searchCanceled();
 
         this._profileGroups = {};
         this._updateRecordButton(false);
@@ -868,89 +862,6 @@ WebInspector.ProfilesPanel.prototype = {
         if (this.visibleView)
             this.visibleView.detach();
         delete this.visibleView;
-    },
-
-    /**
-     * @param {!WebInspector.SearchableView.SearchConfig} searchConfig
-     * @param {boolean} shouldJump
-     * @param {boolean=} jumpBackwards
-     */
-    performSearch: function(searchConfig, shouldJump, jumpBackwards)
-    {
-        var query = searchConfig.query;
-        this.searchCanceled();
-
-        var visibleView = this.visibleView;
-        if (!visibleView)
-            return;
-
-        /**
-         * @this {WebInspector.ProfilesPanel}
-         */
-        function finishedCallback(view, searchMatches)
-        {
-            if (!searchMatches)
-                return;
-            this._searchableView.updateSearchMatchesCount(searchMatches);
-            this._searchResultsView = view;
-            if (shouldJump) {
-                if (jumpBackwards)
-                    view.jumpToLastSearchResult();
-                else
-                    view.jumpToFirstSearchResult();
-                this._searchableView.updateCurrentMatchIndex(view.currentSearchResultIndex());
-            }
-        }
-
-        visibleView.currentQuery = query;
-        visibleView.performSearch(query, finishedCallback.bind(this));
-    },
-
-    jumpToNextSearchResult: function()
-    {
-        if (!this._searchResultsView)
-            return;
-        if (this._searchResultsView !== this.visibleView)
-            return;
-        this._searchResultsView.jumpToNextSearchResult();
-        this._searchableView.updateCurrentMatchIndex(this._searchResultsView.currentSearchResultIndex());
-    },
-
-    jumpToPreviousSearchResult: function()
-    {
-        if (!this._searchResultsView)
-            return;
-        if (this._searchResultsView !== this.visibleView)
-            return;
-        this._searchResultsView.jumpToPreviousSearchResult();
-        this._searchableView.updateCurrentMatchIndex(this._searchResultsView.currentSearchResultIndex());
-    },
-
-    /**
-     * @return {boolean}
-     */
-    supportsCaseSensitiveSearch: function()
-    {
-        return false;
-    },
-
-    /**
-     * @return {boolean}
-     */
-    supportsRegexSearch: function()
-    {
-        return false;
-    },
-
-    searchCanceled: function()
-    {
-        if (this._searchResultsView) {
-            if (this._searchResultsView.searchCanceled)
-                this._searchResultsView.searchCanceled();
-            this._searchResultsView.currentQuery = null;
-            this._searchResultsView = null;
-        }
-        this._searchableView.updateSearchMatchesCount(0);
     },
 
     /**

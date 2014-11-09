@@ -31,6 +31,7 @@
 /**
  * @constructor
  * @implements {WebInspector.ProfileType.DataDisplayDelegate}
+ * @implements {WebInspector.Searchable}
  * @extends {WebInspector.VBox}
  * @param {!WebInspector.ProfileType.DataDisplayDelegate} dataDisplayDelegate
  * @param {!WebInspector.HeapProfileHeader} profile
@@ -51,8 +52,11 @@ WebInspector.HeapSnapshotView = function(dataDisplayDelegate, profile)
 
     this._parentDataDisplayDelegate = dataDisplayDelegate;
 
+    this._searchableView = new WebInspector.SearchableView(this);
+    this._searchableView.show(this.element);
+
     this._splitView = new WebInspector.SplitView(false, true, "heapSnapshotSplitViewState", 200, 200);
-    this._splitView.show(this.element);
+    this._splitView.show(this._searchableView.element);
 
     this._containmentView = new WebInspector.VBox();
     this._containmentView.setMinimumSize(50, 25);
@@ -242,11 +246,11 @@ WebInspector.HeapSnapshotView.SummaryPerspective.prototype = {
     {
         heapSnapshotView._constructorsView.show(heapSnapshotView._splitView.mainElement());
         heapSnapshotView._objectDetailsView.show(heapSnapshotView._splitView.sidebarElement());
-        heapSnapshotView._splitView.show(heapSnapshotView.element);
+        heapSnapshotView._splitView.show(heapSnapshotView._searchableView.element);
         heapSnapshotView._filterSelect.visible = true;
         heapSnapshotView._classNameFilter.visible = true;
         if (heapSnapshotView._trackingOverviewGrid) {
-            heapSnapshotView._trackingOverviewGrid.show(heapSnapshotView.element, heapSnapshotView._splitView.element);
+            heapSnapshotView._trackingOverviewGrid.show(heapSnapshotView._searchableView.element, heapSnapshotView._splitView.element);
             heapSnapshotView._trackingOverviewGrid.update();
             heapSnapshotView._trackingOverviewGrid._updateGrid();
         }
@@ -292,7 +296,7 @@ WebInspector.HeapSnapshotView.ComparisonPerspective.prototype = {
     {
         heapSnapshotView._diffView.show(heapSnapshotView._splitView.mainElement());
         heapSnapshotView._objectDetailsView.show(heapSnapshotView._splitView.sidebarElement());
-        heapSnapshotView._splitView.show(heapSnapshotView.element);
+        heapSnapshotView._splitView.show(heapSnapshotView._searchableView.element);
         heapSnapshotView._baseSelect.visible = true;
         heapSnapshotView._classNameFilter.visible = true;
     },
@@ -337,7 +341,7 @@ WebInspector.HeapSnapshotView.ContainmentPerspective.prototype = {
     {
         heapSnapshotView._containmentView.show(heapSnapshotView._splitView.mainElement());
         heapSnapshotView._objectDetailsView.show(heapSnapshotView._splitView.sidebarElement());
-        heapSnapshotView._splitView.show(heapSnapshotView.element);
+        heapSnapshotView._splitView.show(heapSnapshotView._searchableView.element);
     },
 
     /**
@@ -381,7 +385,7 @@ WebInspector.HeapSnapshotView.AllocationPerspective.prototype = {
         heapSnapshotView._constructorsView.show(heapSnapshotView._splitView.mainElement());
         heapSnapshotView._objectDetailsView.show(heapSnapshotView._splitView.sidebarElement());
         heapSnapshotView._splitView.show(this._allocationSplitView.sidebarElement());
-        this._allocationSplitView.show(heapSnapshotView.element);
+        this._allocationSplitView.show(heapSnapshotView._searchableView.element);
 
         heapSnapshotView._constructorsDataGrid.clear();
         var selectedNode = heapSnapshotView._allocationDataGrid.selectedNode;
@@ -428,7 +432,7 @@ WebInspector.HeapSnapshotView.StatisticsPerspective.prototype = {
      */
     activate: function(heapSnapshotView)
     {
-        heapSnapshotView._statisticsView.show(heapSnapshotView.element);
+        heapSnapshotView._statisticsView.show(heapSnapshotView._searchableView.element);
     },
 
     /**
@@ -446,6 +450,14 @@ WebInspector.HeapSnapshotView.StatisticsPerspective.prototype = {
 
 
 WebInspector.HeapSnapshotView.prototype = {
+    /**
+     * @return {!WebInspector.SearchableView}
+     */
+    searchableView: function()
+    {
+        return this._searchableView;
+    },
+
     /**
      * @override
      * @param {?WebInspector.ProfileHeader} profile
@@ -543,6 +555,22 @@ WebInspector.HeapSnapshotView.prototype = {
             this.helpPopover.hide();
     },
 
+    /**
+     * @return {boolean}
+     */
+    supportsCaseSensitiveSearch: function()
+    {
+        return true;
+    },
+
+    /**
+     * @return {boolean}
+     */
+    supportsRegexSearch: function()
+    {
+        return false;
+    },
+
     searchCanceled: function()
     {
         if (this._searchResults) {
@@ -553,20 +581,30 @@ WebInspector.HeapSnapshotView.prototype = {
             }
         }
 
-        delete this._searchFinishedCallback;
         this._currentSearchResultIndex = -1;
         this._searchResults = [];
     },
 
     /**
-     * @param {string} query
-     * @param {function(!WebInspector.View, number)} finishedCallback
+     * @param {boolean} found
      */
-    performSearch: function(query, finishedCallback)
+    _didHighlightById: function(found)
+    {
+        // Do not remove. It needs for heap snapshot search tests.
+    },
+
+    /**
+     * @param {!WebInspector.SearchableView.SearchConfig} searchConfig
+     * @param {boolean} shouldJump
+     * @param {boolean=} jumpBackwards
+     */
+    performSearch: function(searchConfig, shouldJump, jumpBackwards)
     {
         // Call searchCanceled since it will reset everything we need before doing a new search.
         this.searchCanceled();
 
+        this.currentQuery = searchConfig;
+        var query = searchConfig.query;
         query = query.trim();
 
         if (!query)
@@ -574,26 +612,14 @@ WebInspector.HeapSnapshotView.prototype = {
         if (!this._currentPerspective.supportsSearch())
             return;
 
-        /**
-         * @param {boolean} found
-         * @this {WebInspector.HeapSnapshotView}
-         */
-        function didHighlight(found)
-        {
-            finishedCallback(this, found ? 1 : 0);
-        }
-
         if (query.charAt(0) === "@") {
             var snapshotNodeId = parseInt(query.substring(1), 10);
             if (!isNaN(snapshotNodeId))
-                this._dataGrid.highlightObjectByHeapSnapshotId(String(snapshotNodeId), didHighlight.bind(this));
-            else
-                finishedCallback(this, 0);
+                this._dataGrid.highlightObjectByHeapSnapshotId(String(snapshotNodeId), this._didHighlightById.bind(this));
             return;
         }
 
-        this._searchFinishedCallback = finishedCallback;
-        var nameRegExp = createPlainTextSearchRegex(query, "i");
+        var nameRegExp = createPlainTextSearchRegex(query, searchConfig.caseSensitive ? "": "i");
 
         function matchesByName(gridNode) {
             return ("_name" in gridNode) && nameRegExp.test(gridNode._name);
@@ -624,53 +650,36 @@ WebInspector.HeapSnapshotView.prototype = {
             depth += info.depthChange;
         }
 
-        finishedCallback(this, this._searchResults.length);
-    },
-
-    jumpToFirstSearchResult: function()
-    {
-        if (!this._searchResults || !this._searchResults.length)
-            return;
-        this._currentSearchResultIndex = 0;
-        this._jumpToSearchResult(this._currentSearchResultIndex);
-    },
-
-    jumpToLastSearchResult: function()
-    {
-        if (!this._searchResults || !this._searchResults.length)
-            return;
-        this._currentSearchResultIndex = (this._searchResults.length - 1);
-        this._jumpToSearchResult(this._currentSearchResultIndex);
+        this._searchableView.updateSearchMatchesCount(this._searchResults.length);
+        if (this._searchResults.length) {
+            if (jumpBackwards)
+                this._currentSearchResultIndex = this._searchResults.length - 1;
+            else
+                this._currentSearchResultIndex = this._searchResults.length ? 0 : -1;
+        }
+        this._searchableView.updateCurrentMatchIndex(this._currentSearchResultIndex);
+        this._jumpToSearchResult();
     },
 
     jumpToNextSearchResult: function()
     {
-        if (!this._searchResults || !this._searchResults.length)
+        if (!this._searchResults.length)
             return;
-        if (++this._currentSearchResultIndex >= this._searchResults.length)
-            this._currentSearchResultIndex = 0;
-        this._jumpToSearchResult(this._currentSearchResultIndex);
+        this._currentSearchResultIndex = (this._currentSearchResultIndex + 1) % this._searchResults.length;
+        this._jumpToSearchResult();
     },
 
     jumpToPreviousSearchResult: function()
     {
-        if (!this._searchResults || !this._searchResults.length)
+        if (!this._searchResults.length)
             return;
-        if (--this._currentSearchResultIndex < 0)
-            this._currentSearchResultIndex = (this._searchResults.length - 1);
-        this._jumpToSearchResult(this._currentSearchResultIndex);
+        this._currentSearchResultIndex = (this._currentSearchResultIndex + this._searchResults.length - 1) % this._searchResults.length;
+        this._jumpToSearchResult();
     },
 
-    /**
-     * @return {number}
-     */
-    currentSearchResultIndex: function() {
-        return this._currentSearchResultIndex;
-    },
-
-    _jumpToSearchResult: function(index)
+    _jumpToSearchResult: function()
     {
-        var searchResult = this._searchResults[index];
+        var searchResult = this._searchResults[this._currentSearchResultIndex];
         if (!searchResult)
             return;
 
@@ -700,14 +709,13 @@ WebInspector.HeapSnapshotView.prototype = {
         if (dataGrid.snapshot)
             this._baseProfile.load(dataGrid.setBaseDataSource.bind(dataGrid));
 
-        if (!this.currentQuery || !this._searchFinishedCallback || !this._searchResults)
+        if (!this.currentQuery || !this._searchResults)
             return;
 
         // The current search needs to be performed again. First negate out previous match
         // count by calling the search finished callback with a negative number of matches.
         // Then perform the search again with the same query and callback.
-        this._searchFinishedCallback(this, -this._searchResults.length);
-        this.performSearch(this.currentQuery, this._searchFinishedCallback);
+        this.performSearch(this.currentQuery, false);
     },
 
     _changeFilter: function()
@@ -720,14 +728,13 @@ WebInspector.HeapSnapshotView.prototype = {
             label: this._filterSelect.selectedOption().label
         });
 
-        if (!this.currentQuery || !this._searchFinishedCallback || !this._searchResults)
+        if (!this.currentQuery || !this._searchResults)
             return;
 
         // The current search needs to be performed again. First negate out previous match
         // count by calling the search finished callback with a negative number of matches.
         // Then perform the search again with the same query and callback.
-        this._searchFinishedCallback(this, -this._searchResults.length);
-        this.performSearch(this.currentQuery, this._searchFinishedCallback);
+        this.performSearch(this.currentQuery, false);
     },
 
     /**
@@ -888,14 +895,13 @@ WebInspector.HeapSnapshotView.prototype = {
 
         this._updateDataSourceAndView();
 
-        if (!this.currentQuery || !this._searchFinishedCallback || !this._searchResults)
+        if (!this.currentQuery || !this._searchResults)
             return;
 
         // The current search needs to be performed again. First negate out previous match
         // count by calling the search finished callback with a negative number of matches.
         // Then perform the search again the with same query and callback.
-        this._searchFinishedCallback(this, -this._searchResults.length);
-        this.performSearch(this.currentQuery, this._searchFinishedCallback);
+        this.performSearch(this.currentQuery, false);
     },
 
     /**
@@ -936,6 +942,8 @@ WebInspector.HeapSnapshotView.prototype = {
     _resolveObjectForPopover: function(element, showCallback, objectGroupName)
     {
         if (!this._profile.target())
+            return;
+        if (!element.node)
             return;
         element.node.queryObjectContent(this._profile.target(), showCallback, objectGroupName);
     },

@@ -446,6 +446,31 @@ WebInspector.FlameChart.prototype = {
         }
     },
 
+    _revealEntry: function(entryIndex)
+    {
+        var timelineData = this._timelineData();
+        if (!timelineData)
+            return;
+        var entryStartTime = timelineData.entryStartTimes[entryIndex];
+        var entryTotalTime = timelineData.entryTotalTimes[entryIndex];
+        var entryEndTime = entryStartTime + entryTotalTime;
+        var minEntryTimeWindow = Math.min(entryTotalTime, this._timeWindowRight - this._timeWindowLeft);
+
+        var y = this._levelToHeight(timelineData.entryLevels[entryIndex]);
+        if (y < this._vScrollElement.scrollTop)
+            this._vScrollElement.scrollTop = y;
+        else if (y > this._vScrollElement.scrollTop + this._offsetHeight + this._barHeightDelta)
+            this._vScrollElement.scrollTop = y - this._offsetHeight - this._barHeightDelta;
+
+        if (this._timeWindowLeft > entryEndTime) {
+            var delta = this._timeWindowLeft - entryEndTime + minEntryTimeWindow;
+            this._flameChartDelegate.requestWindowTimes(this._timeWindowLeft - delta, this._timeWindowRight - delta);
+        } else if (this._timeWindowRight < entryStartTime) {
+            var delta = entryStartTime - this._timeWindowRight + minEntryTimeWindow;
+            this._flameChartDelegate.requestWindowTimes(this._timeWindowLeft + delta, this._timeWindowRight + delta);
+        }
+    },
+
     /**
      * @param {number} startTime
      * @param {number} endTime
@@ -1110,6 +1135,7 @@ WebInspector.FlameChart.prototype = {
     setSelectedEntry: function(entryIndex)
     {
         this._selectedEntryIndex = entryIndex;
+        this._revealEntry(entryIndex);
         this._updateElementPosition(this._selectedElement, this._selectedEntryIndex);
     },
 
