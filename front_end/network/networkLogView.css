@@ -106,7 +106,7 @@
 }
 
 .network-log-grid.data-grid.small .network-graph-side {
-    height: 14px;
+    height: 19px;
 }
 
 .network-log-grid.data-grid th.sortable:active {
@@ -258,11 +258,9 @@
 
 .network-graph-side {
     position: relative;
-    height: 36px;
+    height: 39px;
     padding: 0;
     white-space: nowrap;
-    margin-top: 1px;
-    border-top: 1px solid transparent;
     overflow: hidden;
 }
 
@@ -334,12 +332,16 @@
     content: url(Images/graphLabelCalloutRight.png);
 }
 
+.small .network-graph-bar {
+    top: 3px;
+    bottom: 3px;
+}
+
 .network-graph-bar {
     position: absolute;
-    top: 0;
-    bottom: 0;
-    margin: auto -1px;
-    height: 12px;
+    top: 13px;
+    bottom: 13px;
+    margin-left: -1px;
     min-width: 2px;
     border-width: 1px;
     border-style: solid;
