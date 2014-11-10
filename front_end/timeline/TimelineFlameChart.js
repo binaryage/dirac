@@ -207,11 +207,6 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
     _appendThreadTimelineData: function(threadTitle, syncEvents, asyncEvents)
     {
         var levelCount = this._appendAsyncEvents(threadTitle, asyncEvents);
-        // If JS sampling was on covert trace events with call stack into JSFrame events.
-        if (this._model.containsJSSamples()) {
-            var jsFrameEvents = this._generateJSFrameEvents(syncEvents);
-            syncEvents = jsFrameEvents.mergeOrdered(syncEvents, WebInspector.TracingModel.Event.orderedCompareStartTime);
-        }
         levelCount += this._appendSyncEvents(levelCount ? null : threadTitle, syncEvents);
         if (levelCount)
             ++this._currentLevel;
@@ -299,102 +294,6 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
         this._frameBarsLevel = this._currentLevel++;
         for (var i = 0; i < frames.length; ++i)
             this._appendFrame(frames[i]);
-    },
-
-    /**
-     * @param {!Array.<!WebInspector.TracingModel.Event>} events
-     * @return {!Array.<!WebInspector.TracingModel.Event>}
-     */
-    _generateJSFrameEvents: function(events)
-    {
-        function equalFrames(frame1, frame2)
-        {
-            return frame1.scriptId === frame2.scriptId && frame1.functionName === frame2.functionName;
-        }
-
-        function eventEndTime(e)
-        {
-            return e.endTime || e.startTime;
-        }
-
-        function isJSInvocationEvent(e)
-        {
-            switch (e.name) {
-            case WebInspector.TracingTimelineModel.RecordType.FunctionCall:
-            case WebInspector.TracingTimelineModel.RecordType.EvaluateScript:
-                return true;
-            }
-            return false;
-        }
-
-        var jsFrameEvents = [];
-        var jsFramesStack = [];
-        var coalesceThresholdMs = WebInspector.TimelineFlameChartDataProvider.JSFrameCoalesceThresholdMs;
-
-        function onStartEvent(e)
-        {
-            extractStackTrace(e);
-        }
-
-        function onInstantEvent(e, top)
-        {
-            if (e.name === WebInspector.TracingTimelineModel.RecordType.JSSample && top && !isJSInvocationEvent(top))
-                return;
-            extractStackTrace(e);
-        }
-
-        function onEndEvent(e)
-        {
-            if (isJSInvocationEvent(e))
-                jsFramesStack.length = 0;
-        }
-
-        function extractStackTrace(e)
-        {
-            if (!e.stackTrace)
-                return;
-            while (jsFramesStack.length && eventEndTime(jsFramesStack.peekLast()) + coalesceThresholdMs <= e.startTime)
-                jsFramesStack.pop();
-            var endTime = eventEndTime(e);
-            var numFrames = e.stackTrace.length;
-            var minFrames = Math.min(numFrames, jsFramesStack.length);
-            var j;
-            for (j = 0; j < minFrames; ++j) {
-                var newFrame = e.stackTrace[numFrames - 1 - j];
-                var oldFrame = jsFramesStack[j].args["data"];
-                if (!equalFrames(newFrame, oldFrame))
-                    break;
-                jsFramesStack[j].setEndTime(Math.max(jsFramesStack[j].endTime, endTime));
-            }
-            jsFramesStack.length = j;
-            for (; j < numFrames; ++j) {
-                var frame = e.stackTrace[numFrames - 1 - j];
-                var jsFrameEvent = new WebInspector.TracingModel.Event(WebInspector.TracingModel.DevToolsMetadataEventCategory, WebInspector.TracingTimelineModel.RecordType.JSFrame,
-                    WebInspector.TracingModel.Phase.Complete, e.startTime, e.thread);
-                jsFrameEvent.addArgs({ data: frame });
-                jsFrameEvent.setEndTime(endTime);
-                jsFramesStack.push(jsFrameEvent);
-                jsFrameEvents.push(jsFrameEvent);
-            }
-        }
-
-        var stack = [];
-        for (var i = 0; i < events.length; ++i) {
-            var e = events[i];
-            var top = stack.peekLast();
-            if (top && top.endTime <= e.startTime)
-                onEndEvent(stack.pop());
-            if (e.duration) {
-                onStartEvent(e);
-                stack.push(e);
-            } else {
-                onInstantEvent(e, stack.peekLast());
-            }
-        }
-        while (stack.length)
-            onEndEvent(stack.pop());
-
-        return jsFrameEvents;
     },
 
     /**

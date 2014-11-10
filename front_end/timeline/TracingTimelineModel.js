@@ -310,22 +310,16 @@ WebInspector.TracingTimelineModel.prototype = {
     },
 
     /**
-     * @return {boolean}
-     */
-    containsJSSamples: function()
-    {
-        return this._containsJSSamples;
-    },
-
-    /**
      * @param {!ProfilerAgent.CPUProfile} cpuProfile
      */
     _processCpuProfile: function(cpuProfile)
     {
-        this._containsJSSamples = true;
         var jsSamples = WebInspector.TimelineJSProfileProcessor.generateTracingEventsFromCpuProfile(this, cpuProfile);
         this._inspectedTargetEvents = this._inspectedTargetEvents.mergeOrdered(jsSamples, WebInspector.TracingModel.Event.orderedCompareStartTime);
         this._setMainThreadEvents(this.mainThreadEvents().mergeOrdered(jsSamples, WebInspector.TracingModel.Event.orderedCompareStartTime));
+        var jsFrameEvents = WebInspector.TimelineJSProfileProcessor.generateJSFrameEvents(this.mainThreadEvents());
+        this._setMainThreadEvents(jsFrameEvents.mergeOrdered(this.mainThreadEvents(), WebInspector.TracingModel.Event.orderedCompareStartTime));
+        this._inspectedTargetEvents = jsFrameEvents.mergeOrdered(this._inspectedTargetEvents, WebInspector.TracingModel.Event.orderedCompareStartTime);
     },
 
     /**
@@ -409,7 +403,6 @@ WebInspector.TracingTimelineModel.prototype = {
         this._mainThreadEvents = [];
         this._mainThreadAsyncEvents = [];
         this._inspectedTargetEvents = [];
-        this._containsJSSamples = false;
         WebInspector.TimelineModel.prototype.reset.call(this);
     },
 
