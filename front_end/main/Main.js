@@ -156,7 +156,6 @@ WebInspector.Main.prototype = {
         Runtime.experiments.register("gpuTimeline", "GPU data on timeline", true);
         Runtime.experiments.register("layersPanel", "Layers panel");
         Runtime.experiments.register("promiseTracker", "Enable Promise inspection");
-        Runtime.experiments.register("timelineOnTraceEvents", "Timeline on trace events");
         Runtime.experiments.register("timelinePowerProfiler", "Timeline power profiler");
         Runtime.experiments.register("timelineJSCPUProfile", "Timeline with JS sampling");
         Runtime.experiments.register("timelineInvalidationTracking", "Timeline with full invalidation tracking.");
@@ -168,15 +167,12 @@ WebInspector.Main.prototype = {
             var testPath = WebInspector.settings.testPath.get();
             if (testPath.indexOf("timeline/") !== -1 || testPath.indexOf("layers/") !== -1)
                 Runtime.experiments.enableForTest("layersPanel");
-            if (testPath.indexOf("tracing/") !== -1)
-                Runtime.experiments.enableForTest("timelineOnTraceEvents");
             if (testPath.indexOf("documentation/") !== -1)
                 Runtime.experiments.enableForTest("documentation");
             if (testPath.indexOf("elements/") !== -1)
                 Runtime.experiments.enableForTest("animationInspection");
         } else {
             Runtime.experiments.setDefaultExperiments([
-                "timelineOnTraceEvents",
                 "disableAgentsWhenProfile",
                 "timelineJSCPUProfile",
             ]);

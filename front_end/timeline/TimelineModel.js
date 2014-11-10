@@ -557,44 +557,6 @@ WebInspector.TimelineRecordVisibleTypeFilter.prototype = {
 
 /**
  * @constructor
- */
-WebInspector.TimelineMergingRecordBuffer = function()
-{
-    this._backgroundRecordsBuffer = [];
-}
-
-/**
- * @constructor
- */
-WebInspector.TimelineMergingRecordBuffer.prototype = {
-    /**
-     * @param {string} thread
-     * @param {!Array.<!WebInspector.TimelineModel.Record>} records
-     * @return {!Array.<!WebInspector.TimelineModel.Record>}
-     */
-    process: function(thread, records)
-    {
-        if (thread !== WebInspector.TimelineModel.MainThreadName) {
-            this._backgroundRecordsBuffer = this._backgroundRecordsBuffer.concat(records);
-            return [];
-        }
-        /**
-         * @param {!WebInspector.TimelineModel.Record} a
-         * @param {!WebInspector.TimelineModel.Record} b
-         */
-        function recordTimestampComparator(a, b)
-        {
-            // Never return 0, as the merge function will squash identical entries.
-            return a.startTime() < b.startTime() ? -1 : 1;
-        }
-        var result = this._backgroundRecordsBuffer.mergeOrdered(records, recordTimestampComparator);
-        this._backgroundRecordsBuffer = [];
-        return result;
-    }
-}
-
-/**
- * @constructor
  * @implements {WebInspector.OutputStreamDelegate}
  * @param {!WebInspector.TimelineModel} model
  * @param {!WebInspector.Progress} progress

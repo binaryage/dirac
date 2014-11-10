@@ -29,8 +29,7 @@ WebInspector.Target = function(name, connection, callback)
     if (Runtime.experiments.isEnabled("timelinePowerProfiler"))
         this.powerAgent().canProfilePower(this._initializeCapability.bind(this, WebInspector.Target.Capabilities.CanProfilePower, null));
     this.workerAgent().canInspectWorkers(this._initializeCapability.bind(this, WebInspector.Target.Capabilities.CanInspectWorkers, this._loadedWithCapabilities.bind(this, callback)));
-    if (Runtime.experiments.isEnabled("timelineOnTraceEvents"))
-        this.consoleAgent().setTracingBasedTimeline(true);
+    this.consoleAgent().setTracingBasedTimeline(true);
 }
 
 /**
@@ -159,9 +158,6 @@ WebInspector.Target.prototype = {
 
         if (this.hasCapability(WebInspector.Target.Capabilities.CanProfilePower))
             WebInspector.powerProfiler = new WebInspector.PowerProfiler(this);
-
-        /** @type {!WebInspector.TimelineManager} */
-        this.timelineManager = new WebInspector.TimelineManager(this);
 
         /** @type {!WebInspector.DatabaseModel} */
         this.databaseModel = new WebInspector.DatabaseModel(this);

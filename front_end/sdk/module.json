@@ -36,7 +36,6 @@
         "RuntimeModel.js",
         "Script.js",
         "SnippetStorage.js",
-        "TimelineManager.js",
         "RemoteObject.js",
         "Resource.js",
         "ResourceTreeModel.js",
