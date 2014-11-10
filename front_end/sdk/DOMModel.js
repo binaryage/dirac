@@ -1592,8 +1592,9 @@ WebInspector.DOMModel.prototype = {
 
     /**
      * @param {boolean} emulationEnabled
+     * @param {string} configuration
      */
-    emulateTouchEventObjects: function(emulationEnabled)
+    emulateTouchEventObjects: function(emulationEnabled, configuration)
     {
         /**
          * @suppressGlobalPropertiesCheck
@@ -1632,7 +1633,7 @@ WebInspector.DOMModel.prototype = {
             this._addTouchEventsScriptId = scriptId;
         }
 
-        PageAgent.setTouchEmulationEnabled(emulationEnabled);
+        PageAgent.setTouchEmulationEnabled(emulationEnabled, configuration);
     },
 
     markUndoableState: function()

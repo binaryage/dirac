@@ -616,7 +616,7 @@ TestSuite.prototype.testPauseInSharedWorkerInitialization2 = function()
 
 TestSuite.prototype.enableTouchEmulation = function()
 {
-    WebInspector.targetManager.mainTarget().domModel.emulateTouchEventObjects(true);
+    WebInspector.targetManager.mainTarget().domModel.emulateTouchEventObjects(true, "mobile");
 };
 
 

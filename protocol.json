@@ -480,7 +480,8 @@
             {
                 "name": "setTouchEmulationEnabled",
                 "parameters": [
-                    { "name": "enabled", "type": "boolean", "description": "Whether the touch event emulation should be enabled." }
+                    { "name": "enabled", "type": "boolean", "description": "Whether the touch event emulation should be enabled." },
+                    { "name": "configuration", "type": "string", "enum": ["mobile", "desktop"], "optional": true, "description": "Touch/gesture events configuration. Default: current platform." }
                 ],
                 "description": "Toggles mouse event-based touch event emulation.",
                 "hidden": true,

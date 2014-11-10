@@ -672,7 +672,7 @@ WebInspector.OverridesSupport.prototype = {
         var emulateTouch = this.emulationEnabled() && this.settings.emulateTouch.get() && !this._touchEmulationSuspended;
         var targets = WebInspector.targetManager.targets();
         for (var i = 0; i < targets.length; ++i)
-            targets[i].domModel.emulateTouchEventObjects(emulateTouch);
+            targets[i].domModel.emulateTouchEventObjects(emulateTouch, this.settings.emulateMobile.get() ? "mobile" : "desktop");
     },
 
     _cssMediaChanged: function()
