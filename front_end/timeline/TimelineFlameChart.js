@@ -792,6 +792,7 @@ WebInspector.TimelineFlameChart.prototype = {
     },
 
     /**
+     * @override
      * @param {?RegExp} textFilter
      */
     refreshRecords: function(textFilter)
@@ -825,31 +826,6 @@ WebInspector.TimelineFlameChart.prototype = {
     {
         this._automaticallySizeWindow = true;
         this._mainView.reset();
-    },
-
-    /**
-     * @param {!WebInspector.TimelineModel.Record} record
-     */
-    addRecord: function(record)
-    {
-        this._dataProvider.reset();
-        if (this._automaticallySizeWindow) {
-            var minimumRecordTime = this._model.minimumRecordTime();
-            if (record.startTime() > (minimumRecordTime + 1000)) {
-                this._automaticallySizeWindow = false;
-                this._delegate.requestWindowTimes(minimumRecordTime, minimumRecordTime + 1000);
-            }
-            this._mainView.scheduleUpdate();
-        } else {
-            if (!this._pendingUpdateTimer)
-                this._pendingUpdateTimer = window.setTimeout(this._updateOnAddRecord.bind(this), 300);
-        }
-    },
-
-    _updateOnAddRecord: function()
-    {
-        delete this._pendingUpdateTimer;
-        this._mainView.scheduleUpdate();
     },
 
     /**

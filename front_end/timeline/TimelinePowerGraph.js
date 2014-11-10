@@ -39,12 +39,5 @@ WebInspector.TimelinePowerGraph.prototype = {
         this.scheduleRefresh();
     },
 
-    /**
-     * @param {!WebInspector.TimelineModel.Record} record
-     */
-    addRecord: function(record)
-    {
-    },
-
     __proto__: WebInspector.CountersGraph.prototype
 }

@@ -58,9 +58,7 @@ WebInspector.TimelinePanel = function()
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStarted, this._onRecordingStarted, this);
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStopped, this._onRecordingStopped, this);
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordsCleared, this._onRecordsCleared, this);
-    this._model.addEventListener(WebInspector.TimelineModel.Events.RecordingProgress, this._onRecordingProgress, this);
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordFilterChanged, this._refreshViews, this);
-    this._model.addEventListener(WebInspector.TimelineModel.Events.RecordAdded, this._onRecordAdded, this);
 
     this._categoryFilter = new WebInspector.TimelineCategoryFilter(this._uiUtils);
     this._durationFilter = new WebInspector.TimelineIsLongFilter();
@@ -760,14 +758,6 @@ WebInspector.TimelinePanel.prototype = {
     /**
      * @param {!WebInspector.Event} event
      */
-    _onRecordingProgress: function(event)
-    {
-        this._updateProgress(WebInspector.UIString("%d events collected", event.data));
-    },
-
-    /**
-     * @param {!WebInspector.Event} event
-     */
     _onTracingBufferUsage: function(event)
     {
         var usage = /** @type {number} */ (event.data);
@@ -810,18 +800,6 @@ WebInspector.TimelinePanel.prototype = {
         this._hideProgressPane();
         this._overviewPane.update();
         this._updateSearchHighlight(false, true);
-    },
-
-    /**
-     * @param {!WebInspector.Event} event
-     */
-    _onRecordAdded: function(event)
-    {
-        var record = /** @type {!WebInspector.TimelineModel.Record} */ (event.data);
-        if (this._lazyFrameModel && !this._tracingModel)
-            this._lazyFrameModel.addRecord(record);
-        for (var i = 0; i < this._currentViews.length; ++i)
-            this._currentViews[i].addRecord(record);
     },
 
     /**
@@ -1323,11 +1301,6 @@ WebInspector.TimelineModeView.prototype = {
      * @param {?RegExp} textFilter
      */
     refreshRecords: function(textFilter) {},
-
-    /**
-     * @param {!WebInspector.TimelineModel.Record} record
-     */
-    addRecord: function(record) {},
 
     /**
      * @param {?WebInspector.TimelineModel.Record} record

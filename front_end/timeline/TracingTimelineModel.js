@@ -439,8 +439,15 @@ WebInspector.TracingTimelineModel.prototype = {
         }
         this.virtualThreads().forEach(processVirtualThreadEvents.bind(this));
 
-        for (var i = 0; i < topLevelRecords.length; i++)
-            this._addTopLevelRecord(topLevelRecords[i]);
+
+        for (var i = 0; i < topLevelRecords.length; i++) {
+            var record = topLevelRecords[i];
+            if (record.type() === WebInspector.TracingTimelineModel.RecordType.Program)
+                this._mainThreadTasks.push(record);
+            if (record.type() === WebInspector.TracingTimelineModel.RecordType.GPUTask)
+                this._gpuThreadTasks.push(record);
+        }
+        this._records = topLevelRecords;
     },
 
     /**
@@ -480,19 +487,6 @@ WebInspector.TracingTimelineModel.prototype = {
             topLevelRecords.push(recordStack[0]);
 
         return topLevelRecords;
-    },
-
-    /**
-     * @param {!WebInspector.TracingTimelineModel.TraceEventRecord} record
-     */
-    _addTopLevelRecord: function(record)
-    {
-        this._records.push(record);
-        if (record.type() === WebInspector.TracingTimelineModel.RecordType.Program)
-            this._mainThreadTasks.push(record);
-        if (record.type() === WebInspector.TracingTimelineModel.RecordType.GPUTask)
-            this._gpuThreadTasks.push(record);
-        this.dispatchEventToListeners(WebInspector.TimelineModel.Events.RecordAdded, record);
     },
 
     _resetProcessingState: function()

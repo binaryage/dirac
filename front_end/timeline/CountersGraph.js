@@ -238,7 +238,11 @@ WebInspector.CountersGraph.prototype = {
         this._refreshCurrentValues();
     },
 
-    refreshRecords: function()
+    /**
+     * @override
+     * @param {?RegExp} textFilter
+     */
+    refreshRecords: function(textFilter)
     {
     },
 

@@ -102,11 +102,9 @@ WebInspector.TimelineModel.RecordType = {
 }
 
 WebInspector.TimelineModel.Events = {
-    RecordAdded: "RecordAdded",
     RecordsCleared: "RecordsCleared",
     RecordingStarted: "RecordingStarted",
     RecordingStopped: "RecordingStopped",
-    RecordingProgress: "RecordingProgress",
     RecordFilterChanged: "RecordFilterChanged"
 }
 

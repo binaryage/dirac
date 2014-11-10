@@ -217,6 +217,8 @@ WebInspector.TimelinePresentationModel.prototype = {
      */
     filteredRecords: function()
     {
+        if (!this._rootRecord.presentationChildren().length)
+            this.refreshRecords();
         if (this._filteredRecords)
             return this._filteredRecords;
 

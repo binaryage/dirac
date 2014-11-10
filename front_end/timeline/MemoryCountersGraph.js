@@ -61,10 +61,14 @@ WebInspector.MemoryCountersGraph.prototype = {
     },
 
     /**
-     * @param {!WebInspector.TimelineModel.Record} record
+     * @override
+     * @param {?RegExp} textFilter
      */
-    addRecord: function(record)
+    refreshRecords: function(textFilter)
     {
+        this.reset();
+        var records = this._model.records();
+
         /**
          * @param {!WebInspector.TimelineModel.Record} record
          * @this {!WebInspector.MemoryCountersGraph}
@@ -84,16 +88,8 @@ WebInspector.MemoryCountersGraph.prototype = {
             if (this._gpuMemoryCounter && (gpuMemoryLimitCounterName in counters))
                 this._gpuMemoryCounter.setLimit(counters[gpuMemoryLimitCounterName]);
         }
-        WebInspector.TimelineModel.forAllRecords([record], null, addStatistics.bind(this));
+        WebInspector.TimelineModel.forAllRecords(records, null, addStatistics.bind(this));
         this.scheduleRefresh();
-    },
-
-    refreshRecords: function()
-    {
-        this.reset();
-        var records = this._model.records();
-        for (var i = 0; i < records.length; ++i)
-            this.addRecord(records[i]);
     },
 
     __proto__: WebInspector.CountersGraph.prototype

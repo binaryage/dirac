@@ -205,15 +205,6 @@ WebInspector.TimelineView.prototype = {
     },
 
     /**
-     * @param {!WebInspector.TimelineModel.Record} record
-     */
-    addRecord: function(record)
-    {
-        this._presentationModel.addRecord(record);
-        this._invalidateAndScheduleRefresh(false, false);
-    },
-
-    /**
      * @param {number} width
      */
     setSidebarSize: function(width)
