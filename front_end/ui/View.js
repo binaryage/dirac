@@ -61,13 +61,9 @@ WebInspector.View._buildSourceURL = function(cssFile)
  */
 WebInspector.View.createStyleElement = function(cssFile)
 {
-    var content = Runtime.cachedResources[cssFile];
-    if (!content) {
-        if (Runtime.isReleaseMode())
-            console.error(cssFile + " not preloaded, loading from the remote. Check module.json");
-        content = loadResource(cssFile) + WebInspector.View._buildSourceURL(cssFile);
-        Runtime.cachedResources[cssFile] = content;
-    }
+    var content = Runtime.cachedResources[cssFile] || "";
+    if (!content)
+        console.error(cssFile + " not preloaded. Check module.json");
     var styleElement = createElement("style");
     styleElement.type = "text/css";
     styleElement.textContent = content;

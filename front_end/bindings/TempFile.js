@@ -364,7 +364,7 @@ WebInspector.DeferredTempFile.prototype = {
 WebInspector.TempStorageCleaner = function()
 {
     try {
-        this._worker = Runtime.startSharedWorker("temp_storage_shared_worker", "TempStorageCleaner");
+        this._worker = new WorkerRuntime.Worker("temp_storage_shared_worker", "TempStorageCleaner");
         this._worker.onerror = this._handleError.bind(this);
         this._callbacks = [];
         this._worker.port.onmessage = this._handleMessage.bind(this);

@@ -3,6 +3,7 @@
         "platform"
     ],
     "scripts": [
+        "WorkerRuntime.js",
         "WebInspector.js",
         "Object.js",
         "NotificationService.js",

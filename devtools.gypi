@@ -89,6 +89,7 @@
             'front_end/common/Throttler.js',
             'front_end/common/UIString.js',
             'front_end/common/WebInspector.js',
+            'front_end/common/WorkerRuntime.js',
         ],
         'devtools_components_js_files': [
             'front_end/components/breakpointsList.css',
