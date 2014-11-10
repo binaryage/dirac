@@ -1125,6 +1125,7 @@ ol.watch-expressions > li.hovered {
 .console-formatted-object,
 .console-formatted-map,
 .console-formatted-set,
+.console-formatted-iterator,
 .console-formatted-node,
 .console-formatted-array {
     position: relative;
@@ -1140,6 +1141,7 @@ ol.watch-expressions > li.hovered {
 .console-formatted-object .section,
 .console-formatted-map .section,
 .console-formatted-set .section,
+.console-formatted-iterator .section,
 .console-formatted-node .section,
 .console-formatted-array .section {
     position: static;
@@ -1152,6 +1154,7 @@ ol.watch-expressions > li.hovered {
 .console-formatted-object .properties,
 .console-formatted-map .properties,
 .console-formatted-set .properties,
+.console-formatted-iterator .properties,
 .console-formatted-node .properties {
     padding-left: 0 !important;
 }

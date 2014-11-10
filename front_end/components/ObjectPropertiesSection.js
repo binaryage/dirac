@@ -573,7 +573,7 @@ WebInspector.ObjectPropertyTreeElement.populateWithProperties = function(treeEle
         if (!hasTargetFunction)
             treeElement.appendChild(new WebInspector.FunctionScopeMainTreeElement(value));
     }
-    if (value && value.type === "object" && (value.subtype === "map" || value.subtype === "set"))
+    if (value && value.type === "object" && (value.subtype === "map" || value.subtype === "set" || value.subtype === "iterator"))
         treeElement.appendChild(new WebInspector.CollectionEntriesMainTreeElement(value));
     if (internalProperties) {
         for (var i = 0; i < internalProperties.length; i++) {
