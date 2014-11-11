@@ -55,7 +55,7 @@ WebInspector.TimelineUIUtils._initEventStyles = function()
     if (WebInspector.TimelineUIUtils._eventStylesMap)
         return WebInspector.TimelineUIUtils._eventStylesMap;
 
-    var recordTypes = WebInspector.TracingTimelineModel.RecordType;
+    var recordTypes = WebInspector.TimelineModel.RecordType;
     var categories = WebInspector.TimelineUIUtils.categories();
 
     var eventStyles = {};
@@ -110,11 +110,11 @@ WebInspector.TimelineUIUtils._initEventStyles = function()
 }
 
 WebInspector.TimelineUIUtils._coalescableRecordTypes = {};
-WebInspector.TimelineUIUtils._coalescableRecordTypes[WebInspector.TracingTimelineModel.RecordType.Layout] = 1;
-WebInspector.TimelineUIUtils._coalescableRecordTypes[WebInspector.TracingTimelineModel.RecordType.Paint] = 1;
-WebInspector.TimelineUIUtils._coalescableRecordTypes[WebInspector.TracingTimelineModel.RecordType.RasterTask] = 1;
-WebInspector.TimelineUIUtils._coalescableRecordTypes[WebInspector.TracingTimelineModel.RecordType.DecodeImage] = 1;
-WebInspector.TimelineUIUtils._coalescableRecordTypes[WebInspector.TracingTimelineModel.RecordType.ResizeImage] = 1;
+WebInspector.TimelineUIUtils._coalescableRecordTypes[WebInspector.TimelineModel.RecordType.Layout] = 1;
+WebInspector.TimelineUIUtils._coalescableRecordTypes[WebInspector.TimelineModel.RecordType.Paint] = 1;
+WebInspector.TimelineUIUtils._coalescableRecordTypes[WebInspector.TimelineModel.RecordType.RasterTask] = 1;
+WebInspector.TimelineUIUtils._coalescableRecordTypes[WebInspector.TimelineModel.RecordType.DecodeImage] = 1;
+WebInspector.TimelineUIUtils._coalescableRecordTypes[WebInspector.TimelineModel.RecordType.ResizeImage] = 1;
 
 /**
  * @param {string} recordType
@@ -131,7 +131,7 @@ WebInspector.TimelineUIUtils.isCoalescable = function(recordType)
  */
 WebInspector.TimelineUIUtils.isCoalescable.countersForRecord = function(record)
 {
-    return record.type() === WebInspector.TracingTimelineModel.RecordType.UpdateCounters ? record.data() : null;
+    return record.type() === WebInspector.TimelineModel.RecordType.UpdateCounters ? record.data() : null;
 }
 
 /**
@@ -193,7 +193,7 @@ WebInspector.TimelineUIUtils.markerEventColor = function(event)
     if (event.category === WebInspector.TracingModel.ConsoleEventCategory)
         return orange;
 
-    var recordTypes = WebInspector.TracingTimelineModel.RecordType;
+    var recordTypes = WebInspector.TimelineModel.RecordType;
     var eventName = event.name;
     switch (eventName) {
     case recordTypes.MarkDOMContent: return blue;
@@ -224,7 +224,7 @@ WebInspector.TimelineUIUtils.eventTitle = function(event, model)
     var title = WebInspector.TimelineUIUtils.eventStyle(event).title;
     if (event.category === WebInspector.TracingModel.ConsoleEventCategory)
         return title;
-    if (event.name === WebInspector.TracingTimelineModel.RecordType.TimeStamp)
+    if (event.name === WebInspector.TimelineModel.RecordType.TimeStamp)
         return WebInspector.UIString("%s: %s", title, event.args["data"]["message"]);
     if (WebInspector.TimelineUIUtils.isMarkerEvent(event)) {
         var startTime = Number.millisToString(event.startTime - model.minimumRecordTime());
@@ -239,7 +239,7 @@ WebInspector.TimelineUIUtils.eventTitle = function(event, model)
  */
 WebInspector.TimelineUIUtils.isMarkerEvent = function(event)
 {
-    var recordTypes = WebInspector.TracingTimelineModel.RecordType;
+    var recordTypes = WebInspector.TimelineModel.RecordType;
     switch (event.name) {
     case recordTypes.TimeStamp:
     case recordTypes.MarkFirstPaint:
@@ -258,7 +258,7 @@ WebInspector.TimelineUIUtils.isMarkerEvent = function(event)
  */
 WebInspector.TimelineUIUtils.isTallMarkerEvent = function(event)
 {
-    return event.name !== WebInspector.TracingTimelineModel.RecordType.TimeStamp;
+    return event.name !== WebInspector.TimelineModel.RecordType.TimeStamp;
 }
 
 /**
@@ -268,7 +268,7 @@ WebInspector.TimelineUIUtils.isTallMarkerEvent = function(event)
  */
 WebInspector.TimelineUIUtils.buildDetailsNodeForTraceEvent = function(event, linkifier)
 {
-    var recordType = WebInspector.TracingTimelineModel.RecordType;
+    var recordType = WebInspector.TimelineModel.RecordType;
     var target = event.thread.target();
     var details;
     var detailsText;
@@ -397,7 +397,7 @@ WebInspector.TimelineUIUtils.buildDetailsNodeForTraceEvent = function(event, lin
 
 /**
  * @param {!WebInspector.TracingModel.Event} event
- * @param {!WebInspector.TracingTimelineModel} model
+ * @param {!WebInspector.TimelineModel} model
  * @param {!WebInspector.Linkifier} linkifier
  * @param {function(!DocumentFragment)} callback
  */
@@ -469,7 +469,7 @@ WebInspector.TimelineUIUtils.buildTraceEventDetails = function(event, model, lin
 
 /**
  * @param {!WebInspector.TracingModel.Event} event
- * @param {!WebInspector.TracingTimelineModel} model
+ * @param {!WebInspector.TimelineModel} model
  * @param {!WebInspector.Linkifier} linkifier
  * @param {?WebInspector.DOMNode} relatedNode
  * @return {!DocumentFragment}
@@ -483,7 +483,7 @@ WebInspector.TimelineUIUtils._buildTraceEventDetailsSynchronously = function(eve
     var selfTime = event.selfTime;
     var selfCategory = WebInspector.TimelineUIUtils.eventStyle(event).category;
     // JSFrame events have 0 selfTime so we need to work around this below and add the event's time to scripting category.
-    if (event.name === WebInspector.TracingTimelineModel.RecordType.JSFrame && !event.selfTime && event.duration) {
+    if (event.name === WebInspector.TimelineModel.RecordType.JSFrame && !event.selfTime && event.duration) {
         selfTime = event.duration;
         for (var categoryName in stats)
             selfTime -= stats[categoryName];
@@ -494,7 +494,7 @@ WebInspector.TimelineUIUtils._buildTraceEventDetailsSynchronously = function(eve
         WebInspector.TimelineUIUtils.generatePieChart(stats, selfCategory, selfTime) :
         WebInspector.TimelineUIUtils.generatePieChart(stats);
 
-    var recordTypes = WebInspector.TracingTimelineModel.RecordType;
+    var recordTypes = WebInspector.TimelineModel.RecordType;
 
     // This message may vary per event.name;
     var relatedNodeLabel;
@@ -636,7 +636,7 @@ WebInspector.TimelineUIUtils._buildTraceEventDetailsSynchronously = function(eve
  */
 WebInspector.TimelineUIUtils._generateCauses = function(event, contentHelper)
 {
-    var recordTypes = WebInspector.TracingTimelineModel.RecordType;
+    var recordTypes = WebInspector.TimelineModel.RecordType;
 
     var callSiteStackLabel;
     var stackLabel;
@@ -704,10 +704,10 @@ WebInspector.TimelineUIUtils._generateInvalidationsForType = function(type, targ
 {
     var title;
     switch (type) {
-    case WebInspector.TracingTimelineModel.RecordType.StyleRecalcInvalidationTracking:
+    case WebInspector.TimelineModel.RecordType.StyleRecalcInvalidationTracking:
         title = WebInspector.UIString("Style invalidations");
         break;
-    case WebInspector.TracingTimelineModel.RecordType.LayoutInvalidationTracking:
+    case WebInspector.TimelineModel.RecordType.LayoutInvalidationTracking:
         title = WebInspector.UIString("Layout invalidations");
         break;
     default:
@@ -780,13 +780,13 @@ WebInspector.TimelineUIUtils._pushInvalidationNodeIdsToFrontend = function(event
 WebInspector.TimelineUIUtils.aggregateTimeForRecord = function(total, record)
 {
     var traceEvent = record.traceEvent();
-    var model = record._model;
+    var model = record.timelineModel();
     WebInspector.TimelineUIUtils._aggregatedStatsForTraceEvent(total, model, traceEvent);
 }
 
 /**
  * @param {!Object} total
- * @param {!WebInspector.TracingTimelineModel} model
+ * @param {!WebInspector.TimelineModel} model
  * @param {!WebInspector.TracingModel.Event} event
  * @return {boolean}
  */
@@ -880,7 +880,7 @@ WebInspector.TimelineUIUtils.createEventDivider = function(recordType, title)
 {
     var eventDivider = createElement("div");
     eventDivider.className = "resources-event-divider";
-    var recordTypes = WebInspector.TracingTimelineModel.RecordType;
+    var recordTypes = WebInspector.TimelineModel.RecordType;
 
     if (recordType === recordTypes.MarkDOMContent)
         eventDivider.className += " resources-blue-divider";
@@ -922,11 +922,11 @@ WebInspector.TimelineUIUtils._visibleTypes = function()
 }
 
 /**
- * @return {!WebInspector.TracingTimelineModel.Filter}
+ * @return {!WebInspector.TraceEventFilter}
  */
 WebInspector.TimelineUIUtils.hiddenEventsFilter = function()
 {
-    return new WebInspector.TracingTimelineModel.InclusiveEventNameFilter(WebInspector.TimelineUIUtils._visibleTypes());
+    return new WebInspector.InclusiveTraceEventNameFilter(WebInspector.TimelineUIUtils._visibleTypes());
 }
 
 /**

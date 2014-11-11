@@ -31,7 +31,7 @@
 /**
  * @constructor
  * @implements {WebInspector.FlameChartDataProvider}
- * @param {!WebInspector.TracingTimelineModel} model
+ * @param {!WebInspector.TimelineModel} model
  * @param {!WebInspector.TimelineFrameModelBase} frameModel
  */
 WebInspector.TimelineFlameChartDataProvider = function(model, frameModel)
@@ -44,7 +44,7 @@ WebInspector.TimelineFlameChartDataProvider = function(model, frameModel)
     this._linkifier = new WebInspector.Linkifier();
     this._filters = [];
     this.addFilter(WebInspector.TimelineUIUtils.hiddenEventsFilter());
-    this.addFilter(new WebInspector.TracingTimelineModel.ExclusiveEventNameFilter([WebInspector.TracingTimelineModel.RecordType.Program]));
+    this.addFilter(new WebInspector.ExclusiveTraceEventNameFilter([WebInspector.TimelineModel.RecordType.Program]));
 }
 
 WebInspector.TimelineFlameChartDataProvider.InstantEventVisibleDurationMs = 0.01;
@@ -112,7 +112,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
             var name = WebInspector.TimelineUIUtils.eventStyle(event).title;
             // TODO(yurys): support event dividers
             var details = WebInspector.TimelineUIUtils.buildDetailsNodeForTraceEvent(event, this._linkifier);
-            if (event.name === WebInspector.TracingTimelineModel.RecordType.JSFrame && details)
+            if (event.name === WebInspector.TimelineModel.RecordType.JSFrame && details)
                 return details.textContent;
             return details ? WebInspector.UIString("%s (%s)", name, details.textContent) : name;
         }
@@ -297,7 +297,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
     },
 
     /**
-     * @param {!WebInspector.TracingTimelineModel.Filter} filter
+     * @param {!WebInspector.TraceEventFilter} filter
      */
     addFilter: function(filter)
     {
@@ -364,7 +364,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
         var event = this._entryEvents[entryIndex];
         if (!event)
             return this._entryIndexToFrame[entryIndex] ? "white" : "#555";
-        if (event.name === WebInspector.TracingTimelineModel.RecordType.JSFrame)
+        if (event.name === WebInspector.TimelineModel.RecordType.JSFrame)
             return this._timelineData.entryLevels[entryIndex] % 2 ? "#efb320" : "#fcc02d";
         var category = WebInspector.TimelineUIUtils.eventStyle(event).category;
         if (WebInspector.TracingModel.isAsyncPhase(event.phase)) {
@@ -649,7 +649,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
  * @implements {WebInspector.TimelineModeView}
  * @implements {WebInspector.FlameChartDelegate}
  * @param {!WebInspector.TimelineModeViewDelegate} delegate
- * @param {!WebInspector.TracingTimelineModel} tracingModel
+ * @param {!WebInspector.TimelineModel} tracingModel
  * @param {!WebInspector.TimelineFrameModelBase} frameModel
  */
 WebInspector.TimelineFlameChart = function(delegate, tracingModel, frameModel)

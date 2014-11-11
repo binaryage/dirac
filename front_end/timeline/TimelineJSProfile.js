@@ -32,7 +32,7 @@ WebInspector.TimelineJSProfileProcessor.generateTracingEventsFromCpuProfile = fu
             for (var j = 0; node.parent; node = node.parent)
                 stackTrace[j++] = /** @type {!ConsoleAgent.CallFrame} */ (node);
         }
-        var jsEvent = new WebInspector.TracingModel.Event(WebInspector.TracingModel.DevToolsMetadataEventCategory, WebInspector.TracingTimelineModel.RecordType.JSSample,
+        var jsEvent = new WebInspector.TracingModel.Event(WebInspector.TracingModel.DevToolsMetadataEventCategory, WebInspector.TimelineModel.RecordType.JSSample,
             WebInspector.TracingModel.Phase.Instant, timestamps[i], thread);
         jsEvent.stackTrace = stackTrace;
         jsEvents.push(jsEvent);
@@ -59,8 +59,8 @@ WebInspector.TimelineJSProfileProcessor.generateJSFrameEvents = function(events)
     function isJSInvocationEvent(e)
     {
         switch (e.name) {
-        case WebInspector.TracingTimelineModel.RecordType.FunctionCall:
-        case WebInspector.TracingTimelineModel.RecordType.EvaluateScript:
+        case WebInspector.TimelineModel.RecordType.FunctionCall:
+        case WebInspector.TimelineModel.RecordType.EvaluateScript:
             return true;
         }
         return false;
@@ -77,7 +77,7 @@ WebInspector.TimelineJSProfileProcessor.generateJSFrameEvents = function(events)
 
     function onInstantEvent(e, top)
     {
-        if (e.name === WebInspector.TracingTimelineModel.RecordType.JSSample && top && !isJSInvocationEvent(top))
+        if (e.name === WebInspector.TimelineModel.RecordType.JSSample && top && !isJSInvocationEvent(top))
             return;
         extractStackTrace(e);
     }
@@ -108,7 +108,7 @@ WebInspector.TimelineJSProfileProcessor.generateJSFrameEvents = function(events)
         jsFramesStack.length = j;
         for (; j < numFrames; ++j) {
             var frame = e.stackTrace[numFrames - 1 - j];
-            var jsFrameEvent = new WebInspector.TracingModel.Event(WebInspector.TracingModel.DevToolsMetadataEventCategory, WebInspector.TracingTimelineModel.RecordType.JSFrame,
+            var jsFrameEvent = new WebInspector.TracingModel.Event(WebInspector.TracingModel.DevToolsMetadataEventCategory, WebInspector.TimelineModel.RecordType.JSFrame,
                 WebInspector.TracingModel.Phase.Complete, e.startTime, e.thread);
             jsFrameEvent.addArgs({ data: frame });
             jsFrameEvent.setEndTime(endTime);

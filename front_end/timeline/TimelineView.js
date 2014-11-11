@@ -177,7 +177,7 @@ WebInspector.TimelineView.prototype = {
             this._frameContainer.appendChild(frameStrip);
 
             if (actualStart > 0) {
-                var frameMarker = WebInspector.TimelineUIUtils.createEventDivider(WebInspector.TracingTimelineModel.RecordType.BeginFrame);
+                var frameMarker = WebInspector.TimelineUIUtils.createEventDivider(WebInspector.TimelineModel.RecordType.BeginFrame);
                 frameMarker.style.left = frameStart + "px";
                 dividers.push(frameMarker);
             }

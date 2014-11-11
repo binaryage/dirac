@@ -51,8 +51,7 @@ WebInspector.TimelinePanel = function()
     this._tracingManager.addEventListener(WebInspector.TracingManager.Events.BufferUsage, this._onTracingBufferUsage, this);
 
     this._tracingModel = new WebInspector.TracingModel();
-    this._tracingTimelineModel = new WebInspector.TracingTimelineModel(this._tracingManager, this._tracingModel, WebInspector.TimelineUIUtils.hiddenRecordsFilter());
-    this._model = this._tracingTimelineModel;
+    this._model = new WebInspector.TimelineModel(this._tracingManager, this._tracingModel, WebInspector.TimelineUIUtils.hiddenRecordsFilter());
 
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStarted, this._onRecordingStarted, this);
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStopped, this._onRecordingStopped, this);
@@ -225,7 +224,7 @@ WebInspector.TimelinePanel.prototype = {
     {
         if (!this._lazyFrameModel) {
             var tracingFrameModel = new WebInspector.TracingTimelineFrameModel();
-            tracingFrameModel.addTraceEvents(this._tracingTimelineModel.inspectedTargetEvents(), this._tracingModel.sessionId() || "");
+            tracingFrameModel.addTraceEvents(this._model.inspectedTargetEvents(), this._tracingModel.sessionId() || "");
             this._lazyFrameModel = tracingFrameModel;
         }
         return this._lazyFrameModel;
@@ -590,7 +589,7 @@ WebInspector.TimelinePanel.prototype = {
         if (this._flameChartEnabledSetting.get()) {
             this._filterBar.filterButton().setEnabled(false);
             this._filtersContainer.classList.toggle("hidden", true);
-            this._addModeView(new WebInspector.TimelineFlameChart(this, this._tracingTimelineModel, this._frameModel()));
+            this._addModeView(new WebInspector.TimelineFlameChart(this, this._model, this._frameModel()));
         } else {
             this._filterBar.filterButton().setEnabled(true);
             this._filtersContainer.classList.toggle("hidden", !this._filterBar.filtersToggled());
@@ -790,9 +789,9 @@ WebInspector.TimelinePanel.prototype = {
         this._updateToggleTimelineButton(false);
         if (this._lazyFrameModel) {
             this._lazyFrameModel.reset();
-            this._lazyFrameModel.addTraceEvents(this._tracingTimelineModel.inspectedTargetEvents(), this._tracingModel.sessionId());
+            this._lazyFrameModel.addTraceEvents(this._model.inspectedTargetEvents(), this._tracingModel.sessionId());
         }
-        this.requestWindowTimes(this._tracingTimelineModel.minimumRecordTime(), this._tracingTimelineModel.maximumRecordTime());
+        this.requestWindowTimes(this._model.minimumRecordTime(), this._model.maximumRecordTime());
         this._refreshViews();
         this._hideProgressPane();
         this._overviewPane.update();
@@ -958,11 +957,11 @@ WebInspector.TimelinePanel.prototype = {
         case WebInspector.TimelineSelection.Type.Record:
             var record = /** @type {!WebInspector.TimelineModel.Record} */ (this._selection.object());
             var event = record.traceEvent();
-            WebInspector.TimelineUIUtils.buildTraceEventDetails(event, this._tracingTimelineModel, this._detailsLinkifier, this._appendDetailsTabsForTraceEventAndShowDetails.bind(this, event));
+            WebInspector.TimelineUIUtils.buildTraceEventDetails(event, this._model, this._detailsLinkifier, this._appendDetailsTabsForTraceEventAndShowDetails.bind(this, event));
             break;
         case WebInspector.TimelineSelection.Type.TraceEvent:
             var event = /** @type {!WebInspector.TracingModel.Event} */ (this._selection.object());
-            WebInspector.TimelineUIUtils.buildTraceEventDetails(event, this._tracingTimelineModel, this._detailsLinkifier, this._appendDetailsTabsForTraceEventAndShowDetails.bind(this, event));
+            WebInspector.TimelineUIUtils.buildTraceEventDetails(event, this._model, this._detailsLinkifier, this._appendDetailsTabsForTraceEventAndShowDetails.bind(this, event));
             break;
         case WebInspector.TimelineSelection.Type.Frame:
             var frame = /** @type {!WebInspector.TimelineFrame} */ (this._selection.object());

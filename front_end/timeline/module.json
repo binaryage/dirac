@@ -28,7 +28,6 @@
         "TimelineJSProfile.js",
         "TimelineOverviewPane.js",
         "TimelinePresentationModel.js",
-        "TracingTimelineModel.js",
         "TimelineFrameModel.js",
         "TimelineEventOverview.js",
         "TimelineFrameOverview.js",

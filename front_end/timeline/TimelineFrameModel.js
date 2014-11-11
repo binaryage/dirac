@@ -223,10 +223,10 @@ WebInspector.TracingTimelineFrameModel = function()
 }
 
 WebInspector.TracingTimelineFrameModel._mainFrameMarkers = [
-    WebInspector.TracingTimelineModel.RecordType.ScheduleStyleRecalculation,
-    WebInspector.TracingTimelineModel.RecordType.InvalidateLayout,
-    WebInspector.TracingTimelineModel.RecordType.BeginMainThreadFrame,
-    WebInspector.TracingTimelineModel.RecordType.ScrollLayer
+    WebInspector.TimelineModel.RecordType.ScheduleStyleRecalculation,
+    WebInspector.TimelineModel.RecordType.InvalidateLayout,
+    WebInspector.TimelineModel.RecordType.BeginMainThreadFrame,
+    WebInspector.TimelineModel.RecordType.ScrollLayer
 ];
 
 WebInspector.TracingTimelineFrameModel.prototype = {
@@ -250,7 +250,7 @@ WebInspector.TracingTimelineFrameModel.prototype = {
      */
     _addTraceEvent: function(event)
     {
-        var eventNames = WebInspector.TracingTimelineModel.RecordType;
+        var eventNames = WebInspector.TimelineModel.RecordType;
 
         if (event.name === eventNames.SetLayerTreeId) {
             if (this._sessionId === event.args["sessionId"])
@@ -272,7 +272,7 @@ WebInspector.TracingTimelineFrameModel.prototype = {
      */
     _addBackgroundTraceEvent: function(event)
     {
-        var eventNames = WebInspector.TracingTimelineModel.RecordType;
+        var eventNames = WebInspector.TimelineModel.RecordType;
         if (event.phase === WebInspector.TracingModel.Phase.SnapshotObject && event.name === eventNames.LayerTreeHostImplSnapshot && parseInt(event.id, 0) === this._layerTreeId) {
             var snapshot = /** @type {!WebInspector.TracingModel.ObjectSnapshot} */ (event);
             this.handleLayerTreeSnapshot(new WebInspector.DeferredTracingLayerTree(snapshot));
@@ -300,7 +300,7 @@ WebInspector.TracingTimelineFrameModel.prototype = {
      */
     _addMainThreadTraceEvent: function(event)
     {
-        var eventNames = WebInspector.TracingTimelineModel.RecordType;
+        var eventNames = WebInspector.TimelineModel.RecordType;
         var timestamp = event.startTime;
         var selfTime = event.selfTime || 0;
 
