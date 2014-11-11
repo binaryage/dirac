@@ -33,12 +33,10 @@
  * @constructor
  * @extends {WebInspector.Object}
  * @param {!WebInspector.TimelineModel} model
- * @param {!WebInspector.TimelineUIUtils} uiUtils
  */
-WebInspector.TimelinePresentationModel = function(model, uiUtils)
+WebInspector.TimelinePresentationModel = function(model)
 {
     this._model = model;
-    this._uiUtils = uiUtils;
     this._filters = [];
     /**
      * @type {!Map.<!WebInspector.TimelineModel.Record, !WebInspector.TimelinePresentationModel.Record>}
@@ -88,7 +86,7 @@ WebInspector.TimelinePresentationModel.prototype = {
      */
     addRecord: function(record)
     {
-        if (this._uiUtils.isProgram(record)) {
+        if (record.type() === WebInspector.TracingTimelineModel.RecordType.Program) {
             var records = record.children();
             for (var i = 0; i < records.length; ++i)
                 this._innerAddRecord(this._rootRecord, records[i]);
@@ -145,7 +143,7 @@ WebInspector.TimelinePresentationModel.prototype = {
             return null;
         if (lastRecord.record().type() !== record.type())
             return null;
-        if (!this._uiUtils.isCoalescable(record.type()))
+        if (!WebInspector.TimelineUIUtils.isCoalescable(record.type()))
             return null;
         if (lastRecord.record().endTime() + coalescingThresholdMillis < startTime)
             return null;

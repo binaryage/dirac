@@ -540,7 +540,6 @@
             'front_end/timeline/TimelineView.js',
             'front_end/timeline/TracingModel.js',
             'front_end/timeline/TracingTimelineModel.js',
-            'front_end/timeline/TracingTimelineUIUtils.js',
             'front_end/timeline/TransformController.js',
         ],
 

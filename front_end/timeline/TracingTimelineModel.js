@@ -466,7 +466,7 @@ WebInspector.TracingTimelineModel.prototype = {
             if (WebInspector.TracingModel.isAsyncBeginPhase(event.phase) && parentRecord && event.endTime > parentRecord._event.endTime)
                 continue;
             var record = new WebInspector.TracingTimelineModel.TraceEventRecord(this, event);
-            if (WebInspector.TracingTimelineUIUtils.isMarkerEvent(event))
+            if (WebInspector.TimelineUIUtils.isMarkerEvent(event))
                 this._eventDividerRecords.push(record);
             if (!this._recordFilter.accept(record))
                 continue;

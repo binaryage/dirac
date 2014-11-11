@@ -43,7 +43,7 @@ WebInspector.TimelineFlameChartDataProvider = function(model, frameModel)
     this._font = "12px " + WebInspector.fontFamily();
     this._linkifier = new WebInspector.Linkifier();
     this._filters = [];
-    this.addFilter(WebInspector.TracingTimelineUIUtils.hiddenEventsFilter());
+    this.addFilter(WebInspector.TimelineUIUtils.hiddenEventsFilter());
     this.addFilter(new WebInspector.TracingTimelineModel.ExclusiveEventNameFilter([WebInspector.TracingTimelineModel.RecordType.Program]));
 }
 
@@ -109,9 +109,9 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
             if (event.phase === WebInspector.TracingModel.Phase.AsyncStepInto || event.phase === WebInspector.TracingModel.Phase.AsyncStepPast)
                 return event.name + ":" + event.args["step"];
 
-            var name = WebInspector.TracingTimelineUIUtils.eventStyle(event).title;
+            var name = WebInspector.TimelineUIUtils.eventStyle(event).title;
             // TODO(yurys): support event dividers
-            var details = WebInspector.TracingTimelineUIUtils.buildDetailsNodeForTraceEvent(event, this._linkifier);
+            var details = WebInspector.TimelineUIUtils.buildDetailsNodeForTraceEvent(event, this._linkifier);
             if (event.name === WebInspector.TracingTimelineModel.RecordType.JSFrame && details)
                 return details.textContent;
             return details ? WebInspector.UIString("%s (%s)", name, details.textContent) : name;
@@ -142,7 +142,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
     markerColor: function(index)
     {
         var event = this._markerEvents[index];
-        return WebInspector.TracingTimelineUIUtils.markerEventColor(event);
+        return WebInspector.TimelineUIUtils.markerEventColor(event);
     },
 
     /**
@@ -153,7 +153,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
     markerTitle: function(index)
     {
         var event = this._markerEvents[index];
-        return WebInspector.TracingTimelineUIUtils.eventTitle(event, this._model);
+        return WebInspector.TimelineUIUtils.eventTitle(event, this._model);
     },
 
     /**
@@ -164,7 +164,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
     isTallMarker: function(index)
     {
         var event = this._markerEvents[index];
-        return WebInspector.TracingTimelineUIUtils.isTallMarkerEvent(event);
+        return WebInspector.TimelineUIUtils.isTallMarkerEvent(event);
     },
 
     reset: function()
@@ -225,7 +225,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
         var maxStackDepth = 0;
         for (var i = 0; i < events.length; ++i) {
             var e = events[i];
-            if (WebInspector.TracingTimelineUIUtils.isMarkerEvent(e)) {
+            if (WebInspector.TimelineUIUtils.isMarkerEvent(e)) {
                 this._markerEvents.push(e);
                 this._timelineData.markerTimestamps.push(e.startTime);
             }
@@ -366,7 +366,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
             return this._entryIndexToFrame[entryIndex] ? "white" : "#555";
         if (event.name === WebInspector.TracingTimelineModel.RecordType.JSFrame)
             return this._timelineData.entryLevels[entryIndex] % 2 ? "#efb320" : "#fcc02d";
-        var category = WebInspector.TracingTimelineUIUtils.eventStyle(event).category;
+        var category = WebInspector.TimelineUIUtils.eventStyle(event).category;
         if (WebInspector.TracingModel.isAsyncPhase(event.phase)) {
             if (event.category === WebInspector.TracingModel.ConsoleEventCategory)
                 return WebInspector.TimelineFlameChartDataProvider.consoleEventsColorGenerator().colorForID(event.name);

@@ -279,7 +279,7 @@ WebInspector.TracingTimelineFrameModel.prototype = {
             return;
         }
         if (this._lastFrame && event.selfTime)
-            this._lastFrame._addTimeForCategory(WebInspector.TracingTimelineUIUtils.eventStyle(event).category.name, event.selfTime);
+            this._lastFrame._addTimeForCategory(WebInspector.TimelineUIUtils.eventStyle(event).category.name, event.selfTime);
 
         if (event.args["layerTreeId"] !== this._layerTreeId)
             return;
@@ -312,7 +312,7 @@ WebInspector.TracingTimelineFrameModel.prototype = {
             if (!selfTime)
                 return;
 
-            var categoryName = WebInspector.TracingTimelineUIUtils.eventStyle(event).category.name;
+            var categoryName = WebInspector.TimelineUIUtils.eventStyle(event).category.name;
             this._lastFrame._addTimeForCategory(categoryName, selfTime);
             return;
         }
@@ -325,7 +325,7 @@ WebInspector.TracingTimelineFrameModel.prototype = {
             this._framePendingCommit.paints.push(new WebInspector.LayerPaintEvent(event));
 
         if (selfTime) {
-            var categoryName = WebInspector.TracingTimelineUIUtils.eventStyle(event).category.name;
+            var categoryName = WebInspector.TimelineUIUtils.eventStyle(event).category.name;
             this._framePendingCommit.timeByCategory[categoryName] = (this._framePendingCommit.timeByCategory[categoryName] || 0) + selfTime;
         }
         if (event.name === eventNames.CompositeLayers && event.args["layerTreeId"] === this._layerTreeId)

@@ -51,8 +51,7 @@ WebInspector.TimelinePanel = function()
     this._tracingManager.addEventListener(WebInspector.TracingManager.Events.BufferUsage, this._onTracingBufferUsage, this);
 
     this._tracingModel = new WebInspector.TracingModel();
-    this._uiUtils = new WebInspector.TracingTimelineUIUtils();
-    this._tracingTimelineModel = new WebInspector.TracingTimelineModel(this._tracingManager, this._tracingModel, this._uiUtils.hiddenRecordsFilter());
+    this._tracingTimelineModel = new WebInspector.TracingTimelineModel(this._tracingManager, this._tracingModel, WebInspector.TimelineUIUtils.hiddenRecordsFilter());
     this._model = this._tracingTimelineModel;
 
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStarted, this._onRecordingStarted, this);
@@ -60,14 +59,12 @@ WebInspector.TimelinePanel = function()
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordsCleared, this._onRecordsCleared, this);
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordFilterChanged, this._refreshViews, this);
 
-    this._categoryFilter = new WebInspector.TimelineCategoryFilter(this._uiUtils);
+    this._categoryFilter = new WebInspector.TimelineCategoryFilter();
     this._durationFilter = new WebInspector.TimelineIsLongFilter();
-    this._textFilter = new WebInspector.TimelineTextFilter(this._uiUtils);
+    this._textFilter = new WebInspector.TimelineTextFilter();
 
-    var hiddenEmptyRecordsFilter = this._uiUtils.hiddenEmptyRecordsFilter();
-    if (hiddenEmptyRecordsFilter)
-        this._model.addFilter(hiddenEmptyRecordsFilter);
-    this._model.addFilter(this._uiUtils.hiddenRecordsFilter());
+    this._model.addFilter(new WebInspector.TimelineRecordHiddenEmptyTypeFilter([WebInspector.TimelineModel.RecordType.EventDispatch]));
+    this._model.addFilter(WebInspector.TimelineUIUtils.hiddenRecordsFilter());
     this._model.addFilter(this._categoryFilter);
     this._model.addFilter(this._durationFilter);
     this._model.addFilter(this._textFilter);
@@ -83,7 +80,7 @@ WebInspector.TimelinePanel = function()
     topPaneElement.id = "timeline-overview-panel";
 
     // Create top overview component.
-    this._overviewPane = new WebInspector.TimelineOverviewPane(this._model, this._uiUtils);
+    this._overviewPane = new WebInspector.TimelineOverviewPane(this._model);
     this._overviewPane.addEventListener(WebInspector.TimelineOverviewPane.Events.WindowChanged, this._onWindowChanged.bind(this));
     this._overviewPane.show(topPaneElement);
 
@@ -240,7 +237,7 @@ WebInspector.TimelinePanel.prototype = {
     _timelineView: function()
     {
         if (!this._lazyTimelineView)
-            this._lazyTimelineView = new WebInspector.TimelineView(this, this._model, this._uiUtils);
+            this._lazyTimelineView = new WebInspector.TimelineView(this, this._model);
         return this._lazyTimelineView;
     },
 
@@ -588,7 +585,7 @@ WebInspector.TimelinePanel.prototype = {
         if (isFrameMode)
             this._overviewControls.push(new WebInspector.TimelineFrameOverview(this._model, this._frameModel()));
         else
-            this._overviewControls.push(new WebInspector.TimelineEventOverview(this._model, this._uiUtils));
+            this._overviewControls.push(new WebInspector.TimelineEventOverview(this._model));
 
         if (this._flameChartEnabledSetting.get()) {
             this._filterBar.filterButton().setEnabled(false);
@@ -602,8 +599,8 @@ WebInspector.TimelinePanel.prototype = {
 
         if (this._captureMemorySetting.get()) {
             if (!isFrameMode)  // Frame mode skews time, don't render aux overviews.
-                this._overviewControls.push(new WebInspector.TimelineMemoryOverview(this._model, this._uiUtils));
-            this._addModeView(new WebInspector.MemoryCountersGraph(this, this._model, this._uiUtils));
+                this._overviewControls.push(new WebInspector.TimelineMemoryOverview(this._model));
+            this._addModeView(new WebInspector.MemoryCountersGraph(this, this._model));
         }
 
         if (this._capturePowerSetting && this._capturePowerSetting.get() &&
@@ -911,7 +908,7 @@ WebInspector.TimelinePanel.prototype = {
             if (record.endTime() < this._windowStartTime ||
                 record.startTime() > this._windowEndTime)
                 return;
-            if (this._uiUtils.testContentMatching(record, searchRegExp))
+            if (WebInspector.TimelineUIUtils.testContentMatching(record, searchRegExp))
                 matches.push(record);
         }
         this._model.forAllFilteredRecords(processRecord.bind(this));
@@ -961,11 +958,11 @@ WebInspector.TimelinePanel.prototype = {
         case WebInspector.TimelineSelection.Type.Record:
             var record = /** @type {!WebInspector.TimelineModel.Record} */ (this._selection.object());
             var event = record.traceEvent();
-            this._uiUtils.generateDetailsContent(record, this._model, this._detailsLinkifier, this._appendDetailsTabsForTraceEventAndShowDetails.bind(this, event));
+            WebInspector.TimelineUIUtils.buildTraceEventDetails(event, this._tracingTimelineModel, this._detailsLinkifier, this._appendDetailsTabsForTraceEventAndShowDetails.bind(this, event));
             break;
         case WebInspector.TimelineSelection.Type.TraceEvent:
             var event = /** @type {!WebInspector.TracingModel.Event} */ (this._selection.object());
-            WebInspector.TracingTimelineUIUtils.buildTraceEventDetails(event, this._tracingTimelineModel, this._detailsLinkifier, this._appendDetailsTabsForTraceEventAndShowDetails.bind(this, event));
+            WebInspector.TimelineUIUtils.buildTraceEventDetails(event, this._tracingTimelineModel, this._detailsLinkifier, this._appendDetailsTabsForTraceEventAndShowDetails.bind(this, event));
             break;
         case WebInspector.TimelineSelection.Type.Frame:
             var frame = /** @type {!WebInspector.TimelineFrame} */ (this._selection.object());
@@ -1019,8 +1016,6 @@ WebInspector.TimelinePanel.prototype = {
      */
     _updateSelectedRangeStats: function(startTime, endTime)
     {
-        var uiUtils = this._uiUtils;
-
         // Return early in case 0 selection window.
         if (startTime < 0)
             return;
@@ -1054,7 +1049,7 @@ WebInspector.TimelinePanel.prototype = {
                 childrenTime += Math.min(endTime, child.endTime()) - Math.max(startTime, child.startTime());
                 aggregateTimeForRecordWithinWindow(child);
             }
-            var categoryName = uiUtils.categoryForRecord(record).name;
+            var categoryName = WebInspector.TimelineUIUtils.categoryForRecord(record).name;
             var ownTime = Math.min(endTime, record.endTime()) - Math.max(startTime, record.startTime()) - childrenTime;
             aggregatedStats[categoryName] = (aggregatedStats[categoryName] || 0) + ownTime;
         }
@@ -1358,12 +1353,10 @@ WebInspector.TimelineModeViewDelegate.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.TimelineModel.Filter}
- * @param {!WebInspector.TimelineUIUtils} uiUtils
  */
-WebInspector.TimelineCategoryFilter = function(uiUtils)
+WebInspector.TimelineCategoryFilter = function()
 {
     WebInspector.TimelineModel.Filter.call(this);
-    this._uiUtils = uiUtils;
 }
 
 WebInspector.TimelineCategoryFilter.prototype = {
@@ -1373,7 +1366,7 @@ WebInspector.TimelineCategoryFilter.prototype = {
      */
     accept: function(record)
     {
-        return !this._uiUtils.categoryForRecord(record).hidden;
+        return !WebInspector.TimelineUIUtils.categoryForRecord(record).hidden;
     },
 
     __proto__: WebInspector.TimelineModel.Filter.prototype
@@ -1415,12 +1408,10 @@ WebInspector.TimelineIsLongFilter.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.TimelineModel.Filter}
- * @param {!WebInspector.TimelineUIUtils} uiUtils
  */
-WebInspector.TimelineTextFilter = function(uiUtils)
+WebInspector.TimelineTextFilter = function()
 {
     WebInspector.TimelineModel.Filter.call(this);
-    this._uiUtils = uiUtils;
 }
 
 WebInspector.TimelineTextFilter.prototype = {
@@ -1447,7 +1438,7 @@ WebInspector.TimelineTextFilter.prototype = {
      */
     accept: function(record)
     {
-        return !this._regex || this._uiUtils.testContentMatching(record, this._regex);
+        return !this._regex || WebInspector.TimelineUIUtils.testContentMatching(record, this._regex);
     },
 
     __proto__: WebInspector.TimelineModel.Filter.prototype

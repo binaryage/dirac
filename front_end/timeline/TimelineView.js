@@ -35,17 +35,15 @@
  * @implements {WebInspector.TimelineModeView}
  * @param {!WebInspector.TimelineModeViewDelegate} delegate
  * @param {!WebInspector.TimelineModel} model
- * @param {!WebInspector.TimelineUIUtils} uiUtils
  */
-WebInspector.TimelineView = function(delegate, model, uiUtils)
+WebInspector.TimelineView = function(delegate, model)
 {
     WebInspector.HBox.call(this);
     this.element.classList.add("timeline-view");
 
     this._delegate = delegate;
     this._model = model;
-    this._uiUtils = uiUtils;
-    this._presentationModel = new WebInspector.TimelinePresentationModel(model, uiUtils);
+    this._presentationModel = new WebInspector.TimelinePresentationModel(model);
     this._calculator = new WebInspector.TimelineCalculator(model);
     this._linkifier = new WebInspector.Linkifier();
     this._frameStripByFrame = new Map();
@@ -135,8 +133,8 @@ WebInspector.TimelineView.prototype = {
             var dividerPosition = Math.round(position);
             if (dividerPosition < 0 || dividerPosition >= clientWidth || dividers[dividerPosition])
                 continue;
-            var title = this._uiUtils.titleForRecord(record);
-            var divider = this._uiUtils.createEventDivider(record.type(), title);
+            var title = WebInspector.TimelineUIUtils.titleForRecord(record);
+            var divider = WebInspector.TimelineUIUtils.createEventDivider(record.type(), title);
             divider.style.left = dividerPosition + "px";
             dividers[dividerPosition] = divider;
         }
@@ -179,7 +177,7 @@ WebInspector.TimelineView.prototype = {
             this._frameContainer.appendChild(frameStrip);
 
             if (actualStart > 0) {
-                var frameMarker = this._uiUtils.createBeginFrameDivider();
+                var frameMarker = WebInspector.TimelineUIUtils.createEventDivider(WebInspector.TracingTimelineModel.RecordType.BeginFrame);
                 frameMarker.style.left = frameStart + "px";
                 dividers.push(frameMarker);
             }
@@ -333,7 +331,7 @@ WebInspector.TimelineView.prototype = {
             var aggregatedStats = {};
             var presentationChildren = presentationRecord.presentationChildren();
             for (var i = 0; i < presentationChildren.length; ++i)
-                this._uiUtils.aggregateTimeForRecord(aggregatedStats, presentationChildren[i].record());
+                WebInspector.TimelineUIUtils.aggregateTimeForRecord(aggregatedStats, presentationChildren[i].record());
             var idle = presentationRecord.endTime() - presentationRecord.startTime();
             for (var category in aggregatedStats)
                 idle -= aggregatedStats[category];
@@ -341,7 +339,7 @@ WebInspector.TimelineView.prototype = {
 
             var contentHelper = new WebInspector.TimelineDetailsContentHelper(null, null, true);
             var pieChart = WebInspector.TimelineUIUtils.generatePieChart(aggregatedStats);
-            var title = this._uiUtils.titleForRecord(presentationRecord.record());
+            var title = WebInspector.TimelineUIUtils.titleForRecord(presentationRecord.record());
             contentHelper.appendTextRow(WebInspector.UIString("Type"), title);
             contentHelper.appendElementRow(WebInspector.UIString("Aggregated Time"), pieChart);
             this._delegate.showInDetails(contentHelper.element);
@@ -577,8 +575,8 @@ WebInspector.TimelineView.prototype = {
                     this._graphRowsElement.appendChild(graphRowElement);
                 }
 
-                listRowElement.row.update(record, visibleTop, this._uiUtils);
-                graphRowElement.row.update(record, this._calculator, this._expandOffset, i, this._uiUtils);
+                listRowElement.row.update(record, visibleTop);
+                graphRowElement.row.update(record, this._calculator, this._expandOffset, i);
                 if (this._lastSelectedRecord === record) {
                     listRowElement.row.renderAsSelected(true);
                     graphRowElement.row.renderAsSelected(true);
@@ -833,7 +831,7 @@ WebInspector.TimelineView.prototype = {
         if (this._highlightedQuadRecord === record)
             return true;
 
-        var quad = this._uiUtils.highlightQuadForRecord(record);
+        var quad = record.traceEvent().highlightQuad;
         var target = record.target();
         if (!quad || !target)
             return false;
@@ -1050,15 +1048,14 @@ WebInspector.TimelineRecordListRow.prototype = {
     /**
      * @param {!WebInspector.TimelinePresentationModel.Record} presentationRecord
      * @param {number} offset
-     * @param {!WebInspector.TimelineUIUtils} uiUtils
      */
-    update: function(presentationRecord, offset, uiUtils)
+    update: function(presentationRecord, offset)
     {
         this._record = presentationRecord;
         var record = presentationRecord.record();
         this._offset = offset;
 
-        this.element.className = "timeline-tree-item timeline-category-" + uiUtils.categoryForRecord(record).name;
+        this.element.className = "timeline-tree-item timeline-category-" + WebInspector.TimelineUIUtils.categoryForRecord(record).name;
         var paddingLeft = 5;
         var step = -3;
         for (var currentRecord = presentationRecord.presentationParent() ? presentationRecord.presentationParent().presentationParent() : null; currentRecord; currentRecord = currentRecord.presentationParent())
@@ -1067,7 +1064,7 @@ WebInspector.TimelineRecordListRow.prototype = {
         if (record.thread() !== WebInspector.TimelineModel.MainThreadName)
             this.element.classList.add("background");
 
-        this._typeElement.textContent = uiUtils.titleForRecord(record);
+        this._typeElement.textContent = WebInspector.TimelineUIUtils.titleForRecord(record);
 
         if (this._dataElement.firstChild)
             this._dataElement.removeChildren();
@@ -1078,7 +1075,7 @@ WebInspector.TimelineRecordListRow.prototype = {
         if (presentationRecord.coalesced()) {
             this._dataElement.createTextChild(WebInspector.UIString("× %d", presentationRecord.presentationChildren().length));
         } else {
-            var detailsNode = uiUtils.buildDetailsNode(record, this._linkifier);
+            var detailsNode = WebInspector.TimelineUIUtils.buildDetailsNodeForTraceEvent(record.traceEvent(), this._linkifier);
             if (detailsNode) {
                 this._dataElement.createTextChild("(");
                 this._dataElement.appendChild(detailsNode);
@@ -1184,13 +1181,12 @@ WebInspector.TimelineRecordGraphRow.prototype = {
      * @param {!WebInspector.TimelineCalculator} calculator
      * @param {number} expandOffset
      * @param {number} index
-     * @param {!WebInspector.TimelineUIUtils} uiUtils
      */
-    update: function(presentationRecord, calculator, expandOffset, index, uiUtils)
+    update: function(presentationRecord, calculator, expandOffset, index)
     {
         this._record = presentationRecord;
         var record = presentationRecord.record();
-        this.element.className = "timeline-graph-side timeline-category-" + uiUtils.categoryForRecord(record).name;
+        this.element.className = "timeline-graph-side timeline-category-" + WebInspector.TimelineUIUtils.categoryForRecord(record).name;
         if (record.thread() !== WebInspector.TimelineModel.MainThreadName)
             this.element.classList.add("background");
 

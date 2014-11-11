@@ -32,12 +32,10 @@
  * @constructor
  * @extends {WebInspector.TimelineOverviewBase}
  * @param {!WebInspector.TimelineModel} model
- * @param {!WebInspector.TimelineUIUtils} uiUtils
  */
-WebInspector.TimelineEventOverview = function(model, uiUtils)
+WebInspector.TimelineEventOverview = function(model)
 {
     WebInspector.TimelineOverviewBase.call(this, model);
-    this._uiUtils = uiUtils;
     this.element.id = "timeline-overview-events";
 
     this._fillStyles = {};
@@ -88,11 +86,11 @@ WebInspector.TimelineEventOverview.prototype = {
          */
         function appendRecord(record)
         {
-            if (this._uiUtils.isBeginFrame(record))
+            if (record.type() === WebInspector.TracingTimelineModel.RecordType.BeginFrame)
                 return;
             var recordStart = Math.floor((record.startTime() - timeOffset) * scale);
             var recordEnd = Math.ceil((record.endTime() - timeOffset) * scale);
-            var category = this._uiUtils.categoryForRecord(record);
+            var category = WebInspector.TimelineUIUtils.categoryForRecord(record);
             if (category.overviewStripGroupIndex < 0)
                 return;
             var bar = lastBarByGroup[category.overviewStripGroupIndex];
