@@ -91,6 +91,7 @@ WebInspector.Settings = function()
     this.disableOverridesWarning = this.createSetting("disableOverridesWarning", false);
     this.testPath = this.createSetting("testPath", "");
     this.frameViewerHideChromeWindow = this.createSetting("frameViewerHideChromeWindow", false);
+    this.highlightDOMUpdates = this.createSetting("highlightDOMUpdates", true);
 
     // Rendering options
     this.showPaintRects = this.createSetting("showPaintRects", false);

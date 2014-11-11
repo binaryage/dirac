@@ -1053,6 +1053,15 @@ WebInspector.ElementsTreeElement.ChildrenDisplayMode = {
     HasChildren: 2
 }
 
+/**
+ * @param {!WebInspector.ElementsTreeElement} treeElement
+ */
+WebInspector.ElementsTreeElement.animateOnDOMUpdate = function(treeElement)
+{
+    var tagName = treeElement.listItemElement.querySelector(".webkit-html-tag-name");
+    WebInspector.runCSSAnimationOnce(tagName || treeElement.listItemElement, "dom-update-highlight");
+}
+
 WebInspector.ElementsTreeElement.prototype = {
     /**
      * @return {!WebInspector.DOMNode}
@@ -1296,6 +1305,21 @@ WebInspector.ElementsTreeElement.prototype = {
     },
 
     /**
+     * @param {!WebInspector.DOMNode=} node
+     * @return {!WebInspector.ElementsTreeUpdater.UpdateInfo|undefined}
+     */
+    _updateInfo: function(node)
+    {
+        if (!WebInspector.settings.highlightDOMUpdates.get())
+            return undefined;
+        var updater = this.treeOutline._elementsTreeUpdater;
+        if (!updater)
+            return undefined;
+        var effectiveNode = node || this._node;
+        return updater._recentlyModifiedNodes.get(effectiveNode) || updater._recentlyModifiedParentNodes.get(effectiveNode);
+    },
+
+    /**
      * @param {boolean} fullRefresh
      * @param {?Array.<!WebInspector.DOMNode>} children
      */
@@ -1348,6 +1372,9 @@ WebInspector.ElementsTreeElement.prototype = {
             } else {
                 // No existing element found, insert a new element.
                 var newElement = this.insertChildElement(child, i);
+                var updateRecord = this._updateInfo();
+                if (updateRecord)
+                    WebInspector.ElementsTreeElement.animateOnDOMUpdate(newElement);
                 if (child === selectedNode)
                     elementToSelect = newElement;
                 // If a node was inserted in the middle of existing list dynamically we might need to increase the limit.
@@ -2285,6 +2312,10 @@ WebInspector.ElementsTreeElement.prototype = {
 
         var attrValueElement = attrSpanElement.createChild("span", "webkit-html-attribute-value");
 
+        var updates = this._updateInfo();
+        if (updates && updates.isAttributeModified(name))
+            WebInspector.runCSSAnimationOnce(hasText ? attrValueElement : attrNameElement, "dom-update-highlight");
+
         /**
          * @this {WebInspector.ElementsTreeElement}
          * @param {string} value
@@ -2356,14 +2387,34 @@ WebInspector.ElementsTreeElement.prototype = {
         tagElement.createTextChild("<");
         var tagNameElement = tagElement.createChild("span", isClosingTag ? "" : "webkit-html-tag-name");
         tagNameElement.textContent = (isClosingTag ? "/" : "") + tagName;
-        if (!isClosingTag && node.hasAttributes()) {
-            var attributes = node.attributes();
-            for (var i = 0; i < attributes.length; ++i) {
-                var attr = attributes[i];
-                tagElement.createTextChild(" ");
-                this._buildAttributeDOM(tagElement, attr.name, attr.value, false, node, linkify);
+        if (!isClosingTag) {
+            if (node.hasAttributes()) {
+                var attributes = node.attributes();
+                for (var i = 0; i < attributes.length; ++i) {
+                    var attr = attributes[i];
+                    tagElement.createTextChild(" ");
+                    this._buildAttributeDOM(tagElement, attr.name, attr.value, false, node, linkify);
+                }
             }
+            var hasUpdates;
+            var updates = this._updateInfo();
+            if (updates) {
+                hasUpdates |= updates.hasRemovedAttributes();
+                var hasInlineText = this._childrenDisplayMode === WebInspector.ElementsTreeElement.ChildrenDisplayMode.InlineText;
+
+                hasUpdates |= (!hasInlineText || this.expanded) && updates.hasChangedChildren();
+
+                // Highlight the tag name, as the inserted node is not visible (either child of a collapsed tree element or empty inline text).
+                hasUpdates |= !this.expanded && updates.hasInsertedNodes() && (!hasInlineText || this._node.firstChild.nodeValue().length === 0);
+
+                // Highlight the tag name, as the inline text node value has been cleared.
+                // The respective empty node will be highlighted, but the highlight will not be visible to the user.
+                hasUpdates |= hasInlineText && (updates.isCharDataModified() || updates.hasChangedChildren()) && this._node.firstChild.nodeValue().length === 0;
+            }
+            if (hasUpdates)
+                WebInspector.runCSSAnimationOnce(tagNameElement, "dom-update-highlight");
         }
+
         tagElement.createTextChild(">");
         parentElement.createTextChild("\u200B");
     },
@@ -2375,7 +2426,6 @@ WebInspector.ElementsTreeElement.prototype = {
     _convertWhitespaceToEntities: function(text)
     {
         var result = "";
-        var resultLength = 0;
         var lastIndexAfterEntity = 0;
         var entityRanges = [];
         var charToEntity = WebInspector.ElementsTreeOutline.MappedCharToEntity;
@@ -2442,6 +2492,12 @@ WebInspector.ElementsTreeElement.prototype = {
                     info.titleDOM.createTextChild("\u200B");
                     info.hasChildren = false;
                     this._buildTagDOM(info.titleDOM, tagName, true, false);
+                    var updates = this._updateInfo();
+                    if (updates && (updates.hasInsertedNodes() || updates.hasChangedChildren()))
+                        WebInspector.runCSSAnimationOnce(textNodeElement, "dom-update-highlight");
+                    updates = this._updateInfo(this._node.firstChild);
+                    if (updates && updates.isCharDataModified())
+                        WebInspector.runCSSAnimationOnce(textNodeElement, "dom-update-highlight");
                     break;
 
                 case WebInspector.ElementsTreeElement.ChildrenDisplayMode.NoChildren:
@@ -2471,6 +2527,9 @@ WebInspector.ElementsTreeElement.prototype = {
                     textNodeElement.textContent = result.text;
                     WebInspector.highlightRangesWithStyleClass(textNodeElement, result.entityRanges, "webkit-html-entity-value");
                     info.titleDOM.createTextChild("\"");
+                    var updates = this._updateInfo();
+                    if (updates && updates.isCharDataModified())
+                        WebInspector.runCSSAnimationOnce(textNodeElement, "dom-update-highlight");
                 }
                 break;
 
@@ -2499,6 +2558,7 @@ WebInspector.ElementsTreeElement.prototype = {
                 var cdataElement = info.titleDOM.createChild("span", "webkit-html-text-node");
                 cdataElement.createTextChild("<![CDATA[" + node.nodeValue() + "]]>");
                 break;
+
             case Node.DOCUMENT_FRAGMENT_NODE:
                 var fragmentElement = info.titleDOM.createChild("span", "webkit-html-fragment");
                 if (node.isInShadowTree()) {
@@ -2747,18 +2807,18 @@ WebInspector.ElementsTreeUpdater = function(domModel, treeOutline)
 {
     domModel.addEventListener(WebInspector.DOMModel.Events.NodeInserted, this._nodeInserted, this);
     domModel.addEventListener(WebInspector.DOMModel.Events.NodeRemoved, this._nodeRemoved, this);
-    domModel.addEventListener(WebInspector.DOMModel.Events.AttrModified, this._attributesUpdated, this);
-    domModel.addEventListener(WebInspector.DOMModel.Events.AttrRemoved, this._attributesUpdated, this);
+    domModel.addEventListener(WebInspector.DOMModel.Events.AttrModified, this._attributeModified, this);
+    domModel.addEventListener(WebInspector.DOMModel.Events.AttrRemoved, this._attributeRemoved, this);
     domModel.addEventListener(WebInspector.DOMModel.Events.CharacterDataModified, this._characterDataModified, this);
     domModel.addEventListener(WebInspector.DOMModel.Events.DocumentUpdated, this._documentUpdated, this);
     domModel.addEventListener(WebInspector.DOMModel.Events.ChildNodeCountUpdated, this._childNodeCountUpdated, this);
 
     this._domModel = domModel;
     this._treeOutline = treeOutline;
-    /** @type {!Set.<!WebInspector.DOMNode>} */
-    this._recentlyModifiedNodes = new Set();
-    /** @type {!Set.<!WebInspector.DOMNode>} */
-    this._recentlyModifiedParentNodes = new Set();
+    /** @type {!Map.<!WebInspector.DOMNode, !WebInspector.ElementsTreeUpdater.UpdateInfo>} */
+    this._recentlyModifiedNodes = new Map();
+    /** @type {!Map.<!WebInspector.DOMNode, !WebInspector.ElementsTreeUpdater.UpdateInfo>} */
+    this._recentlyModifiedParentNodes = new Map();
 }
 
 WebInspector.ElementsTreeUpdater.prototype = {
@@ -2766,8 +2826,8 @@ WebInspector.ElementsTreeUpdater.prototype = {
     {
         this._domModel.removeEventListener(WebInspector.DOMModel.Events.NodeInserted, this._nodeInserted, this);
         this._domModel.removeEventListener(WebInspector.DOMModel.Events.NodeRemoved, this._nodeRemoved, this);
-        this._domModel.removeEventListener(WebInspector.DOMModel.Events.AttrModified, this._attributesUpdated, this);
-        this._domModel.removeEventListener(WebInspector.DOMModel.Events.AttrRemoved, this._attributesUpdated, this);
+        this._domModel.removeEventListener(WebInspector.DOMModel.Events.AttrModified, this._attributeModified, this);
+        this._domModel.removeEventListener(WebInspector.DOMModel.Events.AttrRemoved, this._attributeRemoved, this);
         this._domModel.removeEventListener(WebInspector.DOMModel.Events.CharacterDataModified, this._characterDataModified, this);
         this._domModel.removeEventListener(WebInspector.DOMModel.Events.DocumentUpdated, this._documentUpdated, this);
         this._domModel.removeEventListener(WebInspector.DOMModel.Events.ChildNodeCountUpdated, this._childNodeCountUpdated, this);
@@ -2775,33 +2835,47 @@ WebInspector.ElementsTreeUpdater.prototype = {
 
     /**
      * @param {?WebInspector.DOMNode} parentNode
+     * @return {!WebInspector.ElementsTreeUpdater.UpdateInfo}
      */
     _parentNodeModified: function(parentNode)
     {
         if (!parentNode)
-            return;
-        this._recentlyModifiedParentNodes.add(parentNode);
+            return new WebInspector.ElementsTreeUpdater.UpdateInfo(); // Bogus info.
+
+        var record = this._recentlyModifiedParentNodes.get(parentNode);
+        if (!record) {
+            record = new WebInspector.ElementsTreeUpdater.UpdateInfo();
+            this._recentlyModifiedParentNodes.set(parentNode, record);
+        }
 
         var treeElement = this._treeOutline.findTreeElement(parentNode);
         if (treeElement) {
             var oldDisplayMode = treeElement._childrenDisplayMode;
             treeElement._updateChildrenDisplayMode();
             if (treeElement._childrenDisplayMode !== oldDisplayMode)
-                this._nodeModified(parentNode);
+                this._nodeModified(parentNode).childrenModified();
         }
 
         if (this._treeOutline._visible)
             this._updateModifiedNodesSoon();
+
+        return record;
     },
 
     /**
      * @param {!WebInspector.DOMNode} node
+     * @return {!WebInspector.ElementsTreeUpdater.UpdateInfo}
      */
     _nodeModified: function(node)
     {
-        this._recentlyModifiedNodes.add(node);
         if (this._treeOutline._visible)
             this._updateModifiedNodesSoon();
+        var record = this._recentlyModifiedNodes.get(node);
+        if (!record) {
+            record = new WebInspector.ElementsTreeUpdater.UpdateInfo();
+            this._recentlyModifiedNodes.set(node, record);
+        }
+        return record;
     },
 
     /**
@@ -2822,10 +2896,19 @@ WebInspector.ElementsTreeUpdater.prototype = {
     /**
      * @param {!WebInspector.Event} event
      */
-    _attributesUpdated: function(event)
+    _attributeModified: function(event)
     {
         var node = /** @type {!WebInspector.DOMNode} */ (event.data.node);
-        this._nodeModified(node);
+        this._nodeModified(node).attributeModified(event.data.name);
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _attributeRemoved: function(event)
+    {
+        var node = /** @type {!WebInspector.DOMNode} */ (event.data.node);
+        this._nodeModified(node).attributeRemoved(event.data.name);
     },
 
     /**
@@ -2834,8 +2917,8 @@ WebInspector.ElementsTreeUpdater.prototype = {
     _characterDataModified: function(event)
     {
         var node = /** @type {!WebInspector.DOMNode} */ (event.data);
-        this._parentNodeModified(node.parentNode);
-        this._nodeModified(node);
+        this._parentNodeModified(node.parentNode).charDataModified();
+        this._nodeModified(node).charDataModified();
     },
 
     /**
@@ -2844,7 +2927,7 @@ WebInspector.ElementsTreeUpdater.prototype = {
     _nodeInserted: function(event)
     {
         var node = /** @type {!WebInspector.DOMNode} */ (event.data);
-        this._parentNodeModified(node.parentNode);
+        this._parentNodeModified(node.parentNode).nodeInserted(node);
     },
 
     /**
@@ -2855,7 +2938,7 @@ WebInspector.ElementsTreeUpdater.prototype = {
         var node = /** @type {!WebInspector.DOMNode} */ (event.data.node);
         var parentNode = /** @type {!WebInspector.DOMNode} */ (event.data.parent);
         this._treeOutline._resetClipboardIfNeeded(node);
-        this._parentNodeModified(parentNode);
+        this._parentNodeModified(parentNode).childrenModified();
     },
 
     /**
@@ -2881,7 +2964,7 @@ WebInspector.ElementsTreeUpdater.prototype = {
             delete this._updateModifiedNodesTimeout;
         }
 
-        var updatedNodes = this._recentlyModifiedNodes.valuesArray().concat(this._recentlyModifiedParentNodes.valuesArray());
+        var updatedNodes = this._recentlyModifiedNodes.keysArray().concat(this._recentlyModifiedParentNodes.keysArray());
         var hidePanelWhileUpdating = updatedNodes.length > 10;
         if (hidePanelWhileUpdating) {
             var treeOutlineContainerElement = this._treeOutline.element.parentNode;
@@ -2893,18 +2976,16 @@ WebInspector.ElementsTreeUpdater.prototype = {
             // Document's children have changed, perform total update.
             this._treeOutline.update();
         } else {
-            var nodes = this._recentlyModifiedNodes.valuesArray();
-            for (var i = 0, size = nodes.length; i < size; ++i) {
-                var nodeItem = this._treeOutline.findTreeElement(nodes[i]);
+            for (var node of this._recentlyModifiedNodes.keys()) {
+                var nodeItem = this._treeOutline.findTreeElement(node);
                 if (nodeItem)
-                    nodeItem.updateTitle();
+                    nodeItem.updateTitle(false);
             }
 
-            var parentNodes = this._recentlyModifiedParentNodes.valuesArray();
-            for (var i = 0, size = parentNodes.length; i < size; ++i) {
-                var parentNodeItem = this._treeOutline.findTreeElement(parentNodes[i]);
+            for (var node of this._recentlyModifiedParentNodes.keys()) {
+                var parentNodeItem = this._treeOutline.findTreeElement(node);
                 if (parentNodeItem && parentNodeItem.populated)
-                    parentNodeItem.updateChildren();
+                    parentNodeItem.updateChildren(false);
             }
         }
 
@@ -2927,6 +3008,108 @@ WebInspector.ElementsTreeUpdater.prototype = {
         this._recentlyModifiedNodes.clear();
         this._recentlyModifiedParentNodes.clear();
         delete this._treeOutline._clipboardNodeData;
+    }
+}
+
+/**
+ * @constructor
+ */
+WebInspector.ElementsTreeUpdater.UpdateInfo = function()
+{
+}
+
+WebInspector.ElementsTreeUpdater.UpdateInfo.prototype = {
+    /**
+     * @param {string} attrName
+     */
+    attributeModified: function(attrName)
+    {
+        if (this._removedAttributes && this._removedAttributes.has(attrName))
+            this._removedAttributes.delete(attrName);
+        if (!this._modifiedAttributes)
+            this._modifiedAttributes = /** @type {!Set.<string>} */ (new Set());
+        this._modifiedAttributes.add(attrName);
+    },
+
+    /**
+     * @param {string} attrName
+     */
+    attributeRemoved: function(attrName)
+    {
+        if (this._modifiedAttributes && this._modifiedAttributes.has(attrName))
+            this._modifiedAttributes.delete(attrName);
+        if (!this._removedAttributes)
+            this._removedAttributes = /** @type {!Set.<string>} */ (new Set());
+        this._removedAttributes.add(attrName);
+    },
+
+    /**
+     * @param {!WebInspector.DOMNode} node
+     */
+    nodeInserted: function(node)
+    {
+        if (!this._insertedNodes)
+            this._insertedNodes = /** @type {!Set.<!WebInspector.DOMNode>} */ (new Set());
+        this._insertedNodes.add(/** @type {!WebInspector.DOMNode} */ (node));
+    },
+
+    charDataModified: function()
+    {
+        this._charDataModified = true;
+    },
+
+    childrenModified: function()
+    {
+        this._hasChangedChildren = true;
+    },
+
+    /**
+     * @param {string} attributeName
+     * @return {boolean}
+     */
+    isAttributeModified: function(attributeName)
+    {
+        return this._modifiedAttributes && this._modifiedAttributes.has(attributeName);
+    },
+
+    /**
+     * @return {boolean}
+     */
+    hasRemovedAttributes: function()
+    {
+        return !!this._removedAttributes && !!this._removedAttributes.size;
+    },
+
+    /**
+     * @return {boolean}
+     */
+    hasInsertedNodes: function()
+    {
+        return !!this._insertedNodes && !!this._insertedNodes.size;
+    },
+
+    /**
+     * @return {boolean}
+     */
+    isCharDataModified: function()
+    {
+        return !!this._charDataModified;
+    },
+
+    /**
+     * @return {boolean}
+     */
+    isNodeInserted: function(node)
+    {
+        return !!this._insertedNodes && this._insertedNodes.has(node);
+    },
+
+    /**
+     * @return {boolean}
+     */
+    hasChangedChildren: function()
+    {
+        return !!this._hasChangedChildren;
     }
 }
 

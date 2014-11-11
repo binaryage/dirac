@@ -271,3 +271,16 @@ body.inactive button.text-button, .text-button:disabled {
 .outline-disclosure .nowrap li {
     word-wrap: normal;
 }
+
+/* DOM update highlight */
+
+@-webkit-keyframes dom-update-highlight-animation {
+    from { background-color: rgb(255, 242, 114); }
+    90% { background-color: rgb(255, 242, 114); }
+    to { background-color: inherit; }
+}
+
+.dom-update-highlight {
+    -webkit-animation: dom-update-highlight-animation 2s 1;
+    color: red !important;
+}

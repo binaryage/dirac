@@ -462,6 +462,7 @@ function Symbol(description) {}
 
 /**
  * @interface
+ * @extends $jscomp.Iterable.<T>
  * @template T
  */
 var Iterator = function() { }
@@ -470,14 +471,20 @@ Iterator.prototype = {
     /**
      * @return {{done: boolean, value: (T|undefined)}}
      */
-    next: function() { }
+    next: function() { },
+
+    // FIXME: This should be removed once transpilation is not required for closure compiler ES6
+    $$iterator: function() { }
 }
 
+// FIXME: $jscomp.Iterable hack below should be removed once transpilation is not required for closure compiler ES6
 /**
  * @constructor
+ * @implements $jscomp.Iterable.<!Array.<K|V>>
+ * @param {!Array.<!Array.<K|V>>|!Iterator.<!Array.<K|V>>=} iterable
  * @template K, V
  */
-var Map = function() { }
+var Map = function(iterable) { }
 
 Map.prototype = {
     /**
@@ -503,6 +510,11 @@ Map.prototype = {
     values: function() { },
 
     /**
+     * @return {!Array.<!Array.<K|V>>}
+     */
+    entries: function() { },
+
+    /**
      * @param {K} key
      * @return {V}
      */
@@ -519,7 +531,10 @@ Map.prototype = {
     /**
      * @return {number}
      */
-    get size() { }
+    get size() { },
+
+    // FIXME: This should be removed once transpilation is not required for closure compiler ES6
+    $$iterator: function() { }
 }
 
 // FIXME: $jscomp.Iterable hack below should be removed once transpilation is not required for closure compiler ES6

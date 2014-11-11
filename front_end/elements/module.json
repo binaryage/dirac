@@ -94,6 +94,13 @@
             "title": "Show rulers",
             "settingName": "showMetricsRulers",
             "settingType": "checkbox"
+        },
+        {
+            "type": "ui-setting",
+            "section": "Elements",
+            "title": "Highlight DOM updates",
+            "settingName": "highlightDOMUpdates",
+            "settingType": "checkbox"
         }
     ],
     "dependencies": [
