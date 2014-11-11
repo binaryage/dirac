@@ -6,11 +6,11 @@
 WebInspector.TimelineJSProfileProcessor = { };
 
 /**
- * @param {!WebInspector.TracingTimelineModel} timelineModel
  * @param {!ProfilerAgent.CPUProfile} jsProfile
+ * @param {!WebInspector.TracingModel.Thread} thread
  * @return {!Array.<!WebInspector.TracingModel.Event>}
  */
-WebInspector.TimelineJSProfileProcessor.generateTracingEventsFromCpuProfile = function(timelineModel, jsProfile)
+WebInspector.TimelineJSProfileProcessor.generateTracingEventsFromCpuProfile = function(jsProfile, thread)
 {
     if (!jsProfile.samples)
         return [];
@@ -21,7 +21,6 @@ WebInspector.TimelineJSProfileProcessor.generateTracingEventsFromCpuProfile = fu
     var samples = jsProfileModel.samples;
     var timestamps = jsProfileModel.timestamps;
     var jsEvents = [];
-    var mainThread = timelineModel.mainThreadEvents()[0].thread;
     for (var i = 0; i < samples.length; ++i) {
         var node = jsProfileModel.nodeByIndex(i);
         if (node === programNode || node === gcNode || node === idleNode)
@@ -34,7 +33,7 @@ WebInspector.TimelineJSProfileProcessor.generateTracingEventsFromCpuProfile = fu
                 stackTrace[j++] = /** @type {!ConsoleAgent.CallFrame} */ (node);
         }
         var jsEvent = new WebInspector.TracingModel.Event(WebInspector.TracingModel.DevToolsMetadataEventCategory, WebInspector.TracingTimelineModel.RecordType.JSSample,
-            WebInspector.TracingModel.Phase.Instant, timestamps[i], mainThread);
+            WebInspector.TracingModel.Phase.Instant, timestamps[i], thread);
         jsEvent.stackTrace = stackTrace;
         jsEvents.push(jsEvent);
     }

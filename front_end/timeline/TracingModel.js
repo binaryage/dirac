@@ -808,7 +808,10 @@ WebInspector.TracingModel.Thread.prototype = {
     target: function()
     {
         //FIXME: correctly specify target
-        return WebInspector.targetManager.targets()[0] || null;
+        if (this.name() === "CrRendererMain")
+            return WebInspector.targetManager.targets()[0] || null;
+        else
+            return null;
     },
 
     /**
