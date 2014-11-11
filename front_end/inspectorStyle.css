@@ -27,6 +27,14 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+.inspector-app-iframe {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+}
+
 input[type="search"]:focus,
 input[type="text"]:focus {
     outline: auto 5px -webkit-focus-ring-color;

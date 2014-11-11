@@ -777,3 +777,24 @@ function consumeEvent(e)
 {
     e.consume();
 }
+
+/**
+ * @param {!function()} callback
+ * @suppressGlobalPropertiesCheck
+ */
+function runOnWindowLoad(callback)
+{
+    /**
+     * @suppressGlobalPropertiesCheck
+     */
+    function windowLoaded()
+    {
+        window.removeEventListener("DOMContentLoaded", windowLoaded, false);
+        callback();
+    }
+
+    if (document.readyState === "complete")
+        callback();
+    else
+        window.addEventListener("DOMContentLoaded", windowLoaded, false);
+}

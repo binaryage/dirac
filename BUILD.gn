@@ -17,6 +17,7 @@ devtools_core_files =
   gypi_values.devtools_bindings_js_files +
   gypi_values.devtools_common_js_files +
   gypi_values.devtools_components_js_files +
+  gypi_values.devtools_devtools_app_js_files +
   gypi_values.devtools_host_js_files +
   gypi_values.devtools_main_js_files +
   gypi_values.devtools_platform_js_files +
@@ -87,6 +88,7 @@ group("devtools_frontend_resources") {
     # and thus should be guarded out in Debug builds.
     deps += [
       ":concatenated_devtools_css",
+      ":concatenated_inspector_css",
       ":concatenated_toolbox_css",
     ]
   }
@@ -112,6 +114,7 @@ action("generate_devtools_grd") {
     # Debug: all files are picked as-is.
     generated_files = generated_scripts + [
       resources_out_dir + "devtools.html",
+      resources_out_dir + "inspector.html",
       resources_out_dir + "toolbox.html",
     ]
     static_files += all_devtools_files + [ "front_end/Runtime.js" ]
@@ -121,6 +124,9 @@ action("generate_devtools_grd") {
       resources_out_dir + "devtools.css",
       resources_out_dir + "devtools.html",
       resources_out_dir + "devtools.js",
+      resources_out_dir + "inspector.css",
+      resources_out_dir + "inspector.html",
+      resources_out_dir + "inspector.js",
       resources_out_dir + "toolbox.css",
       resources_out_dir + "toolbox.html",
       resources_out_dir + "toolbox.js",
@@ -210,11 +216,13 @@ action("build_applications") {
 
   inputs = helper_scripts + all_devtools_files + generated_scripts + [
     "front_end/devtools.html",
+    "front_end/inspector.html",
     "front_end/toolbox.html",
   ]
 
   outputs = [
     resources_out_dir + "devtools.html",
+    resources_out_dir + "inspector.html",
     resources_out_dir + "toolbox.html",
   ]
 
@@ -225,6 +233,7 @@ action("build_applications") {
   } else {
     outputs += [
       resources_out_dir + "devtools.js",
+      resources_out_dir + "inspector.js",
       resources_out_dir + "toolbox.js",
       resources_out_dir + "audits_module.js",
       resources_out_dir + "console_module.js",
@@ -254,7 +263,7 @@ action("build_applications") {
   }
 
   args = [
-    "devtools", "toolbox",
+    "devtools", "inspector", "toolbox",
     "--input_path", rebase_path("front_end", root_build_dir),
     "--output_path", rebase_path(resources_out_dir, root_build_dir),
     "--debug", debug_mode
@@ -310,6 +319,10 @@ if (!debug_devtools) {
 
   concatenate_css("concatenated_devtools_css") {
     app_name = "devtools"
+  }
+
+  concatenate_css("concatenated_inspector_css") {
+    app_name = "inspector"
   }
 
   concatenate_css("concatenated_toolbox_css") {

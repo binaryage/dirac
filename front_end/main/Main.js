@@ -36,23 +36,13 @@
  */
 WebInspector.Main = function()
 {
-    var boundListener = windowLoaded.bind(this);
-    WebInspector.console.setUIDelegate(this);
-    if (document.readyState === "complete") {
-        this._loaded();
+    if (!InspectorAppHost) {
+        console.error("Inspector should be embedded.");
         return;
     }
-
-    /**
-     * @suppressGlobalPropertiesCheck
-     * @this {WebInspector.Main}
-     */
-    function windowLoaded()
-    {
-        this._loaded();
-        window.removeEventListener("DOMContentLoaded", boundListener, false);
-    }
-    window.addEventListener("DOMContentLoaded", boundListener, false);
+    InspectorAppHost.beforeInspectorAppLoad();
+    WebInspector.console.setUIDelegate(this);
+    runOnWindowLoad(this._loaded.bind(this));
 }
 
 WebInspector.Main.prototype = {
@@ -266,6 +256,7 @@ WebInspector.Main.prototype = {
             WebInspector.inspectElementModeController = new WebInspector.InspectElementModeController();
         this._createGlobalStatusBarItems();
 
+        InspectorAppHost.afterInspectorAppLoad();
         InspectorFrontendHost.loadCompleted();
 
         // Give UI cycles to repaint, then proceed with creating connection.

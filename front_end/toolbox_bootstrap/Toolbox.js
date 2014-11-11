@@ -20,25 +20,6 @@ function toolboxLoaded()
     window.opener.WebInspector["app"]["toolboxLoaded"](document);
 }
 
-/**
- * @suppressGlobalPropertiesCheck
- */
-function windowLoaded()
-{
-    window.removeEventListener("DOMContentLoaded", windowLoaded, false);
-    toolboxLoaded();
-}
-
-/**
- * @suppressGlobalPropertiesCheck
- */
-function initToolbox()
-{
-    if (document.readyState === "complete")
-        toolboxLoaded();
-    else
-        window.addEventListener("DOMContentLoaded", windowLoaded, false);
-}
-initToolbox();
+runOnWindowLoad(toolboxLoaded);
 
 })();
