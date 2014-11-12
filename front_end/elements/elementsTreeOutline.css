@@ -273,14 +273,21 @@ body.inactive button.text-button, .text-button:disabled {
 }
 
 /* DOM update highlight */
-
 @-webkit-keyframes dom-update-highlight-animation {
-    from { background-color: rgb(255, 242, 114); }
-    90% { background-color: rgb(255, 242, 114); }
-    to { background-color: inherit; }
+    from {
+        background-color: rgb(158, 54, 153);
+        color: white;
+    }
+    80% {
+        background-color: rgb(245, 219, 244);
+        color: inherit;
+    }
+    to {
+        background-color: inherit;
+    }
 }
 
 .dom-update-highlight {
-    -webkit-animation: dom-update-highlight-animation 2s 1;
-    color: red !important;
+    -webkit-animation: dom-update-highlight-animation 1.4s 1 cubic-bezier(0, 0, 0.2, 1);
+    border-radius: 2px;
 }
