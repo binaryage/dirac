@@ -79,6 +79,7 @@ WebInspector.TimelineModel.RecordType = {
     PaintInvalidationTracking: "PaintInvalidationTracking",
 
     ParseHTML: "ParseHTML",
+    ParseAuthorStyleSheet: "ParseAuthorStyleSheet",
 
     TimerInstall: "TimerInstall",
     TimerRemove: "TimerRemove",

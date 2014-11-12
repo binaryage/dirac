@@ -77,6 +77,7 @@ WebInspector.TimelineUIUtils._initEventStyles = function()
     eventStyles[recordTypes.ScrollLayer] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Scroll"), categories["rendering"]);
     eventStyles[recordTypes.CompositeLayers] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Composite Layers"), categories["painting"]);
     eventStyles[recordTypes.ParseHTML] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Parse HTML"), categories["loading"]);
+    eventStyles[recordTypes.ParseAuthorStyleSheet] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Parse Author Style Sheet"), categories["loading"]);
     eventStyles[recordTypes.TimerInstall] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Install Timer"), categories["scripting"]);
     eventStyles[recordTypes.TimerRemove] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Remove Timer"), categories["scripting"]);
     eventStyles[recordTypes.TimerFire] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Timer Fired"), categories["scripting"]);
@@ -570,6 +571,11 @@ WebInspector.TimelineUIUtils._buildTraceEventDetailsSynchronously = function(eve
         relatedNodeLabel = WebInspector.UIString("Image element");
         if (event.imageURL)
             contentHelper.appendElementRow(WebInspector.UIString("Image URL"), WebInspector.linkifyResourceAsNode(event.imageURL));
+        break;
+    case recordTypes.ParseAuthorStyleSheet:
+        var url = eventData["styleSheetUrl"];
+        if (url)
+            contentHelper.appendElementRow(WebInspector.UIString("Stylesheet URL"), WebInspector.linkifyResourceAsNode(url));
         break;
     case recordTypes.RecalculateStyles: // We don't want to see default details.
         contentHelper.appendTextRow(WebInspector.UIString("Elements affected"), event.args["elementCount"]);
