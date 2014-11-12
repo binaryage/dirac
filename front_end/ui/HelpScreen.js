@@ -37,7 +37,7 @@ WebInspector.HelpScreen = function(title)
 {
     WebInspector.VBox.call(this);
     this.markAsRoot();
-    this.registerRequiredCSS("components/helpScreen.css");
+    this.registerRequiredCSS("ui/helpScreen.css");
 
     this.element.classList.add("help-window-outer");
     this.element.addEventListener("keydown", this._onKeyDown.bind(this), false);
@@ -76,7 +76,7 @@ WebInspector.HelpScreen.prototype = {
             visibleHelpScreen.hide();
         WebInspector.HelpScreen._visibleScreen = this;
         WebInspector.GlassPane.DefaultFocusedViewStack.push(this);
-        this.show(WebInspector.inspectorView.element);
+        this.show(WebInspector.Dialog.modalHostView().element);
         this.focus();
     },
 
@@ -115,40 +115,3 @@ WebInspector.HelpScreen.prototype = {
 
     __proto__: WebInspector.VBox.prototype
 }
-
-/**
- * @constructor
- * @extends {WebInspector.HelpScreen}
- */
-WebInspector.RemoteDebuggingTerminatedScreen = function(reason)
-{
-    WebInspector.HelpScreen.call(this, WebInspector.UIString("Detached from the target"));
-    var p = this.helpContentElement.createChild("p");
-    p.classList.add("help-section");
-    p.createChild("span").textContent = WebInspector.UIString("Remote debugging has been terminated with reason: ");
-    p.createChild("span", "error-message").textContent = reason;
-    p.createChild("br");
-    p.createChild("span").textContent = WebInspector.UIString("Please re-attach to the new target.");
-}
-
-WebInspector.RemoteDebuggingTerminatedScreen.prototype = {
-    __proto__: WebInspector.HelpScreen.prototype
-}
-
-/**
- * @constructor
- * @extends {WebInspector.HelpScreen}
- */
-WebInspector.WorkerTerminatedScreen = function()
-{
-    WebInspector.HelpScreen.call(this, WebInspector.UIString("Inspected worker terminated"));
-    var p = this.helpContentElement.createChild("p");
-    p.classList.add("help-section");
-    p.textContent = WebInspector.UIString("Inspected worker has terminated. Once it restarts we will attach to it automatically.");
-}
-
-WebInspector.WorkerTerminatedScreen.prototype = {
-
-    __proto__: WebInspector.HelpScreen.prototype
-}
-

@@ -57,7 +57,7 @@ WebInspector.FlameChartDelegate.prototype = {
 WebInspector.FlameChart = function(dataProvider, flameChartDelegate, isTopDown)
 {
     WebInspector.HBox.call(this, true);
-    this.contentElement.appendChild(WebInspector.View.createStyleElement("components/flameChart.css"));
+    this.contentElement.appendChild(WebInspector.View.createStyleElement("ui/flameChart.css"));
     this.contentElement.classList.add("flame-chart-main-pane");
     this._flameChartDelegate = flameChartDelegate;
     this._isTopDown = isTopDown;

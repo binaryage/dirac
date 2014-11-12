@@ -9,32 +9,18 @@
         "NativeBreakpointsSidebarPane.js",
         "DOMBreakpointsSidebarPane.js",
         "DOMPresentationUtils.js",
-        "Section.js",
-        "PropertiesSection.js",
         "DockController.js",
         "Drawer.js",
-        "Panel.js",
         "ExecutionContextSelector.js",
-        "FilterBar.js",
-        "FilterSuggestionBuilder.js",
-        "FlameChart.js",
         "HandlerRegistry.js",
-        "HelpScreen.js",
         "InspectElementModeController.js",
         "InspectorView.js",
         "ObjectPopoverHelper.js",
         "ObjectPropertiesSection.js",
-        "OverviewGrid.js",
-        "SearchableView.js",
         "ShortcutsScreen.js",
-        "TargetsComboBoxController.js",
-        "TimelineGrid.js"
+        "TargetsComboBoxController.js"
     ],
     "stylesheets": [
-        "breakpointsList.css",
-        "flameChart.css",
-        "helpScreen.css",
-        "overviewGrid.css",
-        "panelEnablerView.css"
+        "breakpointsList.css"
     ]
 }
