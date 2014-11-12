@@ -745,7 +745,8 @@ WebInspector.CPUProfileHeader.prototype = {
         {
             this._writeToTempFile(tempFile, serializedData);
         }
-        new WebInspector.TempFile("cpu-profiler", String(this.uid), didCreateTempFile.bind(this));
+        WebInspector.TempFile.create("cpu-profiler", String(this.uid))
+            .then(didCreateTempFile.bind(this));
     },
 
     /**
