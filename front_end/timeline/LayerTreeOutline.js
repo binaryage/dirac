@@ -140,7 +140,8 @@ WebInspector.LayerTreeOutline.prototype = {
         var node = this._treeOutline.treeElementFromEvent(event);
         if (node === this._lastHoveredNode)
             return;
-        this.dispatchEventToListeners(WebInspector.LayerTreeOutline.Events.LayerHovered, node && node.representedObject ? {layer: node.representedObject} : null);
+        var selection = node && node.representedObject ? new WebInspector.Layers3DView.LayerSelection(node.representedObject) : null;
+        this.dispatchEventToListeners(WebInspector.LayerTreeOutline.Events.LayerHovered, selection);
     },
 
     /**
@@ -149,7 +150,8 @@ WebInspector.LayerTreeOutline.prototype = {
     _selectedNodeChanged: function(node)
     {
         var layer = /** @type {!WebInspector.Layer} */ (node.representedObject);
-        this.dispatchEventToListeners(WebInspector.LayerTreeOutline.Events.LayerSelected, {layer: layer});
+        var selection = node.representedObject ? new WebInspector.Layers3DView.LayerSelection(node.representedObject) : null;
+        this.dispatchEventToListeners(WebInspector.LayerTreeOutline.Events.LayerSelected, selection);
     },
 
     /**

@@ -163,8 +163,8 @@ WebInspector.LayersPanel.prototype = {
      */
     _onObjectSelected: function(event)
     {
-        var activeObject = /** @type {!WebInspector.Layers3DView.ActiveObject} */ (event.data);
-        this._selectObject(activeObject);
+        var selection = /** @type {!WebInspector.Layers3DView.Selection} */ (event.data);
+        this._selectObject(selection);
     },
 
     /**
@@ -172,8 +172,8 @@ WebInspector.LayersPanel.prototype = {
      */
     _onObjectHovered: function(event)
     {
-        var activeObject = /** @type {!WebInspector.Layers3DView.ActiveObject} */ (event.data);
-        this._hoverObject(activeObject);
+        var selection = /** @type {!WebInspector.Layers3DView.Selection} */ (event.data);
+        this._hoverObject(selection);
     },
 
     /**
@@ -187,40 +187,40 @@ WebInspector.LayersPanel.prototype = {
     },
 
     /**
-     * @param {?WebInspector.Layers3DView.ActiveObject} activeObject
+     * @param {?WebInspector.Layers3DView.Selection} selection
      */
-    _selectObject: function(activeObject)
+    _selectObject: function(selection)
     {
-        var layer = activeObject && activeObject.layer;
-        if (this._currentlySelectedLayer === activeObject)
+        var layer = selection && selection.layer;
+        if (this._currentlySelectedLayer === selection)
             return;
-        this._currentlySelectedLayer = activeObject;
+        this._currentlySelectedLayer = selection;
         var node = layer ? layer.nodeForSelfOrAncestor() : null;
         if (node)
             node.highlightForTwoSeconds();
         else if (this._target)
             this._target.domModel.hideDOMNodeHighlight();
         this._layerTreeOutline.selectLayer(layer);
-        this._layers3DView.selectObject(activeObject);
-        this._layerDetailsView.setObject(activeObject);
+        this._layers3DView.selectObject(selection);
+        this._layerDetailsView.setObject(selection);
     },
 
     /**
-     * @param {?WebInspector.Layers3DView.ActiveObject} activeObject
+     * @param {?WebInspector.Layers3DView.Selection} selection
      */
-    _hoverObject: function(activeObject)
+    _hoverObject: function(selection)
     {
-        var layer = activeObject && activeObject.layer;
-        if (this._currentlyHoveredLayer === activeObject)
+        var layer = selection && selection.layer;
+        if (this._currentlyHoveredLayer === selection)
             return;
-        this._currentlyHoveredLayer = activeObject;
+        this._currentlyHoveredLayer = selection;
         var node = layer ? layer.nodeForSelfOrAncestor() : null;
         if (node)
             node.highlight();
         else if (this._target)
             this._target.domModel.hideDOMNodeHighlight();
         this._layerTreeOutline.hoverLayer(layer);
-        this._layers3DView.hoverObject(activeObject);
+        this._layers3DView.hoverObject(selection);
     },
 
     __proto__: WebInspector.PanelWithSidebarTree.prototype

@@ -88,12 +88,12 @@ WebInspector.LayerDetailsView.CompositingReasonDetail = {
 
 WebInspector.LayerDetailsView.prototype = {
     /**
-     * @param {?WebInspector.Layers3DView.ActiveObject} activeObject
+     * @param {?WebInspector.Layers3DView.Selection} selection
      */
-    setObject: function(activeObject)
+    setObject: function(selection)
     {
-        this._layer = activeObject ? activeObject.layer : null;
-        this._scrollRectIndex = activeObject ? activeObject.scrollRectIndex : null;
+        this._layer = selection ? selection.layer : null;
+        this._scrollRectIndex = selection ? selection.scrollRectIndex : null;
         if (this.isShowing())
             this.update();
     },
@@ -112,7 +112,7 @@ WebInspector.LayerDetailsView.prototype = {
     {
         if (event.which !== 1)
             return;
-        this.dispatchEventToListeners(WebInspector.LayerDetailsView.Events.ObjectSelected, {layer: this._layer, scrollRectIndex: index});
+        this.dispatchEventToListeners(WebInspector.LayerDetailsView.Events.ObjectSelected, new WebInspector.Layers3DView.ScrollRectSelection(this._layer, index));
     },
 
     /**
