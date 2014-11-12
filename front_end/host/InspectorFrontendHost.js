@@ -43,6 +43,7 @@ function InspectorFrontendHostAPI()
 InspectorFrontendHostAPI.ContextMenuDescriptor;
 
 InspectorFrontendHostAPI.Events = {
+    AddExtensions: "addExtensions",
     AppendedToURL: "appendedToURL",
     CanceledSaveURL: "canceledSaveURL",
     ContextMenuCleared: "contextMenuCleared",
@@ -62,12 +63,14 @@ InspectorFrontendHostAPI.Events = {
     RevealSourceLine: "revealSourceLine",
     SavedURL: "savedURL",
     SearchCompleted: "searchCompleted",
+    SetInspectedTabId: "setInspectedTabId",
     SetToolbarColors: "setToolbarColors",
     SetUseSoftMenu: "setUseSoftMenu",
     ShowConsole: "showConsole"
 }
 
 InspectorFrontendHostAPI.EventDescriptors = [
+    [InspectorFrontendHostAPI.Events.AddExtensions, ["extensions"]],
     [InspectorFrontendHostAPI.Events.AppendedToURL, ["url"]],
     [InspectorFrontendHostAPI.Events.CanceledSaveURL, ["url"]],
     [InspectorFrontendHostAPI.Events.ContextMenuCleared, []],
@@ -87,6 +90,7 @@ InspectorFrontendHostAPI.EventDescriptors = [
     [InspectorFrontendHostAPI.Events.RevealSourceLine, ["url", "lineNumber", "columnNumber"]],
     [InspectorFrontendHostAPI.Events.SavedURL, ["url"]],
     [InspectorFrontendHostAPI.Events.SearchCompleted, ["requestId", "fileSystemPath", "files"]],
+    [InspectorFrontendHostAPI.Events.SetInspectedTabId, ["tabId"]],
     [InspectorFrontendHostAPI.Events.SetToolbarColors, ["backgroundColor", "color"]],
     [InspectorFrontendHostAPI.Events.SetUseSoftMenu, ["useSoftMenu"]],
     [InspectorFrontendHostAPI.Events.ShowConsole, []]

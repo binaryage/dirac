@@ -82,6 +82,9 @@ WebInspector.ExtensionServer = function()
     this._registerHandler(commands.UpdateAuditProgress, this._onUpdateAuditProgress.bind(this));
     window.addEventListener("message", this._onWindowMessage.bind(this), false);  // Only for main window.
 
+    InspectorFrontendHost.events.addEventListener(InspectorFrontendHostAPI.Events.AddExtensions, this._addExtensions, this);
+    InspectorFrontendHost.events.addEventListener(InspectorFrontendHostAPI.Events.SetInspectedTabId, this._setInspectedTabId, this);
+
     this._initExtensions();
 }
 
@@ -95,7 +98,7 @@ WebInspector.ExtensionServer.prototype = {
     {
         this._initializeCommandIssued = true;
         if (this._pendingExtensionInfos) {
-            this._addExtensions(this._pendingExtensionInfos);
+            this._pendingExtensionInfos.forEach(this._addExtension, this);
             delete this._pendingExtensionInfos;
         }
     },
@@ -797,14 +800,26 @@ WebInspector.ExtensionServer.prototype = {
     },
 
     /**
-     * @param {!Array.<!ExtensionDescriptor>} extensionInfos
+     * @param {!WebInspector.Event} event
      */
-    _addExtensions: function(extensionInfos)
+    _addExtensions: function(event)
     {
+        if (WebInspector.extensionServer._overridePlatformExtensionAPIForTest)
+            window.buildPlatformExtensionAPI = WebInspector.extensionServer._overridePlatformExtensionAPIForTest;
+
+        var extensionInfos = /** @type {!Array.<!ExtensionDescriptor>} */ (event.data);
         if (this._initializeCommandIssued)
             extensionInfos.forEach(this._addExtension, this);
         else
             this._pendingExtensionInfos = extensionInfos;
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _setInspectedTabId: function(event)
+    {
+        this._inspectedTabId = /** @type {string} */ (event.data);
     },
 
     /**
@@ -826,7 +841,7 @@ WebInspector.ExtensionServer.prototype = {
             var extensionOrigin = originMatch[1];
             if (!this._registeredExtensions[extensionOrigin]) {
                 // See ExtensionAPI.js for details.
-                InspectorFrontendHost.setInjectedScriptForOrigin(extensionOrigin, buildExtensionAPIInjectedScript(extensionInfo));
+                InspectorFrontendHost.setInjectedScriptForOrigin(extensionOrigin, buildExtensionAPIInjectedScript(extensionInfo, this._inspectedTabId));
                 this._registeredExtensions[extensionOrigin] = { name: name };
             }
             var iframe = createElement("iframe");
@@ -1116,15 +1131,3 @@ WebInspector.ExtensionStatus.Record;
 
 WebInspector.extensionAPI = {};
 defineCommonExtensionSymbols(WebInspector.extensionAPI);
-
-WebInspector.addExtensions = function(extensions)
-{
-    if (WebInspector.extensionServer._overridePlatformExtensionAPIForTest)
-        window.buildPlatformExtensionAPI = WebInspector.extensionServer._overridePlatformExtensionAPIForTest;
-    WebInspector.extensionServer._addExtensions(extensions);
-}
-
-WebInspector.setInspectedTabId = function(tabId)
-{
-    WebInspector._inspectedTabId = tabId;
-}

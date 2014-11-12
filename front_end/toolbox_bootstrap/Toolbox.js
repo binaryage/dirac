@@ -2,11 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// FIXME: This stub is invoked from the backend and should be removed
-// once we migrate to the "pull" model for extensions retrieval.
-WebInspector = {};
-WebInspector.addExtensions = function() {};
-
 (function()
 {
 

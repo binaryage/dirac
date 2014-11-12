@@ -1023,26 +1023,28 @@ function platformExtensionAPI(coreAPI)
 
 /**
  * @param {!ExtensionDescriptor} extensionInfo
+ * @param {string} inspectedTabId
  * @return {string}
  */
-function buildPlatformExtensionAPI(extensionInfo)
+function buildPlatformExtensionAPI(extensionInfo, inspectedTabId)
 {
     return "var extensionInfo = " + JSON.stringify(extensionInfo) + ";" +
-       "var tabId = " + WebInspector._inspectedTabId + ";" +
+       "var tabId = " + inspectedTabId + ";" +
        platformExtensionAPI.toString();
 }
 
 /**
  * @param {!ExtensionDescriptor} extensionInfo
+ * @param {string} inspectedTabId
  * @return {string}
  */
-function buildExtensionAPIInjectedScript(extensionInfo)
+function buildExtensionAPIInjectedScript(extensionInfo, inspectedTabId)
 {
     return "(function(injectedScriptId){ " +
         "var extensionServer;" +
         defineCommonExtensionSymbols.toString() + ";" +
         injectedExtensionAPI.toString() + ";" +
-        buildPlatformExtensionAPI(extensionInfo) + ";" +
+        buildPlatformExtensionAPI(extensionInfo, inspectedTabId) + ";" +
         "platformExtensionAPI(injectedExtensionAPI(injectedScriptId));" +
         "return {};" +
         "})";
