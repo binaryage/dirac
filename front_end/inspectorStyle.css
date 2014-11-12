@@ -1103,33 +1103,6 @@ ol.watch-expressions > li.hovered {
     color: rgb(60%, 60%, 60%);
 }
 
-.console-group-messages .outline-disclosure {
-    padding-left: 0;
-}
-
-.console-group-messages .outline-disclosure > ol {
-    padding: 0 0 0 12px !important;
-}
-
-.console-group-messages .outline-disclosure,
-.console-group-messages .outline-disclosure ol {
-    font-size: inherit;
-    line-height: 12px;
-}
-
-.console-group-messages .outline-disclosure.single-node li {
-    padding-left: 2px;
-}
-
-.console-group-messages .outline-disclosure li .selection {
-    margin-left: -6px;
-    margin-right: -6px;
-}
-
-.console-group-messages .add-attribute {
-    display: none;
-}
-
 .console-formatted-object,
 .console-formatted-map,
 .console-formatted-set,

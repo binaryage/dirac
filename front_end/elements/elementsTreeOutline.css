@@ -100,6 +100,7 @@
     min-width: 100%;
     min-height: 100%;
     -webkit-transform: translateZ(0);
+    padding-left: 2px;
 }
 
 .outline-disclosure ol:focus li.selected {
@@ -290,4 +291,8 @@ body.inactive button.text-button, .text-button:disabled {
 .dom-update-highlight {
     -webkit-animation: dom-update-highlight-animation 1.4s 1 cubic-bezier(0, 0, 0.2, 1);
     border-radius: 2px;
+}
+
+.outline-disclosure.single-node li {
+    padding-left: 2px;
 }
