@@ -1435,7 +1435,8 @@ WebInspector.ElementsTreeElement.prototype = {
 
     handleLoadAllChildren: function()
     {
-        this.expandedChildrenLimit = Math.max(this._visibleChildCount(), this.expandedChildrenLimit + WebInspector.ElementsTreeElement.InitialChildrenLimit);
+        var visibleChildCount = this._visibleChildren().length;
+        this.expandedChildrenLimit = Math.max(visibleChildCount, this.expandedChildrenLimit + WebInspector.ElementsTreeElement.InitialChildrenLimit);
     },
 
     expandRecursively: function()
@@ -2729,29 +2730,33 @@ WebInspector.ElementsTreeElement.prototype = {
             visibleChildren.push(this._node.importedDocument());
         if (this._node.templateContent())
             visibleChildren.push(this._node.templateContent());
-        var pseudoElements = this._node.pseudoElements();
-        if (pseudoElements[WebInspector.DOMNode.PseudoElementNames.Before])
-            visibleChildren.push(pseudoElements[WebInspector.DOMNode.PseudoElementNames.Before]);
+        var beforePseudoElement = this._node.beforePseudoElement();
+        if (beforePseudoElement)
+            visibleChildren.push(beforePseudoElement);
         if (this._node.childNodeCount())
             visibleChildren = visibleChildren.concat(this._node.children());
-        if (pseudoElements[WebInspector.DOMNode.PseudoElementNames.After])
-            visibleChildren.push(pseudoElements[WebInspector.DOMNode.PseudoElementNames.After]);
+        var afterPseudoElement = this._node.afterPseudoElement();
+        if (afterPseudoElement)
+            visibleChildren.push(afterPseudoElement);
         return visibleChildren;
     },
 
     /**
-     * @return {number}
+     * @return {boolean}
      */
-    _visibleChildCount: function()
+    _hasVisibleChildren: function()
     {
-        var childCount = this._node.childNodeCount() + this._visibleShadowRoots().length;
         if (this._node.importedDocument())
-            ++childCount;
+            return true;
         if (this._node.templateContent())
-            ++childCount;
-        for (var pseudoType in this._node.pseudoElements())
-            ++childCount;
-        return childCount;
+            return true;
+        if (this._node.childNodeCount())
+            return true;
+        if (this._visibleShadowRoots().length)
+            return true;
+        if (this._node.hasPseudoElements())
+            return true;
+        return false;
     },
 
     /**
@@ -2783,7 +2788,7 @@ WebInspector.ElementsTreeElement.prototype = {
     _updateChildrenDisplayMode: function()
     {
         var showInlineText = this._canShowInlineText();
-        var hasChildren = !this._elementCloseTag && this._visibleChildCount() > 0;
+        var hasChildren = !this._elementCloseTag && this._hasVisibleChildren();
 
         if (showInlineText)
             this._childrenDisplayMode = WebInspector.ElementsTreeElement.ChildrenDisplayMode.InlineText;
