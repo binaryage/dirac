@@ -62,6 +62,14 @@
     z-index: 500;
 }
 
+.split-view.hbox.split-view-first-is-sidebar {
+    flex-direction: row-reverse !important;
+}
+
+.split-view.vbox.split-view-first-is-sidebar {
+    flex-direction: column-reverse !important;
+}
+
 .split-view-resizer-border {
     pointer-events: none;
 }

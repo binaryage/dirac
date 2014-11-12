@@ -335,7 +335,7 @@
                         'inputs': [
                             '<@(_script_name)',
                             '<@(_input_stylesheet)',
-                            '<@(devtools_core_base_files)',
+                            '<@(devtools_core_css_files)',
                         ],
                         'search_path': [ 'front_end' ],
                         'outputs': ['<(PRODUCT_DIR)/resources/inspector/devtools.css'],
@@ -352,7 +352,7 @@
                         'inputs': [
                             '<@(_script_name)',
                             '<@(_input_stylesheet)',
-                            '<@(devtools_core_base_files)',
+                            '<@(devtools_core_css_files)',
                         ],
                         'search_path': [ 'front_end' ],
                         'outputs': ['<(PRODUCT_DIR)/resources/inspector/inspector.css'],
@@ -369,7 +369,7 @@
                         'inputs': [
                             '<@(_script_name)',
                             '<@(_input_stylesheet)',
-                            '<@(devtools_core_base_files)',
+                            '<@(devtools_core_css_files)',
                         ],
                         'search_path': [ 'front_end' ],
                         'outputs': ['<(PRODUCT_DIR)/resources/inspector/toolbox.css'],

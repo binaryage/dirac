@@ -102,6 +102,20 @@ WebInspector.View.prototype = {
         return this._isShowing;
     },
 
+    /**
+     * @return {boolean}
+     */
+    _shouldHideOnDetach: function()
+    {
+        if (this._hideOnDetach)
+            return true;
+        for (var child of this._children) {
+            if (child._shouldHideOnDetach())
+                return true;
+        }
+        return false;
+    },
+
     setHideOnDetach: function()
     {
         this._hideOnDetach = true;
@@ -268,7 +282,7 @@ WebInspector.View.prototype = {
         if (this._parentIsShowing())
             this._processWillHide();
 
-        if (this._hideOnDetach && !overrideHideOnDetach) {
+        if (!overrideHideOnDetach && this._shouldHideOnDetach()) {
             this.element.classList.remove("visible");
             this._visible = false;
             if (this._parentIsShowing())
