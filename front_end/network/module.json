@@ -31,6 +31,8 @@
         "RequestResponseView.js",
         "RequestTimingView.js",
         "ResourceWebSocketFrameView.js",
+        "NetworkDataGridNode.js",
+        "NetworkLogView.js",
         "NetworkPanel.js"
     ],
     "stylesheets": [
