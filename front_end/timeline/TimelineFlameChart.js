@@ -111,7 +111,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
 
             var name = WebInspector.TimelineUIUtils.eventStyle(event).title;
             // TODO(yurys): support event dividers
-            var details = WebInspector.TimelineUIUtils.buildDetailsNodeForTraceEvent(event, this._linkifier);
+            var details = WebInspector.TimelineUIUtils.buildDetailsNodeForTraceEvent(event, this._model.target(), this._linkifier);
             if (event.name === WebInspector.TimelineModel.RecordType.JSFrame && details)
                 return details.textContent;
             return details ? WebInspector.UIString("%s (%s)", name, details.textContent) : name;

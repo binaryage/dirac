@@ -230,12 +230,21 @@ WebInspector.TracingTimelineFrameModel._mainFrameMarkers = [
 ];
 
 WebInspector.TracingTimelineFrameModel.prototype = {
+    reset: function()
+    {
+        WebInspector.TimelineFrameModelBase.prototype.reset.call(this);
+        this._target = null;
+        this._sessionId = null;
+    },
+
     /**
+     * @param {?WebInspector.Target} target
      * @param {!Array.<!WebInspector.TracingModel.Event>} events
      * @param {string} sessionId
      */
-    addTraceEvents: function(events, sessionId)
+    addTraceEvents: function(target, events, sessionId)
     {
+        this._target = target;
         this._sessionId = sessionId;
         if (!events.length)
             return;
@@ -255,16 +264,16 @@ WebInspector.TracingTimelineFrameModel.prototype = {
         if (event.name === eventNames.SetLayerTreeId) {
             if (this._sessionId === event.args["sessionId"])
                 this._layerTreeId = event.args["layerTreeId"];
-            return;
-        }
-        if (event.name === eventNames.TracingStartedInPage) {
+        } else if (event.name === eventNames.TracingStartedInPage) {
             this._mainThread = event.thread;
-            return;
-        }
-        if (event.thread === this._mainThread)
+        } else if (event.phase === WebInspector.TracingModel.Phase.SnapshotObject && event.name === eventNames.LayerTreeHostImplSnapshot && parseInt(event.id, 0) === this._layerTreeId) {
+            var snapshot = /** @type {!WebInspector.TracingModel.ObjectSnapshot} */ (event);
+            this.handleLayerTreeSnapshot(new WebInspector.DeferredTracingLayerTree(snapshot, this._target));
+        } else if (event.thread === this._mainThread) {
             this._addMainThreadTraceEvent(event);
-        else
+        } else {
             this._addBackgroundTraceEvent(event);
+        }
     },
 
     /**
@@ -273,11 +282,6 @@ WebInspector.TracingTimelineFrameModel.prototype = {
     _addBackgroundTraceEvent: function(event)
     {
         var eventNames = WebInspector.TimelineModel.RecordType;
-        if (event.phase === WebInspector.TracingModel.Phase.SnapshotObject && event.name === eventNames.LayerTreeHostImplSnapshot && parseInt(event.id, 0) === this._layerTreeId) {
-            var snapshot = /** @type {!WebInspector.TracingModel.ObjectSnapshot} */ (event);
-            this.handleLayerTreeSnapshot(new WebInspector.DeferredTracingLayerTree(snapshot));
-            return;
-        }
         if (this._lastFrame && event.selfTime)
             this._lastFrame._addTimeForCategory(WebInspector.TimelineUIUtils.eventStyle(event).category.name, event.selfTime);
 
@@ -321,8 +325,8 @@ WebInspector.TracingTimelineFrameModel.prototype = {
             this._framePendingCommit = new WebInspector.PendingFrame();
         if (!this._framePendingCommit)
             return;
-        if (event.name === eventNames.Paint && event.args["data"]["layerId"] && event.picture)
-            this._framePendingCommit.paints.push(new WebInspector.LayerPaintEvent(event));
+        if (event.name === eventNames.Paint && event.args["data"]["layerId"] && event.picture && this._target)
+            this._framePendingCommit.paints.push(new WebInspector.LayerPaintEvent(event, this._target));
 
         if (selfTime) {
             var categoryName = WebInspector.TimelineUIUtils.eventStyle(event).category.name;
@@ -339,10 +343,11 @@ WebInspector.TracingTimelineFrameModel.prototype = {
  * @constructor
  * @extends {WebInspector.DeferredLayerTree}
  * @param {!WebInspector.TracingModel.ObjectSnapshot} snapshot
+ * @param {?WebInspector.Target} target
  */
-WebInspector.DeferredTracingLayerTree = function(snapshot)
+WebInspector.DeferredTracingLayerTree = function(snapshot, target)
 {
-    WebInspector.DeferredLayerTree.call(this, snapshot.thread.target());
+    WebInspector.DeferredLayerTree.call(this, target);
     this._snapshot = snapshot;
 }
 
@@ -427,7 +432,6 @@ WebInspector.TimelineFrame = function(startTime, startTimeOffset)
     this.cpuTime = 0;
     /** @type {?WebInspector.DeferredLayerTree} */
     this.layerTree = null;
-    this.paintTiles = null;
 }
 
 WebInspector.TimelineFrame.prototype = {
@@ -471,10 +475,12 @@ WebInspector.TimelineFrame.prototype = {
 /**
  * @constructor
  * @param {!WebInspector.TracingModel.Event} event
+ * @param {?WebInspector.Target} target
  */
-WebInspector.LayerPaintEvent = function(event)
+WebInspector.LayerPaintEvent = function(event, target)
 {
     this._event = event;
+    this._target = target;
 }
 
 WebInspector.LayerPaintEvent.prototype = {
@@ -499,19 +505,19 @@ WebInspector.LayerPaintEvent.prototype = {
      */
     loadPicture: function(callback)
     {
-        var target = this._event.thread.target();
-        this._event.picture.requestObject(onGotObject);
+        this._event.picture.requestObject(onGotObject.bind(this));
         /**
          * @param {?Object} result
+         * @this {WebInspector.LayerPaintEvent}
          */
         function onGotObject(result)
         {
-            if (!result || !result["skp64"] || !target) {
+            if (!result || !result["skp64"] || !this._target) {
                 callback(null, null);
                 return;
             }
             var rect = result["params"] && result["params"]["layer_rect"];
-            WebInspector.PaintProfilerSnapshot.load(target, result["skp64"], callback.bind(null, rect));
+            WebInspector.PaintProfilerSnapshot.load(this._target, result["skp64"], callback.bind(null, rect));
         }
     }
 };

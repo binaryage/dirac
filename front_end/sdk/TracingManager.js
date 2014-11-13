@@ -62,6 +62,14 @@ WebInspector.TracingManager.prototype = {
     },
 
     /**
+     * @return {?WebInspector.Target}
+     */
+    target: function()
+    {
+        return this._target;
+    },
+
+    /**
      * @param {number} usage
      */
     _bufferUsage: function(usage)

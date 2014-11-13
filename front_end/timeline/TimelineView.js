@@ -567,7 +567,7 @@ WebInspector.TimelineView.prototype = {
                 }
             } else {
                 if (!listRowElement) {
-                    listRowElement = new WebInspector.TimelineRecordListRow(this._linkifier, selectRecordCallback, scheduleRefreshCallback).element;
+                    listRowElement = new WebInspector.TimelineRecordListRow(this._linkifier, this._model.target(), selectRecordCallback, scheduleRefreshCallback).element;
                     this._sidebarListElement.appendChild(listRowElement);
                 }
                 if (!graphRowElement) {
@@ -1019,9 +1019,10 @@ WebInspector.TimelineCalculator.prototype = {
  * @constructor
  * @param {!WebInspector.Linkifier} linkifier
  * @param {function(!WebInspector.TimelinePresentationModel.Record)} selectRecord
+ * @param {?WebInspector.Target} target
  * @param {function()} scheduleRefresh
  */
-WebInspector.TimelineRecordListRow = function(linkifier, selectRecord, scheduleRefresh)
+WebInspector.TimelineRecordListRow = function(linkifier, target, selectRecord, scheduleRefresh)
 {
     this.element = createElement("div");
     this.element.row = this;
@@ -1042,6 +1043,7 @@ WebInspector.TimelineRecordListRow = function(linkifier, selectRecord, scheduleR
     this._dataElement = this.element.createChild("span", "data dimmed");
     this._scheduleRefresh = scheduleRefresh;
     this._selectRecord = selectRecord;
+    this._target = target;
 }
 
 WebInspector.TimelineRecordListRow.prototype = {
@@ -1075,7 +1077,7 @@ WebInspector.TimelineRecordListRow.prototype = {
         if (presentationRecord.coalesced()) {
             this._dataElement.createTextChild(WebInspector.UIString("× %d", presentationRecord.presentationChildren().length));
         } else {
-            var detailsNode = WebInspector.TimelineUIUtils.buildDetailsNodeForTraceEvent(record.traceEvent(), this._linkifier);
+            var detailsNode = WebInspector.TimelineUIUtils.buildDetailsNodeForTraceEvent(record.traceEvent(), this._target, this._linkifier);
             if (detailsNode) {
                 this._dataElement.createTextChild("(");
                 this._dataElement.appendChild(detailsNode);

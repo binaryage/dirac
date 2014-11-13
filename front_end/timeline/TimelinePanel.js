@@ -224,7 +224,7 @@ WebInspector.TimelinePanel.prototype = {
     {
         if (!this._lazyFrameModel) {
             var tracingFrameModel = new WebInspector.TracingTimelineFrameModel();
-            tracingFrameModel.addTraceEvents(this._model.inspectedTargetEvents(), this._tracingModel.sessionId() || "");
+            tracingFrameModel.addTraceEvents(this._model.target(), this._model.inspectedTargetEvents(), this._tracingModel.sessionId() || "");
             this._lazyFrameModel = tracingFrameModel;
         }
         return this._lazyFrameModel;
@@ -789,7 +789,7 @@ WebInspector.TimelinePanel.prototype = {
         this._updateToggleTimelineButton(false);
         if (this._lazyFrameModel) {
             this._lazyFrameModel.reset();
-            this._lazyFrameModel.addTraceEvents(this._model.inspectedTargetEvents(), this._tracingModel.sessionId());
+            this._lazyFrameModel.addTraceEvents(this._model.target(), this._model.inspectedTargetEvents(), this._tracingModel.sessionId());
         }
         this.requestWindowTimes(this._model.minimumRecordTime(), this._model.maximumRecordTime());
         this._refreshViews();
@@ -994,7 +994,8 @@ WebInspector.TimelinePanel.prototype = {
      */
     _showEventInPaintProfiler: function(event, isCloseable)
     {
-        if (!event.picture)
+        var target = this._model.target();
+        if (!event.picture || !target)
             return;
         var paintProfilerView = this._paintProfilerView();
         if (!this._detailsView.hasTab(WebInspector.TimelinePanel.DetailsTab.PaintProfiler))
@@ -1005,7 +1006,7 @@ WebInspector.TimelinePanel.prototype = {
         {
             if (!result || !result["skp64"])
                 return;
-            paintProfilerView.setPicture(event.thread.target(), result["skp64"]);
+            paintProfilerView.setPicture(target, result["skp64"]);
         }
     },
 

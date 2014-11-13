@@ -500,6 +500,15 @@ WebInspector.TimelineModel.prototype = {
     },
 
     /**
+     * @return {?WebInspector.Target}
+     */
+    target: function()
+    {
+        // FIXME: Consider returning null for loaded traces.
+        return this._tracingManager.target();
+    },
+
+    /**
      * @param {!Array.<!WebInspector.TracingManager.EventPayload>} events
      */
     setEventsForTest: function(events)

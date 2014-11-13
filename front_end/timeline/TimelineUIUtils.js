@@ -264,13 +264,13 @@ WebInspector.TimelineUIUtils.isTallMarkerEvent = function(event)
 
 /**
  * @param {!WebInspector.TracingModel.Event} event
+ * @param {?WebInspector.Target} target
  * @param {!WebInspector.Linkifier} linkifier
  * @return {?Node}
  */
-WebInspector.TimelineUIUtils.buildDetailsNodeForTraceEvent = function(event, linkifier)
+WebInspector.TimelineUIUtils.buildDetailsNodeForTraceEvent = function(event, target, linkifier)
 {
     var recordType = WebInspector.TimelineModel.RecordType;
-    var target = event.thread.target();
     var details;
     var detailsText;
     var eventData = event.args["data"];
@@ -404,19 +404,23 @@ WebInspector.TimelineUIUtils.buildDetailsNodeForTraceEvent = function(event, lin
  */
 WebInspector.TimelineUIUtils.buildTraceEventDetails = function(event, model, linkifier, callback)
 {
-    var target = event.thread.target();
+    var target = model.target();
+    if (!target) {
+        callbackWrapper();
+        return;
+    }
     var relatedNode = null;
     var barrier = new CallbackBarrier();
     if (!event.previewElement) {
-        if (event.imageURL && target)
+        if (event.imageURL)
             WebInspector.DOMPresentationUtils.buildImagePreviewContents(target, event.imageURL, false, barrier.createCallback(saveImage));
         else if (event.picture)
-            WebInspector.TimelineUIUtils.buildPicturePreviewContent(event, barrier.createCallback(saveImage));
+            WebInspector.TimelineUIUtils.buildPicturePreviewContent(event, target, barrier.createCallback(saveImage));
     }
-    if (event.backendNodeId && target)
+    if (event.backendNodeId)
         target.domModel.pushNodesByBackendIdsToFrontend([event.backendNodeId], barrier.createCallback(setRelatedNode));
     if (event.invalidationTrackingEvents)
-        WebInspector.TimelineUIUtils._pushInvalidationNodeIdsToFrontend(event, barrier.createCallback(updateInvalidationNodeIds));
+        WebInspector.TimelineUIUtils._pushInvalidationNodeIdsToFrontend(event, target, barrier.createCallback(updateInvalidationNodeIds));
     barrier.callWhenDone(callbackWrapper);
 
     /**
@@ -500,7 +504,7 @@ WebInspector.TimelineUIUtils._buildTraceEventDetailsSynchronously = function(eve
     // This message may vary per event.name;
     var relatedNodeLabel;
 
-    var contentHelper = new WebInspector.TimelineDetailsContentHelper(event.thread.target(), linkifier, true);
+    var contentHelper = new WebInspector.TimelineDetailsContentHelper(model.target(), linkifier, true);
     contentHelper.appendTextRow(WebInspector.UIString("Type"), WebInspector.TimelineUIUtils.eventTitle(event, model));
     contentHelper.appendTextRow(WebInspector.UIString("Self Time"), Number.millisToString(event.selfTime, true));
     contentHelper.appendTextRow(WebInspector.UIString("Start Time"), Number.millisToString((event.startTime - model.minimumRecordTime())));
@@ -607,7 +611,7 @@ WebInspector.TimelineUIUtils._buildTraceEventDetailsSynchronously = function(eve
         contentHelper.appendTextRow(WebInspector.UIString("Callback Function"), eventData["callbackName"]);
         break;
     default:
-        var detailsNode = WebInspector.TimelineUIUtils.buildDetailsNodeForTraceEvent(event, linkifier);
+        var detailsNode = WebInspector.TimelineUIUtils.buildDetailsNodeForTraceEvent(event, model.target(), linkifier);
         if (detailsNode)
             contentHelper.appendElementRow(WebInspector.UIString("Details"), detailsNode);
         break;
@@ -629,7 +633,7 @@ WebInspector.TimelineUIUtils._buildTraceEventDetailsSynchronously = function(eve
         contentHelper.appendElementRow(WebInspector.UIString("Preview"), event.previewElement);
 
     if (event.stackTrace || (event.initiator && event.initiator.stackTrace) || event.invalidationTrackingEvents)
-        WebInspector.TimelineUIUtils._generateCauses(event, contentHelper);
+        WebInspector.TimelineUIUtils._generateCauses(event, model.target(), contentHelper);
 
     fragment.appendChild(contentHelper.element);
 
@@ -638,9 +642,10 @@ WebInspector.TimelineUIUtils._buildTraceEventDetailsSynchronously = function(eve
 
 /**
  * @param {!WebInspector.TracingModel.Event} event
+ * @param {?WebInspector.Target} target
  * @param {!WebInspector.TimelineDetailsContentHelper} contentHelper
  */
-WebInspector.TimelineUIUtils._generateCauses = function(event, contentHelper)
+WebInspector.TimelineUIUtils._generateCauses = function(event, target, contentHelper)
 {
     var recordTypes = WebInspector.TimelineModel.RecordType;
 
@@ -670,7 +675,7 @@ WebInspector.TimelineUIUtils._generateCauses = function(event, contentHelper)
 
     // Indirect causes.
     if (event.invalidationTrackingEvents) { // Full invalidation tracking (experimental).
-        WebInspector.TimelineUIUtils._generateInvalidations(event, contentHelper);
+        WebInspector.TimelineUIUtils._generateInvalidations(event, target, contentHelper);
     } else if (initiator && initiator.stackTrace) { // Partial invalidation tracking.
         contentHelper.appendStackTrace(callSiteStackLabel || WebInspector.UIString("First invalidated"), initiator.stackTrace);
     }
@@ -678,14 +683,14 @@ WebInspector.TimelineUIUtils._generateCauses = function(event, contentHelper)
 
 /**
  * @param {!WebInspector.TracingModel.Event} event
+ * @param {?WebInspector.Target} target
  * @param {!WebInspector.TimelineDetailsContentHelper} contentHelper
  */
-WebInspector.TimelineUIUtils._generateInvalidations = function(event, contentHelper)
+WebInspector.TimelineUIUtils._generateInvalidations = function(event, target, contentHelper)
 {
     if (!event.invalidationTrackingEvents)
         return;
 
-    var target = event.thread.target();
     var invalidations = {};
     event.invalidationTrackingEvents.forEach(function(invalidation) {
         if (!invalidations[invalidation.type])
@@ -755,13 +760,14 @@ WebInspector.TimelineUIUtils._generateInvalidationsForType = function(type, targ
 
 /**
  * @param {!WebInspector.TracingModel.Event} event
+ * @param {!WebInspector.Target} target
  * @param {function(?Array.<number>, ?Array.<number>)} callback
  */
-WebInspector.TimelineUIUtils._pushInvalidationNodeIdsToFrontend = function(event, callback)
+WebInspector.TimelineUIUtils._pushInvalidationNodeIdsToFrontend = function(event, target, callback)
 {
     var backendNodeIds = [];
-
     var dedupedNodeIds = {};
+
     if (event.nodeId) {
         backendNodeIds.push(event.nodeId);
         dedupedNodeIds[event.nodeId] = true;
@@ -773,7 +779,6 @@ WebInspector.TimelineUIUtils._pushInvalidationNodeIdsToFrontend = function(event
         }
     });
 
-    var target = event.thread.target();
     target.domModel.pushNodesByBackendIdsToFrontend(backendNodeIds, function(frontendNodeIds) {
         callback(frontendNodeIds, backendNodeIds);
     });
@@ -840,12 +845,13 @@ WebInspector.TimelineUIUtils._aggregatedStatsForTraceEvent = function(total, mod
 
 /**
  * @param {!WebInspector.TracingModel.Event} event
+ * @param {!WebInspector.Target} target
  * @param {function(!Element=)} callback
  */
-WebInspector.TimelineUIUtils.buildPicturePreviewContent = function(event, callback)
+WebInspector.TimelineUIUtils.buildPicturePreviewContent = function(event, target, callback)
 {
 
-    new WebInspector.LayerPaintEvent(event).loadPicture(onSnapshotLoaded);
+    new WebInspector.LayerPaintEvent(event, target).loadPicture(onSnapshotLoaded);
     /**
      * @param {?Array.<number>} rect
      * @param {?WebInspector.PaintProfilerSnapshot} snapshot
