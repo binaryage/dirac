@@ -37,7 +37,8 @@
  * FIXME: change field naming style to use trailing underscore.
  */
 
-if (window.domAutomationController) {
+function createTestSuite(domAutomationController)
+{
 
 var ___interactiveUiTestsMode = true;
 
@@ -45,7 +46,7 @@ var ___interactiveUiTestsMode = true;
  * Test suite for interactive UI tests.
  * @constructor
  */
-TestSuite = function()
+function TestSuite()
 {
     this.controlTaken_ = false;
     this.timerId_ = -1;
@@ -148,7 +149,7 @@ TestSuite.prototype.releaseControl = function()
  */
 TestSuite.prototype.reportOk_ = function()
 {
-    window.domAutomationController.send("[OK]");
+    domAutomationController.send("[OK]");
 };
 
 
@@ -161,7 +162,7 @@ TestSuite.prototype.reportFailure_ = function(error)
         clearTimeout(this.timerId_);
         this.timerId_ = -1;
     }
-    window.domAutomationController.send("[FAILED] " + error);
+    domAutomationController.send("[FAILED] " + error);
 };
 
 
@@ -905,20 +906,14 @@ TestSuite.createKeyEvent = function(keyIdentifier)
 
 
 /**
- * Test runner for the test suite.
- */
-var uiTests = {};
-
-
-/**
  * Run each test from the test suit on a fresh instance of the suite.
  */
-uiTests.runAllTests = function()
+TestSuite._runAllTests = function()
 {
     // For debugging purposes.
     for (var name in TestSuite.prototype) {
         if (name.substring(0, 4) === "test" && typeof TestSuite.prototype[name] === "function")
-            uiTests.runTest(name);
+            TestSuite._runTest(name);
     }
 };
 
@@ -927,27 +922,28 @@ uiTests.runAllTests = function()
  * Run specified test on a fresh instance of the test suite.
  * @param {string} name Name of a test method from TestSuite class.
  */
-uiTests.runTest = function(name)
+TestSuite._runTest = function(name)
 {
-    if (uiTests._populatedInterface)
+    if (TestSuite._populatedInterface)
         new TestSuite().runTest(name);
     else
-        uiTests._pendingTestName = name;
+        TestSuite._pendingTestName = name;
 };
-
-(function() {
 
 function runTests()
 {
-    uiTests._populatedInterface = true;
-    var name = uiTests._pendingTestName;
-    delete uiTests._pendingTestName;
+    TestSuite._populatedInterface = true;
+    var name = TestSuite._pendingTestName;
+    delete TestSuite._pendingTestName;
     if (name)
         new TestSuite().runTest(name);
 }
 
 WebInspector.notifications.addEventListener(WebInspector.NotificationService.Events.InspectorAgentEnabledForTests, runTests);
 
-})();
+return TestSuite;
 
 }
+
+if (window.parent && window.parent.uiTests)
+    window.parent.uiTests.testSuiteReady(createTestSuite);

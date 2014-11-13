@@ -113,7 +113,6 @@
             'front_end/components/TargetsComboBoxController.js',
         ],
         'devtools_host_js_files': [
-            'front_end/host/InspectorAppHost.js',
             'front_end/host/InspectorFrontendHost.js',
             'front_end/host/Platform.js',
             'front_end/host/UserMetrics.js',
@@ -197,6 +196,7 @@
         ],
         'devtools_devtools_app_js_files': [
             'front_end/devtools_app/DevToolsApp.js',
+            'front_end/devtools_app/UITests.js',
         ],
         'devtools_platform_js_files': [
             'front_end/platform/DOMExtension.js',

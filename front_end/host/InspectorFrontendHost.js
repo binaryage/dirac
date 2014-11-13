@@ -632,10 +632,6 @@ WebInspector.InspectorFrontendHostStub.prototype = {
 var InspectorFrontendHost = window.InspectorFrontendHost || null;
 
 (function() {
-    if (window.top) {
-        // FIXME(dgozman): use InspectorAppHost everywhere in inspector app instead of InspectorFrontendHost.
-        InspectorFrontendHost = window.top.InspectorFrontendHost || null;
-    }
     if (!InspectorFrontendHost) {
         // Instantiate stub for web-hosted mode if necessary.
         InspectorFrontendHost = new WebInspector.InspectorFrontendHostStub();

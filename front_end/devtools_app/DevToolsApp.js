@@ -4,47 +4,20 @@
 
 /**
  * @constructor
- * @implements {InspectorAppHostAPI}
+ * @suppressGlobalPropertiesCheck
  */
 WebInspector.DevToolsApp = function()
 {
-    window.InspectorAppHost = this;
+    this._iframe = document.querySelector("iframe.inspector-app-iframe");
 
     /**
-     * @type {?Window}
+     * @type {!Window}
      */
-    this._inspectorWindow = null;
+    this._inspectorWindow = this._iframe.contentWindow;
+    this._inspectorWindow.InspectorFrontendHost = window.InspectorFrontendHost;
 }
 
 WebInspector.DevToolsApp.prototype = {
-    /**
-     * @param {!Window} inspectorWindow
-     * @override
-     */
-    inspectorAppWindowLoaded: function(inspectorWindow)
-    {
-        this._inspectorWindow = inspectorWindow;
-        if (window.domAutomationController)
-            this._inspectorWindow.domAutomationController = window.domAutomationController;
-    },
-
-    /**
-     * @override
-     */
-    beforeInspectorAppLoad: function()
-    {
-        if (this._inspectorWindow.uiTests) {
-            // FIXME: move Tests to the host or teach browser counterpart about iframe.
-            window.uiTests = this._inspectorWindow.uiTests;
-        }
-    },
-
-    /**
-     * @override
-     */
-    afterInspectorAppLoad: function()
-    {
-    }
 }
 
-new WebInspector.DevToolsApp();
+runOnWindowLoad(function() { new WebInspector.DevToolsApp(); });

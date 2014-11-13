@@ -36,11 +36,6 @@
  */
 WebInspector.Main = function()
 {
-    if (!InspectorAppHost) {
-        console.error("Inspector should be embedded.");
-        return;
-    }
-    InspectorAppHost.beforeInspectorAppLoad();
     WebInspector.console.setUIDelegate(this);
     runOnWindowLoad(this._loaded.bind(this));
 }
@@ -256,7 +251,6 @@ WebInspector.Main.prototype = {
             WebInspector.inspectElementModeController = new WebInspector.InspectElementModeController();
         this._createGlobalStatusBarItems();
 
-        InspectorAppHost.afterInspectorAppLoad();
         InspectorFrontendHost.loadCompleted();
 
         // Give UI cycles to repaint, then proceed with creating connection.
