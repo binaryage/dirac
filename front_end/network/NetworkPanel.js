@@ -735,7 +735,7 @@ WebInspector.NetworkLogView.prototype = {
         this._clearButton.addEventListener("click", this._reset, this);
 
         this._largerRequestsButton = new WebInspector.StatusBarButton(WebInspector.UIString("Use small resource rows."), "network-larger-resources-status-bar-item");
-        this._largerRequestsButton.toggled = WebInspector.settings.resourcesLargeRows.get();
+        this._largerRequestsButton.setToggled(WebInspector.settings.resourcesLargeRows.get());
         this._largerRequestsButton.addEventListener("click", this._toggleLargerRequests, this);
 
         this._preserveLogCheckbox = new WebInspector.StatusBarCheckbox(WebInspector.UIString("Preserve log"));
@@ -751,7 +751,7 @@ WebInspector.NetworkLogView.prototype = {
      */
     _loadEventFired: function(event)
     {
-        if (!this._recordButton.toggled)
+        if (!this._recordButton.toggled())
             return;
 
         var data = /** @type {number} */ (event.data);
@@ -765,7 +765,7 @@ WebInspector.NetworkLogView.prototype = {
      */
     _domContentLoadedEventFired: function(event)
     {
-        if (!this._recordButton.toggled)
+        if (!this._recordButton.toggled())
             return;
         var data = /** @type {number} */ (event.data);
         this._mainRequestDOMContentLoadedTime = data || -1;
@@ -839,9 +839,9 @@ WebInspector.NetworkLogView.prototype = {
 
     _onRecordButtonClicked: function()
     {
-        if (!this._recordButton.toggled)
+        if (!this._recordButton.toggled())
             this._reset();
-        this._toggleRecordButton(!this._recordButton.toggled);
+        this._toggleRecordButton(!this._recordButton.toggled());
     },
 
     /**
@@ -849,8 +849,8 @@ WebInspector.NetworkLogView.prototype = {
      */
     _toggleRecordButton: function(toggled)
     {
-        this._recordButton.toggled = toggled;
-        this._recordButton.title = toggled ? WebInspector.UIString("Stop Recording Network Log") : WebInspector.UIString("Record Network Log");
+        this._recordButton.setToggled(toggled);
+        this._recordButton.setTitle(toggled ? WebInspector.UIString("Stop Recording Network Log") : WebInspector.UIString("Record Network Log"));
     },
 
     _reset: function()
@@ -887,7 +887,7 @@ WebInspector.NetworkLogView.prototype = {
      */
     _onRequestStarted: function(event)
     {
-        if (this._recordButton.toggled) {
+        if (this._recordButton.toggled()) {
             var request = /** @type {!WebInspector.NetworkRequest} */ (event.data);
             this._appendRequest(request);
         }
@@ -959,7 +959,7 @@ WebInspector.NetworkLogView.prototype = {
      */
     _willReloadPage: function(event)
     {
-        this._recordButton.toggled = true;
+        this._recordButton.setToggled(true);
         if (!this._preserveLogCheckbox.checked())
             this._reset();
     },
@@ -969,7 +969,7 @@ WebInspector.NetworkLogView.prototype = {
      */
     _mainFrameNavigated: function(event)
     {
-        if (!this._recordButton.toggled || this._preserveLogCheckbox.checked())
+        if (!this._recordButton.toggled() || this._preserveLogCheckbox.checked())
             return;
 
         var frame = /** @type {!WebInspector.ResourceTreeFrame} */ (event.data);
@@ -1028,9 +1028,9 @@ WebInspector.NetworkLogView.prototype = {
     _updateRowsSize: function()
     {
         var largeRows = this.usesLargeRows();
-        this._largerRequestsButton.toggled = largeRows;
+        this._largerRequestsButton.setToggled(largeRows);
         this._rowHeight = largeRows ? 41 : 21;
-        this._largerRequestsButton.title = WebInspector.UIString(largeRows ? "Use small resource rows." : "Use large resource rows.");
+        this._largerRequestsButton.setTitle(WebInspector.UIString(largeRows ? "Use small resource rows." : "Use large resource rows."));
         this._dataGrid.element.classList.toggle("small", !largeRows);
         this._timelineGrid.element.classList.toggle("small", !largeRows);
         this.dispatchEventToListeners(WebInspector.NetworkLogView.EventTypes.RowSizeChanged, { largeRows: largeRows });
@@ -1384,7 +1384,7 @@ WebInspector.NetworkLogView.prototype = {
         var regExp = this._searchRegExp;
         var nameMatched = request.name().match(regExp);
         var pathMatched = request.path().match(regExp);
-        if (!nameMatched && pathMatched && !this._largerRequestsButton.toggled)
+        if (!nameMatched && pathMatched && !this._largerRequestsButton.toggled())
             this._toggleLargerRequests();
         if (reveal)
             WebInspector.Revealer.reveal(request);

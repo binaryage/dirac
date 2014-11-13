@@ -49,23 +49,26 @@ WebInspector.StatusBarItem.prototype = {
         if (this._enabled === value)
             return;
         this._enabled = value;
-        this.applyEnabledState();
+        this._applyEnabledState();
     },
 
-    /**
-     * @protected
-     */
-    applyEnabledState: function()
+    _applyEnabledState: function()
     {
         this.element.disabled = !this._enabled;
     },
 
-    get visible()
+    /**
+     * @return {boolean} x
+     */
+    visible: function()
     {
         return this._visible;
     },
 
-    set visible(x)
+    /**
+     * @param {boolean} x
+     */
+    setVisible: function(x)
     {
         if (this._visible === x)
             return;
@@ -245,14 +248,14 @@ WebInspector.StatusBarButtonBase = function(title, className, states)
     this._longClickController.addEventListener(WebInspector.LongClickController.Events.LongClick, this._onLongClick.bind(this));
     this._longClickController.addEventListener(WebInspector.LongClickController.Events.LongPress, this._onLongPress.bind(this));
 
-    this.states = states;
+    this._states = states;
     if (!states)
-        this.states = 2;
+        this._states = 2;
 
     if (states == 2)
-        this._state = false;
+        this._state = "off";
     else
-        this._state = 0;
+        this._state = "0";
 
     this.title = title;
     this.className = className;
@@ -284,7 +287,7 @@ WebInspector.StatusBarButtonBase.prototype = {
     /**
      * @override
      */
-    applyEnabledState: function()
+    _applyEnabledState: function()
     {
         this.element.disabled = !this._enabled;
         this._longClickController.reset();
@@ -298,12 +301,10 @@ WebInspector.StatusBarButtonBase.prototype = {
         return this._enabled;
     },
 
-    get title()
-    {
-        return this._title;
-    },
-
-    set title(x)
+    /**
+     * @param {string} x
+     */
+    setTitle: function(x)
     {
         if (this._title === x)
             return;
@@ -311,38 +312,45 @@ WebInspector.StatusBarButtonBase.prototype = {
         this.element.title = x;
     },
 
-    get state()
+    /**
+     * @return {string}
+     */
+    state: function()
     {
         return this._state;
     },
 
-    set state(x)
+    /**
+     * @param {string} x
+     */
+    setState: function(x)
     {
         if (this._state === x)
             return;
 
-        if (this.states === 2) {
-            this.element.classList.toggle("toggled-on", x);
-        } else {
-            this.element.classList.remove("toggled-" + this._state);
-            if (x !== 0)
-                this.element.classList.add("toggled-" + x);
-        }
+        this.element.classList.remove("toggled-" + this._state);
+        this.element.classList.add("toggled-" + x);
         this._state = x;
     },
 
-    get toggled()
+    /**
+     * @return {boolean}
+     */
+    toggled: function()
     {
-        if (this.states !== 2)
+        if (this._states !== 2)
             throw("Only used toggled when there are 2 states, otherwise, use state");
-        return this.state;
+        return this.state() === "on";
     },
 
-    set toggled(x)
+    /**
+     * @param {boolean} x
+     */
+    setToggled: function(x)
     {
-        if (this.states !== 2)
+        if (this._states !== 2)
             throw("Only used toggled when there are 2 states, otherwise, use state");
-        this.state = x;
+        this.setState(x ? "on" : "off");
     },
 
     makeLongClickEnabled: function()
@@ -393,9 +401,9 @@ WebInspector.StatusBarButtonBase.prototype = {
     _showOptions: function()
     {
         var buttons = this._longClickOptionsData.buttonsProvider();
-        var mainButtonClone = new WebInspector.StatusBarButton(this.title, this.className, this.states);
+        var mainButtonClone = new WebInspector.StatusBarButton(this.title, this.className, this._states);
         mainButtonClone.addEventListener("click", this._clicked, this);
-        mainButtonClone.state = this.state;
+        mainButtonClone.setState(this.state());
         buttons.push(mainButtonClone);
 
         var document = this.element.ownerDocument;
@@ -579,7 +587,7 @@ WebInspector.StatusBarComboBox.prototype = {
     /**
      * @override
      */
-    applyEnabledState: function()
+    _applyEnabledState: function()
     {
         this._selectElement.disabled = !this._enabled;
     },
@@ -682,7 +690,7 @@ WebInspector.StatusBarStatesSettingButton = function(className, states, titles, 
     this._buttons = [];
     for (var index = 0; index < states.length; index++) {
         var button = new WebInspector.StatusBarButton(titles[index], className, states.length);
-        button.state = this._states[index];
+        button.setState(this._states[index]);
         button.addEventListener("click", onClickBound, this);
         this._buttons.push(button);
     }
@@ -702,7 +710,7 @@ WebInspector.StatusBarStatesSettingButton.prototype = {
      */
     _onClick: function(e)
     {
-        this.toggleState(e.target.state);
+        this.toggleState(e.target.state());
     },
 
     /**
@@ -722,7 +730,7 @@ WebInspector.StatusBarStatesSettingButton.prototype = {
             this._stateChangedCallback(state);
 
         var defaultState = this._defaultState();
-        this.state = defaultState;
+        this.setState(defaultState);
         this.title = this._buttons[this._states.indexOf(defaultState)].title;
     },
 
@@ -746,7 +754,7 @@ WebInspector.StatusBarStatesSettingButton.prototype = {
     {
         var options = [];
         for (var index = 0; index < this._states.length; index++) {
-            if (this._states[index] !== this.state && this._states[index] !== this._currentState)
+            if (this._states[index] !== this.state() && this._states[index] !== this._currentState)
                 options.push(this._buttons[index]);
         }
         return options;

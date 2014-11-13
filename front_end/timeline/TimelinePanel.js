@@ -324,13 +324,13 @@ WebInspector.TimelinePanel.prototype = {
         panelStatusBarElement.appendChild(garbageCollectButton.element);
 
         var framesToggleButton = new WebInspector.StatusBarButton(WebInspector.UIString("Frames view. (Activity split into frames)"), "timeline-frames-status-bar-item");
-        framesToggleButton.toggled = this._overviewModeSetting.get() === WebInspector.TimelinePanel.OverviewMode.Frames;
+        framesToggleButton.setToggled(this._overviewModeSetting.get() === WebInspector.TimelinePanel.OverviewMode.Frames);
         framesToggleButton.addEventListener("click", this._overviewModeChanged.bind(this, framesToggleButton));
         this._statusBarButtons.push(framesToggleButton);
         panelStatusBarElement.appendChild(framesToggleButton.element);
 
         this._flameChartToggleButton = new WebInspector.StatusBarButton(WebInspector.UIString("Flame chart view. (Use WASD or time selection to navigate)"), "timeline-flame-chart-status-bar-item");
-        this._flameChartToggleButton.toggled = this._flameChartEnabledSetting.get();
+        this._flameChartToggleButton.setToggled(this._flameChartEnabledSetting.get());
         this._flameChartToggleButton.addEventListener("click", this._flameChartEnabledChanged.bind(this));
         this._statusBarButtons.push(this._flameChartToggleButton);
         panelStatusBarElement.appendChild(this._flameChartToggleButton.element);
@@ -556,10 +556,10 @@ WebInspector.TimelinePanel.prototype = {
         var oldMode = this._overviewModeSetting.get();
         if (oldMode === WebInspector.TimelinePanel.OverviewMode.Events) {
             this._overviewModeSetting.set(WebInspector.TimelinePanel.OverviewMode.Frames);
-            button.toggled = true;
+            button.setToggled(true);
         } else {
             this._overviewModeSetting.set(WebInspector.TimelinePanel.OverviewMode.Events);
-            button.toggled = false;
+            button.setToggled(false);
         }
         this._onModeChanged();
     },
@@ -569,7 +569,7 @@ WebInspector.TimelinePanel.prototype = {
         var oldValue = this._flameChartEnabledSetting.get();
         var newValue = !oldValue;
         this._flameChartEnabledSetting.set(newValue);
-        this._flameChartToggleButton.toggled = newValue;
+        this._flameChartToggleButton.setToggled(newValue);
         this._onModeChanged();
     },
 
@@ -667,7 +667,7 @@ WebInspector.TimelinePanel.prototype = {
 
     _onSuspendStateChanged: function()
     {
-        this._updateToggleTimelineButton(this.toggleTimelineButton.toggled);
+        this._updateToggleTimelineButton(this.toggleTimelineButton.toggled());
     },
 
     /**
@@ -675,18 +675,18 @@ WebInspector.TimelinePanel.prototype = {
      */
     _updateToggleTimelineButton: function(toggled)
     {
-        this.toggleTimelineButton.toggled = toggled;
+        this.toggleTimelineButton.setToggled(toggled);
         if (toggled) {
-            this.toggleTimelineButton.title = WebInspector.UIString("Stop");
+            this.toggleTimelineButton.setTitle(WebInspector.UIString("Stop"));
             this.toggleTimelineButton.setEnabled(true);
         } else if (this._stopPending) {
-            this.toggleTimelineButton.title = WebInspector.UIString("Stop pending");
+            this.toggleTimelineButton.setTitle(WebInspector.UIString("Stop pending"));
             this.toggleTimelineButton.setEnabled(false);
         } else if (WebInspector.targetManager.allTargetsSuspended()) {
-            this.toggleTimelineButton.title = WebInspector.anotherProfilerActiveLabel();
+            this.toggleTimelineButton.setTitle(WebInspector.anotherProfilerActiveLabel());
             this.toggleTimelineButton.setEnabled(false);
         } else {
-            this.toggleTimelineButton.title = WebInspector.UIString("Record");
+            this.toggleTimelineButton.setTitle(WebInspector.UIString("Record"));
             this.toggleTimelineButton.setEnabled(true);
         }
     },
@@ -748,7 +748,7 @@ WebInspector.TimelinePanel.prototype = {
 
     _recordingInProgress: function()
     {
-        return this.toggleTimelineButton.toggled;
+        return this.toggleTimelineButton.toggled();
     },
 
     /**

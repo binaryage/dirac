@@ -406,8 +406,8 @@ WebInspector.SourcesPanel.prototype = {
     _pauseOnExceptionEnabledChanged: function()
     {
         var enabled = WebInspector.settings.pauseOnExceptionEnabled.get();
-        this._pauseOnExceptionButton.toggled = enabled;
-        this._pauseOnExceptionButton.title = WebInspector.UIString(enabled ? "Don't pause on exceptions." : "Pause on exceptions.");
+        this._pauseOnExceptionButton.setToggled(enabled);
+        this._pauseOnExceptionButton.setTitle(WebInspector.UIString(enabled ? "Don't pause on exceptions." : "Pause on exceptions."));
         this._debugToolbarDrawer.classList.toggle("expanded", enabled);
     },
 
@@ -419,7 +419,7 @@ WebInspector.SourcesPanel.prototype = {
 
         if (this._paused) {
             this._updateButtonTitle(this._pauseButton, WebInspector.UIString("Resume script execution (%s)."))
-            this._pauseButton.state = true;
+            this._pauseButton.setToggled(true);
             this._pauseButton.setLongClickOptionsEnabled((function() { return [ this._longResumeButton ] }).bind(this));
 
             this._pauseButton.setEnabled(true);
@@ -428,7 +428,7 @@ WebInspector.SourcesPanel.prototype = {
             this._stepOutButton.setEnabled(true);
         } else {
             this._updateButtonTitle(this._pauseButton, WebInspector.UIString("Pause script execution (%s)."))
-            this._pauseButton.state = false;
+            this._pauseButton.setToggled(false);
             this._pauseButton.setLongClickOptionsEnabled(null);
 
             this._pauseButton.setEnabled(!currentTarget.debuggerModel.isPausing());
@@ -453,7 +453,7 @@ WebInspector.SourcesPanel.prototype = {
 
     _togglePauseOnExceptions: function()
     {
-        WebInspector.settings.pauseOnExceptionEnabled.set(!this._pauseOnExceptionButton.toggled);
+        WebInspector.settings.pauseOnExceptionEnabled.set(!this._pauseOnExceptionButton.toggled());
     },
 
     /**
@@ -618,13 +618,13 @@ WebInspector.SourcesPanel.prototype = {
     _breakpointsActiveStateChanged: function(event)
     {
         var active = event.data;
-        this._toggleBreakpointsButton.toggled = !active;
+        this._toggleBreakpointsButton.setToggled(!active);
         this.sidebarPanes.jsBreakpoints.listElement.classList.toggle("breakpoints-list-deactivated", !active);
         this._sourcesView.toggleBreakpointsActiveState(active);
         if (active)
-            this._toggleBreakpointsButton.title = WebInspector.UIString("Deactivate breakpoints.");
+            this._toggleBreakpointsButton.setTitle(WebInspector.UIString("Deactivate breakpoints."));
         else
-            this._toggleBreakpointsButton.title = WebInspector.UIString("Activate breakpoints.");
+            this._toggleBreakpointsButton.setTitle(WebInspector.UIString("Activate breakpoints."));
     },
 
     _createDebugToolbar: function()
@@ -670,7 +670,7 @@ WebInspector.SourcesPanel.prototype = {
 
         // Toggle Breakpoints
         this._toggleBreakpointsButton = new WebInspector.StatusBarButton(WebInspector.UIString("Deactivate breakpoints."), "scripts-toggle-breakpoints");
-        this._toggleBreakpointsButton.toggled = false;
+        this._toggleBreakpointsButton.setToggled(false);
         this._toggleBreakpointsButton.addEventListener("click", this._toggleBreakpointsClicked, this);
         debugToolbar.appendChild(this._toggleBreakpointsButton.element);
 
@@ -701,9 +701,9 @@ WebInspector.SourcesPanel.prototype = {
     {
         var hasShortcuts = button.shortcuts && button.shortcuts.length;
         if (hasShortcuts)
-            button.title = String.vsprintf(buttonTitle, [button.shortcuts[0].name]);
+            button.setTitle(String.vsprintf(buttonTitle, [button.shortcuts[0].name]));
         else
-            button.title = buttonTitle;
+            button.setTitle(buttonTitle);
     },
 
     /**

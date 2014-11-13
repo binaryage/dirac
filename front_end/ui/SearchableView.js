@@ -205,14 +205,14 @@ WebInspector.SearchableView.findPreviousShortcuts = function()
 WebInspector.SearchableView.prototype = {
     _toggleCaseSensitiveSearch: function()
     {
-        this._caseSensitiveButton.toggled = !this._caseSensitiveButton.toggled;
+        this._caseSensitiveButton.setToggled(!this._caseSensitiveButton.toggled());
         this._saveSetting();
         this._performSearch(false, true);
     },
 
     _toggleRegexSearch: function()
     {
-        this._regexButton.toggled = !this._regexButton.toggled;
+        this._regexButton.setToggled(!this._regexButton.toggled());
         this._saveSetting();
         this._performSearch(false, true);
     },
@@ -235,8 +235,8 @@ WebInspector.SearchableView.prototype = {
         if (!setting)
             return;
         var settingValue = setting.get() || {};
-        settingValue.caseSensitive = this._caseSensitiveButton.toggled;
-        settingValue.isRegex = this._regexButton.toggled;
+        settingValue.caseSensitive = this._caseSensitiveButton.toggled();
+        settingValue.isRegex = this._regexButton.toggled();
         setting.set(settingValue);
     },
 
@@ -244,9 +244,9 @@ WebInspector.SearchableView.prototype = {
     {
         var settingValue = this._setting() ? (this._setting().get() || {}) : {};
         if (this._searchProvider.supportsCaseSensitiveSearch())
-            this._caseSensitiveButton.toggled = !!settingValue.caseSensitive;
+            this._caseSensitiveButton.setToggled(!!settingValue.caseSensitive);
         if (this._searchProvider.supportsRegexSearch())
-            this._regexButton.toggled = !!settingValue.isRegex;
+            this._regexButton.setToggled(!!settingValue.isRegex);
     },
 
     /**
@@ -593,8 +593,8 @@ WebInspector.SearchableView.prototype = {
     _currentSearchConfig: function()
     {
         var query = this._searchInputElement.value;
-        var caseSensitive = this._caseSensitiveButton ? this._caseSensitiveButton.toggled : false;
-        var isRegex = this._regexButton ? this._regexButton.toggled : false;
+        var caseSensitive = this._caseSensitiveButton ? this._caseSensitiveButton.toggled() : false;
+        var isRegex = this._regexButton ? this._regexButton.toggled() : false;
         return new WebInspector.SearchableView.SearchConfig(query, caseSensitive, isRegex);
      },
 

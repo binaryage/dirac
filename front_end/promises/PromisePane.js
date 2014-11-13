@@ -44,8 +44,8 @@ WebInspector.PromisePane = function()
 WebInspector.PromisePane.prototype = {
     _recordButtonClicked: function(event)
     {
-        var recording = !this._recordButton.toggled;
-        this._recordButton.toggled = recording;
+        var recording = !this._recordButton.toggled();
+        this._recordButton.setToggled(recording);
         this._refreshButton.setEnabled(recording);
         if (recording)
             this._enablePromiseTracker();

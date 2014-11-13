@@ -580,7 +580,7 @@ WebInspector.ProfilesPanel.prototype = {
 
     _onSuspendStateChanged: function()
     {
-        this._updateRecordButton(this.recordButton.toggled);
+        this._updateRecordButton(this.recordButton.toggled());
     },
 
     /**
@@ -590,11 +590,11 @@ WebInspector.ProfilesPanel.prototype = {
     {
         var enable = toggled || !WebInspector.targetManager.allTargetsSuspended();
         this.recordButton.setEnabled(enable);
-        this.recordButton.toggled = toggled;
+        this.recordButton.setToggled(toggled);
         if (enable)
-            this.recordButton.title = this._selectedProfileType ? this._selectedProfileType.buttonTooltip : "";
+            this.recordButton.setTitle(this._selectedProfileType ? this._selectedProfileType.buttonTooltip : "");
         else
-            this.recordButton.title = WebInspector.anotherProfilerActiveLabel();
+            this.recordButton.setTitle(WebInspector.anotherProfilerActiveLabel());
         if (this._selectedProfileType)
             this._launcherView.updateProfileType(this._selectedProfileType, enable);
     },
@@ -616,7 +616,7 @@ WebInspector.ProfilesPanel.prototype = {
 
     _updateProfileTypeSpecificUI: function()
     {
-        this._updateRecordButton(this.recordButton.toggled);
+        this._updateRecordButton(this.recordButton.toggled());
         this._profileTypeStatusBarItemsContainer.removeChildren();
         var statusBarItems = this._selectedProfileType.statusBarItems;
         if (statusBarItems) {
@@ -647,7 +647,7 @@ WebInspector.ProfilesPanel.prototype = {
 
         this.removeAllListeners();
 
-        this.recordButton.visible = true;
+        this.recordButton.setVisible(true);
         this._profileViewStatusBarItemsContainer.classList.remove("hidden");
         this.clearResultsButton.element.classList.remove("hidden");
         this.profilesItemTreeElement.select();

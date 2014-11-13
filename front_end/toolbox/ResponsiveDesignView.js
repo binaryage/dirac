@@ -495,9 +495,9 @@ WebInspector.ResponsiveDesignView.prototype = {
 
         if (viewportChanged) {
             this._pageScaleLabel.textContent = WebInspector.UIString("%.1f", this._viewport.pageScaleFactor);
-            this._decreasePageScaleButton.title = WebInspector.UIString("Scale down (minimum %.1f)", this._viewport.minimumPageScaleFactor);
+            this._decreasePageScaleButton.setTitle(WebInspector.UIString("Scale down (minimum %.1f)", this._viewport.minimumPageScaleFactor));
             this._decreasePageScaleButton.setEnabled(this._viewport.pageScaleFactor > this._viewport.minimumPageScaleFactor);
-            this._increasePageScaleButton.title = WebInspector.UIString("Scale up (maximum %.1f)", this._viewport.maximumPageScaleFactor);
+            this._increasePageScaleButton.setTitle(WebInspector.UIString("Scale up (maximum %.1f)", this._viewport.maximumPageScaleFactor));
             this._increasePageScaleButton.setEnabled(this._viewport.pageScaleFactor < this._viewport.maximumPageScaleFactor);
         }
 
@@ -560,7 +560,7 @@ WebInspector.ResponsiveDesignView.prototype = {
 
         // Media Query Inspector.
         this._toggleMediaInspectorButton = new WebInspector.StatusBarButton(WebInspector.UIString("Media queries not found"), "responsive-design-toggle-media-inspector");
-        this._toggleMediaInspectorButton.toggled = WebInspector.settings.showMediaQueryInspector.get();
+        this._toggleMediaInspectorButton.setToggled(WebInspector.settings.showMediaQueryInspector.get());
         this._toggleMediaInspectorButton.setEnabled(false);
         this._toggleMediaInspectorButton.addEventListener("click", this._onToggleMediaInspectorButtonClick, this);
         WebInspector.settings.showMediaQueryInspector.addChangeListener(this._updateMediaQueryInspector, this);
@@ -645,12 +645,12 @@ WebInspector.ResponsiveDesignView.prototype = {
 
     _onToggleMediaInspectorButtonClick: function()
     {
-        WebInspector.settings.showMediaQueryInspector.set(!this._toggleMediaInspectorButton.toggled);
+        WebInspector.settings.showMediaQueryInspector.set(!this._toggleMediaInspectorButton.toggled());
     },
 
     _updateMediaQueryInspector: function()
     {
-        this._toggleMediaInspectorButton.toggled = WebInspector.settings.showMediaQueryInspector.get();
+        this._toggleMediaInspectorButton.setToggled(WebInspector.settings.showMediaQueryInspector.get());
         if (this._mediaInspector.isShowing() === WebInspector.settings.showMediaQueryInspector.get())
             return;
         if (this._mediaInspector.isShowing())
@@ -667,8 +667,8 @@ WebInspector.ResponsiveDesignView.prototype = {
     {
         var count = /** @type {number} */ (event.data);
         this._toggleMediaInspectorButton.setEnabled(!!count);
-        this._toggleMediaInspectorButton.title = !count ? WebInspector.UIString("Media queries not found") :
-            WebInspector.UIString((count === 1 ? "%d media query found" : "%d media queries found"), count);
+        this._toggleMediaInspectorButton.setTitle(!count ? WebInspector.UIString("Media queries not found") :
+            WebInspector.UIString((count === 1 ? "%d media query found" : "%d media queries found"), count));
     },
 
     _overridesWarningUpdated: function()

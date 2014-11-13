@@ -114,14 +114,14 @@ WebInspector.Drawer.prototype = {
     wasShown: function()
     {
         this.showView(this._lastSelectedViewSetting.get());
-        this._toggleDrawerButton.toggled = true;
-        this._toggleDrawerButton.title = WebInspector.UIString("Hide drawer.");
+        this._toggleDrawerButton.setToggled(true);
+        this._toggleDrawerButton.setTitle(WebInspector.UIString("Hide drawer."));
     },
 
     willHide: function()
     {
-        this._toggleDrawerButton.toggled = false;
-        this._toggleDrawerButton.title = WebInspector.UIString("Show drawer.");
+        this._toggleDrawerButton.setToggled(false);
+        this._toggleDrawerButton.setTitle(WebInspector.UIString("Show drawer."));
     },
 
     /**
@@ -167,7 +167,7 @@ WebInspector.Drawer.prototype = {
 
     toggle: function()
     {
-        if (this._toggleDrawerButton.toggled)
+        if (this._toggleDrawerButton.toggled())
             this.closeDrawer();
         else
             this.showDrawer();
@@ -178,7 +178,7 @@ WebInspector.Drawer.prototype = {
      */
     visible: function()
     {
-        return this._toggleDrawerButton.toggled;
+        return this._toggleDrawerButton.toggled();
     },
 
     /**

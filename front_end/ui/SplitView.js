@@ -866,12 +866,12 @@ WebInspector.SplitView.prototype = {
         if (!this._showHideSidebarButton)
             return;
         var sidebarHidden = this._showMode === WebInspector.SplitView.ShowMode.OnlyMain;
-        this._showHideSidebarButton.state = sidebarHidden ? "show" : "hide";
+        this._showHideSidebarButton.setState(sidebarHidden ? "show" : "hide");
         this._showHideSidebarButton.element.classList.toggle("top-sidebar-show-hide-button", !this.isVertical() && !this.isSidebarSecond());
         this._showHideSidebarButton.element.classList.toggle("right-sidebar-show-hide-button", this.isVertical() && this.isSidebarSecond());
         this._showHideSidebarButton.element.classList.toggle("bottom-sidebar-show-hide-button", !this.isVertical() && this.isSidebarSecond());
         this._showHideSidebarButton.element.classList.toggle("left-sidebar-show-hide-button", this.isVertical() && !this.isSidebarSecond());
-        this._showHideSidebarButton.title = sidebarHidden ? WebInspector.UIString("Show %s", this._showHideSidebarButtonTitle) : WebInspector.UIString("Hide %s", this._showHideSidebarButtonTitle);
+        this._showHideSidebarButton.setTitle(sidebarHidden ? WebInspector.UIString("Show %s", this._showHideSidebarButtonTitle) : WebInspector.UIString("Hide %s", this._showHideSidebarButtonTitle));
     },
 
     __proto__: WebInspector.View.prototype

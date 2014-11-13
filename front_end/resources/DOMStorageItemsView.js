@@ -38,7 +38,7 @@ WebInspector.DOMStorageItemsView = function(domStorage)
     this.element.classList.add("table");
 
     this.deleteButton = new WebInspector.StatusBarButton(WebInspector.UIString("Delete"), "delete-storage-status-bar-item");
-    this.deleteButton.visible = false;
+    this.deleteButton.setVisible(false);
     this.deleteButton.addEventListener("click", this._deleteButtonClicked, this);
 
     this.refreshButton = new WebInspector.StatusBarButton(WebInspector.UIString("Refresh"), "refresh-storage-status-bar-item");
@@ -63,7 +63,7 @@ WebInspector.DOMStorageItemsView.prototype = {
 
     willHide: function()
     {
-        this.deleteButton.visible = false;
+        this.deleteButton.setVisible(false);
     },
 
     /**
@@ -76,7 +76,7 @@ WebInspector.DOMStorageItemsView.prototype = {
 
         this._dataGrid.rootNode().removeChildren();
         this._dataGrid.addCreationNode(false);
-        this.deleteButton.visible = false;
+        this.deleteButton.setVisible(false);
         event.consume(true);
     },
 
@@ -98,7 +98,7 @@ WebInspector.DOMStorageItemsView.prototype = {
             var childNode = children[i];
             if (childNode.data.key === storageData.key) {
                 rootNode.removeChild(childNode);
-                this.deleteButton.visible = (children.length > 1);
+                this.deleteButton.setVisible(children.length > 1);
                 return;
             }
         }
@@ -117,7 +117,7 @@ WebInspector.DOMStorageItemsView.prototype = {
         var children = rootNode.children;
 
         event.consume(true);
-        this.deleteButton.visible = true;
+        this.deleteButton.setVisible(true);
 
         for (var i = 0; i < children.length; ++i)
             if (children[i].data.key === storageData.key)
@@ -156,7 +156,7 @@ WebInspector.DOMStorageItemsView.prototype = {
                     childNode.select();
                     childNode.reveal();
                 }
-                this.deleteButton.visible = true;
+                this.deleteButton.setVisible(true);
             }
         }
     },
@@ -174,7 +174,7 @@ WebInspector.DOMStorageItemsView.prototype = {
 
         this._dataGrid = this._dataGridForDOMStorageItems(items);
         this._dataGrid.show(this.element);
-        this.deleteButton.visible = (this._dataGrid.rootNode().children.length > 1);
+        this.deleteButton.setVisible(this._dataGrid.rootNode().children.length > 1);
     },
 
     _dataGridForDOMStorageItems: function(items)

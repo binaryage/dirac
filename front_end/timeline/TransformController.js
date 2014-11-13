@@ -145,7 +145,7 @@ WebInspector.TransformController.prototype = {
     _updateModeButtons: function()
     {
         for (var mode in this._modeButtons)
-            this._modeButtons[mode].toggled = (mode === this._mode);
+            this._modeButtons[mode].setToggled(mode === this._mode);
     },
 
     /**

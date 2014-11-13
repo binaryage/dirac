@@ -177,8 +177,8 @@ WebInspector.AnimationSection.prototype = {
          */
         function updatePauseButton(paused)
         {
-            this._pauseButton.state = paused;
-            this._pauseButton.title = paused ? WebInspector.UIString("Play animation") : WebInspector.UIString("Pause animation");
+            this._pauseButton.setToggled(paused);
+            this._pauseButton.setTitle(paused ? WebInspector.UIString("Play animation") : WebInspector.UIString("Pause animation"));
         }
 
         this._pauseButton = new WebInspector.StatusBarButton("", "animation-pause");

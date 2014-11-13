@@ -70,7 +70,7 @@ WebInspector.InspectElementModeController.prototype = {
      */
     enabled: function()
     {
-        return this._toggleSearchButton.toggled;
+        return this._toggleSearchButton.toggled();
     },
 
     disable: function()
@@ -82,7 +82,7 @@ WebInspector.InspectElementModeController.prototype = {
     _toggleSearch: function()
     {
         var enabled = !this.enabled();
-        this._toggleSearchButton.toggled = enabled;
+        this._toggleSearchButton.setToggled(enabled);
 
         var targets = WebInspector.targetManager.targets();
         for (var i = 0; i < targets.length; ++i)

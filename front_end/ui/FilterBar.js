@@ -124,7 +124,7 @@ WebInspector.FilterBar.prototype = {
 
     _updateFilterButton: function()
     {
-        this._filterButton.state = this._filterBarState();
+        this._filterButton.setState(this._filterBarState());
     },
 
     /**

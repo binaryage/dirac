@@ -11,7 +11,7 @@ WebInspector.AdvancedApp = function()
     WebInspector.App.call(this);
     if (WebInspector.overridesSupport.responsiveDesignAvailable()) {
         this._toggleEmulationButton = new WebInspector.StatusBarButton(WebInspector.UIString("Toggle device mode."), "emulation-status-bar-item");
-        this._toggleEmulationButton.toggled = WebInspector.overridesSupport.emulationEnabled();
+        this._toggleEmulationButton.setToggled(WebInspector.overridesSupport.emulationEnabled());
         this._toggleEmulationButton.addEventListener("click", this._toggleEmulationEnabled, this);
         WebInspector.overridesSupport.addEventListener(WebInspector.OverridesSupport.Events.EmulationStateChanged, this._emulationEnabledChanged, this);
         WebInspector.overridesSupport.addEventListener(WebInspector.OverridesSupport.Events.OverridesWarningUpdated, this._overridesWarningUpdated, this);
@@ -22,7 +22,7 @@ WebInspector.AdvancedApp = function()
 WebInspector.AdvancedApp.prototype = {
     _toggleEmulationEnabled: function()
     {
-        var enabled = !this._toggleEmulationButton.toggled;
+        var enabled = !this._toggleEmulationButton.toggled();
         if (enabled)
             WebInspector.userMetrics.DeviceModeEnabled.record();
         WebInspector.overridesSupport.setEmulationEnabled(enabled);
@@ -30,7 +30,7 @@ WebInspector.AdvancedApp.prototype = {
 
     _emulationEnabledChanged: function()
     {
-        this._toggleEmulationButton.toggled = WebInspector.overridesSupport.emulationEnabled();
+        this._toggleEmulationButton.setToggled(WebInspector.overridesSupport.emulationEnabled());
         if (!WebInspector.overridesSupport.responsiveDesignAvailable() && WebInspector.overridesSupport.emulationEnabled())
             WebInspector.inspectorView.showViewInDrawer("emulation", true);
     },
@@ -40,7 +40,7 @@ WebInspector.AdvancedApp.prototype = {
         if (!this._toggleEmulationButton)
             return;
         var message = WebInspector.overridesSupport.warningMessage();
-        this._toggleEmulationButton.title = message || WebInspector.UIString("Toggle device mode.");
+        this._toggleEmulationButton.setTitle(message || WebInspector.UIString("Toggle device mode."));
         this._toggleEmulationButton.element.classList.toggle("warning", !!message);
     },
 

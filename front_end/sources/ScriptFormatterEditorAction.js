@@ -229,7 +229,7 @@ WebInspector.ScriptFormatterEditorAction.prototype = {
         this._sourcesView.addEventListener(WebInspector.SourcesView.Events.EditorClosed, this._editorClosed.bind(this));
 
         this._button = new WebInspector.StatusBarButton(WebInspector.UIString("Pretty print"), "sources-toggle-pretty-print-status-bar-item");
-        this._button.toggled = false;
+        this._button.setToggled(false);
         this._button.addEventListener("click", this._toggleFormatScriptSource, this);
         this._updateButton(sourcesView.currentUISourceCode());
 

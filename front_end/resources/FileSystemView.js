@@ -50,11 +50,11 @@ WebInspector.FileSystemView = function(fileSystem)
     this._visibleView = null;
 
     this._refreshButton = new WebInspector.StatusBarButton(WebInspector.UIString("Refresh"), "refresh-storage-status-bar-item");
-    this._refreshButton.visible = true;
+    this._refreshButton.setVisible(true);
     this._refreshButton.addEventListener("click", this._refresh, this);
 
     this._deleteButton = new WebInspector.StatusBarButton(WebInspector.UIString("Delete"), "delete-storage-status-bar-item");
-    this._deleteButton.visible = true;
+    this._deleteButton.setVisible(true);
     this._deleteButton.addEventListener("click", this._confirmDelete, this);
 }
 

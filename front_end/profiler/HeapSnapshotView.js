@@ -144,15 +144,15 @@ WebInspector.HeapSnapshotView = function(dataDisplayDelegate, profile)
     this._profile = profile;
 
     this._baseSelect = new WebInspector.StatusBarComboBox(this._changeBase.bind(this));
-    this._baseSelect.visible = false;
+    this._baseSelect.setVisible(false);
     this._updateBaseOptions();
 
     this._filterSelect = new WebInspector.StatusBarComboBox(this._changeFilter.bind(this));
-    this._filterSelect.visible = false;
+    this._filterSelect.setVisible(false);
     this._updateFilterOptions();
 
     this._classNameFilter = new WebInspector.StatusBarInput("Class filter");
-    this._classNameFilter.visible = false;
+    this._classNameFilter.setVisible(false);
     this._constructorsDataGrid.setNameFilter(this._classNameFilter);
     this._diffDataGrid.setNameFilter(this._classNameFilter);
 
@@ -188,9 +188,9 @@ WebInspector.HeapSnapshotView.Perspective.prototype = {
      */
     deactivate: function(heapSnapshotView)
     {
-        heapSnapshotView._baseSelect.visible = false;
-        heapSnapshotView._filterSelect.visible = false;
-        heapSnapshotView._classNameFilter.visible = false;
+        heapSnapshotView._baseSelect.setVisible(false);
+        heapSnapshotView._filterSelect.setVisible(false);
+        heapSnapshotView._classNameFilter.setVisible(false);
         if (heapSnapshotView._trackingOverviewGrid)
             heapSnapshotView._trackingOverviewGrid.detach();
         if (heapSnapshotView._allocationView)
@@ -247,8 +247,8 @@ WebInspector.HeapSnapshotView.SummaryPerspective.prototype = {
         heapSnapshotView._constructorsView.show(heapSnapshotView._splitView.mainElement());
         heapSnapshotView._objectDetailsView.show(heapSnapshotView._splitView.sidebarElement());
         heapSnapshotView._splitView.show(heapSnapshotView._searchableView.element);
-        heapSnapshotView._filterSelect.visible = true;
-        heapSnapshotView._classNameFilter.visible = true;
+        heapSnapshotView._filterSelect.setVisible(true);
+        heapSnapshotView._classNameFilter.setVisible(true);
         if (heapSnapshotView._trackingOverviewGrid) {
             heapSnapshotView._trackingOverviewGrid.show(heapSnapshotView._searchableView.element, heapSnapshotView._splitView.element);
             heapSnapshotView._trackingOverviewGrid.update();
@@ -297,8 +297,8 @@ WebInspector.HeapSnapshotView.ComparisonPerspective.prototype = {
         heapSnapshotView._diffView.show(heapSnapshotView._splitView.mainElement());
         heapSnapshotView._objectDetailsView.show(heapSnapshotView._splitView.sidebarElement());
         heapSnapshotView._splitView.show(heapSnapshotView._searchableView.element);
-        heapSnapshotView._baseSelect.visible = true;
-        heapSnapshotView._classNameFilter.visible = true;
+        heapSnapshotView._baseSelect.setVisible(true);
+        heapSnapshotView._classNameFilter.setVisible(true);
     },
 
     /**
