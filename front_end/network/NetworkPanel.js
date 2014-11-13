@@ -656,32 +656,22 @@ WebInspector.NetworkLogView.prototype = {
         }
 
         this._timelineGrid.removeEventDividers();
-        if (this._mainRequestLoadTime !== -1) {
-            var percent = calculator.computePercentageFromEventTime(this._mainRequestLoadTime);
-
-            var loadDivider = createElement("div");
-            loadDivider.className = "network-event-divider network-red-divider";
-
-            var loadDividerPadding = createElement("div");
-            loadDividerPadding.className = "network-event-divider-padding";
-            loadDividerPadding.title = WebInspector.UIString("Load event");
-            loadDividerPadding.appendChild(loadDivider);
-            loadDividerPadding.style.left = percent + "%";
-            this._timelineGrid.addEventDivider(loadDividerPadding);
+        var loadTimePercent = calculator.computePercentageFromEventTime(this._mainRequestLoadTime);
+        if (this._mainRequestLoadTime !== -1 && loadTimePercent >= 0) {
+            var loadDivider = createElementWithClass("div", "network-event-divider-padding");
+            loadDivider.createChild("div", "network-event-divider network-red-divider");
+            loadDivider.title = WebInspector.UIString("Load event");
+            loadDivider.style.left = loadTimePercent + "%";
+            this._timelineGrid.addEventDivider(loadDivider);
         }
 
-        if (this._mainRequestDOMContentLoadedTime !== -1) {
-            var percent = calculator.computePercentageFromEventTime(this._mainRequestDOMContentLoadedTime);
-
-            var domContentLoadedDivider = createElement("div");
-            domContentLoadedDivider.className = "network-event-divider network-blue-divider";
-
-            var domContentLoadedDividerPadding = createElement("div");
-            domContentLoadedDividerPadding.className = "network-event-divider-padding";
-            domContentLoadedDividerPadding.title = WebInspector.UIString("DOMContentLoaded event");
-            domContentLoadedDividerPadding.appendChild(domContentLoadedDivider);
-            domContentLoadedDividerPadding.style.left = percent + "%";
-            this._timelineGrid.addEventDivider(domContentLoadedDividerPadding);
+        var domLoadTimePrecent = calculator.computePercentageFromEventTime(this._mainRequestDOMContentLoadedTime);
+        if (this._mainRequestDOMContentLoadedTime !== -1 && domLoadTimePrecent >= 0) {
+            var domContentLoadedDivider = createElementWithClass("div", "network-event-divider-padding");
+            domContentLoadedDivider.createChild("div", "network-event-divider network-blue-divider");
+            domContentLoadedDivider.title = WebInspector.UIString("DOMContentLoaded event");
+            domContentLoadedDivider.style.left = domLoadTimePrecent + "%";
+            this._timelineGrid.addEventDivider(domContentLoadedDivider);
         }
     },
 
