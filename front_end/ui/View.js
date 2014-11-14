@@ -50,11 +50,6 @@ WebInspector.View = function(isWebComponent)
     this._notificationDepth = 0;
 }
 
-WebInspector.View._buildSourceURL = function(cssFile)
-{
-    return "\n/*# sourceURL=" + WebInspector.ParsedURL.completeURL(window.location.href, cssFile) + " */";
-}
-
 /**
  * @param {string} cssFile
  * @return {!Element}
