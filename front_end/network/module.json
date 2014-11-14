@@ -22,7 +22,9 @@
     "scripts": [
         "FilterSuggestionBuilder.js",
         "RequestView.js",
+        "NetworkDataGridNode.js",
         "NetworkItemView.js",
+        "NetworkLogView.js",
         "RequestCookiesView.js",
         "RequestHeadersView.js",
         "RequestHTMLView.js",
