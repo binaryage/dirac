@@ -59,22 +59,17 @@ WebInspector.CPUProfileView = function(profileHeader)
     var option = options[optionName] || options[WebInspector.CPUProfileView._TypeFlame];
     this.viewSelectComboBox.select(option);
 
-    this._statusBarButtonsElement = createElement("span");
-
     this.focusButton = new WebInspector.StatusBarButton(WebInspector.UIString("Focus selected function."), "focus-profile-node-status-bar-item");
     this.focusButton.setEnabled(false);
     this.focusButton.addEventListener("click", this._focusClicked, this);
-    this._statusBarButtonsElement.appendChild(this.focusButton.element);
 
     this.excludeButton = new WebInspector.StatusBarButton(WebInspector.UIString("Exclude selected function."), "exclude-profile-node-status-bar-item");
     this.excludeButton.setEnabled(false);
     this.excludeButton.addEventListener("click", this._excludeClicked, this);
-    this._statusBarButtonsElement.appendChild(this.excludeButton.element);
 
     this.resetButton = new WebInspector.StatusBarButton(WebInspector.UIString("Restore all functions."), "reset-profile-status-bar-item");
     this.resetButton.setVisible(false);
     this.resetButton.addEventListener("click", this._resetClicked, this);
-    this._statusBarButtonsElement.appendChild(this.resetButton.element);
 
     this._profileHeader = profileHeader;
     this._linkifier = new WebInspector.Linkifier(new WebInspector.Linkifier.DefaultFormatter(30));
@@ -142,9 +137,12 @@ WebInspector.CPUProfileView.prototype = {
         this._flameChart.selectRange(timeLeft, timeRight);
     },
 
-    get statusBarItems()
+    /**
+     * @return {!Array.<!WebInspector.StatusBarItem>}
+     */
+    statusBarItems: function()
     {
-        return [this.viewSelectComboBox.element, this._statusBarButtonsElement];
+        return [this.viewSelectComboBox, this.focusButton, this.excludeButton, this.resetButton];
     },
 
     /**
@@ -290,7 +288,6 @@ WebInspector.CPUProfileView.prototype = {
         switch (this._viewType.get()) {
         case WebInspector.CPUProfileView._TypeFlame:
             this._ensureFlameChartCreated();
-            this._statusBarButtonsElement.classList.toggle("hidden", true);
             this._visibleView = this._flameChart;
             this._searchableElement = this._flameChart;
             break;
@@ -308,7 +305,11 @@ WebInspector.CPUProfileView.prototype = {
             break;
         }
 
-        this._statusBarButtonsElement.classList.toggle("hidden", this._viewType.get() === WebInspector.CPUProfileView._TypeFlame);
+        var isFlame = this._viewType.get() === WebInspector.CPUProfileView._TypeFlame;
+        this.focusButton.setVisible(!isFlame);
+        this.excludeButton.setVisible(!isFlame);
+        this.resetButton.setVisible(!isFlame);
+
         this._visibleView.show(this._searchableView.element);
     },
 

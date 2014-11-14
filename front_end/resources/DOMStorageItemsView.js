@@ -51,9 +51,12 @@ WebInspector.DOMStorageItemsView = function(domStorage)
 }
 
 WebInspector.DOMStorageItemsView.prototype = {
-    get statusBarItems()
+    /**
+     * @return {!Array.<!WebInspector.StatusBarItem>}
+     */
+    statusBarItems: function()
     {
-        return [this.refreshButton.element, this.deleteButton.element];
+        return [this.refreshButton, this.deleteButton];
     },
 
     wasShown: function()

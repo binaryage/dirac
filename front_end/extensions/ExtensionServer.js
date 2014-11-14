@@ -294,7 +294,7 @@ WebInspector.ExtensionServer.prototype = {
          */
         function appendButton(panel)
         {
-            /** @type {!WebInspector.ExtensionPanel} panel*/ (panel).addStatusBarItem(button.element);
+            /** @type {!WebInspector.ExtensionPanel} panel*/ (panel).addStatusBarItem(button.statusBarButton());
         }
 
         return this._status.OK();

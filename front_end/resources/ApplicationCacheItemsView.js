@@ -46,8 +46,7 @@ WebInspector.ApplicationCacheItemsView = function(model, frameId)
     this.connectivityMessage.className = "storage-application-cache-connectivity";
     this.connectivityMessage.textContent = "";
 
-    this.divider = createElement("span");
-    this.divider.className = "status-bar-item status-bar-divider";
+    this.divider = new WebInspector.StatusBarSeparator();
 
     this.statusIcon = createElement("div");
     this.statusMessage = createElement("span");
@@ -72,12 +71,18 @@ WebInspector.ApplicationCacheItemsView = function(model, frameId)
 }
 
 WebInspector.ApplicationCacheItemsView.prototype = {
-    get statusBarItems()
+    /**
+     * @return {!Array.<!WebInspector.StatusBarItem>}
+     */
+    statusBarItems: function()
     {
         return [
-            this.deleteButton.element,
-            this.connectivityIcon, this.connectivityMessage, this.divider,
-            this.statusIcon, this.statusMessage
+            this.deleteButton,
+            new WebInspector.StatusBarItem(this.connectivityIcon),
+            new WebInspector.StatusBarItem(this.connectivityMessage),
+            this.divider,
+            new WebInspector.StatusBarItem(this.statusIcon),
+            new WebInspector.StatusBarItem(this.statusMessage)
         ];
     },
 

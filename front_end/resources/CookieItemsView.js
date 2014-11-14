@@ -58,9 +58,12 @@ WebInspector.CookieItemsView = function(treeElement, cookieDomain)
 }
 
 WebInspector.CookieItemsView.prototype = {
-    get statusBarItems()
+    /**
+     * @return {!Array.<!WebInspector.StatusBarItem>}
+     */
+    statusBarItems: function()
     {
-        return [this._refreshButton.element, this._clearButton.element, this._deleteButton.element];
+        return [this._refreshButton, this._clearButton, this._deleteButton];
     },
 
     wasShown: function()

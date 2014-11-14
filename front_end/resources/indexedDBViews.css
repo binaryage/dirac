@@ -59,18 +59,36 @@
     border-top: none;
     height: 24px;
     padding: 1px;
+    background-color: #eee;
+    border-bottom: 1px solid #ccc;
 }
 
 .indexed-db-data-view .data-grid-container {
     top: 24px;
 }
 
-.indexed-db-data-view .data-view-toolbar .back-button img {
-    content: url(Images/back.png);
+.indexed-db-status-bar-back-button,
+.indexed-db-status-bar-forward-button {
+    background-repeat: no-repeat;
+    border: 3px solid transparent;
 }
 
-.indexed-db-data-view .data-view-toolbar .forward-button img {
-    content: url(Images/forward.png);
+.indexed-db-status-bar-back-button:disabled,
+.indexed-db-status-bar-forward-button:disabled {
+    opacity: 0.5;
+}
+
+.indexed-db-status-bar-back-button {
+    background-image: url(Images/back.png);
+}
+
+.indexed-db-status-bar-forward-button {
+    background-image: url(Images/forward.png);
+}
+
+.indexed-db-status-bar-back-button .glyph,
+.indexed-db-status-bar-forward-button .glyph {
+    display: none;
 }
 
 .indexed-db-data-view .data-view-toolbar .key-input {

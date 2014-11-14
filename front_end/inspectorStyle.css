@@ -389,34 +389,14 @@ body.undocked.platform-mac.inactive .toolbar-colors {
     background-position: -160px -96px;
 }
 
-.panel-status-bar {
-    border-top: none;
-    display: flex;
-    background-color: white;
-    flex: 0 0 23px;
-    position: relative;
-}
-
-.panel-status-bar > div {
-    margin: auto 0;
-}
-
-.panel-status-bar label {
-    margin: auto 0 auto 5px;
-    display: flex;
-    white-space: nowrap;
-    overflow: hidden;
-}
-
 .status-bar {
     position: relative;
     white-space: nowrap;
     height: 23px;
     overflow: hidden;
-    width: 100%;
     z-index: 12;
-    border-top: 1px solid rgb(202, 202, 202);
-    display: -webkit-flex;
+    display: flex;
+    flex: none;
 }
 
 .status-bar > div {
@@ -556,7 +536,7 @@ input.status-bar-item {
     padding: 3px;
     margin: 1px 3px;
     background-color: white;
-    border: solid 1px rgb(236, 236, 236);
+    border: solid 1px rgb(216, 216, 216);
 }
 
 input.status-bar-item:focus,
@@ -2046,7 +2026,7 @@ body.inactive .sidebar-tree-item.selected {
 
 .storage-application-cache-status-icon,
 .storage-application-cache-connectivity-icon {
-    margin: 5px 5px 0;
+    margin: 0 5px;
     vertical-align: middle;
 }
 

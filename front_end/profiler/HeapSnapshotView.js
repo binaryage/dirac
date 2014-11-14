@@ -523,12 +523,15 @@ WebInspector.HeapSnapshotView.prototype = {
             this._constructorsDataGrid.setSelectionRange(minId, maxId);
     },
 
-    get statusBarItems()
+    /**
+     * @return {!Array.<!WebInspector.StatusBarItem>}
+     */
+    statusBarItems: function()
     {
-        var result = [this._perspectiveSelect.element, this._classNameFilter.element];
+        var result = [this._perspectiveSelect, this._classNameFilter];
         if (this._profile.profileType() !== WebInspector.ProfileTypeRegistry.instance.trackingHeapSnapshotProfileType)
-            result.push(this._baseSelect.element, this._filterSelect.element);
-        result.push(this._selectedSizeText.element);
+            result.push(this._baseSelect, this._filterSelect);
+        result.push(this._selectedSizeText);
         return result;
     },
 

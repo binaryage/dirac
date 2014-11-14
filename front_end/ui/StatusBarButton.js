@@ -31,11 +31,12 @@
 /**
  * @constructor
  * @extends {WebInspector.Object}
- * @param {string} elementType
+ * @param {!Element} element
  */
-WebInspector.StatusBarItem = function(elementType)
+WebInspector.StatusBarItem = function(element)
 {
-    this.element = createElement(elementType);
+    this.element = element;
+    this.element.classList.add("status-bar-item");
     this._enabled = true;
     this._visible = true;
 }
@@ -87,8 +88,7 @@ WebInspector.StatusBarItem.prototype = {
  */
 WebInspector.StatusBarCounter = function(counters, className)
 {
-    WebInspector.StatusBarItem.call(this, "div");
-    this.element.className = "status-bar-item status-bar-counter hidden";
+    WebInspector.StatusBarItem.call(this, createElementWithClass("div", "status-bar-counter hidden"));
     if (className)
         this.element.classList.add(className);
     this.element.addEventListener("click", this._clicked.bind(this), false);
@@ -165,8 +165,7 @@ WebInspector.StatusBarCounter.prototype = {
  */
 WebInspector.StatusBarText = function(text, className)
 {
-    WebInspector.StatusBarItem.call(this, "span");
-    this.element.className = "status-bar-item status-bar-text";
+    WebInspector.StatusBarItem.call(this, createElementWithClass("span", "status-bar-text"));
     if (className)
         this.element.classList.add(className);
     this.element.textContent = text;
@@ -192,8 +191,7 @@ WebInspector.StatusBarText.prototype = {
  */
 WebInspector.StatusBarInput = function(placeholder, width)
 {
-    WebInspector.StatusBarItem.call(this, "input");
-    this.element.className = "status-bar-item";
+    WebInspector.StatusBarItem.call(this, createElementWithClass("input", "status-bar-item"));
     this.element.addEventListener("input", this._onChangeCallback.bind(this), false);
     if (width)
         this.element.style.width = width + "px";
@@ -241,8 +239,7 @@ WebInspector.StatusBarInput.prototype = {
  */
 WebInspector.StatusBarButtonBase = function(title, className, states)
 {
-    WebInspector.StatusBarItem.call(this, "button");
-    this.element.className = className + " status-bar-item";
+    WebInspector.StatusBarItem.call(this, createElementWithClass("button", className + " status-bar-item"));
     this.element.addEventListener("click", this._clicked.bind(this), false);
     this._longClickController = new WebInspector.LongClickController(this.element);
     this._longClickController.addEventListener(WebInspector.LongClickController.Events.LongClick, this._onLongClick.bind(this));
@@ -482,11 +479,70 @@ WebInspector.StatusBarButton = function(title, className, states)
 {
     WebInspector.StatusBarButtonBase.call(this, title, className, states);
 
-    this.element.createChild("div", "glyph");
+    this._glyphElement = this.element.createChild("div", "glyph");
 }
 
 WebInspector.StatusBarButton.prototype = {
+    /**
+     * @param {string} iconURL
+     */
+    setBackgroundImage: function(iconURL)
+    {
+        this.element.style.backgroundImage = "url(" + iconURL + ")";
+        this._glyphElement.classList.add("hidden");
+    },
+
     __proto__: WebInspector.StatusBarButtonBase.prototype
+}
+
+/**
+ * @constructor
+ * @param {!Element} parentElement
+ */
+WebInspector.StatusBar = function(parentElement)
+{
+    /** @type {!Array.<!WebInspector.StatusBarItem>} */
+    this._items = [];
+    this.element = parentElement.createChild("div", "status-bar");
+}
+
+WebInspector.StatusBar.prototype = {
+    /**
+     * @param {boolean} enabled
+     */
+    setEnabled: function(enabled)
+    {
+        for (var item of this._items)
+            item.setEnabled(enabled);
+    },
+
+    /**
+     * @param {!WebInspector.StatusBarItem} item
+     */
+    appendStatusBarItem: function(item)
+    {
+        this._items.push(item);
+        this.element.appendChild(item.element);
+    },
+
+    removeStatusBarItems: function()
+    {
+        this._items = [];
+        this.element.removeChildren();
+    }
+}
+
+/**
+ * @constructor
+ * @extends {WebInspector.StatusBarItem}
+ */
+WebInspector.StatusBarSeparator = function()
+{
+    WebInspector.StatusBarItem.call(this, createElementWithClass("div", "status-bar-divider"));
+}
+
+WebInspector.StatusBarSeparator.prototype = {
+    __proto__: WebInspector.StatusBarItem.prototype
 }
 
 /**
@@ -531,8 +587,7 @@ WebInspector.StatusBarItem.Provider.prototype = {
  */
 WebInspector.StatusBarComboBox = function(changeHandler, className)
 {
-    WebInspector.StatusBarItem.call(this, "span");
-    this.element.className = "status-bar-select-container";
+    WebInspector.StatusBarItem.call(this, createElementWithClass("span", "status-bar-select-container"));
 
     this._selectElement = this.element.createChild("select", "status-bar-item");
     this.element.createChild("div", "status-bar-select-arrow");
@@ -645,15 +700,20 @@ WebInspector.StatusBarComboBox.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.StatusBarItem}
- * @param {string} title
+ * @param {string} text
+ * @param {string=} title
+ * @param {!WebInspector.Setting=} setting
  */
-WebInspector.StatusBarCheckbox = function(title)
+WebInspector.StatusBarCheckbox = function(text, title, setting)
 {
-    WebInspector.StatusBarItem.call(this, "label");
-    this.element.classList.add("status-bar-item", "checkbox");
+    WebInspector.StatusBarItem.call(this, createElementWithClass("label", "checkbox"));
     this.inputElement = this.element.createChild("input");
     this.inputElement.type = "checkbox";
-    this.element.createTextChild(title);
+    this.element.createTextChild(text);
+    if (title)
+        this.element.title = title;
+    if (setting)
+        WebInspector.SettingsUI.bindCheckbox(this.inputElement, setting);
 }
 
 WebInspector.StatusBarCheckbox.prototype = {

@@ -64,14 +64,12 @@
     color: inherit;
 }
 
-.profiles.panel .status-bar {
-    border-bottom: 1px solid rgb(202, 202, 202);
-    border-top: none;
-}
-
 .profiles-status-bar {
+    display: flex;
     background-color: #eee;
     flex: 0 0 23px;
+    flex-direction: row;
+    border-bottom: 1px solid rgb(202, 202, 202);
 }
 
 .profile-launcher-view-tree-item > .icon {

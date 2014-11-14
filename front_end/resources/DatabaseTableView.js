@@ -47,9 +47,12 @@ WebInspector.DatabaseTableView.prototype = {
         this.update();
     },
 
-    get statusBarItems()
+    /**
+     * @return {!Array.<!WebInspector.StatusBarItem>}
+     */
+    statusBarItems: function()
     {
-        return [this.refreshButton.element];
+        return [this.refreshButton];
     },
 
     /**

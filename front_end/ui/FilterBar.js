@@ -35,8 +35,7 @@
 WebInspector.FilterBar = function()
 {
     this._filtersShown = false;
-    this._element = createElement("div");
-    this._element.className = "hbox";
+    this._element = createElementWithClass("div", "filter-bar hbox");
 
     this._filterButton = new WebInspector.StatusBarButton(WebInspector.UIString("Filter"), "filters-toggle", 3);
     this._filterButton.element.addEventListener("click", this._handleFilterButtonClick.bind(this), false);
@@ -462,8 +461,7 @@ WebInspector.TextFilterUI.SuggestionBuilder.prototype = {
  */
 WebInspector.NamedBitSetFilterUI = function(items, setting)
 {
-    this._filtersElement = createElement("div");
-    this._filtersElement.className = "filter-bitset-filter status-bar-item";
+    this._filtersElement = createElementWithClass("div", "filter-bitset-filter");
     this._filtersElement.title = WebInspector.UIString("Use %s Click to select multiple types.", WebInspector.KeyboardShortcut.shortcutToString("", WebInspector.KeyboardShortcut.Modifiers.CtrlOrMeta));
 
     this._allowedTypes = {};

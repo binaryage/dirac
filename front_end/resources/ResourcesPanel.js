@@ -70,9 +70,9 @@ WebInspector.ResourcesPanel = function()
     }
 
     var mainView = new WebInspector.VBox();
-    this.storageViews = mainView.element.createChild("div", "resources-main diff-container");
-    var statusBarContainer = mainView.element.createChild("div", "resources-status-bar");
-    this.storageViewStatusBarItemsContainer = statusBarContainer.createChild("div", "status-bar");
+    this.storageViews = mainView.element.createChild("div", "vbox flex-auto");
+    this._storageViewStatusBar = new WebInspector.StatusBar(mainView.element);
+    this._storageViewStatusBar.element.classList.add("resources-status-bar");
     mainView.show(this.mainElement());
 
     /** @type {!Map.<!WebInspector.Database, !Object.<string, !WebInspector.DatabaseTableView>>} */
@@ -232,7 +232,7 @@ WebInspector.ResourcesPanel.prototype = {
         if (this.visibleView && !(this.visibleView instanceof WebInspector.StorageCategoryView))
             this.visibleView.detach();
 
-        this.storageViewStatusBarItemsContainer.removeChildren();
+        this._storageViewStatusBar.removeStatusBarItems();
 
         if (this.sidebarTree.selectedTreeElement)
             this.sidebarTree.selectedTreeElement.deselect();
@@ -620,10 +620,10 @@ WebInspector.ResourcesPanel.prototype = {
         view.show(this.storageViews);
         this.visibleView = view;
 
-        this.storageViewStatusBarItemsContainer.removeChildren();
-        var statusBarItems = view.statusBarItems || [];
-        for (var i = 0; i < statusBarItems.length; ++i)
-            this.storageViewStatusBarItemsContainer.appendChild(statusBarItems[i]);
+        this._storageViewStatusBar.removeStatusBarItems();
+        var statusBarItems = view.statusBarItems ? view.statusBarItems() : null;
+        for (var i = 0; statusBarItems && i < statusBarItems.length; ++i)
+            this._storageViewStatusBar.appendStatusBarItem(statusBarItems[i]);
     },
 
     closeVisibleView: function()
@@ -2154,6 +2154,14 @@ WebInspector.StorageCategoryView = function()
 }
 
 WebInspector.StorageCategoryView.prototype = {
+    /**
+     * @return {!Array.<!WebInspector.StatusBarItem>}
+     */
+    statusBarItems: function()
+    {
+        return [];
+    },
+
     setText: function(text)
     {
         this._emptyView.text = text;

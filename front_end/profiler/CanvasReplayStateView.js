@@ -40,14 +40,14 @@ WebInspector.CanvasReplayStateView = function(traceLogPlayer)
     this.element.classList.add("canvas-replay-state-view");
     this._traceLogPlayer = traceLogPlayer;
 
-    var controlsContainer = this.element.createChild("div", "status-bar");
-    this._prevButton = this._createControlButton(controlsContainer, "canvas-replay-state-prev", WebInspector.UIString("Previous resource."), this._onResourceNavigationClick.bind(this, false));
-    this._nextButton = this._createControlButton(controlsContainer, "canvas-replay-state-next", WebInspector.UIString("Next resource."), this._onResourceNavigationClick.bind(this, true));
-    this._createControlButton(controlsContainer, "canvas-replay-state-refresh", WebInspector.UIString("Refresh."), this._onStateRefreshClick.bind(this));
+    var controlsToolbar = new WebInspector.StatusBar(this.element);
+    this._prevButton = this._createControlButton(controlsToolbar, "canvas-replay-state-prev", WebInspector.UIString("Previous resource."), this._onResourceNavigationClick.bind(this, false));
+    this._nextButton = this._createControlButton(controlsToolbar, "canvas-replay-state-next", WebInspector.UIString("Next resource."), this._onResourceNavigationClick.bind(this, true));
+    this._createControlButton(controlsToolbar, "canvas-replay-state-refresh", WebInspector.UIString("Refresh."), this._onStateRefreshClick.bind(this));
 
     this._resourceSelector = new WebInspector.StatusBarComboBox(this._onReplayResourceChanged.bind(this));
     this._currentOption = this._resourceSelector.createOption(WebInspector.UIString("<auto>"), WebInspector.UIString("Show state of the last replayed resource."), "");
-    controlsContainer.appendChild(this._resourceSelector.element);
+    controlsToolbar.appendStatusBarItem(this._resourceSelector);
 
     /** @type {!Object.<string, string>} */
     this._resourceIdToDescription = {};
@@ -102,16 +102,16 @@ WebInspector.CanvasReplayStateView.prototype = {
     },
 
     /**
-     * @param {!Element} parent
+     * @param {!WebInspector.StatusBar} toolbar
      * @param {string} className
      * @param {string} title
      * @param {function(this:WebInspector.CanvasProfileView)} clickCallback
      * @return {!WebInspector.StatusBarButton}
      */
-    _createControlButton: function(parent, className, title, clickCallback)
+    _createControlButton: function(toolbar, className, title, clickCallback)
     {
         var button = new WebInspector.StatusBarButton(title, className + " canvas-replay-button");
-        parent.appendChild(button.element);
+        toolbar.appendStatusBarItem(button);
 
         button.makeLongClickEnabled();
         button.addEventListener("click", clickCallback, this);

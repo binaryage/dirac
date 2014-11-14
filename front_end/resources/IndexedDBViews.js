@@ -65,6 +65,14 @@ WebInspector.IDBDatabaseView = function(database)
 
 WebInspector.IDBDatabaseView.prototype = {
     /**
+     * @return {!Array.<!WebInspector.StatusBarItem>}
+     */
+    statusBarItems: function()
+    {
+        return [];
+    },
+
+    /**
      * @param {string} name
      * @param {string} value
      */
@@ -207,21 +215,14 @@ WebInspector.IDBDataView.prototype = {
         editorToolbar.classList.add("status-bar");
         editorToolbar.classList.add("data-view-toolbar");
 
-        this._pageBackButton = editorToolbar.createChild("button", "back-button");
-        this._pageBackButton.classList.add("status-bar-item");
-        this._pageBackButton.title = WebInspector.UIString("Show previous page.");
-        this._pageBackButton.disabled = true;
-        this._pageBackButton.appendChild(createElement("img"));
-        this._pageBackButton.addEventListener("click", this._pageBackButtonClicked.bind(this), false);
-        editorToolbar.appendChild(this._pageBackButton);
+        this._pageBackButton = new WebInspector.StatusBarButton(WebInspector.UIString("Show previous page."), "indexed-db-status-bar-back-button");
+        this._pageBackButton.addEventListener("click", this._pageBackButtonClicked, this);
+        editorToolbar.appendChild(this._pageBackButton.element);
 
-        this._pageForwardButton = editorToolbar.createChild("button", "forward-button");
-        this._pageForwardButton.classList.add("status-bar-item");
-        this._pageForwardButton.title = WebInspector.UIString("Show next page.");
-        this._pageForwardButton.disabled = true;
-        this._pageForwardButton.appendChild(createElement("img"));
-        this._pageForwardButton.addEventListener("click", this._pageForwardButtonClicked.bind(this), false);
-        editorToolbar.appendChild(this._pageForwardButton);
+        this._pageForwardButton = new WebInspector.StatusBarButton(WebInspector.UIString("Show next page."), "indexed-db-status-bar-forward-button");
+        this._pageForwardButton.setEnabled(false);
+        this._pageForwardButton.addEventListener("click", this._pageForwardButtonClicked, this);
+        editorToolbar.appendChild(this._pageForwardButton.element);
 
         this._keyInputElement = editorToolbar.createChild("input", "key-input");
         this._keyInputElement.placeholder = WebInspector.UIString("Start from key");
@@ -326,8 +327,8 @@ WebInspector.IDBDataView.prototype = {
                 this._dataGrid.rootNode().appendChild(node);
             }
 
-            this._pageBackButton.disabled = skipCount === 0;
-            this._pageForwardButton.disabled = !hasMore;
+            this._pageBackButton.setEnabled(!!skipCount);
+            this._pageForwardButton.setEnabled(hasMore);
         }
 
         var idbKeyRange = key ? window.IDBKeyRange.lowerBound(key) : null;
@@ -355,9 +356,12 @@ WebInspector.IDBDataView.prototype = {
         this._model.clearObjectStore(this._databaseId, this._objectStore.name, cleared.bind(this));
     },
 
-    get statusBarItems()
+    /**
+     * @return {!Array.<!WebInspector.StatusBarItem>}
+     */
+    statusBarItems: function()
     {
-        return [this._refreshButton.element, this._clearButton.element];
+        return [this._refreshButton, this._clearButton];
     },
 
     clear: function()

@@ -55,6 +55,14 @@ WebInspector.DatabaseQueryView.Events = {
 }
 
 WebInspector.DatabaseQueryView.prototype = {
+    /**
+     * @return {!Array.<!WebInspector.StatusBarItem>}
+     */
+    statusBarItems: function()
+    {
+        return [];
+    },
+
     _messagesClicked: function()
     {
         if (!this._prompt.isCaretInsidePrompt() && window.getSelection().isCollapsed)

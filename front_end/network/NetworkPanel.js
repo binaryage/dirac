@@ -63,7 +63,6 @@ WebInspector.NetworkLogView = function(filterBar, coulmnsVisibilitySetting)
     this._currentMatchedRequestIndex = -1;
 
     this._createStatusbarButtons();
-    this._createStatusBarItems();
     this._linkifier = new WebInspector.Linkifier();
 
     this._allowPopover = true;
@@ -230,18 +229,18 @@ WebInspector.NetworkLogView.prototype = {
     },
 
     /**
-     * @return {!Array.<!Element>}
+     * @return {!Array.<!WebInspector.StatusBarItem>}
      */
     statusBarItems: function()
     {
         return [
-            this._recordButton.element,
-            this._clearButton.element,
-            this._filterBar.filterButton().element,
-            this._largerRequestsButton.element,
-            this._preserveLogCheckbox.element,
-            this._disableCacheCheckbox.element,
-            this._progressBarContainer];
+            this._recordButton,
+            this._clearButton,
+            this._filterBar.filterButton(),
+            this._largerRequestsButton,
+            this._preserveLogCheckbox,
+            this._disableCacheCheckbox,
+            new WebInspector.StatusBarItem(this._progressBarContainer) ];
     },
 
     /**
@@ -558,12 +557,6 @@ WebInspector.NetworkLogView.prototype = {
         this._dataGrid.markColumnAsSortedBy("timeline", WebInspector.DataGrid.Order.Ascending);
     },
 
-    _createStatusBarItems: function()
-    {
-        this._progressBarContainer = createElement("div");
-        this._progressBarContainer.className = "status-bar-item";
-    },
-
     _updateSummaryBar: function()
     {
         var requestsNumber = this._nodesByRequestId.size;
@@ -734,6 +727,8 @@ WebInspector.NetworkLogView.prototype = {
         this._disableCacheCheckbox = new WebInspector.StatusBarCheckbox(WebInspector.UIString("Disable cache"));
         WebInspector.SettingsUI.bindCheckbox(this._disableCacheCheckbox.inputElement, WebInspector.settings.cacheDisabled);
         this._disableCacheCheckbox.element.title = WebInspector.UIString("Disable cache (while DevTools is open).");
+
+        this._progressBarContainer = createElement("div");
     },
 
     /**
@@ -1908,7 +1903,7 @@ WebInspector.NetworkPanel = function()
     WebInspector.Panel.call(this, "network");
     this.registerRequiredCSS("network/networkPanel.css");
 
-    this._panelStatusBarElement = this.element.createChild("div", "panel-status-bar");
+    this._panelStatusBar = new WebInspector.StatusBar(this.element);
     this._filterBar = new WebInspector.FilterBar();
     this._filtersContainer = this.element.createChild("div", "network-filters-header hidden");
     this._filtersContainer.appendChild(this._filterBar.filtersElement());
@@ -1955,7 +1950,7 @@ WebInspector.NetworkPanel = function()
 
     var statusBarItems = this._networkLogView.statusBarItems();
     for (var i = 0; i < statusBarItems.length; ++i)
-        this._panelStatusBarElement.appendChild(statusBarItems[i]);
+        this._panelStatusBar.appendStatusBarItem(statusBarItems[i]);
 
     /**
      * @this {WebInspector.NetworkPanel}

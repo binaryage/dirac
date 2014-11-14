@@ -73,21 +73,8 @@ body.inactive .resources.panel .sidebar li.selected .selection {
     top: 1px;
 }
 
-.resources-main {
-    position: absolute;
-    top: 0;
-    bottom: 23px;
-    left: 0;
-    right: 0;
-    display: flex;
-}
-
 .resources-status-bar {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 23px;
+    border-top: 1px solid #ccc;
     background-color: #eee;
 }
 

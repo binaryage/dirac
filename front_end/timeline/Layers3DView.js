@@ -681,13 +681,13 @@ WebInspector.Layers3DView.prototype = {
      * @param {string} caption
      * @param {string} name
      * @param {boolean} value
-     * @param {!Element} statusBarElement
+     * @param {!WebInspector.StatusBar} statusBar
      * @return {!WebInspector.Setting}
      */
-    _createVisibilitySetting: function(caption, name, value, statusBarElement)
+    _createVisibilitySetting: function(caption, name, value, statusBar)
     {
         var checkbox = new WebInspector.StatusBarCheckbox(WebInspector.UIString(caption))
-        statusBarElement.appendChild(checkbox.element);
+        statusBar.appendStatusBarItem(checkbox);
         var setting = WebInspector.settings.createSetting(name, value)
         WebInspector.SettingsUI.bindCheckbox(checkbox.inputElement, setting);
         setting.addChangeListener(this._update, this);
@@ -696,10 +696,10 @@ WebInspector.Layers3DView.prototype = {
 
     _initStatusBar: function()
     {
-        this._panelStatusBarElement = this.element.createChild("div", "panel-status-bar");
-        this._panelStatusBarElement.appendChild(this._transformController.controlPanelElement());
-        this._showSlowScrollRectsSetting = this._createVisibilitySetting("Slow scroll rects", "frameViewerShowSlowScrollRects", true, this._panelStatusBarElement);
-        this._showPaintsSetting = this._createVisibilitySetting("Paints", "frameViewerShowPaints", true, this._panelStatusBarElement);
+        this._panelStatusBar = new WebInspector.StatusBar(this.element);
+        this._panelStatusBar.appendStatusBarItem(new WebInspector.StatusBarItem(this._transformController.controlPanelElement()));
+        this._showSlowScrollRectsSetting = this._createVisibilitySetting("Slow scroll rects", "frameViewerShowSlowScrollRects", true, this._panelStatusBar);
+        this._showPaintsSetting = this._createVisibilitySetting("Paints", "frameViewerShowPaints", true, this._panelStatusBar);
         WebInspector.settings.frameViewerHideChromeWindow.addChangeListener(this._update, this);
     },
 

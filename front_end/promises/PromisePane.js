@@ -12,21 +12,21 @@ WebInspector.PromisePane = function()
     this.registerRequiredCSS("promises/promisePane.css");
     this.element.classList.add("promises");
 
-    var statusBar = this.element.createChild("div", "panel-status-bar");
+    var statusBar = new WebInspector.StatusBar(this.element);
     this._recordButton = new WebInspector.StatusBarButton(WebInspector.UIString("Record Promises"), "record-profile-status-bar-item");
     this._recordButton.addEventListener("click", this._recordButtonClicked.bind(this));
-    statusBar.appendChild(this._recordButton.element);
+    statusBar.appendStatusBarItem(this._recordButton);
     var clearButton = new WebInspector.StatusBarButton(WebInspector.UIString("Clear"), "clear-status-bar-item");
     clearButton.addEventListener("click", this._clearButtonClicked.bind(this));
-    statusBar.appendChild(clearButton.element);
+    statusBar.appendStatusBarItem(clearButton);
     this._refreshButton = new WebInspector.StatusBarButton(WebInspector.UIString("Refresh"), "refresh-storage-status-bar-item");
     this._refreshButton.addEventListener("click", this._refreshButtonClicked.bind(this));
     this._refreshButton.setEnabled(false);
-    statusBar.appendChild(this._refreshButton.element);
+    statusBar.appendStatusBarItem(this._refreshButton);
     this._liveCheckbox = new WebInspector.StatusBarCheckbox(WebInspector.UIString("Live"));
     this._liveCheckbox.element.title = WebInspector.UIString("Live Recording");
     this._liveCheckbox.inputElement.disabled = true;
-    statusBar.appendChild(this._liveCheckbox.element);
+    statusBar.appendStatusBarItem(this._liveCheckbox);
 
     this._dataGridContainer = new WebInspector.VBox();
     this._dataGridContainer.show(this.element);
