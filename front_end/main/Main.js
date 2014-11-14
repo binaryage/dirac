@@ -611,7 +611,7 @@ WebInspector.Main.prototype = {
 WebInspector.reload = function()
 {
     InspectorAgent.reset();
-    window.location.reload();
+    window.top.location.reload();
 }
 
 /**
