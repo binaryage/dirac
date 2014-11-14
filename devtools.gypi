@@ -407,8 +407,6 @@
             'front_end/network/webSocketFrameView.css',
             'front_end/network/FilterSuggestionBuilder.js',
             'front_end/network/NetworkItemView.js',
-            'front_end/network/NetworkDataGridNode.js',
-            'front_end/network/NetworkLogView.js',
             'front_end/network/NetworkPanel.js',
             'front_end/network/RequestCookiesView.js',
             'front_end/network/RequestHeadersView.js',
