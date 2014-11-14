@@ -4463,6 +4463,7 @@
                     { "name": "fillMode", "type": "number", "description": "<code>AnimationNode</code>'s fill mode." },
                     { "name": "timeFraction", "type": "number", "description": "<code>AnimationNode</code>'s time fraction." },
                     { "name": "name", "type": "string", "description": "<code>AnimationNode</code>'s name." },
+                    { "name": "backendNodeId", "$ref": "DOM.BackendNodeId", "description": "<code>AnimationNode</code>'s target node." },
                     { "name": "keyframesRule", "$ref": "KeyframesRule", "optional": true, "description": "<code>AnimationNode</code>'s keyframes." }
                 ],
                 "description": "AnimationNode instance"
@@ -4490,7 +4491,8 @@
             {
                 "name": "getAnimationPlayersForNode",
                 "parameters": [
-                    { "name": "nodeId", "$ref": "DOM.NodeId", "description": "Id of the node to get animation players for." }
+                    { "name": "nodeId", "$ref": "DOM.NodeId", "description": "Id of the node to get animation players for." },
+                    { "name": "includeSubtreeAnimations", "type": "boolean", "description": "Include animations from elements subtree." }
                 ],
                 "returns": [
                     { "name": "animationPlayers", "type": "array", "items": { "$ref": "AnimationPlayer" }, "description": "Array of animation players." }

@@ -695,3 +695,19 @@ li.child-editing .styles-clipboard-only {
 .swatch-inner:hover {
     border: 1px solid rgba(64, 64, 64, 0.8);
 }
+
+.animationsSettings {
+    padding: 4px;
+}
+
+.animationSectionBody {
+    display: none;
+}
+
+.animationSectionBody.expanded {
+    display: block;
+}
+
+.animationSectionBody .section {
+    border-bottom: 1px solid rgb(191, 191, 191);
+}

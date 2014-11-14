@@ -20,9 +20,10 @@ WebInspector.AnimationModel = function(target)
 WebInspector.AnimationModel.prototype = {
     /**
      * @param {!DOMAgent.NodeId} nodeId
+     * @param {boolean} showSubtreeAnimations
      * @param {function(?Array.<!WebInspector.AnimationModel.AnimationPlayer>)} userCallback
      */
-    getAnimationPlayers: function(nodeId, userCallback)
+    getAnimationPlayers: function(nodeId, showSubtreeAnimations, userCallback)
     {
         /**
          * @param {?Protocol.Error} error
@@ -31,29 +32,14 @@ WebInspector.AnimationModel.prototype = {
          */
         function resultCallback(error, payloads)
         {
-            var callbacks = this._nodeIdToCallbackData[nodeId];
-            delete this._nodeIdToCallbackData[nodeId];
             if (error) {
-                callbacks.forEach(function(callback) {
-                    callback(null);
-                });
+                userCallback(null);
                 return;
             }
-            var animationPlayers = payloads.map(WebInspector.AnimationModel.AnimationPlayer.parsePayload.bind(null, target));
-
-            callbacks.forEach(function(callback) {
-                callback(animationPlayers);
-            });
+            userCallback(payloads.map(WebInspector.AnimationModel.AnimationPlayer.parsePayload.bind(null, this.target())));
         }
 
-        if (this._nodeIdToCallbackData[nodeId]) {
-            this._nodeIdToCallbackData[nodeId].push(userCallback);
-            return;
-        }
-
-        var target = this.target();
-        this._nodeIdToCallbackData[nodeId] = [userCallback];
-        this._agent.getAnimationPlayersForNode(nodeId, resultCallback.bind(this));
+        this._agent.getAnimationPlayersForNode(nodeId, showSubtreeAnimations, resultCallback.bind(this));
     },
 
     __proto__: WebInspector.SDKModel.prototype
@@ -195,10 +181,8 @@ WebInspector.AnimationModel.AnimationPlayer.prototype = {
          */
         function mycallback(error, currentTime, isRunning)
         {
-            if (error) {
-                console.error(error);
+            if (error)
                 return;
-            }
             callback(currentTime, isRunning);
         }
         this.target().animationModel._agent.getAnimationPlayerState(this.id(), mycallback);
@@ -292,6 +276,28 @@ WebInspector.AnimationModel.AnimationNode.prototype = {
     name: function()
     {
         return this._payload.name;
+    },
+
+    /**
+     * @param {function(?WebInspector.DOMNode)} callback
+     */
+    getNode: function(callback)
+    {
+        /**
+         * @this {WebInspector.AnimationModel.AnimationNode}
+         * @param {?Array.<number>} nodeIds
+         */
+        function nodePushedCallback(nodeIds)
+        {
+            if (nodeIds)
+                this.nodeId = nodeIds[0];
+            callback(this.target().domModel.nodeForId(this.nodeId));
+        }
+
+        if (this.nodeId)
+            callback(this.target().domModel.nodeForId(this.nodeId));
+        else
+            this._target.domModel.pushNodesByBackendIdsToFrontend([this._payload.backendNodeId], nodePushedCallback.bind(this));
     },
 
     /**
