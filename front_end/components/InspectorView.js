@@ -56,15 +56,14 @@ WebInspector.InspectorView = function()
     var headerElement = this._tabbedPane.headerElement();
     headerElement.parentElement.insertBefore(this._toolbarElement, headerElement);
 
-    this._leftToolbarElement = this._toolbarElement.createChild("div", "toolbar-controls-left");
+    this._leftToolbar = new WebInspector.StatusBar(this._toolbarElement);
     this._toolbarElement.appendChild(headerElement);
-    this._rightToolbarElement = this._toolbarElement.createChild("div", "toolbar-controls-right");
-    this._toolbarItems = [];
+    this._rightToolbar = new WebInspector.StatusBar(this._toolbarElement);
 
     this._closeButtonToolbarItem = createElementWithClass("div", "toolbar-close-button-item");
     var closeButtonElement = this._closeButtonToolbarItem.createChild("div", "close-button");
     closeButtonElement.addEventListener("click", InspectorFrontendHost.closeWindow.bind(InspectorFrontendHost), true);
-    this._rightToolbarElement.appendChild(this._closeButtonToolbarItem);
+    this._toolbarElement.appendChild(this._closeButtonToolbarItem);
 
     this._panels = {};
     // Used by tests.
@@ -131,8 +130,7 @@ WebInspector.InspectorView.prototype = {
      */
     appendToLeftToolbar: function(item)
     {
-        this._toolbarItems.push(item);
-        this._leftToolbarElement.appendChild(item.element);
+        this._leftToolbar.appendStatusBarItem(item);
     },
 
     /**
@@ -140,8 +138,7 @@ WebInspector.InspectorView.prototype = {
      */
     appendToRightToolbar: function(item)
     {
-        this._toolbarItems.push(item);
-        this._rightToolbarElement.insertBefore(item.element, this._closeButtonToolbarItem);
+        this._rightToolbar.appendStatusBarItem(item);
     },
 
     /**
@@ -205,8 +202,8 @@ WebInspector.InspectorView.prototype = {
     {
         this._currentPanelLocked = WebInspector.targetManager.allTargetsSuspended();
         this._tabbedPane.setCurrentTabLocked(this._currentPanelLocked);
-        for (var i = 0; i < this._toolbarItems.length; ++i)
-            this._toolbarItems[i].setEnabled(!this._currentPanelLocked);
+        this._leftToolbar.setEnabled(!this._currentPanelLocked);
+        this._rightToolbar.setEnabled(!this._currentPanelLocked);
     },
 
     /**

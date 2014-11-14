@@ -107,10 +107,6 @@
     opacity: 1;
 }
 
-.responsive-design-page-scale-container .status-bar-item .glyph.shadow {
-    background-color: black !important;
-}
-
 @media (-webkit-min-device-pixel-ratio: 1.5) {
     .responsive-design-page-scale-container .responsive-design-page-scale-button.status-bar-item > .glyph {
         -webkit-mask-image: url(Images/responsiveDesign_2x.png);
@@ -152,11 +148,6 @@
     justify-content: flex-start;
     padding-top: 1px;
 }
-
-.responsive-design-section .status-bar-item .glyph.shadow {
-    background-color: black !important;
-}
-
 
 .responsive-design-section-decorator {
     height: 2px;
@@ -465,7 +456,7 @@
     -webkit-mask-position: -128px -48px;
 }
 
-.responsive-design-toolbar button.responsive-design-toggle-media-inspector.toggled-on .glyph:not(.shadow) {
+.responsive-design-toolbar button.responsive-design-toggle-media-inspector.toggled-on .glyph {
     background-color: rgb(105, 194, 236) !important;
 }
 

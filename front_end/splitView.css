@@ -110,7 +110,7 @@
 }
 
 .split-view button.right-sidebar-show-hide-button {
-    top: 4px;
+    top: 3px;
     right:2px;
 }
 
@@ -120,7 +120,7 @@
 }
 
 .split-view button.bottom-sidebar-show-hide-button {
-    bottom: 0px;
+    bottom: 1px;
     right: 1px;
 }
 

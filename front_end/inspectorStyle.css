@@ -201,20 +201,10 @@ body.undocked.platform-mac.inactive .toolbar-colors {
     opacity: 0.6;
 }
 
-.toolbar-controls-left {
+.toolbar-controls-left,
+.toolbar-controls-right,
+ {
     flex: none;
-    opacity: 0.8;
-    padding-top: 1px;
-}
-
-.toolbar-controls-right {
-    flex: none;
-    margin-right: 2px;
-    padding-top: 1px;
-}
-
-.toolbar-controls-right .status-bar-item
-{
     opacity: 0.8;
 }
 
@@ -392,7 +382,7 @@ body.undocked.platform-mac.inactive .toolbar-colors {
 .status-bar {
     position: relative;
     white-space: nowrap;
-    height: 23px;
+    height: 24px;
     overflow: hidden;
     z-index: 12;
     display: flex;
@@ -405,15 +395,15 @@ body.undocked.platform-mac.inactive .toolbar-colors {
 }
 
 .status-bar-item {
-    display: inline-block;
-    height: 22px;
-    padding: 0;
-    margin-left: -1px;
-    margin-right: 0;
-    vertical-align: top;
+    position: relative;
+    display: flex;
     border: 0 transparent none;
     background-color: transparent;
     flex: none;
+    font-size: 12px;
+    align-items: center;
+    padding: 0;
+    height: 24px;
 }
 
 .status-bar-text {
@@ -432,16 +422,6 @@ body.undocked.platform-mac.inactive .toolbar-colors {
 .status-bar-item:active {
     position: relative;
     z-index: 200;
-}
-
-.glyph {
-    position: absolute;
-    top: -1px;
-    bottom: 1px;
-    left: 0;
-    right: 0;
-    background-color: rgba(0, 0, 0, 0.75);
-    z-index: 1;
 }
 
 .status-bar-item .status-bar-button-text {
@@ -463,26 +443,13 @@ body.undocked.platform-mac.inactive .toolbar-colors {
 }
 } /* media */
 
-.long-click-glyph.shadow {
-    top: 1px;
-    background-color: white !important;
-    z-index: 0;
-}
-
 button.status-bar-item {
     position: relative;
     width: 32px;
+    height: 23px;
 }
 
-.status-bar button.status-bar-item .glyph {
-    margin: 0 -1px;
-}
-
-button.status-bar-item .glyph.shadow {
-    background-color: rgba(255, 255, 255, 0.33);
-}
-
-button.status-bar-item.toggled-on .glyph:not(.shadow) {
+button.status-bar-item.toggled-on .glyph {
     background-color: rgb(66, 129, 235) !important;
 }
 
@@ -566,7 +533,15 @@ select.status-bar-item {
 .status-bar-item > .glyph {
     -webkit-mask-image: url(Images/statusbarButtonGlyphs.png);
     -webkit-mask-size: 320px 144px;
+    background-color: rgba(0, 0, 0, 0.75);
     opacity: 0.8;
+    flex: auto;
+    z-index: 1;
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
 }
 
 @media (-webkit-min-device-pixel-ratio: 1.5) {
@@ -711,16 +686,12 @@ div.resizer-widget {
 }
 
 .status-bar-counter {
-    display: inline-block;
-    padding: 4px 6px 6px 0;
-    font-size: 11px;
-    height: 19px;
     cursor: pointer;
-    line-height: 14px;
 }
 
-.status-bar-counter:hover {
+.status-bar-counter:hover .status-bar-counter-item {
     border-bottom: 1px solid rgb(96, 96, 96);
+    margin-bottom: -1px;
 }
 
 .status-bar-counter-item {
@@ -732,7 +703,6 @@ div.resizer-widget {
 }
 
 .status-bar-counter-item > div {
-    vertical-align: -1px;
     margin-right: 2px;
 }
 
@@ -2049,7 +2019,7 @@ body.inactive .sidebar-tree-item.selected {
     -webkit-mask-position: -164px 0px;
 }
 
-.emulation-status-bar-item.warning::before {
+.emulation-status-bar-item.warning::after {
     background-image: url(Images/statusbarButtonGlyphs.png);
     background-size: 320px 144px;
     width: 10px;
@@ -2057,9 +2027,9 @@ body.inactive .sidebar-tree-item.selected {
     content: "";
     position: relative;
     top: 4px;
-    left: -7px;
+    left: 13px;
     background-position: -202px -107px;
-    float: right;
+    z-index: 1;
 }
 
 @media (-webkit-min-device-pixel-ratio: 1.5) {
@@ -2423,7 +2393,7 @@ body.inactive .sidebar-tree-item.selected {
     -webkit-mask-position: -288px 0;
 }
 
-button.record-profile-status-bar-item.toggled-on .glyph:not(.shadow) {
+button.record-profile-status-bar-item.toggled-on .glyph {
     -webkit-mask-position: -288px -24px;
     background-color: rgb(216, 0, 0) !important;
 }
@@ -2608,7 +2578,7 @@ button.record-profile-status-bar-item.toggled-on .glyph:not(.shadow) {
 .toolbar-close-button-item {
     display: inline-block;
     float: right;
-    padding-right: 4px;
+    padding-right: 8px;
     padding-top: 4px;
     padding-left: 2px;
 }

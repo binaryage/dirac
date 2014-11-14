@@ -39,7 +39,7 @@ WebInspector.SourcesPanel = function(workspaceForTest)
 
     this._workspace = workspaceForTest || WebInspector.workspace;
 
-    this.debugToolbar = this._createDebugToolbar();
+    this._debugToolbar = this._createDebugToolbar();
     this._debugToolbarDrawer = this._createDebugToolbarDrawer();
 
     const initialDebugSidebarWidth = 225;
@@ -627,9 +627,13 @@ WebInspector.SourcesPanel.prototype = {
             this._toggleBreakpointsButton.setTitle(WebInspector.UIString("Activate breakpoints."));
     },
 
+    /**
+     * @return {!WebInspector.StatusBar}
+     */
     _createDebugToolbar: function()
     {
-        var debugToolbar = createElementWithClass("div", "scripts-debug-toolbar");
+        var debugToolbar = new WebInspector.StatusBar();
+        debugToolbar.element.classList.add("scripts-debug-toolbar");
 
         var title, handler;
         var platformSpecificModifier = WebInspector.KeyboardShortcut.Modifiers.CtrlOrMeta;
@@ -638,12 +642,12 @@ WebInspector.SourcesPanel.prototype = {
         title = WebInspector.UIString("Run snippet (%s).");
         handler = this._runSnippet.bind(this);
         this._runSnippetButton = this._createButtonAndRegisterShortcuts("scripts-run-snippet", title, handler, WebInspector.ShortcutsScreen.SourcesPanelShortcuts.RunSnippet);
-        debugToolbar.appendChild(this._runSnippetButton.element);
+        debugToolbar.appendStatusBarItem(this._runSnippetButton);
         this._runSnippetButton.element.classList.add("hidden");
 
         // Continue.
         this._pauseButton = this._createButtonAndRegisterShortcutsForAction("scripts-pause", "", "debugger.toggle-pause");
-        debugToolbar.appendChild(this._pauseButton.element);
+        debugToolbar.appendStatusBarItem(this._pauseButton);
 
         // Long resume.
         title = WebInspector.UIString("Resume with all pauses blocked for 500 ms");
@@ -654,30 +658,30 @@ WebInspector.SourcesPanel.prototype = {
         title = WebInspector.UIString("Step over next function call (%s).");
         handler = this._stepOverClicked.bind(this);
         this._stepOverButton = this._createButtonAndRegisterShortcuts("scripts-step-over", title, handler, WebInspector.ShortcutsScreen.SourcesPanelShortcuts.StepOver);
-        debugToolbar.appendChild(this._stepOverButton.element);
+        debugToolbar.appendStatusBarItem(this._stepOverButton);
 
         // Step into.
         title = WebInspector.UIString("Step into next function call (%s).");
         handler = this._stepIntoClicked.bind(this);
         this._stepIntoButton = this._createButtonAndRegisterShortcuts("scripts-step-into", title, handler, WebInspector.ShortcutsScreen.SourcesPanelShortcuts.StepInto);
-        debugToolbar.appendChild(this._stepIntoButton.element);
+        debugToolbar.appendStatusBarItem(this._stepIntoButton);
 
         // Step out.
         title = WebInspector.UIString("Step out of current function (%s).");
         handler = this._stepOutClicked.bind(this);
         this._stepOutButton = this._createButtonAndRegisterShortcuts("scripts-step-out", title, handler, WebInspector.ShortcutsScreen.SourcesPanelShortcuts.StepOut);
-        debugToolbar.appendChild(this._stepOutButton.element);
+        debugToolbar.appendStatusBarItem(this._stepOutButton);
 
         // Toggle Breakpoints
         this._toggleBreakpointsButton = new WebInspector.StatusBarButton(WebInspector.UIString("Deactivate breakpoints."), "scripts-toggle-breakpoints");
         this._toggleBreakpointsButton.setToggled(false);
         this._toggleBreakpointsButton.addEventListener("click", this._toggleBreakpointsClicked, this);
-        debugToolbar.appendChild(this._toggleBreakpointsButton.element);
+        debugToolbar.appendStatusBarItem(this._toggleBreakpointsButton);
 
         // Pause on Exception
         this._pauseOnExceptionButton = new WebInspector.StatusBarButton("", "scripts-pause-on-exceptions-status-bar-item");
         this._pauseOnExceptionButton.addEventListener("click", this._togglePauseOnExceptions, this);
-        debugToolbar.appendChild(this._pauseOnExceptionButton.element);
+        debugToolbar.appendStatusBarItem(this._pauseOnExceptionButton);
 
         return debugToolbar;
     },
@@ -1035,7 +1039,7 @@ WebInspector.SourcesPanel.prototype = {
         // Create vertical box with stack.
         var vbox = new WebInspector.VBox();
         vbox.element.appendChild(this._debugToolbarDrawer);
-        vbox.element.appendChild(this.debugToolbar);
+        vbox.element.appendChild(this._debugToolbar.element);
         vbox.setMinimumAndPreferredSizes(25, 25, WebInspector.SourcesPanel.minToolbarWidth, 100);
         var sidebarPaneStack = new WebInspector.SidebarPaneStack();
         sidebarPaneStack.element.classList.add("flex-auto");

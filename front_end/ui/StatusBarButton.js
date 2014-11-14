@@ -370,14 +370,12 @@ WebInspector.StatusBarButtonBase.prototype = {
                 this.makeLongClickEnabled();
 
                 this.longClickGlyph = this.element.createChild("div", "fill long-click-glyph");
-                this.longClickGlyphShadow = this.element.createChild("div", "fill long-click-glyph shadow");
 
                 var longClickDownListener = this._showOptions.bind(this);
                 this.addEventListener("longClickDown", longClickDownListener, this);
 
                 this._longClickOptionsData = {
                     glyphElement: this.longClickGlyph,
-                    glyphShadowElement: this.longClickGlyphShadow,
                     longClickDownListener: longClickDownListener
                 };
             }
@@ -386,7 +384,6 @@ WebInspector.StatusBarButtonBase.prototype = {
             if (!this._longClickOptionsData)
                 return;
             this.element.removeChild(this._longClickOptionsData.glyphElement);
-            this.element.removeChild(this._longClickOptionsData.glyphShadowElement);
 
             this.removeEventListener("longClickDown", this._longClickOptionsData.longClickDownListener, this);
             delete this._longClickOptionsData;
@@ -497,13 +494,13 @@ WebInspector.StatusBarButton.prototype = {
 
 /**
  * @constructor
- * @param {!Element} parentElement
+ * @param {!Element=} parentElement
  */
 WebInspector.StatusBar = function(parentElement)
 {
     /** @type {!Array.<!WebInspector.StatusBarItem>} */
     this._items = [];
-    this.element = parentElement.createChild("div", "status-bar");
+    this.element = parentElement ? parentElement.createChild("div", "status-bar") : createElementWithClass("div", "status-bar");
 }
 
 WebInspector.StatusBar.prototype = {

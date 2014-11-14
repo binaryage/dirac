@@ -40,8 +40,8 @@
     top: 0;
     width: 100%;
     background-color: #eee;
-    overflow: hidden;
-    white-space: nowrap;
+    border-bottom: 1px solid rgb(163, 163, 163);
+    margin-top: -1px;
 }
 
 .scripts-debug-toolbar-drawer {
@@ -146,8 +146,8 @@
 
 .panel.sources button.status-bar-item.scripts-navigator-show-hide-button {
     display: block;
-    top: 4px;
-    left: 4px;
+    top: 3px;
+    left: 3px;
 }
 
 .panel.sources .navigator-tabbed-pane .tabbed-pane-header {
