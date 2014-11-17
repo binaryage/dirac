@@ -103,7 +103,7 @@ WebInspector.AuditCategoryResultPane.prototype = {
         var titleFragment = createDocumentFragment();
         if (severity) {
             var severityElement = createElement("div");
-            severityElement.className = "severity-" + severity;
+            severityElement.classList.add("severity", severity);
             titleFragment.appendChild(severityElement);
         }
         titleFragment.createTextChild(title);

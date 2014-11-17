@@ -121,9 +121,7 @@
     display: block;
 }
 
-.audit-result-view .severity-severe,
-.audit-result-view .severity-warning,
-.audit-result-view .severity-info {
+.audit-result-view .severity {
     background-image: url(Images/statusbarButtonGlyphs.png);
     background-size: 320px 144px;
     display: inline-block;
@@ -136,22 +134,20 @@
 }
 
 @media (-webkit-min-device-pixel-ratio: 1.5) {
-.audit-result-view .severity-severe,
-.audit-result-view .severity-warning,
-.audit-result-view .severity-info {
+.audit-result-view .severity {
     background-image: url(Images/statusbarButtonGlyphs_2x.png);
 }
 } /* media */
 
-.audit-result-view .severity-severe {
+.audit-result-view .severity.severe {
     background-position: -224px -96px;
 }
 
-.audit-result-view .severity-warning {
+.audit-result-view .severity.warning {
     background-position: -246px -96px;
 }
 
-.audit-result-view .severity-info {
+.audit-result-view .severity.info {
     background-position: -235px -96px;
 }
 
