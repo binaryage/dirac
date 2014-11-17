@@ -153,13 +153,9 @@ WebInspector.IdentityFormatter.prototype = {
 }
 
 /**
- * @constructor
+ * @typedef {{original: !Array.<number>, formatted: !Array.<number>}}
  */
-WebInspector.FormatterMappingPayload = function()
-{
-    this.original = [];
-    this.formatted = [];
-}
+WebInspector.FormatterMappingPayload;
 
 /**
  * @interface

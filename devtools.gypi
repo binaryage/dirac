@@ -222,7 +222,6 @@
             'front_end/ui/panelEnablerView.css',
             'front_end/ui/pieChart.css',
             'front_end/ui/ActionRegistry.js',
-            'front_end/ui/Checkbox.js',
             'front_end/ui/CompletionDictionary.js',
             'front_end/ui/Context.js',
             'front_end/ui/ContextMenu.js',
