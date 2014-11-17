@@ -992,7 +992,8 @@ WebInspector.TimelinePanel.prototype = {
     _appendDetailsTabsForTraceEventAndShowDetails: function(event, content)
     {
         this.showInDetails(content);
-        this._showEventInPaintProfiler(event);
+        if (event.name === WebInspector.TimelineModel.RecordType.Paint)
+            this._showEventInPaintProfiler(event);
     },
 
     /**
@@ -1007,7 +1008,6 @@ WebInspector.TimelinePanel.prototype = {
         var paintProfilerView = this._paintProfilerView();
         if (!this._detailsView.hasTab(WebInspector.TimelinePanel.DetailsTab.PaintProfiler))
             this._detailsView.appendTab(WebInspector.TimelinePanel.DetailsTab.PaintProfiler, WebInspector.UIString("Paint Profiler"), paintProfilerView, undefined, undefined, isCloseable);
-        this._detailsView.selectTab(WebInspector.TimelinePanel.DetailsTab.PaintProfiler, true);
         event.picture.requestObject(onGotObject);
         function onGotObject(result)
         {
@@ -1119,6 +1119,7 @@ WebInspector.TimelinePanel.prototype = {
     {
         var event = record.traceEvent();
         this._showEventInPaintProfiler(event, true);
+        this._detailsView.selectTab(WebInspector.TimelinePanel.DetailsTab.PaintProfiler, true);
     },
 
     /**
@@ -1453,13 +1454,13 @@ WebInspector.TimelineTextFilter.prototype = {
 
 WebInspector.TimelinePanel.show = function()
 {
-    WebInspector.inspectorView.setCurrentPanel(WebInspector.TimelinePanel._instance());
+    WebInspector.inspectorView.setCurrentPanel(WebInspector.TimelinePanel.instance());
 }
 
 /**
  * @return {!WebInspector.TimelinePanel}
  */
-WebInspector.TimelinePanel._instance = function()
+WebInspector.TimelinePanel.instance = function()
 {
     if (!WebInspector.TimelinePanel._instanceObject)
         WebInspector.TimelinePanel._instanceObject = new WebInspector.TimelinePanel();
@@ -1480,6 +1481,6 @@ WebInspector.TimelinePanelFactory.prototype = {
      */
     createPanel: function()
     {
-        return WebInspector.TimelinePanel._instance();
+        return WebInspector.TimelinePanel.instance();
     }
 }

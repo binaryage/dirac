@@ -34,6 +34,8 @@ WebInspector.TimelineLayersView = function()
 
     this._layerDetailsView = new WebInspector.LayerDetailsView();
     this._layerDetailsView.show(this._rightSplitView.sidebarElement());
+    this._layerDetailsView.addEventListener(WebInspector.LayerDetailsView.Events.PaintProfilerRequested, this._jumpToPaintEvent, this);
+    this._layerDetailsView.addEventListener(WebInspector.LayerDetailsView.Events.ObjectSelected, this._onObjectSelected, this);
 }
 
 WebInspector.TimelineLayersView.prototype = {

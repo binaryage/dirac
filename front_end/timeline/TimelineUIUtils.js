@@ -878,10 +878,18 @@ WebInspector.TimelineUIUtils.buildPicturePreviewContent = function(event, target
             return;
         }
         var container = createElement("div");
-        container.className = "image-preview-container";
+        container.classList.add("image-preview-container", "vbox", "link");
         var img = container.createChild("img");
         img.src = imageURL;
+        var paintProfilerButton = container.createChild("a");
+        paintProfilerButton.textContent = WebInspector.UIString("Paint Profiler");
+        container.addEventListener("click", showPaintProfiler, false);
         callback(container);
+    }
+
+    function showPaintProfiler()
+    {
+        WebInspector.TimelinePanel.instance().select(WebInspector.TimelineSelection.fromTraceEvent(event), WebInspector.TimelinePanel.DetailsTab.PaintProfiler);
     }
 }
 

@@ -920,6 +920,11 @@
     -webkit-margin-after: 0;
 }
 
+.layer-details-view a {
+    padding: 8px;
+    display: block;
+}
+
 .timeline-layers-view > .split-view-contents-first,
 .timeline-layers-view-properties > .split-view-contents-second {
     background-color: #eee;
