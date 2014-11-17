@@ -278,6 +278,21 @@ Runtime.queryParam = function(name)
 }
 
 /**
+ * @param {!Array.<string>} banned
+ * @return {string}
+ */
+Runtime.constructQueryParams = function(banned)
+{
+    var params = [];
+    for (var key in Runtime._queryParamsObject) {
+        if (!key || banned.indexOf(key) !== -1)
+            continue;
+        params.push(key + "=" + Runtime._queryParamsObject[key]);
+    }
+    return params.length ? "?" + params.join("&") : "";
+}
+
+/**
  * @return {!Object}
  */
 Runtime._experimentsSetting = function()
