@@ -814,10 +814,11 @@ WebInspector.PageDispatcher.prototype = {
     /**
      * @param {string} data
      * @param {!PageAgent.ScreencastFrameMetadata=} metadata
+     * @param {number=} frameNumber
      */
-    screencastFrame: function(data, metadata)
+    screencastFrame: function(data, metadata, frameNumber)
     {
-        this._resourceTreeModel.dispatchEventToListeners(WebInspector.ResourceTreeModel.EventTypes.ScreencastFrame, {data:data, metadata:metadata});
+        this._resourceTreeModel.dispatchEventToListeners(WebInspector.ResourceTreeModel.EventTypes.ScreencastFrame, {data:data, metadata:metadata, frameNumber:frameNumber});
     },
 
     /**

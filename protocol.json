@@ -543,6 +543,15 @@
                 "handlers": ["browser", "renderer"]
             },
             {
+                "name": "screencastFrameAck",
+                "description": "Acknowledges that a screencast frame has been received by the frontend.",
+                "parameters": [
+                    { "name": "frameNumber", "type": "integer", "description": "Frame number." }
+                ],
+                "hidden": true,
+                "handlers": ["browser"]
+            },
+            {
                 "name": "handleJavaScriptDialog",
                 "description": "Accepts or dismisses a JavaScript initiated dialog (alert, confirm, prompt, or onbeforeunload).",
                 "parameters": [
@@ -691,7 +700,8 @@
                 "description": "Compressed image data requested by the <code>startScreencast</code>.",
                 "parameters": [
                     { "name": "data", "type": "string", "description": "Base64-encoded compressed image." },
-                    { "name": "metadata", "$ref": "ScreencastFrameMetadata", "description": "Screencast frame metadata"}
+                    { "name": "metadata", "$ref": "ScreencastFrameMetadata", "description": "Screencast frame metadata."},
+                    { "name": "frameNumber", "type": "integer", "optional": true, "description": "Frame number."}
                 ],
                 "hidden": true,
                 "handlers": ["browser"]
