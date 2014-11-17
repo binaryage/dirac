@@ -11,10 +11,13 @@ WebInspector.AnimationsSidebarPane = function(stylesPane)
     WebInspector.ElementsSidebarPane.call(this, WebInspector.UIString("Animations"));
     this._stylesPane = stylesPane;
 
-    this.headerElement = createElementWithClass("div", "animationsSettings");
+    this.headerElement = createElementWithClass("div", "animationsHeader");
+    this._globalControls = new WebInspector.AnimationsSidebarPane.GlobalAnimationControls();
+    this.headerElement.appendChild(this._globalControls.element);
     this._showSubtreeSetting = WebInspector.settings.createSetting("showSubtreeAnimations", true);
-    this.headerElement.appendChild(WebInspector.AnimationsSidebarPane._showSubtreeAnimationsCheckbox(this._showSubtreeSetting));
     this._showSubtreeSetting.addChangeListener(this._showSubtreeSettingChanged.bind(this));
+    this.headerElement.appendChild(WebInspector.AnimationsSidebarPane._showSubtreeAnimationsCheckbox(this._showSubtreeSetting));
+
     this._emptyElement = createElement("div");
     this._emptyElement.className = "info";
     this._emptyElement.textContent = WebInspector.UIString("No Animations");
@@ -77,6 +80,7 @@ WebInspector.AnimationsSidebarPane.prototype = {
         }
 
         if (!this.node()) {
+            this._globalControls.reset();
             finishCallback();
             return;
         }
@@ -309,4 +313,77 @@ WebInspector.AnimationSection.prototype = {
             }
         }
     }
+}
+
+WebInspector.AnimationsSidebarPane._globalPlaybackRates = [0.1, 0.25, 0.5, 1.0, 2.0];
+
+/**
+ * @constructor
+ * @extends {WebInspector.StatusBar}
+ */
+WebInspector.AnimationsSidebarPane.GlobalAnimationControls = function()
+{
+    WebInspector.StatusBar.call(this);
+    this.element.classList.add("global-animations-toolbar");
+
+    this._pauseButton = new WebInspector.StatusBarButton("", "animation-pause");
+    this._pauseButton.addEventListener("click", this._pauseHandler.bind(this), this);
+    this.appendStatusBarItem(this._pauseButton);
+    this._playbackRateButtons = [];
+    WebInspector.AnimationsSidebarPane._globalPlaybackRates.forEach(this._createPlaybackRateButton.bind(this));
+    this.reset();
+}
+
+WebInspector.AnimationsSidebarPane.GlobalAnimationControls.prototype = {
+    /**
+     * @param {number} playbackRate
+     */
+    _createPlaybackRateButton: function(playbackRate)
+    {
+        var button = new WebInspector.StatusBarTextButton(WebInspector.UIString("Set all animations playback rate to " + playbackRate + "x"), "playback-rate-button", playbackRate + "x");
+        button.playbackRate = playbackRate;
+        button.addEventListener("click", this._playbackRateHandler.bind(this, playbackRate), this);
+        this._playbackRateButtons.push(button);
+        this.appendStatusBarItem(button);
+    },
+
+    reset: function()
+    {
+        this._paused = false;
+        this._playbackRate = 1.0;
+        this._updateControls();
+    },
+
+    _updateControls: function()
+    {
+        this._updatePauseButton();
+        for (var i = 0; i < this._playbackRateButtons.length; i++)
+            this._playbackRateButtons[i].setToggled(this._playbackRateButtons[i].playbackRate === this._playbackRate);
+    },
+
+    _updatePauseButton: function()
+    {
+        this._pauseButton.setToggled(this._paused);
+        this._pauseButton.setTitle(this._paused ? WebInspector.UIString("Resume all animations") : WebInspector.UIString("Pause all animations"));
+    },
+
+    _pauseHandler: function()
+    {
+        this._paused = !this._paused;
+        PageAgent.setAnimationsPlaybackRate(this._paused ? 0 : this._playbackRate);
+        this._updatePauseButton();
+    },
+
+    /**
+     * @param {number} playbackRate
+     */
+    _playbackRateHandler: function(playbackRate)
+    {
+        this._playbackRate = playbackRate;
+        this._paused = false;
+        this._updateControls();
+        PageAgent.setAnimationsPlaybackRate(playbackRate);
+    },
+
+    __proto__: WebInspector.StatusBar.prototype
 }

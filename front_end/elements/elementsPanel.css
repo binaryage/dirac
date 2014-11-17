@@ -711,3 +711,19 @@ li.child-editing .styles-clipboard-only {
 .animationSectionBody .section {
     border-bottom: 1px solid rgb(191, 191, 191);
 }
+
+.animationsHeader {
+    padding-top: 25px;
+}
+
+.global-animations-toolbar {
+    position: absolute;
+    top: 0;
+    width: 100%;
+    background-color: #eee;
+    border-bottom: 1px solid rgb(163, 163, 163);
+}
+
+.playback-rate-button.toggled-on > .status-bar-button-text {
+    color: rgb(66, 129, 235);
+}
