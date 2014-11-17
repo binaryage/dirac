@@ -508,7 +508,9 @@ WebInspector.TimelineUIUtils._buildTraceEventDetailsSynchronously = function(eve
     contentHelper.appendTextRow(WebInspector.UIString("Type"), WebInspector.TimelineUIUtils.eventTitle(event, model));
     contentHelper.appendTextRow(WebInspector.UIString("Self Time"), Number.millisToString(event.selfTime, true));
     contentHelper.appendTextRow(WebInspector.UIString("Start Time"), Number.millisToString((event.startTime - model.minimumRecordTime())));
-    contentHelper.appendElementRow(WebInspector.UIString("Aggregated Time"), pieChart);
+    if (event.previewElement)
+        contentHelper.appendElementRow(WebInspector.UIString("Preview"), event.previewElement);
+
     var eventData = event.args["data"];
     var initiator = event.initiator;
 
@@ -629,8 +631,8 @@ WebInspector.TimelineUIUtils._buildTraceEventDetailsSynchronously = function(eve
         div.textContent = warning;
         contentHelper.appendElementRow(WebInspector.UIString("Warning"), div);
     }
-    if (event.previewElement)
-        contentHelper.appendElementRow(WebInspector.UIString("Preview"), event.previewElement);
+
+    contentHelper.appendElementRow(WebInspector.UIString("Aggregated Time"), pieChart);
 
     if (event.stackTrace || (event.initiator && event.initiator.stackTrace) || event.invalidationTrackingEvents)
         WebInspector.TimelineUIUtils._generateCauses(event, model.target(), contentHelper);
