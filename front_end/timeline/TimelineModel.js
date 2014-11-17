@@ -404,8 +404,6 @@ WebInspector.TimelineModel.prototype = {
         ];
         if (captureCauses || enableJSSampling)
             categoriesArray.push(disabledByDefault("devtools.timeline.stack"));
-        if (enableJSSampling)
-            this._startCpuProfilingOnAllTargets();
         if (captureCauses && Runtime.experiments.isEnabled("timelineInvalidationTracking"))
             categoriesArray.push(disabledByDefault("devtools.timeline.invalidationTracking"));
         if (capturePictures) {
@@ -415,7 +413,7 @@ WebInspector.TimelineModel.prototype = {
                 disabledByDefault("blink.graphics_context_annotations")]);
         }
         var categories = categoriesArray.join(",");
-        this._startRecordingWithCategories(categories);
+        this._startRecordingWithCategories(categories, enableJSSampling);
     },
 
     stopRecording: function()
@@ -556,9 +554,12 @@ WebInspector.TimelineModel.prototype = {
 
     /**
      * @param {string} categories
+     * @param {boolean=} enableJSSampling
      */
-    _startRecordingWithCategories: function(categories)
+    _startRecordingWithCategories: function(categories, enableJSSampling)
     {
+        if (enableJSSampling)
+            this._startCpuProfilingOnAllTargets();
         this._tracingManager.start(categories, "");
     },
 
@@ -606,33 +607,43 @@ WebInspector.TimelineModel.prototype = {
         if (error)
             WebInspector.console.error(error);
         if (!this._cpuProfiles)
-            this._cpuProfiles = {};
-        this._cpuProfiles[target.id()] = cpuProfile;
+            this._cpuProfiles = new Map();
+        this._cpuProfiles.set(target.id(), cpuProfile);
     },
 
     _didStopRecordingTraceEvents: function()
     {
         this._tracingModel.tracingComplete();
 
-        var events = this._tracingModel.devtoolsPageMetadataEvents();
+        var metaEvents = this._tracingModel.devtoolsPageMetadataEvents();
         var workerMetadataEvents = this._tracingModel.devtoolsWorkerMetadataEvents();
 
         this._resetProcessingState();
-        for (var i = 0, length = events.length; i < length; i++) {
-            var event = events[i];
-            var process = event.thread.process();
-            var startTime = event.startTime;
+        for (var i = 0, length = metaEvents.length; i < length; i++) {
+            var metaEvent = metaEvents[i];
+            var process = metaEvent.thread.process();
+            var startTime = metaEvent.startTime;
 
             var endTime = Infinity;
             if (i + 1 < length)
-                endTime = events[i + 1].startTime;
+                endTime = metaEvents[i + 1].startTime;
 
             var threads = process.sortedThreads();
             for (var j = 0; j < threads.length; j++) {
                 var thread = threads[j];
-                if (thread.name() === "WebCore: Worker" && workerMetadataEvents.every(function(e) { return e.args["data"]["workerThreadId"] !== thread.id(); }))
-                    continue;
-                this._processThreadEvents(startTime, endTime, event.thread, thread);
+                var workerId = 0;
+                if (thread.name() === "WebCore: Worker") {
+                    for (var k = 0; k < workerMetadataEvents.length; ++k) {
+                        var eventData = workerMetadataEvents[k].args["data"];
+                        if (eventData["workerThreadId"] === thread.id()) {
+                            workerId = eventData["workerId"];
+                            break;
+                        }
+                    }
+                    if (!workerId)
+                        continue;
+                }
+                this._processThreadEvents(startTime, endTime, metaEvent.thread, thread, workerId);
             }
         }
         this._resetProcessingState();
@@ -764,8 +775,9 @@ WebInspector.TimelineModel.prototype = {
      * @param {?number} endTime
      * @param {!WebInspector.TracingModel.Thread} mainThread
      * @param {!WebInspector.TracingModel.Thread} thread
+     * @param {number} workerId
      */
-    _processThreadEvents: function(startTime, endTime, mainThread, thread)
+    _processThreadEvents: function(startTime, endTime, mainThread, thread, workerId)
     {
         var recordTypes = WebInspector.TimelineModel.RecordType;
         var events = thread.events();
@@ -798,20 +810,24 @@ WebInspector.TimelineModel.prototype = {
             this._inspectedTargetEvents.push(event);
         }
 
-        if (this._cpuProfiles && thread.target()) {
-            var cpuProfile = this._cpuProfiles[thread.target().id()];
-            if (cpuProfile) {
-                var jsSamples = WebInspector.TimelineJSProfileProcessor.generateTracingEventsFromCpuProfile(cpuProfile, thread);
-                var mergedEvents = threadEvents.mergeOrdered(jsSamples, WebInspector.TracingModel.Event.orderedCompareStartTime);
-                var jsFrameEvents = WebInspector.TimelineJSProfileProcessor.generateJSFrameEvents(mergedEvents);
-                mergedEvents = jsFrameEvents.mergeOrdered(mergedEvents, WebInspector.TracingModel.Event.orderedCompareStartTime);
-                if (virtualThread)
-                    virtualThread.events = mergedEvents;
-                else
-                    this._mainThreadEvents = mergedEvents;
-                this._inspectedTargetEvents = this._inspectedTargetEvents.concat(jsSamples, jsFrameEvents);
-            }
-        }
+        if (!this._cpuProfiles)
+            return;
+        var target = thread === mainThread ? WebInspector.targetManager.mainTarget() : WebInspector.workerTargetManager.targetByWorkerId(workerId);
+        if (!target)
+            return;
+        var cpuProfile = this._cpuProfiles.get(target.id());
+        if (!cpuProfile)
+            return;
+        this._cpuProfiles.delete(target.id());
+        var jsSamples = WebInspector.TimelineJSProfileProcessor.generateTracingEventsFromCpuProfile(cpuProfile, thread);
+        var mergedEvents = threadEvents.mergeOrdered(jsSamples, WebInspector.TracingModel.Event.orderedCompareStartTime);
+        var jsFrameEvents = WebInspector.TimelineJSProfileProcessor.generateJSFrameEvents(mergedEvents);
+        mergedEvents = jsFrameEvents.mergeOrdered(mergedEvents, WebInspector.TracingModel.Event.orderedCompareStartTime);
+        if (virtualThread)
+            virtualThread.events = mergedEvents;
+        else
+            this._mainThreadEvents = mergedEvents;
+        this._inspectedTargetEvents = this._inspectedTargetEvents.concat(jsSamples, jsFrameEvents);
     },
 
     /**
