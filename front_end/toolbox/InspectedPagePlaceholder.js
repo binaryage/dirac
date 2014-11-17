@@ -58,8 +58,8 @@ WebInspector.InspectedPagePlaceholder.prototype = {
     _scheduleUpdate: function()
     {
         if (this._updateId)
-            window.cancelAnimationFrame(this._updateId);
-        this._updateId = window.requestAnimationFrame(this.update.bind(this));
+            this.element.window().cancelAnimationFrame(this._updateId);
+        this._updateId = this.element.window().requestAnimationFrame(this.update.bind(this));
     },
 
     /**

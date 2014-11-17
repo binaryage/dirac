@@ -341,7 +341,7 @@ WebInspector.MetricsSidebarPane.prototype = {
         var config = new WebInspector.InplaceEditor.Config(this.editingCommitted.bind(this), this.editingCancelled.bind(this), context);
         WebInspector.InplaceEditor.startEditing(targetElement, config);
 
-        window.getSelection().setBaseAndExtent(targetElement, 0, targetElement, 1);
+        targetElement.window().getSelection().setBaseAndExtent(targetElement, 0, targetElement, 1);
     },
 
     _handleKeyDown: function(context, styleProperty, event)

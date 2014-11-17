@@ -527,10 +527,10 @@ WebInspector.SplitView.prototype = {
                 this.dispatchEventToListeners(WebInspector.SplitView.Events.SidebarSizeChanged, this.sidebarSize());
                 return;
             }
-            this._animationFrameHandle = window.requestAnimationFrame(boundAnimationFrame);
+            this._animationFrameHandle = this.element.window().requestAnimationFrame(boundAnimationFrame);
         }
         boundAnimationFrame = animationFrame.bind(this);
-        this._animationFrameHandle = window.requestAnimationFrame(boundAnimationFrame);
+        this._animationFrameHandle = this.element.window().requestAnimationFrame(boundAnimationFrame);
     },
 
     _cancelAnimation: function()
@@ -542,7 +542,7 @@ WebInspector.SplitView.prototype = {
         this.element.style.removeProperty("transition");
 
         if (this._animationFrameHandle) {
-            window.cancelAnimationFrame(this._animationFrameHandle);
+            this.element.window().cancelAnimationFrame(this._animationFrameHandle);
             delete this._animationFrameHandle;
         }
         if (this._animationCallback) {

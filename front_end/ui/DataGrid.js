@@ -283,7 +283,7 @@ WebInspector.DataGrid.prototype = {
 
         var element = this._editingNode._element.children[cellIndex];
         WebInspector.InplaceEditor.startEditing(element, this._startEditingConfig(element));
-        window.getSelection().setBaseAndExtent(element, 0, element, 1);
+        element.window().getSelection().setBaseAndExtent(element, 0, element, 1);
     },
 
     _startEditing: function(target)
@@ -306,7 +306,7 @@ WebInspector.DataGrid.prototype = {
         this._editing = true;
         WebInspector.InplaceEditor.startEditing(element, this._startEditingConfig(element));
 
-        window.getSelection().setBaseAndExtent(element, 0, element, 1);
+        element.window().getSelection().setBaseAndExtent(element, 0, element, 1);
     },
 
     renderInline: function()

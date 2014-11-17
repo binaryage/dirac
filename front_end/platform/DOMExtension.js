@@ -275,6 +275,14 @@ Node.prototype.parentNodeOrShadowHost = function()
 }
 
 /**
+ * @return {!Window}
+ */
+Node.prototype.window = function()
+{
+    return this.ownerDocument.defaultView;
+}
+
+/**
  * @param {string} query
  * @return {?Node}
  */
@@ -294,7 +302,7 @@ Element.prototype.removeChildren = function()
  */
 Element.prototype.isInsertionCaretInside = function()
 {
-    var selection = window.getSelection();
+    var selection = this.window().getSelection();
     if (!selection.rangeCount || !selection.isCollapsed)
         return false;
     var selectionRange = selection.getRangeAt(0);
@@ -588,7 +596,7 @@ Element.prototype.selectionLeftOffset = function()
 {
     // Calculate selection offset relative to the current element.
 
-    var selection = window.getSelection();
+    var selection = this.window().getSelection();
     if (!selection.containsNode(this, true))
         return null;
 

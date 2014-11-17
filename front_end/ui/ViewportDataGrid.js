@@ -87,7 +87,7 @@ WebInspector.ViewportDataGrid.prototype = {
         if (this._updateScheduled)
             return;
         this._updateScheduled = true;
-        window.requestAnimationFrame(this._update.bind(this));
+        this.element.window().requestAnimationFrame(this._update.bind(this));
     },
 
     /**

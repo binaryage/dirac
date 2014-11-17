@@ -1762,7 +1762,7 @@ WebInspector.StylePropertiesSection.prototype = {
         if (!this.editable)
             return;
 
-        if (!window.getSelection().isCollapsed)
+        if (!event.target.window().getSelection().isCollapsed)
             return;
 
         if (this._checkWillCancelEditing())
@@ -1822,7 +1822,7 @@ WebInspector.StylePropertiesSection.prototype = {
         var config = new WebInspector.InplaceEditor.Config(this.editingSelectorCommitted.bind(this), this.editingSelectorCancelled.bind(this), undefined, this._editingSelectorBlurHandler.bind(this));
         WebInspector.InplaceEditor.startEditing(this._selectorElement, config);
 
-        window.getSelection().setBaseAndExtent(element, 0, element, 1);
+        element.window().getSelection().setBaseAndExtent(element, 0, element, 1);
         this._parentPane._isEditingStyle = true;
         this._parentPane._startEditingSelector(this);
     },
@@ -1833,7 +1833,7 @@ WebInspector.StylePropertiesSection.prototype = {
     setSelectorText: function(text)
     {
         this._selectorElement.textContent = text;
-        window.getSelection().setBaseAndExtent(this._selectorElement, 0, this._selectorElement, 1);
+        this._selectorElement.window().getSelection().setBaseAndExtent(this._selectorElement, 0, this._selectorElement, 1);
     },
 
     /**
@@ -2935,7 +2935,7 @@ WebInspector.StylePropertyTreeElement.prototype = {
 
     _mouseClick: function(event)
     {
-        if (!window.getSelection().isCollapsed)
+        if (!event.target.window().getSelection().isCollapsed)
             return;
 
         event.consume(true);
@@ -3121,7 +3121,7 @@ WebInspector.StylePropertyTreeElement.prototype = {
         if (isEditingName)
             proxyElement.addEventListener("paste", pasteHandler.bind(this, context), false);
 
-        window.getSelection().setBaseAndExtent(selectElement, 0, selectElement, 1);
+        selectElement.window().getSelection().setBaseAndExtent(selectElement, 0, selectElement, 1);
     },
 
     /**
@@ -3142,7 +3142,7 @@ WebInspector.StylePropertyTreeElement.prototype = {
             result = "cancel";
         else if (!context.isEditingName && this._newProperty && event.keyCode === WebInspector.KeyboardShortcut.Keys.Backspace.code) {
             // For a new property, when Backspace is pressed at the beginning of new property value, move back to the property name.
-            var selection = window.getSelection();
+            var selection = event.target.window().getSelection();
             if (selection.isCollapsed && !selection.focusOffset) {
                 event.preventDefault();
                 result = "backward";

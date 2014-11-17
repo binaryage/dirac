@@ -363,7 +363,7 @@ WebInspector.handleElementValueModifications = function(event, element, finishHa
     if (!arrowKeyOrMouseWheelEvent && !pageKeyPressed)
         return false;
 
-    var selection = window.getSelection();
+    var selection = element.window().getSelection();
     if (!selection.rangeCount)
         return false;
 
@@ -697,6 +697,9 @@ WebInspector._isTextEditingElement = function(element)
     return false;
 }
 
+/**
+ * @param {?Node} x
+ */
 WebInspector.setCurrentFocusElement = function(x)
 {
     if (WebInspector._glassPane && x && !WebInspector._glassPane.element.isAncestor(x))
@@ -711,7 +714,7 @@ WebInspector.setCurrentFocusElement = function(x)
         // Make a caret selection inside the new element if there isn't a range selection and there isn't already a caret selection inside.
         // This is needed (at least) to remove caret from console when focus is moved to some element in the panel.
         // The code below should not be applied to text fields and text areas, hence _isTextEditingElement check.
-        var selection = window.getSelection();
+        var selection = x.window().getSelection();
         if (!WebInspector._isTextEditingElement(WebInspector._currentFocusElement) && selection.isCollapsed && !WebInspector._currentFocusElement.isInsertionCaretInside()) {
             var selectionRange = WebInspector._currentFocusElement.ownerDocument.createRange();
             selectionRange.setStart(WebInspector._currentFocusElement, 0);
@@ -987,6 +990,9 @@ WebInspector.InvokeOnceHandlers.prototype = {
         methods.add(method);
     },
 
+    /**
+     * @suppressGlobalPropertiesCheck
+     */
     scheduleInvoke: function()
     {
         if (this._handlers)
@@ -1036,13 +1042,14 @@ WebInspector.invokeOnceAfterBatchUpdate = function(object, method)
 }
 
 /**
+ * @param {!Window} window
  * @param {!Function} func
  * @param {!Array.<{from:number, to:number}>} params
  * @param {number} frames
  * @param {function()=} animationComplete
  * @return {function()}
  */
-WebInspector.animateFunction = function(func, params, frames, animationComplete)
+WebInspector.animateFunction = function(window, func, params, frames, animationComplete)
 {
     var values = new Array(params.length);
     var deltas = new Array(params.length);
@@ -1051,7 +1058,7 @@ WebInspector.animateFunction = function(func, params, frames, animationComplete)
         deltas[i] = (params[i].to - params[i].from) / frames;
     }
 
-    var raf = requestAnimationFrame(animationStep);
+    var raf = window.requestAnimationFrame(animationStep);
 
     var framesLeft = frames;
 

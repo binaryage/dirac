@@ -454,7 +454,7 @@ WebInspector.SearchableView.prototype = {
 
         var queryCandidate;
         if (WebInspector.currentFocusElement() !== this._searchInputElement) {
-            var selection = window.getSelection();
+            var selection = this._searchInputElement.window().getSelection();
             if (selection.rangeCount)
                 queryCandidate = selection.toString().replace(/\r?\n.*/, "");
         }
@@ -483,7 +483,7 @@ WebInspector.SearchableView.prototype = {
      */
     _onSearchFieldManualFocus: function(event)
     {
-        WebInspector.setCurrentFocusElement(event.target);
+        WebInspector.setCurrentFocusElement(/** @type {?Node} */ (event.target));
     },
 
     /**

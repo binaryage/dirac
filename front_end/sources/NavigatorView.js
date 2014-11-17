@@ -1301,7 +1301,7 @@ WebInspector.NavigatorUISourceCodeTreeNode.prototype = {
         var editingConfig = new WebInspector.InplaceEditor.Config(commitHandler.bind(this), cancelHandler.bind(this));
         this.updateTitle(true);
         WebInspector.InplaceEditor.startEditing(this._treeElement.titleElement, editingConfig);
-        window.getSelection().setBaseAndExtent(this._treeElement.titleElement, 0, this._treeElement.titleElement, 1);
+        treeOutlineElement.window().getSelection().setBaseAndExtent(this._treeElement.titleElement, 0, this._treeElement.titleElement, 1);
     },
 
     __proto__: WebInspector.NavigatorTreeNode.prototype

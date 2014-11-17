@@ -281,7 +281,7 @@ WebInspector.TextFilterUI.prototype = {
      */
     _onFilterFieldManualFocus: function(event)
     {
-        WebInspector.setCurrentFocusElement(event.target);
+        WebInspector.setCurrentFocusElement(/** @type {?Node} */ (event.target));
     },
 
     /**

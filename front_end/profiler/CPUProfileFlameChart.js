@@ -657,7 +657,7 @@ WebInspector.CPUProfileFlameChart.OverviewPane.prototype = {
     {
         if (this._updateTimerId)
             return;
-        this._updateTimerId = requestAnimationFrame(this.update.bind(this));
+        this._updateTimerId = this.element.window().requestAnimationFrame(this.update.bind(this));
     },
 
     update: function()

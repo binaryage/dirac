@@ -679,7 +679,7 @@ TreeElement.treeElementToggled = function(event)
         return;
     if (element._selectionStarted) {
         delete element._selectionStarted
-        var selection = window.getSelection();
+        var selection = element.window().getSelection();
         if (selection && !selection.isCollapsed && element.isSelfOrAncestor(selection.anchorNode) && element.isSelfOrAncestor(selection.focusNode))
             return;
     }

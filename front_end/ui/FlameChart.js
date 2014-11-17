@@ -486,7 +486,7 @@ WebInspector.FlameChart.prototype = {
         }
 
         this._cancelAnimation();
-        this._cancelWindowTimesAnimation = WebInspector.animateFunction(this._animateWindowTimes.bind(this),
+        this._cancelWindowTimesAnimation = WebInspector.animateFunction(this.element.window(), this._animateWindowTimes.bind(this),
             [{from: this._timeWindowLeft, to: startTime}, {from: this._timeWindowRight, to: endTime}], 5,
             this._animationCompleted.bind(this));
         this._pendingAnimationTimeLeft = startTime;
@@ -1287,7 +1287,7 @@ WebInspector.FlameChart.prototype = {
     {
         if (this._updateTimerId || this._cancelWindowTimesAnimation)
             return;
-        this._updateTimerId = requestAnimationFrame(this.update.bind(this));
+        this._updateTimerId = this.element.window().requestAnimationFrame(this.update.bind(this));
     },
 
     update: function()
