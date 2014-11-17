@@ -40,6 +40,7 @@ WebInspector.View = function(isWebComponent)
     } else {
         this.element = this.contentElement;
     }
+    this._isWebComponent = isWebComponent;
     this.element.__view = this;
     this._visible = true;
     this._isRoot = false;
@@ -362,9 +363,12 @@ WebInspector.View.prototype = {
         this.doResize();
     },
 
+    /**
+     * @param {string} cssFile
+     */
     registerRequiredCSS: function(cssFile)
     {
-        this.element.appendChild(WebInspector.View.createStyleElement(cssFile));
+        (this._isWebComponent ? this._shadowRoot : this.element).appendChild(WebInspector.View.createStyleElement(cssFile));
     },
 
     printViewHierarchy: function()
