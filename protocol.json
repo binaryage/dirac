@@ -4378,7 +4378,9 @@
             {
                 "name": "bufferUsage",
                 "parameters": [
-                    { "name": "value", "type": "number", "description": "A number in range [0..1] that indicates the used size of event buffer as a fraction of its total size." }
+                    { "name": "percentFull", "type": "number", "optional": true, "description": "A number in range [0..1] that indicates the used size of event buffer as a fraction of its total size." },
+                    { "name": "eventCount", "type": "number", "optional": true, "description": "An approximate number of events in the trace log." },
+                    { "name": "value", "type": "number", "optional": true, "description": "A number in range [0..1] that indicates the used size of event buffer as a fraction of its total size." }
                 ],
                 "handlers": ["browser"]
             }

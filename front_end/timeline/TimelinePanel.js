@@ -49,6 +49,7 @@ WebInspector.TimelinePanel = function()
     // Create model.
     this._tracingManager = new WebInspector.TracingManager();
     this._tracingManager.addEventListener(WebInspector.TracingManager.Events.BufferUsage, this._onTracingBufferUsage, this);
+    this._tracingManager.addEventListener(WebInspector.TracingManager.Events.RetrieveEventsProgress, this._onRetrieveEventsProgress, this);
 
     this._tracingModel = new WebInspector.TracingModel();
     this._model = new WebInspector.TimelineModel(this._tracingManager, this._tracingModel, WebInspector.TimelineUIUtils.hiddenRecordsFilter());
@@ -755,6 +756,15 @@ WebInspector.TimelinePanel.prototype = {
     {
         var usage = /** @type {number} */ (event.data);
         this._updateProgress(WebInspector.UIString("Buffer usage %d%", Math.round(usage * 100)));
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _onRetrieveEventsProgress: function(event)
+    {
+        var progress = /** @type {number} */ (event.data);
+        this._updateProgress(WebInspector.UIString("Retrieving events\u2026 %d%", Math.round(progress * 100)));
     },
 
     /**
