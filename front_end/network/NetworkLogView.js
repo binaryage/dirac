@@ -582,7 +582,7 @@ WebInspector.NetworkLogView.prototype = {
                 selectedRequestsNumber++;
                 selectedTransferSize += requestTransferSize;
             }
-            if (request.url === request.target().resourceTreeModel.inspectedPageURL())
+            if (request.url === request.target().resourceTreeModel.inspectedPageURL() && request.resourceType() === WebInspector.resourceTypes.Document)
                 baseTime = request.startTime;
             if (request.endTime > maxTime)
                 maxTime = request.endTime;
