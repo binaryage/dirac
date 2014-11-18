@@ -90,12 +90,20 @@
 
 .split-view button.sidebar-show-hide-button {
     position: absolute;
-    background-image: none;
+    -webkit-mask-image: url(Images/statusbarButtonGlyphs.png);
+    -webkit-mask-size: 320px 144px;
     height: 16px;
     width: 16px;
     border: none;
     z-index: 10;
+    background-color: rgba(0, 0, 0, 0.6);
 }
+
+@media (-webkit-min-device-pixel-ratio: 1.5) {
+.split-view button.sidebar-show-hide-button {
+    -webkit-mask-image: url(Images/statusbarButtonGlyphs_2x.png);
+}
+} /* media */
 
 .split-view button.left-sidebar-show-hide-button,
 .split-view button.top-sidebar-show-hide-button {
@@ -129,38 +137,38 @@
     right: 0;
 }
 
-.split-view button.left-sidebar-show-hide-button.toggled-show > .glyph {
+.split-view button.left-sidebar-show-hide-button.toggled-show {
     -webkit-mask-position: -168px -76px; /* |> */
 }
 
-.split-view button.left-sidebar-show-hide-button.toggled-hide > .glyph {
+.split-view button.left-sidebar-show-hide-button.toggled-hide {
     -webkit-mask-position: -199px -76px; /* |< */
 }
 
-.split-view button.right-sidebar-show-hide-button.toggled-show > .glyph {
+.split-view button.right-sidebar-show-hide-button.toggled-show {
     -webkit-mask-position: -296px -76px; /* <| */
 }
 
-.split-view button.right-sidebar-show-hide-button.toggled-hide > .glyph {
+.split-view button.right-sidebar-show-hide-button.toggled-hide {
     -webkit-mask-position: -264px -76px; /* >| */
 }
 
-.split-view button.top-sidebar-show-hide-button.toggled-show > .glyph {
+.split-view button.top-sidebar-show-hide-button.toggled-show {
     -webkit-mask-position: -168px -76px; /* |> */
     transform: rotate(90deg);
 }
 
-.split-view button.top-sidebar-show-hide-button.toggled-hide > .glyph {
+.split-view button.top-sidebar-show-hide-button.toggled-hide {
     -webkit-mask-position: -199px -76px; /* |< */
     transform: rotate(90deg);
 }
 
-.split-view button.bottom-sidebar-show-hide-button.toggled-show > .glyph {
+.split-view button.bottom-sidebar-show-hide-button.toggled-show {
     -webkit-mask-position: -296px -76px; /* <| */
     transform: rotate(90deg);
 }
 
-.split-view button.bottom-sidebar-show-hide-button.toggled-hide > .glyph {
+.split-view button.bottom-sidebar-show-hide-button.toggled-hide {
     -webkit-mask-position: -264px -76px; /* >| */
     transform: rotate(90deg);
 }

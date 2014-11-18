@@ -217,23 +217,23 @@ WebInspector.ScriptFormatterEditorAction.prototype = {
 
     /**
      * @param {!WebInspector.SourcesView} sourcesView
-     * @return {!Element}
+     * @return {!WebInspector.StatusBarButton}
      */
     button: function(sourcesView)
     {
         if (this._button)
-            return this._button.element;
+            return this._button;
 
         this._sourcesView = sourcesView;
         this._sourcesView.addEventListener(WebInspector.SourcesView.Events.EditorSelected, this._editorSelected.bind(this));
         this._sourcesView.addEventListener(WebInspector.SourcesView.Events.EditorClosed, this._editorClosed.bind(this));
 
-        this._button = new WebInspector.StatusBarButton(WebInspector.UIString("Pretty print"), "sources-toggle-pretty-print-status-bar-item");
+        this._button = new WebInspector.StatusBarButton(WebInspector.UIString("Pretty print"), "format-status-bar-item");
         this._button.setToggled(false);
         this._button.addEventListener("click", this._toggleFormatScriptSource, this);
         this._updateButton(sourcesView.currentUISourceCode());
 
-        return this._button.element;
+        return this._button;
     },
 
     /**

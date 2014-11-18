@@ -835,20 +835,20 @@ WebInspector.SplitView.prototype = {
     /**
      * @param {string} title
      * @param {string} className
-     * @return {!WebInspector.StatusBarButton}
+     * @return {!Element}
      */
     createShowHideSidebarButton: function(title, className)
     {
         console.assert(this.isVertical(), "Buttons for split view with horizontal split are not supported yet.");
 
         this._showHideSidebarButtonTitle = WebInspector.UIString(title);
-        this._showHideSidebarButton = new WebInspector.StatusBarButton("", "sidebar-show-hide-button " + className, 3);
-        this._showHideSidebarButton.addEventListener("click", buttonClicked.bind(this));
+        this._showHideSidebarButton = createElementWithClass("button", "sidebar-show-hide-button " + className);
+        this._showHideSidebarButton.addEventListener("click", buttonClicked.bind(this), false);
         this._updateShowHideSidebarButton();
 
         /**
+         * @param {!Event} event
          * @this {WebInspector.SplitView}
-         * @param {!WebInspector.Event} event
          */
         function buttonClicked(event)
         {
@@ -866,12 +866,13 @@ WebInspector.SplitView.prototype = {
         if (!this._showHideSidebarButton)
             return;
         var sidebarHidden = this._showMode === WebInspector.SplitView.ShowMode.OnlyMain;
-        this._showHideSidebarButton.setState(sidebarHidden ? "show" : "hide");
-        this._showHideSidebarButton.element.classList.toggle("top-sidebar-show-hide-button", !this.isVertical() && !this.isSidebarSecond());
-        this._showHideSidebarButton.element.classList.toggle("right-sidebar-show-hide-button", this.isVertical() && this.isSidebarSecond());
-        this._showHideSidebarButton.element.classList.toggle("bottom-sidebar-show-hide-button", !this.isVertical() && this.isSidebarSecond());
-        this._showHideSidebarButton.element.classList.toggle("left-sidebar-show-hide-button", this.isVertical() && !this.isSidebarSecond());
-        this._showHideSidebarButton.setTitle(sidebarHidden ? WebInspector.UIString("Show %s", this._showHideSidebarButtonTitle) : WebInspector.UIString("Hide %s", this._showHideSidebarButtonTitle));
+        this._showHideSidebarButton.classList.toggle("toggled-show", sidebarHidden);
+        this._showHideSidebarButton.classList.toggle("toggled-hide", !sidebarHidden);
+        this._showHideSidebarButton.classList.toggle("top-sidebar-show-hide-button", !this.isVertical() && !this.isSidebarSecond());
+        this._showHideSidebarButton.classList.toggle("right-sidebar-show-hide-button", this.isVertical() && this.isSidebarSecond());
+        this._showHideSidebarButton.classList.toggle("bottom-sidebar-show-hide-button", !this.isVertical() && this.isSidebarSecond());
+        this._showHideSidebarButton.classList.toggle("left-sidebar-show-hide-button", this.isVertical() && !this.isSidebarSecond());
+        this._showHideSidebarButton.title = sidebarHidden ? WebInspector.UIString("Show %s", this._showHideSidebarButtonTitle) : WebInspector.UIString("Hide %s", this._showHideSidebarButtonTitle);
     },
 
     __proto__: WebInspector.View.prototype

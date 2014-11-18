@@ -49,11 +49,11 @@ WebInspector.FileSystemView = function(fileSystem)
     this._directoryTree.appendChild(rootItem);
     this._visibleView = null;
 
-    this._refreshButton = new WebInspector.StatusBarButton(WebInspector.UIString("Refresh"), "refresh-storage-status-bar-item");
+    this._refreshButton = new WebInspector.StatusBarButton(WebInspector.UIString("Refresh"), "refresh-status-bar-item");
     this._refreshButton.setVisible(true);
     this._refreshButton.addEventListener("click", this._refresh, this);
 
-    this._deleteButton = new WebInspector.StatusBarButton(WebInspector.UIString("Delete"), "delete-storage-status-bar-item");
+    this._deleteButton = new WebInspector.StatusBarButton(WebInspector.UIString("Delete"), "delete-status-bar-item");
     this._deleteButton.setVisible(true);
     this._deleteButton.addEventListener("click", this._confirmDelete, this);
 }

@@ -57,6 +57,8 @@ WebInspector.InspectorView = function()
     headerElement.parentElement.insertBefore(this._toolbarElement, headerElement);
 
     this._leftToolbar = new WebInspector.StatusBar(this._toolbarElement);
+    this._leftToolbar.element.classList.add("toolbar-left");
+    this._leftToolbar.makeNarrow();
     this._toolbarElement.appendChild(headerElement);
     this._rightToolbar = new WebInspector.StatusBar(this._toolbarElement);
 

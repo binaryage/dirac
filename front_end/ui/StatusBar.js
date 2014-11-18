@@ -30,6 +30,60 @@
 
 /**
  * @constructor
+ * @param {!Element=} parentElement
+ */
+WebInspector.StatusBar = function(parentElement)
+{
+    /** @type {!Array.<!WebInspector.StatusBarItem>} */
+    this._items = [];
+    this.element = parentElement ? parentElement.createChild("div", "status-bar") : createElementWithClass("div", "status-bar");
+
+    this._shadowRoot = this.element.createShadowRoot();
+    this._shadowRoot.appendChild(WebInspector.View.createStyleElement("ui/statusBar.css"));
+    this._contentElement = this._shadowRoot.createChild("div", "status-bar-shadow");
+    this._contentElement.createChild("content");
+    WebInspector.installComponentRootStyles(this._contentElement);
+}
+
+WebInspector.StatusBar.prototype = {
+    makeNarrow: function()
+    {
+        this._contentElement.classList.add("narrow");
+    },
+
+    makeVertical: function()
+    {
+        this._contentElement.classList.add("vertical");
+    },
+
+    /**
+     * @param {boolean} enabled
+     */
+    setEnabled: function(enabled)
+    {
+        for (var item of this._items)
+            item.setEnabled(enabled);
+    },
+
+    /**
+     * @param {!WebInspector.StatusBarItem} item
+     */
+    appendStatusBarItem: function(item)
+    {
+        this._items.push(item);
+        this._contentElement.insertBefore(item.element, this._contentElement.lastChild);
+    },
+
+    removeStatusBarItems: function()
+    {
+        this._items = [];
+        this._contentElement.removeChildren();
+        this._contentElement.createChild("content");
+    }
+}
+
+/**
+ * @constructor
  * @extends {WebInspector.Object}
  * @param {!Element} element
  */
@@ -404,7 +458,9 @@ WebInspector.StatusBarButtonBase.prototype = {
         document.documentElement.addEventListener("mouseup", mouseUp, false);
 
         var optionsGlassPane = new WebInspector.GlassPane(document);
-        var optionsBarElement = optionsGlassPane.element.createChild("div", "alternate-status-bar-buttons-bar");
+        var optionsBar = new WebInspector.StatusBar(optionsGlassPane.element);
+        optionsBar.element.classList.add("fill");
+        optionsBar.makeVertical();
         const buttonHeight = 23;
 
         var hostButtonPosition = this.element.totalOffset();
@@ -414,17 +470,17 @@ WebInspector.StatusBarButtonBase.prototype = {
         if (topNotBottom)
             buttons = buttons.reverse();
 
-        optionsBarElement.style.height = (buttonHeight * buttons.length) + "px";
+        optionsBar.element.style.height = (buttonHeight * buttons.length) + "px";
         if (topNotBottom)
-            optionsBarElement.style.top = (hostButtonPosition.top + 1) + "px";
+            optionsBar.element.style.top = (hostButtonPosition.top + 1) + "px";
         else
-            optionsBarElement.style.top = (hostButtonPosition.top - (buttonHeight * (buttons.length - 1))) + "px";
-        optionsBarElement.style.left = (hostButtonPosition.left + 1) + "px";
+            optionsBar.element.style.top = (hostButtonPosition.top - (buttonHeight * (buttons.length - 1))) + "px";
+        optionsBar.element.style.left = (hostButtonPosition.left + 1) + "px";
 
         for (var i = 0; i < buttons.length; ++i) {
             buttons[i].element.addEventListener("mousemove", mouseOver, false);
             buttons[i].element.addEventListener("mouseout", mouseOut, false);
-            optionsBarElement.appendChild(buttons[i].element);
+            optionsBar.appendStatusBarItem(buttons[i]);
         }
         var hostButtonIndex = topNotBottom ? 0 : buttons.length - 1;
         buttons[hostButtonIndex].element.classList.add("emulate-active");
@@ -490,43 +546,6 @@ WebInspector.StatusBarButton.prototype = {
     },
 
     __proto__: WebInspector.StatusBarButtonBase.prototype
-}
-
-/**
- * @constructor
- * @param {!Element=} parentElement
- */
-WebInspector.StatusBar = function(parentElement)
-{
-    /** @type {!Array.<!WebInspector.StatusBarItem>} */
-    this._items = [];
-    this.element = parentElement ? parentElement.createChild("div", "status-bar") : createElementWithClass("div", "status-bar");
-}
-
-WebInspector.StatusBar.prototype = {
-    /**
-     * @param {boolean} enabled
-     */
-    setEnabled: function(enabled)
-    {
-        for (var item of this._items)
-            item.setEnabled(enabled);
-    },
-
-    /**
-     * @param {!WebInspector.StatusBarItem} item
-     */
-    appendStatusBarItem: function(item)
-    {
-        this._items.push(item);
-        this.element.appendChild(item.element);
-    },
-
-    removeStatusBarItems: function()
-    {
-        this._items = [];
-        this.element.removeChildren();
-    }
 }
 
 /**

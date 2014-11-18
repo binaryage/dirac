@@ -464,7 +464,7 @@ WebInspector.ProfilesPanel = function()
     this.sidebarElement().insertBefore(statusBarContainerLeft, this.sidebarElement().firstChild);
     var statusBar = new WebInspector.StatusBar(statusBarContainerLeft);
 
-    this.recordButton = new WebInspector.StatusBarButton("", "record-profile-status-bar-item");
+    this.recordButton = new WebInspector.StatusBarButton("", "record-status-bar-item");
     this.recordButton.addEventListener("click", this.toggleRecordButton, this);
     statusBar.appendStatusBarItem(this.recordButton);
 
@@ -501,7 +501,7 @@ WebInspector.ProfilesPanel.prototype = {
      */
     searchableView: function()
     {
-        return this.visibleView ? this.visibleView.searchableView() : null;
+        return this.visibleView && this.visibleView.searchableView ? this.visibleView.searchableView() : null;
     },
 
     _createFileSelectorElement: function()

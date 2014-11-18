@@ -44,36 +44,29 @@ WebInspector.SearchableView = function(searchable, settingName)
 
     this.element.addEventListener("keydown", this._onKeyDown.bind(this), false);
 
-    this._footerElementContainer = this.element.createChild("div", "search-bar status-bar hidden");
+    this._footerElementContainer = this.element.createChild("div", "search-bar hidden");
     this._footerElementContainer.style.order = 100;
+
+    var toolbar = new WebInspector.StatusBar(this._footerElementContainer);
+    toolbar.makeNarrow();
+
+    if (this._searchProvider.supportsCaseSensitiveSearch()) {
+        this._caseSensitiveButton = new WebInspector.StatusBarTextButton(WebInspector.UIString("Case sensitive"), "case-sensitive-search-status-bar-item", "Aa", 2);
+        this._caseSensitiveButton.addEventListener("click", this._toggleCaseSensitiveSearch, this);
+        toolbar.appendStatusBarItem(this._caseSensitiveButton);
+    }
+
+    if (this._searchProvider.supportsRegexSearch()) {
+        this._regexButton = new WebInspector.StatusBarTextButton(WebInspector.UIString("Regex"), "regex-search-status-bar-item", ".*", 2);
+        this._regexButton.addEventListener("click", this._toggleRegexSearch, this);
+        toolbar.appendStatusBarItem(this._regexButton);
+    }
 
     this._footerElement = this._footerElementContainer.createChild("table", "toolbar-search");
     this._footerElement.cellSpacing = 0;
 
     this._firstRowElement = this._footerElement.createChild("tr");
     this._secondRowElement = this._footerElement.createChild("tr", "hidden");
-
-    if (this._searchProvider.supportsCaseSensitiveSearch() || this._searchProvider.supportsRegexSearch()) {
-        var searchSettingsPrefixColumn = this._firstRowElement.createChild("td");
-        searchSettingsPrefixColumn.createChild("div", "search-settings-prefix")
-        this._secondRowElement.createChild("td");
-    }
-
-    if (this._searchProvider.supportsCaseSensitiveSearch()) {
-        var caseSensitiveColumn = this._firstRowElement.createChild("td");
-        this._caseSensitiveButton = new WebInspector.StatusBarTextButton(WebInspector.UIString("Case sensitive"), "case-sensitive-search", "Aa", 2);
-        this._caseSensitiveButton.addEventListener("click", this._toggleCaseSensitiveSearch, this);
-        caseSensitiveColumn.appendChild(this._caseSensitiveButton.element);
-        this._secondRowElement.createChild("td");
-    }
-
-    if (this._searchProvider.supportsRegexSearch()) {
-        var regexColumn = this._firstRowElement.createChild("td");
-        this._regexButton = new WebInspector.StatusBarTextButton(WebInspector.UIString("Regex"), "regex-search", ".*", 2);
-        this._regexButton.addEventListener("click", this._toggleRegexSearch, this);
-        regexColumn.appendChild(this._regexButton.element);
-        this._secondRowElement.createChild("td");
-    }
 
     // Column 1
     var searchControlElementColumn = this._firstRowElement.createChild("td");

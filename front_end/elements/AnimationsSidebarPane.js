@@ -262,7 +262,7 @@ WebInspector.AnimationSection.prototype = {
             this._pauseButton.setTitle(paused ? WebInspector.UIString("Play animation") : WebInspector.UIString("Pause animation"));
         }
 
-        this._pauseButton = new WebInspector.StatusBarButton("", "animation-pause");
+        this._pauseButton = new WebInspector.StatusBarButton("", "pause-status-bar-item");
         updatePauseButton.call(this, this.player.paused());
         this._pauseButton.addEventListener("click", pauseButtonHandler, this);
 
@@ -330,7 +330,7 @@ WebInspector.AnimationsSidebarPane.GlobalAnimationControls = function(showSubtre
     labelElement.createTextChild("Global playback:");
     this.appendStatusBarItem(new WebInspector.StatusBarItem(labelElement));
 
-    this._pauseButton = new WebInspector.StatusBarButton("", "animation-pause");
+    this._pauseButton = new WebInspector.StatusBarButton("", "pause-status-bar-item");
     this._pauseButton.addEventListener("click", this._pauseHandler.bind(this), this);
     this.appendStatusBarItem(this._pauseButton);
     this._playbackRateButtons = [];

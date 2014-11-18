@@ -37,7 +37,7 @@ WebInspector.FilterBar = function()
     this._filtersShown = false;
     this._element = createElementWithClass("div", "filter-bar hbox");
 
-    this._filterButton = new WebInspector.StatusBarButton(WebInspector.UIString("Filter"), "filters-toggle", 3);
+    this._filterButton = new WebInspector.StatusBarButton(WebInspector.UIString("Filter"), "filter-status-bar-item", 3);
     this._filterButton.element.addEventListener("click", this._handleFilterButtonClick.bind(this), false);
 
     this._filters = [];

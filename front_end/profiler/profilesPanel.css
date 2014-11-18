@@ -160,18 +160,6 @@
     color: white;
 }
 
-.focus-profile-node-status-bar-item .glyph {
-    -webkit-mask-position: -96px 0;
-}
-
-.exclude-profile-node-status-bar-item .glyph {
-    -webkit-mask-position: -128px 0;
-}
-
-.reset-profile-status-bar-item .glyph {
-    -webkit-mask-position: 0 0;
-}
-
 .profile-launcher-view-content {
     padding: 0 16px;
     text-align: left;

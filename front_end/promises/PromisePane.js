@@ -13,13 +13,13 @@ WebInspector.PromisePane = function()
     this.element.classList.add("promises");
 
     var statusBar = new WebInspector.StatusBar(this.element);
-    this._recordButton = new WebInspector.StatusBarButton(WebInspector.UIString("Record Promises"), "record-profile-status-bar-item");
+    this._recordButton = new WebInspector.StatusBarButton(WebInspector.UIString("Record Promises"), "record-status-bar-item");
     this._recordButton.addEventListener("click", this._recordButtonClicked.bind(this));
     statusBar.appendStatusBarItem(this._recordButton);
     var clearButton = new WebInspector.StatusBarButton(WebInspector.UIString("Clear"), "clear-status-bar-item");
     clearButton.addEventListener("click", this._clearButtonClicked.bind(this));
     statusBar.appendStatusBarItem(clearButton);
-    this._refreshButton = new WebInspector.StatusBarButton(WebInspector.UIString("Refresh"), "refresh-storage-status-bar-item");
+    this._refreshButton = new WebInspector.StatusBarButton(WebInspector.UIString("Refresh"), "refresh-status-bar-item");
     this._refreshButton.addEventListener("click", this._refreshButtonClicked.bind(this));
     this._refreshButton.setEnabled(false);
     statusBar.appendStatusBarItem(this._refreshButton);

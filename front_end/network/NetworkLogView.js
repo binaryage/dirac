@@ -705,13 +705,13 @@ WebInspector.NetworkLogView.prototype = {
 
     _createStatusbarButtons: function()
     {
-        this._recordButton = new WebInspector.StatusBarButton("", "record-profile-status-bar-item");
+        this._recordButton = new WebInspector.StatusBarButton("", "record-status-bar-item");
         this._recordButton.addEventListener("click", this._onRecordButtonClicked, this);
 
         this._clearButton = new WebInspector.StatusBarButton(WebInspector.UIString("Clear"), "clear-status-bar-item");
         this._clearButton.addEventListener("click", this._reset, this);
 
-        this._largerRequestsButton = new WebInspector.StatusBarButton(WebInspector.UIString("Use small resource rows."), "network-larger-resources-status-bar-item");
+        this._largerRequestsButton = new WebInspector.StatusBarButton(WebInspector.UIString("Use small resource rows."), "large-list-status-bar-item");
         this._largerRequestsButton.setToggled(WebInspector.settings.resourcesLargeRows.get());
         this._largerRequestsButton.addEventListener("click", this._toggleLargerRequests, this);
 

@@ -107,7 +107,6 @@ WebInspector.NetworkPanel.prototype = {
     {
         var toggled = /** @type {boolean} */ (event.data);
         this._filtersContainer.classList.toggle("hidden", !toggled);
-        this.element.classList.toggle("filters-toggled", toggled);
         this.doResize();
     },
 

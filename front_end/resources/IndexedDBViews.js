@@ -125,16 +125,12 @@ WebInspector.IDBDataView = function(model, databaseId, objectStore, index)
 
     this.element.classList.add("indexed-db-data-view");
 
-    var editorToolbar = this._createEditorToolbar();
-    this.element.appendChild(editorToolbar);
+    this._createEditorToolbar();
 
-    this._dataGridContainer = this.element.createChild("div", "fill");
-    this._dataGridContainer.classList.add("data-grid-container");
-
-    this._refreshButton = new WebInspector.StatusBarButton(WebInspector.UIString("Refresh"), "refresh-storage-status-bar-item");
+    this._refreshButton = new WebInspector.StatusBarButton(WebInspector.UIString("Refresh"), "refresh-status-bar-item");
     this._refreshButton.addEventListener("click", this._refreshButtonClicked, this);
 
-    this._clearButton = new WebInspector.StatusBarButton(WebInspector.UIString("Clear object store"), "clear-storage-status-bar-item");
+    this._clearButton = new WebInspector.StatusBarButton(WebInspector.UIString("Clear object store"), "clear-status-bar-item");
     this._clearButton.addEventListener("click", this._clearButtonClicked, this);
 
     this._pageSize = 50;
@@ -206,32 +202,26 @@ WebInspector.IDBDataView.prototype = {
         return keyPathStringFragment;
     },
 
-    /**
-     * @return {!Element}
-     */
     _createEditorToolbar: function()
     {
-        var editorToolbar = createElement("div");
-        editorToolbar.classList.add("status-bar");
-        editorToolbar.classList.add("data-view-toolbar");
+        var editorToolbar = new WebInspector.StatusBar(this.element);
+        editorToolbar.element.classList.add("data-view-toolbar");
 
-        this._pageBackButton = new WebInspector.StatusBarButton(WebInspector.UIString("Show previous page."), "indexed-db-status-bar-back-button");
+        this._pageBackButton = new WebInspector.StatusBarButton(WebInspector.UIString("Show previous page."), "play-backwards-status-bar-item");
         this._pageBackButton.addEventListener("click", this._pageBackButtonClicked, this);
-        editorToolbar.appendChild(this._pageBackButton.element);
+        editorToolbar.appendStatusBarItem(this._pageBackButton);
 
-        this._pageForwardButton = new WebInspector.StatusBarButton(WebInspector.UIString("Show next page."), "indexed-db-status-bar-forward-button");
+        this._pageForwardButton = new WebInspector.StatusBarButton(WebInspector.UIString("Show next page."), "play-status-bar-item");
         this._pageForwardButton.setEnabled(false);
         this._pageForwardButton.addEventListener("click", this._pageForwardButtonClicked, this);
-        editorToolbar.appendChild(this._pageForwardButton.element);
+        editorToolbar.appendStatusBarItem(this._pageForwardButton);
 
-        this._keyInputElement = editorToolbar.createChild("input", "key-input");
+        this._keyInputElement = editorToolbar.element.createChild("input", "key-input");
         this._keyInputElement.placeholder = WebInspector.UIString("Start from key");
         this._keyInputElement.addEventListener("paste", this._keyInputChanged.bind(this), false);
         this._keyInputElement.addEventListener("cut", this._keyInputChanged.bind(this), false);
         this._keyInputElement.addEventListener("keypress", this._keyInputChanged.bind(this), false);
         this._keyInputElement.addEventListener("keydown", this._keyInputChanged.bind(this), false);
-
-        return editorToolbar;
     },
 
     _pageBackButtonClicked: function()
@@ -263,7 +253,7 @@ WebInspector.IDBDataView.prototype = {
         if (this._dataGrid)
             this._dataGrid.detach();
         this._dataGrid = this._createDataGrid();
-        this._dataGrid.show(this._dataGridContainer);
+        this._dataGrid.show(this.element);
 
         this._skipCount = 0;
         this._updateData(true);

@@ -41,23 +41,23 @@ WebInspector.InplaceFormatterEditorAction.prototype = {
 
     /**
      * @param {!WebInspector.SourcesView} sourcesView
-     * @return {!Element}
+     * @return {!WebInspector.StatusBarButton}
      */
     button: function(sourcesView)
     {
         if (this._button)
-            return this._button.element;
+            return this._button;
 
         this._sourcesView = sourcesView;
         this._sourcesView.addEventListener(WebInspector.SourcesView.Events.EditorSelected, this._editorSelected.bind(this));
         this._sourcesView.addEventListener(WebInspector.SourcesView.Events.EditorClosed, this._editorClosed.bind(this));
 
-        this._button = new WebInspector.StatusBarButton(WebInspector.UIString("Format"), "sources-toggle-pretty-print-status-bar-item");
+        this._button = new WebInspector.StatusBarButton(WebInspector.UIString("Format"), "format-status-bar-item");
         this._button.setToggled(false);
         this._button.addEventListener("click", this._formatSourceInPlace, this);
         this._updateButton(null);
 
-        return this._button.element;
+        return this._button;
     },
 
     /**

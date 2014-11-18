@@ -174,19 +174,11 @@ WebInspector.SourceFrame.prototype = {
     },
 
     /**
-     * @return {?Element}
+     * @return {!WebInspector.StatusBarText}
      */
     statusBarText: function()
     {
-        return this._sourcePosition.element;
-    },
-
-    /**
-     * @return {!Array.<!Element>}
-     */
-    statusBarItems: function()
-    {
-        return [];
+        return this._sourcePosition;
     },
 
     /**

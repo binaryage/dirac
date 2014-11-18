@@ -361,18 +361,6 @@
     list-style-type: none;
 }
 
-.timeline-garbage-collect-status-bar-item .glyph {
-    -webkit-mask-position: -128px -24px;
-}
-
-.timeline-frames-status-bar-item .glyph {
-    -webkit-mask-position: -160px -48px;
-}
-
-.timeline-flame-chart-status-bar-item .glyph {
-    -webkit-mask-position: -192px -48px;
-}
-
 #resources-container-content {
     overflow: hidden;
     min-height: 100%;

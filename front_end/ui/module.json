@@ -40,7 +40,7 @@
         "SortableDataGrid.js",
         "SplitView.js",
         "StackView.js",
-        "StatusBarButton.js",
+        "StatusBar.js",
         "SuggestBox.js",
         "TabbedPane.js",
         "SidebarPane.js",
@@ -58,6 +58,7 @@
         "helpScreen.css",
         "overviewGrid.css",
         "panelEnablerView.css",
-        "pieChart.css"
+        "pieChart.css",
+        "statusBar.css"
     ]
 }

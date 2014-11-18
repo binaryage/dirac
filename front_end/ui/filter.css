@@ -142,15 +142,3 @@
     background-size: 320px 144px;
     background-position: -129px -110px;
 }
-
-.filters-toggle > .glyph {
-    -webkit-mask-position: -32px -48px;
-}
-
-.filters-toggle.toggled-shown .glyph {
-    background-color: rgb(66, 129, 235);
-}
-
-.filters-toggle.toggled-active .glyph {
-    background-color: rgb(216, 0, 0);
-}

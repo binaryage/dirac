@@ -70,18 +70,18 @@ WebInspector.CanvasProfileView = function(profile)
     var controlsToolbar = new WebInspector.StatusBar(replayLogContainer);
     var logGridContainer = replayLogContainer.createChild("div", "canvas-replay-log");
 
-    this._createControlButton(controlsToolbar, "canvas-replay-first-step", WebInspector.UIString("First call."), this._onReplayFirstStepClick.bind(this));
-    this._createControlButton(controlsToolbar, "canvas-replay-prev-step", WebInspector.UIString("Previous call."), this._onReplayStepClick.bind(this, false));
-    this._createControlButton(controlsToolbar, "canvas-replay-next-step", WebInspector.UIString("Next call."), this._onReplayStepClick.bind(this, true));
-    this._createControlButton(controlsToolbar, "canvas-replay-prev-draw", WebInspector.UIString("Previous drawing call."), this._onReplayDrawingCallClick.bind(this, false));
-    this._createControlButton(controlsToolbar, "canvas-replay-next-draw", WebInspector.UIString("Next drawing call."), this._onReplayDrawingCallClick.bind(this, true));
-    this._createControlButton(controlsToolbar, "canvas-replay-last-step", WebInspector.UIString("Last call."), this._onReplayLastStepClick.bind(this));
+    this._createControlButton(controlsToolbar, "first-step-status-bar-item", WebInspector.UIString("First call."), this._onReplayFirstStepClick.bind(this));
+    this._createControlButton(controlsToolbar, "step-out-status-bar-item", WebInspector.UIString("Previous call."), this._onReplayStepClick.bind(this, false));
+    this._createControlButton(controlsToolbar, "step-in-status-bar-item", WebInspector.UIString("Next call."), this._onReplayStepClick.bind(this, true));
+    this._createControlButton(controlsToolbar, "step-backwards-status-bar-item", WebInspector.UIString("Previous drawing call."), this._onReplayDrawingCallClick.bind(this, false));
+    this._createControlButton(controlsToolbar, "step-over-status-bar-item", WebInspector.UIString("Next drawing call."), this._onReplayDrawingCallClick.bind(this, true));
+    this._createControlButton(controlsToolbar, "last-step-status-bar-item", WebInspector.UIString("Last call."), this._onReplayLastStepClick.bind(this));
 
     this._replayContextSelector = new WebInspector.StatusBarComboBox(this._onReplayContextChanged.bind(this));
     this._replayContextSelector.createOption(WebInspector.UIString("<screenshot auto>"), WebInspector.UIString("Show screenshot of the last replayed resource."), "");
     controlsToolbar.appendStatusBarItem(this._replayContextSelector);
 
-    this._installReplayInfoSidebarWidgets(controlsToolbar);
+    this._installReplayInfoSidebarWidgets(replayLogContainer);
 
     this._replayStateView = new WebInspector.CanvasReplayStateView(this._traceLogPlayer);
     this._replayStateView.show(this._replayInfoSplitView.sidebarElement());
@@ -150,18 +150,17 @@ WebInspector.CanvasProfileView.prototype = {
     },
 
     /**
-     * @param {!WebInspector.StatusBar} controlsToolbar
+     * @param {!Element} replayLogElement
      */
-    _installReplayInfoSidebarWidgets: function(controlsToolbar)
+    _installReplayInfoSidebarWidgets: function(replayLogElement)
     {
-        this._replayInfoResizeWidgetElement = controlsToolbar.element.createChild("div", "resizer-widget");
+        this._replayInfoResizeWidgetElement = replayLogElement.createChild("div", "resizer-widget");
         this._replayInfoSplitView.addEventListener(WebInspector.SplitView.Events.ShowModeChanged, this._updateReplayInfoResizeWidget, this);
         this._updateReplayInfoResizeWidget();
         this._replayInfoSplitView.installResizer(this._replayInfoResizeWidgetElement);
 
-        this._toggleReplayStateSidebarButton = this._replayInfoSplitView.createShowHideSidebarButton("sidebar", "canvas-sidebar-show-hide-button");
-
-        controlsToolbar.element.appendChild(this._toggleReplayStateSidebarButton.element);
+        var toggleReplayStateSidebarButton = this._replayInfoSplitView.createShowHideSidebarButton("sidebar", "canvas-sidebar-show-hide-button");
+        replayLogElement.appendChild(toggleReplayStateSidebarButton);
         this._replayInfoSplitView.hideSidebar();
     },
 

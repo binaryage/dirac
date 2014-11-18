@@ -27,21 +27,17 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-.scripts-pause-on-exceptions-status-bar-item .glyph {
-    -webkit-mask-position: -256px 0;
-}
-
-.scripts-pause-on-exceptions-status-bar-item.toggled-on .glyph {
-    background-color: rgb(66, 129, 235);
-}
-
 .scripts-debug-toolbar {
     position: absolute;
     top: 0;
     width: 100%;
     background-color: #eee;
     border-bottom: 1px solid rgb(163, 163, 163);
+}
+
+.scripts-debug-toolbar /deep/ .status-bar-shadow {
     margin-top: -1px;
+    height: 23px;
 }
 
 .scripts-debug-toolbar-drawer {
@@ -70,42 +66,6 @@
     position: relative;
     margin-top: -1px;
     height: 24px;
-}
-
-.scripts-run-snippet .glyph {
-    -webkit-mask-position: -64px -48px;
-}
-
-.scripts-pause .glyph {
-    -webkit-mask-position: -32px -72px;
-}
-
-.scripts-pause.toggled-on .glyph {
-    -webkit-mask-position: 0 -72px;
-}
-
-.scripts-step-over .glyph {
-    -webkit-mask-position: -128px -72px;
-}
-
-.scripts-step-into .glyph {
-    -webkit-mask-position: -64px -72px;
-}
-
-.scripts-step-out .glyph {
-    -webkit-mask-position: -96px -72px;
-}
-
-.scripts-long-resume .glyph {
-    -webkit-mask-position: -64px -48px;
-}
-
-.scripts-toggle-breakpoints.toggled-on .glyph {
-    -webkit-mask-position: -32px 0;
-}
-
-.scripts-toggle-breakpoints .glyph {
-    -webkit-mask-position: 0 -24px;
 }
 
 #shared-workers-list {
@@ -144,7 +104,7 @@
     display: block;
 }
 
-.panel.sources button.status-bar-item.scripts-navigator-show-hide-button {
+.panel.sources button.scripts-navigator-show-hide-button {
     display: block;
     top: 3px;
     left: 3px;
