@@ -2112,6 +2112,7 @@ WebInspector.HeapSnapshotStatisticsView = function()
     WebInspector.VBox.call(this);
     this.setMinimumSize(50, 25);
     this._pieChart = new WebInspector.PieChart(150, WebInspector.HeapSnapshotStatisticsView._valueFormatter, true);
+    this._pieChart.element.classList.add("heap-snapshot-stats-pie-chart");
     this.element.appendChild(this._pieChart.element);
     this._labels = this.element.createChild("div", "heap-snapshot-stats-legend");
 }

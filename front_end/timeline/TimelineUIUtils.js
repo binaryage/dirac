@@ -1149,7 +1149,7 @@ WebInspector.TimelineUIUtils.generateMainThreadBarPopupContent = function(model,
  */
 WebInspector.TimelineUIUtils.generatePieChart = function(aggregatedStats, selfCategory, selfTime)
 {
-    var element = createElementWithClass("div", "timeline-details-view-pie-chart hbox");
+    var element = createElementWithClass("div", "timeline-details-view-pie-chart-wrapper hbox");
 
     var total = 0;
     for (var categoryName in aggregatedStats)
@@ -1160,6 +1160,7 @@ WebInspector.TimelineUIUtils.generatePieChart = function(aggregatedStats, selfCa
         return Number.millisToString(value, true);
     }
     var pieChart = new WebInspector.PieChart(100, formatter);
+    pieChart.element.classList.add("timeline-details-view-pie-chart");
     pieChart.setTotal(total);
     element.appendChild(pieChart.element);
     var footerElement = element.createChild("div", "timeline-aggregated-info timeline-aggregated-info-legend");

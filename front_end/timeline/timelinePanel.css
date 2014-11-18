@@ -664,12 +664,12 @@
     padding-left: 10px;
 }
 
-.timeline-details-view-pie-chart {
+.timeline-details-view-pie-chart-wrapper {
     margin: 8px 10px 8px 0;
 }
 
 .timeline-details-view-pie-chart {
-    margin: 8px 10px 8px 0;
+    margin-right: 8px;
 }
 
 .timeline-details-view-row-details .image-preview-container {
@@ -847,8 +847,8 @@
 }
 
 .paint-profiler-pie-chart {
-    width: 60px;
-    height: 60px;
+    width: 60px !important;
+    height: 60px !important;
     padding: 2px;
     overflow: hidden;
     font-size: 10px;

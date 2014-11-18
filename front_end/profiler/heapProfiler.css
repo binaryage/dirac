@@ -46,10 +46,6 @@
     bottom: 0;
 }
 
-.heap-snapshot-view .pie-chart {
-    margin: 12px 30px;
-}
-
 .heap-snapshot-view .data-grid {
     border: none;
 }
@@ -162,6 +158,10 @@
     left: 0;
     right: 0;
     bottom: 0;
+}
+
+.heap-snapshot-stats-pie-chart {
+    margin: 12px 30px;
 }
 
 .heap-snapshot-stats-legend {
