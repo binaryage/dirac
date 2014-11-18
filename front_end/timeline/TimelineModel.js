@@ -532,7 +532,7 @@ WebInspector.TimelineModel.prototype = {
             return;
         for (var i = 0; i < this._profilingTargets.length; ++i) {
             var target = this._profilingTargets[i];
-            target.profilerAgent().stop(this._stopCallbackBarrier.createCallback(this._didStopRecordingJSSamples.bind(this, target)));
+            target.profilerAgent().stop(this._stopCallbackBarrier.createCallback(this._didStopRecordingJSSamples.bind(this, target.id())));
         }
         this._profilingTargets = null;
     },
@@ -598,17 +598,17 @@ WebInspector.TimelineModel.prototype = {
     },
 
     /**
-     * @param {!WebInspector.Target} target
+     * @param {number} targetId
      * @param {?Protocol.Error} error
      * @param {?ProfilerAgent.CPUProfile} cpuProfile
      */
-    _didStopRecordingJSSamples: function(target, error, cpuProfile)
+    _didStopRecordingJSSamples: function(targetId, error, cpuProfile)
     {
         if (error)
             WebInspector.console.error(error);
         if (!this._cpuProfiles)
             this._cpuProfiles = new Map();
-        this._cpuProfiles.set(target.id(), cpuProfile);
+        this._cpuProfiles.set(targetId, cpuProfile);
     },
 
     _didStopRecordingTraceEvents: function()
@@ -779,24 +779,35 @@ WebInspector.TimelineModel.prototype = {
      */
     _processThreadEvents: function(startTime, endTime, mainThread, thread, workerId)
     {
-        var recordTypes = WebInspector.TimelineModel.RecordType;
         var events = thread.events();
-        var length = events.length;
-        var i = events.lowerBound(startTime, function (time, event) { return time - event.startTime });
+
+        var target = thread === mainThread ? WebInspector.targetManager.mainTarget() : WebInspector.workerTargetManager.targetByWorkerId(workerId);
+        if (target && this._cpuProfiles) {
+            var cpuProfile = this._cpuProfiles.get(target.id());
+            if (cpuProfile) {
+                this._cpuProfiles.delete(target.id());
+                var jsSamples = WebInspector.TimelineJSProfileProcessor.generateTracingEventsFromCpuProfile(cpuProfile, thread);
+                events = events.mergeOrdered(jsSamples, WebInspector.TracingModel.Event.orderedCompareStartTime);
+                var jsFrameEvents = WebInspector.TimelineJSProfileProcessor.generateJSFrameEvents(events);
+                events = jsFrameEvents.mergeOrdered(events, WebInspector.TracingModel.Event.orderedCompareStartTime);
+            }
+        }
 
         var threadEvents;
-        var virtualThread = null;
         if (thread === mainThread) {
             threadEvents = this._mainThreadEvents;
             this._mainThreadAsyncEvents = this._mainThreadAsyncEvents.concat(thread.asyncEvents());
         } else {
-            virtualThread = new WebInspector.TimelineModel.VirtualThread(thread.name());
+            var virtualThread = new WebInspector.TimelineModel.VirtualThread(thread.name());
             threadEvents = virtualThread.events;
             virtualThread.asyncEvents = virtualThread.asyncEvents.concat(thread.asyncEvents());
             this._virtualThreads.push(virtualThread);
         }
 
         this._eventStack = [];
+        var recordTypes = WebInspector.TimelineModel.RecordType;
+        var i = events.lowerBound(startTime, function (time, event) { return time - event.startTime });
+        var length = events.length;
         for (; i < length; i++) {
             var event = events[i];
             if (endTime && event.startTime >= endTime)
@@ -809,25 +820,6 @@ WebInspector.TimelineModel.prototype = {
             threadEvents.push(event);
             this._inspectedTargetEvents.push(event);
         }
-
-        if (!this._cpuProfiles)
-            return;
-        var target = thread === mainThread ? WebInspector.targetManager.mainTarget() : WebInspector.workerTargetManager.targetByWorkerId(workerId);
-        if (!target)
-            return;
-        var cpuProfile = this._cpuProfiles.get(target.id());
-        if (!cpuProfile)
-            return;
-        this._cpuProfiles.delete(target.id());
-        var jsSamples = WebInspector.TimelineJSProfileProcessor.generateTracingEventsFromCpuProfile(cpuProfile, thread);
-        var mergedEvents = threadEvents.mergeOrdered(jsSamples, WebInspector.TracingModel.Event.orderedCompareStartTime);
-        var jsFrameEvents = WebInspector.TimelineJSProfileProcessor.generateJSFrameEvents(mergedEvents);
-        mergedEvents = jsFrameEvents.mergeOrdered(mergedEvents, WebInspector.TracingModel.Event.orderedCompareStartTime);
-        if (virtualThread)
-            virtualThread.events = mergedEvents;
-        else
-            this._mainThreadEvents = mergedEvents;
-        this._inspectedTargetEvents = this._inspectedTargetEvents.concat(jsSamples, jsFrameEvents);
     },
 
     /**
