@@ -710,10 +710,10 @@ WebInspector.TimelineUIUtils._generateInvalidations = function(event, target, co
 /**
  * @param {string} type
  * @param {?WebInspector.Target} target
- * @param {!Object} invalidationEvents
+ * @param {!Array.<!WebInspector.InvalidationTrackingEvent>} invalidations
  * @param {!WebInspector.TimelineDetailsContentHelper} contentHelper
  */
-WebInspector.TimelineUIUtils._generateInvalidationsForType = function(type, target, invalidationEvents, contentHelper)
+WebInspector.TimelineUIUtils._generateInvalidationsForType = function(type, target, invalidations, contentHelper)
 {
     var title;
     switch (type) {
@@ -731,32 +731,174 @@ WebInspector.TimelineUIUtils._generateInvalidationsForType = function(type, targ
     var detailsNode = createElementWithClass("div", "timeline-details-view-row");
     var titleElement = detailsNode.createChild("span", "timeline-details-view-row-title");
     titleElement.textContent = WebInspector.UIString("%s: ", title);
-    var eventsList = detailsNode.createChild("ol");
-    invalidationEvents.forEach(appendInvalidations);
-
+    var eventsList = detailsNode.createChild("div", "timeline-details-view-row-value");
+    var invalidationGroups = groupInvalidationsByCause(invalidations);
+    invalidationGroups.forEach(function(group) {
+        appendInvalidationGroup(eventsList, group);
+    });
     contentHelper.element.appendChild(detailsNode);
 
-
-    function appendInvalidations(invalidation, index)
+    /**
+     * @param {!Array.<!WebInspector.InvalidationTrackingEvent>} invalidations
+     */
+    function groupInvalidationsByCause(invalidations)
     {
-        var row = eventsList.createChild("li");
-        var nodeRow = row.createChild("div");
+        var causeToInvalidationMap = {};
+        for (var index = 0; index < invalidations.length; index++) {
+            var invalidation = invalidations[index];
+            var causeKey = "";
+            if (invalidation.cause && invalidation.cause.reason)
+                causeKey += invalidation.cause.reason + ".";
+            if (invalidation.cause && invalidation.cause.stackTrace) {
+                invalidation.cause.stackTrace.forEach(function(stackFrame) {
+                    causeKey += stackFrame["functionName"] + ".";
+                    causeKey += stackFrame["scriptId"] + ".";
+                    causeKey += stackFrame["url"] + ".";
+                    causeKey += stackFrame["lineNumber"] + ".";
+                    causeKey += stackFrame["columnNumber"] + ".";
+                });
+            }
+
+            if (causeToInvalidationMap[causeKey])
+                causeToInvalidationMap[causeKey].push(invalidation);
+            else
+                causeToInvalidationMap[causeKey] = [ invalidation ];
+        }
+        return Object.values(causeToInvalidationMap);
+    }
+
+    /**
+     * @param {!Element} parentElement
+     * @param {!Array.<!WebInspector.InvalidationTrackingEvent>} invalidations
+     */
+    function appendInvalidationGroup(parentElement, invalidations)
+    {
+        var row = parentElement.createChild("div", "invalidations-group section");
+        var header = row.createChild("div", "header");
+        header.addEventListener("click", function() {
+            toggleDetails(header, invalidations);
+        });
+
+        var first = invalidations[0];
+        var reason = first.cause && first.cause.reason;
+        var topFrame = first.cause && first.cause.stackTrace && first.cause.stackTrace[0];
+
+        if (reason)
+            header.createTextChild(WebInspector.UIString("%s for ", reason));
+        else
+            header.createTextChild(WebInspector.UIString("Unknown cause for "));
+
+        appendTruncatedNodeList(header, invalidations);
+
+        if (topFrame) {
+            header.createTextChild(WebInspector.UIString(". "));
+            var stack = header.createChild("span", "monospace");
+            contentHelper.appendStackFrame(stack, topFrame);
+        }
+    }
+
+    /**
+     * @param {!WebInspector.InvalidationTrackingEvent} invalidation
+     * @param {boolean} showUnknownNodes
+     */
+    function createInvalidationNode(invalidation, showUnknownNodes)
+    {
         var node = target.domModel.nodeForId(invalidation.frontendNodeId);
         if (node)
-            nodeRow.appendChild(WebInspector.DOMPresentationUtils.linkifyNodeReference(node));
-        else if (invalidation.nodeName)
-            nodeRow.textContent = WebInspector.UIString("[ %s ]", invalidation.nodeName);
-        else
-            nodeRow.textContent = WebInspector.UIString("[ unknown node ]");
+            return WebInspector.DOMPresentationUtils.linkifyNodeReference(node);
+        if (invalidation.nodeName) {
+            var nodeSpan = createElement("span");
+            nodeSpan.textContent = WebInspector.UIString("[ %s ]", invalidation.nodeName);
+            return nodeSpan;
+        }
+        if (showUnknownNodes) {
+            var nodeSpan = createElement("span");
+            return nodeSpan.createTextChild(WebInspector.UIString("[ unknown node ]"));
+        }
+    }
 
-        if (invalidation.reason) {
-            var reasonRow = row.createChild("div");
-            var reason = invalidation.reason;
-            reasonRow.textContent = WebInspector.UIString("Reason: %s.", reason);
+    /**
+     * @param {!Element} parentElement
+     * @param {!Array.<!WebInspector.InvalidationTrackingEvent>} invalidations
+     */
+    function appendTruncatedNodeList(parentElement, invalidations)
+    {
+        var invalidationNodes = [];
+        invalidations.forEach(function(invalidation) {
+            var invalidationNode = createInvalidationNode(invalidation, false);
+            if (invalidationNode)
+                invalidationNodes.push(invalidationNode);
+        });
+
+        if (invalidationNodes.length === 1) {
+            parentElement.appendChild(invalidationNodes[0]);
+        } else if (invalidationNodes.length === 2) {
+            parentElement.appendChild(invalidationNodes[0]);
+            parentElement.createTextChild(WebInspector.UIString(" and "));
+            parentElement.appendChild(invalidationNodes[1]);
+        } else if (invalidationNodes.length >= 3) {
+            parentElement.appendChild(invalidationNodes[0]);
+            parentElement.createTextChild(WebInspector.UIString(", "));
+            parentElement.appendChild(invalidationNodes[1]);
+            parentElement.createTextChild(WebInspector.UIString(", and %s others", invalidationNodes.length - 2));
+        }
+    }
+
+    /**
+     * @param {!Element} parentElement
+     * @param {!Array.<!WebInspector.InvalidationTrackingEvent>} invalidations
+     */
+    function appendNodeList(parentElement, invalidations)
+    {
+        var firstNode = true;
+        invalidations.forEach(function(invalidation) {
+            var invalidationNode = createInvalidationNode(invalidation, true);
+            if (invalidationNode) {
+                if (!firstNode)
+                    parentElement.createTextChild(WebInspector.UIString(", "));
+                parentElement.appendChild(invalidationNode);
+                firstNode = false;
+            }
+        });
+    }
+
+    /**
+     * @param {!Element} header
+     * @param {!Array.<!WebInspector.InvalidationTrackingEvent>} invalidations
+     */
+    function toggleDetails(header, invalidations)
+    {
+        var wasExpanded = header.classList.contains("expanded");
+        header.classList.toggle("expanded", !wasExpanded);
+        header.parentElement.classList.toggle("expanded", !wasExpanded);
+
+        if (wasExpanded) {
+            var content = header.nextElementSibling;
+            if (content)
+                content.remove();
+        } else {
+            createInvalidationGroupDetails(header.parentElement, invalidations);
+        }
+    }
+
+    /**
+     * @param {!Element} parentElement
+     * @param {!Array.<!WebInspector.InvalidationTrackingEvent>} invalidations
+     */
+    function createInvalidationGroupDetails(parentElement, invalidations)
+    {
+        var content = parentElement.createChild("div", "content");
+
+        var first = invalidations[0];
+        if (first.cause && first.cause.stackTrace) {
+            var stack = content.createChild("div");
+            stack.createTextChild(WebInspector.UIString("Stack trace:"));
+            contentHelper.createChildStackTraceElement(stack, first.cause.stackTrace);
         }
 
-        if (invalidation.stackTrace)
-            contentHelper.createChildStackTraceElement(row, invalidation.stackTrace);
+        content.createTextChild(invalidations.length > 1 ? WebInspector.UIString("Nodes:") : WebInspector.UIString("Node:"));
+        var nodeList = content.createChild("div", "node-list timeline-details-view-row-stack-trace");
+        appendNodeList(nodeList, invalidations);
     }
 }
 
@@ -1340,12 +1482,20 @@ WebInspector.TimelineDetailsContentHelper.prototype = {
     {
         var stackTraceElement = parentElement.createChild("div", "timeline-details-view-row-value timeline-details-view-row-stack-trace monospace");
         for (var i = 0; i < stackTrace.length; ++i) {
-            var stackFrame = stackTrace[i];
             var row = stackTraceElement.createChild("div");
-            row.createTextChild(stackFrame.functionName || WebInspector.UIString("(anonymous function)"));
-            row.createTextChild(" @ ");
-            var urlElement = this._linkifier.linkifyScriptLocation(this._target, stackFrame.scriptId, stackFrame.url, stackFrame.lineNumber - 1, stackFrame.columnNumber - 1);
-            row.appendChild(urlElement);
+            this.appendStackFrame(row, stackTrace[i]);
         }
+    },
+
+    /**
+     * @param {!Element} parentElement
+     * @param {!ConsoleAgent.CallFrame} stackFrame
+     */
+    appendStackFrame: function(parentElement, stackFrame)
+    {
+        parentElement.createTextChild(stackFrame.functionName || WebInspector.UIString("(anonymous function)"));
+        parentElement.createTextChild(" @ ");
+        var urlElement = this._linkifier.linkifyScriptLocation(this._target, stackFrame.scriptId, stackFrame.url, stackFrame.lineNumber - 1, stackFrame.columnNumber - 1);
+        parentElement.appendChild(urlElement);
     }
 }

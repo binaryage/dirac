@@ -2749,6 +2749,23 @@ body.inactive select.chrome-select,
     pointer-events: none;
 }
 
+.invalidations-group {
+    margin-top: 4px;
+    line-height: normal;
+}
+
+.invalidations-group > .header {
+    padding-left: 0;
+}
+
+.invalidations-group > .content {
+    margin-left: 25px;
+}
+
+.invalidations-group > .content > .node-list {
+    border-left: 1px solid #e1e1e1;
+}
+
 .link {
     cursor: pointer;
     text-decoration: underline;

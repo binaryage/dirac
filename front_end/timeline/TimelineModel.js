@@ -1592,9 +1592,19 @@ WebInspector.InvalidationTrackingEvent = function(event)
     this.nodeId = event.args["data"]["nodeId"];
     this.nodeName = event.args["data"]["nodeName"];
     this.paintId = event.args["data"]["paintId"];
-    this.reason = event.args["data"]["reason"];
-    this.stackTrace = event.args["data"]["stackTrace"];
+
+    var reason = event.args["data"]["reason"];
+    var stackTrace = event.args["data"]["stackTrace"];
+
+    if (!reason && stackTrace && this.type === WebInspector.TimelineModel.RecordType.LayoutInvalidationTracking)
+        reason = "Layout forced";
+
+    if (reason || stackTrace)
+        this.cause = {reason: reason, stackTrace: stackTrace};
 }
+
+/** @typedef {{reason: string, stackTrace: ?Array.<!ConsoleAgent.CallFrame>}} */
+WebInspector.InvalidationCause;
 
 /**
  * @constructor
