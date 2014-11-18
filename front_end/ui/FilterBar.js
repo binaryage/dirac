@@ -207,7 +207,7 @@ WebInspector.TextFilterUI = function(supportRegex)
     this._filterElement = createElement("div");
     this._filterElement.className = "filter-text-filter";
 
-    this._filterInputElement = /** @type {!HTMLInputElement} */ (this._filterElement.createChild("input", "search-replace toolbar-replace-control"));
+    this._filterInputElement = /** @type {!HTMLInputElement} */ (this._filterElement.createChild("input", "filter-input-field"));
     this._filterInputElement.placeholder = WebInspector.UIString("Filter");
     this._filterInputElement.id = "filter-input-field";
     this._filterInputElement.addEventListener("mousedown", this._onFilterFieldManualFocus.bind(this), false); // when the search field is manually selected

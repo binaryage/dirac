@@ -59,6 +59,7 @@
         "overviewGrid.css",
         "panelEnablerView.css",
         "pieChart.css",
+        "searchableView.css",
         "statusBar.css"
     ]
 }

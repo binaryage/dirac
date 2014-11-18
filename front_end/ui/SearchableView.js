@@ -37,14 +37,16 @@
  */
 WebInspector.SearchableView = function(searchable, settingName)
 {
-    WebInspector.VBox.call(this);
+    WebInspector.VBox.call(this, true);
+    this.registerRequiredCSS("ui/searchableView.css");
 
     this._searchProvider = searchable;
     this._settingName = settingName;
 
     this.element.addEventListener("keydown", this._onKeyDown.bind(this), false);
 
-    this._footerElementContainer = this.element.createChild("div", "search-bar hidden");
+    this.contentElement.createChild("content");
+    this._footerElementContainer = this.contentElement.createChild("div", "search-bar hidden");
     this._footerElementContainer.style.order = 100;
 
     var toolbar = new WebInspector.StatusBar(this._footerElementContainer);
