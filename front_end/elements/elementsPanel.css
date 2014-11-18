@@ -34,10 +34,6 @@
     transform: translateZ(0);
 }
 
-#elements-content:not(.elements-wrap) > div {
-    display: inline-block;
-}
-
 #elements-content.elements-wrap {
     overflow-x: hidden;
 }
