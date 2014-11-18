@@ -677,6 +677,10 @@ li.child-editing .styles-clipboard-only {
     line-height: 16px;
 }
 
+.animation-pause {
+    display: inline-block;
+}
+
 .animation-pause .glyph {
     -webkit-mask-position: -32px -72px;
 }
@@ -713,7 +717,7 @@ li.child-editing .styles-clipboard-only {
 }
 
 .animationsHeader {
-    padding-top: 25px;
+    padding-top: 23px;
 }
 
 .global-animations-toolbar {
@@ -722,8 +726,14 @@ li.child-editing .styles-clipboard-only {
     width: 100%;
     background-color: #eee;
     border-bottom: 1px solid rgb(163, 163, 163);
+    padding-left: 10px;
 }
 
 .playback-rate-button.toggled-on > .status-bar-button-text {
     color: rgb(66, 129, 235);
+}
+
+button.playback-rate-button {
+    width: auto;
+    margin-right: 10px;
 }

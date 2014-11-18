@@ -12,11 +12,10 @@ WebInspector.AnimationsSidebarPane = function(stylesPane)
     this._stylesPane = stylesPane;
 
     this.headerElement = createElementWithClass("div", "animationsHeader");
-    this._globalControls = new WebInspector.AnimationsSidebarPane.GlobalAnimationControls();
-    this.headerElement.appendChild(this._globalControls.element);
     this._showSubtreeSetting = WebInspector.settings.createSetting("showSubtreeAnimations", true);
     this._showSubtreeSetting.addChangeListener(this._showSubtreeSettingChanged.bind(this));
-    this.headerElement.appendChild(WebInspector.AnimationsSidebarPane._showSubtreeAnimationsCheckbox(this._showSubtreeSetting));
+    this._globalControls = new WebInspector.AnimationsSidebarPane.GlobalAnimationControls(this._showSubtreeSetting);
+    this.headerElement.appendChild(this._globalControls.element);
 
     this._emptyElement = createElement("div");
     this._emptyElement.className = "info";
@@ -320,17 +319,27 @@ WebInspector.AnimationsSidebarPane._globalPlaybackRates = [0.1, 0.25, 0.5, 1.0, 
 /**
  * @constructor
  * @extends {WebInspector.StatusBar}
+ * @param {!WebInspector.Setting} showSubtreeAnimationsSetting
  */
-WebInspector.AnimationsSidebarPane.GlobalAnimationControls = function()
+WebInspector.AnimationsSidebarPane.GlobalAnimationControls = function(showSubtreeAnimationsSetting)
 {
     WebInspector.StatusBar.call(this);
     this.element.classList.add("global-animations-toolbar");
+
+    var labelElement = createElement("div");
+    labelElement.createTextChild("Global playback:");
+    this.appendStatusBarItem(new WebInspector.StatusBarItem(labelElement));
 
     this._pauseButton = new WebInspector.StatusBarButton("", "animation-pause");
     this._pauseButton.addEventListener("click", this._pauseHandler.bind(this), this);
     this.appendStatusBarItem(this._pauseButton);
     this._playbackRateButtons = [];
     WebInspector.AnimationsSidebarPane._globalPlaybackRates.forEach(this._createPlaybackRateButton.bind(this));
+
+    var subtreeCheckboxLabel = WebInspector.UIString("Show subtree animations");
+    this._showSubtreeAnimationsCheckbox = new WebInspector.StatusBarCheckbox(subtreeCheckboxLabel, subtreeCheckboxLabel, showSubtreeAnimationsSetting);
+    this.appendStatusBarItem(this._showSubtreeAnimationsCheckbox);
+
     this.reset();
 }
 
