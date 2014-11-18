@@ -822,7 +822,7 @@ WebInspector.ProfilesPanel.prototype = {
             if (profile.maxJSObjectId >= snapshotObjectId) {
                 this.showProfile(profile);
                 var view = this._viewForProfile(profile);
-                view.highlightLiveObject(perspectiveName, snapshotObjectId);
+                view.selectLiveObject(perspectiveName, snapshotObjectId);
                 break;
             }
         }

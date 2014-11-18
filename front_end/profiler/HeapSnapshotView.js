@@ -476,7 +476,7 @@ WebInspector.HeapSnapshotView.prototype = {
     showObject: function(snapshotObjectId, perspectiveName)
     {
         if (snapshotObjectId <= this._profile.maxJSObjectId)
-            this.highlightLiveObject(perspectiveName, snapshotObjectId);
+            this.selectLiveObject(perspectiveName, snapshotObjectId);
         else
             this._parentDataDisplayDelegate.showObject(snapshotObjectId, perspectiveName);
     },
@@ -576,24 +576,18 @@ WebInspector.HeapSnapshotView.prototype = {
 
     searchCanceled: function()
     {
-        if (this._searchResults) {
-            for (var i = 0; i < this._searchResults.length; ++i) {
-                var node = this._searchResults[i].node;
-                delete node._searchMatched;
-                node.refresh();
-            }
-        }
-
         this._currentSearchResultIndex = -1;
         this._searchResults = [];
     },
 
     /**
-     * @param {boolean} found
+     * @param {?WebInspector.HeapSnapshotGridNode} parentNode
+     * @param {?WebInspector.HeapSnapshotGridNode} node
      */
-    _didHighlightById: function(found)
+    _selectRevealedNode: function(parentNode, node)
     {
-        // Do not remove. It needs for heap snapshot search tests.
+        if (node)
+            node.select();
     },
 
     /**
@@ -618,7 +612,7 @@ WebInspector.HeapSnapshotView.prototype = {
         if (query.charAt(0) === "@") {
             var snapshotNodeId = parseInt(query.substring(1), 10);
             if (!isNaN(snapshotNodeId))
-                this._dataGrid.highlightObjectByHeapSnapshotId(String(snapshotNodeId), this._didHighlightById.bind(this));
+                this._dataGrid.revealObjectByHeapSnapshotId(String(snapshotNodeId), this._selectRevealedNode.bind(this));
             return;
         }
 
@@ -911,7 +905,7 @@ WebInspector.HeapSnapshotView.prototype = {
      * @param {string} perspectiveName
      * @param {!HeapProfilerAgent.HeapSnapshotObjectId} snapshotObjectId
      */
-    highlightLiveObject: function(perspectiveName, snapshotObjectId)
+    selectLiveObject: function(perspectiveName, snapshotObjectId)
     {
         this._changePerspectiveAndWait(perspectiveName, didChangePerspective.bind(this));
 
@@ -920,12 +914,12 @@ WebInspector.HeapSnapshotView.prototype = {
          */
         function didChangePerspective()
         {
-            this._dataGrid.highlightObjectByHeapSnapshotId(snapshotObjectId, didHighlightObject);
+            this._dataGrid.revealObjectByHeapSnapshotId(snapshotObjectId, didRevealObject);
         }
 
-        function didHighlightObject(found)
+        function didRevealObject(parentNode, node)
         {
-            if (!found)
+            if (!node)
                 WebInspector.console.error("Cannot find corresponding heap snapshot node");
         }
     },

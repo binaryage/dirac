@@ -103,6 +103,14 @@ WebInspector.HeapSnapshotGridNode.ChildrenProvider.prototype = {
 
 WebInspector.HeapSnapshotGridNode.prototype = {
     /**
+     * @return {!WebInspector.HeapSnapshotSortableDataGrid}
+     */
+    heapSnapshotDataGrid: function()
+    {
+        return this._dataGrid;
+    },
+
+    /**
      * @return {!WebInspector.HeapSnapshotGridNode.ChildrenProvider}
      */
     createProvider: function()
@@ -1054,9 +1062,9 @@ WebInspector.HeapSnapshotConstructorNode.prototype = {
 
     /**
      * @param {number} snapshotObjectId
-     * @param {function(boolean)} callback
+     * @param {function(?WebInspector.HeapSnapshotGridNode, ?WebInspector.HeapSnapshotGridNode)} callback
      */
-    revealNodeBySnapshotObjectId: function(snapshotObjectId, callback)
+    populateNodeBySnapshotObjectId: function(snapshotObjectId, callback)
     {
         /**
          * @this {WebInspector.HeapSnapshotConstructorNode}
@@ -1074,7 +1082,7 @@ WebInspector.HeapSnapshotConstructorNode.prototype = {
         {
             if (nodePosition === -1) {
                 this.collapse();
-                callback(false);
+                callback(null, null);
             } else {
                 this._populateChildren(nodePosition, null, didPopulateChildren.bind(this, nodePosition));
             }
@@ -1086,12 +1094,7 @@ WebInspector.HeapSnapshotConstructorNode.prototype = {
          */
         function didPopulateChildren(nodePosition)
         {
-            var child = this.childForPosition(nodePosition);
-            if (child) {
-                this._dataGrid.revealTreeNode([this, child]);
-                this._dataGrid.highlightNode(/** @type {!WebInspector.HeapSnapshotGridNode} */ (child));
-            }
-            callback(!!child);
+            callback(this, /** @type {?WebInspector.HeapSnapshotGridNode} */(this.childForPosition(nodePosition)));
         }
 
         this._dataGrid.resetNameFilter();
