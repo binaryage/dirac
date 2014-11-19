@@ -776,7 +776,7 @@ WebInspector.ElementsTreeOutline.prototype = {
     _contextMenuEventFired: function(event)
     {
         var treeElement = this._treeElementFromEvent(event);
-        if (!treeElement)
+        if (!treeElement || WebInspector.isEditing())
             return;
 
         var contextMenu = new WebInspector.ContextMenu(event);
