@@ -31,7 +31,7 @@
 /**
  * @constructor
  * @param {!WebInspector.SourcesView} sourcesView
- * @param {!function():?WebInspector.SourceFrame} currentSourceFrameCallback
+ * @param {function():?WebInspector.SourceFrame} currentSourceFrameCallback
  */
 WebInspector.EditingLocationHistoryManager = function(sourcesView, currentSourceFrameCallback)
 {

@@ -445,7 +445,7 @@ WebInspector.HeapSnapshotProxy.prototype = {
     },
 
     /**
-     * @param {!function(!WebInspector.HeapSnapshotCommon.Statistics):void} callback
+     * @param {function(!WebInspector.HeapSnapshotCommon.Statistics):void} callback
      */
     getStatistics: function(callback)
     {

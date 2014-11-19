@@ -636,7 +636,7 @@ WebInspector.HeapSnapshotGenericObjectNode.prototype = {
 
     /**
      * @param {!WebInspector.Target} target
-     * @param {!function(!WebInspector.RemoteObject)} callback
+     * @param {function(!WebInspector.RemoteObject)} callback
      * @param {string} objectGroupName
      */
     queryObjectContent: function(target, callback, objectGroupName)
@@ -1214,7 +1214,7 @@ WebInspector.HeapSnapshotDiffNodesProvider.prototype = {
     /**
      * @param {number} beginPosition
      * @param {number} endPosition
-     * @param {!function(!WebInspector.HeapSnapshotCommon.ItemsRange)} callback
+     * @param {function(!WebInspector.HeapSnapshotCommon.ItemsRange)} callback
      */
     serializeItemsRange: function(beginPosition, endPosition, callback)
     {

@@ -427,7 +427,7 @@ InspectorBackendClass.Connection.prototype = {
      * @param {?function(*)} callback
      * @param {string} method
      * @param {string} domain
-     * @return {!function(*)}
+     * @return {function(*)}
      */
     _wrap: function(callback, domain, method)
     {
@@ -574,7 +574,7 @@ InspectorBackendClass.Connection.prototype = {
     /**
      * @param {string} domain
      * @param {string} methodName
-     * @param {!function(*)} callback
+     * @param {function(*)} callback
      */
     _dispatchConnectionErrorResponse: function(domain, methodName, callback)
     {
@@ -659,7 +659,7 @@ InspectorBackendClass.MainConnection.prototype = {
  * @constructor
  * @extends {InspectorBackendClass.Connection}
  * @param {string} url
- * @param {!function(!InspectorBackendClass.Connection)} onConnectionReady
+ * @param {function(!InspectorBackendClass.Connection)} onConnectionReady
  */
 InspectorBackendClass.WebSocketConnection = function(url, onConnectionReady)
 {
@@ -673,7 +673,7 @@ InspectorBackendClass.WebSocketConnection = function(url, onConnectionReady)
 
 /**
  * @param {string} url
- * @param {!function(!InspectorBackendClass.Connection)} onConnectionReady
+ * @param {function(!InspectorBackendClass.Connection)} onConnectionReady
  */
 InspectorBackendClass.WebSocketConnection.Create = function(url, onConnectionReady)
 {

@@ -225,7 +225,7 @@ TestSuite.prototype.addSniffer = function(receiver, methodName, override, opt_st
 /**
  * Waits for current throttler invocations, if any.
  * @param {!WebInspector.Throttler} throttler
- * @param {!function} callback
+ * @param {function} callback
  */
 TestSuite.prototype.waitForThrottler = function(throttler, callback)
 {

@@ -119,7 +119,7 @@ WebInspector.CPUProfilerModel.prototype = {
     },
 
     /**
-     * @param {!function(?string,?ProfilerAgent.CPUProfile)} callback
+     * @param {function(?string,?ProfilerAgent.CPUProfile)} callback
      */
     stopRecording: function(callback)
     {

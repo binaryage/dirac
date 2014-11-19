@@ -1270,7 +1270,7 @@ WebInspector.HeapSnapshot.prototype = {
 
     /**
      * @param {!WebInspector.HeapSnapshotNode} node
-     * @return {!boolean}
+     * @return {boolean}
      */
     _isUserRoot: function(node)
     {
@@ -1329,7 +1329,7 @@ WebInspector.HeapSnapshot.prototype = {
 
     /**
      * @param {!Uint32Array} nodesToVisit
-     * @param {!number} nodesToVisitLength
+     * @param {number} nodesToVisitLength
      * @param {!Int32Array} distances
      * @param {function(!WebInspector.HeapSnapshotNode,!WebInspector.HeapSnapshotEdge):boolean=} filter
      */

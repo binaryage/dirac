@@ -139,7 +139,7 @@ WebInspector.WorkerTargetManager.prototype = {
  * @param {!WebInspector.Target} target
  * @param {number} workerId
  * @param {boolean} inspectorConnected
- * @param {!function(!InspectorBackendClass.Connection)} onConnectionReady
+ * @param {function(!InspectorBackendClass.Connection)} onConnectionReady
  */
 WebInspector.WorkerConnection = function(target, workerId, inspectorConnected, onConnectionReady)
 {

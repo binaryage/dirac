@@ -5,7 +5,7 @@
 WebInspector.OverridesUI = {}
 
 /**
- * @param {!function(!function(string))=} titleProvider
+ * @param {function(function(string))=} titleProvider
  * @return {!Element}
  */
 WebInspector.OverridesUI.createDeviceSelect = function(titleProvider)

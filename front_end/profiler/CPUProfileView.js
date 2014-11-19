@@ -127,8 +127,8 @@ WebInspector.CPUProfileView.prototype = {
     },
 
     /**
-     * @param {!number} timeLeft
-     * @param {!number} timeRight
+     * @param {number} timeLeft
+     * @param {number} timeRight
      */
     selectRange: function(timeLeft, timeRight)
     {

@@ -416,8 +416,8 @@ WebInspector.CPUProfileFlameChart.prototype = {
     },
 
     /**
-     * @param {!number} timeLeft
-     * @param {!number} timeRight
+     * @param {number} timeLeft
+     * @param {number} timeRight
      */
     selectRange: function(timeLeft, timeRight)
     {
@@ -616,8 +616,8 @@ WebInspector.CPUProfileFlameChart.OverviewPane.prototype = {
     },
 
     /**
-     * @param {!number} timeLeft
-     * @param {!number} timeRight
+     * @param {number} timeLeft
+     * @param {number} timeRight
      */
     _selectRange: function(timeLeft, timeRight)
     {
@@ -727,8 +727,8 @@ WebInspector.CPUProfileFlameChart.OverviewPane.prototype = {
     },
 
     /**
-     * @param {!number} width
-     * @param {!number} height
+     * @param {number} width
+     * @param {number} height
      */
     _resetCanvas: function(width, height)
     {

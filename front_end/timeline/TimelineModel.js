@@ -1755,7 +1755,7 @@ WebInspector.InvalidationTracker.prototype = {
         types.forEach(forAllInvalidationsOfType, this);
 
         /**
-         * @param {!string} type
+         * @param {string} type
          * @this {WebInspector.InvalidationTracker}
          */
         function forAllInvalidationsOfType(type)

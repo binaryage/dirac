@@ -126,8 +126,8 @@ WebInspector.OverviewGrid.prototype = {
     },
 
     /**
-     * @param {!number} zoomFactor
-     * @param {!number} referencePoint
+     * @param {number} zoomFactor
+     * @param {number} referencePoint
      */
     zoom: function(zoomFactor, referencePoint)
     {

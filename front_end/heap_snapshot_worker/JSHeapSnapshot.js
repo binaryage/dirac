@@ -177,7 +177,7 @@ WebInspector.JSHeapSnapshot.prototype = {
 
     /**
      * @param {!WebInspector.HeapSnapshotNode} node
-     * @return {!boolean}
+     * @return {boolean}
      */
     _isUserRoot: function(node)
     {
@@ -630,7 +630,7 @@ WebInspector.JSHeapSnapshotNode.prototype = {
     },
 
     /**
-     * @return {!boolean}
+     * @return {boolean}
      */
     isUserRoot: function()
     {
@@ -638,7 +638,7 @@ WebInspector.JSHeapSnapshotNode.prototype = {
     },
 
     /**
-     * @return {!boolean}
+     * @return {boolean}
      */
     isDocumentDOMTreesRoot: function()
     {

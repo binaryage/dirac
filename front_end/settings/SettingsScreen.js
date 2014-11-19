@@ -30,7 +30,7 @@
 
 /**
  * @constructor
- * @param {!function()} onHide
+ * @param {function()} onHide
  * @extends {WebInspector.HelpScreen}
  */
 WebInspector.SettingsScreen = function(onHide)

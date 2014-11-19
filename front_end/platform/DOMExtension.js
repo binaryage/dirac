@@ -787,7 +787,7 @@ function consumeEvent(e)
 }
 
 /**
- * @param {!function()} callback
+ * @param {function()} callback
  * @suppressGlobalPropertiesCheck
  */
 function runOnWindowLoad(callback)

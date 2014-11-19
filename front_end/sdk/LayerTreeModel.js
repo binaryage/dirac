@@ -293,7 +293,7 @@ WebInspector.TracingLayerTree = function(target)
 WebInspector.TracingLayerTree.prototype = {
     /**
      * @param {!WebInspector.TracingLayerPayload} root
-     * @param {!function()} callback
+     * @param {function()} callback
      */
     setLayers: function(root, callback)
     {

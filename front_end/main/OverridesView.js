@@ -258,7 +258,7 @@ WebInspector.OverridesView.DeviceTab.prototype = {
     },
 
     /**
-     * @param {!function(string)} callback
+     * @param {function(string)} callback
      */
     _showTitleDialog: function(callback)
     {
@@ -271,7 +271,7 @@ WebInspector.OverridesView.DeviceTab.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.DialogDelegate}
- * @param {!function(string)} callback
+ * @param {function(string)} callback
  */
 WebInspector.OverridesView.DeviceTab.CustomDeviceTitleDialog = function(callback)
 {

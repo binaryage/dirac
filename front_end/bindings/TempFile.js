@@ -128,7 +128,7 @@ WebInspector.TempFile.create = function(dirPath, name)
 WebInspector.TempFile.prototype = {
     /**
      * @param {!Array.<string>} strings
-     * @param {!function(boolean)} callback
+     * @param {function(boolean)} callback
      */
     write: function(strings, callback)
     {
@@ -228,8 +228,8 @@ WebInspector.TempFile.prototype = {
 
 /**
  * @constructor
- * @param {!string} dirPath
- * @param {!string} name
+ * @param {string} dirPath
+ * @param {string} name
  */
 WebInspector.DeferredTempFile = function(dirPath, name)
 {
@@ -261,7 +261,7 @@ WebInspector.DeferredTempFile.prototype = {
     },
 
     /**
-     * @param {!function(?WebInspector.TempFile)} callback
+     * @param {function(?WebInspector.TempFile)} callback
      */
     finishWriting: function(callback)
     {

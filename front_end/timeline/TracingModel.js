@@ -647,7 +647,7 @@ WebInspector.TracingModel.Process.prototype = {
     },
 
     /**
-     * @param {!number} lastEventTimeMs
+     * @param {number} lastEventTimeMs
      */
     _tracingComplete: function(lastEventTimeMs)
     {

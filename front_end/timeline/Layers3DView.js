@@ -524,7 +524,7 @@ WebInspector.Layers3DView.prototype = {
     /**
      * @param {!Object} attribute
      * @param {!Array.<number>} array
-     * @param {!number} length
+     * @param {number} length
      */
     _setVertexAttribute: function(attribute, array, length)
     {
@@ -1011,8 +1011,8 @@ WebInspector.Layers3DView.Rectangle.prototype = {
     /**
      * Intersects quad with given transform matrix and line l(t) = (x0, y0, t)
      * @param {!CSSMatrix} matrix
-     * @param {!number} x0
-     * @param {!number} y0
+     * @param {number} x0
+     * @param {number} y0
      * @return {(number|undefined)}
      */
     intersectWithLine: function(matrix, x0, y0)
