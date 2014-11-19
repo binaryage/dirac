@@ -233,7 +233,7 @@ FormatterWorker.parseCSS = function(params)
                 rule = {
                     selectorText: tokenValue,
                     lineNumber: lineNumber,
-                    columNumber: column,
+                    columnNumber: column,
                     properties: [],
                 };
                 state = FormatterWorker.CSSParserStates.Selector;
@@ -241,7 +241,7 @@ FormatterWorker.parseCSS = function(params)
                 rule = {
                     atRule: tokenValue,
                     lineNumber: lineNumber,
-                    columNumber: column,
+                    columnNumber: column,
                 };
                 state = FormatterWorker.CSSParserStates.AtRule;
             }
