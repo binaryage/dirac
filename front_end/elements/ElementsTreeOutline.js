@@ -1076,10 +1076,8 @@ WebInspector.ElementsTreeElement.prototype = {
      */
     highlightSearchResults: function(searchQuery)
     {
-        if (this._searchQuery !== searchQuery) {
-            this._updateSearchHighlight(false);
-            delete this._highlightResult; // A new search query.
-        }
+        if (this._searchQuery !== searchQuery)
+            this._hideSearchHighlight();
 
         this._searchQuery = searchQuery;
         this._searchHighlightsVisible = true;
@@ -1089,28 +1087,13 @@ WebInspector.ElementsTreeElement.prototype = {
     hideSearchHighlights: function()
     {
         delete this._searchHighlightsVisible;
-        this._updateSearchHighlight(false);
+        this._hideSearchHighlight();
     },
 
-    /**
-     * @param {boolean} show
-     */
-    _updateSearchHighlight: function(show)
+    _hideSearchHighlight: function()
     {
         if (!this._highlightResult)
             return;
-
-        function updateEntryShow(entry)
-        {
-            switch (entry.type) {
-                case "added":
-                    entry.parent.insertBefore(entry.node, entry.nextSibling);
-                    break;
-                case "changed":
-                    entry.node.textContent = entry.newText;
-                    break;
-            }
-        }
 
         function updateEntryHide(entry)
         {
@@ -1124,14 +1107,10 @@ WebInspector.ElementsTreeElement.prototype = {
             }
         }
 
-        // Preserve the semantic of node by following the order of updates for hide and show.
-        if (show) {
-            for (var i = 0, size = this._highlightResult.length; i < size; ++i)
-                updateEntryShow(this._highlightResult[i]);
-        } else {
-            for (var i = (this._highlightResult.length - 1); i >= 0; --i)
-                updateEntryHide(this._highlightResult[i]);
-        }
+        for (var i = (this._highlightResult.length - 1); i >= 0; --i)
+            updateEntryHide(this._highlightResult[i]);
+
+        delete this._highlightResult;
     },
 
     /**
@@ -2191,8 +2170,7 @@ WebInspector.ElementsTreeElement.prototype = {
             return;
 
         if (onlySearchQueryChanged) {
-            if (this._highlightResult)
-                this._updateSearchHighlight(false);
+            this._hideSearchHighlight();
         } else {
             var nodeInfo = this._nodeTitleInfo(WebInspector.linkifyURLAsNode);
             if (nodeInfo.shadowRoot)
@@ -2514,13 +2492,13 @@ WebInspector.ElementsTreeElement.prototype = {
                     newNode.textContent = node.nodeValue();
 
                     var javascriptSyntaxHighlighter = new WebInspector.DOMSyntaxHighlighter("text/javascript", true);
-                    javascriptSyntaxHighlighter.syntaxHighlightNode(newNode);
+                    javascriptSyntaxHighlighter.syntaxHighlightNode(newNode).then(updateSearchHighlight.bind(this)).done();
                 } else if (node.parentNode && node.parentNode.nodeName().toLowerCase() === "style") {
                     var newNode = info.titleDOM.createChild("span", "webkit-html-text-node webkit-html-css-node");
                     newNode.textContent = node.nodeValue();
 
                     var cssSyntaxHighlighter = new WebInspector.DOMSyntaxHighlighter("text/css", true);
-                    cssSyntaxHighlighter.syntaxHighlightNode(newNode);
+                    cssSyntaxHighlighter.syntaxHighlightNode(newNode).then(updateSearchHighlight.bind(this)).done();
                 } else {
                     info.titleDOM.createTextChild("\"");
                     var textNodeElement = info.titleDOM.createChild("span", "webkit-html-text-node");
@@ -2574,6 +2552,16 @@ WebInspector.ElementsTreeElement.prototype = {
             default:
                 info.titleDOM.createTextChild(node.nodeNameInCorrectCase().collapseWhitespace());
         }
+
+        /**
+         * @this {WebInspector.ElementsTreeElement}
+         */
+        function updateSearchHighlight()
+        {
+            delete this._highlightResult;
+            this._highlightSearchResults();
+        }
+
         return info;
     },
 
@@ -2662,10 +2650,7 @@ WebInspector.ElementsTreeElement.prototype = {
     {
         if (!this._searchQuery || !this._searchHighlightsVisible)
             return;
-        if (this._highlightResult) {
-            this._updateSearchHighlight(true);
-            return;
-        }
+        this._hideSearchHighlight();
 
         var text = this.listItemElement.textContent;
         var regexObject = createPlainTextSearchRegex(this._searchQuery, "gi");
