@@ -389,9 +389,8 @@ WebInspector.AnimationsSidebarPane.GlobalAnimationControls.prototype = {
     _playbackRateHandler: function(playbackRate)
     {
         this._playbackRate = playbackRate;
-        this._paused = false;
         this._updateControls();
-        PageAgent.setAnimationsPlaybackRate(playbackRate);
+        PageAgent.setAnimationsPlaybackRate(this._paused ? 0 : this._playbackRate);
     },
 
     __proto__: WebInspector.StatusBar.prototype
