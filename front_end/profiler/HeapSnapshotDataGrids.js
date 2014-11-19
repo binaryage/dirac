@@ -55,6 +55,7 @@ WebInspector.HeapSnapshotSortableDataGrid = function(dataDisplayDelegate, column
      * @type {?WebInspector.StatusBarInput}
      */
     this._nameFilter = null;
+    this._nodeFilter = new WebInspector.HeapSnapshotCommon.NodeFilter();
     this.addEventListener(WebInspector.HeapSnapshotSortableDataGrid.Events.SortingComplete, this._sortingComplete, this);
     this.addEventListener(WebInspector.DataGrid.Events.SortingChanged, this.sortingChanged, this);
 }
@@ -65,6 +66,14 @@ WebInspector.HeapSnapshotSortableDataGrid.Events = {
 }
 
 WebInspector.HeapSnapshotSortableDataGrid.prototype = {
+    /**
+     * @return {!WebInspector.HeapSnapshotCommon.NodeFilter}
+     */
+    nodeFilter: function()
+    {
+        return this._nodeFilter;
+    },
+
     /**
      * @param {!WebInspector.StatusBarInput} nameFilter
      */
@@ -775,7 +784,8 @@ WebInspector.HeapSnapshotConstructorsDataGrid.prototype = {
       */
     setSelectionRange: function(minNodeId, maxNodeId)
     {
-        this._populateChildren(new WebInspector.HeapSnapshotCommon.NodeFilter(minNodeId, maxNodeId));
+        this._nodeFilter = new WebInspector.HeapSnapshotCommon.NodeFilter(minNodeId, maxNodeId);
+        this._populateChildren(this._nodeFilter);
     },
 
     /**
@@ -783,9 +793,9 @@ WebInspector.HeapSnapshotConstructorsDataGrid.prototype = {
       */
     setAllocationNodeId: function(allocationNodeId)
     {
-        var filter = new WebInspector.HeapSnapshotCommon.NodeFilter();
-        filter.allocationNodeId = allocationNodeId;
-        this._populateChildren(filter);
+        this._nodeFilter = new WebInspector.HeapSnapshotCommon.NodeFilter();
+        this._nodeFilter.allocationNodeId = allocationNodeId;
+        this._populateChildren(this._nodeFilter);
     },
 
     /**
@@ -828,15 +838,14 @@ WebInspector.HeapSnapshotConstructorsDataGrid.prototype = {
     filterSelectIndexChanged: function(profiles, profileIndex)
     {
         this._profileIndex = profileIndex;
-
-        var nodeFilter;
+        this._nodeFilter = undefined;
         if (profileIndex !== -1) {
             var minNodeId = profileIndex > 0 ? profiles[profileIndex - 1].maxJSObjectId : 0;
             var maxNodeId = profiles[profileIndex].maxJSObjectId;
-            nodeFilter = new WebInspector.HeapSnapshotCommon.NodeFilter(minNodeId, maxNodeId)
+            this._nodeFilter = new WebInspector.HeapSnapshotCommon.NodeFilter(minNodeId, maxNodeId)
         }
 
-        this._populateChildren(nodeFilter);
+        this._populateChildren(this._nodeFilter);
     },
 
     __proto__: WebInspector.HeapSnapshotViewportDataGrid.prototype

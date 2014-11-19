@@ -1119,23 +1119,81 @@ WebInspector.HeapSnapshot.prototype = {
 
     /**
      * @param {!WebInspector.HeapSnapshotCommon.NodeFilter} nodeFilter
-     * @return {!Object.<string, !WebInspector.HeapSnapshotCommon.Aggregate>}
+     * @return {undefined|function(!WebInspector.HeapSnapshotNode):boolean}
      */
-    aggregatesWithFilter: function(nodeFilter)
+    _createFilter: function(nodeFilter)
     {
         var minNodeId = nodeFilter.minNodeId;
         var maxNodeId = nodeFilter.maxNodeId;
         var allocationNodeId = nodeFilter.allocationNodeId;
-        var key;
         var filter;
         if (typeof allocationNodeId === "number") {
             filter = this._createAllocationStackFilter(allocationNodeId);
+            filter.key = "AllocationNodeId: " + allocationNodeId;
         } else if (typeof minNodeId === "number" && typeof maxNodeId === "number") {
-            key = minNodeId + ".." + maxNodeId;
             filter = this._createNodeIdFilter(minNodeId, maxNodeId);
-        } else {
-            key = "allObjects";
+            filter.key = "NodeIdRange: " + minNodeId + ".." + maxNodeId;
         }
+        return filter;
+    },
+
+    /**
+     * @param {!WebInspector.HeapSnapshotCommon.SearchConfig} searchConfig
+     * @param {!WebInspector.HeapSnapshotCommon.NodeFilter} nodeFilter
+     * @return {!Array.<number>}
+     */
+    search: function(searchConfig, nodeFilter)
+    {
+        var query = searchConfig.query;
+
+        function filterString(matchedStringIndexes, string, index)
+        {
+            if (string.indexOf(query) !== -1)
+                matchedStringIndexes.add(index);
+            return matchedStringIndexes;
+        }
+
+        var regexp = searchConfig.isRegex ? new RegExp(query) : createPlainTextSearchRegex(query, "i");
+        function filterRegexp(matchedStringIndexes, string, index)
+        {
+            if (regexp.test(string))
+                matchedStringIndexes.add(index);
+            return matchedStringIndexes;
+        }
+
+        var stringFilter = (searchConfig.isRegex || !searchConfig.caseSensitive) ? filterRegexp : filterString;
+        var stringIndexes = this.strings.reduce(stringFilter, new Set());
+
+        if (!stringIndexes.size)
+            return [];
+
+        var filter = this._createFilter(nodeFilter);
+        var nodeIds = [];
+        var nodesLength = this.nodes.length;
+        var nodes = this.nodes;
+        var nodeNameOffset = this._nodeNameOffset;
+        var nodeIdOffset = this._nodeIdOffset;
+        var nodeFieldCount = this._nodeFieldCount;
+        var node = this.rootNode();
+
+        for (var nodeIndex = 0; nodeIndex < nodesLength; nodeIndex += nodeFieldCount) {
+            node.nodeIndex = nodeIndex;
+            if (filter && !filter(node))
+                continue;
+            if (stringIndexes.has(nodes[nodeIndex + nodeNameOffset]))
+                nodeIds.push(nodes[nodeIndex + nodeIdOffset]);
+        }
+        return nodeIds;
+    },
+
+    /**
+     * @param {!WebInspector.HeapSnapshotCommon.NodeFilter} nodeFilter
+     * @return {!Object.<string, !WebInspector.HeapSnapshotCommon.Aggregate>}
+     */
+    aggregatesWithFilter: function(nodeFilter)
+    {
+        var filter = this._createFilter(nodeFilter);
+        var key = filter ? filter.key : "allObjects";
         return this.aggregates(false, key, filter);
     },
 

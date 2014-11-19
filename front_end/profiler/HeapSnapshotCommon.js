@@ -348,3 +348,20 @@ WebInspector.HeapSnapshotCommon.NodeFilter.prototype =
         return this.minNodeId === o.minNodeId && this.maxNodeId === o.maxNodeId && this.allocationNodeId === o.allocationNodeId;
     }
 }
+
+/**
+ * @param {string} query
+ * @param {boolean} caseSensitive
+ * @param {boolean} isRegex
+ * @param {boolean} shouldJump
+ * @param {boolean} jumpBackward
+ * @constructor
+ */
+WebInspector.HeapSnapshotCommon.SearchConfig = function(query, caseSensitive, isRegex, shouldJump, jumpBackward)
+{
+    this.query = query;
+    this.caseSensitive = caseSensitive;
+    this.isRegex = isRegex;
+    this.shouldJump = shouldJump;
+    this.jumpBackward = jumpBackward;
+}

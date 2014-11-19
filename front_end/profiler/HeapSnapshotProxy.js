@@ -313,6 +313,16 @@ WebInspector.HeapSnapshotProxy = function(worker, objectId)
 
 WebInspector.HeapSnapshotProxy.prototype = {
     /**
+     * @param {!WebInspector.HeapSnapshotCommon.SearchConfig} searchConfig
+     * @param {!WebInspector.HeapSnapshotCommon.NodeFilter} filter
+     * @param {function(!Array.<number>)} callback
+     */
+    search: function(searchConfig, filter, callback)
+    {
+        this.callMethod(callback, "search", searchConfig, filter);
+    },
+
+    /**
      * @param {!WebInspector.HeapSnapshotCommon.NodeFilter} filter
      * @param {function(!Object.<string, !WebInspector.HeapSnapshotCommon.Aggregate>)} callback
      */
