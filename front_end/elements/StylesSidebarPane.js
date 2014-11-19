@@ -646,13 +646,13 @@ WebInspector.StylesSidebarPane.prototype = {
     {
         for (var pseudoId in this.sections) {
             var filteredSections = this.sections[pseudoId] ? this.sections[pseudoId].filter(nonBlankSections) : [];
-            var styleRules = this._refreshStyleRules(filteredSections, computedStyle);
+            var styleRules = this._refreshStyleRules(filteredSections);
             var usedProperties = {};
             this._markUsedProperties(styleRules, usedProperties);
-            this._refreshSectionsForStyleRules(filteredSections, styleRules, usedProperties, editedSection);
+            this._refreshSectionsForStyleRules(filteredSections, styleRules, editedSection);
+            if (pseudoId === "0" && computedStyle)
+                this._computedStylePane._refreshComputedSectionForStyleRule(computedStyle, usedProperties, this.sections[0]);
         }
-        if (computedStyle)
-            this.sections[0][0].rebuildComputedTrace(this.sections[0]);
 
         this._nodeStylesUpdatedForTest(node, false);
 
@@ -669,17 +669,19 @@ WebInspector.StylesSidebarPane.prototype = {
     _innerRebuildUpdate: function(node, styles)
     {
         this._sectionsContainer.removeChildren();
-        this._computedStylePane.bodyElement.removeChildren();
         this._linkifier.reset();
+
+        if (!!node.pseudoType())
+            this._appendTopPadding();
 
         var styleRules = this._rebuildStyleRules(node, styles);
         var usedProperties = {};
         this._markUsedProperties(styleRules, usedProperties);
-        this.sections[0] = this._rebuildSectionsForStyleRules(styleRules, usedProperties, null);
-        var anchorElement = this.sections[0].inheritedPropertiesSeparatorElement;
 
-        if (styles.computedStyle)
-            this.sections[0][0].rebuildComputedTrace(this.sections[0]);
+        this.sections[0] = this._rebuildSectionsForStyleRules(styleRules, null);
+        this._computedStylePane._rebuildComputedSectionForStyleRule(styles.computedStyle, usedProperties, this.sections[0], this._animationProperties);
+
+        var anchorElement = this.sections[0].inheritedPropertiesSeparatorElement;
 
         for (var i = 0; i < styles.pseudoElements.length; ++i) {
             var pseudoElementCSSRules = styles.pseudoElements[i];
@@ -697,7 +699,7 @@ WebInspector.StylesSidebarPane.prototype = {
             }
             usedProperties = {};
             this._markUsedProperties(styleRules, usedProperties);
-            this.sections[pseudoId] = this._rebuildSectionsForStyleRules(styleRules, usedProperties, anchorElement);
+            this.sections[pseudoId] = this._rebuildSectionsForStyleRules(styleRules, anchorElement);
         }
 
         if (this._filterRegex)
@@ -709,15 +711,12 @@ WebInspector.StylesSidebarPane.prototype = {
         // Tests override this method.
     },
 
-    _refreshStyleRules: function(sections, computedStyle)
+    _refreshStyleRules: function(sections)
     {
-        var nodeComputedStyle = computedStyle;
         var styleRules = [];
         for (var i = 0; sections && i < sections.length; ++i) {
             var section = sections[i];
-            if (section.computedStyle)
-                section.styleRule.style = nodeComputedStyle;
-            var styleRule = { style: section.styleRule.style, computedStyle: section.computedStyle, rule: section.rule, editable: !!(section.styleRule.style && section.styleRule.style.styleSheetId),
+            var styleRule = { style: section.styleRule.style, rule: section.rule, editable: !!(section.styleRule.style && section.styleRule.style.styleSheetId),
                 isAttribute: section.styleRule.isAttribute, isInherited: section.styleRule.isInherited, parentNode: section.styleRule.parentNode };
             styleRules.push(styleRule);
         }
@@ -726,7 +725,6 @@ WebInspector.StylesSidebarPane.prototype = {
 
     _rebuildStyleRules: function(node, styles)
     {
-        var nodeComputedStyle = styles.computedStyle;
         this.sections = {};
 
         var styleRules = [];
@@ -739,11 +737,6 @@ WebInspector.StylesSidebarPane.prototype = {
             attrStyle.selectorText = node.nodeNameInCorrectCase() + "[" + WebInspector.UIString("Attributes Style") + "]";
             styleRules.push(attrStyle);
         }
-
-        styleRules.push({ computedStyle: true, selectorText: "", style: nodeComputedStyle, editable: false });
-
-        if (!!node.pseudoType())
-            styleRules.push({ isStyleSeparator: true, isPlaceholder: true });
 
         // Inline style has the greatest specificity.
         if (styles.inlineStyle && node.nodeType() === Node.ELEMENT_NODE) {
@@ -814,7 +807,7 @@ WebInspector.StylesSidebarPane.prototype = {
         var inheritedPropertyToNode = {};
         for (var i = 0; i < styleRules.length; ++i) {
             var styleRule = styleRules[i];
-            if (styleRule.computedStyle || styleRule.isStyleSeparator)
+            if (styleRule.isStyleSeparator)
                 continue;
             if (!WebInspector.StylesSidebarPane._hasMatchingSelectors(styleRule))
                 continue;
@@ -859,28 +852,29 @@ WebInspector.StylesSidebarPane.prototype = {
         }
     },
 
-    _refreshSectionsForStyleRules: function(sections, styleRules, usedProperties, editedSection)
+    _refreshSectionsForStyleRules: function(sections, styleRules, editedSection)
     {
         // Walk the style rules and update the sections with new overloaded and used properties.
         for (var i = 0; i < styleRules.length; ++i) {
             var styleRule = styleRules[i];
             var section = sections[i];
-            if (styleRule.computedStyle) {
-                section._usedProperties = usedProperties;
-                section.update();
-            } else {
-                section._usedProperties = styleRule.usedProperties;
-                section.update(section === editedSection);
-            }
+            section._usedProperties = styleRule.usedProperties;
+            section.update(section === editedSection);
         }
+    },
+
+    _appendTopPadding: function()
+    {
+        var separatorElement = createElement("div");
+        separatorElement.className = "styles-sidebar-placeholder";
+        this._sectionsContainer.appendChild(separatorElement);
     },
 
     /**
      * @param {!Array.<!Object>} styleRules
-     * @param {!Object.<string, boolean>} usedProperties
      * @param {?Element} anchorElement
      */
-    _rebuildSectionsForStyleRules: function(styleRules, usedProperties, anchorElement)
+    _rebuildSectionsForStyleRules: function(styleRules, anchorElement)
     {
         // Make a property section for each style rule.
         var sections = [];
@@ -888,11 +882,6 @@ WebInspector.StylesSidebarPane.prototype = {
             var styleRule = styleRules[i];
             if (styleRule.isStyleSeparator) {
                 var separatorElement = createElement("div");
-                if (styleRule.isPlaceholder) {
-                    separatorElement.className = "styles-sidebar-placeholder";
-                    this._sectionsContainer.insertBefore(separatorElement, anchorElement);
-                    continue;
-                }
                 separatorElement.className = "sidebar-separator";
                 if (styleRule.node) {
                     var link = WebInspector.DOMPresentationUtils.linkifyNodeReference(styleRule.node);
@@ -911,25 +900,16 @@ WebInspector.StylesSidebarPane.prototype = {
                 this._sectionsContainer.insertBefore(separatorElement, anchorElement);
                 continue;
             }
-            var computedStyle = styleRule.computedStyle;
 
             // Default editable to true if it was omitted.
             var editable = styleRule.editable;
             if (typeof editable === "undefined")
                 editable = true;
 
-            if (computedStyle)
-                var section = new WebInspector.ComputedStylePropertiesSection(this, styleRule, usedProperties, this._animationProperties);
-            else {
-                var section = new WebInspector.StylePropertiesSection(this, styleRule, editable, styleRule.isInherited);
-                section._markSelectorMatches();
-            }
+            var section = new WebInspector.StylePropertiesSection(this, styleRule, editable, styleRule.isInherited);
+            section._markSelectorMatches();
             section.expanded = true;
-
-            if (computedStyle)
-                this._computedStylePane.bodyElement.appendChild(section.element);
-            else
-                this._sectionsContainer.insertBefore(section.element, anchorElement);
+            this._sectionsContainer.insertBefore(section.element, anchorElement);
             sections.push(section);
         }
         return sections;
@@ -983,7 +963,7 @@ WebInspector.StylesSidebarPane.prototype = {
         {
             var lines = text.split("\n");
             var range = WebInspector.TextRange.createFromLocation(lines.length - 1, lines[lines.length - 1].length);
-            this._addBlankSection(this.sections[0][1], styleSheetId, range);
+            this._addBlankSection(this.sections[0][0], styleSheetId, range);
         }
     },
 
@@ -1133,12 +1113,14 @@ WebInspector.StylesSidebarPane.prototype = {
      */
     _updateFilter: function(isComputedStyleFilter)
     {
+        if (isComputedStyleFilter) {
+            this._computedStylePane._updateFilter();
+            return;
+        }
         for (var pseudoId in this.sections) {
             var sections = this.sections[pseudoId];
             for (var i = 0; i < sections.length; ++i) {
                 var section = sections[i];
-                if (isComputedStyleFilter !== !!section.computedStyle)
-                    continue;
                 section._updateFilter();
             }
         }
@@ -1216,9 +1198,44 @@ WebInspector.StylesSidebarPane.prototype = {
 WebInspector.ComputedStyleSidebarPane = function()
 {
     WebInspector.SidebarPane.call(this, WebInspector.UIString("Computed Style"));
+    this._rebuildComputedSectionForStyleRule(null, {}, [], {});
 }
 
 WebInspector.ComputedStyleSidebarPane.prototype = {
+    /**
+     * @param {?WebInspector.CSSStyleDeclaration} computedStyle
+     * @param {!Object.<string, boolean>} usedProperties
+     * @param {!Array.<!WebInspector.StylePropertiesSection>} matchedRuleSections
+     * @param {!Object.<string, string>} animationProperties
+     */
+    _rebuildComputedSectionForStyleRule: function(computedStyle, usedProperties, matchedRuleSections, animationProperties)
+    {
+        var computedStyleRule = { selectorText: "", style: computedStyle, editable: false };
+        this._computedStyleSection = new WebInspector.ComputedStylePropertiesSection(this, computedStyleRule, usedProperties, animationProperties);
+        this._computedStyleSection.expanded = true;
+        this._computedStyleSection._rebuildComputedTrace(matchedRuleSections);
+        this.bodyElement.removeChildren();
+        this.bodyElement.appendChild(this._computedStyleSection.element);
+    },
+
+    /**
+     * @param {?WebInspector.CSSStyleDeclaration} computedStyle
+     * @param {!Object.<string, boolean>} usedProperties
+     * @param {!Array.<!WebInspector.StylePropertiesSection>} matchedRuleSections
+     */
+    _refreshComputedSectionForStyleRule: function(computedStyle, usedProperties, matchedRuleSections)
+    {
+        this._computedStyleSection.styleRule.style = computedStyle;
+        this._computedStyleSection._usedProperties = usedProperties;
+        this._computedStyleSection.update();
+        this._computedStyleSection._rebuildComputedTrace(matchedRuleSections);
+    },
+
+    _updateFilter: function()
+    {
+        this._computedStyleSection._updateFilter();
+    },
+
     /**
      * @param {!WebInspector.StylesSidebarPane} pane
      */
@@ -1954,7 +1971,7 @@ WebInspector.StylePropertiesSection.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.PropertiesSection}
- * @param {!WebInspector.StylesSidebarPane} stylesPane
+ * @param {!WebInspector.ComputedStyleSidebarPane} stylesPane
  * @param {!Object} styleRule
  * @param {!Object.<string, boolean>} usedProperties
  * @param {!Object.<string, string>} animationProperties
@@ -1971,7 +1988,6 @@ WebInspector.ComputedStylePropertiesSection = function(stylesPane, styleRule, us
     this._usedProperties = usedProperties;
     this._animationProperties = animationProperties || {};
     this._alwaysShowComputedProperties = { "display": true, "height": true, "width": true };
-    this.computedStyle = true;
     this._propertyTreeElements = {};
     this._expandedPropertyNames = {};
 }
@@ -2049,7 +2065,7 @@ WebInspector.ComputedStylePropertiesSection.prototype = {
         }
     },
 
-    rebuildComputedTrace: function(sections)
+    _rebuildComputedTrace: function(sections)
     {
         // Trace animation related properties
         for (var property in this._animationProperties) {
@@ -2064,7 +2080,7 @@ WebInspector.ComputedStylePropertiesSection.prototype = {
 
         for (var i = 0; i < sections.length; ++i) {
             var section = sections[i];
-            if (section.computedStyle || section.isBlank)
+            if (section.isBlank)
                 continue;
 
             var properties = section.styleRule.style.allProperties;
@@ -2704,7 +2720,7 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.StylePropertyTreeElementBase}
- * @param {!WebInspector.StylesSidebarPane} stylesPane
+ * @param {!WebInspector.ComputedStyleSidebarPane} stylesPane
  * @param {!Object} styleRule
  * @param {!WebInspector.CSSStyleDeclaration} style
  * @param {!WebInspector.CSSProperty} property
@@ -2718,14 +2734,6 @@ WebInspector.ComputedStylePropertyTreeElement = function(stylesPane, styleRule, 
 
 WebInspector.ComputedStylePropertyTreeElement.prototype = {
     /**
-     * @return {?WebInspector.DOMNode}
-     */
-    node: function()
-    {
-        return this._stylesPane._node;
-    },
-
-    /**
      * @return {?WebInspector.StylesSidebarPane}
      */
     editablePane: function()
@@ -2738,7 +2746,7 @@ WebInspector.ComputedStylePropertyTreeElement.prototype = {
      */
     parentPane: function()
     {
-        return this._stylesPane._computedStylePane;
+        return this._stylesPane;
     },
 
     _updateFilter: function()
