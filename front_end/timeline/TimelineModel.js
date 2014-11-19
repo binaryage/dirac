@@ -1613,49 +1613,56 @@ WebInspector.InvalidationTracker.prototype = {
     addInvalidation: function(event)
     {
         var invalidation = new WebInspector.InvalidationTrackingEvent(event);
-
         this._startNewFrameIfNeeded();
+
         if (!invalidation.nodeId && !invalidation.paintId) {
             console.error("Invalidation lacks node information.");
             console.error(invalidation);
+            return;
         }
 
-        // Record the paintIds for style recalc or layout invalidations.
-        // FIXME: This O(n^2) loop could be optimized with a map.
+        // PaintInvalidationTracking events provide a paintId and a nodeId which
+        // we can use to update the paintId for all other invalidation tracking
+        // events.
         var recordTypes = WebInspector.TimelineModel.RecordType;
-        if (invalidation.type == recordTypes.PaintInvalidationTracking)
-            this._invalidationEvents.forEach(updatePaintId);
+        if (invalidation.type === recordTypes.PaintInvalidationTracking)
+            this._forAllInvalidations(updatePaintId);
         else
-            this._invalidationEvents.push(invalidation);
+            this._addInvalidation(invalidation);
 
+        /**
+         * @param {!WebInspector.InvalidationTrackingEvent} invalidationToUpdate
+         */
         function updatePaintId(invalidationToUpdate)
         {
             if (invalidationToUpdate.nodeId !== invalidation.nodeId)
                 return;
-            if (invalidationToUpdate.type === recordTypes.StyleRecalcInvalidationTracking
-                    || invalidationToUpdate.type === recordTypes.LayoutInvalidationTracking) {
-                invalidationToUpdate.paintId = invalidation.paintId;
-            }
+            invalidationToUpdate.paintId = invalidation.paintId;
         }
     },
 
     /**
-     * @param {!WebInspector.TracingModel.Event} styleRecalcEvent
+     * @param {!WebInspector.TracingModel.Event} recalcStyleEvent
      */
-    didRecalcStyle: function(styleRecalcEvent)
+    didRecalcStyle: function(recalcStyleEvent)
     {
-        var recalcFrameId = styleRecalcEvent.args["frame"];
-        var index = this._lastStyleRecalcEventIndex;
-        var invalidationCount = this._invalidationEvents.length;
-        for (; index < invalidationCount; index++) {
-            var invalidation = this._invalidationEvents[index];
-            if (invalidation.type !== WebInspector.TimelineModel.RecordType.StyleRecalcInvalidationTracking)
-                continue;
-            if (invalidation.frameId === recalcFrameId)
-                this._addInvalidationTrackingEvent(styleRecalcEvent, invalidation);
-        }
+        var recalcStyleFrameId = recalcStyleEvent.args["frame"];
+        this._forAllInvalidations(associateWithRecalcStyleEvent.bind(this),
+            [WebInspector.TimelineModel.RecordType.StyleRecalcInvalidationTracking]);
 
-        this._lastStyleRecalcEventIndex = invalidationCount;
+        /**
+         * @param {!WebInspector.InvalidationTrackingEvent} invalidation
+         * @this {WebInspector.InvalidationTracker}
+         */
+        function associateWithRecalcStyleEvent(invalidation)
+        {
+            if (invalidation.linkedRecalcStyleEvent)
+                return;
+            if (invalidation.frameId !== recalcStyleFrameId)
+                return;
+            this._addInvalidationToEvent(recalcStyleEvent, invalidation);
+            invalidation.linkedRecalcStyleEvent = true;
+        }
     },
 
     /**
@@ -1664,17 +1671,22 @@ WebInspector.InvalidationTracker.prototype = {
     didLayout: function(layoutEvent)
     {
         var layoutFrameId = layoutEvent.args["beginData"]["frame"];
-        var index = this._lastLayoutEventIndex;
-        var invalidationCount = this._invalidationEvents.length;
-        for (; index < invalidationCount; index++) {
-            var invalidation = this._invalidationEvents[index];
-            if (invalidation.type !== WebInspector.TimelineModel.RecordType.LayoutInvalidationTracking)
-                continue;
-            if (invalidation.frameId === layoutFrameId)
-                this._addInvalidationTrackingEvent(layoutEvent, invalidation);
-        }
+        this._forAllInvalidations(associateWithLayoutEvent.bind(this),
+            [WebInspector.TimelineModel.RecordType.LayoutInvalidationTracking]);
 
-        this._lastLayoutEventIndex = invalidationCount;
+        /**
+         * @param {!WebInspector.InvalidationTrackingEvent} invalidation
+         * @this {WebInspector.InvalidationTracker}
+         */
+        function associateWithLayoutEvent(invalidation)
+        {
+            if (invalidation.linkedLayoutEvent)
+                return;
+            if (invalidation.frameId !== layoutFrameId)
+                return;
+            this._addInvalidationToEvent(layoutEvent, invalidation);
+            invalidation.linkedLayoutEvent = true;
+        }
     },
 
     /**
@@ -1690,22 +1702,22 @@ WebInspector.InvalidationTracker.prototype = {
         if (layerId)
             this._lastPaintWithLayer = paintEvent;
         if (!this._lastPaintWithLayer) {
-            console.error("Failed to find the paint container for a paint event.");
+            console.error("Failed to find a paint container for a paint event.");
             return;
         }
 
         var effectivePaintId = this._lastPaintWithLayer.args["data"]["nodeId"];
-        var frameId = paintEvent.args["data"]["frame"];
-        this._invalidationEvents.forEach(recordInvalidationForPaint.bind(this));
+        var paintFrameId = paintEvent.args["data"]["frame"];
+        this._forAllInvalidations(associateWithPaintEvent.bind(this));
 
         /**
          * @param {!WebInspector.InvalidationTrackingEvent} invalidation
          * @this {WebInspector.InvalidationTracker}
          */
-        function recordInvalidationForPaint(invalidation)
+        function associateWithPaintEvent(invalidation)
         {
-            if (invalidation.paintId === effectivePaintId && invalidation.frameId === frameId)
-                this._addInvalidationTrackingEvent(paintEvent, invalidation);
+            if (invalidation.paintId === effectivePaintId && invalidation.frameId === paintFrameId)
+                this._addInvalidationToEvent(paintEvent, invalidation);
         }
     },
 
@@ -1713,12 +1725,45 @@ WebInspector.InvalidationTracker.prototype = {
      * @param {!WebInspector.TracingModel.Event} event
      * @param {!WebInspector.InvalidationTrackingEvent} invalidation
      */
-    _addInvalidationTrackingEvent: function(event, invalidation)
+    _addInvalidationToEvent: function(event, invalidation)
     {
         if (!event.invalidationTrackingEvents)
             event.invalidationTrackingEvents = [ invalidation ];
         else
             event.invalidationTrackingEvents.push(invalidation);
+    },
+
+    /**
+     * @param {!WebInspector.InvalidationTrackingEvent} invalidation
+     */
+    _addInvalidation: function(invalidation)
+    {
+        if (this._invalidations[invalidation.type])
+            this._invalidations[invalidation.type].push(invalidation);
+        else
+            this._invalidations[invalidation.type] = [ invalidation ];
+    },
+
+    /**
+     * @param {function(!WebInspector.InvalidationTrackingEvent)} callback
+     * @param {!Array.<string>=} types
+     */
+    _forAllInvalidations: function(callback, types)
+    {
+        if (!types)
+            types = Object.keys(this._invalidations);
+        types.forEach(forAllInvalidationsOfType, this);
+
+        /**
+         * @param {!string} type
+         * @this {WebInspector.InvalidationTracker}
+         */
+        function forAllInvalidationsOfType(type)
+        {
+            var invalidations = this._invalidations[type];
+            if (invalidations)
+                invalidations.forEach(callback);
+        }
     },
 
     _startNewFrameIfNeeded: function()
@@ -1731,10 +1776,9 @@ WebInspector.InvalidationTracker.prototype = {
 
     _initializePerFrameState: function()
     {
-        /** @type {!Array.<!WebInspector.InvalidationTrackingEvent>} */
-        this._invalidationEvents = [];
-        this._lastStyleRecalcEventIndex = 0;
-        this._lastLayoutEventIndex = 0;
+        /** @type {!Object.<string, ?Array.<!WebInspector.InvalidationTrackingEvent>>} */
+        this._invalidations = {};
+
         this._lastPaintWithLayer = undefined;
         this._didPaint = false;
     }
