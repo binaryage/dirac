@@ -70,6 +70,7 @@ WebInspector.TimelineUIUtils._initEventStyles = function()
     eventStyles[recordTypes.InvalidateLayout] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Invalidate Layout"), categories["rendering"], true);
     eventStyles[recordTypes.Layout] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Layout"), categories["rendering"]);
     eventStyles[recordTypes.PaintSetup] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Paint Setup"), categories["painting"]);
+    eventStyles[recordTypes.PaintImage] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Paint Image"), categories["painting"], true);
     eventStyles[recordTypes.UpdateLayer] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Update Layer"), categories["painting"], true);
     eventStyles[recordTypes.UpdateLayerTree] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Update Layer Tree"), categories["rendering"]);
     eventStyles[recordTypes.Paint] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Paint"), categories["painting"]);
@@ -174,7 +175,7 @@ WebInspector.TimelineUIUtils.eventStyle = function(event)
 
     var result = eventStyles[event.name];
     if (!result) {
-        result = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Unknown: %s", event.name),  WebInspector.TimelineUIUtils.categories()["other"]);
+        result = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Unknown: %s", event.name),  WebInspector.TimelineUIUtils.categories()["other"], true);
         eventStyles[event.name] = result;
     }
     return result;
