@@ -645,11 +645,21 @@ WebInspector.StylesSidebarPane.prototype = {
     _innerRefreshUpdate: function(node, computedStyle, editedSection)
     {
         for (var pseudoId in this.sections) {
-            var filteredSections = this.sections[pseudoId] ? this.sections[pseudoId].filter(nonBlankSections) : [];
-            var styleRules = this._refreshStyleRules(filteredSections);
+            var sections = this.sections[pseudoId].filter(nonBlankSections);
+            var styleRules = [];
+            for (var i = 0; i < sections.length; ++i)
+                styleRules.push(sections[i].styleRule);
+
             var usedProperties = {};
             this._markUsedProperties(styleRules, usedProperties);
-            this._refreshSectionsForStyleRules(filteredSections, styleRules, editedSection);
+
+            // Walk the style rules and update the sections with new overloaded and used properties.
+            for (var i = 0; i < styleRules.length; ++i) {
+                var section = sections[i];
+                section._usedProperties = styleRules[i].usedProperties;
+                section.update(section === editedSection);
+            }
+
             if (pseudoId === "0" && computedStyle)
                 this._computedStylePane._refreshComputedSectionForStyleRule(computedStyle, usedProperties, this.sections[0]);
         }
@@ -678,28 +688,23 @@ WebInspector.StylesSidebarPane.prototype = {
         var usedProperties = {};
         this._markUsedProperties(styleRules, usedProperties);
 
-        this.sections[0] = this._rebuildSectionsForStyleRules(styleRules, null);
+        this.sections[0] = this._rebuildSectionsForStyleRules(styleRules);
         this._computedStylePane._rebuildComputedSectionForStyleRule(styles.computedStyle, usedProperties, this.sections[0], this._animationProperties);
-
-        var anchorElement = this.sections[0].inheritedPropertiesSeparatorElement;
 
         for (var i = 0; i < styles.pseudoElements.length; ++i) {
             var pseudoElementCSSRules = styles.pseudoElements[i];
-
-            styleRules = [];
             var pseudoId = pseudoElementCSSRules.pseudoId;
-
-            var entry = { isStyleSeparator: true, pseudoId: pseudoId };
-            styleRules.push(entry);
+            this._appendSectionPseudoIdSeparator(pseudoId);
 
             // Add rules in reverse order to match the cascade order.
+            styleRules = [];
             for (var j = pseudoElementCSSRules.rules.length - 1; j >= 0; --j) {
                 var rule = pseudoElementCSSRules.rules[j];
                 styleRules.push({ style: rule.style, selectorText: rule.selectorText, media: rule.media, rule: rule, editable: !!(rule.style && rule.style.styleSheetId) });
             }
             usedProperties = {};
             this._markUsedProperties(styleRules, usedProperties);
-            this.sections[pseudoId] = this._rebuildSectionsForStyleRules(styleRules, anchorElement);
+            this.sections[pseudoId] = this._rebuildSectionsForStyleRules(styleRules);
         }
 
         if (this._filterRegex)
@@ -709,18 +714,6 @@ WebInspector.StylesSidebarPane.prototype = {
     _nodeStylesUpdatedForTest: function(node, rebuild)
     {
         // Tests override this method.
-    },
-
-    _refreshStyleRules: function(sections)
-    {
-        var styleRules = [];
-        for (var i = 0; sections && i < sections.length; ++i) {
-            var section = sections[i];
-            var styleRule = { style: section.styleRule.style, rule: section.rule, editable: !!(section.styleRule.style && section.styleRule.style.styleSheetId),
-                isAttribute: section.styleRule.isAttribute, isInherited: section.styleRule.isInherited, parentNode: section.styleRule.parentNode };
-            styleRules.push(styleRule);
-        }
-        return styleRules;
     },
 
     _rebuildStyleRules: function(node, styles)
@@ -761,24 +754,12 @@ WebInspector.StylesSidebarPane.prototype = {
 
         // Walk the node structure and identify styles with inherited properties.
         var parentNode = node.parentNode;
-        function insertInheritedNodeSeparator(node)
-        {
-            var entry = {};
-            entry.isStyleSeparator = true;
-            entry.node = node;
-            styleRules.push(entry);
-        }
 
         for (var parentOrdinal = 0; parentOrdinal < styles.inherited.length; ++parentOrdinal) {
             var parentStyles = styles.inherited[parentOrdinal];
-            var separatorInserted = false;
             if (parentStyles.inlineStyle) {
                 if (this._containsInherited(parentStyles.inlineStyle)) {
                     var inlineStyle = { selectorText: WebInspector.UIString("Style Attribute"), style: parentStyles.inlineStyle, isAttribute: true, isInherited: true, parentNode: parentNode };
-                    if (!separatorInserted) {
-                        insertInheritedNodeSeparator(parentNode);
-                        separatorInserted = true;
-                    }
                     styleRules.push(inlineStyle);
                 }
             }
@@ -788,11 +769,6 @@ WebInspector.StylesSidebarPane.prototype = {
                 if (!this._containsInherited(rulePayload.style))
                     continue;
                 var rule = rulePayload;
-
-                if (!separatorInserted) {
-                    insertInheritedNodeSeparator(parentNode);
-                    separatorInserted = true;
-                }
                 styleRules.push({ style: rule.style, selectorText: rule.selectorText, media: rule.media, rule: rule, isInherited: true, parentNode: parentNode, editable: !!(rule.style && rule.style.styleSheetId) });
             }
             parentNode = parentNode.parentNode;
@@ -807,8 +783,6 @@ WebInspector.StylesSidebarPane.prototype = {
         var inheritedPropertyToNode = {};
         for (var i = 0; i < styleRules.length; ++i) {
             var styleRule = styleRules[i];
-            if (styleRule.isStyleSeparator)
-                continue;
             if (!WebInspector.StylesSidebarPane._hasMatchingSelectors(styleRule))
                 continue;
 
@@ -852,17 +826,6 @@ WebInspector.StylesSidebarPane.prototype = {
         }
     },
 
-    _refreshSectionsForStyleRules: function(sections, styleRules, editedSection)
-    {
-        // Walk the style rules and update the sections with new overloaded and used properties.
-        for (var i = 0; i < styleRules.length; ++i) {
-            var styleRule = styleRules[i];
-            var section = sections[i];
-            section._usedProperties = styleRule.usedProperties;
-            section.update(section === editedSection);
-        }
-    },
-
     _appendTopPadding: function()
     {
         var separatorElement = createElement("div");
@@ -871,34 +834,46 @@ WebInspector.StylesSidebarPane.prototype = {
     },
 
     /**
-     * @param {!Array.<!Object>} styleRules
-     * @param {?Element} anchorElement
+     * @param {number} pseudoId
      */
-    _rebuildSectionsForStyleRules: function(styleRules, anchorElement)
+    _appendSectionPseudoIdSeparator: function(pseudoId)
+    {
+        var separatorElement = createElement("div");
+        separatorElement.className = "sidebar-separator";
+        var pseudoName = WebInspector.StylesSidebarPane.PseudoIdNames[pseudoId];
+        if (pseudoName)
+            separatorElement.textContent = WebInspector.UIString("Pseudo ::%s element", pseudoName);
+        else
+            separatorElement.textContent = WebInspector.UIString("Pseudo element");
+        this._sectionsContainer.appendChild(separatorElement);
+    },
+
+    /**
+     * @param {!WebInspector.DOMNode} node
+     */
+    _appendSectionInheritedNodeSeparator: function(node)
+    {
+        var separatorElement = createElement("div");
+        separatorElement.className = "sidebar-separator";
+        var link = WebInspector.DOMPresentationUtils.linkifyNodeReference(node);
+        separatorElement.createTextChild(WebInspector.UIString("Inherited from") + " ");
+        separatorElement.appendChild(link);
+        this._sectionsContainer.appendChild(separatorElement);
+    },
+
+    /**
+     * @param {!Array.<!Object>} styleRules
+     */
+    _rebuildSectionsForStyleRules: function(styleRules)
     {
         // Make a property section for each style rule.
         var sections = [];
+        var lastParentNode = null;
         for (var i = 0; i < styleRules.length; ++i) {
             var styleRule = styleRules[i];
-            if (styleRule.isStyleSeparator) {
-                var separatorElement = createElement("div");
-                separatorElement.className = "sidebar-separator";
-                if (styleRule.node) {
-                    var link = WebInspector.DOMPresentationUtils.linkifyNodeReference(styleRule.node);
-                    separatorElement.createTextChild(WebInspector.UIString("Inherited from") + " ");
-                    separatorElement.appendChild(link);
-                    if (!sections.inheritedPropertiesSeparatorElement)
-                        sections.inheritedPropertiesSeparatorElement = separatorElement;
-                } else if ("pseudoId" in styleRule) {
-                    var pseudoName = WebInspector.StylesSidebarPane.PseudoIdNames[styleRule.pseudoId];
-                    if (pseudoName)
-                        separatorElement.textContent = WebInspector.UIString("Pseudo ::%s element", pseudoName);
-                    else
-                        separatorElement.textContent = WebInspector.UIString("Pseudo element");
-                } else
-                    separatorElement.textContent = styleRule.text;
-                this._sectionsContainer.insertBefore(separatorElement, anchorElement);
-                continue;
+            if (styleRule.parentNode && styleRule.parentNode !== lastParentNode) {
+                lastParentNode = styleRule.parentNode;
+                this._appendSectionInheritedNodeSeparator(lastParentNode);
             }
 
             // Default editable to true if it was omitted.
@@ -909,7 +884,7 @@ WebInspector.StylesSidebarPane.prototype = {
             var section = new WebInspector.StylePropertiesSection(this, styleRule, editable, styleRule.isInherited);
             section._markSelectorMatches();
             section.expanded = true;
-            this._sectionsContainer.insertBefore(section.element, anchorElement);
+            this._sectionsContainer.appendChild(section.element);
             sections.push(section);
         }
         return sections;
