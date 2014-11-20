@@ -292,14 +292,16 @@
 }
 
 .overrides-splash-screen {
-    display: flex;
     padding: 10px 10px;
     flex: auto;
 }
 
-.overrides-splash-screen > button {
-    margin: -4px 0;
-    display: inline-flex;
+.overrides-splash-screen .status-bar {
+    height: 24px;
+    display: inline-block;
+    margin-left: -4px;
+    position: relative;
+    top: -5px;
 }
 
 #overrides-reset-button,

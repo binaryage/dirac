@@ -696,8 +696,8 @@ WebInspector.Layers3DView.prototype = {
 
     _initStatusBar: function()
     {
-        this._panelStatusBar = new WebInspector.StatusBar(this.element);
-        this._panelStatusBar.appendStatusBarItem(new WebInspector.StatusBarItem(this._transformController.controlPanelElement()));
+        this._panelStatusBar = this._transformController.statusBar();
+        this.element.appendChild(this._panelStatusBar.element);
         this._showSlowScrollRectsSetting = this._createVisibilitySetting("Slow scroll rects", "frameViewerShowSlowScrollRects", true, this._panelStatusBar);
         this._showPaintsSetting = this._createVisibilitySetting("Paints", "frameViewerShowPaints", true, this._panelStatusBar);
         WebInspector.settings.frameViewerHideChromeWindow.addChangeListener(this._update, this);

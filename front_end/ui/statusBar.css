@@ -18,6 +18,12 @@
 .status-bar-shadow.vertical {
     flex-direction: column;
     height: auto;
+    width: 32px;
+}
+
+.status-bar-shadow.floating {
+    flex-direction: column;
+    height: auto;
     background-color: white;
     border: 1px solid #ccc;
     margin-top: -1px;
@@ -416,6 +422,22 @@ button.record-status-bar-item.toggled-on .glyph {
 
 .filter-status-bar-item.toggled-active .glyph {
     background-color: rgb(216, 0, 0);
+}
+
+.waterfall-status-bar-item .glyph {
+    -webkit-mask-position: -128px -48px;
+}
+
+.pan-status-bar-item .glyph {
+    -webkit-mask-position: -98px -120px;
+}
+
+.center-status-bar-item .glyph {
+    -webkit-mask-position: -128px -120px;
+}
+
+.rotate-status-bar-item .glyph {
+    -webkit-mask-position: -160px -120px;
 }
 
 .error-icon-small,

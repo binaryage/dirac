@@ -79,6 +79,26 @@ WebInspector.StatusBar.prototype = {
         this._items = [];
         this._contentElement.removeChildren();
         this._contentElement.createChild("content");
+    },
+
+    /**
+     * @param {string} color
+     */
+    setColor: function(color)
+    {
+        var style = createElement("style");
+        style.textContent = "button.status-bar-item .glyph { background-color: " + color + " !important }";
+        this._shadowRoot.appendChild(style);
+    },
+
+    /**
+     * @param {string} color
+     */
+    setToggledColor: function(color)
+    {
+        var style = createElement("style");
+        style.textContent = "button.status-bar-item.toggled-on .glyph { background-color: " + color + " !important }";
+        this._shadowRoot.appendChild(style);
     }
 }
 
@@ -460,7 +480,7 @@ WebInspector.StatusBarButtonBase.prototype = {
         var optionsGlassPane = new WebInspector.GlassPane(document);
         var optionsBar = new WebInspector.StatusBar(optionsGlassPane.element);
         optionsBar.element.classList.add("fill");
-        optionsBar.makeVertical();
+        optionsBar._contentElement.classList.add("floating");
         const buttonHeight = 23;
 
         var hostButtonPosition = this.element.totalOffset();
