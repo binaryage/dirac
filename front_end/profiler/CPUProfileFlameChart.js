@@ -241,7 +241,7 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
             entryInfo.push(row);
         }
 
-        var name = WebInspector.CPUProfileDataModel.beautifyFunctionName(node.functionName);
+        var name = WebInspector.beautifyFunctionName(node.functionName);
         pushEntryInfoRow(WebInspector.UIString("Name"), name);
         var selfTime = this._millisecondsToString(this._entrySelfTimes[entryIndex]);
         var totalTime = this._millisecondsToString(timelineData.entryTotalTimes[entryIndex]);
@@ -273,7 +273,7 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
     entryTitle: function(entryIndex)
     {
         var node = this._entryNodes[entryIndex];
-        return WebInspector.CPUProfileDataModel.beautifyFunctionName(node.functionName);
+        return WebInspector.beautifyFunctionName(node.functionName);
     },
 
     /**

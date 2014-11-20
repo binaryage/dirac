@@ -44,7 +44,7 @@ WebInspector.ProfileDataGridNode = function(profileNode, owningTree, hasChildren
     this.callUID = profileNode.callUID;
     this.selfTime = profileNode.selfTime;
     this.totalTime = profileNode.totalTime;
-    this.functionName = WebInspector.CPUProfileDataModel.beautifyFunctionName(profileNode.functionName);
+    this.functionName = WebInspector.beautifyFunctionName(profileNode.functionName);
     this._deoptReason = (!profileNode.deoptReason || profileNode.deoptReason === "no reason") ? "" : profileNode.deoptReason;
     this.url = profileNode.url;
 }

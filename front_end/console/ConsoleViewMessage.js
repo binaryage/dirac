@@ -1114,7 +1114,7 @@ WebInspector.ConsoleViewMessage.prototype = {
                 var frame = stackTrace[i];
 
                 var content = createElementWithClass("div", "stacktrace-entry");
-                var functionName = frame.functionName || WebInspector.UIString("(anonymous function)");
+                var functionName = WebInspector.beautifyFunctionName(frame.functionName);
                 if (frame.scriptId) {
                     var urlElement = this._linkifyCallFrame(frame);
                     if (!urlElement)

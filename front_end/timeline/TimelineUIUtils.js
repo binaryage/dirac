@@ -288,7 +288,7 @@ WebInspector.TimelineUIUtils.buildDetailsNodeForTraceEvent = function(event, tar
         break;
     case recordType.JSFrame:
         details = linkifyLocation(eventData["scriptId"], eventData["url"], eventData["lineNumber"], eventData["columnNumber"]);
-        detailsText = WebInspector.CPUProfileDataModel.beautifyFunctionName(eventData["functionName"]);
+        detailsText = WebInspector.beautifyFunctionName(eventData["functionName"]);
         if (details && detailsText)
             details.textContent = detailsText;
         break;
@@ -1485,7 +1485,7 @@ WebInspector.TimelineDetailsContentHelper.prototype = {
      */
     appendStackFrame: function(parentElement, stackFrame)
     {
-        parentElement.createTextChild(stackFrame.functionName || WebInspector.UIString("(anonymous function)"));
+        parentElement.createTextChild(WebInspector.beautifyFunctionName(stackFrame.functionName));
         parentElement.createTextChild(" @ ");
         var urlElement = this._linkifier.linkifyScriptLocation(this._target, stackFrame.scriptId, stackFrame.url, stackFrame.lineNumber - 1, stackFrame.columnNumber - 1);
         parentElement.appendChild(urlElement);

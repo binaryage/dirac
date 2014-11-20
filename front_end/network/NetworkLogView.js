@@ -1077,7 +1077,7 @@ WebInspector.NetworkLogView.prototype = {
             for (var i = 0; i < stackTrace.length; ++i) {
                 var stackFrame = stackTrace[i];
                 var row = createElement("tr");
-                row.createChild("td").textContent = stackFrame.functionName || WebInspector.UIString("(anonymous function)");
+                row.createChild("td").textContent = WebInspector.beautifyFunctionName(stackFrame.functionName);
                 row.createChild("td").textContent = " @ ";
                 row.createChild("td").appendChild(this._linkifier.linkifyConsoleCallFrame(request.target(), stackFrame));
                 framesTable.appendChild(row);

@@ -2194,7 +2194,7 @@ WebInspector.HeapAllocationStackView.prototype = {
             var frame = frames[i];
             var frameDiv = stackDiv.createChild("div", "stack-frame");
             var name = frameDiv.createChild("div");
-            name.textContent = frame.functionName;
+            name.textContent = WebInspector.beautifyFunctionName(frame.functionName);
             if (frame.scriptId) {
                 var urlElement = this._linkifier.linkifyScriptLocation(this._target, String(frame.scriptId), frame.scriptName, frame.line - 1, frame.column - 1);
                 frameDiv.appendChild(urlElement);

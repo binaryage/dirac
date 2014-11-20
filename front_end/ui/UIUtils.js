@@ -1235,3 +1235,12 @@ WebInspector.initializeUIUtils = function(window)
     window.document.addEventListener("focus", WebInspector._focusChanged.bind(WebInspector, window.document), true);
     window.document.addEventListener("blur", WebInspector._documentBlurred.bind(WebInspector, window.document), true);
 }
+
+/**
+ * @param {string} name
+ * @return {string}
+ */
+WebInspector.beautifyFunctionName = function(name)
+{
+    return name || WebInspector.UIString("(anonymous function)");
+}
