@@ -1009,6 +1009,8 @@ WebInspector.HeapSnapshotView.prototype = {
             this._allocationStackView.clear();
             this._allocationDataGrid.dispose();
         }
+        if (this._trackingOverviewGrid)
+            this._trackingOverviewGrid.dispose();
     },
 
     __proto__: WebInspector.VBox.prototype
@@ -1356,13 +1358,13 @@ WebInspector.TrackingHeapSnapshotProfileType.prototype = {
     /**
      * @override
      */
-    resetProfiles: function()
+    _resetProfiles: function()
     {
         var wasRecording = this._recording;
         var recordingAllocationStacks = wasRecording && this.profileBeingRecorded()._hasAllocationStacks;
         // Clear current profile to avoid stopping backend.
         this.setProfileBeingRecorded(null);
-        WebInspector.HeapSnapshotProfileType.prototype.resetProfiles.call(this);
+        WebInspector.HeapSnapshotProfileType.prototype._resetProfiles.call(this);
         this._profileSamples = null;
         this._lastSeenIndex = -1;
         if (wasRecording)
@@ -1766,7 +1768,12 @@ WebInspector.HeapTrackingOverviewGrid = function(heapProfileHeader)
 WebInspector.HeapTrackingOverviewGrid.IdsRangeChanged = "IdsRangeChanged";
 
 WebInspector.HeapTrackingOverviewGrid.prototype = {
-    _onStopTracking: function(event)
+    dispose: function()
+    {
+        this._onStopTracking();
+    },
+
+    _onStopTracking: function()
     {
         this._profileType.removeEventListener(WebInspector.TrackingHeapSnapshotProfileType.HeapStatsUpdate, this._onHeapStatsUpdate, this);
         this._profileType.removeEventListener(WebInspector.TrackingHeapSnapshotProfileType.TrackingStopped, this._onStopTracking, this);
