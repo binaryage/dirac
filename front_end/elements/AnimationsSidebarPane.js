@@ -306,7 +306,7 @@ WebInspector.AnimationSection.prototype = {
             var keyframes = this.player.source().keyframesRule().keyframes();
             for (var j = 0; j < keyframes.length; j++) {
                 var inlineStyle = { selectorText: keyframes[j].offset(), style: keyframes[j].style(), isAttribute: true };
-                var styleSection = new WebInspector.StylePropertiesSection(this._stylesPane, inlineStyle, true, false);
+                var styleSection = new WebInspector.StylePropertiesSection(this._stylesPane, inlineStyle, true);
                 styleSection.expanded = true;
                 this._keyframesElement.appendChild(styleSection.element);
             }
