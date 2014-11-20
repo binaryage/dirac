@@ -193,6 +193,8 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
         this._currentLevel = 0;
         this._appendFrameBars(this._frameModel.frames());
         this._appendThreadTimelineData(WebInspector.UIString("Main Thread"), this._model.mainThreadEvents(), this._model.mainThreadAsyncEvents());
+        if (Runtime.experiments.isEnabled("gpuTimeline"))
+            this._appendGPUEvents();
         var threads = this._model.virtualThreads();
         for (var i = 0; i < threads.length; i++)
             this._appendThreadTimelineData(threads[i].name, threads[i].events, threads[i].asyncEvents);
@@ -284,6 +286,16 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
         }
         this._currentLevel += lastUsedTimeByLevel.length;
         return lastUsedTimeByLevel.length;
+    },
+
+    _appendGPUEvents: function()
+    {
+        function recordToEvent(record)
+        {
+            return record.traceEvent();
+        }
+        if (this._appendSyncEvents(WebInspector.UIString("GPU"), this._model.gpuTasks().map(recordToEvent)))
+            ++this._currentLevel;
     },
 
     /**

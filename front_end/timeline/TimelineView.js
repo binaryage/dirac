@@ -610,7 +610,7 @@ WebInspector.TimelineView.prototype = {
     {
         this._refreshUtilizationBars(WebInspector.UIString("CPU"), this._model.mainThreadTasks(), this._cpuBarsElement);
         if (Runtime.experiments.isEnabled("gpuTimeline"))
-            this._refreshUtilizationBars(WebInspector.UIString("GPU"), this._model.gpuThreadTasks(), this._gpuBarsElement);
+            this._refreshUtilizationBars(WebInspector.UIString("GPU"), this._model.gpuTasks(), this._gpuBarsElement);
     },
 
     /**

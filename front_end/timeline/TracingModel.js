@@ -150,7 +150,9 @@ WebInspector.TracingModel.prototype = {
 
     reset: function()
     {
+        /** @type {!Object.<(number|string), !WebInspector.TracingModel.Process>} */
         this._processById = {};
+        this._processByName = new Map();
         this._minimumRecordTime = 0;
         this._maximumRecordTime = 0;
         this._sessionId = null;
@@ -220,7 +222,9 @@ WebInspector.TracingModel.prototype = {
             process._setSortIndex(payload.args["sort_index"]);
             break;
         case WebInspector.TracingModel.MetadataEvent.ProcessName:
-            process._setName(payload.args["name"]);
+            var processName = payload.args["name"];
+            process._setName(processName);
+            this._processByName.set(processName, process);
             break;
         case WebInspector.TracingModel.MetadataEvent.ThreadSortIndex:
             process.threadById(payload.tid)._setSortIndex(payload.args["sort_index"]);
@@ -284,7 +288,16 @@ WebInspector.TracingModel.prototype = {
     sortedProcesses: function()
     {
         return WebInspector.TracingModel.NamedObject._sort(Object.values(this._processById));
-    }
+    },
+
+    /**
+     * @param {string} name
+     * @return {?WebInspector.TracingModel.Process}
+     */
+    processByName: function(name)
+    {
+        return this._processByName.get(name);
+    },
 }
 
 
@@ -592,7 +605,9 @@ WebInspector.TracingModel.Process = function(id)
     WebInspector.TracingModel.NamedObject.call(this);
     this._setName("Process " + id);
     this._id = id;
+    /** @type {!Object.<number, !WebInspector.TracingModel.Thread>} */
     this._threads = {};
+    this._threadByName = new Map();
     this._objects = {};
     /** @type {!Array.<!WebInspector.TracingModel.Event>} */
     this._asyncEvents = [];
@@ -623,6 +638,24 @@ WebInspector.TracingModel.Process.prototype = {
             this._threads[id] = thread;
         }
         return thread;
+    },
+
+    /**
+     * @param {string} name
+     * @return {?WebInspector.TracingModel.Thread}
+     */
+    threadByName: function(name)
+    {
+        return this._threadByName.get(name);
+    },
+
+    /**
+     * @param {string} name
+     * @param {!WebInspector.TracingModel.Thread} thread
+     */
+    _setThreadByName: function(name, thread)
+    {
+        this._threadByName.set(name, thread);
     },
 
     /**
@@ -849,6 +882,16 @@ WebInspector.TracingModel.Thread.prototype = {
     _addAsyncEventSteps: function(eventSteps)
     {
         this._asyncEvents.push(eventSteps);
+    },
+
+    /**
+     * @override
+     * @param {string} name
+     */
+    _setName: function(name)
+    {
+        WebInspector.TracingModel.NamedObject.prototype._setName.call(this, name);
+        this._process._setThreadByName(name, this);
     },
 
     /**

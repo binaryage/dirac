@@ -653,6 +653,7 @@ WebInspector.TimelineModel.prototype = {
         this._cpuProfiles = null;
 
         this._buildTimelineRecords();
+        this._buildGPUTasks();
         this.dispatchEventToListeners(WebInspector.TimelineModel.Events.RecordingStopped);
     },
 
@@ -707,10 +708,24 @@ WebInspector.TimelineModel.prototype = {
             var record = topLevelRecords[i];
             if (record.type() === WebInspector.TimelineModel.RecordType.Program)
                 this._mainThreadTasks.push(record);
-            if (record.type() === WebInspector.TimelineModel.RecordType.GPUTask)
-                this._gpuThreadTasks.push(record);
         }
         this._records = topLevelRecords;
+    },
+
+    _buildGPUTasks: function()
+    {
+        var gpuProcess = this._tracingModel.processByName("GPU Process");
+        if (!gpuProcess)
+            return;
+        var mainThread = gpuProcess.threadByName("CrGpuMain");
+        if (!mainThread)
+            return;
+        var events = mainThread.events();
+        var recordTypes = WebInspector.TimelineModel.RecordType;
+        for (var i = 0; i < events.length; ++i) {
+            if (events[i].name === recordTypes.GPUTask)
+                this._gpuTasks.push(new WebInspector.TimelineModel.Record(this, events[i]));
+        }
     },
 
     /**
@@ -1069,15 +1084,18 @@ WebInspector.TimelineModel.prototype = {
     reset: function()
     {
         this._virtualThreads = [];
+        /** @type {!Array.<!WebInspector.TracingModel.Event>} */
         this._mainThreadEvents = [];
+        /** @type {!Array.<!Array.<!WebInspector.TracingModel.Event>>} */
         this._mainThreadAsyncEvents = [];
+        /** @type {!Array.<!WebInspector.TracingModel.Event>} */
         this._inspectedTargetEvents = [];
 
         this._records = [];
         /** @type {!Array.<!WebInspector.TimelineModel.Record>} */
         this._mainThreadTasks =  [];
         /** @type {!Array.<!WebInspector.TimelineModel.Record>} */
-        this._gpuThreadTasks = [];
+        this._gpuTasks = [];
         /** @type {!Array.<!WebInspector.TimelineModel.Record>} */
         this._eventDividerRecords = [];
         this.dispatchEventToListeners(WebInspector.TimelineModel.Events.RecordsCleared);
@@ -1177,9 +1195,9 @@ WebInspector.TimelineModel.prototype = {
     /**
      * @return {!Array.<!WebInspector.TimelineModel.Record>}
      */
-    gpuThreadTasks: function()
+    gpuTasks: function()
     {
-        return this._gpuThreadTasks;
+        return this._gpuTasks;
     },
 
     /**
