@@ -88,10 +88,6 @@
     border: none;
 }
 
-.canvas-profile-view button.right-sidebar-show-hide-button.canvas-sidebar-show-hide-button.toggled-hide {
-    margin-right: 15px;
-}
-
 .canvas-replay-button {
     min-width: 32px;
 }

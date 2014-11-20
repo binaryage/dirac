@@ -83,7 +83,7 @@
     margin-right: 36px;
 }
 
-.panel.sources .split-view button.scripts-debugger-show-hide-button.right-sidebar-show-hide-button.toggled-hide {
+.panel.sources .split-view /deep/ button.scripts-debugger-show-hide-button.right-sidebar-show-hide-button.toggled-hide {
     margin-right: 15px;
 }
 
@@ -100,14 +100,8 @@
     bottom: 0;
 }
 
-.panel.sources .scripts-debugger-show-hide-button {
+.panel.sources /deep/ .scripts-debugger-show-hide-button {
     display: block;
-}
-
-.panel.sources button.scripts-navigator-show-hide-button {
-    display: block;
-    top: 3px;
-    left: 3px;
 }
 
 .panel.sources .navigator-tabbed-pane .tabbed-pane-header {

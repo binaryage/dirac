@@ -2136,10 +2136,6 @@ body.undocked .toolbar-close-button-item {
     display: none;
 }
 
-.root-view > .split-view > .split-view-sidebar {
-    position: relative;
-}
-
 select.drop-down-menu {
     border: none;
     -webkit-appearance: none;

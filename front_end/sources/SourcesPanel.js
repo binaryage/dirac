@@ -51,7 +51,6 @@ WebInspector.SourcesPanel = function(workspaceForTest)
     const initialNavigatorWidth = 225;
     this.editorView = new WebInspector.SplitView(true, false, "sourcesPanelNavigatorSplitViewState", initialNavigatorWidth);
     this.editorView.enableShowModeSaving();
-    this.editorView.element.id = "scripts-editor-split-view";
     this.editorView.element.tabIndex = 0;
     this.editorView.show(this._splitView.mainElement());
 
@@ -750,12 +749,8 @@ WebInspector.SourcesPanel.prototype = {
 
     _installDebuggerSidebarController: function()
     {
-        var toggleNavigatorSidebarButton = this.editorView.createShowHideSidebarButton("navigator", "scripts-navigator-show-hide-button");
-        this.editorView.mainElement().appendChild(toggleNavigatorSidebarButton);
-
-        this._toggleDebuggerSidebarButton = this._splitView.createShowHideSidebarButton("debugger", "scripts-debugger-show-hide-button");
-
-        this._splitView.mainElement().appendChild(this._toggleDebuggerSidebarButton);
+        this.editorView.displayShowHideSidebarButton("navigator");
+        this._toggleDebuggerSidebarButton = this._splitView.displayShowHideSidebarButton("debugger", "scripts-debugger-show-hide-button");
         this._splitView.mainElement().appendChild(this._debugSidebarResizeWidgetElement);
     },
 

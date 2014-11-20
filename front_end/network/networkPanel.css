@@ -168,11 +168,6 @@
     width: 100%;
 }
 
-.panel.network .split-view {
-    flex: auto;
-    position: relative;
-}
-
 .network-filters-header {
     flex: 0 0 23px;
     padding-right: 4px;

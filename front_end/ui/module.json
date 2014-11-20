@@ -60,6 +60,7 @@
         "panelEnablerView.css",
         "pieChart.css",
         "searchableView.css",
+        "splitView.css",
         "statusBar.css"
     ]
 }

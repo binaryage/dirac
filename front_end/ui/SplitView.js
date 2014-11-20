@@ -38,20 +38,23 @@
  */
 WebInspector.SplitView = function(isVertical, secondIsSidebar, settingName, defaultSidebarWidth, defaultSidebarHeight, constraintsInDip)
 {
-    WebInspector.View.call(this);
-
+    WebInspector.View.call(this, true);
     this.element.classList.add("split-view");
+    this.registerRequiredCSS("ui/splitView.css");
+
+    this.contentElement.classList.add("shadow-split-view");
+    this._mainElement = this.contentElement.createChild("div", "shadow-split-view-contents shadow-split-view-main vbox");
+    this._mainElement.createChild("content").select = ".insertion-point-main";
+    this._sidebarElement = this.contentElement.createChild("div", "shadow-split-view-contents shadow-split-view-sidebar vbox");
+    this._sidebarElement.createChild("content").select = ".insertion-point-sidebar";
+    this._resizerElement = this.contentElement.createChild("div", "shadow-split-view-resizer");
+    this._resizerElement.createChild("div", "shadow-split-view-resizer-border");
 
     this._mainView = new WebInspector.VBox();
-    this._mainElement = this._mainView.element;
-    this._mainElement.className = "split-view-contents split-view-main vbox"; // Override
-
+    this._mainView.element.classList.add("insertion-point-main");
     this._sidebarView = new WebInspector.VBox();
-    this._sidebarElement = this._sidebarView.element;
-    this._sidebarElement.className = "split-view-contents split-view-sidebar vbox"; // Override
+    this._sidebarView.element.classList.add("insertion-point-sidebar");
 
-    this._resizerElement = this.element.createChild("div", "split-view-resizer");
-    this._resizerElement.createChild("div", "split-view-resizer-border");
     this._mainView.show(this.element);
     this._sidebarView.show(this.element);
 
@@ -119,9 +122,10 @@ WebInspector.SplitView.prototype = {
      */
     _innerSetVertical: function(isVertical)
     {
-        this.element.classList.remove(this._isVertical ? "hbox" : "vbox");
+        this.contentElement.classList.toggle("vbox", !isVertical);
+        this.contentElement.classList.toggle("hbox", isVertical);
         this._isVertical = isVertical;
-        this.element.classList.add(this._isVertical ? "hbox" : "vbox");
+
         delete this._resizerElementSize;
         this._sidebarSize = -1;
         this._restoreSidebarSizeFromSettings();
@@ -155,7 +159,7 @@ WebInspector.SplitView.prototype = {
      */
     mainElement: function()
     {
-        return this._mainElement;
+        return this._mainView.element;
     },
 
     /**
@@ -163,7 +167,7 @@ WebInspector.SplitView.prototype = {
      */
     sidebarElement: function()
     {
-        return this._sidebarElement;
+        return this._sidebarView.element;
     },
 
     /**
@@ -193,11 +197,11 @@ WebInspector.SplitView.prototype = {
      */
     setSecondIsSidebar: function(secondIsSidebar)
     {
-        this._mainElement.classList.toggle("split-view-contents-first", secondIsSidebar);
-        this._mainElement.classList.toggle("split-view-contents-second", !secondIsSidebar);
-        this._sidebarElement.classList.toggle("split-view-contents-first", !secondIsSidebar);
-        this._sidebarElement.classList.toggle("split-view-contents-second", secondIsSidebar);
-        this.element.classList.toggle("split-view-first-is-sidebar", !secondIsSidebar);
+        this._mainElement.classList.toggle("shadow-split-view-contents-first", secondIsSidebar);
+        this._mainElement.classList.toggle("shadow-split-view-contents-second", !secondIsSidebar);
+        this._sidebarElement.classList.toggle("shadow-split-view-contents-first", !secondIsSidebar);
+        this._sidebarElement.classList.toggle("shadow-split-view-contents-second", secondIsSidebar);
+        this.contentElement.classList.toggle("shadow-split-view-first-is-sidebar", !secondIsSidebar);
         this._secondIsSidebar = secondIsSidebar;
     },
 
@@ -234,7 +238,7 @@ WebInspector.SplitView.prototype = {
      */
     hideMain: function(animate)
     {
-        this._showOnly(this._sidebarView, this._mainView, animate);
+        this._showOnly(this._sidebarView, this._mainView, this._sidebarElement, this._mainElement, animate);
         this._updateShowMode(WebInspector.SplitView.ShowMode.OnlySidebar);
     },
 
@@ -243,7 +247,7 @@ WebInspector.SplitView.prototype = {
      */
     hideSidebar: function(animate)
     {
-        this._showOnly(this._mainView, this._sidebarView, animate);
+        this._showOnly(this._mainView, this._sidebarView, this._mainElement, this._sidebarElement, animate);
         this._updateShowMode(WebInspector.SplitView.ShowMode.OnlyMain);
     },
 
@@ -259,9 +263,11 @@ WebInspector.SplitView.prototype = {
     /**
      * @param {!WebInspector.View} sideToShow
      * @param {!WebInspector.View} sideToHide
+     * @param {!Element} shadowToShow
+     * @param {!Element} shadowToHide
      * @param {boolean=} animate
      */
-    _showOnly: function(sideToShow, sideToHide, animate)
+    _showOnly: function(sideToShow, sideToHide, shadowToShow, shadowToHide, animate)
     {
         this._cancelAnimation();
 
@@ -276,9 +282,11 @@ WebInspector.SplitView.prototype = {
             else
                 this._sidebarView.show(this.element);
             sideToHide.detach();
-            sideToShow.element.classList.add("maximized");
-            sideToHide.element.classList.remove("maximized");
             this._resizerElement.classList.add("hidden");
+            shadowToShow.classList.remove("hidden");
+            shadowToShow.classList.add("maximized");
+            shadowToHide.classList.add("hidden");
+            shadowToHide.classList.remove("maximized");
             this._removeAllLayoutProperties();
         }
 
@@ -322,8 +330,8 @@ WebInspector.SplitView.prototype = {
             animate = false;
 
         this._cancelAnimation();
-        this._mainElement.classList.remove("maximized");
-        this._sidebarElement.classList.remove("maximized");
+        this._mainElement.classList.remove("maximized", "hidden");
+        this._sidebarElement.classList.remove("maximized", "hidden");
         this._resizerElement.classList.remove("hidden");
 
         // Make sure main is the first in the children list.
@@ -381,8 +389,8 @@ WebInspector.SplitView.prototype = {
     _totalSizeDIP: function()
     {
         if (!this._totalSize) {
-            this._totalSize = this._isVertical ? this.element.offsetWidth : this.element.offsetHeight;
-            this._totalSizeOtherDimension = this._isVertical ? this.element.offsetHeight : this.element.offsetWidth;
+            this._totalSize = this._isVertical ? this.contentElement.offsetWidth : this.contentElement.offsetHeight;
+            this._totalSizeOtherDimension = this._isVertical ? this.contentElement.offsetHeight : this.contentElement.offsetWidth;
         }
         return this._totalSize * WebInspector.zoomManager.zoomFactor();
     },
@@ -423,7 +431,7 @@ WebInspector.SplitView.prototype = {
         // this._totalSize is available below since we successfully applied constraints.
         var sidebarSizeValue = (size / WebInspector.zoomManager.zoomFactor()) + "px";
         var mainSizeValue = (this._totalSize - size / WebInspector.zoomManager.zoomFactor()) + "px";
-        this.sidebarElement().style.flexBasis = sidebarSizeValue;
+        this._sidebarElement.style.flexBasis = sidebarSizeValue;
 
         // Make both sides relayout boundaries.
         if (this._isVertical) {
@@ -491,7 +499,7 @@ WebInspector.SplitView.prototype = {
 
         // This order of things is important.
         // 1. Resize main element early and force layout.
-        this.element.style.setProperty(animatedMarginPropertyName, marginFrom);
+        this.contentElement.style.setProperty(animatedMarginPropertyName, marginFrom);
         if (!reverse) {
             suppressUnused(this._mainElement.offsetWidth);
             suppressUnused(this._sidebarElement.offsetWidth);
@@ -502,7 +510,7 @@ WebInspector.SplitView.prototype = {
             this._sidebarView.doResize();
 
         // 3. Configure and run animation
-        this.element.style.setProperty("transition", animatedMarginPropertyName + " " + animationTime + "ms linear");
+        this.contentElement.style.setProperty("transition", animatedMarginPropertyName + " " + animationTime + "ms linear");
 
         var boundAnimationFrame;
         var startTime;
@@ -515,7 +523,7 @@ WebInspector.SplitView.prototype = {
 
             if (!startTime) {
                 // Kick animation on first frame.
-                this.element.style.setProperty(animatedMarginPropertyName, marginTo);
+                this.contentElement.style.setProperty(animatedMarginPropertyName, marginTo);
                 startTime = window.performance.now();
             } else if (window.performance.now() < startTime + animationTime) {
                 // Process regular animation frame.
@@ -527,22 +535,22 @@ WebInspector.SplitView.prototype = {
                 this.dispatchEventToListeners(WebInspector.SplitView.Events.SidebarSizeChanged, this.sidebarSize());
                 return;
             }
-            this._animationFrameHandle = this.element.window().requestAnimationFrame(boundAnimationFrame);
+            this._animationFrameHandle = this.contentElement.window().requestAnimationFrame(boundAnimationFrame);
         }
         boundAnimationFrame = animationFrame.bind(this);
-        this._animationFrameHandle = this.element.window().requestAnimationFrame(boundAnimationFrame);
+        this._animationFrameHandle = this.contentElement.window().requestAnimationFrame(boundAnimationFrame);
     },
 
     _cancelAnimation: function()
     {
-        this.element.style.removeProperty("margin-top");
-        this.element.style.removeProperty("margin-right");
-        this.element.style.removeProperty("margin-bottom");
-        this.element.style.removeProperty("margin-left");
-        this.element.style.removeProperty("transition");
+        this.contentElement.style.removeProperty("margin-top");
+        this.contentElement.style.removeProperty("margin-right");
+        this.contentElement.style.removeProperty("margin-bottom");
+        this.contentElement.style.removeProperty("margin-left");
+        this.contentElement.style.removeProperty("transition");
 
         if (this._animationFrameHandle) {
-            this.element.window().cancelAnimationFrame(this._animationFrameHandle);
+            this.contentElement.window().cancelAnimationFrame(this._animationFrameHandle);
             delete this._animationFrameHandle;
         }
         if (this._animationCallback) {
@@ -834,15 +842,15 @@ WebInspector.SplitView.prototype = {
 
     /**
      * @param {string} title
-     * @param {string} className
+     * @param {string=} className
      * @return {!Element}
      */
-    createShowHideSidebarButton: function(title, className)
+    displayShowHideSidebarButton: function(title, className)
     {
         console.assert(this.isVertical(), "Buttons for split view with horizontal split are not supported yet.");
 
         this._showHideSidebarButtonTitle = WebInspector.UIString(title);
-        this._showHideSidebarButton = createElementWithClass("button", "sidebar-show-hide-button " + className);
+        this._showHideSidebarButton = this._mainElement.createChild("button", "sidebar-show-hide-button " + (className || ""));
         this._showHideSidebarButton.addEventListener("click", buttonClicked.bind(this), false);
         this._updateShowHideSidebarButton();
 

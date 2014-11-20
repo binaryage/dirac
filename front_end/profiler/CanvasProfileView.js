@@ -158,10 +158,6 @@ WebInspector.CanvasProfileView.prototype = {
         this._replayInfoSplitView.addEventListener(WebInspector.SplitView.Events.ShowModeChanged, this._updateReplayInfoResizeWidget, this);
         this._updateReplayInfoResizeWidget();
         this._replayInfoSplitView.installResizer(this._replayInfoResizeWidgetElement);
-
-        var toggleReplayStateSidebarButton = this._replayInfoSplitView.createShowHideSidebarButton("sidebar", "canvas-sidebar-show-hide-button");
-        replayLogElement.appendChild(toggleReplayStateSidebarButton);
-        this._replayInfoSplitView.hideSidebar();
     },
 
     _updateReplayInfoResizeWidget: function()

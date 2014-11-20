@@ -76,14 +76,6 @@
     background-position: -202px -107px;
 }
 
-button.scripts-debugger-show-hide-button {
-    display: none;
-}
-
-button.scripts-navigator-show-hide-button {
-    display: none;
-}
-
 .source-frame-infobar {
     border-bottom: 1px solid rgb(187, 187, 187);
     display: flex;

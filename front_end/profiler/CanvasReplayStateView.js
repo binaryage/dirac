@@ -41,8 +41,8 @@ WebInspector.CanvasReplayStateView = function(traceLogPlayer)
     this._traceLogPlayer = traceLogPlayer;
 
     var controlsToolbar = new WebInspector.StatusBar(this.element);
-    this._prevButton = this._createControlButton(controlsToolbar, "first-step-status-bar-item", WebInspector.UIString("Previous resource."), this._onResourceNavigationClick.bind(this, false));
-    this._nextButton = this._createControlButton(controlsToolbar, "play-backwards-status-bar-item", WebInspector.UIString("Next resource."), this._onResourceNavigationClick.bind(this, true));
+    this._prevButton = this._createControlButton(controlsToolbar, "play-backwards-step-status-bar-item", WebInspector.UIString("Previous resource."), this._onResourceNavigationClick.bind(this, false));
+    this._nextButton = this._createControlButton(controlsToolbar, "play-status-bar-item", WebInspector.UIString("Next resource."), this._onResourceNavigationClick.bind(this, true));
     this._createControlButton(controlsToolbar, "refresh-status-bar-item", WebInspector.UIString("Refresh."), this._onStateRefreshClick.bind(this));
 
     this._resourceSelector = new WebInspector.StatusBarComboBox(this._onReplayResourceChanged.bind(this));

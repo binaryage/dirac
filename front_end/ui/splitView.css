@@ -26,27 +26,27 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-.split-view {
+.shadow-split-view {
     display: flex;
     overflow: hidden;
 }
 
-.split-view-contents {
+.shadow-split-view-contents {
     overflow: auto;
     display: flex;
     position: relative;
     flex-direction: column;
 }
 
-.split-view-sidebar {
+.shadow-split-view-sidebar {
     flex: none;
 }
 
-.split-view-main, .split-view-sidebar.maximized {
+.shadow-split-view-main, .shadow-split-view-sidebar.maximized {
     flex: auto;
 }
 
-.split-view.hbox > .split-view-resizer {
+.shadow-split-view.hbox > .shadow-split-view-resizer {
     position: absolute;
     top: 0;
     bottom: 0;
@@ -54,7 +54,7 @@
     z-index: 500;
 }
 
-.split-view.vbox > .split-view-resizer {
+.shadow-split-view.vbox > .shadow-split-view-resizer {
     position: absolute;
     left: 0;
     right: 0;
@@ -62,33 +62,33 @@
     z-index: 500;
 }
 
-.split-view.hbox.split-view-first-is-sidebar {
+.shadow-split-view.hbox.shadow-split-view-first-is-sidebar {
     flex-direction: row-reverse !important;
 }
 
-.split-view.vbox.split-view-first-is-sidebar {
+.shadow-split-view.vbox.shadow-split-view-first-is-sidebar {
     flex-direction: column-reverse !important;
 }
 
-.split-view-resizer-border {
+.shadow-split-view-resizer-border {
     pointer-events: none;
 }
 
-.split-view.vbox > .split-view-resizer > .split-view-resizer-border {
+.shadow-split-view.vbox > .shadow-split-view-resizer > .shadow-split-view-resizer-border {
     width: 100%;
     margin-top: 3px;
     height: 1px;
     border-top: 1px solid rgb(64%, 64%, 64%);
 }
 
-.split-view.hbox > .split-view-resizer > .split-view-resizer-border {
+.shadow-split-view.hbox > .shadow-split-view-resizer > .shadow-split-view-resizer-border {
     height: 100%;
     margin-left: 3px;
     width: 1px;
     border-left: 1px solid rgb(64%, 64%, 64%);
 }
 
-.split-view button.sidebar-show-hide-button {
+.shadow-split-view button.sidebar-show-hide-button {
     position: absolute;
     -webkit-mask-image: url(Images/statusbarButtonGlyphs.png);
     -webkit-mask-size: 320px 144px;
@@ -100,75 +100,95 @@
 }
 
 @media (-webkit-min-device-pixel-ratio: 1.5) {
-.split-view button.sidebar-show-hide-button {
+.shadow-split-view button.sidebar-show-hide-button {
     -webkit-mask-image: url(Images/statusbarButtonGlyphs_2x.png);
 }
 } /* media */
 
-.split-view button.left-sidebar-show-hide-button,
-.split-view button.top-sidebar-show-hide-button {
-    top: 4px;
+.shadow-split-view button.left-sidebar-show-hide-button,
+.shadow-split-view button.top-sidebar-show-hide-button {
+    top: 3px;
     left: 4px;
 }
 
-.split-view button.left-sidebar-show-hide-button:active,
-.split-view button.top-sidebar-show-hide-button:active {
+.shadow-split-view button.left-sidebar-show-hide-button:active,
+.shadow-split-view button.top-sidebar-show-hide-button:active {
     top: 5px;
     left: 3px;
 }
 
-.split-view button.right-sidebar-show-hide-button {
+.shadow-split-view button.right-sidebar-show-hide-button {
     top: 3px;
     right:2px;
 }
 
-.split-view button.right-sidebar-show-hide-button:active {
+.shadow-split-view button.right-sidebar-show-hide-button:active {
     top: 5px;
     right: 1px;
 }
 
-.split-view button.bottom-sidebar-show-hide-button {
+.shadow-split-view button.bottom-sidebar-show-hide-button {
     bottom: 1px;
     right: 1px;
 }
 
-.split-view button.bottom-sidebar-show-hide-button:active {
+.shadow-split-view button.bottom-sidebar-show-hide-button:active {
     bottom: 0;
     right: 0;
 }
 
-.split-view button.left-sidebar-show-hide-button.toggled-show {
+.shadow-split-view button.left-sidebar-show-hide-button.toggled-show {
     -webkit-mask-position: -168px -76px; /* |> */
 }
 
-.split-view button.left-sidebar-show-hide-button.toggled-hide {
+.shadow-split-view button.left-sidebar-show-hide-button.toggled-hide {
     -webkit-mask-position: -199px -76px; /* |< */
 }
 
-.split-view button.right-sidebar-show-hide-button.toggled-show {
+.shadow-split-view button.right-sidebar-show-hide-button.toggled-show {
     -webkit-mask-position: -296px -76px; /* <| */
 }
 
-.split-view button.right-sidebar-show-hide-button.toggled-hide {
+.shadow-split-view button.right-sidebar-show-hide-button.toggled-hide {
     -webkit-mask-position: -264px -76px; /* >| */
 }
 
-.split-view button.top-sidebar-show-hide-button.toggled-show {
+.shadow-split-view button.top-sidebar-show-hide-button.toggled-show {
     -webkit-mask-position: -168px -76px; /* |> */
     transform: rotate(90deg);
 }
 
-.split-view button.top-sidebar-show-hide-button.toggled-hide {
+.shadow-split-view button.top-sidebar-show-hide-button.toggled-hide {
     -webkit-mask-position: -199px -76px; /* |< */
     transform: rotate(90deg);
 }
 
-.split-view button.bottom-sidebar-show-hide-button.toggled-show {
+.shadow-split-view button.bottom-sidebar-show-hide-button.toggled-show {
     -webkit-mask-position: -296px -76px; /* <| */
     transform: rotate(90deg);
 }
 
-.split-view button.bottom-sidebar-show-hide-button.toggled-hide {
+.shadow-split-view button.bottom-sidebar-show-hide-button.toggled-hide {
     -webkit-mask-position: -264px -76px; /* >| */
     transform: rotate(90deg);
+}
+
+.resizer-widget {
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: 24px;
+    width: 16px;
+    background-image: url(Images/statusbarResizerHorizontal.png);
+    background-repeat: no-repeat;
+    background-position: center;
+    z-index: 13;
+}
+
+.ns-resizer-widget {
+    cursor: ns-resize;
+}
+
+.ew-resizer-widget {
+    cursor: ew-resize;
 }
