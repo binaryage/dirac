@@ -556,6 +556,12 @@ WebInspector.ObjectPropertyTreeElement.populateWithProperties = function(treeEle
             treeElement.appendChild(new treeElementConstructor(property));
         }
     }
+    if (internalProperties) {
+        for (var i = 0; i < internalProperties.length; i++) {
+            internalProperties[i].parentObject = value;
+            treeElement.appendChild(new treeElementConstructor(internalProperties[i]));
+        }
+    }
     if (value && value.type === "function") {
         // Whether function has TargetFunction internal property.
         // This is a simple way to tell that the function is actually a bound function (we are not told).
@@ -575,12 +581,6 @@ WebInspector.ObjectPropertyTreeElement.populateWithProperties = function(treeEle
     }
     if (value && value.type === "object" && (value.subtype === "map" || value.subtype === "set" || value.subtype === "iterator"))
         treeElement.appendChild(new WebInspector.CollectionEntriesMainTreeElement(value));
-    if (internalProperties) {
-        for (var i = 0; i < internalProperties.length; i++) {
-            internalProperties[i].parentObject = value;
-            treeElement.appendChild(new treeElementConstructor(internalProperties[i]));
-        }
-    }
 
     WebInspector.ObjectPropertyTreeElement._appendEmptyPlaceholderIfNeeded(treeElement, emptyPlaceholder);
 }
