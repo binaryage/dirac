@@ -98,16 +98,16 @@ WebInspector.NetworkLogView._defaultRefreshDelay = 500;
 
 /** @enum {string} */
 WebInspector.NetworkLogView.FilterType = {
-    Domain: "Domain",
-    HasResponseHeader: "HasResponseHeader",
-    Is: "Is",
-    Method: "Method",
-    MimeType: "MimeType",
-    Scheme: "Scheme",
-    SetCookieDomain: "SetCookieDomain",
-    SetCookieName: "SetCookieName",
-    SetCookieValue: "SetCookieValue",
-    StatusCode: "StatusCode"
+    Domain: "domain",
+    HasResponseHeader: "has-response-header",
+    Is: "is",
+    Method: "method",
+    MimeType: "mime-type",
+    Scheme: "scheme",
+    SetCookieDomain: "set-cookie-domain",
+    SetCookieName: "set-cookie-name",
+    SetCookieValue: "set-cookie-value",
+    StatusCode: "status-code"
 };
 
 /** @enum {string} */
@@ -1480,7 +1480,7 @@ WebInspector.NetworkLogView.prototype = {
         var n = parsedQuery.filters.length;
         for (var i = 0; i < n; ++i) {
             var filter = parsedQuery.filters[i];
-            var filterType = /** @type {!WebInspector.NetworkLogView.FilterType} */ (filter.type);
+            var filterType = /** @type {!WebInspector.NetworkLogView.FilterType} */ (filter.type.toLowerCase());
             this._filters.push(this._createFilter(filterType, filter.data, filter.negative));
         }
     },

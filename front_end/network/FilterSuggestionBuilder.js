@@ -77,7 +77,7 @@ WebInspector.FilterSuggestionBuilder.prototype = {
                     suggestions.push(modifier + this._keys[j] + ":");
             }
         } else {
-            var key = prefix.substring(0, valueDelimiterIndex);
+            var key = prefix.substring(0, valueDelimiterIndex).toLowerCase();
             var value = prefix.substring(valueDelimiterIndex + 1);
             var matcher = new RegExp("^" + value.escapeForRegExp(), "i");
             var items = this._values(key);
@@ -102,10 +102,14 @@ WebInspector.FilterSuggestionBuilder.prototype = {
         text = text.substring(0, start);
         var prefixIndex = text.lastIndexOf(" ") + 1;
 
-        text = text.substring(0, prefixIndex) + suggestion;
-        input.value = text;
-        if (!isIntermediate)
+        if (isIntermediate) {
+            text = text + suggestion.substring(text.length - prefixIndex);
+            input.value = text;
+        } else {
+            text = text.substring(0, prefixIndex) + suggestion;
+            input.value = text;
             start = text.length;
+        }
         input.setSelectionRange(start, text.length);
     },
 
@@ -180,7 +184,7 @@ WebInspector.FilterSuggestionBuilder.prototype = {
                 break;
             }
             var spaceIndex = query.lastIndexOf(" ", colonIndex);
-            var key = query.substring(spaceIndex + 1, colonIndex);
+            var key = query.substring(spaceIndex + 1, colonIndex).toLowerCase();
             var negative = key.startsWith("-");
             if (negative)
                 key = key.substring(1);
