@@ -1168,8 +1168,7 @@ WebInspector.FlameChart.prototype = {
      */
     _timeToPosition: function(time)
     {
-        var value = Math.floor((time - this._minimumBoundary) * this._timeToPixel) - this._pixelWindowLeft + this._paddingLeft;
-        return Math.min(this._canvas.width, Math.max(0, value));
+        return Math.floor((time - this._minimumBoundary) * this._timeToPixel) - this._pixelWindowLeft + this._paddingLeft;
     },
 
     _levelToHeight: function(level)
