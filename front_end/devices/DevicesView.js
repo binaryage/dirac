@@ -26,18 +26,6 @@ WebInspector.DevicesView = function()
 WebInspector.DevicesView.MinVersionNewTab = 29;
 
 
-var Adb = {};
-
-/**
- * @typedef {{id: string, adbBrowserChromeVersion: string, compatibleVersion: boolean, adbBrowserName: string, source: string, adbBrowserVersion: string}}
- */
-Adb.Browser;
-
-/**
- * @typedef {{id: string, adbModel: string, adbSerial: string, browsers: !Array.<!Adb.Browser>, adbPortStatus: !Array.<number>, adbConnected: boolean}}
- */
-Adb.Device;
-
 WebInspector.DevicesView.Events = {
     DevicesChanged: "DevicesChanged"
 };

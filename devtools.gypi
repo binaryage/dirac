@@ -194,7 +194,9 @@
             'front_end/bindings/WorkspaceController.js',
         ],
         'devtools_devtools_app_js_files': [
+            'front_end/devtools_app/DevToolsAPI.js',
             'front_end/devtools_app/DevToolsApp.js',
+            'front_end/devtools_app/InspectorFrontendHostImpl.js',
             'front_end/devtools_app/UITests.js',
         ],
         'devtools_platform_js_files': [

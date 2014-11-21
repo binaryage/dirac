@@ -179,6 +179,92 @@ function DOMFileSystem() {}
  */
 DOMFileSystem.prototype.root = null;
 
+var DevToolsHost = {};
+
+/** @typedef {{type:string, id:(number|undefined),
+              label:(string|undefined), enabled:(boolean|undefined), checked:(boolean|undefined),
+              subItems:(!Array.<!DevToolsHost.ContextMenuDescriptor>|undefined)}} */
+DevToolsHost.ContextMenuDescriptor;
+
+/**
+ * @param {number} zoom
+ */
+DevToolsHost.setZoomFactor = function(zoom) { }
+
+/**
+ * @return {number}
+ */
+DevToolsHost.zoomFactor = function() { }
+
+/**
+ * @param {string} origin
+ * @param {string} script
+ */
+DevToolsHost.setInjectedScriptForOrigin = function(origin, script) { }
+
+/**
+ * @param {string} text
+ */
+DevToolsHost.copyText = function(text) { }
+
+/**
+ * @return {string}
+ */
+DevToolsHost.platform = function() { }
+
+/**
+ * @return {string}
+ */
+DevToolsHost.port = function() { }
+
+/**
+ * @param {number} x
+ * @param {number} y
+ * @param {!Array.<!DevToolsHost.ContextMenuDescriptor>} items
+ * @param {!Document} document
+ */
+DevToolsHost.showContextMenuAtPoint = function(x, y, items, document) { }
+
+/**
+ * @param {string} message
+ */
+DevToolsHost.sendMessageToBackend = function(message) { }
+
+/**
+ * @param {string} message
+ */
+DevToolsHost.sendMessageToEmbedder = function(message) { }
+
+/**
+ * @param {number} actionCode
+ */
+DevToolsHost.recordActionTaken = function(actionCode) { }
+
+/**
+ * @param {number} panelCode
+ */
+DevToolsHost.recordPanelShown = function(panelCode) { }
+
+/**
+ * @return {string}
+ */
+DevToolsHost.getSelectionBackgroundColor = function() { }
+
+/**
+ * @return {string}
+ */
+DevToolsHost.getSelectionForegroundColor = function() { }
+
+/**
+ * @return {boolean}
+ */
+DevToolsHost.isUnderTest = function() { }
+
+/**
+ * @return {boolean}
+ */
+DevToolsHost.isHostedMode = function() { }
+
 // FIXME: remove everything below.
 var FormatterWorker = {}
 var WebInspector = {}
@@ -227,6 +313,12 @@ function ExtensionReloadOptions() {
     this.preprocessingScript = "";
     this.userAgent = "";
 }
+
+var Adb = {};
+/** @typedef {{id: string, adbBrowserChromeVersion: string, compatibleVersion: boolean, adbBrowserName: string, source: string, adbBrowserVersion: string}} */
+Adb.Browser;
+/** @typedef {{id: string, adbModel: string, adbSerial: string, browsers: !Array.<!Adb.Browser>, adbPortStatus: !Array.<number>, adbConnected: boolean}} */
+Adb.Device;
 
 /* jsdifflib API */
 var difflib = {};

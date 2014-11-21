@@ -236,11 +236,6 @@ InspectorFrontendHostAPI.prototype = {
     sendMessageToBackend: function(message) { },
 
     /**
-     * @param {string} message
-     */
-    sendMessageToEmbedder: function(message) { },
-
-    /**
      * @param {boolean} enabled
      */
     setDeviceCountUpdatesEnabled: function(enabled) { },
@@ -469,13 +464,6 @@ WebInspector.InspectorFrontendHostStub.prototype = {
     },
 
     /**
-     * @param {string} message
-     */
-    sendMessageToEmbedder: function(message)
-    {
-    },
-
-    /**
      * @param {number} actionCode
      */
     recordActionTaken: function(actionCode)
@@ -631,85 +619,84 @@ WebInspector.InspectorFrontendHostStub.prototype = {
  */
 var InspectorFrontendHost = window.InspectorFrontendHost || null;
 
-(function() {
-    if (!InspectorFrontendHost) {
-        // Instantiate stub for web-hosted mode if necessary.
-        InspectorFrontendHost = new WebInspector.InspectorFrontendHostStub();
-    } else {
-        // Otherwise add stubs for missing methods that are declared in the interface.
-        var proto = WebInspector.InspectorFrontendHostStub.prototype;
-        for (var name in proto) {
-            var value = proto[name];
-            if (typeof value !== "function" || InspectorFrontendHost[name])
-                continue;
+(function(){
 
-            InspectorFrontendHost[name] = stub.bind(null, name);
-        }
-    }
-
-    /**
-     * @param {string} name
-     */
-    function stub(name)
+    function initializeInspectorFrontendHost()
     {
-        console.error("Incompatible embedder: method InspectorFrontendHost." + name + " is missing. Using stub instead.");
-        var args = Array.prototype.slice.call(arguments, 1);
-        return proto[name].apply(InspectorFrontendHost, args);
-    }
+        if (!InspectorFrontendHost) {
+            // Instantiate stub for web-hosted mode if necessary.
+            InspectorFrontendHost = new WebInspector.InspectorFrontendHostStub();
+        } else {
+            // Otherwise add stubs for missing methods that are declared in the interface.
+            var proto = WebInspector.InspectorFrontendHostStub.prototype;
+            for (var name in proto) {
+                var value = proto[name];
+                if (typeof value !== "function" || InspectorFrontendHost[name])
+                    continue;
 
-    // Attach the events object.
-    InspectorFrontendHost.events = new WebInspector.Object();
-})();
-
-/**
- * @constructor
- */
-function InspectorFrontendAPIImpl()
-{
-    this._debugFrontend = !!Runtime.queryParam("debugFrontend");
-
-    var descriptors = InspectorFrontendHostAPI.EventDescriptors;
-    for (var i = 0; i < descriptors.length; ++i)
-        this[descriptors[i][0]] = this._dispatch.bind(this, descriptors[i][0], descriptors[i][1], descriptors[i][2]);
-}
-
-InspectorFrontendAPIImpl.prototype = {
-    /**
-     * @param {string} name
-     * @param {!Array.<string>} signature
-     * @param {boolean} runOnceLoaded
-     */
-    _dispatch: function(name, signature, runOnceLoaded)
-    {
-        var params = Array.prototype.slice.call(arguments, 3);
-
-        if (this._debugFrontend)
-            setImmediate(innerDispatch);
-        else
-            innerDispatch();
-
-        function innerDispatch()
-        {
-            // Single argument methods get dispatched with the param.
-            if (signature.length < 2) {
-                InspectorFrontendHost.events.dispatchEventToListeners(name, params[0]);
-                return;
+                InspectorFrontendHost[name] = stub.bind(null, name);
             }
-            var data = {};
-            for (var i = 0; i < signature.length; ++i)
-                data[signature[i]] = params[i];
-            InspectorFrontendHost.events.dispatchEventToListeners(name, data);
         }
-    },
+
+        /**
+         * @param {string} name
+         */
+        function stub(name)
+        {
+            console.error("Incompatible embedder: method InspectorFrontendHost." + name + " is missing. Using stub instead.");
+            var args = Array.prototype.slice.call(arguments, 1);
+            return proto[name].apply(InspectorFrontendHost, args);
+        }
+
+        // Attach the events object.
+        InspectorFrontendHost.events = new WebInspector.Object();
+    }
 
     /**
-     * @param {number} id
-     * @param {?string} error
+     * @constructor
      */
-    embedderMessageAck: function(id, error)
+    function InspectorFrontendAPIImpl()
     {
-        InspectorFrontendHost["embedderMessageAck"](id, error);
-    }
-}
+        this._debugFrontend = !!Runtime.queryParam("debugFrontend");
 
-var InspectorFrontendAPI = new InspectorFrontendAPIImpl();
+        var descriptors = InspectorFrontendHostAPI.EventDescriptors;
+        for (var i = 0; i < descriptors.length; ++i)
+            this[descriptors[i][0]] = this._dispatch.bind(this, descriptors[i][0], descriptors[i][1], descriptors[i][2]);
+    }
+
+    InspectorFrontendAPIImpl.prototype = {
+        /**
+         * @param {string} name
+         * @param {!Array.<string>} signature
+         * @param {boolean} runOnceLoaded
+         */
+        _dispatch: function(name, signature, runOnceLoaded)
+        {
+            var params = Array.prototype.slice.call(arguments, 3);
+
+            if (this._debugFrontend)
+                setImmediate(innerDispatch);
+            else
+                innerDispatch();
+
+            function innerDispatch()
+            {
+                // Single argument methods get dispatched with the param.
+                if (signature.length < 2) {
+                    InspectorFrontendHost.events.dispatchEventToListeners(name, params[0]);
+                    return;
+                }
+                var data = {};
+                for (var i = 0; i < signature.length; ++i)
+                    data[signature[i]] = params[i];
+                InspectorFrontendHost.events.dispatchEventToListeners(name, data);
+            }
+        }
+    }
+
+    if (!window.DevToolsHost) {
+        initializeInspectorFrontendHost();
+        window.InspectorFrontendAPI = new InspectorFrontendAPIImpl();
+    }
+
+})();
