@@ -418,8 +418,7 @@ WebInspector.TimelineModel.prototype = {
 
     stopRecording: function()
     {
-        this._stopCallbackBarrier = new CallbackBarrier();
-        this._stopProfilingOnAllTargets();
+        this._allProfilesStoppedPromise = this._stopProfilingOnAllTargets();
         this._tracingManager.stop();
     },
 
@@ -518,38 +517,69 @@ WebInspector.TimelineModel.prototype = {
 
     _startCpuProfilingOnAllTargets: function()
     {
-        this._profilingTargets = WebInspector.targetManager.targets();
-        for (var i = 0; i < this._profilingTargets.length; ++i) {
-            var target = this._profilingTargets[i];
-            this._configureCpuProfilerSamplingInterval(target);
+        /**
+         * @param {!WebInspector.Target} target
+         */
+        function startProfiling(target)
+        {
+            var intervalUs = WebInspector.settings.highResolutionCpuProfiling.get() ? 100 : 1000;
+            target.profilerAgent().setSamplingInterval(intervalUs, didChangeInterval);
             target.profilerAgent().start();
         }
-    },
 
-    _stopProfilingOnAllTargets: function()
-    {
-        if (!this._profilingTargets)
-            return;
-        for (var i = 0; i < this._profilingTargets.length; ++i) {
-            var target = this._profilingTargets[i];
-            target.profilerAgent().stop(this._stopCallbackBarrier.createCallback(this._didStopRecordingJSSamples.bind(this, target.id())));
-        }
-        this._profilingTargets = null;
-    },
-
-    /**
-     * @param {!WebInspector.Target} target
-     */
-    _configureCpuProfilerSamplingInterval: function(target)
-    {
-        var intervalUs = WebInspector.settings.highResolutionCpuProfiling.get() ? 100 : 1000;
-        target.profilerAgent().setSamplingInterval(intervalUs, didChangeInterval);
-
+        /**
+         * @param {?string} error
+         */
         function didChangeInterval(error)
         {
             if (error)
                 WebInspector.console.error(error);
         }
+
+        this._profilingTargets = WebInspector.targetManager.targets();
+        this._profilingTargets.forEach(startProfiling);
+    },
+
+    /**
+     * @return {!Promise}
+     */
+    _stopProfilingOnAllTargets: function()
+    {
+        /**
+         * @this {WebInspector.TimelineModel}
+         * @param {!WebInspector.Target} target
+         * @return {!Promise}
+         */
+        function stopProfilingWithPromise(target)
+        {
+            return new Promise(doStopProfiling).then(this._addCpuProfile.bind(this, target.id())).catchAndReport();
+
+            /**
+             * @param {function(!ProfilerAgent.CPUProfile)} resolve
+             * @param {function(!Error)} reject
+             */
+            function doStopProfiling(resolve, reject)
+            {
+                target.profilerAgent().stop(onProfilingStopped);
+
+                /**
+                 * @param {?string} error
+                 * @param {?ProfilerAgent.CPUProfile} cpuProfile
+                 */
+                function onProfilingStopped(error, cpuProfile)
+                {
+                    if (!error && cpuProfile)
+                        resolve(cpuProfile);
+                    else
+                        reject(new Error(error));
+
+                }
+            }
+        }
+
+        var targets = this._profilingTargets || [];
+        this._profilingTargets = null;
+        return Promise.all(targets.map(stopProfilingWithPromise, this));
     },
 
     /**
@@ -589,23 +619,20 @@ WebInspector.TimelineModel.prototype = {
 
     _onTracingComplete: function()
     {
-        if (this._stopCallbackBarrier) {
-            this._stopCallbackBarrier.callWhenDone(this._didStopRecordingTraceEvents.bind(this));
-            this._stopCallbackBarrier = null;
-        } else {
+        if (!this._allProfilesStoppedPromise) {
             this._didStopRecordingTraceEvents();
+            return;
         }
+        this._allProfilesStoppedPromise.then(this._didStopRecordingTraceEvents.bind(this));
+        this._allProfilesStoppedPromise = null;
     },
 
     /**
      * @param {number} targetId
-     * @param {?Protocol.Error} error
-     * @param {?ProfilerAgent.CPUProfile} cpuProfile
+     * @param {!ProfilerAgent.CPUProfile} cpuProfile
      */
-    _didStopRecordingJSSamples: function(targetId, error, cpuProfile)
+    _addCpuProfile: function(targetId, cpuProfile)
     {
-        if (error)
-            WebInspector.console.error(error);
         if (!this._cpuProfiles)
             this._cpuProfiles = new Map();
         this._cpuProfiles.set(targetId, cpuProfile);
