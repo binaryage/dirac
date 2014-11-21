@@ -3243,7 +3243,8 @@ WebInspector.StylePropertyTreeElement.prototype = {
      */
     _editingNameValueInput: function(context, event)
     {
-        if (!context.isEditingName)
+        // Do not live-edit "content" property of pseudo elements. crbug.com/433889
+        if (!context.isEditingName && (!this._parentPane._node.pseudoType() || this.name !== "content"))
             this._applyFreeFlowStyleTextEdit();
     },
 
