@@ -123,6 +123,7 @@ WebInspector.DataGrid = function(columnsArray, editCallback, deleteCallback, ref
         if (column.sortable) {
             cell.addEventListener("click", this._clickInHeaderCell.bind(this), false);
             cell.classList.add("sortable");
+            cell.createChild("div", "sort-order-icon-container").createChild("div", "sort-order-icon");
         }
     }
 

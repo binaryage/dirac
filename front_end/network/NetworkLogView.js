@@ -389,7 +389,6 @@ WebInspector.NetworkLogView.prototype = {
 
         columns.push({
             id: "timeline",
-            titleDOMFragment: createDocumentFragment(),
             title: WebInspector.NetworkLogView._columnTitles["timeline"],
             sortable: false,
             weight: 40,
