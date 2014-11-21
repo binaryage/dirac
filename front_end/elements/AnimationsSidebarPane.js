@@ -336,8 +336,10 @@ WebInspector.AnimationSection.prototype = {
         if (this.player.source().keyframesRule()) {
             var keyframes = this.player.source().keyframesRule().keyframes();
             for (var j = 0; j < keyframes.length; j++) {
-                var inlineStyle = { selectorText: keyframes[j].offset(), style: keyframes[j].style(), isAttribute: true };
-                var styleSection = new WebInspector.StylePropertiesSection(this._stylesPane, inlineStyle, true);
+                var model = WebInspector.StylesSectionModel.fromStyle(keyframes[j].style(), keyframes[j].offset());
+                model.setIsAttribute(true);
+                model.setEditable(true);
+                var styleSection = new WebInspector.StylePropertiesSection(this._stylesPane, model);
                 styleSection.expanded = true;
                 this._keyframesElement.appendChild(styleSection.element);
             }

@@ -661,6 +661,18 @@ WebInspector.CSSStyleDeclaration = function(cssModel, payload)
 }
 
 /**
+ * @return {!WebInspector.CSSStyleDeclaration}
+ */
+WebInspector.CSSStyleDeclaration.createDummyStyle = function()
+{
+    var dummyPayload = {
+        shorthandEntries: [],
+        cssProperties: []
+    };
+    return new WebInspector.CSSStyleDeclaration(WebInspector.cssModel, dummyPayload);
+}
+
+/**
  * @param {!Array.<!CSSAgent.ShorthandEntry>} shorthandEntries
  * @return {!Object}
  */

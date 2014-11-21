@@ -116,6 +116,7 @@
         "MetricsSidebarPane.js",
         "PlatformFontsSidebarPane.js",
         "PropertiesSidebarPane.js",
+        "StylesSectionModel.js",
         "StylesSidebarPane.js",
         "ElementsPanel.js",
         "AnimationsSidebarPane.js"
