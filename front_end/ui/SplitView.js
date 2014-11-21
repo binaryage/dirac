@@ -197,10 +197,6 @@ WebInspector.SplitView.prototype = {
      */
     setSecondIsSidebar: function(secondIsSidebar)
     {
-        this._mainElement.classList.toggle("shadow-split-view-contents-first", secondIsSidebar);
-        this._mainElement.classList.toggle("shadow-split-view-contents-second", !secondIsSidebar);
-        this._sidebarElement.classList.toggle("shadow-split-view-contents-first", !secondIsSidebar);
-        this._sidebarElement.classList.toggle("shadow-split-view-contents-second", secondIsSidebar);
         this.contentElement.classList.toggle("shadow-split-view-first-is-sidebar", !secondIsSidebar);
         this._secondIsSidebar = secondIsSidebar;
     },

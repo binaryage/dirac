@@ -401,7 +401,7 @@
     margin-top: -2px;
 }
 
-#memory-graphs-container .split-view-contents-first {
+#memory-graphs-container > div:last-child {
     background-color: #eee;
     overflow-y: hidden;
 }
@@ -893,8 +893,8 @@
     display: block;
 }
 
-.timeline-layers-view > .split-view-contents-first,
-.timeline-layers-view-properties > .split-view-contents-second {
+.timeline-layers-view > div:last-child,
+.timeline-layers-view-properties > div:last-child {
     background-color: #eee;
 }
 
@@ -908,7 +908,7 @@
     line-height: 22px;
 }
 
-.timeline-paint-profiler-log-split .split-view-contents-first {
+.timeline-paint-profiler-log-split > div:last-child {
     background-color: #eee;
     z-index: 0;
 }
