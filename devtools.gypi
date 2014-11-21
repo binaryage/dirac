@@ -222,6 +222,7 @@
             'front_end/ui/overviewGrid.css',
             'front_end/ui/panelEnablerView.css',
             'front_end/ui/pieChart.css',
+            'front_end/ui/progressIndicator.css',
             'front_end/ui/searchableView.css',
             'front_end/ui/splitView.css',
             'front_end/ui/statusBar.css',

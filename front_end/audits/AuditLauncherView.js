@@ -156,6 +156,7 @@ WebInspector.AuditLauncherView.prototype = {
 
         this._resetResourceCount();
         this._progressIndicator = new WebInspector.ProgressIndicator();
+        this._progressIndicator.hideStopButton();
         this._buttonContainerElement.appendChild(this._progressIndicator.element);
         this._displayResourceLoadingProgress = true;
 

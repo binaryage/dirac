@@ -59,6 +59,7 @@
         "overviewGrid.css",
         "panelEnablerView.css",
         "pieChart.css",
+        "progressIndicator.css",
         "searchableView.css",
         "splitView.css",
         "statusBar.css"

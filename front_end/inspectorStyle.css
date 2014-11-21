@@ -97,6 +97,12 @@ body /deep/ .flex-auto {
     flex: auto;
 }
 
+body /deep/ .flex-centered {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 body /deep/ .inline-block {
     display: inline-block;
 }
@@ -1822,15 +1828,6 @@ body.inactive .sidebar-tree-item.selected {
     flex-grow: 1;
 }
 
-.search-status-bar-summary .progress-bar-container {
-    margin-top: -4px;
-}
-
-.progress-bar-stop-button .glyph {
-    -webkit-mask-position: -96px -48px;
-    background-color: rgb(216, 0, 0) !important;
-}
-
 .search-view .search-results {
     overflow-y: auto;
     flex: auto;
@@ -2084,30 +2081,6 @@ body.inactive .sidebar-tree-item.selected {
     top: 0;
     right: 0;
     bottom: 0;
-}
-
-.progress-bar-container {
-    display: inline-flex;
-    margin: 0 8px;
-    -webkit-flex: 1 0;
-}
-
-.progress-bar-container span {
-    padding: 6px;
-}
-
-.progress-bar-container progress {
-    margin-top: 7px;
-    -webkit-flex: 1 0;
-}
-
-.platform-mac .progress-bar-container progress {
-    margin-top: 6px;
-}
-
-.progress-bar-container button.status-bar-item {
-    border-left: none;
-    margin-top: 1px;
 }
 
 .elements-tree-outline li.parent::before {

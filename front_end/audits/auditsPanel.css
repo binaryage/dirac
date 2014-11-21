@@ -237,10 +237,6 @@
     font-weight: bold;
 }
 
-.audit-launcher-view .progress-bar-container {
+.audit-launcher-view .progress-indicator {
     display: inline-block;
-}
-
-.audit-launcher-view .progress-bar-container .progress-bar-stop-button {
-    display: none;
 }
