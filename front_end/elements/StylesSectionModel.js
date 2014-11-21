@@ -7,7 +7,7 @@
  * @param {?WebInspector.CSSRule} rule
  * @param {!WebInspector.CSSStyleDeclaration} style
  * @param {string} customSelectorText
- * @param {!WebInspector.DOMNode=} inheritedFromNode
+ * @param {?WebInspector.DOMNode=} inheritedFromNode
  */
 WebInspector.StylesSectionModel = function(rule, style, customSelectorText, inheritedFromNode)
 {
@@ -21,7 +21,7 @@ WebInspector.StylesSectionModel = function(rule, style, customSelectorText, inhe
 
 /**
  * @param {!WebInspector.CSSRule} rule
- * @param {!WebInspector.DOMNode=} inheritedFromNode
+ * @param {?WebInspector.DOMNode=} inheritedFromNode
  * @return {!WebInspector.StylesSectionModel}
  */
 WebInspector.StylesSectionModel.fromRule = function(rule, inheritedFromNode)
@@ -32,7 +32,7 @@ WebInspector.StylesSectionModel.fromRule = function(rule, inheritedFromNode)
 /**
  * @param {!WebInspector.CSSStyleDeclaration} style
  * @param {string} selectorText
- * @param {!WebInspector.DOMNode=} inheritedFromNode
+ * @param {?WebInspector.DOMNode=} inheritedFromNode
  * @return {!WebInspector.StylesSectionModel}
  */
 WebInspector.StylesSectionModel.fromStyle = function(style, selectorText, inheritedFromNode)

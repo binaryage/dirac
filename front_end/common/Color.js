@@ -633,6 +633,9 @@ WebInspector.Color.PageHighlight = {
     ShapeMargin: WebInspector.Color.fromRGBA([96, 82, 127, .6])
 }
 
+/**
+ * @enum {string}
+ */
 WebInspector.Color.Format = {
     Original: "original",
     Nickname: "nickname",
