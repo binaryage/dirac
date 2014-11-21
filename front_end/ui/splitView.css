@@ -172,23 +172,3 @@
     -webkit-mask-position: -264px -76px; /* >| */
     transform: rotate(90deg);
 }
-
-.resizer-widget {
-    position: absolute;
-    top: 0;
-    right: 0;
-    height: 24px;
-    width: 16px;
-    background-image: url(Images/statusbarResizerHorizontal.png);
-    background-repeat: no-repeat;
-    background-position: center;
-    z-index: 13;
-}
-
-.ns-resizer-widget {
-    cursor: ns-resize;
-}
-
-.ew-resizer-widget {
-    cursor: ew-resize;
-}

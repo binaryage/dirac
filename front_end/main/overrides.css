@@ -161,6 +161,7 @@
 
 .overrides-device table {
     margin-bottom: 5px;
+    white-space: nowrap !important;
 }
 
 .overrides-device > label {

@@ -265,11 +265,11 @@ body.inactive button.text-button, .text-button:disabled {
     cursor: default !important;
 }
 
-.nowrap, .nowrap .li {
+.elements-tree-nowrap, .elements-tree-nowrap .li {
     white-space: pre !important;
 }
 
-.outline-disclosure .nowrap li {
+.outline-disclosure .elements-tree-nowrap li {
     word-wrap: normal;
 }
 

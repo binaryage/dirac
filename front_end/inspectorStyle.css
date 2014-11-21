@@ -35,18 +35,6 @@
     height: 100%;
 }
 
-input[type="search"]:focus,
-input[type="text"]:focus {
-    outline: auto 5px -webkit-focus-ring-color;
-}
-
-input[type="checkbox"] {
-    height: 12px;
-    width: 12px;
-    margin: auto 3px;
-    flex-shrink: 0;
-}
-
 label {
     cursor: pointer;
 }
@@ -68,64 +56,23 @@ fieldset[disabled] label:hover input {
     box-shadow: none;
 }
 
-body /deep/ .fill {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-}
-
-body /deep/ .view {
-    position: relative;
-    flex: auto;
-}
-
-body /deep/ .hbox {
-    display: flex;
-    flex-direction: row !important;
-    position: relative;
-}
-
-body /deep/ .vbox {
-    display: flex;
-    flex-direction: column !important;
-    position: relative;
-}
-
-body /deep/ .flex-auto {
-    flex: auto;
-}
-
 body /deep/ .flex-centered {
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
-body /deep/ .inline-block {
+.object-popover-container {
     display: inline-block;
 }
 
-body /deep/ .white-background {
+.inspected-page-placeholder {
     background-color: white;
 }
 
-body /deep/ .overflow-hidden {
-    overflow: hidden;
-}
-
-body /deep/ button,
-body /deep/ input,
-body /deep/ select {
-  font-family: inherit;
-  font-size: inherit;
-}
-
-.nowrap,
-.nowrap-below,
-.nowrap-below div,
-.nowrap-below span {
+.console-message-nowrap-below,
+.console-message-nowrap-below div,
+.console-message-nowrap-below span {
     white-space: nowrap !important;
 }
 
@@ -267,17 +214,8 @@ div.resizer-widget {
     z-index: 13;
 }
 
-.ns-resizer-widget {
-    cursor: ns-resize;
-}
-
-.ew-resizer-widget {
-    cursor: ew-resize;
-}
-
 .error-icon-small,
 .warning-icon-small,
-.device-icon-small,
 .red-ball,
 .green-ball,
 .orange-ball {
@@ -291,7 +229,6 @@ div.resizer-widget {
 @media (-webkit-min-device-pixel-ratio: 1.5) {
 .error-icon-small,
 .warning-icon-small,
-.device-icon-small,
 .red-ball,
 .green-ball,
 .orange-ball {
@@ -305,10 +242,6 @@ div.resizer-widget {
 
 .warning-icon-small {
     background-position: -202px -107px;
-}
-
-.device-icon-small {
-    background-position: -224px -107px;
 }
 
 .red-ball {

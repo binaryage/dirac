@@ -224,7 +224,7 @@ WebInspector.OverridesView.DeviceTab.prototype = {
         var resolutionFieldset = WebInspector.SettingsUI.createSettingFieldset(WebInspector.overridesSupport.settings.emulateResolution);
         fieldsetElement.appendChild(resolutionFieldset);
 
-        var tableElement = resolutionFieldset.createChild("table", "nowrap");
+        var tableElement = resolutionFieldset.createChild("table");
         var rowElement = tableElement.createChild("tr");
         var cellElement = rowElement.createChild("td");
         cellElement.createTextChild(WebInspector.UIString("Resolution:"));

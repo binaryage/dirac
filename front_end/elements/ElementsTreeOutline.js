@@ -118,7 +118,7 @@ WebInspector.ElementsTreeOutline.prototype = {
      */
     setWordWrap: function(wrap)
     {
-        this._element.classList.toggle("nowrap", !wrap);
+        this._element.classList.toggle("elements-tree-nowrap", !wrap);
     },
 
     /**

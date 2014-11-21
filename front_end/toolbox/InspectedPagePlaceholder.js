@@ -9,7 +9,7 @@
 WebInspector.InspectedPagePlaceholder = function()
 {
     WebInspector.View.call(this);
-    this.element.classList.add("white-background");
+    this.element.classList.add("inspected-page-placeholder");
     WebInspector.zoomManager.addEventListener(WebInspector.ZoomManager.Events.ZoomChanged, this._scheduleUpdate, this);
     this._margins = { top: 0, right: 0, bottom: 0, left: 0 };
     this.restoreMinimumSizeAndMargins();

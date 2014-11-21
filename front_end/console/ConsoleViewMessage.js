@@ -678,7 +678,7 @@ WebInspector.ConsoleViewMessage.prototype = {
 
                 if (columnRendered) {
                     var cellElement = this._renderPropertyPreviewOrAccessor(table, [rowProperty, cellProperty]);
-                    cellElement.classList.add("nowrap-below");
+                    cellElement.classList.add("console-message-nowrap-below");
                     rowValue[cellProperty.name] = cellElement;
                 }
             }

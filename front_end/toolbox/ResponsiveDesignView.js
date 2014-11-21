@@ -13,10 +13,10 @@ WebInspector.ResponsiveDesignView = function(inspectedPagePlaceholder)
 {
     WebInspector.VBox.call(this);
     this.setMinimumSize(150, 150);
-    this.element.classList.add("overflow-hidden");
+    this.element.classList.add("responsive-design-view");
+    this.registerRequiredCSS("toolbox/responsiveDesignView.css");
 
     this._responsiveDesignContainer = new WebInspector.VBox();
-    this._responsiveDesignContainer.registerRequiredCSS("toolbox/responsiveDesignView.css");
 
     this._createToolbar();
 
