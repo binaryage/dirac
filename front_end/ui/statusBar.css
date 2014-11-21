@@ -481,3 +481,12 @@ button.record-status-bar-item.toggled-on .glyph {
 .regex-search-status-bar-item.toggled-on .status-bar-button-text {
     color: rgb(94, 146, 233);
 }
+
+.playback-rate-button.toggled-on > .status-bar-button-text {
+    color: rgb(66, 129, 235);
+}
+
+button.playback-rate-button {
+    width: auto;
+    margin-right: 10px;
+}

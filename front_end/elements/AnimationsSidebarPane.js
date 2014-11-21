@@ -167,10 +167,15 @@ WebInspector.AnimationSection.prototype = {
          */
         function updateSliderCallback(currentTime, isRunning)
         {
-            this.currentTimeSlider.value = this.player.source().iterationCount() == null ? currentTime % this.player.source().duration() : currentTime;
-            finishCallback();
-            if (isRunning && this._parentPane.isShowing())
+            if (isRunning && this._parentPane.isShowing()) {
+                this.currentTimeSlider.value = this.player.source().iterationCount() == null ? currentTime % this.player.source().duration() : currentTime;
+                finishCallback();
                 this.updateCurrentTime();
+            } else {
+                this.player.payload().pausedState = true;
+                this._updatePauseButton(true);
+                finishCallback();
+            }
         }
         this.player.getCurrentState(updateSliderCallback.bind(this));
     },
@@ -180,6 +185,27 @@ WebInspector.AnimationSection.prototype = {
      */
     _createCurrentTimeSlider: function()
     {
+        /**
+         * @this {WebInspector.AnimationSection}
+         */
+        function sliderMouseDown()
+        {
+            this.player.pause(this._setAnimationPlayer.bind(this));
+            this._isPaused = this.player.paused();
+        }
+
+        /**
+         * @this {WebInspector.AnimationSection}
+         */
+        function sliderMouseUp()
+        {
+            if (this._isPaused)
+                return;
+            this.player.play(this._setAnimationPlayer.bind(this));
+            this._updatePauseButton(false);
+            this.updateCurrentTime();
+        }
+
         /**
          * @param {!Event} e
          * @this {WebInspector.AnimationSection}
@@ -206,6 +232,9 @@ WebInspector.AnimationSection.prototype = {
         }
 
         slider.addEventListener("input", sliderInputHandler.bind(this));
+        slider.addEventListener("mousedown", sliderMouseDown.bind(this));
+        slider.addEventListener("mouseup", sliderMouseUp.bind(this));
+
         this.updateCurrentTime();
         return slider;
     },
@@ -233,6 +262,15 @@ WebInspector.AnimationSection.prototype = {
     },
 
     /**
+     * @param {boolean} paused
+     */
+    _updatePauseButton: function(paused)
+    {
+        this._pauseButton.setToggled(paused);
+        this._pauseButton.setTitle(paused ? WebInspector.UIString("Play animation") : WebInspector.UIString("Pause animation"));
+    },
+
+    /**
      * @return {!Element}
      */
     _createAnimationControls: function()
@@ -244,33 +282,26 @@ WebInspector.AnimationSection.prototype = {
         {
             if (this.player.paused()) {
                 this.player.play(this._setAnimationPlayer.bind(this));
-                updatePauseButton.call(this, false);
+                this._updatePauseButton(false);
                 this.updateCurrentTime();
             } else {
                 this.player.pause(this._setAnimationPlayer.bind(this));
-                updatePauseButton.call(this, true);
+                this._updatePauseButton(true);
             }
         }
 
-        /**
-         * @param {boolean} paused
-         * @this {WebInspector.AnimationSection}
-         */
-        function updatePauseButton(paused)
-        {
-            this._pauseButton.setToggled(paused);
-            this._pauseButton.setTitle(paused ? WebInspector.UIString("Play animation") : WebInspector.UIString("Pause animation"));
-        }
-
         this._pauseButton = new WebInspector.StatusBarButton("", "pause-status-bar-item");
-        updatePauseButton.call(this, this.player.paused());
+        this._pauseButton.element.style.display = "inline-block";
+        this._updatePauseButton(this.player.paused());
         this._pauseButton.addEventListener("click", pauseButtonHandler, this);
 
         this.currentTimeSlider = this._createCurrentTimeSlider();
 
         var controls = createElement("div");
-        controls.appendChild(this._pauseButton.element);
-        controls.appendChild(this.currentTimeSlider);
+        var shadowRoot = controls.createShadowRoot();
+        shadowRoot.appendChild(WebInspector.View.createStyleElement("ui/statusBar.css"));
+        shadowRoot.appendChild(this._pauseButton.element);
+        shadowRoot.appendChild(this.currentTimeSlider);
 
         return controls;
     },

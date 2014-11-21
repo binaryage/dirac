@@ -717,12 +717,3 @@ li.child-editing .styles-clipboard-only {
     border-bottom: 1px solid rgb(163, 163, 163);
     padding-left: 10px;
 }
-
-.playback-rate-button.toggled-on > .status-bar-button-text {
-    color: rgb(66, 129, 235);
-}
-
-button.playback-rate-button {
-    width: auto;
-    margin-right: 10px;
-}
