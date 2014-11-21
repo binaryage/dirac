@@ -158,7 +158,7 @@ WebInspector.ConsoleView.prototype = {
     _onMainFrameNavigated: function(event)
     {
         var frame = /** @type {!WebInspector.ResourceTreeFrame} */(event.data);
-        WebInspector.console.addMessage(WebInspector.UIString("Navigated to %s", frame.url));
+        WebInspector.console.addMessage(WebInspector.UIString("Navigated to %s", frame.url), WebInspector.Console.MessageLevel.Log);
     },
 
     _initConsoleMessages: function()

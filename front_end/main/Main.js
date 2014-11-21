@@ -36,7 +36,6 @@
  */
 WebInspector.Main = function()
 {
-    WebInspector.console.setUIDelegate(this);
     runOnWindowLoad(this._loaded.bind(this));
 }
 
@@ -113,6 +112,14 @@ WebInspector.Main.prototype = {
     _loaded: function()
     {
         console.timeStamp("Main._loaded");
+
+        WebInspector.initializeInspectorFrontendHost();
+        WebInspector.console = new WebInspector.Console(this);
+        WebInspector.userMetrics = new WebInspector.UserMetrics();
+        WebInspector.targetManager = new WebInspector.TargetManager();
+        WebInspector.fileManager = new WebInspector.FileManager();
+        WebInspector.context = new WebInspector.Context();
+        WebInspector.forwardedEventHandler = new WebInspector.ForwardedInputEventHandler();
 
         this._createSettings();
         this._createAppUI();

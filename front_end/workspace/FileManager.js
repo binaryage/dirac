@@ -144,4 +144,7 @@ WebInspector.FileManager.prototype = {
     __proto__: WebInspector.Object.prototype
 }
 
-WebInspector.fileManager = new WebInspector.FileManager();
+/**
+ * @type {!WebInspector.FileManager}
+ */
+WebInspector.fileManager;

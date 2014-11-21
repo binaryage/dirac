@@ -24,7 +24,7 @@ WebInspector.AdvancedApp.prototype = {
     {
         var enabled = !this._toggleEmulationButton.toggled();
         if (enabled)
-            WebInspector.userMetrics.DeviceModeEnabled.record();
+            WebInspector.userMetrics.record(WebInspector.UserMetrics.Actions.DeviceModeEnabled);
         WebInspector.overridesSupport.setEmulationEnabled(enabled);
     },
 

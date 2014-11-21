@@ -276,7 +276,7 @@ WebInspector.DebuggerModel.prototype = {
             }
         }
         this._agent.setBreakpointByUrl(lineNumber, url, undefined, columnNumber, condition, undefined, didSetBreakpoint);
-        WebInspector.userMetrics.ScriptsBreakpointSet.record();
+        WebInspector.userMetrics.record(WebInspector.UserMetrics.Actions.ScriptsBreakpointSet);
     },
 
     /**
@@ -301,7 +301,7 @@ WebInspector.DebuggerModel.prototype = {
             }
         }
         this._agent.setBreakpoint(rawLocation.payload(), condition, didSetBreakpoint);
-        WebInspector.userMetrics.ScriptsBreakpointSet.record();
+        WebInspector.userMetrics.record(WebInspector.UserMetrics.Actions.ScriptsBreakpointSet);
     },
 
     /**

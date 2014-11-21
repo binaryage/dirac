@@ -1081,7 +1081,7 @@ WebInspector.HeapSnapshotProfileType.prototype = {
     buttonClicked: function()
     {
         this._takeHeapSnapshot(function() {});
-        WebInspector.userMetrics.ProfilesHeapProfileTaken.record();
+        WebInspector.userMetrics.record(WebInspector.UserMetrics.Actions.ProfilesHeapProfileTaken);
         return false;
     },
 

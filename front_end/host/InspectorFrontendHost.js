@@ -619,38 +619,35 @@ WebInspector.InspectorFrontendHostStub.prototype = {
  */
 var InspectorFrontendHost = window.InspectorFrontendHost || null;
 
-(function(){
+WebInspector.initializeInspectorFrontendHost = function()
+{
+    if (!InspectorFrontendHost) {
+        // Instantiate stub for web-hosted mode if necessary.
+        InspectorFrontendHost = new WebInspector.InspectorFrontendHostStub();
+    } else {
+        // Otherwise add stubs for missing methods that are declared in the interface.
+        var proto = WebInspector.InspectorFrontendHostStub.prototype;
+        for (var name in proto) {
+            var value = proto[name];
+            if (typeof value !== "function" || InspectorFrontendHost[name])
+                continue;
 
-    function initializeInspectorFrontendHost()
-    {
-        if (!InspectorFrontendHost) {
-            // Instantiate stub for web-hosted mode if necessary.
-            InspectorFrontendHost = new WebInspector.InspectorFrontendHostStub();
-        } else {
-            // Otherwise add stubs for missing methods that are declared in the interface.
-            var proto = WebInspector.InspectorFrontendHostStub.prototype;
-            for (var name in proto) {
-                var value = proto[name];
-                if (typeof value !== "function" || InspectorFrontendHost[name])
-                    continue;
-
-                InspectorFrontendHost[name] = stub.bind(null, name);
-            }
+            InspectorFrontendHost[name] = stub.bind(null, name);
         }
-
-        /**
-         * @param {string} name
-         */
-        function stub(name)
-        {
-            console.error("Incompatible embedder: method InspectorFrontendHost." + name + " is missing. Using stub instead.");
-            var args = Array.prototype.slice.call(arguments, 1);
-            return proto[name].apply(InspectorFrontendHost, args);
-        }
-
-        // Attach the events object.
-        InspectorFrontendHost.events = new WebInspector.Object();
     }
+
+    /**
+     * @param {string} name
+     */
+    function stub(name)
+    {
+        console.error("Incompatible embedder: method InspectorFrontendHost." + name + " is missing. Using stub instead.");
+        var args = Array.prototype.slice.call(arguments, 1);
+        return proto[name].apply(InspectorFrontendHost, args);
+    }
+
+    // Attach the events object.
+    InspectorFrontendHost.events = new WebInspector.Object();
 
     /**
      * @constructor
@@ -694,9 +691,5 @@ var InspectorFrontendHost = window.InspectorFrontendHost || null;
         }
     }
 
-    if (!window.DevToolsHost) {
-        initializeInspectorFrontendHost();
-        window.InspectorFrontendAPI = new InspectorFrontendAPIImpl();
-    }
-
-})();
+    window.InspectorFrontendAPI = new InspectorFrontendAPIImpl();
+}

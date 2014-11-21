@@ -5,9 +5,11 @@
 /**
  * @constructor
  * @extends {WebInspector.Object}
+ * @param {!WebInspector.Console.UIDelegate} uiDelegate
  */
-WebInspector.Console = function()
+WebInspector.Console = function(uiDelegate)
 {
+    this._uiDelegate = uiDelegate;
     /** @type {!Array.<!WebInspector.Console.Message>} */
     this._messages = [];
 }
@@ -58,14 +60,6 @@ WebInspector.Console.UIDelegate.prototype = {
 }
 
 WebInspector.Console.prototype = {
-    /**
-     * @param {!WebInspector.Console.UIDelegate} uiDelegate
-     */
-    setUIDelegate: function(uiDelegate)
-    {
-        this._uiDelegate = uiDelegate;
-    },
-
     /**
      * @param {string} text
      * @param {!WebInspector.Console.MessageLevel} level
@@ -128,4 +122,7 @@ WebInspector.Console.prototype = {
     __proto__: WebInspector.Object.prototype
 }
 
-WebInspector.console = new WebInspector.Console();
+/**
+ * @type {!WebInspector.Console}
+ */
+WebInspector.console;

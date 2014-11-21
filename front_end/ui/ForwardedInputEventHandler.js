@@ -32,4 +32,4 @@ WebInspector.ForwardedInputEventHandler.prototype = {
 }
 
 /** @type {!WebInspector.ForwardedInputEventHandler} */
-WebInspector.forwardedEventHandler = new WebInspector.ForwardedInputEventHandler();
+WebInspector.forwardedEventHandler;
