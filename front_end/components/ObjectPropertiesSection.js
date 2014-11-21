@@ -659,21 +659,24 @@ WebInspector.FunctionScopeMainTreeElement.prototype = {
             for (var i = 0; i < scopeChain.length; ++i) {
                 var scope = scopeChain[i];
                 var title = null;
-                var isTrueObject;
+                var isTrueObject = false;
 
                 switch (scope.type) {
                 case DebuggerAgent.ScopeType.Local:
                     // Not really expecting this scope type here.
                     title = WebInspector.UIString("Local");
-                    isTrueObject = false;
                     break;
                 case DebuggerAgent.ScopeType.Closure:
                     title = WebInspector.UIString("Closure");
-                    isTrueObject = false;
                     break;
                 case DebuggerAgent.ScopeType.Catch:
                     title = WebInspector.UIString("Catch");
-                    isTrueObject = false;
+                    break;
+                case DebuggerAgent.ScopeType.Block:
+                    title = WebInspector.UIString("Block");
+                    break;
+                case DebuggerAgent.ScopeType.Script:
+                    title = WebInspector.UIString("Script");
                     break;
                 case DebuggerAgent.ScopeType.With:
                     title = WebInspector.UIString("With Block");

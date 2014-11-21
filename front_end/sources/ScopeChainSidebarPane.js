@@ -69,17 +69,15 @@ WebInspector.ScopeChainSidebarPane.prototype = {
         for (var i = 0; i < scopeChain.length; ++i) {
             var scope = scopeChain[i];
             var title = null;
-            var subtitle = scope.object.description;
             var emptyPlaceholder = null;
             var extraProperties = [];
-            var declarativeScope;
+            var declarativeScope = true;
 
             switch (scope.type) {
             case DebuggerAgent.ScopeType.Local:
                 foundLocalScope = true;
                 title = WebInspector.UIString("Local");
                 emptyPlaceholder = WebInspector.UIString("No Variables");
-                subtitle = undefined;
                 var thisObject = callFrame.thisObject();
                 if (thisObject)
                     extraProperties.push(new WebInspector.RemoteObjectProperty("this", thisObject));
@@ -94,18 +92,19 @@ WebInspector.ScopeChainSidebarPane.prototype = {
                     if (returnValue)
                         extraProperties.push(new WebInspector.RemoteObjectProperty("<return>", returnValue));
                 }
-                declarativeScope = true;
                 break;
             case DebuggerAgent.ScopeType.Closure:
                 title = WebInspector.UIString("Closure");
                 emptyPlaceholder = WebInspector.UIString("No Variables");
-                subtitle = undefined;
-                declarativeScope = true;
                 break;
             case DebuggerAgent.ScopeType.Catch:
                 title = WebInspector.UIString("Catch");
-                subtitle = undefined;
-                declarativeScope = true;
+                break;
+            case DebuggerAgent.ScopeType.Block:
+                title = WebInspector.UIString("Block");
+                break;
+            case DebuggerAgent.ScopeType.Script:
+                title = WebInspector.UIString("Script");
                 break;
             case DebuggerAgent.ScopeType.With:
                 title = WebInspector.UIString("With Block");
@@ -117,6 +116,7 @@ WebInspector.ScopeChainSidebarPane.prototype = {
                 break;
             }
 
+            var subtitle = declarativeScope ? undefined : scope.object.description;
             if (!title || title === subtitle)
                 subtitle = undefined;
 
