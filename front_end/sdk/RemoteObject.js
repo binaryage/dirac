@@ -397,7 +397,7 @@ WebInspector.RemoteObjectImpl.prototype = {
     },
 
     /**
-     * @param {!RuntimeAgent.CallArgument} name
+     * @param {string|!RuntimeAgent.CallArgument} name
      * @param {string} value
      * @param {function(string=)} callback
      */
@@ -422,6 +422,9 @@ WebInspector.RemoteObjectImpl.prototype = {
                 callback(error || result.description);
                 return;
             }
+
+            if (typeof name === "string")
+                name = WebInspector.RemoteObject.toCallArgument(name);
 
             this.doSetObjectPropertyValue(result, name, callback);
 
@@ -726,10 +729,10 @@ WebInspector.ScopeRemoteObject = function(target, objectId, scopeRef, type, subt
 
 WebInspector.ScopeRemoteObject.prototype = {
     /**
+     * @override
      * @param {boolean} ownProperties
      * @param {boolean} accessorPropertiesOnly
      * @param {function(?Array.<!WebInspector.RemoteObjectProperty>, ?Array.<!WebInspector.RemoteObjectProperty>)} callback
-     * @override
      */
     doGetProperties: function(ownProperties, accessorPropertiesOnly, callback)
     {
@@ -763,12 +766,12 @@ WebInspector.ScopeRemoteObject.prototype = {
     /**
      * @override
      * @param {!RuntimeAgent.RemoteObject} result
-     * @param {string} name
+     * @param {!RuntimeAgent.CallArgument} name
      * @param {function(string=)} callback
      */
     doSetObjectPropertyValue: function(result, name, callback)
     {
-        this._debuggerAgent.setVariableValue(this._scopeRef.number, name, WebInspector.RemoteObject.toCallArgument(result), this._scopeRef.callFrameId, this._scopeRef.functionId, setVariableValueCallback.bind(this));
+        this._debuggerAgent.setVariableValue(this._scopeRef.number, /** @type {string} */ (name.value), WebInspector.RemoteObject.toCallArgument(result), this._scopeRef.callFrameId, this._scopeRef.functionId, setVariableValueCallback.bind(this));
 
         /**
          * @param {?Protocol.Error} error
