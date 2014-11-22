@@ -583,10 +583,9 @@ WebInspector.HeapSnapshotView.prototype = {
 
     /**
      * @param {function()} callback
-     * @param {?WebInspector.HeapSnapshotGridNode} parentNode
      * @param {?WebInspector.HeapSnapshotGridNode} node
      */
-    _selectRevealedNode: function(callback, parentNode, node)
+    _selectRevealedNode: function(callback, node)
     {
         if (node)
             node.select();
