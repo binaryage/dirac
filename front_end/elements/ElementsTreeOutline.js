@@ -1158,7 +1158,7 @@ WebInspector.ElementsTreeElement.prototype = {
 
         this._expandedChildrenLimit = x;
         if (this.treeOutline && !this._updateChildrenInProgress)
-            this._updateChildren(true, this.children);
+            this._updateChildren(true);
     },
 
     get expandedChildCount()
@@ -1186,7 +1186,7 @@ WebInspector.ElementsTreeElement.prototype = {
 
         if (index >= this.expandedChildrenLimit) {
             this._expandedChildrenLimit = index + 1;
-            this._updateChildren(true, this.children);
+            this._updateChildren(true);
         }
 
         // Whether index-th child is visible in the children tree
@@ -1257,7 +1257,18 @@ WebInspector.ElementsTreeElement.prototype = {
         if (!this._hasChildTreeElements())
             return;
         console.assert(!this._elementCloseTag);
-        this._node.getChildNodes(this._updateChildren.bind(this, fullRefresh || false));
+        this._node.getChildNodes(childNodesLoaded.bind(this));
+
+        /**
+         * @this {WebInspector.ElementsTreeElement}
+         * @param {?Array.<!WebInspector.DOMNode>} children
+         */
+        function childNodesLoaded(children)
+        {
+            if (!children)
+                return;
+            this._updateChildren(fullRefresh);
+        }
     },
 
     /**
@@ -1299,12 +1310,11 @@ WebInspector.ElementsTreeElement.prototype = {
     },
 
     /**
-     * @param {boolean} fullRefresh
-     * @param {?Array.<!WebInspector.DOMNode>} children
+     * @param {boolean=} fullRefresh
      */
-    _updateChildren: function(fullRefresh, children)
+    _updateChildren: function(fullRefresh)
     {
-        if (!children || this._updateChildrenInProgress || !this.treeOutline._visible)
+        if (this._updateChildrenInProgress || !this.treeOutline._visible)
             return;
 
         this._updateChildrenInProgress = true;
