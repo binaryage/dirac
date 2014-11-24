@@ -73,10 +73,14 @@ WebInspector.elementDragStart = function(elementDragStart, elementDrag, elementD
     WebInspector._elementDraggingEventListener = elementDrag;
     WebInspector._elementEndDraggingEventListener = elementDragEnd;
     WebInspector._mouseOutWhileDraggingTargetDocument = targetDocument;
+    WebInspector._dragEventsTargetDocument = targetDocument;
+    WebInspector._dragEventsTargetDocumentTop = targetDocument.defaultView.top.document;
 
     targetDocument.addEventListener("mousemove", WebInspector._elementDragMove, true);
     targetDocument.addEventListener("mouseup", WebInspector._elementDragEnd, true);
     targetDocument.addEventListener("mouseout", WebInspector._mouseOutWhileDragging, true);
+    if (targetDocument !== WebInspector._dragEventsTargetDocumentTop)
+        WebInspector._dragEventsTargetDocumentTop.addEventListener("mouseup", WebInspector._elementDragEnd, true);
 
     var targetElement = /** @type {!Element} */ (event.target);
     if (typeof cursor === "string") {
@@ -108,6 +112,18 @@ WebInspector._unregisterMouseOutWhileDragging = function()
     delete WebInspector._mouseOutWhileDraggingTargetDocument;
 }
 
+WebInspector._unregisterDragEvents = function()
+{
+    if (!WebInspector._dragEventsTargetDocument)
+        return;
+    WebInspector._dragEventsTargetDocument.removeEventListener("mousemove", WebInspector._elementDragMove, true);
+    WebInspector._dragEventsTargetDocument.removeEventListener("mouseup", WebInspector._elementDragEnd, true);
+    if (WebInspector._dragEventsTargetDocument !== WebInspector._dragEventsTargetDocumentTop)
+        WebInspector._dragEventsTargetDocumentTop.removeEventListener("mouseup", WebInspector._elementDragEnd, true);
+    delete WebInspector._dragEventsTargetDocument;
+    delete WebInspector._dragEventsTargetDocumentTop;
+}
+
 /**
  * @param {!Event} event
  */
@@ -122,9 +138,7 @@ WebInspector._elementDragMove = function(event)
  */
 WebInspector._cancelDragEvents = function(event)
 {
-    var targetDocument = event.target.ownerDocument;
-    targetDocument.removeEventListener("mousemove", WebInspector._elementDragMove, true);
-    targetDocument.removeEventListener("mouseup", WebInspector._elementDragEnd, true);
+    WebInspector._unregisterDragEvents();
     WebInspector._unregisterMouseOutWhileDragging();
 
     if (WebInspector._restoreCursorAfterDrag)
