@@ -80,7 +80,7 @@ WebInspector.OverridesSupport.Events = {
     EmulationStateChanged: "EmulationStateChanged"
 }
 
-WebInspector.OverridesSupport.MaxDeviceSize = 3000;
+WebInspector.OverridesSupport.MaxDeviceSize = 9999;
 
 /**
  * @interface
