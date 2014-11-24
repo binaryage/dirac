@@ -1202,7 +1202,7 @@ WebInspector.ElementsTreeElement.prototype = {
 
     /**
      * @param {!WebInspector.DOMNode} child
-     * @return {?WebInspector.ElementsTreeElement}
+     * @return {?TreeElement}
      */
     _showChild: function(child)
     {
