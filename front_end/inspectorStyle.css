@@ -827,7 +827,7 @@ iframe.panel.extension {
 }
 
 .outline-disclosure li.parent {
-    margin-left: -12px
+    margin-left: -13px;
 }
 
 .outline-disclosure li .webkit-html-tag.close {
@@ -837,7 +837,6 @@ iframe.panel.extension {
 .outline-disclosure li.parent::before {
     float: left;
     width: 10px;
-    padding-right: 2px;
     box-sizing: border-box;
 }
 
