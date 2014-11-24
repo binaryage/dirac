@@ -76,29 +76,9 @@ WebInspector.InspectorFrontendHostImpl.prototype = {
         DevToolsAPI.sendMessageToEmbedder("setInspectedPageBounds", [bounds], null);
     },
 
-    /**
-     * Requests inspected page to be placed atop of the inspector frontend
-     * with passed insets from the frontend sides, respecting minimum size passed.
-     * @param {{top: number, left: number, right: number, bottom: number}} insets
-     * @param {{width: number, height: number}} minSize
-     */
-    setContentsResizingStrategy: function(insets, minSize)
-    {
-        DevToolsAPI.sendMessageToEmbedder("setContentsResizingStrategy", [insets, minSize], null);
-    },
-
     inspectElementCompleted: function()
     {
         DevToolsAPI.sendMessageToEmbedder("inspectElementCompleted", [], null);
-    },
-
-    /**
-     * @param {number} x
-     * @param {number} y
-     */
-    moveWindowBy: function(x, y)
-    {
-        DevToolsAPI.sendMessageToEmbedder("moveWindowBy", [x, y], null);
     },
 
     /**

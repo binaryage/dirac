@@ -130,25 +130,11 @@ InspectorFrontendHostAPI.prototype = {
     setInspectedPageBounds: function(bounds) { },
 
     /**
-     * Requests inspected page to be placed atop of the inspector frontend
-     * with passed insets from the frontend sides, respecting minimum size passed.
-     * @param {{top: number, left: number, right: number, bottom: number}} insets
-     * @param {{width: number, height: number}} minSize
-     */
-    setContentsResizingStrategy: function(insets, minSize) { },
-
-    /**
      * @param {string} shortcuts
      */
     setWhitelistedShortcuts: function(shortcuts) { },
 
     inspectElementCompleted: function() { },
-
-    /**
-     * @param {number} x
-     * @param {number} y
-     */
-    moveWindowBy: function(x, y) { },
 
     /**
      * @param {string} url
@@ -381,25 +367,7 @@ WebInspector.InspectorFrontendHostStub.prototype = {
     {
     },
 
-    /**
-     * Requests inspected page to be placed atop of the inspector frontend
-     * with passed insets from the frontend sides, respecting minimum size passed.
-     * @param {{top: number, left: number, right: number, bottom: number}} insets
-     * @param {{width: number, height: number}} minSize
-     */
-    setContentsResizingStrategy: function(insets, minSize)
-    {
-    },
-
     inspectElementCompleted: function()
-    {
-    },
-
-    /**
-     * @param {number} x
-     * @param {number} y
-     */
-    moveWindowBy: function(x, y)
     {
     },
 
