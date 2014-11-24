@@ -645,7 +645,7 @@ WebInspector.TimelinePanel.prototype = {
             this._overviewControls[i].timelineStarted();
 
         if (userInitiated)
-            WebInspector.userMetrics.record(WebInspector.UserMetrics.Actions.TimelineStarted);
+            WebInspector.userMetrics.TimelineStarted.record();
         this._setUIControlsEnabled(false);
     },
 

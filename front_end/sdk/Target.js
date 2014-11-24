@@ -558,4 +558,4 @@ WebInspector.TargetManager.Observer.prototype = {
 /**
  * @type {!WebInspector.TargetManager}
  */
-WebInspector.targetManager;
+WebInspector.targetManager = new WebInspector.TargetManager();

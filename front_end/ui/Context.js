@@ -116,7 +116,4 @@ WebInspector.Context.prototype = {
     }
 }
 
-/**
- * @type {!WebInspector.Context}
- */
-WebInspector.context;
+WebInspector.context = new WebInspector.Context();

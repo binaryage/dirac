@@ -387,7 +387,7 @@ WebInspector.IsolatedFileSystem.prototype = {
     setFileContent: function(path, content, callback)
     {
         this._requestFileSystem(fileSystemLoaded.bind(this));
-        WebInspector.userMetrics.record(WebInspector.UserMetrics.Actions.FileSavedInWorkspace);
+        WebInspector.userMetrics.FileSavedInWorkspace.record();
 
         /**
          * @param {?DOMFileSystem} fs
