@@ -187,11 +187,6 @@ var DevToolsHost = {};
 DevToolsHost.ContextMenuDescriptor;
 
 /**
- * @param {number} zoom
- */
-DevToolsHost.setZoomFactor = function(zoom) { }
-
-/**
  * @return {number}
  */
 DevToolsHost.zoomFactor = function() { }
@@ -211,11 +206,6 @@ DevToolsHost.copyText = function(text) { }
  * @return {string}
  */
 DevToolsHost.platform = function() { }
-
-/**
- * @return {string}
- */
-DevToolsHost.port = function() { }
 
 /**
  * @param {number} x

@@ -202,11 +202,6 @@ InspectorFrontendHostAPI.prototype = {
     platform: function() { },
 
     /**
-     * @return {string}
-     */
-    port: function() { },
-
-    /**
      * @param {number} actionCode
      */
     recordActionTaken: function(actionCode) { },
@@ -242,11 +237,6 @@ InspectorFrontendHostAPI.prototype = {
      * @param {function()} callback
      */
     setIsDocked: function(isDocked, callback) { },
-
-    /**
-     * @param {number} zoom
-     */
-    setZoomFactor: function(zoom) { },
 
     /**
      * @return {number}
@@ -327,14 +317,6 @@ WebInspector.InspectorFrontendHostStub.prototype = {
         if (match)
             return "mac";
         return "linux";
-    },
-
-    /**
-     * @return {string}
-     */
-    port: function()
-    {
-        return "unknown";
     },
 
     loadCompleted: function()
@@ -498,13 +480,6 @@ WebInspector.InspectorFrontendHostStub.prototype = {
      * @param {string} query
      */
     searchInPath: function(requestId, fileSystemPath, query)
-    {
-    },
-
-    /**
-     * @param {number} zoom
-     */
-    setZoomFactor: function(zoom)
     {
     },
 

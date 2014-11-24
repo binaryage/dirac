@@ -35,14 +35,6 @@ WebInspector.InspectorFrontendHostImpl.prototype = {
         return DevToolsHost.platform();
     },
 
-    /**
-     * @return {string}
-     */
-    port: function()
-    {
-        return DevToolsHost.port();
-    },
-
     loadCompleted: function()
     {
         DevToolsAPI.sendMessageToEmbedder("loadCompleted", [], null);
@@ -221,14 +213,6 @@ WebInspector.InspectorFrontendHostImpl.prototype = {
     },
 
     /**
-     * @param {number} zoom
-     */
-    setZoomFactor: function(zoom)
-    {
-        DevToolsHost.setZoomFactor(zoom);
-    },
-
-    /**
      * @return {number}
      */
     zoomFactor: function()
@@ -309,6 +293,15 @@ WebInspector.InspectorFrontendHostImpl.prototype = {
     isHostedMode: function()
     {
         return DevToolsHost.isHostedMode();
+    },
+
+    /**
+     * Support for legacy front-ends (<M41).
+     * @return {string}
+     */
+    port: function()
+    {
+        return "unknown";
     },
 
     /**
