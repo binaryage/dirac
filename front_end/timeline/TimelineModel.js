@@ -602,8 +602,8 @@ WebInspector.TimelineModel.prototype = {
      */
     _startCollectingTraceEvents: function(fromFile)
     {
-        this.reset();
         this._tracingModel.reset();
+        this.reset();
         this.dispatchEventToListeners(WebInspector.TimelineModel.Events.RecordingStarted, { fromFile: fromFile });
     },
 
