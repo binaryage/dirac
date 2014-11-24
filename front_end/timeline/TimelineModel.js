@@ -119,7 +119,6 @@ WebInspector.TimelineModel.RecordType = {
 
     EmbedderCallback : "EmbedderCallback",
 
-    CallStack: "CallStack",
     SetLayerTreeId: "SetLayerTreeId",
     TracingStartedInPage: "TracingStartedInPage",
     TracingSessionIdForWorker: "TracingSessionIdForWorker",
@@ -886,13 +885,11 @@ WebInspector.TimelineModel.prototype = {
         if (this._currentScriptEvent && event.startTime > this._currentScriptEvent.endTime)
             this._currentScriptEvent = null;
 
-        switch (event.name) {
-        case recordTypes.CallStack:
-            var lastMainThreadEvent = this.mainThreadEvents().peekLast();
-            if (lastMainThreadEvent && event.args["stack"] && event.args["stack"].length)
-                lastMainThreadEvent.stackTrace = event.args["stack"];
-            break;
+        var eventData = event.args["data"] || event.args["beginData"];
+        if (eventData && eventData["stackTrace"])
+            event.stackTrace = eventData["stackTrace"];
 
+        switch (event.name) {
         case recordTypes.CpuProfile:
             this._cpuProfile = event.args["data"]["cpuProfile"];
             break;
