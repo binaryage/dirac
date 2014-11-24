@@ -620,12 +620,20 @@ TreeElement.prototype._attach = function()
         if (this.selected)
             this._listItemNode.classList.add("selected");
 
-        this._listItemNode.addEventListener("mousedown", TreeElement.treeElementMouseDown, false);
-        this._listItemNode.addEventListener("selectstart", TreeElement.treeElementSelectStart, false);
-        this._listItemNode.addEventListener("click", TreeElement.treeElementToggled, false);
-        this._listItemNode.addEventListener("dblclick", TreeElement.treeElementDoubleClicked, false);
+        this._listItemNode.addEventListener("mousedown", this._handleMouseDown.bind(this), false);
+        this._listItemNode.addEventListener("selectstart", treeElementSelectStart, false);
+        this._listItemNode.addEventListener("click", this._treeElementToggled.bind(this), false);
+        this._listItemNode.addEventListener("dblclick", this._handleDoubleClick.bind(this), false);
 
         this.onattach();
+    }
+
+    /**
+     * @param {!Event} event
+     */
+    function treeElementSelectStart(event)
+    {
+        event.currentTarget._selectionStarted = true;
     }
 
     var nextSibling = null;
@@ -648,78 +656,70 @@ TreeElement.prototype._detach = function()
         this._childrenListNode.parentNode.removeChild(this._childrenListNode);
 }
 
-TreeElement.treeElementMouseDown = function(event)
+TreeElement.prototype._handleMouseDown = function(event)
 {
     var element = event.currentTarget;
     if (!element)
         return;
     delete element._selectionStarted;
 
-    if (!element.treeElement || !element.treeElement.selectable)
+    if (!this.selectable)
+        return;
+    if (element.treeElement !== this)
         return;
 
-    if (element.treeElement.isEventWithinDisclosureTriangle(event))
+    if (this.isEventWithinDisclosureTriangle(event))
         return;
 
-    element.treeElement.selectOnMouseDown(event);
+    this.selectOnMouseDown(event);
 }
 
-TreeElement.treeElementSelectStart = function(event)
+TreeElement.prototype._treeElementToggled = function(event)
 {
     var element = event.currentTarget;
-    if (!element)
-        return;
-    element._selectionStarted = true;
-}
-
-TreeElement.treeElementToggled = function(event)
-{
-    var element = event.currentTarget;
-    if (!element)
-        return;
     if (element._selectionStarted) {
-        delete element._selectionStarted
+        delete element._selectionStarted;
         var selection = element.window().getSelection();
         if (selection && !selection.isCollapsed && element.isSelfOrAncestor(selection.anchorNode) && element.isSelfOrAncestor(selection.focusNode))
             return;
     }
 
-    if (!element.treeElement)
+    if (element.treeElement !== this)
         return;
 
-    var toggleOnClick = element.treeElement.toggleOnClick && !element.treeElement.selectable;
-    var isInTriangle = element.treeElement.isEventWithinDisclosureTriangle(event);
+    var toggleOnClick = this.toggleOnClick && !this.selectable;
+    var isInTriangle = this.isEventWithinDisclosureTriangle(event);
     if (!toggleOnClick && !isInTriangle)
         return;
 
     if (event.target && event.target.enclosingNodeOrSelfWithNodeName("a"))
         return;
 
-    if (element.treeElement.expanded) {
+    if (this.expanded) {
         if (event.altKey)
-            element.treeElement.collapseRecursively();
+            this.collapseRecursively();
         else
-            element.treeElement.collapse();
+            this.collapse();
     } else {
         if (event.altKey)
-            element.treeElement.expandRecursively();
+            this.expandRecursively();
         else
-            element.treeElement.expand();
+            this.expand();
     }
     event.consume();
 }
 
-TreeElement.treeElementDoubleClicked = function(event)
+TreeElement.prototype._handleDoubleClick = function(event)
 {
     var element = event.currentTarget;
-    if (!element || !element.treeElement)
+    if (!element || element.treeElement !== this)
         return;
 
-    var handled = element.treeElement.ondblclick.call(element.treeElement, event);
+    var handled = this.ondblclick(event);
     if (handled)
         return;
-    if (element.treeElement.hasChildren && !element.treeElement.expanded)
-        element.treeElement.expand();
+    if (this.hasChildren && !this.expanded)
+        this.expand();
 }
 
 TreeElement.prototype.collapse = function()
@@ -791,6 +791,9 @@ TreeElement.prototype.expand = function()
     this.onexpand();
 }
 
+/**
+ * @param {number=} maxDepth
+ */
 TreeElement.prototype.expandRecursively = function(maxDepth)
 {
     var item = this;
@@ -798,7 +801,7 @@ TreeElement.prototype.expandRecursively = function(maxDepth)
     var depth = 0;
 
     // The Inspector uses TreeOutlines to represents object properties, so recursive expansion
-    // in some case can be infinite, since JavaScript objects can hold circular references.
+    // in some cases can be infinite, since JavaScript objects can hold circular references.
     // So default to a recursion cap of 3 levels, since that gives fairly good results.
     if (isNaN(maxDepth))
         maxDepth = 3;
