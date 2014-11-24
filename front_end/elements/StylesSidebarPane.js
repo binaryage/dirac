@@ -832,7 +832,7 @@ WebInspector.StylesSidebarPane.prototype = {
         var addedAttributesStyle;
         for (var i = styles.matchedCSSRules.length - 1; i >= 0; --i) {
             var rule = styles.matchedCSSRules[i];
-            if ((rule.isUser || rule.isUserAgent) && !addedAttributesStyle) {
+            if ((rule.isInjected || rule.isUserAgent) && !addedAttributesStyle) {
                 // Show element's Style Attributes after all author rules.
                 addedAttributesStyle = true;
                 addAttributesStyle();
@@ -1375,7 +1375,7 @@ WebInspector.StylePropertiesSection = function(parentPane, styleRule)
     this.editable = styleRule.editable();
 
     var rule = styleRule.rule();
-    var extraClasses = (rule && (rule.isUser || rule.isUserAgent) ? " user-rule" : "");
+    var extraClasses = (rule && (rule.isInjected || rule.isUserAgent) ? " user-rule" : "");
     this.element.className = "styles-section matched-styles monospace" + extraClasses;
     // We don't really use properties' disclosure.
     this.propertiesElement.classList.remove("properties-tree");
@@ -1407,7 +1407,7 @@ WebInspector.StylePropertiesSection = function(parentPane, styleRule)
 
     if (rule) {
         // Prevent editing the user agent and user rules.
-        if (rule.isUserAgent || rule.isUser)
+        if (rule.isUserAgent || rule.isInjected)
             this.editable = false;
         else {
             // Check this is a real CSSRule, not a bogus object coming from WebInspector.BlankStylePropertiesSection.
@@ -1841,8 +1841,8 @@ WebInspector.StylePropertiesSection.prototype = {
 
         if (rule.isUserAgent)
             return createTextNode(WebInspector.UIString("user agent stylesheet"));
-        if (rule.isUser)
-            return createTextNode(WebInspector.UIString("user stylesheet"));
+        if (rule.isInjected)
+            return createTextNode(WebInspector.UIString("injected stylesheet"));
         if (rule.isViaInspector)
             return createTextNode(WebInspector.UIString("via inspector"));
         return createTextNode("");

@@ -1064,9 +1064,9 @@ WebInspector.CSSRule.prototype = {
         return this.origin === "user-agent";
     },
 
-    get isUser()
+    get isInjected()
     {
-        return this.origin === "user";
+        return this.origin === "injected";
     },
 
     get isViaInspector()
