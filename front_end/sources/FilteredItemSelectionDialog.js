@@ -560,7 +560,7 @@ WebInspector.JavaScriptOutlineDialog.prototype = {
         for (var i = 0; i < chunk.length; ++i)
             this._functionItems.push(chunk[i]);
 
-        if (data.total === data.index + 1)
+        if (data.isLastChunk)
             this.dispose();
 
         this.refresh();
@@ -934,6 +934,6 @@ WebInspector.SelectUISourceCodeForProjectTypesDialog.show = function(name, types
 }
 
 /**
- * @typedef {{index: number, total: number, chunk: !Array.<!{selectorText: string, lineNumber: number, columnNumber: number}>}}
+ * @typedef {{isLastChunk: boolean, chunk: !Array.<!{selectorText: string, lineNumber: number, columnNumber: number}>}}
  */
 WebInspector.JavaScriptOutlineDialog.MessageEventData;
