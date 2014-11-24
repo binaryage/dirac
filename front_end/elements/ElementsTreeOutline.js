@@ -498,22 +498,51 @@ WebInspector.ElementsTreeOutline.prototype = {
 
     /**
      * @param {!WebInspector.DOMNode} node
-     * @return {?TreeElement}
+     * @return {?WebInspector.ElementsTreeElement}
      */
     findTreeElement: function(node)
     {
-        function parentNode(node)
-        {
-            return node.parentNode;
-        }
-
-        var treeElement = TreeOutline.prototype.findTreeElement.call(this, node, parentNode);
+        var treeElement = this._lookUpTreeElement(node);
         if (!treeElement && node.nodeType() === Node.TEXT_NODE) {
             // The text node might have been inlined if it was short, so try to find the parent element.
-            treeElement = TreeOutline.prototype.findTreeElement.call(this, node.parentNode, parentNode);
+            treeElement = this._lookUpTreeElement(node.parentNode);
         }
 
-        return treeElement;
+        return /** @type {?WebInspector.ElementsTreeElement} */ (treeElement);
+    },
+
+    /**
+     * @param {?WebInspector.DOMNode} node
+     * @return {?TreeElement}
+     */
+    _lookUpTreeElement: function(node)
+    {
+        if (!node)
+            return null;
+
+        var cachedElement = this.getCachedTreeElement(node);
+        if (cachedElement)
+            return cachedElement;
+
+        // Walk up the parent pointers from the desired node
+        var ancestors = [];
+        for (var currentNode = node.parentNode; currentNode; currentNode = currentNode.parentNode) {
+            ancestors.push(currentNode);
+            if (this.getCachedTreeElement(currentNode))  // stop climbing as soon as we hit
+                break;
+        }
+
+        if (!currentNode)
+            return null;
+
+        // Walk down to populate each ancestor's children, to fill in the tree and the cache.
+        for (var i = ancestors.length - 1; i >= 0; --i) {
+            var treeElement = this.getCachedTreeElement(ancestors[i]);
+            if (treeElement)
+                treeElement.onpopulate();  // fill the cache with the children of treeElement
+        }
+
+        return this.getCachedTreeElement(node);
     },
 
     /**

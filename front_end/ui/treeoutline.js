@@ -282,41 +282,6 @@ TreeOutline.prototype.getCachedTreeElement = function(representedObject)
 }
 
 /**
- * @param {?Object} representedObject
- * @param {function(!Object):?Object} getParent
- * @return {?TreeElement}
- */
-TreeOutline.prototype.findTreeElement = function(representedObject, getParent)
-{
-    if (!representedObject)
-        return null;
-
-    var cachedElement = this.getCachedTreeElement(representedObject);
-    if (cachedElement)
-        return cachedElement;
-
-    // Walk up the parent pointers from the desired representedObject
-    var ancestors = [];
-    for (var currentObject = getParent(representedObject); currentObject;  currentObject = getParent(currentObject)) {
-        ancestors.push(currentObject);
-        if (this.getCachedTreeElement(currentObject))  // stop climbing as soon as we hit
-            break;
-    }
-
-    if (!currentObject)
-        return null;
-
-    // Walk down to populate each ancestor's children, to fill in the tree and the cache.
-    for (var i = ancestors.length - 1; i >= 0; --i) {
-        var treeElement = this.getCachedTreeElement(ancestors[i]);
-        if (treeElement)
-            treeElement.onpopulate();  // fill the cache with the children of treeElement
-    }
-
-    return this.getCachedTreeElement(representedObject);
-}
-
-/**
  * @param {number} x
  * @param {number} y
  * @return {?TreeElement}

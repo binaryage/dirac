@@ -753,13 +753,7 @@ WebInspector.ResourcesPanel.prototype = {
 
     _findTreeElementForResource: function(resource)
     {
-        function getParent(object)
-        {
-            // Redirects, XHRs do not belong to the tree, it is fine to silently return false here.
-            return null;
-        }
-
-        return this.sidebarTree.findTreeElement(resource, getParent);
+        return this.sidebarTree.getCachedTreeElement(resource);
     },
 
     showView: function(view)
