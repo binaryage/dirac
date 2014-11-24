@@ -2901,7 +2901,10 @@ WebInspector.ComputedStylePropertyTreeElement.prototype = {
     _updateFilter: function()
     {
         var regEx = this.parentPane().filterRegex();
-        this.listItemElement.classList.toggle("hidden", !!regEx && (!regEx.test(this.property.name) && !regEx.test(this.property.value)));
+        var matched = !!regEx && (!regEx.test(this.property.name) && !regEx.test(this.property.value));
+        this.listItemElement.classList.toggle("hidden", matched);
+        if (this.childrenListElement)
+            this.childrenListElement.classList.toggle("hidden", matched);
     },
 
     __proto__: WebInspector.StylePropertyTreeElementBase.prototype
