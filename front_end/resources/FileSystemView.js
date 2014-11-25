@@ -39,10 +39,11 @@ WebInspector.FileSystemView = function(fileSystem)
     this.element.classList.add("file-system-view");
     this.element.classList.add("storage-view");
 
-    var directoryTreeElement = this.element.createChild("ol", "filesystem-directory-tree");
+    var vbox = new WebInspector.VBox();
+    vbox.element.classList.add("outline-disclosure", "sidebar");
+    var directoryTreeElement = vbox.element.createChild("ol", "filesystem-directory-tree");
     this._directoryTree = new TreeOutline(directoryTreeElement);
-    this.sidebarElement().appendChild(directoryTreeElement);
-    this.sidebarElement().classList.add("outline-disclosure", "sidebar");
+    this.setSidebarView(vbox);
 
     var rootItem = new WebInspector.FileSystemView.EntryTreeElement(this, fileSystem.root);
     rootItem.expanded = true;
@@ -85,7 +86,7 @@ WebInspector.FileSystemView.prototype = {
         if (this._visibleView)
             this._visibleView.detach();
         this._visibleView = view;
-        view.show(this.mainElement());
+        this.setMainView(view);
     },
 
     _refresh: function()

@@ -46,10 +46,11 @@ WebInspector.CountersGraph = function(title, delegate, model)
     this._model = model;
     this._calculator = new WebInspector.TimelineCalculator(this._model);
 
-    this._graphsContainer = this.mainElement();
+    this._graphsContainer = new WebInspector.VBox();
+    this.setMainView(this._graphsContainer);
     this._createCurrentValuesBar();
     this._canvasView = new WebInspector.VBoxWithResizeCallback(this._resize.bind(this));
-    this._canvasView.show(this._graphsContainer);
+    this._canvasView.show(this._graphsContainer.element);
     this._canvasContainer = this._canvasView.element;
     this._canvasContainer.id = "memory-graphs-canvas-container";
     this._canvas = this._canvasContainer.createChild("canvas");
@@ -64,7 +65,10 @@ WebInspector.CountersGraph = function(title, delegate, model)
     this._canvasContainer.appendChild(this._timelineGrid.dividersElement);
 
     // Populate sidebar
-    this.sidebarElement().createChild("div", "sidebar-tree sidebar-tree-section").textContent = title;
+    this._infoView = new WebInspector.VBox();
+    this._infoView.element.classList.add("sidebar-tree");
+    this._infoView.element.createChild("div", "sidebar-tree-section").textContent = title;
+    this.setSidebarView(this._infoView);
     this._counters = [];
     this._counterUI = [];
 }
@@ -72,7 +76,7 @@ WebInspector.CountersGraph = function(title, delegate, model)
 WebInspector.CountersGraph.prototype = {
     _createCurrentValuesBar: function()
     {
-        this._currentValuesBar = this._graphsContainer.createChild("div");
+        this._currentValuesBar = this._graphsContainer.element.createChild("div");
         this._currentValuesBar.id = "counter-values-bar";
     },
 
@@ -379,7 +383,7 @@ WebInspector.CountersGraph.CounterUI = function(memoryCountersPane, title, curre
 {
     this._memoryCountersPane = memoryCountersPane;
     this.counter = counter;
-    var container = memoryCountersPane.sidebarElement().createChild("div", "memory-counter-sidebar-info");
+    var container = memoryCountersPane._infoView.element.createChild("div", "memory-counter-sidebar-info");
     var swatchColor = graphColor;
     this._swatch = new WebInspector.SwatchCheckbox(WebInspector.UIString(title), swatchColor);
     this._swatch.addEventListener(WebInspector.SwatchCheckbox.Events.Changed, this._toggleCounterGraph.bind(this));

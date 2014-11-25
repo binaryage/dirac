@@ -87,7 +87,7 @@
     margin-right: 15px;
 }
 
-.panel.sources .split-view #scripts-debug-sidebar-resizer-widget {
+.dock-to-right .panel.sources .split-view #scripts-debug-sidebar-resizer-widget {
     transform: rotate(90deg);
     right: 17px;
     bottom: 4px;

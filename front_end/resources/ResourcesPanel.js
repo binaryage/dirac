@@ -40,7 +40,7 @@ WebInspector.ResourcesPanel = function()
 
     WebInspector.settings.resourcesLastSelectedItem = WebInspector.settings.createSetting("resourcesLastSelectedItem", {});
 
-    this.sidebarElement().classList.add("filter-all", "children", "small", "outline-disclosure");
+    this.panelSidebarElement().classList.add("filter-all", "children", "small", "outline-disclosure");
     this.sidebarTree.element.classList.remove("sidebar-tree");
 
     this.resourcesListTreeElement = new WebInspector.StorageCategoryTreeElement(this, WebInspector.UIString("Frames"), "Frames", ["frame-storage-tree-item"]);
@@ -73,7 +73,7 @@ WebInspector.ResourcesPanel = function()
     this.storageViews = mainView.element.createChild("div", "vbox flex-auto");
     this._storageViewStatusBar = new WebInspector.StatusBar(mainView.element);
     this._storageViewStatusBar.element.classList.add("resources-status-bar");
-    mainView.show(this.mainElement());
+    this.splitView().setMainView(mainView);
 
     /** @type {!Map.<!WebInspector.Database, !Object.<string, !WebInspector.DatabaseTableView>>} */
     this._databaseTableViews = new Map();
@@ -90,8 +90,8 @@ WebInspector.ResourcesPanel = function()
     /** @type {!Object.<string, boolean>} */
     this._domains = {};
 
-    this.sidebarElement().addEventListener("mousemove", this._onmousemove.bind(this), false);
-    this.sidebarElement().addEventListener("mouseleave", this._onmouseleave.bind(this), false);
+    this.panelSidebarElement().addEventListener("mousemove", this._onmousemove.bind(this), false);
+    this.panelSidebarElement().addEventListener("mouseleave", this._onmouseleave.bind(this), false);
 
     /**
      * @this {WebInspector.ResourcesPanel}

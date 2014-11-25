@@ -93,15 +93,14 @@ WebInspector.TimelinePanel = function()
     // Create top level properties splitter.
     this._detailsSplitView = new WebInspector.SplitView(false, true, "timelinePanelDetailsSplitViewState");
     this._detailsSplitView.element.classList.add("timeline-details-split");
-    this._detailsSplitView.sidebarElement().classList.add("timeline-details");
     this._detailsView = new WebInspector.TimelineDetailsView();
     this._detailsSplitView.installResizer(this._detailsView.headerElement());
-    this._detailsView.show(this._detailsSplitView.sidebarElement());
+    this._detailsSplitView.setSidebarView(this._detailsView);
 
     this._searchableView = new WebInspector.SearchableView(this);
     this._searchableView.setMinimumSize(0, 25);
     this._searchableView.element.classList.add("searchable-view");
-    this._searchableView.show(this._detailsSplitView.mainElement());
+    this._detailsSplitView.setMainView(this._searchableView);
 
     this._stackView = new WebInspector.StackView(false);
     this._stackView.show(this._searchableView.element);
@@ -780,7 +779,7 @@ WebInspector.TimelinePanel.prototype = {
     _showProgressPane: function()
     {
         this._hideProgressPane();
-        this._progressElement = this._detailsSplitView.mainElement().createChild("div", "timeline-progress-pane");
+        this._progressElement = this._searchableView.element.createChild("div", "timeline-progress-pane");
     },
 
     _hideProgressPane: function()
@@ -1140,6 +1139,7 @@ WebInspector.TimelinePanel.prototype = {
 WebInspector.TimelineDetailsView = function()
 {
     WebInspector.TabbedPane.call(this);
+    this.element.classList.add("timeline-details");
 
     this._defaultDetailsView = new WebInspector.VBox();
     this._defaultDetailsView.element.classList.add("timeline-details-view");

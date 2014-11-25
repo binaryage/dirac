@@ -44,10 +44,10 @@ WebInspector.ResourceWebSocketFrameView = function(request)
 
     this._dataGrid.setName("ResourceWebSocketFrameView");
     this._dataGrid.addEventListener(WebInspector.DataGrid.Events.SelectedNode, this._onFrameSelected, this);
-    this._dataGrid.show(this.mainElement());
+    this.setMainView(this._dataGrid);
 
     this._messageView = new WebInspector.EmptyView("Select frame to browse its content.");
-    this._messageView.show(this.sidebarElement());
+    this.setSidebarView(this._messageView);
 }
 
 /** @enum {number} */
@@ -118,7 +118,7 @@ WebInspector.ResourceWebSocketFrameView.prototype = {
         if (this._dataView)
             this._dataView.detach();
         this._dataView = new WebInspector.ResourceSourceFrame(selectedNode.contentProvider());
-        this._dataView.show(this.sidebarElement());
+        this.setSidebarView(this._dataView);
     },
 
     refresh: function()

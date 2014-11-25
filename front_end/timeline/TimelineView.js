@@ -92,13 +92,15 @@ WebInspector.TimelineView.prototype = {
         this._containerElement.addEventListener("scroll", this._onScroll.bind(this), false);
 
         // Create records list in the records sidebar.
-        recordsView.sidebarElement().createChild("div", "timeline-records-title").textContent = WebInspector.UIString("RECORDS");
-        this._sidebarListElement = recordsView.sidebarElement().createChild("div", "timeline-records-list");
+        var sidebarView = new WebInspector.VBox();
+        sidebarView.element.createChild("div", "timeline-records-title").textContent = WebInspector.UIString("RECORDS");
+        recordsView.setSidebarView(sidebarView);
+        this._sidebarListElement = sidebarView.element.createChild("div", "timeline-records-list");
 
         // Create grid in the records main area.
         this._gridContainer = new WebInspector.VBoxWithResizeCallback(this._onViewportResize.bind(this));
         this._gridContainer.element.id = "resources-container-content";
-        this._gridContainer.show(recordsView.mainElement());
+        recordsView.setMainView(this._gridContainer);
         this._timelineGrid = new WebInspector.TimelineGrid();
         this._gridContainer.element.appendChild(this._timelineGrid.element);
 
@@ -536,13 +538,13 @@ WebInspector.TimelineView.prototype = {
 
         // Resize gaps first.
         this._topGapElement.style.height = (startIndex * rowHeight) + "px";
-        this._recordsView.sidebarElement().firstElementChild.style.flexBasis = (startIndex * rowHeight + headerHeight) + "px";
+        this._recordsView.sidebarView().element.firstElementChild.style.flexBasis = (startIndex * rowHeight + headerHeight) + "px";
         this._bottomGapElement.style.height = (recordsInWindow.length - endIndex) * rowHeight + "px";
         var rowsHeight = headerHeight + recordsInWindow.length * rowHeight;
         var totalHeight = Math.max(this._containerElementHeight, rowsHeight);
 
-        this._recordsView.mainElement().style.height = totalHeight + "px";
-        this._recordsView.sidebarElement().style.height = totalHeight + "px";
+        this._recordsView.mainView().element.style.height = totalHeight + "px";
+        this._recordsView.sidebarView().element.style.height = totalHeight + "px";
         this._recordsView.resizerElement().style.height = totalHeight + "px";
 
         // Update visible rows.

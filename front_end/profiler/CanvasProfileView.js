@@ -48,11 +48,11 @@ WebInspector.CanvasProfileView = function(profile)
     this._replayInfoSplitView.show(this.element);
 
     this._imageSplitView = new WebInspector.SplitView(false, true, "canvasProfileViewSplitViewState", 300);
-    this._imageSplitView.show(this._replayInfoSplitView.mainElement());
+    this._replayInfoSplitView.setMainView(this._imageSplitView);
 
     var replayImageContainerView = new WebInspector.VBoxWithResizeCallback(this._onReplayImageResize.bind(this));
     replayImageContainerView.setMinimumSize(50, 28);
-    replayImageContainerView.show(this._imageSplitView.mainElement());
+    this._imageSplitView.setMainView(replayImageContainerView);
 
     var replayImageContainer = replayImageContainerView.element;
     replayImageContainer.id = "canvas-replay-image-container";
@@ -64,7 +64,7 @@ WebInspector.CanvasProfileView = function(profile)
 
     var replayLogContainerView = new WebInspector.VBox();
     replayLogContainerView.setMinimumSize(22, 22);
-    replayLogContainerView.show(this._imageSplitView.sidebarElement());
+    this._imageSplitView.setSidebarView(replayLogContainerView);
 
     var replayLogContainer = replayLogContainerView.element;
     var controlsToolbar = new WebInspector.StatusBar(replayLogContainer);
@@ -84,7 +84,7 @@ WebInspector.CanvasProfileView = function(profile)
     this._installReplayInfoSidebarWidgets(replayLogContainer);
 
     this._replayStateView = new WebInspector.CanvasReplayStateView(this._traceLogPlayer);
-    this._replayStateView.show(this._replayInfoSplitView.sidebarElement());
+    this._replayInfoSplitView.setSidebarView(this._replayStateView);
 
     /** @type {!Object.<string, boolean>} */
     this._replayContexts = {};

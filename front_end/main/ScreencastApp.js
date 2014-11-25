@@ -37,7 +37,7 @@ WebInspector.ScreencastApp.prototype = {
         this._rootSplitView.show(rootView.element);
         this._rootSplitView.hideMain();
 
-        WebInspector.inspectorView.show(this._rootSplitView.sidebarElement());
+        this._rootSplitView.setSidebarView(WebInspector.inspectorView);
         WebInspector.inspectorView.showInitialPanel();
         rootView.attachToDocument(document);
     },
@@ -52,7 +52,7 @@ WebInspector.ScreencastApp.prototype = {
         this._target = target;
         if (target.hasCapability(WebInspector.Target.Capabilities.CanScreencast)) {
             this._screencastView = new WebInspector.ScreencastView(target);
-            this._screencastView.show(this._rootSplitView.mainElement());
+            this._rootSplitView.setMainView(this._screencastView);
             this._screencastView.initialize();
             this._onStatusBarButtonStateChanged(this._currentScreencastState.get());
         } else {

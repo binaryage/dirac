@@ -15,16 +15,16 @@ WebInspector.TimelinePaintProfilerView = function()
     this.setResizable(false);
     this._logAndImageSplitView = new WebInspector.SplitView(true, false);
     this._logAndImageSplitView.element.classList.add("timeline-paint-profiler-log-split");
-    this._logAndImageSplitView.show(this.mainElement());
+    this.setMainView(this._logAndImageSplitView);
     this._imageView = new WebInspector.TimelinePaintImageView();
-    this._imageView.show(this._logAndImageSplitView.mainElement());
+    this._logAndImageSplitView.setMainView(this._imageView);
 
     this._paintProfilerView = new WebInspector.PaintProfilerView(this._imageView.showImage.bind(this._imageView));
     this._paintProfilerView.addEventListener(WebInspector.PaintProfilerView.Events.WindowChanged, this._onWindowChanged, this);
-    this._paintProfilerView.show(this.sidebarElement());
+    this.setSidebarView(this._paintProfilerView);
 
     this._logTreeView = new WebInspector.PaintProfilerCommandLogView();
-    this._logTreeView.show(this._logAndImageSplitView.sidebarElement());
+    this._logAndImageSplitView.setSidebarView(this._logTreeView);
 }
 
 WebInspector.TimelinePaintProfilerView.prototype = {

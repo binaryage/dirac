@@ -445,7 +445,7 @@ WebInspector.ProfilesPanel = function()
     this.registerRequiredCSS("profiler/profilesPanel.css");
 
     var mainView = new WebInspector.VBox();
-    mainView.show(this.mainElement());
+    this.splitView().setMainView(mainView);
 
     this.profilesItemTreeElement = new WebInspector.ProfilesSidebarTreeElement(this);
     this.sidebarTree.setFocusable(false);
@@ -459,9 +459,9 @@ WebInspector.ProfilesPanel = function()
     this._statusBarElement = createElementWithClass("div", "profiles-status-bar");
     mainView.element.insertBefore(this._statusBarElement, mainView.element.firstChild);
 
-    this.sidebarElement().classList.add("profiles-sidebar-tree-box");
+    this.panelSidebarElement().classList.add("profiles-sidebar-tree-box");
     var statusBarContainerLeft = createElementWithClass("div", "profiles-status-bar");
-    this.sidebarElement().insertBefore(statusBarContainerLeft, this.sidebarElement().firstChild);
+    this.panelSidebarElement().insertBefore(statusBarContainerLeft, this.panelSidebarElement().firstChild);
     var statusBar = new WebInspector.StatusBar(statusBarContainerLeft);
 
     this.recordButton = new WebInspector.StatusBarButton("", "record-status-bar-item");
@@ -729,7 +729,7 @@ WebInspector.ProfilesPanel.prototype = {
         if (this.visibleView instanceof WebInspector.HeapSnapshotView) {
             this.visibleView.populateContextMenu(contextMenu, event);
         }
-        if (element !== this.element || event.srcElement === this.sidebarElement()) {
+        if (element !== this.element || event.srcElement === this.panelSidebarElement()) {
             contextMenu.appendItem(WebInspector.UIString("Load\u2026"), this._fileSelectorElement.click.bind(this._fileSelectorElement));
         }
         contextMenu.show();

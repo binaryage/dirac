@@ -245,8 +245,8 @@ WebInspector.HeapSnapshotView.SummaryPerspective.prototype = {
      */
     activate: function(heapSnapshotView)
     {
-        heapSnapshotView._constructorsView.show(heapSnapshotView._splitView.mainElement());
-        heapSnapshotView._objectDetailsView.show(heapSnapshotView._splitView.sidebarElement());
+        heapSnapshotView._splitView.setMainView(heapSnapshotView._constructorsView);
+        heapSnapshotView._splitView.setSidebarView(heapSnapshotView._objectDetailsView);
         heapSnapshotView._splitView.show(heapSnapshotView._searchableView.element);
         heapSnapshotView._filterSelect.setVisible(true);
         heapSnapshotView._classNameFilter.setVisible(true);
@@ -295,8 +295,8 @@ WebInspector.HeapSnapshotView.ComparisonPerspective.prototype = {
      */
     activate: function(heapSnapshotView)
     {
-        heapSnapshotView._diffView.show(heapSnapshotView._splitView.mainElement());
-        heapSnapshotView._objectDetailsView.show(heapSnapshotView._splitView.sidebarElement());
+        heapSnapshotView._splitView.setMainView(heapSnapshotView._diffView);
+        heapSnapshotView._splitView.setSidebarView(heapSnapshotView._objectDetailsView);
         heapSnapshotView._splitView.show(heapSnapshotView._searchableView.element);
         heapSnapshotView._baseSelect.setVisible(true);
         heapSnapshotView._classNameFilter.setVisible(true);
@@ -340,8 +340,8 @@ WebInspector.HeapSnapshotView.ContainmentPerspective.prototype = {
      */
     activate: function(heapSnapshotView)
     {
-        heapSnapshotView._containmentView.show(heapSnapshotView._splitView.mainElement());
-        heapSnapshotView._objectDetailsView.show(heapSnapshotView._splitView.sidebarElement());
+        heapSnapshotView._splitView.setMainView(heapSnapshotView._containmentView);
+        heapSnapshotView._splitView.setSidebarView(heapSnapshotView._objectDetailsView);
         heapSnapshotView._splitView.show(heapSnapshotView._searchableView.element);
     },
 
@@ -365,6 +365,7 @@ WebInspector.HeapSnapshotView.AllocationPerspective = function()
 {
     WebInspector.HeapSnapshotView.Perspective.call(this,  WebInspector.UIString("Allocation"));
     this._allocationSplitView = new WebInspector.SplitView(false, true, "heapSnapshotAllocationSplitViewState", 200, 200);
+    this._allocationSplitView.setSidebarView(new WebInspector.VBox());
 
     var resizer = createElementWithClass("div", "heap-snapshot-view-resizer");
     var title = resizer.createChild("div", "title").createChild("span");
@@ -372,7 +373,7 @@ WebInspector.HeapSnapshotView.AllocationPerspective = function()
     this._allocationSplitView.hideDefaultResizer();
     this._allocationSplitView.installResizer(resizer);
 
-    this._allocationSplitView.sidebarElement().appendChild(resizer);
+    this._allocationSplitView.sidebarView().element.appendChild(resizer);
 }
 
 WebInspector.HeapSnapshotView.AllocationPerspective.prototype = {
@@ -382,10 +383,10 @@ WebInspector.HeapSnapshotView.AllocationPerspective.prototype = {
      */
     activate: function(heapSnapshotView)
     {
-        heapSnapshotView._allocationView.show(this._allocationSplitView.mainElement());
-        heapSnapshotView._constructorsView.show(heapSnapshotView._splitView.mainElement());
-        heapSnapshotView._objectDetailsView.show(heapSnapshotView._splitView.sidebarElement());
-        heapSnapshotView._splitView.show(this._allocationSplitView.sidebarElement());
+        this._allocationSplitView.setMainView(heapSnapshotView._allocationView);
+        heapSnapshotView._splitView.setMainView(heapSnapshotView._constructorsView);
+        heapSnapshotView._splitView.setSidebarView(heapSnapshotView._objectDetailsView);
+        this._allocationSplitView.setSidebarView(heapSnapshotView._splitView);
         this._allocationSplitView.show(heapSnapshotView._searchableView.element);
 
         heapSnapshotView._constructorsDataGrid.clear();

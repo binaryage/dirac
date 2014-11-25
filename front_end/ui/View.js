@@ -91,6 +91,14 @@ WebInspector.View.prototype = {
     },
 
     /**
+     * @param {!WebInspector.View} view
+     * @protected
+     */
+    childWasDetached: function(view)
+    {
+    },
+
+    /**
      * @return {boolean}
      */
     isShowing: function()
@@ -301,6 +309,7 @@ WebInspector.View.prototype = {
             var childIndex = this._parentView._children.indexOf(this);
             WebInspector.View.__assert(childIndex >= 0, "Attempt to remove non-child view");
             this._parentView._children.splice(childIndex, 1);
+            this._parentView.childWasDetached(this);
             var parent = this._parentView;
             this._parentView = null;
             if (this._hasNonZeroConstraints())
@@ -442,7 +451,7 @@ WebInspector.View.prototype = {
      */
     calculateConstraints: function()
     {
-        return new Constraints(new Size(0, 0));
+        return new Constraints();
     },
 
     /**
@@ -556,7 +565,7 @@ WebInspector.VBox.prototype = {
      */
     calculateConstraints: function()
     {
-        var constraints = new Constraints(new Size(0, 0));
+        var constraints = new Constraints();
 
         /**
          * @this {!WebInspector.View}
@@ -593,7 +602,7 @@ WebInspector.HBox.prototype = {
      */
     calculateConstraints: function()
     {
-        var constraints = new Constraints(new Size(0, 0));
+        var constraints = new Constraints();
 
         /**
          * @this {!WebInspector.View}

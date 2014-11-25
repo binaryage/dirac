@@ -122,6 +122,7 @@
     margin-left: 5px;
     padding-left: 5px;
     border-left: 1px solid gray;
+    /* opacity: 0; */
 }
 
 .elements-tree-editor {
@@ -294,4 +295,9 @@ body.inactive button.text-button, .text-button:disabled {
 
 .outline-disclosure.single-node li {
     padding-left: 2px;
+}
+
+
+li.parent.shadow-root {
+    /* display: none; */
 }

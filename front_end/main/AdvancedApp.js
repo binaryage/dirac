@@ -55,12 +55,12 @@ WebInspector.AdvancedApp.prototype = {
         this._rootSplitView = new WebInspector.SplitView(false, true, "InspectorView.splitViewState", 300, 300, true);
         this._rootSplitView.show(rootView.element);
 
-        WebInspector.inspectorView.show(this._rootSplitView.sidebarElement());
+        this._rootSplitView.setSidebarView(WebInspector.inspectorView);
 
         this._inspectedPagePlaceholder = new WebInspector.InspectedPagePlaceholder();
         this._inspectedPagePlaceholder.addEventListener(WebInspector.InspectedPagePlaceholder.Events.Update, this._onSetInspectedPageBounds.bind(this, false), this);
         this._responsiveDesignView = new WebInspector.ResponsiveDesignView(this._inspectedPagePlaceholder);
-        this._responsiveDesignView.show(this._rootSplitView.mainElement());
+        this._rootSplitView.setMainView(this._responsiveDesignView);
 
         WebInspector.dockController.addEventListener(WebInspector.DockController.Events.BeforeDockSideChanged, this._onBeforeDockSideChange, this);
         WebInspector.dockController.addEventListener(WebInspector.DockController.Events.DockSideChanged, this._onDockSideChange, this);

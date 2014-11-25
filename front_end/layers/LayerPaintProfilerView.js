@@ -13,9 +13,9 @@ WebInspector.LayerPaintProfilerView = function(showImageForLayerCallback)
 
     this._showImageForLayerCallback = showImageForLayerCallback;
     this._logTreeView = new WebInspector.PaintProfilerCommandLogView();
-    this._logTreeView.show(this.sidebarElement());
+    this.setSidebarView(this._logTreeView);
     this._paintProfilerView = new WebInspector.PaintProfilerView(this._showImage.bind(this));
-    this._paintProfilerView.show(this.mainElement());
+    this.setMainView(this._paintProfilerView);
 
     this._paintProfilerView.addEventListener(WebInspector.PaintProfilerView.Events.WindowChanged, this._onWindowChanged, this);
 }

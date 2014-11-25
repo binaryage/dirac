@@ -47,7 +47,7 @@ WebInspector.InspectorView = function()
 
     this._tabbedPane = new WebInspector.TabbedPane();
     this._tabbedPane.setRetainTabOrder(true);
-    this._tabbedPane.show(this._drawerSplitView.mainElement());
+    this._drawerSplitView.setMainView(this._tabbedPane);
     this._drawer = new WebInspector.Drawer(this._drawerSplitView);
 
     // Patch tabbed pane header with toolbar actions.

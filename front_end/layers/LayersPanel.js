@@ -39,7 +39,7 @@ WebInspector.LayersPanel = function()
     this.registerRequiredCSS("timeline/timelinePanel.css");
     this._target = null;
 
-    this.sidebarElement().classList.add("outline-disclosure", "layer-tree");
+    this.panelSidebarElement().classList.add("outline-disclosure", "layer-tree");
     this.sidebarTree.element.classList.remove("sidebar-tree");
 
     WebInspector.targetManager.observeTargets(this);
@@ -51,16 +51,16 @@ WebInspector.LayersPanel = function()
     this._layerTreeOutline.addEventListener(WebInspector.LayerTreeOutline.Events.LayerHovered, this._onObjectHovered, this);
 
     this._rightSplitView = new WebInspector.SplitView(false, true, "layerDetailsSplitViewState");
-    this._rightSplitView.show(this.mainElement());
+    this.splitView().setMainView(this._rightSplitView);
 
     this._layers3DView = new WebInspector.Layers3DView();
-    this._layers3DView.show(this._rightSplitView.mainElement());
+    this._rightSplitView.setMainView(this._layers3DView);
     this._layers3DView.addEventListener(WebInspector.Layers3DView.Events.ObjectSelected, this._onObjectSelected, this);
     this._layers3DView.addEventListener(WebInspector.Layers3DView.Events.ObjectHovered, this._onObjectHovered, this);
     this._layers3DView.addEventListener(WebInspector.Layers3DView.Events.LayerSnapshotRequested, this._onSnapshotRequested, this);
 
     this._tabbedPane = new WebInspector.TabbedPane();
-    this._tabbedPane.show(this._rightSplitView.sidebarElement());
+    this._rightSplitView.setSidebarView(this._tabbedPane);
 
     this._layerDetailsView = new WebInspector.LayerDetailsView();
     this._layerDetailsView.addEventListener(WebInspector.LayerDetailsView.Events.ObjectSelected, this._onObjectSelected, this);

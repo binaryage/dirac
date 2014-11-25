@@ -633,8 +633,10 @@ WebInspector.TabbedPane.prototype = {
         }
 
         // Perform measurement
-        for (var i = 0; i < measuringTabElements.length; ++i)
-            measuringTabElements[i].__tab._measuredWidth = measuringTabElements[i].getBoundingClientRect().width;
+        for (var i = 0; i < measuringTabElements.length; ++i) {
+            var width = measuringTabElements[i].getBoundingClientRect().width;
+            measuringTabElements[i].__tab._measuredWidth = width;
+        }
 
         // Nuke elements from the UI
         for (var i = 0; i < measuringTabElements.length; ++i)

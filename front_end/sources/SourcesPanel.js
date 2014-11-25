@@ -52,11 +52,11 @@ WebInspector.SourcesPanel = function(workspaceForTest)
     this.editorView = new WebInspector.SplitView(true, false, "sourcesPanelNavigatorSplitViewState", initialNavigatorWidth);
     this.editorView.enableShowModeSaving();
     this.editorView.element.tabIndex = 0;
-    this.editorView.show(this._splitView.mainElement());
+    this._splitView.setMainView(this.editorView);
 
     this._navigator = new WebInspector.SourcesNavigator(this._workspace);
     this._navigator.view.setMinimumSize(100, 25);
-    this._navigator.view.show(this.editorView.sidebarElement());
+    this.editorView.setSidebarView(this._navigator.view);
     this._navigator.addEventListener(WebInspector.SourcesNavigator.Events.SourceSelected, this._sourceSelected, this);
     this._navigator.addEventListener(WebInspector.SourcesNavigator.Events.SourceRenamed, this._sourceRenamed, this);
 
@@ -64,7 +64,7 @@ WebInspector.SourcesPanel = function(workspaceForTest)
     this._sourcesView.addEventListener(WebInspector.SourcesView.Events.EditorSelected, this._editorSelected.bind(this));
     this._sourcesView.addEventListener(WebInspector.SourcesView.Events.EditorClosed, this._editorClosed.bind(this));
     this._sourcesView.registerShortcuts(this.registerShortcuts.bind(this));
-    this._sourcesView.show(this.editorView.mainElement());
+    this.editorView.setMainView(this._sourcesView);
 
     this._debugSidebarResizeWidgetElement = createElementWithClass("div", "resizer-widget");
     this._debugSidebarResizeWidgetElement.id = "scripts-debug-sidebar-resizer-widget";
@@ -751,7 +751,7 @@ WebInspector.SourcesPanel.prototype = {
     {
         this.editorView.displayShowHideSidebarButton("navigator");
         this._toggleDebuggerSidebarButton = this._splitView.displayShowHideSidebarButton("debugger", "scripts-debugger-show-hide-button");
-        this._splitView.mainElement().appendChild(this._debugSidebarResizeWidgetElement);
+        this._sourcesView.element.appendChild(this._debugSidebarResizeWidgetElement);
     },
 
     _updateDebugSidebarResizeWidget: function()
@@ -789,7 +789,7 @@ WebInspector.SourcesPanel.prototype = {
      */
     mapFileSystemToNetwork: function(uiSourceCode)
     {
-        WebInspector.SelectUISourceCodeForProjectTypesDialog.show(uiSourceCode.name(), [WebInspector.projectTypes.Network, WebInspector.projectTypes.ContentScripts], mapFileSystemToNetwork.bind(this), this.editorView.mainElement())
+        WebInspector.SelectUISourceCodeForProjectTypesDialog.show(uiSourceCode.name(), [WebInspector.projectTypes.Network, WebInspector.projectTypes.ContentScripts], mapFileSystemToNetwork.bind(this), this._sourcesView.element);
 
         /**
          * @param {?WebInspector.UISourceCode} networkUISourceCode
@@ -809,7 +809,7 @@ WebInspector.SourcesPanel.prototype = {
      */
     mapNetworkToFileSystem: function(networkUISourceCode)
     {
-        WebInspector.SelectUISourceCodeForProjectTypesDialog.show(networkUISourceCode.name(), [WebInspector.projectTypes.FileSystem], mapNetworkToFileSystem.bind(this), this.editorView.mainElement())
+        WebInspector.SelectUISourceCodeForProjectTypesDialog.show(networkUISourceCode.name(), [WebInspector.projectTypes.FileSystem], mapNetworkToFileSystem.bind(this), this._sourcesView.element);
 
         /**
          * @param {?WebInspector.UISourceCode} uiSourceCode
@@ -885,7 +885,7 @@ WebInspector.SourcesPanel.prototype = {
         if ((contentType === WebInspector.resourceTypes.Script || contentType === WebInspector.resourceTypes.Document) && projectType !== WebInspector.projectTypes.Snippets)
             this.sidebarPanes.callstack.appendBlackboxURLContextMenuItems(contextMenu, uiSourceCode.url, projectType === WebInspector.projectTypes.ContentScripts);
 
-        if (!event.target.isSelfOrDescendant(this.editorView.sidebarElement())) {
+        if (!event.target.isSelfOrDescendant(this._navigator.view.element)) {
             contextMenu.appendSeparator();
             contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Reveal in navigator" : "Reveal in Navigator"), this._handleContextMenuReveal.bind(this, uiSourceCode));
         }
@@ -1052,7 +1052,7 @@ WebInspector.SourcesPanel.prototype = {
             this.sidebarPaneView = vbox;
         } else {
             var splitView = new WebInspector.SplitView(true, true, "sourcesPanelDebuggerSidebarSplitViewState", 0.5);
-            vbox.show(splitView.mainElement());
+            splitView.setMainView(vbox);
 
             // Populate the left stack.
             sidebarPaneStack.addPane(this.sidebarPanes.threads);
@@ -1063,7 +1063,7 @@ WebInspector.SourcesPanel.prototype = {
             sidebarPaneStack.addPane(this.sidebarPanes.eventListenerBreakpoints);
 
             var tabbedPane = new WebInspector.SidebarTabbedPane();
-            tabbedPane.show(splitView.sidebarElement());
+            splitView.setSidebarView(tabbedPane);
             tabbedPane.addPane(this.sidebarPanes.scopechain);
             tabbedPane.addPane(this.sidebarPanes.watchExpressions);
             this._extensionSidebarPanesContainer = tabbedPane;
@@ -1075,7 +1075,7 @@ WebInspector.SourcesPanel.prototype = {
         for (var i = 0; i < extensionSidebarPanes.length; ++i)
             this._addExtensionSidebarPane(extensionSidebarPanes[i]);
 
-        this.sidebarPaneView.show(this._splitView.sidebarElement());
+        this._splitView.setSidebarView(this.sidebarPaneView);
         this.sidebarPanes.threads.expand();
         this.sidebarPanes.scopechain.expand();
         this.sidebarPanes.jsBreakpoints.expand();
