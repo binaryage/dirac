@@ -323,6 +323,3 @@ DevToolsAPIImpl.prototype = {
 }
 
 var DevToolsAPI = new DevToolsAPIImpl();
-
-// FIXME: remove once embedders move to DevToolsAPI.
-var InspectorFrontendAPI = DevToolsAPI;
