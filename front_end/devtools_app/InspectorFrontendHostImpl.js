@@ -138,7 +138,7 @@ WebInspector.InspectorFrontendHostImpl.prototype = {
      */
     recordActionTaken: function(actionCode)
     {
-        DevToolsHost.recordActionTaken(actionCode);
+        DevToolsAPI.sendMessageToEmbedder("recordActionUMA", ["DevTools.ActionTaken", actionCode], null);
     },
 
     /**
@@ -146,7 +146,7 @@ WebInspector.InspectorFrontendHostImpl.prototype = {
      */
     recordPanelShown: function(panelCode)
     {
-        DevToolsHost.recordPanelShown(panelCode);
+        DevToolsAPI.sendMessageToEmbedder("recordActionUMA", ["DevTools.PanelShown", panelCode], null);
     },
 
     requestFileSystems: function()

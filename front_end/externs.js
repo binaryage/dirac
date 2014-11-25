@@ -226,16 +226,6 @@ DevToolsHost.sendMessageToBackend = function(message) { }
 DevToolsHost.sendMessageToEmbedder = function(message) { }
 
 /**
- * @param {number} actionCode
- */
-DevToolsHost.recordActionTaken = function(actionCode) { }
-
-/**
- * @param {number} panelCode
- */
-DevToolsHost.recordPanelShown = function(panelCode) { }
-
-/**
  * @return {string}
  */
 DevToolsHost.getSelectionBackgroundColor = function() { }
