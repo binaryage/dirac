@@ -197,24 +197,24 @@ WebInspector.ProfileDataGridNode.prototype = {
     },
 
     /**
-     * @param {!WebInspector.ProfileDataGridNode} profileDataGridNode
+     * @param {!WebInspector.DataGridNode} profileDataGridNode
      * @param {number} index
      */
     insertChild: function(profileDataGridNode, index)
     {
         WebInspector.DataGridNode.prototype.insertChild.call(this, profileDataGridNode, index);
 
-        this.childrenByCallUID[profileDataGridNode.callUID] = profileDataGridNode;
+        this.childrenByCallUID[profileDataGridNode.callUID] = /** @type {!WebInspector.ProfileDataGridNode} */ (profileDataGridNode);
     },
 
     /**
-     * @param {!WebInspector.ProfileDataGridNode} profileDataGridNode
+     * @param {!WebInspector.DataGridNode} profileDataGridNode
      */
     removeChild: function(profileDataGridNode)
     {
         WebInspector.DataGridNode.prototype.removeChild.call(this, profileDataGridNode);
 
-        delete this.childrenByCallUID[profileDataGridNode.callUID];
+        delete this.childrenByCallUID[/** @type {!WebInspector.ProfileDataGridNode} */ (profileDataGridNode).callUID];
     },
 
     removeChildren: function()

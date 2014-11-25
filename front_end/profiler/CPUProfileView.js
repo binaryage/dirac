@@ -644,7 +644,7 @@ WebInspector.CPUProfileHeader.prototype = {
 
     /**
      * @override
-     * @param {!WebInspector.ProfilesPanel} panel
+     * @param {!WebInspector.ProfileType.DataDisplayDelegate} panel
      * @return {!WebInspector.ProfileSidebarTreeElement}
      */
     createSidebarTreeElement: function(panel)

@@ -166,7 +166,7 @@ WebInspector.HeapSnapshotSortableDataGrid.prototype = {
 
     /**
      * @param {!HeapProfilerAgent.HeapSnapshotObjectId} heapSnapshotObjectId
-     * @param {function(boolean)} callback
+     * @param {function(?WebInspector.HeapSnapshotGridNode)} callback
      */
     revealObjectByHeapSnapshotId: function(heapSnapshotObjectId, callback)
     {

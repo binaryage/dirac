@@ -1353,9 +1353,9 @@ WebInspector.AuditRules.VendorPrefixedCSSProperties.prototype = {
     },
 
     /**
-     * @param {!WebInspector.CSSParser.StyleRule} rule
+     * @override
      */
-    visitRule: function(rule)
+    visitRule: function()
     {
         this._mentionedProperties = {};
     },

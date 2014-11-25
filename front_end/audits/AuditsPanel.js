@@ -310,7 +310,7 @@ WebInspector.AuditRule.prototype = {
     /**
      * @param {!WebInspector.Target} target
      * @param {!Array.<!WebInspector.NetworkRequest>} requests
-     * @param {function(!WebInspector.AuditRuleResult)} callback
+     * @param {function(?WebInspector.AuditRuleResult)} callback
      * @param {!WebInspector.Progress} progress
      */
     run: function(target, requests, callback, progress)
@@ -327,7 +327,7 @@ WebInspector.AuditRule.prototype = {
      * @param {!WebInspector.Target} target
      * @param {!Array.<!WebInspector.NetworkRequest>} requests
      * @param {!WebInspector.AuditRuleResult} result
-     * @param {function(!WebInspector.AuditRuleResult)} callback
+     * @param {function(?WebInspector.AuditRuleResult)} callback
      * @param {!WebInspector.Progress} progress
      */
     doRun: function(target, requests, result, callback, progress)

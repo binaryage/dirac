@@ -2314,7 +2314,7 @@ WebInspector.BlankStylePropertiesSection.prototype = {
      * @param {!Element} element
      * @param {string} newContent
      * @param {string} oldContent
-     * @param {!WebInspector.StylePropertyTreeElement.Context} context
+     * @param {!WebInspector.StylePropertyTreeElement.Context|undefined} context
      * @param {string} moveDirection
      */
     editingSelectorCommitted: function(element, newContent, oldContent, context, moveDirection)

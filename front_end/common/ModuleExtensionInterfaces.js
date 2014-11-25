@@ -45,7 +45,7 @@ WebInspector.Revealer = function()
 }
 
 /**
- * @param {!Object} revealable
+ * @param {?Object} revealable
  * @param {number=} lineNumber
  */
 WebInspector.Revealer.reveal = function(revealable, lineNumber)
@@ -54,9 +54,9 @@ WebInspector.Revealer.reveal = function(revealable, lineNumber)
 }
 
 /**
- * @param {!Object} revealable
+ * @param {?Object} revealable
  * @param {number=} lineNumber
- * @return {!Promise}
+ * @return {!Promise.<undefined>}
  */
 WebInspector.Revealer.revealPromise = function(revealable, lineNumber)
 {
@@ -67,13 +67,13 @@ WebInspector.Revealer.revealPromise = function(revealable, lineNumber)
 
     /**
      * @param {!Array.<!WebInspector.Revealer>} revealers
-     * @return {!Promise}
+     * @return {!Promise.<undefined>}
      */
     function reveal(revealers)
     {
         var promises = [];
         for (var i = 0; i < revealers.length; ++i)
-            promises.push(revealers[i].reveal(revealable, lineNumber));
+            promises.push(revealers[i].reveal(/** @type {!Object} */ (revealable), lineNumber));
         return Promise.race(promises);
     }
 }

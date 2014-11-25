@@ -166,9 +166,6 @@ WebInspector.HeapSnapshotGridNode.prototype = {
         this._dataGrid.updateVisibleNodes(true);
     },
 
-    /**
-     * @override
-     */
     dispose: function()
     {
         if (this._providerObject)

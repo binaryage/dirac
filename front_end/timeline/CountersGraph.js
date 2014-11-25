@@ -31,6 +31,7 @@
 /**
  * @constructor
  * @extends {WebInspector.SplitView}
+ * @implements {WebInspector.TimelineModeView}
  * @param {string} title
  * @param {!WebInspector.TimelineModeViewDelegate} delegate
  * @param {!WebInspector.TimelineModel} model
