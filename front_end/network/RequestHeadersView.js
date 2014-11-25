@@ -208,6 +208,7 @@ WebInspector.RequestHeadersView.prototype = {
         {
             paramsTreeElement._viewSource = !paramsTreeElement._viewSource;
             this._refreshParams(title, params, sourceText, paramsTreeElement);
+            event.consume();
         }
 
         paramsTreeElement.listItemElement.appendChild(this._createViewSourceToggle(paramsTreeElement._viewSource, toggleViewSource.bind(this)));
@@ -256,6 +257,7 @@ WebInspector.RequestHeadersView.prototype = {
         {
             treeElement._viewSource = !treeElement._viewSource;
             this._refreshRequestJSONPayload(parsedObject, sourceText);
+            event.consume();
         }
 
         listItem.appendChild(this._createViewSourceToggle(treeElement._viewSource, toggleViewSource.bind(this)));
@@ -291,6 +293,7 @@ WebInspector.RequestHeadersView.prototype = {
         this._decodeRequestParameters = !this._decodeRequestParameters;
         this._refreshQueryString();
         this._refreshFormData();
+        event.consume();
     },
 
     _refreshRequestHeaders: function()
@@ -445,6 +448,7 @@ WebInspector.RequestHeadersView.prototype = {
     {
         this._showRequestHeadersText = !this._showRequestHeadersText;
         this._refreshRequestHeaders();
+        event.consume();
     },
 
     /**
@@ -454,6 +458,7 @@ WebInspector.RequestHeadersView.prototype = {
     {
         this._showResponseHeadersText = !this._showResponseHeadersText;
         this._refreshResponseHeaders();
+        event.consume();
     },
 
     /**
@@ -491,6 +496,7 @@ WebInspector.RequestHeadersView.Category = function(root, name, title)
 {
     TreeElement.call(this, title || "", null, true);
     this.selectable = false;
+    this.toggleOnClick = true;
     this.hidden = true;
     this._expandedSetting = WebInspector.settings.createSetting("request-info-" + name + "-category-expanded", false);
     this.expanded = this._expandedSetting.get();
