@@ -249,7 +249,7 @@ WebInspector.Color.prototype = {
     /**
      * @return {?string}
      */
-    toString: function(format)
+    asString: function(format)
     {
         if (!format)
             format = this._format;

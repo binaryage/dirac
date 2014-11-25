@@ -386,7 +386,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
             if (color)
                 return color;
             var parsedColor = WebInspector.Color.parse(category.fillColorStop1);
-            color = parsedColor.setAlpha(0.7).toString(WebInspector.Color.Format.RGBA) || "";
+            color = parsedColor.setAlpha(0.7).asString(WebInspector.Color.Format.RGBA) || "";
             this._asyncColorByCategory[category.name] = color;
             return color;
         }

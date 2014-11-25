@@ -2749,7 +2749,7 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
 
             var visible = spectrumHelper.toggle(colorSwatch.element, color, format);
             if (visible) {
-                spectrum.displayText = color.toString(format);
+                spectrum.displayText = color.asString(format);
                 this.originalPropertyText = this.property.propertyText;
                 this.editablePane()._isEditingStyle = true;
                 spectrum.addEventListener(WebInspector.Spectrum.Events.ColorChanged, boundSpectrumChanged);
@@ -2767,7 +2767,7 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
         if (format === WebInspector.Color.Format.Original)
             colorValueElement.textContent = text;
         else
-            colorValueElement.textContent = color.toString(format);
+            colorValueElement.textContent = color.asString(format);
 
         /**
          * @param {string} curFormat
@@ -2822,7 +2822,7 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
         {
             do {
                 format = nextFormat(format);
-                var currentValue = color.toString(format);
+                var currentValue = color.asString(format);
             } while (currentValue === colorValueElement.textContent);
             colorValueElement.textContent = currentValue;
         }

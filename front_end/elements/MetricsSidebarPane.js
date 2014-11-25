@@ -279,7 +279,7 @@ WebInspector.MetricsSidebarPane.prototype = {
 
             var boxElement = createElement("div");
             boxElement.className = name;
-            boxElement._backgroundColor = boxColors[i].toString(WebInspector.Color.Format.RGBA);
+            boxElement._backgroundColor = boxColors[i].asString(WebInspector.Color.Format.RGBA);
             boxElement._name = name;
             boxElement.style.backgroundColor = boxElement._backgroundColor;
             boxElement.addEventListener("mouseover", this._highlightDOMNode.bind(this, true, name === "position" ? "all" : name), false);

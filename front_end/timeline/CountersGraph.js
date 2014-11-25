@@ -389,7 +389,7 @@ WebInspector.CountersGraph.CounterUI = function(memoryCountersPane, title, curre
     this._value = memoryCountersPane._currentValuesBar.createChild("span", "memory-counter-value");
     this._value.style.color = graphColor;
     this.graphColor = graphColor;
-    this.limitColor = WebInspector.Color.parse(graphColor).setAlpha(0.3).toString(WebInspector.Color.Format.RGBA);
+    this.limitColor = WebInspector.Color.parse(graphColor).setAlpha(0.3).asString(WebInspector.Color.Format.RGBA);
     this.graphYValues = [];
     this._verticalPadding = 10;
 

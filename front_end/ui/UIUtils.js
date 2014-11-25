@@ -759,7 +759,7 @@ WebInspector.setToolbarColors = function(document, backgroundColor, color)
         document.head.appendChild(WebInspector._themeStyleElement);
     }
     var parsedColor = WebInspector.Color.parse(color);
-    var shadowColor = parsedColor ? parsedColor.invert().setAlpha(0.33).toString(WebInspector.Color.Format.RGBA) : "white";
+    var shadowColor = parsedColor ? parsedColor.invert().setAlpha(0.33).asString(WebInspector.Color.Format.RGBA) : "white";
     var prefix = WebInspector.isMac() ? "body:not(.undocked)" : "";
     WebInspector._themeStyleElement.textContent =
         String.sprintf(

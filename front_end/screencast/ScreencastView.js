@@ -525,7 +525,7 @@ WebInspector.ScreencastView.prototype = {
     {
         if (!color)
             return "transparent";
-        return WebInspector.Color.fromRGBA([color.r, color.g, color.b, color.a]).toString(WebInspector.Color.Format.RGBA) || "";
+        return WebInspector.Color.fromRGBA([color.r, color.g, color.b, color.a]).asString(WebInspector.Color.Format.RGBA) || "";
     },
 
     /**
