@@ -76,6 +76,9 @@ WebInspector.ElementsTreeOutline = function(target, omitRootDOMNode, selectEnabl
 
     this._setPseudoClassCallback = setPseudoClassCallback;
     this._createNodeDecorators();
+
+    this._popoverHelper = new WebInspector.PopoverHelper(this._element, this._getPopoverAnchor.bind(this), this._showPopover.bind(this));
+    this._popoverHelper.setTimeout(0);
 }
 
 /** @typedef {{node: !WebInspector.DOMNode, isCut: boolean}} */
@@ -348,8 +351,10 @@ WebInspector.ElementsTreeOutline.prototype = {
     setVisible: function(visible)
     {
         this._visible = visible;
-        if (!this._visible)
+        if (!this._visible) {
+            this._popoverHelper.hidePopover();
             return;
+        }
 
         this._updateModifiedNodes();
         if (this._selectedDOMNode)
@@ -615,6 +620,77 @@ WebInspector.ElementsTreeOutline.prototype = {
             element = this.treeElementFromPoint(x, y + 2);
 
         return element;
+    },
+
+    /**
+     * @param {!Element} element
+     * @param {!Event} event
+     * @return {!Element|!AnchorBox|undefined}
+     */
+    _getPopoverAnchor: function(element, event)
+    {
+        var anchor = element.enclosingNodeOrSelfWithClass("webkit-html-resource-link");
+        if (!anchor || !anchor.href)
+            return;
+
+        return anchor;
+    },
+
+    /**
+     * @param {!WebInspector.DOMNode} node
+     * @param {function()} callback
+     */
+    _loadDimensionsForNode: function(node, callback)
+    {
+        if (!node.nodeName() || node.nodeName().toLowerCase() !== "img") {
+            callback();
+            return;
+        }
+
+        node.resolveToObject("", resolvedNode);
+
+        function resolvedNode(object)
+        {
+            if (!object) {
+                callback();
+                return;
+            }
+
+            object.callFunctionJSON(dimensions, undefined, callback);
+            object.release();
+
+            /**
+             * @return {!{offsetWidth: number, offsetHeight: number, naturalWidth: number, naturalHeight: number}}
+             * @suppressReceiverCheck
+             * @this {!Element}
+             */
+            function dimensions()
+            {
+                return { offsetWidth: this.offsetWidth, offsetHeight: this.offsetHeight, naturalWidth: this.naturalWidth, naturalHeight: this.naturalHeight };
+            }
+        }
+    },
+
+    /**
+     * @param {!Element} anchor
+     * @param {!WebInspector.Popover} popover
+     */
+    _showPopover: function(anchor, popover)
+    {
+        var listItem = anchor.enclosingNodeOrSelfWithNodeName("li");
+        var node = /** @type {!WebInspector.ElementsTreeElement} */ (listItem.treeElement).node();
+        this._loadDimensionsForNode(node, WebInspector.DOMPresentationUtils.buildImagePreviewContents.bind(WebInspector.DOMPresentationUtils, node.target(), anchor.href, true, showPopover));
+
+        /**
+         * @param {!Element=} contents
+         */
+        function showPopover(contents)
+        {
+            if (!contents)
+                return;
+            popover.setCanShrink(false);
+            popover.show(contents, anchor);
+        }
     },
 
     _onmousedown: function(event)

@@ -86,7 +86,7 @@ WebInspector.ElementsPanel = function()
     WebInspector.settings.splitVerticallyWhenDockedToRight.addChangeListener(this._dockSideChanged.bind(this));
     this._dockSideChanged();
 
-    this._popoverHelper = new WebInspector.PopoverHelper(this.element, this._getPopoverAnchor.bind(this), this._showPopover.bind(this));
+    this._popoverHelper = new WebInspector.PopoverHelper(this._splitView.sidebarElement(), this._getPopoverAnchor.bind(this), this._showPopover.bind(this));
     this._popoverHelper.setTimeout(0);
 
     /** @type {!Array.<!WebInspector.ElementsTreeOutline>} */
@@ -463,55 +463,7 @@ WebInspector.ElementsPanel.prototype = {
         if (!anchor || !anchor.href)
             return;
 
-        var treeOutlineElement = anchor.enclosingNodeOrSelfWithClass("elements-tree-outline");
-        if (!treeOutlineElement)
-            return;
-
-        for (var i = 0; i < this._treeOutlines.length; ++i) {
-            if (this._treeOutlines[i].element !== treeOutlineElement)
-                continue;
-
-            var resource = this._treeOutlines[i].target().resourceTreeModel.resourceForURL(anchor.href);
-            if (!resource || resource.resourceType() !== WebInspector.resourceTypes.Image)
-                return;
-            anchor.removeAttribute("title");
-            return anchor;
-        }
-    },
-
-    /**
-     * @param {!WebInspector.DOMNode} node
-     * @param {function()} callback
-     */
-    _loadDimensionsForNode: function(node, callback)
-    {
-        if (!node.nodeName() || node.nodeName().toLowerCase() !== "img") {
-            callback();
-            return;
-        }
-
-        node.resolveToObject("", resolvedNode);
-
-        function resolvedNode(object)
-        {
-            if (!object) {
-                callback();
-                return;
-            }
-
-            object.callFunctionJSON(dimensions, undefined, callback);
-            object.release();
-
-            /**
-             * @return {!{offsetWidth: number, offsetHeight: number, naturalWidth: number, naturalHeight: number}}
-             * @suppressReceiverCheck
-             * @this {!Element}
-             */
-            function dimensions()
-            {
-                return { offsetWidth: this.offsetWidth, offsetHeight: this.offsetHeight, naturalWidth: this.naturalWidth, naturalHeight: this.naturalHeight };
-            }
-        }
+        return anchor;
     },
 
     /**
@@ -520,17 +472,9 @@ WebInspector.ElementsPanel.prototype = {
      */
     _showPopover: function(anchor, popover)
     {
-        var listItem = anchor.enclosingNodeOrSelfWithNodeName("li");
-        // We get here for CSS properties, too.
-        if (listItem && listItem.treeElement && listItem.treeElement instanceof WebInspector.ElementsTreeElement) {
-            var elementsTreeElement = /** @type {!WebInspector.ElementsTreeElement} */ (listItem.treeElement);
-            var node = elementsTreeElement.node();
-            this._loadDimensionsForNode(node, WebInspector.DOMPresentationUtils.buildImagePreviewContents.bind(WebInspector.DOMPresentationUtils, node.target(), anchor.href, true, showPopover));
-        } else {
-            var node = this.selectedDOMNode();
-            if (node)
-                WebInspector.DOMPresentationUtils.buildImagePreviewContents(node.target(), anchor.href, true, showPopover);
-        }
+        var node = this.selectedDOMNode();
+        if (node)
+            WebInspector.DOMPresentationUtils.buildImagePreviewContents(node.target(), anchor.href, true, showPopover);
 
         /**
          * @param {!Element=} contents
