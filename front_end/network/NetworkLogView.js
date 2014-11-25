@@ -1051,7 +1051,7 @@ WebInspector.NetworkLogView.prototype = {
             content = WebInspector.RequestTimingView.createTimingTable(anchor.parentElement.request);
             popover.setCanShrink(false);
         }
-        popover.show(content, anchor);
+        popover.showForAnchor(content, anchor);
     },
 
     _onHidePopover: function()

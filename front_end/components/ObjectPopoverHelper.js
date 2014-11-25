@@ -91,7 +91,7 @@ WebInspector.ObjectPopoverHelper.prototype = {
             }
 
             container.appendChild(popoverContentElement);
-            popover.show(container, anchorElement);
+            popover.showForAnchor(container, anchorElement);
         }
 
         /**
@@ -125,7 +125,7 @@ WebInspector.ObjectPopoverHelper.prototype = {
                     result.functionDetails(didGetDetails.bind(this, result.target(), anchorElement, popoverContentElement));
                     return;
                 }
-                popover.show(popoverContentElement, anchorElement);
+                popover.showForAnchor(popoverContentElement, anchorElement);
             } else {
                 if (result.subtype === "node") {
                     result.highlightAsDOMNode();
@@ -150,7 +150,7 @@ WebInspector.ObjectPopoverHelper.prototype = {
 
                 const popoverWidth = 300;
                 const popoverHeight = 250;
-                popover.show(popoverContentElement, anchorElement, popoverWidth, popoverHeight);
+                popover.showForAnchor(popoverContentElement, anchorElement, popoverWidth, popoverHeight);
             }
         }
         this._queryObject(element, showObjectPopover.bind(this), this._popoverObjectGroup);

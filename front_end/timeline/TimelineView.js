@@ -858,7 +858,7 @@ WebInspector.TimelineView.prototype = {
     {
         if (!anchor._tasksInfo)
             return;
-        popover.show(WebInspector.TimelineUIUtils.generateMainThreadBarPopupContent(this._model, anchor._tasksInfo), anchor, null, null, WebInspector.Popover.Orientation.Bottom);
+        popover.showForAnchor(WebInspector.TimelineUIUtils.generateMainThreadBarPopupContent(this._model, anchor._tasksInfo), anchor, null, null, WebInspector.Popover.Orientation.Bottom);
     },
 
     _closeRecordDetails: function()

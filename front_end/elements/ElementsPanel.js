@@ -484,7 +484,7 @@ WebInspector.ElementsPanel.prototype = {
             if (!contents)
                 return;
             popover.setCanShrink(false);
-            popover.show(contents, anchor);
+            popover.showForAnchor(contents, anchor);
         }
     },
 

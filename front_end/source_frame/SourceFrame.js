@@ -134,7 +134,7 @@ WebInspector.SourceFrame.prototype = {
         var messageBucket = anchor.enclosingNodeOrSelfWithClass("text-editor-line-decoration")._messageBucket;
         var messagesOutline = messageBucket.messagesDescription();
         var popoverAnchor = anchor.enclosingNodeOrSelfWithClass("text-editor-line-decoration-icon") ? anchor : this._errorWavePopoverAnchor;
-        popover.show(messagesOutline, popoverAnchor);
+        popover.showForAnchor(messagesOutline, popoverAnchor);
     },
 
     /**
