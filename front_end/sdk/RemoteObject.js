@@ -342,7 +342,7 @@ WebInspector.RemoteObjectImpl.prototype = {
     /**
      * @param {boolean} ownProperties
      * @param {boolean} accessorPropertiesOnly
-     * @param {?function(?Array.<!WebInspector.RemoteObjectProperty>, ?Array.<!WebInspector.RemoteObjectProperty>)} callback
+     * @param {function(?Array.<!WebInspector.RemoteObjectProperty>, ?Array.<!WebInspector.RemoteObjectProperty>)} callback
      */
     doGetProperties: function(ownProperties, accessorPropertiesOnly, callback)
     {
@@ -440,7 +440,7 @@ WebInspector.RemoteObjectImpl.prototype = {
      */
     doSetObjectPropertyValue: function(result, name, callback)
     {
-        // This assignment may be for a regular (data) property, and for an acccessor property (with getter/setter).
+        // This assignment may be for a regular (data) property, and for an accessor property (with getter/setter).
         // Note the sensitive matter about accessor property: the property may be physically defined in some proto object,
         // but logically it is bound to the object in question. JavaScript passes this object to getters/setters, not the object
         // where property was defined; so do we.
@@ -989,11 +989,11 @@ WebInspector.LocalJSONObject.prototype = {
     },
 
     /**
-     * @param {function(!Array.<!WebInspector.RemoteObjectProperty>)} callback
+     * @param {function(?Array.<!WebInspector.RemoteObjectProperty>, ?Array.<!WebInspector.RemoteObjectProperty>)} callback
      */
     getOwnProperties: function(callback)
     {
-        callback(this._children());
+        callback(this._children(), null);
     },
 
     /**

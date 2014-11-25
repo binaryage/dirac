@@ -288,7 +288,7 @@ WebInspector.ContextMenu.prototype = {
 
     _innerShow: function()
     {
-        var menuObject = this._buildDescriptor();
+        var menuObject = this._buildDescriptors();
 
         WebInspector._contextMenu = this;
         if (WebInspector.ContextMenu._useSoftMenu || InspectorFrontendHost.isHostedMode()) {
@@ -314,7 +314,7 @@ WebInspector.ContextMenu.prototype = {
     /**
      * @return {!Array.<!InspectorFrontendHostAPI.ContextMenuDescriptor>}
      */
-    _buildDescriptor: function()
+    _buildDescriptors: function()
     {
         var result = [];
         for (var i = 0; i < this._items.length; ++i)

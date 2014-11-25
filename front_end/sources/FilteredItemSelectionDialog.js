@@ -493,7 +493,7 @@ WebInspector.SelectionDialogContentProvider.prototype = {
     },
 
     /**
-     * @param {?number} itemIndex
+     * @param {number} itemIndex
      * @param {string} promptValue
      */
     selectItem: function(itemIndex, promptValue)
@@ -734,7 +734,6 @@ WebInspector.SelectUISourceCodeDialog.prototype = {
      * @param {string} query
      * @param {!Element} titleElement
      * @param {!Element} subtitleElement
-     * @return {!Array.<!Element>}
      */
     renderItem: function(itemIndex, query, titleElement, subtitleElement)
     {
@@ -752,9 +751,9 @@ WebInspector.SelectUISourceCodeDialog.prototype = {
         if (indexes[0] > fileNameIndex) {
             for (var i = 0; i < ranges.length; ++i)
                 ranges[i].offset -= fileNameIndex + 1;
-            return WebInspector.highlightRangesWithStyleClass(titleElement, ranges, "highlight");
+            WebInspector.highlightRangesWithStyleClass(titleElement, ranges, "highlight");
         } else {
-            return WebInspector.highlightRangesWithStyleClass(subtitleElement, ranges, "highlight");
+            WebInspector.highlightRangesWithStyleClass(subtitleElement, ranges, "highlight");
         }
     },
 
@@ -884,7 +883,7 @@ WebInspector.OpenResourceDialog.show = function(sourcesView, relativeToElement, 
  * @constructor
  * @extends {WebInspector.SelectUISourceCodeDialog}
  * @param {!Array.<string>} types
- * @param {function(!WebInspector.UISourceCode)} callback
+ * @param {function(?WebInspector.UISourceCode)} callback
  */
 WebInspector.SelectUISourceCodeForProjectTypesDialog = function(types, callback)
 {
@@ -895,7 +894,7 @@ WebInspector.SelectUISourceCodeForProjectTypesDialog = function(types, callback)
 
 WebInspector.SelectUISourceCodeForProjectTypesDialog.prototype = {
     /**
-     * @param {!WebInspector.UISourceCode} uiSourceCode
+     * @param {?WebInspector.UISourceCode} uiSourceCode
      * @param {number=} lineNumber
      * @param {number=} columnNumber
      */
@@ -919,7 +918,7 @@ WebInspector.SelectUISourceCodeForProjectTypesDialog.prototype = {
 /**
  * @param {string} name
  * @param {!Array.<string>} types
- * @param {function(!WebInspector.UISourceCode)} callback
+ * @param {function(?WebInspector.UISourceCode)} callback
  * @param {!Element} relativeToElement
  */
 WebInspector.SelectUISourceCodeForProjectTypesDialog.show = function(name, types, callback, relativeToElement)

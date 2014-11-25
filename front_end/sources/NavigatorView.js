@@ -179,7 +179,7 @@ WebInspector.NavigatorView.prototype = {
         var projectNode = this._rootNode.child(project.id());
         if (!projectNode)
             return;
-        projectNode.treeElement().titleText = project.displayName();
+        projectNode.treeNode().titleText = project.displayName();
     },
 
     /**
@@ -981,9 +981,9 @@ WebInspector.NavigatorTreeNode = function(id)
 
 WebInspector.NavigatorTreeNode.prototype = {
     /**
-     * @return {!TreeElement}
+     * @return {!TreeContainerNode}
      */
-    treeElement: function() { throw "Not implemented"; },
+    treeNode: function() { throw "Not implemented"; },
 
     dispose: function() { },
 
@@ -1017,7 +1017,7 @@ WebInspector.NavigatorTreeNode.prototype = {
     {
         var children = this.children();
         for (var i = 0; i < children.length; ++i)
-            this.treeElement().appendChild(children[i].treeElement());
+            this.treeNode().appendChild(/** @type {!TreeElement} */ (children[i].treeNode()));
     },
 
     /**
@@ -1026,7 +1026,7 @@ WebInspector.NavigatorTreeNode.prototype = {
     didAddChild: function(node)
     {
         if (this.isPopulated())
-            this.treeElement().appendChild(node.treeElement());
+            this.treeNode().appendChild(/** @type {!TreeElement} */ (node.treeNode()));
     },
 
     /**
@@ -1035,7 +1035,7 @@ WebInspector.NavigatorTreeNode.prototype = {
     willRemoveChild: function(node)
     {
         if (this.isPopulated())
-            this.treeElement().removeChild(node.treeElement());
+            this.treeNode().removeChild(/** @type {!TreeElement} */ (node.treeNode()));
     },
 
     /**
@@ -1119,9 +1119,9 @@ WebInspector.NavigatorRootTreeNode.prototype = {
     },
 
     /**
-     * @return {!TreeOutline}
+     * @return {!TreeContainerNode}
      */
-    treeElement: function()
+    treeNode: function()
     {
         return this._navigatorView._scriptsTree;
     },
@@ -1159,9 +1159,9 @@ WebInspector.NavigatorUISourceCodeTreeNode.prototype = {
     },
 
     /**
-     * @return {!TreeElement}
+     * @return {!TreeContainerNode}
      */
-    treeElement: function()
+    treeNode: function()
     {
         if (this._treeElement)
             return this._treeElement;
@@ -1228,7 +1228,7 @@ WebInspector.NavigatorUISourceCodeTreeNode.prototype = {
     reveal: function(select)
     {
         this.parent.populate();
-        this.parent.treeElement().expand();
+        this.parent.treeNode().expand();
         this._treeElement.reveal();
         if (select)
             this._treeElement.select(true);
@@ -1329,9 +1329,9 @@ WebInspector.NavigatorFolderTreeNode = function(navigatorView, project, id, type
 
 WebInspector.NavigatorFolderTreeNode.prototype = {
     /**
-     * @return {!TreeElement}
+     * @return {!TreeContainerNode}
      */
-    treeElement: function()
+    treeNode: function()
     {
         if (this._treeElement)
             return this._treeElement;
@@ -1438,7 +1438,7 @@ WebInspector.NavigatorFolderTreeNode.prototype = {
                 treeElement.expand();
         }
         if (this.isPopulated())
-            this._treeElement.appendChild(node.treeElement());
+            this._treeElement.appendChild(node.treeNode());
     },
 
     willRemoveChild: function(node)

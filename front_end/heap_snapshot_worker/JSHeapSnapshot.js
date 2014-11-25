@@ -52,12 +52,12 @@ WebInspector.JSHeapSnapshot = function(profile, progress, showHiddenData)
 
 WebInspector.JSHeapSnapshot.prototype = {
     /**
-     * @param {number} nodeIndex
+     * @param {number=} nodeIndex
      * @return {!WebInspector.JSHeapSnapshotNode}
      */
     createNode: function(nodeIndex)
     {
-        return new WebInspector.JSHeapSnapshotNode(this, nodeIndex);
+        return new WebInspector.JSHeapSnapshotNode(this, nodeIndex === undefined ? -1 : nodeIndex);
     },
 
     /**

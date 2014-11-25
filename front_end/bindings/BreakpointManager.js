@@ -675,7 +675,8 @@ WebInspector.BreakpointManager.Breakpoint.prototype = {
             return;
 
         this._fakePrimaryLocation = uiSourceCode.uiLocation(this._lineNumber, this._columnNumber);
-        this._breakpointManager._uiLocationAdded(this, this._fakePrimaryLocation);
+        if (this._fakePrimaryLocation)
+            this._breakpointManager._uiLocationAdded(this, this._fakePrimaryLocation);
     },
 
     _removeFakeBreakpointAtPrimaryLocation: function()

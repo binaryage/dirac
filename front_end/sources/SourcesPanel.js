@@ -792,11 +792,13 @@ WebInspector.SourcesPanel.prototype = {
         WebInspector.SelectUISourceCodeForProjectTypesDialog.show(uiSourceCode.name(), [WebInspector.projectTypes.Network, WebInspector.projectTypes.ContentScripts], mapFileSystemToNetwork.bind(this), this.editorView.mainElement())
 
         /**
-         * @param {!WebInspector.UISourceCode} networkUISourceCode
+         * @param {?WebInspector.UISourceCode} networkUISourceCode
          * @this {WebInspector.SourcesPanel}
          */
         function mapFileSystemToNetwork(networkUISourceCode)
         {
+            if (!networkUISourceCode)
+                return;
             this._workspace.addMapping(networkUISourceCode, uiSourceCode, WebInspector.fileSystemWorkspaceBinding);
             this._suggestReload();
         }
@@ -810,11 +812,13 @@ WebInspector.SourcesPanel.prototype = {
         WebInspector.SelectUISourceCodeForProjectTypesDialog.show(networkUISourceCode.name(), [WebInspector.projectTypes.FileSystem], mapNetworkToFileSystem.bind(this), this.editorView.mainElement())
 
         /**
-         * @param {!WebInspector.UISourceCode} uiSourceCode
+         * @param {?WebInspector.UISourceCode} uiSourceCode
          * @this {WebInspector.SourcesPanel}
          */
         function mapNetworkToFileSystem(uiSourceCode)
         {
+            if (!uiSourceCode)
+                return;
             this._workspace.addMapping(networkUISourceCode, uiSourceCode, WebInspector.fileSystemWorkspaceBinding);
             this._suggestReload();
         }
