@@ -51,7 +51,7 @@ WebInspector.CookieItemsView = function(treeElement, cookieDomain)
     this._treeElement = treeElement;
     this._cookieDomain = cookieDomain;
 
-    this._emptyView = new WebInspector.EmptyView(WebInspector.UIString("This site has no cookies."));
+    this._emptyView = new WebInspector.EmptyView(cookieDomain ? WebInspector.UIString("This site has no cookies.") : WebInspector.UIString("By default cookies are disabled for local files.\nYou could override this by starting the browser with --enable-file-cookies command line flag."));
     this._emptyView.show(this.element);
 
     this.element.addEventListener("contextmenu", this._contextMenu.bind(this), true);
