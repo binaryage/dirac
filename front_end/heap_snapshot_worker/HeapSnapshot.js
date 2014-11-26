@@ -1327,10 +1327,11 @@ WebInspector.HeapSnapshot.prototype = {
     },
 
     /**
+     * @protected
      * @param {!WebInspector.HeapSnapshotNode} node
      * @return {boolean}
      */
-    _isUserRoot: function(node)
+    isUserRoot: function(node)
     {
         return true;
     },
@@ -1343,7 +1344,7 @@ WebInspector.HeapSnapshot.prototype = {
     {
         for (var iter = this.rootNode().edges(); iter.hasNext(); iter.next()) {
             var node = iter.edge.node();
-            if (!userRootsOnly || this._isUserRoot(node))
+            if (!userRootsOnly || this.isUserRoot(node))
                 action(node);
         }
     },
