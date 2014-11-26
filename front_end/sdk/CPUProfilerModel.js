@@ -55,12 +55,7 @@ WebInspector.CPUProfilerModel.prototype = {
     _configureCpuProfilerSamplingInterval: function()
     {
         var intervalUs = WebInspector.settings.highResolutionCpuProfiling.get() ? 100 : 1000;
-        this.target().profilerAgent().setSamplingInterval(intervalUs, didChangeInterval);
-        function didChangeInterval(error)
-        {
-            if (error)
-                WebInspector.console.error(error);
-        }
+        this.target().profilerAgent().setSamplingInterval(intervalUs);
     },
 
     /**
@@ -119,13 +114,21 @@ WebInspector.CPUProfilerModel.prototype = {
     },
 
     /**
-     * @param {function(?string,?ProfilerAgent.CPUProfile)} callback
+     * @return {!Promise.<!ProfilerAgent.CPUProfile>}
      */
-    stopRecording: function(callback)
+    stopRecording: function()
     {
+        /**
+         * @param {!{profile: !ProfilerAgent.CPUProfile}} value
+         * @return {!ProfilerAgent.CPUProfile}
+         */
+        function extractProfile(value)
+        {
+            return value.profile;
+        }
         this._isRecording = false;
-        this.target().profilerAgent().stop(callback);
         this.dispatchEventToListeners(WebInspector.CPUProfilerModel.EventTypes.ProfileStopped);
+        return this.target().profilerAgent().stop().then(extractProfile);
     },
 
     dispose: function()

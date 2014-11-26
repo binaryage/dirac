@@ -522,17 +522,8 @@ WebInspector.TimelineModel.prototype = {
         function startProfiling(target)
         {
             var intervalUs = WebInspector.settings.highResolutionCpuProfiling.get() ? 100 : 1000;
-            target.profilerAgent().setSamplingInterval(intervalUs, didChangeInterval);
+            target.profilerAgent().setSamplingInterval(intervalUs);
             target.profilerAgent().start();
-        }
-
-        /**
-         * @param {?string} error
-         */
-        function didChangeInterval(error)
-        {
-            if (error)
-                WebInspector.console.error(error);
         }
 
         this._profilingTargets = WebInspector.targetManager.targets();
@@ -545,40 +536,27 @@ WebInspector.TimelineModel.prototype = {
     _stopProfilingOnAllTargets: function()
     {
         /**
+         * @param {!{profile: !ProfilerAgent.CPUProfile}} value
+         * @return {!ProfilerAgent.CPUProfile}
+         */
+        function extractProfile(value)
+        {
+            return value.profile;
+        }
+
+        /**
          * @this {WebInspector.TimelineModel}
          * @param {!WebInspector.Target} target
          * @return {!Promise}
          */
-        function stopProfilingWithPromise(target)
+        function stopProfiling(target)
         {
-            return new Promise(doStopProfiling).then(this._addCpuProfile.bind(this, target.id())).catchAndReport();
-
-            /**
-             * @param {function(!ProfilerAgent.CPUProfile)} resolve
-             * @param {function(!Error)} reject
-             */
-            function doStopProfiling(resolve, reject)
-            {
-                target.profilerAgent().stop(onProfilingStopped);
-
-                /**
-                 * @param {?string} error
-                 * @param {?ProfilerAgent.CPUProfile} cpuProfile
-                 */
-                function onProfilingStopped(error, cpuProfile)
-                {
-                    if (!error && cpuProfile)
-                        resolve(cpuProfile);
-                    else
-                        reject(new Error(error));
-
-                }
-            }
+            return target.profilerAgent().stop().then(extractProfile).then(this._addCpuProfile.bind(this, target.id()));
         }
 
         var targets = this._profilingTargets || [];
         this._profilingTargets = null;
-        return Promise.all(targets.map(stopProfilingWithPromise, this));
+        return Promise.all(targets.map(stopProfiling, this));
     },
 
     /**

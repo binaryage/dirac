@@ -523,11 +523,10 @@ WebInspector.CPUProfileType.prototype = {
             return;
 
         /**
-         * @param {?string} error
-         * @param {?ProfilerAgent.CPUProfile} profile
+         * @param {!ProfilerAgent.CPUProfile} profile
          * @this {WebInspector.CPUProfileType}
          */
-        function didStopProfiling(error, profile)
+        function didStopProfiling(profile)
         {
             if (!this._profileBeingRecorded)
                 return;
@@ -537,7 +536,7 @@ WebInspector.CPUProfileType.prototype = {
             this.setProfileBeingRecorded(null);
             this.dispatchEventToListeners(WebInspector.ProfileType.Events.ProfileComplete, recordedProfile);
         }
-        this._profileBeingRecorded.target().cpuProfilerModel.stopRecording(didStopProfiling.bind(this));
+        this._profileBeingRecorded.target().cpuProfilerModel.stopRecording().then(didStopProfiling.bind(this));
     },
 
     /**
