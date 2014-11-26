@@ -273,28 +273,6 @@ WebInspector.JavaScriptSourceFrame.prototype = {
             var evaluateLabel = WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Evaluate in console" : "Evaluate in Console");
             contextMenu.appendItem(evaluateLabel, this._evaluateInConsole.bind(this, selection));
             contextMenu.appendSeparator();
-        } else if (this._uiSourceCode.project().type() === WebInspector.projectTypes.Debugger) {
-            // FIXME: Change condition above to explicitly check that current uiSourceCode is created by default debugger mapping
-            // and move the code adding this menu item to generic context menu provider for UISourceCode.
-            var liveEditLabel = WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Live edit" : "Live Edit");
-            var liveEditSupport = WebInspector.LiveEditSupport.liveEditSupportForUISourceCode(this._uiSourceCode);
-            if (!liveEditSupport)
-                return;
-
-            contextMenu.appendItem(liveEditLabel, liveEdit.bind(this, liveEditSupport));
-            contextMenu.appendSeparator();
-        }
-
-        /**
-         * @this {WebInspector.JavaScriptSourceFrame}
-         * @param {!WebInspector.LiveEditSupport} liveEditSupport
-         */
-        function liveEdit(liveEditSupport)
-        {
-            var liveEditUISourceCode = liveEditSupport.uiSourceCodeForLiveEdit(this._uiSourceCode);
-            if (!liveEditUISourceCode)
-                return;
-            WebInspector.Revealer.reveal(liveEditUISourceCode.uiLocation(lineNumber));
         }
 
         /**
@@ -376,10 +354,33 @@ WebInspector.JavaScriptSourceFrame.prototype = {
                 return;
 
             if (!failedEdits)
-                WebInspector.LiveEditSupport.logSuccess();
+                WebInspector.console.log(WebInspector.UIString("Recompilation and update succeeded."));
             else
-                WebInspector.LiveEditSupport.logDetailedError(liveEditError, liveEditErrorData, contextScript)
+                logLiveEditError(liveEditError, liveEditErrorData, contextScript)
             this._scriptsPanel.setIgnoreExecutionLineEvents(false);
+        }
+
+        /**
+         * @param {?string} error
+         * @param {!DebuggerAgent.SetScriptSourceError=} errorData
+         * @param {!WebInspector.Script=} contextScript
+         */
+        function logLiveEditError(error, errorData, contextScript)
+        {
+            var warningLevel = WebInspector.Console.MessageLevel.Warning;
+            if (!errorData) {
+                if (error)
+                    WebInspector.console.addMessage(WebInspector.UIString("LiveEdit failed: %s", error), warningLevel);
+                return;
+            }
+            var compileError = errorData.compileError;
+            if (compileError) {
+                var location = contextScript ? WebInspector.UIString(" at %s:%d:%d", contextScript.sourceURL, compileError.lineNumber, compileError.columnNumber) : "";
+                var message = WebInspector.UIString("LiveEdit compile failed: %s%s", compileError.message, location);
+                WebInspector.console.error(message);
+            } else {
+                WebInspector.console.addMessage(WebInspector.UIString("Unknown LiveEdit error: %s; %s", JSON.stringify(errorData), error), warningLevel);
+            }
         }
 
         this._scriptsPanel.setIgnoreExecutionLineEvents(true);

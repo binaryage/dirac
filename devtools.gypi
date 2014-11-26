@@ -180,7 +180,6 @@
             'front_end/bindings/ContentScriptProjectDecorator.js',
             'front_end/bindings/FileUtils.js',
             'front_end/bindings/Linkifier.js',
-            'front_end/bindings/LiveEditSupport.js',
             'front_end/bindings/LiveLocation.js',
             'front_end/bindings/NetworkUISourceCodeProvider.js',
             'front_end/bindings/NetworkWorkspaceBinding.js',

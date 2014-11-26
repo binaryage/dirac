@@ -197,16 +197,6 @@ WebInspector.DebuggerWorkspaceBinding.prototype = {
     },
 
     /**
-     * @param {!WebInspector.Target} target
-     * @return {?WebInspector.LiveEditSupport}
-     */
-    liveEditSupport: function(target)
-    {
-        var targetData = this._targetToData.get(target);
-        return targetData ? targetData._liveEditSupport : null;
-    },
-
-    /**
      * @param {!WebInspector.UISourceCode} uiSourceCode
      * @param {!WebInspector.Target} target
      * @return {?WebInspector.ResourceScriptFile}
@@ -313,13 +303,9 @@ WebInspector.DebuggerWorkspaceBinding.TargetData = function(target, debuggerWork
     var debuggerModel = target.debuggerModel;
     var workspace = debuggerWorkspaceBinding._workspace;
 
-    this._liveEditSupport = new WebInspector.LiveEditSupport(target, workspace, debuggerWorkspaceBinding);
     this._defaultMapping = new WebInspector.DefaultScriptMapping(debuggerModel, workspace, debuggerWorkspaceBinding);
     this._resourceMapping = new WebInspector.ResourceScriptMapping(debuggerModel, workspace, debuggerWorkspaceBinding);
     this._compilerMapping = new WebInspector.CompilerScriptMapping(debuggerModel, workspace, debuggerWorkspaceBinding._networkWorkspaceBinding, debuggerWorkspaceBinding);
-
-    /** @type {!WebInspector.LiveEditSupport} */
-    this._liveEditSupport = new WebInspector.LiveEditSupport(target, workspace, debuggerWorkspaceBinding);
 
     /** @type {!Map.<!WebInspector.UISourceCode, !WebInspector.DebuggerSourceMapping>} */
     this._uiSourceCodeToSourceMapping = new Map();
