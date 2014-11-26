@@ -461,10 +461,6 @@
     margin: 0 1px;
 }
 
-.timeline .resources-event-divider.timeline-frame-divider::before {
-    display: none;
-}
-
 .timeline .resources-event-divider.resources-red-divider::before {
     background-color: rgb(255, 0, 0);
 }

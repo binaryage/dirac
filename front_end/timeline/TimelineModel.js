@@ -807,8 +807,6 @@ WebInspector.TimelineModel.prototype = {
         this._lastRecalculateStylesEvent = null;
         this._currentScriptEvent = null;
         this._eventStack = [];
-        this._layerTreeActivatedAfterLoad = false;
-        this._expectFirstPaint = false;
     },
 
     /**
@@ -854,10 +852,6 @@ WebInspector.TimelineModel.prototype = {
             if (endTime && event.startTime >= endTime)
                 break;
             this._processEvent(event);
-            if (this._expectFirstPaint && event.name === recordTypes.DrawFrame && this._layerTreeActivatedAfterLoad) {
-                threadEvents.push(new WebInspector.TracingModel.Event(event.category, recordTypes.MarkFirstPaint, WebInspector.TracingModel.Phase.Instant, event.startTime, event.thread));
-                this._expectFirstPaint = false;
-            }
             threadEvents.push(event);
             this._inspectedTargetEvents.push(event);
         }
@@ -869,6 +863,7 @@ WebInspector.TimelineModel.prototype = {
     _processEvent: function(event)
     {
         var recordTypes = WebInspector.TimelineModel.RecordType;
+
         var eventStack = this._eventStack;
         while (eventStack.length && eventStack.peekLast().endTime < event.startTime)
             eventStack.pop();
@@ -1035,17 +1030,6 @@ WebInspector.TimelineModel.prototype = {
             this._paintImageEventByPixelRefId[event.args["LazyPixelRef"]] = paintImageEvent;
             event.backendNodeId = paintImageEvent.backendNodeId;
             event.imageURL = paintImageEvent.imageURL;
-            break;
-
-        case recordTypes.MarkDOMContent:
-            if (!event.args["data"]["isMainFrame"])
-                break;
-            this._expectFirstPaint = true;
-            this._layerTreeActivatedAfterLoad = false;
-            break;
-
-        case recordTypes.ActivateLayerTree:
-            this._layerTreeActivatedAfterLoad = true;
             break;
         }
     },
