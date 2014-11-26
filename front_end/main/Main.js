@@ -140,6 +140,7 @@ WebInspector.Main.prototype = {
         Runtime.experiments.register("fileSystemInspection", "FileSystem inspection");
         Runtime.experiments.register("gpuTimeline", "GPU data on timeline", true);
         Runtime.experiments.register("layersPanel", "Layers panel");
+        Runtime.experiments.register("privateScriptInspection", "Private script inspection");
         Runtime.experiments.register("promiseTracker", "Enable Promise inspection");
         Runtime.experiments.register("timelinePowerProfiler", "Timeline power profiler");
         Runtime.experiments.register("timelineJSCPUProfile", "Timeline with JS sampling");
