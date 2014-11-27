@@ -156,6 +156,7 @@ WebInspector.SplitView.prototype = {
         this._mainView = view;
         if (view) {
             view.element.classList.add("insertion-point-main");
+            view.element.classList.remove("insertion-point-sidebar");
             if (this._showMode === WebInspector.SplitView.ShowMode.OnlyMain || this._showMode === WebInspector.SplitView.ShowMode.Both)
                 view.show(this.element);
         }
@@ -171,6 +172,7 @@ WebInspector.SplitView.prototype = {
         this._sidebarView = view;
         if (view) {
             view.element.classList.add("insertion-point-sidebar");
+            view.element.classList.remove("insertion-point-main");
             if (this._showMode === WebInspector.SplitView.ShowMode.OnlySidebar || this._showMode === WebInspector.SplitView.ShowMode.Both)
                 view.show(this.element);
         }
@@ -559,11 +561,13 @@ WebInspector.SplitView.prototype = {
                 startTime = window.performance.now();
             } else if (window.performance.now() < startTime + animationTime) {
                 // Process regular animation frame.
-                this._mainView.doResize();
+                if (this._mainView)
+                    this._mainView.doResize();
             } else {
                 // Complete animation.
                 this._cancelAnimation();
-                this._mainView.doResize();
+                if (this._mainView)
+                    this._mainView.doResize();
                 this.dispatchEventToListeners(WebInspector.SplitView.Events.SidebarSizeChanged, this.sidebarSize());
                 return;
             }
