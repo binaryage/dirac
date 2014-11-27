@@ -175,18 +175,23 @@ WebInspector.StylesSidebarPane._ignoreErrorsForProperty = function(property) {
 
 /**
  * @param {!Array.<!WebInspector.StylesSectionModel>} styleRules
- * @return {!Array.<!Object.<string, boolean>>}
+ * @return {!Array.<!Set.<string>>}
  */
 WebInspector.StylesSidebarPane._computeUsedProperties = function(styleRules)
 {
-    var usedProperties = {};
-    var foundImportantProperties = {};
-    var propertyToEffectiveRule = {};
-    var inheritedPropertyToNode = {};
+    /** @type {!Set.<string>} */
+    var usedProperties = new Set();
+    /** @type {!Set.<string>} */
+    var foundImportantProperties = new Set();
+    /** @type {!Map.<string, !Set.<string>>} */
+    var propertyToEffectiveRule = new Map();
+    /** @type {!Map.<string, !WebInspector.DOMNode>} */
+    var inheritedPropertyToNode = new Map();
     var stylesUsedProperties = [];
     for (var i = 0; i < styleRules.length; ++i) {
         var styleRule = styleRules[i];
-        var styleRuleUsedProperties = {};
+        /** @type {!Set.<string>} */
+        var styleRuleUsedProperties = new Set();
         stylesUsedProperties.push(styleRuleUsedProperties);
         if (!styleRule.hasMatchingSelectors())
             continue;
@@ -203,43 +208,44 @@ WebInspector.StylesSidebarPane._computeUsedProperties = function(styleRules)
                 continue;
 
             var canonicalName = WebInspector.CSSMetadata.canonicalPropertyName(property.name);
-            if (foundImportantProperties.hasOwnProperty(canonicalName))
+            if (foundImportantProperties.has(canonicalName))
                 continue;
 
-            if (!property.important && usedProperties.hasOwnProperty(canonicalName))
+            if (!property.important && usedProperties.has(canonicalName))
                 continue;
 
-            var isKnownProperty = propertyToEffectiveRule.hasOwnProperty(canonicalName);
-            if (!isKnownProperty && styleRule.inherited() && !inheritedPropertyToNode[canonicalName])
-                inheritedPropertyToNode[canonicalName] = styleRule.parentNode();
+            var isKnownProperty = propertyToEffectiveRule.has(canonicalName);
+            var parentNode = styleRule.parentNode();
+            if (!isKnownProperty && parentNode && !inheritedPropertyToNode.has(canonicalName))
+                inheritedPropertyToNode.set(canonicalName, parentNode);
 
             if (property.important) {
-                if (styleRule.inherited() && isKnownProperty && styleRule.parentNode() !== inheritedPropertyToNode[canonicalName])
+                if (styleRule.inherited() && isKnownProperty && styleRule.parentNode() !== inheritedPropertyToNode.get(canonicalName))
                     continue;
 
-                foundImportantProperties[canonicalName] = true;
+                foundImportantProperties.add(canonicalName);
                 if (isKnownProperty)
-                    delete propertyToEffectiveRule[canonicalName][canonicalName];
+                    propertyToEffectiveRule.get(canonicalName).delete(canonicalName);
             }
 
-            styleRuleUsedProperties[canonicalName] = true;
-            usedProperties[canonicalName] = true;
-            propertyToEffectiveRule[canonicalName] = styleRuleUsedProperties;
+            styleRuleUsedProperties.add(canonicalName);
+            usedProperties.add(canonicalName);
+            propertyToEffectiveRule.set(canonicalName, styleRuleUsedProperties);
         }
     }
     return stylesUsedProperties;
 }
 
 /**
- * @param {!Array.<!Object.<string, boolean>>} usedPropertiesStack
- * @return {!Object.<string, boolean>}
+ * @param {!Array.<!Set<string>>} usedPropertiesStack
+ * @return {!Set.<string>}
  */
 WebInspector.StylesSidebarPane._aggregateUsedProperties = function(usedPropertiesStack)
 {
-    var usedProperties = {};
+    var usedProperties = new Set();
     for (var i = 0; i < usedPropertiesStack.length; ++i) {
-        for (var propertyName in usedPropertiesStack[i])
-            usedProperties[propertyName] = true;
+        for (var propertyName of usedPropertiesStack[i])
+            usedProperties.add(propertyName);
     }
     return usedProperties;
 }
@@ -645,7 +651,7 @@ WebInspector.StylesSidebarPane.prototype = {
                 for (var j = 0; j < keyframes.length; j++)
                     styles.push(WebInspector.StylesSectionModel.fromStyle(keyframes[j].style(), ""));
                 var usedProperties = WebInspector.StylesSidebarPane._aggregateUsedProperties(WebInspector.StylesSidebarPane._computeUsedProperties(styles));
-                for (var property in usedProperties)
+                for (var property of usedProperties)
                     this._animationProperties[property] = player.name();
             }
         }
@@ -1289,7 +1295,7 @@ WebInspector.ComputedStyleSidebarPane.prototype = {
 
     /**
      * @param {!Array.<!WebInspector.StylePropertiesSection>} matchedRuleSections
-     * @return {!Object.<string, boolean>}
+     * @return {!Set.<string>}
      */
     _usedPropertiesForSections: function(matchedRuleSections)
     {
@@ -1578,7 +1584,7 @@ WebInspector.StylePropertiesSection.prototype = {
         }
 
         var canonicalName = WebInspector.CSSMetadata.canonicalPropertyName(propertyName);
-        var used = (canonicalName in this._usedProperties);
+        var used = this._usedProperties.has(canonicalName);
         if (used || !isShorthand)
             return !used;
 
@@ -1587,7 +1593,8 @@ WebInspector.StylePropertiesSection.prototype = {
         var longhandProperties = this.styleRule.style().longhandProperties(propertyName);
         for (var j = 0; j < longhandProperties.length; ++j) {
             var individualProperty = longhandProperties[j];
-            if (WebInspector.CSSMetadata.canonicalPropertyName(individualProperty.name) in this._usedProperties)
+            var canonicalPropertyName = WebInspector.CSSMetadata.canonicalPropertyName(individualProperty.name);
+            if (this._usedProperties.has(canonicalPropertyName))
                 return false;
         }
 
@@ -2098,7 +2105,7 @@ WebInspector.StylePropertiesSection._linkifyRuleLocation = function(target, link
  * @extends {WebInspector.PropertiesSection}
  * @param {!WebInspector.ComputedStyleSidebarPane} stylesPane
  * @param {!WebInspector.StylesSectionModel} styleRule
- * @param {!Object.<string, boolean>} usedProperties
+ * @param {!Set.<string>} usedProperties
  * @param {!Object.<string, string>} animationProperties
  */
 WebInspector.ComputedStylePropertiesSection = function(stylesPane, styleRule, usedProperties, animationProperties)
@@ -2144,7 +2151,7 @@ WebInspector.ComputedStylePropertiesSection.prototype = {
     _isPropertyInherited: function(propertyName)
     {
         var canonicalName = WebInspector.CSSMetadata.canonicalPropertyName(propertyName);
-        return !(canonicalName in this._usedProperties) && !(canonicalName in this._alwaysShowComputedProperties) && !(canonicalName in this._animationProperties);
+        return !(this._usedProperties.has(canonicalName)) && !(canonicalName in this._alwaysShowComputedProperties) && !(canonicalName in this._animationProperties);
     },
 
     update: function()
