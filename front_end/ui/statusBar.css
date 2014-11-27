@@ -51,6 +51,7 @@
     white-space: nowrap;
     overflow: hidden;
     margin-left: 6px;
+    -webkit-user-select: text;
 }
 
 #drawer-view-anchor {

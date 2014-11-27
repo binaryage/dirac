@@ -70,12 +70,6 @@ body /deep/ .flex-centered {
     background-color: white;
 }
 
-.console-message-nowrap-below,
-.console-message-nowrap-below div,
-.console-message-nowrap-below span {
-    white-space: nowrap !important;
-}
-
 .toolbar-background {
     padding-left: 1px;
     border-bottom: 1px solid rgb(64%, 64%, 64%);
@@ -264,121 +258,6 @@ div.resizer-widget {
     cursor: default;
 }
 
-.console-view {
-    background-color: white;
-    overflow: hidden;
-}
-
-.console-view-wrapper {
-    background-color: #eee;
-}
-
-.console-status-bar,
-.console-filters-header {
-    flex: 0 0 23px;
-    overflow: hidden;
-}
-
-.console-status-bar {
-    display: flex;
-}
-
-#console-messages {
-    flex: 1 1;
-    padding: 2px 0;
-    overflow-y: auto;
-    word-wrap: break-word;
-    -webkit-user-select: text;
-    border-top: 1px solid rgb(230, 230, 230);
-    transform: translateZ(0);
-}
-
-.console-view-fix-select-all {
-    height: 0px;
-    overflow: hidden;
-}
-
-#console-prompt {
-    clear: right;
-    position: relative;
-    padding: 1px 22px 1px 0;
-    margin-left: 24px;
-    min-height: 16px;
-    white-space: pre-wrap;
-    -webkit-user-modify: read-write-plaintext-only;
-}
-
-#console-prompt::before {
-    background-position: -192px -96px;
-}
-
-.console-user-command-result.console-log-level::before {
-    background-position: -202px -96px;
-}
-
-.console-message,
-.console-user-command {
-    clear: right;
-    position: relative;
-    border-bottom: 1px solid rgb(240, 240, 240);
-    padding: 1px 22px 1px 0;
-    margin-left: 24px;
-    min-height: 16px;
-    flex: auto;
-}
-
-.console-adjacent-user-command-result .console-user-command {
-    border-bottom: none;
-}
-
-.console-adjacent-user-command-result + .console-user-command-result.console-log-level::before {
-    background-image: none;
-}
-
-.console-timestamp {
-    color: gray;
-    margin-right: 10px;
-    -webkit-user-select: none;
-}
-
-.console-message::before,
-.console-user-command::before,
-#console-prompt::before,
-.console-group-title::before {
-    position: absolute;
-    display: block;
-    content: "";
-    left: -17px;
-    top: 0.8em;
-    width: 10px;
-    height: 10px;
-    margin-top: -6px;
-    -webkit-user-select: none;
-    background-image: url(Images/statusbarButtonGlyphs.png);
-    background-size: 320px 144px;
-}
-
-@media (-webkit-min-device-pixel-ratio: 1.5) {
-.console-message::before,
-.console-user-command::before,
-#console-prompt::before,
-.console-group-title::before {
-    background-image: url(Images/statusbarButtonGlyphs_2x.png);
-}
-} /* media */
-
-.console-message > .outline-disclosure li.parent::before {
-    top: 0;
-}
-
-.console-message .outline-disclosure .stacktrace-entry:hover {
-    background-color: rgba(0, 0, 0, 0.05);
-}
-
-.stacktrace-entry .webkit-html-blackbox-link {
-    opacity: 0.6;
-}
-
 .bubble-repeat-count {
     display: inline-block;
     height: 14px;
@@ -396,175 +275,6 @@ div.resizer-widget {
     border-radius: 7px;
 }
 
-.console-message .bubble-repeat-count {
-    margin-right: 4px;
-    margin-left: -18px;
-}
-
-.console-async-trace-text {
-    margin-left: -10px;
-    font-style: italic;
-}
-
-.repeated-message.console-error-level::before,
-.repeated-message.console-warning-level:before,
-.repeated-message.console-debug-level:before,
-.repeated-message.console-info-level:before {
-    visibility: hidden;
-}
-
-.repeated-message .outline-disclosure,
-.repeated-message > .console-message-text {
-    -webkit-flex: 1;
-}
-
-.console-info {
-    color: rgb(128, 128, 128);
-    font-style: italic;
-}
-
-.console-group .console-group > .console-group-messages {
-    margin-left: 16px;
-}
-
-.console-group-title {
-    font-weight: bold;
-}
-
-.console-group-title::before {
-    -webkit-user-select: none;
-    -webkit-mask-image: url(Images/statusbarButtonGlyphs.png);
-    -webkit-mask-size: 320px 144px;
-    float: left;
-    width: 8px;
-    content: "a";
-    color: transparent;
-    text-shadow: none;
-    margin-left: 3px;
-    margin-top: -7px;
-}
-
-@media (-webkit-min-device-pixel-ratio: 1.5) {
-.console-group-title::before {
-    -webkit-mask-image: url(Images/statusbarButtonGlyphs_2x.png);
-}
-} /* media */
-
-.console-group .console-group-title::before {
-    -webkit-mask-position: -20px -96px;
-    background-color: rgb(110, 110, 110);
-}
-
-.console-message-wrapper.collapsed .console-group-title::before {
-    -webkit-mask-position: -4px -96px;
-}
-
-.console-group {
-    position: relative;
-}
-
-.console-message-wrapper {
-    display: flex;
-}
-
-.console-message-wrapper .nesting-level-marker {
-    width: 14px;
-    flex: 0 0 auto;
-    border-right: 1px solid #A3A3A3;
-    position: relative;
-}
-
-.console-message-wrapper:last-child .nesting-level-marker,
-.console-message-wrapper .nesting-level-marker.group-closed {
-    margin-bottom: 4px;
-}
-
-.console-message-wrapper:last-child .nesting-level-marker::before,
-.console-message-wrapper .nesting-level-marker.group-closed::before
-{
-    content: "";
-}
-
-.console-message-wrapper .nesting-level-marker::before {
-    border-bottom: 1px solid #A3A3A3;
-    position: absolute;
-    top: 0;
-    left: 0;
-    margin-left: 100%;
-    width: 3px;
-    height: 100%;
-    box-sizing: border-box;
-}
-
-.console-error-level .console-message-text,
-.console-error-level .section > .header .title {
-    color: red !important;
-}
-
-.console-debug-level .console-message-text {
-    color: blue;
-}
-
-.console-error-level::before,
-.console-warning-level::before,
-.console-debug-level::before,
-.console-info-level::before {
-    background-image: url(Images/statusbarButtonGlyphs.png);
-    background-size: 320px 144px;
-    width: 10px;
-    height: 10px;
-}
-
-@media (-webkit-min-device-pixel-ratio: 1.5) {
-.console-error-level::before,
-.console-warning-level::before,
-.console-debug-level::before,
-.console-info-level::before {
-    background-image: url(Images/statusbarButtonGlyphs_2x.png);
-}
-} /* media */
-
-.console-warning-level::before {
-    background-position: -202px -107px;
-}
-
-.console-error-level::before {
-    background-position: -213px -96px;
-}
-
-.console-info-level::before {
-    background-position: -213px -107px;
-}
-
-.console-user-command .console-message {
-    margin-left: -24px;
-    padding-right: 0;
-    border-bottom: none;
-}
-
-.console-user-command::before {
-    background-position: -192px -107px;
-}
-
-.console-user-command > .console-message-text {
-    color: rgb(0, 128, 255);
-}
-
-#console-messages .link {
-    text-decoration: underline;
-}
-
-#console-messages .link,
-#console-messages a {
-    color: rgb(33%, 33%, 33%);
-    cursor: pointer;
-}
-
-#console-messages .link:hover,
-#console-messages a:hover {
-    color: rgb(15%, 15%, 15%);
-}
-
 ol.watch-expressions > li.hovered {
     background-color: #F0F0F0;
 }
@@ -574,33 +284,6 @@ ol.watch-expressions > li.hovered {
     text-align: right;
     max-width: 100%;
     margin-left: 4px;
-}
-
-.console-group-messages .section {
-    margin: 0 0 0 12px !important;
-}
-
-.console-group-messages .section > .header {
-    padding: 0 8px 0 0;
-    background-image: none;
-    border: none;
-    min-height: 0;
-}
-
-.console-group-messages .section > .header::before {
-    margin-left: -12px;
-}
-
-.console-group-messages .section > .header .title {
-    color: #222;
-    font-weight: normal;
-    line-height: 13px;
-}
-
-.console-group-messages .section .properties li .info {
-    padding-top: 0;
-    padding-bottom: 0;
-    color: rgb(60%, 60%, 60%);
 }
 
 .console-formatted-object,
@@ -676,10 +359,6 @@ ol.watch-expressions > li.hovered {
 .console-formatted-preview-node,
 .section .console-formatted-node {
     color: rgb(136, 18, 128);
-}
-
-.console-object-preview {
-    font-style: italic;
 }
 
 .object-info-state-note {
@@ -805,10 +484,6 @@ iframe.panel.extension {
     list-style-type: none;
     -webkit-padding-start: 12px;
     margin: 0;
-}
-
-.console-message-text {
-    white-space: pre-wrap;
 }
 
 .outline-disclosure li {
@@ -1199,8 +874,7 @@ li.editing-sub-part .delete-button {
 }
 
 .section .properties .name,
-.event-properties .name,
-.console-object-preview .name {
+.event-properties .name {
     color: rgb(136, 19, 145);
     flex-shrink: 0;
 }
@@ -1263,18 +937,6 @@ li.editing-sub-part .delete-button {
 .pane-title-button:active {
     background-color: rgb(215, 215, 215);
     background-image: linear-gradient(to bottom, rgb(194, 194, 194), rgb(239, 239, 239));
-}
-
-.console-warning-level.repeated-message,
-.console-error-level.repeated-message,
-.console-log-level.repeated-message,
-.console-debug-level.repeated-message,
-.console-info-level.repeated-message {
-    display: -webkit-flex;
-}
-
-.console-user-command-result {
-    display: block;
 }
 
 .sidebar-tree,
@@ -2000,10 +1662,6 @@ body.inactive .sidebar-tree-item.selected {
     background: linear-gradient(to right, rgb(80, 80, 80), rgb(192, 192, 192) 25%, rgb(192, 192, 192));
     border-radius: 5px;
     margin: 5px;
-}
-
-.console-context {
-    max-width: 200px;
 }
 
 .root-view {

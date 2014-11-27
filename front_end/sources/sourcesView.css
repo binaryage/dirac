@@ -58,10 +58,6 @@
     margin-top: -2px;
 }
 
-#sources-panel-sources-view .source-frame-cursor-position {
-    -webkit-user-select: text;
-}
-
 .source-frame-debugger-script {
     background-color: rgba(255, 255, 194, 0.5);
 }

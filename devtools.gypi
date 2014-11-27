@@ -341,6 +341,7 @@
             'front_end/audits/AuditsPanel.js',
         ],
         'devtools_console_js_files': [
+            'front_end/console/consoleView.css',
             'front_end/console/ConsolePanel.js',
             'front_end/console/ConsoleView.js',
             'front_end/console/ConsoleViewMessage.js',
