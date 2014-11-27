@@ -328,7 +328,7 @@ WebInspector.StatusBarButtonBase = function(title, className, states)
     else
         this._state = "0";
 
-    this.title = title;
+    this.setTitle(title);
     this.className = className;
 }
 
@@ -370,6 +370,14 @@ WebInspector.StatusBarButtonBase.prototype = {
     enabled: function()
     {
         return this._enabled;
+    },
+
+    /**
+     * @return {string}
+     */
+    title: function()
+    {
+        return this._title;
     },
 
     /**
@@ -469,7 +477,7 @@ WebInspector.StatusBarButtonBase.prototype = {
     _showOptions: function()
     {
         var buttons = this._longClickOptionsData.buttonsProvider();
-        var mainButtonClone = new WebInspector.StatusBarButton(this.title, this.className, this._states);
+        var mainButtonClone = new WebInspector.StatusBarButton(this.title(), this.className, this._states);
         mainButtonClone.addEventListener("click", this._clicked, this);
         mainButtonClone.setState(this.state());
         buttons.push(mainButtonClone);
@@ -783,6 +791,7 @@ WebInspector.StatusBarStatesSettingButton = function(className, states, titles, 
     this.addEventListener("click", onClickBound, this);
 
     this._states = states;
+    /** @type {!Array.<!WebInspector.StatusBarButton>} */
     this._buttons = [];
     for (var index = 0; index < states.length; index++) {
         var button = new WebInspector.StatusBarButton(titles[index], className, states.length);
@@ -827,7 +836,7 @@ WebInspector.StatusBarStatesSettingButton.prototype = {
 
         var defaultState = this._defaultState();
         this.setState(defaultState);
-        this.title = this._buttons[this._states.indexOf(defaultState)].title;
+        this.setTitle(this._buttons[this._states.indexOf(defaultState)].title());
     },
 
     /**
