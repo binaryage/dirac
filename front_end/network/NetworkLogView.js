@@ -44,6 +44,7 @@ WebInspector.NetworkLogView = function(filterBar, coulmnsVisibilitySetting)
 
     this._filterBar = filterBar;
     this._coulmnsVisibilitySetting = coulmnsVisibilitySetting;
+    this._hideColumnsSetting = WebInspector.settings.createSetting("networkLogHideColumns", false);
     /** @type {!Map.<string, !WebInspector.NetworkDataGridNode>} */
     this._nodesByRequestId = new Map();
     /** @type {!Object.<string, boolean>} */
@@ -240,6 +241,7 @@ WebInspector.NetworkLogView.prototype = {
             this._clearButton,
             this._filterBar.filterButton(),
             this._largerRequestsButton,
+            this._hideColumnsButton,
             this._preserveLogCheckbox,
             this._disableCacheCheckbox,
             new WebInspector.StatusBarItem(this._progressBarContainer) ];
@@ -466,6 +468,25 @@ WebInspector.NetworkLogView.prototype = {
         timelineSorting.addEventListener("click", function(event) { event.consume() }, false);
         timelineSorting.addEventListener("change", this._sortByTimeline.bind(this), false);
         this._timelineSortSelector = timelineSorting;
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _clickHideColumnsButton: function(event)
+    {
+        this._toggleHideColumnsButton(!this._hideColumnsSetting.get());
+    },
+
+    /**
+     * @param {boolean} toggled
+     */
+    _toggleHideColumnsButton: function(toggled)
+    {
+        this._hideColumnsSetting.set(toggled);
+        this._hideColumnsButton.title = toggled ? WebInspector.UIString("Show columns.") : WebInspector.UIString("Hide columns.");
+        this._hideColumnsButton.setToggled(toggled);
+        this._updateColumns();
     },
 
     _createSortingFunctions: function()
@@ -713,6 +734,10 @@ WebInspector.NetworkLogView.prototype = {
         this._largerRequestsButton = new WebInspector.StatusBarButton(WebInspector.UIString("Use small resource rows."), "large-list-status-bar-item");
         this._largerRequestsButton.setToggled(WebInspector.settings.resourcesLargeRows.get());
         this._largerRequestsButton.addEventListener("click", this._toggleLargerRequests, this);
+
+        this._hideColumnsButton = new WebInspector.StatusBarButton("", "waterfall-status-bar-item");
+        this._toggleHideColumnsButton(this._hideColumnsSetting.get());
+        this._hideColumnsButton.addEventListener("click", this._clickHideColumnsButton, this);
 
         this._preserveLogCheckbox = new WebInspector.StatusBarCheckbox(WebInspector.UIString("Preserve log"));
         this._preserveLogCheckbox.element.title = WebInspector.UIString("Do not clear log on page reload / navigation.");
@@ -991,7 +1016,10 @@ WebInspector.NetworkLogView.prototype = {
         this._updateColumns();
     },
 
-    _toggleLargerRequests: function()
+    /**
+     * @param {!WebInspector.Event=} event
+     */
+    _toggleLargerRequests: function(event)
     {
         WebInspector.settings.resourcesLargeRows.set(!WebInspector.settings.resourcesLargeRows.get());
         this._updateRowsSize();
@@ -1106,10 +1134,13 @@ WebInspector.NetworkLogView.prototype = {
 
     _updateColumns: function()
     {
+        if (!this._dataGrid)
+            return;
         var gridMode = this._gridMode;
         var visibleColumns = {"name": true};
-        if (gridMode) {
+        if (gridMode)
             visibleColumns["timeline"] = true;
+        if (gridMode && !this._hideColumnsSetting.get()) {
             var columnsVisibility = this._coulmnsVisibilitySetting.get();
             for (var columnIdentifier in columnsVisibility)
                 visibleColumns[columnIdentifier] = columnsVisibility[columnIdentifier];
