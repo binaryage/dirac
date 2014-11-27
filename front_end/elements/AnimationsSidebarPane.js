@@ -43,10 +43,59 @@ WebInspector.AnimationsSidebarPane._showSubtreeAnimationsCheckbox = function(set
 }
 
 WebInspector.AnimationsSidebarPane.prototype = {
+    /**
+     * @param {?WebInspector.DOMNode} node
+     */
+    setNode: function(node)
+    {
+        WebInspector.ElementsSidebarPane.prototype.setNode.call(this, node);
+        if (!node)
+            return;
+        this._updateTarget(node.target());
+    },
+
+    /**
+     * @param {!WebInspector.Target} target
+     */
+    _updateTarget: function(target)
+    {
+        if (this._target === target)
+            return;
+        if (this._target)
+            this._target.animationModel.removeEventListener(WebInspector.AnimationModel.Events.AnimationPlayerCreated, this._animationPlayerCreated, this);
+        this._target = target;
+        this._target.animationModel.addEventListener(WebInspector.AnimationModel.Events.AnimationPlayerCreated, this._animationPlayerCreated, this);
+    },
+
     _showSubtreeSettingChanged: function()
     {
         this._forceUpdate = true;
         this.update();
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _animationPlayerCreated: function(event)
+    {
+        this._addAnimationPlayer(/** @type {!WebInspector.AnimationModel.AnimationPlayer} */ (event.data));
+    },
+
+    /**
+     * @param {!WebInspector.AnimationModel.AnimationPlayer} player
+     */
+    _addAnimationPlayer: function(player)
+    {
+        if (this.animationsElement.hasChildNodes() && !this._animationSections.length)
+            this.animationsElement.removeChild(this._emptyElement);
+        var section = new WebInspector.AnimationSection(this, this._stylesPane, player);
+        if (this._animationSections.length < 10)
+            section.expand(true);
+        this._animationSections.push(section);
+        this.animationsElement.appendChild(section.element);
+
+        if (this._animationSections.length > 100)
+            this._target.animationModel.stopListening();
     },
 
     /**
@@ -68,13 +117,8 @@ WebInspector.AnimationsSidebarPane.prototype = {
                 finishCallback();
                 return;
             }
-            for (var i = 0; i < animationPlayers.length; ++i) {
-                var player = animationPlayers[i];
-                this._animationSections[i] = new WebInspector.AnimationSection(this, this._stylesPane, player);
-                if (animationPlayers.length < 5)
-                    this._animationSections[i].expand(true);
-                this.animationsElement.appendChild(this._animationSections[i].element);
-            }
+            for (var i = 0; i < animationPlayers.length; ++i)
+                this._addAnimationPlayer(animationPlayers[i]);
             finishCallback();
         }
 
@@ -94,6 +138,7 @@ WebInspector.AnimationsSidebarPane.prototype = {
         this._forceUpdate = false;
         this._selectedNode = this.node();
         this.node().target().animationModel.getAnimationPlayers(this.node().id, this._showSubtreeSetting.get(), animationPlayersCallback.bind(this));
+        this.node().target().animationModel.startListening(this.node().id, this._showSubtreeSetting.get());
     },
 
     __proto__: WebInspector.ElementsSidebarPane.prototype
