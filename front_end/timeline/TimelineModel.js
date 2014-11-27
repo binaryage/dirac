@@ -90,6 +90,7 @@ WebInspector.TimelineModel.RecordType = {
     XHRLoad: "XHRLoad",
     EvaluateScript: "EvaluateScript",
 
+    CommitLoad: "CommitLoad",
     MarkLoad: "MarkLoad",
     MarkDOMContent: "MarkDOMContent",
     MarkFirstPaint: "MarkFirstPaint",
@@ -202,6 +203,17 @@ WebInspector.TimelineModel.Record = function(model, traceEvent)
     this._event = traceEvent;
     traceEvent._timelineRecord = this;
     this._children = [];
+}
+
+/**
+ * @param {!WebInspector.TimelineModel.Record} a
+ * @param {!WebInspector.TimelineModel.Record} b
+ * @return {number}
+ */
+WebInspector.TimelineModel.Record._compareStartTime = function(a, b)
+{
+    // Never return 0 as otherwise equal records would be merged.
+    return a.startTime() <= b.startTime() ? -1 : 1;
 }
 
 WebInspector.TimelineModel.Record.prototype = {
@@ -671,14 +683,14 @@ WebInspector.TimelineModel.prototype = {
                 this._processThreadEvents(startTime, endTime, metaEvent.thread, thread, workerId);
             }
         }
-        this._resetProcessingState();
-
         this._inspectedTargetEvents.sort(WebInspector.TracingModel.Event.compareStartTime);
 
         this._cpuProfiles = null;
-
         this._buildTimelineRecords();
         this._buildGPUTasks();
+        this._insertFirstPaintEvent();
+        this._resetProcessingState();
+
         this.dispatchEventToListeners(WebInspector.TimelineModel.Events.RecordingStopped);
     },
 
@@ -702,20 +714,27 @@ WebInspector.TimelineModel.prototype = {
         this._tracingModel.addEvents([cpuProfileEvent]);
     },
 
+    _insertFirstPaintEvent: function()
+    {
+        if (!this._firstCompositeLayers)
+            return;
+
+        // First Paint is actually a DrawFrame that happened after first CompositeLayers following last CommitLoadEvent.
+        var recordTypes = WebInspector.TimelineModel.RecordType;
+        var i = insertionIndexForObjectInListSortedByFunction(this._firstCompositeLayers, this._inspectedTargetEvents, WebInspector.TracingModel.Event.compareStartTime);
+        for (; i < this._inspectedTargetEvents.length && this._inspectedTargetEvents[i].name !== recordTypes.DrawFrame; ++i) { }
+        if (i >= this._inspectedTargetEvents.length)
+            return;
+        var drawFrameEvent = this._inspectedTargetEvents[i];
+        var firstPaintEvent = new WebInspector.TracingModel.Event(drawFrameEvent.category, recordTypes.MarkFirstPaint, WebInspector.TracingModel.Phase.Instant, drawFrameEvent.startTime, drawFrameEvent.thread);
+        this._mainThreadEvents.splice(insertionIndexForObjectInListSortedByFunction(firstPaintEvent, this._mainThreadEvents, WebInspector.TracingModel.Event.compareStartTime), 0, firstPaintEvent);
+        var firstPaintRecord = new WebInspector.TimelineModel.Record(this, firstPaintEvent);
+        this._eventDividerRecords.splice(insertionIndexForObjectInListSortedByFunction(firstPaintRecord, this._eventDividerRecords, WebInspector.TimelineModel.Record._compareStartTime), 0, firstPaintRecord);
+    },
+
     _buildTimelineRecords: function()
     {
         var topLevelRecords = this._buildTimelineRecordsForThread(this.mainThreadEvents());
-
-        /**
-         * @param {!WebInspector.TimelineModel.Record} a
-         * @param {!WebInspector.TimelineModel.Record} b
-         * @return {number}
-         */
-        function compareRecordStartTime(a, b)
-        {
-            // Never return 0 as otherwise equal records would be merged.
-            return (a.startTime() <= b.startTime()) ? -1 : +1;
-        }
 
         /**
          * @param {!WebInspector.TimelineModel.VirtualThread} virtualThread
@@ -724,7 +743,7 @@ WebInspector.TimelineModel.prototype = {
         function processVirtualThreadEvents(virtualThread)
         {
             var threadRecords = this._buildTimelineRecordsForThread(virtualThread.events);
-            topLevelRecords = topLevelRecords.mergeOrdered(threadRecords, compareRecordStartTime);
+            topLevelRecords = topLevelRecords.mergeOrdered(threadRecords, WebInspector.TimelineModel.Record._compareStartTime);
         }
         this.virtualThreads().forEach(processVirtualThreadEvents.bind(this));
 
@@ -806,6 +825,8 @@ WebInspector.TimelineModel.prototype = {
         this._lastRecalculateStylesEvent = null;
         this._currentScriptEvent = null;
         this._eventStack = [];
+        this._hadCommitLoad = false;
+        this._firstCompositeLayers = null;
     },
 
     /**
@@ -843,7 +864,6 @@ WebInspector.TimelineModel.prototype = {
         }
 
         this._eventStack = [];
-        var recordTypes = WebInspector.TimelineModel.RecordType;
         var i = events.lowerBound(startTime, function (time, event) { return time - event.startTime });
         var length = events.length;
         for (; i < length; i++) {
@@ -1029,6 +1049,18 @@ WebInspector.TimelineModel.prototype = {
             this._paintImageEventByPixelRefId[event.args["LazyPixelRef"]] = paintImageEvent;
             event.backendNodeId = paintImageEvent.backendNodeId;
             event.imageURL = paintImageEvent.imageURL;
+            break;
+
+        case recordTypes.CommitLoad:
+            if (!event.args["data"]["isMainFrame"])
+                break;
+            this._hadCommitLoad = true;
+            this._firstCompositeLayers = null;
+            break;
+
+        case recordTypes.CompositeLayers:
+            if (!this._firstCompositeLayers && this._hadCommitLoad)
+                this._firstCompositeLayers = event;
             break;
         }
     },
