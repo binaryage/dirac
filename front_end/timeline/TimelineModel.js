@@ -34,6 +34,7 @@
  * @param {!WebInspector.TracingModel} tracingModel
  * @param {!WebInspector.TimelineModel.Filter} recordFilter
  * @extends {WebInspector.Object}
+ * @implements {WebInspector.TargetManager.Observer}
  */
 WebInspector.TimelineModel = function(tracingManager, tracingModel, recordFilter)
 {
@@ -514,26 +515,48 @@ WebInspector.TimelineModel.prototype = {
         this._onTracingComplete();
     },
 
-    _startCpuProfilingOnAllTargets: function()
+    /**
+     * @override
+     * @param {!WebInspector.Target} target
+     */
+    targetAdded: function(target)
     {
-        /**
-         * @param {!WebInspector.Target} target
-         */
-        function startProfiling(target)
-        {
-            var intervalUs = WebInspector.settings.highResolutionCpuProfiling.get() ? 100 : 1000;
-            target.profilerAgent().setSamplingInterval(intervalUs);
-            target.profilerAgent().start();
-        }
-
-        this._profilingTargets = WebInspector.targetManager.targets();
-        this._profilingTargets.forEach(startProfiling);
+        this._profilingTargets.push(target);
+        this._startProfilingOnTarget(target);
     },
 
     /**
+     * @override
+     * @param {!WebInspector.Target} target
+     */
+    targetRemoved: function(target)
+    {
+        this._profilingTargets.remove(target, true);
+        // FIXME: We'd like to stop profiling on the target and retrieve a profile
+        // but it's too late. Backend connection is closed.
+    },
+
+    /**
+     * @param {!WebInspector.Target} target
+     */
+    _startProfilingOnTarget: function(target)
+    {
+        target.profilerAgent().start();
+    },
+
+    _startProfilingOnAllTargets: function()
+    {
+        var intervalUs = WebInspector.settings.highResolutionCpuProfiling.get() ? 100 : 1000;
+        WebInspector.targetManager.mainTarget().profilerAgent().setSamplingInterval(intervalUs);
+        this._profilingTargets = [];
+        WebInspector.targetManager.observeTargets(this); // This guy invokes targetAdded for already existing targets.
+    },
+
+    /**
+     * @param {!WebInspector.Target} target
      * @return {!Promise}
      */
-    _stopProfilingOnAllTargets: function()
+    _stopProfilingOnTarget: function(target)
     {
         /**
          * @param {!{profile: !ProfilerAgent.CPUProfile}} value
@@ -543,20 +566,18 @@ WebInspector.TimelineModel.prototype = {
         {
             return value.profile;
         }
+        return target.profilerAgent().stop().then(extractProfile).then(this._addCpuProfile.bind(this, target.id())).catchAndReport();
+    },
 
-        /**
-         * @this {WebInspector.TimelineModel}
-         * @param {!WebInspector.Target} target
-         * @return {!Promise}
-         */
-        function stopProfiling(target)
-        {
-            return target.profilerAgent().stop().then(extractProfile).then(this._addCpuProfile.bind(this, target.id()));
-        }
-
+    /**
+     * @return {!Promise}
+     */
+    _stopProfilingOnAllTargets: function()
+    {
+        WebInspector.targetManager.unobserveTargets(this);
         var targets = this._profilingTargets || [];
         this._profilingTargets = null;
-        return Promise.all(targets.map(stopProfiling, this));
+        return Promise.all(targets.map(this._stopProfilingOnTarget, this));
     },
 
     /**
@@ -566,7 +587,7 @@ WebInspector.TimelineModel.prototype = {
     _startRecordingWithCategories: function(categories, enableJSSampling)
     {
         if (enableJSSampling)
-            this._startCpuProfilingOnAllTargets();
+            this._startProfilingOnAllTargets();
         this._tracingManager.start(categories, "");
     },
 
