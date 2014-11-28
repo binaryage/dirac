@@ -35,10 +35,30 @@
 WebInspector.ResourceSourceFrame = function(resource)
 {
     this._resource = resource;
+    this._messages = [];
     WebInspector.SourceFrame.call(this, resource);
 }
 
 WebInspector.ResourceSourceFrame.prototype = {
+    /**
+     * @param {!WebInspector.ConsoleMessage} message
+     */
+    addPersistentMessage: function(message)
+    {
+        this._messages.push(message);
+        if (this.loaded)
+            this.addMessageToSource(message.line - 1, message);
+    },
+
+    /**
+     * @override
+     */
+    onTextEditorContentLoaded: function()
+    {
+        for (var message of this._messages)
+            this.addMessageToSource(message.line - 1, message);
+    },
+
     get resource()
     {
         return this._resource;

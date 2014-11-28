@@ -1305,7 +1305,7 @@ WebInspector.FrameResourceTreeElement.prototype = {
             this._sourceView = sourceFrame;
             if (this._resource.messages) {
                 for (var i = 0; i < this._resource.messages.length; i++)
-                    this._sourceView.addMessage(this._resource.messages[i]);
+                    this._sourceView.addPersistentMessage(this._resource.messages[i]);
             }
         }
         return this._sourceView;

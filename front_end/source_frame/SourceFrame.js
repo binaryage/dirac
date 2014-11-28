@@ -48,7 +48,6 @@ WebInspector.SourceFrame = function(contentProvider)
     this._currentSearchResultIndex = -1;
     this._searchResults = [];
 
-    this._messages = [];
     this._rowMessageBuckets = {};
 
     this._textEditor.setReadOnly(!this.canEditSource());
@@ -207,13 +206,6 @@ WebInspector.SourceFrame.prototype = {
         }
     },
 
-    addMessage: function(msg)
-    {
-        this._messages.push(msg);
-        if (this.loaded)
-            this.addMessageToSource(msg.line - 1, msg);
-    },
-
     clearMessages: function()
     {
         for (var line in this._rowMessageBuckets) {
@@ -221,7 +213,6 @@ WebInspector.SourceFrame.prototype = {
             bubble.detachFromEditor();
         }
 
-        this._messages = [];
         this._rowMessageBuckets = {};
     },
 
@@ -396,10 +387,6 @@ WebInspector.SourceFrame.prototype = {
     _setTextEditorDecorations: function()
     {
         this._rowMessageBuckets = {};
-
-        this._textEditor.beginUpdates();
-        this._addExistingMessagesToSource();
-        this._textEditor.endUpdates();
     },
 
     /**
@@ -617,13 +604,6 @@ WebInspector.SourceFrame.prototype = {
             } while (match && line);
         }
         return ranges;
-    },
-
-    _addExistingMessagesToSource: function()
-    {
-        var length = this._messages.length;
-        for (var i = 0; i < length; ++i)
-            this.addMessageToSource(this._messages[i].line - 1, this._messages[i]);
     },
 
     /**
