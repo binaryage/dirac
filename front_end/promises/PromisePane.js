@@ -143,6 +143,8 @@ WebInspector.PromisePane.prototype = {
     {
         this._dataGrid.rootNode().removeChildren();
         this._linkifier.reset();
+        if (this._target)
+            this._target.heapProfilerAgent().collectGarbage();
     },
 
     /**
