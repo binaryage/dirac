@@ -47,7 +47,7 @@ WebInspector.ResourceSourceFrame.prototype = {
     {
         this._messages.push(message);
         if (this.loaded)
-            this.addMessageToSource(message.line - 1, message);
+            this.addMessageToSource(WebInspector.SourceFrameMessage.fromConsoleMessage(message, message.line - 1));
     },
 
     /**
@@ -56,7 +56,7 @@ WebInspector.ResourceSourceFrame.prototype = {
     onTextEditorContentLoaded: function()
     {
         for (var message of this._messages)
-            this.addMessageToSource(message.line - 1, message);
+            this.addMessageToSource(WebInspector.SourceFrameMessage.fromConsoleMessage(message, message.line - 1));
     },
 
     get resource()

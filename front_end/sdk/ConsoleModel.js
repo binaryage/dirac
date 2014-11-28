@@ -431,24 +431,6 @@ WebInspector.ConsoleMessage.MessageLevel = {
     Debug: "debug"
 };
 
-WebInspector.ConsoleMessage._messageLevelPriority = {
-    "debug": 0,
-    "log": 1,
-    "info": 2,
-    "warning": 3,
-    "error": 4
-};
-
-/**
- * @param {!WebInspector.ConsoleMessage} a
- * @param {!WebInspector.ConsoleMessage} b
- * @return {number}
- */
-WebInspector.ConsoleMessage.messageLevelComparator = function(a, b)
-{
-    return WebInspector.ConsoleMessage._messageLevelPriority[a.level] - WebInspector.ConsoleMessage._messageLevelPriority[b.level];
-}
-
 /**
  * @param {!WebInspector.ConsoleMessage} a
  * @param {!WebInspector.ConsoleMessage} b

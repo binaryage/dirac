@@ -353,10 +353,8 @@ WebInspector.JavaScriptSourceFrame.prototype = {
             if (succeededEdits + failedEdits !== scriptFiles.length)
                 return;
 
-            if (!failedEdits)
-                WebInspector.console.log(WebInspector.UIString("Recompilation and update succeeded."));
-            else
-                logLiveEditError(liveEditError, liveEditErrorData, contextScript)
+            if (failedEdits)
+                logLiveEditError.call(this, liveEditError, liveEditErrorData, contextScript);
             this._scriptsPanel.setIgnoreExecutionLineEvents(false);
         }
 
@@ -364,6 +362,7 @@ WebInspector.JavaScriptSourceFrame.prototype = {
          * @param {?string} error
          * @param {!DebuggerAgent.SetScriptSourceError=} errorData
          * @param {!WebInspector.Script=} contextScript
+         * @this {WebInspector.JavaScriptSourceFrame}
          */
         function logLiveEditError(error, errorData, contextScript)
         {
@@ -375,9 +374,9 @@ WebInspector.JavaScriptSourceFrame.prototype = {
             }
             var compileError = errorData.compileError;
             if (compileError) {
-                var location = contextScript ? WebInspector.UIString(" at %s:%d:%d", contextScript.sourceURL, compileError.lineNumber, compileError.columnNumber) : "";
-                var message = WebInspector.UIString("LiveEdit compile failed: %s%s", compileError.message, location);
-                WebInspector.console.error(message);
+                var messageText = WebInspector.UIString("LiveEdit compile failed: %s", compileError.message);
+                var message = new WebInspector.SourceFrameMessage(messageText, WebInspector.SourceFrameMessage.Level.Error, compileError.lineNumber - 1, compileError.columnNumber);
+                this.addMessageToSource(message);
             } else {
                 WebInspector.console.addMessage(WebInspector.UIString("Unknown LiveEdit error: %s; %s", JSON.stringify(errorData), error), warningLevel);
             }
@@ -747,14 +746,23 @@ WebInspector.JavaScriptSourceFrame.prototype = {
     {
         var message = /** @type {!WebInspector.PresentationConsoleMessage} */ (event.data);
         if (this.loaded)
-            this.addMessageToSource(message.lineNumber, message.originalMessage);
+            this.addMessageToSource(this._sourceFrameMessage(message));
     },
 
     _consoleMessageRemoved: function(event)
     {
         var message = /** @type {!WebInspector.PresentationConsoleMessage} */ (event.data);
         if (this.loaded)
-            this.removeMessageFromSource(message.lineNumber, message.originalMessage);
+            this.removeMessageFromSource(this._sourceFrameMessage(message));
+    },
+
+    /**
+     * @param {!WebInspector.PresentationConsoleMessage} message
+     * @return {!WebInspector.SourceFrameMessage}
+     */
+    _sourceFrameMessage: function(message)
+    {
+        return WebInspector.SourceFrameMessage.fromConsoleMessage(message.originalMessage, message.lineNumber);
     },
 
     _consoleMessagesCleared: function(event)
@@ -822,10 +830,8 @@ WebInspector.JavaScriptSourceFrame.prototype = {
             this._breakpointAdded({data:breakpointLocations[i]});
 
         var messages = WebInspector.presentationConsoleMessageHelper.consoleMessages(this._uiSourceCode);
-        for (var i = 0; i < messages.length; ++i) {
-            var message = messages[i];
-            this.addMessageToSource(message.lineNumber, message.originalMessage);
-        }
+        for (var message of messages)
+            this.addMessageToSource(this._sourceFrameMessage(message));
 
         var scriptFiles = this._scriptFileForTarget.valuesArray();
         for (var i = 0; i < scriptFiles.length; ++i)
