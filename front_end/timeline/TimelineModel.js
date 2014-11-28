@@ -317,12 +317,9 @@ WebInspector.TimelineModel.Record.prototype = {
     frameId: function()
     {
         switch (this._event.name) {
-        case WebInspector.TimelineModel.RecordType.ScheduleStyleRecalculation:
         case WebInspector.TimelineModel.RecordType.RecalculateStyles:
-        case WebInspector.TimelineModel.RecordType.InvalidateLayout:
-            return this._event.args["frameId"];
         case WebInspector.TimelineModel.RecordType.Layout:
-            return this._event.args["beginData"]["frameId"];
+            return this._event.args["beginData"]["frame"];
         default:
             var data = this._event.args["data"];
             return (data && data["frame"]) || "";
@@ -938,12 +935,13 @@ WebInspector.TimelineModel.prototype = {
             break;
 
         case recordTypes.ScheduleStyleRecalculation:
-            this._lastScheduleStyleRecalculation[event.args["frame"]] = event;
+            this._lastScheduleStyleRecalculation[event.args["data"]["frame"]] = event;
             break;
 
         case recordTypes.RecalculateStyles:
             this._invalidationTracker.didRecalcStyle(event);
-            event.initiator = this._lastScheduleStyleRecalculation[event.args["frame"]];
+            if (event.args["beginData"])
+                event.initiator = this._lastScheduleStyleRecalculation[event.args["beginData"]["frame"]];
             this._lastRecalculateStylesEvent = event;
             break;
 
@@ -958,7 +956,7 @@ WebInspector.TimelineModel.prototype = {
             // Consider style recalculation as a reason for layout invalidation,
             // but only if we had no earlier layout invalidation records.
             var layoutInitator = event;
-            var frameId = event.args["frame"];
+            var frameId = event.args["data"]["frame"];
             if (!this._layoutInvalidate[frameId] && this._lastRecalculateStylesEvent && this._lastRecalculateStylesEvent.endTime >  event.startTime)
                 layoutInitator = this._lastRecalculateStylesEvent.initiator;
             this._layoutInvalidate[frameId] = layoutInitator;
@@ -1735,7 +1733,7 @@ WebInspector.InvalidationTracker.prototype = {
     {
         if (invalidation.linkedRecalcStyleEvent)
             return;
-        var recalcStyleFrameId = this._lastRecalcStyle.args["frame"];
+        var recalcStyleFrameId = this._lastRecalcStyle.args["beginData"]["frame"];
         this._addInvalidationToEvent(this._lastRecalcStyle, recalcStyleFrameId, invalidation);
         invalidation.linkedRecalcStyleEvent = true;
     },
