@@ -1263,7 +1263,7 @@ WebInspector.ElementsTreeElement.prototype = {
 
         this._expandedChildrenLimit = x;
         if (this.treeOutline && !this._updateChildrenInProgress)
-            this._updateChildren(true);
+            this._updateChildren();
     },
 
     get expandedChildCount()
@@ -1289,10 +1289,8 @@ WebInspector.ElementsTreeElement.prototype = {
         if (index === -1)
             return null;
 
-        if (index >= this.expandedChildrenLimit) {
-            this._expandedChildrenLimit = index + 1;
-            this._updateChildren(true);
-        }
+        if (index >= this.expandedChildrenLimit)
+            this.expandedChildrenLimit = index + 1;
 
         // Whether index-th child is visible in the children tree
         return this.expandedChildCount > index ? this.children[index] : null;
@@ -1354,10 +1352,7 @@ WebInspector.ElementsTreeElement.prototype = {
         this.updateChildren();
     },
 
-    /**
-     * @param {boolean=} fullRefresh
-     */
-    updateChildren: function(fullRefresh)
+    updateChildren: function()
     {
         if (!this._hasChildTreeElements())
             return;
@@ -1372,7 +1367,7 @@ WebInspector.ElementsTreeElement.prototype = {
         {
             if (!children)
                 return;
-            this._updateChildren(fullRefresh);
+            this._updateChildren();
         }
     },
 
@@ -1414,25 +1409,12 @@ WebInspector.ElementsTreeElement.prototype = {
         return updater._recentlyModifiedNodes.get(effectiveNode) || updater._recentlyModifiedParentNodes.get(effectiveNode);
     },
 
-    /**
-     * @param {boolean=} fullRefresh
-     */
-    _updateChildren: function(fullRefresh)
+    _updateChildren: function()
     {
         if (this._updateChildrenInProgress || !this.treeOutline._visible)
             return;
 
         this._updateChildrenInProgress = true;
-        var selectedNode = this.treeOutline.selectedDOMNode();
-        var originalScrollTop = 0;
-        if (fullRefresh) {
-            var treeOutlineContainerElement = this.treeOutline.element.parentNode;
-            originalScrollTop = treeOutlineContainerElement.scrollTop;
-            var selectedTreeElement = this.treeOutline.selectedTreeElement;
-            if (selectedTreeElement && selectedTreeElement.hasAncestor(this))
-                this.select();
-            this.removeChildren();
-        }
 
         // Remove any tree elements that no longer have this node as their parent and save
         // all existing elements that could be reused. This also removes closing tag element.
@@ -1456,7 +1438,6 @@ WebInspector.ElementsTreeElement.prototype = {
             this.removeChildAtIndex(i);
         }
 
-        var elementToSelect;
         var visibleChildren = this._visibleChildren();
         for (var i = 0; i < visibleChildren.length && i < this.expandedChildrenLimit; ++i) {
             var child = visibleChildren[i];
@@ -1469,8 +1450,6 @@ WebInspector.ElementsTreeElement.prototype = {
                 var updateRecord = this._updateInfo();
                 if (updateRecord)
                     WebInspector.ElementsTreeElement.animateOnDOMUpdate(newElement);
-                if (child === selectedNode)
-                    elementToSelect = newElement;
                 // If a node was inserted in the middle of existing list dynamically we might need to increase the limit.
                 if (this.expandedChildCount > this.expandedChildrenLimit)
                     this.expandedChildrenLimit++;
@@ -1482,13 +1461,6 @@ WebInspector.ElementsTreeElement.prototype = {
 
         if (this._node.nodeType() === Node.ELEMENT_NODE && this._hasChildTreeElements())
             this.insertChildElement(this._node, this.children.length, true);
-
-        // We want to restore the original selection and tree scroll position after a full refresh, if possible.
-        if (fullRefresh && elementToSelect) {
-            elementToSelect.select();
-            if (treeOutlineContainerElement && originalScrollTop <= treeOutlineContainerElement.scrollHeight)
-                treeOutlineContainerElement.scrollTop = originalScrollTop;
-        }
 
         delete this._updateChildrenInProgress;
     },
@@ -3090,7 +3062,7 @@ WebInspector.ElementsTreeUpdater.prototype = {
             for (var node of this._recentlyModifiedParentNodes.keys()) {
                 var parentNodeItem = this._treeOutline.findTreeElement(node);
                 if (parentNodeItem && parentNodeItem.populated)
-                    parentNodeItem.updateChildren(false);
+                    parentNodeItem.updateChildren();
             }
         }
 
