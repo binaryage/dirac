@@ -381,7 +381,8 @@ WebInspector.AnimationSection.prototype = {
         if (this.player.source().keyframesRule()) {
             var keyframes = this.player.source().keyframesRule().keyframes();
             for (var j = 0; j < keyframes.length; j++) {
-                var model = WebInspector.StylesSectionModel.fromStyle(keyframes[j].style(), keyframes[j].offset());
+                var animationCascade = new WebInspector.SectionCascade();
+                var model = animationCascade.appendModelFromStyle(keyframes[j].style(), keyframes[j].offset());
                 model.setIsAttribute(true);
                 model.setEditable(true);
                 var styleSection = new WebInspector.StylePropertiesSection(this._stylesPane, model);
