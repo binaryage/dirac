@@ -8,7 +8,7 @@
  */
 WebInspector.DevToolsApp = function()
 {
-    this._iframe = document.querySelector("iframe.inspector-app-iframe");
+    this._iframe = document.getElementById("inspector-app-iframe");
     this._inspectorFrontendHostImpl = new WebInspector.InspectorFrontendHostImpl();
 
     /**

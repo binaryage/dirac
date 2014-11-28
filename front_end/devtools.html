@@ -19,7 +19,7 @@
     var src = remoteFrontendUrl
         ? decodeURIComponent(remoteFrontendUrl) + Runtime.constructQueryParams(["remoteFrontendUrl"])
         : "inspector.html" + window.location.search;
-    document.write("<iframe class='inspector-app-iframe' src='" + src + "'></iframe>");
+    document.write("<iframe id='inspector-app-iframe' class='fill' src='" + src + "'></iframe>");
 })();
 </script>
 </body>
