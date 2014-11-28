@@ -1209,8 +1209,8 @@ WebInspector.ExtensibleTabbedPaneController.prototype = {
          */
         function viewLoaded(view)
         {
-            var shouldFocus = this._tabbedPane.visibleView.element.isSelfOrAncestor(WebInspector.currentFocusElement());
             this._tabbedPane.changeTabView(tabId, view);
+            var shouldFocus = this._tabbedPane.visibleView.element.isSelfOrAncestor(WebInspector.currentFocusElement());
             if (shouldFocus)
                 view.focus();
         }

@@ -52,7 +52,7 @@ WebInspector.AdvancedSearchView = function()
     WebInspector.AdvancedSearchView._instance = this;
     /** @type {!WebInspector.SearchScope} */
     this._searchScope = new WebInspector.SourcesSearchScope();
-    if (WebInspector.AdvancedSearchView._pendingQuery) {
+    if (WebInspector.AdvancedSearchView._pendingQuery !== undefined) {
         this._toggle(WebInspector.AdvancedSearchView._pendingQuery);
         delete WebInspector.AdvancedSearchView._pendingQuery;
     }
