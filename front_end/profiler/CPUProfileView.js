@@ -762,12 +762,12 @@ WebInspector.CPUProfileHeader.prototype = {
             return;
         }
         /**
-         * @param {boolean} success
+         * @param {number} fileSize
          * @this {WebInspector.CPUProfileHeader}
          */
-        function didWriteToTempFile(success)
+        function didWriteToTempFile(fileSize)
         {
-            if (!success)
+            if (!fileSize)
                 this._failedToCreateTempFile = true;
             tempFile.finishWriting();
             this._notifyTempFileReady();
