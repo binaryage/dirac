@@ -177,10 +177,10 @@ TreeContainerNode.prototype = {
 
         var parent = child.parent;
         if (child.deselect()) {
-            if (child.nextSibling)
-                child.nextSibling.select();
-            else if (child.previousSibling)
+            if (child.previousSibling)
                 child.previousSibling.select();
+            else if (child.nextSibling)
+                child.nextSibling.select();
             else
                 parent.select();
         }
