@@ -236,6 +236,7 @@ WebInspector.TextFilterUI = function(supportRegex)
 
 WebInspector.TextFilterUI.prototype = {
     /**
+     * @override
      * @return {boolean}
      */
     isActive: function()
@@ -244,6 +245,7 @@ WebInspector.TextFilterUI.prototype = {
     },
 
     /**
+     * @override
      * @return {!Element}
      */
     element: function()
@@ -488,6 +490,7 @@ WebInspector.NamedBitSetFilterUI.ALL_TYPES = "all";
 
 WebInspector.NamedBitSetFilterUI.prototype = {
     /**
+     * @override
      * @return {boolean}
      */
     isActive: function()
@@ -496,6 +499,7 @@ WebInspector.NamedBitSetFilterUI.prototype = {
     },
 
     /**
+     * @override
      * @return {!Element}
      */
     element: function()
@@ -608,6 +612,7 @@ WebInspector.ComboBoxFilterUI = function(options)
 
 WebInspector.ComboBoxFilterUI.prototype = {
     /**
+     * @override
      * @return {boolean}
      */
     isActive: function()
@@ -616,6 +621,7 @@ WebInspector.ComboBoxFilterUI.prototype = {
     },
 
     /**
+     * @override
      * @return {!Element}
      */
     element: function()
@@ -690,6 +696,7 @@ WebInspector.CheckboxFilterUI = function(className, title, activeWhenChecked, se
 
 WebInspector.CheckboxFilterUI.prototype = {
     /**
+     * @override
      * @return {boolean}
      */
     isActive: function()
@@ -698,6 +705,7 @@ WebInspector.CheckboxFilterUI.prototype = {
     },
 
     /**
+     * @override
      * @return {!Element}
      */
     element: function()

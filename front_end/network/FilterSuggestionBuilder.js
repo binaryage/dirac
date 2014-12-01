@@ -45,6 +45,7 @@ WebInspector.FilterSuggestionBuilder.Filter;
 
 WebInspector.FilterSuggestionBuilder.prototype = {
     /**
+     * @override
      * @param {!HTMLInputElement} input
      * @return {?Array.<string>}
      */
@@ -90,6 +91,7 @@ WebInspector.FilterSuggestionBuilder.prototype = {
     },
 
     /**
+     * @override
      * @param {!HTMLInputElement} input
      * @param {string} suggestion
      * @param {boolean} isIntermediate
@@ -114,6 +116,7 @@ WebInspector.FilterSuggestionBuilder.prototype = {
     },
 
     /**
+     * @override
      * @param {!HTMLInputElement} input
      */
     unapplySuggestion: function(input)

@@ -216,6 +216,7 @@ WebInspector.FileSystemWorkspaceBinding.FileSystem = function(fileSystemWorkspac
 
 WebInspector.FileSystemWorkspaceBinding.FileSystem.prototype = {
     /**
+     * @override
      * @return {string}
      */
     type: function()
@@ -232,6 +233,7 @@ WebInspector.FileSystemWorkspaceBinding.FileSystem.prototype = {
     },
 
     /**
+     * @override
      * @return {string}
      */
     displayName: function()
@@ -241,6 +243,7 @@ WebInspector.FileSystemWorkspaceBinding.FileSystem.prototype = {
     },
 
     /**
+     * @override
      * @return {string}
      */
     url: function()
@@ -259,6 +262,7 @@ WebInspector.FileSystemWorkspaceBinding.FileSystem.prototype = {
     },
 
     /**
+     * @override
      * @param {string} path
      * @param {function(?string)} callback
      */
@@ -269,6 +273,7 @@ WebInspector.FileSystemWorkspaceBinding.FileSystem.prototype = {
     },
 
     /**
+     * @override
      * @param {string} path
      * @param {function(?Date, ?number)} callback
      */
@@ -279,6 +284,7 @@ WebInspector.FileSystemWorkspaceBinding.FileSystem.prototype = {
     },
 
     /**
+     * @override
      * @return {boolean}
      */
     canSetFileContent: function()
@@ -287,6 +293,7 @@ WebInspector.FileSystemWorkspaceBinding.FileSystem.prototype = {
     },
 
     /**
+     * @override
      * @param {string} path
      * @param {string} newContent
      * @param {function(?string)} callback
@@ -298,6 +305,7 @@ WebInspector.FileSystemWorkspaceBinding.FileSystem.prototype = {
     },
 
     /**
+     * @override
      * @return {boolean}
      */
     canRename: function()
@@ -306,6 +314,7 @@ WebInspector.FileSystemWorkspaceBinding.FileSystem.prototype = {
     },
 
     /**
+     * @override
      * @param {string} path
      * @param {string} newName
      * @param {function(boolean, string=, string=, string=, !WebInspector.ResourceType=)} callback
@@ -341,6 +350,7 @@ WebInspector.FileSystemWorkspaceBinding.FileSystem.prototype = {
     },
 
     /**
+     * @override
      * @param {string} path
      * @param {string} query
      * @param {boolean} caseSensitive
@@ -365,6 +375,7 @@ WebInspector.FileSystemWorkspaceBinding.FileSystem.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.ProjectSearchConfig} searchConfig
      * @param {!Array.<string>} filesMathingFileQuery
      * @param {!WebInspector.Progress} progress
@@ -441,6 +452,7 @@ WebInspector.FileSystemWorkspaceBinding.FileSystem.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.Progress} progress
      */
     indexContent: function(progress)
@@ -492,6 +504,7 @@ WebInspector.FileSystemWorkspaceBinding.FileSystem.prototype = {
     },
 
     /**
+     * @override
      * @param {string} path
      * @param {function()=} callback
      */
@@ -501,6 +514,7 @@ WebInspector.FileSystemWorkspaceBinding.FileSystem.prototype = {
     },
 
     /**
+     * @override
      * @param {string} path
      */
     excludeFolder: function(path)
@@ -509,6 +523,7 @@ WebInspector.FileSystemWorkspaceBinding.FileSystem.prototype = {
     },
 
     /**
+     * @override
      * @param {string} path
      * @param {?string} name
      * @param {string} content
@@ -548,6 +563,7 @@ WebInspector.FileSystemWorkspaceBinding.FileSystem.prototype = {
     },
 
     /**
+     * @override
      * @param {string} path
      */
     deleteFile: function(path)
@@ -556,6 +572,9 @@ WebInspector.FileSystemWorkspaceBinding.FileSystem.prototype = {
         this._removeFile(path);
     },
 
+    /**
+     * @override
+     */
     remove: function()
     {
         this._fileSystemWorkspaceBinding._isolatedFileSystemManager.removeFileSystem(this._fileSystem.path());

@@ -26,6 +26,7 @@ WebInspector.DebuggerWorkspaceBinding = function(targetManager, workspace, netwo
 
 WebInspector.DebuggerWorkspaceBinding.prototype = {
     /**
+     * @override
      * @param {!WebInspector.Target} target
      */
     targetAdded: function(target)
@@ -34,6 +35,7 @@ WebInspector.DebuggerWorkspaceBinding.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.Target} target
      */
     targetRemoved: function(target)
@@ -482,6 +484,7 @@ WebInspector.DebuggerWorkspaceBinding.Location = function(script, rawLocation, b
 
 WebInspector.DebuggerWorkspaceBinding.Location.prototype = {
     /**
+     * @override
      * @return {!WebInspector.UILocation}
      */
     uiLocation: function()

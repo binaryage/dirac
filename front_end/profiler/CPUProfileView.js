@@ -204,6 +204,7 @@ WebInspector.CPUProfileView.prototype = {
     },
 
     /**
+     * @override
      * @return {boolean}
      */
     supportsCaseSensitiveSearch: function()
@@ -212,6 +213,7 @@ WebInspector.CPUProfileView.prototype = {
     },
 
     /**
+     * @override
      * @return {boolean}
      */
     supportsRegexSearch: function()
@@ -219,12 +221,16 @@ WebInspector.CPUProfileView.prototype = {
         return false;
     },
 
+    /**
+     * @override
+     */
     searchCanceled: function()
     {
         this._searchableElement.searchCanceled();
     },
 
     /**
+     * @override
      * @param {!WebInspector.SearchableView.SearchConfig} searchConfig
      * @param {boolean} shouldJump
      * @param {boolean=} jumpBackwards
@@ -236,12 +242,18 @@ WebInspector.CPUProfileView.prototype = {
         this._searchableView.updateCurrentMatchIndex(this._searchableElement.currentSearchResultIndex());
     },
 
+    /**
+     * @override
+     */
     jumpToNextSearchResult: function()
     {
         this._searchableElement.jumpToNextSearchResult();
         this._searchableView.updateCurrentMatchIndex(this._searchableElement.currentSearchResultIndex());
     },
 
+    /**
+     * @override
+     */
     jumpToPreviousSearchResult: function()
     {
         this._searchableElement.jumpToPreviousSearchResult();
@@ -576,6 +588,9 @@ WebInspector.CPUProfileHeader = function(target, type, title)
 }
 
 WebInspector.CPUProfileHeader.prototype = {
+    /**
+     * @override
+     */
     onTransferStarted: function()
     {
         this._jsonifiedProfile = "";
@@ -583,6 +598,7 @@ WebInspector.CPUProfileHeader.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.ChunkedReader} reader
      */
     onChunkTransferred: function(reader)
@@ -590,6 +606,9 @@ WebInspector.CPUProfileHeader.prototype = {
         this.updateStatus(WebInspector.UIString("Loading\u2026 %d\%", Number.bytesToString(this._jsonifiedProfile.length)));
     },
 
+    /**
+     * @override
+     */
     onTransferFinished: function()
     {
         this.updateStatus(WebInspector.UIString("Parsing\u2026"), true);
@@ -602,6 +621,7 @@ WebInspector.CPUProfileHeader.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.ChunkedReader} reader
      * @param {!Event} e
      */
@@ -624,6 +644,7 @@ WebInspector.CPUProfileHeader.prototype = {
     },
 
     /**
+     * @override
      * @param {string} text
      */
     write: function(text)
@@ -631,6 +652,9 @@ WebInspector.CPUProfileHeader.prototype = {
         this._jsonifiedProfile += text;
     },
 
+    /**
+     * @override
+     */
     close: function() { },
 
     /**
@@ -702,6 +726,7 @@ WebInspector.CPUProfileHeader.prototype = {
     },
 
     /**
+     * @override
      * @param {!File} file
      */
     loadFromFile: function(file)

@@ -561,6 +561,7 @@ WebInspector.VBox = function(isWebComponent)
 
 WebInspector.VBox.prototype = {
     /**
+     * @override
      * @return {!Constraints}
      */
     calculateConstraints: function()
@@ -598,6 +599,7 @@ WebInspector.HBox = function(isWebComponent)
 
 WebInspector.HBox.prototype = {
     /**
+     * @override
      * @return {!Constraints}
      */
     calculateConstraints: function()
@@ -643,6 +645,7 @@ WebInspector.VBoxWithResizeCallback.prototype = {
 }
 
 /**
+ * @override
  * @param {?Node} child
  * @return {?Node}
  * @suppress {duplicate}
@@ -654,6 +657,7 @@ Element.prototype.appendChild = function(child)
 }
 
 /**
+ * @override
  * @param {?Node} child
  * @param {?Node} anchor
  * @return {!Node}
@@ -666,6 +670,7 @@ Element.prototype.insertBefore = function(child, anchor)
 }
 
 /**
+ * @override
  * @param {?Node} child
  * @return {!Node}
  * @suppress {duplicate}

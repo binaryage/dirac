@@ -770,6 +770,7 @@ WebInspector.OverridesSupport.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.Target} target
      */
     targetAdded: function(target)
@@ -795,6 +796,7 @@ WebInspector.OverridesSupport.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.Target} target
      */
     targetRemoved: function(target)

@@ -44,6 +44,7 @@ WebInspector.AnimationsSidebarPane._showSubtreeAnimationsCheckbox = function(set
 
 WebInspector.AnimationsSidebarPane.prototype = {
     /**
+     * @override
      * @param {?WebInspector.DOMNode} node
      */
     setNode: function(node)
@@ -99,6 +100,7 @@ WebInspector.AnimationsSidebarPane.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.Throttler.FinishCallback} finishCallback
      * @protected
      */

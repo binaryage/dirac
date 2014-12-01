@@ -12,6 +12,7 @@ WebInspector.InspectorFrontendHostImpl = function()
 
 WebInspector.InspectorFrontendHostImpl.prototype = {
     /**
+     * @override
      * @return {string}
      */
     getSelectionBackgroundColor: function()
@@ -20,6 +21,7 @@ WebInspector.InspectorFrontendHostImpl.prototype = {
     },
 
     /**
+     * @override
      * @return {string}
      */
     getSelectionForegroundColor: function()
@@ -28,6 +30,7 @@ WebInspector.InspectorFrontendHostImpl.prototype = {
     },
 
     /**
+     * @override
      * @return {string}
      */
     platform: function()
@@ -35,22 +38,32 @@ WebInspector.InspectorFrontendHostImpl.prototype = {
         return DevToolsHost.platform();
     },
 
+    /**
+     * @override
+     */
     loadCompleted: function()
     {
         DevToolsAPI.sendMessageToEmbedder("loadCompleted", [], null);
     },
 
+    /**
+     * @override
+     */
     bringToFront: function()
     {
         DevToolsAPI.sendMessageToEmbedder("bringToFront", [], null);
     },
 
+    /**
+     * @override
+     */
     closeWindow: function()
     {
         DevToolsAPI.sendMessageToEmbedder("closeWindow", [], null);
     },
 
     /**
+     * @override
      * @param {boolean} isDocked
      * @param {function()} callback
      */
@@ -61,6 +74,7 @@ WebInspector.InspectorFrontendHostImpl.prototype = {
 
     /**
      * Requests inspected page to be placed atop of the inspector frontend with specified bounds.
+     * @override
      * @param {{x: number, y: number, width: number, height: number}} bounds
      */
     setInspectedPageBounds: function(bounds)
@@ -68,12 +82,16 @@ WebInspector.InspectorFrontendHostImpl.prototype = {
         DevToolsAPI.sendMessageToEmbedder("setInspectedPageBounds", [bounds], null);
     },
 
+    /**
+     * @override
+     */
     inspectElementCompleted: function()
     {
         DevToolsAPI.sendMessageToEmbedder("inspectElementCompleted", [], null);
     },
 
     /**
+     * @override
      * @param {string} origin
      * @param {string} script
      */
@@ -83,6 +101,7 @@ WebInspector.InspectorFrontendHostImpl.prototype = {
     },
 
     /**
+     * @override
      * @param {string} url
      */
     inspectedURLChanged: function(url)
@@ -91,6 +110,7 @@ WebInspector.InspectorFrontendHostImpl.prototype = {
     },
 
     /**
+     * @override
      * @param {string} text
      */
     copyText: function(text)
@@ -99,6 +119,7 @@ WebInspector.InspectorFrontendHostImpl.prototype = {
     },
 
     /**
+     * @override
      * @param {string} url
      */
     openInNewTab: function(url)
@@ -107,6 +128,7 @@ WebInspector.InspectorFrontendHostImpl.prototype = {
     },
 
     /**
+     * @override
      * @param {string} url
      * @param {string} content
      * @param {boolean} forceSaveAs
@@ -117,6 +139,7 @@ WebInspector.InspectorFrontendHostImpl.prototype = {
     },
 
     /**
+     * @override
      * @param {string} url
      * @param {string} content
      */
@@ -126,6 +149,7 @@ WebInspector.InspectorFrontendHostImpl.prototype = {
     },
 
     /**
+     * @override
      * @param {string} message
      */
     sendMessageToBackend: function(message)
@@ -134,6 +158,7 @@ WebInspector.InspectorFrontendHostImpl.prototype = {
     },
 
     /**
+     * @override
      * @param {number} actionCode
      */
     recordActionTaken: function(actionCode)
@@ -142,6 +167,7 @@ WebInspector.InspectorFrontendHostImpl.prototype = {
     },
 
     /**
+     * @override
      * @param {number} panelCode
      */
     recordPanelShown: function(panelCode)
@@ -149,17 +175,24 @@ WebInspector.InspectorFrontendHostImpl.prototype = {
         DevToolsAPI.sendMessageToEmbedder("recordActionUMA", ["DevTools.PanelShown", panelCode], null);
     },
 
+    /**
+     * @override
+     */
     requestFileSystems: function()
     {
         DevToolsAPI.sendMessageToEmbedder("requestFileSystems", [], null);
     },
 
+    /**
+     * @override
+     */
     addFileSystem: function()
     {
         DevToolsAPI.sendMessageToEmbedder("addFileSystem", [], null);
     },
 
     /**
+     * @override
      * @param {string} fileSystemPath
      */
     removeFileSystem: function(fileSystemPath)
@@ -168,6 +201,7 @@ WebInspector.InspectorFrontendHostImpl.prototype = {
     },
 
     /**
+     * @override
      * @param {string} fileSystemId
      * @param {string} registeredName
      * @return {?DOMFileSystem}
@@ -178,6 +212,7 @@ WebInspector.InspectorFrontendHostImpl.prototype = {
     },
 
     /**
+     * @override
      * @param {!FileSystem} fileSystem
      */
     upgradeDraggedFileSystemPermissions: function(fileSystem)
@@ -186,6 +221,7 @@ WebInspector.InspectorFrontendHostImpl.prototype = {
     },
 
     /**
+     * @override
      * @param {number} requestId
      * @param {string} fileSystemPath
      */
@@ -195,6 +231,7 @@ WebInspector.InspectorFrontendHostImpl.prototype = {
     },
 
     /**
+     * @override
      * @param {number} requestId
      */
     stopIndexing: function(requestId)
@@ -203,6 +240,7 @@ WebInspector.InspectorFrontendHostImpl.prototype = {
     },
 
     /**
+     * @override
      * @param {number} requestId
      * @param {string} fileSystemPath
      * @param {string} query
@@ -213,6 +251,7 @@ WebInspector.InspectorFrontendHostImpl.prototype = {
     },
 
     /**
+     * @override
      * @return {number}
      */
     zoomFactor: function()
@@ -220,22 +259,32 @@ WebInspector.InspectorFrontendHostImpl.prototype = {
         return DevToolsHost.zoomFactor();
     },
 
+    /**
+     * @override
+     */
     zoomIn: function()
     {
         DevToolsAPI.sendMessageToEmbedder("zoomIn", [], null);
     },
 
+    /**
+     * @override
+     */
     zoomOut: function()
     {
         DevToolsAPI.sendMessageToEmbedder("zoomOut", [], null);
     },
 
+    /**
+     * @override
+     */
     resetZoom: function()
     {
         DevToolsAPI.sendMessageToEmbedder("resetZoom", [], null);
     },
 
     /**
+     * @override
      * @param {string} shortcuts
      */
     setWhitelistedShortcuts: function(shortcuts)
@@ -244,6 +293,7 @@ WebInspector.InspectorFrontendHostImpl.prototype = {
     },
 
     /**
+     * @override
      * @return {boolean}
      */
     isUnderTest: function()
@@ -252,6 +302,7 @@ WebInspector.InspectorFrontendHostImpl.prototype = {
     },
 
     /**
+     * @override
      * @param {string} browserId
      * @param {string} url
      */
@@ -261,6 +312,7 @@ WebInspector.InspectorFrontendHostImpl.prototype = {
     },
 
     /**
+     * @override
      * @param {boolean} enabled
      */
     setDeviceCountUpdatesEnabled: function(enabled)
@@ -269,6 +321,7 @@ WebInspector.InspectorFrontendHostImpl.prototype = {
     },
 
     /**
+     * @override
      * @param {boolean} enabled
      */
     setDevicesUpdatesEnabled: function(enabled)
@@ -277,6 +330,7 @@ WebInspector.InspectorFrontendHostImpl.prototype = {
     },
 
     /**
+     * @override
      * @param {number} x
      * @param {number} y
      * @param {!Array.<!InspectorFrontendHostAPI.ContextMenuDescriptor>} items
@@ -288,6 +342,7 @@ WebInspector.InspectorFrontendHostImpl.prototype = {
     },
 
     /**
+     * @override
      * @return {boolean}
      */
     isHostedMode: function()

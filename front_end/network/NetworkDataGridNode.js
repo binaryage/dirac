@@ -63,7 +63,9 @@ WebInspector.NetworkDataGridNode.prototype = {
         return this._parentView.rowHeight();
     },
 
-    /** override */
+    /**
+     * @override
+     */
     createCells: function()
     {
         this._nameCell = null;

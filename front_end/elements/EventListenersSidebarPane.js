@@ -67,6 +67,7 @@ WebInspector.EventListenersSidebarPane._objectGroupName = "event-listeners-sideb
 
 WebInspector.EventListenersSidebarPane.prototype = {
     /**
+     * @override
      * @param {!WebInspector.Throttler.FinishCallback} finishCallback
      * @protected
      */

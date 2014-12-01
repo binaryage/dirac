@@ -376,6 +376,7 @@ WebInspector.IDBDataGridNode = function(data)
 
 WebInspector.IDBDataGridNode.prototype = {
     /**
+     * @override
      * @return {!Element}
      */
     createCell: function(columnIdentifier)

@@ -256,6 +256,7 @@ WebInspector.NetworkDispatcher.prototype = {
     },
 
     /**
+     * @override
      * @param {!NetworkAgent.RequestId} requestId
      * @param {!PageAgent.FrameId} frameId
      * @param {!NetworkAgent.LoaderId} loaderId
@@ -286,6 +287,7 @@ WebInspector.NetworkDispatcher.prototype = {
     },
 
     /**
+     * @override
      * @param {!NetworkAgent.RequestId} requestId
      */
     requestServedFromCache: function(requestId)
@@ -298,6 +300,7 @@ WebInspector.NetworkDispatcher.prototype = {
     },
 
     /**
+     * @override
      * @param {!NetworkAgent.RequestId} requestId
      * @param {!PageAgent.FrameId} frameId
      * @param {!NetworkAgent.LoaderId} loaderId
@@ -329,6 +332,7 @@ WebInspector.NetworkDispatcher.prototype = {
     },
 
     /**
+     * @override
      * @param {!NetworkAgent.RequestId} requestId
      * @param {!NetworkAgent.Timestamp} time
      * @param {number} dataLength
@@ -349,6 +353,7 @@ WebInspector.NetworkDispatcher.prototype = {
     },
 
     /**
+     * @override
      * @param {!NetworkAgent.RequestId} requestId
      * @param {!NetworkAgent.Timestamp} finishTime
      * @param {number} encodedDataLength
@@ -362,6 +367,7 @@ WebInspector.NetworkDispatcher.prototype = {
     },
 
     /**
+     * @override
      * @param {!NetworkAgent.RequestId} requestId
      * @param {!NetworkAgent.Timestamp} time
      * @param {!PageAgent.ResourceType} resourceType
@@ -382,6 +388,7 @@ WebInspector.NetworkDispatcher.prototype = {
     },
 
     /**
+     * @override
      * @param {!NetworkAgent.RequestId} requestId
      * @param {string} requestURL
      */
@@ -394,6 +401,7 @@ WebInspector.NetworkDispatcher.prototype = {
     },
 
     /**
+     * @override
      * @param {!NetworkAgent.RequestId} requestId
      * @param {!NetworkAgent.Timestamp} time
      * @param {!NetworkAgent.WebSocketRequest} request
@@ -412,6 +420,7 @@ WebInspector.NetworkDispatcher.prototype = {
     },
 
     /**
+     * @override
      * @param {!NetworkAgent.RequestId} requestId
      * @param {!NetworkAgent.Timestamp} time
      * @param {!NetworkAgent.WebSocketResponse} response
@@ -436,6 +445,7 @@ WebInspector.NetworkDispatcher.prototype = {
     },
 
     /**
+     * @override
      * @param {!NetworkAgent.RequestId} requestId
      * @param {!NetworkAgent.Timestamp} time
      * @param {!NetworkAgent.WebSocketFrame} response
@@ -453,6 +463,7 @@ WebInspector.NetworkDispatcher.prototype = {
     },
 
     /**
+     * @override
      * @param {!NetworkAgent.RequestId} requestId
      * @param {!NetworkAgent.Timestamp} time
      * @param {!NetworkAgent.WebSocketFrame} response
@@ -470,6 +481,7 @@ WebInspector.NetworkDispatcher.prototype = {
     },
 
     /**
+     * @override
      * @param {!NetworkAgent.RequestId} requestId
      * @param {!NetworkAgent.Timestamp} time
      * @param {string} errorMessage
@@ -487,6 +499,7 @@ WebInspector.NetworkDispatcher.prototype = {
     },
 
     /**
+     * @override
      * @param {!NetworkAgent.RequestId} requestId
      * @param {!NetworkAgent.Timestamp} time
      */

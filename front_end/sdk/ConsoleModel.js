@@ -453,6 +453,7 @@ WebInspector.ConsoleDispatcher = function(console)
 
 WebInspector.ConsoleDispatcher.prototype = {
     /**
+     * @override
      * @param {!ConsoleAgent.ConsoleMessage} payload
      */
     messageAdded: function(payload)
@@ -478,12 +479,16 @@ WebInspector.ConsoleDispatcher.prototype = {
     },
 
     /**
+     * @override
      * @param {number} count
      */
     messageRepeatCountUpdated: function(count)
     {
     },
 
+    /**
+     * @override
+     */
     messagesCleared: function()
     {
         if (!WebInspector.settings.preserveConsoleLog.get())
@@ -505,6 +510,7 @@ WebInspector.MultitargetConsoleModel = function()
 
 WebInspector.MultitargetConsoleModel.prototype = {
     /**
+     * @override
      * @param {!WebInspector.Target} target
      */
     targetAdded: function(target)
@@ -516,6 +522,7 @@ WebInspector.MultitargetConsoleModel.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.Target} target
      */
     targetRemoved: function(target)

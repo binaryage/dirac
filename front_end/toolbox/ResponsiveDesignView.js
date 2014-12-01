@@ -97,6 +97,7 @@ WebInspector.ResponsiveDesignView.RulerBottomHeight = 9;
 WebInspector.ResponsiveDesignView.prototype = {
 
     /**
+     * @override
      * @param {!WebInspector.Target} target
      */
     targetAdded: function(target)
@@ -109,6 +110,7 @@ WebInspector.ResponsiveDesignView.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.Target} target
      */
     targetRemoved: function(target)
@@ -159,6 +161,7 @@ WebInspector.ResponsiveDesignView.prototype = {
     },
 
     /**
+     * @override
      * WebInspector.OverridesSupport.PageResizer override.
      * @param {number} dipWidth
      * @param {number} dipHeight

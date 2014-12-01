@@ -57,6 +57,7 @@ WebInspector.SourcesSearchScope._filesComparator = function(uiSourceCode1, uiSou
 
 WebInspector.SourcesSearchScope.prototype = {
     /**
+     * @override
      * @param {!WebInspector.Progress} progress
      * @param {function(boolean)} indexingFinishedCallback
      */
@@ -108,6 +109,7 @@ WebInspector.SourcesSearchScope.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.ProjectSearchConfig} searchConfig
      * @param {!WebInspector.Progress} progress
      * @param {function(!WebInspector.FileBasedSearchResult)} searchResultCallback
@@ -292,12 +294,16 @@ WebInspector.SourcesSearchScope.prototype = {
         }
     },
 
+    /**
+     * @override
+     */
     stopSearch: function()
     {
         ++this._searchId;
     },
 
     /**
+     * @override
      * @param {!WebInspector.ProjectSearchConfig} searchConfig
      * @return {!WebInspector.FileBasedSearchResultsPane}
      */

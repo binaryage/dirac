@@ -117,13 +117,23 @@ WebInspector.StaticViewportElement = function(element)
 }
 
 WebInspector.StaticViewportElement.prototype = {
+    /**
+     * @override
+     */
     cacheFastHeight: function() { },
 
+    /**
+     * @override
+     */
     willHide: function() { },
 
+    /**
+     * @override
+     */
     wasShown: function() { },
 
     /**
+     * @override
      * @return {!Element}
      */
     element: function()

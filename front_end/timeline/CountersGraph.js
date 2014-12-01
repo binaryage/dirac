@@ -95,6 +95,7 @@ WebInspector.CountersGraph.prototype = {
     },
 
     /**
+     * @override
      * @return {!WebInspector.View}
      */
     view: function()
@@ -102,10 +103,16 @@ WebInspector.CountersGraph.prototype = {
         return this;
     },
 
+    /**
+     * @override
+     */
     dispose: function()
     {
     },
 
+    /**
+     * @override
+     */
     reset: function()
     {
         for (var i = 0; i < this._counters.length; ++i) {
@@ -126,6 +133,7 @@ WebInspector.CountersGraph.prototype = {
     },
 
     /**
+     * @override
      * @param {number} startTime
      * @param {number} endTime
      */
@@ -258,6 +266,7 @@ WebInspector.CountersGraph.prototype = {
     },
 
     /**
+     * @override
      * @param {?WebInspector.TimelineModel.Record} record
      * @param {string=} regex
      * @param {boolean=} selectRecord
@@ -267,6 +276,7 @@ WebInspector.CountersGraph.prototype = {
     },
 
     /**
+     * @override
      * @param {?WebInspector.TimelineSelection} selection
      */
     setSelection: function(selection)

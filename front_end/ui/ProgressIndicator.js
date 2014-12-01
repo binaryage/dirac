@@ -58,6 +58,9 @@ WebInspector.ProgressIndicator.prototype = {
         parent.appendChild(this.element);
     },
 
+    /**
+     * @override
+     */
     done: function()
     {
         if (this._isDone)
@@ -74,6 +77,7 @@ WebInspector.ProgressIndicator.prototype = {
     },
 
     /**
+     * @override
      * @return {boolean}
      */
     isCanceled: function()
@@ -82,6 +86,7 @@ WebInspector.ProgressIndicator.prototype = {
     },
 
     /**
+     * @override
      * @param {string} title
      */
     setTitle: function(title)
@@ -90,6 +95,7 @@ WebInspector.ProgressIndicator.prototype = {
     },
 
     /**
+     * @override
      * @param {number} totalWork
      */
     setTotalWork: function(totalWork)
@@ -98,6 +104,7 @@ WebInspector.ProgressIndicator.prototype = {
     },
 
     /**
+     * @override
      * @param {number} worked
      * @param {string=} title
      */
@@ -110,6 +117,7 @@ WebInspector.ProgressIndicator.prototype = {
     },
 
     /**
+     * @override
      * @param {number=} worked
      */
     worked: function(worked)

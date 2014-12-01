@@ -1745,12 +1745,16 @@ WebInspector.DOMDispatcher = function(domModel)
 }
 
 WebInspector.DOMDispatcher.prototype = {
+    /**
+     * @override
+     */
     documentUpdated: function()
     {
         this._domModel._documentUpdated();
     },
 
     /**
+     * @override
      * @param {!DOMAgent.NodeId} nodeId
      */
     inspectNodeRequested: function(nodeId)
@@ -1759,6 +1763,7 @@ WebInspector.DOMDispatcher.prototype = {
     },
 
     /**
+     * @override
      * @param {!DOMAgent.NodeId} nodeId
      * @param {string} name
      * @param {string} value
@@ -1769,6 +1774,7 @@ WebInspector.DOMDispatcher.prototype = {
     },
 
     /**
+     * @override
      * @param {!DOMAgent.NodeId} nodeId
      * @param {string} name
      */
@@ -1778,6 +1784,7 @@ WebInspector.DOMDispatcher.prototype = {
     },
 
     /**
+     * @override
      * @param {!Array.<!DOMAgent.NodeId>} nodeIds
      */
     inlineStyleInvalidated: function(nodeIds)
@@ -1786,6 +1793,7 @@ WebInspector.DOMDispatcher.prototype = {
     },
 
     /**
+     * @override
      * @param {!DOMAgent.NodeId} nodeId
      * @param {string} characterData
      */
@@ -1795,6 +1803,7 @@ WebInspector.DOMDispatcher.prototype = {
     },
 
     /**
+     * @override
      * @param {!DOMAgent.NodeId} parentId
      * @param {!Array.<!DOMAgent.Node>} payloads
      */
@@ -1804,6 +1813,7 @@ WebInspector.DOMDispatcher.prototype = {
     },
 
     /**
+     * @override
      * @param {!DOMAgent.NodeId} nodeId
      * @param {number} childNodeCount
      */
@@ -1813,6 +1823,7 @@ WebInspector.DOMDispatcher.prototype = {
     },
 
     /**
+     * @override
      * @param {!DOMAgent.NodeId} parentNodeId
      * @param {!DOMAgent.NodeId} previousNodeId
      * @param {!DOMAgent.Node} payload
@@ -1823,6 +1834,7 @@ WebInspector.DOMDispatcher.prototype = {
     },
 
     /**
+     * @override
      * @param {!DOMAgent.NodeId} parentNodeId
      * @param {!DOMAgent.NodeId} nodeId
      */
@@ -1832,6 +1844,7 @@ WebInspector.DOMDispatcher.prototype = {
     },
 
     /**
+     * @override
      * @param {!DOMAgent.NodeId} hostId
      * @param {!DOMAgent.Node} root
      */
@@ -1841,6 +1854,7 @@ WebInspector.DOMDispatcher.prototype = {
     },
 
     /**
+     * @override
      * @param {!DOMAgent.NodeId} hostId
      * @param {!DOMAgent.NodeId} rootId
      */
@@ -1850,6 +1864,7 @@ WebInspector.DOMDispatcher.prototype = {
     },
 
     /**
+     * @override
      * @param {!DOMAgent.NodeId} parentId
      * @param {!DOMAgent.Node} pseudoElement
      */
@@ -1859,6 +1874,7 @@ WebInspector.DOMDispatcher.prototype = {
     },
 
     /**
+     * @override
      * @param {!DOMAgent.NodeId} parentId
      * @param {!DOMAgent.NodeId} pseudoElementId
      */
@@ -1965,6 +1981,7 @@ WebInspector.DefaultDOMNodeHighlighter = function(agent)
 
 WebInspector.DefaultDOMNodeHighlighter.prototype = {
     /**
+     * @override
      * @param {?WebInspector.DOMNode} node
      * @param {!DOMAgent.HighlightConfig} config
      * @param {!RuntimeAgent.RemoteObjectId=} objectId
@@ -1978,6 +1995,7 @@ WebInspector.DefaultDOMNodeHighlighter.prototype = {
     },
 
     /**
+     * @override
      * @param {boolean} enabled
      * @param {boolean} inspectUAShadowDOM
      * @param {!DOMAgent.HighlightConfig} config

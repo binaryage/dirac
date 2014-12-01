@@ -137,6 +137,7 @@ WebInspector.TimelinePanel.durationFilterPresetsMs = [0, 1, 15];
 
 WebInspector.TimelinePanel.prototype = {
     /**
+     * @override
      * @return {?WebInspector.SearchableView}
      */
     searchableView: function()
@@ -209,6 +210,7 @@ WebInspector.TimelinePanel.prototype = {
     },
 
     /**
+     * @override
      * @param {number} windowStartTime
      * @param {number} windowEndTime
      */
@@ -826,6 +828,9 @@ WebInspector.TimelinePanel.prototype = {
 
     // WebInspector.Searchable implementation
 
+    /**
+     * @override
+     */
     jumpToNextSearchResult: function()
     {
         if (!this._searchResults || !this._searchResults.length)
@@ -834,6 +839,9 @@ WebInspector.TimelinePanel.prototype = {
         this._jumpToSearchResult(index + 1);
     },
 
+    /**
+     * @override
+     */
     jumpToPreviousSearchResult: function()
     {
         if (!this._searchResults || !this._searchResults.length)
@@ -843,6 +851,7 @@ WebInspector.TimelinePanel.prototype = {
     },
 
     /**
+     * @override
      * @return {boolean}
      */
     supportsCaseSensitiveSearch: function()
@@ -851,6 +860,7 @@ WebInspector.TimelinePanel.prototype = {
     },
 
     /**
+     * @override
      * @return {boolean}
      */
     supportsRegexSearch: function()
@@ -933,6 +943,9 @@ WebInspector.TimelinePanel.prototype = {
         }
     },
 
+    /**
+     * @override
+     */
     searchCanceled: function()
     {
         this._clearHighlight();
@@ -942,6 +955,7 @@ WebInspector.TimelinePanel.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.SearchableView.SearchConfig} searchConfig
      * @param {boolean} shouldJump
      * @param {boolean=} jumpBackwards
@@ -1094,6 +1108,7 @@ WebInspector.TimelinePanel.prototype = {
     },
 
     /**
+     * @override
      * @param {?WebInspector.TimelineSelection} selection
      * @param {!WebInspector.TimelinePanel.DetailsTab=} preferredTab
      */
@@ -1112,6 +1127,7 @@ WebInspector.TimelinePanel.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.TimelineModel.Record} record
      */
     showNestedRecordDetails: function(record)
@@ -1122,6 +1138,7 @@ WebInspector.TimelinePanel.prototype = {
     },
 
     /**
+     * @override
      * @param {!Node} node
      */
     showInDetails: function(node)
@@ -1369,6 +1386,7 @@ WebInspector.TimelineCategoryFilter = function()
 
 WebInspector.TimelineCategoryFilter.prototype = {
     /**
+     * @override
      * @param {!WebInspector.TimelineModel.Record} record
      * @return {boolean}
      */
@@ -1401,6 +1419,7 @@ WebInspector.TimelineIsLongFilter.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.TimelineModel.Record} record
      * @return {boolean}
      */
@@ -1441,6 +1460,7 @@ WebInspector.TimelineTextFilter.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.TimelineModel.Record} record
      * @return {boolean}
      */
@@ -1477,6 +1497,7 @@ WebInspector.TimelinePanelFactory = function()
 
 WebInspector.TimelinePanelFactory.prototype = {
     /**
+     * @override
      * @return {!WebInspector.Panel}
      */
     createPanel: function()

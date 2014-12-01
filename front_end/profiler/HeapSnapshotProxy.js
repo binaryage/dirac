@@ -256,6 +256,7 @@ WebInspector.HeapSnapshotLoaderProxy = function(worker, objectId, profileUid, sn
 
 WebInspector.HeapSnapshotLoaderProxy.prototype = {
     /**
+     * @override
      * @param {string} chunk
      * @param {function(!WebInspector.OutputStream)=} callback
      */
@@ -265,6 +266,7 @@ WebInspector.HeapSnapshotLoaderProxy.prototype = {
     },
 
     /**
+     * @override
      * @param {function()=} callback
      */
     close: function(callback)

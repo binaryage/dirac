@@ -197,6 +197,7 @@ WebInspector.ProfileDataGridNode.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.DataGridNode} profileDataGridNode
      * @param {number} index
      */
@@ -208,6 +209,7 @@ WebInspector.ProfileDataGridNode.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.DataGridNode} profileDataGridNode
      */
     removeChild: function(profileDataGridNode)
@@ -440,6 +442,7 @@ WebInspector.ProfileDataGridTree.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.SearchableView.SearchConfig} searchConfig
      * @param {boolean} shouldJump
      * @param {boolean=} jumpBackwards
@@ -546,6 +549,9 @@ WebInspector.ProfileDataGridTree.prototype = {
         return this._searchResults.length;
     },
 
+    /**
+     * @override
+     */
     searchCanceled: function()
     {
         if (this._searchResults) {
@@ -562,6 +568,9 @@ WebInspector.ProfileDataGridTree.prototype = {
         this._searchResultIndex = -1;
     },
 
+    /**
+     * @override
+     */
     jumpToNextSearchResult: function()
     {
         if (!this._searchResults || !this._searchResults.length)
@@ -570,6 +579,9 @@ WebInspector.ProfileDataGridTree.prototype = {
         this._jumpToSearchResult(this._searchResultIndex);
     },
 
+    /**
+     * @override
+     */
     jumpToPreviousSearchResult: function()
     {
         if (!this._searchResults || !this._searchResults.length)
@@ -579,6 +591,7 @@ WebInspector.ProfileDataGridTree.prototype = {
     },
 
     /**
+     * @override
      * @return {number}
      */
     currentSearchResultIndex: function()

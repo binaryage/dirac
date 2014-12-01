@@ -363,6 +363,7 @@ WebInspector.InspectorView.prototype = {
     },
 
     /**
+     * @override
      * @return {!Element}
      */
     defaultFocusedElement: function()
@@ -519,6 +520,7 @@ WebInspector.InspectorView.DrawerToggleActionDelegate = function()
 
 WebInspector.InspectorView.DrawerToggleActionDelegate.prototype = {
     /**
+     * @override
      * @return {boolean}
      */
     handleAction: function()
@@ -542,6 +544,7 @@ WebInspector.InspectorView.ToggleDrawerButtonProvider = function()
 
 WebInspector.InspectorView.ToggleDrawerButtonProvider.prototype = {
     /**
+     * @override
      * @return {?WebInspector.StatusBarItem}
      */
     item: function()

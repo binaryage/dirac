@@ -66,6 +66,7 @@ WebInspector.TimelineFlameChartDataProvider.consoleEventsColorGenerator = functi
 
 WebInspector.TimelineFlameChartDataProvider.prototype = {
     /**
+     * @override
      * @return {number}
      */
     barHeight: function()
@@ -74,6 +75,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
     },
 
     /**
+     * @override
      * @return {number}
      */
     textBaseline: function()
@@ -82,6 +84,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
     },
 
     /**
+     * @override
      * @return {number}
      */
     textPadding: function()
@@ -90,6 +93,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
     },
 
     /**
+     * @override
      * @param {number} entryIndex
      * @return {string}
      */
@@ -99,6 +103,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
     },
 
     /**
+     * @override
      * @param {number} entryIndex
      * @return {?string}
      */
@@ -125,6 +130,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
     },
 
     /**
+     * @override
      * @param {number} startTime
      * @param {number} endTime
      * @return {?Array.<number>}
@@ -179,6 +185,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
     },
 
     /**
+     * @override
      * @return {!WebInspector.FlameChart.TimelineData}
      */
     timelineData: function()
@@ -326,6 +333,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
     },
 
     /**
+     * @override
      * @return {number}
      */
     minimumBoundary: function()
@@ -334,6 +342,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
     },
 
     /**
+     * @override
      * @return {number}
      */
     totalTime: function()
@@ -342,6 +351,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
     },
 
     /**
+     * @override
      * @return {number}
      */
     maxStackDepth: function()
@@ -350,6 +360,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
     },
 
     /**
+     * @override
      * @param {number} entryIndex
      * @return {?Array.<!{title: string, text: string}>}
      */
@@ -359,6 +370,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
     },
 
     /**
+     * @override
      * @param {number} entryIndex
      * @return {boolean}
      */
@@ -368,6 +380,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
     },
 
     /**
+     * @override
      * @param {number} entryIndex
      * @return {string}
      */
@@ -394,6 +407,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
     },
 
     /**
+     * @override
      * @param {number} entryIndex
      * @param {!CanvasRenderingContext2D} context
      * @param {?string} text
@@ -498,6 +512,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
     },
 
     /**
+     * @override
      * @param {number} entryIndex
      * @return {boolean}
      */
@@ -510,6 +525,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
     },
 
    /**
+    * @override
      * @param {number} entryIndex
      * @return {?{startTime: number, endTime: number}}
      */
@@ -525,6 +541,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
     },
 
     /**
+     * @override
      * @return {number}
      */
     paddingLeft: function()
@@ -533,6 +550,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
     },
 
     /**
+     * @override
      * @param {number} entryIndex
      * @return {string}
      */
@@ -678,6 +696,9 @@ WebInspector.TimelineFlameChart = function(delegate, tracingModel, frameModel)
 }
 
 WebInspector.TimelineFlameChart.prototype = {
+    /**
+     * @override
+     */
     dispose: function()
     {
         this._model.removeEventListener(WebInspector.TimelineModel.Events.RecordingStarted, this._onRecordingStarted, this);
@@ -685,6 +706,7 @@ WebInspector.TimelineFlameChart.prototype = {
     },
 
     /**
+     * @override
      * @param {number} windowStartTime
      * @param {number} windowEndTime
      */
@@ -694,6 +716,7 @@ WebInspector.TimelineFlameChart.prototype = {
     },
 
     /**
+     * @override
      * @param {number} startTime
      * @param {number} endTime
      */
@@ -718,6 +741,7 @@ WebInspector.TimelineFlameChart.prototype = {
     },
 
     /**
+     * @override
      * @return {!WebInspector.View}
      */
     view: function()
@@ -725,6 +749,9 @@ WebInspector.TimelineFlameChart.prototype = {
         return this;
     },
 
+    /**
+     * @override
+     */
     reset: function()
     {
         this._automaticallySizeWindow = true;
@@ -740,6 +767,7 @@ WebInspector.TimelineFlameChart.prototype = {
     },
 
     /**
+     * @override
      * @param {number} startTime
      * @param {number} endTime
      */
@@ -750,6 +778,7 @@ WebInspector.TimelineFlameChart.prototype = {
     },
 
     /**
+     * @override
      * @param {number} width
      */
     setSidebarSize: function(width)
@@ -757,6 +786,7 @@ WebInspector.TimelineFlameChart.prototype = {
     },
 
     /**
+     * @override
      * @param {?WebInspector.TimelineModel.Record} record
      * @param {string=} regex
      * @param {boolean=} selectRecord
@@ -775,6 +805,7 @@ WebInspector.TimelineFlameChart.prototype = {
     },
 
     /**
+     * @override
      * @param {?WebInspector.TimelineSelection} selection
      */
     setSelection: function(selection)

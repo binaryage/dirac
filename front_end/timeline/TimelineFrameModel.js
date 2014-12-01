@@ -353,6 +353,7 @@ WebInspector.DeferredTracingLayerTree = function(snapshot, target)
 
 WebInspector.DeferredTracingLayerTree.prototype = {
     /**
+     * @override
      * @param {function(!WebInspector.LayerTreeBase)} callback
      */
     resolve: function(callback)

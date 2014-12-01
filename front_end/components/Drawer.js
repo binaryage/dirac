@@ -224,6 +224,7 @@ WebInspector.Drawer.SingletonViewFactory = function(constructor)
 
 WebInspector.Drawer.SingletonViewFactory.prototype = {
     /**
+     * @override
      * @return {!WebInspector.View}
      */
     createView: function()

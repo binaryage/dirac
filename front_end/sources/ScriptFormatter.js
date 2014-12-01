@@ -95,6 +95,7 @@ WebInspector.ScriptFormatter = function()
 
 WebInspector.ScriptFormatter.prototype = {
     /**
+     * @override
      * @param {string} mimeType
      * @param {string} content
      * @param {function(string, !WebInspector.FormatterSourceMapping)} callback
@@ -142,6 +143,7 @@ WebInspector.IdentityFormatter = function()
 
 WebInspector.IdentityFormatter.prototype = {
     /**
+     * @override
      * @param {string} mimeType
      * @param {string} content
      * @param {function(string, !WebInspector.FormatterSourceMapping)} callback
@@ -190,6 +192,7 @@ WebInspector.IdentityFormatterSourceMapping = function()
 
 WebInspector.IdentityFormatterSourceMapping.prototype = {
     /**
+     * @override
      * @param {number} lineNumber
      * @param {number=} columnNumber
      * @return {!Array.<number>}
@@ -200,6 +203,7 @@ WebInspector.IdentityFormatterSourceMapping.prototype = {
     },
 
     /**
+     * @override
      * @param {number} lineNumber
      * @param {number=} columnNumber
      * @return {!Array.<number>}
@@ -226,6 +230,7 @@ WebInspector.FormatterSourceMappingImpl = function(originalLineEndings, formatte
 
 WebInspector.FormatterSourceMappingImpl.prototype = {
     /**
+     * @override
      * @param {number} lineNumber
      * @param {number=} columnNumber
      * @return {!Array.<number>}
@@ -238,6 +243,7 @@ WebInspector.FormatterSourceMappingImpl.prototype = {
     },
 
     /**
+     * @override
      * @param {number} lineNumber
      * @param {number=} columnNumber
      * @return {!Array.<number>}

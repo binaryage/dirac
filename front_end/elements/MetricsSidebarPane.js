@@ -37,6 +37,7 @@ WebInspector.MetricsSidebarPane = function()
 
 WebInspector.MetricsSidebarPane.prototype = {
     /**
+     * @override
      * @param {?WebInspector.DOMNode} node
      */
     setNode: function(node)
@@ -73,6 +74,7 @@ WebInspector.MetricsSidebarPane.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.Throttler.FinishCallback} finishedCallback
      * @protected
      */

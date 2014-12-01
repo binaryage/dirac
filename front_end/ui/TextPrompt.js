@@ -532,6 +532,7 @@ WebInspector.TextPrompt.prototype = {
     },
 
     /**
+     * @override
      * @param {string} completionText
      * @param {boolean=} isIntermediateSuggestion
      */

@@ -63,6 +63,7 @@ WebInspector.FilteredItemSelectionDialog = function(delegate)
 
 WebInspector.FilteredItemSelectionDialog.prototype = {
     /**
+     * @override
      * @param {!Element} element
      * @param {!Element} relativeToElement
      */
@@ -343,6 +344,7 @@ WebInspector.FilteredItemSelectionDialog.prototype = {
     },
 
     /**
+     * @override
      * @return {number}
      */
     itemCount: function()
@@ -351,6 +353,7 @@ WebInspector.FilteredItemSelectionDialog.prototype = {
     },
 
     /**
+     * @override
      * @param {number} index
      * @return {number}
      */
@@ -365,6 +368,7 @@ WebInspector.FilteredItemSelectionDialog.prototype = {
     },
 
     /**
+     * @override
      * @param {number} index
      * @return {!WebInspector.ViewportElement}
      */
@@ -378,6 +382,7 @@ WebInspector.FilteredItemSelectionDialog.prototype = {
     },
 
     /**
+     * @override
      * @return {number}
      */
     minimumRowHeight: function()
@@ -567,6 +572,7 @@ WebInspector.JavaScriptOutlineDialog.prototype = {
     },
 
     /**
+     * @override
      * @return {number}
      */
     itemCount: function()
@@ -575,6 +581,7 @@ WebInspector.JavaScriptOutlineDialog.prototype = {
     },
 
     /**
+     * @override
      * @param {number} itemIndex
      * @return {string}
      */
@@ -584,6 +591,7 @@ WebInspector.JavaScriptOutlineDialog.prototype = {
     },
 
     /**
+     * @override
      * @param {number} itemIndex
      * @param {string} query
      * @return {number}
@@ -595,6 +603,7 @@ WebInspector.JavaScriptOutlineDialog.prototype = {
     },
 
     /**
+     * @override
      * @param {number} itemIndex
      * @param {string} query
      * @param {!Element} titleElement
@@ -609,6 +618,7 @@ WebInspector.JavaScriptOutlineDialog.prototype = {
     },
 
     /**
+     * @override
      * @param {?number} itemIndex
      * @param {string} promptValue
      */
@@ -692,6 +702,7 @@ WebInspector.SelectUISourceCodeDialog.prototype = {
     },
 
     /**
+     * @override
      * @return {number}
      */
     itemCount: function()
@@ -700,6 +711,7 @@ WebInspector.SelectUISourceCodeDialog.prototype = {
     },
 
     /**
+     * @override
      * @param {number} itemIndex
      * @return {string}
      */
@@ -709,6 +721,7 @@ WebInspector.SelectUISourceCodeDialog.prototype = {
     },
 
     /**
+     * @override
      * @param {number} itemIndex
      * @param {string} query
      * @return {number}
@@ -730,6 +743,7 @@ WebInspector.SelectUISourceCodeDialog.prototype = {
     },
 
     /**
+     * @override
      * @param {number} itemIndex
      * @param {string} query
      * @param {!Element} titleElement
@@ -758,6 +772,7 @@ WebInspector.SelectUISourceCodeDialog.prototype = {
     },
 
     /**
+     * @override
      * @param {?number} itemIndex
      * @param {string} promptValue
      */
@@ -778,6 +793,7 @@ WebInspector.SelectUISourceCodeDialog.prototype = {
     },
 
     /**
+     * @override
      * @param {string} query
      * @return {string}
      */
@@ -827,6 +843,7 @@ WebInspector.OpenResourceDialog = function(sourcesView, defaultScores)
 WebInspector.OpenResourceDialog.prototype = {
 
     /**
+     * @override
      * @param {?WebInspector.UISourceCode} uiSourceCode
      * @param {number=} lineNumber
      * @param {number=} columnNumber
@@ -841,6 +858,7 @@ WebInspector.OpenResourceDialog.prototype = {
     },
 
     /**
+     * @override
      * @param {string} query
      * @return {boolean}
      */
@@ -850,6 +868,7 @@ WebInspector.OpenResourceDialog.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.Project} project
      * @return {boolean}
      */
@@ -894,6 +913,7 @@ WebInspector.SelectUISourceCodeForProjectTypesDialog = function(types, callback)
 
 WebInspector.SelectUISourceCodeForProjectTypesDialog.prototype = {
     /**
+     * @override
      * @param {?WebInspector.UISourceCode} uiSourceCode
      * @param {number=} lineNumber
      * @param {number=} columnNumber
@@ -904,6 +924,7 @@ WebInspector.SelectUISourceCodeForProjectTypesDialog.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.Project} project
      * @return {boolean}
      */

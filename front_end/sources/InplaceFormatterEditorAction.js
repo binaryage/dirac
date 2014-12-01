@@ -40,6 +40,7 @@ WebInspector.InplaceFormatterEditorAction.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.SourcesView} sourcesView
      * @return {!WebInspector.StatusBarButton}
      */

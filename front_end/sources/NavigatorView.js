@@ -555,6 +555,7 @@ WebInspector.SourcesNavigatorView.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.UISourceCode} uiSourceCode
      */
     _addUISourceCode: function(uiSourceCode)
@@ -909,6 +910,7 @@ WebInspector.NavigatorSourceTreeElement.prototype = {
     },
 
     /**
+     * @override
      * @return {boolean}
      */
     onspace: function()
@@ -1111,6 +1113,7 @@ WebInspector.NavigatorRootTreeNode = function(navigatorView)
 
 WebInspector.NavigatorRootTreeNode.prototype = {
     /**
+     * @override
      * @return {boolean}
      */
     isRoot: function()
@@ -1119,6 +1122,7 @@ WebInspector.NavigatorRootTreeNode.prototype = {
     },
 
     /**
+     * @override
      * @return {!TreeContainerNode}
      */
     treeNode: function()
@@ -1159,6 +1163,7 @@ WebInspector.NavigatorUISourceCodeTreeNode.prototype = {
     },
 
     /**
+     * @override
      * @return {!TreeContainerNode}
      */
     treeNode: function()
@@ -1191,6 +1196,7 @@ WebInspector.NavigatorUISourceCodeTreeNode.prototype = {
     },
 
     /**
+     * @override
      * @return {boolean}
      */
     hasChildren: function()
@@ -1329,6 +1335,7 @@ WebInspector.NavigatorFolderTreeNode = function(navigatorView, project, id, type
 
 WebInspector.NavigatorFolderTreeNode.prototype = {
     /**
+     * @override
      * @return {!TreeContainerNode}
      */
     treeNode: function()

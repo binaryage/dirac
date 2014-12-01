@@ -497,6 +497,7 @@ WebInspector.ProfilesPanel = function()
 
 WebInspector.ProfilesPanel.prototype = {
     /**
+     * @override
      * @return {?WebInspector.SearchableView}
      */
     searchableView: function()
@@ -777,6 +778,7 @@ WebInspector.ProfilesPanel.prototype = {
     },
 
     /**
+     * @override
      * @param {?WebInspector.ProfileHeader} profile
      * @return {?WebInspector.View}
      */
@@ -810,6 +812,7 @@ WebInspector.ProfilesPanel.prototype = {
     },
 
     /**
+     * @override
      * @param {!HeapProfilerAgent.HeapSnapshotObjectId} snapshotObjectId
      * @param {string} perspectiveName
      */
@@ -1064,6 +1067,7 @@ WebInspector.ProfilesPanel.ContextMenuProvider = function()
 
 WebInspector.ProfilesPanel.ContextMenuProvider.prototype = {
     /**
+     * @override
      * @param {!Event} event
      * @param {!WebInspector.ContextMenu} contextMenu
      * @param {!Object} target
@@ -1127,6 +1131,7 @@ WebInspector.ProfileSidebarTreeElement.prototype = {
     },
 
     /**
+     * @override
      * @return {boolean}
      */
     onselect: function()
@@ -1136,6 +1141,7 @@ WebInspector.ProfileSidebarTreeElement.prototype = {
     },
 
     /**
+     * @override
      * @return {boolean}
      */
     ondelete: function()
@@ -1183,6 +1189,7 @@ WebInspector.ProfileGroupSidebarTreeElement = function(dataDisplayDelegate, titl
 
 WebInspector.ProfileGroupSidebarTreeElement.prototype = {
     /**
+     * @override
      * @return {boolean}
      */
     onselect: function()
@@ -1211,6 +1218,7 @@ WebInspector.ProfilesSidebarTreeElement = function(panel)
 
 WebInspector.ProfilesSidebarTreeElement.prototype = {
     /**
+     * @override
      * @return {boolean}
      */
     onselect: function()
@@ -1252,6 +1260,7 @@ WebInspector.ProfilesPanelFactory = function()
 
 WebInspector.ProfilesPanelFactory.prototype = {
     /**
+     * @override
      * @return {!WebInspector.Panel}
      */
     createPanel: function()

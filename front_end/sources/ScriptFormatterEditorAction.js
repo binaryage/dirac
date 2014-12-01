@@ -16,6 +16,7 @@ WebInspector.FormatterScriptMapping = function(target, editorAction)
 
 WebInspector.FormatterScriptMapping.prototype = {
     /**
+     * @override
      * @param {!WebInspector.DebuggerModel.Location} rawLocation
      * @return {?WebInspector.UILocation}
      */
@@ -38,6 +39,7 @@ WebInspector.FormatterScriptMapping.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.UISourceCode} uiSourceCode
      * @param {number} lineNumber
      * @param {number} columnNumber
@@ -57,6 +59,7 @@ WebInspector.FormatterScriptMapping.prototype = {
     },
 
     /**
+     * @override
      * @return {boolean}
      */
     isIdentity: function()
@@ -65,6 +68,7 @@ WebInspector.FormatterScriptMapping.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.UISourceCode} uiSourceCode
      * @param {number} lineNumber
      * @return {boolean}
@@ -104,6 +108,7 @@ WebInspector.FormatterProjectDelegate = function(workspace, id)
 
 WebInspector.FormatterProjectDelegate.prototype = {
     /**
+     * @override
      * @return {string}
      */
     displayName: function()
@@ -163,6 +168,7 @@ WebInspector.ScriptFormatterEditorAction = function()
 
 WebInspector.ScriptFormatterEditorAction.prototype = {
     /**
+     * @override
      * @param {!WebInspector.Target} target
      */
     targetAdded: function(target)
@@ -172,6 +178,7 @@ WebInspector.ScriptFormatterEditorAction.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.Target} target
      */
     targetRemoved: function(target)
@@ -216,6 +223,7 @@ WebInspector.ScriptFormatterEditorAction.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.SourcesView} sourcesView
      * @return {!WebInspector.StatusBarButton}
      */

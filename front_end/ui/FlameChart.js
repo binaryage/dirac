@@ -342,6 +342,7 @@ WebInspector.FlameChart.Calculator = function()
 
 WebInspector.FlameChart.Calculator.prototype = {
     /**
+     * @override
      * @return {number}
      */
     paddingLeft: function()
@@ -364,6 +365,7 @@ WebInspector.FlameChart.Calculator.prototype = {
     },
 
     /**
+     * @override
      * @param {number} time
      * @return {number}
      */
@@ -373,6 +375,7 @@ WebInspector.FlameChart.Calculator.prototype = {
     },
 
     /**
+     * @override
      * @param {number} value
      * @param {number=} precision
      * @return {string}
@@ -383,6 +386,7 @@ WebInspector.FlameChart.Calculator.prototype = {
     },
 
     /**
+     * @override
      * @return {number}
      */
     maximumBoundary: function()
@@ -391,6 +395,7 @@ WebInspector.FlameChart.Calculator.prototype = {
     },
 
     /**
+     * @override
      * @return {number}
      */
     minimumBoundary: function()
@@ -399,6 +404,7 @@ WebInspector.FlameChart.Calculator.prototype = {
     },
 
     /**
+     * @override
      * @return {number}
      */
     zeroTime: function()
@@ -407,6 +413,7 @@ WebInspector.FlameChart.Calculator.prototype = {
     },
 
     /**
+     * @override
      * @return {number}
      */
     boundarySpan: function()

@@ -180,6 +180,7 @@ WebInspector.ContextSubMenuItem.prototype = {
     },
 
     /**
+     * @override
      * @return {!InspectorFrontendHostAPI.ContextMenuDescriptor}
      */
     _buildDescriptor: function()

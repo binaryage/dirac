@@ -111,6 +111,7 @@ WebInspector.NetworkPanel.prototype = {
     },
 
     /**
+     * @override
      * @return {!Array.<!Element>}
      */
     elementsToRestoreScrollPositionsFor: function()
@@ -119,6 +120,7 @@ WebInspector.NetworkPanel.prototype = {
     },
 
     /**
+     * @override
      * @return {!WebInspector.SearchableView}
      */
     searchableView: function()
@@ -127,6 +129,7 @@ WebInspector.NetworkPanel.prototype = {
     },
 
     /**
+     * @override
      * @param {!KeyboardEvent} event
      */
     handleShortcut: function(event)
@@ -254,6 +257,7 @@ WebInspector.NetworkPanel.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.SearchableView.SearchConfig} searchConfig
      * @param {boolean} shouldJump
      * @param {boolean=} jumpBackwards
@@ -263,12 +267,16 @@ WebInspector.NetworkPanel.prototype = {
         this._networkLogView.performSearch(searchConfig, shouldJump, jumpBackwards);
     },
 
+    /**
+     * @override
+     */
     jumpToPreviousSearchResult: function()
     {
         this._networkLogView.jumpToPreviousSearchResult();
     },
 
     /**
+     * @override
      * @return {boolean}
      */
     supportsCaseSensitiveSearch: function()
@@ -277,6 +285,7 @@ WebInspector.NetworkPanel.prototype = {
     },
 
     /**
+     * @override
      * @return {boolean}
      */
     supportsRegexSearch: function()
@@ -284,17 +293,24 @@ WebInspector.NetworkPanel.prototype = {
         return false;
     },
 
+    /**
+     * @override
+     */
     jumpToNextSearchResult: function()
     {
         this._networkLogView.jumpToNextSearchResult();
     },
 
+    /**
+     * @override
+     */
     searchCanceled: function()
     {
         this._networkLogView.searchCanceled();
     },
 
     /**
+     * @override
      * @param {!Event} event
      * @param {!WebInspector.ContextMenu} contextMenu
      * @param {!Object} target
@@ -356,6 +372,7 @@ WebInspector.NetworkPanel.ContextMenuProvider = function()
 
 WebInspector.NetworkPanel.ContextMenuProvider.prototype = {
     /**
+     * @override
      * @param {!Event} event
      * @param {!WebInspector.ContextMenu} contextMenu
      * @param {!Object} target
@@ -376,6 +393,7 @@ WebInspector.NetworkPanel.RequestRevealer = function()
 
 WebInspector.NetworkPanel.RequestRevealer.prototype = {
     /**
+     * @override
      * @param {!Object} request
      * @param {number=} lineNumber
      * @return {!Promise}
@@ -419,6 +437,7 @@ WebInspector.NetworkPanelFactory = function()
 
 WebInspector.NetworkPanelFactory.prototype = {
     /**
+     * @override
      * @return {!WebInspector.Panel}
      */
     createPanel: function()

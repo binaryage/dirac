@@ -245,6 +245,7 @@ WebInspector.SearchableView.prototype = {
     },
 
     /**
+     * @override
      * @return {!Element}
      */
     defaultFocusedElement: function()

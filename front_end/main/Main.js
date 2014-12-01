@@ -42,6 +42,7 @@ WebInspector.Main = function()
 
 WebInspector.Main.prototype = {
     /**
+     * @override
      * @return {!Promise.<undefined>}
      */
     showConsole: function()
@@ -625,6 +626,7 @@ WebInspector.Main.ReloadActionDelegate = function()
 
 WebInspector.Main.ReloadActionDelegate.prototype = {
     /**
+     * @override
      * @return {boolean}
      */
     handleAction: function()
@@ -643,6 +645,7 @@ WebInspector.Main.HardReloadActionDelegate = function()
 
 WebInspector.Main.HardReloadActionDelegate.prototype = {
     /**
+     * @override
      * @return {boolean}
      */
     handleAction: function()
@@ -661,6 +664,7 @@ WebInspector.Main.DebugReloadActionDelegate = function()
 
 WebInspector.Main.DebugReloadActionDelegate.prototype = {
     /**
+     * @override
      * @return {boolean}
      */
     handleAction: function()
@@ -680,6 +684,7 @@ WebInspector.Main.ZoomInActionDelegate = function()
 
 WebInspector.Main.ZoomInActionDelegate.prototype = {
     /**
+     * @override
      * @return {boolean}
      */
     handleAction: function()
@@ -702,6 +707,7 @@ WebInspector.Main.ZoomOutActionDelegate = function()
 
 WebInspector.Main.ZoomOutActionDelegate.prototype = {
     /**
+     * @override
      * @return {boolean}
      */
     handleAction: function()
@@ -724,6 +730,7 @@ WebInspector.Main.ZoomResetActionDelegate = function()
 
 WebInspector.Main.ZoomResetActionDelegate.prototype = {
     /**
+     * @override
      * @return {boolean}
      */
     handleAction: function()
@@ -832,6 +839,7 @@ WebInspector.Main.WarningErrorCounter.prototype = {
     },
 
     /**
+     * @override
      * @return {?WebInspector.StatusBarItem}
      */
     item: function()

@@ -447,7 +447,7 @@ WebInspector.DOMPresentationUtils._xPathValue = function(node, optimized)
         ownValue += "[" + ownIndex + "]";
 
     return new WebInspector.DOMNodePathStep(ownValue, node.nodeType() === Node.DOCUMENT_NODE);
-},
+}
 
 /**
  * @param {!WebInspector.DOMNode} node
@@ -509,6 +509,7 @@ WebInspector.DOMNodePathStep = function(value, optimized)
 
 WebInspector.DOMNodePathStep.prototype = {
     /**
+     * @override
      * @return {string}
      */
     toString: function()

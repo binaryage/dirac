@@ -175,6 +175,7 @@ WebInspector.DockController.ButtonProvider = function()
 
 WebInspector.DockController.ButtonProvider.prototype = {
     /**
+     * @override
      * @return {?WebInspector.StatusBarItem}
      */
     item: function()

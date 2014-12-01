@@ -61,6 +61,10 @@ WebInspector.PowerDispatcher = function(profiler)
 }
 
 WebInspector.PowerDispatcher.prototype = {
+    /**
+     * @override
+     * @param {!Array.<!PowerAgent.PowerEvent>} events
+     */
     dataAvailable: function(events)
     {
         for (var i = 0; i < events.length; ++i)

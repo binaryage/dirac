@@ -181,6 +181,7 @@ WebInspector.SourceFrame.prototype = {
     },
 
     /**
+     * @override
      * @return {!Element}
      */
     defaultFocusedElement: function()
@@ -527,6 +528,7 @@ WebInspector.SourceFrame.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.SearchableView.SearchConfig} searchConfig
      * @param {string} replacement
      */
@@ -550,6 +552,7 @@ WebInspector.SourceFrame.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.SearchableView.SearchConfig} searchConfig
      * @param {string} replacement
      */
@@ -1020,12 +1023,16 @@ WebInspector.TextEditorDelegateForSourceFrame = function(sourceFrame)
 }
 
 WebInspector.TextEditorDelegateForSourceFrame.prototype = {
+    /**
+     * @override
+     */
     onTextChanged: function(oldRange, newRange)
     {
         this._sourceFrame.onTextChanged(oldRange, newRange);
     },
 
     /**
+     * @override
      * @param {!WebInspector.TextRange} textRange
      */
     selectionChanged: function(textRange)
@@ -1034,6 +1041,7 @@ WebInspector.TextEditorDelegateForSourceFrame.prototype = {
     },
 
     /**
+     * @override
      * @param {number} lineNumber
      */
     scrollChanged: function(lineNumber)
@@ -1041,22 +1049,32 @@ WebInspector.TextEditorDelegateForSourceFrame.prototype = {
         this._sourceFrame.scrollChanged(lineNumber);
     },
 
+    /**
+     * @override
+     */
     editorFocused: function()
     {
         this._sourceFrame._editorFocused();
     },
 
+    /**
+     * @override
+     */
     populateLineGutterContextMenu: function(contextMenu, lineNumber)
     {
         this._sourceFrame.populateLineGutterContextMenu(contextMenu, lineNumber);
     },
 
+    /**
+     * @override
+     */
     populateTextAreaContextMenu: function(contextMenu, lineNumber)
     {
         this._sourceFrame.populateTextAreaContextMenu(contextMenu, lineNumber);
     },
 
     /**
+     * @override
      * @param {?WebInspector.TextRange} from
      * @param {?WebInspector.TextRange} to
      */

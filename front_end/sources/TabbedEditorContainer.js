@@ -728,6 +728,7 @@ WebInspector.EditorContainerTabDelegate = function(editorContainer)
 
 WebInspector.EditorContainerTabDelegate.prototype = {
     /**
+     * @override
      * @param {!WebInspector.TabbedPane} tabbedPane
      * @param {!Array.<string>} ids
      */

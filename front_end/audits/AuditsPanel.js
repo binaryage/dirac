@@ -479,6 +479,7 @@ WebInspector.AuditsSidebarTreeElement.prototype = {
     },
 
     /**
+     * @override
      * @return {boolean}
      */
     onselect: function()
@@ -518,6 +519,7 @@ WebInspector.AuditResultSidebarTreeElement = function(panel, results, mainResour
 
 WebInspector.AuditResultSidebarTreeElement.prototype = {
     /**
+     * @override
      * @return {boolean}
      */
     onselect: function()
@@ -559,6 +561,7 @@ WebInspector.AuditsPanelFactory = function()
 
 WebInspector.AuditsPanelFactory.prototype = {
     /**
+     * @override
      * @return {!WebInspector.Panel}
      */
     createPanel: function()

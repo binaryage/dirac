@@ -673,6 +673,7 @@ WebInspector.SettingsController.SettingsScreenActionDelegate = function() { }
 
 WebInspector.SettingsController.SettingsScreenActionDelegate.prototype = {
     /**
+     * @override
      * @return {boolean}
      */
     handleAction: function()
@@ -882,6 +883,7 @@ WebInspector.EditableSettingsList = function(columns, valuesProvider, validateHa
 
 WebInspector.EditableSettingsList.prototype = {
     /**
+     * @override
      * @param {?string} itemId
      * @param {?string=} beforeId
      * @return {!Element}

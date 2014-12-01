@@ -54,6 +54,7 @@ WebInspector.ResourceScriptMapping = function(debuggerModel, workspace, debugger
 
 WebInspector.ResourceScriptMapping.prototype = {
     /**
+     * @override
      * @param {!WebInspector.DebuggerModel.Location} rawLocation
      * @return {?WebInspector.UILocation}
      */
@@ -75,6 +76,7 @@ WebInspector.ResourceScriptMapping.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.UISourceCode} uiSourceCode
      * @param {number} lineNumber
      * @param {number} columnNumber
@@ -107,6 +109,7 @@ WebInspector.ResourceScriptMapping.prototype = {
     },
 
     /**
+     * @override
      * @return {boolean}
      */
     isIdentity: function()
@@ -115,6 +118,7 @@ WebInspector.ResourceScriptMapping.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.UISourceCode} uiSourceCode
      * @param {number} lineNumber
      * @return {boolean}

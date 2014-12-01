@@ -386,6 +386,7 @@ WebInspector.ScreencastView.prototype = {
     },
 
     /**
+     * @override
      * @param {?WebInspector.DOMNode} node
      * @param {?DOMAgent.HighlightConfig} config
      * @param {!RuntimeAgent.RemoteObjectId=} objectId
@@ -667,6 +668,7 @@ WebInspector.ScreencastView.prototype = {
     },
 
     /**
+     * @override
      * @param {boolean} enabled
      * @param {boolean} inspectUAShadowDOM
      * @param {!DOMAgent.HighlightConfig} config

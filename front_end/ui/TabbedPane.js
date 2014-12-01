@@ -142,6 +142,7 @@ WebInspector.TabbedPane.prototype = {
     },
 
     /**
+     * @override
      * @return {!Element}
      */
     defaultFocusedElement: function()
@@ -449,6 +450,7 @@ WebInspector.TabbedPane.prototype = {
     },
 
     /**
+     * @override
      * @return {!Constraints}
      */
     calculateConstraints: function()
@@ -742,6 +744,7 @@ WebInspector.TabbedPane.prototype = {
     },
 
     /**
+     * @override
      * @return {!Array.<!Element>}
      */
     elementsToRestoreScrollPositionsFor: function()

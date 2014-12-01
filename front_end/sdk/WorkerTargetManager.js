@@ -171,6 +171,7 @@ WebInspector.WorkerConnection.prototype = {
     },
 
     /**
+     * @override
      * @param {!Object} messageObject
      */
     sendMessage: function(messageObject)

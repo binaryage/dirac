@@ -196,6 +196,7 @@ WebInspector.DatabaseDispatcher = function(model)
 
 WebInspector.DatabaseDispatcher.prototype = {
     /**
+     * @override
      * @param {!DatabaseAgent.Database} payload
      */
     addDatabase: function(payload)

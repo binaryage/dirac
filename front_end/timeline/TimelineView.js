@@ -209,6 +209,7 @@ WebInspector.TimelineView.prototype = {
     },
 
     /**
+     * @override
      * @param {number} width
      */
     setSidebarSize: function(width)
@@ -255,6 +256,7 @@ WebInspector.TimelineView.prototype = {
 
 
     /**
+     * @override
      * @return {!WebInspector.View}
      */
     view: function()
@@ -262,10 +264,16 @@ WebInspector.TimelineView.prototype = {
         return this;
     },
 
+    /**
+     * @override
+     */
     dispose: function()
     {
     },
 
+    /**
+     * @override
+     */
     reset: function()
     {
         this._resetView();
@@ -273,6 +281,7 @@ WebInspector.TimelineView.prototype = {
     },
 
     /**
+     * @override
      * @return {!Array.<!Element>}
      */
     elementsToRestoreScrollPositionsFor: function()
@@ -281,6 +290,7 @@ WebInspector.TimelineView.prototype = {
     },
 
     /**
+     * @override
      * @param {?RegExp} textFilter
      */
     refreshRecords: function(textFilter)
@@ -354,6 +364,7 @@ WebInspector.TimelineView.prototype = {
     },
 
     /**
+     * @override
      * @param {?WebInspector.TimelineSelection} selection
      */
     setSelection: function(selection)
@@ -418,6 +429,7 @@ WebInspector.TimelineView.prototype = {
     },
 
     /**
+     * @override
      * @param {number} startTime
      * @param {number} endTime
      */
@@ -869,6 +881,7 @@ WebInspector.TimelineView.prototype = {
     },
 
     /**
+     * @override
      * @param {?WebInspector.TimelineModel.Record} record
      * @param {string=} regex
      * @param {boolean=} selectRecord
@@ -911,6 +924,7 @@ WebInspector.TimelineCalculator._minWidth = 5;
 
 WebInspector.TimelineCalculator.prototype = {
     /**
+     * @override
      * @return {number}
      */
     paddingLeft: function()
@@ -919,6 +933,7 @@ WebInspector.TimelineCalculator.prototype = {
     },
 
     /**
+     * @override
      * @param {number} time
      * @return {number}
      */
@@ -975,6 +990,7 @@ WebInspector.TimelineCalculator.prototype = {
     },
 
     /**
+     * @override
      * @param {number} value
      * @param {number=} precision
      * @return {string}
@@ -985,6 +1001,7 @@ WebInspector.TimelineCalculator.prototype = {
     },
 
     /**
+     * @override
      * @return {number}
      */
     maximumBoundary: function()
@@ -993,6 +1010,7 @@ WebInspector.TimelineCalculator.prototype = {
     },
 
     /**
+     * @override
      * @return {number}
      */
     minimumBoundary: function()
@@ -1001,6 +1019,7 @@ WebInspector.TimelineCalculator.prototype = {
     },
 
     /**
+     * @override
      * @return {number}
      */
     zeroTime: function()
@@ -1009,6 +1028,7 @@ WebInspector.TimelineCalculator.prototype = {
     },
 
     /**
+     * @override
      * @return {number}
      */
     boundarySpan: function()

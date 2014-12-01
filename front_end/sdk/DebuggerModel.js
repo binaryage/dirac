@@ -748,6 +748,7 @@ WebInspector.DebuggerDispatcher = function(debuggerModel)
 
 WebInspector.DebuggerDispatcher.prototype = {
     /**
+     * @override
      * @param {!Array.<!DebuggerAgent.CallFrame>} callFrames
      * @param {string} reason
      * @param {!Object=} auxData
@@ -776,6 +777,7 @@ WebInspector.DebuggerDispatcher.prototype = {
     },
 
     /**
+     * @override
      * @param {!DebuggerAgent.ScriptId} scriptId
      * @param {string} sourceURL
      * @param {number} startLine
@@ -792,6 +794,7 @@ WebInspector.DebuggerDispatcher.prototype = {
     },
 
     /**
+     * @override
      * @param {!DebuggerAgent.ScriptId} scriptId
      * @param {string} sourceURL
      * @param {number} startLine
@@ -808,6 +811,7 @@ WebInspector.DebuggerDispatcher.prototype = {
     },
 
     /**
+     * @override
      * @param {!DebuggerAgent.BreakpointId} breakpointId
      * @param {!DebuggerAgent.Location} location
      */

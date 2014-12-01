@@ -250,6 +250,7 @@ WebInspector.AdvancedApp.DeviceCounter.prototype = {
     },
 
     /**
+     * @override
      * @return {?WebInspector.StatusBarItem}
      */
     item: function()
@@ -268,6 +269,7 @@ WebInspector.AdvancedApp.EmulationButtonProvider = function()
 
 WebInspector.AdvancedApp.EmulationButtonProvider.prototype = {
     /**
+     * @override
      * @return {?WebInspector.StatusBarItem}
      */
     item: function()
@@ -288,6 +290,7 @@ WebInspector.AdvancedApp.ToggleDeviceModeActionDelegate = function()
 
 WebInspector.AdvancedApp.ToggleDeviceModeActionDelegate.prototype = {
     /**
+     * @override
      * @return {boolean}
      */
     handleAction: function()

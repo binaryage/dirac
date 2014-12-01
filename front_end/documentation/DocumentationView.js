@@ -328,6 +328,7 @@ WebInspector.DocumentationView.ContextMenuProvider = function()
 
 WebInspector.DocumentationView.ContextMenuProvider.prototype = {
     /**
+     * @override
      * @param {!Event} event
      * @param {!WebInspector.ContextMenu} contextMenu
      * @param {!Object} target

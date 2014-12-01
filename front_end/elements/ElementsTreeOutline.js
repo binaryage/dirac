@@ -1085,6 +1085,7 @@ WebInspector.ElementsTreeOutline.PseudoStateDecorator = function()
 
 WebInspector.ElementsTreeOutline.PseudoStateDecorator.prototype = {
     /**
+     * @override
      * @param {!WebInspector.DOMNode} node
      * @return {?string}
      */
@@ -1099,6 +1100,7 @@ WebInspector.ElementsTreeOutline.PseudoStateDecorator.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.DOMNode} node
      * @return {?string}
      */
@@ -1563,6 +1565,7 @@ WebInspector.ElementsTreeElement.prototype = {
     },
 
     /**
+     * @override
      * @param {boolean=} omitFocus
      * @param {boolean=} selectedByUser
      * @return {boolean}
@@ -3199,6 +3202,7 @@ WebInspector.ElementsTreeOutline.Renderer = function()
 
 WebInspector.ElementsTreeOutline.Renderer.prototype = {
     /**
+     * @override
      * @param {!Object} object
      * @return {!Promise.<!Element>}
      */

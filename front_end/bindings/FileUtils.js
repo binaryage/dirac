@@ -127,12 +127,16 @@ WebInspector.ChunkedFileReader.prototype = {
         this._loadChunk();
     },
 
+    /**
+     * @override
+     */
     cancel: function()
     {
         this._isCanceled = true;
     },
 
     /**
+     * @override
      * @return {number}
      */
     loadedSize: function()
@@ -141,6 +145,7 @@ WebInspector.ChunkedFileReader.prototype = {
     },
 
     /**
+     * @override
      * @return {number}
      */
     fileSize: function()
@@ -149,6 +154,7 @@ WebInspector.ChunkedFileReader.prototype = {
     },
 
     /**
+     * @override
      * @return {string}
      */
     fileName: function()
@@ -245,6 +251,7 @@ WebInspector.FileOutputStream.prototype = {
     },
 
     /**
+     * @override
      * @param {string} data
      * @param {function(!WebInspector.OutputStream)=} callback
      */
@@ -254,6 +261,9 @@ WebInspector.FileOutputStream.prototype = {
         WebInspector.fileManager.append(this._fileName, data);
     },
 
+    /**
+     * @override
+     */
     close: function()
     {
         this._closed = true;

@@ -1301,6 +1301,7 @@ WebInspector.TimelineRecordHiddenEmptyTypeFilter = function(recordTypes)
 
 WebInspector.TimelineRecordHiddenEmptyTypeFilter.prototype = {
     /**
+     * @override
      * @param {!WebInspector.TimelineModel.Record} record
      * @return {boolean}
      */
@@ -1324,6 +1325,7 @@ WebInspector.TimelineRecordHiddenTypeFilter = function(recordTypes)
 
 WebInspector.TimelineRecordHiddenTypeFilter.prototype = {
     /**
+     * @override
      * @param {!WebInspector.TimelineModel.Record} record
      * @return {boolean}
      */
@@ -1347,6 +1349,7 @@ WebInspector.TimelineRecordVisibleTypeFilter = function(recordTypes)
 
 WebInspector.TimelineRecordVisibleTypeFilter.prototype = {
     /**
+     * @override
      * @param {!WebInspector.TimelineModel.Record} record
      * @return {boolean}
      */
@@ -1371,12 +1374,16 @@ WebInspector.TimelineModelLoadFromFileDelegate = function(model, progress)
 }
 
 WebInspector.TimelineModelLoadFromFileDelegate.prototype = {
+    /**
+     * @override
+     */
     onTransferStarted: function()
     {
         this._progress.setTitle(WebInspector.UIString("Loading\u2026"));
     },
 
     /**
+     * @override
      * @param {!WebInspector.ChunkedReader} reader
      */
     onChunkTransferred: function(reader)
@@ -1395,12 +1402,16 @@ WebInspector.TimelineModelLoadFromFileDelegate.prototype = {
         }
     },
 
+    /**
+     * @override
+     */
     onTransferFinished: function()
     {
         this._progress.done();
     },
 
     /**
+     * @override
      * @param {!WebInspector.ChunkedReader} reader
      * @param {!Event} event
      */
@@ -1449,6 +1460,7 @@ WebInspector.TraceEventNameFilter = function(eventNames)
 
 WebInspector.TraceEventNameFilter.prototype = {
     /**
+     * @override
      * @param {!WebInspector.TracingModel.Event} event
      * @return {boolean}
      */
@@ -1523,6 +1535,7 @@ WebInspector.TracingModelLoader = function(model, reader, progress)
 
 WebInspector.TracingModelLoader.prototype = {
     /**
+     * @override
      * @param {string} chunk
      */
     write: function(chunk)
@@ -1588,6 +1601,9 @@ WebInspector.TracingModelLoader.prototype = {
         return typeof item === "string" && item.indexOf("Chrome") !== -1;
     },
 
+    /**
+     * @override
+     */
     close: function()
     {
         this._loader.finish();
@@ -1606,22 +1622,30 @@ WebInspector.TracingTimelineSaver = function(stream)
 }
 
 WebInspector.TracingTimelineSaver.prototype = {
+    /**
+     * @override
+     */
     onTransferStarted: function()
     {
         this._stream.write("[");
     },
 
+    /**
+     * @override
+     */
     onTransferFinished: function()
     {
         this._stream.write("]");
     },
 
     /**
+     * @override
      * @param {!WebInspector.ChunkedReader} reader
      */
     onChunkTransferred: function(reader) { },
 
     /**
+     * @override
      * @param {!WebInspector.ChunkedReader} reader
      * @param {!Event} event
      */

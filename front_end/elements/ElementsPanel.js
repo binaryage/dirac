@@ -111,6 +111,7 @@ WebInspector.ElementsPanel.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.Target} target
      */
     targetAdded: function(target)
@@ -130,6 +131,7 @@ WebInspector.ElementsPanel.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.Target} target
      */
     targetRemoved: function(target)
@@ -164,6 +166,7 @@ WebInspector.ElementsPanel.prototype = {
     },
 
     /**
+     * @override
      * @return {!Element}
      */
     defaultFocusedElement: function()
@@ -172,6 +175,7 @@ WebInspector.ElementsPanel.prototype = {
     },
 
     /**
+     * @override
      * @return {!WebInspector.SearchableView}
      */
     searchableView: function()
@@ -362,6 +366,9 @@ WebInspector.ElementsPanel.prototype = {
         delete this._selectedPathOnReset;
     },
 
+    /**
+     * @override
+     */
     searchCanceled: function()
     {
         delete this._searchQuery;
@@ -378,6 +385,7 @@ WebInspector.ElementsPanel.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.SearchableView.SearchConfig} searchConfig
      * @param {boolean} shouldJump
      * @param {boolean=} jumpBackwards
@@ -492,6 +500,9 @@ WebInspector.ElementsPanel.prototype = {
         this._highlightCurrentSearchResult();
     },
 
+    /**
+     * @override
+     */
     jumpToNextSearchResult: function()
     {
         if (!this._searchResults)
@@ -499,6 +510,9 @@ WebInspector.ElementsPanel.prototype = {
         this._jumpToSearchResult(this._currentSearchResultIndex + 1);
     },
 
+    /**
+     * @override
+     */
     jumpToPreviousSearchResult: function()
     {
         if (!this._searchResults)
@@ -507,6 +521,7 @@ WebInspector.ElementsPanel.prototype = {
     },
 
     /**
+     * @override
      * @return {boolean}
      */
     supportsCaseSensitiveSearch: function()
@@ -515,6 +530,7 @@ WebInspector.ElementsPanel.prototype = {
     },
 
     /**
+     * @override
      * @return {boolean}
      */
     supportsRegexSearch: function()
@@ -632,6 +648,7 @@ WebInspector.ElementsPanel.prototype = {
     },
 
     /**
+     * @override
      * @param {!KeyboardEvent} event
      */
     handleShortcut: function(event)
@@ -971,6 +988,7 @@ WebInspector.ElementsPanel.ContextMenuProvider = function()
 
 WebInspector.ElementsPanel.ContextMenuProvider.prototype = {
     /**
+     * @override
      * @param {!Event} event
      * @param {!WebInspector.ContextMenu} contextMenu
      * @param {!Object} target
@@ -991,6 +1009,7 @@ WebInspector.ElementsPanel.DOMNodeRevealer = function()
 
 WebInspector.ElementsPanel.DOMNodeRevealer.prototype = {
     /**
+     * @override
      * @param {!Object} node
      * @return {!Promise}
      */
@@ -1055,6 +1074,7 @@ WebInspector.ElementsPanelFactory = function()
 
 WebInspector.ElementsPanelFactory.prototype = {
     /**
+     * @override
      * @return {!WebInspector.Panel}
      */
     createPanel: function()

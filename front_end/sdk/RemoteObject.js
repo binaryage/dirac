@@ -268,37 +268,52 @@ WebInspector.RemoteObjectImpl.prototype = {
         return this._objectId;
     },
 
-    /** @return {string} */
+    /**
+     * @override
+     * @return {string}
+     */
     get type()
     {
         return this._type;
     },
 
-    /** @return {string|undefined} */
+    /**
+     * @override
+     * @return {string|undefined}
+     */
     get subtype()
     {
         return this._subtype;
     },
 
-    /** @return {string|undefined} */
+    /**
+     * @override
+     * @return {string|undefined}
+     */
     get description()
     {
         return this._description;
     },
 
-    /** @return {boolean} */
+    /**
+     * @override
+     * @return {boolean}
+     */
     get hasChildren()
     {
         return this._hasChildren;
     },
 
-    /** @return {!RuntimeAgent.ObjectPreview|undefined} */
+    /**
+     * @return {!RuntimeAgent.ObjectPreview|undefined}
+     */
     get preview()
     {
         return this._preview;
     },
 
     /**
+     * @override
      * @param {function(?Array.<!WebInspector.RemoteObjectProperty>, ?Array.<!WebInspector.RemoteObjectProperty>)} callback
      */
     getOwnProperties: function(callback)
@@ -307,6 +322,7 @@ WebInspector.RemoteObjectImpl.prototype = {
     },
 
     /**
+     * @override
      * @param {boolean} accessorPropertiesOnly
      * @param {function(?Array.<!WebInspector.RemoteObjectProperty>, ?Array.<!WebInspector.RemoteObjectProperty>)} callback
      */
@@ -465,6 +481,7 @@ WebInspector.RemoteObjectImpl.prototype = {
     },
 
     /**
+     * @override
      * @param {!RuntimeAgent.CallArgument} name
      * @param {function(string=)} callback
      */
@@ -518,6 +535,7 @@ WebInspector.RemoteObjectImpl.prototype = {
     },
 
     /**
+     * @override
      * @param {function(this:Object, ...)} functionDeclaration
      * @param {!Array.<!RuntimeAgent.CallArgument>=} args
      * @param {function(?WebInspector.RemoteObject, boolean=)=} callback
@@ -544,6 +562,7 @@ WebInspector.RemoteObjectImpl.prototype = {
     },
 
     /**
+     * @override
      * @param {function(this:Object)} functionDeclaration
      * @param {!Array.<!RuntimeAgent.CallArgument>|undefined} args
      * @param {function(*)} callback
@@ -571,6 +590,7 @@ WebInspector.RemoteObjectImpl.prototype = {
     },
 
     /**
+     * @override
      * @return {number}
      */
     arrayLength: function()
@@ -585,6 +605,7 @@ WebInspector.RemoteObjectImpl.prototype = {
     },
 
     /**
+     * @override
      * @return {!WebInspector.Target}
      */
     target: function()
@@ -593,6 +614,7 @@ WebInspector.RemoteObjectImpl.prototype = {
     },
 
     /**
+     * @override
      * @return {boolean}
      */
     isNode: function()
@@ -601,6 +623,7 @@ WebInspector.RemoteObjectImpl.prototype = {
     },
 
     /**
+     * @override
      * @param {function(?WebInspector.DebuggerModel.FunctionDetails)} callback
      */
     functionDetails: function(callback)
@@ -609,6 +632,7 @@ WebInspector.RemoteObjectImpl.prototype = {
     },
 
     /**
+     * @override
      * @param {function(?Array.<!DebuggerAgent.CollectionEntry>)} callback
      */
     collectionEntries: function(callback)
@@ -862,6 +886,7 @@ WebInspector.LocalJSONObject = function(value)
 
 WebInspector.LocalJSONObject.prototype = {
     /**
+     * @override
      * @return {string}
      */
     get description()
@@ -954,6 +979,7 @@ WebInspector.LocalJSONObject.prototype = {
     },
 
     /**
+     * @override
      * @return {string}
      */
     get type()
@@ -962,6 +988,7 @@ WebInspector.LocalJSONObject.prototype = {
     },
 
     /**
+     * @override
      * @return {string|undefined}
      */
     get subtype()
@@ -979,6 +1006,7 @@ WebInspector.LocalJSONObject.prototype = {
     },
 
     /**
+     * @override
      * @return {boolean}
      */
     get hasChildren()
@@ -989,6 +1017,7 @@ WebInspector.LocalJSONObject.prototype = {
     },
 
     /**
+     * @override
      * @param {function(?Array.<!WebInspector.RemoteObjectProperty>, ?Array.<!WebInspector.RemoteObjectProperty>)} callback
      */
     getOwnProperties: function(callback)
@@ -997,6 +1026,7 @@ WebInspector.LocalJSONObject.prototype = {
     },
 
     /**
+     * @override
      * @param {boolean} accessorPropertiesOnly
      * @param {function(?Array.<!WebInspector.RemoteObjectProperty>, ?Array.<!WebInspector.RemoteObjectProperty>)} callback
      */
@@ -1042,6 +1072,7 @@ WebInspector.LocalJSONObject.prototype = {
     },
 
     /**
+     * @override
      * @return {number}
      */
     arrayLength: function()
@@ -1050,6 +1081,7 @@ WebInspector.LocalJSONObject.prototype = {
     },
 
     /**
+     * @override
      * @param {function(this:Object, ...)} functionDeclaration
      * @param {!Array.<!RuntimeAgent.CallArgument>=} args
      * @param {function(?WebInspector.RemoteObject, boolean=)=} callback
@@ -1073,6 +1105,7 @@ WebInspector.LocalJSONObject.prototype = {
     },
 
     /**
+     * @override
      * @param {function(this:Object)} functionDeclaration
      * @param {!Array.<!RuntimeAgent.CallArgument>|undefined} args
      * @param {function(*)} callback
@@ -1107,6 +1140,7 @@ WebInspector.MapEntryLocalJSONObject = function(value)
 
 WebInspector.MapEntryLocalJSONObject.prototype = {
     /**
+     * @override
      * @return {string}
      */
     get description()

@@ -561,6 +561,7 @@ WebInspector.HeapSnapshotView.prototype = {
     },
 
     /**
+     * @override
      * @return {boolean}
      */
     supportsCaseSensitiveSearch: function()
@@ -569,6 +570,7 @@ WebInspector.HeapSnapshotView.prototype = {
     },
 
     /**
+     * @override
      * @return {boolean}
      */
     supportsRegexSearch: function()
@@ -576,6 +578,9 @@ WebInspector.HeapSnapshotView.prototype = {
         return false;
     },
 
+    /**
+     * @override
+     */
     searchCanceled: function()
     {
         this._currentSearchResultIndex = -1;
@@ -595,6 +600,7 @@ WebInspector.HeapSnapshotView.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.SearchableView.SearchConfig} searchConfig
      * @param {boolean} shouldJump
      * @param {boolean=} jumpBackwards
@@ -657,6 +663,9 @@ WebInspector.HeapSnapshotView.prototype = {
         this._profile._snapshotProxy.search(this.currentQuery, this._dataGrid.nodeFilter(), didSearch.bind(this));
     },
 
+    /**
+     * @override
+     */
     jumpToNextSearchResult: function()
     {
         if (!this._searchResults.length)
@@ -665,6 +674,9 @@ WebInspector.HeapSnapshotView.prototype = {
         this._searchThrottler.schedule(this._jumpToSearchResult.bind(this, this._currentSearchResultIndex));
     },
 
+    /**
+     * @override
+     */
     jumpToPreviousSearchResult: function()
     {
         if (!this._searchResults.length)
@@ -1037,6 +1049,7 @@ WebInspector.HeapSnapshotProfileType.SnapshotReceived = "SnapshotReceived";
 
 WebInspector.HeapSnapshotProfileType.prototype = {
     /**
+     * @override
      * @param {!WebInspector.Target} target
      */
     targetAdded: function(target)
@@ -1045,6 +1058,7 @@ WebInspector.HeapSnapshotProfileType.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.Target} target
      */
     targetRemoved: function(target)
@@ -1190,6 +1204,7 @@ WebInspector.TrackingHeapSnapshotProfileType.TrackingStopped = "TrackingStopped"
 WebInspector.TrackingHeapSnapshotProfileType.prototype = {
 
     /**
+     * @override
      * @param {!WebInspector.Target} target
      */
     targetAdded: function(target)
@@ -1200,6 +1215,7 @@ WebInspector.TrackingHeapSnapshotProfileType.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.Target} target
      */
     targetRemoved: function(target)
@@ -1652,22 +1668,30 @@ WebInspector.HeapSnapshotLoadFromFileDelegate = function(snapshotHeader)
 }
 
 WebInspector.HeapSnapshotLoadFromFileDelegate.prototype = {
+    /**
+     * @override
+     */
     onTransferStarted: function()
     {
     },
 
     /**
+     * @override
      * @param {!WebInspector.ChunkedReader} reader
      */
     onChunkTransferred: function(reader)
     {
     },
 
+    /**
+     * @override
+     */
     onTransferFinished: function()
     {
     },
 
     /**
+     * @override
      * @param {!WebInspector.ChunkedReader} reader
      * @param {!Event} e
      */
@@ -1701,17 +1725,24 @@ WebInspector.SaveSnapshotOutputStreamDelegate = function(profileHeader)
 }
 
 WebInspector.SaveSnapshotOutputStreamDelegate.prototype = {
+    /**
+     * @override
+     */
     onTransferStarted: function()
     {
         this._profileHeader._updateSaveProgress(0, 1);
     },
 
+    /**
+     * @override
+     */
     onTransferFinished: function()
     {
         this._profileHeader._didCompleteSnapshotTransfer();
     },
 
     /**
+     * @override
      * @param {!WebInspector.ChunkedReader} reader
      */
     onChunkTransferred: function(reader)
@@ -1720,6 +1751,7 @@ WebInspector.SaveSnapshotOutputStreamDelegate.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.ChunkedReader} reader
      * @param {!Event} event
      */
@@ -2029,6 +2061,7 @@ WebInspector.HeapTrackingOverviewGrid.OverviewCalculator = function()
 
 WebInspector.HeapTrackingOverviewGrid.OverviewCalculator.prototype = {
     /**
+     * @override
      * @return {number}
      */
     paddingLeft: function()
@@ -2047,6 +2080,7 @@ WebInspector.HeapTrackingOverviewGrid.OverviewCalculator.prototype = {
     },
 
     /**
+     * @override
      * @param {number} time
      * @return {number}
      */
@@ -2056,6 +2090,7 @@ WebInspector.HeapTrackingOverviewGrid.OverviewCalculator.prototype = {
     },
 
     /**
+     * @override
      * @param {number} value
      * @param {number=} precision
      * @return {string}
@@ -2066,6 +2101,7 @@ WebInspector.HeapTrackingOverviewGrid.OverviewCalculator.prototype = {
     },
 
     /**
+     * @override
      * @return {number}
      */
     maximumBoundary: function()
@@ -2074,6 +2110,7 @@ WebInspector.HeapTrackingOverviewGrid.OverviewCalculator.prototype = {
     },
 
     /**
+     * @override
      * @return {number}
      */
     minimumBoundary: function()
@@ -2082,6 +2119,7 @@ WebInspector.HeapTrackingOverviewGrid.OverviewCalculator.prototype = {
     },
 
     /**
+     * @override
      * @return {number}
      */
     zeroTime: function()
@@ -2090,6 +2128,7 @@ WebInspector.HeapTrackingOverviewGrid.OverviewCalculator.prototype = {
     },
 
     /**
+     * @override
      * @return {number}
      */
     boundarySpan: function()

@@ -193,6 +193,7 @@ WebInspector.ConsoleView.prototype = {
     },
 
     /**
+     * @override
      * @return {number}
      */
     itemCount: function()
@@ -201,6 +202,7 @@ WebInspector.ConsoleView.prototype = {
     },
 
     /**
+     * @override
      * @param {number} index
      * @return {?WebInspector.ViewportElement}
      */
@@ -210,6 +212,7 @@ WebInspector.ConsoleView.prototype = {
     },
 
     /**
+     * @override
      * @param {number} index
      * @return {number}
      */
@@ -219,6 +222,7 @@ WebInspector.ConsoleView.prototype = {
     },
 
     /**
+     * @override
      * @return {number}
      */
     minimumRowHeight: function()
@@ -227,6 +231,7 @@ WebInspector.ConsoleView.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.Target} target
      */
     targetAdded: function(target)
@@ -238,6 +243,7 @@ WebInspector.ConsoleView.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.Target} target
      */
     targetRemoved: function(target)
@@ -293,6 +299,7 @@ WebInspector.ConsoleView.prototype = {
     },
 
     /**
+     * @override
      * @return {!Element}
      */
     defaultFocusedElement: function()
@@ -893,6 +900,7 @@ WebInspector.ConsoleView.prototype = {
     },
 
     /**
+     * @override
      * @return {!Array.<!Element>}
      */
     elementsToRestoreScrollPositionsFor: function()
@@ -900,6 +908,9 @@ WebInspector.ConsoleView.prototype = {
         return [this._messagesElement];
     },
 
+    /**
+     * @override
+     */
     searchCanceled: function()
     {
         this._clearCurrentSearchResultHighlight();
@@ -909,6 +920,7 @@ WebInspector.ConsoleView.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.SearchableView.SearchConfig} searchConfig
      * @param {boolean} shouldJump
      * @param {boolean=} jumpBackwards
@@ -933,6 +945,9 @@ WebInspector.ConsoleView.prototype = {
         this._viewport.refresh();
     },
 
+    /**
+     * @override
+     */
     jumpToNextSearchResult: function()
     {
         if (!this._searchResults || !this._searchResults.length)
@@ -940,6 +955,9 @@ WebInspector.ConsoleView.prototype = {
         this._jumpToSearchResult(this._currentSearchResultIndex + 1);
     },
 
+    /**
+     * @override
+     */
     jumpToPreviousSearchResult: function()
     {
         if (!this._searchResults || !this._searchResults.length)
@@ -948,6 +966,7 @@ WebInspector.ConsoleView.prototype = {
     },
 
     /**
+     * @override
      * @return {boolean}
      */
     supportsCaseSensitiveSearch: function()
@@ -956,6 +975,7 @@ WebInspector.ConsoleView.prototype = {
     },
 
     /**
+     * @override
      * @return {boolean}
      */
     supportsRegexSearch: function()
@@ -1161,6 +1181,7 @@ WebInspector.ConsoleCommand.prototype = {
     },
 
     /**
+     * @override
      * @param {!RegExp} regexObject
      * @return {boolean}
      */
@@ -1171,6 +1192,7 @@ WebInspector.ConsoleCommand.prototype = {
     },
 
     /**
+     * @override
      * @return {!Element}
      */
     contentElement: function()
@@ -1218,6 +1240,7 @@ WebInspector.ConsoleCommandResult.prototype = {
     },
 
     /**
+     * @override
      * @return {!Element}
      */
     contentElement: function()
@@ -1287,6 +1310,7 @@ WebInspector.ConsoleView.ShowConsoleActionDelegate = function()
 
 WebInspector.ConsoleView.ShowConsoleActionDelegate.prototype = {
     /**
+     * @override
      * @return {boolean}
      */
     handleAction: function()

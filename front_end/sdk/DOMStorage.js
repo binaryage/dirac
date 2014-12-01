@@ -273,6 +273,7 @@ WebInspector.DOMStorageDispatcher = function(model)
 WebInspector.DOMStorageDispatcher.prototype = {
 
     /**
+     * @override
      * @param {!DOMStorageAgent.StorageId} storageId
      */
     domStorageItemsCleared: function(storageId)
@@ -281,6 +282,7 @@ WebInspector.DOMStorageDispatcher.prototype = {
     },
 
     /**
+     * @override
      * @param {!DOMStorageAgent.StorageId} storageId
      * @param {string} key
      */
@@ -290,6 +292,7 @@ WebInspector.DOMStorageDispatcher.prototype = {
     },
 
     /**
+     * @override
      * @param {!DOMStorageAgent.StorageId} storageId
      * @param {string} key
      * @param {string} value
@@ -300,6 +303,7 @@ WebInspector.DOMStorageDispatcher.prototype = {
     },
 
     /**
+     * @override
      * @param {!DOMStorageAgent.StorageId} storageId
      * @param {string} key
      * @param {string} oldValue

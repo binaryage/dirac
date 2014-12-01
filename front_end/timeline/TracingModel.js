@@ -573,7 +573,7 @@ WebInspector.TracingModel.Event.prototype = {
     },
 
     /**
-     * @param {function():!Promise.<string>} backingStorage
+     * @param {function():!Promise.<?string>} backingStorage
      */
     _setBackingStorage: function(backingStorage)
     {
@@ -668,8 +668,8 @@ WebInspector.TracingModel.ObjectSnapshot.prototype = {
     },
 
     /**
-     * @param {function():!Promise.<?string>} backingStorage
      * @override
+     * @param {function():!Promise.<?string>} backingStorage
      */
     _setBackingStorage: function(backingStorage)
     {

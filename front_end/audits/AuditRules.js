@@ -80,6 +80,7 @@ WebInspector.AuditRules.GzipRule = function()
 
 WebInspector.AuditRules.GzipRule.prototype = {
     /**
+     * @override
      * @param {!WebInspector.Target} target
      * @param {!Array.<!WebInspector.NetworkRequest>} requests
      * @param {!WebInspector.AuditRuleResult} result
@@ -159,6 +160,7 @@ WebInspector.AuditRules.CombineExternalResourcesRule = function(id, name, type, 
 
 WebInspector.AuditRules.CombineExternalResourcesRule.prototype = {
     /**
+     * @override
      * @param {!WebInspector.Target} target
      * @param {!Array.<!WebInspector.NetworkRequest>} requests
      * @param {!WebInspector.AuditRuleResult} result
@@ -227,6 +229,7 @@ WebInspector.AuditRules.MinimizeDnsLookupsRule = function(hostCountThreshold) {
 
 WebInspector.AuditRules.MinimizeDnsLookupsRule.prototype = {
     /**
+     * @override
      * @param {!WebInspector.Target} target
      * @param {!Array.<!WebInspector.NetworkRequest>} requests
      * @param {!WebInspector.AuditRuleResult} result
@@ -274,6 +277,7 @@ WebInspector.AuditRules.ParallelizeDownloadRule = function(optimalHostnameCount,
 
 WebInspector.AuditRules.ParallelizeDownloadRule.prototype = {
     /**
+     * @override
      * @param {!WebInspector.Target} target
      * @param {!Array.<!WebInspector.NetworkRequest>} requests
      * @param {!WebInspector.AuditRuleResult} result
@@ -360,6 +364,7 @@ WebInspector.AuditRules.UnusedCssRule = function()
 
 WebInspector.AuditRules.UnusedCssRule.prototype = {
     /**
+     * @override
      * @param {!WebInspector.Target} target
      * @param {!Array.<!WebInspector.NetworkRequest>} requests
      * @param {!WebInspector.AuditRuleResult} result
@@ -574,6 +579,7 @@ WebInspector.AuditRules.CacheControlRule.MillisPerMonth = 1000 * 60 * 60 * 24 * 
 
 WebInspector.AuditRules.CacheControlRule.prototype = {
     /**
+     * @override
      * @param {!WebInspector.Target} target
      * @param {!Array.<!WebInspector.NetworkRequest>} requests
      * @param {!WebInspector.AuditRuleResult} result
@@ -869,6 +875,7 @@ WebInspector.AuditRules.ImageDimensionsRule = function()
 
 WebInspector.AuditRules.ImageDimensionsRule.prototype = {
     /**
+     * @override
      * @param {!WebInspector.Target} target
      * @param {!Array.<!WebInspector.NetworkRequest>} requests
      * @param {!WebInspector.AuditRuleResult} result
@@ -1005,6 +1012,7 @@ WebInspector.AuditRules.CssInHeadRule = function()
 
 WebInspector.AuditRules.CssInHeadRule.prototype = {
     /**
+     * @override
      * @param {!WebInspector.Target} target
      * @param {!Array.<!WebInspector.NetworkRequest>} requests
      * @param {!WebInspector.AuditRuleResult} result
@@ -1108,6 +1116,7 @@ WebInspector.AuditRules.StylesScriptsOrderRule = function()
 
 WebInspector.AuditRules.StylesScriptsOrderRule.prototype = {
     /**
+     * @override
      * @param {!WebInspector.Target} target
      * @param {!Array.<!WebInspector.NetworkRequest>} requests
      * @param {!WebInspector.AuditRuleResult} result
@@ -1210,6 +1219,7 @@ WebInspector.AuditRules.CSSRuleBase = function(id, name)
 
 WebInspector.AuditRules.CSSRuleBase.prototype = {
     /**
+     * @override
      * @param {!WebInspector.Target} target
      * @param {!Array.<!WebInspector.NetworkRequest>} requests
      * @param {!WebInspector.AuditRuleResult} result
@@ -1345,6 +1355,7 @@ WebInspector.AuditRules.VendorPrefixedCSSProperties.supportedProperties = [
 
 WebInspector.AuditRules.VendorPrefixedCSSProperties.prototype = {
     /**
+     * @override
      * @param {!WebInspector.AuditRules.ParsedStyleSheet} styleSheet
      */
     didVisitStyleSheet: function(styleSheet)
@@ -1367,6 +1378,7 @@ WebInspector.AuditRules.VendorPrefixedCSSProperties.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.AuditRules.ParsedStyleSheet} styleSheet
      * @param {!WebInspector.CSSParser.StyleRule} rule
      * @param {!WebInspector.CSSParser.Property} property
@@ -1406,6 +1418,7 @@ WebInspector.AuditRules.CookieRuleBase = function(id, name)
 
 WebInspector.AuditRules.CookieRuleBase.prototype = {
     /**
+     * @override
      * @param {!WebInspector.Target} target
      * @param {!Array.<!WebInspector.NetworkRequest>} requests
      * @param {!WebInspector.AuditRuleResult} result

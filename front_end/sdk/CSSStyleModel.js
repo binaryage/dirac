@@ -1650,12 +1650,16 @@ WebInspector.CSSDispatcher = function(cssModel)
 }
 
 WebInspector.CSSDispatcher.prototype = {
+    /**
+     * @override
+     */
     mediaQueryResultChanged: function()
     {
         this._cssModel.mediaQueryResultChanged();
     },
 
     /**
+     * @override
      * @param {!CSSAgent.StyleSheetId} styleSheetId
      */
     styleSheetChanged: function(styleSheetId)
@@ -1664,6 +1668,7 @@ WebInspector.CSSDispatcher.prototype = {
     },
 
     /**
+     * @override
      * @param {!CSSAgent.CSSStyleSheetHeader} header
      */
     styleSheetAdded: function(header)
@@ -1672,6 +1677,7 @@ WebInspector.CSSDispatcher.prototype = {
     },
 
     /**
+     * @override
      * @param {!CSSAgent.StyleSheetId} id
      */
     styleSheetRemoved: function(id)

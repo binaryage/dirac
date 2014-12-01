@@ -17,6 +17,7 @@ WebInspector.CSSWorkspaceBinding = function()
 
 WebInspector.CSSWorkspaceBinding.prototype = {
     /**
+     * @override
      * @param {!WebInspector.Target} target
      */
     targetAdded: function(target)
@@ -25,6 +26,7 @@ WebInspector.CSSWorkspaceBinding.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.Target} target
      */
     targetRemoved: function(target)
@@ -369,6 +371,7 @@ WebInspector.CSSWorkspaceBinding.LiveLocation.prototype = {
     },
 
     /**
+     * @override
      * @return {?WebInspector.UILocation}
      */
     uiLocation: function()

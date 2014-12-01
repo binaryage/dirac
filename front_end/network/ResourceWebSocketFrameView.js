@@ -181,7 +181,9 @@ WebInspector.ResourceWebSocketFrameNode = function(frame)
 }
 
 WebInspector.ResourceWebSocketFrameNode.prototype = {
-    /** override */
+    /**
+     * @override
+     */
     createCells: function()
     {
         var element = this._element;

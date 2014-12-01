@@ -52,6 +52,7 @@ WebInspector.JSHeapSnapshot = function(profile, progress, showHiddenData)
 
 WebInspector.JSHeapSnapshot.prototype = {
     /**
+     * @override
      * @param {number=} nodeIndex
      * @return {!WebInspector.JSHeapSnapshotNode}
      */
@@ -103,6 +104,7 @@ WebInspector.JSHeapSnapshot.prototype = {
     },
 
     /**
+     * @override
      * @return {function(!WebInspector.HeapSnapshotEdge):boolean}
      */
     containmentEdgesFilter: function()
@@ -120,6 +122,7 @@ WebInspector.JSHeapSnapshot.prototype = {
     },
 
     /**
+     * @override
      * @return {function(!WebInspector.HeapSnapshotEdge):boolean}
      */
     retainingEdgesFilter: function()
@@ -187,6 +190,7 @@ WebInspector.JSHeapSnapshot.prototype = {
     },
 
     /**
+     * @override
      * @param {function(!WebInspector.HeapSnapshotNode)} action
      * @param {boolean=} userRootsOnly
      */
@@ -500,6 +504,7 @@ WebInspector.JSHeapSnapshotNode.prototype = {
     rawName: WebInspector.HeapSnapshotNode.prototype.name,
 
     /**
+     * @override
      * @return {string}
      */
     name: function()
@@ -567,6 +572,7 @@ WebInspector.JSHeapSnapshotNode.prototype = {
     },
 
     /**
+     * @override
      * @return {string}
      */
     className: function()
@@ -586,6 +592,7 @@ WebInspector.JSHeapSnapshotNode.prototype = {
     },
 
     /**
+     * @override
      * @return {number}
      */
     classIndex: function()
@@ -599,6 +606,7 @@ WebInspector.JSHeapSnapshotNode.prototype = {
     },
 
     /**
+     * @override
      * @return {number}
      */
     id: function()
@@ -648,6 +656,7 @@ WebInspector.JSHeapSnapshotNode.prototype = {
     },
 
     /**
+     * @override
      * @return {!WebInspector.HeapSnapshotCommon.Node}
      */
     serialize: function()
@@ -677,6 +686,7 @@ WebInspector.JSHeapSnapshotEdge = function(snapshot, edgeIndex)
 
 WebInspector.JSHeapSnapshotEdge.prototype = {
     /**
+     * @override
      * @return {!WebInspector.JSHeapSnapshotEdge}
      */
     clone: function()
@@ -686,6 +696,7 @@ WebInspector.JSHeapSnapshotEdge.prototype = {
     },
 
     /**
+     * @override
      * @return {boolean}
      */
     hasStringName: function()
@@ -757,6 +768,7 @@ WebInspector.JSHeapSnapshotEdge.prototype = {
     },
 
     /**
+     * @override
      * @return {string}
      */
     toString: function()
@@ -832,6 +844,7 @@ WebInspector.JSHeapSnapshotRetainerEdge = function(snapshot, retainerIndex)
 
 WebInspector.JSHeapSnapshotRetainerEdge.prototype = {
     /**
+     * @override
      * @return {!WebInspector.JSHeapSnapshotRetainerEdge}
      */
     clone: function()

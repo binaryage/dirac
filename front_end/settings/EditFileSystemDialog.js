@@ -101,6 +101,7 @@ WebInspector.EditFileSystemDialog.show = function(element, fileSystemPath)
 
 WebInspector.EditFileSystemDialog.prototype = {
     /**
+     * @override
      * @param {!Element} element
      */
     show: function(element)
@@ -128,6 +129,7 @@ WebInspector.EditFileSystemDialog.prototype = {
     },
 
     /**
+     * @override
      * @param {!Element} element
      * @param {!Element} relativeToElement
      */

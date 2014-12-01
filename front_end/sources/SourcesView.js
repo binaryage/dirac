@@ -162,6 +162,7 @@ WebInspector.SourcesView.prototype = {
     },
 
     /**
+     * @override
      * @return {!Element}
      */
     defaultFocusedElement: function()
@@ -407,6 +408,7 @@ WebInspector.SourcesView.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.UISourceCode} uiSourceCode
      * @return {!WebInspector.UISourceCodeFrame}
      */
@@ -486,6 +488,9 @@ WebInspector.SourcesView.prototype = {
         this._recreateSourceFrameIfNeeded(uiSourceCode);
     },
 
+    /**
+     * @override
+     */
     searchCanceled: function()
     {
         if (this._searchView)
@@ -496,6 +501,7 @@ WebInspector.SourcesView.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.SearchableView.SearchConfig} searchConfig
      * @param {boolean} shouldJump
      * @param {boolean=} jumpBackwards
@@ -544,6 +550,9 @@ WebInspector.SourcesView.prototype = {
         this._searchView.performSearch(this._searchConfig, shouldJump, !!jumpBackwards, finishedCallback.bind(this), currentMatchChanged.bind(this), searchResultsChanged.bind(this));
     },
 
+    /**
+     * @override
+     */
     jumpToNextSearchResult: function()
     {
         if (!this._searchView)
@@ -557,6 +566,9 @@ WebInspector.SourcesView.prototype = {
         this._searchView.jumpToNextSearchResult();
     },
 
+    /**
+     * @override
+     */
     jumpToPreviousSearchResult: function()
     {
         if (!this._searchView)
@@ -573,6 +585,7 @@ WebInspector.SourcesView.prototype = {
     },
 
     /**
+     * @override
      * @return {boolean}
      */
     supportsCaseSensitiveSearch: function()
@@ -581,6 +594,7 @@ WebInspector.SourcesView.prototype = {
     },
 
     /**
+     * @override
      * @return {boolean}
      */
     supportsRegexSearch: function()
@@ -589,6 +603,7 @@ WebInspector.SourcesView.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.SearchableView.SearchConfig} searchConfig
      * @param {string} replacement
      */
@@ -603,6 +618,7 @@ WebInspector.SourcesView.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.SearchableView.SearchConfig} searchConfig
      * @param {string} replacement
      */
@@ -780,11 +796,12 @@ WebInspector.SourcesView.SwitchFileActionDelegate._nextFile = function(currentUI
     var fullPath = (path ? path + "/" : "") + candidates[index];
     var nextUISourceCode = currentUISourceCode.project().uiSourceCode(fullPath);
     return nextUISourceCode !== currentUISourceCode ? nextUISourceCode : null;
-},
+}
 
 
 WebInspector.SourcesView.SwitchFileActionDelegate.prototype = {
     /**
+     * @override
      * @return {boolean}
      */
     handleAction: function()

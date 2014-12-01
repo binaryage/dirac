@@ -549,6 +549,7 @@ WebInspector.SASSSourceMapping.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.CSSLocation} rawLocation
      * @return {?WebInspector.UILocation}
      */
@@ -568,6 +569,7 @@ WebInspector.SASSSourceMapping.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.UISourceCode} uiSourceCode
      * @param {number} lineNumber
      * @param {number} columnNumber
@@ -580,6 +582,7 @@ WebInspector.SASSSourceMapping.prototype = {
     },
 
     /**
+     * @override
      * @return {boolean}
      */
     isIdentity: function()
@@ -588,6 +591,7 @@ WebInspector.SASSSourceMapping.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.UISourceCode} uiSourceCode
      * @param {number} lineNumber
      * @return {boolean}

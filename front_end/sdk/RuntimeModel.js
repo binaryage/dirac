@@ -151,16 +151,27 @@ WebInspector.RuntimeDispatcher = function(runtimeModel)
 }
 
 WebInspector.RuntimeDispatcher.prototype = {
+    /**
+     * @override
+     * @param {!RuntimeAgent.ExecutionContextDescription} context
+     */
     executionContextCreated: function(context)
     {
         this._runtimeModel._executionContextCreated(context);
     },
 
+    /**
+     * @override
+     * @param {!RuntimeAgent.ExecutionContextId} executionContextId
+     */
     executionContextDestroyed: function(executionContextId)
     {
         this._runtimeModel._executionContextDestroyed(executionContextId);
     },
 
+    /**
+     * @override
+     */
     executionContextsCleared: function()
     {
         this._runtimeModel._executionContextsCleared();

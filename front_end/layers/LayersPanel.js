@@ -92,6 +92,7 @@ WebInspector.LayersPanel.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.Target} target
      */
     targetAdded: function(target)
@@ -106,6 +107,7 @@ WebInspector.LayersPanel.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.Target} target
      */
     targetRemoved: function(target)
@@ -236,6 +238,7 @@ WebInspector.LayersPanel.LayerTreeRevealer = function()
 
 WebInspector.LayersPanel.LayerTreeRevealer.prototype = {
     /**
+     * @override
      * @param {!Object} snapshotData
      * @return {!Promise}
      */
@@ -270,6 +273,7 @@ WebInspector.LayersPanelFactory = function()
 
 WebInspector.LayersPanelFactory.prototype = {
     /**
+     * @override
      * @return {!WebInspector.Panel}
      */
     createPanel: function()

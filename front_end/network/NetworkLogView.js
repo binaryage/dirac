@@ -150,6 +150,7 @@ WebInspector.NetworkLogView._columnTitles = {
 
 WebInspector.NetworkLogView.prototype = {
     /**
+     * @override
      * @param {!WebInspector.Target} target
      */
     targetAdded: function(target)
@@ -158,6 +159,7 @@ WebInspector.NetworkLogView.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.Target} target
      */
     targetRemoved: function(target)
@@ -256,6 +258,7 @@ WebInspector.NetworkLogView.prototype = {
     },
 
     /**
+     * @override
      * @return {!Array.<!Element>}
      */
     elementsToRestoreScrollPositionsFor: function()
@@ -1408,6 +1411,7 @@ WebInspector.NetworkLogView.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.SearchableView.SearchConfig} searchConfig
      * @param {boolean} shouldJump
      * @param {boolean=} jumpBackwards
@@ -1430,6 +1434,7 @@ WebInspector.NetworkLogView.prototype = {
     },
 
     /**
+     * @override
      * @return {boolean}
      */
     supportsCaseSensitiveSearch: function()
@@ -1438,6 +1443,7 @@ WebInspector.NetworkLogView.prototype = {
     },
 
     /**
+     * @override
      * @return {boolean}
      */
     supportsRegexSearch: function()
@@ -1591,6 +1597,9 @@ WebInspector.NetworkLogView.prototype = {
         this.refresh();
     },
 
+    /**
+     * @override
+     */
     jumpToPreviousSearchResult: function()
     {
         if (!this._matchedRequestCount)
@@ -1599,6 +1608,9 @@ WebInspector.NetworkLogView.prototype = {
         this._highlightNthMatchedRequestForSearch(index, true);
     },
 
+    /**
+     * @override
+     */
     jumpToNextSearchResult: function()
     {
         if (!this._matchedRequestCount)
@@ -1607,6 +1619,9 @@ WebInspector.NetworkLogView.prototype = {
         this._highlightNthMatchedRequestForSearch(index, true);
     },
 
+    /**
+     * @override
+     */
     searchCanceled: function()
     {
         delete this._searchRegExp;

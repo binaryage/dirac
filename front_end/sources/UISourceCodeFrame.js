@@ -75,6 +75,7 @@ WebInspector.UISourceCodeFrame.prototype = {
     },
 
     /**
+     * @override
      * @return {boolean}
      */
     canEditSource: function()

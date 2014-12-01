@@ -2156,6 +2156,7 @@ WebInspector.BlankStylePropertiesSection.prototype = {
     },
 
     /**
+     * @override
      * @param {!Element} element
      * @param {string} newContent
      * @param {string} oldContent
@@ -2728,6 +2729,7 @@ WebInspector.ComputedStylePropertyTreeElement = function(stylesPane, styleRule, 
 
 WebInspector.ComputedStylePropertyTreeElement.prototype = {
     /**
+     * @override
      * @return {?WebInspector.StylesSidebarPane}
      */
     editablePane: function()
@@ -2736,6 +2738,7 @@ WebInspector.ComputedStylePropertyTreeElement.prototype = {
     },
 
     /**
+     * @override
      * @return {!WebInspector.ComputedStyleSidebarPane}
      */
     parentPane: function()
@@ -2778,6 +2781,7 @@ WebInspector.StylePropertyTreeElement.Context;
 
 WebInspector.StylePropertyTreeElement.prototype = {
     /**
+     * @override
      * @return {?WebInspector.DOMNode}
      */
     node: function()
@@ -2786,6 +2790,7 @@ WebInspector.StylePropertyTreeElement.prototype = {
     },
 
     /**
+     * @override
      * @return {?WebInspector.StylesSidebarPane}
      */
     editablePane: function()
@@ -2794,6 +2799,7 @@ WebInspector.StylePropertyTreeElement.prototype = {
     },
 
     /**
+     * @override
      * @return {!WebInspector.StylesSidebarPane}
      */
     parentPane: function()
@@ -3546,6 +3552,7 @@ WebInspector.StylePropertyTreeElement.prototype = {
     },
 
     /**
+     * @override
      * @return {boolean}
      */
     ondblclick: function()
@@ -3554,6 +3561,7 @@ WebInspector.StylePropertyTreeElement.prototype = {
     },
 
     /**
+     * @override
      * @param {!Event} event
      * @return {boolean}
      */
@@ -3587,6 +3595,7 @@ WebInspector.StylesSidebarPane.CSSPropertyPrompt = function(cssCompletions, side
 
 WebInspector.StylesSidebarPane.CSSPropertyPrompt.prototype = {
     /**
+     * @override
      * @param {!Event} event
      */
     onKeyDown: function(event)
@@ -3613,6 +3622,7 @@ WebInspector.StylesSidebarPane.CSSPropertyPrompt.prototype = {
     },
 
     /**
+     * @override
      * @param {!Event} event
      */
     onMouseWheel: function(event)

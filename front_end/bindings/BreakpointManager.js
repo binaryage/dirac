@@ -83,6 +83,7 @@ WebInspector.BreakpointManager._breakpointStorageId = function(sourceFileId, lin
 
 WebInspector.BreakpointManager.prototype = {
     /**
+     * @override
      * @param {!WebInspector.Target} target
      */
     targetAdded: function(target) {
@@ -91,6 +92,7 @@ WebInspector.BreakpointManager.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.Target} target
      */
     targetRemoved: function(target) { },
@@ -484,6 +486,7 @@ WebInspector.BreakpointManager.Breakpoint = function(breakpointManager, projectI
 
 WebInspector.BreakpointManager.Breakpoint.prototype = {
     /**
+     * @override
      * @param {!WebInspector.Target} target
      */
     targetAdded: function(target)
@@ -492,6 +495,7 @@ WebInspector.BreakpointManager.Breakpoint.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.Target} target
      */
     targetRemoved: function(target)

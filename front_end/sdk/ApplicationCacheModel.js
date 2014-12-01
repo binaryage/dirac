@@ -242,6 +242,7 @@ WebInspector.ApplicationCacheDispatcher = function(applicationCacheModel)
 
 WebInspector.ApplicationCacheDispatcher.prototype = {
     /**
+     * @override
      * @param {string} frameId
      * @param {string} manifestURL
      * @param {number} status
@@ -252,6 +253,7 @@ WebInspector.ApplicationCacheDispatcher.prototype = {
     },
 
     /**
+     * @override
      * @param {boolean} isNowOnline
      */
     networkStateUpdated: function(isNowOnline)

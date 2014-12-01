@@ -59,6 +59,7 @@ WebInspector.CPUProfilerModel.prototype = {
     },
 
     /**
+     * @override
      * @param {string} id
      * @param {!DebuggerAgent.Location} scriptLocation
      * @param {!ProfilerAgent.CPUProfile} cpuProfile
@@ -79,6 +80,7 @@ WebInspector.CPUProfilerModel.prototype = {
     },
 
     /**
+     * @override
      * @param {string} id
      * @param {!DebuggerAgent.Location} scriptLocation
      * @param {string=} title

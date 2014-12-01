@@ -674,6 +674,7 @@ WebInspector.SplitView.prototype = {
     },
 
     /**
+     * @override
      * @return {!Constraints}
      */
     calculateConstraints: function()

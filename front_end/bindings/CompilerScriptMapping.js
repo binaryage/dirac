@@ -65,6 +65,7 @@ WebInspector.CompilerScriptMapping = function(debuggerModel, workspace, networkW
 
 WebInspector.CompilerScriptMapping.prototype = {
     /**
+     * @override
      * @param {!WebInspector.DebuggerModel.Location} rawLocation
      * @return {?WebInspector.UILocation}
      */
@@ -92,6 +93,7 @@ WebInspector.CompilerScriptMapping.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.UISourceCode} uiSourceCode
      * @param {number} lineNumber
      * @param {number} columnNumber
@@ -213,6 +215,7 @@ WebInspector.CompilerScriptMapping.prototype = {
     },
 
     /**
+     * @override
      * @return {boolean}
      */
     isIdentity: function()
@@ -221,6 +224,7 @@ WebInspector.CompilerScriptMapping.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.UISourceCode} uiSourceCode
      * @param {number} lineNumber
      * @return {boolean}

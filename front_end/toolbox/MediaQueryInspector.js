@@ -40,6 +40,7 @@ WebInspector.MediaQueryInspector.Events = {
 
 WebInspector.MediaQueryInspector.prototype = {
     /**
+     * @override
      * @param {!WebInspector.Target} target
      */
     targetAdded: function(target)
@@ -55,6 +56,7 @@ WebInspector.MediaQueryInspector.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.Target} target
      */
     targetRemoved: function(target)

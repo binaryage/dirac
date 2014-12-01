@@ -43,6 +43,7 @@ WebInspector.ScreencastApp.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.Target} target
      */
     targetAdded: function(target)
@@ -62,6 +63,7 @@ WebInspector.ScreencastApp.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.Target} target
      */
     targetRemoved: function(target)
@@ -111,6 +113,7 @@ WebInspector.ScreencastApp.StatusBarButtonProvider = function()
 
 WebInspector.ScreencastApp.StatusBarButtonProvider.prototype = {
     /**
+     * @override
      * @return {?WebInspector.StatusBarItem}
      */
     item: function()

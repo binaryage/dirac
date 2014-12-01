@@ -250,6 +250,7 @@ WebInspector.HandlerRegistry.ContextMenuProvider = function()
 
 WebInspector.HandlerRegistry.ContextMenuProvider.prototype = {
     /**
+     * @override
      * @param {!Event} event
      * @param {!WebInspector.ContextMenu} contextMenu
      * @param {!Object} target
@@ -271,6 +272,7 @@ WebInspector.HandlerRegistry.LinkHandler = function()
 
 WebInspector.HandlerRegistry.LinkHandler.prototype = {
     /**
+     * @override
      * @param {string} url
      * @param {number=} lineNumber
      * @return {boolean}

@@ -144,6 +144,7 @@ WebInspector.SourcesPanel.prototype = {
     },
 
     /**
+     * @override
      * @return {!Element}
      */
     defaultFocusedElement: function()
@@ -172,6 +173,7 @@ WebInspector.SourcesPanel.prototype = {
     },
 
     /**
+     * @override
      * @return {!WebInspector.SearchableView}
      */
     searchableView: function()
@@ -769,6 +771,7 @@ WebInspector.SourcesPanel.prototype = {
     },
 
     /**
+     * @override
      * @param {!Event} event
      * @param {!WebInspector.ContextMenu} contextMenu
      * @param {!Object} target
@@ -1117,6 +1120,7 @@ WebInspector.SourcesPanel.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.Target} target
      */
     targetAdded: function(target)
@@ -1125,6 +1129,7 @@ WebInspector.SourcesPanel.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.Target} target
      */
     targetRemoved: function(target)
@@ -1214,6 +1219,7 @@ WebInspector.SourcesPanel.ContextMenuProvider = function()
 
 WebInspector.SourcesPanel.ContextMenuProvider.prototype = {
     /**
+     * @override
      * @param {!Event} event
      * @param {!WebInspector.ContextMenu} contextMenu
      * @param {!Object} target
@@ -1234,6 +1240,7 @@ WebInspector.SourcesPanel.UILocationRevealer = function()
 
 WebInspector.SourcesPanel.UILocationRevealer.prototype = {
     /**
+     * @override
      * @param {!Object} uiLocation
      * @return {!Promise}
      */
@@ -1257,6 +1264,7 @@ WebInspector.SourcesPanel.UISourceCodeRevealer = function()
 
 WebInspector.SourcesPanel.UISourceCodeRevealer.prototype = {
     /**
+     * @override
      * @param {!Object} uiSourceCode
      * @return {!Promise}
      */
@@ -1280,6 +1288,7 @@ WebInspector.SourcesPanel.DebuggerPausedDetailsRevealer = function()
 
 WebInspector.SourcesPanel.DebuggerPausedDetailsRevealer.prototype = {
     /**
+     * @override
      * @param {!Object} object
      * @return {!Promise}
      */
@@ -1298,6 +1307,7 @@ WebInspector.SourcesPanel.ShowGoToSourceDialogActionDelegate = function() {}
 
 WebInspector.SourcesPanel.ShowGoToSourceDialogActionDelegate.prototype = {
     /**
+     * @override
      * @return {boolean}
      */
     handleAction: function()
@@ -1382,6 +1392,7 @@ WebInspector.SourcesPanel.TogglePauseActionDelegate = function()
 
 WebInspector.SourcesPanel.TogglePauseActionDelegate.prototype = {
     /**
+     * @override
      * @return {boolean}
      */
     handleAction: function()
@@ -1418,6 +1429,7 @@ WebInspector.SourcesPanelFactory = function()
 
 WebInspector.SourcesPanelFactory.prototype = {
     /**
+     * @override
      * @return {!WebInspector.Panel}
      */
     createPanel: function()

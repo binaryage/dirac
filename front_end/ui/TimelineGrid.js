@@ -153,7 +153,7 @@ WebInspector.TimelineGrid.drawCanvasGrid = function(canvas, calculator, dividerO
         lastPosition = position;
     }
     context.restore();
-},
+}
 
 WebInspector.TimelineGrid.prototype = {
     get dividersElement()

@@ -69,6 +69,7 @@ WebInspector.ProfileLauncherView.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.Target} target
      */
     targetAdded: function(target)
@@ -77,6 +78,7 @@ WebInspector.ProfileLauncherView.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.Target} target
      */
     targetRemoved: function(target)
@@ -263,4 +265,3 @@ WebInspector.MultiProfileLauncherView.prototype = {
 
     __proto__: WebInspector.ProfileLauncherView.prototype
 }
-

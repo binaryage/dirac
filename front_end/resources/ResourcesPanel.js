@@ -111,6 +111,7 @@ WebInspector.ResourcesPanel = function()
 
 WebInspector.ResourcesPanel.prototype = {
     /**
+     * @override
      * @param {!WebInspector.Target} target
      */
     targetAdded: function(target)
@@ -132,6 +133,7 @@ WebInspector.ResourcesPanel.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.Target} target
      */
     targetRemoved: function(target)
@@ -808,6 +810,7 @@ WebInspector.ResourcesPanel.ResourceRevealer = function()
 
 WebInspector.ResourcesPanel.ResourceRevealer.prototype = {
     /**
+     * @override
      * @param {!Object} resource
      * @param {number=} lineNumber
      * @return {!Promise}
@@ -2189,6 +2192,7 @@ WebInspector.ResourcesPanelFactory = function()
 
 WebInspector.ResourcesPanelFactory.prototype = {
     /**
+     * @override
      * @return {!WebInspector.Panel}
      */
     createPanel: function()

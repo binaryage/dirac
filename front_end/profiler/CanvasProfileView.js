@@ -688,6 +688,7 @@ WebInspector.CanvasProfileType.prototype = {
     },
 
     /**
+     * @override
      * @return {!Array.<!WebInspector.StatusBarItem>}
      */
     statusBarItems: function()
@@ -1007,6 +1008,7 @@ WebInspector.CanvasDispatcher = function(target, profileType)
 
 WebInspector.CanvasDispatcher.prototype = {
     /**
+     * @override
      * @param {string} frameId
      */
     contextCreated: function(frameId)
@@ -1015,6 +1017,7 @@ WebInspector.CanvasDispatcher.prototype = {
     },
 
     /**
+     * @override
      * @param {!PageAgent.FrameId=} frameId
      * @param {!CanvasAgent.TraceLogId=} traceLogId
      */

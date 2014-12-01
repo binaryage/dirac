@@ -62,6 +62,7 @@ WebInspector.FrameworkBlackboxDialog.show = function(element)
 
 WebInspector.FrameworkBlackboxDialog.prototype = {
     /**
+     * @override
      * @param {!Element} element
      */
     show: function(element)
@@ -89,6 +90,7 @@ WebInspector.FrameworkBlackboxDialog.prototype = {
     },
 
     /**
+     * @override
      * @param {!Element} element
      * @param {!Element} relativeToElement
      */

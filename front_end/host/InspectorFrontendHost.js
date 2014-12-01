@@ -290,6 +290,7 @@ WebInspector.InspectorFrontendHostStub = function()
 
 WebInspector.InspectorFrontendHostStub.prototype = {
     /**
+     * @override
      * @return {string}
      */
     getSelectionBackgroundColor: function()
@@ -298,6 +299,7 @@ WebInspector.InspectorFrontendHostStub.prototype = {
     },
 
     /**
+     * @override
      * @return {string}
      */
     getSelectionForegroundColor: function()
@@ -306,6 +308,7 @@ WebInspector.InspectorFrontendHostStub.prototype = {
     },
 
     /**
+     * @override
      * @return {string}
      */
     platform: function()
@@ -319,21 +322,31 @@ WebInspector.InspectorFrontendHostStub.prototype = {
         return "linux";
     },
 
+    /**
+     * @override
+     */
     loadCompleted: function()
     {
     },
 
+    /**
+     * @override
+     */
     bringToFront: function()
     {
         this._windowVisible = true;
     },
 
+    /**
+     * @override
+     */
     closeWindow: function()
     {
         this._windowVisible = false;
     },
 
     /**
+     * @override
      * @param {boolean} isDocked
      * @param {function()} callback
      */
@@ -343,17 +356,22 @@ WebInspector.InspectorFrontendHostStub.prototype = {
 
     /**
      * Requests inspected page to be placed atop of the inspector frontend with specified bounds.
+     * @override
      * @param {{x: number, y: number, width: number, height: number}} bounds
      */
     setInspectedPageBounds: function(bounds)
     {
     },
 
+    /**
+     * @override
+     */
     inspectElementCompleted: function()
     {
     },
 
     /**
+     * @override
      * @param {string} origin
      * @param {string} script
      */
@@ -362,6 +380,7 @@ WebInspector.InspectorFrontendHostStub.prototype = {
     },
 
     /**
+     * @override
      * @param {string} url
      * @suppressGlobalPropertiesCheck
      */
@@ -371,6 +390,7 @@ WebInspector.InspectorFrontendHostStub.prototype = {
     },
 
     /**
+     * @override
      * @param {string} text
      */
     copyText: function(text)
@@ -379,6 +399,7 @@ WebInspector.InspectorFrontendHostStub.prototype = {
     },
 
     /**
+     * @override
      * @param {string} url
      */
     openInNewTab: function(url)
@@ -387,6 +408,7 @@ WebInspector.InspectorFrontendHostStub.prototype = {
     },
 
     /**
+     * @override
      * @param {string} url
      * @param {string} content
      * @param {boolean} forceSaveAs
@@ -398,6 +420,7 @@ WebInspector.InspectorFrontendHostStub.prototype = {
     },
 
     /**
+     * @override
      * @param {string} url
      * @param {string} content
      */
@@ -407,6 +430,7 @@ WebInspector.InspectorFrontendHostStub.prototype = {
     },
 
     /**
+     * @override
      * @param {string} message
      */
     sendMessageToBackend: function(message)
@@ -414,6 +438,7 @@ WebInspector.InspectorFrontendHostStub.prototype = {
     },
 
     /**
+     * @override
      * @param {number} actionCode
      */
     recordActionTaken: function(actionCode)
@@ -421,21 +446,29 @@ WebInspector.InspectorFrontendHostStub.prototype = {
     },
 
     /**
+     * @override
      * @param {number} panelCode
      */
     recordPanelShown: function(panelCode)
     {
     },
 
+    /**
+     * @override
+     */
     requestFileSystems: function()
     {
     },
 
+    /**
+     * @override
+     */
     addFileSystem: function()
     {
     },
 
     /**
+     * @override
      * @param {string} fileSystemPath
      */
     removeFileSystem: function(fileSystemPath)
@@ -443,6 +476,7 @@ WebInspector.InspectorFrontendHostStub.prototype = {
     },
 
     /**
+     * @override
      * @param {string} fileSystemId
      * @param {string} registeredName
      * @return {?DOMFileSystem}
@@ -453,6 +487,7 @@ WebInspector.InspectorFrontendHostStub.prototype = {
     },
 
     /**
+     * @override
      * @param {!FileSystem} fileSystem
      */
     upgradeDraggedFileSystemPermissions: function(fileSystem)
@@ -460,6 +495,7 @@ WebInspector.InspectorFrontendHostStub.prototype = {
     },
 
     /**
+     * @override
      * @param {number} requestId
      * @param {string} fileSystemPath
      */
@@ -468,6 +504,7 @@ WebInspector.InspectorFrontendHostStub.prototype = {
     },
 
     /**
+     * @override
      * @param {number} requestId
      */
     stopIndexing: function(requestId)
@@ -475,6 +512,7 @@ WebInspector.InspectorFrontendHostStub.prototype = {
     },
 
     /**
+     * @override
      * @param {number} requestId
      * @param {string} fileSystemPath
      * @param {string} query
@@ -484,6 +522,7 @@ WebInspector.InspectorFrontendHostStub.prototype = {
     },
 
     /**
+     * @override
      * @return {number}
      */
     zoomFactor: function()
@@ -491,23 +530,37 @@ WebInspector.InspectorFrontendHostStub.prototype = {
         return 1;
     },
 
+    /**
+     * @override
+     */
     zoomIn: function()
     {
     },
 
+    /**
+     * @override
+     */
     zoomOut: function()
     {
     },
 
+    /**
+     * @override
+     */
     resetZoom: function()
     {
     },
 
+    /**
+     * @override
+     * @param {string} shortcuts
+     */
     setWhitelistedShortcuts: function(shortcuts)
     {
     },
 
     /**
+     * @override
      * @return {boolean}
      */
     isUnderTest: function()
@@ -516,6 +569,7 @@ WebInspector.InspectorFrontendHostStub.prototype = {
     },
 
     /**
+     * @override
      * @param {string} browserId
      * @param {string} url
      */
@@ -524,6 +578,7 @@ WebInspector.InspectorFrontendHostStub.prototype = {
     },
 
     /**
+     * @override
      * @param {boolean} enabled
      */
     setDeviceCountUpdatesEnabled: function(enabled)
@@ -531,6 +586,7 @@ WebInspector.InspectorFrontendHostStub.prototype = {
     },
 
     /**
+     * @override
      * @param {boolean} enabled
      */
     setDevicesUpdatesEnabled: function(enabled)
@@ -538,6 +594,7 @@ WebInspector.InspectorFrontendHostStub.prototype = {
     },
 
     /**
+     * @override
      * @param {number} x
      * @param {number} y
      * @param {!Array.<!InspectorFrontendHostAPI.ContextMenuDescriptor>} items
@@ -549,6 +606,7 @@ WebInspector.InspectorFrontendHostStub.prototype = {
     },
 
     /**
+     * @override
      * @return {boolean}
      */
     isHostedMode: function()

@@ -54,6 +54,7 @@ WebInspector.NetworkProjectDelegate.prototype = {
     },
 
     /**
+     * @override
      * @return {string}
      */
     displayName: function()
@@ -76,6 +77,7 @@ WebInspector.NetworkProjectDelegate.prototype = {
     },
 
     /**
+     * @override
      * @return {string}
      */
     url: function()

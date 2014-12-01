@@ -100,6 +100,7 @@ WebInspector.HeapSnapshotEdge.prototype = {
     },
 
     /**
+     * @override
      * @return {string}
      */
     toString: function()
@@ -185,6 +186,7 @@ WebInspector.HeapSnapshotNodeIndexProvider = function(snapshot)
 
 WebInspector.HeapSnapshotNodeIndexProvider.prototype = {
     /**
+     * @override
      * @param {number} index
      * @return {!WebInspector.HeapSnapshotNode}
      */
@@ -208,6 +210,7 @@ WebInspector.HeapSnapshotEdgeIndexProvider = function(snapshot)
 
 WebInspector.HeapSnapshotEdgeIndexProvider.prototype = {
     /**
+     * @override
      * @param {number} index
      * @return {!WebInspector.HeapSnapshotEdge}
      */
@@ -231,6 +234,7 @@ WebInspector.HeapSnapshotRetainerEdgeIndexProvider = function(snapshot)
 
 WebInspector.HeapSnapshotRetainerEdgeIndexProvider.prototype = {
     /**
+     * @override
      * @param {number} index
      * @return {!WebInspector.HeapSnapshotRetainerEdge}
      */
@@ -255,6 +259,7 @@ WebInspector.HeapSnapshotEdgeIterator = function(node)
 
 WebInspector.HeapSnapshotEdgeIterator.prototype = {
     /**
+     * @override
      * @return {boolean}
      */
     hasNext: function()
@@ -263,6 +268,7 @@ WebInspector.HeapSnapshotEdgeIterator.prototype = {
     },
 
     /**
+     * @override
      * @return {!WebInspector.HeapSnapshotEdge}
      */
     item: function()
@@ -270,6 +276,9 @@ WebInspector.HeapSnapshotEdgeIterator.prototype = {
         return this.edge;
     },
 
+    /**
+     * @override
+     */
     next: function()
     {
         this.edge.edgeIndex += this.edge._snapshot._edgeFieldsCount;
@@ -374,6 +383,7 @@ WebInspector.HeapSnapshotRetainerEdge.prototype = {
     },
 
     /**
+     * @override
      * @return {string}
      */
     toString: function()
@@ -424,6 +434,7 @@ WebInspector.HeapSnapshotRetainerEdgeIterator = function(retainedNode)
 
 WebInspector.HeapSnapshotRetainerEdgeIterator.prototype = {
     /**
+     * @override
      * @return {boolean}
      */
     hasNext: function()
@@ -432,6 +443,7 @@ WebInspector.HeapSnapshotRetainerEdgeIterator.prototype = {
     },
 
     /**
+     * @override
      * @return {!WebInspector.HeapSnapshotRetainerEdge}
      */
     item: function()
@@ -439,6 +451,9 @@ WebInspector.HeapSnapshotRetainerEdgeIterator.prototype = {
         return this.retainer;
     },
 
+    /**
+     * @override
+     */
     next: function()
     {
         this.retainer.setRetainerIndex(this.retainer.retainerIndex() + 1);
@@ -665,6 +680,7 @@ WebInspector.HeapSnapshotNodeIterator = function(node)
 
 WebInspector.HeapSnapshotNodeIterator.prototype = {
     /**
+     * @override
      * @return {boolean}
      */
     hasNext: function()
@@ -673,6 +689,7 @@ WebInspector.HeapSnapshotNodeIterator.prototype = {
     },
 
     /**
+     * @override
      * @return {!WebInspector.HeapSnapshotNode}
      */
     item: function()
@@ -680,6 +697,9 @@ WebInspector.HeapSnapshotNodeIterator.prototype = {
         return this.node;
     },
 
+    /**
+     * @override
+     */
     next: function()
     {
         this.node.nodeIndex = this.node._nextNodeIndex();
@@ -702,6 +722,7 @@ WebInspector.HeapSnapshotIndexRangeIterator = function(itemProvider, indexes)
 
 WebInspector.HeapSnapshotIndexRangeIterator.prototype = {
     /**
+     * @override
      * @return {boolean}
      */
     hasNext: function()
@@ -710,6 +731,7 @@ WebInspector.HeapSnapshotIndexRangeIterator.prototype = {
     },
 
     /**
+     * @override
      * @return {!WebInspector.HeapSnapshotItem}
      */
     item: function()
@@ -718,6 +740,9 @@ WebInspector.HeapSnapshotIndexRangeIterator.prototype = {
         return this._itemProvider.itemForIndex(index);
     },
 
+    /**
+     * @override
+     */
     next: function()
     {
         ++this._position;
@@ -740,6 +765,7 @@ WebInspector.HeapSnapshotFilteredIterator = function(iterator, filter)
 
 WebInspector.HeapSnapshotFilteredIterator.prototype = {
     /**
+     * @override
      * @return {boolean}
      */
     hasNext: function()
@@ -748,6 +774,7 @@ WebInspector.HeapSnapshotFilteredIterator.prototype = {
     },
 
     /**
+     * @override
      * @return {!WebInspector.HeapSnapshotItem}
      */
     item: function()
@@ -755,6 +782,9 @@ WebInspector.HeapSnapshotFilteredIterator.prototype = {
         return this._iterator.item();
     },
 
+    /**
+     * @override
+     */
     next: function()
     {
         this._iterator.next();
@@ -842,6 +872,7 @@ WebInspector.HeapSnapshotProblemReport.prototype = {
     },
 
     /**
+     * @override
      * @return {string}
      */
     toString: function()

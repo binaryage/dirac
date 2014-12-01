@@ -472,6 +472,7 @@ WebInspector.WatchExpressionTreeElement.prototype = {
     },
 
     /**
+     * @override
      * @return {boolean}
      */
     renderPromptAsBlock: function()

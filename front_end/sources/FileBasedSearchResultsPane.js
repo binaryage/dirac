@@ -28,6 +28,7 @@ WebInspector.FileBasedSearchResultsPane.fileMatchesShownAtOnce = 20;
 
 WebInspector.FileBasedSearchResultsPane.prototype = {
     /**
+     * @override
      * @param {!WebInspector.FileBasedSearchResult} searchResult
      */
     addSearchResult: function(searchResult)

@@ -298,6 +298,7 @@ WebInspector.XHRBreakpointsSidebarPane = function()
 
 WebInspector.XHRBreakpointsSidebarPane.prototype = {
     /**
+     * @override
      * @param {!WebInspector.Target} target
      */
     targetAdded: function(target)
@@ -306,6 +307,7 @@ WebInspector.XHRBreakpointsSidebarPane.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.Target} target
      */
     targetRemoved: function(target) { },
@@ -605,6 +607,7 @@ WebInspector.EventListenerBreakpointsSidebarPane.eventNameForUI = function(event
 
 WebInspector.EventListenerBreakpointsSidebarPane.prototype = {
     /**
+     * @override
      * @param {!WebInspector.Target} target
      */
     targetAdded: function(target)
@@ -613,6 +616,7 @@ WebInspector.EventListenerBreakpointsSidebarPane.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.Target} target
      */
     targetRemoved: function(target) { },

@@ -52,6 +52,7 @@ WebInspector.StylesSourceMapping.MinorChangeUpdateTimeoutMs = 1000;
 
 WebInspector.StylesSourceMapping.prototype = {
     /**
+     * @override
      * @param {!WebInspector.CSSLocation} rawLocation
      * @return {?WebInspector.UILocation}
      */
@@ -65,6 +66,7 @@ WebInspector.StylesSourceMapping.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.UISourceCode} uiSourceCode
      * @param {number} lineNumber
      * @param {number} columnNumber
@@ -76,6 +78,7 @@ WebInspector.StylesSourceMapping.prototype = {
     },
 
     /**
+     * @override
      * @return {boolean}
      */
     isIdentity: function()
@@ -84,6 +87,7 @@ WebInspector.StylesSourceMapping.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.UISourceCode} uiSourceCode
      * @param {number} lineNumber
      * @return {boolean}

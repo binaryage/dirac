@@ -44,6 +44,7 @@ WebInspector.TracingManager.EventPayload;
 
 WebInspector.TracingManager.prototype = {
     /**
+     * @override
      * @param {!WebInspector.Target} target
      */
     targetAdded: function(target)
@@ -55,6 +56,7 @@ WebInspector.TracingManager.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.Target} target
      */
     targetRemoved: function(target)
@@ -151,6 +153,7 @@ WebInspector.TracingDispatcher = function(tracingManager)
 
 WebInspector.TracingDispatcher.prototype = {
     /**
+     * @override
      * @param {number=} usage
      * @param {number=} eventCount
      * @param {number=} percentFull
@@ -161,6 +164,7 @@ WebInspector.TracingDispatcher.prototype = {
     },
 
     /**
+     * @override
      * @param {!Array.<!WebInspector.TracingManager.EventPayload>} data
      */
     dataCollected: function(data)
@@ -168,6 +172,9 @@ WebInspector.TracingDispatcher.prototype = {
         this._tracingManager._eventsCollected(data);
     },
 
+    /**
+     * @override
+     */
     tracingComplete: function()
     {
         this._tracingManager._tracingComplete();

@@ -185,6 +185,7 @@ WebInspector.TimelineOverviewCalculator = function()
 
 WebInspector.TimelineOverviewCalculator.prototype = {
     /**
+     * @override
      * @return {number}
      */
     paddingLeft: function()
@@ -193,6 +194,7 @@ WebInspector.TimelineOverviewCalculator.prototype = {
     },
 
     /**
+     * @override
      * @param {number} time
      * @return {number}
      */
@@ -237,6 +239,7 @@ WebInspector.TimelineOverviewCalculator.prototype = {
     },
 
     /**
+     * @override
      * @param {number} value
      * @param {number=} precision
      * @return {string}
@@ -247,6 +250,7 @@ WebInspector.TimelineOverviewCalculator.prototype = {
     },
 
     /**
+     * @override
      * @return {number}
      */
     maximumBoundary: function()
@@ -255,6 +259,7 @@ WebInspector.TimelineOverviewCalculator.prototype = {
     },
 
     /**
+     * @override
      * @return {number}
      */
     minimumBoundary: function()
@@ -263,6 +268,7 @@ WebInspector.TimelineOverviewCalculator.prototype = {
     },
 
     /**
+     * @override
      * @return {number}
      */
     zeroTime: function()
@@ -271,6 +277,7 @@ WebInspector.TimelineOverviewCalculator.prototype = {
     },
 
     /**
+     * @override
      * @return {number}
      */
     boundarySpan: function()
@@ -336,21 +343,31 @@ WebInspector.TimelineOverviewBase = function(model)
 
 WebInspector.TimelineOverviewBase.prototype = {
     /**
+     * @override
      * @param {!WebInspector.OverviewGrid} grid
      */
     setOverviewGrid: function(grid)
     {
     },
 
+    /**
+     * @override
+     */
     update: function()
     {
         this.resetCanvas();
     },
 
+    /**
+     * @override
+     */
     dispose: function()
     {
     },
 
+    /**
+     * @override
+     */
     reset: function()
     {
     },
@@ -364,6 +381,7 @@ WebInspector.TimelineOverviewBase.prototype = {
     },
 
     /**
+     * @override
      * @param {number} windowLeft
      * @param {number} windowRight
      * @return {!{startTime: number, endTime: number}}
@@ -379,6 +397,7 @@ WebInspector.TimelineOverviewBase.prototype = {
     },
 
     /**
+     * @override
      * @param {number} startTime
      * @param {number} endTime
      * @return {!{left: number, right: number}}

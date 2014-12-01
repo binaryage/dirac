@@ -729,6 +729,7 @@ WebInspector.OverridesView.Revealer = function()
 
 WebInspector.OverridesView.Revealer.prototype = {
     /**
+     * @override
      * @param {!Object} overridesSupport
      * @return {!Promise}
      */

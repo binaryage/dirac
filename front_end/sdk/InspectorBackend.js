@@ -614,8 +614,8 @@ InspectorBackendClass.MainConnection = function()
 }
 
 InspectorBackendClass.MainConnection.prototype = {
-
     /**
+     * @override
      * @param {!Object} messageObject
      */
     sendMessage: function(messageObject)
@@ -699,6 +699,7 @@ InspectorBackendClass.WebSocketConnection.prototype = {
     },
 
     /**
+     * @override
      * @param {!Object} messageObject
      */
     sendMessage: function(messageObject)
@@ -721,8 +722,8 @@ InspectorBackendClass.StubConnection = function()
 }
 
 InspectorBackendClass.StubConnection.prototype = {
-
     /**
+     * @override
      * @param {!Object} messageObject
      */
     sendMessage: function(messageObject)

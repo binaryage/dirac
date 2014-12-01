@@ -246,12 +246,23 @@ TreeContainerNode.prototype = {
     {
     },
 
-    select: function()
+    /**
+     * @param {boolean=} omitFocus
+     * @param {boolean=} selectedByUser
+     * @return {boolean}
+     */
+    select: function(omitFocus, selectedByUser)
     {
+        return false;
     },
 
-    deselect: function()
+    /**
+     * @param {boolean=} supressOnDeselect
+     * @return {boolean}
+     */
+    deselect: function(supressOnDeselect)
     {
+        return false;
     }
 }
 
@@ -704,6 +715,9 @@ TreeElement.prototype = {
             this._childrenListNode.parentNode.removeChild(this._childrenListNode);
     },
 
+    /**
+     * @override
+     */
     collapse: function()
     {
         if (this._listItemNode)
@@ -729,6 +743,9 @@ TreeElement.prototype = {
         }
     },
 
+    /**
+     * @override
+     */
     expand: function()
     {
         if (!this.hasChildren || (this.expanded && !this._shouldRefreshChildren && this._childrenListNode))
@@ -832,6 +849,7 @@ TreeElement.prototype = {
     },
 
     /**
+     * @override
      * @param {boolean=} omitFocus
      * @param {boolean=} selectedByUser
      * @return {boolean}
@@ -869,6 +887,7 @@ TreeElement.prototype = {
     },
 
     /**
+     * @override
      * @param {boolean=} supressOnDeselect
      * @return {boolean}
      */

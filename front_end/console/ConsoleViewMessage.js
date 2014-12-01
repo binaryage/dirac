@@ -70,6 +70,7 @@ WebInspector.ConsoleViewMessage.prototype = {
     },
 
     /**
+     * @override
      * @return {!Element}
      */
     element: function()
@@ -77,6 +78,9 @@ WebInspector.ConsoleViewMessage.prototype = {
         return this.toMessageElement();
     },
 
+    /**
+     * @override
+     */
     wasShown: function()
     {
         for (var i = 0; this._dataGrids && i < this._dataGrids.length; ++i) {
@@ -87,11 +91,17 @@ WebInspector.ConsoleViewMessage.prototype = {
         }
     },
 
+    /**
+     * @override
+     */
     cacheFastHeight: function()
     {
         this._cachedHeight = this.contentElement().offsetHeight;
     },
 
+    /**
+     * @override
+     */
     willHide: function()
     {
         for (var i = 0; this._dataGrids && i < this._dataGrids.length; ++i) {
@@ -1173,6 +1183,7 @@ WebInspector.ConsoleViewMessage.prototype = {
     },
 
     /**
+     * @override
      * @return {string}
      */
     toString: function()
@@ -1375,6 +1386,7 @@ WebInspector.ConsoleGroupViewMessage.prototype = {
     },
 
     /**
+     * @override
      * @return {!Element}
      */
     toMessageElement: function()

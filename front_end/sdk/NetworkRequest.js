@@ -814,6 +814,7 @@ WebInspector.NetworkRequest.prototype = {
     },
 
     /**
+     * @override
      * @return {string}
      */
     contentURL: function()
@@ -822,6 +823,7 @@ WebInspector.NetworkRequest.prototype = {
     },
 
     /**
+     * @override
      * @return {!WebInspector.ResourceType}
      */
     contentType: function()
@@ -830,6 +832,7 @@ WebInspector.NetworkRequest.prototype = {
     },
 
     /**
+     * @override
      * @param {function(?string)} callback
      */
     requestContent: function(callback)
@@ -851,6 +854,7 @@ WebInspector.NetworkRequest.prototype = {
     },
 
     /**
+     * @override
      * @param {string} query
      * @param {boolean} caseSensitive
      * @param {boolean} isRegex

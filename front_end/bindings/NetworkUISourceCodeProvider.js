@@ -185,6 +185,7 @@ WebInspector.NetworkUISourceCodeProvider.FallbackResource = function(resource)
 WebInspector.NetworkUISourceCodeProvider.FallbackResource.prototype = {
 
     /**
+     * @override
      * @return {string}
      */
     contentURL: function()
@@ -193,6 +194,7 @@ WebInspector.NetworkUISourceCodeProvider.FallbackResource.prototype = {
     },
 
     /**
+     * @override
      * @return {!WebInspector.ResourceType}
      */
     contentType: function()
@@ -201,6 +203,7 @@ WebInspector.NetworkUISourceCodeProvider.FallbackResource.prototype = {
     },
 
     /**
+     * @override
      * @param {function(?string)} callback
      */
     requestContent: function(callback)
@@ -244,6 +247,7 @@ WebInspector.NetworkUISourceCodeProvider.FallbackResource.prototype = {
     },
 
     /**
+     * @override
      * @param {string} query
      * @param {boolean} caseSensitive
      * @param {boolean} isRegex

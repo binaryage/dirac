@@ -1069,6 +1069,7 @@ WebInspector.ExtensionServerPanelDescriptor = function(name, title, panel)
 
 WebInspector.ExtensionServerPanelDescriptor.prototype = {
     /**
+     * @override
      * @return {string}
      */
     name: function()
@@ -1077,6 +1078,7 @@ WebInspector.ExtensionServerPanelDescriptor.prototype = {
     },
 
     /**
+     * @override
      * @return {string}
      */
     title: function()
@@ -1085,6 +1087,7 @@ WebInspector.ExtensionServerPanelDescriptor.prototype = {
     },
 
     /**
+     * @override
      * @return {!Promise.<!WebInspector.Panel>}
      */
     panel: function()

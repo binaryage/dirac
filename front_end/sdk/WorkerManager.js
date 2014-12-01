@@ -142,22 +142,39 @@ WebInspector.WorkerDispatcher = function(workerManager)
 }
 
 WebInspector.WorkerDispatcher.prototype = {
-
+    /**
+     * @override
+     * @param {number} workerId
+     * @param {string} url
+     * @param {boolean} inspectorConnected
+     */
     workerCreated: function(workerId, url, inspectorConnected)
     {
         this._workerManager._workerCreated(workerId, url, inspectorConnected);
     },
 
+    /**
+     * @override
+     * @param {number} workerId
+     */
     workerTerminated: function(workerId)
     {
         this._workerManager._workerTerminated(workerId);
     },
 
+    /**
+     * @override
+     * @param {number} workerId
+     * @param {!Object} message
+     */
     dispatchMessageFromWorker: function(workerId, message)
     {
         this._workerManager._dispatchMessageFromWorker(workerId, message);
     },
 
+    /**
+     * @override
+     */
     disconnectedFromWorker: function()
     {
         this._workerManager._disconnectedFromWorker();

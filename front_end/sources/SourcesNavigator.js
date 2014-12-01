@@ -140,6 +140,7 @@ WebInspector.SnippetsNavigatorView.prototype = {
     },
 
     /**
+     * @override
      * @param {!Event} event
      */
     handleContextMenu: function(event)
@@ -150,6 +151,7 @@ WebInspector.SnippetsNavigatorView.prototype = {
     },
 
     /**
+     * @override
      * @param {!Event} event
      * @param {!WebInspector.UISourceCode} uiSourceCode
      */

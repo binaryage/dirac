@@ -336,6 +336,7 @@ WebInspector.HeapSnapshotViewportDataGrid = function(dataDisplayDelegate, column
 
 WebInspector.HeapSnapshotViewportDataGrid.prototype = {
     /**
+     * @override
      * @return {!Array.<!WebInspector.HeapSnapshotGridNode>}
      */
     topLevelNodes: function()
@@ -514,6 +515,7 @@ WebInspector.HeapSnapshotViewportDataGrid.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.DataGridNode} parent
      * @return {!Array.<!WebInspector.HeapSnapshotGridNode>}
      */
@@ -532,6 +534,7 @@ WebInspector.HeapSnapshotViewportDataGrid.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.DataGridNode} parent
      * @param {!WebInspector.DataGridNode} node
      * @param {number} index
@@ -681,6 +684,7 @@ WebInspector.HeapSnapshotRetainmentDataGrid.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.HeapSnapshotProxy} snapshot
      * @param {number} nodeIndex
      */

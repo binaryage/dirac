@@ -55,6 +55,7 @@ WebInspector.Panel.prototype = {
     },
 
     /**
+     * @override
      * @return {!Element}
      */
     defaultFocusedElement: function()
@@ -71,6 +72,7 @@ WebInspector.Panel.prototype = {
     },
 
     /**
+     * @override
      * @return {!Array.<!Element>}
      */
     elementsToRestoreScrollPositionsFor: function()
@@ -174,6 +176,7 @@ WebInspector.PanelWithSidebarTree.prototype = {
     },
 
     /**
+     * @override
      * @return {!Element}
      */
     defaultFocusedElement: function()
@@ -236,6 +239,7 @@ WebInspector.RuntimeExtensionPanelDescriptor = function(extension)
 
 WebInspector.RuntimeExtensionPanelDescriptor.prototype = {
     /**
+     * @override
      * @return {string}
      */
     name: function()
@@ -244,6 +248,7 @@ WebInspector.RuntimeExtensionPanelDescriptor.prototype = {
     },
 
     /**
+     * @override
      * @return {string}
      */
     title: function()
@@ -252,6 +257,7 @@ WebInspector.RuntimeExtensionPanelDescriptor.prototype = {
     },
 
     /**
+     * @override
      * @return {!Promise.<!WebInspector.Panel>}
      */
     panel: function()

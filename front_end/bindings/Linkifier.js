@@ -114,6 +114,7 @@ WebInspector.Linkifier.linkifyUsingRevealer = function(revealable, text, fallbac
 
 WebInspector.Linkifier.prototype = {
     /**
+     * @override
      * @param {!WebInspector.Target} target
      */
     targetAdded: function(target)
@@ -122,6 +123,7 @@ WebInspector.Linkifier.prototype = {
     },
 
     /**
+     * @override
      * @param {!WebInspector.Target} target
      */
     targetRemoved: function(target)
@@ -284,6 +286,7 @@ WebInspector.Linkifier.DefaultFormatter = function(maxLength)
 
 WebInspector.Linkifier.DefaultFormatter.prototype = {
     /**
+     * @override
      * @param {!Element} anchor
      * @param {!WebInspector.UILocation} uiLocation
      */
@@ -314,6 +317,7 @@ WebInspector.Linkifier.DefaultCSSFormatter.MaxLengthForDisplayedURLs = 30;
 
 WebInspector.Linkifier.DefaultCSSFormatter.prototype = {
     /**
+     * @override
      * @param {!Element} anchor
      * @param {!WebInspector.UILocation} uiLocation
      */
