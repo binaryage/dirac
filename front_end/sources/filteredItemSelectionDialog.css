@@ -15,7 +15,6 @@
 .filtered-item-list-dialog > div.container {
     flex: auto;
     overflow-y: auto;
-    margin-top: 4px;
     background: white;
 }
 
