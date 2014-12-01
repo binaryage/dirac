@@ -35,6 +35,7 @@ WebInspector.SourcesPanel = function(workspaceForTest)
 {
     WebInspector.Panel.call(this, "sources");
     this.registerRequiredCSS("sources/sourcesPanel.css");
+    this.registerRequiredCSS("sources/sourcesSearch.css");
     new WebInspector.UpgradeFileSystemDropTarget(this.element);
 
     this._workspace = workspaceForTest || WebInspector.workspace;
@@ -66,7 +67,7 @@ WebInspector.SourcesPanel = function(workspaceForTest)
     this._sourcesView.registerShortcuts(this.registerShortcuts.bind(this));
     this.editorView.setMainView(this._sourcesView);
 
-    this._debugSidebarResizeWidgetElement = createElementWithClass("div", "resizer-widget");
+    this._debugSidebarResizeWidgetElement = createElement("div");
     this._debugSidebarResizeWidgetElement.id = "scripts-debug-sidebar-resizer-widget";
     this._splitView.addEventListener(WebInspector.SplitView.Events.ShowModeChanged, this._updateDebugSidebarResizeWidget, this);
     this._updateDebugSidebarResizeWidget();

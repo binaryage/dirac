@@ -46,6 +46,18 @@
     color: white;
 }
 
+.canvas-profile-view .resizer-widget {
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: 24px;
+    width: 16px;
+    background-image: url(Images/statusbarResizerHorizontal.png);
+    background-repeat: no-repeat;
+    background-position: center;
+    z-index: 13;
+}
+
 .canvas-replay-image-parent {
     position: absolute;
     top: 5px;

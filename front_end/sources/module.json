@@ -226,6 +226,7 @@
         "navigatorView.css",
         "revisionHistory.css",
         "sourcesPanel.css",
+        "sourcesSearch.css",
         "sourcesView.css"
     ]
 }

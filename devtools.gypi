@@ -497,6 +497,7 @@
             'front_end/sources/navigatorView.css',
             'front_end/sources/revisionHistory.css',
             'front_end/sources/sourcesPanel.css',
+            'front_end/sources/sourcesSearch.css',
             'front_end/sources/sourcesView.css',
             'front_end/sources/AddSourceMapURLDialog.js',
             'front_end/sources/AdvancedSearchView.js',

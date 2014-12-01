@@ -717,3 +717,8 @@ li.child-editing .styles-clipboard-only {
     border-bottom: 1px solid rgb(163, 163, 163);
     padding-left: 10px;
 }
+
+label.checkbox-with-label {
+    display: flex;
+    -webkit-user-select: none;
+}
