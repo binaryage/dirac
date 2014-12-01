@@ -415,9 +415,9 @@ FormatterWorker.JavaScriptFormatter.prototype = {
         if (this._peek() !== FormatterWorker.JavaScriptTokens.SEMICOLON) {
             if (this._peek() === FormatterWorker.JavaScriptTokens.VAR || this._peek() === FormatterWorker.JavaScriptTokens.CONST) {
                 this._parseVariableDeclarations();
-                if (this._peek() === FormatterWorker.JavaScriptTokens.IN) {
+                if (this._peek() === FormatterWorker.JavaScriptTokens.IN || (this._peek() === FormatterWorker.JavaScriptTokens.IDENTIFIER && this._nextToken.value === "of")) {
                     this._builder.addSpace();
-                    this._consume(FormatterWorker.JavaScriptTokens.IN);
+                    this._next();
                     this._builder.addSpace();
                     this._parseExpression();
                 }
