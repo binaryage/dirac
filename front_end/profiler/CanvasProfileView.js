@@ -136,8 +136,8 @@ WebInspector.CanvasProfileView.prototype = {
     _onReplayImageResize: function()
     {
         var parent = this._replayImageElement.parentElement;
-        this._replayImageElement.style.maxWidth = parent.clientWidth + "px";
-        this._replayImageElement.style.maxHeight = parent.clientHeight + "px";
+        this._replayImageElement.style.maxWidth = (parent.clientWidth - 1) + "px";
+        this._replayImageElement.style.maxHeight = (parent.clientHeight - 1) + "px";
     },
 
     /**
