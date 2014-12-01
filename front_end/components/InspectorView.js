@@ -52,7 +52,7 @@ WebInspector.InspectorView = function()
     this._drawer = new WebInspector.Drawer(this._drawerSplitView);
 
     this._leftToolbar = new WebInspector.StatusBar();
-    this._leftToolbar.element.classList.add("toolbar-left");
+    this._leftToolbar.element.classList.add("inspector-view-toolbar-left");
     this._leftToolbar.makeNarrow();
     this._tabbedPane.insertBeforeTabStrip(this._leftToolbar.element);
 

@@ -33,6 +33,7 @@
 .status-bar-shadow > div {
     display: inline-flex;
     overflow: visible;
+    margin: 0 2px;
 }
 
 .status-bar-item {
@@ -88,15 +89,15 @@
 } /* media */
 
 .narrow button.status-bar-item {
-    width: 26px;
+    width: 28px;
 }
 
 .narrow button.status-bar-item .glyph {
-    margin-left: -4px;
+    margin: 0 -2px;
 }
 
 button.status-bar-item {
-    width: 32px;
+    width: 30px;
 }
 
 button.status-bar-item.toggled-on .glyph {
@@ -192,6 +193,7 @@ select.status-bar-item {
     right: 0;
     bottom: 0;
     left: 0;
+    margin: 0 -1px;
 }
 
 @media (-webkit-min-device-pixel-ratio: 1.5) {

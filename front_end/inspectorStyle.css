@@ -77,6 +77,10 @@ body .inspector-view-tabbed-pane.tabbed-pane::shadow .tabbed-pane-header {
     flex: 0 0 24px;
 }
 
+.inspector-view-toolbar-left {
+    padding-left: 2px;
+}
+
 .inspector-view-tabbed-pane.tabbed-pane::shadow .tabbed-pane-header-tab,
 .inspector-view-tabbed-pane.tabbed-pane::shadow .tabbed-pane-header-tab.selected {
     border-width: 0 2px 0 2px;
@@ -92,7 +96,11 @@ body .inspector-view-tabbed-pane.tabbed-pane::shadow .tabbed-pane-header {
 .inspector-view-close-button {
     float: right;
     padding-right: 6px;
-    padding-left: 2px;
+    padding-left: 4px;
+}
+
+body.undocked .inspector-view-close-button {
+    display: none;
 }
 
 .platform-windows .inspector-view-tabbed-pane.tabbed-pane::shadow .tabbed-pane-header,
@@ -108,10 +116,6 @@ body.undocked.platform-mac .inspector-view-tabbed-pane.tabbed-pane::shadow .tabb
 body.undocked.platform-mac.inactive .inspector-view-tabbed-pane.tabbed-pane::shadow .tabbed-pane-header {
     background-image: linear-gradient(to bottom, rgb(238, 238, 238), rgb(224, 224, 224)) !important;
     color: #555 !important;
-}
-
-.toolbar-left {
-    margin-left: 4px;
 }
 
 .close-button,
@@ -1373,20 +1377,8 @@ body.inactive .sidebar-tree-item.selected {
     bottom: 0;
 }
 
-.toolbar-close-button-item {
-    display: inline-block;
-    float: right;
-    padding-right: 8px;
-    padding-top: 4px;
-    padding-left: 2px;
-}
-
 #drawer-editor-view {
     flex: auto;
-}
-
-body.undocked .toolbar-close-button-item {
-    display: none;
 }
 
 select.drop-down-menu {

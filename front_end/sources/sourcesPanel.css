@@ -99,7 +99,7 @@
     z-index: 13;
 }
 
-.dock-to-right .panel.sources .split-view #scripts-debug-sidebar-resizer-widget {
+.sources-split-view-vertical #scripts-debug-sidebar-resizer-widget {
     transform: rotate(90deg);
     right: 17px;
     bottom: 4px;

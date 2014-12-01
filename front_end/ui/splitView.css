@@ -98,6 +98,10 @@
     background-color: rgba(0, 0, 0, 0.6);
 }
 
+.shadow-split-view button.sidebar-show-hide-button:disabled {
+    background-color: rgba(0, 0, 0, 0.35);
+}
+
 @media (-webkit-min-device-pixel-ratio: 1.5) {
 .shadow-split-view button.sidebar-show-hide-button {
     -webkit-mask-image: url(Images/statusbarButtonGlyphs_2x.png);

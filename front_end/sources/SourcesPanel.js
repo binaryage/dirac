@@ -1030,6 +1030,7 @@ WebInspector.SourcesPanel.prototype = {
             this.sidebarPaneView.detach();
 
         this._splitView.setVertical(!vertically);
+        this._splitView.element.classList.toggle("sources-split-view-vertical", vertically);
 
         if (!vertically)
             this._splitView.uninstallResizer(this._sourcesView.statusBarContainerElement());
