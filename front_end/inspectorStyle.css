@@ -1381,11 +1381,6 @@ body.inactive .sidebar-tree-item.selected {
     flex: auto;
 }
 
-select.drop-down-menu {
-    border: none;
-    -webkit-appearance: none;
-}
-
 .viewport-control-gap-element {
     color: transparent;
 }

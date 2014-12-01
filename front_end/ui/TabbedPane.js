@@ -527,12 +527,10 @@ WebInspector.TabbedPane.prototype = {
     _createDropDownButton: function()
     {
         var dropDownContainer = createElementWithClass("div", "tabbed-pane-header-tabs-drop-down-container");
-        var dropDownButton = dropDownContainer.createChild("div", "tabbed-pane-header-tabs-drop-down");
-        dropDownButton.createTextChild("\u00bb");
+        dropDownContainer.createTextChild("\u00bb");
 
-        this._dropDownMenu = new WebInspector.DropDownMenu();
+        this._dropDownMenu = new WebInspector.DropDownMenu(dropDownContainer);
         this._dropDownMenu.addEventListener(WebInspector.DropDownMenu.Events.ItemSelected, this._dropDownMenuItemSelected, this);
-        dropDownButton.appendChild(this._dropDownMenu.element);
 
         return dropDownContainer;
     },

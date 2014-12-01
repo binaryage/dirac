@@ -128,24 +128,21 @@
     vertical-align: bottom;
     padding-left: 3px;
     line-height: 20px;
+    opacity: 0.7;
+    color: rgb(30, 30, 30);
+    font-size: 133%;
+    padding: 0 3px 0 6px;
 }
 
 .tabbed-pane-header-tabs-drop-down-container.measuring {
     visibility: hidden;
 }
 
-.tabbed-pane-header-tabs-drop-down {
-    position: relative;
-    opacity: 0.7;
-    font-size: 133%;
-    padding: 0 3px;
-}
-
-.tabbed-pane-header-tabs-drop-down:hover {
+.tabbed-pane-header-tabs-drop-down-container:hover {
     opacity: 1.0;
 }
 
-.tabbed-pane-header-tabs-drop-down:active {
+.tabbed-pane-header-tabs-drop-down-container:active {
     opacity: 0.8;
 }
 
@@ -236,4 +233,3 @@
     border: none transparent;
     border-left: 6px solid #666;
 }
-
