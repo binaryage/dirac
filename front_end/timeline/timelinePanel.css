@@ -88,7 +88,7 @@
 
 .timeline-view {
     flex: auto;
-    overflow: hidden;
+    overflow: auto;
 }
 
 .timeline-view-stack {
@@ -911,4 +911,8 @@
 .timeline-paint-profiler-log-split > div:last-child {
     background-color: #eee;
     z-index: 0;
+}
+
+.timeline-gap {
+    flex: none;
 }

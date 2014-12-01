@@ -32,7 +32,6 @@
 }
 
 .shadow-split-view-contents {
-    overflow: auto;
     display: flex;
     position: relative;
     flex-direction: column;

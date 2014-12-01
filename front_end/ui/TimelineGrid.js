@@ -306,7 +306,10 @@ WebInspector.TimelineGrid.prototype = {
         this._rightCurtainElement.classList.remove("hidden");
     },
 
-    setScrollAndDividerTop: function(scrollTop, dividersTop)
+    /**
+     * @param {number} scrollTop
+     */
+    setScrollTop: function(scrollTop)
     {
         this._dividersLabelBarElement.style.top = scrollTop + "px";
         this._eventDividersElement.style.top = scrollTop + "px";
