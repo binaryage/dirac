@@ -17,6 +17,8 @@ WebInspector.DevToolsApp = function()
     this._inspectorWindow = this._iframe.contentWindow;
     this._inspectorWindow.InspectorFrontendHost = this._inspectorFrontendHostImpl;
     DevToolsAPI.setInspectorWindow(this._inspectorWindow);
+
+    this._iframe.focus();
 }
 
 WebInspector.DevToolsApp.prototype = {
