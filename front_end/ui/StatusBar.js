@@ -71,7 +71,10 @@ WebInspector.StatusBar.prototype = {
     appendStatusBarItem: function(item)
     {
         this._items.push(item);
-        this._contentElement.insertBefore(item.element, this._contentElement.lastChild);
+        if (item._isLightDOM)
+            this.element.appendChild(item.element);
+        else
+            this._contentElement.insertBefore(item.element, this._contentElement.lastChild);
     },
 
     removeStatusBarItems: function()
@@ -106,13 +109,15 @@ WebInspector.StatusBar.prototype = {
  * @constructor
  * @extends {WebInspector.Object}
  * @param {!Element} element
+ * @param {boolean=} isLightDOM
  */
-WebInspector.StatusBarItem = function(element)
+WebInspector.StatusBarItem = function(element, isLightDOM)
 {
     this.element = element;
     this.element.classList.add("status-bar-item");
     this._enabled = true;
     this._visible = true;
+    this._isLightDOM = isLightDOM;
 }
 
 WebInspector.StatusBarItem.prototype = {
@@ -866,4 +871,18 @@ WebInspector.StatusBarStatesSettingButton.prototype = {
     },
 
     __proto__: WebInspector.StatusBarButton.prototype
+}
+
+/**
+ * @constructor
+ * @extends {WebInspector.StatusBarItem}
+ * @param {!Element} element
+ */
+WebInspector.StatusBarItemWrapper = function(element)
+{
+    WebInspector.StatusBarItem.call(this, element, true);
+}
+
+WebInspector.StatusBarItemWrapper.prototype = {
+    __proto__: WebInspector.StatusBarItem.prototype
 }

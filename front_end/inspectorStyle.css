@@ -1253,21 +1253,13 @@ body.inactive .sidebar-tree-item.selected {
 
 .empty-view,
 .storage-view .storage-table-error {
-    position: absolute;
-    top: 0;
-    bottom: 25%;
-    left: 0;
-    right: 0;
     font-size: 24px;
     color: rgb(75%, 75%, 75%);
-    margin-top: auto;
-    margin-bottom: auto;
-    height: 50px;
-    line-height: 26px;
-    text-align: center;
     font-weight: bold;
     padding: 10px;
-    white-space: pre-wrap;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 /* Custom popup scrollers */

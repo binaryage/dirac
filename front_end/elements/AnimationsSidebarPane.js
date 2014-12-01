@@ -409,7 +409,7 @@ WebInspector.AnimationsSidebarPane.GlobalAnimationControls = function(showSubtre
 
     var labelElement = createElement("div");
     labelElement.createTextChild("Global playback:");
-    this.appendStatusBarItem(new WebInspector.StatusBarItem(labelElement));
+    this.appendStatusBarItem(new WebInspector.StatusBarItemWrapper(labelElement));
 
     this._pauseButton = new WebInspector.StatusBarButton("", "pause-status-bar-item");
     this._pauseButton.addEventListener("click", this._pauseHandler.bind(this), this);

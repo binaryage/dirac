@@ -358,7 +358,7 @@ WebInspector.TimelinePanel.prototype = {
                                                                       this._captureLayersAndPicturesSetting,
                                                                       WebInspector.UIString("Capture graphics layer positions and painted pictures.  (Has performance overhead)")));
 
-        this._progressStatusBarItem = new WebInspector.StatusBarItem(createElement("div"));
+        this._progressStatusBarItem = new WebInspector.StatusBarItemWrapper(createElement("div"));
         this._progressStatusBarItem.setVisible(false);
         this._panelToolbar.appendStatusBarItem(this._progressStatusBarItem);
 

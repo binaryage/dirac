@@ -346,11 +346,11 @@ li.selected .base-storage-tree-element-subtitle {
 .storage-application-cache-status-icon,
 .storage-application-cache-connectivity-icon {
     margin: 0 5px;
-    vertical-align: middle;
 }
 
-.storage-application-cache-status,
 .storage-application-cache-connectivity {
-    position: relative;
-    top: 4px;
+    padding-right: 5px;
+    border-right: 1px solid #CCC;
+    height: 23px;
+    line-height: 23px
 }

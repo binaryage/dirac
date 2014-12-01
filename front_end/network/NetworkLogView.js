@@ -246,7 +246,7 @@ WebInspector.NetworkLogView.prototype = {
             this._hideColumnsButton,
             this._preserveLogCheckbox,
             this._disableCacheCheckbox,
-            new WebInspector.StatusBarItem(this._progressBarContainer) ];
+            new WebInspector.StatusBarItemWrapper(this._progressBarContainer) ];
     },
 
     /**

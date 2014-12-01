@@ -46,8 +46,6 @@ WebInspector.ApplicationCacheItemsView = function(model, frameId)
     this.connectivityMessage.className = "storage-application-cache-connectivity";
     this.connectivityMessage.textContent = "";
 
-    this.divider = new WebInspector.StatusBarSeparator();
-
     this.statusIcon = createElement("div");
     this.statusMessage = createElement("span");
     this.statusMessage.className = "storage-application-cache-status";
@@ -78,11 +76,10 @@ WebInspector.ApplicationCacheItemsView.prototype = {
     {
         return [
             this.deleteButton,
-            new WebInspector.StatusBarItem(this.connectivityIcon),
-            new WebInspector.StatusBarItem(this.connectivityMessage),
-            this.divider,
-            new WebInspector.StatusBarItem(this.statusIcon),
-            new WebInspector.StatusBarItem(this.statusMessage)
+            new WebInspector.StatusBarItemWrapper(this.connectivityIcon),
+            new WebInspector.StatusBarItemWrapper(this.connectivityMessage),
+            new WebInspector.StatusBarItemWrapper(this.statusIcon),
+            new WebInspector.StatusBarItemWrapper(this.statusMessage)
         ];
     },
 
