@@ -55,7 +55,7 @@ WebInspector.TabbedEditorContainer = function(delegate, settingName, placeholder
     this._tabbedPane.setPlaceholderText(placeholderText);
     this._tabbedPane.setTabDelegate(new WebInspector.EditorContainerTabDelegate(this));
 
-    this._tabbedPane.closeableTabs = true;
+    this._tabbedPane.setCloseableTabs(true);
     this._tabbedPane.element.id = "sources-editor-container-tabbed-pane";
 
     this._tabbedPane.addEventListener(WebInspector.TabbedPane.EventTypes.TabClosed, this._tabClosed, this);

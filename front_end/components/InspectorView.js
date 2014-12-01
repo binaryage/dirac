@@ -46,26 +46,23 @@ WebInspector.InspectorView = function()
     this._drawerSplitView.show(this.element);
 
     this._tabbedPane = new WebInspector.TabbedPane();
+    this._tabbedPane.element.classList.add("inspector-view-tabbed-pane");
     this._tabbedPane.setRetainTabOrder(true);
     this._drawerSplitView.setMainView(this._tabbedPane);
     this._drawer = new WebInspector.Drawer(this._drawerSplitView);
 
-    // Patch tabbed pane header with toolbar actions.
-    this._toolbarElement = createElement("div");
-    this._toolbarElement.className = "toolbar toolbar-background toolbar-colors";
-    var headerElement = this._tabbedPane.headerElement();
-    headerElement.parentElement.insertBefore(this._toolbarElement, headerElement);
-
-    this._leftToolbar = new WebInspector.StatusBar(this._toolbarElement);
+    this._leftToolbar = new WebInspector.StatusBar();
     this._leftToolbar.element.classList.add("toolbar-left");
     this._leftToolbar.makeNarrow();
-    this._toolbarElement.appendChild(headerElement);
-    this._rightToolbar = new WebInspector.StatusBar(this._toolbarElement);
+    this._tabbedPane.insertBeforeTabStrip(this._leftToolbar.element);
 
-    this._closeButtonToolbarItem = createElementWithClass("div", "toolbar-close-button-item");
+    this._rightToolbar = new WebInspector.StatusBar();
+    this._tabbedPane.appendAfterTabStrip(this._rightToolbar.element);
+
+    this._closeButtonToolbarItem = createElementWithClass("div", "inspector-view-close-button");
     var closeButtonElement = this._closeButtonToolbarItem.createChild("div", "close-button");
     closeButtonElement.addEventListener("click", InspectorFrontendHost.closeWindow.bind(InspectorFrontendHost), true);
-    this._toolbarElement.appendChild(this._closeButtonToolbarItem);
+    this._rightToolbar.element.appendChild(this._closeButtonToolbarItem);
 
     this._panels = {};
     // Used by tests.

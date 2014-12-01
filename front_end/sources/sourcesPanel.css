@@ -78,7 +78,7 @@
     top: 2px;
 }
 
-.panel.sources #sources-editor-container-tabbed-pane .tabbed-pane-header-contents {
+.panel.sources #sources-editor-container-tabbed-pane::shadow .tabbed-pane-header-contents {
     margin-left: 22px;
     margin-right: 36px;
 }
@@ -114,10 +114,6 @@
 
 .panel.sources /deep/ .scripts-debugger-show-hide-button {
     display: block;
-}
-
-.panel.sources .navigator-tabbed-pane .tabbed-pane-header {
-    background-color: #eee;
 }
 
 .function-location-link {

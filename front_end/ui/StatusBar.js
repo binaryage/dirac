@@ -451,7 +451,7 @@ WebInspector.StatusBarButtonBase.prototype = {
             if (!this._longClickOptionsData) {
                 this.makeLongClickEnabled();
 
-                this.longClickGlyph = this.element.createChild("div", "fill long-click-glyph");
+                this.longClickGlyph = this.element.createChild("div", "fill long-click-glyph status-bar-button-theme");
 
                 var longClickDownListener = this._showOptions.bind(this);
                 this.addEventListener("longClickDown", longClickDownListener, this);
@@ -560,7 +560,7 @@ WebInspector.StatusBarButton = function(title, className, states)
 {
     WebInspector.StatusBarButtonBase.call(this, title, className, states);
 
-    this._glyphElement = this.element.createChild("div", "glyph");
+    this._glyphElement = this.element.createChild("div", "glyph status-bar-button-theme");
 }
 
 WebInspector.StatusBarButton.prototype = {

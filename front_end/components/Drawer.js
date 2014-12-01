@@ -46,7 +46,7 @@ WebInspector.Drawer = function(splitView)
 
     this._tabbedPane = new WebInspector.TabbedPane();
     this._tabbedPane.element.id = "drawer-tabbed-pane";
-    this._tabbedPane.closeableTabs = false;
+    this._tabbedPane.setCloseableTabs(false);
     this._tabbedPane.addEventListener(WebInspector.TabbedPane.EventTypes.TabSelected, this._tabSelected, this);
     new WebInspector.ExtensibleTabbedPaneController(this._tabbedPane, "drawer-view");
 

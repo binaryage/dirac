@@ -758,24 +758,18 @@ WebInspector.setToolbarColors = function(document, backgroundColor, color)
         WebInspector._themeStyleElement = createElement("style");
         document.head.appendChild(WebInspector._themeStyleElement);
     }
-    var parsedColor = WebInspector.Color.parse(color);
-    var shadowColor = parsedColor ? parsedColor.invert().setAlpha(0.33).asString(WebInspector.Color.Format.RGBA) : "white";
-    var prefix = WebInspector.isMac() ? "body:not(.undocked)" : "";
+    var prefix = WebInspector.isMac() ? "body:not(.undocked)" : "body";
     WebInspector._themeStyleElement.textContent =
         String.sprintf(
-            "%s .toolbar-colors {" +
+            "%s .inspector-view-tabbed-pane.tabbed-pane::shadow .tabbed-pane-header {" +
             "    background-image: none !important;" +
             "    background-color: %s !important;" +
             "    color: %s !important;" +
             "}", prefix, backgroundColor, color) +
         String.sprintf(
-             "%s .toolbar-colors button.status-bar-item .glyph, %s .toolbar-colors button.status-bar-item .long-click-glyph {" +
+             "%s .status-bar::shadow .status-bar-button-theme {" +
              "   background-color: %s;" +
-             "}", prefix, prefix, color) +
-        String.sprintf(
-             "%s .toolbar-colors button.status-bar-item .glyph.shadow, %s .toolbar-colors button.status-bar-item .long-click-glyph.shadow {" +
-             "   background-color: %s;" +
-             "}", prefix, prefix, shadowColor);
+             "}", prefix, color);
 }
 
 WebInspector.resetToolbarColors = function()

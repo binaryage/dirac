@@ -39,8 +39,8 @@ WebInspector.OverridesView = function()
     this.element.classList.add("overrides-view");
 
     this._tabbedPane = new WebInspector.TabbedPane();
-    this._tabbedPane.shrinkableTabs = false;
-    this._tabbedPane.verticalTabLayout = true;
+    this._tabbedPane.setShrinkableTabs(false);
+    this._tabbedPane.setVerticalTabLayout(true);
 
     new WebInspector.OverridesView.DeviceTab().appendAsTab(this._tabbedPane);
     new WebInspector.OverridesView.MediaTab().appendAsTab(this._tabbedPane);
@@ -52,13 +52,15 @@ WebInspector.OverridesView = function()
     this._tabbedPane.addEventListener(WebInspector.TabbedPane.EventTypes.TabSelected, this._tabSelected, this);
     this._tabbedPane.show(this.element);
 
-    var resetButtonElement = this._tabbedPane.headerElement().createChild("button", "text-button");
+    var resetButtonElement = createElementWithClass("button", "text-button");
+    this._tabbedPane.appendAfterTabStrip(resetButtonElement);
     resetButtonElement.id = "overrides-reset-button";
     resetButtonElement.textContent = WebInspector.UIString("Reset");
     resetButtonElement.addEventListener("click", WebInspector.overridesSupport.reset.bind(WebInspector.overridesSupport), false);
 
     if (!WebInspector.overridesSupport.responsiveDesignAvailable()) {
-        var disableButtonElement = this._tabbedPane.headerElement().createChild("button", "text-button overrides-disable-button");
+        var disableButtonElement = createElementWithClass("button", "text-button overrides-disable-button");
+        this._tabbedPane.appendAfterTabStrip(disableButtonElement);
         disableButtonElement.id = "overrides-disable-button";
         disableButtonElement.textContent = WebInspector.UIString("Disable");
         disableButtonElement.addEventListener("click", this._toggleEmulationEnabled.bind(this), false);

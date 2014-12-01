@@ -69,81 +69,49 @@ body /deep/ .flex-centered {
     background-clip: padding-box;
 }
 
-.toolbar-colors {
+body .inspector-view-tabbed-pane.tabbed-pane::shadow .tabbed-pane-header {
     background-color: #eee;
 }
 
-.toolbar {
+.inspector-view-tabbed-pane.tabbed-pane::shadow .tabbed-pane-header {
     flex: 0 0 24px;
-    display: flex;
-    flex-direction: row;
-    position: relative;
 }
 
-.toolbar .tabbed-pane-header {
-    border: none;
-}
-
-.toolbar .tabbed-pane-header-contents {
-    margin: 0;
-}
-
-.toolbar-left {
-    padding: 0 4px;
-}
-
-.toolbar .tabbed-pane-header-tab,
-.toolbar .tabbed-pane-header-tab.selected {
+.inspector-view-tabbed-pane.tabbed-pane::shadow .tabbed-pane-header-tab,
+.inspector-view-tabbed-pane.tabbed-pane::shadow .tabbed-pane-header-tab.selected {
     border-width: 0 2px 0 2px;
     background: none;
     padding-right: 3px;
 }
 
-.toolbar .tabbed-pane-header-tab.selected {
+.inspector-view-tabbed-pane.tabbed-pane::shadow .tabbed-pane-header-tab.selected {
     border-width: 0 2px 0 2px;
     -webkit-border-image: url(Images/toolbarItemSelected.png) 0 2 0 2;
 }
 
-body.dock-to-bottom .toolbar-background {
-    padding-top: 0;
+.inspector-view-close-button {
+    float: right;
+    padding-right: 6px;
+    padding-left: 2px;
 }
 
-body.dock-to-bottom .toolbar-background .tabbed-pane-header {
-    cursor: ns-resize;
-}
-
-body.dock-to-bottom .toolbar-background .tabbed-pane-header .tabbed-pane-header-tabs {
-    cursor: default;
-}
-
-.platform-windows .toolbar-colors,
-.platform-windows.inactive .toolbar-colors {
+.platform-windows .inspector-view-tabbed-pane.tabbed-pane::shadow .tabbed-pane-header,
+.platform-windows.inactive .inspector-view-tabbed-pane.tabbed-pane::shadow .tabbed-pane-header {
     background-image: none;
 }
 
-body.undocked.platform-mac .toolbar-colors {
+body.undocked.platform-mac .inspector-view-tabbed-pane.tabbed-pane::shadow .tabbed-pane-header {
     background-image: linear-gradient(to bottom, rgb(208, 208, 208), rgb(200, 200, 200)) !important;
     color: #333 !important;
 }
 
-body.undocked.platform-mac.inactive .toolbar-colors {
+body.undocked.platform-mac.inactive .inspector-view-tabbed-pane.tabbed-pane::shadow .tabbed-pane-header {
     background-image: linear-gradient(to bottom, rgb(238, 238, 238), rgb(224, 224, 224)) !important;
     color: #555 !important;
 }
 
-.toolbar > .tabbed-pane-header {
-    flex: auto;
-}
-
-.tabbed-pane-header.locked .tabbed-pane-header-tab:not(.selected) {
-    opacity: 0.6;
-}
-
-.toolbar-controls-left,
-.toolbar-controls-right,
- {
-    flex: none;
-    opacity: 0.8;
+.toolbar-left {
+    margin-left: 4px;
 }
 
 .close-button,
@@ -228,14 +196,6 @@ body.undocked.platform-mac.inactive .toolbar-colors {
 
 .orange-ball {
     background-position: -246px -96px;
-}
-
-#drawer-tabbed-pane > .tabbed-pane-header {
-    background-color: #eee;
-}
-
-#drawer-contents .tabbed-pane-header .tabbed-pane-header-tab {
-    cursor: default;
 }
 
 .bubble-repeat-count {
@@ -1419,6 +1379,10 @@ body.inactive .sidebar-tree-item.selected {
     padding-right: 8px;
     padding-top: 4px;
     padding-left: 2px;
+}
+
+#drawer-editor-view {
+    flex: auto;
 }
 
 body.undocked .toolbar-close-button-item {

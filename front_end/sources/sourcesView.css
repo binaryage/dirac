@@ -33,18 +33,6 @@
     position: relative;
 }
 
-#sources-editor-container-tabbed-pane {
-    flex: auto;
-}
-
-#sources-editor-container-tabbed-pane .tabbed-pane-header-tab {
-    border-bottom: 1px solid #BBB;
-}
-
-#sources-panel-sources-view .tabbed-pane-header {
-    background-color: #eee;
-}
-
 #sources-panel-sources-view .sources-status-bar {
     display: flex;
     position: relative;

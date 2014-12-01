@@ -62,6 +62,7 @@
         "progressIndicator.css",
         "searchableView.css",
         "splitView.css",
-        "statusBar.css"
+        "statusBar.css",
+        "tabbedPane.css"
     ]
 }

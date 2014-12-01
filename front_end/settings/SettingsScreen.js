@@ -41,19 +41,20 @@ WebInspector.SettingsScreen = function(onHide)
     /** @type {function()} */
     this._onHide = onHide;
 
-    this._tabbedPane = new WebInspector.TabbedPane();
-    this._tabbedPane.element.classList.add("help-window-main");
+    this._contentElement = this.element.createChild("div", "help-window-main");
     var settingsLabelElement = createElementWithClass("div", "help-window-label");
     settingsLabelElement.createTextChild(WebInspector.UIString("Settings"));
-    this._tabbedPane.element.insertBefore(settingsLabelElement, this._tabbedPane.element.firstChild);
-    this._tabbedPane.element.appendChild(this._createCloseButton());
+    this._contentElement.appendChild(this._createCloseButton());
+
+    this._tabbedPane = new WebInspector.TabbedPane();
+    this._tabbedPane.insertBeforeTabStrip(settingsLabelElement);
     this._tabbedPane.appendTab(WebInspector.SettingsScreen.Tabs.General, WebInspector.UIString("General"), new WebInspector.GenericSettingsTab());
     this._tabbedPane.appendTab(WebInspector.SettingsScreen.Tabs.Workspace, WebInspector.UIString("Workspace"), new WebInspector.WorkspaceSettingsTab());
     if (Runtime.experiments.supportEnabled())
         this._tabbedPane.appendTab(WebInspector.SettingsScreen.Tabs.Experiments, WebInspector.UIString("Experiments"), new WebInspector.ExperimentsSettingsTab());
     this._tabbedPane.appendTab(WebInspector.SettingsScreen.Tabs.Shortcuts, WebInspector.UIString("Shortcuts"), WebInspector.shortcutsScreen.createShortcutsTabView());
-    this._tabbedPane.shrinkableTabs = false;
-    this._tabbedPane.verticalTabLayout = true;
+    this._tabbedPane.setShrinkableTabs(false);
+    this._tabbedPane.setVerticalTabLayout(true);
 
     this._lastSelectedTabSetting = WebInspector.settings.createSetting("lastSelectedSettingsTab", WebInspector.SettingsScreen.Tabs.General);
     this.selectTab(this._lastSelectedTabSetting.get());
@@ -108,7 +109,7 @@ WebInspector.SettingsScreen.prototype = {
      */
     wasShown: function()
     {
-        this._tabbedPane.show(this.element);
+        this._tabbedPane.show(this._contentElement);
         WebInspector.HelpScreen.prototype.wasShown.call(this);
     },
 
