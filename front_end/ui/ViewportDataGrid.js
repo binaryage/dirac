@@ -213,10 +213,12 @@ WebInspector.ViewportDataGrid.prototype = {
         var toY = fromY + node.nodeSelfHeight();
 
         var scrollTop = this._scrollContainer.scrollTop;
-        if (scrollTop > fromY)
+        if (scrollTop > fromY) {
             scrollTop = fromY;
-        else if (scrollTop + this._scrollContainer.offsetHeight < toY)
+            this._atBottom = false;
+        } else if (scrollTop + this._scrollContainer.offsetHeight < toY) {
             scrollTop = toY - this._scrollContainer.offsetHeight;
+        }
         this._scrollContainer.scrollTop = scrollTop;
     },
 
