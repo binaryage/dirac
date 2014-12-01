@@ -70,9 +70,11 @@ WebInspector.ElementsPanel = function()
 
     this._matchedStylesFilterBoxContainer = createElement("div");
     this._matchedStylesFilterBoxContainer.className = "sidebar-pane-filter-box";
+    this.sidebarPanes.styles.setFilterBoxContainer(this._matchedStylesFilterBoxContainer);
+
     this._computedStylesFilterBoxContainer = createElement("div");
     this._computedStylesFilterBoxContainer.className = "sidebar-pane-filter-box";
-    this.sidebarPanes.styles.setFilterBoxContainers(this._matchedStylesFilterBoxContainer, this._computedStylesFilterBoxContainer);
+    this.sidebarPanes.computedStyle.setFilterBoxContainer(this._computedStylesFilterBoxContainer);
 
     this.sidebarPanes.metrics = new WebInspector.MetricsSidebarPane();
     this.sidebarPanes.properties = new WebInspector.PropertiesSidebarPane();
