@@ -197,7 +197,7 @@ WebInspector.RequestHeadersView.prototype = {
         paramsTreeElement.listItemElement.createTextChild(title);
 
         var headerCount = createElementWithClass("span", "header-count");
-        headerCount.textContent = WebInspector.UIString(" (%d)", params.length);
+        headerCount.textContent = WebInspector.UIString("\u00A0(%d)", params.length);
         paramsTreeElement.listItemElement.appendChild(headerCount);
 
         /**
@@ -385,7 +385,7 @@ WebInspector.RequestHeadersView.prototype = {
         headersTreeElement.listItemElement.removeChildren();
         headersTreeElement.listItemElement.createTextChild(title);
 
-        var headerCount = WebInspector.UIString(" (%d)", headersLength);
+        var headerCount = WebInspector.UIString("\u00A0(%d)", headersLength);
         headersTreeElement.listItemElement.createChild("span", "header-count").textContent = headerCount;
     },
 
