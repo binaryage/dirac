@@ -144,14 +144,12 @@
 
 .network-timing-bar.connecting,
 .network-timing-bar.ssl,
-.network-timing-bar.serviceworker {
+.network-timing-bar.serviceworker,
+.network-timing-bar.serviceworker-preparation {
     background-color: rgb(229, 130, 38);
 }
 
-.network-timing-bar.sending {
-    background-color: rgb(95, 221, 95);
-}
-
+.network-timing-bar.sending,
 .network-timing-bar.waiting {
     background-color: rgb(95, 221, 95);
 }
