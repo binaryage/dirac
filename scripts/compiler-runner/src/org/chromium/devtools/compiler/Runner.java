@@ -1,6 +1,7 @@
 package org.chromium.devtools.compiler;
 
 import com.google.common.collect.Lists;
+import com.google.javascript.jscomp.CheckLevel;
 import com.google.javascript.jscomp.CommandLineRunner;
 import com.google.javascript.jscomp.CompilerOptions;
 
@@ -185,6 +186,7 @@ public class Runner {
             CompilerOptions options = super.createOptions();
             options.setIdeMode(true);
             options.setExtraAnnotationNames(EXTRA_ANNOTATION_NAMES);
+            options.setReportMissingOverride(CheckLevel.ERROR);
             return options;
         }
 
