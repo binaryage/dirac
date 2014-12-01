@@ -1416,6 +1416,8 @@ WebInspector.ElementsTreeElement.prototype = {
 
         this._updateChildrenInProgress = true;
 
+        var selectedTreeElement = this.treeOutline.selectedTreeElement;
+
         // Remove any tree elements that no longer have this node as their parent and save
         // all existing elements that could be reused. This also removes closing tag element.
         var existingTreeElements = new Map();
@@ -1431,12 +1433,19 @@ WebInspector.ElementsTreeElement.prototype = {
                 continue;
             }
 
-            var selectedTreeElement = this.treeOutline.selectedTreeElement;
-            if (selectedTreeElement && (selectedTreeElement === existingTreeElement || selectedTreeElement.hasAncestor(existingTreeElement)))
-                this.select();
+            if (selectedTreeElement === existingTreeElement || selectedTreeElement.hasAncestor(existingTreeElement)) {
+                if (existingTreeElement.nextSibling)
+                    selectedTreeElement = existingTreeElement.nextSibling;
+                else if (existingTreeElement.previousSibling)
+                    selectedTreeElement = existingTreeElement.previousSibling;
+                else
+                    selectedTreeElement = this;
+            }
 
             this.removeChildAtIndex(i);
         }
+        if (selectedTreeElement !== this.treeOutline.selectedTreeElement)
+            selectedTreeElement.select();
 
         var visibleChildren = this._visibleChildren();
         for (var i = 0; i < visibleChildren.length && i < this.expandedChildrenLimit; ++i) {
@@ -2660,19 +2669,9 @@ WebInspector.ElementsTreeElement.prototype = {
         if (!parentElement)
             return;
 
-        var self = this;
-        function removeNodeCallback(error)
-        {
-            if (error)
-                return;
-
-            parentElement.removeChild(self);
-            parentElement._adjustCollapsedRange();
-        }
-
         if (!this._node.parentNode || this._node.parentNode.nodeType() === Node.DOCUMENT_NODE)
             return;
-        this._node.removeNode(removeNodeCallback);
+        this._node.removeNode();
     },
 
     _editAsHTML: function()
