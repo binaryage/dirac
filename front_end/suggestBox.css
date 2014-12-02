@@ -82,7 +82,7 @@
     text-overflow: ellipsis;
     border: 1px solid transparent;
     flex: 0 0 auto;
-    padding-right: 0px;
+    padding-right: 0;
     white-space: nowrap;
 }
 

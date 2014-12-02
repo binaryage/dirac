@@ -116,7 +116,7 @@
     display: flex;
     min-height: 17px;
     overflow: hidden;
-    margin: 5px 10px 0px;
+    margin: 5px 10px 0;
 }
 
 .source-frame-infobar-details-container {
@@ -128,7 +128,7 @@
 .source-frame-infobar-details-row {
     display: flex;
     flex: none;
-    margin: 0px 10px;
+    margin: 0 10px;
 }
 
 .source-frame-infobar-row-message {

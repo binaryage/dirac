@@ -231,7 +231,7 @@ body.inactive .profile-launcher-view-content button.running:not(.status-bar-item
 .text-button.load-profile.multi-target {
     display: block;
     margin-top: 14px;
-    margin-left: 0px;
+    margin-left: 0;
 }
 
 .cpu-profile-flame-chart-overview-container {

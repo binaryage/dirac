@@ -259,7 +259,7 @@ select.status-bar-item {
 }
 
 .emulation-status-bar-item .glyph {
-    -webkit-mask-position: -160px 0px;
+    -webkit-mask-position: -160px 0;
 }
 
 .emulation-status-bar-item.warning::after {
@@ -315,7 +315,7 @@ select.status-bar-item {
 }
 
 .screencast-status-bar-item.toggled-disabled .glyph {
-    -webkit-mask-position: 0px -120px;
+    -webkit-mask-position: 0 -120px;
 }
 
 .record-status-bar-item .glyph {

@@ -127,7 +127,7 @@ body.dock-to-bottom .help-content {
 
 .settings-tab .field-error-message {
     color: DarkRed;
-    height: 0px; /* Avoid changing element height when content is set. */
+    height: 0; /* Avoid changing element height when content is set. */
 }
 
 .help-line {
@@ -161,7 +161,7 @@ body.dock-to-bottom .help-content {
     font-size: 11px;
     background-color: #f7f7f7;
     color: #333;
-    box-shadow: 0 1px 0px rgba(0, 0, 0, 0.2), 0 0 0 2px #ffffff inset;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2), 0 0 0 2px #ffffff inset;
     border-radius: 3px;
     display: inline-block;
     margin: 0 0.1em;
@@ -458,7 +458,7 @@ input.list-column-editor {
 }
 select.list-column-editor {
     padding: 2px;
-    margin-left: 0px;
+    margin-left: 0;
 }
 
 .settings-tab .settings-list .settings-list-item .file-system-path {

@@ -549,7 +549,7 @@ iframe.panel.extension {
 }
 
 .section > .header {
-    padding: 0px 8px 0 5px;
+    padding: 0 8px 0 5px;
     min-height: 18px;
     white-space: nowrap;
     background-origin: padding-box;
@@ -939,7 +939,7 @@ li.editing .enabled-button {
     margin: 4px;
     border: 3px solid grey;
     border-radius: 12px;
-    clip: rect(0px, 15px, 15px, 0px);
+    clip: rect(0, 15px, 15px, 0);
     content: "";
     position: absolute;
     -webkit-animation: spinner-animation 1s linear infinite;
@@ -951,7 +951,7 @@ li.editing .enabled-button {
     width: 14px;
     height: 14px;
     margin: 1px;
-    clip: rect(0px, 9px, 9px, 0px);
+    clip: rect(0, 9px, 9px, 0);
     border-width: 2px;
 }
 

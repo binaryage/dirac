@@ -864,7 +864,7 @@
 
 .profiler-log-view.section .properties {
     display: block;
-    padding-right: 0px !important;
+    padding-right: 0 !important;
 }
 
 .paint-profiler-image-view {
@@ -873,7 +873,7 @@
 
 .paint-profiler-image-view img {
     border: solid 1px black;
-    -webkit-transform-origin: 0px 0px;
+    -webkit-transform-origin: 0 0;
 }
 
 .layer-details-view ul {
