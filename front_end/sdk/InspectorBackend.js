@@ -912,7 +912,7 @@ InspectorBackendClass.AgentPrototype.prototype = {
         }
         var params = this._prepareParameters(method, signature, args, false, onError);
         if (errorMessage)
-            return Promise.rejectWithError(errorMessage);
+            return Promise.reject(new Error(errorMessage));
         else
             return new Promise(promiseAction.bind(this));
 
@@ -929,10 +929,12 @@ InspectorBackendClass.AgentPrototype.prototype = {
              */
             function callback(error, result)
             {
-                if (error)
-                    reject(new Error(error));
-                else
-                    resolve(replyArgs.length ? result : undefined);
+                if (error) {
+                    console.error(error);
+                    resolve(null);
+                    return;
+                }
+                resolve(replyArgs.length ? result : undefined);
             }
             this._connection._wrapCallbackAndSendMessageObject(this._domain, method, params, callback);
         }

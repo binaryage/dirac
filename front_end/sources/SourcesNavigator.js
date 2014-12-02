@@ -80,7 +80,7 @@ WebInspector.SourcesNavigator.prototype = {
         var promises = [];
         for (var i = 0; i < ids.length; ++i)
             promises.push(this._tabbedPaneController.viewForId(ids[i]));
-        Promise.all(promises).then(filterNavigators.bind(this)).done();
+        Promise.all(promises).then(filterNavigators.bind(this));
 
         /**
          * @param {!Array.<!Object>} objects

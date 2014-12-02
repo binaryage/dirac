@@ -199,7 +199,6 @@
         ],
         'devtools_platform_js_files': [
             'front_end/platform/DOMExtension.js',
-            'front_end/platform/Promise.js',
             'front_end/platform/utilities.js',
         ],
         'devtools_toolbox_bootstrap_js_files': [
@@ -396,7 +395,6 @@
             'front_end/heap_snapshot_worker/HeapSnapshotWorker.js',
             'front_end/heap_snapshot_worker/HeapSnapshotWorkerDispatcher.js',
             'front_end/heap_snapshot_worker/JSHeapSnapshot.js',
-            'front_end/platform/Promise.js',
             'front_end/platform/utilities.js',
             'front_end/profiler/HeapSnapshotCommon.js',
         ],
@@ -468,7 +466,6 @@
             'front_end/cm/javascript.js',
             'front_end/cm/xml.js',
             'front_end/common/WebInspector.js',
-            'front_end/platform/Promise.js',
             'front_end/platform/utilities.js',
             'front_end/script_formatter_worker/CSSFormatter.js',
             'front_end/script_formatter_worker/JavaScriptFormatter.js',

@@ -56,7 +56,7 @@ WebInspector.Main.prototype = {
         var promises = [];
         for (var i = 0; i < extensions.length; ++i)
             promises.push(resolveItem(extensions[i]));
-        Promise.all(promises).then(appendItemsInOrder).done();
+        Promise.all(promises).then(appendItemsInOrder);
 
         /**
          * @param {!Runtime.Extension} extension
@@ -552,7 +552,7 @@ WebInspector.Main.prototype = {
     {
         var object = WebInspector.runtimeModel.createRemoteObject(payload);
         if (object.isNode()) {
-            WebInspector.Revealer.revealPromise(object).thenOrCatch(object.release.bind(object)).done();
+            WebInspector.Revealer.revealPromise(object).then(object.release.bind(object));
             return;
         }
 

@@ -158,7 +158,7 @@ WebInspector.ConsoleModel.evaluateCommandInConsole = function(executionContext, 
         if (!result)
             return;
 
-        WebInspector.console.showPromise().then(reportUponEvaluation).done();
+        WebInspector.console.showPromise().then(reportUponEvaluation);
         function reportUponEvaluation()
         {
             target.consoleModel.dispatchEventToListeners(WebInspector.ConsoleModel.Events.CommandEvaluated, {result: result, wasThrown: wasThrown, text: text, commandMessage: commandMessage, exceptionDetails: exceptionDetails});

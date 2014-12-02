@@ -234,7 +234,7 @@ WebInspector.DocumentationView.Renderer.prototype = {
             if (!examples[i].language)
                 continue;
             var syntaxHighlighter = new WebInspector.DOMSyntaxHighlighter(WebInspector.DocumentationView._languageToMimeType[examples[i].language.toLowerCase()], true);
-            syntaxHighlighter.syntaxHighlightNode(code).done();
+            syntaxHighlighter.syntaxHighlightNode(code);
         }
         return section;
     },

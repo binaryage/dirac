@@ -568,14 +568,14 @@ WebInspector.TimelineModel.prototype = {
     _stopProfilingOnTarget: function(target)
     {
         /**
-         * @param {!{profile: !ProfilerAgent.CPUProfile}} value
-         * @return {!ProfilerAgent.CPUProfile}
+         * @param {?{profile: !ProfilerAgent.CPUProfile}} value
+         * @return {?ProfilerAgent.CPUProfile}
          */
         function extractProfile(value)
         {
-            return value.profile;
+            return value && value.profile;
         }
-        return target.profilerAgent().stop().then(extractProfile).then(this._addCpuProfile.bind(this, target.id())).catchAndReport();
+        return target.profilerAgent().stop().then(extractProfile).then(this._addCpuProfile.bind(this, target.id()));
     },
 
     /**
@@ -636,10 +636,12 @@ WebInspector.TimelineModel.prototype = {
 
     /**
      * @param {number} targetId
-     * @param {!ProfilerAgent.CPUProfile} cpuProfile
+     * @param {?ProfilerAgent.CPUProfile} cpuProfile
      */
     _addCpuProfile: function(targetId, cpuProfile)
     {
+        if (!cpuProfile)
+            return;
         if (!this._cpuProfiles)
             this._cpuProfiles = new Map();
         this._cpuProfiles.set(targetId, cpuProfile);

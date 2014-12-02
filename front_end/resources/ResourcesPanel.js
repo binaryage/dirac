@@ -817,14 +817,12 @@ WebInspector.ResourcesPanel.ResourceRevealer.prototype = {
      */
     reveal: function(resource, lineNumber)
     {
-        if (resource instanceof WebInspector.Resource) {
-
-            var panel = WebInspector.ResourcesPanel._instance();
-            WebInspector.inspectorView.setCurrentPanel(panel);
-            panel.showResource(resource, lineNumber);
-            return Promise.resolve();
-        }
-        return Promise.rejectWithError("Internal error: not a resource");
+        if (!(resource instanceof WebInspector.Resource))
+            return Promise.reject(new Error("Internal error: not a resource"));
+        var panel = WebInspector.ResourcesPanel._instance();
+        WebInspector.inspectorView.setCurrentPanel(panel);
+        panel.showResource(resource, lineNumber);
+        return Promise.resolve();
     }
 }
 

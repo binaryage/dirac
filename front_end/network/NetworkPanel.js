@@ -400,14 +400,12 @@ WebInspector.NetworkPanel.RequestRevealer.prototype = {
      */
     reveal: function(request, lineNumber)
     {
-        if (request instanceof WebInspector.NetworkRequest) {
-
-            var panel = WebInspector.NetworkPanel._instance();
-            WebInspector.inspectorView.setCurrentPanel(panel);
-            panel.revealAndHighlightRequest(request);
-            return Promise.resolve();
-        }
-        return Promise.rejectWithError("Internal error: not a network request");
+        if (!(request instanceof WebInspector.NetworkRequest))
+            return Promise.reject(new Error("Internal error: not a network request"));
+        var panel = WebInspector.NetworkPanel._instance();
+        WebInspector.inspectorView.setCurrentPanel(panel);
+        panel.revealAndHighlightRequest(request);
+        return Promise.resolve();
     }
 }
 

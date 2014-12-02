@@ -2072,7 +2072,7 @@ WebInspector.ElementsTreeElement.prototype = {
 
         var config = new WebInspector.InplaceEditor.Config(commit.bind(this), dispose.bind(this));
         config.setMultilineOptions(initialValue, { name: "xml", htmlMode: true }, "web-inspector-html", WebInspector.settings.domWordWrap.get(), true);
-        WebInspector.InplaceEditor.startMultilineEditing(this._htmlEditElement, config).then(markAsBeingEdited.bind(this)).done();
+        WebInspector.InplaceEditor.startMultilineEditing(this._htmlEditElement, config).then(markAsBeingEdited.bind(this));
 
         /**
          * @param {!Object} controller
@@ -2594,13 +2594,13 @@ WebInspector.ElementsTreeElement.prototype = {
                     newNode.textContent = node.nodeValue();
 
                     var javascriptSyntaxHighlighter = new WebInspector.DOMSyntaxHighlighter("text/javascript", true);
-                    javascriptSyntaxHighlighter.syntaxHighlightNode(newNode).then(updateSearchHighlight.bind(this)).done();
+                    javascriptSyntaxHighlighter.syntaxHighlightNode(newNode).then(updateSearchHighlight.bind(this));
                 } else if (node.parentNode && node.parentNode.nodeName().toLowerCase() === "style") {
                     var newNode = info.titleDOM.createChild("span", "webkit-html-text-node webkit-html-css-node");
                     newNode.textContent = node.nodeValue();
 
                     var cssSyntaxHighlighter = new WebInspector.DOMSyntaxHighlighter("text/css", true);
-                    cssSyntaxHighlighter.syntaxHighlightNode(newNode).then(updateSearchHighlight.bind(this)).done();
+                    cssSyntaxHighlighter.syntaxHighlightNode(newNode).then(updateSearchHighlight.bind(this));
                 } else {
                     info.titleDOM.createTextChild("\"");
                     var textNodeElement = info.titleDOM.createChild("span", "webkit-html-text-node");

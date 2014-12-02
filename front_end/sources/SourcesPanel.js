@@ -1248,11 +1248,10 @@ WebInspector.SourcesPanel.UILocationRevealer.prototype = {
      */
     reveal: function(uiLocation)
     {
-        if (uiLocation instanceof WebInspector.UILocation) {
-            WebInspector.SourcesPanel.instance().showUILocation(uiLocation);
-            return Promise.resolve();
-        }
-        return Promise.rejectWithError("Internal error: not a ui location");
+        if (!(uiLocation instanceof WebInspector.UILocation))
+            return Promise.reject(new Error("Internal error: not a ui location"));
+        WebInspector.SourcesPanel.instance().showUILocation(uiLocation);
+        return Promise.resolve();
     }
 }
 
@@ -1272,11 +1271,10 @@ WebInspector.SourcesPanel.UISourceCodeRevealer.prototype = {
      */
     reveal: function(uiSourceCode)
     {
-        if (uiSourceCode instanceof WebInspector.UISourceCode) {
-            WebInspector.SourcesPanel.instance().showUISourceCode(uiSourceCode);
-            return Promise.resolve();
-        }
-        return Promise.rejectWithError("Internal error: not a ui source code");
+        if (!(uiSourceCode instanceof WebInspector.UISourceCode))
+            return Promise.reject(new Error("Internal error: not a ui source code"));
+        WebInspector.SourcesPanel.instance().showUISourceCode(uiSourceCode);
+        return Promise.resolve();
     }
 }
 

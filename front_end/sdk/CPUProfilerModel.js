@@ -68,7 +68,7 @@ WebInspector.CPUProfilerModel.prototype = {
     consoleProfileFinished: function(id, scriptLocation, cpuProfile, title)
     {
         // Make sure ProfilesPanel is initialized and CPUProfileType is created.
-        self.runtime.loadModulePromise("profiler").then(dispatchEvent.bind(this)).done();
+        self.runtime.loadModulePromise("profiler").then(dispatchEvent.bind(this));
         /**
          * @this {WebInspector.CPUProfilerModel}
          */
@@ -88,7 +88,7 @@ WebInspector.CPUProfilerModel.prototype = {
     consoleProfileStarted: function(id, scriptLocation, title)
     {
         // Make sure ProfilesPanel is initialized and CPUProfileType is created.
-        self.runtime.loadModulePromise("profiler").then(dispatchEvent.bind(this)).done();
+        self.runtime.loadModulePromise("profiler").then(dispatchEvent.bind(this));
         /**
          * @this {WebInspector.CPUProfilerModel}
          */

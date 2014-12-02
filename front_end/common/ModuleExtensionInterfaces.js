@@ -24,7 +24,7 @@ WebInspector.Renderer.prototype = {
 WebInspector.Renderer.renderPromise = function(object)
 {
     if (!object)
-        return Promise.rejectWithError("Can't render " + object);
+        return Promise.reject(new Error("Can't render " + object));
 
     return self.runtime.instancePromise(WebInspector.Renderer, object).then(render);
 
@@ -50,7 +50,7 @@ WebInspector.Revealer = function()
  */
 WebInspector.Revealer.reveal = function(revealable, lineNumber)
 {
-    WebInspector.Revealer.revealPromise(revealable, lineNumber).done();
+    WebInspector.Revealer.revealPromise(revealable, lineNumber);
 }
 
 /**
@@ -61,8 +61,7 @@ WebInspector.Revealer.reveal = function(revealable, lineNumber)
 WebInspector.Revealer.revealPromise = function(revealable, lineNumber)
 {
     if (!revealable)
-        return Promise.rejectWithError("Can't reveal " + revealable);
-
+        return Promise.reject(new Error("Can't reveal " + revealable));
     return self.runtime.instancesPromise(WebInspector.Revealer, revealable).then(reveal);
 
     /**

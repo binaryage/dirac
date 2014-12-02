@@ -1226,7 +1226,7 @@ WebInspector.ExtensibleTabbedPaneController.prototype = {
     _tabSelected: function(event)
     {
         var tabId = /** @type {string} */ (event.data.tabId);
-        this.viewForId(tabId).then(viewLoaded.bind(this)).done();
+        this.viewForId(tabId).then(viewLoaded.bind(this));
 
         /**
          * @this {WebInspector.ExtensibleTabbedPaneController}
@@ -1258,7 +1258,7 @@ WebInspector.ExtensibleTabbedPaneController.prototype = {
         if (this._views.has(id))
             return Promise.resolve(/** @type {!WebInspector.View} */ (this._views.get(id)));
         if (!this._extensions.has(id))
-            return Promise.rejectWithError("No view registered for given type and id: " + this._extensionPoint + ", " + id);
+            return Promise.reject(new Error("No view registered for given type and id: " + this._extensionPoint + ", " + id));
         if (this._promiseForId[id])
             return this._promiseForId[id];
 

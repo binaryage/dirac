@@ -90,7 +90,7 @@ WebInspector.InspectorView = function()
      */
     function showConsole()
     {
-        this.showPanel("console").done();
+        this.showPanel("console");
     }
 
     WebInspector.targetManager.addEventListener(WebInspector.TargetManager.Events.SuspendStateChanged, this._onSuspendStateChanged.bind(this));
@@ -169,7 +169,7 @@ WebInspector.InspectorView.prototype = {
     {
         var panelDescriptor = this._panelDescriptors[panelName];
         if (!panelDescriptor)
-            return Promise.rejectWithError("Can't load panel without the descriptor: " + panelName);
+            return Promise.reject(new Error("Can't load panel without the descriptor: " + panelName));
 
         var promise = this._panelPromises[panelName];
         if (promise)
@@ -214,8 +214,11 @@ WebInspector.InspectorView.prototype = {
      */
     showPanel: function(panelName)
     {
-        if (this._currentPanelLocked)
-            return this._currentPanel === this._panels[panelName] ? Promise.resolve(this._currentPanel) : Promise.rejectWithError("Current panel locked");
+        if (this._currentPanelLocked) {
+            if (this._currentPanel !== this._panels[panelName])
+                return Promise.reject(new Error("Current panel locked"));
+            return Promise.resolve(this._currentPanel);
+        }
 
         this._panelForShowPromise = this.panel(panelName);
         return this._panelForShowPromise.then(setCurrentPanelIfNecessary.bind(this, this._panelForShowPromise));
@@ -274,7 +277,7 @@ WebInspector.InspectorView.prototype = {
         if (!panelName)
             return;
 
-        this.showPanel(panelName).done();
+        this.showPanel(panelName);
     },
 
     /**
@@ -399,7 +402,7 @@ WebInspector.InspectorView.prototype = {
                 var panelName = this._tabbedPane.allTabs()[panelIndex];
                 if (panelName) {
                     if (!WebInspector.Dialog.currentInstance() && !this._currentPanelLocked)
-                        this.showPanel(panelName).done();
+                        this.showPanel(panelName);
                     event.consume(true);
                 }
                 return;
@@ -452,7 +455,7 @@ WebInspector.InspectorView.prototype = {
         var panelOrder = this._tabbedPane.allTabs();
         var index = panelOrder.indexOf(this.currentPanel().name);
         index = (index + panelOrder.length + direction) % panelOrder.length;
-        this.showPanel(panelOrder[index]).done();
+        this.showPanel(panelOrder[index]);
     },
 
     /**

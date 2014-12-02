@@ -228,7 +228,7 @@ WebInspector.AuditExtensionFormatters = {
          */
         function onEvaluate(remoteObject)
         {
-            WebInspector.Renderer.renderPromise(remoteObject).then(appendRenderer).thenOrCatch(remoteObject.release.bind(remoteObject)).done();
+            WebInspector.Renderer.renderPromise(remoteObject).then(appendRenderer).then(remoteObject.release.bind(remoteObject));
 
             /**
              * @param {!Element} element

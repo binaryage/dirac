@@ -276,7 +276,7 @@ WebInspector.ExtensionServer.prototype = {
 
     _onShowPanel: function(message)
     {
-        WebInspector.inspectorView.showPanel(message.id).done();
+        WebInspector.inspectorView.showPanel(message.id);
     },
 
     _onCreateStatusBarButton: function(message, port)
@@ -287,7 +287,7 @@ WebInspector.ExtensionServer.prototype = {
         var button = new WebInspector.ExtensionButton(this, message.id, this._expandResourcePath(port._extensionOrigin, message.icon), message.tooltip, message.disabled);
         this._clientObjects[message.id] = button;
 
-        panelDescriptor.panel().then(appendButton).done();
+        panelDescriptor.panel().then(appendButton);
 
         /**
          * @param {!WebInspector.Panel} panel

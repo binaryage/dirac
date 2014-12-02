@@ -290,7 +290,7 @@ WebInspector.GenericSettingsTab.prototype = {
                 return;
 
             if (descriptor["settingType"] === "custom") {
-                extension.instancePromise().then(appendCustomSetting).done();
+                extension.instancePromise().then(appendCustomSetting);
                 return;
             }
 
