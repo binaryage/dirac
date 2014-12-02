@@ -485,6 +485,12 @@ WebInspector.TimelineUIUtils._buildTraceEventDetailsSynchronously = function(eve
 {
     var fragment = createDocumentFragment();
     var stats = {};
+    var hasChildren = WebInspector.TimelineUIUtils._aggregatedStatsForTraceEvent(stats, model, event);
+
+    var pieChart = hasChildren ?
+        WebInspector.TimelineUIUtils.generatePieChart(stats, WebInspector.TimelineUIUtils.eventStyle(event).category, event.selfTime) :
+        WebInspector.TimelineUIUtils.generatePieChart(stats);
+
     var recordTypes = WebInspector.TimelineModel.RecordType;
 
     // This message may vary per event.name;
@@ -494,12 +500,6 @@ WebInspector.TimelineUIUtils._buildTraceEventDetailsSynchronously = function(eve
     contentHelper.appendTextRow(WebInspector.UIString("Type"), WebInspector.TimelineUIUtils.eventTitle(event, model));
     contentHelper.appendTextRow(WebInspector.UIString("Self Time"), Number.millisToString(event.selfTime, true));
     contentHelper.appendTextRow(WebInspector.UIString("Start Time"), Number.millisToString((event.startTime - model.minimumRecordTime())));
-
-    var hasChildren = WebInspector.TimelineUIUtils._aggregatedStatsForTraceEvent(stats, model, event);
-    if (hasChildren) {
-        var pieChart = WebInspector.TimelineUIUtils.generatePieChart(stats, selfCategory, selfTime);
-        contentHelper.appendElementRow(WebInspector.UIString("Aggregated Time"), pieChart);
-    }
     if (event.previewElement)
         contentHelper.appendElementRow(WebInspector.UIString("Preview"), event.previewElement);
 
