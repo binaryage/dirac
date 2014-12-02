@@ -64,7 +64,7 @@ WebInspector.DocumentationCatalog.ItemDescriptor.prototype = {
 /**
  * @const
  */
-WebInspector.DocumentationCatalog.apiURLPrefix = "http://docs.webplatform.org/w/api.php?action=query";
+WebInspector.DocumentationCatalog.apiURLPrefix = "https://docs.webplatform.org/w/api.php?action=query";
 
 /**
  * @const

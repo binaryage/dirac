@@ -4,6 +4,11 @@
  * found in the LICENSE file.
  */
 
+.documentation-view {
+    -webkit-user-select: text;
+    padding: 10px;
+}
+
 .documentation-code {
     padding: 15px;
     margin: 2em 0;
@@ -23,6 +28,10 @@
 .documentation-view .documentation-method-signature.monospace {
     font-size: 14px !important;
     margin-bottom: 20px;
+}
+
+.documentation-method-name {
+    margin-right: -0.5em;
 }
 
 .documentation-parameter-data-type-value {
@@ -88,11 +97,6 @@
 
 .documentation-paragraph {
     margin-bottom: 0.7em;
-}
-
-.documentation-view {
-    -webkit-user-select: text;
-    padding: 10px;
 }
 
 .documentation-example-description-section {

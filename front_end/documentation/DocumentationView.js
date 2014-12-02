@@ -22,9 +22,8 @@ WebInspector.DocumentationView.showDocumentationURL = function(url, searchItem)
     if (!WebInspector.DocumentationView._view)
         WebInspector.DocumentationView._view = new WebInspector.DocumentationView();
     var view = WebInspector.DocumentationView._view;
-    view.element.removeChildren();
+    view._showDocumentation(url, searchItem);
     WebInspector.inspectorView.showCloseableViewInDrawer("documentation", WebInspector.UIString("Documentation"), view);
-    view.showDocumentation(url, searchItem);
 }
 
 WebInspector.DocumentationView._languageToMimeType = {
@@ -37,8 +36,10 @@ WebInspector.DocumentationView.prototype = {
      * @param {string} url
      * @param {string} searchItem
      */
-    showDocumentation: function(url, searchItem)
+    _showDocumentation: function(url, searchItem)
     {
+        if (this._documentationElement)
+            this._documentationElement.remove();
         if (!url) {
             this._createEmptyPage();
             return;
@@ -73,18 +74,17 @@ WebInspector.DocumentationView.prototype = {
             return;
         }
 
-        this.element.removeChildren();
         var renderer = new WebInspector.DocumentationView.Renderer(article, searchItem);
-        this.element.appendChild(renderer.renderJSArticle());
+        this._documentationElement = renderer.renderJSArticle();
+        this.element.appendChild(this._documentationElement);
     },
 
     _createEmptyPage: function()
     {
-        this.element.removeChildren();
-        var emptyPage = this.element.createChild("div", "documentation-empty-page");
-        var pageTitle = emptyPage.createChild("div", "documentation-not-found");
+        this._documentationElement = this.element.createChild("div", "documentation-empty-page");
+        var pageTitle = this._documentationElement.createChild("div", "documentation-not-found");
         pageTitle.textContent = WebInspector.UIString("No documentation found.");
-        emptyPage.createChild("div", "documentation-empty-page-align");
+        this._documentationElement.createChild("div", "documentation-empty-page-align");
     },
 
     __proto__: WebInspector.View.prototype
