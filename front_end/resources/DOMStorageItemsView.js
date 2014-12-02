@@ -34,8 +34,7 @@ WebInspector.DOMStorageItemsView = function(domStorage)
 
     this.domStorage = domStorage;
 
-    this.element.classList.add("storage-view");
-    this.element.classList.add("table");
+    this.element.classList.add("storage-view", "table");
 
     this.deleteButton = new WebInspector.StatusBarButton(WebInspector.UIString("Delete"), "delete-status-bar-item");
     this.deleteButton.setVisible(false);

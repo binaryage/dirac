@@ -37,7 +37,7 @@ WebInspector.AuditResultView = function(categoryResults)
 {
     WebInspector.SidebarPaneStack.call(this);
     this.setMinimumSize(100, 25);
-    this.element.classList.add("audit-result-view", "fill");
+    this.element.classList.add("audit-result-view");
 
     function categorySorter(a, b) {
         return (a.title || "").localeCompare(b.title || "");

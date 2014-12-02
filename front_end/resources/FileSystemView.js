@@ -36,8 +36,7 @@
 WebInspector.FileSystemView = function(fileSystem)
 {
     WebInspector.SplitView.call(this, true, false, "fileSystemViewSplitViewState");
-    this.element.classList.add("file-system-view");
-    this.element.classList.add("storage-view");
+    this.element.classList.add("file-system-view", "storage-view");
 
     var vbox = new WebInspector.VBox();
     vbox.element.classList.add("outline-disclosure", "sidebar");

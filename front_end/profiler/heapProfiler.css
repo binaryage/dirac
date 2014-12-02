@@ -39,11 +39,6 @@
 
 .heap-snapshot-view {
     overflow: hidden;
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
 }
 
 .heap-snapshot-view .data-grid {

@@ -1132,11 +1132,6 @@ body.inactive .sidebar-tree-item.selected {
 }
 
 .soft-context-menu-glass-pane {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
     z-index: 20000;
 }
 
@@ -1202,14 +1197,6 @@ body.inactive .sidebar-tree-item.selected {
     color: white;
 }
 
-.search-view {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-}
-
 .search-drawer-header {
     flex: none;
     padding: 4px;
@@ -1248,11 +1235,10 @@ body.inactive .sidebar-tree-item.selected {
 }
 
 .search-results .empty-view {
-    pointer-events:none;
+    pointer-events: none;
 }
 
-.empty-view,
-.storage-view .storage-table-error {
+.empty-view {
     font-size: 24px;
     color: rgb(75%, 75%, 75%);
     font-weight: bold;

@@ -33,9 +33,7 @@ WebInspector.DatabaseQueryView = function(database)
 
     this.database = database;
 
-    this.element.classList.add("storage-view");
-    this.element.classList.add("query");
-    this.element.classList.add("monospace");
+    this.element.classList.add("storage-view", "query", "monospace");
     this.element.addEventListener("selectstart", this._selectStart.bind(this), false);
 
     this._promptElement = createElement("div");

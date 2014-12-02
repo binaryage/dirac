@@ -68,7 +68,7 @@ WebInspector.SoftContextMenu.prototype = {
 
         // Install glass pane capturing events.
         if (!this._parentMenu) {
-            this._glassPaneElement = createElementWithClass("div", "soft-context-menu-glass-pane");
+            this._glassPaneElement = createElementWithClass("div", "soft-context-menu-glass-pane fill");
             this._glassPaneElement.tabIndex = 0;
             this._glassPaneElement.addEventListener("mouseup", this._glassPaneMouseUp.bind(this), false);
             this._glassPaneElement.appendChild(this._contextMenuElement);

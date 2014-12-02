@@ -112,11 +112,6 @@
 .cpu-profile-view {
     display: none;
     overflow: hidden;
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
 }
 
 .cpu-profile-view.visible {
@@ -128,10 +123,7 @@
     flex: auto;
 }
 
-.cpu-profile-view .data-grid th.self-column {
-    text-align: center;
-}
-
+.cpu-profile-view .data-grid th.self-column,
 .cpu-profile-view .data-grid th.total-column {
     text-align: center;
 }

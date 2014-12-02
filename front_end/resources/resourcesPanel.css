@@ -104,11 +104,6 @@ li.selected .base-storage-tree-element-subtitle {
 .storage-view {
     display: none;
     overflow: hidden;
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
 }
 
 .storage-view.visible {
@@ -126,6 +121,12 @@ li.selected .base-storage-tree-element-subtitle {
 
 .storage-view .storage-table-error {
     color: rgb(66%, 33%, 33%);
+    font-size: 24px;
+    font-weight: bold;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .storage-view.query {

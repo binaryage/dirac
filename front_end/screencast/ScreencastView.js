@@ -58,7 +58,7 @@ WebInspector.ScreencastView.prototype = {
 
         this._viewportElement = this.element.createChild("div", "screencast-viewport hidden");
         this._canvasContainerElement = this._viewportElement.createChild("div", "screencast-canvas-container");
-        this._glassPaneElement = this._canvasContainerElement.createChild("div", "screencast-glasspane hidden");
+        this._glassPaneElement = this._canvasContainerElement.createChild("div", "screencast-glasspane fill hidden");
 
         this._canvasElement = this._canvasContainerElement.createChild("canvas");
         this._canvasElement.tabIndex = 1;

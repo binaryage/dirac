@@ -734,11 +734,6 @@
 }
 
 .timeline-progress-pane {
-    position: absolute;
-    top: 0px;
-    right: 0px;
-    bottom: 0px;
-    left: 0px;
     color: #777;
     background-color: rgba(255, 255, 255, 0.8);
     font-size: 30px;

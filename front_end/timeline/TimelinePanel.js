@@ -781,7 +781,7 @@ WebInspector.TimelinePanel.prototype = {
     _showProgressPane: function()
     {
         this._hideProgressPane();
-        this._progressElement = this._searchableView.element.createChild("div", "timeline-progress-pane");
+        this._progressElement = this._searchableView.element.createChild("div", "timeline-progress-pane fill");
     },
 
     _hideProgressPane: function()

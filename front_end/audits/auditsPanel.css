@@ -109,16 +109,12 @@
 
 .audit-result-view {
     overflow: auto;
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
     display: none;
 }
 
 .audit-result-view.visible {
     display: block;
+    flex: auto;
 }
 
 .audit-result-view .severity {

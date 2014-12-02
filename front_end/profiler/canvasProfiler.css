@@ -31,11 +31,6 @@
 .canvas-profile-view,
 #canvas-replay-image-container {
     overflow: hidden;
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
 }
 
 #canvas-replay-image-container {
@@ -44,6 +39,7 @@
     overflow: hidden;
     padding: 0;
     color: white;
+    flex: auto;
 }
 
 .canvas-profile-view .resizer-widget {

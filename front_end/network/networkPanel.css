@@ -65,7 +65,7 @@
 }
 
 .network-item-view.visible {
-    display: -webkit-flex;
+    display: flex;
 }
 
 .network-item-view::shadow .tabbed-pane-header {
@@ -75,11 +75,6 @@
 
 .resource-timing-view {
     display: none;
-    position: absolute;
-    top: 0;
-    right: 0;
-    left: 0;
-    bottom: 0;
     margin: 6px;
     color: rgb(30%, 30%, 30%);
 }

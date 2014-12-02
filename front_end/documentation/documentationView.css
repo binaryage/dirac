@@ -125,6 +125,7 @@
 .documentation-empty-page {
     display: flex;
     flex-direction: column !important;
+    flex: auto;
 }
 
 .documentation-empty-page-align {
