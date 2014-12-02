@@ -2902,6 +2902,18 @@
                 "description": "Modifies the rule selector."
             },
             {
+                "name": "setMediaText",
+                "parameters": [
+                    { "name": "styleSheetId", "$ref": "StyleSheetId" },
+                    { "name": "range", "$ref": "SourceRange" },
+                    { "name": "text", "type": "string" }
+                ],
+                "returns": [
+                    { "name": "media", "$ref": "CSSMedia", "description": "The resulting CSS media rule after modification." }
+                ],
+                "description": "Modifies the rule selector."
+            },
+            {
                 "name": "createStyleSheet",
                 "parameters": [
                     { "name": "frameId", "$ref": "Page.FrameId", "description": "Identifier of the frame where \"via-inspector\" stylesheet should be created."}
