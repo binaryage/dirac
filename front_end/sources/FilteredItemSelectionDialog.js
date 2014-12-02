@@ -587,7 +587,8 @@ WebInspector.JavaScriptOutlineDialog.prototype = {
      */
     itemKeyAt: function(itemIndex)
     {
-        return this._functionItems[itemIndex].name;
+        var item = this._functionItems[itemIndex];
+        return item.name + (item.arguments ? item.arguments : "");
     },
 
     /**
