@@ -146,17 +146,6 @@
     opacity: 0.8;
 }
 
-.tabbed-pane-header-tabs-drop-down > select.drop-down-menu {
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    opacity: 0;
-    font-size: 75%;
-    width: 20px;
-}
-
 .tabbed-pane-close-button-gray {
     background-image: url(Images/statusbarButtonGlyphs.png);
     background-size: 320px 144px;

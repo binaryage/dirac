@@ -689,19 +689,15 @@ li.child-editing .styles-clipboard-only {
     border: 1px solid rgba(64, 64, 64, 0.8);
 }
 
-.animationsSettings {
-    padding: 4px;
-}
-
-.animationSectionBody {
+.animation-section-body {
     display: none;
 }
 
-.animationSectionBody.expanded {
+.animation-section-body.expanded {
     display: block;
 }
 
-.animationSectionBody .section {
+.animation-section-body .section {
     border-bottom: 1px solid rgb(191, 191, 191);
 }
 

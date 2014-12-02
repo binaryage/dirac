@@ -202,13 +202,6 @@ select.status-bar-item {
 }
 } /* media */
 
-.alternate-status-bar-buttons-bar {
-    position: absolute;
-    width: 31px;
-    bottom: -3px;
-    background: white;
-}
-
 .status-bar-item.emulate-active {
     background-color: rgb(163,163,163);
 }

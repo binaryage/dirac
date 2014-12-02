@@ -72,11 +72,6 @@
     color: grey;
 }
 
-.heap-snapshot-view .delimiter {
-    height: 24px;
-    background-color: #d6dde5;
-}
-
 .heap-snapshot-view .data-grid {
     flex: auto;
 }

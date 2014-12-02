@@ -164,7 +164,7 @@ WebInspector.AnimationSection = function(parentPane, stylesPane, animationPlayer
 
     this.element = createElement("div");
     this.element.appendChild(this._createHeader());
-    this.bodyElement = this.element.createChild("div", "animationSectionBody");
+    this.bodyElement = this.element.createChild("div", "animation-section-body");
     this.bodyElement.appendChild(this._createAnimationControls());
     this.bodyElement.appendChild(this._propertiesElement);
     this.bodyElement.appendChild(this._keyframesElement);

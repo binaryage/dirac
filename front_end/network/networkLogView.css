@@ -456,11 +456,6 @@
     pointer-events: none;
 }
 
-.data-grid td.timeline-column {
-    padding-left: 0;
-    padding-right: 0;
-}
-
 .network-event-divider-padding {
     position: absolute;
     width: 8px;
