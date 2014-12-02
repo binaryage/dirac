@@ -23,8 +23,7 @@ WebInspector.PromisePane = function()
     this._refreshButton.addEventListener("click", this._refreshButtonClicked.bind(this));
     this._refreshButton.setEnabled(false);
     statusBar.appendStatusBarItem(this._refreshButton);
-    this._liveCheckbox = new WebInspector.StatusBarCheckbox(WebInspector.UIString("Live"));
-    this._liveCheckbox.element.title = WebInspector.UIString("Live Recording");
+    this._liveCheckbox = new WebInspector.StatusBarCheckbox(WebInspector.UIString("Live"), WebInspector.UIString("Live Recording"));
     this._liveCheckbox.inputElement.disabled = true;
     statusBar.appendStatusBarItem(this._liveCheckbox);
 

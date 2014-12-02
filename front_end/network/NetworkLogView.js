@@ -742,12 +742,9 @@ WebInspector.NetworkLogView.prototype = {
         this._toggleHideColumnsButton(this._hideColumnsSetting.get());
         this._hideColumnsButton.addEventListener("click", this._clickHideColumnsButton, this);
 
-        this._preserveLogCheckbox = new WebInspector.StatusBarCheckbox(WebInspector.UIString("Preserve log"));
-        this._preserveLogCheckbox.element.title = WebInspector.UIString("Do not clear log on page reload / navigation.");
+        this._preserveLogCheckbox = new WebInspector.StatusBarCheckbox(WebInspector.UIString("Preserve log"), WebInspector.UIString("Do not clear log on page reload / navigation."));
 
-        this._disableCacheCheckbox = new WebInspector.StatusBarCheckbox(WebInspector.UIString("Disable cache"));
-        WebInspector.SettingsUI.bindCheckbox(this._disableCacheCheckbox.inputElement, WebInspector.settings.cacheDisabled);
-        this._disableCacheCheckbox.element.title = WebInspector.UIString("Disable cache (while DevTools is open).");
+        this._disableCacheCheckbox = new WebInspector.StatusBarCheckbox(WebInspector.UIString("Disable cache"), WebInspector.UIString("Disable cache (while DevTools is open)."), WebInspector.settings.cacheDisabled);
 
         this._progressBarContainer = createElement("div");
     },
