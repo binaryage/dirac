@@ -1171,7 +1171,7 @@ WebInspector.ExtensibleTabbedPaneController = function(tabbedPane, extensionPoin
     this._extensionPoint = extensionPoint;
     this._viewCallback = viewCallback;
     this._tabOrders = {};
-    /** @type {!Object.<string, !Promise.<!WebInspector.View>>} */
+    /** @type {!Object.<string, !Promise.<?WebInspector.View>>} */
     this._promiseForId = {};
 
     this._tabbedPane.setRetainTabOrder(true, this._tabOrderComparator.bind(this));
@@ -1230,10 +1230,12 @@ WebInspector.ExtensibleTabbedPaneController.prototype = {
 
         /**
          * @this {WebInspector.ExtensibleTabbedPaneController}
-         * @param {!WebInspector.View} view
+         * @param {?WebInspector.View} view
          */
         function viewLoaded(view)
         {
+            if (!view)
+                return;
             this._tabbedPane.changeTabView(tabId, view);
             var shouldFocus = this._tabbedPane.visibleView.element.isSelfOrAncestor(WebInspector.currentFocusElement());
             if (shouldFocus)
@@ -1251,19 +1253,19 @@ WebInspector.ExtensibleTabbedPaneController.prototype = {
 
     /**
      * @param {string} id
-     * @return {!Promise.<!WebInspector.View>}
+     * @return {!Promise.<?WebInspector.View>}
      */
     viewForId: function(id)
     {
         if (this._views.has(id))
-            return Promise.resolve(/** @type {!WebInspector.View} */ (this._views.get(id)));
+            return Promise.resolve(/** @type {?WebInspector.View} */ (this._views.get(id)));
         if (!this._extensions.has(id))
-            return Promise.reject(new Error("No view registered for given type and id: " + this._extensionPoint + ", " + id));
+            return Promise.resolve(/** @type {?WebInspector.View} */ (null));
         if (this._promiseForId[id])
             return this._promiseForId[id];
 
         var promise = this._extensions.get(id).instancePromise();
-        this._promiseForId[id] = /** @type {!Promise.<!WebInspector.View>} */ (promise);
+        this._promiseForId[id] = /** @type {!Promise.<?WebInspector.View>} */ (promise);
         return promise.then(cacheView.bind(this));
 
         /**
