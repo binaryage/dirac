@@ -649,6 +649,7 @@ WebInspector.TimelineModel.prototype = {
 
     _didStopRecordingTraceEvents: function()
     {
+        this._injectCpuProfileEvents();
         this._tracingModel.tracingComplete();
 
         var metaEvents = this._tracingModel.devtoolsPageMetadataEvents();
@@ -659,27 +660,14 @@ WebInspector.TimelineModel.prototype = {
             var metaEvent = metaEvents[i];
             var process = metaEvent.thread.process();
             var startTime = metaEvent.startTime;
-
             var endTime = Infinity;
             if (i + 1 < length)
                 endTime = metaEvents[i + 1].startTime;
 
-            var threads = process.sortedThreads();
-            for (var j = 0; j < threads.length; j++) {
-                var thread = threads[j];
-                var workerId = 0;
-                if (thread.name() === "WebCore: Worker") {
-                    for (var k = 0; k < workerMetadataEvents.length; ++k) {
-                        var eventData = workerMetadataEvents[k].args["data"];
-                        if (eventData["workerThreadId"] === thread.id()) {
-                            workerId = eventData["workerId"];
-                            break;
-                        }
-                    }
-                    if (!workerId)
-                        continue;
-                }
-                this._processThreadEvents(startTime, endTime, metaEvent.thread, thread, workerId);
+            for (var thread of process.sortedThreads()) {
+                if (thread.name() === "WebCore: Worker" && !workerMetadataEvents.some(function(e) { return e.args["data"]["workerThreadId"] === thread.id(); }))
+                    continue;
+                this._processThreadEvents(startTime, endTime, metaEvent.thread, thread);
             }
         }
         this._inspectedTargetEvents.sort(WebInspector.TracingModel.Event.compareStartTime);
@@ -694,23 +682,45 @@ WebInspector.TimelineModel.prototype = {
     },
 
     /**
-     * @param {!ProfilerAgent.CPUProfile} cpuProfile
+     * @param {number} pid
+     * @param {number} tid
+     * @param {?ProfilerAgent.CPUProfile} cpuProfile
      */
-    _injectCpuProfileEvent: function(cpuProfile)
+    _injectCpuProfileEvent: function(pid, tid, cpuProfile)
     {
-        var metaEvent = this._tracingModel.devtoolsPageMetadataEvents().peekLast();
-        if (!metaEvent)
+        if (!cpuProfile)
             return;
         var cpuProfileEvent = /** @type {!WebInspector.TracingManager.EventPayload} */ ({
             cat: WebInspector.TracingModel.DevToolsMetadataEventCategory,
             ph: WebInspector.TracingModel.Phase.Instant,
             ts: this._tracingModel.maximumRecordTime() * 1000,
-            pid: metaEvent.thread.process().id(),
-            tid: metaEvent.thread.id(),
+            pid: pid,
+            tid: tid,
             name: WebInspector.TimelineModel.RecordType.CpuProfile,
             args: { data: { cpuProfile: cpuProfile } }
         });
         this._tracingModel.addEvents([cpuProfileEvent]);
+    },
+
+    _injectCpuProfileEvents: function()
+    {
+        if (!this._cpuProfiles)
+            return;
+        var mainMetaEvent = this._tracingModel.devtoolsPageMetadataEvents().peekLast();
+        var pid = mainMetaEvent.thread.process().id();
+        var mainTarget = WebInspector.targetManager.mainTarget();
+        var mainCpuProfile = this._cpuProfiles.get(mainTarget.id());
+        this._injectCpuProfileEvent(pid, mainMetaEvent.thread.id(), mainCpuProfile);
+        var workerMetadataEvents = this._tracingModel.devtoolsWorkerMetadataEvents();
+        for (var metaEvent of workerMetadataEvents) {
+            var workerId = metaEvent.args["data"]["workerId"];
+            var target = WebInspector.workerTargetManager.targetByWorkerId(workerId);
+            if (!target)
+                continue;
+            var cpuProfile = this._cpuProfiles.get(target.id());
+            this._injectCpuProfileEvent(pid, metaEvent.args["data"]["workerThreadId"], cpuProfile);
+        }
+        this._cpuProfiles = null;
     },
 
     _insertFirstPaintEvent: function()
@@ -833,17 +843,15 @@ WebInspector.TimelineModel.prototype = {
      * @param {?number} endTime
      * @param {!WebInspector.TracingModel.Thread} mainThread
      * @param {!WebInspector.TracingModel.Thread} thread
-     * @param {number} workerId
      */
-    _processThreadEvents: function(startTime, endTime, mainThread, thread, workerId)
+    _processThreadEvents: function(startTime, endTime, mainThread, thread)
     {
         var events = thread.events();
 
-        var target = thread === mainThread ? WebInspector.targetManager.mainTarget() : WebInspector.workerTargetManager.targetByWorkerId(workerId);
-        if (target && this._cpuProfiles) {
-            var cpuProfile = this._cpuProfiles.get(target.id());
+        var cpuProfileEvent = events.peekLast();
+        if (cpuProfileEvent && cpuProfileEvent.name === WebInspector.TimelineModel.RecordType.CpuProfile) {
+            var cpuProfile = cpuProfileEvent.args["data"]["cpuProfile"];
             if (cpuProfile) {
-                this._cpuProfiles.delete(target.id());
                 var jsSamples = WebInspector.TimelineJSProfileProcessor.generateTracingEventsFromCpuProfile(cpuProfile, thread);
                 events = events.mergeOrdered(jsSamples, WebInspector.TracingModel.Event.orderedCompareStartTime);
                 var jsFrameEvents = WebInspector.TimelineJSProfileProcessor.generateJSFrameEvents(events);
@@ -903,10 +911,6 @@ WebInspector.TimelineModel.prototype = {
             event.stackTrace = eventData["stackTrace"];
 
         switch (event.name) {
-        case recordTypes.CpuProfile:
-            this._cpuProfile = event.args["data"]["cpuProfile"];
-            break;
-
         case recordTypes.ResourceSendRequest:
             this._sendRequestEvents[event.args["data"]["requestId"]] = event;
             event.imageURL = event.args["data"]["url"];
