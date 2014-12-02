@@ -64,7 +64,6 @@
 .tabbed-pane-header-contents {
     flex: auto;
     pointer-events: none;
-    margin: 0 5px;
 }
 
 .tabbed-pane-header-contents > * {
@@ -131,7 +130,7 @@
     opacity: 0.7;
     color: rgb(30, 30, 30);
     font-size: 133%;
-    padding: 0 3px 0 6px;
+    padding: 0 3px 0 5px;
 }
 
 .tabbed-pane-header-tabs-drop-down-container.measuring {

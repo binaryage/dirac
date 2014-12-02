@@ -89,11 +89,11 @@
 } /* media */
 
 .narrow button.status-bar-item {
-    width: 28px;
+    width: 26px;
 }
 
 .narrow button.status-bar-item .glyph {
-    margin: 0 -2px;
+    margin: 0 -3px;
 }
 
 button.status-bar-item {
