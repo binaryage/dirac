@@ -1862,6 +1862,9 @@ WebInspector.ElementsTreeElement.prototype = {
         var attributeName = attributeNameElement.textContent;
         var attributeValueElement = attribute.getElementsByClassName("webkit-html-attribute-value")[0];
 
+        // Make sure elementForSelection is not a child of attributeValueElement.
+        elementForSelection = attributeValueElement.isAncestor(elementForSelection) ? attributeValueElement : elementForSelection;
+
         function removeZeroWidthSpaceRecursive(node)
         {
             if (node.nodeType === Node.TEXT_NODE) {
