@@ -886,8 +886,10 @@ WebInspector.SourcesPanel.prototype = {
         this._appendUISourceCodeMappingItems(contextMenu, uiSourceCode);
 
         var contentType = uiSourceCode.contentType();
-        if ((contentType === WebInspector.resourceTypes.Script || contentType === WebInspector.resourceTypes.Document) && projectType !== WebInspector.projectTypes.Snippets)
-            this.sidebarPanes.callstack.appendBlackboxURLContextMenuItems(contextMenu, uiSourceCode.url, projectType === WebInspector.projectTypes.ContentScripts);
+        if ((contentType === WebInspector.resourceTypes.Script || contentType === WebInspector.resourceTypes.Document) && projectType !== WebInspector.projectTypes.Snippets) {
+            var url = projectType === WebInspector.projectTypes.Formatter ? uiSourceCode.originURL() : uiSourceCode.url;
+            this.sidebarPanes.callstack.appendBlackboxURLContextMenuItems(contextMenu, url, projectType === WebInspector.projectTypes.ContentScripts);
+        }
 
         if (!event.target.isSelfOrDescendant(this._navigator.view.element)) {
             contextMenu.appendSeparator();

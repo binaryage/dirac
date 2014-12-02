@@ -130,7 +130,7 @@ WebInspector.JavaScriptSourceFrame.prototype = {
         var projectType = this._uiSourceCode.project().type();
         if (projectType === WebInspector.projectTypes.Snippets)
             return;
-        var url = this._uiSourceCode.url;
+        var url = projectType === WebInspector.projectTypes.Formatter ? this._uiSourceCode.originURL() : this._uiSourceCode.url;
         var isContentScript = projectType === WebInspector.projectTypes.ContentScripts;
         if (!WebInspector.BlackboxSupport.isBlackboxed(url, isContentScript)) {
             this._hideBlackboxInfobar();
