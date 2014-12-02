@@ -566,7 +566,7 @@ WebInspector.TimelineUIUtils._buildTraceEventDetailsSynchronously = function(eve
     case recordTypes.DecodeImage:
     case recordTypes.ResizeImage:
     case recordTypes.DrawLazyPixelRef:
-        relatedNodeLabel = WebInspector.UIString("Image element");
+        relatedNodeLabel = WebInspector.UIString("Owner element");
         if (event.imageURL)
             contentHelper.appendElementRow(WebInspector.UIString("Image URL"), WebInspector.linkifyResourceAsNode(event.imageURL));
         break;
