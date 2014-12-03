@@ -485,12 +485,6 @@ WebInspector.TimelineUIUtils._buildTraceEventDetailsSynchronously = function(eve
 {
     var fragment = createDocumentFragment();
     var stats = {};
-    var hasChildren = WebInspector.TimelineUIUtils._aggregatedStatsForTraceEvent(stats, model, event);
-
-    var pieChart = hasChildren ?
-        WebInspector.TimelineUIUtils.generatePieChart(stats, WebInspector.TimelineUIUtils.eventStyle(event).category, event.selfTime) :
-        WebInspector.TimelineUIUtils.generatePieChart(stats);
-
     var recordTypes = WebInspector.TimelineModel.RecordType;
 
     // This message may vary per event.name;
@@ -624,7 +618,11 @@ WebInspector.TimelineUIUtils._buildTraceEventDetailsSynchronously = function(eve
         contentHelper.appendElementRow(WebInspector.UIString("Warning"), div);
     }
 
-    contentHelper.appendElementRow(WebInspector.UIString("Aggregated Time"), pieChart);
+    var hasChildren = WebInspector.TimelineUIUtils._aggregatedStatsForTraceEvent(stats, model, event);
+    if (hasChildren) {
+        var pieChart = WebInspector.TimelineUIUtils.generatePieChart(stats, WebInspector.TimelineUIUtils.eventStyle(event).category, event.selfTime);
+        contentHelper.appendElementRow(WebInspector.UIString("Aggregated Time"), pieChart);
+    }
 
     if (event.stackTrace || (event.initiator && event.initiator.stackTrace) || event.invalidationTrackingEvents)
         WebInspector.TimelineUIUtils._generateCauses(event, model.target(), contentHelper);
