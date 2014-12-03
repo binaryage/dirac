@@ -56,6 +56,7 @@ WebInspector.ConsoleViewMessage = function(consoleMessage, linkifier, nestingLev
         "map": this._formatParameterAsObject,
         "set": this._formatParameterAsObject,
         "iterator": this._formatParameterAsObject,
+        "generator": this._formatParameterAsObject,
         "string": this._formatParameterAsString
     };
 }

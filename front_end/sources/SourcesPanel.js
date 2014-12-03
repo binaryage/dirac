@@ -918,6 +918,8 @@ WebInspector.SourcesPanel.prototype = {
         contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Store as global variable" : "Store as Global Variable"), this._saveToTempVariable.bind(this, remoteObject));
         if (remoteObject.type === "function")
             contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Show function definition" : "Show Function Definition"), this._showFunctionDefinition.bind(this, remoteObject));
+        if (remoteObject.subtype === "generator")
+            contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Show generator location" : "Show Generator Location"), this._showGeneratorLocation.bind(this, remoteObject));
     },
 
     /**
@@ -991,25 +993,33 @@ WebInspector.SourcesPanel.prototype = {
     _showFunctionDefinition: function(remoteObject)
     {
         var debuggerModel = remoteObject.target().debuggerModel;
+        debuggerModel.functionDetails(remoteObject, this._didGetFunctionOrGeneratorObjectDetails.bind(this));
+    },
 
-        /**
-         * @param {?WebInspector.DebuggerModel.FunctionDetails} response
-         * @this {WebInspector.SourcesPanel}
-         */
-        function didGetFunctionDetails(response)
-        {
-            if (!response || !response.location)
-                return;
+    /**
+     * @param {!WebInspector.RemoteObject} remoteObject
+     */
+    _showGeneratorLocation: function(remoteObject)
+    {
+        var debuggerModel = remoteObject.target().debuggerModel;
+        debuggerModel.generatorObjectDetails(remoteObject, this._didGetFunctionOrGeneratorObjectDetails.bind(this));
+    },
 
-            var location = response.location;
-            if (!location)
-                return;
+    /**
+     * @param {?{location: ?WebInspector.DebuggerModel.Location}} response
+     */
+    _didGetFunctionOrGeneratorObjectDetails: function(response)
+    {
+        if (!response || !response.location)
+            return;
 
-            var uiLocation = WebInspector.debuggerWorkspaceBinding.rawLocationToUILocation(location);
-            if (uiLocation)
-                this.showUILocation(uiLocation, true);
-        }
-        debuggerModel.functionDetails(remoteObject, didGetFunctionDetails.bind(this));
+        var location = response.location;
+        if (!location)
+            return;
+
+        var uiLocation = WebInspector.debuggerWorkspaceBinding.rawLocationToUILocation(location);
+        if (uiLocation)
+            this.showUILocation(uiLocation, true);
     },
 
     showGoToSourceDialog: function()

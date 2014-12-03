@@ -263,6 +263,13 @@ WebInspector.Linkifier.prototype = {
         }
     },
 
+    dispose: function()
+    {
+        this.reset();
+        WebInspector.targetManager.unobserveTargets(this);
+        this._liveLocationsByTarget.clear();
+    },
+
     /**
      * @param {!Element} anchor
      * @param {!WebInspector.UILocation} uiLocation

@@ -139,6 +139,14 @@ WebInspector.RemoteObject.prototype = {
     },
 
     /**
+     * @param {function(?WebInspector.DebuggerModel.GeneratorObjectDetails)} callback
+     */
+    generatorObjectDetails: function(callback)
+    {
+        callback(null);
+    },
+
+    /**
      * @param {function(?Array.<!DebuggerAgent.CollectionEntry>)} callback
      */
     collectionEntries: function(callback)
@@ -629,6 +637,15 @@ WebInspector.RemoteObjectImpl.prototype = {
     functionDetails: function(callback)
     {
         this._target.debuggerModel.functionDetails(this, callback)
+    },
+
+    /**
+     * @override
+     * @param {function(?WebInspector.DebuggerModel.GeneratorObjectDetails)} callback
+     */
+    generatorObjectDetails: function(callback)
+    {
+        this._target.debuggerModel.generatorObjectDetails(this, callback)
     },
 
     /**

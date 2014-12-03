@@ -230,6 +230,7 @@ body.undocked.platform-mac.inactive .inspector-view-tabbed-pane.tabbed-pane::sha
 .console-formatted-map,
 .console-formatted-set,
 .console-formatted-iterator,
+.console-formatted-generator,
 .console-formatted-node,
 .console-formatted-array {
     position: relative;
@@ -246,6 +247,7 @@ body.undocked.platform-mac.inactive .inspector-view-tabbed-pane.tabbed-pane::sha
 .console-formatted-map .section,
 .console-formatted-set .section,
 .console-formatted-iterator .section,
+.console-formatted-generator .section,
 .console-formatted-node .section,
 .console-formatted-array .section {
     position: static;
@@ -259,6 +261,7 @@ body.undocked.platform-mac.inactive .inspector-view-tabbed-pane.tabbed-pane::sha
 .console-formatted-map .properties,
 .console-formatted-set .properties,
 .console-formatted-iterator .properties,
+.console-formatted-generator .properties,
 .console-formatted-node .properties {
     padding-left: 0 !important;
 }
