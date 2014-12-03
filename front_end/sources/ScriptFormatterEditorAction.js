@@ -401,9 +401,8 @@ WebInspector.ScriptFormatterEditorAction.prototype = {
          */
         function contentLoaded(content)
         {
-            var formatter = WebInspector.Formatter.createFormatter(uiSourceCode.contentType());
             var highlighterType = WebInspector.SourcesView.uiSourceCodeHighlighterType(uiSourceCode);
-            formatter.formatContent(highlighterType, content || "", innerCallback.bind(this));
+            WebInspector.Formatter.format(uiSourceCode.contentType(), highlighterType, content || "", innerCallback.bind(this));
         }
 
         /**
