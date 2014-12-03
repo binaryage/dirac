@@ -737,9 +737,9 @@ WebInspector.TimelineUIUtils._generateInvalidationsForType = function(type, targ
         for (var index = 0; index < invalidations.length; index++) {
             var invalidation = invalidations[index];
             var causeKey = "";
-            if (invalidation.cause && invalidation.cause.reason)
+            if (invalidation.cause.reason)
                 causeKey += invalidation.cause.reason + ".";
-            if (invalidation.cause && invalidation.cause.stackTrace) {
+            if (invalidation.cause.stackTrace) {
                 invalidation.cause.stackTrace.forEach(function(stackFrame) {
                     causeKey += stackFrame["functionName"] + ".";
                     causeKey += stackFrame["scriptId"] + ".";
@@ -770,8 +770,8 @@ WebInspector.TimelineUIUtils._generateInvalidationsForType = function(type, targ
         });
 
         var first = invalidations[0];
-        var reason = first.cause && first.cause.reason;
-        var topFrame = first.cause && first.cause.stackTrace && first.cause.stackTrace[0];
+        var reason = first.cause.reason;
+        var topFrame = first.cause.stackTrace && first.cause.stackTrace[0];
 
         if (reason)
             header.createTextChild(WebInspector.UIString("%s for ", reason));
@@ -814,11 +814,15 @@ WebInspector.TimelineUIUtils._generateInvalidationsForType = function(type, targ
     function appendTruncatedNodeList(parentElement, invalidations)
     {
         var invalidationNodes = [];
-        invalidations.forEach(function(invalidation) {
+        var invalidationNodeIdMap = {};
+        for (var i = 0; i < invalidations.length; i++) {
+            var invalidation = invalidations[i];
             var invalidationNode = createInvalidationNode(invalidation, false);
-            if (invalidationNode)
+            if (invalidationNode && !invalidationNodeIdMap[invalidation.nodeId]) {
                 invalidationNodes.push(invalidationNode);
-        });
+                invalidationNodeIdMap[invalidation.nodeId] = true;
+            }
+        }
 
         if (invalidationNodes.length === 1) {
             parentElement.appendChild(invalidationNodes[0]);
@@ -832,24 +836,6 @@ WebInspector.TimelineUIUtils._generateInvalidationsForType = function(type, targ
             parentElement.appendChild(invalidationNodes[1]);
             parentElement.createTextChild(WebInspector.UIString(", and %s others", invalidationNodes.length - 2));
         }
-    }
-
-    /**
-     * @param {!Element} parentElement
-     * @param {!Array.<!WebInspector.InvalidationTrackingEvent>} invalidations
-     */
-    function appendNodeList(parentElement, invalidations)
-    {
-        var firstNode = true;
-        invalidations.forEach(function(invalidation) {
-            var invalidationNode = createInvalidationNode(invalidation, true);
-            if (invalidationNode) {
-                if (!firstNode)
-                    parentElement.createTextChild(WebInspector.UIString(", "));
-                parentElement.appendChild(invalidationNode);
-                firstNode = false;
-            }
-        });
     }
 
     /**
@@ -880,7 +866,7 @@ WebInspector.TimelineUIUtils._generateInvalidationsForType = function(type, targ
         var content = parentElement.createChild("div", "content");
 
         var first = invalidations[0];
-        if (first.cause && first.cause.stackTrace) {
+        if (first.cause.stackTrace) {
             var stack = content.createChild("div");
             stack.createTextChild(WebInspector.UIString("Stack trace:"));
             contentHelper.createChildStackTraceElement(stack, first.cause.stackTrace);
@@ -888,7 +874,40 @@ WebInspector.TimelineUIUtils._generateInvalidationsForType = function(type, targ
 
         content.createTextChild(invalidations.length > 1 ? WebInspector.UIString("Nodes:") : WebInspector.UIString("Node:"));
         var nodeList = content.createChild("div", "node-list timeline-details-view-row-stack-trace");
-        appendNodeList(nodeList, invalidations);
+        appendDetailedNodeList(nodeList, invalidations);
+    }
+
+    /**
+     * @param {!Element} parentElement
+     * @param {!Array.<!WebInspector.InvalidationTrackingEvent>} invalidations
+     */
+    function appendDetailedNodeList(parentElement, invalidations)
+    {
+        var firstNode = true;
+        for (var i = 0; i < invalidations.length; i++) {
+            var invalidation = invalidations[i];
+            var invalidationNode = createInvalidationNode(invalidation, true);
+            if (invalidationNode) {
+                if (!firstNode)
+                    parentElement.createTextChild(WebInspector.UIString(", "));
+                firstNode = false;
+
+                parentElement.appendChild(invalidationNode);
+
+                var extraData = invalidation.extraData ? ", " + invalidation.extraData : "";
+                if (invalidation.changedId) {
+                    parentElement.createTextChild(WebInspector.UIString("(changed id to \"%s\"%s)", invalidation.changedId, extraData));
+                } else if (invalidation.changedClass) {
+                    parentElement.createTextChild(WebInspector.UIString("(changed class to \"%s\"%s)", invalidation.changedClass, extraData));
+                } else if (invalidation.changedAttribute) {
+                    parentElement.createTextChild(WebInspector.UIString("(changed attribute to \"%s\"%s)", invalidation.changedAttribute, extraData));
+                } else if (invalidation.changedPseudo) {
+                    parentElement.createTextChild(WebInspector.UIString("(changed pesudo to \"%s\"%s)", invalidation.changedPseudo, extraData));
+                } else if (invalidation.selectorPart) {
+                    parentElement.createTextChild(WebInspector.UIString("(changed \"%s\"%s)", invalidation.selectorPart, extraData));
+                }
+            }
+        }
     }
 }
 

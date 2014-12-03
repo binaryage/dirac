@@ -74,7 +74,9 @@ WebInspector.TimelineModel.RecordType = {
     ScrollLayer: "ScrollLayer",
     CompositeLayers: "CompositeLayers",
 
+    ScheduleStyleInvalidationTracking: "ScheduleStyleInvalidationTracking",
     StyleRecalcInvalidationTracking: "StyleRecalcInvalidationTracking",
+    StyleInvalidatorInvalidationTracking: "StyleInvalidatorInvalidationTracking",
     LayoutInvalidationTracking: "LayoutInvalidationTracking",
     LayerInvalidationTracking: "LayerInvalidationTracking",
     PaintInvalidationTracking: "PaintInvalidationTracking",
@@ -951,11 +953,13 @@ WebInspector.TimelineModel.prototype = {
             this._lastRecalculateStylesEvent = event;
             break;
 
+        case recordTypes.ScheduleStyleInvalidationTracking:
         case recordTypes.StyleRecalcInvalidationTracking:
+        case recordTypes.StyleInvalidatorInvalidationTracking:
         case recordTypes.LayoutInvalidationTracking:
         case recordTypes.LayerInvalidationTracking:
         case recordTypes.PaintInvalidationTracking:
-            this._invalidationTracker.addInvalidation(event);
+            this._invalidationTracker.addInvalidation(new WebInspector.InvalidationTrackingEvent(event));
             break;
 
         case recordTypes.InvalidateLayout:
@@ -1664,20 +1668,47 @@ WebInspector.TracingTimelineSaver.prototype = {
  */
 WebInspector.InvalidationTrackingEvent = function(event)
 {
+    /** @type {string} */
     this.type = event.name;
-    this.frameId = event.args["data"]["frame"];
-    this.nodeId = event.args["data"]["nodeId"];
-    this.nodeName = event.args["data"]["nodeName"];
-    this.paintId = event.args["data"]["paintId"];
+    /** @type {number} */
+    this.startTime = event.startTime;
+    /** @type {!WebInspector.TracingModel.Event} */
+    this._tracingEvent = event;
 
-    var reason = event.args["data"]["reason"];
-    var stackTrace = event.args["data"]["stackTrace"];
+    var eventData = event.args["data"];
 
-    if (!reason && stackTrace && this.type === WebInspector.TimelineModel.RecordType.LayoutInvalidationTracking)
-        reason = "Layout forced";
+    /** @type {number} */
+    this.frame = eventData["frame"];
+    /** @type {?number} */
+    this.nodeId = eventData["nodeId"];
+    /** @type {?string} */
+    this.nodeName = eventData["nodeName"];
+    /** @type {?number} */
+    this.paintId = eventData["paintId"];
+    /** @type {?number} */
+    this.invalidationSet = eventData["invalidationSet"];
+    /** @type {?string} */
+    this.invalidatedSelectorId = eventData["invalidatedSelectorId"];
+    /** @type {?string} */
+    this.changedId = eventData["changedId"];
+    /** @type {?string} */
+    this.changedClass = eventData["changedClass"];
+    /** @type {?string} */
+    this.changedAttribute = eventData["changedAttribute"];
+    /** @type {?string} */
+    this.changedPseudo = eventData["changedPseudo"];
+    /** @type {?string} */
+    this.selectorPart = eventData["selectorPart"];
+    /** @type {?string} */
+    this.extraData = eventData["extraData"];
+    /** @type {?Array.<!Object.<string, number>>} */
+    this.invalidationList = eventData["invalidationList"];
+    /** @type {!WebInspector.InvalidationCause} */
+    this.cause = {reason: eventData["reason"], stackTrace: eventData["stackTrace"]};
 
-    if (reason || stackTrace)
-        this.cause = {reason: reason, stackTrace: stackTrace};
+    // FIXME: Move this to TimelineUIUtils.js.
+    if (!this.cause.reason && this.cause.stackTrace && this.type === WebInspector.TimelineModel.RecordType.LayoutInvalidationTracking)
+        this.cause.reason = "Layout forced";
 }
 
 /** @typedef {{reason: string, stackTrace: ?Array.<!ConsoleAgent.CallFrame>}} */
@@ -1693,11 +1724,10 @@ WebInspector.InvalidationTracker = function()
 
 WebInspector.InvalidationTracker.prototype = {
     /**
-     * @param {!WebInspector.TracingModel.Event} event
+     * @param {!WebInspector.InvalidationTrackingEvent} invalidation
      */
-    addInvalidation: function(event)
+    addInvalidation: function(invalidation)
     {
-        var invalidation = new WebInspector.InvalidationTrackingEvent(event);
         this._startNewFrameIfNeeded();
 
         if (!invalidation.nodeId && !invalidation.paintId) {
@@ -1717,14 +1747,22 @@ WebInspector.InvalidationTracker.prototype = {
             return;
         }
 
-        // StyleRecalcInvalidationTracking events can occur before and during
-        // recalc style. didRecalcStyle handles StyleRecalcInvalidationTracking
-        // events that occur before the recalc style event but we need to handle
-        // StyleRecalcInvalidationTracking events during recalc style here.
-        if (invalidation.type === recordTypes.StyleRecalcInvalidationTracking) {
-            var duringRecalcStyle = event.startTime && this._lastRecalcStyle
-                && event.startTime >= this._lastRecalcStyle.startTime
-                && event.startTime <= this._lastRecalcStyle.endTime;
+        // Suppress StyleInvalidator StyleRecalcInvalidationTracking invalidations because they
+        // will be handled by StyleInvalidatorInvalidationTracking.
+        // FIXME: Investigate if we can remove StyleInvalidator invalidations entirely.
+        if (invalidation.type === recordTypes.StyleRecalcInvalidationTracking && invalidation.cause.reason === "StyleInvalidator")
+            return;
+
+        // Style invalidation events can occur before and during recalc style. didRecalcStyle
+        // handles style invalidations that occur before the recalc style event but we need to
+        // handle style recalc invalidations during recalc style here.
+        var styleRecalcInvalidation = (invalidation.type === recordTypes.ScheduleStyleInvalidationTracking
+            || invalidation.type === recordTypes.StyleInvalidatorInvalidationTracking
+            || invalidation.type === recordTypes.StyleRecalcInvalidationTracking);
+        if (styleRecalcInvalidation) {
+            var duringRecalcStyle = invalidation.startTime && this._lastRecalcStyle
+                && invalidation.startTime >= this._lastRecalcStyle.startTime
+                && invalidation.startTime <= this._lastRecalcStyle.endTime;
             if (duringRecalcStyle)
                 this._associateWithLastRecalcStyleEvent(invalidation);
         }
@@ -1752,8 +1790,10 @@ WebInspector.InvalidationTracker.prototype = {
     didRecalcStyle: function(recalcStyleEvent)
     {
         this._lastRecalcStyle = recalcStyleEvent;
-        this._forAllInvalidations(this._associateWithLastRecalcStyleEvent,
-            [WebInspector.TimelineModel.RecordType.StyleRecalcInvalidationTracking]);
+        var types = [WebInspector.TimelineModel.RecordType.ScheduleStyleInvalidationTracking,
+                WebInspector.TimelineModel.RecordType.StyleInvalidatorInvalidationTracking,
+                WebInspector.TimelineModel.RecordType.StyleRecalcInvalidationTracking];
+        this._forAllInvalidations(this._associateWithLastRecalcStyleEvent, types);
     },
 
     /**
@@ -1763,9 +1803,74 @@ WebInspector.InvalidationTracker.prototype = {
     {
         if (invalidation.linkedRecalcStyleEvent)
             return;
+
+        var recordTypes = WebInspector.TimelineModel.RecordType;
         var recalcStyleFrameId = this._lastRecalcStyle.args["beginData"]["frame"];
-        this._addInvalidationToEvent(this._lastRecalcStyle, recalcStyleFrameId, invalidation);
+        if (invalidation.type === recordTypes.StyleInvalidatorInvalidationTracking) {
+            // Instead of calling _addInvalidationToEvent directly, we create synthetic
+            // StyleRecalcInvalidationTracking events which will be added in _addInvalidationToEvent.
+            this._addSyntheticStyleRecalcInvalidations(this._lastRecalcStyle, recalcStyleFrameId, invalidation);
+        } else if (invalidation.type === recordTypes.ScheduleStyleInvalidationTracking) {
+            // ScheduleStyleInvalidationTracking events are only used for adding information to
+            // StyleInvalidatorInvalidationTracking events. See: _addSyntheticStyleRecalcInvalidations.
+        } else {
+            this._addInvalidationToEvent(this._lastRecalcStyle, recalcStyleFrameId, invalidation);
+        }
+
         invalidation.linkedRecalcStyleEvent = true;
+    },
+
+    /**
+     * @param {!WebInspector.TracingModel.Event} event
+     * @param {number} frameId
+     * @param {!WebInspector.InvalidationTrackingEvent} styleInvalidatorInvalidation
+     */
+    _addSyntheticStyleRecalcInvalidations: function(event, frameId, styleInvalidatorInvalidation)
+    {
+        if (!styleInvalidatorInvalidation.invalidationList) {
+            this._addSyntheticStyleRecalcInvalidation(styleInvalidatorInvalidation._tracingEvent, styleInvalidatorInvalidation);
+            return;
+        }
+
+        for (var i = 0; i < styleInvalidatorInvalidation.invalidationList.length; i++) {
+            var setId = styleInvalidatorInvalidation.invalidationList[i]["id"];
+            var lastScheduleStyleRecalculation;
+
+            function findMatchingInvalidation(invalidation)
+            {
+                if (invalidation.frame !== frameId)
+                    return;
+                if (invalidation.nodeId === styleInvalidatorInvalidation.nodeId && invalidation.invalidationSet === setId)
+                    lastScheduleStyleRecalculation = invalidation;
+            }
+
+            this._forAllInvalidations(findMatchingInvalidation, [WebInspector.TimelineModel.RecordType.ScheduleStyleInvalidationTracking]);
+
+            if (!lastScheduleStyleRecalculation) {
+                console.error("Failed to lookup the event that scheduled a style invalidator invalidation.");
+                continue;
+            }
+            this._addSyntheticStyleRecalcInvalidation(lastScheduleStyleRecalculation._tracingEvent, styleInvalidatorInvalidation);
+        }
+    },
+
+    /**
+     * @param {!WebInspector.TracingModel.Event} baseEvent
+     * @param {!WebInspector.InvalidationTrackingEvent} styleInvalidatorInvalidation
+     */
+    _addSyntheticStyleRecalcInvalidation: function(baseEvent, styleInvalidatorInvalidation)
+    {
+        var invalidation = new WebInspector.InvalidationTrackingEvent(baseEvent);
+        invalidation.type = WebInspector.TimelineModel.RecordType.StyleRecalcInvalidationTracking;
+        invalidation.synthetic = true;
+        if (styleInvalidatorInvalidation.cause.reason)
+            invalidation.cause.reason = styleInvalidatorInvalidation.cause.reason;
+        if (styleInvalidatorInvalidation.selectorPart)
+            invalidation.selectorPart = styleInvalidatorInvalidation.selectorPart;
+
+        this.addInvalidation(invalidation);
+        if (!invalidation.linkedRecalcStyleEvent)
+            this._associateWithLastRecalcStyleEvent(invalidation);
     },
 
     /**
@@ -1810,7 +1915,10 @@ WebInspector.InvalidationTracker.prototype = {
 
         var effectivePaintId = this._lastPaintWithLayer.args["data"]["nodeId"];
         var paintFrameId = paintEvent.args["data"]["frame"];
-        this._forAllInvalidations(associateWithPaintEvent);
+        var types = [WebInspector.TimelineModel.RecordType.StyleRecalcInvalidationTracking,
+                WebInspector.TimelineModel.RecordType.LayoutInvalidationTracking,
+                WebInspector.TimelineModel.RecordType.PaintInvalidationTracking];
+        this._forAllInvalidations(associateWithPaintEvent, types);
 
         /**
          * @param {!WebInspector.InvalidationTrackingEvent} invalidation
@@ -1831,7 +1939,7 @@ WebInspector.InvalidationTracker.prototype = {
      */
     _addInvalidationToEvent: function(event, eventFrameId, invalidation)
     {
-        if (eventFrameId !== invalidation.frameId)
+        if (eventFrameId !== invalidation.frame)
             return;
         if (!event.invalidationTrackingEvents)
             event.invalidationTrackingEvents = [ invalidation ];
