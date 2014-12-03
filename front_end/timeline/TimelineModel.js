@@ -1741,7 +1741,10 @@ WebInspector.InvalidationTracker.prototype = {
         // events.
         var recordTypes = WebInspector.TimelineModel.RecordType;
         if (invalidation.type === recordTypes.PaintInvalidationTracking) {
-            this._forAllInvalidations(updatePaintId);
+            for (var invalidationToUpdate of this._invalidationsOfTypes()) {
+                if (invalidationToUpdate.nodeId === invalidation.nodeId)
+                    invalidationToUpdate.paintId = invalidation.paintId;
+            }
 
             // PaintInvalidationTracking is only used for updating paintIds.
             return;
@@ -1772,16 +1775,6 @@ WebInspector.InvalidationTracker.prototype = {
             this._invalidations[invalidation.type].push(invalidation);
         else
             this._invalidations[invalidation.type] = [ invalidation ];
-
-
-        /**
-         * @param {!WebInspector.InvalidationTrackingEvent} invalidationToUpdate
-         */
-        function updatePaintId(invalidationToUpdate)
-        {
-            if (invalidationToUpdate.nodeId === invalidation.nodeId)
-                invalidationToUpdate.paintId = invalidation.paintId;
-        }
     },
 
     /**
@@ -1793,7 +1786,8 @@ WebInspector.InvalidationTracker.prototype = {
         var types = [WebInspector.TimelineModel.RecordType.ScheduleStyleInvalidationTracking,
                 WebInspector.TimelineModel.RecordType.StyleInvalidatorInvalidationTracking,
                 WebInspector.TimelineModel.RecordType.StyleRecalcInvalidationTracking];
-        this._forAllInvalidations(this._associateWithLastRecalcStyleEvent, types);
+        for (var invalidation of this._invalidationsOfTypes(types))
+            this._associateWithLastRecalcStyleEvent(invalidation);
     },
 
     /**
@@ -1836,15 +1830,12 @@ WebInspector.InvalidationTracker.prototype = {
             var setId = styleInvalidatorInvalidation.invalidationList[i]["id"];
             var lastScheduleStyleRecalculation;
 
-            function findMatchingInvalidation(invalidation)
-            {
+            for (var invalidation of this._invalidationsOfTypes([WebInspector.TimelineModel.RecordType.ScheduleStyleInvalidationTracking])) {
                 if (invalidation.frame !== frameId)
-                    return;
+                    continue;
                 if (invalidation.nodeId === styleInvalidatorInvalidation.nodeId && invalidation.invalidationSet === setId)
                     lastScheduleStyleRecalculation = invalidation;
             }
-
-            this._forAllInvalidations(findMatchingInvalidation, [WebInspector.TimelineModel.RecordType.ScheduleStyleInvalidationTracking]);
 
             if (!lastScheduleStyleRecalculation) {
                 console.error("Failed to lookup the event that scheduled a style invalidator invalidation.");
@@ -1879,18 +1870,9 @@ WebInspector.InvalidationTracker.prototype = {
     didLayout: function(layoutEvent)
     {
         var layoutFrameId = layoutEvent.args["beginData"]["frame"];
-        this._forAllInvalidations(associateWithLayoutEvent,
-            [WebInspector.TimelineModel.RecordType.LayoutInvalidationTracking]);
-
-        /**
-         * @param {!WebInspector.InvalidationTrackingEvent} invalidation
-         * @suppressReceiverCheck
-         * @this {WebInspector.InvalidationTracker}
-         */
-        function associateWithLayoutEvent(invalidation)
-        {
+        for (var invalidation of this._invalidationsOfTypes([WebInspector.TimelineModel.RecordType.LayoutInvalidationTracking])) {
             if (invalidation.linkedLayoutEvent)
-                return;
+                continue;
             this._addInvalidationToEvent(layoutEvent, layoutFrameId, invalidation);
             invalidation.linkedLayoutEvent = true;
         }
@@ -1916,17 +1898,9 @@ WebInspector.InvalidationTracker.prototype = {
         var effectivePaintId = this._lastPaintWithLayer.args["data"]["nodeId"];
         var paintFrameId = paintEvent.args["data"]["frame"];
         var types = [WebInspector.TimelineModel.RecordType.StyleRecalcInvalidationTracking,
-                WebInspector.TimelineModel.RecordType.LayoutInvalidationTracking,
-                WebInspector.TimelineModel.RecordType.PaintInvalidationTracking];
-        this._forAllInvalidations(associateWithPaintEvent, types);
-
-        /**
-         * @param {!WebInspector.InvalidationTrackingEvent} invalidation
-         * @suppressReceiverCheck
-         * @this {WebInspector.InvalidationTracker}
-         */
-        function associateWithPaintEvent(invalidation)
-        {
+            WebInspector.TimelineModel.RecordType.LayoutInvalidationTracking,
+            WebInspector.TimelineModel.RecordType.PaintInvalidationTracking];
+        for (var invalidation of this._invalidationsOfTypes(types)) {
             if (invalidation.paintId === effectivePaintId)
                 this._addInvalidationToEvent(paintEvent, paintFrameId, invalidation);
         }
@@ -1948,25 +1922,20 @@ WebInspector.InvalidationTracker.prototype = {
     },
 
     /**
-     * @param {function(!WebInspector.InvalidationTrackingEvent)} callback
      * @param {!Array.<string>=} types
+     * @return {!$jscomp.Iterable.<!WebInspector.InvalidationTrackingEvent>}
      */
-    _forAllInvalidations: function(callback, types)
+    _invalidationsOfTypes: function(types)
     {
-        if (!types)
-            types = Object.keys(this._invalidations);
-        types.forEach(forAllInvalidationsOfType, this);
-
-        /**
-         * @param {string} type
-         * @this {WebInspector.InvalidationTracker}
-         */
-        function forAllInvalidationsOfType(type)
+        var invalidations = this._invalidations;
+        function* generator()
         {
-            var invalidations = this._invalidations[type];
-            if (invalidations)
-                invalidations.forEach(callback, this);
+            for (var type of (types || Object.keys(invalidations))) {
+                for (var invalidation of (invalidations[type] || []))
+                    yield invalidation;
+            }
         }
+        return generator();
     },
 
     _startNewFrameIfNeeded: function()
