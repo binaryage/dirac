@@ -55,10 +55,6 @@
     -webkit-user-select: text;
 }
 
-#drawer-view-anchor {
-    display: inline-block;
-}
-
 .status-bar-item:active {
     position: relative;
     z-index: 200;

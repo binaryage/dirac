@@ -68,14 +68,6 @@
     height: 100%;
 }
 
-#timeline-overview-grid #resources-graphs {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 80px;
-}
-
 #timeline-container {
     border-right: 0 none transparent;
     overflow-y: scroll;
@@ -366,14 +358,6 @@
     min-height: 100%;
 }
 
-#resources-graphs {
-    position: absolute;
-    left: 0;
-    right: 0;
-    max-height: 100%;
-    top: 112px;
-}
-
 .memory-graph-label {
     position: absolute;
     left: 5px;
@@ -596,12 +580,6 @@
     vertical-align: top;
 }
 
-.timeline-details .record-title {
-    float: left;
-    padding: 5px 10px 5px 10px;
-    font-weight: bold;
-}
-
 .timeline-details-title {
     border-bottom: 1px solid #B8B8B8;
     font-weight: bold;
@@ -712,15 +690,6 @@
     flex: none;
     position: relative;
     margin-left:  5px;
-}
-
-.timeline-range-summary {
-    align-items: left;
-    margin: 6px;
-}
-
-.timeline-range-summary > div {
-    flex-shrink: 0;
 }
 
 .timeline-aggregated-info-legend > div {

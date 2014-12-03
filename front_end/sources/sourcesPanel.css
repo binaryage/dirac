@@ -62,22 +62,6 @@
     height: 24px;
 }
 
-#scripts-editor-toolbar {
-    position: relative;
-    margin-top: -1px;
-    height: 24px;
-}
-
-#shared-workers-list {
-    margin: 5px 0 5px 20px;
-    font-style:italic;
-}
-
-#pause-workers-checkbox > input {
-    position: relative;
-    top: 2px;
-}
-
 .panel.sources #sources-editor-container-tabbed-pane::shadow .tabbed-pane-header-contents {
     margin-left: 22px;
     margin-right: 36px;
@@ -133,15 +117,6 @@
 
 .panel.sources .sidebar-pane-stack {
     overflow: auto;
-}
-
-#targets-toolbar {
-    background: rgb(236, 236, 236);
-    border-bottom: 1px solid rgb(189, 189, 189);
-    border-top: 1px solid rgb(189, 189, 189);
-    margin-right: 0;
-    padding-right: 6px;
-    margin-top: -1px;
 }
 
 .panel.sources .drag-mask {

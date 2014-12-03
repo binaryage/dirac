@@ -206,11 +206,6 @@ body.dock-to-bottom .help-content {
     padding-left: 30px;
 }
 
-#enable-devtools-on-startup {
-    margin: 0 0 0 80px;
-    display: inline-block;
-}
-
 .help-content p.help-section {
     margin: 0 0 15px 0;
 }
@@ -221,10 +216,6 @@ body.dock-to-bottom .help-content {
 
 .settings-experiments-warning-subsection-message {
     color: inherit;
-}
-
-#resolution-override-section {
-    margin-left: 13px;
 }
 
 .help-content input[type=checkbox] {
