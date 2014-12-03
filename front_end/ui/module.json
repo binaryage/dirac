@@ -63,6 +63,7 @@
         "searchableView.css",
         "splitView.css",
         "statusBar.css",
-        "tabbedPane.css"
+        "tabbedPane.css",
+        "textButton.css"
     ]
 }

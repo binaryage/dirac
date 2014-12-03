@@ -423,9 +423,8 @@ WebInspector.WatchExpressionTreeElement.prototype = {
             this.listItemElement.classList.remove("dimmed");
         }
 
-        var deleteButton = createElementWithClass("input", "enabled-button delete-button");
-        deleteButton.type = "button";
-        deleteButton.title = WebInspector.UIString("Delete watch expression.");
+        var deleteButton = createElementWithClass("button", "enabled-button delete-button");
+        deleteButton.title = WebInspector.UIString("Delete watch expression");
         deleteButton.addEventListener("click", this._deleteButtonClicked.bind(this), false);
         this.listItemElement.addEventListener("contextmenu", this._contextMenu.bind(this), false);
         this.listItemElement.insertBefore(deleteButton, this.listItemElement.firstChild);

@@ -64,6 +64,7 @@
 .tabbed-pane-header-contents {
     flex: auto;
     pointer-events: none;
+    margin-left: 5px;
 }
 
 .tabbed-pane-header-contents > * {

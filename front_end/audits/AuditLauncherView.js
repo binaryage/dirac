@@ -285,11 +285,11 @@ WebInspector.AuditLauncherView.prototype = {
         this._auditReloadedStateElement.type = "radio";
         labelElement.createTextChild("Reload Page and Audit on Load");
 
-        this._launchButton = this._buttonContainerElement.createChild("button", "text-button");
+        this._launchButton = this._buttonContainerElement.createChild("button", "", "text-button");
         this._launchButton.textContent = WebInspector.UIString("Run");
         this._launchButton.addEventListener("click", this._launchButtonClicked.bind(this), false);
 
-        this._clearButton = this._buttonContainerElement.createChild("button", "text-button");
+        this._clearButton = this._buttonContainerElement.createChild("button", "", "text-button");
         this._clearButton.textContent = WebInspector.UIString("Clear");
         this._clearButton.addEventListener("click", this._clearButtonClicked.bind(this), false);
 

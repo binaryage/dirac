@@ -215,9 +215,8 @@ WebInspector.GenericSettingsTab = function()
 
     this._populateSectionsFromExtensions();
 
-    var restoreDefaults = this._appendSection().createChild("input", "text-button");
-    restoreDefaults.type = "button";
-    restoreDefaults.value = WebInspector.UIString("Restore defaults and reload");
+    var restoreDefaults = this._appendSection().createChild("input", "", "text-button");
+    restoreDefaults.textContent = WebInspector.UIString("Restore defaults and reload");
     restoreDefaults.addEventListener("click", restoreAndReload, false);
 
     function restoreAndReload()
@@ -374,9 +373,8 @@ WebInspector.SettingsScreen.SkipStackFramePatternSettingDelegate.prototype = {
      */
     settingElement: function()
     {
-        var button = createElementWithClass("input", "text-button");
-        button.type = "button";
-        button.value = WebInspector.manageBlackboxingButtonLabel();
+        var button = createElement("button", "text-button");
+        button.textContent = WebInspector.manageBlackboxingButtonLabel();
         button.title = WebInspector.UIString("Skip stepping through sources with particular names");
         button.addEventListener("click", this._onManageButtonClick.bind(this), false);
         return button;
@@ -408,14 +406,12 @@ WebInspector.WorkspaceSettingsTab = function()
     this._fileSystemsListContainer = this._fileSystemsSection.createChild("p", "settings-list-container");
 
     this._addFileSystemRowElement = this._fileSystemsSection.createChild("div");
-    var addFileSystemButton = this._addFileSystemRowElement.createChild("input", "text-button");
-    addFileSystemButton.type = "button";
-    addFileSystemButton.value = WebInspector.UIString("Add folder\u2026");
+    var addFileSystemButton = this._addFileSystemRowElement.createChild("button", "", "text-button");
+    addFileSystemButton.textContent = WebInspector.UIString("Add folder\u2026");
     addFileSystemButton.addEventListener("click", this._addFileSystemClicked.bind(this), false);
 
-    this._editFileSystemButton = this._addFileSystemRowElement.createChild("input", "text-button");
-    this._editFileSystemButton.type = "button";
-    this._editFileSystemButton.value = WebInspector.UIString("Folder options\u2026");
+    this._editFileSystemButton = this._addFileSystemRowElement.createChild("button", "", "text-button");
+    this._editFileSystemButton.textContent = WebInspector.UIString("Folder options\u2026");
     this._editFileSystemButton.addEventListener("click", this._editFileSystemClicked.bind(this), false);
     this._updateEditFileSystemButtonState();
 

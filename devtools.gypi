@@ -224,6 +224,7 @@
             'front_end/ui/splitView.css',
             'front_end/ui/statusBar.css',
             'front_end/ui/tabbedPane.css',
+            'front_end/ui/textButton.css',
             'front_end/ui/ActionRegistry.js',
             'front_end/ui/CompletionDictionary.js',
             'front_end/ui/Context.js',

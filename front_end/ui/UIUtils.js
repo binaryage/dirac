@@ -1252,3 +1252,21 @@ WebInspector.beautifyFunctionName = function(name)
 {
     return name || WebInspector.UIString("(anonymous function)");
 }
+
+;(
+/** @suppressGlobalPropertiesCheck */
+function() {
+    var proto = Object.create(HTMLButtonElement.prototype);
+    /**
+     * @this {HTMLButtonElement}
+     */
+    proto.createdCallback = function() {
+        var root = this.createShadowRoot();
+        root.appendChild(createElement("content"));
+        root.appendChild(WebInspector.View.createStyleElement("ui/textButton.css"));
+    };
+    document.registerElement("text-button", {
+        prototype: proto,
+        extends: "button"
+    });
+})();

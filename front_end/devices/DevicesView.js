@@ -149,7 +149,7 @@ WebInspector.DevicesView.prototype = {
                             ? WebInspector.UIString("You may need a newer version of desktop Chrome. Please try Chrome %s  or later.", browser.adbBrowserVersion)
                             : WebInspector.UIString("You may need a newer version of Chrome on your device. Please try Chrome %s or later.", WebInspector.DevicesView.MinVersionNewTab);
                     } else {
-                        var newPageButton = browserSection.createChild("button", "text-button");
+                        var newPageButton = browserSection.createChild("button", "", "text-button");
                         newPageButton.textContent = WebInspector.UIString("Try here");
                         newPageButton.title = WebInspector.UIString("Inspect current page in this browser.");
                         newPageButton.addEventListener("click", InspectorFrontendHost.openUrlOnRemoteDeviceAndInspect.bind(null, browser.id, WebInspector.targetManager.inspectedPageURL()), true);
