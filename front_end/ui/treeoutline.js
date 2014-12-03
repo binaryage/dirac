@@ -458,6 +458,7 @@ function TreeElement(title, representedObject, hasChildren)
     this.expanded = false;
     this.selected = false;
     this.hasChildren = hasChildren;
+    /** @type {?TreeOutline} */
     this.treeOutline = null;
     this.parent = null;
     this.previousSibling = null;
@@ -692,7 +693,7 @@ TreeElement.prototype = {
     },
 
     /**
-     * @param {!MouseEvent} event
+     * @param {!Event} event
      */
     _handleDoubleClick: function(event)
     {
@@ -945,7 +946,7 @@ TreeElement.prototype = {
     },
 
     /**
-     * @param {!MouseEvent} e
+     * @param {!Event} e
      * @return {boolean}
      */
     ondblclick: function(e)
