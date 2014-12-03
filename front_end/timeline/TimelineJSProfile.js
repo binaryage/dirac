@@ -90,12 +90,15 @@ WebInspector.TimelineJSProfileProcessor.generateJSFrameEvents = function(events)
 
     function extractStackTrace(e)
     {
-        var eventData = e.args["data"] || e.args["beginData"];
-        var stackTrace = eventData && eventData["stackTrace"];
-        if (!stackTrace)
-            return;
         while (jsFramesStack.length && eventEndTime(jsFramesStack.peekLast()) + coalesceThresholdMs <= e.startTime)
             jsFramesStack.pop();
+        var eventData = e.args["data"] || e.args["beginData"];
+        var stackTrace = eventData && eventData["stackTrace"];
+        // GC events do not hold call stack, so make a copy of the current stack.
+        if (e.name === WebInspector.TimelineModel.RecordType.GCEvent)
+            stackTrace = jsFramesStack.map(function(frameEvent) { return frameEvent.args["data"]; }).reverse();
+        if (!stackTrace)
+            return;
         var endTime = eventEndTime(e);
         var numFrames = stackTrace.length;
         var minFrames = Math.min(numFrames, jsFramesStack.length);
