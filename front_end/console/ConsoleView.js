@@ -618,6 +618,8 @@ WebInspector.ConsoleView.prototype = {
         this._clearCurrentSearchResultHighlight();
         this._consoleMessages = [];
         this._updateMessageList();
+        this._prompt.hideSuggestBox();
+        this._prompt.clearAutoComplete(true);
 
         if (this._searchRegex)
             this._searchableView.updateSearchMatchesCount(0);
