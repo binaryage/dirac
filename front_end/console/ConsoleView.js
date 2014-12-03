@@ -438,8 +438,7 @@ WebInspector.ConsoleView.prototype = {
 
     willHide: function()
     {
-        this._prompt.hideSuggestBox();
-        this._prompt.clearAutoComplete(true);
+        this._hidePromptSuggestBox();
     },
 
     wasShown: function()
@@ -468,9 +467,15 @@ WebInspector.ConsoleView.prototype = {
     onResize: function()
     {
         this._scheduleViewportRefresh();
-        this._prompt.hideSuggestBox();
+        this._hidePromptSuggestBox();
         if (this._viewport.scrolledToBottom())
             this._immediatelyScrollToBottom();
+    },
+
+    _hidePromptSuggestBox: function()
+    {
+        this._prompt.hideSuggestBox();
+        this._prompt.clearAutoComplete(true);
     },
 
     _scheduleViewportRefresh: function()
@@ -618,8 +623,7 @@ WebInspector.ConsoleView.prototype = {
         this._clearCurrentSearchResultHighlight();
         this._consoleMessages = [];
         this._updateMessageList();
-        this._prompt.hideSuggestBox();
-        this._prompt.clearAutoComplete(true);
+        this._hidePromptSuggestBox();
 
         if (this._searchRegex)
             this._searchableView.updateSearchMatchesCount(0);
