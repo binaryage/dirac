@@ -27,36 +27,31 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#network-views {
+.network-details-view {
     background: rgb(203, 203, 203);
 }
 
-#network-close-button {
+.network-close-button {
     position: absolute;
-    top: 8px;
+    top: 4px;
     left: 5px;
     z-index: 10;
-    display: none;
 }
 
-#network-views.small #network-close-button {
-    top: 4px;
+.network-details-view-tall-header .network-close-button {
+    top: 8px;
 }
 
-.network.panel.viewing-resource #network-close-button {
-    display: block;
-}
-
-#network-views .network-item-view::shadow .tabbed-pane-header {
-    flex: 0 0 31px;
-    padding-top: 8px;
+.network-details-view .network-item-view::shadow .tabbed-pane-header {
+    flex: 0 0 23px;
+    padding-top: 0;
     padding-left: 13px;
     white-space: nowrap;
 }
 
-#network-views.small .network-item-view::shadow .tabbed-pane-header {
-    flex-basis: 23px;
-    padding-top: 0;
+.network-details-view-tall-header .network-item-view::shadow .tabbed-pane-header {
+    flex-basis: 31px;
+    padding-top: 8px;
 }
 
 .network-item-view {

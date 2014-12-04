@@ -66,12 +66,13 @@ WebInspector.NetworkPanel = function()
     this._networkLogView = new WebInspector.NetworkLogView(this._filterBar, networkLogColumnsVisibilitySetting);
     this._splitView.setSidebarView(this._networkLogView);
 
-    var viewsContainerView = new WebInspector.VBox();
-    this._viewsContainerElement = viewsContainerView.element;
-    this._viewsContainerElement.id = "network-views";
-    if (!this._networkLogView.usesLargeRows())
-        this._viewsContainerElement.classList.add("small");
-    this._splitView.setMainView(viewsContainerView);
+    this._detailsView = new WebInspector.VBox();
+    this._detailsView.element.classList.add("network-details-view");
+    this._splitView.setMainView(this._detailsView);
+
+    WebInspector.dockController.addEventListener(WebInspector.DockController.Events.DockSideChanged, this._dockSideChanged.bind(this));
+    WebInspector.settings.splitVerticallyWhenDockedToRight.addChangeListener(this._dockSideChanged.bind(this));
+    this._dockSideChanged();
 
     this._networkLogView.addEventListener(WebInspector.NetworkLogView.EventTypes.ViewCleared, this._onViewCleared, this);
     this._networkLogView.addEventListener(WebInspector.NetworkLogView.EventTypes.RowSizeChanged, this._onRowSizeChanged, this);
@@ -79,10 +80,9 @@ WebInspector.NetworkPanel = function()
     this._networkLogView.addEventListener(WebInspector.NetworkLogView.EventTypes.SearchCountUpdated, this._onSearchCountUpdated, this);
     this._networkLogView.addEventListener(WebInspector.NetworkLogView.EventTypes.SearchIndexUpdated, this._onSearchIndexUpdated, this);
 
-    this._closeButtonElement = this._viewsContainerElement.createChild("div", "close-button");
-    this._closeButtonElement.id = "network-close-button";
-    this._closeButtonElement.addEventListener("click", this._toggleGridMode.bind(this), false);
-    this._viewsContainerElement.appendChild(this._closeButtonElement);
+    this._closeButtonElement = this._detailsView.element.createChild("div", "close-button");
+    this._closeButtonElement.classList.add("network-close-button");
+    this._closeButtonElement.addEventListener("click", this._showRequest.bind(this, null), false);
 
     var statusBarItems = this._networkLogView.statusBarItems();
     for (var i = 0; i < statusBarItems.length; ++i)
@@ -100,6 +100,21 @@ WebInspector.NetworkPanel = function()
 }
 
 WebInspector.NetworkPanel.prototype = {
+    /**
+     * @return {boolean}
+     */
+    _isDetailsPaneAtBottom: function()
+    {
+        return WebInspector.settings.splitVerticallyWhenDockedToRight.get() && WebInspector.dockController.isVertical();
+    },
+
+    _dockSideChanged: function()
+    {
+        var detailsViewAtBottom = this._isDetailsPaneAtBottom();
+        this._splitView.setVertical(!detailsViewAtBottom);
+        this._updateUI();
+    },
+
     /**
      * @param {!WebInspector.Event} event
      */
@@ -134,8 +149,8 @@ WebInspector.NetworkPanel.prototype = {
      */
     handleShortcut: function(event)
     {
-        if (this._viewingRequestMode && event.keyCode === WebInspector.KeyboardShortcut.Keys.Esc.code) {
-            this._toggleGridMode();
+        if (event.keyCode === WebInspector.KeyboardShortcut.Keys.Esc.code) {
+            this._showRequest(null);
             event.handled = true;
             return;
         }
@@ -153,7 +168,7 @@ WebInspector.NetworkPanel.prototype = {
      */
     revealAndHighlightRequest: function(request)
     {
-        this._toggleGridMode();
+        this._showRequest(null);
         if (request)
             this._networkLogView.revealAndHighlightRequest(request);
     },
@@ -163,10 +178,7 @@ WebInspector.NetworkPanel.prototype = {
      */
     _onViewCleared: function(event)
     {
-        this._closeVisibleRequest();
-        this._toggleGridMode();
-        this._viewsContainerElement.removeChildren();
-        this._viewsContainerElement.appendChild(this._closeButtonElement);
+        this._showRequest(null);
     },
 
     /**
@@ -174,7 +186,7 @@ WebInspector.NetworkPanel.prototype = {
      */
     _onRowSizeChanged: function(event)
     {
-        this._viewsContainerElement.classList.toggle("small", !event.data.largeRows);
+        this._updateUI();
     },
 
     /**
@@ -209,51 +221,28 @@ WebInspector.NetworkPanel.prototype = {
      */
     _showRequest: function(request)
     {
-        if (!request)
-            return;
-
-        this._toggleViewingRequestMode();
-
         if (this._networkItemView) {
             this._networkItemView.detach();
-            delete this._networkItemView;
+            this._networkItemView = null;
         }
 
-        var view = new WebInspector.NetworkItemView(request);
-        view.show(this._viewsContainerElement);
-        this._networkItemView = view;
-    },
-
-    _closeVisibleRequest: function()
-    {
-        this.element.classList.remove("viewing-resource");
-
-        if (this._networkItemView) {
-            this._networkItemView.detach();
-            delete this._networkItemView;
+        if (request) {
+            this._networkItemView = new WebInspector.NetworkItemView(request);
+            this._networkItemView.show(this._detailsView.element);
         }
-    },
 
-    _toggleGridMode: function()
-    {
-        if (this._viewingRequestMode) {
-            this._viewingRequestMode = false;
-            this.element.classList.remove("viewing-resource");
+        if (!!request)
+            this._splitView.showBoth();
+        else
             this._splitView.hideMain();
-        }
-
-        this._networkLogView.switchViewMode(true);
+        this._updateUI();
     },
 
-    _toggleViewingRequestMode: function()
+    _updateUI: function()
     {
-        if (this._viewingRequestMode)
-            return;
-        this._viewingRequestMode = true;
-
-        this.element.classList.add("viewing-resource");
-        this._splitView.showBoth();
-        this._networkLogView.switchViewMode(false);
+        var detailsPaneAtBottom = this._isDetailsPaneAtBottom();
+        this._detailsView.element.classList.toggle("network-details-view-tall-header", this._networkLogView.usesLargeRows() && !detailsPaneAtBottom);
+        this._networkLogView.switchViewMode(!this._splitView.isResizable() || detailsPaneAtBottom);
     },
 
     /**
