@@ -56,6 +56,11 @@
     background: #eee;
 }
 
+.network-log-grid .network-navigation-row,
+.network-log-grid .network-navigation-row.odd {
+    background: #def;
+}
+
 .network-log-grid.data-grid td {
     line-height: 17px;
     height: 41px;

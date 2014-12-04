@@ -974,7 +974,7 @@ WebInspector.NetworkLogView.prototype = {
      */
     _mainFrameNavigated: function(event)
     {
-        if (!this._recordButton.toggled() || this._preserveLogCheckbox.checked())
+        if (!this._recordButton.toggled())
             return;
 
         var frame = /** @type {!WebInspector.ResourceTreeFrame} */ (event.data);
@@ -989,10 +989,19 @@ WebInspector.NetworkLogView.prototype = {
                 requestsToPick.push(request);
         }
 
-        this._reset();
-
-        for (var i = 0; i < requestsToPick.length; ++i)
-            this._appendRequest(requestsToPick[i]);
+        if (!this._preserveLogCheckbox.checked()) {
+            this._reset();
+            for (var i = 0; i < requestsToPick.length; ++i)
+                this._appendRequest(requestsToPick[i]);
+        }
+        for (var i = 0; i < requestsToPick.length; ++i) {
+            var request = requestsToPick[i];
+            var node = this._nodesByRequestId.get(request.requestId);
+            if (node) {
+                node.markAsNavigationRequest();
+                break;
+            }
+        }
     },
 
     /**

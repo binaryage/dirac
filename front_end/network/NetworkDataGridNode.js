@@ -41,6 +41,7 @@ WebInspector.NetworkDataGridNode = function(parentView, request)
     this._request = request;
     this._linkifier = new WebInspector.Linkifier();
     this._staleGraph = true;
+    this._isNavigationRequest = false;
 }
 
 WebInspector.NetworkDataGridNode._hoveredRowSymbol = Symbol("hoveredRow");
@@ -52,6 +53,12 @@ WebInspector.NetworkDataGridNode.prototype = {
     request: function()
     {
         return this._request;
+    },
+
+    markAsNavigationRequest: function()
+    {
+        this._isNavigationRequest = true;
+        this.refresh();
     },
 
     /**
@@ -73,6 +80,7 @@ WebInspector.NetworkDataGridNode.prototype = {
         this._initiatorCell = null;
 
         this._element.classList.toggle("network-error-row", this._isFailed());
+        this._element.classList.toggle("network-navigation-row", this._isNavigationRequest);
         WebInspector.SortableDataGridNode.prototype.createCells.call(this);
 
         this._updateGraph();
