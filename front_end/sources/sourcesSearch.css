@@ -4,6 +4,38 @@
  * found in the LICENSE file.
  */
 
+.search-drawer-header {
+    flex: none;
+    padding: 4px;
+    display: flex;
+}
+
+.search-drawer-header input[type="text"].search-config-search {
+    -webkit-appearance: none;
+    padding: 0 3px;
+    margin: 0;
+    border: 1px solid rgb(163, 163, 163);
+    height: 20px;
+    border-radius: 2px;
+    color: #303030;
+}
+
+.search-drawer-header input[type="search"].search-config-search:focus {
+    border: 1px solid rgb(190, 190, 190);
+    outline: none;
+}
+
+:host-context(.platform-mac) .search-drawer-header input[type="search"].search-config-search {
+    top: 1px;
+}
+
+.search-drawer-header label.search-config-label {
+    margin: auto 0;
+    margin-left: 8px;
+    color: #303030;
+    display: flex;
+}
+
 .search-status-bar-summary {
     background-color: #eee;
     border-top: 1px solid #ccc;
@@ -135,4 +167,24 @@
 
 #search-results-pane-file-based .search-match .search-match-content {
     color: #000;
+}
+
+.search-view .search-results {
+    overflow-y: auto;
+    display: flex;
+    flex: auto;
+}
+
+.search-results .empty-view {
+    pointer-events: none;
+}
+
+.empty-view {
+    font-size: 24px;
+    color: rgb(75%, 75%, 75%);
+    font-weight: bold;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }

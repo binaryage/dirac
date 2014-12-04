@@ -8,16 +8,17 @@
  */
 WebInspector.AdvancedSearchView = function()
 {
-    WebInspector.VBox.call(this);
+    WebInspector.VBox.call(this, true);
+    this.registerRequiredCSS("sources/sourcesSearch.css");
 
     this._searchId = 0;
 
-    this.element.classList.add("search-view");
+    this.contentElement.classList.add("search-view");
 
-    this._searchPanelElement = this.element.createChild("div", "search-drawer-header");
+    this._searchPanelElement = this.contentElement.createChild("div", "search-drawer-header");
     this._searchPanelElement.addEventListener("keydown", this._onKeyDown.bind(this), false);
 
-    this._searchResultsElement = this.element.createChild("div");
+    this._searchResultsElement = this.contentElement.createChild("div");
     this._searchResultsElement.className = "search-results";
 
     this._search = this._searchPanelElement.createChild("input");
@@ -41,7 +42,7 @@ WebInspector.AdvancedSearchView = function()
     this._regexCheckbox.classList.add("search-config-checkbox");
     this._regexLabel.createTextChild(WebInspector.UIString("Regular expression"));
 
-    this._searchStatusBarElement = this.element.createChild("div", "search-status-bar-summary");
+    this._searchStatusBarElement = this.contentElement.createChild("div", "search-status-bar-summary");
     this._searchMessageElement = this._searchStatusBarElement.createChild("div", "search-message");
     this._searchProgressPlaceholderElement = this._searchStatusBarElement.createChild("div", "flex-centered");
     this._searchStatusBarElement.createChild("div", "search-message-spacer");

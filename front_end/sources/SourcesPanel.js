@@ -35,7 +35,6 @@ WebInspector.SourcesPanel = function(workspaceForTest)
 {
     WebInspector.Panel.call(this, "sources");
     this.registerRequiredCSS("sources/sourcesPanel.css");
-    this.registerRequiredCSS("sources/sourcesSearch.css");
     new WebInspector.UpgradeFileSystemDropTarget(this.element);
 
     this._workspace = workspaceForTest || WebInspector.workspace;

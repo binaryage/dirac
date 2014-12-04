@@ -1201,47 +1201,6 @@ body.inactive .sidebar-tree-item.selected {
     color: white;
 }
 
-.search-drawer-header {
-    flex: none;
-    padding: 4px;
-    display: flex;
-}
-
-.search-drawer-header input[type="text"].search-config-search {
-    -webkit-appearance: none;
-    padding: 0 3px;
-    margin: 0;
-    border: 1px solid rgb(163, 163, 163);
-    height: 20px;
-    border-radius: 2px;
-    color: #303030;
-}
-
-.search-drawer-header input[type="search"].search-config-search:focus {
-    border: 1px solid rgb(190, 190, 190);
-    outline: none;
-}
-
-.platform-mac .search-drawer-header input[type="search"].search-config-search {
-    top: 1px;
-}
-
-.search-drawer-header label.search-config-label {
-    margin: auto 0;
-    margin-left: 8px;
-    color: #303030;
-    display: flex;
-}
-
-.search-view .search-results {
-    overflow-y: auto;
-    flex: auto;
-}
-
-.search-results .empty-view {
-    pointer-events: none;
-}
-
 .empty-view {
     font-size: 24px;
     color: rgb(75%, 75%, 75%);
