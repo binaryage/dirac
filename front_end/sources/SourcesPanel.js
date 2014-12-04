@@ -890,7 +890,7 @@ WebInspector.SourcesPanel.prototype = {
             this.sidebarPanes.callstack.appendBlackboxURLContextMenuItems(contextMenu, url, projectType === WebInspector.projectTypes.ContentScripts);
         }
 
-        if (!event.target.isSelfOrDescendant(this._navigator.view.element)) {
+        if (projectType !== WebInspector.projectTypes.Debugger && !event.target.isSelfOrDescendant(this._navigator.view.element)) {
             contextMenu.appendSeparator();
             contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Reveal in navigator" : "Reveal in Navigator"), this._handleContextMenuReveal.bind(this, uiSourceCode));
         }
