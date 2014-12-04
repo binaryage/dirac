@@ -4,6 +4,10 @@
  * found in the LICENSE file.
  */
 
+:host {
+    flex: none;
+}
+
 .status-bar-shadow {
     position: relative;
     white-space: nowrap;
