@@ -727,6 +727,7 @@ WebInspector.CollectionEntriesMainTreeElement = function(remoteObject)
     this.selectable = false;
     this._remoteObject = remoteObject;
     this.hasChildren = true;
+    this.expand();
 }
 
 WebInspector.CollectionEntriesMainTreeElement.prototype = {
