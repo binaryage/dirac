@@ -752,8 +752,11 @@ InspectedWindow.prototype = {
     reload: function(optionsOrUserAgent)
     {
         var options = null;
-        if (typeof optionsOrUserAgent === "object")
+        if (typeof optionsOrUserAgent === "object") {
             options = optionsOrUserAgent;
+            if (options.preprocessingScript)
+                console.warn("Please avoid using 'preprocessingScript' option to chrome.devtools.inspectedWindow.reload(), support for it will be removed soon.");
+        }
         else if (typeof optionsOrUserAgent === "string") {
             options = { userAgent: optionsOrUserAgent };
             console.warn("Passing userAgent as string parameter to inspectedWindow.reload() is deprecated. " +
