@@ -581,6 +581,19 @@ WebInspector.SourcesPanel.prototype = {
     /**
      * @return {boolean}
      */
+    _stepIntoAsyncClicked: function()
+    {
+        var debuggerModel = this._prepareToResume();
+        if (!debuggerModel)
+            return true;
+
+        debuggerModel.stepIntoAsync();
+        return true;
+    },
+
+    /**
+     * @return {boolean}
+     */
     _stepOutClicked: function()
     {
         var debuggerModel = this._prepareToResume();
@@ -666,6 +679,12 @@ WebInspector.SourcesPanel.prototype = {
         handler = this._stepIntoClicked.bind(this);
         this._stepIntoButton = this._createButtonAndRegisterShortcuts("step-in-status-bar-item", title, handler, WebInspector.ShortcutsScreen.SourcesPanelShortcuts.StepInto);
         debugToolbar.appendStatusBarItem(this._stepIntoButton);
+
+        // Step into async.
+        if (Runtime.experiments.isEnabled("stepIntoAsync")) {
+            handler = this._stepIntoAsyncClicked.bind(this);
+            this.registerShortcuts(WebInspector.ShortcutsScreen.SourcesPanelShortcuts.StepIntoAsync, handler);
+        }
 
         // Step out.
         title = WebInspector.UIString("Step out of current function (%s).");

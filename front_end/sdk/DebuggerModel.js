@@ -202,6 +202,18 @@ WebInspector.DebuggerModel.prototype = {
         this._agent.setOverlayMessage(undefined, callback.bind(this));
     },
 
+    stepIntoAsync: function()
+    {
+        /**
+         * @this {WebInspector.DebuggerModel}
+         */
+        function callback()
+        {
+            this._agent.stepIntoAsync();
+        }
+        this._agent.setOverlayMessage(undefined, callback.bind(this));
+    },
+
     stepOver: function()
     {
         /**

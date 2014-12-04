@@ -143,9 +143,10 @@ WebInspector.Main.prototype = {
         Runtime.experiments.register("layersPanel", "Layers panel");
         Runtime.experiments.register("privateScriptInspection", "Private script inspection");
         Runtime.experiments.register("promiseTracker", "Enable Promise inspection");
+        Runtime.experiments.register("stepIntoAsync", "Enable step into async");
         Runtime.experiments.register("timelinePowerProfiler", "Timeline power profiler");
         Runtime.experiments.register("timelineJSCPUProfile", "Timeline with JS sampling");
-        Runtime.experiments.register("timelineInvalidationTracking", "Timeline with full invalidation tracking.");
+        Runtime.experiments.register("timelineInvalidationTracking", "Timeline with full invalidation tracking");
         Runtime.experiments.cleanUpStaleExperiments();
 
         if (InspectorFrontendHost.isUnderTest()) {
