@@ -296,8 +296,8 @@ WebInspector.AnimationSection.prototype = {
          */
         function nodeResolved(node)
         {
-            headerElement.addEventListener("mouseover", node.highlight.bind(node, undefined, undefined), false);
-            headerElement.addEventListener("mouseleave", node.domModel().hideDOMNodeHighlight.bind(node.domModel()), false);
+            headerElement.createTextChild(" - ");
+            headerElement.appendChild(WebInspector.DOMPresentationUtils.linkifyNodeReference(node));
         }
 
         var headerElement = createElementWithClass("div", "sidebar-separator");
