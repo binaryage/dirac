@@ -388,7 +388,8 @@ WebInspector.TargetManager.prototype = {
     {
         for (var i = 0; i < this._targets.length; ++i) {
             var model = this._targets[i]._modelByConstructor.get(modelClass);
-            model.addEventListener(eventType, listener, thisObject);
+            if (model)
+                model.addEventListener(eventType, listener, thisObject);
         }
         if (!this._modelListeners[eventType])
             this._modelListeners[eventType] = [];
@@ -408,7 +409,8 @@ WebInspector.TargetManager.prototype = {
 
         for (var i = 0; i < this._targets.length; ++i) {
             var model = this._targets[i]._modelByConstructor.get(modelClass);
-            model.removeEventListener(eventType, listener, thisObject);
+            if (model)
+                model.removeEventListener(eventType, listener, thisObject);
         }
 
         var listeners = this._modelListeners[eventType];
@@ -479,7 +481,8 @@ WebInspector.TargetManager.prototype = {
             var listeners = this._modelListeners[eventType];
             for (var i = 0; i < listeners.length; ++i) {
                 var model = target._modelByConstructor.get(listeners[i].modelClass);
-                model.addEventListener(eventType, listeners[i].listener, listeners[i].thisObject);
+                if (model)
+                    model.addEventListener(eventType, listeners[i].listener, listeners[i].thisObject);
             }
         }
     },
@@ -504,7 +507,8 @@ WebInspector.TargetManager.prototype = {
             var listeners = this._modelListeners[eventType];
             for (var i = 0; i < listeners.length; ++i) {
                 var model = target._modelByConstructor.get(listeners[i].modelClass);
-                model.removeEventListener(eventType, listeners[i].listener, listeners[i].thisObject);
+                if (model)
+                    model.removeEventListener(eventType, listeners[i].listener, listeners[i].thisObject);
             }
         }
     },
