@@ -54,7 +54,6 @@ WebInspector.ExtensionServer = function()
 
     this._registerHandler(commands.AddAuditCategory, this._onAddAuditCategory.bind(this));
     this._registerHandler(commands.AddAuditResult, this._onAddAuditResult.bind(this));
-    this._registerHandler(commands.AddConsoleMessage, this._onAddConsoleMessage.bind(this));
     this._registerHandler(commands.AddRequestHeaders, this._onAddRequestHeaders.bind(this));
     this._registerHandler(commands.ApplyStyleSheet, this._onApplyStyleSheet.bind(this));
     this._registerHandler(commands.CreatePanel, this._onCreatePanel.bind(this));
@@ -63,7 +62,6 @@ WebInspector.ExtensionServer = function()
     this._registerHandler(commands.EvaluateOnInspectedPage, this._onEvaluateOnInspectedPage.bind(this));
     this._registerHandler(commands.ForwardKeyboardEvent, this._onForwardKeyboardEvent.bind(this));
     this._registerHandler(commands.GetHAR, this._onGetHAR.bind(this));
-    this._registerHandler(commands.GetConsoleMessages, this._onGetConsoleMessages.bind(this));
     this._registerHandler(commands.GetPageResources, this._onGetPageResources.bind(this));
     this._registerHandler(commands.GetRequestContent, this._onGetRequestContent.bind(this));
     this._registerHandler(commands.GetResourceContent, this._onGetResourceContent.bind(this));
@@ -451,72 +449,6 @@ WebInspector.ExtensionServer.prototype = {
         return this.evaluate(message.expression, true, true, message.evaluateOptions, port._extensionOrigin, callback.bind(this));
     },
 
-    _onGetConsoleMessages: function()
-    {
-        return WebInspector.multitargetConsoleModel.messages().map(this._makeConsoleMessage);
-    },
-
-    _onAddConsoleMessage: function(message)
-    {
-        function convertSeverity(level)
-        {
-            switch (level) {
-                case WebInspector.extensionAPI.console.Severity.Log:
-                    return WebInspector.ConsoleMessage.MessageLevel.Log;
-                case WebInspector.extensionAPI.console.Severity.Warning:
-                    return WebInspector.ConsoleMessage.MessageLevel.Warning;
-                case WebInspector.extensionAPI.console.Severity.Error:
-                    return WebInspector.ConsoleMessage.MessageLevel.Error;
-                case WebInspector.extensionAPI.console.Severity.Debug:
-                    return WebInspector.ConsoleMessage.MessageLevel.Debug;
-            }
-        }
-        var level = convertSeverity(message.severity);
-        if (!level)
-            return this._status.E_BADARG("message.severity", message.severity);
-
-        var mainTarget = WebInspector.targetManager.mainTarget();
-        var consoleMessage = new WebInspector.ConsoleMessage(
-            mainTarget,
-            WebInspector.ConsoleMessage.MessageSource.JS,
-            level,
-            message.text,
-            WebInspector.ConsoleMessage.MessageType.Log,
-            message.url,
-            message.line);
-        mainTarget.consoleModel.addMessage(consoleMessage);
-    },
-
-    _makeConsoleMessage: function(message)
-    {
-        function convertLevel(level)
-        {
-            if (!level)
-                return;
-            switch (level) {
-                case WebInspector.ConsoleMessage.MessageLevel.Log:
-                    return WebInspector.extensionAPI.console.Severity.Log;
-                case WebInspector.ConsoleMessage.MessageLevel.Warning:
-                    return WebInspector.extensionAPI.console.Severity.Warning;
-                case WebInspector.ConsoleMessage.MessageLevel.Error:
-                    return WebInspector.extensionAPI.console.Severity.Error;
-                case WebInspector.ConsoleMessage.MessageLevel.Debug:
-                    return WebInspector.extensionAPI.console.Severity.Debug;
-                default:
-                    return WebInspector.extensionAPI.console.Severity.Log;
-            }
-        }
-        var result = {
-            severity: convertLevel(message.level),
-            text: message.messageText,
-        };
-        if (message.url)
-            result.url = message.url;
-        if (message.line)
-            result.line = message.line;
-        return result;
-    },
-
     _onGetHAR: function()
     {
         var requests = WebInspector.networkLog.requests;
@@ -737,8 +669,6 @@ WebInspector.ExtensionServer.prototype = {
 
     _initExtensions: function()
     {
-        this._registerAutosubscriptionTargetManagerHandler(WebInspector.extensionAPI.Events.ConsoleMessageAdded,
-            WebInspector.ConsoleModel, WebInspector.ConsoleModel.Events.MessageAdded, this._notifyConsoleMessageAdded);
         this._registerAutosubscriptionHandler(WebInspector.extensionAPI.Events.ResourceAdded,
             WebInspector.workspace, WebInspector.Workspace.Events.UISourceCodeAdded, this._notifyResourceAdded);
         this._registerAutosubscriptionTargetManagerHandler(WebInspector.extensionAPI.Events.NetworkRequestFinished,
@@ -768,11 +698,6 @@ WebInspector.ExtensionServer.prototype = {
             this._inspectedURLChanged, this);
 
         InspectorExtensionRegistry.getExtensionsAsync();
-    },
-
-    _notifyConsoleMessageAdded: function(event)
-    {
-        this._postNotification(WebInspector.extensionAPI.Events.ConsoleMessageAdded, this._makeConsoleMessage(event.data));
     },
 
     _notifyResourceAdded: function(event)

@@ -38,15 +38,6 @@ function defineCommonExtensionSymbols(apiPrivate)
         Severe: "severe"
     };
 
-    if (!apiPrivate.console)
-        apiPrivate.console = {};
-    apiPrivate.console.Severity = {
-        Debug: "debug",
-        Log: "log",
-        Warning: "warning",
-        Error: "error"
-    };
-
     if (!apiPrivate.panels)
         apiPrivate.panels = {};
     apiPrivate.panels.SearchAction = {
@@ -59,7 +50,6 @@ function defineCommonExtensionSymbols(apiPrivate)
     apiPrivate.Events = {
         AuditStarted: "audit-started-",
         ButtonClicked: "button-clicked-",
-        ConsoleMessageAdded: "console-message-added",
         PanelObjectSelected: "panel-objectSelected-",
         NetworkRequestFinished: "network-request-finished",
         OpenResource: "open-resource",
@@ -73,7 +63,6 @@ function defineCommonExtensionSymbols(apiPrivate)
     apiPrivate.Commands = {
         AddAuditCategory: "addAuditCategory",
         AddAuditResult: "addAuditResult",
-        AddConsoleMessage: "addConsoleMessage",
         AddRequestHeaders: "addRequestHeaders",
         ApplyStyleSheet: "applyStyleSheet",
         CreatePanel: "createPanel",
@@ -81,7 +70,6 @@ function defineCommonExtensionSymbols(apiPrivate)
         CreateStatusBarButton: "createStatusBarButton",
         EvaluateOnInspectedPage: "evaluateOnInspectedPage",
         ForwardKeyboardEvent: "_forwardKeyboardEvent",
-        GetConsoleMessages: "getConsoleMessages",
         GetHAR: "getHAR",
         GetPageResources: "getPageResources",
         GetRequestContent: "getRequestContent",
@@ -189,32 +177,6 @@ function InspectorExtensionAPI()
     this.panels = new Panels();
     this.network = new Network();
     defineDeprecatedProperty(this, "webInspector", "resources", "network");
-    this.console = new ConsoleAPI();
-}
-
-/**
- * @constructor
- */
-function ConsoleAPI()
-{
-    this.onMessageAdded = new EventSink(events.ConsoleMessageAdded);
-}
-
-ConsoleAPI.prototype = {
-    getMessages: function(callback)
-    {
-        extensionServer.sendRequest({ command: commands.GetConsoleMessages }, callback);
-    },
-
-    addMessage: function(severity, text, url, line)
-    {
-        extensionServer.sendRequest({ command: commands.AddConsoleMessage, severity: severity, text: text, url: url, line: line });
-    },
-
-    get Severity()
-    {
-        return apiPrivate.console.Severity;
-    }
 }
 
 /**
