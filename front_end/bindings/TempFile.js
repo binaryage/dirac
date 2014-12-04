@@ -310,7 +310,7 @@ WebInspector.DeferredTempFile.prototype = {
     _didWriteChunk: function(callback, size)
     {
         this._isWriting = false;
-        if (!size) {
+        if (size === -1) {
             this._tempFile = null;
             this._notifyFinished();
             return;
