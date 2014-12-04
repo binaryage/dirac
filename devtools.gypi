@@ -221,6 +221,7 @@
             'front_end/ui/pieChart.css',
             'front_end/ui/progressIndicator.css',
             'front_end/ui/searchableView.css',
+            'front_end/ui/softContextMenu.css',
             'front_end/ui/splitView.css',
             'front_end/ui/statusBar.css',
             'front_end/ui/tabbedPane.css',

@@ -61,6 +61,7 @@
         "pieChart.css",
         "progressIndicator.css",
         "searchableView.css",
+        "softContextMenu.css",
         "splitView.css",
         "statusBar.css",
         "tabbedPane.css",
