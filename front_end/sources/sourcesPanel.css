@@ -33,11 +33,12 @@
     width: 100%;
     background-color: #eee;
     border-bottom: 1px solid rgb(163, 163, 163);
+    height: 23px;
 }
 
-.scripts-debug-toolbar /deep/ .status-bar-shadow {
-    margin-top: -1px;
-    height: 23px;
+.scripts-debug-toolbar::shadow .status-bar-item {
+    position: relative;
+    top: -1px;
 }
 
 .scripts-debug-toolbar-drawer {

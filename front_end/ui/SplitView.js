@@ -48,7 +48,6 @@ WebInspector.SplitView = function(isVertical, secondIsSidebar, settingName, defa
     this._sidebarElement = this.contentElement.createChild("div", "shadow-split-view-contents shadow-split-view-sidebar vbox");
     this._sidebarElement.createChild("content").select = ".insertion-point-sidebar";
     this._resizerElement = this.contentElement.createChild("div", "shadow-split-view-resizer");
-    this._resizerElement.createChild("div", "shadow-split-view-resizer-border");
 
     this._resizerWidget = new WebInspector.ResizerWidget();
     this._resizerWidget.setEnabled(true);
@@ -119,7 +118,7 @@ WebInspector.SplitView.prototype = {
         this._isVertical = isVertical;
 
         delete this._resizerElementSize;
-        this._sidebarSize = -1;
+        this._sidebarSizeDIP = -1;
         this._restoreSidebarSizeFromSettings();
         if (this._shouldSaveShowMode)
             this._restoreAndApplyShowModeFromSettings();
@@ -134,8 +133,8 @@ WebInspector.SplitView.prototype = {
      */
     _updateLayout: function(animate)
     {
-        delete this._totalSize; // Lazy update.
-        delete this._totalSizeOtherDimension;
+        delete this._totalSizeCSS; // Lazy update.
+        delete this._totalSizeOtherDimensionCSS;
 
         // Remove properties that might affect total size calculation.
         this._mainElement.style.removeProperty("width");
@@ -143,7 +142,7 @@ WebInspector.SplitView.prototype = {
         this._sidebarElement.style.removeProperty("width");
         this._sidebarElement.style.removeProperty("height");
 
-        this._innerSetSidebarSize(this._preferredSidebarSize(), !!animate);
+        this._innerSetSidebarSizeDIP(this._preferredSidebarSizeDIP(), !!animate);
     },
 
     /**
@@ -256,7 +255,7 @@ WebInspector.SplitView.prototype = {
      */
     preferredSidebarSize: function()
     {
-        return this._preferredSidebarSize();
+        return this._preferredSidebarSizeDIP();
     },
 
     /**
@@ -329,7 +328,7 @@ WebInspector.SplitView.prototype = {
             this.doResize();
         }
 
-        this._sidebarSize = -1;
+        this._sidebarSizeDIP = -1;
         this.setResizable(false);
     },
 
@@ -374,7 +373,7 @@ WebInspector.SplitView.prototype = {
         // Order views in DOM properly.
         this.setSecondIsSidebar(this._secondIsSidebar);
 
-        this._sidebarSize = -1;
+        this._sidebarSizeDIP = -1;
         this.setResizable(true);
         this._updateShowMode(WebInspector.SplitView.ShowMode.Both);
         this._updateLayout(animate);
@@ -401,10 +400,10 @@ WebInspector.SplitView.prototype = {
      */
     setSidebarSize: function(size)
     {
-        size *= WebInspector.zoomManager.zoomFactor();
-        this._savedSidebarSize = size;
+        var sizeDIP = WebInspector.zoomManager.cssToDIP(size);
+        this._savedSidebarSizeDIP = sizeDIP;
         this._saveSetting();
-        this._innerSetSidebarSize(size, false, true);
+        this._innerSetSidebarSizeDIP(sizeDIP, false, true);
     },
 
     /**
@@ -412,8 +411,8 @@ WebInspector.SplitView.prototype = {
      */
     sidebarSize: function()
     {
-        var size = Math.max(0, this._sidebarSize);
-        return size / WebInspector.zoomManager.zoomFactor();
+        var sizeDIP = Math.max(0, this._sidebarSizeDIP);
+        return WebInspector.zoomManager.dipToCSS(sizeDIP);
     },
 
     /**
@@ -422,11 +421,11 @@ WebInspector.SplitView.prototype = {
      */
     _totalSizeDIP: function()
     {
-        if (!this._totalSize) {
-            this._totalSize = this._isVertical ? this.contentElement.offsetWidth : this.contentElement.offsetHeight;
-            this._totalSizeOtherDimension = this._isVertical ? this.contentElement.offsetHeight : this.contentElement.offsetWidth;
+        if (!this._totalSizeCSS) {
+            this._totalSizeCSS = this._isVertical ? this.contentElement.offsetWidth : this.contentElement.offsetHeight;
+            this._totalSizeOtherDimensionCSS = this._isVertical ? this.contentElement.offsetHeight : this.contentElement.offsetWidth;
         }
-        return this._totalSize * WebInspector.zoomManager.zoomFactor();
+        return WebInspector.zoomManager.cssToDIP(this._totalSizeCSS);
     },
 
     /**
@@ -442,17 +441,17 @@ WebInspector.SplitView.prototype = {
     },
 
     /**
-     * @param {number} size
+     * @param {number} sizeDIP
      * @param {boolean} animate
      * @param {boolean=} userAction
      */
-    _innerSetSidebarSize: function(size, animate, userAction)
+    _innerSetSidebarSizeDIP: function(sizeDIP, animate, userAction)
     {
         if (this._showMode !== WebInspector.SplitView.ShowMode.Both || !this.isShowing())
             return;
 
-        size = this._applyConstraints(size, userAction);
-        if (this._sidebarSize === size)
+        sizeDIP = this._applyConstraints(sizeDIP, userAction);
+        if (this._sidebarSizeDIP === sizeDIP)
             return;
 
         if (!this._resizerElementSize)
@@ -462,22 +461,22 @@ WebInspector.SplitView.prototype = {
 
         this._removeAllLayoutProperties();
 
-        // this._totalSize is available below since we successfully applied constraints.
-        var sidebarSizeValue = (size / WebInspector.zoomManager.zoomFactor()) + "px";
-        var mainSizeValue = (this._totalSize - size / WebInspector.zoomManager.zoomFactor()) + "px";
+        // this._totalSizeDIP is available below since we successfully applied constraints.
+        var sidebarSizeValue = WebInspector.zoomManager.dipToCSS(sizeDIP) + "px";
+        var mainSizeValue = (this._totalSizeCSS - WebInspector.zoomManager.dipToCSS(sizeDIP)) + "px";
         this._sidebarElement.style.flexBasis = sidebarSizeValue;
 
         // Make both sides relayout boundaries.
         if (this._isVertical) {
             this._sidebarElement.style.width = sidebarSizeValue;
             this._mainElement.style.width = mainSizeValue;
-            this._sidebarElement.style.height = this._totalSizeOtherDimension + "px";
-            this._mainElement.style.height = this._totalSizeOtherDimension + "px";
+            this._sidebarElement.style.height = this._totalSizeOtherDimensionCSS + "px";
+            this._mainElement.style.height = this._totalSizeOtherDimensionCSS + "px";
         } else {
             this._sidebarElement.style.height = sidebarSizeValue;
             this._mainElement.style.height = mainSizeValue;
-            this._sidebarElement.style.width = this._totalSizeOtherDimension + "px";
-            this._mainElement.style.width = this._totalSizeOtherDimension + "px";
+            this._sidebarElement.style.width = this._totalSizeOtherDimensionCSS + "px";
+            this._mainElement.style.width = this._totalSizeOtherDimensionCSS + "px";
         }
 
         // Position resizer.
@@ -499,14 +498,14 @@ WebInspector.SplitView.prototype = {
             }
         }
 
-        this._sidebarSize = size;
+        this._sidebarSizeDIP = sizeDIP;
 
         // Force layout.
 
         if (animate) {
             this._animate(false);
         } else {
-            // No need to recalculate this._sidebarSize and this._totalSize again.
+            // No need to recalculate this._sidebarSizeDIP and this._totalSizeDIP again.
             this.doResize();
             this.dispatchEventToListeners(WebInspector.SplitView.Events.SidebarSizeChanged, this.sidebarSize());
         }
@@ -527,9 +526,8 @@ WebInspector.SplitView.prototype = {
         else
             animatedMarginPropertyName = this._secondIsSidebar ? "margin-bottom" : "margin-top";
 
-        var zoomFactor = WebInspector.zoomManager.zoomFactor();
-        var marginFrom = reverse ? "0" : "-" + (this._sidebarSize / zoomFactor) + "px";
-        var marginTo = reverse ? "-" + (this._sidebarSize / zoomFactor) + "px" : "0";
+        var marginFrom = reverse ? "0" : "-" + WebInspector.zoomManager.dipToCSS(this._sidebarSizeDIP) + "px";
+        var marginTo = reverse ? "-" + WebInspector.zoomManager.dipToCSS(this._sidebarSizeDIP) + "px" : "0";
 
         // This order of things is important.
         // 1. Resize main element early and force layout.
@@ -618,6 +616,7 @@ WebInspector.SplitView.prototype = {
         // Allow sidebar to be less than preferred by explicit user action.
         if (sidebarSize < preferredSidebarSize)
             preferredSidebarSize = Math.max(sidebarSize, minSidebarSize);
+        preferredSidebarSize += zoomFactor; // 1 css pixel for splitter border.
 
         constraints = this._mainView ? this._mainView.constraints() : new Constraints();
         var minMainSize = this.isVertical() ? constraints.minimum.width : constraints.minimum.height;
@@ -688,11 +687,11 @@ WebInspector.SplitView.prototype = {
         var sidebarConstraints = this._sidebarView ? this._sidebarView.constraints() : new Constraints();
         var min = WebInspector.SplitView.MinPadding;
         if (this._isVertical) {
-            mainConstraints = mainConstraints.widthToMax(min);
+            mainConstraints = mainConstraints.widthToMax(min).addWidth(1); // 1 for splitter
             sidebarConstraints = sidebarConstraints.widthToMax(min);
             return mainConstraints.addWidth(sidebarConstraints).heightToMax(sidebarConstraints);
         } else {
-            mainConstraints = mainConstraints.heightToMax(min);
+            mainConstraints = mainConstraints.heightToMax(min).addHeight(1); // 1 for splitter
             sidebarConstraints = sidebarConstraints.heightToMax(min);
             return mainConstraints.widthToMax(sidebarConstraints).addHeight(sidebarConstraints);
         }
@@ -703,7 +702,7 @@ WebInspector.SplitView.prototype = {
      */
     _onResizeStart: function(event)
     {
-        this._resizeStartSize = this._sidebarSize;
+        this._resizeStartSizeDIP = this._sidebarSizeDIP;
     },
 
     /**
@@ -711,17 +710,17 @@ WebInspector.SplitView.prototype = {
      */
     _onResizeUpdate: function(event)
     {
-        var cssOffset = event.data.currentPosition - event.data.startPosition;
-        var dipOffset = cssOffset * WebInspector.zoomManager.zoomFactor();
-        var newSize = this._secondIsSidebar ? this._resizeStartSize - dipOffset : this._resizeStartSize + dipOffset;
-        var constrainedSize = this._applyConstraints(newSize, true);
-        this._savedSidebarSize = constrainedSize;
+        var offset = event.data.currentPosition - event.data.startPosition;
+        var offsetDIP = WebInspector.zoomManager.cssToDIP(offset);
+        var newSizeDIP = this._secondIsSidebar ? this._resizeStartSizeDIP - offsetDIP : this._resizeStartSizeDIP + offsetDIP;
+        var constrainedSizeDIP = this._applyConstraints(newSizeDIP, true);
+        this._savedSidebarSizeDIP = constrainedSizeDIP;
         this._saveSetting();
-        this._innerSetSidebarSize(constrainedSize, false, true);
+        this._innerSetSidebarSizeDIP(constrainedSizeDIP, false, true);
         if (this.isVertical())
-            this._savedVerticalMainSize = this._totalSizeDIP() - this._sidebarSize;
+            this._savedVerticalMainSize = this._totalSizeDIP() - this._sidebarSizeDIP;
         else
-            this._savedHorizontalMainSize = this._totalSizeDIP() - this._sidebarSize;
+            this._savedHorizontalMainSize = this._totalSizeDIP() - this._sidebarSizeDIP;
     },
 
     /**
@@ -729,7 +728,7 @@ WebInspector.SplitView.prototype = {
      */
     _onResizeEnd: function(event)
     {
-        delete this._resizeStartSize;
+        delete this._resizeStartSizeDIP;
     },
 
     hideDefaultResizer: function()
@@ -800,9 +799,9 @@ WebInspector.SplitView.prototype = {
     /**
      * @return {number}
      */
-    _preferredSidebarSize: function()
+    _preferredSidebarSizeDIP: function()
     {
-        var size = this._savedSidebarSize;
+        var size = this._savedSidebarSizeDIP;
         if (!size) {
             size = this._isVertical ? this._defaultSidebarWidth : this._defaultSidebarHeight;
             // If we have default value in percents, calculate it on first use.
@@ -815,7 +814,7 @@ WebInspector.SplitView.prototype = {
     _restoreSidebarSizeFromSettings: function()
     {
         var settingForOrientation = this._settingForOrientation();
-        this._savedSidebarSize = settingForOrientation ? settingForOrientation.size : 0;
+        this._savedSidebarSizeDIP = settingForOrientation ? settingForOrientation.size : 0;
     },
 
     _restoreAndApplyShowModeFromSettings: function()
@@ -851,7 +850,7 @@ WebInspector.SplitView.prototype = {
         var state = setting.get();
         var orientationState = (this._isVertical ? state.vertical : state.horizontal) || {};
 
-        orientationState.size = this._savedSidebarSize;
+        orientationState.size = this._savedSidebarSizeDIP;
         if (this._shouldSaveShowMode)
             orientationState.showMode = this._savedShowMode;
 
@@ -865,7 +864,7 @@ WebInspector.SplitView.prototype = {
     _forceUpdateLayout: function()
     {
         // Force layout even if sidebar size does not change.
-        this._sidebarSize = -1;
+        this._sidebarSizeDIP = -1;
         this._updateLayout();
     },
 

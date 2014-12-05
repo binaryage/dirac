@@ -73,18 +73,24 @@
     pointer-events: none;
 }
 
-.shadow-split-view.vbox > .shadow-split-view-resizer > .shadow-split-view-resizer-border {
-    width: 100%;
-    margin-top: 3px;
-    height: 1px;
+.shadow-split-view.vbox > .shadow-split-view-sidebar:not(.maximized) {
+    border: 0;
     border-top: 1px solid rgb(64%, 64%, 64%);
 }
 
-.shadow-split-view.hbox > .shadow-split-view-resizer > .shadow-split-view-resizer-border {
-    height: 100%;
-    margin-left: 3px;
-    width: 1px;
+.shadow-split-view.vbox.shadow-split-view-first-is-sidebar > .shadow-split-view-sidebar:not(.maximized) {
+    border: 0;
+    border-bottom: 1px solid rgb(64%, 64%, 64%);
+}
+
+.shadow-split-view.hbox > .shadow-split-view-sidebar:not(.maximized) {
+    border: 0;
     border-left: 1px solid rgb(64%, 64%, 64%);
+}
+
+.shadow-split-view.hbox.shadow-split-view-first-is-sidebar > .shadow-split-view-sidebar:not(.maximized) {
+    border: 0;
+    border-right: 1px solid rgb(64%, 64%, 64%);
 }
 
 .shadow-split-view button.sidebar-show-hide-button {
