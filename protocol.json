@@ -3300,6 +3300,11 @@
                 "description": "Resumes JavaScript execution."
             },
             {
+                "name": "stepIntoAsync",
+                "description": "Steps into the first async operation handler that was scheduled by or after the current statement.",
+                "hidden": true
+            },
+            {
                 "name": "searchInContent",
                 "parameters": [
                     { "name": "scriptId", "$ref": "ScriptId", "description": "Id of the script to search in." },
