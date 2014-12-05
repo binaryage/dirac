@@ -262,8 +262,9 @@ WebInspector.TracingTimelineFrameModel.prototype = {
         var eventNames = WebInspector.TimelineModel.RecordType;
 
         if (event.name === eventNames.SetLayerTreeId) {
-            if (this._sessionId === event.args["sessionId"])
-                this._layerTreeId = event.args["layerTreeId"];
+            var sessionId = event.args["sessionId"] || event.args["data"]["sessionId"];
+            if (this._sessionId === sessionId)
+                this._layerTreeId = event.args["layerTreeId"] || event.args["data"]["layerTreeId"];
         } else if (event.name === eventNames.TracingStartedInPage) {
             this._mainThread = event.thread;
         } else if (event.phase === WebInspector.TracingModel.Phase.SnapshotObject && event.name === eventNames.LayerTreeHostImplSnapshot && parseInt(event.id, 0) === this._layerTreeId) {

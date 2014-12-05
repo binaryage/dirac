@@ -386,7 +386,7 @@ WebInspector.TracingModel.prototype = {
             WebInspector.console.error(WebInspector.TracingModel.DevToolsMetadataEvent.TracingStartedInPage + " event not found.");
             return;
         }
-        var sessionId = this._devtoolsPageMetadataEvents[0].args["sessionId"];
+        var sessionId = this._devtoolsPageMetadataEvents[0].args["sessionId"] || this._devtoolsPageMetadataEvents[0].args["data"]["sessionId"];
         this._sessionId = sessionId;
 
         var mismatchingIds = {};

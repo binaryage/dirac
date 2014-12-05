@@ -665,6 +665,7 @@ WebInspector.TimelineModel.prototype = {
             var endTime = Infinity;
             if (i + 1 < length)
                 endTime = metaEvents[i + 1].startTime;
+            this._currentPage = metaEvent.args["data"] && metaEvent.args["data"]["page"];
 
             for (var thread of process.sortedThreads()) {
                 if (thread.name() === "WebCore: Worker" && !workerMetadataEvents.some(function(e) { return e.args["data"]["workerThreadId"] === thread.id(); }))
@@ -838,6 +839,7 @@ WebInspector.TimelineModel.prototype = {
         this._eventStack = [];
         this._hadCommitLoad = false;
         this._firstCompositeLayers = null;
+        this._currentPage = null;
     },
 
     /**
@@ -879,7 +881,8 @@ WebInspector.TimelineModel.prototype = {
             var event = events[i];
             if (endTime && event.startTime >= endTime)
                 break;
-            this._processEvent(event);
+            if (!this._processEvent(event))
+                continue;
             threadEvents.push(event);
             this._inspectedTargetEvents.push(event);
         }
@@ -887,6 +890,7 @@ WebInspector.TimelineModel.prototype = {
 
     /**
      * @param {!WebInspector.TracingModel.Event} event
+     * @return {boolean}
      */
     _processEvent: function(event)
     {
@@ -1003,7 +1007,7 @@ WebInspector.TimelineModel.prototype = {
             break;
 
         case recordTypes.SetLayerTreeId:
-            this._inspectedTargetLayerTreeId = event.args["layerTreeId"];
+            this._inspectedTargetLayerTreeId = event.args["layerTreeId"] || event.args["data"]["layerTreeId"];
             break;
 
         case recordTypes.Paint:
@@ -1059,7 +1063,17 @@ WebInspector.TimelineModel.prototype = {
             event.imageURL = paintImageEvent.imageURL;
             break;
 
+        case recordTypes.MarkDOMContent:
+        case recordTypes.MarkLoad:
+            var page = event.args["data"] && event.args["data"]["page"];
+            if (page && page !== this._currentPage)
+                return false;
+            break;
+
         case recordTypes.CommitLoad:
+            var page = event.args["data"] && event.args["data"]["page"];
+            if (page && page !== this._currentPage)
+                return false;
             if (!event.args["data"]["isMainFrame"])
                 break;
             this._hadCommitLoad = true;
@@ -1071,6 +1085,7 @@ WebInspector.TimelineModel.prototype = {
                 this._firstCompositeLayers = event;
             break;
         }
+        return true;
     },
 
     /**
