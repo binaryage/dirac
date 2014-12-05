@@ -545,13 +545,6 @@ iframe.panel.extension {
     margin-top: 1px;
 }
 
-.events-pane .section {
-    margin: 0;
-}
-.events-pane .section:not(:nth-of-type(1)) {
-    border-top: 1px solid rgb(231, 231, 231);
-}
-
 .section > .header {
     padding: 0 8px 0 5px;
     min-height: 18px;
@@ -588,26 +581,22 @@ iframe.panel.extension {
     background-position: -20px -96px;
 }
 
-.section > .header .title,
-.event-bar .header .title {
+.section > .header .title {
     font-weight: normal;
     word-wrap: break-word;
     white-space: normal;
     line-height: 18px;
 }
 
-.section > .header label,
-.event-bar .header label {
+.section > .header label {
     display: none;
 }
 
-.section.expanded .header label,
-.event-bar.expanded .header label {
+.section.expanded .header label {
     display: inline;
 }
 
-.section > .header .subtitle,
-.event-bar .header .subtitle {
+.section > .header .subtitle {
     float: right;
     margin-left: 5px;
     max-width: 55%;
@@ -619,26 +608,12 @@ iframe.panel.extension {
     color: inherit;
 }
 
-.section .properties,
-.event-bar .event-properties {
+.section > .properties {
     display: none;
 }
 
-.section.expanded .properties,
-.event-bar.expanded .event-properties {
+.section.expanded > .properties {
     display: block;
-}
-
-.event-bar .event-properties {
-    padding-left: 16px;
-}
-
-.section.no-affect .properties li {
-    opacity: 0.5;
-}
-
-.section.no-affect .properties li.editing {
-    opacity: 1.0;
 }
 
 .properties-tree {
@@ -762,8 +737,7 @@ li.editing .enabled-button {
     text-overflow: clip;
 }
 
-.section .properties .name,
-.event-properties .name {
+.section .properties .name {
     color: rgb(136, 19, 145);
     flex-shrink: 0;
 }
@@ -780,18 +754,15 @@ li.editing .enabled-button {
     color: red;
 }
 
-.section .properties .number,
-.event-properties .number {
+.section .properties .number {
     color: blue;
 }
 
-.section .properties .keyword,
-.event-properties .keyword {
+.section .properties .keyword {
     color: rgb(136, 19, 79);
 }
 
-.section .properties .color,
-.event-properties .color {
+.section .properties .color {
     color: rgb(118, 15, 21);
 }
 

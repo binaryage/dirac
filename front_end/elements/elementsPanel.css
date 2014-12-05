@@ -455,12 +455,12 @@
     display: block;
 }
 
-.event-bar {
+.events-pane .section.event-bar {
     position: relative;
     margin-left: 10px;
 }
 
-.event-bar:first-child {
+.events-pane .section.event-bar:first-child {
     margin-top: 1px;
 }
 
@@ -717,4 +717,23 @@ li.child-editing .styles-clipboard-only {
 label.checkbox-with-label {
     display: flex;
     -webkit-user-select: none;
+}
+
+.events-pane .section:not(:first-of-type) {
+    border-top: 1px solid rgb(231, 231, 231);
+}
+
+.event-bar .header .title {
+    font-weight: normal;
+    word-wrap: break-word;
+    white-space: normal;
+    line-height: 18px;
+}
+
+.events-pane .section {
+    margin: 0;
+}
+
+.event-bar .event-properties {
+    padding-left: 16px;
 }
