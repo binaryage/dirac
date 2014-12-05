@@ -77,6 +77,7 @@ WebInspector.Settings = function()
     this.messageURLFilters = this.createSetting("messageURLFilters", {});
     this.networkHideDataURL = this.createSetting("networkHideDataURL", false);
     this.networkResourceTypeFilters = this.createSetting("networkResourceTypeFilters", {});
+    this.networkShowRequestTimingInTimeline = this.createSetting("networkShowRequestTimingInTimeline", false);
     this.messageLevelFilters = this.createSetting("messageLevelFilters", {});
     this.splitVerticallyWhenDockedToRight = this.createSetting("splitVerticallyWhenDockedToRight", true);
     this.visiblePanels = this.createSetting("visiblePanels", {});

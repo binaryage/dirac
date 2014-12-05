@@ -350,16 +350,56 @@
     min-width: 2px;
     border-width: 1px;
     border-style: solid;
-    border-color: hsl(0, 0%, 60%);
-    background: linear-gradient(0deg, hsl(0, 0%, 65%), hsl(0, 0%, 80%));
+    border-color: hsl(0, 0%, 75%);
+    background: linear-gradient(0deg, hsl(0, 0%, 85%), hsl(0, 0%, 95%));
 }
 
-.network-graph-bar.waiting {
+.network-graph-bar.request-timing {
+    border-right-width: 0;
+    margin: 4px 0;
+}
+
+.network-graph-bar.request-timing:last-child {
+    border-right-width: 1px;
+}
+
+.network-graph-bar.waiting:not(.request-timing) {
     opacity: 0.5;
 }
 
 /* Resource categories */
 
+.network-graph-bar.request-timing.receiving {
+    border-color: hsl(210, 49%, 60%);
+    background: linear-gradient(0deg, hsl(210, 72%, 65%), hsl(210, 100%, 80%));
+    margin: 0;
+}
+
+.network-graph-bar.request-timing.waiting {
+    border-color: hsl(120, 49%, 60%);
+    background: linear-gradient(0deg, hsl(120, 72%, 65%), hsl(120, 100%, 80%));
+    margin: 2px 0;
+}
+
+.network-graph-bar.request-timing.connecting {
+    border-color: hsl(30, 49%, 60%);
+    background: linear-gradient(0deg, hsl(30, 72%, 65%), hsl(30, 100%, 80%));
+}
+
+.network-graph-bar.request-timing.ssl {
+    border-color: hsl(270, 31%, 60%);
+    background: linear-gradient(0deg, hsl(270, 46%, 65%), hsl(270, 64%, 80%));
+}
+
+.network-graph-bar.request-timing.dns {
+    border-color: hsl(180, 31%, 60%);
+    background: linear-gradient(0deg, hsl(180, 46%, 65%), hsl(180, 64%, 80%));
+}
+
+.network-graph-bar.request-timing.proxy {
+    border-color: hsl(60, 31%, 60%);
+    background: linear-gradient(0deg, hsl(60, 46%, 65%), hsl(60, 64%, 80%));
+}
 
 .network-graph-bar.cached {
     background: hsl(0, 0%, 90%);

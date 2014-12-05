@@ -75,6 +75,8 @@ WebInspector.NetworkLogView = function(filterBar, coulmnsVisibilitySetting)
     this._initializeView();
     this._toggleRecordButton(true);
 
+    WebInspector.settings.networkShowRequestTimingInTimeline.addChangeListener(this._invalidateAllItems, this);
+
     WebInspector.targetManager.observeTargets(this);
     WebInspector.targetManager.addModelListener(WebInspector.NetworkManager, WebInspector.NetworkManager.EventTypes.RequestStarted, this._onRequestStarted, this);
     WebInspector.targetManager.addModelListener(WebInspector.NetworkManager, WebInspector.NetworkManager.EventTypes.RequestUpdated, this._onRequestUpdated, this);
@@ -696,6 +698,7 @@ WebInspector.NetworkLogView.prototype = {
         var requestIds = this._nodesByRequestId.keysArray();
         for (var i = 0; i < requestIds.length; ++i)
             this._staleRequestIds[requestIds[i]] = true;
+        this.refresh();
     },
 
     /**
@@ -723,7 +726,6 @@ WebInspector.NetworkLogView.prototype = {
             this._timelineGrid.showEventDividers();
 
         this._invalidateAllItems();
-        this.refresh();
     },
 
     _createStatusbarButtons: function()
@@ -1600,7 +1602,6 @@ WebInspector.NetworkLogView.prototype = {
     {
         this._removeAllHighlights();
         this._invalidateAllItems();
-        this.refresh();
     },
 
     /**

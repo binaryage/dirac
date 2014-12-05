@@ -143,6 +143,7 @@ WebInspector.Main.prototype = {
         Runtime.experiments.register("layersPanel", "Layers panel");
         Runtime.experiments.register("privateScriptInspection", "Private script inspection");
         Runtime.experiments.register("promiseTracker", "Enable Promise inspection");
+        Runtime.experiments.register("showRequestTimingInNetworkTimeline", "Show request timing directly in Network timeline");
         Runtime.experiments.register("stepIntoAsync", "Enable step into async");
         Runtime.experiments.register("timelinePowerProfiler", "Timeline power profiler");
         Runtime.experiments.register("timelineJSCPUProfile", "Timeline with JS sampling");

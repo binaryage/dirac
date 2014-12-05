@@ -16,6 +16,14 @@
             "type": "@WebInspector.Revealer",
             "contextTypes": ["WebInspector.NetworkRequest"],
             "className": "WebInspector.NetworkPanel.RequestRevealer"
+        },
+        {
+            "type": "ui-setting",
+            "section": "Network",
+            "title": "Show request timing directly in timeline",
+            "settingName": "networkShowRequestTimingInTimeline",
+            "settingType": "checkbox",
+            "experiment": "showRequestTimingInNetworkTimeline"
         }
     ],
     "dependencies": ["source_frame"],
