@@ -215,7 +215,7 @@ WebInspector.GenericSettingsTab = function()
 
     this._populateSectionsFromExtensions();
 
-    var restoreDefaults = this._appendSection().createChild("input", "", "text-button");
+    var restoreDefaults = this._appendSection().createChild("button", "", "text-button");
     restoreDefaults.textContent = WebInspector.UIString("Restore defaults and reload");
     restoreDefaults.addEventListener("click", restoreAndReload, false);
 
