@@ -32,20 +32,12 @@
 }
 
 .network-close-button {
-    position: absolute;
-    top: 4px;
-    left: 5px;
-    z-index: 10;
-}
-
-.network-details-view-tall-header .network-close-button {
-    top: 8px;
+    margin: auto -1px auto 4px;
 }
 
 .network-details-view .network-item-view::shadow .tabbed-pane-header {
     flex: 0 0 23px;
     padding-top: 0;
-    padding-left: 13px;
     white-space: nowrap;
 }
 

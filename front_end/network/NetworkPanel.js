@@ -80,7 +80,7 @@ WebInspector.NetworkPanel = function()
     this._networkLogView.addEventListener(WebInspector.NetworkLogView.EventTypes.SearchCountUpdated, this._onSearchCountUpdated, this);
     this._networkLogView.addEventListener(WebInspector.NetworkLogView.EventTypes.SearchIndexUpdated, this._onSearchIndexUpdated, this);
 
-    this._closeButtonElement = this._detailsView.element.createChild("div", "close-button");
+    this._closeButtonElement = createElementWithClass("div", "close-button");
     this._closeButtonElement.classList.add("network-close-button");
     this._closeButtonElement.addEventListener("click", this._showRequest.bind(this, null), false);
 
@@ -228,6 +228,7 @@ WebInspector.NetworkPanel.prototype = {
 
         if (request) {
             this._networkItemView = new WebInspector.NetworkItemView(request);
+            this._networkItemView.insertBeforeTabStrip(this._closeButtonElement);
             this._networkItemView.show(this._detailsView.element);
         }
 
