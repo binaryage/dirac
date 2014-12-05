@@ -106,10 +106,6 @@ WebInspector.TimelinePanel = function()
     this._stackView.show(this._searchableView.element);
     this._stackView.element.classList.add("timeline-view-stack");
 
-    WebInspector.dockController.addEventListener(WebInspector.DockController.Events.DockSideChanged, this._dockSideChanged.bind(this));
-    WebInspector.settings.splitVerticallyWhenDockedToRight.addChangeListener(this._dockSideChanged.bind(this));
-    this._dockSideChanged();
-
     this._onModeChanged();
     this._detailsSplitView.show(this.element);
     WebInspector.targetManager.addEventListener(WebInspector.TargetManager.Events.SuspendStateChanged, this._onSuspendStateChanged, this);
@@ -154,17 +150,6 @@ WebInspector.TimelinePanel.prototype = {
             style.textContent = Object.values(categories).map(WebInspector.TimelineUIUtils.createStyleRuleForCategory).join("\n");
             this.element.ownerDocument.head.appendChild(style);
         }
-    },
-
-    _dockSideChanged: function()
-    {
-        var dockSide = WebInspector.dockController.dockSide();
-        var vertically = false;
-        if (dockSide === WebInspector.DockController.State.DockedToBottom)
-            vertically = true;
-        else
-            vertically = !WebInspector.settings.splitVerticallyWhenDockedToRight.get();
-        this._detailsSplitView.setVertical(vertically);
     },
 
     /**
