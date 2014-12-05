@@ -76,7 +76,7 @@ WebInspector.ElementsTreeOutline = function(target, omitRootDOMNode, selectEnabl
     this._visible = false;
     this._pickNodeMode = false;
 
-    this._setPseudoClassCallback = setPseudoClassCallback;
+    this.setPseudoClassCallback = setPseudoClassCallback;
     this._createNodeDecorators();
 
     this._popoverHelper = new WebInspector.PopoverHelper(this._element, this._getPopoverAnchor.bind(this), this._showPopover.bind(this));
@@ -118,6 +118,11 @@ WebInspector.ElementsTreeOutline.MappedCharToEntity = {
 }
 
 WebInspector.ElementsTreeOutline.prototype = {
+    focus: function()
+    {
+        this._element.focus();
+    },
+
     /**
      * @param {boolean} wrap
      */
@@ -136,6 +141,14 @@ WebInspector.ElementsTreeOutline.prototype = {
     },
 
     /**
+     * @return {boolean}
+     */
+    pickNodeMode: function()
+    {
+        return this._pickNodeMode;
+    },
+
+    /**
      * @param {boolean} value
      */
     setPickNodeMode: function(value)
@@ -147,8 +160,9 @@ WebInspector.ElementsTreeOutline.prototype = {
     /**
      * @param {!Element} element
      * @param {?WebInspector.DOMNode} node
+     * @return {boolean}
      */
-    _handlePickNode: function(element, node)
+    handlePickNode: function(element, node)
     {
         if (!this._pickNodeMode)
             return false;
@@ -178,6 +192,22 @@ WebInspector.ElementsTreeOutline.prototype = {
     },
 
     /**
+     * @param {?WebInspector.InplaceEditor.Controller} multilineEditing
+     */
+    setMultilineEditing: function(multilineEditing)
+    {
+        this._multilineEditing = multilineEditing;
+    },
+
+    /**
+     * @return {number}
+     */
+    visibleWidth: function()
+    {
+        return this._visibleWidth;
+    },
+
+    /**
      * @param {number} width
      */
     setVisibleWidth: function(width)
@@ -185,6 +215,14 @@ WebInspector.ElementsTreeOutline.prototype = {
         this._visibleWidth = width;
         if (this._multilineEditing)
             this._multilineEditing.setWidth(this._visibleWidth);
+    },
+
+    /**
+     * @return {!Array<!WebInspector.ElementsTreeOutline.ElementDecorator>}
+     */
+    nodeDecorators: function()
+    {
+        return this._nodeDecorators;
     },
 
     _createNodeDecorators: function()
@@ -226,7 +264,7 @@ WebInspector.ElementsTreeOutline.prototype = {
     /**
      * @param {!WebInspector.DOMNode} removedNode
      */
-    _resetClipboardIfNeeded: function(removedNode)
+    resetClipboardIfNeeded: function(removedNode)
     {
         if (this._clipboardNodeData && this._clipboardNodeData.node === removedNode)
             this._setClipboardData(null);
@@ -255,14 +293,14 @@ WebInspector.ElementsTreeOutline.prototype = {
         event.clipboardData.clearData();
         event.preventDefault();
 
-        this._performCopyOrCut(isCut, targetNode);
+        this.performCopyOrCut(isCut, targetNode);
     },
 
     /**
      * @param {boolean} isCut
      * @param {?WebInspector.DOMNode} node
      */
-    _performCopyOrCut: function(isCut, node)
+    performCopyOrCut: function(isCut, node)
     {
         if (isCut && (node.isShadowRoot() || node.ancestorUserAgentShadowRoot()))
             return;
@@ -275,7 +313,7 @@ WebInspector.ElementsTreeOutline.prototype = {
      * @param {!WebInspector.DOMNode} targetNode
      * @return {boolean}
      */
-    _canPaste: function(targetNode)
+    canPaste: function(targetNode)
     {
         if (targetNode.isShadowRoot() || targetNode.ancestorUserAgentShadowRoot())
             return false;
@@ -295,9 +333,9 @@ WebInspector.ElementsTreeOutline.prototype = {
     /**
      * @param {!WebInspector.DOMNode} targetNode
      */
-    _pasteNode: function(targetNode)
+    pasteNode: function(targetNode)
     {
-        if (this._canPaste(targetNode))
+        if (this.canPaste(targetNode))
             this._performPaste(targetNode);
     },
 
@@ -311,7 +349,7 @@ WebInspector.ElementsTreeOutline.prototype = {
             return;
 
         var targetNode = this.selectedDOMNode();
-        if (!targetNode || !this._canPaste(targetNode))
+        if (!targetNode || !this.canPaste(targetNode))
             return;
 
         event.preventDefault();
@@ -357,7 +395,7 @@ WebInspector.ElementsTreeOutline.prototype = {
             return;
         }
 
-        this._updateModifiedNodes();
+        this.runPendingUpdates();
         if (this._selectedDOMNode)
             this._revealAndSelectNode(this._selectedDOMNode, false);
     },
@@ -837,7 +875,7 @@ WebInspector.ElementsTreeOutline.prototype = {
         }
 
         var wasExpanded = this._treeElementBeingDragged.expanded;
-        this._treeElementBeingDragged._node.moveTo(parentNode, anchorNode, this._selectNodeAfterEdit.bind(this, wasExpanded));
+        this._treeElementBeingDragged._node.moveTo(parentNode, anchorNode, this.selectNodeAfterEdit.bind(this, wasExpanded));
 
         delete this._treeElementBeingDragged;
     },
@@ -908,7 +946,16 @@ WebInspector.ElementsTreeOutline.prototype = {
         contextMenu.show();
     },
 
-    _updateModifiedNodes: function()
+    /**
+     * @param {!WebInspector.ElementsTreeElement} treeElement
+     */
+    populateTreeElement: function(treeElement)
+    {
+        if (this._elementsTreeUpdater)
+            this._elementsTreeUpdater._populateTreeElement(treeElement);
+    },
+
+    runPendingUpdates: function()
     {
         if (this._elementsTreeUpdater)
             this._elementsTreeUpdater._updateModifiedNodes();
@@ -929,12 +976,12 @@ WebInspector.ElementsTreeOutline.prototype = {
 
         if (WebInspector.KeyboardShortcut.eventHasCtrlOrMeta(event) && node.parentNode) {
             if (event.keyIdentifier === "Up" && node.previousSibling) {
-                node.moveTo(node.parentNode, node.previousSibling, this._selectNodeAfterEdit.bind(this, treeElement.expanded));
+                node.moveTo(node.parentNode, node.previousSibling, this.selectNodeAfterEdit.bind(this, treeElement.expanded));
                 event.handled = true;
                 return;
             }
             if (event.keyIdentifier === "Down" && node.nextSibling) {
-                node.moveTo(node.parentNode, node.nextSibling.nextSibling, this._selectNodeAfterEdit.bind(this, treeElement.expanded));
+                node.moveTo(node.parentNode, node.nextSibling.nextSibling, this.selectNodeAfterEdit.bind(this, treeElement.expanded));
                 event.handled = true;
                 return;
             }
@@ -957,18 +1004,19 @@ WebInspector.ElementsTreeOutline.prototype = {
      * @param {boolean} wasExpanded
      * @param {?Protocol.Error} error
      * @param {!DOMAgent.NodeId=} nodeId
+     * @return {?WebInspector.ElementsTreeElement} nodeId
      */
-    _selectNodeAfterEdit: function(wasExpanded, error, nodeId)
+    selectNodeAfterEdit: function(wasExpanded, error, nodeId)
     {
         if (error)
-            return;
+            return null;
 
         // Select it and expand if necessary. We force tree update so that it processes dom events and is up to date.
-        this._updateModifiedNodes();
+        this.runPendingUpdates();
 
         var newNode = nodeId ? this._domModel.nodeForId(nodeId) : null;
         if (!newNode)
-            return;
+            return null;
 
         this.selectDOMNode(newNode, true);
 
@@ -1166,14 +1214,6 @@ WebInspector.ElementsTreeElement.animateOnDOMUpdate = function(treeElement)
 
 WebInspector.ElementsTreeElement.prototype = {
     /**
-     * @param {function()} populateCallback
-     */
-    setPopulateCallback: function(populateCallback)
-    {
-        this._populateCallback = populateCallback;
-    },
-
-    /**
      * @return {boolean}
      */
     isClosingTag: function()
@@ -1358,8 +1398,7 @@ WebInspector.ElementsTreeElement.prototype = {
     onpopulate: function()
     {
         this.populated = true;
-        if (this._populateCallback)
-            this._populateCallback();
+        this.treeOutline.populateTreeElement(this);
     },
 
     /**
@@ -1428,7 +1467,7 @@ WebInspector.ElementsTreeElement.prototype = {
     {
         if (this._editing)
             return false;
-        if (this.treeOutline._handlePickNode(this.title, this._node))
+        if (this.treeOutline.handlePickNode(this.title, this._node))
             return true;
         return TreeElement.prototype.select.call(this, omitFocus, selectedByUser);
     },
@@ -1483,12 +1522,6 @@ WebInspector.ElementsTreeElement.prototype = {
 
         if (this._editing)
             return;
-
-        if (this.treeOutline._showInElementsPanelEnabled) {
-            var panel = WebInspector.ElementsPanel.instance();
-            WebInspector.inspectorView.setCurrentPanel(panel);
-            this.treeOutline.selectDOMNode(this._node, true);
-        }
 
         // Prevent selecting the nearest word on double click.
         if (event.detail >= 2)
@@ -1547,7 +1580,7 @@ WebInspector.ElementsTreeElement.prototype = {
         if (this._node.nodeType() != Node.ELEMENT_NODE && this._node.nodeType() != Node.TEXT_NODE)
             return false;
 
-        if (this.treeOutline._pickNodeMode)
+        if (this.treeOutline.pickNodeMode())
             return false;
 
         var textNode = eventTarget.enclosingNodeOrSelfWithClass("webkit-html-text-node");
@@ -1584,7 +1617,7 @@ WebInspector.ElementsTreeElement.prototype = {
         if (attribute && !newAttribute)
             contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Edit attribute" : "Edit Attribute"), this._startEditingAttribute.bind(this, attribute, event.target));
         contextMenu.appendSeparator();
-        if (this.treeOutline._setPseudoClassCallback) {
+        if (this.treeOutline.setPseudoClassCallback) {
             var pseudoSubMenu = contextMenu.appendSubMenuItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Force element state" : "Force Element State"));
             this._populateForcedPseudoStateItems(pseudoSubMenu);
             contextMenu.appendSeparator();
@@ -1609,7 +1642,8 @@ WebInspector.ElementsTreeElement.prototype = {
         var forcedPseudoState = (node ? node.getUserProperty("pseudoState") : null) || [];
         for (var i = 0; i < pseudoClasses.length; ++i) {
             var pseudoClassForced = forcedPseudoState.indexOf(pseudoClasses[i]) >= 0;
-            subMenu.appendCheckboxItem(":" + pseudoClasses[i], this.treeOutline._setPseudoClassCallback.bind(null, node, pseudoClasses[i], !pseudoClassForced), pseudoClassForced, false);
+            var setPseudoClassCallback = this.treeOutline.setPseudoClassCallback.bind(this.treeOutline, node, pseudoClasses[i], !pseudoClassForced);
+            subMenu.appendCheckboxItem(":" + pseudoClasses[i], setPseudoClassCallback, pseudoClassForced, false);
         }
     },
 
@@ -1637,9 +1671,9 @@ WebInspector.ElementsTreeElement.prototype = {
         if (!isShadowRoot) {
             var treeOutline = this.treeOutline;
             contextMenu.appendSeparator();
-            contextMenu.appendItem(WebInspector.UIString("Cut"), treeOutline._performCopyOrCut.bind(treeOutline, true, this._node), !this.hasEditableNode());
-            contextMenu.appendItem(WebInspector.UIString("Copy"), treeOutline._performCopyOrCut.bind(treeOutline, false, this._node));
-            contextMenu.appendItem(WebInspector.UIString("Paste"), treeOutline._pasteNode.bind(treeOutline, this._node), !treeOutline._canPaste(this._node));
+            contextMenu.appendItem(WebInspector.UIString("Cut"), treeOutline.performCopyOrCut.bind(treeOutline, true, this._node), !this.hasEditableNode());
+            contextMenu.appendItem(WebInspector.UIString("Copy"), treeOutline.performCopyOrCut.bind(treeOutline, false, this._node));
+            contextMenu.appendItem(WebInspector.UIString("Paste"), treeOutline.pasteNode.bind(treeOutline, this._node), !treeOutline.canPaste(this._node));
         }
 
         if (isEditable)
@@ -1904,7 +1938,7 @@ WebInspector.ElementsTreeElement.prototype = {
         function dispose()
         {
             delete this._editing;
-            delete this.treeOutline._multilineEditing;
+            this.treeOutline.setMultilineEditing(null);
 
             // Remove editor.
             this.listItemElement.removeChild(this._htmlEditElement);
@@ -1921,7 +1955,7 @@ WebInspector.ElementsTreeElement.prototype = {
 
             this.treeOutline.childrenListElement.parentElement.removeEventListener("mousedown", consume, false);
             this.updateSelection();
-            this.treeOutline._element.focus();
+            this.treeOutline.focus();
         }
 
         var config = new WebInspector.InplaceEditor.Config(commit.bind(this), dispose.bind(this));
@@ -1935,8 +1969,8 @@ WebInspector.ElementsTreeElement.prototype = {
         function markAsBeingEdited(controller)
         {
             this._editing = /** @type {!WebInspector.InplaceEditor.Controller} */ (controller);
-            this._editing.setWidth(this.treeOutline._visibleWidth);
-            this.treeOutline._multilineEditing = this._editing;
+            this._editing.setWidth(this.treeOutline.visibleWidth());
+            this.treeOutline.setMultilineEditing(this._editing);
         }
     },
 
@@ -1958,7 +1992,7 @@ WebInspector.ElementsTreeElement.prototype = {
             if (!moveDirection)
                 return;
 
-            treeOutline._updateModifiedNodes();
+            treeOutline.runPendingUpdates();
 
             // Search for the attribute's position, and then decide where to move to.
             var attributes = this._node.attributes();
@@ -2056,7 +2090,7 @@ WebInspector.ElementsTreeElement.prototype = {
                 cancel();
                 return;
             }
-            var newTreeItem = treeOutline._selectNodeAfterEdit(wasExpanded, error, nodeId);
+            var newTreeItem = treeOutline.selectNodeAfterEdit(wasExpanded, error, nodeId);
             moveToNextAttributeIfNeeded.call(newTreeItem);
         }
 
@@ -2154,8 +2188,9 @@ WebInspector.ElementsTreeElement.prototype = {
         var node = this._node;
         var decoratorMessages = [];
         var parentDecoratorMessages = [];
-        for (var i = 0; i < this.treeOutline._nodeDecorators.length; ++i) {
-            var decorator = this.treeOutline._nodeDecorators[i];
+        var decorators = this.treeOutline.nodeDecorators();
+        for (var i = 0; i < decorators.length; ++i) {
+            var decorator = decorators[i];
             var message = decorator.decorate(node);
             if (message) {
                 decoratorMessages.push(message);
@@ -2559,7 +2594,7 @@ WebInspector.ElementsTreeElement.prototype = {
                 return;
 
             // Select it and expand if necessary. We force tree update so that it processes dom events and is up to date.
-            treeOutline._updateModifiedNodes();
+            treeOutline.runPendingUpdates();
 
             var newNode = parentNode ? parentNode.children()[index] || parentNode : null;
             if (!newNode)
@@ -2812,7 +2847,7 @@ WebInspector.ElementsTreeUpdater.prototype = {
     {
         var node = /** @type {!WebInspector.DOMNode} */ (event.data.node);
         var parentNode = /** @type {!WebInspector.DOMNode} */ (event.data.parent);
-        this._treeOutline._resetClipboardIfNeeded(node);
+        this._treeOutline.resetClipboardIfNeeded(node);
         this._parentNodeModified(parentNode).childrenModified();
         this._updateModifiedNodesSoon();
     },
@@ -2942,7 +2977,7 @@ WebInspector.ElementsTreeUpdater.prototype = {
     {
         var treeElement = new WebInspector.ElementsTreeElement(node, closingTag);
         treeElement.selectable = this._treeOutline._selectEnabled;
-        treeElement.setPopulateCallback(this._populateTreeElement.bind(this, treeElement));
+
         if (!closingTag)
             treeElement.setUpdateInfo(this._updateInfo(node));
         this._updateChildrenDisplayMode(treeElement);
