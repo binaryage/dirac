@@ -79,6 +79,7 @@
         "Spectrum.js",
         "ElementsBreadcrumbs.js",
         "ElementsSidebarPane.js",
+        "ElementsTreeElement.js",
         "ElementsTreeOutline.js",
         "EventListenersSidebarPane.js",
         "MetricsSidebarPane.js",
