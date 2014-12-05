@@ -116,29 +116,35 @@
     border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
-.network-timing-bar.blocking,
+.network-timing-bar.blocking {
+    background-color: hsl(0, 0%, 80%);
+}
+
 .network-timing-bar.proxy {
-    background-color: rgb(205, 205, 205);
+    background-color: hsl(60, 80%, 80%);
 }
 
 .network-timing-bar.dns {
-    background-color: rgb(31, 124, 131);
+    background-color: hsl(180, 80%, 80%);
 }
 
 .network-timing-bar.connecting,
-.network-timing-bar.ssl,
 .network-timing-bar.serviceworker,
 .network-timing-bar.serviceworker-preparation {
-    background-color: rgb(229, 130, 38);
+    background-color: hsl(30, 80%, 80%);
+}
+
+.network-timing-bar.ssl {
+    background-color: hsl(270, 80%, 80%);
 }
 
 .network-timing-bar.sending,
 .network-timing-bar.waiting {
-    background-color: rgb(95, 221, 95);
+    background-color: hsl(120, 80%, 80%);
 }
 
 .network-timing-bar.receiving {
-    background-color: rgb(65, 137, 215);
+    background-color: hsl(210, 80%, 80%);
 }
 
 .resource-timing-view.visible {
