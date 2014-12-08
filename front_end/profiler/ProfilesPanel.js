@@ -389,13 +389,6 @@ WebInspector.ProfileHeader.prototype = {
     },
 
     /**
-     * @param {!Function} callback
-     */
-    load: function(callback)
-    {
-    },
-
-    /**
      * @return {boolean}
      */
     canSaveToFile: function()

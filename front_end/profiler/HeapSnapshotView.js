@@ -485,7 +485,7 @@ WebInspector.HeapSnapshotView.prototype = {
 
     _refreshView: function()
     {
-        this._profile.load(profileCallback.bind(this));
+        this._profile._loadPromise.then(profileCallback.bind(this));
 
         /**
          * @param {!WebInspector.HeapSnapshotProxy} heapSnapshotProxy
@@ -539,17 +539,7 @@ WebInspector.HeapSnapshotView.prototype = {
 
     wasShown: function()
     {
-        // FIXME: load base and current snapshots in parallel
-        this._profile.load(profileCallback.bind(this));
-
-        /**
-         * @this {WebInspector.HeapSnapshotView}
-         */
-        function profileCallback() {
-            this._profile._wasShown();
-            if (this._baseProfile)
-                this._baseProfile.load(function() { });
-        }
+        this._profile._loadPromise.then(this._profile._wasShown.bind(this._profile));
     },
 
     willHide: function()
@@ -711,7 +701,7 @@ WebInspector.HeapSnapshotView.prototype = {
         var dataGrid = /** @type {!WebInspector.HeapSnapshotDiffDataGrid} */ (this._dataGrid);
         // Change set base data source only if main data source is already set.
         if (dataGrid.snapshot)
-            this._baseProfile.load(dataGrid.setBaseDataSource.bind(dataGrid));
+            this._baseProfile._loadPromise.then(dataGrid.setBaseDataSource.bind(dataGrid));
 
         if (!this.currentQuery || !this._searchResults)
             return;
@@ -838,7 +828,7 @@ WebInspector.HeapSnapshotView.prototype = {
         if (!dataGrid || dataGrid.snapshot)
             return;
 
-        this._profile.load(didLoadSnapshot.bind(this));
+        this._profile._loadPromise.then(didLoadSnapshot.bind(this));
 
         /**
          * @this {WebInspector.HeapSnapshotView}
@@ -852,7 +842,7 @@ WebInspector.HeapSnapshotView.prototype = {
             if (dataGrid === this._diffDataGrid) {
                 if (!this._baseProfile)
                     this._baseProfile = this._profiles()[this._baseSelect.selectedIndex()];
-                this._baseProfile.load(didLoadBaseSnaphot.bind(this));
+                this._baseProfile._loadPromise.then(didLoadBaseSnaphot.bind(this));
             }
         }
 
@@ -1425,11 +1415,20 @@ WebInspector.HeapProfileHeader = function(target, type, title, hasAllocationStac
      */
     this._snapshotProxy = null;
     /**
-     * @type {?Array.<function(!WebInspector.HeapSnapshotProxy)>}
+     * @type {!Promise.<!WebInspector.HeapSnapshotProxy>}
      */
-    this._loadCallbacks = [];
+    this._loadPromise = new Promise(loadResolver.bind(this));
     this._totalNumberOfChunks = 0;
     this._bufferedWriter = null;
+
+    /**
+     * @param {function(!WebInspector.HeapSnapshotProxy)} fulfill
+     * @this {WebInspector.HeapProfileHeader}
+     */
+    function loadResolver(fulfill)
+    {
+        this._fulfillLoad = fulfill;
+    }
 }
 
 WebInspector.HeapProfileHeader.prototype = {
@@ -1451,21 +1450,6 @@ WebInspector.HeapProfileHeader.prototype = {
     createView: function(dataDisplayDelegate)
     {
         return new WebInspector.HeapSnapshotView(dataDisplayDelegate, this);
-    },
-
-    /**
-     * @override
-     * @param {function(!WebInspector.HeapSnapshotProxy):void} callback
-     */
-    load: function(callback)
-    {
-        if (this.uid === -1)
-            return;
-        if (this._snapshotProxy) {
-            callback(this._snapshotProxy);
-            return;
-        }
-        this._loadCallbacks.push(callback);
     },
 
     _prepareToLoad: function()
@@ -1579,9 +1563,7 @@ WebInspector.HeapProfileHeader.prototype = {
 
     notifySnapshotReceived: function()
     {
-        for (var i = 0; i < this._loadCallbacks.length; i++)
-            this._loadCallbacks[i](/** @type {!WebInspector.HeapSnapshotProxy} */ (this._snapshotProxy));
-        this._loadCallbacks = null;
+        this._fulfillLoad(this._snapshotProxy);
         this._profileType._snapshotReceived(this);
         if (this.canSaveToFile())
             this.dispatchEventToListeners(WebInspector.ProfileHeader.Events.ProfileReceived);
