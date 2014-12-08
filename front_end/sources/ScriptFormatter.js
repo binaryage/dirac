@@ -90,14 +90,20 @@ WebInspector.ScriptFormatter = function(mimeType, content, callback)
     this._originalContent = content;
 
     this._worker = new WorkerRuntime.Worker("script_formatter_worker");
-    this._worker.onmessage = /** @type {function(this:Worker)} */ (this._didFormatContent.bind(this));
+    this._worker.onmessage = this._didFormatContent.bind(this);
 
-    const method = "format";
-    var parameters = { mimeType: mimeType, content: content, indentString: WebInspector.settings.textEditorIndent.get() };
-    this._worker.postMessage({ method: method, params: parameters });
+    var parameters = {
+        mimeType: mimeType,
+        content: content,
+        indentString: WebInspector.settings.textEditorIndent.get()
+    };
+    this._worker.postMessage({ method: "format", params: parameters });
 }
 
 WebInspector.ScriptFormatter.prototype = {
+    /**
+     * @param {!MessageEvent} event
+     */
     _didFormatContent: function(event)
     {
         this._worker.terminate();
