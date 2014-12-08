@@ -1131,7 +1131,10 @@ WebInspector.TimelineUIUtils.generatePieChart = function(aggregatedStats, selfCa
     var total = 0;
     for (var categoryName in aggregatedStats)
         total += aggregatedStats[categoryName];
-
+    /**
+     * @param {number} value
+     * @return {string}
+     */
     function formatter(value)
     {
         return Number.millisToString(value, true);
@@ -1145,13 +1148,13 @@ WebInspector.TimelineUIUtils.generatePieChart = function(aggregatedStats, selfCa
     rowElement.createTextChild(formatter(total));
 
     // In case of self time, first add self, then children of the same category.
-    if (selfCategory && selfTime) {
-        // Self.
-        pieChart.addSlice(selfTime, selfCategory.fillColorStop1);
-        rowElement = footerElement.createChild("div");
-        rowElement.createChild("div", "timeline-aggregated-category timeline-" + selfCategory.name);
-        rowElement.createTextChild(WebInspector.UIString("%s %s (Self)", formatter(selfTime), selfCategory.title));
-
+    if (selfCategory) {
+        if (selfTime) {
+            pieChart.addSlice(selfTime, selfCategory.fillColorStop1);
+            rowElement = footerElement.createChild("div");
+            rowElement.createChild("div", "timeline-aggregated-category timeline-" + selfCategory.name);
+            rowElement.createTextChild(WebInspector.UIString("%s %s (Self)", formatter(selfTime), selfCategory.title));
+        }
         // Children of the same category.
         var categoryTime = aggregatedStats[selfCategory.name];
         var value = categoryTime - selfTime;
