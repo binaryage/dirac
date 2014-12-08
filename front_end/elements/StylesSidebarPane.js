@@ -61,7 +61,6 @@ WebInspector.StylesSidebarPane = function(computedStylePane, setPseudoClassCallb
     this.element.addEventListener("contextmenu", this._contextMenuEventFired.bind(this), true);
     WebInspector.settings.colorFormat.addChangeListener(this._colorFormatSettingChanged.bind(this));
     WebInspector.settings.showUserAgentStyles.addChangeListener(this._showUserAgentStylesSettingChanged.bind(this));
-    WebInspector.settings.showInheritedComputedStyleProperties.addChangeListener(this._showInheritedComputedStyleChanged.bind(this));
 
     this._createElementStatePane();
     this.bodyElement.appendChild(this._elementStatePane);
@@ -174,11 +173,6 @@ WebInspector.StylesSidebarPane._ignoreErrorsForProperty = function(property) {
 }
 
 WebInspector.StylesSidebarPane.prototype = {
-    _showInheritedComputedStyleChanged: function()
-    {
-        this.update(this._node);
-    },
-
     /**
      * @param {!WebInspector.Event} event
      */
@@ -350,20 +344,11 @@ WebInspector.StylesSidebarPane.prototype = {
 
     /**
      * @param {?WebInspector.DOMNode} node
-     * @param {boolean=} forceUpdate
      */
-    update: function(node, forceUpdate)
+    update: function(node)
     {
         this._spectrumHelper.hide();
         this._discardElementUnderMouse();
-
-        var refresh = false;
-
-        if (forceUpdate)
-            delete this._node;
-
-        if (!forceUpdate && (node === this._node))
-            refresh = true;
 
         if (node && node.nodeType() === Node.TEXT_NODE && node.parentNode)
             node = node.parentNode;
@@ -371,40 +356,29 @@ WebInspector.StylesSidebarPane.prototype = {
         if (node && node.nodeType() !== Node.ELEMENT_NODE)
             node = null;
 
+        this._node = node;
         if (node) {
             this._updateTarget(node.target());
             this._computedStylePane._updateTarget(node.target());
-            this._node = node;
-        } else
-            node = this._node;
+        }
 
-        this._scheduleUpdate(refresh);
+        this._scheduleUpdate();
     },
 
-    /**
-     * @param {boolean=} refresh
-     */
-    _innerUpdate: function(refresh)
+    _innerUpdate: function()
     {
         this._updateForcedPseudoStateInputs();
-
-        if (refresh)
-            this._refreshUpdate();
-        else
-            this._rebuildUpdate();
+        this._rebuildUpdate();
     },
 
-    /**
-     * @param {boolean=} refresh
-     */
-    _scheduleUpdate: function(refresh)
+    _scheduleUpdate: function()
     {
         if (!this.isShowing() && !this._computedStylePane.isShowing()) {
-            this._updateCallbackWhenVisible = this._innerUpdate.bind(this, refresh);
+            this._updateWhenVisible = true;
             return;
         }
 
-        this._innerUpdate(refresh);
+        this._innerUpdate();
     },
 
     /**
@@ -1034,9 +1008,9 @@ WebInspector.StylesSidebarPane.prototype = {
         WebInspector.SidebarPane.prototype.wasShown.call(this);
         this.element.ownerDocument.body.addEventListener("keydown", this._keyDownBound, false);
         this.element.ownerDocument.body.addEventListener("keyup", this._keyUpBound, false);
-        if (this._updateCallbackWhenVisible) {
-            this._updateCallbackWhenVisible.call(null);
-            delete this._updateCallbackWhenVisible;
+        if (this._updateWhenVisible) {
+            this._innerUpdate();
+            delete this._updateWhenVisible;
         }
     },
 
@@ -1140,11 +1114,18 @@ WebInspector.StylesSidebarPane._createPropertyFilterElement = function(placehold
 WebInspector.ComputedStyleSidebarPane = function()
 {
     WebInspector.SidebarPane.call(this, WebInspector.UIString("Computed Style"));
+    WebInspector.settings.showInheritedComputedStyleProperties.addChangeListener(this._showInheritedComputedStyleChanged.bind(this));
     this._linkifier = new WebInspector.Linkifier(new WebInspector.Linkifier.DefaultCSSFormatter());
     this._rebuildComputedSectionForStyleRule(WebInspector.CSSStyleDeclaration.createDummyStyle(), new WebInspector.SectionCascade(), {});
 }
 
 WebInspector.ComputedStyleSidebarPane.prototype = {
+    _showInheritedComputedStyleChanged: function()
+    {
+        this._computedStyleSection.update();
+        this._computedStyleSection._rebuildComputedTrace();
+    },
+
     /**
      * @param {!WebInspector.Target} target
      */
