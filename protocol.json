@@ -1261,6 +1261,7 @@
             },
             {
                 "name": "getResponseBody",
+                "async": true,
                 "description": "Returns content served for the given request.",
                 "parameters": [
                     { "name": "requestId", "$ref": "RequestId", "description": "Identifier of the network request to get content for." }
