@@ -268,7 +268,7 @@ WebInspector.RequestHeadersView.prototype = {
             var section = new WebInspector.ObjectPropertiesSection(object, object.description);
             section.expand();
             section.editable = false;
-            listItem.appendChild(section.element);
+            treeElement.appendChild(new TreeElement(section.element));
         }
     },
 

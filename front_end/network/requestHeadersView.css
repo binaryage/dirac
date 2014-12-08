@@ -35,6 +35,10 @@
     -webkit-mask-position: -20px -98px;
 }
 
+.request-headers-view .properties-tree li.parent {
+    margin-left: -1px;
+}
+
 .request-headers-view .outline-disclosure .children li {
     white-space: nowrap;
 }
@@ -90,4 +94,12 @@
     margin-top: -2px;
     margin-right: 3px;
     vertical-align: middle;
+}
+
+.request-headers-view .section {
+    margin-left: -16px;
+}
+
+.request-headers-view .section.expanded .properties {
+    -webkit-padding-start: 0;
 }
