@@ -19,9 +19,35 @@ WebInspector.DevToolsApp = function()
     DevToolsAPI.setInspectorWindow(this._inspectorWindow);
 
     this._iframe.focus();
+    this._iframe.addEventListener("load", this._onIframeLoad.bind(this), false);
 }
 
 WebInspector.DevToolsApp.prototype = {
+    _onIframeLoad: function()
+    {
+        /**
+         * @this {CSSStyleDeclaration}
+         */
+        function getValue(property)
+        {
+            // Note that |property| comes from another context, so we can't use === here.
+            if (property == "padding-left") {
+                return {
+                    /**
+                     * @suppressReceiverCheck
+                     * @this {Object}
+                     */
+                    getFloatValue: function() { return this.__paddingLeft; },
+                    __paddingLeft: parseFloat(this.paddingLeft)
+                };
+            }
+            throw new Error("getPropertyCSSValue is undefined");
+        }
+
+        // Support for legacy (<M41) frontends. Remove in M45.
+        this._iframe.contentWindow.CSSStyleDeclaration.prototype.getPropertyCSSValue = getValue;
+        this._iframe.contentWindow.CSSPrimitiveValue = { CSS_PX: "CSS_PX" };
+    }
 }
 
 runOnWindowLoad(function() { new WebInspector.DevToolsApp(); });
