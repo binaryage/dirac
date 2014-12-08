@@ -85,8 +85,6 @@ WebInspector.ConsolePanel.WrapperView = function()
     WebInspector.ConsolePanel.WrapperView._instance = this;
 
     this._view = WebInspector.ConsolePanel._view();
-    // FIXME: this won't be needed once drawer becomes a view.
-    this.wasShown();
 }
 
 WebInspector.ConsolePanel.WrapperView.prototype = {
