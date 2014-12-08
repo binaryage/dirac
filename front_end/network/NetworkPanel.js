@@ -54,39 +54,32 @@ WebInspector.NetworkPanel = function()
     this._splitView.show(contentsElement);
     this._splitView.hideMain();
 
-    var defaultColumnsVisibility = WebInspector.NetworkLogView.defaultColumnsVisibility;
-    var networkLogColumnsVisibilitySetting = WebInspector.settings.createSetting("networkLogColumnsVisibility", defaultColumnsVisibility);
-    var savedColumnsVisibility = networkLogColumnsVisibilitySetting.get();
-    var columnsVisibility = {};
-    for (var columnId in defaultColumnsVisibility)
-        columnsVisibility[columnId] = savedColumnsVisibility.hasOwnProperty(columnId) ? savedColumnsVisibility[columnId] : defaultColumnsVisibility[columnId];
-    networkLogColumnsVisibilitySetting.set(columnsVisibility);
+    this._progressBarContainer = createElement("div");
+    this._createStatusbarButtons();
 
     /** @type {!WebInspector.NetworkLogView} */
-    this._networkLogView = new WebInspector.NetworkLogView(this._filterBar, networkLogColumnsVisibilitySetting);
+    this._networkLogView = new WebInspector.NetworkLogView(this._filterBar, this._progressBarContainer);
     this._splitView.setSidebarView(this._networkLogView);
 
     this._detailsView = new WebInspector.VBox();
     this._detailsView.element.classList.add("network-details-view");
     this._splitView.setMainView(this._detailsView);
 
-    WebInspector.dockController.addEventListener(WebInspector.DockController.Events.DockSideChanged, this._dockSideChanged.bind(this));
-    WebInspector.settings.splitVerticallyWhenDockedToRight.addChangeListener(this._dockSideChanged.bind(this));
-    this._dockSideChanged();
-
-    this._networkLogView.addEventListener(WebInspector.NetworkLogView.EventTypes.ViewCleared, this._onViewCleared, this);
-    this._networkLogView.addEventListener(WebInspector.NetworkLogView.EventTypes.RowSizeChanged, this._onRowSizeChanged, this);
-    this._networkLogView.addEventListener(WebInspector.NetworkLogView.EventTypes.RequestSelected, this._onRequestSelected, this);
-    this._networkLogView.addEventListener(WebInspector.NetworkLogView.EventTypes.SearchCountUpdated, this._onSearchCountUpdated, this);
-    this._networkLogView.addEventListener(WebInspector.NetworkLogView.EventTypes.SearchIndexUpdated, this._onSearchIndexUpdated, this);
-
     this._closeButtonElement = createElementWithClass("div", "close-button");
     this._closeButtonElement.classList.add("network-close-button");
     this._closeButtonElement.addEventListener("click", this._showRequest.bind(this, null), false);
 
-    var statusBarItems = this._networkLogView.statusBarItems();
-    for (var i = 0; i < statusBarItems.length; ++i)
-        this._panelStatusBar.appendStatusBarItem(statusBarItems[i]);
+    this._toggleRecordButton(true);
+    this._toggleHideColumnsButton(WebInspector.settings.networkLogHideColumns.get());
+    this._toggleLargerRequests(WebInspector.settings.resourcesLargeRows.get());
+    this._dockSideChanged();
+
+    WebInspector.dockController.addEventListener(WebInspector.DockController.Events.DockSideChanged, this._dockSideChanged.bind(this));
+    WebInspector.settings.splitVerticallyWhenDockedToRight.addChangeListener(this._dockSideChanged.bind(this));
+    WebInspector.targetManager.addModelListener(WebInspector.ResourceTreeModel, WebInspector.ResourceTreeModel.EventTypes.WillReloadPage, this._willReloadPage, this);
+    this._networkLogView.addEventListener(WebInspector.NetworkLogView.EventTypes.RequestSelected, this._onRequestSelected, this);
+    this._networkLogView.addEventListener(WebInspector.NetworkLogView.EventTypes.SearchCountUpdated, this._onSearchCountUpdated, this);
+    this._networkLogView.addEventListener(WebInspector.NetworkLogView.EventTypes.SearchIndexUpdated, this._onSearchIndexUpdated, this);
 
     /**
      * @this {WebInspector.NetworkPanel}
@@ -100,6 +93,119 @@ WebInspector.NetworkPanel = function()
 }
 
 WebInspector.NetworkPanel.prototype = {
+    _createStatusbarButtons: function()
+    {
+        this._recordButton = new WebInspector.StatusBarButton("", "record-status-bar-item");
+        this._recordButton.addEventListener("click", this._onRecordButtonClicked, this);
+        this._panelStatusBar.appendStatusBarItem(this._recordButton);
+
+        this._clearButton = new WebInspector.StatusBarButton(WebInspector.UIString("Clear"), "clear-status-bar-item");
+        this._clearButton.addEventListener("click", this._onClearButtonClicked, this);
+        this._panelStatusBar.appendStatusBarItem(this._clearButton);
+
+        this._panelStatusBar.appendStatusBarItem(this._filterBar.filterButton());
+
+        this._largerRequestsButton = new WebInspector.StatusBarButton("", "large-list-status-bar-item");
+        this._largerRequestsButton.addEventListener("click", this._onLargerRequestsClicked, this);
+        this._panelStatusBar.appendStatusBarItem(this._largerRequestsButton);
+
+        this._hideColumnsButton = new WebInspector.StatusBarButton("", "waterfall-status-bar-item");
+        this._hideColumnsButton.addEventListener("click", this._onHideColumnsButtonClicked, this);
+        this._panelStatusBar.appendStatusBarItem(this._hideColumnsButton);
+
+        this._preserveLogCheckbox = new WebInspector.StatusBarCheckbox(WebInspector.UIString("Preserve log"), WebInspector.UIString("Do not clear log on page reload / navigation."));
+        this._preserveLogCheckbox.inputElement.addEventListener("change", this._onPreserveLogCheckboxChanged.bind(this), false);
+        this._panelStatusBar.appendStatusBarItem(this._preserveLogCheckbox);
+
+        this._disableCacheCheckbox = new WebInspector.StatusBarCheckbox(WebInspector.UIString("Disable cache"), WebInspector.UIString("Disable cache (while DevTools is open)."), WebInspector.settings.cacheDisabled);
+        this._panelStatusBar.appendStatusBarItem(this._disableCacheCheckbox);
+
+        this._panelStatusBar.appendStatusBarItem(new WebInspector.StatusBarItemWrapper(this._progressBarContainer));
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _onRecordButtonClicked: function(event)
+    {
+        if (!this._recordButton.toggled())
+            this._networkLogView.reset();
+        this._toggleRecordButton(!this._recordButton.toggled());
+    },
+
+    /**
+     * @param {boolean} toggled
+     */
+    _toggleRecordButton: function(toggled)
+    {
+        this._recordButton.setToggled(toggled);
+        this._recordButton.setTitle(toggled ? WebInspector.UIString("Stop Recording Network Log") : WebInspector.UIString("Record Network Log"));
+        this._networkLogView.setRecording(toggled);
+    },
+
+    /**
+     * @param {!Event} event
+     */
+    _onPreserveLogCheckboxChanged: function(event)
+    {
+        this._networkLogView.setPreserveLog(this._preserveLogCheckbox.checked());
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _onClearButtonClicked: function(event)
+    {
+        this._networkLogView.reset();
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _willReloadPage: function(event)
+    {
+        this._toggleRecordButton(true);
+        if (!this._preserveLogCheckbox.checked())
+            this._networkLogView.reset();
+    },
+
+    /**
+     * @param {!WebInspector.Event=} event
+     */
+    _onLargerRequestsClicked: function(event)
+    {
+        this._toggleLargerRequests(!this._largerRequestsButton.toggled());
+    },
+
+    /**
+     * @param {boolean} toggled
+     */
+    _toggleLargerRequests: function(toggled)
+    {
+        WebInspector.settings.resourcesLargeRows.set(toggled);
+        this._largerRequestsButton.setToggled(toggled);
+        this._largerRequestsButton.setTitle(WebInspector.UIString(toggled ? "Use small resource rows." : "Use large resource rows."));
+        this._updateUI();
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _onHideColumnsButtonClicked: function(event)
+    {
+        this._toggleHideColumnsButton(!WebInspector.settings.networkLogHideColumns.get());
+    },
+
+    /**
+     * @param {boolean} toggled
+     */
+    _toggleHideColumnsButton: function(toggled)
+    {
+        WebInspector.settings.networkLogHideColumns.set(toggled);
+        this._hideColumnsButton.title = toggled ? WebInspector.UIString("Show columns.") : WebInspector.UIString("Hide columns.");
+        this._hideColumnsButton.setToggled(toggled);
+    },
+
     /**
      * @return {boolean}
      */
@@ -176,14 +282,6 @@ WebInspector.NetworkPanel.prototype = {
     /**
      * @param {!WebInspector.Event} event
      */
-    _onViewCleared: function(event)
-    {
-        this._showRequest(null);
-    },
-
-    /**
-     * @param {!WebInspector.Event} event
-     */
     _onRowSizeChanged: function(event)
     {
         this._updateUI();
@@ -212,7 +310,7 @@ WebInspector.NetworkPanel.prototype = {
      */
     _onRequestSelected: function(event)
     {
-        var request = /** @type {!WebInspector.NetworkRequest} */ (event.data);
+        var request = /** @type {?WebInspector.NetworkRequest} */ (event.data);
         this._showRequest(request);
     },
 
@@ -242,7 +340,7 @@ WebInspector.NetworkPanel.prototype = {
     _updateUI: function()
     {
         var detailsPaneAtBottom = this._isDetailsPaneAtBottom();
-        this._detailsView.element.classList.toggle("network-details-view-tall-header", this._networkLogView.usesLargeRows() && !detailsPaneAtBottom);
+        this._detailsView.element.classList.toggle("network-details-view-tall-header", WebInspector.settings.resourcesLargeRows.get() && !detailsPaneAtBottom);
         this._networkLogView.switchViewMode(!this._splitView.isResizable() || detailsPaneAtBottom);
     },
 
