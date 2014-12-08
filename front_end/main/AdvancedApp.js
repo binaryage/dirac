@@ -178,7 +178,7 @@ WebInspector.AdvancedApp.prototype = {
      */
     _updateForDocked: function(dockSide)
     {
-        this._rootSplitView.setVertical(dockSide === WebInspector.DockController.State.DockedToLeft || dockSide === WebInspector.DockController.State.DockedToRight);
+        this._rootSplitView.setVertical(dockSide === WebInspector.DockController.State.DockedToRight);
         this._rootSplitView.setSecondIsSidebar(dockSide === WebInspector.DockController.State.DockedToRight || dockSide === WebInspector.DockController.State.DockedToBottom);
         this._rootSplitView.toggleResizer(this._rootSplitView.resizerElement(), true);
         this._rootSplitView.toggleResizer(WebInspector.inspectorView.topResizerElement(), dockSide === WebInspector.DockController.State.DockedToBottom);

@@ -136,7 +136,6 @@ WebInspector.Main.prototype = {
         Runtime.experiments.register("canvasInspection", "Canvas inspection");
         Runtime.experiments.register("devicesPanel", "Devices panel");
         Runtime.experiments.register("disableAgentsWhenProfile", "Disable other agents and UI when profiler is active", true);
-        Runtime.experiments.register("dockToLeft", "Dock to left", true);
         Runtime.experiments.register("documentation", "JavaScript documentation", true);
         Runtime.experiments.register("fileSystemInspection", "FileSystem inspection");
         Runtime.experiments.register("gpuTimeline", "GPU data on timeline", true);
