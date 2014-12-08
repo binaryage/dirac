@@ -1261,6 +1261,7 @@ function() {
      * @this {HTMLButtonElement}
      */
     proto.createdCallback = function() {
+        this.type = "button";
         var root = this.createShadowRoot();
         root.appendChild(createElement("content"));
         root.appendChild(WebInspector.View.createStyleElement("ui/textButton.css"));
