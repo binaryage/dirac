@@ -247,6 +247,25 @@ TreeContainerNode.prototype = {
     },
 
     /**
+     * @return {boolean}
+     */
+    revealed: function()
+    {
+        return true;
+    },
+
+    reveal: function()
+    {
+    },
+
+    /**
+     * @param {boolean=} omitFocus
+     */
+    revealAndSelect: function(omitFocus)
+    {
+    },
+
+    /**
      * @param {boolean=} omitFocus
      * @param {boolean=} selectedByUser
      * @return {boolean}
@@ -814,6 +833,9 @@ TreeElement.prototype = {
         }
     },
 
+    /**
+     * @override
+     */
     reveal: function()
     {
         var currentAncestor = this.parent;
@@ -829,6 +851,7 @@ TreeElement.prototype = {
     },
 
     /**
+     * @override
      * @return {boolean}
      */
     revealed: function()
@@ -879,6 +902,7 @@ TreeElement.prototype = {
     },
 
     /**
+     * @override
      * @param {boolean=} omitFocus
      */
     revealAndSelect: function(omitFocus)
@@ -969,7 +993,7 @@ TreeElement.prototype = {
 
     /**
      * @param {boolean} skipUnrevealed
-     * @param {(!TreeOutline|!TreeElement|null)=} stayWithin
+     * @param {?TreeContainerNode=} stayWithin
      * @param {boolean=} dontPopulate
      * @param {!Object=} info
      * @return {?TreeElement}
