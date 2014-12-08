@@ -284,8 +284,8 @@ WebInspector.XHRBreakpointsSidebarPane = function()
 {
     WebInspector.NativeBreakpointsSidebarPane.call(this, WebInspector.UIString("XHR Breakpoints"));
 
-    // FIXME: Use StringMap.
-    this._breakpointElements = { __proto__: null };
+    /** @type {!Map.<string, !Element>} */
+    this._breakpointElements = new Map();
 
     var addButton = this.titleElement.createChild("button", "pane-title-button add");
     addButton.title = WebInspector.UIString("Add XHR breakpoint");
@@ -362,7 +362,7 @@ WebInspector.XHRBreakpointsSidebarPane.prototype = {
         if (enabled)
             this._updateBreakpointOnTarget(url, true, target);
 
-        if (url in this._breakpointElements)
+        if (this._breakpointElements.has(url))
             return;
 
         var element = createElement("li");
@@ -389,7 +389,7 @@ WebInspector.XHRBreakpointsSidebarPane.prototype = {
             currentElement = /** @type {?Element} */ (currentElement.nextSibling);
         }
         this.addListElement(element, currentElement);
-        this._breakpointElements[url] = element;
+        this._breakpointElements.set(url, element);
     },
 
     /**
@@ -398,12 +398,12 @@ WebInspector.XHRBreakpointsSidebarPane.prototype = {
      */
     _removeBreakpoint: function(url, target)
     {
-        var element = this._breakpointElements[url];
+        var element = this._breakpointElements.get(url);
         if (!element)
             return;
 
         this.removeListElement(element);
-        delete this._breakpointElements[url];
+        this._breakpointElements.delete(url);
         if (element._checkboxElement.checked)
             this._updateBreakpointOnTarget(url, false, target);
     },
@@ -442,7 +442,7 @@ WebInspector.XHRBreakpointsSidebarPane.prototype = {
          */
         function removeAllBreakpoints()
         {
-            for (var url in this._breakpointElements)
+            for (var url of this._breakpointElements.keys())
                 this._removeBreakpoint(url);
             this._saveBreakpoints();
         }
@@ -462,7 +462,7 @@ WebInspector.XHRBreakpointsSidebarPane.prototype = {
 
     _labelClicked: function(url)
     {
-        var element = this._breakpointElements[url];
+        var element = this._breakpointElements.get(url);
         var inputElement = createElementWithClass("span", "breakpoint-condition editing");
         inputElement.textContent = url;
         this.listElement.insertBefore(inputElement, element);
@@ -490,7 +490,7 @@ WebInspector.XHRBreakpointsSidebarPane.prototype = {
 
     highlightBreakpoint: function(url)
     {
-        var element = this._breakpointElements[url];
+        var element = this._breakpointElements.get(url);
         if (!element)
             return;
         this.expand();
@@ -509,8 +509,8 @@ WebInspector.XHRBreakpointsSidebarPane.prototype = {
     _saveBreakpoints: function()
     {
         var breakpoints = [];
-        for (var url in this._breakpointElements)
-            breakpoints.push({ url: url, enabled: this._breakpointElements[url]._checkboxElement.checked });
+        for (var url of this._breakpointElements.keys())
+            breakpoints.push({ url: url, enabled: this._breakpointElements.get(url)._checkboxElement.checked });
         WebInspector.settings.xhrBreakpoints.set(breakpoints);
     },
 
