@@ -396,6 +396,9 @@ WebInspector.JSHeapSnapshot.prototype = {
         }
     },
 
+    /**
+     * @override
+     */
     _calculateStatistics: function()
     {
         var nodeFieldCount = this._nodeFieldCount;
@@ -407,15 +410,22 @@ WebInspector.JSHeapSnapshot.prototype = {
         var nodeCodeType = this._nodeCodeType;
         var nodeConsStringType = this._nodeConsStringType;
         var nodeSlicedStringType = this._nodeSlicedStringType;
+        var distances = this._nodeDistances;
         var sizeNative = 0;
         var sizeCode = 0;
         var sizeStrings = 0;
         var sizeJSArrays = 0;
+        var sizeSystem = 0;
         var node = this.rootNode();
         for (var nodeIndex = 0; nodeIndex < nodesLength; nodeIndex += nodeFieldCount) {
-            node.nodeIndex = nodeIndex;
-            var nodeType = nodes[nodeIndex + nodeTypeOffset];
             var nodeSize = nodes[nodeIndex + nodeSizeOffset];
+            var ordinal = nodeIndex / nodeFieldCount;
+            if (distances[ordinal] >= WebInspector.HeapSnapshotCommon.baseSystemDistance) {
+                sizeSystem += nodeSize;
+                continue;
+            }
+            var nodeType = nodes[nodeIndex + nodeTypeOffset];
+            node.nodeIndex = nodeIndex;
             if (nodeType === nodeNativeType)
                 sizeNative += nodeSize;
             else if (nodeType === nodeCodeType)
@@ -432,6 +442,7 @@ WebInspector.JSHeapSnapshot.prototype = {
         this._statistics.code = sizeCode;
         this._statistics.jsArrays = sizeJSArrays;
         this._statistics.strings = sizeStrings;
+        this._statistics.system = sizeSystem;
     },
 
     /**

@@ -493,7 +493,7 @@ WebInspector.HeapSnapshotView.prototype = {
          */
         function profileCallback(heapSnapshotProxy)
         {
-            heapSnapshotProxy.getStatistics(this._gotStatistics.bind(this));
+            heapSnapshotProxy.getStatistics().then(this._gotStatistics.bind(this));
             var list = this._profiles();
             var profileIndex = list.indexOf(this._profile);
             this._baseSelect.setSelectedIndex(Math.max(0, profileIndex - 1));
@@ -513,6 +513,7 @@ WebInspector.HeapSnapshotView.prototype = {
         this._statisticsView.addRecord(statistics.strings, WebInspector.UIString("Strings"), "#5e5");
         this._statisticsView.addRecord(statistics.jsArrays, WebInspector.UIString("JS Arrays"), "#7af");
         this._statisticsView.addRecord(statistics.native, WebInspector.UIString("Typed Arrays"), "#fc5");
+        this._statisticsView.addRecord(statistics.system, WebInspector.UIString("System Objects"), "#98f");
         this._statisticsView.addRecord(statistics.total, WebInspector.UIString("Total"));
     },
 
