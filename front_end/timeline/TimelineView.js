@@ -139,10 +139,7 @@ WebInspector.TimelineView.prototype = {
             var dividerPosition = Math.round(position);
             if (dividerPosition < 0 || dividerPosition >= clientWidth || dividers[dividerPosition])
                 continue;
-            var title = WebInspector.TimelineUIUtils.titleForRecord(record);
-            var divider = WebInspector.TimelineUIUtils.createEventDivider(record.type(), title);
-            divider.style.left = dividerPosition + "px";
-            dividers[dividerPosition] = divider;
+            dividers[dividerPosition] = WebInspector.TimelineUIUtils.createDividerForRecord(record, dividerPosition);
         }
         this._timelineGrid.addEventDividers(dividers);
     },
@@ -182,11 +179,8 @@ WebInspector.TimelineView.prototype = {
 
             this._frameContainer.appendChild(frameStrip);
 
-            if (actualStart > 0) {
-                var frameMarker = WebInspector.TimelineUIUtils.createEventDivider(WebInspector.TimelineModel.RecordType.BeginFrame);
-                frameMarker.style.left = frameStart + "px";
-                dividers.push(frameMarker);
-            }
+            if (actualStart > 0)
+                dividers.push(WebInspector.TimelineUIUtils.createEventDivider(WebInspector.TimelineModel.RecordType.BeginFrame, WebInspector.UIString("Frame"), frameStart));
         }
         this._timelineGrid.addEventDividers(dividers);
         this._headerElement.appendChild(this._frameContainer);
@@ -354,7 +348,7 @@ WebInspector.TimelineView.prototype = {
 
             var contentHelper = new WebInspector.TimelineDetailsContentHelper(null, null, true);
             var pieChart = WebInspector.TimelineUIUtils.generatePieChart(aggregatedStats);
-            var title = WebInspector.TimelineUIUtils.titleForRecord(presentationRecord.record());
+            var title = WebInspector.TimelineUIUtils.eventTitle(presentationRecord.record().traceEvent());
             contentHelper.appendTextRow(WebInspector.UIString("Type"), title);
             contentHelper.appendElementRow(WebInspector.UIString("Aggregated Time"), pieChart);
             this._delegate.showInDetails(contentHelper.element);
@@ -1088,7 +1082,7 @@ WebInspector.TimelineRecordListRow.prototype = {
         if (record.thread() !== WebInspector.TimelineModel.MainThreadName)
             this.element.classList.add("background");
 
-        this._typeElement.textContent = WebInspector.TimelineUIUtils.titleForRecord(record);
+        this._typeElement.textContent = WebInspector.TimelineUIUtils.eventTitle(record.traceEvent());
 
         if (this._dataElement.firstChild)
             this._dataElement.removeChildren();

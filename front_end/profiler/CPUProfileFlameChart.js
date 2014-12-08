@@ -119,36 +119,6 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
     },
 
     /**
-     * @override
-     * @param {number} index
-     * @return {string}
-     */
-    markerColor: function(index)
-    {
-        throw new Error("Unreachable.");
-    },
-
-    /**
-     * @override
-     * @param {number} index
-     * @return {string}
-     */
-    markerTitle: function(index)
-    {
-        throw new Error("Unreachable.");
-    },
-
-    /**
-     * @override
-     * @param {number} index
-     * @return {boolean}
-     */
-    isTallMarker: function(index)
-    {
-        throw new Error("Unreachable.");
-    },
-
-    /**
      * @return {!WebInspector.FlameChart.TimelineData}
      */
     _calculateTimelineData: function()
@@ -326,10 +296,9 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
      * @param {number} barY
      * @param {number} barWidth
      * @param {number} barHeight
-     * @param {function(number):number} timeToPosition
      * @return {boolean}
      */
-    decorateEntry: function(entryIndex, context, text, barX, barY, barWidth, barHeight, timeToPosition)
+    decorateEntry: function(entryIndex, context, text, barX, barY, barWidth, barHeight)
     {
         return false;
     },

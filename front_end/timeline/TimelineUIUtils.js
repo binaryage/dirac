@@ -186,53 +186,13 @@ WebInspector.TimelineUIUtils.eventStyle = function(event)
  * @param {!WebInspector.TracingModel.Event} event
  * @return {string}
  */
-WebInspector.TimelineUIUtils.markerEventColor = function(event)
-{
-    var red = "rgb(255, 0, 0)";
-    var blue = "rgb(0, 0, 255)";
-    var orange = "rgb(255, 178, 23)";
-    var green = "rgb(0, 130, 0)";
-
-    if (event.category === WebInspector.TracingModel.ConsoleEventCategory)
-        return orange;
-
-    var recordTypes = WebInspector.TimelineModel.RecordType;
-    var eventName = event.name;
-    switch (eventName) {
-    case recordTypes.MarkDOMContent: return blue;
-    case recordTypes.MarkLoad: return red;
-    case recordTypes.MarkFirstPaint: return green;
-    case recordTypes.TimeStamp: return orange;
-    }
-    return green;
-}
-
-/**
- * @param {!WebInspector.TimelineModel.Record} record
- * @return {string}
- */
-WebInspector.TimelineUIUtils.titleForRecord = function(record)
-{
-    var event = record.traceEvent();
-    return WebInspector.TimelineUIUtils.eventTitle(event, record.timelineModel());
-}
-
-/**
- * @param {!WebInspector.TracingModel.Event} event
- * @param {!WebInspector.TimelineModel} model
- * @return {string}
- */
-WebInspector.TimelineUIUtils.eventTitle = function(event, model)
+WebInspector.TimelineUIUtils.eventTitle = function(event)
 {
     var title = WebInspector.TimelineUIUtils.eventStyle(event).title;
     if (event.category === WebInspector.TracingModel.ConsoleEventCategory)
         return title;
     if (event.name === WebInspector.TimelineModel.RecordType.TimeStamp)
         return WebInspector.UIString("%s: %s", title, event.args["data"]["message"]);
-    if (WebInspector.TimelineUIUtils.isMarkerEvent(event)) {
-        var startTime = Number.millisToString(event.startTime - model.minimumRecordTime());
-        return WebInspector.UIString("%s at %s", title, startTime);
-    }
     return title;
 }
 
@@ -253,15 +213,6 @@ WebInspector.TimelineUIUtils.isMarkerEvent = function(event)
     default:
         return false;
     }
-}
-
-/**
- * @param {!WebInspector.TracingModel.Event} event
- * @return {boolean}
- */
-WebInspector.TimelineUIUtils.isTallMarkerEvent = function(event)
-{
-    return event.name !== WebInspector.TimelineModel.RecordType.TimeStamp;
 }
 
 /**
@@ -491,7 +442,7 @@ WebInspector.TimelineUIUtils._buildTraceEventDetailsSynchronously = function(eve
     var relatedNodeLabel;
 
     var contentHelper = new WebInspector.TimelineDetailsContentHelper(model.target(), linkifier, true);
-    contentHelper.appendTextRow(WebInspector.UIString("Type"), WebInspector.TimelineUIUtils.eventTitle(event, model));
+    contentHelper.appendTextRow(WebInspector.UIString("Type"), WebInspector.TimelineUIUtils.eventTitle(event));
     contentHelper.appendTextRow(WebInspector.UIString("Self Time"), Number.millisToString(event.selfTime, true));
     contentHelper.appendTextRow(WebInspector.UIString("Start Time"), Number.millisToString((event.startTime - model.minimumRecordTime())));
     if (event.previewElement)
@@ -1049,10 +1000,11 @@ WebInspector.TimelineUIUtils.buildPicturePreviewContent = function(event, target
 
 /**
  * @param {string} recordType
- * @param {string=} title
+ * @param {?string} title
+ * @param {number} position
  * @return {!Element}
  */
-WebInspector.TimelineUIUtils.createEventDivider = function(recordType, title)
+WebInspector.TimelineUIUtils.createEventDivider = function(recordType, title, position)
 {
     var eventDivider = createElement("div");
     eventDivider.className = "resources-event-divider";
@@ -1071,8 +1023,20 @@ WebInspector.TimelineUIUtils.createEventDivider = function(recordType, title)
 
     if (title)
         eventDivider.title = title;
-
+    eventDivider.style.left = position + "px";
     return eventDivider;
+}
+
+/**
+ * @param {!WebInspector.TimelineModel.Record} record
+ * @param {number} position
+ * @return {!Element}
+ */
+WebInspector.TimelineUIUtils.createDividerForRecord = function(record, position)
+{
+    var startTime = Number.millisToString(record.startTime() - record.timelineModel().minimumRecordTime());
+    var title = WebInspector.UIString("%s at %s", WebInspector.TimelineUIUtils.eventTitle(record.traceEvent()), startTime);
+    return WebInspector.TimelineUIUtils.createEventDivider(record.type(), title, position);
 }
 
 /**
@@ -1347,6 +1311,87 @@ WebInspector.TimelineCategory.prototype = {
     },
 
     __proto__: WebInspector.Object.prototype
+}
+
+/**
+ * @typedef {!{
+ *     title: string,
+ *     color: string,
+ *     lineWidth: number,
+ *     dashStyle: !Array.<number>,
+ *     tall: boolean,
+ *     lowPriority: boolean
+ * }}
+ */
+WebInspector.TimelineMarkerStyle;
+
+/**
+ * @param {!WebInspector.TracingModel.Event} event
+ * @return {!WebInspector.TimelineMarkerStyle}
+ */
+WebInspector.TimelineUIUtils.markerStyleForEvent = function(event)
+{
+    var red = "rgb(255, 0, 0)";
+    var blue = "rgb(0, 0, 255)";
+    var orange = "rgb(255, 178, 23)";
+    var green = "rgb(0, 130, 0)";
+    var tallMarkerDashStyle = [10, 5];
+
+    var title = WebInspector.TimelineUIUtils.eventTitle(event)
+
+    if (event.category === WebInspector.TracingModel.ConsoleEventCategory) {
+        return {
+            title: title,
+            dashStyle: tallMarkerDashStyle,
+            lineWidth: 0.5,
+            color: orange,
+            tall: false,
+            lowPriority: false,
+        }
+    }
+    var recordTypes = WebInspector.TimelineModel.RecordType;
+    var tall = false;
+    var color = green;
+    switch (event.name) {
+    case recordTypes.MarkDOMContent:
+        color = blue;
+        tall = true;
+        break;
+    case recordTypes.MarkLoad:
+        color = red;
+        tall = true;
+        break;
+    case recordTypes.MarkFirstPaint:
+        color = green;
+        tall = true;
+        break;
+    case recordTypes.TimeStamp:
+        color = orange;
+        break;
+    }
+    return {
+        title: title,
+        dashStyle: tallMarkerDashStyle,
+        lineWidth: 0.5,
+        color: color,
+        tall: tall,
+        lowPriority: false,
+    }
+}
+
+/**
+ * @return {!WebInspector.TimelineMarkerStyle}
+ */
+WebInspector.TimelineUIUtils.markerStyleForFrame = function()
+{
+    return {
+        title: WebInspector.UIString("Frame"),
+        color: "rgba(100, 100, 100, 0.4)",
+        lineWidth: 3,
+        dashStyle: [3],
+        tall: true,
+        lowPriority: true
+    }
 }
 
 /**

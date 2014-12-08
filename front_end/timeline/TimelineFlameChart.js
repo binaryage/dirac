@@ -140,46 +140,14 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
         return null;
     },
 
-    /**
-     * @override
-     * @param {number} index
-     * @return {string}
-     */
-    markerColor: function(index)
-    {
-        var event = this._markerEvents[index];
-        return WebInspector.TimelineUIUtils.markerEventColor(event);
-    },
-
-    /**
-     * @override
-     * @param {number} index
-     * @return {string}
-     */
-    markerTitle: function(index)
-    {
-        var event = this._markerEvents[index];
-        return WebInspector.TimelineUIUtils.eventTitle(event, this._model);
-    },
-
-    /**
-     * @override
-     * @param {number} index
-     * @return {boolean}
-     */
-    isTallMarker: function(index)
-    {
-        var event = this._markerEvents[index];
-        return WebInspector.TimelineUIUtils.isTallMarkerEvent(event);
-    },
-
     reset: function()
     {
         this._timelineData = null;
         /** @type {!Array.<!WebInspector.TracingModel.Event>} */
         this._entryEvents = [];
         this._entryIndexToTitle = {};
-        this._markerEvents = [];
+        /** @type {!Array.<!WebInspector.TimelineFlameChartMarker>} */
+        this._markers = [];
         this._entryIndexToFrame = {};
         this._asyncColorByCategory = {};
     },
@@ -205,6 +173,19 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
         var threads = this._model.virtualThreads();
         for (var i = 0; i < threads.length; i++)
             this._appendThreadTimelineData(threads[i].name, threads[i].events, threads[i].asyncEvents);
+
+        /**
+         * @param {!WebInspector.TimelineFlameChartMarker} a
+         * @param {!WebInspector.TimelineFlameChartMarker} b
+         */
+        function compareStartTime(a, b)
+        {
+            return a.startTime() - b.startTime();
+        }
+
+        this._markers.sort(compareStartTime);
+        this._timelineData.markers = this._markers;
+
         return this._timelineData;
     },
 
@@ -234,10 +215,8 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
         var maxStackDepth = 0;
         for (var i = 0; i < events.length; ++i) {
             var e = events[i];
-            if (WebInspector.TimelineUIUtils.isMarkerEvent(e)) {
-                this._markerEvents.push(e);
-                this._timelineData.markerTimestamps.push(e.startTime);
-            }
+            if (WebInspector.TimelineUIUtils.isMarkerEvent(e))
+                this._markers.push(new WebInspector.TimelineFlameChartMarker(e.startTime, e.startTime - this._model.minimumRecordTime(), WebInspector.TimelineUIUtils.markerStyleForEvent(e)));
             if (!e.endTime && e.phase !== WebInspector.TracingModel.Phase.Instant)
                 continue;
             if (WebInspector.TracingModel.isAsyncPhase(e.phase))
@@ -310,9 +289,12 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
      */
     _appendFrameBars: function(frames)
     {
+        var style = WebInspector.TimelineUIUtils.markerStyleForFrame();
         this._frameBarsLevel = this._currentLevel++;
-        for (var i = 0; i < frames.length; ++i)
+        for (var i = 0; i < frames.length; ++i) {
+            this._markers.push(new WebInspector.TimelineFlameChartMarker(frames[i].startTime, frames[i].startTime - this._model.minimumRecordTime(), style));
             this._appendFrame(frames[i]);
+        }
     },
 
     /**
@@ -415,31 +397,14 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
      * @param {number} barY
      * @param {number} barWidth
      * @param {number} barHeight
-     * @param {function(number):number} offsetToPosition
      * @return {boolean}
      */
-    decorateEntry: function(entryIndex, context, text, barX, barY, barWidth, barHeight, offsetToPosition)
+    decorateEntry: function(entryIndex, context, text, barX, barY, barWidth, barHeight)
     {
         var frame = this._entryIndexToFrame[entryIndex];
         if (frame) {
             context.save();
-
             context.translate(0.5, 0.5);
-
-            // Only paint starting with certain zoom.
-            var scale = barWidth / (frame.endTime - frame.startTime);
-            if (scale > 4) {
-                context.beginPath();
-                context.lineWidth = 3;
-                context.moveTo(barX, barY);
-                context.lineTo(barX, context.canvas.height);
-                context.strokeStyle = "rgba(100, 100, 100, 0.4)";
-                context.setLineDash([3]);
-                context.stroke();
-                context.setLineDash([]);
-                context.lineWidth = 1;
-            }
-
             var padding = 4;
             barX += padding;
             barWidth -= 2 * padding;
@@ -670,6 +635,87 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
             break;
         }
         return -1;
+    }
+}
+
+/**
+ * @constructor
+ * @implements {WebInspector.FlameChartMarker}
+ * @param {number} startTime
+ * @param {number} startOffset
+ * @param {!WebInspector.TimelineMarkerStyle} style
+ */
+WebInspector.TimelineFlameChartMarker = function(startTime, startOffset, style)
+{
+    this._startTime = startTime;
+    this._startOffset = startOffset;
+    this._style = style;
+}
+
+WebInspector.TimelineFlameChartMarker.prototype = {
+    /**
+     * @override
+     * @return {number}
+     */
+    startTime: function()
+    {
+        return this._startTime;
+    },
+
+    /**
+     * @override
+     * @return {string}
+     */
+    color: function()
+    {
+        return this._style.color;
+    },
+
+    /**
+     * @override
+     * @return {string}
+     */
+    title: function()
+    {
+        var startTime = Number.millisToString(this._startOffset);
+        return WebInspector.UIString("%s at %s", this._style.title, this._startOffset);
+    },
+
+    /**
+     * @override
+     * @param {!CanvasRenderingContext2D} context
+     * @param {number} x
+     * @param {number} height
+     * @param {number} pixelsPerMillisecond
+     */
+    draw: function(context, x, height, pixelsPerMillisecond)
+    {
+        var lowPriorityVisibilityThresholdInPixelsPerMs = 4;
+
+        if (this._style.lowPriority && pixelsPerMillisecond < lowPriorityVisibilityThresholdInPixelsPerMs)
+            return;
+        context.save()
+
+        if (!this._style.lowPriority) {
+            context.strokeStyle = this._style.color;
+            context.lineWidth = 2;
+            context.beginPath();
+            context.moveTo(x, 0);
+            context.lineTo(x, height);
+            context.stroke();
+        }
+
+        if (this._style.tall) {
+            context.strokeStyle = this._style.color;
+            context.lineWidth = this._style.lineWidth;
+            context.translate(this._style.lineWidth < 1 || (this._style.lineWidth & 1) ? 0.5 : 0, 0.5);
+            context.beginPath();
+            context.moveTo(x, height);
+            context.setLineDash(this._style.dashStyle);
+            context.lineTo(x, context.canvas.height);
+            context.stroke();
+        }
+        context.restore();
     }
 }
 

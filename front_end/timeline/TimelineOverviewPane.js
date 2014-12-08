@@ -112,10 +112,7 @@ WebInspector.TimelineOverviewPane.prototype = {
             var dividerPosition = Math.round(positions.start * 10);
             if (dividers[dividerPosition])
                 continue;
-            var title = WebInspector.TimelineUIUtils.titleForRecord(record);
-            var divider = WebInspector.TimelineUIUtils.createEventDivider(record.type(), title);
-            divider.style.left = positions.start + "%";
-            dividers[dividerPosition] = divider;
+            dividers[dividerPosition] = WebInspector.TimelineUIUtils.createDividerForRecord(record, dividerPosition);
         }
         this._overviewGrid.addEventDividers(dividers);
     },
