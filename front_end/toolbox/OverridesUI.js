@@ -15,13 +15,10 @@ WebInspector.OverridesUI.createDeviceSelect = function(titleProvider)
     var deviceSelectElement = p.createChild("select");
     deviceSelectElement.addEventListener("change", deviceSelected, false);
 
-    var saveButton = p.createChild("button", "", "text-button");
-    saveButton.textContent = WebInspector.UIString("Save as");
-    saveButton.addEventListener("click", saveClicked, false);
-
-    var removeButton = p.createChild("button", "", "text-button");
-    removeButton.textContent = WebInspector.UIString("Remove");
-    removeButton.addEventListener("click", removeClicked, false);
+    var saveButton = createTextButton(WebInspector.UIString("Save as"), saveClicked);
+    p.appendChild(saveButton);
+    var removeButton = createTextButton(WebInspector.UIString("Remove"), removeClicked);
+    p.appendChild(removeButton);
 
     // This has to be object, not boolean, otherwise its value doesn't update properly.
     var emulatedSettingChangedMuted = { muted: false };

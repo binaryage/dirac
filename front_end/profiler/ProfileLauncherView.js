@@ -50,12 +50,11 @@ WebInspector.ProfileLauncherView = function(profilesPanel)
     selectTargetText.textContent = WebInspector.UIString("Target:");
     var targetsSelect = targetSpan.createChild("select", "chrome-select");
     new WebInspector.TargetsComboBoxController(targetsSelect, targetSpan);
-    this._controlButton = this._contentElement.createChild("button", "control-profiling", "text-button");
-    this._controlButton.addEventListener("click", this._controlButtonClicked.bind(this), false);
+    this._controlButton = createTextButton("", this._controlButtonClicked.bind(this), "control-profiling");
+    this._contentElement.appendChild(this._controlButton);
     this._recordButtonEnabled = true;
-    this._loadButton = this._contentElement.createChild("button", "load-profile", "text-button");
-    this._loadButton.textContent = WebInspector.UIString("Load");
-    this._loadButton.addEventListener("click", this._loadButtonClicked.bind(this), false);
+    this._loadButton = createTextButton(WebInspector.UIString("Load"), this._loadButtonClicked.bind(this), "load-profile");
+    this._contentElement.appendChild(this._loadButton);
     WebInspector.targetManager.observeTargets(this);
 }
 

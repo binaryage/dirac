@@ -52,18 +52,14 @@ WebInspector.OverridesView = function()
     this._tabbedPane.addEventListener(WebInspector.TabbedPane.EventTypes.TabSelected, this._tabSelected, this);
     this._tabbedPane.show(this.element);
 
-    var resetButtonElement = createElement("button", "text-button");
-    this._tabbedPane.appendAfterTabStrip(resetButtonElement);
+    var resetButtonElement = createTextButton(WebInspector.UIString("Reset"), WebInspector.overridesSupport.reset.bind(WebInspector.overridesSupport));
     resetButtonElement.id = "overrides-reset-button";
-    resetButtonElement.textContent = WebInspector.UIString("Reset");
-    resetButtonElement.addEventListener("click", WebInspector.overridesSupport.reset.bind(WebInspector.overridesSupport), false);
+    this._tabbedPane.appendAfterTabStrip(resetButtonElement);
 
     if (!WebInspector.overridesSupport.responsiveDesignAvailable()) {
-        var disableButtonElement = createElementWithClass("button", "overrides-disable-button", "text-button");
-        this._tabbedPane.appendAfterTabStrip(disableButtonElement);
+        var disableButtonElement = createTextButton(WebInspector.UIString("Disable"), this._toggleEmulationEnabled.bind(this), "overrides-disable-button");
         disableButtonElement.id = "overrides-disable-button";
-        disableButtonElement.textContent = WebInspector.UIString("Disable");
-        disableButtonElement.addEventListener("click", this._toggleEmulationEnabled.bind(this), false);
+        this._tabbedPane.appendAfterTabStrip(disableButtonElement);
     }
 
     this._splashScreenElement = this.element.createChild("div", "overrides-splash-screen");
@@ -78,9 +74,7 @@ WebInspector.OverridesView = function()
         statusBar.appendStatusBarItem(toggleEmulationButton);
         this._splashScreenElement.createTextChild(WebInspector.UIString("in the main toolbar to enable it."));
     } else {
-        var toggleEmulationButton = this._splashScreenElement.createChild("button", "overrides-enable-button", "text-button");
-        toggleEmulationButton.textContent = WebInspector.UIString("Enable emulation");
-        toggleEmulationButton.addEventListener("click", this._toggleEmulationEnabled.bind(this), false);
+        this._splashScreenElement.appendChild(createTextButton(WebInspector.UIString("Enable emulation"), this._toggleEmulationEnabled.bind(this), "overrides-enable-button"));
     }
 
     this._warningFooter = this.element.createChild("div", "overrides-footer");
@@ -611,9 +605,7 @@ WebInspector.OverridesView.SensorsTab.prototype = {
         this._betaElement = this._createAxisInput(cellElement, "device-orientation-override-beta", "\u03B2: ", String(deviceOrientation.beta));
         this._gammaElement = this._createAxisInput(cellElement, "device-orientation-override-gamma", "\u03B3: ", String(deviceOrientation.gamma));
 
-        var resetButton = cellElement.createChild("button", "accelerometer-reset-button", "text-button");
-        resetButton.textContent = WebInspector.UIString("Reset");
-        resetButton.addEventListener("click", this._resetDeviceOrientation.bind(this), false);
+        cellElement.appendChild(createTextButton(WebInspector.UIString("Reset"), this._resetDeviceOrientation.bind(this), "accelerometer-reset-button"));
 
         this._stageElement = rowElement.createChild("td","accelerometer-stage");
         this._boxElement = this._stageElement.createChild("section", "accelerometer-box");

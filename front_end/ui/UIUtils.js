@@ -1253,6 +1253,24 @@ WebInspector.beautifyFunctionName = function(name)
     return name || WebInspector.UIString("(anonymous function)");
 }
 
+/**
+ * @param {string} text
+ * @param {function(!Event)=} clickHandler
+ * @param {string=} className
+ * @param {string=} title
+ * @return {!Element}
+ */
+function createTextButton(text, clickHandler, className, title)
+{
+    var element = createElementWithClass("button", className || "", "text-button");
+    element.textContent = text;
+    if (clickHandler)
+        element.addEventListener("click", clickHandler, false);
+    if (title)
+        element.title = title;
+    return element;
+}
+
 ;(
 /** @suppressGlobalPropertiesCheck */
 function() {

@@ -1594,9 +1594,8 @@ WebInspector.ElementsTreeUpdater.prototype = {
      */
     _createExpandAllButtonTreeElement: function(treeElement)
     {
-        var button = createElement("button", "text-button");
+        var button = createTextButton("", handleLoadAllChildren.bind(this));
         button.value = "";
-        button.addEventListener("click", handleLoadAllChildren.bind(this), false);
         var expandAllButtonElement = new TreeElement(button, null, false);
         expandAllButtonElement.selectable = false;
         expandAllButtonElement.expandAllButton = true;
