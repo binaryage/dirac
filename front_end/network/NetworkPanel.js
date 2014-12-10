@@ -255,7 +255,7 @@ WebInspector.NetworkPanel.prototype = {
      */
     handleShortcut: function(event)
     {
-        if (event.keyCode === WebInspector.KeyboardShortcut.Keys.Esc.code) {
+        if (this._networkItemView && event.keyCode === WebInspector.KeyboardShortcut.Keys.Esc.code) {
             this._showRequest(null);
             event.handled = true;
             return;
