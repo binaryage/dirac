@@ -997,7 +997,39 @@ WebInspector.ElementsTreeOutline.prototype = {
         if (!treeElement)
             return;
 
-        treeElement.toggleEditAsHTML();
+        if (node.pseudoType())
+            return;
+
+        var parentNode = node.parentNode;
+        var index = node.index;
+        var wasExpanded = treeElement.expanded;
+
+        treeElement.toggleEditAsHTML(editingFinished.bind(this));
+
+        /**
+         * @this {WebInspector.ElementsTreeOutline}
+         * @param {boolean} success
+         */
+        function editingFinished(success)
+        {
+            if (!success)
+                return;
+
+            // Select it and expand if necessary. We force tree update so that it processes dom events and is up to date.
+            this.runPendingUpdates();
+
+            var newNode = parentNode ? parentNode.children()[index] || parentNode : null;
+            if (!newNode)
+                return;
+
+            this.selectDOMNode(newNode, true);
+
+            if (wasExpanded) {
+                var newTreeItem = this.findTreeElement(newNode);
+                if (newTreeItem)
+                    newTreeItem.expand();
+            }
+        }
     },
 
     /**
@@ -1480,13 +1512,9 @@ WebInspector.ElementsTreeUpdater.prototype = {
         if (index === -1)
             return null;
 
-        if (index >= treeElement.expandedChildrenLimit)
+        if (index >= treeElement.expandedChildrenLimit())
             this.setExpandedChildrenLimit(treeElement, index + 1);
-
-        // Check index-th child is visible in the children tree
-        if (treeElement.expandedChildCount > index)
-            return /** @type {!WebInspector.ElementsTreeElement} */ (treeElement.children[index]);
-        return null;
+        return /** @type {!WebInspector.ElementsTreeElement} */ (treeElement.children[index]);
     },
 
     /**
@@ -1609,7 +1637,7 @@ WebInspector.ElementsTreeUpdater.prototype = {
         function handleLoadAllChildren(event)
         {
             var visibleChildCount = this._visibleChildren(treeElement).length;
-            this.setExpandedChildrenLimit(treeElement, Math.max(visibleChildCount, treeElement.expandedChildrenLimit + WebInspector.ElementsTreeElement.InitialChildrenLimit));
+            this.setExpandedChildrenLimit(treeElement, Math.max(visibleChildCount, treeElement.expandedChildrenLimit() + WebInspector.ElementsTreeElement.InitialChildrenLimit));
             event.consume();
         }
     },
@@ -1620,10 +1648,10 @@ WebInspector.ElementsTreeUpdater.prototype = {
      */
     setExpandedChildrenLimit: function(treeElement, expandedChildrenLimit)
     {
-        if (treeElement.expandedChildrenLimit === expandedChildrenLimit)
+        if (treeElement.expandedChildrenLimit() === expandedChildrenLimit)
             return;
 
-        treeElement.expandedChildrenLimit = expandedChildrenLimit;
+        treeElement.setExpandedChildrenLimit(expandedChildrenLimit);
         if (treeElement.treeOutline && !this._treeElementsBeingUpdated.has(treeElement))
             this._updateChildren(treeElement);
     },
@@ -1697,12 +1725,13 @@ WebInspector.ElementsTreeUpdater.prototype = {
         var existingTreeElements = new Map();
         for (var i = treeElement.children.length - 1; i >= 0; --i) {
             var existingTreeElement = treeElement.children[i];
-            var existingNode;
-            if (existingTreeElement instanceof WebInspector.ElementsTreeElement)
-                existingNode = existingTreeElement.node();
-            // Skip expand all button.
-            if (!existingNode)
+            if (!(existingTreeElement instanceof WebInspector.ElementsTreeElement)) {
+                // Remove expand all button.
+                treeElement.removeChildAtIndex(i);
                 continue;
+            }
+            var elementsTreeElement = /** @type {!WebInspector.ElementsTreeElement} */ (existingTreeElement);
+            var existingNode = elementsTreeElement.node();
 
             if (existingNode.parentNode === node) {
                 existingTreeElements.set(existingNode, existingTreeElement);
@@ -1724,7 +1753,8 @@ WebInspector.ElementsTreeUpdater.prototype = {
             selectedTreeElement.select();
 
         var visibleChildren = this._visibleChildren(treeElement);
-        for (var i = 0; i < visibleChildren.length && i < treeElement.expandedChildrenLimit; ++i) {
+
+        for (var i = 0; i < visibleChildren.length && i < treeElement.expandedChildrenLimit(); ++i) {
             var child = visibleChildren[i];
             if (existingTreeElements.has(child)) {
                 // If an existing element was found, just move it.
@@ -1735,47 +1765,31 @@ WebInspector.ElementsTreeUpdater.prototype = {
                 if (this._updateInfo(treeElement.node()))
                     WebInspector.ElementsTreeElement.animateOnDOMUpdate(newElement);
                 // If a node was inserted in the middle of existing list dynamically we might need to increase the limit.
-                if (treeElement.expandedChildCount > treeElement.expandedChildrenLimit)
-                    this.setExpandedChildrenLimit(treeElement, treeElement.expandedChildrenLimit + 1);
+                if (treeElement.children.length > treeElement.expandedChildrenLimit())
+                    this.setExpandedChildrenLimit(treeElement, treeElement.expandedChildrenLimit() + 1);
             }
         }
 
         treeElement.updateTitle();
-        this._adjustCollapsedRange(treeElement);
 
-        if (node.nodeType() === Node.ELEMENT_NODE && treeElement.hasChildren)
-            this.insertChildElement(treeElement, node, treeElement.children.length, true);
-
-        this._treeElementsBeingUpdated.delete(treeElement)
-    },
-
-    /**
-     * @param {!WebInspector.ElementsTreeElement} treeElement
-     */
-    _adjustCollapsedRange: function(treeElement)
-    {
-        var visibleChildren = this._visibleChildren(treeElement);
-        // Ensure precondition: only the tree elements for node children are found in the tree
-        // (not the Expand All button or the closing tag).
-        if (treeElement.expandAllButtonElement && treeElement.expandAllButtonElement.parent)
-            treeElement.removeChild(treeElement.expandAllButtonElement);
-
-        const childNodeCount = visibleChildren.length;
-
-        // In case some nodes from the expanded range were removed, pull some nodes from the collapsed range into the expanded range at the bottom.
-        for (var i = treeElement.expandedChildCount, limit = Math.min(treeElement.expandedChildrenLimit, childNodeCount); i < limit; ++i)
-            this.insertChildElement(treeElement, visibleChildren[i], i);
-
-        const expandedChildCount = treeElement.expandedChildCount;
-        if (childNodeCount > treeElement.expandedChildCount) {
+        // Update expand all button.
+        var expandedChildCount = treeElement.children.length;
+        if (visibleChildren.length > expandedChildCount) {
             var targetButtonIndex = expandedChildCount;
             if (!treeElement.expandAllButtonElement)
                 treeElement.expandAllButtonElement = this._createExpandAllButtonTreeElement(treeElement);
             if (!treeElement.expandAllButtonElement.parent)
                 treeElement.insertChild(treeElement.expandAllButtonElement, targetButtonIndex);
-            treeElement.expandAllButtonElement.button.textContent = WebInspector.UIString("Show All Nodes (%d More)", childNodeCount - expandedChildCount);
-        } else if (treeElement.expandAllButtonElement)
+            treeElement.expandAllButtonElement.button.textContent = WebInspector.UIString("Show All Nodes (%d More)", visibleChildren.length - expandedChildCount);
+        } else if (treeElement.expandAllButtonElement) {
             delete treeElement.expandAllButtonElement;
+        }
+
+        // Insert close tag.
+        if (node.nodeType() === Node.ELEMENT_NODE && treeElement.hasChildren)
+            this.insertChildElement(treeElement, node, treeElement.children.length, true);
+
+        this._treeElementsBeingUpdated.delete(treeElement)
     },
 }
 

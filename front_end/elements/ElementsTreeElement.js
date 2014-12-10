@@ -178,24 +178,20 @@ WebInspector.ElementsTreeElement.prototype = {
         }
     },
 
-    get expandedChildrenLimit()
+    /**
+     * @return {number}
+     */
+    expandedChildrenLimit: function()
     {
         return this._expandedChildrenLimit;
     },
 
-    set expandedChildrenLimit(x)
+    /**
+     * @param {number} expandedChildrenLimit
+     */
+    setExpandedChildrenLimit: function(expandedChildrenLimit)
     {
-        this._expandedChildrenLimit = x;
-    },
-
-    get expandedChildCount()
-    {
-        var count = this.children.length;
-        if (count && this.children[count - 1]._elementCloseTag)
-            count--;
-        if (count && this.children[count - 1].expandAllButton)
-            count--;
-        return count;
+        this._expandedChildrenLimit = expandedChildrenLimit;
     },
 
     /**
@@ -1435,44 +1431,22 @@ WebInspector.ElementsTreeElement.prototype = {
         this._node.removeNode();
     },
 
-    toggleEditAsHTML: function()
+    /**
+     * @param {function(boolean)} callback
+     */
+    toggleEditAsHTML: function(callback)
     {
         if (this._editing && this._htmlEditElement && WebInspector.isBeingEdited(this._htmlEditElement)) {
             this._editing.commit();
             return;
         }
 
-        var node = this._node;
-        if (node.pseudoType())
-            return;
-
-        var treeOutline = this.treeOutline;
-        var parentNode = node.parentNode;
-        var index = node.index;
-        var wasExpanded = this.expanded;
-
         /**
          * @param {?Protocol.Error} error
          */
         function selectNode(error)
         {
-            if (error)
-                return;
-
-            // Select it and expand if necessary. We force tree update so that it processes dom events and is up to date.
-            treeOutline.runPendingUpdates();
-
-            var newNode = parentNode ? parentNode.children()[index] || parentNode : null;
-            if (!newNode)
-                return;
-
-            treeOutline.selectDOMNode(newNode, true);
-
-            if (wasExpanded) {
-                var newTreeItem = treeOutline.findTreeElement(newNode);
-                if (newTreeItem)
-                    newTreeItem.expand();
-            }
+            callback(!error);
         }
 
         /**
@@ -1485,6 +1459,7 @@ WebInspector.ElementsTreeElement.prototype = {
                 node.setOuterHTML(value, selectNode);
         }
 
+        var node = this._node;
         node.getOuterHTML(this._startEditingAsHTML.bind(this, commitChange));
     },
 
