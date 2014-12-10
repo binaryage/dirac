@@ -113,6 +113,7 @@ WebInspector.NetworkLogView.FilterType = {
     Domain: "domain",
     HasResponseHeader: "has-response-header",
     Is: "is",
+    LargerThan: "larger-than",
     Method: "method",
     MimeType: "mime-type",
     Scheme: "scheme",
@@ -228,6 +229,9 @@ WebInspector.NetworkLogView.prototype = {
     {
         this._suggestionBuilder = new WebInspector.FilterSuggestionBuilder(WebInspector.NetworkLogView._searchKeys);
         this._suggestionBuilder.addItem(WebInspector.NetworkLogView.FilterType.Is, WebInspector.NetworkLogView.IsFilterType.Running);
+        this._suggestionBuilder.addItem(WebInspector.NetworkLogView.FilterType.LargerThan, "100");
+        this._suggestionBuilder.addItem(WebInspector.NetworkLogView.FilterType.LargerThan, "10k");
+        this._suggestionBuilder.addItem(WebInspector.NetworkLogView.FilterType.LargerThan, "1M");
         this._textFilterUI.setSuggestionBuilder(this._suggestionBuilder);
     },
 
@@ -1490,6 +1494,9 @@ WebInspector.NetworkLogView.prototype = {
                 return WebInspector.NetworkLogView._runningRequestFilter;
             break;
 
+        case WebInspector.NetworkLogView.FilterType.LargerThan:
+            return this._createSizeFilter(value.toLowerCase());
+
         case WebInspector.NetworkLogView.FilterType.Method:
             return WebInspector.NetworkLogView._requestMethodFilter.bind(null, value);
 
@@ -1512,6 +1519,26 @@ WebInspector.NetworkLogView.prototype = {
             return WebInspector.NetworkLogView._statusCodeFilter.bind(null, value);
         }
         return null;
+    },
+
+    /**
+     * @param {string} value
+     * @return {?WebInspector.NetworkLogView.Filter}
+     */
+    _createSizeFilter: function(value)
+    {
+        var multiplier = 1;
+        if (value.endsWith("k")) {
+            multiplier = 1024;
+            value = value.substring(0, value.length - 1);
+        } else if (value.endsWith("m")) {
+            multiplier = 1024 * 1024;
+            value = value.substring(0, value.length - 1);
+        }
+        var quantity  = Number(value);
+        if (isNaN(quantity))
+            return null;
+        return WebInspector.NetworkLogView._requestSizeLargerThanFilter.bind(null, quantity * multiplier);
     },
 
     _filterRequests: function()
@@ -1809,6 +1836,16 @@ WebInspector.NetworkLogView._requestSetCookieValueFilter = function(value, reque
             return true;
     }
     return false;
+}
+
+/**
+ * @param {number} value
+ * @param {!WebInspector.NetworkRequest} request
+ * @return {boolean}
+ */
+WebInspector.NetworkLogView._requestSizeLargerThanFilter = function(value, request)
+{
+    return request.transferSize >= value;
 }
 
 /**
