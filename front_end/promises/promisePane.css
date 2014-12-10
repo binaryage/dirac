@@ -46,6 +46,10 @@
     color: white;
 }
 
+.promises .status.pending {
+    background-color: rgb(171, 191, 254);
+}
+
 .promises .status.rejected {
     background-color: #f66;
 }
