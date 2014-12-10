@@ -1776,7 +1776,7 @@ WebInspector.NetworkLogView._requestSetCookieDomainFilter = function(value, requ
     var cookies = request.responseCookies;
     for (var i = 0, l = cookies ? cookies.length : 0; i < l; ++i) {
         if (cookies[i].domain() === value)
-            return false;
+            return true;
     }
     return false;
 }
@@ -1791,7 +1791,7 @@ WebInspector.NetworkLogView._requestSetCookieNameFilter = function(value, reques
     var cookies = request.responseCookies;
     for (var i = 0, l = cookies ? cookies.length : 0; i < l; ++i) {
         if (cookies[i].name() === value)
-            return false;
+            return true;
     }
     return false;
 }
@@ -1806,7 +1806,7 @@ WebInspector.NetworkLogView._requestSetCookieValueFilter = function(value, reque
     var cookies = request.responseCookies;
     for (var i = 0, l = cookies ? cookies.length : 0; i < l; ++i) {
         if (cookies[i].value() === value)
-            return false;
+            return true;
     }
     return false;
 }
