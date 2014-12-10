@@ -130,18 +130,18 @@ WebInspector.TimelineView.prototype = {
     {
         this._timelineGrid.removeEventDividers();
         var clientWidth = this._graphRowsElementWidth;
-        var dividers = [];
+        var dividers = new Map();
         var eventDividerRecords = this._model.eventDividerRecords();
 
         for (var i = 0; i < eventDividerRecords.length; ++i) {
             var record = eventDividerRecords[i];
             var position = this._calculator.computePosition(record.startTime());
             var dividerPosition = Math.round(position);
-            if (dividerPosition < 0 || dividerPosition >= clientWidth || dividers[dividerPosition])
+            if (dividerPosition < 0 || dividerPosition >= clientWidth || dividers.has(dividerPosition))
                 continue;
-            dividers[dividerPosition] = WebInspector.TimelineUIUtils.createDividerForRecord(record, dividerPosition);
+            dividers.set(dividerPosition, WebInspector.TimelineUIUtils.createDividerForRecord(record, dividerPosition));
         }
-        this._timelineGrid.addEventDividers(dividers);
+        this._timelineGrid.addEventDividers(dividers.valuesArray());
     },
 
     _updateFrameBars: function(frames)

@@ -54,11 +54,17 @@ WebInspector.TimelineOverviewPane.Events = {
 };
 
 WebInspector.TimelineOverviewPane.prototype = {
+    /**
+     * @override
+     */
     wasShown: function()
     {
         this.update();
     },
 
+    /**
+     * @override
+     */
     onResize: function()
     {
         this.update();
@@ -103,18 +109,16 @@ WebInspector.TimelineOverviewPane.prototype = {
 
     _updateEventDividers: function()
     {
-        var records = this._model.eventDividerRecords();
         this._overviewGrid.removeEventDividers();
-        var dividers = [];
-        for (var i = 0; i < records.length; ++i) {
-            var record = records[i];
-            var positions = this._overviewCalculator.computeBarGraphPercentages(record);
-            var dividerPosition = Math.round(positions.start * 10);
-            if (dividers[dividerPosition])
+        var dividers = new Map();
+        for (var record of this._model.eventDividerRecords()) {
+            var dividerPosition = Math.round(this._overviewCalculator.computePosition(record.startTime()));
+            // Limit the number of dividers to one per pixel.
+            if (dividers.has(dividerPosition))
                 continue;
-            dividers[dividerPosition] = WebInspector.TimelineUIUtils.createDividerForRecord(record, dividerPosition);
+            dividers.set(dividerPosition, WebInspector.TimelineUIUtils.createDividerForRecord(record, dividerPosition));
         }
-        this._overviewGrid.addEventDividers(dividers);
+        this._overviewGrid.addEventDividers(dividers.valuesArray());
     },
 
     _reset: function()
@@ -198,16 +202,6 @@ WebInspector.TimelineOverviewCalculator.prototype = {
     computePosition: function(time)
     {
         return (time - this._minimumBoundary) / this.boundarySpan() * this._workingArea + this._paddingLeft;
-    },
-
-    /**
-     * @return {!{start: number, end: number}}
-     */
-    computeBarGraphPercentages: function(record)
-    {
-        var start = (record.startTime() - this._minimumBoundary) / this.boundarySpan() * 100;
-        var end = (record.endTime() - this._minimumBoundary) / this.boundarySpan() * 100;
-        return {start: start, end: end};
     },
 
     /**
