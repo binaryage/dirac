@@ -60,6 +60,7 @@
         "panelEnablerView.css",
         "pieChart.css",
         "progressIndicator.css",
+        "radioButton.css",
         "searchableView.css",
         "softContextMenu.css",
         "splitView.css",

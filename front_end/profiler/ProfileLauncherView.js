@@ -195,14 +195,11 @@ WebInspector.MultiProfileLauncherView.prototype = {
      */
     addProfileType: function(profileType)
     {
-        var labelElement = this._profileTypeSelectorForm.createChild("label");
-        labelElement.textContent = profileType.name;
-        var optionElement = createElement("input");
-        labelElement.insertBefore(optionElement, labelElement.firstChild);
+        var labelElement = createRadioLabel("profile-type", profileType.name);
+        this._profileTypeSelectorForm.appendChild(labelElement);
+        var optionElement = labelElement.radioElement;
         this._typeIdToOptionElement[profileType.id] = optionElement;
         optionElement._profileType = profileType;
-        optionElement.type = "radio";
-        optionElement.name = "profile-type";
         optionElement.style.hidden = true;
         optionElement.addEventListener("change", this._profileTypeChanged.bind(this, profileType), false);
         var descriptionElement = labelElement.createChild("p");

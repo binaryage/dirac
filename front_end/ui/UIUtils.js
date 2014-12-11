@@ -1254,6 +1254,38 @@ WebInspector.beautifyFunctionName = function(name)
 }
 
 /**
+ * @param {string} localName
+ * @param {string} typeExtension
+ * @param {function(new:T)} extendedType
+ * @param {!Object.<string, function(...*)>} protoTemplate
+ * @param {string=} styleSheet
+ * @suppressGlobalPropertiesCheck
+ * @template T
+ */
+function registerCustomElement(localName, typeExtension, extendedType, protoTemplate, styleSheet)
+{
+    var proto = Object.create(extendedType.prototype);
+    for (var p in protoTemplate)
+        proto[p] = protoTemplate[p];
+
+    if (!protoTemplate["createdCallback"]) {
+        /**
+         * @this {Element}
+         */
+        proto.createdCallback = function() {
+            var root = this.createShadowRoot();
+            root.appendChild(createElement("content"));
+            if (styleSheet)
+                root.appendChild(WebInspector.View.createStyleElement(styleSheet));
+        };
+    }
+    document.registerElement(typeExtension, {
+        prototype: proto,
+        extends: localName
+    });
+}
+
+/**
  * @param {string} text
  * @param {function(!Event)=} clickHandler
  * @param {string=} className
@@ -1271,21 +1303,62 @@ function createTextButton(text, clickHandler, className, title)
     return element;
 }
 
-;(
-/** @suppressGlobalPropertiesCheck */
-function() {
-    var proto = Object.create(HTMLButtonElement.prototype);
-    /**
-     * @this {HTMLButtonElement}
-     */
-    proto.createdCallback = function() {
-        this.type = "button";
-        var root = this.createShadowRoot();
-        root.appendChild(createElement("content"));
-        root.appendChild(WebInspector.View.createStyleElement("ui/textButton.css"));
-    };
-    document.registerElement("text-button", {
-        prototype: proto,
-        extends: "button"
+/**
+ * @param {string} name
+ * @param {string} title
+ * @param {boolean=} checked
+ * @return {!Element}
+ */
+function createRadioLabel(name, title, checked)
+{
+    var element = createElement("label", "dt-radio");
+    element.radioElement.name = name;
+    element.radioElement.checked = !!checked;
+    element.createTextChild(title);
+    return element;
+}
+
+;(function() {
+    registerCustomElement("button", "text-button", HTMLButtonElement, {
+        /**
+         * @this {Element}
+         */
+        createdCallback: function()
+        {
+            this.type = "button";
+            var root = this.createShadowRoot();
+            root.appendChild(WebInspector.View.createStyleElement("ui/textButton.css"));
+            root.createChild("content");
+        }
+    }, "ui/textButton.css");
+
+    registerCustomElement("label", "dt-radio", HTMLLabelElement, {
+        /**
+         * @this {Element}
+         */
+        createdCallback: function()
+        {
+            this.radioElement = this.createChild("input", "dt-radio-button");
+            this.radioElement.type = "radio";
+
+            var root = this.createShadowRoot();
+            root.appendChild(WebInspector.View.createStyleElement("ui/radioButton.css"));
+            root.createChild("content").select = ".dt-radio-button";
+            root.createChild("content");
+            this.addEventListener("click", radioClickHandler, false);
+        }
     });
+
+    /**
+     * @param {!Event} event
+     * @suppressReceiverCheck
+     * @this {Element}
+     */
+    function radioClickHandler(event)
+    {
+        if (this.radioElement.checked)
+            return;
+        this.radioElement.checked = true;
+        this.radioElement.dispatchEvent(new Event("change"));
+    }
 })();
