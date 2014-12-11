@@ -186,6 +186,11 @@ WebInspector.Target.prototype = {
         /** @type {!WebInspector.AnimationModel} */
         this.animationModel = new WebInspector.AnimationModel(this);
 
+        if (WebInspector.isWorkerFrontend() && this.isWorkerTarget() && Runtime.experiments.isEnabled("serviceWorkerCacheInspection")) {
+            /** @type {!WebInspector.ServiceWorkerCacheModel} */
+            this.serviceWorkerCacheModel = new WebInspector.ServiceWorkerCacheModel(this);
+        }
+
         if (callback)
             callback(this);
     },
@@ -227,6 +232,8 @@ WebInspector.Target.prototype = {
         this.debuggerModel.dispose();
         this.networkManager.dispose();
         this.cpuProfilerModel.dispose();
+        if (this.serviceWorkerCacheModel)
+            this.serviceWorkerCacheModel.dispose();
     },
 
     /**

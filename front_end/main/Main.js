@@ -138,6 +138,7 @@ WebInspector.Main.prototype = {
         Runtime.experiments.register("disableAgentsWhenProfile", "Disable other agents and UI when profiler is active", true);
         Runtime.experiments.register("documentation", "JavaScript documentation", true);
         Runtime.experiments.register("fileSystemInspection", "FileSystem inspection");
+        Runtime.experiments.register("serviceWorkerCacheInspection", "ServiceWorker cache inspection", true);
         Runtime.experiments.register("gpuTimeline", "GPU data on timeline", true);
         Runtime.experiments.register("layersPanel", "Layers panel");
         Runtime.experiments.register("privateScriptInspection", "Private script inspection");

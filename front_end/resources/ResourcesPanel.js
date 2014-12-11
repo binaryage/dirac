@@ -52,6 +52,11 @@ WebInspector.ResourcesPanel = function()
     this.indexedDBListTreeElement = new WebInspector.IndexedDBTreeElement(this);
     this.sidebarTree.appendChild(this.indexedDBListTreeElement);
 
+    if (WebInspector.isWorkerFrontend() && Runtime.experiments.isEnabled("serviceWorkerCacheInspection")) {
+        this.serviceWorkerCacheListTreeElement = new WebInspector.ServiceWorkerCacheTreeElement(this);
+        this.sidebarTree.appendChild(this.serviceWorkerCacheListTreeElement);
+    }
+
     this.localStorageListTreeElement = new WebInspector.StorageCategoryTreeElement(this, WebInspector.UIString("Local Storage"), "LocalStorage", ["domstorage-storage-tree-item", "local-storage"]);
     this.sidebarTree.appendChild(this.localStorageListTreeElement);
 
@@ -172,6 +177,8 @@ WebInspector.ResourcesPanel.prototype = {
             this._populateDOMStorageTree();
             this._populateApplicationCacheTree(target);
             this.indexedDBListTreeElement._initialize();
+            if (this.serviceWorkerCacheListTreeElement)
+                this.serviceWorkerCacheListTreeElement._initialize();
             if (Runtime.experiments.isEnabled("fileSystemInspection"))
                 this.fileSystemListTreeElement._initialize();
             this._initDefaultSelection();
@@ -230,6 +237,8 @@ WebInspector.ResourcesPanel.prototype = {
         this.localStorageListTreeElement.removeChildren();
         this.sessionStorageListTreeElement.removeChildren();
         this.cookieListTreeElement.removeChildren();
+        if (this.serviceWorkerCacheListTreeElement)
+            this.serviceWorkerCacheListTreeElement.removeChildren();
 
         if (this.visibleView && !(this.visibleView instanceof WebInspector.StorageCategoryView))
             this.visibleView.detach();
@@ -542,6 +551,14 @@ WebInspector.ResourcesPanel.prototype = {
      * @param {!WebInspector.View} view
      */
     showIndexedDB: function(view)
+    {
+        this._innerShowView(view);
+    },
+
+    /**
+     * @param {!WebInspector.View} view
+     */
+    showServiceWorkerCache: function(view)
     {
         this._innerShowView(view);
     },
@@ -1402,6 +1419,208 @@ WebInspector.DatabaseTableTreeElement.prototype = {
 
     __proto__: WebInspector.BaseStorageTreeElement.prototype
 }
+
+
+/**
+ * @constructor
+ * @extends {WebInspector.StorageCategoryTreeElement}
+ * @param {!WebInspector.ResourcesPanel} storagePanel
+ * @implements {WebInspector.TargetManager.Observer}
+ */
+WebInspector.ServiceWorkerCacheTreeElement = function(storagePanel)
+{
+    WebInspector.StorageCategoryTreeElement.call(this, storagePanel, WebInspector.UIString("ServiceWorkerCache"), "IndexedDB", ["indexed-db-storage-tree-item"]);
+}
+
+WebInspector.ServiceWorkerCacheTreeElement.prototype = {
+    _initialize: function()
+    {
+        /** @type {!Array.<!WebInspector.SWCacheTreeElement>} */
+        this._swCacheTreeElements = [];
+        var targets = WebInspector.targetManager.targets();
+        for (var i = 0; i < targets.length; ++i) {
+            if (!targets[i].serviceWorkerCacheModel)
+                continue;
+            var caches = targets[i].serviceWorkerCacheModel.caches();
+            for (var j = 0; j < caches.length; ++j)
+                this._addCache(targets[i].serviceWorkerCacheModel, caches[j]);
+        }
+        WebInspector.targetManager.addModelListener(WebInspector.ServiceWorkerCacheModel, WebInspector.ServiceWorkerCacheModel.EventTypes.CacheAdded, this._cacheAdded, this);
+        WebInspector.targetManager.addModelListener(WebInspector.ServiceWorkerCacheModel, WebInspector.ServiceWorkerCacheModel.EventTypes.CacheRemoved, this._cacheRemoved, this);
+        this._refreshCaches();
+        WebInspector.targetManager.observeTargets(this);
+    },
+
+    onattach: function()
+    {
+        WebInspector.StorageCategoryTreeElement.prototype.onattach.call(this);
+        this.listItemElement.addEventListener("contextmenu", this._handleContextMenuEvent.bind(this), true);
+    },
+
+    /**
+     * @override
+     * @param {!WebInspector.Target} target
+     */
+    targetAdded: function(target)
+    {
+        if (target.isWorkerTarget() && target.serviceWorkerCacheModel)
+            this._refreshCaches();
+    },
+
+    /**
+     * @override
+     * @param {!WebInspector.Target} target
+     */
+    targetRemoved: function(target) {},
+
+    _handleContextMenuEvent: function(event)
+    {
+        var contextMenu = new WebInspector.ContextMenu(event);
+        contextMenu.appendItem(WebInspector.UIString("Refresh Caches"), this._refreshCaches.bind(this));
+        contextMenu.show();
+    },
+
+    _refreshCaches: function()
+    {
+        var targets = WebInspector.targetManager.targets();
+        for (var i = 0; i < targets.length; ++i) {
+            if (targets[i].serviceWorkerCacheModel)
+                targets[i].serviceWorkerCacheModel.refreshCacheNames();
+        }
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _cacheAdded: function(event)
+    {
+        var cacheId = /** @type {!WebInspector.ServiceWorkerCacheModel.CacheId} */ (event.data);
+        var model = /** @type {!WebInspector.ServiceWorkerCacheModel} */ (event.target);
+        this._addCache(model, cacheId);
+    },
+
+    /**
+     * @param {!WebInspector.ServiceWorkerCacheModel} model
+     * @param {!WebInspector.ServiceWorkerCacheModel.CacheId} cacheId
+     */
+    _addCache: function(model, cacheId)
+    {
+        var swCacheTreeElement = new WebInspector.SWCacheTreeElement(this._storagePanel, model, cacheId);
+        this._swCacheTreeElements.push(swCacheTreeElement);
+        this.appendChild(swCacheTreeElement);
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _cacheRemoved: function(event)
+    {
+        var cacheId = /** @type {!WebInspector.ServiceWorkerCacheModel.CacheId} */ (event.data);
+        var model = /** @type {!WebInspector.ServiceWorkerCacheModel} */ (event.target);
+
+        var swCacheTreeElement = this._cacheTreeElement(model, cacheId)
+        if (!swCacheTreeElement)
+            return;
+
+        swCacheTreeElement.clear();
+        this.removeChild(swCacheTreeElement);
+        this._swCacheTreeElements.remove(swCacheTreeElement);
+    },
+
+    /**
+     * @param {!WebInspector.ServiceWorkerCacheModel} model
+     * @param {!WebInspector.ServiceWorkerCacheModel.CacheId} cacheId
+     * @return {?WebInspector.SWCacheTreeElement}
+     */
+    _cacheTreeElement: function(model, cacheId)
+    {
+        var index = -1;
+        for (var i = 0; i < this._swCacheTreeElements.length; ++i) {
+            if (this._swCacheTreeElements[i]._cacheId.equals(cacheId) && this._swCacheTreeElements[i]._model === model) {
+                index = i;
+                break;
+            }
+        }
+        if (index !== -1)
+            return this._swCacheTreeElements[i];
+        return null;
+    },
+
+    __proto__: WebInspector.StorageCategoryTreeElement.prototype
+}
+
+/**
+ * @constructor
+ * @extends {WebInspector.BaseStorageTreeElement}
+ * @param {!WebInspector.ResourcesPanel} storagePanel
+ * @param {!WebInspector.ServiceWorkerCacheModel} model
+ * @param {!WebInspector.ServiceWorkerCacheModel.CacheId} cacheId
+ */
+WebInspector.SWCacheTreeElement = function(storagePanel, model, cacheId)
+{
+    WebInspector.BaseStorageTreeElement.call(this, storagePanel, null, cacheId.name, ["indexed-db-storage-tree-item"]);
+    this._model = model;
+    this._cacheId = cacheId;
+}
+
+WebInspector.SWCacheTreeElement.prototype = {
+    get itemURL()
+    {
+        // I don't think this will work at all.
+        return "swcache://" + this._cacheId.name;
+    },
+
+    onattach: function()
+    {
+        WebInspector.BaseStorageTreeElement.prototype.onattach.call(this);
+        this.listItemElement.addEventListener("contextmenu", this._handleContextMenuEvent.bind(this), true);
+    },
+
+    _handleContextMenuEvent: function(event)
+    {
+        var contextMenu = new WebInspector.ContextMenu(event);
+        contextMenu.appendItem(WebInspector.UIString("Delete"), this._clearCache.bind(this));
+        contextMenu.show();
+    },
+
+    _clearCache: function()
+    {
+        this._model.deleteCache(this._cacheId);
+    },
+
+    /**
+     * @param {!WebInspector.ServiceWorkerCacheModel.Cache} cache
+     */
+    update: function(cache)
+    {
+        this._cache = cache;
+        if (this._view)
+            this._view.update(cache);
+    },
+
+    /**
+     * @override
+     * @return {boolean}
+     */
+    onselect: function(selectedByUser)
+    {
+        WebInspector.BaseStorageTreeElement.prototype.onselect.call(this, selectedByUser);
+        if (!this._view)
+            this._view = new WebInspector.ServiceWorkerCacheView(this._model, this._cacheId, this._cache);
+
+        this._storagePanel.showServiceWorkerCache(this._view);
+        return false;
+    },
+
+    clear: function()
+    {
+        if (this._view)
+            this._view.clear();
+    },
+
+    __proto__: WebInspector.BaseStorageTreeElement.prototype
+}
+
 
 /**
  * @constructor

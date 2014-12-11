@@ -1702,6 +1702,53 @@
         ]
     },
     {
+        "domain": "ServiceWorkerCache",
+        "hidden": true,
+        "types": [
+            {
+                "id": "DataEntry",
+                "type": "object",
+                "description": "Data entry.",
+                "properties": [
+                    { "name": "request", "type": "string", "description": "JSON-stringified request object." },
+                    { "name": "response", "type": "string", "description": "JSON-stringified response object." }
+                ]
+            }
+        ],
+        "commands": [
+            {
+                "name": "requestCacheNames",
+                "async": true,
+                "returns": [
+                    { "name": "cacheNames", "type": "array", "items": { "type": "string" }, "description": "Cache names for origin." }
+                ],
+                "description": "Requests cache names."
+            },
+            {
+                "name": "requestEntries",
+                "async": true,
+                "parameters": [
+                    { "name": "cacheName", "type": "string", "description": "Cache name." },
+                    { "name": "skipCount", "type": "integer", "description": "Number of records to skip." },
+                    { "name": "pageSize", "type": "integer", "description": "Number of records to fetch." }
+                ],
+                "returns": [
+                    { "name": "cacheDataEntries", "type": "array", "items": { "$ref": "DataEntry" }, "description": "Array of object store data entries." },
+                    { "name": "hasMore", "type": "boolean", "description": "If true, there are more entries to fetch in the given range." }
+                ],
+                "description": "Requests data from cache."
+            },
+            {
+                "name": "deleteCache",
+                "async": true,
+                "parameters": [
+                    { "name": "cacheName", "type": "string", "description": "Cache name." }
+                ],
+                "description": "Deletes a cache."
+            }
+        ]
+    },
+    {
         "domain": "DOMStorage",
         "hidden": true,
         "description": "Query and modify DOM storage.",
