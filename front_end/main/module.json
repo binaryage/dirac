@@ -220,6 +220,13 @@
         },
         {
             "type": "ui-setting",
+            "section": "Appearance",
+            "title": "Disable paused state overlay",
+            "settingName": "disablePausedStateOverlay",
+            "settingType": "checkbox"
+        },
+        {
+            "type": "ui-setting",
             "section": "Extensions",
             "settingType": "custom",
             "className": "WebInspector.HandlerRegistry.OpenAnchorLocationSettingDelegate"

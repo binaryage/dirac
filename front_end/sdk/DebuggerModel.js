@@ -56,6 +56,7 @@ WebInspector.DebuggerModel = function(target)
     WebInspector.settings.enableAsyncStackTraces.addChangeListener(this.asyncStackTracesStateChanged, this);
     WebInspector.settings.skipStackFramesPattern.addChangeListener(this._applySkipStackFrameSettings, this);
     WebInspector.settings.skipContentScripts.addChangeListener(this._applySkipStackFrameSettings, this);
+    WebInspector.settings.disablePausedStateOverlay.addChangeListener(this._updateOverlayMessage, this);
 
     this.enableDebugger();
 
@@ -446,13 +447,17 @@ WebInspector.DebuggerModel.prototype = {
         this._debuggerPausedDetails = debuggerPausedDetails;
         if (this._debuggerPausedDetails)
             this.dispatchEventToListeners(WebInspector.DebuggerModel.Events.DebuggerPaused, this._debuggerPausedDetails);
-        if (debuggerPausedDetails) {
+        if (debuggerPausedDetails)
             this.setSelectedCallFrame(debuggerPausedDetails.callFrames[0]);
-            this._agent.setOverlayMessage(WebInspector.UIString("Paused in debugger"));
-        } else {
+        else
             this.setSelectedCallFrame(null);
-            this._agent.setOverlayMessage();
-        }
+        this._updateOverlayMessage();
+    },
+
+    _updateOverlayMessage: function()
+    {
+        var message = this._debuggerPausedDetails && !WebInspector.settings.disablePausedStateOverlay.get() ? WebInspector.UIString("Paused in debugger") : undefined;
+        this._agent.setOverlayMessage(message);
     },
 
     /**
