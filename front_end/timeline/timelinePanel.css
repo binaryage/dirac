@@ -719,6 +719,7 @@
 .layer-tree.outline-disclosure > ol,
 .profiler-log-view > ol {
     margin-left: -12px
+    overflow: auto;
 }
 
 .layer-tree.outline-disclosure ol.children,
