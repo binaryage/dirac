@@ -148,7 +148,7 @@ WebInspector.ConsoleViewMessage.prototype = {
          */
         function linkifyRequest(title)
         {
-            return WebInspector.Linkifier.linkifyUsingRevealer(/** @type {!WebInspector.NetworkRequest} */ (this.request), title, this.url);
+            return WebInspector.Linkifier.linkifyUsingRevealer(/** @type {!WebInspector.NetworkRequest} */ (this.request), title, this.request.url);
         }
 
         var consoleMessage = this._message;
