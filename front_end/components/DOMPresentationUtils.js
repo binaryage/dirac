@@ -111,8 +111,8 @@ WebInspector.DOMPresentationUtils.linkifyNodeReference = function(node)
 }
 
 /**
- * @param {string} imageURL
  * @param {!WebInspector.Target} target
+ * @param {string} imageURL
  * @param {boolean} showDimensions
  * @param {function(!Element=)} userCallback
  * @param {!Object=} precomputedDimensions
@@ -157,6 +157,49 @@ WebInspector.DOMPresentationUtils.buildImagePreviewContents = function(target, i
             container.createChild("tr").createChild("td").createChild("span", "description").textContent = description;
         userCallback(container);
     }
+}
+
+/**
+ * @param {!WebInspector.Target} target
+ * @param {!WebInspector.Linkifier} linkifier
+ * @param {!Array.<!ConsoleAgent.CallFrame>=} stackTrace
+ * @param {!ConsoleAgent.AsyncStackTrace=} asyncStackTrace
+ * @return {!Element}
+ */
+WebInspector.DOMPresentationUtils.buildStackTracePreviewContents = function(target, linkifier, stackTrace, asyncStackTrace)
+{
+    var element = createElementWithClass("table", "stack-preview-container");
+
+    /**
+     * @param {!Array.<!ConsoleAgent.CallFrame>} stackTrace
+     */
+    function appendStackTrace(stackTrace)
+    {
+        for (var stackFrame of stackTrace) {
+            var row = createElement("tr");
+            row.createChild("td").textContent = WebInspector.beautifyFunctionName(stackFrame.functionName);
+            row.createChild("td").textContent = " @ ";
+            row.createChild("td").appendChild(linkifier.linkifyConsoleCallFrame(target, stackFrame));
+            element.appendChild(row);
+        }
+    }
+
+    if (stackTrace)
+        appendStackTrace(stackTrace);
+
+    while (asyncStackTrace) {
+        var callFrames = asyncStackTrace.callFrames;
+        if (!callFrames || !callFrames.length)
+            break;
+        var row = element.createChild("tr");
+        row.createChild("td", "stack-preview-async-description").textContent = WebInspector.asyncStackTraceLabel(asyncStackTrace.description);
+        row.createChild("td");
+        row.createChild("td");
+        appendStackTrace(callFrames);
+        asyncStackTrace = asyncStackTrace.asyncStackTrace;
+    }
+
+    return element;
 }
 
 /**

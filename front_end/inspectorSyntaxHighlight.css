@@ -120,3 +120,12 @@ body /deep/ .webkit-html-end-of-file {
     color: rgb(255, 0, 0);
     font-weight: bold;
 }
+
+body /deep/ .stack-preview-async-description {
+    padding: 3px 0 1px;
+    font-style: italic;
+}
+
+body /deep/ .stack-preview-container .webkit-html-blackbox-link {
+    opacity: 0.6;
+}

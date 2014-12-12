@@ -160,6 +160,8 @@ WebInspector.Main.prototype = {
                 Runtime.experiments.enableForTest("documentation");
             if (testPath.indexOf("elements/") !== -1)
                 Runtime.experiments.enableForTest("animationInspection");
+            if (testPath.indexOf("debugger/promise") !== -1)
+                Runtime.experiments.enableForTest("promiseTracker");
         } else {
             Runtime.experiments.setDefaultExperiments([
                 "disableAgentsWhenProfile",

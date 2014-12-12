@@ -23,9 +23,11 @@ WebInspector.PromisePane = function()
     this._refreshButton.addEventListener("click", this._refreshButtonClicked.bind(this));
     this._refreshButton.setEnabled(false);
     statusBar.appendStatusBarItem(this._refreshButton);
-    this._liveCheckbox = new WebInspector.StatusBarCheckbox(WebInspector.UIString("Live"), WebInspector.UIString("Live Recording"));
-    this._liveCheckbox.inputElement.disabled = true;
-    statusBar.appendStatusBarItem(this._liveCheckbox);
+
+    this._captureStacksSetting = WebInspector.settings.createSetting("promisesCaptureStacks", false);
+    this._captureStacksSetting.addChangeListener(this._refreshCaptureStacks, this);
+    this._captureStacksCheckbox = new WebInspector.StatusBarCheckbox(WebInspector.UIString("Capture stacks"), WebInspector.UIString("Capture stack traces for promise creation and settlement events. (Has performance overhead)"), this._captureStacksSetting);
+    statusBar.appendStatusBarItem(this._captureStacksCheckbox);
 
     this._dataGridContainer = new WebInspector.VBox();
     this._dataGridContainer.show(this.element);
@@ -38,10 +40,28 @@ WebInspector.PromisePane = function()
     this._dataGrid.show(this._dataGridContainer.element);
 
     this._linkifier = new WebInspector.Linkifier();
+
+    this._popoverHelper = new WebInspector.PopoverHelper(this.element, this._getPopoverAnchor.bind(this), this._showPopover.bind(this));
+    this._popoverHelper.setTimeout(250, 250);
+
+    this.element.addEventListener("click", this._hidePopover.bind(this), false);
 }
 
 WebInspector.PromisePane.prototype = {
-    _recordButtonClicked: function(event)
+    /**
+     * @override
+     */
+    willHide: function()
+    {
+        this._hidePopover();
+    },
+
+    _hidePopover: function()
+    {
+        this._popoverHelper.hidePopover();
+    },
+
+    _recordButtonClicked: function()
     {
         var recording = !this._recordButton.toggled();
         this._recordButton.setToggled(recording);
@@ -52,12 +72,12 @@ WebInspector.PromisePane.prototype = {
             this._disablePromiseTracker();
     },
 
-    _refreshButtonClicked: function(event)
+    _refreshButtonClicked: function()
     {
         this._updateData();
     },
 
-    _clearButtonClicked: function(event)
+    _clearButtonClicked: function()
     {
         this._clear();
     },
@@ -66,18 +86,27 @@ WebInspector.PromisePane.prototype = {
     {
         var mainTarget = WebInspector.targetManager.mainTarget();
         if (mainTarget) {
-            mainTarget.debuggerAgent().enablePromiseTracker();
             this._target = mainTarget;
+            var capture = this._captureStacksSetting.get();
+            this._target.debuggerAgent().enablePromiseTracker(capture);
         }
     },
 
     _disablePromiseTracker: function()
     {
+        this._clear();
         if (this._target) {
             this._target.debuggerAgent().disablePromiseTracker();
             delete this._target;
         }
-        this._clear();
+    },
+
+    _refreshCaptureStacks: function()
+    {
+        if (!this._target)
+            return;
+        var capture = this._captureStacksSetting.get();
+        this._target.debuggerAgent().enablePromiseTracker(capture);
     },
 
     /**
@@ -85,40 +114,40 @@ WebInspector.PromisePane.prototype = {
      * @param {!DebuggerAgent.PromiseDetails} p2
      * @return {number}
      */
-    _comparePromises: function(p1, p2) {
+    _comparePromises: function(p1, p2)
+    {
         var t1 = p1.creationTime || 0;
         var t2 = p2.creationTime || 0;
-        return t1 - t2;
+        return (t1 - t2) || (p1.id - p2.id);
     },
 
     _updateData: function()
     {
         /**
          * @param {?Protocol.Error} error
-         * @param {?Array.<!DebuggerAgent.PromiseDetails>} promiseData
+         * @param {?Array.<!DebuggerAgent.PromiseDetails>} promiseDetails
          * @this {WebInspector.PromisePane}
          */
-        function callback(error, promiseData)
+        function callback(error, promiseDetails)
         {
-            if (error || !promiseData)
+            if (error || !promiseDetails)
                 return;
 
-            promiseData.sort(this._comparePromises);
+            promiseDetails.sort(this._comparePromises);
             var nodesToInsert = { __proto__: null };
-            for (var i = 0; i < promiseData.length; i++) {
-                var promise = promiseData[i];
-                var status = createElementWithClass("div", "status");
-                status.classList.add(promise.status);
-                status.createTextChild(promise.status);
+            for (var i = 0; i < promiseDetails.length; i++) {
+                var promise = promiseDetails[i];
+                var statusElement = createElementWithClass("div", "status " + promise.status);
+                statusElement.createTextChild(promise.status);
                 var data = {
                     promiseId: promise.id,
-                    status: status
+                    location: promise.callFrame ? this._linkifier.linkifyConsoleCallFrame(this._target, promise.callFrame) : WebInspector.UIString("(unknown)"),
+                    status: statusElement
                 };
-                if (promise.callFrame)
-                    data.location = this._linkifier.linkifyConsoleCallFrame(this._target, promise.callFrame);
                 if (promise.creationTime && promise.settlementTime && promise.settlementTime >= promise.creationTime)
-                    data.tts = Number.millisToString(promise.settlementTime - promise.creationTime, true);
+                    data.tts = Number.millisToString(promise.settlementTime - promise.creationTime);
                 var node = new WebInspector.DataGridNode(data, false);
+                node.__promiseDetails = promise;
                 nodesToInsert[promise.id] = { node: node, parentId: promise.parentId };
             }
 
@@ -140,6 +169,7 @@ WebInspector.PromisePane.prototype = {
 
     _clear: function()
     {
+        this._popoverHelper.hidePopover();
         this._dataGrid.rootNode().removeChildren();
         this._linkifier.reset();
         if (this._target)
@@ -195,6 +225,52 @@ WebInspector.PromisePane.prototype = {
             this._target.consoleModel.addMessage(message);
             WebInspector.console.show();
         }
+    },
+
+    /**
+     * @param {!Element} element
+     * @param {!Event} event
+     * @return {!Element|!AnchorBox|undefined}
+     */
+    _getPopoverAnchor: function(element, event)
+    {
+        if (!this._target)
+            return undefined;
+        var node = this._dataGrid.dataGridNodeFromNode(element);
+        if (!node)
+            return undefined;
+        var details = node.__promiseDetails;
+        if (!details)
+            return undefined;
+        var anchor = element.enclosingNodeOrSelfWithClass("location-column");
+        if (anchor)
+            return details.creationStack ? anchor : undefined;
+        anchor = element.enclosingNodeOrSelfWithClass("status-column");
+        return (anchor && details.settlementStack) ? anchor : undefined;
+    },
+
+    /**
+     * @param {!Element} anchor
+     * @param {!WebInspector.Popover} popover
+     */
+    _showPopover: function(anchor, popover)
+    {
+        var node = this._dataGrid.dataGridNodeFromNode(anchor);
+        var details = node.__promiseDetails;
+
+        var stackTrace;
+        var asyncStackTrace;
+        if (anchor.classList.contains("location-column")) {
+            stackTrace = details.creationStack;
+            asyncStackTrace = details.asyncCreationStack;
+        } else {
+            stackTrace = details.settlementStack;
+            asyncStackTrace = details.asyncSettlementStack;
+        }
+
+        var content = WebInspector.DOMPresentationUtils.buildStackTracePreviewContents(this._target, this._linkifier, stackTrace, asyncStackTrace);
+        popover.setCanShrink(true);
+        popover.showForAnchor(content, anchor);
     },
 
     __proto__: WebInspector.VBox.prototype

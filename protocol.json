@@ -3254,7 +3254,11 @@
                     { "name": "parentId", "type": "integer", "optional": true, "description": "Id of the parent promise." },
                     { "name": "callFrame", "$ref": "Console.CallFrame", "optional": true, "description": "Top call frame on promise creation."},
                     { "name": "creationTime", "type": "number", "optional": true, "description": "Creation time of the promise." },
-                    { "name": "settlementTime", "type": "number", "optional": true, "description": "Settlement time of the promise." }
+                    { "name": "settlementTime", "type": "number", "optional": true, "description": "Settlement time of the promise." },
+                    { "name": "creationStack", "$ref": "Console.StackTrace", "optional": true, "description": "JavaScript stack trace on promise creation." },
+                    { "name": "asyncCreationStack", "$ref": "Console.AsyncStackTrace", "optional": true, "description": "JavaScript asynchronous stack trace on promise creation, if available." },
+                    { "name": "settlementStack", "$ref": "Console.StackTrace", "optional": true, "description": "JavaScript stack trace on promise settlement." },
+                    { "name": "asyncSettlementStack", "$ref": "Console.AsyncStackTrace", "optional": true, "description": "JavaScript asynchronous stack trace on promise settlement, if available." }
                 ],
                 "hidden": true
             }
@@ -3557,6 +3561,9 @@
             },
             {
                 "name": "enablePromiseTracker",
+                "parameters": [
+                    { "name": "captureStacks", "type": "boolean", "optional": true, "description": "Whether to capture stack traces for promise creation and settlement events (default: false)." }
+                ],
                 "hidden": true,
                 "description": "Enables promise tracking, information about <code>Promise</code>s created or updated will now be stored on the backend."
             },

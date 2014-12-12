@@ -1009,7 +1009,9 @@ WebInspector.NetworkLogView.prototype = {
     {
         var content;
         if (anchor.classList.contains("network-script-initiated")) {
-            content = this._generateScriptInitiatedPopoverContent(anchor.request);
+            var request = /** @type {!WebInspector.NetworkRequest} */ (anchor.request);
+            var initiator = /** @type {!NetworkAgent.Initiator} */ (request.initiator());
+            content = WebInspector.DOMPresentationUtils.buildStackTracePreviewContents(request.target(), this._linkifier, initiator.stackTrace, initiator.asyncStackTrace);
             popover.setCanShrink(true);
         } else {
             content = WebInspector.RequestTimingView.createTimingTable(anchor.parentElement.request);
@@ -1021,51 +1023,6 @@ WebInspector.NetworkLogView.prototype = {
     _onHidePopover: function()
     {
         this._linkifier.reset();
-    },
-
-    /**
-     * @param {!WebInspector.NetworkRequest} request
-     * @return {!Element}
-     */
-    _generateScriptInitiatedPopoverContent: function(request)
-    {
-        var framesTable = createElementWithClass("table", "network-stack-trace");
-
-        /**
-         * @param {!Array.<!ConsoleAgent.CallFrame>} stackTrace
-         * @this {WebInspector.NetworkLogView}
-         */
-        function appendStackTrace(stackTrace)
-        {
-            for (var i = 0; i < stackTrace.length; ++i) {
-                var stackFrame = stackTrace[i];
-                var row = createElement("tr");
-                row.createChild("td").textContent = WebInspector.beautifyFunctionName(stackFrame.functionName);
-                row.createChild("td").textContent = " @ ";
-                row.createChild("td").appendChild(this._linkifier.linkifyConsoleCallFrame(request.target(), stackFrame));
-                framesTable.appendChild(row);
-            }
-        }
-
-        // Initiator is not null, checked in _getPopoverAnchor.
-        var initiator = /** @type {!NetworkAgent.Initiator} */ (request.initiator());
-        if (initiator.stackTrace)
-            appendStackTrace.call(this, initiator.stackTrace);
-
-        var asyncStackTrace = initiator.asyncStackTrace;
-        while (asyncStackTrace) {
-            var callFrames = asyncStackTrace.callFrames;
-            if (!callFrames || !callFrames.length)
-                break;
-            var row = framesTable.createChild("tr");
-            row.createChild("td", "network-async-trace-description").textContent = WebInspector.asyncStackTraceLabel(asyncStackTrace.description);
-            row.createChild("td");
-            row.createChild("td");
-            appendStackTrace.call(this, callFrames);
-            asyncStackTrace = asyncStackTrace.asyncStackTrace;
-        }
-
-        return framesTable;
     },
 
     _updateColumns: function()
