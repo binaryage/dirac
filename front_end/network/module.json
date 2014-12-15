@@ -23,7 +23,7 @@
             "title": "Show request timing directly in timeline",
             "settingName": "networkShowRequestTimingInTimeline",
             "settingType": "checkbox",
-            "experiment": "showRequestTimingInNetworkTimeline"
+            "experiment": "requestTimingInNetworkTimeline"
         }
     ],
     "dependencies": ["source_frame"],

@@ -47,10 +47,6 @@ WebInspector.Target._nextId = 1;
 WebInspector.Target.prototype = {
     suspend: function()
     {
-        if (!Runtime.experiments.isEnabled("disableAgentsWhenProfile")) {
-            this.debuggerModel.asyncStackTracesStateChanged();
-            return;
-        }
         this.debuggerModel.suspendModel();
         this.cssModel.suspendModel();
         this.domModel.suspendModel();
@@ -58,13 +54,9 @@ WebInspector.Target.prototype = {
 
     resume: function()
     {
-        if (Runtime.experiments.isEnabled("disableAgentsWhenProfile")) {
-            this.domModel.resumeModel();
-            this.cssModel.resumeModel();
-            this.debuggerModel.resumeModel();
-        } else {
-            this.debuggerModel.asyncStackTracesStateChanged();
-        }
+        this.domModel.resumeModel();
+        this.cssModel.resumeModel();
+        this.debuggerModel.resumeModel();
     },
 
     /**

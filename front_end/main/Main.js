@@ -135,24 +135,21 @@ WebInspector.Main.prototype = {
         Runtime.experiments.register("applyCustomStylesheet", "Allow custom UI themes");
         Runtime.experiments.register("canvasInspection", "Canvas inspection");
         Runtime.experiments.register("devicesPanel", "Devices panel");
-        Runtime.experiments.register("disableAgentsWhenProfile", "Disable other agents and UI when profiler is active", true);
-        Runtime.experiments.register("documentation", "JavaScript documentation", true);
+        Runtime.experiments.register("documentation", "Documentation for JS", true);
         Runtime.experiments.register("fileSystemInspection", "FileSystem inspection");
-        Runtime.experiments.register("serviceWorkerCacheInspection", "ServiceWorker cache inspection", true);
         Runtime.experiments.register("gpuTimeline", "GPU data on timeline", true);
         Runtime.experiments.register("layersPanel", "Layers panel");
         Runtime.experiments.register("privateScriptInspection", "Private script inspection");
-        Runtime.experiments.register("promiseTracker", "Enable Promise inspection");
-        Runtime.experiments.register("showRequestTimingInNetworkTimeline", "Show request timing directly in Network timeline");
-        Runtime.experiments.register("stepIntoAsync", "Enable step into async");
+        Runtime.experiments.register("promiseTracker", "Promise inspector");
+        Runtime.experiments.register("requestTimingInNetworkTimeline", "Request timing directly in Network timeline", true);
+        Runtime.experiments.register("serviceWorkerCacheInspection", "ServiceWorker cache inspection", true);
+        Runtime.experiments.register("stepIntoAsync", "Step into async");
+        Runtime.experiments.register("timelineInvalidationTracking", "Timeline invalidation tracking");
         Runtime.experiments.register("timelinePowerProfiler", "Timeline power profiler");
-        Runtime.experiments.register("timelineJSCPUProfile", "Timeline with JS sampling");
-        Runtime.experiments.register("timelineInvalidationTracking", "Timeline with full invalidation tracking");
         Runtime.experiments.cleanUpStaleExperiments();
 
         if (InspectorFrontendHost.isUnderTest()) {
             // Enable experiments for testing.
-            Runtime.experiments.enableForTest("disableAgentsWhenProfile");
             var testPath = WebInspector.settings.testPath.get();
             if (testPath.indexOf("timeline/") !== -1 || testPath.indexOf("layers/") !== -1)
                 Runtime.experiments.enableForTest("layersPanel");
@@ -164,8 +161,6 @@ WebInspector.Main.prototype = {
                 Runtime.experiments.enableForTest("promiseTracker");
         } else {
             Runtime.experiments.setDefaultExperiments([
-                "disableAgentsWhenProfile",
-                "timelineJSCPUProfile",
             ]);
         }
     },
