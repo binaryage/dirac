@@ -1060,13 +1060,6 @@
                 "hidden": true
             },
             {
-                "name": "setTracingBasedTimeline",
-                "parameters": [
-                    { "name": "enabled", "type": "boolean", "description": "Switch console.timeline to tracing based." }
-                ],
-                "hidden": true
-            },
-            {
                 "name": "setLastEvaluationResult",
                 "parameters": [
                     { "name": "objectId", "$ref": "Runtime.RemoteObjectId", "description": "Identifier of the object to set as last evaluation result." }
