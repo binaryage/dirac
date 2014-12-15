@@ -123,18 +123,15 @@ WebInspector.ResourcesPanel.prototype = {
     {
         if (this._target)
             return;
+        this._target = target;
 
         if (target.resourceTreeModel.cachedResourcesLoaded())
-            this._cachedResourcesLoaded();
-
-        target.databaseModel.databases().forEach(this._addDatabase.bind(this));
+            this._initialize();
 
         target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.Load, this._loadEventFired, this);
-        target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.CachedResourcesLoaded, this._cachedResourcesLoaded, this);
+        target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.CachedResourcesLoaded, this._initialize, this);
         target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.WillLoadCachedResources, this._resetWithFrames, this);
         target.databaseModel.addEventListener(WebInspector.DatabaseModel.Events.DatabaseAdded, this._databaseAdded, this);
-
-        this._target = target;
     },
 
     /**
@@ -148,7 +145,7 @@ WebInspector.ResourcesPanel.prototype = {
         delete this._target;
 
         target.resourceTreeModel.removeEventListener(WebInspector.ResourceTreeModel.EventTypes.Load, this._loadEventFired, this);
-        target.resourceTreeModel.removeEventListener(WebInspector.ResourceTreeModel.EventTypes.CachedResourcesLoaded, this._cachedResourcesLoaded, this);
+        target.resourceTreeModel.removeEventListener(WebInspector.ResourceTreeModel.EventTypes.CachedResourcesLoaded, this._initialize, this);
         target.resourceTreeModel.removeEventListener(WebInspector.ResourceTreeModel.EventTypes.WillLoadCachedResources, this._resetWithFrames, this);
         target.databaseModel.removeEventListener(WebInspector.DatabaseModel.Events.DatabaseAdded, this._databaseAdded, this);
 
@@ -163,27 +160,22 @@ WebInspector.ResourcesPanel.prototype = {
         return false;
     },
 
-    wasShown: function()
-    {
-        WebInspector.Panel.prototype.wasShown.call(this);
-        this._initialize();
-    },
-
     _initialize: function()
     {
-        if (!this._initialized && this.isShowing() && this._cachedResourcesWereLoaded) {
-            var target = /** @type {!WebInspector.Target} */ (WebInspector.targetManager.mainTarget());
-            this._populateResourceTree();
-            this._populateDOMStorageTree();
-            this._populateApplicationCacheTree(target);
-            this.indexedDBListTreeElement._initialize();
-            if (this.serviceWorkerCacheListTreeElement)
-                this.serviceWorkerCacheListTreeElement._initialize();
-            if (Runtime.experiments.isEnabled("fileSystemInspection"))
-                this.fileSystemListTreeElement._initialize();
-            this._initDefaultSelection();
-            this._initialized = true;
-        }
+        this._target.databaseModel.enable();
+        this._target.domStorageModel.enable();
+        this._target.indexedDBModel.enable();
+
+        this._populateResourceTree();
+        this._populateDOMStorageTree();
+        this._populateApplicationCacheTree();
+        this.indexedDBListTreeElement._initialize();
+        if (this.serviceWorkerCacheListTreeElement)
+            this.serviceWorkerCacheListTreeElement._initialize();
+        if (Runtime.experiments.isEnabled("fileSystemInspection"))
+            this.fileSystemListTreeElement._initialize();
+        this._initDefaultSelection();
+        this._initialized = true;
     },
 
     _loadEventFired: function()
@@ -335,12 +327,6 @@ WebInspector.ResourcesPanel.prototype = {
         var applicationCacheFrameTreeElement = this._applicationCacheFrameElements[frameId];
         if (applicationCacheFrameTreeElement)
             applicationCacheFrameTreeElement.frameNavigated(frame);
-    },
-
-    _cachedResourcesLoaded: function()
-    {
-        this._cachedResourcesWereLoaded = true;
-        this._initialize();
     },
 
     /**
@@ -696,12 +682,9 @@ WebInspector.ResourcesPanel.prototype = {
         WebInspector.domStorageModel.addEventListener(WebInspector.DOMStorageModel.Events.DOMStorageRemoved, this._domStorageRemoved, this);
     },
 
-    /**
-     * @param {!WebInspector.Target} target
-     */
-    _populateApplicationCacheTree: function(target)
+    _populateApplicationCacheTree: function()
     {
-        this._applicationCacheModel = new WebInspector.ApplicationCacheModel(target);
+        this._applicationCacheModel = new WebInspector.ApplicationCacheModel(this._target);
 
         this._applicationCacheViews = {};
         this._applicationCacheFrameElements = {};
