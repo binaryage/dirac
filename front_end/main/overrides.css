@@ -251,11 +251,11 @@
 }
 
 .overrides-splash-screen .status-bar {
-    height: 24px;
+    height: 16px;
     display: inline-block;
     margin-left: -4px;
     position: relative;
-    top: -5px;
+    top: -3px;
 }
 
 #overrides-reset-button,
