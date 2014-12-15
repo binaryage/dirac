@@ -72,19 +72,16 @@ ol.breakpoint-list {
 }
 
 .breakpoint-list .checkbox-elem {
-    font-size: 10px;
     margin: 0 4px;
     vertical-align: top;
     position: relative;
     z-index: 1;
-    top: 3px;
 }
 
 .breakpoint-list .source-text {
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
-    margin: 2px 0 0 20px;
 }
 
 .sidebar-pane .breakpoint-hit {
@@ -112,8 +109,5 @@ li.breakpoint-hit .breakpoint-hit-marker {
 }
 
 .event-listener-breakpoints .checkbox-elem {
-    float: left;
-    position: relative;
-    top: 1px;
     font-size: 10px;
 }

@@ -720,7 +720,7 @@ WebInspector.ElementsPanel.prototype = {
      */
     handleCopyEvent: function(event)
     {
-        if (!WebInspector.currentFocusElement().enclosingNodeOrSelfWithClass("elements-tree-outline"))
+        if (!WebInspector.currentFocusElement() || !WebInspector.currentFocusElement().enclosingNodeOrSelfWithClass("elements-tree-outline"))
             return;
         var treeOutline = this._treeOutlineForNode(this.selectedDOMNode());
         if (treeOutline)

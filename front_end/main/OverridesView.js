@@ -513,13 +513,10 @@ WebInspector.OverridesView.SensorsTab.prototype = {
         rowElement = tableElement.createChild("tr");
         cellElement = rowElement.createChild("td");
         cellElement.colSpan = 2;
-        var geolocationErrorLabelElement = createElement("label");
-        var geolocationErrorCheckboxElement = geolocationErrorLabelElement.createChild("input");
+        var geolocationErrorLabelElement = createCheckboxLabel(WebInspector.UIString("Emulate position unavailable"), !geolocation || !!geolocation.error);
+        var geolocationErrorCheckboxElement = geolocationErrorLabelElement.checkboxElement;
         geolocationErrorCheckboxElement.id = "geolocation-error";
-        geolocationErrorCheckboxElement.type = "checkbox";
-        geolocationErrorCheckboxElement.checked = !geolocation || geolocation.error;
         geolocationErrorCheckboxElement.addEventListener("click", this._applyGeolocationUserInput.bind(this), false);
-        geolocationErrorLabelElement.createTextChild(WebInspector.UIString("Emulate position unavailable"));
         this._geolocationErrorElement = geolocationErrorCheckboxElement;
         cellElement.appendChild(geolocationErrorLabelElement);
 

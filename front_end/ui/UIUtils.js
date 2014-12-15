@@ -1318,6 +1318,22 @@ function createRadioLabel(name, title, checked)
     return element;
 }
 
+/**
+ * @param {string=} title
+ * @param {boolean=} checked
+ * @return {!Element}
+ */
+function createCheckboxLabel(title, checked)
+{
+    var element = createElement("label", "dt-checkbox");
+    element.checkboxElement.checked = !!checked;
+    if (title !== undefined) {
+        element.textElement = element.createChild("div", "dt-checkbox-text");
+        element.textElement.textContent = title;
+    }
+    return element;
+}
+
 ;(function() {
     registerCustomElement("button", "text-button", HTMLButtonElement, {
         /**
@@ -1361,4 +1377,19 @@ function createRadioLabel(name, title, checked)
         this.radioElement.checked = true;
         this.radioElement.dispatchEvent(new Event("change"));
     }
+
+    registerCustomElement("label", "dt-checkbox", HTMLLabelElement, {
+        /**
+         * @this {Element}
+         */
+        createdCallback: function()
+        {
+            var root = this.createShadowRoot();
+            root.appendChild(WebInspector.View.createStyleElement("ui/checkboxTextLabel.css"));
+            this.checkboxElement = this.createChild("input", "dt-checkbox-button");
+            this.checkboxElement.type = "checkbox";
+            root.createChild("content").select = ".dt-checkbox-button";
+            root.createChild("content");
+        }
+    });
 })();

@@ -949,14 +949,11 @@ WebInspector.StylesSidebarPane.prototype = {
         function createCheckbox(state)
         {
             var td = createElement("td");
-            var label = createElement("label");
-            var input = createElement("input");
-            input.type = "checkbox";
+            var label = createCheckboxLabel(":" + state);
+            var input = label.checkboxElement;
             input.state = state;
             input.addEventListener("click", clickListener.bind(this), false);
             inputs.push(input);
-            label.appendChild(input);
-            label.createTextChild(":" + state);
             td.appendChild(label);
             return td;
         }

@@ -219,7 +219,7 @@ body.dock-to-bottom .help-content {
 }
 
 .help-content input[type=checkbox] {
-    margin-right: 7px;
+    margin: 1px 7px 1px 2px;
 }
 
 .help-content option {

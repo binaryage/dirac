@@ -755,10 +755,9 @@ WebInspector.StatusBarComboBox.prototype = {
  */
 WebInspector.StatusBarCheckbox = function(text, title, setting)
 {
-    WebInspector.StatusBarItem.call(this, createElementWithClass("label", "checkbox"));
-    this.inputElement = this.element.createChild("input");
-    this.inputElement.type = "checkbox";
-    this.element.createTextChild(text);
+    WebInspector.StatusBarItem.call(this, createCheckboxLabel(text));
+    this.element.classList.add("checkbox");
+    this.inputElement = this.element.checkboxElement;
     if (title)
         this.element.title = title;
     if (setting)

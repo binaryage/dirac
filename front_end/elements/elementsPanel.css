@@ -715,8 +715,11 @@ li.child-editing .styles-clipboard-only {
 }
 
 label.checkbox-with-label {
-    display: flex;
     -webkit-user-select: none;
+}
+
+label.checkbox-with-label > .dt-checkbox-text {
+    margin-top: 1px;
 }
 
 .events-pane .section:not(:first-of-type) {

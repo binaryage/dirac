@@ -123,16 +123,14 @@ WebInspector.SearchableView = function(searchable, settingName)
     // Column 4
     this._replaceElement = this._firstRowElement.createChild("td").createChild("span");
 
-    this._replaceCheckboxElement = this._replaceElement.createChild("input");
-    this._replaceCheckboxElement.type = "checkbox";
+    this._replaceLabelElement = createCheckboxLabel(WebInspector.UIString("Replace"));
+    this._replaceCheckboxElement = this._replaceLabelElement.checkboxElement;
     this._uniqueId = ++WebInspector.SearchableView._lastUniqueId;
     var replaceCheckboxId = "search-replace-trigger" + this._uniqueId;
     this._replaceCheckboxElement.id = replaceCheckboxId;
     this._replaceCheckboxElement.addEventListener("change", this._updateSecondRowVisibility.bind(this), false);
 
-    this._replaceLabelElement = this._replaceElement.createChild("label");
-    this._replaceLabelElement.textContent = WebInspector.UIString("Replace");
-    this._replaceLabelElement.setAttribute("for", replaceCheckboxId);
+    this._replaceElement.appendChild(this._replaceLabelElement);
 
     // Column 5
     var cancelButtonElement = this._firstRowElement.createChild("td").createChild("button", "search-action-button");

@@ -596,7 +596,7 @@ WebInspector.ResponsiveDesignView.prototype = {
         var screenElement = detailsElement.createChild("div", "");
         fieldsetElement = screenElement.createChild("fieldset");
 
-        var emulateResolutionCheckbox = WebInspector.SettingsUI.createSettingCheckbox("", WebInspector.overridesSupport.settings.emulateResolution, true, undefined, WebInspector.UIString("Emulate screen resolution"));
+        var emulateResolutionCheckbox = WebInspector.SettingsUI.createSettingCheckbox("", WebInspector.overridesSupport.settings.emulateResolution, true, WebInspector.UIString("Emulate screen resolution"));
         fieldsetElement.appendChild(emulateResolutionCheckbox);
 
         var resolutionIcon = fieldsetElement.createChild("div", "responsive-design-icon responsive-design-icon-resolution");
@@ -626,7 +626,7 @@ WebInspector.ResponsiveDesignView.prototype = {
         detailsElement.createChild("div", "responsive-design-suite-separator");
         var fitToWindowElement = detailsElement.createChild("div", "");
         fieldsetElement = fitToWindowElement.createChild("fieldset");
-        fieldsetElement.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Fit"), WebInspector.overridesSupport.settings.deviceFitWindow, true, undefined, WebInspector.UIString("Zoom to fit available space")));
+        fieldsetElement.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Fit"), WebInspector.overridesSupport.settings.deviceFitWindow, true, WebInspector.UIString("Zoom to fit available space")));
     },
 
     _createNetworkSection: function()

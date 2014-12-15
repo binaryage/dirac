@@ -52,6 +52,7 @@
         "ZoomManager.js"
     ],
     "stylesheets": [
+        "checkboxTextLabel.css",
         "dataGrid.css",
         "filter.css",
         "flameChart.css",

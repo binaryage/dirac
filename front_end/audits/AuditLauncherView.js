@@ -107,7 +107,7 @@ WebInspector.AuditLauncherView.prototype = {
 
         var selectedCategories = this._selectedCategoriesSetting.get();
         var categoryElement = this._createCategoryElement(category.displayName, category.id);
-        category._checkboxElement = categoryElement.firstChild;
+        category._checkboxElement = categoryElement.checkboxElement;
         if (this._selectAllCheckboxElement.checked || selectedCategories[category.displayName]) {
             category._checkboxElement.checked = true;
             ++this._currentCategoriesCount;
@@ -221,19 +221,15 @@ WebInspector.AuditLauncherView.prototype = {
 
     /**
      * @param {string} title
-     * @param {string} id
+     * @param {string=} id
      */
     _createCategoryElement: function(title, id)
     {
-        var labelElement = createElement("label");
-        labelElement.id = this._categoryIdPrefix + id;
-
-        var element = createElement("input");
-        element.type = "checkbox";
-        if (id !== "")
-            element.addEventListener("click", this._boundCategoryClickListener, false);
-        labelElement.appendChild(element);
-        labelElement.createTextChild(title);
+        var labelElement = createCheckboxLabel(title);
+        if (id) {
+            labelElement.id = this._categoryIdPrefix + id;
+            labelElement.checkboxElement.addEventListener("click", this._boundCategoryClickListener, false);
+        }
         labelElement.__displayName = title;
 
         return labelElement;
@@ -259,7 +255,7 @@ WebInspector.AuditLauncherView.prototype = {
         }
         var categoryElement = this._createCategoryElement(WebInspector.UIString("Select All"), "");
         categoryElement.id = "audit-launcher-selectall";
-        this._selectAllCheckboxElement = categoryElement.firstChild;
+        this._selectAllCheckboxElement = categoryElement.checkboxElement;
         this._selectAllCheckboxElement.checked = this._selectedCategoriesSetting.get()[WebInspector.AuditLauncherView.AllCategoriesKey];
         this._selectAllCheckboxElement.addEventListener("click", handleSelectAllClick.bind(this), false);
         this._contentElement.appendChild(categoryElement);

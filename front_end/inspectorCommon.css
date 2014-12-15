@@ -145,10 +145,3 @@ body /deep/ input[type="search"]:focus,
 body /deep/ input[type="text"]:focus {
     outline: auto 5px -webkit-focus-ring-color;
 }
-
-body /deep/ input[type="checkbox"] {
-    height: 12px;
-    width: 12px;
-    margin: auto 3px;
-    flex-shrink: 0;
-}

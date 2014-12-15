@@ -96,14 +96,11 @@ WebInspector.JavaScriptBreakpointsSidebarPane.prototype = {
         element.addEventListener("contextmenu", this._breakpointContextMenu.bind(this, breakpoint), true);
         element.addEventListener("click", this._breakpointClicked.bind(this, uiLocation), false);
 
-        var checkbox = element.createChild("input", "checkbox-elem");
-        checkbox.type = "checkbox";
-        checkbox.checked = breakpoint.enabled();
+        var checkbox = createCheckboxLabel(uiLocation.linkText(), breakpoint.enabled());
+        element.appendChild(checkbox);
         checkbox.addEventListener("click", this._breakpointCheckboxClicked.bind(this, breakpoint), false);
 
-        element.createTextChild(uiLocation.linkText());
-
-        var snippetElement = element.createChild("div", "source-text monospace");
+        var snippetElement = checkbox.textElement.createChild("div", "source-text monospace");
 
         /**
          * @param {?string} content
@@ -369,13 +366,13 @@ WebInspector.XHRBreakpointsSidebarPane.prototype = {
         element._url = url;
         element.addEventListener("contextmenu", this._contextMenu.bind(this, url), true);
 
-        var checkboxElement = element.createChild("input", "checkbox-elem");
-        checkboxElement.type = "checkbox";
-        checkboxElement.checked = enabled;
-        checkboxElement.addEventListener("click", this._checkboxClicked.bind(this, url), false);
-        element._checkboxElement = checkboxElement;
+        var label = createCheckboxLabel(undefined, enabled);
+        label.classList.add("checkbox-elem");
+        element.appendChild(label);
+        label.checkboxElement.addEventListener("click", this._checkboxClicked.bind(this, url), false);
+        element._checkboxElement = label.checkboxElement;
 
-        var labelElement = element.createChild("span", "cursor-auto");
+        var labelElement = label.createChild("span", "cursor-auto");
         if (!url)
             labelElement.textContent = WebInspector.UIString("Any XHR");
         else
@@ -629,8 +626,7 @@ WebInspector.EventListenerBreakpointsSidebarPane.prototype = {
      */
     _createCategory: function(name, eventNames, isInstrumentationEvent, targetNames)
     {
-        var labelNode = createElement("label");
-        labelNode.textContent = name;
+        var labelNode = createCheckboxLabel(name);
 
         var categoryItem = {};
         categoryItem.element = new TreeElement(labelNode);
@@ -638,7 +634,7 @@ WebInspector.EventListenerBreakpointsSidebarPane.prototype = {
         categoryItem.element.listItemElement.classList.add("event-category");
         categoryItem.element.selectable = true;
 
-        categoryItem.checkbox = this._createCheckbox(labelNode);
+        categoryItem.checkbox = labelNode.checkboxElement;
         categoryItem.checkbox.addEventListener("click", this._categoryCheckboxClicked.bind(this, categoryItem), true);
 
         categoryItem.targetNames = this._stringArrayToLowerCase(targetNames || [WebInspector.EventListenerBreakpointsSidebarPane.eventTargetAny]);
@@ -650,17 +646,16 @@ WebInspector.EventListenerBreakpointsSidebarPane.prototype = {
             var breakpointItem = {};
             var title = WebInspector.EventListenerBreakpointsSidebarPane.eventNameForUI(eventName);
 
-            labelNode = createElement("label");
-            labelNode.textContent = title;
+            labelNode = createCheckboxLabel(title);
+            labelNode.classList.add("source-code");
 
             breakpointItem.element = new TreeElement(labelNode);
             categoryItem.element.appendChild(breakpointItem.element);
 
             breakpointItem.element.listItemElement.createChild("div", "breakpoint-hit-marker");
-            breakpointItem.element.listItemElement.classList.add("source-code");
             breakpointItem.element.selectable = false;
 
-            breakpointItem.checkbox = this._createCheckbox(labelNode);
+            breakpointItem.checkbox = labelNode.checkboxElement;
             breakpointItem.checkbox.addEventListener("click", this._breakpointCheckboxClicked.bind(this, eventName, categoryItem.targetNames), true);
             breakpointItem.parent = categoryItem;
 
@@ -678,18 +673,6 @@ WebInspector.EventListenerBreakpointsSidebarPane.prototype = {
         return array.map(function(value) {
             return value.toLowerCase();
         });
-    },
-
-    /**
-     * @param {!Element} labelNode
-     * @return {!Element}
-     */
-    _createCheckbox: function(labelNode)
-    {
-        var checkbox = createElementWithClass("input", "checkbox-elem");
-        checkbox.type = "checkbox";
-        labelNode.insertBefore(checkbox, labelNode.firstChild);
-        return checkbox;
     },
 
     _categoryCheckboxClicked: function(categoryItem)

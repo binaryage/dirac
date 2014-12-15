@@ -588,10 +588,9 @@ WebInspector.ExperimentsSettingsTab.prototype = {
 
     _createExperimentCheckbox: function(experiment)
     {
-        var input = createElement("input");
-        input.type = "checkbox";
+        var label = createCheckboxLabel(WebInspector.UIString(experiment.title), experiment.isEnabled());
+        var input = label.checkboxElement;
         input.name = experiment.name;
-        input.checked = experiment.isEnabled();
         function listener()
         {
             experiment.setEnabled(input.checked);
@@ -600,9 +599,6 @@ WebInspector.ExperimentsSettingsTab.prototype = {
 
         var p = createElement("p");
         p.className = experiment.hidden && !experiment.isEnabled() ? "settings-experiment-hidden" : "";
-        var label = p.createChild("label");
-        label.appendChild(input);
-        label.createTextChild(WebInspector.UIString(experiment.title));
         p.appendChild(label);
         return p;
     },

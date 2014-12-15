@@ -233,25 +233,23 @@ WebInspector.DOMBreakpointsSidebarPane.prototype = {
         element._type = type;
         element.addEventListener("contextmenu", this._contextMenu.bind(this, node, type), true);
 
-        var checkboxElement = createElement("input");
-        checkboxElement.className = "checkbox-elem";
-        checkboxElement.type = "checkbox";
-        checkboxElement.checked = enabled;
-        checkboxElement.addEventListener("click", this._checkboxClicked.bind(this, node, type), false);
-        element._checkboxElement = checkboxElement;
-        element.appendChild(checkboxElement);
+        var checkboxLabel = createCheckboxLabel(undefined, enabled);
+        checkboxLabel.className = "checkbox-elem";
+        checkboxLabel.checkboxElement.addEventListener("click", this._checkboxClicked.bind(this, node, type), false);
+        element._checkboxElement = checkboxLabel.checkboxElement;
+        element.appendChild(checkboxLabel);
 
-        var labelElement = createElement("span");
-        element.appendChild(labelElement);
 
         var linkifiedNode = WebInspector.DOMPresentationUtils.linkifyNodeReference(node);
         linkifiedNode.classList.add("monospace");
-        labelElement.appendChild(linkifiedNode);
+
+        var textElement = checkboxLabel.createChild("span");
+        textElement.appendChild(linkifiedNode);
 
         var description = createElement("div");
         description.className = "source-text";
         description.textContent = this._breakpointTypeLabels[type];
-        labelElement.appendChild(description);
+        textElement.appendChild(description);
 
         var currentElement = this.listElement.firstChild;
         while (currentElement) {
