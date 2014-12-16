@@ -415,6 +415,11 @@ WebInspector.ConsoleViewMessage.prototype = {
      */
     _formatParameter: function(output, forceObjectFormat, includePreview)
     {
+        if (output.customPreview()) {
+            var customSection = new WebInspector.CustomPreviewSection(output);
+            return customSection.element();
+        }
+
         var type = forceObjectFormat ? "object" : (output.subtype || output.type);
         var formatter = this._customFormatters[type] || this._formatParameterAsValue;
         var span = createElement("span");

@@ -36,6 +36,15 @@
 WebInspector.RemoteObject = function() { }
 
 WebInspector.RemoteObject.prototype = {
+
+    /**
+     * @return {?RuntimeAgent.CustomPreview}
+     */
+    customPreview: function()
+    {
+        return null;
+    },
+
     /** @return {string} */
     get type()
     {
@@ -239,8 +248,9 @@ WebInspector.RemoteObject.toCallArgument = function(object)
  * @param {*} value
  * @param {string=} description
  * @param {!RuntimeAgent.ObjectPreview=} preview
+ * @param {!RuntimeAgent.CustomPreview=} customPreview
  */
-WebInspector.RemoteObjectImpl = function(target, objectId, type, subtype, value, description, preview)
+WebInspector.RemoteObjectImpl = function(target, objectId, type, subtype, value, description, preview, customPreview)
 {
     WebInspector.RemoteObject.call(this);
 
@@ -267,9 +277,20 @@ WebInspector.RemoteObjectImpl = function(target, objectId, type, subtype, value,
         else
             this.value = value;
     }
+    this._customPreview = customPreview || null;
 }
 
 WebInspector.RemoteObjectImpl.prototype = {
+
+    /**
+     * @override
+     * @return {?RuntimeAgent.CustomPreview}
+     */
+    customPreview: function()
+    {
+        return this._customPreview;
+    },
+
     /** @return {!RuntimeAgent.RemoteObjectId} */
     get objectId()
     {

@@ -94,6 +94,7 @@ WebInspector.Settings = function()
     this.testPath = this.createSetting("testPath", "");
     this.frameViewerHideChromeWindow = this.createSetting("frameViewerHideChromeWindow", false);
     this.highlightDOMUpdates = this.createSetting("highlightDOMUpdates", true);
+    this.enableCustomFormatters = this.createSetting("customFormatters", false);
 
     // Rendering options
     this.showPaintRects = this.createSetting("showPaintRects", false);

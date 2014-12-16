@@ -45,6 +45,14 @@ WebInspector.RuntimeModel = function(target)
      * @type {!Object.<number, !WebInspector.ExecutionContext>}
      */
     this._executionContextById = {};
+
+    if (!Runtime.experiments.isEnabled("customObjectFormatters"))
+        return;
+
+    if (WebInspector.settings.enableCustomFormatters.get())
+        this._agent.setCustomObjectFormatterEnabled(true);
+
+    WebInspector.settings.enableCustomFormatters.addChangeListener(this._enableCustomFormattersStateChanged.bind(this));
 }
 
 WebInspector.RuntimeModel.Events = {
@@ -105,7 +113,7 @@ WebInspector.RuntimeModel.prototype = {
     createRemoteObject: function(payload)
     {
         console.assert(typeof payload === "object", "Remote object payload should only be an object");
-        return new WebInspector.RemoteObjectImpl(this.target(), payload.objectId, payload.type, payload.subtype, payload.value, payload.description, payload.preview);
+        return new WebInspector.RemoteObjectImpl(this.target(), payload.objectId, payload.type, payload.subtype, payload.value, payload.description, payload.preview, payload.customPreview);
     },
 
     /**
@@ -135,6 +143,15 @@ WebInspector.RuntimeModel.prototype = {
     createRemotePropertyFromPrimitiveValue: function(name, value)
     {
         return new WebInspector.RemoteObjectProperty(name, this.createRemoteObjectFromPrimitiveValue(value));
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _enableCustomFormattersStateChanged: function(event)
+    {
+        var enabled = /** @type {boolean} */ (event.data);
+        this._agent.setCustomObjectFormatterEnabled(enabled);
     },
 
     __proto__: WebInspector.SDKModel.prototype

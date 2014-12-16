@@ -762,7 +762,16 @@
                     { "name": "value", "type": "any", "optional": true, "description": "Remote object value in case of primitive values or JSON values (if it was requested), or description string if the value can not be JSON-stringified (like NaN, Infinity, -Infinity, -0)." },
                     { "name": "description", "type": "string", "optional": true, "description": "String representation of the object." },
                     { "name": "objectId", "$ref": "RemoteObjectId", "optional": true, "description": "Unique object identifier (for non-primitive values)." },
-                    { "name": "preview", "$ref": "ObjectPreview", "optional": true, "description": "Preview containing abbreviated property values. Specified for <code>object</code> type values only.", "hidden": true }
+                    { "name": "preview", "$ref": "ObjectPreview", "optional": true, "description": "Preview containing abbreviated property values. Specified for <code>object</code> type values only.", "hidden": true },
+                    { "name": "customPreview", "$ref": "CustomPreview", "optional": true, "hidden": true}
+                ]
+            },
+            {   "id": "CustomPreview",
+                "type": "object",
+                "hidden": true,
+                "properties": [
+                    { "name": "header", "type": "string"},
+                    { "name": "hasBody", "type": "boolean"}
                 ]
             },
             {
@@ -936,6 +945,16 @@
                 "name": "isRunRequired",
                 "returns": [
                     { "name": "result", "type": "boolean", "description": "True if the Runtime is in paused on start state." }
+                ],
+                "hidden": true
+            },
+            {
+                "name": "setCustomObjectFormatterEnabled",
+                "parameters": [
+                    {
+                        "name": "enabled",
+                        "type": "boolean"
+                    }
                 ],
                 "hidden": true
             }

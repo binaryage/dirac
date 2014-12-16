@@ -1229,3 +1229,24 @@ body.inactive select.chrome-select,
     text-decoration: underline;
     color: rgb(17, 85, 204);
 }
+
+.custom-expandable-section::before {
+    -webkit-user-select: none;
+    background-image: url(Images/statusbarButtonGlyphs.png);
+    background-size: 320px 144px;
+    opacity: 0.5;
+    content: "a";
+    width: 8px;
+    margin-right: 4px;
+    padding-right: 2px;
+    color: transparent;
+    text-shadow: none;
+}
+
+.custom-expandable-section::before {
+    background-position: -4px -96px;
+}
+
+.custom-expandable-section.expanded::before {
+    background-position: -20px -96px;
+}

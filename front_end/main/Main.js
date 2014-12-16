@@ -134,6 +134,7 @@ WebInspector.Main.prototype = {
         Runtime.experiments.register("animationInspection", "Animation Inspection", true);
         Runtime.experiments.register("applyCustomStylesheet", "Allow custom UI themes");
         Runtime.experiments.register("canvasInspection", "Canvas inspection");
+        Runtime.experiments.register("customObjectFormatters", "Enable custom object formatters", true);
         Runtime.experiments.register("devicesPanel", "Devices panel");
         Runtime.experiments.register("fileSystemInspection", "FileSystem inspection");
         Runtime.experiments.register("gpuTimeline", "GPU data on timeline", true);

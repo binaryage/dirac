@@ -109,6 +109,7 @@
             'front_end/components/ObjectPropertiesSection.js',
             'front_end/components/ShortcutsScreen.js',
             'front_end/components/TargetsComboBoxController.js',
+            'front_end/components/CustomPreviewSection.js',
         ],
         'devtools_host_js_files': [
             'front_end/host/InspectorFrontendHost.js',
