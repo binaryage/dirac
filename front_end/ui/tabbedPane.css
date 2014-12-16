@@ -132,6 +132,7 @@
     color: rgb(30, 30, 30);
     font-size: 133%;
     padding: 0 3px 0 5px;
+    cursor: default;
 }
 
 .tabbed-pane-header-tabs-drop-down-container.measuring {
