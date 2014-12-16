@@ -135,7 +135,6 @@ WebInspector.Main.prototype = {
         Runtime.experiments.register("applyCustomStylesheet", "Allow custom UI themes");
         Runtime.experiments.register("canvasInspection", "Canvas inspection");
         Runtime.experiments.register("devicesPanel", "Devices panel");
-        Runtime.experiments.register("documentation", "Documentation for JS", true);
         Runtime.experiments.register("fileSystemInspection", "FileSystem inspection");
         Runtime.experiments.register("gpuTimeline", "GPU data on timeline", true);
         Runtime.experiments.register("layersPanel", "Layers panel");
@@ -153,8 +152,6 @@ WebInspector.Main.prototype = {
             var testPath = WebInspector.settings.testPath.get();
             if (testPath.indexOf("timeline/") !== -1 || testPath.indexOf("layers/") !== -1)
                 Runtime.experiments.enableForTest("layersPanel");
-            if (testPath.indexOf("documentation/") !== -1)
-                Runtime.experiments.enableForTest("documentation");
             if (testPath.indexOf("elements/") !== -1)
                 Runtime.experiments.enableForTest("animationInspection");
             if (testPath.indexOf("debugger/promise") !== -1)

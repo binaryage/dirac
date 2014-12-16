@@ -296,7 +296,6 @@
             'front_end/console/module.json',
             'front_end/devices/module.json',
             'front_end/devtools_app/module.json',
-            'front_end/documentation/module.json',
             'front_end/elements/module.json',
             'front_end/extensions/module.json',
             'front_end/heap_snapshot_worker/module.json',
@@ -352,13 +351,6 @@
         'devtools_devices_js_files': [
             'front_end/devices/devicesView.css',
             'front_end/devices/DevicesView.js',
-        ],
-        'devtools_documentation_js_files': [
-            'front_end/documentation/documentationView.css',
-            'front_end/documentation/DocumentationCatalog.js',
-            'front_end/documentation/DocumentationView.js',
-            'front_end/documentation/JSArticle.js',
-            'front_end/documentation/WikiParser.js',
         ],
         'devtools_elements_js_files': [
             'front_end/elements/breadcrumbs.css',
@@ -593,7 +585,6 @@
             '<@(devtools_audits_js_files)',
             '<@(devtools_console_js_files)',
             '<@(devtools_devices_js_files)',
-            '<@(devtools_documentation_js_files)',
             '<@(devtools_elements_js_files)',
             '<@(devtools_extensions_js_files)',
             '<@(devtools_heap_snapshot_worker_js_files)',
