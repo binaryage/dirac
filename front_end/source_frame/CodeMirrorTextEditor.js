@@ -704,15 +704,12 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         this._codeMirror.redo();
     },
 
-    /**
-     * // FIXME: remove this suppression.
-     * @suppressGlobalPropertiesCheck
-     */
     _setupWhitespaceHighlight: function()
     {
-        if (WebInspector.CodeMirrorTextEditor._whitespaceStyleInjected || !WebInspector.settings.showWhitespacesInEditor.get())
+        var doc = this.element.ownerDocument;
+        if (doc._codeMirrorWhitespaceStyleInjected || !WebInspector.settings.showWhitespacesInEditor.get())
             return;
-        WebInspector.CodeMirrorTextEditor._whitespaceStyleInjected = true;
+        doc._codeMirrorWhitespaceStyleInjected = true;
         const classBase = ".show-whitespaces .CodeMirror .cm-whitespace-";
         const spaceChar = "·";
         var spaceChars = "";
@@ -722,9 +719,9 @@ WebInspector.CodeMirrorTextEditor.prototype = {
             var rule = classBase + i + "::before { content: '" + spaceChars + "';}\n";
             rules += rule;
         }
-        var style = createElement("style");
+        var style = doc.createElement("style");
         style.textContent = rules;
-        document.head.appendChild(style);
+        doc.head.appendChild(style);
     },
 
     _handleKeyDown: function(e)
@@ -777,8 +774,6 @@ WebInspector.CodeMirrorTextEditor.prototype = {
      * @param {number} x
      * @param {number} y
      * @return {?WebInspector.TextRange}
-     * // FIXME: remove this suppression.
-     * @suppressGlobalPropertiesCheck
      */
     coordinatesToCursorPosition: function(x, y)
     {
