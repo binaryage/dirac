@@ -266,14 +266,14 @@ WebInspector.StatusBarText.prototype = {
  * @constructor
  * @extends {WebInspector.StatusBarItem}
  * @param {string=} placeholder
- * @param {number=} width
+ * @param {number=} growFactor
  */
-WebInspector.StatusBarInput = function(placeholder, width)
+WebInspector.StatusBarInput = function(placeholder, growFactor)
 {
     WebInspector.StatusBarItem.call(this, createElementWithClass("input", "status-bar-item"));
     this.element.addEventListener("input", this._onChangeCallback.bind(this), false);
-    if (width)
-        this.element.style.width = width + "px";
+    if (growFactor)
+        this.element.style.flexGrow = growFactor;
     if (placeholder)
         this.element.setAttribute("placeholder", placeholder);
     this._value = "";
