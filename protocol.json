@@ -2169,6 +2169,26 @@
                     { "name": "shapeMarginColor", "$ref": "RGBA", "optional": true, "hidden": true, "description": "The shape margin fill color (default: transparent)." }
                 ],
                 "description": "Configuration data for the highlighting of page elements."
+            },
+            {
+                "id": "DistributedNode",
+                "type": "object",
+                "hidden": true,
+                "properties": [
+                    { "name": "nodeId", "$ref": "NodeId", "description": "Distributed node id." },
+                    { "name": "destinationInsertionPointIds", "type": "array", "optional": true, "items": { "$ref": "NodeId" }, "description": "Identifiers of nodes this node was distributed into." }
+                ],
+                "description": "Distributed node detailed information."
+            },
+            {
+                "id": "InsertionPointDistribution",
+                "type": "object",
+                "hidden": true,
+                "properties": [
+                    { "name": "nodeId", "$ref": "NodeId", "description": "Insertion point node id." },
+                    { "name": "distributedNodes", "type": "array", "items": { "$ref": "DistributedNode" }, "description": "A list of distributed node details for this insertion point." }
+                ],
+                "description": "Distribution data for insertion point."
             }
         ],
         "commands": [
@@ -2194,6 +2214,16 @@
                     { "name": "depth", "type": "integer", "optional": true, "description": "The maximum depth at which children should be retrieved, defaults to 1. Use -1 for the entire subtree or provide an integer larger than 0.", "hidden": true }
                 ],
                 "description": "Requests that children of the node with given id are returned to the caller in form of <code>setChildNodes</code> events where not only immediate children are retrieved, but all children down to the specified depth."
+            },
+            {
+                "name": "requestShadowHostDistributedNodes",
+                "parameters": [
+                    { "name": "nodeId", "$ref": "NodeId", "description": "Id of the node to get distributed nodes for." }
+                ],
+                "returns": [
+                    { "name": "insertionPointDistributions", "type": "array", "items": { "$ref": "InsertionPointDistribution" }, "description": "A list of distribution data for each insertion point in shadow host." }
+                ],
+                "description": "Returns distribution data for all insertion points in shadow tree of the given node."
             },
             {
                 "name": "querySelector",
@@ -2578,6 +2608,14 @@
                     { "name": "nodeIds", "type": "array", "items": { "$ref": "NodeId" }, "description": "Ids of the nodes for which the inline styles have been invalidated." }
                 ],
                 "description": "Fired when <code>Element</code>'s inline style is modified via a CSS property modification.",
+                "hidden": true
+            },
+            {
+                "name": "shadowHostDistributionInvalidated",
+                "parameters": [
+                    { "name": "nodeIds", "type": "array", "items": { "$ref": "NodeId" }, "description": "Ids of the shadow host nodes for which content distribution has been invalidated." }
+                ],
+                "description": "Fired when shadow host node content distribution is recalculated.",
                 "hidden": true
             },
             {

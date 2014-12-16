@@ -1163,6 +1163,13 @@ WebInspector.DOMModel.prototype = {
         this._loadNodeAttributesTimeout = setTimeout(this._loadNodeAttributes.bind(this), 20);
     },
 
+    /**
+     * @param {!Array.<!DOMAgent.NodeId>} nodeIds
+     */
+    _shadowHostDistributionInvalidated: function(nodeIds)
+    {
+    },
+
     _loadNodeAttributes: function()
     {
         /**
@@ -1790,6 +1797,15 @@ WebInspector.DOMDispatcher.prototype = {
     inlineStyleInvalidated: function(nodeIds)
     {
         this._domModel._inlineStyleInvalidated(nodeIds);
+    },
+
+    /**
+     * @override
+     * @param {!Array.<!DOMAgent.NodeId>} nodeIds
+     */
+    shadowHostDistributionInvalidated: function(nodeIds)
+    {
+        this._domModel._shadowHostDistributionInvalidated(nodeIds);
     },
 
     /**
