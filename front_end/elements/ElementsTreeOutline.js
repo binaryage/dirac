@@ -693,17 +693,17 @@ WebInspector.ElementsTreeOutline.prototype = {
                 return;
             }
 
-            object.callFunctionJSON(dimensions, undefined, callback);
+            object.callFunctionJSON(features, undefined, callback);
             object.release();
 
             /**
-             * @return {!{offsetWidth: number, offsetHeight: number, naturalWidth: number, naturalHeight: number}}
+             * @return {!{offsetWidth: number, offsetHeight: number, naturalWidth: number, naturalHeight: number, currentSrc: (string|undefined)}}
              * @suppressReceiverCheck
              * @this {!Element}
              */
-            function dimensions()
+            function features()
             {
-                return { offsetWidth: this.offsetWidth, offsetHeight: this.offsetHeight, naturalWidth: this.naturalWidth, naturalHeight: this.naturalHeight };
+                return { offsetWidth: this.offsetWidth, offsetHeight: this.offsetHeight, naturalWidth: this.naturalWidth, naturalHeight: this.naturalHeight, currentSrc: this.currentSrc };
             }
         }
     },

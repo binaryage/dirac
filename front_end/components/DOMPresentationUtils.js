@@ -112,15 +112,20 @@ WebInspector.DOMPresentationUtils.linkifyNodeReference = function(node)
 
 /**
  * @param {!WebInspector.Target} target
- * @param {string} imageURL
+ * @param {string} originalImageURL
  * @param {boolean} showDimensions
  * @param {function(!Element=)} userCallback
- * @param {!Object=} precomputedDimensions
+ * @param {!Object=} precomputedFeatures
  */
-WebInspector.DOMPresentationUtils.buildImagePreviewContents = function(target, imageURL, showDimensions, userCallback, precomputedDimensions)
+WebInspector.DOMPresentationUtils.buildImagePreviewContents = function(target, originalImageURL, showDimensions, userCallback, precomputedFeatures)
 {
-    var resource = target.resourceTreeModel.resourceForURL(imageURL);
-    if (!resource || resource.resourceType() !== WebInspector.resourceTypes.Image) {
+    var resource = target.resourceTreeModel.resourceForURL(originalImageURL);
+    var imageURL = originalImageURL;
+    if (!isImageResource(resource) && precomputedFeatures && precomputedFeatures.currentSrc) {
+        imageURL = precomputedFeatures.currentSrc;
+        resource = target.resourceTreeModel.resourceForURL(imageURL);
+    }
+    if (!isImageResource(resource)) {
         userCallback();
         return;
     }
@@ -136,14 +141,23 @@ WebInspector.DOMPresentationUtils.buildImagePreviewContents = function(target, i
         userCallback();
     }
 
+    /**
+     * @param {?WebInspector.Resource} resource
+     * @return {boolean}
+     */
+    function isImageResource(resource)
+    {
+        return !!resource && resource.resourceType() === WebInspector.resourceTypes.Image;
+    }
+
     function buildContent()
     {
         var container = createElement("table");
         container.className = "image-preview-container";
-        var naturalWidth = precomputedDimensions ? precomputedDimensions.naturalWidth : imageElement.naturalWidth;
-        var naturalHeight = precomputedDimensions ? precomputedDimensions.naturalHeight : imageElement.naturalHeight;
-        var offsetWidth = precomputedDimensions ? precomputedDimensions.offsetWidth : naturalWidth;
-        var offsetHeight = precomputedDimensions ? precomputedDimensions.offsetHeight : naturalHeight;
+        var naturalWidth = precomputedFeatures ? precomputedFeatures.naturalWidth : imageElement.naturalWidth;
+        var naturalHeight = precomputedFeatures ? precomputedFeatures.naturalHeight : imageElement.naturalHeight;
+        var offsetWidth = precomputedFeatures ? precomputedFeatures.offsetWidth : naturalWidth;
+        var offsetHeight = precomputedFeatures ? precomputedFeatures.offsetHeight : naturalHeight;
         var description;
         if (showDimensions) {
             if (offsetHeight === naturalHeight && offsetWidth === naturalWidth)
@@ -155,6 +169,8 @@ WebInspector.DOMPresentationUtils.buildImagePreviewContents = function(target, i
         container.createChild("tr").createChild("td", "image-container").appendChild(imageElement);
         if (description)
             container.createChild("tr").createChild("td").createChild("span", "description").textContent = description;
+        if (imageURL !== originalImageURL)
+            container.createChild("tr").createChild("td").createChild("span", "description").textContent = String.sprintf("currentSrc: %s", imageURL.trimMiddle(100));
         userCallback(container);
     }
 }
