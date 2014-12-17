@@ -365,12 +365,6 @@ WebInspector.StylesSidebarPane.prototype = {
         this._scheduleUpdate();
     },
 
-    _innerUpdate: function()
-    {
-        this._updateForcedPseudoStateInputs();
-        this._rebuildUpdate();
-    },
-
     _scheduleUpdate: function()
     {
         if (!this.isShowing() && !this._computedStylePane.isShowing()) {
@@ -378,7 +372,7 @@ WebInspector.StylesSidebarPane.prototype = {
             return;
         }
 
-        this._innerUpdate();
+        this._rebuildUpdate();
     },
 
     /**
@@ -465,6 +459,8 @@ WebInspector.StylesSidebarPane.prototype = {
 
     _rebuildUpdate: function()
     {
+        this._updateForcedPseudoStateInputs();
+
         if (this._rebuildUpdateInProgress) {
             this._lastNodeForInnerRebuild = this._node;
             return;
@@ -476,7 +472,8 @@ WebInspector.StylesSidebarPane.prototype = {
 
         this._rebuildUpdateInProgress = true;
 
-        var resultStyles = {};
+        var resultStyles = new WebInspector.StylesSidebarPane.MatchedRulesPayload();
+        var computedStyle;
 
         /**
          * @param {?*} matchedResult
@@ -495,12 +492,14 @@ WebInspector.StylesSidebarPane.prototype = {
                 }
             }
 
-            if (matchedResult && this._node === node) {
+            if (matchedResult) {
                 resultStyles.matchedCSSRules = matchedResult.matchedCSSRules;
                 resultStyles.pseudoElements = matchedResult.pseudoElements;
                 resultStyles.inherited = matchedResult.inherited;
-                this._innerRebuildUpdate(node, resultStyles);
             }
+
+            if (resultStyles.fulfilled() && this._node === node)
+                this._innerRebuildUpdate(node, resultStyles, computedStyle);
 
             if (lastNodeForRebuild) {
                 // lastNodeForRebuild is the same as this.node - another rebuild has been requested.
@@ -522,11 +521,11 @@ WebInspector.StylesSidebarPane.prototype = {
         }
 
         /**
-         * @param {?WebInspector.CSSStyleDeclaration} computedStyle
+         * @param {?WebInspector.CSSStyleDeclaration} computed
          */
-        function computedCallback(computedStyle)
+        function computedCallback(computed)
         {
-            resultStyles.computedStyle = computedStyle;
+            computedStyle = computed;
         }
 
         /**
@@ -653,9 +652,10 @@ WebInspector.StylesSidebarPane.prototype = {
 
     /**
      * @param {!WebInspector.DOMNode} node
-     * @param {*} styles
+     * @param {!WebInspector.StylesSidebarPane.MatchedRulesPayload} styles
+     * @param {?WebInspector.CSSStyleDeclaration} computedStyle
      */
-    _innerRebuildUpdate: function(node, styles)
+    _innerRebuildUpdate: function(node, styles, computedStyle)
     {
         this._sectionsContainer.removeChildren();
         this._linkifier.reset();
@@ -663,15 +663,33 @@ WebInspector.StylesSidebarPane.prototype = {
         if (!!node.pseudoType())
             this._appendTopPadding();
 
-        var cascade = this._buildMatchedRulesSectionCascade(node, styles);
+        var matchedCascade = this._buildMatchedRulesSectionCascade(node, styles);
         this.sections = {};
-        this.sections[0] = this._rebuildSectionsForStyleRules(cascade);
-        this._computedStylePane._rebuildComputedSectionForStyleRule(styles.computedStyle, cascade, this._animationProperties);
+        this.sections[0] = this._rebuildSectionsForStyleRules(matchedCascade);
+        this._computedStylePane._rebuildComputedSectionForStyleRule(computedStyle, matchedCascade, this._animationProperties);
 
+        var pseudoCascades = this._buildPseudoCascades(node, styles);
+        var pseudoIds = pseudoCascades.keysArray().sort();
+        for (var pseudoId of pseudoIds) {
+            this._appendSectionPseudoIdSeparator(pseudoId);
+            this.sections[pseudoId] = this._rebuildSectionsForStyleRules(pseudoCascades.get(pseudoId));
+        }
+
+        if (this._filterRegex)
+            this._updateFilter();
+    },
+
+    /**
+     * @param {!WebInspector.DOMNode} node
+     * @param {!WebInspector.StylesSidebarPane.MatchedRulesPayload} styles
+     * @return {!Map<number, !WebInspector.SectionCascade>}
+     */
+    _buildPseudoCascades: function(node, styles)
+    {
+        var pseudoCascades = new Map();
         for (var i = 0; i < styles.pseudoElements.length; ++i) {
             var pseudoElementCSSRules = styles.pseudoElements[i];
             var pseudoId = pseudoElementCSSRules.pseudoId;
-            this._appendSectionPseudoIdSeparator(pseudoId);
 
             // Add rules in reverse order to match the cascade order.
             var pseudoElementCascade = new WebInspector.SectionCascade();
@@ -679,11 +697,9 @@ WebInspector.StylesSidebarPane.prototype = {
                 var rule = pseudoElementCSSRules.rules[j];
                 pseudoElementCascade.appendModelFromRule(rule);
             }
-            this.sections[pseudoId] = this._rebuildSectionsForStyleRules(pseudoElementCascade);
+            pseudoCascades.set(pseudoId, pseudoElementCascade);
         }
-
-        if (this._filterRegex)
-            this._updateFilter();
+        return pseudoCascades;
     },
 
     /**
@@ -697,7 +713,7 @@ WebInspector.StylesSidebarPane.prototype = {
 
     /**
      * @param {!WebInspector.DOMNode} node
-     * @param {*} styles
+     * @param {!WebInspector.StylesSidebarPane.MatchedRulesPayload} styles
      * @return {!WebInspector.SectionCascade}
      */
     _buildMatchedRulesSectionCascade: function(node, styles)
@@ -1006,7 +1022,7 @@ WebInspector.StylesSidebarPane.prototype = {
         this.element.ownerDocument.body.addEventListener("keydown", this._keyDownBound, false);
         this.element.ownerDocument.body.addEventListener("keyup", this._keyUpBound, false);
         if (this._updateWhenVisible) {
-            this._innerUpdate();
+            this._rebuildUpdate();
             delete this._updateWhenVisible;
         }
     },
@@ -1113,7 +1129,7 @@ WebInspector.ComputedStyleSidebarPane = function()
     WebInspector.SidebarPane.call(this, WebInspector.UIString("Computed Style"));
     WebInspector.settings.showInheritedComputedStyleProperties.addChangeListener(this._showInheritedComputedStyleChanged.bind(this));
     this._linkifier = new WebInspector.Linkifier(new WebInspector.Linkifier.DefaultCSSFormatter());
-    this._rebuildComputedSectionForStyleRule(WebInspector.CSSStyleDeclaration.createDummyStyle(), new WebInspector.SectionCascade(), null);
+    this._rebuildComputedSectionForStyleRule(null, new WebInspector.SectionCascade(), null);
 }
 
 WebInspector.ComputedStyleSidebarPane.prototype = {
@@ -1132,13 +1148,15 @@ WebInspector.ComputedStyleSidebarPane.prototype = {
     },
 
     /**
-     * @param {!WebInspector.CSSStyleDeclaration} computedStyle
+     * @param {?WebInspector.CSSStyleDeclaration} computedStyle
      * @param {!WebInspector.SectionCascade} matchedRuleCascade
      * @param {?Map.<string, string>} animationProperties
      */
     _rebuildComputedSectionForStyleRule: function(computedStyle, matchedRuleCascade, animationProperties)
     {
         this._linkifier.reset();
+        if (!computedStyle)
+            computedStyle = WebInspector.CSSStyleDeclaration.createDummyStyle();
         var computedCascade = new WebInspector.SectionCascade();
         var computedStyleRule = computedCascade.appendModelFromStyle(computedStyle, "");
         this._computedStyleSection = new WebInspector.ComputedStylePropertiesSection(this, computedStyleRule, matchedRuleCascade, animationProperties);
@@ -3707,4 +3725,31 @@ WebInspector.StylesSidebarPane.CSSPropertyPrompt.prototype = {
     },
 
     __proto__: WebInspector.TextPrompt.prototype
+}
+
+/**
+ * @constructor
+ */
+WebInspector.StylesSidebarPane.MatchedRulesPayload = function()
+{
+    /** @type {?WebInspector.CSSStyleDeclaration} */
+    this.inlineStyle = null;
+    /** @type {?WebInspector.CSSStyleDeclaration} */
+    this.attributesStyle = null;
+    /** @type {?Array.<!WebInspector.CSSRule>} */
+    this.matchedCSSRules = null;
+    /** @type {?Array.<{pseudoId: number, rules: !Array.<!WebInspector.CSSRule>}>} */
+    this.pseudoElements = null;
+    /** @type {?Array.<{matchedCSSRules: !Array.<!WebInspector.CSSRule>}>} */
+    this.inherited = null;
+}
+
+WebInspector.StylesSidebarPane.MatchedRulesPayload.prototype = {
+    /**
+     * @return {boolean}
+     */
+    fulfilled: function()
+    {
+        return !!(this.matchedCSSRules && this.pseudoElements && this.inherited);
+    }
 }
