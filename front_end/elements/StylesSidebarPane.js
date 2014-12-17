@@ -535,7 +535,7 @@ WebInspector.StylesSidebarPane.prototype = {
          */
         function animationPlayersCallback(animationPlayers)
         {
-            this._animationProperties = {};
+            this._animationProperties = new Map();
             if (!animationPlayers)
                 return;
             for (var i = 0; i < animationPlayers.length; i++) {
@@ -547,7 +547,7 @@ WebInspector.StylesSidebarPane.prototype = {
                 for (var j = 0; j < keyframes.length; j++)
                     animationCascade.appendModelFromStyle(keyframes[j].style(), "");
                 for (var property of animationCascade.allUsedProperties())
-                    this._animationProperties[property] = player.name();
+                    this._animationProperties.set(property, player.name());
             }
         }
 
@@ -1113,7 +1113,7 @@ WebInspector.ComputedStyleSidebarPane = function()
     WebInspector.SidebarPane.call(this, WebInspector.UIString("Computed Style"));
     WebInspector.settings.showInheritedComputedStyleProperties.addChangeListener(this._showInheritedComputedStyleChanged.bind(this));
     this._linkifier = new WebInspector.Linkifier(new WebInspector.Linkifier.DefaultCSSFormatter());
-    this._rebuildComputedSectionForStyleRule(WebInspector.CSSStyleDeclaration.createDummyStyle(), new WebInspector.SectionCascade(), {});
+    this._rebuildComputedSectionForStyleRule(WebInspector.CSSStyleDeclaration.createDummyStyle(), new WebInspector.SectionCascade(), null);
 }
 
 WebInspector.ComputedStyleSidebarPane.prototype = {
@@ -1134,7 +1134,7 @@ WebInspector.ComputedStyleSidebarPane.prototype = {
     /**
      * @param {!WebInspector.CSSStyleDeclaration} computedStyle
      * @param {!WebInspector.SectionCascade} matchedRuleCascade
-     * @param {!Object.<string, string>} animationProperties
+     * @param {?Map.<string, string>} animationProperties
      */
     _rebuildComputedSectionForStyleRule: function(computedStyle, matchedRuleCascade, animationProperties)
     {
@@ -1921,7 +1921,7 @@ WebInspector.StylePropertiesSection._linkifyRuleLocation = function(target, link
  * @param {!WebInspector.ComputedStyleSidebarPane} stylesPane
  * @param {!WebInspector.StylesSectionModel} styleRule
  * @param {!WebInspector.SectionCascade} matchedRuleCascade
- * @param {!Object.<string, string>} animationProperties
+ * @param {?Map.<string, string>} animationProperties
  */
 WebInspector.ComputedStylePropertiesSection = function(stylesPane, styleRule, matchedRuleCascade, animationProperties)
 {
@@ -1933,7 +1933,7 @@ WebInspector.ComputedStylePropertiesSection = function(stylesPane, styleRule, ma
     this._stylesPane = stylesPane;
     this.styleRule = styleRule;
     this._matchedRuleCascade = matchedRuleCascade;
-    this._animationProperties = animationProperties || {};
+    this._animationProperties = animationProperties || new Map();
     this._alwaysShowComputedProperties = { "display": true, "height": true, "width": true };
     this._propertyTreeElements = {};
     this._expandedPropertyNames = {};
@@ -1966,7 +1966,7 @@ WebInspector.ComputedStylePropertiesSection.prototype = {
     _isPropertyInherited: function(propertyName)
     {
         var canonicalName = WebInspector.CSSMetadata.canonicalPropertyName(propertyName);
-        return !(this._matchedRuleCascade.allUsedProperties().has(canonicalName)) && !(canonicalName in this._alwaysShowComputedProperties) && !(canonicalName in this._animationProperties);
+        return !(this._matchedRuleCascade.allUsedProperties().has(canonicalName)) && !(canonicalName in this._alwaysShowComputedProperties) && !this._animationProperties.has(canonicalName);
     },
 
     update: function()
@@ -2025,12 +2025,12 @@ WebInspector.ComputedStylePropertiesSection.prototype = {
     _rebuildComputedTrace: function()
     {
         // Trace animation related properties
-        for (var property in this._animationProperties) {
+        for (var property of this._animationProperties.keys()) {
             var treeElement = this._propertyTreeElements[property.toLowerCase()];
             if (treeElement) {
                 var fragment = createDocumentFragment();
                 var name = fragment.createChild("span");
-                name.textContent = WebInspector.UIString("Animation") + " " + this._animationProperties[property];
+                name.textContent = WebInspector.UIString("Animation") + " " + this._animationProperties.get(property);
                 treeElement.appendChild(new TreeElement(fragment, null, false));
             }
         }
