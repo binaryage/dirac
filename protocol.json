@@ -218,6 +218,16 @@
                     { "name": "timestamp", "type": "number", "optional": true, "hidden": true, "description": "Frame swap timestamp." }
                 ],
                 "hidden": true
+            },
+            {
+                "id": "RecordedFrame",
+                "type": "object",
+                "description": "Compressed frame data.",
+                "properties": [
+                    { "name": "data", "type": "string", "description": "Base64-encoded compressed image." },
+                    { "name": "timestamp", "type": "number", "description": "Frame swap timestamp." }
+                ],
+                "hidden": true
             }
         ],
         "commands": [
@@ -543,6 +553,27 @@
                 "description": "Acknowledges that a screencast frame has been received by the frontend.",
                 "parameters": [
                     { "name": "frameNumber", "type": "integer", "description": "Frame number." }
+                ],
+                "hidden": true,
+                "handlers": ["browser"]
+            },
+            {
+                "name": "startRecordingFrames",
+                "description": "Starts recording each frame to the buffer.",
+                "parameters": [
+                    { "name": "maxFrameCount", "type": "integer", "description": "Maximal number of frames to record from range. Actual maximum depends on implementation." }
+                ],
+                "hidden": true,
+                "handlers": ["browser"]
+            },
+            {
+                "name": "stopRecordingFrames",
+                "async": true,
+                "description": "Stops recording, encodes and returns images.",
+                "parameters": [
+                ],
+                "returns": [
+                    { "name": "frames", "type": "array", "items": { "$ref": "RecordedFrame" }, "description": "Encoded recorded frames." }
                 ],
                 "hidden": true,
                 "handlers": ["browser"]
