@@ -111,6 +111,28 @@ WebInspector.DOMPresentationUtils.linkifyNodeReference = function(node)
 }
 
 /**
+ * @param {!WebInspector.DeferredDOMNode} deferredNode
+ * @return {!Node}
+ */
+WebInspector.DOMPresentationUtils.linkifyDeferredNodeReference = function(deferredNode)
+{
+    var link = createElement("span");
+    link.className = "node-link";
+
+    link.addEventListener("click", deferredNode.resolve.bind(deferredNode, onDeferredNodeResolved), false);
+
+    /**
+     * @param {?WebInspector.DOMNode} node
+     */
+    function onDeferredNodeResolved(node)
+    {
+        WebInspector.Revealer.reveal(node);
+    }
+
+    return link;
+}
+
+/**
  * @param {!WebInspector.Target} target
  * @param {string} originalImageURL
  * @param {boolean} showDimensions

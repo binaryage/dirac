@@ -2778,6 +2778,7 @@
                     { "name": "sourceMapURL", "type": "string", "optional": true, "description": "URL of source map associated with the stylesheet (if any)." },
                     { "name": "origin", "$ref": "StyleSheetOrigin", "description": "Stylesheet origin."},
                     { "name": "title", "type": "string", "description": "Stylesheet title."},
+                    { "name": "ownerNode", "$ref": "DOM.BackendNodeId", "optional": true, "description": "The backend id for the owner node of the stylesheet." },
                     { "name": "disabled", "type": "boolean", "description": "Denotes whether the stylesheet is disabled."},
                     { "name": "hasSourceURL", "type": "boolean", "optional": true, "description": "Whether the sourceURL field value comes from the sourceURL comment." },
                     { "name": "isInline", "type": "boolean", "description": "Whether this stylesheet is created for STYLE tag by parser. This flag is not set for document.written STYLE tags." },

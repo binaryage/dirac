@@ -1500,6 +1500,8 @@ WebInspector.CSSStyleSheetHeader = function(cssModel, payload)
     this.isInline = payload.isInline;
     this.startLine = payload.startLine;
     this.startColumn = payload.startColumn;
+    if (payload.ownerNode)
+        this.ownerNode = new WebInspector.DeferredDOMNode(cssModel.target(), payload.ownerNode);
 }
 
 WebInspector.CSSStyleSheetHeader.prototype = {

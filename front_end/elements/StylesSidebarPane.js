@@ -1878,7 +1878,8 @@ WebInspector.StylePropertiesSection._createRuleOriginNode = function(target, lin
     var firstMatchingIndex = rule.matchingSelectors && rule.matchingSelectors.length ? rule.matchingSelectors[0] : 0;
     var ruleLocation = rule.selectors[firstMatchingIndex].range;
 
-    if (ruleLocation && rule.styleSheetId)
+    var header = rule.styleSheetId ? target.cssModel.styleSheetHeaderForId(rule.styleSheetId) : null;
+    if (ruleLocation && rule.styleSheetId && header && header.resourceURL())
         return WebInspector.StylePropertiesSection._linkifyRuleLocation(target, linkifier, rule.styleSheetId, ruleLocation);
 
     if (rule.isUserAgent)
@@ -1887,6 +1888,13 @@ WebInspector.StylePropertiesSection._createRuleOriginNode = function(target, lin
         return createTextNode(WebInspector.UIString("injected stylesheet"));
     if (rule.isViaInspector)
         return createTextNode(WebInspector.UIString("via inspector"));
+
+    if (header && header.ownerNode) {
+        var link = WebInspector.DOMPresentationUtils.linkifyDeferredNodeReference(header.ownerNode);
+        link.textContent = "<style>…</style>";
+        return link;
+    }
+
     return createTextNode("");
 }
 
