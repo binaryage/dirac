@@ -167,8 +167,8 @@ WebInspector.RequestTimingView.calculateRequestTimeRanges = function(request)
     var timing = request.timing;
     if (!timing) {
         var start = (request.startTime === -1) ? 0 : request.startTime;
-        var middle = (request.responseReceivedTime !== -1) ? Number.MAX_VALUE : request.responseReceivedTime;
-        var end = (request.endTime !== -1) ? Number.MAX_VALUE : request.endTime;
+        var middle = (request.responseReceivedTime === -1) ? Number.MAX_VALUE : request.responseReceivedTime;
+        var end = (request.endTime === -1) ? Number.MAX_VALUE : request.endTime;
         addRange(WebInspector.RequestTimeRangeNames.Total, start, end);
         addRange(WebInspector.RequestTimeRangeNames.Blocking, start, middle);
         addRange(WebInspector.RequestTimeRangeNames.Receiving, middle, end);
