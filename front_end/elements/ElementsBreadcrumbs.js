@@ -356,8 +356,9 @@ WebInspector.ElementsBreadcrumbs.prototype = {
                         newEndNeeded = false;
                         crumb.classList.add("end");
                     }
-                } else
+                } else {
                     collapsedRun = true;
+                }
                 crumb = crumb.nextSibling;
             }
 

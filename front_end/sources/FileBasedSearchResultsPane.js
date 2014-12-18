@@ -209,7 +209,6 @@ WebInspector.FileBasedSearchResultsPane.FileTreeElement.prototype = {
     {
         regex.lastIndex = 0;
         var match;
-        var offset = 0;
         var matchRanges = [];
         while ((regex.lastIndex < lineContent.length) && (match = regex.exec(lineContent)))
             matchRanges.push(new WebInspector.SourceRange(match.index, match[0].length));

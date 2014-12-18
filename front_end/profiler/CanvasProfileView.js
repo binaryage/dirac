@@ -601,7 +601,7 @@ WebInspector.CanvasProfileView.prototype = {
     _onHidePopover: function()
     {
         if (this._popoverAnchorElement) {
-            this._popoverAnchorElement.remove()
+            this._popoverAnchorElement.remove();
             delete this._popoverAnchorElement;
         }
     },

@@ -152,7 +152,6 @@ WebInspector.ApplicationCacheModel.prototype = {
         if (!this._manifestURLsByFrame[frameId])
             return;
 
-        var manifestURL = this._manifestURLsByFrame[frameId];
         delete this._manifestURLsByFrame[frameId];
         delete this._statuses[frameId];
 

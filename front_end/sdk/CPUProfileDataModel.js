@@ -197,7 +197,6 @@ WebInspector.CPUProfileDataModel.prototype = {
         var stackTop = 0;
         var stackNodes = [];
         var prevId = this.profileHead.id;
-        var prevHeight = this.profileHead.depth;
         var sampleTime = timestamps[samplesCount];
         var gcParentNode = null;
 

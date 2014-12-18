@@ -201,18 +201,18 @@ WebInspector.ServiceWorkerCacheModel.Entry = function(request, response)
  */
 WebInspector.ServiceWorkerCacheModel.CacheId = function(name)
 {
-   this.name = name;
+    this.name = name;
 }
 
 WebInspector.ServiceWorkerCacheModel.CacheId.prototype = {
-   /**
-    * @param {!WebInspector.ServiceWorkerCacheModel.CacheId} cacheId
-    * @return {boolean}
-    */
-   equals: function(cacheId)
-   {
-       return this.name === cacheId.name;
-   },
+    /**
+     * @param {!WebInspector.ServiceWorkerCacheModel.CacheId} cacheId
+     * @return {boolean}
+     */
+    equals: function(cacheId)
+    {
+        return this.name === cacheId.name;
+    }
 }
 
 /**

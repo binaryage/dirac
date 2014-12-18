@@ -923,7 +923,7 @@ WebInspector.DebuggerModel.Location.prototype = {
      */
     id: function()
     {
-        return this.target().id() + ":" + this.scriptId + ":" + this.lineNumber + ":" + this.columnNumber
+        return this.target().id() + ":" + this.scriptId + ":" + this.lineNumber + ":" + this.columnNumber;
     },
 
     __proto__: WebInspector.SDKObject.prototype
@@ -1004,7 +1004,7 @@ WebInspector.DebuggerModel.CallFrame.prototype = {
      */
     returnValue: function()
     {
-        return this._payload.returnValue ?  this.target().runtimeModel.createRemoteObject(this._payload.returnValue) : null
+        return this._payload.returnValue ?  this.target().runtimeModel.createRemoteObject(this._payload.returnValue) : null;
     },
 
     /**

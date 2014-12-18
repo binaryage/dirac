@@ -916,7 +916,7 @@ WebInspector.CSSRuleSelector = function(payload)
  */
 WebInspector.CSSRuleSelector.parsePayload = function(payload)
 {
-    return new WebInspector.CSSRuleSelector(payload)
+    return new WebInspector.CSSRuleSelector(payload);
 }
 
 WebInspector.CSSRuleSelector.prototype = {
@@ -1241,7 +1241,7 @@ WebInspector.CSSProperty.prototype = {
      */
     setValue: function(newValue, majorChange, overwrite, userCallback)
     {
-        var text = this.name + ": " + newValue + (this.important ? " !important" : "") + ";"
+        var text = this.name + ": " + newValue + (this.important ? " !important" : "") + ";";
         this.setText(text, majorChange, overwrite, userCallback);
     },
 

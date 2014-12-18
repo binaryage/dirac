@@ -280,7 +280,7 @@ WebInspector.SourcesSearchScope.prototype = {
             var queries = this._searchConfig.queries();
             if (content !== null) {
                 for (var i = 0; i < queries.length; ++i) {
-                    var nextMatches = WebInspector.ContentProvider.performSearchInContent(content, queries[i], !this._searchConfig.ignoreCase(), this._searchConfig.isRegex())
+                    var nextMatches = WebInspector.ContentProvider.performSearchInContent(content, queries[i], !this._searchConfig.ignoreCase(), this._searchConfig.isRegex());
                     matches = matches.mergeOrdered(nextMatches, matchesComparator);
                 }
             }

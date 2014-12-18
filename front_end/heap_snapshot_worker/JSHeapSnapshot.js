@@ -242,7 +242,7 @@ WebInspector.JSHeapSnapshot.prototype = {
                 doAction(subRoot);
             }
             for (var iter = this.rootNode().edges(); iter.hasNext(); iter.next())
-                doAction(iter.edge.node())
+                doAction(iter.edge.node());
         }
     },
 
@@ -301,8 +301,6 @@ WebInspector.JSHeapSnapshot.prototype = {
         var edgeTypeOffset = this._edgeTypeOffset;
         var edgeFieldsCount = this._edgeFieldsCount;
         var containmentEdges = this.containmentEdges;
-        var nodes = this.nodes;
-        var nodeCount = this.nodeCount;
         var nodeFieldCount = this._nodeFieldCount;
         var firstEdgeIndexes = this._firstEdgeIndexes;
 
@@ -344,8 +342,6 @@ WebInspector.JSHeapSnapshot.prototype = {
         var edgeWeakType = this._edgeWeakType;
         var firstEdgeIndexes = this._firstEdgeIndexes;
         var containmentEdges = this.containmentEdges;
-        var containmentEdgesLength = containmentEdges.length;
-        var nodes = this.nodes;
         var nodeFieldCount = this._nodeFieldCount;
         var nodesCount = this.nodeCount;
 
@@ -496,7 +492,7 @@ WebInspector.JSHeapSnapshot.prototype = {
  */
 WebInspector.JSHeapSnapshotNode = function(snapshot, nodeIndex)
 {
-    WebInspector.HeapSnapshotNode.call(this, snapshot, nodeIndex)
+    WebInspector.HeapSnapshotNode.call(this, snapshot, nodeIndex);
 }
 
 WebInspector.JSHeapSnapshotNode.prototype = {

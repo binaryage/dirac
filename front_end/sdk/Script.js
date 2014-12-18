@@ -256,7 +256,7 @@ WebInspector.Script.prototype = {
      */
     isInlineScriptWithSourceURL: function()
     {
-        return !!this.hasSourceURL && this.isInlineScript()
+        return !!this.hasSourceURL && this.isInlineScript();
     },
 
     __proto__: WebInspector.SDKObject.prototype

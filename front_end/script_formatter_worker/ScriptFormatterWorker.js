@@ -378,7 +378,6 @@ FormatterWorker.HTMLFormatter.prototype = {
         function processToken(tokenValue, tokenType, tokenStart, tokenEnd) {
             if (!tokenType)
                 return;
-            var oldType = tokenType;
             tokenType = tokenType.split(" ").keySet();
             if (!tokenType["tag"])
                 return;

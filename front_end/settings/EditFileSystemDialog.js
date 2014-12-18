@@ -274,7 +274,7 @@ WebInspector.EditFileSystemDialog.prototype = {
             return;
 
         this._entries[urlPrefix] = entry;
-        var fileMappingListItem = this._fileMappingsList.addItem(urlPrefix, null);
+        this._fileMappingsList.addItem(urlPrefix, null);
         this._resize();
     },
 
@@ -311,7 +311,6 @@ WebInspector.EditFileSystemDialog.prototype = {
      */
     _excludedFolderValidate: function(itemId, data)
     {
-        var fileSystemPath = this._fileSystemPath;
         var columns = [];
         if (!this._validateExcludedFolder(data["path"], itemId))
             columns.push("path");

@@ -128,7 +128,7 @@ WebInspector.AnimationModel.AnimationPlayer.prototype = {
     /**
      * @return {boolean}
      */
-    paused: function ()
+    paused: function()
     {
         return this._payload.pausedState;
     },

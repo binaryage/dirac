@@ -95,7 +95,6 @@ WebInspector.SuggestBox.prototype = {
         // Position relative to main DevTools element.
         var container = WebInspector.Dialog.modalHostView().element;
         anchorBox = anchorBox.relativeToElement(container);
-        var totalWidth = container.offsetWidth;
         var totalHeight = container.offsetHeight;
         var aboveHeight = anchorBox.y;
         var underHeight = totalHeight - anchorBox.y - anchorBox.height;

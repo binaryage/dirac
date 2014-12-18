@@ -247,7 +247,6 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
         var lastUsedTimeByLevel = [];
         var headerAppended = false;
 
-        var maxStackDepth = 0;
         for (var i = 0; i < eventSteps.length; ++i) {
             var e = eventSteps[i][0];
             if (!this._isVisible(e))
@@ -502,7 +501,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
         return {
             startTime: startTime,
             endTime: startTime + this._timelineData.entryTotalTimes[entryIndex]
-        }
+        };
     },
 
     /**
@@ -678,7 +677,7 @@ WebInspector.TimelineFlameChartMarker.prototype = {
     title: function()
     {
         var startTime = Number.millisToString(this._startOffset);
-        return WebInspector.UIString("%s at %s", this._style.title, this._startOffset);
+        return WebInspector.UIString("%s at %s", this._style.title, startTime);
     },
 
     /**
@@ -694,7 +693,7 @@ WebInspector.TimelineFlameChartMarker.prototype = {
 
         if (this._style.lowPriority && pixelsPerMillisecond < lowPriorityVisibilityThresholdInPixelsPerMs)
             return;
-        context.save()
+        context.save();
 
         if (!this._style.lowPriority) {
             context.strokeStyle = this._style.color;
@@ -734,7 +733,7 @@ WebInspector.TimelineFlameChart = function(delegate, tracingModel, frameModel)
     this.element.classList.add("timeline-flamechart");
     this._delegate = delegate;
     this._model = tracingModel;
-    this._dataProvider = new WebInspector.TimelineFlameChartDataProvider(tracingModel, frameModel)
+    this._dataProvider = new WebInspector.TimelineFlameChartDataProvider(tracingModel, frameModel);
     this._mainView = new WebInspector.FlameChart(this._dataProvider, this, true);
     this._mainView.show(this.element);
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStarted, this._onRecordingStarted, this);

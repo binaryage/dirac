@@ -312,7 +312,6 @@ WebInspector.IDBDataView.prototype = {
                 data["primaryKey"] = entries[i].primaryKey;
                 data["value"] = entries[i].value;
 
-                var primaryKey = JSON.stringify(this._isIndex ? entries[i].primaryKey : entries[i].key);
                 var node = new WebInspector.IDBDataGridNode(data);
                 this._dataGrid.rootNode().appendChild(node);
             }
@@ -405,7 +404,7 @@ WebInspector.IDBDataGridNode.prototype = {
         switch (type) {
         case "object":
         case "array":
-            var section = new WebInspector.ObjectPropertiesSection(value, value.description)
+            var section = new WebInspector.ObjectPropertiesSection(value, value.description);
             section.editable = false;
             section.skipProto = true;
             contents.appendChild(section.element);

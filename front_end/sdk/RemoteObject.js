@@ -657,7 +657,7 @@ WebInspector.RemoteObjectImpl.prototype = {
      */
     functionDetails: function(callback)
     {
-        this._target.debuggerModel.functionDetails(this, callback)
+        this._target.debuggerModel.functionDetails(this, callback);
     },
 
     /**
@@ -666,7 +666,7 @@ WebInspector.RemoteObjectImpl.prototype = {
      */
     generatorObjectDetails: function(callback)
     {
-        this._target.debuggerModel.generatorObjectDetails(this, callback)
+        this._target.debuggerModel.generatorObjectDetails(this, callback);
     },
 
     /**

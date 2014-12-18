@@ -46,7 +46,7 @@ WebInspector.CodeMirrorUtils.toPos = function(range)
     return {
         start: new CodeMirror.Pos(range.startLine, range.startColumn),
         end: new CodeMirror.Pos(range.endLine, range.endColumn)
-    }
+    };
 }
 
 /**

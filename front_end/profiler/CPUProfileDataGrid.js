@@ -632,7 +632,7 @@ WebInspector.ProfileDataGridTree.propertyComparator = function(property, isAscen
                     return 1;
 
                 return 0;
-            }
+            };
         } else {
             comparator = function(lhs, rhs)
             {
@@ -643,7 +643,7 @@ WebInspector.ProfileDataGridTree.propertyComparator = function(property, isAscen
                     return 1;
 
                 return 0;
-            }
+            };
         }
 
         WebInspector.ProfileDataGridTree.propertyComparators[(isAscending ? 1 : 0)][property] = comparator;

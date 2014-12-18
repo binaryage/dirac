@@ -182,7 +182,7 @@ WebInspector.StylesSectionModel.prototype = {
         }
 
         return true;
-    },
+    }
 }
 
 /**

@@ -141,7 +141,6 @@ WebInspector.JavaScriptBreakpointsSidebarPane.prototype = {
     _breakpointRemoved: function(event)
     {
         var breakpoint = /** @type {!WebInspector.BreakpointManager.Breakpoint} */ (event.data.breakpoint);
-        var uiLocation = /** @type {!WebInspector.UILocation} */ (event.data.uiLocation);
         var breakpointItem = this._items.get(breakpoint);
         if (!breakpointItem)
             return;

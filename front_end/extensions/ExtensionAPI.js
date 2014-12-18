@@ -371,7 +371,7 @@ function declareInterfaceClass(implConstructor)
         var impl = { __proto__: implConstructor.prototype };
         implConstructor.apply(impl, arguments);
         populateInterfaceClass(this, impl);
-    }
+    };
 }
 
 function defineDeprecatedProperty(object, className, oldName, newName)
@@ -718,8 +718,7 @@ InspectedWindow.prototype = {
             options = optionsOrUserAgent;
             if (options.preprocessingScript)
                 console.warn("Please avoid using 'preprocessingScript' option to chrome.devtools.inspectedWindow.reload(), support for it will be removed soon.");
-        }
-        else if (typeof optionsOrUserAgent === "string") {
+        } else if (typeof optionsOrUserAgent === "string") {
             options = { userAgent: optionsOrUserAgent };
             console.warn("Passing userAgent as string parameter to inspectedWindow.reload() is deprecated. " +
                          "Use inspectedWindow.reload({ userAgent: value}) instead.");
@@ -769,7 +768,7 @@ InspectedWindow.prototype = {
  */
 function ResourceImpl(resourceData)
 {
-    this._url = resourceData.url
+    this._url = resourceData.url;
     this._type = resourceData.type;
 }
 

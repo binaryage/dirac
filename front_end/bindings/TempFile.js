@@ -180,11 +180,11 @@ WebInspector.TempFile.prototype = {
             reader.onloadend = function(e)
             {
                 callback(/** @type {?string} */ (this.result));
-            }
+            };
             reader.onerror = function(error)
             {
                 WebInspector.console.error("Failed to read from temp file: " + error.message);
-            }
+            };
             reader.readAsText(file);
         }
         function didFailToGetFile(error)

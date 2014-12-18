@@ -214,7 +214,7 @@ WebInspector.ApplicationCacheItemsView.prototype = {
         }
         function localeCompare(field, resource1, resource2)
         {
-             return sortDirection * (resource1[field] + "").localeCompare(resource2[field] + "")
+             return sortDirection * (resource1[field] + "").localeCompare(resource2[field] + "");
         }
 
         var comparator;

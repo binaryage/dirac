@@ -579,7 +579,7 @@ WebInspector.ResponsiveDesignView.prototype = {
     {
         var deviceSection = this._toolbarElement.createChild("div", "responsive-design-section responsive-design-section-device");
 
-        var separator = deviceSection.createChild("div", "responsive-design-section-decorator");
+        deviceSection.createChild("div", "responsive-design-section-decorator");
 
         // Device.
         var deviceElement = deviceSection.createChild("div", "responsive-design-suite responsive-design-suite-top").createChild("div");
@@ -633,7 +633,7 @@ WebInspector.ResponsiveDesignView.prototype = {
     {
         var networkSection = this._toolbarElement.createChild("div", "responsive-design-section responsive-design-section-network");
 
-        var separator = networkSection.createChild("div", "responsive-design-section-decorator");
+        networkSection.createChild("div", "responsive-design-section-decorator");
 
         // Bandwidth.
         var bandwidthElement = networkSection.createChild("div", "responsive-design-suite responsive-design-suite-top").createChild("div");
@@ -741,7 +741,7 @@ WebInspector.ResponsiveDesignView.prototype = {
                 var value = this._viewport.pageScaleFactor;
                 value = increase ? value * 1.1 : value / 1.1;
                 value = Math.min(this._viewport.maximumPageScaleFactor, value);
-                value = Math.max(this._viewport.minimumPageScaleFactor, value)
+                value = Math.max(this._viewport.minimumPageScaleFactor, value);
                 this._target.pageAgent().setPageScaleFactor(value);
             }
             finishCallback();

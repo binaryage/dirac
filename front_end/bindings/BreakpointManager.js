@@ -809,7 +809,7 @@ WebInspector.BreakpointManager.TargetBreakpoint.prototype = {
             if (script.sourceURL)
                 newState = new WebInspector.BreakpointManager.Breakpoint.State(script.sourceURL, null, debuggerLocation.lineNumber, debuggerLocation.columnNumber, condition);
             else
-                newState = new WebInspector.BreakpointManager.Breakpoint.State(null, debuggerLocation.scriptId, debuggerLocation.lineNumber, debuggerLocation.columnNumber, condition)
+                newState = new WebInspector.BreakpointManager.Breakpoint.State(null, debuggerLocation.scriptId, debuggerLocation.lineNumber, debuggerLocation.columnNumber, condition);
         } else if (this._breakpoint._currentState && this._breakpoint._currentState.url) {
             var position = this._breakpoint._currentState;
             newState = new WebInspector.BreakpointManager.Breakpoint.State(position.url, null, position.lineNumber, position.columnNumber, condition);

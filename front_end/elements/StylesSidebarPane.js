@@ -434,7 +434,7 @@ WebInspector.StylesSidebarPane.prototype = {
             if (this._node === node && computedStyle)
                 this._innerRefreshUpdate(node, computedStyle, editedSection);
 
-            callbackWrapper.call(this)
+            callbackWrapper.call(this);
         }
 
         if (this._computedStylePane.isShowing() || forceFetchComputedStyle) {
@@ -1691,7 +1691,7 @@ WebInspector.StylePropertiesSection.prototype = {
         }
         this.expand();
         this.addNewBlankProperty().startEditing();
-        event.consume(true)
+        event.consume(true);
     },
 
     /**

@@ -635,7 +635,7 @@ WebInspector.installComponentRootStyles = function(element)
  */
 WebInspector.uninstallComponentRootStyles = function(element)
 {
-    var wasInstalled = element.classList.remove("component-root", "platform-" + WebInspector.platform());
+    element.classList.remove("component-root", "platform-" + WebInspector.platform());
 }
 
 /**

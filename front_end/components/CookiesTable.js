@@ -193,7 +193,7 @@ WebInspector.CookiesTable.prototype = {
 
         function compareTo(getter, cookie1, cookie2)
         {
-            return sortDirection * (getter.apply(cookie1) + "").compareTo(getter.apply(cookie2) + "")
+            return sortDirection * (getter.apply(cookie1) + "").compareTo(getter.apply(cookie2) + "");
         }
 
         function numberCompare(getter, cookie1, cookie2)

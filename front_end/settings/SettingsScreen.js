@@ -338,12 +338,12 @@ WebInspector.GenericSettingsTab.prototype = {
             case "checkbox":
                 return WebInspector.SettingsUI.createSettingCheckbox(uiTitle, setting);
             case "select":
-                var descriptorOptions = descriptor["options"]
+                var descriptorOptions = descriptor["options"];
                 var options = new Array(descriptorOptions.length);
                 for (var i = 0; i < options.length; ++i) {
                     // The third array item flags that the option name is "raw" (non-i18n-izable).
                     var optionName = descriptorOptions[i][2] ? descriptorOptions[i][0] : WebInspector.UIString(descriptorOptions[i][0]);
-                    options[i] = [WebInspector.UIString(descriptorOptions[i][0]), descriptorOptions[i][1]];
+                    options[i] = [optionName, descriptorOptions[i][1]];
                 }
                 return this._createSelectSetting(uiTitle, options, setting);
             default:
@@ -537,7 +537,6 @@ WebInspector.WorkspaceSettingsTab.prototype = {
     _fileSystemRemoved: function(event)
     {
         var fileSystem = /** @type {!WebInspector.IsolatedFileSystem} */ (event.data);
-        var selectedFileSystemPath = this._selectedFileSystemPath();
         if (this._fileSystemsList.itemForId(fileSystem.path()))
             this._fileSystemsList.removeItem(fileSystem.path());
         if (!this._fileSystemsList.itemIds().length)

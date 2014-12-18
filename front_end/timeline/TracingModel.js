@@ -838,7 +838,7 @@ WebInspector.TracingModel.Process.prototype = {
             var startEvent = steps[0];
             var syntheticEndEvent = new WebInspector.TracingModel.Event(startEvent.category, startEvent.name, WebInspector.TracingModel.Phase.AsyncEnd, lastEventTimeMs, startEvent.thread);
             steps.push(syntheticEndEvent);
-            startEvent.setEndTime(lastEventTimeMs)
+            startEvent.setEndTime(lastEventTimeMs);
         }
         for (var key in this._openNestableAsyncEvents) {
             var openEvents = this._openNestableAsyncEvents[key];

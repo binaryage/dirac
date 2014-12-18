@@ -73,7 +73,7 @@ WebInspector.Linkifier.handleLink = function(url, lineNumber)
 {
     if (!WebInspector.Linkifier._linkHandler)
         return false;
-    return WebInspector.Linkifier._linkHandler.handleLink(url, lineNumber)
+    return WebInspector.Linkifier._linkHandler.handleLink(url, lineNumber);
 }
 
 /**

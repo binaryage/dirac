@@ -189,7 +189,6 @@ WebInspector.StylesSourceMapping.prototype = {
     {
         if (this._styleFiles.get(uiSourceCode) || header.isInline)
             return;
-        var url = uiSourceCode.url;
         this._styleFiles.set(uiSourceCode, new WebInspector.StyleFile(uiSourceCode, this));
         WebInspector.cssWorkspaceBinding.updateLocations(header);
     },
@@ -307,7 +306,7 @@ WebInspector.StylesSourceMapping.prototype = {
         var styleSheetURL = header.resourceURL();
         if (!styleSheetURL)
             return;
-        var uiSourceCode = this._workspace.uiSourceCodeForURL(styleSheetURL)
+        var uiSourceCode = this._workspace.uiSourceCodeForURL(styleSheetURL);
         if (!uiSourceCode)
             return;
         header.requestContent(callback.bind(this, uiSourceCode));

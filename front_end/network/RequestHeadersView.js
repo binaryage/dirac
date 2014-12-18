@@ -302,7 +302,7 @@ WebInspector.RequestHeadersView.prototype = {
 
         var headers = this._request.requestHeaders();
         headers = headers.slice();
-        headers.sort(function(a, b) { return a.name.toLowerCase().compareTo(b.name.toLowerCase()) });
+        headers.sort(function(a, b) { return a.name.toLowerCase().compareTo(b.name.toLowerCase()); });
         var headersText = this._request.requestHeadersText();
 
         if (this._showRequestHeadersText && headersText)

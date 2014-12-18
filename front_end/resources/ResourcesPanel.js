@@ -273,7 +273,7 @@ WebInspector.ResourcesPanel.prototype = {
 
         var parentTreeElement = parentFrame ? this._treeElementForFrameId[parentFrame.id] : this.resourcesListTreeElement;
         if (!parentTreeElement) {
-            console.warn("No frame to route " + frame.url + " to.")
+            console.warn("No frame to route " + frame.url + " to.");
             return;
         }
 
@@ -701,9 +701,8 @@ WebInspector.ResourcesPanel.prototype = {
     {
         var frameId = event.data;
         var manifestURL = this._applicationCacheModel.frameManifestURL(frameId);
-        var status = this._applicationCacheModel.frameManifestStatus(frameId)
 
-        var manifestTreeElement = this._applicationCacheManifestElements[manifestURL]
+        var manifestTreeElement = this._applicationCacheManifestElements[manifestURL];
         if (!manifestTreeElement) {
             manifestTreeElement = new WebInspector.ApplicationCacheManifestTreeElement(this, manifestURL);
             this.applicationCacheListTreeElement.appendChild(manifestTreeElement);
@@ -739,7 +738,7 @@ WebInspector.ResourcesPanel.prototype = {
     _applicationCacheFrameManifestStatusChanged: function(event)
     {
         var frameId = event.data;
-        var status = this._applicationCacheModel.frameManifestStatus(frameId)
+        var status = this._applicationCacheModel.frameManifestStatus(frameId);
 
         if (this._applicationCacheViews[frameId])
             this._applicationCacheViews[frameId].updateStatus(status);
@@ -1501,7 +1500,7 @@ WebInspector.ServiceWorkerCacheTreeElement.prototype = {
         var cacheId = /** @type {!WebInspector.ServiceWorkerCacheModel.CacheId} */ (event.data);
         var model = /** @type {!WebInspector.ServiceWorkerCacheModel} */ (event.target);
 
-        var swCacheTreeElement = this._cacheTreeElement(model, cacheId)
+        var swCacheTreeElement = this._cacheTreeElement(model, cacheId);
         if (!swCacheTreeElement)
             return;
 
@@ -1699,7 +1698,7 @@ WebInspector.IndexedDBTreeElement.prototype = {
         var database = /** @type {!WebInspector.IndexedDBModel.Database} */ (event.data);
         var model = /** @type {!WebInspector.IndexedDBModel} */ (event.target);
 
-        var idbDatabaseTreeElement = this._idbDatabaseTreeElement(model, database.databaseId)
+        var idbDatabaseTreeElement = this._idbDatabaseTreeElement(model, database.databaseId);
         if (!idbDatabaseTreeElement)
             return;
 
@@ -2002,7 +2001,7 @@ WebInspector.IDBObjectStoreTreeElement.prototype = {
         var tooltipString = keyPathString !== null ? (WebInspector.UIString("Key path: ") + keyPathString) : "";
         if (this._objectStore.autoIncrement)
             tooltipString += "\n" + WebInspector.UIString("autoIncrement");
-        this.tooltip = tooltipString
+        this.tooltip = tooltipString;
     },
 
     /**

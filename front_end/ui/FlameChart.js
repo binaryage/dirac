@@ -620,7 +620,7 @@ WebInspector.FlameChart.prototype = {
         var style = this._selectionOverlay.style;
         style.left = Math.min(x, this._selectionStartX) + "px";
         style.top = Math.min(y, this._selectionStartY) + "px";
-        var selectionWidth = Math.abs(x - this._selectionStartX)
+        var selectionWidth = Math.abs(x - this._selectionStartX);
         style.width =  selectionWidth + "px";
         style.height = Math.abs(y - this._selectionStartY) + "px";
 
@@ -929,9 +929,6 @@ WebInspector.FlameChart.prototype = {
 
         var timeWindowRight = this._timeWindowRight;
         var timeWindowLeft = this._timeWindowLeft;
-        var timeToPixel = this._timeToPixel;
-        var pixelWindowLeft = this._pixelWindowLeft;
-        var paddingLeft = this._paddingLeft;
         var minWidth = this._minWidth;
         var entryTotalTimes = timelineData.entryTotalTimes;
         var entryStartTimes = timelineData.entryStartTimes;
@@ -974,7 +971,6 @@ WebInspector.FlameChart.prototype = {
                 var barX = this._timeToPosition(entryStartTime);
                 if (barX >= lastDrawOffset)
                     continue;
-                var barRight = Math.min(this._timeToPosition(entryOffsetRight), lastDrawOffset);
                 lastDrawOffset = barX;
 
                 var color = this._dataProvider.entryColor(entryIndex);

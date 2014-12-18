@@ -21,12 +21,12 @@ WebInspector.PowerProfiler.EventTypes = {
 }
 
 WebInspector.PowerProfiler.prototype = {
-    startProfile: function ()
+    startProfile: function()
     {
         this._target.powerAgent().start();
     },
 
-    stopProfile: function ()
+    stopProfile: function()
     {
         this._target.powerAgent().end();
     },

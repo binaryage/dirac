@@ -666,7 +666,7 @@ WebInspector.TabbedPane.prototype = {
         if (!measuredWidths.length)
             return 0;
 
-        measuredWidths.sort(function(x, y) { return x - y });
+        measuredWidths.sort(function(x, y) { return x - y; });
 
         var totalMeasuredWidth = 0;
         for (var i = 0; i < measuredWidths.length; ++i)
@@ -711,7 +711,7 @@ WebInspector.TabbedPane.prototype = {
             tabsToShowIndexes.push(tabsOrdered.indexOf(tab));
         }
 
-        tabsToShowIndexes.sort(function(x, y) { return x - y });
+        tabsToShowIndexes.sort(function(x, y) { return x - y; });
 
         return tabsToShowIndexes;
     },

@@ -419,9 +419,9 @@ WebInspector.SourcesPanel.prototype = {
             return;
 
         if (this._paused) {
-            this._updateButtonTitle(this._pauseButton, WebInspector.UIString("Resume script execution (%s)."))
+            this._updateButtonTitle(this._pauseButton, WebInspector.UIString("Resume script execution (%s)."));
             this._pauseButton.setToggled(true);
-            this._pauseButton.setLongClickOptionsEnabled((function() { return [ this._longResumeButton ] }).bind(this));
+            this._pauseButton.setLongClickOptionsEnabled((function() { return [ this._longResumeButton ]; }).bind(this));
 
             this._pauseButton.setEnabled(true);
             this._stepOverButton.setEnabled(true);
@@ -650,7 +650,6 @@ WebInspector.SourcesPanel.prototype = {
         debugToolbar.element.classList.add("scripts-debug-toolbar");
 
         var title, handler;
-        var platformSpecificModifier = WebInspector.KeyboardShortcut.Modifiers.CtrlOrMeta;
 
         // Run snippet.
         title = WebInspector.UIString("Run snippet (%s).");
@@ -1192,14 +1191,14 @@ WebInspector.UpgradeFileSystemDropTarget = function(element)
 WebInspector.UpgradeFileSystemDropTarget.dragAndDropFilesType = "Files";
 
 WebInspector.UpgradeFileSystemDropTarget.prototype = {
-    _onDragEnter: function (event)
+    _onDragEnter: function(event)
     {
         if (event.dataTransfer.types.indexOf(WebInspector.UpgradeFileSystemDropTarget.dragAndDropFilesType) === -1)
             return;
         event.consume(true);
     },
 
-    _onDragOver: function (event)
+    _onDragOver: function(event)
     {
         if (event.dataTransfer.types.indexOf(WebInspector.UpgradeFileSystemDropTarget.dragAndDropFilesType) === -1)
             return;
@@ -1213,7 +1212,7 @@ WebInspector.UpgradeFileSystemDropTarget.prototype = {
         this._dragMaskElement.addEventListener("dragleave", this._onDragLeave.bind(this), true);
     },
 
-    _onDrop: function (event)
+    _onDrop: function(event)
     {
         event.consume(true);
         this._removeMask();
@@ -1226,13 +1225,13 @@ WebInspector.UpgradeFileSystemDropTarget.prototype = {
         InspectorFrontendHost.upgradeDraggedFileSystemPermissions(entry.filesystem);
     },
 
-    _onDragLeave: function (event)
+    _onDragLeave: function(event)
     {
         event.consume(true);
         this._removeMask();
     },
 
-    _removeMask: function ()
+    _removeMask: function()
     {
         this._dragMaskElement.remove();
         delete this._dragMaskElement;

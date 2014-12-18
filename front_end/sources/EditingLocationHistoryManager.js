@@ -197,4 +197,4 @@ WebInspector.EditingLocationHistoryEntry.prototype = {
         this._editingLocationManager.updateCurrentState();
         this._sourcesView.showSourceLocation(uiSourceCode, position.lineNumber, position.columnNumber);
     }
-};
+}

@@ -662,7 +662,7 @@ WebInspector.ProfilesPanel.prototype = {
     {
         this._launcherView.addProfileType(profileType);
         var profileTypeSection = new WebInspector.ProfileTypeSidebarSection(this, profileType);
-        this._typeIdToSidebarSection[profileType.id] = profileTypeSection
+        this._typeIdToSidebarSection[profileType.id] = profileTypeSection;
         this.sidebarTree.appendChild(profileTypeSection);
         profileTypeSection.childrenListElement.addEventListener("contextmenu", this._handleContextMenuEvent.bind(this), true);
 

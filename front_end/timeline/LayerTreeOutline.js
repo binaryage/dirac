@@ -150,7 +150,7 @@ WebInspector.LayerTreeOutline.prototype = {
     _selectedNodeChanged: function(node)
     {
         var layer = /** @type {!WebInspector.Layer} */ (node.representedObject);
-        var selection = node.representedObject ? new WebInspector.Layers3DView.LayerSelection(node.representedObject) : null;
+        var selection = layer ? new WebInspector.Layers3DView.LayerSelection(layer) : null;
         this.dispatchEventToListeners(WebInspector.LayerTreeOutline.Events.LayerSelected, selection);
     },
 

@@ -727,7 +727,7 @@ WebInspector.HeapSnapshotIndexRangeIterator.prototype = {
      */
     hasNext: function()
     {
-        return this._position < this._indexes.length
+        return this._position < this._indexes.length;
     },
 
     /**
@@ -1385,7 +1385,6 @@ WebInspector.HeapSnapshot.prototype = {
      */
     calculateDistances: function(filter)
     {
-        var nodeFieldCount = this._nodeFieldCount;
         var nodeCount = this.nodeCount;
         var distances = this._nodeDistances;
         var noDistance = this._noDistance;
@@ -1433,7 +1432,6 @@ WebInspector.HeapSnapshot.prototype = {
         var edgeToNodeOffset = this._edgeToNodeOffset;
         var edgeTypeOffset = this._edgeTypeOffset;
         var nodeCount = this.nodeCount;
-        var containmentEdgesLength = containmentEdges.length;
         var edgeWeakType = this._edgeWeakType;
         var noDistance = this._noDistance;
 
@@ -1593,7 +1591,6 @@ WebInspector.HeapSnapshot.prototype = {
     _buildPostOrderIndex: function()
     {
         var nodeFieldCount = this._nodeFieldCount;
-        var nodes = this.nodes;
         var nodeCount = this.nodeCount;
         var rootNodeOrdinal = this._rootNodeIndex / nodeFieldCount;
 
@@ -1737,7 +1734,6 @@ WebInspector.HeapSnapshot.prototype = {
     _buildDominatorTree: function(postOrderIndex2NodeOrdinal, nodeOrdinal2PostOrderIndex)
     {
         var nodeFieldCount = this._nodeFieldCount;
-        var nodes = this.nodes;
         var firstRetainerIndex = this._firstRetainerIndex;
         var retainingNodes = this._retainingNodes;
         var retainingEdges = this._retainingEdges;
@@ -1748,7 +1744,6 @@ WebInspector.HeapSnapshot.prototype = {
         var edgeWeakType = this._edgeWeakType;
         var firstEdgeIndexes = this._firstEdgeIndexes;
         var containmentEdges = this.containmentEdges;
-        var containmentEdgesLength = this.containmentEdges.length;
         var rootNodeIndex = this._rootNodeIndex;
 
         var mapAndFlag = this.userObjectsMapAndFlag();
@@ -2234,7 +2229,6 @@ WebInspector.HeapSnapshotItemProvider.prototype = {
         var position = begin;
         var count = end - begin;
         var result = new Array(count);
-        var iterator = this._iterator;
         for (var i = 0 ; i < count; ++i) {
             var itemIndex = this._iterationOrder[position++];
             var item = this._indexProvider.itemForIndex(itemIndex);

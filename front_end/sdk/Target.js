@@ -444,7 +444,7 @@ WebInspector.TargetManager.prototype = {
      */
     createTarget: function(name, connection, callback)
     {
-        var target = new WebInspector.Target(name, connection, callbackWrapper.bind(this));
+        new WebInspector.Target(name, connection, callbackWrapper.bind(this));
 
         /**
          * @this {WebInspector.TargetManager}

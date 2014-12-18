@@ -926,7 +926,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
      */
     setReadOnly: function(readOnly)
     {
-        this.element.classList.toggle("CodeMirror-readonly", readOnly)
+        this.element.classList.toggle("CodeMirror-readonly", readOnly);
         this._codeMirror.setOption("readOnly", readOnly);
     },
 
@@ -1130,7 +1130,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         var lineInfo = this._codeMirror.lineInfo(lineNumber);
         var wrapClass = lineInfo.wrapClass || "";
         var classNames = wrapClass.split(" ");
-        return classNames.indexOf(className) !== -1
+        return classNames.indexOf(className) !== -1;
     },
 
     /**
@@ -1734,7 +1734,7 @@ WebInspector.CodeMirrorTextEditor.TokenHighlighter.prototype = {
         var selectedText = selections[0];
         if (this._isWord(selectedText, selectionStart.line, selectionStart.ch, selectionEnd.ch)) {
             if (selectionStart)
-                this._codeMirror.addLineClass(selectionStart.line, "wrap", "cm-line-with-selection")
+                this._codeMirror.addLineClass(selectionStart.line, "wrap", "cm-line-with-selection");
             this._setHighlighter(this._tokenHighlighter.bind(this, selectedText, selectionStart), selectionStart);
         }
     },
@@ -1791,7 +1791,7 @@ WebInspector.CodeMirrorTextEditor.TokenHighlighter.prototype = {
             return "search-highlight search-highlight-start";
         }
 
-        while (!stream.match(regex, false) && stream.next()) {};
+        while (!stream.match(regex, false) && stream.next()) {}
     },
 
     /**

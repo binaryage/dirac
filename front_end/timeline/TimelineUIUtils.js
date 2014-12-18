@@ -1245,7 +1245,7 @@ WebInspector.TimelineUIUtils.createStyleRuleForCategory = function(category)
     var selector = ".timeline-category-" + category.name + " .timeline-graph-bar, " +
         ".panel.timeline .timeline-filters-header .filter-checkbox-filter.filter-checkbox-filter-" + category.name + " .checkbox-filter-checkbox, " +
         ".timeline-details-view .timeline-" + category.name + ", " +
-        ".timeline-category-" + category.name + " .timeline-tree-icon"
+        ".timeline-category-" + category.name + " .timeline-tree-icon";
 
     return selector + " { background-image: linear-gradient(" +
        category.fillColorStop0 + ", " + category.fillColorStop1 + " 25%, " + category.fillColorStop1 + " 25%, " + category.fillColorStop1 + ");" +
@@ -1350,7 +1350,7 @@ WebInspector.TimelineUIUtils.markerStyleForEvent = function(event)
             color: orange,
             tall: false,
             lowPriority: false,
-        }
+        };
     }
     var recordTypes = WebInspector.TimelineModel.RecordType;
     var tall = false;
@@ -1379,7 +1379,7 @@ WebInspector.TimelineUIUtils.markerStyleForEvent = function(event)
         color: color,
         tall: tall,
         lowPriority: false,
-    }
+    };
 }
 
 /**
@@ -1394,7 +1394,7 @@ WebInspector.TimelineUIUtils.markerStyleForFrame = function()
         dashStyle: [3],
         tall: true,
         lowPriority: true
-    }
+    };
 }
 
 /**

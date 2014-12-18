@@ -1502,7 +1502,7 @@ WebInspector.TraceEventNameFilter.prototype = {
  */
 WebInspector.InclusiveTraceEventNameFilter = function(includeNames)
 {
-    WebInspector.TraceEventNameFilter.call(this, includeNames)
+    WebInspector.TraceEventNameFilter.call(this, includeNames);
 }
 
 WebInspector.InclusiveTraceEventNameFilter.prototype = {
@@ -1525,7 +1525,7 @@ WebInspector.InclusiveTraceEventNameFilter.prototype = {
  */
 WebInspector.ExclusiveTraceEventNameFilter = function(excludeNames)
 {
-    WebInspector.TraceEventNameFilter.call(this, excludeNames)
+    WebInspector.TraceEventNameFilter.call(this, excludeNames);
 }
 
 WebInspector.ExclusiveTraceEventNameFilter.prototype = {
@@ -1538,6 +1538,7 @@ WebInspector.ExclusiveTraceEventNameFilter.prototype = {
     {
         return !this._eventNames[event.name];
     },
+
     __proto__: WebInspector.TraceEventNameFilter.prototype
 }
 
@@ -1571,7 +1572,7 @@ WebInspector.TracingModelLoader.prototype = {
         do {
             index = lastIndex;
             lastIndex = WebInspector.TextUtils.findBalancedCurlyBrackets(data, index);
-        } while (lastIndex !== -1)
+        } while (lastIndex !== -1);
 
         var json = data.slice(0, index) + "]";
         this._buffer = data.slice(index);
@@ -1674,7 +1675,7 @@ WebInspector.TracingTimelineSaver.prototype = {
      * @param {!WebInspector.ChunkedReader} reader
      * @param {!Event} event
      */
-    onError: function(reader, event) { },
+    onError: function(reader, event) { }
 }
 
 /**

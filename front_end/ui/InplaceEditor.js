@@ -236,7 +236,7 @@ WebInspector.InplaceEditor.prototype = {
 WebInspector.InplaceEditor.Config = function(commitHandler, cancelHandler, context, blurHandler)
 {
     this.commitHandler = commitHandler;
-    this.cancelHandler = cancelHandler
+    this.cancelHandler = cancelHandler;
     this.context = context;
     this.blurHandler = blurHandler;
 

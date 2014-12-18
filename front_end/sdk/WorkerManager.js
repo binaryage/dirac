@@ -82,12 +82,12 @@ WebInspector.WorkerManager.prototype = {
 
     _dispatchMessageFromWorker: function(workerId, message)
     {
-        this.dispatchEventToListeners(WebInspector.WorkerManager.Events.MessageFromWorker, {workerId: workerId, message: message})
+        this.dispatchEventToListeners(WebInspector.WorkerManager.Events.MessageFromWorker, {workerId: workerId, message: message});
     },
 
     _disconnectedFromWorker: function()
     {
-        this.dispatchEventToListeners(WebInspector.WorkerManager.Events.WorkerDisconnected)
+        this.dispatchEventToListeners(WebInspector.WorkerManager.Events.WorkerDisconnected);
     },
 
     _mainFrameNavigated: function(event)

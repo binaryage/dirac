@@ -46,7 +46,7 @@ WebInspector.SASSSourceMapping = function(cssModel, workspace, networkWorkspaceB
     this._addingRevisionCounter = 0;
     this._reset();
     WebInspector.fileManager.addEventListener(WebInspector.FileManager.EventTypes.SavedURL, this._fileSaveFinished, this);
-    WebInspector.settings.cssSourceMapsEnabled.addChangeListener(this._toggleSourceMapSupport, this)
+    WebInspector.settings.cssSourceMapsEnabled.addChangeListener(this._toggleSourceMapSupport, this);
     this._cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetChanged, this._styleSheetChanged, this);
     this._workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, this._uiSourceCodeAdded, this);
     this._workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeContentCommitted, this._uiSourceCodeContentCommitted, this);

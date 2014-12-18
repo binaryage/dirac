@@ -133,7 +133,7 @@ WebInspector.NetworkManager.prototype = {
 
     dispose: function()
     {
-        WebInspector.settings.cacheDisabled.removeChangeListener(this._cacheDisabledSettingChanged, this)
+        WebInspector.settings.cacheDisabled.removeChangeListener(this._cacheDisabledSettingChanged, this);
     },
 
     __proto__: WebInspector.SDKModel.prototype

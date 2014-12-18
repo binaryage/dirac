@@ -708,10 +708,10 @@ WebInspector.JavaScriptSourceFrame.prototype = {
         if (this._muted)
             return true;
         var scriptFiles = this._scriptFileForTarget.valuesArray();
-        var hasDivergingOrMergingFile = false;
-        for (var i = 0; i < scriptFiles.length; ++i)
+        for (var i = 0; i < scriptFiles.length; ++i) {
             if (scriptFiles[i].isDivergingFromVM() || scriptFiles[i].isMergingToVM())
                 return true;
+        }
         return false;
     },
 
@@ -736,7 +736,6 @@ WebInspector.JavaScriptSourceFrame.prototype = {
         if (this._shouldIgnoreExternalBreakpointEvents())
             return;
 
-        var breakpoint = /** @type {!WebInspector.BreakpointManager.Breakpoint} */ (event.data.breakpoint);
         var remainingBreakpoint = this._breakpointManager.findBreakpointOnLine(this._uiSourceCode, uiLocation.lineNumber);
         if (!remainingBreakpoint && this.loaded)
             this._removeBreakpointDecoration(uiLocation.lineNumber);

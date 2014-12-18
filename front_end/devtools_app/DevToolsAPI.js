@@ -49,7 +49,6 @@ DevToolsAPIImpl.prototype = {
     sendMessageToEmbedder: function(method, args, callback)
     {
         var callId = ++this._lastCallId;
-        var argsArray = Array.prototype.slice.call(arguments, 2);
         if (callback)
             this._callbacks[callId] = callback;
         var message = { "id": callId, "method": method };

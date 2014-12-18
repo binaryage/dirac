@@ -1031,7 +1031,6 @@ WebInspector.AuditRules.CssInHeadRule.prototype = {
 
             var summary = result.addChild("");
 
-            var outputMessages = [];
             for (var url in evalResult) {
                 var urlViolations = evalResult[url];
                 if (urlViolations[0]) {
@@ -1234,7 +1233,7 @@ WebInspector.AuditRules.CSSRuleBase.prototype = {
             callback(null);
             return;
         }
-        var activeHeaders = []
+        var activeHeaders = [];
         for (var i = 0; i < headers.length; ++i) {
             if (!headers[i].disabled)
                 activeHeaders.push(headers[i]);
@@ -1522,7 +1521,6 @@ WebInspector.AuditRules.CookieSizeRule.prototype = {
         var domainToResourcesMap = WebInspector.AuditRules.getDomainToResourcesMap(requests,
                 null,
                 true);
-        var matchingResourceData = {};
         this.mapResourceCookies(domainToResourcesMap, allCookies, collectorCallback);
 
         for (var requestDomain in cookiesPerResourceDomain) {
@@ -1554,7 +1552,6 @@ WebInspector.AuditRules.CookieSizeRule.prototype = {
         }
         result.addChild(WebInspector.UIString("The average cookie size for all requests on this page is %s", Number.bytesToString(avgAllCookiesSize)));
 
-        var message;
         if (hugeCookieDomains.length) {
             var entry = result.addChild(WebInspector.UIString("The following domains have a cookie size in excess of 1KB. This is harmful because requests with cookies larger than 1KB typically cannot fit into a single network packet."), true);
             entry.addURLs(hugeCookieDomains);
@@ -1600,7 +1597,7 @@ WebInspector.AuditRules.StaticCookielessRule.prototype = {
         var cookieBytes = 0;
         for (var url in matchingResourceData) {
             badUrls.push(url);
-            cookieBytes += matchingResourceData[url]
+            cookieBytes += matchingResourceData[url];
         }
         if (badUrls.length < this._minResources)
             return;

@@ -141,7 +141,7 @@ WebInspector.OverridesSupport.GeolocationPosition.parseSetting = function(value)
     if (value) {
         var splitError = value.split(":");
         if (splitError.length === 2) {
-            var splitPosition = splitError[0].split("@")
+            var splitPosition = splitError[0].split("@");
             if (splitPosition.length === 2)
                 return new WebInspector.OverridesSupport.GeolocationPosition(parseFloat(splitPosition[0]), parseFloat(splitPosition[1]), splitError[1]);
         }

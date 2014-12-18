@@ -393,7 +393,7 @@ WebInspector.NetworkLogView.prototype = {
                 id: headerName,
                 title: WebInspector.NetworkLogView._columnTitles[headerName],
                 weight: 6
-            }
+            };
             if (headerName === "Content-Length")
                 descriptor.align = WebInspector.DataGrid.Align.Right;
             columns.push(descriptor);
@@ -475,7 +475,7 @@ WebInspector.NetworkLogView.prototype = {
         var header = this._dataGrid.headerTableHeader("timeline");
         header.replaceChild(timelineSorting, header.firstChild);
 
-        timelineSorting.addEventListener("click", function(event) { event.consume() }, false);
+        timelineSorting.addEventListener("click", function(event) { event.consume(); }, false);
         timelineSorting.addEventListener("change", this._sortByTimeline.bind(this), false);
         this._timelineSortSelector = timelineSorting;
     },
@@ -994,8 +994,7 @@ WebInspector.NetworkLogView.prototype = {
             return anchor;
         anchor = element.enclosingNodeOrSelfWithClass("network-script-initiated");
         if (anchor && anchor.request) {
-            var request = /** @type {!WebInspector.NetworkRequest} */ (anchor.request);
-            var initiator = anchor.request.initiator();
+            var initiator = /** @type {!WebInspector.NetworkRequest} */ (anchor.request).initiator();
             if (initiator && (initiator.stackTrace || initiator.asyncStackTrace))
                 return anchor;
         }
@@ -1397,7 +1396,6 @@ WebInspector.NetworkLogView.prototype = {
     {
         var parsedQuery = this._suggestionBuilder.parseQuery(query);
         this._filters = parsedQuery.text.map(this._createTextFilter);
-        var filters = parsedQuery.filters;
         var n = parsedQuery.filters.length;
         for (var i = 0; i < n; ++i) {
             var filter = parsedQuery.filters[i];

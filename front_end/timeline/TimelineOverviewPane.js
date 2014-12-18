@@ -401,7 +401,7 @@ WebInspector.TimelineOverviewBase.prototype = {
         return {
             left: haveRecords && startTime ? Math.min((startTime - absoluteMin) / timeSpan, 1) : 0,
             right: haveRecords && endTime < Infinity ? (endTime - absoluteMin) / timeSpan : 1
-        }
+        };
     },
 
     resetCanvas: function()

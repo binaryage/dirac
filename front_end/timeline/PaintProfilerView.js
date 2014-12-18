@@ -112,7 +112,6 @@ WebInspector.PaintProfilerView.prototype = {
         var maxBars = Math.floor((this._canvas.width - 2 * this._barPaddingWidth) / this._outerBarWidth);
         var sampleCount = this._log.length;
         this._samplesPerBar = Math.ceil(sampleCount / maxBars);
-        var barCount = Math.floor(sampleCount / this._samplesPerBar);
 
         var maxBarTime = 0;
         var barTimes = [];

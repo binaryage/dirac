@@ -491,25 +491,25 @@ CodeMirror.StringStream = function(line)
     this.start = 0;
 }
 CodeMirror.StringStream.prototype = {
-    backUp: function (n) { },
-    column: function () { },
-    current: function () { },
-    eat: function (match) { },
-    eatSpace: function () { },
-    eatWhile: function (match) { },
-    eol: function () { },
-    indentation: function () { },
+    backUp: function(n) { },
+    column: function() { },
+    current: function() { },
+    eat: function(match) { },
+    eatSpace: function() { },
+    eatWhile: function(match) { },
+    eol: function() { },
+    indentation: function() { },
     /**
      * @param {!RegExp|string} pattern
      * @param {boolean=} consume
      * @param {boolean=} caseInsensitive
      */
-    match: function (pattern, consume, caseInsensitive) { },
-    next: function () { },
-    peek: function () { },
-    skipTo: function (ch) { },
-    skipToEnd: function () { },
-    sol: function () { }
+    match: function(pattern, consume, caseInsensitive) { },
+    next: function() { },
+    peek: function() { },
+    skipTo: function(ch) { },
+    skipToEnd: function() { },
+    sol: function() { }
 }
 
 /** @type {Object.<string, !Object.<string, string>>} */

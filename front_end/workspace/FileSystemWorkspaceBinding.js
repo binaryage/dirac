@@ -98,7 +98,6 @@ WebInspector.FileSystemWorkspaceBinding.prototype = {
     {
         var fileSystemPath = projectId.substr("filesystem:".length);
         var normalizedPath = WebInspector.IsolatedFileSystem.normalizePath(fileSystemPath);
-        var boundFileSystem = this._boundFileSystems.get(normalizedPath);
         return projectId.substr("filesystem:".length);
     },
 
@@ -138,7 +137,6 @@ WebInspector.FileSystemWorkspaceBinding.prototype = {
     _onIndexingTotalWorkCalculated: function(event)
     {
         var requestId = /** @type {number} */ (event.data["requestId"]);
-        var fileSystemPath = /** @type {string} */ (event.data["fileSystemPath"]);
         var totalWork = /** @type {number} */ (event.data["totalWork"]);
 
         var progress = this._progresses[requestId];
@@ -153,7 +151,6 @@ WebInspector.FileSystemWorkspaceBinding.prototype = {
     _onIndexingWorked: function(event)
     {
         var requestId = /** @type {number} */ (event.data["requestId"]);
-        var fileSystemPath = /** @type {string} */ (event.data["fileSystemPath"]);
         var worked = /** @type {number} */ (event.data["worked"]);
 
         var progress = this._progresses[requestId];
@@ -168,7 +165,6 @@ WebInspector.FileSystemWorkspaceBinding.prototype = {
     _onIndexingDone: function(event)
     {
         var requestId = /** @type {number} */ (event.data["requestId"]);
-        var fileSystemPath = /** @type {string} */ (event.data["fileSystemPath"]);
 
         var progress = this._progresses[requestId];
         if (!progress)
@@ -183,7 +179,6 @@ WebInspector.FileSystemWorkspaceBinding.prototype = {
     _onSearchCompleted: function(event)
     {
         var requestId = /** @type {number} */ (event.data["requestId"]);
-        var fileSystemPath = /** @type {string} */ (event.data["fileSystemPath"]);
         var files = /** @type {!Array.<string>} */ (event.data["files"]);
 
         var callback = this._callbacks[requestId];
@@ -343,7 +338,7 @@ WebInspector.FileSystemWorkspaceBinding.FileSystem.prototype = {
             filePath = filePath.substr(1);
             var newURL = this._workspace.urlForPath(this._fileSystem.path(), filePath);
             var extension = this._extensionForPath(validNewName);
-            var newOriginURL = this._fileSystemURL + filePath
+            var newOriginURL = this._fileSystemURL + filePath;
             var newContentType = this._contentTypeForExtension(extension);
             callback(true, validNewName, newURL, newOriginURL, newContentType);
         }

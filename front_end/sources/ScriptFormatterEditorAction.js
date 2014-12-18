@@ -53,7 +53,7 @@ WebInspector.FormatterScriptMapping.prototype = {
         var originalLocation = formatData.mapping.formattedToOriginal(lineNumber, columnNumber);
         for (var i = 0; i < formatData.scripts.length; ++i) {
             if (formatData.scripts[i].target() === this._target)
-                return this._target.debuggerModel.createRawLocation(formatData.scripts[i], originalLocation[0], originalLocation[1])
+                return this._target.debuggerModel.createRawLocation(formatData.scripts[i], originalLocation[0], originalLocation[1]);
         }
         return null;
     },
@@ -373,7 +373,7 @@ WebInspector.ScriptFormatterEditorAction.prototype = {
         }
         if (uiSourceCode.contentType() === WebInspector.resourceTypes.Script) {
             var rawLocations = WebInspector.debuggerWorkspaceBinding.uiLocationToRawLocations(uiSourceCode, 0, 0);
-            return rawLocations.map(function(rawLocation) { return rawLocation.script()});
+            return rawLocations.map(function(rawLocation) { return rawLocation.script(); });
         }
         return [];
     },

@@ -126,7 +126,7 @@ WebInspector.DevicesView.prototype = {
 
             var browsers = device.browsers.filter(function(browser) { return browser.adbBrowserChromeVersion; });
 
-            var newBrowserIds = browsers.map(function(browser) { return browser.id });
+            var newBrowserIds = browsers.map(function(browser) { return browser.id; });
             Array.prototype.forEach.call(deviceSection.querySelectorAll(".browser"), removeObsolete.bind(null, newBrowserIds));
 
             for (var b = 0; b < browsers.length; b++) {

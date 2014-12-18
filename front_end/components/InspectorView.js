@@ -445,7 +445,7 @@ WebInspector.InspectorView.prototype = {
         }
 
         if (event.altKey && this._moveInHistory(direction))
-            event.consume(true)
+            event.consume(true);
     },
 
     /**

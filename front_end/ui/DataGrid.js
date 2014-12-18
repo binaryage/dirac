@@ -982,8 +982,6 @@ WebInspector.DataGrid.prototype = {
         if (!resizer)
             return;
 
-        var tableWidth = this.element.offsetWidth; // Cache it early, before we invalidate layout.
-
         // Constrain the dragpoint to be within the containing div of the
         // datagrid.
         var dragPoint = event.clientX - this.element.totalOffsetLeft();
@@ -1703,7 +1701,6 @@ WebInspector.DataGridNode.prototype = {
 
         this._attached = true;
 
-        var nextNode = null;
         var previousNode = this.traversePreviousNode(true, true);
         var previousElement = previousNode ? previousNode.element() : this.dataGrid._topFillerRow;
         this.dataGrid.dataTableBody.insertBefore(this.element(), previousElement.nextSibling);

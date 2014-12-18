@@ -169,7 +169,6 @@ WebInspector.FilteredItemSelectionDialog.prototype = {
 
         var query = this._delegate.rewriteQuery(this._promptElement.value.trim());
         this._query = query;
-        var queryLength = query.length;
         var filterRegex = query ? WebInspector.FilePathScoreFunction.filterRegex(query) : null;
 
         var oldSelectedAbsoluteIndex = this._selectedIndexInFiltered ? this._filteredItems[this._selectedIndexInFiltered] : null;
@@ -816,7 +815,7 @@ WebInspector.SelectUISourceCodeDialog.prototype = {
         var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (event.data);
         if (!this.filterProject(uiSourceCode.project()))
             return;
-        this._uiSourceCodes.push(uiSourceCode)
+        this._uiSourceCodes.push(uiSourceCode);
         this.refresh();
     },
 

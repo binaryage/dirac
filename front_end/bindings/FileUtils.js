@@ -195,7 +195,7 @@ WebInspector.ChunkedFileReader.prototype = {
     _loadChunk: function()
     {
         var chunkStart = this._loadedSize;
-        var chunkEnd = Math.min(this._fileSize, chunkStart + this._chunkSize)
+        var chunkEnd = Math.min(this._fileSize, chunkStart + this._chunkSize);
         var nextPart = this._file.slice(chunkStart, chunkEnd);
         this._reader.readAsText(nextPart);
     }

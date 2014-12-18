@@ -1482,7 +1482,6 @@ WebInspector.ElementsTreeElement.prototype = {
         var text = this.listItemElement.textContent;
         var regexObject = createPlainTextSearchRegex(this._searchQuery, "gi");
 
-        var offset = 0;
         var match = regexObject.exec(text);
         var matchRanges = [];
         while (match) {

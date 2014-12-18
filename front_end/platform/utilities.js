@@ -1306,7 +1306,7 @@ StringMultimap.prototype = {
         var values = this.get(key);
         values.remove(value);
         if (!values.size)
-            this._map.remove(key)
+            this._map.remove(key);
     },
 
     /**
@@ -1314,7 +1314,7 @@ StringMultimap.prototype = {
      */
     removeAll: function(key)
     {
-        this._map.remove(key)
+        this._map.remove(key);
     },
 
     /**

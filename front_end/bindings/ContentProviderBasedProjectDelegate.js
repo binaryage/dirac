@@ -61,7 +61,7 @@ WebInspector.ContentProviderBasedProjectDelegate.prototype = {
      */
     displayName: function()
     {
-        // Overriddden by subclasses
+        // Overridden by subclasses
         return "";
     },
 
@@ -71,7 +71,7 @@ WebInspector.ContentProviderBasedProjectDelegate.prototype = {
      */
     url: function()
     {
-        // Overriddden by subclasses
+        // Overridden by subclasses
         return "";
     },
 

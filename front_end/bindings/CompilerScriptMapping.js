@@ -150,7 +150,6 @@ WebInspector.CompilerScriptMapping.prototype = {
         // Create stub UISourceCode for the time source mapping is being loaded.
         var url = script.sourceURL;
         var splitURL = WebInspector.ParsedURL.splitURLIntoPathComponents(url);
-        var projectName = splitURL[0];
         var parentPath = splitURL.slice(1, -1).join("/");
         var name = splitURL.peekLast() || "";
         var uiSourceCodePath = this._stubProjectDelegate.addContentProvider(parentPath, name, url, url, new WebInspector.StaticContentProvider(WebInspector.resourceTypes.Script, "\n\n\n\n\n// Please wait a bit.\n// Compiled script is not shown while source map is being loaded!", url));

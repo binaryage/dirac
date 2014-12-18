@@ -554,7 +554,7 @@ WebInspector.ExtensionServer.prototype = {
             var resource = WebInspector.resourceTreeModel.resourceForURL(url);
             if (!resource)
                 return this._status.E_NOTFOUND(url);
-            return this._status.E_NOTSUPPORTED("Resource is not editable")
+            return this._status.E_NOTSUPPORTED("Resource is not editable");
         }
         uiSourceCode.setWorkingCopy(message.content);
         if (message.commit)

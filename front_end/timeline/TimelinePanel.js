@@ -404,7 +404,6 @@ WebInspector.TimelinePanel.prototype = {
         this._filterBar.addFilter(this._filters._durationFilterUI);
 
         this._filters._categoryFiltersUI = {};
-        var categoryTypes = [];
         var categories = WebInspector.TimelineUIUtils.categories();
         for (var categoryName in categories) {
             var category = categories[categoryName];

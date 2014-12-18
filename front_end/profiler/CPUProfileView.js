@@ -279,7 +279,7 @@ WebInspector.CPUProfileView.prototype = {
         var target = this._profileHeader.target();
         if (!node || !node.scriptId || !target)
             return;
-        var script = target.debuggerModel.scriptForId(node.scriptId)
+        var script = target.debuggerModel.scriptForId(node.scriptId);
         if (!script)
             return;
         var location = /** @type {!WebInspector.DebuggerModel.Location} */ (script.target().debuggerModel.createRawLocation(script, node.lineNumber, 0));
@@ -338,7 +338,7 @@ WebInspector.CPUProfileView.prototype = {
 
     _excludeClicked: function(event)
     {
-        var selectedNode = this.dataGrid.selectedNode
+        var selectedNode = this.dataGrid.selectedNode;
 
         if (!selectedNode)
             return;

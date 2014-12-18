@@ -94,7 +94,7 @@ WebInspector.DatabaseQueryView.prototype = {
 
         function tableNamesCallback(tableNames)
         {
-            accumulateMatches(tableNames.map(function(name) { return name + " " }));
+            accumulateMatches(tableNames.map(function(name) { return name + " "; }));
             accumulateMatches(["SELECT ", "FROM ", "WHERE ", "LIMIT ", "DELETE FROM ", "CREATE ", "DROP ", "TABLE ", "INDEX ", "UPDATE ", "INSERT INTO ", "VALUES ("]);
 
             completionsReadyCallback(results);
@@ -186,7 +186,7 @@ WebInspector.DatabaseQueryView.prototype = {
     _appendErrorQueryResult: function(query, errorText)
     {
         var resultElement = this._appendQueryResult(query);
-        resultElement.classList.add("error")
+        resultElement.classList.add("error");
         resultElement.textContent = errorText;
 
         this._promptElement.scrollIntoView(false);

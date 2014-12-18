@@ -177,7 +177,6 @@ WebInspector.HeapSnapshotSortableDataGrid.prototype = {
      */
     highlightNode: function(node)
     {
-        var prevNode = this._highlightedNode;
         this._clearCurrentHighlight();
         this._highlightedNode = node;
         WebInspector.runCSSAnimationOnce(this._highlightedNode.element(), "highlighted-row");
@@ -469,7 +468,6 @@ WebInspector.HeapSnapshotViewportDataGrid.prototype = {
     {
         var height = this._calculateOffset(pathToReveal);
         var node = /** @type {!WebInspector.HeapSnapshotGridNode} */(pathToReveal.peekLast());
-        var scrollHeight = this.scrollContainer.scrollHeight;
         var scrollTop = this.scrollContainer.scrollTop;
         var scrollBottom = scrollTop + this.scrollContainer.offsetHeight;
         if (height >= scrollTop && height < scrollBottom)
@@ -569,7 +567,7 @@ WebInspector.HeapSnapshotViewportDataGrid.prototype = {
     {
         var viewportTop = this.scrollContainer.scrollTop;
         var viewportBottom = viewportTop + this.scrollContainer.clientHeight;
-        var elemTop = element.offsetTop
+        var elemTop = element.offsetTop;
         var elemBottom = elemTop + element.offsetHeight;
         return elemBottom <= viewportBottom && elemTop >= viewportTop;
     },
@@ -859,7 +857,7 @@ WebInspector.HeapSnapshotConstructorsDataGrid.prototype = {
         if (profileIndex !== -1) {
             var minNodeId = profileIndex > 0 ? profiles[profileIndex - 1].maxJSObjectId : 0;
             var maxNodeId = profiles[profileIndex].maxJSObjectId;
-            this._nodeFilter = new WebInspector.HeapSnapshotCommon.NodeFilter(minNodeId, maxNodeId)
+            this._nodeFilter = new WebInspector.HeapSnapshotCommon.NodeFilter(minNodeId, maxNodeId);
         }
 
         this._populateChildren(this._nodeFilter);

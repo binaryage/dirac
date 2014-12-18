@@ -456,7 +456,7 @@ WebInspector.NavigatorView.prototype = {
 
             this.dispatchEventToListeners(WebInspector.NavigatorView.Events.ItemRenamed, uiSourceCode);
             this._updateIcon(uiSourceCode);
-            this._sourceSelected(uiSourceCode, true)
+            this._sourceSelected(uiSourceCode, true);
         }
     },
 
@@ -504,7 +504,7 @@ WebInspector.NavigatorView.prototype = {
             filePath = path;
             uiSourceCode = project.uiSourceCode(filePath);
             if (!uiSourceCode) {
-                console.assert(uiSourceCode)
+                console.assert(uiSourceCode);
                 return;
             }
             this._sourceSelected(uiSourceCode, false);

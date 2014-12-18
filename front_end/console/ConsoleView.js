@@ -302,7 +302,7 @@ WebInspector.ConsoleView.prototype = {
      */
     defaultFocusedElement: function()
     {
-        return this._promptElement
+        return this._promptElement;
     },
 
     _onFiltersToggled: function(event)
@@ -546,7 +546,7 @@ WebInspector.ConsoleView.prototype = {
             this._urlToMessageCount[message.url] = 1;
 
         if (!insertedInMiddle) {
-            this._appendMessageToEnd(viewMessage)
+            this._appendMessageToEnd(viewMessage);
             this._updateFilterStatus();
         } else {
             this._needsFullUpdate = true;

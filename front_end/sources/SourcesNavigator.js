@@ -189,7 +189,7 @@ WebInspector.SnippetsNavigatorView.prototype = {
 
     _handleCreateSnippet: function()
     {
-        this.create(WebInspector.scriptSnippetModel.project(), "")
+        this.create(WebInspector.scriptSnippetModel.project(), "");
     },
 
     /**

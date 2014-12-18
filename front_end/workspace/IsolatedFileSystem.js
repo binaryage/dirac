@@ -457,7 +457,6 @@ WebInspector.IsolatedFileSystem.prototype = {
         }
         var fileEntry;
         var dirEntry;
-        var newFileEntry;
         this._requestFileSystem(fileSystemLoaded.bind(this));
 
         /**
@@ -584,7 +583,7 @@ WebInspector.IsolatedFileSystem.prototype = {
          */
         function innerCallback(dirEntry)
         {
-            this._readDirectory(dirEntry, callback)
+            this._readDirectory(dirEntry, callback);
         }
 
         function errorHandler(error)

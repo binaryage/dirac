@@ -134,7 +134,7 @@ WebInspector.ShortcutsSection.prototype = {
      */
     _addLine: function(keyElement, description)
     {
-        this._lines.push({ key: keyElement, text: description })
+        this._lines.push({ key: keyElement, text: description });
     },
 
     /**

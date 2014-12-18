@@ -316,7 +316,7 @@ WebInspector.TimelineFrameOverview.prototype = {
         return {
             startTime: leftOffset > snapTolerancePixels ? this._barTimes[firstBar].startTime : this._model.minimumRecordTime(),
             endTime: (rightOffset + snapTolerancePixels > windowSpan) || (lastBar >= this._barTimes.length) ? this._model.maximumRecordTime() : this._barTimes[lastBar].endTime
-        }
+        };
     },
 
     /**
@@ -353,7 +353,7 @@ WebInspector.TimelineFrameOverview.prototype = {
         return {
             left: this._windowBoundaryFromTime(startTime, barEndComparator),
             right: this._windowBoundaryFromTime(endTime, barStartComparator)
-        }
+        };
     },
 
     /**
