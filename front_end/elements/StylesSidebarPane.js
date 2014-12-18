@@ -529,12 +529,38 @@ WebInspector.StylesSidebarPane.prototype = {
         }
 
         /**
-         * @param {?Array.<!WebInspector.AnimationModel.AnimationPlayer>} animationPlayers
+         * @param {!Map<string, string>} animationProperties
          * @this {WebInspector.StylesSidebarPane}
+         */
+        function animationPlayersCallback(animationProperties)
+        {
+            this._animationProperties = animationProperties;
+        }
+
+        if (this._computedStylePane.isShowing())
+            this._target.cssModel.getComputedStyleAsync(node.id, computedCallback);
+        this._getAnimationPropertiesForNode(node, animationPlayersCallback.bind(this));
+        this._target.cssModel.getInlineStylesAsync(node.id, inlineCallback);
+        this._target.cssModel.getMatchedStylesAsync(node.id, false, false, stylesCallback.bind(this));
+    },
+
+    /**
+     * @param {!WebInspector.DOMNode} node
+     * @param {function(!Map<string, string>)} callback
+     */
+    _getAnimationPropertiesForNode: function(node, callback)
+    {
+        if (Runtime.experiments.isEnabled("animationInspection"))
+            node.target().animationModel.getAnimationPlayers(node.id, false, animationPlayersCallback);
+        else
+            callback(new Map());
+
+        /**
+         * @param {?Array.<!WebInspector.AnimationModel.AnimationPlayer>} animationPlayers
          */
         function animationPlayersCallback(animationPlayers)
         {
-            this._animationProperties = new Map();
+            var animationProperties = new Map();
             if (!animationPlayers)
                 return;
             for (var i = 0; i < animationPlayers.length; i++) {
@@ -546,16 +572,10 @@ WebInspector.StylesSidebarPane.prototype = {
                 for (var j = 0; j < keyframes.length; j++)
                     animationCascade.appendModelFromStyle(keyframes[j].style(), "");
                 for (var property of animationCascade.allUsedProperties())
-                    this._animationProperties.set(property, player.name());
+                    animationProperties.set(property, player.name());
             }
+            callback(animationProperties);
         }
-
-        if (this._computedStylePane.isShowing())
-            this._target.cssModel.getComputedStyleAsync(node.id, computedCallback);
-        if (Runtime.experiments.isEnabled("animationInspection"))
-            this._target.animationModel.getAnimationPlayers(node.id, false, animationPlayersCallback.bind(this));
-        this._target.cssModel.getInlineStylesAsync(node.id, inlineCallback);
-        this._target.cssModel.getMatchedStylesAsync(node.id, false, false, stylesCallback.bind(this));
     },
 
     /**
@@ -1129,7 +1149,7 @@ WebInspector.ComputedStyleSidebarPane = function()
     WebInspector.SidebarPane.call(this, WebInspector.UIString("Computed Style"));
     WebInspector.settings.showInheritedComputedStyleProperties.addChangeListener(this._showInheritedComputedStyleChanged.bind(this));
     this._linkifier = new WebInspector.Linkifier(new WebInspector.Linkifier.DefaultCSSFormatter());
-    this._rebuildComputedSectionForStyleRule(null, new WebInspector.SectionCascade(), null);
+    this._rebuildComputedSectionForStyleRule(null, new WebInspector.SectionCascade(), new Map());
 }
 
 WebInspector.ComputedStyleSidebarPane.prototype = {
@@ -1150,7 +1170,7 @@ WebInspector.ComputedStyleSidebarPane.prototype = {
     /**
      * @param {?WebInspector.CSSStyleDeclaration} computedStyle
      * @param {!WebInspector.SectionCascade} matchedRuleCascade
-     * @param {?Map.<string, string>} animationProperties
+     * @param {!Map.<string, string>} animationProperties
      */
     _rebuildComputedSectionForStyleRule: function(computedStyle, matchedRuleCascade, animationProperties)
     {
@@ -1939,7 +1959,7 @@ WebInspector.StylePropertiesSection._linkifyRuleLocation = function(target, link
  * @param {!WebInspector.ComputedStyleSidebarPane} stylesPane
  * @param {!WebInspector.StylesSectionModel} styleRule
  * @param {!WebInspector.SectionCascade} matchedRuleCascade
- * @param {?Map.<string, string>} animationProperties
+ * @param {!Map.<string, string>} animationProperties
  */
 WebInspector.ComputedStylePropertiesSection = function(stylesPane, styleRule, matchedRuleCascade, animationProperties)
 {
@@ -1951,7 +1971,7 @@ WebInspector.ComputedStylePropertiesSection = function(stylesPane, styleRule, ma
     this._stylesPane = stylesPane;
     this.styleRule = styleRule;
     this._matchedRuleCascade = matchedRuleCascade;
-    this._animationProperties = animationProperties || new Map();
+    this._animationProperties = animationProperties;
     this._alwaysShowComputedProperties = { "display": true, "height": true, "width": true };
     this._propertyTreeElements = {};
     this._expandedPropertyNames = {};
