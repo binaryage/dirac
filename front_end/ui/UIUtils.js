@@ -1372,7 +1372,7 @@ function createCheckboxLabel(title, checked)
      */
     function radioClickHandler(event)
     {
-        if (this.radioElement.checked)
+        if (this.radioElement.checked || this.radioElement.disabled)
             return;
         this.radioElement.checked = true;
         this.radioElement.dispatchEvent(new Event("change"));
