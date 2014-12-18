@@ -52,11 +52,12 @@ WebInspector.InspectorView = function()
     this._drawer = new WebInspector.Drawer(this._drawerSplitView);
 
     this._leftToolbar = new WebInspector.StatusBar();
-    this._leftToolbar.element.classList.add("inspector-view-toolbar-left");
+    this._leftToolbar.element.classList.add("inspector-view-toolbar", "inspector-view-toolbar-left");
     this._leftToolbar.makeNarrow();
     this._tabbedPane.insertBeforeTabStrip(this._leftToolbar.element);
 
     this._rightToolbar = new WebInspector.StatusBar();
+    this._rightToolbar.element.classList.add("inspector-view-toolbar");
     this._tabbedPane.appendAfterTabStrip(this._rightToolbar.element);
 
     this._closeButtonToolbarItem = createElementWithClass("div", "inspector-view-close-button");

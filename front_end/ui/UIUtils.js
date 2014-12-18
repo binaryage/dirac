@@ -767,7 +767,7 @@ WebInspector.setToolbarColors = function(document, backgroundColor, color)
             "    color: %s !important;" +
             "}", prefix, backgroundColor, color) +
         String.sprintf(
-             "%s .status-bar::shadow .status-bar-button-theme {" +
+             "%s .inspector-view-toolbar.status-bar::shadow .status-bar-button-theme {" +
              "   background-color: %s;" +
              "}", prefix, color);
 }
