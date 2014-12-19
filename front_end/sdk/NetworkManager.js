@@ -210,6 +210,20 @@ WebInspector.NetworkDispatcher.prototype = {
             networkRequest.setFromDiskCache();
         networkRequest.timing = response.timing;
 
+        var protocolEnum = NetworkAgent.ResponseProtocol;
+        if (response.protocol === protocolEnum.Http09)
+            networkRequest.protocol = "HTTP/0.9";
+        else if (response.protocol === protocolEnum.Http10)
+            networkRequest.protocol = "HTTP/1.0";
+        else if (response.protocol === protocolEnum.Http11)
+            networkRequest.protocol = "HTTP/1.1";
+        else if (response.protocol === protocolEnum.Spdy)
+            networkRequest.protocol = "SPDY";
+        else if (response.protocol === protocolEnum.Unknown)
+            networkRequest.protocol = "Unknown";
+        else
+            networkRequest.protocol = "";
+
         if (!this._mimeTypeIsConsistentWithType(networkRequest)) {
             var consoleModel = this._manager._target.consoleModel;
             consoleModel.addMessage(new WebInspector.ConsoleMessage(consoleModel.target(), WebInspector.ConsoleMessage.MessageSource.Network,

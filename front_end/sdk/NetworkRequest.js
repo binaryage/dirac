@@ -58,6 +58,7 @@ WebInspector.NetworkRequest = function(target, requestId, url, documentURL, fram
     this.statusText = "";
     this.requestMethod = "";
     this.requestTime = 0;
+    this.protocol = "";
 
     /** @type {!WebInspector.ResourceType} */
     this._resourceType = WebInspector.resourceTypes.Other;

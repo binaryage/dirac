@@ -103,7 +103,7 @@ WebInspector.NetworkLogView._isMatchingSearchQuerySymbol = Symbol("isMatchingSea
 WebInspector.NetworkLogView.HTTPSchemas = {"http": true, "https": true, "ws": true, "wss": true};
 WebInspector.NetworkLogView._responseHeaderColumns = ["Cache-Control", "Connection", "Content-Encoding", "Content-Length", "ETag", "Keep-Alive", "Last-Modified", "Server", "Vary"];
 WebInspector.NetworkLogView._defaultColumnsVisibility = {
-    method: true, status: true, scheme: false, domain: false, remoteAddress: false, type: true, initiator: true, cookies: false, setCookies: false, size: true, time: true, connectionId: false,
+    method: true, status: true, protocol: false, scheme: false, domain: false, remoteAddress: false, type: true, initiator: true, cookies: false, setCookies: false, size: true, time: true, connectionId: false,
     "Cache-Control": false, "Connection": false, "Content-Encoding": false, "Content-Length": false, "ETag": false, "Keep-Alive": false, "Last-Modified": false, "Server": false, "Vary": false
 };
 WebInspector.NetworkLogView._defaultRefreshDelay = 500;
@@ -136,6 +136,7 @@ WebInspector.NetworkLogView._columnTitles = {
     "name": WebInspector.UIString("Name"),
     "method": WebInspector.UIString("Method"),
     "status": WebInspector.UIString("Status"),
+    "protocol": WebInspector.UIString("Protocol"),
     "scheme": WebInspector.UIString("Scheme"),
     "domain": WebInspector.UIString("Domain"),
     "remoteAddress": WebInspector.UIString("Remote Address"),
@@ -305,6 +306,13 @@ WebInspector.NetworkLogView.prototype = {
             id: "status",
             titleDOMFragment: this._makeHeaderFragment(WebInspector.UIString("Status"), WebInspector.UIString("Text")),
             title: WebInspector.NetworkLogView._columnTitles["status"],
+            sortable: true,
+            weight: 6
+        });
+
+        columns.push({
+            id: "protocol",
+            title: WebInspector.NetworkLogView._columnTitles["protocol"],
             sortable: true,
             weight: 6
         });
@@ -486,6 +494,7 @@ WebInspector.NetworkLogView.prototype = {
         this._sortingFunctions.name = WebInspector.NetworkDataGridNode.NameComparator;
         this._sortingFunctions.method = WebInspector.NetworkDataGridNode.RequestPropertyComparator.bind(null, "method", false);
         this._sortingFunctions.status = WebInspector.NetworkDataGridNode.RequestPropertyComparator.bind(null, "statusCode", false);
+        this._sortingFunctions.protocol = WebInspector.NetworkDataGridNode.RequestPropertyComparator.bind(null, "protocol", false);
         this._sortingFunctions.scheme = WebInspector.NetworkDataGridNode.RequestPropertyComparator.bind(null, "scheme", false);
         this._sortingFunctions.domain = WebInspector.NetworkDataGridNode.RequestPropertyComparator.bind(null, "domain", false);
         this._sortingFunctions.remoteAddress = WebInspector.NetworkDataGridNode.RemoteAddressComparator;
