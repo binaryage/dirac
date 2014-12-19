@@ -147,6 +147,8 @@ WebInspector.TimelineUIUtils.testContentMatching = function(record, regExp)
     var traceEvent = record.traceEvent();
     var title = WebInspector.TimelineUIUtils.eventStyle(traceEvent).title;
     var tokens = [title];
+    if (traceEvent.url)
+        tokens.push(traceEvent.url);
     for (var argName in traceEvent.args) {
         var argValue = traceEvent.args[argName];
         for (var key in argValue)
@@ -300,7 +302,7 @@ WebInspector.TimelineUIUtils.buildDetailsNodeForTraceEvent = function(event, tar
     case recordType.DecodeImage:
     case recordType.ResizeImage:
     case recordType.DecodeLazyPixelRef:
-            var url = event.imageURL;
+            var url = event.url;
             if (url)
                 detailsText = WebInspector.displayNameForURL(url);
         break;
@@ -365,8 +367,8 @@ WebInspector.TimelineUIUtils.buildTraceEventDetails = function(event, model, lin
     var relatedNode = null;
     var barrier = new CallbackBarrier();
     if (!event.previewElement) {
-        if (event.imageURL)
-            WebInspector.DOMPresentationUtils.buildImagePreviewContents(target, event.imageURL, false, barrier.createCallback(saveImage));
+        if (event.url)
+            WebInspector.DOMPresentationUtils.buildImagePreviewContents(target, event.url, false, barrier.createCallback(saveImage));
         else if (event.picture)
             WebInspector.TimelineUIUtils.buildPicturePreviewContent(event, target, barrier.createCallback(saveImage));
     }
@@ -512,8 +514,8 @@ WebInspector.TimelineUIUtils._buildTraceEventDetailsSynchronously = function(eve
     case recordTypes.ResizeImage:
     case recordTypes.DrawLazyPixelRef:
         relatedNodeLabel = WebInspector.UIString("Owner element");
-        if (event.imageURL)
-            contentHelper.appendElementRow(WebInspector.UIString("Image URL"), WebInspector.linkifyResourceAsNode(event.imageURL));
+        if (event.url)
+            contentHelper.appendElementRow(WebInspector.UIString("Image URL"), WebInspector.linkifyResourceAsNode(event.url));
         break;
     case recordTypes.ParseAuthorStyleSheet:
         var url = eventData["styleSheetUrl"];

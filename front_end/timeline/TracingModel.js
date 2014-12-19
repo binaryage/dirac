@@ -506,7 +506,7 @@ WebInspector.TracingModel.Event = function(category, name, phase, startTime, thr
     /** @type {?Element} */
     this.previewElement = null;
     /** @type {?string} */
-    this.imageURL = null;
+    this.url = null;
     /** @type {number} */
     this.backendNodeId = 0;
 

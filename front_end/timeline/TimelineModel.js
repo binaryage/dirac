@@ -919,7 +919,7 @@ WebInspector.TimelineModel.prototype = {
         switch (event.name) {
         case recordTypes.ResourceSendRequest:
             this._sendRequestEvents[event.args["data"]["requestId"]] = event;
-            event.imageURL = event.args["data"]["url"];
+            event.url = event.args["data"]["url"];
             break;
 
         case recordTypes.ResourceReceiveResponse:
@@ -927,7 +927,7 @@ WebInspector.TimelineModel.prototype = {
         case recordTypes.ResourceFinish:
             event.initiator = this._sendRequestEvents[event.args["data"]["requestId"]];
             if (event.initiator)
-                event.imageURL = event.initiator.imageURL;
+                event.url = event.initiator.url;
             break;
 
         case recordTypes.TimerInstall:
@@ -1038,7 +1038,7 @@ WebInspector.TimelineModel.prototype = {
 
         case recordTypes.PaintImage:
             event.backendNodeId = event.args["data"]["nodeId"];
-            event.imageURL = event.args["data"]["url"];
+            event.url = event.args["data"]["url"];
             break;
 
         case recordTypes.DecodeImage:
@@ -1051,7 +1051,7 @@ WebInspector.TimelineModel.prototype = {
             if (!paintImageEvent)
                 break;
             event.backendNodeId = paintImageEvent.backendNodeId;
-            event.imageURL = paintImageEvent.imageURL;
+            event.url = paintImageEvent.url;
             break;
 
         case recordTypes.DrawLazyPixelRef:
@@ -1060,7 +1060,7 @@ WebInspector.TimelineModel.prototype = {
                 break;
             this._paintImageEventByPixelRefId[event.args["LazyPixelRef"]] = paintImageEvent;
             event.backendNodeId = paintImageEvent.backendNodeId;
-            event.imageURL = paintImageEvent.imageURL;
+            event.url = paintImageEvent.url;
             break;
 
         case recordTypes.MarkDOMContent:
