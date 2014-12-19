@@ -45,7 +45,6 @@
     flex: 0 0 46px;
     -webkit-transition: margin-top 0.1s ease-in-out;
     margin-top: -23px;
-    line-height: 23px;
     padding-top: 22px;
     border-bottom: 1px solid rgb(202, 202, 202);
     background-color: white;
@@ -58,6 +57,7 @@
 
 .scripts-debug-toolbar-drawer > label {
     display: flex;
+    padding-top: 3px;
     padding-left: 3px;
     border-top: 1px solid rgb(196,196,196);
     height: 24px;
@@ -226,4 +226,16 @@ li.editing-sub-part .delete-button {
     box-shadow: none !important;
     outline: none !important;
     -webkit-user-modify: read-write;
+}
+
+li.editing .delete-button {
+    display: none !important;
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.cursor-auto {
+    cursor: auto;
 }

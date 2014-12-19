@@ -48,12 +48,6 @@ fieldset[disabled] label:hover input {
     box-shadow: none;
 }
 
-body /deep/ .flex-centered {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
 .object-popover-container {
     display: inline-block;
 }
@@ -354,15 +348,6 @@ body.undocked.platform-mac.inactive .inspector-view-tabbed-pane.tabbed-pane::sha
 
 .panel.visible {
     display: flex !important;
-}
-
-.panel.extension-panel.visible {
-    display: flex !important;
-    flex-direction: column;
-}
-
-.extension-view {
-    flex: auto;
 }
 
 iframe.extension {
@@ -726,11 +711,6 @@ iframe.panel.extension {
     text-overflow: clip;
 }
 
-li.editing .swatch,
-li.editing .enabled-button {
-    display: none !important;
-}
-
 .section .properties li.editing-sub-part {
     padding: 3px 6px 8px 18px;
     margin: -1px -6px -8px -6px;
@@ -1065,11 +1045,6 @@ body.inactive .sidebar-tree-item.selected {
     background-color: rgb(216, 35, 35) !important;
 }
 
-.webkit-html-js-node,
-.webkit-html-css-node {
-    white-space: pre;
-}
-
 .source-frame-eval-expression {
     outline: 1px solid rgb(163, 41, 34);
     background-color: rgb(255, 255, 194);
@@ -1078,14 +1053,6 @@ body.inactive .sidebar-tree-item.selected {
 .node-link {
     text-decoration: underline;
     cursor: pointer;
-}
-
-.cursor-pointer {
-    cursor: pointer;
-}
-
-.cursor-auto {
-    cursor: auto;
 }
 
 .soft-context-menu-glass-pane {

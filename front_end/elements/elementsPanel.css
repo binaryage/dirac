@@ -666,6 +666,11 @@ li.child-editing .styles-clipboard-only {
     display: none;
 }
 
+li.editing .swatch,
+li.editing .enabled-button {
+    display: none !important;
+}
+
 .sidebar-separator {
     background-color: #ddd;
     padding: 0 5px;

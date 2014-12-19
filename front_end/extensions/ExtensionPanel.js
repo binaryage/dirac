@@ -41,7 +41,6 @@ WebInspector.ExtensionPanel = function(server, id, pageURL)
     WebInspector.Panel.call(this, id);
     this._server = server;
     this.setHideOnDetach();
-    this.element.classList.add("extension-panel");
     this._panelStatusBar = new WebInspector.StatusBar(this.element);
     this._panelStatusBar.element.classList.add("hidden");
 

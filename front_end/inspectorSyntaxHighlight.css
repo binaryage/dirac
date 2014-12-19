@@ -66,6 +66,11 @@ body /deep/ .webkit-html-pseudo-element {
     color: brown;
 }
 
+body /deep/ .webkit-html-js-node,
+body /deep/ .webkit-html-css-node {
+    white-space: pre;
+}
+
 body /deep/ .webkit-html-text-node {
     unicode-bidi: -webkit-isolate;
 }

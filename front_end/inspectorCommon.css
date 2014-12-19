@@ -108,6 +108,12 @@ body /deep/ .flex-auto {
     flex: auto;
 }
 
+body /deep/ .flex-centered {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 body /deep/ iframe.view {
     position: absolute;
     width: 100%;
