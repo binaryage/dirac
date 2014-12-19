@@ -39,6 +39,7 @@ WebInspector.IDBDatabaseView = function(database)
     this.registerRequiredCSS("resources/indexedDBViews.css");
 
     this.element.classList.add("indexed-db-database-view");
+    this.element.classList.add("storage-view");
 
     this._headersListElement = this.element.createChild("ol", "outline-disclosure");
     this._headersTreeOutline = new TreeOutline(this._headersListElement);

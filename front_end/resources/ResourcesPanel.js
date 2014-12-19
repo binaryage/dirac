@@ -52,7 +52,7 @@ WebInspector.ResourcesPanel = function()
     this.indexedDBListTreeElement = new WebInspector.IndexedDBTreeElement(this);
     this.sidebarTree.appendChild(this.indexedDBListTreeElement);
 
-    if (WebInspector.isWorkerFrontend() && Runtime.experiments.isEnabled("serviceWorkerCacheInspection")) {
+    if (WebInspector.isWorkerFrontend()) {
         this.serviceWorkerCacheListTreeElement = new WebInspector.ServiceWorkerCacheTreeElement(this);
         this.sidebarTree.appendChild(this.serviceWorkerCacheListTreeElement);
     }
@@ -1411,7 +1411,7 @@ WebInspector.DatabaseTableTreeElement.prototype = {
  */
 WebInspector.ServiceWorkerCacheTreeElement = function(storagePanel)
 {
-    WebInspector.StorageCategoryTreeElement.call(this, storagePanel, WebInspector.UIString("ServiceWorkerCache"), "IndexedDB", ["indexed-db-storage-tree-item"]);
+    WebInspector.StorageCategoryTreeElement.call(this, storagePanel, WebInspector.UIString("Service Worker Cache"), "ServiceWorkerCache", ["service-worker-cache-storage-tree-item"]);
 }
 
 WebInspector.ServiceWorkerCacheTreeElement.prototype = {
@@ -1540,7 +1540,7 @@ WebInspector.ServiceWorkerCacheTreeElement.prototype = {
  */
 WebInspector.SWCacheTreeElement = function(storagePanel, model, cacheId)
 {
-    WebInspector.BaseStorageTreeElement.call(this, storagePanel, null, cacheId.name, ["indexed-db-storage-tree-item"]);
+    WebInspector.BaseStorageTreeElement.call(this, storagePanel, null, cacheId.name, ["service-worker-cache-tree-item"]);
     this._model = model;
     this._cacheId = cacheId;
 }

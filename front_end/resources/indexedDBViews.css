@@ -86,6 +86,10 @@
     border: 0;
 }
 
+.indexed-db-data-view .data-grid .data-container tr:nth-last-child(2) td {
+    border-bottom: 1px solid #aaa;
+}
+
 .indexed-db-data-view .section,
 .indexed-db-data-view .section > .header,
 .indexed-db-data-view .section > .header .title {

@@ -18,6 +18,7 @@ WebInspector.ServiceWorkerCacheView = function(model, cacheId, cache)
     this._cacheId = cacheId;
 
     this.element.classList.add("service-worker-cache-data-view");
+    this.element.classList.add("storage-view");
 
     this._createEditorToolbar();
 

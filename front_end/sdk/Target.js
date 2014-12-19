@@ -177,7 +177,7 @@ WebInspector.Target.prototype = {
         /** @type {!WebInspector.AnimationModel} */
         this.animationModel = new WebInspector.AnimationModel(this);
 
-        if (WebInspector.isWorkerFrontend() && this.isWorkerTarget() && Runtime.experiments.isEnabled("serviceWorkerCacheInspection")) {
+        if (WebInspector.isWorkerFrontend() && this.isWorkerTarget()) {
             /** @type {!WebInspector.ServiceWorkerCacheModel} */
             this.serviceWorkerCacheModel = new WebInspector.ServiceWorkerCacheModel(this);
         }
