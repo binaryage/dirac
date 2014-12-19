@@ -472,11 +472,10 @@ WebInspector.StylesSidebarPane.prototype = {
 
         this._rebuildUpdateInProgress = true;
 
-        var resultStyles = new WebInspector.StylesSidebarPane.MatchedRulesPayload();
         var computedStyle;
 
         /**
-         * @param {?*} matchedResult
+         * @param {!WebInspector.StylesSidebarPane.MatchedRulesPayload} matchedResult
          * @this {WebInspector.StylesSidebarPane}
          */
         function stylesCallback(matchedResult)
@@ -492,32 +491,16 @@ WebInspector.StylesSidebarPane.prototype = {
                 }
             }
 
-            if (matchedResult) {
-                resultStyles.matchedCSSRules = matchedResult.matchedCSSRules;
-                resultStyles.pseudoElements = matchedResult.pseudoElements;
-                resultStyles.inherited = matchedResult.inherited;
-            }
-
-            if (resultStyles.fulfilled() && this._node === node)
-                this._innerRebuildUpdate(node, resultStyles, computedStyle);
+            if (matchedResult.fulfilled() && this._node === node)
+                this._innerRebuildUpdate(node, matchedResult, computedStyle);
 
             if (lastNodeForRebuild) {
                 // lastNodeForRebuild is the same as this.node - another rebuild has been requested.
                 this._rebuildUpdate();
                 return;
             }
-            if (matchedResult && this._node === node)
+            if (this._node === node)
                 this._nodeStylesUpdatedForTest(node, true);
-        }
-
-        /**
-         * @param {?WebInspector.CSSStyleDeclaration} inlineStyle
-         * @param {?WebInspector.CSSStyleDeclaration} attributesStyle
-         */
-        function inlineCallback(inlineStyle, attributesStyle)
-        {
-            resultStyles.inlineStyle = inlineStyle;
-            resultStyles.attributesStyle = attributesStyle;
         }
 
         /**
@@ -540,8 +523,43 @@ WebInspector.StylesSidebarPane.prototype = {
         if (this._computedStylePane.isShowing())
             this._target.cssModel.getComputedStyleAsync(node.id, computedCallback);
         this._getAnimationPropertiesForNode(node, animationPlayersCallback.bind(this));
-        this._target.cssModel.getInlineStylesAsync(node.id, inlineCallback);
-        this._target.cssModel.getMatchedStylesAsync(node.id, false, false, stylesCallback.bind(this));
+        this._getMatchedStylesForNode(node, stylesCallback.bind(this));
+    },
+
+    /**
+     * @param {!WebInspector.DOMNode} node
+     * @param {function(!WebInspector.StylesSidebarPane.MatchedRulesPayload)} callback
+     */
+    _getMatchedStylesForNode: function(node, callback)
+    {
+        var target = node.target();
+        target.cssModel.getInlineStylesAsync(node.id, inlineCallback);
+        target.cssModel.getMatchedStylesAsync(node.id, false, false, matchedCallback);
+
+        var payload = new WebInspector.StylesSidebarPane.MatchedRulesPayload();
+
+        /**
+         * @param {?WebInspector.CSSStyleDeclaration} inlineStyle
+         * @param {?WebInspector.CSSStyleDeclaration} attributesStyle
+         */
+        function inlineCallback(inlineStyle, attributesStyle)
+        {
+            payload.inlineStyle = /** @type {?WebInspector.CSSStyleDeclaration} */(inlineStyle);
+            payload.attributesStyle = /** @type {?WebInspector.CSSStyleDeclaration} */(attributesStyle);
+        }
+
+        /**
+         * @param {?*} matchedResult
+         */
+        function matchedCallback(matchedResult)
+        {
+            if (matchedResult) {
+                payload.matchedCSSRules = /** @type {?Array.<!WebInspector.CSSRule>} */(matchedResult.matchedCSSRules);
+                payload.pseudoElements = /** @type {?Array.<{pseudoId: number, rules: !Array.<!WebInspector.CSSRule>}>} */(matchedResult.pseudoElements);
+                payload.inherited = /** @type {?Array.<{matchedCSSRules: !Array.<!WebInspector.CSSRule>}>} */(matchedResult.inherited);
+            }
+            callback(payload);
+        }
     },
 
     /**
