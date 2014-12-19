@@ -161,7 +161,7 @@ WebInspector.OverridesSupport.GeolocationPosition.parseUserInput = function(lati
         return /^[-]?[0-9]*[.]?[0-9]*$/.test(value);
     }
 
-    if (!latitudeString ^ !latitudeString)
+    if (!latitudeString && !longitudeString)
         return null;
 
     var isLatitudeValid = isUserInputValid(latitudeString);
@@ -228,7 +228,7 @@ WebInspector.OverridesSupport.DeviceOrientation.parseUserInput = function(alphaS
         return /^[-]?[0-9]*[.]?[0-9]*$/.test(value);
     }
 
-    if (!alphaString ^ !betaString ^ !gammaString)
+    if (!alphaString && !betaString && !gammaString)
         return null;
 
     var isAlphaValid = isUserInputValid(alphaString);
