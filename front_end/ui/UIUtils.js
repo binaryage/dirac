@@ -958,13 +958,10 @@ WebInspector.measurePreferredSize = function(element, containerElement)
 {
     containerElement = containerElement || element.ownerDocument.body;
     containerElement.appendChild(element);
-    var fakingComponentRoot = WebInspector.installComponentRootStyles(element);
     element.positionAt(0, 0);
     var result = new Size(element.offsetWidth, element.offsetHeight);
     element.positionAt(undefined, undefined);
     element.remove();
-    if (fakingComponentRoot)
-        WebInspector.uninstallComponentRootStyles(element);
     return result;
 }
 
