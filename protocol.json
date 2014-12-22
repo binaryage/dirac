@@ -621,6 +621,14 @@
                 "handlers": ["browser"]
             },
             {
+                "name": "animationsPlaybackRate",
+                "returns": [
+                    { "name": "playbackRate", "type": "number", "description": "Playback rate for animations on page."}
+                ],
+                "description": "Gets the playback rate of the document timeline.",
+                "hidden": true
+            },
+            {
                 "name": "setAnimationsPlaybackRate",
                 "parameters": [
                     { "name": "playbackRate", "type": "number", "description": "Playback rate for animations on page" }

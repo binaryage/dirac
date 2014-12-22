@@ -1073,8 +1073,18 @@ WebInspector.StylesSidebarPane.prototype = {
             this._animationsPauseButton.element.classList.toggle("play-status-bar-item");
         }
 
+        /**
+         * @param {?Protocol.Error} error
+         * @param {number} playbackRate
+         */
+        function setPlaybackRate(error, playbackRate) {
+            playbackSlider.value = WebInspector.AnimationsSidebarPane.GlobalPlaybackRates.indexOf(playbackRate);
+            playbackLabel.textContent = playbackRate + "x";
+        }
+
         this._animationsPaused = false;
         this._animationsPlaybackRate = 1;
+        PageAgent.animationsPlaybackRate(setPlaybackRate);
 
         this._animationsControlPane = createElementWithClass("div", "styles-animations-controls-pane");
         var labelElement = createElement("div");
