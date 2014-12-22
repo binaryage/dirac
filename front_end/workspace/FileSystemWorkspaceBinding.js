@@ -191,6 +191,7 @@ WebInspector.FileSystemWorkspaceBinding.prototype = {
 
 /**
  * @constructor
+ * @extends {WebInspector.Object}
  * @implements {WebInspector.ProjectDelegate}
  * @param {!WebInspector.IsolatedFileSystem} isolatedFileSystem
  * @param {!WebInspector.Workspace} workspace
@@ -198,6 +199,7 @@ WebInspector.FileSystemWorkspaceBinding.prototype = {
  */
 WebInspector.FileSystemWorkspaceBinding.FileSystem = function(fileSystemWorkspaceBinding, isolatedFileSystem, workspace)
 {
+    WebInspector.Object.call(this);
     this._fileSystemWorkspaceBinding = fileSystemWorkspaceBinding;
     this._fileSystem = isolatedFileSystem;
     this._fileSystemURL = "file://" + this._fileSystem.normalizedPath() + "/";
@@ -205,7 +207,7 @@ WebInspector.FileSystemWorkspaceBinding.FileSystem = function(fileSystemWorkspac
 
     this._projectId = WebInspector.FileSystemWorkspaceBinding.projectId(this._fileSystem.path());
     console.assert(!this._workspace.project(this._projectId));
-    this._projectStore = this._workspace.addProject(this._projectId, this);
+    this._workspace.addProject(this._projectId, this);
     this.populate();
 }
 
@@ -592,7 +594,7 @@ WebInspector.FileSystemWorkspaceBinding.FileSystem.prototype = {
         var contentType = this._contentTypeForExtension(extension);
 
         var fileDescriptor = new WebInspector.FileDescriptor(parentPath, name, this._fileSystemURL + filePath, url, contentType);
-        this._projectStore.addFile(fileDescriptor);
+        this.dispatchEventToListeners(WebInspector.ProjectDelegate.Events.FileAdded, fileDescriptor);
     },
 
     /**
@@ -600,13 +602,15 @@ WebInspector.FileSystemWorkspaceBinding.FileSystem.prototype = {
      */
     _removeFile: function(path)
     {
-        this._projectStore.removeFile(path);
+        this.dispatchEventToListeners(WebInspector.ProjectDelegate.Events.FileRemoved, path);
     },
 
     dispose: function()
     {
         this._workspace.removeProject(this._projectId);
-    }
+    },
+
+    __proto__: WebInspector.Object.prototype
 }
 
 /**

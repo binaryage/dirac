@@ -30,6 +30,7 @@
 
  /**
  * @constructor
+ * @extends {WebInspector.Object}
  * @implements {WebInspector.ProjectDelegate}
  * @param {!WebInspector.Workspace} workspace
  * @param {string} id
@@ -37,12 +38,13 @@
  */
 WebInspector.ContentProviderBasedProjectDelegate = function(workspace, id, type)
 {
+    WebInspector.Object.call(this);
     this._type = type;
     /** @type {!Object.<string, !WebInspector.ContentProvider>} */
     this._contentProviders = {};
     this._workspace = workspace;
     this._id = id;
-    this._projectStore = workspace.addProject(id, this);
+    workspace.addProject(id, this);
 }
 
 WebInspector.ContentProviderBasedProjectDelegate.prototype = {
@@ -344,7 +346,7 @@ WebInspector.ContentProviderBasedProjectDelegate.prototype = {
             return path;
         var fileDescriptor = new WebInspector.FileDescriptor(parentPath, name, originURL, url, contentProvider.contentType());
         this._contentProviders[path] = contentProvider;
-        this._projectStore.addFile(fileDescriptor);
+        this.dispatchEventToListeners(WebInspector.ProjectDelegate.Events.FileAdded, fileDescriptor);
         return path;
     },
 
@@ -354,7 +356,7 @@ WebInspector.ContentProviderBasedProjectDelegate.prototype = {
     removeFile: function(path)
     {
         delete this._contentProviders[path];
-        this._projectStore.removeFile(path);
+        this.dispatchEventToListeners(WebInspector.ProjectDelegate.Events.FileRemoved, path);
     },
 
     /**
@@ -369,6 +371,8 @@ WebInspector.ContentProviderBasedProjectDelegate.prototype = {
     {
         this._contentProviders = {};
         this._workspace.removeProject(this._id);
-        this._projectStore = this._workspace.addProject(this._id, this);
-    }
+        this._workspace.addProject(this._id, this);
+    },
+
+    __proto__: WebInspector.Object.prototype
 }

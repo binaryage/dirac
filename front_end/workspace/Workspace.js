@@ -80,8 +80,14 @@ WebInspector.FileDescriptor = function(parentPath, name, originURL, url, content
 
 /**
  * @interface
+ * @extends {WebInspector.EventTarget}
  */
 WebInspector.ProjectDelegate = function() { }
+
+WebInspector.ProjectDelegate.Events = {
+    FileAdded: "FileAdded",
+    FileRemoved: "FileRemoved",
+}
 
 WebInspector.ProjectDelegate.prototype = {
     /**
@@ -186,41 +192,6 @@ WebInspector.ProjectDelegate.prototype = {
 
 /**
  * @constructor
- * @param {!WebInspector.Project} project
- */
-WebInspector.ProjectStore = function(project)
-{
-    this._project = project;
-}
-
-WebInspector.ProjectStore.prototype = {
-    /**
-     * @param {!WebInspector.FileDescriptor} fileDescriptor
-     */
-    addFile: function(fileDescriptor)
-    {
-        this._project._addFile(fileDescriptor);
-    },
-
-    /**
-     * @param {string} path
-     */
-    removeFile: function(path)
-    {
-        this._project._removeFile(path);
-    },
-
-    /**
-     * @return {!WebInspector.Project}
-     */
-    project: function()
-    {
-        return this._project;
-    }
-}
-
-/**
- * @constructor
  * @extends {WebInspector.Object}
  * @param {!WebInspector.Workspace} workspace
  * @param {string} projectId
@@ -237,6 +208,8 @@ WebInspector.Project = function(workspace, projectId, projectDelegate)
     this._projectDelegate = projectDelegate;
     this._url = this._projectDelegate.url();
     this._displayName = this._projectDelegate.displayName();
+    projectDelegate.addEventListener(WebInspector.ProjectDelegate.Events.FileAdded, this._fileAdded, this);
+    projectDelegate.addEventListener(WebInspector.ProjectDelegate.Events.FileRemoved, this._fileRemoved, this);
 }
 
 /**
@@ -298,11 +271,13 @@ WebInspector.Project.prototype = {
         return this._projectDelegate.type() === WebInspector.projectTypes.Debugger || this._projectDelegate.type() === WebInspector.projectTypes.Formatter || this._projectDelegate.type() === WebInspector.projectTypes.Service;
     },
 
+
     /**
-     * @param {!WebInspector.FileDescriptor} fileDescriptor
+     * @param {!WebInspector.Event} event
      */
-    _addFile: function(fileDescriptor)
+    _fileAdded: function(event)
     {
+        var fileDescriptor = /** @type {!WebInspector.FileDescriptor} */ (event.data);
         var path = fileDescriptor.parentPath ? fileDescriptor.parentPath + "/" + fileDescriptor.name : fileDescriptor.name;
         var uiSourceCode = this.uiSourceCode(path);
         if (uiSourceCode)
@@ -313,6 +288,15 @@ WebInspector.Project.prototype = {
         this._uiSourceCodesMap.set(path, {uiSourceCode: uiSourceCode, index: this._uiSourceCodesList.length});
         this._uiSourceCodesList.push(uiSourceCode);
         this._workspace.dispatchEventToListeners(WebInspector.Workspace.Events.UISourceCodeAdded, uiSourceCode);
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _fileRemoved: function(event)
+    {
+        var path = /** @type {string} */ (event.data);
+        this._removeFile(path);
     },
 
     /**
@@ -336,6 +320,8 @@ WebInspector.Project.prototype = {
 
     _remove: function()
     {
+        this._projectDelegate.removeEventListener(WebInspector.ProjectDelegate.Events.FileAdded, this._fileAdded, this);
+        this._projectDelegate.removeEventListener(WebInspector.ProjectDelegate.Events.FileRemoved, this._fileRemoved, this);
         this._workspace.dispatchEventToListeners(WebInspector.Workspace.Events.ProjectRemoved, this);
         this._uiSourceCodesMap = new Map();
         this._uiSourceCodesList = [];
@@ -661,15 +647,14 @@ WebInspector.Workspace.prototype = {
     /**
      * @param {string} projectId
      * @param {!WebInspector.ProjectDelegate} projectDelegate
-     * @return {!WebInspector.ProjectStore}
+     * @return {!WebInspector.Project}
      */
     addProject: function(projectId, projectDelegate)
     {
         var project = new WebInspector.Project(this, projectId, projectDelegate);
         this._projects[projectId] = project;
-        var projectStore = new WebInspector.ProjectStore(project);
         this.dispatchEventToListeners(WebInspector.Workspace.Events.ProjectAdded, project);
-        return projectStore;
+        return project;
     },
 
     /**
