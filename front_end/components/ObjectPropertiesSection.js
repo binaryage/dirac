@@ -444,11 +444,20 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
     },
 
     /**
+     * @override
+     * @return {*}
+     */
+    elementIdentity: function()
+    {
+        return this.propertyPath();
+    },
+
+    /**
      * @return {string|undefined}
      */
     propertyPath: function()
     {
-        if ("_cachedPropertyPath" in this)
+        if (this._cachedPropertyPath)
             return this._cachedPropertyPath;
 
         var current = this;

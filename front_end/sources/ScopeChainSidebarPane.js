@@ -32,8 +32,10 @@ WebInspector.ScopeChainSidebarPane = function()
 {
     WebInspector.SidebarPane.call(this, WebInspector.UIString("Scope Variables"));
     this._sections = [];
-    this._expandedSections = {};
-    this._expandedProperties = [];
+    /** @type {!Set.<?string>} */
+    this._expandedSections = new Set();
+    /** @type {!Set.<string>} */
+    this._expandedProperties = new Set();
 }
 
 WebInspector.ScopeChainSidebarPane.prototype = {
@@ -57,9 +59,9 @@ WebInspector.ScopeChainSidebarPane.prototype = {
             if (!section.title)
                 continue;
             if (section.expanded)
-                this._expandedSections[section.title] = true;
+                this._expandedSections.add(section.title);
             else
-                delete this._expandedSections[section.title];
+                this._expandedSections.delete(section.title);
         }
 
         this._sections = [];
@@ -132,7 +134,7 @@ WebInspector.ScopeChainSidebarPane.prototype = {
 
             if (scope.type === DebuggerAgent.ScopeType.Global)
                 section.expanded = false;
-            else if (!foundLocalScope || scope.type === DebuggerAgent.ScopeType.Local || title in this._expandedSections)
+            else if (!foundLocalScope || scope.type === DebuggerAgent.ScopeType.Local || this._expandedSections.has(title))
                 section.expanded = true;
 
             this._sections.push(section);
@@ -157,26 +159,30 @@ WebInspector.ScopeVariableTreeElement.prototype = {
     onattach: function()
     {
         WebInspector.ObjectPropertyTreeElement.prototype.onattach.call(this);
-        if (this.hasChildren && this.propertyIdentifier in this.treeOutline.section.pane._expandedProperties)
+        if (this.hasChildren && this.treeOutline.section.pane._expandedProperties.has(this.propertyPath()))
             this.expand();
     },
 
     onexpand: function()
     {
-        this.treeOutline.section.pane._expandedProperties[this.propertyIdentifier] = true;
+        this.treeOutline.section.pane._expandedProperties.add(this.propertyPath());
     },
 
     oncollapse: function()
     {
-        delete this.treeOutline.section.pane._expandedProperties[this.propertyIdentifier];
+        this.treeOutline.section.pane._expandedProperties.delete(this.propertyPath());
     },
 
-    get propertyIdentifier()
+    /**
+     * @override
+     * @return {string|undefined}
+     */
+    propertyPath: function()
     {
-        if ("_propertyIdentifier" in this)
-            return this._propertyIdentifier;
-        var section = this.treeOutline.section;
-        this._propertyIdentifier = section.title + ":" + (section.subtitle ? section.subtitle + ":" : "") + this.propertyPath();
+        if (!this._propertyIdentifier) {
+            var section = this.treeOutline.section;
+            this._propertyIdentifier = section.title + ":" + (section.subtitle ? section.subtitle + ":" : "") + WebInspector.ObjectPropertyTreeElement.prototype.propertyPath.call(this);
+        }
         return this._propertyIdentifier;
     },
 

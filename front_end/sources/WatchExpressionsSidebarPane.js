@@ -106,12 +106,8 @@ WebInspector.WatchExpressionsSection = function()
     this._watchObjectGroupId = "watch-group";
 
     WebInspector.PropertiesSection.call(this, "");
-    this.treeElementConstructor = WebInspector.WatchedPropertyTreeElement;
+    this.treeElementConstructor = WebInspector.ObjectPropertyTreeElement;
     this.skipProto = false;
-    /** @type {!Set.<string>} */
-    this._expandedExpressions = new Set();
-    /** @type {!Set.<string>} */
-    this._expandedProperties = new Set();
 
     this.emptyElement = createElementWithClass("div", "info");
     this.emptyElement.textContent = WebInspector.UIString("No Watch Expressions");
@@ -214,8 +210,6 @@ WebInspector.WatchExpressionsSection.prototype = {
         if (!propertyCount) {
             this.element.appendChild(this.emptyElement);
             this.propertiesTreeOutline.removeChildren();
-            this._expandedExpressions.clear();
-            this._expandedProperties.clear();
         } else {
             this.emptyElement.remove();
         }
@@ -388,26 +382,11 @@ WebInspector.WatchExpressionTreeElement = function(property)
 }
 
 WebInspector.WatchExpressionTreeElement.prototype = {
-    onexpand: function()
-    {
-        WebInspector.ObjectPropertyTreeElement.prototype.onexpand.call(this);
-        this.treeOutline.section._expandedExpressions.add(this._expression());
-    },
-
-    oncollapse: function()
-    {
-        WebInspector.ObjectPropertyTreeElement.prototype.oncollapse.call(this);
-        this.treeOutline.section._expandedExpressions.remove(this._expression());
-    },
-
-    onattach: function()
-    {
-        WebInspector.ObjectPropertyTreeElement.prototype.onattach.call(this);
-        if (this.treeOutline.section._expandedExpressions.has(this._expression()))
-            this.expanded = true;
-    },
-
-    _expression: function()
+    /**
+     * @override
+     * @return {*}
+     */
+    elementIdentity: function()
     {
         return this.property.name;
     },
@@ -508,40 +487,6 @@ WebInspector.WatchExpressionTreeElement.prototype = {
         expression = expression.trim();
         this.property.name = expression || null;
         this.treeOutline.section.updateExpression(this, expression);
-    },
-
-    __proto__: WebInspector.ObjectPropertyTreeElement.prototype
-}
-
-
-/**
- * @constructor
- * @extends {WebInspector.ObjectPropertyTreeElement}
- * @param {!WebInspector.RemoteObjectProperty} property
- */
-WebInspector.WatchedPropertyTreeElement = function(property)
-{
-    WebInspector.ObjectPropertyTreeElement.call(this, property);
-}
-
-WebInspector.WatchedPropertyTreeElement.prototype = {
-    onattach: function()
-    {
-        WebInspector.ObjectPropertyTreeElement.prototype.onattach.call(this);
-        if (this.hasChildren && this.treeOutline.section._expandedProperties.has(this.propertyPath()))
-            this.expand();
-    },
-
-    onexpand: function()
-    {
-        WebInspector.ObjectPropertyTreeElement.prototype.onexpand.call(this);
-        this.treeOutline.section._expandedProperties.add(this.propertyPath());
-    },
-
-    oncollapse: function()
-    {
-        WebInspector.ObjectPropertyTreeElement.prototype.oncollapse.call(this);
-        this.treeOutline.section._expandedProperties.remove(this.propertyPath());
     },
 
     __proto__: WebInspector.ObjectPropertyTreeElement.prototype

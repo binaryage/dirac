@@ -150,8 +150,8 @@ TreeContainerNode.prototype = {
             current = current.traverseNextTreeElement(false, child, true);
         }
 
-        if (child.hasChildren && typeof(child.treeOutline._expandedStateMap.get(child.representedObject)) !== "undefined")
-            child.expanded = child.treeOutline._expandedStateMap.get(child.representedObject);
+        if (child.hasChildren && child.treeOutline._expandedElementIdentities.has(child.elementIdentity()))
+            child.expanded = true;
 
         if (!this._childrenListNode) {
             this._childrenListNode = this.treeOutline._childrenListNode.ownerDocument.createElement("ol");
@@ -313,8 +313,8 @@ function TreeOutline(listNode, nonFocusable)
 
     /** @type {!Map.<!Object, !Array.<!TreeElement>>} */
     this._treeElementsMap = new Map();
-    /** @type {!Map.<!Object, boolean>} */
-    this._expandedStateMap = new Map();
+    /** @type {!Set.<*>} */
+    this._expandedElementIdentities = new Set();
     this.element = listNode;
 }
 
@@ -384,6 +384,25 @@ TreeOutline.prototype = {
         return null;
     },
 
+    /**
+     * @param {!TreeElement} element
+     */
+    _elementExpanded: function(element)
+    {
+        this._expandedElementIdentities.add(element.elementIdentity());
+    },
+
+    /**
+     * @param {!TreeElement} element
+     */
+    _elementCollapsed: function(element)
+    {
+        this._expandedElementIdentities.delete(element.elementIdentity());
+    },
+
+    /**
+     * @param {!Event} event
+     */
     _treeKeyDown: function(event)
     {
         if (event.target !== this._childrenListNode)
@@ -549,9 +568,11 @@ TreeElement.prototype = {
         if (!this._listItemNode)
             return;
 
-        if (x)
+        if (x) {
             this._listItemNode.classList.add("parent");
-        else {
+            if (this.treeOutline._expandedElementIdentities.has(this.elementIdentity()))
+                this.expand();
+        } else {
             this._listItemNode.classList.remove("parent");
             this.collapse();
         }
@@ -736,6 +757,14 @@ TreeElement.prototype = {
     },
 
     /**
+     * @return {*}
+     */
+    elementIdentity: function()
+    {
+        return this.representedObject;
+    },
+
+    /**
      * @override
      */
     collapse: function()
@@ -748,7 +777,7 @@ TreeElement.prototype = {
         this.expanded = false;
 
         if (this.treeOutline)
-            this.treeOutline._expandedStateMap.set(this.representedObject, false);
+            this.treeOutline._elementCollapsed(this);
 
         this.oncollapse();
     },
@@ -777,7 +806,7 @@ TreeElement.prototype = {
 
         this.expanded = true;
         if (this.treeOutline)
-            this.treeOutline._expandedStateMap.set(this.representedObject, true);
+            this.treeOutline._elementExpanded(this);
 
         if (this.treeOutline && (!this._childrenListNode || this._shouldRefreshChildren)) {
             if (this._childrenListNode && this._childrenListNode.parentNode)
