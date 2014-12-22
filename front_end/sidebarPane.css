@@ -179,6 +179,10 @@
     background-image: url(Images/paneRefreshButtons.png);
 }
 
+.sidebar-pane-toolbar > .pane-title-button.animations-controls {
+    background-image: url(Images/paneAnimationsButtons.png);
+}
+
 .sidebar-pane-toolbar > label.scripts-callstack-async {
     margin: auto;
     margin-right: 5px;

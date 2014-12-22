@@ -37,6 +37,12 @@ WebInspector.StylesSidebarPane = function(computedStylePane, setPseudoClassCallb
 {
     WebInspector.SidebarPane.call(this, WebInspector.UIString("Styles"));
 
+    this._animationsControlButton = createElement("button");
+    this._animationsControlButton.className = "pane-title-button animations-controls";
+    this._animationsControlButton.title = WebInspector.UIString("Animations Controls");
+    this._animationsControlButton.addEventListener("click", this._toggleAnimationsControlPane.bind(this), false);
+    this.titleElement.appendChild(this._animationsControlButton);
+
     this._elementStateButton = createElement("button");
     this._elementStateButton.className = "pane-title-button element-state";
     this._elementStateButton.title = WebInspector.UIString("Toggle Element State");
@@ -64,6 +70,8 @@ WebInspector.StylesSidebarPane = function(computedStylePane, setPseudoClassCallb
 
     this._createElementStatePane();
     this.bodyElement.appendChild(this._elementStatePane);
+    this._createAnimationsControlPane();
+    this.bodyElement.appendChild(this._animationsControlPane);
     this._sectionsContainer = createElement("div");
     this.bodyElement.appendChild(this._sectionsContainer);
 
@@ -972,6 +980,8 @@ WebInspector.StylesSidebarPane.prototype = {
             this.expand();
         this._elementStateButton.classList.toggle("toggled", buttonToggled);
         this._elementStatePane.classList.toggle("expanded", buttonToggled);
+        this._animationsControlButton.classList.remove("toggled");
+        this._animationsControlPane.classList.remove("expanded");
     },
 
     _createElementStatePane: function()
@@ -1021,6 +1031,72 @@ WebInspector.StylesSidebarPane.prototype = {
         tr.appendChild(createCheckbox.call(this, "visited"));
 
         this._elementStatePane.appendChild(table);
+    },
+
+        /**
+     * @param {!Event} event
+     */
+    _toggleAnimationsControlPane: function(event)
+    {
+        event.consume();
+
+        var buttonToggled = !this._animationsControlButton.classList.contains("toggled");
+        if (buttonToggled)
+            this.expand();
+        this._animationsControlButton.classList.toggle("toggled", buttonToggled);
+        this._animationsControlPane.classList.toggle("expanded", buttonToggled);
+        this._elementStateButton.classList.remove("toggled");
+        this._elementStatePane.classList.remove("expanded");
+    },
+
+    _createAnimationsControlPane: function()
+    {
+        /**
+         * @param {!Event} event
+         * @this {WebInspector.StylesSidebarPane}
+         */
+        function playbackSliderInputHandler(event)
+        {
+            this._animationsPlaybackRate = WebInspector.AnimationsSidebarPane.GlobalPlaybackRates[event.target.value];
+            PageAgent.setAnimationsPlaybackRate(this._animationsPaused ? 0 : this._animationsPlaybackRate);
+            playbackLabel.textContent = this._animationsPlaybackRate + "x";
+        }
+
+        /**
+         * @this {WebInspector.StylesSidebarPane}
+         */
+        function pauseButtonHandler()
+        {
+            this._animationsPaused = !this._animationsPaused;
+            PageAgent.setAnimationsPlaybackRate(this._animationsPaused ? 0 : this._animationsPlaybackRate);
+            this._animationsPauseButton.element.classList.toggle("pause-status-bar-item");
+            this._animationsPauseButton.element.classList.toggle("play-status-bar-item");
+        }
+
+        this._animationsPaused = false;
+        this._animationsPlaybackRate = 1;
+
+        this._animationsControlPane = createElementWithClass("div", "styles-animations-controls-pane");
+        var labelElement = createElement("div");
+        labelElement.createTextChild("Animations");
+        this._animationsControlPane.appendChild(labelElement);
+        var container = this._animationsControlPane.createChild("div", "animations-controls");
+
+        var statusBar = new WebInspector.StatusBar();
+        this._animationsPauseButton = new WebInspector.StatusBarButton("", "pause-status-bar-item");
+        statusBar.appendStatusBarItem(this._animationsPauseButton);
+        this._animationsPauseButton.addEventListener("click", pauseButtonHandler.bind(this));
+        container.appendChild(statusBar.element);
+
+        var playbackSlider = container.createChild("input");
+        playbackSlider.type = "range";
+        playbackSlider.min = 0;
+        playbackSlider.max = WebInspector.AnimationsSidebarPane.GlobalPlaybackRates.length - 1;
+        playbackSlider.value = playbackSlider.max;
+        playbackSlider.addEventListener("input", playbackSliderInputHandler.bind(this));
+
+        var playbackLabel = container.createChild("div", "playback-label");
+        playbackLabel.createTextChild("1x");
     },
 
     /**
