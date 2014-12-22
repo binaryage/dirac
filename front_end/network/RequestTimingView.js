@@ -32,13 +32,15 @@
  * @constructor
  * @extends {WebInspector.VBox}
  * @param {!WebInspector.NetworkRequest} request
+ * @param {!WebInspector.NetworkTimeCalculator} calculator
  */
-WebInspector.RequestTimingView = function(request)
+WebInspector.RequestTimingView = function(request, calculator)
 {
     WebInspector.VBox.call(this);
     this.element.classList.add("resource-timing-view");
 
     this._request = request;
+    this._calculator = calculator;
 }
 
 WebInspector.RequestTimingView.prototype = {
@@ -46,21 +48,7 @@ WebInspector.RequestTimingView.prototype = {
     {
         this._request.addEventListener(WebInspector.NetworkRequest.Events.TimingChanged, this._refresh, this);
         this._request.addEventListener(WebInspector.NetworkRequest.Events.FinishedLoading, this._refresh, this);
-
-        if (!this._request.timing) {
-            if (!this._emptyView) {
-                this._emptyView = new WebInspector.EmptyView(WebInspector.UIString("This request has no detailed timing info."));
-                this._emptyView.show(this.element);
-                this.innerView = this._emptyView;
-            }
-            return;
-        }
-
-        if (this._emptyView) {
-            this._emptyView.detach();
-            delete this._emptyView;
-        }
-
+        this._calculator.addEventListener(WebInspector.NetworkTimeCalculator.Events.BoundariesChanged, this._refresh, this);
         this._refresh();
     },
 
@@ -68,6 +56,7 @@ WebInspector.RequestTimingView.prototype = {
     {
         this._request.removeEventListener(WebInspector.NetworkRequest.Events.TimingChanged, this._refresh, this);
         this._request.removeEventListener(WebInspector.NetworkRequest.Events.FinishedLoading, this._refresh, this);
+        this._calculator.removeEventListener(WebInspector.NetworkTimeCalculator.Events.BoundariesChanged, this._refresh, this);
     },
 
     _refresh: function()
@@ -75,7 +64,7 @@ WebInspector.RequestTimingView.prototype = {
         if (this._tableElement)
             this._tableElement.remove();
 
-        this._tableElement = WebInspector.RequestTimingView.createTimingTable(this._request);
+        this._tableElement = WebInspector.RequestTimingView.createTimingTable(this._request, this._calculator.minimumBoundary());
         this.element.appendChild(this._tableElement);
     },
 
@@ -204,9 +193,10 @@ WebInspector.RequestTimingView.calculateRequestTimeRanges = function(request)
 
 /**
  * @param {!WebInspector.NetworkRequest} request
+ * @param {number} navigationStart
  * @return {!Element}
  */
-WebInspector.RequestTimingView.createTimingTable = function(request)
+WebInspector.RequestTimingView.createTimingTable = function(request, navigationStart)
 {
     var tableElement = createElementWithClass("table", "network-timing-table");
     tableElement.createChild("colgroup").createChild("col", "labels");
@@ -216,6 +206,9 @@ WebInspector.RequestTimingView.createTimingTable = function(request)
     var endTime = timeRanges[0].end;
     var scale = 100 / (endTime - startTime);
 
+    var globalTimeInfo = tableElement.createChild("tr").createChild("td");
+    globalTimeInfo.colSpan = 2;
+    globalTimeInfo.createTextChild("Started at " + Number.secondsToString(timeRanges[0].start - navigationStart));
 
     for (var i = 0; i < timeRanges.length; ++i) {
         var range = timeRanges[i];

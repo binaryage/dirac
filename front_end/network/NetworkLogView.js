@@ -699,6 +699,14 @@ WebInspector.NetworkLogView.prototype = {
     /**
      * @return {!WebInspector.NetworkTimeCalculator}
      */
+    timeCalculator: function()
+    {
+        return this._timeCalculator;
+    },
+
+    /**
+     * @return {!WebInspector.NetworkTimeCalculator}
+     */
     calculator: function()
     {
         return this._calculator;
@@ -769,12 +777,12 @@ WebInspector.NetworkLogView.prototype = {
         }
 
         this._removeAllNodeHighlights();
-        var boundariesChanged = false;
-        var calculator = this.calculator();
-        if (calculator.updateBoundariesForEventTime) {
-            boundariesChanged = calculator.updateBoundariesForEventTime(this._mainRequestLoadTime) || boundariesChanged;
-            boundariesChanged = calculator.updateBoundariesForEventTime(this._mainRequestDOMContentLoadedTime) || boundariesChanged;
-        }
+
+        var oldBoundary = this.calculator().boundary();
+        this._timeCalculator.updateBoundariesForEventTime(this._mainRequestLoadTime);
+        this._durationCalculator.updateBoundariesForEventTime(this._mainRequestLoadTime);
+        this._timeCalculator.updateBoundariesForEventTime(this._mainRequestDOMContentLoadedTime);
+        this._durationCalculator.updateBoundariesForEventTime(this._mainRequestDOMContentLoadedTime);
 
         var dataGrid = this._dataGrid;
         var rootNode = dataGrid.rootNode();
@@ -788,8 +796,9 @@ WebInspector.NetworkLogView.prototype = {
             node[WebInspector.NetworkLogView._isFilteredOutSymbol] = !this._applyFilter(node);
             if (!node[WebInspector.NetworkLogView._isFilteredOutSymbol])
                 nodesToInsert.push(node);
-            if (calculator.updateBoundaries(node.request()))
-                boundariesChanged = true;
+            var request = node.request();
+            this._timeCalculator.updateBoundaries(request);
+            this._durationCalculator.updateBoundaries(request);
         }
 
         for (var i = 0; i < nodesToInsert.length; ++i) {
@@ -802,7 +811,7 @@ WebInspector.NetworkLogView.prototype = {
 
         this._highlightNthMatchedRequestForSearch(this._updateMatchCountAndFindMatchIndex(this._currentMatchedRequestNode), false);
 
-        if (boundariesChanged) {
+        if (!this.calculator().boundary().equals(oldBoundary)) {
             // The boundaries changed, so all item graphs are stale.
             this._updateDividersIfNeeded();
             var nodes = this._nodesByRequestId.valuesArray();
@@ -1022,7 +1031,7 @@ WebInspector.NetworkLogView.prototype = {
             content = WebInspector.DOMPresentationUtils.buildStackTracePreviewContents(request.target(), this._linkifier, initiator.stackTrace, initiator.asyncStackTrace);
             popover.setCanShrink(true);
         } else {
-            content = WebInspector.RequestTimingView.createTimingTable(anchor.parentElement.request);
+            content = WebInspector.RequestTimingView.createTimingTable(anchor.parentElement.request, this._timeCalculator.minimumBoundary());
             popover.setCanShrink(false);
         }
         popover.showForAnchor(content, anchor);

@@ -30,11 +30,40 @@
 
 /**
  * @constructor
+ * @param {number} minimum
+ * @param {number} maximum
+ */
+WebInspector.NetworkTimeBoundary = function(minimum, maximum)
+{
+    this.minimum = minimum;
+    this.maximum = maximum;
+}
+
+WebInspector.NetworkTimeBoundary.prototype = {
+    /**
+     * @param {!WebInspector.NetworkTimeBoundary} other
+     * @return {boolean}
+     */
+    equals: function(other)
+    {
+        return (this.minimum === other.minimum) && (this.maximum === other.maximum);
+    }
+}
+
+/**
+ * @constructor
+ * @extends {WebInspector.Object}
  * @implements {WebInspector.TimelineGrid.Calculator}
  */
 WebInspector.NetworkTimeCalculator = function(startAtZero)
 {
     this.startAtZero = startAtZero;
+    this._boundryChangedEventThrottler = new WebInspector.Throttler(0);
+}
+
+/** @enum {string} */
+WebInspector.NetworkTimeCalculator.Events = {
+    BoundariesChanged: "BoundariesChanged"
 }
 
 /** @type {!WebInspector.UIStringFormat} */
@@ -111,6 +140,14 @@ WebInspector.NetworkTimeCalculator.prototype = {
     },
 
     /**
+     * @return {!WebInspector.NetworkTimeBoundary}
+     */
+    boundary: function()
+    {
+        return new WebInspector.NetworkTimeBoundary(this.minimumBoundary(), this.maximumBoundary());
+    },
+
+    /**
      * @override
      * @return {number}
      */
@@ -123,6 +160,7 @@ WebInspector.NetworkTimeCalculator.prototype = {
     {
         delete this._minimumBoundary;
         delete this._maximumBoundary;
+        this._boundaryChanged();
     },
 
     /**
@@ -186,20 +224,23 @@ WebInspector.NetworkTimeCalculator.prototype = {
         return 0;
     },
 
+    _boundaryChanged: function()
+    {
+        this._boundryChangedEventThrottler.schedule(this.dispatchEventToListeners.bind(this, WebInspector.NetworkTimeCalculator.Events.BoundariesChanged));
+    },
+
     /**
      * @param {number} eventTime
-     * @return {boolean}
      */
     updateBoundariesForEventTime: function(eventTime)
     {
         if (eventTime === -1 || this.startAtZero)
-            return false;
+            return;
 
-        if (typeof this._maximumBoundary === "undefined" || eventTime > this._maximumBoundary) {
+        if (this._maximumBoundary === undefined || eventTime > this._maximumBoundary) {
             this._maximumBoundary = eventTime;
-            return true;
+            this._boundaryChanged();
         }
-        return false;
     },
 
     /**
@@ -239,12 +280,9 @@ WebInspector.NetworkTimeCalculator.prototype = {
 
     /**
      * @param {!WebInspector.NetworkRequest} request
-     * @return {boolean}
      */
     updateBoundaries: function(request)
     {
-        var didChange = false;
-
         var lowerBound;
         if (this.startAtZero)
             lowerBound = 0;
@@ -253,16 +291,14 @@ WebInspector.NetworkTimeCalculator.prototype = {
 
         if (lowerBound !== -1 && (typeof this._minimumBoundary === "undefined" || lowerBound < this._minimumBoundary)) {
             this._minimumBoundary = lowerBound;
-            didChange = true;
+            this._boundaryChanged();
         }
 
         var upperBound = this._upperBound(request);
         if (upperBound !== -1 && (typeof this._maximumBoundary === "undefined" || upperBound > this._maximumBoundary)) {
             this._maximumBoundary = upperBound;
-            didChange = true;
+            this._boundaryChanged();
         }
-
-        return didChange;
     },
 
     /**
@@ -281,7 +317,9 @@ WebInspector.NetworkTimeCalculator.prototype = {
     _upperBound: function(request)
     {
         return 0;
-    }
+    },
+
+    __proto__: WebInspector.Object.prototype
 }
 
 /**
