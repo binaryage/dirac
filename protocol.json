@@ -4375,6 +4375,16 @@
                 ]
             },
             {
+                "id": "PictureTile",
+                "type": "object",
+                "description": "Serialized fragment of layer picture along with its offset within the layer.",
+                "properties": [
+                    { "name": "x", "type": "number", "description": "Offset from owning layer left boundary" },
+                    { "name": "y", "type": "number", "description": "Offset from owning layer top boundary" },
+                    { "name": "picture", "type": "string", "description": "Base64-encoded snapshot data." }
+                ]
+            },
+            {
                 "id": "Layer",
                 "type": "object",
                 "description": "Information about a compositing layer.",
@@ -4437,7 +4447,7 @@
             {
                 "name": "loadSnapshot",
                 "parameters": [
-                    { "name": "data", "type": "string", "description": "Base64-encoded snapshot data." }
+                    { "name": "tiles", "type": "array", "items": { "$ref": "PictureTile" }, "minItems": 1, "description": "An array of tiles composing the snapshot." }
                 ],
                 "description": "Returns the snapshot identifier.",
                 "returns": [

@@ -29,6 +29,11 @@
  */
 
 /**
+ * @typedef {!{x: number, y: number, picture: string}}
+ */
+WebInspector.PictureFragment;
+
+/**
  * @constructor
  * @param {!WebInspector.Target} target
  * @param {string} snapshotId
@@ -41,13 +46,28 @@ WebInspector.PaintProfilerSnapshot = function(target, snapshotId)
 
 /**
  * @param {!WebInspector.Target} target
+ * @param {!Array.<!WebInspector.PictureFragment>} fragments
+ * @param {function(?WebInspector.PaintProfilerSnapshot)} callback
+ */
+WebInspector.PaintProfilerSnapshot.loadFromFragments = function(target, fragments, callback)
+{
+    var wrappedCallback = InspectorBackend.wrapClientCallback(callback, "LayerTreeAgent.loadSnapshot(): ", WebInspector.PaintProfilerSnapshot.bind(null, target));
+    target.layerTreeAgent().loadSnapshot(fragments, wrappedCallback);
+}
+
+/**
+ * @param {!WebInspector.Target} target
  * @param {string} encodedPicture
  * @param {function(?WebInspector.PaintProfilerSnapshot)} callback
  */
 WebInspector.PaintProfilerSnapshot.load = function(target, encodedPicture, callback)
 {
-    var wrappedCallback = InspectorBackend.wrapClientCallback(callback, "LayerTreeAgent.loadSnapshot(): ", WebInspector.PaintProfilerSnapshot.bind(null, target));
-    target.layerTreeAgent().loadSnapshot(encodedPicture, wrappedCallback);
+    var fragment = {
+        x: 0,
+        y: 0,
+        picture: encodedPicture
+    };
+    WebInspector.PaintProfilerSnapshot.loadFromFragments(target, [fragment], callback);
 }
 
 /**
