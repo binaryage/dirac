@@ -2611,8 +2611,7 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
         if (!this.treeOutline)
             return;
 
-        if (this.disabled)
-            this.listItemElement.createChild("span", "styles-clipboard-only").createTextChild("/* ");
+        this.listItemElement.createChild("span", "styles-clipboard-only").createTextChild(this.disabled ? "  /* " : "  ");
         this.listItemElement.appendChild(nameElement);
         this.listItemElement.createTextChild(": ");
         this.listItemElement.appendChild(this._expandElement);
