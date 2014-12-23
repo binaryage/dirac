@@ -83,6 +83,8 @@ WebInspector.ScreencastView.prototype = {
         this._titleElement.createTextChild(" \u00D7 ");
         this._nodeHeightElement = this._titleElement.createChild("span");
         this._titleElement.createChild("span", "screencast-px").textContent = "px";
+        this._titleElement.style.top = "0";
+        this._titleElement.style.left = "0";
 
         this._imageElement = new Image();
         this._isCasting = false;
@@ -471,26 +473,20 @@ WebInspector.ScreencastView.prototype = {
         if (model && config) {
             this._context.save();
             const transparentColor = "rgba(0, 0, 0, 0)";
-            var hasContent = model.content && config.contentColor !== transparentColor;
-            var hasPadding = model.padding && config.paddingColor !== transparentColor;
-            var hasBorder = model.border && config.borderColor !== transparentColor;
-            var hasMargin = model.margin && config.marginColor !== transparentColor;
+            var quads = [];
+            if (model.content && config.contentColor !== transparentColor)
+                quads.push({quad: model.content, color: config.contentColor});
+            if (model.padding && config.paddingColor !== transparentColor)
+                quads.push({quad: model.padding, color: config.paddingColor});
+            if (model.border && config.borderColor !== transparentColor)
+                quads.push({quad: model.border, color: config.borderColor});
+            if (model.margin && config.marginColor !== transparentColor)
+                quads.push({quad: model.margin, color: config.marginColor});
 
-            var clipQuad;
-            if (hasMargin && (!hasBorder || !this._quadsAreEqual(model.margin, model.border))) {
-                this._drawOutlinedQuadWithClip(model.margin, model.border, config.marginColor);
-                clipQuad = model.border;
-            }
-            if (hasBorder && (!hasPadding || !this._quadsAreEqual(model.border, model.padding))) {
-                this._drawOutlinedQuadWithClip(model.border, model.padding, config.borderColor);
-                clipQuad = model.padding;
-            }
-            if (hasPadding && (!hasContent || !this._quadsAreEqual(model.padding, model.content))) {
-                this._drawOutlinedQuadWithClip(model.padding, model.content, config.paddingColor);
-                clipQuad = model.content;
-            }
-            if (hasContent)
-                this._drawOutlinedQuad(model.content, config.contentColor);
+            for (var i = quads.length - 1; i > 0; --i)
+                this._drawOutlinedQuadWithClip(quads[i].quad, quads[i - 1].quad, quads[i].color);
+            if (quads.length > 0)
+                this._drawOutlinedQuad(quads[0].quad, quads[0].color);
             this._context.restore();
 
             this._drawElementTitle();
@@ -594,7 +590,7 @@ WebInspector.ScreencastView.prototype = {
         this._nodeWidthElement.textContent = this._model.width;
         this._nodeHeightElement.textContent = this._model.height;
 
-        var marginQuad = this._model.margin;
+        this._titleElement.classList.remove("hidden");
         var titleWidth = this._titleElement.offsetWidth + 6;
         var titleHeight = this._titleElement.offsetHeight + 4;
 
@@ -650,7 +646,6 @@ WebInspector.ScreencastView.prototype = {
 
         this._context.restore();
 
-        this._titleElement.classList.remove("hidden");
         this._titleElement.style.top = (boxY + 3) + "px";
         this._titleElement.style.left = (boxX + 3) + "px";
     },
