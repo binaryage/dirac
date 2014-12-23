@@ -76,12 +76,14 @@ ol.breakpoint-list {
     vertical-align: top;
     position: relative;
     z-index: 1;
+    top: 3px;
 }
 
 .breakpoint-list .source-text {
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
+    margin: 2px 0 0 20px;
 }
 
 .sidebar-pane .breakpoint-hit {
