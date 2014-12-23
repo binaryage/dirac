@@ -97,7 +97,7 @@ invalid_non_object_type_regex = re.compile(r'@(?:' + type_checked_jsdoc_tags_or 
 error_warning_regex = re.compile(r'WARNING|ERROR')
 loaded_css_regex = re.compile(r'(?:registerRequiredCSS|WebInspector\.View\.createStyleElement)\s*\(\s*"(.+)"\s*\)')
 
-java_build_regex = re.compile(r'(Runtime Environment)?.+build\s+(\d+).(\d+).(\d+)')
+java_build_regex = re.compile(r'^\w+ version "(\d+)\.(\d+)')
 errors_found = False
 
 generate_protocol_externs.generate_protocol_externs(protocol_externs_file, path.join(devtools_path, 'protocol.json'))
@@ -218,14 +218,11 @@ def find_java():
     is_ok = False
     java_version_out, _ = run_in_shell('%s -version' % java_path).communicate()
     # pylint: disable=E1103
-    for line in java_version_out.splitlines():
-        match = re.search(java_build_regex, line)
-        if match:
-            major = int(match.group(2))
-            minor = int(match.group(3))
-            is_ok = major >= required_major and minor >= required_minor
-            if match.group(1):
-                break
+    match = re.search(java_build_regex, java_version_out)
+    if match:
+        major = int(match.group(1))
+        minor = int(match.group(2))
+        is_ok = major >= required_major and minor >= required_minor
     if is_ok:
         exec_command = '%s -Xms1024m -server -XX:+TieredCompilation' % java_path
         check_server_proc = run_in_shell('%s -version' % exec_command)
