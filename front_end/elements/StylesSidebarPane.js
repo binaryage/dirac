@@ -182,6 +182,14 @@ WebInspector.StylesSidebarPane._ignoreErrorsForProperty = function(property) {
 
 WebInspector.StylesSidebarPane.prototype = {
     /**
+     * @return {?WebInspector.DOMNode}
+     */
+    node: function()
+    {
+        return this._node;
+    },
+
+    /**
      * @param {!WebInspector.Event} event
      */
     _onAddButtonLongClick: function(event)
@@ -353,7 +361,7 @@ WebInspector.StylesSidebarPane.prototype = {
     /**
      * @param {?WebInspector.DOMNode} node
      */
-    update: function(node)
+    setNode: function(node)
     {
         this._spectrumHelper.hide();
         this._discardElementUnderMouse();
@@ -370,6 +378,7 @@ WebInspector.StylesSidebarPane.prototype = {
             this._computedStylePane._updateTarget(node.target());
         }
 
+        this._resetCache();
         this._scheduleUpdate();
     },
 
@@ -462,7 +471,7 @@ WebInspector.StylesSidebarPane.prototype = {
                 this._updateFilter();
             if (userCallback)
                 userCallback();
-        };
+        }
     },
 
     _rebuildUpdate: function()
@@ -470,7 +479,7 @@ WebInspector.StylesSidebarPane.prototype = {
         this._updateForcedPseudoStateInputs();
 
         if (this._rebuildUpdateInProgress) {
-            this._lastNodeForInnerRebuild = this._node;
+            this._lastNodeForInnerRebuild = this.node();
             return;
         }
 
@@ -480,58 +489,134 @@ WebInspector.StylesSidebarPane.prototype = {
 
         this._rebuildUpdateInProgress = true;
 
-        var computedStyle;
+        var promises = [
+            this._fetchMatchedCascade(),
+            this._computedStylePane.isShowing() ? this._fetchComputedCascade() : Promise.resolve(null),
+            this._fetchAnimationProperties()
+        ];
+
+        Promise.all(promises)
+            .spread(onStylesLoaded.bind(this));
 
         /**
-         * @param {!WebInspector.StylesSidebarPane.MatchedRulesPayload} matchedResult
+         * @param {?{matched: !WebInspector.SectionCascade, pseudo: !Map.<number, !WebInspector.SectionCascade>}} cascades
+         * @param {?WebInspector.SectionCascade} computedCascade
+         * @param {!Map.<string, string>} animationProperties
          * @this {WebInspector.StylesSidebarPane}
          */
-        function stylesCallback(matchedResult)
+        function onStylesLoaded(cascades, computedCascade, animationProperties)
         {
+            var lastRequestedRebuildNode = this._lastNodeForInnerRebuild || node;
             delete this._rebuildUpdateInProgress;
-
-            var lastNodeForRebuild = this._lastNodeForInnerRebuild;
-            if (lastNodeForRebuild) {
-                delete this._lastNodeForInnerRebuild;
-                if (lastNodeForRebuild !== this._node) {
-                    this._rebuildUpdate();
-                    return;
-                }
-            }
-
-            if (matchedResult.fulfilled() && this._node === node)
-                this._innerRebuildUpdate(node, matchedResult, computedStyle);
-
-            if (lastNodeForRebuild) {
-                // lastNodeForRebuild is the same as this.node - another rebuild has been requested.
+            delete this._lastNodeForInnerRebuild;
+            if (node !== lastRequestedRebuildNode) {
                 this._rebuildUpdate();
                 return;
             }
-            if (this._node === node)
-                this._nodeStylesUpdatedForTest(node, true);
+            this._innerRebuildUpdate(cascades, computedCascade, animationProperties);
         }
+    },
+
+    _resetCache: function()
+    {
+        delete this._matchedCascadePromise;
+        delete this._computedCascadePromise;
+        delete this._animationPropertiesPromise;
+    },
+
+    /**
+     * @return {!Promise.<?{matched: !WebInspector.SectionCascade, pseudo: !Map.<number, !WebInspector.SectionCascade>}>}
+     */
+    _fetchMatchedCascade: function()
+    {
+        var node = this.node();
+        if (!node)
+            return Promise.resolve(/** @type {?{matched: !WebInspector.SectionCascade, pseudo: !Map.<number, !WebInspector.SectionCascade>}} */(null));
+        if (!this._matchedCascadePromise)
+            this._matchedCascadePromise = new Promise(this._getMatchedStylesForNode.bind(this, node)).then(buildMatchedCascades.bind(this, node));
+        return this._matchedCascadePromise;
 
         /**
-         * @param {?WebInspector.CSSStyleDeclaration} computed
-         */
-        function computedCallback(computed)
-        {
-            computedStyle = computed;
-        }
-
-        /**
-         * @param {!Map<string, string>} animationProperties
+         * @param {!WebInspector.DOMNode} node
+         * @param {!WebInspector.StylesSidebarPane.MatchedRulesPayload} payload
+         * @return {?{matched: !WebInspector.SectionCascade, pseudo: !Map.<number, !WebInspector.SectionCascade>}}
          * @this {WebInspector.StylesSidebarPane}
          */
-        function animationPlayersCallback(animationProperties)
+        function buildMatchedCascades(node, payload)
         {
-            this._animationProperties = animationProperties;
+            if (node !== this.node() || !payload.fulfilled())
+                return null;
+
+            return {
+                matched: this._buildMatchedRulesSectionCascade(node, payload),
+                pseudo: this._buildPseudoCascades(node, payload)
+            };
+        }
+    },
+
+    /**
+     * @return {!Promise.<?WebInspector.SectionCascade>}
+     */
+    _fetchComputedCascade: function()
+    {
+        var node = this.node();
+        if (!node)
+            return Promise.resolve(/** @type {?WebInspector.SectionCascade} */(null));
+        if (!this._computedCascadePromise)
+            this._computedCascadePromise = new Promise(getComputedStyle.bind(null, node)).then(buildComputedCascade.bind(this, node));
+
+        return this._computedCascadePromise;
+
+        /**
+         * @param {!WebInspector.DOMNode} node
+         * @param {function(?WebInspector.CSSStyleDeclaration)} resolve
+         */
+        function getComputedStyle(node, resolve)
+        {
+            node.target().cssModel.getComputedStyleAsync(node.id, resolve);
         }
 
-        if (this._computedStylePane.isShowing())
-            this._target.cssModel.getComputedStyleAsync(node.id, computedCallback);
-        this._getAnimationPropertiesForNode(node, animationPlayersCallback.bind(this));
-        this._getMatchedStylesForNode(node, stylesCallback.bind(this));
+        /**
+         * @param {!WebInspector.DOMNode} node
+         * @param {?WebInspector.CSSStyleDeclaration} styles
+         * @return {?WebInspector.SectionCascade}
+         * @this {WebInspector.StylesSidebarPane}
+         */
+        function buildComputedCascade(node, styles)
+        {
+            if (node !== this.node())
+                return null;
+            if (!styles)
+                return null;
+
+            var computedCascade = new WebInspector.SectionCascade();
+            computedCascade.appendModelFromStyle(styles, "");
+            return computedCascade;
+        }
+    },
+
+    /**
+     * @return {!Promise.<!Map.<string, string>>}
+     */
+    _fetchAnimationProperties: function()
+    {
+        var node = this.node();
+        if (!node)
+            return Promise.resolve(new Map());
+        if (!this._animationPropertiesPromise)
+            this._animationPropertiesPromise = new Promise(this._getAnimationPropertiesForNode.bind(this, node)).then(onAnimationProperties.bind(this));
+
+        return this._animationPropertiesPromise;
+
+        /**
+         * @param {!Map.<string, string>} properties
+         * @return {!Map.<string, string>}
+         * @this {WebInspector.StylesSidebarPane}
+         */
+        function onAnimationProperties(properties)
+        {
+            return this.node() !== node ? new Map() : properties;
+        }
     },
 
     /**
@@ -624,6 +709,8 @@ WebInspector.StylesSidebarPane.prototype = {
     {
         if (this._userOperation || this._isEditingStyle)
             return;
+
+        this._resetCache();
         this._scheduleUpdate();
     },
 
@@ -657,7 +744,8 @@ WebInspector.StylesSidebarPane.prototype = {
         if (!this._canAffectCurrentStyles(event.data.node))
             return;
 
-        this._rebuildUpdate();
+        this._resetCache();
+        this._scheduleUpdate();
     },
 
     /**
@@ -697,32 +785,36 @@ WebInspector.StylesSidebarPane.prototype = {
     },
 
     /**
-     * @param {!WebInspector.DOMNode} node
-     * @param {!WebInspector.StylesSidebarPane.MatchedRulesPayload} styles
-     * @param {?WebInspector.CSSStyleDeclaration} computedStyle
+     * @param {?{matched: !WebInspector.SectionCascade, pseudo: !Map.<number, !WebInspector.SectionCascade>}} cascades
+     * @param {?WebInspector.SectionCascade} computedCascade
+     * @param {!Map.<string, string>} animationProperties
      */
-    _innerRebuildUpdate: function(node, styles, computedStyle)
+    _innerRebuildUpdate: function(cascades, computedCascade, animationProperties)
     {
-        this._sectionsContainer.removeChildren();
         this._linkifier.reset();
+        this._sectionsContainer.removeChildren();
+        this.sections = {};
+
+        var node = this.node();
+        if (!cascades || !node)
+            return;
 
         if (!!node.pseudoType())
             this._appendTopPadding();
 
-        var matchedCascade = this._buildMatchedRulesSectionCascade(node, styles);
-        this.sections = {};
-        this.sections[0] = this._rebuildSectionsForStyleRules(matchedCascade);
-        this._computedStylePane._rebuildComputedSectionForStyleRule(computedStyle, matchedCascade, this._animationProperties);
+        this.sections[0] = this._rebuildSectionsForStyleRules(cascades.matched);
+        this._computedStylePane._rebuildComputedSectionForStyleRule(computedCascade, cascades.matched, animationProperties);
 
-        var pseudoCascades = this._buildPseudoCascades(node, styles);
-        var pseudoIds = pseudoCascades.keysArray().sort();
+        var pseudoIds = cascades.pseudo.keysArray().sort();
         for (var pseudoId of pseudoIds) {
             this._appendSectionPseudoIdSeparator(pseudoId);
-            this.sections[pseudoId] = this._rebuildSectionsForStyleRules(pseudoCascades.get(pseudoId));
+            this.sections[pseudoId] = this._rebuildSectionsForStyleRules(cascades.pseudo.get(pseudoId));
         }
 
         if (this._filterRegex)
             this._updateFilter();
+
+        this._nodeStylesUpdatedForTest(node, true);
     },
 
     /**
@@ -1272,17 +1364,18 @@ WebInspector.ComputedStyleSidebarPane.prototype = {
     },
 
     /**
-     * @param {?WebInspector.CSSStyleDeclaration} computedStyle
+     * @param {?WebInspector.SectionCascade} computedCascade
      * @param {!WebInspector.SectionCascade} matchedRuleCascade
      * @param {!Map.<string, string>} animationProperties
      */
-    _rebuildComputedSectionForStyleRule: function(computedStyle, matchedRuleCascade, animationProperties)
+    _rebuildComputedSectionForStyleRule: function(computedCascade, matchedRuleCascade, animationProperties)
     {
         this._linkifier.reset();
-        if (!computedStyle)
-            computedStyle = WebInspector.CSSStyleDeclaration.createDummyStyle();
-        var computedCascade = new WebInspector.SectionCascade();
-        var computedStyleRule = computedCascade.appendModelFromStyle(computedStyle, "");
+        if (!computedCascade) {
+            computedCascade = new WebInspector.SectionCascade();
+            computedCascade.appendModelFromStyle(WebInspector.CSSStyleDeclaration.createDummyStyle(), "");
+        }
+        var computedStyleRule = computedCascade.sectionModels()[0];
         this._computedStyleSection = new WebInspector.ComputedStylePropertiesSection(this, computedStyleRule, matchedRuleCascade, animationProperties);
         this._computedStyleSection.expanded = true;
         this._computedStyleSection._rebuildComputedTrace();

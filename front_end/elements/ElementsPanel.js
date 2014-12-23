@@ -642,7 +642,7 @@ WebInspector.ElementsPanel.prototype = {
         if (!selectedDOMNode || !selectedDOMNode.target().cssModel.isEnabled())
             return;
 
-        this.sidebarPanes.styles.update(selectedDOMNode);
+        this.sidebarPanes.styles.setNode(selectedDOMNode);
         this.sidebarPanes.metrics.setNode(selectedDOMNode);
         this.sidebarPanes.platformFonts.setNode(selectedDOMNode);
     },
