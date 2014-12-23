@@ -865,9 +865,9 @@ WebInspector.SourcesPanel.prototype = {
         if (uiSourceCode.project().type() === WebInspector.projectTypes.FileSystem) {
             var hasMappings = !!uiSourceCode.url;
             if (!hasMappings)
-                contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Map to network resource\u2026" : "Map to Network Resource\u2026"), this.mapFileSystemToNetwork.bind(this, uiSourceCode));
+                contextMenu.appendItem(WebInspector.UIString.capitalize("Map to ^network ^resource\u2026"), this.mapFileSystemToNetwork.bind(this, uiSourceCode));
             else
-                contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Remove network mapping" : "Remove Network Mapping"), this._removeNetworkMapping.bind(this, uiSourceCode));
+                contextMenu.appendItem(WebInspector.UIString.capitalize("Remove ^network ^mapping"), this._removeNetworkMapping.bind(this, uiSourceCode));
         }
 
         /**
@@ -882,7 +882,7 @@ WebInspector.SourcesPanel.prototype = {
             if (!this._workspace.projects().filter(filterProject).length)
                 return;
             if (this._workspace.uiSourceCodeForURL(uiSourceCode.url) === uiSourceCode)
-                contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Map to file system resource\u2026" : "Map to File System Resource\u2026"), this.mapNetworkToFileSystem.bind(this, uiSourceCode));
+                contextMenu.appendItem(WebInspector.UIString.capitalize("Map to ^file ^system ^resource\u2026"), this.mapNetworkToFileSystem.bind(this, uiSourceCode));
         }
     },
 
@@ -899,7 +899,7 @@ WebInspector.SourcesPanel.prototype = {
         var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (target);
         var projectType = uiSourceCode.project().type();
         if (projectType !== WebInspector.projectTypes.FileSystem)
-            contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Local modifications\u2026" : "Local Modifications\u2026"), this._showLocalHistory.bind(this, uiSourceCode));
+            contextMenu.appendItem(WebInspector.UIString.capitalize("Local ^modifications\u2026"), this._showLocalHistory.bind(this, uiSourceCode));
         this._appendUISourceCodeMappingItems(contextMenu, uiSourceCode);
 
         var contentType = uiSourceCode.contentType();
@@ -910,7 +910,7 @@ WebInspector.SourcesPanel.prototype = {
 
         if (projectType !== WebInspector.projectTypes.Debugger && !event.target.isSelfOrDescendant(this._navigator.view.element)) {
             contextMenu.appendSeparator();
-            contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Reveal in navigator" : "Reveal in Navigator"), this._handleContextMenuReveal.bind(this, uiSourceCode));
+            contextMenu.appendItem(WebInspector.UIString.capitalize("Reveal in ^navigator"), this._handleContextMenuReveal.bind(this, uiSourceCode));
         }
     },
 
@@ -932,11 +932,11 @@ WebInspector.SourcesPanel.prototype = {
         if (!(target instanceof WebInspector.RemoteObject))
             return;
         var remoteObject = /** @type {!WebInspector.RemoteObject} */ (target);
-        contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Store as global variable" : "Store as Global Variable"), this._saveToTempVariable.bind(this, remoteObject));
+        contextMenu.appendItem(WebInspector.UIString.capitalize("Store as ^global ^variable"), this._saveToTempVariable.bind(this, remoteObject));
         if (remoteObject.type === "function")
-            contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Show function definition" : "Show Function Definition"), this._showFunctionDefinition.bind(this, remoteObject));
+            contextMenu.appendItem(WebInspector.UIString.capitalize("Show ^function ^definition"), this._showFunctionDefinition.bind(this, remoteObject));
         if (remoteObject.subtype === "generator")
-            contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Show generator location" : "Show Generator Location"), this._showGeneratorLocation.bind(this, remoteObject));
+            contextMenu.appendItem(WebInspector.UIString.capitalize("Show ^generator ^location"), this._showGeneratorLocation.bind(this, remoteObject));
     },
 
     /**

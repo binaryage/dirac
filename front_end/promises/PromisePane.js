@@ -186,7 +186,7 @@ WebInspector.PromisePane.prototype = {
             return;
         var promiseId = node.data.promiseId;
 
-        contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Show in console" : "Show In Console"), showPromiseInConsole.bind(this));
+        contextMenu.appendItem(WebInspector.UIString.capitalize("Show in ^console"), showPromiseInConsole.bind(this));
         contextMenu.show();
 
         /**

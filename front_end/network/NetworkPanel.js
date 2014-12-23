@@ -420,8 +420,7 @@ WebInspector.NetworkPanel.prototype = {
          */
         function appendRevealItem(request)
         {
-            var revealText = WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Reveal in Network panel" : "Reveal in Network Panel");
-            contextMenu.appendItem(revealText, reveal.bind(this, request));
+            contextMenu.appendItem(WebInspector.UIString.capitalize("Reveal in Network ^panel"), reveal.bind(this, request));
         }
 
         if (target instanceof WebInspector.Resource) {

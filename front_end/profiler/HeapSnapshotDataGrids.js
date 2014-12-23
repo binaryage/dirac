@@ -147,7 +147,7 @@ WebInspector.HeapSnapshotSortableDataGrid.prototype = {
         }
 
         if (node instanceof WebInspector.HeapSnapshotRetainingObjectNode)
-            contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Reveal in Summary view" : "Reveal in Summary View"), revealInSummaryView.bind(this));
+            contextMenu.appendItem(WebInspector.UIString.capitalize("Reveal in Summary ^view"), revealInSummaryView.bind(this));
     },
 
     resetSortingCache: function()

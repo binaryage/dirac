@@ -1125,21 +1125,21 @@ WebInspector.NetworkLogView.prototype = {
             contextMenu.appendSeparator();
             contextMenu.appendItem(WebInspector.copyLinkAddressLabel(), this._copyLocation.bind(this, request));
             if (request.requestHeadersText())
-                contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Copy request headers" : "Copy Request Headers"), this._copyRequestHeaders.bind(this, request));
+                contextMenu.appendItem(WebInspector.UIString.capitalize("Copy ^request ^headers"), this._copyRequestHeaders.bind(this, request));
             if (request.responseHeadersText)
-                contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Copy response headers" : "Copy Response Headers"), this._copyResponseHeaders.bind(this, request));
+                contextMenu.appendItem(WebInspector.UIString.capitalize("Copy ^response ^headers"), this._copyResponseHeaders.bind(this, request));
             if (request.finished)
-                contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Copy response" : "Copy Response"), this._copyResponse.bind(this, request));
+                contextMenu.appendItem(WebInspector.UIString.capitalize("Copy ^response"), this._copyResponse.bind(this, request));
             contextMenu.appendItem(WebInspector.UIString("Copy as cURL"), this._copyCurlCommand.bind(this, request));
         }
-        contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Copy all as HAR" : "Copy All as HAR"), this._copyAll.bind(this));
+        contextMenu.appendItem(WebInspector.UIString.capitalize("Copy ^all as HAR"), this._copyAll.bind(this));
 
         contextMenu.appendSeparator();
-        contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Save as HAR with content" : "Save as HAR with Content"), this._exportAll.bind(this));
+        contextMenu.appendItem(WebInspector.UIString.capitalize("Save as HAR with ^content"), this._exportAll.bind(this));
 
         contextMenu.appendSeparator();
-        contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Clear browser cache" : "Clear Browser Cache"), this._clearBrowserCache.bind(this));
-        contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Clear browser cookies" : "Clear Browser Cookies"), this._clearBrowserCookies.bind(this));
+        contextMenu.appendItem(WebInspector.UIString.capitalize("Clear ^browser ^cache"), this._clearBrowserCache.bind(this));
+        contextMenu.appendItem(WebInspector.UIString.capitalize("Clear ^browser ^cookies"), this._clearBrowserCookies.bind(this));
 
         if (request && request.resourceType() === WebInspector.resourceTypes.XHR) {
             contextMenu.appendSeparator();

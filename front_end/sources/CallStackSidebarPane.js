@@ -152,9 +152,9 @@ WebInspector.CallStackSidebarPane.prototype = {
         var contextMenu = new WebInspector.ContextMenu(event);
 
         if (!placard._callFrame.isAsync())
-            contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Restart frame" : "Restart Frame"), this._restartFrame.bind(this, placard));
+            contextMenu.appendItem(WebInspector.UIString.capitalize("Restart ^frame"), this._restartFrame.bind(this, placard));
 
-        contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Copy stack trace" : "Copy Stack Trace"), this._copyStackTrace.bind(this));
+        contextMenu.appendItem(WebInspector.UIString.capitalize("Copy ^stack ^trace"), this._copyStackTrace.bind(this));
 
         var script = placard._callFrame.script;
         if (!script.isSnippet()) {
@@ -189,12 +189,12 @@ WebInspector.CallStackSidebarPane.prototype = {
     {
         var blackboxed = WebInspector.BlackboxSupport.isBlackboxed(url, isContentScript);
         if (blackboxed) {
-            contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Stop blackboxing" : "Stop Blackboxing"), this._handleContextMenuBlackboxURL.bind(this, url, isContentScript, false));
+            contextMenu.appendItem(WebInspector.UIString.capitalize("Stop ^blackboxing"), this._handleContextMenuBlackboxURL.bind(this, url, isContentScript, false));
         } else {
             if (WebInspector.BlackboxSupport.canBlackboxURL(url))
-                contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Blackbox script" : "Blackbox Script"), this._handleContextMenuBlackboxURL.bind(this, url, false, true));
+                contextMenu.appendItem(WebInspector.UIString.capitalize("Blackbox ^script"), this._handleContextMenuBlackboxURL.bind(this, url, false, true));
             if (isContentScript)
-                contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Blackbox all content scripts" : "Blackbox All Content Scripts"), this._handleContextMenuBlackboxURL.bind(this, url, true, true));
+                contextMenu.appendItem(WebInspector.UIString.capitalize("Blackbox ^all ^content ^scripts"), this._handleContextMenuBlackboxURL.bind(this, url, true, true));
         }
     },
 

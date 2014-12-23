@@ -650,12 +650,12 @@ WebInspector.ConsoleView.prototype = {
         var filterSubMenu = contextMenu.appendSubMenuItem(WebInspector.UIString("Filter"));
 
         if (consoleMessage && consoleMessage.url) {
-            var menuTitle = WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Hide messages from %s" : "Hide Messages from %s", new WebInspector.ParsedURL(consoleMessage.url).displayName);
+            var menuTitle = WebInspector.UIString.capitalize("Hide ^messages from %s", new WebInspector.ParsedURL(consoleMessage.url).displayName);
             filterSubMenu.appendItem(menuTitle, this._filter.addMessageURLFilter.bind(this._filter, consoleMessage.url));
         }
 
         filterSubMenu.appendSeparator();
-        var unhideAll = filterSubMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Unhide all" : "Unhide All"), this._filter.removeMessageURLFilter.bind(this._filter));
+        var unhideAll = filterSubMenu.appendItem(WebInspector.UIString.capitalize("Unhide ^all"), this._filter.removeMessageURLFilter.bind(this._filter));
         filterSubMenu.appendSeparator();
 
         var hasFilters = false;
@@ -669,7 +669,7 @@ WebInspector.ConsoleView.prototype = {
         unhideAll.setEnabled(hasFilters);
 
         contextMenu.appendSeparator();
-        contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Clear console" : "Clear Console"), this._requestClearMessages.bind(this));
+        contextMenu.appendItem(WebInspector.UIString.capitalize("Clear ^console"), this._requestClearMessages.bind(this));
 
         var request = consoleMessage ? consoleMessage.request : null;
         if (request && request.resourceType() === WebInspector.resourceTypes.XHR) {

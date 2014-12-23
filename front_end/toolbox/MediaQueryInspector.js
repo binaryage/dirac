@@ -146,7 +146,7 @@ WebInspector.MediaQueryInspector.prototype = {
 
         var contextMenuItems = uiLocations.keysArray().sort();
         var contextMenu = new WebInspector.ContextMenu(event);
-        var subMenuItem = contextMenu.appendSubMenuItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Reveal in source code" : "Reveal In Source Code"));
+        var subMenuItem = contextMenu.appendSubMenuItem(WebInspector.UIString.capitalize("Reveal in ^source ^code"));
         for (var i = 0; i < contextMenuItems.length; ++i) {
             var title = contextMenuItems[i];
             subMenuItem.appendItem(title, this._revealSourceLocation.bind(this, /** @type {!WebInspector.UILocation} */(uiLocations.get(title))));

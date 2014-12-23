@@ -1072,9 +1072,9 @@ WebInspector.TabbedPaneTab.prototype = {
         }
 
         var contextMenu = new WebInspector.ContextMenu(event);
-        contextMenu.appendItem(WebInspector.UIString("Close"), close.bind(this));
-        contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Close others" : "Close Others"), closeOthers.bind(this));
-        contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Close all" : "Close All"), closeAll.bind(this));
+        contextMenu.appendItem(WebInspector.UIString.capitalize("Close"), close.bind(this));
+        contextMenu.appendItem(WebInspector.UIString.capitalize("Close ^others"), closeOthers.bind(this));
+        contextMenu.appendItem(WebInspector.UIString.capitalize("Close ^all"), closeAll.bind(this));
         contextMenu.show();
     },
 

@@ -554,14 +554,6 @@ Number.withThousandsSeparator = function(num)
 }
 
 /**
- * @return {boolean}
- */
-WebInspector.useLowerCaseMenuTitles = function()
-{
-    return WebInspector.platform() === "windows";
-}
-
-/**
  * @param {string} format
  * @param {?ArrayLike} substitutions
  * @param {!Object.<string, function(string, ...):*>} formatters
@@ -579,7 +571,7 @@ WebInspector.formatLocalized = function(format, substitutions, formatters, initi
  */
 WebInspector.openLinkExternallyLabel = function()
 {
-    return WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Open link in new tab" : "Open Link in New Tab");
+    return WebInspector.UIString.capitalize("Open ^link in ^new ^tab");
 }
 
 /**
@@ -587,7 +579,7 @@ WebInspector.openLinkExternallyLabel = function()
  */
 WebInspector.copyLinkAddressLabel = function()
 {
-    return WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Copy link address" : "Copy Link Address");
+    return WebInspector.UIString.capitalize("Copy ^link ^address");
 }
 
 /**

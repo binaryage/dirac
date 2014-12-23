@@ -472,15 +472,15 @@ WebInspector.ElementsTreeElement.prototype = {
     {
         // Add attribute-related actions.
         var treeElement = this._elementCloseTag ? this.treeOutline.findTreeElement(this._node) : this;
-        contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Add attribute" : "Add Attribute"), treeElement._addNewAttribute.bind(treeElement));
+        contextMenu.appendItem(WebInspector.UIString.capitalize("Add ^attribute"), treeElement._addNewAttribute.bind(treeElement));
 
         var attribute = event.target.enclosingNodeOrSelfWithClass("webkit-html-attribute");
         var newAttribute = event.target.enclosingNodeOrSelfWithClass("add-attribute");
         if (attribute && !newAttribute)
-            contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Edit attribute" : "Edit Attribute"), this._startEditingAttribute.bind(this, attribute, event.target));
+            contextMenu.appendItem(WebInspector.UIString.capitalize("Edit ^attribute"), this._startEditingAttribute.bind(this, attribute, event.target));
         contextMenu.appendSeparator();
         if (this.treeOutline.setPseudoClassCallback) {
-            var pseudoSubMenu = contextMenu.appendSubMenuItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Force element state" : "Force Element State"));
+            var pseudoSubMenu = contextMenu.appendSubMenuItem(WebInspector.UIString.capitalize("Force ^element ^state"));
             this._populateForcedPseudoStateItems(pseudoSubMenu);
             contextMenu.appendSeparator();
         }
@@ -494,7 +494,7 @@ WebInspector.ElementsTreeElement.prototype = {
     populateScrollIntoView: function(contextMenu)
     {
         contextMenu.appendSeparator();
-        contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Scroll into view" : "Scroll into View"), this._scrollIntoView.bind(this));
+        contextMenu.appendItem(WebInspector.UIString.capitalize("Scroll into ^view"), this._scrollIntoView.bind(this));
     },
 
     _populateForcedPseudoStateItems: function(subMenu)
@@ -512,7 +512,7 @@ WebInspector.ElementsTreeElement.prototype = {
     populateTextContextMenu: function(contextMenu, textNode)
     {
         if (!this._editing)
-            contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Edit text" : "Edit Text"), this._startEditingTextNode.bind(this, textNode));
+            contextMenu.appendItem(WebInspector.UIString.capitalize("Edit ^text"), this._startEditingTextNode.bind(this, textNode));
         this.populateNodeContextMenu(contextMenu);
     },
 
@@ -527,7 +527,7 @@ WebInspector.ElementsTreeElement.prototype = {
 
         // Place it here so that all "Copy"-ing items stick together.
         if (this._node.nodeType() === Node.ELEMENT_NODE)
-            contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Copy CSS path" : "Copy CSS Path"), this._copyCSSPath.bind(this));
+            contextMenu.appendItem(WebInspector.UIString.capitalize("Copy CSS ^path"), this._copyCSSPath.bind(this));
         if (!isShadowRoot)
             contextMenu.appendItem(WebInspector.UIString("Copy XPath"), this._copyXPath.bind(this));
         if (!isShadowRoot) {

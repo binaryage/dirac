@@ -921,7 +921,7 @@ WebInspector.DataGrid.prototype = {
         if (gridNode && gridNode.selectable && !gridNode.isEventWithinDisclosureTriangle(event)) {
             if (this._editCallback) {
                 if (gridNode === this.creationNode)
-                    contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Add new" : "Add New"), this._startEditing.bind(this, event.target));
+                    contextMenu.appendItem(WebInspector.UIString.capitalize("Add ^new"), this._startEditing.bind(this, event.target));
                 else {
                     var columnIdentifier = this.columnIdentifierFromNode(event.target);
                     if (columnIdentifier && this._columns[columnIdentifier].editable)
@@ -929,7 +929,7 @@ WebInspector.DataGrid.prototype = {
                 }
             }
             if (this._deleteCallback && gridNode !== this.creationNode)
-                contextMenu.appendItem(WebInspector.UIString("Delete"), this._deleteCallback.bind(this, gridNode));
+                contextMenu.appendItem(WebInspector.UIString.capitalize("Delete"), this._deleteCallback.bind(this, gridNode));
             if (this._contextMenuCallback)
                 this._contextMenuCallback(contextMenu, gridNode);
         }

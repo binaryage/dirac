@@ -246,20 +246,20 @@ WebInspector.JavaScriptSourceFrame.prototype = {
 
     populateLineGutterContextMenu: function(contextMenu, lineNumber)
     {
-        contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Continue to here" : "Continue to Here"), this._continueToLine.bind(this, lineNumber));
+        contextMenu.appendItem(WebInspector.UIString.capitalize("Continue to ^here"), this._continueToLine.bind(this, lineNumber));
         var breakpoint = this._breakpointManager.findBreakpointOnLine(this._uiSourceCode, lineNumber);
         if (!breakpoint) {
             // This row doesn't have a breakpoint: We want to show Add Breakpoint and Add and Edit Breakpoint.
-            contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Add breakpoint" : "Add Breakpoint"), this._setBreakpoint.bind(this, lineNumber, 0, "", true));
-            contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Add conditional breakpoint…" : "Add Conditional Breakpoint…"), this._editBreakpointCondition.bind(this, lineNumber));
+            contextMenu.appendItem(WebInspector.UIString.capitalize("Add ^breakpoint"), this._setBreakpoint.bind(this, lineNumber, 0, "", true));
+            contextMenu.appendItem(WebInspector.UIString.capitalize("Add ^conditional ^breakpoint…"), this._editBreakpointCondition.bind(this, lineNumber));
         } else {
             // This row has a breakpoint, we want to show edit and remove breakpoint, and either disable or enable.
-            contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Remove breakpoint" : "Remove Breakpoint"), breakpoint.remove.bind(breakpoint));
-            contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Edit breakpoint…" : "Edit Breakpoint…"), this._editBreakpointCondition.bind(this, lineNumber, breakpoint));
+            contextMenu.appendItem(WebInspector.UIString.capitalize("Remove ^breakpoint"), breakpoint.remove.bind(breakpoint));
+            contextMenu.appendItem(WebInspector.UIString.capitalize("Edit ^breakpoint…"), this._editBreakpointCondition.bind(this, lineNumber, breakpoint));
             if (breakpoint.enabled())
-                contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Disable breakpoint" : "Disable Breakpoint"), breakpoint.setEnabled.bind(breakpoint, false));
+                contextMenu.appendItem(WebInspector.UIString.capitalize("Disable ^breakpoint"), breakpoint.setEnabled.bind(breakpoint, false));
             else
-                contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Enable breakpoint" : "Enable Breakpoint"), breakpoint.setEnabled.bind(breakpoint, true));
+                contextMenu.appendItem(WebInspector.UIString.capitalize("Enable ^breakpoint"), breakpoint.setEnabled.bind(breakpoint, true));
         }
     },
 
@@ -268,9 +268,9 @@ WebInspector.JavaScriptSourceFrame.prototype = {
         var textSelection = this.textEditor.selection();
         if (textSelection && !textSelection.isEmpty()) {
             var selection = this.textEditor.copyRange(textSelection);
-            var addToWatchLabel = WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Add to watch" : "Add to Watch");
+            var addToWatchLabel = WebInspector.UIString.capitalize("Add to ^watch");
             contextMenu.appendItem(addToWatchLabel, this._innerAddToWatch.bind(this, selection));
-            var evaluateLabel = WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Evaluate in console" : "Evaluate in Console");
+            var evaluateLabel = WebInspector.UIString.capitalize("Evaluate in ^console");
             contextMenu.appendItem(evaluateLabel, this._evaluateInConsole.bind(this, selection));
             contextMenu.appendSeparator();
         }
@@ -300,7 +300,7 @@ WebInspector.JavaScriptSourceFrame.prototype = {
         if (this._uiSourceCode.project().type() === WebInspector.projectTypes.Network && WebInspector.settings.jsSourceMapsEnabled.get()) {
             if (this._scriptFileForTarget.size) {
                 var scriptFile = this._scriptFileForTarget.valuesArray()[0];
-                var addSourceMapURLLabel = WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Add source map\u2026" : "Add Source Map\u2026");
+                var addSourceMapURLLabel = WebInspector.UIString.capitalize("Add ^source ^map\u2026");
                 contextMenu.appendItem(addSourceMapURLLabel, addSourceMapURL.bind(this, scriptFile));
                 contextMenu.appendSeparator();
             }

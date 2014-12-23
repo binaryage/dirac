@@ -138,7 +138,7 @@ WebInspector.ResourceWebSocketFrameView.prototype = {
      */
     _onContextMenu: function(contextMenu, node)
     {
-        contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Copy message" : "Copy Message"), this._copyMessage.bind(this, node.data));
+        contextMenu.appendItem(WebInspector.UIString.capitalize("Copy ^message"), this._copyMessage.bind(this, node.data));
     },
 
     /**

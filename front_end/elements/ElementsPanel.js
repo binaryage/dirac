@@ -803,7 +803,7 @@ WebInspector.ElementsPanel.prototype = {
             return;
         var commandCallback = WebInspector.Revealer.reveal.bind(WebInspector.Revealer, object);
 
-        contextMenu.appendItem(WebInspector.useLowerCaseMenuTitles() ? "Reveal in Elements panel" : "Reveal in Elements Panel", commandCallback);
+        contextMenu.appendItem(WebInspector.UIString.capitalize("Reveal in Elements ^panel"), commandCallback);
     },
 
     _sidebarContextMenuEventFired: function(event)

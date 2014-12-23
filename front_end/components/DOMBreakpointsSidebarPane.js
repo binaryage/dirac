@@ -49,9 +49,9 @@ WebInspector.DOMBreakpointsSidebarPane = function()
     this._breakpointTypeLabels[this._breakpointTypes.NodeRemoved] = WebInspector.UIString("Node Removed");
 
     this._contextMenuLabels = {};
-    this._contextMenuLabels[this._breakpointTypes.SubtreeModified] = WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Subtree modifications" : "Subtree Modifications");
-    this._contextMenuLabels[this._breakpointTypes.AttributeModified] = WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Attributes modifications" : "Attributes Modifications");
-    this._contextMenuLabels[this._breakpointTypes.NodeRemoved] = WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Node removal" : "Node Removal");
+    this._contextMenuLabels[this._breakpointTypes.SubtreeModified] = WebInspector.UIString.capitalize("Subtree ^modifications");
+    this._contextMenuLabels[this._breakpointTypes.AttributeModified] = WebInspector.UIString.capitalize("Attributes ^modifications");
+    this._contextMenuLabels[this._breakpointTypes.NodeRemoved] = WebInspector.UIString.capitalize("Node ^removal");
 
     WebInspector.targetManager.addEventListener(WebInspector.TargetManager.Events.InspectedURLChanged, this._inspectedURLChanged, this);
     WebInspector.targetManager.addModelListener(WebInspector.DOMModel, WebInspector.DOMModel.Events.NodeRemoved, this._nodeRemoved, this);
@@ -304,8 +304,8 @@ WebInspector.DOMBreakpointsSidebarPane.prototype = {
             this._removeBreakpoint(node, type);
             this._saveBreakpoints();
         }
-        contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Remove breakpoint" : "Remove Breakpoint"), removeBreakpoint.bind(this));
-        contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Remove all DOM breakpoints" : "Remove All DOM Breakpoints"), this._removeAllBreakpoints.bind(this));
+        contextMenu.appendItem(WebInspector.UIString.capitalize("Remove ^breakpoint"), removeBreakpoint.bind(this));
+        contextMenu.appendItem(WebInspector.UIString.capitalize("Remove ^all DOM breakpoints"), this._removeAllBreakpoints.bind(this));
         contextMenu.show();
     },
 
