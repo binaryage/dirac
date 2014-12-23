@@ -4466,7 +4466,8 @@
                 "parameters": [
                     { "name": "snapshotId", "$ref": "SnapshotId", "description": "The id of the layer snapshot." },
                     { "name": "minRepeatCount", "type": "integer", "optional": true, "description": "The maximum number of times to replay the snapshot (1, if not specified)." },
-                    { "name": "minDuration", "type": "number", "optional": true, "description": "The minimum duration (in seconds) to replay the snapshot." }
+                    { "name": "minDuration", "type": "number", "optional": true, "description": "The minimum duration (in seconds) to replay the snapshot." },
+                    { "name": "clipRect", "$ref": "DOM.Rect", "optional": true, "description": "The clip rectangle to apply when replaying the snapshot." }
                 ],
                 "returns": [
                     { "name": "timings", "type": "array", "items": { "$ref": "PaintProfile" }, "description": "The array of paint profiles, one per run." }

@@ -144,12 +144,13 @@ WebInspector.PaintProfilerSnapshot.prototype = {
     },
 
     /**
+     * @param {?DOMAgent.Rect} clipRect
      * @param {function(!Array.<!LayerTreeAgent.PaintProfile>=)} callback
      */
-    profile: function(callback)
+    profile: function(clipRect, callback)
     {
         var wrappedCallback = InspectorBackend.wrapClientCallback(callback, "LayerTreeAgent.profileSnapshot(): ");
-        this._target.layerTreeAgent().profileSnapshot(this._id, 5, 1, wrappedCallback);
+        this._target.layerTreeAgent().profileSnapshot(this._id, 5, 1, clipRect || undefined, wrappedCallback);
     },
 
     /**

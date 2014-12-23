@@ -87,7 +87,7 @@ WebInspector.PaintProfilerView.prototype = {
         }
         this._progressBanner.classList.remove("hidden");
         snapshot.requestImage(null, null, 1, this._showImageCallback);
-        snapshot.profile(onProfileDone.bind(this));
+        snapshot.profile(null, onProfileDone.bind(this));
         /**
          * @param {!Array.<!LayerTreeAgent.PaintProfile>=} profiles
          * @this {WebInspector.PaintProfilerView}
