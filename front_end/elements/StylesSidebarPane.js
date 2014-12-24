@@ -373,10 +373,10 @@ WebInspector.StylesSidebarPane.prototype = {
             node = null;
 
         this._node = node;
-        if (node) {
+        if (node)
             this._updateTarget(node.target());
-            this._computedStylePane._updateTarget(node.target());
-        }
+
+        this._computedStylePane.setNode(node);
 
         this._resetCache();
         this._scheduleUpdate();
@@ -420,58 +420,16 @@ WebInspector.StylesSidebarPane.prototype = {
 
     /**
      * @param {!WebInspector.StylePropertiesSection=} editedSection
-     * @param {boolean=} forceFetchComputedStyle
-     * @param {function()=} userCallback
      */
-    _refreshUpdate: function(editedSection, forceFetchComputedStyle, userCallback)
+    _refreshUpdate: function(editedSection)
     {
-        if (this._refreshUpdateInProgress) {
-            this._lastNodeForInnerRefresh = this._node;
-            return;
-        }
-
-        var node = this._validateNode(userCallback);
+        var node = this._validateNode();
         if (!node)
             return;
 
-        /**
-         * @param {?WebInspector.CSSStyleDeclaration} computedStyle
-         * @this {WebInspector.StylesSidebarPane}
-         */
-        function computedStyleCallback(computedStyle)
-        {
-            delete this._refreshUpdateInProgress;
-
-            if (this._lastNodeForInnerRefresh) {
-                delete this._lastNodeForInnerRefresh;
-                this._refreshUpdate(editedSection, forceFetchComputedStyle, callbackWrapper.bind(this));
-                return;
-            }
-
-            if (this._node === node && computedStyle)
-                this._innerRefreshUpdate(node, computedStyle, editedSection);
-
-            callbackWrapper.call(this);
-        }
-
-        if (this._computedStylePane.isShowing() || forceFetchComputedStyle) {
-            this._refreshUpdateInProgress = true;
-            this._target.cssModel.getComputedStyleAsync(node.id, computedStyleCallback.bind(this));
-        } else {
-            this._innerRefreshUpdate(node, null, editedSection);
-            callbackWrapper.call(this);
-        }
-
-        /**
-         * @this {WebInspector.StylesSidebarPane}
-         */
-        function callbackWrapper()
-        {
-            if (this._filterRegex)
-                this._updateFilter();
-            if (userCallback)
-                userCallback();
-        }
+        this._innerRefreshUpdate(node, editedSection);
+        if (this._filterRegex)
+            this._updateFilter();
     },
 
     _rebuildUpdate: function()
@@ -489,22 +447,14 @@ WebInspector.StylesSidebarPane.prototype = {
 
         this._rebuildUpdateInProgress = true;
 
-        var promises = [
-            this._fetchMatchedCascade(),
-            this._computedStylePane.isShowing() ? this._fetchComputedCascade() : Promise.resolve(null),
-            this._fetchAnimationProperties()
-        ];
-
-        Promise.all(promises)
-            .spread(onStylesLoaded.bind(this));
+        this._fetchMatchedCascade()
+            .then(onStylesLoaded.bind(this));
 
         /**
          * @param {?{matched: !WebInspector.SectionCascade, pseudo: !Map.<number, !WebInspector.SectionCascade>}} cascades
-         * @param {?WebInspector.SectionCascade} computedCascade
-         * @param {!Map.<string, string>} animationProperties
          * @this {WebInspector.StylesSidebarPane}
          */
-        function onStylesLoaded(cascades, computedCascade, animationProperties)
+        function onStylesLoaded(cascades)
         {
             var lastRequestedRebuildNode = this._lastNodeForInnerRebuild || node;
             delete this._rebuildUpdateInProgress;
@@ -513,13 +463,18 @@ WebInspector.StylesSidebarPane.prototype = {
                 this._rebuildUpdate();
                 return;
             }
-            this._innerRebuildUpdate(cascades, computedCascade, animationProperties);
+            this._innerRebuildUpdate(cascades);
         }
     },
 
     _resetCache: function()
     {
         delete this._matchedCascadePromise;
+        this._resetComputedCache();
+    },
+
+    _resetComputedCache: function()
+    {
         delete this._computedCascadePromise;
         delete this._animationPropertiesPromise;
     },
@@ -689,17 +644,11 @@ WebInspector.StylesSidebarPane.prototype = {
         }
     },
 
-    /**
-     * @param {function()=} userCallback
-     */
-    _validateNode: function(userCallback)
+    _validateNode: function()
     {
         if (!this._node) {
             this._sectionsContainer.removeChildren();
-            this._computedStylePane.bodyElement.removeChildren();
             this.sections = {};
-            if (userCallback)
-                userCallback();
             return null;
         }
         return this._node;
@@ -707,8 +656,10 @@ WebInspector.StylesSidebarPane.prototype = {
 
     _styleSheetOrMediaQueryResultChanged: function()
     {
-        if (this._userOperation || this._isEditingStyle)
+        if (this._userOperation || this._isEditingStyle) {
+            this._resetComputedCache();
             return;
+        }
 
         this._resetCache();
         this._scheduleUpdate();
@@ -738,8 +689,10 @@ WebInspector.StylesSidebarPane.prototype = {
     {
         // Any attribute removal or modification can affect the styles of "related" nodes.
         // Do not touch the styles if they are being edited.
-        if (this._isEditingStyle || this._userOperation)
+        if (this._isEditingStyle || this._userOperation) {
+            this._resetComputedCache();
             return;
+        }
 
         if (!this._canAffectCurrentStyles(event.data.node))
             return;
@@ -758,10 +711,9 @@ WebInspector.StylesSidebarPane.prototype = {
 
     /**
      * @param {!WebInspector.DOMNode} node
-     * @param {?WebInspector.CSSStyleDeclaration} computedStyle
      * @param {!WebInspector.StylePropertiesSection=} editedSection
      */
-    _innerRefreshUpdate: function(node, computedStyle, editedSection)
+    _innerRefreshUpdate: function(node, editedSection)
     {
         for (var pseudoId in this.sections) {
             var sections = this.sections[pseudoId].filter(nonBlankSections);
@@ -769,8 +721,7 @@ WebInspector.StylesSidebarPane.prototype = {
                 section.update(section === editedSection);
         }
 
-        if (computedStyle)
-            this._computedStylePane._refreshComputedSectionForStyleRule(computedStyle);
+        this._computedStylePane.update();
 
         this._nodeStylesUpdatedForTest(node, false);
 
@@ -786,10 +737,8 @@ WebInspector.StylesSidebarPane.prototype = {
 
     /**
      * @param {?{matched: !WebInspector.SectionCascade, pseudo: !Map.<number, !WebInspector.SectionCascade>}} cascades
-     * @param {?WebInspector.SectionCascade} computedCascade
-     * @param {!Map.<string, string>} animationProperties
      */
-    _innerRebuildUpdate: function(cascades, computedCascade, animationProperties)
+    _innerRebuildUpdate: function(cascades)
     {
         this._linkifier.reset();
         this._sectionsContainer.removeChildren();
@@ -803,7 +752,7 @@ WebInspector.StylesSidebarPane.prototype = {
             this._appendTopPadding();
 
         this.sections[0] = this._rebuildSectionsForStyleRules(cascades.matched);
-        this._computedStylePane._rebuildComputedSectionForStyleRule(computedCascade, cascades.matched, animationProperties);
+        this._computedStylePane.update();
 
         var pseudoIds = cascades.pseudo.keysArray().sort();
         for (var pseudoId of pseudoIds) {
@@ -1338,14 +1287,13 @@ WebInspector.StylesSidebarPane._createPropertyFilterElement = function(placehold
 
 /**
  * @constructor
- * @extends {WebInspector.SidebarPane}
+ * @extends {WebInspector.ElementsSidebarPane}
  */
 WebInspector.ComputedStyleSidebarPane = function()
 {
-    WebInspector.SidebarPane.call(this, WebInspector.UIString("Computed Style"));
+    WebInspector.ElementsSidebarPane.call(this, WebInspector.UIString("Computed Style"));
     WebInspector.settings.showInheritedComputedStyleProperties.addChangeListener(this._showInheritedComputedStyleChanged.bind(this));
     this._linkifier = new WebInspector.Linkifier(new WebInspector.Linkifier.DefaultCSSFormatter());
-    this._rebuildComputedSectionForStyleRule(null, new WebInspector.SectionCascade(), new Map());
 }
 
 WebInspector.ComputedStyleSidebarPane.prototype = {
@@ -1356,42 +1304,48 @@ WebInspector.ComputedStyleSidebarPane.prototype = {
     },
 
     /**
-     * @param {!WebInspector.Target} target
+     * @override
+     * @param {?WebInspector.DOMNode} node
      */
-    _updateTarget: function(target)
+    setNode: function(node)
     {
-        this._target = target;
+        if (node)
+            this._target = node.target();
+        WebInspector.ElementsSidebarPane.prototype.setNode.call(this, node);
+    },
+
+    /**
+     * @override
+     * @param {!WebInspector.Throttler.FinishCallback} finishedCallback
+     */
+    doUpdate: function(finishedCallback)
+    {
+        var promises = [
+            this._stylesSidebarPane._fetchComputedCascade(),
+            this._stylesSidebarPane._fetchMatchedCascade(),
+            this._stylesSidebarPane._fetchAnimationProperties()
+        ];
+        Promise.all(promises)
+            .spread(this._innerRebuildUpdate.bind(this))
+            .then(finishedCallback);
     },
 
     /**
      * @param {?WebInspector.SectionCascade} computedCascade
-     * @param {!WebInspector.SectionCascade} matchedRuleCascade
+       @param {?{matched: !WebInspector.SectionCascade, pseudo: !Map.<number, !WebInspector.SectionCascade>}} cascades
      * @param {!Map.<string, string>} animationProperties
      */
-    _rebuildComputedSectionForStyleRule: function(computedCascade, matchedRuleCascade, animationProperties)
+    _innerRebuildUpdate: function(computedCascade, cascades, animationProperties)
     {
         this._linkifier.reset();
-        if (!computedCascade) {
-            computedCascade = new WebInspector.SectionCascade();
-            computedCascade.appendModelFromStyle(WebInspector.CSSStyleDeclaration.createDummyStyle(), "");
-        }
+        this.bodyElement.removeChildren();
+        if (!computedCascade || !cascades)
+            return;
         var computedStyleRule = computedCascade.sectionModels()[0];
-        this._computedStyleSection = new WebInspector.ComputedStylePropertiesSection(this, computedStyleRule, matchedRuleCascade, animationProperties);
+        this._computedStyleSection = new WebInspector.ComputedStylePropertiesSection(this, computedStyleRule, cascades.matched, animationProperties);
         this._computedStyleSection.expanded = true;
         this._computedStyleSection._rebuildComputedTrace();
-        this.bodyElement.removeChildren();
         this.bodyElement.appendChild(this._computedStyleSection.element);
-    },
-
-    /**
-     * @param {?WebInspector.CSSStyleDeclaration} computedStyle
-     */
-    _refreshComputedSectionForStyleRule: function(computedStyle)
-    {
-        this._linkifier.reset();
-        this._computedStyleSection.styleRule.updateStyleDeclaration(computedStyle);
-        this._computedStyleSection.update();
-        this._computedStyleSection._rebuildComputedTrace();
     },
 
     _updateFilter: function()
@@ -1426,24 +1380,6 @@ WebInspector.ComputedStyleSidebarPane.prototype = {
     },
 
     /**
-     * @override
-     */
-    wasShown: function()
-    {
-        WebInspector.SidebarPane.prototype.wasShown.call(this);
-        this.prepareContent();
-    },
-
-    /**
-     * @override
-     * @param {function()=} callback
-     */
-    prepareContent: function(callback)
-    {
-        this._stylesSidebarPane._refreshUpdate(null, true, callback);
-    },
-
-    /**
      * @return {?RegExp}
      */
     filterRegex: function()
@@ -1451,7 +1387,7 @@ WebInspector.ComputedStyleSidebarPane.prototype = {
         return this._filterRegex;
     },
 
-    __proto__: WebInspector.SidebarPane.prototype
+    __proto__: WebInspector.ElementsSidebarPane.prototype
 }
 
 /**
@@ -2050,7 +1986,7 @@ WebInspector.StylePropertiesSection.prototype = {
             var oldSelectorRange = this.rule().selectorRange;
             this.styleRule.updateRule(newRule);
 
-            this._parentPane._refreshUpdate(this, false);
+            this._parentPane._refreshUpdate(this);
             this._parentPane._styleSheetRuleEdited(newRule, oldSelectorRange, newRule.selectorRange);
 
             finishOperationAndMoveEditor.call(this, moveDirection);
@@ -3035,18 +2971,11 @@ WebInspector.StylePropertyTreeElement.prototype = {
         return this.treeOutline && this.treeOutline.section;
     },
 
-    /**
-     * @param {function()=} userCallback
-     */
-    _updatePane: function(userCallback)
+    _updatePane: function()
     {
         var section = this.section();
         if (section && section._parentPane)
-            section._parentPane._refreshUpdate(section, false, userCallback);
-        else  {
-            if (userCallback)
-                userCallback();
-        }
+            section._parentPane._refreshUpdate(section);
     },
 
     /**
@@ -3749,11 +3678,8 @@ WebInspector.StylePropertyTreeElement.prototype = {
 
             this.property = newStyle.propertyAt(this.property.index);
 
-            if (updateInterface && currentNode === this.node()) {
-                this._updatePane(userCallback);
-                this.styleTextAppliedForTest();
-                return;
-            }
+            if (updateInterface && currentNode === this.node())
+                this._updatePane();
 
             userCallback();
             this.styleTextAppliedForTest();
