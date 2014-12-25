@@ -797,6 +797,7 @@ WebInspector.SourcesPanel.prototype = {
     {
         this._appendUISourceCodeItems(event, contextMenu, target);
         this._appendRemoteObjectItems(contextMenu, target);
+        this._appendNetworkRequestItems(contextMenu, target);
     },
 
     _suggestReload: function()
@@ -937,6 +938,22 @@ WebInspector.SourcesPanel.prototype = {
             contextMenu.appendItem(WebInspector.UIString.capitalize("Show ^function ^definition"), this._showFunctionDefinition.bind(this, remoteObject));
         if (remoteObject.subtype === "generator")
             contextMenu.appendItem(WebInspector.UIString.capitalize("Show ^generator ^location"), this._showGeneratorLocation.bind(this, remoteObject));
+    },
+
+    /**
+     * @param {!WebInspector.ContextMenu} contextMenu
+     * @param {!Object} target
+     */
+    _appendNetworkRequestItems: function(contextMenu, target)
+    {
+        if (!(target instanceof WebInspector.NetworkRequest))
+            return;
+        var request = /** @type {!WebInspector.NetworkRequest} */ (target);
+        var uiSourceCode = this._workspace.uiSourceCodeForURL(request.url);
+        if (!uiSourceCode)
+            return;
+        var openText = WebInspector.UIString.capitalize("Open in Sources ^panel");
+        contextMenu.appendItem(openText, this.showUILocation.bind(this, uiSourceCode.uiLocation(0, 0)));
     },
 
     /**

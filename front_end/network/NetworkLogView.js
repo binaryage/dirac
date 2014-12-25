@@ -1121,6 +1121,7 @@ WebInspector.NetworkLogView.prototype = {
         }
 
         if (request) {
+            contextMenu.appendApplicableItems(request);
             contextMenu.appendItem(WebInspector.openLinkExternallyLabel(), openResourceInNewTab.bind(null, request.url));
             contextMenu.appendSeparator();
             contextMenu.appendItem(WebInspector.copyLinkAddressLabel(), this._copyLocation.bind(this, request));

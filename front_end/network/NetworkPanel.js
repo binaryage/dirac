@@ -423,6 +423,9 @@ WebInspector.NetworkPanel.prototype = {
             contextMenu.appendItem(WebInspector.UIString.capitalize("Reveal in Network ^panel"), reveal.bind(this, request));
         }
 
+        if (event.target.isSelfOrDescendant(this.element))
+            return;
+
         if (target instanceof WebInspector.Resource) {
             var resource = /** @type {!WebInspector.Resource} */ (target);
             if (resource.request)
