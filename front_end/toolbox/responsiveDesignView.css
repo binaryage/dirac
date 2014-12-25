@@ -235,7 +235,7 @@
 
 .responsive-design-toolbar input[type='checkbox'] {
     -webkit-appearance: none;
-    margin: auto 5px auto 2px;
+    margin: 0 5px auto 2px;
     border: 1px solid rgb(45, 45, 45);
     border-radius: 3px;
     background-color: rgb(102, 102, 102);

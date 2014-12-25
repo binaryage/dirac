@@ -759,10 +759,6 @@ label.checkbox-with-label {
     -webkit-user-select: none;
 }
 
-label.checkbox-with-label > .dt-checkbox-text {
-    margin-top: 1px;
-}
-
 .events-pane .section:not(:first-of-type) {
     border-top: 1px solid rgb(231, 231, 231);
 }

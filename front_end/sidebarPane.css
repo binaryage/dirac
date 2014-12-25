@@ -184,9 +184,8 @@
 }
 
 .sidebar-pane-toolbar > label.scripts-callstack-async {
-    margin: auto;
     margin-right: 5px;
-    display: flex;
+    line-height: 16px;
 }
 
 .section > .header input[type=checkbox] {
