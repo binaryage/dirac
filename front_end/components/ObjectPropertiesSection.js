@@ -26,7 +26,7 @@
 
 /**
  * @constructor
- * @extends {WebInspector.PropertiesSection}
+ * @extends {WebInspector.Section}
  * @param {!WebInspector.RemoteObject} object
  * @param {?string|!Element=} title
  * @param {string=} subtitle
@@ -45,7 +45,7 @@ WebInspector.ObjectPropertiesSection = function(object, title, subtitle, emptyPl
     this.editable = true;
     this.skipProto = false;
 
-    WebInspector.PropertiesSection.call(this, title || "", subtitle);
+    WebInspector.Section.call(this, title || "", subtitle);
 }
 
 /** @const */
@@ -115,7 +115,7 @@ WebInspector.ObjectPropertiesSection.prototype = {
         this.propertiesForTest = properties;
     },
 
-    __proto__: WebInspector.PropertiesSection.prototype
+    __proto__: WebInspector.Section.prototype
 }
 
 /**

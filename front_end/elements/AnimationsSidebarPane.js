@@ -388,7 +388,7 @@ WebInspector.AnimationSection.prototype = {
                 model.setIsAttribute(true);
                 model.setEditable(true);
                 var styleSection = new WebInspector.StylePropertiesSection(this._stylesPane, model);
-                styleSection.expanded = true;
+                styleSection.expand();
                 this._keyframesElement.appendChild(styleSection.element);
             }
         }

@@ -726,7 +726,7 @@ WebInspector.StylesSidebarPane.prototype = {
         this._nodeStylesUpdatedForTest(node, false);
 
         /**
-         * @param {!WebInspector.PropertiesSection} section
+         * @param {!WebInspector.Section} section
          * @return {boolean}
          */
         function nonBlankSections(section)
@@ -911,7 +911,7 @@ WebInspector.StylesSidebarPane.prototype = {
 
             var section = new WebInspector.StylePropertiesSection(this, sectionModel);
             section._markSelectorMatches();
-            section.expanded = true;
+            section.expand();
             this._sectionsContainer.appendChild(section.element);
             sections.push(section);
         }
@@ -1343,7 +1343,7 @@ WebInspector.ComputedStyleSidebarPane.prototype = {
             return;
         var computedStyleRule = computedCascade.sectionModels()[0];
         this._computedStyleSection = new WebInspector.ComputedStylePropertiesSection(this, computedStyleRule, cascades.matched, animationProperties);
-        this._computedStyleSection.expanded = true;
+        this._computedStyleSection.expand();
         this._computedStyleSection._rebuildComputedTrace();
         this.bodyElement.appendChild(this._computedStyleSection.element);
     },
@@ -1392,13 +1392,13 @@ WebInspector.ComputedStyleSidebarPane.prototype = {
 
 /**
  * @constructor
- * @extends {WebInspector.PropertiesSection}
+ * @extends {WebInspector.Section}
  * @param {!WebInspector.StylesSidebarPane} parentPane
  * @param {!WebInspector.StylesSectionModel} styleRule
  */
 WebInspector.StylePropertiesSection = function(parentPane, styleRule)
 {
-    WebInspector.PropertiesSection.call(this, "");
+    WebInspector.Section.call(this, "");
 
     this._parentPane = parentPane;
     this.styleRule = styleRule;
@@ -1464,6 +1464,70 @@ WebInspector.StylePropertiesSection = function(parentPane, styleRule)
 }
 
 WebInspector.StylePropertiesSection.prototype = {
+    /**
+     * @return {?WebInspector.StylePropertiesSection}
+     */
+    firstSibling: function()
+    {
+        var parent = this.element.parentElement;
+        if (!parent)
+            return null;
+
+        var childElement = parent.firstChild;
+        while (childElement) {
+            if (childElement._section)
+                return childElement._section;
+            childElement = childElement.nextSibling;
+        }
+
+        return null;
+    },
+
+    /**
+     * @return {?WebInspector.StylePropertiesSection}
+     */
+    lastSibling: function()
+    {
+        var parent = this.element.parentElement;
+        if (!parent)
+            return null;
+
+        var childElement = parent.lastChild;
+        while (childElement) {
+            if (childElement._section)
+                return childElement._section;
+            childElement = childElement.previousSibling;
+        }
+
+        return null;
+    },
+
+    /**
+     * @return {?WebInspector.StylePropertiesSection}
+     */
+    nextSibling: function()
+    {
+        var curElement = this.element;
+        do {
+            curElement = curElement.nextSibling;
+        } while (curElement && !curElement._section);
+
+        return curElement ? curElement._section : null;
+    },
+
+    /**
+     * @return {?WebInspector.StylePropertiesSection}
+     */
+    previousSibling: function()
+    {
+        var curElement = this.element;
+        do {
+            curElement = curElement.previousSibling;
+        } while (curElement && !curElement._section);
+
+        return curElement ? curElement._section : null;
+    },
+
     /**
      * @return {boolean}
      */
@@ -1587,13 +1651,13 @@ WebInspector.StylePropertiesSection.prototype = {
     {
         var curSection = this;
         do {
-            curSection = curSection.nextSibling;
+            curSection = curSection.nextSibling();
         } while (curSection && !curSection.editable);
 
         if (!curSection) {
-            curSection = this.firstSibling;
+            curSection = this.firstSibling();
             while (curSection && !curSection.editable)
-                curSection = curSection.nextSibling;
+                curSection = curSection.nextSibling();
         }
 
         return (curSection && curSection.editable) ? curSection : null;
@@ -1606,13 +1670,13 @@ WebInspector.StylePropertiesSection.prototype = {
     {
         var curSection = this;
         do {
-            curSection = curSection.previousSibling;
+            curSection = curSection.previousSibling();
         } while (curSection && !curSection.editable);
 
         if (!curSection) {
-            curSection = this.lastSibling;
+            curSection = this.lastSibling();
             while (curSection && !curSection.editable)
-                curSection = curSection.previousSibling;
+                curSection = curSection.previousSibling();
         }
 
         return (curSection && curSection.editable) ? curSection : null;
@@ -1628,7 +1692,7 @@ WebInspector.StylePropertiesSection.prototype = {
         this._markSelectorMatches();
         if (full) {
             this.propertiesTreeOutline.removeChildren();
-            this.populated = false;
+            this.repopulate();
         } else {
             var child = this.propertiesTreeOutline.children[0];
             while (child) {
@@ -2032,7 +2096,7 @@ WebInspector.StylePropertiesSection.prototype = {
         this._markSelectorMatches();
     },
 
-    __proto__: WebInspector.PropertiesSection.prototype
+    __proto__: WebInspector.Section.prototype
 }
 
 /**
@@ -2088,7 +2152,7 @@ WebInspector.StylePropertiesSection._linkifyRuleLocation = function(target, link
 
 /**
  * @constructor
- * @extends {WebInspector.PropertiesSection}
+ * @extends {WebInspector.Section}
  * @param {!WebInspector.ComputedStyleSidebarPane} stylesPane
  * @param {!WebInspector.StylesSectionModel} styleRule
  * @param {!WebInspector.SectionCascade} matchedRuleCascade
@@ -2096,7 +2160,7 @@ WebInspector.StylePropertiesSection._linkifyRuleLocation = function(target, link
  */
 WebInspector.ComputedStylePropertiesSection = function(stylesPane, styleRule, matchedRuleCascade, animationProperties)
 {
-    WebInspector.PropertiesSection.call(this, "");
+    WebInspector.Section.call(this, "");
     this.element.className = "styles-section monospace read-only computed-style";
 
     this.headerElement.appendChild(WebInspector.ComputedStylePropertiesSection._showInheritedCheckbox());
@@ -2149,7 +2213,7 @@ WebInspector.ComputedStylePropertiesSection.prototype = {
         }
         this._propertyTreeElements = {};
         this.propertiesTreeOutline.removeChildren();
-        this.populated = false;
+        this.repopulate();
     },
 
     _updateFilter: function()
@@ -2246,7 +2310,7 @@ WebInspector.ComputedStylePropertiesSection.prototype = {
         }
     },
 
-    __proto__: WebInspector.PropertiesSection.prototype
+    __proto__: WebInspector.Section.prototype
 }
 
 /**

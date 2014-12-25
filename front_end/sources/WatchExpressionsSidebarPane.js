@@ -48,7 +48,7 @@ WebInspector.WatchExpressionsSidebarPane = function()
     addButton.title = WebInspector.UIString("Add watch expression");
 
     this._requiresUpdate = true;
-    WebInspector.context.addFlavorChangeListener(WebInspector.ExecutionContext ,this.refreshExpressions, this);
+    WebInspector.context.addFlavorChangeListener(WebInspector.ExecutionContext, this.refreshExpressions, this);
 }
 
 WebInspector.WatchExpressionsSidebarPane.prototype = {
@@ -99,13 +99,13 @@ WebInspector.WatchExpressionsSidebarPane.prototype = {
 
 /**
  * @constructor
- * @extends {WebInspector.PropertiesSection}
+ * @extends {WebInspector.Section}
  */
 WebInspector.WatchExpressionsSection = function()
 {
     this._watchObjectGroupId = "watch-group";
 
-    WebInspector.PropertiesSection.call(this, "");
+    WebInspector.Section.call(this, "");
     this.treeElementConstructor = WebInspector.ObjectPropertyTreeElement;
     this.skipProto = false;
 
@@ -117,7 +117,7 @@ WebInspector.WatchExpressionsSection = function()
 
     this.headerElement.className = "hidden";
     this.editable = true;
-    this.expanded = true;
+    this.expand();
     this.propertiesElement.classList.add("watch-expressions");
 
     this.element.addEventListener("mousemove", this._mouseMove.bind(this), true);
@@ -209,17 +209,13 @@ WebInspector.WatchExpressionsSection.prototype = {
 
         if (!propertyCount) {
             this.element.appendChild(this.emptyElement);
+            this.propertiesElement.remove();
             this.propertiesTreeOutline.removeChildren();
         } else {
+            this.element.appendChild(this.propertiesElement);
             this.emptyElement.remove();
         }
-
-        // Note: this is setting the expansion of the tree, not the section;
-        // with no expressions, and expanded tree, we get some extra vertical
-        // white space.
-        this.expanded = (propertyCount != 0);
     },
-
 
     /**
      * @param {!Array.<!WebInspector.RemoteObjectProperty>} properties
@@ -353,7 +349,7 @@ WebInspector.WatchExpressionsSection.prototype = {
         contextMenu.show();
     },
 
-    __proto__: WebInspector.PropertiesSection.prototype
+    __proto__: WebInspector.Section.prototype
 }
 
 /**

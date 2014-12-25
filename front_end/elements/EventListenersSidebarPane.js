@@ -152,13 +152,13 @@ WebInspector.EventListenersSidebarPane.prototype = {
 
 /**
  * @constructor
- * @extends {WebInspector.PropertiesSection}
+ * @extends {WebInspector.Section}
  */
 WebInspector.EventListenersSection = function(title, nodeId, linkifier)
 {
     this._nodeId = nodeId;
     this._linkifier = linkifier;
-    WebInspector.PropertiesSection.call(this, title);
+    WebInspector.Section.call(this, title);
 
     // Changed from a Properties List
     this.propertiesElement.remove();
@@ -178,7 +178,7 @@ WebInspector.EventListenersSection.prototype = {
         this._eventBars.appendChild(eventListenerBar.element);
     },
 
-    __proto__: WebInspector.PropertiesSection.prototype
+    __proto__: WebInspector.Section.prototype
 }
 
 /**

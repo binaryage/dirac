@@ -204,7 +204,7 @@ WebInspector.AuditExtensionFormatters = {
         function onEvaluate(remoteObject)
         {
             var section = new WebInspector.ObjectPropertiesSection(remoteObject, title);
-            section.expanded = true;
+            section.expand();
             section.editable = false;
             parentElement.appendChild(section.element);
         }

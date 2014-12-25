@@ -133,9 +133,9 @@ WebInspector.ScopeChainSidebarPane.prototype = {
             section.pane = this;
 
             if (scope.type === DebuggerAgent.ScopeType.Global)
-                section.expanded = false;
+                section.collapse();
             else if (!foundLocalScope || scope.type === DebuggerAgent.ScopeType.Local || this._expandedSections.has(title))
-                section.expanded = true;
+                section.expand();
 
             this._sections.push(section);
             this.bodyElement.appendChild(section.element);
