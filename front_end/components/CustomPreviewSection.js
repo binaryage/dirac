@@ -93,13 +93,14 @@ WebInspector.CustomPreviewSection.prototype = {
      */
     _renderJSONMLTag: function(jsonML)
     {
-        if (typeof jsonML !== "object" || !(jsonML instanceof Array))
+        if (!Array.isArray(jsonML))
             return createTextNode(jsonML + "");
 
-        if (jsonML[0] === "object")
-            return this._renderObjectTag(jsonML);
+        var array = /** @type {!Array.<*>} */(jsonML);
+        if (array[0] === "object")
+            return this._renderObjectTag(array);
         else
-            return this._renderElement(jsonML);
+            return this._renderElement(array);
     },
 
     /**
