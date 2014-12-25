@@ -1756,11 +1756,10 @@ WebInspector.InvalidationTracker.prototype = {
         // we can use to update the paintId for all other invalidation tracking
         // events.
         var recordTypes = WebInspector.TimelineModel.RecordType;
-        if (invalidation.type === recordTypes.PaintInvalidationTracking) {
-            for (var invalidationToUpdate of this._invalidationsOfTypes()) {
-                if (invalidationToUpdate.nodeId === invalidation.nodeId)
-                    invalidationToUpdate.paintId = invalidation.paintId;
-            }
+        if (invalidation.type === recordTypes.PaintInvalidationTracking && invalidation.nodeId) {
+            var invalidations = this._invalidationsByNodeId[invalidation.nodeId] || [];
+            for (var i = 0; i < invalidations.length; ++i)
+                invalidations[i].paintId = invalidation.paintId;
 
             // PaintInvalidationTracking is only used for updating paintIds.
             return;
@@ -1791,6 +1790,12 @@ WebInspector.InvalidationTracker.prototype = {
             this._invalidations[invalidation.type].push(invalidation);
         else
             this._invalidations[invalidation.type] = [ invalidation ];
+        if (invalidation.nodeId) {
+            if (this._invalidationsByNodeId[invalidation.nodeId])
+                this._invalidationsByNodeId[invalidation.nodeId].push(invalidation);
+            else
+                this._invalidationsByNodeId[invalidation.nodeId] = [ invalidation ];
+        }
     },
 
     /**
@@ -1841,18 +1846,21 @@ WebInspector.InvalidationTracker.prototype = {
             this._addSyntheticStyleRecalcInvalidation(styleInvalidatorInvalidation._tracingEvent, styleInvalidatorInvalidation);
             return;
         }
-
+        if (!styleInvalidatorInvalidation.nodeId) {
+            console.error("Invalidation lacks node information.");
+            console.error(invalidation);
+            return;
+        }
         for (var i = 0; i < styleInvalidatorInvalidation.invalidationList.length; i++) {
             var setId = styleInvalidatorInvalidation.invalidationList[i]["id"];
             var lastScheduleStyleRecalculation;
-
-            for (var invalidation of this._invalidationsOfTypes([WebInspector.TimelineModel.RecordType.ScheduleStyleInvalidationTracking])) {
-                if (invalidation.frame !== frameId)
+            var nodeInvalidations = this._invalidationsByNodeId[styleInvalidatorInvalidation.nodeId];
+            for (var j = 0; j < nodeInvalidations.length; j++) {
+                var invalidation = nodeInvalidations[j];
+                if (invalidation.frame !== frameId || invalidation.invalidationSet !== setId || invalidation.type !== WebInspector.TimelineModel.RecordType.ScheduleStyleInvalidationTracking)
                     continue;
-                if (invalidation.nodeId === styleInvalidatorInvalidation.nodeId && invalidation.invalidationSet === setId)
-                    lastScheduleStyleRecalculation = invalidation;
+                lastScheduleStyleRecalculation = invalidation;
             }
-
             if (!lastScheduleStyleRecalculation) {
                 console.error("Failed to lookup the event that scheduled a style invalidator invalidation.");
                 continue;
@@ -1939,16 +1947,19 @@ WebInspector.InvalidationTracker.prototype = {
 
     /**
      * @param {!Array.<string>=} types
-     * @return {!$jscomp.Iterable.<!WebInspector.InvalidationTrackingEvent>}
+     * @return {!Iterator.<!WebInspector.InvalidationTrackingEvent>}
      */
     _invalidationsOfTypes: function(types)
     {
         var invalidations = this._invalidations;
+        if (!types)
+            types = Object.keys(invalidations);
         function* generator()
         {
-            for (var type of (types || Object.keys(invalidations))) {
-                for (var invalidation of (invalidations[type] || []))
-                    yield invalidation;
+            for (var i = 0; i < types.length; ++i) {
+                var invalidationList = invalidations[types[i]] || [];
+                for (var j = 0; j < invalidationList.length; ++j)
+                    yield invalidationList[j];
             }
         }
         return generator();
@@ -1964,8 +1975,10 @@ WebInspector.InvalidationTracker.prototype = {
 
     _initializePerFrameState: function()
     {
-        /** @type {!Object.<string, ?Array.<!WebInspector.InvalidationTrackingEvent>>} */
+        /** @type {!Object.<string, !Array.<!WebInspector.InvalidationTrackingEvent>>} */
         this._invalidations = {};
+        /** @type {!Object.<number, !Array.<!WebInspector.InvalidationTrackingEvent>>} */
+        this._invalidationsByNodeId = {};
 
         this._lastRecalcStyle = undefined;
         this._lastPaintWithLayer = undefined;
