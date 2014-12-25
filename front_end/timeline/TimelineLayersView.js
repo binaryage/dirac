@@ -109,7 +109,7 @@ WebInspector.TimelineLayersView.prototype = {
         var tilesReadyBarrier = new CallbackBarrier();
         this._deferredLayerTree.resolve(tilesReadyBarrier.createCallback(onLayersReady));
         for (var i = 0; this._paints && i < this._paints.length; ++i)
-            this._paints[i].loadPicture(tilesReadyBarrier.createCallback(onSnapshotLoaded.bind(this, this._paints[i])));
+            this._paints[i].loadSnapshot(tilesReadyBarrier.createCallback(onSnapshotLoaded.bind(this, this._paints[i])));
         tilesReadyBarrier.callWhenDone(onLayersAndTilesReady.bind(this));
 
         /**

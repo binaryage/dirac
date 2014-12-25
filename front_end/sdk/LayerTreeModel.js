@@ -43,6 +43,15 @@
 */
 WebInspector.TracingLayerPayload;
 
+/** @typedef {!{
+        id: string,
+        layer_id: number,
+        gpu_memory_usage: number,
+        content_rect: !Array.<number>
+    }}
+*/
+WebInspector.TracingLayerTile;
+
 /**
   * @constructor
   * @extends {WebInspector.SDKModel}
@@ -288,6 +297,8 @@ WebInspector.LayerTreeBase.prototype = {
 WebInspector.TracingLayerTree = function(target)
 {
     WebInspector.LayerTreeBase.call(this, target);
+    /** @type {!Map.<string, !WebInspector.TracingLayerTile>} */
+    this._tileById = new Map();
 }
 
 WebInspector.TracingLayerTree.prototype = {
@@ -312,6 +323,25 @@ WebInspector.TracingLayerTree.prototype = {
             this._root = this._innerSetLayers(oldLayersById, root);
             callback();
         }
+    },
+
+    /**
+     * @param {!Array.<!WebInspector.TracingLayerTile>} tiles
+     */
+    setTiles: function(tiles)
+    {
+        this._tileById = new Map();
+        for (var tile of tiles)
+            this._tileById.set(tile.id, tile);
+    },
+
+    /**
+     * @param {string} id
+     * @return {?WebInspector.TracingLayerTile}
+     */
+    tileById: function(id)
+    {
+        return this._tileById.get(id);
     },
 
     /**

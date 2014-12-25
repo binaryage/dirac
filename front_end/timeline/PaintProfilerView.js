@@ -72,8 +72,9 @@ WebInspector.PaintProfilerView.prototype = {
     /**
      * @param {?WebInspector.PaintProfilerSnapshot} snapshot
      * @param {!Array.<!WebInspector.PaintProfilerLogItem>} log
+     * @param {?DOMAgent.Rect} clipRect
      */
-    setSnapshotAndLog: function(snapshot, log)
+    setSnapshotAndLog: function(snapshot, log, clipRect)
     {
         this._reset();
         this._snapshot = snapshot;
@@ -87,7 +88,7 @@ WebInspector.PaintProfilerView.prototype = {
         }
         this._progressBanner.classList.remove("hidden");
         snapshot.requestImage(null, null, 1, this._showImageCallback);
-        snapshot.profile(null, onProfileDone.bind(this));
+        snapshot.profile(clipRect, onProfileDone.bind(this));
         /**
          * @param {!Array.<!LayerTreeAgent.PaintProfile>=} profiles
          * @this {WebInspector.PaintProfilerView}
