@@ -129,7 +129,7 @@
     padding-left: 3px;
     line-height: 20px;
     opacity: 0.7;
-    color: rgb(30, 30, 30);
+    color: inherit;
     font-size: 133%;
     padding: 0 3px 0 5px;
     cursor: default;

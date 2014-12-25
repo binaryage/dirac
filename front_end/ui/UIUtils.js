@@ -750,6 +750,7 @@ WebInspector.setToolbarColors = function(document, backgroundColor, color)
         WebInspector._themeStyleElement = createElement("style");
         document.head.appendChild(WebInspector._themeStyleElement);
     }
+    var colorWithAlpha = WebInspector.Color.parse(color).setAlpha(0.8).asString(WebInspector.Color.Format.RGBA);
     var prefix = WebInspector.isMac() ? "body:not(.undocked)" : "body";
     WebInspector._themeStyleElement.textContent =
         String.sprintf(
@@ -757,11 +758,19 @@ WebInspector.setToolbarColors = function(document, backgroundColor, color)
             "    background-image: none !important;" +
             "    background-color: %s !important;" +
             "    color: %s !important;" +
-            "}", prefix, backgroundColor, color) +
+            "}", prefix, backgroundColor, colorWithAlpha) +
+        String.sprintf(
+            "%s .inspector-view-tabbed-pane.tabbed-pane::shadow .tabbed-pane-header-tab:hover {" +
+             "   color: %s;" +
+             "}", prefix, color) +
+        String.sprintf(
+             "%s .inspector-view-toolbar.status-bar::shadow .status-bar-item {" +
+             "   color: %s;" +
+             "}", prefix, colorWithAlpha) +
         String.sprintf(
              "%s .inspector-view-toolbar.status-bar::shadow .status-bar-button-theme {" +
              "   background-color: %s;" +
-             "}", prefix, color);
+             "}", prefix, colorWithAlpha);
 }
 
 WebInspector.resetToolbarColors = function()
