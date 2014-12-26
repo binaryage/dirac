@@ -1429,8 +1429,16 @@ WebInspector.NetworkLogView.prototype = {
      */
     _createTextFilter: function(text)
     {
+        var negative = false;
+        if (text[0] === "-" && text.length > 1) {
+            negative = true;
+            text = text.substring(1);
+        }
         var regexp = new RegExp(text.escapeForRegExp(), "i");
-        return WebInspector.NetworkLogView._requestNameOrPathFilter.bind(null, regexp);
+        var filter = WebInspector.NetworkLogView._requestNameOrPathFilter.bind(null, regexp);
+        if (negative)
+            filter = WebInspector.NetworkLogView._negativeFilter.bind(null, filter);
+        return filter;
     },
 
     /**
