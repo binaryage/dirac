@@ -74,7 +74,7 @@ WebInspector.StylesSourceMapping.prototype = {
      */
     uiLocationToRawLocation: function(uiSourceCode, lineNumber, columnNumber)
     {
-        return new WebInspector.CSSLocation(this._cssModel.target(), null, uiSourceCode.url || "", lineNumber, columnNumber);
+        return new WebInspector.CSSLocation(this._cssModel.target(), null, uiSourceCode.networkURL() || "", lineNumber, columnNumber);
     },
 
     /**
@@ -175,7 +175,7 @@ WebInspector.StylesSourceMapping.prototype = {
     _uiSourceCodeAddedToWorkspace: function(event)
     {
         var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (event.data);
-        var url = uiSourceCode.url;
+        var url = uiSourceCode.networkURL();
         if (!url || !this._urlToHeadersByFrameId[url])
             return;
         this._bindUISourceCode(uiSourceCode, this._urlToHeadersByFrameId[url].valuesArray()[0].valuesArray()[0]);
@@ -243,9 +243,9 @@ WebInspector.StylesSourceMapping.prototype = {
      */
     _setStyleContent: function(uiSourceCode, content, majorChange, userCallback)
     {
-        var styleSheetIds = this._cssModel.styleSheetIdsForURL(uiSourceCode.url);
+        var styleSheetIds = this._cssModel.styleSheetIdsForURL(uiSourceCode.networkURL());
         if (!styleSheetIds.length) {
-            userCallback("No stylesheet found: " + uiSourceCode.url);
+            userCallback("No stylesheet found: " + uiSourceCode.networkURL());
             return;
         }
 

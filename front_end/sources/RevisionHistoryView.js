@@ -122,7 +122,7 @@ WebInspector.RevisionHistoryView.prototype = {
 
         WebInspector.notifications.dispatchEventToListeners(WebInspector.UserMetrics.UserAction, {
             action: WebInspector.UserMetrics.UserActionNames.ApplyOriginalContent,
-            url: uiSourceCode.url
+            url: uiSourceCode.networkURL()
         });
     },
 
@@ -135,7 +135,7 @@ WebInspector.RevisionHistoryView.prototype = {
 
         WebInspector.notifications.dispatchEventToListeners(WebInspector.UserMetrics.UserAction, {
             action: WebInspector.UserMetrics.UserActionNames.RevertRevision,
-            url: uiSourceCode.url
+            url: uiSourceCode.networkURL()
         });
     },
 

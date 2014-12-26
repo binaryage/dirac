@@ -70,7 +70,7 @@ WebInspector.UISourceCode.prototype = {
     /**
      * @return {string}
      */
-    get url()
+    networkURL: function()
     {
         return this._url;
     },

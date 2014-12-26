@@ -549,7 +549,7 @@ WebInspector.SourcesNavigatorView.prototype = {
        for (var i = 0; i < nodes.length; ++i) {
            var uiSourceCode = nodes[i].uiSourceCode();
            var inspectedPageURL = WebInspector.targetManager.inspectedPageURL();
-           if (inspectedPageURL && uiSourceCode.url === inspectedPageURL)
+           if (inspectedPageURL && uiSourceCode.networkURL() === inspectedPageURL)
               this.revealUISourceCode(uiSourceCode, true);
        }
     },
@@ -562,7 +562,7 @@ WebInspector.SourcesNavigatorView.prototype = {
     {
         WebInspector.NavigatorView.prototype._addUISourceCode.call(this, uiSourceCode);
         var inspectedPageURL = WebInspector.targetManager.inspectedPageURL();
-        if (inspectedPageURL && uiSourceCode.url === inspectedPageURL)
+        if (inspectedPageURL && uiSourceCode.networkURL() === inspectedPageURL)
             this.revealUISourceCode(uiSourceCode, true);
      },
 

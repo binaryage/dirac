@@ -155,7 +155,7 @@ WebInspector.ResourceScriptMapping.prototype = {
     _uiSourceCodeAdded: function(event)
     {
         var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (event.data);
-        if (!uiSourceCode.url)
+        if (!uiSourceCode.networkURL())
             return;
         if (uiSourceCode.project().isServiceProject())
             return;
@@ -173,7 +173,7 @@ WebInspector.ResourceScriptMapping.prototype = {
     _uiSourceCodeRemoved: function(event)
     {
         var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (event.data);
-        if (!uiSourceCode.url)
+        if (!uiSourceCode.networkURL())
             return;
         if (uiSourceCode.project().isServiceProject())
             return;
@@ -222,9 +222,9 @@ WebInspector.ResourceScriptMapping.prototype = {
      */
     _scriptsForUISourceCode: function(uiSourceCode)
     {
-        if (!uiSourceCode.url)
+        if (!uiSourceCode.networkURL())
             return [];
-        return this._debuggerModel.scriptsForSourceURL(uiSourceCode.url);
+        return this._debuggerModel.scriptsForSourceURL(uiSourceCode.networkURL());
     },
 
     /**
@@ -239,7 +239,7 @@ WebInspector.ResourceScriptMapping.prototype = {
         for (var i = 0; i < scripts.length; ++i)
             this._debuggerWorkspaceBinding.updateLocations(scripts[i]);
         this._debuggerWorkspaceBinding.setSourceMapping(this._target, uiSourceCode, this);
-        this._boundURLs.add(uiSourceCode.url);
+        this._boundURLs.add(uiSourceCode.networkURL());
     },
 
     /**

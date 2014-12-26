@@ -276,7 +276,7 @@ WebInspector.SASSSourceMapping.prototype = {
      */
     _reloadCSSFromNetwork: function(cssUISourceCode, sassURL, callback)
     {
-        var cssURL = cssUISourceCode.url;
+        var cssURL = cssUISourceCode.networkURL();
         var data = this._pollDataForSASSURL[sassURL];
         if (!data) {
             callback(cssURL, sassURL, true);
@@ -330,7 +330,7 @@ WebInspector.SASSSourceMapping.prototype = {
     {
         ++this._addingRevisionCounter;
         cssUISourceCode.addRevision(content);
-        this._cssUISourceCodeUpdated(cssUISourceCode.url, sassURL, callback);
+        this._cssUISourceCodeUpdated(cssUISourceCode.networkURL(), sassURL, callback);
     },
 
     /**
@@ -348,7 +348,7 @@ WebInspector.SASSSourceMapping.prototype = {
          */
         function metadataCallback(timestamp)
         {
-            var cssURL = cssUISourceCode.url;
+            var cssURL = cssUISourceCode.networkURL();
             if (!timestamp) {
                 callback(cssURL, sassURL, false);
                 return;
@@ -578,7 +578,7 @@ WebInspector.SASSSourceMapping.prototype = {
     uiLocationToRawLocation: function(uiSourceCode, lineNumber, columnNumber)
     {
         // FIXME: Implement this when ui -> raw mapping has clients.
-        return new WebInspector.CSSLocation(this._cssModel.target(), null, uiSourceCode.url || "", lineNumber, columnNumber);
+        return new WebInspector.CSSLocation(this._cssModel.target(), null, uiSourceCode.networkURL() || "", lineNumber, columnNumber);
     },
 
     /**
@@ -615,7 +615,7 @@ WebInspector.SASSSourceMapping.prototype = {
     _uiSourceCodeAdded: function(event)
     {
         var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (event.data);
-        var cssURLs = this._cssURLsForSASSURL[uiSourceCode.url];
+        var cssURLs = this._cssURLsForSASSURL[uiSourceCode.networkURL()];
         if (!cssURLs)
             return;
         for (var i = 0; i < cssURLs.length; ++i) {
@@ -635,7 +635,7 @@ WebInspector.SASSSourceMapping.prototype = {
     {
         var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (event.data.uiSourceCode);
         if (uiSourceCode.project().type() === WebInspector.projectTypes.FileSystem)
-            this._sassFileSaved(uiSourceCode.url, true);
+            this._sassFileSaved(uiSourceCode.networkURL(), true);
     },
 
     _reset: function()
