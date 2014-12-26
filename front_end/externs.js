@@ -651,3 +651,60 @@ Set.prototype = {
     // FIXME: This should be removed once transpilation is not required for closure compiler ES6
     $$iterator: function() { }
 }
+
+/**
+ * @constructor
+ * @template K, V
+ */
+var WeakMap = function() { }
+
+WeakMap.prototype = {
+    /**
+     * @param {K} key
+     * @param {V} value
+     */
+    set: function(key, value) { },
+
+    /**
+     * @param {K} key
+     * @return {boolean}
+     */
+    delete: function(key) { },
+
+    /**
+     * @param {K} key
+     * @return {V}
+     */
+    get: function(key) { },
+
+    /**
+     * @param {K} key
+     * @return {boolean}
+     */
+    has: function(key) { },
+}
+
+/**
+ * @constructor
+ * @template V
+ */
+var WeakSet = function() { }
+
+WeakSet.prototype = {
+    /**
+     * @param {V} value
+     */
+    add: function(value) { },
+
+    /**
+     * @param {V} value
+     * @return {boolean}
+     */
+    delete: function(value) { },
+
+    /**
+     * @param {V} value
+     * @return {boolean}
+     */
+    has: function(value) { },
+}

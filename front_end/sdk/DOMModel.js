@@ -263,6 +263,38 @@ WebInspector.DOMNode.prototype = {
     /**
      * @return {boolean}
      */
+    isInsertionPoint: function()
+    {
+        return !this.isXMLNode() && (this._nodeName === "SHADOW" || this._nodeName === "CONTENT");
+    },
+
+    /**
+     * @return {!Array.<!WebInspector.DOMNode>}
+     */
+    distributedNodes: function()
+    {
+        return this._distributedNodes || [];
+    },
+
+    /**
+     * @return {!Array.<!WebInspector.DOMNode>}
+     */
+    insertionPoints: function()
+    {
+        return this._insertionPoints || [];
+    },
+
+    /**
+     * @return {?WebInspector.DOMNode}
+     */
+    distributedShadowRoot: function()
+    {
+        return this._distributedShadowRoot;
+    },
+
+    /**
+     * @return {boolean}
+     */
     isInShadowTree: function()
     {
         return this._isInShadowTree;
@@ -271,15 +303,35 @@ WebInspector.DOMNode.prototype = {
     /**
      * @return {?WebInspector.DOMNode}
      */
-    ancestorUserAgentShadowRoot: function()
+    ancestorShadowHost: function()
+    {
+        var ancestorShadowRoot = this.ancestorShadowRoot();
+        return ancestorShadowRoot ? ancestorShadowRoot.parentNode : null;
+    },
+
+    /**
+     * @return {?WebInspector.DOMNode}
+     */
+    ancestorShadowRoot: function()
     {
         if (!this._isInShadowTree)
             return null;
 
         var current = this;
-        while (!current.isShadowRoot())
+        while (current && !current.isShadowRoot())
             current = current.parentNode;
-        return current.shadowRootType() === WebInspector.DOMNode.ShadowRootTypes.UserAgent ? current : null;
+        return current;
+    },
+
+    /**
+     * @return {?WebInspector.DOMNode}
+     */
+    ancestorUserAgentShadowRoot: function()
+    {
+        var ancestorShadowRoot = this.ancestorShadowRoot();
+        if (!ancestorShadowRoot)
+            return null;
+        return ancestorShadowRoot.shadowRootType() === WebInspector.DOMNode.ShadowRootTypes.UserAgent ? ancestorShadowRoot : null;
     },
 
     /**
@@ -406,6 +458,95 @@ WebInspector.DOMNode.prototype = {
             this._domModel._markRevision(this, callback)(error);
         }
         this._agent.removeAttribute(this.id, name, mycallback.bind(this));
+    },
+
+    /**
+     * @param {function()} callback
+     */
+    ensureShadowHostDistributedNodesLoaded: function(callback)
+    {
+        if (this.hasShadowRoots() && !this._distributedNodesLoaded) {
+            this._requestShadowHostDistribution(innerCallback.bind(this));
+            return;
+        }
+
+        /**
+         * @this {WebInspector.DOMNode}
+         */
+        function innerCallback()
+        {
+            this._distributedNodesLoaded = true;
+            callback();
+        }
+
+        callback();
+    },
+
+    /**
+     * @param {function()} callback
+     */
+    _requestShadowHostDistribution: function(callback)
+    {
+        this._agent.requestShadowHostDistributedNodes(this.id, innerCallback.bind(this));
+
+        /**
+         * @this {WebInspector.DOMNode}
+         * @param {?Protocol.Error} error
+         * @param {!Array.<!DOMAgent.InsertionPointDistribution>} insertionPointDistributions
+         */
+        function innerCallback(error, insertionPointDistributions)
+        {
+            if (error)
+                console.error(error);
+            this._setShadowHostDistribution(insertionPointDistributions);
+            callback();
+        }
+    },
+
+    /**
+     * @param {!Array.<!DOMAgent.InsertionPointDistribution>} insertionPointDistributions
+     */
+    _setShadowHostDistribution: function(insertionPointDistributions)
+    {
+        this._nodeDistributionPaths = new WeakMap();
+        this._insertionPoints = [];
+        for (var insertionPointDistribution of insertionPointDistributions) {
+            var insertionPointId = insertionPointDistribution.nodeId;
+            var insertionPoint = this._domModel.nodeForId(insertionPointId)
+            if (!insertionPoint)
+                return;
+
+            this._insertionPoints.push(insertionPoint);
+
+            if (insertionPoint._nodeName === "SHADOW") {
+                var ancestorShadowRoot = insertionPoint.ancestorShadowRoot();
+                var ancestorShadowHost = ancestorShadowRoot.parentNode;
+                var shadowRootIndex = ancestorShadowHost._shadowRoots.indexOf(ancestorShadowRoot);
+                if (shadowRootIndex + 1 < ancestorShadowHost._shadowRoots.length)
+                    insertionPoint._distributedShadowRoot = ancestorShadowHost._shadowRoots[shadowRootIndex + 1];
+            } else {
+                var distributedNodes = insertionPointDistribution.distributedNodes;
+                insertionPoint._distributedNodes = [];
+                var addedNodes = new Set();
+                for (var distributedNodeObject of distributedNodes) {
+                    var distributedNodeId = distributedNodeObject.nodeId;
+                    var destinationInsertionPointIds = distributedNodeObject.destinationInsertionPointIds || [insertionPointId];
+
+                    var distributedNode = this._domModel.nodeForId(distributedNodeId);
+                    var destinationInsertionPoints = destinationInsertionPointIds.map(this._domModel.nodeForId.bind(this._domModel))
+                    this._nodeDistributionPaths.set(distributedNode, destinationInsertionPoints);
+                    var insertionPointIndex = destinationInsertionPoints.indexOf(insertionPoint);
+                    var redistributedInsertionPoint;
+                    if (insertionPointIndex > 0)
+                        redistributedInsertionPoint = destinationInsertionPoints[insertionPointIndex - 1];
+                    var nodeToAdd = redistributedInsertionPoint || distributedNode;
+                    if (!addedNodes.has(nodeToAdd)) {
+                        insertionPoint._distributedNodes.push(redistributedInsertionPoint || distributedNode);
+                        addedNodes.add(nodeToAdd);
+                    }
+                }
+            }
+        }
     },
 
     /**
@@ -963,6 +1104,8 @@ WebInspector.DOMModel = function(target) {
     this._document = null;
     /** @type {!Object.<number, boolean>} */
     this._attributeLoadNodeIds = {};
+    /** @type {!Set<number>} */
+    this._shadowHostDistributionRequestNodeIds = new Set();
     target.registerDOMDispatcher(new WebInspector.DOMDispatcher(this));
 
     this._defaultHighlighter = new WebInspector.DefaultDOMNodeHighlighter(this._agent);
@@ -982,6 +1125,7 @@ WebInspector.DOMModel.Events = {
     ChildNodeCountUpdated: "ChildNodeCountUpdated",
     UndoRedoRequested: "UndoRedoRequested",
     UndoRedoCompleted: "UndoRedoCompleted",
+    DistributedNodesChanged: "DistributedNodesChanged",
 }
 
 WebInspector.DOMModel.prototype = {
@@ -1163,13 +1307,6 @@ WebInspector.DOMModel.prototype = {
         this._loadNodeAttributesTimeout = setTimeout(this._loadNodeAttributes.bind(this), 20);
     },
 
-    /**
-     * @param {!Array.<!DOMAgent.NodeId>} nodeIds
-     */
-    _shadowHostDistributionInvalidated: function(nodeIds)
-    {
-    },
-
     _loadNodeAttributes: function()
     {
         /**
@@ -1198,6 +1335,44 @@ WebInspector.DOMModel.prototype = {
             this._agent.getAttributes(nodeIdAsNumber, callback.bind(this, nodeIdAsNumber));
         }
         this._attributeLoadNodeIds = {};
+    },
+
+    /**
+     * @param {!Array.<!DOMAgent.NodeId>} nodeIds
+     */
+    _shadowHostDistributionInvalidated: function(nodeIds)
+    {
+        if (!this._shadowHostDistributionRequestThrottler)
+            this._shadowHostDistributionRequestThrottler = new WebInspector.Throttler(20);
+        this._shadowHostDistributionRequestThrottler.schedule(this._requestShadowHostDistributions.bind(this));
+        for (var nodeId of nodeIds)
+            this._shadowHostDistributionRequestNodeIds.add(nodeId);
+    },
+
+    /**
+     * @param {function()} callback
+     */
+    _requestShadowHostDistributions: function(callback)
+    {
+        var barrier = new CallbackBarrier();
+        for (var nodeId of this._shadowHostDistributionRequestNodeIds) {
+            var node = this._idToDOMNode[nodeId];
+            var barrierCallback = barrier.createCallback();
+            node._requestShadowHostDistribution(shadowHostDistributionLoaded.bind(this, barrierCallback, node));
+        }
+        this._shadowHostDistributionRequestNodeIds.clear();
+        barrier.callWhenDone(callback);
+
+        /**
+         * @this {WebInspector.DOMModel}
+         * @param {function()} barrierCallback
+         * @param {!WebInspector.DOMNode} shadowHost
+         */
+        function shadowHostDistributionLoaded(barrierCallback, shadowHost)
+        {
+            this.dispatchEventToListeners(WebInspector.DOMModel.Events.DistributedNodesChanged, shadowHost);
+            barrierCallback();
+        }
     },
 
     /**
@@ -1314,7 +1489,7 @@ WebInspector.DOMModel.prototype = {
         var node = new WebInspector.DOMNode(this, host.ownerDocument, true, root);
         node.parentNode = host;
         this._idToDOMNode[node.id] = node;
-        host._shadowRoots.push(node);
+        host._shadowRoots.unshift(node);
         this.dispatchEventToListeners(WebInspector.DOMModel.Events.NodeInserted, node);
     },
 
