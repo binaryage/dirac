@@ -50,6 +50,7 @@ WebInspector.TimelineModel = function(tracingManager, tracingModel, recordFilter
 }
 
 WebInspector.TimelineModel.RecordType = {
+    Task: "Task",
     Program: "Program",
     EventDispatch: "EventDispatch",
 
@@ -413,6 +414,11 @@ WebInspector.TimelineModel.prototype = {
             disabledByDefault("devtools.timeline.frame"),
             WebInspector.TracingModel.ConsoleEventCategory
         ];
+        if (Runtime.experiments.isEnabled("timelineFlowEvents")) {
+            categoriesArray.push(disabledByDefault("toplevel.flow"),
+                                 disabledByDefault("ipc.flow"),
+                                 disabledByDefault("devtools.timeline.top-level-task"));
+        }
         if (captureCauses || enableJSSampling)
             categoriesArray.push(disabledByDefault("devtools.timeline.stack"));
         if (captureCauses && Runtime.experiments.isEnabled("timelineInvalidationTracking"))
@@ -1513,7 +1519,9 @@ WebInspector.InclusiveTraceEventNameFilter.prototype = {
      */
     accept: function(event)
     {
-        return event.category === WebInspector.TracingModel.ConsoleEventCategory || !!this._eventNames[event.name];
+        return event.category === WebInspector.TracingModel.ConsoleEventCategory
+            || event.category === WebInspector.TracingModel.TopLevelEventCategory
+            || !!this._eventNames[event.name];
     },
     __proto__: WebInspector.TraceEventNameFilter.prototype
 }

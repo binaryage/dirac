@@ -128,6 +128,10 @@ WebInspector.FlameChart.TimelineData = function(entryLevels, entryTotalTimes, en
     this.entryStartTimes = entryStartTimes;
     /** @type {!Array.<!WebInspector.FlameChartMarker>} */
     this.markers = [];
+    this.flowStartTimes = [];
+    this.flowStartLevels = [];
+    this.flowEndTimes = [];
+    this.flowEndLevels = [];
 }
 
 WebInspector.FlameChartDataProvider.prototype = {
@@ -968,7 +972,7 @@ WebInspector.FlameChart.prototype = {
                 if (entryOffsetRight <= timeWindowLeft)
                     break;
 
-                var barX = this._timeToPosition(entryStartTime);
+                var barX = this._timeToPositionClipped(entryStartTime);
                 if (barX >= lastDrawOffset)
                     continue;
                 lastDrawOffset = barX;
@@ -996,8 +1000,8 @@ WebInspector.FlameChart.prototype = {
             for (var i = 0; i < indexes.length; ++i) {
                 var entryIndex = indexes[i];
                 var entryStartTime = entryStartTimes[entryIndex];
-                var barX = this._timeToPosition(entryStartTime);
-                var barRight = this._timeToPosition(entryStartTime + entryTotalTimes[entryIndex]);
+                var barX = this._timeToPositionClipped(entryStartTime);
+                var barRight = this._timeToPositionClipped(entryStartTime + entryTotalTimes[entryIndex]);
                 var barWidth = Math.max(barRight - barX, minWidth);
                 var barLevel = entryLevels[entryIndex];
                 var barY = this._levelToHeight(barLevel);
@@ -1019,7 +1023,7 @@ WebInspector.FlameChart.prototype = {
         for (var m = 0; m < nextMarkerIndex; ++m) {
             var entryIndex = markerIndices[m];
             var entryStartTime = entryStartTimes[entryIndex];
-            var barX = this._timeToPosition(entryStartTime);
+            var barX = this._timeToPositionClipped(entryStartTime);
             var barLevel = entryLevels[entryIndex];
             var barY = this._levelToHeight(barLevel);
             context.moveTo(barX + this._markerRadius, barY + barHeight / 2);
@@ -1032,8 +1036,8 @@ WebInspector.FlameChart.prototype = {
         for (var i = 0; i < nextTitleIndex; ++i) {
             var entryIndex = titleIndices[i];
             var entryStartTime = entryStartTimes[entryIndex];
-            var barX = this._timeToPosition(entryStartTime);
-            var barRight = this._timeToPosition(entryStartTime + entryTotalTimes[entryIndex]);
+            var barX = this._timeToPositionClipped(entryStartTime);
+            var barRight = this._timeToPositionClipped(entryStartTime + entryTotalTimes[entryIndex]);
             var barWidth = Math.max(barRight - barX, minWidth);
             var barLevel = entryLevels[entryIndex];
             var barY = this._levelToHeight(barLevel);
@@ -1051,6 +1055,9 @@ WebInspector.FlameChart.prototype = {
             context.fillStyle = this._dataProvider.textColor(entryIndex);
             context.fillText(text, barX + textPadding, textBaseHeight - barLevel * this._barHeightDelta);
         }
+
+        this._drawFlowEvents(context, width, height);
+
         context.restore();
 
         var offsets = this._dataProvider.dividerOffsets(this._calculator.minimumBoundary(), this._calculator.maximumBoundary());
@@ -1060,6 +1067,58 @@ WebInspector.FlameChart.prototype = {
         this._updateElementPosition(this._highlightElement, this._highlightedEntryIndex);
         this._updateElementPosition(this._selectedElement, this._selectedEntryIndex);
         this._updateMarkerHighlight();
+    },
+
+    /**
+     * @param {!CanvasRenderingContext2D} context
+     * @param {number} height
+     * @param {number} width
+     */
+    _drawFlowEvents: function(context, width, height)
+    {
+        var timelineData = this._timelineData();
+        var timeWindowRight = this._timeWindowRight;
+        var timeWindowLeft = this._timeWindowLeft;
+        var flowStartTimes = timelineData.flowStartTimes;
+        var flowEndTimes = timelineData.flowEndTimes;
+        var flowStartLevels = timelineData.flowStartLevels;
+        var flowEndLevels = timelineData.flowEndLevels;
+        var flowCount = flowStartTimes.length;
+        var endIndex = flowStartTimes.lowerBound(timeWindowRight);
+
+        var color = [];
+        var fadeColorsCount = 8;
+        for (var i = 0; i <= fadeColorsCount; ++i)
+            color[i] = "rgba(128, 0, 0, " + i / fadeColorsCount + ")";
+        var fadeColorsRange = color.length;
+        var minimumFlowDistancePx = 15;
+        var flowArcHeight = 4 * this._barHeight;
+        var colorIndex = 0;
+        context.lineWidth = 0.5;
+        for (var i = 0; i < endIndex; ++i) {
+            if (flowEndTimes[i] < timeWindowLeft)
+                continue;
+            var startX = this._timeToPosition(flowStartTimes[i]);
+            var endX = this._timeToPosition(flowEndTimes[i]);
+            if (endX - startX < minimumFlowDistancePx)
+                continue;
+            if (startX < -minimumFlowDistancePx && endX > width + minimumFlowDistancePx)
+                continue;
+            // Assign a trasparent color if the flow is small enough or if the previous color was a transparent color.
+            if (endX - startX < minimumFlowDistancePx + fadeColorsRange || colorIndex !== color.length - 1) {
+                colorIndex = Math.min(fadeColorsRange - 1, Math.floor(endX - startX - minimumFlowDistancePx));
+                context.strokeStyle = color[colorIndex];
+            }
+            var startY = this._levelToHeight(flowStartLevels[i]) + this._barHeight;
+            var endY = this._levelToHeight(flowEndLevels[i]);
+            context.beginPath();
+            context.moveTo(startX, startY);
+            var arcHeight = Math.max(Math.sqrt(Math.abs(startY - endY)), flowArcHeight) + 5;
+            context.bezierCurveTo(startX, startY + arcHeight,
+                                  endX, endY + arcHeight,
+                                  endX, endY + this._barHeight);
+            context.stroke();
+        }
     },
 
     _drawMarkers: function()
@@ -1091,7 +1150,7 @@ WebInspector.FlameChart.prototype = {
         if (markerIndex === -1)
             return;
         var marker = this._timelineData().markers[markerIndex];
-        var barX = this._timeToPosition(marker.startTime());
+        var barX = this._timeToPositionClipped(marker.startTime());
         element.title = marker.title();
         var style = element.style;
         style.left = barX + "px";
@@ -1148,8 +1207,8 @@ WebInspector.FlameChart.prototype = {
         if (!timeRange)
             return;
         var timelineData = this._timelineData();
-        var barX = this._timeToPosition(timeRange.startTime);
-        var barRight = this._timeToPosition(timeRange.endTime);
+        var barX = this._timeToPositionClipped(timeRange.startTime);
+        var barRight = this._timeToPositionClipped(timeRange.endTime);
         if (barRight === 0 || barX === this._canvas.width)
             return;
         var barWidth = Math.max(barRight - barX, this._minWidth);
@@ -1164,10 +1223,20 @@ WebInspector.FlameChart.prototype = {
 
     /**
      * @param {number} time
+     * @return {number}
+     */
+    _timeToPositionClipped: function(time)
+    {
+        return Math.max(0, this._timeToPosition(time));
+    },
+
+    /**
+     * @param {number} time
+     * @return {number}
      */
     _timeToPosition: function(time)
     {
-        return Math.max(0, Math.floor((time - this._minimumBoundary) * this._timeToPixel) - this._pixelWindowLeft + this._paddingLeft);
+        return Math.floor((time - this._minimumBoundary) * this._timeToPixel) - this._pixelWindowLeft + this._paddingLeft;
     },
 
     _levelToHeight: function(level)
