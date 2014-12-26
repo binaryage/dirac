@@ -621,6 +621,14 @@
                 "handlers": ["browser"]
             },
             {
+                "name": "setOverlayMessage",
+                "parameters": [
+                    { "name": "message", "type": "string", "optional": true, "description": "Overlay message to display when paused in debugger." }
+                ],
+                "hidden": true,
+                "description": "Sets overlay message."
+            },
+            {
                 "name": "animationsPlaybackRate",
                 "returns": [
                     { "name": "playbackRate", "type": "number", "description": "Playback rate for animations on page."}
@@ -3592,14 +3600,6 @@
                     { "name": "exceptionDetails", "$ref": "ExceptionDetails", "optional": true, "description": "Exception details."}
                 ],
                 "description": "Runs script with given id in a given context."
-            },
-            {
-                "name": "setOverlayMessage",
-                "parameters": [
-                    { "name": "message", "type": "string", "optional": true, "description": "Overlay message to display when paused in debugger." }
-                ],
-                "hidden": true,
-                "description": "Sets overlay message."
             },
             {
                 "name": "setVariableValue",
