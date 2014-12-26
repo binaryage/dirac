@@ -161,6 +161,7 @@
             'front_end/sdk/WorkerTargetManager.js',
         ],
         'devtools_workspace_js_files': [
+            'front_end/workspace/ExcludedFolderManager.js',
             'front_end/workspace/FileManager.js',
             'front_end/workspace/FileSystemMapping.js',
             'front_end/workspace/FileSystemWorkspaceBinding.js',

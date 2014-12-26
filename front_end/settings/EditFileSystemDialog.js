@@ -51,8 +51,8 @@ WebInspector.EditFileSystemDialog = function(fileSystemPath)
 
     WebInspector.isolatedFileSystemManager.mapping().addEventListener(WebInspector.FileSystemMapping.Events.FileMappingAdded, this._fileMappingAdded, this);
     WebInspector.isolatedFileSystemManager.mapping().addEventListener(WebInspector.FileSystemMapping.Events.FileMappingRemoved, this._fileMappingRemoved, this);
-    WebInspector.isolatedFileSystemManager.mapping().addEventListener(WebInspector.FileSystemMapping.Events.ExcludedFolderAdded, this._excludedFolderAdded, this);
-    WebInspector.isolatedFileSystemManager.mapping().addEventListener(WebInspector.FileSystemMapping.Events.ExcludedFolderRemoved, this._excludedFolderRemoved, this);
+    WebInspector.isolatedFileSystemManager.mapping().addEventListener(WebInspector.ExcludedFolderManager.Events.ExcludedFolderAdded, this._excludedFolderAdded, this);
+    WebInspector.isolatedFileSystemManager.mapping().addEventListener(WebInspector.ExcludedFolderManager.Events.ExcludedFolderRemoved, this._excludedFolderRemoved, this);
 
     var blockHeader = contents.createChild("div", "block-header");
     blockHeader.textContent = WebInspector.UIString("Mappings");
@@ -77,7 +77,7 @@ WebInspector.EditFileSystemDialog = function(fileSystemPath)
     blockHeader.textContent = WebInspector.UIString("Excluded folders");
     this._excludedFolderListSection = contents.createChild("div", "section excluded-folders-section");
     this._excludedFolderListContainer = this._excludedFolderListSection.createChild("div", "settings-list-container");
-    var excludedFolderEntries = WebInspector.isolatedFileSystemManager.mapping().excludedFolders(fileSystemPath);
+    var excludedFolderEntries = WebInspector.isolatedFileSystemManager.excludedFolderManager().excludedFolders(fileSystemPath);
 
     this._excludedFolderList = new WebInspector.EditableSettingsList([pathColumn], this._excludedFolderValueProvider.bind(this), this._excludedFolderValidate.bind(this), this._excludedFolderEdit.bind(this));
     this._excludedFolderList.addEventListener(WebInspector.SettingsList.Events.Removed, this._excludedFolderRemovedfromList.bind(this));
@@ -280,13 +280,13 @@ WebInspector.EditFileSystemDialog.prototype = {
 
     _excludedFolderAdded: function(event)
     {
-        var entry = /** @type {!WebInspector.FileSystemMapping.ExcludedFolderEntry} */ (event.data);
+        var entry = /** @type {!WebInspector.ExcludedFolderManager.Entry} */ (event.data);
         this._addExcludedFolderRow(entry);
     },
 
     _excludedFolderRemoved: function(event)
     {
-        var entry = /** @type {!WebInspector.FileSystemMapping.ExcludedFolderEntry} */ (event.data);
+        var entry = /** @type {!WebInspector.ExcludedFolderManager.Entry} */ (event.data);
         var fileSystemPath = entry.fileSystemPath;
         if (!fileSystemPath || this._fileSystemPath !== fileSystemPath)
             return;
@@ -335,9 +335,9 @@ WebInspector.EditFileSystemDialog.prototype = {
     {
         var fileSystemPath = this._fileSystemPath;
         if (itemId)
-            WebInspector.isolatedFileSystemManager.mapping().removeExcludedFolder(fileSystemPath, itemId);
+            WebInspector.isolatedFileSystemManager.excludedFolderManager().removeExcludedFolder(fileSystemPath, itemId);
         var excludedFolderPath = data["path"];
-        WebInspector.isolatedFileSystemManager.mapping().addExcludedFolder(fileSystemPath, excludedFolderPath);
+        WebInspector.isolatedFileSystemManager.excludedFolderManager().addExcludedFolder(fileSystemPath, excludedFolderPath);
     },
 
     /**
@@ -348,11 +348,11 @@ WebInspector.EditFileSystemDialog.prototype = {
         var itemId = /** @type{?string} */ (event.data);
         if (!itemId)
             return;
-        WebInspector.isolatedFileSystemManager.mapping().removeExcludedFolder(this._fileSystemPath, itemId);
+        WebInspector.isolatedFileSystemManager.excludedFolderManager().removeExcludedFolder(this._fileSystemPath, itemId);
     },
 
     /**
-     * @param {!WebInspector.FileSystemMapping.ExcludedFolderEntry} entry
+     * @param {!WebInspector.ExcludedFolderManager.Entry} entry
      */
     _addExcludedFolderRow: function(entry)
     {
