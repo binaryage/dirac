@@ -227,7 +227,8 @@ WebInspector.ConsoleViewMessage.prototype = {
 
         this._formattedMessage.appendChild(this._messageElement);
         if (this._anchorElement) {
-            this._formattedMessage.insertBefore(createTextNode(" "), this._formattedMessage.firstChild);
+            // Append a space to prevent the anchor text from being glued to the console message when the user selects and copies the console messages.
+            this._anchorElement.appendChild(createTextNode(" "));
             this._formattedMessage.insertBefore(this._anchorElement, this._formattedMessage.firstChild);
         }
 
