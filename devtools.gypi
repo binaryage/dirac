@@ -182,7 +182,6 @@
             'front_end/bindings/FileUtils.js',
             'front_end/bindings/Linkifier.js',
             'front_end/bindings/LiveLocation.js',
-            'front_end/bindings/NetworkUISourceCodeProvider.js',
             'front_end/bindings/NetworkWorkspaceBinding.js',
             'front_end/bindings/PresentationConsoleMessageHelper.js',
             'front_end/bindings/ResourceScriptMapping.js',
