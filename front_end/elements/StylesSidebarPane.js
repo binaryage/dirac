@@ -572,6 +572,7 @@ WebInspector.StylesSidebarPane.prototype = {
         {
             return this.node() !== node ? new Map() : properties;
         }
+
     },
 
     /**
@@ -764,6 +765,8 @@ WebInspector.StylesSidebarPane.prototype = {
             this._updateFilter();
 
         this._nodeStylesUpdatedForTest(node, true);
+
+        this._updateAnimationsPlaybackRate();
     },
 
     /**
@@ -1090,6 +1093,21 @@ WebInspector.StylesSidebarPane.prototype = {
         this._elementStatePane.classList.remove("expanded");
     },
 
+    _updateAnimationsPlaybackRate: function()
+    {
+        /**
+         * @param {?Protocol.Error} error
+         * @param {number} playbackRate
+         * @this {WebInspector.StylesSidebarPane}
+         */
+        function setPlaybackRate(error, playbackRate)
+        {
+            this._animationsPlaybackSlider.value = WebInspector.AnimationsSidebarPane.GlobalPlaybackRates.indexOf(playbackRate);
+            this._animationsPlaybackLabel.textContent = playbackRate + "x";
+        }
+        PageAgent.animationsPlaybackRate(setPlaybackRate.bind(this));
+    },
+
     _createAnimationsControlPane: function()
     {
         /**
@@ -1100,7 +1118,7 @@ WebInspector.StylesSidebarPane.prototype = {
         {
             this._animationsPlaybackRate = WebInspector.AnimationsSidebarPane.GlobalPlaybackRates[event.target.value];
             PageAgent.setAnimationsPlaybackRate(this._animationsPaused ? 0 : this._animationsPlaybackRate);
-            playbackLabel.textContent = this._animationsPlaybackRate + "x";
+            this._animationsPlaybackLabel.textContent = this._animationsPlaybackRate + "x";
         }
 
         /**
@@ -1114,18 +1132,10 @@ WebInspector.StylesSidebarPane.prototype = {
             this._animationsPauseButton.element.classList.toggle("play-status-bar-item");
         }
 
-        /**
-         * @param {?Protocol.Error} error
-         * @param {number} playbackRate
-         */
-        function setPlaybackRate(error, playbackRate) {
-            playbackSlider.value = WebInspector.AnimationsSidebarPane.GlobalPlaybackRates.indexOf(playbackRate);
-            playbackLabel.textContent = playbackRate + "x";
-        }
 
         this._animationsPaused = false;
         this._animationsPlaybackRate = 1;
-        PageAgent.animationsPlaybackRate(setPlaybackRate);
+        this._updateAnimationsPlaybackRate();
 
         this._animationsControlPane = createElementWithClass("div", "styles-animations-controls-pane");
         var labelElement = createElement("div");
@@ -1139,15 +1149,15 @@ WebInspector.StylesSidebarPane.prototype = {
         this._animationsPauseButton.addEventListener("click", pauseButtonHandler.bind(this));
         container.appendChild(statusBar.element);
 
-        var playbackSlider = container.createChild("input");
-        playbackSlider.type = "range";
-        playbackSlider.min = 0;
-        playbackSlider.max = WebInspector.AnimationsSidebarPane.GlobalPlaybackRates.length - 1;
-        playbackSlider.value = playbackSlider.max;
-        playbackSlider.addEventListener("input", playbackSliderInputHandler.bind(this));
+        this._animationsPlaybackSlider = container.createChild("input");
+        this._animationsPlaybackSlider.type = "range";
+        this._animationsPlaybackSlider.min = 0;
+        this._animationsPlaybackSlider.max = WebInspector.AnimationsSidebarPane.GlobalPlaybackRates.length - 1;
+        this._animationsPlaybackSlider.value = this._animationsPlaybackSlider.max;
+        this._animationsPlaybackSlider.addEventListener("input", playbackSliderInputHandler.bind(this));
 
-        var playbackLabel = container.createChild("div", "playback-label");
-        playbackLabel.createTextChild("1x");
+        this._animationsPlaybackLabel = container.createChild("div", "playback-label");
+        this._animationsPlaybackLabel.createTextChild("1x");
     },
 
     /**
