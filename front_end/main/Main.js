@@ -351,7 +351,7 @@ WebInspector.Main.prototype = {
 
     _registerForwardedShortcuts: function()
     {
-        /** @const */ var forwardedActions = ["main.reload", "main.hard-reload"];
+        /** @const */ var forwardedActions = ["main.reload", "main.hard-reload", "main.toggle-dock"];
         var actionKeys = WebInspector.shortcutRegistry.keysForActions(forwardedActions).map(WebInspector.KeyboardShortcut.keyCodeAndModifiersFromKey);
 
         actionKeys.push({keyCode: WebInspector.KeyboardShortcut.Keys.F8.code});
@@ -453,6 +453,8 @@ WebInspector.Main.prototype = {
         section.addKey(shortcut.makeDescriptor(shortcut.Keys.Esc), WebInspector.UIString("Toggle drawer"));
         if (WebInspector.overridesSupport.responsiveDesignAvailable())
             section.addKey(shortcut.makeDescriptor("M", shortcut.Modifiers.CtrlOrMeta | shortcut.Modifiers.Shift), WebInspector.UIString("Toggle device mode"));
+        if (WebInspector.dockController.canDock())
+            section.addKey(shortcut.makeDescriptor("D", shortcut.Modifiers.CtrlOrMeta | shortcut.Modifiers.Shift), WebInspector.UIString("Toggle dock side"));
         section.addKey(shortcut.makeDescriptor("f", shortcut.Modifiers.CtrlOrMeta), WebInspector.UIString("Search"));
 
         var advancedSearchShortcutModifier = WebInspector.isMac()

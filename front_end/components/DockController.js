@@ -169,8 +169,8 @@ WebInspector.DockController.ButtonProvider.prototype = {
         if (!WebInspector.dockController.canDock())
             return null;
 
-        if (!this._dockToggleButton) {
-            this._dockToggleButton = new WebInspector.StatusBarStatesSettingButton(
+        if (!WebInspector.dockController._dockToggleButton) {
+            WebInspector.dockController._dockToggleButton = new WebInspector.StatusBarStatesSettingButton(
                     "dock-status-bar-item",
                     WebInspector.dockController._states,
                     WebInspector.dockController._titles,
@@ -179,7 +179,30 @@ WebInspector.DockController.ButtonProvider.prototype = {
                     WebInspector.settings.lastDockState,
                     WebInspector.dockController._dockSideChanged.bind(WebInspector.dockController));
         }
-        return this._dockToggleButton;
+        return WebInspector.dockController._dockToggleButton;
+    }
+}
+
+/**
+ * @constructor
+ * @implements {WebInspector.ActionDelegate}
+ */
+WebInspector.DockController.ToggleDockActionDelegate = function()
+{
+}
+
+WebInspector.DockController.ToggleDockActionDelegate.prototype = {
+    /**
+     * @override
+     * @return {boolean}
+     */
+    handleAction: function()
+    {
+        var toggleButton = new WebInspector.DockController.ButtonProvider().item();
+        if (!toggleButton)
+            return false;
+        /** @type {!WebInspector.StatusBarStatesSettingButton} */ (toggleButton).toggle();
+        return true;
     }
 }
 

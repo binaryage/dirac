@@ -72,6 +72,21 @@
         },
         {
             "type": "@WebInspector.ActionDelegate",
+            "actionId": "main.toggle-dock",
+            "className": "WebInspector.DockController.ToggleDockActionDelegate",
+            "bindings": [
+                {
+                    "platform": "windows,linux",
+                    "shortcut": "Ctrl+Shift+D"
+                },
+                {
+                    "platform": "mac",
+                    "shortcut": "Meta+Shift+D"
+                }
+            ]
+        },
+        {
+            "type": "@WebInspector.ActionDelegate",
             "actionId": "main.zoom-in",
             "className": "WebInspector.Main.ZoomInActionDelegate",
             "bindings": [

@@ -810,7 +810,7 @@ WebInspector.StatusBarStatesSettingButton = function(className, states, titles, 
     this.setLongClickOptionsEnabled(this._createOptions.bind(this));
 
     this._currentState = null;
-    this.toggleState(initialState);
+    this._toggleState(initialState);
 }
 
 WebInspector.StatusBarStatesSettingButton.prototype = {
@@ -819,13 +819,13 @@ WebInspector.StatusBarStatesSettingButton.prototype = {
      */
     _onClick: function(e)
     {
-        this.toggleState(e.target.state());
+        this._toggleState(e.target.state());
     },
 
     /**
      * @param {string} state
      */
-    toggleState: function(state)
+    _toggleState: function(state)
     {
         if (this._currentState === state)
             return;
@@ -841,6 +841,14 @@ WebInspector.StatusBarStatesSettingButton.prototype = {
         var defaultState = this._defaultState();
         this.setState(defaultState);
         this.setTitle(this._buttons[this._states.indexOf(defaultState)].title());
+    },
+
+    /**
+     * Toggle state similarly to user click.
+     */
+    toggle: function()
+    {
+        this._toggleState(this.state());
     },
 
     /**
