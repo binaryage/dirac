@@ -159,7 +159,7 @@ WebInspector.SASSSourceMapping.prototype = {
         if (!WebInspector.settings.cssReloadEnabled.get())
             return;
 
-        var sassFile = this._workspace.uiSourceCodeForURL(sassURL);
+        var sassFile = this._networkMapping.uiSourceCodeForURL(sassURL);
         console.assert(sassFile);
         if (wasLoadedFromFileSystem)
             sassFile.requestMetadata(metadataReceived.bind(this));
@@ -258,14 +258,14 @@ WebInspector.SASSSourceMapping.prototype = {
      */
     _reloadCSS: function(cssURL, sassURL, callback)
     {
-        var cssUISourceCode = this._workspace.uiSourceCodeForURL(cssURL);
+        var cssUISourceCode = this._networkMapping.uiSourceCodeForURL(cssURL);
         if (!cssUISourceCode) {
             WebInspector.console.warn(WebInspector.UIString("%s resource missing. Please reload the page.", cssURL));
             callback(cssURL, sassURL, true);
             return;
         }
 
-        if (this._workspace.hasMappingForURL(sassURL))
+        if (this._networkMapping.hasMappingForURL(sassURL))
             this._reloadCSSFromFileSystem(cssUISourceCode, sassURL, callback);
         else
             this._reloadCSSFromNetwork(cssUISourceCode, sassURL, callback);
@@ -544,7 +544,7 @@ WebInspector.SASSSourceMapping.prototype = {
         for (var i = 0; i < sources.length; ++i) {
             var url = sources[i];
             this._addCSSURLforSASSURL(rawURL, url);
-            if (!this._workspace.hasMappingForURL(url) && !this._workspace.uiSourceCodeForURL(url)) {
+            if (!this._networkMapping.hasMappingForURL(url) && !this._networkMapping.uiSourceCodeForURL(url)) {
                 var contentProvider = sourceMap.sourceContentProvider(url, WebInspector.resourceTypes.Stylesheet);
                 this._networkWorkspaceBinding.addFileForURL(url, contentProvider);
             }
@@ -565,7 +565,7 @@ WebInspector.SASSSourceMapping.prototype = {
         entry = sourceMap.findEntry(rawLocation.lineNumber, rawLocation.columnNumber);
         if (!entry || entry.length === 2)
             return null;
-        var uiSourceCode = this._workspace.uiSourceCodeForURL(entry[2]);
+        var uiSourceCode = this._networkMapping.uiSourceCodeForURL(entry[2]);
         if (!uiSourceCode)
             return null;
         return uiSourceCode.uiLocation(entry[3], entry[4]);

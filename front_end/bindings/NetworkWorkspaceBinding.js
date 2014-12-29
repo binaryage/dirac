@@ -104,12 +104,13 @@ WebInspector.NetworkProjectDelegate.prototype = {
  * @constructor
  * @extends {WebInspector.Object}
  * @param {!WebInspector.Workspace} workspace
+ * @param {!WebInspector.NetworkMapping} networkMapping
  */
-WebInspector.NetworkWorkspaceBinding = function(workspace)
+WebInspector.NetworkWorkspaceBinding = function(workspace, networkMapping)
 {
     this._workspace = workspace;
     this._projectDelegates = {};
-    new WebInspector.NetworkUISourceCodeProvider(this, workspace);
+    new WebInspector.NetworkUISourceCodeProvider(this, workspace, networkMapping);
 }
 
 WebInspector.NetworkWorkspaceBinding.prototype = {
@@ -175,11 +176,13 @@ WebInspector.NetworkWorkspaceBinding.prototype = {
  * @constructor
  * @param {!WebInspector.NetworkWorkspaceBinding} networkWorkspaceBinding
  * @param {!WebInspector.Workspace} workspace
+ * @param {!WebInspector.NetworkMapping} networkMapping
  */
-WebInspector.NetworkUISourceCodeProvider = function(networkWorkspaceBinding, workspace)
+WebInspector.NetworkUISourceCodeProvider = function(networkWorkspaceBinding, workspace, networkMapping)
 {
     this._networkWorkspaceBinding = networkWorkspaceBinding;
     this._workspace = workspace;
+    this._networkMapping = networkMapping;
     this._processedURLs = {};
     WebInspector.targetManager.addModelListener(WebInspector.ResourceTreeModel, WebInspector.ResourceTreeModel.EventTypes.ResourceAdded, this._resourceAdded, this);
     WebInspector.targetManager.addModelListener(WebInspector.ResourceTreeModel, WebInspector.ResourceTreeModel.EventTypes.MainFrameNavigated, this._mainFrameNavigated, this);
@@ -281,7 +284,7 @@ WebInspector.NetworkUISourceCodeProvider.prototype = {
      */
     _addFile: function(url, contentProvider, isContentScript)
     {
-        if (this._workspace.hasMappingForURL(url))
+        if (this._networkMapping.hasMappingForURL(url))
             return;
 
         var type = contentProvider.contentType();

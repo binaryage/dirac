@@ -822,7 +822,7 @@ WebInspector.SourcesPanel.prototype = {
         {
             if (!networkUISourceCode)
                 return;
-            this._workspace.addMapping(networkUISourceCode, uiSourceCode, WebInspector.fileSystemWorkspaceBinding);
+            this._networkMapping.addMapping(networkUISourceCode, uiSourceCode, WebInspector.fileSystemWorkspaceBinding);
             this._suggestReload();
         }
     },
@@ -842,7 +842,7 @@ WebInspector.SourcesPanel.prototype = {
         {
             if (!uiSourceCode)
                 return;
-            this._workspace.addMapping(networkUISourceCode, uiSourceCode, WebInspector.fileSystemWorkspaceBinding);
+            this._networkMapping.addMapping(networkUISourceCode, uiSourceCode, WebInspector.fileSystemWorkspaceBinding);
             this._suggestReload();
         }
     },
@@ -853,7 +853,7 @@ WebInspector.SourcesPanel.prototype = {
     _removeNetworkMapping: function(uiSourceCode)
     {
         if (confirm(WebInspector.UIString("Are you sure you want to remove network mapping?"))) {
-            this._workspace.removeMapping(uiSourceCode);
+            this._networkMapping.removeMapping(uiSourceCode);
             this._suggestReload();
         }
     },
@@ -884,7 +884,7 @@ WebInspector.SourcesPanel.prototype = {
             if (!this._workspace.projects().filter(filterProject).length)
                 return;
             var networkURL = this._networkMapping.networkURL(uiSourceCode);
-            if (this._workspace.uiSourceCodeForURL(networkURL) === uiSourceCode)
+            if (this._networkMapping.uiSourceCodeForURL(networkURL) === uiSourceCode)
                 contextMenu.appendItem(WebInspector.UIString.capitalize("Map to ^file ^system ^resource\u2026"), this.mapNetworkToFileSystem.bind(this, uiSourceCode));
         }
     },
@@ -952,7 +952,7 @@ WebInspector.SourcesPanel.prototype = {
         if (!(target instanceof WebInspector.NetworkRequest))
             return;
         var request = /** @type {!WebInspector.NetworkRequest} */ (target);
-        var uiSourceCode = this._workspace.uiSourceCodeForURL(request.url);
+        var uiSourceCode = this._networkMapping.uiSourceCodeForURL(request.url);
         if (!uiSourceCode)
             return;
         var openText = WebInspector.UIString.capitalize("Open in Sources ^panel");

@@ -567,7 +567,6 @@ WebInspector.Workspace = function(fileSystemMapping)
     /** @type {!Object.<string, !WebInspector.Project>} */
     this._projects = {};
     this._hasResourceContentTrackingExtensions = false;
-    InspectorFrontendHost.events.addEventListener(InspectorFrontendHostAPI.Events.RevealSourceLine, this._revealSourceLine, this);
 }
 
 WebInspector.Workspace.Events = {
@@ -713,85 +712,6 @@ WebInspector.Workspace.prototype = {
     },
 
     /**
-     * @param {string} url
-     * @return {boolean}
-     */
-    hasMappingForURL: function(url)
-    {
-        return this._fileSystemMapping.hasMappingForURL(url);
-    },
-
-    /**
-     * @param {string} url
-     * @return {?WebInspector.UISourceCode}
-     */
-    _networkUISourceCodeForURL: function(url)
-    {
-        var splitURL = WebInspector.ParsedURL.splitURLIntoPathComponents(url);
-        var projectId = splitURL[0];
-        var project = this.project(projectId);
-        return project ? project.uiSourceCode(splitURL.slice(1).join("/")) : null;
-    },
-
-    /**
-     * @param {string} url
-     * @return {?WebInspector.UISourceCode}
-     */
-    _contentScriptUISourceCodeForURL: function(url)
-    {
-        var splitURL = WebInspector.ParsedURL.splitURLIntoPathComponents(url);
-        var projectId = "contentscripts:" + splitURL[0];
-        var project = this.project(projectId);
-        return project ? project.uiSourceCode(splitURL.slice(1).join("/")) : null;
-    },
-
-    /**
-     * @param {string} url
-     * @return {?WebInspector.UISourceCode}
-     */
-    uiSourceCodeForURL: function(url)
-    {
-        var file = this._fileSystemMapping.fileForURL(url);
-        if (!file)
-            return this._networkUISourceCodeForURL(url) || this._contentScriptUISourceCodeForURL(url);
-
-        var projectId = WebInspector.FileSystemWorkspaceBinding.projectId(file.fileSystemPath);
-        var project = this.project(projectId);
-        return project ? project.uiSourceCode(file.filePath) : null;
-    },
-
-    /**
-     * @param {string} fileSystemPath
-     * @param {string} filePath
-     * @return {string}
-     */
-    urlForPath: function(fileSystemPath, filePath)
-    {
-        return this._fileSystemMapping.urlForPath(fileSystemPath, filePath);
-    },
-
-    /**
-     * @param {!WebInspector.UISourceCode} networkUISourceCode
-     * @param {!WebInspector.UISourceCode} uiSourceCode
-     * @param {!WebInspector.FileSystemWorkspaceBinding} fileSystemWorkspaceBinding
-     */
-    addMapping: function(networkUISourceCode, uiSourceCode, fileSystemWorkspaceBinding)
-    {
-        var url = networkUISourceCode.networkURL();
-        var path = uiSourceCode.path();
-        var fileSystemPath = fileSystemWorkspaceBinding.fileSystemPath(uiSourceCode.project().id());
-        this._fileSystemMapping.addMappingForResource(url, fileSystemPath, path);
-    },
-
-    /**
-     * @param {!WebInspector.UISourceCode} uiSourceCode
-     */
-    removeMapping: function(uiSourceCode)
-    {
-        this._fileSystemMapping.removeMappingForURL(uiSourceCode.networkURL());
-    },
-
-    /**
      * @param {boolean} hasExtensions
      */
     setHasResourceContentTrackingExtensions: function(hasExtensions)
@@ -805,37 +725,6 @@ WebInspector.Workspace.prototype = {
     hasResourceContentTrackingExtensions: function()
     {
         return this._hasResourceContentTrackingExtensions;
-    },
-
-    /**
-     * @param {!WebInspector.Event} event
-     */
-    _revealSourceLine: function(event)
-    {
-        var url = /** @type {string} */ (event.data["url"]);
-        var lineNumber = /** @type {number} */ (event.data["lineNumber"]);
-        var columnNumber = /** @type {number} */ (event.data["columnNumber"]);
-
-        var uiSourceCode = this.uiSourceCodeForURL(url);
-        if (uiSourceCode) {
-            WebInspector.Revealer.reveal(uiSourceCode.uiLocation(lineNumber, columnNumber));
-            return;
-        }
-
-        /**
-         * @param {!WebInspector.Event} event
-         * @this {WebInspector.Workspace}
-         */
-        function listener(event)
-        {
-            var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (event.data);
-            if (uiSourceCode.networkURL() === url) {
-                WebInspector.Revealer.reveal(uiSourceCode.uiLocation(lineNumber, columnNumber));
-                this.removeEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, listener, this);
-            }
-        }
-
-        this.addEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, listener, this);
     },
 
     __proto__: WebInspector.Object.prototype

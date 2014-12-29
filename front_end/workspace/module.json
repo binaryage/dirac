@@ -4,7 +4,6 @@
         "ExcludedFolderManager.js",
         "FileManager.js",
         "FileSystemMapping.js",
-        "FileSystemWorkspaceBinding.js",
         "IsolatedFileSystem.js",
         "IsolatedFileSystemManager.js",
         "SearchConfig.js",

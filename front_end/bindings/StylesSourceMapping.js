@@ -61,7 +61,7 @@ WebInspector.StylesSourceMapping.prototype = {
     rawLocationToUILocation: function(rawLocation)
     {
         var location = /** @type WebInspector.CSSLocation */ (rawLocation);
-        var uiSourceCode = this._workspace.uiSourceCodeForURL(location.url);
+        var uiSourceCode = this._networkMapping.uiSourceCodeForURL(location.url);
         if (!uiSourceCode)
             return null;
         return uiSourceCode.uiLocation(location.lineNumber, location.columnNumber);
@@ -129,7 +129,7 @@ WebInspector.StylesSourceMapping.prototype = {
             map.set(header.frameId, headersById);
         }
         headersById.set(header.id, header);
-        var uiSourceCode = this._workspace.uiSourceCodeForURL(url);
+        var uiSourceCode = this._networkMapping.uiSourceCodeForURL(url);
         if (uiSourceCode)
             this._bindUISourceCode(uiSourceCode, header);
     },
@@ -153,7 +153,7 @@ WebInspector.StylesSourceMapping.prototype = {
             map.remove(header.frameId);
             if (!map.size) {
                 delete this._urlToHeadersByFrameId[url];
-                var uiSourceCode = this._workspace.uiSourceCodeForURL(url);
+                var uiSourceCode = this._networkMapping.uiSourceCodeForURL(url);
                 if (uiSourceCode)
                     this._unbindUISourceCode(uiSourceCode);
             }
@@ -230,7 +230,7 @@ WebInspector.StylesSourceMapping.prototype = {
     _mainFrameNavigated: function(event)
     {
         for (var url in this._urlToHeadersByFrameId) {
-            var uiSourceCode = this._workspace.uiSourceCodeForURL(url);
+            var uiSourceCode = this._networkMapping.uiSourceCodeForURL(url);
             if (!uiSourceCode)
                 continue;
             this._unbindUISourceCode(uiSourceCode);
@@ -310,7 +310,7 @@ WebInspector.StylesSourceMapping.prototype = {
         var styleSheetURL = header.resourceURL();
         if (!styleSheetURL)
             return;
-        var uiSourceCode = this._workspace.uiSourceCodeForURL(styleSheetURL);
+        var uiSourceCode = this._networkMapping.uiSourceCodeForURL(styleSheetURL);
         if (!uiSourceCode)
             return;
         header.requestContent(callback.bind(this, uiSourceCode));

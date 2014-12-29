@@ -88,7 +88,7 @@ WebInspector.CompilerScriptMapping.prototype = {
         if (!entry || entry.length === 2)
             return null;
         var url = /** @type {string} */ (entry[2]);
-        var uiSourceCode = this._workspace.uiSourceCodeForURL(url);
+        var uiSourceCode = this._networkMapping.uiSourceCodeForURL(url);
         if (!uiSourceCode)
             return null;
         return uiSourceCode.uiLocation(/** @type {number} */ (entry[3]), /** @type {number} */ (entry[4]));
@@ -192,11 +192,11 @@ WebInspector.CompilerScriptMapping.prototype = {
                 if (this._sourceMapForURL.get(sourceURL))
                     continue;
                 this._sourceMapForURL.set(sourceURL, sourceMap);
-                if (!this._workspace.hasMappingForURL(sourceURL) && !this._workspace.uiSourceCodeForURL(sourceURL)) {
+                if (!this._networkMapping.hasMappingForURL(sourceURL) && !this._networkMapping.uiSourceCodeForURL(sourceURL)) {
                     var contentProvider = sourceMap.sourceContentProvider(sourceURL, WebInspector.resourceTypes.Script);
                     this._networkWorkspaceBinding.addFileForURL(sourceURL, contentProvider, script.isContentScript());
                 }
-                var uiSourceCode = this._workspace.uiSourceCodeForURL(sourceURL);
+                var uiSourceCode = this._networkMapping.uiSourceCodeForURL(sourceURL);
                 if (uiSourceCode) {
                     this._bindUISourceCode(uiSourceCode);
                 } else {
@@ -336,7 +336,7 @@ WebInspector.CompilerScriptMapping.prototype = {
          */
         function unbindUISourceCodeForURL(sourceURL)
         {
-            var uiSourceCode = this._workspace.uiSourceCodeForURL(sourceURL);
+            var uiSourceCode = this._networkMapping.uiSourceCodeForURL(sourceURL);
             if (!uiSourceCode)
                 return;
             this._unbindUISourceCode(uiSourceCode);

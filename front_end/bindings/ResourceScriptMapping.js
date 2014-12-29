@@ -215,7 +215,7 @@ WebInspector.ResourceScriptMapping.prototype = {
     {
         if (script.isAnonymousScript())
             return null;
-        return this._workspace.uiSourceCodeForURL(script.sourceURL);
+        return this._networkMapping.uiSourceCodeForURL(script.sourceURL);
     },
 
     /**
@@ -262,7 +262,7 @@ WebInspector.ResourceScriptMapping.prototype = {
         var boundURLs = this._boundURLs.valuesArray();
         for (var i = 0; i < boundURLs.length; ++i)
         {
-            var uiSourceCode = this._workspace.uiSourceCodeForURL(boundURLs[i]);
+            var uiSourceCode = this._networkMapping.uiSourceCodeForURL(boundURLs[i]);
             if (!uiSourceCode)
                 continue;
             this._unbindUISourceCode(uiSourceCode);
