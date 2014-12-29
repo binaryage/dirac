@@ -219,9 +219,16 @@
     white-space: normal;
 }
 
-.styles-section .header .title .media,
-.styles-section .header .title .media .subtitle {
-    color: rgb(128, 128, 128);
+.styles-section .header .title .media-list {
+    color: #888;
+}
+
+.styles-section .header .title .media-list.media-matches .media.editable-media {
+    color: #222;
+}
+
+.styles-section .header .title .media:not(.editing-media),
+.styles-section .header .title .media:not(.editing-media) .subtitle {
     overflow: hidden;
 }
 

@@ -35,7 +35,20 @@ WebInspector.StylesSectionModel.prototype = {
      */
     hasMatchingSelectors: function()
     {
-        return this.rule() ? this.rule().matchingSelectors.length > 0 : true;
+        return this.rule() ? this.rule().matchingSelectors.length > 0 && this.mediaMatches() : true;
+    },
+
+    /**
+     * @return {boolean}
+     */
+    mediaMatches: function()
+    {
+        var media = this.media();
+        for (var i = 0; media && i < media.length; ++i) {
+            if (!media[i].active())
+                return false;
+        }
+        return true;
     },
 
     /**

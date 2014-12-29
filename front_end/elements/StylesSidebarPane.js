@@ -296,6 +296,25 @@ WebInspector.StylesSidebarPane.prototype = {
     },
 
     /**
+     * @param {!WebInspector.CSSMedia} oldMedia
+     * @param {!WebInspector.CSSMedia}  newMedia
+     */
+    _styleSheetMediaEdited: function(oldMedia, newMedia)
+    {
+        if (!oldMedia.parentStyleSheetId)
+            return;
+        for (var pseudoId in this.sections) {
+            var styleRuleSections = this.sections[pseudoId];
+            for (var i = 0; i < styleRuleSections.length; ++i) {
+                var section = styleRuleSections[i];
+                if (section.computedStyle)
+                    continue;
+                section._styleSheetMediaEdited(oldMedia, newMedia);
+            }
+        }
+    },
+
+    /**
      * @param {!Event} event
      */
     _contextMenuEventFired: function(event)
@@ -1459,7 +1478,7 @@ WebInspector.StylePropertiesSection = function(parentPane, styleRule)
 
     this._selectorRefElement = createElement("div");
     this._selectorRefElement.className = "subtitle";
-    this._mediaListElement = this.titleElement.createChild("div", "media-list");
+    this._mediaListElement = this.titleElement.createChild("div", "media-list media-matches");
     this._updateMediaList();
     this._updateRuleOrigin();
     selectorContainer.insertBefore(this._selectorRefElement, selectorContainer.firstChild);
@@ -1582,6 +1601,19 @@ WebInspector.StylePropertiesSection.prototype = {
     },
 
     /**
+     * @param {!WebInspector.CSSMedia} oldMedia
+     * @param {!WebInspector.CSSMedia} newMedia
+     */
+    _styleSheetMediaEdited: function(oldMedia, newMedia)
+    {
+        var rule = this.rule();
+        if (!rule || !rule.styleSheetId)
+            return;
+        rule.mediaEdited(oldMedia, newMedia);
+        this._updateMediaList();
+    },
+
+    /**
      * @param {?Array.<!WebInspector.CSSMedia>} mediaRules
      */
     _createMediaList: function(mediaRules)
@@ -1591,20 +1623,6 @@ WebInspector.StylePropertiesSection.prototype = {
         for (var i = mediaRules.length - 1; i >= 0; --i) {
             var media = mediaRules[i];
             var mediaDataElement = this._mediaListElement.createChild("div", "media");
-            var mediaText;
-            switch (media.source) {
-            case WebInspector.CSSMedia.Source.LINKED_SHEET:
-            case WebInspector.CSSMedia.Source.INLINE_SHEET:
-                mediaText = "media=\"" + media.text + "\"";
-                break;
-            case WebInspector.CSSMedia.Source.MEDIA_RULE:
-                mediaText = "@media " + media.text;
-                break;
-            case WebInspector.CSSMedia.Source.IMPORT_RULE:
-                mediaText = "@import " + media.text;
-                break;
-            }
-
             if (media.sourceURL) {
                 var refElement = mediaDataElement.createChild("div", "subtitle");
                 var anchor = this._parentPane._linkifier.linkifyMedia(media);
@@ -1612,9 +1630,29 @@ WebInspector.StylePropertiesSection.prototype = {
                 refElement.appendChild(anchor);
             }
 
-            var mediaTextElement = mediaDataElement.createChild("span");
-            mediaTextElement.textContent = mediaText;
+            var mediaContainerElement = mediaDataElement.createChild("span");
+            var mediaTextElement = mediaContainerElement.createChild("span", "media-text");
             mediaTextElement.title = media.text;
+            switch (media.source) {
+            case WebInspector.CSSMedia.Source.LINKED_SHEET:
+            case WebInspector.CSSMedia.Source.INLINE_SHEET:
+                mediaTextElement.textContent = "media=\"" + media.text + "\"";
+                break;
+            case WebInspector.CSSMedia.Source.MEDIA_RULE:
+                var decoration = mediaContainerElement.createChild("span");
+                mediaContainerElement.insertBefore(decoration, mediaTextElement);
+                decoration.textContent = "@media ";
+                decoration.title = media.text;
+                mediaTextElement.textContent = media.text;
+                if (media.parentStyleSheetId) {
+                    mediaDataElement.classList.add("editable-media");
+                    mediaTextElement.addEventListener("click", this._handleMediaRuleClick.bind(this, media, mediaTextElement), false);
+                }
+                break;
+            case WebInspector.CSSMedia.Source.IMPORT_RULE:
+                mediaTextElement.textContent = "@import " + media.text;
+                break;
+            }
         }
     },
 
@@ -1813,16 +1851,18 @@ WebInspector.StylePropertiesSection.prototype = {
         if (!rule)
             return;
 
-        var matchingSelectors = rule.matchingSelectors;
+        this._mediaListElement.classList.toggle("media-matches", this.styleRule.mediaMatches());
+
         // .selector is rendered as non-affecting selector by default.
-        if (!this.styleRule.hasMatchingSelectors() || matchingSelectors)
+        if (!this.styleRule.hasMatchingSelectors()) {
             this._selectorElement.className = "selector";
-        if (!matchingSelectors)
             return;
+        }
 
         var selectors = rule.selectors;
         var fragment = createDocumentFragment();
         var currentMatch = 0;
+        var matchingSelectors = rule.matchingSelectors;
         for (var i = 0; i < selectors.length ; ++i) {
             if (i)
                 fragment.createTextChild(", ");
@@ -1920,6 +1960,102 @@ WebInspector.StylePropertiesSection.prototype = {
         this.addNewBlankProperty().startEditing();
         event.consume(true);
     },
+
+    /**
+     * @param {!WebInspector.CSSMedia} media
+     * @param {!Element} element
+     * @param {!Event} event
+     */
+    _handleMediaRuleClick: function(media, element, event)
+    {
+        if (WebInspector.isBeingEdited(element))
+            return;
+
+        var config = new WebInspector.InplaceEditor.Config(this._editingMediaCommitted.bind(this, media), this._editingMediaCancelled.bind(this, element), undefined, this._editingMediaBlurHandler.bind(this));
+        WebInspector.InplaceEditor.startEditing(element, config);
+
+        element.window().getSelection().setBaseAndExtent(element, 0, element, 1);
+        this._parentPane._isEditingStyle = true;
+        var parentMediaElement = element.enclosingNodeOrSelfWithClass("media");
+        parentMediaElement.classList.add("editing-media");
+
+        event.consume(true);
+    },
+
+    /**
+     * @param {!Element} element
+     */
+    _editingMediaFinished: function(element)
+    {
+        delete this._parentPane._isEditingStyle;
+        var parentMediaElement = element.enclosingNodeOrSelfWithClass("media");
+        parentMediaElement.classList.remove("editing-media");
+    },
+
+    /**
+     * @param {!Element} element
+     */
+    _editingMediaCancelled: function(element)
+    {
+        this._editingMediaFinished(element);
+        // Mark the selectors in group if necessary.
+        // This is overridden by BlankStylePropertiesSection.
+        this._markSelectorMatches();
+        element.window().getSelection().collapse(element, 0);
+    },
+
+    /**
+     * @param {!Element} editor
+     * @param {!Event} blurEvent
+     * @return {boolean}
+     */
+    _editingMediaBlurHandler: function(editor, blurEvent)
+    {
+        return true;
+    },
+
+    /**
+     * @param {!WebInspector.CSSMedia} media
+     * @param {!Element} element
+     * @param {string} newContent
+     * @param {string} oldContent
+     * @param {(!WebInspector.StylePropertyTreeElement.Context|undefined)} context
+     * @param {string} moveDirection
+     */
+    _editingMediaCommitted: function(media, element, newContent, oldContent, context, moveDirection)
+    {
+        delete this._parentPane._isEditingStyle;
+        this._editingMediaFinished(element);
+
+        if (newContent)
+            newContent = newContent.trim();
+
+        /**
+         * @param {!WebInspector.CSSMedia} newMedia
+         * @this {WebInspector.StylePropertiesSection}
+         */
+        function successCallback(newMedia)
+        {
+            this._parentPane._styleSheetMediaEdited(media, newMedia);
+            this._parentPane._refreshUpdate(this);
+            finishOperation.call(this);
+        }
+
+        /**
+         * @this {WebInspector.StylePropertiesSection}
+         */
+        function finishOperation()
+        {
+            delete this._parentPane._userOperation;
+            this._editingMediaTextCommittedForTest();
+        }
+
+        // This gets deleted in finishOperation(), which is called both on success and failure.
+        this._parentPane._userOperation = true;
+        this._parentPane._target.cssModel.setMediaText(media, newContent, successCallback.bind(this), finishOperation.bind(this));
+    },
+
+    _editingMediaTextCommittedForTest: function() { },
 
     /**
      * @param {!Event} event
