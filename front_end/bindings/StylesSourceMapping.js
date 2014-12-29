@@ -33,14 +33,16 @@
  * @implements {WebInspector.CSSSourceMapping}
  * @param {!WebInspector.CSSStyleModel} cssModel
  * @param {!WebInspector.Workspace} workspace
+ * @param {!WebInspector.NetworkMapping} networkMapping
  */
-WebInspector.StylesSourceMapping = function(cssModel, workspace)
+WebInspector.StylesSourceMapping = function(cssModel, workspace, networkMapping)
 {
     this._cssModel = cssModel;
     this._workspace = workspace;
     this._workspace.addEventListener(WebInspector.Workspace.Events.ProjectRemoved, this._projectRemoved, this);
     this._workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, this._uiSourceCodeAddedToWorkspace, this);
     this._workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeRemoved, this._uiSourceCodeRemoved, this);
+    this._networkMapping = networkMapping;
 
     cssModel.target().resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.MainFrameNavigated, this._mainFrameNavigated, this);
 
@@ -74,7 +76,8 @@ WebInspector.StylesSourceMapping.prototype = {
      */
     uiLocationToRawLocation: function(uiSourceCode, lineNumber, columnNumber)
     {
-        return new WebInspector.CSSLocation(this._cssModel.target(), null, uiSourceCode.networkURL() || "", lineNumber, columnNumber);
+        var networkURL = this._networkMapping.networkURL(uiSourceCode);
+        return new WebInspector.CSSLocation(this._cssModel.target(), null, networkURL || "", lineNumber, columnNumber);
     },
 
     /**
@@ -175,10 +178,10 @@ WebInspector.StylesSourceMapping.prototype = {
     _uiSourceCodeAddedToWorkspace: function(event)
     {
         var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (event.data);
-        var url = uiSourceCode.networkURL();
-        if (!url || !this._urlToHeadersByFrameId[url])
+        var networkURL = this._networkMapping.networkURL(uiSourceCode);
+        if (!networkURL || !this._urlToHeadersByFrameId[networkURL])
             return;
-        this._bindUISourceCode(uiSourceCode, this._urlToHeadersByFrameId[url].valuesArray()[0].valuesArray()[0]);
+        this._bindUISourceCode(uiSourceCode, this._urlToHeadersByFrameId[networkURL].valuesArray()[0].valuesArray()[0]);
     },
 
     /**
@@ -243,9 +246,10 @@ WebInspector.StylesSourceMapping.prototype = {
      */
     _setStyleContent: function(uiSourceCode, content, majorChange, userCallback)
     {
-        var styleSheetIds = this._cssModel.styleSheetIdsForURL(uiSourceCode.networkURL());
+        var networkURL = this._networkMapping.networkURL(uiSourceCode);
+        var styleSheetIds = this._cssModel.styleSheetIdsForURL(networkURL);
         if (!styleSheetIds.length) {
-            userCallback("No stylesheet found: " + uiSourceCode.networkURL());
+            userCallback("No stylesheet found: " + networkURL);
             return;
         }
 

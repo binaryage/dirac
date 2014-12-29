@@ -33,15 +33,17 @@
  * @implements {WebInspector.DebuggerSourceMapping}
  * @param {!WebInspector.DebuggerModel} debuggerModel
  * @param {!WebInspector.Workspace} workspace
+ * @param {!WebInspector.NetworkMapping} networkMapping
  * @param {!WebInspector.NetworkWorkspaceBinding} networkWorkspaceBinding
  * @param {!WebInspector.DebuggerWorkspaceBinding} debuggerWorkspaceBinding
  */
-WebInspector.CompilerScriptMapping = function(debuggerModel, workspace, networkWorkspaceBinding, debuggerWorkspaceBinding)
+WebInspector.CompilerScriptMapping = function(debuggerModel, workspace, networkMapping, networkWorkspaceBinding, debuggerWorkspaceBinding)
 {
     this._target = debuggerModel.target();
     this._debuggerModel = debuggerModel;
     this._workspace = workspace;
     this._workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, this._uiSourceCodeAddedToWorkspace, this);
+    this._networkMapping = networkMapping;
     this._networkWorkspaceBinding = networkWorkspaceBinding;
     this._debuggerWorkspaceBinding = debuggerWorkspaceBinding;
 
@@ -103,16 +105,17 @@ WebInspector.CompilerScriptMapping.prototype = {
     {
         if (uiSourceCode.project().type() === WebInspector.projectTypes.Service)
             return null;
-        if (!uiSourceCode.networkURL())
+        var networkURL = this._networkMapping.networkURL(uiSourceCode);
+        if (!networkURL)
             return null;
-        var sourceMap = this._sourceMapForURL.get(uiSourceCode.networkURL());
+        var sourceMap = this._sourceMapForURL.get(networkURL);
         if (!sourceMap)
             return null;
         var script = /** @type {!WebInspector.Script} */ (this._scriptForSourceMap.get(sourceMap));
         console.assert(script);
         var mappingSearchLinesCount = 5;
         // We do not require precise (breakpoint) location but limit the number of lines to search or mapping.
-        var entry = sourceMap.findEntryReversed(uiSourceCode.networkURL(), lineNumber, mappingSearchLinesCount);
+        var entry = sourceMap.findEntryReversed(networkURL, lineNumber, mappingSearchLinesCount);
         if (!entry)
             return null;
         return this._debuggerModel.createRawLocation(script, /** @type {number} */ (entry[0]), /** @type {number} */ (entry[1]));
@@ -230,12 +233,13 @@ WebInspector.CompilerScriptMapping.prototype = {
      */
     uiLineHasMapping: function(uiSourceCode, lineNumber)
     {
-        if (!uiSourceCode.networkURL())
+        var networkURL = this._networkMapping.networkURL(uiSourceCode);
+        if (!networkURL)
             return true;
-        var sourceMap = this._sourceMapForURL.get(uiSourceCode.networkURL());
+        var sourceMap = this._sourceMapForURL.get(networkURL);
         if (!sourceMap)
             return true;
-        return !!sourceMap.findEntryReversed(uiSourceCode.networkURL(), lineNumber, 0);
+        return !!sourceMap.findEntryReversed(networkURL, lineNumber, 0);
     },
 
     /**
@@ -260,7 +264,8 @@ WebInspector.CompilerScriptMapping.prototype = {
     _uiSourceCodeAddedToWorkspace: function(event)
     {
         var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (event.data);
-        if (!uiSourceCode.networkURL() || !this._sourceMapForURL.get(uiSourceCode.networkURL()))
+        var networkURL = this._networkMapping.networkURL(uiSourceCode);
+        if (!networkURL || !this._sourceMapForURL.get(networkURL))
             return;
         this._bindUISourceCode(uiSourceCode);
     },

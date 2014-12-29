@@ -33,9 +33,10 @@
  * @implements {WebInspector.CSSSourceMapping}
  * @param {!WebInspector.CSSStyleModel} cssModel
  * @param {!WebInspector.Workspace} workspace
+ * @param {!WebInspector.NetworkMapping} networkMapping
  * @param {!WebInspector.NetworkWorkspaceBinding} networkWorkspaceBinding
  */
-WebInspector.SASSSourceMapping = function(cssModel, workspace, networkWorkspaceBinding)
+WebInspector.SASSSourceMapping = function(cssModel, workspace, networkMapping, networkWorkspaceBinding)
 {
     this.pollPeriodMs = 30 * 1000;
     this.pollIntervalMs = 200;
@@ -51,6 +52,7 @@ WebInspector.SASSSourceMapping = function(cssModel, workspace, networkWorkspaceB
     this._workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, this._uiSourceCodeAdded, this);
     this._workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeContentCommitted, this._uiSourceCodeContentCommitted, this);
     this._workspace.addEventListener(WebInspector.Workspace.Events.ProjectRemoved, this._reset, this);
+    this._networkMapping = networkMapping;
 }
 
 WebInspector.SASSSourceMapping.prototype = {
@@ -276,7 +278,7 @@ WebInspector.SASSSourceMapping.prototype = {
      */
     _reloadCSSFromNetwork: function(cssUISourceCode, sassURL, callback)
     {
-        var cssURL = cssUISourceCode.networkURL();
+        var cssURL = this._networkMapping.networkURL(cssUISourceCode);
         var data = this._pollDataForSASSURL[sassURL];
         if (!data) {
             callback(cssURL, sassURL, true);
@@ -330,7 +332,8 @@ WebInspector.SASSSourceMapping.prototype = {
     {
         ++this._addingRevisionCounter;
         cssUISourceCode.addRevision(content);
-        this._cssUISourceCodeUpdated(cssUISourceCode.networkURL(), sassURL, callback);
+        var networkURL = this._networkMapping.networkURL(cssUISourceCode);
+        this._cssUISourceCodeUpdated(networkURL, sassURL, callback);
     },
 
     /**
@@ -348,7 +351,7 @@ WebInspector.SASSSourceMapping.prototype = {
          */
         function metadataCallback(timestamp)
         {
-            var cssURL = cssUISourceCode.networkURL();
+            var cssURL = this._networkMapping.networkURL(cssUISourceCode);
             if (!timestamp) {
                 callback(cssURL, sassURL, false);
                 return;
@@ -578,7 +581,8 @@ WebInspector.SASSSourceMapping.prototype = {
     uiLocationToRawLocation: function(uiSourceCode, lineNumber, columnNumber)
     {
         // FIXME: Implement this when ui -> raw mapping has clients.
-        return new WebInspector.CSSLocation(this._cssModel.target(), null, uiSourceCode.networkURL() || "", lineNumber, columnNumber);
+        var networkURL = this._networkMapping.networkURL(uiSourceCode);
+        return new WebInspector.CSSLocation(this._cssModel.target(), null, networkURL || "", lineNumber, columnNumber);
     },
 
     /**
@@ -615,7 +619,8 @@ WebInspector.SASSSourceMapping.prototype = {
     _uiSourceCodeAdded: function(event)
     {
         var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (event.data);
-        var cssURLs = this._cssURLsForSASSURL[uiSourceCode.networkURL()];
+        var networkURL = this._networkMapping.networkURL(uiSourceCode);
+        var cssURLs = this._cssURLsForSASSURL[networkURL];
         if (!cssURLs)
             return;
         for (var i = 0; i < cssURLs.length; ++i) {
@@ -634,8 +639,10 @@ WebInspector.SASSSourceMapping.prototype = {
     _uiSourceCodeContentCommitted: function(event)
     {
         var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (event.data.uiSourceCode);
-        if (uiSourceCode.project().type() === WebInspector.projectTypes.FileSystem)
-            this._sassFileSaved(uiSourceCode.networkURL(), true);
+        if (uiSourceCode.project().type() === WebInspector.projectTypes.FileSystem) {
+            var networkURL = this._networkMapping.networkURL(uiSourceCode);
+            this._sassFileSaved(networkURL, true);
+        }
     },
 
     _reset: function()

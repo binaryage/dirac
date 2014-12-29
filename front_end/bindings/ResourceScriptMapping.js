@@ -33,15 +33,17 @@
  * @implements {WebInspector.DebuggerSourceMapping}
  * @param {!WebInspector.DebuggerModel} debuggerModel
  * @param {!WebInspector.Workspace} workspace
+ * @param {!WebInspector.NetworkMapping} networkMapping
  * @param {!WebInspector.DebuggerWorkspaceBinding} debuggerWorkspaceBinding
  */
-WebInspector.ResourceScriptMapping = function(debuggerModel, workspace, debuggerWorkspaceBinding)
+WebInspector.ResourceScriptMapping = function(debuggerModel, workspace, networkMapping, debuggerWorkspaceBinding)
 {
     this._target = debuggerModel.target();
     this._debuggerModel = debuggerModel;
     this._workspace = workspace;
     this._workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, this._uiSourceCodeAdded, this);
     this._workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeRemoved, this._uiSourceCodeRemoved, this);
+    this._networkMapping = networkMapping;
     this._debuggerWorkspaceBinding = debuggerWorkspaceBinding;
     /** @type {!Set.<string>} */
     this._boundURLs = new Set();
@@ -155,7 +157,7 @@ WebInspector.ResourceScriptMapping.prototype = {
     _uiSourceCodeAdded: function(event)
     {
         var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (event.data);
-        if (!uiSourceCode.networkURL())
+        if (!this._networkMapping.networkURL(uiSourceCode))
             return;
         if (uiSourceCode.project().isServiceProject())
             return;
@@ -173,7 +175,7 @@ WebInspector.ResourceScriptMapping.prototype = {
     _uiSourceCodeRemoved: function(event)
     {
         var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (event.data);
-        if (!uiSourceCode.networkURL())
+        if (!this._networkMapping.networkURL(uiSourceCode))
             return;
         if (uiSourceCode.project().isServiceProject())
             return;
@@ -222,9 +224,9 @@ WebInspector.ResourceScriptMapping.prototype = {
      */
     _scriptsForUISourceCode: function(uiSourceCode)
     {
-        if (!uiSourceCode.networkURL())
+        if (!this._networkMapping.networkURL(uiSourceCode))
             return [];
-        return this._debuggerModel.scriptsForSourceURL(uiSourceCode.networkURL());
+        return this._debuggerModel.scriptsForSourceURL(this._networkMapping.networkURL(uiSourceCode));
     },
 
     /**
@@ -239,7 +241,7 @@ WebInspector.ResourceScriptMapping.prototype = {
         for (var i = 0; i < scripts.length; ++i)
             this._debuggerWorkspaceBinding.updateLocations(scripts[i]);
         this._debuggerWorkspaceBinding.setSourceMapping(this._target, uiSourceCode, this);
-        this._boundURLs.add(uiSourceCode.networkURL());
+        this._boundURLs.add(this._networkMapping.networkURL(uiSourceCode));
     },
 
     /**

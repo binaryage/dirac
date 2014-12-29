@@ -434,7 +434,7 @@ WebInspector.NetworkPanel.prototype = {
         }
         if (target instanceof WebInspector.UISourceCode) {
             var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (target);
-            var resource = WebInspector.resourceForURL(uiSourceCode.networkURL());
+            var resource = WebInspector.resourceForURL(WebInspector.networkMapping.networkURL(uiSourceCode));
             if (resource && resource.request)
                 appendRevealItem.call(this, resource.request);
             return;

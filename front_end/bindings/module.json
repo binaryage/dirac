@@ -13,6 +13,7 @@
         "DefaultScriptMapping.js",
         "FileUtils.js",
         "Linkifier.js",
+        "NetworkMapping.js",
         "NetworkWorkspaceBinding.js",
         "PresentationConsoleMessageHelper.js",
         "ResourceUtils.js",

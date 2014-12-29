@@ -46,7 +46,8 @@ WebInspector.WorkspaceMappingTip.prototype = {
 
         // First try mapping filesystem -> network.
         if (uiSourceCode.project().type() === WebInspector.projectTypes.FileSystem) {
-            var hasMappings = !!uiSourceCode.networkURL();
+            var networkURL = WebInspector.networkMapping.networkURL(uiSourceCode);
+            var hasMappings = !!networkURL;
             if (hasMappings)
                 return;
 
@@ -71,7 +72,8 @@ WebInspector.WorkspaceMappingTip.prototype = {
             // Suggest for localhost only.
             if (!this._isLocalHost(uiSourceCode.originURL()))
                 return;
-            if (this._workspace.uiSourceCodeForURL(uiSourceCode.networkURL()) !== uiSourceCode)
+            var networkURL = WebInspector.networkMapping.networkURL(uiSourceCode);
+            if (this._workspace.uiSourceCodeForURL(networkURL) !== uiSourceCode)
                 return;
 
             var filesystemProjects = this._workspace.projectsForType(WebInspector.projectTypes.FileSystem);

@@ -47,9 +47,11 @@ WebInspector.SourcesSearchScope._filesComparator = function(uiSourceCode1, uiSou
         return -1;
     if (!uiSourceCode1.isDirty() && uiSourceCode2.isDirty())
         return 1;
-    if (uiSourceCode1.networkURL() && !uiSourceCode2.networkURL())
+    var networkURL1 = WebInspector.networkMapping.networkURL(uiSourceCode1);
+    var networkURL2 = WebInspector.networkMapping.networkURL(uiSourceCode2);
+    if (networkURL1 && !networkURL2)
         return -1;
-    if (!uiSourceCode1.networkURL() && uiSourceCode2.networkURL())
+    if (!networkURL1 && networkURL2)
         return 1;
     return String.naturalOrderComparator(uiSourceCode1.fullDisplayName(), uiSourceCode2.fullDisplayName());
 }

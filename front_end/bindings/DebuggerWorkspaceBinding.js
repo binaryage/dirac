@@ -7,11 +7,13 @@
  * @implements {WebInspector.TargetManager.Observer}
  * @param {!WebInspector.TargetManager} targetManager
  * @param {!WebInspector.Workspace} workspace
+ * @param {!WebInspector.NetworkMapping} networkMapping
  * @param {!WebInspector.NetworkWorkspaceBinding} networkWorkspaceBinding
  */
-WebInspector.DebuggerWorkspaceBinding = function(targetManager, workspace, networkWorkspaceBinding)
+WebInspector.DebuggerWorkspaceBinding = function(targetManager, workspace, networkMapping, networkWorkspaceBinding)
 {
     this._workspace = workspace;
+    this._networkMapping = networkMapping;
     this._networkWorkspaceBinding = networkWorkspaceBinding;
 
     /** @type {!Map.<!WebInspector.Target, !WebInspector.DebuggerWorkspaceBinding.TargetData>} */
@@ -304,10 +306,11 @@ WebInspector.DebuggerWorkspaceBinding.TargetData = function(target, debuggerWork
 
     var debuggerModel = target.debuggerModel;
     var workspace = debuggerWorkspaceBinding._workspace;
+    var networkMapping = debuggerWorkspaceBinding._networkMapping;
 
     this._defaultMapping = new WebInspector.DefaultScriptMapping(debuggerModel, workspace, debuggerWorkspaceBinding);
-    this._resourceMapping = new WebInspector.ResourceScriptMapping(debuggerModel, workspace, debuggerWorkspaceBinding);
-    this._compilerMapping = new WebInspector.CompilerScriptMapping(debuggerModel, workspace, debuggerWorkspaceBinding._networkWorkspaceBinding, debuggerWorkspaceBinding);
+    this._resourceMapping = new WebInspector.ResourceScriptMapping(debuggerModel, workspace, networkMapping, debuggerWorkspaceBinding);
+    this._compilerMapping = new WebInspector.CompilerScriptMapping(debuggerModel, workspace, networkMapping, debuggerWorkspaceBinding._networkWorkspaceBinding, debuggerWorkspaceBinding);
 
     /** @type {!Map.<!WebInspector.UISourceCode, !WebInspector.DebuggerSourceMapping>} */
     this._uiSourceCodeToSourceMapping = new Map();

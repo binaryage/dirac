@@ -22,7 +22,7 @@ WebInspector.CSSWorkspaceBinding.prototype = {
      */
     targetAdded: function(target)
     {
-        this._targetToTargetInfo.set(target, new WebInspector.CSSWorkspaceBinding.TargetInfo(target, WebInspector.workspace, WebInspector.networkWorkspaceBinding));
+        this._targetToTargetInfo.set(target, new WebInspector.CSSWorkspaceBinding.TargetInfo(target, WebInspector.workspace, WebInspector.networkMapping, WebInspector.networkWorkspaceBinding));
     },
 
     /**
@@ -61,7 +61,7 @@ WebInspector.CSSWorkspaceBinding.prototype = {
     {
         var targetInfo = this._targetToTargetInfo.get(header.target());
         if (!targetInfo) {
-            targetInfo = new WebInspector.CSSWorkspaceBinding.TargetInfo(header.target(), WebInspector.workspace, WebInspector.networkWorkspaceBinding);
+            targetInfo = new WebInspector.CSSWorkspaceBinding.TargetInfo(header.target(), WebInspector.workspace, WebInspector.networkMapping, WebInspector.networkWorkspaceBinding);
             this._targetToTargetInfo.set(header.target(), targetInfo);
         }
         return targetInfo._ensureInfoForHeader(header);
@@ -173,16 +173,16 @@ WebInspector.CSSWorkspaceBinding.prototype = {
  * @constructor
  * @param {!WebInspector.Target} target
  * @param {!WebInspector.Workspace} workspace
+ * @param {!WebInspector.NetworkMapping} networkMapping
  * @param {!WebInspector.NetworkWorkspaceBinding} networkWorkspaceBinding
  */
-WebInspector.CSSWorkspaceBinding.TargetInfo = function(target, workspace, networkWorkspaceBinding)
+WebInspector.CSSWorkspaceBinding.TargetInfo = function(target, workspace, networkMapping, networkWorkspaceBinding)
 {
     this._target = target;
-    this._workspace = workspace;
 
     var cssModel = target.cssModel;
-    this._stylesSourceMapping = new WebInspector.StylesSourceMapping(cssModel, workspace);
-    this._sassSourceMapping = new WebInspector.SASSSourceMapping(cssModel, workspace, networkWorkspaceBinding);
+    this._stylesSourceMapping = new WebInspector.StylesSourceMapping(cssModel, workspace, networkMapping);
+    this._sassSourceMapping = new WebInspector.SASSSourceMapping(cssModel, workspace, networkMapping, networkWorkspaceBinding);
 
     /** @type {!Map.<string, !WebInspector.CSSWorkspaceBinding.HeaderInfo>} */
     this._headerInfoById = new Map();

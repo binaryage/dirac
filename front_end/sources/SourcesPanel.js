@@ -38,6 +38,7 @@ WebInspector.SourcesPanel = function(workspaceForTest)
     new WebInspector.UpgradeFileSystemDropTarget(this.element);
 
     this._workspace = workspaceForTest || WebInspector.workspace;
+    this._networkMapping = WebInspector.networkMapping;
 
     this._debugToolbar = this._createDebugToolbar();
     this._debugToolbarDrawer = this._createDebugToolbarDrawer();
@@ -864,7 +865,7 @@ WebInspector.SourcesPanel.prototype = {
     _appendUISourceCodeMappingItems: function(contextMenu, uiSourceCode)
     {
         if (uiSourceCode.project().type() === WebInspector.projectTypes.FileSystem) {
-            var hasMappings = !!uiSourceCode.networkURL();
+            var hasMappings = !!this._networkMapping.networkURL(uiSourceCode);
             if (!hasMappings)
                 contextMenu.appendItem(WebInspector.UIString.capitalize("Map to ^network ^resource\u2026"), this.mapFileSystemToNetwork.bind(this, uiSourceCode));
             else
@@ -882,7 +883,8 @@ WebInspector.SourcesPanel.prototype = {
         if (uiSourceCode.project().type() === WebInspector.projectTypes.Network || uiSourceCode.project().type() === WebInspector.projectTypes.ContentScripts) {
             if (!this._workspace.projects().filter(filterProject).length)
                 return;
-            if (this._workspace.uiSourceCodeForURL(uiSourceCode.networkURL()) === uiSourceCode)
+            var networkURL = this._networkMapping.networkURL(uiSourceCode);
+            if (this._workspace.uiSourceCodeForURL(networkURL) === uiSourceCode)
                 contextMenu.appendItem(WebInspector.UIString.capitalize("Map to ^file ^system ^resource\u2026"), this.mapNetworkToFileSystem.bind(this, uiSourceCode));
         }
     },
@@ -905,7 +907,8 @@ WebInspector.SourcesPanel.prototype = {
 
         var contentType = uiSourceCode.contentType();
         if ((contentType === WebInspector.resourceTypes.Script || contentType === WebInspector.resourceTypes.Document) && projectType !== WebInspector.projectTypes.Snippets) {
-            var url = projectType === WebInspector.projectTypes.Formatter ? uiSourceCode.originURL() : uiSourceCode.networkURL();
+            var networkURL = this._networkMapping.networkURL(uiSourceCode);
+            var url = projectType === WebInspector.projectTypes.Formatter ? uiSourceCode.originURL() : networkURL;
             this.sidebarPanes.callstack.appendBlackboxURLContextMenuItems(contextMenu, url, projectType === WebInspector.projectTypes.ContentScripts);
         }
 
