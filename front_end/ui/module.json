@@ -66,6 +66,7 @@
         "softContextMenu.css",
         "splitView.css",
         "statusBar.css",
+        "suggestBox.css",
         "tabbedPane.css",
         "textButton.css"
     ]

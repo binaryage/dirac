@@ -70,7 +70,6 @@
             'front_end/inspectorSyntaxHighlight.css',
             'front_end/popover.css',
             'front_end/sidebarPane.css',
-            'front_end/suggestBox.css',
         ],
         'devtools_common_js_files': [
             'front_end/common/Color.js',
@@ -228,6 +227,7 @@
             'front_end/ui/softContextMenu.css',
             'front_end/ui/splitView.css',
             'front_end/ui/statusBar.css',
+            'front_end/ui/suggestBox.css',
             'front_end/ui/tabbedPane.css',
             'front_end/ui/textButton.css',
             'front_end/ui/ActionRegistry.js',
