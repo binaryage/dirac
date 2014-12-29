@@ -15,7 +15,7 @@
         "FileUtils.js",
         "Linkifier.js",
         "NetworkMapping.js",
-        "NetworkWorkspaceBinding.js",
+        "NetworkProject.js",
         "PresentationConsoleMessageHelper.js",
         "ResourceUtils.js",
         "ScriptSnippetModel.js",
