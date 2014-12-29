@@ -79,7 +79,7 @@ WebInspector.IndexedDBModel.keyFromIDBKey = function(idbKey)
         if (idbKey instanceof Date) {
             key.date = idbKey.getTime();
             key.type = WebInspector.IndexedDBModel.KeyTypes.DateType;
-        } else if (idbKey instanceof Array) {
+        } else if (Array.isArray(idbKey)) {
             key.array = [];
             for (var i = 0; i < idbKey.length; ++i)
                 key.array.push(WebInspector.IndexedDBModel.keyFromIDBKey(idbKey[i]));

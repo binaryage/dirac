@@ -601,7 +601,7 @@ AuditResultImpl.prototype = {
     {
         // shorthand for specifying details directly in addResult().
         if (details && !(details instanceof AuditResultNode))
-            details = new AuditResultNode(details instanceof Array ? details : [details]);
+            details = new AuditResultNode(Array.isArray(details) ? details : [details]);
 
         var request = {
             command: commands.AddAuditResult,

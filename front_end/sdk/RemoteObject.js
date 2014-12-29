@@ -817,7 +817,7 @@ WebInspector.ScopeRemoteObject.prototype = {
          */
         function wrappedCallback(properties, internalProperties)
         {
-            if (this._scopeRef && properties instanceof Array)
+            if (this._scopeRef && Array.isArray(properties))
                 this._savedScopeProperties = properties.slice();
             callback(properties, internalProperties);
         }
@@ -1034,7 +1034,7 @@ WebInspector.LocalJSONObject.prototype = {
         if (this._value === null)
             return "null";
 
-        if (this._value instanceof Array)
+        if (Array.isArray(this._value))
             return "array";
 
         if (this._value instanceof Date)
@@ -1115,7 +1115,7 @@ WebInspector.LocalJSONObject.prototype = {
      */
     arrayLength: function()
     {
-        return this._value instanceof Array ? this._value.length : 0;
+        return Array.isArray(this._value) ? this._value.length : 0;
     },
 
     /**

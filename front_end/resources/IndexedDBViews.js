@@ -173,7 +173,7 @@ WebInspector.IDBDataView.prototype = {
             return keyColumnHeaderFragment;
 
         keyColumnHeaderFragment.createTextChild(" (" + WebInspector.UIString("Key path: "));
-        if (keyPath instanceof Array) {
+        if (Array.isArray(keyPath)) {
             keyColumnHeaderFragment.createTextChild("[");
             for (var i = 0; i < keyPath.length; ++i) {
                 if (i != 0)
