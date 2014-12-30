@@ -77,7 +77,6 @@ WebInspector.CallStackSidebarPane.prototype = {
             asyncPlacard.element.addEventListener("click", this._selectNextVisiblePlacard.bind(this, this.placards.length, false), false);
             asyncPlacard.element.addEventListener("contextmenu", this._asyncPlacardContextMenu.bind(this, this.placards.length), true);
             asyncPlacard.element.classList.add("placard-label");
-            this.bodyElement.appendChild(asyncPlacard.element);
             this._appendSidebarPlacards(asyncStackTrace.callFrames, asyncPlacard);
             asyncStackTrace = asyncStackTrace.asyncStackTrace;
         }
@@ -105,6 +104,9 @@ WebInspector.CallStackSidebarPane.prototype = {
      */
     _appendSidebarPlacards: function(callFrames, asyncPlacard)
     {
+        if (asyncPlacard)
+            this.bodyElement.appendChild(asyncPlacard.element);
+
         var allPlacardsHidden = true;
         for (var i = 0, n = callFrames.length; i < n; ++i) {
             var callFrame = callFrames[i];
@@ -112,18 +114,20 @@ WebInspector.CallStackSidebarPane.prototype = {
             placard.element.addEventListener("click", this._placardSelected.bind(this, placard), false);
             placard.element.addEventListener("contextmenu", this._placardContextMenu.bind(this, placard), true);
             this.placards.push(placard);
-            this.bodyElement.appendChild(placard.element);
 
             if (WebInspector.BlackboxSupport.isBlackboxed(callFrame.script.sourceURL, callFrame.script.isContentScript())) {
                 placard.setHidden(true);
                 placard.element.classList.add("dimmed");
                 ++this._hiddenPlacards;
             } else {
+                this.bodyElement.appendChild(placard.element);
                 allPlacardsHidden = false;
             }
         }
-        if (allPlacardsHidden && asyncPlacard)
+        if (allPlacardsHidden && asyncPlacard) {
             asyncPlacard.setHidden(true);
+            asyncPlacard.element.remove();
+        }
     },
 
     _revealHiddenPlacards: function()
@@ -131,11 +135,23 @@ WebInspector.CallStackSidebarPane.prototype = {
         if (!this._hiddenPlacards)
             return;
         this._hiddenPlacards = 0;
+        var lastElement = null;
+        for (var i = this.placards.length - 1; i >= 0; --i) {
+            var placard = this.placards[i];
+            if (!placard.isHidden()) {
+                lastElement = placard.element.nextSibling;
+                break;
+            }
+        }
         for (var i = 0; i < this.placards.length; ++i) {
             var placard = this.placards[i];
-            placard.setHidden(false);
-            if (placard._asyncPlacard)
+            if (placard._asyncPlacard) {
                 placard._asyncPlacard.setHidden(false);
+                if (i && placard._asyncPlacard !== this.placards[i - 1]._asyncPlacard)
+                    this.bodyElement.insertBefore(placard._asyncPlacard.element, lastElement);
+            }
+            placard.setHidden(false);
+            this.bodyElement.insertBefore(placard.element, lastElement);
         }
         if (this._hiddenPlacardsMessageElement) {
             this._hiddenPlacardsMessageElement.remove();
