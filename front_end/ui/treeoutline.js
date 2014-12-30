@@ -535,14 +535,25 @@ TreeElement.prototype = {
         this._setListItemNodeContent();
     },
 
+    /**
+     * @type {string}
+     */
     get tooltip() {
-        return this._tooltip;
+        return this._tooltip || "";
     },
 
+    /**
+     * @param {string} x
+     */
     set tooltip(x) {
+        // Do not check for the same value to update element title on reattach.
         this._tooltip = x;
-        if (this._listItemNode)
-            this._listItemNode.title = x ? x : "";
+        if (!this._listItemNode)
+            return;
+        if (x)
+            this._listItemNode.title = x;
+        else
+            this._listItemNode.removeAttribute("title");
     },
 
     get hasChildren() {
@@ -634,7 +645,7 @@ TreeElement.prototype = {
             this._listItemNode = this.treeOutline._childrenListNode.ownerDocument.createElement("li");
             this._listItemNode.treeElement = this;
             this._setListItemNodeContent();
-            this._listItemNode.title = this._tooltip ? this._tooltip : "";
+            this.tooltip = this._tooltip; // Force the _listItemNode's title update.
 
             if (this.hidden)
                 this._listItemNode.classList.add("hidden");
