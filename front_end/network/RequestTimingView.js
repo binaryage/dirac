@@ -155,7 +155,7 @@ WebInspector.RequestTimingView.calculateRequestTimeRanges = function(request)
 
     var timing = request.timing;
     if (!timing) {
-        var start = (request.startTime === -1) ? 0 : request.startTime;
+        var start = request.issueTime() !== -1 ? request.issueTime() : request.startTime !== -1 ? request.startTime : 0;
         var middle = (request.responseReceivedTime === -1) ? Number.MAX_VALUE : request.responseReceivedTime;
         var end = (request.endTime === -1) ? Number.MAX_VALUE : request.endTime;
         addRange(WebInspector.RequestTimeRangeNames.Total, start, end);
@@ -164,10 +164,11 @@ WebInspector.RequestTimingView.calculateRequestTimeRanges = function(request)
         return result;
     }
 
+    var issueTime = request.issueTime();
     var startTime = timing.requestTime;
     var endTime = firstPositive([request.endTime, request.responseReceivedTime]) || startTime;
 
-    addRange(WebInspector.RequestTimeRangeNames.Total, startTime, endTime);
+    addRange(WebInspector.RequestTimeRangeNames.Total, issueTime < startTime ? issueTime : startTime, endTime);
 
     if (request.fetchedViaServiceWorker) {
         addOffsetRange(WebInspector.RequestTimeRangeNames.Blocking, 0, timing.serviceWorkerFetchStart);

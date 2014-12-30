@@ -282,7 +282,7 @@ WebInspector.NetworkDispatcher.prototype = {
             networkRequest = this._createNetworkRequest(requestId, frameId, loaderId, request.url, documentURL, initiator);
         networkRequest.hasNetworkData = true;
         this._updateNetworkRequestWithRequest(networkRequest, request);
-        networkRequest.startTime = time;
+        networkRequest.setIssueTime(time);
         networkRequest.setResourceType(WebInspector.resourceTypes[resourceType]);
 
         this._startNetworkRequest(networkRequest);
@@ -416,7 +416,7 @@ WebInspector.NetworkDispatcher.prototype = {
 
         networkRequest.requestMethod = "GET";
         networkRequest.setRequestHeaders(this._headersMapToHeadersArray(request.headers));
-        networkRequest.startTime = time;
+        networkRequest.setIssueTime(time);
 
         this._updateNetworkRequest(networkRequest);
     },
