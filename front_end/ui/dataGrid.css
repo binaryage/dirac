@@ -187,6 +187,7 @@
     -webkit-mask-size: 320px 144px;
     float: left;
     width: 8px;
+    height: 12px;
     margin-right: 2px;
     content: "a";
     color: transparent;
