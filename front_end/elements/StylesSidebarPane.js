@@ -1138,6 +1138,7 @@ WebInspector.StylesSidebarPane.prototype = {
             this._animationsPlaybackRate = WebInspector.AnimationsSidebarPane.GlobalPlaybackRates[event.target.value];
             PageAgent.setAnimationsPlaybackRate(this._animationsPaused ? 0 : this._animationsPlaybackRate);
             this._animationsPlaybackLabel.textContent = this._animationsPlaybackRate + "x";
+            WebInspector.userMetrics.AnimationsPlaybackRateChanged.record();
         }
 
         /**
@@ -1147,6 +1148,7 @@ WebInspector.StylesSidebarPane.prototype = {
         {
             this._animationsPaused = !this._animationsPaused;
             PageAgent.setAnimationsPlaybackRate(this._animationsPaused ? 0 : this._animationsPlaybackRate);
+            WebInspector.userMetrics.AnimationsPlaybackRateChanged.record();
             this._animationsPauseButton.element.classList.toggle("pause-status-bar-item");
             this._animationsPauseButton.element.classList.toggle("play-status-bar-item");
         }
