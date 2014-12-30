@@ -1385,8 +1385,7 @@ WebInspector.DataGridNode.prototype = {
         if (child.parent === this)
             throw("insertChild: Node is already a child of this node.");
 
-        if (child.parent)
-            child.parent.removeChild(child);
+        child.remove();
 
         this.children.splice(index, 0, child);
         this.hasChildren = true;
@@ -1414,6 +1413,12 @@ WebInspector.DataGridNode.prototype = {
             child._attach();
         if (!this.revealed)
             child.revealed = false;
+    },
+
+    remove: function()
+    {
+        if (this.parent)
+            this.parent.removeChild(this);
     },
 
     /**

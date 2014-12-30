@@ -358,6 +358,14 @@ WebInspector.PopoverHelper.prototype = {
     /**
      * @return {boolean}
      */
+    isHoverTimerActive: function()
+    {
+        return !!this._hoverTimer;
+    },
+
+    /**
+     * @return {boolean}
+     */
     isPopoverVisible: function()
     {
         return !!this._popover;
