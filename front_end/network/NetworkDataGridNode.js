@@ -75,7 +75,7 @@ WebInspector.NetworkDataGridNode.prototype = {
      */
     createCells: function()
     {
-        this._showTiming = Runtime.experiments.isEnabled("requestTimingInNetworkTimeline") && WebInspector.settings.networkShowRequestTimingInTimeline.get();
+        this._showTiming = Runtime.experiments.isEnabled("requestTimingInNetworkTimeline") && WebInspector.settings.networkShowRequestTimingInTimeline.get() && !this._parentView.calculator().startAtZero;
         this._nameCell = null;
         this._timelineCell = null;
         this._initiatorCell = null;
