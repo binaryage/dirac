@@ -229,7 +229,7 @@ WebInspector.GenericSettingsTab.prototype = {
     _populateSectionsFromExtensions: function()
     {
         /** @const */
-        var explicitSectionOrder = ["", "Appearance", "Elements", "Sources", "Profiler", "Console", "Extensions"];
+        var explicitSectionOrder = ["", "Appearance", "Elements", "Sources", "Network", "Profiler", "Console", "Extensions"];
 
         var allExtensions = self.runtime.extensions("ui-setting");
 

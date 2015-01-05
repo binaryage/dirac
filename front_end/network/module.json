@@ -28,10 +28,9 @@
         {
             "type": "ui-setting",
             "section": "Network",
-            "title": "Show request timing directly in timeline",
-            "settingName": "networkShowRequestTimingInTimeline",
-            "settingType": "checkbox",
-            "experiment": "requestTimingInNetworkTimeline"
+            "title": "Color-code resource types",
+            "settingName": "networkColorCodeResourceTypes",
+            "settingType": "checkbox"
         }
     ],
     "dependencies": ["source_frame"],
