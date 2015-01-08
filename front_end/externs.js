@@ -708,3 +708,9 @@ WeakSet.prototype = {
      */
     has: function(value) { },
 }
+
+/**
+ * @param {*} obj
+ * @return {boolean}
+ */
+ArrayBuffer.isView = function(obj) { }
