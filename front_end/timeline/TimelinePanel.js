@@ -1028,9 +1028,11 @@ WebInspector.TimelinePanel.prototype = {
         if (!target)
             return;
         var paintProfilerView = this._paintProfilerView();
+        var hasProfileData = paintProfilerView.setEvent(target, event);
+        if (!hasProfileData)
+            return;
         if (!this._detailsView.hasTab(WebInspector.TimelinePanel.DetailsTab.PaintProfiler))
             this._detailsView.appendTab(WebInspector.TimelinePanel.DetailsTab.PaintProfiler, WebInspector.UIString("Paint Profiler"), paintProfilerView, undefined, undefined, isCloseable);
-        paintProfilerView.setEvent(target, event);
     },
 
     /**

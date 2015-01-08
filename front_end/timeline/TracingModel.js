@@ -642,30 +642,29 @@ WebInspector.TracingModel.ObjectSnapshot.prototype = {
      */
     requestObject: function(callback)
     {
-       var snapshot = this.args["snapshot"];
-       if (snapshot) {
-           callback(snapshot);
-           return;
-       }
-       this._backingStorage().then(onRead, callback.bind(null, null));
-       /**
-        * @param {?string} result
-        */
-       function onRead(result)
-       {
-           if (!result) {
-               callback(null);
-               return;
-           }
-           var snapshot;
-           try {
-               var payload = JSON.parse(result);
-               snapshot = payload["args"]["snapshot"];
-           } catch (e) {
-               WebInspector.console.error("Malformed event data in backing storage");
-           }
-           callback(snapshot);
-       }
+        var snapshot = this.args["snapshot"];
+        if (snapshot) {
+            callback(snapshot);
+            return;
+        }
+        this._backingStorage().then(onRead, callback.bind(null, null));
+        /**
+         * @param {?string} result
+         */
+        function onRead(result)
+        {
+            if (!result) {
+                callback(null);
+                return;
+            }
+            try {
+                var payload = JSON.parse(result);
+                callback(payload["args"]["snapshot"]);
+            } catch (e) {
+                WebInspector.console.error("Malformed event data in backing storage");
+                callback(null);
+            }
+        }
     },
 
     /**

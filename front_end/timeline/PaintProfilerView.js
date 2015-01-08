@@ -184,6 +184,8 @@ WebInspector.PaintProfilerView.prototype = {
 
     _updatePieChart: function()
     {
+        if (!this._profiles || !this._profiles.length)
+            return;
         var window = this.windowBoundaries();
         var totalTime = 0;
         var timeByCategory = {};
