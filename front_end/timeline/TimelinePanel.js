@@ -64,7 +64,10 @@ WebInspector.TimelinePanel = function()
     this._durationFilter = new WebInspector.TimelineIsLongFilter();
     this._textFilter = new WebInspector.TimelineTextFilter();
 
-    this._model.addFilter(new WebInspector.TimelineRecordHiddenEmptyTypeFilter([WebInspector.TimelineModel.RecordType.EventDispatch]));
+    this._model.addFilter(new WebInspector.TimelineRecordHiddenEmptyTypeFilter([
+        WebInspector.TimelineModel.RecordType.EventDispatch,
+        WebInspector.TimelineModel.RecordType.UpdateCounters
+    ]));
     this._model.addFilter(WebInspector.TimelineUIUtils.hiddenRecordsFilter());
     this._model.addFilter(this._categoryFilter);
     this._model.addFilter(this._durationFilter);
