@@ -331,6 +331,7 @@ WebInspector.NetworkPanel.prototype = {
             this._splitView.showBoth();
         } else {
             this._splitView.hideMain();
+            this._networkLogView.clearSelection();
         }
         this._updateUI();
     },

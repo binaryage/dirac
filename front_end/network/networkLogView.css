@@ -132,8 +132,16 @@
     color: inherit;
 }
 
-.network-log-grid.data-grid tr.selected .network-cell-subtitle {
-    color: white;
+.network-log-grid.data-grid tr.selected,
+.network-log-grid.data-grid tr.selected .network-cell-subtitle,
+.network-log-grid.data-grid tr.selected .network-dim-cell {
+    color: inherit !important;
+}
+
+.network-log-grid.data-grid:focus tr.selected,
+.network-log-grid.data-grid:focus tr.selected .network-cell-subtitle,
+.network-log-grid.data-grid:focus tr.selected .network-dim-cell {
+    color: white !important;
 }
 
 .network-log-grid tr.highlighted-row {

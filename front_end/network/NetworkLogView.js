@@ -198,12 +198,10 @@ WebInspector.NetworkLogView.prototype = {
     {
     },
 
-    /**
-     * @return {boolean}
-     */
-    allowRequestSelection: function()
+    clearSelection: function()
     {
-        return !this._gridMode;
+        if (this._dataGrid.selectedNode)
+            this._dataGrid.selectedNode.deselect();
     },
 
     _addFilters: function()
