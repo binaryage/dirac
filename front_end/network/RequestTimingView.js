@@ -125,7 +125,7 @@ WebInspector.RequestTimingView.calculateRequestTimeRanges = function(request)
      */
     function addRange(name, start, end)
     {
-        if (start < end)
+        if (start <= end)
             result.push({name: name, start: start, end: end});
     }
 
