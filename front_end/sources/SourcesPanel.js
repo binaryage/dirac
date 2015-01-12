@@ -451,6 +451,27 @@ WebInspector.SourcesPanel.prototype = {
 
         this._sourcesView.clearCurrentExecutionLine();
         this._updateDebuggerButtons();
+
+        if (this._switchToPausedTargetTimeout)
+            clearTimeout(this._switchToPausedTargetTimeout);
+        this._switchToPausedTargetTimeout = setTimeout(this._switchToPausedTarget.bind(this), 500);
+    },
+
+    _switchToPausedTarget: function()
+    {
+        delete this._switchToPausedTargetTimeout;
+        if (this._paused)
+            return;
+        var target = WebInspector.context.flavor(WebInspector.Target);
+        if (target && target.debuggerModel.isPaused())
+            return;
+        var targets = WebInspector.targetManager.targets();
+        for (var i = 0; i < targets.length; ++i) {
+            if (targets[i].debuggerModel.isPaused()) {
+                WebInspector.context.setFlavor(WebInspector.Target, targets[i]);
+                break;
+            }
+        }
     },
 
     _togglePauseOnExceptions: function()
