@@ -4668,14 +4668,13 @@
                 "type": "object",
                 "hidden": true,
                 "properties": [
-                    { "name": "startDelay", "type": "number", "description": "<code>AnimationNode</code>'s start delay." },
+                    { "name": "delay", "type": "number", "description": "<code>AnimationNode</code>'s delay." },
                     { "name": "playbackRate", "type": "number", "description": "<code>AnimationNode</code>'s playbackRate." },
                     { "name": "iterationStart", "type": "number", "description": "<code>AnimationNode</code>'s iteration start." },
-                    { "name": "iterationCount", "type": "number", "description": "<code>AnimationNode</code>'s iteration count." },
+                    { "name": "iterations", "type": "number", "description": "<code>AnimationNode</code>'s iterations." },
                     { "name": "duration", "type": "number", "description": "<code>AnimationNode</code>'s iteration duration." },
-                    { "name": "direction", "type": "number", "description": "<code>AnimationNode</code>'s playback direction." },
-                    { "name": "fillMode", "type": "number", "description": "<code>AnimationNode</code>'s fill mode." },
-                    { "name": "timeFraction", "type": "number", "description": "<code>AnimationNode</code>'s time fraction." },
+                    { "name": "direction", "type": "string", "description": "<code>AnimationNode</code>'s playback direction." },
+                    { "name": "fill", "type": "string", "description": "<code>AnimationNode</code>'s fill mode." },
                     { "name": "name", "type": "string", "description": "<code>AnimationNode</code>'s name." },
                     { "name": "backendNodeId", "$ref": "DOM.BackendNodeId", "description": "<code>AnimationNode</code>'s target node." },
                     { "name": "keyframesRule", "$ref": "KeyframesRule", "optional": true, "description": "<code>AnimationNode</code>'s keyframes." }

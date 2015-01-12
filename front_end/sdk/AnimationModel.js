@@ -241,9 +241,9 @@ WebInspector.AnimationModel.AnimationNode.prototype = {
     /**
      * @return {number}
      */
-    startDelay: function()
+    delay: function()
     {
-        return this._payload.startDelay;
+        return this._payload.delay;
     },
 
     /**
@@ -265,9 +265,9 @@ WebInspector.AnimationModel.AnimationNode.prototype = {
     /**
      * @return {number}
      */
-    iterationCount: function()
+    iterations: function()
     {
-        return this._payload.iterationCount;
+        return this._payload.iterations;
     },
 
     /**
@@ -279,7 +279,7 @@ WebInspector.AnimationModel.AnimationNode.prototype = {
     },
 
     /**
-     * @return {number}
+     * @return {string}
      */
     direction: function()
     {
@@ -287,19 +287,11 @@ WebInspector.AnimationModel.AnimationNode.prototype = {
     },
 
     /**
-     * @return {number}
+     * @return {string}
      */
-    fillMode: function()
+    fill: function()
     {
-        return this._payload.fillMode;
-    },
-
-    /**
-     * @return {number}
-     */
-    timeFraction: function()
-    {
-        return this._payload.timeFraction;
+        return this._payload.fill;
     },
 
     /**

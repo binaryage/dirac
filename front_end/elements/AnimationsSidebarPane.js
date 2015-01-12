@@ -215,7 +215,7 @@ WebInspector.AnimationSection.prototype = {
         function updateSliderCallback(currentTime, isRunning)
         {
             if (isRunning && this._parentPane.isShowing()) {
-                this.currentTimeSlider.value = this.player.source().iterationCount() == null ? currentTime % this.player.source().duration() : currentTime;
+                this.currentTimeSlider.value = this.player.source().iterations() == null ? currentTime % this.player.source().duration() : currentTime;
                 finishCallback();
                 this.updateCurrentTime();
             } else {
@@ -263,18 +263,18 @@ WebInspector.AnimationSection.prototype = {
         }
 
         var iterationDuration = this.player.source().duration();
-        var iterationCount = this.player.source().iterationCount();
+        var iterations = this.player.source().iterations();
         var slider = createElement("input");
         slider.type = "range";
         slider.min = 0;
         slider.step = 0.01;
 
-        if (!iterationCount) {
+        if (!iterations) {
             // Infinite iterations
             slider.max = iterationDuration;
             slider.value = this.player.currentTime() % iterationDuration;
         } else {
-            slider.max = iterationCount * iterationDuration;
+            slider.max = iterations * iterationDuration;
             slider.value = this.player.currentTime();
         }
 
@@ -367,14 +367,13 @@ WebInspector.AnimationSection.prototype = {
             "start-time": p.startTime(),
             "player-playback-rate": p.playbackRate(),
             "id": p.id(),
-            "start-delay": p.source().startDelay(),
+            "delay": p.source().delay(),
             "playback-rate": p.source().playbackRate(),
             "iteration-start": p.source().iterationStart(),
-            "iteration-count": p.source().iterationCount(),
+            "iterations": p.source().iterations(),
             "duration": p.source().duration(),
             "direction": p.source().direction(),
-            "fill-mode": p.source().fillMode(),
-            "time-fraction": p.source().timeFraction()
+            "fill": p.source().fill()
         };
         var obj = WebInspector.RemoteObject.fromLocalObject(animationObject);
         var objSection = new WebInspector.ObjectPropertiesSection(obj, WebInspector.UIString("Animation Properties"));
