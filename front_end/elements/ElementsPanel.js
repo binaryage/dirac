@@ -842,10 +842,8 @@ WebInspector.ElementsPanel.prototype = {
         var computedPane = new WebInspector.SidebarPane(WebInspector.UIString("Computed"));
         computedPane.element.classList.add("composite");
         computedPane.element.classList.add("fill");
-        var expandComputed = computedPane.expand.bind(computedPane);
 
         computedPane.bodyElement.classList.add("metrics-and-computed");
-        this.sidebarPanes.computedStyle.setExpandCallback(expandComputed);
 
         var matchedStylePanesWrapper = createElement("div");
         matchedStylePanesWrapper.className = "style-panes-wrapper";
@@ -886,12 +884,10 @@ WebInspector.ElementsPanel.prototype = {
 
         if (vertically) {
             this._splitView.installResizer(this.sidebarPaneView.headerElement());
-            this.sidebarPanes.metrics.setExpandCallback(expandComputed);
 
             var compositePane = new WebInspector.SidebarPane(this.sidebarPanes.styles.title());
             compositePane.element.classList.add("composite");
             compositePane.element.classList.add("fill");
-            var expandComposite = compositePane.expand.bind(compositePane);
 
             var splitView = new WebInspector.SplitView(true, true, "stylesPaneSplitViewState", 0.5);
             splitView.show(compositePane.bodyElement);
@@ -906,24 +902,16 @@ WebInspector.ElementsPanel.prototype = {
             vbox2.element.appendChild(this._computedStylesFilterBoxContainer);
             splitView.setSidebarView(vbox2);
 
-            this.sidebarPanes.styles.setExpandCallback(expandComposite);
-
             computedPane.show(computedStylePanesWrapper);
-            computedPane.setExpandCallback(expandComposite);
-
             this.sidebarPaneView.addPane(compositePane);
         } else {
             var stylesPane = new WebInspector.SidebarPane(this.sidebarPanes.styles.title());
             stylesPane.element.classList.add("composite");
             stylesPane.element.classList.add("fill");
-            var expandStyles = stylesPane.expand.bind(stylesPane);
             stylesPane.bodyElement.classList.add("metrics-and-styles");
 
             stylesPane.bodyElement.appendChild(matchedStylePanesWrapper);
             computedPane.bodyElement.appendChild(computedStylePanesWrapper);
-
-            this.sidebarPanes.styles.setExpandCallback(expandStyles);
-            this.sidebarPanes.metrics.setExpandCallback(expandStyles);
 
             this.sidebarPaneView.addEventListener(WebInspector.TabbedPane.EventTypes.TabSelected, tabSelected, this);
 
