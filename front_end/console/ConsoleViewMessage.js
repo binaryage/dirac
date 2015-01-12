@@ -995,7 +995,10 @@ WebInspector.ConsoleViewMessage.prototype = {
     matchesRegex: function(regexObject)
     {
         regexObject.lastIndex = 0;
-        return regexObject.test(this._formattedMessageText()) || (!!this._anchorElement && regexObject.test(this._anchorElement.textContent));
+        var text = this._formattedMessageText();
+        if (this._anchorElement)
+            text += " " + this._anchorElement.textContent;
+        return regexObject.test(text);
     },
 
     /**
