@@ -517,14 +517,44 @@ WebInspector.ConsoleViewMessage.prototype = {
     _appendPropertiesPreview: function(parentElement, preview, object)
     {
         var isArray = preview.subtype === "array";
+        var arrayLength = WebInspector.RemoteObject.arrayLength(preview);
+        var properties = preview.properties;
+        if (isArray)
+            properties = properties.slice().stableSort(compareIndexesFirst);
+
+        /**
+         * @param {!RuntimeAgent.PropertyPreview} a
+         * @param {!RuntimeAgent.PropertyPreview} b
+         */
+        function compareIndexesFirst(a, b)
+        {
+            var index1 = toArrayIndex(a.name);
+            var index2 = toArrayIndex(b.name);
+            if (index1 < 0)
+                return index2 < 0 ? 0 : 1;
+            return index2 < 0 ? -1 : index1 - index2;
+        }
+
+        /**
+         * @param {string} name
+         * @return {number}
+         */
+        function toArrayIndex(name)
+        {
+            var index = name >>> 0;
+            if (String(index) === name && index < arrayLength)
+                return index;
+            return -1;
+        }
+
         parentElement.createTextChild(isArray ? "[" : "{");
-        for (var i = 0; i < preview.properties.length; ++i) {
+        for (var i = 0; i < properties.length; ++i) {
             if (i > 0)
                 parentElement.createTextChild(", ");
 
-            var property = preview.properties[i];
+            var property = properties[i];
             var name = property.name;
-            if (!isArray || name != i) {
+            if (!isArray || name != i || i >= arrayLength) {
                 if (/^\s|\s$|^$|\n/.test(name))
                     parentElement.createChild("span", "name").createTextChildren("\"", name.replace(/\n/g, "\u21B5"), "\"");
                 else
@@ -654,11 +684,11 @@ WebInspector.ConsoleViewMessage.prototype = {
             return;
         }
 
-        const maxFlatArrayLength = 100;
+        var maxFlatArrayLength = 100;
         if (this._message.isOutdated || array.arrayLength() > maxFlatArrayLength)
             this._formatParameterAsObject(array, elem, false);
         else
-            array.getOwnProperties(this._printArray.bind(this, array, elem));
+            array.getAllProperties(false, this._printArray.bind(this, array, elem));
     },
 
     /**
@@ -750,8 +780,10 @@ WebInspector.ConsoleViewMessage.prototype = {
      */
     _printArray: function(array, elem, properties)
     {
-        if (!properties)
+        if (!properties) {
+            this._formatParameterAsObject(array, elem, false);
             return;
+        }
 
         var elements = [];
         for (var i = 0; i < properties.length; ++i) {

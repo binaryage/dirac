@@ -190,6 +190,20 @@ WebInspector.RemoteObject.type = function(remoteObject)
 }
 
 /**
+ * @param {!WebInspector.RemoteObject|!RuntimeAgent.RemoteObject|!RuntimeAgent.ObjectPreview} object
+ * @return {number}
+ */
+WebInspector.RemoteObject.arrayLength = function(object)
+{
+    if (object.subtype !== "array")
+        return 0;
+    var matches = object.description.match(/\[([0-9]+)\]/);
+    if (!matches)
+        return 0;
+    return parseInt(matches[1], 10);
+}
+
+/**
  * @param {!RuntimeAgent.RemoteObject|!WebInspector.RemoteObject|number|string|boolean|undefined|null} object
  * @return {!RuntimeAgent.CallArgument}
  */
@@ -624,13 +638,7 @@ WebInspector.RemoteObjectImpl.prototype = {
      */
     arrayLength: function()
     {
-        if (this.subtype !== "array")
-            return 0;
-
-        var matches = this._description.match(/\[([0-9]+)\]/);
-        if (!matches)
-            return 0;
-        return parseInt(matches[1], 10);
+        return WebInspector.RemoteObject.arrayLength(this);
     },
 
     /**
