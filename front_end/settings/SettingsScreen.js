@@ -44,7 +44,7 @@ WebInspector.SettingsScreen = function(onHide)
     this._contentElement = this.element.createChild("div", "help-window-main");
     var settingsLabelElement = createElementWithClass("div", "help-window-label");
     settingsLabelElement.createTextChild(WebInspector.UIString("Settings"));
-    this._contentElement.appendChild(this._createCloseButton());
+    this._contentElement.appendChild(this.createCloseButton());
 
     this._tabbedPane = new WebInspector.TabbedPane();
     this._tabbedPane.insertBeforeTabStrip(settingsLabelElement);
