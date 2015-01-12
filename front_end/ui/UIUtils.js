@@ -29,6 +29,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+WebInspector.highlightedSearchResultClassName = "highlighted-search-result";
+
 /**
  * @param {!Element} element
  * @param {?function(!MouseEvent): boolean} elementDragStart
@@ -800,15 +802,16 @@ WebInspector.highlightSearchResult = function(element, offset, length, domChange
  */
 WebInspector.highlightSearchResults = function(element, resultRanges, changes)
 {
-    return WebInspector.highlightRangesWithStyleClass(element, resultRanges, "highlighted-search-result", changes);
+    return WebInspector.highlightRangesWithStyleClass(element, resultRanges, WebInspector.highlightedSearchResultClassName, changes);
 }
 
 /**
  * @param {!Element} element
+ * @param {string} styleClass
  */
-WebInspector.removeSearchResultsHighlight = function(element)
+WebInspector.removeSearchResultsHighlight = function(element, styleClass)
 {
-    var highlightBits = element.querySelectorAll(".highlighted-search-result");
+    var highlightBits = element.querySelectorAll("." + styleClass);
     for (var i = 0; i < highlightBits.length; ++i) {
         var span = highlightBits[i];
         span.parentElement.replaceChild(createTextNode(span.textContent), span);

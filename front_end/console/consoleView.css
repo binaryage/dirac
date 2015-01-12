@@ -385,3 +385,10 @@
 .console-view .status-bar::shadow .console-context {
     max-width: 200px;
 }
+
+.highlighted-search-result.current-search-result {
+    border-radius: 1px;
+    padding: 1px;
+    margin: -1px;
+    background-color: rgba(255, 127, 0, 0.8);
+}

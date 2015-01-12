@@ -571,7 +571,7 @@ WebInspector.ElementsPanel.prototype = {
         if (treeElement) {
             treeElement.highlightSearchResults(this._searchQuery);
             treeElement.reveal();
-            var matches = treeElement.listItemElement.getElementsByClassName("highlighted-search-result");
+            var matches = treeElement.listItemElement.getElementsByClassName(WebInspector.highlightedSearchResultClassName);
             if (matches.length)
                 matches[0].scrollIntoViewIfNeeded();
         }
