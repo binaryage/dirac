@@ -1948,7 +1948,7 @@ WebInspector.StylePropertiesSection.prototype = {
         if (!this.editable)
             return;
 
-        if (!event.target.window().getSelection().isCollapsed)
+        if (!event.target.isComponentSelectionCollapsed())
             return;
 
         if (this._checkWillCancelEditing())
@@ -1976,7 +1976,7 @@ WebInspector.StylePropertiesSection.prototype = {
         var config = new WebInspector.InplaceEditor.Config(this._editingMediaCommitted.bind(this, media), this._editingMediaCancelled.bind(this, element), undefined, this._editingMediaBlurHandler.bind(this));
         WebInspector.InplaceEditor.startEditing(element, config);
 
-        element.window().getSelection().setBaseAndExtent(element, 0, element, 1);
+        element.getComponentSelection().setBaseAndExtent(element, 0, element, 1);
         this._parentPane._isEditingStyle = true;
         var parentMediaElement = element.enclosingNodeOrSelfWithClass("media");
         parentMediaElement.classList.add("editing-media");
@@ -2003,7 +2003,7 @@ WebInspector.StylePropertiesSection.prototype = {
         // Mark the selectors in group if necessary.
         // This is overridden by BlankStylePropertiesSection.
         this._markSelectorMatches();
-        element.window().getSelection().collapse(element, 0);
+        element.getComponentSelection().collapse(element, 0);
     },
 
     /**
@@ -2108,7 +2108,7 @@ WebInspector.StylePropertiesSection.prototype = {
         var config = new WebInspector.InplaceEditor.Config(this.editingSelectorCommitted.bind(this), this.editingSelectorCancelled.bind(this), undefined, this._editingSelectorBlurHandler.bind(this));
         WebInspector.InplaceEditor.startEditing(this._selectorElement, config);
 
-        element.window().getSelection().setBaseAndExtent(element, 0, element, 1);
+        element.getComponentSelection().setBaseAndExtent(element, 0, element, 1);
         this._parentPane._isEditingStyle = true;
         this._parentPane._startEditingSelector(this);
     },
@@ -2119,7 +2119,7 @@ WebInspector.StylePropertiesSection.prototype = {
     setSelectorText: function(text)
     {
         this._selectorElement.textContent = text;
-        this._selectorElement.window().getSelection().setBaseAndExtent(this._selectorElement, 0, this._selectorElement, 1);
+        this._selectorElement.getComponentSelection().setBaseAndExtent(this._selectorElement, 0, this._selectorElement, 1);
     },
 
     /**
@@ -3308,7 +3308,7 @@ WebInspector.StylePropertyTreeElement.prototype = {
      */
     _mouseClick: function(event)
     {
-        if (!event.target.window().getSelection().isCollapsed)
+        if (!event.target.isComponentSelectionCollapsed())
             return;
 
         event.consume(true);
@@ -3496,7 +3496,7 @@ WebInspector.StylePropertyTreeElement.prototype = {
         if (isEditingName)
             proxyElement.addEventListener("paste", pasteHandler.bind(this, context), false);
 
-        selectElement.window().getSelection().setBaseAndExtent(selectElement, 0, selectElement, 1);
+        selectElement.getComponentSelection().setBaseAndExtent(selectElement, 0, selectElement, 1);
     },
 
     /**
@@ -3517,7 +3517,7 @@ WebInspector.StylePropertyTreeElement.prototype = {
             result = "cancel";
         else if (!context.isEditingName && this._newProperty && event.keyCode === WebInspector.KeyboardShortcut.Keys.Backspace.code) {
             // For a new property, when Backspace is pressed at the beginning of new property value, move back to the property name.
-            var selection = event.target.window().getSelection();
+            var selection = event.target.getComponentSelection();
             if (selection.isCollapsed && !selection.focusOffset) {
                 event.preventDefault();
                 result = "backward";

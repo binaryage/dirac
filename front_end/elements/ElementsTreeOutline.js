@@ -290,7 +290,7 @@ WebInspector.ElementsTreeOutline.prototype = {
         this._setClipboardData(null);
 
         // Don't prevent the normal copy if the user has a selection.
-        if (!event.target.window().getSelection().isCollapsed)
+        if (!event.target.isComponentSelectionCollapsed())
             return;
 
         // Do not interfere with text editing.
@@ -788,7 +788,7 @@ WebInspector.ElementsTreeOutline.prototype = {
 
     _ondragstart: function(event)
     {
-        if (!event.target.window().getSelection().isCollapsed)
+        if (!event.target.isComponentSelectionCollapsed())
             return false;
         if (event.target.nodeName === "A")
             return false;

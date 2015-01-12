@@ -356,7 +356,7 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
         }
 
         var proxyElement = this._prompt.attachAndStartEditing(elementToEdit, blurListener.bind(this));
-        this.listItemElement.window().getSelection().setBaseAndExtent(elementToEdit, 0, elementToEdit, 1);
+        this.listItemElement.getComponentSelection().setBaseAndExtent(elementToEdit, 0, elementToEdit, 1);
         proxyElement.addEventListener("keydown", this._promptKeyDown.bind(this, context), false);
     },
 

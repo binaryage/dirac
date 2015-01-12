@@ -239,7 +239,7 @@ WebInspector.TextPrompt.prototype = {
         function moveBackIfOutside()
         {
             delete this._selectionTimeout;
-            if (!this.isCaretInsidePrompt() && this._element.window().getSelection().isCollapsed) {
+            if (!this.isCaretInsidePrompt() && this._element.isComponentSelectionCollapsed()) {
                 this.moveCaretToEndOfPrompt();
                 this.autoCompleteSoon();
             }
@@ -377,7 +377,7 @@ WebInspector.TextPrompt.prototype = {
     complete: function(force, reverse)
     {
         this.clearAutoComplete(true);
-        var selection = this._element.window().getSelection();
+        var selection = this._element.getComponentSelection();
         if (!selection.rangeCount)
             return;
 
@@ -571,7 +571,7 @@ WebInspector.TextPrompt.prototype = {
 
         finalSelectionRange.setEnd(completionTextNode, completionText.length);
 
-        var selection = this._element.window().getSelection();
+        var selection = this._element.getComponentSelection();
         selection.removeAllRanges();
         selection.addRange(finalSelectionRange);
         if (isIntermediateSuggestion)
@@ -604,7 +604,7 @@ WebInspector.TextPrompt.prototype = {
         finalSelectionRange.setStart(textNode, text.length);
         finalSelectionRange.setEnd(textNode, text.length);
 
-        var selection = this._element.window().getSelection();
+        var selection = this._element.getComponentSelection();
         selection.removeAllRanges();
         selection.addRange(finalSelectionRange);
 
@@ -644,7 +644,7 @@ WebInspector.TextPrompt.prototype = {
      */
     isCaretAtEndOfPrompt: function()
     {
-        var selection = this._element.window().getSelection();
+        var selection = this._element.getComponentSelection();
         if (!selection.rangeCount || !selection.isCollapsed)
             return false;
 
@@ -675,7 +675,7 @@ WebInspector.TextPrompt.prototype = {
      */
     isCaretOnFirstLine: function()
     {
-        var selection = this._element.window().getSelection();
+        var selection = this._element.getComponentSelection();
         var focusNode = selection.focusNode;
         if (!focusNode || focusNode.nodeType !== Node.TEXT_NODE || focusNode.parentNode !== this._element)
             return true;
@@ -700,7 +700,7 @@ WebInspector.TextPrompt.prototype = {
      */
     isCaretOnLastLine: function()
     {
-        var selection = this._element.window().getSelection();
+        var selection = this._element.getComponentSelection();
         var focusNode = selection.focusNode;
         if (!focusNode || focusNode.nodeType !== Node.TEXT_NODE || focusNode.parentNode !== this._element)
             return true;
@@ -722,7 +722,7 @@ WebInspector.TextPrompt.prototype = {
 
     moveCaretToEndOfPrompt: function()
     {
-        var selection = this._element.window().getSelection();
+        var selection = this._element.getComponentSelection();
         var selectionRange = this._createRange();
 
         var offset = this._element.childNodes.length;
@@ -906,7 +906,7 @@ WebInspector.TextPromptWithHistory.prototype = {
                 if (firstNewlineIndex === -1)
                     this.moveCaretToEndOfPrompt();
                 else {
-                    var selection = this._element.window().getSelection();
+                    var selection = this._element.getComponentSelection();
                     var selectionRange = this._createRange();
 
                     selectionRange.setStart(this._element.firstChild, firstNewlineIndex);

@@ -275,6 +275,43 @@ Node.prototype.parentNodeOrShadowHost = function()
 }
 
 /**
+ * @return {?Selection}
+ */
+Node.prototype.getComponentSelection = function()
+{
+    var parent = this.parentNode;
+    while (parent && parent.nodeType !== Node.DOCUMENT_FRAGMENT_NODE)
+        parent = parent.parentNode;
+    return parent instanceof ShadowRoot ? parent.getSelection() : this.window().getSelection();
+}
+
+
+/**
+ * @return {boolean}
+ */
+Node.prototype.isComponentSelectionCollapsed = function()
+{
+    // FIXME: crbug.com/447523, use selection.isCollapsed when it is fixed for shadow dom.
+    var selection = this.getComponentSelection();
+    return selection && selection.rangeCount ? selection.getRangeAt(0).collapsed : false;
+}
+
+/**
+ * @return {!Selection}
+ */
+Node.prototype.getDeepSelection = function()
+{
+    var activeElement = this.ownerDocument.activeElement;
+    var shadowRoot = null;
+    while (activeElement && activeElement.shadowRoot) {
+        shadowRoot = activeElement.shadowRoot;
+        activeElement = shadowRoot.activeElement;
+    }
+
+    return shadowRoot ? shadowRoot.getSelection() : this.window().getSelection();
+}
+
+/**
  * @return {!Window}
  */
 Node.prototype.window = function()
@@ -302,7 +339,7 @@ Element.prototype.removeChildren = function()
  */
 Element.prototype.isInsertionCaretInside = function()
 {
-    var selection = this.window().getSelection();
+    var selection = this.getComponentSelection();
     if (!selection.rangeCount || !selection.isCollapsed)
         return false;
     var selectionRange = selection.getRangeAt(0);
@@ -584,7 +621,7 @@ Text.prototype.select = function(start, end)
     if (start < 0)
         start = end + start;
 
-    var selection = this.ownerDocument.defaultView.getSelection();
+    var selection = this.getComponentSelection();
     selection.removeAllRanges();
     var range = this.ownerDocument.createRange();
     range.setStart(this, start);
@@ -600,7 +637,7 @@ Element.prototype.selectionLeftOffset = function()
 {
     // Calculate selection offset relative to the current element.
 
-    var selection = this.window().getSelection();
+    var selection = this.getComponentSelection();
     if (!selection.containsNode(this, true))
         return null;
 

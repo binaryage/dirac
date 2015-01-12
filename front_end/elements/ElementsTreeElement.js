@@ -659,7 +659,7 @@ WebInspector.ElementsTreeElement.prototype = {
 
         this._editing = WebInspector.InplaceEditor.startEditing(attribute, config);
 
-        this.listItemElement.window().getSelection().setBaseAndExtent(elementForSelection, 0, elementForSelection, 1);
+        this.listItemElement.getComponentSelection().setBaseAndExtent(elementForSelection, 0, elementForSelection, 1);
 
         return true;
     },
@@ -683,7 +683,7 @@ WebInspector.ElementsTreeElement.prototype = {
             container.textContent = textNode.nodeValue(); // Strip the CSS or JS highlighting if present.
         var config = new WebInspector.InplaceEditor.Config(this._textNodeEditingCommitted.bind(this, textNode), this._editingCancelled.bind(this));
         this._editing = WebInspector.InplaceEditor.startEditing(textNodeElement, config);
-        this.listItemElement.window().getSelection().setBaseAndExtent(textNodeElement, 0, textNodeElement, 1);
+        this.listItemElement.getComponentSelection().setBaseAndExtent(textNodeElement, 0, textNodeElement, 1);
 
         return true;
     },
@@ -741,7 +741,7 @@ WebInspector.ElementsTreeElement.prototype = {
 
         var config = new WebInspector.InplaceEditor.Config(editingComitted.bind(this), editingCancelled.bind(this), tagName);
         this._editing = WebInspector.InplaceEditor.startEditing(tagNameElement, config);
-        this.listItemElement.window().getSelection().setBaseAndExtent(tagNameElement, 0, tagNameElement, 1);
+        this.listItemElement.getComponentSelection().setBaseAndExtent(tagNameElement, 0, tagNameElement, 1);
         return true;
     },
 

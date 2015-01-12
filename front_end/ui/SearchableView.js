@@ -448,7 +448,7 @@ WebInspector.SearchableView.prototype = {
 
         var queryCandidate;
         if (WebInspector.currentFocusElement() !== this._searchInputElement) {
-            var selection = this._searchInputElement.window().getSelection();
+            var selection = this._searchInputElement.getComponentSelection();
             if (selection.rangeCount)
                 queryCandidate = selection.toString().replace(/\r?\n.*/, "");
         }

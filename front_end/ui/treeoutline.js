@@ -692,7 +692,7 @@ TreeElement.prototype = {
         var element = event.currentTarget;
         if (element._selectionStarted) {
             delete element._selectionStarted;
-            var selection = element.window().getSelection();
+            var selection = element.getComponentSelection();
             if (selection && !selection.isCollapsed && element.isSelfOrAncestor(selection.anchorNode) && element.isSelfOrAncestor(selection.focusNode))
                 return;
         }

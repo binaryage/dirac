@@ -63,7 +63,7 @@ WebInspector.DatabaseQueryView.prototype = {
 
     _messagesClicked: function()
     {
-        if (!this._prompt.isCaretInsidePrompt() && this.element.window().getSelection().isCollapsed)
+        if (!this._prompt.isCaretInsidePrompt() && this.element.isComponentSelectionCollapsed())
             this._prompt.moveCaretToEndOfPrompt();
     },
 
@@ -115,7 +115,7 @@ WebInspector.DatabaseQueryView.prototype = {
         function moveBackIfOutside()
         {
             delete this._selectionTimeout;
-            if (!this._prompt.isCaretInsidePrompt() && this.element.window().getSelection().isCollapsed)
+            if (!this._prompt.isCaretInsidePrompt() && this.element.isComponentSelectionCollapsed())
                 this._prompt.moveCaretToEndOfPrompt();
             this._prompt.autoCompleteSoon();
         }

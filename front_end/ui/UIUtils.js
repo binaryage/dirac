@@ -377,7 +377,7 @@ WebInspector.handleElementValueModifications = function(event, element, finishHa
     if (!arrowKeyOrMouseWheelEvent && !pageKeyPressed)
         return false;
 
-    var selection = element.window().getSelection();
+    var selection = element.getComponentSelection();
     if (!selection.rangeCount)
         return false;
 
@@ -720,7 +720,7 @@ WebInspector.setCurrentFocusElement = function(x)
         // Make a caret selection inside the new element if there isn't a range selection and there isn't already a caret selection inside.
         // This is needed (at least) to remove caret from console when focus is moved to some element in the panel.
         // The code below should not be applied to text fields and text areas, hence _isTextEditingElement check.
-        var selection = x.window().getSelection();
+        var selection = x.getComponentSelection();
         if (!WebInspector._isTextEditingElement(WebInspector._currentFocusElement) && selection.isCollapsed && !WebInspector._currentFocusElement.isInsertionCaretInside()) {
             var selectionRange = WebInspector._currentFocusElement.ownerDocument.createRange();
             selectionRange.setStart(WebInspector._currentFocusElement, 0);
