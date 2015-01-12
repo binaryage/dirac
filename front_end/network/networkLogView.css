@@ -345,8 +345,7 @@
     position: absolute;
     top: 13px;
     bottom: 13px;
-    margin: 0 0 0 -1px;
-    min-width: 2px;
+    min-width: 3px;
 }
 
 .network-graph-bar:not(.request-timing) {
@@ -362,12 +361,17 @@
 
 /* Resource categories */
 
+.network-graph-bar.request-timing.total,
 .network-graph-bar.request-timing.proxy,
 .network-graph-bar.request-timing.dns,
 .network-graph-bar.request-timing.ssl,
 .network-graph-bar.request-timing.connecting,
 .network-graph-bar.request-timing.blocking {
-    margin: 3px 0 3px -1px;
+    margin: 3px 0;
+}
+
+.network-graph-bar.request-timing.total {
+    border: solid 1px #AAAAAA;
 }
 
 .network-graph-bar.request-timing.receiving {
