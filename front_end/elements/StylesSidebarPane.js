@@ -4069,6 +4069,8 @@ WebInspector.StylesSidebarPane.CSSPropertyPrompt.prototype = {
         }
 
         var results = this._cssCompletions.startsWith(prefix);
+        if (!this._isEditingName && !results.length && prefix.length > 1 && "!important".startsWith(prefix))
+            results.push("!important");
         var userEnteredText = wordRange.toString().replace("-", "");
         if (userEnteredText && (userEnteredText === userEnteredText.toUpperCase())) {
             for (var i = 0; i < results.length; ++i)
