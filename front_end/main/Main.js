@@ -775,6 +775,8 @@ WebInspector.Main._reloadPage = function(hard)
 {
     if (!WebInspector.targetManager.hasTargets())
         return false;
+    if (WebInspector.isWorkerFrontend())
+        return false;
 
     var targets = WebInspector.targetManager.targets();
     for (var i = 0; i < targets.length; ++i)
