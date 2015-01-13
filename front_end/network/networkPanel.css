@@ -89,6 +89,10 @@
     width: 120px;
 }
 
+.network-timing-table col.duration {
+    width: 80px;
+}
+
 .network-timing-table td {
     padding: 2px 0;
 }
@@ -111,7 +115,6 @@
 .network-timing-row {
     position: relative;
     height: 15px;
-    width: 150px;
 }
 
 .network-timing-bar {
