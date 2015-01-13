@@ -285,7 +285,7 @@ body.undocked.platform-mac.inactive .inspector-view-tabbed-pane.tabbed-pane::sha
 .console-formatted-regexp,
 .console-formatted-symbol {
     color: rgb(196, 26, 22);
-    white-space: pre;
+    white-space: pre-wrap;
     unicode-bidi: -webkit-isolate;
 }
 
