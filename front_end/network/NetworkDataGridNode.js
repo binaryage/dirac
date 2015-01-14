@@ -394,7 +394,7 @@ WebInspector.NetworkDataGridNode.prototype = {
             this._expandTimelineButton = this._timelineCell.createChild("div", "network-expand-timeline-button");
             this._expandTimelineButton.createChild("div", "network-expand-timeline-glyph");
             this._expandTimelineButton.title = WebInspector.UIString("Show full timeline");
-            this._expandTimelineButton.addEventListener("click", this._onExpandTimeline.bind(this));
+            this._expandTimelineButton.addEventListener("mousedown", this._onExpandTimeline.bind(this));
         } else if (!show && this._expandTimelineButton) {
             this._expandTimelineButton.remove();
             this._expandTimelineButton = null;
@@ -404,6 +404,7 @@ WebInspector.NetworkDataGridNode.prototype = {
     _onExpandTimeline: function(event)
     {
         this._parentView.expandTimeline();
+        event.consume();
     },
 
     _updateTimingGraph: function()

@@ -52,7 +52,7 @@ WebInspector.DataGrid = function(columnsArray, editCallback, deleteCallback, ref
     /** @type {!Element} */
     this._dataTable = this._scrollContainer.createChild("table", "data");
 
-    this._dataTable.addEventListener("mousedown", this._mouseDownInDataTable.bind(this), true);
+    this._dataTable.addEventListener("mousedown", this._mouseDownInDataTable.bind(this));
     this._dataTable.addEventListener("click", this._clickInDataTable.bind(this), true);
 
     this._dataTable.addEventListener("contextmenu", this._contextMenuInDataTable.bind(this), true);
