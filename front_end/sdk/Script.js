@@ -141,8 +141,11 @@ WebInspector.Script.prototype = {
          */
         function innerCallback(error, searchMatches)
         {
-            if (error)
+            if (error) {
                 console.error(error);
+                callback([]);
+                return;
+            }
             var result = [];
             for (var i = 0; i < searchMatches.length; ++i) {
                 var searchMatch = new WebInspector.ContentProvider.SearchMatch(searchMatches[i].lineNumber, searchMatches[i].lineContent);
