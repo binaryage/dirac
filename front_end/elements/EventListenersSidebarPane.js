@@ -160,11 +160,6 @@ WebInspector.EventListenersSection = function(title, nodeId, linkifier)
     this._linkifier = linkifier;
     WebInspector.Section.call(this, title);
 
-    // Changed from a Properties List
-    this.propertiesElement.remove();
-    delete this.propertiesElement;
-    delete this.propertiesTreeOutline;
-
     this._eventBars = this.element.createChild("div", "event-bars");
 }
 
