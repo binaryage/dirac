@@ -139,6 +139,7 @@ WebInspector.ResponsiveDesignView.prototype = {
         var enabled = WebInspector.overridesSupport.emulationEnabled();
         this._mediaInspector.setEnabled(enabled);
         if (enabled && !this._enabled) {
+            WebInspector.userMetrics.DeviceModeEnabled.record();
             this._invalidateCache();
             this._ignoreResize = true;
             this._enabled = true;
