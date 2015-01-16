@@ -135,8 +135,8 @@ WebInspector.ConsoleView = function()
     this._prompt = new WebInspector.TextPromptWithHistory(WebInspector.ExecutionContextSelector.completionsForTextPromptInCurrentContext);
     this._prompt.setSuggestBoxEnabled(true);
     this._prompt.renderAsBlock();
-    this._prompt.attach(this._promptElement);
-    this._prompt.proxyElement.addEventListener("keydown", this._promptKeyDown.bind(this), false);
+    var proxyElement = this._prompt.attach(this._promptElement);
+    proxyElement.addEventListener("keydown", this._promptKeyDown.bind(this), false);
     this._prompt.setHistoryData(WebInspector.settings.consoleHistory.get());
     var historyData = WebInspector.settings.consoleHistory.get();
     this._prompt.setHistoryData(historyData);
@@ -782,7 +782,7 @@ WebInspector.ConsoleView.prototype = {
 
     _clearPromptBackwards: function()
     {
-        this._prompt.text = "";
+        this._prompt.setText("");
     },
 
     _requestClearMessages: function()
@@ -816,7 +816,7 @@ WebInspector.ConsoleView.prototype = {
 
         this._prompt.clearAutoComplete(true);
 
-        var str = this._prompt.text;
+        var str = this._prompt.text();
         if (!str.length)
             return;
         this._appendCommand(str, true);
@@ -889,7 +889,7 @@ WebInspector.ConsoleView.prototype = {
     _appendCommand: function(text, useCommandLineAPI)
     {
 
-        this._prompt.text = "";
+        this._prompt.setText("");
         var currentExecutionContext = WebInspector.context.flavor(WebInspector.ExecutionContext);
         if (currentExecutionContext)
             WebInspector.ConsoleModel.evaluateCommandInConsole(currentExecutionContext, text, useCommandLineAPI);
@@ -902,7 +902,7 @@ WebInspector.ConsoleView.prototype = {
     {
         var data = /**{{result: ?WebInspector.RemoteObject, wasThrown: boolean, text: string, commandMessage: !WebInspector.ConsoleMessage}} */ (event.data);
         this._prompt.pushHistoryItem(data.text);
-        WebInspector.settings.consoleHistory.set(this._prompt.historyData.slice(-30));
+        WebInspector.settings.consoleHistory.set(this._prompt.historyData().slice(-30));
         this._printResult(data.result, data.wasThrown, data.commandMessage, data.exceptionDetails);
     },
 
