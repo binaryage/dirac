@@ -419,7 +419,7 @@ WebInspector.NetworkDataGridNode.prototype = {
         for (var i = 0; i < timeRanges.length; ++i) {
             var range = timeRanges[i];
             var start = calculator.computePercentageFromEventTime(range.start);
-            var end = calculator.computePercentageFromEventTime(range.end);
+            var end = (range.end !== Number.MAX_VALUE) ? calculator.computePercentageFromEventTime(range.end) : 100;
             if (!nextBar)
                 nextBar = container.createChild("div");
             nextBar.className = "network-graph-bar request-timing";
