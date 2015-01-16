@@ -62,6 +62,11 @@ WebInspector.TextPrompt.prototype = {
         this._autocompletionTimeout = timeout;
     },
 
+    get proxyElement()
+    {
+        return this._proxyElement;
+    },
+
     /**
      * @param {boolean} suggestBoxEnabled
      */
@@ -99,9 +104,9 @@ WebInspector.TextPrompt.prototype = {
      */
     attachAndStartEditing: function(element, blurListener)
     {
-        var proxyElement = this._attachInternal(element);
+        this._attachInternal(element);
         this._startEditing(blurListener);
-        return proxyElement;
+        return this.proxyElement;
     },
 
     /**
@@ -110,7 +115,7 @@ WebInspector.TextPrompt.prototype = {
      */
     _attachInternal: function(element)
     {
-        if (this._proxyElement)
+        if (this.proxyElement)
             throw "Cannot attach an attached TextPrompt";
         this._element = element;
 
@@ -121,8 +126,8 @@ WebInspector.TextPrompt.prototype = {
         this._boundRemoveSuggestionAids = this._removeSuggestionAids.bind(this);
         this._proxyElement = element.ownerDocument.createElement("span");
         this._proxyElement.style.display = this._proxyElementDisplay;
-        element.parentElement.insertBefore(this._proxyElement, element);
-        this._proxyElement.appendChild(element);
+        element.parentElement.insertBefore(this.proxyElement, element);
+        this.proxyElement.appendChild(element);
         this._element.classList.add("text-prompt");
         this._element.addEventListener("keydown", this._boundOnKeyDown, false);
         this._element.addEventListener("input", this._boundOnInput, false);
@@ -134,23 +139,23 @@ WebInspector.TextPrompt.prototype = {
         if (this._suggestBoxEnabled)
             this._suggestBox = new WebInspector.SuggestBox(this);
 
-        return this._proxyElement;
+        return this.proxyElement;
     },
 
     detach: function()
     {
         this._removeFromElement();
-        this._proxyElement.parentElement.insertBefore(this._element, this._proxyElement);
-        this._proxyElement.remove();
+        this.proxyElement.parentElement.insertBefore(this._element, this.proxyElement);
+        this.proxyElement.remove();
         delete this._proxyElement;
         this._element.classList.remove("text-prompt");
         WebInspector.restoreFocusFromElement(this._element);
     },
 
     /**
-     * @return {string}
+     * @type {string}
      */
-    text: function()
+    get text()
     {
         return this._element.textContent;
     },
@@ -158,7 +163,7 @@ WebInspector.TextPrompt.prototype = {
     /**
      * @param {string} x
      */
-    setText: function(x)
+    set text(x)
     {
         this._removeSuggestionAids();
         if (!x) {
@@ -202,7 +207,7 @@ WebInspector.TextPrompt.prototype = {
         if (this._element.tabIndex < 0)
             this._element.tabIndex = 0;
         WebInspector.setCurrentFocusElement(this._element);
-        if (!this.text())
+        if (!this.text)
             this._updateAutoComplete();
     },
 
@@ -396,7 +401,7 @@ WebInspector.TextPrompt.prototype = {
 
         var wordPrefixRange = selectionRange.startContainer.rangeOfWord(selectionRange.startOffset, this._completionStopCharacters, this._element, "backward");
         this._waitingForCompletions = true;
-        this._loadCompletions(/** @type {!Element} */ (this._proxyElement), wordPrefixRange, force || false, this._completionsReady.bind(this, selection, wordPrefixRange, !!reverse));
+        this._loadCompletions(this.proxyElement, wordPrefixRange, force || false, this._completionsReady.bind(this, selection, wordPrefixRange, !!reverse));
     },
 
     disableDefaultSuggestionForEmptyInput: function()
@@ -474,7 +479,7 @@ WebInspector.TextPrompt.prototype = {
         if (originalWordPrefixRange.toString() + selectionRange.toString() !== fullWordRange.toString())
             return;
 
-        selectedIndex = (this._disableDefaultSuggestionForEmptyInput && !this.text()) ? -1 : (selectedIndex || 0);
+        selectedIndex = (this._disableDefaultSuggestionForEmptyInput && !this.text) ? -1 : (selectedIndex || 0);
 
         this._userEnteredRange = fullWordRange;
         this._userEnteredText = fullWordRange.toString();
@@ -740,14 +745,6 @@ WebInspector.TextPrompt.prototype = {
         return true;
     },
 
-    /**
-     * @return {?Element}
-     */
-    proxyElementForTests: function()
-    {
-        return this._proxyElement || null;
-    },
-
     __proto__: WebInspector.Object.prototype
 }
 
@@ -772,16 +769,30 @@ WebInspector.TextPromptWithHistory = function(completions, stopCharacters)
      * @type {number}
      */
     this._historyOffset = 1;
+
+    /**
+     * Whether to coalesce duplicate items in the history, default is true.
+     * @type {boolean}
+     */
+    this._coalesceHistoryDupes = true;
 }
 
 WebInspector.TextPromptWithHistory.prototype = {
     /**
      * @return {!Array.<string>}
      */
-    historyData: function()
+    get historyData()
     {
         // FIXME: do we need to copy this?
         return this._data;
+    },
+
+    /**
+     * @param {boolean} x
+     */
+    setCoalesceHistoryDupes: function(x)
+    {
+        this._coalesceHistoryDupes = x;
     },
 
     /**
@@ -805,7 +816,7 @@ WebInspector.TextPromptWithHistory.prototype = {
         }
 
         this._historyOffset = 1;
-        if (text === this._currentHistoryItem())
+        if (this._coalesceHistoryDupes && text === this._currentHistoryItem())
             return;
         this._data.push(text);
     },
@@ -819,7 +830,7 @@ WebInspector.TextPromptWithHistory.prototype = {
             this._data.pop(); // Throw away obsolete uncommitted text.
         this._uncommittedIsTop = true;
         this.clearAutoComplete(true);
-        this._data.push(this.text());
+        this._data.push(this.text);
     },
 
     /**
@@ -888,10 +899,10 @@ WebInspector.TextPromptWithHistory.prototype = {
 
         if (newText !== undefined) {
             event.consume(true);
-            this.setText(newText);
+            this.text = newText;
 
             if (isPrevious) {
-                var firstNewlineIndex = this.text().indexOf("\n");
+                var firstNewlineIndex = this.text.indexOf("\n");
                 if (firstNewlineIndex === -1)
                     this.moveCaretToEndOfPrompt();
                 else {
