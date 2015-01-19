@@ -44,6 +44,17 @@ WebInspector.RequestHeadersView = function(request)
     this._showRequestHeadersText = false;
     this._showResponseHeadersText = false;
 
+    /** @type {?RegExp} */
+    this._filterRegex = null;
+    if (Runtime.experiments.isEnabled("networkRequestHeadersFilterInDetailsView")) {
+        this._filterInput = this.element.createChild("input", "filter-input");
+        this._filterInput.type = "text";
+        this._filterInput.placeholder = WebInspector.UIString("Filter headers");
+        this._filterInput.addEventListener("input", this._updateFilter.bind(this), false);
+        this._filterInput.addEventListener("keydown", this._onFilterKeyDown.bind(this), false);
+        this._filterInput.value = WebInspector.RequestHeadersView._requestHeaderFilterSetting.get() || "";
+    }
+
     var outline = this.element.createChild("ol", "outline-disclosure");
     var root = new TreeOutline(outline);
     root.expandTreeElementsWhenArrowing = true;
@@ -63,15 +74,7 @@ WebInspector.RequestHeadersView = function(request)
     this._requestPayloadCategory = new WebInspector.RequestHeadersView.Category(root, "requestPayload", WebInspector.UIString("Request Payload"));
 
 
-    /** @type {?RegExp} */
-    this._filterRegex = null;
     if (Runtime.experiments.isEnabled("networkRequestHeadersFilterInDetailsView")) {
-        this._filterInput = this.element.createChild("input", "filter-input");
-        this._filterInput.type = "text";
-        this._filterInput.placeholder = WebInspector.UIString("Filter headers");
-        this._filterInput.addEventListener("input", this._updateFilter.bind(this), false);
-        this._filterInput.addEventListener("keydown", this._onFilterKeyDown.bind(this), false);
-        this._filterInput.value = WebInspector.RequestHeadersView._requestHeaderFilterSetting.get() || "";
         this._updateFilter();
     }
 }
