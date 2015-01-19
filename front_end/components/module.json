@@ -32,6 +32,7 @@
         "CustomPreviewSection.js"
     ],
     "stylesheets": [
-        "breakpointsList.css"
+        "breakpointsList.css",
+        "nodeLink.css"
     ]
 }

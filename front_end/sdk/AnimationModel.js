@@ -235,6 +235,8 @@ WebInspector.AnimationModel.AnimationNode = function(target, payload)
     this._payload = payload;
     if (payload.keyframesRule)
         this._keyframesRule = new WebInspector.AnimationModel.KeyframesRule(target, payload.keyframesRule);
+    this._delay = this._payload.delay;
+    this._duration = this._payload.duration;
 }
 
 WebInspector.AnimationModel.AnimationNode.prototype = {
@@ -243,7 +245,15 @@ WebInspector.AnimationModel.AnimationNode.prototype = {
      */
     delay: function()
     {
-        return this._payload.delay;
+        return this._delay;
+    },
+
+    /**
+     * @param {number} delay
+     */
+    setDelay: function(delay)
+    {
+        this._delay = delay;
     },
 
     /**
@@ -275,7 +285,12 @@ WebInspector.AnimationModel.AnimationNode.prototype = {
      */
     duration: function()
     {
-        return this._payload.duration;
+        return this._duration;
+    },
+
+    setDuration: function(duration)
+    {
+        this._duration = duration;
     },
 
     /**
@@ -330,6 +345,14 @@ WebInspector.AnimationModel.AnimationNode.prototype = {
     keyframesRule: function()
     {
         return this._keyframesRule;
+    },
+
+    /**
+     * @return {string}
+     */
+    easing: function()
+    {
+        return this._payload.easing;
     },
 
     __proto__: WebInspector.SDKObject.prototype
@@ -391,6 +414,7 @@ WebInspector.AnimationModel.KeyframeStyle = function(target, payload)
     WebInspector.SDKObject.call(this, target);
     this._payload = payload;
     this._style = WebInspector.CSSStyleDeclaration.parsePayload(this.target().cssModel, payload.style);
+    this._offset = this._payload.offset;
 }
 
 WebInspector.AnimationModel.KeyframeStyle.prototype = {
@@ -399,7 +423,23 @@ WebInspector.AnimationModel.KeyframeStyle.prototype = {
      */
     offset: function()
     {
-        return this._payload.offset;
+        return this._offset;
+    },
+
+    /**
+     * @param {number} offset
+     */
+    setOffset: function(offset)
+    {
+        this._offset = offset * 100 + "%";
+    },
+
+    /**
+     * @return {number}
+     */
+    offsetAsNumber: function()
+    {
+        return parseFloat(this._offset) / 100;
     },
 
     /**
@@ -408,6 +448,14 @@ WebInspector.AnimationModel.KeyframeStyle.prototype = {
     style: function()
     {
         return this._style;
+    },
+
+    /**
+     * @return {string}
+     */
+    easing: function()
+    {
+        return this._payload.easing;
     },
 
     __proto__: WebInspector.SDKObject.prototype

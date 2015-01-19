@@ -27,6 +27,9 @@ WebInspector.AnimationsSidebarPane = function(stylesPane)
 
     this.bodyElement.appendChild(this.headerElement);
     this.bodyElement.appendChild(this.animationsElement);
+
+    this._timeline = new WebInspector.AnimationTimeline();
+    this._timeline.show(this.bodyElement);
 }
 
 /**
@@ -80,6 +83,7 @@ WebInspector.AnimationsSidebarPane.prototype = {
     _animationPlayerCreated: function(event)
     {
         this._addAnimationPlayer(/** @type {!WebInspector.AnimationModel.AnimationPlayer} */ (event.data));
+        this._timeline.addAnimation(/** @type {!WebInspector.AnimationModel.AnimationPlayer} */ (event.data));
     },
 
     /**
@@ -141,6 +145,7 @@ WebInspector.AnimationsSidebarPane.prototype = {
         this._selectedNode = this.node();
         this.node().target().animationModel.getAnimationPlayers(this.node().id, this._showSubtreeSetting.get(), animationPlayersCallback.bind(this));
         this.node().target().animationModel.startListening(this.node().id, this._showSubtreeSetting.get());
+        this._timeline.redraw();
     },
 
     __proto__: WebInspector.ElementsSidebarPane.prototype

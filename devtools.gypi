@@ -94,6 +94,7 @@
         ],
         'devtools_components_js_files': [
             'front_end/components/breakpointsList.css',
+            'front_end/components/nodeLink.css',
             'front_end/components/CookiesTable.js',
             'front_end/components/DockController.js',
             'front_end/components/DOMBreakpointsSidebarPane.js',
@@ -359,10 +360,12 @@
             'front_end/devices/DevicesView.js',
         ],
         'devtools_elements_js_files': [
+            'front_end/elements/animationTimeline.css',
             'front_end/elements/breadcrumbs.css',
             'front_end/elements/elementsPanel.css',
             'front_end/elements/elementsTreeOutline.css',
             'front_end/elements/spectrum.css',
+            'front_end/elements/AnimationTimeline.js',
             'front_end/elements/AnimationsSidebarPane.js',
             'front_end/elements/ElementsBreadcrumbs.js',
             'front_end/elements/ElementsPanel.js',

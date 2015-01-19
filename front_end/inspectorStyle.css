@@ -869,7 +869,7 @@ body.inactive .sidebar-tree-item.selected {
     background-color: rgb(255, 255, 194);
 }
 
-.node-link {
+.link {
     text-decoration: underline;
     cursor: pointer;
 }

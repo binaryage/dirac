@@ -76,6 +76,7 @@
         "extensions"
     ],
     "scripts": [
+        "AnimationTimeline.js",
         "Spectrum.js",
         "ElementsBreadcrumbs.js",
         "ElementsSidebarPane.js",
@@ -91,6 +92,7 @@
         "AnimationsSidebarPane.js"
     ],
     "stylesheets": [
+        "animationTimeline.css",
         "breadcrumbs.css",
         "elementsPanel.css",
         "elementsTreeOutline.css",

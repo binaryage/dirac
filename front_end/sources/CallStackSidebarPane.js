@@ -90,7 +90,7 @@ WebInspector.CallStackSidebarPane.prototype = {
             else
                 element.textContent = WebInspector.UIString("%d stack frames are hidden (black-boxed).", this._hiddenPlacards);
             element.createTextChild(" ");
-            var showAllLink = element.createChild("span", "node-link");
+            var showAllLink = element.createChild("span", "link");
             showAllLink.textContent = WebInspector.UIString("Show");
             showAllLink.addEventListener("click", this._revealHiddenPlacards.bind(this), false);
             this.bodyElement.insertBefore(element, this.bodyElement.firstChild);

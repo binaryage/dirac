@@ -4677,7 +4677,8 @@
                     { "name": "fill", "type": "string", "description": "<code>AnimationNode</code>'s fill mode." },
                     { "name": "name", "type": "string", "description": "<code>AnimationNode</code>'s name." },
                     { "name": "backendNodeId", "$ref": "DOM.BackendNodeId", "description": "<code>AnimationNode</code>'s target node." },
-                    { "name": "keyframesRule", "$ref": "KeyframesRule", "optional": true, "description": "<code>AnimationNode</code>'s keyframes." }
+                    { "name": "keyframesRule", "$ref": "KeyframesRule", "optional": true, "description": "<code>AnimationNode</code>'s keyframes." },
+                    { "name": "easing", "type": "string", "description": "<code>AnimationNode</code>'s timing function." }
                 ],
                 "description": "AnimationNode instance"
             },
@@ -4695,7 +4696,8 @@
                 "type": "object",
                 "properties": [
                     { "name": "offset", "type": "string", "description": "Keyframe's time offset." },
-                    { "name": "style", "$ref": "CSS.CSSStyle", "description": "Keyframe's associated CSS style declaration." }
+                    { "name": "style", "$ref": "CSS.CSSStyle", "description": "Keyframe's associated CSS style declaration." },
+                    { "name": "easing", "type": "string", "description": "<code>AnimationNode</code>'s timing function." }
                 ],
                 "description": "Keyframe Style"
             }

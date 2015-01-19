@@ -171,6 +171,8 @@ WebInspector.DOMBreakpointsSidebarPane.prototype = {
         {
             if (typeof b === "string")
                 b = createTextNode(b);
+            else if (b.shadowRoot)
+                b = createTextNode(b.shadowRoot.lastChild.textContent);
             element.appendChild(b);
         }
         WebInspector.formatLocalized(message, substitutions, formatters, "", append);

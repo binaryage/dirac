@@ -71,6 +71,16 @@ WebInspector.Geometry.Vector.prototype = {
 
 /**
  * @constructor
+ * @param {number} x
+ * @param {number} y
+ */
+WebInspector.Geometry.Point = function(x, y) {
+    this.x = x;
+    this.y = y;
+}
+
+/**
+ * @constructor
  * @param {number} alpha
  * @param {number} beta
  * @param {number} gamma

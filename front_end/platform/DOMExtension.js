@@ -490,6 +490,20 @@ Element.prototype.scrollOffset = function()
 }
 
 /**
+ * @param {string} childType
+ * @param {string=} className
+ * @return {!Element}
+ */
+Element.prototype.createSVGChild = function(childType, className)
+{
+    var child = this.ownerDocument.createElementNS("http://www.w3.org/2000/svg", childType);
+    this.appendChild(child);
+    if (className)
+        child.setAttribute("class", className);
+    return child;
+}
+
+/**
  * @constructor
  * @param {number=} x
  * @param {number=} y

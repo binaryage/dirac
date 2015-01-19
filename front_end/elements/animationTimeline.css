@@ -1,0 +1,59 @@
+/*
+ * Copyright (c) 2015 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+.animation-row {
+    height: 60px;
+    width: 100%;
+    display: flex;
+}
+
+.animation-node-description {
+    display: inline-block;
+    height: 100%;
+    vertical-align: top;
+    line-height: 60px;
+    width: 150px;
+    padding-left: 15px;
+}
+
+.animation-row:nth-child(odd) > .animation-node-description {
+    background-color: #f6f6f6;
+}
+
+.animation-timeline-row {
+    position: relative;
+    display: inline-block;
+    flex-grow: 1;
+}
+
+.animation-timeline-row > canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.animation-timeline-grid-row {
+    border-bottom: 1px dashed #ddd;
+}
+
+path.animation-keyframe {
+    fill-opacity: 0.3;
+}
+
+line.animation-line {
+    stroke-width: 3;
+    stroke-linecap: round;
+    fill: none;
+}
+
+circle.animation-point {
+    stroke-width: 3;
+}
+
+circle.animation-keyframe-point {
+    stroke-width: 3;
+    fill: white;
+}
