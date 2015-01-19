@@ -26,7 +26,7 @@ WebInspector.TracingModel.Phase = {
     AsyncEnd: "F",
     NestableAsyncBegin: "b",
     NestableAsyncEnd: "e",
-    NestableAsyncInstant: "i",
+    NestableAsyncInstant: "n",
     FlowBegin: "s",
     FlowStep: "t",
     FlowEnd: "f",

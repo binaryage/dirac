@@ -61,6 +61,7 @@ WebInspector.TimelineUIUtils._initEventStyles = function()
     var eventStyles = {};
     eventStyles[recordTypes.Task] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Task"), categories["other"]);
     eventStyles[recordTypes.Program] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Other"), categories["other"]);
+    eventStyles[recordTypes.Animation] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Animation"), categories["rendering"]);
     eventStyles[recordTypes.EventDispatch] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Event"), categories["scripting"]);
     eventStyles[recordTypes.RequestMainThreadFrame] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Request Main Thread Frame"), categories["rendering"], true);
     eventStyles[recordTypes.BeginFrame] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Frame Start"), categories["rendering"], true);
@@ -197,6 +198,8 @@ WebInspector.TimelineUIUtils.eventTitle = function(event)
         return title;
     if (event.name === WebInspector.TimelineModel.RecordType.TimeStamp)
         return WebInspector.UIString("%s: %s", title, event.args["data"]["message"]);
+    if (event.name === WebInspector.TimelineModel.RecordType.Animation && event.args["data"] && event.args["data"]["name"])
+        return WebInspector.UIString("%s: %s", title, event.args["data"]["name"]);
     return title;
 }
 
@@ -307,6 +310,10 @@ WebInspector.TimelineUIUtils.buildDetailsNodeForTraceEvent = function(event, tar
             var url = event.url;
             if (url)
                 detailsText = WebInspector.displayNameForURL(url);
+        break;
+
+    case recordType.Animation:
+        detailsText = eventData && eventData["name"];
         break;
 
     default:
@@ -552,6 +559,10 @@ WebInspector.TimelineUIUtils._buildTraceEventDetailsSynchronously = function(eve
         break;
     case recordTypes.EmbedderCallback:
         contentHelper.appendTextRow(WebInspector.UIString("Callback Function"), eventData["callbackName"]);
+        break;
+    case recordTypes.Animation:
+        if (event.phase === WebInspector.TracingModel.Phase.NestableAsyncInstant)
+            contentHelper.appendTextRow(WebInspector.UIString("State"), eventData["state"]);
         break;
     default:
         var detailsNode = WebInspector.TimelineUIUtils.buildDetailsNodeForTraceEvent(event, model.target(), linkifier);

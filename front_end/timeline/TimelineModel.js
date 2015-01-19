@@ -56,6 +56,7 @@ WebInspector.TimelineModel.RecordType = {
 
     GPUTask: "GPUTask",
 
+    Animation: "Animation",
     RequestMainThreadFrame: "RequestMainThreadFrame",
     BeginFrame: "BeginFrame",
     BeginMainThreadFrame: "BeginMainThreadFrame",
@@ -857,6 +858,7 @@ WebInspector.TimelineModel.prototype = {
     _processThreadEvents: function(startTime, endTime, mainThread, thread)
     {
         var events = thread.events();
+        var asyncEvents = thread.asyncEvents();
 
         var cpuProfileEvent = events.peekLast();
         if (cpuProfileEvent && cpuProfileEvent.name === WebInspector.TimelineModel.RecordType.CpuProfile) {
@@ -870,14 +872,15 @@ WebInspector.TimelineModel.prototype = {
         }
 
         var threadEvents;
+        var threadAsyncEvents;
         if (thread === mainThread) {
             threadEvents = this._mainThreadEvents;
-            this._mainThreadAsyncEvents = this._mainThreadAsyncEvents.concat(thread.asyncEvents());
+            threadAsyncEvents = this._mainThreadAsyncEvents;
         } else {
             var virtualThread = new WebInspector.TimelineModel.VirtualThread(thread.name());
-            threadEvents = virtualThread.events;
-            virtualThread.asyncEvents = virtualThread.asyncEvents.concat(thread.asyncEvents());
             this._virtualThreads.push(virtualThread);
+            threadEvents = virtualThread.events;
+            threadAsyncEvents = virtualThread.asyncEvents;
         }
 
         this._eventStack = [];
@@ -887,21 +890,27 @@ WebInspector.TimelineModel.prototype = {
             var event = events[i];
             if (endTime && event.startTime >= endTime)
                 break;
+            this._updateEventStack(event);
             if (!this._processEvent(event))
                 continue;
             threadEvents.push(event);
             this._inspectedTargetEvents.push(event);
         }
+        i = asyncEvents.lowerBound(startTime, function (time, event) { return time - event.startTime });
+        for (; i < asyncEvents.length; ++i) {
+            if (endTime && event.startTime >= endTime)
+                break;
+            var asyncEvent = asyncEvents[i];
+            if (this._processEvent(asyncEvent[0]))
+                threadAsyncEvents.push(asyncEvent);
+        }
     },
 
     /**
      * @param {!WebInspector.TracingModel.Event} event
-     * @return {boolean}
      */
-    _processEvent: function(event)
+    _updateEventStack: function(event)
     {
-        var recordTypes = WebInspector.TimelineModel.RecordType;
-
         var eventStack = this._eventStack;
         while (eventStack.length && eventStack.peekLast().endTime < event.startTime)
             eventStack.pop();
@@ -914,11 +923,20 @@ WebInspector.TimelineModel.prototype = {
             event.selfTime = duration;
             eventStack.push(event);
         }
+    },
+
+    /**
+     * @param {!WebInspector.TracingModel.Event} event
+     * @return {boolean}
+     */
+    _processEvent: function(event)
+    {
+        var recordTypes = WebInspector.TimelineModel.RecordType;
 
         if (this._currentScriptEvent && event.startTime > this._currentScriptEvent.endTime)
             this._currentScriptEvent = null;
 
-        var eventData = event.args["data"] || event.args["beginData"];
+        var eventData = event.args["data"] || event.args["beginData"] || {};
         if (eventData && eventData["stackTrace"])
             event.stackTrace = eventData["stackTrace"];
 
@@ -1071,16 +1089,16 @@ WebInspector.TimelineModel.prototype = {
 
         case recordTypes.MarkDOMContent:
         case recordTypes.MarkLoad:
-            var page = event.args["data"] && event.args["data"]["page"];
+            var page = eventData["page"];
             if (page && page !== this._currentPage)
                 return false;
             break;
 
         case recordTypes.CommitLoad:
-            var page = event.args["data"] && event.args["data"]["page"];
+            var page = eventData["page"];
             if (page && page !== this._currentPage)
                 return false;
-            if (!event.args["data"]["isMainFrame"])
+            if (!eventData["isMainFrame"])
                 break;
             this._hadCommitLoad = true;
             this._firstCompositeLayers = null;
@@ -1089,6 +1107,13 @@ WebInspector.TimelineModel.prototype = {
         case recordTypes.CompositeLayers:
             if (!this._firstCompositeLayers && this._hadCommitLoad)
                 this._firstCompositeLayers = event;
+            break;
+
+        case recordTypes.Animation:
+            // FIXME: consider exposing animation state transitions.
+            if (event.phase === WebInspector.TracingModel.Phase.NestableAsyncInstant)
+                return false;
+            event.backendNodeId = eventData["nodeId"];
             break;
         }
         return true;

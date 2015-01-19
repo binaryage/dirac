@@ -277,10 +277,10 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
             else
                 this._appendAsyncEventSteps(eventSteps[i], this._currentLevel + level);
             var lastStep = eventSteps[i].peekLast();
-            if (lastStep.phase === WebInspector.TracingModel.Phase.AsyncEnd || lastStep.phase === WebInspector.TracingModel.Phase.NestableAsyncInstant)
+            if (e.phase === WebInspector.TracingModel.Phase.AsyncBegin || e.phase === WebInspector.TracingModel.Phase.NestableAsyncInstant)
                 lastUsedTimeByLevel[level] = lastStep.startTime;
-            else if (lastStep.phase === WebInspector.TracingModel.Phase.NestableAsyncBegin && lastStep.endTime)
-                lastUsedTimeByLevel[level] = lastStep.endTime;
+            else if (e.phase === WebInspector.TracingModel.Phase.NestableAsyncBegin && e.endTime)
+                lastUsedTimeByLevel[level] = e.endTime;
             else
                 lastUsedTimeByLevel[level] = Infinity;
         }
