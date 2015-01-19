@@ -328,13 +328,6 @@ body.undocked.platform-mac.inactive .inspector-view-tabbed-pane.tabbed-pane::sha
     background-color: rgb(220, 130, 130);
 }
 
-.auto-complete-text,
-.editing .auto-complete-text {
-    color: rgb(128, 128, 128) !important;
-    -webkit-user-select: none;
-    -webkit-user-modify: read-only;
-}
-
 .panel {
     display: none !important;
     overflow: hidden;
@@ -559,10 +552,6 @@ iframe.panel.extension {
     color: #222 !important;
     text-decoration: none !important;
     overflow: visible !important;
-}
-
-.editing br {
-    display: none;
 }
 
 .swatch {

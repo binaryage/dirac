@@ -72,6 +72,7 @@
         "suggestBox.css",
         "tabbedPane.css",
         "textButton.css",
+        "textPrompt.css",
         "xmlView.css"
     ]
 }

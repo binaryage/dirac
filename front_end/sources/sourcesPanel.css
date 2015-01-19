@@ -228,10 +228,6 @@ li.editing-sub-part .delete-button {
     -webkit-user-modify: read-write;
 }
 
-li.editing .delete-button {
-    display: none !important;
-}
-
 .cursor-pointer {
     cursor: pointer;
 }

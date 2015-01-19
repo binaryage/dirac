@@ -233,6 +233,7 @@
             'front_end/ui/suggestBox.css',
             'front_end/ui/tabbedPane.css',
             'front_end/ui/textButton.css',
+            'front_end/ui/textPrompt.css',
             'front_end/ui/xmlView.css',
             'front_end/ui/ActionRegistry.js',
             'front_end/ui/CompletionDictionary.js',
