@@ -153,8 +153,8 @@ WebInspector.NetworkDataGridNode.prototype = {
 
     select: function()
     {
-        this._parentView.dispatchEventToListeners(WebInspector.NetworkLogView.EventTypes.RequestSelected, this._request);
         WebInspector.SortableDataGridNode.prototype.select.apply(this, arguments);
+        this._parentView.dispatchEventToListeners(WebInspector.NetworkLogView.EventTypes.RequestSelected, this._request);
 
         WebInspector.notifications.dispatchEventToListeners(WebInspector.UserMetrics.UserAction, {
             action: WebInspector.UserMetrics.UserActionNames.NetworkRequestSelected,

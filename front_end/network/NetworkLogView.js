@@ -1008,6 +1008,12 @@ WebInspector.NetworkLogView.prototype = {
         this._updateColumns();
     },
 
+    revealSelectedItem: function()
+    {
+        if (this._dataGrid.selectedNode)
+            this._dataGrid.selectedNode.reveal();
+    },
+
     /**
      * @return {number}
      */

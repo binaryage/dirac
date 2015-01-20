@@ -329,6 +329,7 @@ WebInspector.NetworkPanel.prototype = {
             this._networkItemView.insertBeforeTabStrip(this._closeButtonElement);
             this._networkItemView.show(this._detailsView.element);
             this._splitView.showBoth();
+            this._networkLogView.revealSelectedItem();
         } else {
             this._splitView.hideMain();
             this._networkLogView.clearSelection();
