@@ -423,6 +423,7 @@ WebInspector.NetworkLogView.prototype = {
         this._dataGrid.setResizeMethod(WebInspector.DataGrid.ResizeMethod.Last);
         this._dataGrid.element.classList.add("network-log-grid");
         this._dataGrid.element.addEventListener("contextmenu", this._contextMenu.bind(this), true);
+        this._dataGrid.element.addEventListener("mousedown", this._dataGridMouseDown.bind(this), true);
         this._dataGrid.show(this.element);
 
         // Event listeners need to be added _after_ we attach to the document, so that owner document is properly update.
@@ -431,6 +432,15 @@ WebInspector.NetworkLogView.prototype = {
 
         this._patchTimelineHeader();
         this._dataGrid.sortNodes(this._sortingFunctions.startTime, false);
+    },
+
+    /**
+     * @param {!Event} event
+     */
+    _dataGridMouseDown: function(event)
+    {
+        if (!this._dataGrid.selectedNode && event.button)
+            event.consume();
     },
 
     /**
