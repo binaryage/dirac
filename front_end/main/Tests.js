@@ -798,7 +798,7 @@ TestSuite.prototype.evaluateInConsole_ = function(code, callback)
     {
         WebInspector.context.removeFlavorChangeListener(WebInspector.ExecutionContext, showConsoleAndEvaluate, this);
         var consoleView = WebInspector.ConsolePanel._view();
-        consoleView._prompt.text = code;
+        consoleView._prompt.setText(code);
         consoleView._promptElement.dispatchEvent(TestSuite.createKeyEvent("Enter"));
 
         this.addSniffer(WebInspector.ConsoleView.prototype, "_consoleMessageAddedForTest",
