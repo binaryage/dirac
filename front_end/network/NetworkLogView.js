@@ -1022,6 +1022,7 @@ WebInspector.NetworkLogView.prototype = {
         this._rowHeight = largeRows ? 41 : 21;
         this._dataGrid.element.classList.toggle("small", !largeRows);
         this._timelineGrid.element.classList.toggle("small", !largeRows);
+        this._dataGrid.scheduleUpdate();
     },
 
     /**
