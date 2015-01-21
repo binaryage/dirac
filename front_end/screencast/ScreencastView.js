@@ -49,6 +49,8 @@ WebInspector.ScreencastView._navBarHeight = 29;
 
 WebInspector.ScreencastView._HttpRegex = /^https?:\/\/(.+)/;
 
+WebInspector.ScreencastView._SchemeRegex = /^(https?|about|chrome):/;
+
 WebInspector.ScreencastView.prototype = {
     initialize: function()
     {
@@ -744,7 +746,7 @@ WebInspector.ScreencastView.prototype = {
         var url = this._navigationUrl.value;
         if (!url)
             return;
-        if (!url.match(WebInspector.ScreencastView._HttpRegex))
+        if (!url.match(WebInspector.ScreencastView._SchemeRegex))
             url = "http://" + url;
         PageAgent.navigate(url);
         this._canvasElement.focus();
