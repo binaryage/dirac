@@ -1938,6 +1938,9 @@ WebInspector.StylePropertiesSection.prototype = {
         if (this._checkWillCancelEditing())
             return;
 
+        if (event.target.enclosingNodeOrSelfWithNodeName("a"))
+            return;
+
         if (event.target.classList.contains("header") || this.element.classList.contains("read-only") || event.target.enclosingNodeOrSelfWithClass("media")) {
             event.consume();
             return;
