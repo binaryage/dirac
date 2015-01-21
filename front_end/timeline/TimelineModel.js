@@ -766,7 +766,6 @@ WebInspector.TimelineModel.prototype = {
         }
         this.virtualThreads().forEach(processVirtualThreadEvents.bind(this));
 
-
         for (var i = 0; i < topLevelRecords.length; i++) {
             var record = topLevelRecords[i];
             if (record.type() === WebInspector.TimelineModel.RecordType.Program)

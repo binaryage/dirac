@@ -110,7 +110,6 @@ WebInspector.TimelineUIUtils._initEventStyles = function()
     eventStyles[recordTypes.DecodeImage] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Image Decode"), categories["painting"]);
     eventStyles[recordTypes.ResizeImage] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("Image Resize"), categories["painting"]);
     eventStyles[recordTypes.GPUTask] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("GPU"), categories["gpu"]);
-    eventStyles[recordTypes.UpdateCounters] = new WebInspector.TimelineRecordStyle(WebInspector.UIString("UpdateCounters"), categories["other"]);
     WebInspector.TimelineUIUtils._eventStylesMap = eventStyles;
     return eventStyles;
 }
@@ -129,15 +128,6 @@ WebInspector.TimelineUIUtils._coalescableRecordTypes[WebInspector.TimelineModel.
 WebInspector.TimelineUIUtils.isCoalescable = function(recordType)
 {
     return !!WebInspector.TimelineUIUtils._coalescableRecordTypes[recordType];
-}
-
-/**
- * @param {!WebInspector.TimelineModel.Record} record
- * @return {?Object}
- */
-WebInspector.TimelineUIUtils.isCoalescable.countersForRecord = function(record)
-{
-    return record.type() === WebInspector.TimelineModel.RecordType.UpdateCounters ? record.data() : null;
 }
 
 /**
