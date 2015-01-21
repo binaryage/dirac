@@ -3741,6 +3741,15 @@
             {
                 "name": "resumed",
                 "description": "Fired when the virtual machine resumed execution."
+            },
+            {
+                "name": "promiseUpdated",
+                "parameters": [
+                    { "name": "eventType", "type": "string", "enum": ["new", "update", "gc"], "description": "Type of the event." },
+                    { "name": "promise", "$ref": "PromiseDetails", "description": "Information about the updated <code>Promise</code>." }
+                ],
+                "description": "Fired when a <code>Promise</code> is created, updated or garbage collected.",
+                "hidden": true
             }
         ]
     },

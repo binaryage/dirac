@@ -90,6 +90,7 @@ WebInspector.DebuggerModel.Events = {
     GlobalObjectCleared: "GlobalObjectCleared",
     CallFrameSelected: "CallFrameSelected",
     ConsoleCommandEvaluatedInSelectedCallFrame: "ConsoleCommandEvaluatedInSelectedCallFrame",
+    PromiseUpdated: "PromiseUpdated",
 }
 
 WebInspector.DebuggerModel.BreakReason = {
@@ -354,6 +355,15 @@ WebInspector.DebuggerModel.prototype = {
         this._setDebuggerPausedDetails(null);
         this._reset();
         this.dispatchEventToListeners(WebInspector.DebuggerModel.Events.GlobalObjectCleared);
+    },
+
+    /**
+     * @param {string} eventType
+     * @param {!DebuggerAgent.PromiseDetails} promise
+     */
+    _promiseUpdated: function(eventType, promise)
+    {
+        this.dispatchEventToListeners(WebInspector.DebuggerModel.Events.PromiseUpdated, { eventType: eventType, promise: promise });
     },
 
     _reset: function()
@@ -888,6 +898,16 @@ WebInspector.DebuggerDispatcher.prototype = {
     breakpointResolved: function(breakpointId, location)
     {
         this._debuggerModel._breakpointResolved(breakpointId, location);
+    },
+
+    /**
+     * @override
+     * @param {string} eventType
+     * @param {!DebuggerAgent.PromiseDetails} promise
+     */
+    promiseUpdated: function(eventType, promise)
+    {
+        this._debuggerModel._promiseUpdated(eventType, promise);
     }
 }
 
