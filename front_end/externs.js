@@ -714,3 +714,10 @@ WeakSet.prototype = {
  * @return {boolean}
  */
 ArrayBuffer.isView = function(obj) { }
+
+/**
+ * @param {Array.<Object>} keyframes
+ * @param {number|Object} timing
+ * @return {Object}
+ */
+Element.prototype.animate = function(keyframes, timing) { }

@@ -62,97 +62,6 @@ WebInspector.AnimationTimeline.prototype = {
 
 /**
  * @constructor
- * @param {!WebInspector.Geometry.Point} point1
- * @param {!WebInspector.Geometry.Point} point2
- */
-WebInspector.AnimationTimeline.CubicBezier = function(point1, point2)
-{
-    this.controlPoints = [point1, point2];
-}
-
-/**
- * @param {string} text
- * @return {?WebInspector.AnimationTimeline.CubicBezier}
- */
-WebInspector.AnimationTimeline.CubicBezier.parse = function(text)
-{
-    var keywordValues = WebInspector.AnimationTimeline.CubicBezier.KeywordValues;
-    var value = text.toLowerCase().replace(/\s+/g, "");
-    if (Object.keys(keywordValues).indexOf(value) != -1)
-        return keywordValues[value];
-    var bezierRegex = /^cubic-bezier\(([^,]+),([^,]+),([^,]+),([^,]+)\)$/;
-    var match = value.match(bezierRegex);
-    if (match) {
-        var control1 = new WebInspector.Geometry.Point(parseFloat(match[1]), parseFloat(match[2]));
-        var control2 = new WebInspector.Geometry.Point(parseFloat(match[3]), parseFloat(match[4]));
-        return new WebInspector.AnimationTimeline.CubicBezier(control1, control2);
-    }
-    return null;
-}
-
-WebInspector.AnimationTimeline.CubicBezier.prototype = {
-    /**
-     * @param {number} t
-     * @return {!WebInspector.Geometry.Point}
-     */
-    _evaluateAt: function(t)
-    {
-        /**
-         * @param {number} v1
-         * @param {number} v2
-         * @param {number} t
-         */
-        function evaluate(v1, v2, t)
-        {
-            return 3 * (1 - t) * (1 - t) * t * v1 + 3 * (1 - t) * t * t * v2 + Math.pow(t, 3);
-        }
-
-        var x = evaluate(this.controlPoints[0].x, this.controlPoints[1].x, t);
-        var y = evaluate(this.controlPoints[0].y, this.controlPoints[1].y, t);
-        return new WebInspector.Geometry.Point(x, y);
-    },
-
-    /**
-     * @param {!Element} path
-     * @param {number} width
-     */
-    drawVelocityChart: function(path, width)
-    {
-        var height = WebInspector.AnimationUI.Options.GridCanvasHeight;
-        var pathBuilder = ["M", 0, height];
-
-        var prev = this._evaluateAt(0);
-        for (var t = this._sampleSize(); t < 1 + this._sampleSize(); t += this._sampleSize()) {
-            var current = this._evaluateAt(t);
-            var slope = (current.y - prev.y) / (current.x - prev.x);
-            var weightedX = prev.x * (1 - t) + current.x * t;
-            slope = Math.tanh(slope / 1.5); // Normalise slope
-            pathBuilder = pathBuilder.concat(["L", weightedX * width, height - slope * height ]);
-            prev = current;
-        }
-        pathBuilder = pathBuilder.concat(["L", width, height, "Z"]);
-        path.setAttribute("d", pathBuilder.join(" "));
-    },
-
-    /**
-     * @return {number}
-     */
-    _sampleSize: function()
-    {
-        return 1 / 40;
-    }
-}
-
-WebInspector.AnimationTimeline.CubicBezier.KeywordValues = {
-    "linear": new WebInspector.AnimationTimeline.CubicBezier(new WebInspector.Geometry.Point(0, 0), new WebInspector.Geometry.Point(1, 1)),
-    "ease": new WebInspector.AnimationTimeline.CubicBezier(new WebInspector.Geometry.Point(0.25, 0.1), new WebInspector.Geometry.Point(0.25, 1)),
-    "ease-in": new WebInspector.AnimationTimeline.CubicBezier(new WebInspector.Geometry.Point(0.42, 0), new WebInspector.Geometry.Point(1, 1)),
-    "ease-in-out": new WebInspector.AnimationTimeline.CubicBezier(new WebInspector.Geometry.Point(0.42, 0), new WebInspector.Geometry.Point(0.58, 1)),
-    "ease-out": new WebInspector.AnimationTimeline.CubicBezier(new WebInspector.Geometry.Point(0, 0), new WebInspector.Geometry.Point(0.58, 1))
-}
-
-/**
- * @constructor
  * @param {!WebInspector.AnimationModel.AnimationPlayer} animation
  * @param {!WebInspector.AnimationTimeline} timeline
  * @param {!Element} parentElement
@@ -163,7 +72,6 @@ WebInspector.AnimationUI = function(animation, timeline, parentElement) {
     this._parentElement = parentElement;
 
     this._grid = parentElement.createChild("canvas", "animation-timeline-grid-row");
-    this._canvases = [];
     this._keyframes = this._animation.source().keyframesRule().keyframes();
 
     this._svg = parentElement.createSVGChild("svg");
@@ -275,13 +183,13 @@ WebInspector.AnimationUI.prototype = {
         for (var i = 0; i < this._keyframes.length - 1; i++) {
             var leftDistance = this._offset(i) * this._duration() * this._pixelMsRatio()  + WebInspector.AnimationUI.Options.AnimationMargin;
             var width = this._duration() * (this._offset(i + 1) - this._offset(i)) * this._pixelMsRatio();
-            var bezier = WebInspector.AnimationTimeline.CubicBezier.parse(this._keyframes[i].easing());
+            var bezier = WebInspector.Geometry.CubicBezier.parse(this._keyframes[i].easing());
             // FIXME: add support for step functions
             if (bezier) {
                 var path = this._svgGroup.createSVGChild("path", "animation-keyframe");
                 path.style.transform = "translateX(" + leftDistance + "px)";
                 path.style.fill = WebInspector.AnimationUI.Options.ColorPurple.asString(WebInspector.Color.Format.RGB);
-                bezier.drawVelocityChart(path, width);
+                WebInspector.BezierUI.drawVelocityChart(bezier, path, width);
             }
             this._drawPoint(leftDistance, i);
         }
