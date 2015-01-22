@@ -1136,6 +1136,14 @@ WebInspector.ElementsTreeOutline.prototype = {
         effectiveNode.resolveToObject("", resolvedNode);
     },
 
+    _reset: function()
+    {
+        this.rootDOMNode = null;
+        this.selectDOMNode(null, false);
+        this._popoverHelper.hidePopover();
+        delete this._clipboardNodeData;
+    },
+
     __proto__: TreeOutline.prototype
 }
 
@@ -1504,13 +1512,11 @@ WebInspector.ElementsTreeUpdater.prototype = {
 
     _reset: function()
     {
-        this._treeOutline.rootDOMNode = null;
-        this._treeOutline.selectDOMNode(null, false);
+        this._treeOutline._reset();
         this._domModel.hideDOMNodeHighlight();
         this._recentlyModifiedNodes.clear();
         this._recentlyModifiedParentNodes.clear();
         this._updateInfos.clear();
-        delete this._treeOutline._clipboardNodeData;
     },
 
     /**
