@@ -228,6 +228,10 @@
     overflow: hidden;
 }
 
+.styles-section-title .media .subtitle {
+    float: right;
+}
+
 .styles-section-subtitle {
     color: rgb(85, 85, 85);
     float: right;

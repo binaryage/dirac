@@ -1628,7 +1628,6 @@ WebInspector.StylePropertiesSection.prototype = {
             if (media.sourceURL) {
                 var refElement = mediaDataElement.createChild("div", "subtitle");
                 var anchor = this._parentPane._linkifier.linkifyMedia(media);
-                anchor.style.float = "right";
                 refElement.appendChild(anchor);
             }
 
