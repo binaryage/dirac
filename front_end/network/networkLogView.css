@@ -502,14 +502,6 @@
     pointer-events: none;
 }
 
-.network-event-divider-padding {
-    position: absolute;
-    width: 8px;
-    top: 0;
-    bottom: 0;
-    pointer-events: auto;
-}
-
 .network-event-divider {
     position: absolute;
     width: 2px;
@@ -526,8 +518,16 @@
     background-color: rgba(255, 0, 0, 0.5);
 }
 
+.network-summary-bar .summary-red {
+    color: red;
+}
+
 .network-blue-divider {
     background-color: rgba(0, 0, 255, 0.5);
+}
+
+.network-summary-bar .summary-blue {
+    color: blue;
 }
 
 .network-log-grid.data-grid .resources-dividers {

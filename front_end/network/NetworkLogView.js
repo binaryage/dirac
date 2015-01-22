@@ -618,22 +618,47 @@ WebInspector.NetworkLogView.prototype = {
             if (request.endTime > maxTime)
                 maxTime = request.endTime;
         }
+
+        var summaryBar = this._summaryBarElement;
+        summaryBar.removeChildren();
+        var separator = "\u2002\u2758\u2002";
         var text = "";
+        /**
+         * @param {string} chunk
+         * @return {!Element}
+         */
+        function appendChunk(chunk)
+        {
+            var span = summaryBar.createChild("span");
+            span.textContent = chunk;
+            text += chunk;
+            return span;
+        }
+
         if (selectedRequestsNumber !== requestsNumber) {
-            text += String.sprintf(WebInspector.UIString("%d / %d requests"), selectedRequestsNumber, requestsNumber);
-            text += "  \u2758  " + String.sprintf(WebInspector.UIString("%s / %s transferred"), Number.bytesToString(selectedTransferSize), Number.bytesToString(transferSize));
+            appendChunk(WebInspector.UIString("%d / %d requests", selectedRequestsNumber, requestsNumber));
+            appendChunk(separator);
+            appendChunk(WebInspector.UIString("%s / %s transferred", Number.bytesToString(selectedTransferSize), Number.bytesToString(transferSize)));
         } else {
-            text += String.sprintf(WebInspector.UIString("%d requests"), requestsNumber);
-            text += "  \u2758  " + String.sprintf(WebInspector.UIString("%s transferred"), Number.bytesToString(transferSize));
+            appendChunk(WebInspector.UIString("%d requests", requestsNumber));
+            appendChunk(separator);
+            appendChunk(WebInspector.UIString("%s transferred", Number.bytesToString(transferSize)));
         }
-        if (baseTime !== -1 && this._mainRequestLoadTime !== -1 && this._mainRequestDOMContentLoadedTime !== -1 && this._mainRequestDOMContentLoadedTime > baseTime) {
-            text += "  \u2758  " + String.sprintf(WebInspector.UIString("%s (load: %s, DOMContentLoaded: %s)"),
-                        Number.secondsToString(maxTime - baseTime),
-                        Number.secondsToString(this._mainRequestLoadTime - baseTime),
-                        Number.secondsToString(this._mainRequestDOMContentLoadedTime - baseTime));
+        if (baseTime !== -1) {
+            appendChunk(separator);
+            appendChunk(WebInspector.UIString("Finish: %s", Number.secondsToString(maxTime - baseTime)));
+            if (this._mainRequestDOMContentLoadedTime !== -1 && this._mainRequestDOMContentLoadedTime > baseTime) {
+                appendChunk(separator);
+                var domContentLoadedText = WebInspector.UIString("DOMContentLoaded: %s", Number.secondsToString(this._mainRequestDOMContentLoadedTime - baseTime));
+                appendChunk(domContentLoadedText).classList.add("summary-blue");
+            }
+            if (this._mainRequestLoadTime !== -1) {
+                appendChunk(separator);
+                var loadText = WebInspector.UIString("Load: %s", Number.secondsToString(this._mainRequestLoadTime - baseTime));
+                appendChunk(loadText).classList.add("summary-red");
+            }
         }
-        this._summaryBarElement.textContent = text;
-        this._summaryBarElement.title = text;
+        summaryBar.title = text;
     },
 
     _scheduleRefresh: function()
@@ -676,18 +701,14 @@ WebInspector.NetworkLogView.prototype = {
         this._timelineGrid.removeEventDividers();
         var loadTimePercent = calculator.computePercentageFromEventTime(this._mainRequestLoadTime);
         if (this._mainRequestLoadTime !== -1 && loadTimePercent >= 0) {
-            var loadDivider = createElementWithClass("div", "network-event-divider-padding");
-            loadDivider.createChild("div", "network-event-divider network-red-divider");
-            loadDivider.title = WebInspector.UIString("Load event");
+            var loadDivider = createElementWithClass("div", "network-event-divider network-red-divider");
             loadDivider.style.left = loadTimePercent + "%";
             this._timelineGrid.addEventDivider(loadDivider);
         }
 
         var domLoadTimePrecent = calculator.computePercentageFromEventTime(this._mainRequestDOMContentLoadedTime);
         if (this._mainRequestDOMContentLoadedTime !== -1 && domLoadTimePrecent >= 0) {
-            var domContentLoadedDivider = createElementWithClass("div", "network-event-divider-padding");
-            domContentLoadedDivider.createChild("div", "network-event-divider network-blue-divider");
-            domContentLoadedDivider.title = WebInspector.UIString("DOMContentLoaded event");
+            var domContentLoadedDivider = createElementWithClass("div", "network-event-divider network-blue-divider");
             domContentLoadedDivider.style.left = domLoadTimePrecent + "%";
             this._timelineGrid.addEventDivider(domContentLoadedDivider);
         }
