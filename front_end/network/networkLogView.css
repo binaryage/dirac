@@ -106,6 +106,10 @@
     cursor: pointer;
 }
 
+.network-log-grid.data-grid .timeline-column {
+    padding: 1px 0;
+}
+
 #network-container:not(.brief-mode) .network-log-grid.data-grid td.name-column:hover {
     text-decoration: underline;
 }
@@ -280,6 +284,10 @@
 .network-timeline-grid .resources-dividers-label-bar {
     right: 12px;
     left: 12px;
+}
+
+.network-timeline-grid .resources-event-dividers {
+    margin-left: 1px;
 }
 
 .network-graph-label {
