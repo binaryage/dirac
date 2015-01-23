@@ -282,6 +282,10 @@ WebInspector.NetworkLogView.prototype = {
         this._timelineGrid = new WebInspector.TimelineGrid();
         this._timelineGrid.element.classList.add("network-timeline-grid");
         this._dataGrid.element.appendChild(this._timelineGrid.element);
+        this._loadDivider = createElementWithClass("div", "network-event-divider network-red-divider invisible");
+        this._timelineGrid.addEventDivider(this._loadDivider);
+        this._domContentLoadedDivider = createElementWithClass("div", "network-event-divider network-blue-divider invisible");
+        this._timelineGrid.addEventDivider(this._domContentLoadedDivider);
     },
 
     _createTable: function()
@@ -674,22 +678,19 @@ WebInspector.NetworkLogView.prototype = {
 
     _updateDividersIfNeeded: function()
     {
+        if (!this.isShowing()) {
+            this._scheduleRefresh();
+            return;
+        }
+
         var timelineOffset = this._dataGrid.columnOffset("timeline");
         // Position timline grid location.
         if (timelineOffset)
             this._timelineGrid.element.style.left = timelineOffset + "px";
 
         var calculator = this.calculator();
-        var proceed = true;
-        if (!this.isShowing()) {
-            this._scheduleRefresh();
-            proceed = false;
-        } else {
-            calculator.setDisplayWindow(this._timelineGrid.dividersElement.clientWidth);
-            proceed = this._timelineGrid.updateDividers(calculator);
-        }
-        if (!proceed)
-            return;
+        calculator.setDisplayWindow(this._timelineGrid.dividersElement.clientWidth);
+        this._timelineGrid.updateDividers(calculator);
 
         if (calculator.startAtZero) {
             // If our current sorting method starts at zero, that means it shows all
@@ -698,20 +699,13 @@ WebInspector.NetworkLogView.prototype = {
             return;
         }
 
-        this._timelineGrid.removeEventDividers();
         var loadTimePercent = calculator.computePercentageFromEventTime(this._mainRequestLoadTime);
-        if (this._mainRequestLoadTime !== -1 && loadTimePercent >= 0) {
-            var loadDivider = createElementWithClass("div", "network-event-divider network-red-divider");
-            loadDivider.style.left = loadTimePercent + "%";
-            this._timelineGrid.addEventDivider(loadDivider);
-        }
+        this._loadDivider.classList.toggle("invisible", this._mainRequestLoadTime === -1 || loadTimePercent < 0);
+        this._loadDivider.style.left = loadTimePercent + "%";
 
         var domLoadTimePrecent = calculator.computePercentageFromEventTime(this._mainRequestDOMContentLoadedTime);
-        if (this._mainRequestDOMContentLoadedTime !== -1 && domLoadTimePrecent >= 0) {
-            var domContentLoadedDivider = createElementWithClass("div", "network-event-divider network-blue-divider");
-            domContentLoadedDivider.style.left = domLoadTimePrecent + "%";
-            this._timelineGrid.addEventDivider(domContentLoadedDivider);
-        }
+        this._domContentLoadedDivider.classList.toggle("invisible", this._mainRequestDOMContentLoadedTime === -1 || domLoadTimePrecent < 0);
+        this._domContentLoadedDivider.style.left = domLoadTimePrecent + "%";
     },
 
     _refreshIfNeeded: function()

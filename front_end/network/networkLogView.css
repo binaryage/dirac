@@ -518,6 +518,10 @@
     z-index: 300;
 }
 
+.network-event-divider.invisible {
+    visibility: hidden;
+}
+
 .network-timeline-grid.small .network-event-divider {
     top: 23px;
 }
