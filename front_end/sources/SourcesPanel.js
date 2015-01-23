@@ -282,6 +282,7 @@ WebInspector.SourcesPanel.prototype = {
         this._paused = false;
         this._clearInterface();
         this._toggleDebuggerSidebarButton.disabled = false;
+        this._switchToPausedTargetTimeout = setTimeout(this._switchToPausedTarget.bind(this), 500);
     },
 
     /**
@@ -457,7 +458,6 @@ WebInspector.SourcesPanel.prototype = {
 
         if (this._switchToPausedTargetTimeout)
             clearTimeout(this._switchToPausedTargetTimeout);
-        this._switchToPausedTargetTimeout = setTimeout(this._switchToPausedTarget.bind(this), 500);
     },
 
     _switchToPausedTarget: function()
