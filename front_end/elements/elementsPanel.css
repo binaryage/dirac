@@ -484,67 +484,42 @@
     cursor: text;
 }
 
-.section .event-bars {
-    display: none;
+.events-pane > .properties {
+    padding-left: 0;
+    padding-right: 0;
 }
 
-.section.expanded .event-bars {
-    display: block;
+.events-pane > ol > li {
+    padding: 2px 0 0 4px;
+    margin: 2px 0 0 !important;
 }
 
-.events-pane .section.event-bar {
-    position: relative;
-    margin-left: 10px;
+.events-pane > ol > ol > li {
+    padding-left: 0;
+    padding-top: 2px;
+    margin-left: 12px !important;
 }
 
-.events-pane .section.event-bar:first-child {
-    margin-top: 1px;
+.events-pane > ol > li,
+.events-pane > ol > ol > li {
+    border-top: 1px solid rgb(231, 231, 231);
 }
 
-.event-bars .event-bar .header {
-    padding: 0 8px 0 6px;
-    min-height: 16px;
-    opacity: 1.0;
-    white-space: nowrap;
-    background-origin: padding;
-    background-clip: padding;
+.events-pane > ol > li:first-of-type,
+.events-pane > ol > ol > li:first-of-type {
+    border-top: none;
 }
 
-.event-bars .event-bar .header .title {
-    font-weight: normal;
-    text-shadow: white 0 1px 0;
+.events-pane > ol > ol {
+    padding-left: 0;
 }
 
-.event-bars .event-bar .header .subtitle {
+.event-bar > .header {
+    padding-left: 0 !important;
+}
+
+.event-bar .header .subtitle {
     color: rgba(90, 90, 90, 0.75);
-}
-
-.event-bars .event-bar .header::before {
-    -webkit-user-select: none;
-    background-image: url(Images/statusbarButtonGlyphs.png);
-    background-size: 320px 144px;
-    opacity: 0.5;
-    content: "a";
-    color: transparent;
-    text-shadow: none;
-    float: left;
-    width: 8px;
-    margin-right: 4px;
-    margin-top: 2px;
-}
-
-@media (-webkit-min-device-pixel-ratio: 1.5) {
-.event-bars .event-bar .header::before {
-    background-image: url(Images/statusbarButtonGlyphs_2x.png);
-}
-} /* media */
-
-.event-bars .event-bar .header::before {
-    background-position: -4px -96px;
-}
-
-.event-bars .event-bar.expanded .header::before {
-    background-position: -20px -96px;
 }
 
 .image-preview-container {
@@ -765,19 +740,12 @@ label.checkbox-with-label {
     border-top: 1px solid rgb(231, 231, 231);
 }
 
-.event-bar .header .title {
-    font-weight: normal;
-    word-wrap: break-word;
-    white-space: normal;
-    line-height: 18px;
-}
-
 .events-pane .section {
     margin: 0;
 }
 
 .event-bar .event-properties {
-    padding-left: 16px;
+    padding-left: 0 !important;
 }
 
 .style-properties li.editing {
@@ -789,4 +757,12 @@ label.checkbox-with-label {
     padding: 3px 6px 8px 18px;
     margin: -1px -6px -8px -6px;
     text-overflow: clip;
+}
+
+.event-listener-tree {
+    padding-left: 0 !important;
+}
+
+.event-listener-tree li.parent::before {
+    top: 0 !important;
 }
