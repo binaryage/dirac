@@ -31,7 +31,9 @@ WebInspector.BezierEditor = function()
     this._curve = container.createSVGChild("svg", "bezier-curve");
     WebInspector.installDragHandle(this._curve, this._dragStart.bind(this), this._dragMove.bind(this), this._dragEnd.bind(this), "default");
 
-    this._previewElement = container.createChild("div", "bezier-preview-animation");
+    this._previewElement = container.createChild("div", "bezier-preview-container");
+    this._previewElement.createChild("div", "bezier-preview-animation");
+    this._previewOnion = container.createChild("div", "bezier-preview-onion");
 }
 
 
@@ -73,6 +75,7 @@ WebInspector.BezierEditor.prototype = {
     _updateUI: function()
     {
         this._curveUI.drawCurve(this._bezier, this._curve);
+        this._previewOnion.removeChildren();
     },
 
     /**
@@ -156,11 +159,19 @@ WebInspector.BezierEditor.prototype = {
     {
         if (this._previewAnimation)
             this._previewAnimation.cancel();
-        var keyframes = [{ transform: "translateX(0px)", easing: this._bezier.asCSSText() },
-            { transform: "translateX(130px)", easing: this._bezier.asCSSText() },
-            { transform: "translateX(0px)" }];
-        // FIXME: Should include a delay, blocked on crbug.com/450109
-        this._previewAnimation = this._previewElement.animate(keyframes, 1600);
+
+        const animationDuration = 1600;
+        const numberOnionSlices = 15;
+        var keyframes = [{ transform: "translateX(0px)", easing: this._bezier.asCSSText() }, { transform: "translateX(130px)" }];
+
+        this._previewAnimation = this._previewElement.animate(keyframes, { duration: animationDuration, fill: "forwards" });
+        this._previewOnion.removeChildren();
+        for (var i = 0; i < numberOnionSlices; i++) {
+            var slice = this._previewOnion.createChild("div", "bezier-preview-animation");
+            var player = slice.animate(keyframes, animationDuration);
+            player.pause();
+            player.currentTime = animationDuration * i / numberOnionSlices;
+        }
     },
 
     __proto__: WebInspector.HBox.prototype

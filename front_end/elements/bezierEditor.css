@@ -89,10 +89,32 @@ svg.bezier-preset-selected {
     fill: none;
 }
 
+.bezier-preview-container {
+    position: relative;
+    background-color: white;
+    overflow: hidden;
+    border-radius: 20px;
+    width: 200px;
+    height: 20px;
+    z-index: 2;
+    margin-left: 10px;
+}
+
 .bezier-preview-animation {
     background-color: rgb(56, 121, 217);
     width: 20px;
     height: 20px;
     border-radius: 20px;
-    margin-top: 5px;
+    position: absolute;
+}
+
+.bezier-preview-onion {
+    margin-top: -20px;
+    position: relative;
+    z-index: 1;
+    margin-left: 10px;
+}
+
+.bezier-preview-onion > .bezier-preview-animation {
+    opacity: 0.1;
 }
