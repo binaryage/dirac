@@ -49,7 +49,7 @@ line.animation-line {
     fill: none;
 }
 
-circle.animation-point {
+circle.animation-endpoint {
     stroke-width: 3;
 }
 

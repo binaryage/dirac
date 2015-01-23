@@ -26,10 +26,9 @@ WebInspector.AnimationsSidebarPane = function(stylesPane)
     this._animationSections = [];
 
     this.bodyElement.appendChild(this.headerElement);
-    this.bodyElement.appendChild(this.animationsElement);
-
     this._timeline = new WebInspector.AnimationTimeline();
     this._timeline.show(this.bodyElement);
+    this.bodyElement.appendChild(this.animationsElement);
 }
 
 /**

@@ -12,16 +12,56 @@ WebInspector.AnimationTimeline = function() {
     this.element.classList.add("animations-timeline");
     this._animations = [];
     this._uiAnimations = [];
+    this._duration = this._defaultDuration();
 }
 
 WebInspector.AnimationTimeline.prototype = {
     /**
      * @return {number}
      */
+    _defaultDuration: function ()
+    {
+        return 300;
+    },
+
+    /**
+     * @return {number}
+     */
     duration: function()
     {
-        // FIXME: this should scale according to the animations shown
-        return 300;
+        return this._duration;
+    },
+
+    /**
+     * @return {number|undefined}
+     */
+    startTime: function()
+    {
+        return this._startTime;
+    },
+
+    /**
+     * @param {!WebInspector.AnimationModel.AnimationPlayer} animation
+     * @return {boolean}
+     */
+    _inThreshold: function(animation)
+    {
+        if (!this._animations.length)
+            return true;
+
+        if (animation.startTime() - this._animations.peekLast().startTime() < 2000)
+            return true;
+
+        return false;
+    },
+
+    _reset: function()
+    {
+        this._animations = [];
+        this._uiAnimations = [];
+        this.contentElement.removeChildren();
+        this._duration = this._defaultDuration();
+        delete this._startTime;
     },
 
     /**
@@ -38,12 +78,19 @@ WebInspector.AnimationTimeline.prototype = {
             description.appendChild(WebInspector.DOMPresentationUtils.linkifyNodeReference(node));
         }
 
+        if (!this._inThreshold(animation))
+            this._reset();
+
         var row = this.contentElement.createChild("div", "animation-row");
         var description = row.createChild("div", "animation-node-description");
         animation.source().getNode(nodeResolved.bind(null, description));
         var container = row.createChild("div", "animation-timeline-row");
-        this._uiAnimations.push(new WebInspector.AnimationUI(animation, this, container));
+
+        this._resizeWindow(animation);
         this._animations.push(animation);
+
+        this._uiAnimations.push(new WebInspector.AnimationUI(animation, this, container));
+        this.redraw();
     },
 
     redraw: function()
@@ -55,6 +102,20 @@ WebInspector.AnimationTimeline.prototype = {
     onResize: function()
     {
         this.redraw();
+    },
+
+    /**
+     * @param {!WebInspector.AnimationModel.AnimationPlayer} animation
+     */
+    _resizeWindow: function(animation)
+    {
+        if (!this._startTime)
+            this._startTime = animation.startTime();
+
+        // This shows at most 2 iterations
+        var iterations = animation.source().iterations() || 1;
+        var duration = animation.source().duration() * Math.min(2, iterations);
+        this._duration = Math.max(this._duration, animation.startTime() + duration - this._startTime + 50);
     },
 
     __proto__: WebInspector.VBox.prototype
@@ -75,7 +136,6 @@ WebInspector.AnimationUI = function(animation, timeline, parentElement) {
     this._keyframes = this._animation.source().keyframesRule().keyframes();
 
     this._svg = parentElement.createSVGChild("svg");
-    this._svg.setAttribute("width", this._duration() * this._pixelMsRatio() + 2 * WebInspector.AnimationUI.Options.AnimationMargin);
     this._svg.setAttribute("height", WebInspector.AnimationUI.Options.AnimationCanvasHeight);
     this._svg.style.marginLeft = "-" + WebInspector.AnimationUI.Options.AnimationMargin + "px";
     this._svg.addEventListener("mousedown", this._mouseDown.bind(this, WebInspector.AnimationUI.MouseEvents.AnimationDrag, null));
@@ -152,17 +212,14 @@ WebInspector.AnimationUI.prototype = {
      */
     _drawPoint: function(x, keyframeIndex)
     {
-        var circle = this._svgGroup.createSVGChild("circle", "animation-point");
+        var circle = this._svgGroup.createSVGChild("circle", keyframeIndex <= 0 ? "animation-endpoint" : "animation-keyframe-point");
         circle.setAttribute("cx", x);
         circle.setAttribute("cy", WebInspector.AnimationUI.Options.GridCanvasHeight);
         circle.style.stroke = WebInspector.AnimationUI.Options.ColorPurple.asString(WebInspector.Color.Format.RGB);
-        if (keyframeIndex <= 0) {
-            circle.setAttribute("r", WebInspector.AnimationUI.Options.AnimationMargin / 2);
+        circle.setAttribute("r", WebInspector.AnimationUI.Options.AnimationMargin / 2);
+
+        if (keyframeIndex <= 0)
             circle.style.fill = WebInspector.AnimationUI.Options.ColorPurple.asString(WebInspector.Color.Format.RGB);
-        } else {
-            circle.setAttribute("r", WebInspector.AnimationUI.Options.AnimationMargin / 2 + 1);
-            circle.style.fill = "white";
-        }
 
         if (keyframeIndex == 0) {
             circle.addEventListener("mousedown", this._mouseDown.bind(this, WebInspector.AnimationUI.MouseEvents.StartEndpointMove, keyframeIndex));
@@ -176,7 +233,8 @@ WebInspector.AnimationUI.prototype = {
     redraw: function()
     {
         this._renderGrid();
-        this._svg.style.transform = "translateX(" + this._delay() * this._pixelMsRatio() + "px)";
+        this._svg.setAttribute("width", this._duration() * this._pixelMsRatio() + 2 * WebInspector.AnimationUI.Options.AnimationMargin);
+        this._svg.style.transform = "translateX(" + (this._animation.startTime() - this._timeline.startTime() + this._delay()) * this._pixelMsRatio() + "px)";
         this._svgGroup.removeChildren();
         this._drawAnimationLine();
 
