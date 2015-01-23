@@ -106,7 +106,7 @@ WebInspector.NetworkLogView._defaultColumnsVisibility = {
     method: true, status: true, protocol: false, scheme: false, domain: false, remoteAddress: false, type: true, initiator: true, cookies: false, setCookies: false, size: true, time: true, connectionId: false,
     "Cache-Control": false, "Connection": false, "Content-Encoding": false, "Content-Length": false, "ETag": false, "Keep-Alive": false, "Last-Modified": false, "Server": false, "Vary": false
 };
-WebInspector.NetworkLogView._defaultRefreshDelay = 500;
+WebInspector.NetworkLogView._defaultRefreshDelay = 200;
 
 WebInspector.NetworkLogView._waterfallMinOvertime = 1;
 WebInspector.NetworkLogView._waterfallMaxOvertime = 3;
