@@ -30,6 +30,12 @@
 
 WebInspector.Geometry = {};
 
+/** @typedef {!{top: number, left: number, width: number, height: number}} */
+WebInspector.Geometry.Rect;
+
+/** @typedef {!{top: number, left: number}} */
+WebInspector.Geometry.Insets;
+
 /**
  * @type {number}
  */

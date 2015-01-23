@@ -208,6 +208,7 @@
         ],
         'devtools_toolbox_js_files': [
             'front_end/toolbox/responsiveDesignView.css',
+            'front_end/toolbox/EmulatedDevices.js',
             'front_end/toolbox/InspectedPagePlaceholder.js',
             'front_end/toolbox/MediaQueryInspector.js',
             'front_end/toolbox/OverridesUI.js',

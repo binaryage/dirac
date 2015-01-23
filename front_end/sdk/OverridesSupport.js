@@ -57,7 +57,6 @@ WebInspector.OverridesSupport = function(responsiveDesignAvailable)
     this.settings.deviceScaleFactor = WebInspector.settings.createSetting("deviceScaleFactor", 0);
     this.settings.deviceFitWindow = WebInspector.settings.createSetting("deviceFitWindow", true);
     this.settings.emulateMobile = WebInspector.settings.createSetting("emulateMobile", false);
-    this.settings.customDevicePresets = WebInspector.settings.createSetting("customDevicePresets", []);
 
     this.settings.emulateTouch = WebInspector.settings.createSetting("emulateTouch", false);
 
@@ -107,7 +106,7 @@ WebInspector.OverridesSupport.PageResizer.prototype = {
     update: function(dipWidth, dipHeight, scale) { }
 };
 
-/** @typedef {{title: string, width: number, height: number, deviceScaleFactor: number, userAgent: string, touch: boolean, mobile: boolean}} */
+/** @typedef {{width: number, height: number, deviceScaleFactor: number, userAgent: string, touch: boolean, mobile: boolean}} */
 WebInspector.OverridesSupport.Device = {};
 
 /**

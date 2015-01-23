@@ -30,8 +30,8 @@ WebInspector.OverridesUI.createDeviceSelect = function(titleProvider)
     WebInspector.overridesSupport.settings.emulateTouch.addChangeListener(emulatedSettingChanged);
     WebInspector.overridesSupport.settings.userAgent.addChangeListener(emulatedSettingChanged);
 
-    WebInspector.overridesSupport.settings.customDevicePresets.addChangeListener(customPresetsChanged);
-    customPresetsChanged();
+    WebInspector.emulatedDevicesList.addEventListener(WebInspector.EmulatedDevicesList.Events.CustomDevicesUpdated, deviceListChanged);
+    deviceListChanged();
 
     function deviceSelected()
     {
@@ -42,7 +42,7 @@ WebInspector.OverridesUI.createDeviceSelect = function(titleProvider)
 
         var option = deviceSelectElement.options[deviceSelectElement.selectedIndex];
         emulatedSettingChangedMuted.muted = true;
-        WebInspector.overridesSupport.emulateDevice(option.device);
+        WebInspector.overridesSupport.emulateDevice(option.overridesDevice);
         emulatedSettingChangedMuted.muted = false;
     }
 
@@ -54,7 +54,7 @@ WebInspector.OverridesUI.createDeviceSelect = function(titleProvider)
         var index = 0;
         for (var i = 1; i < deviceSelectElement.options.length; ++i) {
             var option = deviceSelectElement.options[i];
-            if (WebInspector.overridesSupport.isEmulatingDevice(option.device)) {
+            if (WebInspector.overridesSupport.isEmulatingDevice(option.overridesDevice)) {
                 index = i;
                 break;
             }
@@ -71,7 +71,7 @@ WebInspector.OverridesUI.createDeviceSelect = function(titleProvider)
         removeButton.disabled = !custom;
     }
 
-    function customPresetsChanged()
+    function deviceListChanged()
     {
         deviceSelectElement.removeChildren();
 
@@ -80,13 +80,12 @@ WebInspector.OverridesUI.createDeviceSelect = function(titleProvider)
         selectDeviceOption.disabled = true;
         deviceSelectElement.appendChild(selectDeviceOption);
 
-        addGroup(WebInspector.UIString("Custom"), WebInspector.overridesSupport.settings.customDevicePresets.get(), true);
-        addGroup(WebInspector.UIString("Devices"), WebInspector.OverridesUI._phones.concat(WebInspector.OverridesUI._tablets));
-        addGroup(WebInspector.UIString("Notebooks"), WebInspector.OverridesUI._notebooks);
+        addGroup(WebInspector.UIString("Custom"), WebInspector.emulatedDevicesList.custom(), true);
+        addGroup(WebInspector.UIString("Devices"), WebInspector.emulatedDevicesList.standard());
 
         /**
          * @param {string} name
-         * @param {!Array.<!WebInspector.OverridesSupport.Device>} devices
+         * @param {!Array.<!WebInspector.EmulatedDevice>} devices
          * @param {boolean=} custom
          */
         function addGroup(name, devices, custom)
@@ -100,14 +99,15 @@ WebInspector.OverridesUI.createDeviceSelect = function(titleProvider)
             for (var i = 0; i < devices.length; ++i) {
                 var option = new Option(devices[i].title, devices[i].title);
                 option.device = devices[i];
+                option.overridesDevice = devices[i].toOverridesDevice();
                 option.custom = custom;
                 groupElement.appendChild(option);
             }
         }
 
         /**
-         * @param {!WebInspector.OverridesSupport.Device} device1
-         * @param {!WebInspector.OverridesSupport.Device} device2
+         * @param {!WebInspector.EmulatedDevice} device1
+         * @param {!WebInspector.EmulatedDevice} device2
          * @return {number}
          */
         function compareDevices(device1, device2)
@@ -130,20 +130,14 @@ WebInspector.OverridesUI.createDeviceSelect = function(titleProvider)
     {
         if (!title)
             return;
-        var device = WebInspector.overridesSupport.deviceFromCurrentSettings();
-        device.title = title;
-        var presets = WebInspector.overridesSupport.settings.customDevicePresets.get();
-        presets.push(device);
-        WebInspector.overridesSupport.settings.customDevicePresets.set(presets);
+        var device = WebInspector.EmulatedDevice.fromOverridesDevice(WebInspector.overridesSupport.deviceFromCurrentSettings(), title);
+        WebInspector.emulatedDevicesList.addCustomDevice(device);
     }
 
     function removeClicked()
     {
-        var presets = WebInspector.overridesSupport.settings.customDevicePresets.get();
         var option = deviceSelectElement.options[deviceSelectElement.selectedIndex];
-        var device = option.device;
-        presets.remove(device);
-        WebInspector.overridesSupport.settings.customDevicePresets.set(presets);
+        WebInspector.emulatedDevicesList.removeCustomDevice(option.device);
     }
 
     return p;
@@ -301,7 +295,7 @@ WebInspector.OverridesUI.createUserAgentSelectAndInput = function()
     return { select: userAgentSelectElement, input: otherUserAgentElement };
 }
 
-/** @type {!Array.<!WebInspector.OverridesSupport.Device>} */
+/** @type {!Array.<*>} */
 WebInspector.OverridesUI._phones = [
     {title: "Apple iPhone 3GS", width: 320, height: 480, deviceScaleFactor: 1, userAgent: "Mozilla/5.0 (iPhone; U; CPU iPhone OS 4_2_1 like Mac OS X; en-us) AppleWebKit/533.17.9 (KHTML, like Gecko) Version/5.0.2 Mobile/8C148 Safari/6533.18.5", touch: true, mobile: true},
     {title: "Apple iPhone 4", width: 320, height: 480, deviceScaleFactor: 2, userAgent: "Mozilla/5.0 (iPhone; U; CPU iPhone OS 4_2_1 like Mac OS X; en-us) AppleWebKit/533.17.9 (KHTML, like Gecko) Version/5.0.2 Mobile/8C148 Safari/6533.18.5", touch: true, mobile: true},
@@ -336,7 +330,7 @@ WebInspector.OverridesUI._phones = [
     {title: "Sony Xperia Z, Z1", width: 360, height: 640, deviceScaleFactor: 3, userAgent: "Mozilla/5.0 (Linux; U; Android 4.2; en-us; SonyC6903 Build/14.1.G.1.518) AppleWebKit/534.30 (KHTML, like Gecko) Version/4.0 Mobile Safari/534.30", touch: true, mobile: true}
 ];
 
-/** @type {!Array.<!WebInspector.OverridesSupport.Device>} */
+/** @type {!Array.<*>} */
 WebInspector.OverridesUI._tablets = [
     {title: "Amazon Kindle Fire HDX 7″", width: 1920, height: 1200, deviceScaleFactor: 2, userAgent: "Mozilla/5.0 (Linux; U; en-us; KFTHWI Build/JDQ39) AppleWebKit/535.19 (KHTML, like Gecko) Silk/3.13 Safari/535.19 Silk-Accelerated=true", touch: true, mobile: true},
     {title: "Amazon Kindle Fire HDX 8.9″", width: 2560, height: 1600, deviceScaleFactor: 2, userAgent: "Mozilla/5.0 (Linux; U; en-us; KFAPWI Build/JDQ39) AppleWebKit/535.19 (KHTML, like Gecko) Silk/3.13 Safari/535.19 Silk-Accelerated=true", touch: true, mobile: true},
@@ -352,7 +346,7 @@ WebInspector.OverridesUI._tablets = [
     {title: "Samsung Galaxy Tab", width: 1024, height: 600, deviceScaleFactor: 1, userAgent: "Mozilla/5.0 (Linux; U; Android 2.2; en-us; SCH-I800 Build/FROYO) AppleWebKit/533.1 (KHTML, like Gecko) Version/4.0 Mobile Safari/533.1", touch: true, mobile: true}
 ];
 
-/** @type {!Array.<!WebInspector.OverridesSupport.Device>} */
+/** @type {!Array.<*>} */
 WebInspector.OverridesUI._notebooks = [
     {title: "Notebook with touch", width: 1280, height: 950, deviceScaleFactor: 1, userAgent: "", touch: true, mobile: false},
     {title: "Notebook with HiDPI screen", width: 1440, height: 900, deviceScaleFactor: 2, userAgent: "", touch: false, mobile: false},
