@@ -39,6 +39,7 @@ WebInspector.JavaScriptSourceFrame = function(scriptsPanel, uiSourceCode)
     this._scriptsPanel = scriptsPanel;
     this._breakpointManager = WebInspector.breakpointManager;
     this._uiSourceCode = uiSourceCode;
+    this._compiler = new WebInspector.JavaScriptCompiler(this);
 
     WebInspector.UISourceCodeFrame.call(this, uiSourceCode);
     if (uiSourceCode.project().type() === WebInspector.projectTypes.Debugger)
@@ -243,6 +244,7 @@ WebInspector.JavaScriptSourceFrame.prototype = {
         this._scriptsPanel.setIgnoreExecutionLineEvents(true);
         WebInspector.UISourceCodeFrame.prototype.onTextChanged.call(this, oldRange, newRange);
         this._scriptsPanel.setIgnoreExecutionLineEvents(false);
+        this._compiler.scheduleCompile();
     },
 
     populateLineGutterContextMenu: function(contextMenu, lineNumber)

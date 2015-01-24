@@ -215,6 +215,7 @@ WebInspector.SourceFrame.prototype = {
         }
 
         this._rowMessageBuckets = {};
+        this._errorPopoverHelper.hidePopover();
     },
 
     /**
@@ -317,6 +318,11 @@ WebInspector.SourceFrame.prototype = {
         this.clearMessages();
     },
 
+    /**
+     * @param {string} content
+     * @param {string} mimeType
+     * @return {string}
+     */
     _simplifyMimeType: function(content, mimeType)
     {
         if (!mimeType)

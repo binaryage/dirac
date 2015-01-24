@@ -517,6 +517,7 @@
             'front_end/sources/FilePathScoreFunction.js',
             'front_end/sources/FilteredItemSelectionDialog.js',
             'front_end/sources/InplaceFormatterEditorAction.js',
+            'front_end/sources/JavaScriptCompiler.js',
             'front_end/sources/JavaScriptSourceFrame.js',
             'front_end/sources/jsdifflib.js',
             'front_end/sources/NavigatorView.js',
