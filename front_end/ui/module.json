@@ -74,6 +74,7 @@
         "tabbedPane.css",
         "textButton.css",
         "textPrompt.css",
+        "timelineGrid.css",
         "xmlView.css"
     ]
 }
