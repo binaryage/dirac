@@ -71,12 +71,14 @@ WebInspector.ConsoleView = function()
     this._filterBar = new WebInspector.FilterBar();
 
     this._preserveLogCheckbox = new WebInspector.StatusBarCheckbox(WebInspector.UIString("Preserve log"), WebInspector.UIString("Do not clear log on page reload / navigation."), WebInspector.settings.preserveConsoleLog);
+    this._progressStatusBarItem = new WebInspector.StatusBarItemWrapper(createElement("div"));
 
     var statusBar = new WebInspector.StatusBar(this._contentsElement);
     statusBar.appendStatusBarItem(this._clearConsoleButton);
     statusBar.appendStatusBarItem(this._filterBar.filterButton());
     statusBar.appendStatusBarItem(this._executionContextSelector);
     statusBar.appendStatusBarItem(this._preserveLogCheckbox);
+    statusBar.appendStatusBarItem(this._progressStatusBarItem);
 
     this._filtersContainer = this._contentsElement.createChild("div", "console-filters-header hidden");
     this._filtersContainer.appendChild(this._filterBar.filtersElement());
@@ -673,6 +675,7 @@ WebInspector.ConsoleView.prototype = {
 
         contextMenu.appendSeparator();
         contextMenu.appendItem(WebInspector.UIString.capitalize("Clear ^console"), this._requestClearMessages.bind(this));
+        contextMenu.appendItem(WebInspector.UIString("Save as..."), this._saveConsole.bind(this));
 
         var request = consoleMessage ? consoleMessage.request : null;
         if (request && request.resourceType() === WebInspector.resourceTypes.XHR) {
@@ -681,6 +684,55 @@ WebInspector.ConsoleView.prototype = {
         }
 
         contextMenu.show();
+    },
+
+    _saveConsole: function()
+    {
+        var filename = String.sprintf("%s-%d.log", WebInspector.targetManager.inspectedPageDomain(), Date.now());
+        var stream = new WebInspector.FileOutputStream();
+
+        var progressIndicator = new WebInspector.ProgressIndicator();
+        this._progressStatusBarItem.element.appendChild(progressIndicator.element);
+        progressIndicator.setTitle(WebInspector.UIString("Writing file…"));
+        progressIndicator.setTotalWork(this.itemCount());
+
+        /** @const */
+        var chunkSize = 350;
+        var messageIndex = 0;
+
+        stream.open(filename, openCallback.bind(this));
+
+        /**
+         * @param {boolean} accepted
+         * @this {WebInspector.ConsoleView}
+         */
+        function openCallback(accepted)
+        {
+            if (!accepted)
+                return;
+            writeNextChunk.call(this, stream);
+        }
+
+        /**
+         * @param {!WebInspector.OutputStream} stream
+         * @param {string=} error
+         * @this {WebInspector.ConsoleView}
+         */
+        function writeNextChunk(stream, error)
+        {
+            if (messageIndex >= this.itemCount() || error) {
+                stream.close();
+                progressIndicator.done();
+                return;
+            }
+            var lines = [];
+            for (var i = 0; i < chunkSize && i + messageIndex < this.itemCount(); ++i)
+                lines.push(this.itemElement(messageIndex + i).element().textContent);
+            messageIndex += i;
+            stream.write(lines.join("\n") + "\n", writeNextChunk.bind(this));
+            progressIndicator.setWorked(messageIndex);
+        }
+
     },
 
     /**

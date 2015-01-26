@@ -1033,7 +1033,7 @@ WebInspector.ConsoleViewMessage.prototype = {
 
         if (show && !this.timestampElement) {
             this.timestampElement = this._element.createChild("span", "console-timestamp");
-            this.timestampElement.textContent = (new Date(this._message.timestamp)).toConsoleTime();
+            this.timestampElement.textContent = (new Date(this._message.timestamp)).toConsoleTime() + " ";
             var afterRepeatCountChild = this._repeatCountElement && this._repeatCountElement.nextSibling;
             this._element.insertBefore(this.timestampElement, afterRepeatCountChild || this._element.firstChild);
             return;
