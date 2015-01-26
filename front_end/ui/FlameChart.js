@@ -470,6 +470,9 @@ WebInspector.FlameChart.prototype = {
         }
     },
 
+    /**
+     * @param {number} entryIndex
+     */
     _revealEntry: function(entryIndex)
     {
         var timelineData = this._timelineData();
@@ -932,7 +935,7 @@ WebInspector.FlameChart.prototype = {
         context.scale(ratio, ratio);
 
         var timeWindowRight = this._timeWindowRight;
-        var timeWindowLeft = this._timeWindowLeft;
+        var timeWindowLeft = this._timeWindowLeft - this._paddingLeftTime;
         var minWidth = this._minWidth;
         var entryTotalTimes = timelineData.entryTotalTimes;
         var entryStartTimes = timelineData.entryStartTimes;
