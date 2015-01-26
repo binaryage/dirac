@@ -402,9 +402,18 @@
 }
 
 .memory-counter-sidebar-info .swatch {
+    margin-left: 1px;
+    margin-right: 2px;
+    width: 10px;
+    height: 10px;
+    position: relative;
+    top: 1px;
+    display: inline-block;
+    line-height: 1px;
     background-image: none;
     border: 1px solid rgba(0,0,0,0.3);
     opacity: 0.5;
+    -webkit-user-select: none;
 }
 
 .memory-counter-sidebar-info .title {

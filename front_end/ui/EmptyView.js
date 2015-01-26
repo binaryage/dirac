@@ -35,6 +35,7 @@
 WebInspector.EmptyView = function(text)
 {
     WebInspector.VBox.call(this);
+    this.registerRequiredCSS("ui/emptyView.css");
     this._text = text;
 }
 

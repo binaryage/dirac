@@ -376,6 +376,13 @@
     white-space: pre-wrap;
 }
 
+.console-message-url {
+    float: right;
+    text-align: right;
+    max-width: 100%;
+    margin-left: 4px;
+}
+
 .console-message-nowrap-below,
 .console-message-nowrap-below div,
 .console-message-nowrap-below span {

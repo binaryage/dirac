@@ -140,6 +140,12 @@ body /deep/ .highlighted-search-result {
     background-color: rgba(255, 255, 0, 0.8);
 }
 
+body /deep/ .link {
+    cursor: pointer;
+    text-decoration: underline;
+    color: rgb(17, 85, 204);
+}
+
 body /deep/ button,
 body /deep/ input,
 body /deep/ select {

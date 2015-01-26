@@ -55,6 +55,7 @@
     "stylesheets": [
         "checkboxTextLabel.css",
         "dataGrid.css",
+        "emptyView.css",
         "filter.css",
         "flameChart.css",
         "helpScreen.css",

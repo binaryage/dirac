@@ -217,6 +217,7 @@
         'devtools_ui_js_files': [
             'front_end/ui/checkboxTextLabel.css',
             'front_end/ui/dataGrid.css',
+            'front_end/ui/emptyView.css',
             'front_end/ui/filter.css',
             'front_end/ui/flameChart.css',
             'front_end/ui/helpScreen.css',

@@ -35,15 +35,6 @@ label:hover input {
     box-shadow: 0 0 3px highlight;
 }
 
-label.dimmed {
-    opacity: 0.6;
-    cursor: default;
-}
-
-label.dimmed:hover input {
-    box-shadow: none;
-}
-
 fieldset[disabled] label:hover input {
     box-shadow: none;
 }
@@ -212,13 +203,6 @@ body.undocked.platform-mac.inactive .inspector-view-tabbed-pane.tabbed-pane::sha
     color: white;
     margin-top: -1px;
     border-radius: 7px;
-}
-
-.console-message-url {
-    float: right;
-    text-align: right;
-    max-width: 100%;
-    margin-left: 4px;
 }
 
 .console-formatted-object,
@@ -554,19 +538,6 @@ iframe.panel.extension {
     overflow: visible !important;
 }
 
-.swatch {
-    margin-left: 1px;
-    margin-right: 2px;
-    width: 10px;
-    height: 10px;
-    position: relative;
-    top: 1px;
-    display: inline-block;
-    line-height: 1px;
-    background-image: url(Images/checker.png);
-    -webkit-user-select: none;
-}
-
 .sidebar {
     overflow-x: hidden;
     background-color: #eee;
@@ -858,23 +829,8 @@ body.inactive .sidebar-tree-item.selected {
     background-color: rgb(255, 255, 194);
 }
 
-.link {
-    text-decoration: underline;
-    cursor: pointer;
-}
-
 .soft-context-menu-glass-pane {
     z-index: 20000;
-}
-
-.empty-view {
-    font-size: 24px;
-    color: rgb(75%, 75%, 75%);
-    font-weight: bold;
-    padding: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
 }
 
 .root-view {
@@ -997,12 +953,6 @@ body.inactive select.chrome-select,
     font-size: 80%;
     white-space: nowrap;
     pointer-events: none;
-}
-
-.link {
-    cursor: pointer;
-    text-decoration: underline;
-    color: rgb(17, 85, 204);
 }
 
 .custom-expandable-section::before {
