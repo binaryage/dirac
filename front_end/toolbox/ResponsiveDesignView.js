@@ -46,10 +46,12 @@ WebInspector.ResponsiveDesignView = function(inspectedPagePlaceholder)
     genericDeviceOutline.createChild("div", "responsive-design-generic-outline");
     var widthSlider = this._slidersContainer.createChild("div", "responsive-design-slider-width");
     widthSlider.createChild("div", "responsive-design-thumb-handle");
-    this._createResizer(widthSlider, false);
+    this._createResizer(widthSlider, true, false);
     var heightSlider = this._slidersContainer.createChild("div", "responsive-design-slider-height");
     heightSlider.createChild("div", "responsive-design-thumb-handle");
-    this._createResizer(heightSlider, true);
+    this._createResizer(heightSlider, false, true);
+    var cornerSlider = this._slidersContainer.createChild("div", "responsive-design-slider-corner");
+    this._createResizer(cornerSlider, true, true);
     this._pageContainer = this._slidersContainer.createChild("div", "vbox flex-auto");
 
     // Page scale controls.
@@ -198,16 +200,17 @@ WebInspector.ResponsiveDesignView.prototype = {
 
     /**
      * @param {!Element} element
-     * @param {boolean} vertical
+     * @param {boolean} x
+     * @param {boolean} y
      * @return {!WebInspector.ResizerWidget}
      */
-    _createResizer: function(element, vertical)
+    _createResizer: function(element, x, y)
     {
         var resizer = new WebInspector.ResizerWidget();
         resizer.addElement(element);
-        resizer.setVertical(vertical);
+        resizer.setCursor(x && y ? "nwse-resize" : (x ? "ew-resize" : "ns-resize"));
         resizer.addEventListener(WebInspector.ResizerWidget.Events.ResizeStart, this._onResizeStart, this);
-        resizer.addEventListener(WebInspector.ResizerWidget.Events.ResizeUpdate, this._onResizeUpdate, this);
+        resizer.addEventListener(WebInspector.ResizerWidget.Events.ResizeUpdate, this._onResizeUpdate.bind(this, x, y));
         resizer.addEventListener(WebInspector.ResizerWidget.Events.ResizeEnd, this._onResizeEnd, this);
         return resizer;
     },
@@ -220,28 +223,42 @@ WebInspector.ResponsiveDesignView.prototype = {
         this._drawContentsSize = false;
         var available = this._availableDipSize();
         this._slowPositionStart = null;
-        this._resizeStartSize = event.target.isVertical() ? (this._dipHeight || available.height) : (this._dipWidth || available.width);
+        this._resizeStart = { x: this._dipWidth || available.width, y : this._dipHeight || available.height };
         this.dispatchEventToListeners(WebInspector.OverridesSupport.PageResizer.Events.FixedScaleRequested, true);
         this._updateUI();
     },
 
     /**
+     * @param {boolean} x
+     * @param {boolean} y
      * @param {!WebInspector.Event} event
      */
-    _onResizeUpdate: function(event)
+    _onResizeUpdate: function(x, y, event)
     {
         if (event.data.shiftKey !== !!this._slowPositionStart)
-            this._slowPositionStart = event.data.shiftKey ? event.data.currentPosition : null;
-        var cssOffset = this._slowPositionStart ? (event.data.currentPosition - this._slowPositionStart) / 10 + this._slowPositionStart - event.data.startPosition : event.data.currentPosition - event.data.startPosition;
-        var dipOffset = Math.round(cssOffset * WebInspector.zoomManager.zoomFactor());
-        var newSize = this._resizeStartSize + dipOffset;
-        newSize = Math.round(newSize / (this._scale || 1));
-        newSize = Math.max(Math.min(newSize, WebInspector.OverridesSupport.MaxDeviceSize), 1);
+            this._slowPositionStart = event.data.shiftKey ? { x: event.data.currentX, y: event.data.currentY } : null;
+
+        var cssOffsetX = event.data.currentX - event.data.startX;
+        var cssOffsetY = event.data.currentY - event.data.startY;
+        if (this._slowPositionStart) {
+            cssOffsetX = (event.data.currentX - this._slowPositionStart.x) / 10 + this._slowPositionStart.x - event.data.startX;
+            cssOffsetY = (event.data.currentY - this._slowPositionStart.y) / 10 + this._slowPositionStart.y - event.data.startY;
+        }
+        var dipOffsetX = Math.round(cssOffsetX * WebInspector.zoomManager.zoomFactor());
+        var dipOffsetY = Math.round(cssOffsetY * WebInspector.zoomManager.zoomFactor());
+
+        var newSizeX = this._resizeStart.x + dipOffsetX;
+        newSizeX = Math.round(newSizeX / (this._scale || 1));
+        newSizeX = Math.max(Math.min(newSizeX, WebInspector.OverridesSupport.MaxDeviceSize), 1);
+        var newSizeY = this._resizeStart.y + dipOffsetY;
+        newSizeY = Math.round(newSizeY / (this._scale || 1));
+        newSizeY = Math.max(Math.min(newSizeY, WebInspector.OverridesSupport.MaxDeviceSize), 1);
+
         var requested = {};
-        if (event.target.isVertical())
-            requested.height = newSize;
-        else
-            requested.width = newSize;
+        if (x)
+            requested.width = newSizeX;
+        if (y)
+            requested.height = newSizeY;
         this.dispatchEventToListeners(WebInspector.OverridesSupport.PageResizer.Events.ResizeRequested, requested);
     },
 
@@ -252,7 +269,7 @@ WebInspector.ResponsiveDesignView.prototype = {
     {
         this._drawContentsSize = true;
         this.dispatchEventToListeners(WebInspector.OverridesSupport.PageResizer.Events.FixedScaleRequested, false);
-        delete this._resizeStartSize;
+        delete this._resizeStart;
         this._updateUI();
     },
 

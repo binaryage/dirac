@@ -65,6 +65,14 @@
     justify-content: center;
 }
 
+.responsive-design-slider-corner {
+    position: absolute;
+    right: -14px;
+    width: 14px;
+    bottom: -14px;
+    height: 14px;
+}
+
 .responsive-design-thumb-handle {
     content: url(Images/statusbarResizerHorizontal.png);
     pointer-events: none;
