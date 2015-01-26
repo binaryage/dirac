@@ -618,7 +618,6 @@
         ],
         'devtools_image_files': [
             'front_end/Images/applicationCache.png',
-            'front_end/Images/back.png',
             'front_end/Images/breakpoint.png',
             'front_end/Images/breakpoint_2x.png',
             'front_end/Images/breakpointConditional.png',
