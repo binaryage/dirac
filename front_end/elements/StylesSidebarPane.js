@@ -1124,7 +1124,8 @@ WebInspector.StylesSidebarPane.prototype = {
             this._animationsPlaybackSlider.value = WebInspector.AnimationsSidebarPane.GlobalPlaybackRates.indexOf(playbackRate);
             this._animationsPlaybackLabel.textContent = playbackRate + "x";
         }
-        PageAgent.animationsPlaybackRate(setPlaybackRate.bind(this));
+        if (this._target)
+            this._target.pageAgent().animationsPlaybackRate(setPlaybackRate.bind(this));
     },
 
     _createAnimationsControlPane: function()
@@ -1136,7 +1137,7 @@ WebInspector.StylesSidebarPane.prototype = {
         function playbackSliderInputHandler(event)
         {
             this._animationsPlaybackRate = WebInspector.AnimationsSidebarPane.GlobalPlaybackRates[event.target.value];
-            PageAgent.setAnimationsPlaybackRate(this._animationsPaused ? 0 : this._animationsPlaybackRate);
+            this._target.pageAgent().setAnimationsPlaybackRate(this._animationsPaused ? 0 : this._animationsPlaybackRate);
             this._animationsPlaybackLabel.textContent = this._animationsPlaybackRate + "x";
             WebInspector.userMetrics.AnimationsPlaybackRateChanged.record();
         }
@@ -1147,7 +1148,7 @@ WebInspector.StylesSidebarPane.prototype = {
         function pauseButtonHandler()
         {
             this._animationsPaused = !this._animationsPaused;
-            PageAgent.setAnimationsPlaybackRate(this._animationsPaused ? 0 : this._animationsPlaybackRate);
+            this._target.pageAgent().setAnimationsPlaybackRate(this._animationsPaused ? 0 : this._animationsPlaybackRate);
             WebInspector.userMetrics.AnimationsPlaybackRateChanged.record();
             this._animationsPauseButton.element.classList.toggle("pause-status-bar-item");
             this._animationsPauseButton.element.classList.toggle("play-status-bar-item");
