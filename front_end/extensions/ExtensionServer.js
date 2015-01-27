@@ -241,7 +241,8 @@ WebInspector.ExtensionServer.prototype = {
                     allHeaders[name] = headers[name];
             }
         }
-        NetworkAgent.setExtraHTTPHeaders(allHeaders);
+
+        WebInspector.multitargetNetworkManager.setExtraHTTPHeaders(allHeaders);
     },
 
     /**
@@ -417,7 +418,8 @@ WebInspector.ExtensionServer.prototype = {
     _onReload: function(message)
     {
         var options = /** @type {!ExtensionReloadOptions} */ (message.options || {});
-        NetworkAgent.setUserAgentOverride(typeof options.userAgent === "string" ? options.userAgent : "");
+
+        WebInspector.multitargetNetworkManager.setUserAgentOverride(typeof options.userAgent === "string" ? options.userAgent : "");
         var injectedScript;
         if (options.injectedScript)
             injectedScript = "(function(){" + options.injectedScript + "})()";
@@ -947,7 +949,7 @@ WebInspector.ExtensionServer.prototype = {
                 contextSecurityOrigin = options.scriptExecutionContext;
 
             var context;
-            var executionContexts = WebInspector.runtimeModel.executionContexts();
+            var executionContexts = frame.target().runtimeModel.executionContexts();
             if (contextSecurityOrigin) {
                 for (var i = 0; i < executionContexts.length; ++i) {
                     var executionContext = executionContexts[i];
@@ -972,7 +974,9 @@ WebInspector.ExtensionServer.prototype = {
 
             contextId = context.id;
         }
-        RuntimeAgent.evaluate(expression, "extension", exposeCommandLineAPI, true, contextId, returnByValue, false, callback);
+        var target = target ? target : WebInspector.targetManager.mainTarget();
+        if (target)
+            target.runtimeAgent().evaluate(expression, "extension", exposeCommandLineAPI, true, contextId, returnByValue, false, callback);
     },
 
     __proto__: WebInspector.Object.prototype

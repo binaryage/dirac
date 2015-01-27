@@ -1725,6 +1725,14 @@ WebInspector.DOMModel.prototype = {
     },
 
     /**
+     * @param {!PageAgent.FrameId} frameId
+     */
+    highlightFrame: function(frameId)
+    {
+        this._highlighter.highlightFrame(frameId);
+    },
+
+    /**
      * @param {boolean} enabled
      * @param {boolean} inspectUAShadowDOM
      * @param {function(?Protocol.Error)=} callback
@@ -2157,7 +2165,12 @@ WebInspector.DOMNodeHighlighter.prototype = {
      * @param {!DOMAgent.HighlightConfig} config
      * @param {function(?Protocol.Error)=} callback
      */
-    setInspectModeEnabled: function(enabled, inspectUAShadowDOM, config, callback) {}
+    setInspectModeEnabled: function(enabled, inspectUAShadowDOM, config, callback) {},
+
+    /**
+     * @param {!PageAgent.FrameId} frameId
+     */
+    highlightFrame: function(frameId) {}
 }
 
 /**
@@ -2196,5 +2209,14 @@ WebInspector.DefaultDOMNodeHighlighter.prototype = {
     {
         WebInspector.overridesSupport.setTouchEmulationSuspended(enabled);
         this._agent.setInspectModeEnabled(enabled, inspectUAShadowDOM, config, callback);
+    },
+
+    /**
+     * @override
+     * @param {!PageAgent.FrameId} frameId
+     */
+    highlightFrame: function(frameId)
+    {
+        this._agent.highlightFrame(frameId, WebInspector.Color.PageHighlight.Content.toProtocolRGBA(), WebInspector.Color.PageHighlight.ContentOutline.toProtocolRGBA());
     }
 }

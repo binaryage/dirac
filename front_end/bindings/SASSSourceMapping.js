@@ -40,7 +40,7 @@ WebInspector.SASSSourceMapping = function(cssModel, workspace, networkMapping, n
 {
     this.pollPeriodMs = 30 * 1000;
     this.pollIntervalMs = 200;
-
+    this._target = cssModel.target();
     this._cssModel = cssModel;
     this._workspace = workspace;
     this._networkProject = networkProject;
@@ -164,7 +164,7 @@ WebInspector.SASSSourceMapping.prototype = {
         if (wasLoadedFromFileSystem)
             sassFile.requestMetadata(metadataReceived.bind(this));
         else
-            NetworkAgent.loadResourceForFrontend(WebInspector.resourceTreeModel.mainFrame.id, sassURL, undefined, sassLoadedViaNetwork.bind(this));
+            this._target.networkAgent().loadResourceForFrontend(WebInspector.resourceTreeModel.mainFrame.id, sassURL, undefined, sassLoadedViaNetwork.bind(this));
 
         /**
          * @param {?Protocol.Error} error
@@ -285,7 +285,7 @@ WebInspector.SASSSourceMapping.prototype = {
             return;
         }
         var headers = { "if-modified-since": new Date(data.sassTimestamp.getTime() - 1000).toUTCString() };
-        NetworkAgent.loadResourceForFrontend(WebInspector.resourceTreeModel.mainFrame.id, cssURL, headers, contentLoaded.bind(this));
+        this._target.networkAgent().loadResourceForFrontend(WebInspector.resourceTreeModel.mainFrame.id, cssURL, headers, contentLoaded.bind(this));
 
         /**
          * @param {?Protocol.Error} error
@@ -511,7 +511,7 @@ WebInspector.SASSSourceMapping.prototype = {
         pendingCallbacks = [callback];
         this._pendingSourceMapLoadingCallbacks[completeSourceMapURL] = pendingCallbacks;
 
-        WebInspector.SourceMap.load(completeSourceMapURL, completeStyleSheetURL, sourceMapLoaded.bind(this));
+        WebInspector.SourceMap.load(this._target, completeSourceMapURL, completeStyleSheetURL, sourceMapLoaded.bind(this));
 
         /**
          * @param {?WebInspector.SourceMap} sourceMap

@@ -1294,14 +1294,20 @@ WebInspector.NetworkLogView.prototype = {
 
     _clearBrowserCache: function()
     {
-        if (confirm(WebInspector.UIString("Are you sure you want to clear browser cache?")))
-            NetworkAgent.clearBrowserCache();
+        if (confirm(WebInspector.UIString("Are you sure you want to clear browser cache?"))) {
+            var target = WebInspector.targetManager.mainTarget()
+            if (target)
+                target.networkManager.clearBrowserCache();
+        }
     },
 
     _clearBrowserCookies: function()
     {
-        if (confirm(WebInspector.UIString("Are you sure you want to clear browser cookies?")))
-            NetworkAgent.clearBrowserCookies();
+        if (confirm(WebInspector.UIString("Are you sure you want to clear browser cookies?"))) {
+            var target = WebInspector.targetManager.mainTarget()
+            if (target)
+                target.networkManager.clearBrowserCookies();
+        }
     },
 
     /**

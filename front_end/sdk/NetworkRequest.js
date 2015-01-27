@@ -945,7 +945,7 @@ WebInspector.NetworkRequest.prototype = {
             this._pendingContentCallbacks.length = 0;
             delete this._contentRequested;
         }
-        NetworkAgent.getResponseBody(this._requestId, onResourceContent.bind(this));
+        this.target().networkAgent().getResponseBody(this._requestId, onResourceContent.bind(this));
     },
 
     /**

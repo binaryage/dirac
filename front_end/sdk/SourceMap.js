@@ -63,10 +63,11 @@ SourceMapV3.Offset = function()
  * Implements Source Map V3 model. See http://code.google.com/p/closure-compiler/wiki/SourceMaps
  * for format description.
  * @constructor
+ * @param {!WebInspector.Target} target
  * @param {string} sourceMappingURL
  * @param {!SourceMapV3} payload
  */
-WebInspector.SourceMap = function(sourceMappingURL, payload)
+WebInspector.SourceMap = function(target, sourceMappingURL, payload)
 {
     if (!WebInspector.SourceMap.prototype._base64Map) {
         const base64Digits = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
@@ -80,16 +81,18 @@ WebInspector.SourceMap = function(sourceMappingURL, payload)
     this._mappings = [];
     this._sources = {};
     this._sourceContentByURL = {};
+    this._target = target;
     this._parseMappingPayload(payload);
 }
 
 /**
+ * @param {!WebInspector.Target} target
  * @param {string} sourceMapURL
  * @param {string} compiledURL
  * @param {function(?WebInspector.SourceMap)} callback
  * @this {WebInspector.SourceMap}
  */
-WebInspector.SourceMap.load = function(sourceMapURL, compiledURL, callback)
+WebInspector.SourceMap.load = function(target, sourceMapURL, compiledURL, callback)
 {
     var resourceTreeModel = WebInspector.resourceTreeModel;
     if (resourceTreeModel.cachedResourcesLoaded())
@@ -106,7 +109,7 @@ WebInspector.SourceMap.load = function(sourceMapURL, compiledURL, callback)
     function loadResource()
     {
         var headers = {};
-        NetworkAgent.loadResourceForFrontend(resourceTreeModel.mainFrame.id, sourceMapURL, headers, contentLoaded);
+        target.networkAgent().loadResourceForFrontend(resourceTreeModel.mainFrame.id, sourceMapURL, headers, contentLoaded);
     }
 
     /**
@@ -127,7 +130,7 @@ WebInspector.SourceMap.load = function(sourceMapURL, compiledURL, callback)
         try {
             var payload = /** @type {!SourceMapV3} */ (JSON.parse(content));
             var baseURL = sourceMapURL.startsWith("data:") ? compiledURL : sourceMapURL;
-            callback(new WebInspector.SourceMap(baseURL, payload));
+            callback(new WebInspector.SourceMap(target, baseURL, payload));
         } catch(e) {
             console.error(e.message);
             callback(null);
@@ -171,7 +174,7 @@ WebInspector.SourceMap.prototype = {
         var sourceContent = this.sourceContent(sourceURL);
         if (sourceContent)
             return new WebInspector.StaticContentProvider(contentType, sourceContent);
-        return new WebInspector.CompilerSourceMappingContentProvider(sourceURL, contentType);
+        return new WebInspector.CompilerSourceMappingContentProvider(this._target, sourceURL, contentType);
     },
 
     /**

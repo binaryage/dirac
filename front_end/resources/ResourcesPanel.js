@@ -1026,6 +1026,8 @@ WebInspector.StorageCategoryTreeElement.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.BaseStorageTreeElement}
+ * @param {!WebInspector.ResourcesPanel} storagePanel
+ * @param {!WebInspector.ResourceTreeFrame} frame
  */
 WebInspector.FrameTreeElement = function(storagePanel, frame)
 {
@@ -1064,7 +1066,7 @@ WebInspector.FrameTreeElement.prototype = {
         this._storagePanel.showCategoryView(this.displayName);
 
         this.listItemElement.classList.remove("hovered");
-        DOMAgent.hideHighlight();
+        this._frame.target().domModel.hideDOMNodeHighlight();
         return false;
     },
 
@@ -1072,10 +1074,10 @@ WebInspector.FrameTreeElement.prototype = {
     {
         if (hovered) {
             this.listItemElement.classList.add("hovered");
-            DOMAgent.highlightFrame(this._frameId, WebInspector.Color.PageHighlight.Content.toProtocolRGBA(), WebInspector.Color.PageHighlight.ContentOutline.toProtocolRGBA());
+            this._frame.target().domModel.highlightFrame(this._frameId);
         } else {
             this.listItemElement.classList.remove("hovered");
-            DOMAgent.hideHighlight();
+            this._frame.target().domModel.hideDOMNodeHighlight();
         }
     },
 

@@ -503,7 +503,7 @@ WebInspector.OverridesSupport.prototype = {
         if (this._userAgentChangedListenerMuted)
             return;
         var userAgent = this.emulationEnabled() ? this.settings.userAgent.get() : "";
-        NetworkAgent.setUserAgentOverride(userAgent);
+        WebInspector.multitargetNetworkManager.setUserAgentOverride(userAgent);
         if (this._userAgent !== userAgent)
             this._updateUserAgentWarningMessage(WebInspector.UIString("You might need to reload the page for proper user agent spoofing and viewport rendering."));
         this._userAgent = userAgent;
@@ -686,13 +686,13 @@ WebInspector.OverridesSupport.prototype = {
     _networkConditionsChanged: function()
     {
         if (!this.emulationEnabled() || !this.networkThroughputIsLimited()) {
-            NetworkAgent.emulateNetworkConditions(false, 0, 0, 0);
+            WebInspector.multitargetNetworkManager.emulateNetworkConditions(false, 0, 0);
         } else {
             var conditions = this.settings.networkConditions.get();
             var throughput = conditions.throughput;
             var latency = conditions.latency;
             var offline = !throughput && !latency;
-            NetworkAgent.emulateNetworkConditions(offline, latency, throughput, throughput);
+            WebInspector.multitargetNetworkManager.emulateNetworkConditions(offline, latency, throughput);
         }
     },
 

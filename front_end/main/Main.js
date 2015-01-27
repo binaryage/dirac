@@ -198,6 +198,7 @@ WebInspector.Main.prototype = {
         WebInspector.overridesSupport = new WebInspector.OverridesSupport(canDock);
         WebInspector.emulatedDevicesList = new WebInspector.EmulatedDevicesList();
         WebInspector.multitargetConsoleModel = new WebInspector.MultitargetConsoleModel();
+        WebInspector.multitargetNetworkManager = new WebInspector.MultitargetNetworkManager();
 
         WebInspector.shortcutsScreen = new WebInspector.ShortcutsScreen();
         // set order of some sections explicitly
@@ -337,7 +338,7 @@ WebInspector.Main.prototype = {
             screen.showModal();
         }
 
-        InspectorAgent.enable(inspectorAgentEnableCallback);
+        target.inspectorAgent().enable(inspectorAgentEnableCallback);
 
         function inspectorAgentEnableCallback()
         {
@@ -614,7 +615,8 @@ WebInspector.Main.prototype = {
 
 WebInspector.reload = function()
 {
-    InspectorAgent.reset();
+    for (var target of WebInspector.targetManager.targets())
+        target.inspectorAgent().reset();
     window.top.location.reload();
 }
 

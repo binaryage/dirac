@@ -321,7 +321,7 @@ WebInspector.ScreencastView.prototype = {
         }
         if (event.type === "mouseup")
             delete this._eventScreenOffsetTop;
-        InputAgent.invoke_emulateTouchFromMouseEvent(params);
+        WebInspector.targetManager.mainTarget().inputAgent().invoke_emulateTouchFromMouseEvent(params);
     },
 
     /**
@@ -333,7 +333,7 @@ WebInspector.ScreencastView.prototype = {
             var params = this._eventParams;
             delete this._eventParams;
             params.type = "mouseReleased";
-            InputAgent.invoke_emulateTouchFromMouseEvent(params);
+            WebInspector.targetManager.mainTarget().inputAgent().invoke_emulateTouchFromMouseEvent(params);
         }
     },
 
@@ -676,6 +676,14 @@ WebInspector.ScreencastView.prototype = {
         this._inspectModeConfig = enabled ? config : null;
         if (callback)
             callback(null);
+    },
+
+    /**
+     * @override
+     * @param {!PageAgent.FrameId} frameId
+     */
+    highlightFrame: function(frameId)
+    {
     },
 
     /**
