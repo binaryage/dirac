@@ -463,7 +463,10 @@ WebInspector.AnimationsSidebarPane.GlobalAnimationControls.prototype = {
     _pauseHandler: function()
     {
         this._paused = !this._paused;
-        PageAgent.setAnimationsPlaybackRate(this._paused ? 0 : this._playbackRate);
+        // Only apply to main target.
+        var target = WebInspector.targetManager.mainTarget();
+        if (target)
+            target.pageAgent().setAnimationsPlaybackRate(this._paused ? 0 : this._playbackRate);
         this._updatePauseButton();
     },
 
@@ -474,7 +477,10 @@ WebInspector.AnimationsSidebarPane.GlobalAnimationControls.prototype = {
     {
         this._playbackRate = playbackRate;
         this._updateControls();
-        PageAgent.setAnimationsPlaybackRate(this._paused ? 0 : this._playbackRate);
+        // Only apply to main target.
+        var target = WebInspector.targetManager.mainTarget();
+        if (target)
+            target.pageAgent().setAnimationsPlaybackRate(this._paused ? 0 : this._playbackRate);
     },
 
     __proto__: WebInspector.StatusBar.prototype

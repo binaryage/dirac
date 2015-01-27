@@ -279,7 +279,7 @@ WebInspector.ScreencastView.prototype = {
         }
 
         var text = event.type === "keypress" ? String.fromCharCode(event.charCode) : undefined;
-        InputAgent.dispatchKeyEvent(type, this._modifiersForEvent(event), event.timeStamp / 1000, text, text ? text.toLowerCase() : undefined,
+        this._target.inputAgent().dispatchKeyEvent(type, this._modifiersForEvent(event), event.timeStamp / 1000, text, text ? text.toLowerCase() : undefined,
                                     event.keyIdentifier, event.keyCode /* windowsVirtualKeyCode */, event.keyCode /* nativeVirtualKeyCode */, false, false, false);
         event.consume();
         this._canvasElement.focus();
@@ -738,7 +738,7 @@ WebInspector.ScreencastView.prototype = {
         var newIndex = this._historyIndex + offset;
         if (newIndex < 0 || newIndex >= this._historyEntries.length)
           return;
-        PageAgent.navigateToHistoryEntry(this._historyEntries[newIndex].id);
+        this._target.pageAgent().navigateToHistoryEntry(this._historyEntries[newIndex].id);
         this._requestNavigationHistory();
     },
 
@@ -756,13 +756,13 @@ WebInspector.ScreencastView.prototype = {
             return;
         if (!url.match(WebInspector.ScreencastView._SchemeRegex))
             url = "http://" + url;
-        PageAgent.navigate(url);
+        this._target.pageAgent().navigate(url);
         this._canvasElement.focus();
     },
 
     _requestNavigationHistory: function()
     {
-        PageAgent.getNavigationHistory(this._onNavigationHistory.bind(this));
+        this._target.pageAgent().getNavigationHistory(this._onNavigationHistory.bind(this));
     },
 
     _onNavigationHistory: function(error, currentIndex, entries)

@@ -374,7 +374,8 @@ WebInspector.SpectrumPopupHelper.prototype = {
         document.defaultView.addEventListener("resize", this._hideProxy, false);
 
         WebInspector.targetManager.addModelListener(WebInspector.ResourceTreeModel, WebInspector.ResourceTreeModel.EventTypes.ColorPicked, this._colorPicked, this);
-        PageAgent.setColorPickerEnabled(true);
+        for (var target of WebInspector.targetManager.targets())
+            target.pageAgent().setColorPickerEnabled(true);
         return true;
     },
 
@@ -400,7 +401,8 @@ WebInspector.SpectrumPopupHelper.prototype = {
         document.removeEventListener("mousedown", this._hideProxy, false);
         document.defaultView.removeEventListener("resize", this._hideProxy, false);
 
-        PageAgent.setColorPickerEnabled(false);
+        for (var target of WebInspector.targetManager.targets())
+            target.pageAgent().setColorPickerEnabled(false);
         WebInspector.targetManager.removeModelListener(WebInspector.ResourceTreeModel, WebInspector.ResourceTreeModel.EventTypes.ColorPicked, this._colorPicked, this);
 
         this.dispatchEventToListeners(WebInspector.SpectrumPopupHelper.Events.Hidden, !!commitEdit);

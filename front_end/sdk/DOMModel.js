@@ -1822,10 +1822,10 @@ WebInspector.DOMModel.prototype = {
 
         if (emulationEnabled && !this._addTouchEventsScriptInjecting) {
             this._addTouchEventsScriptInjecting = true;
-            PageAgent.addScriptToEvaluateOnLoad("(" + injectedFunction.toString() + ")()", scriptAddedCallback.bind(this));
+            this.target().pageAgent().addScriptToEvaluateOnLoad("(" + injectedFunction.toString() + ")()", scriptAddedCallback.bind(this));
         } else {
             if (typeof this._addTouchEventsScriptId !== "undefined") {
-                PageAgent.removeScriptToEvaluateOnLoad(this._addTouchEventsScriptId);
+                this.target().pageAgent().removeScriptToEvaluateOnLoad(this._addTouchEventsScriptId);
                 delete this._addTouchEventsScriptId;
             }
         }
@@ -1843,7 +1843,7 @@ WebInspector.DOMModel.prototype = {
             this._addTouchEventsScriptId = scriptId;
         }
 
-        PageAgent.setTouchEmulationEnabled(emulationEnabled, configuration);
+        this.target().pageAgent().setTouchEmulationEnabled(emulationEnabled, configuration);
     },
 
     markUndoableState: function()

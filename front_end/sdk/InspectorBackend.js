@@ -370,14 +370,8 @@ InspectorBackendClass.Connection.prototype = {
      */
     registerAgentsOn: function(object)
     {
-        var targetOnlyDomains = { "CSS": true, "DOM": true, "DOMDebugger": true, "Debugger": true, "Inspector": true, "Memory": true, "Network": true, "Runtime": true };
-        for (var domain in this._agents) {
-            if (targetOnlyDomains[domain]) {
-                object[domain + "Agent"]  = {};
-                continue;
-            }
-            object[domain + "Agent"]  = this._agents[domain];
-        }
+        for (var domain in this._agents)
+            object[domain + "Agent"]  = {};
     },
 
     /**

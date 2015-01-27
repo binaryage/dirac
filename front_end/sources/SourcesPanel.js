@@ -1423,12 +1423,18 @@ WebInspector.SourcesPanel.DisableJavaScriptSettingDelegate.prototype = {
      */
     _settingChanged: function(event)
     {
-        PageAgent.setScriptExecutionDisabled(event.data, this._updateScriptDisabledCheckbox.bind(this));
+        // Only applies to the main target.
+        var target = WebInspector.targetManager.mainTarget();
+        if (target)
+            target.pageAgent().setScriptExecutionDisabled(/** @type {boolean} */(event.data), this._updateScriptDisabledCheckbox.bind(this));
     },
 
     _updateScriptDisabledCheckbox: function()
     {
-        PageAgent.getScriptExecutionStatus(executionStatusCallback.bind(this));
+        // Only applies to the main target.
+        var target = WebInspector.targetManager.mainTarget();
+        if (target)
+            target.pageAgent().getScriptExecutionStatus(executionStatusCallback.bind(this));
 
         /**
          * @param {?Protocol.Error} error

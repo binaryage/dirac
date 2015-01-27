@@ -177,7 +177,8 @@ WebInspector.OverridesSupport.GeolocationPosition.parseUserInput = function(lati
 
 WebInspector.OverridesSupport.GeolocationPosition.clearGeolocationOverride = function()
 {
-    PageAgent.clearGeolocationOverride();
+    for (var target of WebInspector.targetManager.targets())
+        target.pageAgent().clearGeolocationOverride();
 }
 
 /**
@@ -244,9 +245,10 @@ WebInspector.OverridesSupport.DeviceOrientation.parseUserInput = function(alphaS
     return new WebInspector.OverridesSupport.DeviceOrientation(alpha, beta, gamma);
 }
 
-WebInspector.OverridesSupport.DeviceOrientation.clearDeviceOrientationOverride = function()
+WebInspector.OverridesSupport.DeviceOrientation._clearDeviceOrientationOverride = function()
 {
-    PageAgent.clearDeviceOrientationOverride();
+    for (var target of WebInspector.targetManager.targets())
+        target.pageAgent().clearDeviceOrientationOverride();
 }
 
 /**
@@ -645,42 +647,46 @@ WebInspector.OverridesSupport.prototype = {
     _geolocationPositionChanged: function()
     {
         if (!this.emulationEnabled() || !this.settings.overrideGeolocation.get()) {
-            PageAgent.clearGeolocationOverride();
+            for (var target of WebInspector.targetManager.targets())
+                target.pageAgent().clearGeolocationOverride();
             return;
         }
         var geolocation = WebInspector.OverridesSupport.GeolocationPosition.parseSetting(this.settings.geolocationOverride.get());
-        if (geolocation.error)
-            PageAgent.setGeolocationOverride();
-        else
-            PageAgent.setGeolocationOverride(geolocation.latitude, geolocation.longitude, 150);
+        for (var target of WebInspector.targetManager.targets()) {
+            if (geolocation.error)
+                target.pageAgent().setGeolocationOverride();
+            else
+                target.pageAgent().setGeolocationOverride(geolocation.latitude, geolocation.longitude, 150);
+        }
     },
 
     _deviceOrientationChanged: function()
     {
         if (!this.emulationEnabled() || !this.settings.overrideDeviceOrientation.get()) {
-            PageAgent.clearDeviceOrientationOverride();
+            WebInspector.OverridesSupport.DeviceOrientation._clearDeviceOrientationOverride();
             return;
         }
 
         var deviceOrientation = WebInspector.OverridesSupport.DeviceOrientation.parseSetting(this.settings.deviceOrientationOverride.get());
-        PageAgent.setDeviceOrientationOverride(deviceOrientation.alpha, deviceOrientation.beta, deviceOrientation.gamma);
+        for (var target of WebInspector.targetManager.targets())
+            target.pageAgent().setDeviceOrientationOverride(deviceOrientation.alpha, deviceOrientation.beta, deviceOrientation.gamma);
     },
 
     _emulateTouchEventsChanged: function()
     {
         var emulateTouch = this.emulationEnabled() && this.settings.emulateTouch.get() && !this._touchEmulationSuspended;
-        var targets = WebInspector.targetManager.targets();
-        for (var i = 0; i < targets.length; ++i)
-            targets[i].domModel.emulateTouchEventObjects(emulateTouch, this.settings.emulateMobile.get() ? "mobile" : "desktop");
+        for (var target of WebInspector.targetManager.targets())
+            target.domModel.emulateTouchEventObjects(emulateTouch, this.settings.emulateMobile.get() ? "mobile" : "desktop");
     },
 
     _cssMediaChanged: function()
     {
         var enabled = this.emulationEnabled() && this.settings.overrideCSSMedia.get();
-        PageAgent.setEmulatedMedia(enabled ? this.settings.emulatedCSSMedia.get() : "");
-        var targets = WebInspector.targetManager.targets();
-        for (var i = 0; i < targets.length; ++i)
-            targets[i].cssModel.mediaQueryResultChanged();
+
+        for (var target of WebInspector.targetManager.targets()) {
+            target.pageAgent().setEmulatedMedia(enabled ? this.settings.emulatedCSSMedia.get() : "");
+            target.cssModel.mediaQueryResultChanged();
+        }
     },
 
     _networkConditionsChanged: function()
@@ -719,7 +725,8 @@ WebInspector.OverridesSupport.prototype = {
 
     _showRulersChanged: function()
     {
-        PageAgent.setShowViewportSizeOnResize(!this._pageResizerActive(), WebInspector.settings.showMetricsRulers.get());
+        for (var target of WebInspector.targetManager.targets())
+            target.pageAgent().setShowViewportSizeOnResize(!this._pageResizerActive(), WebInspector.settings.showMetricsRulers.get());
     },
 
     _onMainFrameNavigated: function()

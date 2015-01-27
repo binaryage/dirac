@@ -599,7 +599,7 @@ WebInspector.NetworkRequest.prototype = {
     get requestCookies()
     {
         if (!this._requestCookies)
-            this._requestCookies = WebInspector.CookieParser.parseCookie(this.requestHeaderValue("Cookie"));
+            this._requestCookies = WebInspector.CookieParser.parseCookie(this.target(), this.requestHeaderValue("Cookie"));
         return this._requestCookies;
     },
 
@@ -696,7 +696,7 @@ WebInspector.NetworkRequest.prototype = {
     get responseCookies()
     {
         if (!this._responseCookies)
-            this._responseCookies = WebInspector.CookieParser.parseSetCookie(this.responseHeaderValue("Set-Cookie"));
+            this._responseCookies = WebInspector.CookieParser.parseSetCookie(this.target(), this.responseHeaderValue("Set-Cookie"));
         return this._responseCookies;
     },
 

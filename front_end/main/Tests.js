@@ -567,8 +567,8 @@ TestSuite.prototype.testConsoleOnNavigateBack = function()
 
 TestSuite.prototype.testReattachAfterCrash = function()
 {
-    PageAgent.navigate("about:crash");
-    PageAgent.navigate("about:blank");
+    WebInspector.targetManager.mainTarget().pageAgent().navigate("about:crash");
+    WebInspector.targetManager.mainTarget().pageAgent().navigate("about:blank");
     WebInspector.runtimeModel.addEventListener(WebInspector.RuntimeModel.Events.ExecutionContextCreated, this.releaseControl, this);
 };
 
@@ -637,7 +637,7 @@ TestSuite.prototype.testDeviceMetricsOverrides = function()
 
     function testOverrides(params, metrics, callback)
     {
-        PageAgent.invoke_setDeviceMetricsOverride(params, getMetrics);
+        WebInspector.targetManager.mainTarget().pageAgent().invoke_setDeviceMetricsOverride(params, getMetrics);
 
         function getMetrics()
         {
