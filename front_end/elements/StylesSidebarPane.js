@@ -2745,34 +2745,6 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
         this.valueElement = valueElement;
 
         /**
-         * @param {!RegExp} regex
-         * @param {function(string):!Node} processor
-         * @param {?function(string):!Node} nextProcessor
-         * @param {string} valueText
-         * @return {!DocumentFragment}
-         */
-        function processValue(regex, processor, nextProcessor, valueText)
-        {
-            var container = createDocumentFragment();
-
-            var items = valueText.replace(regex, "\0$1\0").split("\0");
-            for (var i = 0; i < items.length; ++i) {
-                if ((i % 2) === 0) {
-                    if (nextProcessor)
-                        container.appendChild(nextProcessor(items[i]));
-                    else
-                        container.createTextChild(items[i]);
-                } else {
-                    var processedNode = processor(items[i]);
-                    if (processedNode)
-                        container.appendChild(processedNode);
-                }
-            }
-
-            return container;
-        }
-
-        /**
          * @param {string} value
          * @return {!RegExp}
          */
@@ -2811,8 +2783,12 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
         }
 
         if (value) {
-            var colorProcessor = processValue.bind(null, WebInspector.StylesSidebarPane._colorRegex, this._processColor.bind(this, nameElement, valueElement), null);
-            valueElement.appendChild(processValue(urlRegex(value), linkifyURL.bind(this), WebInspector.CSSMetadata.isColorAwareProperty(this.name) && this.parsedOk ? colorProcessor : null, value));
+            var formatter = new WebInspector.StringFormatter();
+            formatter.addProcessor(urlRegex(value), linkifyURL.bind(this));
+            if (WebInspector.CSSMetadata.isColorAwareProperty(this.name) && this.parsedOk)
+                formatter.addProcessor(WebInspector.StylesSidebarPane._colorRegex, this._processColor.bind(this, nameElement, valueElement));
+
+            valueElement.appendChild(formatter.formatText(value));
         }
 
         this.listItemElement.removeChildren();
