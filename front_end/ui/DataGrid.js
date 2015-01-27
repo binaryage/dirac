@@ -1246,11 +1246,7 @@ WebInspector.DataGridNode.prototype = {
 
     get leftPadding()
     {
-        if (typeof this._leftPadding === "number")
-            return this._leftPadding;
-
-        this._leftPadding = this.depth * this.dataGrid.indentWidth;
-        return this._leftPadding;
+        return this.depth * this.dataGrid.indentWidth;
     },
 
     get shouldRefreshChildren()
@@ -1692,7 +1688,7 @@ WebInspector.DataGridNode.prototype = {
         if (!this.hasChildren)
             return false;
         var cell = event.target.enclosingNodeOrSelfWithNodeName("td");
-        if (!cell.classList.contains("disclosure"))
+        if (!cell || !cell.classList.contains("disclosure"))
             return false;
 
         var left = cell.totalOffsetLeft() + this.leftPadding;

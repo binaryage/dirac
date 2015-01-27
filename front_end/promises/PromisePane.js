@@ -13,8 +13,13 @@ WebInspector.PromisePane = function()
     this.registerRequiredCSS("promises/promisePane.css");
     this.element.classList.add("promises");
 
-    this._enabled = false;
-    this._target = null;
+    var statusBar = new WebInspector.StatusBar(this.element);
+    this._recordButton = new WebInspector.StatusBarButton(WebInspector.UIString("Record Promises"), "record-status-bar-item");
+    this._recordButton.addEventListener("click", this._recordButtonClicked.bind(this));
+    statusBar.appendStatusBarItem(this._recordButton);
+    var clearButton = new WebInspector.StatusBarButton(WebInspector.UIString("Clear"), "clear-status-bar-item");
+    clearButton.addEventListener("click", this._clearButtonClicked.bind(this));
+    statusBar.appendStatusBarItem(clearButton);
 
     this._dataGridContainer = new WebInspector.VBox();
     this._dataGridContainer.show(this.element);
@@ -30,32 +35,42 @@ WebInspector.PromisePane = function()
     this._dataGrid.show(this._dataGridContainer.element);
 
     this._linkifier = new WebInspector.Linkifier();
-    this._throttler = new WebInspector.Throttler(1000);
 
-    this._popoverHelper = new WebInspector.PopoverHelper(this.element, this._getPopoverAnchor.bind(this), this._showPopover.bind(this), this._onHidePopover.bind(this));
+    /** @type {!Map.<!WebInspector.Target, !Map.<number, !DebuggerAgent.PromiseDetails>>} */
+    this._promiseDetailsByTarget = new Map();
+    /** @type {!Map.<number, !WebInspector.DataGridNode>} */
+    this._promiseIdToNode = new Map();
+
+    this._popoverHelper = new WebInspector.PopoverHelper(this.element, this._getPopoverAnchor.bind(this), this._showPopover.bind(this));
     this._popoverHelper.setTimeout(250, 250);
 
     this.element.addEventListener("click", this._hidePopover.bind(this), true);
 
-    WebInspector.targetManager.addModelListener(WebInspector.DebuggerModel, WebInspector.DebuggerModel.Events.DebuggerPaused, this._debuggerStateChanged, this);
-    WebInspector.targetManager.addModelListener(WebInspector.DebuggerModel, WebInspector.DebuggerModel.Events.DebuggerResumed, this._debuggerStateChanged, this);
+    WebInspector.targetManager.addModelListener(WebInspector.DebuggerModel, WebInspector.DebuggerModel.Events.PromiseUpdated, this._onPromiseUpdated, this);
+    WebInspector.targetManager.addModelListener(WebInspector.ResourceTreeModel, WebInspector.ResourceTreeModel.EventTypes.MainFrameNavigated, this._mainFrameNavigated, this);
     WebInspector.context.addFlavorChangeListener(WebInspector.Target, this._targetChanged, this);
 
     WebInspector.targetManager.observeTargets(this);
 }
 
-WebInspector.PromisePane._detailsSymbol = Symbol("details");
-
 WebInspector.PromisePane.prototype = {
+    /**
+     * @override
+     * @return {!Array.<!Element>}
+     */
+    elementsToRestoreScrollPositionsFor: function()
+    {
+        return [this._dataGrid.scrollContainer];
+    },
+
     /**
      * @override
      * @param {!WebInspector.Target} target
      */
     targetAdded: function(target)
     {
-        if (!this._enabled)
-            return;
-        this._enablePromiseTracker(target);
+        if (this._enabled)
+            this._enablePromiseTracker(target);
     },
 
     /**
@@ -64,11 +79,10 @@ WebInspector.PromisePane.prototype = {
      */
     targetRemoved: function(target)
     {
-        if (!this._enabled)
-            return;
+        this._promiseDetailsByTarget.delete(target);
         if (this._target === target) {
             this._clear();
-            this._target = null;
+            delete this._target;
         }
     },
 
@@ -82,20 +96,48 @@ WebInspector.PromisePane.prototype = {
         var target = /** @type {!WebInspector.Target} */ (event.data);
         if (this._target === target)
             return;
-        this._clear();
         this._target = target;
-        this._scheduleDataUpdate(true);
+        this._refresh();
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _mainFrameNavigated: function(event)
+    {
+        var frame = /** @type {!WebInspector.ResourceTreeFrame} */ (event.data);
+        var target = frame.target();
+        this._promiseDetailsByTarget.delete(target);
+        if (this._target === target)
+            this._clear();
     },
 
     /** @override */
     wasShown: function()
     {
-        if (!this._enabled) {
+        // Auto enable upon the very first show.
+        if (typeof this._enabled === "undefined") {
             this._enabled = true;
+            this._recordButton.setToggled(true);
             this._target = WebInspector.context.flavor(WebInspector.Target);
             WebInspector.targetManager.targets().forEach(this._enablePromiseTracker, this);
         }
-        this._scheduleDataUpdate(true);
+    },
+
+    /**
+     * @param {!WebInspector.Target} target
+     */
+    _enablePromiseTracker: function(target)
+    {
+        target.debuggerAgent().enablePromiseTracker(true);
+    },
+
+    /**
+     * @param {!WebInspector.Target} target
+     */
+    _disablePromiseTracker: function(target)
+    {
+        target.debuggerAgent().disablePromiseTracker();
     },
 
     /** @override */
@@ -109,163 +151,139 @@ WebInspector.PromisePane.prototype = {
         this._popoverHelper.hidePopover();
     },
 
-    _onHidePopover: function()
+    _recordButtonClicked: function()
     {
-        this._scheduleDataUpdate(true);
+        this._enabled = !this._recordButton.toggled();
+        this._recordButton.setToggled(this._enabled);
+        WebInspector.targetManager.targets().forEach(this._enabled ? this._enablePromiseTracker : this._disablePromiseTracker, this);
+    },
+
+    _clearButtonClicked: function()
+    {
+        this._clear();
+        if (this._target)
+            this._promiseDetailsByTarget.delete(this._target);
     },
 
     /**
-     * @param {!WebInspector.Target} target
+     * @param {!WebInspector.Event} event
      */
-    _enablePromiseTracker: function(target)
+    _onPromiseUpdated: function(event)
     {
-        target.debuggerAgent().enablePromiseTracker(true);
-    },
+        var target = /** @type {!WebInspector.Target} */ (event.data.target);
+        var eventType = /** @type {string} */ (event.data.eventType);
+        var details = /** @type {!DebuggerAgent.PromiseDetails} */ (event.data.promise);
+        if (eventType === "gc")
+            details.__isGarbageCollected = true;
 
-    _debuggerStateChanged: function()
-    {
-        this._hidePopover();
-        this._scheduleDataUpdate(true);
-    },
+        var promiseIdToDetails = this._promiseDetailsByTarget.get(target);
+        if (!promiseIdToDetails) {
+            promiseIdToDetails = new Map();
+            this._promiseDetailsByTarget.set(target, promiseIdToDetails)
+        }
+        promiseIdToDetails.set(details.id, details);
 
-    /**
-     * @param {!DebuggerAgent.PromiseDetails} p1
-     * @param {!DebuggerAgent.PromiseDetails} p2
-     * @return {number}
-     */
-    _comparePromises: function(p1, p2)
-    {
-        var t1 = p1.creationTime || 0;
-        var t2 = p2.creationTime || 0;
-        return (t1 - t2) || (p1.id - p2.id);
+        if (target === this._target)
+            this._attachDataGridNode(details);
     },
 
     /**
-     * @param {!WebInspector.Throttler.FinishCallback} finishCallback
+     * @param {!DebuggerAgent.PromiseDetails} details
      */
-    _updateData: function(finishCallback)
+    _attachDataGridNode: function(details)
     {
-        var target = this._target;
-        if (!target || this._popoverHelper.isPopoverVisible() || this._popoverHelper.isHoverTimerActive()) {
-            didUpdate.call(this);
+        var scrolledToBottom = this._dataGrid.scrollContainer.isScrolledToBottom();
+        var node = this._createDataGridNode(details);
+        var parentId = details.parentId;
+        var parentNode = (parentId && this._promiseIdToNode.get(parentId)) || this._dataGrid.rootNode();
+        if (parentNode !== node.parent) {
+            parentNode.appendChild(node);
+            parentNode.expanded = true;
+        }
+        if (details.__isGarbageCollected)
+            node.element().classList.add("promise-gc");
+        if (scrolledToBottom)
+            this._dataGrid.scrollContainer.scrollTop = this._dataGrid.scrollContainer.scrollHeight;
+    },
+
+    /**
+     * @param {!DebuggerAgent.PromiseDetails} details
+     * @return {!WebInspector.DataGridNode}
+     */
+    _createDataGridNode: function(details)
+    {
+        var statusElement = createElementWithClass("div", "status " + details.status);
+        switch (details.status) {
+        case "pending":
+            statusElement.title = WebInspector.UIString("Pending");
+            break;
+        case "resolved":
+            statusElement.title = WebInspector.UIString("Fulfilled");
+            break;
+        case "rejected":
+            statusElement.title = WebInspector.UIString("Rejected");
+            break;
+        }
+        var data = {
+            status: statusElement,
+            promiseId: details.id,
+            function: WebInspector.beautifyFunctionName(details.callFrame ? details.callFrame.functionName : "")
+        };
+        if (details.callFrame)
+            data.created = this._linkifier.linkifyConsoleCallFrame(this._target, details.callFrame);
+        if (details.settlementStack && details.settlementStack[0])
+            data.settled = this._linkifier.linkifyConsoleCallFrame(this._target, details.settlementStack[0]);
+        if (details.creationTime && details.settlementTime && details.settlementTime >= details.creationTime)
+            data.tts = Number.millisToString(details.settlementTime - details.creationTime);
+        var node = this._promiseIdToNode.get(details.id);
+        if (!node) {
+            node = new WebInspector.DataGridNode(data, false);
+            this._promiseIdToNode.set(details.id, node);
+        } else {
+            node.data = data;
+        }
+        return node;
+    },
+
+    _refresh: function()
+    {
+        this._clear();
+        if (!this._target)
             return;
-        }
-
-        // FIXME: Run GC on getPromises from backend.
-        target.heapProfilerAgent().collectGarbage();
-        target.debuggerAgent().getPromises(didGetPromises.bind(this));
-
-        /**
-         * @param {?Protocol.Error} error
-         * @param {?Array.<!DebuggerAgent.PromiseDetails>} promiseDetails
-         * @this {WebInspector.PromisePane}
-         */
-        function didGetPromises(error, promiseDetails)
-        {
-            if (target !== this._target || this._popoverHelper.isPopoverVisible() || this._popoverHelper.isHoverTimerActive()) {
-                didUpdate.call(this);
-                return;
-            }
-
-            var expandedState = this._dataGridExpandedState();
-            this._clear();
-
-            if (error || !promiseDetails) {
-                didUpdate.call(this);
-                return;
-            }
-
-            var nodesToInsert = { __proto__: null };
-            promiseDetails.sort(this._comparePromises);
-            for (var i = 0; i < promiseDetails.length; i++) {
-                var promise = promiseDetails[i];
-                var statusElement = createElementWithClass("div", "status " + promise.status);
-                switch (promise.status) {
-                case "pending":
-                    statusElement.title = WebInspector.UIString("Pending");
-                    break;
-                case "resolved":
-                    statusElement.title = WebInspector.UIString("Fulfilled");
-                    break;
-                case "rejected":
-                    statusElement.title = WebInspector.UIString("Rejected");
-                    break;
-                }
-                var data = {
-                    status: statusElement,
-                    promiseId: promise.id,
-                    function: WebInspector.beautifyFunctionName(promise.callFrame ? promise.callFrame.functionName : "")
-                };
-                if (promise.callFrame)
-                    data.created = this._linkifier.linkifyConsoleCallFrame(target, promise.callFrame);
-                if (promise.settlementStack && promise.settlementStack[0])
-                    data.settled = this._linkifier.linkifyConsoleCallFrame(target, promise.settlementStack[0]);
-                if (promise.creationTime && promise.settlementTime && promise.settlementTime >= promise.creationTime)
-                    data.tts = Number.millisToString(promise.settlementTime - promise.creationTime);
-                var node = new WebInspector.DataGridNode(data, false);
-                node.selectable = false;
-                node[WebInspector.PromisePane._detailsSymbol] = promise;
-                nodesToInsert[promise.id] = { node: node, parentId: promise.parentId };
-            }
-
-            var rootNode = this._dataGrid.rootNode();
-
-            for (var id in nodesToInsert) {
-                var node = nodesToInsert[id].node;
-                var parentId = nodesToInsert[id].parentId;
-                var parentNode = (parentId && nodesToInsert[parentId]) ? nodesToInsert[parentId].node : rootNode;
-                parentNode.appendChild(node);
-            }
-
-            for (var id in nodesToInsert) {
-                var node = nodesToInsert[id].node;
-                node.expanded = (id in expandedState ? expandedState[id] : true);
-            }
-
-            didUpdate.call(this);
-        }
-
-        /**
-         * @this {WebInspector.PromisePane}
-         */
-        function didUpdate()
-        {
-            this._scheduleDataUpdate();
-            finishCallback();
-        }
-    },
-
-    _dataGridExpandedState: function()
-    {
-        var result = { __proto__: null };
-        examineNode(this._dataGrid.rootNode());
-        return result;
-
-        /**
-         * @param {!WebInspector.DataGridNode} node
-         */
-        function examineNode(node)
-        {
-            var details = node[WebInspector.PromisePane._detailsSymbol];
-            if (details)
-                result[details.id] = node.hasChildren ? node.expanded : true;
-            for (var child of node.children)
-                examineNode(child);
-        }
-    },
-
-    /**
-     * @param {boolean=} asSoonAsPossible
-     */
-    _scheduleDataUpdate: function(asSoonAsPossible)
-    {
-        if (!this.isShowing())
+        if (!this._promiseDetailsByTarget.has(this._target))
             return;
-        this._throttler.schedule(this._updateData.bind(this), asSoonAsPossible);
+
+        var rootNode = this._dataGrid.rootNode();
+        var promiseIdToDetails = this._promiseDetailsByTarget.get(this._target);
+
+        var nodesToInsert = { __proto__: null };
+        // The for..of loop iterates in insertion order.
+        for (var pair of promiseIdToDetails) {
+            var id = /** @type {number} */ (pair[0]);
+            var details = /** @type {!DebuggerAgent.PromiseDetails} */ (pair[1]);
+            nodesToInsert[id] = {
+                parentId: details.parentId,
+                node: this._createDataGridNode(details),
+                gc: details.__isGarbageCollected
+            };
+        }
+        for (var id in nodesToInsert) {
+            var node = nodesToInsert[id].node;
+            var parentId = nodesToInsert[id].parentId;
+            var parentNode = (parentId && nodesToInsert[parentId]) ? nodesToInsert[parentId].node : rootNode;
+            parentNode.appendChild(node);
+        }
+        for (var id in nodesToInsert) {
+            var node = nodesToInsert[id].node;
+            node.expanded = true;
+            if (nodesToInsert[id].gc)
+                node.element().classList.add("promise-gc");
+        }
     },
 
     _clear: function()
     {
+        this._promiseIdToNode.clear();
         this._hidePopover();
         this._dataGrid.rootNode().removeChildren();
         this._linkifier.reset();
@@ -282,6 +300,12 @@ WebInspector.PromisePane.prototype = {
             return;
 
         var promiseId = node.data.promiseId;
+        if (this._promiseDetailsByTarget.has(target)) {
+            var details = this._promiseDetailsByTarget.get(target).get(promiseId);
+            if (details.__isGarbageCollected)
+                return;
+        }
+
         contextMenu.appendItem(WebInspector.UIString.capitalize("Show in ^console"), showPromiseInConsole);
         contextMenu.show();
 
@@ -322,12 +346,12 @@ WebInspector.PromisePane.prototype = {
      */
     _getPopoverAnchor: function(element, event)
     {
-        if (!this._target)
+        if (!this._target || !this._promiseDetailsByTarget.has(this._target))
             return undefined;
         var node = this._dataGrid.dataGridNodeFromNode(element);
         if (!node)
             return undefined;
-        var details = node[WebInspector.PromisePane._detailsSymbol];
+        var details = this._promiseDetailsByTarget.get(this._target).get(node.data.promiseId);
         if (!details)
             return undefined;
         var anchor = element.enclosingNodeOrSelfWithClass("created-column");
@@ -344,7 +368,7 @@ WebInspector.PromisePane.prototype = {
     _showPopover: function(anchor, popover)
     {
         var node = this._dataGrid.dataGridNodeFromNode(anchor);
-        var details = node[WebInspector.PromisePane._detailsSymbol];
+        var details = this._promiseDetailsByTarget.get(this._target).get(node.data.promiseId);
 
         var stackTrace;
         var asyncStackTrace;

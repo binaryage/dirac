@@ -363,7 +363,7 @@ WebInspector.DebuggerModel.prototype = {
      */
     _promiseUpdated: function(eventType, promise)
     {
-        this.dispatchEventToListeners(WebInspector.DebuggerModel.Events.PromiseUpdated, { eventType: eventType, promise: promise });
+        this.dispatchEventToListeners(WebInspector.DebuggerModel.Events.PromiseUpdated, { target: this.target(), eventType: eventType, promise: promise });
     },
 
     _reset: function()
