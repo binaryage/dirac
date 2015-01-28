@@ -5,19 +5,23 @@
 /**
  * @constructor
  * @extends {WebInspector.Object}
+ * @param {?WebInspector.Target} target
  */
-WebInspector.TimelinePowerOverviewDataProvider = function()
+WebInspector.TimelinePowerOverviewDataProvider = function(target)
 {
     this._records = [];
     this._energies = [];
     this._times = [];
-    WebInspector.powerProfiler.addEventListener(WebInspector.PowerProfiler.EventTypes.PowerEventRecorded, this._onRecordAdded, this);
+    this._target = target;
+    if (this._target)
+        this._target.powerProfiler.addEventListener(WebInspector.PowerProfiler.EventTypes.PowerEventRecorded, this._onRecordAdded, this);
 }
 
 WebInspector.TimelinePowerOverviewDataProvider.prototype = {
     dispose: function()
     {
-        WebInspector.powerProfiler.removeEventListener(WebInspector.PowerProfiler.EventTypes.PowerEventRecorded, this._onRecordAdded, this);
+        if (this._target)
+            this._target.powerProfiler.removeEventListener(WebInspector.PowerProfiler.EventTypes.PowerEventRecorded, this._onRecordAdded, this);
     },
 
     /**
@@ -93,8 +97,11 @@ WebInspector.TimelinePowerOverviewDataProvider.prototype = {
 WebInspector.TimelinePowerOverview = function(model)
 {
     WebInspector.TimelineOverviewBase.call(this, model);
+
+    // FIXME: Figure out optional targets in timeline.
+    this._target = model.target();
     this.element.id = "timeline-overview-power";
-    this._dataProvider = new WebInspector.TimelinePowerOverviewDataProvider();
+    this._dataProvider = new WebInspector.TimelinePowerOverviewDataProvider(this._target);
 
     this._maxPowerLabel = this.element.createChild("div", "max memory-graph-label");
     this._minPowerLabel = this.element.createChild("div", "min memory-graph-label");
@@ -111,14 +118,14 @@ WebInspector.TimelinePowerOverview.prototype = {
 
     timelineStarted: function()
     {
-        if (WebInspector.targetManager.mainTarget().hasCapability(WebInspector.Target.Capabilities.CanProfilePower))
-            WebInspector.powerProfiler.startProfile();
+        if (this._target && this._target.hasCapability(WebInspector.Target.Capabilities.CanProfilePower))
+            this._target.powerProfiler.startProfile();
     },
 
     timelineStopped: function()
     {
-        if (WebInspector.targetManager.mainTarget().hasCapability(WebInspector.Target.Capabilities.CanProfilePower))
-            WebInspector.powerProfiler.stopProfile();
+        if (this._target && this._target.hasCapability(WebInspector.Target.Capabilities.CanProfilePower))
+            this._target.powerProfiler.stopProfile();
     },
 
     _resetPowerLabels: function()
@@ -215,6 +222,14 @@ WebInspector.TimelinePowerOverview.prototype = {
     calculateEnergy: function(minTime, maxTime)
     {
         return this._dataProvider._calculateEnergy(minTime, maxTime);
+    },
+
+    /**
+     * @return {string}
+     */
+    accuracyLevel: function()
+    {
+        return this._target ? this._target.powerProfiler.accuracyLevel() : "";
     },
 
     __proto__: WebInspector.TimelineOverviewBase.prototype

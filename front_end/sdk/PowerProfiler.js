@@ -34,12 +34,13 @@ WebInspector.PowerProfiler.prototype = {
     /**
      * @return {string}
      */
-    getAccuracyLevel: function()
+    accuracyLevel: function()
     {
         return this._accuracyLevel;
     },
 
-    _onAccuracyLevel: function(error, result) {
+    _onAccuracyLevel: function(error, result)
+    {
         this._accuracyLevel = "";
         if (error) {
             console.log("Unable to retrieve PowerProfiler accuracy level: " + error);
@@ -71,8 +72,3 @@ WebInspector.PowerDispatcher.prototype = {
             this._profiler.dispatchEventToListeners(WebInspector.PowerProfiler.EventTypes.PowerEventRecorded, events[i]);
     }
 }
-
-/**
- * @type {!WebInspector.PowerProfiler}
- */
-WebInspector.powerProfiler;

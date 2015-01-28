@@ -76,6 +76,33 @@ WebInspector.ResourceTreeModel.EventTypes = {
     ColorPicked: "ColorPicked"
 }
 
+
+/**
+ * @return {!Array.<!WebInspector.ResourceTreeFrame>}
+ */
+WebInspector.ResourceTreeModel.frames = function()
+{
+    var result = [];
+    for (var target of WebInspector.targetManager.targets())
+        result = result.concat(Object.values(target.resourceTreeModel._frames));
+    return result;
+}
+
+/**
+ * @param {string} url
+ * @return {?WebInspector.Resource}
+ */
+WebInspector.ResourceTreeModel.resourceForURL = function(url)
+{
+    for (var target of WebInspector.targetManager.targets()) {
+        var mainFrame = target.resourceTreeModel.mainFrame;
+        var result = mainFrame ? mainFrame.resourceForURL(url) : null;
+        if (result)
+            return result;
+    }
+    return null;
+}
+
 WebInspector.ResourceTreeModel.prototype = {
     _fetchResourceTree: function()
     {
@@ -909,8 +936,3 @@ WebInspector.PageDispatcher.prototype = {
         // Frontend is not interested in interstitials.
     }
 }
-
-/**
- * @type {!WebInspector.ResourceTreeModel}
- */
-WebInspector.resourceTreeModel;

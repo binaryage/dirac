@@ -282,7 +282,6 @@ WebInspector.RemoteObjectImpl = function(target, objectId, type, subtype, value,
         this._preview = preview;
     } else {
         // Primitive or null object.
-        console.assert(type !== "object" || value === null);
         this._description = description || (value + "");
         this._hasChildren = false;
         // Handle special numbers: NaN, Infinity, -Infinity, -0.

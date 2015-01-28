@@ -1190,8 +1190,3 @@ WebInspector.DebuggerPausedDetails.prototype = {
 
     __proto__: WebInspector.SDKObject.prototype
 }
-
-/**
- * @type {!WebInspector.DebuggerModel}
- */
-WebInspector.debuggerModel;

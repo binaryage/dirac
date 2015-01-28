@@ -94,7 +94,7 @@ WebInspector.SourceMap = function(target, sourceMappingURL, payload)
  */
 WebInspector.SourceMap.load = function(target, sourceMapURL, compiledURL, callback)
 {
-    var resourceTreeModel = WebInspector.resourceTreeModel;
+    var resourceTreeModel = target.resourceTreeModel;
     if (resourceTreeModel.cachedResourcesLoaded())
         loadResource();
     else

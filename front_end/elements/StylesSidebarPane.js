@@ -2454,7 +2454,7 @@ WebInspector.ComputedStylePropertiesSection.prototype = {
 WebInspector.BlankStylePropertiesSection = function(stylesPane, defaultSelectorText, styleSheetId, ruleLocation, insertAfterStyleRule)
 {
     var dummyCascade = new WebInspector.SectionCascade();
-    var blankSectionModel = dummyCascade.appendModelFromStyle(WebInspector.CSSStyleDeclaration.createDummyStyle(), defaultSelectorText);
+    var blankSectionModel = dummyCascade.appendModelFromStyle(WebInspector.CSSStyleDeclaration.createDummyStyle(stylesPane._target), defaultSelectorText);
     blankSectionModel.setEditable(true);
     WebInspector.StylePropertiesSection.call(this, stylesPane, blankSectionModel);
     this._ruleLocation = ruleLocation;

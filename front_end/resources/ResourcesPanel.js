@@ -198,8 +198,8 @@ WebInspector.ResourcesPanel.prototype = {
             }
         }
 
-        var mainResource = WebInspector.resourceTreeModel.inspectedPageURL() && this.resourcesListTreeElement && this.resourcesListTreeElement.expanded
-                ? WebInspector.resourceTreeModel.resourceForURL(WebInspector.resourceTreeModel.inspectedPageURL())
+        var mainResource = this._target.resourceTreeModel.inspectedPageURL() && this.resourcesListTreeElement && this.resourcesListTreeElement.expanded
+                ? this._target.resourceTreeModel.resourceForURL(this._target.resourceTreeModel.inspectedPageURL())
                 : null;
         if (mainResource)
             this.showResource(mainResource);
@@ -244,10 +244,10 @@ WebInspector.ResourcesPanel.prototype = {
     _populateResourceTree: function()
     {
         this._treeElementForFrameId = {};
-        WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.FrameAdded, this._frameAdded, this);
-        WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.FrameNavigated, this._frameNavigated, this);
-        WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.FrameDetached, this._frameDetached, this);
-        WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.ResourceAdded, this._resourceAdded, this);
+        this._target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.FrameAdded, this._frameAdded, this);
+        this._target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.FrameNavigated, this._frameNavigated, this);
+        this._target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.FrameDetached, this._frameDetached, this);
+        this._target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.ResourceAdded, this._resourceAdded, this);
 
         /**
          * @param {!WebInspector.ResourceTreeFrame} frame
@@ -263,7 +263,7 @@ WebInspector.ResourcesPanel.prototype = {
             for (var i = 0; i < resources.length; ++i)
                 this._resourceAdded({data:resources[i]});
         }
-        populateFrame.call(this, WebInspector.resourceTreeModel.mainFrame);
+        populateFrame.call(this, this._target.resourceTreeModel.mainFrame);
     },
 
     _frameAdded: function(event)
@@ -677,9 +677,9 @@ WebInspector.ResourcesPanel.prototype = {
 
     _populateDOMStorageTree: function()
     {
-        WebInspector.domStorageModel.storages().forEach(this._addDOMStorage.bind(this));
-        WebInspector.domStorageModel.addEventListener(WebInspector.DOMStorageModel.Events.DOMStorageAdded, this._domStorageAdded, this);
-        WebInspector.domStorageModel.addEventListener(WebInspector.DOMStorageModel.Events.DOMStorageRemoved, this._domStorageRemoved, this);
+        this._target.domStorageModel.storages().forEach(this._addDOMStorage.bind(this));
+        this._target.domStorageModel.addEventListener(WebInspector.DOMStorageModel.Events.DOMStorageAdded, this._domStorageAdded, this);
+        this._target.domStorageModel.addEventListener(WebInspector.DOMStorageModel.Events.DOMStorageRemoved, this._domStorageRemoved, this);
     },
 
     _populateApplicationCacheTree: function()
@@ -966,7 +966,6 @@ WebInspector.StorageCategoryTreeElement = function(storagePanel, categoryName, s
     this._expandedSettingKey = "resources" + settingsKey + "Expanded";
     WebInspector.settings[this._expandedSettingKey] = WebInspector.settings.createSetting(this._expandedSettingKey, settingsKey === "Frames");
     this._categoryName = categoryName;
-    this._target = /** @type {!WebInspector.Target} */ (WebInspector.targetManager.mainTarget());
 }
 
 WebInspector.StorageCategoryTreeElement.prototype = {
@@ -975,7 +974,7 @@ WebInspector.StorageCategoryTreeElement.prototype = {
      */
     target: function()
     {
-        return this._target;
+        return this._storagePanel._target;
     },
 
     get itemURL()
@@ -2238,6 +2237,9 @@ WebInspector.ApplicationCacheManifestTreeElement.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.BaseStorageTreeElement}
+ * @param {!WebInspector.ResourcesPanel} storagePanel
+ * @param {!PageAgent.FrameId} frameId
+ * @param {string} manifestURL
  */
 WebInspector.ApplicationCacheFrameTreeElement = function(storagePanel, frameId, manifestURL)
 {
@@ -2265,7 +2267,7 @@ WebInspector.ApplicationCacheFrameTreeElement.prototype = {
 
     _refreshTitles: function()
     {
-        var frame = WebInspector.resourceTreeModel.frameForId(this._frameId);
+        var frame = this._storagePanel._target.resourceTreeModel.frameForId(this._frameId);
         if (!frame) {
             this.subtitleText = WebInspector.UIString("new frame");
             return;

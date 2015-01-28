@@ -495,7 +495,15 @@ WebInspector.CanvasProfileView.prototype = {
             data[2] = this._linkifier.linkifyScriptLocation(this._profile.target(), null, call.sourceURL, lineNumber, columnNumber);
         }
 
+        var node = new WebInspector.DataGridNode(data);
+        node.index = index;
+        node.selectable = true;
+        node.call = call;
+
         callViewElement.createChild("span", "canvas-function-name").textContent = call.functionName || "context." + call.property;
+        var target = this._profile.target();
+        if (!target)
+            return node;
 
         if (call.arguments) {
             callViewElement.createTextChild("(");
@@ -503,25 +511,21 @@ WebInspector.CanvasProfileView.prototype = {
                 var argument = /** @type {!CanvasAgent.CallArgument} */ (call.arguments[i]);
                 if (i)
                     callViewElement.createTextChild(", ");
-                var element = WebInspector.CanvasProfileDataGridHelper.createCallArgumentElement(argument);
+                var element = WebInspector.CanvasProfileDataGridHelper.createCallArgumentElement(target, argument);
                 element.__argumentIndex = i;
                 callViewElement.appendChild(element);
             }
             callViewElement.createTextChild(")");
         } else if (call.value) {
             callViewElement.createTextChild(" = ");
-            callViewElement.appendChild(WebInspector.CanvasProfileDataGridHelper.createCallArgumentElement(call.value));
+            callViewElement.appendChild(WebInspector.CanvasProfileDataGridHelper.createCallArgumentElement(target, call.value));
         }
 
         if (call.result) {
             callViewElement.createTextChild(" => ");
-            callViewElement.appendChild(WebInspector.CanvasProfileDataGridHelper.createCallArgumentElement(call.result));
+            callViewElement.appendChild(WebInspector.CanvasProfileDataGridHelper.createCallArgumentElement(target, call.result));
         }
 
-        var node = new WebInspector.DataGridNode(data);
-        node.index = index;
-        node.selectable = true;
-        node.call = call;
         return node;
     },
 
@@ -563,7 +567,7 @@ WebInspector.CanvasProfileView.prototype = {
             var diffLeft = this._popoverAnchorElement.boxInWindow().x - argumentElement.boxInWindow().x;
             this._popoverAnchorElement.style.left = this._popoverAnchorElement.offsetLeft - diffLeft + "px";
 
-            showCallback(WebInspector.runtimeModel.createRemoteObject(result), false, this._popoverAnchorElement);
+            showCallback(this._profile.target().runtimeModel.createRemoteObject(result), false, this._popoverAnchorElement);
         }
 
         var evalResult = argumentElement.__evalResult;
@@ -1145,13 +1149,14 @@ WebInspector.CanvasProfileHeader.prototype = {
 
 WebInspector.CanvasProfileDataGridHelper = {
     /**
+     * @param {!WebInspector.Target} target
      * @param {!CanvasAgent.CallArgument} callArgument
      * @return {!Element}
      */
-    createCallArgumentElement: function(callArgument)
+    createCallArgumentElement: function(target, callArgument)
     {
         if (callArgument.enumName)
-            return WebInspector.CanvasProfileDataGridHelper.createEnumValueElement(callArgument.enumName, +callArgument.description);
+            return WebInspector.CanvasProfileDataGridHelper.createEnumValueElement(target, callArgument.enumName, +callArgument.description);
         var element = createElement("span");
         element.className = "canvas-call-argument";
         var description = callArgument.description;
@@ -1162,7 +1167,7 @@ WebInspector.CanvasProfileDataGridHelper = {
             element.createTextChild("\"");
             element.__suppressPopover = (description.length <= maxStringLength && !/[\r\n]/.test(description));
             if (!element.__suppressPopover)
-                element.__evalResult = WebInspector.runtimeModel.createRemoteObjectFromPrimitiveValue(description);
+                element.__evalResult = target.runtimeModel.createRemoteObjectFromPrimitiveValue(description);
         } else {
             var type = callArgument.subtype || callArgument.type;
             if (type) {
@@ -1172,7 +1177,7 @@ WebInspector.CanvasProfileDataGridHelper = {
             }
             element.textContent = description;
             if (callArgument.remoteObject)
-                element.__evalResult = WebInspector.runtimeModel.createRemoteObject(callArgument.remoteObject);
+                element.__evalResult = target.runtimeModel.createRemoteObject(callArgument.remoteObject);
         }
         if (callArgument.resourceId) {
             element.classList.add("canvas-formatted-resource");
@@ -1182,16 +1187,17 @@ WebInspector.CanvasProfileDataGridHelper = {
     },
 
     /**
+     * @param {!WebInspector.Target} target
      * @param {string} enumName
      * @param {number} enumValue
      * @return {!Element}
      */
-    createEnumValueElement: function(enumName, enumValue)
+    createEnumValueElement: function(target, enumName, enumValue)
     {
         var element = createElement("span");
         element.className = "canvas-call-argument canvas-formatted-number";
         element.textContent = enumName;
-        element.__evalResult = WebInspector.runtimeModel.createRemoteObjectFromPrimitiveValue(enumValue);
+        element.__evalResult = target.runtimeModel.createRemoteObjectFromPrimitiveValue(enumValue);
         return element;
     }
 }

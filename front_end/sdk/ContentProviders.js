@@ -227,7 +227,7 @@ WebInspector.CompilerSourceMappingContentProvider.prototype = {
      */
     requestContent: function(callback)
     {
-        this._target.networkAgent().loadResourceForFrontend(WebInspector.resourceTreeModel.mainFrame.id, this._sourceURL, undefined, contentLoaded.bind(this));
+        this._target.networkAgent().loadResourceForFrontend(this._target.resourceTreeModel.mainFrame.id, this._sourceURL, undefined, contentLoaded.bind(this));
 
         /**
          * @param {?Protocol.Error} error

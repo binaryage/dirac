@@ -692,15 +692,16 @@ WebInspector.CSSStyleDeclaration = function(cssModel, payload)
 }
 
 /**
+ * @param {!WebInspector.Target} target
  * @return {!WebInspector.CSSStyleDeclaration}
  */
-WebInspector.CSSStyleDeclaration.createDummyStyle = function()
+WebInspector.CSSStyleDeclaration.createDummyStyle = function(target)
 {
     var dummyPayload = {
         shorthandEntries: [],
         cssProperties: []
     };
-    return new WebInspector.CSSStyleDeclaration(WebInspector.cssModel, dummyPayload);
+    return new WebInspector.CSSStyleDeclaration(target.cssModel, dummyPayload);
 }
 
 /**
@@ -1818,8 +1819,3 @@ WebInspector.CSSStyleModel.ComputedStyleLoader.prototype = {
         }
     }
 }
-
-/**
- * @type {!WebInspector.CSSStyleModel}
- */
-WebInspector.cssModel;

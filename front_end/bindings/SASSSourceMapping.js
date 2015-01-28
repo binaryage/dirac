@@ -164,7 +164,7 @@ WebInspector.SASSSourceMapping.prototype = {
         if (wasLoadedFromFileSystem)
             sassFile.requestMetadata(metadataReceived.bind(this));
         else
-            this._target.networkAgent().loadResourceForFrontend(WebInspector.resourceTreeModel.mainFrame.id, sassURL, undefined, sassLoadedViaNetwork.bind(this));
+            this._target.networkAgent().loadResourceForFrontend(this._target.resourceTreeModel.mainFrame.id, sassURL, undefined, sassLoadedViaNetwork.bind(this));
 
         /**
          * @param {?Protocol.Error} error
@@ -285,7 +285,7 @@ WebInspector.SASSSourceMapping.prototype = {
             return;
         }
         var headers = { "if-modified-since": new Date(data.sassTimestamp.getTime() - 1000).toUTCString() };
-        this._target.networkAgent().loadResourceForFrontend(WebInspector.resourceTreeModel.mainFrame.id, cssURL, headers, contentLoaded.bind(this));
+        this._target.networkAgent().loadResourceForFrontend(this._target.resourceTreeModel.mainFrame.id, cssURL, headers, contentLoaded.bind(this));
 
         /**
          * @param {?Protocol.Error} error

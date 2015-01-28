@@ -466,8 +466,3 @@ WebInspector.ExecutionContext.prototype = {
 
     __proto__: WebInspector.SDKObject.prototype
 }
-
-/**
- * @type {!WebInspector.RuntimeModel}
- */
-WebInspector.runtimeModel;

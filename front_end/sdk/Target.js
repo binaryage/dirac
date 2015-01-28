@@ -110,73 +110,40 @@ WebInspector.Target.prototype = {
 
         /** @type {!WebInspector.ConsoleModel} */
         this.consoleModel = new WebInspector.ConsoleModel(this);
-
         /** @type {!WebInspector.NetworkManager} */
         this.networkManager = new WebInspector.NetworkManager(this);
-
         /** @type {!WebInspector.ResourceTreeModel} */
         this.resourceTreeModel = new WebInspector.ResourceTreeModel(this);
-        if (!WebInspector.resourceTreeModel)
-            WebInspector.resourceTreeModel = this.resourceTreeModel;
-
         /** @type {!WebInspector.NetworkLog} */
         this.networkLog = new WebInspector.NetworkLog(this);
-        if (!WebInspector.networkLog)
-            WebInspector.networkLog = this.networkLog;
-
         /** @type {!WebInspector.DebuggerModel} */
         this.debuggerModel = new WebInspector.DebuggerModel(this);
-        if (!WebInspector.debuggerModel)
-            WebInspector.debuggerModel = this.debuggerModel;
-
         /** @type {!WebInspector.RuntimeModel} */
         this.runtimeModel = new WebInspector.RuntimeModel(this);
-        if (!WebInspector.runtimeModel)
-            WebInspector.runtimeModel = this.runtimeModel;
-
         /** @type {!WebInspector.DOMModel} */
         this.domModel = new WebInspector.DOMModel(this);
-
         /** @type {!WebInspector.CSSStyleModel} */
         this.cssModel = new WebInspector.CSSStyleModel(this);
-        if (!WebInspector.cssModel)
-            WebInspector.cssModel = this.cssModel;
-
         /** @type {!WebInspector.WorkerManager} */
         this.workerManager = new WebInspector.WorkerManager(this, this.hasCapability(WebInspector.Target.Capabilities.CanInspectWorkers));
-        if (!WebInspector.workerManager)
-            WebInspector.workerManager = this.workerManager;
-
-        if (this.hasCapability(WebInspector.Target.Capabilities.CanProfilePower))
-            WebInspector.powerProfiler = new WebInspector.PowerProfiler(this);
-
+        if (this.hasCapability(WebInspector.Target.Capabilities.CanProfilePower)) {
+            /** @type {!WebInspector.PowerProfiler} */
+            this.powerProfiler = new WebInspector.PowerProfiler(this);
+        }
         /** @type {!WebInspector.DatabaseModel} */
         this.databaseModel = new WebInspector.DatabaseModel(this);
-        if (!WebInspector.databaseModel)
-            WebInspector.databaseModel = this.databaseModel;
-
         /** @type {!WebInspector.DOMStorageModel} */
         this.domStorageModel = new WebInspector.DOMStorageModel(this);
-        if (!WebInspector.domStorageModel)
-            WebInspector.domStorageModel = this.domStorageModel;
-
         /** @type {!WebInspector.CPUProfilerModel} */
         this.cpuProfilerModel = new WebInspector.CPUProfilerModel(this);
-        if (!WebInspector.cpuProfilerModel)
-            WebInspector.cpuProfilerModel = this.cpuProfilerModel;
-
         /** @type {!WebInspector.HeapProfilerModel} */
         this.heapProfilerModel = new WebInspector.HeapProfilerModel(this);
-
         /** @type {!WebInspector.IndexedDBModel} */
         this.indexedDBModel = new WebInspector.IndexedDBModel(this);
-
         /** @type {!WebInspector.LayerTreeModel} */
         this.layerTreeModel = new WebInspector.LayerTreeModel(this);
-
         /** @type {!WebInspector.AnimationModel} */
         this.animationModel = new WebInspector.AnimationModel(this);
-
         if (WebInspector.isWorkerFrontend() && this.isWorkerTarget()) {
             /** @type {!WebInspector.ServiceWorkerCacheModel} */
             this.serviceWorkerCacheModel = new WebInspector.ServiceWorkerCacheModel(this);

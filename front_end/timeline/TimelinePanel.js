@@ -1104,7 +1104,7 @@ WebInspector.TimelinePanel.prototype = {
             if (this._overviewControls[i] instanceof WebInspector.TimelinePowerOverview) {
                 var energy = this._overviewControls[i].calculateEnergy(startTime, endTime);
                 contentHelper.appendTextRow(WebInspector.UIString("Energy"), WebInspector.UIString("%.2f Joules", energy));
-                contentHelper.appendTextRow(WebInspector.UIString("Accuracy"), WebInspector.powerProfiler.getAccuracyLevel());
+                contentHelper.appendTextRow(WebInspector.UIString("Accuracy"), this._overviewControls[i].accuracyLevel());
                 break;
             }
         }

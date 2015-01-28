@@ -187,7 +187,7 @@ WebInspector.NetworkLogView.prototype = {
      */
     targetAdded: function(target)
     {
-        target.networkLog.requests.forEach(this._appendRequest.bind(this));
+        target.networkLog.requests().forEach(this._appendRequest.bind(this));
     },
 
     /**
@@ -990,7 +990,7 @@ WebInspector.NetworkLogView.prototype = {
 
         // Pick provisional load requests.
         var requestsToPick = [];
-        var requests = frame.target().networkLog.requests;
+        var requests = frame.target().networkLog.requests();
         for (var i = 0; i < requests.length; ++i) {
             var request = requests[i];
             if (request.loaderId === loaderId)

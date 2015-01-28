@@ -379,7 +379,7 @@ WebInspector.ExtensionServer.prototype = {
             return this._status.OK();
         }
 
-        var request = WebInspector.networkLog.requestForURL(message.url);
+        var request = WebInspector.NetworkLog.requestForURL(message.url);
         if (request) {
             WebInspector.Revealer.reveal(request);
             return this._status.OK();
@@ -424,7 +424,9 @@ WebInspector.ExtensionServer.prototype = {
         if (options.injectedScript)
             injectedScript = "(function(){" + options.injectedScript + "})()";
         var preprocessingScript = options.preprocessingScript;
-        WebInspector.resourceTreeModel.reloadPage(!!options.ignoreCache, injectedScript, preprocessingScript);
+        // Reload main frame.
+        var target = WebInspector.targetManager.mainTarget();
+        target.resourceTreeModel.reloadPage(!!options.ignoreCache, injectedScript, preprocessingScript);
         return this._status.OK();
     },
 
@@ -432,19 +434,19 @@ WebInspector.ExtensionServer.prototype = {
     {
         /**
          * @param {?Protocol.Error} error
-         * @param {?RuntimeAgent.RemoteObject} resultPayload
+         * @param {?WebInspector.RemoteObject} remoteObject
          * @param {boolean=} wasThrown
          * @this {WebInspector.ExtensionServer}
          */
-        function callback(error, resultPayload, wasThrown)
+        function callback(error, remoteObject, wasThrown)
         {
             var result;
-            if (error || !resultPayload)
+            if (error || !remoteObject)
                 result = this._status.E_PROTOCOLERROR(error.toString());
             else if (wasThrown)
-                result = { isException: true, value: resultPayload.description };
+                result = { isException: true, value: remoteObject.description };
             else
-                result = { value: resultPayload.value };
+                result = { value: remoteObject.value };
 
             this._dispatchCallback(message.requestId, port, result);
         }
@@ -453,7 +455,7 @@ WebInspector.ExtensionServer.prototype = {
 
     _onGetHAR: function()
     {
-        var requests = WebInspector.networkLog.requests;
+        var requests = WebInspector.NetworkLog.requests();
         var harLog = (new WebInspector.HARLog(requests)).build();
         for (var i = 0; i < harLog.entries.length; ++i)
             harLog.entries[i]._requestId = this._requestId(requests[i]);
@@ -489,7 +491,8 @@ WebInspector.ExtensionServer.prototype = {
         var uiSourceCodes = WebInspector.workspace.uiSourceCodesForProjectType(WebInspector.projectTypes.Network);
         uiSourceCodes = uiSourceCodes.concat(WebInspector.workspace.uiSourceCodesForProjectType(WebInspector.projectTypes.ContentScripts));
         uiSourceCodes.forEach(pushResourceData.bind(this));
-        WebInspector.resourceTreeModel.forAllResources(pushResourceData.bind(this));
+        for (var target of WebInspector.targetManager.targets())
+            target.resourceTreeModel.forAllResources(pushResourceData.bind(this));
         return Object.values(resources);
     },
 
@@ -553,7 +556,7 @@ WebInspector.ExtensionServer.prototype = {
         var url = /** @type {string} */ (message.url);
         var uiSourceCode = WebInspector.workspace.uiSourceCodeForOriginURL(url);
         if (!uiSourceCode) {
-            var resource = WebInspector.resourceTreeModel.resourceForURL(url);
+            var resource = WebInspector.ResourceTreeModel.resourceForURL(url);
             if (!resource)
                 return this._status.E_NOTFOUND(url);
             return this._status.E_NOTSUPPORTED("Resource is not editable");
@@ -909,7 +912,7 @@ WebInspector.ExtensionServer.prototype = {
      * @param {boolean} returnByValue
      * @param {?Object} options
      * @param {string} securityOrigin
-     * @param {function(?string, !RuntimeAgent.RemoteObject, boolean=)} callback
+     * @param {function(?string, ?WebInspector.RemoteObject, boolean=)} callback
      * @return {!WebInspector.ExtensionStatus.Record|undefined}
      */
     evaluate: function(expression, exposeCommandLineAPI, returnByValue, options, securityOrigin, callback)
@@ -928,12 +931,12 @@ WebInspector.ExtensionServer.prototype = {
                 found = (frame.url === url) ? frame : null;
                 return found;
             }
-            WebInspector.resourceTreeModel.frames().some(hasMatchingURL);
+            WebInspector.ResourceTreeModel.frames().some(hasMatchingURL);
             return found;
         }
 
         if (typeof options === "object") {
-            var frame = options.frameURL ? resolveURLToFrame(options.frameURL) : WebInspector.resourceTreeModel.mainFrame;
+            var frame = options.frameURL ? resolveURLToFrame(options.frameURL) : WebInspector.targetManager.mainTarget().resourceTreeModel.mainFrame;
             if (!frame) {
                 if (options.frameURL)
                     console.warn("evaluate: there is no frame with URL " + options.frameURL);
@@ -975,8 +978,24 @@ WebInspector.ExtensionServer.prototype = {
             contextId = context.id;
         }
         var target = target ? target : WebInspector.targetManager.mainTarget();
-        if (target)
-            target.runtimeAgent().evaluate(expression, "extension", exposeCommandLineAPI, true, contextId, returnByValue, false, callback);
+        if (!target)
+            return;
+
+        target.runtimeAgent().evaluate(expression, "extension", exposeCommandLineAPI, true, contextId, returnByValue, false, onEvalute);
+
+        /**
+         * @param {?Protocol.Error} error
+         * @param {!RuntimeAgent.RemoteObject} result
+         * @param {boolean=} wasThrown
+         */
+        function onEvalute(error, result, wasThrown)
+        {
+            if (error) {
+                callback(error, null, wasThrown);
+                return;
+            }
+            callback(error, target.runtimeModel.createRemoteObject(result), wasThrown);
+        }
     },
 
     __proto__: WebInspector.Object.prototype

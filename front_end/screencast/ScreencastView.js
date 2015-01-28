@@ -96,8 +96,8 @@ WebInspector.ScreencastView.prototype = {
         this._shortcuts = /** !Object.<number, function(Event=):boolean> */ ({});
         this._shortcuts[WebInspector.KeyboardShortcut.makeKey("l", WebInspector.KeyboardShortcut.Modifiers.Ctrl)] = this._focusNavigationBar.bind(this);
 
-        WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.ScreencastFrame, this._screencastFrame, this);
-        WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.ScreencastVisibilityChanged, this._screencastVisibilityChanged, this);
+        this._target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.ScreencastFrame, this._screencastFrame, this);
+        this._target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.ScreencastVisibilityChanged, this._screencastVisibilityChanged, this);
 
         WebInspector.targetManager.addEventListener(WebInspector.TargetManager.Events.SuspendStateChanged, this._onSuspendStateChange, this);
         this._updateGlasspane();
@@ -744,7 +744,7 @@ WebInspector.ScreencastView.prototype = {
 
     _navigateReload: function()
     {
-        WebInspector.resourceTreeModel.reloadPage();
+        this._target.resourceTreeModel.reloadPage();
     },
 
     _navigationUrlKeyUp: function(event)
