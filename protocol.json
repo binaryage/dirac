@@ -4668,7 +4668,8 @@
                     { "name": "playbackRate", "type": "number", "description": "<code>AnimationPlayer</code>'s playback rate." },
                     { "name": "startTime", "type": "number", "description": "<code>AnimationPlayer</code>'s start time." },
                     { "name": "currentTime", "type": "number", "description": "<code>AnimationPlayer</code>'s current time." },
-                    { "name": "source", "$ref": "AnimationNode", "description": "<code>AnimationPlayer</code>'s source animation node." }
+                    { "name": "source", "$ref": "AnimationNode", "description": "<code>AnimationPlayer</code>'s source animation node." },
+                    { "name": "type", "type": "string", "enum": ["CSSTransition", "CSSAnimation", "WebAnimation"], "description": "Animation type of <code>AnimationPlayer</code>." }
                 ],
                 "description": "AnimationPlayer instance."
             },

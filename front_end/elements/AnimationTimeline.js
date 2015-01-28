@@ -115,7 +115,7 @@ WebInspector.AnimationTimeline.prototype = {
         // This shows at most 2 iterations
         var iterations = animation.source().iterations() || 1;
         var duration = animation.source().duration() * Math.min(2, iterations);
-        this._duration = Math.max(this._duration, animation.startTime() + duration - this._startTime + 50);
+        this._duration = Math.max(this._duration, animation.startTime() + duration + animation.source().delay() - this._startTime + 50);
     },
 
     __proto__: WebInspector.VBox.prototype
@@ -133,7 +133,8 @@ WebInspector.AnimationUI = function(animation, timeline, parentElement) {
     this._parentElement = parentElement;
 
     this._grid = parentElement.createChild("canvas", "animation-timeline-grid-row");
-    this._keyframes = this._animation.source().keyframesRule().keyframes();
+    if (this._animation.source().keyframesRule())
+        this._keyframes =  this._animation.source().keyframesRule().keyframes();
 
     this._svg = parentElement.createSVGChild("svg");
     this._svg.setAttribute("height", WebInspector.AnimationUI.Options.AnimationCanvasHeight);
@@ -232,24 +233,41 @@ WebInspector.AnimationUI.prototype = {
 
     redraw: function()
     {
+        /**
+         * @param {!Element} svgGroup
+         * @param {number} leftDistance
+         * @param {number} width
+         * @param {!WebInspector.Geometry.CubicBezier} bezier
+         */
+        function renderBezierKeyframe(svgGroup, leftDistance, width, bezier)
+        {
+            var path = svgGroup.createSVGChild("path", "animation-keyframe");
+            path.style.transform = "translateX(" + leftDistance + "px)";
+            path.style.fill = WebInspector.AnimationUI.Options.ColorPurple.asString(WebInspector.Color.Format.RGB);
+            WebInspector.BezierUI.drawVelocityChart(bezier, path, width);
+        }
+
         this._renderGrid();
         this._svg.setAttribute("width", this._duration() * this._pixelMsRatio() + 2 * WebInspector.AnimationUI.Options.AnimationMargin);
         this._svg.style.transform = "translateX(" + (this._animation.startTime() - this._timeline.startTime() + this._delay()) * this._pixelMsRatio() + "px)";
         this._svgGroup.removeChildren();
         this._drawAnimationLine();
-
-        for (var i = 0; i < this._keyframes.length - 1; i++) {
-            var leftDistance = this._offset(i) * this._duration() * this._pixelMsRatio()  + WebInspector.AnimationUI.Options.AnimationMargin;
-            var width = this._duration() * (this._offset(i + 1) - this._offset(i)) * this._pixelMsRatio();
-            var bezier = WebInspector.Geometry.CubicBezier.parse(this._keyframes[i].easing());
+        if (this._animation.type() == "CSSTransition") {
+            var bezier = WebInspector.Geometry.CubicBezier.parse(this._animation.source().easing());
             // FIXME: add support for step functions
-            if (bezier) {
-                var path = this._svgGroup.createSVGChild("path", "animation-keyframe");
-                path.style.transform = "translateX(" + leftDistance + "px)";
-                path.style.fill = WebInspector.AnimationUI.Options.ColorPurple.asString(WebInspector.Color.Format.RGB);
-                WebInspector.BezierUI.drawVelocityChart(bezier, path, width);
+            if (bezier)
+                renderBezierKeyframe(this._svgGroup, WebInspector.AnimationUI.Options.AnimationMargin, this._duration() * this._pixelMsRatio(), bezier);
+            this._drawPoint(WebInspector.AnimationUI.Options.AnimationMargin, 0);
+        } else {
+            for (var i = 0; i < this._keyframes.length - 1; i++) {
+                var leftDistance = this._offset(i) * this._duration() * this._pixelMsRatio() + WebInspector.AnimationUI.Options.AnimationMargin;
+                var width = this._duration() * (this._offset(i + 1) - this._offset(i)) * this._pixelMsRatio();
+                var bezier = WebInspector.Geometry.CubicBezier.parse(this._keyframes[i].easing());
+                // FIXME: add support for step functions
+                if (bezier)
+                    renderBezierKeyframe(this._svgGroup, leftDistance, width, bezier);
+                this._drawPoint(leftDistance, i);
             }
-            this._drawPoint(leftDistance, i);
         }
         this._drawPoint(this._duration() * this._pixelMsRatio() +  WebInspector.AnimationUI.Options.AnimationMargin, -1);
     },

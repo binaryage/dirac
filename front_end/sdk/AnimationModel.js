@@ -174,6 +174,14 @@ WebInspector.AnimationModel.AnimationPlayer.prototype = {
     },
 
     /**
+     * @return {string}
+     */
+    type: function()
+    {
+        return this._payload.type;
+    },
+
+    /**
      * @param {function(?WebInspector.AnimationModel.AnimationPlayer)} callback
      */
     pause: function(callback)
