@@ -2280,8 +2280,7 @@ WebInspector.CodeMirrorTextEditor.AutocompleteController.prototype = {
         }
 
         var selections = this._codeMirror.listSelections().slice();
-        var topSelection = selections.shift();
-        var cursor = topSelection.head;
+        var cursor = this._codeMirror.getCursor("head");
         var substituteRange = this._autocompleteWordRange(cursor.line, cursor.ch);
         if (!substituteRange || substituteRange.startColumn === cursor.ch || !this._validateSelectionsContexts(substituteRange, selections)) {
             this.finishAutocomplete();
