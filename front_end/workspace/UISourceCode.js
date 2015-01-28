@@ -518,8 +518,6 @@ WebInspector.UISourceCode.prototype = {
      */
     extension: function()
     {
-        if (this._project.type() === WebInspector.projectTypes.Network)
-            return this.contentType().canonicalMimeType();
         var lastIndexOfDot = this._name.lastIndexOf(".");
         var extension = lastIndexOfDot !== -1 ? this._name.substr(lastIndexOfDot + 1) : "";
         var indexOfQuestionMark = extension.indexOf("?");
