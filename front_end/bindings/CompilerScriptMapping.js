@@ -308,7 +308,7 @@ WebInspector.CompilerScriptMapping.prototype = {
         pendingCallbacks = [callback];
         this._pendingSourceMapLoadingCallbacks[sourceMapURL] = pendingCallbacks;
 
-        WebInspector.SourceMap.load(this._target, sourceMapURL, scriptURL, sourceMapLoaded.bind(this));
+        WebInspector.SourceMap.load(sourceMapURL, scriptURL, sourceMapLoaded.bind(this));
 
         /**
          * @param {?WebInspector.SourceMap} sourceMap

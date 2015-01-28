@@ -191,13 +191,11 @@ WebInspector.ConcatenatedScriptsContentProvider.prototype = {
 /**
  * @constructor
  * @implements {WebInspector.ContentProvider}
- * @param {!WebInspector.Target} target
  * @param {string} sourceURL
  * @param {!WebInspector.ResourceType} contentType
  */
-WebInspector.CompilerSourceMappingContentProvider = function(target, sourceURL, contentType)
+WebInspector.CompilerSourceMappingContentProvider = function(sourceURL, contentType)
 {
-    this._target = target;
     this._sourceURL = sourceURL;
     this._contentType = contentType;
 }
@@ -227,7 +225,7 @@ WebInspector.CompilerSourceMappingContentProvider.prototype = {
      */
     requestContent: function(callback)
     {
-        this._target.networkAgent().loadResourceForFrontend(this._target.resourceTreeModel.mainFrame.id, this._sourceURL, undefined, contentLoaded.bind(this));
+        WebInspector.NetworkManager.loadResourceForFrontend(this._sourceURL, undefined, contentLoaded.bind(this));
 
         /**
          * @param {?Protocol.Error} error

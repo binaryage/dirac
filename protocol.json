@@ -1395,7 +1395,6 @@
                 "name": "loadResourceForFrontend",
                 "async": true,
                 "parameters": [
-                    { "name": "frameId", "$ref": "Page.FrameId", "description": "Frame to load the resource from." },
                     { "name": "url", "type": "string", "description": "URL of the resource to load." },
                     { "name": "requestHeaders", "$ref": "Network.Headers", "optional": true, "description": "Request headers." }
                 ],
