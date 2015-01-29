@@ -13,6 +13,7 @@ WebInspector.AnimationTimeline = function() {
     this._animations = [];
     this._uiAnimations = [];
     this._duration = this._defaultDuration();
+    WebInspector.targetManager.addModelListener(WebInspector.ResourceTreeModel, WebInspector.ResourceTreeModel.EventTypes.MainFrameNavigated, this._mainFrameNavigated, this);
 }
 
 WebInspector.AnimationTimeline.prototype = {
@@ -49,7 +50,7 @@ WebInspector.AnimationTimeline.prototype = {
         if (!this._animations.length)
             return true;
 
-        if (animation.startTime() - this._animations.peekLast().startTime() < 2000)
+        if (animation.startTime() - this._animations.peekLast().startTime() < 1000)
             return true;
 
         return false;
@@ -62,6 +63,14 @@ WebInspector.AnimationTimeline.prototype = {
         this.contentElement.removeChildren();
         this._duration = this._defaultDuration();
         delete this._startTime;
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _mainFrameNavigated: function(event)
+    {
+        this._reset();
     },
 
     /**
@@ -136,8 +145,11 @@ WebInspector.AnimationUI = function(animation, timeline, parentElement) {
     if (this._animation.source().keyframesRule())
         this._keyframes =  this._animation.source().keyframesRule().keyframes();
 
+    this._nameElement = parentElement.createChild("div", "animation-name");
+    this._nameElement.textContent = this._animation.name();
+
     this._svg = parentElement.createSVGChild("svg");
-    this._svg.setAttribute("height", WebInspector.AnimationUI.Options.AnimationCanvasHeight);
+    this._svg.setAttribute("height", WebInspector.AnimationUI.Options.AnimationSVGHeight);
     this._svg.style.marginLeft = "-" + WebInspector.AnimationUI.Options.AnimationMargin + "px";
     this._svg.addEventListener("mousedown", this._mouseDown.bind(this, WebInspector.AnimationUI.MouseEvents.AnimationDrag, null));
     this._svgGroup = this._svg.createSVGChild("g");
@@ -161,8 +173,8 @@ WebInspector.AnimationUI.prototype = {
     {
         var width = parseInt(window.getComputedStyle(this._parentElement).width, 10);
         const height = WebInspector.AnimationUI.Options.GridCanvasHeight;
-        const minorMs = 20;
-        const majorMs = 100;
+        const minorMs = this._timeline.duration() / 20;
+        const majorMs = minorMs * 5;
 
         this._grid.width = width * window.devicePixelRatio;
         this._grid.height = height * window.devicePixelRatio;
@@ -201,9 +213,9 @@ WebInspector.AnimationUI.prototype = {
     {
         var line = this._svgGroup.createSVGChild("line", "animation-line");
         line.setAttribute("x1", WebInspector.AnimationUI.Options.AnimationMargin);
-        line.setAttribute("y1", WebInspector.AnimationUI.Options.GridCanvasHeight);
+        line.setAttribute("y1", WebInspector.AnimationUI.Options.AnimationHeight);
         line.setAttribute("x2", this._duration() * this._pixelMsRatio() +  WebInspector.AnimationUI.Options.AnimationMargin);
-        line.setAttribute("y2", WebInspector.AnimationUI.Options.GridCanvasHeight);
+        line.setAttribute("y2", WebInspector.AnimationUI.Options.AnimationHeight);
         line.style.stroke = WebInspector.AnimationUI.Options.ColorPurple.asString(WebInspector.Color.Format.RGB);
     },
 
@@ -215,7 +227,7 @@ WebInspector.AnimationUI.prototype = {
     {
         var circle = this._svgGroup.createSVGChild("circle", keyframeIndex <= 0 ? "animation-endpoint" : "animation-keyframe-point");
         circle.setAttribute("cx", x);
-        circle.setAttribute("cy", WebInspector.AnimationUI.Options.GridCanvasHeight);
+        circle.setAttribute("cy", WebInspector.AnimationUI.Options.AnimationHeight);
         circle.style.stroke = WebInspector.AnimationUI.Options.ColorPurple.asString(WebInspector.Color.Format.RGB);
         circle.setAttribute("r", WebInspector.AnimationUI.Options.AnimationMargin / 2);
 
@@ -248,8 +260,12 @@ WebInspector.AnimationUI.prototype = {
         }
 
         this._renderGrid();
-        this._svg.setAttribute("width", this._duration() * this._pixelMsRatio() + 2 * WebInspector.AnimationUI.Options.AnimationMargin);
-        this._svg.style.transform = "translateX(" + (this._animation.startTime() - this._timeline.startTime() + this._delay()) * this._pixelMsRatio() + "px)";
+        var animationWidth = this._duration() * this._pixelMsRatio() + 2 * WebInspector.AnimationUI.Options.AnimationMargin;
+        var leftMargin = (this._animation.startTime() - this._timeline.startTime() + this._delay()) * this._pixelMsRatio();
+        this._svg.setAttribute("width", animationWidth);
+        this._svg.style.transform = "translateX(" + leftMargin  + "px)";
+        this._nameElement.style.transform = "translateX(" + leftMargin + "px)";
+        this._nameElement.style.width = animationWidth + "px";
         this._svgGroup.removeChildren();
         this._drawAnimationLine();
         if (this._animation.type() == "CSSTransition") {
@@ -377,7 +393,8 @@ WebInspector.AnimationUI.prototype = {
 }
 
 WebInspector.AnimationUI.Options = {
-    AnimationCanvasHeight: 100,
+    AnimationHeight: 40,
+    AnimationSVGHeight: 100,
     AnimationMargin: 8,
     EndpointsClickRegionSize: 10,
     GridCanvasHeight: 60,

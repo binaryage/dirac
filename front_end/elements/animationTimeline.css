@@ -15,8 +15,9 @@
     height: 100%;
     vertical-align: top;
     line-height: 60px;
-    width: 150px;
+    width: 200px;
     padding-left: 15px;
+    overflow: hidden;
 }
 
 .animation-row:nth-child(odd) > .animation-node-description {
@@ -56,4 +57,12 @@ circle.animation-endpoint {
 circle.animation-keyframe-point {
     stroke-width: 3;
     fill: white;
+}
+
+.animation-name {
+    position: absolute;
+    top: 45px;
+    color: #777;
+    text-align: center;
+    margin-left: -8px;
 }

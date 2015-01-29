@@ -107,7 +107,7 @@ WebInspector.BezierUI.prototype = {
  */
 WebInspector.BezierUI.drawVelocityChart = function(bezier, path, width)
 {
-    var height = WebInspector.AnimationUI.Options.GridCanvasHeight;
+    var height = WebInspector.AnimationUI.Options.AnimationHeight;
     var pathBuilder = ["M", 0, height];
     const sampleSize = 1 / 40;
 
