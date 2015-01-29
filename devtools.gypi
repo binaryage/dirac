@@ -500,6 +500,7 @@
             'front_end/source_frame/ImageView.js',
             'front_end/source_frame/ResourceSourceFrame.js',
             'front_end/source_frame/SourceFrame.js',
+            'front_end/source_frame/TextEditorAutocompleteController.js',
         ],
         'devtools_sources_js_files': [
             'front_end/sources/filteredItemSelectionDialog.css',

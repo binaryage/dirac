@@ -45,6 +45,7 @@
         "../cm/python.js",
         "../cm/shell.js",
         "CodeMirrorUtils.js",
+        "TextEditorAutocompleteController.js",
         "CodeMirrorTextEditor.js",
         "FontView.js",
         "ImageView.js",
