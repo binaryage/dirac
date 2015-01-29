@@ -457,51 +457,6 @@ iframe.panel.extension {
     display: block;
 }
 
-.placard {
-    position: relative;
-    padding: 3px 8px 4px 18px;
-    min-height: 18px;
-    white-space: nowrap;
-}
-
-.placard:nth-of-type(2n) {
-    background-color: rgb(234, 243, 255);
-}
-
-.placard.selected {
-    background-color: #cfcfcf;
-    background-clip: padding-box;
-}
-
-.placard .title {
-    font-weight: normal;
-    word-wrap: break-word;
-    white-space: normal;
-}
-
-.placard .subtitle {
-    float: right;
-    margin-left: 5px;
-    color: rgba(0, 0, 0, 0.7);
-    text-overflow: ellipsis;
-    overflow: hidden;
-}
-
-.placard .subtitle a {
-    color: inherit;
-}
-
-.placard-label {
-    text-align: center;
-}
-
-.placard-label .title,
-.placard-label .subtitle {
-    font-style: italic;
-    font-weight: bold;
-    color: #999;
-}
-
 .properties-calculate-value-button:hover {
     text-decoration: underline;
 }

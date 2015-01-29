@@ -26,31 +26,90 @@
 
 /**
  * @constructor
+ * @extends {WebInspector.VBox}
+ */
+WebInspector.UIList = function()
+{
+    WebInspector.VBox.call(this, true);
+    this.registerRequiredCSS("sources/uiList.css");
+
+    /** @type {!Array.<!WebInspector.UIList.Item>} */
+    this.items = [];
+}
+
+WebInspector.UIList._Key = Symbol("ownerList");
+
+WebInspector.UIList.prototype = {
+    /**
+     * @param {!WebInspector.UIList.Item} item
+     * @param {?WebInspector.UIList.Item=} beforeItem
+     */
+    addItem: function(item, beforeItem)
+    {
+        item[WebInspector.UIList._Key] = this;
+        var beforeElement = beforeItem ? beforeItem.element : null;
+        this.contentElement.insertBefore(item.element, beforeElement);
+
+        var index = beforeItem ? this.items.indexOf(beforeItem) : this.items.length;
+        console.assert(index >= 0, "Anchor item not found in UIList");
+        this.items.splice(index, 0, item);
+    },
+
+    clear: function()
+    {
+        this.contentElement.removeChildren();
+        this.items = [];
+    },
+
+    __proto__: WebInspector.VBox.prototype
+}
+
+/**
+ * @constructor
  * @param {string} title
  * @param {string} subtitle
+ * @param {boolean=} isLabel
  */
-WebInspector.Placard = function(title, subtitle)
+WebInspector.UIList.Item = function(title, subtitle, isLabel)
 {
-    this.element = createElementWithClass("div", "placard");
-    this.element.placard = this;
+    this.element = createElementWithClass("div", "list-item");
+    if (isLabel)
+        this.element.classList.add("label");
 
     this.subtitleElement = this.element.createChild("div", "subtitle");
     this.titleElement = this.element.createChild("div", "title");
 
     this._hidden = false;
-    this.title = title;
-    this.subtitle = subtitle;
-    this.selected = false;
+    this._isLabel = !!isLabel;
+    this.setTitle(title);
+    this.setSubtitle(subtitle);
+    this.setSelected(false);
 }
 
-WebInspector.Placard.prototype = {
-    /** @return {string} */
-    get title()
+WebInspector.UIList.Item.prototype = {
+    /**
+     * @return {?WebInspector.UIList.Item}
+     */
+    nextSibling: function()
+    {
+        var list = this[WebInspector.UIList._Key];
+        var index = list.items.indexOf(this);
+        console.assert(index >= 0);
+        return list.items[index + 1] || null;
+    },
+
+    /**
+     * @return {string}
+     */
+    title: function()
     {
         return this._title;
     },
 
-    set title(x)
+    /**
+     * @param {string} x
+     */
+    setTitle: function(x)
     {
         if (this._title === x)
             return;
@@ -58,13 +117,18 @@ WebInspector.Placard.prototype = {
         this.titleElement.textContent = x;
     },
 
-    /** @return {string} */
-    get subtitle()
+    /**
+     * @return {string}
+     */
+    subtitle: function()
     {
         return this._subtitle;
     },
 
-    set subtitle(x)
+    /**
+     * @param {string} x
+     */
+    setSubtitle: function(x)
     {
         if (this._subtitle === x)
             return;
@@ -72,13 +136,18 @@ WebInspector.Placard.prototype = {
         this.subtitleElement.textContent = x;
     },
 
-    /** @return {boolean} */
-    get selected()
+    /**
+     * @return {boolean}
+     */
+    isSelected: function()
     {
         return this._selected;
     },
 
-    set selected(x)
+    /**
+     * @param {boolean} x
+     */
+    setSelected: function(x)
     {
         if (x)
             this.select();
@@ -104,7 +173,7 @@ WebInspector.Placard.prototype = {
 
     toggleSelected: function()
     {
-        this.selected = !this.selected;
+        this.setSelected(!this.isSelected());
     },
 
     /**
@@ -124,6 +193,22 @@ WebInspector.Placard.prototype = {
             return;
         this._hidden = x;
         this.element.classList.toggle("hidden", x);
+    },
+
+    /**
+     * @return {boolean}
+     */
+    isLabel: function()
+    {
+        return this._isLabel;
+    },
+
+    /**
+     * @param {boolean} x
+     */
+    setDimmed: function(x)
+    {
+        this.element.classList.toggle("dimmed", x);
     },
 
     discard: function()

@@ -189,7 +189,7 @@
     ],
     "scripts": [
         "jsdifflib.js",
-        "Placard.js",
+        "UIList.js",
         "AddSourceMapURLDialog.js",
         "BreakpointsSidebarPane.js",
         "CallStackSidebarPane.js",
@@ -224,6 +224,7 @@
     ],
     "stylesheets": [
         "filteredItemSelectionDialog.css",
+        "uiList.css",
         "navigatorView.css",
         "revisionHistory.css",
         "sourcesPanel.css",

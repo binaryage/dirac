@@ -44,16 +44,6 @@
     color: #888;
 }
 
-.sidebar-pane > .body .placard.dimmed {
-    opacity: 0.6;
-    font-style: italic;
-}
-
-.sidebar-pane > .body .placard + .info {
-    border-top: 1px solid rgb(189, 189, 189);
-    background-color: rgb(255, 255, 194);
-}
-
 .sidebar-pane.visible > .body {
     display: block;
 }
