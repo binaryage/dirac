@@ -670,7 +670,7 @@ WebInspector.ConsoleViewMessage.prototype = {
      */
     useArrayPreviewInFormatter: function(array)
     {
-        return this._message.type !== WebInspector.ConsoleMessage.MessageType.DirXML && !!array.preview;
+        return this._message.type !== WebInspector.ConsoleMessage.MessageType.DirXML;
     },
 
     /**
@@ -679,14 +679,9 @@ WebInspector.ConsoleViewMessage.prototype = {
      */
     _formatParameterAsArray: function(array, elem)
     {
-        if (this.useArrayPreviewInFormatter(array)) {
-            this._formatParameterAsArrayOrObject(array, elem, true);
-            return;
-        }
-
         var maxFlatArrayLength = 100;
-        if (this._message.isOutdated || array.arrayLength() > maxFlatArrayLength)
-            this._formatParameterAsObject(array, elem, false);
+        if (this.useArrayPreviewInFormatter(array) || array.arrayLength() > maxFlatArrayLength)
+            this._formatParameterAsArrayOrObject(array, elem, this.useArrayPreviewInFormatter(array) || array.arrayLength() <= maxFlatArrayLength);
         else
             array.getAllProperties(false, this._printArray.bind(this, array, elem));
     },
