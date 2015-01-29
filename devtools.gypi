@@ -274,7 +274,6 @@
             'front_end/ui/StatusBar.js',
             'front_end/ui/SuggestBox.js',
             'front_end/ui/TabbedPane.js',
-            'front_end/ui/TextEditor.js',
             'front_end/ui/TextPrompt.js',
             'front_end/ui/TimelineGrid.js',
             'front_end/ui/UIUtils.js',

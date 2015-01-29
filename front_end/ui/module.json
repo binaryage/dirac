@@ -44,7 +44,6 @@
         "SuggestBox.js",
         "TabbedPane.js",
         "SidebarPane.js",
-        "TextEditor.js",
         "TextPrompt.js",
         "TimelineGrid.js",
         "UIUtils.js",

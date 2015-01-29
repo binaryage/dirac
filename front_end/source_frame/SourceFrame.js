@@ -673,11 +673,6 @@ WebInspector.SourceFrame.prototype = {
         });
     },
 
-    inheritScrollPositions: function(sourceFrame)
-    {
-        this._textEditor.inheritScrollPositions(sourceFrame._textEditor);
-    },
-
     /**
      * @return {boolean}
      */
@@ -881,7 +876,7 @@ WebInspector.SourceFrame.RowMessage.prototype = {
 /**
  * @constructor
  * @param {!WebInspector.SourceFrame} sourceFrame
- * @param {!WebInspector.TextEditor} textEditor
+ * @param {!WebInspector.CodeMirrorTextEditor} textEditor
  * @param {number} lineNumber
  */
 WebInspector.SourceFrame.RowMessageBucket = function(sourceFrame, textEditor, lineNumber)
