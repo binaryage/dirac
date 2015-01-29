@@ -146,11 +146,14 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
     this._shouldClearHistory = true;
     this._lineSeparator = "\n";
 
-    this._autocompleteController = WebInspector.TextEditorAutocompleteController.Dummy;
+    this._autocompleteController = new WebInspector.TextEditorAutocompleteController(this, this._codeMirror);
     this._tokenHighlighter = new WebInspector.CodeMirrorTextEditor.TokenHighlighter(this, this._codeMirror);
     this._blockIndentController = new WebInspector.CodeMirrorTextEditor.BlockIndentController(this._codeMirror);
     this._fixWordMovement = new WebInspector.CodeMirrorTextEditor.FixWordMovement(this._codeMirror);
     this._selectNextOccurrenceController = new WebInspector.CodeMirrorTextEditor.SelectNextOccurrenceController(this, this._codeMirror);
+
+    WebInspector.settings.textEditorAutocompletion.addChangeListener(this._enableAutocompletionIfNeeded, this);
+    this._enableAutocompletionIfNeeded();
 
     this._codeMirror.on("changes", this._changes.bind(this));
     this._codeMirror.on("gutterClick", this._gutterClick.bind(this));
@@ -363,6 +366,11 @@ WebInspector.CodeMirrorTextEditor.MaximumNumberOfWhitespacesPerSingleSpan = 16;
 WebInspector.CodeMirrorTextEditor.MaxEditableTextSize = 1024 * 1024 * 10;
 
 WebInspector.CodeMirrorTextEditor.prototype = {
+    _enableAutocompletionIfNeeded: function()
+    {
+        this._autocompleteController.setEnabled(WebInspector.settings.textEditorAutocompletion.get());
+    },
+
     /**
      * @param {string} quoteCharacter
      * @return {*}
@@ -564,6 +572,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         WebInspector.settings.textEditorAutoDetectIndent.removeChangeListener(this._updateEditorIndentation, this);
         WebInspector.settings.showWhitespacesInEditor.removeChangeListener(this._updateCodeMirrorMode, this);
         WebInspector.settings.textEditorBracketMatching.removeChangeListener(this._enableBracketMatchingIfNeeded, this);
+        WebInspector.settings.textEditorAutocompletion.removeChangeListener(this._enableAutocompletionIfNeeded, this);
     },
 
     _enableBracketMatchingIfNeeded: function()
@@ -750,15 +759,11 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     },
 
     /**
-     * @param {?WebInspector.CompletionDictionary} dictionary
+     * @param {!WebInspector.TextEditorAutocompleteDelegate} delegate
      */
-    setCompletionDictionary: function(dictionary)
+    setAutocompleteDelegate: function(delegate)
     {
-        this._autocompleteController.dispose();
-        if (dictionary)
-            this._autocompleteController = new WebInspector.TextEditorAutocompleteController(this, this._codeMirror, dictionary);
-        else
-            this._autocompleteController = WebInspector.TextEditorAutocompleteController.Dummy;
+        this._autocompleteController.setDelegate(delegate);
     },
 
     /**
@@ -920,7 +925,6 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         else
             this._disableLongLinesMode();
         this._updateCodeMirrorMode();
-        this._autocompleteController.setMimeType(mimeType);
     },
 
     /**

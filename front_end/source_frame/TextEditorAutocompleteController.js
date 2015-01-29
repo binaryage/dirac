@@ -5,12 +5,10 @@
 /**
  * @constructor
  * @implements {WebInspector.SuggestBoxDelegate}
- * @implements {WebInspector.TextEditorAutocompleteControllerAPI}
  * @param {!WebInspector.CodeMirrorTextEditor} textEditor
  * @param {!CodeMirror} codeMirror
- * @param {?WebInspector.CompletionDictionary} dictionary
  */
-WebInspector.TextEditorAutocompleteController = function(textEditor, codeMirror, dictionary)
+WebInspector.TextEditorAutocompleteController = function(textEditor, codeMirror)
 {
     this._textEditor = textEditor;
     this._codeMirror = codeMirror;
@@ -20,20 +18,21 @@ WebInspector.TextEditorAutocompleteController = function(textEditor, codeMirror,
     this._changes = this._changes.bind(this);
     this._beforeChange = this._beforeChange.bind(this);
     this._blur = this._blur.bind(this);
-
     this._codeMirror.on("changes", this._changes);
 
-    this._additionalWordChars = WebInspector.TextEditorAutocompleteController._NoAdditionalWordChars;
     this._enabled = true;
-
-    this._dictionary = dictionary;
     this._initialized = false;
 }
 
-WebInspector.TextEditorAutocompleteController._NoAdditionalWordChars = {};
-WebInspector.TextEditorAutocompleteController._CSSAdditionalWordChars = { ".": true, "-": true };
-
 WebInspector.TextEditorAutocompleteController.prototype = {
+    /**
+     * @return {boolean}
+     */
+    _ready: function()
+    {
+        return !!(this._enabled && this._initialized && this._delegate);
+    },
+
     _initializeIfNeeded: function()
     {
         if (this._initialized)
@@ -47,21 +46,16 @@ WebInspector.TextEditorAutocompleteController.prototype = {
     },
 
     /**
-     * @override
+     * @param {!WebInspector.TextEditorAutocompleteDelegate} delegate
      */
-    dispose: function()
+    setDelegate: function(delegate)
     {
-        this._codeMirror.off("changes", this._changes);
-        if (!this._initialized)
-            return;
-        this._codeMirror.off("scroll", this._onScroll);
-        this._codeMirror.off("cursorActivity", this._onCursorActivity);
-        this._codeMirror.off("beforeChange", this._beforeChange);
-        this._codeMirror.off("blur", this._blur);
+        if (this._delegate)
+            this._delegate.reset();
+        this._delegate = delegate;
     },
 
     /**
-     * @override
      * @param {boolean} enabled
      */
     setEnabled: function(enabled)
@@ -69,42 +63,12 @@ WebInspector.TextEditorAutocompleteController.prototype = {
         if (enabled === this._enabled)
             return;
         this._enabled = enabled;
+        if (!this._delegate)
+            return;
         if (!enabled)
-            this._dictionary.reset();
+            this._delegate.reset();
         else
             this._addTextToCompletionDictionary(this._textEditor.text());
-    },
-
-    /**
-     * @override
-     * @param {string} mimeType
-     */
-    setMimeType: function(mimeType)
-    {
-        var additionalWordChars = mimeType.indexOf("css") !== -1 ? WebInspector.TextEditorAutocompleteController._CSSAdditionalWordChars : WebInspector.TextEditorAutocompleteController._NoAdditionalWordChars;
-        if (additionalWordChars !== this._additionalWordChars) {
-            this._additionalWordChars = additionalWordChars;
-            this._dictionary.reset();
-            this._addTextToCompletionDictionary(this._textEditor.text());
-        }
-    },
-
-    /**
-     * @param {string} char
-     * @return {boolean}
-     */
-    _isWordChar: function(char)
-    {
-        return WebInspector.TextUtils.isWordChar(char) || !!this._additionalWordChars[char];
-    },
-
-    /**
-     * @param {string} word
-     * @return {boolean}
-     */
-    _shouldProcessWordForAutocompletion: function(word)
-    {
-        return !!word.length && (word[0] < '0' || word[0] > '9');
     },
 
     /**
@@ -112,13 +76,9 @@ WebInspector.TextEditorAutocompleteController.prototype = {
      */
     _addTextToCompletionDictionary: function(text)
     {
-        if (!this._enabled || !this._initialized)
+        if (!this._ready())
             return;
-        var words = WebInspector.TextUtils.textToWords(text, this._isWordChar.bind(this));
-        for (var i = 0; i < words.length; ++i) {
-            if (this._shouldProcessWordForAutocompletion(words[i]))
-                this._dictionary.addWord(words[i]);
-        }
+        this._delegate.addText(text);
     },
 
     /**
@@ -126,13 +86,9 @@ WebInspector.TextEditorAutocompleteController.prototype = {
      */
     _removeTextFromCompletionDictionary: function(text)
     {
-        if (!this._enabled || !this._initialized)
+        if (!this._ready())
             return;
-        var words = WebInspector.TextUtils.textToWords(text, this._isWordChar.bind(this));
-        for (var i = 0; i < words.length; ++i) {
-            if (this._shouldProcessWordForAutocompletion(words[i]))
-                this._dictionary.removeWord(words[i]);
-        }
+        this._delegate.removeText(text);
     },
 
     /**
@@ -141,7 +97,7 @@ WebInspector.TextEditorAutocompleteController.prototype = {
      */
     _beforeChange: function(codeMirror, changeObject)
     {
-        if (!this._enabled)
+        if (!this._enabled || !this._delegate)
             return;
         this._updatedLines = this._updatedLines || {};
         for (var i = changeObject.from.line; i <= changeObject.to.line; ++i)
@@ -154,7 +110,7 @@ WebInspector.TextEditorAutocompleteController.prototype = {
      */
     _changes: function(codeMirror, changes)
     {
-        if (!changes.length || !this._enabled)
+        if (!changes.length || !this._enabled || !this._delegate)
             return;
 
         if (this._updatedLines) {
@@ -187,16 +143,6 @@ WebInspector.TextEditorAutocompleteController.prototype = {
     },
 
     /**
-     * @param {number} lineNumber
-     * @param {number} columnNumber
-     * @return {!WebInspector.TextRange}
-     */
-    _autocompleteWordRange: function(lineNumber, columnNumber)
-    {
-        return this._textEditor.wordRangeForCursorPosition(lineNumber, columnNumber, this._isWordChar.bind(this));
-    },
-
-    /**
      * @param {!WebInspector.TextRange} mainSelection
      * @param {!Array.<!{head: !CodeMirror.Pos, anchor: !CodeMirror.Pos}>} selections
      * @return {boolean}
@@ -205,7 +151,7 @@ WebInspector.TextEditorAutocompleteController.prototype = {
     {
         var mainSelectionContext = this._textEditor.copyRange(mainSelection);
         for (var i = 0; i < selections.length; ++i) {
-            var wordRange = this._autocompleteWordRange(selections[i].head.line, selections[i].head.ch);
+            var wordRange = this._delegate.substituteRange(this._textEditor, selections[i].head.line, selections[i].head.ch);
             if (!wordRange)
                 return false;
             var context = this._textEditor.copyRange(wordRange);
@@ -215,13 +161,11 @@ WebInspector.TextEditorAutocompleteController.prototype = {
         return true;
     },
 
-    /**
-     * @override
-     */
     autocomplete: function()
     {
+        if (!this._enabled || !this._delegate)
+            return;
         this._initializeIfNeeded();
-        var dictionary = this._dictionary;
         if (this._codeMirror.somethingSelected()) {
             this.finishAutocomplete();
             return;
@@ -230,7 +174,7 @@ WebInspector.TextEditorAutocompleteController.prototype = {
         var selections = this._codeMirror.listSelections().slice();
         var topSelection = selections.shift();
         var cursor = topSelection.head;
-        var substituteRange = this._autocompleteWordRange(cursor.line, cursor.ch);
+        var substituteRange = this._delegate.substituteRange(this._textEditor, cursor.line, cursor.ch);
         if (!substituteRange || substituteRange.startColumn === cursor.ch || !this._validateSelectionsContexts(substituteRange, selections)) {
             this.finishAutocomplete();
             return;
@@ -239,20 +183,7 @@ WebInspector.TextEditorAutocompleteController.prototype = {
         var prefixRange = substituteRange.clone();
         prefixRange.endColumn = cursor.ch;
 
-        var substituteWord = this._textEditor.copyRange(substituteRange);
-        var hasPrefixInDictionary = dictionary.hasWord(substituteWord);
-        if (hasPrefixInDictionary)
-            dictionary.removeWord(substituteWord);
-        var wordsWithPrefix = dictionary.wordsWithPrefix(this._textEditor.copyRange(prefixRange));
-        if (hasPrefixInDictionary)
-            dictionary.addWord(substituteWord);
-
-        function sortSuggestions(a, b)
-        {
-            return dictionary.wordCount(b) - dictionary.wordCount(a) || a.length - b.length;
-        }
-
-        wordsWithPrefix.sort(sortSuggestions);
+        var wordsWithPrefix = this._delegate.wordsWithPrefix(this._textEditor, prefixRange, substituteRange);
 
         if (!this._suggestBox)
             this._suggestBox = new WebInspector.SuggestBox(this, 6);
@@ -263,11 +194,11 @@ WebInspector.TextEditorAutocompleteController.prototype = {
         this._suggestBox.updateSuggestions(this._anchorBox, wordsWithPrefix, 0, true, this._textEditor.copyRange(prefixRange));
         if (!this._suggestBox.visible())
             this.finishAutocomplete();
+        this._onSuggestionsShownForTest();
     },
 
-    /**
-     * @override
-     */
+    _onSuggestionsShownForTest: function() { },
+
     finishAutocomplete: function()
     {
         if (!this._suggestBox)
@@ -279,7 +210,6 @@ WebInspector.TextEditorAutocompleteController.prototype = {
     },
 
     /**
-     * @override
      * @param {!Event} e
      * @return {boolean}
      */
@@ -363,75 +293,138 @@ WebInspector.TextEditorAutocompleteController.prototype = {
 /**
  * @interface
  */
-WebInspector.TextEditorAutocompleteControllerAPI = function() {}
+WebInspector.TextEditorAutocompleteDelegate = function() {}
 
-WebInspector.TextEditorAutocompleteControllerAPI.prototype = {
-    dispose: function() { },
+WebInspector.TextEditorAutocompleteDelegate.prototype = {
+    /**
+     * @param {string} text
+     */
+    addText: function(text) {},
 
     /**
-     * @param {boolean} enabled
+     * @param {string} text
      */
-    setEnabled: function(enabled) { },
+    removeText: function(text) {},
 
     /**
-     * @param {string} mimeType
+     * @param {!WebInspector.CodeMirrorTextEditor} editor
+     * @param {number} lineNumber
+     * @param {number} columnNumber
+     * @return {!WebInspector.TextRange}
      */
-    setMimeType: function(mimeType) { },
+    substituteRange: function(editor, lineNumber, columnNumber) {},
 
-    autocomplete: function() { },
-
-    finishAutocomplete: function() { },
+    reset: function() {},
 
     /**
-     * @param {!Event} e
-     * @return {boolean}
+     * @param {!WebInspector.CodeMirrorTextEditor} editor
+     * @param {!WebInspector.TextRange} prefixRange
+     * @param {!WebInspector.TextRange} substituteRange
+     * @return {!Array.<string>}
      */
-    keyDown: function(e) { }
+    wordsWithPrefix: function(editor, prefixRange, substituteRange) {}
 }
 
 /**
  * @constructor
- * @implements {WebInspector.TextEditorAutocompleteControllerAPI}
+ * @implements {WebInspector.TextEditorAutocompleteDelegate}
+ * @param {!Object.<string, boolean>=} additionalWordChars
  */
-WebInspector.DummyTextEditorAutocompleteController = function() { }
-
-WebInspector.DummyTextEditorAutocompleteController.prototype = {
-    /**
-     * @override
-     */
-    dispose: function() { },
-
-    /**
-     * @override
-     * @param {boolean} enabled
-     */
-    setEnabled: function(enabled) { },
-
-    /**
-     * @override
-     * @param {string} mimeType
-     */
-    setMimeType: function(mimeType) { },
-
-    /**
-     * @override
-     */
-    autocomplete: function() { },
-
-    /**
-     * @override
-     */
-    finishAutocomplete: function() { },
-
-    /**
-     * @override
-     * @param {!Event} e
-     * @return {boolean}
-     */
-    keyDown: function(e)
-    {
-        return false;
-    }
+WebInspector.SimpleAutocompleteDelegate = function(additionalWordChars)
+{
+    this._dictionary = new WebInspector.SampleCompletionDictionary();
+    this._additionalWordChars = additionalWordChars || {};
 }
 
-WebInspector.TextEditorAutocompleteController.Dummy = new WebInspector.DummyTextEditorAutocompleteController();
+WebInspector.SimpleAutocompleteDelegate.prototype = {
+    /**
+     * @override
+     * @param {string} text
+     */
+    addText: function(text)
+    {
+        var words = WebInspector.TextUtils.textToWords(text, this._isWordChar.bind(this));
+        for (var i = 0; i < words.length; ++i) {
+            if (this._shouldProcessWordForAutocompletion(words[i]))
+                this._dictionary.addWord(words[i]);
+        }
+    },
+
+    /**
+     * @override
+     * @param {string} text
+     */
+    removeText: function(text)
+    {
+        var words = WebInspector.TextUtils.textToWords(text, this._isWordChar.bind(this));
+        for (var i = 0; i < words.length; ++i) {
+            if (this._shouldProcessWordForAutocompletion(words[i]))
+                this._dictionary.removeWord(words[i]);
+        }
+    },
+
+    /**
+     * @override
+     */
+    reset: function()
+    {
+        this._dictionary.reset();
+    },
+
+    /**
+     * @override
+     * @param {!WebInspector.CodeMirrorTextEditor} editor
+     * @param {number} lineNumber
+     * @param {number} columnNumber
+     * @return {!WebInspector.TextRange}
+     */
+    substituteRange: function(editor, lineNumber, columnNumber)
+    {
+        return editor.wordRangeForCursorPosition(lineNumber, columnNumber, this._isWordChar.bind(this));
+    },
+
+    /**
+     * @override
+     * @param {!WebInspector.CodeMirrorTextEditor} editor
+     * @param {!WebInspector.TextRange} prefixRange
+     * @param {!WebInspector.TextRange} substituteRange
+     * @return {!Array.<string>}
+     */
+    wordsWithPrefix: function(editor, prefixRange, substituteRange)
+    {
+        var dictionary = this._dictionary;
+        var substituteWord = editor.copyRange(substituteRange);
+        var hasPrefixInDictionary = dictionary.hasWord(substituteWord);
+        if (hasPrefixInDictionary)
+            dictionary.removeWord(substituteWord);
+        var completions = dictionary.wordsWithPrefix(editor.copyRange(prefixRange));
+        if (hasPrefixInDictionary)
+            dictionary.addWord(substituteWord);
+
+        function sortSuggestions(a, b)
+        {
+            return dictionary.wordCount(b) - dictionary.wordCount(a) || a.length - b.length;
+        }
+
+        completions.sort(sortSuggestions);
+        return completions;
+    },
+
+    /**
+     * @param {string} word
+     * @return {boolean}
+     */
+    _shouldProcessWordForAutocompletion: function(word)
+    {
+        return !!word.length && (word[0] < '0' || word[0] > '9');
+    },
+
+    /**
+     * @param {string} char
+     * @return {boolean}
+     */
+    _isWordChar: function(char)
+    {
+        return WebInspector.TextUtils.isWordChar(char) || !!this._additionalWordChars[char];
+    }
+}
