@@ -5,20 +5,14 @@
 WebInspector.OverridesUI = {}
 
 /**
- * @param {function(function(string))=} titleProvider
  * @return {!Element}
  */
-WebInspector.OverridesUI.createDeviceSelect = function(titleProvider)
+WebInspector.OverridesUI.createDeviceSelect = function()
 {
     var p = createElement("p");
 
     var deviceSelectElement = p.createChild("select");
     deviceSelectElement.addEventListener("change", deviceSelected, false);
-
-    var saveButton = createTextButton(WebInspector.UIString("Save as"), saveClicked);
-    p.appendChild(saveButton);
-    var removeButton = createTextButton(WebInspector.UIString("Remove"), removeClicked);
-    p.appendChild(removeButton);
 
     // This has to be object, not boolean, otherwise its value doesn't update properly.
     var emulatedSettingChangedMuted = { muted: false };
@@ -31,12 +25,11 @@ WebInspector.OverridesUI.createDeviceSelect = function(titleProvider)
     WebInspector.overridesSupport.settings.userAgent.addChangeListener(emulatedSettingChanged);
 
     WebInspector.emulatedDevicesList.addEventListener(WebInspector.EmulatedDevicesList.Events.CustomDevicesUpdated, deviceListChanged);
+    WebInspector.emulatedDevicesList.addEventListener(WebInspector.EmulatedDevicesList.Events.StandardDevicesUpdated, deviceListChanged);
     deviceListChanged();
 
     function deviceSelected()
     {
-        updateButtons();
-
         if (deviceSelectElement.selectedIndex === 0)
             return;
 
@@ -60,15 +53,6 @@ WebInspector.OverridesUI.createDeviceSelect = function(titleProvider)
             }
         }
         deviceSelectElement.selectedIndex = index;
-        updateButtons();
-    }
-
-    function updateButtons()
-    {
-        var index = deviceSelectElement.selectedIndex;
-        var custom = deviceSelectElement.options[index].custom;
-        saveButton.disabled = !!index || !titleProvider;
-        removeButton.disabled = !custom;
     }
 
     function deviceListChanged()
@@ -90,10 +74,10 @@ WebInspector.OverridesUI.createDeviceSelect = function(titleProvider)
          */
         function addGroup(name, devices, custom)
         {
+            devices = devices.filter(function (d) { return d.show(); });
             if (!devices.length)
                 return;
-            devices = devices.slice();
-            devices.sort(compareDevices);
+            devices.sort(WebInspector.EmulatedDevice.compareByTitle);
             var groupElement = deviceSelectElement.createChild("optgroup");
             groupElement.label = name;
             for (var i = 0; i < devices.length; ++i) {
@@ -105,39 +89,7 @@ WebInspector.OverridesUI.createDeviceSelect = function(titleProvider)
             }
         }
 
-        /**
-         * @param {!WebInspector.EmulatedDevice} device1
-         * @param {!WebInspector.EmulatedDevice} device2
-         * @return {number}
-         */
-        function compareDevices(device1, device2)
-        {
-            return device1.title < device2.title ? -1 : (device1.title > device2.title ? 1 : 0);
-        }
-
         emulatedSettingChanged();
-    }
-
-    function saveClicked()
-    {
-        titleProvider(saveDevicePreset);
-    }
-
-    /**
-     * @param {string} title
-     */
-    function saveDevicePreset(title)
-    {
-        if (!title)
-            return;
-        var device = WebInspector.EmulatedDevice.fromOverridesDevice(WebInspector.overridesSupport.deviceFromCurrentSettings(), title);
-        WebInspector.emulatedDevicesList.addCustomDevice(device);
-    }
-
-    function removeClicked()
-    {
-        var option = deviceSelectElement.options[deviceSelectElement.selectedIndex];
-        WebInspector.emulatedDevicesList.removeCustomDevice(option.device);
     }
 
     return p;

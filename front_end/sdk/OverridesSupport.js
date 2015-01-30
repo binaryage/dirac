@@ -403,27 +403,6 @@ WebInspector.OverridesSupport.prototype = {
     },
 
     /**
-     * @return {!WebInspector.OverridesSupport.Device}
-     */
-    deviceFromCurrentSettings: function()
-    {
-        var device = {};
-        if (this.settings.emulateResolution.get()) {
-            device.width = this.settings.deviceWidth.get();
-            device.height = this.settings.deviceHeight.get();
-        } else {
-            device.width = 0;
-            device.height = 0;
-        }
-        device.deviceScaleFactor = this.settings.deviceScaleFactor.get();
-        device.touch = this.settings.emulateTouch.get();
-        device.mobile = this.settings.emulateMobile.get();
-        device.userAgent = this.settings.userAgent.get();
-        device.title = "";
-        return device;
-    },
-
-    /**
      * @param {boolean} suspended
      */
     setTouchEmulationSuspended: function(suspended)

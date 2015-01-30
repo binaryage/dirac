@@ -18,7 +18,7 @@ WebInspector.EmulatedDevice = function()
     /** @type {number} */
     this.deviceScaleFactor = 1;
     /** @type {!Array.<string>} */
-    this.capabilities = [];
+    this.capabilities = [WebInspector.EmulatedDevice.Capability.Touch, WebInspector.EmulatedDevice.Capability.Mobile];
     /** @type {string} */
     this.userAgent = "";
     /** @type {!Array.<!WebInspector.EmulatedDevice.Mode>} */
@@ -179,6 +179,7 @@ WebInspector.EmulatedDevice.fromJSON = function(json)
         var capabilities = parseValue(json, "capabilities", "object", []);
         if (!Array.isArray(capabilities))
             throw new Error("Emulated device capabilities must be an array");
+        result.capabilities = [];
         for (var i = 0; i < capabilities.length; ++i) {
             if (typeof capabilities[i] !== "string")
                 throw new Error("Emulated device capability must be a string");
@@ -195,6 +196,7 @@ WebInspector.EmulatedDevice.fromJSON = function(json)
         var modes = parseValue(json, "modes", "object", []);
         if (!Array.isArray(modes))
             throw new Error("Emulated device modes must be an array");
+        result.modes = [];
         for (var i = 0; i < modes.length; ++i) {
             var mode = {};
             mode.title = /** @type {string} */ (parseValue(modes[i], "title", "string"));
@@ -243,6 +245,16 @@ WebInspector.EmulatedDevice.fromOverridesDevice = function(device, title, type)
     if (device.mobile)
         result.capabilities.push(WebInspector.EmulatedDevice.Capability.Mobile);
     return result;
+}
+
+/**
+ * @param {!WebInspector.EmulatedDevice} device1
+ * @param {!WebInspector.EmulatedDevice} device2
+ * @return {number}
+ */
+WebInspector.EmulatedDevice.compareByTitle = function(device1, device2)
+{
+    return device1.title < device2.title ? -1 : (device1.title > device2.title ? 1 : 0);
 }
 
 WebInspector.EmulatedDevice.prototype = {
@@ -327,6 +339,14 @@ WebInspector.EmulatedDevice.prototype = {
         if (this._show === WebInspector.EmulatedDevice._Show.Default)
             return this._showByDefault;
         return this._show === WebInspector.EmulatedDevice._Show.Always;
+    },
+
+    /**
+     * @param {boolean} show
+     */
+    setShow: function(show)
+    {
+        this._show = show ? WebInspector.EmulatedDevice._Show.Always : WebInspector.EmulatedDevice._Show.Never;
     },
 
     /**
@@ -428,7 +448,8 @@ WebInspector.EmulatedDevicesList = function()
 }
 
 WebInspector.EmulatedDevicesList.Events = {
-    CustomDevicesUpdated: "CustomDevicesUpdated"
+    CustomDevicesUpdated: "CustomDevicesUpdated",
+    StandardDevicesUpdated: "StandardDevicesUpdated"
 }
 
 WebInspector.EmulatedDevicesList.prototype = {
@@ -471,7 +492,7 @@ WebInspector.EmulatedDevicesList.prototype = {
     addCustomDevice: function(device)
     {
         this._custom.push(device);
-        this._saveCustomDevices();
+        this.saveCustomDevices();
     },
 
     /**
@@ -480,14 +501,21 @@ WebInspector.EmulatedDevicesList.prototype = {
     removeCustomDevice: function(device)
     {
         this._custom.remove(device);
-        this._saveCustomDevices();
+        this.saveCustomDevices();
     },
 
-    _saveCustomDevices: function()
+    saveCustomDevices: function()
     {
         var json = this._custom.map(/** @param {!WebInspector.EmulatedDevice} device */ function(device) { return device._toJSON(); });
         this._customSetting.set(json);
         this.dispatchEventToListeners(WebInspector.EmulatedDevicesList.Events.CustomDevicesUpdated);
+    },
+
+    saveStandardDevices: function()
+    {
+        var json = this._standard.map(/** @param {!WebInspector.EmulatedDevice} device */ function(device) { return device._toJSON(); });
+        this._standardSetting.set(json);
+        this.dispatchEventToListeners(WebInspector.EmulatedDevicesList.Events.StandardDevicesUpdated);
     },
 
     __proto__: WebInspector.Object.prototype
