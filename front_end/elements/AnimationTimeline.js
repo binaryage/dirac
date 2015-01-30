@@ -216,7 +216,7 @@ WebInspector.AnimationUI.prototype = {
         line.setAttribute("y1", WebInspector.AnimationUI.Options.AnimationHeight);
         line.setAttribute("x2", this._duration() * this._pixelMsRatio() +  WebInspector.AnimationUI.Options.AnimationMargin);
         line.setAttribute("y2", WebInspector.AnimationUI.Options.AnimationHeight);
-        line.style.stroke = WebInspector.AnimationUI.Options.ColorPurple.asString(WebInspector.Color.Format.RGB);
+        line.style.stroke = this._color().asString(WebInspector.Color.Format.RGB);
     },
 
     /**
@@ -228,11 +228,11 @@ WebInspector.AnimationUI.prototype = {
         var circle = this._svgGroup.createSVGChild("circle", keyframeIndex <= 0 ? "animation-endpoint" : "animation-keyframe-point");
         circle.setAttribute("cx", x);
         circle.setAttribute("cy", WebInspector.AnimationUI.Options.AnimationHeight);
-        circle.style.stroke = WebInspector.AnimationUI.Options.ColorPurple.asString(WebInspector.Color.Format.RGB);
+        circle.style.stroke = this._color().asString(WebInspector.Color.Format.RGB);
         circle.setAttribute("r", WebInspector.AnimationUI.Options.AnimationMargin / 2);
 
         if (keyframeIndex <= 0)
-            circle.style.fill = WebInspector.AnimationUI.Options.ColorPurple.asString(WebInspector.Color.Format.RGB);
+            circle.style.fill = this._color().asString(WebInspector.Color.Format.RGB);
 
         if (keyframeIndex == 0) {
             circle.addEventListener("mousedown", this._mouseDown.bind(this, WebInspector.AnimationUI.MouseEvents.StartEndpointMove, keyframeIndex));
@@ -243,22 +243,21 @@ WebInspector.AnimationUI.prototype = {
         }
     },
 
+    /**
+     * @param {number} leftDistance
+     * @param {number} width
+     * @param {!WebInspector.Geometry.CubicBezier} bezier
+     */
+    _renderBezierKeyframe: function(leftDistance, width, bezier)
+    {
+        var path = this._svgGroup.createSVGChild("path", "animation-keyframe");
+        path.style.transform = "translateX(" + leftDistance + "px)";
+        path.style.fill = this._color().asString(WebInspector.Color.Format.RGB);
+        WebInspector.BezierUI.drawVelocityChart(bezier, path, width);
+    },
+
     redraw: function()
     {
-        /**
-         * @param {!Element} svgGroup
-         * @param {number} leftDistance
-         * @param {number} width
-         * @param {!WebInspector.Geometry.CubicBezier} bezier
-         */
-        function renderBezierKeyframe(svgGroup, leftDistance, width, bezier)
-        {
-            var path = svgGroup.createSVGChild("path", "animation-keyframe");
-            path.style.transform = "translateX(" + leftDistance + "px)";
-            path.style.fill = WebInspector.AnimationUI.Options.ColorPurple.asString(WebInspector.Color.Format.RGB);
-            WebInspector.BezierUI.drawVelocityChart(bezier, path, width);
-        }
-
         this._renderGrid();
         var animationWidth = this._duration() * this._pixelMsRatio() + 2 * WebInspector.AnimationUI.Options.AnimationMargin;
         var leftMargin = (this._animation.startTime() - this._timeline.startTime() + this._delay()) * this._pixelMsRatio();
@@ -272,7 +271,7 @@ WebInspector.AnimationUI.prototype = {
             var bezier = WebInspector.Geometry.CubicBezier.parse(this._animation.source().easing());
             // FIXME: add support for step functions
             if (bezier)
-                renderBezierKeyframe(this._svgGroup, WebInspector.AnimationUI.Options.AnimationMargin, this._duration() * this._pixelMsRatio(), bezier);
+                this._renderBezierKeyframe(WebInspector.AnimationUI.Options.AnimationMargin, this._duration() * this._pixelMsRatio(), bezier);
             this._drawPoint(WebInspector.AnimationUI.Options.AnimationMargin, 0);
         } else {
             for (var i = 0; i < this._keyframes.length - 1; i++) {
@@ -281,7 +280,7 @@ WebInspector.AnimationUI.prototype = {
                 var bezier = WebInspector.Geometry.CubicBezier.parse(this._keyframes[i].easing());
                 // FIXME: add support for step functions
                 if (bezier)
-                    renderBezierKeyframe(this._svgGroup, leftDistance, width, bezier);
+                    this._renderBezierKeyframe(leftDistance, width, bezier);
                 this._drawPoint(leftDistance, i);
             }
         }
@@ -389,6 +388,30 @@ WebInspector.AnimationUI.prototype = {
         delete this._mouseEventType;
         delete this._downMouseX;
         delete this._keyframeMoved;
+    },
+
+    /**
+     * @return {!WebInspector.Color}
+     */
+    _color: function()
+    {
+        /**
+         * @param {string} string
+         * @return {number}
+         */
+        function hash(string)
+        {
+            var hash = 0;
+            for (var i = 0; i < string.length; i++)
+                hash = (hash << 5) + hash + string.charCodeAt(i);
+            return hash;
+        }
+
+        if (!this._selectedColor) {
+            var names = Object.keys(WebInspector.AnimationUI.Colors);
+            this._selectedColor = WebInspector.AnimationUI.Colors[names[hash(this._animation.name()) % names.length]];
+        }
+        return this._selectedColor;
     }
 }
 
@@ -397,8 +420,18 @@ WebInspector.AnimationUI.Options = {
     AnimationSVGHeight: 100,
     AnimationMargin: 8,
     EndpointsClickRegionSize: 10,
-    GridCanvasHeight: 60,
-    ColorPurple: WebInspector.Color.fromRGBA([157,29,177])
+    GridCanvasHeight: 60
 }
 
-
+WebInspector.AnimationUI.Colors = {
+    "Purple": WebInspector.Color.parse("#9C27B0"),
+    "Light Blue": WebInspector.Color.parse("#03A9F4"),
+    "Deep Orange": WebInspector.Color.parse("#FF5722"),
+    "Blue": WebInspector.Color.parse("#5677FC"),
+    "Lime": WebInspector.Color.parse("#CDDC39"),
+    "Blue Grey": WebInspector.Color.parse("#607D8B"),
+    "Pink": WebInspector.Color.parse("#E91E63"),
+    "Green": WebInspector.Color.parse("#0F9D58"),
+    "Brown": WebInspector.Color.parse("#795548"),
+    "Cyan": WebInspector.Color.parse("#00BCD4")
+}
