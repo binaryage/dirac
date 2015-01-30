@@ -35,10 +35,11 @@
  * @param {number} endLine
  * @param {number} endColumn
  * @param {boolean} isContentScript
+ * @param {boolean} isInternalScript
  * @param {string=} sourceMapURL
  * @param {boolean=} hasSourceURL
  */
-WebInspector.Script = function(target, scriptId, sourceURL, startLine, startColumn, endLine, endColumn, isContentScript, sourceMapURL, hasSourceURL)
+WebInspector.Script = function(target, scriptId, sourceURL, startLine, startColumn, endLine, endColumn, isContentScript, isInternalScript, sourceMapURL, hasSourceURL)
 {
     WebInspector.SDKObject.call(this, target);
     this.scriptId = scriptId;
@@ -48,6 +49,7 @@ WebInspector.Script = function(target, scriptId, sourceURL, startLine, startColu
     this.endLine = endLine;
     this.endColumn = endColumn;
     this._isContentScript = isContentScript;
+    this._isInternalScript = isInternalScript;
     this.sourceMapURL = sourceMapURL;
     this.hasSourceURL = hasSourceURL;
 }
