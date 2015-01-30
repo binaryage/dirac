@@ -108,8 +108,6 @@
             'front_end/components/ObjectPopoverHelper.js',
             'front_end/components/ObjectPropertiesSection.js',
             'front_end/components/ShortcutsScreen.js',
-            'front_end/components/TargetsComboBoxController.js',
-            'front_end/components/CustomPreviewSection.js',
         ],
         'devtools_host_js_files': [
             'front_end/host/InspectorFrontendHost.js',
@@ -237,7 +235,6 @@
             'front_end/ui/textButton.css',
             'front_end/ui/textPrompt.css',
             'front_end/ui/timelineGrid.css',
-            'front_end/ui/xmlView.css',
             'front_end/ui/ActionRegistry.js',
             'front_end/ui/CompletionDictionary.js',
             'front_end/ui/Context.js',
@@ -280,7 +277,6 @@
             'front_end/ui/View.js',
             'front_end/ui/ViewportControl.js',
             'front_end/ui/ViewportDataGrid.js',
-            'front_end/ui/XMLView.js',
             'front_end/ui/ZoomManager.js',
             'front_end/ui/treeoutline.js',
         ],
@@ -357,6 +353,7 @@
             'front_end/console/ConsolePanel.js',
             'front_end/console/ConsoleView.js',
             'front_end/console/ConsoleViewMessage.js',
+            'front_end/console/CustomPreviewSection.js',
         ],
         'devtools_devices_js_files': [
             'front_end/devices/devicesView.css',
@@ -421,6 +418,7 @@
             'front_end/network/requestCookiesView.css',
             'front_end/network/requestHeadersView.css',
             'front_end/network/webSocketFrameView.css',
+            'front_end/network/xmlView.css',
             'front_end/network/EventSourceMessagesView.js',
             'front_end/network/FilterSuggestionBuilder.js',
             'front_end/network/HARWriter.js',
@@ -438,6 +436,7 @@
             'front_end/network/RequestTimingView.js',
             'front_end/network/RequestView.js',
             'front_end/network/ResourceWebSocketFrameView.js',
+            'front_end/network/XMLView.js',
         ],
         'devtools_profiler_js_files': [
             'front_end/profiler/canvasProfiler.css',
@@ -458,6 +457,7 @@
             'front_end/profiler/ProfileLauncherView.js',
             'front_end/profiler/ProfilesPanel.js',
             'front_end/profiler/ProfileTypeRegistry.js',
+            'front_end/profiler/TargetsComboBoxController.js',
         ],
         'devtools_resources_js_files': [
             'front_end/resources/indexedDBViews.css',

@@ -51,7 +51,8 @@
         "RequestResponseView.js",
         "RequestTimingView.js",
         "ResourceWebSocketFrameView.js",
-        "NetworkPanel.js"
+        "NetworkPanel.js",
+        "XMLView.js"
     ],
     "stylesheets": [
         "eventSourceMessagesView.css",
@@ -59,6 +60,7 @@
         "networkPanel.css",
         "requestCookiesView.css",
         "requestHeadersView.css",
-        "webSocketFrameView.css"
+        "webSocketFrameView.css",
+        "xmlView.css"
     ]
 }
