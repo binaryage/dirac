@@ -415,11 +415,13 @@
             'front_end/layers/LayersPanel.js',
         ],
         'devtools_network_js_files': [
+            'front_end/network/eventSourceMessagesView.css',
             'front_end/network/networkLogView.css',
             'front_end/network/networkPanel.css',
             'front_end/network/requestCookiesView.css',
             'front_end/network/requestHeadersView.css',
             'front_end/network/webSocketFrameView.css',
+            'front_end/network/EventSourceMessagesView.js',
             'front_end/network/FilterSuggestionBuilder.js',
             'front_end/network/HARWriter.js',
             'front_end/network/NetworkDataGridNode.js',

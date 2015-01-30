@@ -1539,6 +1539,18 @@
                     { "name": "response", "$ref": "WebSocketFrame", "description": "WebSocket response data." }
                 ],
                 "hidden": true
+            },
+            {
+                "name": "eventSourceMessageReceived",
+                "description": "Fired when EventSource message is received.",
+                "parameters": [
+                    { "name": "requestId", "$ref": "RequestId", "description": "Request identifier." },
+                    { "name": "timestamp", "$ref": "Timestamp", "description": "Timestamp." },
+                    { "name": "eventName", "type": "string", "description": "Message type." },
+                    { "name": "eventId", "type": "string", "description": "Message identifier." },
+                    { "name": "data", "type": "string", "description": "Message content." }
+                ],
+                "hidden": true
             }
         ]
     },

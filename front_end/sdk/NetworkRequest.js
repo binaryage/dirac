@@ -67,6 +67,8 @@ WebInspector.NetworkRequest = function(target, requestId, url, documentURL, fram
     this._pendingContentCallbacks = [];
     /** @type {!Array.<!WebInspector.NetworkRequest.WebSocketFrame>} */
     this._frames = [];
+    /** @type {!Array.<!WebInspector.NetworkRequest.EventSourceMessage>} */
+    this._eventSourceMessages = [];
 
     this._responseHeaderValues = {};
 
@@ -83,6 +85,7 @@ WebInspector.NetworkRequest.Events = {
     RequestHeadersChanged: "RequestHeadersChanged",
     ResponseHeadersChanged: "ResponseHeadersChanged",
     WebsocketFrameAdded: "WebsocketFrameAdded",
+    EventSourceMessageAdded: "EventSourceMessageAdded",
 }
 
 /** @enum {string} */
@@ -105,6 +108,9 @@ WebInspector.NetworkRequest.WebSocketFrameType = {
 
 /** @typedef {!{type: WebInspector.NetworkRequest.WebSocketFrameType, time: number, text: string, opCode: number, mask: boolean}} */
 WebInspector.NetworkRequest.WebSocketFrame;
+
+/** @typedef {!{time: number, eventName: string, eventId: string, data: string}} */
+WebInspector.NetworkRequest.EventSourceMessage;
 
 WebInspector.NetworkRequest.prototype = {
     /**
@@ -1028,6 +1034,27 @@ WebInspector.NetworkRequest.prototype = {
     {
         this._frames.push(frame);
         this.dispatchEventToListeners(WebInspector.NetworkRequest.Events.WebsocketFrameAdded, frame);
+    },
+
+    /**
+     * @return {!Array.<!WebInspector.NetworkRequest.EventSourceMessage>}
+     */
+    eventSourceMessages: function()
+    {
+        return this._eventSourceMessages;
+    },
+
+    /**
+     * @param {number} time
+     * @param {string} eventName
+     * @param {string} eventId
+     * @param {string} data
+     */
+    addEventSourceMessage: function(time, eventName, eventId, data)
+    {
+        var message = {time: time, eventName: eventName, eventId: eventId, data: data};
+        this._eventSourceMessages.push(message);
+        this.dispatchEventToListeners(WebInspector.NetworkRequest.Events.EventSourceMessageAdded, message);
     },
 
     replayXHR: function()

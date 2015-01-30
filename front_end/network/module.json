@@ -35,6 +35,7 @@
     ],
     "dependencies": ["source_frame"],
     "scripts": [
+        "EventSourceMessagesView.js",
         "FilterSuggestionBuilder.js",
         "HARWriter.js",
         "RequestView.js",
@@ -53,6 +54,7 @@
         "NetworkPanel.js"
     ],
     "stylesheets": [
+        "eventSourceMessagesView.css",
         "networkLogView.css",
         "networkPanel.css",
         "requestCookiesView.css",

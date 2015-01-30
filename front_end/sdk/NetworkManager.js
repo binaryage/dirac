@@ -539,6 +539,22 @@ WebInspector.NetworkDispatcher.prototype = {
     },
 
     /**
+     * @override
+     * @param {!NetworkAgent.RequestId} requestId
+     * @param {!NetworkAgent.Timestamp} time
+     * @param {string} eventName
+     * @param {string} eventId
+     * @param {string} data
+     */
+    eventSourceMessageReceived: function(requestId, time, eventName, eventId, data)
+    {
+        var networkRequest = this._inflightRequestsById[requestId];
+        if (!networkRequest)
+            return;
+        networkRequest.addEventSourceMessage(time, eventName, eventId, data);
+    },
+
+    /**
      * @param {!NetworkAgent.RequestId} requestId
      * @param {!NetworkAgent.Timestamp} time
      * @param {string} redirectURL
