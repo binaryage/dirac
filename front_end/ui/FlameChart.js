@@ -93,7 +93,6 @@ WebInspector.FlameChart = function(dataProvider, flameChartDelegate, isTopDown)
     this._timeWindowRight = Infinity;
     this._barHeight = dataProvider.barHeight();
     this._barHeightDelta = this._isTopDown ? -this._barHeight : this._barHeight;
-    this._minWidth = 2;
     this._paddingLeft = this._dataProvider.paddingLeft();
     this._markerPadding = 2;
     this._markerRadius = this._barHeight / 2 - this._markerPadding;
@@ -936,7 +935,6 @@ WebInspector.FlameChart.prototype = {
 
         var timeWindowRight = this._timeWindowRight;
         var timeWindowLeft = this._timeWindowLeft - this._paddingLeftTime;
-        var minWidth = this._minWidth;
         var entryTotalTimes = timelineData.entryTotalTimes;
         var entryStartTimes = timelineData.entryStartTimes;
         var entryLevels = timelineData.entryLevels;
@@ -976,6 +974,7 @@ WebInspector.FlameChart.prototype = {
                     break;
 
                 var barX = this._timeToPositionClipped(entryStartTime);
+                // Check if the entry entirely fits into an already drawn pixel, we can just skip drawing it.
                 if (barX >= lastDrawOffset)
                     continue;
                 lastDrawOffset = barX;
@@ -1004,8 +1003,8 @@ WebInspector.FlameChart.prototype = {
                 var entryIndex = indexes[i];
                 var entryStartTime = entryStartTimes[entryIndex];
                 var barX = this._timeToPositionClipped(entryStartTime);
-                var barRight = this._timeToPositionClipped(entryStartTime + entryTotalTimes[entryIndex]);
-                var barWidth = Math.max(barRight - barX, minWidth);
+                var barRight = this._timeToPositionClipped(entryStartTime + entryTotalTimes[entryIndex]) + 1;
+                var barWidth = barRight - barX;
                 var barLevel = entryLevels[entryIndex];
                 var barY = this._levelToHeight(barLevel);
                 if (isNaN(entryTotalTimes[entryIndex])) {
@@ -1040,8 +1039,8 @@ WebInspector.FlameChart.prototype = {
             var entryIndex = titleIndices[i];
             var entryStartTime = entryStartTimes[entryIndex];
             var barX = this._timeToPositionClipped(entryStartTime);
-            var barRight = this._timeToPositionClipped(entryStartTime + entryTotalTimes[entryIndex]);
-            var barWidth = Math.max(barRight - barX, minWidth);
+            var barRight = this._timeToPositionClipped(entryStartTime + entryTotalTimes[entryIndex]) + 1;
+            var barWidth = barRight - barX;
             var barLevel = entryLevels[entryIndex];
             var barY = this._levelToHeight(barLevel);
             var text = this._dataProvider.entryTitle(entryIndex);
@@ -1200,8 +1199,13 @@ WebInspector.FlameChart.prototype = {
         this._updateElementPosition(this._selectedElement, this._selectedEntryIndex);
     },
 
+    /**
+     * @param {!Element} element
+     * @param {number} entryIndex
+     */
     _updateElementPosition: function(element, entryIndex)
     {
+        /** @const */ var elementMinWidth = 2;
         if (element.parentElement)
             element.remove();
         if (entryIndex === -1)
@@ -1214,7 +1218,10 @@ WebInspector.FlameChart.prototype = {
         var barRight = this._timeToPositionClipped(timeRange.endTime);
         if (barRight === 0 || barX === this._canvas.width)
             return;
-        var barWidth = Math.max(barRight - barX, this._minWidth);
+        var barWidth = barRight - barX;
+        var barCenter = barX + barWidth / 2;
+        barWidth = Math.max(barWidth, elementMinWidth);
+        barX = barCenter - barWidth / 2;
         var barY = this._levelToHeight(timelineData.entryLevels[entryIndex]) - this._scrollTop;
         var style = element.style;
         style.left = barX + "px";
@@ -1242,11 +1249,19 @@ WebInspector.FlameChart.prototype = {
         return Math.floor((time - this._minimumBoundary) * this._timeToPixel) - this._pixelWindowLeft + this._paddingLeft;
     },
 
+    /**
+     * @param {number} level
+     * @return {number}
+     */
     _levelToHeight: function(level)
     {
          return this._baseHeight - level * this._barHeightDelta;
     },
 
+    /**
+     * @param {!Array.<!{title: string, text: string}>} entryInfo
+     * @return {!Element}
+     */
     _buildEntryInfo: function(entryInfo)
     {
         var infoTable = createElementWithClass("table", "info-table");
