@@ -690,7 +690,7 @@ WebInspector.NetworkLogView.prototype = {
 
         var calculator = this.calculator();
         calculator.setDisplayWindow(this._timelineGrid.dividersElement.clientWidth);
-        this._timelineGrid.updateDividers(calculator);
+        this._timelineGrid.updateDividers(calculator, 50);
 
         if (calculator.startAtZero) {
             // If our current sorting method starts at zero, that means it shows all
