@@ -77,7 +77,7 @@ WebInspector.CompilerScriptMapping.prototype = {
 
         var stubUISourceCode = this._stubUISourceCodes.get(debuggerModelLocation.scriptId);
         if (stubUISourceCode)
-            return new WebInspector.UILocation(stubUISourceCode, 0, 0);
+            return new WebInspector.UILocation(stubUISourceCode, rawLocation.lineNumber, rawLocation.columnNumber);
 
         var sourceMap = this._sourceMapForScriptId[debuggerModelLocation.scriptId];
         if (!sourceMap)
