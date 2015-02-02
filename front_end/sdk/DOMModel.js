@@ -2093,11 +2093,8 @@ WebInspector.DOMModel.EventListener = function(target, payload)
 {
     WebInspector.SDKObject.call(this, target);
     this._payload = payload;
-    var sourceName = this._payload.sourceName;
-    if (!sourceName) {
-        var script = target.debuggerModel.scriptForId(payload.location.scriptId);
-        sourceName = script ? script.contentURL() : "";
-    }
+    var script = target.debuggerModel.scriptForId(payload.location.scriptId);
+    var sourceName = script ? script.contentURL() : "";
     this._sourceName = sourceName;
 }
 

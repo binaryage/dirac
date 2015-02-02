@@ -83,6 +83,14 @@ WebInspector.Script.prototype = {
     },
 
     /**
+     * @return {boolean}
+     */
+    isInternalScript: function()
+    {
+        return this._isInternalScript;
+    },
+
+    /**
      * @override
      * @return {string}
      */
