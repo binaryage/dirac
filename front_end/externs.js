@@ -370,7 +370,7 @@ CodeMirror.prototype = {
     getInputField: function(){ },
     getLine: function(line) { },
     /**
-     * @return {!{wrapClass: string}}
+     * @return {!{wrapClass: string, height: number}}
      */
     getLineHandle: function(line) { },
     getLineNumber: function(line) { },

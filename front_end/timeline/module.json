@@ -16,7 +16,8 @@
         }
     ],
     "dependencies": [
-        "components"
+        "components",
+        "ui_lazy"
     ],
     "scripts": [
         "CountersGraph.js",

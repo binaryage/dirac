@@ -15,7 +15,6 @@
         "ui"
     ],
     "scripts": [
-        "CookiesTable.js",
         "NativeBreakpointsSidebarPane.js",
         "DOMBreakpointsSidebarPane.js",
         "DOMPresentationUtils.js",

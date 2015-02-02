@@ -33,7 +33,7 @@
             "settingType": "checkbox"
         }
     ],
-    "dependencies": ["source_frame"],
+    "dependencies": ["source_frame", "components_lazy", "ui_lazy"],
     "scripts": [
         "EventSourceMessagesView.js",
         "FilterSuggestionBuilder.js",
