@@ -9,7 +9,6 @@
         "treeoutline.js",
         "ActionRegistry.js",
         "ShortcutRegistry.js",
-        "CompletionDictionary.js",
         "Context.js",
         "ContextMenu.js",
         "Dialog.js",

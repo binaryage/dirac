@@ -187,12 +187,6 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
     this._setupWhitespaceHighlight();
 }
 
-/** @typedef {{canceled: boolean, from: !CodeMirror.Pos, to: !CodeMirror.Pos, text: string, origin: string, cancel: function()}} */
-WebInspector.CodeMirrorTextEditor.BeforeChangeObject;
-
-/** @typedef {{from: !CodeMirror.Pos, to: !CodeMirror.Pos, origin: string, text: !Array.<string>, removed: !Array.<string>}} */
-WebInspector.CodeMirrorTextEditor.ChangeObject;
-
 WebInspector.CodeMirrorTextEditor.maxHighlightLength = 1000;
 
 /**
@@ -336,36 +330,20 @@ CodeMirror.commands.dismissMultipleSelections = function(codemirror)
     codemirror._codeMirrorTextEditor._revealLine(selection.anchor.line);
 }
 
-/**
- * @param {!WebInspector.CodeMirrorTextEditor.ChangeObject} changeObject
- * @return {{oldRange: !WebInspector.TextRange, newRange: !WebInspector.TextRange}}
- */
-WebInspector.CodeMirrorTextEditor.changeObjectToEditOperation = function(changeObject)
-{
-    var oldRange = WebInspector.CodeMirrorUtils.toRange(changeObject.from, changeObject.to);
-    var newRange = oldRange.clone();
-    var linesAdded = changeObject.text.length;
-    if (linesAdded === 0) {
-        newRange.endLine = newRange.startLine;
-        newRange.endColumn = newRange.startColumn;
-    } else if (linesAdded === 1) {
-        newRange.endLine = newRange.startLine;
-        newRange.endColumn = newRange.startColumn + changeObject.text[0].length;
-    } else {
-        newRange.endLine = newRange.startLine + linesAdded - 1;
-        newRange.endColumn = changeObject.text[linesAdded - 1].length;
-    }
-    return {
-        oldRange: oldRange,
-        newRange: newRange
-    };
-}
-
 WebInspector.CodeMirrorTextEditor.LongLineModeLineLengthThreshold = 2000;
 WebInspector.CodeMirrorTextEditor.MaximumNumberOfWhitespacesPerSingleSpan = 16;
 WebInspector.CodeMirrorTextEditor.MaxEditableTextSize = 1024 * 1024 * 10;
 
 WebInspector.CodeMirrorTextEditor.prototype = {
+    /**
+     * @param {string=} additionalWordChars
+     * @return {!WebInspector.CodeMirrorDictionary}
+     */
+    createTextDictionary: function(additionalWordChars)
+    {
+        return new WebInspector.CodeMirrorDictionary(this._codeMirror, additionalWordChars);
+    },
+
     _enableAutocompletionIfNeeded: function()
     {
         this._autocompleteController.setEnabled(WebInspector.settings.textEditorAutocompletion.get());
@@ -1274,7 +1252,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
 
     /**
      * @param {!CodeMirror} codeMirror
-     * @param {!Array.<!WebInspector.CodeMirrorTextEditor.ChangeObject>} changes
+     * @param {!Array.<!CodeMirror.ChangeObject>} changes
      */
     _changes: function(codeMirror, changes)
     {
@@ -1293,7 +1271,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         for (var changeIndex = 0; changeIndex < changes.length; ++changeIndex) {
             var changeObject = changes[changeIndex];
 
-            var editInfo = WebInspector.CodeMirrorTextEditor.changeObjectToEditOperation(changeObject);
+            var editInfo = WebInspector.CodeMirrorUtils.changeObjectToEditOperation(changeObject);
             if (!this._muteTextChangedEvent)
                 this._delegate.onTextChanged(editInfo.oldRange, editInfo.newRange);
         }

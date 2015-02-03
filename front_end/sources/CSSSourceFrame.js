@@ -36,7 +36,7 @@
 WebInspector.CSSSourceFrame = function(uiSourceCode)
 {
     WebInspector.UISourceCodeFrame.call(this, uiSourceCode);
-    this.textEditor.setAutocompleteDelegate(new WebInspector.SimpleAutocompleteDelegate({ ".": true, "-": true }));
+    this.textEditor.setAutocompleteDelegate(new WebInspector.SimpleAutocompleteDelegate(".-"));
     this._registerShortcuts();
 }
 

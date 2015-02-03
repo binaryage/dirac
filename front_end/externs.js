@@ -470,6 +470,12 @@ CodeMirror.overlayMode = function(mode1, mode2, squashSpans) { };
 CodeMirror.defineMode = function(modeName, modeConstructor) { };
 CodeMirror.startState = function(mode) { };
 
+/** @typedef {{canceled: boolean, from: !CodeMirror.Pos, to: !CodeMirror.Pos, text: string, origin: string, cancel: function()}} */
+CodeMirror.BeforeChangeObject;
+
+/** @typedef {{from: !CodeMirror.Pos, to: !CodeMirror.Pos, origin: string, text: !Array.<string>, removed: !Array.<string>}} */
+CodeMirror.ChangeObject;
+
 /** @constructor */
 CodeMirror.Pos = function(line, ch) { }
 /** @type {number} */
@@ -613,7 +619,7 @@ Map.prototype = {
 /**
  * @constructor
  * @implements $jscomp.Iterable.<V>
- * @param {!Array.<V>|!Iterator.<V>=} iterable
+ * @param {!Array.<V>|!Iterator.<V>|string=} iterable
  * @template V
  */
 var Set = function(iterable) { }
