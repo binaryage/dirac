@@ -46,6 +46,7 @@ WebInspector.TimelinePanel = function()
     this._detailsLinkifier = new WebInspector.Linkifier();
     this._windowStartTime = 0;
     this._windowEndTime = Infinity;
+    this._millisecondsToRecordAfterLoadEvent = 3000;
 
     // Create model.
     this._tracingManager = new WebInspector.TracingManager();
@@ -644,7 +645,7 @@ WebInspector.TimelinePanel.prototype = {
      */
     _startRecording: function(userInitiated)
     {
-        this._userInitiatedRecording = userInitiated;
+        this._autoRecordGeneration = userInitiated ? null : {};
         var enableJSSampling = this._enableJSSamplingSettingSetting && this._enableJSSamplingSettingSetting.get();
         this._model.startRecording(this._captureCausesSetting.get(), enableJSSampling, this._captureMemorySetting.get(), this._captureLayersAndPicturesSetting && this._captureLayersAndPicturesSetting.get());
         if (this._lazyFrameModel)
@@ -662,7 +663,7 @@ WebInspector.TimelinePanel.prototype = {
     {
         this._stopPending = true;
         this._updateToggleTimelineButton(false);
-        this._userInitiatedRecording = false;
+        this._autoRecordGeneration = null;
         this._model.stopRecording();
         if (this._progressElement)
             this._updateProgress(WebInspector.UIString("Retrieving events\u2026"));
@@ -819,7 +820,7 @@ WebInspector.TimelinePanel.prototype = {
      */
     _willReloadPage: function(event)
     {
-        if (this._operationInProgress || this._userInitiatedRecording || !this.isShowing())
+        if (this._operationInProgress || this._recordingInProgress() || !this.isShowing())
             return;
         this._startRecording(false);
     },
@@ -829,9 +830,21 @@ WebInspector.TimelinePanel.prototype = {
      */
     _loadEventFired: function(event)
     {
-        if (!this._recordingInProgress() || this._userInitiatedRecording)
+        if (!this._recordingInProgress() || !this._autoRecordGeneration)
             return;
-        this._stopRecording();
+        setTimeout(stopRecordingOnReload.bind(this, this._autoRecordGeneration), this._millisecondsToRecordAfterLoadEvent);
+
+        /**
+         * @this {WebInspector.TimelinePanel}
+         * @param {!Object} recordGeneration
+         */
+        function stopRecordingOnReload(recordGeneration)
+        {
+            // Check if we're still in the same recording session.
+            if (this._autoRecordGeneration !== recordGeneration)
+                return;
+            this._stopRecording();
+        }
     },
 
     // WebInspector.Searchable implementation
