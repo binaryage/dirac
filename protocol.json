@@ -1405,6 +1405,15 @@
                 ],
                 "description": "Loads a resource in the context of a frame on the inspected page without cross origin checks.",
                 "hidden": true
+            },
+            {
+                "name": "setDataSizeLimitsForTest",
+                "parameters": [
+                    { "name": "maxTotalSize", "type": "integer", "description": "Maximum total buffer size." },
+                    { "name": "maxResourceSize", "type": "integer", "description": "Maximum per-resource size." }
+                ],
+                "description": "For testing.",
+                "hidden": true
             }
         ],
         "events": [
