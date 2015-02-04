@@ -280,7 +280,7 @@ WebInspector.ScreencastView.prototype = {
 
         var text = event.type === "keypress" ? String.fromCharCode(event.charCode) : undefined;
         this._target.inputAgent().dispatchKeyEvent(type, this._modifiersForEvent(event), event.timeStamp / 1000, text, text ? text.toLowerCase() : undefined,
-                                    event.keyIdentifier, event.keyCode /* windowsVirtualKeyCode */, event.keyCode /* nativeVirtualKeyCode */, false, false, false);
+                                    event.keyIdentifier, event.code, event.keyCode /* windowsVirtualKeyCode */, event.keyCode /* nativeVirtualKeyCode */, false, false, false);
         event.consume();
         this._canvasElement.focus();
     },
