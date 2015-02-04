@@ -2647,6 +2647,17 @@
                 ],
                 "description": "Returns the id of the nearest ancestor that is a relayout boundary.",
                 "hidden": true
+            },
+            {
+                "name": "getHighlightObjectForTest",
+                "parameters": [
+                    { "name": "nodeId", "$ref": "NodeId", "description": "Id of the node to get highlight object for." }
+                ],
+                "returns": [
+                    { "name": "highlight", "type": "object", "description": "Highlight data for the node." }
+                ],
+                "description": "For testing.",
+                "hidden": true
             }
         ],
         "events": [
