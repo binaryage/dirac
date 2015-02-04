@@ -95,11 +95,13 @@ WebInspector.TextEditorAutocompleteController.prototype = {
 
     /**
      * @param {!WebInspector.TextRange} mainSelection
-     * @param {!Array.<!{head: !CodeMirror.Pos, anchor: !CodeMirror.Pos}>} selections
      * @return {boolean}
      */
-    _validateSelectionsContexts: function(mainSelection, selections)
+    _validateSelectionsContexts: function(mainSelection)
     {
+        var selections = this._codeMirror.listSelections();
+        if (selections.length <= 1)
+            return true;
         var mainSelectionContext = this._textEditor.copyRange(mainSelection);
         for (var i = 0; i < selections.length; ++i) {
             var wordRange = this._delegate.substituteRange(this._textEditor, selections[i].head.line, selections[i].head.ch);
@@ -122,10 +124,9 @@ WebInspector.TextEditorAutocompleteController.prototype = {
             return;
         }
 
-        var selections = this._codeMirror.listSelections().slice();
         var cursor = this._codeMirror.getCursor("head");
         var substituteRange = this._delegate.substituteRange(this._textEditor, cursor.line, cursor.ch);
-        if (!substituteRange || substituteRange.startColumn === cursor.ch || !this._validateSelectionsContexts(substituteRange, selections)) {
+        if (!substituteRange || !this._validateSelectionsContexts(substituteRange)) {
             this.finishAutocomplete();
             return;
         }
@@ -134,6 +135,10 @@ WebInspector.TextEditorAutocompleteController.prototype = {
         prefixRange.endColumn = cursor.ch;
 
         var wordsWithPrefix = this._delegate.wordsWithPrefix(this._textEditor, prefixRange, substituteRange);
+        if (!wordsWithPrefix.length) {
+            this.finishAutocomplete();
+            return;
+        }
 
         if (!this._suggestBox)
             this._suggestBox = new WebInspector.SuggestBox(this, 6);
@@ -144,10 +149,13 @@ WebInspector.TextEditorAutocompleteController.prototype = {
         this._suggestBox.updateSuggestions(this._anchorBox, wordsWithPrefix, 0, true, this._textEditor.copyRange(prefixRange));
         if (!this._suggestBox.visible())
             this.finishAutocomplete();
-        this._onSuggestionsShownForTest();
+        this._onSuggestionsShownForTest(wordsWithPrefix);
     },
 
-    _onSuggestionsShownForTest: function() { },
+    /**
+     * @param {!Array.<string>} suggestions
+     */
+    _onSuggestionsShownForTest: function(suggestions) { },
 
     finishAutocomplete: function()
     {
@@ -250,7 +258,7 @@ WebInspector.TextEditorAutocompleteDelegate.prototype = {
      * @param {!WebInspector.CodeMirrorTextEditor} editor
      * @param {number} lineNumber
      * @param {number} columnNumber
-     * @return {!WebInspector.TextRange}
+     * @return {?WebInspector.TextRange}
      */
     substituteRange: function(editor, lineNumber, columnNumber) {},
 
@@ -308,7 +316,7 @@ WebInspector.SimpleAutocompleteDelegate.prototype = {
      * @param {!WebInspector.CodeMirrorTextEditor} editor
      * @param {number} lineNumber
      * @param {number} columnNumber
-     * @return {!WebInspector.TextRange}
+     * @return {?WebInspector.TextRange}
      */
     substituteRange: function(editor, lineNumber, columnNumber)
     {
@@ -324,6 +332,9 @@ WebInspector.SimpleAutocompleteDelegate.prototype = {
      */
     wordsWithPrefix: function(editor, prefixRange, substituteRange)
     {
+        if (prefixRange.startColumn === prefixRange.endColumn)
+            return [];
+
         var dictionary = this._dictionary;
         var completions = dictionary.wordsWithPrefix(editor.copyRange(prefixRange));
         var substituteWord = editor.copyRange(substituteRange);

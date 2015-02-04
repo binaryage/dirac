@@ -363,7 +363,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
 
         var selection = selections[0];
         var token = this.tokenAtTextPosition(selection.startLine, selection.startColumn);
-        if (!token || token.type.indexOf("string") === -1)
+        if (!token || !token.type || token.type.indexOf("string") === -1)
             return CodeMirror.Pass;
         var line = this.line(selection.startLine);
         var tokenValue = line.substring(token.startColumn, token.endColumn);
@@ -791,7 +791,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         if (lineNumber < 0 || lineNumber >= this._codeMirror.lineCount())
             return null;
         var token = this._codeMirror.getTokenAt(new CodeMirror.Pos(lineNumber, (column || 0) + 1));
-        if (!token || !token.type)
+        if (!token)
             return null;
         return {
             startColumn: token.start,

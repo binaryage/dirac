@@ -520,7 +520,7 @@ WebInspector.JavaScriptSourceFrame.prototype = {
         }
 
         var token = this.textEditor.tokenAtTextPosition(textPosition.startLine, textPosition.startColumn);
-        if (!token)
+        if (!token || !token.type)
             return;
         var lineNumber = textPosition.startLine;
         var line = this.textEditor.line(lineNumber);
@@ -557,7 +557,7 @@ WebInspector.JavaScriptSourceFrame.prototype = {
         if (!anchorBox.forSelection) {
             while (startHighlight > 1 && line.charAt(startHighlight - 1) === '.') {
                 var token = this.textEditor.tokenAtTextPosition(lineNumber, startHighlight - 2);
-                if (!token) {
+                if (!token || !token.type) {
                     this._popoverHelper.hidePopover();
                     return;
                 }
