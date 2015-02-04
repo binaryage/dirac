@@ -3891,7 +3891,7 @@
             {
                 "id": "LayerId",
                 "type": "string",
-                "description": "Unique RenderLayer identifier."
+                "description": "Unique Layer identifier."
             },
             {
                 "id": "Layer",

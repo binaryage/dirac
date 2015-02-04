@@ -4388,7 +4388,7 @@
             {
                 "id": "LayerId",
                 "type": "string",
-                "description": "Unique RenderLayer identifier."
+                "description": "Unique Layer identifier."
             },
             {
                 "id": "SnapshotId",
