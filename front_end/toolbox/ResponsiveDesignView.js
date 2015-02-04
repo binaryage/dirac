@@ -17,59 +17,7 @@ WebInspector.ResponsiveDesignView = function(inspectedPagePlaceholder)
     this.registerRequiredCSS("toolbox/responsiveDesignView.css");
 
     this._responsiveDesignContainer = new WebInspector.VBox();
-
-    this._createToolbar();
-
-    this._canvasContainer = new WebInspector.View();
-    this._canvasContainer.element.classList.add("responsive-design");
-    this._canvasContainer.show(this._responsiveDesignContainer.element);
-
-    this._canvas = this._canvasContainer.element.createChild("canvas", "fill responsive-design-canvas");
-
-    this._mediaInspectorContainer = this._canvasContainer.element.createChild("div", "responsive-design-media-container");
-    this._mediaInspector = new WebInspector.MediaQueryInspector();
-    this._updateMediaQueryInspector();
-
-    this._warningMessage = this._canvasContainer.element.createChild("div", "responsive-design-warning hidden");
-    this._warningMessage.createChild("div", "warning-icon-small");
-    this._warningMessage.createChild("span");
-    var warningDisableButton = this._warningMessage.createChild("div", "disable-warning");
-    warningDisableButton.textContent = WebInspector.UIString("Never show");
-    warningDisableButton.addEventListener("click", this._disableOverridesWarnings.bind(this), false);
-    var warningCloseButton = this._warningMessage.createChild("div", "close-button");
-    warningCloseButton.addEventListener("click", WebInspector.overridesSupport.clearWarningMessage.bind(WebInspector.overridesSupport), false);
-    WebInspector.overridesSupport.addEventListener(WebInspector.OverridesSupport.Events.OverridesWarningUpdated, this._overridesWarningUpdated, this);
-    WebInspector.settings.disableOverridesWarning.addChangeListener(this._overridesWarningUpdated, this);
-
-    this._slidersContainer = this._canvasContainer.element.createChild("div", "vbox responsive-design-sliders-container");
-    var genericDeviceOutline = this._slidersContainer.createChild("div", "responsive-design-generic-outline-container");
-    genericDeviceOutline.createChild("div", "responsive-design-generic-outline");
-    var widthSlider = this._slidersContainer.createChild("div", "responsive-design-slider-width");
-    widthSlider.createChild("div", "responsive-design-thumb-handle");
-    this._createResizer(widthSlider, true, false);
-    var heightSlider = this._slidersContainer.createChild("div", "responsive-design-slider-height");
-    heightSlider.createChild("div", "responsive-design-thumb-handle");
-    this._createResizer(heightSlider, false, true);
-    var cornerSlider = this._slidersContainer.createChild("div", "responsive-design-slider-corner");
-    this._createResizer(cornerSlider, true, true);
-    this._pageContainer = this._slidersContainer.createChild("div", "vbox flex-auto");
-
-    // Page scale controls.
-    this._pageScaleContainer = this._canvasContainer.element.createChild("div", "hbox responsive-design-page-scale-container");
-    this._decreasePageScaleButton = this._pageScaleContainer.createChild("button", "responsive-design-page-scale-button responsive-design-page-scale-decrease");
-    this._decreasePageScaleButton.createChild("div", "glyph");
-    this._decreasePageScaleButton.tabIndex = -1;
-    this._decreasePageScaleButton.addEventListener("click", this._pageScaleButtonClicked.bind(this, false), false);
-
-    this._pageScaleLabel = this._pageScaleContainer.createChild("label", "responsive-design-page-scale-label");
-    this._pageScaleLabel.title = WebInspector.UIString("For a simpler way to change the current page scale, hold down Shift and drag with your mouse.");
-    this._pageScaleLabel.addEventListener("dblclick", this._resetPageScale.bind(this), false);
-
-
-    this._increasePageScaleButton = this._pageScaleContainer.createChild("button", "responsive-design-page-scale-button responsive-design-page-scale-increase");
-    this._increasePageScaleButton.tabIndex = -1;
-    this._increasePageScaleButton.createChild("div", "glyph");
-    this._increasePageScaleButton.addEventListener("click", this._pageScaleButtonClicked.bind(this, true), false);
+    this._uiInitialized = false;
 
     this._inspectedPagePlaceholder = inspectedPagePlaceholder;
     inspectedPagePlaceholder.show(this.element);
@@ -82,12 +30,8 @@ WebInspector.ResponsiveDesignView = function(inspectedPagePlaceholder)
 
     WebInspector.zoomManager.addEventListener(WebInspector.ZoomManager.Events.ZoomChanged, this._onZoomChanged, this);
     WebInspector.overridesSupport.addEventListener(WebInspector.OverridesSupport.Events.EmulationStateChanged, this._emulationEnabledChanged, this);
-    this._mediaInspector.addEventListener(WebInspector.MediaQueryInspector.Events.CountUpdated, this._updateMediaQueryInspectorButton, this);
-    this._mediaInspector.addEventListener(WebInspector.MediaQueryInspector.Events.HeightUpdated, this.onResize, this);
     WebInspector.targetManager.observeTargets(this);
-
     this._emulationEnabledChanged();
-    this._overridesWarningUpdated();
 };
 
 // Measured in DIP.
@@ -97,6 +41,69 @@ WebInspector.ResponsiveDesignView.RulerTopHeight = 11;
 WebInspector.ResponsiveDesignView.RulerBottomHeight = 9;
 
 WebInspector.ResponsiveDesignView.prototype = {
+    _ensureUIInitialized: function()
+    {
+        if (this._uiInitialized)
+            return;
+
+        this._uiInitialized = true;
+
+        this._createToolbar();
+
+        this._canvasContainer = new WebInspector.View();
+        this._canvasContainer.element.classList.add("responsive-design");
+        this._canvasContainer.show(this._responsiveDesignContainer.element);
+
+        this._canvas = this._canvasContainer.element.createChild("canvas", "fill responsive-design-canvas");
+
+        this._mediaInspectorContainer = this._canvasContainer.element.createChild("div", "responsive-design-media-container");
+        this._mediaInspector = new WebInspector.MediaQueryInspector();
+        this._updateMediaQueryInspector();
+
+        this._warningMessage = this._canvasContainer.element.createChild("div", "responsive-design-warning hidden");
+        this._warningMessage.createChild("div", "warning-icon-small");
+        this._warningMessage.createChild("span");
+        var warningDisableButton = this._warningMessage.createChild("div", "disable-warning");
+        warningDisableButton.textContent = WebInspector.UIString("Never show");
+        warningDisableButton.addEventListener("click", this._disableOverridesWarnings.bind(this), false);
+        var warningCloseButton = this._warningMessage.createChild("div", "close-button");
+        warningCloseButton.addEventListener("click", WebInspector.overridesSupport.clearWarningMessage.bind(WebInspector.overridesSupport), false);
+        WebInspector.overridesSupport.addEventListener(WebInspector.OverridesSupport.Events.OverridesWarningUpdated, this._overridesWarningUpdated, this);
+        WebInspector.settings.disableOverridesWarning.addChangeListener(this._overridesWarningUpdated, this);
+
+        this._slidersContainer = this._canvasContainer.element.createChild("div", "vbox responsive-design-sliders-container");
+        var genericDeviceOutline = this._slidersContainer.createChild("div", "responsive-design-generic-outline-container");
+        genericDeviceOutline.createChild("div", "responsive-design-generic-outline");
+        var widthSlider = this._slidersContainer.createChild("div", "responsive-design-slider-width");
+        widthSlider.createChild("div", "responsive-design-thumb-handle");
+        this._createResizer(widthSlider, true, false);
+        var heightSlider = this._slidersContainer.createChild("div", "responsive-design-slider-height");
+        heightSlider.createChild("div", "responsive-design-thumb-handle");
+        this._createResizer(heightSlider, false, true);
+        var cornerSlider = this._slidersContainer.createChild("div", "responsive-design-slider-corner");
+        this._createResizer(cornerSlider, true, true);
+        this._pageContainer = this._slidersContainer.createChild("div", "vbox flex-auto");
+
+        // Page scale controls.
+        this._pageScaleContainer = this._canvasContainer.element.createChild("div", "hbox responsive-design-page-scale-container");
+        this._decreasePageScaleButton = this._pageScaleContainer.createChild("button", "responsive-design-page-scale-button responsive-design-page-scale-decrease");
+        this._decreasePageScaleButton.createChild("div", "glyph");
+        this._decreasePageScaleButton.tabIndex = -1;
+        this._decreasePageScaleButton.addEventListener("click", this._pageScaleButtonClicked.bind(this, false), false);
+
+        this._pageScaleLabel = this._pageScaleContainer.createChild("label", "responsive-design-page-scale-label");
+        this._pageScaleLabel.title = WebInspector.UIString("For a simpler way to change the current page scale, hold down Shift and drag with your mouse.");
+        this._pageScaleLabel.addEventListener("dblclick", this._resetPageScale.bind(this), false);
+
+        this._increasePageScaleButton = this._pageScaleContainer.createChild("button", "responsive-design-page-scale-button responsive-design-page-scale-increase");
+        this._increasePageScaleButton.tabIndex = -1;
+        this._increasePageScaleButton.createChild("div", "glyph");
+        this._increasePageScaleButton.addEventListener("click", this._pageScaleButtonClicked.bind(this, true), false);
+
+        this._mediaInspector.addEventListener(WebInspector.MediaQueryInspector.Events.CountUpdated, this._updateMediaQueryInspectorButton, this);
+        this._mediaInspector.addEventListener(WebInspector.MediaQueryInspector.Events.HeightUpdated, this.onResize, this);
+        this._overridesWarningUpdated();
+    },
 
     /**
      * @override
@@ -139,18 +146,20 @@ WebInspector.ResponsiveDesignView.prototype = {
     _emulationEnabledChanged: function()
     {
         var enabled = WebInspector.overridesSupport.emulationEnabled();
-        this._mediaInspector.setEnabled(enabled);
         if (enabled && !this._enabled) {
             WebInspector.userMetrics.DeviceModeEnabled.record();
             this._invalidateCache();
             this._ignoreResize = true;
             this._enabled = true;
+            this._ensureUIInitialized();
+            this._mediaInspector.setEnabled(true);
             this._inspectedPagePlaceholder.clearMinimumSizeAndMargins();
             this._inspectedPagePlaceholder.show(this._pageContainer);
             this._responsiveDesignContainer.show(this.element);
             delete this._ignoreResize;
             this.onResize();
         } else if (!enabled && this._enabled) {
+            this._mediaInspector.setEnabled(false);
             this._invalidateCache();
             this._ignoreResize = true;
             this._enabled = false;
@@ -189,6 +198,8 @@ WebInspector.ResponsiveDesignView.prototype = {
     _availableDipSize: function()
     {
         if (typeof this._availableSize === "undefined") {
+            if (!this._enabled)
+                return new Size(1, 1);
             var zoomFactor = WebInspector.zoomManager.zoomFactor();
             var rect = this._canvasContainer.element.getBoundingClientRect();
             var rulerTotalHeight = this._rulerTotalHeightDIP();
