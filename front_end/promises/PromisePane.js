@@ -10,16 +10,43 @@
 WebInspector.PromisePane = function()
 {
     WebInspector.VBox.call(this);
+    this.registerRequiredCSS("ui/filter.css");
     this.registerRequiredCSS("promises/promisePane.css");
     this.element.classList.add("promises");
 
     var statusBar = new WebInspector.StatusBar(this.element);
-    this._recordButton = new WebInspector.StatusBarButton(WebInspector.UIString("Record Promises"), "record-status-bar-item");
+    this._recordButton = new WebInspector.StatusBarButton("", "record-status-bar-item");
     this._recordButton.addEventListener("click", this._recordButtonClicked.bind(this));
     statusBar.appendStatusBarItem(this._recordButton);
     var clearButton = new WebInspector.StatusBarButton(WebInspector.UIString("Clear"), "clear-status-bar-item");
     clearButton.addEventListener("click", this._clearButtonClicked.bind(this));
     statusBar.appendStatusBarItem(clearButton);
+    this._filterBar = new WebInspector.FilterBar();
+    statusBar.appendStatusBarItem(this._filterBar.filterButton());
+
+    // Filter UI controls.
+    this._hiddenByFilterCount = 0;
+    this._filtersContainer = this.element.createChild("div", "promises-filters-header hidden");
+    this._filtersContainer.appendChild(this._filterBar.filtersElement());
+    this._filterBar.addEventListener(WebInspector.FilterBar.Events.FiltersToggled, this._onFiltersToggled, this);
+    this._filterBar.setName("promisePane");
+
+    var statuses = [
+        { name: "pending", label: WebInspector.UIString("Pending") },
+        { name: "resolved", label: WebInspector.UIString("Fulfilled") },
+        { name: "rejected", label: WebInspector.UIString("Rejected") }
+    ];
+    this._promiseStatusFiltersSetting = WebInspector.settings.createSetting("promiseStatusFilters", {});
+    this._statusFilterUI = new WebInspector.NamedBitSetFilterUI(statuses, this._promiseStatusFiltersSetting);
+    this._statusFilterUI.addEventListener(WebInspector.FilterUI.Events.FilterChanged, this._filtersChanged, this);
+    this._filterBar.addFilter(this._statusFilterUI);
+
+    this._filterStatusMessageElement = this.element.createChild("div", "promises-filter-status hidden");
+    this._filterStatusTextElement = this._filterStatusMessageElement.createChild("span");
+    this._filterStatusMessageElement.createTextChild(" ");
+    var resetFiltersLink = this._filterStatusMessageElement.createChild("span", "link");
+    resetFiltersLink.textContent = WebInspector.UIString("Show all promises.");
+    resetFiltersLink.addEventListener("click", this._resetFilters.bind(this), true);
 
     this._dataGridContainer = new WebInspector.VBox();
     this._dataGridContainer.show(this.element);
@@ -117,10 +144,8 @@ WebInspector.PromisePane.prototype = {
     {
         // Auto enable upon the very first show.
         if (typeof this._enabled === "undefined") {
-            this._enabled = true;
-            this._recordButton.setToggled(true);
             this._target = WebInspector.context.flavor(WebInspector.Target);
-            WebInspector.targetManager.targets().forEach(this._enablePromiseTracker, this);
+            this._updateRecordingState(true);
         }
     },
 
@@ -153,8 +178,17 @@ WebInspector.PromisePane.prototype = {
 
     _recordButtonClicked: function()
     {
-        this._enabled = !this._recordButton.toggled();
+        this._updateRecordingState(!this._recordButton.toggled());
+    },
+
+    /**
+     * @param {boolean} enabled
+     */
+    _updateRecordingState: function(enabled)
+    {
+        this._enabled = enabled;
         this._recordButton.setToggled(this._enabled);
+        this._recordButton.setTitle(this._enabled ? WebInspector.UIString("Stop Recording Promises Log") : WebInspector.UIString("Record Promises Log"));
         WebInspector.targetManager.targets().forEach(this._enabled ? this._enablePromiseTracker : this._disablePromiseTracker, this);
     },
 
@@ -163,6 +197,31 @@ WebInspector.PromisePane.prototype = {
         this._clear();
         if (this._target)
             this._promiseDetailsByTarget.delete(this._target);
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _onFiltersToggled: function(event)
+    {
+        var toggled = /** @type {boolean} */ (event.data);
+        this._filtersContainer.classList.toggle("hidden", !toggled);
+    },
+
+    _filtersChanged: function()
+    {
+        this._refresh();
+    },
+
+    _resetFilters: function()
+    {
+        this._promiseStatusFiltersSetting.set({});
+    },
+
+    _updateFilterStatus: function()
+    {
+        this._filterStatusTextElement.textContent = WebInspector.UIString(this._hiddenByFilterCount === 1 ? "%d promise is hidden by filters." : "%d promises are hidden by filters.", this._hiddenByFilterCount);
+        this._filterStatusMessageElement.classList.toggle("hidden", !this._hiddenByFilterCount);
     },
 
     /**
@@ -181,10 +240,18 @@ WebInspector.PromisePane.prototype = {
             promiseIdToDetails = new Map();
             this._promiseDetailsByTarget.set(target, promiseIdToDetails)
         }
+        var previousDetails = promiseIdToDetails.get(details.id);
         promiseIdToDetails.set(details.id, details);
 
         if (target === this._target)
             this._attachDataGridNode(details);
+
+        var wasVisible = !previousDetails || this._statusFilterUI.accept(previousDetails.status);
+        var isVisible = this._statusFilterUI.accept(details.status);
+        if (wasVisible !== isVisible) {
+            this._hiddenByFilterCount += wasVisible ? 1 : -1;
+            this._updateFilterStatus();
+        }
     },
 
     /**
@@ -194,16 +261,40 @@ WebInspector.PromisePane.prototype = {
     {
         var scrolledToBottom = this._dataGrid.scrollContainer.isScrolledToBottom();
         var node = this._createDataGridNode(details);
-        var parentId = details.parentId;
-        var parentNode = (parentId && this._promiseIdToNode.get(parentId)) || this._dataGrid.rootNode();
-        if (parentNode !== node.parent) {
+        var parentNode = this._findVisibleParentNodeDetails(details);
+        if (parentNode !== node.parent)
             parentNode.appendChild(node);
-            parentNode.expanded = true;
-        }
         if (details.__isGarbageCollected)
             node.element().classList.add("promise-gc");
+        if (this._statusFilterUI.accept(details.status))
+            parentNode.expanded = true;
+        else
+            node.remove();
         if (scrolledToBottom)
             this._dataGrid.scrollContainer.scrollTop = this._dataGrid.scrollContainer.scrollHeight;
+    },
+
+    /**
+     * @param {!DebuggerAgent.PromiseDetails} details
+     * @return {!WebInspector.DataGridNode}
+     */
+    _findVisibleParentNodeDetails: function(details)
+    {
+        var promiseIdToDetails = this._promiseDetailsByTarget.get(this._target);
+        while (details) {
+            var parentId = details.parentId;
+            if (typeof parentId !== "number")
+                break;
+            details = promiseIdToDetails.get(parentId);
+            if (!details)
+                break;
+            if (!this._statusFilterUI.accept(details.status))
+                continue;
+            var node = this._promiseIdToNode.get(details.id);
+            if (node)
+                return node;
+        }
+        return this._dataGrid.rootNode();
     },
 
     /**
@@ -261,28 +352,33 @@ WebInspector.PromisePane.prototype = {
         for (var pair of promiseIdToDetails) {
             var id = /** @type {number} */ (pair[0]);
             var details = /** @type {!DebuggerAgent.PromiseDetails} */ (pair[1]);
-            nodesToInsert[id] = {
-                parentId: details.parentId,
-                node: this._createDataGridNode(details),
-                gc: details.__isGarbageCollected
-            };
+            if (!this._statusFilterUI.accept(details.status)) {
+                ++this._hiddenByFilterCount;
+                continue;
+            }
+            nodesToInsert[id] = { details: details, node: this._createDataGridNode(details) };
         }
+
         for (var id in nodesToInsert) {
             var node = nodesToInsert[id].node;
-            var parentId = nodesToInsert[id].parentId;
-            var parentNode = (parentId && nodesToInsert[parentId]) ? nodesToInsert[parentId].node : rootNode;
-            parentNode.appendChild(node);
+            var details = nodesToInsert[id].details;
+            this._findVisibleParentNodeDetails(details).appendChild(node);
         }
+
         for (var id in nodesToInsert) {
             var node = nodesToInsert[id].node;
+            var details = nodesToInsert[id].details;
             node.expanded = true;
-            if (nodesToInsert[id].gc)
+            if (details.__isGarbageCollected)
                 node.element().classList.add("promise-gc");
         }
+
+        this._updateFilterStatus();
     },
 
     _clear: function()
     {
+        this._hiddenByFilterCount = 0;
         this._promiseIdToNode.clear();
         this._hidePopover();
         this._dataGrid.rootNode().removeChildren();
