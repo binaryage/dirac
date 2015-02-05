@@ -18,11 +18,20 @@ WebInspector.PromisePane = function()
     this._recordButton = new WebInspector.StatusBarButton("", "record-status-bar-item");
     this._recordButton.addEventListener("click", this._recordButtonClicked.bind(this));
     statusBar.appendStatusBarItem(this._recordButton);
+
     var clearButton = new WebInspector.StatusBarButton(WebInspector.UIString("Clear"), "clear-status-bar-item");
     clearButton.addEventListener("click", this._clearButtonClicked.bind(this));
     statusBar.appendStatusBarItem(clearButton);
+
     this._filterBar = new WebInspector.FilterBar();
     statusBar.appendStatusBarItem(this._filterBar.filterButton());
+
+    var garbageCollectButton = new WebInspector.StatusBarButton(WebInspector.UIString("Collect garbage"), "garbage-collect-status-bar-item");
+    garbageCollectButton.addEventListener("click", this._garbageCollectButtonClicked, this);
+    statusBar.appendStatusBarItem(garbageCollectButton);
+
+    var asyncCheckbox = new WebInspector.StatusBarCheckbox(WebInspector.UIString("Async"), WebInspector.UIString("Capture async stack traces"), WebInspector.settings.enableAsyncStackTraces);
+    statusBar.appendStatusBarItem(asyncCheckbox);
 
     // Filter UI controls.
     this._hiddenByFilterCount = 0;
@@ -224,6 +233,13 @@ WebInspector.PromisePane.prototype = {
         this._filterStatusMessageElement.classList.toggle("hidden", !this._hiddenByFilterCount);
     },
 
+    _garbageCollectButtonClicked: function()
+    {
+        var targets = WebInspector.targetManager.targets();
+        for (var i = 0; i < targets.length; ++i)
+            targets[i].heapProfilerAgent().collectGarbage();
+    },
+
     /**
      * @param {!WebInspector.Event} event
      */
@@ -303,18 +319,23 @@ WebInspector.PromisePane.prototype = {
      */
     _createDataGridNode: function(details)
     {
-        var statusElement = createElementWithClass("div", "status " + details.status);
+        var title = "";
         switch (details.status) {
         case "pending":
-            statusElement.title = WebInspector.UIString("Pending");
+            title = WebInspector.UIString("Pending");
             break;
         case "resolved":
-            statusElement.title = WebInspector.UIString("Fulfilled");
+            title = WebInspector.UIString("Fulfilled");
             break;
         case "rejected":
-            statusElement.title = WebInspector.UIString("Rejected");
+            title = WebInspector.UIString("Rejected");
             break;
         }
+        if (details.__isGarbageCollected)
+            title += " " + WebInspector.UIString("(garbage collected)");
+
+        var statusElement = createElementWithClass("div", "status " + details.status);
+        statusElement.title = title;
         var data = {
             status: statusElement,
             promiseId: details.id,
