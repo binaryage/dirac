@@ -1109,11 +1109,8 @@ WebInspector.TimelineModel.prototype = {
             break;
 
         case recordTypes.Animation:
-            // FIXME: consider exposing animation state transitions.
-            if (event.phase === WebInspector.TracingModel.Phase.NestableAsyncInstant)
-                return false;
-            event.backendNodeId = eventData["nodeId"];
-            break;
+            // FIXME: bring back Animation events as we figure out a way to show them while not cluttering the UI.
+            return false;
         }
         return true;
     },
