@@ -37,7 +37,7 @@
 WebInspector.ElementsTreeElement = function(node, elementCloseTag)
 {
     // The title will be updated in onattach.
-    TreeElement.call(this, "", node);
+    TreeElement.call(this, "", elementCloseTag ? null : node);
     this._node = node;
 
     this._elementCloseTag = elementCloseTag;

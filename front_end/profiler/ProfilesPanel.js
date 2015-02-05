@@ -1004,6 +1004,7 @@ WebInspector.ProfileTypeSidebarSection.prototype = {
             if (groupElements.length === 1) {
                 // Move the last profile out of its group and remove the group.
                 var pos = sidebarParent.children.indexOf(group.sidebarTreeElement);
+                group.sidebarTreeElement.removeChild(groupElements[0]);
                 this.insertChild(groupElements[0], pos);
                 groupElements[0].small = false;
                 groupElements[0].mainTitle = group.sidebarTreeElement.title;

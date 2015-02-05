@@ -121,6 +121,8 @@ TreeContainerNode.prototype = {
         if (!child)
             throw("child can't be undefined or null");
 
+        console.assert(!child.parent, "Attempting to insert a child that is already in the tree, reparenting is not supported.");
+
         var previousChild = (index > 0 ? this.children[index - 1] : null);
         if (previousChild) {
             previousChild.nextSibling = child;
@@ -333,6 +335,9 @@ TreeOutline.prototype = {
     _rememberTreeElement: function(element)
     {
         var elements = this._treeElementsMap.get(element.representedObject);
+        console.assert(!elements, "A tree element with given represented object already exists" + (elements ? ": " + elements[0].textContent : ""));
+        if (elements)
+            console.error(element.representedObject);
         if (!elements) {
             elements = [];
             this._treeElementsMap.set(element.representedObject, elements);
