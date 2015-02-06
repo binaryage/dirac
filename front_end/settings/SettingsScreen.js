@@ -701,9 +701,9 @@ WebInspector.DevicesSettingsTab.prototype = {
         fields.appendChild(this._editDeviceTitle);
 
         var screen = fields.createChild("div", "hbox");
-        this._editDeviceWidth = this._createNumericInput(WebInspector.UIString("Width"), "100px");
+        this._editDeviceWidth = this._createNumericInput(WebInspector.UIString("Width"), "120px");
         screen.appendChild(this._editDeviceWidth);
-        this._editDeviceHeight = this._createNumericInput(WebInspector.UIString("Height"), "100px");
+        this._editDeviceHeight = this._createNumericInput(WebInspector.UIString("Height"), "120px");
         screen.appendChild(this._editDeviceHeight);
         this._editDeviceScale = this._createNumericInput(WebInspector.UIString("Device pixel ratio"));
         screen.appendChild(this._editDeviceScale);
@@ -741,11 +741,11 @@ WebInspector.DevicesSettingsTab.prototype = {
         function onKeyDown(event)
         {
             if (event.keyCode === WebInspector.KeyboardShortcut.Keys.Esc.code) {
-                event.consume();
+                event.consume(true);
                 this._stopEditing();
             }
             if (isEnterKey(event)) {
-                event.consume();
+                event.consume(true);
                 if (!this._editDeviceCommitButton.disabled)
                     this._editDeviceCommitClicked();
             }
@@ -841,6 +841,7 @@ WebInspector.DevicesSettingsTab.prototype = {
         if (this._editDeviceElement.parentElement)
             this._devicesList.removeChild(this._editDeviceElement);
         this._addCustomButton.disabled = false;
+        this._addCustomButton.focus();
     },
 
     __proto__: WebInspector.SettingsTab.prototype

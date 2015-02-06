@@ -350,7 +350,7 @@ body.dock-to-bottom .help-content {
 }
 
 #devices-tab-content .devices-list {
-    width: 300px;
+    width: 350px;
     overflow-y: auto;
     margin: 10px 0;
     border: 1px solid rgb(231, 231, 231);
