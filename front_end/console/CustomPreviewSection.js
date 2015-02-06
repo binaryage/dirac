@@ -98,7 +98,7 @@ WebInspector.CustomPreviewSection.prototype = {
 
         var array = /** @type {!Array.<*>} */(jsonML);
         if (array[0] === "object")
-            return this._renderObjectTag(array);
+            return this._layoutObjectTag(array);
         else
             return this._renderElement(array);
     },
@@ -135,7 +135,7 @@ WebInspector.CustomPreviewSection.prototype = {
      * @param {!Array.<*>} objectTag
      * @return {!Node}
      */
-    _renderObjectTag: function(objectTag)
+    _layoutObjectTag: function(objectTag)
     {
         objectTag.shift();
         var attributes = objectTag.shift();
