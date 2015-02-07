@@ -103,7 +103,7 @@ WebInspector.FlameChart = function(dataProvider, flameChartDelegate, isTopDown)
     this._textWidth = {};
 }
 
-WebInspector.FlameChart.DividersBarHeight = 20;
+WebInspector.FlameChart.DividersBarHeight = 18;
 
 WebInspector.FlameChart.MinimalTimeWindowMs = 0.01;
 
@@ -1012,7 +1012,7 @@ WebInspector.FlameChart.prototype = {
                     context.arc(barX, barY + barHeight / 2, this._markerRadius, 0, Math.PI * 2);
                     markerIndices[nextMarkerIndex++] = entryIndex;
                 } else {
-                    context.rect(barX, barY, barWidth, barHeight);
+                    context.rect(barX, barY, barWidth, barHeight - 1);
                     if (barWidth > minTextWidth || this._dataProvider.forceDecoration(entryIndex))
                         titleIndices[nextTitleIndex++] = entryIndex;
                 }
@@ -1226,8 +1226,8 @@ WebInspector.FlameChart.prototype = {
         var style = element.style;
         style.left = barX + "px";
         style.top = barY + "px";
-        style.width = barWidth + "px";
-        style.height = this._barHeight + "px";
+        style.width = barWidth + 1 + "px";
+        style.height = this._barHeight - 1 + "px";
         this.contentElement.appendChild(element);
     },
 

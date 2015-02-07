@@ -40,7 +40,7 @@ WebInspector.TimelineFlameChartDataProvider = function(model, frameModel)
     this.reset();
     this._model = model;
     this._frameModel = frameModel;
-    this._font = "12px " + WebInspector.fontFamily();
+    this._font = "11px " + WebInspector.fontFamily();
     this._linkifier = new WebInspector.Linkifier();
     this._filters = [];
     this.addFilter(WebInspector.TimelineUIUtils.hiddenEventsFilter());
@@ -71,7 +71,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
      */
     barHeight: function()
     {
-        return 20;
+        return 17;
     },
 
     /**
@@ -80,7 +80,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
      */
     textBaseline: function()
     {
-        return 6;
+        return 5;
     },
 
     /**
@@ -89,7 +89,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
      */
     textPadding: function()
     {
-        return 5;
+        return 4;
     },
 
     /**
@@ -384,7 +384,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
     {
         var event = this._entryEvents[entryIndex];
         if (!event)
-            return this._entryIndexToFrame[entryIndex] ? "white" : "#555";
+            return this._entryIndexToFrame[entryIndex] ? "white" : "#aaa";
         if (event.name === WebInspector.TimelineModel.RecordType.JSFrame)
             return this._timelineData.entryLevels[entryIndex] % 2 ? "#efb320" : "#fcc02d";
         var category = WebInspector.TimelineUIUtils.eventStyle(event).category;
@@ -418,39 +418,38 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
         var frame = this._entryIndexToFrame[entryIndex];
         if (frame) {
             context.save();
+            var /** @const */ vPadding = 2;
+            var /** @const */ hPadding = 3;
+            barX += hPadding;
+            barWidth -= 2 * hPadding;
+            barY += vPadding;
+            barHeight -= 2 * vPadding;
+
+            context.fillStyle = "#ccc";
+            context.fillRect(barX, barY, barWidth, barHeight);
+
+            if (barWidth > 10) {
+                // Draw frame perforation.
+                context.fillStyle = "white";
+                for (var i = 0; i < barHeight; i += 3) {
+                    context.fillRect(barX + 1, barY + i, 2, 2);
+                    context.fillRect(barX + barWidth - 2, barY + i, 2, 2);
+                }
+            }
+
             context.translate(0.5, 0.5);
-            var padding = 4;
-            barX += padding;
-            barWidth -= 2 * padding;
-            barY += padding;
-            barHeight -= 2 * padding;
-
-            var cornerRadis = 3;
-            var radiusY = cornerRadis;
-            var radiusX = Math.min(cornerRadis, barWidth / 2);
-
-            context.beginPath();
-            context.moveTo(barX + radiusX, barY);
-            context.lineTo(barX + barWidth - radiusX, barY);
-            context.quadraticCurveTo(barX + barWidth, barY, barX + barWidth, barY + radiusY);
-            context.lineTo(barX + barWidth, barY + barHeight - radiusY);
-            context.quadraticCurveTo(barX + barWidth, barY + barHeight, barX + barWidth - radiusX, barY + barHeight);
-            context.lineTo(barX + radiusX, barY + barHeight);
-            context.quadraticCurveTo(barX, barY + barHeight, barX, barY + barHeight - radiusY);
-            context.lineTo(barX, barY + radiusY);
-            context.quadraticCurveTo(barX, barY, barX + radiusX, barY);
-            context.closePath();
-
-            context.fillStyle = "rgba(200, 200, 200, 0.8)";
-            context.fill();
-            context.strokeStyle = "rgba(150, 150, 150, 0.8)";
+            context.moveTo(barX, barY);
+            context.lineTo(barX, barY + barHeight - 1);
+            context.moveTo(barX + barWidth, barY);
+            context.lineTo(barX + barWidth, barY + barHeight - 1);
+            context.strokeStyle = "#aaa";
             context.stroke();
 
-            var frameDurationText = Number.millisToString(frame.duration, true);
+            var frameDurationText = Number.preciseMillisToString(frame.duration, 1);
             var textWidth = context.measureText(frameDurationText).width;
             if (barWidth > textWidth) {
-                context.fillStyle = "#555";
-                context.fillText(frameDurationText, barX + ((barWidth - textWidth) >> 1), barY + barHeight - 2);
+                context.fillStyle = "#333";
+                context.fillText(frameDurationText, barX + ((barWidth - textWidth) >> 1), barY + barHeight - 3);
             }
             context.restore();
             return true;
@@ -461,10 +460,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
         // Paint text using white color on dark background.
         if (text) {
             context.save();
-            context.fillStyle = "white";
-            context.shadowColor = "rgba(0, 0, 0, 0.1)";
-            context.shadowOffsetX = 1;
-            context.shadowOffsetY = 1;
+            context.fillStyle = "#333";
             context.font = this._font;
             context.fillText(text, barX + this.textPadding(), barY + barHeight - this.textBaseline());
             context.restore();
@@ -478,10 +474,11 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
             context.clip();
 
             context.beginPath();
+            var /** @const */ triangleSize = 10;
             context.fillStyle = "red";
-            context.moveTo(barX + barWidth - 15, barY + 1);
+            context.moveTo(barX + barWidth - triangleSize, barY + 1);
             context.lineTo(barX + barWidth - 1, barY + 1);
-            context.lineTo(barX + barWidth - 1, barY + 15);
+            context.lineTo(barX + barWidth - 1, barY + triangleSize);
             context.fill();
 
             context.restore();
