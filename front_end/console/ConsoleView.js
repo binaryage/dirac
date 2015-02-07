@@ -726,8 +726,12 @@ WebInspector.ConsoleView.prototype = {
                 return;
             }
             var lines = [];
-            for (var i = 0; i < chunkSize && i + messageIndex < this.itemCount(); ++i)
-                lines.push(this.itemElement(messageIndex + i).element().textContent);
+            for (var i = 0; i < chunkSize && i + messageIndex < this.itemCount(); ++i) {
+                var message = this.itemElement(messageIndex + i);
+                // Ensure DOM element for console message.
+                message.element();
+                lines.push(message.renderedText());
+            }
             messageIndex += i;
             stream.write(lines.join("\n") + "\n", writeNextChunk.bind(this));
             progressIndicator.setWorked(messageIndex);

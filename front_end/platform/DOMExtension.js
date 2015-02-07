@@ -674,15 +674,23 @@ Element.prototype.selectionLeftOffset = function()
  */
 Node.prototype.deepTextContent = function()
 {
+    return this.childTextNodes().map(function (node) { return node.textContent; }).join("");
+}
+
+/**
+ * @return {!Array.<!Node>}
+ */
+Node.prototype.childTextNodes = function()
+{
     var node = this.traverseNextTextNode(this);
     var result = [];
     var nonTextTags = { "STYLE": 1, "SCRIPT": 1 };
     while (node) {
         if (!nonTextTags[node.parentElement.nodeName])
-            result.push(node.textContent);
+            result.push(node);
         node = node.traverseNextTextNode(this);
     }
-    return result.join("");
+    return result;
 }
 
 /**

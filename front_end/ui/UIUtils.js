@@ -848,20 +848,19 @@ WebInspector.highlightRangesWithStyleClass = function(element, resultRanges, sty
 {
     changes = changes || [];
     var highlightNodes = [];
-    var lineText = element.textContent;
+    var lineText = element.deepTextContent();
     var ownerDocument = element.ownerDocument;
-    var textNodeSnapshot = ownerDocument.evaluate(".//text()", element, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+    var textNodes = element.childTextNodes();
 
-    var snapshotLength = textNodeSnapshot.snapshotLength;
-    if (snapshotLength === 0)
+    if (textNodes.length === 0)
         return highlightNodes;
 
     var nodeRanges = [];
     var rangeEndOffset = 0;
-    for (var i = 0; i < snapshotLength; ++i) {
+    for (var i = 0; i < textNodes.length; ++i) {
         var range = {};
         range.offset = rangeEndOffset;
-        range.length = textNodeSnapshot.snapshotItem(i).textContent.length;
+        range.length = textNodes[i].textContent.length;
         rangeEndOffset = range.offset + range.length;
         nodeRanges.push(range);
     }
@@ -871,19 +870,19 @@ WebInspector.highlightRangesWithStyleClass = function(element, resultRanges, sty
         var startOffset = resultRanges[i].offset;
         var endOffset = startOffset + resultRanges[i].length;
 
-        while (startIndex < snapshotLength && nodeRanges[startIndex].offset + nodeRanges[startIndex].length <= startOffset)
+        while (startIndex < textNodes.length && nodeRanges[startIndex].offset + nodeRanges[startIndex].length <= startOffset)
             startIndex++;
         var endIndex = startIndex;
-        while (endIndex < snapshotLength && nodeRanges[endIndex].offset + nodeRanges[endIndex].length < endOffset)
+        while (endIndex < textNodes.length && nodeRanges[endIndex].offset + nodeRanges[endIndex].length < endOffset)
             endIndex++;
-        if (endIndex === snapshotLength)
+        if (endIndex === textNodes.length)
             break;
 
         var highlightNode = ownerDocument.createElement("span");
         highlightNode.className = styleClass;
         highlightNode.textContent = lineText.substring(startOffset, endOffset);
 
-        var lastTextNode = textNodeSnapshot.snapshotItem(endIndex);
+        var lastTextNode = textNodes[endIndex];
         var lastText = lastTextNode.textContent;
         lastTextNode.textContent = lastText.substring(endOffset - nodeRanges[endIndex].offset);
         changes.push({ node: lastTextNode, type: "changed", oldText: lastText, newText: lastTextNode.textContent });
@@ -897,7 +896,7 @@ WebInspector.highlightRangesWithStyleClass = function(element, resultRanges, sty
             lastTextNode.parentElement.insertBefore(prefixNode, highlightNode);
             changes.push({ node: prefixNode, type: "added", nextSibling: highlightNode, parent: lastTextNode.parentElement });
         } else {
-            var firstTextNode = textNodeSnapshot.snapshotItem(startIndex);
+            var firstTextNode = textNodes[startIndex];
             var firstText = firstTextNode.textContent;
             var anchorElement = firstTextNode.nextSibling;
 
@@ -909,7 +908,7 @@ WebInspector.highlightRangesWithStyleClass = function(element, resultRanges, sty
             changes.push({ node: firstTextNode, type: "changed", oldText: firstText, newText: firstTextNode.textContent });
 
             for (var j = startIndex + 1; j < endIndex; j++) {
-                var textNode = textNodeSnapshot.snapshotItem(j);
+                var textNode = textNodes[j];
                 var text = textNode.textContent;
                 textNode.textContent = "";
                 changes.push({ node: textNode, type: "changed", oldText: text, newText: textNode.textContent });
