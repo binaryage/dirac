@@ -215,13 +215,11 @@ WebInspector.TimelineUIUtils.isMarkerEvent = function(event)
 /**
  * @param {!WebInspector.TracingModel.Event} event
  * @param {?WebInspector.Target} target
- * @param {!WebInspector.Linkifier} linkifier
- * @return {?Node}
+ * @return {?string}
  */
-WebInspector.TimelineUIUtils.buildDetailsNodeForTraceEvent = function(event, target, linkifier)
+WebInspector.TimelineUIUtils.buildDetailsTextForTraceEvent = function(event, target)
 {
     var recordType = WebInspector.TimelineModel.RecordType;
-    var details;
     var detailsText;
     var eventData = event.args["data"];
     switch (event.name) {
@@ -233,13 +231,10 @@ WebInspector.TimelineUIUtils.buildDetailsNodeForTraceEvent = function(event, tar
         detailsText = eventData["timerId"];
         break;
     case recordType.FunctionCall:
-        details = linkifyLocation(eventData["scriptId"], eventData["scriptName"], eventData["scriptLine"], 0);
+        detailsText = linkifyLocationAsText(eventData["scriptId"], eventData["scriptLine"], 0);
         break;
     case recordType.JSFrame:
-        details = linkifyLocation(eventData["scriptId"], eventData["url"], eventData["lineNumber"], eventData["columnNumber"]);
         detailsText = WebInspector.beautifyFunctionName(eventData["functionName"]);
-        if (details && detailsText)
-            details.textContent = detailsText;
         break;
     case recordType.FireAnimationFrame:
         detailsText = eventData["id"];
@@ -255,22 +250,20 @@ WebInspector.TimelineUIUtils.buildDetailsNodeForTraceEvent = function(event, tar
         break;
     case recordType.TimerInstall:
     case recordType.TimerRemove:
-        details = linkifyTopCallFrame();
-        detailsText = eventData["timerId"];
+        detailsText = linkifyTopCallFrameAsText() || eventData["timerId"];
         break;
     case recordType.RequestAnimationFrame:
     case recordType.CancelAnimationFrame:
-        details = linkifyTopCallFrame();
-        detailsText = eventData["id"];
+        detailsText = linkifyTopCallFrameAsText() || eventData["id"];
         break;
     case recordType.ParseHTML:
     case recordType.RecalculateStyles:
-        details = linkifyTopCallFrame();
+        detailsText = linkifyTopCallFrameAsText();
         break;
     case recordType.EvaluateScript:
         var url = eventData["url"];
         if (url)
-            details = linkifyLocation("", url, eventData["lineNumber"], 0);
+            detailsText = url + ":" + eventData["lineNumber"];
         break;
     case recordType.XHRReadyStateChange:
     case recordType.XHRLoad:
@@ -306,6 +299,110 @@ WebInspector.TimelineUIUtils.buildDetailsNodeForTraceEvent = function(event, tar
         detailsText = eventData && eventData["name"];
         break;
 
+    default:
+        if (event.category === WebInspector.TracingModel.ConsoleEventCategory)
+            detailsText = null;
+        else
+            detailsText = linkifyTopCallFrameAsText();
+        break;
+    }
+
+    return detailsText;
+
+    /**
+     * @param {string} scriptId
+     * @param {number} lineNumber
+     * @param {number=} columnNumber
+     * @return {?string}
+     */
+    function linkifyLocationAsText(scriptId, lineNumber, columnNumber)
+    {
+        // FIXME(62725): stack trace line/column numbers are one-based.
+        var rawLocation = target && !target.isDetached() && scriptId ? target.debuggerModel.createRawLocationByScriptId(scriptId, lineNumber - 1, (columnNumber || 1) - 1) : null;
+        if (!rawLocation)
+            return null;
+        var uiLocation = WebInspector.debuggerWorkspaceBinding.rawLocationToUILocation(rawLocation);
+        return uiLocation.toUIString();
+    }
+
+    /**
+     * @return {?string}
+     */
+    function linkifyTopCallFrameAsText()
+    {
+        var stackTrace = event.stackTrace;
+        if (!stackTrace) {
+            var initiator = event.initiator;
+            if (initiator)
+                stackTrace = initiator.stackTrace;
+        }
+        if (!stackTrace || !stackTrace.length)
+            return null;
+        var callFrame = stackTrace[0];
+        return linkifyLocationAsText(callFrame.scriptId, callFrame.lineNumber, callFrame.columnNumber);
+    }
+}
+
+/**
+ * @param {!WebInspector.TracingModel.Event} event
+ * @param {?WebInspector.Target} target
+ * @param {!WebInspector.Linkifier} linkifier
+ * @return {?Node}
+ */
+WebInspector.TimelineUIUtils.buildDetailsNodeForTraceEvent = function(event, target, linkifier)
+{
+    var recordType = WebInspector.TimelineModel.RecordType;
+    var details;
+    var detailsText;
+    var eventData = event.args["data"];
+    switch (event.name) {
+    case recordType.GCEvent:
+    case recordType.TimerFire:
+    case recordType.FireAnimationFrame:
+    case recordType.EventDispatch:
+    case recordType.Paint:
+    case recordType.PaintImage:
+    case recordType.DecodeImage:
+    case recordType.ResizeImage:
+    case recordType.DecodeLazyPixelRef:
+    case recordType.Animation:
+    case recordType.XHRReadyStateChange:
+    case recordType.XHRLoad:
+    case recordType.ResourceSendRequest:
+    case recordType.ResourceReceivedData:
+    case recordType.ResourceReceiveResponse:
+    case recordType.ResourceFinish:
+    case recordType.EmbedderCallback:
+        detailsText = WebInspector.TimelineUIUtils.buildDetailsTextForTraceEvent(event, target);
+        break;
+    case recordType.FunctionCall:
+        details = linkifyLocation(eventData["scriptId"], eventData["scriptName"], eventData["scriptLine"], 0);
+        break;
+    case recordType.JSFrame:
+        details = linkifyLocation(eventData["scriptId"], eventData["url"], eventData["lineNumber"], eventData["columnNumber"]);
+        detailsText = WebInspector.beautifyFunctionName(eventData["functionName"]);
+        if (details && detailsText)
+            details.textContent = detailsText;
+        break;
+    case recordType.TimerInstall:
+    case recordType.TimerRemove:
+        details = linkifyTopCallFrame();
+        detailsText = eventData["timerId"];
+        break;
+    case recordType.RequestAnimationFrame:
+    case recordType.CancelAnimationFrame:
+        details = linkifyTopCallFrame();
+        detailsText = eventData["id"];
+        break;
+    case recordType.ParseHTML:
+    case recordType.RecalculateStyles:
+        details = linkifyTopCallFrame();
+        break;
+    case recordType.EvaluateScript:
+        var url = eventData["url"];
+        if (url)
+            details = linkifyLocation("", url, eventData["lineNumber"], 0);
+        break;
     default:
         if (event.category === WebInspector.TracingModel.ConsoleEventCategory)
             detailsText = null;

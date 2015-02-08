@@ -75,7 +75,8 @@ WebInspector.FlameChart = function(dataProvider, flameChartDelegate, isTopDown)
 
     this._vScrollElement = this.contentElement.createChild("div", "flame-chart-v-scroll");
     this._vScrollContent = this._vScrollElement.createChild("div");
-    this._vScrollElement.addEventListener("scroll", this.scheduleUpdate.bind(this), false);
+    this._vScrollElement.addEventListener("scroll", this._onScroll.bind(this), false);
+    this._scrollTop = 0;
 
     this._entryInfo = this.contentElement.createChild("div", "flame-chart-entry-info");
     this._markerHighlighElement = this.contentElement.createChild("div", "flame-chart-marker-highlight-element");
@@ -1350,22 +1351,35 @@ WebInspector.FlameChart.prototype = {
 
         this._totalHeight = this._levelToHeight(this._dataProvider.maxStackDepth() + 1);
         this._vScrollContent.style.height = this._totalHeight + "px";
-        this._scrollTop = this._vScrollElement.scrollTop;
         this._updateScrollBar();
     },
 
     onResize: function()
     {
         this._updateScrollBar();
+        this._updateContentElementSize();
         this.scheduleUpdate();
     },
 
     _updateScrollBar: function()
     {
         var showScroll = this._totalHeight > this._offsetHeight;
-        this._vScrollElement.classList.toggle("hidden", !showScroll);
+        if (this._vScrollElement.classList.contains("hidden") === showScroll) {
+            this._vScrollElement.classList.toggle("hidden", !showScroll);
+            this._updateContentElementSize();
+        }
+    },
+
+    _updateContentElementSize: function()
+    {
         this._offsetWidth = this.contentElement.offsetWidth - (WebInspector.isMac() ? 0 : this._vScrollElement.offsetWidth);
         this._offsetHeight = this.contentElement.offsetHeight;
+    },
+
+    _onScroll: function()
+    {
+        this._scrollTop = this._vScrollElement.scrollTop;
+        this.scheduleUpdate();
     },
 
     scheduleUpdate: function()

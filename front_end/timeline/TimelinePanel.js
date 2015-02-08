@@ -134,6 +134,8 @@ WebInspector.TimelinePanel.DetailsTab = {
 WebInspector.TimelinePanel.rowHeight = 18;
 WebInspector.TimelinePanel.headerHeight = 20;
 
+WebInspector.TimelinePanel._aggregatedStatsKey = Symbol("aggregatedStats");
+
 WebInspector.TimelinePanel.durationFilterPresetsMs = [0, 1, 15];
 
 WebInspector.TimelinePanel.prototype = {
@@ -1048,6 +1050,33 @@ WebInspector.TimelinePanel.prototype = {
     },
 
     /**
+     * @param {!WebInspector.TimelineModel.Record} record
+     * @param {number} startTime
+     * @param {number} endTime
+     * @param {!Object} aggregatedStats
+     */
+    _collectAggregatedStatsForRecord: function(record, startTime, endTime, aggregatedStats)
+    {
+        var records = [];
+
+        if (!record.endTime() || record.endTime() < startTime || record.startTime() > endTime)
+            return;
+
+        var childrenTime = 0;
+        var children = record.children() || [];
+        for (var i = 0; i < children.length; ++i) {
+            var child = children[i];
+            if (!child.endTime() || child.endTime() < startTime || child.startTime() > endTime)
+                continue;
+            childrenTime += Math.min(endTime, child.endTime()) - Math.max(startTime, child.startTime());
+            this._collectAggregatedStatsForRecord(child, startTime, endTime, aggregatedStats);
+        }
+        var categoryName = WebInspector.TimelineUIUtils.categoryForRecord(record).name;
+        var ownTime = Math.min(endTime, record.endTime()) - Math.max(startTime, record.startTime()) - childrenTime;
+        aggregatedStats[categoryName] = (aggregatedStats[categoryName] || 0) + ownTime;
+    },
+
+    /**
      * @param {number} startTime
      * @param {number} endTime
      */
@@ -1068,36 +1097,25 @@ WebInspector.TimelinePanel.prototype = {
         {
             return value < task.endTime() ? -1 : 1;
         }
-
-        /**
-         * @param {!WebInspector.TimelineModel.Record} record
-         */
-        function aggregateTimeForRecordWithinWindow(record)
-        {
-            if (!record.endTime() || record.endTime() < startTime || record.startTime() > endTime)
-                return;
-
-            var childrenTime = 0;
-            var children = record.children() || [];
-            for (var i = 0; i < children.length; ++i) {
-                var child = children[i];
-                if (!child.endTime() || child.endTime() < startTime || child.startTime() > endTime)
-                    continue;
-                childrenTime += Math.min(endTime, child.endTime()) - Math.max(startTime, child.startTime());
-                aggregateTimeForRecordWithinWindow(child);
-            }
-            var categoryName = WebInspector.TimelineUIUtils.categoryForRecord(record).name;
-            var ownTime = Math.min(endTime, record.endTime()) - Math.max(startTime, record.startTime()) - childrenTime;
-            aggregatedStats[categoryName] = (aggregatedStats[categoryName] || 0) + ownTime;
-        }
-
         var mainThreadTasks = this._model.mainThreadTasks();
         var taskIndex = insertionIndexForObjectInListSortedByFunction(startTime, mainThreadTasks, compareEndTime);
         for (; taskIndex < mainThreadTasks.length; ++taskIndex) {
             var task = mainThreadTasks[taskIndex];
             if (task.startTime() > endTime)
                 break;
-            aggregateTimeForRecordWithinWindow(task);
+            if (task.startTime() > startTime && task.endTime() < endTime) {
+                // cache stats for top-level entries that fit the range entirely.
+                var taskStats = task[WebInspector.TimelinePanel._aggregatedStatsKey];
+                if (!taskStats) {
+                    taskStats = {};
+                    this._collectAggregatedStatsForRecord(task, startTime, endTime, taskStats);
+                    task[WebInspector.TimelinePanel._aggregatedStatsKey] = taskStats;
+                }
+                for (var key in taskStats)
+                    aggregatedStats[key] = (aggregatedStats[key] || 0) + taskStats[key];
+                continue;
+            }
+            this._collectAggregatedStatsForRecord(task, startTime, endTime, aggregatedStats);
         }
 
         var aggregatedTotal = 0;

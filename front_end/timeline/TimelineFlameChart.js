@@ -41,7 +41,6 @@ WebInspector.TimelineFlameChartDataProvider = function(model, frameModel)
     this._model = model;
     this._frameModel = frameModel;
     this._font = "11px " + WebInspector.fontFamily();
-    this._linkifier = new WebInspector.Linkifier();
     this._filters = [];
     this.addFilter(WebInspector.TimelineUIUtils.hiddenEventsFilter());
     this.addFilter(new WebInspector.ExclusiveTraceEventNameFilter([WebInspector.TimelineModel.RecordType.Program]));
@@ -116,10 +115,10 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
 
             var name = WebInspector.TimelineUIUtils.eventStyle(event).title;
             // TODO(yurys): support event dividers
-            var details = WebInspector.TimelineUIUtils.buildDetailsNodeForTraceEvent(event, this._model.target(), this._linkifier);
-            if (event.name === WebInspector.TimelineModel.RecordType.JSFrame && details)
-                return details.textContent;
-            return details ? WebInspector.UIString("%s (%s)", name, details.textContent) : name;
+            var detailsText = WebInspector.TimelineUIUtils.buildDetailsTextForTraceEvent(event, this._model.target());
+            if (event.name === WebInspector.TimelineModel.RecordType.JSFrame && detailsText)
+                return detailsText;
+            return detailsText ? WebInspector.UIString("%s (%s)", name, detailsText) : name;
         }
         var title = this._entryIndexToTitle[entryIndex];
         if (!title) {

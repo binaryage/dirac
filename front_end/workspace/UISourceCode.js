@@ -621,6 +621,14 @@ WebInspector.UILocation.prototype = {
     {
         return this.uiSourceCode.uri() + ":" + this.lineNumber + ":" + this.columnNumber;
     },
+
+    /**
+     * @return {string}
+     */
+    toUIString: function()
+    {
+        return this.uiSourceCode.uri() + ":" + (this.lineNumber + 1);
+    }
 }
 
 /**

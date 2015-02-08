@@ -598,16 +598,15 @@ WebInspector.DebuggerModel.prototype = {
     },
 
     /**
-     * @param {?DebuggerAgent.ScriptId} scriptId
-     * @param {string} sourceUrl
+     * @param {!DebuggerAgent.ScriptId} scriptId
      * @param {number} lineNumber
      * @param {number} columnNumber
      * @return {?WebInspector.DebuggerModel.Location}
      */
-    createRawLocationByScriptId: function(scriptId, sourceUrl, lineNumber, columnNumber)
+    createRawLocationByScriptId: function(scriptId, lineNumber, columnNumber)
     {
-        var script = scriptId ? this.scriptForId(scriptId) : null;
-        return script ? this.createRawLocation(script, lineNumber, columnNumber) : this.createRawLocationByURL(sourceUrl, lineNumber, columnNumber);
+        var script = this.scriptForId(scriptId);
+        return script ? this.createRawLocation(script, lineNumber, columnNumber) : null;
     },
 
     /**
