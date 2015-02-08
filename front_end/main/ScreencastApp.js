@@ -11,8 +11,8 @@ WebInspector.ScreencastApp = function()
 {
     WebInspector.App.call(this);
 
-    var lastScreencastState = WebInspector.settings.createSetting("lastScreencastState", "disabled");
-    this._currentScreencastState = WebInspector.settings.createSetting("currentScreencastState", "left");
+    var lastScreencastState = WebInspector.settings.createSetting("lastScreencastState", "left");
+    this._currentScreencastState = WebInspector.settings.createSetting("currentScreencastState", "disabled");
     this._toggleScreencastButton = new WebInspector.StatusBarStatesSettingButton(
         "screencast-status-bar-item",
         ["disabled", "left", "top"],
