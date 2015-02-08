@@ -111,7 +111,11 @@ WebInspector.TimelineJSProfileProcessor.generateJSFrameEvents = function(events)
             return;
         var eventData = e.args["data"] || e.args["beginData"];
         var stackTrace = eventData && eventData["stackTrace"];
-        jsFramesStack.length = stackTrace ? stackTrace.length : 0;
+        var stackLength = stackTrace ? stackTrace.length : 0;
+        // FIXME: there shouldn't be such a case.
+        // The current stack should never go beyond the parent event's stack.
+        if (stackLength < jsFramesStack.length)
+            jsFramesStack.length = stackLength;
     }
 
     /**
