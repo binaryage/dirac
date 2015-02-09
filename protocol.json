@@ -3157,22 +3157,8 @@
     },
     {
         "domain": "Timeline",
-        "description": "Timeline provides its clients with instrumentation records that are generated during the page runtime. Timeline instrumentation can be started and stopped using corresponding commands. While timeline is started, it is generating timeline event records.",
+        "description": "Timeline domain is deprecated. Please use Tracing instead.",
         "types": [
-            {
-                "id": "Counters",
-                "type": "object",
-                "properties": [
-                    { "name": "documents", "type": "integer", "optional": true },
-                    { "name": "nodes", "type": "integer", "optional": true },
-                    { "name": "jsEventListeners", "type": "integer", "optional": true },
-                    { "name": "jsHeapSizeUsed", "type": "number", "optional": true, "description": "Currently used size of JS heap." },
-                    { "name": "gpuMemoryUsedKB", "type": "number", "optional": true, "description": "Current GPU memory usage in kilobytes." },
-                    { "name": "gpuMemoryLimitKB", "type": "number", "optional": true, "description": "Current GPU memory limit in kilobytes." }
-                ],
-                "description": "Current values of counters.",
-                "hidden": true
-            },
             {
                 "id": "TimelineEvent",
                 "type": "object",
@@ -3192,11 +3178,11 @@
         "commands": [
             {
                 "name": "enable",
-                "description": "Enables timeline. After this call, timeline can be started from within the page (for example upon console.timeline)."
+                "description": "Deprecated."
             },
             {
                 "name": "disable",
-                "description": "Disables timeline."
+                "description": "Deprecated."
             },
             {
                 "name": "start",
@@ -3207,11 +3193,11 @@
                     { "name": "includeCounters", "optional": true, "type": "boolean", "hidden": true, "description": "Whether counters data should be included into timeline events." },
                     { "name": "includeGPUEvents", "optional": true, "type": "boolean", "hidden": true, "description": "Whether events from GPU process should be collected." }
                 ],
-                "description": "Starts capturing instrumentation events."
+                "description": "Deprecated."
             },
             {
                 "name": "stop",
-                "description": "Stops capturing instrumentation events."
+                "description": "Deprecated."
             }
         ],
         "events": [
@@ -3220,31 +3206,7 @@
                 "parameters": [
                     { "name": "record", "$ref": "TimelineEvent", "description": "Timeline event record data." }
                 ],
-                "description": "Fired for every instrumentation event while timeline is started."
-            },
-            {
-                "name": "progress",
-                "parameters": [
-                    { "name": "count", "type": "number" }
-                ],
-                "hidden": true
-            },
-            {
-                "name": "started",
-                "parameters": [
-                    { "name": "consoleTimeline", "type": "boolean", "optional": true, "description": "If specified, identifies that timeline was started using console.timeline() call." }
-                ],
-                "description": "Fired when timeline is started.",
-                "hidden": true
-            },
-            {
-                "name": "stopped",
-                "parameters": [
-                    { "name": "consoleTimeline", "type": "boolean", "optional": true, "description": "If specified, identifies that timeline was started using console.timeline() call." },
-                    { "name": "events", "type": "array", "items": { "$ref": "TimelineEvent" }, "optional": true, "hidden": true, "description": "Timeline event record data." }
-                ],
-                "description": "Fired when timeline is stopped.",
-                "hidden": true
+                "description": "Deprecated."
             }
         ]
     },
@@ -4575,7 +4537,6 @@
     },
     {
         "domain": "Tracing",
-        "hidden": true,
         "commands": [
             {
                 "name": "start",
