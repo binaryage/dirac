@@ -85,9 +85,9 @@ WebInspector.StylesSidebarPane = function(computedStylePane, setPseudoClassCallb
     this._keyUpBound = this._keyUp.bind(this);
 }
 
-// Keep in sync with RenderStyleConstants.h PseudoId enum. Array below contains pseudo id names for corresponding enum indexes.
+// Keep in sync with LayoutStyleConstants.h PseudoId enum. Array below contains pseudo id names for corresponding enum indexes.
 // First item is empty due to its artificial NOPSEUDO nature in the enum.
-// FIXME: find a way of generating this mapping or getting it from combination of RenderStyleConstants and CSSSelector.cpp at
+// FIXME: find a way of generating this mapping or getting it from combination of LayoutStyleConstants and CSSSelector.cpp at
 // runtime.
 WebInspector.StylesSidebarPane.PseudoIdNames = [
     "", "first-line", "first-letter", "before", "after", "backdrop", "selection", "", "-webkit-scrollbar",
