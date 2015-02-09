@@ -548,7 +548,7 @@ WebInspector.RequestHeadersView.Category = function(root, name, title)
     this.selectable = false;
     this.toggleOnClick = true;
     this.hidden = true;
-    this._expandedSetting = WebInspector.settings.createSetting("request-info-" + name + "-category-expanded", false);
+    this._expandedSetting = WebInspector.settings.createSetting("request-info-" + name + "-category-expanded", true);
     this.expanded = this._expandedSetting.get();
     root.appendChild(this);
 }
