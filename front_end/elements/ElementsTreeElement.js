@@ -264,7 +264,7 @@ WebInspector.ElementsTreeElement.prototype = {
     },
 
     /**
-     * @param {?WebInspector.ElementsTreeUpdater.UpdateInfo} updateInfo
+     * @param {?WebInspector.ElementsTreeOutline.UpdateInfo} updateInfo
      */
     setUpdateInfo: function(updateInfo)
     {
