@@ -26,8 +26,6 @@ WebInspector.Target = function(name, connection, callback)
     this._capabilities = {};
     this.pageAgent().canScreencast(this._initializeCapability.bind(this, WebInspector.Target.Capabilities.CanScreencast, null));
     this.pageAgent().canEmulate(this._initializeCapability.bind(this, WebInspector.Target.Capabilities.CanEmulate, null));
-    if (Runtime.experiments.isEnabled("timelinePowerProfiler"))
-        this.powerAgent().canProfilePower(this._initializeCapability.bind(this, WebInspector.Target.Capabilities.CanProfilePower, null));
     this.workerAgent().canInspectWorkers(this._initializeCapability.bind(this, WebInspector.Target.Capabilities.CanInspectWorkers, this._loadedWithCapabilities.bind(this, callback)));
 }
 
@@ -37,7 +35,6 @@ WebInspector.Target = function(name, connection, callback)
 WebInspector.Target.Capabilities = {
     CanScreencast: "CanScreencast",
     HasTouchInputs: "HasTouchInputs",
-    CanProfilePower: "CanProfilePower",
     CanInspectWorkers: "CanInspectWorkers",
     CanEmulate: "CanEmulate"
 }
@@ -126,10 +123,6 @@ WebInspector.Target.prototype = {
         this.cssModel = new WebInspector.CSSStyleModel(this);
         /** @type {!WebInspector.WorkerManager} */
         this.workerManager = new WebInspector.WorkerManager(this, this.hasCapability(WebInspector.Target.Capabilities.CanInspectWorkers));
-        if (this.hasCapability(WebInspector.Target.Capabilities.CanProfilePower)) {
-            /** @type {!WebInspector.PowerProfiler} */
-            this.powerProfiler = new WebInspector.PowerProfiler(this);
-        }
         /** @type {!WebInspector.DatabaseModel} */
         this.databaseModel = new WebInspector.DatabaseModel(this);
         /** @type {!WebInspector.DOMStorageModel} */

@@ -34,7 +34,6 @@
  * @extends {WebInspector.Panel}
  * @implements {WebInspector.TimelineModeViewDelegate}
  * @implements {WebInspector.Searchable}
- * @implements {WebInspector.TargetManager.Observer}
  */
 WebInspector.TimelinePanel = function()
 {
@@ -113,7 +112,6 @@ WebInspector.TimelinePanel = function()
     this._onModeChanged();
     this._detailsSplitView.show(this.element);
     WebInspector.targetManager.addEventListener(WebInspector.TargetManager.Events.SuspendStateChanged, this._onSuspendStateChanged, this);
-    WebInspector.targetManager.observeTargets(this);
 }
 
 WebInspector.TimelinePanel.OverviewMode = {
@@ -139,27 +137,6 @@ WebInspector.TimelinePanel._aggregatedStatsKey = Symbol("aggregatedStats");
 WebInspector.TimelinePanel.durationFilterPresetsMs = [0, 1, 15];
 
 WebInspector.TimelinePanel.prototype = {
-    /**
-     * @override
-     * @param {!WebInspector.Target} target
-     */
-    targetAdded: function(target)
-    {
-        if (target !== WebInspector.targetManager.mainTarget() || !this._capturePowerCheckbox)
-            return;
-
-        this._capturePowerCheckbox.setVisible(target.hasCapability(WebInspector.Target.Capabilities.CanProfilePower));
-        this._onModeChanged();
-    },
-
-    /**
-     * @override
-     * @param {!WebInspector.Target} target
-     */
-    targetRemoved: function(target)
-    {
-    },
-
     /**
      * @override
      * @return {?WebInspector.SearchableView}
@@ -357,13 +334,6 @@ WebInspector.TimelinePanel.prototype = {
                                                                       this._captureMemorySetting,
                                                                       WebInspector.UIString("Capture memory information on every timeline event")));
         this._captureMemorySetting.addChangeListener(this._onModeChanged, this);
-        if (Runtime.experiments.isEnabled("timelinePowerProfiler")) {
-            this._capturePowerSetting = WebInspector.settings.createSetting("timelineCapturePower", false);
-            this._capturePowerSetting.addChangeListener(this._onModeChanged, this);
-            this._capturePowerCheckbox = this._createSettingCheckbox(WebInspector.UIString("Power"), this._capturePowerSetting, WebInspector.UIString("Capture power information"));
-            this._capturePowerCheckbox.setVisible(false);
-            this._panelToolbar.appendStatusBarItem(this._capturePowerCheckbox);
-        }
         this._captureLayersAndPicturesSetting = WebInspector.settings.createSetting("timelineCaptureLayersAndPictures", false);
         this._panelToolbar.appendStatusBarItem(this._createSettingCheckbox(WebInspector.UIString("Paint"),
                                                                       this._captureLayersAndPicturesSetting,
@@ -610,13 +580,6 @@ WebInspector.TimelinePanel.prototype = {
         }
 
         var mainTarget = WebInspector.targetManager.mainTarget();
-        if (this._capturePowerSetting && this._capturePowerSetting.get() && mainTarget &&
-            mainTarget.hasCapability(WebInspector.Target.Capabilities.CanProfilePower)) {
-            if (!isFrameMode)  // Frame mode skews time, don't render aux overviews.
-                this._overviewControls.push(new WebInspector.TimelinePowerOverview(this._model));
-            this._addModeView(new WebInspector.TimelinePowerGraph(this, this._model));
-        }
-
         if (this._lazyTimelineView)
             this._lazyTimelineView.setFrameModel(isFrameMode ? this._frameModel() : null);
 
@@ -1131,14 +1094,6 @@ WebInspector.TimelinePanel.prototype = {
         contentHelper.appendTextRow(WebInspector.UIString("Range"), WebInspector.UIString("%s \u2013 %s", Number.millisToString(startOffset), Number.millisToString(endOffset)));
         contentHelper.appendElementRow(WebInspector.UIString("Aggregated Time"), pieChart);
 
-        for (var i = 0; i < this._overviewControls.length; ++i) {
-            if (this._overviewControls[i] instanceof WebInspector.TimelinePowerOverview) {
-                var energy = this._overviewControls[i].calculateEnergy(startTime, endTime);
-                contentHelper.appendTextRow(WebInspector.UIString("Energy"), WebInspector.UIString("%.2f Joules", energy));
-                contentHelper.appendTextRow(WebInspector.UIString("Accuracy"), this._overviewControls[i].accuracyLevel());
-                break;
-            }
-        }
         this.showInDetails(contentHelper.element);
     },
 
