@@ -379,10 +379,13 @@ WebInspector.TimelineUIUtils.buildDetailsNodeForTraceEvent = function(event, tar
         details = linkifyLocation(eventData["scriptId"], eventData["scriptName"], eventData["scriptLine"], 0);
         break;
     case recordType.JSFrame:
-        details = linkifyLocation(eventData["scriptId"], eventData["url"], eventData["lineNumber"], eventData["columnNumber"]);
-        detailsText = WebInspector.beautifyFunctionName(eventData["functionName"]);
-        if (details && detailsText)
-            details.textContent = detailsText;
+        details = createElement("span");
+        details.createTextChild(WebInspector.beautifyFunctionName(eventData["functionName"]));
+        var location = linkifyLocation(eventData["scriptId"], eventData["url"], eventData["lineNumber"], eventData["columnNumber"]);
+        if (location) {
+           details.createTextChild(" @ ");
+           details.appendChild(location);
+        }
         break;
     case recordType.TimerInstall:
     case recordType.TimerRemove:
