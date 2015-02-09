@@ -1367,6 +1367,7 @@ function loadXHR(url)
         }
 
         var xhr = new XMLHttpRequest();
+        xhr.withCredentials = false;
         xhr.open("GET", url, true);
         xhr.onreadystatechange = onReadyStateChanged;
         xhr.send(null);

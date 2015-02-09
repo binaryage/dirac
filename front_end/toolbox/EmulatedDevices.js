@@ -62,7 +62,7 @@ WebInspector.EmulatedDevice._Show = {
  * @param {*} json
  * @return {?WebInspector.EmulatedDevice}
  */
-WebInspector.EmulatedDevice.fromJSON = function(json)
+WebInspector.EmulatedDevice.fromJSONV1 = function(json)
 {
     try {
         /**
@@ -350,6 +350,14 @@ WebInspector.EmulatedDevice.prototype = {
     },
 
     /**
+     * @param {!WebInspector.EmulatedDevice} other
+     */
+    copyShowFrom: function(other)
+    {
+        this._show = other._show;
+    },
+
+    /**
      * @return {boolean}
      */
     touch: function()
@@ -439,31 +447,36 @@ WebInspector.EmulatedDevicesList = function()
     /** @type {!WebInspector.Setting} */
     this._standardSetting = WebInspector.settings.createSetting("standardEmulatedDeviceList", defaultValue);
     /** @type {!Array.<!WebInspector.EmulatedDevice>} */
-    this._standard = this._listFromJSON(this._standardSetting.get());
+    this._standard = this._listFromJSONV1(this._standardSetting.get());
 
     /** @type {!WebInspector.Setting} */
     this._customSetting = WebInspector.settings.createSetting("customEmulatedDeviceList", []);
     /** @type {!Array.<!WebInspector.EmulatedDevice>} */
-    this._custom = this._listFromJSON(this._customSetting.get());
+    this._custom = this._listFromJSONV1(this._customSetting.get());
+
+    this._updating = false;
 }
 
 WebInspector.EmulatedDevicesList.Events = {
     CustomDevicesUpdated: "CustomDevicesUpdated",
+    IsUpdatingChanged: "IsUpdatingChanged",
     StandardDevicesUpdated: "StandardDevicesUpdated"
 }
+
+WebInspector.EmulatedDevicesList._DevicesJsonUrl = "https://api.github.com/repos/GoogleChrome/devtools-device-data/contents/devices.json?ref=release";
 
 WebInspector.EmulatedDevicesList.prototype = {
     /**
      * @param {!Array.<*>} jsonArray
      * @return {!Array.<!WebInspector.EmulatedDevice>}
      */
-    _listFromJSON: function(jsonArray)
+    _listFromJSONV1: function(jsonArray)
     {
         var result = [];
         if (!Array.isArray(jsonArray))
             return result;
         for (var i = 0; i < jsonArray.length; ++i) {
-            var device = WebInspector.EmulatedDevice.fromJSON(jsonArray[i]);
+            var device = WebInspector.EmulatedDevice.fromJSONV1(jsonArray[i]);
             if (device)
                 result.push(device);
         }
@@ -516,6 +529,121 @@ WebInspector.EmulatedDevicesList.prototype = {
         var json = this._standard.map(/** @param {!WebInspector.EmulatedDevice} device */ function(device) { return device._toJSON(); });
         this._standardSetting.set(json);
         this.dispatchEventToListeners(WebInspector.EmulatedDevicesList.Events.StandardDevicesUpdated);
+    },
+
+    update: function()
+    {
+        if (this._updating)
+            return;
+
+        this._updating = true;
+        this.dispatchEventToListeners(WebInspector.EmulatedDevicesList.Events.IsUpdatingChanged);
+
+        /**
+         * @param {*} json
+         * @return {!Promise.<string>}
+         */
+        function decodeBase64Content(json)
+        {
+            return loadXHR("data:application/json;charset=utf-8;base64," + json.content);
+        }
+
+        /**
+         * FIXME: promise chain below does not compile with JSON.parse.
+         * @return {*}
+         */
+        function myJsonParse(json)
+        {
+            return JSON.parse(json);
+        }
+
+        loadXHR(WebInspector.EmulatedDevicesList._DevicesJsonUrl)
+            .then(JSON.parse)
+            .then(decodeBase64Content)
+            .then(myJsonParse)
+            .then(this._parseUpdatedDevices.bind(this))
+            .then(this._updateFinished.bind(this))
+            .catch(this._updateFailed.bind(this));
+    },
+
+    /**
+     * @param {*} json
+     */
+    _parseUpdatedDevices: function(json)
+    {
+        if (!json || typeof json !== "object") {
+            WebInspector.console.error("Malfromed device list");
+            return;
+        }
+        if (!("version" in json) || typeof json["version"] !== "number") {
+            WebInspector.console.error("Device list does not specify version");
+            return;
+        }
+        var version = json["version"];
+        if (version === 1) {
+            this._parseDevicesV1(json);
+            return;
+        }
+        WebInspector.console.error("Unsupported device list version '" + version + "'");
+    },
+
+    /**
+     * @param {*} json
+     */
+    _parseDevicesV1: function(json)
+    {
+        if (!("devices" in json)) {
+            WebInspector.console.error("Malfromed device list");
+            return;
+        }
+        var devices = json["devices"];
+        if (!Array.isArray(devices)) {
+            WebInspector.console.error("Malfromed device list");
+            return;
+        }
+
+        devices = this._listFromJSONV1(devices);
+        this._copyShowValues(this._standard, devices);
+        this._standard = devices;
+        this.saveStandardDevices();
+        WebInspector.console.log("Device list updated successfully");
+    },
+
+    _updateFailed: function()
+    {
+        WebInspector.console.error("Cannot update device list");
+        this._updateFinished();
+    },
+
+    _updateFinished: function()
+    {
+        this._updating = false;
+        this.dispatchEventToListeners(WebInspector.EmulatedDevicesList.Events.IsUpdatingChanged);
+    },
+
+    /**
+     * @param {!Array.<!WebInspector.EmulatedDevice>} from
+     * @param {!Array.<!WebInspector.EmulatedDevice>} to
+     */
+    _copyShowValues: function(from, to)
+    {
+        var deviceById = new Map();
+        for (var i = 0; i < from.length; ++i)
+            deviceById.set(from[i].title, from[i]);
+
+        for (var i = 0; i < to.length; ++i) {
+            var title = to[i].title;
+            if (deviceById.has(title))
+                to[i].copyShowFrom(deviceById.get(title));
+        }
+    },
+
+    /**
+     * @return {boolean}
+     */
+    isUpdating: function()
+    {
+        return this._updating;
     },
 
     __proto__: WebInspector.Object.prototype

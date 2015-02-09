@@ -336,7 +336,7 @@ body.dock-to-bottom .help-content {
     opacity: 1.0 !important;
 }
 
-#devices-tab-content .settings-tab.help-content{
+#devices-tab-content .settings-tab.help-content {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
@@ -349,12 +349,21 @@ body.dock-to-bottom .help-content {
     flex: none;
 }
 
+#devices-tab-content .devices-button-row {
+    flex: none;
+}
+
+#devices-tab-content .devices-button-row button {
+    margin-right: 10px;
+    min-width: 120px;
+}
+
 #devices-tab-content .devices-list {
     width: 350px;
     overflow-y: auto;
     margin: 10px 0;
     border: 1px solid rgb(231, 231, 231);
-    flex: auto;
+    flex: auto 0 1;
 }
 
 #devices-tab-content .devices-custom-separator {
