@@ -975,6 +975,17 @@ WebInspector.ElementsTreeOutline.prototype = {
             this._elementsTreeUpdater._updateModifiedNodes();
     },
 
+    /**
+     * @param {!WebInspector.DOMNode} shadowHost
+     * @param {?WebInspector.ElementsTreeOutline.ShadowHostDisplayMode} newMode
+     */
+    setShadowHostDisplayMode: function(shadowHost, newMode)
+    {
+        var treeElement = this.findTreeElement(shadowHost);
+        if (treeElement && this._elementsTreeUpdater)
+            this._elementsTreeUpdater._setShadowHostDisplayMode(treeElement, newMode);
+    },
+
     handleShortcut: function(event)
     {
         var node = this.selectedDOMNode();
@@ -1562,8 +1573,6 @@ WebInspector.ElementsTreeUpdater.prototype = {
 
         if (index >= treeElement.expandedChildrenLimit())
             this.setExpandedChildrenLimit(treeElement, index + 1);
-        if (treeElement.shadowHostToolbarElement)
-            ++index;
         return /** @type {!WebInspector.ElementsTreeElement} */ (treeElement.children[index]);
     },
 
@@ -1967,6 +1976,7 @@ WebInspector.ElementsTreeUpdater.prototype = {
         if (selectedTreeElement !== treeElement.treeOutline.selectedTreeElement)
             selectedTreeElement.select();
 
+        var displayMode = this._treeOutline._shadowHostDisplayModes.get(node);
         for (var i = 0; i < visibleChildren.length && i < treeElement.expandedChildrenLimit(); ++i) {
             var child = visibleChildren[i];
             var existingTreeElement = existingTreeElements.get(child) || this._treeOutline.findTreeElement(child);
@@ -1976,6 +1986,7 @@ WebInspector.ElementsTreeUpdater.prototype = {
             } else {
                 // No existing element found, insert a new element.
                 var newElement = this.insertChildElement(treeElement, child, i);
+                newElement.setShadowHostToolbarMode(displayMode);
                 if (this._updateInfo(node))
                     WebInspector.ElementsTreeElement.animateOnDOMUpdate(newElement);
                 // If a node was inserted in the middle of existing list dynamically we might need to increase the limit.
@@ -2001,15 +2012,6 @@ WebInspector.ElementsTreeUpdater.prototype = {
         // Insert close tag.
         if (node.nodeType() === Node.ELEMENT_NODE && treeElement.hasChildren)
             this.insertChildElement(treeElement, node, treeElement.children.length, true);
-
-        // Update shadow host toolbar.
-        if (Runtime.experiments.isEnabled("composedShadowDOM") && node.shadowRoots().length) {
-            if (!treeElement.shadowHostToolbarElement)
-                treeElement.shadowHostToolbarElement = this._createShadowHostToolbar(treeElement);
-            treeElement.insertChild(treeElement.shadowHostToolbarElement, 0);
-        } else if (treeElement.shadowHostToolbarElement) {
-            delete treeElement.shadowHostToolbarElement;
-        }
 
         this._treeElementsBeingUpdated.delete(treeElement)
     },
@@ -2045,6 +2047,13 @@ WebInspector.ElementsTreeUpdater.prototype = {
             for (var insertionPoint of node.insertionPoints())
                 this._parentNodeModified(insertionPoint);
             delete this._domUpdateHighlightsMuted;
+
+            for (var shadowRoot of node.shadowRoots()) {
+                var treeElement = this._treeOutline.findTreeElement(shadowRoot);
+                if (treeElement)
+                    treeElement.setShadowHostToolbarMode(newMode);
+            }
+
             this._updateModifiedNodes();
 
             if (newMode === WebInspector.ElementsTreeOutline.ShadowHostDisplayMode.Composed) {
@@ -2060,75 +2069,6 @@ WebInspector.ElementsTreeUpdater.prototype = {
                 }
             }
         }
-
-        elementsTreeElement.shadowHostToolbarElement.updateButtons(newMode);
-    },
-
-    /**
-     * @param {!WebInspector.ElementsTreeElement} elementsTreeElement
-     */
-    _createShadowHostToolbar: function(elementsTreeElement)
-    {
-        /**
-         * @this {WebInspector.ElementsTreeUpdater}
-         * @param {string} label
-         * @param {string} tooltip
-         * @param {?WebInspector.ElementsTreeOutline.ShadowHostDisplayMode} mode
-         */
-        function createButton(label, tooltip, mode)
-        {
-            var button = createElement("button");
-            button.className = "shadow-host-display-mode-toolbar-button";
-            button.textContent = label;
-            button.title = tooltip;
-            button.mode = mode;
-            if (mode)
-                button.classList.add("custom-mode")
-            button.addEventListener("click", buttonClicked.bind(this));
-            toolbar.appendChild(button);
-            return button;
-        }
-
-        /**
-         * @param {?WebInspector.ElementsTreeOutline.ShadowHostDisplayMode} mode
-         */
-        function updateButtons(mode)
-        {
-            for (var i = 0; i < buttons.length; ++i) {
-                var currentModeButton = mode === buttons[i].mode;
-                buttons[i].classList.toggle("toggled", currentModeButton);
-                buttons[i].disabled = currentModeButton;
-            }
-        }
-
-        /**
-         * @this {WebInspector.ElementsTreeUpdater}
-         * @param {!Event} event
-         */
-        function buttonClicked(event)
-        {
-            var button = event.target;
-            if (button.disabled)
-                return;
-            this._setShadowHostDisplayMode(elementsTreeElement, button.mode);
-            event.consume();
-        }
-
-        var node = elementsTreeElement.node();
-        var toolbar = createElementWithClass("div", "shadow-host-display-mode-toolbar");
-        var toolbarTreeElement = new TreeElement(toolbar, null, false);
-
-        var buttons = [];
-        buttons.push(createButton.call(this, "Logical", WebInspector.UIString("Logical view \n(Light and Shadow DOM are shown separately)."), null));
-        buttons.push(createButton.call(this, "Composed", WebInspector.UIString("Composed view\n(Light DOM is shown as distributed into Shadow DOM)."), WebInspector.ElementsTreeOutline.ShadowHostDisplayMode.Composed));
-        buttons.push(createButton.call(this, "Flattened", WebInspector.UIString("Flattened view\n(Same as composed view, but shadow roots and insertion points are hidden)."), WebInspector.ElementsTreeOutline.ShadowHostDisplayMode.Flattened));
-        updateButtons(this._treeOutline._shadowHostDisplayModes.get(node) || null);
-
-        toolbarTreeElement.selectable = false;
-        toolbarTreeElement.shadowHostToolbar = true;
-        toolbarTreeElement.buttons = buttons;
-        toolbarTreeElement.updateButtons = updateButtons;
-        return toolbarTreeElement;
     },
 }
 
