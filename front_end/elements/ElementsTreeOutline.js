@@ -1912,7 +1912,8 @@ WebInspector.ElementsTreeUpdater.prototype = {
         if (treeElement.children.indexOf(child) === targetIndex)
             return;
         var wasSelected = child.selected;
-        treeElement.removeChild(child);
+        if (child.parent)
+            child.parent.removeChild(child);
         treeElement.insertChild(child, targetIndex);
         if (wasSelected)
             child.select();
@@ -1926,13 +1927,12 @@ WebInspector.ElementsTreeUpdater.prototype = {
         if (this._treeElementsBeingUpdated.has(treeElement) || !this._treeOutline._visible)
             return;
 
-        var node = treeElement.node();
-
         this._treeElementsBeingUpdated.add(treeElement);
 
         var selectedTreeElement = treeElement.treeOutline.selectedTreeElement;
 
-        var visibleChildren = this._visibleChildren(treeElement.node());
+        var node = treeElement.node();
+        var visibleChildren = this._visibleChildren(node);
         var visibleChildrenSet = new Set(visibleChildren);
 
         // Remove any tree elements that no longer have this node as their parent and save
@@ -1969,13 +1969,14 @@ WebInspector.ElementsTreeUpdater.prototype = {
 
         for (var i = 0; i < visibleChildren.length && i < treeElement.expandedChildrenLimit(); ++i) {
             var child = visibleChildren[i];
-            if (existingTreeElements.has(child)) {
+            var existingTreeElement = existingTreeElements.get(child) || this._treeOutline.findTreeElement(child);
+            if (existingTreeElement && existingTreeElement !== treeElement) {
                 // If an existing element was found, just move it.
-                this._moveChild(treeElement, existingTreeElements.get(child), i);
+                this._moveChild(treeElement, existingTreeElement, i);
             } else {
                 // No existing element found, insert a new element.
                 var newElement = this.insertChildElement(treeElement, child, i);
-                if (this._updateInfo(treeElement.node()))
+                if (this._updateInfo(node))
                     WebInspector.ElementsTreeElement.animateOnDOMUpdate(newElement);
                 // If a node was inserted in the middle of existing list dynamically we might need to increase the limit.
                 if (treeElement.children.length > treeElement.expandedChildrenLimit())
