@@ -44,24 +44,18 @@ WebInspector.TimelineFlameChartDataProvider = function(model, frameModel)
     this._filters = [];
     this.addFilter(WebInspector.TimelineUIUtils.hiddenEventsFilter());
     this.addFilter(new WebInspector.ExclusiveTraceEventNameFilter([WebInspector.TimelineModel.RecordType.Program]));
+    var hueSpace = { min: 180, max: 310, count: 7 };
+    var satSpace = { min: 50, max: 80, count: 5 };
+    this._jsOddFramesColorGenerator = new WebInspector.FlameChart.ColorGenerator(hueSpace, satSpace, 85);
+    this._jsEvenFramesColorGenerator = new WebInspector.FlameChart.ColorGenerator(hueSpace, satSpace, 90);
+    this._consoleColorGenerator = new WebInspector.FlameChart.ColorGenerator(
+        { min: 30, max: 55, count: 5 },
+        { min: 70, max: 100, count: 6 },
+        50, 0.7);
 }
 
 WebInspector.TimelineFlameChartDataProvider.InstantEventVisibleDurationMs = 0.001;
 WebInspector.TimelineFlameChartDataProvider.JSFrameCoalesceThresholdMs = 1.1;
-
-/**
- * @return {!WebInspector.FlameChart.ColorGenerator}
- */
-WebInspector.TimelineFlameChartDataProvider.consoleEventsColorGenerator = function()
-{
-    if (!WebInspector.TimelineFlameChartDataProvider.consoleEventsColorGenerator._consoleEventsColorGenerator) {
-        var hueSpace = { min: 30, max: 55, count: 5 };
-        var satSpace = { min: 70, max: 100, count: 6 };
-        var colorGenerator = new WebInspector.FlameChart.ColorGenerator(hueSpace, satSpace, 50, 0.7);
-        WebInspector.TimelineFlameChartDataProvider.consoleEventsColorGenerator._consoleEventsColorGenerator = colorGenerator;
-    }
-    return WebInspector.TimelineFlameChartDataProvider.consoleEventsColorGenerator._consoleEventsColorGenerator;
-}
 
 WebInspector.TimelineFlameChartDataProvider.prototype = {
     /**
@@ -384,12 +378,15 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
         var event = this._entryEvents[entryIndex];
         if (!event)
             return this._entryIndexToFrame[entryIndex] ? "white" : "#aaa";
-        if (event.name === WebInspector.TimelineModel.RecordType.JSFrame)
-            return this._timelineData.entryLevels[entryIndex] % 2 ? "#efb320" : "#fcc02d";
+        if (event.name === WebInspector.TimelineModel.RecordType.JSFrame) {
+            var generator = this._timelineData.entryLevels[entryIndex] % 2 ? this._jsOddFramesColorGenerator : this._jsEvenFramesColorGenerator;
+            var colorId = event.args["data"]["url"];
+            return generator.colorForID(colorId);
+        }
         var category = WebInspector.TimelineUIUtils.eventStyle(event).category;
         if (WebInspector.TracingModel.isAsyncPhase(event.phase)) {
             if (event.category === WebInspector.TracingModel.ConsoleEventCategory)
-                return WebInspector.TimelineFlameChartDataProvider.consoleEventsColorGenerator().colorForID(event.name);
+                return this._consoleColorGenerator.colorForID(event.name);
             var color = this._asyncColorByCategory[category.name];
             if (color)
                 return color;
@@ -456,7 +453,6 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
         if (barWidth < 5)
             return false;
 
-        // Paint text using white color on dark background.
         if (text) {
             context.save();
             context.fillStyle = "#333";
