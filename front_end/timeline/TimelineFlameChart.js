@@ -413,33 +413,22 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
     {
         var frame = this._entryIndexToFrame[entryIndex];
         if (frame) {
-            context.save();
-            var /** @const */ vPadding = 2;
-            var /** @const */ hPadding = 3;
+            var /** @const */ vPadding = 1;
+            var /** @const */ hPadding = 2;
             barX += hPadding;
             barWidth -= 2 * hPadding;
             barY += vPadding;
-            barHeight -= 2 * vPadding;
+            barHeight -= 2 * vPadding + 1;
 
             context.fillStyle = "#ccc";
             context.fillRect(barX, barY, barWidth, barHeight);
 
-            if (barWidth > 10) {
-                // Draw frame perforation.
-                context.fillStyle = "white";
-                for (var i = 0; i < barHeight; i += 3) {
-                    context.fillRect(barX + 1, barY + i, 2, 2);
-                    context.fillRect(barX + barWidth - 2, barY + i, 2, 2);
-                }
+            // Draw frame perforation.
+            context.fillStyle = "white";
+            for (var i = 1; i < barWidth; i += 4) {
+                context.fillRect(barX + i, barY + 1, 2, 2);
+                context.fillRect(barX + i, barY + barHeight - 3, 2, 2);
             }
-
-            context.translate(0.5, 0.5);
-            context.moveTo(barX, barY);
-            context.lineTo(barX, barY + barHeight - 1);
-            context.moveTo(barX + barWidth, barY);
-            context.lineTo(barX + barWidth, barY + barHeight - 1);
-            context.strokeStyle = "#aaa";
-            context.stroke();
 
             var frameDurationText = Number.preciseMillisToString(frame.duration, 1);
             var textWidth = context.measureText(frameDurationText).width;
@@ -447,7 +436,6 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
                 context.fillStyle = "#333";
                 context.fillText(frameDurationText, barX + ((barWidth - textWidth) >> 1), barY + barHeight - 3);
             }
-            context.restore();
             return true;
         }
         if (barWidth < 5)
