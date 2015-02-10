@@ -241,8 +241,6 @@ WebInspector.TimelineFrameModelBase.prototype = {
     {
         if (!this._lastFrame)
             return;
-        this._mainFrameRequested = false;
-        this._mainFrameCommitted = true;
         if (this._framePendingActivation) {
             this._lastFrame._addTimeForCategories(this._framePendingActivation.timeByCategory);
             this._lastFrame.paints = this._framePendingActivation.paints;
@@ -264,6 +262,8 @@ WebInspector.TimelineFrameModelBase.prototype = {
             return;
         this._framePendingActivation = this._framePendingCommit;
         this._framePendingCommit = null;
+        this._mainFrameRequested = false;
+        this._mainFrameCommitted = true;
     },
 
     /**
