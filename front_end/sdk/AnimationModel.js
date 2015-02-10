@@ -45,33 +45,20 @@ WebInspector.AnimationModel.prototype = {
     },
 
     /**
-     * @param {!DOMAgent.NodeId} nodeId
-     * @param {boolean} showSubtreeAnimations
-     */
-    startListening: function(nodeId, showSubtreeAnimations)
-    {
-        if (!this._enabled)
-            this._agent.enable(this._wasEnabled.bind(this));
-        this._agent.startListening(nodeId, showSubtreeAnimations);
-    },
-
-    stopListening: function()
-    {
-        this._agent.stopListening();
-    },
-
-    _wasEnabled: function()
-    {
-        this._enabled = true;
-    },
-
-    /**
      * @param {!AnimationAgent.AnimationPlayer} payload
      */
     animationPlayerCreated: function(payload)
     {
         var player = WebInspector.AnimationModel.AnimationPlayer.parsePayload(this.target(), payload);
         this.dispatchEventToListeners(WebInspector.AnimationModel.Events.AnimationPlayerCreated, player);
+    },
+
+    ensureEnabled: function()
+    {
+        if (this._enabled)
+            return;
+        this._agent.enable();
+        this._enabled = true;
     },
 
     __proto__: WebInspector.SDKModel.prototype

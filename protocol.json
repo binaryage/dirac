@@ -4767,20 +4767,6 @@
                 ],
                 "description": "Gets the state of an AnimationPlayer.",
                 "hidden": true
-            },
-            {
-                "name": "startListening",
-                "parameters": [
-                    { "name": "nodeId", "$ref": "DOM.NodeId", "description": "Id of the node to record on." },
-                    { "name": "includeSubtreeAnimations", "type": "boolean", "description": "Include animations from elements subtree." }
-                ],
-                "description": "Sets the parameters of recording for new animations events.",
-                "hidden": true
-            },
-            {
-                "name": "stopListening",
-                "description": "Stops recording for new animation player events.",
-                "hidden": true
             }
         ],
         "events": [
