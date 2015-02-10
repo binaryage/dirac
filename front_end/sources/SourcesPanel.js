@@ -1159,7 +1159,8 @@ WebInspector.SourcesPanel.prototype = {
         this.sidebarPanes.jsBreakpoints.expand();
         this.sidebarPanes.callstack.expand();
         this._sidebarPaneStack = sidebarPaneStack;
-        this._updateTargetsSidebarVisibility();
+        this._sidebarPaneStack.togglePaneHidden(this.sidebarPanes.threads, true);
+        this._showThreadsSidebarPaneIfNeeded();
         if (WebInspector.settings.watchExpressions.get().length > 0)
             this.sidebarPanes.watchExpressions.expand();
     },
@@ -1198,7 +1199,7 @@ WebInspector.SourcesPanel.prototype = {
      */
     targetAdded: function(target)
     {
-        this._updateTargetsSidebarVisibility();
+        this._showThreadsSidebarPaneIfNeeded();
     },
 
     /**
@@ -1207,15 +1208,16 @@ WebInspector.SourcesPanel.prototype = {
      */
     targetRemoved: function(target)
     {
-        this._updateTargetsSidebarVisibility();
+        this._showThreadsSidebarPaneIfNeeded();
     },
 
-    _updateTargetsSidebarVisibility: function()
+    _showThreadsSidebarPaneIfNeeded: function()
     {
-        if (!this._sidebarPaneStack)
-            return;
         // FIXME(413886): We could remove worker frontend check here once we support explicit threads and do not send main thread for service/shared workers to frontend.
-        this._sidebarPaneStack.togglePaneHidden(this.sidebarPanes.threads, WebInspector.targetManager.targets().length < 2 || WebInspector.isWorkerFrontend());
+        if (!this._sidebarPaneStack || WebInspector.isWorkerFrontend() || WebInspector.targetManager.targets().length < 2)
+            return;
+
+        this._sidebarPaneStack.togglePaneHidden(this.sidebarPanes.threads, false);
     },
 
     __proto__: WebInspector.Panel.prototype
