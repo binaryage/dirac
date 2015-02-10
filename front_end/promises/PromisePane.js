@@ -23,8 +23,8 @@ WebInspector.PromisePane = function()
     clearButton.addEventListener("click", this._clearButtonClicked.bind(this));
     statusBar.appendStatusBarItem(clearButton);
 
-    this._filterBar = new WebInspector.FilterBar();
-    statusBar.appendStatusBarItem(this._filterBar.filterButton());
+    this._filter = new WebInspector.PromisePaneFilter(this._refresh.bind(this));
+    statusBar.appendStatusBarItem(this._filter.filterButton());
 
     var garbageCollectButton = new WebInspector.StatusBarButton(WebInspector.UIString("Collect garbage"), "garbage-collect-status-bar-item");
     garbageCollectButton.addEventListener("click", this._garbageCollectButtonClicked, this);
@@ -33,23 +33,9 @@ WebInspector.PromisePane = function()
     var asyncCheckbox = new WebInspector.StatusBarCheckbox(WebInspector.UIString("Async"), WebInspector.UIString("Capture async stack traces"), WebInspector.settings.enableAsyncStackTraces);
     statusBar.appendStatusBarItem(asyncCheckbox);
 
-    // Filter UI controls.
+    this.element.appendChild(this._filter.filtersContainer());
+
     this._hiddenByFilterCount = 0;
-    this._filtersContainer = this.element.createChild("div", "promises-filters-header hidden");
-    this._filtersContainer.appendChild(this._filterBar.filtersElement());
-    this._filterBar.addEventListener(WebInspector.FilterBar.Events.FiltersToggled, this._onFiltersToggled, this);
-    this._filterBar.setName("promisePane");
-
-    var statuses = [
-        { name: "pending", label: WebInspector.UIString("Pending") },
-        { name: "resolved", label: WebInspector.UIString("Fulfilled") },
-        { name: "rejected", label: WebInspector.UIString("Rejected") }
-    ];
-    this._promiseStatusFiltersSetting = WebInspector.settings.createSetting("promiseStatusFilters", {});
-    this._statusFilterUI = new WebInspector.NamedBitSetFilterUI(statuses, this._promiseStatusFiltersSetting);
-    this._statusFilterUI.addEventListener(WebInspector.FilterUI.Events.FilterChanged, this._filtersChanged, this);
-    this._filterBar.addFilter(this._statusFilterUI);
-
     this._filterStatusMessageElement = this.element.createChild("div", "promises-filter-status hidden");
     this._filterStatusTextElement = this._filterStatusMessageElement.createChild("span");
     this._filterStatusMessageElement.createTextChild(" ");
@@ -208,23 +194,9 @@ WebInspector.PromisePane.prototype = {
             this._promiseDetailsByTarget.delete(this._target);
     },
 
-    /**
-     * @param {!WebInspector.Event} event
-     */
-    _onFiltersToggled: function(event)
-    {
-        var toggled = /** @type {boolean} */ (event.data);
-        this._filtersContainer.classList.toggle("hidden", !toggled);
-    },
-
-    _filtersChanged: function()
-    {
-        this._refresh();
-    },
-
     _resetFilters: function()
     {
-        this._promiseStatusFiltersSetting.set({});
+        this._filter.reset();
     },
 
     _updateFilterStatus: function()
@@ -262,8 +234,8 @@ WebInspector.PromisePane.prototype = {
         if (target === this._target)
             this._attachDataGridNode(details);
 
-        var wasVisible = !previousDetails || this._statusFilterUI.accept(previousDetails.status);
-        var isVisible = this._statusFilterUI.accept(details.status);
+        var wasVisible = !previousDetails || this._filter.shouldBeVisible(previousDetails);
+        var isVisible = this._filter.shouldBeVisible(details);
         if (wasVisible !== isVisible) {
             this._hiddenByFilterCount += wasVisible ? 1 : -1;
             this._updateFilterStatus();
@@ -282,7 +254,7 @@ WebInspector.PromisePane.prototype = {
             parentNode.appendChild(node);
         if (details.__isGarbageCollected)
             node.element().classList.add("promise-gc");
-        if (this._statusFilterUI.accept(details.status))
+        if (this._filter.shouldBeVisible(details))
             parentNode.expanded = true;
         else
             node.remove();
@@ -304,7 +276,7 @@ WebInspector.PromisePane.prototype = {
             details = promiseIdToDetails.get(parentId);
             if (!details)
                 break;
-            if (!this._statusFilterUI.accept(details.status))
+            if (!this._filter.shouldBeVisible(details))
                 continue;
             var node = this._promiseIdToNode.get(details.id);
             if (node)
@@ -373,7 +345,7 @@ WebInspector.PromisePane.prototype = {
         for (var pair of promiseIdToDetails) {
             var id = /** @type {number} */ (pair[0]);
             var details = /** @type {!DebuggerAgent.PromiseDetails} */ (pair[1]);
-            if (!this._statusFilterUI.accept(details.status)) {
+            if (!this._filter.shouldBeVisible(details)) {
                 ++this._hiddenByFilterCount;
                 continue;
             }
@@ -400,6 +372,7 @@ WebInspector.PromisePane.prototype = {
     _clear: function()
     {
         this._hiddenByFilterCount = 0;
+        this._updateFilterStatus();
         this._promiseIdToNode.clear();
         this._hidePopover();
         this._dataGrid.rootNode().removeChildren();
@@ -503,4 +476,69 @@ WebInspector.PromisePane.prototype = {
     },
 
     __proto__: WebInspector.VBox.prototype
+}
+
+/**
+ * @constructor
+ * @param {function()} filterChanged
+ */
+WebInspector.PromisePaneFilter = function(filterChanged)
+{
+    this._filterBar = new WebInspector.FilterBar();
+
+    this._filtersContainer = createElementWithClass("div", "promises-filters-header hidden");
+    this._filtersContainer.appendChild(this._filterBar.filtersElement());
+    this._filterBar.addEventListener(WebInspector.FilterBar.Events.FiltersToggled, this._onFiltersToggled, this);
+    this._filterBar.setName("promisePane");
+
+    var statuses = [
+        { name: "pending", label: WebInspector.UIString("Pending") },
+        { name: "resolved", label: WebInspector.UIString("Fulfilled") },
+        { name: "rejected", label: WebInspector.UIString("Rejected") }
+    ];
+    this._promiseStatusFiltersSetting = WebInspector.settings.createSetting("promiseStatusFilters", {});
+    this._statusFilterUI = new WebInspector.NamedBitSetFilterUI(statuses, this._promiseStatusFiltersSetting);
+    this._statusFilterUI.addEventListener(WebInspector.FilterUI.Events.FilterChanged, filterChanged, undefined);
+    this._filterBar.addFilter(this._statusFilterUI);
+}
+
+WebInspector.PromisePaneFilter.prototype = {
+    /**
+     * @return {!WebInspector.StatusBarButton}
+     */
+    filterButton: function()
+    {
+        return this._filterBar.filterButton();
+    },
+
+    /**
+     * @return {!Element}
+     */
+    filtersContainer: function()
+    {
+        return this._filtersContainer;
+    },
+
+    /**
+     * @param {!DebuggerAgent.PromiseDetails} details
+     * @return {boolean}
+     */
+    shouldBeVisible: function(details)
+    {
+        return this._statusFilterUI.accept(details.status);
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _onFiltersToggled: function(event)
+    {
+        var toggled = /** @type {boolean} */ (event.data);
+        this._filtersContainer.classList.toggle("hidden", !toggled);
+    },
+
+    reset: function()
+    {
+        this._promiseStatusFiltersSetting.set({});
+    }
 }
