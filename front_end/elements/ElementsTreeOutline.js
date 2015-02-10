@@ -1230,11 +1230,9 @@ WebInspector.ElementsTreeOutline.prototype = {
         var treeElement = this.findTreeElement(parentNode);
         if (treeElement) {
             var oldDisplayMode = treeElement.childrenDisplayMode();
-            this._updateChildrenDisplayMode(treeElement);
-            if (treeElement.childrenDisplayMode() !== oldDisplayMode) {
-                this._nodeModified(parentNode);
+            var newDisplayMode = this._calculateChildrenDisplayMode(treeElement);
+            if (newDisplayMode !== oldDisplayMode)
                 this._updateRecord(parentNode).childrenModified();
-            }
         }
         return this._updateRecord(parentNode);
     },
@@ -1385,17 +1383,10 @@ WebInspector.ElementsTreeOutline.prototype = {
             // Document's children have changed, perform total update.
             this.update();
         } else {
-            for (var node of this._recentlyModifiedNodes) {
-                var nodeItem = this.findTreeElement(node);
-                if (nodeItem)
-                    nodeItem.updateTitle(false);
-            }
-
-            for (var node of this._recentlyModifiedParentNodes) {
-                var parentNodeItem = this.findTreeElement(node);
-                if (parentNodeItem && parentNodeItem.populated)
-                    this.updateChildren(parentNodeItem);
-            }
+            for (var node of this._recentlyModifiedNodes)
+                this._updateModifiedNode(node);
+            for (var node of this._recentlyModifiedParentNodes)
+                this._updateModifiedParentNode(node);
         }
 
         if (hidePanelWhileUpdating) {
@@ -1411,6 +1402,24 @@ WebInspector.ElementsTreeOutline.prototype = {
         this._fireElementsTreeUpdated(updatedNodes.valuesArray());
     },
 
+    _updateModifiedNode: function(node)
+    {
+        var treeElement = this.findTreeElement(node);
+        if (treeElement)
+            treeElement.updateTitle(false);
+    },
+
+    _updateModifiedParentNode: function(node)
+    {
+        var parentTreeElement = this.findTreeElement(node);
+        if (parentTreeElement) {
+            this._updateChildrenDisplayMode(parentTreeElement);
+            parentTreeElement.updateTitle(false);
+            if (parentTreeElement.populated)
+                this.updateChildren(parentTreeElement);
+        }
+    },
+
     /**
      * @param {!WebInspector.ElementsTreeElement} treeElement
      */
@@ -1419,7 +1428,7 @@ WebInspector.ElementsTreeOutline.prototype = {
         if (treeElement.children.length || !treeElement.hasChildren)
             return;
 
-        this.updateChildren(treeElement);
+        this._updateModifiedParentNode(treeElement.node());
     },
 
     /**
@@ -1689,21 +1698,25 @@ WebInspector.ElementsTreeOutline.prototype = {
 
     /**
      * @param {!WebInspector.ElementsTreeElement} treeElement
+     * @return {!WebInspector.ElementsTreeElement.ChildrenDisplayMode}
      */
-    _updateChildrenDisplayMode: function(treeElement)
+    _calculateChildrenDisplayMode: function(treeElement)
     {
         var node = treeElement.node();
         var showInlineText = this._canShowInlineText(treeElement);
         var hasChildren = !treeElement.isClosingTag() && this._hasVisibleChildren(node);
 
-        var childrenDisplayMode;
         if (showInlineText)
-            childrenDisplayMode = WebInspector.ElementsTreeElement.ChildrenDisplayMode.InlineText;
-        else if (hasChildren)
-            childrenDisplayMode = WebInspector.ElementsTreeElement.ChildrenDisplayMode.HasChildren;
-        else
-            childrenDisplayMode = WebInspector.ElementsTreeElement.ChildrenDisplayMode.NoChildren;
+            return WebInspector.ElementsTreeElement.ChildrenDisplayMode.InlineText;
+        return hasChildren ? WebInspector.ElementsTreeElement.ChildrenDisplayMode.HasChildren : WebInspector.ElementsTreeElement.ChildrenDisplayMode.NoChildren;
+    },
 
+    /**
+     * @param {!WebInspector.ElementsTreeElement} treeElement
+     */
+    _updateChildrenDisplayMode: function(treeElement)
+    {
+        var childrenDisplayMode = this._calculateChildrenDisplayMode(treeElement);
         treeElement.setChildrenDisplayMode(childrenDisplayMode);
         treeElement.setHasChildren(childrenDisplayMode === WebInspector.ElementsTreeElement.ChildrenDisplayMode.HasChildren);
     },
@@ -1744,7 +1757,7 @@ WebInspector.ElementsTreeOutline.prototype = {
 
         treeElement.setExpandedChildrenLimit(expandedChildrenLimit);
         if (treeElement.treeOutline && !this._treeElementsBeingUpdated.has(treeElement))
-            this._updateChildren(treeElement);
+            this._updateModifiedParentNode(treeElement.node());
     },
 
     /**
@@ -1875,8 +1888,6 @@ WebInspector.ElementsTreeOutline.prototype = {
                     this.setExpandedChildrenLimit(treeElement, treeElement.expandedChildrenLimit() + 1);
             }
         }
-
-        treeElement.updateTitle();
 
         // Update expand all button.
         var expandedChildCount = treeElement.children.length;

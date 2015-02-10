@@ -1503,7 +1503,7 @@ WebInspector.ElementsTreeElement.prototype = {
     },
 
     /**
-     * @param {function(boolean)} callback
+     * @param {function(boolean)=} callback
      */
     toggleEditAsHTML: function(callback)
     {
@@ -1517,7 +1517,8 @@ WebInspector.ElementsTreeElement.prototype = {
          */
         function selectNode(error)
         {
-            callback(!error);
+            if (callback)
+                callback(!error);
         }
 
         /**
