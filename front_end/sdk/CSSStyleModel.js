@@ -1284,6 +1284,14 @@ WebInspector.CSSProperty.prototype = {
         if (!this.ownerStyle.styleSheetId)
             throw "No owner style id";
 
+        if (overwrite && propertyText === this.propertyText) {
+            if (majorChange)
+                this.ownerStyle._cssModel._domModel.markUndoableState();
+            if (userCallback)
+                userCallback(this.ownerStyle);
+            return;
+        }
+
         // An index past all the properties adds a new property to the style.
         var cssModel = this.ownerStyle._cssModel;
         cssModel._pendingCommandsMajorState.push(majorChange);

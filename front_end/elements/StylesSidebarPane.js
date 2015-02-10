@@ -3844,10 +3844,7 @@ WebInspector.StylePropertyTreeElement.prototype = {
             styleText += ";";
         var overwriteProperty = !!(!this._newProperty || this._newPropertyInStyle);
         var boundCallback = callback.bind(this, userOperationFinishedCallback.bind(null, this._parentPane, updateInterface), this.originalPropertyText);
-        if (overwriteProperty && styleText === this.property.propertyText)
-            boundCallback.call(null, this.property.ownerStyle)
-        else
-            this.property.setText(styleText, majorChange, overwriteProperty, boundCallback);
+        this.property.setText(styleText, majorChange, overwriteProperty, boundCallback);
     },
 
     /**
