@@ -231,14 +231,16 @@ WebInspector.PromisePane.prototype = {
         var previousDetails = promiseIdToDetails.get(details.id);
         promiseIdToDetails.set(details.id, details);
 
-        if (target === this._target)
+        if (target === this._target) {
+            var wasVisible = !previousDetails || this._filter.shouldBeVisible(previousDetails, this._promiseIdToNode.get(details.id));
+
             this._attachDataGridNode(details);
 
-        var wasVisible = !previousDetails || this._filter.shouldBeVisible(previousDetails);
-        var isVisible = this._filter.shouldBeVisible(details);
-        if (wasVisible !== isVisible) {
-            this._hiddenByFilterCount += wasVisible ? 1 : -1;
-            this._updateFilterStatus();
+            var isVisible = this._filter.shouldBeVisible(details, this._promiseIdToNode.get(details.id));
+            if (wasVisible !== isVisible) {
+                this._hiddenByFilterCount += wasVisible ? 1 : -1;
+                this._updateFilterStatus();
+            }
         }
     },
 
@@ -254,7 +256,7 @@ WebInspector.PromisePane.prototype = {
             parentNode.appendChild(node);
         if (details.__isGarbageCollected)
             node.element().classList.add("promise-gc");
-        if (this._filter.shouldBeVisible(details))
+        if (this._filter.shouldBeVisible(details, node))
             parentNode.expanded = true;
         else
             node.remove();
@@ -276,10 +278,8 @@ WebInspector.PromisePane.prototype = {
             details = promiseIdToDetails.get(parentId);
             if (!details)
                 break;
-            if (!this._filter.shouldBeVisible(details))
-                continue;
             var node = this._promiseIdToNode.get(details.id);
-            if (node)
+            if (node && this._filter.shouldBeVisible(details, node))
                 return node;
         }
         return this._dataGrid.rootNode();
@@ -345,11 +345,12 @@ WebInspector.PromisePane.prototype = {
         for (var pair of promiseIdToDetails) {
             var id = /** @type {number} */ (pair[0]);
             var details = /** @type {!DebuggerAgent.PromiseDetails} */ (pair[1]);
-            if (!this._filter.shouldBeVisible(details)) {
+            var node = this._createDataGridNode(details);
+            if (!this._filter.shouldBeVisible(details, node)) {
                 ++this._hiddenByFilterCount;
                 continue;
             }
-            nodesToInsert[id] = { details: details, node: this._createDataGridNode(details) };
+            nodesToInsert[id] = { details: details, node: node };
         }
 
         for (var id in nodesToInsert) {
@@ -491,6 +492,10 @@ WebInspector.PromisePaneFilter = function(filterChanged)
     this._filterBar.addEventListener(WebInspector.FilterBar.Events.FiltersToggled, this._onFiltersToggled, this);
     this._filterBar.setName("promisePane");
 
+    this._textFilterUI = new WebInspector.TextFilterUI(true);
+    this._textFilterUI.addEventListener(WebInspector.FilterUI.Events.FilterChanged, filterChanged, undefined);
+    this._filterBar.addFilter(this._textFilterUI);
+
     var statuses = [
         { name: "pending", label: WebInspector.UIString("Pending") },
         { name: "resolved", label: WebInspector.UIString("Fulfilled") },
@@ -521,11 +526,38 @@ WebInspector.PromisePaneFilter.prototype = {
 
     /**
      * @param {!DebuggerAgent.PromiseDetails} details
+     * @param {!WebInspector.DataGridNode} node
      * @return {boolean}
      */
-    shouldBeVisible: function(details)
+    shouldBeVisible: function(details, node)
     {
-        return this._statusFilterUI.accept(details.status);
+        if (!this._statusFilterUI.accept(details.status))
+            return false;
+
+        var regex = this._textFilterUI.regex();
+        if (!regex)
+            return true;
+
+        var text = this._createDataTextForSearch(node);
+        regex.lastIndex = 0;
+        return regex.test(text);
+    },
+
+    /**
+     * @param {!WebInspector.DataGridNode} node
+     * @return {string}
+     */
+    _createDataTextForSearch: function(node)
+    {
+        var texts = [];
+        var data = node.data;
+        for (var key in data) {
+            var value = data[key];
+            var text = (value instanceof Node) ? value.textContent : String(value);
+            if (text)
+                texts.push(text);
+        }
+        return texts.join(" ");
     },
 
     /**
@@ -540,5 +572,6 @@ WebInspector.PromisePaneFilter.prototype = {
     reset: function()
     {
         this._promiseStatusFiltersSetting.set({});
+        this._textFilterUI.setValue("");
     }
 }
