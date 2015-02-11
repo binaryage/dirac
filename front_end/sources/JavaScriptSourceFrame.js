@@ -255,7 +255,7 @@ WebInspector.JavaScriptSourceFrame.prototype = {
         var breakpoint = this._breakpointManager.findBreakpointOnLine(this._uiSourceCode, lineNumber);
         if (!breakpoint) {
             // This row doesn't have a breakpoint: We want to show Add Breakpoint and Add and Edit Breakpoint.
-            contextMenu.appendItem(WebInspector.UIString.capitalize("Add ^breakpoint"), this._setBreakpoint.bind(this, lineNumber, 0, "", true));
+            contextMenu.appendItem(WebInspector.UIString.capitalize("Add ^breakpoint"), this._createNewBreakpoint.bind(this, lineNumber, 0, "", true));
             contextMenu.appendItem(WebInspector.UIString.capitalize("Add ^conditional ^breakpoint…"), this._editBreakpointCondition.bind(this, lineNumber));
         } else {
             // This row has a breakpoint, we want to show edit and remove breakpoint, and either disable or enable.
@@ -661,7 +661,7 @@ WebInspector.JavaScriptSourceFrame.prototype = {
             if (breakpoint)
                 breakpoint.setCondition(newText);
             else
-                this._setBreakpoint(lineNumber, 0, newText, true);
+                this._createNewBreakpoint(lineNumber, 0, newText, true);
         }
 
         var config = new WebInspector.InplaceEditor.Config(finishEditing.bind(this, true), finishEditing.bind(this, false));
@@ -876,7 +876,19 @@ WebInspector.JavaScriptSourceFrame.prototype = {
             else
                 breakpoint.remove();
         } else
-            this._setBreakpoint(lineNumber, 0, "", true);
+            this._createNewBreakpoint(lineNumber, 0, "", true);
+    },
+
+    /**
+     * @param {number} lineNumber
+     * @param {number} columnNumber
+     * @param {string} condition
+     * @param {boolean} enabled
+     */
+    _createNewBreakpoint: function(lineNumber, columnNumber, condition, enabled)
+    {
+        this._setBreakpoint(lineNumber, columnNumber, condition, enabled);
+        WebInspector.userMetrics.ScriptsBreakpointSet.record();
     },
 
     toggleBreakpointOnCurrentLine: function()

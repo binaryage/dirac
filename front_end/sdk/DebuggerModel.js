@@ -298,7 +298,6 @@ WebInspector.DebuggerModel.prototype = {
             }
         }
         this._agent.setBreakpointByUrl(lineNumber, url, undefined, columnNumber, condition, didSetBreakpoint);
-        WebInspector.userMetrics.ScriptsBreakpointSet.record();
     },
 
     /**
@@ -323,7 +322,6 @@ WebInspector.DebuggerModel.prototype = {
             }
         }
         this._agent.setBreakpoint(rawLocation.payload(), condition, didSetBreakpoint);
-        WebInspector.userMetrics.ScriptsBreakpointSet.record();
     },
 
     /**
