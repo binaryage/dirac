@@ -454,6 +454,10 @@ WebInspector.EmulatedDevicesList = function()
     /** @type {!Array.<!WebInspector.EmulatedDevice>} */
     this._custom = this._listFromJSONV1(this._customSetting.get());
 
+    /** @type {!WebInspector.Setting} */
+    this._lastUpdatedSetting = WebInspector.settings.createSetting("lastUpdatedDeviceList", null);
+
+    /** @type {boolean} */
     this._updating = false;
 }
 
@@ -464,6 +468,7 @@ WebInspector.EmulatedDevicesList.Events = {
 }
 
 WebInspector.EmulatedDevicesList._DevicesJsonUrl = "https://api.github.com/repos/GoogleChrome/devtools-device-data/contents/devices.json?ref=release";
+WebInspector.EmulatedDevicesList._UpdateIntervalMs = 24 * 60 * 60 * 1000;
 
 WebInspector.EmulatedDevicesList.prototype = {
     /**
@@ -566,6 +571,16 @@ WebInspector.EmulatedDevicesList.prototype = {
             .catch(this._updateFailed.bind(this));
     },
 
+    maybeAutoUpdate: function()
+    {
+        if (!Runtime.experiments.isEnabled("externalDeviceList"))
+            return;
+        var lastUpdated = this._lastUpdatedSetting.get();
+        if (lastUpdated && (Date.now() - lastUpdated < WebInspector.EmulatedDevicesList._UpdateIntervalMs))
+            return;
+        this.update();
+    },
+
     /**
      * @param {*} json
      */
@@ -618,6 +633,7 @@ WebInspector.EmulatedDevicesList.prototype = {
     _updateFinished: function()
     {
         this._updating = false;
+        this._lastUpdatedSetting.set(Date.now());
         this.dispatchEventToListeners(WebInspector.EmulatedDevicesList.Events.IsUpdatingChanged);
     },
 

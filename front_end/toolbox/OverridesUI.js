@@ -26,6 +26,7 @@ WebInspector.OverridesUI.createDeviceSelect = function()
 
     WebInspector.emulatedDevicesList.addEventListener(WebInspector.EmulatedDevicesList.Events.CustomDevicesUpdated, deviceListChanged);
     WebInspector.emulatedDevicesList.addEventListener(WebInspector.EmulatedDevicesList.Events.StandardDevicesUpdated, deviceListChanged);
+    WebInspector.emulatedDevicesList.maybeAutoUpdate();
     deviceListChanged();
 
     function deviceSelected()
