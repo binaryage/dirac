@@ -819,6 +819,9 @@ WebInspector.TimelineUIUtils._generateInvalidationsForType = function(type, targ
      */
     function appendInvalidationGroup(parentElement, invalidations)
     {
+        if (!target)
+            return;
+
         var row = parentElement.createChild("div", "invalidations-group section");
         var header = row.createChild("div", "header");
         header.addEventListener("click", function() {
@@ -836,10 +839,13 @@ WebInspector.TimelineUIUtils._generateInvalidationsForType = function(type, targ
 
         appendTruncatedNodeList(header, invalidations);
 
-        if (topFrame) {
+        if (topFrame && contentHelper.linkifier()) {
             header.createTextChild(WebInspector.UIString(". "));
             var stack = header.createChild("span", "monospace");
-            contentHelper.appendStackFrame(stack, topFrame);
+
+            stack.createChild("span").textContent = WebInspector.beautifyFunctionName(topFrame.functionName);
+            stack.createChild("span").textContent = " @ ";
+            stack.createChild("span").appendChild(contentHelper.linkifier().linkifyConsoleCallFrame(target, topFrame));
         }
     }
 
@@ -1590,6 +1596,14 @@ WebInspector.TimelineDetailsContentHelper = function(target, linkifier, monospac
 
 WebInspector.TimelineDetailsContentHelper.prototype = {
     /**
+     * @return {?WebInspector.Linkifier}
+     */
+    linkifier: function()
+    {
+        return this._linkifier;
+    },
+
+    /**
      * @param {string} title
      * @param {string|number|boolean} value
      */
@@ -1647,22 +1661,14 @@ WebInspector.TimelineDetailsContentHelper.prototype = {
      */
     createChildStackTraceElement: function(parentElement, stackTrace)
     {
-        var stackTraceElement = parentElement.createChild("div", "timeline-details-view-row-value timeline-details-view-row-stack-trace monospace");
-        for (var i = 0; i < stackTrace.length; ++i) {
-            var row = stackTraceElement.createChild("div");
-            this.appendStackFrame(row, stackTrace[i]);
-        }
-    },
+        if (!this._linkifier || !this._target)
+            return;
 
-    /**
-     * @param {!Element} parentElement
-     * @param {!ConsoleAgent.CallFrame} stackFrame
-     */
-    appendStackFrame: function(parentElement, stackFrame)
-    {
-        parentElement.createTextChild(WebInspector.beautifyFunctionName(stackFrame.functionName));
-        parentElement.createTextChild(" @ ");
-        var urlElement = this._linkifier.linkifyScriptLocation(this._target, stackFrame.scriptId, stackFrame.url, stackFrame.lineNumber - 1, stackFrame.columnNumber - 1);
-        parentElement.appendChild(urlElement);
+        var stackTraceElement = parentElement.createChild("div", "timeline-details-view-row-value timeline-details-view-row-stack-trace monospace");
+
+        var callFrameElem = WebInspector.DOMPresentationUtils.buildStackTracePreviewContents(this._target, this._linkifier, stackTrace);
+
+        stackTraceElement.appendChild(callFrameElem);
     }
+
 }

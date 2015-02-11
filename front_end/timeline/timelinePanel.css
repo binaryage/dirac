@@ -647,6 +647,10 @@
     -webkit-user-select: text;
 }
 
+.timeline-details-view-row-value .stack-preview-container {
+    line-height: 11px;
+}
+
 .timeline-details-view-row-details {
     padding-left: 10px;
 }
@@ -688,11 +692,6 @@
     white-space: nowrap;
     text-overflow: ellipsis;
     line-height: 12px;
-}
-
-.timeline-details-view-row-stack-trace .webkit-html-external-link,
-.timeline-details-view-row-stack-trace .webkit-html-resource-link {
-    color: #333 !important;
 }
 
 .timeline-aggregated-info {
