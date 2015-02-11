@@ -1125,44 +1125,12 @@ WebInspector.ConsoleViewMessage.prototype = {
      */
     _populateStackTraceTreeElement: function(parentTreeElement)
     {
-        /**
-         * @param {!Array.<!ConsoleAgent.CallFrame>=} stackTrace
-         * @this {WebInspector.ConsoleViewMessage}
-         */
-        function appendStackTrace(stackTrace)
-        {
-            if (!stackTrace)
-                return;
-
-            for (var i = 0; i < stackTrace.length; i++) {
-                var frame = stackTrace[i];
-
-                var content = createElementWithClass("div", "stacktrace-entry");
-                var functionName = WebInspector.beautifyFunctionName(frame.functionName);
-                if (frame.scriptId) {
-                    var urlElement = this._linkifyCallFrame(frame);
-                    if (!urlElement)
-                        continue;
-                    content.appendChild(urlElement);
-                    content.createTextChild(" ");
-                }
-
-                content.createChild("span", "console-message-text source-code").textContent = functionName;
-                parentTreeElement.appendChild(new TreeElement(content));
-            }
-        }
-
-        appendStackTrace.call(this, this._message.stackTrace);
-
-        for (var asyncTrace = this._message.asyncStackTrace; asyncTrace; asyncTrace = asyncTrace.asyncStackTrace) {
-            if (!asyncTrace.callFrames || !asyncTrace.callFrames.length)
-                break;
-            var content = createElementWithClass("div", "stacktrace-entry");
-            var description = WebInspector.asyncStackTraceLabel(asyncTrace.description);
-            content.createChild("span", "console-message-text source-code console-async-trace-text").textContent = description;
-            parentTreeElement.appendChild(new TreeElement(content));
-            appendStackTrace.call(this, asyncTrace.callFrames);
-        }
+        var target = this._target();
+        if (!target)
+            return;
+        var content = WebInspector.DOMPresentationUtils.buildStackTracePreviewContents(target,
+            this._linkifier, this._message.stackTrace, this._message.asyncStackTrace);
+        parentTreeElement.appendChild(new TreeElement(content));
     },
 
     resetIncrementRepeatCount: function()
