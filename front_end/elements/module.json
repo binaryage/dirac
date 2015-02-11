@@ -78,6 +78,7 @@
     "scripts": [
         "BezierUI.js",
         "AnimationTimeline.js",
+        "StylesPopoverHelper.js",
         "BezierEditor.js",
         "Spectrum.js",
         "ElementsBreadcrumbs.js",

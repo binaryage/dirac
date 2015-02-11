@@ -75,7 +75,10 @@ WebInspector.StylesSidebarPane = function(computedStylePane, setPseudoClassCallb
     this._sectionsContainer = createElement("div");
     this.bodyElement.appendChild(this._sectionsContainer);
 
-    this._spectrumHelper = new WebInspector.SpectrumPopupHelper();
+    this._stylesPopoverHelper = new WebInspector.StylesPopoverHelper();
+    this._spectrum = new WebInspector.Spectrum();
+    this._bezierEditor = new WebInspector.BezierEditor();
+
     this._linkifier = new WebInspector.Linkifier(new WebInspector.Linkifier.DefaultCSSFormatter());
 
     this.element.classList.add("styles-pane");
@@ -96,6 +99,7 @@ WebInspector.StylesSidebarPane.PseudoIdNames = [
 ];
 
 WebInspector.StylesSidebarPane._colorRegex = /((?:rgb|hsl)a?\([^)]+\)|#[0-9a-fA-F]{6}|#[0-9a-fA-F]{3}|\b\w+\b(?!-))/g;
+WebInspector.StylesSidebarPane._bezierRegex = /(cubic-bezier\([^)]+\))/g;
 
 /**
  * @enum {string}
@@ -115,29 +119,6 @@ WebInspector.StylesSidebarPane.createExclamationMark = function(property)
     exclamationElement.className = "exclamation-mark" + (WebInspector.StylesSidebarPane._ignoreErrorsForProperty(property) ? "" : " warning-icon-small");
     exclamationElement.title = WebInspector.CSSMetadata.cssPropertiesMetainfo.keySet()[property.name.toLowerCase()] ? WebInspector.UIString("Invalid property value.") : WebInspector.UIString("Unknown property name.");
     return exclamationElement;
-}
-
-/**
- * @param {!WebInspector.Color} color
- * @return {!WebInspector.Color.Format}
- */
-WebInspector.StylesSidebarPane._colorFormat = function(color)
-{
-    const cf = WebInspector.Color.Format;
-    var format;
-    var formatSetting = WebInspector.settings.colorFormat.get();
-    if (formatSetting === cf.Original)
-        format = cf.Original;
-    else if (formatSetting === cf.RGB)
-        format = (color.hasAlpha() ? cf.RGBA : cf.RGB);
-    else if (formatSetting === cf.HSL)
-        format = (color.hasAlpha() ? cf.HSLA : cf.HSL);
-    else if (!color.hasAlpha())
-        format = (color.canBeShortHex() ? cf.ShortHEX : cf.HEX);
-    else
-        format = cf.RGBA;
-
-    return format;
 }
 
 /**
@@ -382,7 +363,7 @@ WebInspector.StylesSidebarPane.prototype = {
      */
     setNode: function(node)
     {
-        this._spectrumHelper.hide();
+        this._stylesPopoverHelper.hide();
         this._discardElementUnderMouse();
 
         if (node && node.nodeType() === Node.TEXT_NODE && node.parentNode)
@@ -672,6 +653,14 @@ WebInspector.StylesSidebarPane.prototype = {
             return null;
         }
         return this._node;
+    },
+
+    /**
+     * @param {boolean} editing
+     */
+    setEditingStyle: function(editing)
+    {
+        this._isEditingStyle = editing;
     },
 
     _styleSheetOrMediaQueryResultChanged: function()
@@ -1231,7 +1220,7 @@ WebInspector.StylesSidebarPane.prototype = {
     {
         this.element.ownerDocument.body.removeEventListener("keydown", this._keyDownBound, false);
         this.element.ownerDocument.body.removeEventListener("keyup", this._keyUpBound, false);
-        this._spectrumHelper.hide();
+        this._stylesPopoverHelper.hide();
         this._discardElementUnderMouse();
         WebInspector.SidebarPane.prototype.willHide.call(this);
     },
@@ -2630,6 +2619,14 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
     },
 
     /**
+     * @return {boolean}
+     */
+    isEditableStyleRule: function()
+    {
+        return !!(this._styleRule && this._styleRule.editable());
+    },
+
+    /**
      * @return {!WebInspector.StylesSidebarPane|!WebInspector.ComputedStyleSidebarPane}
      */
     parentPane: function()
@@ -2782,6 +2779,8 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
         if (value) {
             var formatter = new WebInspector.StringFormatter();
             formatter.addProcessor(urlRegex(value), linkifyURL.bind(this));
+            if (Runtime.experiments.isEnabled("animationInspection") && WebInspector.CSSMetadata.isBezierAwareProperty(this.name) && this.parsedOk)
+                formatter.addProcessor(WebInspector.StylesSidebarPane._bezierRegex, this._processBezier.bind(this, nameElement, valueElement));
             if (WebInspector.CSSMetadata.isColorAwareProperty(this.name) && this.parsedOk)
                 formatter.addProcessor(WebInspector.StylesSidebarPane._colorRegex, this._processColor.bind(this, nameElement, valueElement));
 
@@ -2831,163 +2830,24 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
      */
     _processColor: function(nameElement, valueElement, text)
     {
-        var color = WebInspector.Color.parse(text);
+        var spectrum = this.editablePane() && this.editablePane()._spectrum;
+        var stylesPopoverHelper = this.editablePane() && this.editablePane()._stylesPopoverHelper;
+        var iconHelper = new WebInspector.ColorSwatchIcon(this, stylesPopoverHelper, spectrum, nameElement, valueElement, text);
+        return iconHelper.icon();
+    },
 
-        // We can be called with valid non-color values of |text| (like 'none' from border style)
-        if (!color)
-            return createTextNode(text);
-
-        var format = WebInspector.StylesSidebarPane._colorFormat(color);
-        var spectrumHelper = this.editablePane() && this.editablePane()._spectrumHelper;
-        var spectrum = spectrumHelper ? spectrumHelper.spectrum() : null;
-
-        var isEditable = !!(this._styleRule && this._styleRule.editable());
-        var colorSwatch = new WebInspector.ColorSwatch(!isEditable);
-        colorSwatch.setColorString(text);
-        colorSwatch.element.addEventListener("click", swatchClick.bind(this), false);
-
-        var scrollerElement;
-        var boundSpectrumChanged = spectrumChanged.bind(this);
-        var boundSpectrumHidden = spectrumHidden.bind(this);
-
-        /**
-         * @param {!WebInspector.Event} event
-         * @this {WebInspector.StylePropertyTreeElementBase}
-         */
-        function spectrumChanged(event)
-        {
-            var colorString = /** @type {string} */ (event.data);
-            spectrum.displayText = colorString;
-            colorValueElement.textContent = colorString;
-            colorSwatch.setColorString(colorString);
-            this.applyStyleText(nameElement.textContent + ": " + valueElement.textContent, false, false, false);
-        }
-
-        /**
-         * @param {!WebInspector.Event} event
-         * @this {WebInspector.StylePropertyTreeElementBase}
-         */
-        function spectrumHidden(event)
-        {
-            if (scrollerElement)
-                scrollerElement.removeEventListener("scroll", repositionSpectrum, false);
-            var commitEdit = event.data;
-            var propertyText = !commitEdit && this.originalPropertyText ? this.originalPropertyText : (nameElement.textContent + ": " + valueElement.textContent);
-            this.applyStyleText(propertyText, true, true, false);
-            spectrum.removeEventListener(WebInspector.Spectrum.Events.ColorChanged, boundSpectrumChanged);
-            spectrumHelper.removeEventListener(WebInspector.SpectrumPopupHelper.Events.Hidden, boundSpectrumHidden);
-
-            delete this.editablePane()._isEditingStyle;
-            delete this.originalPropertyText;
-        }
-
-        function repositionSpectrum()
-        {
-            spectrumHelper.reposition(colorSwatch.element);
-        }
-
-        /**
-         * @param {!Event} e
-         * @this {WebInspector.StylePropertyTreeElementBase}
-         */
-        function swatchClick(e)
-        {
-            e.consume(true);
-
-            // Shift + click toggles color formats.
-            // Click opens colorpicker, only if the element is not in computed styles section.
-            if (!spectrumHelper || e.shiftKey) {
-                changeColorDisplay();
-                return;
-            }
-
-            if (!isEditable)
-                return;
-
-            var visible = spectrumHelper.toggle(colorSwatch.element, color, format);
-            if (visible) {
-                spectrum.displayText = color.asString(format);
-                this.originalPropertyText = this.property.propertyText;
-                this.editablePane()._isEditingStyle = true;
-                spectrum.addEventListener(WebInspector.Spectrum.Events.ColorChanged, boundSpectrumChanged);
-                spectrumHelper.addEventListener(WebInspector.SpectrumPopupHelper.Events.Hidden, boundSpectrumHidden);
-
-                scrollerElement = colorSwatch.element.enclosingNodeOrSelfWithClass("style-panes-wrapper");
-                if (scrollerElement)
-                    scrollerElement.addEventListener("scroll", repositionSpectrum, false);
-                else
-                    console.error("Unable to handle color picker scrolling");
-            }
-        }
-
-        var colorValueElement = createElement("span");
-        if (format === WebInspector.Color.Format.Original)
-            colorValueElement.textContent = text;
-        else
-            colorValueElement.textContent = color.asString(format);
-
-        /**
-         * @param {string} curFormat
-         */
-        function nextFormat(curFormat)
-        {
-            // The format loop is as follows:
-            // * original
-            // * rgb(a)
-            // * hsl(a)
-            // * nickname (if the color has a nickname)
-            // * if the color is simple:
-            //   - shorthex (if has short hex)
-            //   - hex
-            var cf = WebInspector.Color.Format;
-
-            switch (curFormat) {
-                case cf.Original:
-                    return !color.hasAlpha() ? cf.RGB : cf.RGBA;
-
-                case cf.RGB:
-                case cf.RGBA:
-                    return !color.hasAlpha() ? cf.HSL : cf.HSLA;
-
-                case cf.HSL:
-                case cf.HSLA:
-                    if (color.nickname())
-                        return cf.Nickname;
-                    if (!color.hasAlpha())
-                        return color.canBeShortHex() ? cf.ShortHEX : cf.HEX;
-                    else
-                        return cf.Original;
-
-                case cf.ShortHEX:
-                    return cf.HEX;
-
-                case cf.HEX:
-                    return cf.Original;
-
-                case cf.Nickname:
-                    if (!color.hasAlpha())
-                        return color.canBeShortHex() ? cf.ShortHEX : cf.HEX;
-                    else
-                        return cf.Original;
-
-                default:
-                    return cf.RGBA;
-            }
-        }
-
-        function changeColorDisplay()
-        {
-            do {
-                format = nextFormat(format);
-                var currentValue = color.asString(format);
-            } while (currentValue === colorValueElement.textContent);
-            colorValueElement.textContent = currentValue;
-        }
-
-        var container = createElement("nobr");
-        container.appendChild(colorSwatch.element);
-        container.appendChild(colorValueElement);
-        return container;
+   /**
+    * @param {!Element} nameElement
+    * @param {!Element} valueElement
+    * @param {string} text
+    * @return {!Node}
+    */
+    _processBezier: function(nameElement, valueElement, text)
+    {
+        var bezierEditor = this.editablePane() && this.editablePane()._bezierEditor;
+        var stylesPopoverHelper = this.editablePane() && this.editablePane()._stylesPopoverHelper;
+        var iconHelper = new WebInspector.BezierIcon(this, stylesPopoverHelper, bezierEditor, nameElement, valueElement, text);
+        return iconHelper.icon();
     },
 
     updateState: function()
