@@ -505,6 +505,11 @@ WebInspector.PromisePaneFilter = function(filterChanged)
     this._statusFilterUI = new WebInspector.NamedBitSetFilterUI(statuses, this._promiseStatusFiltersSetting);
     this._statusFilterUI.addEventListener(WebInspector.FilterUI.Events.FilterChanged, filterChanged, undefined);
     this._filterBar.addFilter(this._statusFilterUI);
+
+    this._hideCollectedPromisesSetting = WebInspector.settings.createSetting("hideCollectedPromises", false);
+    var hideCollectedCheckbox = new WebInspector.CheckboxFilterUI("hide-collected-promises", WebInspector.UIString("Hide collected promises"), true, this._hideCollectedPromisesSetting);
+    hideCollectedCheckbox.addEventListener(WebInspector.FilterUI.Events.FilterChanged, filterChanged, undefined);
+    this._filterBar.addFilter(hideCollectedCheckbox);
 }
 
 WebInspector.PromisePaneFilter.prototype = {
@@ -532,6 +537,9 @@ WebInspector.PromisePaneFilter.prototype = {
     shouldBeVisible: function(details, node)
     {
         if (!this._statusFilterUI.accept(details.status))
+            return false;
+
+        if (this._hideCollectedPromisesSetting.get() && details.__isGarbageCollected)
             return false;
 
         var regex = this._textFilterUI.regex();
@@ -571,6 +579,7 @@ WebInspector.PromisePaneFilter.prototype = {
 
     reset: function()
     {
+        this._hideCollectedPromisesSetting.set(false);
         this._promiseStatusFiltersSetting.set({});
         this._textFilterUI.setValue("");
     }
