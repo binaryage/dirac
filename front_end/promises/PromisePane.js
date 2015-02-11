@@ -55,6 +55,8 @@ WebInspector.PromisePane = function()
     ];
     this._dataGrid = new WebInspector.DataGrid(columns, undefined, undefined, undefined, this._onContextMenu.bind(this));
     this._dataGrid.show(this._dataGridContainer.element);
+    this._shouldScrollToBottom = true;
+    this._dataGrid.scrollContainer.addEventListener("scroll", this._onScroll.bind(this), true);
 
     this._linkifier = new WebInspector.Linkifier();
 
@@ -142,6 +144,8 @@ WebInspector.PromisePane.prototype = {
             this._target = WebInspector.context.flavor(WebInspector.Target);
             this._updateRecordingState(true);
         }
+        if (this._refreshIsNeeded)
+            this._refresh();
     },
 
     /**
@@ -232,9 +236,18 @@ WebInspector.PromisePane.prototype = {
         promiseIdToDetails.set(details.id, details);
 
         if (target === this._target) {
-            var wasVisible = !previousDetails || this._filter.shouldBeVisible(previousDetails, this._promiseIdToNode.get(details.id));
+            if (!this.isShowing()) {
+                this._refreshIsNeeded = true;
+                return;
+            }
 
-            this._attachDataGridNode(details);
+            var node = this._promiseIdToNode.get(details.id);
+            var wasVisible = !previousDetails || this._filter.shouldBeVisible(previousDetails, node);
+
+            if (eventType === "gc" && node)
+                node.element().classList.add("promise-gc");
+            else
+                this._attachDataGridNode(details);
 
             var isVisible = this._filter.shouldBeVisible(details, this._promiseIdToNode.get(details.id));
             if (wasVisible !== isVisible) {
@@ -249,19 +262,17 @@ WebInspector.PromisePane.prototype = {
      */
     _attachDataGridNode: function(details)
     {
-        var scrolledToBottom = this._dataGrid.scrollContainer.isScrolledToBottom();
+        var attachingNewNode = !this._promiseIdToNode.has(details.id);
         var node = this._createDataGridNode(details);
         var parentNode = this._findVisibleParentNodeDetails(details);
         if (parentNode !== node.parent)
             parentNode.appendChild(node);
-        if (details.__isGarbageCollected)
-            node.element().classList.add("promise-gc");
         if (this._filter.shouldBeVisible(details, node))
             parentNode.expanded = true;
         else
             node.remove();
-        if (scrolledToBottom)
-            this._dataGrid.scrollContainer.scrollTop = this._dataGrid.scrollContainer.scrollHeight;
+        if (attachingNewNode)
+            this._scrollToBottomIfNeeded();
     },
 
     /**
@@ -331,6 +342,7 @@ WebInspector.PromisePane.prototype = {
 
     _refresh: function()
     {
+        delete this._refreshIsNeeded;
         this._clear();
         if (!this._target)
             return;
@@ -368,6 +380,7 @@ WebInspector.PromisePane.prototype = {
         }
 
         this._updateFilterStatus();
+        this._scrollToBottomIfNeeded();
     },
 
     _clear: function()
@@ -378,6 +391,18 @@ WebInspector.PromisePane.prototype = {
         this._hidePopover();
         this._dataGrid.rootNode().removeChildren();
         this._linkifier.reset();
+        this._shouldScrollToBottom = true;
+    },
+
+    _onScroll: function()
+    {
+        this._shouldScrollToBottom = this._dataGrid.scrollContainer.isScrolledToBottom();
+    },
+
+    _scrollToBottomIfNeeded: function()
+    {
+        if (this._shouldScrollToBottom)
+            this._dataGrid.scrollContainer.scrollTop = this._dataGrid.scrollContainer.scrollHeight;
     },
 
     /**
@@ -485,6 +510,7 @@ WebInspector.PromisePane.prototype = {
  */
 WebInspector.PromisePaneFilter = function(filterChanged)
 {
+    this._filterChangedCallback = filterChanged;
     this._filterBar = new WebInspector.FilterBar();
 
     this._filtersContainer = createElementWithClass("div", "promises-filters-header hidden");
@@ -493,7 +519,7 @@ WebInspector.PromisePaneFilter = function(filterChanged)
     this._filterBar.setName("promisePane");
 
     this._textFilterUI = new WebInspector.TextFilterUI(true);
-    this._textFilterUI.addEventListener(WebInspector.FilterUI.Events.FilterChanged, filterChanged, undefined);
+    this._textFilterUI.addEventListener(WebInspector.FilterUI.Events.FilterChanged, this._onFilterChanged, this);
     this._filterBar.addFilter(this._textFilterUI);
 
     var statuses = [
@@ -503,12 +529,12 @@ WebInspector.PromisePaneFilter = function(filterChanged)
     ];
     this._promiseStatusFiltersSetting = WebInspector.settings.createSetting("promiseStatusFilters", {});
     this._statusFilterUI = new WebInspector.NamedBitSetFilterUI(statuses, this._promiseStatusFiltersSetting);
-    this._statusFilterUI.addEventListener(WebInspector.FilterUI.Events.FilterChanged, filterChanged, undefined);
+    this._statusFilterUI.addEventListener(WebInspector.FilterUI.Events.FilterChanged, this._onFilterChanged, this);
     this._filterBar.addFilter(this._statusFilterUI);
 
     this._hideCollectedPromisesSetting = WebInspector.settings.createSetting("hideCollectedPromises", false);
     var hideCollectedCheckbox = new WebInspector.CheckboxFilterUI("hide-collected-promises", WebInspector.UIString("Hide collected promises"), true, this._hideCollectedPromisesSetting);
-    hideCollectedCheckbox.addEventListener(WebInspector.FilterUI.Events.FilterChanged, filterChanged, undefined);
+    hideCollectedCheckbox.addEventListener(WebInspector.FilterUI.Events.FilterChanged, this._onFilterChanged, this);
     this._filterBar.addFilter(hideCollectedCheckbox);
 }
 
@@ -575,6 +601,20 @@ WebInspector.PromisePaneFilter.prototype = {
     {
         var toggled = /** @type {boolean} */ (event.data);
         this._filtersContainer.classList.toggle("hidden", !toggled);
+    },
+
+    _onFilterChanged: function()
+    {
+        if (this._filterChangedTimeout)
+            clearTimeout(this._filterChangedTimeout);
+        this._filterChangedTimeout = setTimeout(onTimerFired.bind(this), 100);
+
+        /** @this {WebInspector.PromisePaneFilter} */
+        function onTimerFired()
+        {
+            delete this._filterChangedTimeout;
+            this._filterChangedCallback();
+        }
     },
 
     reset: function()
