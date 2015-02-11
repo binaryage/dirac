@@ -1765,8 +1765,13 @@ WebInspector.ElementsTreeOutline.prototype = {
      */
     updateChildren: function(treeElement)
     {
-        if (!treeElement.hasChildren)
+        if (!treeElement.hasChildren) {
+            var selectedTreeElement = treeElement.treeOutline.selectedTreeElement;
+            if (selectedTreeElement.hasAncestor(treeElement))
+                treeElement.select();
+            treeElement.removeChildren();
             return;
+        }
         console.assert(!treeElement.isClosingTag());
 
         var barrier = new CallbackBarrier();
