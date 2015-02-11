@@ -25,7 +25,6 @@ WebInspector.ThreadsSidebarPane = function()
 }
 
 WebInspector.ThreadsSidebarPane.prototype = {
-
     /**
      * @override
      * @param {!WebInspector.Target} target
@@ -52,7 +51,7 @@ WebInspector.ThreadsSidebarPane.prototype = {
     {
         var listItem = this._targetsToListItems.remove(target);
         this._listItemsToTargets.remove(listItem);
-        listItem.element.remove();
+        this.threadList.removeItem(listItem);
     },
 
     /**

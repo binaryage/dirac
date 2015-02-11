@@ -34,7 +34,7 @@ WebInspector.UIList = function()
     this.registerRequiredCSS("sources/uiList.css");
 
     /** @type {!Array.<!WebInspector.UIList.Item>} */
-    this.items = [];
+    this._items = [];
 }
 
 WebInspector.UIList._Key = Symbol("ownerList");
@@ -50,15 +50,26 @@ WebInspector.UIList.prototype = {
         var beforeElement = beforeItem ? beforeItem.element : null;
         this.contentElement.insertBefore(item.element, beforeElement);
 
-        var index = beforeItem ? this.items.indexOf(beforeItem) : this.items.length;
+        var index = beforeItem ? this._items.indexOf(beforeItem) : this._items.length;
         console.assert(index >= 0, "Anchor item not found in UIList");
-        this.items.splice(index, 0, item);
+        this._items.splice(index, 0, item);
+    },
+
+    /**
+     * @param {!WebInspector.UIList.Item} item
+     */
+    removeItem: function(item)
+    {
+        var index = this._items.indexOf(item);
+        console.assert(index >= 0);
+        this._items.splice(index, 1);
+        item.element.remove();
     },
 
     clear: function()
     {
         this.contentElement.removeChildren();
-        this.items = [];
+        this._items = [];
     },
 
     __proto__: WebInspector.VBox.prototype
@@ -93,9 +104,9 @@ WebInspector.UIList.Item.prototype = {
     nextSibling: function()
     {
         var list = this[WebInspector.UIList._Key];
-        var index = list.items.indexOf(this);
+        var index = list._items.indexOf(this);
         console.assert(index >= 0);
-        return list.items[index + 1] || null;
+        return list._items[index + 1] || null;
     },
 
     /**
