@@ -88,7 +88,7 @@ WebInspector.CallStackSidebarPane.prototype = {
         if (topStackHidden)
             this._revealHiddenCallFrames();
         if (this._hiddenCallFrames) {
-            var element = createElementWithClass("div", "hidden-callFrames-message");
+            var element = createElementWithClass("div", "hidden-callframes-message");
             if (this._hiddenCallFrames === 1)
                 element.textContent = WebInspector.UIString("1 stack frame is hidden (black-boxed).");
             else
@@ -139,23 +139,16 @@ WebInspector.CallStackSidebarPane.prototype = {
         if (!this._hiddenCallFrames)
             return;
         this._hiddenCallFrames = 0;
-        var lastItem = null;
-        for (var i = this.callFrames.length - 1; i >= 0; --i) {
-            var callFrame = this.callFrames[i];
-            if (!callFrame.isHidden()) {
-                lastItem = callFrame.nextSibling();
-                break;
-            }
-        }
+        this.callFrameList.clear();
         for (var i = 0; i < this.callFrames.length; ++i) {
             var callFrame = this.callFrames[i];
             if (callFrame._asyncCallFrame) {
                 callFrame._asyncCallFrame.setHidden(false);
                 if (i && callFrame._asyncCallFrame !== this.callFrames[i - 1]._asyncCallFrame)
-                    callFrame._asyncCallFrame.show(this.bodyElement, lastItem.element);
+                    this.callFrameList.addItem(callFrame._asyncCallFrame);
             }
             callFrame.setHidden(false);
-            this.callFrameList.addItem(callFrame, lastItem);
+            this.callFrameList.addItem(callFrame);
         }
         if (this._hiddenCallFramesMessageElement) {
             this._hiddenCallFramesMessageElement.remove();
