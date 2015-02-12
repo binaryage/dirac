@@ -1276,10 +1276,7 @@ WebInspector.ConsoleCommand = function(message, linkifier, nestingLevel)
 WebInspector.ConsoleCommand.prototype = {
     clearHighlights: function()
     {
-        var highlightedMessage = this._formattedCommand;
-        delete this._formattedCommand;
-        this._formatCommand();
-        this._element.replaceChild(this._formattedCommand, highlightedMessage);
+        WebInspector.removeSearchResultsHighlight(this._formattedCommand, WebInspector.highlightedSearchResultClassName);
     },
 
     /**
@@ -1303,16 +1300,14 @@ WebInspector.ConsoleCommand.prototype = {
             this._element = createElementWithClass("div", "console-user-command");
             this._element.message = this;
 
-            this._formatCommand();
+            this._formattedCommand = createElementWithClass("span", "console-message-text source-code");
+            this._formattedCommand.textContent = this.text;
             this._element.appendChild(this._formattedCommand);
+
+            var javascriptSyntaxHighlighter = new WebInspector.DOMSyntaxHighlighter("text/javascript", true);
+            javascriptSyntaxHighlighter.syntaxHighlightNode(this._formattedCommand);
         }
         return this._element;
-    },
-
-    _formatCommand: function()
-    {
-        this._formattedCommand = createElementWithClass("span", "console-message-text source-code");
-        this._formattedCommand.textContent = this.text;
     },
 
     /**

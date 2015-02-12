@@ -298,10 +298,6 @@
     background-position: -192px -107px;
 }
 
-.console-user-command > .console-message-text {
-    color: rgb(0, 128, 255);
-}
-
 .console-user-command-result {
     display: block;
 }
