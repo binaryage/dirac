@@ -80,7 +80,11 @@ WebInspector.DebuggerModel.PauseOnExceptionsState = {
     PauseOnUncaughtExceptions: "uncaught"
 };
 
+/** @enum {string} */
 WebInspector.DebuggerModel.Events = {
+    AsyncOperationStarted: "AsyncOperationStarted",
+    AsyncOperationCompleted: "AsyncOperationCompleted",
+    AsyncOperationsCleared: "AsyncOperationsCleared",
     DebuggerWasEnabled: "DebuggerWasEnabled",
     DebuggerWasDisabled: "DebuggerWasDisabled",
     DebuggerPaused: "DebuggerPaused",
@@ -93,6 +97,7 @@ WebInspector.DebuggerModel.Events = {
     PromiseUpdated: "PromiseUpdated",
 }
 
+/** @enum {string} */
 WebInspector.DebuggerModel.BreakReason = {
     DOM: "DOM",
     EventListener: "EventListener",
@@ -367,6 +372,27 @@ WebInspector.DebuggerModel.prototype = {
     _promiseUpdated: function(eventType, promise)
     {
         this.dispatchEventToListeners(WebInspector.DebuggerModel.Events.PromiseUpdated, { target: this.target(), eventType: eventType, promise: promise });
+    },
+
+    /**
+     * @param {!DebuggerAgent.AsyncOperation} operation
+     */
+    _asyncOperationStarted: function(operation)
+    {
+        this.dispatchEventToListeners(WebInspector.DebuggerModel.Events.AsyncOperationStarted, { target: this.target(), operation: operation });
+    },
+
+    /**
+     * @param {number} operationId
+     */
+    _asyncOperationCompleted: function(operationId)
+    {
+        this.dispatchEventToListeners(WebInspector.DebuggerModel.Events.AsyncOperationCompleted, { target: this.target(), operationId: operationId });
+    },
+
+    _asyncOperationsCleared: function()
+    {
+        this.dispatchEventToListeners(WebInspector.DebuggerModel.Events.AsyncOperationsCleared, this.target());
     },
 
     _reset: function()
@@ -913,6 +939,32 @@ WebInspector.DebuggerDispatcher.prototype = {
     promiseUpdated: function(eventType, promise)
     {
         this._debuggerModel._promiseUpdated(eventType, promise);
+    },
+
+    /**
+     * @override
+     * @param {!DebuggerAgent.AsyncOperation} operation
+     */
+    asyncOperationStarted: function(operation)
+    {
+        this._debuggerModel._asyncOperationStarted(operation);
+    },
+
+    /**
+     * @override
+     * @param {number} operationId
+     */
+    asyncOperationCompleted: function(operationId)
+    {
+        this._debuggerModel._asyncOperationCompleted(operationId);
+    },
+
+    /**
+     * @override
+     */
+    asyncOperationsCleared: function()
+    {
+        this._debuggerModel._asyncOperationsCleared();
     }
 }
 
