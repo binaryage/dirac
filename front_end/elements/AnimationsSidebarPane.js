@@ -10,7 +10,7 @@ WebInspector.AnimationsSidebarPane = function(stylesPane)
 {
     WebInspector.ElementsSidebarPane.call(this, WebInspector.UIString("Animations"));
     this._stylesPane = stylesPane;
-    this._timeline = new WebInspector.AnimationTimeline();
+    this._timeline = new WebInspector.AnimationTimeline(this._stylesPane);
     this._timeline.show(this.bodyElement);
 }
 
