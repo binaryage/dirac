@@ -159,6 +159,14 @@ WebInspector.ConsoleView = function()
 
 WebInspector.ConsoleView.prototype = {
     /**
+     * @return {!WebInspector.SearchableView}
+     */
+    searchableView: function()
+    {
+        return this._searchableView;
+    },
+
+    /**
      * @param {!WebInspector.Event} event
      */
     _onMainFrameNavigated: function(event)
