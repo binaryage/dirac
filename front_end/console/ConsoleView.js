@@ -112,6 +112,8 @@ WebInspector.ConsoleView = function()
     this._promptElement.id = "console-prompt";
     this._promptElement.spellcheck = false;
 
+    this._searchableView.setDefaultFocusedElement(this._promptElement);
+
     // FIXME: This is a workaround for the selection machinery bug. See crbug.com/410899
     var selectAllFixer = this._messagesElement.createChild("div", "console-view-fix-select-all");
     selectAllFixer.textContent = ".";
