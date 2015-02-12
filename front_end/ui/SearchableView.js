@@ -701,3 +701,35 @@ WebInspector.SearchableView.SearchConfig = function(query, caseSensitive, isRege
     this.caseSensitive = caseSensitive;
     this.isRegex = isRegex;
 }
+
+WebInspector.SearchableView.SearchConfig.prototype = {
+    /**
+     * @param {boolean=} global
+     * @return {!RegExp}
+     */
+    toSearchRegex: function(global)
+    {
+        var modifiers = this.caseSensitive ? "" : "i";
+        if (global)
+            modifiers += "g";
+        var query = this.isRegex ? "/" + this.query + "/" : this.query;
+
+        var regex;
+
+        // First try creating regex if user knows the / / hint.
+        try {
+            if (/^\/.+\/$/.test(query)) {
+                regex = new RegExp(query.substring(1, query.length - 1), modifiers);
+                regex.__fromRegExpQuery = true;
+            }
+        } catch (e) {
+            // Silent catch.
+        }
+
+        // Otherwise just do a plain text search.
+        if (!regex)
+            regex = createPlainTextSearchRegex(query, modifiers);
+
+        return regex;
+    }
+}

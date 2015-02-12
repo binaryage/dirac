@@ -1000,10 +1000,10 @@ WebInspector.ConsoleView.prototype = {
      */
     performSearch: function(searchConfig, shouldJump, jumpBackwards)
     {
-        var query = searchConfig.query;
         this.searchCanceled();
         this._searchableView.updateSearchMatchesCount(0);
-        this._searchRegex = createPlainTextSearchRegex(query, "gi");
+
+        this._searchRegex = searchConfig.toSearchRegex(true);
 
         this._regexMatchRanges = [];
         this._currentMatchRangeIndex = -1;
@@ -1070,7 +1070,7 @@ WebInspector.ConsoleView.prototype = {
      */
     supportsCaseSensitiveSearch: function()
     {
-        return false;
+        return true;
     },
 
     /**
@@ -1079,7 +1079,7 @@ WebInspector.ConsoleView.prototype = {
      */
     supportsRegexSearch: function()
     {
-        return false;
+        return true;
     },
 
     _clearSearchResultHighlights: function()
