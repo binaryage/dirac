@@ -652,6 +652,10 @@ WebInspector.ConsoleView.prototype = {
             return;
 
         var contextMenu = new WebInspector.ContextMenu(event);
+        if (event.target.isSelfOrDescendant(this._promptElement)) {
+            contextMenu.show()
+            return;
+        }
 
         function monitoringXHRItemAction()
         {
