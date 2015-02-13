@@ -35,6 +35,7 @@
  * @param {!WebInspector.TimelineModel.Filter} recordFilter
  * @extends {WebInspector.Object}
  * @implements {WebInspector.TargetManager.Observer}
+ * @implements {WebInspector.TracingManagerClient}
  */
 WebInspector.TimelineModel = function(tracingManager, tracingModel, recordFilter)
 {
@@ -43,9 +44,6 @@ WebInspector.TimelineModel = function(tracingManager, tracingModel, recordFilter
     this._tracingManager = tracingManager;
     this._tracingModel = tracingModel;
     this._recordFilter = recordFilter;
-    this._tracingManager.addEventListener(WebInspector.TracingManager.Events.TracingStarted, this._onTracingStarted, this);
-    this._tracingManager.addEventListener(WebInspector.TracingManager.Events.EventsCollected, this._onEventsCollected, this);
-    this._tracingManager.addEventListener(WebInspector.TracingManager.Events.TracingComplete, this._onTracingComplete, this);
     this.reset();
 }
 
@@ -147,7 +145,9 @@ WebInspector.TimelineModel.Events = {
     RecordsCleared: "RecordsCleared",
     RecordingStarted: "RecordingStarted",
     RecordingStopped: "RecordingStopped",
-    RecordFilterChanged: "RecordFilterChanged"
+    RecordFilterChanged: "RecordFilterChanged",
+    BufferUsage: "BufferUsage",
+    RetrieveEventsProgress: "RetrieveEventsProgress"
 }
 
 WebInspector.TimelineModel.MainThreadName = "main";
@@ -530,7 +530,7 @@ WebInspector.TimelineModel.prototype = {
     {
         this._startCollectingTraceEvents(false);
         this._tracingModel.addEvents(events);
-        this._onTracingComplete();
+        this.tracingComplete();
     },
 
     /**
@@ -606,12 +606,7 @@ WebInspector.TimelineModel.prototype = {
     {
         if (enableJSSampling)
             this._startProfilingOnAllTargets();
-        this._tracingManager.start(categories, "");
-    },
-
-    _onTracingStarted: function()
-    {
-        this._startCollectingTraceEvents(false);
+        this._tracingManager.start(this, categories, "");
     },
 
     /**
@@ -625,15 +620,26 @@ WebInspector.TimelineModel.prototype = {
     },
 
     /**
-     * @param {!WebInspector.Event} event
+     * @override
      */
-    _onEventsCollected: function(event)
+    tracingStarted: function()
     {
-        var traceEvents = /** @type {!Array.<!WebInspector.TracingManager.EventPayload>} */ (event.data);
-        this._tracingModel.addEvents(traceEvents);
+        this._startCollectingTraceEvents(false);
     },
 
-    _onTracingComplete: function()
+    /**
+     * @param {!Array.<!WebInspector.TracingManager.EventPayload>} events
+     * @override
+     */
+    traceEventsCollected: function(events)
+    {
+        this._tracingModel.addEvents(events);
+    },
+
+    /**
+     * @override
+     */
+    tracingComplete: function()
     {
         if (!this._allProfilesStoppedPromise) {
             this._didStopRecordingTraceEvents();
@@ -641,6 +647,24 @@ WebInspector.TimelineModel.prototype = {
         }
         this._allProfilesStoppedPromise.then(this._didStopRecordingTraceEvents.bind(this));
         this._allProfilesStoppedPromise = null;
+    },
+
+    /**
+     * @param {number} usage
+     * @override
+     */
+    tracingBufferUsage: function(usage)
+    {
+        this.dispatchEventToListeners(WebInspector.TimelineModel.Events.BufferUsage, usage);
+    },
+
+    /**
+     * @param {number} progress
+     * @override
+     */
+    eventsRetrievalProgress: function(progress)
+    {
+        this.dispatchEventToListeners(WebInspector.TimelineModel.Events.RetrieveEventsProgress, progress);
     },
 
     /**
@@ -1645,7 +1669,7 @@ WebInspector.TracingModelLoader.prototype = {
     _reportErrorAndCancelLoading: function(messsage)
     {
         WebInspector.console.error(messsage);
-        this._model._onTracingComplete();
+        this._model.tracingComplete();
         this._model.reset();
         this._reader.cancel();
         this._progress.done();
@@ -1662,7 +1686,7 @@ WebInspector.TracingModelLoader.prototype = {
     close: function()
     {
         this._loader.finish();
-        this._model._onTracingComplete();
+        this._model.tracingComplete();
     }
 }
 

@@ -5,6 +5,30 @@
  */
 
 /**
+ * @interface
+ */
+WebInspector.TracingManagerClient = function()
+{
+}
+
+WebInspector.TracingManagerClient.prototype = {
+    tracingStarted: function() { },
+    /**
+     * @param {!Array.<!WebInspector.TracingManager.EventPayload>} events
+     */
+    traceEventsCollected: function(events) { },
+    tracingComplete: function() { },
+    /**
+     * @param {number} usage
+     */
+    tracingBufferUsage: function(usage) { },
+    /**
+     * @param {number} progress
+     */
+    eventsRetrievalProgress: function(progress) { }
+}
+
+/**
  * @constructor
  * @extends {WebInspector.Object}
  * @implements {WebInspector.TargetManager.Observer}
@@ -12,19 +36,11 @@
 WebInspector.TracingManager = function()
 {
     WebInspector.Object.call(this);
-    this._active = false;
+    /** @type {?WebInspector.TracingManagerClient} */
+    this._activeClient = null;
     this._eventBufferSize = 0;
     this._eventsRetrieved = 0;
     WebInspector.targetManager.observeTargets(this);
-}
-
-WebInspector.TracingManager.Events = {
-    "RetrieveEventsProgress": "RetrieveEventsProgress",
-    "BufferUsage": "BufferUsage",
-    "TracingStarted": "TracingStarted",
-    "EventsCollected": "EventsCollected",
-    "TracingStopped": "TracingStopped",
-    "TracingComplete": "TracingComplete"
 }
 
 /** @typedef {!{
@@ -82,7 +98,7 @@ WebInspector.TracingManager.prototype = {
     _bufferUsage: function(usage, eventCount, percentFull)
     {
         this._eventBufferSize = eventCount;
-        this.dispatchEventToListeners(WebInspector.TracingManager.Events.BufferUsage, usage || percentFull);
+        this._activeClient.tracingBufferUsage(usage || percentFull || 0);
     },
 
     /**
@@ -90,52 +106,44 @@ WebInspector.TracingManager.prototype = {
      */
     _eventsCollected: function(events)
     {
-        this.dispatchEventToListeners(WebInspector.TracingManager.Events.EventsCollected, events);
+        this._activeClient.traceEventsCollected(events);
         this._eventsRetrieved += events.length;
         if (!this._eventBufferSize)
             return;
         if (this._eventsRetrieved > this._eventBufferSize)
             this._eventsRetrieved = this._eventBufferSize;
-        this.dispatchEventToListeners(WebInspector.TracingManager.Events.RetrieveEventsProgress, this._eventsRetrieved / this._eventBufferSize);
+        this._activeClient.eventsRetrievalProgress(this._eventsRetrieved / this._eventBufferSize);
     },
 
     _tracingComplete: function()
     {
         this._eventBufferSize = 0;
         this._eventsRetrieved = 0;
-        this.dispatchEventToListeners(WebInspector.TracingManager.Events.TracingComplete);
+        this._activeClient.tracingComplete();
+        this._activeClient = null;
     },
 
     /**
+     * @param {!WebInspector.TracingManagerClient} client
      * @param {string} categoryFilter
      * @param {string} options
      * @param {function(?string)=} callback
      */
-    start: function(categoryFilter, options, callback)
+    start: function(client, categoryFilter, options, callback)
     {
-        if (this._active)
-            return;
+        if (this._activeClient)
+            throw new Error("Tracing is already started");
         WebInspector.targetManager.suspendAllTargets();
         var bufferUsageReportingIntervalMs = 500;
+        this._activeClient = client;
         this._target.tracingAgent().start(categoryFilter, options, bufferUsageReportingIntervalMs, callback);
-        this._active = true;
-        this.dispatchEventToListeners(WebInspector.TracingManager.Events.TracingStarted);
+        this._activeClient.tracingStarted();
     },
 
     stop: function()
     {
-        if (!this._active)
-            return;
-        this._target.tracingAgent().end(this._onStop.bind(this));
+        this._target.tracingAgent().end();
         WebInspector.targetManager.resumeAllTargets();
-    },
-
-    _onStop: function()
-    {
-        if (!this._active)
-            return;
-        this.dispatchEventToListeners(WebInspector.TracingManager.Events.TracingStopped);
-        this._active = false;
     },
 
     __proto__: WebInspector.Object.prototype
