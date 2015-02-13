@@ -424,6 +424,7 @@ WebInspector.UISourceCode.prototype = {
             this.addRevision(content);
         }
 
+        WebInspector.userMetrics.RevisionApplied.record();
         this.requestOriginalContent(callback.bind(this));
     },
 
@@ -446,6 +447,7 @@ WebInspector.UISourceCode.prototype = {
             callback(this);
         }
 
+        WebInspector.userMetrics.RevisionApplied.record();
         this.requestOriginalContent(revert.bind(this));
     },
 
@@ -681,6 +683,7 @@ WebInspector.Revision.prototype = {
             if (this._uiSourceCode._content !== content)
                 this._uiSourceCode.addRevision(content);
         }
+        WebInspector.userMetrics.RevisionApplied.record();
         this.requestContent(revert.bind(this));
     },
 
