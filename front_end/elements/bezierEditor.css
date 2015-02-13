@@ -5,15 +5,9 @@
  */
 
 :host {
-    width: 215px;
+    width: 235px;
     height: 320px;
     -webkit-user-select: none;
-}
-
-.bezier-editor-container {
-    display: flex;
-    flex-direction: column;
-    margin-left: 10px;
 }
 
 .bezier-presets {
@@ -21,7 +15,7 @@
     flex-direction: column;
 }
 
-svg.bezier-preset-selected {
+.bezier-preset-selected > svg{
     background-color: rgb(56, 121, 217);
 }
 
@@ -94,10 +88,10 @@ svg.bezier-preset-selected {
     background-color: white;
     overflow: hidden;
     border-radius: 20px;
-    width: 200px;
+    width: 100%;
     height: 20px;
-    z-index: 2;
     margin-left: 10px;
+    z-index: 2;
 }
 
 .bezier-preview-animation {
@@ -117,4 +111,52 @@ svg.bezier-preset-selected {
 
 .bezier-preview-onion > .bezier-preview-animation {
     opacity: 0.1;
+}
+
+svg.bezier-preset-modify {
+    background-color: #ccc;
+    border-radius: 10px;
+    display: inline-block;
+    opacity: 0;
+    transition: opacity 250ms;
+    margin: 2px;
+}
+
+svg.bezier-preset-modify:hover, .bezier-preset:hover {
+    background-color: #999;
+}
+
+.bezier-preset-selected .bezier-preset:hover {
+    background-color: rgb(56, 121, 217);
+}
+
+.bezier-preset-modify path {
+    stroke-width: 2;
+    stroke: white;
+    fill: none;
+}
+
+.bezier-preset-selected .bezier-preset-modify {
+    opacity: 1;
+}
+
+.bezier-preset-category {
+    width: 50px;
+}
+
+.bezier-display-value {
+    width: 100%;
+    -webkit-user-select: text;
+    display: block;
+    text-align: center;
+    padding-top: 5px;
+    padding-bottom: 10px;
+}
+
+.bezier-container {
+    display: flex;
+}
+
+svg.bezier-curve {
+    margin-left: 10px;
 }
