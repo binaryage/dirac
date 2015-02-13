@@ -77,6 +77,9 @@ WebInspector.PromisePane = function()
     WebInspector.targetManager.observeTargets(this);
 }
 
+// FIXME: Bump the limit up once we use viewport DataGrid.
+WebInspector.PromisePane._maxPromiseCount = 1000;
+
 WebInspector.PromisePane.prototype = {
     /**
      * @override
@@ -217,6 +220,35 @@ WebInspector.PromisePane.prototype = {
     },
 
     /**
+     * @param {!WebInspector.Target} target
+     * @return {boolean}
+     */
+    _truncateLogIfNeeded: function(target)
+    {
+        var promiseIdToDetails = this._promiseDetailsByTarget.get(target);
+        if (!promiseIdToDetails || promiseIdToDetails.size <= WebInspector.PromisePane._maxPromiseCount)
+            return false;
+
+        var elementsToTruncate = WebInspector.PromisePane._maxPromiseCount / 10;
+        var sortedDetails = promiseIdToDetails.valuesArray().sort(compare);
+        for (var i = 0; i < elementsToTruncate; ++i)
+            promiseIdToDetails.delete(sortedDetails[i].id);
+        return true;
+
+        /**
+         * @param {!DebuggerAgent.PromiseDetails} x
+         * @param {!DebuggerAgent.PromiseDetails} y
+         * @return {number}
+         */
+        function compare(x, y)
+        {
+            var t1 = x.creationTime || 0;
+            var t2 = y.creationTime || 0;
+            return t1 - t2 || x.id - y.id;
+        }
+    },
+
+    /**
      * @param {!WebInspector.Event} event
      */
     _onPromiseUpdated: function(event)
@@ -232,7 +264,12 @@ WebInspector.PromisePane.prototype = {
             promiseIdToDetails = new Map();
             this._promiseDetailsByTarget.set(target, promiseIdToDetails)
         }
+
         var previousDetails = promiseIdToDetails.get(details.id);
+        if (!previousDetails && eventType === "gc")
+            return;
+
+        var truncated = this._truncateLogIfNeeded(target);
         promiseIdToDetails.set(details.id, details);
 
         if (target === this._target) {
@@ -240,11 +277,15 @@ WebInspector.PromisePane.prototype = {
                 this._refreshIsNeeded = true;
                 return;
             }
+            if (truncated || this._refreshIsNeeded) {
+                this._refresh();
+                return;
+            }
 
             var node = this._promiseIdToNode.get(details.id);
             var wasVisible = !previousDetails || this._filter.shouldBeVisible(previousDetails, node);
 
-            if (eventType === "gc" && node)
+            if (eventType === "gc" && node && node.parent)
                 node.element().classList.add("promise-gc");
             else
                 this._attachDataGridNode(details);
@@ -267,6 +308,8 @@ WebInspector.PromisePane.prototype = {
         var parentNode = this._findVisibleParentNodeDetails(details);
         if (parentNode !== node.parent)
             parentNode.appendChild(node);
+        if (details.__isGarbageCollected)
+            node.element().classList.add("promise-gc");
         if (this._filter.shouldBeVisible(details, node))
             parentNode.expanded = true;
         else
