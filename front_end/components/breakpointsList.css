@@ -168,3 +168,12 @@ li.breakpoint-hit .breakpoint-hit-marker {
 .event-listener-breakpoints .checkbox-elem {
     font-size: 10px;
 }
+
+.async-operations li > label {
+    float: left;
+}
+
+.async-operations li > div {
+    float: right;
+    margin: 2px 3px 0 2px;
+}

@@ -191,6 +191,7 @@
         "jsdifflib.js",
         "UIList.js",
         "AddSourceMapURLDialog.js",
+        "AsyncOperationsSidebarPane.js",
         "BreakpointsSidebarPane.js",
         "CallStackSidebarPane.js",
         "SimpleHistoryManager.js",

@@ -506,6 +506,7 @@
             'front_end/sources/uiList.css',
             'front_end/sources/AddSourceMapURLDialog.js',
             'front_end/sources/AdvancedSearchView.js',
+            'front_end/sources/AsyncOperationsSidebarPane.js',
             'front_end/sources/BreakpointsSidebarPane.js',
             'front_end/sources/CallStackSidebarPane.js',
             'front_end/sources/CSSSourceFrame.js',
