@@ -50,7 +50,7 @@ WebInspector.AdvancedApp.prototype = {
     {
         var rootView = new WebInspector.RootView();
 
-        this._rootSplitView = new WebInspector.SplitView(false, true, "InspectorView.splitViewState", 300, 300, true);
+        this._rootSplitView = new WebInspector.SplitView(false, true, "InspectorView.splitViewState", 555, 300, true);
         this._rootSplitView.show(rootView.element);
 
         this._rootSplitView.setSidebarView(WebInspector.inspectorView);

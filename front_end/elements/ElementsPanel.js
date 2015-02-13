@@ -889,7 +889,7 @@ WebInspector.ElementsPanel.prototype = {
             compositePane.element.classList.add("composite");
             compositePane.element.classList.add("fill");
 
-            var splitView = new WebInspector.SplitView(true, true, "stylesPaneSplitViewState", 0.5);
+            var splitView = new WebInspector.SplitView(true, true, "stylesPaneSplitViewState", 215);
             splitView.show(compositePane.bodyElement);
 
             var vbox1 = new WebInspector.VBox();
