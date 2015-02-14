@@ -84,7 +84,7 @@ WebInspector.NetworkLogView = function(filterBar, progressBarContainer)
     this._initializeView();
 
     WebInspector.settings.networkColorCodeResourceTypes.addChangeListener(this._invalidateAllItems, this);
-    WebInspector.settings.resourcesLargeRows.addChangeListener(this._updateRowsSize, this);
+    WebInspector.settings.networkLogLargeRows.addChangeListener(this._updateRowsSize, this);
     WebInspector.settings.networkLogHideColumns.addChangeListener(this._updateColumns, this);
 
     WebInspector.targetManager.observeTargets(this);
@@ -1049,7 +1049,7 @@ WebInspector.NetworkLogView.prototype = {
 
     _updateRowsSize: function()
     {
-        var largeRows = !!WebInspector.settings.resourcesLargeRows.get();
+        var largeRows = !!WebInspector.settings.networkLogLargeRows.get();
         this._rowHeight = largeRows ? 41 : 21;
         this._dataGrid.element.classList.toggle("small", !largeRows);
         this._timelineGrid.element.classList.toggle("small", !largeRows);
@@ -1319,7 +1319,7 @@ WebInspector.NetworkLogView.prototype = {
         var re = this._searchRegExp;
         if (!re)
             return false;
-        return re.test(request.name()) || (WebInspector.settings.resourcesLargeRows.get() && re.test(request.path()));
+        return re.test(request.name()) || (WebInspector.settings.networkLogLargeRows.get() && re.test(request.path()));
     },
 
     _clearSearchMatchedList: function()
