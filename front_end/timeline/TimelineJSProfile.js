@@ -158,8 +158,7 @@ WebInspector.TimelineJSProfileProcessor.generateJSFrameEvents = function(events)
     var stack = [];
     for (var i = 0; i < events.length; ++i) {
         var e = events[i];
-        var top = stack.peekLast();
-        if (top && top.endTime <= e.startTime)
+        while (stack.length && stack.peekLast().endTime <= e.startTime)
             onEndEvent(stack.pop());
         if (e.duration) {
             onStartEvent(e);
