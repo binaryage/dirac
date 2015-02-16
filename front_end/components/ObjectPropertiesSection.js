@@ -183,12 +183,7 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
 
     update: function()
     {
-        this.nameElement = createElementWithClass("span", "name");
-        var name = this.property.name;
-        if (/^\s|\s$|^$|\n/.test(name))
-            this.nameElement.createTextChildren("\"", name.replace(/\n/g, "\u21B5"), "\"");
-        else
-            this.nameElement.textContent = name;
+        this.nameElement = WebInspector.ObjectPropertiesSection.createNameElement(this.property.name);
         if (!this.property.enumerable)
             this.nameElement.classList.add("dimmed");
         if (this.property.isAccessorProperty())
@@ -196,77 +191,22 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
         if (this.property.symbol)
             this.nameElement.addEventListener("contextmenu", this._contextMenuFired.bind(this, this.property.symbol), false);
 
+        if (this.property.value) {
+            this.valueElement = WebInspector.ObjectPropertiesSection.createValueElement(this.property.value, this.property.wasThrown, this.listItemElement);
+            this.valueElement.addEventListener("contextmenu", this._contextMenuFired.bind(this, this.property.value), false);
+            this.hasChildren = this.property.value.hasChildren && !this.property.wasThrown;
+        } else if (this.property.getter) {
+            this.valueElement = WebInspector.ObjectPropertyTreeElement.createRemoteObjectAccessorPropertySpan(this.property.parentObject, [this.property.name], this._onInvokeGetterClick.bind(this));
+        } else {
+            this.valueElement = createElementWithClass("span", "console-formatted-undefined");
+            this.valueElement.textContent = WebInspector.UIString("<unreadable>");
+            this.valueElement.title = WebInspector.UIString("No property getter");
+        }
+
         var separatorElement = createElementWithClass("span", "separator");
         separatorElement.textContent = ": ";
 
-        if (this.property.value) {
-            this.valueElement = createElementWithClass("span", "value");
-            var type = this.property.value.type;
-            var subtype = this.property.value.subtype;
-            var description = this.property.value.description;
-            var prefix;
-            var valueText;
-            var suffix;
-            if (this.property.wasThrown) {
-                prefix = "[Exception: ";
-                valueText = description;
-                suffix = "]";
-            } else if (type === "string" && typeof description === "string") {
-                // Render \n as a nice unicode cr symbol.
-                prefix = "\"";
-                valueText = description.replace(/\n/g, "\u21B5");
-                suffix = "\"";
-                this.valueElement._originalTextContent = "\"" + description + "\"";
-            } else if (type === "function" && typeof description === "string") {
-                // Render function description until the first \n.
-                valueText = /.*/.exec(description)[0].replace(/\s+$/g, "");
-                this.valueElement._originalTextContent = description;
-            } else if (type !== "object" || subtype !== "node") {
-                valueText = description;
-            }
-            if (type !== "number" || valueText.indexOf("e") === -1) {
-                this.valueElement.setTextContentTruncatedIfNeeded(valueText || "");
-                if (prefix)
-                    this.valueElement.insertBefore(createTextNode(prefix), this.valueElement.firstChild);
-                if (suffix)
-                    this.valueElement.createTextChild(suffix);
-            } else {
-                var numberParts = valueText.split("e");
-                var mantissa = this.valueElement.createChild("span", "scientific-notation-mantissa");
-                mantissa.textContent = numberParts[0];
-                var exponent = this.valueElement.createChild("span", "scientific-notation-exponent");
-                exponent.textContent = "e" + numberParts[1];
-                this.valueElement.classList.add("scientific-notation-number");
-                this.listItemElement.classList.add("hbox");
-            }
-
-            if (this.property.wasThrown)
-                this.valueElement.classList.add("error");
-            if (subtype || type)
-                this.valueElement.classList.add("console-formatted-" + (subtype || type));
-
-            this.valueElement.addEventListener("contextmenu", this._contextMenuFired.bind(this, this.property.value), false);
-            if (type === "object" && subtype === "node" && description) {
-                WebInspector.DOMPresentationUtils.createSpansForNodeTitle(this.valueElement, description);
-                this.valueElement.addEventListener("mousemove", this._mouseMove.bind(this), false);
-                this.valueElement.addEventListener("mouseleave", this._mouseLeave.bind(this), false);
-            } else {
-                this.valueElement.title = description || "";
-            }
-
-            this.listItemElement.removeChildren();
-
-            this.hasChildren = this.property.value.hasChildren && !this.property.wasThrown;
-        } else {
-            if (this.property.getter) {
-                this.valueElement = WebInspector.ObjectPropertyTreeElement.createRemoteObjectAccessorPropertySpan(this.property.parentObject, [this.property.name], this._onInvokeGetterClick.bind(this));
-            } else {
-                this.valueElement = createElementWithClass("span", "console-formatted-undefined");
-                this.valueElement.textContent = WebInspector.UIString("<unreadable>");
-                this.valueElement.title = WebInspector.UIString("No property getter");
-            }
-        }
-
+        this.listItemElement.removeChildren();
         this.listItemElement.appendChildren(this.nameElement, separatorElement, this.valueElement);
     },
 
@@ -283,16 +223,6 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
      */
     populateContextMenu: function(contextMenu)
     {
-    },
-
-    _mouseMove: function(event)
-    {
-        this.property.value.highlightAsDOMNode();
-    },
-
-    _mouseLeave: function(event)
-    {
-        this.property.value.hideDOMNodeHighlight();
     },
 
     updateSiblings: function()
@@ -1126,4 +1056,92 @@ WebInspector.ObjectPropertyPrompt = function(renderAsBlock)
 
 WebInspector.ObjectPropertyPrompt.prototype = {
     __proto__: WebInspector.TextPrompt.prototype
+}
+
+/**
+ * @param {?string} name
+ * @return {!Element}
+ */
+WebInspector.ObjectPropertiesSection.createNameElement = function(name)
+{
+    var nameElement = createElementWithClass("span", "name");
+    if (/^\s|\s$|^$|\n/.test(name))
+        nameElement.createTextChildren("\"", name.replace(/\n/g, "\u21B5"), "\"");
+    else
+        nameElement.textContent = name;
+    return nameElement;
+}
+
+/**
+ * @param {!WebInspector.RemoteObject} value
+ * @param {boolean} wasThrown
+ * @param {!Element} parentElement
+ * @return {!Element}
+ */
+WebInspector.ObjectPropertiesSection.createValueElement = function(value, wasThrown, parentElement)
+{
+    var valueElement = createElementWithClass("span", "value");
+    var type = value.type;
+    var subtype = value.subtype;
+    var description = value.description;
+    var prefix;
+    var valueText;
+    var suffix;
+    if (wasThrown) {
+        prefix = "[Exception: ";
+        valueText = description;
+        suffix = "]";
+    } else if (type === "string" && typeof description === "string") {
+        // Render \n as a nice unicode cr symbol.
+        prefix = "\"";
+        valueText = description.replace(/\n/g, "\u21B5");
+        suffix = "\"";
+        valueElement._originalTextContent = "\"" + description + "\"";
+    } else if (type === "function" && typeof description === "string") {
+        // Render function description until the first \n.
+        valueText = /.*/.exec(description)[0].replace(/\s+$/g, "");
+        valueElement._originalTextContent = description;
+    } else if (type !== "object" || subtype !== "node") {
+        valueText = description;
+    }
+    if (type !== "number" || valueText.indexOf("e") === -1) {
+        valueElement.setTextContentTruncatedIfNeeded(valueText || "");
+        if (prefix)
+            valueElement.insertBefore(createTextNode(prefix), valueElement.firstChild);
+        if (suffix)
+            valueElement.createTextChild(suffix);
+    } else {
+        var numberParts = valueText.split("e");
+        var mantissa = valueElement.createChild("span", "scientific-notation-mantissa");
+        mantissa.textContent = numberParts[0];
+        var exponent = valueElement.createChild("span", "scientific-notation-exponent");
+        exponent.textContent = "e" + numberParts[1];
+        valueElement.classList.add("scientific-notation-number");
+        parentElement.classList.add("hbox");
+    }
+
+    if (wasThrown)
+        valueElement.classList.add("error");
+    if (subtype || type)
+        valueElement.classList.add("console-formatted-" + (subtype || type));
+
+    if (type === "object" && subtype === "node" && description) {
+        WebInspector.DOMPresentationUtils.createSpansForNodeTitle(valueElement, description);
+        valueElement.addEventListener("mousemove", mouseMove, false);
+        valueElement.addEventListener("mouseleave", mouseLeave, false);
+    } else {
+        valueElement.title = description || "";
+    }
+
+    function mouseMove()
+    {
+        value.highlightAsDOMNode();
+    }
+
+    function mouseLeave()
+    {
+        value.hideDOMNodeHighlight();
+    }
+
+    return valueElement;
 }
