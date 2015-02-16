@@ -111,13 +111,11 @@ WebInspector.linkifyStringAsFragmentWithCustomLinkifier = function(string, linki
 
         var title = linkString;
         var realURL = (linkString.startsWith("www.") ? "http://" + linkString : linkString);
-        var parsedURL = new WebInspector.ParsedURL(realURL);
-        var splitResult = WebInspector.ParsedURL.splitLineAndColumn(parsedURL.lastPathComponent);
+        var splitResult = WebInspector.ParsedURL.splitLineAndColumn(realURL);
         var linkNode;
-        if (splitResult) {
-            var link = realURL.substring(0, realURL.length - parsedURL.lastPathComponent.length + splitResult.url.length);
-            linkNode = linkifier(title, link, splitResult.lineNumber, splitResult.columnNumber);
-        } else
+        if (splitResult)
+            linkNode = linkifier(title, splitResult.url, splitResult.lineNumber, splitResult.columnNumber);
+        else
             linkNode = linkifier(title, realURL);
 
         container.appendChild(linkNode);
