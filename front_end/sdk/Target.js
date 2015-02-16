@@ -142,6 +142,8 @@ WebInspector.Target.prototype = {
             this.serviceWorkerCacheModel = new WebInspector.ServiceWorkerCacheModel(this);
         }
 
+        this.tracingManager = new WebInspector.TracingManager(this);
+
         if (callback)
             callback(this);
     },

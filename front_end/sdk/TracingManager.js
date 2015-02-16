@@ -30,17 +30,17 @@ WebInspector.TracingManagerClient.prototype = {
 
 /**
  * @constructor
- * @extends {WebInspector.Object}
- * @implements {WebInspector.TargetManager.Observer}
+ * @param {!WebInspector.Target} target
  */
-WebInspector.TracingManager = function()
+WebInspector.TracingManager = function(target)
 {
-    WebInspector.Object.call(this);
+    this._target = target;
+    target.registerTracingDispatcher(new WebInspector.TracingDispatcher(this));
+
     /** @type {?WebInspector.TracingManagerClient} */
     this._activeClient = null;
     this._eventBufferSize = 0;
     this._eventsRetrieved = 0;
-    WebInspector.targetManager.observeTargets(this);
 }
 
 /** @typedef {!{
@@ -59,29 +59,6 @@ WebInspector.TracingManager = function()
 WebInspector.TracingManager.EventPayload;
 
 WebInspector.TracingManager.prototype = {
-    /**
-     * @override
-     * @param {!WebInspector.Target} target
-     */
-    targetAdded: function(target)
-    {
-        if (this._target)
-            return;
-        this._target = target;
-        target.registerTracingDispatcher(new WebInspector.TracingDispatcher(this));
-    },
-
-    /**
-     * @override
-     * @param {!WebInspector.Target} target
-     */
-    targetRemoved: function(target)
-    {
-        if (this._target !== target)
-            return;
-        delete this._target;
-    },
-
     /**
      * @return {?WebInspector.Target}
      */
@@ -144,9 +121,7 @@ WebInspector.TracingManager.prototype = {
     {
         this._target.tracingAgent().end();
         WebInspector.targetManager.resumeAllTargets();
-    },
-
-    __proto__: WebInspector.Object.prototype
+    }
 }
 
 /**

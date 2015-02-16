@@ -30,21 +30,21 @@
 
 /**
  * @constructor
- * @param {!WebInspector.TracingManager} tracingManager
  * @param {!WebInspector.TracingModel} tracingModel
  * @param {!WebInspector.TimelineModel.Filter} recordFilter
  * @extends {WebInspector.Object}
  * @implements {WebInspector.TargetManager.Observer}
  * @implements {WebInspector.TracingManagerClient}
  */
-WebInspector.TimelineModel = function(tracingManager, tracingModel, recordFilter)
+WebInspector.TimelineModel = function(tracingModel, recordFilter)
 {
     WebInspector.Object.call(this);
     this._filters = [];
-    this._tracingManager = tracingManager;
     this._tracingModel = tracingModel;
     this._recordFilter = recordFilter;
+    this._targets = [];
     this.reset();
+    WebInspector.targetManager.observeTargets(this);
 }
 
 WebInspector.TimelineModel.RecordType = {
@@ -437,7 +437,8 @@ WebInspector.TimelineModel.prototype = {
     stopRecording: function()
     {
         this._allProfilesStoppedPromise = this._stopProfilingOnAllTargets();
-        this._tracingManager.stop();
+        if (this._targets[0])
+            this._targets[0].tracingManager.stop();
     },
 
     /**
@@ -520,7 +521,7 @@ WebInspector.TimelineModel.prototype = {
     target: function()
     {
         // FIXME: Consider returning null for loaded traces.
-        return this._tracingManager.target();
+        return this._targets[0];
     },
 
     /**
@@ -539,8 +540,9 @@ WebInspector.TimelineModel.prototype = {
      */
     targetAdded: function(target)
     {
-        this._profilingTargets.push(target);
-        this._startProfilingOnTarget(target);
+        this._targets.push(target);
+        if (this._profiling)
+            this._startProfilingOnTarget(target);
     },
 
     /**
@@ -549,7 +551,7 @@ WebInspector.TimelineModel.prototype = {
      */
     targetRemoved: function(target)
     {
-        this._profilingTargets.remove(target, true);
+        this._targets.remove(target, true);
         // FIXME: We'd like to stop profiling on the target and retrieve a profile
         // but it's too late. Backend connection is closed.
     },
@@ -565,9 +567,10 @@ WebInspector.TimelineModel.prototype = {
     _startProfilingOnAllTargets: function()
     {
         var intervalUs = WebInspector.settings.highResolutionCpuProfiling.get() ? 100 : 1000;
-        WebInspector.targetManager.mainTarget().profilerAgent().setSamplingInterval(intervalUs);
-        this._profilingTargets = [];
-        WebInspector.targetManager.observeTargets(this); // This guy invokes targetAdded for already existing targets.
+        this._targets[0].profilerAgent().setSamplingInterval(intervalUs);
+        this._profiling = true;
+        for (var target of this._targets)
+            this._startProfilingOnTarget(target);
     },
 
     /**
@@ -592,9 +595,8 @@ WebInspector.TimelineModel.prototype = {
      */
     _stopProfilingOnAllTargets: function()
     {
-        WebInspector.targetManager.unobserveTargets(this);
-        var targets = this._profilingTargets || [];
-        this._profilingTargets = null;
+        var targets = this._profiling ? this._targets : [];
+        this._profiling = false;
         return Promise.all(targets.map(this._stopProfilingOnTarget, this));
     },
 
@@ -604,9 +606,11 @@ WebInspector.TimelineModel.prototype = {
      */
     _startRecordingWithCategories: function(categories, enableJSSampling)
     {
+        if (!this._targets.length)
+            return;
         if (enableJSSampling)
             this._startProfilingOnAllTargets();
-        this._tracingManager.start(this, categories, "");
+        this._targets[0].tracingManager.start(this, categories, "");
     },
 
     /**
@@ -742,7 +746,7 @@ WebInspector.TimelineModel.prototype = {
             return;
         var mainMetaEvent = this._tracingModel.devtoolsPageMetadataEvents().peekLast();
         var pid = mainMetaEvent.thread.process().id();
-        var mainTarget = WebInspector.targetManager.mainTarget();
+        var mainTarget = this._targets[0];
         var mainCpuProfile = this._cpuProfiles.get(mainTarget.id());
         this._injectCpuProfileEvent(pid, mainMetaEvent.thread.id(), mainCpuProfile);
         var workerMetadataEvents = this._tracingModel.devtoolsWorkerMetadataEvents();

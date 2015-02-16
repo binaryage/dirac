@@ -47,11 +47,9 @@ WebInspector.TimelinePanel = function()
     this._windowEndTime = Infinity;
     this._millisecondsToRecordAfterLoadEvent = 3000;
 
-    this._tracingManager = new WebInspector.TracingManager();
-
     // Create model.
     this._tracingModel = new WebInspector.TracingModel();
-    this._model = new WebInspector.TimelineModel(this._tracingManager, this._tracingModel, WebInspector.TimelineUIUtils.hiddenRecordsFilter());
+    this._model = new WebInspector.TimelineModel(this._tracingModel, WebInspector.TimelineUIUtils.hiddenRecordsFilter());
 
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStarted, this._onRecordingStarted, this);
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStopped, this._onRecordingStopped, this);
