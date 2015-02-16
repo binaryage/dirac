@@ -487,12 +487,15 @@ WebInspector.ElementsTreeOutline.prototype = {
 
     update: function()
     {
-        var selectedNode = this.selectedTreeElement ? this.selectedTreeElement.node() : null;
+        var selectedTreeElement = this.suspendSelectionCare();
+        var selectedNode = selectedTreeElement ? selectedTreeElement.node() : null;
 
         this.removeChildren();
 
-        if (!this.rootDOMNode)
+        if (!this.rootDOMNode) {
+            this.resumeSelectionCare();
             return;
+        }
 
         var treeElement;
         if (this._includeRootDOMNode) {
@@ -510,6 +513,8 @@ WebInspector.ElementsTreeOutline.prototype = {
 
         if (selectedNode)
             this._revealAndSelectNode(selectedNode, true);
+        else
+            this.resumeSelectionCare();
     },
 
     updateSelection: function()
@@ -1767,7 +1772,7 @@ WebInspector.ElementsTreeOutline.prototype = {
     {
         if (!treeElement.hasChildren) {
             var selectedTreeElement = treeElement.treeOutline.selectedTreeElement;
-            if (selectedTreeElement.hasAncestor(treeElement))
+            if (selectedTreeElement && selectedTreeElement.hasAncestor(treeElement))
                 treeElement.select();
             treeElement.removeChildren();
             return;
@@ -1837,7 +1842,7 @@ WebInspector.ElementsTreeOutline.prototype = {
 
         this._treeElementsBeingUpdated.add(treeElement);
 
-        var selectedTreeElement = treeElement.treeOutline.selectedTreeElement;
+        var selectedTreeElement = treeElement.treeOutline.suspendSelectionCare();
 
         var node = treeElement.node();
         var visibleChildren = this._visibleChildren(node);
@@ -1872,8 +1877,7 @@ WebInspector.ElementsTreeOutline.prototype = {
 
             treeElement.removeChildAtIndex(i);
         }
-        if (selectedTreeElement !== treeElement.treeOutline.selectedTreeElement)
-            selectedTreeElement.select();
+        treeElement.treeOutline.resumeSelectionCare(selectedTreeElement);
 
         var displayMode = this._shadowHostDisplayModes.get(node);
         for (var i = 0; i < visibleChildren.length && i < treeElement.expandedChildrenLimit(); ++i) {
@@ -1910,7 +1914,7 @@ WebInspector.ElementsTreeOutline.prototype = {
         if (node.nodeType() === Node.ELEMENT_NODE && treeElement.hasChildren)
             this.insertChildElement(treeElement, node, treeElement.children.length, true);
 
-        this._treeElementsBeingUpdated.delete(treeElement)
+        this._treeElementsBeingUpdated.delete(treeElement);
     },
 
     /**

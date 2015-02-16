@@ -604,7 +604,7 @@ WebInspector.NavigatorTreeOutline = function(element)
     TreeOutline.call(this, element);
     this.element = element;
 
-    this.comparator = WebInspector.NavigatorTreeOutline._treeElementsCompare;
+    this.setComparator(WebInspector.NavigatorTreeOutline._treeElementsCompare);
 }
 
 WebInspector.NavigatorTreeOutline.Types = {
