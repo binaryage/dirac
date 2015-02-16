@@ -1,4 +1,4 @@
-// Copyright (c) 2015 The Chromium Authors. All rights reserved.
+ // Copyright (c) 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -90,7 +90,8 @@ WebInspector.StylesPopoverHelper.prototype = {
         delete this._previousFocusElement;
         delete this._anchorElement;
         if (this._view) {
-            this._view.contentElement.addEventListener("keydown", this._boundOnKeyDown, false);
+            this._view.detach();
+            this._view.contentElement.removeEventListener("keydown", this._boundOnKeyDown, false);
             delete this._view;
         }
     },
