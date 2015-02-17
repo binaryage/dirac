@@ -119,7 +119,6 @@
             'front_end/screencast/ScreencastView.js',
         ],
         'devtools_sdk_js_files': [
-            'front_end/sdk/AccessibilityModel.js',
             'front_end/sdk/AnimationModel.js',
             'front_end/sdk/ApplicationCacheModel.js',
             'front_end/sdk/BlackboxSupport.js',
@@ -358,7 +357,6 @@
             'front_end/elements/elementsPanel.css',
             'front_end/elements/elementsTreeOutline.css',
             'front_end/elements/spectrum.css',
-            'front_end/elements/AccessibilitySidebarPane.js',
             'front_end/elements/AnimationTimeline.js',
             'front_end/elements/AnimationsSidebarPane.js',
             'front_end/elements/BezierEditor.js',

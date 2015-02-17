@@ -80,10 +80,7 @@ WebInspector.ElementsPanel = function()
     this.sidebarPanes.properties = new WebInspector.PropertiesSidebarPane();
     this.sidebarPanes.domBreakpoints = WebInspector.domBreakpointsSidebarPane.createProxy(this);
     this.sidebarPanes.eventListeners = new WebInspector.EventListenersSidebarPane();
-    if (Runtime.experiments.isEnabled("animationInspection"))
-        this.sidebarPanes.animations = new WebInspector.AnimationsSidebarPane(this.sidebarPanes.styles);
-    if (Runtime.experiments.isEnabled("accessibilityInspection"))
-        this.sidebarPanes.accessibility = new WebInspector.AccessibilitySidebarPane();
+    this.sidebarPanes.animations = new WebInspector.AnimationsSidebarPane(this.sidebarPanes.styles);
 
     WebInspector.dockController.addEventListener(WebInspector.DockController.Events.DockSideChanged, this._dockSideChanged.bind(this));
     WebInspector.settings.splitVerticallyWhenDockedToRight.addChangeListener(this._dockSideChanged.bind(this));
@@ -292,10 +289,7 @@ WebInspector.ElementsPanel.prototype = {
         this._updateCSSSidebars();
         this.sidebarPanes.properties.setNode(this.selectedDOMNode());
         this.sidebarPanes.eventListeners.setNode(this.selectedDOMNode());
-        if (this.sidebarPanes.animations)
-            this.sidebarPanes.animations.setNode(this.selectedDOMNode());
-        if (this.sidebarPanes.accessibility)
-            this.sidebarPanes.accessibility.setNode(this.selectedDOMNode());
+        this.sidebarPanes.animations.setNode(this.selectedDOMNode());
     },
 
     _reset: function()
@@ -937,11 +931,8 @@ WebInspector.ElementsPanel.prototype = {
         this.sidebarPaneView.addPane(this.sidebarPanes.eventListeners);
         this.sidebarPaneView.addPane(this.sidebarPanes.domBreakpoints);
         this.sidebarPaneView.addPane(this.sidebarPanes.properties);
-        if (this.sidebarPanes.animations)
+        if (Runtime.experiments.isEnabled("animationInspection"))
             this.sidebarPaneView.addPane(this.sidebarPanes.animations);
-        if (this.sidebarPanes.accessibility)
-            this.sidebarPaneView.addPane(this.sidebarPanes.accessibility);
-
         this._extensionSidebarPanesContainer = this.sidebarPaneView;
 
         var extensionSidebarPanes = WebInspector.extensionServer.sidebarPanes();
