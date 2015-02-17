@@ -151,9 +151,9 @@ WebInspector.AsyncOperationsSidebarPane.prototype = {
         label.classList.add("checkbox-elem");
         element.appendChild(label);
 
-        var link = operation.callFrame && this._linkifier.linkifyConsoleCallFrame(this._target, operation.callFrame);
-        if (link)
-            element.createChild("div").appendChild(link);
+        var callFrame = operation.stackTrace && operation.stackTrace[0];
+        if (callFrame)
+            element.createChild("div").appendChild(this._linkifier.linkifyConsoleCallFrame(this._target, callFrame));
 
         this._operationIdToElement.set(operation.id, element);
         this.addListElement(element, this.listElement.firstChild);

@@ -3366,7 +3366,8 @@
                 "properties": [
                     { "name": "id", "type": "integer", "description": "Unique id of the async operation." },
                     { "name": "description", "type": "string", "description": "String description of the async operation." },
-                    { "name": "callFrame", "$ref": "Console.CallFrame", "optional": true, "description": "Top call frame where async operation was scheduled."}
+                    { "name": "stackTrace", "$ref": "Console.StackTrace", "optional": true, "description": "Stack trace where async operation was scheduled." },
+                    { "name": "asyncStackTrace", "$ref": "Console.AsyncStackTrace", "optional": true, "description": "Asynchronous stack trace where async operation was scheduled, if available." }
                 ],
                 "hidden": true
             }
