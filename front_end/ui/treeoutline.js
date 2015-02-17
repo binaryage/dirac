@@ -131,7 +131,7 @@ TreeContainerNode.prototype = {
         this.children.splice(childIndex, 1);
 
         var parent = child.parent;
-        if (this.treeOutline && !this.treeOutline._selectionCareSuspended && this.treeOutline.selectedTreeElement && this.treeOutline.selectedTreeElement.hasAncestorOrSelf(child)) {
+        if (this.treeOutline && this.treeOutline.selectedTreeElement && this.treeOutline.selectedTreeElement.hasAncestorOrSelf(child)) {
             if (child.nextSibling)
                 child.nextSibling.select(true);
             else if (child.previousSibling)
@@ -171,7 +171,7 @@ TreeContainerNode.prototype = {
 
     removeChildren: function()
     {
-        if (this.treeOutline && !this.treeOutline._selectionCareSuspended && this.treeOutline.selectedTreeElement && this.treeOutline.selectedTreeElement.hasAncestor(this))
+        if (!this.root && this.treeOutline && this.treeOutline.selectedTreeElement && this.treeOutline.selectedTreeElement.hasAncestor(this))
             this.select(true);
 
         for (var i = 0; i < this.children.length; ++i) {
@@ -275,29 +275,6 @@ TreeOutline.prototype = {
             this._childrenListNode.setAttribute("tabIndex", 0);
         else
             this._childrenListNode.removeAttribute("tabIndex");
-    },
-
-    /**
-     * @return {?TreeElement} treeElement
-     */
-    suspendSelectionCare: function()
-    {
-        this._selectionCareSuspended = true;
-        return this.selectedTreeElement;
-    },
-
-    /**
-     * @param {?TreeElement=} treeElement
-     */
-    resumeSelectionCare: function(treeElement)
-    {
-        delete this._selectionCareSuspended;
-        if (treeElement === this.selectedTreeElement)
-            return;
-        if (this.selectedTreeElement && this.selectedTreeElement.treeOutline)
-            this.selectedTreeElement.deselect();
-        if (treeElement)
-            treeElement.select(true);
     },
 
     /**
@@ -520,7 +497,7 @@ TreeElement.prototype = {
      */
     removeChildren: function()
     {
-        if (this.treeOutline && !this.treeOutline._selectionCareSuspended && this.treeOutline.selectedTreeElement && this.treeOutline.selectedTreeElement.hasAncestorOrSelf(this))
+        if (this.treeOutline && this.treeOutline.selectedTreeElement && this.treeOutline.selectedTreeElement.hasAncestorOrSelf(this))
             this.select(true);
         TreeContainerNode.prototype.removeChildren.call(this);
     },

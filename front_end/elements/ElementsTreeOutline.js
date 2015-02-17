@@ -487,15 +487,13 @@ WebInspector.ElementsTreeOutline.prototype = {
 
     update: function()
     {
-        var selectedTreeElement = this.suspendSelectionCare();
+        var selectedTreeElement = this.selectedTreeElement;
         var selectedNode = selectedTreeElement ? selectedTreeElement.node() : null;
 
         this.removeChildren();
 
-        if (!this.rootDOMNode) {
-            this.resumeSelectionCare();
+        if (!this.rootDOMNode)
             return;
-        }
 
         var treeElement;
         if (this._includeRootDOMNode) {
@@ -513,8 +511,6 @@ WebInspector.ElementsTreeOutline.prototype = {
 
         if (selectedNode)
             this._revealAndSelectNode(selectedNode, true);
-        else
-            this.resumeSelectionCare();
     },
 
     updateSelection: function()
@@ -1842,8 +1838,6 @@ WebInspector.ElementsTreeOutline.prototype = {
 
         this._treeElementsBeingUpdated.add(treeElement);
 
-        var selectedTreeElement = treeElement.treeOutline.suspendSelectionCare();
-
         var node = treeElement.node();
         var visibleChildren = this._visibleChildren(node);
         var visibleChildrenSet = new Set(visibleChildren);
@@ -1866,18 +1860,8 @@ WebInspector.ElementsTreeOutline.prototype = {
                 continue;
             }
 
-            if (selectedTreeElement && (selectedTreeElement === existingTreeElement || selectedTreeElement.hasAncestor(existingTreeElement))) {
-                if (existingTreeElement.nextSibling)
-                    selectedTreeElement = existingTreeElement.nextSibling;
-                else if (existingTreeElement.previousSibling)
-                    selectedTreeElement = existingTreeElement.previousSibling;
-                else
-                    selectedTreeElement = treeElement;
-            }
-
             treeElement.removeChildAtIndex(i);
         }
-        treeElement.treeOutline.resumeSelectionCare(selectedTreeElement);
 
         var displayMode = this._shadowHostDisplayModes.get(node);
         for (var i = 0; i < visibleChildren.length && i < treeElement.expandedChildrenLimit(); ++i) {
