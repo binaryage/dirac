@@ -38,6 +38,15 @@ WebInspector.AnimationTimeline.prototype = {
     },
 
     /**
+     * @param {number} duration
+     */
+    setDuration: function(duration)
+    {
+        this._duration = duration;
+        this.redraw();
+    },
+
+    /**
      * @return {number|undefined}
      */
     startTime: function()
@@ -130,7 +139,9 @@ WebInspector.AnimationTimeline.prototype = {
         // This shows at most 2 iterations
         var iterations = animation.source().iterations() || 1;
         var duration = animation.source().duration() * Math.min(2, iterations);
-        this._duration = Math.max(this._duration, animation.startTime() + duration + animation.source().delay() - this._startTime + 50);
+        var requiredDuration = animation.startTime() + duration + animation.source().delay() - this.startTime();
+        if (requiredDuration > this._duration * 0.8)
+            this._duration = requiredDuration * 1.5;
     },
 
     __proto__: WebInspector.VBox.prototype
@@ -189,7 +200,7 @@ WebInspector.AnimationUI.prototype = {
     {
         var width = parseInt(window.getComputedStyle(this._parentElement).width, 10);
         const height = WebInspector.AnimationUI.Options.GridCanvasHeight;
-        const minorMs = this._timeline.duration() / 20;
+        const minorMs = 100;
         const majorMs = minorMs * 5;
 
         this._grid.width = width * window.devicePixelRatio;
@@ -379,6 +390,8 @@ WebInspector.AnimationUI.prototype = {
     _mouseMove: function (event)
     {
         this._movementInMs = (event.clientX - this._downMouseX) / this._pixelMsRatio();
+        if (this._animation.startTime() + this._delay() + this._duration() - this._timeline.startTime() > this._timeline.duration() * 0.8)
+            this._timeline.setDuration(this._timeline.duration() * 1.2);
         this.redraw();
     },
 
@@ -425,7 +438,7 @@ WebInspector.AnimationUI.prototype = {
             propertyName = "animation-delay";
         else
             return; // FIXME: support web animations
-        this._setNodeStyle(propertyName, this._delay() + "ms");
+        this._setNodeStyle(propertyName, Math.round(value) + "ms");
     },
 
     /**
@@ -444,7 +457,7 @@ WebInspector.AnimationUI.prototype = {
             propertyName = "animation-duration";
         else
             return; // FIXME: support web animations
-        this._setNodeStyle(propertyName, value + "ms");
+        this._setNodeStyle(propertyName, Math.round(value) + "ms");
     },
 
     /**
@@ -457,7 +470,7 @@ WebInspector.AnimationUI.prototype = {
         if (style)
             style = style.replace(new RegExp("\\s*(-webkit-)?" + name + ":[^;]*;?\\s*", "g"), "");
         var valueString = name + ": " + value;
-        this._node.setAttributeValue("style", style + " " + valueString + "; -webkit-" + valueString);
+        this._node.setAttributeValue("style", style + " " + valueString + "; -webkit-" + valueString + ";");
     },
 
     /**
