@@ -706,7 +706,6 @@ WebInspector.ConsoleView.prototype = {
         var stream = new WebInspector.FileOutputStream();
 
         var progressIndicator = new WebInspector.ProgressIndicator();
-        this._progressStatusBarItem.element.appendChild(progressIndicator.element);
         progressIndicator.setTitle(WebInspector.UIString("Writing file…"));
         progressIndicator.setTotalWork(this.itemCount());
 
@@ -724,6 +723,7 @@ WebInspector.ConsoleView.prototype = {
         {
             if (!accepted)
                 return;
+            this._progressStatusBarItem.element.appendChild(progressIndicator.element);
             writeNextChunk.call(this, stream);
         }
 
