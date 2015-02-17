@@ -93,7 +93,7 @@ WebInspector.TimelineJSProfileProcessor.generateJSFrameEvents = function(events)
 
     /**
      * @param {!WebInspector.TracingModel.Event} e
-     * @param {!WebInspector.TracingModel.Event|undefined} top
+     * @param {?WebInspector.TracingModel.Event} top
      */
     function onInstantEvent(e, top)
     {
@@ -155,6 +155,18 @@ WebInspector.TimelineJSProfileProcessor.generateJSFrameEvents = function(events)
         }
     }
 
+    WebInspector.TimelineJSProfileProcessor.eventsStackedIterator(events, onStartEvent, onEndEvent, onInstantEvent);
+    return jsFrameEvents;
+}
+
+/**
+ * @param {!Array.<!WebInspector.TracingModel.Event>} events
+ * @param {function(!WebInspector.TracingModel.Event)} onStartEvent
+ * @param {function(!WebInspector.TracingModel.Event)} onEndEvent
+ * @param {function(!WebInspector.TracingModel.Event,?WebInspector.TracingModel.Event)=} onInstantEvent
+ */
+WebInspector.TimelineJSProfileProcessor.eventsStackedIterator = function(events, onStartEvent, onEndEvent, onInstantEvent)
+{
     var stack = [];
     for (var i = 0; i < events.length; ++i) {
         var e = events[i];
@@ -164,11 +176,9 @@ WebInspector.TimelineJSProfileProcessor.generateJSFrameEvents = function(events)
             onStartEvent(e);
             stack.push(e);
         } else {
-            onInstantEvent(e, stack.peekLast());
+            onInstantEvent && onInstantEvent(e, stack.peekLast() || null);
         }
     }
     while (stack.length)
         onEndEvent(stack.pop());
-
-    return jsFrameEvents;
 }

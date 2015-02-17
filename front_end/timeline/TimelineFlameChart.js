@@ -32,7 +32,7 @@
  * @constructor
  * @implements {WebInspector.FlameChartDataProvider}
  * @param {!WebInspector.TimelineModel} model
- * @param {!WebInspector.TimelineFrameModelBase} frameModel
+ * @param {?WebInspector.TimelineFrameModelBase} frameModel
  */
 WebInspector.TimelineFlameChartDataProvider = function(model, frameModel)
 {
@@ -677,6 +677,377 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
 
 /**
  * @constructor
+ * @extends {WebInspector.TimelineFlameChartDataProvider}
+ * @param {!WebInspector.TimelineModel} model
+ */
+WebInspector.TimelineFlameChartBottomUpDataProvider = function(model)
+{
+    WebInspector.TimelineFlameChartDataProvider.call(this, model, null);
+}
+
+/**
+ * @constructor
+ */
+WebInspector.TimelineFlameChartBottomUpDataProvider.TreeNode = function()
+{
+    /** @type {number} */
+    this.totalTime;
+    /** @type {number} */
+    this.selfTime;
+    /** @type {string} */
+    this.name;
+    /** @type {string} */
+    this.color;
+    /** @type {string} */
+    this.id;
+    /** @type {!WebInspector.TracingModel.Event} */
+    this.event;
+    /** @type {?Object.<string,!WebInspector.TimelineFlameChartBottomUpDataProvider.TreeNode>} */
+    this.children;
+    /** @type {?WebInspector.TimelineFlameChartBottomUpDataProvider.TreeNode} */
+    this.parent;
+}
+
+WebInspector.TimelineFlameChartBottomUpDataProvider.prototype = {
+    /**
+     * @override
+     * @return {!WebInspector.FlameChart.TimelineData}
+     */
+    timelineData: function()
+    {
+        if (this._timelineData)
+            return this._timelineData;
+        this._entries = [];
+        this._timelineData = new WebInspector.FlameChart.TimelineData([], [], []);
+        this._appendTimelineData(this._model.mainThreadEvents());
+        return this._timelineData;
+    },
+
+    /**
+     * @override
+     */
+    reset: function()
+    {
+        WebInspector.TimelineFlameChartDataProvider.prototype.reset.call(this);
+        this._entries = [];
+    },
+
+    /**
+     * @param {number} startTime
+     * @param {number} endTime
+     */
+    setWindowTimes: function(startTime, endTime)
+    {
+        this._startTime = startTime;
+        this._endTime = endTime;
+        this.reset();
+    },
+
+    /**
+     * @override
+     * @param {number} index
+     * @return {?WebInspector.TimelineSelection}
+     */
+    createSelection: function(index)
+    {
+        return null;
+    },
+
+    /**
+     * @override
+     * @param {number} index
+     * @return {string}
+     */
+    entryTitle: function(index)
+    {
+        return this._entries[index].name;
+    },
+
+    /**
+     * @override
+     * @param {number} index
+     * @return {boolean}
+     */
+    forceDecoration: function(index)
+    {
+        return false;
+    },
+
+    /**
+     * @override
+     * @param {number} entryIndex
+     * @return {string}
+     */
+    entryColor: function(entryIndex)
+    {
+        var entry = this._entries[entryIndex];
+        if (entry.color)
+            return entry.color;
+        var event = entry.event;
+        if (!event)
+            return this._entryIndexToFrame[entryIndex] ? "white" : "#aaa";
+        if (event.name === WebInspector.TimelineModel.RecordType.JSFrame) {
+            var colorId = event.args["data"]["url"];
+            return this._jsFramesColorGenerator.colorForID(colorId);
+        }
+        var category = WebInspector.TimelineUIUtils.eventStyle(event).category;
+        if (WebInspector.TracingModel.isAsyncPhase(event.phase)) {
+            if (event.category === WebInspector.TracingModel.ConsoleEventCategory)
+                return this._consoleColorGenerator.colorForID(event.name);
+            var color = this._asyncColorByCategory[category.name];
+            if (color)
+                return color;
+            var parsedColor = WebInspector.Color.parse(category.fillColorStop1);
+            color = parsedColor.setAlpha(0.7).asString(WebInspector.Color.Format.RGBA) || "";
+            this._asyncColorByCategory[category.name] = color;
+            return color;
+        }
+        return category.fillColorStop1;
+    },
+
+    /**
+     * @param {!Array.<!WebInspector.TracingModel.Event>} events
+     */
+    _appendTimelineData: function(events)
+    {
+        var topDownTree = this._buildTopDownTree(events);
+        var bottomUpTree = this._buildBottomUpTree(topDownTree);
+        this._flowEventIndexById = {};
+        this._minimumBoundary = 0;
+        this._currentLevel = 0;
+
+        // FIXME: flamechart doesn't work with 0 offset. So start with something small enough.
+        this._timeSpan = appendTree.call(this, 0, 0.0001, bottomUpTree);
+
+        /**
+         * @param {number} level
+         * @param {number} position
+         * @param {!WebInspector.TimelineFlameChartBottomUpDataProvider.TreeNode} node
+         * @this {!WebInspector.TimelineFlameChartBottomUpDataProvider}
+         */
+        function appendTree(level, position, node)
+        {
+            /**
+             * @param {!WebInspector.TimelineFlameChartBottomUpDataProvider.TreeNode} a
+             * @param {!WebInspector.TimelineFlameChartBottomUpDataProvider.TreeNode} b
+             * @return {number}
+             */
+            function sortFunction(a, b)
+            {
+                return b.totalTime - a.totalTime;
+            }
+            this._currentLevel = Math.max(this._currentLevel, level);
+            this._appendNode(node, level, position);
+            if (node.children)
+                Object.values(node.children).sort(sortFunction).reduce(appendTree.bind(this, level + 1), position);
+            return position + node.totalTime;
+        }
+    },
+
+    /**
+     * @param {!WebInspector.TimelineFlameChartBottomUpDataProvider.TreeNode} node
+     * @param {number} level
+     * @param {number} position
+     */
+    _appendNode: function(node, level, position)
+    {
+        var index = this._entries.length;
+        this._entries.push(node);
+        this._timelineData.entryLevels[index] = level;
+        this._timelineData.entryTotalTimes[index] = node.totalTime;
+        this._timelineData.entryStartTimes[index] = position;
+    },
+
+    /**
+     * @param {!Array.<!WebInspector.TracingModel.Event>} events
+     * @return {!WebInspector.TimelineFlameChartBottomUpDataProvider.TreeNode}
+     */
+    _buildTopDownTree: function(events)
+    {
+        // Use a big enough value that exceeds the max recording time.
+        var /** @const */ initialTime = 1e7;
+        var root = new WebInspector.TimelineFlameChartBottomUpDataProvider.TreeNode();
+        root.totalTime = initialTime;
+        root.selfTime = initialTime;
+        root.name = WebInspector.UIString("Top-Down Chart");
+        var parent = root;
+
+        /**
+         * @param {!WebInspector.TracingModel.Event} e
+         * @return {boolean}
+         * @this {!WebInspector.TimelineFlameChartBottomUpDataProvider}
+         */
+        function filter(e)
+        {
+            if (!e.endTime && e.phase !== WebInspector.TracingModel.Phase.Instant)
+                return false;
+            if (WebInspector.TracingModel.isAsyncPhase(e.phase))
+                return false;
+            if (!this._isVisible(e))
+                return false;
+            if (e.endTime <= this._startTime)
+                return false;
+            if (e.startTime >= this._endTime)
+                return false;
+            return true;
+        }
+        var boundFilter = filter.bind(this);
+
+        /**
+         * @param {!WebInspector.TracingModel.Event} e
+         * @this {!WebInspector.TimelineFlameChartBottomUpDataProvider}
+         */
+        function onStartEvent(e)
+        {
+            if (!boundFilter(e))
+                return;
+            var time = Math.min(this._endTime, e.endTime) - Math.max(this._startTime, e.startTime);
+            var id = eventId(e);
+            if (!parent.children)
+                parent.children = {};
+            var node = parent.children[id];
+            if (node) {
+                node.selfTime += time;
+                node.totalTime += time;
+            } else {
+                node = new WebInspector.TimelineFlameChartBottomUpDataProvider.TreeNode();
+                node.totalTime = time;
+                node.selfTime = time;
+                node.parent = parent;
+                node.name = eventName(e);
+                node.id = id;
+                node.event = e;
+                parent.children[id] = node;
+            }
+            parent.selfTime -= time;
+            if (parent.selfTime < 0) {
+                console.log("Error: Negative self of " + parent.selfTime, e);
+                parent.selfTime = 0;
+            }
+            parent = node;
+        }
+
+        /**
+         * @param {!WebInspector.TracingModel.Event} e
+         */
+        function onEndEvent(e)
+        {
+            if (!boundFilter(e))
+                return;
+            parent = parent.parent;
+        }
+
+        /**
+         * @param {!WebInspector.TracingModel.Event} e
+         * @return {string}
+         */
+        function eventId(e)
+        {
+            if (e.name === "JSFrame")
+                return "f:" + e.args.data.callUID;
+            return e.name;
+        }
+
+        /**
+         * @param {!WebInspector.TracingModel.Event} e
+         * @return {string}
+         */
+        function eventName(e)
+        {
+            if (e.name === "JSFrame")
+                return WebInspector.beautifyFunctionName(e.args.data.functionName);
+            if (e.name === "EventDispatch")
+                return WebInspector.UIString("Event%s", e.args.data ? " (" + e.args.data.type + ")" : "");
+            return e.name;
+        }
+
+        WebInspector.TimelineJSProfileProcessor.eventsStackedIterator(events, onStartEvent.bind(this), onEndEvent);
+        root.totalTime -= root.selfTime;
+        root.selfTime = 0;
+        return root;
+    },
+
+    /**
+     * @param {!WebInspector.TimelineFlameChartBottomUpDataProvider.TreeNode} topDownTree
+     * @return {!WebInspector.TimelineFlameChartBottomUpDataProvider.TreeNode}
+     */
+    _buildBottomUpTree: function(topDownTree)
+    {
+        var buRoot = new WebInspector.TimelineFlameChartBottomUpDataProvider.TreeNode();
+        buRoot.totalTime = 0;
+        buRoot.name = WebInspector.UIString("Bottom-Up Chart");
+        buRoot.children = {};
+
+        var categories = WebInspector.TimelineUIUtils.categories();
+        for (var categoryName in categories) {
+            var category = categories[categoryName];
+            var node = new WebInspector.TimelineFlameChartBottomUpDataProvider.TreeNode();
+            node.totalTime = 0;
+            node.name = category.title;
+            node.color = category.fillColorStop1;
+            buRoot.children[categoryName] = node;
+        }
+
+        for (var id in topDownTree.children)
+            processNode(topDownTree.children[id]);
+
+        for (var id in buRoot.children) {
+            var buNode = buRoot.children[id];
+            buRoot.totalTime += buNode.totalTime;
+        }
+
+        /**
+         * @param {!WebInspector.TimelineFlameChartBottomUpDataProvider.TreeNode} tdNode
+         */
+        function processNode(tdNode)
+        {
+            if (tdNode.selfTime > 0) {
+                var category = WebInspector.TimelineUIUtils.eventStyle(tdNode.event).category;
+                var buNode = buRoot.children[category.name] || buRoot;
+                var time = tdNode.selfTime;
+                buNode.totalTime += time;
+                appendNode(tdNode, buNode, time);
+            }
+            for (var id in tdNode.children)
+                processNode(tdNode.children[id]);
+        }
+
+        /**
+         * @param {!WebInspector.TimelineFlameChartBottomUpDataProvider.TreeNode} tdNode
+         * @param {!WebInspector.TimelineFlameChartBottomUpDataProvider.TreeNode} buParent
+         * @param {number} time
+         */
+        function appendNode(tdNode, buParent, time)
+        {
+            // FIXME: it is possible to optimize this loop out.
+            while (tdNode.parent) {
+                if (!buParent.children)
+                    buParent.children = {};
+                var id = tdNode.id;
+                var buNode = buParent.children[id];
+                if (!buNode) {
+                    buNode = new WebInspector.TimelineFlameChartBottomUpDataProvider.TreeNode();
+                    buNode.totalTime = time;
+                    buNode.name = tdNode.name;
+                    buNode.event = tdNode.event;
+                    buNode.id = id;
+                    buParent.children[id] = buNode;
+                } else {
+                    buNode.totalTime += time;
+                }
+                tdNode = tdNode.parent;
+                buParent = buNode;
+            }
+        }
+
+        return buRoot;
+    },
+
+    __proto__: WebInspector.TimelineFlameChartDataProvider.prototype
+}
+
+/**
+ * @constructor
  * @implements {WebInspector.FlameChartMarker}
  * @param {number} startTime
  * @param {number} startOffset
@@ -763,15 +1134,15 @@ WebInspector.TimelineFlameChartMarker.prototype = {
  * @implements {WebInspector.FlameChartDelegate}
  * @param {!WebInspector.TimelineModeViewDelegate} delegate
  * @param {!WebInspector.TimelineModel} timelineModel
- * @param {!WebInspector.TimelineFrameModelBase} frameModel
+ * @param {!WebInspector.TimelineFlameChartDataProvider} dataProvider
  */
-WebInspector.TimelineFlameChart = function(delegate, timelineModel, frameModel)
+WebInspector.TimelineFlameChart = function(delegate, timelineModel, dataProvider)
 {
     WebInspector.VBox.call(this);
     this.element.classList.add("timeline-flamechart");
     this._delegate = delegate;
     this._model = timelineModel;
-    this._dataProvider = new WebInspector.TimelineFlameChartDataProvider(timelineModel, frameModel);
+    this._dataProvider = dataProvider;
     this._mainView = new WebInspector.FlameChart(this._dataProvider, this, true);
     this._mainView.show(this.element);
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStarted, this._onRecordingStarted, this);
@@ -818,6 +1189,9 @@ WebInspector.TimelineFlameChart.prototype = {
         this._mainView.scheduleUpdate();
     },
 
+    /**
+     * @override
+     */
     wasShown: function()
     {
         this._mainView.scheduleUpdate();

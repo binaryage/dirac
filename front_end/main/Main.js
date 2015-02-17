@@ -148,6 +148,7 @@ WebInspector.Main.prototype = {
         Runtime.experiments.register("stepIntoAsync", "Step into async");
         Runtime.experiments.register("timelineInvalidationTracking", "Timeline invalidation tracking");
         Runtime.experiments.register("timelineFlowEvents", "Timeline flow events", true);
+        Runtime.experiments.register("timelineDetailsChart", "Show costly functions in Timeline details", true);
         Runtime.experiments.cleanUpStaleExperiments();
 
         if (InspectorFrontendHost.isUnderTest()) {
