@@ -716,18 +716,18 @@ WebInspector.DevicesSettingsTab.prototype = {
         this._editDeviceCheckbox.type = "checkbox";
         var fields = this._editDeviceElement.createChild("div", "devices-edit-fields");
 
-        this._editDeviceTitle = this._createNumericInput(WebInspector.UIString("Device name"));
+        this._editDeviceTitle = this._createInput(WebInspector.UIString("Device name"));
         fields.appendChild(this._editDeviceTitle);
 
         var screen = fields.createChild("div", "hbox");
-        this._editDeviceWidth = this._createNumericInput(WebInspector.UIString("Width"), "120px");
+        this._editDeviceWidth = this._createInput(WebInspector.UIString("Width"), "120px");
         screen.appendChild(this._editDeviceWidth);
-        this._editDeviceHeight = this._createNumericInput(WebInspector.UIString("Height"), "120px");
+        this._editDeviceHeight = this._createInput(WebInspector.UIString("Height"), "120px");
         screen.appendChild(this._editDeviceHeight);
-        this._editDeviceScale = this._createNumericInput(WebInspector.UIString("Device pixel ratio"));
+        this._editDeviceScale = this._createInput(WebInspector.UIString("Device pixel ratio"));
         screen.appendChild(this._editDeviceScale);
 
-        this._editDeviceUserAgent = this._createNumericInput(WebInspector.UIString("User agent string"));
+        this._editDeviceUserAgent = this._createInput(WebInspector.UIString("User agent string"));
         fields.appendChild(this._editDeviceUserAgent);
 
         var buttonsRow = fields.createChild("div", "devices-edit-buttons");
@@ -742,7 +742,7 @@ WebInspector.DevicesSettingsTab.prototype = {
      * @param {string=} width
      * @return {!Element}
      */
-    _createNumericInput: function(title, width)
+    _createInput: function(title, width)
     {
         var input = createElement("input");
         input.type = "text";
@@ -775,7 +775,8 @@ WebInspector.DevicesSettingsTab.prototype = {
 
     _validateInputs: function()
     {
-        var titleValid = !!this._editDeviceTitle.value;
+        var trimmedTitle = this._editDeviceTitle.value.trim();
+        var titleValid = trimmedTitle.length > 0 && trimmedTitle.length < 50;
         this._editDeviceTitle.classList.toggle("error-input", !titleValid);
 
         var widthValid = !WebInspector.OverridesSupport.deviceSizeValidator(this._editDeviceWidth.value);
