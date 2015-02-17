@@ -131,6 +131,7 @@ WebInspector.Main.prototype = {
 
     _initializeExperiments: function()
     {
+        Runtime.experiments.register("accessibilityInspection", "Accessibility Inspection", true);
         Runtime.experiments.register("animationInspection", "Animation Inspection", true);
         Runtime.experiments.register("applyCustomStylesheet", "Allow custom UI themes");
         Runtime.experiments.register("canvasInspection", "Canvas inspection");
