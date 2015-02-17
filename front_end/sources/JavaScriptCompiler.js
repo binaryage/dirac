@@ -49,7 +49,7 @@ WebInspector.JavaScriptCompiler.prototype = {
 
         this._compiling = true;
         var code = this._sourceFrame.textEditor.text();
-        target.debuggerAgent().compileScript(code, "", undefined, compileCallback.bind(this, target));
+        target.debuggerAgent().compileScript(code, "", false, undefined, compileCallback.bind(this, target));
 
         /**
          * @param {!WebInspector.Target} target
