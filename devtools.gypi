@@ -544,6 +544,7 @@
             'front_end/timeline/CountersGraph.js',
             'front_end/timeline/LayerDetailsView.js',
             'front_end/timeline/LayerTreeOutline.js',
+            'front_end/timeline/LayerViewHost.js',
             'front_end/timeline/Layers3DView.js',
             'front_end/timeline/MemoryCountersGraph.js',
             'front_end/timeline/PaintProfilerView.js',

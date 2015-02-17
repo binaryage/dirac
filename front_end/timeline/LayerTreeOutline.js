@@ -30,12 +30,17 @@
 
 /**
  * @constructor
- * @extends {WebInspector.Object}
+ * @param {!WebInspector.LayerViewHost} layerViewHost
  * @param {!TreeOutline} treeOutline
+ * @extends {WebInspector.Object}
+ * @implements {WebInspector.LayerView}
  */
-WebInspector.LayerTreeOutline = function(treeOutline)
+WebInspector.LayerTreeOutline = function(layerViewHost, treeOutline)
 {
     WebInspector.Object.call(this);
+    this._layerViewHost = layerViewHost;
+    this._layerViewHost.registerView(this);
+
     this._treeOutline = treeOutline;
     this._treeOutline.childrenListElement.addEventListener("mousemove", this._onMouseMove.bind(this), false);
     this._treeOutline.childrenListElement.addEventListener("mouseout", this._onMouseMove.bind(this), false);
@@ -43,21 +48,15 @@ WebInspector.LayerTreeOutline = function(treeOutline)
     this._lastHoveredNode = null;
 }
 
-/**
- * @enum {string}
- */
-WebInspector.LayerTreeOutline.Events = {
-    LayerHovered: "LayerHovered",
-    LayerSelected: "LayerSelected"
-}
-
 WebInspector.LayerTreeOutline.prototype = {
     /**
-     * @param {?WebInspector.Layer} layer
+     * @param {?WebInspector.LayerView.Selection} selection
+     * @override
      */
-    selectLayer: function(layer)
+    selectObject: function(selection)
     {
-        this.hoverLayer(null);
+        this.hoverObject(null);
+        var layer = selection && selection.layer();
         var node = layer && this._treeOutline.getCachedTreeElement(layer);
         if (node)
             node.revealAndSelect(true);
@@ -66,10 +65,12 @@ WebInspector.LayerTreeOutline.prototype = {
     },
 
     /**
-     * @param {?WebInspector.Layer} layer
+     * @param {?WebInspector.LayerView.Selection} selection
+     * @override
      */
-    hoverLayer: function(layer)
+    hoverObject: function(selection)
     {
+        var layer = selection && selection.layer();
         var node = layer && this._treeOutline.getCachedTreeElement(layer);
         if (node === this._lastHoveredNode)
             return;
@@ -82,8 +83,9 @@ WebInspector.LayerTreeOutline.prototype = {
 
     /**
      * @param {?WebInspector.LayerTreeBase} layerTree
+     * @override
      */
-    update: function(layerTree)
+    setLayerTree: function(layerTree)
     {
         var seenLayers = new Map();
         var root = layerTree && (layerTree.contentRoot() || layerTree.root());
@@ -140,8 +142,8 @@ WebInspector.LayerTreeOutline.prototype = {
         var node = this._treeOutline.treeElementFromEvent(event);
         if (node === this._lastHoveredNode)
             return;
-        var selection = node && node.representedObject ? new WebInspector.Layers3DView.LayerSelection(node.representedObject) : null;
-        this.dispatchEventToListeners(WebInspector.LayerTreeOutline.Events.LayerHovered, selection);
+        var selection = node && node.representedObject ? new WebInspector.LayerView.LayerSelection(node.representedObject) : null;
+        this._layerViewHost.hoverObject(selection);
     },
 
     /**
@@ -150,8 +152,8 @@ WebInspector.LayerTreeOutline.prototype = {
     _selectedNodeChanged: function(node)
     {
         var layer = /** @type {!WebInspector.Layer} */ (node.representedObject);
-        var selection = layer ? new WebInspector.Layers3DView.LayerSelection(layer) : null;
-        this.dispatchEventToListeners(WebInspector.LayerTreeOutline.Events.LayerSelected, selection);
+        var selection = layer ? new WebInspector.LayerView.LayerSelection(layer) : null;
+        this._layerViewHost.selectObject(selection);
     },
 
     /**

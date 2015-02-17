@@ -23,6 +23,7 @@
         "CountersGraph.js",
         "LayerDetailsView.js",
         "LayerTreeOutline.js",
+        "LayerViewHost.js",
         "Layers3DView.js",
         "MemoryCountersGraph.js",
         "TimelineModel.js",

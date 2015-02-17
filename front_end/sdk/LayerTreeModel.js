@@ -194,6 +194,14 @@ WebInspector.LayerTreeBase.prototype = {
     },
 
     /**
+     * @return {?WebInspector.Target}
+     */
+    target: function()
+    {
+        return this._target;
+    },
+
+    /**
      * @return {?WebInspector.Layer}
      */
     root: function()
