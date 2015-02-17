@@ -45,7 +45,7 @@ WebInspector.AnimationsSidebarPane.prototype = {
      */
     _animationPlayerCreated: function(event)
     {
-        this._timeline.addAnimation(/** @type {!WebInspector.AnimationModel.AnimationPlayer} */ (event.data));
+        this._timeline.addAnimation(/** @type {!WebInspector.AnimationModel.AnimationPlayer} */ (event.data.player), event.data.resetTimeline);
     },
 
     /**

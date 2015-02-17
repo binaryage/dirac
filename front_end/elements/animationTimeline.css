@@ -5,7 +5,7 @@
  */
 
 .animation-row {
-    height: 60px;
+    height: 40px;
     width: 100%;
     display: flex;
 }
@@ -14,10 +14,12 @@
     display: inline-block;
     height: 100%;
     vertical-align: top;
-    line-height: 60px;
-    width: 200px;
+    line-height: 40px;
+    min-width: 200px;
+    max-width: 200px;
     padding-left: 15px;
     overflow: hidden;
+    border-right: 1px solid #ccc;
 }
 
 .animation-row:nth-child(odd) > .animation-node-description {
@@ -37,7 +39,7 @@
 }
 
 .animation-timeline-grid-row {
-    border-bottom: 1px dashed #ddd;
+    border-bottom: 1px dashed #ccc;
 }
 
 path.animation-keyframe {
@@ -61,8 +63,64 @@ circle.animation-keyframe-point {
 
 .animation-name {
     position: absolute;
-    top: 45px;
+    top: 15px;
     color: #777;
     text-align: center;
     margin-left: -8px;
+}
+
+.animation-timeline-header {
+    height: 44px;
+    border-bottom: 1px solid #ccc;
+}
+
+.animation-control-replay {
+    float: right;
+    content: url(Images/animationsReplay.png);
+}
+
+.animation-control-replay circle {
+    stroke: #666;
+    stroke-width: 2px;
+    fill: none;
+}
+
+.animation-control-replay path {
+    fill: #666;
+}
+
+.animation-control-replay:hover circle {
+    stroke: #333;
+}
+
+.animation-control-replay:hover path {
+    fill: #333;
+}
+
+.animation-controls {
+    width: 200px;
+    max-width: 200px;
+    padding: 10px;
+    height: 100%;
+    display: inline-block;
+    border-right: 1px solid #ccc;
+}
+
+.animation-timeline-markers {
+    height: 100%;
+    width: calc(100% - 200px);
+    display: inline-block;
+}
+
+.animation-time-overlay {
+    background-color: black;
+    opacity: 0.05;
+    position: absolute;
+    left: 200px;
+    height: 100%;
+    width: calc(100% - 200px);
+}
+
+.view.component-root.platform-linux.vbox {
+    overflow: hidden;
 }

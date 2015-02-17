@@ -13,7 +13,9 @@ WebInspector.AnimationTimeline = function(stylesPane)
     this._stylesPane = stylesPane;
     this.registerRequiredCSS("elements/animationTimeline.css");
     this.element.classList.add("animations-timeline");
-
+    this._timeOverlay = this.contentElement.createChild("div", "animation-time-overlay");
+    this.contentElement.appendChild(this._createHeader());
+    this._animationsContainer = this.contentElement.createChild("div");
     this._animations = [];
     this._uiAnimations = [];
     this._duration = this._defaultDuration();
@@ -21,6 +23,37 @@ WebInspector.AnimationTimeline = function(stylesPane)
 }
 
 WebInspector.AnimationTimeline.prototype = {
+    _createHeader: function()
+    {
+        var container = createElementWithClass("div", "animation-timeline-header");
+        var controls = container.createChild("div", "animation-controls");
+        this._gridMarkers = container.createChild("div", "animation-timeline-markers");
+
+        var replayButton = controls.createSVGChild("svg", "animation-control-replay");
+        replayButton.setAttribute("height", 24);
+        replayButton.setAttribute("width", 24);
+        var g = replayButton.createSVGChild("g")
+        var circle = g.createSVGChild("circle");
+        circle.setAttribute("cx", 12);
+        circle.setAttribute("cy", 12);
+        circle.setAttribute("r", 9);
+        var triangle = g.createSVGChild("path");
+        triangle.setAttribute("d", "M 10 8 L 10 16 L 16 12 z");
+        replayButton.addEventListener("click", this._replay.bind(this));
+
+        return container;
+    },
+
+    _replay: function()
+    {
+        if (this.startTime() === undefined)
+            return;
+        var targets = WebInspector.targetManager.targets();
+        for (var target of targets)
+            target.pageAgent().setCurrentTime(/** @type {number} */(this.startTime()));
+        this._animateTime(this.startTime());
+    },
+
     /**
      * @return {number}
      */
@@ -54,26 +87,14 @@ WebInspector.AnimationTimeline.prototype = {
         return this._startTime;
     },
 
-    /**
-     * @param {!WebInspector.AnimationModel.AnimationPlayer} animation
-     * @return {boolean}
-     */
-    _inThreshold: function(animation)
-    {
-        if (!this._animations.length)
-            return true;
-
-        if (animation.startTime() - this._animations.peekLast().startTime() < 1000)
-            return true;
-
-        return false;
-    },
-
     _reset: function()
     {
+        if (!this._animations.length)
+            return;
+
         this._animations = [];
         this._uiAnimations = [];
-        this.contentElement.removeChildren();
+        this._animationsContainer.removeChildren();
         this._duration = this._defaultDuration();
         delete this._startTime;
     },
@@ -88,8 +109,9 @@ WebInspector.AnimationTimeline.prototype = {
 
     /**
      * @param {!WebInspector.AnimationModel.AnimationPlayer} animation
+     * @param {boolean} resetTimeline
      */
-    addAnimation: function(animation)
+    addAnimation: function(animation, resetTimeline)
     {
         /**
          * @param {!Element} description
@@ -101,10 +123,14 @@ WebInspector.AnimationTimeline.prototype = {
             uiAnimation.setNode(node);
         }
 
-        if (!this._inThreshold(animation))
+        if (resetTimeline)
             this._reset();
 
-        var row = this.contentElement.createChild("div", "animation-row");
+        // Ignore Web Animations custom effects & groups
+        if (animation.type() === "WebAnimation" && animation.source().keyframesRule().keyframes().length === 0)
+            return;
+
+        var row = this._animationsContainer.createChild("div", "animation-row");
         var description = row.createChild("div", "animation-node-description");
         animation.source().getNode(nodeResolved.bind(null, description));
         var container = row.createChild("div", "animation-timeline-row");
@@ -142,6 +168,27 @@ WebInspector.AnimationTimeline.prototype = {
         var requiredDuration = animation.startTime() + duration + animation.source().delay() - this.startTime();
         if (requiredDuration > this._duration * 0.8)
             this._duration = requiredDuration * 1.5;
+        this._animateTime(animation.startTime());
+    },
+
+    /**
+      * @param {number|undefined} startTime
+      */
+    _animateTime: function(startTime)
+    {
+        if (!startTime)
+            return;
+
+        if (this._timeOverlayPlayer)
+            this._timeOverlayPlayer.cancel();
+
+        var width = parseInt(window.getComputedStyle(this._animationsContainer).width, 10) - 200 || 0;
+        this._timeOverlayPlayer = this._timeOverlay.animate([
+            { transform: "translateX(0px)" },
+            { transform: "translateX(" +  width + "px)" }
+        ], { duration: this.duration(), fill: 'forwards' });
+
+        this._timeOverlayPlayer.currentTime = startTime - this._startTime;
     },
 
     __proto__: WebInspector.VBox.prototype
@@ -213,7 +260,8 @@ WebInspector.AnimationUI.prototype = {
 
         // Draw minor lines
         ctx.beginPath();
-        for (var x = 0; x <= width; x += width * minorMs / this._timeline.duration()) {
+        var minorIncrement = width * minorMs / this._timeline.duration();
+        for (var x = minorIncrement; x <= width; x += minorIncrement) {
             var xr = Math.round(x);
             ctx.moveTo(xr + 0.5, 0);
             ctx.lineTo(xr + 0.5, height);
@@ -224,9 +272,8 @@ WebInspector.AnimationUI.prototype = {
 
         // Draw major lines
         ctx.beginPath();
-        ctx.moveTo(1, 0);
-        ctx.lineTo(1, WebInspector.AnimationUI.Options.GridCanvasHeight);
-        for (var x = 0; x < width; x += width * majorMs / this._timeline.duration()) {
+        var majorIncrement = width * majorMs / this._timeline.duration();
+        for (var x = majorIncrement; x < width; x += majorIncrement) {
             var xr = Math.round(x);
             ctx.moveTo(xr + 0.5, 0);
             ctx.lineTo(xr + 0.5, height);
@@ -301,6 +348,7 @@ WebInspector.AnimationUI.prototype = {
                 this._renderBezierKeyframe(WebInspector.AnimationUI.Options.AnimationMargin, this._duration() * this._pixelMsRatio(), bezier);
             this._drawPoint(WebInspector.AnimationUI.Options.AnimationMargin, 0);
         } else {
+            console.assert(this._keyframes.length > 1);
             for (var i = 0; i < this._keyframes.length - 1; i++) {
                 var leftDistance = this._offset(i) * this._duration() * this._pixelMsRatio() + WebInspector.AnimationUI.Options.AnimationMargin;
                 var width = this._duration() * (this._offset(i + 1) - this._offset(i)) * this._pixelMsRatio();
@@ -487,7 +535,7 @@ WebInspector.AnimationUI.prototype = {
             var hash = 0;
             for (var i = 0; i < string.length; i++)
                 hash = (hash << 5) + hash + string.charCodeAt(i);
-            return hash;
+            return Math.abs(hash);
         }
 
         if (!this._selectedColor) {
@@ -499,11 +547,11 @@ WebInspector.AnimationUI.prototype = {
 }
 
 WebInspector.AnimationUI.Options = {
-    AnimationHeight: 40,
-    AnimationSVGHeight: 100,
+    AnimationHeight: 32,
+    AnimationSVGHeight: 80,
     AnimationMargin: 8,
     EndpointsClickRegionSize: 10,
-    GridCanvasHeight: 60
+    GridCanvasHeight: 40
 }
 
 WebInspector.AnimationUI.Colors = {

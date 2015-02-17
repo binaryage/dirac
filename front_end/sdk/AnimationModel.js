@@ -46,11 +46,12 @@ WebInspector.AnimationModel.prototype = {
 
     /**
      * @param {!AnimationAgent.AnimationPlayer} payload
+     * @param {boolean} resetTimeline
      */
-    animationPlayerCreated: function(payload)
+    animationPlayerCreated: function(payload, resetTimeline)
     {
         var player = WebInspector.AnimationModel.AnimationPlayer.parsePayload(this.target(), payload);
-        this.dispatchEventToListeners(WebInspector.AnimationModel.Events.AnimationPlayerCreated, player);
+        this.dispatchEventToListeners(WebInspector.AnimationModel.Events.AnimationPlayerCreated, { "player": player, "resetTimeline": resetTimeline });
     },
 
     ensureEnabled: function()
@@ -166,53 +167,6 @@ WebInspector.AnimationModel.AnimationPlayer.prototype = {
     type: function()
     {
         return this._payload.type;
-    },
-
-    /**
-     * @param {function(?WebInspector.AnimationModel.AnimationPlayer)} callback
-     */
-    pause: function(callback)
-    {
-        var wrappedCallback = InspectorBackend.wrapClientCallback(callback, "AnimationAgent.pauseAnimationPlayer(): ", WebInspector.AnimationModel.AnimationPlayer.bind(null, this._target));
-        this.target().animationModel._agent.pauseAnimationPlayer(this.id(), wrappedCallback);
-    },
-
-    /**
-     * @param {function(?WebInspector.AnimationModel.AnimationPlayer)} callback
-     */
-    play: function(callback)
-    {
-        var wrappedCallback = InspectorBackend.wrapClientCallback(callback, "AnimationAgent.playAnimationPlayer(): ", WebInspector.AnimationModel.AnimationPlayer.bind(null, this._target));
-        this.target().animationModel._agent.playAnimationPlayer(this.id(), wrappedCallback);
-    },
-
-    /**
-     * @param {number} currentTime
-     * @param {function(?WebInspector.AnimationModel.AnimationPlayer)} callback
-     */
-    setCurrentTime: function(currentTime, callback)
-    {
-        var wrappedCallback = InspectorBackend.wrapClientCallback(callback, "AnimationAgent.setAnimationPlayerCurrentTime(): ", WebInspector.AnimationModel.AnimationPlayer.bind(null, this._target));
-        this.target().animationModel._agent.setAnimationPlayerCurrentTime(this.id(), currentTime, wrappedCallback);
-    },
-
-    /**
-     * @param {function(number, boolean)} callback
-     */
-    getCurrentState: function(callback)
-    {
-        /**
-         * @param {?Protocol.Error} error
-         * @param {number} currentTime
-         * @param {boolean} isRunning
-         */
-        function mycallback(error, currentTime, isRunning)
-        {
-            if (error)
-                return;
-            callback(currentTime, isRunning);
-        }
-        this.target().animationModel._agent.getAnimationPlayerState(this.id(), mycallback);
     },
 
     __proto__: WebInspector.SDKObject.prototype
@@ -469,9 +423,10 @@ WebInspector.AnimationDispatcher.prototype = {
     /**
      * @override
      * @param {!AnimationAgent.AnimationPlayer} payload
+     * @param {boolean} resetTimeline
      */
-    animationPlayerCreated: function(payload)
+    animationPlayerCreated: function(payload, resetTimeline)
     {
-        this._animationModel.animationPlayerCreated(payload);
+        this._animationModel.animationPlayerCreated(payload, resetTimeline);
     }
 }

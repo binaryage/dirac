@@ -643,6 +643,14 @@
                 ],
                 "description": "Sets the playback rate of the document timeline.",
                 "hidden": true
+            },
+            {
+                "name": "setCurrentTime",
+                "parameters": [
+                    { "name": "currentTime", "type": "number", "description": "Current time for the page animation timeline" }
+                ],
+                "description": "Sets the current time of the document timeline.",
+                "hidden": true
             }
         ],
         "events": [
@@ -4753,59 +4761,14 @@
                 ],
                 "description": "Returns animation players relevant to the node.",
                 "hidden": true
-            },
-            {
-                "name": "pauseAnimationPlayer",
-                "parameters": [
-                    { "name": "id", "type": "string", "description": "Id of the animation player." }
-                ],
-                "returns": [
-                    { "name": "animationPlayer", "$ref": "AnimationPlayer", "description": "Animation Player with current time set." }
-                ],
-                "description": "Pauses animations relevant to the node.",
-                "hidden": true
-            },
-            {
-                "name": "playAnimationPlayer",
-                "parameters": [
-                    { "name": "id", "type": "string", "description": "Id of the animation player." }
-                ],
-                "returns": [
-                    { "name": "animationPlayer", "$ref": "AnimationPlayer", "description": "Animation Player with current time set." }
-                ],
-                "description": "Plays animations relevant to the node.",
-                "hidden": true
-            },
-            {
-                "name": "setAnimationPlayerCurrentTime",
-                "parameters": [
-                    { "name": "id", "type": "string", "description": "Id of the animation player." },
-                    { "name": "currentTime", "type": "number", "description": "Current time to set animation to"}
-                ],
-                "returns": [
-                    { "name": "animationPlayer", "$ref": "AnimationPlayer", "description": "Animation Player with current time set." }
-                ],
-                "description": "Sets the current time on given AnimationPlayer.",
-                "hidden": true
-            },
-            {
-                "name": "getAnimationPlayerState",
-                "parameters": [
-                    { "name": "id", "type": "string", "description": "Id of the animation player." }
-                ],
-                "returns": [
-                    { "name": "currentTime", "type": "number", "description": "Current time of the animation player." },
-                    { "name": "isRunning", "type": "boolean", "description": "If the animation player is still running." }
-                ],
-                "description": "Gets the state of an AnimationPlayer.",
-                "hidden": true
             }
         ],
         "events": [
             {
                 "name": "animationPlayerCreated",
                 "parameters": [
-                    { "name": "player", "$ref": "AnimationPlayer", "description": "AnimationPlayer that was created." }
+                    { "name": "player", "$ref": "AnimationPlayer", "description": "AnimationPlayer that was created." },
+                    { "name": "resetTimeline", "type": "boolean", "description": "Whether the timeline should be reset." }
                 ],
                 "hidden": true
             }
