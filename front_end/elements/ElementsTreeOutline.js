@@ -46,7 +46,7 @@ WebInspector.ElementsTreeOutline = function(target, omitRootDOMNode, selectEnabl
     this._shadowRoot.appendChild(WebInspector.View.createStyleElement("elements/elementsTreeOutline.css"));
 
 
-    var outlineDisclosureElement = this._shadowRoot.createChild("div", "outline-disclosure");
+    var outlineDisclosureElement = this._shadowRoot.createChild("div", "elements-disclosure");
     WebInspector.installComponentRootStyles(outlineDisclosureElement);
     this._element = outlineDisclosureElement.createChild("ol", "elements-tree-outline source-code");
     this._element.addEventListener("mousedown", this._onmousedown.bind(this), false);

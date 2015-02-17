@@ -434,6 +434,30 @@ TreeOutline.prototype = {
 
 /**
  * @constructor
+ * @extends {TreeOutline}
+ */
+function TreeOutlineInShadow()
+{
+    var element = createElement("div");
+    this._shadowRoot = element.createShadowRoot();
+    this._shadowRoot.appendChild(WebInspector.View.createStyleElement("ui/treeoutline.css"));
+
+    TreeOutline.call(this, this._shadowRoot.createChild("ol", "tree-outline"));
+    this._renderSelection = true;
+    this.element = element;
+}
+
+TreeOutlineInShadow.prototype = {
+    focus: function()
+    {
+        this._childrenListNode.focus();
+    },
+
+    __proto__: TreeOutline.prototype
+}
+
+/**
+ * @constructor
  * @extends {TreeContainerNode}
  * @param {string|!Node} title
  * @param {?Object=} representedObject
@@ -640,6 +664,10 @@ TreeElement.prototype = {
             this._listItemNode.removeChildren();
             if (this._title)
                 this._listItemNode.appendChild(this._title);
+        }
+        if (this.treeOutline && this.treeOutline._renderSelection) {
+            var selectionElement = createElementWithClass("div", "selection");
+            this._listItemNode.insertBefore(selectionElement, this.listItemElement.firstChild);
         }
     },
 
@@ -1065,7 +1093,7 @@ TreeElement.prototype = {
             element = element.parent;
         }
 
-        if (!element)
+        if (!element || element.root)
             return null;
 
         return (skipUnrevealed ? (element.revealed() ? element.nextSibling : null) : element.nextSibling);

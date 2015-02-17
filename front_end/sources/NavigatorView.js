@@ -36,8 +36,8 @@ WebInspector.NavigatorView = function()
     this.registerRequiredCSS("sources/navigatorView.css");
 
     this.element.classList.add("navigator-container");
-    var scriptsOutlineElement = this.element.createChild("div", "outline-disclosure navigator");
-    var scriptsTreeElement = scriptsOutlineElement.createChild("ol");
+    var scriptsOutlineElement = this.element.createChild("div", "navigator");
+    var scriptsTreeElement = scriptsOutlineElement.createChild("ol", "outline-disclosure");
     this._scriptsTree = new WebInspector.NavigatorTreeOutline(scriptsTreeElement);
 
     this.setDefaultFocusedElement(this._scriptsTree.element);

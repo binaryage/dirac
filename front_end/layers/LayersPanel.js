@@ -30,23 +30,21 @@
 
 /**
  * @constructor
- * @extends {WebInspector.PanelWithSidebarTree}
+ * @extends {WebInspector.PanelWithSidebar}
  * @implements {WebInspector.TargetManager.Observer}
  */
 WebInspector.LayersPanel = function()
 {
-    WebInspector.PanelWithSidebarTree.call(this, "layers", 225);
+    WebInspector.PanelWithSidebar.call(this, "layers", 225);
     this.registerRequiredCSS("timeline/timelinePanel.css");
+
     this._target = null;
 
-    this.panelSidebarElement().classList.add("outline-disclosure", "layer-tree");
-    this.sidebarTree.element.classList.remove("sidebar-tree");
-
     WebInspector.targetManager.observeTargets(this);
-
     this._layerViewHost = new WebInspector.LayerViewHost();
-
-    this._layerTreeOutline = new WebInspector.LayerTreeOutline(this._layerViewHost, this.sidebarTree);
+    this._layerTreeOutline = new WebInspector.LayerTreeOutline(this._layerViewHost);
+    this.panelSidebarElement().appendChild(this._layerTreeOutline.element);
+    this.setDefaultFocusedElement(this._layerTreeOutline.element);
 
     this._rightSplitView = new WebInspector.SplitView(false, true, "layerDetailsSplitViewState");
     this.splitView().setMainView(this._rightSplitView);
@@ -71,12 +69,17 @@ WebInspector.LayersPanel.DetailsViewTabs = {
 };
 
 WebInspector.LayersPanel.prototype = {
+    focus: function()
+    {
+        this._layerTreeOutline.focus();
+    },
+
     wasShown: function()
     {
         WebInspector.Panel.prototype.wasShown.call(this);
-        this.sidebarTree.element.focus();
         if (this._target)
             this._target.layerTreeModel.enable();
+        this._layerTreeOutline.focus();
     },
 
     willHide: function()
@@ -151,7 +154,7 @@ WebInspector.LayersPanel.prototype = {
         this._paintProfilerView.profileLayer(layer);
     },
 
-    __proto__: WebInspector.PanelWithSidebarTree.prototype
+    __proto__: WebInspector.PanelWithSidebar.prototype
 }
 
 /**

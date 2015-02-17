@@ -30,48 +30,49 @@
 
 /**
  * @constructor
- * @extends {WebInspector.PanelWithSidebarTree}
+ * @extends {WebInspector.PanelWithSidebar}
  * @implements {WebInspector.TargetManager.Observer}
  */
 WebInspector.ResourcesPanel = function()
 {
-    WebInspector.PanelWithSidebarTree.call(this, "resources");
+    WebInspector.PanelWithSidebar.call(this, "resources");
     this.registerRequiredCSS("resources/resourcesPanel.css");
 
     WebInspector.settings.resourcesLastSelectedItem = WebInspector.settings.createSetting("resourcesLastSelectedItem", {});
 
-    this.panelSidebarElement().classList.add("filter-all", "children", "small", "outline-disclosure");
-    this.sidebarTree.element.classList.remove("sidebar-tree");
+    var sidebarTreeElement = this.panelSidebarElement().createChild("ol",  "filter-all children small outline-disclosure");
+    this._sidebarTree = new TreeOutline(sidebarTreeElement);
+    this.setDefaultFocusedElement(sidebarTreeElement);
 
     this.resourcesListTreeElement = new WebInspector.StorageCategoryTreeElement(this, WebInspector.UIString("Frames"), "Frames", ["frame-storage-tree-item"]);
-    this.sidebarTree.appendChild(this.resourcesListTreeElement);
+    this._sidebarTree.appendChild(this.resourcesListTreeElement);
 
     this.databasesListTreeElement = new WebInspector.StorageCategoryTreeElement(this, WebInspector.UIString("Web SQL"), "Databases", ["database-storage-tree-item"]);
-    this.sidebarTree.appendChild(this.databasesListTreeElement);
+    this._sidebarTree.appendChild(this.databasesListTreeElement);
 
     this.indexedDBListTreeElement = new WebInspector.IndexedDBTreeElement(this);
-    this.sidebarTree.appendChild(this.indexedDBListTreeElement);
+    this._sidebarTree.appendChild(this.indexedDBListTreeElement);
 
     if (WebInspector.isWorkerFrontend()) {
         this.serviceWorkerCacheListTreeElement = new WebInspector.ServiceWorkerCacheTreeElement(this);
-        this.sidebarTree.appendChild(this.serviceWorkerCacheListTreeElement);
+        this._sidebarTree.appendChild(this.serviceWorkerCacheListTreeElement);
     }
 
     this.localStorageListTreeElement = new WebInspector.StorageCategoryTreeElement(this, WebInspector.UIString("Local Storage"), "LocalStorage", ["domstorage-storage-tree-item", "local-storage"]);
-    this.sidebarTree.appendChild(this.localStorageListTreeElement);
+    this._sidebarTree.appendChild(this.localStorageListTreeElement);
 
     this.sessionStorageListTreeElement = new WebInspector.StorageCategoryTreeElement(this, WebInspector.UIString("Session Storage"), "SessionStorage", ["domstorage-storage-tree-item", "session-storage"]);
-    this.sidebarTree.appendChild(this.sessionStorageListTreeElement);
+    this._sidebarTree.appendChild(this.sessionStorageListTreeElement);
 
     this.cookieListTreeElement = new WebInspector.StorageCategoryTreeElement(this, WebInspector.UIString("Cookies"), "Cookies", ["cookie-storage-tree-item"]);
-    this.sidebarTree.appendChild(this.cookieListTreeElement);
+    this._sidebarTree.appendChild(this.cookieListTreeElement);
 
     this.applicationCacheListTreeElement = new WebInspector.StorageCategoryTreeElement(this, WebInspector.UIString("Application Cache"), "ApplicationCache", ["application-cache-storage-tree-item"]);
-    this.sidebarTree.appendChild(this.applicationCacheListTreeElement);
+    this._sidebarTree.appendChild(this.applicationCacheListTreeElement);
 
     if (Runtime.experiments.isEnabled("fileSystemInspection")) {
         this.fileSystemListTreeElement = new WebInspector.FileSystemListTreeElement(this);
-        this.sidebarTree.appendChild(this.fileSystemListTreeElement);
+        this._sidebarTree.appendChild(this.fileSystemListTreeElement);
     }
 
     var mainView = new WebInspector.VBox();
@@ -190,7 +191,7 @@ WebInspector.ResourcesPanel.prototype = {
 
         var itemURL = WebInspector.settings.resourcesLastSelectedItem.get();
         if (itemURL) {
-            for (var treeElement = this.sidebarTree.children[0]; treeElement; treeElement = treeElement.traverseNextTreeElement(false, this.sidebarTree, true)) {
+            for (var treeElement = this._sidebarTree.children[0]; treeElement; treeElement = treeElement.traverseNextTreeElement(false, this._sidebarTree, true)) {
                 if (treeElement.itemURL === itemURL) {
                     treeElement.revealAndSelect(true);
                     return;
@@ -237,8 +238,8 @@ WebInspector.ResourcesPanel.prototype = {
 
         this._storageViewStatusBar.removeStatusBarItems();
 
-        if (this.sidebarTree.selectedTreeElement)
-            this.sidebarTree.selectedTreeElement.deselect();
+        if (this._sidebarTree.selectedTreeElement)
+            this._sidebarTree.selectedTreeElement.deselect();
     },
 
     _populateResourceTree: function()
@@ -754,7 +755,7 @@ WebInspector.ResourcesPanel.prototype = {
 
     _findTreeElementForResource: function(resource)
     {
-        return this.sidebarTree.getCachedTreeElement(resource);
+        return this._sidebarTree.getCachedTreeElement(resource);
     },
 
     showView: function(view)
@@ -796,7 +797,7 @@ WebInspector.ResourcesPanel.prototype = {
         }
     },
 
-    __proto__: WebInspector.PanelWithSidebarTree.prototype
+    __proto__: WebInspector.PanelWithSidebar.prototype
 }
 
 /**

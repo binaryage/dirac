@@ -1,5 +1,6 @@
 html {
     height: 100%;
+    overflow: hidden;
 }
 
 body {
@@ -149,11 +150,15 @@ body /deep/ .link {
 body /deep/ button,
 body /deep/ input,
 body /deep/ select {
-  font-family: inherit;
-  font-size: inherit;
+    font-family: inherit;
+    font-size: inherit;
 }
 
 body /deep/ input[type="search"]:focus,
 body /deep/ input[type="text"]:focus {
     outline: auto 5px -webkit-focus-ring-color;
+}
+
+.overflow-auto {
+    overflow: auto;
 }

@@ -58,6 +58,7 @@
         "suggestBox.css",
         "tabbedPane.css",
         "textButton.css",
-        "textPrompt.css"
+        "textPrompt.css",
+        "treeoutline.css"
     ]
 }

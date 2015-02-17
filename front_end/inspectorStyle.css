@@ -337,6 +337,11 @@ iframe.panel.extension {
     height: 100%;
 }
 
+.outline-disclosure {
+    padding: 0 0 0 4px;
+    margin: 0;
+}
+
 .outline-disclosure li.hovered:not(.selected) .selection {
     display: block;
     left: 3px;
@@ -369,59 +374,44 @@ iframe.panel.extension {
     border-top: 2px solid rgb(56, 121, 217);
 }
 
-.outline-disclosure ol:focus li.selected .selection {
+ol.outline-disclosure:focus li.selected .selection {
     background-color: rgb(56, 121, 217);
 }
 
-.outline-disclosure ol:focus li.parent.selected::before {
+ol.outline-disclosure:focus li.parent.selected::before {
     background-color: white;
 }
 
-.outline-disclosure > ol {
-    position: relative;
-    padding: 2px 6px !important;
-    margin: 0;
-    cursor: default;
-    min-width: 100%;
-}
-
-.outline-disclosure,
+ol.outline-disclosure,
 .outline-disclosure ol {
     list-style-type: none;
-    -webkit-padding-start: 12px;
-    margin: 0;
+}
+
+.outline-disclosure-no-padding {
+    padding: 0;
+}
+
+.outline-disclosure ol {
+    padding-left: 12px;
 }
 
 .outline-disclosure li {
-    padding: 0 0 0 14px;
     margin-top: 1px;
-    margin-left: -2px;
-    word-wrap: break-word;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
 }
 
-.outline-disclosure ol:focus li.selected {
+ol.outline-disclosure:focus li.selected {
     color: white;
 }
 
-.outline-disclosure ol:focus li.selected * {
+ol.outline-disclosure:focus li.selected * {
     color: inherit;
 }
 
-.outline-disclosure li.parent {
-    margin-left: -13px;
-}
-
-.outline-disclosure li .webkit-html-tag.close {
-    margin-left: -12px;
-}
-
-.outline-disclosure li.parent::before {
+.outline-disclosure li::before {
     float: left;
-    width: 10px;
-    box-sizing: border-box;
-}
-
-.outline-disclosure li.parent::before {
     -webkit-user-select: none;
     -webkit-mask-image: url(Images/statusbarButtonGlyphs.png);
     -webkit-mask-size: 320px 144px;
@@ -431,16 +421,21 @@ iframe.panel.extension {
     position: relative;
     top: 2px;
     margin-right: 1px;
-    height: 12px;
+    width: 10px;
+    height: 10px;
+}
+
+.outline-disclosure li:not(.parent)::before {
+    background-color: transparent;
 }
 
 @media (-webkit-min-device-pixel-ratio: 1.5) {
-.outline-disclosure li.parent::before {
+.outline-disclosure li::before {
     -webkit-mask-image: url(Images/statusbarButtonGlyphs_2x.png);
 }
 } /* media */
 
-.outline-disclosure li.parent::before {
+.outline-disclosure li::before {
     -webkit-mask-position: -4px -96px;
     background-color: rgb(110, 110, 110);
 }

@@ -229,6 +229,7 @@
             'front_end/ui/tabbedPane.css',
             'front_end/ui/textButton.css',
             'front_end/ui/textPrompt.css',
+            'front_end/ui/treeoutline.css',
             'front_end/ui/ActionRegistry.js',
             'front_end/ui/Context.js',
             'front_end/ui/ContextMenu.js',

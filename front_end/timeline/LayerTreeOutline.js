@@ -31,24 +31,31 @@
 /**
  * @constructor
  * @param {!WebInspector.LayerViewHost} layerViewHost
- * @param {!TreeOutline} treeOutline
  * @extends {WebInspector.Object}
  * @implements {WebInspector.LayerView}
  */
-WebInspector.LayerTreeOutline = function(layerViewHost, treeOutline)
+WebInspector.LayerTreeOutline = function(layerViewHost)
 {
     WebInspector.Object.call(this);
     this._layerViewHost = layerViewHost;
     this._layerViewHost.registerView(this);
 
-    this._treeOutline = treeOutline;
-    this._treeOutline.childrenListElement.addEventListener("mousemove", this._onMouseMove.bind(this), false);
-    this._treeOutline.childrenListElement.addEventListener("mouseout", this._onMouseMove.bind(this), false);
-    this._treeOutline.childrenListElement.addEventListener("contextmenu", this._onContextMenu.bind(this), true);
+    this._treeOutline = new TreeOutlineInShadow();
+    this._treeOutline.element.classList.add("layer-tree");
+    this._treeOutline.element.addEventListener("mousemove", this._onMouseMove.bind(this), false);
+    this._treeOutline.element.addEventListener("mouseout", this._onMouseMove.bind(this), false);
+    this._treeOutline.element.addEventListener("contextmenu", this._onContextMenu.bind(this), true);
+
     this._lastHoveredNode = null;
+    this.element = this._treeOutline.element;
 }
 
 WebInspector.LayerTreeOutline.prototype = {
+    focus: function()
+    {
+        this._treeOutline.focus();
+    },
+
     /**
      * @param {?WebInspector.LayerView.Selection} selection
      * @override
@@ -132,6 +139,8 @@ WebInspector.LayerTreeOutline.prototype = {
         }
         if (this._treeOutline.children[0])
             this._treeOutline.children[0].expand();
+        if (!this._treeOutline.selectedTreeElement)
+            this._treeOutline.children[0].select(true);
     },
 
     /**
@@ -192,19 +201,11 @@ WebInspector.LayerTreeElement = function(tree, layer)
 }
 
 WebInspector.LayerTreeElement.prototype = {
-    onattach: function()
-    {
-        var selection = createElement("div");
-        selection.className = "selection";
-        this.listItemElement.insertBefore(selection, this.listItemElement.firstChild);
-    },
-
     _update: function()
     {
         var layer = /** @type {!WebInspector.Layer} */ (this.representedObject);
         var node = layer.nodeForSelfOrAncestor();
         var title = createDocumentFragment();
-        title.createChild("div", "selection");
         title.createTextChild(node ? WebInspector.DOMPresentationUtils.simpleSelector(node) : "#" + layer.id());
         var details = title.createChild("span", "dimmed");
         details.textContent = WebInspector.UIString(" (%d × %d)", layer.width(), layer.height());

@@ -19,14 +19,12 @@ WebInspector.TimelineLayersView = function()
     this._paintTiles = [];
 
     var vbox = new WebInspector.VBox();
-    vbox.element.classList.add("outline-disclosure", "layer-tree");
-    var sidebarTreeElement = vbox.element.createChild("ol");
     this.setSidebarView(vbox);
 
     this._layerViewHost = new WebInspector.LayerViewHost();
 
-    var treeOutline = new TreeOutline(sidebarTreeElement);
-    var layerTreeOutline = new WebInspector.LayerTreeOutline(this._layerViewHost, treeOutline);
+    var layerTreeOutline = new WebInspector.LayerTreeOutline(this._layerViewHost);
+    vbox.element.appendChild(layerTreeOutline.element);
 
     this._layers3DView = new WebInspector.Layers3DView(this._layerViewHost);
     this._layers3DView.addEventListener(WebInspector.Layers3DView.Events.PaintProfilerRequested, this._jumpToPaintEvent, this);
