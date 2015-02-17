@@ -191,26 +191,16 @@ WebInspector.linkifyURLAsNode = function(url, linkText, classes, isExternal, too
 /**
  * @param {string} url
  * @param {number=} lineNumber
- * @return {string}
- */
-WebInspector.formatLinkText = function(url, lineNumber)
-{
-    var text = url ? WebInspector.displayNameForURL(url) : WebInspector.UIString("(program)");
-    if (typeof lineNumber === "number")
-        text += ":" + (lineNumber + 1);
-    return text;
-}
-
-/**
- * @param {string} url
- * @param {number=} lineNumber
  * @param {string=} classes
  * @param {string=} tooltipText
+ * @param {string=} urlDisplayName
  * @return {!Element}
  */
-WebInspector.linkifyResourceAsNode = function(url, lineNumber, classes, tooltipText)
+WebInspector.linkifyResourceAsNode = function(url, lineNumber, classes, tooltipText, urlDisplayName)
 {
-    var linkText = WebInspector.formatLinkText(url, lineNumber);
+    var linkText = urlDisplayName ? urlDisplayName : url ? WebInspector.displayNameForURL(url) : WebInspector.UIString("(program)");
+    if (typeof lineNumber === "number")
+        linkText += ":" + (lineNumber + 1);
     var anchor = WebInspector.linkifyURLAsNode(url, linkText, classes, false, tooltipText);
     anchor.lineNumber = lineNumber;
     return anchor;
