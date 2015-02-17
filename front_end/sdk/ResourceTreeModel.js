@@ -497,12 +497,11 @@ WebInspector.ResourceTreeModel.prototype = {
     /**
      * @param {boolean=} ignoreCache
      * @param {string=} scriptToEvaluateOnLoad
-     * @param {string=} scriptPreprocessor
      */
-    reloadPage: function(ignoreCache, scriptToEvaluateOnLoad, scriptPreprocessor)
+    reloadPage: function(ignoreCache, scriptToEvaluateOnLoad)
     {
         this.dispatchEventToListeners(WebInspector.ResourceTreeModel.EventTypes.WillReloadPage);
-        this._agent.reload(ignoreCache, scriptToEvaluateOnLoad, scriptPreprocessor);
+        this._agent.reload(ignoreCache, scriptToEvaluateOnLoad);
     },
 
     __proto__: WebInspector.SDKModel.prototype

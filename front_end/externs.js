@@ -290,7 +290,6 @@ function ExtensionDescriptor() {
 function ExtensionReloadOptions() {
     this.ignoreCache = false;
     this.injectedScript = "";
-    this.preprocessingScript = "";
     this.userAgent = "";
 }
 
