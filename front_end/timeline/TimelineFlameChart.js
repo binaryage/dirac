@@ -32,14 +32,14 @@
  * @constructor
  * @implements {WebInspector.FlameChartDataProvider}
  * @param {!WebInspector.TimelineModel} model
- * @param {?WebInspector.TimelineFrameModelBase} frameModel
  */
-WebInspector.TimelineFlameChartDataProvider = function(model, frameModel)
+WebInspector.TimelineFlameChartDataProviderBase = function(model)
 {
     WebInspector.FlameChartDataProvider.call(this);
     this.reset();
     this._model = model;
-    this._frameModel = frameModel;
+    /** @type {?WebInspector.FlameChart.TimelineData} */
+    this._timelineData;
     this._font = "11px " + WebInspector.fontFamily();
     this._filters = [];
     this.addFilter(WebInspector.TimelineUIUtils.hiddenEventsFilter());
@@ -48,16 +48,9 @@ WebInspector.TimelineFlameChartDataProvider = function(model, frameModel)
         { min: 180, max: 310, count: 7 },
         { min: 50, max: 80, count: 5 },
         85);
-    this._consoleColorGenerator = new WebInspector.FlameChart.ColorGenerator(
-        { min: 30, max: 55, count: 5 },
-        { min: 70, max: 100, count: 6 },
-        50, 0.7);
 }
 
-WebInspector.TimelineFlameChartDataProvider.InstantEventVisibleDurationMs = 0.001;
-WebInspector.TimelineFlameChartDataProvider.JSFrameCoalesceThresholdMs = 1.1;
-
-WebInspector.TimelineFlameChartDataProvider.prototype = {
+WebInspector.TimelineFlameChartDataProviderBase.prototype = {
     /**
      * @override
      * @return {number}
@@ -102,6 +95,204 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
      */
     entryTitle: function(entryIndex)
     {
+        return null;
+    },
+
+    reset: function()
+    {
+        this._timelineData = null;
+    },
+
+    /**
+     * @param {!WebInspector.TraceEventFilter} filter
+     */
+    addFilter: function(filter)
+    {
+        this._filters.push(filter);
+    },
+
+    /**
+     * @override
+     * @return {number}
+     */
+    minimumBoundary: function()
+    {
+        return this._minimumBoundary;
+    },
+
+    /**
+     * @override
+     * @return {number}
+     */
+    totalTime: function()
+    {
+        return this._timeSpan;
+    },
+
+    /**
+     * @override
+     * @return {number}
+     */
+    maxStackDepth: function()
+    {
+        return this._currentLevel;
+    },
+
+    /**
+     * @override
+     * @param {number} entryIndex
+     * @return {?Array.<!{title: string, text: string}>}
+     */
+    prepareHighlightedEntryInfo: function(entryIndex)
+    {
+        return null;
+    },
+
+    /**
+     * @override
+     * @param {number} entryIndex
+     * @return {boolean}
+     */
+    canJumpToEntry: function(entryIndex)
+    {
+        return false;
+    },
+
+    /**
+     * @override
+     * @param {number} entryIndex
+     * @return {string}
+     */
+    entryColor: function(entryIndex)
+    {
+        return "red";
+    },
+
+    /**
+     * @override
+     * @param {number} index
+     * @return {boolean}
+     */
+    forceDecoration: function(index)
+    {
+        return false;
+    },
+
+    /**
+     * @override
+     * @param {number} entryIndex
+     * @param {!CanvasRenderingContext2D} context
+     * @param {?string} text
+     * @param {number} barX
+     * @param {number} barY
+     * @param {number} barWidth
+     * @param {number} barHeight
+     * @return {boolean}
+     */
+    decorateEntry: function(entryIndex, context, text, barX, barY, barWidth, barHeight)
+    {
+        return false;
+    },
+
+    /**
+     * @override
+     * @param {number} startTime
+     * @param {number} endTime
+     * @return {?Array.<number>}
+     */
+    dividerOffsets: function(startTime, endTime)
+    {
+        return null;
+    },
+
+    /**
+     * @override
+     * @return {number}
+     */
+    paddingLeft: function()
+    {
+        return 0;
+    },
+
+    /**
+     * @override
+     * @param {number} entryIndex
+     * @return {string}
+     */
+    textColor: function(entryIndex)
+    {
+        return "#333";
+    },
+
+    /**
+     * @override
+     * @param {number} entryIndex
+     * @return {?{startTime: number, endTime: number}}
+     */
+    highlightTimeRange: function(entryIndex)
+    {
+        var startTime = this._timelineData.entryStartTimes[entryIndex];
+        return {
+            startTime: startTime,
+            endTime: startTime + this._timelineData.entryTotalTimes[entryIndex]
+        };
+    },
+
+    /**
+     * @param {number} entryIndex
+     * @return {?WebInspector.TimelineSelection}
+     */
+    createSelection: function(entryIndex)
+    {
+        return null;
+    },
+
+    /**
+     * @override
+     * @return {!WebInspector.FlameChart.TimelineData}
+     */
+    timelineData: function()
+    {
+        throw new Error("Not implemented");
+    },
+
+    /**
+     * @param {!WebInspector.TracingModel.Event} event
+     * @return {boolean}
+     */
+    _isVisible: function(event)
+    {
+        return this._filters.every(function (filter) { return filter.accept(event); });
+    }
+}
+
+/**
+ * @constructor
+ * @extends {WebInspector.TimelineFlameChartDataProviderBase}
+ * @param {!WebInspector.TimelineModel} model
+ * @param {?WebInspector.TimelineFrameModelBase} frameModel
+ */
+WebInspector.TimelineFlameChartDataProvider = function(model, frameModel)
+{
+    WebInspector.TimelineFlameChartDataProviderBase.call(this, model);
+    this._frameModel = frameModel;
+    this._consoleColorGenerator = new WebInspector.FlameChart.ColorGenerator(
+        { min: 30, max: 55, count: 5 },
+        { min: 70, max: 100, count: 6 },
+        50, 0.7);
+}
+
+WebInspector.TimelineFlameChartDataProvider.InstantEventVisibleDurationMs = 0.001;
+WebInspector.TimelineFlameChartDataProvider.JSFrameCoalesceThresholdMs = 1.1;
+
+WebInspector.TimelineFlameChartDataProvider.prototype = {
+    /**
+     * @override
+     * @param {number} entryIndex
+     * @return {?string}
+     */
+    entryTitle: function(entryIndex)
+    {
         var event = this._entryEvents[entryIndex];
         if (event) {
             if (event.phase === WebInspector.TracingModel.Phase.AsyncStepInto || event.phase === WebInspector.TracingModel.Phase.AsyncStepPast)
@@ -124,18 +315,10 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
 
     /**
      * @override
-     * @param {number} startTime
-     * @param {number} endTime
-     * @return {?Array.<number>}
      */
-    dividerOffsets: function(startTime, endTime)
-    {
-        return null;
-    },
-
     reset: function()
     {
-        this._timelineData = null;
+        WebInspector.TimelineFlameChartDataProviderBase.prototype.reset.call(this);
         /** @type {!Array.<!WebInspector.TracingModel.Event>} */
         this._entryEvents = [];
         this._entryIndexToTitle = {};
@@ -305,70 +488,6 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
     },
 
     /**
-     * @param {!WebInspector.TraceEventFilter} filter
-     */
-    addFilter: function(filter)
-    {
-        this._filters.push(filter);
-    },
-
-    /**
-     * @param {!WebInspector.TracingModel.Event} event
-     * @return {boolean}
-     */
-    _isVisible: function(event)
-    {
-        return this._filters.every(function (filter) { return filter.accept(event); });
-    },
-
-    /**
-     * @override
-     * @return {number}
-     */
-    minimumBoundary: function()
-    {
-        return this._minimumBoundary;
-    },
-
-    /**
-     * @override
-     * @return {number}
-     */
-    totalTime: function()
-    {
-        return this._timeSpan;
-    },
-
-    /**
-     * @override
-     * @return {number}
-     */
-    maxStackDepth: function()
-    {
-        return this._currentLevel;
-    },
-
-    /**
-     * @override
-     * @param {number} entryIndex
-     * @return {?Array.<!{title: string, text: string}>}
-     */
-    prepareHighlightedEntryInfo: function(entryIndex)
-    {
-        return null;
-    },
-
-    /**
-     * @override
-     * @param {number} entryIndex
-     * @return {boolean}
-     */
-    canJumpToEntry: function(entryIndex)
-    {
-        return false;
-    },
-
-    /**
      * @override
      * @param {number} entryIndex
      * @return {string}
@@ -432,7 +551,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
             var frameDurationText = Number.preciseMillisToString(frame.duration, 1);
             var textWidth = context.measureText(frameDurationText).width;
             if (barWidth > textWidth) {
-                context.fillStyle = "#333";
+                context.fillStyle = this.textColor(entryIndex);
                 context.fillText(frameDurationText, barX + ((barWidth - textWidth) >> 1), barY + barHeight - 3);
             }
             return true;
@@ -442,7 +561,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
 
         if (text) {
             context.save();
-            context.fillStyle = "#333";
+            context.fillStyle = this.textColor(entryIndex);
             context.font = this._font;
             context.fillText(text, barX + this.textPadding(), barY + barHeight - this.textBaseline());
             context.restore();
@@ -480,39 +599,6 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
         if (!event)
             return !!this._entryIndexToFrame[entryIndex];
         return !!event.warning;
-    },
-
-    /**
-     * @override
-     * @param {number} entryIndex
-     * @return {?{startTime: number, endTime: number}}
-     */
-    highlightTimeRange: function(entryIndex)
-    {
-        var startTime = this._timelineData.entryStartTimes[entryIndex];
-        return {
-            startTime: startTime,
-            endTime: startTime + this._timelineData.entryTotalTimes[entryIndex]
-        };
-    },
-
-    /**
-     * @override
-     * @return {number}
-     */
-    paddingLeft: function()
-    {
-        return 0;
-    },
-
-    /**
-     * @override
-     * @param {number} entryIndex
-     * @return {string}
-     */
-    textColor: function(entryIndex)
-    {
-        return "white";
     },
 
     /**
@@ -619,6 +705,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
     },
 
     /**
+     * @override
      * @param {number} entryIndex
      * @return {?WebInspector.TimelineSelection}
      */
@@ -670,17 +757,19 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
             break;
         }
         return -1;
-    }
+    },
+
+    __proto__: WebInspector.TimelineFlameChartDataProviderBase.prototype
 }
 
 /**
  * @constructor
- * @extends {WebInspector.TimelineFlameChartDataProvider}
+ * @extends {WebInspector.TimelineFlameChartDataProviderBase}
  * @param {!WebInspector.TimelineModel} model
  */
 WebInspector.TimelineFlameChartBottomUpDataProvider = function(model)
 {
-    WebInspector.TimelineFlameChartDataProvider.call(this, model, null);
+    WebInspector.TimelineFlameChartDataProviderBase.call(this, model);
 }
 
 /**
@@ -726,7 +815,7 @@ WebInspector.TimelineFlameChartBottomUpDataProvider.prototype = {
      */
     reset: function()
     {
-        WebInspector.TimelineFlameChartDataProvider.prototype.reset.call(this);
+        WebInspector.TimelineFlameChartDataProviderBase.prototype.reset.call(this);
         this._entries = [];
     },
 
@@ -744,31 +833,11 @@ WebInspector.TimelineFlameChartBottomUpDataProvider.prototype = {
     /**
      * @override
      * @param {number} index
-     * @return {?WebInspector.TimelineSelection}
-     */
-    createSelection: function(index)
-    {
-        return null;
-    },
-
-    /**
-     * @override
-     * @param {number} index
      * @return {string}
      */
     entryTitle: function(index)
     {
         return this._entries[index].name;
-    },
-
-    /**
-     * @override
-     * @param {number} index
-     * @return {boolean}
-     */
-    forceDecoration: function(index)
-    {
-        return false;
     },
 
     /**
@@ -783,24 +852,12 @@ WebInspector.TimelineFlameChartBottomUpDataProvider.prototype = {
             return entry.color;
         var event = entry.event;
         if (!event)
-            return this._entryIndexToFrame[entryIndex] ? "white" : "#aaa";
+            return "#aaa";
         if (event.name === WebInspector.TimelineModel.RecordType.JSFrame) {
             var colorId = event.args["data"]["url"];
             return this._jsFramesColorGenerator.colorForID(colorId);
         }
-        var category = WebInspector.TimelineUIUtils.eventStyle(event).category;
-        if (WebInspector.TracingModel.isAsyncPhase(event.phase)) {
-            if (event.category === WebInspector.TracingModel.ConsoleEventCategory)
-                return this._consoleColorGenerator.colorForID(event.name);
-            var color = this._asyncColorByCategory[category.name];
-            if (color)
-                return color;
-            var parsedColor = WebInspector.Color.parse(category.fillColorStop1);
-            color = parsedColor.setAlpha(0.7).asString(WebInspector.Color.Format.RGBA) || "";
-            this._asyncColorByCategory[category.name] = color;
-            return color;
-        }
-        return category.fillColorStop1;
+        return WebInspector.TimelineUIUtils.eventStyle(event).category.fillColorStop1;
     },
 
     /**
@@ -1039,7 +1096,7 @@ WebInspector.TimelineFlameChartBottomUpDataProvider.prototype = {
         return buRoot;
     },
 
-    __proto__: WebInspector.TimelineFlameChartDataProvider.prototype
+    __proto__: WebInspector.TimelineFlameChartDataProviderBase.prototype
 }
 
 /**
@@ -1130,7 +1187,7 @@ WebInspector.TimelineFlameChartMarker.prototype = {
  * @implements {WebInspector.FlameChartDelegate}
  * @param {!WebInspector.TimelineModeViewDelegate} delegate
  * @param {!WebInspector.TimelineModel} timelineModel
- * @param {!WebInspector.TimelineFlameChartDataProvider} dataProvider
+ * @param {!WebInspector.TimelineFlameChartDataProviderBase} dataProvider
  */
 WebInspector.TimelineFlameChart = function(delegate, timelineModel, dataProvider)
 {
