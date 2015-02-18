@@ -482,16 +482,14 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
         return !!event.warning;
     },
 
-   /**
-    * @override
+    /**
+     * @override
      * @param {number} entryIndex
      * @return {?{startTime: number, endTime: number}}
      */
     highlightTimeRange: function(entryIndex)
     {
         var startTime = this._timelineData.entryStartTimes[entryIndex];
-        if (!startTime)
-            return null;
         return {
             startTime: startTime,
             endTime: startTime + this._timelineData.entryTotalTimes[entryIndex]
@@ -815,9 +813,7 @@ WebInspector.TimelineFlameChartBottomUpDataProvider.prototype = {
         this._flowEventIndexById = {};
         this._minimumBoundary = 0;
         this._currentLevel = 0;
-
-        // FIXME: flamechart doesn't work with 0 offset. So start with something small enough.
-        this._timeSpan = appendTree.call(this, 0, 0.0001, bottomUpTree);
+        this._timeSpan = appendTree.call(this, 0, 0, bottomUpTree);
 
         /**
          * @param {number} level
