@@ -42,8 +42,10 @@ WebInspector.CallStackSidebarPane = function()
     WebInspector.settings.skipStackFramesPattern.addChangeListener(this._blackboxingStateChanged, this);
 }
 
+/** @enum {string} */
 WebInspector.CallStackSidebarPane.Events = {
-    CallFrameSelected: "CallFrameSelected"
+    CallFrameSelected: "CallFrameSelected",
+    RevealHiddenCallFrames: "RevealHiddenCallFrames"
 }
 
 WebInspector.CallStackSidebarPane.prototype = {
@@ -154,6 +156,7 @@ WebInspector.CallStackSidebarPane.prototype = {
             this._hiddenCallFramesMessageElement.remove();
             delete this._hiddenCallFramesMessageElement;
         }
+        this.dispatchEventToListeners(WebInspector.CallStackSidebarPane.Events.RevealHiddenCallFrames);
     },
 
     /**

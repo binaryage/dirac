@@ -216,9 +216,9 @@ WebInspector.ConsoleViewMessage.prototype = {
             if (consoleMessage.scriptId) {
                 this._anchorElement = this._linkifyScriptId(consoleMessage.scriptId, consoleMessage.url || "", consoleMessage.line, consoleMessage.column);
             } else {
-                var useBlackboxing = (consoleMessage.source === WebInspector.ConsoleMessage.MessageSource.ConsoleAPI);
-                var callFrame = this._callFrameAnchorFromStackTrace(consoleMessage.stackTrace, useBlackboxing);
-                if (callFrame)
+                var showBlackboxed = (consoleMessage.source !== WebInspector.ConsoleMessage.MessageSource.ConsoleAPI);
+                var callFrame = WebInspector.DebuggerPresentationUtils.callFrameAnchorFromStackTrace(this._target(), consoleMessage.stackTrace, consoleMessage.asyncStackTrace, showBlackboxed);
+                if (callFrame && callFrame.scriptId)
                     this._anchorElement = this._linkifyCallFrame(callFrame);
                 else if (consoleMessage.url && consoleMessage.url !== "undefined")
                     this._anchorElement = this._linkifyLocation(consoleMessage.url, consoleMessage.line, consoleMessage.column);
@@ -314,30 +314,6 @@ WebInspector.ConsoleViewMessage.prototype = {
         lineNumber = lineNumber ? lineNumber - 1 : 0;
         columnNumber = columnNumber ? columnNumber - 1 : 0;
         return this._linkifier.linkifyScriptLocation(target, scriptId, url, lineNumber, columnNumber, "console-message-url");
-    },
-
-    /**
-     * @param {?Array.<!ConsoleAgent.CallFrame>|undefined} stackTrace
-     * @param {boolean} useBlackboxing
-     * @return {?ConsoleAgent.CallFrame}
-     */
-    _callFrameAnchorFromStackTrace: function(stackTrace, useBlackboxing)
-    {
-        if (!stackTrace || !stackTrace.length)
-            return null;
-        var callFrame = stackTrace[0].scriptId ? stackTrace[0] : null;
-        if (!useBlackboxing)
-            return callFrame;
-        var target = this._target();
-        for (var i = 0; i < stackTrace.length; ++i) {
-            var script = target && target.debuggerModel.scriptForId(stackTrace[i].scriptId);
-            var blackboxed = script ?
-                WebInspector.BlackboxSupport.isBlackboxed(script.sourceURL, script.isContentScript()) :
-                WebInspector.BlackboxSupport.isBlackboxedURL(stackTrace[i].url);
-            if (!blackboxed)
-                return stackTrace[i].scriptId ? stackTrace[i] : null;
-        }
-        return callFrame;
     },
 
     /**

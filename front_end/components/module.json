@@ -16,6 +16,7 @@
     ],
     "scripts": [
         "NativeBreakpointsSidebarPane.js",
+        "DebuggerPresentationUtils.js",
         "DOMBreakpointsSidebarPane.js",
         "DOMPresentationUtils.js",
         "DockController.js",

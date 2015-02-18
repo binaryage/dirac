@@ -78,6 +78,7 @@ WebInspector.SourcesPanel = function(workspaceForTest)
     this.sidebarPanes.watchExpressions = new WebInspector.WatchExpressionsSidebarPane();
     this.sidebarPanes.callstack = new WebInspector.CallStackSidebarPane();
     this.sidebarPanes.callstack.addEventListener(WebInspector.CallStackSidebarPane.Events.CallFrameSelected, this._callFrameSelectedInSidebar.bind(this));
+    this.sidebarPanes.callstack.addEventListener(WebInspector.CallStackSidebarPane.Events.RevealHiddenCallFrames, this._hiddenCallFramesRevealedInSidebar.bind(this));
     this.sidebarPanes.callstack.registerShortcuts(this.registerShortcuts.bind(this));
 
     this.sidebarPanes.scopechain = new WebInspector.ScopeChainSidebarPane();
@@ -638,6 +639,12 @@ WebInspector.SourcesPanel.prototype = {
     {
         var callFrame = /** @type {!WebInspector.DebuggerModel.CallFrame} */ (event.data);
         callFrame.target().debuggerModel.setSelectedCallFrame(callFrame);
+    },
+
+    _hiddenCallFramesRevealedInSidebar: function()
+    {
+        if (Runtime.experiments.isEnabled("stepIntoAsync"))
+            this.sidebarPanes.asyncOperationBreakpoints.revealHiddenCallFrames(WebInspector.context.flavor(WebInspector.Target));
     },
 
     /**

@@ -18,12 +18,16 @@ WebInspector.AsyncOperationsSidebarPane = function()
     /** @type {!Map.<number, !Element>} */
     this._operationIdToElement = new Map();
 
+    this._revealBlackboxedCallFrames = false;
     this._linkifier = new WebInspector.Linkifier(new WebInspector.Linkifier.DefaultFormatter(30));
 
     WebInspector.targetManager.addModelListener(WebInspector.DebuggerModel, WebInspector.DebuggerModel.Events.AsyncOperationStarted, this._onAsyncOperationStarted, this);
     WebInspector.targetManager.addModelListener(WebInspector.DebuggerModel, WebInspector.DebuggerModel.Events.AsyncOperationCompleted, this._onAsyncOperationCompleted, this);
     WebInspector.targetManager.addModelListener(WebInspector.DebuggerModel, WebInspector.DebuggerModel.Events.AsyncOperationsCleared, this._onAsyncOperationsCleared, this);
+    WebInspector.targetManager.addModelListener(WebInspector.DebuggerModel, WebInspector.DebuggerModel.Events.DebuggerResumed, this._debuggerResumed, this);
     WebInspector.context.addFlavorChangeListener(WebInspector.Target, this._targetChanged, this);
+
+    WebInspector.settings.skipStackFramesPattern.addChangeListener(this._refresh, this);
 
     WebInspector.targetManager.observeTargets(this);
 }
@@ -69,6 +73,29 @@ WebInspector.AsyncOperationsSidebarPane.prototype = {
             this._target = WebInspector.context.flavor(WebInspector.Target);
             this._refresh();
         }
+    },
+
+    /**
+     * @param {!WebInspector.Target} target
+     */
+    revealHiddenCallFrames: function(target)
+    {
+        if (this._target !== target || this._revealBlackboxedCallFrames)
+            return;
+        this._revealBlackboxedCallFrames = true;
+        this._refresh();
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _debuggerResumed: function(event)
+    {
+        var target = /** @type {!WebInspector.Target} */  (event.target.target());
+        if (this._target !== target || !this._revealBlackboxedCallFrames)
+            return;
+        this._revealBlackboxedCallFrames = false;
+        this._refresh();
     },
 
     /**
@@ -151,7 +178,7 @@ WebInspector.AsyncOperationsSidebarPane.prototype = {
         label.classList.add("checkbox-elem");
         element.appendChild(label);
 
-        var callFrame = operation.stackTrace && operation.stackTrace[0];
+        var callFrame = WebInspector.DebuggerPresentationUtils.callFrameAnchorFromStackTrace(this._target, operation.stackTrace, operation.asyncStackTrace, this._revealBlackboxedCallFrames);
         if (callFrame)
             element.createChild("div").appendChild(this._linkifier.linkifyConsoleCallFrame(this._target, callFrame));
 
