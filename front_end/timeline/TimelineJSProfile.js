@@ -155,30 +155,6 @@ WebInspector.TimelineJSProfileProcessor.generateJSFrameEvents = function(events)
         }
     }
 
-    WebInspector.TimelineJSProfileProcessor.eventsStackedIterator(events, onStartEvent, onEndEvent, onInstantEvent);
+    WebInspector.TimelineModel.forEachEvent(events, onStartEvent, onEndEvent, onInstantEvent);
     return jsFrameEvents;
-}
-
-/**
- * @param {!Array.<!WebInspector.TracingModel.Event>} events
- * @param {function(!WebInspector.TracingModel.Event)} onStartEvent
- * @param {function(!WebInspector.TracingModel.Event)} onEndEvent
- * @param {function(!WebInspector.TracingModel.Event,?WebInspector.TracingModel.Event)=} onInstantEvent
- */
-WebInspector.TimelineJSProfileProcessor.eventsStackedIterator = function(events, onStartEvent, onEndEvent, onInstantEvent)
-{
-    var stack = [];
-    for (var i = 0; i < events.length; ++i) {
-        var e = events[i];
-        while (stack.length && stack.peekLast().endTime <= e.startTime)
-            onEndEvent(stack.pop());
-        if (e.duration) {
-            onStartEvent(e);
-            stack.push(e);
-        } else {
-            onInstantEvent && onInstantEvent(e, stack.peekLast() || null);
-        }
-    }
-    while (stack.length)
-        onEndEvent(stack.pop());
 }

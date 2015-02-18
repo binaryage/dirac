@@ -153,6 +153,30 @@ WebInspector.TimelineModel.Events = {
 WebInspector.TimelineModel.MainThreadName = "main";
 
 /**
+ * @param {!Array.<!WebInspector.TracingModel.Event>} events
+ * @param {function(!WebInspector.TracingModel.Event)} onStartEvent
+ * @param {function(!WebInspector.TracingModel.Event)} onEndEvent
+ * @param {function(!WebInspector.TracingModel.Event,?WebInspector.TracingModel.Event)=} onInstantEvent
+ */
+WebInspector.TimelineModel.forEachEvent = function(events, onStartEvent, onEndEvent, onInstantEvent)
+{
+    var stack = [];
+    for (var i = 0; i < events.length; ++i) {
+        var e = events[i];
+        while (stack.length && stack.peekLast().endTime <= e.startTime)
+            onEndEvent(stack.pop());
+        if (e.duration) {
+            onStartEvent(e);
+            stack.push(e);
+        } else {
+            onInstantEvent && onInstantEvent(e, stack.peekLast() || null);
+        }
+    }
+    while (stack.length)
+        onEndEvent(stack.pop());
+}
+
+/**
  * @param {!Array.<!WebInspector.TimelineModel.Record>} recordsArray
  * @param {?function(!WebInspector.TimelineModel.Record)|?function(!WebInspector.TimelineModel.Record,number)} preOrderCallback
  * @param {function(!WebInspector.TimelineModel.Record)|function(!WebInspector.TimelineModel.Record,number)=} postOrderCallback

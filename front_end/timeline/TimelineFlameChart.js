@@ -1014,7 +1014,7 @@ WebInspector.TimelineFlameChartBottomUpDataProvider.prototype = {
             return e.name;
         }
 
-        WebInspector.TimelineJSProfileProcessor.eventsStackedIterator(events, onStartEvent.bind(this), onEndEvent);
+        WebInspector.TimelineModel.forEachEvent(events, onStartEvent.bind(this), onEndEvent);
         root.totalTime -= root.selfTime;
         root.selfTime = 0;
         return root;
