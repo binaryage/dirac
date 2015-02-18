@@ -37,11 +37,13 @@ WebInspector.StylesSidebarPane = function(computedStylePane, setPseudoClassCallb
 {
     WebInspector.SidebarPane.call(this, WebInspector.UIString("Styles"));
 
-    this._animationsControlButton = createElement("button");
-    this._animationsControlButton.className = "pane-title-button animations-controls";
-    this._animationsControlButton.title = WebInspector.UIString("Animations Controls");
-    this._animationsControlButton.addEventListener("click", this._toggleAnimationsControlPane.bind(this), false);
-    this.titleElement.appendChild(this._animationsControlButton);
+    if (!Runtime.experiments.isEnabled("animationInspection")) {
+        this._animationsControlButton = createElement("button");
+        this._animationsControlButton.className = "pane-title-button animations-controls";
+        this._animationsControlButton.title = WebInspector.UIString("Animations Controls");
+        this._animationsControlButton.addEventListener("click", this._toggleAnimationsControlPane.bind(this), false);
+        this.titleElement.appendChild(this._animationsControlButton);
+    }
 
     this._elementStateButton = createElement("button");
     this._elementStateButton.className = "pane-title-button element-state";
@@ -1114,7 +1116,7 @@ WebInspector.StylesSidebarPane.prototype = {
             this._animationsPlaybackLabel.textContent = playbackRate + "x";
         }
         if (this._target)
-            this._target.pageAgent().animationsPlaybackRate(setPlaybackRate.bind(this));
+            this._target.pageAgent().getAnimationsPlaybackRate(setPlaybackRate.bind(this));
     },
 
     _createAnimationsControlPane: function()

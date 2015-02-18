@@ -25,6 +25,20 @@ WebInspector.AnimationTimeline = function(stylesPane)
 WebInspector.AnimationTimeline.prototype = {
     _createHeader: function()
     {
+        /**
+         * @param {!Event} event
+         * @this {WebInspector.AnimationTimeline}
+         */
+        function playbackSliderInputHandler(event)
+        {
+            this._animationsPlaybackRate = WebInspector.AnimationsSidebarPane.GlobalPlaybackRates[event.target.value];
+            var target = WebInspector.targetManager.mainTarget();
+            if (target)
+                target.pageAgent().setAnimationsPlaybackRate(this._animationsPaused ? 0 : this._animationsPlaybackRate);
+            this._playbackLabel.textContent = this._animationsPlaybackRate + "x";
+            WebInspector.userMetrics.AnimationsPlaybackRateChanged.record();
+        }
+
         var container = createElementWithClass("div", "animation-timeline-header");
         var controls = container.createChild("div", "animation-controls");
         this._gridMarkers = container.createChild("div", "animation-timeline-markers");
@@ -41,7 +55,35 @@ WebInspector.AnimationTimeline.prototype = {
         triangle.setAttribute("d", "M 10 8 L 10 16 L 16 12 z");
         replayButton.addEventListener("click", this._replay.bind(this));
 
+        this._playbackLabel = controls.createChild("div", "source-code animation-playback-label");
+        this._playbackLabel.createTextChild("1x");
+
+        this._playbackSlider = controls.createChild("input", "animation-playback-slider");
+        this._playbackSlider.type = "range";
+        this._playbackSlider.min = 0;
+        this._playbackSlider.max = WebInspector.AnimationsSidebarPane.GlobalPlaybackRates.length - 1;
+        this._playbackSlider.value = this._playbackSlider.max;
+        this._playbackSlider.addEventListener("input", playbackSliderInputHandler.bind(this));
+
         return container;
+    },
+
+    _updateAnimationsPlaybackRate: function()
+    {
+        /**
+         * @param {?Protocol.Error} error
+         * @param {number} playbackRate
+         * @this {WebInspector.AnimationTimeline}
+         */
+        function setPlaybackRate(error, playbackRate)
+        {
+            this._playbackSlider.value = WebInspector.AnimationsSidebarPane.GlobalPlaybackRates.indexOf(playbackRate);
+            this._playbackLabel.textContent = playbackRate + "x";
+        }
+
+        var target = WebInspector.targetManager.mainTarget();
+        if (target)
+            target.pageAgent().getAnimationsPlaybackRate(setPlaybackRate.bind(this));
     },
 
     _replay: function()

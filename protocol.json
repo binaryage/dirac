@@ -628,7 +628,7 @@
                 "description": "Sets overlay message."
             },
             {
-                "name": "animationsPlaybackRate",
+                "name": "getAnimationsPlaybackRate",
                 "returns": [
                     { "name": "playbackRate", "type": "number", "description": "Playback rate for animations on page."}
                 ],

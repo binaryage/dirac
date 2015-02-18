@@ -102,8 +102,8 @@ circle.animation-keyframe-point {
     max-width: 200px;
     padding: 10px;
     height: 100%;
-    display: inline-block;
     border-right: 1px solid #ccc;
+    line-height: 22px;
 }
 
 .animation-timeline-markers {
@@ -123,4 +123,17 @@ circle.animation-keyframe-point {
 
 .view.component-root.platform-linux.vbox {
     overflow: hidden;
+}
+
+input.animation-playback-slider {
+    float: right;
+    width: 63px;
+    margin-right: 8px;
+}
+
+.animation-playback-label {
+    float: right;
+    margin-right: 8px;
+    line-height: 24px;
+    width: 34px;
 }
