@@ -151,11 +151,19 @@ WebInspector.Section.prototype = {
      */
     handleClick: function(event)
     {
+        if (this._doNotExpandOnTitleClick)
+            return;
+
         if (this._expanded)
             this.collapse();
         else
             this.expand();
         event.consume();
+    },
+
+    doNotExpandOnTitleClick: function()
+    {
+        this._doNotExpandOnTitleClick = true;
     }
 }
 

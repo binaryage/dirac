@@ -167,7 +167,7 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
      */
     ondblclick: function(event)
     {
-        var editableElement = this.elementAndValueToEdit().element;
+        var editableElement = this.valueElement;
         if ((this.property.writable || this.property.setter) && event.target.isSelfOrDescendant(editableElement))
             this.startEditing(event);
         return false;
@@ -213,16 +213,8 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
     _contextMenuFired: function(value, event)
     {
         var contextMenu = new WebInspector.ContextMenu(event);
-        this.populateContextMenu(contextMenu);
         contextMenu.appendApplicableItems(value);
         contextMenu.show();
-    },
-
-    /**
-     * @param {!WebInspector.ContextMenu} contextMenu
-     */
-    populateContextMenu: function(contextMenu)
-    {
     },
 
     updateSiblings: function()
@@ -234,59 +226,38 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
     },
 
     /**
-     * @return {boolean}
-     */
-    renderPromptAsBlock: function()
-    {
-        return false;
-    },
-
-    /**
-     * @return {{element: !Element, value: (string|undefined)}}
-     */
-    elementAndValueToEdit: function()
-    {
-        return {
-            element: this.valueElement,
-            value: (typeof this.valueElement._originalTextContent === "string") ? this.valueElement._originalTextContent : undefined
-        };
-    },
-
-    /**
      * @param {!Event=} event
      */
     startEditing: function(event)
     {
-        var elementAndValueToEdit = this.elementAndValueToEdit();
-        var elementToEdit = elementAndValueToEdit.element;
-        var valueToEdit = elementAndValueToEdit.value;
+        var valueToEdit = (typeof this.valueElement._originalTextContent === "string") ? this.valueElement._originalTextContent : undefined;
 
-        if (WebInspector.isBeingEdited(elementToEdit) || !this.treeOutline.section.editable || this._readOnly)
+        if (WebInspector.isBeingEdited(this.valueElement) || !this.treeOutline.section.editable || this._readOnly)
             return;
 
         // Edit original source.
         if (typeof valueToEdit !== "undefined")
-            elementToEdit.setTextContentTruncatedIfNeeded(valueToEdit, WebInspector.UIString("<string is too large to edit>"));
+            this.valueElement.setTextContentTruncatedIfNeeded(valueToEdit, WebInspector.UIString("<string is too large to edit>"));
 
-        var context = { expanded: this.expanded, elementToEdit: elementToEdit, previousContent: elementToEdit.textContent };
+        var context = { expanded: this.expanded, previousContent: this.valueElement.textContent };
 
         // Lie about our children to prevent expanding on double click and to collapse subproperties.
         this.hasChildren = false;
 
         this.listItemElement.classList.add("editing-sub-part");
 
-        this._prompt = new WebInspector.ObjectPropertyPrompt(this.renderPromptAsBlock());
+        this._prompt = new WebInspector.ObjectPropertyPrompt();
 
         /**
          * @this {WebInspector.ObjectPropertyTreeElement}
          */
         function blurListener()
         {
-            this.editingCommitted(null, elementToEdit.textContent, context.previousContent, context);
+            this.editingCommitted(null, this.valueElement.textContent, context.previousContent, context);
         }
 
-        var proxyElement = this._prompt.attachAndStartEditing(elementToEdit, blurListener.bind(this));
-        this.listItemElement.getComponentSelection().setBaseAndExtent(elementToEdit, 0, elementToEdit, 1);
+        var proxyElement = this._prompt.attachAndStartEditing(this.valueElement, blurListener.bind(this));
+        this.listItemElement.getComponentSelection().setBaseAndExtent(this.valueElement, 0, this.valueElement, 1);
         proxyElement.addEventListener("keydown", this._promptKeyDown.bind(this, context), false);
     },
 
@@ -330,7 +301,7 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
     {
         if (isEnterKey(event)) {
             event.consume(true);
-            this.editingCommitted(null, context.elementToEdit.textContent, context.previousContent, context);
+            this.editingCommitted(null, this.valueElement.textContent, context.previousContent, context);
             return;
         }
         if (event.keyIdentifier === "U+001B") { // Esc
@@ -1035,14 +1006,11 @@ WebInspector.ArrayGroupingTreeElement.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.TextPrompt}
- * @param {boolean=} renderAsBlock
  */
-WebInspector.ObjectPropertyPrompt = function(renderAsBlock)
+WebInspector.ObjectPropertyPrompt = function()
 {
     WebInspector.TextPrompt.call(this, WebInspector.ExecutionContextSelector.completionsForTextPromptInCurrentContext);
     this.setSuggestBoxEnabled(true);
-    if (renderAsBlock)
-        this.renderAsBlock();
 }
 
 WebInspector.ObjectPropertyPrompt.prototype = {

@@ -136,68 +136,6 @@
     pointer-events: none;
 }
 
-ol.watch-expressions > li.hovered {
-    background-color: #F0F0F0;
-}
-
-.sidebar-tabbed-pane .watch-expressions {
-    margin-top: 17px;
-}
-
-.properties-tree.watch-expressions {
-    padding-left: 0 !important;
-}
-
-.properties-tree.watch-expressions > li {
-    padding-left: 4px;
-}
-
-.properties-tree.watch-expressions > li > .value {
-    display: inline;
-    position: static;
-}
-
-.properties-tree.watch-expressions > li:not(.parent) {
-    margin-left: 1px;
-    padding-left: 15px;
-}
-
-.properties-tree.watch-expressions > li.hovered {
-    padding-right: 14px;
-}
-
-.watch-expressions > li.editing-sub-part .text-prompt {
-    display: block;
-    width: 100%;
-    overflow: hidden;
-}
-
-.watch-expressions > li.editing-sub-part .value,
-.watch-expressions > li.editing-sub-part .separator  {
-    display: none;
-}
-
-li.editing-sub-part .delete-button {
-    display: none !important;
-}
-
-.section .properties .delete-button {
-    width: 10px;
-    height: 10px;
-    background-image: url(Images/deleteIcon.png);
-    background-position: 0 0;
-    background-color: transparent;
-    background-repeat: no-repeat;
-    border: 0 none transparent;
-    position: absolute;
-    right: 8px;
-    display: none;
-}
-
-.section .properties li.hovered .delete-button {
-    display: inline;
-}
-
 .source-frame-breakpoint-condition {
     z-index: 30;
     padding: 4px;
@@ -248,4 +186,95 @@ li.editing-sub-part .delete-button {
 .callstack-info.status {
     border-top: 1px solid rgb(189, 189, 189);
     background-color: rgb(255, 255, 194);
+}
+
+.watch-expression .delete-button {
+    width: 10px;
+    height: 10px;
+    background-image: url(Images/deleteIcon.png);
+    background-position: 0 0;
+    background-color: transparent;
+    background-repeat: no-repeat;
+    border: 0 none transparent;
+    position: absolute;
+    right: 3px;
+    display: none;
+}
+
+.watch-expression .primitive-value:hover .delete-button,
+.watch-expression .section .header:hover .delete-button {
+    display: inline;
+}
+
+
+.watch-expressions {
+    margin-top: 14px;
+    overflow-x: hidden;
+    padding: 3px 6px 6px 0px;
+}
+
+.watch-expressions .dimmed {
+    opacity: 0.6;
+}
+
+.watch-expression-title {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    line-height: 12px;
+    padding-top: 1px;
+    padding-bottom: 1px;
+    margin-left: 16px;
+}
+
+.watch-expression {
+    position: relative;
+}
+
+.watch-expression .section .header {
+    min-height: 14px;
+    padding-right: 0px;
+}
+
+.watch-expressions .name {
+    color: rgb(136, 19, 145);
+    flex: none;
+    white-space: nowrap;
+    text-overflow: ellipsis ;
+    overflow: hidden;
+}
+
+.watch-expressions .separator {
+    flex: none;
+}
+
+.watch-expressions .value {
+    white-space: nowrap;
+    display: inline;
+}
+
+.watch-expression .text-prompt {
+    text-overflow: clip;
+    overflow: hidden;
+    white-space: nowrap;
+    padding-left: 4px;
+    -webkit-user-select: text;
+}
+
+.watch-expression .section > .header::before {
+    margin-top: 0px;
+}
+
+.section .watch-expression-title {
+    margin-left: 11px;
+}
+
+.watch-expression-text-prompt-proxy {
+    margin-left: 12px;
+}
+
+.watch-expression .primitive-value:hover,
+.watch-expression .section .header:hover {
+    background-color: #F0F0F0;
+    padding-right: 14px;
 }
