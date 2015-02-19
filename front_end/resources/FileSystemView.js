@@ -191,7 +191,7 @@ WebInspector.FileSystemView.EntryTreeElement.prototype = {
 
             if (order === 0) {
                 if (oldChild._entry.isDirectory)
-                    oldChild.shouldRefreshChildren = true;
+                    oldChild.invalidateChildren();
                 else
                     oldChild.refresh();
 

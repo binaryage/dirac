@@ -651,7 +651,7 @@ WebInspector.ResourcesPanel.prototype = {
         if (!databasesTreeElement)
             return;
 
-        databasesTreeElement.shouldRefreshChildren = true;
+        databasesTreeElement.invalidateChildren();
         var tableViews = this._databaseTableViews.get(database);
 
         if (!tableViews)
@@ -1858,11 +1858,6 @@ WebInspector.IDBDatabaseTreeElement.prototype = {
         for (var objectStoreName in this._idbObjectStoreTreeElements) {
             if (!objectStoreNames[objectStoreName])
                 this._objectStoreRemoved(objectStoreName);
-        }
-
-        if (this.children.length) {
-            this.hasChildren = true;
-            this.expand();
         }
 
         if (this._view)

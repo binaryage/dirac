@@ -230,7 +230,7 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
         if (this.parent.root)
             this.treeOutline.section.update();
         else
-            this.parent.shouldRefreshChildren = true;
+            this.parent.invalidateChildren();
     },
 
     /**
@@ -419,7 +419,7 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
         this.property.wasThrown = wasThrown;
 
         this.update();
-        this.shouldRefreshChildren = true;
+        this.invalidateChildren();
     },
 
     __proto__: TreeElement.prototype
@@ -431,9 +431,6 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
  * @param {string=} emptyPlaceholder
  */
 WebInspector.ObjectPropertyTreeElement.populate = function(treeElement, value, emptyPlaceholder) {
-    if (treeElement.children.length && !treeElement.shouldRefreshChildren)
-        return;
-
     if (value.arrayLength() > WebInspector.ObjectPropertiesSection._arrayLoadThreshold) {
         treeElement.removeChildren();
         WebInspector.ArrayGroupingTreeElement._populateArray(treeElement, value, 0, value.arrayLength() - 1);
@@ -582,9 +579,6 @@ WebInspector.FunctionScopeMainTreeElement = function(remoteObject)
 WebInspector.FunctionScopeMainTreeElement.prototype = {
     onpopulate: function()
     {
-        if (this.children.length && !this.shouldRefreshChildren)
-            return;
-
         /**
          * @param {?WebInspector.DebuggerModel.FunctionDetails} response
          * @this {WebInspector.FunctionScopeMainTreeElement}
@@ -673,9 +667,6 @@ WebInspector.CollectionEntriesMainTreeElement = function(remoteObject)
 WebInspector.CollectionEntriesMainTreeElement.prototype = {
     onpopulate: function()
     {
-        if (this.children.length && !this.shouldRefreshChildren)
-            return;
-
         /**
          * @param {?Array.<!DebuggerAgent.CollectionEntry>} entries
          * @this {WebInspector.CollectionEntriesMainTreeElement}
