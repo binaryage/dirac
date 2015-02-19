@@ -8,6 +8,7 @@
         "InspectorBackend.js",
         "../InspectorBackendCommands.js",
         "Target.js",
+        "AccessibilityModel.js",
         "AnimationModel.js",
         "ApplicationCacheModel.js",
         "BlackboxSupport.js",

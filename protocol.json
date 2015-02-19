@@ -4774,5 +4774,47 @@
                 "hidden": true
             }
         ]
+    },
+    {
+        "domain": "Accessibility",
+        "hidden": true,
+        "types": [
+            {
+                "id": "AXNodeId",
+                "type": "string",
+                "description": "Unique accessibility node identifier."
+            },
+            {
+                "id": "AXNode",
+                "type": "object",
+                "properties": [
+                    { "name": "nodeId", "$ref": "AXNodeId", "description": "Unique identifier for this node." },
+                    { "name": "role", "type": "string", "description": "This <code>Node</code>'s role, whether explicit or implicit." },
+                    { "name": "name", "type": "string", "description": "The accessible name for this <code>Node</code>.", "optional": true },
+                    { "name": "description", "type": "string", "description": "The accessible description for this <code>Node</code>.", "optional": true },
+                    { "name": "value", "type": "any", "description": "The value for this <code>Node</code>.", "optional": true },
+                    { "name": "help", "type": "string", "description": "Help.", "optional": true },
+                    { "name": "liveRegionProperties", "type": "object", "description": "Live region properties.", "optional": true },
+                    { "name": "globalStates", "type": "object", "description": "Global states.", "optional": true },
+                    { "name": "widgetProperties", "type": "object", "description": "Widget properties.", "optional": true },
+                    { "name": "widgetStates", "type": "object", "description": "Widget states.", "optional": true },
+                    { "name": "relationships", "type": "object", "description": "Related nodes other than parent/child.", "optional": true }
+                ],
+                "description": "A node in the accessibility tree."
+            }
+        ],
+        "commands": [
+            {
+                "name": "getAXNode",
+                "parameters": [
+                    { "name": "nodeId", "$ref": "DOM.NodeId", "description": "ID of node to get accessibility node for." }
+                ],
+                "returns": [
+                    { "name": "accessibilityNode", "$ref": "AXNode", "description": "The <code>Accessibility.AXNode</code> for this DOM node, if it exists." }
+                ],
+                "description": "Fetches the accessibility node for this DOM node, if it exists.",
+                "hidden": true
+            }
+        ]
     }]
 }

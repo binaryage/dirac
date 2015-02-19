@@ -92,7 +92,8 @@
         "StylesSectionModel.js",
         "StylesSidebarPane.js",
         "ElementsPanel.js",
-        "AnimationsSidebarPane.js"
+        "AnimationsSidebarPane.js",
+        "AccessibilitySidebarPane.js"
     ],
     "stylesheets": [
         "animationTimeline.css",
