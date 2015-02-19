@@ -354,14 +354,13 @@ li.selected .base-storage-tree-element-subtitle {
     content: url(Images/fileSystem.png);
 }
 
-.storage-application-cache-status-icon,
-.storage-application-cache-connectivity-icon {
-    margin: 0 5px;
-}
-
-.storage-application-cache-connectivity {
+.resources-status-bar::shadow .storage-application-cache-connectivity {
     padding-right: 5px;
     border-right: 1px solid #CCC;
     height: 23px;
     line-height: 23px
+}
+
+.resources-status-bar::shadow label[is=dt-icon-label] {
+    margin: 4px;
 }

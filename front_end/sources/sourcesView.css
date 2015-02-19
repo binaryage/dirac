@@ -54,12 +54,6 @@
     background-color: rgba(255, 225, 205, 0.40);
 }
 
-.editor-container-unsaved-committed-changes-icon {
-    background-image: url(Images/statusbarButtonGlyphs.png);
-    background-size: 320px 144px;
-    background-position: -202px -107px;
-}
-
 .source-frame-infobar {
     border-bottom: 1px solid rgb(187, 187, 187);
     display: flex;

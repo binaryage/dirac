@@ -771,8 +771,8 @@ WebInspector.SourceFrameMessage.prototype = {
 }
 
 WebInspector.SourceFrame._iconClassPerLevel = {};
-WebInspector.SourceFrame._iconClassPerLevel[WebInspector.SourceFrameMessage.Level.Error] = "error-icon-small";
-WebInspector.SourceFrame._iconClassPerLevel[WebInspector.SourceFrameMessage.Level.Warning] = "warning-icon-small";
+WebInspector.SourceFrame._iconClassPerLevel[WebInspector.SourceFrameMessage.Level.Error] = "error-icon";
+WebInspector.SourceFrame._iconClassPerLevel[WebInspector.SourceFrameMessage.Level.Warning] = "warning-icon";
 
 WebInspector.SourceFrame._lineClassPerLevel = {};
 WebInspector.SourceFrame._lineClassPerLevel[WebInspector.SourceFrameMessage.Level.Error] = "text-editor-line-with-error";
@@ -787,8 +787,8 @@ WebInspector.SourceFrame.RowMessage = function(message)
     this._message = message;
     this._repeatCount = 1;
     this.element = createElementWithClass("div", "text-editor-row-message");
-    this._icon = this.element.createChild("span", "text-editor-row-message-icon");
-    this._icon.classList.add(WebInspector.SourceFrame._iconClassPerLevel[message.level()]);
+    this._icon = this.element.createChild("label", "", "dt-icon-label");
+    this._icon.type = WebInspector.SourceFrame._iconClassPerLevel[message.level()];
     this._repeatCountElement = this.element.createChild("span", "bubble-repeat-count hidden error");
     var linesContainer = this.element.createChild("div", "text-editor-row-message-lines");
     var lines = this._message.messageText().split("\n");
@@ -846,7 +846,7 @@ WebInspector.SourceFrame.RowMessageBucket = function(sourceFrame, textEditor, li
     this._decoration = createElementWithClass("div", "text-editor-line-decoration");
     this._decoration._messageBucket = this;
     this._wave = this._decoration.createChild("div", "text-editor-line-decoration-wave");
-    this._icon = this._wave.createChild("div", "text-editor-line-decoration-icon");
+    this._icon = this._wave.createChild("label", "text-editor-line-decoration-icon", "dt-icon-label");
 
     this._textEditor.addDecoration(lineNumber, this._decoration);
 
@@ -963,13 +963,13 @@ WebInspector.SourceFrame.RowMessageBucket.prototype = {
 
         if (this._level) {
             this._textEditor.toggleLineClass(lineNumber, WebInspector.SourceFrame._lineClassPerLevel[this._level], false);
-            this._icon.classList.toggle(WebInspector.SourceFrame._iconClassPerLevel[this._level], false);
+            this._icon.type = "";
         }
         this._level = maxMessage.level();
         if (!this._level)
             return;
         this._textEditor.toggleLineClass(lineNumber, WebInspector.SourceFrame._lineClassPerLevel[this._level], true);
-        this._icon.classList.toggle(WebInspector.SourceFrame._iconClassPerLevel[this._level], true);
+        this._icon.type = WebInspector.SourceFrame._iconClassPerLevel[this._level];
     }
 }
 

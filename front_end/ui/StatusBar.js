@@ -71,10 +71,7 @@ WebInspector.StatusBar.prototype = {
     appendStatusBarItem: function(item)
     {
         this._items.push(item);
-        if (item._isLightDOM)
-            this.element.appendChild(item.element);
-        else
-            this._contentElement.insertBefore(item.element, this._contentElement.lastChild);
+        this._contentElement.insertBefore(item.element, this._contentElement.lastChild);
     },
 
     removeStatusBarItems: function()
@@ -109,15 +106,13 @@ WebInspector.StatusBar.prototype = {
  * @constructor
  * @extends {WebInspector.Object}
  * @param {!Element} element
- * @param {boolean=} isLightDOM
  */
-WebInspector.StatusBarItem = function(element, isLightDOM)
+WebInspector.StatusBarItem = function(element)
 {
     this.element = element;
     this.element.classList.add("status-bar-item");
     this._enabled = true;
     this._visible = true;
-    this._isLightDOM = isLightDOM;
 }
 
 WebInspector.StatusBarItem.prototype = {
@@ -163,21 +158,19 @@ WebInspector.StatusBarItem.prototype = {
  * @constructor
  * @extends {WebInspector.StatusBarItem}
  * @param {!Array.<string>} counters
- * @param {string=} className
  */
-WebInspector.StatusBarCounter = function(counters, className)
+WebInspector.StatusBarCounter = function(counters)
 {
     WebInspector.StatusBarItem.call(this, createElementWithClass("div", "status-bar-counter hidden"));
-    if (className)
-        this.element.classList.add(className);
     this.element.addEventListener("click", this._clicked.bind(this), false);
     /** @type {!Array.<!{element: !Element, counter: string, value: number, title: string}>} */
     this._counters = [];
     for (var i = 0; i < counters.length; ++i) {
         var element = this.element.createChild("span", "status-bar-counter-item");
-        element.createChild("div", counters[i]);
-        element.createChild("span");
-        this._counters.push({counter: counters[i], element: element, value: 0, title: ""});
+        var icon = element.createChild("label", "", "dt-icon-label");
+        icon.type = counters[i];
+        var span = icon.createChild("span");
+        this._counters.push({counter: counters[i], element: element, value: 0, title: "", span: span});
     }
     this._update();
 }
@@ -213,7 +206,7 @@ WebInspector.StatusBarCounter.prototype = {
             }
             counter.element.classList.remove("hidden");
             counter.element.classList.toggle("status-bar-counter-item-first", !total);
-            counter.element.querySelector("span").textContent = value;
+            counter.span.textContent = value;
             total += value;
             if (counter.title) {
                 if (title)
@@ -878,18 +871,4 @@ WebInspector.StatusBarStatesSettingButton.prototype = {
     },
 
     __proto__: WebInspector.StatusBarButton.prototype
-}
-
-/**
- * @constructor
- * @extends {WebInspector.StatusBarItem}
- * @param {!Element} element
- */
-WebInspector.StatusBarItemWrapper = function(element)
-{
-    WebInspector.StatusBarItem.call(this, element, true);
-}
-
-WebInspector.StatusBarItemWrapper.prototype = {
-    __proto__: WebInspector.StatusBarItem.prototype
 }

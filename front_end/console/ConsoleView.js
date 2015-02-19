@@ -71,7 +71,7 @@ WebInspector.ConsoleView = function()
     this._filterBar = new WebInspector.FilterBar();
 
     this._preserveLogCheckbox = new WebInspector.StatusBarCheckbox(WebInspector.UIString("Preserve log"), WebInspector.UIString("Do not clear log on page reload / navigation."), WebInspector.settings.preserveConsoleLog);
-    this._progressStatusBarItem = new WebInspector.StatusBarItemWrapper(createElement("div"));
+    this._progressStatusBarItem = new WebInspector.StatusBarItem(createElement("div"));
 
     var statusBar = new WebInspector.StatusBar(this._contentsElement);
     statusBar.appendStatusBarItem(this._clearConsoleButton);

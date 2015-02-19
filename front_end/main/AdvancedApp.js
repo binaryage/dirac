@@ -224,7 +224,7 @@ WebInspector.AdvancedApp.DeviceCounter = function()
         return;
     }
 
-    this._counter = new WebInspector.StatusBarCounter(["device-icon-small"]);
+    this._counter = new WebInspector.StatusBarCounter(["device-icon"]);
     this._counter.addEventListener("click", showDevices);
 
     function showDevices()

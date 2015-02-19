@@ -146,48 +146,6 @@ body.undocked.platform-mac.inactive .inspector-view-tabbed-pane.tabbed-pane::sha
     background-position: -160px -96px;
 }
 
-.error-icon-small,
-.warning-icon-small,
-.red-ball,
-.green-ball,
-.orange-ball {
-    background-image: url(Images/statusbarButtonGlyphs.png);
-    background-size: 320px 144px;
-    width: 10px;
-    height: 10px;
-    display: inline-block;
-}
-
-@media (-webkit-min-device-pixel-ratio: 1.5) {
-.error-icon-small,
-.warning-icon-small,
-.red-ball,
-.green-ball,
-.orange-ball {
-    background-image: url(Images/statusbarButtonGlyphs_2x.png);
-}
-} /* media */
-
-.error-icon-small {
-    background-position: -213px -96px;
-}
-
-.warning-icon-small {
-    background-position: -202px -107px;
-}
-
-.red-ball {
-    background-position: -224px -96px;
-}
-
-.green-ball {
-    background-position: -235px -96px;
-}
-
-.orange-ball {
-    background-position: -246px -96px;
-}
-
 .bubble-repeat-count {
     display: inline-block;
     height: 14px;

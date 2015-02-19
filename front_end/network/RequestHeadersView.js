@@ -397,15 +397,15 @@ WebInspector.RequestHeadersView.prototype = {
             var statusCodeFragment = createDocumentFragment();
             statusCodeFragment.createChild("div", "header-name").textContent = WebInspector.UIString("Status Code") + ":";
 
-            var statusCodeImage = statusCodeFragment.createChild("div", "resource-status-image");
+            var statusCodeImage = statusCodeFragment.createChild("label", "resource-status-image", "dt-icon-label");
             statusCodeImage.title = this._request.statusCode + " " + this._request.statusText;
 
             if (this._request.statusCode < 300 || this._request.statusCode === 304)
-                statusCodeImage.classList.add("green-ball");
+                statusCodeImage.type = "green-ball";
             else if (this._request.statusCode < 400)
-                statusCodeImage.classList.add("orange-ball");
+                statusCodeImage.type = "orange-ball";
             else
-                statusCodeImage.classList.add("red-ball");
+                statusCodeImage.type = "red-ball";
 
             requestMethodElement.title = this._formatHeader(WebInspector.UIString("Request Method"), this._request.requestMethod);
 
@@ -454,7 +454,7 @@ WebInspector.RequestHeadersView.prototype = {
         if (provisionalHeaders) {
             var cautionText = WebInspector.UIString("Provisional headers are shown");
             var cautionFragment = createDocumentFragment();
-            cautionFragment.createChild("div", "warning-icon-small");
+            cautionFragment.createChild("label", "", "dt-icon-label").type = "warning-icon";
             cautionFragment.createChild("div", "caution").textContent = cautionText;
             var cautionTreeElement = new TreeElement(cautionFragment);
             cautionTreeElement.selectable = false;

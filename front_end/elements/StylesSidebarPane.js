@@ -117,8 +117,10 @@ WebInspector.StylesSidebarPane.Events = {
  */
 WebInspector.StylesSidebarPane.createExclamationMark = function(property)
 {
-    var exclamationElement = createElement("div");
-    exclamationElement.className = "exclamation-mark" + (WebInspector.StylesSidebarPane._ignoreErrorsForProperty(property) ? "" : " warning-icon-small");
+    var exclamationElement = createElement("label", "dt-icon-label");
+    exclamationElement.className = "exclamation-mark";
+    if (!WebInspector.StylesSidebarPane._ignoreErrorsForProperty(property))
+        exclamationElement.type = "warning-icon";
     exclamationElement.title = WebInspector.CSSMetadata.cssPropertiesMetainfo.keySet()[property.name.toLowerCase()] ? WebInspector.UIString("Invalid property value.") : WebInspector.UIString("Unknown property name.");
     return exclamationElement;
 }

@@ -225,6 +225,7 @@
             'front_end/ui/searchableView.css',
             'front_end/ui/section.css',
             'front_end/ui/softContextMenu.css',
+            'front_end/ui/smallIcon.css',
             'front_end/ui/splitView.css',
             'front_end/ui/statusBar.css',
             'front_end/ui/suggestBox.css',

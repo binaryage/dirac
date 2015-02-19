@@ -823,7 +823,7 @@ WebInspector.__defineGetter__("inspectedPageURL", function()
  */
 WebInspector.Main.WarningErrorCounter = function()
 {
-    this._counter = new WebInspector.StatusBarCounter(["error-icon-small", "warning-icon-small"]);
+    this._counter = new WebInspector.StatusBarCounter(["error-icon", "warning-icon"]);
     this._counter.addEventListener("click", showConsole);
 
     function showConsole()
@@ -845,8 +845,8 @@ WebInspector.Main.WarningErrorCounter.prototype = {
             errors = errors + targets[i].consoleModel.errors;
             warnings = warnings + targets[i].consoleModel.warnings;
         }
-        this._counter.setCounter("error-icon-small", errors, WebInspector.UIString(errors > 1 ? "%d errors" : "%d error", errors));
-        this._counter.setCounter("warning-icon-small", warnings, WebInspector.UIString(warnings > 1 ? "%d warnings" : "%d warning", warnings));
+        this._counter.setCounter("error-icon", errors, WebInspector.UIString(errors > 1 ? "%d errors" : "%d error", errors));
+        this._counter.setCounter("warning-icon", warnings, WebInspector.UIString(warnings > 1 ? "%d warnings" : "%d warning", warnings));
         WebInspector.inspectorView.toolbarItemResized();
     },
 

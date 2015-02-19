@@ -595,7 +595,7 @@ WebInspector.NetworkLogView.prototype = {
                 return;
             this._summaryBarElement._isDisplayingWarning = true;
             this._summaryBarElement.removeChildren();
-            this._summaryBarElement.createChild("div", "warning-icon-small");
+            this._summaryBarElement.createChild("label", "", "dt-icon-label").type = "warning-icon";
             var text = WebInspector.UIString("No requests captured. Reload the page to see detailed information on the network activity.");
             this._summaryBarElement.createTextChild(text);
             this._summaryBarElement.title = text;

@@ -219,6 +219,10 @@ select.status-bar-item {
     margin-left: 6px;
 }
 
+.status-bar-counter-item label {
+    cursor: inherit;
+}
+
 .status-bar-counter-item.status-bar-counter-item-first {
     margin-left: 0;
 }
@@ -434,36 +438,6 @@ button.record-status-bar-item.toggled-on .glyph {
 
 .rotate-status-bar-item .glyph {
     -webkit-mask-position: -160px -120px;
-}
-
-.error-icon-small,
-.warning-icon-small,
-.device-icon-small {
-    background-image: url(Images/statusbarButtonGlyphs.png);
-    background-size: 320px 144px;
-    width: 10px;
-    height: 10px;
-    display: inline-block;
-}
-
-@media (-webkit-min-device-pixel-ratio: 1.5) {
-.error-icon-small,
-.warning-icon-small,
-.device-icon-small {
-    background-image: url(Images/statusbarButtonGlyphs_2x.png);
-}
-} /* media */
-
-.error-icon-small {
-    background-position: -213px -96px;
-}
-
-.warning-icon-small {
-    background-position: -202px -107px;
-}
-
-.device-icon-small {
-    background-position: -224px -107px;
 }
 
 .case-sensitive-search-status-bar-item.toggled-on .status-bar-button-text {

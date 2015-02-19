@@ -40,14 +40,13 @@ WebInspector.ApplicationCacheItemsView = function(model, frameId)
     this.deleteButton.setVisible(false);
     this.deleteButton.addEventListener("click", this._deleteButtonClicked, this);
 
-    this.connectivityIcon = createElement("div");
+    this.connectivityIcon = createElement("label", "dt-icon-label");
     this.connectivityMessage = createElement("span");
     this.connectivityMessage.className = "storage-application-cache-connectivity";
     this.connectivityMessage.textContent = "";
 
-    this.statusIcon = createElement("div");
+    this.statusIcon = createElement("label", "dt-icon-label");
     this.statusMessage = createElement("span");
-    this.statusMessage.className = "storage-application-cache-status";
     this.statusMessage.textContent = "";
 
     this._frameId = frameId;
@@ -75,10 +74,10 @@ WebInspector.ApplicationCacheItemsView.prototype = {
     {
         return [
             this.deleteButton,
-            new WebInspector.StatusBarItemWrapper(this.connectivityIcon),
-            new WebInspector.StatusBarItemWrapper(this.connectivityMessage),
-            new WebInspector.StatusBarItemWrapper(this.statusIcon),
-            new WebInspector.StatusBarItemWrapper(this.statusMessage)
+            new WebInspector.StatusBarItem(this.connectivityIcon),
+            new WebInspector.StatusBarItem(this.connectivityMessage),
+            new WebInspector.StatusBarItem(this.statusIcon),
+            new WebInspector.StatusBarItem(this.statusMessage)
         ];
     },
 
@@ -116,16 +115,16 @@ WebInspector.ApplicationCacheItemsView.prototype = {
 
         var statusInformation = {};
         // We should never have UNCACHED status, since we remove frames with UNCACHED application cache status from the tree.
-        statusInformation[applicationCache.UNCACHED]    = { className: "red-ball", text: "UNCACHED" };
-        statusInformation[applicationCache.IDLE]        = { className: "green-ball", text: "IDLE" };
-        statusInformation[applicationCache.CHECKING]    = { className: "orange-ball",  text: "CHECKING" };
-        statusInformation[applicationCache.DOWNLOADING] = { className: "orange-ball",  text: "DOWNLOADING" };
-        statusInformation[applicationCache.UPDATEREADY] = { className: "green-ball",  text: "UPDATEREADY" };
-        statusInformation[applicationCache.OBSOLETE]    = { className: "red-ball",      text: "OBSOLETE" };
+        statusInformation[applicationCache.UNCACHED]    = { type: "red-ball", text: "UNCACHED" };
+        statusInformation[applicationCache.IDLE]        = { type: "green-ball", text: "IDLE" };
+        statusInformation[applicationCache.CHECKING]    = { type: "orange-ball",  text: "CHECKING" };
+        statusInformation[applicationCache.DOWNLOADING] = { type: "orange-ball",  text: "DOWNLOADING" };
+        statusInformation[applicationCache.UPDATEREADY] = { type: "green-ball",  text: "UPDATEREADY" };
+        statusInformation[applicationCache.OBSOLETE]    = { type: "red-ball",      text: "OBSOLETE" };
 
         var info = statusInformation[status] || statusInformation[applicationCache.UNCACHED];
 
-        this.statusIcon.className = "storage-application-cache-status-icon " + info.className;
+        this.statusIcon.type = info.type;
         this.statusMessage.textContent = info.text;
 
         if (this.isShowing() && this._status === applicationCache.IDLE && (oldStatus === applicationCache.UPDATEREADY || !this._resources))
@@ -139,10 +138,10 @@ WebInspector.ApplicationCacheItemsView.prototype = {
     updateNetworkState: function(isNowOnline)
     {
         if (isNowOnline) {
-            this.connectivityIcon.className = "storage-application-cache-connectivity-icon green-ball";
+            this.connectivityIcon.type = "green-ball";
             this.connectivityMessage.textContent = WebInspector.UIString("Online");
         } else {
-            this.connectivityIcon.className = "storage-application-cache-connectivity-icon red-ball";
+            this.connectivityIcon.type = "red-ball";
             this.connectivityMessage.textContent = WebInspector.UIString("Offline");
         }
     },

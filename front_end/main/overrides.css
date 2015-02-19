@@ -233,7 +233,7 @@
 }
 } /* media */
 
-.overrides-view .overrides-footer .warning-icon-small {
+.overrides-view .overrides-footer label[is=dt-icon-label] {
     margin-right: 3px;
 }
 

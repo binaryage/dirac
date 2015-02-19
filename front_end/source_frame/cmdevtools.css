@@ -250,11 +250,6 @@
   margin-top: -1px;
 }
 
-.text-editor-row-message-icon {
-  margin-right: 1ex;
-  margin-top: 2px;
-}
-
 .CodeMirror .text-editor-line-decoration-icon {
     position: absolute;
     cursor: pointer;

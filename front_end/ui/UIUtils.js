@@ -1256,31 +1256,14 @@ WebInspector.beautifyFunctionName = function(name)
 /**
  * @param {string} localName
  * @param {string} typeExtension
- * @param {function(new:T)} extendedType
- * @param {!Object.<string, function(...*)>} protoTemplate
- * @param {string=} styleSheet
+ * @param {!Object} prototype
  * @suppressGlobalPropertiesCheck
  * @template T
  */
-function registerCustomElement(localName, typeExtension, extendedType, protoTemplate, styleSheet)
+function registerCustomElement(localName, typeExtension, prototype)
 {
-    var proto = Object.create(extendedType.prototype);
-    for (var p in protoTemplate)
-        proto[p] = protoTemplate[p];
-
-    if (!protoTemplate["createdCallback"]) {
-        /**
-         * @this {Element}
-         */
-        proto.createdCallback = function() {
-            var root = this.createShadowRoot();
-            root.appendChild(createElement("content"));
-            if (styleSheet)
-                root.appendChild(WebInspector.View.createStyleElement(styleSheet));
-        };
-    }
     document.registerElement(typeExtension, {
-        prototype: proto,
+        prototype: Object.create(prototype),
         extends: localName
     });
 }
@@ -1335,7 +1318,7 @@ function createCheckboxLabel(title, checked)
 }
 
 ;(function() {
-    registerCustomElement("button", "text-button", HTMLButtonElement, {
+    registerCustomElement("button", "text-button", {
         /**
          * @this {Element}
          */
@@ -1345,10 +1328,12 @@ function createCheckboxLabel(title, checked)
             var root = this.createShadowRoot();
             root.appendChild(WebInspector.View.createStyleElement("ui/textButton.css"));
             root.createChild("content");
-        }
-    }, "ui/textButton.css");
+        },
 
-    registerCustomElement("label", "dt-radio", HTMLLabelElement, {
+        __proto__: HTMLButtonElement.prototype
+    });
+
+    registerCustomElement("label", "dt-radio", {
         /**
          * @this {Element}
          */
@@ -1362,7 +1347,9 @@ function createCheckboxLabel(title, checked)
             root.createChild("content").select = ".dt-radio-button";
             root.createChild("content");
             this.addEventListener("click", radioClickHandler, false);
-        }
+        },
+
+        __proto__: HTMLLabelElement.prototype
     });
 
     /**
@@ -1378,7 +1365,7 @@ function createCheckboxLabel(title, checked)
         this.radioElement.dispatchEvent(new Event("change"));
     }
 
-    registerCustomElement("label", "dt-checkbox", HTMLLabelElement, {
+    registerCustomElement("label", "dt-checkbox", {
         /**
          * @this {Element}
          */
@@ -1390,7 +1377,33 @@ function createCheckboxLabel(title, checked)
             this.checkboxElement.type = "checkbox";
             root.createChild("content").select = ".dt-checkbox-button";
             root.createChild("content");
-        }
+        },
+
+        __proto__: HTMLLabelElement.prototype
+    });
+
+    registerCustomElement("label", "dt-icon-label", {
+        /**
+         * @this {Element}
+         */
+        createdCallback: function()
+        {
+            var root = this.createShadowRoot();
+            root.appendChild(WebInspector.View.createStyleElement("ui/smallIcon.css"));
+            this._iconElement = root.createChild("div");
+            root.createChild("content");
+        },
+
+        /**
+         * @param {string} type
+         * @this {Element}
+         */
+        set type(type)
+        {
+            this._iconElement.className = type;
+        },
+
+        __proto__: HTMLLabelElement.prototype
     });
 })();
 

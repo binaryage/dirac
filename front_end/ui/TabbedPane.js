@@ -373,13 +373,13 @@ WebInspector.TabbedPane.prototype = {
 
     /**
      * @param {string} id
-     * @param {string} iconClass
+     * @param {string} iconType
      * @param {string=} iconTooltip
      */
-    setTabIcon: function(id, iconClass, iconTooltip)
+    setTabIcon: function(id, iconType, iconTooltip)
     {
         var tab = this._tabsById[id];
-        if (tab._setIconClass(iconClass, iconTooltip))
+        if (tab._setIconType(iconType, iconTooltip))
             this._updateTabElements();
     },
 
@@ -850,14 +850,6 @@ WebInspector.TabbedPaneTab.prototype = {
     },
 
     /**
-     * @return {string}
-     */
-    iconClass: function()
-    {
-        return this._iconClass;
-    },
-
-    /**
      * @return {boolean}
      */
     isCloseable: function()
@@ -866,19 +858,19 @@ WebInspector.TabbedPaneTab.prototype = {
     },
 
     /**
-     * @param {string} iconClass
+     * @param {string} iconType
      * @param {string=} iconTooltip
      * @return {boolean}
      */
-    _setIconClass: function(iconClass, iconTooltip)
+    _setIconType: function(iconType, iconTooltip)
     {
-        if (iconClass === this._iconClass && iconTooltip === this._iconTooltip)
+        if (iconType === this._iconType && iconTooltip === this._iconTooltip)
             return false;
-        this._iconClass = iconClass;
+        this._iconType = iconType;
         this._iconTooltip = iconTooltip;
         if (this._iconElement)
             this._iconElement.remove();
-        if (this._iconClass && this._tabElement)
+        if (this._iconType && this._tabElement)
             this._iconElement = this._createIconElement(this._tabElement, this._titleElement);
         delete this._measuredWidth;
         return true;
@@ -966,7 +958,8 @@ WebInspector.TabbedPaneTab.prototype = {
 
     _createIconElement: function(tabElement, titleElement)
     {
-        var iconElement = createElementWithClass("span", "tabbed-pane-header-tab-icon " + this._iconClass);
+        var iconElement = createElementWithClass("label", "", "dt-icon-label");
+        iconElement.type = this._iconType;
         if (this._iconTooltip)
             iconElement.title = this._iconTooltip;
         tabElement.insertBefore(iconElement, titleElement);
@@ -987,7 +980,7 @@ WebInspector.TabbedPaneTab.prototype = {
         var titleElement = tabElement.createChild("span", "tabbed-pane-header-tab-title");
         titleElement.textContent = this.title;
         titleElement.title = this.tooltip || "";
-        if (this._iconClass)
+        if (this._iconType)
             this._createIconElement(tabElement, titleElement);
         if (!measuring)
             this._titleElement = titleElement;

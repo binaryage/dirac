@@ -113,15 +113,6 @@
     visibility: visible;
 }
 
-.tabbed-pane-header-tab-icon {
-    width: 11px;
-    height: 10px;
-    margin-top: 3px;
-    float: left;
-    display: block;
-    margin-right: 1px;
-}
-
 .tabbed-pane-header-tabs-drop-down-container {
     float: left;
     position: relative;

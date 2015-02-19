@@ -120,7 +120,7 @@ WebInspector.NetworkPanel.prototype = {
         this._disableCacheCheckbox = new WebInspector.StatusBarCheckbox(WebInspector.UIString("Disable cache"), WebInspector.UIString("Disable cache (while DevTools is open)."), WebInspector.settings.cacheDisabled);
         this._panelStatusBar.appendStatusBarItem(this._disableCacheCheckbox);
 
-        this._panelStatusBar.appendStatusBarItem(new WebInspector.StatusBarItemWrapper(this._progressBarContainer));
+        this._panelStatusBar.appendStatusBarItem(new WebInspector.StatusBarItem(this._progressBarContainer));
     },
 
     /**

@@ -61,7 +61,7 @@ WebInspector.ResponsiveDesignView.prototype = {
         this._updateMediaQueryInspector();
 
         this._warningMessage = this._canvasContainer.element.createChild("div", "responsive-design-warning hidden");
-        this._warningMessage.createChild("div", "warning-icon-small");
+        this._warningMessage.createChild("label", "", "dt-icon-label").type = "warning-icon";
         this._warningMessage.createChild("span");
         var warningDisableButton = this._warningMessage.createChild("div", "disable-warning");
         warningDisableButton.textContent = WebInspector.UIString("Never show");
