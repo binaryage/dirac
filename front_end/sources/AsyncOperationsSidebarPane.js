@@ -21,6 +21,10 @@ WebInspector.AsyncOperationsSidebarPane = function()
     this._revealBlackboxedCallFrames = false;
     this._linkifier = new WebInspector.Linkifier(new WebInspector.Linkifier.DefaultFormatter(30));
 
+    this._popoverHelper = new WebInspector.PopoverHelper(this.bodyElement, this._getPopoverAnchor.bind(this), this._showPopover.bind(this));
+    this._popoverHelper.setTimeout(250, 250);
+    this.bodyElement.addEventListener("click", this._hidePopover.bind(this), true);
+
     WebInspector.targetManager.addModelListener(WebInspector.DebuggerModel, WebInspector.DebuggerModel.Events.AsyncOperationStarted, this._onAsyncOperationStarted, this);
     WebInspector.targetManager.addModelListener(WebInspector.DebuggerModel, WebInspector.DebuggerModel.Events.AsyncOperationCompleted, this._onAsyncOperationCompleted, this);
     WebInspector.targetManager.addModelListener(WebInspector.DebuggerModel, WebInspector.DebuggerModel.Events.AsyncOperationsCleared, this._onAsyncOperationsCleared, this);
@@ -32,6 +36,8 @@ WebInspector.AsyncOperationsSidebarPane = function()
 
     WebInspector.targetManager.observeTargets(this);
 }
+
+WebInspector.AsyncOperationsSidebarPane._operationIdSymbol = Symbol("operationId");
 
 WebInspector.AsyncOperationsSidebarPane.prototype = {
     /**
@@ -106,6 +112,18 @@ WebInspector.AsyncOperationsSidebarPane.prototype = {
             this._target = WebInspector.context.flavor(WebInspector.Target);
             this._refresh();
         }
+    },
+
+    /** @override */
+    willHide: function()
+    {
+        this._hidePopover();
+    },
+
+    /** @override */
+    onResize: function()
+    {
+        this._hidePopover();
     },
 
     /**
@@ -204,7 +222,7 @@ WebInspector.AsyncOperationsSidebarPane.prototype = {
      */
     _createAsyncOperationItem: function(operation)
     {
-        var element = createElement("li");
+        var element = createElementWithClass("li", "async-operation");
 
         var title = operation.description || WebInspector.UIString("Async Operation");
         var label = createCheckboxLabel(title, false);
@@ -215,15 +233,69 @@ WebInspector.AsyncOperationsSidebarPane.prototype = {
         if (callFrame)
             element.createChild("div").appendChild(this._linkifier.linkifyConsoleCallFrame(this._target, callFrame));
 
+        element[WebInspector.AsyncOperationsSidebarPane._operationIdSymbol] = operation.id;
         this._operationIdToElement.set(operation.id, element);
         this.addListElement(element, this.listElement.firstChild);
     },
 
     _clear: function()
     {
+        this._hidePopover();
         this.reset();
         this._operationIdToElement.clear();
         this._linkifier.reset();
+    },
+
+    _hidePopover: function()
+    {
+        this._popoverHelper.hidePopover();
+    },
+
+    /**
+     * @param {!Element} element
+     * @param {!Event} event
+     * @return {!Element|!AnchorBox|undefined}
+     */
+    _getPopoverAnchor: function(element, event)
+    {
+        var anchor = /** @type {?Element} */ (element.enclosingNodeOrSelfWithNodeName("a"));
+        if (!anchor)
+            return undefined;
+        var operation = this._operationForPopover(anchor);
+        return operation ? anchor : undefined;
+    },
+
+    /**
+     * @param {!Element} anchor
+     * @param {!WebInspector.Popover} popover
+     */
+    _showPopover: function(anchor, popover)
+    {
+        var operation = this._operationForPopover(anchor);
+        if (!operation)
+            return;
+        var content = WebInspector.DOMPresentationUtils.buildStackTracePreviewContents(this._target, this._linkifier, operation.stackTrace, operation.asyncStackTrace);
+        popover.setCanShrink(true);
+        popover.showForAnchor(content, anchor);
+    },
+
+    /**
+     * @param {!Element} element
+     * @return {?DebuggerAgent.AsyncOperation}
+     */
+    _operationForPopover: function(element)
+    {
+        var asyncOperations = this._target && this._asyncOperationsByTarget.get(this._target);
+        if (!asyncOperations)
+            return null;
+        var anchor = element.enclosingNodeOrSelfWithClass("async-operation");
+        if (!anchor)
+            return null;
+        var operationId = anchor[WebInspector.AsyncOperationsSidebarPane._operationIdSymbol];
+        var operation = operationId && asyncOperations.get(operationId);
+        if (!operation || !operation.stackTrace)
+            return null;
+        return operation;
     },
 
     __proto__: WebInspector.NativeBreakpointsSidebarPane.prototype
