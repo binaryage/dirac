@@ -11,7 +11,7 @@ WebInspector.AsyncOperationsSidebarPane = function()
 {
     WebInspector.NativeBreakpointsSidebarPane.call(this, WebInspector.UIString("Async Operation Breakpoints"));
     this.bodyElement.classList.add("async-operations");
-    this.emptyElement.textContent = WebInspector.UIString("No Async Operations");
+    this._updateEmptyElement();
 
     /** @type {!Map.<!WebInspector.Target, !Map.<number, !DebuggerAgent.AsyncOperation>>} */
     this._asyncOperationsByTarget = new Map();
@@ -28,6 +28,7 @@ WebInspector.AsyncOperationsSidebarPane = function()
     WebInspector.context.addFlavorChangeListener(WebInspector.Target, this._targetChanged, this);
 
     WebInspector.settings.skipStackFramesPattern.addChangeListener(this._refresh, this);
+    WebInspector.settings.enableAsyncStackTraces.addChangeListener(this._asyncStackTracesStateChanged, this);
 
     WebInspector.targetManager.observeTargets(this);
 }
@@ -66,10 +67,42 @@ WebInspector.AsyncOperationsSidebarPane.prototype = {
         this._refresh();
     },
 
+    _asyncStackTracesStateChanged: function()
+    {
+        var enabled = WebInspector.settings.enableAsyncStackTraces.get();
+        if (enabled) {
+            this._target = WebInspector.context.flavor(WebInspector.Target);
+        } else if (this._target) {
+            this._asyncOperationsByTarget.delete(this._target);
+            delete this._target;
+        }
+        this._updateEmptyElement();
+        this._refresh();
+    },
+
+    _updateEmptyElement: function()
+    {
+        var enabled = WebInspector.settings.enableAsyncStackTraces.get();
+        if (enabled) {
+            this.emptyElement.textContent = WebInspector.UIString("No Async Operations");
+        } else {
+            this.emptyElement.textContent = WebInspector.UIString("Async stack traces are disabled.");
+            this.emptyElement.createTextChild(" ");
+            var enableLink = this.emptyElement.createChild("span", "link");
+            enableLink.textContent = WebInspector.UIString("Enable");
+            enableLink.addEventListener("click", enableAsyncStackTraces, true);
+        }
+
+        function enableAsyncStackTraces()
+        {
+            WebInspector.settings.enableAsyncStackTraces.set(true);
+        }
+    },
+
     /** @override */
     wasShown: function()
     {
-        if (!this._target) {
+        if (!this._target && WebInspector.settings.enableAsyncStackTraces.get()) {
             this._target = WebInspector.context.flavor(WebInspector.Target);
             this._refresh();
         }
