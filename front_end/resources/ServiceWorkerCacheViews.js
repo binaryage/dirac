@@ -215,7 +215,7 @@ WebInspector.SWCacheDataGridNode.prototype = {
         case "array":
             var section = new WebInspector.ObjectPropertiesSection(value, value.description);
             section.editable = false;
-            section.skipProto = true;
+            section.skipProto();
             contents.appendChild(section.element);
             break;
         case "string":

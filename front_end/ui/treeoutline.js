@@ -131,6 +131,8 @@ TreeContainerNode.prototype = {
             this.treeOutline._bindTreeElement(current);
 
         child.onattach();
+        if (this.treeOutline)
+            this.treeOutline._eventSink.dispatchEventToListeners(TreeOutline.Events.ElementAttached, child);
         var nextSibling = child.nextSibling ? child.nextSibling._listItemNode : null;
         this._childrenListNode.insertBefore(child._listItemNode, nextSibling);
         this._childrenListNode.insertBefore(child._childrenListNode, nextSibling);
@@ -250,9 +252,36 @@ function TreeOutline(listNode, nonFocusable)
     this.setFocusable(!nonFocusable);
     this._childrenListNode.addEventListener("keydown", this._treeKeyDown.bind(this), true);
     this.element = listNode;
+    this._eventSink = new WebInspector.Object();
+}
+
+TreeOutline.Events = {
+    ElementAttached: "ElementAttached",
+    ElementExpanded: "ElementExpanded",
+    ElementCollapsed: "ElementCollapsed"
 }
 
 TreeOutline.prototype = {
+    /**
+     * @param {string} eventType
+     * @param {function(!WebInspector.Event)} listener
+     * @param {!Object=} thisObject
+     */
+    addEventListener: function(eventType, listener, thisObject)
+    {
+        this._eventSink.addEventListener(eventType, listener, thisObject);
+    },
+
+    /**
+     * @param {string} eventType
+     * @param {function(!WebInspector.Event)} listener
+     * @param {!Object=} thisObject
+     */
+    removeEventListener: function(eventType, listener, thisObject)
+    {
+        this._eventSink.removeEventListener(eventType, listener, thisObject);
+    },
+
     /**
      * @param {number} x
      * @param {number} y
@@ -734,6 +763,8 @@ TreeElement.prototype = {
         this._childrenListNode.classList.remove("expanded");
         this.expanded = false;
         this.oncollapse();
+        if (this.treeOutline)
+            this.treeOutline._eventSink.dispatchEventToListeners(TreeOutline.Events.ElementCollapsed, this);
     },
 
     collapseRecursively: function()
@@ -760,13 +791,17 @@ TreeElement.prototype = {
 
         this.expanded = true;
 
-        if (!this._children)
+        if (!this._children) {
+            this._children = [];
             this.onpopulate();
+        }
 
         this._listItemNode.classList.add("expanded");
         this._childrenListNode.classList.add("expanded");
 
         this.onexpand();
+        if (this.treeOutline)
+            this.treeOutline._eventSink.dispatchEventToListeners(TreeOutline.Events.ElementExpanded, this);
     },
 
     /**
