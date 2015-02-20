@@ -1198,30 +1198,6 @@ WebInspector.TimelineModel.prototype = {
         return new WebInspector.ChunkedFileReader(file, WebInspector.TimelineModel.TransferChunkLengthBytes, delegate);
     },
 
-    _createFileWriter: function()
-    {
-        return new WebInspector.FileOutputStream();
-    },
-
-    saveToFile: function()
-    {
-        var now = new Date();
-        var fileName = "TimelineRawData-" + now.toISO8601Compact() + ".json";
-        var stream = this._createFileWriter();
-
-        /**
-         * @param {boolean} accepted
-         * @this {WebInspector.TimelineModel}
-         */
-        function callback(accepted)
-        {
-            if (!accepted)
-                return;
-            this.writeToStream(stream);
-        }
-        stream.open(fileName, callback.bind(this));
-    },
-
     reset: function()
     {
         this._virtualThreads = [];
@@ -1306,15 +1282,6 @@ WebInspector.TimelineModel.prototype = {
     createLoader: function(fileReader, progress)
     {
         return new WebInspector.TracingModelLoader(this, fileReader, progress);
-    },
-
-    /**
-     * @param {!WebInspector.OutputStream} stream
-     */
-    writeToStream: function(stream)
-    {
-        var saver = new WebInspector.TracingTimelineSaver(stream);
-        this._tracingModel.writeToStream(stream, saver);
     },
 
     /**

@@ -39,7 +39,6 @@
         "TimelineView.js",
         "TimelineLayersView.js",
         "TimelinePaintProfilerView.js",
-        "TracingModel.js",
         "TransformController.js",
         "PaintProfilerView.js",
         "TimelinePanel.js"

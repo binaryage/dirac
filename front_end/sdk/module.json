@@ -31,6 +31,7 @@
         "NetworkLog.js",
         "OverridesSupport.js",
         "TracingManager.js",
+        "TracingModel.js",
         "WorkerManager.js",
         "WorkerTargetManager.js",
         "RuntimeModel.js",

@@ -48,7 +48,8 @@ WebInspector.TimelinePanel = function()
     this._millisecondsToRecordAfterLoadEvent = 3000;
 
     // Create model.
-    this._tracingModel = new WebInspector.TracingModel();
+    this._tracingModelBackingStorage = new WebInspector.TempFileBackingStorage("tracing");
+    this._tracingModel = new WebInspector.TracingModel(this._tracingModelBackingStorage);
     this._model = new WebInspector.TimelineModel(this._tracingModel, WebInspector.TimelineUIUtils.hiddenRecordsFilter());
 
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStarted, this._onRecordingStarted, this);
@@ -491,7 +492,23 @@ WebInspector.TimelinePanel.prototype = {
     {
         if (this._operationInProgress)
             return true;
-        this._model.saveToFile();
+
+        var now = new Date();
+        var fileName = "TimelineRawData-" + now.toISO8601Compact() + ".json";
+        var stream = new WebInspector.FileOutputStream();
+
+        /**
+         * @param {boolean} accepted
+         * @this {WebInspector.TimelinePanel}
+         */
+        function callback(accepted)
+        {
+            if (!accepted)
+                return;
+            var saver = new WebInspector.TracingTimelineSaver(stream);
+            this._tracingModelBackingStorage.writeToStream(stream, saver);
+        }
+        stream.open(fileName, callback.bind(this));
         return true;
     },
 

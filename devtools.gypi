@@ -156,6 +156,7 @@
             'front_end/sdk/SourceMap.js',
             'front_end/sdk/Target.js',
             'front_end/sdk/TracingManager.js',
+            'front_end/sdk/TracingModel.js',
             'front_end/sdk/WorkerManager.js',
             'front_end/sdk/WorkerTargetManager.js',
         ],
@@ -567,7 +568,6 @@
             'front_end/timeline/TimelinePresentationModel.js',
             'front_end/timeline/TimelineUIUtils.js',
             'front_end/timeline/TimelineView.js',
-            'front_end/timeline/TracingModel.js',
             'front_end/timeline/TransformController.js',
         ],
         'devtools_ui_lazy_js_files': [

@@ -6,9 +6,11 @@
 
 /**
  * @constructor
+ * @param {!WebInspector.BackingStorage} backingStorage
  */
-WebInspector.TracingModel = function()
+WebInspector.TracingModel = function(backingStorage)
 {
+    this._backingStorage = backingStorage;
     this.reset();
 }
 
@@ -98,144 +100,27 @@ WebInspector.TracingModel.isAsyncPhase = function(phase)
 }
 
 /**
- * @constructor
- * @param {string} dirName
- * @param {string} fileName
+ * @interface
  */
-WebInspector.BackingStorage = function(dirName, fileName)
+WebInspector.BackingStorage = function()
 {
-    this._file = new WebInspector.DeferredTempFile(dirName, fileName);
-    /**
-     * @type {!Array.<string>}
-     */
-    this._strings = [];
-    this._stringsLength = 0;
-    this._fileSize = 0;
 }
-
-/**
- * @typedef {{
-        string: ?string,
-        startOffset: number,
-        endOffset: number
-   }}
- */
-WebInspector.BackingStorage.Chunk;
 
 WebInspector.BackingStorage.prototype = {
     /**
      * @param {string} string
      */
-    appendString: function(string)
-    {
-        this._strings.push(string);
-        this._stringsLength += string.length;
-        var flushStringLength = 10 * 1024 * 1024;
-        if (this._stringsLength > flushStringLength)
-            this._flush(false);
-    },
+    appendString: function(string) { },
 
     /**
      * @param {string} string
      * @return {function():!Promise.<?string>}
      */
-    appendAccessibleString: function(string)
-    {
-        this._flush(false);
-        this._strings.push(string);
-        var chunk = /** @type {!WebInspector.BackingStorage.Chunk} */ (this._flush(true));
+    appendAccessibleString: function(string) { },
 
-        /**
-         * @param {!WebInspector.BackingStorage.Chunk} chunk
-         * @param {!WebInspector.DeferredTempFile} file
-         * @return {!Promise.<?string>}
-         */
-        function readString(chunk, file)
-        {
-            if (chunk.string)
-                return /** @type {!Promise.<?string>} */ (Promise.resolve(chunk.string));
+    finishWriting: function() { },
 
-            console.assert(chunk.endOffset);
-            if (!chunk.endOffset)
-                return Promise.reject("Nor string nor offset to the string in the file were found.");
-
-            /**
-             * @param {function(?string)} fulfill
-             * @param {function(*)} reject
-             */
-            function readRange(fulfill, reject)
-            {
-                // FIXME: call reject for null strings.
-                file.readRange(chunk.startOffset, chunk.endOffset, fulfill);
-            }
-
-            return new Promise(readRange);
-        }
-
-        return readString.bind(null, chunk, this._file);
-    },
-
-    /**
-     * @param {boolean} createChunk
-     * @return {?WebInspector.BackingStorage.Chunk}
-     */
-    _flush: function(createChunk)
-    {
-        if (!this._strings.length)
-            return null;
-
-        var chunk = null;
-        if (createChunk) {
-            console.assert(this._strings.length === 1);
-            chunk = {
-                string: this._strings[0],
-                startOffset: 0,
-                endOffset: 0
-            };
-        }
-
-        /**
-         * @this {WebInspector.BackingStorage}
-         * @param {?WebInspector.BackingStorage.Chunk} chunk
-         * @param {number} fileSize
-         */
-        function didWrite(chunk, fileSize)
-        {
-            if (fileSize === -1)
-                return;
-            if (chunk) {
-                chunk.startOffset = this._fileSize;
-                chunk.endOffset = fileSize;
-                chunk.string = null;
-            }
-            this._fileSize = fileSize;
-        }
-
-        this._file.write(this._strings, didWrite.bind(this, chunk));
-        this._strings = [];
-        this._stringsLength = 0;
-        return chunk;
-    },
-
-    finishWriting: function()
-    {
-        this._flush(false);
-        this._file.finishWriting(function() {});
-    },
-
-    remove: function()
-    {
-        this._file.remove();
-    },
-
-    /**
-     * @param {!WebInspector.OutputStream} outputStream
-     * @param {!WebInspector.OutputStreamDelegate} delegate
-     */
-    writeToStream: function(outputStream, delegate)
-    {
-        this._file.writeToOutputStream(outputStream, delegate);
-    }
+    reset: function() { },
 }
 
 
@@ -301,19 +186,8 @@ WebInspector.TracingModel.prototype = {
         this._sessionId = null;
         this._devtoolsPageMetadataEvents = [];
         this._devtoolsWorkerMetadataEvents = [];
-        if (this._backingStorage)
-            this._backingStorage.remove();
-        this._backingStorage = new WebInspector.BackingStorage("tracing", String(Date.now()));
+        this._backingStorage.reset();
         this._appendDelimiter = false;
-    },
-
-    /**
-     * @param {!WebInspector.OutputStream} outputStream
-     * @param {!WebInspector.OutputStreamDelegate} delegate
-     */
-    writeToStream: function(outputStream, delegate)
-    {
-        this._backingStorage.writeToStream(outputStream, delegate);
     },
 
     /**
@@ -445,7 +319,6 @@ WebInspector.TracingModel.prototype = {
     },
 }
 
-
 /**
  * @constructor
  * @param {!WebInspector.TracingModel} tracingModel
@@ -496,6 +369,7 @@ WebInspector.TracingModel.Event = function(category, name, phase, startTime, thr
     this.startTime = startTime;
     /** @type {!WebInspector.TracingModel.Thread} */
     this.thread = thread;
+    /** @type {!Object} */
     this.args = {};
 
     /** @type {?string} */
@@ -574,7 +448,7 @@ WebInspector.TracingModel.Event.prototype = {
     },
 
     /**
-     * @param {function():!Promise.<?string>} backingStorage
+     * @param {?function():!Promise.<?string>} backingStorage
      */
     _setBackingStorage: function(backingStorage)
     {
@@ -669,7 +543,7 @@ WebInspector.TracingModel.ObjectSnapshot.prototype = {
 
     /**
      * @override
-     * @param {function():!Promise.<?string>} backingStorage
+     * @param {?function():!Promise.<?string>} backingStorage
      */
     _setBackingStorage: function(backingStorage)
     {
