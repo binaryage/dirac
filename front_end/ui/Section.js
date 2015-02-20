@@ -82,18 +82,6 @@ WebInspector.Section.prototype = {
         return this._subtitle;
     },
 
-    get subtitleAsTextForTest()
-    {
-        var result = this.subtitleElement.textContent;
-        var child = this.subtitleElement.querySelector("[data-uncopyable]");
-        if (child) {
-            var linkData = child.getAttribute("data-uncopyable");
-            if (linkData)
-                result += linkData;
-        }
-        return result;
-    },
-
     get expanded()
     {
         return this._expanded;

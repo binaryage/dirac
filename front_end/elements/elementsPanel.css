@@ -485,42 +485,36 @@
     cursor: text;
 }
 
-.events-pane > .properties {
-    padding-left: 0;
-    padding-right: 0;
+.event-listener-tree li {
+    padding: 2px 0 0 5px;
 }
 
-.events-pane > ol > li {
-    padding: 2px 0 0 4px;
-    margin: 2px 0 0 !important;
+.event-listener-tree {
+    margin-top: 5px;
 }
 
-.events-pane > ol > ol > li {
-    padding-left: 0;
-    padding-top: 2px;
-    margin-left: 12px !important;
-}
-
-.events-pane > ol > li,
-.events-pane > ol > ol > li {
+.event-listener-tree > li {
     border-top: 1px solid rgb(231, 231, 231);
 }
 
-.events-pane > ol > li:first-of-type,
-.events-pane > ol > ol > li:first-of-type {
+.event-listener-tree > li:first-of-type {
     border-top: none;
 }
 
-.events-pane > ol > ol {
-    padding-left: 0;
-}
-
-.event-bar > .header {
+.event-listener-tree {
     padding-left: 0 !important;
 }
 
-.event-bar .header .subtitle {
-    color: rgba(90, 90, 90, 0.75);
+.event-listener-tree li.parent::before {
+    top: 0 !important;
+}
+
+.event-listener-tree .name {
+    color: rgb(136, 19, 145);
+}
+
+.event-listener-tree-subtitle {
+    float: right;
 }
 
 .image-preview-container {
@@ -773,10 +767,6 @@ label.checkbox-with-label {
     margin: 0;
 }
 
-.event-bar .event-properties {
-    padding-left: 0 !important;
-}
-
 .style-properties li.editing {
     margin-left: 10px;
     text-overflow: clip;
@@ -786,12 +776,4 @@ label.checkbox-with-label {
     padding: 3px 6px 8px 18px;
     margin: -1px -6px -8px -6px;
     text-overflow: clip;
-}
-
-.event-listener-tree {
-    padding-left: 0 !important;
-}
-
-.event-listener-tree li.parent::before {
-    top: 0 !important;
 }

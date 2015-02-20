@@ -178,10 +178,8 @@ WebInspector.EventListenersTreeElement.prototype = {
      */
     addListener: function(eventListener)
     {
-        var bar = new WebInspector.EventListenerBar(eventListener, this._nodeId, this._linkifier);
-        var treeElement = new TreeElement("");
+        var treeElement = new WebInspector.EventListenerBar(eventListener, this._nodeId, this._linkifier);
         this.appendChild(treeElement);
-        treeElement.title = bar.element;
     },
 
     __proto__: TreeElement.prototype
@@ -189,29 +187,25 @@ WebInspector.EventListenersTreeElement.prototype = {
 
 /**
  * @constructor
- * @extends {WebInspector.ObjectPropertiesSection}
+ * @extends {TreeElement}
  * @param {!WebInspector.DOMModel.EventListener} eventListener
  * @param {!DOMAgent.NodeId} nodeId
  * @param {!WebInspector.Linkifier} linkifier
  */
 WebInspector.EventListenerBar = function(eventListener, nodeId, linkifier)
 {
-    var target = eventListener.target();
-    WebInspector.ObjectPropertiesSection.call(this, target.runtimeModel.createRemoteObjectFromPrimitiveValue(""));
+    TreeElement.call(this, "", {}, true);
 
+    var target = eventListener.target();
     this._runtimeModel = target.runtimeModel;
     this._eventListener = eventListener;
     this._nodeId = nodeId;
-    this._setNodeTitle();
-    this._setFunctionSubtitle(linkifier);
+    this._setNodeTitle(linkifier);
     this.editable = false;
-    this.element.classList.add("event-bar");
-    this.headerElement.classList.add("source-code");
-    this.propertiesElement.classList.add("event-properties");
 }
 
 WebInspector.EventListenerBar.prototype = {
-    update: function()
+    onpopulate: function()
     {
         /**
          * @param {?WebInspector.RemoteObject} nodeObject
@@ -231,40 +225,37 @@ WebInspector.EventListenerBar.prototype = {
                 properties.push(new WebInspector.RemoteObjectProperty("handler", remoteObject));
             }
 
-            this.updateProperties(properties);
+            WebInspector.ObjectPropertyTreeElement.populateWithProperties(this, properties, [], true, null);
         }
         this._eventListener.node().resolveToObject(WebInspector.EventListenersSidebarPane._objectGroupName, updateWithNodeObject.bind(this));
-    },
-
-    _setNodeTitle: function()
-    {
-        var node = this._eventListener.node();
-        if (!node)
-            return;
-
-        if (node.nodeType() === Node.DOCUMENT_NODE) {
-            this.titleElement.textContent = "document";
-            return;
-        }
-
-        if (node.id === this._nodeId) {
-            this.titleElement.textContent = WebInspector.DOMPresentationUtils.simpleSelector(node);
-            return;
-        }
-
-        this.titleElement.removeChildren();
-        this.titleElement.appendChild(WebInspector.DOMPresentationUtils.linkifyNodeReference(node));
     },
 
     /**
      * @param {!WebInspector.Linkifier} linkifier
      */
-    _setFunctionSubtitle: function(linkifier)
+    _setNodeTitle: function(linkifier)
     {
-        this.subtitleElement.removeChildren();
-        var link = linkifier.linkifyRawLocation(this._eventListener.location(), this._eventListener.sourceName());
-        this.subtitleElement.appendChild(link);
+        var node = this._eventListener.node();
+        if (!node)
+            return;
+
+        this.listItemElement.removeChildren();
+        var title = this.listItemElement.createChild("span");
+        var subtitle = this.listItemElement.createChild("span", "event-listener-tree-subtitle");
+        subtitle.appendChild(linkifier.linkifyRawLocation(this._eventListener.location(), this._eventListener.sourceName()));
+
+        if (node.nodeType() === Node.DOCUMENT_NODE) {
+            title.textContent = "document";
+            return;
+        }
+
+        if (node.id === this._nodeId) {
+            title.textContent = WebInspector.DOMPresentationUtils.simpleSelector(node);
+            return;
+        }
+
+        title.appendChild(WebInspector.DOMPresentationUtils.linkifyNodeReference(node));
     },
 
-    __proto__: WebInspector.ObjectPropertiesSection.prototype
+    __proto__: TreeElement.prototype
 }
