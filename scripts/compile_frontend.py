@@ -262,6 +262,17 @@ for module_name in descriptors.application:
         list.append(module_name)
 
 
+def check_conditional_dependencies():
+    for name in modules_by_name:
+        for dep_name in modules_by_name[name].get('dependencies', []):
+            dependency = modules_by_name[dep_name]
+            if dependency.get('experiment') or dependency.get('condition'):
+                log_error('Module "%s" may not depend on the conditional module "%s"' % (name, dep_name))
+                errors_found = True
+
+check_conditional_dependencies()
+
+
 def verify_worker_modules():
     for name in modules_by_name:
         for dependency in modules_by_name[name].get('dependencies', []):
