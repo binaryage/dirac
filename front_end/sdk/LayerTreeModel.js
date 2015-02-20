@@ -36,6 +36,7 @@
         scroll_offset: Array.<number>,
         layer_quad: Array.<number>,
         draws_content: number,
+        gpu_memory_usage: number,
         transform: Array.<number>,
         owner_node: number,
         compositing_reasons: Array.<string>
@@ -584,6 +585,11 @@ WebInspector.Layer.prototype = {
     scrollRects: function() { },
 
     /**
+     * @return {number}
+     */
+    gpuMemoryUsage: function() { },
+
+    /**
      * @param {function(!Array.<string>)} callback
      */
     requestCompositingReasons: function(callback) { },
@@ -822,6 +828,19 @@ WebInspector.AgentLayer.prototype = {
     },
 
     /**
+     * @override
+     * @return {number}
+     */
+    gpuMemoryUsage: function()
+    {
+        /**
+         * @const
+         */
+        var bytesPerPixel = 4;
+        return this.drawsContent() ? this.width() * this.height() * bytesPerPixel : 0;
+    },
+
+    /**
      * @param {function(!WebInspector.PaintProfilerSnapshot=)} callback
      */
     requestSnapshot: function(callback)
@@ -953,6 +972,7 @@ WebInspector.TracingLayer.prototype = {
         this._createScrollRects(payload);
         this._compositingReasons = payload.compositing_reasons || [];
         this._drawsContent = !!payload.draws_content;
+        this._gpuMemoryUsage = payload.gpu_memory_usage;
     },
 
     /**
@@ -1141,6 +1161,15 @@ WebInspector.TracingLayer.prototype = {
     scrollRects: function()
     {
         return this._scrollRects;
+    },
+
+    /**
+     * @override
+     * @return {number}
+     */
+    gpuMemoryUsage: function()
+    {
+        return this._gpuMemoryUsage;
     },
 
     /**
