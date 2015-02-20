@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 /**
- * @constructor
+ * @interface
  */
 WebInspector.App = function()
 {

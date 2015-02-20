@@ -4,11 +4,10 @@
 
 /**
  * @constructor
- * @extends {WebInspector.App}
+ * @implements {WebInspector.App}
  */
 WebInspector.SimpleApp = function()
 {
-    WebInspector.App.call(this);
 };
 
 WebInspector.SimpleApp.prototype = {
@@ -22,7 +21,5 @@ WebInspector.SimpleApp.prototype = {
         WebInspector.inspectorView.show(rootView.element);
         WebInspector.inspectorView.showInitialPanel();
         rootView.attachToDocument(document);
-    },
-
-    __proto__: WebInspector.App.prototype
+    }
 };

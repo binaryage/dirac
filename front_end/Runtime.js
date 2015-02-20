@@ -487,6 +487,12 @@ Runtime.prototype = {
             activatorExperiment = extension._module._descriptor["experiment"];
             if (activatorExperiment && !Runtime.experiments.isEnabled(activatorExperiment))
                 return false;
+            var condition = extension.descriptor()["condition"];
+            if (condition && !Runtime.queryParam(condition))
+                return false;
+            condition = extension._module._descriptor["condition"];
+            if (condition && !Runtime.queryParam(condition))
+                return false;
             return !context || extension.isApplicable(context);
         }
 

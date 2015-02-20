@@ -1,6 +1,23 @@
 {
     "extensions": [
         {
+            "type": "@WebInspector.App",
+            "condition": "can_dock",
+            "className": "WebInspector.AdvancedApp",
+            "order": 0
+        },
+        {
+            "type": "@WebInspector.App",
+            "condition": "remoteFrontend",
+            "className": "WebInspector.ScreencastApp",
+            "order": 1
+        },
+        {
+            "type": "@WebInspector.App",
+            "className": "WebInspector.SimpleApp",
+            "order": 10
+        },
+        {
             "type": "@WebInspector.ContextMenu.Provider",
             "contextTypes": ["WebInspector.UISourceCode", "WebInspector.Resource", "WebInspector.NetworkRequest", "Node"],
             "className": "WebInspector.HandlerRegistry.ContextMenuProvider"

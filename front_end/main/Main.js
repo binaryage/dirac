@@ -240,13 +240,24 @@ WebInspector.Main.prototype = {
         this._registerForwardedShortcuts();
         this._registerMessageSinkListener();
 
-        if (canDock)
-            WebInspector.app = new WebInspector.AdvancedApp();
-        else if (Runtime.queryParam("remoteFrontend"))
-            WebInspector.app = new WebInspector.ScreencastApp();
-        else
-            WebInspector.app = new WebInspector.SimpleApp();
+        var appExtension = self.runtime.extensions(WebInspector.App)[0];
+        appExtension.instancePromise().then(createApp).then(this._initApp.bind(this));
 
+        /**
+         * @param {!Object} app
+         * FIXME: don't save to global WebInspector.app once we split apps to separate modules.
+         */
+        function createApp(app)
+        {
+            WebInspector.app = /** @type {!WebInspector.App} */ (app);
+        }
+    },
+
+    /**
+     * @suppressGlobalPropertiesCheck
+     */
+    _initApp: function()
+    {
         // It is important to kick controller lifetime after apps are instantiated.
         WebInspector.dockController.initialize();
         console.timeStamp("Main._presentUI");

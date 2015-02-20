@@ -4,11 +4,10 @@
 
 /**
  * @constructor
- * @extends {WebInspector.App}
+ * @implements {WebInspector.App}
  */
 WebInspector.AdvancedApp = function()
 {
-    WebInspector.App.call(this);
     if (WebInspector.overridesSupport.responsiveDesignAvailable()) {
         this._toggleEmulationButton = new WebInspector.StatusBarButton(WebInspector.UIString("Toggle device mode."), "emulation-status-bar-item");
         this._toggleEmulationButton.setToggled(WebInspector.overridesSupport.emulationEnabled());
@@ -208,9 +207,7 @@ WebInspector.AdvancedApp.prototype = {
         var bounds = /** @type {{x: number, y: number, width: number, height: number}} */ (event.data);
         console.timeStamp("AdvancedApp.setInspectedPageBounds");
         InspectorFrontendHost.setInspectedPageBounds(bounds);
-    },
-
-    __proto__: WebInspector.App.prototype
+    }
 };
 
 /**

@@ -4,13 +4,11 @@
 
 /**
  * @constructor
- * @extends {WebInspector.App}
+ * @implements {WebInspector.App}
  * @implements {WebInspector.TargetManager.Observer}
  */
 WebInspector.ScreencastApp = function()
 {
-    WebInspector.App.call(this);
-
     var lastScreencastState = WebInspector.settings.createSetting("lastScreencastState", "left");
     this._currentScreencastState = WebInspector.settings.createSetting("currentScreencastState", "disabled");
     this._toggleScreencastButton = new WebInspector.StatusBarStatesSettingButton(
@@ -98,9 +96,7 @@ WebInspector.ScreencastApp.prototype = {
         this._rootSplitView.toggleResizer(this._rootSplitView.resizerElement(), true);
         this._rootSplitView.toggleResizer(WebInspector.inspectorView.topResizerElement(), state === "top");
         this._rootSplitView.showBoth();
-    },
-
-    __proto__: WebInspector.App.prototype
+    }
 };
 
 /**
