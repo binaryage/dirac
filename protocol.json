@@ -3779,11 +3779,6 @@
                 ],
                 "description": "Fired when an async operation is completed (while in a debugger stepping session).",
                 "hidden": true
-            },
-            {
-                "name": "asyncOperationsCleared",
-                "description": "Fired when all async operations are cleared (e.g. fired upon exiting from a debugger stepping session).",
-                "hidden": true
             }
         ]
     },

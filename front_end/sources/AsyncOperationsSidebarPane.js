@@ -27,8 +27,8 @@ WebInspector.AsyncOperationsSidebarPane = function()
 
     WebInspector.targetManager.addModelListener(WebInspector.DebuggerModel, WebInspector.DebuggerModel.Events.AsyncOperationStarted, this._onAsyncOperationStarted, this);
     WebInspector.targetManager.addModelListener(WebInspector.DebuggerModel, WebInspector.DebuggerModel.Events.AsyncOperationCompleted, this._onAsyncOperationCompleted, this);
-    WebInspector.targetManager.addModelListener(WebInspector.DebuggerModel, WebInspector.DebuggerModel.Events.AsyncOperationsCleared, this._onAsyncOperationsCleared, this);
     WebInspector.targetManager.addModelListener(WebInspector.DebuggerModel, WebInspector.DebuggerModel.Events.DebuggerResumed, this._debuggerResumed, this);
+    WebInspector.targetManager.addModelListener(WebInspector.DebuggerModel, WebInspector.DebuggerModel.Events.GlobalObjectCleared, this._debuggerReset, this);
     WebInspector.context.addFlavorChangeListener(WebInspector.Target, this._targetChanged, this);
 
     WebInspector.settings.skipStackFramesPattern.addChangeListener(this._refresh, this);
@@ -152,6 +152,17 @@ WebInspector.AsyncOperationsSidebarPane.prototype = {
     /**
      * @param {!WebInspector.Event} event
      */
+    _debuggerReset: function(event)
+    {
+        var target = /** @type {!WebInspector.Target} */ (event.target.target());
+        this._asyncOperationsByTarget.delete(target);
+        if (this._target === target)
+            this._clear();
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
     _onAsyncOperationStarted: function(event)
     {
         var target = /** @type {!WebInspector.Target} */ (event.data.target);
@@ -188,17 +199,6 @@ WebInspector.AsyncOperationsSidebarPane.prototype = {
             if (!this._operationIdToElement.size)
                 this._clear();
         }
-    },
-
-    /**
-     * @param {!WebInspector.Event} event
-     */
-    _onAsyncOperationsCleared: function(event)
-    {
-        var target = /** @type {!WebInspector.Target} */ (event.data);
-        this._asyncOperationsByTarget.delete(target);
-        if (this._target === target)
-            this._clear();
     },
 
     _refresh: function()

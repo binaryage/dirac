@@ -84,7 +84,6 @@ WebInspector.DebuggerModel.PauseOnExceptionsState = {
 WebInspector.DebuggerModel.Events = {
     AsyncOperationStarted: "AsyncOperationStarted",
     AsyncOperationCompleted: "AsyncOperationCompleted",
-    AsyncOperationsCleared: "AsyncOperationsCleared",
     DebuggerWasEnabled: "DebuggerWasEnabled",
     DebuggerWasDisabled: "DebuggerWasDisabled",
     DebuggerPaused: "DebuggerPaused",
@@ -388,11 +387,6 @@ WebInspector.DebuggerModel.prototype = {
     _asyncOperationCompleted: function(operationId)
     {
         this.dispatchEventToListeners(WebInspector.DebuggerModel.Events.AsyncOperationCompleted, { target: this.target(), operationId: operationId });
-    },
-
-    _asyncOperationsCleared: function()
-    {
-        this.dispatchEventToListeners(WebInspector.DebuggerModel.Events.AsyncOperationsCleared, this.target());
     },
 
     _reset: function()
@@ -957,14 +951,6 @@ WebInspector.DebuggerDispatcher.prototype = {
     asyncOperationCompleted: function(operationId)
     {
         this._debuggerModel._asyncOperationCompleted(operationId);
-    },
-
-    /**
-     * @override
-     */
-    asyncOperationsCleared: function()
-    {
-        this._debuggerModel._asyncOperationsCleared();
     }
 }
 
