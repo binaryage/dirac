@@ -39,7 +39,6 @@ WebInspector.NetworkDataGridNode = function(parentView, request)
     WebInspector.SortableDataGridNode.call(this, {});
     this._parentView = parentView;
     this._request = request;
-    this._linkifier = new WebInspector.Linkifier();
     this._staleGraph = true;
     this._isNavigationRequest = false;
     this.selectable = true;
@@ -148,7 +147,8 @@ WebInspector.NetworkDataGridNode.prototype = {
 
     dispose: function()
     {
-        this._linkifier.reset();
+        if (this._linkifiedInitiatorAnchor)
+            this._parentView.linkifier.disposeAnchor(this._request.target(), this._linkifiedInitiatorAnchor);
     },
 
     select: function()
@@ -316,7 +316,7 @@ WebInspector.NetworkDataGridNode.prototype = {
 
         case WebInspector.NetworkRequest.InitiatorType.Script:
             if (!this._linkifiedInitiatorAnchor) {
-                this._linkifiedInitiatorAnchor = this._linkifier.linkifyScriptLocation(request.target(), null, initiator.url, initiator.lineNumber - 1, initiator.columnNumber - 1);
+                this._linkifiedInitiatorAnchor = this._parentView.linkifier.linkifyScriptLocation(request.target(), null, initiator.url, initiator.lineNumber - 1, initiator.columnNumber - 1);
                 this._linkifiedInitiatorAnchor.title = "";
             }
             cell.appendChild(this._linkifiedInitiatorAnchor);

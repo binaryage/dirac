@@ -51,7 +51,7 @@ WebInspector.LinkifierFormatter.prototype = {
 WebInspector.Linkifier = function(formatter)
 {
     this._formatter = formatter || new WebInspector.Linkifier.DefaultFormatter(WebInspector.Linkifier.MaxLengthForDisplayedURLs);
-    /** @type {!Map.<!WebInspector.Target, !Array.<{anchor: !Element, location: !WebInspector.LiveLocation}>>}*/
+    /** @type {!Map.<!WebInspector.Target, !Map.<!Element, !WebInspector.LiveLocation>>}*/
     this._liveLocationsByTarget = new Map();
     WebInspector.targetManager.observeTargets(this);
 }
@@ -112,6 +112,9 @@ WebInspector.Linkifier.linkifyUsingRevealer = function(revealable, text, fallbac
     return a;
 }
 
+WebInspector.Linkifier._uiLocationSymbol = Symbol("uiLocation");
+WebInspector.Linkifier._fallbackAnchorSymbol = Symbol("fallbackAnchor");;
+
 WebInspector.Linkifier.prototype = {
     /**
      * @override
@@ -119,7 +122,7 @@ WebInspector.Linkifier.prototype = {
      */
     targetAdded: function(target)
     {
-        this._liveLocationsByTarget.set(target, []);
+        this._liveLocationsByTarget.set(target, new Map());
     },
 
     /**
@@ -129,17 +132,21 @@ WebInspector.Linkifier.prototype = {
     targetRemoved: function(target)
     {
         var liveLocations = this._liveLocationsByTarget.remove(target);
-        for (var i = 0; i < liveLocations.length; ++i) {
-            delete liveLocations[i].anchor.__uiLocation;
-            var anchor = liveLocations[i].anchor;
-            if (anchor.__fallbackAnchor) {
-                anchor.href = anchor.__fallbackAnchor.href;
-                anchor.lineNumber = anchor.__fallbackAnchor.lineNumber;
-                anchor.title = anchor.__fallbackAnchor.title;
-                anchor.className = anchor.__fallbackAnchor.className;
-                anchor.textContent = anchor.__fallbackAnchor.textContent;
+        var anchors = liveLocations.keysArray();
+        for (var i = 0; i < anchors.length; ++i) {
+            var anchor = anchors[i];
+            var location = liveLocations.get(anchor);
+            delete anchor[WebInspector.Linkifier._uiLocationSymbol];
+            var fallbackAnchor = anchor[WebInspector.Linkifier._fallbackAnchorSymbol];
+            if (fallbackAnchor) {
+                anchor.href = fallbackAnchor.href;
+                anchor.lineNumber = fallbackAnchor.lineNumber;
+                anchor.title = fallbackAnchor.title;
+                anchor.className = fallbackAnchor.className;
+                anchor.textContent = fallbackAnchor.textContent;
+                delete anchor[WebInspector.Linkifier._fallbackAnchorSymbol];
             }
-            liveLocations[i].location.dispose();
+            location.dispose();
         }
     },
 
@@ -165,8 +172,8 @@ WebInspector.Linkifier.prototype = {
 
         var anchor = this._createAnchor(classes);
         var liveLocation = WebInspector.debuggerWorkspaceBinding.createLiveLocation(rawLocation, this._updateAnchor.bind(this, anchor));
-        this._liveLocationsByTarget.get(rawLocation.target()).push({ anchor: anchor, location: liveLocation });
-        anchor.__fallbackAnchor = fallbackAnchor;
+        this._liveLocationsByTarget.get(rawLocation.target()).set(anchor, liveLocation);
+        anchor[WebInspector.Linkifier._fallbackAnchorSymbol] = fallbackAnchor;
         return anchor;
     },
 
@@ -213,7 +220,7 @@ WebInspector.Linkifier.prototype = {
     {
         var anchor = this._createAnchor(classes);
         var liveLocation = WebInspector.cssWorkspaceBinding.createLiveLocation(rawLocation, this._updateAnchor.bind(this, anchor));
-        this._liveLocationsByTarget.get(rawLocation.target()).push({ anchor: anchor, location: liveLocation });
+        this._liveLocationsByTarget.get(rawLocation.target()).set(anchor, liveLocation);
         return anchor;
     },
 
@@ -232,6 +239,22 @@ WebInspector.Linkifier.prototype = {
     },
 
     /**
+     * @param {!WebInspector.Target} target
+     * @param {!Element} anchor
+     */
+    disposeAnchor: function(target, anchor)
+    {
+        delete anchor[WebInspector.Linkifier._uiLocationSymbol];
+        delete anchor[WebInspector.Linkifier._fallbackAnchorSymbol];
+        var liveLocations = this._liveLocationsByTarget.get(target);
+        if (!liveLocations)
+            return;
+        var location = liveLocations.remove(anchor);
+        if (location)
+            location.dispose();
+    },
+
+    /**
      * @param {string=} classes
      * @return {!Element}
      */
@@ -245,7 +268,7 @@ WebInspector.Linkifier.prototype = {
          */
         function clickHandler(event)
         {
-            var uiLocation = anchor.__uiLocation;
+            var uiLocation = anchor[WebInspector.Linkifier._uiLocationSymbol];
             if (!uiLocation)
                 return;
 
@@ -261,9 +284,9 @@ WebInspector.Linkifier.prototype = {
 
     reset: function()
     {
-        var keys = this._liveLocationsByTarget.keysArray();
-        for (var i = 0; i < keys.length; ++i) {
-            var target = keys[i];
+        var targets = this._liveLocationsByTarget.keysArray();
+        for (var i = 0; i < targets.length; ++i) {
+            var target = targets[i];
             this.targetRemoved(target);
             this.targetAdded(target);
         }
@@ -282,7 +305,7 @@ WebInspector.Linkifier.prototype = {
      */
     _updateAnchor: function(anchor, uiLocation)
     {
-        anchor.__uiLocation = uiLocation;
+        anchor[WebInspector.Linkifier._uiLocationSymbol] = uiLocation;
         this._formatter.formatLiveAnchor(anchor, uiLocation);
     }
 }

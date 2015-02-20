@@ -70,7 +70,10 @@ WebInspector.NetworkLogView = function(filterBar, progressBarContainer)
     this._currentMatchedRequestNode = null;
     this._currentMatchedRequestIndex = -1;
 
-    this._linkifier = new WebInspector.Linkifier();
+    /** @type {!WebInspector.Linkifier} */
+    this._popupLinkifier = new WebInspector.Linkifier();
+    /** @type {!WebInspector.Linkifier} */
+    this.linkifier = new WebInspector.Linkifier();
 
     this._gridMode = true;
     this._recording = false;
@@ -1086,7 +1089,7 @@ WebInspector.NetworkLogView.prototype = {
         if (anchor.classList.contains("network-script-initiated")) {
             var request = /** @type {!WebInspector.NetworkRequest} */ (anchor.request);
             var initiator = /** @type {!NetworkAgent.Initiator} */ (request.initiator());
-            content = WebInspector.DOMPresentationUtils.buildStackTracePreviewContents(request.target(), this._linkifier, initiator.stackTrace, initiator.asyncStackTrace);
+            content = WebInspector.DOMPresentationUtils.buildStackTracePreviewContents(request.target(), this._popupLinkifier, initiator.stackTrace, initiator.asyncStackTrace);
             popover.setCanShrink(true);
         } else {
             content = WebInspector.RequestTimingView.createTimingTable(anchor.parentElement.request, this._timeCalculator.minimumBoundary());
@@ -1097,7 +1100,7 @@ WebInspector.NetworkLogView.prototype = {
 
     _onHidePopover: function()
     {
-        this._linkifier.reset();
+        this._popupLinkifier.reset();
     },
 
     _updateColumns: function()
