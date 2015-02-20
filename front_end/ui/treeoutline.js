@@ -131,6 +131,7 @@ TreeContainerNode.prototype = {
             this.treeOutline._bindTreeElement(current);
 
         child.onattach();
+        child._ensureSelection();
         if (this.treeOutline)
             this.treeOutline._eventSink.dispatchEventToListeners(TreeOutline.Events.ElementAttached, child);
         var nextSibling = child.nextSibling ? child.nextSibling._listItemNode : null;
@@ -590,10 +591,7 @@ TreeElement.prototype = {
             this._listItemNode.removeChildren();
             if (this._title)
                 this._listItemNode.appendChild(this._title);
-        }
-        if (this.treeOutline && this.treeOutline._renderSelection) {
-            var selectionElement = createElementWithClass("div", "selection");
-            this._listItemNode.insertBefore(selectionElement, this.listItemElement.firstChild);
+            this._ensureSelection();
         }
     },
 
@@ -657,6 +655,15 @@ TreeElement.prototype = {
             this.removeChildren();
             this._children = null;
         }
+    },
+
+    _ensureSelection: function()
+    {
+        if (!this.treeOutline || !this.treeOutline._renderSelection)
+            return;
+        if (!this._selectionElement)
+            this._selectionElement = createElementWithClass("div", "selection");
+        this._listItemNode.insertBefore(this._selectionElement, this.listItemElement.firstChild);
     },
 
     /**
