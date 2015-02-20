@@ -3709,6 +3709,11 @@
                 ],
                 "hidden": true,
                 "description": "Returns <code>Promise</code> with specified ID."
+            },
+            {
+                "name": "flushAsyncOperationEvents",
+                "hidden": true,
+                "description": "Fires pending <code>asyncOperationStarted</code> events (if any), as if a debugger stepping session has just been started."
             }
         ],
         "events": [

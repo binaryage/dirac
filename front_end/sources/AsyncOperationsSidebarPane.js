@@ -13,6 +13,10 @@ WebInspector.AsyncOperationsSidebarPane = function()
     this.bodyElement.classList.add("async-operations");
     this._updateEmptyElement();
 
+    var refreshButton = this.titleElement.createChild("button", "pane-title-button refresh");
+    refreshButton.addEventListener("click", this._refreshButtonClicked.bind(this), false);
+    refreshButton.title = WebInspector.UIString("Refresh");
+
     /** @type {!Map.<!WebInspector.Target, !Map.<number, !DebuggerAgent.AsyncOperation>>} */
     this._asyncOperationsByTarget = new Map();
     /** @type {!Map.<number, !Element>} */
@@ -158,6 +162,17 @@ WebInspector.AsyncOperationsSidebarPane.prototype = {
         this._asyncOperationsByTarget.delete(target);
         if (this._target === target)
             this._clear();
+    },
+
+    /**
+     * @param {!Event} event
+     */
+    _refreshButtonClicked: function(event)
+    {
+        event.consume();
+        this.expand();
+        if (this._target)
+            this._target.debuggerAgent().flushAsyncOperationEvents();
     },
 
     /**
