@@ -192,7 +192,8 @@ WebInspector.ResourcesPanel.prototype = {
 
         var itemURL = WebInspector.settings.resourcesLastSelectedItem.get();
         if (itemURL) {
-            for (var treeElement = this._sidebarTree.children[0]; treeElement; treeElement = treeElement.traverseNextTreeElement(false, this._sidebarTree, true)) {
+            var rootElement = this._sidebarTree.rootElement();
+            for (var treeElement = rootElement.firstChild(); treeElement; treeElement = treeElement.traverseNextTreeElement(false, rootElement, true)) {
                 if (treeElement.itemURL === itemURL) {
                     treeElement.revealAndSelect(true);
                     return;
@@ -730,7 +731,7 @@ WebInspector.ResourcesPanel.prototype = {
         frameTreeElement.parent.removeChild(frameTreeElement);
 
         var manifestTreeElement = this._applicationCacheManifestElements[manifestURL];
-        if (manifestTreeElement.children.length !== 0)
+        if (manifestTreeElement.childCount())
             return;
 
         delete this._applicationCacheManifestElements[manifestURL];
@@ -1147,10 +1148,10 @@ WebInspector.FrameTreeElement.prototype = {
             return result;
         }
 
-        var children = parentTreeElement.children;
+        var childCount = parentTreeElement.childCount();
         var i;
-        for (i = 0; i < children.length; ++i) {
-            if (compare(childTreeElement, children[i]) < 0)
+        for (i = 0; i < childCount; ++i) {
+            if (compare(childTreeElement, parentTreeElement.childAt(i)) < 0)
                 break;
         }
         parentTreeElement.insertChild(childTreeElement, i);
@@ -1778,10 +1779,10 @@ WebInspector.FileSystemListTreeElement.prototype = {
 
     _fileSystemTreeElementByName: function(fileSystemName)
     {
-        for (var i = 0; i < this.children.length; ++i) {
-            var child = /** @type {!WebInspector.FileSystemTreeElement} */ (this.children[i]);
-            if (child.fileSystemName === fileSystemName)
-                return this.children[i];
+        for (var child of this.children()) {
+            var fschild = /** @type {!WebInspector.FileSystemTreeElement} */ (child);
+            if (fschild.fileSystemName === fileSystemName)
+                return fschild;
         }
         return null;
     },
@@ -1981,7 +1982,7 @@ WebInspector.IDBObjectStoreTreeElement.prototype = {
             }
         }
 
-        if (this.children.length) {
+        if (this.childCount()) {
             this.hasChildren = true;
             this.expand();
         }

@@ -81,14 +81,15 @@ WebInspector.RevisionHistoryView.prototype = {
         uiSourceCodeItem.selectable = false;
 
         // Insert in sorted order
-        for (var i = 0; i < this._treeOutline.children.length; ++i) {
-            if (this._treeOutline.children[i].title.localeCompare(uiSourceCode.displayName()) > 0) {
-                this._treeOutline.insertChild(uiSourceCodeItem, i);
+        var rootElement = this._treeOutline.rootElement();
+        for (var i = 0; i < rootElement.childCount(); ++i) {
+            if (rootElement.childAt(i).title.localeCompare(uiSourceCode.displayName()) > 0) {
+                rootElement.insertChild(uiSourceCodeItem, i);
                 break;
             }
         }
-        if (i === this._treeOutline.children.length)
-            this._treeOutline.appendChild(uiSourceCodeItem);
+        if (i === rootElement.childCount())
+            rootElement.appendChild(uiSourceCodeItem);
 
         this._uiSourceCodeItems.set(uiSourceCode, uiSourceCodeItem);
 
@@ -150,8 +151,8 @@ WebInspector.RevisionHistoryView.prototype = {
 
         var historyLength = uiSourceCode.history.length;
         var historyItem = new WebInspector.RevisionHistoryTreeElement(uiSourceCode.history[historyLength - 1], uiSourceCode.history[historyLength - 2], false);
-        if (uiSourceCodeItem.children.length)
-            uiSourceCodeItem.children[0].allowRevert();
+        if (uiSourceCodeItem.firstChild())
+            uiSourceCodeItem.firstChild().allowRevert();
         uiSourceCodeItem.insertChild(historyItem, 0);
     },
 

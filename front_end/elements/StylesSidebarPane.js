@@ -1722,7 +1722,7 @@ WebInspector.StylePropertiesSection.prototype = {
             this.propertiesTreeOutline.removeChildren();
             this.onpopulate();
         } else {
-            var child = this.propertiesTreeOutline.children[0];
+            var child = this.propertiesTreeOutline.firstChild();
             while (child) {
                 child.overloaded = this.styleRule.isPropertyOverloaded(child.name, child.isShorthand);
                 child = child.traverseNextTreeElement(false, null, true);
@@ -1817,9 +1817,8 @@ WebInspector.StylePropertiesSection.prototype = {
         if (hideRule)
             return;
 
-        var children = this.propertiesTreeOutline.children;
-        for (var i = 0; i < children.length; ++i)
-            children[i]._updateFilter();
+        for (var child of this.propertiesTreeOutline.rootElement().children())
+            child._updateFilter();
 
         if (this.styleRule.rule())
             this._markSelectorHighlights();
@@ -2061,7 +2060,7 @@ WebInspector.StylePropertiesSection.prototype = {
         if (!this.editable)
             return;
 
-        if (!this.rule() && this.propertiesTreeOutline.children.length === 0) {
+        if (!this.rule() && !this.propertiesTreeOutline.rootElement().childCount()) {
             this.addNewBlankProperty().startEditing();
             return;
         }
@@ -2125,7 +2124,7 @@ WebInspector.StylePropertiesSection.prototype = {
             return;
 
         if (moveDirection === "forward") {
-            var firstChild = this.propertiesTreeOutline.children[0];
+            var firstChild = this.propertiesTreeOutline.firstChild();
             while (firstChild && firstChild.inherited)
                 firstChild = firstChild.nextSibling;
             if (!firstChild)
@@ -2338,9 +2337,8 @@ WebInspector.ComputedStylePropertiesSection.prototype = {
 
     _updateFilter: function()
     {
-        var children = this.propertiesTreeOutline.children;
-        for (var i = 0; i < children.length; ++i)
-            children[i]._updateFilter();
+        for (var child of this.propertiesTreeOutline.rootElement().children())
+            child._updateFilter();
     },
 
     onpopulate: function()
@@ -3041,7 +3039,7 @@ WebInspector.StylePropertyTreeElement.prototype = {
     onpopulate: function()
     {
         // Only populate once and if this property is a shorthand.
-        if (this.children.length || !this.isShorthand)
+        if (this.childCount() || !this.isShorthand)
             return;
 
         var longhandProperties = this.style().longhandProperties(this.name);
@@ -3499,7 +3497,7 @@ WebInspector.StylePropertyTreeElement.prototype = {
         }
 
         // Make the Changes and trigger the moveToNextCallback after updating.
-        var moveToIndex = moveTo && this.treeOutline ? this.treeOutline.children.indexOf(moveTo) : -1;
+        var moveToIndex = moveTo && this.treeOutline ? this.treeOutline.rootElement().indexOfChild(moveTo) : -1;
         var blankInput = /^\s*$/.test(userInput);
         var shouldCommitNewProperty = this._newProperty && (isPropertySplitPaste || moveToOther || (!moveDirection && !isEditingName) || (isEditingName && blankInput));
         var section = /** @type {!WebInspector.StylePropertiesSection} */(this.section());
@@ -3546,13 +3544,13 @@ WebInspector.StylePropertyTreeElement.prototype = {
             // User has made a change then tabbed, wiping all the original treeElements.
             // Recalculate the new treeElement for the same property we were going to edit next.
             if (moveTo && !moveTo.parent) {
-                var propertyElements = section.propertiesTreeOutline.children;
+                var rootElement = section.propertiesTreeOutline.rootElement();
                 if (moveDirection === "forward" && blankInput && !isEditingName)
                     --moveToIndex;
-                if (moveToIndex >= propertyElements.length && !this._newProperty)
+                if (moveToIndex >= rootElement.childCount() && !this._newProperty)
                     createNewProperty = true;
                 else {
-                    var treeElement = moveToIndex >= 0 ? propertyElements[moveToIndex] : null;
+                    var treeElement = moveToIndex >= 0 ? rootElement.childAt(moveToIndex) : null;
                     if (treeElement) {
                         var elementToEdit = !isEditingName || isPropertySplitPaste ? treeElement.nameElement : treeElement.valueElement;
                         if (alreadyNew && blankInput)

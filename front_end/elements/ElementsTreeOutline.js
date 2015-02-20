@@ -71,7 +71,6 @@ WebInspector.ElementsTreeOutline = function(target, omitRootDOMNode, selectEnabl
     this._rootDOMNode = null;
     /** @type {?WebInspector.DOMNode} */
     this._selectedDOMNode = null;
-    this._eventSupport = new WebInspector.Object();
 
     this._visible = false;
     this._pickNodeMode = false;
@@ -187,7 +186,7 @@ WebInspector.ElementsTreeOutline.prototype = {
         if (!this._pickNodeMode)
             return false;
 
-        this._eventSupport.dispatchEventToListeners(WebInspector.ElementsTreeOutline.Events.NodePicked, node);
+        this.dispatchEventToListeners(WebInspector.ElementsTreeOutline.Events.NodePicked, node);
         var hasRunningAnimation = element.classList.contains("elements-tree-element-pick-node-1") || element.classList.contains("elements-tree-element-pick-node-2");
         element.classList.toggle("elements-tree-element-pick-node-1");
         if (hasRunningAnimation)
@@ -410,16 +409,6 @@ WebInspector.ElementsTreeOutline.prototype = {
             this._revealAndSelectNode(this._selectedDOMNode, false);
     },
 
-    addEventListener: function(eventType, listener, thisObject)
-    {
-        this._eventSupport.addEventListener(eventType, listener, thisObject);
-    },
-
-    removeEventListener: function(eventType, listener, thisObject)
-    {
-        this._eventSupport.removeEventListener(eventType, listener, thisObject);
-    },
-
     get rootDOMNode()
     {
         return this._rootDOMNode;
@@ -518,7 +507,7 @@ WebInspector.ElementsTreeOutline.prototype = {
     {
         if (!this.selectedTreeElement)
             return;
-        var element = this.treeOutline.selectedTreeElement;
+        var element = this.selectedTreeElement;
         element.updateSelection();
     },
 
@@ -530,15 +519,14 @@ WebInspector.ElementsTreeOutline.prototype = {
         var treeElement = this.findTreeElement(node);
         if (treeElement)
             treeElement.updateTitle();
-        var children = treeElement.children;
-        var closingTagElement = children[children.length - 1];
+        var closingTagElement = treeElement.lastChild();
         if (closingTagElement && closingTagElement.isClosingTag())
             closingTagElement.updateTitle();
     },
 
     _selectedNodeChanged: function()
     {
-        this._eventSupport.dispatchEventToListeners(WebInspector.ElementsTreeOutline.Events.SelectedNodeChanged, this._selectedDOMNode);
+        this.dispatchEventToListeners(WebInspector.ElementsTreeOutline.Events.SelectedNodeChanged, this._selectedDOMNode);
     },
 
     /**
@@ -546,7 +534,7 @@ WebInspector.ElementsTreeOutline.prototype = {
      */
     _fireElementsTreeUpdated: function(nodes)
     {
-        this._eventSupport.dispatchEventToListeners(WebInspector.ElementsTreeOutline.Events.ElementsTreeUpdated, nodes);
+        this.dispatchEventToListeners(WebInspector.ElementsTreeOutline.Events.ElementsTreeUpdated, nodes);
     },
 
     /**
@@ -1427,7 +1415,7 @@ WebInspector.ElementsTreeOutline.prototype = {
      */
     populateTreeElement: function(treeElement)
     {
-        if (treeElement.children.length || !treeElement.hasChildren)
+        if (treeElement.childCount() || !treeElement.hasChildren)
             return;
 
         this._updateModifiedParentNode(treeElement.node());
@@ -1465,7 +1453,7 @@ WebInspector.ElementsTreeOutline.prototype = {
 
         if (index >= treeElement.expandedChildrenLimit())
             this.setExpandedChildrenLimit(treeElement, index + 1);
-        return /** @type {!WebInspector.ElementsTreeElement} */ (treeElement.children[index]);
+        return /** @type {!WebInspector.ElementsTreeElement} */ (treeElement.childAt(index));
     },
 
     /**
@@ -1819,7 +1807,7 @@ WebInspector.ElementsTreeOutline.prototype = {
      */
     _moveChild: function(treeElement, child, targetIndex)
     {
-        if (treeElement.children.indexOf(child) === targetIndex)
+        if (treeElement.indexOfChild(child) === targetIndex)
             return;
         var wasSelected = child.selected;
         if (child.parent)
@@ -1846,8 +1834,8 @@ WebInspector.ElementsTreeOutline.prototype = {
         // Remove any tree elements that no longer have this node as their parent and save
         // all existing elements that could be reused. This also removes closing tag element.
         var existingTreeElements = new Map();
-        for (var i = treeElement.children.length - 1; i >= 0; --i) {
-            var existingTreeElement = treeElement.children[i];
+        for (var i = treeElement.childCount() - 1; i >= 0; --i) {
+            var existingTreeElement = treeElement.childAt(i);
             if (!(existingTreeElement instanceof WebInspector.ElementsTreeElement)) {
                 // Remove expand all button and shadow host toolbar.
                 treeElement.removeChildAtIndex(i);
@@ -1878,13 +1866,13 @@ WebInspector.ElementsTreeOutline.prototype = {
                 if (this._updateInfo(node))
                     WebInspector.ElementsTreeElement.animateOnDOMUpdate(newElement);
                 // If a node was inserted in the middle of existing list dynamically we might need to increase the limit.
-                if (treeElement.children.length > treeElement.expandedChildrenLimit())
+                if (treeElement.childCount() > treeElement.expandedChildrenLimit())
                     this.setExpandedChildrenLimit(treeElement, treeElement.expandedChildrenLimit() + 1);
             }
         }
 
         // Update expand all button.
-        var expandedChildCount = treeElement.children.length;
+        var expandedChildCount = treeElement.childCount();
         if (visibleChildren.length > expandedChildCount) {
             var targetButtonIndex = expandedChildCount;
             if (!treeElement.expandAllButtonElement)
@@ -1897,7 +1885,7 @@ WebInspector.ElementsTreeOutline.prototype = {
 
         // Insert close tag.
         if (node.nodeType() === Node.ELEMENT_NODE && treeElement.hasChildren)
-            this.insertChildElement(treeElement, node, treeElement.children.length, true);
+            this.insertChildElement(treeElement, node, treeElement.childCount(), true);
 
         this._treeElementsBeingUpdated.delete(treeElement);
     },
@@ -2178,10 +2166,10 @@ WebInspector.ElementsTreeOutline.Renderer.prototype = {
                 }
                 var treeOutline = new WebInspector.ElementsTreeOutline(node.target(), false, false);
                 treeOutline.rootDOMNode = node;
-                if (!treeOutline.children[0].hasChildren)
+                if (!treeOutline.firstChild().hasChildren)
                     treeOutline._element.classList.add("single-node");
                 treeOutline.setVisible(true);
-                treeOutline.element.treeElementForTest = treeOutline.children[0];
+                treeOutline.element.treeElementForTest = treeOutline.firstChild();
                 resolve(treeOutline.element);
             }
         }

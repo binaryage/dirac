@@ -947,7 +947,7 @@ WebInspector.CanvasProfileType.prototype = {
     _traceLogsRemoved: function(frameId, traceLogId)
     {
         var sidebarElementsToDelete = [];
-        var sidebarElements = /** @type {!Array.<!WebInspector.ProfileSidebarTreeElement>} */ ((this.treeElement && this.treeElement.children) || []);
+        var sidebarElements = /** @type {!Array.<!WebInspector.ProfileSidebarTreeElement>} */ (this.treeElement ? this.treeElement.children() : []);
         for (var i = 0, n = sidebarElements.length; i < n; ++i) {
             var header = /** @type {!WebInspector.CanvasProfileHeader} */ (sidebarElements[i].profile);
             if (!header)

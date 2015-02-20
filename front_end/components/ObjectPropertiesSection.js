@@ -76,7 +76,7 @@ WebInspector.ObjectPropertiesSection.prototype = {
     {
         if (this.object.arrayLength() > WebInspector.ObjectPropertiesSection._arrayLoadThreshold) {
             this.propertiesTreeOutline.removeChildren();
-            WebInspector.ArrayGroupingTreeElement._populateArray(this.propertiesTreeOutline, this.object, 0, this.object.arrayLength() - 1);
+            WebInspector.ArrayGroupingTreeElement._populateArray(this.propertiesTreeOutline.rootElement(), this.object, 0, this.object.arrayLength() - 1);
             return;
         }
 
@@ -104,7 +104,7 @@ WebInspector.ObjectPropertiesSection.prototype = {
 
         this.propertiesTreeOutline.removeChildren();
 
-        WebInspector.ObjectPropertyTreeElement.populateWithProperties(this.propertiesTreeOutline,
+        WebInspector.ObjectPropertyTreeElement.populateWithProperties(this.propertiesTreeOutline.rootElement(),
             properties, internalProperties,
             this._skipProto, this.object, this._emptyPlaceholder);
 
@@ -424,7 +424,7 @@ WebInspector.ObjectPropertyTreeElement._populate = function(treeElement, value, 
 }
 
 /**
- * @param {!TreeContainerNode} treeNode
+ * @param {!TreeElement} treeNode
  * @param {!Array.<!WebInspector.RemoteObjectProperty>} properties
  * @param {?Array.<!WebInspector.RemoteObjectProperty>} internalProperties
  * @param {boolean} skipProto
@@ -490,12 +490,12 @@ WebInspector.ObjectPropertyTreeElement.populateWithProperties = function(treeNod
 }
 
 /**
- * @param {!TreeContainerNode} treeNode
+ * @param {!TreeElement} treeNode
  * @param {?string=} emptyPlaceholder
  */
 WebInspector.ObjectPropertyTreeElement._appendEmptyPlaceholderIfNeeded = function(treeNode, emptyPlaceholder)
 {
-    if (treeNode.children.length)
+    if (treeNode.childCount())
         return;
     var title = createElementWithClass("div", "info");
     title.textContent = emptyPlaceholder || WebInspector.UIString("No Properties");
@@ -717,7 +717,7 @@ WebInspector.ArrayGroupingTreeElement._sparseIterationThreshold = 250000;
 WebInspector.ArrayGroupingTreeElement._getOwnPropertyNamesThreshold = 500000;
 
 /**
- * @param {!TreeContainerNode} treeNode
+ * @param {!TreeElement} treeNode
  * @param {!WebInspector.RemoteObject} object
  * @param {number} fromIndex
  * @param {number} toIndex
@@ -728,7 +728,7 @@ WebInspector.ArrayGroupingTreeElement._populateArray = function(treeNode, object
 }
 
 /**
- * @param {!TreeContainerNode} treeNode
+ * @param {!TreeElement} treeNode
  * @param {!WebInspector.RemoteObject} object
  * @param {number} fromIndex
  * @param {number} toIndex
@@ -847,7 +847,7 @@ WebInspector.ArrayGroupingTreeElement._populateRanges = function(treeNode, objec
 }
 
 /**
- * @param {!TreeContainerNode} treeNode
+ * @param {!TreeElement} treeNode
  * @param {!WebInspector.RemoteObject} object
  * @param {number} fromIndex
  * @param {number} toIndex
@@ -913,7 +913,7 @@ WebInspector.ArrayGroupingTreeElement._populateAsFragment = function(treeNode, o
 }
 
 /**
- * @param {!TreeContainerNode} treeNode
+ * @param {!TreeElement} treeNode
  * @param {!WebInspector.RemoteObject} object
  * @param {boolean} skipGetOwnPropertyNames
  * @this {WebInspector.ArrayGroupingTreeElement}

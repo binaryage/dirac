@@ -779,7 +779,7 @@ WebInspector.ElementsTreeElement.prototype = {
             this._childrenListNode.style.display = "none";
         // Append editor.
         this.listItemElement.appendChild(this._htmlEditElement);
-        this.treeOutline.childrenListElement.parentElement.addEventListener("mousedown", consume, false);
+        this.treeOutline.element.addEventListener("mousedown", consume, false);
 
         this.updateSelection();
 
@@ -815,7 +815,7 @@ WebInspector.ElementsTreeElement.prototype = {
                 child = child.nextSibling;
             }
 
-            this.treeOutline.childrenListElement.parentElement.removeEventListener("mousedown", consume, false);
+            this.treeOutline.element.removeEventListener("mousedown", consume, false);
             this.updateSelection();
             this.treeOutline.focus();
         }

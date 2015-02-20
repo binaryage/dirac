@@ -152,7 +152,8 @@ WebInspector.LayerTreeOutline.prototype = {
         if (root)
             this._layerTree.forEachLayer(updateLayer.bind(this), root);
         // Cleanup layers that don't exist anymore from tree.
-        for (var node = /** @type {?TreeContainerNode} */ (this._treeOutline.children[0]); node && !node.root;) {
+        var rootElement = this._treeOutline.rootElement();
+        for (var node = rootElement.firstChild(); node && !node.root;) {
             if (seenLayers.get(node.representedObject)) {
                 node = node.traverseNextTreeElement(false);
             } else {

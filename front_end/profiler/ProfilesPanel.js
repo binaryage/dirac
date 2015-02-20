@@ -964,7 +964,7 @@ WebInspector.ProfileTypeSidebarSection.prototype = {
 
                 var firstProfileTreeElement = group.profileSidebarTreeElements[0];
                 // Insert at the same index for the first profile of the group.
-                var index = this.children.indexOf(firstProfileTreeElement);
+                var index = this.children().indexOf(firstProfileTreeElement);
                 this.insertChild(group.sidebarTreeElement, index);
 
                 // Move the first profile to the group.
@@ -1009,7 +1009,7 @@ WebInspector.ProfileTypeSidebarSection.prototype = {
             groupElements.splice(groupElements.indexOf(profileTreeElement), 1);
             if (groupElements.length === 1) {
                 // Move the last profile out of its group and remove the group.
-                var pos = sidebarParent.children.indexOf(group.sidebarTreeElement);
+                var pos = sidebarParent.children().indexOf(group.sidebarTreeElement);
                 group.sidebarTreeElement.removeChild(groupElements[0]);
                 this.insertChild(groupElements[0], pos);
                 groupElements[0].small = false;
@@ -1022,7 +1022,7 @@ WebInspector.ProfileTypeSidebarSection.prototype = {
         sidebarParent.removeChild(profileTreeElement);
         profileTreeElement.dispose();
 
-        if (this.children.length)
+        if (this.childCount())
             return false;
         this.hidden = true;
         return true;
@@ -1193,9 +1193,9 @@ WebInspector.ProfileGroupSidebarTreeElement.prototype = {
      */
     onselect: function()
     {
-        var hasChildren = this.children.length > 0;
+        var hasChildren = this.childCount() > 0;
         if (hasChildren)
-            this._dataDisplayDelegate.showProfile(this.children[this.children.length - 1].profile);
+            this._dataDisplayDelegate.showProfile(this.lastChild().profile);
         return hasChildren;
     },
 

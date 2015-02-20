@@ -78,7 +78,7 @@ WebInspector.AuditCategoryResultPane = function(categoryResult)
 
     for (var i = 0; i < categoryResult.ruleResults.length; ++i) {
         var ruleResult = categoryResult.ruleResults[i];
-        var treeElement = this._appendResult(this._treeOutline, ruleResult, ruleResult.severity);
+        var treeElement = this._appendResult(this._treeOutline.rootElement(), ruleResult, ruleResult.severity);
         treeElement.listItemElement.classList.add("audit-result");
     }
     this.expand();
@@ -86,7 +86,7 @@ WebInspector.AuditCategoryResultPane = function(categoryResult)
 
 WebInspector.AuditCategoryResultPane.prototype = {
     /**
-     * @param {!TreeContainerNode} parentTreeNode
+     * @param {!TreeElement} parentTreeNode
      * @param {!WebInspector.AuditRuleResult} result
      * @param {?WebInspector.AuditRule.Severity=} severity
      */

@@ -240,9 +240,7 @@ WebInspector.AuditLauncherView.prototype = {
         this._headerElement = createElement("h1");
         this._headerElement.textContent = WebInspector.UIString("Select audits to run");
 
-        for (var child = 0; child < this._contentElement.children.length; ++child)
-            this._contentElement.removeChild(this._contentElement.children[child]);
-
+        this._contentElement.removeChildren();
         this._contentElement.appendChild(this._headerElement);
 
         /**

@@ -120,10 +120,9 @@ WebInspector.AuditsPanel.prototype = {
      */
     auditFinishedCallback: function(mainResourceURL, results)
     {
-        var children = this.auditResultsTreeElement.children;
         var ordinal = 1;
-        for (var i = 0; i < children.length; ++i) {
-            if (children[i].mainResourceURL === mainResourceURL)
+        for (var child of this.auditResultsTreeElement.children()) {
+            if (child.mainResourceURL === mainResourceURL)
                 ordinal++;
         }
 
