@@ -43,6 +43,8 @@ def validate_injected_script(fileName):
         "push", "reduce", "reduceRight", "reverse", "shift", "slice", "some", "sort", "splice", "toLocaleString", "toString", "unshift",
         # Function.prototype.*
         "apply", "bind", "call", "isGenerator", "toSource",
+        # Object.prototype.*
+        "toString",
     ])
 
     global_functions = "|".join([
@@ -57,7 +59,7 @@ def validate_injected_script(fileName):
     # - Function.prototype.*
     # - Math.*
     # - Global functions
-    black_list_call_regex = re.compile(r"\sinstanceof\s+\w*|\bMath\.\w+\(|\.(toString|" + proto_functions + r")\(|[^\.]\b(" + global_functions + r")\(")
+    black_list_call_regex = re.compile(r"\sinstanceof\s+\w*|\bMath\.\w+\(|(?<!InjectedScriptHost)\.(" + proto_functions + r")\(|[^\.]\b(" + global_functions + r")\(")
 
     errors_found = False
     for i, line in enumerate(lines):
