@@ -698,9 +698,9 @@ var InspectorFrontendHost = window.InspectorFrontendHost || null;
 
     // FIXME: This file is included into both apps, since the devtools_app needs the InspectorFrontendHostAPI only,
     // so the host instance should not initialized there.
+    initializeInspectorFrontendHost();
+    window.InspectorFrontendAPI = new InspectorFrontendAPIImpl();
     if (!window.DevToolsHost) {
-        initializeInspectorFrontendHost();
-        window.InspectorFrontendAPI = new InspectorFrontendAPIImpl();
         WebInspector.setLocalizationPlatform(InspectorFrontendHost.platform());
     } else {
         WebInspector.setLocalizationPlatform(DevToolsHost.platform());
