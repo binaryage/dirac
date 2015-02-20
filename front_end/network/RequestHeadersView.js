@@ -55,8 +55,10 @@ WebInspector.RequestHeadersView = function(request)
         this._filterInput.value = WebInspector.RequestHeadersView._requestHeaderFilterSetting.get() || "";
     }
 
-    var root = new TreeOutline(this.element.createChild("ol", "outline-disclosure"));
+    var root = new TreeOutline();
+    root.element.classList.add("outline-disclosure");
     root.expandTreeElementsWhenArrowing = true;
+    this.element.appendChild(root.element);
 
     var generalCategory = new WebInspector.RequestHeadersView.Category(root, "general", WebInspector.UIString("General"));
     generalCategory.hidden = false;

@@ -59,11 +59,11 @@ WebInspector.AuditResultView.prototype = {
 WebInspector.AuditCategoryResultPane = function(categoryResult)
 {
     WebInspector.SidebarPane.call(this, categoryResult.title);
-    var treeOutlineElement = createElement("ol");
     this.bodyElement.classList.add("audit-result-tree");
-    this.bodyElement.appendChild(treeOutlineElement);
 
-    this._treeOutline = new TreeOutline(treeOutlineElement);
+    this._treeOutline = new TreeOutline();
+    this.bodyElement.appendChild(this._treeOutline.element);
+
     this._treeOutline.expandTreeElementsWhenArrowing = true;
 
     function ruleSorter(a, b)

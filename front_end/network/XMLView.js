@@ -12,7 +12,9 @@ WebInspector.XMLView = function(parsedXML)
     WebInspector.View.call(this, true);
     this.registerRequiredCSS("network/xmlView.css");
     this.contentElement.classList.add("shadow-xml-view", "source-code");
-    WebInspector.XMLView.Node.populate(new TreeOutline(this.contentElement.createChild("ol")), parsedXML);
+    var treeOutline = new TreeOutline();
+    this.contentElement.appendChild(treeOutline.element);
+    WebInspector.XMLView.Node.populate(treeOutline, parsedXML);
 }
 
 /**

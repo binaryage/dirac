@@ -234,7 +234,8 @@ WebInspector.ConsoleViewMessage.prototype = {
 
         var dumpStackTrace = !!consoleMessage.stackTrace && consoleMessage.stackTrace.length && (consoleMessage.source === WebInspector.ConsoleMessage.MessageSource.Network || consoleMessage.level === WebInspector.ConsoleMessage.MessageLevel.Error || consoleMessage.type === WebInspector.ConsoleMessage.MessageType.Trace);
         if (dumpStackTrace) {
-            var treeOutline = new TreeOutline(createElementWithClass("ol", "outline-disclosure outline-disclosure-no-padding"));
+            var treeOutline = new TreeOutline();
+            treeOutline.element.classList.add("outline-disclosure", "outline-disclosure-no-padding");
             var content = this._formattedMessage;
             var root = new TreeElement(content, null, true);
             root.toggleOnClick = true;

@@ -226,12 +226,12 @@ TreeContainerNode.prototype = {
 /**
  * @constructor
  * @extends {TreeContainerNode}
- * @param {!Element} listNode
  * @param {boolean=} nonFocusable
  */
-function TreeOutline(listNode, nonFocusable)
+function TreeOutline(nonFocusable)
 {
     TreeContainerNode.call(this);
+    var listNode = createElement("ol");
 
     this._treeElementSymbol = Symbol("TreeElement");
 
@@ -449,13 +449,17 @@ TreeOutline.prototype = {
  */
 function TreeOutlineInShadow()
 {
-    var element = createElement("div");
-    this._shadowRoot = element.createShadowRoot();
-    this._shadowRoot.appendChild(WebInspector.View.createStyleElement("ui/treeoutline.css"));
+    TreeOutline.call(this);
+    var innerElement = this.element;
+    innerElement.classList.add("tree-outline");
 
-    TreeOutline.call(this, this._shadowRoot.createChild("ol", "tree-outline"));
+    // Redefine element to the external one.
+    this.element = createElement("div");
+
+    this._shadowRoot = this.element.createShadowRoot();
+    this._shadowRoot.appendChild(WebInspector.View.createStyleElement("ui/treeoutline.css"));
+    this._shadowRoot.appendChild(innerElement);
     this._renderSelection = true;
-    this.element = element;
 }
 
 TreeOutlineInShadow.prototype = {

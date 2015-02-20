@@ -1432,10 +1432,11 @@ WebInspector.StylePropertiesSection = function(parentPane, styleRule)
     this.element._section = this;
 
     this.titleElement = this.element.createChild("div", "styles-section-title " + (rule ? "styles-selector" : ""));
-    this.propertiesElement = this.element.createChild("ol", "style-properties monospace");
-    this.propertiesTreeOutline = new TreeOutline(this.propertiesElement, true);
-    this.propertiesTreeOutline.setFocusable(false);
+
+    this.propertiesTreeOutline = new TreeOutline();
+    this.propertiesTreeOutline.element.classList.add("style-properties", "monospace");
     this.propertiesTreeOutline.section = this;
+    this.element.appendChild(this.propertiesTreeOutline.element);
 
     var selectorContainer = createElement("div");
     this._selectorElement = createElementWithClass("span", "selector");

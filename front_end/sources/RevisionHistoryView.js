@@ -39,7 +39,9 @@ WebInspector.RevisionHistoryView = function()
     this.element.classList.add("revision-history-drawer");
     this._uiSourceCodeItems = new Map();
 
-    this._treeOutline = new TreeOutline(this.element.createChild("ol", "outline-disclosure"));
+    this._treeOutline = new TreeOutline();
+    this._treeOutline.element.classList.add("outline-disclosure");
+    this.element.appendChild(this._treeOutline.element);
 
     /**
      * @param {!WebInspector.UISourceCode} uiSourceCode

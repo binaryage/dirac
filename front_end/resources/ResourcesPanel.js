@@ -40,9 +40,10 @@ WebInspector.ResourcesPanel = function()
 
     WebInspector.settings.resourcesLastSelectedItem = WebInspector.settings.createSetting("resourcesLastSelectedItem", {});
 
-    var sidebarTreeElement = this.panelSidebarElement().createChild("ol",  "filter-all children small outline-disclosure");
-    this._sidebarTree = new TreeOutline(sidebarTreeElement);
-    this.setDefaultFocusedElement(sidebarTreeElement);
+    this._sidebarTree = new TreeOutline();
+    this._sidebarTree.element.classList.add("filter-all", "children", "small", "outline-disclosure");
+    this.panelSidebarElement().appendChild(this._sidebarTree.element);
+    this.setDefaultFocusedElement(this._sidebarTree.element);
 
     this.resourcesListTreeElement = new WebInspector.StorageCategoryTreeElement(this, WebInspector.UIString("Frames"), "Frames", ["frame-storage-tree-item"]);
     this._sidebarTree.appendChild(this.resourcesListTreeElement);

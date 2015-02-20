@@ -14,7 +14,9 @@ WebInspector.FileBasedSearchResultsPane = function(searchConfig)
     this._searchResults = [];
 
     this.element.id = "search-results-pane-file-based";
-    this._treeOutline = new TreeOutline(this.element.createChild("ol", "search-results-outline-disclosure"));
+    this._treeOutline = new TreeOutline();
+    this._treeOutline.element.classList.add("search-results-outline-disclosure");
+    this.element.appendChild(this._treeOutline.element);
 
     this._matchesExpandedCount = 0;
 }

@@ -442,9 +442,10 @@ WebInspector.ProfilesPanel = function()
 
     this.profilesItemTreeElement = new WebInspector.ProfilesSidebarTreeElement(this);
 
-    var sidebarTreeElement = this.panelSidebarElement().createChild("ol", "sidebar-tree");
-    this._sidebarTree = new TreeOutline(sidebarTreeElement);
-    this.setDefaultFocusedElement(sidebarTreeElement);
+    this._sidebarTree = new TreeOutline();
+    this._sidebarTree.element.classList.add("sidebar-tree");
+    this.panelSidebarElement().appendChild(this._sidebarTree.element);
+    this.setDefaultFocusedElement(this._sidebarTree.element);
 
     this._sidebarTree.appendChild(this.profilesItemTreeElement);
 

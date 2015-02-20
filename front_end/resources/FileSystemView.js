@@ -40,8 +40,9 @@ WebInspector.FileSystemView = function(fileSystem)
 
     var vbox = new WebInspector.VBox();
     vbox.element.classList.add("sidebar");
-    var directoryTreeElement = vbox.element.createChild("ol", "outline-disclosure filesystem-directory-tree");
-    this._directoryTree = new TreeOutline(directoryTreeElement);
+    this._directoryTree = new TreeOutline();
+    this._directoryTree.element.classList.add("outline-disclosure", "filesystem-directory-tree");
+    vbox.element.appendChild(this._directoryTree.element);
     this.setSidebarView(vbox);
 
     var rootItem = new WebInspector.FileSystemView.EntryTreeElement(this, fileSystem.root);

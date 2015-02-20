@@ -539,9 +539,10 @@ WebInspector.EventListenerBreakpointsSidebarPane = function()
     WebInspector.SidebarPane.call(this, WebInspector.UIString("Event Listener Breakpoints"));
     this.registerRequiredCSS("components/breakpointsList.css");
 
-    this.categoriesElement = this.bodyElement.createChild("ol", "event-listener-breakpoints");
-    this.categoriesElement.tabIndex = 0;
-    this.categoriesTreeOutline = new TreeOutline(this.categoriesElement);
+    this._categoriesTreeOutline = new TreeOutline();
+    this._categoriesTreeOutline.element.tabIndex = 0;
+    this._categoriesTreeOutline.element.classList.add("event-listener-breakpoints");
+    this.bodyElement.appendChild(this._categoriesTreeOutline.element);
 
     this._categoryItems = [];
     // FIXME: uncomment following once inspector stops being drop targer in major ports.
@@ -634,7 +635,7 @@ WebInspector.EventListenerBreakpointsSidebarPane.prototype = {
 
         var categoryItem = {};
         categoryItem.element = new TreeElement(labelNode);
-        this.categoriesTreeOutline.appendChild(categoryItem.element);
+        this._categoriesTreeOutline.appendChild(categoryItem.element);
         categoryItem.element.listItemElement.classList.add("event-category");
         categoryItem.element.selectable = true;
 

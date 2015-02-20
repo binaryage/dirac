@@ -36,8 +36,9 @@ WebInspector.EventListenersSidebarPane = function()
     WebInspector.ElementsSidebarPane.call(this, WebInspector.UIString("Event Listeners"));
     this.bodyElement.classList.add("events-pane");
 
-    this.treeElement = this.bodyElement.createChild("ol", "event-listener-tree outline-disclosure monospace");
-    this.treeOutline = new TreeOutline(this.treeElement, true);
+    this._treeOutline = new TreeOutline(true);
+    this._treeOutline.element.classList.add("event-listener-tree", "outline-disclosure", "monospace");
+    this.bodyElement.appendChild(this._treeOutline.element);
 
     var refreshButton = this.titleElement.createChild("button", "pane-title-button refresh");
     refreshButton.addEventListener("click", this.update.bind(this), false);
@@ -83,7 +84,7 @@ WebInspector.EventListenersSidebarPane.prototype = {
 
         var body = this.bodyElement;
         body.removeChildren();
-        this.treeOutline.removeChildren();
+        this._treeOutline.removeChildren();
 
         var node = this.node();
         if (!node) {
@@ -136,14 +137,14 @@ WebInspector.EventListenersSidebarPane.prototype = {
             if (!treeItem) {
                 treeItem = new WebInspector.EventListenersTreeElement(type, node.id, this._linkifier);
                 treeItemMap.set(type, treeItem);
-                this.treeOutline.appendChild(treeItem);
+                this._treeOutline.appendChild(treeItem);
             }
             treeItem.addListener(eventListener);
         }
         if (treeItemMap.size === 0)
             body.createChild("div", "info").textContent = WebInspector.UIString("No Event Listeners");
         else
-            body.appendChild(this.treeElement);
+            body.appendChild(this._treeOutline.element);
 
         finishCallback();
     },

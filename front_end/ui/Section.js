@@ -166,8 +166,9 @@ WebInspector.PropertiesSection = function(title, subtitle)
     WebInspector.Section.call(this, title, subtitle);
     this.registerRequiredCSS("ui/propertiesSection.css");
 
-    this.propertiesElement = createElementWithClass("ol", "properties properties-tree monospace");
-    this.propertiesTreeOutline = new TreeOutline(this.propertiesElement, true);
+    this.propertiesTreeOutline = new TreeOutline(true);
+    this.propertiesElement = this.propertiesTreeOutline.element;
+    this.propertiesElement.classList.add("properties", "properties-tree", "monospace");
     this.propertiesTreeOutline.setFocusable(false);
     this.propertiesTreeOutline.section = this;
 

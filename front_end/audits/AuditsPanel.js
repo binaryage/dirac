@@ -38,9 +38,10 @@ WebInspector.AuditsPanel = function()
     this.registerRequiredCSS("ui/panelEnablerView.css");
     this.registerRequiredCSS("audits/auditsPanel.css");
 
-    var sidebarTreeElement = this.panelSidebarElement().createChild("ol", "sidebar-tree");
-    var sidebarTree = new TreeOutline(sidebarTreeElement);
-    this.setDefaultFocusedElement(sidebarTreeElement);
+    var sidebarTree = new TreeOutline();
+    sidebarTree.element.classList.add("sidebar-tree");
+    this.panelSidebarElement().appendChild(sidebarTree.element);
+    this.setDefaultFocusedElement(sidebarTree.element);
 
     this.auditsTreeElement = new WebInspector.SidebarSectionTreeElement("", {}, true);
     sidebarTree.appendChild(this.auditsTreeElement);
