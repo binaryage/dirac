@@ -4345,6 +4345,12 @@
                     { "name": "force", "type": "number", "optional": true, "description": "Force (default: 1.0)."},
                     { "name": "id", "type": "number", "optional": true, "description": "Identifier used to track touch sources between events, must be unique within an event."}
                 ]
+            },
+            {
+                "id": "GestureSourceType",
+                "type": "string",
+                "hidden": true,
+                "enum": ["default", "touch", "mouse"]
             }
         ],
         "commands": [
@@ -4406,6 +4412,52 @@
                     { "name": "clickCount", "type": "integer", "optional": true, "description": "Number of times the mouse button was clicked (default: 0)." }
                 ],
                 "description": "Emulates touch event from the mouse event parameters.",
+                "handlers": ["browser"]
+            },
+            {
+                "name": "synthesizePinchGesture",
+                "async": true,
+                "parameters": [
+                    { "name": "x", "type": "integer", "description": "X coordinate of the start of the gesture in CSS pixels." },
+                    { "name": "y", "type": "integer", "description": "Y coordinate of the start of the gesture in CSS pixels." },
+                    { "name": "scaleFactor", "type": "number", "description": "Relative scale factor after zooming (>1.0 zooms in, <1.0 zooms out)." },
+                    { "name": "relativeSpeed", "type": "integer", "optional": true, "description": "Relative pointer speed in pixels per second (default: 800)." },
+                    { "name": "gestureSourceType", "$ref": "GestureSourceType", "optional": true, "description": "Which type of input events to be generated (default: 'default', which queries the platform for the preferred input type)." }
+                ],
+                "description": "Synthesizes a pinch gesture over a time period by issuing appropriate touch events.",
+                "hidden": true,
+                "handlers": ["browser"]
+            },
+            {
+                "name": "synthesizeScrollGesture",
+                "async": true,
+                "parameters": [
+                    { "name": "x", "type": "integer", "description": "X coordinate of the start of the gesture in CSS pixels." },
+                    { "name": "y", "type": "integer", "description": "Y coordinate of the start of the gesture in CSS pixels." },
+                    { "name": "xDistance", "type": "integer", "optional": true, "description": "The distance to scroll along the X axis (positive to scroll left)." },
+                    { "name": "yDistance", "type": "integer", "optional": true, "description": "The distance to scroll along the Y axis (positive to scroll up)." },
+                    { "name": "xOverscroll", "type": "integer", "optional": true, "description": "The number of additional pixels to scroll back along the X axis, in addition to the given distance." },
+                    { "name": "yOverscroll", "type": "integer", "optional": true, "description": "The number of additional pixels to scroll back along the Y axis, in addition to the given distance." },
+                    { "name": "preventFling", "type": "boolean", "optional": true, "description": "Prevent fling (default: true)." },
+                    { "name": "speed", "type": "integer", "optional": true, "description": "Swipe speed in pixels per second (default: 800)." },
+                    { "name": "gestureSourceType", "$ref": "GestureSourceType", "optional": true, "description": "Which type of input events to be generated (default: 'default', which queries the platform for the preferred input type)." }
+                ],
+                "description": "Synthesizes a scroll gesture over a time period by issuing appropriate touch events.",
+                "hidden": true,
+                "handlers": ["browser"]
+            },
+            {
+                "name": "synthesizeTapGesture",
+                "async": true,
+                "parameters": [
+                    { "name": "x", "type": "integer", "description": "X coordinate of the start of the gesture in CSS pixels." },
+                    { "name": "y", "type": "integer", "description": "Y coordinate of the start of the gesture in CSS pixels." },
+                    { "name": "duration", "type": "integer", "optional": true, "description": "Duration between touchdown and touchup events in ms (default: 50)." },
+                    { "name": "tapCount", "type": "integer", "optional": true, "description": "Number of times to perform the tap (e.g. 2 for double tap, default: 1)." },
+                    { "name": "gestureSourceType", "$ref": "GestureSourceType", "optional": true, "description": "Which type of input events to be generated (default: 'default', which queries the platform for the preferred input type)." }
+                ],
+                "description": "Synthesizes a tap gesture over a time period by issuing appropriate touch events.",
+                "hidden": true,
                 "handlers": ["browser"]
             }
         ],
