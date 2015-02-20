@@ -101,7 +101,7 @@ WebInspector.Geometry.Point.prototype = {
      */
     toString: function()
     {
-       return this.x.toFixed(2) + "," + this.y.toFixed(2);
+       return Math.round(this.x * 100) / 100 + ", " + Math.round(this.y * 100) / 100;
     }
 }
 
@@ -171,7 +171,13 @@ WebInspector.Geometry.CubicBezier.prototype = {
      */
     asCSSText: function()
     {
-        return "cubic-bezier(" + this.controlPoints.toString() + ")";
+        var raw = "cubic-bezier(" + this.controlPoints.join(", ") + ")";
+        var keywordValues = WebInspector.Geometry.CubicBezier.KeywordValues;
+        for (var keyword in keywordValues) {
+            if (raw === keywordValues[keyword])
+                return keyword;
+        }
+        return raw;
     }
 }
 

@@ -101,7 +101,7 @@ WebInspector.StylesSidebarPane.PseudoIdNames = [
 ];
 
 WebInspector.StylesSidebarPane._colorRegex = /((?:rgb|hsl)a?\([^)]+\)|#[0-9a-fA-F]{6}|#[0-9a-fA-F]{3}|\b\w+\b(?!-))/g;
-WebInspector.StylesSidebarPane._bezierRegex = /(cubic-bezier\([^)]+\))/g;
+WebInspector.StylesSidebarPane._bezierRegex = /((cubic-bezier\([^)]+\))|\b(linear|ease-in-out|ease-in|ease-out|ease)\b)/g;
 
 /**
  * @enum {string}
