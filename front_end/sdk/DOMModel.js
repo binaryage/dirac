@@ -767,10 +767,12 @@ WebInspector.DOMNode.prototype = {
             this._pseudoElements.delete(node.pseudoType());
         } else {
             var shadowRootIndex = this._shadowRoots.indexOf(node);
-            if (shadowRootIndex !== -1)
+            if (shadowRootIndex !== -1) {
                 this._shadowRoots.splice(shadowRootIndex, 1);
-            else
+            } else {
+                console.assert(this._children.indexOf(node) !== -1);
                 this._children.splice(this._children.indexOf(node), 1);
+            }
         }
         node.parentNode = null;
         node._updateChildUserPropertyCountsOnRemoval(this);
