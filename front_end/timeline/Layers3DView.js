@@ -59,7 +59,6 @@ WebInspector.Layers3DView = function(layerViewHost)
     this._lastSelection = {};
     this._picturesForLayer = {};
     this._scrollRectQuadsForLayer = {};
-    this._isVisible = {};
     this._layerTree = null;
     this._textureManager = new WebInspector.LayerTextureManager();
     this._textureManager.addEventListener(WebInspector.LayerTextureManager.Events.TextureUpdated, this._update, this);
@@ -67,6 +66,7 @@ WebInspector.Layers3DView = function(layerViewHost)
     this._chromeTextures = [];
 
     WebInspector.settings.showPaintRects.addChangeListener(this._update, this);
+    this._layerViewHost.showInternalLayersSetting().addChangeListener(this._update, this);
 }
 
 /** @typedef {{borderColor: !Array.<number>, borderWidth: number}} */
@@ -285,9 +285,9 @@ WebInspector.Layers3DView.prototype = {
     {
         var paddingFraction = 0.1;
         var viewport = this._layerTree.viewportSize();
-        var root = this._layerTree.contentRoot() || this._layerTree.root();
-        var baseWidth = viewport ? viewport.width : root.width();
-        var baseHeight = viewport ? viewport.height : root.height();
+        var root = this._layerTree.root();
+        var baseWidth = viewport ? viewport.width : this._dimensionsForAutoscale.width;
+        var baseHeight = viewport ? viewport.height : this._dimensionsForAutoscale.height;
         var canvasWidth = this._canvasElement.width;
         var canvasHeight = this._canvasElement.height;
         var paddingX = canvasWidth * paddingFraction;
@@ -295,7 +295,7 @@ WebInspector.Layers3DView.prototype = {
         var scaleX = (canvasWidth - 2 * paddingX) / baseWidth;
         var scaleY = (canvasHeight - 2 * paddingY) / baseHeight;
         var viewScale = Math.min(scaleX, scaleY);
-        var minScaleConstraint = Math.min(baseWidth / root.width(), baseHeight / root.height()) / 2;
+        var minScaleConstraint = Math.min(baseWidth / this._dimensionsForAutoscale.width, baseHeight / this._dimensionsForAutoscale.width) / 2;
         this._transformController.setScaleConstraints(minScaleConstraint, 10 / viewScale); // 1/viewScale is 1:1 in terms of pixels, so allow zooming to 10x of native size
         var scale = this._transformController.scale();
         var rotateX = this._transformController.rotateX();
@@ -365,21 +365,21 @@ WebInspector.Layers3DView.prototype = {
         return this._gl;
     },
 
-    _calculateDepths: function()
+    _calculateDepthsAndVisibility: function()
     {
         this._depthByLayerId = {};
-        this._isVisible = {};
         var depth = 0;
-        var root = this._layerTree.root();
+        var showInternalLayers = this._layerViewHost.showInternalLayersSetting().get();
+        var root = showInternalLayers ? this._layerTree.root() : (this._layerTree.contentRoot() || this._layerTree.root());
         var queue = [root];
         this._depthByLayerId[root.id()] = 0;
-        this._isVisible[root.id()] = !this._layerTree.contentRoot();
+        this._visibleLayers = {};
         while (queue.length > 0) {
             var layer = queue.shift();
+            this._visibleLayers[layer.id()] = showInternalLayers || layer.drawsContent();
             var children = layer.children();
             for (var i = 0; i < children.length; ++i) {
                 this._depthByLayerId[children[i].id()] = ++depth;
-                this._isVisible[children[i].id()] = children[i] === this._layerTree.contentRoot() || this._isVisible[layer.id()];
                 queue.push(children[i]);
             }
         }
@@ -417,14 +417,28 @@ WebInspector.Layers3DView.prototype = {
     /**
      * @param {!WebInspector.Layer} layer
      */
+    _updateDimensionsForAutoscale: function(layer)
+    {
+        // We don't want to be precise, but rather pick something least affected by
+        // animationtransforms, so that we don't change scale too often. So let's
+        // disregard transforms, scrolling and relative layer positioning and choose
+        // the largest dimensions of all layers.
+        this._dimensionsForAutoscale.width = Math.max(layer.width(), this._dimensionsForAutoscale.width);
+        this._dimensionsForAutoscale.height = Math.max(layer.height(), this._dimensionsForAutoscale.height);
+    },
+
+    /**
+     * @param {!WebInspector.Layer} layer
+     */
     _calculateLayerRect: function(layer)
     {
-        if (!this._isVisible[layer.id()])
+        if (!this._visibleLayers[layer.id()])
             return;
         var selection = new WebInspector.LayerView.LayerSelection(layer);
         var rect = new WebInspector.Layers3DView.Rectangle(selection);
         rect.setVertices(layer.quad(), this._depthForLayer(layer));
         this._appendRect(rect);
+        this._updateDimensionsForAutoscale(layer);
     },
 
     /**
@@ -500,7 +514,7 @@ WebInspector.Layers3DView.prototype = {
     _calculateRects: function()
     {
         this._rects = [];
-
+        this._dimensionsForAutoscale = { width: 0, height: 0 };
         this._layerTree.forEachLayer(this._calculateLayerRect.bind(this));
 
         if (this._showSlowScrollRectsSetting.get())
@@ -639,7 +653,7 @@ WebInspector.Layers3DView.prototype = {
 
         var gl = this._initGLIfNecessary();
         this._resizeCanvas();
-        this._calculateDepths();
+        this._calculateDepthsAndVisibility();
         this._calculateRects();
         this._updateTransformAndConstraints();
 
@@ -714,15 +728,12 @@ WebInspector.Layers3DView.prototype = {
      */
     _onContextMenu: function(event)
     {
-        var selection = this._selectionFromEventPoint(event);
-        var node = selection && selection.layer() && selection.layer().nodeForSelfOrAncestor();
         var contextMenu = new WebInspector.ContextMenu(event);
         contextMenu.appendItem(WebInspector.UIString("Reset View"), this._transformController.resetAndNotify.bind(this._transformController), false);
+        var selection = this._selectionFromEventPoint(event);
         if (selection && selection.type() === WebInspector.LayerView.Selection.Type.Tile)
-            contextMenu.appendItem(WebInspector.UIString("Show Paint Profiler"), this.dispatchEventToListeners.bind(this, WebInspector.Layers3DView.Events.PaintProfilerRequested, selection.traceEvent), false);
-        if (node)
-            contextMenu.appendApplicableItems(node);
-        contextMenu.show();
+            contextMenu.appendItem(WebInspector.UIString("Show Paint Profiler"), this.dispatchEventToListeners.bind(this, WebInspector.Layers3DView.Events.PaintProfilerRequested, selection.traceEvent()), false);
+        this._layerViewHost.showContextMenu(contextMenu, selection);
     },
 
     /**
@@ -761,12 +772,12 @@ WebInspector.Layers3DView.prototype = {
      */
     _onDoubleClick: function(event)
     {
-        var object = this._selectionFromEventPoint(event);
-        if (object) {
-            if (object.type() == WebInspector.LayerView.Selection.Type.Tile)
-                this.dispatchEventToListeners(WebInspector.Layers3DView.Events.PaintProfilerRequested, object.traceEvent);
-            else if (object.layer)
-                this.dispatchEventToListeners(WebInspector.Layers3DView.Events.LayerSnapshotRequested, object.layer);
+        var selection = this._selectionFromEventPoint(event);
+        if (selection) {
+            if (selection.type() == WebInspector.LayerView.Selection.Type.Tile)
+                this.dispatchEventToListeners(WebInspector.Layers3DView.Events.PaintProfilerRequested, selection.traceEvent());
+            else if (selection.layer())
+                this.dispatchEventToListeners(WebInspector.Layers3DView.Events.LayerSnapshotRequested, selection.layer());
         }
         event.stopPropagation();
     },

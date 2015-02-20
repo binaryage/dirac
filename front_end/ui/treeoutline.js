@@ -122,8 +122,8 @@ TreeContainerNode.prototype = {
 
         this._children.splice(index, 0, child);
 
-        this.hasChildren = true;
         child.parent = this;
+        this.hasChildren = true;
 
         if (this.treeOutline)
             this.treeOutline._bindTreeElement(child);
