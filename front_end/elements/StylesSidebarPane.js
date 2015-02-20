@@ -2783,7 +2783,7 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
         if (value) {
             var formatter = new WebInspector.StringFormatter();
             formatter.addProcessor(urlRegex(value), linkifyURL.bind(this));
-            if (Runtime.experiments.isEnabled("animationInspection") && WebInspector.CSSMetadata.isBezierAwareProperty(this.name) && this.parsedOk)
+            if (WebInspector.CSSMetadata.isBezierAwareProperty(this.name) && this.parsedOk)
                 formatter.addProcessor(WebInspector.StylesSidebarPane._bezierRegex, this._processBezier.bind(this, nameElement, valueElement));
             if (WebInspector.CSSMetadata.isColorAwareProperty(this.name) && this.parsedOk)
                 formatter.addProcessor(WebInspector.StylesSidebarPane._colorRegex, this._processColor.bind(this, nameElement, valueElement));
