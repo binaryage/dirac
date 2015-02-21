@@ -180,8 +180,8 @@ WebInspector.AsyncOperationsSidebarPane.prototype = {
      */
     _onAsyncOperationStarted: function(event)
     {
-        var target = /** @type {!WebInspector.Target} */ (event.data.target);
-        var operation = /** @type {!DebuggerAgent.AsyncOperation} */ (event.data.operation);
+        var target = /** @type {!WebInspector.Target} */ (event.target.target());
+        var operation = /** @type {!DebuggerAgent.AsyncOperation} */ (event.data);
 
         var operationsMap = this._asyncOperationsByTarget.get(target);
         if (!operationsMap) {
@@ -199,8 +199,8 @@ WebInspector.AsyncOperationsSidebarPane.prototype = {
      */
     _onAsyncOperationCompleted: function(event)
     {
-        var target = /** @type {!WebInspector.Target} */ (event.data.target);
-        var operationId = /** @type {number} */ (event.data.operationId);
+        var target = /** @type {!WebInspector.Target} */ (event.target.target());
+        var operationId = /** @type {number} */ (event.data);
 
         var operationsMap = this._asyncOperationsByTarget.get(target);
         if (operationsMap)

@@ -253,7 +253,7 @@ WebInspector.PromisePane.prototype = {
      */
     _onPromiseUpdated: function(event)
     {
-        var target = /** @type {!WebInspector.Target} */ (event.data.target);
+        var target = /** @type {!WebInspector.Target} */ (event.target.target());
         var eventType = /** @type {string} */ (event.data.eventType);
         var details = /** @type {!DebuggerAgent.PromiseDetails} */ (event.data.promise);
         if (eventType === "gc")

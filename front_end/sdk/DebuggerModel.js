@@ -370,7 +370,7 @@ WebInspector.DebuggerModel.prototype = {
      */
     _promiseUpdated: function(eventType, promise)
     {
-        this.dispatchEventToListeners(WebInspector.DebuggerModel.Events.PromiseUpdated, { target: this.target(), eventType: eventType, promise: promise });
+        this.dispatchEventToListeners(WebInspector.DebuggerModel.Events.PromiseUpdated, { eventType: eventType, promise: promise });
     },
 
     /**
@@ -378,7 +378,7 @@ WebInspector.DebuggerModel.prototype = {
      */
     _asyncOperationStarted: function(operation)
     {
-        this.dispatchEventToListeners(WebInspector.DebuggerModel.Events.AsyncOperationStarted, { target: this.target(), operation: operation });
+        this.dispatchEventToListeners(WebInspector.DebuggerModel.Events.AsyncOperationStarted, operation);
     },
 
     /**
@@ -386,7 +386,7 @@ WebInspector.DebuggerModel.prototype = {
      */
     _asyncOperationCompleted: function(operationId)
     {
-        this.dispatchEventToListeners(WebInspector.DebuggerModel.Events.AsyncOperationCompleted, { target: this.target(), operationId: operationId });
+        this.dispatchEventToListeners(WebInspector.DebuggerModel.Events.AsyncOperationCompleted, operationId);
     },
 
     _reset: function()
