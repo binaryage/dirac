@@ -232,7 +232,7 @@ WebInspector.BezierEditor.prototype = {
         this._header.classList.add("bezier-header-active");
         this._selectedCategory = category;
         this._selectedCategory.icon.classList.add("bezier-preset-selected");
-        this.setBezier(WebInspector.Geometry.CubicBezier.parse(category.presets[0].value));
+        this.setBezier(WebInspector.Geometry.CubicBezier.parse(category.presets[category.presetIndex].value));
         this._onchange();
         this._startPreviewAnimation();
         if (event)
