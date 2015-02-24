@@ -2281,6 +2281,7 @@ WebInspector.ComputedStylePropertiesSection = function(stylesPane, styleRule, ma
 {
     WebInspector.PropertiesSection.call(this, "");
     this.element.className = "styles-section monospace read-only computed-style";
+    this.propertiesElement.classList.add("style-properties");
 
     this.headerElement.appendChild(WebInspector.ComputedStylePropertiesSection._showInheritedCheckbox());
 
