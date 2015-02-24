@@ -261,6 +261,10 @@ WebInspector.SourcesPanel.prototype = {
             this.sidebarPanes.callstack.setStatus(WebInspector.UIString("Paused on a script blocked due to Content Security Policy directive: \"%s\".", details.auxData["directiveText"]));
         } else if (details.reason === WebInspector.DebuggerModel.BreakReason.DebugCommand) {
             this.sidebarPanes.callstack.setStatus(WebInspector.UIString("Paused on a debugged function"));
+        } else if (details.reason === WebInspector.DebuggerModel.BreakReason.AsyncOperation) {
+                this.sidebarPanes.callstack.setStatus(WebInspector.UIString("Paused on async operation"));
+                if (Runtime.experiments.isEnabled("stepIntoAsync"))
+                    this.sidebarPanes.asyncOperationBreakpoints.highlightBreakpoint(details.auxData["operationId"]);
         } else {
             if (details.callFrames.length)
                 WebInspector.debuggerWorkspaceBinding.createCallFrameLiveLocation(details.callFrames[0], didGetUILocation.bind(this));
@@ -455,6 +459,8 @@ WebInspector.SourcesPanel.prototype = {
         WebInspector.domBreakpointsSidebarPane.clearBreakpointHighlight();
         this.sidebarPanes.eventListenerBreakpoints.clearBreakpointHighlight();
         this.sidebarPanes.xhrBreakpoints.clearBreakpointHighlight();
+        if (Runtime.experiments.isEnabled("stepIntoAsync"))
+            this.sidebarPanes.asyncOperationBreakpoints.clearBreakpointHighlight();
 
         this._sourcesView.clearCurrentExecutionLine();
         this._updateDebuggerButtons();

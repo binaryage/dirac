@@ -98,6 +98,7 @@ WebInspector.DebuggerModel.Events = {
 
 /** @enum {string} */
 WebInspector.DebuggerModel.BreakReason = {
+    AsyncOperation: "AsyncOperation",
     DOM: "DOM",
     EventListener: "EventListener",
     XHR: "XHR",

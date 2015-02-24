@@ -142,6 +142,27 @@ WebInspector.AsyncOperationsSidebarPane.prototype = {
     },
 
     /**
+     * @param {number} operationId
+     */
+    highlightBreakpoint: function(operationId)
+    {
+        var element = this._operationIdToElement.get(operationId);
+        if (!element)
+            return;
+        this.expand();
+        element.classList.add("breakpoint-hit");
+        this._highlightedElement = element;
+    },
+
+    clearBreakpointHighlight: function()
+    {
+        if (this._highlightedElement) {
+            this._highlightedElement.classList.remove("breakpoint-hit");
+            delete this._highlightedElement;
+        }
+    },
+
+    /**
      * @param {!WebInspector.Event} event
      */
     _debuggerResumed: function(event)
@@ -242,6 +263,7 @@ WebInspector.AsyncOperationsSidebarPane.prototype = {
         var title = operation.description || WebInspector.UIString("Async Operation");
         var label = createCheckboxLabel(title, false);
         label.classList.add("checkbox-elem");
+        label.checkboxElement.addEventListener("click", this._checkboxClicked.bind(this, operation.id), false);
         element.appendChild(label);
 
         var callFrame = WebInspector.DebuggerPresentationUtils.callFrameAnchorFromStackTrace(this._target, operation.stackTrace, operation.asyncStackTrace, this._revealBlackboxedCallFrames);
@@ -251,6 +273,18 @@ WebInspector.AsyncOperationsSidebarPane.prototype = {
         element[WebInspector.AsyncOperationsSidebarPane._operationIdSymbol] = operation.id;
         this._operationIdToElement.set(operation.id, element);
         this.addListElement(element, this.listElement.firstChild);
+    },
+
+    /**
+     * @param {number} operationId
+     * @param {!Event} event
+     */
+    _checkboxClicked: function(operationId, event)
+    {
+        if (event.target.checked)
+            this._target.debuggerAgent().setAsyncOperationBreakpoint(operationId);
+        else
+            this._target.debuggerAgent().removeAsyncOperationBreakpoint(operationId);
     },
 
     _clear: function()
