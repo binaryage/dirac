@@ -1048,11 +1048,11 @@ WebInspector.ElementsTreeElement.prototype = {
             this._hideSearchHighlight();
         } else {
             var nodeInfo = this._nodeTitleInfo(WebInspector.linkifyURLAsNode);
-            if (nodeInfo.shadowRoot)
+            if (this._node.nodeType() === Node.DOCUMENT_FRAGMENT_NODE && this._node.isInShadowTree() && this._node.shadowRootType())
                 this.listItemElement.classList.add("shadow-root");
             var highlightElement = createElement("span");
             highlightElement.className = "highlight";
-            highlightElement.appendChild(nodeInfo.titleDOM);
+            highlightElement.appendChild(nodeInfo);
             this.title = highlightElement;
             this._updateDecorations();
             delete this._highlightResult;
@@ -1301,52 +1301,50 @@ WebInspector.ElementsTreeElement.prototype = {
 
     /**
      * @param {function(string, string, string, boolean=, string=)=} linkify
+     * @return {!DocumentFragment} result
      */
     _nodeTitleInfo: function(linkify)
     {
         var node = this._node;
-        var info = {titleDOM: createDocumentFragment(), hasChildren: this.hasChildren};
+        var titleDOM = createDocumentFragment();
 
         switch (node.nodeType()) {
             case Node.ATTRIBUTE_NODE:
-                this._buildAttributeDOM(info.titleDOM, /** @type {string} */ (node.name), /** @type {string} */ (node.value), true);
+                this._buildAttributeDOM(titleDOM, /** @type {string} */ (node.name), /** @type {string} */ (node.value), true);
                 break;
 
             case Node.ELEMENT_NODE:
                 var pseudoType = node.pseudoType();
                 if (pseudoType) {
-                    this._buildPseudoElementDOM(info.titleDOM, pseudoType);
-                    info.hasChildren = false;
+                    this._buildPseudoElementDOM(titleDOM, pseudoType);
                     break;
                 }
 
                 var tagName = node.nodeNameInCorrectCase();
                 if (this._elementCloseTag) {
-                    this._buildTagDOM(info.titleDOM, tagName, true, true);
-                    info.hasChildren = false;
+                    this._buildTagDOM(titleDOM, tagName, true, true);
                     break;
                 }
 
-                this._buildTagDOM(info.titleDOM, tagName, false, false, linkify);
+                this._buildTagDOM(titleDOM, tagName, false, false, linkify);
 
                 switch (this._childrenDisplayMode) {
                 case WebInspector.ElementsTreeElement.ChildrenDisplayMode.HasChildren:
                     if (!this.expanded) {
-                        var textNodeElement = info.titleDOM.createChild("span", "webkit-html-text-node bogus");
+                        var textNodeElement = titleDOM.createChild("span", "webkit-html-text-node bogus");
                         textNodeElement.textContent = "\u2026";
-                        info.titleDOM.createTextChild("\u200B");
-                        this._buildTagDOM(info.titleDOM, tagName, true, false);
+                        titleDOM.createTextChild("\u200B");
+                        this._buildTagDOM(titleDOM, tagName, true, false);
                     }
                     break;
 
                 case WebInspector.ElementsTreeElement.ChildrenDisplayMode.InlineText:
-                    var textNodeElement = info.titleDOM.createChild("span", "webkit-html-text-node");
+                    var textNodeElement = titleDOM.createChild("span", "webkit-html-text-node");
                     var result = this._convertWhitespaceToEntities(node.firstChild.nodeValue());
                     textNodeElement.textContent = result.text;
                     WebInspector.highlightRangesWithStyleClass(textNodeElement, result.entityRanges, "webkit-html-entity-value");
-                    info.titleDOM.createTextChild("\u200B");
-                    info.hasChildren = false;
-                    this._buildTagDOM(info.titleDOM, tagName, true, false);
+                    titleDOM.createTextChild("\u200B");
+                    this._buildTagDOM(titleDOM, tagName, true, false);
                     var updates = this._updateInfo;
                     if (updates && (updates.hasInsertedNodes() || updates.hasChangedChildren()))
                         WebInspector.runCSSAnimationOnce(textNodeElement, "dom-update-highlight");
@@ -1357,31 +1355,31 @@ WebInspector.ElementsTreeElement.prototype = {
 
                 case WebInspector.ElementsTreeElement.ChildrenDisplayMode.NoChildren:
                     if (this.treeOutline.isXMLMimeType || !WebInspector.ElementsTreeElement.ForbiddenClosingTagElements[tagName])
-                        this._buildTagDOM(info.titleDOM, tagName, true, false);
+                        this._buildTagDOM(titleDOM, tagName, true, false);
                     break;
                 }
                 break;
 
             case Node.TEXT_NODE:
                 if (node.parentNode && node.parentNode.nodeName().toLowerCase() === "script") {
-                    var newNode = info.titleDOM.createChild("span", "webkit-html-text-node webkit-html-js-node");
+                    var newNode = titleDOM.createChild("span", "webkit-html-text-node webkit-html-js-node");
                     newNode.textContent = node.nodeValue();
 
                     var javascriptSyntaxHighlighter = new WebInspector.DOMSyntaxHighlighter("text/javascript", true);
                     javascriptSyntaxHighlighter.syntaxHighlightNode(newNode).then(updateSearchHighlight.bind(this));
                 } else if (node.parentNode && node.parentNode.nodeName().toLowerCase() === "style") {
-                    var newNode = info.titleDOM.createChild("span", "webkit-html-text-node webkit-html-css-node");
+                    var newNode = titleDOM.createChild("span", "webkit-html-text-node webkit-html-css-node");
                     newNode.textContent = node.nodeValue();
 
                     var cssSyntaxHighlighter = new WebInspector.DOMSyntaxHighlighter("text/css", true);
                     cssSyntaxHighlighter.syntaxHighlightNode(newNode).then(updateSearchHighlight.bind(this));
                 } else {
-                    info.titleDOM.createTextChild("\"");
-                    var textNodeElement = info.titleDOM.createChild("span", "webkit-html-text-node");
+                    titleDOM.createTextChild("\"");
+                    var textNodeElement = titleDOM.createChild("span", "webkit-html-text-node");
                     var result = this._convertWhitespaceToEntities(node.nodeValue());
                     textNodeElement.textContent = result.text;
                     WebInspector.highlightRangesWithStyleClass(textNodeElement, result.entityRanges, "webkit-html-entity-value");
-                    info.titleDOM.createTextChild("\"");
+                    titleDOM.createTextChild("\"");
                     var updates = this._updateInfo;
                     if (updates && updates.isCharDataModified())
                         WebInspector.runCSSAnimationOnce(textNodeElement, "dom-update-highlight");
@@ -1389,12 +1387,12 @@ WebInspector.ElementsTreeElement.prototype = {
                 break;
 
             case Node.COMMENT_NODE:
-                var commentElement = info.titleDOM.createChild("span", "webkit-html-comment");
+                var commentElement = titleDOM.createChild("span", "webkit-html-comment");
                 commentElement.createTextChild("<!--" + node.nodeValue() + "-->");
                 break;
 
             case Node.DOCUMENT_TYPE_NODE:
-                var docTypeElement = info.titleDOM.createChild("span", "webkit-html-doctype");
+                var docTypeElement = titleDOM.createChild("span", "webkit-html-doctype");
                 docTypeElement.createTextChild("<!DOCTYPE " + node.nodeName());
                 if (node.publicId) {
                     docTypeElement.createTextChild(" PUBLIC \"" + node.publicId + "\"");
@@ -1410,24 +1408,21 @@ WebInspector.ElementsTreeElement.prototype = {
                 break;
 
             case Node.CDATA_SECTION_NODE:
-                var cdataElement = info.titleDOM.createChild("span", "webkit-html-text-node");
+                var cdataElement = titleDOM.createChild("span", "webkit-html-text-node");
                 cdataElement.createTextChild("<![CDATA[" + node.nodeValue() + "]]>");
                 break;
 
             case Node.DOCUMENT_FRAGMENT_NODE:
-                var fragmentElement = info.titleDOM.createChild("span", "webkit-html-fragment");
+                var fragmentElement = titleDOM.createChild("span", "webkit-html-fragment");
                 fragmentElement.textContent = node.nodeNameInCorrectCase().collapseWhitespace();
                 delete this.shadowHostToolbar;
                 if (node.isInShadowTree()) {
                     var shadowRootType = node.shadowRootType();
                     if (shadowRootType) {
-                        info.shadowRoot = true;
-                        fragmentElement.classList.add("shadow-root");
-
                         if (Runtime.experiments.isEnabled("composedShadowDOM")) {
                             var isYoungestShadowRoot = node === node.parentNode.shadowRoots()[0];
                             if (isYoungestShadowRoot) {
-                                var toolbarElement = info.titleDOM.createChild("span", "webkit-html-fragment");
+                                var toolbarElement = titleDOM.createChild("span", "webkit-html-fragment");
                                 this.shadowHostToolbar = this._createShadowHostToolbar();
                                 toolbarElement.appendChild(this.shadowHostToolbar);
                             }
@@ -1436,7 +1431,7 @@ WebInspector.ElementsTreeElement.prototype = {
                 }
                 break;
             default:
-                info.titleDOM.createTextChild(node.nodeNameInCorrectCase().collapseWhitespace());
+                titleDOM.createTextChild(node.nodeNameInCorrectCase().collapseWhitespace());
         }
 
         /**
@@ -1448,7 +1443,7 @@ WebInspector.ElementsTreeElement.prototype = {
             this._highlightSearchResults();
         }
 
-        return info;
+        return titleDOM;
     },
 
     /**

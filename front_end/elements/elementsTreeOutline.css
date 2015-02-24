@@ -268,11 +268,6 @@ button, input, select {
     padding-left: 2px;
 }
 
-
-li.parent.shadow-root {
-    /* display: none; */
-}
-
 .shadow-host-display-mode-toolbar .shadow-host-display-mode-toolbar-button {
     border: 0;
     margin: 0;
