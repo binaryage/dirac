@@ -379,6 +379,7 @@
             'front_end/elements/StylesPopoverHelper.js',
             'front_end/elements/StylesSectionModel.js',
             'front_end/elements/StylesSidebarPane.js',
+            'front_end/elements/ComputedStyleSidebarPane.js',
         ],
         'devtools_extensions_js_files': [
             'front_end/extensions/ExtensionAuditCategory.js',

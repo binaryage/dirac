@@ -119,7 +119,7 @@ WebInspector.StylesSidebarPane.createExclamationMark = function(property)
 {
     var exclamationElement = createElement("label", "dt-icon-label");
     exclamationElement.className = "exclamation-mark";
-    if (!WebInspector.StylesSidebarPane._ignoreErrorsForProperty(property))
+    if (!WebInspector.StylesSidebarPane.ignoreErrorsForProperty(property))
         exclamationElement.type = "warning-icon";
     exclamationElement.title = WebInspector.CSSMetadata.cssPropertiesMetainfo.keySet()[property.name.toLowerCase()] ? WebInspector.UIString("Invalid property value.") : WebInspector.UIString("Unknown property name.");
     return exclamationElement;
@@ -129,7 +129,7 @@ WebInspector.StylesSidebarPane.createExclamationMark = function(property)
  * @param {!WebInspector.CSSProperty} property
  * @return {boolean}
  */
-WebInspector.StylesSidebarPane._ignoreErrorsForProperty = function(property) {
+WebInspector.StylesSidebarPane.ignoreErrorsForProperty = function(property) {
     /**
      * @param {string} string
      */
@@ -324,7 +324,7 @@ WebInspector.StylesSidebarPane.prototype = {
      */
     _createCSSFilterControl: function()
     {
-        var filterInput = WebInspector.StylesSidebarPane._createPropertyFilterElement(WebInspector.UIString("Find in Styles"), searchHandler.bind(this));
+        var filterInput = WebInspector.StylesSidebarPane.createPropertyFilterElement(WebInspector.UIString("Find in Styles"), searchHandler.bind(this));
 
         /**
          * @param {?RegExp} regex
@@ -1279,7 +1279,7 @@ WebInspector.StylesSidebarPane.prototype = {
  * @return {!Element}
  * @param {function(?RegExp)} filterCallback
  */
-WebInspector.StylesSidebarPane._createPropertyFilterElement = function(placeholder, filterCallback)
+WebInspector.StylesSidebarPane.createPropertyFilterElement = function(placeholder, filterCallback)
 {
     var input = createElement("input");
     input.type = "text";
@@ -1308,111 +1308,6 @@ WebInspector.StylesSidebarPane._createPropertyFilterElement = function(placehold
     input.addEventListener("keydown", keydownHandler, false);
 
     return input;
-}
-
-/**
- * @constructor
- * @extends {WebInspector.ElementsSidebarPane}
- */
-WebInspector.ComputedStyleSidebarPane = function()
-{
-    WebInspector.ElementsSidebarPane.call(this, WebInspector.UIString("Computed Style"));
-    WebInspector.settings.showInheritedComputedStyleProperties.addChangeListener(this._showInheritedComputedStyleChanged.bind(this));
-    this._linkifier = new WebInspector.Linkifier(new WebInspector.Linkifier.DefaultCSSFormatter());
-}
-
-WebInspector.ComputedStyleSidebarPane.prototype = {
-    _showInheritedComputedStyleChanged: function()
-    {
-        this._computedStyleSection.update();
-        this._computedStyleSection._rebuildComputedTrace();
-    },
-
-    /**
-     * @override
-     * @param {?WebInspector.DOMNode} node
-     */
-    setNode: function(node)
-    {
-        if (node)
-            this._target = node.target();
-        WebInspector.ElementsSidebarPane.prototype.setNode.call(this, node);
-    },
-
-    /**
-     * @override
-     * @param {!WebInspector.Throttler.FinishCallback} finishedCallback
-     */
-    doUpdate: function(finishedCallback)
-    {
-        var promises = [
-            this._stylesSidebarPane._fetchComputedCascade(),
-            this._stylesSidebarPane._fetchMatchedCascade(),
-            this._stylesSidebarPane._fetchAnimationProperties()
-        ];
-        Promise.all(promises)
-            .spread(this._innerRebuildUpdate.bind(this))
-            .then(finishedCallback);
-    },
-
-    /**
-     * @param {?WebInspector.SectionCascade} computedCascade
-       @param {?{matched: !WebInspector.SectionCascade, pseudo: !Map.<number, !WebInspector.SectionCascade>}} cascades
-     * @param {!Map.<string, string>} animationProperties
-     */
-    _innerRebuildUpdate: function(computedCascade, cascades, animationProperties)
-    {
-        this._linkifier.reset();
-        this.bodyElement.removeChildren();
-        if (!computedCascade || !cascades)
-            return;
-        var computedStyleRule = computedCascade.sectionModels()[0];
-        this._computedStyleSection = new WebInspector.ComputedStylePropertiesSection(this, computedStyleRule, cascades.matched, animationProperties);
-        this._computedStyleSection.expand();
-        this._computedStyleSection._rebuildComputedTrace();
-        this.bodyElement.appendChild(this._computedStyleSection.element);
-    },
-
-    _updateFilter: function()
-    {
-        this._computedStyleSection._updateFilter();
-    },
-
-    /**
-     * @param {!WebInspector.StylesSidebarPane} pane
-     */
-    setHostingPane: function(pane)
-    {
-        this._stylesSidebarPane = pane;
-    },
-
-    /**
-     * @param {!Element} element
-     */
-    setFilterBoxContainer: function(element)
-    {
-        element.appendChild(WebInspector.StylesSidebarPane._createPropertyFilterElement(WebInspector.UIString("Filter"), filterCallback.bind(this)));
-
-        /**
-         * @param {?RegExp} regex
-         * @this {WebInspector.ComputedStyleSidebarPane}
-         */
-        function filterCallback(regex)
-        {
-            this._filterRegex = regex;
-            this._updateFilter();
-        }
-    },
-
-    /**
-     * @return {?RegExp}
-     */
-    filterRegex: function()
-    {
-        return this._filterRegex;
-    },
-
-    __proto__: WebInspector.ElementsSidebarPane.prototype
 }
 
 /**
@@ -2199,7 +2094,7 @@ WebInspector.StylePropertiesSection.prototype = {
     _updateRuleOrigin: function()
     {
         this._selectorRefElement.removeChildren();
-        this._selectorRefElement.appendChild(WebInspector.StylePropertiesSection._createRuleOriginNode(this._parentPane._target, this._parentPane._linkifier, this.rule()));
+        this._selectorRefElement.appendChild(WebInspector.StylePropertiesSection.createRuleOriginNode(this._parentPane._target, this._parentPane._linkifier, this.rule()));
     },
 
     _editingSelectorEnded: function()
@@ -2224,7 +2119,7 @@ WebInspector.StylePropertiesSection.prototype = {
  * @param {?WebInspector.CSSRule} rule
  * @return {!Node}
  */
-WebInspector.StylePropertiesSection._createRuleOriginNode = function(target, linkifier, rule)
+WebInspector.StylePropertiesSection.createRuleOriginNode = function(target, linkifier, rule)
 {
     if (!rule)
         return createTextNode("");
@@ -2267,169 +2162,6 @@ WebInspector.StylePropertiesSection._linkifyRuleLocation = function(target, link
     var columnNumber = styleSheetHeader.columnNumberInSource(ruleLocation.startLine, ruleLocation.startColumn);
     var matchingSelectorLocation = new WebInspector.CSSLocation(target, styleSheetId, sourceURL, lineNumber, columnNumber);
     return linkifier.linkifyCSSLocation(matchingSelectorLocation);
-}
-
-/**
- * @constructor
- * @extends {WebInspector.PropertiesSection}
- * @param {!WebInspector.ComputedStyleSidebarPane} stylesPane
- * @param {!WebInspector.StylesSectionModel} styleRule
- * @param {!WebInspector.SectionCascade} matchedRuleCascade
- * @param {!Map.<string, string>} animationProperties
- */
-WebInspector.ComputedStylePropertiesSection = function(stylesPane, styleRule, matchedRuleCascade, animationProperties)
-{
-    WebInspector.PropertiesSection.call(this, "");
-    this.element.className = "styles-section monospace read-only computed-style";
-    this.propertiesElement.classList.add("style-properties");
-
-    this.headerElement.appendChild(WebInspector.ComputedStylePropertiesSection._showInheritedCheckbox());
-
-    this._stylesPane = stylesPane;
-    this.styleRule = styleRule;
-    this._matchedRuleCascade = matchedRuleCascade;
-    this._animationProperties = animationProperties;
-    this._alwaysShowComputedProperties = { "display": true, "height": true, "width": true };
-    this._propertyTreeElements = {};
-    this._expandedPropertyNames = {};
-}
-
-/**
- * @return {!Element}
- */
-WebInspector.ComputedStylePropertiesSection._showInheritedCheckbox = function()
-{
-    if (!WebInspector.ComputedStylePropertiesSection._showInheritedCheckboxElement) {
-        WebInspector.ComputedStylePropertiesSection._showInheritedCheckboxElement = WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Show inherited properties"), WebInspector.settings.showInheritedComputedStyleProperties, true);
-        WebInspector.ComputedStylePropertiesSection._showInheritedCheckboxElement.classList.add("checkbox-with-label");
-    }
-    return WebInspector.ComputedStylePropertiesSection._showInheritedCheckboxElement;
-}
-
-WebInspector.ComputedStylePropertiesSection.prototype = {
-    /**
-     * @override
-     */
-    collapse: function()
-    {
-        // Overriding with empty body.
-    },
-
-    /**
-     * @param {string} propertyName
-     */
-    _isPropertyInherited: function(propertyName)
-    {
-        var canonicalName = WebInspector.CSSMetadata.canonicalPropertyName(propertyName);
-        return !(this._matchedRuleCascade.allUsedProperties().has(canonicalName)) && !(canonicalName in this._alwaysShowComputedProperties) && !this._animationProperties.has(canonicalName);
-    },
-
-    update: function()
-    {
-        this._expandedPropertyNames = {};
-        for (var name in this._propertyTreeElements) {
-            if (this._propertyTreeElements[name].expanded)
-                this._expandedPropertyNames[name] = true;
-        }
-        this._propertyTreeElements = {};
-        this.propertiesTreeOutline.removeChildren();
-        this.repopulate();
-    },
-
-    _updateFilter: function()
-    {
-        for (var child of this.propertiesTreeOutline.rootElement().children())
-            child._updateFilter();
-    },
-
-    onpopulate: function()
-    {
-        var style = this.styleRule.style();
-        if (!style)
-            return;
-
-        var uniqueProperties = [];
-        var allProperties = style.allProperties;
-        for (var i = 0; i < allProperties.length; ++i)
-            uniqueProperties.push(allProperties[i]);
-        uniqueProperties.sort(propertySorter);
-
-        this._propertyTreeElements = {};
-        var showInherited = WebInspector.settings.showInheritedComputedStyleProperties.get();
-        for (var i = 0; i < uniqueProperties.length; ++i) {
-            var property = uniqueProperties[i];
-            var inherited = this._isPropertyInherited(property.name);
-            if (!showInherited && inherited)
-                continue;
-            var item = new WebInspector.ComputedStylePropertyTreeElement(this._stylesPane, this.styleRule, property, inherited);
-            this.propertiesTreeOutline.appendChild(item);
-            this._propertyTreeElements[property.name] = item;
-        }
-
-        /**
-         * @param {!WebInspector.CSSProperty} a
-         * @param {!WebInspector.CSSProperty} b
-         */
-        function propertySorter(a, b)
-        {
-            return a.name.compareTo(b.name);
-        }
-    },
-
-    _rebuildComputedTrace: function()
-    {
-        // Trace animation related properties
-        for (var property of this._animationProperties.keys()) {
-            var treeElement = this._propertyTreeElements[property.toLowerCase()];
-            if (treeElement) {
-                var fragment = createDocumentFragment();
-                var name = fragment.createChild("span");
-                name.textContent = WebInspector.UIString("Animation") + " " + this._animationProperties.get(property);
-                treeElement.appendChild(new TreeElement(fragment));
-            }
-        }
-
-        for (var model of this._matchedRuleCascade.sectionModels()) {
-            var properties = model.style().allProperties;
-            for (var j = 0; j < properties.length; ++j) {
-                var property = properties[j];
-                if (property.disabled)
-                    continue;
-                if (model.inherited() && !WebInspector.CSSMetadata.isPropertyInherited(property.name))
-                    continue;
-
-                var treeElement = this._propertyTreeElements[property.name.toLowerCase()];
-                if (treeElement) {
-                    var fragment = createDocumentFragment();
-                    var selector = fragment.createChild("span");
-                    selector.style.color = "gray";
-                    selector.textContent = model.selectorText();
-                    fragment.createTextChild(" - " + property.value + " ");
-                    var subtitle = fragment.createChild("span");
-                    subtitle.style.float = "right";
-                    subtitle.appendChild(WebInspector.StylePropertiesSection._createRuleOriginNode(this._stylesPane._target, this._stylesPane._linkifier, model.rule()));
-                    var childElement = new TreeElement(fragment);
-                    treeElement.appendChild(childElement);
-                    if (property.inactive || model.isPropertyOverloaded(property.name))
-                        childElement.listItemElement.classList.add("overloaded");
-                    if (!property.parsedOk) {
-                        childElement.listItemElement.classList.add("not-parsed-ok");
-                        childElement.listItemElement.insertBefore(WebInspector.StylesSidebarPane.createExclamationMark(property), childElement.listItemElement.firstChild);
-                        if (WebInspector.StylesSidebarPane._ignoreErrorsForProperty(property))
-                            childElement.listItemElement.classList.add("has-ignorable-error");
-                    }
-                }
-            }
-        }
-
-        // Restore expanded state after update.
-        for (var name in this._expandedPropertyNames) {
-            if (name in this._propertyTreeElements)
-                this._propertyTreeElements[name].expand();
-        }
-    },
-
-    __proto__: WebInspector.PropertiesSection.prototype
 }
 
 /**
@@ -2648,7 +2380,7 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
      */
     hasIgnorableError: function()
     {
-        return !this.parsedOk && WebInspector.StylesSidebarPane._ignoreErrorsForProperty(this.property);
+        return !this.parsedOk && WebInspector.StylesSidebarPane.ignoreErrorsForProperty(this.property);
     },
 
     set inherited(x)
@@ -2885,51 +2617,6 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
     },
 
     __proto__: TreeElement.prototype
-}
-
-/**
- * @constructor
- * @extends {WebInspector.StylePropertyTreeElementBase}
- * @param {!WebInspector.ComputedStyleSidebarPane} stylesPane
- * @param {!WebInspector.StylesSectionModel} styleRule
- * @param {!WebInspector.CSSProperty} property
- * @param {boolean} inherited
- */
-WebInspector.ComputedStylePropertyTreeElement = function(stylesPane, styleRule, property, inherited)
-{
-    WebInspector.StylePropertyTreeElementBase.call(this, styleRule, property, inherited, false, false);
-    this._stylesPane = stylesPane;
-}
-
-WebInspector.ComputedStylePropertyTreeElement.prototype = {
-    /**
-     * @override
-     * @return {?WebInspector.StylesSidebarPane}
-     */
-    editablePane: function()
-    {
-        return null;
-    },
-
-    /**
-     * @override
-     * @return {!WebInspector.ComputedStyleSidebarPane}
-     */
-    parentPane: function()
-    {
-        return this._stylesPane;
-    },
-
-    _updateFilter: function()
-    {
-        var regEx = this.parentPane().filterRegex();
-        var matched = !!regEx && (!regEx.test(this.property.name) && !regEx.test(this.property.value));
-        this.listItemElement.classList.toggle("hidden", matched);
-        if (this.childrenListElement)
-            this.childrenListElement.classList.toggle("hidden", matched);
-    },
-
-    __proto__: WebInspector.StylePropertyTreeElementBase.prototype
 }
 
 /**
