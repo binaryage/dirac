@@ -26,10 +26,11 @@
 /**
  * @constructor
  * @extends {TreeElement}
+ * @param {string} title
  */
-WebInspector.SidebarSectionTreeElement = function(title, hasChildren)
+WebInspector.SidebarSectionTreeElement = function(title)
 {
-    TreeElement.call(this, title.escapeHTML(), hasChildren);
+    TreeElement.call(this, title.escapeHTML(), true);
     this.expand();
 }
 
@@ -76,13 +77,13 @@ WebInspector.SidebarSectionTreeElement.prototype = {
  * @param {string} className
  * @param {string} title
  * @param {string=} subtitle
- * @param {boolean=} hasChildren
+ * @param {boolean=} expandable
  */
-WebInspector.SidebarTreeElement = function(className, title, subtitle, hasChildren)
+WebInspector.SidebarTreeElement = function(className, title, subtitle, expandable)
 {
-    TreeElement.call(this, "", hasChildren);
+    TreeElement.call(this, "", expandable);
 
-    if (hasChildren)
+    if (expandable)
         this.disclosureButton = createElementWithClass("button", "disclosure-button");
 
     this.iconElement = createElementWithClass("div", "icon");
@@ -175,7 +176,7 @@ WebInspector.SidebarTreeElement.prototype = {
         if (this.small)
             this.listItemElement.classList.add("small");
 
-        if (this.hasChildren && this.disclosureButton)
+        if (this.isExpandable() && this.disclosureButton)
             this.listItemElement.appendChild(this.disclosureButton);
 
         this.listItemElement.appendChildren(this.iconElement, this.statusElement, this.titlesElement);

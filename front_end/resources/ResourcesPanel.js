@@ -834,12 +834,12 @@ WebInspector.ResourcesPanel.ResourceRevealer.prototype = {
  * @param {!WebInspector.ResourcesPanel} storagePanel
  * @param {string} title
  * @param {?Array.<string>=} iconClasses
- * @param {boolean=} hasChildren
+ * @param {boolean=} expandable
  * @param {boolean=} noIcon
  */
-WebInspector.BaseStorageTreeElement = function(storagePanel, title, iconClasses, hasChildren, noIcon)
+WebInspector.BaseStorageTreeElement = function(storagePanel, title, iconClasses, expandable, noIcon)
 {
-    TreeElement.call(this, "", hasChildren);
+    TreeElement.call(this, "", expandable);
     this._storagePanel = storagePanel;
     this._titleText = title;
     this._iconClasses = iconClasses;
@@ -1984,10 +1984,8 @@ WebInspector.IDBObjectStoreTreeElement.prototype = {
             }
         }
 
-        if (this.childCount()) {
-            this.hasChildren = true;
+        if (this.childCount())
             this.expand();
-        }
 
         if (this._view)
             this._view.update(this._objectStore);

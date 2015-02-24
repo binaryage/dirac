@@ -649,13 +649,13 @@ WebInspector.NavigatorView._treeElementsCompare = function compare(treeElement1,
  * @param {string} type
  * @param {string} title
  * @param {!Array.<string>} iconClasses
- * @param {boolean} hasChildren
+ * @param {boolean} expandable
  * @param {boolean=} noIcon
  */
-WebInspector.BaseNavigatorTreeElement = function(type, title, iconClasses, hasChildren, noIcon)
+WebInspector.BaseNavigatorTreeElement = function(type, title, iconClasses, expandable, noIcon)
 {
     this._type = type;
-    TreeElement.call(this, "", hasChildren);
+    TreeElement.call(this, "", expandable);
     this._titleText = title;
     this._iconClasses = iconClasses;
     this._noIcon = noIcon;

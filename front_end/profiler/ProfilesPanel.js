@@ -920,7 +920,7 @@ WebInspector.ProfilesPanel.prototype = {
  */
 WebInspector.ProfileTypeSidebarSection = function(dataDisplayDelegate, profileType)
 {
-    WebInspector.SidebarSectionTreeElement.call(this, profileType.treeItemTitle, true);
+    WebInspector.SidebarSectionTreeElement.call(this, profileType.treeItemTitle);
     this._dataDisplayDelegate = dataDisplayDelegate;
     this._profileTreeElements = [];
     this._profileGroups = {};

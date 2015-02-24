@@ -43,14 +43,14 @@ WebInspector.AuditsPanel = function()
     this.panelSidebarElement().appendChild(sidebarTree.element);
     this.setDefaultFocusedElement(sidebarTree.element);
 
-    this.auditsTreeElement = new WebInspector.SidebarSectionTreeElement("", true);
+    this.auditsTreeElement = new WebInspector.SidebarSectionTreeElement("");
     sidebarTree.appendChild(this.auditsTreeElement);
     this.auditsTreeElement.listItemElement.classList.add("hidden");
 
     this.auditsItemTreeElement = new WebInspector.AuditsSidebarTreeElement(this);
     this.auditsTreeElement.appendChild(this.auditsItemTreeElement);
 
-    this.auditResultsTreeElement = new WebInspector.SidebarSectionTreeElement(WebInspector.UIString("RESULTS"), true);
+    this.auditResultsTreeElement = new WebInspector.SidebarSectionTreeElement(WebInspector.UIString("RESULTS"));
     sidebarTree.appendChild(this.auditResultsTreeElement);
     this.auditResultsTreeElement.expand();
 

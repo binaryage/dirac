@@ -177,6 +177,8 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
     onattach: function()
     {
         this.update();
+        if (this.property.value)
+            this.setExpandable(this.property.value.hasChildren && !this.property.wasThrown);
     },
 
     update: function()
@@ -192,7 +194,6 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
         if (this.property.value) {
             this.valueElement = WebInspector.ObjectPropertiesSection.createValueElement(this.property.value, this.property.wasThrown, this.listItemElement);
             this.valueElement.addEventListener("contextmenu", this._contextMenuFired.bind(this, this.property.value), false);
-            this.hasChildren = this.property.value.hasChildren && !this.property.wasThrown;
         } else if (this.property.getter) {
             this.valueElement = WebInspector.ObjectPropertyTreeElement.createRemoteObjectAccessorPropertySpan(this.property.parentObject, [this.property.name], this._onInvokeGetterClick.bind(this));
         } else {
@@ -240,7 +241,7 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
         var context = { expanded: this.expanded, previousContent: this.valueElement.textContent };
 
         // Lie about our children to prevent expanding on double click and to collapse subproperties.
-        this.hasChildren = false;
+        this.setExpandable(false);
 
         this.listItemElement.classList.add("editing-sub-part");
 
@@ -527,11 +528,10 @@ WebInspector.ObjectPropertyTreeElement.createRemoteObjectAccessorPropertySpan = 
  */
 WebInspector.FunctionScopeMainTreeElement = function(remoteObject)
 {
-    TreeElement.call(this, "<function scope>");
+    TreeElement.call(this, "<function scope>", true);
     this.toggleOnClick = true;
     this.selectable = false;
     this._remoteObject = remoteObject;
-    this.hasChildren = true;
 }
 
 WebInspector.FunctionScopeMainTreeElement.prototype = {
@@ -614,11 +614,10 @@ WebInspector.FunctionScopeMainTreeElement.prototype = {
  */
 WebInspector.CollectionEntriesMainTreeElement = function(remoteObject)
 {
-    TreeElement.call(this, "<entries>");
+    TreeElement.call(this, "<entries>", true);
     this.toggleOnClick = true;
     this.selectable = false;
     this._remoteObject = remoteObject;
-    this.hasChildren = true;
     this.expand();
 }
 
@@ -666,11 +665,10 @@ WebInspector.CollectionEntriesMainTreeElement.prototype = {
  */
 WebInspector.ScopeTreeElement = function(title, remoteObject)
 {
-    TreeElement.call(this, title);
+    TreeElement.call(this, title, true);
     this.toggleOnClick = true;
     this.selectable = false;
     this._remoteObject = remoteObject;
-    this.hasChildren = true;
 }
 
 WebInspector.ScopeTreeElement.prototype = {
@@ -700,7 +698,6 @@ WebInspector.ArrayGroupingTreeElement = function(object, fromIndex, toIndex, pro
     this._object = object;
     this._readOnly = true;
     this._propertyCount = propertyCount;
-    this._populated = false;
 }
 
 WebInspector.ArrayGroupingTreeElement._bucketThreshold = 100;
@@ -970,11 +967,6 @@ WebInspector.ArrayGroupingTreeElement._populateNonIndexProperties = function(tre
 WebInspector.ArrayGroupingTreeElement.prototype = {
     onpopulate: function()
     {
-        if (this._populated)
-            return;
-
-        this._populated = true;
-
         if (this._propertyCount >= WebInspector.ArrayGroupingTreeElement._bucketThreshold) {
             WebInspector.ArrayGroupingTreeElement._populateRanges(this, this._object, this._fromIndex, this._toIndex, false);
             return;

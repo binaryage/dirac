@@ -168,7 +168,7 @@ WebInspector.EventListenersTreeElement = function(title, nodeId, linkifier)
     this._nodeId = nodeId;
     this._linkifier = linkifier;
 
-    TreeElement.call(this, title, true);
+    TreeElement.call(this, title);
     this.toggleOnClick = true;
     this.selectable = false;
 }

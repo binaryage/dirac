@@ -229,7 +229,7 @@ TreeOutline.prototype = {
             if (!this.selectedTreeElement.revealed()) {
                 this.selectedTreeElement.reveal();
                 handled = true;
-            } else if (this.selectedTreeElement.hasChildren) {
+            } else if (this.selectedTreeElement._expandable) {
                 handled = true;
                 if (this.selectedTreeElement.expanded) {
                     nextSelectedElement = this.selectedTreeElement.firstChild();
@@ -288,9 +288,9 @@ TreeOutlineInShadow.prototype = {
 /**
  * @constructor
  * @param {(string|!Node)=} title
- * @param {boolean=} hasChildren
+ * @param {boolean=} expandable
  */
-function TreeElement(title, hasChildren)
+function TreeElement(title, expandable)
 {
     /** @type {?TreeOutline} */
     this.treeOutline = null;
@@ -317,7 +317,7 @@ function TreeElement(title, hasChildren)
     this._selectable = true;
     this.expanded = false;
     this.selected = false;
-    this.hasChildren = hasChildren || false;
+    this.setExpandable(expandable || false);
 }
 
 /** @const */
@@ -450,7 +450,7 @@ TreeElement.prototype = {
 
         this._children.splice(index, 0, child);
 
-        this.hasChildren = true;
+        this.setExpandable(true);
         child.parent = this;
 
         if (this.treeOutline)
@@ -593,30 +593,26 @@ TreeElement.prototype = {
             this._listItemNode.removeAttribute("title");
     },
 
-    get hasChildren()
+    /**
+     * @return {boolean}
+     */
+    isExpandable: function()
     {
-        return this._hasChildren;
+        return this._expandable;
     },
 
     /**
-     * Used inside subclasses.
-     *
-     * @param {boolean} hasChildren
+     * @param {boolean} expandable
      */
-    setHasChildren: function(hasChildren)
+    setExpandable: function(expandable)
     {
-        this.hasChildren = hasChildren;
-    },
-
-    set hasChildren(x)
-    {
-        if (this._hasChildren === x)
+        if (this._expandable === expandable)
             return;
 
-        this._hasChildren = x;
+        this._expandable = expandable;
 
-        this._listItemNode.classList.toggle("parent", x);
-        if (!x)
+        this._listItemNode.classList.toggle("parent", expandable);
+        if (!expandable)
             this.collapse();
     },
 
@@ -732,7 +728,7 @@ TreeElement.prototype = {
         var handled = this.ondblclick(event);
         if (handled)
             return;
-        if (this.hasChildren && !this.expanded)
+        if (this._expandable && !this.expanded)
             this.expand();
     },
 
@@ -766,7 +762,7 @@ TreeElement.prototype = {
 
     expand: function()
     {
-        if (!this.hasChildren || (this.expanded && this._children))
+        if (!this._expandable || (this.expanded && this._children))
             return;
 
         // Set this before onpopulate. Since onpopulate can add elements, this makes
@@ -775,11 +771,7 @@ TreeElement.prototype = {
 
         this.expanded = true;
 
-        if (!this._children) {
-            this._children = [];
-            this.onpopulate();
-        }
-
+        this._populateIfNeeded();
         this._listItemNode.classList.add("expanded");
         this._childrenListNode.classList.add("expanded");
 
@@ -899,6 +891,14 @@ TreeElement.prototype = {
         this._listItemNode.classList.remove("selected");
     },
 
+    _populateIfNeeded: function()
+    {
+        if (this._expandable && !this._children) {
+            this._children = [];
+            this.onpopulate();
+        }
+    },
+
     onpopulate: function()
     {
         // Overridden by subclasses.
@@ -979,8 +979,8 @@ TreeElement.prototype = {
      */
     traverseNextTreeElement: function(skipUnrevealed, stayWithin, dontPopulate, info)
     {
-        if (!dontPopulate && this.hasChildren)
-            this.onpopulate();
+        if (!dontPopulate)
+            this._populateIfNeeded();
 
         if (info)
             info.depthChange = 0;
@@ -1020,12 +1020,12 @@ TreeElement.prototype = {
     traversePreviousTreeElement: function(skipUnrevealed, dontPopulate)
     {
         var element = skipUnrevealed ? (this.revealed() ? this.previousSibling : null) : this.previousSibling;
-        if (!dontPopulate && element && element.hasChildren)
-            element.onpopulate();
+        if (!dontPopulate && element)
+            element._populateIfNeeded();
 
         while (element && (skipUnrevealed ? (element.revealed() && element.expanded ? element.lastChild() : null) : element.lastChild())) {
-            if (!dontPopulate && element.hasChildren)
-                element.onpopulate();
+            if (!dontPopulate)
+                element._populateIfNeeded();
             element = (skipUnrevealed ? (element.revealed() && element.expanded ? element.lastChild() : null) : element.lastChild());
         }
 
@@ -1048,6 +1048,6 @@ TreeElement.prototype = {
         console.assert(paddingLeftValue.endsWith("px"));
         var computedLeftPadding = parseFloat(paddingLeftValue);
         var left = this._listItemNode.totalOffsetLeft() + computedLeftPadding;
-        return event.pageX >= left && event.pageX <= left + TreeElement._ArrowToggleWidth && this.hasChildren;
+        return event.pageX >= left && event.pageX <= left + TreeElement._ArrowToggleWidth && this._expandable;
     }
 }

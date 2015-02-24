@@ -1419,7 +1419,7 @@ WebInspector.ElementsTreeOutline.prototype = {
      */
     populateTreeElement: function(treeElement)
     {
-        if (treeElement.childCount() || !treeElement.hasChildren)
+        if (treeElement.childCount() || !treeElement.isExpandable())
             return;
 
         this._updateModifiedParentNode(treeElement.node());
@@ -1712,7 +1712,7 @@ WebInspector.ElementsTreeOutline.prototype = {
     {
         var childrenDisplayMode = this._calculateChildrenDisplayMode(treeElement);
         treeElement.setChildrenDisplayMode(childrenDisplayMode);
-        treeElement.setHasChildren(childrenDisplayMode === WebInspector.ElementsTreeElement.ChildrenDisplayMode.HasChildren);
+        treeElement.setExpandable(childrenDisplayMode === WebInspector.ElementsTreeElement.ChildrenDisplayMode.HasChildren);
     },
 
     /**
@@ -1759,7 +1759,7 @@ WebInspector.ElementsTreeOutline.prototype = {
      */
     updateChildren: function(treeElement)
     {
-        if (!treeElement.hasChildren) {
+        if (!treeElement.isExpandable()) {
             var selectedTreeElement = treeElement.treeOutline.selectedTreeElement;
             if (selectedTreeElement && selectedTreeElement.hasAncestor(treeElement))
                 treeElement.select();
@@ -1888,7 +1888,7 @@ WebInspector.ElementsTreeOutline.prototype = {
         }
 
         // Insert close tag.
-        if (node.nodeType() === Node.ELEMENT_NODE && treeElement.hasChildren)
+        if (node.nodeType() === Node.ELEMENT_NODE && treeElement.isExpandable())
             this.insertChildElement(treeElement, node, treeElement.childCount(), true);
 
         this._treeElementsBeingUpdated.delete(treeElement);
@@ -2170,7 +2170,7 @@ WebInspector.ElementsTreeOutline.Renderer.prototype = {
                 }
                 var treeOutline = new WebInspector.ElementsTreeOutline(node.target(), false, false);
                 treeOutline.rootDOMNode = node;
-                if (!treeOutline.firstChild().hasChildren)
+                if (!treeOutline.firstChild().isExpandable())
                     treeOutline._element.classList.add("single-node");
                 treeOutline.setVisible(true);
                 treeOutline.element.treeElementForTest = treeOutline.firstChild();

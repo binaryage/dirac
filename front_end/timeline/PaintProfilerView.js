@@ -355,7 +355,7 @@ WebInspector.PaintProfilerCommandLogView.prototype = {
   */
 WebInspector.LogTreeElement = function(ownerView, logItem)
 {
-    TreeElement.call(this);
+    TreeElement.call(this, "", !!this._logItem.params);
     this._logItem = logItem;
     this._ownerView = ownerView;
     this._filled = false;
@@ -365,14 +365,10 @@ WebInspector.LogTreeElement.prototype = {
     onattach: function()
     {
         this._update();
-        this.hasChildren = !!this._logItem.params;
     },
 
-    onexpand: function()
+    onpopulate: function()
     {
-        if (this._filled)
-            return;
-        this._filled = true;
         for (var param in this._logItem.params)
             WebInspector.LogPropertyTreeElement._appendLogPropertyItem(this, param, this._logItem.params[param]);
     },

@@ -425,7 +425,7 @@ WebInspector.ElementsTreeElement.prototype = {
         if (this._startEditingTarget(/** @type {!Element} */(event.target)))
             return false;
 
-        if (this.hasChildren && !this.expanded)
+        if (this.isExpandable() && !this.expanded)
             this.expand();
         return false;
     },

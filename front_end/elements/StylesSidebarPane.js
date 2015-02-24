@@ -2582,9 +2582,9 @@ WebInspector.BlankStylePropertiesSection.prototype = {
  * @param {!WebInspector.CSSProperty} property
  * @param {boolean} inherited
  * @param {boolean} overloaded
- * @param {boolean} hasChildren
+ * @param {boolean} expandable
  */
-WebInspector.StylePropertyTreeElementBase = function(styleRule, property, inherited, overloaded, hasChildren)
+WebInspector.StylePropertyTreeElementBase = function(styleRule, property, inherited, overloaded, expandable)
 {
     this._styleRule = styleRule;
     this.property = property;
@@ -2592,7 +2592,7 @@ WebInspector.StylePropertyTreeElementBase = function(styleRule, property, inheri
     this._overloaded = overloaded;
 
     // Pass an empty title, the title gets made later in onattach.
-    TreeElement.call(this, "", hasChildren);
+    TreeElement.call(this, "", expandable);
 
     this.selectable = false;
 }
@@ -2809,7 +2809,6 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
 
         if (!this.parsedOk) {
             // Avoid having longhands under an invalid shorthand.
-            this.hasChildren = false;
             this.listItemElement.classList.add("not-parsed-ok");
 
             // Add a separate exclamation mark IMG element with a tooltip.
@@ -3218,13 +3217,13 @@ WebInspector.StylePropertyTreeElement.prototype = {
         /** @type {!WebInspector.StylePropertyTreeElement.Context} */
         var context = {
             expanded: this.expanded,
-            hasChildren: this.hasChildren,
+            hasChildren: this.isExpandable(),
             isEditingName: isEditingName,
             previousContent: selectElement.textContent
         };
 
         // Lie about our children to prevent expanding on double click and to collapse shorthands.
-        this.hasChildren = false;
+        this.setExpandable(false);
 
         if (selectElement.parentElement)
             selectElement.parentElement.classList.add("child-editing");
@@ -3415,7 +3414,7 @@ WebInspector.StylePropertyTreeElement.prototype = {
     {
         this._resetMouseDownElement();
 
-        this.hasChildren = context.hasChildren;
+        this.setExpandable(context.hasChildren);
         if (context.expanded)
             this.expand();
         var editedElement = context.isEditingName ? this.nameElement : this.valueElement;

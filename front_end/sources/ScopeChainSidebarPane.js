@@ -151,7 +151,7 @@ WebInspector.ScopeChainSidebarPane.prototype = {
     _elementAttached: function(event)
     {
         var element = /** @type {!WebInspector.ObjectPropertyTreeElement} */ (event.data);
-        if (element.hasChildren && this._expandedProperties.has(this._propertyPath(element)))
+        if (element.isExpandable() && this._expandedProperties.has(this._propertyPath(element)))
             element.expand();
     },
 

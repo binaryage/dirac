@@ -47,12 +47,10 @@ WebInspector.XMLView.prototype = {
  */
 WebInspector.XMLView.Node = function(node, closeTag)
 {
-    TreeElement.call(this, "", true);
+    TreeElement.call(this, "", !closeTag && !!node.childElementCount);
     this._node = node;
     this._closeTag = closeTag;
-    this._populated = false;
     this.selectable = false;
-    this.hasChildren = !closeTag && !!node.childElementCount;
     this._updateTitle();
 }
 
@@ -163,11 +161,8 @@ WebInspector.XMLView.Node.prototype = {
 
     onpopulate: function()
     {
-        if (this._populated || this._closeTag)
-            return;
         WebInspector.XMLView.Node.populate(this, this._node);
         this.appendChild(new WebInspector.XMLView.Node(this._node, true));
-        this._populated = true;
     },
 
     __proto__: TreeElement.prototype

@@ -224,13 +224,9 @@ WebInspector.RevisionHistoryTreeElement.prototype = {
         this.listItemElement.classList.add("revision-history-revision");
     },
 
-    onexpand: function()
+    onpopulate: function()
     {
         this.listItemElement.appendChild(this._revertElement);
-
-        if (this._wasExpandedOnce)
-            return;
-        this._wasExpandedOnce = true;
 
         this.childrenListElement.classList.add("source-code");
         if (this._baseRevision)
