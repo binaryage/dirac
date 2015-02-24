@@ -39,3 +39,9 @@
     box-shadow: none;
     text-shadow: none;
 }
+
+:host(:not(:disabled):focus) {
+    -webkit-transition: border-color 200ms;
+    border-color: rgb(77, 144, 254);
+    outline: none;
+}
