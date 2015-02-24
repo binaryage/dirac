@@ -112,6 +112,8 @@ WebInspector.ElementsTreeOutline.Events = {
  */
 WebInspector.ElementsTreeOutline.MappedCharToEntity = {
     "\u00a0": "nbsp",
+    "\u0093": "#147", // <control>
+    "\u00ad": "shy",
     "\u2002": "ensp",
     "\u2003": "emsp",
     "\u2009": "thinsp",
