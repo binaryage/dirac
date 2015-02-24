@@ -333,9 +333,9 @@ WebInspector.PaintProfilerCommandLogView.prototype = {
         if (!this._target)
             return;
         var node = this._treeOutline.treeElementFromEvent(event);
-        if (!node || !node.representedObject || !(node instanceof WebInspector.LogTreeElement))
+        if (!node || !(node instanceof WebInspector.LogTreeElement))
             return;
-        var logItem = /** @type {!WebInspector.PaintProfilerLogItem} */ (node.representedObject);
+        var logItem = /** @type {!WebInspector.LogTreeElement} */ (node)._logItem;
         if (!logItem.nodeId())
             return;
         var contextMenu = new WebInspector.ContextMenu(event);
@@ -355,7 +355,8 @@ WebInspector.PaintProfilerCommandLogView.prototype = {
   */
 WebInspector.LogTreeElement = function(ownerView, logItem)
 {
-    TreeElement.call(this, "", logItem);
+    TreeElement.call(this);
+    this._logItem = logItem;
     this._ownerView = ownerView;
     this._filled = false;
 }
@@ -364,7 +365,7 @@ WebInspector.LogTreeElement.prototype = {
     onattach: function()
     {
         this._update();
-        this.hasChildren = !!this.representedObject.params;
+        this.hasChildren = !!this._logItem.params;
     },
 
     onexpand: function()
@@ -372,12 +373,12 @@ WebInspector.LogTreeElement.prototype = {
         if (this._filled)
             return;
         this._filled = true;
-        for (var param in this.representedObject.params)
-            WebInspector.LogPropertyTreeElement._appendLogPropertyItem(this, param, this.representedObject.params[param]);
+        for (var param in this._logItem.params)
+            WebInspector.LogPropertyTreeElement._appendLogPropertyItem(this, param, this._logItem.params[param]);
     },
 
     /**
-      * @param {!Object} param
+      * @param {!Object<string,*>} param
       * @param {string} name
       * @return {string}
       */
@@ -398,7 +399,7 @@ WebInspector.LogTreeElement.prototype = {
     },
 
     /**
-      * @param {!Object} params
+      * @param {?Array<!Object<string, *>>} params
       * @return {string}
       */
     _paramsToString: function(params)
@@ -414,9 +415,8 @@ WebInspector.LogTreeElement.prototype = {
 
     _update: function()
     {
-        var logItem = this.representedObject;
         var title = createDocumentFragment();
-        title.createTextChild(logItem.method + "(" + this._paramsToString(logItem.params) + ")");
+        title.createTextChild(this._logItem.method + "(" + this._paramsToString(this._logItem.params) + ")");
         this.title = title;
     },
 
@@ -433,7 +433,7 @@ WebInspector.LogTreeElement.prototype = {
             target.domModel.hideDOMNodeHighlight();
             return;
         }
-        var logItem = /** @type {!WebInspector.PaintProfilerLogItem} */ (this.representedObject);
+        var logItem = /** @type {!WebInspector.PaintProfilerLogItem} */ (this._logItem);
         if (!logItem)
             return;
         var backendNodeId = logItem.nodeId();
@@ -460,7 +460,8 @@ WebInspector.LogTreeElement.prototype = {
   */
 WebInspector.LogPropertyTreeElement = function(property)
 {
-    TreeElement.call(this, "", property);
+    TreeElement.call(this);
+    this._property = property;
 };
 
 /**
@@ -481,16 +482,15 @@ WebInspector.LogPropertyTreeElement._appendLogPropertyItem = function(element, n
 WebInspector.LogPropertyTreeElement.prototype = {
     onattach: function()
     {
-        var property = this.representedObject;
         var title = createDocumentFragment();
         var nameElement = title.createChild("span", "name");
-        nameElement.textContent = property.name;
+        nameElement.textContent = this._property.name;
         var separatorElement = title.createChild("span", "separator");
         separatorElement.textContent = ": ";
-        if (property.value === null || typeof property.value !== "object") {
+        if (this._property.value === null || typeof this._property.value !== "object") {
             var valueElement = title.createChild("span", "value");
-            valueElement.textContent = JSON.stringify(property.value);
-            valueElement.classList.add("cm-js-" + (property.value === null ? "null" : typeof property.value));
+            valueElement.textContent = JSON.stringify(this._property.value);
+            valueElement.classList.add("cm-js-" + (this._property.value === null ? "null" : typeof this._property.value));
         }
         this.title = title;
     },

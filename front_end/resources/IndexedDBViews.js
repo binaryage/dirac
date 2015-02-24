@@ -46,19 +46,19 @@ WebInspector.IDBDatabaseView = function(database)
     this.element.appendChild(this._headersTreeOutline.element);
     this._headersTreeOutline.expandTreeElementsWhenArrowing = true;
 
-    this._securityOriginTreeElement = new TreeElement("", null, false);
+    this._securityOriginTreeElement = new TreeElement();
     this._securityOriginTreeElement.selectable = false;
     this._headersTreeOutline.appendChild(this._securityOriginTreeElement);
 
-    this._nameTreeElement = new TreeElement("", null, false);
+    this._nameTreeElement = new TreeElement();
     this._nameTreeElement.selectable = false;
     this._headersTreeOutline.appendChild(this._nameTreeElement);
 
-    this._intVersionTreeElement = new TreeElement("", null, false);
+    this._intVersionTreeElement = new TreeElement();
     this._intVersionTreeElement.selectable = false;
     this._headersTreeOutline.appendChild(this._intVersionTreeElement);
 
-    this._stringVersionTreeElement = new TreeElement("", null, false);
+    this._stringVersionTreeElement = new TreeElement();
     this._stringVersionTreeElement.selectable = false;
     this._headersTreeOutline.appendChild(this._stringVersionTreeElement);
 

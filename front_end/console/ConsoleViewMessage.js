@@ -237,7 +237,7 @@ WebInspector.ConsoleViewMessage.prototype = {
             var treeOutline = new TreeOutline();
             treeOutline.element.classList.add("outline-disclosure", "outline-disclosure-no-padding");
             var content = this._formattedMessage;
-            var root = new TreeElement(content, null, true);
+            var root = new TreeElement(content);
             root.toggleOnClick = true;
             root.selectable = false;
             content.treeElementForTest = root;

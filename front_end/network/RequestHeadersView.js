@@ -276,7 +276,7 @@ WebInspector.RequestHeadersView.prototype = {
             paramNameValue.appendChild(name);
             paramNameValue.appendChild(value);
 
-            var parmTreeElement = new TreeElement(paramNameValue, null, false);
+            var parmTreeElement = new TreeElement(paramNameValue);
             parmTreeElement.selectable = false;
             paramsTreeElement.appendChild(parmTreeElement);
         }
@@ -545,7 +545,7 @@ WebInspector.RequestHeadersView.prototype = {
  */
 WebInspector.RequestHeadersView.Category = function(root, name, title)
 {
-    TreeElement.call(this, title || "", null, true);
+    TreeElement.call(this, title || "", true);
     this.selectable = false;
     this.toggleOnClick = true;
     this.hidden = true;
@@ -560,7 +560,7 @@ WebInspector.RequestHeadersView.Category.prototype = {
      */
     createLeaf: function()
     {
-        var leaf = new TreeElement("", null, false);
+        var leaf = new TreeElement();
         leaf.selectable = false;
         this.appendChild(leaf);
         return leaf;

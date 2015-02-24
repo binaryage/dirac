@@ -77,7 +77,7 @@ WebInspector.RevisionHistoryView.prototype = {
      */
     _createUISourceCodeItem: function(uiSourceCode)
     {
-        var uiSourceCodeItem = new TreeElement(uiSourceCode.displayName(), null, true);
+        var uiSourceCodeItem = new TreeElement(uiSourceCode.displayName(), true);
         uiSourceCodeItem.selectable = false;
 
         // Insert in sorted order
@@ -100,7 +100,7 @@ WebInspector.RevisionHistoryView.prototype = {
             uiSourceCodeItem.appendChild(historyItem);
         }
 
-        var linkItem = new TreeElement("", null, false);
+        var linkItem = new TreeElement();
         linkItem.selectable = false;
         uiSourceCodeItem.appendChild(linkItem);
 
@@ -204,7 +204,7 @@ WebInspector.RevisionHistoryView.prototype = {
  */
 WebInspector.RevisionHistoryTreeElement = function(revision, baseRevision, allowRevert)
 {
-    TreeElement.call(this, revision.timestamp.toLocaleTimeString(), null, true);
+    TreeElement.call(this, revision.timestamp.toLocaleTimeString(), true);
     this.selectable = false;
 
     this._revision = revision;
@@ -306,7 +306,7 @@ WebInspector.RevisionHistoryTreeElement.prototype = {
      */
     _createLine: function(baseLineNumber, newLineNumber, lineContent, changeType)
     {
-        var child = new TreeElement("", null, false);
+        var child = new TreeElement();
         child.selectable = false;
         this.appendChild(child);
 

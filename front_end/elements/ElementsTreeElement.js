@@ -37,7 +37,7 @@
 WebInspector.ElementsTreeElement = function(node, elementCloseTag)
 {
     // The title will be updated in onattach.
-    TreeElement.call(this, "", elementCloseTag ? null : node);
+    TreeElement.call(this);
     this._node = node;
 
     this._elementCloseTag = elementCloseTag;
@@ -47,6 +47,8 @@ WebInspector.ElementsTreeElement = function(node, elementCloseTag)
     this._searchQuery = null;
     this._expandedChildrenLimit = WebInspector.ElementsTreeElement.InitialChildrenLimit;
 }
+
+WebInspector.ElementsTreeElement.symbol = Symbol("treeElement");
 
 WebInspector.ElementsTreeElement.InitialChildrenLimit = 500;
 
@@ -235,6 +237,27 @@ WebInspector.ElementsTreeElement.prototype = {
         this.selectionElement.style.height = listItemElement.offsetHeight + "px";
     },
 
+    /**
+     * @override
+     */
+    onbind: function()
+    {
+        if (!this._elementCloseTag)
+            this._node[WebInspector.ElementsTreeElement.symbol] = this;
+    },
+
+    /**
+     * @override
+     */
+    onunbind: function()
+    {
+        if (this._node[WebInspector.ElementsTreeElement.symbol] === this)
+            this._node[WebInspector.ElementsTreeElement.symbol] = null;
+    },
+
+    /**
+     * @override
+     */
     onattach: function()
     {
         if (this._hovered) {
@@ -519,7 +542,7 @@ WebInspector.ElementsTreeElement.prototype = {
     populateNodeContextMenu: function(contextMenu)
     {
         // Add free-form node-related actions.
-        var openTagElement = this.treeOutline.getCachedTreeElement(this._node) || this;
+        var openTagElement = this._node[WebInspector.ElementsTreeElement.symbol] || this;
         var isEditable = this.hasEditableNode();
         if (isEditable && !this._editing)
             contextMenu.appendItem(WebInspector.UIString("Edit as HTML"), openTagElement.toggleEditAsHTML.bind(openTagElement));

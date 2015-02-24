@@ -33,7 +33,6 @@
  */
 function TreeOutline(nonFocusable)
 {
-    this._treeElementSymbol = Symbol("TreeElement");
     this._createRootElement();
 
     this.selectedTreeElement = null;
@@ -58,7 +57,7 @@ TreeOutline.Events = {
 TreeOutline.prototype = {
     _createRootElement: function()
     {
-        this._rootElement = new TreeElement("", null, false);
+        this._rootElement = new TreeElement();
         this._rootElement.treeOutline = this;
         this._rootElement.root = true;
         this._rootElement.selectable = false;
@@ -169,11 +168,8 @@ TreeOutline.prototype = {
     {
         if (element.treeOutline)
             console.error("Binding element for the second time: " + new Error().stack);
-
-        var existingElement = element.representedObject[this._treeElementSymbol];
-        console.assert(!existingElement, "A tree element with given represented object already exists: " + (existingElement && existingElement.title ? existingElement.title.textContent : ""));
-        element.representedObject[this._treeElementSymbol] = element;
         element.treeOutline = this;
+        element.onbind();
     },
 
     /**
@@ -185,20 +181,8 @@ TreeOutline.prototype = {
             console.error("Unbinding element that was not bound: " + new Error().stack);
 
         element.deselect();
-        delete element.representedObject[this._treeElementSymbol];
         element.treeOutline = null;
-    },
-
-    /**
-     * @param {?Object} representedObject
-     * @return {?TreeElement}
-     */
-    getCachedTreeElement: function(representedObject)
-    {
-        if (!representedObject)
-            return null;
-
-        return representedObject[this._treeElementSymbol] || null;
+        element.onunbind();
     },
 
     /**
@@ -303,14 +287,11 @@ TreeOutlineInShadow.prototype = {
 
 /**
  * @constructor
- * @param {string|!Node} title
- * @param {?Object=} representedObject
+ * @param {(string|!Node)=} title
  * @param {boolean=} hasChildren
  */
-function TreeElement(title, representedObject, hasChildren)
+function TreeElement(title, hasChildren)
 {
-    this.representedObject = representedObject || {};
-
     /** @type {?TreeOutline} */
     this.treeOutline = null;
     this.parent = null;
@@ -319,7 +300,8 @@ function TreeElement(title, representedObject, hasChildren)
 
     this._listItemNode = createElement("li");
     this._listItemNode.treeElement = this;
-    this.title = title;
+    if (title)
+        this.title = title;
     if (typeof title === "string")
         this.tooltip = title;
     this._listItemNode.addEventListener("mousedown", this._handleMouseDown.bind(this), false);
@@ -760,14 +742,6 @@ TreeElement.prototype = {
         this._childrenListNode.remove();
     },
 
-    /**
-     * @return {*}
-     */
-    elementIdentity: function()
-    {
-        return this.representedObject;
-    },
-
     collapse: function()
     {
         if (!this.expanded)
@@ -952,6 +926,14 @@ TreeElement.prototype = {
     onspace: function()
     {
         return false;
+    },
+
+    onbind: function()
+    {
+    },
+
+    onunbind: function()
+    {
     },
 
     onattach: function()

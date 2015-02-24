@@ -62,7 +62,7 @@ WebInspector.FileBasedSearchResultsPane.prototype = {
  */
 WebInspector.FileBasedSearchResultsPane.FileTreeElement = function(searchConfig, searchResult)
 {
-    TreeElement.call(this, "", null, true);
+    TreeElement.call(this, "", true);
     this._searchConfig = searchConfig;
     this._searchResult = searchResult;
 
@@ -153,7 +153,7 @@ WebInspector.FileBasedSearchResultsPane.FileTreeElement.prototype = {
             var contentSpan = this._createContentSpan(lineContent, matchRanges);
             anchor.appendChild(contentSpan);
 
-            var searchMatchElement = new TreeElement("");
+            var searchMatchElement = new TreeElement();
             searchMatchElement.selectable = false;
             this.appendChild(searchMatchElement);
             searchMatchElement.listItemElement.className = "search-match source-code";

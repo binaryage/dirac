@@ -116,7 +116,7 @@ WebInspector.FileSystemView.prototype = {
  */
 WebInspector.FileSystemView.EntryTreeElement = function(fileSystemView, entry)
 {
-    TreeElement.call(this, entry.name, null, entry.isDirectory);
+    TreeElement.call(this, entry.name, entry.isDirectory);
 
     this._entry = entry;
     this._fileSystemView = fileSystemView;

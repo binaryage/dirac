@@ -757,7 +757,7 @@ WebInspector.ResourcesPanel.prototype = {
 
     _findTreeElementForResource: function(resource)
     {
-        return this._sidebarTree.getCachedTreeElement(resource);
+        return resource[WebInspector.FrameResourceTreeElement._symbol];
     },
 
     showView: function(view)
@@ -832,15 +832,14 @@ WebInspector.ResourcesPanel.ResourceRevealer.prototype = {
  * @constructor
  * @extends {TreeElement}
  * @param {!WebInspector.ResourcesPanel} storagePanel
- * @param {?Object} representedObject
  * @param {string} title
  * @param {?Array.<string>=} iconClasses
  * @param {boolean=} hasChildren
  * @param {boolean=} noIcon
  */
-WebInspector.BaseStorageTreeElement = function(storagePanel, representedObject, title, iconClasses, hasChildren, noIcon)
+WebInspector.BaseStorageTreeElement = function(storagePanel, title, iconClasses, hasChildren, noIcon)
 {
-    TreeElement.call(this, "", representedObject, hasChildren);
+    TreeElement.call(this, "", hasChildren);
     this._storagePanel = storagePanel;
     this._titleText = title;
     this._iconClasses = iconClasses;
@@ -965,7 +964,7 @@ WebInspector.BaseStorageTreeElement.prototype = {
  */
 WebInspector.StorageCategoryTreeElement = function(storagePanel, categoryName, settingsKey, iconClasses, noIcon)
 {
-    WebInspector.BaseStorageTreeElement.call(this, storagePanel, null, categoryName, iconClasses, false, noIcon);
+    WebInspector.BaseStorageTreeElement.call(this, storagePanel, categoryName, iconClasses, false, noIcon);
     this._expandedSettingKey = "resources" + settingsKey + "Expanded";
     WebInspector.settings[this._expandedSettingKey] = WebInspector.settings.createSetting(this._expandedSettingKey, settingsKey === "Frames");
     this._categoryName = categoryName;
@@ -1033,7 +1032,7 @@ WebInspector.StorageCategoryTreeElement.prototype = {
  */
 WebInspector.FrameTreeElement = function(storagePanel, frame)
 {
-    WebInspector.BaseStorageTreeElement.call(this, storagePanel, null, "", ["frame-storage-tree-item"]);
+    WebInspector.BaseStorageTreeElement.call(this, storagePanel, "", ["frame-storage-tree-item"]);
     this._frame = frame;
     this.frameNavigated(frame);
 }
@@ -1110,7 +1109,7 @@ WebInspector.FrameTreeElement.prototype = {
     resourceByURL: function(url)
     {
         var treeElement = this._treeElementForResource[url];
-        return treeElement ? treeElement.representedObject : null;
+        return treeElement ? treeElement._resource : null;
     },
 
     appendChild: function(treeElement)
@@ -1168,13 +1167,16 @@ WebInspector.FrameTreeElement.prototype = {
  */
 WebInspector.FrameResourceTreeElement = function(storagePanel, resource)
 {
-    WebInspector.BaseStorageTreeElement.call(this, storagePanel, resource, resource.displayName, ["resource-sidebar-tree-item", "resources-type-" + resource.resourceType().name()]);
+    WebInspector.BaseStorageTreeElement.call(this, storagePanel, resource.displayName, ["resource-sidebar-tree-item", "resources-type-" + resource.resourceType().name()]);
     /** @type {!WebInspector.Resource} */
     this._resource = resource;
     this._resource.addEventListener(WebInspector.Resource.Events.MessageAdded, this._consoleMessageAdded, this);
     this._resource.addEventListener(WebInspector.Resource.Events.MessagesCleared, this._consoleMessagesCleared, this);
     this.tooltip = resource.url;
+    this._resource[WebInspector.FrameResourceTreeElement._symbol] = this;
 }
+
+WebInspector.FrameResourceTreeElement._symbol = Symbol("treeElement");
 
 WebInspector.FrameResourceTreeElement.prototype = {
     get itemURL()
@@ -1326,7 +1328,7 @@ WebInspector.FrameResourceTreeElement.prototype = {
  */
 WebInspector.DatabaseTreeElement = function(storagePanel, database)
 {
-    WebInspector.BaseStorageTreeElement.call(this, storagePanel, null, database.name, ["database-storage-tree-item"], true);
+    WebInspector.BaseStorageTreeElement.call(this, storagePanel, database.name, ["database-storage-tree-item"], true);
     this._database = database;
 }
 
@@ -1381,7 +1383,7 @@ WebInspector.DatabaseTreeElement.prototype = {
  */
 WebInspector.DatabaseTableTreeElement = function(storagePanel, database, tableName)
 {
-    WebInspector.BaseStorageTreeElement.call(this, storagePanel, null, tableName, ["database-table-storage-tree-item"]);
+    WebInspector.BaseStorageTreeElement.call(this, storagePanel, tableName, ["database-table-storage-tree-item"]);
     this._database = database;
     this._tableName = tableName;
 }
@@ -1544,7 +1546,7 @@ WebInspector.ServiceWorkerCacheTreeElement.prototype = {
  */
 WebInspector.SWCacheTreeElement = function(storagePanel, model, cacheId)
 {
-    WebInspector.BaseStorageTreeElement.call(this, storagePanel, null, cacheId.name, ["service-worker-cache-tree-item"]);
+    WebInspector.BaseStorageTreeElement.call(this, storagePanel, cacheId.name, ["service-worker-cache-tree-item"]);
     this._model = model;
     this._cacheId = cacheId;
 }
@@ -1810,7 +1812,7 @@ WebInspector.FileSystemListTreeElement.prototype = {
  */
 WebInspector.IDBDatabaseTreeElement = function(storagePanel, model, databaseId)
 {
-    WebInspector.BaseStorageTreeElement.call(this, storagePanel, null, databaseId.name + " - " + databaseId.securityOrigin, ["indexed-db-storage-tree-item"]);
+    WebInspector.BaseStorageTreeElement.call(this, storagePanel, databaseId.name + " - " + databaseId.securityOrigin, ["indexed-db-storage-tree-item"]);
     this._model = model;
     this._databaseId = databaseId;
     this._idbObjectStoreTreeElements = {};
@@ -1917,7 +1919,7 @@ WebInspector.IDBDatabaseTreeElement.prototype = {
  */
 WebInspector.IDBObjectStoreTreeElement = function(storagePanel, model, databaseId, objectStore)
 {
-    WebInspector.BaseStorageTreeElement.call(this, storagePanel, null, objectStore.name, ["indexed-db-object-store-storage-tree-item"]);
+    WebInspector.BaseStorageTreeElement.call(this, storagePanel, objectStore.name, ["indexed-db-object-store-storage-tree-item"]);
     this._model = model;
     this._databaseId = databaseId;
     this._idbIndexTreeElements = {};
@@ -2050,7 +2052,7 @@ WebInspector.IDBObjectStoreTreeElement.prototype = {
  */
 WebInspector.IDBIndexTreeElement = function(storagePanel, model, databaseId, objectStore, index)
 {
-    WebInspector.BaseStorageTreeElement.call(this, storagePanel, null, index.name, ["indexed-db-index-storage-tree-item"]);
+    WebInspector.BaseStorageTreeElement.call(this, storagePanel, index.name, ["indexed-db-index-storage-tree-item"]);
     this._model = model;
     this._databaseId = databaseId;
     this._objectStore = objectStore;
@@ -2117,7 +2119,7 @@ WebInspector.IDBIndexTreeElement.prototype = {
  */
 WebInspector.DOMStorageTreeElement = function(storagePanel, domStorage, className)
 {
-    WebInspector.BaseStorageTreeElement.call(this, storagePanel, null, domStorage.securityOrigin ? domStorage.securityOrigin : WebInspector.UIString("Local Files"), ["domstorage-storage-tree-item", className]);
+    WebInspector.BaseStorageTreeElement.call(this, storagePanel, domStorage.securityOrigin ? domStorage.securityOrigin : WebInspector.UIString("Local Files"), ["domstorage-storage-tree-item", className]);
     this._domStorage = domStorage;
 }
 
@@ -2147,7 +2149,7 @@ WebInspector.DOMStorageTreeElement.prototype = {
  */
 WebInspector.CookieTreeElement = function(storagePanel, cookieDomain)
 {
-    WebInspector.BaseStorageTreeElement.call(this, storagePanel, null, cookieDomain ? cookieDomain : WebInspector.UIString("Local Files"), ["cookie-storage-tree-item"]);
+    WebInspector.BaseStorageTreeElement.call(this, storagePanel, cookieDomain ? cookieDomain : WebInspector.UIString("Local Files"), ["cookie-storage-tree-item"]);
     this._cookieDomain = cookieDomain;
 }
 
@@ -2202,7 +2204,7 @@ WebInspector.CookieTreeElement.prototype = {
 WebInspector.ApplicationCacheManifestTreeElement = function(storagePanel, manifestURL)
 {
     var title = new WebInspector.ParsedURL(manifestURL).displayName;
-    WebInspector.BaseStorageTreeElement.call(this, storagePanel, null, title, ["application-cache-storage-tree-item"]);
+    WebInspector.BaseStorageTreeElement.call(this, storagePanel, title, ["application-cache-storage-tree-item"]);
     this.tooltip = manifestURL;
     this._manifestURL = manifestURL;
 }
@@ -2241,7 +2243,7 @@ WebInspector.ApplicationCacheManifestTreeElement.prototype = {
  */
 WebInspector.ApplicationCacheFrameTreeElement = function(storagePanel, frameId, manifestURL)
 {
-    WebInspector.BaseStorageTreeElement.call(this, storagePanel, null, "", ["frame-storage-tree-item"]);
+    WebInspector.BaseStorageTreeElement.call(this, storagePanel, "", ["frame-storage-tree-item"]);
     this._frameId = frameId;
     this._manifestURL = manifestURL;
     this._refreshTitles();
@@ -2302,7 +2304,7 @@ WebInspector.ApplicationCacheFrameTreeElement.prototype = {
 WebInspector.FileSystemTreeElement = function(storagePanel, fileSystem)
 {
     var displayName = fileSystem.type + " - " + fileSystem.origin;
-    WebInspector.BaseStorageTreeElement.call(this, storagePanel, null, displayName, ["file-system-storage-tree-item"]);
+    WebInspector.BaseStorageTreeElement.call(this, storagePanel, displayName, ["file-system-storage-tree-item"]);
     this._fileSystem = fileSystem;
 }
 

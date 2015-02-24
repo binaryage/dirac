@@ -47,7 +47,7 @@ WebInspector.XMLView.prototype = {
  */
 WebInspector.XMLView.Node = function(node, closeTag)
 {
-    TreeElement.call(this, "", null, true);
+    TreeElement.call(this, "", true);
     this._node = node;
     this._closeTag = closeTag;
     this._populated = false;

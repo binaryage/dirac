@@ -920,7 +920,7 @@ WebInspector.ProfilesPanel.prototype = {
  */
 WebInspector.ProfileTypeSidebarSection = function(dataDisplayDelegate, profileType)
 {
-    WebInspector.SidebarSectionTreeElement.call(this, profileType.treeItemTitle, null, true);
+    WebInspector.SidebarSectionTreeElement.call(this, profileType.treeItemTitle, true);
     this._dataDisplayDelegate = dataDisplayDelegate;
     this._profileTreeElements = [];
     this._profileGroups = {};
@@ -1088,7 +1088,7 @@ WebInspector.ProfileSidebarTreeElement = function(dataDisplayDelegate, profile, 
 {
     this._dataDisplayDelegate = dataDisplayDelegate;
     this.profile = profile;
-    WebInspector.SidebarTreeElement.call(this, className, profile.title, "", profile, false);
+    WebInspector.SidebarTreeElement.call(this, className, profile.title);
     this.refreshTitles();
     profile.addEventListener(WebInspector.ProfileHeader.Events.UpdateStatus, this._updateStatus, this);
     if (profile.canSaveToFile())
@@ -1182,7 +1182,7 @@ WebInspector.ProfileSidebarTreeElement.prototype = {
  */
 WebInspector.ProfileGroupSidebarTreeElement = function(dataDisplayDelegate, title, subtitle)
 {
-    WebInspector.SidebarTreeElement.call(this, "profile-group-sidebar-tree-item", title, subtitle, null, true);
+    WebInspector.SidebarTreeElement.call(this, "profile-group-sidebar-tree-item", title, subtitle, true);
     this._dataDisplayDelegate = dataDisplayDelegate;
 }
 
@@ -1212,7 +1212,7 @@ WebInspector.ProfilesSidebarTreeElement = function(panel)
     this._panel = panel;
     this.small = false;
 
-    WebInspector.SidebarTreeElement.call(this, "profile-launcher-view-tree-item", WebInspector.UIString("Profiles"), "", null, false);
+    WebInspector.SidebarTreeElement.call(this, "profile-launcher-view-tree-item", WebInspector.UIString("Profiles"));
 }
 
 WebInspector.ProfilesSidebarTreeElement.prototype = {

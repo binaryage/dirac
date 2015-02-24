@@ -2385,7 +2385,7 @@ WebInspector.ComputedStylePropertiesSection.prototype = {
                 var fragment = createDocumentFragment();
                 var name = fragment.createChild("span");
                 name.textContent = WebInspector.UIString("Animation") + " " + this._animationProperties.get(property);
-                treeElement.appendChild(new TreeElement(fragment, null, false));
+                treeElement.appendChild(new TreeElement(fragment));
             }
         }
 
@@ -2408,7 +2408,7 @@ WebInspector.ComputedStylePropertiesSection.prototype = {
                     var subtitle = fragment.createChild("span");
                     subtitle.style.float = "right";
                     subtitle.appendChild(WebInspector.StylePropertiesSection._createRuleOriginNode(this._stylesPane._target, this._stylesPane._linkifier, model.rule()));
-                    var childElement = new TreeElement(fragment, null, false);
+                    var childElement = new TreeElement(fragment);
                     treeElement.appendChild(childElement);
                     if (property.inactive || model.isPropertyOverloaded(property.name))
                         childElement.listItemElement.classList.add("overloaded");
@@ -2592,7 +2592,7 @@ WebInspector.StylePropertyTreeElementBase = function(styleRule, property, inheri
     this._overloaded = overloaded;
 
     // Pass an empty title, the title gets made later in onattach.
-    TreeElement.call(this, "", null, hasChildren);
+    TreeElement.call(this, "", hasChildren);
 
     this.selectable = false;
 }

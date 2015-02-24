@@ -43,14 +43,14 @@ WebInspector.AuditsPanel = function()
     this.panelSidebarElement().appendChild(sidebarTree.element);
     this.setDefaultFocusedElement(sidebarTree.element);
 
-    this.auditsTreeElement = new WebInspector.SidebarSectionTreeElement("", {}, true);
+    this.auditsTreeElement = new WebInspector.SidebarSectionTreeElement("", true);
     sidebarTree.appendChild(this.auditsTreeElement);
     this.auditsTreeElement.listItemElement.classList.add("hidden");
 
     this.auditsItemTreeElement = new WebInspector.AuditsSidebarTreeElement(this);
     this.auditsTreeElement.appendChild(this.auditsItemTreeElement);
 
-    this.auditResultsTreeElement = new WebInspector.SidebarSectionTreeElement(WebInspector.UIString("RESULTS"), {}, true);
+    this.auditResultsTreeElement = new WebInspector.SidebarSectionTreeElement(WebInspector.UIString("RESULTS"), true);
     sidebarTree.appendChild(this.auditResultsTreeElement);
     this.auditResultsTreeElement.expand();
 
@@ -473,7 +473,7 @@ WebInspector.AuditsSidebarTreeElement = function(panel)
 {
     this._panel = panel;
     this.small = false;
-    WebInspector.SidebarTreeElement.call(this, "audits-sidebar-tree-item", WebInspector.UIString("Audits"), "", null, false);
+    WebInspector.SidebarTreeElement.call(this, "audits-sidebar-tree-item", WebInspector.UIString("Audits"));
 }
 
 WebInspector.AuditsSidebarTreeElement.prototype = {
@@ -518,7 +518,7 @@ WebInspector.AuditResultSidebarTreeElement = function(panel, results, mainResour
     this._panel = panel;
     this.results = results;
     this.mainResourceURL = mainResourceURL;
-    WebInspector.SidebarTreeElement.call(this, "audit-result-sidebar-tree-item", String.sprintf("%s (%d)", mainResourceURL, ordinal), "", {}, false);
+    WebInspector.SidebarTreeElement.call(this, "audit-result-sidebar-tree-item", String.sprintf("%s (%d)", mainResourceURL, ordinal));
 }
 
 WebInspector.AuditResultSidebarTreeElement.prototype = {

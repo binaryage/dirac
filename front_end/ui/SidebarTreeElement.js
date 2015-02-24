@@ -27,9 +27,9 @@
  * @constructor
  * @extends {TreeElement}
  */
-WebInspector.SidebarSectionTreeElement = function(title, representedObject, hasChildren)
+WebInspector.SidebarSectionTreeElement = function(title, hasChildren)
 {
-    TreeElement.call(this, title.escapeHTML(), representedObject || {}, hasChildren);
+    TreeElement.call(this, title.escapeHTML(), hasChildren);
     this.expand();
 }
 
@@ -76,12 +76,11 @@ WebInspector.SidebarSectionTreeElement.prototype = {
  * @param {string} className
  * @param {string} title
  * @param {string=} subtitle
- * @param {?Object=} representedObject
  * @param {boolean=} hasChildren
  */
-WebInspector.SidebarTreeElement = function(className, title, subtitle, representedObject, hasChildren)
+WebInspector.SidebarTreeElement = function(className, title, subtitle, hasChildren)
 {
-    TreeElement.call(this, "", representedObject, hasChildren);
+    TreeElement.call(this, "", hasChildren);
 
     if (hasChildren)
         this.disclosureButton = createElementWithClass("button", "disclosure-button");

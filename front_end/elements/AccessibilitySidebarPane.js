@@ -41,7 +41,7 @@ WebInspector.AccessibilitySidebarPane.prototype = {
             return;
 
         this._treeOutline = new TreeOutlineInShadow();
-        this._rootElement = new TreeElement("Accessibility Node", {}, true);
+        this._rootElement = new TreeElement("Accessibility Node", true);
         this._rootElement.selectable = false;
         this._treeOutline.appendChild(this._rootElement);
         this.bodyElement.appendChild(this._treeOutline.element);

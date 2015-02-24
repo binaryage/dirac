@@ -563,7 +563,7 @@ WebInspector.ElementsTreeOutline.prototype = {
         if (!node)
             return null;
 
-        var cachedElement = this.getCachedTreeElement(node);
+        var cachedElement = node[WebInspector.ElementsTreeElement.symbol];
         if (cachedElement)
             return cachedElement;
 
@@ -571,7 +571,7 @@ WebInspector.ElementsTreeOutline.prototype = {
         var ancestors = [];
         for (var currentNode = node.parentNode; currentNode; currentNode = currentNode.parentNode) {
             ancestors.push(currentNode);
-            if (this.getCachedTreeElement(currentNode))  // stop climbing as soon as we hit
+            if (currentNode[WebInspector.ElementsTreeElement.symbol])  // stop climbing as soon as we hit
                 break;
         }
 
@@ -580,12 +580,12 @@ WebInspector.ElementsTreeOutline.prototype = {
 
         // Walk down to populate each ancestor's children, to fill in the tree and the cache.
         for (var i = ancestors.length - 1; i >= 0; --i) {
-            var treeElement = this.getCachedTreeElement(ancestors[i]);
+            var treeElement = ancestors[i][WebInspector.ElementsTreeElement.symbol];
             if (treeElement)
                 treeElement.onpopulate();  // fill the cache with the children of treeElement
         }
 
-        return this.getCachedTreeElement(node);
+        return node[WebInspector.ElementsTreeElement.symbol];
     },
 
     /**
@@ -908,7 +908,7 @@ WebInspector.ElementsTreeOutline.prototype = {
         var keyboardEvent = /** @type {!KeyboardEvent} */ (event);
         var node = /** @type {!WebInspector.DOMNode} */ (this.selectedDOMNode());
         console.assert(node);
-        var treeElement = this.getCachedTreeElement(node);
+        var treeElement = node[WebInspector.ElementsTreeElement.symbol];
         if (!treeElement)
             return;
 
@@ -958,8 +958,10 @@ WebInspector.ElementsTreeOutline.prototype = {
     handleShortcut: function(event)
     {
         var node = this.selectedDOMNode();
-        var treeElement = this.getCachedTreeElement(node);
-        if (!node || !treeElement)
+        if (!node)
+            return;
+        var treeElement = node[WebInspector.ElementsTreeElement.symbol];
+        if (!treeElement)
             return;
 
         if (event.keyIdentifier === "F2" && treeElement.hasEditableNode()) {
@@ -987,7 +989,7 @@ WebInspector.ElementsTreeOutline.prototype = {
      */
     _toggleEditAsHTML: function(node)
     {
-        var treeElement = this.getCachedTreeElement(node);
+        var treeElement = node[WebInspector.ElementsTreeElement.symbol];
         if (!treeElement)
             return;
 
@@ -1320,7 +1322,7 @@ WebInspector.ElementsTreeOutline.prototype = {
     _setUpdateInfos: function()
     {
         for (var node of this._updateInfos.keys()) {
-            var treeElement = this.getCachedTreeElement(node);
+            var treeElement = node[WebInspector.ElementsTreeElement.symbol];
             if (treeElement)
                 treeElement.setUpdateInfo(this._updateInfo(node));
         }
@@ -1329,7 +1331,7 @@ WebInspector.ElementsTreeOutline.prototype = {
     _clearUpdateInfos: function()
     {
         for (var node of this._updateInfos.keys()) {
-            var treeElement = this.getCachedTreeElement(node);
+            var treeElement = node[WebInspector.ElementsTreeElement.symbol];
             if (treeElement)
                 treeElement.setUpdateInfo(null);
         }
@@ -1720,7 +1722,7 @@ WebInspector.ElementsTreeOutline.prototype = {
     {
         var button = createTextButton("", handleLoadAllChildren.bind(this));
         button.value = "";
-        var expandAllButtonElement = new TreeElement(button, null, false);
+        var expandAllButtonElement = new TreeElement(button);
         expandAllButtonElement.selectable = false;
         expandAllButtonElement.expandAllButton = true;
         expandAllButtonElement.button = button;

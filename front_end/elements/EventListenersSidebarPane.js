@@ -168,7 +168,7 @@ WebInspector.EventListenersTreeElement = function(title, nodeId, linkifier)
     this._nodeId = nodeId;
     this._linkifier = linkifier;
 
-    TreeElement.call(this, title, null, true);
+    TreeElement.call(this, title, true);
     this.toggleOnClick = true;
     this.selectable = false;
 }
@@ -195,7 +195,7 @@ WebInspector.EventListenersTreeElement.prototype = {
  */
 WebInspector.EventListenerBar = function(eventListener, nodeId, linkifier)
 {
-    TreeElement.call(this, "", {}, true);
+    TreeElement.call(this, "", true);
 
     var target = eventListener.target();
     this._runtimeModel = target.runtimeModel;

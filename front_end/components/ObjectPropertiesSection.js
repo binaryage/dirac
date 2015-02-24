@@ -144,7 +144,7 @@ WebInspector.ObjectPropertyTreeElement = function(property)
     this.property = property;
 
     // Pass an empty title, the title gets made later in onattach.
-    TreeElement.call(this, "", null, false);
+    TreeElement.call(this);
     this.toggleOnClick = true;
     this.selectable = false;
 }
@@ -343,15 +343,6 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
     },
 
     /**
-     * @override
-     * @return {*}
-     */
-    elementIdentity: function()
-    {
-        return this.propertyPath();
-    },
-
-    /**
      * @return {string|undefined}
      */
     propertyPath: function()
@@ -499,7 +490,7 @@ WebInspector.ObjectPropertyTreeElement._appendEmptyPlaceholderIfNeeded = functio
         return;
     var title = createElementWithClass("div", "info");
     title.textContent = emptyPlaceholder || WebInspector.UIString("No Properties");
-    var infoElement = new TreeElement(title, null, false);
+    var infoElement = new TreeElement(title);
     treeNode.appendChild(infoElement);
 }
 
@@ -536,7 +527,7 @@ WebInspector.ObjectPropertyTreeElement.createRemoteObjectAccessorPropertySpan = 
  */
 WebInspector.FunctionScopeMainTreeElement = function(remoteObject)
 {
-    TreeElement.call(this, "<function scope>", null, false);
+    TreeElement.call(this, "<function scope>");
     this.toggleOnClick = true;
     this.selectable = false;
     this._remoteObject = remoteObject;
@@ -623,7 +614,7 @@ WebInspector.FunctionScopeMainTreeElement.prototype = {
  */
 WebInspector.CollectionEntriesMainTreeElement = function(remoteObject)
 {
-    TreeElement.call(this, "<entries>", null, false);
+    TreeElement.call(this, "<entries>");
     this.toggleOnClick = true;
     this.selectable = false;
     this._remoteObject = remoteObject;
@@ -675,7 +666,7 @@ WebInspector.CollectionEntriesMainTreeElement.prototype = {
  */
 WebInspector.ScopeTreeElement = function(title, remoteObject)
 {
-    TreeElement.call(this, title, null, false);
+    TreeElement.call(this, title);
     this.toggleOnClick = true;
     this.selectable = false;
     this._remoteObject = remoteObject;
@@ -701,7 +692,7 @@ WebInspector.ScopeTreeElement.prototype = {
  */
 WebInspector.ArrayGroupingTreeElement = function(object, fromIndex, toIndex, propertyCount)
 {
-    TreeElement.call(this, String.sprintf("[%d \u2026 %d]", fromIndex, toIndex), undefined, true);
+    TreeElement.call(this, String.sprintf("[%d \u2026 %d]", fromIndex, toIndex), true);
     this.toggleOnClick = true;
     this.selectable = false;
     this._fromIndex = fromIndex;
