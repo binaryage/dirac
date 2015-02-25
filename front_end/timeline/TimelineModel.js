@@ -1355,88 +1355,26 @@ WebInspector.TimelineModel.Filter.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.TimelineModel.Filter}
- * @param {!Array.<string>} recordTypes
+ * @param {!Array.<string>} visibleTypes
  */
-WebInspector.TimelineRecordTypeFilter = function(recordTypes)
+WebInspector.TimelineVisibleRecordsFilter = function(visibleTypes)
 {
     WebInspector.TimelineModel.Filter.call(this);
-    this._recordTypes = recordTypes.keySet();
+    this._visibleTypes = visibleTypes.keySet();
 }
 
-WebInspector.TimelineRecordTypeFilter.prototype = {
+WebInspector.TimelineVisibleRecordsFilter.prototype = {
+    /**
+     * @override
+     * @param {!WebInspector.TimelineModel.Record} record
+     * @return {boolean}
+     */
+    accept: function(record)
+    {
+        return !!this._visibleTypes[record.type()];
+    },
+
     __proto__: WebInspector.TimelineModel.Filter.prototype
-}
-
-/**
- * @constructor
- * @extends {WebInspector.TimelineRecordTypeFilter}
- * @param {!Array.<string>} recordTypes
- */
-WebInspector.TimelineRecordHiddenEmptyTypeFilter = function(recordTypes)
-{
-    WebInspector.TimelineRecordTypeFilter.call(this, recordTypes);
-}
-
-WebInspector.TimelineRecordHiddenEmptyTypeFilter.prototype = {
-    /**
-     * @override
-     * @param {!WebInspector.TimelineModel.Record} record
-     * @return {boolean}
-     */
-    accept: function(record)
-    {
-        return record.children().length !== 0 || !this._recordTypes[record.type()];
-    },
-
-    __proto__: WebInspector.TimelineRecordTypeFilter.prototype
-}
-
-/**
- * @constructor
- * @extends {WebInspector.TimelineRecordTypeFilter}
- * @param {!Array.<string>} recordTypes
- */
-WebInspector.TimelineRecordHiddenTypeFilter = function(recordTypes)
-{
-    WebInspector.TimelineRecordTypeFilter.call(this, recordTypes);
-}
-
-WebInspector.TimelineRecordHiddenTypeFilter.prototype = {
-    /**
-     * @override
-     * @param {!WebInspector.TimelineModel.Record} record
-     * @return {boolean}
-     */
-    accept: function(record)
-    {
-        return !this._recordTypes[record.type()];
-    },
-
-    __proto__: WebInspector.TimelineRecordTypeFilter.prototype
-}
-
-/**
- * @constructor
- * @extends {WebInspector.TimelineRecordTypeFilter}
- * @param {!Array.<string>} recordTypes
- */
-WebInspector.TimelineRecordVisibleTypeFilter = function(recordTypes)
-{
-    WebInspector.TimelineRecordTypeFilter.call(this, recordTypes);
-}
-
-WebInspector.TimelineRecordVisibleTypeFilter.prototype = {
-    /**
-     * @override
-     * @param {!WebInspector.TimelineModel.Record} record
-     * @return {boolean}
-     */
-    accept: function(record)
-    {
-        return !!this._recordTypes[record.type()];
-    },
-
-    __proto__: WebInspector.TimelineRecordTypeFilter.prototype
 }
 
 /**

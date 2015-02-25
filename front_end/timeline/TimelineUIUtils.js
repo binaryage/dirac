@@ -1151,14 +1151,6 @@ WebInspector.TimelineUIUtils.createDividerForRecord = function(record, position)
 }
 
 /**
- * @return {!WebInspector.TimelineModel.Filter}
- */
-WebInspector.TimelineUIUtils.hiddenRecordsFilter = function()
-{
-    return new WebInspector.TimelineRecordVisibleTypeFilter(WebInspector.TimelineUIUtils._visibleTypes());
-}
-
-/**
  * @return {!Array.<string>}
  */
 WebInspector.TimelineUIUtils._visibleTypes = function()
@@ -1170,6 +1162,14 @@ WebInspector.TimelineUIUtils._visibleTypes = function()
             result.push(name);
     }
     return result;
+}
+
+/**
+ * @return {!WebInspector.TimelineModel.Filter}
+ */
+WebInspector.TimelineUIUtils.visibleRecordsFilter = function()
+{
+    return new WebInspector.TimelineVisibleRecordsFilter(WebInspector.TimelineUIUtils._visibleTypes());
 }
 
 /**

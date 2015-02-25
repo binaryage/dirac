@@ -50,7 +50,7 @@ WebInspector.TimelinePanel = function()
     // Create model.
     this._tracingModelBackingStorage = new WebInspector.TempFileBackingStorage("tracing");
     this._tracingModel = new WebInspector.TracingModel(this._tracingModelBackingStorage);
-    this._model = new WebInspector.TimelineModel(this._tracingModel, WebInspector.TimelineUIUtils.hiddenRecordsFilter());
+    this._model = new WebInspector.TimelineModel(this._tracingModel, WebInspector.TimelineUIUtils.visibleRecordsFilter());
 
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStarted, this._onRecordingStarted, this);
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStopped, this._onRecordingStopped, this);
@@ -62,13 +62,10 @@ WebInspector.TimelinePanel = function()
     this._categoryFilter = new WebInspector.TimelineCategoryFilter();
     this._durationFilter = new WebInspector.TimelineIsLongFilter();
     this._textFilter = new WebInspector.TimelineTextFilter();
-
-    this._model.addFilter(new WebInspector.TimelineRecordHiddenEmptyTypeFilter([WebInspector.TimelineModel.RecordType.EventDispatch]));
-    this._model.addFilter(new WebInspector.TimelineRecordHiddenTypeFilter([WebInspector.TimelineModel.RecordType.JSFrame]));
-    this._model.addFilter(WebInspector.TimelineUIUtils.hiddenRecordsFilter());
     this._model.addFilter(this._categoryFilter);
     this._model.addFilter(this._durationFilter);
     this._model.addFilter(this._textFilter);
+    this._model.addFilter(new WebInspector.TimelineStaticFilter());
 
     /** @type {!Array.<!WebInspector.TimelineModeView>} */
     this._currentViews = [];
@@ -1572,6 +1569,36 @@ WebInspector.TimelineTextFilter.prototype = {
     accept: function(record)
     {
         return !this._regex || WebInspector.TimelineUIUtils.testContentMatching(record, this._regex);
+    },
+
+    __proto__: WebInspector.TimelineModel.Filter.prototype
+}
+
+/**
+ * @constructor
+ * @extends {WebInspector.TimelineModel.Filter}
+ */
+WebInspector.TimelineStaticFilter = function()
+{
+    WebInspector.TimelineModel.Filter.call(this);
+}
+
+WebInspector.TimelineStaticFilter.prototype = {
+    /**
+     * @override
+     * @param {!WebInspector.TimelineModel.Record} record
+     * @return {boolean}
+     */
+    accept: function(record)
+    {
+        switch(record.type()) {
+        case WebInspector.TimelineModel.RecordType.EventDispatch:
+            return record.children().length !== 0;
+        case WebInspector.TimelineModel.RecordType.JSFrame:
+            return false;
+        default:
+            return true;
+        }
     },
 
     __proto__: WebInspector.TimelineModel.Filter.prototype
