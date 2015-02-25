@@ -962,18 +962,25 @@ WebInspector.TimelineModel.prototype = {
      */
     _updateEventStack: function(event)
     {
+        if (WebInspector.TracingModel.isAsyncPhase(event.phase))
+            return;
         var eventStack = this._eventStack;
         while (eventStack.length && eventStack.peekLast().endTime < event.startTime)
             eventStack.pop();
         var duration = event.duration;
-        if (duration) {
-            if (eventStack.length) {
-                var parent = eventStack.peekLast();
-                parent.selfTime -= duration;
+        if (!duration)
+            return;
+        if (eventStack.length) {
+            var parent = eventStack.peekLast();
+            parent.selfTime -= duration;
+            if (parent.selfTime < 0) {
+                var epsilon = 1e-3;
+                console.assert(parent.selfTime > -epsilon, "Children are longer than parent at " + event.startTime);
+                parent.selfTime = 0;
             }
-            event.selfTime = duration;
-            eventStack.push(event);
         }
+        event.selfTime = duration;
+        eventStack.push(event);
     },
 
     /**
