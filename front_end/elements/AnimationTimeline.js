@@ -14,6 +14,7 @@ WebInspector.AnimationTimeline = function(stylesPane)
     this.registerRequiredCSS("elements/animationTimeline.css");
     this.element.classList.add("animations-timeline");
 
+    this._grid = this.contentElement.createSVGChild("svg", "animation-timeline-grid");
     this._timelineScrubber = this.contentElement.createChild("div", "animation-scrubber");
     this._timelineScrubber.createChild("div", "animation-time-overlay");
     this._timelineScrubber.createChild("div", "animation-scrubber-arrow");
@@ -204,10 +205,26 @@ WebInspector.AnimationTimeline.prototype = {
         this.redraw();
     },
 
+    _renderGrid: function()
+    {
+        this._grid.setAttribute("width", Math.max(0, parseInt(window.getComputedStyle(this._grid.parentElement).width, 10) - 200));
+        this._grid.setAttribute("height", "100%");
+        this._grid.setAttribute("shape-rendering", "crispEdges");
+        this._grid.removeChildren();
+        for (var time = 250; time < this.duration(); time += 250) {
+            var line = this._grid.createSVGChild("rect", "animation-timeline-grid-line");
+            line.setAttribute("x", time * this.pixelMsRatio());
+            line.setAttribute("y", 0);
+            line.setAttribute("height", "100%");
+            line.setAttribute("width", 1);
+        }
+    },
+
     redraw: function()
     {
         for (var i = 0; i < this._uiAnimations.length; i++)
             this._uiAnimations[i].redraw();
+        this._renderGrid();
     },
 
     onResize: function()
@@ -346,7 +363,6 @@ WebInspector.AnimationUI = function(stylesPane, animation, timeline, parentEleme
     this._timeline = timeline;
     this._parentElement = parentElement;
 
-    this._grid = parentElement.createChild("canvas", "animation-timeline-grid-row");
     if (this._animation.source().keyframesRule())
         this._keyframes =  this._animation.source().keyframesRule().keyframes();
 
@@ -380,46 +396,6 @@ WebInspector.AnimationUI.prototype = {
     setNode: function(node)
     {
         this._node = node;
-    },
-
-    _renderGrid: function()
-    {
-        var width = parseInt(window.getComputedStyle(this._parentElement).width, 10);
-        const height = WebInspector.AnimationUI.Options.GridCanvasHeight;
-        const minorMs = 100;
-        const majorMs = minorMs * 5;
-
-        this._grid.width = width * window.devicePixelRatio;
-        this._grid.height = height * window.devicePixelRatio;
-        this._grid.style.width = width + "px";
-        this._grid.style.height = height + "px";
-
-        var ctx = this._grid.getContext("2d");
-        ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
-
-        // Draw minor lines
-        ctx.beginPath();
-        var minorIncrement = width * minorMs / this._timeline.duration();
-        for (var x = minorIncrement; x <= width; x += minorIncrement) {
-            var xr = Math.round(x);
-            ctx.moveTo(xr + 0.5, 0);
-            ctx.lineTo(xr + 0.5, height);
-        }
-        ctx.strokeStyle = "rgba(0,0,0,0.07)";
-        ctx.lineWidth = 1;
-        ctx.stroke();
-
-        // Draw major lines
-        ctx.beginPath();
-        var majorIncrement = width * majorMs / this._timeline.duration();
-        for (var x = majorIncrement; x < width; x += majorIncrement) {
-            var xr = Math.round(x);
-            ctx.moveTo(xr + 0.5, 0);
-            ctx.lineTo(xr + 0.5, height);
-        }
-        ctx.strokeStyle = "rgba(0,0,0,0.15)";
-        ctx.lineWidth = 1;
-        ctx.stroke();
     },
 
     _drawAnimationLine: function()
@@ -471,7 +447,6 @@ WebInspector.AnimationUI.prototype = {
 
     redraw: function()
     {
-        this._renderGrid();
         var animationWidth = this._duration() * this._timeline.pixelMsRatio() + 2 * WebInspector.AnimationUI.Options.AnimationMargin;
         var leftMargin = (this._animation.startTime() - this._timeline.startTime() + this._delay()) * this._timeline.pixelMsRatio();
         this._svg.setAttribute("width", animationWidth);

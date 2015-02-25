@@ -30,15 +30,6 @@
     position: relative;
     display: inline-block;
     flex-grow: 1;
-}
-
-.animation-timeline-row > canvas {
-    position: absolute;
-    top: 0;
-    left: 0;
-}
-
-.animation-timeline-grid-row {
     border-bottom: 1px dashed #ccc;
 }
 
@@ -172,4 +163,13 @@ input.animation-playback-slider {
 
 .animation-timeline-end > .animation-scrubber-arrow {
     visibility: hidden;
+}
+
+svg.animation-timeline-grid {
+    position: absolute;
+    left: 200px;
+}
+
+rect.animation-timeline-grid-line {
+    fill: #ccc;
 }
