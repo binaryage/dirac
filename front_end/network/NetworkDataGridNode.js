@@ -108,7 +108,7 @@ WebInspector.NetworkDataGridNode.prototype = {
         case "cookies": cell.setTextAndTitle(this._arrayLength(this._request.requestCookies)); break;
         case "setCookies": cell.setTextAndTitle(this._arrayLength(this._request.responseCookies)); break;
         case "connectionId": cell.setTextAndTitle(this._request.connectionId); break;
-        case "type": cell.setTextAndTitle(this._request.mimeType || this._request.requestContentType() || ""); break;
+        case "type": this._renderTypeCell(cell); break;
         case "initiator": this._renderInitiatorCell(cell); break;
         case "size": this._renderSizeCell(cell); break;
         case "time": this._renderTimeCell(cell); break;
@@ -287,6 +287,22 @@ WebInspector.NetworkDataGridNode.prototype = {
         } else {
             cell.setTextAndTitle(WebInspector.UIString("(pending)"));
         }
+    },
+
+    /**
+     * @param {!Element} cell
+     */
+    _renderTypeCell: function(cell)
+    {
+        var mimeType = this._request.mimeType || this._request.requestContentType() || "";
+        var resourceType = this._request.resourceType();
+        var simpleType = resourceType.name();
+
+        if (resourceType == WebInspector.resourceTypes.Other
+            || resourceType == WebInspector.resourceTypes.Image)
+            simpleType = mimeType.replace(/^(application|image)\//, "");
+
+        cell.setTextAndTitle(simpleType);
     },
 
     /**
