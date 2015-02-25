@@ -626,30 +626,6 @@
                 ],
                 "hidden": true,
                 "description": "Sets overlay message."
-            },
-            {
-                "name": "getAnimationsPlaybackRate",
-                "returns": [
-                    { "name": "playbackRate", "type": "number", "description": "Playback rate for animations on page."}
-                ],
-                "description": "Gets the playback rate of the document timeline.",
-                "hidden": true
-            },
-            {
-                "name": "setAnimationsPlaybackRate",
-                "parameters": [
-                    { "name": "playbackRate", "type": "number", "description": "Playback rate for animations on page" }
-                ],
-                "description": "Sets the playback rate of the document timeline.",
-                "hidden": true
-            },
-            {
-                "name": "setCurrentTime",
-                "parameters": [
-                    { "name": "currentTime", "type": "number", "description": "Current time for the page animation timeline" }
-                ],
-                "description": "Sets the current time of the document timeline.",
-                "hidden": true
             }
         ],
         "events": [
@@ -4847,6 +4823,27 @@
                 ],
                 "description": "Returns animation players relevant to the node.",
                 "hidden": true
+            },
+            {
+                "name": "getPlaybackRate",
+                "returns": [
+                    { "name": "playbackRate", "type": "number", "description": "Playback rate for animations on page."}
+                ],
+                "description": "Gets the playback rate of the document timeline."
+            },
+            {
+                "name": "setPlaybackRate",
+                "parameters": [
+                    { "name": "playbackRate", "type": "number", "description": "Playback rate for animations on page" }
+                ],
+                "description": "Sets the playback rate of the document timeline."
+            },
+            {
+                "name": "setCurrentTime",
+                "parameters": [
+                    { "name": "currentTime", "type": "number", "description": "Current time for the page animation timeline" }
+                ],
+                "description": "Sets the current time of the document timeline."
             }
         ],
         "events": [

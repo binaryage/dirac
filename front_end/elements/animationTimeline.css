@@ -76,7 +76,6 @@ circle.animation-keyframe-point {
 
 .animation-control-replay {
     float: right;
-    content: url(Images/animationsReplay.png);
 }
 
 .animation-control-replay circle {
@@ -116,9 +115,8 @@ circle.animation-keyframe-point {
     background-color: black;
     opacity: 0.05;
     position: absolute;
-    left: 200px;
     height: 100%;
-    width: calc(100% - 200px);
+    width: 100%;
 }
 
 .view.component-root.platform-linux.vbox {
@@ -136,4 +134,42 @@ input.animation-playback-slider {
     margin-right: 8px;
     line-height: 24px;
     width: 34px;
+}
+
+.animation-scrubber {
+    opacity: 1;
+    position: absolute;
+    left: 200px;
+    height: calc(100% - 43px);
+    width: calc(100% - 200px);
+    top: 43px;
+    border-left: 1px solid rgba(0,0,0,0.5);
+}
+
+.animation-scrubber-head {
+    background-color: rgba(0, 0, 0, 0.5);
+    width: 50px;
+    height: 23px;
+    color: white;
+    line-height: 23px;
+    text-align: center;
+    border-radius: 5px;
+    position: relative;
+    top: -29px;
+    left: -25px;
+    font-size: 10px;
+}
+
+.animation-scrubber-arrow {
+    width: 21px;
+    height: 25px;
+    position: absolute;
+    top: -6px;
+    left: -7px;
+    -webkit-clip-path: polygon(0 0, 6px 6px, 12px 0px, 0px 0px);
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.animation-timeline-end > .animation-scrubber-arrow {
+    visibility: hidden;
 }
