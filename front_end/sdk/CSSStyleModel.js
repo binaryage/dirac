@@ -84,11 +84,11 @@ WebInspector.CSSStyleModel.prototype = {
     {
         this._agent.disable();
         this._isEnabled = false;
-        this._resetStyleSheets();
     },
 
     resumeModel: function()
     {
+        this._resetStyleSheets();
         this._agent.enable(this._wasEnabled.bind(this));
     },
 
