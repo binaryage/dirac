@@ -77,6 +77,19 @@ WebInspector.AsyncOperationsSidebarPane.prototype = {
         this._refresh();
     },
 
+    /**
+     * @param {!WebInspector.Target} target
+     * @param {number} operationId
+     * @return {?DebuggerAgent.AsyncOperation}
+     */
+    operationById: function(target, operationId)
+    {
+        var operationsMap = this._asyncOperationsByTarget.get(target);
+        if (!operationsMap)
+            return null;
+        return operationsMap.get(operationId);
+    },
+
     _asyncStackTracesStateChanged: function()
     {
         var enabled = WebInspector.settings.enableAsyncStackTraces.get();

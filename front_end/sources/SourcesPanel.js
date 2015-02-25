@@ -260,11 +260,15 @@ WebInspector.SourcesPanel.prototype = {
         } else if (details.reason === WebInspector.DebuggerModel.BreakReason.CSPViolation) {
             this.sidebarPanes.callstack.setStatus(WebInspector.UIString("Paused on a script blocked due to Content Security Policy directive: \"%s\".", details.auxData["directiveText"]));
         } else if (details.reason === WebInspector.DebuggerModel.BreakReason.DebugCommand) {
-            this.sidebarPanes.callstack.setStatus(WebInspector.UIString("Paused on a debugged function"));
+            this.sidebarPanes.callstack.setStatus(WebInspector.UIString("Paused on a debugged function."));
         } else if (details.reason === WebInspector.DebuggerModel.BreakReason.AsyncOperation) {
-                this.sidebarPanes.callstack.setStatus(WebInspector.UIString("Paused on async operation"));
-                if (Runtime.experiments.isEnabled("stepIntoAsync"))
-                    this.sidebarPanes.asyncOperationBreakpoints.highlightBreakpoint(details.auxData["operationId"]);
+            if (Runtime.experiments.isEnabled("stepIntoAsync")) {
+                var operationId = details.auxData["operationId"];
+                var operation = this.sidebarPanes.asyncOperationBreakpoints.operationById(details.target(), operationId);
+                var description = (operation && operation.description) || WebInspector.UIString("<unknown>");
+                this.sidebarPanes.callstack.setStatus(WebInspector.UIString("Paused on a \"%s\" async operation.", description));
+                this.sidebarPanes.asyncOperationBreakpoints.highlightBreakpoint(operationId);
+            }
         } else {
             if (details.callFrames.length)
                 WebInspector.debuggerWorkspaceBinding.createCallFrameLiveLocation(details.callFrames[0], didGetUILocation.bind(this));
