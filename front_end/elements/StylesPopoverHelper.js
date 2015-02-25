@@ -131,11 +131,18 @@ WebInspector.StylesPopoverIcon = function(treeElement, stylesPopoverHelper, name
     this._nameElement = nameElement;
     this._valueElement = valueElement;
     this._text = text;
-    this._isEditable = this._treeElement.isEditableStyleRule();
     this._boundPopoverHidden = this.popoverHidden.bind(this);
 }
 
 WebInspector.StylesPopoverIcon.prototype = {
+    /**
+     * @return {boolean}
+     */
+    editable: function()
+    {
+        return this._treeElement.isEditableStyleRule();
+    },
+
     /**
      * @return {?WebInspector.View}
      */
@@ -159,9 +166,6 @@ WebInspector.StylesPopoverIcon.prototype = {
     _iconClick: function(event)
     {
         event.consume(true);
-
-        if (!this._isEditable)
-            return;
 
         if (this.toggle(event)) {
             this._originalPropertyText = this._treeElement.property.propertyText;

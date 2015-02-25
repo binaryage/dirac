@@ -359,15 +359,12 @@ WebInspector.ColorSwatchIcon.prototype = {
         return this._spectrum;
     },
 
-    /**
-     * @param {boolean=} readOnly
-     */
-    _createSwatch: function(readOnly)
+    _createSwatch: function()
     {
         this._colorSwatch = createElementWithClass("span", "swatch popover-icon");
         this._swatchInnerElement = this._colorSwatch.createChild("span", "swatch-inner");
         var shiftClickMessage = WebInspector.UIString("Shift-click to change color format.");
-        this._colorSwatch.title = readOnly ? shiftClickMessage : String.sprintf("%s\n%s", WebInspector.UIString("Click to open a colorpicker."), shiftClickMessage);
+        this._colorSwatch.title = this.editable() ? String.sprintf("%s\n%s", WebInspector.UIString("Click to open a colorpicker."), shiftClickMessage) : shiftClickMessage;
         this._colorSwatch.addEventListener("mousedown", consumeEvent, false);
         this._colorSwatch.addEventListener("dblclick", consumeEvent, false);
         this._iconElement = this._colorSwatch;
@@ -393,7 +390,7 @@ WebInspector.ColorSwatchIcon.prototype = {
             return createTextNode(this._text);
 
         this._format = WebInspector.ColorSwatchIcon._colorFormat(this._color);
-        this._createSwatch(!this._isEditable);
+        this._createSwatch();
         this._setColorString(this._text);
         this._colorSwatch.addEventListener("click", this._iconClick.bind(this), false);
 
@@ -453,7 +450,7 @@ WebInspector.ColorSwatchIcon.prototype = {
      */
     toggle: function(e)
     {
-        if (!this._stylesPopoverHelper || e.shiftKey) {
+        if (!this.editable() || !this._stylesPopoverHelper || e.shiftKey) {
             this._changeColorDisplay();
             return false;
         }

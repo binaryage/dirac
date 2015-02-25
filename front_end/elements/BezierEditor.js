@@ -345,7 +345,7 @@ WebInspector.BezierIcon.prototype = {
     {
         event.consume(true);
 
-        if (!this._stylesPopoverHelper)
+        if (!this.editable() || !this._stylesPopoverHelper)
             return false;
 
         if (this._stylesPopoverHelper.isShowing()) {
