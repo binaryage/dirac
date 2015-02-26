@@ -462,6 +462,8 @@ WebInspector.TimelinePanel.prototype = {
         this.registerShortcuts(WebInspector.ShortcutsScreen.TimelinePanelShortcuts.StartStopRecording, this._toggleTimelineButtonClicked.bind(this));
         this.registerShortcuts(WebInspector.ShortcutsScreen.TimelinePanelShortcuts.SaveToFile, this._saveToFile.bind(this));
         this.registerShortcuts(WebInspector.ShortcutsScreen.TimelinePanelShortcuts.LoadFromFile, this._selectFileToLoad.bind(this));
+        this.registerShortcuts(WebInspector.ShortcutsScreen.TimelinePanelShortcuts.JumpToPreviousFrame, this._jumpToFrame.bind(this, -1));
+        this.registerShortcuts(WebInspector.ShortcutsScreen.TimelinePanelShortcuts.JumpToNextFrame, this._jumpToFrame.bind(this, 1));
     },
 
     _createFileSelector: function()
@@ -997,6 +999,50 @@ WebInspector.TimelinePanel.prototype = {
         }
 
         this._detailsView.updateContents(this._selection);
+    },
+
+    /**
+     * @param {!WebInspector.TimelineSelection} selection
+     * @return {?WebInspector.TimelineFrame}
+     */
+    _frameForSelection: function(selection)
+    {
+        switch (selection.type()) {
+        case WebInspector.TimelineSelection.Type.Frame:
+            return /** @type {!WebInspector.TimelineFrame} */ (selection.object());
+        case WebInspector.TimelineSelection.Type.Range:
+            return null;
+        case WebInspector.TimelineSelection.Type.Record:
+        case WebInspector.TimelineSelection.Type.TraceEvent:
+            return this._frameModel().filteredFrames(selection._endTime, selection._endTime)[0];
+        default:
+            console.assert(false, "Should never be reached");
+            return null;
+        }
+    },
+
+    /**
+     * @param {number} offset
+     */
+    _jumpToFrame: function(offset)
+    {
+        var currentFrame = this._frameForSelection(this._selection);
+        if (!currentFrame)
+            return;
+        var frames = this._frameModel().frames();
+        var index = frames.indexOf(currentFrame);
+        console.assert(index >= 0, "Can't find current frame in the frame list");
+        index = Number.constrain(index + offset, 0, frames.length - 1);
+        var newFrame = frames[index];
+        var timeShift = 0;
+        if (this._windowEndTime < newFrame.endTime)
+            timeShift = newFrame.endTime - this._windowEndTime;
+        else if (this._windowStartTime > newFrame.startTime)
+            timeShift = newFrame.startTime - this._windowStartTime;
+        if (timeShift)
+            this.requestWindowTimes(this._windowStartTime + timeShift, this._windowEndTime + timeShift);
+        this.select(WebInspector.TimelineSelection.fromFrame(newFrame));
+        return true;
     },
 
     /**
