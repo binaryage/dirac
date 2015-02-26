@@ -39,6 +39,8 @@ WebInspector.ElementsTreeOutline = function(target, omitRootDOMNode, selectEnabl
 {
     this._target = target;
     this._domModel = target.domModel;
+    this._treeElementSymbol = Symbol("treeElement");
+
     var element = createElement("div");
 
     this._shadowRoot = element.createShadowRoot();
@@ -133,6 +135,14 @@ WebInspector.ElementsTreeOutline.ShadowHostDisplayMode = {
 }
 
 WebInspector.ElementsTreeOutline.prototype = {
+    /**
+     * @return {symbol}
+     */
+    treeElementSymbol: function()
+    {
+        return this._treeElementSymbol;
+    },
+
     focus: function()
     {
         this._element.focus();
@@ -557,7 +567,7 @@ WebInspector.ElementsTreeOutline.prototype = {
         if (!node)
             return null;
 
-        var cachedElement = node[WebInspector.ElementsTreeElement.symbol];
+        var cachedElement = node[this._treeElementSymbol];
         if (cachedElement)
             return cachedElement;
 
@@ -565,7 +575,7 @@ WebInspector.ElementsTreeOutline.prototype = {
         var ancestors = [];
         for (var currentNode = node.parentNode; currentNode; currentNode = currentNode.parentNode) {
             ancestors.push(currentNode);
-            if (currentNode[WebInspector.ElementsTreeElement.symbol])  // stop climbing as soon as we hit
+            if (currentNode[this._treeElementSymbol])  // stop climbing as soon as we hit
                 break;
         }
 
@@ -574,12 +584,12 @@ WebInspector.ElementsTreeOutline.prototype = {
 
         // Walk down to populate each ancestor's children, to fill in the tree and the cache.
         for (var i = ancestors.length - 1; i >= 0; --i) {
-            var treeElement = ancestors[i][WebInspector.ElementsTreeElement.symbol];
+            var treeElement = ancestors[i][this._treeElementSymbol];
             if (treeElement)
                 treeElement.onpopulate();  // fill the cache with the children of treeElement
         }
 
-        return node[WebInspector.ElementsTreeElement.symbol];
+        return node[this._treeElementSymbol];
     },
 
     /**
@@ -902,7 +912,7 @@ WebInspector.ElementsTreeOutline.prototype = {
         var keyboardEvent = /** @type {!KeyboardEvent} */ (event);
         var node = /** @type {!WebInspector.DOMNode} */ (this.selectedDOMNode());
         console.assert(node);
-        var treeElement = node[WebInspector.ElementsTreeElement.symbol];
+        var treeElement = node[this._treeElementSymbol];
         if (!treeElement)
             return;
 
@@ -954,7 +964,7 @@ WebInspector.ElementsTreeOutline.prototype = {
         var node = this.selectedDOMNode();
         if (!node)
             return;
-        var treeElement = node[WebInspector.ElementsTreeElement.symbol];
+        var treeElement = node[this._treeElementSymbol];
         if (!treeElement)
             return;
 
@@ -983,7 +993,7 @@ WebInspector.ElementsTreeOutline.prototype = {
      */
     _toggleEditAsHTML: function(node)
     {
-        var treeElement = node[WebInspector.ElementsTreeElement.symbol];
+        var treeElement = node[this._treeElementSymbol];
         if (!treeElement)
             return;
 

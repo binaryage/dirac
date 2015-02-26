@@ -48,8 +48,6 @@ WebInspector.ElementsTreeElement = function(node, elementCloseTag)
     this._expandedChildrenLimit = WebInspector.ElementsTreeElement.InitialChildrenLimit;
 }
 
-WebInspector.ElementsTreeElement.symbol = Symbol("treeElement");
-
 WebInspector.ElementsTreeElement.InitialChildrenLimit = 500;
 
 // A union of HTML4 and HTML5-Draft elements that explicitly
@@ -259,7 +257,7 @@ WebInspector.ElementsTreeElement.prototype = {
     onbind: function()
     {
         if (!this._elementCloseTag)
-            this._node[WebInspector.ElementsTreeElement.symbol] = this;
+            this._node[this.treeOutline.treeElementSymbol()] = this;
     },
 
     /**
@@ -267,8 +265,8 @@ WebInspector.ElementsTreeElement.prototype = {
      */
     onunbind: function()
     {
-        if (this._node[WebInspector.ElementsTreeElement.symbol] === this)
-            this._node[WebInspector.ElementsTreeElement.symbol] = null;
+        if (this._node[this.treeOutline.treeElementSymbol()] === this)
+            this._node[this.treeOutline.treeElementSymbol()] = null;
     },
 
     /**
@@ -559,7 +557,7 @@ WebInspector.ElementsTreeElement.prototype = {
     populateNodeContextMenu: function(contextMenu)
     {
         // Add free-form node-related actions.
-        var openTagElement = this._node[WebInspector.ElementsTreeElement.symbol] || this;
+        var openTagElement = this._node[this.treeOutline.treeElementSymbol()] || this;
         var isEditable = this.hasEditableNode();
         if (isEditable && !this._editing)
             contextMenu.appendItem(WebInspector.UIString("Edit as HTML"), openTagElement.toggleEditAsHTML.bind(openTagElement));
