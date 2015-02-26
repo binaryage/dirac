@@ -277,7 +277,7 @@ WebInspector.ElementsPanel.prototype = {
         this._updateSidebars();
 
         if (selectedNode) {
-            selectedNode.target().consoleAgent().addInspectedNode(selectedNode.id);
+            selectedNode.setAsInspectedNode();
             this._lastValidSelectedNode = selectedNode;
         }
         WebInspector.notifications.dispatchEventToListeners(WebInspector.NotificationService.Events.SelectedNodeChanged);
