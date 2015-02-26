@@ -28,7 +28,9 @@ WebInspector.AnimationTimeline = function(stylesPane)
     this._scrubberRadius = 25;
     /** @type {!Map.<!DOMAgent.BackendNodeId, !WebInspector.AnimationTimeline.NodeUI>} */
     this._nodesMap = new Map();
+    this._symbol = Symbol("animationTimeline");
     WebInspector.targetManager.addModelListener(WebInspector.ResourceTreeModel, WebInspector.ResourceTreeModel.EventTypes.MainFrameNavigated, this._mainFrameNavigated, this);
+    WebInspector.targetManager.addModelListener(WebInspector.DOMModel, WebInspector.DOMModel.Events.NodeRemoved, this._nodeRemoved, this);
 }
 
 WebInspector.AnimationTimeline.prototype = {
@@ -172,6 +174,16 @@ WebInspector.AnimationTimeline.prototype = {
      */
     addAnimation: function(animation, resetTimeline)
     {
+        /**
+         * @param {?WebInspector.DOMNode} node
+         * @this {WebInspector.AnimationTimeline}
+         */
+        function nodeResolved(node)
+        {
+            uiAnimation.setNode(node);
+            node[this._symbol] = nodeUI;
+        }
+
         if (resetTimeline)
             this._reset();
 
@@ -181,17 +193,28 @@ WebInspector.AnimationTimeline.prototype = {
 
         this._resizeWindow(animation);
 
-        var node = this._nodesMap.get(animation.source().backendNodeId());
-        if (!node) {
-            node = new WebInspector.AnimationTimeline.NodeUI(animation.source());
-            this._animationsContainer.appendChild(node.element);
-            this._nodesMap.set(animation.source().backendNodeId(), node);
+        var nodeUI = this._nodesMap.get(animation.source().backendNodeId());
+        if (!nodeUI) {
+            nodeUI = new WebInspector.AnimationTimeline.NodeUI(animation.source());
+            this._animationsContainer.appendChild(nodeUI.element);
+            this._nodesMap.set(animation.source().backendNodeId(), nodeUI);
         }
-        var nodeRow = node.findRow(animation);
+        var nodeRow = nodeUI.findRow(animation);
         var uiAnimation = new WebInspector.AnimationUI(this._stylesPane, animation, this, nodeRow.element);
-        uiAnimation.setNode.bind(uiAnimation);
+        animation.source().getNode(nodeResolved.bind(this));
         nodeRow.animations.push(uiAnimation);
         this.redraw();
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _nodeRemoved: function(event)
+    {
+        var node = event.data.node;
+        if (node[this._symbol])
+            node[this._symbol].nodeRemoved();
+
     },
 
     _renderGrid: function()
@@ -405,6 +428,11 @@ WebInspector.AnimationTimeline.NodeUI.prototype = {
                 return nodeRow;
         }
         return null;
+    },
+
+    nodeRemoved: function()
+    {
+        this.element.classList.add("animation-node-removed");
     }
 }
 

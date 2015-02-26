@@ -185,3 +185,7 @@ rect.animation-timeline-grid-line {
     transform: translateY(-50%);
     max-height: 100%;
 }
+
+.animation-node-row.animation-node-removed {
+    background-color: #fff0f0;
+}
