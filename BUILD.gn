@@ -21,7 +21,6 @@ devtools_core_files =
   gypi_values.devtools_host_js_files +
   gypi_values.devtools_main_js_files +
   gypi_values.devtools_platform_js_files +
-  gypi_values.devtools_screencast_js_files +
   gypi_values.devtools_sdk_js_files +
   gypi_values.devtools_toolbox_js_files +
   gypi_values.devtools_toolbox_bootstrap_js_files +
@@ -46,6 +45,7 @@ devtools_modules_js_files =
   gypi_values.devtools_profiler_js_files +
   gypi_values.devtools_promises_js_files +
   gypi_values.devtools_resources_js_files +
+  gypi_values.devtools_screencast_js_files +
   gypi_values.devtools_script_formatter_worker_js_files +
   gypi_values.devtools_settings_js_files +
   gypi_values.devtools_source_frame_js_files +
@@ -142,6 +142,7 @@ action("generate_devtools_grd") {
       resources_out_dir + "profiler_module.js",
       resources_out_dir + "promises_module.js",
       resources_out_dir + "resources_module.js",
+      resources_out_dir + "screencast_module.js",
       resources_out_dir + "script_formatter_worker_module.js",
       resources_out_dir + "settings_module.js",
       resources_out_dir + "source_frame_module.js",
@@ -248,6 +249,7 @@ action("build_applications") {
       resources_out_dir + "profiler_module.js",
       resources_out_dir + "promises_module.js",
       resources_out_dir + "resources_module.js",
+      resources_out_dir + "screencast_module.js",
       resources_out_dir + "script_formatter_worker_module.js",
       resources_out_dir + "settings_module.js",
       resources_out_dir + "source_frame_module.js",

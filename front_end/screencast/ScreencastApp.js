@@ -99,6 +99,20 @@ WebInspector.ScreencastApp.prototype = {
     }
 };
 
+
+/** @type {!WebInspector.ScreencastApp} */
+WebInspector.ScreencastApp._appInstance;
+
+/**
+ * @return {!WebInspector.ScreencastApp}
+ */
+WebInspector.ScreencastApp._instance = function()
+{
+    if (!WebInspector.ScreencastApp._appInstance)
+        WebInspector.ScreencastApp._appInstance = new WebInspector.ScreencastApp();
+    return WebInspector.ScreencastApp._appInstance;
+};
+
 /**
  * @constructor
  * @implements {WebInspector.StatusBarItem.Provider}
@@ -114,8 +128,25 @@ WebInspector.ScreencastApp.StatusBarButtonProvider.prototype = {
      */
     item: function()
     {
-        if (!(WebInspector.app instanceof WebInspector.ScreencastApp))
-            return null;
-        return /** @type {!WebInspector.ScreencastApp} */ (WebInspector.app)._toggleScreencastButton;
+        return WebInspector.ScreencastApp._instance()._toggleScreencastButton;
     }
 }
+
+/**
+ * @constructor
+ * @implements {WebInspector.AppProvider}
+ */
+WebInspector.ScreencastAppProvider = function()
+{
+};
+
+WebInspector.ScreencastAppProvider.prototype = {
+    /**
+     * @override
+     * @return {!WebInspector.App}
+     */
+    createApp: function()
+    {
+        return WebInspector.ScreencastApp._instance();
+    }
+};
