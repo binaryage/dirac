@@ -1086,14 +1086,6 @@
                 "description": "Clears console messages collected in the browser."
             },
             {
-                "name": "setMonitoringXHREnabled",
-                "parameters": [
-                    { "name": "enabled", "type": "boolean", "description": "Monitoring enabled state." }
-                ],
-                "description": "Toggles monitoring of XMLHttpRequest. If <code>true</code>, console will receive messages upon each XHR issued.",
-                "hidden": true
-            },
-            {
                 "name": "addInspectedNode",
                 "parameters": [
                     { "name": "nodeId", "$ref": "DOM.NodeId", "description": "DOM node id to be accessible by means of $x command line API." }
@@ -1320,6 +1312,14 @@
                 "parameters": [
                     { "name": "requestId", "$ref": "RequestId", "description": "Identifier of XHR to replay." }
                 ],
+                "hidden": true
+            },
+            {
+                "name": "setMonitoringXHREnabled",
+                "parameters": [
+                    { "name": "enabled", "type": "boolean", "description": "Monitoring enabled state." }
+                ],
+                "description": "Toggles monitoring of XMLHttpRequest. If <code>true</code>, console will receive messages upon each XHR issued.",
                 "hidden": true
             },
             {
