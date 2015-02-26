@@ -510,11 +510,9 @@ WebInspector.ElementsTreeElement.prototype = {
         if (attribute && !newAttribute)
             contextMenu.appendItem(WebInspector.UIString.capitalize("Edit ^attribute"), this._startEditingAttribute.bind(this, attribute, event.target));
         contextMenu.appendSeparator();
-        if (this.treeOutline.setPseudoClassCallback) {
-            var pseudoSubMenu = contextMenu.appendSubMenuItem(WebInspector.UIString.capitalize("Force ^element ^state"));
-            this._populateForcedPseudoStateItems(pseudoSubMenu);
-            contextMenu.appendSeparator();
-        }
+        var pseudoSubMenu = contextMenu.appendSubMenuItem(WebInspector.UIString.capitalize("Force ^element ^state"));
+        this._populateForcedPseudoStateItems(pseudoSubMenu, treeElement.node());
+        contextMenu.appendSeparator();
         this.populateNodeContextMenu(contextMenu);
         this.populateScrollIntoView(contextMenu);
     },
@@ -528,15 +526,26 @@ WebInspector.ElementsTreeElement.prototype = {
         contextMenu.appendItem(WebInspector.UIString.capitalize("Scroll into ^view"), this._scrollIntoView.bind(this));
     },
 
-    _populateForcedPseudoStateItems: function(subMenu)
+    /**
+     * @param {!WebInspector.ContextSubMenuItem} subMenu
+     * @param {!WebInspector.DOMNode} node
+     */
+    _populateForcedPseudoStateItems: function(subMenu, node)
     {
         const pseudoClasses = ["active", "hover", "focus", "visited"];
-        var node = this._node;
-        var forcedPseudoState = (node ? node.getUserProperty("pseudoState") : null) || [];
+        var forcedPseudoState = node.getUserProperty(WebInspector.CSSStyleModel.PseudoStatePropertyName) || [];
         for (var i = 0; i < pseudoClasses.length; ++i) {
             var pseudoClassForced = forcedPseudoState.indexOf(pseudoClasses[i]) >= 0;
-            var setPseudoClassCallback = this.treeOutline.setPseudoClassCallback.bind(this.treeOutline, node, pseudoClasses[i], !pseudoClassForced);
-            subMenu.appendCheckboxItem(":" + pseudoClasses[i], setPseudoClassCallback, pseudoClassForced, false);
+            subMenu.appendCheckboxItem(":" + pseudoClasses[i], setPseudoStateCallback.bind(null, pseudoClasses[i], !pseudoClassForced), pseudoClassForced, false);
+        }
+
+        /**
+         * @param {string} pseudoState
+         * @param {boolean} enabled
+         */
+        function setPseudoStateCallback(pseudoState, enabled)
+        {
+            node.target().cssModel.forcePseudoState(node, pseudoState, enabled);
         }
     },
 

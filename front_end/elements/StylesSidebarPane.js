@@ -31,9 +31,8 @@
  * @constructor
  * @extends {WebInspector.ElementsSidebarPane}
  * @param {!WebInspector.ComputedStyleSidebarPane} computedStylePane
- * @param {function(!WebInspector.DOMNode, string, boolean)=} setPseudoClassCallback
  */
-WebInspector.StylesSidebarPane = function(computedStylePane, setPseudoClassCallback)
+WebInspector.StylesSidebarPane = function(computedStylePane)
 {
     WebInspector.ElementsSidebarPane.call(this, WebInspector.UIString("Styles"));
 
@@ -65,7 +64,6 @@ WebInspector.StylesSidebarPane = function(computedStylePane, setPseudoClassCallb
 
     this._computedStylePane = computedStylePane;
     computedStylePane.setHostingPane(this);
-    this._setPseudoClassCallback = setPseudoClassCallback;
     this.element.addEventListener("contextmenu", this._contextMenuEventFired.bind(this), true);
     WebInspector.settings.colorFormat.addChangeListener(this._colorFormatSettingChanged.bind(this));
     WebInspector.settings.showUserAgentStyles.addChangeListener(this._showUserAgentStylesSettingChanged.bind(this));
@@ -1041,7 +1039,7 @@ WebInspector.StylesSidebarPane.prototype = {
             var node = this._validateNode();
             if (!node)
                 return;
-            this._setPseudoClassCallback(node, event.target.state, event.target.checked);
+            node.target().cssModel.forcePseudoState(node, event.target.state, event.target.checked);
         }
 
         /**
