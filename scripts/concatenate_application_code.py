@@ -26,6 +26,8 @@ import re
 import shutil
 import sys
 
+REMOTE_URL_TEMPLATE = 'https://chrome-devtools-frontend.appspot.com/serve_file/@%s/'
+
 try:
     import simplejson as json
 except ImportError:
@@ -75,6 +77,19 @@ def hardlink_or_copy_dir(src, dest):
             hardlink_or_copy_file(src_name, dest_name)
 
 
+def blink_revision():
+    # Using src/build/util/LASTCHANGE.blink.
+    dir_name = path.dirname(path.abspath(__file__))
+    lastchange_file = path.dirname(path.dirname(path.dirname(path.dirname(path.dirname(dir_name)))))
+    lastchange_file = path.join(lastchange_file, 'build', 'util', 'LASTCHANGE.blink')
+    prefix = 'LASTCHANGE='
+    with open(lastchange_file, 'r') as lastchange:
+        for line in lastchange:
+            if prefix in line:
+                return int(line[len(prefix):])
+    bail_error('Unable to get blink revision')
+
+
 class AppBuilder:
     def __init__(self, application_name, descriptors, application_dir, output_dir):
         self.application_name = application_name
@@ -106,11 +121,12 @@ class AppBuilder:
 class ReleaseBuilder(AppBuilder):
     def __init__(self, application_name, descriptors, application_dir, output_dir):
         AppBuilder.__init__(self, application_name, descriptors, application_dir, output_dir)
+        self._cached_remote_url = None
 
     def build_app(self):
         self._build_html()
         self._build_app_script()
-        for module in filter(lambda desc: not desc.get('type'), self.descriptors.application.values()):
+        for module in filter(lambda desc: (not desc.get('type') or desc.get('type') == 'remote'), self.descriptors.application.values()):
             self._concatenate_dynamic_module(module['name'])
         for module in filter(lambda desc: desc.get('type') == 'worker', self.descriptors.application.values()):
             self._concatenate_worker(module['name'])
@@ -161,8 +177,17 @@ class ReleaseBuilder(AppBuilder):
             condition = self.descriptors.application[name].get('condition')
             if condition:
                 module['condition'] = condition
+            type = self.descriptors.application[name].get('type')
+            if type == 'remote':
+                module['base'] = self.remote_url()
             result.append(module)
         return json.dumps(result)
+
+    def remote_url(self):
+        if self._cached_remote_url is None:
+            revision = blink_revision()
+            self._cached_remote_url = REMOTE_URL_TEMPLATE % revision
+        return self._cached_remote_url
 
     def _write_module_css_styles(self, css_names, output):
         for css_name in css_names:
