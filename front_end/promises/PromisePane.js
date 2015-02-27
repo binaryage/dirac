@@ -463,19 +463,17 @@ WebInspector.PromisePane.prototype = {
         {
             if (error || !promise)
                 return;
-
-            target.consoleAgent().setLastEvaluationResult(promise.objectId);
-            var message = new WebInspector.ConsoleMessage(target,
-                                                          WebInspector.ConsoleMessage.MessageSource.Other,
-                                                          WebInspector.ConsoleMessage.MessageLevel.Log,
-                                                          "",
-                                                          WebInspector.ConsoleMessage.MessageType.Log,
-                                                          undefined,
-                                                          undefined,
-                                                          undefined,
-                                                          undefined,
-                                                          [promise]);
-            target.consoleModel.addMessage(message);
+            var object = target.runtimeModel.createRemoteObject(promise);
+            object.callFunction(dumpIntoConsole);
+            object.release();
+            /**
+             * @suppressReceiverCheck
+             * @this {Object}
+             */
+            function dumpIntoConsole()
+            {
+                console.log(this);
+            }
             WebInspector.console.show();
         }
     },
