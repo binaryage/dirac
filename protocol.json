@@ -2652,7 +2652,7 @@
             {
                 "name": "inspectNodeRequested",
                 "parameters": [
-                    { "name": "nodeId", "$ref": "NodeId", "description": "Id of the node to inspect." }
+                    { "name": "backendNodeId", "$ref": "BackendNodeId", "description": "Id of the node to inspect." }
                 ],
                 "description": "Fired when the node should be inspected. This happens after call to <code>setInspectModeEnabled</code>.",
                 "hidden" : true

@@ -909,7 +909,8 @@ WebInspector.Main.InspectedNodeRevealer.prototype = {
      */
     _inspectNode: function(event)
     {
-        WebInspector.Revealer.reveal(/** @type {!WebInspector.DOMNode} */ (event.data));
+        var deferredNode = /** @type {!WebInspector.DeferredDOMNode} */ (event.data);
+        WebInspector.Revealer.reveal(deferredNode);
     }
 }
 
