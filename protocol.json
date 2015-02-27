@@ -4884,7 +4884,7 @@
                     { "name": "nodeId", "$ref": "DOM.NodeId", "description": "ID of node to get accessibility node for." }
                 ],
                 "returns": [
-                    { "name": "accessibilityNode", "$ref": "AXNode", "description": "The <code>Accessibility.AXNode</code> for this DOM node, if it exists." }
+                    { "name": "accessibilityNode", "$ref": "AXNode", "description": "The <code>Accessibility.AXNode</code> for this DOM node, if it exists.", "optional": true }
                 ],
                 "description": "Fetches the accessibility node for this DOM node, if it exists.",
                 "hidden": true
