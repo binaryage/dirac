@@ -216,6 +216,7 @@
         ],
         'devtools_ui_js_files': [
             'front_end/ui/checkboxTextLabel.css',
+            'front_end/ui/dropTarget.css',
             'front_end/ui/emptyView.css',
             'front_end/ui/filter.css',
             'front_end/ui/helpScreen.css',
@@ -240,6 +241,7 @@
             'front_end/ui/Dialog.js',
             'front_end/ui/DOMSyntaxHighlighter.js',
             'front_end/ui/DropDownMenu.js',
+            'front_end/ui/DropTarget.js',
             'front_end/ui/EmptyView.js',
             'front_end/ui/FilterBar.js',
             'front_end/ui/ForwardedInputEventHandler.js',

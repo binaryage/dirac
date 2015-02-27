@@ -41,6 +41,7 @@ WebInspector.TimelinePanel = function()
     this.registerRequiredCSS("timeline/timelinePanel.css");
     this.registerRequiredCSS("ui/filter.css");
     this.element.addEventListener("contextmenu", this._contextMenu.bind(this), false);
+    new WebInspector.DropTarget(this.element, [WebInspector.DropTarget.dragAndDropFilesType], WebInspector.UIString("Drop timeline file or URL here"), this._handleDrop.bind(this));
 
     this._detailsLinkifier = new WebInspector.Linkifier();
     this._windowStartTime = 0;
@@ -1204,6 +1205,19 @@ WebInspector.TimelinePanel.prototype = {
         this._detailsView.setContent(node);
     },
 
+    /**
+     * @param {!Array.<!DataTransferItem>} items
+     */
+    _handleDrop: function(items)
+    {
+        if (!items.length)
+            return;
+        var entry = items[0].webkitGetAsEntry();
+        if (!entry.isFile)
+            return;
+        entry.file(this._loadFromFile.bind(this));
+    },
+
     __proto__: WebInspector.Panel.prototype
 }
 
@@ -1690,3 +1704,4 @@ WebInspector.TimelinePanelFactory.prototype = {
         return WebInspector.TimelinePanel.instance();
     }
 }
+
