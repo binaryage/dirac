@@ -1352,21 +1352,6 @@
                 "description": "Toggles ignoring cache for each request. If <code>true</code>, cache will not be used."
             },
             {
-                "name": "loadResourceForFrontend",
-                "async": true,
-                "parameters": [
-                    { "name": "url", "type": "string", "description": "URL of the resource to load." },
-                    { "name": "requestHeaders", "$ref": "Network.Headers", "optional": true, "description": "Request headers." }
-                ],
-                "returns": [
-                    { "name": "statusCode", "type": "number", "description": "HTTP status code." },
-                    { "name": "responseHeaders", "$ref": "Network.Headers", "description": "Response headers." },
-                    { "name": "content", "type": "string", "description": "Resource content." }
-                ],
-                "description": "Loads a resource in the context of a frame on the inspected page without cross origin checks.",
-                "hidden": true
-            },
-            {
                 "name": "setDataSizeLimitsForTest",
                 "parameters": [
                     { "name": "maxTotalSize", "type": "integer", "description": "Maximum total buffer size." },
