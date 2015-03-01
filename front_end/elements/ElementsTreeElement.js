@@ -232,16 +232,6 @@ WebInspector.ElementsTreeElement.prototype = {
         if (!listItemElement)
             return;
 
-        if (!this._readyToUpdateSelection) {
-            if (listItemElement.ownerDocument.body.offsetWidth > 0)
-                this._readyToUpdateSelection = true;
-            else {
-                // The stylesheet hasn't loaded yet or the window is closed,
-                // so we can't calculate what we need. Return early.
-                return;
-            }
-        }
-
         if (!this.selectionElement) {
             this.selectionElement = createElement("div");
             this.selectionElement.className = "selection selected";
