@@ -271,8 +271,23 @@ WebInspector.Main.prototype = {
 
         InspectorFrontendHost.loadCompleted();
 
+        var extensions = self.runtime.extensions(WebInspector.QueryParamHandler);
+        for (var extension of extensions) {
+            var value = Runtime.queryParam(extension.descriptor()["name"]);
+            if (value !== null)
+                extension.instancePromise().then(handleQueryParam.bind(null, value));
+        }
         // Give UI cycles to repaint, then proceed with creating connection.
         setTimeout(this._createConnection.bind(this), 0);
+
+        /**
+         * @param {string} value
+         * @param {!WebInspector.QueryParamHandler} handler
+         */
+        function handleQueryParam(value, handler)
+        {
+            handler.handleQueryParam(value);
+        }
     },
 
     _createConnection: function()

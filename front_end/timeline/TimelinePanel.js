@@ -41,7 +41,7 @@ WebInspector.TimelinePanel = function()
     this.registerRequiredCSS("timeline/timelinePanel.css");
     this.registerRequiredCSS("ui/filter.css");
     this.element.addEventListener("contextmenu", this._contextMenu.bind(this), false);
-    new WebInspector.DropTarget(this.element, [WebInspector.DropTarget.dragAndDropFilesType], WebInspector.UIString("Drop timeline file or URL here"), this._handleDrop.bind(this));
+    this._dropTarget = new WebInspector.DropTarget(this.element, [WebInspector.DropTarget.Types.Files, WebInspector.DropTarget.Types.URIList], WebInspector.UIString("Drop timeline file or URL here"), this._handleDrop.bind(this));
 
     this._detailsLinkifier = new WebInspector.Linkifier();
     this._windowStartTime = 0;
@@ -424,12 +424,10 @@ WebInspector.TimelinePanel.prototype = {
     },
 
     /**
-     * @return {?WebInspector.ProgressIndicator}
+     * @return {!WebInspector.ProgressIndicator}
      */
     _prepareToLoadTimeline: function()
     {
-        if (this._operationInProgress)
-            return null;
         if (this._recordingInProgress()) {
             this._updateToggleTimelineButton(false);
             this._stopRecording();
@@ -457,6 +455,7 @@ WebInspector.TimelinePanel.prototype = {
     {
         this._operationInProgress = !!indicator;
         this._panelToolbar.setEnabled(!this._operationInProgress);
+        this._dropTarget.setEnabled(!this._operationInProgress);
 
         this._progressStatusBarItem.setVisible(this._operationInProgress);
         this._progressStatusBarItem.element.removeChildren();
@@ -530,11 +529,19 @@ WebInspector.TimelinePanel.prototype = {
      */
     _loadFromFile: function(file)
     {
-        var progressIndicator = this._prepareToLoadTimeline();
-        if (!progressIndicator)
+        if (this._operationInProgress)
             return;
-        this._model.loadFromFile(file, progressIndicator);
+        this._model.loadFromFile(file, this._prepareToLoadTimeline());
         this._createFileSelector();
+    },
+
+    /**
+     * @param {string} url
+     */
+    _loadFromURL: function(url)
+    {
+        console.assert(!this._operationInProgress);
+        this._model.loadFromURL(url, this._prepareToLoadTimeline());
     },
 
     _refreshViews: function()
@@ -736,7 +743,7 @@ WebInspector.TimelinePanel.prototype = {
     {
         this._updateToggleTimelineButton(true);
         if (event.data && event.data.fromFile)
-            this._updateProgress(WebInspector.UIString("Loading from file..."));
+            this._updateProgress(WebInspector.UIString("Loading..."));
         else
             this._updateProgress(WebInspector.UIString("%d events collected", 0));
     },
@@ -1206,16 +1213,24 @@ WebInspector.TimelinePanel.prototype = {
     },
 
     /**
-     * @param {!Array.<!DataTransferItem>} items
+     * @param {!DataTransfer} dataTransfer
      */
-    _handleDrop: function(items)
+    _handleDrop: function(dataTransfer)
     {
+        var items = dataTransfer.items;
         if (!items.length)
             return;
-        var entry = items[0].webkitGetAsEntry();
-        if (!entry.isFile)
-            return;
-        entry.file(this._loadFromFile.bind(this));
+        var item = items[0];
+        if (item.kind === "string") {
+            var url = dataTransfer.getData("text/uri-list");
+            if (new WebInspector.ParsedURL(url).isValid)
+                this._loadFromURL(url);
+        } else if (item.kind === "file") {
+            var entry = items[0].webkitGetAsEntry();
+            if (!entry.isFile)
+                return;
+            entry.file(this._loadFromFile.bind(this));
+        }
     },
 
     __proto__: WebInspector.Panel.prototype
@@ -1702,6 +1717,26 @@ WebInspector.TimelinePanelFactory.prototype = {
     createPanel: function()
     {
         return WebInspector.TimelinePanel.instance();
+    }
+}
+
+/**
+ * @constructor
+ * @implements {WebInspector.QueryParamHandler}
+ */
+WebInspector.LoadTimelineHandler = function()
+{
+}
+
+WebInspector.LoadTimelineHandler.prototype = {
+    /**
+     * @override
+     * @param {string} value
+     */
+    handleQueryParam: function(value)
+    {
+        WebInspector.TimelinePanel.show();
+        WebInspector.TimelinePanel.instance()._loadFromURL(value);
     }
 }
 

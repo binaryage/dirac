@@ -35,7 +35,7 @@ WebInspector.SourcesPanel = function(workspaceForTest)
 {
     WebInspector.Panel.call(this, "sources");
     this.registerRequiredCSS("sources/sourcesPanel.css");
-    new WebInspector.DropTarget(this.element, [WebInspector.DropTarget.dragAndDropFilesType], WebInspector.UIString("Drop workspace folder here"), this._handleDrop.bind(this));
+    new WebInspector.DropTarget(this.element, [WebInspector.DropTarget.Types.Files], WebInspector.UIString("Drop workspace folder here"), this._handleDrop.bind(this));
 
     this._workspace = workspaceForTest || WebInspector.workspace;
     this._networkMapping = WebInspector.networkMapping;
@@ -1242,10 +1242,11 @@ WebInspector.SourcesPanel.prototype = {
     },
 
     /**
-     * @param {!Array.<!DataTransferItem>} items
+     * @param {!DataTransfer} dataTransfer
      */
-    _handleDrop: function(items)
+    _handleDrop: function(dataTransfer)
     {
+        var items = dataTransfer.items;
         if (!items.length)
             return;
         var entry = items[0].webkitGetAsEntry();

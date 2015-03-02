@@ -1200,6 +1200,16 @@ WebInspector.TimelineModel.prototype = {
         fileReader.start(loader);
     },
 
+    /**
+     * @param {string} url
+     * @param {!WebInspector.Progress} progress
+     */
+    loadFromURL: function(url, progress)
+    {
+        var stream = new WebInspector.TracingModelLoader(this, progress);
+        WebInspector.NetworkManager.loadResourceAsStream(url, null, stream);
+    },
+
     _createFileReader: function(file, delegate)
     {
         return new WebInspector.ChunkedFileReader(file, WebInspector.TimelineModel.TransferChunkLengthBytes, delegate);

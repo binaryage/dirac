@@ -7,7 +7,7 @@
  * @param {!Element} element
  * @param {!Array.<string>} transferTypes
  * @param {string} messageText
- * @param {function(!Array.<!DataTransferItem>)} handleDrop
+ * @param {function(!DataTransfer)} handleDrop
  */
 WebInspector.DropTarget = function(element, transferTypes, messageText, handleDrop)
 {
@@ -17,17 +17,29 @@ WebInspector.DropTarget = function(element, transferTypes, messageText, handleDr
     this._transferTypes = transferTypes;
     this._messageText = messageText;
     this._handleDrop = handleDrop;
+    this._enabled = true;
 }
 
-WebInspector.DropTarget.dragAndDropFilesType = "Files";
+WebInspector.DropTarget.Types = {
+    Files: "Files",
+    URIList: "text/uri-list"
+}
 
 WebInspector.DropTarget.prototype = {
+    /**
+     * @param {boolean} enabled
+     */
+    setEnabled: function(enabled)
+    {
+        this._enabled = enabled;
+    },
+
     /**
      * @param {!Event} event
      */
     _onDragEnter: function(event)
     {
-        if (this._hasMatchingType(event))
+        if (this._enabled && this._hasMatchingType(event))
             event.consume(true);
     },
 
@@ -49,7 +61,7 @@ WebInspector.DropTarget.prototype = {
      */
     _onDragOver: function(event)
     {
-        if (!this._hasMatchingType(event))
+        if (!this._enabled || !this._hasMatchingType(event))
             return;
         event.dataTransfer.dropEffect = "copy";
         event.consume(true);
@@ -63,13 +75,20 @@ WebInspector.DropTarget.prototype = {
         this._dragMaskElement.addEventListener("dragleave", this._onDragLeave.bind(this), true);
     },
 
+    /**
+     * @param {!Event} event
+     */
     _onDrop: function(event)
     {
         event.consume(true);
         this._removeMask();
-        this._handleDrop(/** @type {!Array.<!DataTransferItem>} */ (event.dataTransfer.items));
+        if (this._enabled)
+            this._handleDrop(event.dataTransfer);
     },
 
+    /**
+     * @param {!Event} event
+     */
     _onDragLeave: function(event)
     {
         event.consume(true);
