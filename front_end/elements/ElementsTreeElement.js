@@ -659,7 +659,7 @@ WebInspector.ElementsTreeElement.prototype = {
 
         var attributeValue = attributeName && attributeValueElement ? this._node.getAttribute(attributeName) : undefined;
         if (attributeValue !== undefined)
-            attributeValueElement.textContent = attributeValue;
+            attributeValueElement.setTextContentTruncatedIfNeeded(attributeValue, WebInspector.UIString("<value is too large to edit>"));
 
         // Remove zero-width spaces that were added by nodeTitleInfo.
         removeZeroWidthSpaceRecursive(attribute);
@@ -1158,7 +1158,7 @@ WebInspector.ElementsTreeElement.prototype = {
                 result.entityRanges[highlightIndex].offset += additionalHighlightOffset;
                 ++highlightIndex;
             }
-            element.textContent = value;
+            element.setTextContentTruncatedIfNeeded(value);
             WebInspector.highlightRangesWithStyleClass(element, result.entityRanges, "webkit-html-entity-value");
         }
 
