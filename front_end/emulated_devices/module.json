@@ -1,0 +1,35 @@
+{
+    "dependencies": [
+        "common",
+        "platform",
+        "toolbox"
+    ],
+    "scripts": [
+    ],
+    "extensions": [
+        {
+            "type": "emulated-device",
+            "device": {
+                "title": "Google Nexus 5",
+                "type": "phone",
+                "user-agent": "Mozilla/5.0 (Linux; Android 4.4.4; Nexus 5 Build/KTU84P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/38.0.2125.114 Mobile Safari/537.36",
+                "capabilities": [
+                    "touch",
+                    "mobile"
+                ],
+                "show-by-default": true,
+                "screen": {
+                    "device-pixel-ratio": 3,
+                    "vertical": {
+                        "width": 360,
+                        "height": 640
+                    },
+                    "horizontal": {
+                        "width": 640,
+                        "height": 360
+                    }
+                }
+            }
+        }
+    ]
+}

@@ -26,6 +26,7 @@
     { "name": "layers" },
     { "name": "promises" },
     { "name": "screencast", "condition": "remoteFrontend" },
+    { "name": "emulated_devices", "type": "remote" },
 
     { "name": "heap_snapshot_worker", "type": "worker" },
     { "name": "script_formatter_worker", "type": "worker" },
