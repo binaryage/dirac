@@ -2935,7 +2935,7 @@ WebInspector.StylePropertyTreeElement.prototype = {
             this.editingCommitted(event.target.textContent, context, moveDirection);
         }
 
-        delete this._originalPropertyText;
+        this._originalPropertyText = this.property.propertyText;
 
         this._parentPane._isEditingStyle = true;
         if (selectElement.parentElement)
@@ -3055,7 +3055,7 @@ WebInspector.StylePropertyTreeElement.prototype = {
     {
         var valueText = this.valueElement.textContent;
         if (valueText.indexOf(";") === -1)
-            this.applyStyleText(this.nameElement.textContent + ": " + valueText, false, false, false);
+            this.applyStyleText(this.nameElement.textContent + ": " + valueText, false);
     },
 
     kickFreeFlowStyleEditForTest: function()
@@ -3068,6 +3068,7 @@ WebInspector.StylePropertyTreeElement.prototype = {
      */
     editingEnded: function(context)
     {
+        delete this._originalPropertyText;
         this._resetMouseDownElement();
 
         this.setExpandable(context.hasChildren);
@@ -3096,8 +3097,7 @@ WebInspector.StylePropertyTreeElement.prototype = {
     _revertStyleUponEditingCanceled: function()
     {
         if (typeof this._originalPropertyText === "string") {
-            this.applyStyleText(this._originalPropertyText, true, false, true);
-            delete this._originalPropertyText;
+            this.applyStyleText(this._originalPropertyText, false);
         } else {
             if (this._newProperty)
                 this.treeOutline.removeChild(this);
@@ -3165,7 +3165,7 @@ WebInspector.StylePropertyTreeElement.prototype = {
                 else
                     propertyText = this.property.name + ": " + userInput;
             }
-            this.applyStyleText(propertyText, true, true, false);
+            this.applyStyleText(propertyText, true);
         } else {
             if (isEditingName)
                 this.property.name = userInput;
@@ -3264,80 +3264,55 @@ WebInspector.StylePropertyTreeElement.prototype = {
         return typeof this._originalPropertyText === "string" || (!!this.property.propertyText && this._newProperty);
     },
 
-    styleTextAppliedForTest: function()
-    {
-    },
+    styleTextAppliedForTest: function() { },
 
     /**
      * @param {string} styleText
-     * @param {boolean} updateInterface
      * @param {boolean} majorChange
-     * @param {boolean} isRevert
      */
-    applyStyleText: function(styleText, updateInterface, majorChange, isRevert)
+    applyStyleText: function(styleText, majorChange)
     {
-        this._applyStyleThrottler.schedule(this._innerApplyStyleText.bind(this, styleText, updateInterface, majorChange, isRevert));
+        this._applyStyleThrottler.schedule(this._innerApplyStyleText.bind(this, styleText, majorChange));
     },
 
     /**
      * @param {string} styleText
-     * @param {boolean} updateInterface
      * @param {boolean} majorChange
-     * @param {boolean} isRevert
      * @param {!WebInspector.Throttler.FinishCallback} finishedCallback
      */
-    _innerApplyStyleText: function(styleText, updateInterface, majorChange, isRevert, finishedCallback)
+    _innerApplyStyleText: function(styleText, majorChange, finishedCallback)
     {
-        /**
-         * @param {!WebInspector.StylesSidebarPane} parentPane
-         * @param {boolean} updateInterface
-         */
-        function userOperationFinishedCallback(parentPane, updateInterface)
-        {
-            if (updateInterface)
-                delete parentPane._userOperation;
-            finishedCallback();
-        }
-
-        // Leave a way to cancel editing after incremental changes.
-        if (!isRevert && !updateInterface && !this._hasBeenModifiedIncrementally()) {
-            // Remember the rule's original CSS text on [Page](Up|Down), so it can be restored
-            // if the editing is canceled.
-            this._originalPropertyText = this.property.propertyText;
-        }
-
         if (!this.treeOutline) {
             finishedCallback();
             return;
         }
 
-        var section = this.section();
         styleText = styleText.replace(/\s/g, " ").trim(); // Replace &nbsp; with whitespace.
-        var styleTextLength = styleText.length;
-        if (!styleTextLength && updateInterface && !isRevert && this._newProperty && !this._hasBeenModifiedIncrementally()) {
+        if (!styleText.length && majorChange && this._newProperty && !this._hasBeenModifiedIncrementally()) {
             // The user deleted everything and never applied a new property value via Up/Down scrolling/live editing, so remove the tree element and update.
+            var section = this.section();
             this.parent.removeChild(this);
             section.afterUpdate();
             return;
         }
 
         var currentNode = this._parentPane.node();
-        if (updateInterface)
-            this._parentPane._userOperation = true;
+        this._parentPane._userOperation = true;
 
         /**
-         * @param {function()} userCallback
          * @param {?WebInspector.CSSStyleDeclaration} newStyle
          * @this {WebInspector.StylePropertyTreeElement}
          */
-        function callback(userCallback, newStyle)
+        function callback(newStyle)
         {
+            delete this._parentPane._userOperation;
+
             if (!newStyle) {
-                if (updateInterface) {
+                if (majorChange) {
                     // It did not apply, cancel editing.
                     this._revertStyleUponEditingCanceled();
                 }
-                userCallback();
+                finishedCallback();
                 this.styleTextAppliedForTest();
                 return;
             }
@@ -3348,10 +3323,11 @@ WebInspector.StylePropertyTreeElement.prototype = {
 
             this.property = newStyle.propertyAt(this.property.index);
 
-            if (updateInterface && currentNode === this.node())
+            // We are happy to update UI if user is not editing.
+            if (!this._parentPane._isEditingStyle && currentNode === this.node())
                 this._updatePane();
 
-            userCallback();
+            finishedCallback();
             this.styleTextAppliedForTest();
         }
 
@@ -3360,8 +3336,7 @@ WebInspector.StylePropertyTreeElement.prototype = {
         if (styleText.length && !/;\s*$/.test(styleText))
             styleText += ";";
         var overwriteProperty = !!(!this._newProperty || this._newPropertyInStyle);
-        var boundCallback = callback.bind(this, userOperationFinishedCallback.bind(null, this._parentPane, updateInterface));
-        this.property.setText(styleText, majorChange, overwriteProperty, boundCallback);
+        this.property.setText(styleText, majorChange, overwriteProperty, callback.bind(this));
     },
 
     /**
@@ -3473,7 +3448,7 @@ WebInspector.StylesSidebarPane.CSSPropertyPrompt.prototype = {
         function finishHandler(originalValue, replacementString)
         {
             // Synthesize property text disregarding any comments, custom whitespace etc.
-            this._treeElement.applyStyleText(this._treeElement.nameElement.textContent + ": " + this._treeElement.valueElement.textContent, false, false, false);
+            this._treeElement.applyStyleText(this._treeElement.nameElement.textContent + ": " + this._treeElement.valueElement.textContent, false);
         }
 
         /**
