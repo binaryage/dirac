@@ -271,7 +271,6 @@
                             '<(_output_path)/console_module.js',
                             '<(_output_path)/devices_module.js',
                             '<(_output_path)/elements_module.js',
-                            '<(_output_path)/emulated_devices_module.js',
                             '<(_output_path)/heap_snapshot_worker_module.js',
                             '<(_output_path)/layers_module.js',
                             '<(_output_path)/network_module.js',

@@ -24,9 +24,9 @@ WebInspector.OverridesUI.createDeviceSelect = function()
     WebInspector.overridesSupport.settings.emulateTouch.addChangeListener(emulatedSettingChanged);
     WebInspector.overridesSupport.settings.userAgent.addChangeListener(emulatedSettingChanged);
 
-    var emulatedDevices = WebInspector.EmulatedDevicesList.instance();
-    emulatedDevices.addEventListener(WebInspector.EmulatedDevicesList.Events.CustomDevicesUpdated, deviceListChanged);
-    emulatedDevices.addEventListener(WebInspector.EmulatedDevicesList.Events.StandardDevicesUpdated, deviceListChanged);
+    WebInspector.emulatedDevicesList.addEventListener(WebInspector.EmulatedDevicesList.Events.CustomDevicesUpdated, deviceListChanged);
+    WebInspector.emulatedDevicesList.addEventListener(WebInspector.EmulatedDevicesList.Events.StandardDevicesUpdated, deviceListChanged);
+    WebInspector.emulatedDevicesList.maybeAutoUpdate();
     deviceListChanged();
 
     function deviceSelected()
@@ -65,8 +65,8 @@ WebInspector.OverridesUI.createDeviceSelect = function()
         selectDeviceOption.disabled = true;
         deviceSelectElement.appendChild(selectDeviceOption);
 
-        addGroup(WebInspector.UIString("Custom"), emulatedDevices.custom(), true);
-        addGroup(WebInspector.UIString("Devices"), emulatedDevices.standard());
+        addGroup(WebInspector.UIString("Custom"), WebInspector.emulatedDevicesList.custom(), true);
+        addGroup(WebInspector.UIString("Devices"), WebInspector.emulatedDevicesList.standard());
 
         /**
          * @param {string} name
