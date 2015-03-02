@@ -8,9 +8,6 @@
  */
 WebInspector.DevToolsApp = function()
 {
-    if (DevToolsHost.isUnderTest())
-        self.runtime.useTestBase();
-
     this._iframe = document.getElementById("inspector-app-iframe");
     this._inspectorFrontendHostImpl = new WebInspector.InspectorFrontendHostImpl();
 

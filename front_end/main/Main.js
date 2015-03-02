@@ -115,8 +115,6 @@ WebInspector.Main.prototype = {
     {
         console.timeStamp("Main._loaded");
 
-        if (InspectorFrontendHost.isUnderTest())
-            self.runtime.useTestBase();
         this._createSettings();
         this._createAppUI();
     },
