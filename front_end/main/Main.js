@@ -805,10 +805,6 @@ WebInspector.Main._reloadPage = function(hard)
         return false;
     if (WebInspector.isWorkerFrontend())
         return false;
-
-    var targets = WebInspector.targetManager.targets();
-    for (var i = 0; i < targets.length; ++i)
-        targets[i].debuggerModel.skipAllPauses(true, true);
     WebInspector.targetManager.reloadPage(hard);
     return true;
 }

@@ -149,15 +149,14 @@ WebInspector.DebuggerModel.prototype = {
 
     /**
      * @param {boolean} skip
-     * @param {boolean=} untilReload
      */
-    skipAllPauses: function(skip, untilReload)
+    _skipAllPauses: function(skip)
     {
         if (this._skipAllPausesTimeout) {
             clearTimeout(this._skipAllPausesTimeout);
             delete this._skipAllPausesTimeout;
         }
-        this._agent.setSkipAllPauses(skip, untilReload);
+        this._agent.setSkipAllPauses(skip);
     },
 
     /**
@@ -167,9 +166,9 @@ WebInspector.DebuggerModel.prototype = {
     {
         if (this._skipAllPausesTimeout)
             clearTimeout(this._skipAllPausesTimeout);
-        this._agent.setSkipAllPauses(true, true);
+        this._agent.setSkipAllPauses(true);
         // If reload happens before the timeout, the flag will be already unset and the timeout callback won't change anything.
-        this._skipAllPausesTimeout = setTimeout(this.skipAllPauses.bind(this, false), timeout);
+        this._skipAllPausesTimeout = setTimeout(this._skipAllPauses.bind(this, false), timeout);
     },
 
     _pauseOnExceptionStateChanged: function()
@@ -266,7 +265,7 @@ WebInspector.DebuggerModel.prototype = {
     pause: function()
     {
         this._isPausing = true;
-        this.skipAllPauses(false);
+        this._skipAllPauses(false);
         this._agent.pause();
     },
 
