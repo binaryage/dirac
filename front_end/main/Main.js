@@ -641,8 +641,8 @@ WebInspector.Main.prototype = {
 
 WebInspector.reload = function()
 {
-    for (var target of WebInspector.targetManager.targets())
-        target.inspectorAgent().reset();
+    if (WebInspector.dockController.canDock() && WebInspector.dockController.dockSide() === WebInspector.DockController.State.Undocked)
+        InspectorFrontendHost.setIsDocked(true, function() {});
     window.top.location.reload();
 }
 
