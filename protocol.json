@@ -155,37 +155,6 @@
                 "hidden": true
             },
             {
-                "id": "Quota",
-                "type": "object",
-                "description": "Quota information",
-                "properties": [
-                    { "name": "temporary", "type": "number", "description": "Quota for temporary storage shared among all security origins" },
-                    { "name": "persistent", "type": "number", "description": "Quota for persistent storage for the security origin." }
-                ],
-                "hidden": true
-            },
-            {
-                "id": "Usage",
-                "type": "object",
-                "description": "Usage information",
-                "properties": [
-                    { "name": "temporary", "type": "array", "items": { "$ref": "Page.UsageItem" }, "description": "Temporary storage usage." },
-                    { "name": "persistent", "type": "array", "items": { "$ref": "Page.UsageItem" }, "description": "Persistent storage usage." },
-                    { "name": "syncable", "type": "array", "items": { "$ref": "Page.UsageItem" }, "description": "Syncable storage." }
-                ],
-                "hidden": true
-            },
-            {
-                "id": "UsageItem",
-                "type": "object",
-                "description": "Usage information for a client and storage type",
-                "properties": [
-                    { "name": "id", "type": "string", "enum": ["filesystem", "database", "appcache", "indexeddatabase"], "description": "Item id." },
-                    { "name": "value", "type": "number", "description": "Item usage value." }
-                ],
-                "hidden": true
-            },
-            {
                 "id": "Viewport",
                 "type": "object",
                 "description": "Visible page viewport",
@@ -591,20 +560,6 @@
                     { "name": "showGrid", "type": "boolean", "optional": true, "description": "Whether to paint grid as well." }
                 ],
                 "hidden": true
-            },
-            {
-                "name": "queryUsageAndQuota",
-                "async": true,
-                "parameters": [
-                    { "name": "securityOrigin", "type": "string", "description": "Security origin quota and usage requested for" }
-                ],
-                "returns": [
-                    { "name": "quota", "$ref": "Quota", "description": "Quota for requested security origin." },
-                    { "name": "usage", "$ref": "Usage", "description": "Current usage for requested security origin." }
-                ],
-                "description": "Queries more detailed quota and usage data than Storage API provides.",
-                "hidden": true,
-                "handlers": ["browser"]
             },
             {
                 "name": "setColorPickerEnabled",
