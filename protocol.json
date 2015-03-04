@@ -3996,8 +3996,8 @@
             {
                 "name": "sendMessageToWorker",
                 "parameters": [
-                    { "name": "workerId", "type": "integer" },
-                    { "name": "message", "type": "object" }
+                    { "name": "workerId", "type": "string" },
+                    { "name": "message", "type": "string" }
                 ]
             },
             {
@@ -4010,13 +4010,13 @@
             {
                 "name": "connectToWorker",
                 "parameters": [
-                    { "name": "workerId", "type": "integer" }
+                    { "name": "workerId", "type": "string" }
                 ]
             },
             {
                 "name": "disconnectFromWorker",
                 "parameters": [
-                    { "name": "workerId", "type": "integer" }
+                    { "name": "workerId", "type": "string" }
                 ],
                 "handlers": ["browser", "renderer"]
             },
@@ -4031,7 +4031,7 @@
             {
                 "name": "workerCreated",
                 "parameters": [
-                    { "name": "workerId", "type": "integer" },
+                    { "name": "workerId", "type": "string" },
                     { "name": "url", "type": "string" },
                     { "name": "inspectorConnected", "type": "boolean" }
                 ]
@@ -4039,14 +4039,14 @@
             {
                 "name": "workerTerminated",
                 "parameters": [
-                    { "name": "workerId", "type": "integer" }
+                    { "name": "workerId", "type": "string" }
                 ]
             },
             {
                 "name": "dispatchMessageFromWorker",
                 "parameters": [
-                    { "name": "workerId", "type": "integer" },
-                    { "name": "message", "type": "object" }
+                    { "name": "workerId", "type": "string" },
+                    { "name": "message", "type": "string" }
                 ]
             },
             {
