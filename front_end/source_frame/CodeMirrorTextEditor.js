@@ -375,7 +375,7 @@ WebInspector.CodeMirrorTextEditor._guessIndentationLevel = function(lines)
     }
     if (minimumIndent === Infinity)
         return WebInspector.settings.textEditorIndent.get();
-    return new Array(minimumIndent + 1).join(" ");
+    return " ".repeat(minimumIndent);
 }
 
 
