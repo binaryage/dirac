@@ -210,19 +210,6 @@ WebInspector.AdvancedApp.prototype = {
     }
 };
 
-/** @type {!WebInspector.AdvancedApp} */
-WebInspector.AdvancedApp._appInstance;
-
-/**
- * @return {!WebInspector.AdvancedApp}
- */
-WebInspector.AdvancedApp._instance = function()
-{
-    if (!WebInspector.AdvancedApp._appInstance)
-        WebInspector.AdvancedApp._appInstance = new WebInspector.AdvancedApp();
-    return WebInspector.AdvancedApp._appInstance;
-};
-
 /**
  * @constructor
  * @implements {WebInspector.AppProvider}
@@ -238,7 +225,7 @@ WebInspector.AdvancedAppProvider.prototype = {
      */
     createApp: function()
     {
-        return WebInspector.AdvancedApp._instance();
+        return new WebInspector.AdvancedApp();
     }
 };
 
@@ -248,6 +235,11 @@ WebInspector.AdvancedAppProvider.prototype = {
  */
 WebInspector.AdvancedApp.DeviceCounter = function()
 {
+    if (!Runtime.experiments.isEnabled("devicesPanel") || !(WebInspector.app instanceof WebInspector.AdvancedApp)) {
+        this._counter = null;
+        return;
+    }
+
     this._counter = new WebInspector.StatusBarCounter(["device-icon"]);
     this._counter.addEventListener("click", showDevices);
 
@@ -267,7 +259,7 @@ WebInspector.AdvancedApp.DeviceCounter.prototype = {
     _onDeviceCountUpdated: function(event)
     {
         var count = /** @type {number} */ (event.data);
-        this._counter.setCounter("device-icon", count, WebInspector.UIString(count > 1 ? "%d devices found" : "%d device found", count));
+        this._counter.setCounter("device-icon-small", count, WebInspector.UIString(count > 1 ? "%d devices found" : "%d device found", count));
         WebInspector.inspectorView.toolbarItemResized();
     },
 
@@ -296,7 +288,9 @@ WebInspector.AdvancedApp.EmulationButtonProvider.prototype = {
      */
     item: function()
     {
-        return WebInspector.AdvancedApp._instance()._toggleEmulationButton;
+        if (!(WebInspector.app instanceof WebInspector.AdvancedApp))
+            return null;
+        return WebInspector.app._toggleEmulationButton || null;
     }
 }
 
@@ -317,7 +311,9 @@ WebInspector.AdvancedApp.ToggleDeviceModeActionDelegate.prototype = {
     {
         if (!WebInspector.overridesSupport.responsiveDesignAvailable())
             return false;
-        WebInspector.AdvancedApp._instance()._toggleEmulationEnabled();
+        if (!(WebInspector.app instanceof WebInspector.AdvancedApp))
+            return false;
+        WebInspector.app._toggleEmulationEnabled();
         return true;
     }
 }

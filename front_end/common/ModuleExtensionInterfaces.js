@@ -127,3 +127,8 @@ WebInspector.QueryParamHandler.prototype = {
      */
     handleQueryParam: function(value) { }
 }
+
+/**
+ * @type {!WebInspector.App}
+ */
+WebInspector.app;

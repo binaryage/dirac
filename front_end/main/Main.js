@@ -242,20 +242,27 @@ WebInspector.Main.prototype = {
         this._registerMessageSinkListener();
 
         var appExtension = self.runtime.extensions(WebInspector.AppProvider)[0];
-        appExtension.instancePromise().then(this._showAppUI.bind(this));
+        appExtension.instancePromise().then(createApp).then(this._initApp.bind(this));
+
+        /**
+         * @param {!Object} appProvider
+         * FIXME: don't save to global WebInspector.app once we split apps to separate modules.
+         */
+        function createApp(appProvider)
+        {
+            WebInspector.app = /** @type {!WebInspector.AppProvider} */ (appProvider).createApp();
+        }
     },
 
     /**
-     * @param {!Object} appProvider
      * @suppressGlobalPropertiesCheck
      */
-    _showAppUI: function(appProvider)
+    _initApp: function()
     {
-        var app = /** @type {!WebInspector.AppProvider} */ (appProvider).createApp();
         // It is important to kick controller lifetime after apps are instantiated.
         WebInspector.dockController.initialize();
         console.timeStamp("Main._presentUI");
-        app.presentUI(document);
+        WebInspector.app.presentUI(document);
 
         if (!WebInspector.isWorkerFrontend())
             WebInspector.inspectElementModeController = new WebInspector.InspectElementModeController();
