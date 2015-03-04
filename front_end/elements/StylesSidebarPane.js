@@ -395,6 +395,7 @@ WebInspector.StylesSidebarPane.prototype = {
             this._target.domModel.removeEventListener(WebInspector.DOMModel.Events.AttrModified, this._attributeChanged, this);
             this._target.domModel.removeEventListener(WebInspector.DOMModel.Events.AttrRemoved, this._attributeChanged, this);
             this._target.resourceTreeModel.removeEventListener(WebInspector.ResourceTreeModel.EventTypes.FrameResized, this._frameResized, this);
+            this._target.resourceTreeModel.removeEventListener(WebInspector.ResourceTreeModel.EventTypes.MainFrameNavigated, this._updateAnimationsPlaybackRate, this);
         }
         this._target = target;
         this._target.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetAdded, this._styleSheetOrMediaQueryResultChanged, this);
@@ -404,6 +405,8 @@ WebInspector.StylesSidebarPane.prototype = {
         this._target.domModel.addEventListener(WebInspector.DOMModel.Events.AttrModified, this._attributeChanged, this);
         this._target.domModel.addEventListener(WebInspector.DOMModel.Events.AttrRemoved, this._attributeChanged, this);
         this._target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.FrameResized, this._frameResized, this);
+        this._target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.MainFrameNavigated, this._updateAnimationsPlaybackRate, this);
+        this._updateAnimationsPlaybackRate();
     },
 
     /**
@@ -746,8 +749,6 @@ WebInspector.StylesSidebarPane.prototype = {
             this._updateFilter();
 
         this._nodeStylesUpdatedForTest(node, true);
-
-        this._updateAnimationsPlaybackRate();
     },
 
     /**
@@ -1086,7 +1087,10 @@ WebInspector.StylesSidebarPane.prototype = {
         this._elementStatePane.classList.remove("expanded");
     },
 
-    _updateAnimationsPlaybackRate: function()
+    /**
+     * @param {!WebInspector.Event=} event
+     */
+    _updateAnimationsPlaybackRate: function(event)
     {
         /**
          * @param {?Protocol.Error} error
@@ -1098,6 +1102,7 @@ WebInspector.StylesSidebarPane.prototype = {
             this._animationsPlaybackSlider.value = WebInspector.AnimationsSidebarPane.GlobalPlaybackRates.indexOf(playbackRate);
             this._animationsPlaybackLabel.textContent = playbackRate + "x";
         }
+
         if (this._target)
             this._target.animationAgent().getPlaybackRate(setPlaybackRate.bind(this));
     },
@@ -1131,7 +1136,6 @@ WebInspector.StylesSidebarPane.prototype = {
 
         this._animationsPaused = false;
         this._animationsPlaybackRate = 1;
-        this._updateAnimationsPlaybackRate();
 
         this._animationsControlPane = createElementWithClass("div", "styles-animations-controls-pane");
         var labelElement = createElement("div");
