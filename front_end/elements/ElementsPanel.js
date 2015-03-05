@@ -1026,7 +1026,7 @@ WebInspector.ElementsPanel.DOMNodeRevealer.prototype = {
             } else if (node instanceof WebInspector.DeferredDOMNode) {
                 (/** @type {!WebInspector.DeferredDOMNode} */ (node)).resolve(onNodeResolved);
             } else if (node instanceof WebInspector.RemoteObject) {
-                (/** @type {!WebInspector.RemoteObject} */ (node)).pushNodeToFrontend(onNodeResolved);
+                (/** @type {!WebInspector.RemoteObject} */ (node)).target().domModel.pushObjectAsNodeToFrontend(node, onNodeResolved);
             } else {
                 reject(new Error("Can't reveal a non-node."));
                 panel._pendingNodeReveal = false;

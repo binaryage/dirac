@@ -556,27 +556,6 @@ WebInspector.RemoteObjectImpl.prototype = {
     },
 
     /**
-     * @param {function(?WebInspector.DOMNode)} callback
-     */
-    pushNodeToFrontend: function(callback)
-    {
-        if (this.isNode())
-            this._domModel.pushNodeToFrontend(this._objectId, callback);
-        else
-            callback(null);
-    },
-
-    highlightAsDOMNode: function()
-    {
-        this._domModel.highlightDOMNode(undefined, undefined, this._objectId);
-    },
-
-    hideDOMNodeHighlight: function()
-    {
-        this._domModel.hideDOMNodeHighlight();
-    },
-
-    /**
      * @override
      * @param {function(this:Object, ...)} functionDeclaration
      * @param {!Array.<!RuntimeAgent.CallArgument>=} args

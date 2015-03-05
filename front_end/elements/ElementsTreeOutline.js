@@ -2027,7 +2027,7 @@ WebInspector.ElementsTreeOutline.Renderer.prototype = {
             else if (object instanceof WebInspector.DeferredDOMNode)
                 (/** @type {!WebInspector.DeferredDOMNode} */ (object)).resolve(onNodeResolved);
             else if (object instanceof WebInspector.RemoteObject)
-                (/** @type {!WebInspector.RemoteObject} */ (object)).pushNodeToFrontend(onNodeResolved);
+                (/** @type {!WebInspector.RemoteObject} */ (object)).target().domModel.pushObjectAsNodeToFrontend(object, onNodeResolved);
             else
                 reject(new Error("Can't reveal not a node."));
 

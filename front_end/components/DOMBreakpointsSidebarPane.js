@@ -113,7 +113,7 @@ WebInspector.DOMBreakpointsSidebarPane.prototype = {
         var domModel = details.target().domModel;
         if (auxData.type === this._breakpointTypes.SubtreeModified) {
             var targetNodeObject = details.target().runtimeModel.createRemoteObject(auxData["targetNode"]);
-            targetNodeObject.pushNodeToFrontend(didPushNodeToFrontend.bind(this));
+            domModel.pushObjectAsNodeToFrontend(targetNodeObject, didPushNodeToFrontend.bind(this));
         } else {
             this._doCreateBreakpointHitStatusMessage(auxData, domModel.nodeForId(auxData.nodeId), null, callback);
         }

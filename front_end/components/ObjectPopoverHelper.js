@@ -172,7 +172,7 @@ WebInspector.ObjectPopoverHelper.prototype = {
                 popover.showForAnchor(popoverContentElement, anchorElement);
             } else {
                 if (result.subtype === "node") {
-                    result.highlightAsDOMNode();
+                    result.target().domModel.highlightObjectAsDOMNode(result);
                     this._resultHighlightedAsDOM = result;
                 }
                 popoverContentElement = createElement("div");

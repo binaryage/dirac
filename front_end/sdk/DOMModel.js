@@ -1941,6 +1941,26 @@ WebInspector.DOMModel.prototype = {
         }
     },
 
+    /**
+     * @param {!WebInspector.RemoteObject} object
+     * @param {function(?WebInspector.DOMNode)} callback
+     */
+    pushObjectAsNodeToFrontend: function(object, callback)
+    {
+        if (object.isNode())
+            this.pushNodeToFrontend(object.objectId, callback);
+        else
+            callback(null);
+    },
+
+    /**
+     * @param {!WebInspector.RemoteObject} object
+     */
+    highlightObjectAsDOMNode: function(object)
+    {
+        this.highlightDOMNode(undefined, undefined, object.objectId);
+    },
+
     __proto__: WebInspector.SDKModel.prototype
 }
 

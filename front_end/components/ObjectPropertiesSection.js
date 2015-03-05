@@ -1061,12 +1061,12 @@ WebInspector.ObjectPropertiesSection.createValueElement = function(value, wasThr
 
     function mouseMove()
     {
-        value.highlightAsDOMNode();
+        value.target().domModel.highlightObjectAsDOMNode(value);
     }
 
     function mouseLeave()
     {
-        value.hideDOMNodeHighlight();
+        value.target().domModel.hideDOMNodeHighlight();
     }
 
     return valueElement;
