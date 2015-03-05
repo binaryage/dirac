@@ -51,84 +51,6 @@ WebInspector.TimelineEventOverview = function(model)
 /** @const */
 WebInspector.TimelineEventOverview._stripHeight = 10;
 
-/**
- * @constructor
- * @template T
- */
-WebInspector.Dithering = function()
-{
-    /** @type {!Map.<?T,number>} */
-    this._groupError = new Map();
-    this._position = 0;
-    this._lastReportedPosition = 0;
-}
-
-WebInspector.Dithering.prototype = {
-    /**
-     * @param {!T} group
-     * @param {number} start
-     * @param {number} end
-     * @return {?{start: number, end: number}}
-     * @template T
-     */
-    appendInterval: function(group, start, end)
-    {
-        this._innerAppend(null, start); // Append an empty space before.
-        return this._innerAppend(group, end); // Append the interval itself.
-    },
-
-    /**
-     * @param {?T} group
-     * @param {number} position
-     * @return {?{start: number, end: number}}
-     * @template T
-     */
-    _innerAppend: function(group, position)
-    {
-        if (position < this._position)
-            return null;
-        var result = null;
-        var length = position - this._position;
-        length += this._groupError.get(group) || 0;
-        if (length >= 1) {
-            if (!group)
-                length -= this._distributeExtraAmount(length - 1);
-            var newReportedPosition = this._lastReportedPosition + Math.floor(length);
-            result = { start: this._lastReportedPosition, end: newReportedPosition };
-            this._lastReportedPosition = newReportedPosition;
-            length %= 1;
-        }
-        this._groupError.set(group, length);
-        this._position = position;
-        return result;
-    },
-
-    /**
-     * @param {number} amount
-     * @return {number}
-     */
-    _distributeExtraAmount: function(amount)
-    {
-        var canConsume = 0;
-        for (var g of this._groupError.keys()) {
-            if (g)
-                canConsume += 1 - this._groupError.get(g);
-        }
-        var toDistribute = Math.min(amount, canConsume);
-        if (toDistribute <= 0)
-            return 0;
-        var ratio = toDistribute / canConsume;
-        for (var g of this._groupError.keys()) {
-            if (!g)
-                continue;
-            var value = this._groupError.get(g);
-            value += (1 - value) * ratio;
-            this._groupError.set(g, value);
-        }
-        return toDistribute;
-    }
-}
-
 WebInspector.TimelineEventOverview.prototype = {
     /**
      * @override
@@ -148,14 +70,18 @@ WebInspector.TimelineEventOverview.prototype = {
         var /** @const */ topPadding = 2;
         this.resetCanvas();
         var threads = this._model.virtualThreads();
-        var estimatedHeight = (1 + threads.length) * WebInspector.TimelineEventOverview._stripHeight;
+        var estimatedHeight = 3 * WebInspector.TimelineEventOverview._stripHeight;
         this._canvas.height = estimatedHeight * window.devicePixelRatio;
         this._canvas.style.height = estimatedHeight + "px";
         var position = topPadding;
         position += this._drawEvents(this._model.mainThreadEvents(), position);
-        for (var thread of threads)
-            position += this._drawEvents(thread.events, position);
-        position = Math.max(position, topPadding + WebInspector.TimelineEventOverview._stripHeight);
+        for (var thread of threads.filter(function(thread) { return !thread.isWorker(); }))
+            this._drawEvents(thread.events, position);
+        position += WebInspector.TimelineEventOverview._stripHeight;
+        var workersHeight = 0;
+        for (var thread of threads.filter(function(thread) { return thread.isWorker(); }))
+            workersHeight = Math.max(workersHeight, this._drawEvents(thread.events, position));
+        position += workersHeight;
         this.element.style.flexBasis = position + "px";
     },
 
@@ -238,4 +164,82 @@ WebInspector.TimelineEventOverview.prototype = {
     },
 
     __proto__: WebInspector.TimelineOverviewBase.prototype
+}
+
+/**
+ * @constructor
+ * @template T
+ */
+WebInspector.Dithering = function()
+{
+    /** @type {!Map.<?T,number>} */
+    this._groupError = new Map();
+    this._position = 0;
+    this._lastReportedPosition = 0;
+}
+
+WebInspector.Dithering.prototype = {
+    /**
+     * @param {!T} group
+     * @param {number} start
+     * @param {number} end
+     * @return {?{start: number, end: number}}
+     * @template T
+     */
+    appendInterval: function(group, start, end)
+    {
+        this._innerAppend(null, start); // Append an empty space before.
+        return this._innerAppend(group, end); // Append the interval itself.
+    },
+
+    /**
+     * @param {?T} group
+     * @param {number} position
+     * @return {?{start: number, end: number}}
+     * @template T
+     */
+    _innerAppend: function(group, position)
+    {
+        if (position < this._position)
+            return null;
+        var result = null;
+        var length = position - this._position;
+        length += this._groupError.get(group) || 0;
+        if (length >= 1) {
+            if (!group)
+                length -= this._distributeExtraAmount(length - 1);
+            var newReportedPosition = this._lastReportedPosition + Math.floor(length);
+            result = { start: this._lastReportedPosition, end: newReportedPosition };
+            this._lastReportedPosition = newReportedPosition;
+            length %= 1;
+        }
+        this._groupError.set(group, length);
+        this._position = position;
+        return result;
+    },
+
+    /**
+     * @param {number} amount
+     * @return {number}
+     */
+    _distributeExtraAmount: function(amount)
+    {
+        var canConsume = 0;
+        for (var g of this._groupError.keys()) {
+            if (g)
+                canConsume += 1 - this._groupError.get(g);
+        }
+        var toDistribute = Math.min(amount, canConsume);
+        if (toDistribute <= 0)
+            return 0;
+        var ratio = toDistribute / canConsume;
+        for (var g of this._groupError.keys()) {
+            if (!g)
+                continue;
+            var value = this._groupError.get(g);
+            value += (1 - value) * ratio;
+            this._groupError.set(g, value);
+        }
+        return toDistribute;
+    }
 }

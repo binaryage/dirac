@@ -220,6 +220,16 @@ WebInspector.TimelineModel.VirtualThread = function(name)
     this.asyncEvents = [];
 }
 
+WebInspector.TimelineModel.VirtualThread.prototype = {
+    /**
+     * @return {boolean}
+     */
+    isWorker: function()
+    {
+        return this.name === "WebCore: Worker";
+    }
+}
+
 /**
  * @constructor
  * @param {!WebInspector.TimelineModel} model
