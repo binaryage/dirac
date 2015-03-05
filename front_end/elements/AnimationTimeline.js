@@ -689,7 +689,7 @@ WebInspector.AnimationUI.prototype = {
     _delay: function()
     {
         var delay = this._animation.source().delay();
-        if (this._mouseEventType === WebInspector.AnimationUI.MouseEvents.AnimationDrag || this._mouseEventType    === WebInspector.AnimationUI.MouseEvents.StartEndpointMove)
+        if (this._mouseEventType === WebInspector.AnimationUI.MouseEvents.AnimationDrag || this._mouseEventType === WebInspector.AnimationUI.MouseEvents.StartEndpointMove)
             delay += this._movementInMs;
         // FIXME: add support for negative start delay
         return Math.max(0, delay);
@@ -704,7 +704,7 @@ WebInspector.AnimationUI.prototype = {
         if (this._mouseEventType === WebInspector.AnimationUI.MouseEvents.FinishEndpointMove)
             duration += this._movementInMs;
         else if (this._mouseEventType === WebInspector.AnimationUI.MouseEvents.StartEndpointMove)
-            duration -= this._movementInMs;
+            duration -= Math.max(this._movementInMs, -this._animation.source().delay()); // Cannot have negative delay
         return Math.max(0, duration);
     },
 
@@ -767,8 +767,16 @@ WebInspector.AnimationUI.prototype = {
         if (this._mouseEventType === WebInspector.AnimationUI.MouseEvents.KeyframeMove) {
             this._keyframes[this._keyframeMoved].setOffset(this._offset(this._keyframeMoved));
         } else {
-            this._setDelay(this._delay());
-            this._setDuration(this._duration());
+            var delay = this._delay();
+            var duration = this._duration();
+            this._setDelay(delay);
+            this._setDuration(duration);
+            // FIXME: Transition timing updates currently not supported
+            if (this._animation.type() == "WebAnimation") {
+                var target = WebInspector.targetManager.mainTarget();
+                if (target)
+                    target.animationAgent().setTiming(this._animation.id(), duration, delay);
+            }
         }
 
         this._movementInMs = 0;
@@ -798,7 +806,7 @@ WebInspector.AnimationUI.prototype = {
         else if (this._animation.type() == "CSSAnimation")
             propertyName = "animation-delay";
         else
-            return; // FIXME: support web animations
+            return;
         this._setNodeStyle(propertyName, Math.round(value) + "ms");
     },
 
@@ -817,7 +825,7 @@ WebInspector.AnimationUI.prototype = {
         else if (this._animation.type() == "CSSAnimation")
             propertyName = "animation-duration";
         else
-            return; // FIXME: support web animations
+            return;
         this._setNodeStyle(propertyName, Math.round(value) + "ms");
     },
 
