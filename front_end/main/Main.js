@@ -219,7 +219,6 @@ WebInspector.Main.prototype = {
         WebInspector.scriptSnippetModel = new WebInspector.ScriptSnippetModel(WebInspector.workspace);
         WebInspector.extensionServer = new WebInspector.ExtensionServer();
 
-        new WebInspector.OverlayController();
         new WebInspector.ContentScriptProjectDecorator();
         new WebInspector.ExecutionContextSelector();
 

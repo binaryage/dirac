@@ -56,6 +56,7 @@ WebInspector.DebuggerModel = function(target)
     WebInspector.settings.enableAsyncStackTraces.addChangeListener(this.asyncStackTracesStateChanged, this);
     WebInspector.settings.skipStackFramesPattern.addChangeListener(this._applySkipStackFrameSettings, this);
     WebInspector.settings.skipContentScripts.addChangeListener(this._applySkipStackFrameSettings, this);
+    WebInspector.settings.disablePausedStateOverlay.addChangeListener(this._updateOverlayMessage, this);
 
     this.enableDebugger();
 
@@ -202,27 +203,62 @@ WebInspector.DebuggerModel.prototype = {
 
     stepInto: function()
     {
-        this._agent.stepInto();
+        /**
+         * @this {WebInspector.DebuggerModel}
+         */
+        function callback()
+        {
+            this._agent.stepInto();
+        }
+        this._setOverlayMessage(undefined).then(callback.bind(this));
     },
 
     stepIntoAsync: function()
     {
-        this._agent.stepIntoAsync();
+        /**
+         * @this {WebInspector.DebuggerModel}
+         */
+        function callback()
+        {
+            this._agent.stepIntoAsync();
+        }
+        this._setOverlayMessage(undefined).then(callback.bind(this));
     },
 
     stepOver: function()
     {
-        this._agent.stepOver();
+        /**
+         * @this {WebInspector.DebuggerModel}
+         */
+        function callback()
+        {
+            this._agent.stepOver();
+        }
+        this._setOverlayMessage(undefined).then(callback.bind(this));
     },
 
     stepOut: function()
     {
-        this._agent.stepOut();
+        /**
+         * @this {WebInspector.DebuggerModel}
+         */
+        function callback()
+        {
+            this._agent.stepOut();
+        }
+        this._setOverlayMessage(undefined).then(callback.bind(this));
     },
 
     resume: function()
     {
-        this._agent.resume();
+        /**
+         * @this {WebInspector.DebuggerModel}
+         */
+        function callback()
+        {
+            this._agent.resume();
+        }
+        this._setOverlayMessage(undefined).then(callback.bind(this));
         this._isPausing = false;
     },
 
@@ -448,6 +484,35 @@ WebInspector.DebuggerModel.prototype = {
             this.setSelectedCallFrame(debuggerPausedDetails.callFrames[0]);
         else
             this.setSelectedCallFrame(null);
+        this._updateOverlayMessage();
+    },
+
+    _updateOverlayMessage: function()
+    {
+        var message = this._debuggerPausedDetails && !WebInspector.settings.disablePausedStateOverlay.get() ? WebInspector.UIString("Paused in debugger") : undefined;
+        this._setOverlayMessage(message);
+    },
+
+    /**
+     * @param {string=} message
+     * @return {!Promise.<undefined>}
+     */
+    _setOverlayMessage: function(message)
+    {
+        /**
+         * @param {function(?):?} fulfill
+         * @param {function(*):?} reject
+         * @this {WebInspector.DebuggerModel}
+         */
+        function setOverlayMessagePromiseCallback(fulfill, reject)
+        {
+            var pageAgent = this.target().pageAgent();
+            if (pageAgent)
+                pageAgent.setOverlayMessage(message, fulfill);
+            else
+                fulfill(undefined);
+        }
+        return new Promise(setOverlayMessagePromiseCallback.bind(this));
     },
 
     /**

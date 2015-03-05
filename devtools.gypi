@@ -279,7 +279,6 @@
             'front_end/main/AdvancedApp.js',
             'front_end/main/HelpScreenUntilReload.js',
             'front_end/main/Main.js',
-            'front_end/main/OverlayController.js',
             'front_end/main/OverridesView.js',
             'front_end/main/RenderingOptions.js',
             'front_end/main/SimpleApp.js',

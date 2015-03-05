@@ -271,7 +271,6 @@
         "SimpleApp.js",
         "TestController.js",
         "Tests.js",
-        "OverlayController.js",
         "Main.js"
     ],
     "skip_compilation": [
