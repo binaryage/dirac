@@ -40,6 +40,11 @@ line.animation-line {
     fill: none;
 }
 
+line.animation-delay-line {
+    stroke-width: 2;
+    stroke-dasharray: 6, 4;
+}
+
 circle.animation-endpoint {
     stroke-width: 3;
 }
@@ -52,7 +57,7 @@ circle.animation-keyframe-point {
 .animation-name {
     position: absolute;
     top: 15px;
-    color: #777;
+    color: #333;
     text-align: center;
     margin-left: -8px;
 }

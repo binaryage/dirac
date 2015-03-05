@@ -4701,6 +4701,7 @@
                 "hidden": true,
                 "properties": [
                     { "name": "delay", "type": "number", "description": "<code>AnimationNode</code>'s delay." },
+                    { "name": "endDelay", "type": "number", "description": "<code>AnimationNode</code>'s end delay." },
                     { "name": "playbackRate", "type": "number", "description": "<code>AnimationNode</code>'s playbackRate." },
                     { "name": "iterationStart", "type": "number", "description": "<code>AnimationNode</code>'s iteration start." },
                     { "name": "iterations", "type": "number", "description": "<code>AnimationNode</code>'s iterations." },
