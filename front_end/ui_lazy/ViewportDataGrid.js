@@ -18,6 +18,8 @@ WebInspector.ViewportDataGrid = function(columnsArray, editCallback, deleteCallb
     this._scrollContainer.addEventListener("mousewheel", this._onWheel.bind(this), true);
     /** @type {!Array.<!WebInspector.ViewportDataGridNode>} */
     this._visibleNodes = [];
+    /** @type {?Array.<!WebInspector.ViewportDataGridNode>} */
+    this._flatNodes = null;
     /** @type {boolean} */
     this._updateScheduled = false;
     /** @type {boolean} */
@@ -82,6 +84,15 @@ WebInspector.ViewportDataGrid.prototype = {
     /**
      * @protected
      */
+    scheduleUpdateStructure: function()
+    {
+        this._flatNodes = null;
+        this.scheduleUpdate();
+    },
+
+    /**
+     * @protected
+     */
     scheduleUpdate: function()
     {
         if (this._updateScheduled)
@@ -101,13 +112,42 @@ WebInspector.ViewportDataGrid.prototype = {
     },
 
     /**
+     * @return {!Array.<!WebInspector.ViewportDataGridNode>}
+     */
+    _flatNodesList: function()
+    {
+        if (this._flatNodes)
+            return this._flatNodes;
+        var flatNodes = [];
+        var children = [this._rootNode.children];
+        var counters = [0];
+        var depth = 0;
+        while (depth >= 0) {
+            var node = children[depth][counters[depth]++];
+            if (!node) {
+                depth--;
+                continue;
+            }
+            flatNodes.push(node);
+            node.setDepth(depth);
+            if (node._expanded && node.children.length) {
+                depth++;
+                children[depth] = node.children;
+                counters[depth] = 0;
+            }
+        }
+        this._flatNodes = flatNodes;
+        return this._flatNodes;
+    },
+
+    /**
      * @param {number} clientHeight
      * @param {number} scrollTop
      * @return {{topPadding: number, bottomPadding: number, visibleNodes: !Array.<!WebInspector.ViewportDataGridNode>, offset: number}}
      */
     _calculateVisibleNodes: function(clientHeight, scrollTop)
     {
-        var nodes = this._rootNode.children;
+        var nodes = this._flatNodesList();
         if (this._inline)
             return {topPadding: 0, bottomPadding: 0, visibleNodes: nodes, offset: 0};
 
@@ -136,7 +176,7 @@ WebInspector.ViewportDataGrid.prototype = {
      */
     _contentHeight: function()
     {
-        var nodes = this._rootNode.children;
+        var nodes = this._flatNodesList();
         var result = 0;
         for (var i = 0, size = nodes.length; i < size; ++i)
             result += nodes[i].nodeSelfHeight();
@@ -203,7 +243,7 @@ WebInspector.ViewportDataGrid.prototype = {
      */
     _revealViewportNode: function(node)
     {
-        var nodes = this._rootNode.children;
+        var nodes = this._flatNodesList();
         var index = nodes.indexOf(node);
         if (index === -1)
             return;
@@ -259,6 +299,14 @@ WebInspector.ViewportDataGridNode.prototype = {
     },
 
     /**
+     * @param {number} depth
+     */
+    setDepth: function(depth)
+    {
+        this._depth = depth;
+    },
+
+    /**
      * @override
      * @param {!WebInspector.DataGridNode} child
      * @param {number} index
@@ -269,7 +317,8 @@ WebInspector.ViewportDataGridNode.prototype = {
         child.dataGrid = this.dataGrid;
         this.children.splice(index, 0, child);
         child.recalculateSiblings(index);
-        this.dataGrid.scheduleUpdate();
+        if (this._expanded)
+            this.dataGrid.scheduleUpdateStructure();
     },
 
     /**
@@ -286,7 +335,8 @@ WebInspector.ViewportDataGridNode.prototype = {
         if (child.nextSibling)
             child.nextSibling.previousSibling = child.previousSibling;
 
-        this.dataGrid.scheduleUpdate();
+        if (this._expanded)
+            this.dataGrid.scheduleUpdateStructure();
     },
 
     /**
@@ -298,7 +348,19 @@ WebInspector.ViewportDataGridNode.prototype = {
             this.children[i].deselect();
         this.children = [];
 
-        this.dataGrid.scheduleUpdate();
+        if (this._expanded)
+            this.dataGrid.scheduleUpdateStructure();
+    },
+
+    /**
+     * @override
+     */
+    collapse: function()
+    {
+        if (!this._expanded)
+            return;
+        this._expanded = false;
+        this.dataGrid.scheduleUpdateStructure();
     },
 
     /**
@@ -306,6 +368,10 @@ WebInspector.ViewportDataGridNode.prototype = {
      */
     expand: function()
     {
+        if (this._expanded)
+            return;
+        this._expanded = true;
+        this.dataGrid.scheduleUpdateStructure();
     },
 
     /**
