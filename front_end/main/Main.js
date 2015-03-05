@@ -136,6 +136,7 @@ WebInspector.Main.prototype = {
         Runtime.experiments.register("applyCustomStylesheet", "Allow custom UI themes");
         Runtime.experiments.register("canvasInspection", "Canvas inspection");
         Runtime.experiments.register("composedShadowDOM", "Composed Shadow DOM view.", true);
+        Runtime.experiments.register("timelineDetailsChart", "Costly functions view in Timeline details", true);
         Runtime.experiments.register("customObjectFormatters", "Custom object formatters", true);
         Runtime.experiments.register("devicesPanel", "Devices panel");
         Runtime.experiments.register("externalDeviceList", "External device list", true);
@@ -143,13 +144,13 @@ WebInspector.Main.prototype = {
         Runtime.experiments.register("gpuTimeline", "GPU data on timeline", true);
         Runtime.experiments.register("layersPanel", "Layers panel");
         Runtime.experiments.register("networkRequestHeadersFilterInDetailsView", "Network request headers filter in details view", true);
+        Runtime.experiments.register("networkRequestsOnTimeline", "Network requests on Timeline");
         Runtime.experiments.register("privateScriptInspection", "Private script inspection");
         Runtime.experiments.register("promiseTracker", "Promise inspector");
         Runtime.experiments.register("showPrimaryLoadWaterfallInNetworkTimeline", "Show primary load waterfall in Network timeline", true);
         Runtime.experiments.register("stepIntoAsync", "Step into async");
         Runtime.experiments.register("timelineInvalidationTracking", "Timeline invalidation tracking");
         Runtime.experiments.register("timelineFlowEvents", "Timeline flow events", true);
-        Runtime.experiments.register("timelineDetailsChart", "Show costly functions in Timeline details", true);
         Runtime.experiments.cleanUpStaleExperiments();
 
         if (InspectorFrontendHost.isUnderTest()) {
