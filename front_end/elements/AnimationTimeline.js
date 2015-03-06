@@ -277,9 +277,10 @@ WebInspector.AnimationTimeline.prototype = {
         if (!this._startTime)
             this._startTime = animation.startTime();
 
-        // This shows at most 3 iterations
-        var duration = animation.source().duration() * Math.min(3, animation.source().iterations());
-        var requiredDuration = animation.startTime() + animation.source().delay() + duration + animation.source().endDelay() - this.startTime();
+        // This shows at most 2 iterations
+        var iterations = animation.source().iterations() || 1;
+        var duration = animation.source().duration() * Math.min(3, iterations);
+        var requiredDuration = animation.startTime() + duration + animation.source().delay() - this.startTime();
         if (requiredDuration > this._duration * 0.8) {
             resized = true;
             this._duration = requiredDuration * 1.5;
@@ -297,7 +298,7 @@ WebInspector.AnimationTimeline.prototype = {
 
         this._scrubberPlayer = this._timelineScrubber.animate([
             { transform: "translateX(0px)" },
-            { transform: "translateX(" +  (this.width() - this._scrubberRadius) + "px)" }
+            { transform: "translateX(" +  (this._cachedTimelineWidth - this._scrubberRadius) + "px)" }
         ], { duration: this.duration() - this._scrubberRadius / this.pixelMsRatio(), fill: "forwards" });
         this._scrubberPlayer.playbackRate = this._animationsPlaybackRate;
 
@@ -319,7 +320,7 @@ WebInspector.AnimationTimeline.prototype = {
      */
     pixelMsRatio: function()
     {
-        return this.width() / this.duration() || 0;
+        return this._cachedTimelineWidth / this.duration() || 0;
     },
 
     /**
@@ -393,17 +394,16 @@ WebInspector.AnimationTimeline.prototype = {
 WebInspector.AnimationTimeline.NodeUI = function(animationNode) {
     /**
      * @param {?WebInspector.DOMNode} node
-     * @this {WebInspector.AnimationTimeline.NodeUI}
      */
     function nodeResolved(node)
     {
-        this._description.appendChild(WebInspector.DOMPresentationUtils.linkifyNodeReference(node));
+        description.appendChild(WebInspector.DOMPresentationUtils.linkifyNodeReference(node));
     }
 
     this._rows = [];
     this.element = createElementWithClass("div", "animation-node-row");
-    this._description = this.element.createChild("div", "animation-node-description");
-    animationNode.getNode(nodeResolved.bind(this));
+    var description = this.element.createChild("div", "animation-node-description");
+    animationNode.getNode(nodeResolved);
     this._timelineElement = this.element.createChild("div", "animation-node-timeline");
 }
 
@@ -484,7 +484,6 @@ WebInspector.AnimationUI = function(stylesPane, animation, timeline, parentEleme
     this._svg.setAttribute("height", WebInspector.AnimationUI.Options.AnimationSVGHeight);
     this._svg.style.marginLeft = "-" + WebInspector.AnimationUI.Options.AnimationMargin + "px";
     this._svg.addEventListener("mousedown", this._mouseDown.bind(this, WebInspector.AnimationUI.MouseEvents.AnimationDrag, null));
-    this._activeIntervalGroup = this._svg.createSVGChild("g");
 
     /** @type {!Array.<{group: ?Element, animationLine: ?Element, keyframePoints: !Object.<number, !Element>, beziers: !Object.<number, !Element>}>} */
     this._cachedElements = [];
@@ -521,20 +520,6 @@ WebInspector.AnimationUI.prototype = {
     },
 
     /**
-     * @param {!Element} parentElement
-     * @param {string} className
-     */
-    _createLine: function(parentElement, className)
-    {
-        var line = parentElement.createSVGChild("line", className);
-        line.setAttribute("x1", WebInspector.AnimationUI.Options.AnimationMargin);
-        line.setAttribute("y1", WebInspector.AnimationUI.Options.AnimationHeight);
-        line.setAttribute("y2", WebInspector.AnimationUI.Options.AnimationHeight);
-        line.style.stroke = this._color();
-        return line;
-    },
-
-    /**
      * @param {number} iteration
      * @param {!Element} parentElement
      */
@@ -542,25 +527,12 @@ WebInspector.AnimationUI.prototype = {
     {
         var cache = this._cachedElements[iteration];
         if (!cache.animationLine)
-            cache.animationLine = this._createLine(parentElement, "animation-line");
+            cache.animationLine = parentElement.createSVGChild("line", "animation-line");
+        cache.animationLine.setAttribute("y1", WebInspector.AnimationUI.Options.AnimationHeight);
+        cache.animationLine.setAttribute("x1", WebInspector.AnimationUI.Options.AnimationMargin);
         cache.animationLine.setAttribute("x2", this._duration() * this._timeline.pixelMsRatio() + WebInspector.AnimationUI.Options.AnimationMargin);
-    },
-
-    /**
-     * @param {!Element} parentElement
-     */
-    _drawDelayLine: function(parentElement)
-    {
-        if (!this._delayLine) {
-            this._delayLine = this._createLine(parentElement, "animation-delay-line");
-            this._endDelayLine = this._createLine(parentElement, "animation-delay-line");
-        }
-        this._delayLine.setAttribute("x1", WebInspector.AnimationUI.Options.AnimationMargin);
-        this._delayLine.setAttribute("x2", this._delay() * this._timeline.pixelMsRatio() + WebInspector.AnimationUI.Options.AnimationMargin);
-        var leftMargin = (this._delay() + this._duration() * this._animation.source().iterations()) * this._timeline.pixelMsRatio();
-        this._endDelayLine.style.transform = "translateX(" + Math.min(leftMargin, this._timeline.width()) + "px)";
-        this._endDelayLine.setAttribute("x1", WebInspector.AnimationUI.Options.AnimationMargin);
-        this._endDelayLine.setAttribute("x2", this._animation.source().endDelay() * this._timeline.pixelMsRatio() + WebInspector.AnimationUI.Options.AnimationMargin);
+        cache.animationLine.setAttribute("y2", WebInspector.AnimationUI.Options.AnimationHeight);
+        cache.animationLine.style.stroke = this._color();
     },
 
     /**
@@ -620,28 +592,25 @@ WebInspector.AnimationUI.prototype = {
 
     redraw: function()
     {
-        var durationWithDelay = this._delay() + this._duration() * this._animation.source().iterations() + this._animation.source().endDelay();
-        var svgWidth = Math.min(this._timeline.width(), durationWithDelay * this._timeline.pixelMsRatio());
-        var leftMargin = (this._animation.startTime() - this._timeline.startTime()) * this._timeline.pixelMsRatio();
-
-        this._svg.setAttribute("width", svgWidth + 2 * WebInspector.AnimationUI.Options.AnimationMargin);
+        var iterationWidth = this._duration() * this._timeline.pixelMsRatio();
+        var svgWidth = this._animation.source().iterations() ? Math.min(this._timeline.width(), iterationWidth * this._animation.source().iterations()) : this._timeline.width();
+        svgWidth += 2 * WebInspector.AnimationUI.Options.AnimationMargin;
+        var leftMargin = (this._animation.startTime() - this._timeline.startTime() + this._delay()) * this._timeline.pixelMsRatio();
+        this._svg.setAttribute("width", svgWidth);
         this._svg.style.transform = "translateX(" + leftMargin  + "px)";
-        this._activeIntervalGroup.style.transform = "translateX(" + (this._delay() * this._timeline.pixelMsRatio()) + "px)";
-
-        this._nameElement.style.transform = "translateX(" + (leftMargin + this._delay() * this._timeline.pixelMsRatio() + WebInspector.AnimationUI.Options.AnimationMargin) + "px)";
-        this._nameElement.style.width = this._duration() * this._timeline.pixelMsRatio() + "px";
-        this._drawDelayLine(this._svg);
+        this._nameElement.style.transform = "translateX(" + leftMargin + "px)";
+        this._nameElement.style.width = svgWidth + "px";
 
         if (this._animation.type() === "CSSTransition") {
             this._renderTransition();
             return;
         }
 
-        this._renderIteration(this._activeIntervalGroup, 0);
+        var numIterations = this._animation.source().iterations() ? this._animation.source().iterations() : Infinity;
+        this._renderIteration(this._svg, 0);
         if (!this._tailGroup)
-            this._tailGroup = this._activeIntervalGroup.createSVGChild("g", "animation-tail-iterations");
-        var iterationWidth = this._duration() * this._timeline.pixelMsRatio();
-        for (var iteration = 1; iteration < this._animation.source().iterations() && iterationWidth * (iteration - 1) < this._timeline.width(); iteration++)
+            this._tailGroup = this._svg.createSVGChild("g", "animation-tail-iterations");
+        for (var iteration = 1; iteration < numIterations && iterationWidth * (iteration - 1) < this._timeline.width(); iteration++)
             this._renderIteration(this._tailGroup, iteration);
     },
 
@@ -649,13 +618,13 @@ WebInspector.AnimationUI.prototype = {
     {
         if (!this._cachedElements[0])
             this._cachedElements[0] = { animationLine: null, keyframePoints: {}, beziers: {}, group: null };
-        this._drawAnimationLine(0, this._activeIntervalGroup);
+        this._drawAnimationLine(0, this._svg);
         var bezier = WebInspector.Geometry.CubicBezier.parse(this._animation.source().easing());
         // FIXME: add support for step functions
         if (bezier)
-            this._renderBezierKeyframe(0, 0, this._activeIntervalGroup, WebInspector.AnimationUI.Options.AnimationMargin, this._duration() * this._timeline.pixelMsRatio(), bezier);
-        this._drawPoint(0, this._activeIntervalGroup, WebInspector.AnimationUI.Options.AnimationMargin, 0, true);
-        this._drawPoint(0, this._activeIntervalGroup, this._duration() * this._timeline.pixelMsRatio() + WebInspector.AnimationUI.Options.AnimationMargin, -1, true);
+            this._renderBezierKeyframe(0, 0, this._svg, WebInspector.AnimationUI.Options.AnimationMargin, this._duration() * this._timeline.pixelMsRatio(), bezier);
+        this._drawPoint(0, this._svg, WebInspector.AnimationUI.Options.AnimationMargin, 0, true);
+        this._drawPoint(0, this._svg, this._duration() * this._timeline.pixelMsRatio() + WebInspector.AnimationUI.Options.AnimationMargin, -1, true);
     },
 
     /**

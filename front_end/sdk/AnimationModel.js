@@ -152,7 +152,7 @@ WebInspector.AnimationModel.AnimationPlayer.prototype = {
     {
         if (!this.source().iterations)
             return Infinity;
-        return this.startTime() + this.source().delay() + this.source().duration() * this.source().iterations() + this.source().endDelay();
+        return this.startTime() + this.source().duration() * this.source().iterations();
     },
 
     /**
@@ -233,14 +233,6 @@ WebInspector.AnimationModel.AnimationNode.prototype = {
     /**
      * @return {number}
      */
-    endDelay: function()
-    {
-        return this._payload.endDelay;
-    },
-
-    /**
-     * @return {number}
-     */
     playbackRate: function()
     {
         return this._payload.playbackRate;
@@ -259,7 +251,7 @@ WebInspector.AnimationModel.AnimationNode.prototype = {
      */
     iterations: function()
     {
-        return this._payload.iterations || Infinity;
+        return this._payload.iterations;
     },
 
     /**
