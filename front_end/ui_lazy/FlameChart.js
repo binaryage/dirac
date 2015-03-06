@@ -68,6 +68,7 @@ WebInspector.FlameChart = function(dataProvider, flameChartDelegate, isTopDown)
     this._canvas.tabIndex = 1;
     this.setDefaultFocusedElement(this._canvas);
     this._canvas.addEventListener("mousemove", this._onMouseMove.bind(this), false);
+    this._canvas.addEventListener("mouseout", this._onMouseOut.bind(this), false);
     this._canvas.addEventListener("mousewheel", this._onMouseWheel.bind(this), false);
     this._canvas.addEventListener("click", this._onClick.bind(this), false);
     this._canvas.addEventListener("keydown", this._onKeyDown.bind(this), false);
@@ -657,11 +658,20 @@ WebInspector.FlameChart.prototype = {
         var inDividersBar = event.offsetY < WebInspector.FlameChart.DividersBarHeight;
         this._highlightedMarkerIndex = inDividersBar ? this._markerIndexAtPosition(event.offsetX) : -1;
         this._updateMarkerHighlight();
-        if (inDividersBar)
-            return;
 
-        var entryIndex = this._coordinatesToEntryIndex(event.offsetX, event.offsetY);
+        this._highlightEntry(this._coordinatesToEntryIndex(event.offsetX, event.offsetY));
+    },
 
+    _onMouseOut: function()
+    {
+        this._highlightEntry(-1);
+    },
+
+    /**
+     * @param {number} entryIndex
+     */
+    _highlightEntry: function(entryIndex)
+    {
         if (this._highlightedEntryIndex === entryIndex)
             return;
 
