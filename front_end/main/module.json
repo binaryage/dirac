@@ -224,6 +224,12 @@
         },
         {
             "type": "ui-setting",
+            "title": "Disable JavaScript",
+            "settingName": "javaScriptDisabled",
+            "settingType": "checkbox"
+        },
+        {
+            "type": "ui-setting",
             "section": "Appearance",
             "title": "Split panels vertically when docked to right",
             "settingName": "splitVerticallyWhenDockedToRight",

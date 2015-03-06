@@ -233,6 +233,7 @@ WebInspector.Main.prototype = {
 
         new WebInspector.WorkspaceController(WebInspector.workspace);
         new WebInspector.RenderingOptions();
+        new WebInspector.DisableJavaScriptObserver();
         new WebInspector.Main.PauseListener();
         new WebInspector.Main.InspectedNodeRevealer();
         WebInspector.domBreakpointsSidebarPane = new WebInspector.DOMBreakpointsSidebarPane();
@@ -930,6 +931,47 @@ WebInspector.WorkerTerminatedScreen = function()
 WebInspector.WorkerTerminatedScreen.prototype = {
 
     __proto__: WebInspector.HelpScreen.prototype
+}
+
+/**
+ * @constructor
+ * @implements {WebInspector.TargetManager.Observer}
+ */
+WebInspector.DisableJavaScriptObserver = function()
+{
+    this._setting = WebInspector.settings.javaScriptDisabled;
+    this._setting.addChangeListener(this._settingChanged, this);
+    WebInspector.targetManager.observeTargets(this);
+}
+
+WebInspector.DisableJavaScriptObserver.prototype = {
+    /**
+     * @override
+     * @param {!WebInspector.Target} target
+     */
+    targetAdded: function(target)
+    {
+        target.pageAgent().setScriptExecutionDisabled(this._setting.get());
+    },
+
+    /**
+     * @override
+     * @param {!WebInspector.Target} target
+     */
+    targetRemoved: function(target)
+    {
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _settingChanged: function(event)
+    {
+        var value = this._setting.get();
+        var targets = WebInspector.targetManager.targets();
+        for (var i = 0; i < targets.length; ++i)
+            targets[i].pageAgent().setScriptExecutionDisabled(value);
+    }
 }
 
 new WebInspector.Main();

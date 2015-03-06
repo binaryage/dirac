@@ -203,12 +203,6 @@
         },
         {
             "type": "ui-setting",
-            "settingName": "javaScriptDisabled",
-            "settingType": "custom",
-            "className": "WebInspector.SourcesPanel.DisableJavaScriptSettingDelegate"
-        },
-        {
-            "type": "ui-setting",
             "section": "Sources",
             "title": "Search in content scripts",
             "settingName": "searchInContentScripts",

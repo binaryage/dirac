@@ -875,15 +875,6 @@ WebInspector.PageDispatcher.prototype = {
 
     /**
      * @override
-     * @param {boolean} isEnabled
-     */
-    scriptsEnabled: function(isEnabled)
-    {
-        WebInspector.settings.javaScriptDisabled.set(!isEnabled);
-    },
-
-    /**
-     * @override
      * @param {string} data
      * @param {!PageAgent.ScreencastFrameMetadata=} metadata
      * @param {number=} frameNumber

@@ -400,14 +400,6 @@
                 "hidden": true
             },
             {
-                "name": "getScriptExecutionStatus",
-                "description": "Determines if scripts can be executed in the page.",
-                "returns": [
-                    { "name": "result", "type": "string", "enum": ["allowed", "disabled", "forbidden"], "description": "Script execution status: \"allowed\" if scripts can be executed, \"disabled\" if script execution has been disabled through page settings, \"forbidden\" if script execution for the given page is not possible for other reasons." }
-                ],
-                "hidden": true
-            },
-            {
                 "name": "setScriptExecutionDisabled",
                 "description": "Switches script execution in the page.",
                 "parameters": [
@@ -662,14 +654,6 @@
             {
                 "name": "javascriptDialogClosed",
                 "description": "Fired when a JavaScript initiated dialog (alert, confirm, prompt, or onbeforeunload) has been closed.",
-                "hidden": true
-            },
-            {
-                "name": "scriptsEnabled",
-                "description": "Fired when the JavaScript is enabled/disabled on the page",
-                "parameters": [
-                    { "name": "isEnabled", "type": "boolean", "description": "Whether script execution is enabled or disabled on the page." }
-                ],
                 "hidden": true
             },
             {
