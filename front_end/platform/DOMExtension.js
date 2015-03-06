@@ -394,6 +394,30 @@ function createElementWithClass(elementName, className, customElementType)
 }
 
 /**
+ * @param {string} childType
+ * @param {string=} className
+ * @return {!Element}
+ */
+Document.prototype.createSVGElement = function(childType, className)
+{
+    var element = this.createElementNS("http://www.w3.org/2000/svg", childType);
+    if (className)
+        element.setAttribute("class", className);
+    return element;
+}
+
+/**
+ * @param {string} childType
+ * @param {string=} className
+ * @return {!Element}
+ * @suppressGlobalPropertiesCheck
+ */
+function createSVGElement(childType, className)
+{
+    return document.createSVGElement(childType, className);
+}
+
+/**
  * @return {!DocumentFragment}
  * @suppressGlobalPropertiesCheck
  */
@@ -496,10 +520,8 @@ Element.prototype.scrollOffset = function()
  */
 Element.prototype.createSVGChild = function(childType, className)
 {
-    var child = this.ownerDocument.createElementNS("http://www.w3.org/2000/svg", childType);
+    var child = this.ownerDocument.createSVGElement(childType, className);
     this.appendChild(child);
-    if (className)
-        child.setAttribute("class", className);
     return child;
 }
 

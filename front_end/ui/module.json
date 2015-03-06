@@ -9,6 +9,7 @@
         "treeoutline.js",
         "ActionRegistry.js",
         "ShortcutRegistry.js",
+        "ColorSwatch.js",
         "Context.js",
         "ContextMenu.js",
         "Dialog.js",
@@ -44,6 +45,7 @@
     ],
     "stylesheets": [
         "checkboxTextLabel.css",
+        "colorSwatch.css",
         "dropTarget.css",
         "emptyView.css",
         "filter.css",

@@ -29,7 +29,7 @@
 
 /**
  * @param {!Array.<number>} rgba
- * @param {string=} format
+ * @param {!WebInspector.Color.Format=} format
  * @param {string=} originalText
  * @constructor
  */
@@ -87,7 +87,7 @@ WebInspector.Color.parse = function(text)
                 var rgba = WebInspector.Color.Nicknames[nickname];
                 var color = WebInspector.Color.fromRGBA(rgba);
                 color._format = WebInspector.Color.Format.Nickname;
-                color._originalText = nickname;
+                color._originalText = text;
                 return color;
             }
             return null;
@@ -163,7 +163,7 @@ WebInspector.Color.fromHSVA = function(hsva)
 
 WebInspector.Color.prototype = {
     /**
-     * @return {?string}
+     * @return {?WebInspector.Color.Format}
      */
     format: function()
     {

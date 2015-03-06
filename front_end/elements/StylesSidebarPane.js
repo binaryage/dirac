@@ -76,8 +76,6 @@ WebInspector.StylesSidebarPane = function(computedStylePane)
     this.bodyElement.appendChild(this._sectionsContainer);
 
     this._stylesPopoverHelper = new WebInspector.StylesPopoverHelper();
-    this._spectrum = new WebInspector.Spectrum();
-    this._bezierEditor = new WebInspector.BezierEditor();
 
     this._linkifier = new WebInspector.Linkifier(new WebInspector.Linkifier.DefaultCSSFormatter());
 
@@ -2489,9 +2487,9 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
             var formatter = new WebInspector.StringFormatter();
             formatter.addProcessor(urlRegex(value), linkifyURL.bind(this));
             if (WebInspector.CSSMetadata.isBezierAwareProperty(this.name) && this.parsedOk)
-                formatter.addProcessor(WebInspector.StylesSidebarPane._bezierRegex, this._processBezier.bind(this, nameElement, valueElement));
+                formatter.addProcessor(WebInspector.StylesSidebarPane._bezierRegex, this._processBezier.bind(this));
             if (WebInspector.CSSMetadata.isColorAwareProperty(this.name) && this.parsedOk)
-                formatter.addProcessor(WebInspector.StylesSidebarPane._colorRegex, this._processColor.bind(this, nameElement, valueElement));
+                formatter.addProcessor(WebInspector.StylesSidebarPane._colorRegex, this._processColor.bind(this));
 
             valueElement.appendChild(formatter.formatText(value));
         }
@@ -2531,31 +2529,45 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
     },
 
     /**
-     * @param {!Element} nameElement
-     * @param {!Element} valueElement
      * @param {string} text
      * @return {!Node}
      */
-    _processColor: function(nameElement, valueElement, text)
+    _processColor: function(text)
     {
-        var spectrum = this.editablePane() && this.editablePane()._spectrum;
+        // We can be called with valid non-color values of |text| (like 'none' from border style)
+        var color = WebInspector.Color.parse(text);
+        if (!color)
+            return createTextNode(text);
+
         var stylesPopoverHelper = this.editablePane() && this.editablePane()._stylesPopoverHelper;
-        var iconHelper = new WebInspector.ColorSwatchIcon(this, stylesPopoverHelper, spectrum, nameElement, valueElement, text);
-        return iconHelper.icon();
+        if (!stylesPopoverHelper || !this.isEditableStyleRule()) {
+            var swatch = WebInspector.ColorSwatch.create();
+            swatch.setColorText(text);
+            return swatch;
+        }
+
+        return new WebInspector.ColowSwatchPopoverIcon(this, stylesPopoverHelper, text).element();
     },
 
-   /**
-    * @param {!Element} nameElement
-    * @param {!Element} valueElement
-    * @param {string} text
-    * @return {!Node}
-    */
-    _processBezier: function(nameElement, valueElement, text)
+    /**
+     * @return {string}
+     */
+    renderedPropertyText: function()
     {
-        var bezierEditor = this.editablePane() && this.editablePane()._bezierEditor;
+        return this.nameElement.textContent + ": " + this.valueElement.textContent;
+    },
+
+    /**
+     * @param {string} text
+     * @return {!Node}
+     */
+    _processBezier: function(text)
+    {
+        var geometry = WebInspector.Geometry.CubicBezier.parse(text);
         var stylesPopoverHelper = this.editablePane() && this.editablePane()._stylesPopoverHelper;
-        var iconHelper = new WebInspector.BezierIcon(this, stylesPopoverHelper, bezierEditor, nameElement, valueElement, text);
-        return iconHelper.icon();
+        if (!geometry || !stylesPopoverHelper || !this.isEditableStyleRule())
+            return createTextNode(text);
+        return new WebInspector.BezierPopoverIcon(this, stylesPopoverHelper, text).element();
     },
 
     _updateState: function()

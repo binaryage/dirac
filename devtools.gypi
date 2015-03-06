@@ -219,6 +219,7 @@
         ],
         'devtools_ui_js_files': [
             'front_end/ui/checkboxTextLabel.css',
+            'front_end/ui/colorSwatch.css',
             'front_end/ui/dropTarget.css',
             'front_end/ui/emptyView.css',
             'front_end/ui/filter.css',
@@ -239,6 +240,7 @@
             'front_end/ui/textPrompt.css',
             'front_end/ui/treeoutline.css',
             'front_end/ui/ActionRegistry.js',
+            'front_end/ui/ColorSwatch.js',
             'front_end/ui/Context.js',
             'front_end/ui/ContextMenu.js',
             'front_end/ui/Dialog.js',

@@ -1257,12 +1257,13 @@ WebInspector.beautifyFunctionName = function(name)
  * @param {string} localName
  * @param {string} typeExtension
  * @param {!Object} prototype
+ * @return {function()}
  * @suppressGlobalPropertiesCheck
  * @template T
  */
 function registerCustomElement(localName, typeExtension, prototype)
 {
-    document.registerElement(typeExtension, {
+    return document.registerElement(typeExtension, {
         prototype: Object.create(prototype),
         extends: localName
     });
