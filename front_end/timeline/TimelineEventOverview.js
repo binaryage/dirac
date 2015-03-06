@@ -139,7 +139,7 @@ WebInspector.TimelineEventOverview.prototype = {
         var timeSpan = this._model.maximumRecordTime() - timeOffset;
         var scale = this._canvas.width / timeSpan;
         var loadingCategory = WebInspector.TimelineUIUtils.categories()["loading"];
-        var waitingColor = loadingCategory.fillColorStop0;
+        var waitingColor = loadingCategory.backgroundColor;
         var processingColor = loadingCategory.fillColorStop1;
 
         var bandsInUse = new Array(bandsCount);
