@@ -54,11 +54,6 @@ WebInspector.ResourcesPanel = function()
     this.indexedDBListTreeElement = new WebInspector.IndexedDBTreeElement(this);
     this._sidebarTree.appendChild(this.indexedDBListTreeElement);
 
-    if (WebInspector.isWorkerFrontend()) {
-        this.serviceWorkerCacheListTreeElement = new WebInspector.ServiceWorkerCacheTreeElement(this);
-        this._sidebarTree.appendChild(this.serviceWorkerCacheListTreeElement);
-    }
-
     this.localStorageListTreeElement = new WebInspector.StorageCategoryTreeElement(this, WebInspector.UIString("Local Storage"), "LocalStorage", ["domstorage-storage-tree-item", "local-storage"]);
     this._sidebarTree.appendChild(this.localStorageListTreeElement);
 
@@ -126,6 +121,11 @@ WebInspector.ResourcesPanel.prototype = {
         if (this._target)
             return;
         this._target = target;
+
+        if (target.isServiceWorker()) {
+            this.serviceWorkerCacheListTreeElement = new WebInspector.ServiceWorkerCacheTreeElement(this);
+            this._sidebarTree.appendChild(this.serviceWorkerCacheListTreeElement);
+        }
 
         if (target.resourceTreeModel.cachedResourcesLoaded())
             this._initialize();
@@ -1451,7 +1451,7 @@ WebInspector.ServiceWorkerCacheTreeElement.prototype = {
      */
     targetAdded: function(target)
     {
-        if (target.isWorkerTarget() && target.serviceWorkerCacheModel)
+        if (target.isServiceWorker() && target.serviceWorkerCacheModel)
             this._refreshCaches();
     },
 

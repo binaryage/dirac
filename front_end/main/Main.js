@@ -147,6 +147,7 @@ WebInspector.Main.prototype = {
         Runtime.experiments.register("networkRequestsOnTimeline", "Network requests on Timeline");
         Runtime.experiments.register("privateScriptInspection", "Private script inspection");
         Runtime.experiments.register("promiseTracker", "Promise inspector");
+        Runtime.experiments.register("serviceWorkersInPageFrontend", "Service workers in DevTools for page", true);
         Runtime.experiments.register("showPrimaryLoadWaterfallInNetworkTimeline", "Show primary load waterfall in Network timeline", true);
         Runtime.experiments.register("stepIntoAsync", "Step into async");
         Runtime.experiments.register("timelineInvalidationTracking", "Timeline invalidation tracking");
@@ -258,7 +259,7 @@ WebInspector.Main.prototype = {
         console.timeStamp("Main._presentUI");
         app.presentUI(document);
 
-        if (!WebInspector.isWorkerFrontend())
+        if (!Runtime.queryParam("isSharedWorker"))
             WebInspector.inspectElementModeController = new WebInspector.InspectElementModeController();
         this._createGlobalStatusBarItems();
 
@@ -321,7 +322,8 @@ WebInspector.Main.prototype = {
         }
 
         InspectorBackend.setConnection(connection);
-        WebInspector.targetManager.createTarget(WebInspector.UIString("Main"), connection, this._mainTargetCreated.bind(this));
+        var targetType = Runtime.queryParam("isSharedWorker") ? WebInspector.Target.Type.ServiceWorker : WebInspector.Target.Type.Page;
+        WebInspector.targetManager.createTarget(WebInspector.UIString("Main"), targetType, connection, null, this._mainTargetCreated.bind(this));
     },
 
     /**
@@ -333,11 +335,11 @@ WebInspector.Main.prototype = {
         this._mainTarget = /** @type {!WebInspector.Target} */(target);
         this._registerShortcuts();
 
-        WebInspector.workerTargetManager = new WebInspector.WorkerTargetManager(this._mainTarget, WebInspector.targetManager);
+        WebInspector.workerTargetManager = new WebInspector.WorkerTargetManager();
 
         this._mainTarget.registerInspectorDispatcher(this);
 
-        if (WebInspector.isWorkerFrontend())
+        if (this._mainTarget.isServiceWorker())
             this._mainTarget.runtimeAgent().run();
 
         target.inspectorAgent().enable(inspectorAgentEnableCallback);
@@ -781,7 +783,7 @@ WebInspector.Main._reloadPage = function(hard)
 {
     if (!WebInspector.targetManager.hasTargets())
         return false;
-    if (WebInspector.isWorkerFrontend())
+    if (WebInspector.targetManager.mainTarget().isServiceWorker())
         return false;
     WebInspector.targetManager.reloadPage(hard);
     return true;
@@ -797,7 +799,7 @@ WebInspector.Main._addWebSocketTarget = function(ws)
      */
     function callback(connection)
     {
-        WebInspector.targetManager.createTarget(ws, connection);
+        WebInspector.targetManager.createTarget(ws, WebInspector.Target.Type.Page, connection, null);
     }
     new InspectorBackendClass.WebSocketConnection(ws, callback);
 }

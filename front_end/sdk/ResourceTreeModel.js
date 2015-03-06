@@ -108,6 +108,12 @@ WebInspector.ResourceTreeModel.prototype = {
     {
         /** @type {!Object.<string, !WebInspector.ResourceTreeFrame>} */
         this._frames = {};
+
+        if (this.target().isDedicatedWorker()) {
+            this._cachedResourcesProcessed = true;
+            return;
+        }
+
         delete this._cachedResourcesProcessed;
         this._agent.getResourceTree(this._processCachedResources.bind(this));
     },
@@ -115,9 +121,7 @@ WebInspector.ResourceTreeModel.prototype = {
     _processCachedResources: function(error, mainFramePayload)
     {
         if (error) {
-            //FIXME: remove resourceTreeModel from worker
-            if (!this.target().isWorkerTarget())
-                console.error(JSON.stringify(error));
+            console.error(JSON.stringify(error));
             return;
         }
 
@@ -467,10 +471,7 @@ WebInspector.ResourceTreeModel.prototype = {
         var frameResource = this._createResourceFromFramePayload(framePayload, framePayload.url, WebInspector.resourceTypes.Document, framePayload.mimeType);
         if (frame.isMainFrame())
             this._inspectedPageURL = frameResource.url;
-        // FIXME(413891): This check could be removed once we stop to send frame tree for service/shared workers.
-        // This makes sure that the shadow page document resource does not hide the worker script resource (they have the same url).
-        if (!WebInspector.isWorkerFrontend())
-            frame.addResource(frameResource);
+        frame.addResource(frameResource);
 
         for (var i = 0; frameTreePayload.childFrames && i < frameTreePayload.childFrames.length; ++i)
             this._addFramesRecursively(frame, frameTreePayload.childFrames[i]);

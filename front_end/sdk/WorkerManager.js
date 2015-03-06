@@ -30,16 +30,17 @@
 
 /**
  * @constructor
- * @extends {WebInspector.Object}
+ * @extends {WebInspector.SDKObject}
  * @param {!WebInspector.Target} target
- * @param {boolean} isMainFrontend
  */
-WebInspector.WorkerManager = function(target, isMainFrontend)
+WebInspector.WorkerManager = function(target)
 {
+    WebInspector.SDKObject.call(this, target);
     target.registerWorkerDispatcher(new WebInspector.WorkerDispatcher(this));
-    if (isMainFrontend) {
-        target.workerAgent().enable();
-        target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.MainFrameNavigated, this._mainFrameNavigated, this);
+
+    if (!target.isDedicatedWorker()) {
+        this.target().workerAgent().enable();
+        this.target().resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.MainFrameNavigated, this._mainFrameNavigated, this);
     }
 }
 
@@ -51,7 +52,6 @@ WebInspector.WorkerManager.Events = {
 }
 
 WebInspector.WorkerManager.prototype = {
-
     /**
      * @param {string} workerId
      * @param {string} url
@@ -59,8 +59,8 @@ WebInspector.WorkerManager.prototype = {
      */
     _workerCreated: function(workerId, url, inspectorConnected)
     {
-        this.dispatchEventToListeners(WebInspector.WorkerManager.Events.WorkerAdded, {workerId: workerId, url: url, inspectorConnected: inspectorConnected});
-     },
+        this.dispatchEventToListeners(WebInspector.WorkerManager.Events.WorkerAdded, {workerId: workerId, url: url, inspectorConnected: inspectorConnected });
+    },
 
     /**
      * @param {string} workerId
@@ -87,7 +87,7 @@ WebInspector.WorkerManager.prototype = {
         this.dispatchEventToListeners(WebInspector.WorkerManager.Events.WorkersCleared);
     },
 
-    __proto__: WebInspector.Object.prototype
+    __proto__: WebInspector.SDKObject.prototype
 }
 
 /**

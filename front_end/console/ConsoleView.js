@@ -180,7 +180,7 @@ WebInspector.ConsoleView.prototype = {
     _initConsoleMessages: function()
     {
         var mainTarget = WebInspector.targetManager.mainTarget();
-        if (!WebInspector.isWorkerFrontend() && (!mainTarget || !mainTarget.resourceTreeModel.cachedResourcesLoaded())) {
+        if (!mainTarget || !mainTarget.resourceTreeModel.cachedResourcesLoaded()) {
             WebInspector.targetManager.addModelListener(WebInspector.ResourceTreeModel, WebInspector.ResourceTreeModel.EventTypes.CachedResourcesLoaded, this._onResourceTreeModelLoaded, this);
             return;
         }
@@ -253,7 +253,7 @@ WebInspector.ConsoleView.prototype = {
     {
         this._viewport.invalidate();
         target.runtimeModel.executionContexts().forEach(this._executionContextCreated, this);
-        if (WebInspector.targetManager.targets().length > 1 && !WebInspector.isWorkerFrontend())
+        if (WebInspector.targetManager.targets().length > 1 && WebInspector.targetManager.mainTarget().isPage())
             this._showAllMessagesCheckbox.element.classList.toggle("hidden", false);
     },
 
@@ -365,7 +365,7 @@ WebInspector.ConsoleView.prototype = {
     {
         // FIXME(413886): We never want to show execution context for the main thread of shadow page in service/shared worker frontend.
         // This check could be removed once we do not send this context to frontend.
-        if (WebInspector.isWorkerFrontend() && executionContext.target() === WebInspector.targetManager.mainTarget())
+        if (executionContext.target().isServiceWorker())
             return;
 
         var newOption = createElement("option");

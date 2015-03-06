@@ -154,6 +154,7 @@
             'front_end/sdk/ResourceTreeModel.js',
             'front_end/sdk/RuntimeModel.js',
             'front_end/sdk/Script.js',
+            'front_end/sdk/ServiceWorkerManager.js',
             'front_end/sdk/SnippetStorage.js',
             'front_end/sdk/SourceMap.js',
             'front_end/sdk/Target.js',

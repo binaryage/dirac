@@ -1211,8 +1211,7 @@ WebInspector.SourcesPanel.prototype = {
 
     _showThreadsSidebarPaneIfNeeded: function()
     {
-        // FIXME(413886): We could remove worker frontend check here once we support explicit threads and do not send main thread for service/shared workers to frontend.
-        if (!this._sidebarPaneStack || WebInspector.isWorkerFrontend() || WebInspector.targetManager.targets().length < 2)
+        if (!this._sidebarPaneStack || this.sidebarPanes.threads.threadCount() < 2)
             return;
 
         this._sidebarPaneStack.togglePaneHidden(this.sidebarPanes.threads, false);

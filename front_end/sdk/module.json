@@ -30,6 +30,7 @@
         "LayerTreeModel.js",
         "NetworkLog.js",
         "OverridesSupport.js",
+        "ServiceWorkerManager.js",
         "TracingManager.js",
         "TracingModel.js",
         "WorkerManager.js",

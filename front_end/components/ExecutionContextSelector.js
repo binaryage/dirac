@@ -27,7 +27,8 @@ WebInspector.ExecutionContextSelector.prototype = {
         // Defer selecting default target since we need all clients to get their
         // targetAdded notifications first.
         setImmediate(function() {
-            if (!WebInspector.context.flavor(WebInspector.Target) || WebInspector.isWorkerFrontend())
+            // We always want the second context for the service worker targets.
+            if (!WebInspector.context.flavor(WebInspector.Target) || (target.parentTarget() &&  target.parentTarget().isServiceWorker()))
                 WebInspector.context.setFlavor(WebInspector.Target, target);
         });
     },
@@ -43,7 +44,7 @@ WebInspector.ExecutionContextSelector.prototype = {
             this._currentExecutionContextGone();
 
         var targets = WebInspector.targetManager.targets();
-        if (WebInspector.context.flavor(WebInspector.Target) === target && targets.length && !WebInspector.isWorkerFrontend())
+        if (WebInspector.context.flavor(WebInspector.Target) === target && targets.length && !(target.parentTarget() &&  target.parentTarget().isServiceWorker()))
             WebInspector.context.setFlavor(WebInspector.Target, targets[0]);
     },
 
@@ -90,7 +91,7 @@ WebInspector.ExecutionContextSelector.prototype = {
         if (!WebInspector.context.flavor(WebInspector.ExecutionContext)) {
             // FIXME(413886): Execution context for the main thread on the service/shared worker shadow page
             // should never be sent to frontend. The worker frontend check below could be removed once this is fixed.
-            if (!WebInspector.isWorkerFrontend() || executionContext.target() !== WebInspector.targetManager.mainTarget())
+            if (!executionContext.target().isServiceWorker())
                 WebInspector.context.setFlavor(WebInspector.ExecutionContext, executionContext);
         }
     },
@@ -110,7 +111,7 @@ WebInspector.ExecutionContextSelector.prototype = {
         var targets = WebInspector.targetManager.targets();
         var newContext = null;
         for (var i = 0; i < targets.length; ++i) {
-            if (WebInspector.isWorkerFrontend() && targets[i] === WebInspector.targetManager.mainTarget())
+            if (targets[i].isServiceWorker())
                 continue;
             var executionContexts = targets[i].runtimeModel.executionContexts();
             if (executionContexts.length) {

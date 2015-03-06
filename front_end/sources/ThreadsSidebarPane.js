@@ -31,6 +31,8 @@ WebInspector.ThreadsSidebarPane.prototype = {
      */
     targetAdded: function(target)
     {
+        if (target.isServiceWorker())
+            return;
         var listItem = new WebInspector.UIList.Item(target.name(), "");
         listItem.element.addEventListener("click", this._onListItemClick.bind(this, listItem), false);
         var currentTarget = WebInspector.context.flavor(WebInspector.Target);
@@ -44,14 +46,24 @@ WebInspector.ThreadsSidebarPane.prototype = {
     },
 
     /**
+     * @return {number}
+     */
+    threadCount: function()
+    {
+        return this._targetsToListItems.size;
+    },
+
+    /**
      * @override
      * @param {!WebInspector.Target} target
      */
     targetRemoved: function(target)
     {
         var listItem = this._targetsToListItems.remove(target);
-        this._listItemsToTargets.remove(listItem);
-        this.threadList.removeItem(listItem);
+        if (listItem) {
+            this._listItemsToTargets.remove(listItem);
+            this.threadList.removeItem(listItem);
+        }
     },
 
     /**
