@@ -34,7 +34,6 @@
         "TracingManager.js",
         "TracingModel.js",
         "WorkerManager.js",
-        "WorkerTargetManager.js",
         "RuntimeModel.js",
         "Script.js",
         "ServiceWorkerCacheModel.js",

@@ -786,7 +786,7 @@ WebInspector.TimelineModel.prototype = {
         var workerMetadataEvents = this._tracingModel.devtoolsWorkerMetadataEvents();
         for (var metaEvent of workerMetadataEvents) {
             var workerId = metaEvent.args["data"]["workerId"];
-            var target = WebInspector.workerTargetManager.targetByWorkerId(workerId);
+            var target = mainTarget.workerManager ? mainTarget.workerManager.targetByWorkerId(workerId) : null;
             if (!target)
                 continue;
             var cpuProfile = this._cpuProfiles.get(target.id());

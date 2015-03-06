@@ -161,7 +161,6 @@
             'front_end/sdk/TracingManager.js',
             'front_end/sdk/TracingModel.js',
             'front_end/sdk/WorkerManager.js',
-            'front_end/sdk/WorkerTargetManager.js',
         ],
         'devtools_workspace_js_files': [
             'front_end/workspace/ExcludedFolderManager.js',

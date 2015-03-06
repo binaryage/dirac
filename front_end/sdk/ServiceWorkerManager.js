@@ -44,19 +44,27 @@ WebInspector.ServiceWorkerManager = function(target)
 }
 
 WebInspector.ServiceWorkerManager.prototype = {
-
     enable: function()
     {
+        if (this._enabled)
+            return;
+        this._enabled = true;
+
         this.target().serviceWorkerAgent().enable();
         WebInspector.targetManager.addEventListener(WebInspector.TargetManager.Events.MainFrameNavigated, this._mainFrameNavigated, this);
     },
 
     disable: function()
     {
+        if (!this._enabled)
+            return;
+        this._enabled = false;
+
         for (var connection of this._connections.values())
             connection._close();
         this._connections.clear();
         this.target().serviceWorkerAgent().disable();
+        WebInspector.targetManager.removeEventListener(WebInspector.TargetManager.Events.MainFrameNavigated, this._mainFrameNavigated, this);
     },
 
     /**
@@ -108,7 +116,7 @@ WebInspector.ServiceWorkerManager.prototype = {
      */
     _mainFrameNavigated: function(event)
     {
-        this.disable();
+        // Attache to the new worker set.
     },
 
     __proto__: WebInspector.SDKObject.prototype

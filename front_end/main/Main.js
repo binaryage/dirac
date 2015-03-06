@@ -336,8 +336,6 @@ WebInspector.Main.prototype = {
         this._mainTarget = /** @type {!WebInspector.Target} */(target);
         this._registerShortcuts();
 
-        WebInspector.workerTargetManager = new WebInspector.WorkerTargetManager();
-
         this._mainTarget.registerInspectorDispatcher(this);
 
         if (this._mainTarget.isServiceWorker())

@@ -134,8 +134,8 @@ WebInspector.Target.prototype = {
         this.domModel = new WebInspector.DOMModel(this);
         /** @type {!WebInspector.CSSStyleModel} */
         this.cssModel = new WebInspector.CSSStyleModel(this);
-        /** @type {!WebInspector.WorkerManager} */
-        this.workerManager = new WebInspector.WorkerManager(this);
+        /** @type {?WebInspector.WorkerManager} */
+        this.workerManager = !this.isDedicatedWorker() ? new WebInspector.WorkerManager(this) : null;
         /** @type {!WebInspector.DatabaseModel} */
         this.databaseModel = new WebInspector.DatabaseModel(this);
         /** @type {!WebInspector.DOMStorageModel} */
@@ -230,6 +230,8 @@ WebInspector.Target.prototype = {
         this.cpuProfilerModel.dispose();
         if (this.serviceWorkerCacheModel)
             this.serviceWorkerCacheModel.dispose();
+        if (this.workerManager)
+            this.workerManager.dispose();
     },
 
     /**

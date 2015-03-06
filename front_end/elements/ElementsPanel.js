@@ -120,6 +120,8 @@ WebInspector.ElementsPanel.prototype = {
      */
     targetAdded: function(target)
     {
+        if (!target.isPage())
+            return;
         var treeOutline = new WebInspector.ElementsTreeOutline(target, true, true);
         treeOutline.setWordWrap(WebInspector.settings.domWordWrap.get());
         treeOutline.wireToDOMModel();
@@ -140,6 +142,8 @@ WebInspector.ElementsPanel.prototype = {
      */
     targetRemoved: function(target)
     {
+        if (!target.isPage())
+            return;
         var treeOutline = this._targetToTreeOutline.remove(target);
         treeOutline.unwireFromDOMModel();
         this._treeOutlines.remove(treeOutline);
