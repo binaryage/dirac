@@ -123,7 +123,8 @@ WebInspector.ElementsTreeOutline.MappedCharToEntity = {
     "\u202b": "#8235", // RLE
     "\u202c": "#8236", // PDF
     "\u202d": "#8237", // LRO
-    "\u202e": "#8238" // RLO
+    "\u202e": "#8238", // RLO
+    "\ufeff": "#65279" // BOM
 }
 
 /**
