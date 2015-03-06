@@ -85,6 +85,7 @@
             'front_end/common/Settings.js',
             'front_end/common/StaticContentProvider.js',
             'front_end/common/Streams.js',
+            'front_end/common/TestBase.js',
             'front_end/common/TextDictionary.js',
             'front_end/common/TextRange.js',
             'front_end/common/TextUtils.js',
