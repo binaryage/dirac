@@ -336,32 +336,8 @@ WebInspector.Main.prototype = {
 
         this._mainTarget.registerInspectorDispatcher(this);
 
-        if (WebInspector.isWorkerFrontend()) {
+        if (WebInspector.isWorkerFrontend())
             this._mainTarget.runtimeAgent().run();
-            this._mainTarget.workerManager.addEventListener(WebInspector.WorkerManager.Events.WorkerDisconnected, onWorkerDisconnected.bind(this));
-        }
-
-        /**
-         * @this {WebInspector.Main}
-         */
-        function onWorkerDisconnected()
-        {
-            var screen = new WebInspector.WorkerTerminatedScreen();
-            var listener = hideScreen.bind(this, screen);
-            this._mainTarget.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.GlobalObjectCleared, listener);
-
-            /**
-             * @param {!WebInspector.WorkerTerminatedScreen} screen
-             * @this {WebInspector.Main}
-             */
-            function hideScreen(screen)
-            {
-                this._mainTarget.debuggerModel.removeEventListener(WebInspector.DebuggerModel.Events.GlobalObjectCleared, listener);
-                screen.hide();
-            }
-
-            screen.showModal();
-        }
 
         target.inspectorAgent().enable(inspectorAgentEnableCallback);
 
@@ -624,8 +600,8 @@ WebInspector.Main.prototype = {
     {
         (new WebInspector.HelpScreenUntilReload(
             this._mainTarget,
-            WebInspector.UIString("Inspected target crashed"),
-            WebInspector.UIString("Inspected target has crashed. Once it reloads we will attach to it automatically."))).showModal();
+            WebInspector.UIString("Inspected target disconnected"),
+            WebInspector.UIString("Inspected target disconnected. Once it reloads we will attach to it automatically."))).showModal();
     },
 
     /**

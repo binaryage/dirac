@@ -47,7 +47,6 @@ WebInspector.WorkerManager.Events = {
     WorkerAdded: "WorkerAdded",
     WorkerRemoved: "WorkerRemoved",
     WorkersCleared: "WorkersCleared",
-    WorkerDisconnected: "WorkerDisconnected",
     MessageFromWorker: "MessageFromWorker",
 }
 
@@ -78,11 +77,6 @@ WebInspector.WorkerManager.prototype = {
     _dispatchMessageFromWorker: function(workerId, message)
     {
         this.dispatchEventToListeners(WebInspector.WorkerManager.Events.MessageFromWorker, {workerId: workerId, message: message});
-    },
-
-    _disconnectedFromWorker: function()
-    {
-        this.dispatchEventToListeners(WebInspector.WorkerManager.Events.WorkerDisconnected);
     },
 
     /**
@@ -134,13 +128,5 @@ WebInspector.WorkerDispatcher.prototype = {
     dispatchMessageFromWorker: function(workerId, message)
     {
         this._workerManager._dispatchMessageFromWorker(workerId, message);
-    },
-
-    /**
-     * @override
-     */
-    disconnectedFromWorker: function()
-    {
-        this._workerManager._disconnectedFromWorker();
     }
 }

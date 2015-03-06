@@ -4017,8 +4017,7 @@
                 "name": "disconnectFromWorker",
                 "parameters": [
                     { "name": "workerId", "type": "string" }
-                ],
-                "handlers": ["browser", "renderer"]
+                ]
             },
             {
                 "name": "setAutoconnectToWorkers",
@@ -4048,9 +4047,67 @@
                     { "name": "workerId", "type": "string" },
                     { "name": "message", "type": "string" }
                 ]
+            }
+        ]
+    },
+    {
+        "domain": "ServiceWorker",
+        "hidden": true,
+        "types": [],
+        "commands": [
+            {
+                "name": "enable",
+                "handlers": ["browser"]
             },
             {
-                "name": "disconnectedFromWorker",
+                "name": "disable",
+                "handlers": ["browser"]
+            },
+            {
+                "name": "sendMessage",
+                "parameters": [
+                    { "name": "workerId", "type": "string" },
+                    { "name": "message", "type": "string" }
+                ],
+                "handlers": ["browser"]
+            },
+            {
+                "name": "attach",
+                "parameters": [
+                    { "name": "workerId", "type": "string" }
+                ],
+                "handlers": ["browser"]
+            },
+            {
+                "name": "detach",
+                "parameters": [
+                    { "name": "workerId", "type": "string" }
+                ],
+                "handlers": ["browser"]
+            }
+        ],
+        "events": [
+            {
+                "name": "workerCreated",
+                "parameters": [
+                    { "name": "workerId", "type": "string" },
+                    { "name": "url", "type": "string" }
+                ],
+                "handlers": ["browser"]
+            },
+            {
+                "name": "workerTerminated",
+                "parameters": [
+                    { "name": "workerId", "type": "string" }
+                ],
+                "handlers": ["browser"]
+            },
+            {
+                "name": "dispatchMessage",
+                "parameters": [
+                    { "name": "workerId", "type": "string" },
+                    { "name": "message", "type": "string" }
+                ],
                 "handlers": ["browser"]
             }
         ]
