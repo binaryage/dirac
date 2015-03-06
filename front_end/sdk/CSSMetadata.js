@@ -352,7 +352,7 @@ WebInspector.CSSMetadata._propertyDataMap = {
         "mathematical", "use-script", "no-change", "reset-size"
     ] },
     "display": { values: [
-        "none", "inline", "block", "list-item", "run-in", "compact", "inline-block", "table", "inline-table",
+        "none", "inline", "block", "list-item", "run-in", "inline-block", "table", "inline-table",
         "table-row-group", "table-header-group", "table-footer-group", "table-row", "table-column-group",
         "table-column", "table-cell", "table-caption", "-webkit-box", "-webkit-inline-box",
         "flex", "inline-flex", "grid", "inline-grid"
