@@ -15,7 +15,7 @@
         "ui"
     ],
     "scripts": [
-        "NativeBreakpointsSidebarPane.js",
+        "BreakpointsSidebarPaneBase.js",
         "DebuggerPresentationUtils.js",
         "DOMBreakpointsSidebarPane.js",
         "DOMPresentationUtils.js",

@@ -30,11 +30,11 @@
 
 /**
  * @constructor
- * @extends {WebInspector.NativeBreakpointsSidebarPane}
+ * @extends {WebInspector.BreakpointsSidebarPaneBase}
  */
 WebInspector.DOMBreakpointsSidebarPane = function()
 {
-    WebInspector.NativeBreakpointsSidebarPane.call(this, WebInspector.UIString("DOM Breakpoints"));
+    WebInspector.BreakpointsSidebarPaneBase.call(this, WebInspector.UIString("DOM Breakpoints"));
 
     this._breakpointElements = {};
 
@@ -427,7 +427,7 @@ WebInspector.DOMBreakpointsSidebarPane.prototype = {
             this._proxies[i].onContentReady();
     },
 
-    __proto__: WebInspector.NativeBreakpointsSidebarPane.prototype
+    __proto__: WebInspector.BreakpointsSidebarPaneBase.prototype
 }
 
 /**

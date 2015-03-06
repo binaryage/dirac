@@ -273,13 +273,14 @@
         "UIList.js",
         "AddSourceMapURLDialog.js",
         "AsyncOperationsSidebarPane.js",
-        "BreakpointsSidebarPane.js",
         "CallStackSidebarPane.js",
         "SimpleHistoryManager.js",
         "EditingLocationHistoryManager.js",
+        "EventListenerBreakpointsSidebarPane.js",
         "FilePathScoreFunction.js",
         "FilteredItemSelectionDialog.js",
         "UISourceCodeFrame.js",
+        "JavaScriptBreakpointsSidebarPane.js",
         "JavaScriptSourceFrame.js",
         "CSSSourceFrame.js",
         "NavigatorView.js",
@@ -299,6 +300,7 @@
         "SourcesSearchScope.js",
         "SourcesPanel.js",
         "WorkspaceMappingTip.js",
+        "XHRBreakpointsSidebarPane.js",
         "JavaScriptCompiler.js"
     ],
     "skip_compilation": [
