@@ -125,7 +125,6 @@
             'front_end/sdk/AccessibilityModel.js',
             'front_end/sdk/AnimationModel.js',
             'front_end/sdk/ApplicationCacheModel.js',
-            'front_end/sdk/BlackboxSupport.js',
             'front_end/sdk/ConsoleModel.js',
             'front_end/sdk/ContentProviders.js',
             'front_end/sdk/CookieParser.js',
@@ -173,6 +172,7 @@
             'front_end/workspace/Workspace.js',
         ],
         'devtools_bindings_js_files': [
+            'front_end/bindings/BlackboxSupport.js',
             'front_end/bindings/BreakpointManager.js',
             'front_end/bindings/CompilerScriptMapping.js',
             'front_end/bindings/ContentProviderBasedProjectDelegate.js',
