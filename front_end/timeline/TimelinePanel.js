@@ -594,8 +594,7 @@ WebInspector.TimelinePanel.prototype = {
         if (this._flameChartEnabledSetting.get()) {
             this._filterBar.filterButton().setEnabled(false);
             this._filtersContainer.classList.toggle("hidden", true);
-            var dataProvider = new WebInspector.TimelineFlameChartDataProvider(this._model, this._frameModel());
-            this._addModeView(new WebInspector.TimelineFlameChart(this, this._model, dataProvider));
+            this._addModeView(new WebInspector.TimelineFlameChartView(this, this._model, this._frameModel()));
         } else {
             this._filterBar.filterButton().setEnabled(true);
             this._filtersContainer.classList.toggle("hidden", !this._filterBar.filtersToggled());
@@ -1332,6 +1331,7 @@ WebInspector.TimelineDetailsView.prototype = {
 /**
  * @constructor
  * @implements {WebInspector.TimelineModeViewDelegate}
+ * @implements {WebInspector.FlameChartDelegate}
  * @extends {WebInspector.VBox}
  */
 WebInspector.TimelineDetailsView.BottomUpChartView = function(model) {
@@ -1345,7 +1345,7 @@ WebInspector.TimelineDetailsView.BottomUpChartView.prototype = {
         if (this._heavyChart)
             return;
         this._dataProvider = new WebInspector.TimelineFlameChartBottomUpDataProvider(this._model);
-        this._heavyChart = new WebInspector.TimelineFlameChart(this, this._model, this._dataProvider);
+        this._heavyChart = new WebInspector.FlameChart(this._dataProvider, this, true);
         this._heavyChart.show(this.element);
     },
 
@@ -1389,6 +1389,15 @@ WebInspector.TimelineDetailsView.BottomUpChartView.prototype = {
      * @param {!Node} node
      */
     showInDetails: function(node) {},
+
+    /**
+     * @override
+     * @param {number} startTime
+     * @param {number} endTime
+     */
+    updateBoxSelection: function(startTime, endTime)
+    {
+    },
 
     __proto__: WebInspector.VBox.prototype
 }

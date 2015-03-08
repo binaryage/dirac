@@ -713,12 +713,12 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
     {
         var event = this._entryEvents[entryIndex];
         if (event) {
-            this._lastSelection = new WebInspector.TimelineFlameChart.Selection(WebInspector.TimelineSelection.fromTraceEvent(event), entryIndex);
+            this._lastSelection = new WebInspector.TimelineFlameChartView.Selection(WebInspector.TimelineSelection.fromTraceEvent(event), entryIndex);
             return this._lastSelection.timelineSelection;
         }
         var frame = this._entryIndexToFrame[entryIndex];
         if (frame) {
-            this._lastSelection = new WebInspector.TimelineFlameChart.Selection(WebInspector.TimelineSelection.fromFrame(frame), entryIndex);
+            this._lastSelection = new WebInspector.TimelineFlameChartView.Selection(WebInspector.TimelineSelection.fromFrame(frame), entryIndex);
             return this._lastSelection.timelineSelection;
         }
         return null;
@@ -741,7 +741,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
             var entryEvents = this._entryEvents;
             for (var entryIndex = 0; entryIndex < entryEvents.length; ++entryIndex) {
                 if (entryEvents[entryIndex] === event) {
-                    this._lastSelection = new WebInspector.TimelineFlameChart.Selection(WebInspector.TimelineSelection.fromTraceEvent(event), entryIndex);
+                    this._lastSelection = new WebInspector.TimelineFlameChartView.Selection(WebInspector.TimelineSelection.fromTraceEvent(event), entryIndex);
                     return entryIndex;
                 }
             }
@@ -750,7 +750,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
             var frame = /** @type {!WebInspector.TimelineFrame} */ (selection.object());
             for (var frameIndex in this._entryIndexToFrame) {
                 if (this._entryIndexToFrame[frameIndex] === frame) {
-                    this._lastSelection = new WebInspector.TimelineFlameChart.Selection(WebInspector.TimelineSelection.fromFrame(frame), Number(frameIndex));
+                    this._lastSelection = new WebInspector.TimelineFlameChartView.Selection(WebInspector.TimelineSelection.fromFrame(frame), Number(frameIndex));
                     return Number(frameIndex);
                 }
             }
@@ -1187,22 +1187,22 @@ WebInspector.TimelineFlameChartMarker.prototype = {
  * @implements {WebInspector.FlameChartDelegate}
  * @param {!WebInspector.TimelineModeViewDelegate} delegate
  * @param {!WebInspector.TimelineModel} timelineModel
- * @param {!WebInspector.TimelineFlameChartDataProviderBase} dataProvider
+ * @param {!WebInspector.TimelineFrameModelBase} frameModel
  */
-WebInspector.TimelineFlameChart = function(delegate, timelineModel, dataProvider)
+WebInspector.TimelineFlameChartView = function(delegate, timelineModel, frameModel)
 {
     WebInspector.VBox.call(this);
     this.element.classList.add("timeline-flamechart");
     this._delegate = delegate;
     this._model = timelineModel;
-    this._dataProvider = dataProvider;
+    this._dataProvider = new WebInspector.TimelineFlameChartDataProvider(this._model, frameModel);
     this._mainView = new WebInspector.FlameChart(this._dataProvider, this, true);
     this._mainView.show(this.element);
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStarted, this._onRecordingStarted, this);
     this._mainView.addEventListener(WebInspector.FlameChart.Events.EntrySelected, this._onEntrySelected, this);
 }
 
-WebInspector.TimelineFlameChart.prototype = {
+WebInspector.TimelineFlameChartView.prototype = {
     /**
      * @override
      */
@@ -1343,7 +1343,7 @@ WebInspector.TimelineFlameChart.prototype = {
   * @param {!WebInspector.TimelineSelection} selection
   * @param {number} entryIndex
   */
-WebInspector.TimelineFlameChart.Selection = function(selection, entryIndex)
+WebInspector.TimelineFlameChartView.Selection = function(selection, entryIndex)
 {
     this.timelineSelection = selection;
     this.entryIndex = entryIndex;
