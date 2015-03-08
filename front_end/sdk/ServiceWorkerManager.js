@@ -73,19 +73,20 @@ WebInspector.ServiceWorkerManager.prototype = {
      */
     _workerCreated: function(workerId, url)
     {
-        var connection = new WebInspector.ServiceWorkerConnection(this, workerId, onConnectionReady.bind(this));
+        var connection = new WebInspector.ServiceWorkerConnection(this, workerId);
         this._connections.set(workerId, connection);
+        var parsedURL = url.asParsedURL();
+        var workerName = parsedURL ? parsedURL.lastPathComponent : "#" + (++this._lastAnonymousTargetId);
+        var title = WebInspector.UIString("Worker %s", workerName);
+        WebInspector.targetManager.createTarget(title, WebInspector.Target.Type.ServiceWorker, connection, this.target(), targetCreated.bind(null));
 
         /**
-         * @param {!InspectorBackendClass.Connection} connection
-         * @this {WebInspector.ServiceWorkerManager}
+         * @param {?WebInspector.Target} target
          */
-        function onConnectionReady(connection)
+        function targetCreated(target)
         {
-            var parsedURL = url.asParsedURL();
-            var workerName = parsedURL ? parsedURL.lastPathComponent : "#" + (++this._lastAnonymousTargetId);
-            var title = WebInspector.UIString("Worker %s", workerName);
-            WebInspector.targetManager.createTarget(title, WebInspector.Target.Type.ServiceWorker, connection, this.target());
+            if (target)
+                target.runtimeAgent().run();
         }
     },
 
@@ -116,7 +117,7 @@ WebInspector.ServiceWorkerManager.prototype = {
      */
     _mainFrameNavigated: function(event)
     {
-        // Attache to the new worker set.
+        // Attach to the new worker set.
     },
 
     __proto__: WebInspector.SDKObject.prototype
@@ -168,16 +169,14 @@ WebInspector.ServiceWorkerDispatcher.prototype = {
  * @extends {InspectorBackendClass.Connection}
  * @param {!WebInspector.ServiceWorkerManager} serviceWorkerManager
  * @param {string} workerId
- * @param {function(!InspectorBackendClass.Connection)} onConnectionReady
  */
-WebInspector.ServiceWorkerConnection = function(serviceWorkerManager, workerId, onConnectionReady)
+WebInspector.ServiceWorkerConnection = function(serviceWorkerManager, workerId)
 {
     InspectorBackendClass.Connection.call(this);
     //FIXME: remove resourceTreeModel and others from worker targets
     this.suppressErrorsForDomains(["Worker", "Page", "CSS", "DOM", "DOMStorage", "Database", "Network", "IndexedDB", "ServiceWorkerCache"]);
     this._agent = serviceWorkerManager.target().serviceWorkerAgent();
     this._workerId = workerId;
-    this._agent.attach(workerId, onConnectionReady.bind(null, this));
 }
 
 WebInspector.ServiceWorkerConnection.prototype = {

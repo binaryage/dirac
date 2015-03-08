@@ -132,7 +132,10 @@ WebInspector.WorkerManager.prototype = {
          */
         function pauseInDebuggerAndRunIfRequired(target, error, required)
         {
-            if (target.parentTarget().isServiceWorker() && required)
+            // Only pause new worker if debugging SW - we are going through the
+            // pause on start checkbox.
+            var mainIsServiceWorker = WebInspector.targetManager.mainTarget().isServiceWorker();
+            if (mainIsServiceWorker && required)
                 target.debuggerAgent().pause();
             target.runtimeAgent().run();
         }

@@ -40,7 +40,8 @@ WebInspector.RuntimeModel = function(target)
     this._debuggerModel = target.debuggerModel;
     this._agent = target.runtimeAgent();
     this.target().registerRuntimeDispatcher(new WebInspector.RuntimeDispatcher(this));
-    this._agent.enable();
+    if (target.hasJSContext())
+        this._agent.enable();
     /**
      * @type {!Object.<number, !WebInspector.ExecutionContext>}
      */

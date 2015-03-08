@@ -202,6 +202,14 @@ WebInspector.Target.prototype = {
     },
 
     /**
+     * @return {boolean}
+     */
+    hasJSContext: function()
+    {
+        return !this.isServiceWorker();
+    },
+
+    /**
      * @return {?WebInspector.Target}
      */
     parentTarget: function()
@@ -534,6 +542,19 @@ WebInspector.TargetManager.prototype = {
     targets: function()
     {
         return this._targets.slice();
+    },
+
+    /**
+     * @return {!Array.<!WebInspector.Target>}
+     */
+    targetsWithJSContext: function()
+    {
+        var result = [];
+        for (var target of this._targets) {
+            if (target.hasJSContext())
+                result.push(target);
+        }
+        return result;
     },
 
     /**

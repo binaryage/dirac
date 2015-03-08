@@ -4054,20 +4054,6 @@
                     { "name": "message", "type": "string" }
                 ],
                 "handlers": ["browser"]
-            },
-            {
-                "name": "attach",
-                "parameters": [
-                    { "name": "workerId", "type": "string" }
-                ],
-                "handlers": ["browser"]
-            },
-            {
-                "name": "detach",
-                "parameters": [
-                    { "name": "workerId", "type": "string" }
-                ],
-                "handlers": ["browser"]
             }
         ],
         "events": [
