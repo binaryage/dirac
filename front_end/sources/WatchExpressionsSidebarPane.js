@@ -34,7 +34,7 @@
  */
 WebInspector.WatchExpressionsSidebarPane = function()
 {
-    WebInspector.SidebarPane.call(this, WebInspector.UIString("Watch Expressions"));
+    WebInspector.SidebarPane.call(this, WebInspector.UIString("Watch"));
 
     this._requiresUpdate = true;
     /** @type {!Array.<!WebInspector.WatchExpression>} */

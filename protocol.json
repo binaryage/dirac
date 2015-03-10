@@ -4081,6 +4081,13 @@
                     { "name": "message", "type": "string" }
                 ],
                 "handlers": ["browser"]
+            },
+            {
+                "name": "stop",
+                "parameters": [
+                    { "name": "workerId", "type": "string" }
+                ],
+                "handlers": ["browser"]
             }
         ],
         "events": [

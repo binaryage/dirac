@@ -82,6 +82,8 @@ WebInspector.SourcesPanel = function(workspaceForTest)
     this.sidebarPanes.callstack.registerShortcuts(this.registerShortcuts.bind(this));
 
     this.sidebarPanes.scopechain = new WebInspector.ScopeChainSidebarPane();
+    if (Runtime.experiments.isEnabled("serviceWorkersInPageFrontend"))
+        this.sidebarPanes.serviceWorkers = new WebInspector.ServiceWorkersSidebarPane();
     this.sidebarPanes.jsBreakpoints = new WebInspector.JavaScriptBreakpointsSidebarPane(WebInspector.breakpointManager, this.showUISourceCode.bind(this));
     this.sidebarPanes.domBreakpoints = WebInspector.domBreakpointsSidebarPane.createProxy(this);
     this.sidebarPanes.xhrBreakpoints = new WebInspector.XHRBreakpointsSidebarPane();
@@ -1142,6 +1144,8 @@ WebInspector.SourcesPanel.prototype = {
             splitView.setSidebarView(tabbedPane);
             tabbedPane.addPane(this.sidebarPanes.scopechain);
             tabbedPane.addPane(this.sidebarPanes.watchExpressions);
+            if (this.sidebarPanes.serviceWorkers)
+                tabbedPane.addPane(this.sidebarPanes.serviceWorkers);
             this._extensionSidebarPanesContainer = tabbedPane;
 
             this.sidebarPaneView = splitView;

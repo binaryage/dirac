@@ -30,7 +30,7 @@
  */
 WebInspector.ScopeChainSidebarPane = function()
 {
-    WebInspector.SidebarPane.call(this, WebInspector.UIString("Scope Variables"));
+    WebInspector.SidebarPane.call(this, WebInspector.UIString("Scope"));
     this._sections = [];
     /** @type {!Set.<?string>} */
     this._expandedSections = new Set();

@@ -38,9 +38,13 @@ WebInspector.ServiceWorkerManager = function(target)
     WebInspector.SDKObject.call(this, target);
     target.registerServiceWorkerDispatcher(new WebInspector.ServiceWorkerDispatcher(this));
     this._lastAnonymousTargetId = 0;
-    /** @type {!Map.<string, !WebInspector.ServiceWorkerConnection>} */
-    this._connections = new Map();
+    /** @type {!Map.<string, !WebInspector.ServiceWorker>} */
+    this._workers = new Map();
     this.enable();
+}
+
+WebInspector.ServiceWorkerManager.Events = {
+    WorkersUpdated: "WorkersUpdated"
 }
 
 WebInspector.ServiceWorkerManager.prototype = {
@@ -60,11 +64,19 @@ WebInspector.ServiceWorkerManager.prototype = {
             return;
         this._enabled = false;
 
-        for (var connection of this._connections.values())
-            connection._close();
-        this._connections.clear();
+        for (var worker of this._workers.values())
+            worker._connection.close();
+        this._workers.clear();
         this.target().serviceWorkerAgent().disable();
         WebInspector.targetManager.removeEventListener(WebInspector.TargetManager.Events.MainFrameNavigated, this._mainFrameNavigated, this);
+    },
+
+    /**
+     * @return {!Iterator.<!WebInspector.ServiceWorker>}
+     */
+    workers: function()
+    {
+        return this._workers.values();
     },
 
     /**
@@ -73,21 +85,7 @@ WebInspector.ServiceWorkerManager.prototype = {
      */
     _workerCreated: function(workerId, url)
     {
-        var connection = new WebInspector.ServiceWorkerConnection(this, workerId);
-        this._connections.set(workerId, connection);
-        var parsedURL = url.asParsedURL();
-        var workerName = parsedURL ? parsedURL.lastPathComponent : "#" + (++this._lastAnonymousTargetId);
-        var title = WebInspector.UIString("Worker %s", workerName);
-        WebInspector.targetManager.createTarget(title, WebInspector.Target.Type.ServiceWorker, connection, this.target(), targetCreated.bind(null));
-
-        /**
-         * @param {?WebInspector.Target} target
-         */
-        function targetCreated(target)
-        {
-            if (target)
-                target.runtimeAgent().run();
-        }
+        new WebInspector.ServiceWorker(this, workerId, url);
     },
 
     /**
@@ -95,10 +93,14 @@ WebInspector.ServiceWorkerManager.prototype = {
      */
     _workerTerminated: function(workerId)
     {
-        var connection = this._connections.get(workerId);
-        if (connection)
-            connection._close();
-        this._connections.delete(workerId);
+        var worker = this._workers.get(workerId);
+        if (!worker)
+            return;
+
+        worker._closeConnection();
+        this._workers.delete(workerId);
+
+        this.dispatchEventToListeners(WebInspector.ServiceWorkerManager.Events.WorkersUpdated);
     },
 
     /**
@@ -107,9 +109,9 @@ WebInspector.ServiceWorkerManager.prototype = {
      */
     _dispatchMessage: function(workerId, message)
     {
-        var connection = this._connections.get(workerId);
-        if (connection)
-            connection.dispatch(message);
+        var worker = this._workers.get(workerId);
+        if (worker)
+            worker._connection.dispatch(message);
     },
 
     /**
@@ -121,6 +123,72 @@ WebInspector.ServiceWorkerManager.prototype = {
     },
 
     __proto__: WebInspector.SDKObject.prototype
+}
+
+/**
+ * @constructor
+ * @param {!WebInspector.ServiceWorkerManager} manager
+ * @param {string} workerId
+ * @param {string} url
+ */
+WebInspector.ServiceWorker = function(manager, workerId, url)
+{
+    this._manager = manager;
+    this._agent = manager.target().serviceWorkerAgent();
+    this._workerId = workerId;
+    this._connection = new WebInspector.ServiceWorkerConnection(this._agent, workerId);
+
+    var parsedURL = url.asParsedURL();
+    this._name = parsedURL ? parsedURL.lastPathComponent : "#" + (++WebInspector.ServiceWorker._lastAnonymousTargetId);
+    this._scope = parsedURL.host + parsedURL.folderPathComponents;
+    var title = WebInspector.UIString("Worker %s", this._name);
+
+    this._manager._workers.set(workerId, this);
+    WebInspector.targetManager.createTarget(title, WebInspector.Target.Type.ServiceWorker, this._connection, manager.target(), targetCreated.bind(this));
+
+    /**
+     * @param {?WebInspector.Target} target
+     * @this {WebInspector.ServiceWorker}
+     */
+    function targetCreated(target)
+    {
+        if (!target) {
+            this._manager._workers.delete(workerId);
+            return;
+        }
+        this._manager.dispatchEventToListeners(WebInspector.ServiceWorkerManager.Events.WorkersUpdated);
+        target.runtimeAgent().run();
+    }
+}
+
+WebInspector.ServiceWorker._lastAnonymousTargetId = 0;
+
+WebInspector.ServiceWorker.prototype = {
+    /**
+     * @return {string}
+     */
+    name: function()
+    {
+        return this._name;
+    },
+
+    /**
+     * @return {string}
+     */
+    scope: function()
+    {
+        return this._scope;
+    },
+
+    stop: function()
+    {
+        this._agent.stop(this._workerId);
+    },
+
+    _closeConnection: function()
+    {
+        this._connection._close();
+    }
 }
 
 /**
@@ -194,15 +262,15 @@ WebInspector.ServiceWorkerDispatcher.prototype = {
 /**
  * @constructor
  * @extends {InspectorBackendClass.Connection}
- * @param {!WebInspector.ServiceWorkerManager} serviceWorkerManager
+ * @param {!Protocol.ServiceWorkerAgent} agent
  * @param {string} workerId
  */
-WebInspector.ServiceWorkerConnection = function(serviceWorkerManager, workerId)
+WebInspector.ServiceWorkerConnection = function(agent, workerId)
 {
     InspectorBackendClass.Connection.call(this);
     //FIXME: remove resourceTreeModel and others from worker targets
     this.suppressErrorsForDomains(["Worker", "Page", "CSS", "DOM", "DOMStorage", "Database", "Network", "IndexedDB", "ServiceWorkerCache"]);
-    this._agent = serviceWorkerManager.target().serviceWorkerAgent();
+    this._agent = agent;
     this._workerId = workerId;
 }
 
