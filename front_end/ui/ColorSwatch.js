@@ -37,6 +37,7 @@ WebInspector.ColorSwatch.prototype = {
     {
         this._color = WebInspector.Color.parse(colorText);
         console.assert(this._color, "Color text could not be parsed.");
+        this._format = this._color.format();
         this._colorValueElement.textContent = this._color.asString(this._format);
         this._swatchInner.style.backgroundColor = colorText;
     },
@@ -90,7 +91,6 @@ WebInspector.ColorSwatch.prototype = {
         root.createChild("content");
         this._colorValueElement = this.createChild("span");
 
-        this._format = WebInspector.Color.Format.Original;
         this.setColorText("white");
     },
 

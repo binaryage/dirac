@@ -276,7 +276,7 @@ WebInspector.ColowSwatchPopoverIcon.prototype = {
         var color = this._swatch.color();
         var format = this._swatch.format();
         if (format === WebInspector.Color.Format.Original)
-            format = color.format() || WebInspector.Color.Format.HEX;
+            format = color.format();
         this._spectrum = new WebInspector.Spectrum();
         this._spectrum.setColor(color);
         this._spectrum.setColorFormat(format);
