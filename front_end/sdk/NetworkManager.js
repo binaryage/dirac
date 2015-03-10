@@ -312,11 +312,12 @@ WebInspector.NetworkDispatcher.prototype = {
      * @param {string} documentURL
      * @param {!NetworkAgent.Request} request
      * @param {!NetworkAgent.Timestamp} time
+     * @param {!NetworkAgent.Timestamp} wallTime
      * @param {!NetworkAgent.Initiator} initiator
      * @param {!NetworkAgent.Response=} redirectResponse
      * @param {!PageAgent.ResourceType=} resourceType
      */
-    requestWillBeSent: function(requestId, frameId, loaderId, documentURL, request, time, initiator, redirectResponse, resourceType)
+    requestWillBeSent: function(requestId, frameId, loaderId, documentURL, request, time, wallTime, initiator, redirectResponse, resourceType)
     {
         var networkRequest = this._inflightRequestsById[requestId];
         if (networkRequest) {
@@ -329,7 +330,7 @@ WebInspector.NetworkDispatcher.prototype = {
             networkRequest = this._createNetworkRequest(requestId, frameId, loaderId, request.url, documentURL, initiator);
         networkRequest.hasNetworkData = true;
         this._updateNetworkRequestWithRequest(networkRequest, request);
-        networkRequest.setIssueTime(time);
+        networkRequest.setIssueTime(time, wallTime);
         networkRequest.setResourceType(WebInspector.resourceTypes[resourceType]);
 
         this._startNetworkRequest(networkRequest);
@@ -453,9 +454,10 @@ WebInspector.NetworkDispatcher.prototype = {
      * @override
      * @param {!NetworkAgent.RequestId} requestId
      * @param {!NetworkAgent.Timestamp} time
+     * @param {!NetworkAgent.Timestamp} wallTime
      * @param {!NetworkAgent.WebSocketRequest} request
      */
-    webSocketWillSendHandshakeRequest: function(requestId, time, request)
+    webSocketWillSendHandshakeRequest: function(requestId, time, wallTime, request)
     {
         var networkRequest = this._inflightRequestsById[requestId];
         if (!networkRequest)
@@ -463,7 +465,7 @@ WebInspector.NetworkDispatcher.prototype = {
 
         networkRequest.requestMethod = "GET";
         networkRequest.setRequestHeaders(this._headersMapToHeadersArray(request.headers));
-        networkRequest.setIssueTime(time);
+        networkRequest.setIssueTime(time, wallTime);
 
         this._updateNetworkRequest(networkRequest);
     },

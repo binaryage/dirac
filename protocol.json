@@ -1307,6 +1307,7 @@
                     { "name": "documentURL", "type": "string", "description": "URL of the document this request is loaded for." },
                     { "name": "request", "$ref": "Request", "description": "Request data." },
                     { "name": "timestamp", "$ref": "Timestamp", "description": "Timestamp." },
+                    { "name": "wallTime", "$ref": "Timestamp", "hidden": true, "description": "UTC Timestamp." },
                     { "name": "initiator", "$ref": "Initiator", "description": "Request initiator." },
                     { "name": "redirectResponse", "optional": true, "$ref": "Response", "description": "Redirect response data." },
                     { "name": "type", "$ref": "Page.ResourceType", "optional": true, "hidden": true, "description": "Type of this resource." }
@@ -1367,6 +1368,7 @@
                 "parameters": [
                     { "name": "requestId", "$ref": "RequestId", "description": "Request identifier." },
                     { "name": "timestamp", "$ref": "Timestamp", "description": "Timestamp." },
+                    { "name": "wallTime", "$ref": "Timestamp", "hidden": true, "description": "UTC Timestamp." },
                     { "name": "request", "$ref": "WebSocketRequest", "description": "WebSocket request data." }
                 ],
                 "hidden": true
