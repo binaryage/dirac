@@ -48,6 +48,7 @@ devtools_modules_js_files =
   gypi_values.devtools_screencast_js_files +
   gypi_values.devtools_script_formatter_worker_js_files +
   gypi_values.devtools_settings_js_files +
+  gypi_values.devtools_snippets_js_files +
   gypi_values.devtools_source_frame_js_files +
   gypi_values.devtools_sources_js_files +
   gypi_values.devtools_temp_storage_shared_worker_js_files +
@@ -145,6 +146,7 @@ action("generate_devtools_grd") {
       resources_out_dir + "screencast_module.js",
       resources_out_dir + "script_formatter_worker_module.js",
       resources_out_dir + "settings_module.js",
+      resources_out_dir + "snippets_module.js",
       resources_out_dir + "source_frame_module.js",
       resources_out_dir + "sources_module.js",
       resources_out_dir + "temp_storage_shared_worker_module.js",
@@ -252,6 +254,7 @@ action("build_applications") {
       resources_out_dir + "screencast_module.js",
       resources_out_dir + "script_formatter_worker_module.js",
       resources_out_dir + "settings_module.js",
+      resources_out_dir + "snippets_module.js",
       resources_out_dir + "source_frame_module.js",
       resources_out_dir + "sources_module.js",
       resources_out_dir + "temp_storage_shared_worker_module.js",

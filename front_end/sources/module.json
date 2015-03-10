@@ -260,6 +260,7 @@
     ],
     "dependencies": [
         "source_frame",
+        "snippets",
         "extensions"
     ],
     "scripts": [

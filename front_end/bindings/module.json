@@ -19,7 +19,6 @@
         "NetworkProject.js",
         "PresentationConsoleMessageHelper.js",
         "ResourceUtils.js",
-        "ScriptSnippetModel.js",
         "TempFile.js",
         "WorkspaceController.js",
         "ContentScriptProjectDecorator.js"
