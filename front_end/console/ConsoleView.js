@@ -374,19 +374,20 @@ WebInspector.ConsoleView.prototype = {
         this._optionByExecutionContext.set(executionContext, newOption);
         var sameGroupExists = false;
         var options = this._executionContextSelector.selectElement().options;
-        var insertBeforeOption = null;
-        for (var i = 0; i < options.length; ++i) {
-            var optionContext = options[i].__executionContext;
-            var isSameGroup = executionContext.target() === optionContext.target() && executionContext.frameId === optionContext.frameId;
-            sameGroupExists |= isSameGroup;
-            if ((isSameGroup && WebInspector.ExecutionContext.comparator(optionContext, executionContext) > 0) || (sameGroupExists && !isSameGroup)) {
-                insertBeforeOption = options[i];
-                break;
-            }
-        }
-        this._executionContextSelector.selectElement().insertBefore(newOption, insertBeforeOption);
+        var contexts = Array.prototype.map.call(options, mapping);
+        var index = insertionIndexForObjectInListSortedByFunction(executionContext, contexts, WebInspector.ExecutionContext.comparator);
+        this._executionContextSelector.selectElement().insertBefore(newOption, options[index]);
         if (executionContext === WebInspector.context.flavor(WebInspector.ExecutionContext))
             this._executionContextSelector.select(newOption);
+
+        /**
+         * @param {!Element} option
+         * @return {!WebInspector.ExecutionContext}
+         */
+        function mapping(option)
+        {
+            return option.__executionContext;
+        }
     },
 
     /**

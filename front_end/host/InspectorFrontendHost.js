@@ -721,7 +721,7 @@ var InspectorFrontendHost = window.InspectorFrontendHost || null;
                     try {
                         InspectorFrontendHost.events.dispatchEventToListeners(name, params[0]);
                     } catch(e) {
-                        console.error(e + " " + e.stackTrace);
+                        console.error(e + " " + e.stack);
                     }
                     return;
                 }
@@ -731,7 +731,7 @@ var InspectorFrontendHost = window.InspectorFrontendHost || null;
                 try {
                     InspectorFrontendHost.events.dispatchEventToListeners(name, data);
                 } catch(e) {
-                    console.error(e + " " + e.stackTrace);
+                    console.error(e + " " + e.stack);
                 }
             }
         },

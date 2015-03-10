@@ -225,6 +225,27 @@ WebInspector.ExecutionContext = function(target, id, name, origin, isPageContext
  */
 WebInspector.ExecutionContext.comparator = function(a, b)
 {
+    /**
+     * @param {!WebInspector.Target} target
+     * @return {number}
+     */
+    function targetWeight(target)
+    {
+        if (target.isPage())
+            return 3;
+        if (target.isDedicatedWorker())
+            return 2;
+        return 1;
+    }
+
+    var weightDiff = targetWeight(a.target()) - targetWeight(b.target());
+    if (weightDiff)
+        return -weightDiff;
+
+    var frameIdDiff = a.frameId.hashCode() - b.frameId.hashCode();
+    if (frameIdDiff)
+        return frameIdDiff;
+
     // Main world context should always go first.
     if (a.isMainWorldContext)
         return -1;
