@@ -859,11 +859,22 @@ Document.prototype.deepElementFromPoint = function(x, y)
 }
 
 /**
+ * @param {!Event} event
  * @return {boolean}
  */
-function isEnterKey(event) {
+function isEnterKey(event)
+{
     // Check if in IME.
     return event.keyCode !== 229 && event.keyIdentifier === "Enter";
+}
+
+/**
+ * @param {!Event} event
+ * @return {boolean}
+ */
+function isEscKey(event)
+{
+    return event.keyCode === 27;
 }
 
 function consumeEvent(e)
