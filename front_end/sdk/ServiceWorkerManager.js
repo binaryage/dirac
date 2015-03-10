@@ -161,6 +161,33 @@ WebInspector.ServiceWorkerDispatcher.prototype = {
     dispatchMessage: function(workerId, message)
     {
         this._manager._dispatchMessage(workerId, message);
+    },
+
+    /**
+     * @override
+     * @param {!Array.<!ServiceWorkerAgent.ServiceWorkerRegistration>} registrations
+     */
+    workerRegistrationUpdated: function(registrations)
+    {
+        //FIXME: implement this.
+    },
+
+    /**
+     * @override
+     * @param {!Array.<!ServiceWorkerAgent.ServiceWorkerVersion>} versions
+     */
+    workerVersionUpdated: function(versions)
+    {
+        //FIXME: implement this.
+    },
+
+    /**
+     * @override
+     * @param {string} registrationId
+     */
+    workerRegistrationDeleted: function(registrationId)
+    {
+        //FIXME: implement this.
     }
 }
 

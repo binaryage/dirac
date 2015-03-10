@@ -4037,7 +4037,32 @@
     {
         "domain": "ServiceWorker",
         "hidden": true,
-        "types": [],
+        "types": [
+            {
+                "id": "ServiceWorkerRegistration",
+                "type": "object",
+                "description": "ServiceWorker registration.",
+                "properties": [
+                    { "name": "registrationId", "type": "string" },
+                    { "name": "scopeURL", "type": "string" },
+                    { "name": "activeVersion", "optional": true, "$ref": "ServiceWorkerVersion" },
+                    { "name": "waitingVersion", "optional": true, "$ref": "ServiceWorkerVersion" },
+                    { "name": "installingVersion", "optional": true, "$ref": "ServiceWorkerVersion" }
+                ]
+            },
+            {
+                "id": "ServiceWorkerVersion",
+                "type": "object",
+                "description": "ServiceWorker version.",
+                "properties": [
+                    { "name": "versionId", "type": "string" },
+                    { "name": "registrationId", "type": "string" },
+                    { "name": "scriptURL", "type": "string" },
+                    { "name": "runningStatus", "type": "string", "enum": ["stopped", "starting", "running", "stopping"] },
+                    { "name": "status", "type": "string", "enum": ["new", "installing", "installed", "activating", "activated", "redundant"] }
+                ]
+            }
+        ],
         "commands": [
             {
                 "name": "enable",
@@ -4077,6 +4102,27 @@
                 "parameters": [
                     { "name": "workerId", "type": "string" },
                     { "name": "message", "type": "string" }
+                ],
+                "handlers": ["browser"]
+            },
+            {
+                "name": "workerRegistrationUpdated",
+                "parameters": [
+                    { "name": "registrations", "type": "array", "items": { "$ref": "ServiceWorkerRegistration" } }
+                ],
+                "handlers": ["browser"]
+            },
+            {
+                "name": "workerVersionUpdated",
+                "parameters": [
+                    { "name": "versions", "type": "array", "items": { "$ref": "ServiceWorkerVersion" } }
+                ],
+                "handlers": ["browser"]
+            },
+            {
+                "name": "workerRegistrationDeleted",
+                "parameters": [
+                    { "name": "registrationId", "type": "string" }
                 ],
                 "handlers": ["browser"]
             }
