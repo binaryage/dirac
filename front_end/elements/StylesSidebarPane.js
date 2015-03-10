@@ -96,9 +96,6 @@ WebInspector.StylesSidebarPane.PseudoIdNames = [
     "-webkit-scrollbar-corner", "-webkit-resizer"
 ];
 
-WebInspector.StylesSidebarPane._colorRegex = /((?:rgb|hsl)a?\([^)]+\)|#[0-9a-fA-F]{6}|#[0-9a-fA-F]{3}|\b\w+\b(?!-))/g;
-WebInspector.StylesSidebarPane._bezierRegex = /((cubic-bezier\([^)]+\))|\b(linear|ease-in-out|ease-in|ease-out|ease)\b)/g;
-
 /**
  * @enum {string}
  */
@@ -2428,84 +2425,28 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
 
     updateTitle: function()
     {
-        var value = this.value;
-
         this._updateState();
-
-        var nameElement = createElement("span");
-        nameElement.className = "webkit-css-property";
-        nameElement.textContent = this.name;
-        nameElement.title = this.property.propertyText;
-        this.nameElement = nameElement;
-
         this._expandElement = createElement("span");
         this._expandElement.className = "expand-element";
 
-        var valueElement = createElement("span");
-        valueElement.className = "value";
-        this.valueElement = valueElement;
-
-        /**
-         * @param {string} value
-         * @return {!RegExp}
-         */
-        function urlRegex(value)
-        {
-            // Heuristically choose between single-quoted, double-quoted or plain URL regex.
-            if (/url\(\s*'.*\s*'\s*\)/.test(value))
-                return /url\(\s*('.+')\s*\)/g;
-            if (/url\(\s*".*\s*"\s*\)/.test(value))
-                return /url\(\s*(".+")\s*\)/g;
-            return /url\(\s*([^)]+)\s*\)/g;
-        }
-
-        /**
-         * @param {string} url
-         * @return {!Node}
-         * @this {WebInspector.StylePropertyTreeElementBase}
-         */
-        function linkifyURL(url)
-        {
-            var hrefUrl = url;
-            var match = hrefUrl.match(/['"]?([^'"]+)/);
-            if (match)
-                hrefUrl = match[1];
-            var container = createDocumentFragment();
-            container.createTextChild("url(");
-            if (this._styleRule.rule() && this._styleRule.rule().resourceURL())
-                hrefUrl = WebInspector.ParsedURL.completeURL(this._styleRule.rule().resourceURL(), hrefUrl);
-            else if (this.node())
-                hrefUrl = this.node().resolveURL(hrefUrl);
-            var hasResource = hrefUrl && !!WebInspector.resourceForURL(hrefUrl);
-            // FIXME: WebInspector.linkifyURLAsNode() should really use baseURI.
-            container.appendChild(WebInspector.linkifyURLAsNode(hrefUrl || url, url, undefined, !hasResource));
-            container.createTextChild(")");
-            return container;
-        }
-
-        if (value) {
-            var formatter = new WebInspector.StringFormatter();
-            formatter.addProcessor(urlRegex(value), linkifyURL.bind(this));
-            if (WebInspector.CSSMetadata.isBezierAwareProperty(this.name) && this.parsedOk)
-                formatter.addProcessor(WebInspector.StylesSidebarPane._bezierRegex, this._processBezier.bind(this));
-            if (WebInspector.CSSMetadata.isColorAwareProperty(this.name) && this.parsedOk)
-                formatter.addProcessor(WebInspector.StylesSidebarPane._colorRegex, this._processColor.bind(this));
-
-            valueElement.appendChild(formatter.formatText(value));
+        var propertyRenderer = new WebInspector.StylesSidebarPropertyRenderer(this._styleRule.rule(), this.node(), this.name, this.value);
+        if (this.parsedOk) {
+            propertyRenderer.setColorHandler(this._processColor.bind(this));
+            propertyRenderer.setBezierHandler(this._processBezier.bind(this));
         }
 
         this.listItemElement.removeChildren();
-        nameElement.normalize();
-        valueElement.normalize();
-
+        this.nameElement = propertyRenderer.renderName();
+        this.nameElement.title = this.property.propertyText;
+        this.valueElement = propertyRenderer.renderValue();
         if (!this.treeOutline)
             return;
 
         this.listItemElement.createChild("span", "styles-clipboard-only").createTextChild(this.disabled ? "  /* " : "  ");
-        this.listItemElement.appendChild(nameElement);
+        this.listItemElement.appendChild(this.nameElement);
         this.listItemElement.createTextChild(": ");
         this.listItemElement.appendChild(this._expandElement);
-        this.listItemElement.appendChild(valueElement);
+        this.listItemElement.appendChild(this.valueElement);
         this.listItemElement.createTextChild(";");
         if (this.disabled)
             this.listItemElement.createChild("span", "styles-clipboard-only").createTextChild(" */");
@@ -3527,6 +3468,114 @@ WebInspector.StylesSidebarPane.CSSPropertyPrompt.prototype = {
     },
 
     __proto__: WebInspector.TextPrompt.prototype
+}
+
+/**
+ * @constructor
+ * @param {?WebInspector.CSSRule} rule
+ * @param {?WebInspector.DOMNode} node
+ * @param {string} name
+ * @param {string} value
+ */
+WebInspector.StylesSidebarPropertyRenderer = function(rule, node, name, value)
+{
+    this._rule = rule;
+    this._node = node;
+    this._propertyName = name;
+    this._propertyValue = value;
+}
+
+WebInspector.StylesSidebarPropertyRenderer._colorRegex = /((?:rgb|hsl)a?\([^)]+\)|#[0-9a-fA-F]{6}|#[0-9a-fA-F]{3}|\b\w+\b(?!-))/g;
+WebInspector.StylesSidebarPropertyRenderer._bezierRegex = /((cubic-bezier\([^)]+\))|\b(linear|ease-in-out|ease-in|ease-out|ease)\b)/g;
+
+/**
+ * @param {string} value
+ * @return {!RegExp}
+ */
+WebInspector.StylesSidebarPropertyRenderer._urlRegex = function(value)
+{
+    // Heuristically choose between single-quoted, double-quoted or plain URL regex.
+    if (/url\(\s*'.*\s*'\s*\)/.test(value))
+        return /url\(\s*('.+')\s*\)/g;
+    if (/url\(\s*".*\s*"\s*\)/.test(value))
+        return /url\(\s*(".+")\s*\)/g;
+    return /url\(\s*([^)]+)\s*\)/g;
+}
+
+WebInspector.StylesSidebarPropertyRenderer.prototype = {
+    /**
+     * @param {function(string):!Node} handler
+     */
+    setColorHandler: function(handler)
+    {
+        this._colorHandler = handler;
+    },
+
+    /**
+     * @param {function(string):!Node} handler
+     */
+    setBezierHandler: function(handler)
+    {
+        this._bezierHandler = handler;
+    },
+
+    /**
+     * @return {!Element}
+     */
+    renderName: function()
+    {
+        var nameElement = createElement("span");
+        nameElement.className = "webkit-css-property";
+        nameElement.textContent = this._propertyName;
+        nameElement.normalize();
+        return nameElement;
+    },
+
+    /**
+     * @return {!Element}
+     */
+    renderValue: function()
+    {
+        var valueElement = createElement("span");
+        valueElement.className = "value";
+
+        if (!this._propertyValue)
+            return valueElement;
+
+        var formatter = new WebInspector.StringFormatter();
+        formatter.addProcessor(WebInspector.StylesSidebarPropertyRenderer._urlRegex(this._propertyValue), this._processURL.bind(this));
+        if (this._bezierHandler && WebInspector.CSSMetadata.isBezierAwareProperty(this._propertyName))
+            formatter.addProcessor(WebInspector.StylesSidebarPropertyRenderer._bezierRegex, this._bezierHandler);
+        if (this._colorHandler && WebInspector.CSSMetadata.isColorAwareProperty(this._propertyName))
+            formatter.addProcessor(WebInspector.StylesSidebarPropertyRenderer._colorRegex, this._colorHandler);
+
+        valueElement.appendChild(formatter.formatText(this._propertyValue));
+        valueElement.normalize();
+        return valueElement;
+    },
+
+    /**
+     * @param {string} url
+     * @return {!Node}
+     */
+    _processURL: function(url)
+    {
+        var hrefUrl = url;
+        var match = hrefUrl.match(/['"]?([^'"]+)/);
+        if (match)
+            hrefUrl = match[1];
+        var container = createDocumentFragment();
+        container.createTextChild("url(");
+        if (this._rule && this._rule.resourceURL())
+            hrefUrl = WebInspector.ParsedURL.completeURL(this._rule.resourceURL(), hrefUrl);
+        else if (this._node)
+            hrefUrl = this._node.resolveURL(hrefUrl);
+        var hasResource = hrefUrl && !!WebInspector.resourceForURL(hrefUrl);
+        // FIXME: WebInspector.linkifyURLAsNode() should really use baseURI.
+        container.appendChild(WebInspector.linkifyURLAsNode(hrefUrl || url, url, undefined, !hasResource));
+        container.createTextChild(")");
+        return container;
+    }
 }
 
 /**
