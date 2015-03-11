@@ -358,6 +358,10 @@
     white-space: pre-wrap;
 }
 
+.console-message-formatted-table {
+    clear: both;
+}
+
 .console-message-url {
     float: right;
     text-align: right;

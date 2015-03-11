@@ -667,7 +667,7 @@ WebInspector.ConsoleViewMessage.prototype = {
      */
     _formatParameterAsTable: function(parameters)
     {
-        var element = createElement("span");
+        var element = createElementWithClass("div", "console-message-formatted-table");
         var table = parameters[0];
         if (!table || !table.preview)
             return element;
