@@ -379,7 +379,7 @@ WebInspector.Color.prototype = {
         rgba[1] = 1 - this._rgba[1];
         rgba[2] = 1 - this._rgba[2];
         rgba[3] = this._rgba[3];
-        return WebInspector.Color.fromRGBA(rgba);
+        return new WebInspector.Color(rgba, WebInspector.Color.Format.RGBA);
     },
 
     /**
@@ -390,7 +390,7 @@ WebInspector.Color.prototype = {
      {
          var rgba = this._rgba.slice();
          rgba[3] = alpha;
-         return WebInspector.Color.fromRGBA(rgba);
+         return new WebInspector.Color(rgba, WebInspector.Color.Format.RGBA);
      }
 }
 
