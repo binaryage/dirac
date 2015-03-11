@@ -301,27 +301,17 @@ WebInspector.StylesSidebarPane.prototype = {
      */
     setFilterBoxContainer: function(matchedStylesElement)
     {
-        matchedStylesElement.appendChild(this._createCSSFilterControl());
+        var filterInput = WebInspector.StylesSidebarPane.createPropertyFilterElement(WebInspector.UIString("Find in Styles"), this._onFilterChanged.bind(this));
+        matchedStylesElement.appendChild(filterInput);
     },
 
     /**
-     * @return {!Element}
+     * @param {?RegExp} regex
      */
-    _createCSSFilterControl: function()
+    _onFilterChanged: function(regex)
     {
-        var filterInput = WebInspector.StylesSidebarPane.createPropertyFilterElement(WebInspector.UIString("Find in Styles"), searchHandler.bind(this));
-
-        /**
-         * @param {?RegExp} regex
-         * @this {WebInspector.StylesSidebarPane}
-         */
-        function searchHandler(regex)
-        {
-            this._filterRegex = regex;
-            this._updateFilter();
-        }
-
-        return filterInput;
+        this._filterRegex = regex;
+        this._updateFilter();
     },
 
     /**
@@ -2463,10 +2453,32 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
         this._updateFilter();
     },
 
+    /**
+     * @return {boolean}
+     */
     _updateFilter: function()
     {
-        var regEx = this.parentPane().filterRegex();
-        this.listItemElement.classList.toggle("filter-match", !!regEx && (regEx.test(this.property.name) || regEx.test(this.property.value)));
+        var regex = this.parentPane().filterRegex();
+        var matches = !!regex && (regex.test(this.property.name) || regex.test(this.property.value));
+        this.listItemElement.classList.toggle("filter-match", matches);
+
+        this.onpopulate();
+        var hasMatchingChildren = false;
+        for (var i = 0; i < this.childCount(); ++i)
+            hasMatchingChildren |= this.childAt(i)._updateFilter();
+
+        if (!regex) {
+            if (this._expandedDueToFilter)
+                this.collapse();
+            this._expandedDueToFilter = false;
+        } else if (hasMatchingChildren && !this.expanded) {
+            this.expand();
+            this._expandedDueToFilter = true;
+        } else if (!hasMatchingChildren && this.expanded && this._expandedDueToFilter) {
+            this.collapse();
+            this._expandedDueToFilter = false;
+        }
+        return matches;
     },
 
     /**

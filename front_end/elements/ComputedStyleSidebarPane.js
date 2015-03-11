@@ -328,6 +328,10 @@ WebInspector.ComputedStylePropertyTreeElement.prototype = {
         return this._stylesPane;
     },
 
+    /**
+     * @override
+     * @return {boolean}
+     */
     _updateFilter: function()
     {
         var regEx = this.parentPane().filterRegex();
@@ -335,6 +339,7 @@ WebInspector.ComputedStylePropertyTreeElement.prototype = {
         this.listItemElement.classList.toggle("hidden", matched);
         if (this.childrenListElement)
             this.childrenListElement.classList.toggle("hidden", matched);
+        return matched;
     },
 
     __proto__: WebInspector.StylePropertyTreeElementBase.prototype
