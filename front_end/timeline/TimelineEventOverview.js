@@ -101,147 +101,36 @@ WebInspector.TimelineEventOverview.prototype = {
      */
     _drawNetwork: function(events, position)
     {
-        /**
-         * @param {!Array.<!WebInspector.TracingModel.Event>} events
-         * @return {number}
-         */
-        function calculateNetworkBandsCount(events)
-        {
-            var openBands = new Set();
-            var maxBands = 0;
-            for (var i = 0; i < events.length; ++i) {
-                var e = events[i];
-                switch (e.name) {
-                case WebInspector.TimelineModel.RecordType.ResourceSendRequest:
-                case WebInspector.TimelineModel.RecordType.ResourceReceiveResponse:
-                case WebInspector.TimelineModel.RecordType.ResourceReceivedData:
-                    var reqId = e.args["data"]["requestId"];
-                    openBands.add(reqId);
-                    maxBands = Math.max(maxBands, openBands.size);
-                    break;
-                case WebInspector.TimelineModel.RecordType.ResourceFinish:
-                    var reqId = e.args["data"]["requestId"];
-                    if (!openBands.has(reqId))
-                        ++maxBands;
-                    else
-                        openBands.delete(reqId);
-                    break;
-                }
-            }
-            return maxBands;
-        }
-
         var /** @const */ maxBandHeight = 4;
-        var bandsCount = calculateNetworkBandsCount(events);
+        var bandsCount = WebInspector.TimelineUIUtils.calculateNetworkBandsCount(events);
         var bandInterval = Math.min(maxBandHeight, WebInspector.TimelineEventOverview._maxNetworkStripHeight / (bandsCount || 1));
         var bandHeight = Math.ceil(bandInterval);
         var timeOffset = this._model.minimumRecordTime();
         var timeSpan = this._model.maximumRecordTime() - timeOffset;
-        var scale = this._canvas.width / timeSpan;
+        var canvasWidth = this._canvas.width;
+        var scale = canvasWidth / timeSpan;
         var loadingCategory = WebInspector.TimelineUIUtils.categories()["loading"];
         var waitingColor = loadingCategory.backgroundColor;
         var processingColor = loadingCategory.fillColorStop1;
 
-        var bandsInUse = new Array(bandsCount);
-        var freeBandsCount = bandsCount;
-        var requestsInFlight = new Map();
-        var lastBand = 0;
-
-        /**
-         * @constructor
-         * @param {number} band
-         * @param {number} lastTime
-         * @param {boolean} gotResponse
-         */
-        function RequestInfo(band, lastTime, gotResponse)
-        {
-            this.band = band;
-            this.lastTime = lastTime;
-            this.gotResponse = gotResponse;
-        }
-
-        /**
-         * @return {number}
-         */
-        function seizeBand()
-        {
-            console.assert(freeBandsCount);
-            do {
-                lastBand = (lastBand + 1) % bandsInUse.length;
-            } while (bandsInUse[lastBand]);
-            bandsInUse[lastBand] = true;
-            --freeBandsCount;
-            return lastBand;
-        }
-
         /**
          * @param {number} band
-         */
-        function releaseBand(band)
-        {
-            bandsInUse[band] = false;
-            ++freeBandsCount;
-        }
-
-        /**
-         * @param {string} reqId
-         * @param {number=} time
-         * @return {!RequestInfo}
-         */
-        function getRequestInfo(reqId, time)
-        {
-            var reqInfo = requestsInFlight.get(reqId);
-            if (!reqInfo) {
-                reqInfo = new RequestInfo(seizeBand(), time || timeOffset, false);
-                requestsInFlight.set(reqId, reqInfo);
-            }
-            return reqInfo;
-        }
-
-        /**
-         * @param {string} reqId
-         * @param {!RequestInfo} reqInfo
-         * @param {number} time
-         * @param {boolean=} finish
+         * @param {number} startTime
+         * @param {number} endTime
+         * @param {?WebInspector.TracingModel.Event} event
          * @this {WebInspector.TimelineEventOverview}
          */
-        function advanceRequest(reqId, reqInfo, time, finish)
+        function drawBar(band, startTime, endTime, event)
         {
-            var band = reqInfo.band;
-            var start = (reqInfo.lastTime - timeOffset) * scale;
-            var end = (time - timeOffset) * scale;
-            var color = reqInfo.gotResponse ? processingColor : waitingColor;
-            if (finish) {
-                releaseBand(band);
-                requestsInFlight.delete(reqId);
-            } else {
-                reqInfo.lastTime = time;
-                reqInfo.gotResponse = true;
-            }
+            var start = Number.constrain((startTime - timeOffset) * scale, 0, canvasWidth);
+            var end = Number.constrain((endTime - timeOffset) * scale, 0, canvasWidth);
+            var color = !event ||
+                event.name === WebInspector.TimelineModel.RecordType.ResourceReceiveResponse ||
+                event.name === WebInspector.TimelineModel.RecordType.ResourceSendRequest ? waitingColor : processingColor;
             this._renderBar(Math.floor(start), Math.ceil(end), Math.floor(position + band * bandInterval), bandHeight, color);
         }
 
-        for (var i = 0; i < events.length; ++i) {
-            var event = events[i];
-            switch (event.name) {
-            case WebInspector.TimelineModel.RecordType.ResourceSendRequest:
-                var reqId = event.args["data"]["requestId"];
-                getRequestInfo(reqId, event.startTime);
-                break;
-            case WebInspector.TimelineModel.RecordType.ResourceReceivedData:
-            case WebInspector.TimelineModel.RecordType.ResourceReceiveResponse:
-            case WebInspector.TimelineModel.RecordType.ResourceFinish:
-                var reqId = event.args["data"]["requestId"];
-                var reqInfo = getRequestInfo(reqId);
-                var finish = event.name === WebInspector.TimelineModel.RecordType.ResourceFinish;
-                advanceRequest.call(this, reqId, reqInfo, event.startTime, finish);
-                break;
-            }
-        }
-
-        for (var reqId of requestsInFlight.keys())
-            advanceRequest.call(this, reqId, requestsInFlight.get(reqId), timeOffset + timeSpan);
-
+        WebInspector.TimelineUIUtils.iterateNetworkRequestsInRoundRobin(events, bandsCount, drawBar.bind(this));
         return Math.ceil(bandInterval * bandsCount);
     },
 

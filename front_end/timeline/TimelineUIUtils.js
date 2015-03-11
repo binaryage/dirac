@@ -577,7 +577,7 @@ WebInspector.TimelineUIUtils._buildTraceEventDetailsSynchronously = function(eve
     case recordTypes.ResourceReceiveResponse:
     case recordTypes.ResourceReceivedData:
     case recordTypes.ResourceFinish:
-        var url = (event.name === recordTypes.ResourceSendRequest) ? eventData["url"] : initiator.args["data"]["url"];
+        var url = (event.name === recordTypes.ResourceSendRequest) ? eventData["url"] : initiator && initiator.args["data"]["url"];
         if (url)
             contentHelper.appendElementRow(WebInspector.UIString("Resource"), WebInspector.linkifyResourceAsNode(url));
         if (eventData["requestMethod"])
@@ -1380,6 +1380,154 @@ WebInspector.TimelineUIUtils.quadWidth = function(quad)
 WebInspector.TimelineUIUtils.quadHeight = function(quad)
 {
     return Math.round(Math.sqrt(Math.pow(quad[0] - quad[6], 2) + Math.pow(quad[1] - quad[7], 2)));
+}
+
+/**
+ * @param {!Array.<!WebInspector.TracingModel.Event>} events
+ * @return {number}
+ */
+WebInspector.TimelineUIUtils.calculateNetworkBandsCount = function(events)
+{
+    var openBands = new Set();
+    var maxBands = 0;
+    for (var i = 0; i < events.length; ++i) {
+        var e = events[i];
+        switch (e.name) {
+        case WebInspector.TimelineModel.RecordType.ResourceSendRequest:
+            var reqId = e.args["data"]["requestId"];
+            openBands.add(reqId);
+            maxBands = Math.max(maxBands, openBands.size);
+            break;
+        case WebInspector.TimelineModel.RecordType.ResourceReceiveResponse:
+        case WebInspector.TimelineModel.RecordType.ResourceReceivedData:
+        case WebInspector.TimelineModel.RecordType.ResourceFinish:
+            var reqId = e.args["data"]["requestId"];
+            if (!openBands.has(reqId)) {
+                openBands.add(reqId);
+                ++maxBands;
+            }
+            if (e.name === WebInspector.TimelineModel.RecordType.ResourceFinish)
+                openBands.delete(reqId);
+            break;
+        }
+    }
+    return maxBands;
+}
+
+/**
+ * @param {!Array.<!WebInspector.TracingModel.Event>} events
+ * @param {number} bandsCount
+ * @param {function(number, number, number, ?WebInspector.TracingModel.Event)} callback
+ */
+WebInspector.TimelineUIUtils.iterateNetworkRequestsInRoundRobin = function(events, bandsCount, callback)
+{
+    var bandsInUse = new Array(bandsCount);
+    var requestsInFlight = new Map();
+    var lastBand = -1;
+
+    // Invoke synthetic calls for events that are missing ResourceSendRequest
+    var requestsWithSend = new Set();
+    for (var i = 0; i < events.length; ++i) {
+        var event = events[i];
+        switch (event.name) {
+        case WebInspector.TimelineModel.RecordType.ResourceSendRequest:
+            var reqId = event.args["data"]["requestId"];
+            requestsWithSend.add(reqId);
+            break;
+        case WebInspector.TimelineModel.RecordType.ResourceReceivedData:
+        case WebInspector.TimelineModel.RecordType.ResourceReceiveResponse:
+        case WebInspector.TimelineModel.RecordType.ResourceFinish:
+            var reqId = event.args["data"]["requestId"];
+            if (!requestsWithSend.has(reqId)) {
+                requestsWithSend.add(reqId);
+                var reqInfo = new RequestInfo(seizeBand(), 0);
+                requestsInFlight.set(reqId, reqInfo);
+                callback(reqInfo.band, 0, 0, null);
+            }
+            if (event.name === WebInspector.TimelineModel.RecordType.ResourceFinish)
+                requestsWithSend.delete(reqId);
+            break;
+        }
+    }
+    requestsWithSend = null;
+
+    /**
+     * @constructor
+     * @param {number} band
+     * @param {number} time
+     */
+    function RequestInfo(band, time)
+    {
+        this.band = band;
+        this.time = time;
+    }
+
+    /**
+     * @return {number}
+     */
+    function seizeBand()
+    {
+        var i = 0;
+        do {
+            lastBand = (lastBand + 1) % bandsInUse.length;
+            console.assert(i++ < bandsInUse.length);
+        } while (bandsInUse[lastBand]);
+        bandsInUse[lastBand] = true;
+        return lastBand;
+    }
+
+    /**
+     * @param {number} band
+     */
+    function releaseBand(band)
+    {
+        bandsInUse[band] = false;
+    }
+
+    /**
+     * @param {string} reqId
+     * @param {?WebInspector.TracingModel.Event} event
+     * @param {boolean} first
+     * @return {!RequestInfo}
+     */
+    function getOrCreateRequestInfo(reqId, event, first)
+    {
+        var reqInfo = requestsInFlight.get(reqId);
+        if (!reqInfo) {
+            reqInfo = new RequestInfo(seizeBand(), event.startTime);
+            requestsInFlight.set(reqId, reqInfo);
+            if (!first)
+                callback(reqInfo.band, 0, event.startTime, event);
+        }
+        return reqInfo;
+    }
+
+    for (var i = 0; i < events.length; ++i) {
+        var event = events[i];
+        switch (event.name) {
+        case WebInspector.TimelineModel.RecordType.ResourceSendRequest:
+            var reqId = event.args["data"]["requestId"];
+            var reqInfo = getOrCreateRequestInfo(reqId, event, true);
+            callback(reqInfo.band, reqInfo.time, event.startTime, event);
+            break;
+        case WebInspector.TimelineModel.RecordType.ResourceReceivedData:
+        case WebInspector.TimelineModel.RecordType.ResourceReceiveResponse:
+        case WebInspector.TimelineModel.RecordType.ResourceFinish:
+            var reqId = event.args["data"]["requestId"];
+            var reqInfo = getOrCreateRequestInfo(reqId, event, false);
+            callback(reqInfo.band, reqInfo.time, event.startTime, event);
+            if (event.name === WebInspector.TimelineModel.RecordType.ResourceFinish) {
+                releaseBand(reqInfo.band);
+                requestsInFlight.delete(reqId);
+            } else {
+                reqInfo.time = event.startTime;
+            }
+            break;
+        }
+    }
+
+    for (var reqInfo of requestsInFlight.values())
+        callback(reqInfo.band, reqInfo.time, Infinity, null);
 }
 
 /**
