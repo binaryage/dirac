@@ -111,16 +111,6 @@
                 "hidden": true
             },
             {
-                "id": "SearchMatch",
-                "type": "object",
-                "description": "Search match for resource.",
-                "properties": [
-                    { "name": "lineNumber", "type": "number", "description": "Line number in resource content." },
-                    { "name": "lineContent", "type": "string", "description": "Line with match content." }
-                ],
-                "hidden": true
-            },
-            {
                 "id": "Cookie",
                 "type": "object",
                 "description": "Cookie object",
@@ -313,7 +303,7 @@
                     { "name": "isRegex", "type": "boolean", "optional": true, "description": "If true, treats string parameter as regex." }
                 ],
                 "returns": [
-                    { "name": "result", "type": "array", "items": { "$ref": "SearchMatch" }, "description": "List of search matches." }
+                    { "name": "result", "type": "array", "items": { "$ref": "Debugger.SearchMatch" }, "description": "List of search matches." }
                 ],
                 "hidden": true
             },
@@ -3269,6 +3259,16 @@
                     { "name": "asyncStackTrace", "$ref": "Console.AsyncStackTrace", "optional": true, "description": "Asynchronous stack trace where async operation was scheduled, if available." }
                 ],
                 "hidden": true
+            },
+            {
+                "id": "SearchMatch",
+                "type": "object",
+                "description": "Search match for resource.",
+                "properties": [
+                    { "name": "lineNumber", "type": "number", "description": "Line number in resource content." },
+                    { "name": "lineContent", "type": "string", "description": "Line with match content." }
+                ],
+                "hidden": true
             }
         ],
         "commands": [
@@ -3371,7 +3371,7 @@
                     { "name": "isRegex", "type": "boolean", "optional": true, "description": "If true, treats string parameter as regex." }
                 ],
                 "returns": [
-                    { "name": "result", "type": "array", "items": { "$ref": "Page.SearchMatch" }, "description": "List of search matches." }
+                    { "name": "result", "type": "array", "items": { "$ref": "SearchMatch" }, "description": "List of search matches." }
                 ],
                 "description": "Searches for given string in script content."
             },
