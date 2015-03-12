@@ -282,7 +282,7 @@ WebInspector.TracingModel.prototype = {
 
         var idList = Object.keys(mismatchingIds);
         if (idList.length)
-            WebInspector.console.error("Timeline recording was started in more than one page simulaniously. Session id mismatch: " + this._sessionId + " and " + idList + ".");
+            WebInspector.console.error("Timeline recording was started in more than one page simultaneously. Session id mismatch: " + this._sessionId + " and " + idList + ".");
     },
 
     /**
