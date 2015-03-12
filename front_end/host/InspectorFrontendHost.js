@@ -692,7 +692,7 @@ var InspectorFrontendHost = window.InspectorFrontendHost || null;
      */
     function InspectorFrontendAPIImpl()
     {
-        this._debugFrontend = !!Runtime.queryParam("debugFrontend");
+        this._debugFrontend = !!Runtime.queryParam("debugFrontend") || (window["InspectorTest"] && window["InspectorTest"]["debugTest"]);
 
         var descriptors = InspectorFrontendHostAPI.EventDescriptors;
         for (var i = 0; i < descriptors.length; ++i)

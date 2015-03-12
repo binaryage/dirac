@@ -109,7 +109,7 @@ WebInspector.ResourceTreeModel.prototype = {
         /** @type {!Object.<string, !WebInspector.ResourceTreeFrame>} */
         this._frames = {};
 
-        if (this.target().isDedicatedWorker()) {
+        if (!this.target().isPage()) {
             this._cachedResourcesProcessed = true;
             return;
         }

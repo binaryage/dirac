@@ -906,7 +906,7 @@ WebInspector.SourcesPanel.prototype = {
             if (!this._workspace.projects().filter(filterProject).length)
                 return;
             var networkURL = this._networkMapping.networkURL(uiSourceCode);
-            if (this._networkMapping.uiSourceCodeForURL(networkURL) === uiSourceCode)
+            if (this._networkMapping.uiSourceCodeForURLForAnyTarget(networkURL) === uiSourceCode)
                 contextMenu.appendItem(WebInspector.UIString.capitalize("Map to ^file ^system ^resource\u2026"), this.mapNetworkToFileSystem.bind(this, uiSourceCode));
         }
     },
@@ -974,7 +974,7 @@ WebInspector.SourcesPanel.prototype = {
         if (!(target instanceof WebInspector.NetworkRequest))
             return;
         var request = /** @type {!WebInspector.NetworkRequest} */ (target);
-        var uiSourceCode = this._networkMapping.uiSourceCodeForURL(request.url);
+        var uiSourceCode = this._networkMapping.uiSourceCodeForURLForAnyTarget(request.url);
         if (!uiSourceCode)
             return;
         var openText = WebInspector.UIString.capitalize("Open in Sources ^panel");

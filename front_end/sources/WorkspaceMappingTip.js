@@ -73,7 +73,7 @@ WebInspector.WorkspaceMappingTip.prototype = {
             if (!this._isLocalHost(uiSourceCode.originURL()))
                 return;
             var networkURL = WebInspector.networkMapping.networkURL(uiSourceCode);
-            if (WebInspector.networkMapping.uiSourceCodeForURL(networkURL) !== uiSourceCode)
+            if (WebInspector.networkMapping.uiSourceCodeForURLForAnyTarget(networkURL) !== uiSourceCode)
                 return;
 
             var filesystemProjects = this._workspace.projectsForType(WebInspector.projectTypes.FileSystem);
