@@ -437,7 +437,7 @@ WebInspector.DebuggerWorkspaceBinding.ScriptInfo.prototype = {
      */
     _removeLocation: function(location)
     {
-        this._locations.remove(location);
+        this._locations.delete(location);
     },
 
     _updateLocations: function()

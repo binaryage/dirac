@@ -198,7 +198,7 @@ WebInspector.ViewportDataGrid.prototype = {
 
         var viewportState = this._calculateVisibleNodes(clientHeight, scrollTop);
         var visibleNodes = viewportState.visibleNodes;
-        var visibleNodesSet = Set.fromArray(visibleNodes);
+        var visibleNodesSet = new Set(visibleNodes);
 
         if (this._hiddenWheelTarget && this._hiddenWheelTarget !== this._wheelTarget) {
             this._hiddenWheelTarget.remove();
