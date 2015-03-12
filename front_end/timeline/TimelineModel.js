@@ -216,7 +216,7 @@ WebInspector.TimelineModel.VirtualThread = function(name)
     this.name = name;
     /** @type {!Array.<!WebInspector.TracingModel.Event>} */
     this.events = [];
-    /** @type {!Array.<!Array.<!WebInspector.TracingModel.Event>>} */
+    /** @type {!Array.<!WebInspector.TracingModel.AsyncEvent>} */
     this.asyncEvents = [];
 }
 
@@ -957,12 +957,12 @@ WebInspector.TimelineModel.prototype = {
             threadEvents.push(event);
             this._inspectedTargetEvents.push(event);
         }
-        i = asyncEvents.lowerBound(startTime, function (time, event) { return time - event.startTime });
+        i = asyncEvents.lowerBound(startTime, function (time, asyncEvent) { return time - asyncEvent.startTime });
         for (; i < asyncEvents.length; ++i) {
-            if (endTime && event.startTime >= endTime)
-                break;
             var asyncEvent = asyncEvents[i];
-            if (this._processEvent(asyncEvent[0]))
+            if (endTime && asyncEvent.startTime >= endTime)
+                break;
+            if (this._processEvent(asyncEvent))
                 threadAsyncEvents.push(asyncEvent);
         }
     },
@@ -1230,7 +1230,7 @@ WebInspector.TimelineModel.prototype = {
         this._virtualThreads = [];
         /** @type {!Array.<!WebInspector.TracingModel.Event>} */
         this._mainThreadEvents = [];
-        /** @type {!Array.<!Array.<!WebInspector.TracingModel.Event>>} */
+        /** @type {!Array.<!WebInspector.TracingModel.AsyncEvent>} */
         this._mainThreadAsyncEvents = [];
         /** @type {!Array.<!WebInspector.TracingModel.Event>} */
         this._inspectedTargetEvents = [];
@@ -1286,7 +1286,7 @@ WebInspector.TimelineModel.prototype = {
     },
 
     /**
-     * @return {!Array.<!Array.<!WebInspector.TracingModel.Event>>}
+     * @return {!Array.<!WebInspector.TracingModel.AsyncEvent>}
      */
     mainThreadAsyncEvents: function()
     {

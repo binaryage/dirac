@@ -370,7 +370,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
     /**
      * @param {string} threadTitle
      * @param {!Array.<!WebInspector.TracingModel.Event>} syncEvents
-     * @param {!Array.<!Array.<!WebInspector.TracingModel.Event>>} asyncEvents
+     * @param {!Array.<!WebInspector.TracingModel.AsyncEvent>} asyncEvents
      */
     _appendThreadTimelineData: function(threadTitle, syncEvents, asyncEvents)
     {
@@ -431,34 +431,26 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
 
     /**
      * @param {string} header
-     * @param {!Array.<!Array.<!WebInspector.TracingModel.Event>>} eventSteps
+     * @param {!Array.<!WebInspector.TracingModel.AsyncEvent>} asyncEvents
      */
-    _appendAsyncEvents: function(header, eventSteps)
+    _appendAsyncEvents: function(header, asyncEvents)
     {
         var lastUsedTimeByLevel = [];
         var headerAppended = false;
 
-        for (var i = 0; i < eventSteps.length; ++i) {
-            var e = eventSteps[i][0];
-            if (!this._isVisible(e))
+        for (var i = 0; i < asyncEvents.length; ++i) {
+            var asyncEvent = asyncEvents[i];
+            if (!this._isVisible(asyncEvent))
                 continue;
             if (!headerAppended && header) {
                 this._appendHeaderRecord(header, this._currentLevel++);
                 headerAppended = true;
             }
+            var startTime = asyncEvent.startTime;
             var level;
-            for (level = 0; level < lastUsedTimeByLevel.length && lastUsedTimeByLevel[level] > e.startTime; ++level) {}
-            if (WebInspector.TracingModel.isNestableAsyncPhase(e.phase))
-                this._appendEvent(e, this._currentLevel + level);
-            else
-                this._appendAsyncEventSteps(eventSteps[i], this._currentLevel + level);
-            var lastStep = eventSteps[i].peekLast();
-            if (e.phase === WebInspector.TracingModel.Phase.AsyncBegin || e.phase === WebInspector.TracingModel.Phase.NestableAsyncInstant)
-                lastUsedTimeByLevel[level] = lastStep.startTime;
-            else if (e.phase === WebInspector.TracingModel.Phase.NestableAsyncBegin && e.endTime)
-                lastUsedTimeByLevel[level] = e.endTime;
-            else
-                lastUsedTimeByLevel[level] = Infinity;
+            for (level = 0; level < lastUsedTimeByLevel.length && lastUsedTimeByLevel[level] > startTime; ++level) {}
+            this._appendAsyncEvent(asyncEvent, this._currentLevel + level);
+            lastUsedTimeByLevel[level] = asyncEvent.endTime;
         }
         this._currentLevel += lastUsedTimeByLevel.length;
         return lastUsedTimeByLevel.length;
@@ -673,13 +665,19 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
     },
 
     /**
-     * @param {!Array.<!WebInspector.TracingModel.Event>} steps
+     * @param {!WebInspector.TracingModel.AsyncEvent} asyncEvent
      * @param {number} level
      */
-    _appendAsyncEventSteps: function(steps, level)
+    _appendAsyncEvent: function(asyncEvent, level)
     {
+        if (WebInspector.TracingModel.isNestableAsyncPhase(asyncEvent.phase)) {
+            // FIXME: also add steps once we support event nesting in the FlameChart.
+            this._appendEvent(asyncEvent, level);
+            return;
+        }
+        var steps = asyncEvent.steps;
         // If we have past steps, put the end event for each range rather than start one.
-        var eventOffset = steps[1].phase === WebInspector.TracingModel.Phase.AsyncStepPast ? 1 : 0;
+        var eventOffset = steps.length > 1 && steps[1].phase === WebInspector.TracingModel.Phase.AsyncStepPast ? 1 : 0;
         for (var i = 0; i < steps.length - 1; ++i) {
             var index = this._entryEvents.length;
             this._entryEvents.push(steps[i + eventOffset]);
