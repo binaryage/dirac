@@ -167,6 +167,7 @@ WebInspector.NetworkProject = function(target, workspace, networkMapping)
 }
 
 WebInspector.NetworkProject._networkProjectSymbol = Symbol("networkProject");
+WebInspector.NetworkProject._targetSymbol = Symbol("target");
 WebInspector.NetworkProject._contentTypeSymbol = Symbol("networkContentType");
 
 /**
@@ -187,6 +188,15 @@ WebInspector.NetworkProject.projectId = function(target, projectURL, isContentSc
 WebInspector.NetworkProject.forTarget = function(target)
 {
     return target[WebInspector.NetworkProject._networkProjectSymbol];
+}
+
+/**
+ * @param {!WebInspector.UISourceCode} uiSourceCode
+ * @return {?WebInspector.Target} target
+ */
+WebInspector.NetworkProject.targetForUISourceCode = function(uiSourceCode)
+{
+    return uiSourceCode[WebInspector.NetworkProject._targetSymbol];
 }
 
 /**
@@ -231,6 +241,7 @@ WebInspector.NetworkProject.prototype = {
         var projectDelegate = this._projectDelegate(projectURL, isContentScript || false);
         var path = projectDelegate.addFile(parentPath, name, url, contentProvider);
         var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (this._workspace.uiSourceCode(projectDelegate.id(), path));
+        uiSourceCode[WebInspector.NetworkProject._targetSymbol] = this.target();
         console.assert(uiSourceCode);
         return uiSourceCode;
     },

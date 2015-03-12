@@ -184,6 +184,21 @@ WebInspector.DebuggerWorkspaceBinding.prototype = {
     },
 
     /**
+     * @param {!WebInspector.UILocation} uiLocation
+     * @return {!WebInspector.UILocation}
+     */
+    normalizeUILocation: function(uiLocation)
+    {
+        var target = WebInspector.NetworkProject.targetForUISourceCode(uiLocation.uiSourceCode);
+        if (target) {
+            var rawLocation = this.uiLocationToRawLocation(target, uiLocation.uiSourceCode, uiLocation.lineNumber, uiLocation.columnNumber);
+            if (rawLocation)
+                return this.rawLocationToUILocation(rawLocation);
+        }
+        return uiLocation;
+    },
+
+    /**
      * @param {!WebInspector.UISourceCode} uiSourceCode
      * @param {number} lineNumber
      * @return {boolean}
