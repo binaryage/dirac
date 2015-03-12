@@ -174,16 +174,12 @@
     height: 16px;
 }
 
-.styles-section.read-only:not(.computed-style) {
+.styles-section.read-only {
     background-color: #eee;
 }
 
 .styles-section .style-properties li.not-parsed-ok {
     margin-left: 0;
-}
-
-.styles-section.computed-style .style-properties li.not-parsed-ok {
-    margin-left: -6px;
 }
 
 .styles-section .style-properties li.filter-match,
@@ -292,14 +288,6 @@
     cursor: auto;
 }
 
-.styles-section.computed-style .style-properties > li {
-    padding-left: 0;
-}
-
-.styles-section.computed-style .style-properties > li .webkit-css-property {
-    margin-left: 0;
-}
-
 .styles-section .style-properties li .webkit-css-property {
     margin-left: -22px; /* outdent the first line of longhand properties (in an expanded shorthand) to compensate for the "padding-left" shift in .styles-section .style-properties li */
 }
@@ -406,11 +394,6 @@
 
 .styles-section .style-properties .has-ignorable-error .webkit-css-property {
     color: inherit;
-}
-
-.styles-section.computed-style .style-properties .disabled {
-    text-decoration: none;
-    opacity: 0.5;
 }
 
 .styles-section .style-properties .implicit,

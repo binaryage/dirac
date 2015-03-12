@@ -31,8 +31,9 @@
  * @constructor
  * @extends {WebInspector.ElementsSidebarPane}
  * @param {!WebInspector.ComputedStyleSidebarPane} computedStylePane
+ * @param {function()} requestShowCallback
  */
-WebInspector.StylesSidebarPane = function(computedStylePane)
+WebInspector.StylesSidebarPane = function(computedStylePane, requestShowCallback)
 {
     WebInspector.ElementsSidebarPane.call(this, WebInspector.UIString("Styles"));
 
@@ -67,6 +68,8 @@ WebInspector.StylesSidebarPane = function(computedStylePane)
     this.element.addEventListener("contextmenu", this._contextMenuEventFired.bind(this), true);
     WebInspector.settings.colorFormat.addChangeListener(this._colorFormatSettingChanged.bind(this));
     WebInspector.settings.showUserAgentStyles.addChangeListener(this._showUserAgentStylesSettingChanged.bind(this));
+
+    this._requestShowCallback = requestShowCallback;
 
     this._createElementStatePane();
     this.bodyElement.appendChild(this._elementStatePane);
@@ -301,8 +304,17 @@ WebInspector.StylesSidebarPane.prototype = {
      */
     setFilterBoxContainer: function(matchedStylesElement)
     {
-        var filterInput = WebInspector.StylesSidebarPane.createPropertyFilterElement(WebInspector.UIString("Find in Styles"), this._onFilterChanged.bind(this));
-        matchedStylesElement.appendChild(filterInput);
+        this._filterInput = WebInspector.StylesSidebarPane.createPropertyFilterElement(WebInspector.UIString("Find in Styles"), this._onFilterChanged.bind(this));
+        matchedStylesElement.appendChild(this._filterInput);
+    },
+
+    /**
+     * @param {string} propertyName
+     */
+    tracePropertyName: function(propertyName)
+    {
+        this._requestShowCallback();
+        this._filterInput.setFilterValue(WebInspector.CSSMetadata.canonicalPropertyName(propertyName));
     },
 
     /**
@@ -1248,7 +1260,7 @@ WebInspector.StylesSidebarPane.prototype = {
 WebInspector.StylesSidebarPane.createPropertyFilterElement = function(placeholder, filterCallback)
 {
     var input = createElement("input");
-    input.type = "text";
+    input.type = "search";
     input.placeholder = placeholder;
 
     function searchHandler()
@@ -1272,6 +1284,18 @@ WebInspector.StylesSidebarPane.createPropertyFilterElement = function(placeholde
         searchHandler();
     }
     input.addEventListener("keydown", keydownHandler, false);
+
+    input.setFilterValue = setFilterValue;
+
+    /**
+     * @param {string} value
+     */
+    function setFilterValue(value)
+    {
+        input.value = value;
+        input.focus();
+        searchHandler();
+    }
 
     return input;
 }
@@ -2313,22 +2337,6 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
     },
 
     /**
-     * @return {?WebInspector.StylesSidebarPane}
-     */
-    editablePane: function()
-    {
-        return null;  // Overridden by ancestors.
-    },
-
-    /**
-     * @return {boolean}
-     */
-    isEditableStyleRule: function()
-    {
-        return !!(this._styleRule && this._styleRule.editable());
-    },
-
-    /**
      * @return {!WebInspector.StylesSidebarPane|!WebInspector.ComputedStyleSidebarPane}
      */
     parentPane: function()
@@ -2492,13 +2500,13 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
         if (!color)
             return createTextNode(text);
 
-        var stylesPopoverHelper = this.editablePane() && this.editablePane()._stylesPopoverHelper;
-        if (!stylesPopoverHelper || !this.isEditableStyleRule()) {
+        if (!this._styleRule.editable()) {
             var swatch = WebInspector.ColorSwatch.create();
             swatch.setColorText(text);
             return swatch;
         }
 
+        var stylesPopoverHelper = this.parentPane()._stylesPopoverHelper;
         return new WebInspector.ColowSwatchPopoverIcon(this, stylesPopoverHelper, text).element();
     },
 
@@ -2517,9 +2525,9 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
     _processBezier: function(text)
     {
         var geometry = WebInspector.Geometry.CubicBezier.parse(text);
-        var stylesPopoverHelper = this.editablePane() && this.editablePane()._stylesPopoverHelper;
-        if (!geometry || !stylesPopoverHelper || !this.isEditableStyleRule())
+        if (!geometry || !this._styleRule.editable())
             return createTextNode(text);
+        var stylesPopoverHelper = this.parentPane()._stylesPopoverHelper;
         return new WebInspector.BezierPopoverIcon(this, stylesPopoverHelper, text).element();
     },
 
@@ -2586,15 +2594,6 @@ WebInspector.StylePropertyTreeElement.prototype = {
     node: function()
     {
         return this._parentPane.node();
-    },
-
-    /**
-     * @override
-     * @return {?WebInspector.StylesSidebarPane}
-     */
-    editablePane: function()
-    {
-        return this._parentPane;
     },
 
     /**

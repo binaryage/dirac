@@ -178,7 +178,7 @@ WebInspector.BezierPopoverIcon.prototype = {
         this._stylesPopoverHelper.show(this._bezierEditor, this._iconElement, this._onPopoverHidden.bind(this));
 
         this._originalPropertyText = this._treeElement.property.propertyText;
-        this._treeElement.editablePane().setEditingStyle(true);
+        this._treeElement.parentPane().setEditingStyle(true);
     },
 
     /**
@@ -200,7 +200,7 @@ WebInspector.BezierPopoverIcon.prototype = {
 
         var propertyText = commitEdit ? this._treeElement.renderedPropertyText() : this._originalPropertyText;
         this._treeElement.applyStyleText(propertyText, true);
-        this._treeElement.editablePane().setEditingStyle(false);
+        this._treeElement.parentPane().setEditingStyle(false);
         delete this._originalPropertyText;
     }
 }
@@ -284,7 +284,7 @@ WebInspector.ColowSwatchPopoverIcon.prototype = {
         this._stylesPopoverHelper.show(this._spectrum, this._swatch.iconElement(), this._onPopoverHidden.bind(this));
 
         this._originalPropertyText = this._treeElement.property.propertyText;
-        this._treeElement.editablePane().setEditingStyle(true);
+        this._treeElement.parentPane().setEditingStyle(true);
     },
 
     /**
@@ -325,7 +325,7 @@ WebInspector.ColowSwatchPopoverIcon.prototype = {
 
         var propertyText = commitEdit ? this._treeElement.renderedPropertyText() : this._originalPropertyText;
         this._treeElement.applyStyleText(propertyText, true);
-        this._treeElement.editablePane().setEditingStyle(false);
+        this._treeElement.parentPane().setEditingStyle(false);
         delete this._originalPropertyText;
     }
 }

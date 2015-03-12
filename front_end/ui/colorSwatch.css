@@ -18,6 +18,7 @@
     display: inline-block;
     -webkit-user-select: none;
     background-image: url(Images/checker.png);
+    line-height: 10px;
 }
 
 .color-swatch-inner {

@@ -362,6 +362,7 @@
             'front_end/elements/animationTimeline.css',
             'front_end/elements/bezierEditor.css',
             'front_end/elements/breadcrumbs.css',
+            'front_end/elements/computedStyleSidebarPane.css',
             'front_end/elements/elementsPanel.css',
             'front_end/elements/elementsTreeOutline.css',
             'front_end/elements/spectrum.css',
