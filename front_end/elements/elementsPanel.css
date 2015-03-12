@@ -162,14 +162,6 @@
     border-top: 0 none;
 }
 
-.styles-section.user-rule {
-    display: none;
-}
-
-.show-user-styles .styles-section.user-rule {
-    display: block;
-}
-
 .styles-sidebar-placeholder {
     height: 16px;
 }

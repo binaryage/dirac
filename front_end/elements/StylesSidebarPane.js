@@ -67,7 +67,6 @@ WebInspector.StylesSidebarPane = function(computedStylePane, requestShowCallback
     computedStylePane.setHostingPane(this);
     this.element.addEventListener("contextmenu", this._contextMenuEventFired.bind(this), true);
     WebInspector.settings.colorFormat.addChangeListener(this._colorFormatSettingChanged.bind(this));
-    WebInspector.settings.showUserAgentStyles.addChangeListener(this._showUserAgentStylesSettingChanged.bind(this));
 
     this._requestShowCallback = requestShowCallback;
 
@@ -83,7 +82,6 @@ WebInspector.StylesSidebarPane = function(computedStylePane, requestShowCallback
     this._linkifier = new WebInspector.Linkifier(new WebInspector.Linkifier.DefaultCSSFormatter());
 
     this.element.classList.add("styles-pane");
-    this.element.classList.toggle("show-user-styles", WebInspector.settings.showUserAgentStyles.get());
     this.element.addEventListener("mousemove", this._mouseMovedOverElement.bind(this), false);
     this._keyDownBound = this._keyDown.bind(this);
     this._keyUpBound = this._keyUp.bind(this);
@@ -1177,15 +1175,6 @@ WebInspector.StylesSidebarPane.prototype = {
     },
 
     /**
-     * @param {!WebInspector.Event} event
-     */
-    _showUserAgentStylesSettingChanged: function(event)
-    {
-        var showStyles = /** @type {boolean} */ (event.data);
-        this.element.classList.toggle("show-user-styles", showStyles);
-    },
-
-    /**
      * @override
      */
     wasShown: function()
@@ -1312,8 +1301,7 @@ WebInspector.StylePropertiesSection = function(parentPane, styleRule)
     this.editable = styleRule.editable();
 
     var rule = styleRule.rule();
-    var extraClasses = (rule && (rule.isInjected || rule.isUserAgent) ? " user-rule" : "");
-    this.element = createElementWithClass("div", "styles-section matched-styles monospace" + extraClasses);
+    this.element = createElementWithClass("div", "styles-section matched-styles monospace");
     this.element._section = this;
 
     this.titleElement = this.element.createChild("div", "styles-section-title " + (rule ? "styles-selector" : ""));

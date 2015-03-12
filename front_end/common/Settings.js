@@ -47,7 +47,6 @@ WebInspector.Settings = function()
     this.consoleTimestampsEnabled = this.createSetting("consoleTimestampsEnabled", false);
     this.resourceViewTab = this.createSetting("resourceViewTab", "preview");
     this.showInheritedComputedStyleProperties = this.createSetting("showInheritedComputedStyleProperties", false);
-    this.showUserAgentStyles = this.createSetting("showUserAgentStyles", true);
     this.watchExpressions = this.createSetting("watchExpressions", []);
     this.breakpoints = this.createSetting("breakpoints", []);
     this.eventListenerBreakpoints = this.createSetting("eventListenerBreakpoints", []);
