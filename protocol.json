@@ -4040,6 +4040,7 @@
                 "properties": [
                     { "name": "registrationId", "type": "string" },
                     { "name": "scopeURL", "type": "string" },
+                    { "name": "isDeleted", "type": "boolean", "optional": true },
                     { "name": "activeVersion", "optional": true, "$ref": "ServiceWorkerVersion" },
                     { "name": "waitingVersion", "optional": true, "$ref": "ServiceWorkerVersion" },
                     { "name": "installingVersion", "optional": true, "$ref": "ServiceWorkerVersion" }
