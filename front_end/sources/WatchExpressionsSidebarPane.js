@@ -40,7 +40,7 @@ WebInspector.WatchExpressionsSidebarPane = function()
     /** @type {!Array.<!WebInspector.WatchExpression>} */
     this._watchExpressions = [];
 
-
+    this.registerRequiredCSS("components/objectValue.css");
     this.bodyElement.classList.add("vbox", "watch-expressions");
     this.bodyElement.addEventListener("contextmenu", this._contextMenu.bind(this), false);
 
