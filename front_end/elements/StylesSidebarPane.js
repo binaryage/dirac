@@ -255,14 +255,9 @@ WebInspector.StylesSidebarPane.prototype = {
     {
         if (!editedRule.styleSheetId)
             return;
-        for (var pseudoId in this.sections) {
-            var styleRuleSections = this.sections[pseudoId];
-            for (var i = 0; i < styleRuleSections.length; ++i) {
-                var section = styleRuleSections[i];
-                if (section.computedStyle)
-                    continue;
+        for (var block of this._sectionBlocks) {
+            for (var section of block.sections)
                 section._styleSheetRuleEdited(editedRule, oldRange, newRange);
-            }
         }
     },
 
@@ -274,14 +269,9 @@ WebInspector.StylesSidebarPane.prototype = {
     {
         if (!oldMedia.parentStyleSheetId)
             return;
-        for (var pseudoId in this.sections) {
-            var styleRuleSections = this.sections[pseudoId];
-            for (var i = 0; i < styleRuleSections.length; ++i) {
-                var section = styleRuleSections[i];
-                if (section.computedStyle)
-                    continue;
+        for (var block of this._sectionBlocks) {
+            for (var section of block.sections)
                 section._styleSheetMediaEdited(oldMedia, newMedia);
-            }
         }
     },
 
@@ -409,13 +399,22 @@ WebInspector.StylesSidebarPane.prototype = {
      */
     _refreshUpdate: function(editedSection)
     {
-        var node = this._validateNode();
+        var node = this.node();
         if (!node)
             return;
 
-        this._innerRefreshUpdate(node, editedSection);
+        for (var block of this._sectionBlocks) {
+            for (var section of block.sections) {
+                if (section.isBlank)
+                    continue;
+                section.update(section === editedSection);
+            }
+        }
+
+        this._computedStylePane.update();
         if (this._filterRegex)
             this._updateFilter();
+        this._nodeStylesUpdatedForTest(node, false);
     },
 
     /**
@@ -425,12 +424,6 @@ WebInspector.StylesSidebarPane.prototype = {
     doUpdate: function(finishedCallback)
     {
         this._updateForcedPseudoStateInputs();
-
-        var node = this._validateNode();
-        if (!node) {
-            finishedCallback();
-            return;
-        }
 
         this._fetchMatchedCascade()
             .then(this._innerRebuildUpdate.bind(this))
@@ -615,16 +608,6 @@ WebInspector.StylesSidebarPane.prototype = {
         }
     },
 
-    _validateNode: function()
-    {
-        if (!this.node()) {
-            this._sectionsContainer.removeChildren();
-            this.sections = {};
-            return null;
-        }
-        return this.node();
-    },
-
     /**
      * @param {boolean} editing
      */
@@ -690,60 +673,46 @@ WebInspector.StylesSidebarPane.prototype = {
     },
 
     /**
-     * @param {!WebInspector.DOMNode} node
-     * @param {!WebInspector.StylePropertiesSection=} editedSection
-     */
-    _innerRefreshUpdate: function(node, editedSection)
-    {
-        for (var pseudoId in this.sections) {
-            var sections = this.sections[pseudoId].filter(nonBlankSections);
-            for (var section of sections)
-                section.update(section === editedSection);
-        }
-
-        this._computedStylePane.update();
-
-        this._nodeStylesUpdatedForTest(node, false);
-
-        /**
-         * @param {!WebInspector.StylePropertiesSection} section
-         * @return {boolean}
-         */
-        function nonBlankSections(section)
-        {
-            return !section.isBlank;
-        }
-    },
-
-    /**
      * @param {?{matched: !WebInspector.SectionCascade, pseudo: !Map.<number, !WebInspector.SectionCascade>}} cascades
      */
     _innerRebuildUpdate: function(cascades)
     {
         this._linkifier.reset();
         this._sectionsContainer.removeChildren();
-        this.sections = {};
+        this._sectionBlocks = [];
 
         var node = this.node();
         if (!cascades || !node)
             return;
 
+        this._sectionBlocks = this._rebuildSectionsForMatchedStyleRules(cascades.matched);
+        var pseudoIds = cascades.pseudo.keysArray().sort();
+        for (var pseudoId of pseudoIds) {
+            var block = WebInspector.SectionBlock.createPseudoIdBlock(pseudoId);
+            var cascade = cascades.pseudo.get(pseudoId);
+            for (sectionModel of cascade.sectionModels()) {
+                var section = new WebInspector.StylePropertiesSection(this, sectionModel);
+                block.sections.push(section);
+            }
+            this._sectionBlocks.push(block);
+        }
+
         if (!!node.pseudoType())
             this._appendTopPadding();
 
-        this.sections[0] = this._rebuildSectionsForStyleRules(cascades.matched);
-        this._computedStylePane.update();
-
-        var pseudoIds = cascades.pseudo.keysArray().sort();
-        for (var pseudoId of pseudoIds) {
-            this._appendSectionPseudoIdSeparator(pseudoId);
-            this.sections[pseudoId] = this._rebuildSectionsForStyleRules(cascades.pseudo.get(pseudoId));
+        for (var block of this._sectionBlocks) {
+            var titleElement = block.titleElement();
+            if (titleElement)
+                this._sectionsContainer.appendChild(titleElement);
+            for (var section of block.sections)
+                this._sectionsContainer.appendChild(section.element);
         }
 
         if (this._filterRegex)
             this._updateFilter();
 
         this._nodeStylesUpdatedForTest(node, true);
+        this._computedStylePane.update();
     },
 
     /**
@@ -847,55 +816,25 @@ WebInspector.StylesSidebarPane.prototype = {
     },
 
     /**
-     * @param {number} pseudoId
+     * @param {!WebInspector.SectionCascade} matchedCascade
+     * @return {!Array.<!WebInspector.SectionBlock>}
      */
-    _appendSectionPseudoIdSeparator: function(pseudoId)
+    _rebuildSectionsForMatchedStyleRules: function(matchedCascade)
     {
-        var separatorElement = createElement("div");
-        separatorElement.className = "sidebar-separator";
-        var pseudoName = WebInspector.StylesSidebarPane.PseudoIdNames[pseudoId];
-        if (pseudoName)
-            separatorElement.textContent = WebInspector.UIString("Pseudo ::%s element", pseudoName);
-        else
-            separatorElement.textContent = WebInspector.UIString("Pseudo element");
-        this._sectionsContainer.appendChild(separatorElement);
-    },
-
-    /**
-     * @param {!WebInspector.DOMNode} node
-     */
-    _appendSectionInheritedNodeSeparator: function(node)
-    {
-        var separatorElement = createElement("div");
-        separatorElement.className = "sidebar-separator";
-        var link = WebInspector.DOMPresentationUtils.linkifyNodeReference(node);
-        separatorElement.createTextChild(WebInspector.UIString("Inherited from") + " ");
-        separatorElement.appendChild(link);
-        this._sectionsContainer.appendChild(separatorElement);
-    },
-
-    /**
-     * @param {!WebInspector.SectionCascade} cascade
-     * @return {!Array.<!WebInspector.StylePropertiesSection>}
-     */
-    _rebuildSectionsForStyleRules: function(cascade)
-    {
-        var sections = [];
+        var blocks = [new WebInspector.SectionBlock(null)];
         var lastParentNode = null;
-        for (var sectionModel of cascade.sectionModels()) {
+        for (var sectionModel of matchedCascade.sectionModels()) {
             var parentNode = sectionModel.parentNode();
             if (parentNode && parentNode !== lastParentNode) {
                 lastParentNode = parentNode;
-                this._appendSectionInheritedNodeSeparator(lastParentNode);
+                var block = WebInspector.SectionBlock.createInheritedNodeBlock(lastParentNode);
+                blocks.push(block);
             }
 
             var section = new WebInspector.StylePropertiesSection(this, sectionModel);
-            section._markSelectorMatches();
-            section.onpopulate();
-            this._sectionsContainer.appendChild(section.element);
-            sections.push(section);
+            blocks.peekLast().sections.push(section);
         }
-        return sections;
+        return blocks;
     },
 
     /**
@@ -919,10 +858,9 @@ WebInspector.StylesSidebarPane.prototype = {
      */
     _colorFormatSettingChanged: function(event)
     {
-        for (var pseudoId in this.sections) {
-            var sections = this.sections[pseudoId];
-            for (var i = 0; i < sections.length; ++i)
-                sections[i].update(true);
+        for (var block of this._sectionBlocks) {
+            for (var section of block.sections)
+                section.update(true);
         }
     },
 
@@ -964,7 +902,7 @@ WebInspector.StylesSidebarPane.prototype = {
         {
             var lines = text.split("\n");
             var range = WebInspector.TextRange.createFromLocation(lines.length - 1, lines[lines.length - 1].length);
-            this._addBlankSection(this.sections[0][0], styleSheetId, range);
+            this._addBlankSection(this._sectionBlocks[0].sections[0], styleSheetId, range);
         }
     },
 
@@ -981,9 +919,13 @@ WebInspector.StylesSidebarPane.prototype = {
 
         this._sectionsContainer.insertBefore(blankSection.element, insertAfterSection.element.nextSibling);
 
-        var index = this.sections[0].indexOf(insertAfterSection);
-        this.sections[0].splice(index + 1, 0, blankSection);
-        blankSection.startEditingSelector();
+        for (var block of this._sectionBlocks) {
+            var index = block.sections.indexOf(insertAfterSection);
+            if (index === -1)
+                continue;
+            block.sections.splice(index + 1, 0, blankSection);
+            blankSection.startEditingSelector();
+        }
     },
 
     /**
@@ -991,12 +933,11 @@ WebInspector.StylesSidebarPane.prototype = {
      */
     removeSection: function(section)
     {
-        for (var pseudoId in this.sections) {
-            var sections = this.sections[pseudoId];
-            var index = sections.indexOf(section);
+        for (var block of this._sectionBlocks) {
+            var index = block.sections.indexOf(section);
             if (index === -1)
                 continue;
-            sections.splice(index, 1);
+            block.sections.splice(index, 1);
             section.element.remove();
         }
     },
@@ -1032,7 +973,7 @@ WebInspector.StylesSidebarPane.prototype = {
          */
         function clickListener(event)
         {
-            var node = this._validateNode();
+            var node = this.node();
             if (!node)
                 return;
             node.target().cssModel.forcePseudoState(node, event.target.state, event.target.checked);
@@ -1165,12 +1106,9 @@ WebInspector.StylesSidebarPane.prototype = {
 
     _updateFilter: function()
     {
-        for (var pseudoId in this.sections) {
-            var sections = this.sections[pseudoId];
-            for (var i = 0; i < sections.length; ++i) {
-                var section = sections[i];
+        for (var block of this._sectionBlocks) {
+            for (var section of block.sections)
                 section._updateFilter();
-            }
         }
     },
 
@@ -1291,6 +1229,56 @@ WebInspector.StylesSidebarPane.createPropertyFilterElement = function(placeholde
 
 /**
  * @constructor
+ * @param {?Element} titleElement
+ */
+WebInspector.SectionBlock = function(titleElement)
+{
+    this._titleElement = titleElement;
+    this.sections = [];
+}
+
+/**
+ * @param {number} pseudoId
+ * @return {!WebInspector.SectionBlock}
+ */
+WebInspector.SectionBlock.createPseudoIdBlock = function(pseudoId)
+{
+    var separatorElement = createElement("div");
+    separatorElement.className = "sidebar-separator";
+    var pseudoName = WebInspector.StylesSidebarPane.PseudoIdNames[pseudoId];
+    if (pseudoName)
+        separatorElement.textContent = WebInspector.UIString("Pseudo ::%s element", pseudoName);
+    else
+        separatorElement.textContent = WebInspector.UIString("Pseudo element");
+    return new WebInspector.SectionBlock(separatorElement);
+}
+
+/**
+ * @param {!WebInspector.DOMNode} node
+ * @return {!WebInspector.SectionBlock}
+ */
+WebInspector.SectionBlock.createInheritedNodeBlock = function(node)
+{
+    var separatorElement = createElement("div");
+    separatorElement.className = "sidebar-separator";
+    var link = WebInspector.DOMPresentationUtils.linkifyNodeReference(node);
+    separatorElement.createTextChild(WebInspector.UIString("Inherited from") + " ");
+    separatorElement.appendChild(link);
+    return new WebInspector.SectionBlock(separatorElement);
+}
+
+WebInspector.SectionBlock.prototype = {
+    /**
+     * @return {?Element}
+     */
+    titleElement: function()
+    {
+        return this._titleElement;
+    }
+}
+
+/**
+ * @constructor
  * @param {!WebInspector.StylesSidebarPane} parentPane
  * @param {!WebInspector.StylesSectionModel} styleRule
  */
@@ -1360,6 +1348,9 @@ WebInspector.StylePropertiesSection = function(parentPane, styleRule)
 
     if (!this.editable)
         this.element.classList.add("read-only");
+
+    this._markSelectorMatches();
+    this.onpopulate();
 }
 
 WebInspector.StylePropertiesSection.prototype = {
