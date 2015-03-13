@@ -340,10 +340,12 @@ WebInspector.ConsoleView.prototype = {
                 var frame = executionContext.target().resourceTreeModel.frameForId(executionContext.frameId);
                 result =  frame ? frame.displayName() : (executionContext.origin || executionContext.name);
             } else {
-                result = WebInspector.displayNameForURL(executionContext.origin) || executionContext.name;
+                var name = WebInspector.displayNameForURL(executionContext.origin) || executionContext.name;
+                result = executionContext.target().decorateLabel(name);
             }
-        } else
+        } else {
             result = "\u00a0\u00a0\u00a0\u00a0" + (executionContext.name || executionContext.origin);
+        }
 
         var maxLength = 50;
         return result.trimMiddle(maxLength);

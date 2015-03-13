@@ -80,6 +80,14 @@ WebInspector.ServiceWorkerManager.prototype = {
     },
 
     /**
+     * @return {boolean}
+     */
+    hasWorkers: function()
+    {
+        return !!this._workers.size;
+    },
+
+    /**
      * @param {string} workerId
      * @param {string} url
      */
@@ -141,7 +149,7 @@ WebInspector.ServiceWorker = function(manager, workerId, url)
     var parsedURL = url.asParsedURL();
     this._name = parsedURL ? parsedURL.lastPathComponent : "#" + (++WebInspector.ServiceWorker._lastAnonymousTargetId);
     this._scope = parsedURL.host + parsedURL.folderPathComponents;
-    var title = WebInspector.UIString("Worker %s", this._name);
+    var title = WebInspector.UIString("\u2699 %s", this._name);
 
     this._manager._workers.set(workerId, this);
     WebInspector.targetManager.createTarget(title, WebInspector.Target.Type.ServiceWorker, this._connection, manager.target(), targetCreated.bind(this));

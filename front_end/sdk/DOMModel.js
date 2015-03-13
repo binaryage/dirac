@@ -1129,7 +1129,8 @@ WebInspector.DOMModel = function(target) {
     this._defaultHighlighter = new WebInspector.DefaultDOMNodeHighlighter(this._agent);
     this._highlighter = this._defaultHighlighter;
 
-    this._agent.enable();
+    if (target.isPage())
+        this._agent.enable();
 }
 
 WebInspector.DOMModel.Events = {

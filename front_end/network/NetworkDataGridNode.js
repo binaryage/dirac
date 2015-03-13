@@ -254,7 +254,7 @@ WebInspector.NetworkDataGridNode.prototype = {
         iconElement.classList.add(this._request.resourceType().name());
 
         cell.appendChild(iconElement);
-        cell.createTextChild(this._request.name());
+        cell.createTextChild(this._request.target().decorateLabel(this._request.name()));
         this._appendSubtitle(cell, this._request.path());
         cell.title = this._request.url;
     },

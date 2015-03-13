@@ -9,8 +9,10 @@
  */
 WebInspector.ServiceWorkersSidebarPane = function()
 {
-    WebInspector.SidebarPane.call(this, WebInspector.UIString("Service Workers"));
+    WebInspector.SidebarPane.call(this, WebInspector.UIString("\u2699 Service Workers"));
     this.registerRequiredCSS("sources/serviceWorkersSidebar.css");
+    this.setVisible(false);
+
     /** @type {?WebInspector.ServiceWorkerManager} */
     this._manager = null;
     WebInspector.targetManager.observeTargets(this);
@@ -23,10 +25,11 @@ WebInspector.ServiceWorkersSidebarPane.prototype = {
      */
     targetAdded: function(target)
     {
-        if (target.isPage()) {
-            this._manager = target.serviceWorkerManager;
-            target.serviceWorkerManager.addEventListener(WebInspector.ServiceWorkerManager.Events.WorkersUpdated, this._update, this);
-        }
+        if (this._manager || !target.isPage())
+            return;
+        this._manager = target.serviceWorkerManager;
+        this._updateVisibility();
+        target.serviceWorkerManager.addEventListener(WebInspector.ServiceWorkerManager.Events.WorkersUpdated, this._update, this);
     },
 
     /**
@@ -37,12 +40,16 @@ WebInspector.ServiceWorkersSidebarPane.prototype = {
     {
         if (target.isPage())
             target.serviceWorkerManager.removeEventListener(WebInspector.ServiceWorkerManager.Events.WorkersUpdated, this._update, this);
+        this._updateVisibility();
     },
 
     _update: function()
     {
-        if (!this.isShowing() || !this._manager)
+        this._updateVisibility();
+
+        if (!this.isShowing() || !this._manager || !this._manager.hasWorkers())
             return;
+
         this.bodyElement.removeChildren();
         for (var worker of this._manager.workers()) {
             var workerElement = this.bodyElement.createChild("div", "service-worker");
@@ -52,6 +59,11 @@ WebInspector.ServiceWorkersSidebarPane.prototype = {
             stopButton.title = WebInspector.UIString("Stop");
             stopButton.addEventListener("click", worker.stop.bind(worker), false);
         }
+    },
+
+    _updateVisibility: function()
+    {
+        this.setVisible(!!this._manager && this._manager.hasWorkers());
     },
 
     wasShown: function()

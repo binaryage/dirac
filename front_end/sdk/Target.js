@@ -85,6 +85,15 @@ WebInspector.Target.prototype = {
     },
 
     /**
+     * @param {string} label
+     * @return {string}
+     */
+    decorateLabel: function(label)
+    {
+        return this.isWorker() ? "\u2699 " + label : label;
+    },
+
+    /**
      * @param {string} name
      * @param {function()|null} callback
      * @param {?Protocol.Error} error
@@ -181,6 +190,14 @@ WebInspector.Target.prototype = {
     isPage: function()
     {
         return this._type === WebInspector.Target.Type.Page;
+    },
+
+    /**
+     * @return {boolean}
+     */
+    isWorker: function()
+    {
+        return this.isDedicatedWorker() || this.isServiceWorker();
     },
 
     /**

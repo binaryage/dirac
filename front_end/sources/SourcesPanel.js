@@ -28,7 +28,6 @@
  * @constructor
  * @extends {WebInspector.Panel}
  * @implements {WebInspector.ContextMenu.Provider}
- * @implements {WebInspector.TargetManager.Observer}
  * @param {!WebInspector.Workspace=} workspaceForTest
  */
 WebInspector.SourcesPanel = function(workspaceForTest)
@@ -111,7 +110,6 @@ WebInspector.SourcesPanel = function(workspaceForTest)
     WebInspector.targetManager.addModelListener(WebInspector.DebuggerModel, WebInspector.DebuggerModel.Events.CallFrameSelected, this._callFrameSelected, this);
     WebInspector.targetManager.addModelListener(WebInspector.DebuggerModel, WebInspector.DebuggerModel.Events.ConsoleCommandEvaluatedInSelectedCallFrame, this._consoleCommandEvaluatedInSelectedCallFrame, this);
     WebInspector.targetManager.addModelListener(WebInspector.DebuggerModel, WebInspector.DebuggerModel.Events.GlobalObjectCleared, this._debuggerReset, this);
-    WebInspector.targetManager.observeTargets(this);
     new WebInspector.WorkspaceMappingTip(this, this._workspace);
     WebInspector.extensionServer.addEventListener(WebInspector.ExtensionServer.Events.SidebarPaneAdded, this._extensionSidebarPaneAdded, this);
 }
@@ -1161,8 +1159,6 @@ WebInspector.SourcesPanel.prototype = {
         this.sidebarPanes.jsBreakpoints.expand();
         this.sidebarPanes.callstack.expand();
         this._sidebarPaneStack = sidebarPaneStack;
-        this._sidebarPaneStack.togglePaneHidden(this.sidebarPanes.threads, true);
-        this._showThreadsSidebarPaneIfNeeded();
         if (WebInspector.settings.watchExpressions.get().length > 0)
             this.sidebarPanes.watchExpressions.expand();
     },
@@ -1193,32 +1189,6 @@ WebInspector.SourcesPanel.prototype = {
     sourcesView: function()
     {
         return this._sourcesView;
-    },
-
-    /**
-     * @override
-     * @param {!WebInspector.Target} target
-     */
-    targetAdded: function(target)
-    {
-        this._showThreadsSidebarPaneIfNeeded();
-    },
-
-    /**
-     * @override
-     * @param {!WebInspector.Target} target
-     */
-    targetRemoved: function(target)
-    {
-        this._showThreadsSidebarPaneIfNeeded();
-    },
-
-    _showThreadsSidebarPaneIfNeeded: function()
-    {
-        if (!this._sidebarPaneStack || this.sidebarPanes.threads.threadCount() < 2)
-            return;
-
-        this._sidebarPaneStack.togglePaneHidden(this.sidebarPanes.threads, false);
     },
 
     /**
