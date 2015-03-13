@@ -49,7 +49,9 @@ WebInspector.TimelineEventOverview = function(model)
 }
 
 /** @const */
-WebInspector.TimelineEventOverview._stripHeight = 10;
+WebInspector.TimelineEventOverview._mainStripHeight = 12;
+/** @const */
+WebInspector.TimelineEventOverview._backgroundStripHeight = 8;
 /** @const */
 WebInspector.TimelineEventOverview._maxNetworkStripHeight = 32;
 
@@ -73,21 +75,21 @@ WebInspector.TimelineEventOverview.prototype = {
         this.resetCanvas();
         var threads = this._model.virtualThreads();
         var mainThreadEvents = this._model.mainThreadEvents();
-        var estimatedHeight = padding + 3 * WebInspector.TimelineEventOverview._stripHeight;
+        var estimatedHeight = padding + WebInspector.TimelineEventOverview._mainStripHeight + 2 * WebInspector.TimelineEventOverview._backgroundStripHeight;
         estimatedHeight += padding + WebInspector.TimelineEventOverview._maxNetworkStripHeight;
         this._canvas.height = estimatedHeight * window.devicePixelRatio;
         this._canvas.style.height = estimatedHeight + "px";
         var position = padding;
         position += this._drawNetwork(mainThreadEvents, position);
         position += padding;
-        this._drawEvents(mainThreadEvents, position);
-        position += WebInspector.TimelineEventOverview._stripHeight;
+        this._drawEvents(mainThreadEvents, position, WebInspector.TimelineEventOverview._mainStripHeight);
+        position += WebInspector.TimelineEventOverview._mainStripHeight;
         for (var thread of threads.filter(function(thread) { return !thread.isWorker(); }))
-            this._drawEvents(thread.events, position);
-        position += WebInspector.TimelineEventOverview._stripHeight;
+            this._drawEvents(thread.events, position, WebInspector.TimelineEventOverview._backgroundStripHeight);
+        position += WebInspector.TimelineEventOverview._backgroundStripHeight;
         var workersHeight = 0;
         for (var thread of threads.filter(function(thread) { return thread.isWorker(); }))
-            workersHeight = Math.max(workersHeight, this._drawEvents(thread.events, position));
+            workersHeight = Math.max(workersHeight, this._drawEvents(thread.events, position, WebInspector.TimelineEventOverview._backgroundStripHeight));
         position += workersHeight;
         this.element.style.flexBasis = position + "px";
     },
@@ -135,12 +137,12 @@ WebInspector.TimelineEventOverview.prototype = {
     /**
      * @param {!Array.<!WebInspector.TracingModel.Event>} events
      * @param {number} position
+     * @param {number} stripHeight
      * @return {number}
      */
-    _drawEvents: function(events, position)
+    _drawEvents: function(events, position, stripHeight)
     {
         var /** @const */ padding = 1;
-        var stripHeight = WebInspector.TimelineEventOverview._stripHeight;
         var visualHeight = stripHeight - padding;
         var timeOffset = this._model.minimumRecordTime();
         var timeSpan = this._model.maximumRecordTime() - timeOffset;
