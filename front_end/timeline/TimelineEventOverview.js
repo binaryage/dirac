@@ -78,10 +78,8 @@ WebInspector.TimelineEventOverview.prototype = {
         this._canvas.height = estimatedHeight * window.devicePixelRatio;
         this._canvas.style.height = estimatedHeight + "px";
         var position = padding;
-        if (Runtime.experiments.isEnabled("networkRequestsOnTimeline")) {
-            position += this._drawNetwork(mainThreadEvents, position);
-            position += padding;
-        }
+        position += this._drawNetwork(mainThreadEvents, position);
+        position += padding;
         this._drawEvents(mainThreadEvents, position);
         position += WebInspector.TimelineEventOverview._stripHeight;
         for (var thread of threads.filter(function(thread) { return !thread.isWorker(); }))
