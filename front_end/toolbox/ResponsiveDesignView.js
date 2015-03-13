@@ -637,7 +637,7 @@ WebInspector.ResponsiveDesignView.prototype = {
         resolutionFieldset.createTextChild("\u00D7");
         resolutionFieldset.appendChild(WebInspector.SettingsUI.createSettingInputField("", WebInspector.overridesSupport.settings.deviceHeight, true, 4, "3em", WebInspector.OverridesSupport.deviceSizeValidator, true, true, WebInspector.UIString("\u2013")));
 
-        var swapButton = resolutionFieldset.createChild("div", "responsive-design-icon responsive-design-icon-swap");
+        var swapButton = resolutionFieldset.createChild("button", "responsive-design-icon responsive-design-icon-swap");
         swapButton.title = WebInspector.UIString("Swap dimensions");
         swapButton.addEventListener("click", WebInspector.overridesSupport.swapDimensions.bind(WebInspector.overridesSupport), false);
 
