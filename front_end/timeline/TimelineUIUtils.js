@@ -1532,6 +1532,40 @@ WebInspector.TimelineUIUtils.iterateNetworkRequestsInRoundRobin = function(event
 
 /**
  * @constructor
+ * @param {number} priority
+ * @param {string} color
+ * @param {!Array.<string>} eventTypes
+ */
+WebInspector.TimelineUIUtils.EventDispatchTypeDescriptor = function(priority, color, eventTypes)
+{
+    this.priority = priority;
+    this.color = color;
+    this.eventTypes = eventTypes;
+}
+
+/**
+ * @return {!Array.<!WebInspector.TimelineUIUtils.EventDispatchTypeDescriptor>}
+ */
+WebInspector.TimelineUIUtils.eventDispatchDesciptors = function()
+{
+    if (WebInspector.TimelineUIUtils._eventDispatchDesciptors)
+        return WebInspector.TimelineUIUtils._eventDispatchDesciptors;
+    var lightOrange = "hsl(40,100%,80%)";
+    var orange = "hsl(40,100%,50%)";
+    var green = "hsl(90,100%,40%)";
+    var purple = "hsl(256,100%,75%)";
+    WebInspector.TimelineUIUtils._eventDispatchDesciptors = [
+        new WebInspector.TimelineUIUtils.EventDispatchTypeDescriptor(1, lightOrange, ["mousemove", "mouseenter", "mouseleave", "mouseout", "mouseover"]),
+        new WebInspector.TimelineUIUtils.EventDispatchTypeDescriptor(2, green, ["wheel"]),
+        new WebInspector.TimelineUIUtils.EventDispatchTypeDescriptor(3, orange, ["click", "mousedown", "mouseup"]),
+        new WebInspector.TimelineUIUtils.EventDispatchTypeDescriptor(3, orange, ["touchstart", "touchend", "touchmove", "touchcancel"]),
+        new WebInspector.TimelineUIUtils.EventDispatchTypeDescriptor(3, purple, ["keydown", "keyup", "keypress"])
+    ];
+    return WebInspector.TimelineUIUtils._eventDispatchDesciptors;
+}
+
+/**
+ * @constructor
  * @extends {WebInspector.Object}
  * @param {string} name
  * @param {string} title

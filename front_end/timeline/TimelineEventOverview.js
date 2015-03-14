@@ -51,7 +51,7 @@ WebInspector.TimelineEventOverview = function(model)
 /** @const */
 WebInspector.TimelineEventOverview._mainStripHeight = 12;
 /** @const */
-WebInspector.TimelineEventOverview._backgroundStripHeight = 8;
+WebInspector.TimelineEventOverview._smallStripHeight = 8;
 /** @const */
 WebInspector.TimelineEventOverview._maxNetworkStripHeight = 32;
 
@@ -75,23 +75,71 @@ WebInspector.TimelineEventOverview.prototype = {
         this.resetCanvas();
         var threads = this._model.virtualThreads();
         var mainThreadEvents = this._model.mainThreadEvents();
-        var estimatedHeight = padding + WebInspector.TimelineEventOverview._mainStripHeight + 2 * WebInspector.TimelineEventOverview._backgroundStripHeight;
+        var estimatedHeight = padding + WebInspector.TimelineEventOverview._mainStripHeight + 2 * WebInspector.TimelineEventOverview._smallStripHeight;
         estimatedHeight += padding + WebInspector.TimelineEventOverview._maxNetworkStripHeight;
         this._canvas.height = estimatedHeight * window.devicePixelRatio;
         this._canvas.style.height = estimatedHeight + "px";
         var position = padding;
+        if (Runtime.experiments.isEnabled("inputEventsOnTimelineOverview")) {
+            position += this._drawInputEvents(mainThreadEvents, position);
+            position += padding;
+        }
         position += this._drawNetwork(mainThreadEvents, position);
         position += padding;
         this._drawEvents(mainThreadEvents, position, WebInspector.TimelineEventOverview._mainStripHeight);
         position += WebInspector.TimelineEventOverview._mainStripHeight;
         for (var thread of threads.filter(function(thread) { return !thread.isWorker(); }))
-            this._drawEvents(thread.events, position, WebInspector.TimelineEventOverview._backgroundStripHeight);
-        position += WebInspector.TimelineEventOverview._backgroundStripHeight;
+            this._drawEvents(thread.events, position, WebInspector.TimelineEventOverview._smallStripHeight);
+        position += WebInspector.TimelineEventOverview._smallStripHeight;
         var workersHeight = 0;
         for (var thread of threads.filter(function(thread) { return thread.isWorker(); }))
-            workersHeight = Math.max(workersHeight, this._drawEvents(thread.events, position, WebInspector.TimelineEventOverview._backgroundStripHeight));
+            workersHeight = Math.max(workersHeight, this._drawEvents(thread.events, position, WebInspector.TimelineEventOverview._smallStripHeight));
         position += workersHeight;
         this.element.style.flexBasis = position + "px";
+    },
+
+    /**
+     * @param {!Array.<!WebInspector.TracingModel.Event>} events
+     * @param {number} position
+     * @return {number}
+     */
+    _drawInputEvents: function(events, position)
+    {
+        var descriptors = WebInspector.TimelineUIUtils.eventDispatchDesciptors();
+        /** @type {!Map.<string,!WebInspector.TimelineUIUtils.EventDispatchTypeDescriptor>} */
+        var descriptorsByType = new Map();
+        var maxPriority = -1;
+        for (var descriptor of descriptors) {
+            for (var type of descriptor.eventTypes)
+                descriptorsByType.set(type, descriptor);
+            maxPriority = Math.max(maxPriority, descriptor.priority);
+        }
+
+        var /** @const */ minWidth = 2 * window.devicePixelRatio;
+        var stripHeight = WebInspector.TimelineEventOverview._smallStripHeight;
+        var timeOffset = this._model.minimumRecordTime();
+        var timeSpan = this._model.maximumRecordTime() - timeOffset;
+        var canvasWidth = this._canvas.width;
+        var scale = canvasWidth / timeSpan;
+        var drawn = false;
+
+        for (var priority = 0; priority <= maxPriority; ++priority) {
+            for (var i = 0; i < events.length; ++i) {
+                var event = events[i];
+                if (event.name !== WebInspector.TimelineModel.RecordType.EventDispatch)
+                    continue;
+                var descriptor = descriptorsByType.get(event.args["data"]["type"]);
+                if (!descriptor || descriptor.priority !== priority)
+                    continue;
+                var start = Number.constrain(Math.floor((event.startTime - timeOffset) * scale), 0, canvasWidth);
+                var end = Number.constrain(Math.ceil((event.endTime - timeOffset) * scale), 0, canvasWidth);
+                var width = Math.max(end - start, minWidth);
+                this._renderBar(start, start + width, position, stripHeight, descriptor.color);
+                drawn = true;
+            }
+        }
+
+        return drawn ? stripHeight : 0;
     },
 
     /**
