@@ -1106,10 +1106,8 @@ WebInspector.StylesSidebarPane.prototype = {
 
     _updateFilter: function()
     {
-        for (var block of this._sectionBlocks) {
-            for (var section of block.sections)
-                section._updateFilter();
-        }
+        for (var block of this._sectionBlocks)
+            block.updateFilter();
     },
 
     /**
@@ -1268,6 +1266,15 @@ WebInspector.SectionBlock.createInheritedNodeBlock = function(node)
 }
 
 WebInspector.SectionBlock.prototype = {
+    updateFilter: function()
+    {
+        var hasAnyVisibleSection = false;
+        for (var section of this.sections)
+            hasAnyVisibleSection |= section._updateFilter();
+        if (this._titleElement)
+            this._titleElement.classList.toggle("hidden", !hasAnyVisibleSection);
+    },
+
     /**
      * @return {?Element}
      */
@@ -1671,21 +1678,24 @@ WebInspector.StylePropertiesSection.prototype = {
         }
     },
 
+    /**
+     * @return {boolean}
+     */
     _updateFilter: function()
     {
         if (this.styleRule.isAttribute())
-            return;
-        var regex = this._parentPane.filterRegex();
-        var hideRule = regex && !regex.test(this.element.textContent);
-        this.element.classList.toggle("hidden", hideRule);
-        if (hideRule)
-            return;
+            return true;
 
+        var hasMatchingChild = false;
         for (var child of this.propertiesTreeOutline.rootElement().children())
-            child._updateFilter();
+            hasMatchingChild |= child._updateFilter();
 
-        if (this.styleRule.rule())
+        var regex = this._parentPane.filterRegex();
+        var hideRule = !hasMatchingChild && regex && !regex.test(this.element.textContent);
+        this.element.classList.toggle("hidden", hideRule);
+        if (!hideRule && this.styleRule.rule())
             this._markSelectorHighlights();
+        return !hideRule;
     },
 
     _markSelectorMatches: function()
