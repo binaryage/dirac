@@ -91,6 +91,20 @@ WebInspector.ServiceWorkerCacheView.prototype = {
     },
 
     /**
+     * @param {string} keyString
+     */
+    _parseKey: function(keyString)
+    {
+        var result;
+        try {
+            result = JSON.parse(keyString);
+        } catch (e) {
+            result = keyString;
+        }
+        return result;
+    },
+
+    /**
      * @param {boolean} force
      */
     _updateData: function(force)
@@ -193,16 +207,24 @@ WebInspector.SWCacheDataGridNode.prototype = {
 
     _formatValue: function(cell, value)
     {
-        var valueElement = WebInspector.ObjectPropertiesSection.createValueElement(value, false, cell);
-        valueElement.classList.add("source-code");
-        if (value.type === "object") {
-            var section = new WebInspector.ObjectPropertiesSection(value, valueElement);
+        var type = value.subtype || value.type;
+        var contents = cell.createChild("div", "source-code console-formatted-" + type);
+
+        switch (type) {
+        case "object":
+        case "array":
+            var section = new WebInspector.ObjectPropertiesSection(value, value.description);
             section.editable = false;
             section.skipProto();
-            cell.appendChild(section.element);
-        } else {
-            valueElement.classList.add("primitive-value");
-            cell.appendChild(valueElement);
+            contents.appendChild(section.element);
+            break;
+        case "string":
+            contents.classList.add("primitive-value");
+            contents.createTextChildren("\"", value.description, "\"");
+            break;
+        default:
+            contents.classList.add("primitive-value");
+            contents.createTextChild(value.description);
         }
     },
 

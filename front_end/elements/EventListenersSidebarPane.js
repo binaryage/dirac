@@ -34,7 +34,6 @@
 WebInspector.EventListenersSidebarPane = function()
 {
     WebInspector.ElementsSidebarPane.call(this, WebInspector.UIString("Event Listeners"));
-    this.registerRequiredCSS("components/objectValue.css");
     this.bodyElement.classList.add("events-pane");
 
     this._treeOutline = new TreeOutline(true);

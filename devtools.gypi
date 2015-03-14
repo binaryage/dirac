@@ -97,7 +97,6 @@
         'devtools_components_js_files': [
             'front_end/components/breakpointsList.css',
             'front_end/components/nodeLink.css',
-            'front_end/components/objectValue.css',
             'front_end/components/DebuggerPresentationUtils.js',
             'front_end/components/DockController.js',
             'front_end/components/DOMBreakpointsSidebarPane.js',

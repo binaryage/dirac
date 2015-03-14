@@ -47,6 +47,7 @@ WebInspector.View = function(isWebComponent)
     this._isShowing = false;
     this._children = [];
     this._hideOnDetach = false;
+    this._cssFiles = [];
     this._notificationDepth = 0;
 }
 

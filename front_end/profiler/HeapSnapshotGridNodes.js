@@ -587,7 +587,10 @@ WebInspector.HeapSnapshotGenericObjectNode.prototype = {
             valueStyle = "null";
             break;
         case "array":
-            value = (value || "") + "[]";
+            if (!value)
+                value = "[]";
+            else
+                value += "[]";
             break;
         };
         if (this._reachableFromWindow)
@@ -610,12 +613,12 @@ WebInspector.HeapSnapshotGenericObjectNode.prototype = {
         this._prefixObjectCell(div);
 
         var valueSpan = createElement("span");
-        valueSpan.className = "value object-value-" + valueStyle;
+        valueSpan.className = "value console-formatted-" + valueStyle;
         valueSpan.textContent = value;
         div.appendChild(valueSpan);
 
         var idSpan = createElement("span");
-        idSpan.className = "object-value-id";
+        idSpan.className = "console-formatted-id";
         idSpan.textContent = " @" + this.snapshotNodeId;
         div.appendChild(idSpan);
 
@@ -797,16 +800,17 @@ WebInspector.HeapSnapshotObjectNode.prototype = {
 
     _prefixObjectCell: function(div)
     {
-        var name = this._referenceName || "(empty)";
+        var name = this._referenceName;
+        if (name === "") name = "(empty)";
         var nameClass = "name";
         switch (this._referenceType) {
         case "context":
-            nameClass = "object-value-number";
+            nameClass = "console-formatted-number";
             break;
         case "internal":
         case "hidden":
         case "weak":
-            nameClass = "object-value-null";
+            nameClass = "console-formatted-null";
             break;
         case "element":
             name = "[" + name + "]";
