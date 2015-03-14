@@ -133,8 +133,8 @@ Node.prototype.traverseNextTextNode = function(stayWithin)
     var node = this.traverseNextNode(stayWithin);
     if (!node)
         return null;
-
-    while (node && node.nodeType !== Node.TEXT_NODE)
+    var nonTextTags = { "STYLE": 1, "SCRIPT": 1 };
+    while (node && (node.nodeType !== Node.TEXT_NODE || nonTextTags[node.parentElement.nodeName]))
         node = node.traverseNextNode(stayWithin);
 
     return node;

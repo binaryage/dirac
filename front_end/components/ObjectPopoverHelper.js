@@ -90,7 +90,6 @@ WebInspector.ObjectPopoverHelper.prototype = {
                     }
                 }
             }
-            popoverContentElement.textContent = this._formattedObjectDescription(funcObject);
             funcObject.functionDetails(didGetFunctionDetails.bind(this, popoverContentElement, anchorElement));
         }
 
@@ -159,16 +158,20 @@ WebInspector.ObjectPopoverHelper.prototype = {
             var description = this._formattedObjectDescription(result);
             var popoverContentElement = null;
             if (result.type !== "object") {
-                popoverContentElement = createElementWithClass("span", "monospace console-formatted-" + result.type);
-                popoverContentElement.style.whiteSpace = "pre";
+                popoverContentElement =  createElement("span");
+                popoverContentElement.appendChild(WebInspector.View.createStyleElement("components/objectValue.css"));
+                var valueElement = popoverContentElement.createChild("span", "monospace object-value-" + result.type);
+                valueElement.style.whiteSpace = "pre";
+
+                if (result.type === "string")
+                    valueElement.createTextChildren("\"", description, "\"");
+                else
+                    valueElement.textContent = description;
+
                 if (result.type === "function") {
                     result.getOwnProperties(didGetFunctionProperties.bind(this, result, popoverContentElement, anchorElement));
                     return;
                 }
-                if (result.type === "string")
-                    popoverContentElement.createTextChildren("\"", description, "\"");
-                else
-                    popoverContentElement.textContent = description;
                 popover.showForAnchor(popoverContentElement, anchorElement);
             } else {
                 if (result.subtype === "node") {

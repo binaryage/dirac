@@ -140,6 +140,7 @@ WebInspector.ConsoleViewMessage.prototype = {
     _formatMessage: function()
     {
         this._formattedMessage = createElement("span");
+        this._formattedMessage.appendChild(WebInspector.View.createStyleElement("components/objectValue.css"));
         this._formattedMessage.className = "console-message-text source-code";
 
         /**
@@ -399,7 +400,7 @@ WebInspector.ConsoleViewMessage.prototype = {
         var type = forceObjectFormat ? "object" : (output.subtype || output.type);
         var formatter = this._customFormatters[type] || this._formatParameterAsValue;
         var span = createElement("span");
-        span.className = "console-formatted-" + type + " source-code";
+        span.className = "object-value-" + type + " source-code";
         formatter.call(this, output, span, includePreview);
         return span;
     },
@@ -592,7 +593,7 @@ WebInspector.ConsoleViewMessage.prototype = {
      */
     _renderPropertyPreview: function(type, subtype, description)
     {
-        var span = createElementWithClass("span", "console-formatted-" + (subtype || type));
+        var span = createElementWithClass("span", "object-value-" + (subtype || type));
         description = description || "";
 
         if (type === "function") {
@@ -601,7 +602,7 @@ WebInspector.ConsoleViewMessage.prototype = {
         }
 
         if (type === "object" && subtype === "node" && description) {
-            span.classList.add("console-formatted-preview-node");
+            span.classList.add("object-value-preview-node");
             WebInspector.DOMPresentationUtils.createSpansForNodeTitle(span, description);
             return span;
         }
@@ -733,11 +734,11 @@ WebInspector.ConsoleViewMessage.prototype = {
     _formatParameterAsString: function(output, elem)
     {
         var span = createElement("span");
-        span.className = "console-formatted-string source-code";
+        span.className = "object-value-string source-code";
         span.appendChild(WebInspector.linkifyStringAsFragment(output.description || ""));
 
         // Make black quotes.
-        elem.classList.remove("console-formatted-string");
+        elem.classList.remove("object-value-string");
         elem.createTextChild("\"");
         elem.appendChild(span);
         elem.createTextChild("\"");
@@ -749,7 +750,7 @@ WebInspector.ConsoleViewMessage.prototype = {
      */
     _formatParameterAsError: function(output, elem)
     {
-        var span = elem.createChild("span", "console-formatted-error source-code");
+        var span = elem.createChild("span", "object-value-error source-code");
         span.appendChild(WebInspector.linkifyStringAsFragment(output.description || ""));
     },
 
@@ -784,7 +785,7 @@ WebInspector.ConsoleViewMessage.prototype = {
         {
             if (index - lastNonEmptyIndex <= 1)
                 return;
-            var span = elem.createChild("span", "console-formatted-undefined");
+            var span = elem.createChild("span", "object-value-undefined");
             span.textContent = WebInspector.UIString("undefined × %d", index - lastNonEmptyIndex - 1);
         }
 
