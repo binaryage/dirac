@@ -360,7 +360,7 @@ WebInspector.RemoteObjectImpl.prototype = {
      */
     getOwnProperties: function(callback)
     {
-        this.doGetProperties(true, false, callback);
+        this.doGetProperties(true, false, false, callback);
     },
 
     /**
@@ -370,7 +370,7 @@ WebInspector.RemoteObjectImpl.prototype = {
      */
     getAllProperties: function(accessorPropertiesOnly, callback)
     {
-        this.doGetProperties(false, accessorPropertiesOnly, callback);
+        this.doGetProperties(false, accessorPropertiesOnly, false, callback);
     },
 
     /**
@@ -400,9 +400,10 @@ WebInspector.RemoteObjectImpl.prototype = {
     /**
      * @param {boolean} ownProperties
      * @param {boolean} accessorPropertiesOnly
+     * @param {boolean} generatePreview
      * @param {function(?Array.<!WebInspector.RemoteObjectProperty>, ?Array.<!WebInspector.RemoteObjectProperty>)} callback
      */
-    doGetProperties: function(ownProperties, accessorPropertiesOnly, callback)
+    doGetProperties: function(ownProperties, accessorPropertiesOnly, generatePreview, callback)
     {
         if (!this._objectId) {
             callback(null, null);
@@ -451,7 +452,7 @@ WebInspector.RemoteObjectImpl.prototype = {
             }
             callback(result, internalPropertiesResult);
         }
-        this._runtimeAgent.getProperties(this._objectId, ownProperties, accessorPropertiesOnly, remoteObjectBinder.bind(this));
+        this._runtimeAgent.getProperties(this._objectId, ownProperties, accessorPropertiesOnly, generatePreview, remoteObjectBinder.bind(this));
     },
 
     /**
@@ -780,9 +781,10 @@ WebInspector.ScopeRemoteObject.prototype = {
      * @override
      * @param {boolean} ownProperties
      * @param {boolean} accessorPropertiesOnly
+     * @param {boolean} generatePreview
      * @param {function(?Array.<!WebInspector.RemoteObjectProperty>, ?Array.<!WebInspector.RemoteObjectProperty>)} callback
      */
-    doGetProperties: function(ownProperties, accessorPropertiesOnly, callback)
+    doGetProperties: function(ownProperties, accessorPropertiesOnly, generatePreview, callback)
     {
         if (accessorPropertiesOnly) {
             callback([], []);
@@ -808,7 +810,7 @@ WebInspector.ScopeRemoteObject.prototype = {
             callback(properties, internalProperties);
         }
 
-        WebInspector.RemoteObjectImpl.prototype.doGetProperties.call(this, ownProperties, accessorPropertiesOnly, wrappedCallback.bind(this));
+        WebInspector.RemoteObjectImpl.prototype.doGetProperties.call(this, ownProperties, accessorPropertiesOnly, generatePreview, wrappedCallback.bind(this));
     },
 
     /**
