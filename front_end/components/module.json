@@ -27,6 +27,7 @@
         "InspectorView.js",
         "ObjectPopoverHelper.js",
         "ObjectPropertiesSection.js",
+        "RemoteObjectPreviewFormatter.js",
         "ShortcutsScreen.js"
     ],
     "stylesheets": [
