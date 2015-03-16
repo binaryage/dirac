@@ -525,6 +525,21 @@ WebInspector.CSSMetadata._propertyDataMap = {
     "flex-wrap": { values: [
         "nowrap", "wrap", "wrap-reverse"
     ] },
+    "perspective": { values: [
+        "none"
+    ] },
+    "perspective-origin": { values: [
+        "left", "center", "right", "top", "bottom"
+    ] },
+    "transform-origin": { values: [
+        "left", "center", "right", "top", "bottom"
+    ] },
+    "transform-style": { values: [
+        "flat", "preserve-3d"
+    ] },
+    "transition-timing-function": { values: [
+        "ease", "linear", "ease-in", "ease-out", "ease-in-out", "step-start", "step-end", "steps", "cubic-bezier"
+    ] },
     "-webkit-animation-timing-function": { values: [
         "ease", "linear", "ease-in", "ease-out", "ease-in-out", "step-start", "step-end", "steps", "cubic-bezier"
     ] },
@@ -561,14 +576,11 @@ WebInspector.CSSMetadata._propertyDataMap = {
     "-webkit-column-gap": { values: [
         "normal"
     ] },
+    "-webkit-filter": { values: [
+        "url", "blur", "brightness", "contrast", "drop-shadow", "grayscale", "hue-rotate", "invert", "opacity", "saturate", "sepia"
+    ] },
     "-webkit-line-break": { values: [
         "auto", "loose", "normal", "strict"
-    ] },
-    "-webkit-perspective": { values: [
-        "none"
-    ] },
-    "-webkit-perspective-origin": { values: [
-        "left", "center", "right", "top", "bottom"
     ] },
     "text-align-last": { values: [
         "auto", "start", "end", "left", "right", "center", "justify"
@@ -581,85 +593,7 @@ WebInspector.CSSMetadata._propertyDataMap = {
     ] },
     "-webkit-text-decoration-skip": { values: [
         "none", "objects", "spaces", "ink", "edges", "box-decoration"
-    ] },
-    "-webkit-transform-origin": { values: [
-        "left", "center", "right", "top", "bottom"
-    ] },
-    "-webkit-transform-style": { values: [
-        "flat", "preserve-3d"
-    ] },
-    "-webkit-transition-timing-function": { values: [
-        "ease", "linear", "ease-in", "ease-out", "ease-in-out", "step-start", "step-end", "steps", "cubic-bezier"
-    ] },
-
-    "-webkit-flex": { m: "flexbox" },
-    "-webkit-flex-basis": { m: "flexbox" },
-    "-webkit-flex-flow": { m: "flexbox" },
-    "-webkit-flex-grow": { m: "flexbox" },
-    "-webkit-flex-shrink": { m: "flexbox" },
-    "-webkit-animation": { m: "animations" },
-    "-webkit-animation-delay": { m: "animations" },
-    "-webkit-animation-duration": { m: "animations" },
-    "-webkit-animation-iteration-count": { m: "animations" },
-    "-webkit-animation-name": { m: "animations" },
-    "-webkit-column-rule": { m: "multicol" },
-    "-webkit-column-rule-color": { m: "multicol", a: "crc" },
-    "-webkit-column-rule-style": { m: "multicol", a: "crs" },
-    "-webkit-column-rule-width": { m: "multicol", a: "crw" },
-    "-webkit-column-width": { m: "multicol", a: "cw" },
-    "-webkit-columns": { m: "multicol" },
-    "-webkit-order": { m: "flexbox" },
-    "-webkit-text-decoration-color": { m: "text-decor" },
-    "-webkit-text-emphasis-color": { m: "text-decor" },
-    "-webkit-transition": { m: "transitions" },
-    "-webkit-transition-delay": { m: "transitions" },
-    "-webkit-transition-duration": { m: "transitions" },
-    "-webkit-transition-property": { m: "transitions" },
-    "background": { m: "background" },
-    "background-attachment": { m: "background" },
-    "background-color": { m: "background" },
-    "background-image": { m: "background" },
-    "background-position": { m: "background" },
-    "background-position-x": { m: "background" },
-    "background-position-y": { m: "background" },
-    "background-repeat-x": { m: "background" },
-    "background-repeat-y": { m: "background" },
-    "border-top": { m: "background" },
-    "border-right": { m: "background" },
-    "border-bottom": { m: "background" },
-    "border-left": { m: "background" },
-    "border-radius": { m: "background" },
-    "bottom": { m: "visuren" },
-    "color": { m: "color", a: "foreground" },
-    "counter-increment": { m: "generate" },
-    "counter-reset": { m: "generate" },
-    "grid-template-columns": { m: "grid" },
-    "grid-template-rows": { m: "grid" },
-    "height": { m: "box" },
-    "image-orientation": { m: "images" },
-    "left": { m: "visuren" },
-    "list-style": { m: "lists" },
-    "min-height": { m: "box" },
-    "min-width": { m: "box" },
-    "opacity": { m: "color", a: "transparency" },
-    "orphans": { m: "page" },
-    "outline-offset": { m: "ui" },
-    "padding": { m: "box", a: "padding1" },
-    "padding-bottom": { m: "box" },
-    "padding-left": { m: "box" },
-    "padding-right": { m: "box" },
-    "padding-top": { m: "box" },
-    "page": { m: "page" },
-    "quotes": { m: "generate" },
-    "right": { m: "visuren" },
-    "tab-size": { m: "text" },
-    "text-indent": { m: "text" },
-    "text-shadow": { m: "text-decor" },
-    "top": { m: "visuren" },
-    "unicode-range": { m: "fonts", a: "descdef-unicode-range" },
-    "widows": { m: "page" },
-    "width": { m: "box" },
-    "z-index": { m: "visuren" }
+    ] }
 }
 
 /**
