@@ -351,7 +351,7 @@ WebInspector.ExecutionContext.prototype = {
         }
 
         if (!expressionString && this._debuggerModel.selectedCallFrame())
-            this._debuggerModel.getSelectedCallFrameVariables(receivedPropertyNames.bind(this));
+            this._debuggerModel.selectedCallFrame().variableNames(receivedPropertyNames.bind(this));
         else
             this.evaluate(expressionString, "completion", true, true, false, false, evaluated.bind(this));
 
