@@ -329,13 +329,13 @@
                     { "name": "offsetX", "type": "number", "optional": true, "description": "X offset to shift resulting view image by. Ignored in |fitWindow| mode." },
                     { "name": "offsetY", "type": "number", "optional": true, "description": "Y offset to shift resulting view image by. Ignored in |fitWindow| mode." }
                 ],
-                "handlers": ["browser", "renderer"],
+                "handlers": ["browser"],
                 "hidden": true
             },
             {
                 "name": "clearDeviceMetricsOverride",
                 "description": "Clears the overriden device metrics.",
-                "handlers": ["browser", "renderer"],
+                "handlers": ["browser"],
                 "hidden": true
             },
             {
