@@ -566,7 +566,7 @@ TestSuite.prototype.evaluateInConsole_ = function(code, callback)
 
         this.addSniffer(WebInspector.ConsoleView.prototype, "_consoleMessageAddedForTest",
             function(viewMessage) {
-                callback(viewMessage.toMessageElement().textContent);
+                callback(viewMessage.toMessageElement().deepTextContent());
             }.bind(this));
     }
 
