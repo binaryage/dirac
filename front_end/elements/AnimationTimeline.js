@@ -203,7 +203,7 @@ WebInspector.AnimationTimeline.prototype = {
         }
         var nodeRow = nodeUI.findRow(animation);
         var uiAnimation = new WebInspector.AnimationUI(this._stylesPane, animation, this, nodeRow.element);
-        animation.source().getNode(nodeResolved.bind(this));
+        animation.source().deferredNode().resolve(nodeResolved.bind(this));
         nodeRow.animations.push(uiAnimation);
     },
 
@@ -405,7 +405,7 @@ WebInspector.AnimationTimeline.NodeUI = function(animationNode) {
     this._rows = [];
     this.element = createElementWithClass("div", "animation-node-row");
     this._description = this.element.createChild("div", "animation-node-description");
-    animationNode.getNode(nodeResolved.bind(this));
+    animationNode.deferredNode().resolve(nodeResolved.bind(this));
     this._timelineElement = this.element.createChild("div", "animation-node-timeline");
 }
 

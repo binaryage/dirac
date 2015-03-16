@@ -300,29 +300,15 @@ WebInspector.AnimationModel.AnimationNode.prototype = {
     },
 
     /**
-     * @param {function(?WebInspector.DOMNode)} callback
+     * @return {!WebInspector.DeferredDOMNode}
      */
-    getNode: function(callback)
+    deferredNode: function()
     {
-        /**
-         * @this {WebInspector.AnimationModel.AnimationNode}
-         * @param {?Array.<number>} nodeIds
-         */
-        function nodePushedCallback(nodeIds)
-        {
-            if (nodeIds)
-                this.nodeId = nodeIds[0];
-            callback(this.target().domModel.nodeForId(this.nodeId));
-        }
-
-        if (this.nodeId)
-            callback(this.target().domModel.nodeForId(this.nodeId));
-        else
-            this._target.domModel.pushNodesByBackendIdsToFrontend([this._payload.backendNodeId], nodePushedCallback.bind(this));
+        return new WebInspector.DeferredDOMNode(this.target(), this.backendNodeId());
     },
 
     /**
-     * @return {!DOMAgent.BackendNodeId}
+     * @return {number}
      */
     backendNodeId: function()
     {

@@ -1161,7 +1161,7 @@ WebInspector.TimelinePanel.prototype = {
             aggregatedTotal += aggregatedStats[categoryName];
         aggregatedStats["idle"] = Math.max(0, endTime - startTime - aggregatedTotal);
 
-        var contentHelper = new WebInspector.TimelineDetailsContentHelper(null, null, true);
+        var contentHelper = new WebInspector.TimelineDetailsContentHelper(null, null, null, true);
         var pieChart = WebInspector.TimelineUIUtils.generatePieChart(aggregatedStats);
 
         var startOffset = startTime - this._model.minimumRecordTime();

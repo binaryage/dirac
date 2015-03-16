@@ -37,7 +37,8 @@
  * @param {boolean} isInShadowTree
  * @param {!DOMAgent.Node} payload
  */
-WebInspector.DOMNode = function(domModel, doc, isInShadowTree, payload) {
+WebInspector.DOMNode = function(domModel, doc, isInShadowTree, payload)
+{
     WebInspector.SDKObject.call(this, domModel.target());
     this._domModel = domModel;
     this._agent = domModel._agent;
@@ -1070,19 +1071,15 @@ WebInspector.DeferredDOMNode.prototype = {
      */
     resolve: function(callback)
     {
-        this._target.domModel.pushNodesByBackendIdsToFrontend([this._backendNodeId], onGotNode.bind(this));
+        this._target.domModel.pushNodesByBackendIdsToFrontend(new Set([this._backendNodeId]), onGotNode.bind(this));
 
         /**
-         * @param {?Array.<number>} nodeIds
+         * @param {?Map<number, ?WebInspector.DOMNode>} nodeIds
          * @this {WebInspector.DeferredDOMNode}
          */
         function onGotNode(nodeIds)
         {
-            if (!nodeIds || !nodeIds[0]) {
-                callback(null);
-                return;
-            }
-            callback(this._target.domModel.nodeForId(nodeIds[0]));
+            callback(nodeIds && nodeIds.get(this._backendNodeId));
         }
     }
 }
@@ -1233,12 +1230,31 @@ WebInspector.DOMModel.prototype = {
     },
 
     /**
-     * @param {!Array.<number>} backendNodeIds
-     * @param {function(?Array.<number>)=} callback
+     * @param {!Set<number>} backendNodeIds
+     * @param {function(?Map<number, ?WebInspector.DOMNode>)} callback
      */
     pushNodesByBackendIdsToFrontend: function(backendNodeIds, callback)
     {
-        this._dispatchWhenDocumentAvailable(this._agent.pushNodesByBackendIdsToFrontend.bind(this._agent, backendNodeIds), callback);
+        var backendNodeIdsArray = Array.from(backendNodeIds.values());
+        /**
+         * @param {?Array<!DOMAgent.NodeId>} nodeIds
+         * @this {!WebInspector.DOMModel}
+         */
+        function mycallback(nodeIds)
+        {
+            if (!nodeIds) {
+                callback(null);
+                return;
+            }
+            /** @type {!Map<number, ?WebInspector.DOMNode>} */
+            var map = new Map();
+            for (var i = 0; i < nodeIds.length; ++i) {
+                if (nodeIds[i])
+                    map.set(backendNodeIdsArray[i], this.nodeForId(nodeIds[i]));
+            }
+            callback(map);
+        }
+        this._dispatchWhenDocumentAvailable(this._agent.pushNodesByBackendIdsToFrontend.bind(this._agent, backendNodeIdsArray), mycallback.bind(this));
     },
 
     /**
