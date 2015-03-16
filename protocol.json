@@ -352,46 +352,6 @@
                 "hidden": true
             },
             {
-                "name": "setShowPaintRects",
-                "description": "Requests that backend shows paint rectangles",
-                "parameters": [
-                    { "name": "result", "type": "boolean", "description": "True for showing paint rectangles" }
-                ],
-                "hidden": true
-            },
-            {
-                "name": "setShowDebugBorders",
-                "description": "Requests that backend shows debug borders on layers",
-                "parameters": [
-                    { "name": "show", "type": "boolean", "description": "True for showing debug borders" }
-                ],
-                "hidden": true
-            },
-            {
-                "name": "setShowFPSCounter",
-                "description": "Requests that backend shows the FPS counter",
-                "parameters": [
-                    { "name": "show", "type": "boolean", "description": "True for showing the FPS counter" }
-                ],
-                "hidden": true
-            },
-            {
-                "name": "setContinuousPaintingEnabled",
-                "description": "Requests that backend enables continuous painting",
-                "parameters": [
-                    { "name": "enabled", "type": "boolean", "description": "True for enabling cointinuous painting" }
-                ],
-                "hidden": true
-            },
-            {
-                "name": "setShowScrollBottleneckRects",
-                "description": "Requests that backend shows scroll bottleneck rects",
-                "parameters": [
-                    { "name": "show", "type": "boolean", "description": "True for showing scroll bottleneck rects" }
-                ],
-                "hidden": true
-            },
-            {
                 "name": "setScriptExecutionDisabled",
                 "description": "Switches script execution in the page.",
                 "parameters": [
@@ -696,6 +656,48 @@
                 "description": "Fired when interstitial page was hidden",
                 "hidden": true,
                 "handlers": ["browser"]
+            }
+        ]
+    },
+    {
+        "domain": "Rendering",
+        "description": "This domain allows to control rendering of the page.",
+        "hidden": true,
+        "commands": [
+            {
+                "name": "setShowPaintRects",
+                "description": "Requests that backend shows paint rectangles",
+                "parameters": [
+                    { "name": "result", "type": "boolean", "description": "True for showing paint rectangles" }
+                ]
+            },
+            {
+                "name": "setShowDebugBorders",
+                "description": "Requests that backend shows debug borders on layers",
+                "parameters": [
+                    { "name": "show", "type": "boolean", "description": "True for showing debug borders" }
+                ]
+            },
+            {
+                "name": "setShowFPSCounter",
+                "description": "Requests that backend shows the FPS counter",
+                "parameters": [
+                    { "name": "show", "type": "boolean", "description": "True for showing the FPS counter" }
+                ]
+            },
+            {
+                "name": "setContinuousPaintingEnabled",
+                "description": "Requests that backend enables continuous painting",
+                "parameters": [
+                    { "name": "enabled", "type": "boolean", "description": "True for enabling cointinuous painting" }
+                ]
+            },
+            {
+                "name": "setShowScrollBottleneckRects",
+                "description": "Requests that backend shows scroll bottleneck rects",
+                "parameters": [
+                    { "name": "show", "type": "boolean", "description": "True for showing scroll bottleneck rects" }
+                ]
             }
         ]
     },
