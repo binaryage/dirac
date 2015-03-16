@@ -138,6 +138,7 @@ WebInspector.ConsoleView = function()
 
     this._prompt = new WebInspector.TextPromptWithHistory(WebInspector.ExecutionContextSelector.completionsForTextPromptInCurrentContext);
     this._prompt.setSuggestBoxEnabled(true);
+    this._prompt.setAutocompletionTimeout(0);
     this._prompt.renderAsBlock();
     var proxyElement = this._prompt.attach(this._promptElement);
     proxyElement.addEventListener("keydown", this._promptKeyDown.bind(this), false);
