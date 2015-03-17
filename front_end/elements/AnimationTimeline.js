@@ -30,6 +30,8 @@ WebInspector.AnimationTimeline = function(stylesPane)
     /** @type {!Map.<!DOMAgent.BackendNodeId, !WebInspector.AnimationTimeline.NodeUI>} */
     this._nodesMap = new Map();
     this._symbol = Symbol("animationTimeline");
+    /** @type {!Map.<string, !WebInspector.AnimationModel.AnimationPlayer>} */
+    this._animationsMap = new Map();
     WebInspector.targetManager.addModelListener(WebInspector.ResourceTreeModel, WebInspector.ResourceTreeModel.EventTypes.MainFrameNavigated, this._mainFrameNavigated, this);
     WebInspector.targetManager.addModelListener(WebInspector.DOMModel, WebInspector.DOMModel.Events.NodeRemoved, this._nodeRemoved, this);
 }
@@ -151,6 +153,7 @@ WebInspector.AnimationTimeline.prototype = {
             return;
 
         this._nodesMap.clear();
+        this._animationsMap.clear();
         this._animationsContainer.removeChildren();
         this._duration = this._defaultDuration();
         delete this._startTime;
@@ -205,6 +208,17 @@ WebInspector.AnimationTimeline.prototype = {
         var uiAnimation = new WebInspector.AnimationUI(this._stylesPane, animation, this, nodeRow.element);
         animation.source().deferredNode().resolve(nodeResolved.bind(this));
         nodeRow.animations.push(uiAnimation);
+        this._animationsMap.set(animation.id(), animation);
+    },
+
+    /**
+     * @param {string} playerId
+     */
+    cancelAnimation: function(playerId)
+    {
+        var animation = this._animationsMap.get(playerId);
+        animation.setPlayState("idle");
+        this.scheduleRedraw();
     },
 
     /**
@@ -626,7 +640,8 @@ WebInspector.AnimationUI.prototype = {
         var svgWidth = Math.min(this._timeline.width(), durationWithDelay * this._timeline.pixelMsRatio());
         var leftMargin = ((this._animation.startTime() - this._timeline.startTime()) * this._timeline.pixelMsRatio()).toFixed(2);
 
-        this._svg.setAttribute("width", svgWidth + 2 * WebInspector.AnimationUI.Options.AnimationMargin);
+        this._svg.classList.toggle("animation-ui-canceled", this._animation.playState() === "idle");
+        this._svg.setAttribute("width", (svgWidth + 2 * WebInspector.AnimationUI.Options.AnimationMargin).toFixed(2));
         this._svg.style.transform = "translateX(" + leftMargin  + "px)";
         this._activeIntervalGroup.style.transform = "translateX(" + (this._delay() * this._timeline.pixelMsRatio()).toFixed(2) + "px)";
 
@@ -733,6 +748,8 @@ WebInspector.AnimationUI.prototype = {
      */
     _mouseDown: function(mouseEventType, keyframeIndex, event)
     {
+        if (this._animation.playState() === "idle")
+            return;
         this._mouseEventType = mouseEventType;
         this._keyframeMoved = keyframeIndex;
         this._downMouseX = event.clientX;

@@ -4872,7 +4872,14 @@
                     { "name": "player", "$ref": "AnimationPlayer", "description": "AnimationPlayer that was created." },
                     { "name": "resetTimeline", "type": "boolean", "description": "Whether the timeline should be reset." }
                 ],
-                "hidden": true
+                "description": "Event for each animation player that has been created."
+            },
+            {
+                "name": "animationPlayerCanceled",
+                "parameters": [
+                    { "name": "playerId", "type": "string", "description": "Id of the AnimationPlayer that was cancelled." }
+                ],
+                "description": "Event for AnimationPlayers in the frontend that have been cancelled."
             }
         ]
     },

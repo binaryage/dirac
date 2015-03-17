@@ -16,7 +16,8 @@ WebInspector.AnimationModel = function(target)
 }
 
 WebInspector.AnimationModel.Events = {
-    AnimationPlayerCreated: "AnimationPlayerCreated"
+    AnimationPlayerCreated: "AnimationPlayerCreated",
+    AnimationPlayerCanceled: "AnimationPlayerCanceled"
 }
 
 WebInspector.AnimationModel.prototype = {
@@ -52,6 +53,14 @@ WebInspector.AnimationModel.prototype = {
     {
         var player = WebInspector.AnimationModel.AnimationPlayer.parsePayload(this.target(), payload);
         this.dispatchEventToListeners(WebInspector.AnimationModel.Events.AnimationPlayerCreated, { "player": player, "resetTimeline": resetTimeline });
+    },
+
+    /**
+     * @param {string} playerId
+     */
+    animationPlayerCanceled: function(playerId)
+    {
+        this.dispatchEventToListeners(WebInspector.AnimationModel.Events.AnimationPlayerCanceled, { "playerId": playerId });
     },
 
     ensureEnabled: function()
@@ -126,7 +135,15 @@ WebInspector.AnimationModel.AnimationPlayer.prototype = {
      */
     playState: function()
     {
-        return this._payload.playState;
+        return this._playState || this._payload.playState;
+    },
+
+    /**
+     * @param {string} playState
+     */
+    setPlayState: function(playState)
+    {
+        this._playState = playState;
     },
 
     /**
@@ -455,5 +472,14 @@ WebInspector.AnimationDispatcher.prototype = {
     animationPlayerCreated: function(payload, resetTimeline)
     {
         this._animationModel.animationPlayerCreated(payload, resetTimeline);
+    },
+
+    /**
+     * @override
+     * @param {string} playerId
+     */
+    animationPlayerCanceled: function(playerId)
+    {
+        this._animationModel.animationPlayerCanceled(playerId);
     }
 }
