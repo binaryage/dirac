@@ -1163,6 +1163,28 @@ WebInspector.TimelineUIUtils.categories = function()
 };
 
 /**
+ * @constructor
+ * @param {string} title
+ */
+WebInspector.AsyncEventGroup = function(title)
+{
+    this.title = title;
+}
+
+/**
+ * @return {!Object<string, !WebInspector.AsyncEventGroup>}
+ */
+WebInspector.TimelineUIUtils.asyncEventGroups = function()
+{
+    if (WebInspector.TimelineUIUtils._asyncEventGroups)
+        return WebInspector.TimelineUIUtils._asyncEventGroups;
+    WebInspector.TimelineUIUtils._asyncEventGroups = {
+        console: new WebInspector.AsyncEventGroup(WebInspector.UIString("Console"))
+    };
+    return WebInspector.TimelineUIUtils._asyncEventGroups;
+}
+
+/**
  * @param {!WebInspector.TimelineModel} model
  * @param {!{name: string, tasks: !Array.<!WebInspector.TimelineModel.Record>, firstTaskIndex: number, lastTaskIndex: number}} info
  * @return {!Element}

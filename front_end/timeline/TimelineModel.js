@@ -214,10 +214,10 @@ WebInspector.TimelineModel.TransferChunkLengthBytes = 5000000;
 WebInspector.TimelineModel.VirtualThread = function(name)
 {
     this.name = name;
-    /** @type {!Array.<!WebInspector.TracingModel.Event>} */
+    /** @type {!Array<!WebInspector.TracingModel.Event>} */
     this.events = [];
-    /** @type {!Array.<!WebInspector.TracingModel.AsyncEvent>} */
-    this.asyncEvents = [];
+    /** @type {!Map<!WebInspector.AsyncEventGroup, !Array<!WebInspector.TracingModel.AsyncEvent>>} */
+    this.asyncEventsByGroup = new Map();
 }
 
 WebInspector.TimelineModel.VirtualThread.prototype = {
@@ -933,15 +933,15 @@ WebInspector.TimelineModel.prototype = {
         }
 
         var threadEvents;
-        var threadAsyncEvents;
+        var threadAsyncEventsByGroup;
         if (thread === mainThread) {
             threadEvents = this._mainThreadEvents;
-            threadAsyncEvents = this._mainThreadAsyncEvents;
+            threadAsyncEventsByGroup = this._mainThreadAsyncEventsByGroup;
         } else {
             var virtualThread = new WebInspector.TimelineModel.VirtualThread(thread.name());
             this._virtualThreads.push(virtualThread);
             threadEvents = virtualThread.events;
-            threadAsyncEvents = virtualThread.asyncEvents;
+            threadAsyncEventsByGroup = virtualThread.asyncEventsByGroup;
         }
 
         this._eventStack = [];
@@ -962,8 +962,15 @@ WebInspector.TimelineModel.prototype = {
             var asyncEvent = asyncEvents[i];
             if (endTime && asyncEvent.startTime >= endTime)
                 break;
-            if (this._processEvent(asyncEvent))
-                threadAsyncEvents.push(asyncEvent);
+            var asyncGroup = this._processAsyncEvent(asyncEvent);
+            if (!asyncGroup)
+                continue;
+            var groupAsyncEvents = threadAsyncEventsByGroup.get(asyncGroup);
+            if (!groupAsyncEvents) {
+                groupAsyncEvents = [];
+                threadAsyncEventsByGroup.set(asyncGroup, groupAsyncEvents);
+            }
+            groupAsyncEvents.push(asyncEvent);
         }
     },
 
@@ -1185,6 +1192,19 @@ WebInspector.TimelineModel.prototype = {
     },
 
     /**
+     * @param {!WebInspector.TracingModel.AsyncEvent} asyncEvent
+     * @return {?WebInspector.AsyncEventGroup}
+     */
+    _processAsyncEvent: function(asyncEvent)
+    {
+        var groups = WebInspector.TimelineUIUtils.asyncEventGroups();
+        if (asyncEvent.category === WebInspector.TracingModel.ConsoleEventCategory)
+            return groups.console;
+
+        return null;
+    },
+
+    /**
      * @param {string} name
      * @return {?WebInspector.TracingModel.Event}
      */
@@ -1230,8 +1250,8 @@ WebInspector.TimelineModel.prototype = {
         this._virtualThreads = [];
         /** @type {!Array.<!WebInspector.TracingModel.Event>} */
         this._mainThreadEvents = [];
-        /** @type {!Array.<!WebInspector.TracingModel.AsyncEvent>} */
-        this._mainThreadAsyncEvents = [];
+        /** @type {!Map<!WebInspector.AsyncEventGroup, !Array<!WebInspector.TracingModel.AsyncEvent>>} */
+        this._mainThreadAsyncEventsByGroup = new Map();
         /** @type {!Array.<!WebInspector.TracingModel.Event>} */
         this._inspectedTargetEvents = [];
 
@@ -1286,11 +1306,11 @@ WebInspector.TimelineModel.prototype = {
     },
 
     /**
-     * @return {!Array.<!WebInspector.TracingModel.AsyncEvent>}
+     * @return {!Map<!WebInspector.AsyncEventGroup, !Array.<!WebInspector.TracingModel.AsyncEvent>>}
      */
     mainThreadAsyncEvents: function()
     {
-        return this._mainThreadAsyncEvents;
+        return this._mainThreadAsyncEventsByGroup;
     },
 
     /**

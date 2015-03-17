@@ -349,7 +349,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
             this._appendGPUEvents();
         var threads = this._model.virtualThreads();
         for (var i = 0; i < threads.length; i++)
-            this._appendThreadTimelineData(threads[i].name, threads[i].events, threads[i].asyncEvents);
+            this._appendThreadTimelineData(threads[i].name, threads[i].events, threads[i].asyncEventsByGroup);
 
         /**
          * @param {!WebInspector.TimelineFlameChartMarker} a
@@ -369,21 +369,21 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
 
     /**
      * @param {string} threadTitle
-     * @param {!Array.<!WebInspector.TracingModel.Event>} syncEvents
-     * @param {!Array.<!WebInspector.TracingModel.AsyncEvent>} asyncEvents
+     * @param {!Array<!WebInspector.TracingModel.Event>} syncEvents
+     * @param {!Map<!WebInspector.AsyncEventGroup, !Array<!WebInspector.TracingModel.AsyncEvent>>} asyncEvents
      */
     _appendThreadTimelineData: function(threadTitle, syncEvents, asyncEvents)
     {
-        var levelCount = this._appendAsyncEvents(threadTitle, asyncEvents);
-        levelCount += this._appendSyncEvents(levelCount ? null : threadTitle, syncEvents);
+        var levelCount = this._appendSyncEvents(threadTitle, syncEvents);
+        levelCount += this._appendAsyncEvents(levelCount ? null : threadTitle, asyncEvents);
         if (levelCount)
             ++this._currentLevel;
     },
 
     /**
      * @param {?string} headerName
-     * @param {!Array.<!WebInspector.TracingModel.Event>} events
-     * @return {boolean}
+     * @param {!Array<!WebInspector.TracingModel.Event>} events
+     * @return {number}
      */
     _appendSyncEvents: function(headerName, events)
     {
@@ -426,34 +426,49 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
                 openEvents.push(e);
         }
         this._currentLevel += maxStackDepth;
-        return !!maxStackDepth;
+        return maxStackDepth;
     },
 
     /**
-     * @param {string} header
-     * @param {!Array.<!WebInspector.TracingModel.AsyncEvent>} asyncEvents
+     * @param {?string} header
+     * @param {!Map<!WebInspector.AsyncEventGroup, !Array<!WebInspector.TracingModel.AsyncEvent>>} asyncEvents
+     * @return {number}
      */
     _appendAsyncEvents: function(header, asyncEvents)
     {
-        var lastUsedTimeByLevel = [];
         var headerAppended = false;
+        var groups = Object.values(WebInspector.TimelineUIUtils.asyncEventGroups());
+        var levels = 0;
 
-        for (var i = 0; i < asyncEvents.length; ++i) {
-            var asyncEvent = asyncEvents[i];
-            if (!this._isVisible(asyncEvent))
+        for (var groupIndex = 0; groupIndex < groups.length; ++groupIndex) {
+            var lastUsedTimeByLevel = [];
+            var group = groups[groupIndex];
+            var events = asyncEvents.get(group);
+            if (!events)
                 continue;
             if (!headerAppended && header) {
                 this._appendHeaderRecord(header, this._currentLevel++);
                 headerAppended = true;
             }
-            var startTime = asyncEvent.startTime;
-            var level;
-            for (level = 0; level < lastUsedTimeByLevel.length && lastUsedTimeByLevel[level] > startTime; ++level) {}
-            this._appendAsyncEvent(asyncEvent, this._currentLevel + level);
-            lastUsedTimeByLevel[level] = asyncEvent.endTime;
+            var groupHeaderAppended = false;
+            for (var i = 0; i < events.length; ++i) {
+                var asyncEvent = events[i];
+                if (!this._isVisible(asyncEvent))
+                    continue;
+                if (!groupHeaderAppended) {
+                    this._appendHeaderRecord(group.title, this._currentLevel++);
+                    groupHeaderAppended = true;
+                }
+                var startTime = asyncEvent.startTime;
+                var level;
+                for (level = 0; level < lastUsedTimeByLevel.length && lastUsedTimeByLevel[level] > startTime; ++level) {}
+                this._appendAsyncEvent(asyncEvent, this._currentLevel + level);
+                lastUsedTimeByLevel[level] = asyncEvent.endTime;
+            }
+            levels += lastUsedTimeByLevel.length;
+            this._currentLevel += lastUsedTimeByLevel.length;
         }
-        this._currentLevel += lastUsedTimeByLevel.length;
-        return lastUsedTimeByLevel.length;
+        return levels;
     },
 
     _appendGPUEvents: function()
