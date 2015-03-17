@@ -1003,7 +1003,7 @@ WebInspector.ObjectPropertiesSection.createNameElement = function(name)
 /**
  * @param {!WebInspector.RemoteObject} value
  * @param {boolean} wasThrown
- * @param {!Element} parentElement
+ * @param {!Element=} parentElement
  * @return {!Element}
  */
 WebInspector.ObjectPropertiesSection.createValueElement = function(value, wasThrown, parentElement)
@@ -1043,7 +1043,8 @@ WebInspector.ObjectPropertiesSection.createValueElement = function(value, wasThr
         var exponent = valueElement.createChild("span", "object-value-scientific-notation-exponent");
         exponent.textContent = "e" + numberParts[1];
         valueElement.classList.add("object-value-scientific-notation-number");
-        parentElement.classList.add("hbox");
+        if (parentElement)  // FIXME: do it in the caller.
+            parentElement.classList.add("hbox");
     }
 
     if (wasThrown)

@@ -143,3 +143,22 @@
 .source-frame-infobar-details-url {
     flex: 0 1000 auto;
 }
+
+@-webkit-keyframes source-frame-value-update-highlight-animation {
+    from {
+        background-color: rgb(158, 54, 153);
+        color: white;
+    }
+    80% {
+        background-color: rgb(245, 219, 244);
+        color: inherit;
+    }
+    to {
+        background-color: inherit;
+    }
+}
+
+.source-frame-value-update-highlight {
+    -webkit-animation: source-frame-value-update-highlight-animation 1.4s 1 cubic-bezier(0, 0, 0.2, 1);
+    border-radius: 2px;
+}

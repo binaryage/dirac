@@ -790,6 +790,7 @@ WebInspector.ScopeRemoteObject.prototype = {
             callback([], []);
             return;
         }
+
         if (this._savedScopeProperties) {
             // No need to reload scope variables, as the remote object never
             // changes its properties. If variable is updated, the properties
@@ -809,6 +810,9 @@ WebInspector.ScopeRemoteObject.prototype = {
                 this._savedScopeProperties = properties.slice();
             callback(properties, internalProperties);
         }
+
+        // Scope objects always fetch preview.
+        generatePreview = true;
 
         WebInspector.RemoteObjectImpl.prototype.doGetProperties.call(this, ownProperties, accessorPropertiesOnly, generatePreview, wrappedCallback.bind(this));
     },
