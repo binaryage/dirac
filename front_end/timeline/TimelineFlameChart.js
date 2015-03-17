@@ -374,23 +374,26 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
      */
     _appendThreadTimelineData: function(threadTitle, syncEvents, asyncEvents)
     {
-        var levelCount = this._appendSyncEvents(threadTitle, syncEvents);
-        levelCount += this._appendAsyncEvents(levelCount ? null : threadTitle, asyncEvents);
-        if (levelCount)
+        var firstLevel = this._currentLevel;
+        this._appendSyncEvents(threadTitle, syncEvents);
+        this._appendAsyncEvents(this._currentLevel !== firstLevel ? null : threadTitle, asyncEvents);
+        if (this._currentLevel !== firstLevel)
             ++this._currentLevel;
     },
 
     /**
      * @param {?string} headerName
      * @param {!Array<!WebInspector.TracingModel.Event>} events
-     * @return {number}
      */
     _appendSyncEvents: function(headerName, events)
     {
         var openEvents = [];
-        var headerAppended = false;
-
         var flowEventsEnabled = Runtime.experiments.isEnabled("timelineFlowEvents");
+
+        /**
+         * @param {!WebInspector.TracingModel.Event} event
+         * @return {boolean}
+         */
         function isFlowEvent(event)
         {
             return e.phase === WebInspector.TracingModel.Phase.FlowBegin ||
@@ -413,9 +416,9 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
             }
             while (openEvents.length && openEvents.peekLast().endTime <= e.startTime)
                 openEvents.pop();
-            if (!headerAppended && headerName) {
+            if (headerName) {
                 this._appendHeaderRecord(headerName, this._currentLevel++);
-                headerAppended = true;
+                headerName = null;
             }
             var level = this._currentLevel + openEvents.length;
             this._appendEvent(e, level);
@@ -426,19 +429,15 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
                 openEvents.push(e);
         }
         this._currentLevel += maxStackDepth;
-        return maxStackDepth;
     },
 
     /**
      * @param {?string} header
      * @param {!Map<!WebInspector.AsyncEventGroup, !Array<!WebInspector.TracingModel.AsyncEvent>>} asyncEvents
-     * @return {number}
      */
     _appendAsyncEvents: function(header, asyncEvents)
     {
-        var headerAppended = false;
         var groups = Object.values(WebInspector.TimelineUIUtils.asyncEventGroups());
-        var levels = 0;
 
         for (var groupIndex = 0; groupIndex < groups.length; ++groupIndex) {
             var lastUsedTimeByLevel = [];
@@ -446,15 +445,15 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
             var events = asyncEvents.get(group);
             if (!events)
                 continue;
-            if (!headerAppended && header) {
-                this._appendHeaderRecord(header, this._currentLevel++);
-                headerAppended = true;
-            }
             var groupHeaderAppended = false;
             for (var i = 0; i < events.length; ++i) {
                 var asyncEvent = events[i];
                 if (!this._isVisible(asyncEvent))
                     continue;
+                if (header) {
+                    this._appendHeaderRecord(header, this._currentLevel++);
+                    header = null;
+                }
                 if (!groupHeaderAppended) {
                     this._appendHeaderRecord(group.title, this._currentLevel++);
                     groupHeaderAppended = true;
@@ -465,10 +464,8 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
                 this._appendAsyncEvent(asyncEvent, this._currentLevel + level);
                 lastUsedTimeByLevel[level] = asyncEvent.endTime;
             }
-            levels += lastUsedTimeByLevel.length;
             this._currentLevel += lastUsedTimeByLevel.length;
         }
-        return levels;
     },
 
     _appendGPUEvents: function()
