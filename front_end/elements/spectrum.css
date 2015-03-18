@@ -98,6 +98,7 @@
     width: 20px;
     height:20px;
     margin: 0;
+    background-image: url(Images/checker.png);
 }
 
 .swatch-inner {
