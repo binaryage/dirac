@@ -304,7 +304,7 @@ WebInspector.OverridesSupport.prototype = {
             this.settings._emulationEnabled.set(enabled);
             this.dispatchEventToListeners(WebInspector.OverridesSupport.Events.EmulationStateChanged);
             if (enabled && this.settings.emulateResolution.get())
-                this._target.pageAgent().resetScrollAndPageScaleFactor();
+                this._target.emulationAgent().resetScrollAndPageScaleFactor();
         }
     },
 
@@ -361,7 +361,7 @@ WebInspector.OverridesSupport.prototype = {
         if (this._initialized) {
             this._deviceMetricsChanged();
             this._userAgentChanged();
-            this._target.pageAgent().resetScrollAndPageScaleFactor();
+            this._target.emulationAgent().resetScrollAndPageScaleFactor();
         }
     },
 
@@ -471,7 +471,7 @@ WebInspector.OverridesSupport.prototype = {
 
         this._deviceMetricsChanged();
         if (this.settings.emulateResolution.get())
-            this._target.pageAgent().resetScrollAndPageScaleFactor();
+            this._target.emulationAgent().resetScrollAndPageScaleFactor();
 
         this._userAgentChanged();
 
@@ -663,7 +663,7 @@ WebInspector.OverridesSupport.prototype = {
         var enabled = this.emulationEnabled() && this.settings.overrideCSSMedia.get();
 
         for (var target of WebInspector.targetManager.targets()) {
-            target.pageAgent().setEmulatedMedia(enabled ? this.settings.emulatedCSSMedia.get() : "");
+            target.emulationAgent().setEmulatedMedia(enabled ? this.settings.emulatedCSSMedia.get() : "");
             target.cssModel.mediaQueryResultChanged();
         }
     },
@@ -760,7 +760,7 @@ WebInspector.OverridesSupport.prototype = {
      */
     targetAdded: function(target)
     {
-        if (this._target)
+        if (this._target || !target.supportsEmulation())
             return;
         this._target = target;
         target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.MainFrameNavigated, this._onMainFrameNavigated, this);

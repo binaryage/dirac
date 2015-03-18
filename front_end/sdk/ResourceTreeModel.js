@@ -72,7 +72,6 @@ WebInspector.ResourceTreeModel.EventTypes = {
     SecurityOriginRemoved: "SecurityOriginRemoved",
     ScreencastFrame: "ScreencastFrame",
     ScreencastVisibilityChanged: "ScreencastVisibilityChanged",
-    ViewportChanged: "ViewportChanged",
     ColorPicked: "ColorPicked"
 }
 
@@ -891,15 +890,6 @@ WebInspector.PageDispatcher.prototype = {
     screencastVisibilityChanged: function(visible)
     {
         this._resourceTreeModel.dispatchEventToListeners(WebInspector.ResourceTreeModel.EventTypes.ScreencastVisibilityChanged, {visible:visible});
-    },
-
-    /**
-     * @override
-     * @param {!PageAgent.Viewport=} viewport
-     */
-    viewportChanged: function(viewport)
-    {
-        this._resourceTreeModel.dispatchEventToListeners(WebInspector.ResourceTreeModel.EventTypes.ViewportChanged, viewport);
     },
 
     /**

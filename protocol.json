@@ -145,21 +145,6 @@
                 "hidden": true
             },
             {
-                "id": "Viewport",
-                "type": "object",
-                "description": "Visible page viewport",
-                "properties": [
-                    { "name": "scrollX", "type": "number", "description": "X scroll offset in CSS pixels." },
-                    { "name": "scrollY", "type": "number", "description": "Y scroll offset in CSS pixels." },
-                    { "name": "contentsWidth", "type": "number", "description": "Contents width in CSS pixels." },
-                    { "name": "contentsHeight", "type": "number", "description": "Contents height in CSS pixels." },
-                    { "name": "pageScaleFactor", "type": "number", "description": "Page scale factor." },
-                    { "name": "minimumPageScaleFactor", "type": "number", "description": "Minimum page scale factor." },
-                    { "name": "maximumPageScaleFactor", "type": "number", "description": "Maximum page scale factor." }
-                ],
-                "hidden": true
-            },
-            {
                 "id": "ScreencastFrameMetadata",
                 "type": "object",
                 "description": "Screencast frame metadata",
@@ -339,27 +324,6 @@
                 "hidden": true
             },
             {
-                "name": "resetScrollAndPageScaleFactor",
-                "description": "Requests that scroll offsets and page scale factor are reset to initial values.",
-                "hidden": true
-            },
-            {
-                "name": "setPageScaleFactor",
-                "description": "Sets a specified page scale factor.",
-                "parameters": [
-                    { "name": "pageScaleFactor", "type": "number", "description": "Page scale factor." }
-                ],
-                "hidden": true
-            },
-            {
-                "name": "setScriptExecutionDisabled",
-                "description": "Switches script execution in the page.",
-                "parameters": [
-                    { "name": "value", "type": "boolean", "description": "Whether script execution should be disabled in the page." }
-                ],
-                "hidden": true
-            },
-            {
                 "name": "setGeolocationOverride",
                 "description": "Overrides the Geolocation Position or Error. Omitting any of the parameters emulates position unavailable.",
                 "parameters": [
@@ -400,14 +364,6 @@
                 "description": "Toggles mouse event-based touch event emulation.",
                 "hidden": true,
                 "handlers": ["browser", "renderer"]
-            },
-            {
-                "name": "setEmulatedMedia",
-                "parameters": [
-                    { "name": "media", "type": "string", "description": "Media type to emulate. Empty string disables the override." }
-                ],
-                "description": "Emulates the given media for CSS media queries.",
-                "hidden": true
             },
             {
                 "name": "captureScreenshot",
@@ -629,14 +585,6 @@
                 "handlers": ["browser"]
             },
             {
-                "name": "viewportChanged",
-                "description": "Fired when a visible page viewport has changed.",
-                "parameters": [
-                    { "name": "viewport", "$ref": "Viewport", "description": "Viewport description." }
-                ],
-                "hidden": true
-            },
-            {
                 "name": "colorPicked",
                 "description": "Fired when a color has been picked.",
                 "parameters": [
@@ -697,6 +645,115 @@
                 "description": "Requests that backend shows scroll bottleneck rects",
                 "parameters": [
                     { "name": "show", "type": "boolean", "description": "True for showing scroll bottleneck rects" }
+                ]
+            }
+        ]
+    },
+    {
+        "domain": "Emulation",
+        "description": "This domain emulates different environments for the page.",
+        "hidden": true,
+        "types": [
+            {
+                "id": "Viewport",
+                "type": "object",
+                "description": "Visible page viewport",
+                "properties": [
+                    { "name": "scrollX", "type": "number", "description": "X scroll offset in CSS pixels." },
+                    { "name": "scrollY", "type": "number", "description": "Y scroll offset in CSS pixels." },
+                    { "name": "contentsWidth", "type": "number", "description": "Contents width in CSS pixels." },
+                    { "name": "contentsHeight", "type": "number", "description": "Contents height in CSS pixels." },
+                    { "name": "pageScaleFactor", "type": "number", "description": "Page scale factor." },
+                    { "name": "minimumPageScaleFactor", "type": "number", "description": "Minimum page scale factor." },
+                    { "name": "maximumPageScaleFactor", "type": "number", "description": "Maximum page scale factor." }
+                ]
+            }
+        ],
+        "commands": [
+            {
+                "name": "setDeviceMetricsOverride",
+                "description": "Overrides the values of device screen dimensions (window.screen.width, window.screen.height, window.innerWidth, window.innerHeight, and \"device-width\"/\"device-height\"-related CSS media query results).",
+                "parameters": [
+                    { "name": "width", "type": "integer", "description": "Overriding width value in pixels (minimum 0, maximum 10000000). 0 disables the override." },
+                    { "name": "height", "type": "integer", "description": "Overriding height value in pixels (minimum 0, maximum 10000000). 0 disables the override." },
+                    { "name": "deviceScaleFactor", "type": "number", "description": "Overriding device scale factor value. 0 disables the override." },
+                    { "name": "mobile", "type": "boolean", "description": "Whether to emulate mobile device. This includes viewport meta tag, overlay scrollbars, text autosizing and more." },
+                    { "name": "fitWindow", "type": "boolean", "description": "Whether a view that exceeds the available browser window area should be scaled down to fit." },
+                    { "name": "scale", "type": "number", "optional": true, "description": "Scale to apply to resulting view image. Ignored in |fitWindow| mode." },
+                    { "name": "offsetX", "type": "number", "optional": true, "description": "X offset to shift resulting view image by. Ignored in |fitWindow| mode." },
+                    { "name": "offsetY", "type": "number", "optional": true, "description": "Y offset to shift resulting view image by. Ignored in |fitWindow| mode." }
+                ],
+                "handlers": ["browser"]
+            },
+            {
+                "name": "clearDeviceMetricsOverride",
+                "description": "Clears the overriden device metrics.",
+                "handlers": ["browser"]
+            },
+            {
+                "name": "resetScrollAndPageScaleFactor",
+                "description": "Requests that scroll offsets and page scale factor are reset to initial values."
+            },
+            {
+                "name": "setPageScaleFactor",
+                "description": "Sets a specified page scale factor.",
+                "parameters": [
+                    { "name": "pageScaleFactor", "type": "number", "description": "Page scale factor." }
+                ]
+            },
+            {
+                "name": "setScriptExecutionDisabled",
+                "description": "Switches script execution in the page.",
+                "parameters": [
+                    { "name": "value", "type": "boolean", "description": "Whether script execution should be disabled in the page." }
+                ]
+            },
+            {
+                "name": "setGeolocationOverride",
+                "description": "Overrides the Geolocation Position or Error. Omitting any of the parameters emulates position unavailable.",
+                "parameters": [
+                    { "name": "latitude", "type": "number", "optional": true, "description": "Mock latitude"},
+                    { "name": "longitude", "type": "number", "optional": true, "description": "Mock longitude"},
+                    { "name": "accuracy", "type": "number", "optional": true, "description": "Mock accuracy"}
+                ],
+                "handlers": ["browser"]
+            },
+            {
+                "name": "clearGeolocationOverride",
+                "description": "Clears the overriden Geolocation Position and Error.",
+                "handlers": ["browser"]
+            },
+            {
+                "name": "setTouchEmulationEnabled",
+                "parameters": [
+                    { "name": "enabled", "type": "boolean", "description": "Whether the touch event emulation should be enabled." },
+                    { "name": "configuration", "type": "string", "enum": ["mobile", "desktop"], "optional": true, "description": "Touch/gesture events configuration. Default: current platform." }
+                ],
+                "description": "Toggles mouse event-based touch event emulation.",
+                "handlers": ["browser", "renderer"]
+            },
+            {
+                "name": "setEmulatedMedia",
+                "parameters": [
+                    { "name": "media", "type": "string", "description": "Media type to emulate. Empty string disables the override." }
+                ],
+                "description": "Emulates the given media for CSS media queries."
+            },
+            {
+                "name": "canEmulate",
+                "description": "Tells whether emulation is supported.",
+                "returns": [
+                    { "name": "result", "type": "boolean", "description": "True if emulation is supported." }
+                ],
+                "handlers": ["browser"]
+            }
+        ],
+        "events": [
+            {
+                "name": "viewportChanged",
+                "description": "Fired when a visible page viewport has changed. Only fired when device metrics are overridden.",
+                "parameters": [
+                    { "name": "viewport", "$ref": "Viewport", "description": "Viewport description." }
                 ]
             }
         ]

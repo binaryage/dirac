@@ -952,7 +952,8 @@ WebInspector.DisableJavaScriptObserver.prototype = {
      */
     targetAdded: function(target)
     {
-        target.pageAgent().setScriptExecutionDisabled(this._setting.get());
+        if (target.supportsEmulation())
+            target.emulationAgent().setScriptExecutionDisabled(this._setting.get());
     },
 
     /**
@@ -970,8 +971,10 @@ WebInspector.DisableJavaScriptObserver.prototype = {
     {
         var value = this._setting.get();
         var targets = WebInspector.targetManager.targets();
-        for (var i = 0; i < targets.length; ++i)
-            targets[i].pageAgent().setScriptExecutionDisabled(value);
+        for (var i = 0; i < targets.length; ++i) {
+            if (targets[i].supportsEmulation())
+                targets[i].emulationAgent().setScriptExecutionDisabled(value);
+        }
     }
 }
 

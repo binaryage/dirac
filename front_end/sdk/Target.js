@@ -187,6 +187,14 @@ WebInspector.Target.prototype = {
     /**
      * @return {boolean}
      */
+    supportsEmulation: function()
+    {
+        return this.isPage();
+    },
+
+    /**
+     * @return {boolean}
+     */
     isPage: function()
     {
         return this._type === WebInspector.Target.Type.Page;
