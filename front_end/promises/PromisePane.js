@@ -283,7 +283,8 @@ WebInspector.PromisePane.prototype = {
             var node = this._promiseIdToNode.get(details.id);
             var wasVisible = !previousDetails || this._filter.shouldBeVisible(previousDetails, node);
 
-            if (eventType === "gc" && node && node.parent)
+            // Check for the fast path on GC events.
+            if (eventType === "gc" && node && node.parent && !this._filter.shouldHideCollectedPromises())
                 node.element().classList.add("promise-gc");
             else
                 this._attachDataGridNode(details);
@@ -579,6 +580,14 @@ WebInspector.PromisePaneFilter.prototype = {
     },
 
     /**
+     * @return {boolean}
+     */
+    shouldHideCollectedPromises: function()
+    {
+        return this._hideCollectedPromisesSetting.get();
+    },
+
+    /**
      * @param {!DebuggerAgent.PromiseDetails} details
      * @param {!WebInspector.DataGridNode} node
      * @return {boolean}
@@ -588,7 +597,7 @@ WebInspector.PromisePaneFilter.prototype = {
         if (!this._statusFilterUI.accept(details.status))
             return false;
 
-        if (this._hideCollectedPromisesSetting.get() && details.__isGarbageCollected)
+        if (this.shouldHideCollectedPromises() && details.__isGarbageCollected)
             return false;
 
         var regex = this._textFilterUI.regex();
