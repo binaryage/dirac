@@ -438,7 +438,7 @@ WebInspector.StylesSidebarPane.prototype = {
 
     _resetComputedCache: function()
     {
-        delete this._computedCascadePromise;
+        delete this._computedStylePromise;
         delete this._animationPropertiesPromise;
     },
 
@@ -473,17 +473,17 @@ WebInspector.StylesSidebarPane.prototype = {
     },
 
     /**
-     * @return {!Promise.<?WebInspector.SectionCascade>}
+     * @return {!Promise.<?WebInspector.CSSStyleDeclaration>}
      */
-    _fetchComputedCascade: function()
+    _fetchComputedStyle: function()
     {
         var node = this.node();
         if (!node)
-            return Promise.resolve(/** @type {?WebInspector.SectionCascade} */(null));
-        if (!this._computedCascadePromise)
-            this._computedCascadePromise = new Promise(getComputedStyle.bind(null, node)).then(buildComputedCascade.bind(this, node));
+            return Promise.resolve(/** @type {?WebInspector.CSSStyleDeclaration} */(null));
+        if (!this._computedStylePromise)
+            this._computedStylePromise = new Promise(getComputedStyle.bind(null, node)).then(verifyOutdated.bind(this, node));
 
-        return this._computedCascadePromise;
+        return this._computedStylePromise;
 
         /**
          * @param {!WebInspector.DOMNode} node
@@ -496,20 +496,13 @@ WebInspector.StylesSidebarPane.prototype = {
 
         /**
          * @param {!WebInspector.DOMNode} node
-         * @param {?WebInspector.CSSStyleDeclaration} styles
-         * @return {?WebInspector.SectionCascade}
+         * @param {?WebInspector.CSSStyleDeclaration} style
+         * @return {?WebInspector.CSSStyleDeclaration}
          * @this {WebInspector.StylesSidebarPane}
          */
-        function buildComputedCascade(node, styles)
+        function verifyOutdated(node, style)
         {
-            if (node !== this.node())
-                return null;
-            if (!styles)
-                return null;
-
-            var computedCascade = new WebInspector.SectionCascade();
-            computedCascade.appendModelFromStyle(styles, "");
-            return computedCascade;
+            return node !== this.node() ? null : style;
         }
     },
 

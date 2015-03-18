@@ -86,7 +86,7 @@ WebInspector.ComputedStyleSidebarPane.prototype = {
     doUpdate: function(finishedCallback)
     {
         var promises = [
-            this._stylesSidebarPane._fetchComputedCascade(),
+            this._stylesSidebarPane._fetchComputedStyle(),
             this._stylesSidebarPane._fetchMatchedCascade()
         ];
         Promise.all(promises)
@@ -109,16 +109,13 @@ WebInspector.ComputedStyleSidebarPane.prototype = {
     },
 
     /**
-     * @param {?WebInspector.SectionCascade} computedCascade
+     * @param {?WebInspector.CSSStyleDeclaration} computedStyle
        @param {?{matched: !WebInspector.SectionCascade, pseudo: !Map.<number, !WebInspector.SectionCascade>}} cascades
      */
-    _innerRebuildUpdate: function(computedCascade, cascades)
+    _innerRebuildUpdate: function(computedStyle, cascades)
     {
         this._propertiesContainer.removeChildren();
-        if (!computedCascade || !cascades)
-            return;
-        var computedStyle = computedCascade.sectionModels()[0].style();
-        if (!computedStyle)
+        if (!computedStyle || !cascades)
             return;
 
         var uniqueProperties = computedStyle.allProperties.slice();
