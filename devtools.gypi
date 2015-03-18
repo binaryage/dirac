@@ -690,7 +690,6 @@
             'front_end/Images/paneFilterButtons.png',
             'front_end/Images/paneRefreshButtons.png',
             'front_end/Images/popoverArrows.png',
-            'front_end/Images/popoverBackground.png',
             'front_end/Images/profileGroupIcon.png',
             'front_end/Images/profileIcon.png',
             'front_end/Images/profileSmallIcon.png',
