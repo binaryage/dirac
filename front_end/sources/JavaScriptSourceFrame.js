@@ -46,7 +46,7 @@ WebInspector.JavaScriptSourceFrame = function(scriptsPanel, uiSourceCode)
     if (uiSourceCode.project().type() === WebInspector.projectTypes.Debugger)
         this.element.classList.add("source-frame-debugger-script");
 
-    this._popoverHelper = new WebInspector.ObjectPopoverHelper(this.textEditor.element,
+    this._popoverHelper = new WebInspector.ObjectPopoverHelper(scriptsPanel.element,
         this._getPopoverAnchor.bind(this), this._resolveObjectForPopover.bind(this), this._onHidePopover.bind(this), true);
 
     this.textEditor.element.addEventListener("keydown", this._onKeyDown.bind(this), true);
