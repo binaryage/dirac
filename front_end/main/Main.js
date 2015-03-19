@@ -140,7 +140,6 @@ WebInspector.Main.prototype = {
         Runtime.experiments.register("composedShadowDOM", "Composed Shadow DOM view.", true);
         Runtime.experiments.register("timelineDetailsChart", "Costly functions view in Timeline details", true);
         Runtime.experiments.register("customObjectFormatters", "Custom object formatters", true);
-        Runtime.experiments.register("devicesPanel", "Devices panel");
         Runtime.experiments.register("externalDeviceList", "External device list", true);
         Runtime.experiments.register("fileSystemInspection", "FileSystem inspection");
         Runtime.experiments.register("gpuTimeline", "GPU data on timeline", true);
