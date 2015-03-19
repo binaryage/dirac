@@ -1142,12 +1142,14 @@ WebInspector.DOMModel.Events = {
     UndoRedoRequested: "UndoRedoRequested",
     UndoRedoCompleted: "UndoRedoCompleted",
     DistributedNodesChanged: "DistributedNodesChanged",
+    ModelSuspended: "ModelSuspended"
 }
 
 WebInspector.DOMModel.prototype = {
     suspendModel: function()
     {
         this._agent.disable();
+        this.dispatchEventToListeners(WebInspector.DOMModel.Events.ModelSuspended);
     },
 
     resumeModel: function()
