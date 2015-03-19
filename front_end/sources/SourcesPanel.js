@@ -90,6 +90,8 @@ WebInspector.SourcesPanel = function(workspaceForTest)
     if (Runtime.experiments.isEnabled("stepIntoAsync"))
         this.sidebarPanes.asyncOperationBreakpoints = new WebInspector.AsyncOperationsSidebarPane();
 
+    this._lastSelectedTabSetting = WebInspector.settings.createSetting("lastSelectedSourcesSidebarPaneTab", this.sidebarPanes.scopechain.title());
+
     this._extensionSidebarPanes = [];
     this._installDebuggerSidebarController();
 
@@ -1124,6 +1126,10 @@ WebInspector.SourcesPanel.prototype = {
                 sidebarPaneStack.addPane(this.sidebarPanes[pane]);
             this._extensionSidebarPanesContainer = sidebarPaneStack;
             this.sidebarPaneView = vbox;
+
+            this.sidebarPanes.scopechain.expand();
+            if (WebInspector.settings.watchExpressions.get().length > 0)
+                this.sidebarPanes.watchExpressions.expand();
         } else {
             var splitView = new WebInspector.SplitView(true, true, "sourcesPanelDebuggerSidebarSplitViewState", 0.5);
             splitView.setMainView(vbox);
@@ -1144,8 +1150,9 @@ WebInspector.SourcesPanel.prototype = {
             tabbedPane.addPane(this.sidebarPanes.watchExpressions);
             if (this.sidebarPanes.serviceWorkers)
                 tabbedPane.addPane(this.sidebarPanes.serviceWorkers);
+            tabbedPane.selectTab(this._lastSelectedTabSetting.get());
+            tabbedPane.addEventListener(WebInspector.TabbedPane.EventTypes.TabSelected, this._tabSelected, this);
             this._extensionSidebarPanesContainer = tabbedPane;
-
             this.sidebarPaneView = splitView;
         }
 
@@ -1155,12 +1162,16 @@ WebInspector.SourcesPanel.prototype = {
 
         this._splitView.setSidebarView(this.sidebarPaneView);
         this.sidebarPanes.threads.expand();
-        this.sidebarPanes.scopechain.expand();
         this.sidebarPanes.jsBreakpoints.expand();
         this.sidebarPanes.callstack.expand();
-        this._sidebarPaneStack = sidebarPaneStack;
-        if (WebInspector.settings.watchExpressions.get().length > 0)
-            this.sidebarPanes.watchExpressions.expand();
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _tabSelected: function(event)
+    {
+        this._lastSelectedTabSetting.set(event.data.tabId);
     },
 
     /**

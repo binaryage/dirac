@@ -41,7 +41,7 @@ WebInspector.SidebarPane = function(title)
     this.bodyElement = this.element.createChild("div", "body");
     this._title = title;
     this._expandCallback = null;
-    this._visible = true;
+    this._paneVisible = true;
 }
 
 WebInspector.SidebarPane.prototype = {
@@ -73,7 +73,7 @@ WebInspector.SidebarPane.prototype = {
     _attached: function(setVisibleCallback, expandCallback)
     {
         this._setVisibleCallback = setVisibleCallback;
-        this._setVisibleCallback(this._visible);
+        this._setVisibleCallback(this._paneVisible);
 
         this._expandCallback = expandCallback;
         if (this._expandPending) {
@@ -87,7 +87,7 @@ WebInspector.SidebarPane.prototype = {
      */
     setVisible: function(visible)
     {
-        this._visible = visible;
+        this._paneVisible = visible;
         if (this._setVisibleCallback)
             this._setVisibleCallback(visible)
     },
