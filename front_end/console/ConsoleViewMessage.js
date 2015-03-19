@@ -978,7 +978,9 @@ WebInspector.ConsoleViewMessage.prototype = {
             return;
         var content = WebInspector.DOMPresentationUtils.buildStackTracePreviewContents(target,
             this._linkifier, this._message.stackTrace, this._message.asyncStackTrace);
-        parentTreeElement.appendChild(new TreeElement(content));
+        var treeElement = new TreeElement(content);
+        treeElement.selectable = false;
+        parentTreeElement.appendChild(treeElement);
     },
 
     resetIncrementRepeatCount: function()
