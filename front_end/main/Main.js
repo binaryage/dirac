@@ -143,7 +143,7 @@ WebInspector.Main.prototype = {
         Runtime.experiments.register("externalDeviceList", "External device list", true);
         Runtime.experiments.register("fileSystemInspection", "FileSystem inspection");
         Runtime.experiments.register("gpuTimeline", "GPU data on timeline", true);
-        Runtime.experiments.register("inputEventsOnTimelineOverview", "Input events on Timeline overview")
+        Runtime.experiments.register("inputEventsOnTimelineOverview", "Input events on Timeline overview", true)
         Runtime.experiments.register("javaScriptValuesInSource", "JavaScript values in source");
         Runtime.experiments.register("layersPanel", "Layers panel");
         Runtime.experiments.register("networkRequestHeadersFilterInDetailsView", "Network request headers filter in details view", true);
@@ -153,7 +153,7 @@ WebInspector.Main.prototype = {
         Runtime.experiments.register("serviceWorkersInPageFrontend", "Service workers in DevTools for page");
         Runtime.experiments.register("showPrimaryLoadWaterfallInNetworkTimeline", "Show primary load waterfall in Network timeline", true);
         Runtime.experiments.register("stepIntoAsync", "Step into async");
-        Runtime.experiments.register("timelineInvalidationTracking", "Timeline invalidation tracking");
+        Runtime.experiments.register("timelineInvalidationTracking", "Timeline invalidation tracking", true);
         Runtime.experiments.register("timelineFlowEvents", "Timeline flow events", true);
         Runtime.experiments.cleanUpStaleExperiments();
 
