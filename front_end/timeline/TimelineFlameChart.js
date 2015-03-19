@@ -1354,8 +1354,7 @@ WebInspector.TimelineFlameChartView = function(delegate, timelineModel, frameMod
     this._delegate = delegate;
     this._model = timelineModel;
 
-    var splitView = Runtime.experiments.isEnabled("networkRequestsOnTimeline") ?
-        new WebInspector.SplitView(false, false, "timelineFlamechartMainView", 150) : null;
+    this._splitView = new WebInspector.SplitView(false, false, "timelineFlamechartMainView", 150);
 
     this._dataProvider = new WebInspector.TimelineFlameChartDataProvider(this._model, frameModel);
     this._mainView = new WebInspector.FlameChart(this._dataProvider, this, true);
@@ -1364,9 +1363,9 @@ WebInspector.TimelineFlameChartView = function(delegate, timelineModel, frameMod
     this._networkView = new WebInspector.FlameChart(this._networkDataProvider, this, true);
 
     if (Runtime.experiments.isEnabled("networkRequestsOnTimeline")) {
-        splitView.setMainView(this._mainView);
-        splitView.setSidebarView(this._networkView);
-        splitView.show(this.element);
+        this._splitView.setMainView(this._mainView);
+        this._splitView.setSidebarView(this._networkView);
+        this._splitView.show(this.element);
     } else {
         this._mainView.show(this.element);
     }
@@ -1521,6 +1520,17 @@ WebInspector.TimelineFlameChartView.prototype = {
         var timelineSelection = dataProvider.createSelection(entryIndex);
         if (timelineSelection)
             this._delegate.select(timelineSelection);
+    },
+
+    /**
+     * @param {boolean} enable
+     */
+    enableNetworkPane: function(enable)
+    {
+        if (enable)
+            this._splitView.showBoth(true);
+        else
+            this._splitView.hideSidebar(true);
     },
 
     __proto__: WebInspector.VBox.prototype

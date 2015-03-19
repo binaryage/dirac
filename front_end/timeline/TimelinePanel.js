@@ -322,6 +322,13 @@ WebInspector.TimelinePanel.prototype = {
         var captureSettingsLabel = new WebInspector.StatusBarText(WebInspector.UIString("Capture Details:"), "timeline-status-bar-group-label");
         this._panelToolbar.appendStatusBarItem(captureSettingsLabel);
 
+        this._captureNetworkSetting = WebInspector.settings.createSetting("timelineCaptureNetwork", false);
+        this._captureNetworkSetting.addChangeListener(this._onNetworkChanged, this);
+        if (Runtime.experiments.isEnabled("networkRequestsOnTimeline")) {
+            this._panelToolbar.appendStatusBarItem(this._createSettingCheckbox(WebInspector.UIString("Network"),
+                                                                          this._captureNetworkSetting,
+                                                                          WebInspector.UIString("Capture network requests information")));
+        }
         this._captureCausesSetting = WebInspector.settings.createSetting("timelineCaptureCauses", true);
         this._captureCausesSetting.addChangeListener(this._refreshViews, this);
         this._panelToolbar.appendStatusBarItem(this._createSettingCheckbox(WebInspector.UIString("Causes"),
@@ -594,8 +601,11 @@ WebInspector.TimelinePanel.prototype = {
         if (this._flameChartEnabledSetting.get()) {
             this._filterBar.filterButton().setEnabled(false);
             this._filtersContainer.classList.toggle("hidden", true);
-            this._addModeView(new WebInspector.TimelineFlameChartView(this, this._model, this._frameModel()));
+            this._flameChart = new WebInspector.TimelineFlameChartView(this, this._model, this._frameModel());
+            this._onNetworkChanged();
+            this._addModeView(this._flameChart);
         } else {
+            this._flameChart = null;
             this._filterBar.filterButton().setEnabled(true);
             this._filtersContainer.classList.toggle("hidden", !this._filterBar.filtersToggled());
             this._addModeView(this._timelineView());
@@ -617,6 +627,12 @@ WebInspector.TimelinePanel.prototype = {
         this._updateSelectionDetails();
 
         this._stackView.show(this._searchableView.element);
+    },
+
+    _onNetworkChanged: function()
+    {
+        if (this._flameChart)
+            this._flameChart.enableNetworkPane(this._captureNetworkSetting.get());
     },
 
     /**
