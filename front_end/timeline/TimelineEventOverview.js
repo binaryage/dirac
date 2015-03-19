@@ -75,7 +75,8 @@ WebInspector.TimelineEventOverview.prototype = {
         this.resetCanvas();
         var threads = this._model.virtualThreads();
         var mainThreadEvents = this._model.mainThreadEvents();
-        var estimatedHeight = padding + WebInspector.TimelineEventOverview._mainStripHeight + 2 * WebInspector.TimelineEventOverview._smallStripHeight;
+        var estimatedHeight = padding + WebInspector.TimelineEventOverview._smallStripHeight;
+        estimatedHeight += padding + WebInspector.TimelineEventOverview._mainStripHeight + 2 * WebInspector.TimelineEventOverview._smallStripHeight;
         estimatedHeight += padding + WebInspector.TimelineEventOverview._maxNetworkStripHeight;
         this._canvas.height = estimatedHeight * window.devicePixelRatio;
         this._canvas.style.height = estimatedHeight + "px";
@@ -95,6 +96,7 @@ WebInspector.TimelineEventOverview.prototype = {
         for (var thread of threads.filter(function(thread) { return thread.isWorker(); }))
             workersHeight = Math.max(workersHeight, this._drawEvents(thread.events, position, WebInspector.TimelineEventOverview._smallStripHeight));
         position += workersHeight;
+        console.assert(position <= estimatedHeight);
         this.element.style.flexBasis = position + "px";
     },
 
