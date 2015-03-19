@@ -245,7 +245,7 @@ WebInspector.ServiceWorkerDispatcher.prototype = {
      */
     workerRegistrationUpdated: function(registrations)
     {
-        //FIXME: implement this.
+        // FIXME: implement this.
     },
 
     /**
@@ -254,16 +254,7 @@ WebInspector.ServiceWorkerDispatcher.prototype = {
      */
     workerVersionUpdated: function(versions)
     {
-        //FIXME: implement this.
-    },
-
-    /**
-     * @override
-     * @param {string} registrationId
-     */
-    workerRegistrationDeleted: function(registrationId)
-    {
-        //FIXME: implement this.
+        // FIXME: implement this.
     }
 }
 
