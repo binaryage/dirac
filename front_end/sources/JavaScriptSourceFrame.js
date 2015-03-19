@@ -228,6 +228,8 @@ WebInspector.JavaScriptSourceFrame.prototype = {
     wasShown: function()
     {
         WebInspector.UISourceCodeFrame.prototype.wasShown.call(this);
+        if (this._executionLineNumber && this.loaded)
+            this._generateValuesInSource();
     },
 
     willHide: function()
@@ -707,12 +709,14 @@ WebInspector.JavaScriptSourceFrame.prototype = {
             return;
 
         this.textEditor.setExecutionLine(lineNumber);
-        if (Runtime.experiments.isEnabled("javaScriptValuesInSource"))
+        if (this.isShowing())
             this._generateValuesInSource();
     },
 
     _generateValuesInSource: function()
     {
+        if (!WebInspector.settings.javaScriptValuesInSource.get())
+            return;
         var executionContext = WebInspector.context.flavor(WebInspector.ExecutionContext);
         if (!executionContext)
             return;
@@ -723,7 +727,7 @@ WebInspector.JavaScriptSourceFrame.prototype = {
         var localScope = callFrame.localScope();
         var functionLocation = callFrame.functionLocation();
         if (localScope && functionLocation)
-            localScope.object().getAllProperties(false, this._printScopeValues.bind(this, callFrame));
+            localScope.object().getAllProperties(false, this._prepareScopeVariables.bind(this, callFrame));
 
         if (this._clearValueWidgetsTimer) {
             clearTimeout(this._clearValueWidgetsTimer);
@@ -736,7 +740,7 @@ WebInspector.JavaScriptSourceFrame.prototype = {
      * @param {?Array.<!WebInspector.RemoteObjectProperty>} properties
      * @param {?Array.<!WebInspector.RemoteObjectProperty>} internalProperties
      */
-    _printScopeValues: function(callFrame, properties, internalProperties)
+    _prepareScopeVariables: function(callFrame, properties, internalProperties)
     {
         if (!properties || !properties.length || properties.length > 500) {
             this._clearValueWidgets();
@@ -768,7 +772,7 @@ WebInspector.JavaScriptSourceFrame.prototype = {
         for (var property of properties)
             valuesMap.set(property.name, property.value);
 
-        /** @type {!Map.<number, !Set<string>>}*/
+        /** @type {!Map.<number, !Set<string>>} */
         var namesPerLine = new Map();
         var tokenizer = new WebInspector.CodeMirrorUtils.TokenizerFactory().createTokenizer("text/javascript");
         tokenizer(this.textEditor.line(fromLine).substring(fromColumn), processToken.bind(this, fromLine));
@@ -794,7 +798,17 @@ WebInspector.JavaScriptSourceFrame.prototype = {
                 names.add(tokenValue);
             }
         }
+        this.textEditor.operation(this._renderDecorations.bind(this, valuesMap, namesPerLine, fromLine, toLine));
+    },
 
+    /**
+     * @param {!Map.<string,!WebInspector.RemoteObject>} valuesMap
+     * @param {!Map.<number, !Set<string>>} namesPerLine
+     * @param {number} fromLine
+     * @param {number} toLine
+     */
+    _renderDecorations: function(valuesMap, namesPerLine, fromLine, toLine)
+    {
         var formatter = new WebInspector.RemoteObjectPreviewFormatter();
         for (var i = fromLine; i < toLine; ++i) {
             var names = namesPerLine.get(i);
@@ -813,7 +827,6 @@ WebInspector.JavaScriptSourceFrame.prototype = {
             var codeMirrorLinesLeftPadding = 4;
             var left = offset.x - base.x + codeMirrorLinesLeftPadding;
             widget.style.left = left + "px";
-            widget.createTextChild(" // ");
             widget.__nameToToken = new Map();
 
             var renderedNameCount = 0;
@@ -826,7 +839,9 @@ WebInspector.JavaScriptSourceFrame.prototype = {
                 widget.__nameToToken.set(name, nameValuePair);
                 nameValuePair.createTextChild(name + " = ");
                 var value = valuesMap.get(name);
-                if (value.preview)
+                var propertyCount = value.preview ? value.preview.properties.length : 0;
+                var entryCount = value.preview && value.preview.entries ? value.preview.entries.length : 0;
+                if (value.preview && propertyCount + entryCount < 10)
                     formatter.appendObjectPreview(nameValuePair, value.preview, value);
                 else
                     nameValuePair.appendChild(WebInspector.ObjectPropertiesSection.createValueElement(value, false));
@@ -835,7 +850,9 @@ WebInspector.JavaScriptSourceFrame.prototype = {
 
             if (oldWidget) {
                 for (var name of widget.__nameToToken.keys()) {
-                    if (oldWidget.__nameToToken.get(name).textContent !== widget.__nameToToken.get(name).textContent) {
+                    var oldText = oldWidget.__nameToToken.get(name) ? oldWidget.__nameToToken.get(name).textContent : "";
+                    var newText = widget.__nameToToken.get(name) ? widget.__nameToToken.get(name).textContent : "";
+                    if (newText !== oldText) {
                         // value has changed, update it.
                         WebInspector.runCSSAnimationOnce(widget.__nameToToken.get(name), "source-frame-value-update-highlight");
                     }

@@ -988,6 +988,14 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     },
 
     /**
+     * @param {function()} operation
+     */
+    operation: function(operation)
+    {
+        this._codeMirror.operation(operation);
+    },
+
+    /**
      * @param {number} lineNumber
      */
     _revealLine: function(lineNumber)

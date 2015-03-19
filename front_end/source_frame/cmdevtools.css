@@ -232,17 +232,17 @@
 
 .CodeMirror .text-editor-value-decoration {
     position: absolute;
-    padding-left: 10px;
     top: -13px;
-    color: #aaa;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 1000px;
-}
-
-.CodeMirror .text-editor-value-decoration * {
-    color: inherit !important;
+    opacity: 0.8;
+    background-color: #FFE3C7;
+    margin-left: 10px;
+    padding-left: 5px;
+    color: #222;
+    -webkit-user-select: text;
 }
 
 .text-editor-messages-description-container {

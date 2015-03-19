@@ -246,6 +246,13 @@
         {
             "type": "ui-setting",
             "section": "Sources",
+            "title": "Show scope values inline",
+            "settingName": "javaScriptValuesInSource",
+            "settingType": "checkbox"
+        },
+        {
+            "type": "ui-setting",
+            "section": "Sources",
             "title": "Enable CSS source maps",
             "settingName": "cssSourceMapsEnabled",
             "settingType": "checkbox"
