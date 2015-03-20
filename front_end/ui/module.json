@@ -20,6 +20,7 @@
         "FilterBar.js",
         "ForwardedInputEventHandler.js",
         "HelpScreen.js",
+        "HistoryInput.js",
         "InplaceEditor.js",
         "KeyboardShortcut.js",
         "Panel.js",

@@ -358,6 +358,20 @@ function createElement(tagName, customElementType)
 }
 
 /**
+ * @param {string} type
+ * @param {boolean} bubbles
+ * @param {boolean} cancelable
+ * @return {!Event}
+ * @suppressGlobalPropertiesCheck
+ */
+function createEvent(type, bubbles, cancelable)
+{
+    var event = document.createEvent("Event");
+    event.initEvent(type, bubbles, cancelable);
+    return event;
+}
+
+/**
  * @param {number|string} data
  * @return {!Text}
  * @suppressGlobalPropertiesCheck

@@ -250,6 +250,7 @@
             'front_end/ui/FilterBar.js',
             'front_end/ui/ForwardedInputEventHandler.js',
             'front_end/ui/HelpScreen.js',
+            'front_end/ui/HistoryInput.js',
             'front_end/ui/InplaceEditor.js',
             'front_end/ui/KeyboardShortcut.js',
             'front_end/ui/Panel.js',
