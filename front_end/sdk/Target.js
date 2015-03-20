@@ -28,8 +28,9 @@ WebInspector.Target = function(name, type, connection, parentTarget, callback)
 
     /** @type {!Object.<string, boolean>} */
     this._capabilities = {};
-    this.pageAgent().canScreencast(this._initializeCapability.bind(this, WebInspector.Target.Capabilities.CanScreencast, null));
-    this.pageAgent().canEmulate(this._initializeCapability.bind(this, WebInspector.Target.Capabilities.CanEmulate, this._loadedWithCapabilities.bind(this, callback)));
+    if (this.supportsEmulation())
+        this.emulationAgent().canEmulate(this._initializeCapability.bind(this, WebInspector.Target.Capabilities.CanEmulate, null));
+    this.pageAgent().canScreencast(this._initializeCapability.bind(this, WebInspector.Target.Capabilities.CanScreencast, this._loadedWithCapabilities.bind(this, callback)));
 }
 
 /**

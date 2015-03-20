@@ -445,7 +445,7 @@ TestSuite.prototype.testDeviceMetricsOverrides = function()
 
     function testOverrides(params, metrics, callback)
     {
-        WebInspector.targetManager.mainTarget().pageAgent().invoke_setDeviceMetricsOverride(params, getMetrics);
+        WebInspector.targetManager.mainTarget().emulationAgent().invoke_setDeviceMetricsOverride(params, getMetrics);
 
         function getMetrics()
         {

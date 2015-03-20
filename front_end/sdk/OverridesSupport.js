@@ -178,7 +178,7 @@ WebInspector.OverridesSupport.GeolocationPosition.parseUserInput = function(lati
 WebInspector.OverridesSupport.GeolocationPosition.clearGeolocationOverride = function()
 {
     for (var target of WebInspector.targetManager.targets())
-        target.pageAgent().clearGeolocationOverride();
+        target.emulationAgent().clearGeolocationOverride();
 }
 
 /**
@@ -580,7 +580,7 @@ WebInspector.OverridesSupport.prototype = {
          */
         function setDeviceMetricsOverride(finishCallback)
         {
-            this._target.pageAgent().setDeviceMetricsOverride(
+            this._target.emulationAgent().setDeviceMetricsOverride(
                 overrideWidth, overrideHeight, this.settings.emulateResolution.get() ? this.settings.deviceScaleFactor.get() : 0,
                 this.settings.emulateMobile.get(), this._pageResizer ? false : this.settings.deviceFitWindow.get(), scale, 0, 0,
                 apiCallback.bind(this, finishCallback));
@@ -592,7 +592,7 @@ WebInspector.OverridesSupport.prototype = {
          */
         function clearDeviceMetricsOverride(finishCallback)
         {
-            this._target.pageAgent().clearDeviceMetricsOverride(apiCallback.bind(this, finishCallback));
+            this._target.emulationAgent().clearDeviceMetricsOverride(apiCallback.bind(this, finishCallback));
         }
 
         /**
@@ -627,15 +627,15 @@ WebInspector.OverridesSupport.prototype = {
     {
         if (!this.emulationEnabled() || !this.settings.overrideGeolocation.get()) {
             for (var target of WebInspector.targetManager.targets())
-                target.pageAgent().clearGeolocationOverride();
+                target.emulationAgent().clearGeolocationOverride();
             return;
         }
         var geolocation = WebInspector.OverridesSupport.GeolocationPosition.parseSetting(this.settings.geolocationOverride.get());
         for (var target of WebInspector.targetManager.targets()) {
             if (geolocation.error)
-                target.pageAgent().setGeolocationOverride();
+                target.emulationAgent().setGeolocationOverride();
             else
-                target.pageAgent().setGeolocationOverride(geolocation.latitude, geolocation.longitude, 150);
+                target.emulationAgent().setGeolocationOverride(geolocation.latitude, geolocation.longitude, 150);
         }
     },
 
@@ -654,8 +654,10 @@ WebInspector.OverridesSupport.prototype = {
     _emulateTouchEventsChanged: function()
     {
         var emulateTouch = this.emulationEnabled() && this.settings.emulateTouch.get() && !this._touchEmulationSuspended;
-        for (var target of WebInspector.targetManager.targets())
-            target.domModel.emulateTouchEventObjects(emulateTouch, this.settings.emulateMobile.get() ? "mobile" : "desktop");
+        for (var target of WebInspector.targetManager.targets()) {
+            if (target.supportsEmulation())
+                target.domModel.emulateTouchEventObjects(emulateTouch, this.settings.emulateMobile.get() ? "mobile" : "desktop");
+        }
     },
 
     _cssMediaChanged: function()

@@ -315,12 +315,14 @@
                     { "name": "offsetY", "type": "number", "optional": true, "description": "Y offset to shift resulting view image by. Ignored in |fitWindow| mode." }
                 ],
                 "handlers": ["browser"],
+                "redirect": "Emulation",
                 "hidden": true
             },
             {
                 "name": "clearDeviceMetricsOverride",
                 "description": "Clears the overriden device metrics.",
                 "handlers": ["browser"],
+                "redirect": "Emulation",
                 "hidden": true
             },
             {
@@ -331,11 +333,13 @@
                     { "name": "longitude", "type": "number", "optional": true, "description": "Mock longitude"},
                     { "name": "accuracy", "type": "number", "optional": true, "description": "Mock accuracy"}
                 ],
+                "redirect": "Emulation",
                 "handlers": ["browser"]
             },
             {
                 "name": "clearGeolocationOverride",
                 "description": "Clears the overriden Geolocation Position and Error.",
+                "redirect": "Emulation",
                 "handlers": ["browser"]
             },
             {
@@ -363,6 +367,7 @@
                 ],
                 "description": "Toggles mouse event-based touch event emulation.",
                 "hidden": true,
+                "redirect": "Emulation",
                 "handlers": ["browser", "renderer"]
             },
             {
@@ -381,15 +386,6 @@
                 "description": "Tells whether screencast is supported.",
                 "returns": [
                   { "name": "result", "type": "boolean", "description": "True if screencast is supported." }
-                ],
-                "hidden": true,
-                "handlers": ["browser"]
-            },
-            {
-                "name": "canEmulate",
-                "description": "Tells whether emulation is supported.",
-                "returns": [
-                    { "name": "result", "type": "boolean", "description": "True if emulation is supported." }
                 ],
                 "hidden": true,
                 "handlers": ["browser"]

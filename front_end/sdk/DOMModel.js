@@ -1882,7 +1882,7 @@ WebInspector.DOMModel.prototype = {
             this._addTouchEventsScriptId = scriptId;
         }
 
-        this.target().pageAgent().setTouchEmulationEnabled(emulationEnabled, configuration);
+        this.target().emulationAgent().setTouchEmulationEnabled(emulationEnabled, configuration);
     },
 
     markUndoableState: function()
