@@ -99,7 +99,7 @@ WebInspector.DOMPresentationUtils.linkifyNodeReference = function(node)
     if (!node)
         return createTextNode(WebInspector.UIString("<node>"));
 
-    var root = createElement("div");
+    var root = createElement("span");
     var shadowRoot = root.createShadowRoot();
     shadowRoot.appendChild(WebInspector.View.createStyleElement("components/nodeLink.css"));
     var link = shadowRoot.createChild("div", "node-link");

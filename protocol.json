@@ -4940,20 +4940,100 @@
                 "description": "Unique accessibility node identifier."
             },
             {
+                "id": "AXValueType",
+                "type": "string",
+                "enum": [ "boolean", "tristate", "booleanOrUndefined", "idref", "idrefList", "integer", "number", "string", "token", "tokenList", "domRelation" ],
+                "description": "Enum of possible property types."
+            },
+            {
+                "id": "AXPropertySourceType",
+                "type": "string",
+                "enum": [ "attribute", "implicit", "style" ],
+                "description": "Enum of possible property sources."
+            },
+            {
+                "id": "AXPropertySource",
+                "type": "object",
+                "properties": [
+                    { "name": "name", "type": "string", "description": "The name/label of this source." },
+                    { "name": "sourceType", "$ref": "AXPropertySourceType", "description": "What type of source this is." },
+                    { "name": "value", "type": "any", "description": "The value of this property source." },
+                    { "name": "type", "$ref": "AXValueType", "description": "What type the value should be interpreted as." },
+                    { "name": "invalid", "type": "boolean", "description": "Whether the value for this property is invalid.", "optional": true },
+                    { "name": "invalidReason", "type": "string", "description": "Reason for the value being invalid, if it is.", "optional": true }
+                ],
+                "description": "A single source for a computed AX property."
+            },
+            {
+                "id": "AXRelatedNode",
+                "type": "object",
+                "properties": [
+                    { "name": "idref", "type": "string", "description": "The IDRef value provided, if any.", "optional": true },
+                    { "name": "backendNodeId", "$ref": "DOM.BackendNodeId", "description": "The BackendNodeId of the related node." }
+                ]
+            },
+            {
+                "id": "AXProperty",
+                "type": "object",
+                "properties": [
+                    { "name": "name", "type": "string", "description": "The name of this property." },
+                    { "name": "value", "$ref": "AXValue", "description": "The value of this property." }
+                ]
+            },
+            {
+                "id": "AXValue",
+                "type": "object",
+                "properties": [
+                    { "name": "type", "$ref": "AXValueType", "description": "The type of this value." },
+
+                    { "name": "value", "type": "any", "description": "The computed value of this property.", "optional": true },
+                    { "name": "relatedNodeValue", "$ref": "AXRelatedNode", "description": "The related node value, if any.", "optional": true },
+                    { "name": "relatedNodeArrayValue", "type": "array", "items": { "$ref": "AXRelatedNode" }, "description": "Multiple relted nodes, if applicable.", "optional": true },
+                    { "name": "sources", "type": "array", "items": { "$ref": "AXPropertySource" }, "description": "The sources which contributed to the computation of this property.", "optional": true }
+                ],
+                "description": "A single computed AX property."
+            },
+            {
+                "id": "AXGlobalStates",
+                "type": "string",
+                "enum": [ "disabled", "hidden", "hiddenRoot", "invalid" ],
+                "description": "States which apply to every AX node."
+            },
+            {
+                "id": "AXLiveRegionAttributes",
+                "type": "string",
+                "enum": [ "live", "atomic", "relevant", "busy", "root" ],
+                "description": "Attributes which apply to nodes in live regions."
+            },
+            {
+                "id": "AXWidgetAttributes",
+                "type": "string",
+                "enum": [ "autocomplete", "haspopup", "level", "multiselectable", "orientation", "multiline", "readonly", "required", "valuemin", "valuemax", "valuetext" ],
+                "Description": "Attributes which apply to widgets."
+            },
+            {
+                "id": "AXWidgetStates",
+                "type": "string",
+                "enum": [ "checked", "expanded", "pressed", "selected" ],
+                "description": "States which apply to widgets."
+            },
+            {
+                "id": "AXRelationshipAttributes",
+                "type": "string",
+                "enum": [ "activedescendant", "flowto", "controls", "describedby", "labelledby", "owns" ],
+                "description": "Relationships between elements other than parent/child/sibling."
+            },
+            {
                 "id": "AXNode",
                 "type": "object",
                 "properties": [
                     { "name": "nodeId", "$ref": "AXNodeId", "description": "Unique identifier for this node." },
-                    { "name": "role", "type": "string", "description": "This <code>Node</code>'s role, whether explicit or implicit." },
-                    { "name": "name", "type": "string", "description": "The accessible name for this <code>Node</code>.", "optional": true },
-                    { "name": "description", "type": "string", "description": "The accessible description for this <code>Node</code>.", "optional": true },
-                    { "name": "value", "type": "any", "description": "The value for this <code>Node</code>.", "optional": true },
-                    { "name": "help", "type": "string", "description": "Help.", "optional": true },
-                    { "name": "liveRegionProperties", "type": "object", "description": "Live region properties.", "optional": true },
-                    { "name": "globalStates", "type": "object", "description": "Global states.", "optional": true },
-                    { "name": "widgetProperties", "type": "object", "description": "Widget properties.", "optional": true },
-                    { "name": "widgetStates", "type": "object", "description": "Widget states.", "optional": true },
-                    { "name": "relationships", "type": "object", "description": "Related nodes other than parent/child.", "optional": true }
+                    { "name": "role", "$ref": "AXValue", "description": "This <code>Node</code>'s role, whether explicit or implicit." },
+                    { "name": "name", "$ref": "AXValue", "description": "The accessible name for this <code>Node</code>.", "optional": true },
+                    { "name": "description", "$ref": "AXValue", "description": "The accessible description for this <code>Node</code>.", "optional": true },
+                    { "name": "value", "$ref": "AXValue", "description": "The value for this <code>Node</code>.", "optional": true },
+                    { "name": "help", "$ref": "AXValue", "description": "Help.", "optional": true },
+                    { "name": "properties", "type": "array", "items": { "$ref": "AXProperty" }, "description": "All other properties" }
                 ],
                 "description": "A node in the accessibility tree."
             }
