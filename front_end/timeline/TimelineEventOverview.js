@@ -49,7 +49,7 @@ WebInspector.TimelineEventOverview = function(model)
 }
 
 /** @const */
-WebInspector.TimelineEventOverview._mainStripHeight = 12;
+WebInspector.TimelineEventOverview._mainStripHeight = 16;
 /** @const */
 WebInspector.TimelineEventOverview._smallStripHeight = 8;
 /** @const */
