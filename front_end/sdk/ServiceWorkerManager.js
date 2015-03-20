@@ -40,11 +40,19 @@ WebInspector.ServiceWorkerManager = function(target)
     this._lastAnonymousTargetId = 0;
     /** @type {!Map.<string, !WebInspector.ServiceWorker>} */
     this._workers = new Map();
+    /** @type {!Map.<string, !ServiceWorkerAgent.ServiceWorkerRegistration>} */
+    this._registrations = new Map();
+    /** @type {!Map.<string, !Map.<string, !ServiceWorkerAgent.ServiceWorkerVersion>>} */
+    this._versions = new Map();
     this.enable();
 }
 
 WebInspector.ServiceWorkerManager.Events = {
-    WorkersUpdated: "WorkersUpdated"
+    WorkersUpdated: "WorkersUpdated",
+    RegistrationUpdated: "RegistrationUpdated",
+    RegistrationDeleted: "RegistrationDeleted",
+    VersionUpdated: "VersionUpdated",
+    VersionDeleted: "VersionDeleted"
 }
 
 WebInspector.ServiceWorkerManager.prototype = {
@@ -67,6 +75,8 @@ WebInspector.ServiceWorkerManager.prototype = {
         for (var worker of this._workers.values())
             worker._connection.close();
         this._workers.clear();
+        this._registrations.clear();
+        this._versions.clear();
         this.target().serviceWorkerAgent().disable();
         WebInspector.targetManager.removeEventListener(WebInspector.TargetManager.Events.MainFrameNavigated, this._mainFrameNavigated, this);
     },
@@ -85,6 +95,22 @@ WebInspector.ServiceWorkerManager.prototype = {
     hasWorkers: function()
     {
         return !!this._workers.size;
+    },
+
+    /**
+     * @return {!Map.<string, !ServiceWorkerAgent.ServiceWorkerRegistration>}
+     */
+    registrations: function()
+    {
+        return this._registrations;
+    },
+
+    /**
+     * @return {!Map.<string, !Map.<string, !ServiceWorkerAgent.ServiceWorkerVersion>>}
+     */
+    versions: function()
+    {
+        return this._versions;
     },
 
     /**
@@ -120,6 +146,61 @@ WebInspector.ServiceWorkerManager.prototype = {
         var worker = this._workers.get(workerId);
         if (worker)
             worker._connection.dispatch(message);
+    },
+
+    /**
+     * @param {!Array.<!ServiceWorkerAgent.ServiceWorkerRegistration>} registrations
+     */
+    _workerRegistrationUpdated: function(registrations)
+    {
+        for (var registration of registrations) {
+            this._registrations.set(registration.registrationId, registration);
+            this.dispatchEventToListeners(WebInspector.ServiceWorkerManager.Events.RegistrationUpdated, registration);
+
+            if (registration.isDeleted && !this._versions.get(registration.registrationId)) {
+                this._registrations.delete(registration.registrationId);
+                this.dispatchEventToListeners(WebInspector.ServiceWorkerManager.Events.RegistrationDeleted, registration);
+            }
+        }
+    },
+
+    /**
+     * @param {!Array.<!ServiceWorkerAgent.ServiceWorkerVersion>} versions
+     */
+    _workerVersionUpdated: function(versions)
+    {
+        for (var version of versions) {
+            var versionMap = this._versions.get(version.registrationId);
+            if (!versionMap) {
+                versionMap = new Map();
+                this._versions.set(version.registrationId, versionMap);
+            }
+            versionMap.set(version.versionId, version);
+            this.dispatchEventToListeners(WebInspector.ServiceWorkerManager.Events.VersionUpdated, version);
+
+            if (!this._isDeletedVersion(version))
+                continue;
+            versionMap.delete(version.versionId);
+            this.dispatchEventToListeners(WebInspector.ServiceWorkerManager.Events.VersionDeleted, version);
+            if (versionMap.size != 0)
+                continue;
+            this._versions.delete(version.registrationId);
+            var registration = this._registrations.get(version.registrationId);
+            if (!registration || !registration.isDeleted)
+                continue;
+            this._registrations.delete(version.registrationId);
+            this.dispatchEventToListeners(WebInspector.ServiceWorkerManager.Events.RegistrationDeleted, registration);
+        }
+    },
+
+    /**
+     * @param {!ServiceWorkerAgent.ServiceWorkerVersion} version
+     * @return {boolean}
+     */
+     _isDeletedVersion: function(version)
+    {
+        return version.runningStatus == ServiceWorkerAgent.ServiceWorkerVersionRunningStatus.Stopped &&
+            version.status == ServiceWorkerAgent.ServiceWorkerVersionStatus.Redundant;
     },
 
     /**
@@ -245,7 +326,7 @@ WebInspector.ServiceWorkerDispatcher.prototype = {
      */
     workerRegistrationUpdated: function(registrations)
     {
-        // FIXME: implement this.
+        this._manager._workerRegistrationUpdated(registrations);
     },
 
     /**
@@ -254,7 +335,7 @@ WebInspector.ServiceWorkerDispatcher.prototype = {
      */
     workerVersionUpdated: function(versions)
     {
-        // FIXME: implement this.
+        this._manager._workerVersionUpdated(versions);
     }
 }
 

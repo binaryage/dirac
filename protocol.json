@@ -4107,6 +4107,18 @@
                 ]
             },
             {
+                "id": "ServiceWorkerVersionRunningStatus",
+                "type": "string",
+                "hidden": true,
+                "enum": ["stopped", "starting", "running", "stopping"]
+            },
+            {
+                "id": "ServiceWorkerVersionStatus",
+                "type": "string",
+                "hidden": true,
+                "enum": ["new", "installing", "installed", "activating", "activated", "redundant"]
+            },
+            {
                 "id": "ServiceWorkerVersion",
                 "type": "object",
                 "description": "ServiceWorker version.",
@@ -4114,8 +4126,8 @@
                     { "name": "versionId", "type": "string" },
                     { "name": "registrationId", "type": "string" },
                     { "name": "scriptURL", "type": "string" },
-                    { "name": "runningStatus", "type": "string", "enum": ["stopped", "starting", "running", "stopping"] },
-                    { "name": "status", "type": "string", "enum": ["new", "installing", "installed", "activating", "activated", "redundant"] }
+                    { "name": "runningStatus", "$ref": "ServiceWorkerVersionRunningStatus" },
+                    { "name": "status", "$ref": "ServiceWorkerVersionStatus" }
                 ]
             }
         ],

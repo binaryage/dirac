@@ -71,6 +71,11 @@ WebInspector.ResourcesPanel = function()
         this._sidebarTree.appendChild(this.fileSystemListTreeElement);
     }
 
+    if (Runtime.experiments.isEnabled("serviceWorkersInResources")) {
+        this.serviceWorkersTreeElement = new WebInspector.ServiceWorkersTreeElement(this);
+        this._sidebarTree.appendChild(this.serviceWorkersTreeElement);
+    }
+
     var mainView = new WebInspector.VBox();
     this.storageViews = mainView.element.createChild("div", "vbox flex-auto");
     this._storageViewStatusBar = new WebInspector.StatusBar(mainView.element);
@@ -548,6 +553,14 @@ WebInspector.ResourcesPanel.prototype = {
      * @param {!WebInspector.View} view
      */
     showServiceWorkerCache: function(view)
+    {
+        this._innerShowView(view);
+    },
+
+    /**
+     * @param {!WebInspector.View} view
+     */
+     showServiceWorkersView: function(view)
     {
         this._innerShowView(view);
     },
@@ -1607,6 +1620,34 @@ WebInspector.SWCacheTreeElement.prototype = {
     },
 
     __proto__: WebInspector.BaseStorageTreeElement.prototype
+}
+
+
+/**
+ * @constructor
+ * @extends {WebInspector.StorageCategoryTreeElement}
+ * @param {!WebInspector.ResourcesPanel} storagePanel
+ */
+WebInspector.ServiceWorkersTreeElement = function(storagePanel)
+{
+    WebInspector.StorageCategoryTreeElement.call(this, storagePanel, WebInspector.UIString("Service Workers"), "Service Workers", ["service-workers-tree-item"]);
+}
+
+WebInspector.ServiceWorkersTreeElement.prototype = {
+    /**
+     * @override
+     * @return {boolean}
+     */
+    onselect: function(selectedByUser)
+    {
+        WebInspector.StorageCategoryTreeElement.prototype.onselect.call(this, selectedByUser);
+        if (!this._view)
+            this._view = new WebInspector.ServiceWorkersView();
+        this._storagePanel.showServiceWorkersView(this._view);
+        return false;
+    },
+
+    __proto__: WebInspector.StorageCategoryTreeElement.prototype
 }
 
 

@@ -462,6 +462,8 @@
         'devtools_resources_js_files': [
             'front_end/resources/indexedDBViews.css',
             'front_end/resources/resourcesPanel.css',
+            'front_end/resources/serviceWorkerCacheViews.css',
+            'front_end/resources/serviceWorkersView.css',
             'front_end/resources/ApplicationCacheItemsView.js',
             'front_end/resources/CookieItemsView.js',
             'front_end/resources/DatabaseQueryView.js',
@@ -472,6 +474,8 @@
             'front_end/resources/FileSystemView.js',
             'front_end/resources/IndexedDBViews.js',
             'front_end/resources/ResourcesPanel.js',
+            'front_end/resources/ServiceWorkerCacheViews.js',
+            'front_end/resources/ServiceWorkersView.js',
         ],
         'devtools_script_formatter_worker_js_files': [
             'front_end/cm/css.js',
@@ -699,6 +703,7 @@
             'front_end/Images/responsiveDesign_2x.png',
             'front_end/Images/searchNext.png',
             'front_end/Images/searchPrev.png',
+            'front_end/Images/serviceWorker.svg',
             'front_end/Images/sessionStorage.png',
             'front_end/Images/settingsListRemove.png',
             'front_end/Images/settingsListRemove_2x.png',
