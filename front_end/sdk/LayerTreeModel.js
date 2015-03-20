@@ -347,7 +347,7 @@ WebInspector.TracingLayerTree.prototype = {
      */
     tileById: function(id)
     {
-        return this._tileById.get(id);
+        return this._tileById.get(id) || null;
     },
 
     /**
@@ -364,7 +364,7 @@ WebInspector.TracingLayerTree.prototype = {
             layer = new WebInspector.TracingLayer(payload);
         this._layersById[payload.layer_id] = layer;
         if (payload.owner_node)
-            layer._setNode(this._backendNodeIdToNode.get(payload.owner_node));
+            layer._setNode(this._backendNodeIdToNode.get(payload.owner_node) || null);
         if (!this._contentRoot && layer.drawsContent())
             this._contentRoot = layer;
         for (var i = 0; payload.children && i < payload.children.length; ++i)

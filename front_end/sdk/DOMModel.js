@@ -1079,7 +1079,7 @@ WebInspector.DeferredDOMNode.prototype = {
          */
         function onGotNode(nodeIds)
         {
-            callback(nodeIds && nodeIds.get(this._backendNodeId));
+            callback(nodeIds && (nodeIds.get(this._backendNodeId) || null));
         }
     }
 }
@@ -1593,8 +1593,8 @@ WebInspector.DOMModel.prototype = {
         for (var i = 0; i < node._shadowRoots.length; ++i)
             this._unbind(node._shadowRoots[i]);
         var pseudoElements = node.pseudoElements();
-        for (var pseudoType of pseudoElements.keys())
-            this._unbind(pseudoElements.get(pseudoType));
+        for (var value of pseudoElements.values())
+            this._unbind(value);
         if (node._templateContent)
             this._unbind(node._templateContent);
     },

@@ -687,7 +687,7 @@ WebInspector.TracingModel.Process.prototype = {
      */
     threadByName: function(name)
     {
-        return this._threadByName.get(name);
+        return this._threadByName.get(name) || null;
     },
 
     /**

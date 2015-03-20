@@ -854,7 +854,7 @@ WebInspector.JavaScriptSourceFrame.prototype = {
                     var newText = widget.__nameToToken.get(name) ? widget.__nameToToken.get(name).textContent : "";
                     if (newText !== oldText) {
                         // value has changed, update it.
-                        WebInspector.runCSSAnimationOnce(widget.__nameToToken.get(name), "source-frame-value-update-highlight");
+                        WebInspector.runCSSAnimationOnce(/** @type {!Element} */ (widget.__nameToToken.get(name)), "source-frame-value-update-highlight");
                     }
                 }
                 this._valueWidgets.delete(i);

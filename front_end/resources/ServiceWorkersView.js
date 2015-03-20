@@ -352,7 +352,7 @@ WebInspector.SWRegistrationElement.prototype = {
             [WebInspector.SWRegistrationElement.VersionMode.Active, []],
             [WebInspector.SWRegistrationElement.VersionMode.Redundant, []]]);
         for (var version of this._versions.values()) {
-            var mode = WebInspector.SWRegistrationElement.VersionStausToModeMap.get(version.status);
+            var mode = /** @type {string} */ (WebInspector.SWRegistrationElement.VersionStausToModeMap.get(version.status));
             modeVersionArrayMap.get(mode).push(version);
         }
         var fragment = createDocumentFragment();
@@ -379,7 +379,7 @@ WebInspector.SWRegistrationElement.prototype = {
      * @param {string} mode
      */
     _createVersionModeRow: function(modeVersionArrayMap, mode) {
-        var versionList = modeVersionArrayMap.get(mode);
+        var versionList = /** @type {!Array.<!ServiceWorkerAgent.ServiceWorkerVersion>} */(modeVersionArrayMap.get(mode));
         var modeRowElement = createElementWithClass("div", "service-workers-version-mode-row  service-workers-version-mode-row-" + mode);
         modeRowElement.createChild("div", "service-workers-version-mode").createTextChild(mode);
         var versionsElement = modeRowElement.createChild("div", "service-workers-versions" + mode);

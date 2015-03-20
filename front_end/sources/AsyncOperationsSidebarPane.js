@@ -90,7 +90,7 @@ WebInspector.AsyncOperationsSidebarPane.prototype = {
         var operationsMap = this._asyncOperationsByTarget.get(target);
         if (!operationsMap)
             return null;
-        return operationsMap.get(operationId);
+        return operationsMap.get(operationId) || null;
     },
 
     _asyncStackTracesStateChanged: function()

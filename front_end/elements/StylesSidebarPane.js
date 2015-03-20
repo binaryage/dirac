@@ -683,7 +683,7 @@ WebInspector.StylesSidebarPane.prototype = {
         for (var pseudoId of pseudoIds) {
             var block = WebInspector.SectionBlock.createPseudoIdBlock(pseudoId);
             var cascade = cascades.pseudo.get(pseudoId);
-            for (sectionModel of cascade.sectionModels()) {
+            for (var sectionModel of cascade.sectionModels()) {
                 var section = new WebInspector.StylePropertiesSection(this, sectionModel);
                 block.sections.push(section);
             }

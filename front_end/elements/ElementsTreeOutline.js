@@ -1733,7 +1733,7 @@ WebInspector.ElementsTreeOutline.prototype = {
             treeElement.removeChildAtIndex(i);
         }
 
-        var displayMode = this._shadowHostDisplayModes.get(node);
+        var displayMode = this._shadowHostDisplayModes.get(node) || null;
         for (var i = 0; i < visibleChildren.length && i < treeElement.expandedChildrenLimit(); ++i) {
             var child = visibleChildren[i];
             var existingTreeElement = existingTreeElements.get(child) || this.findTreeElement(child);

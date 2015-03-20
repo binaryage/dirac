@@ -82,7 +82,7 @@ WebInspector.ServiceWorkerManager.prototype = {
     },
 
     /**
-     * @return {!Iterator.<!WebInspector.ServiceWorker>}
+     * @return {!Iterable.<!WebInspector.ServiceWorker>}
      */
     workers: function()
     {

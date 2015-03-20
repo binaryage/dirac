@@ -189,7 +189,7 @@ WebInspector.XHRBreakpointsSidebarPane.prototype = {
 
     _labelClicked: function(url)
     {
-        var element = this._breakpointElements.get(url);
+        var element = this._breakpointElements.get(url) || null;
         var inputElement = createElementWithClass("span", "breakpoint-condition editing");
         inputElement.textContent = url;
         this.listElement.insertBefore(inputElement, element);

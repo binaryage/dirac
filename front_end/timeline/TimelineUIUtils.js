@@ -1780,7 +1780,7 @@ WebInspector.TimelineDetailsContentHelper.prototype = {
     {
         if (!backendNodeId || !this._relatedNodesMap)
             return null;
-        return this._relatedNodesMap.get(backendNodeId);
+        return this._relatedNodesMap.get(backendNodeId) || null;
     },
 
     /**

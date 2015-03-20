@@ -1510,7 +1510,7 @@ self.setImmediate = function(callback)
 }
 
 /**
- * @param {function(...[?])} callback
+ * @param {function(...?)} callback
  * @return {!Promise.<T>}
  * @template T
  */

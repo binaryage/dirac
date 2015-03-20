@@ -280,7 +280,7 @@ WebInspector.PromisePane.prototype = {
                 return;
             }
 
-            var node = this._promiseIdToNode.get(details.id);
+            var node = /** @type {!WebInspector.DataGridNode} */ (this._promiseIdToNode.get(details.id));
             var wasVisible = !previousDetails || this._filter.shouldBeVisible(previousDetails, node);
 
             // Check for the fast path on GC events.
@@ -289,7 +289,7 @@ WebInspector.PromisePane.prototype = {
             else
                 this._attachDataGridNode(details);
 
-            var isVisible = this._filter.shouldBeVisible(details, this._promiseIdToNode.get(details.id));
+            var isVisible = this._filter.shouldBeVisible(details, /** @type {!WebInspector.DataGridNode} */(this._promiseIdToNode.get(details.id)));
             if (wasVisible !== isVisible) {
                 this._hiddenByFilterCount += wasVisible ? 1 : -1;
                 this._updateFilterStatus();
@@ -320,16 +320,17 @@ WebInspector.PromisePane.prototype = {
      */
     _findVisibleParentNodeDetails: function(details)
     {
-        var promiseIdToDetails = this._promiseDetailsByTarget.get(this._target);
-        while (details) {
-            var parentId = details.parentId;
+        var promiseIdToDetails = /** @type {!Map.<number, !DebuggerAgent.PromiseDetails>} */ (this._promiseDetailsByTarget.get(this._target));
+        var currentDetails = details;
+        while (currentDetails) {
+            var parentId = currentDetails.parentId;
             if (typeof parentId !== "number")
                 break;
-            details = promiseIdToDetails.get(parentId);
-            if (!details)
+            currentDetails = promiseIdToDetails.get(parentId);
+            if (!currentDetails)
                 break;
-            var node = this._promiseIdToNode.get(details.id);
-            if (node && this._filter.shouldBeVisible(details, node))
+            var node = this._promiseIdToNode.get(currentDetails.id);
+            if (node && this._filter.shouldBeVisible(currentDetails, node))
                 return node;
         }
         return this._dataGrid.rootNode();
@@ -389,7 +390,7 @@ WebInspector.PromisePane.prototype = {
             return;
 
         var rootNode = this._dataGrid.rootNode();
-        var promiseIdToDetails = this._promiseDetailsByTarget.get(this._target);
+        var promiseIdToDetails = /** @type {!Map.<number, !DebuggerAgent.PromiseDetails>} */ (this._promiseDetailsByTarget.get(this._target));
 
         var nodesToInsert = { __proto__: null };
         // The for..of loop iterates in insertion order.
