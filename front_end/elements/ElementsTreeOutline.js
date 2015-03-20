@@ -1638,7 +1638,7 @@ WebInspector.ElementsTreeOutline.prototype = {
         if (!treeElement.isExpandable()) {
             var selectedTreeElement = treeElement.treeOutline.selectedTreeElement;
             if (selectedTreeElement && selectedTreeElement.hasAncestor(treeElement))
-                treeElement.select();
+                treeElement.select(true);
             treeElement.removeChildren();
             return;
         }

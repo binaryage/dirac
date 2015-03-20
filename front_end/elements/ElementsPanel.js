@@ -285,7 +285,10 @@ WebInspector.ElementsPanel.prototype = {
             this._lastValidSelectedNode = selectedNode;
         }
         WebInspector.notifications.dispatchEventToListeners(WebInspector.NotificationService.Events.SelectedNodeChanged);
+        this._selectedNodeChangedForTest();
     },
+
+    _selectedNodeChangedForTest: function() { },
 
     _updateSidebars: function()
     {

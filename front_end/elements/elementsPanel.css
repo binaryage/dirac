@@ -263,11 +263,11 @@
     padding-left: 0;
 }
 
-.styles-section.no-affect .style-properties li {
+.no-affect .style-properties li {
     opacity: 0.5;
 }
 
-.styles-section.no-affect .style-properties li.editing {
+.no-affect .style-properties li.editing {
     opacity: 1.0;
 }
 

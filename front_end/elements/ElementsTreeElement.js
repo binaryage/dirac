@@ -348,7 +348,7 @@ WebInspector.ElementsTreeElement.prototype = {
     {
         if (this._editing)
             return false;
-        if (this.treeOutline.handlePickNode(this.title, this._node))
+        if (selectedByUser && this.treeOutline.handlePickNode(this.title, this._node))
             return true;
         return TreeElement.prototype.select.call(this, omitFocus, selectedByUser);
     },

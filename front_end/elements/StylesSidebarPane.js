@@ -348,8 +348,14 @@ WebInspector.StylesSidebarPane.prototype = {
      */
     setNode: function(node)
     {
-        this._stylesPopoverHelper.hide();
-        this._discardElementUnderMouse();
+        // We should update SSP on main frame navigation only.
+        if (!node || !this.node() || node.ownerDocument === this.node().ownerDocument) {
+            this.element.classList.toggle("no-affect", this._isEditingStyle);
+            if (this._isEditingStyle) {
+                this._pendingNode = node;
+                return;
+            }
+        }
 
         if (node && node.nodeType() === Node.TEXT_NODE && node.parentNode)
             node = node.parentNode;
@@ -424,6 +430,7 @@ WebInspector.StylesSidebarPane.prototype = {
     doUpdate: function(finishedCallback)
     {
         this._updateForcedPseudoStateInputs();
+        this._discardElementUnderMouse();
 
         this._fetchMatchedCascade()
             .then(this._innerRebuildUpdate.bind(this))
@@ -606,7 +613,13 @@ WebInspector.StylesSidebarPane.prototype = {
      */
     setEditingStyle: function(editing)
     {
+        if (this._isEditingStyle === editing)
+            return;
         this._isEditingStyle = editing;
+        if (!editing && this._pendingNode) {
+            this.setNode(this._pendingNode);
+            delete this._pendingNode;
+        }
     },
 
     _styleSheetOrMediaQueryResultChanged: function()
@@ -1820,7 +1833,7 @@ WebInspector.StylePropertiesSection.prototype = {
         WebInspector.InplaceEditor.startEditing(element, config);
 
         element.getComponentSelection().setBaseAndExtent(element, 0, element, 1);
-        this._parentPane._isEditingStyle = true;
+        this._parentPane.setEditingStyle(true);
         var parentMediaElement = element.enclosingNodeOrSelfWithClass("media");
         parentMediaElement.classList.add("editing-media");
 
@@ -1832,7 +1845,7 @@ WebInspector.StylePropertiesSection.prototype = {
      */
     _editingMediaFinished: function(element)
     {
-        delete this._parentPane._isEditingStyle;
+        this._parentPane.setEditingStyle(false);
         var parentMediaElement = element.enclosingNodeOrSelfWithClass("media");
         parentMediaElement.classList.remove("editing-media");
     },
@@ -1869,7 +1882,7 @@ WebInspector.StylePropertiesSection.prototype = {
      */
     _editingMediaCommitted: function(media, element, newContent, oldContent, context, moveDirection)
     {
-        delete this._parentPane._isEditingStyle;
+        this._parentPane.setEditingStyle(false);
         this._editingMediaFinished(element);
 
         if (newContent)
@@ -1951,7 +1964,7 @@ WebInspector.StylePropertiesSection.prototype = {
         WebInspector.InplaceEditor.startEditing(this._selectorElement, config);
 
         element.getComponentSelection().setBaseAndExtent(element, 0, element, 1);
-        this._parentPane._isEditingStyle = true;
+        this._parentPane.setEditingStyle(true);
         this._parentPane._startEditingSelector(this);
     },
 
@@ -2071,7 +2084,7 @@ WebInspector.StylePropertiesSection.prototype = {
 
     _editingSelectorEnded: function()
     {
-        delete this._parentPane._isEditingStyle;
+        this._parentPane.setEditingStyle(false);
         this._parentPane._finishEditingSelector();
     },
 
@@ -2887,7 +2900,7 @@ WebInspector.StylePropertyTreeElement.prototype = {
 
         this._originalPropertyText = this.property.propertyText;
 
-        this._parentPane._isEditingStyle = true;
+        this._parentPane.setEditingStyle(true);
         if (selectElement.parentElement)
             selectElement.parentElement.scrollIntoViewIfNeeded(false);
 
@@ -3029,7 +3042,7 @@ WebInspector.StylePropertyTreeElement.prototype = {
         if (editedElement.parentElement)
             editedElement.parentElement.classList.remove("child-editing");
 
-        delete this._parentPane._isEditingStyle;
+        this._parentPane.setEditingStyle(false);
     },
 
     /**
