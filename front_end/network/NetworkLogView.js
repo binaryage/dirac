@@ -299,8 +299,7 @@ WebInspector.NetworkLogView.prototype = {
             titleDOMFragment: this._makeHeaderFragment(WebInspector.UIString("Name"), WebInspector.UIString("Path")),
             title: WebInspector.NetworkLogView._columnTitles["name"],
             sortable: true,
-            weight: 20,
-            disclosure: true
+            weight: 20
         });
 
         columns.push({

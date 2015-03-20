@@ -315,6 +315,8 @@ WebInspector.ViewportDataGridNode.prototype = {
     {
         child.parent = this;
         child.dataGrid = this.dataGrid;
+        if (!this.children.length)
+            this.hasChildren = true;
         this.children.splice(index, 0, child);
         child.recalculateSiblings(index);
         if (this._expanded)
@@ -335,6 +337,8 @@ WebInspector.ViewportDataGridNode.prototype = {
         if (child.nextSibling)
             child.nextSibling.previousSibling = child.previousSibling;
 
+        if (!this.children.length)
+            this.hasChildren = false;
         if (this._expanded)
             this.dataGrid.scheduleUpdateStructure();
     },
@@ -360,6 +364,8 @@ WebInspector.ViewportDataGridNode.prototype = {
         if (!this._expanded)
             return;
         this._expanded = false;
+        if (this._element)
+            this._element.classList.remove("expanded");
         this.dataGrid.scheduleUpdateStructure();
     },
 
@@ -371,6 +377,8 @@ WebInspector.ViewportDataGridNode.prototype = {
         if (this._expanded)
             return;
         this._expanded = true;
+        if (this._element)
+            this._element.classList.add("expanded");
         this.dataGrid.scheduleUpdateStructure();
     },
 
