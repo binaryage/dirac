@@ -134,6 +134,7 @@
 .cm-execution-line {
     background-color: rgb(171, 191, 254);
     outline: 1px solid rgb(64, 115, 244);
+    z-index: 4;
 }
 
 .cm-execution-line .CodeMirror-linenumber {
@@ -243,6 +244,10 @@
     padding-left: 5px;
     color: #222;
     -webkit-user-select: text;
+}
+
+.CodeMirror .cm-execution-line .text-editor-value-decoration {
+    background-color: transparent;
 }
 
 .text-editor-messages-description-container {
