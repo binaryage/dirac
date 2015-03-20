@@ -490,7 +490,7 @@ WebInspector.ResourcesPanel.prototype = {
         case WebInspector.resourceTypes.Image:
             return new WebInspector.ImageView(resource.url, resource.mimeType, resource);
         case WebInspector.resourceTypes.Font:
-            return new WebInspector.FontView(resource.url);
+            return new WebInspector.FontView(resource.url, resource.mimeType, resource);
         default:
             return new WebInspector.EmptyView(resource.url);
         }
