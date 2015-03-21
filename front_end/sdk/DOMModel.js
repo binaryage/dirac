@@ -720,7 +720,6 @@ WebInspector.DOMNode.prototype = {
         this._distributedNodes = [];
         for (var payload of payloads)
             this._distributedNodes.push(new WebInspector.DOMNodeShortcut(this._domModel.target(), payload.backendNodeId, payload.nodeType, payload.nodeName));
-        this._domModel.dispatchEventToListeners(WebInspector.DOMModel.Events.DistributedNodesChanged, this);
     },
 
     _renumber: function()
@@ -1488,6 +1487,7 @@ WebInspector.DOMModel.prototype = {
         if (!insertionPoint)
             return;
         insertionPoint._setDistributedNodePayloads(distributedNodes);
+        this.dispatchEventToListeners(WebInspector.DOMModel.Events.DistributedNodesChanged, insertionPoint);
     },
 
     /**
