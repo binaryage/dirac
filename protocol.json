@@ -2054,6 +2054,17 @@
                 "hidden": true
             },
             {
+                "id": "BackendNode",
+                "type": "object",
+                "properties": [
+                    { "name": "nodeType", "type": "integer", "description": "<code>Node</code>'s nodeType." },
+                    { "name": "nodeName", "type": "string", "description": "<code>Node</code>'s nodeName." },
+                    { "name": "backendNodeId", "$ref": "BackendNodeId" }
+                ],
+                "hidden": true,
+                "description": "Backend node with a friendly name."
+            },
+            {
                 "id": "PseudoType",
                 "type": "string",
                 "enum": [
@@ -2108,7 +2119,8 @@
                     { "name": "shadowRoots", "type": "array", "optional": true, "items": { "$ref": "Node" }, "description": "Shadow root list for given element host.", "hidden": true },
                     { "name": "templateContent", "$ref": "Node", "optional": true, "description": "Content document fragment for template elements.", "hidden": true },
                     { "name": "pseudoElements", "type": "array", "items": { "$ref": "Node" }, "optional": true, "description": "Pseudo elements associated with this node.", "hidden": true },
-                    { "name": "importedDocument", "$ref": "Node", "optional": true, "description": "Import document for the HTMLImport links." }
+                    { "name": "importedDocument", "$ref": "Node", "optional": true, "description": "Import document for the HTMLImport links." },
+                    { "name": "distributedNodes", "type": "array", "items": { "$ref": "BackendNode" }, "optional": true, "description": "Distributed nodes for given insertion point.", "hidden": true }
                 ],
                 "description": "DOM interaction is implemented in terms of mirror objects that represent the actual DOM nodes. DOMNode is a base node mirror type."
             },
@@ -2200,26 +2212,6 @@
                     { "name": "shapeMarginColor", "$ref": "RGBA", "optional": true, "hidden": true, "description": "The shape margin fill color (default: transparent)." }
                 ],
                 "description": "Configuration data for the highlighting of page elements."
-            },
-            {
-                "id": "DistributedNode",
-                "type": "object",
-                "hidden": true,
-                "properties": [
-                    { "name": "nodeId", "$ref": "NodeId", "description": "Distributed node id." },
-                    { "name": "destinationInsertionPointIds", "type": "array", "optional": true, "items": { "$ref": "NodeId" }, "description": "Identifiers of nodes this node was distributed into." }
-                ],
-                "description": "Distributed node detailed information."
-            },
-            {
-                "id": "InsertionPointDistribution",
-                "type": "object",
-                "hidden": true,
-                "properties": [
-                    { "name": "nodeId", "$ref": "NodeId", "description": "Insertion point node id." },
-                    { "name": "distributedNodes", "type": "array", "items": { "$ref": "DistributedNode" }, "description": "A list of distributed node details for this insertion point." }
-                ],
-                "description": "Distribution data for insertion point."
             }
         ],
         "commands": [
@@ -2245,16 +2237,6 @@
                     { "name": "depth", "type": "integer", "optional": true, "description": "The maximum depth at which children should be retrieved, defaults to 1. Use -1 for the entire subtree or provide an integer larger than 0.", "hidden": true }
                 ],
                 "description": "Requests that children of the node with given id are returned to the caller in form of <code>setChildNodes</code> events where not only immediate children are retrieved, but all children down to the specified depth."
-            },
-            {
-                "name": "requestShadowHostDistributedNodes",
-                "parameters": [
-                    { "name": "nodeId", "$ref": "NodeId", "description": "Id of the node to get distributed nodes for." }
-                ],
-                "returns": [
-                    { "name": "insertionPointDistributions", "type": "array", "items": { "$ref": "InsertionPointDistribution" }, "description": "A list of distribution data for each insertion point in shadow host." }
-                ],
-                "description": "Returns distribution data for all insertion points in shadow tree of the given node."
             },
             {
                 "name": "querySelector",
@@ -2441,6 +2423,7 @@
                 "parameters": [
                     { "name": "highlightConfig", "$ref": "HighlightConfig",  "description": "A descriptor for the highlight appearance." },
                     { "name": "nodeId", "$ref": "NodeId", "optional": true, "description": "Identifier of the node to highlight." },
+                    { "name": "backendNodeId", "$ref": "BackendNodeId", "optional": true, "description": "Identifier of the backend node to highlight." },
                     { "name": "objectId", "$ref": "Runtime.RemoteObjectId", "optional": true, "description": "JavaScript object id of the node to be highlighted.", "hidden": true }
                 ],
                 "description": "Highlights DOM node with given id or with the given JavaScript object wrapper. Either nodeId or objectId must be specified."
@@ -2661,14 +2644,6 @@
                 "hidden": true
             },
             {
-                "name": "shadowHostDistributionInvalidated",
-                "parameters": [
-                    { "name": "nodeIds", "type": "array", "items": { "$ref": "NodeId" }, "description": "Ids of the shadow host nodes for which content distribution has been invalidated." }
-                ],
-                "description": "Fired when shadow host node content distribution is recalculated.",
-                "hidden": true
-            },
-            {
                 "name": "characterDataModified",
                 "parameters": [
                     { "name": "nodeId", "$ref": "NodeId", "description": "Id of the node that has changed." },
@@ -2735,6 +2710,15 @@
                     { "name": "pseudoElementId", "$ref": "NodeId", "description": "The removed pseudo element id." }
                 ],
                 "description": "Called when a pseudo element is removed from an element.",
+                "hidden": true
+            },
+            {
+                "name": "distributedNodesUpdated",
+                "parameters": [
+                    { "name": "insertionPointId", "$ref": "NodeId", "description": "Insertion point where distrubuted nodes were updated." },
+                    { "name": "distributedNodes", "type": "array", "items": { "$ref": "BackendNode" }, "description": "Distributed nodes for given insertion point." }
+                ],
+                "description": "Called when distrubution is changed.",
                 "hidden": true
             }
         ]

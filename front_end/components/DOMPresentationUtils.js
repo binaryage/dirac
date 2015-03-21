@@ -123,7 +123,7 @@ WebInspector.DOMPresentationUtils.linkifyDeferredNodeReference = function(deferr
     var shadowRoot = root.createShadowRoot();
     shadowRoot.appendChild(WebInspector.View.createStyleElement("components/nodeLink.css"));
     var link = shadowRoot.createChild("div", "node-link");
-
+    link.createChild("content");
     link.addEventListener("click", deferredNode.resolve.bind(deferredNode, onDeferredNodeResolved), false);
 
     /**

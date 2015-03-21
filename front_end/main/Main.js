@@ -137,7 +137,6 @@ WebInspector.Main.prototype = {
         Runtime.experiments.register("animationInspection", "Animation Inspection", true);
         Runtime.experiments.register("applyCustomStylesheet", "Allow custom UI themes");
         Runtime.experiments.register("canvasInspection", "Canvas inspection");
-        Runtime.experiments.register("composedShadowDOM", "Composed Shadow DOM view.", true);
         Runtime.experiments.register("timelineDetailsChart", "Costly functions view in Timeline details", true);
         Runtime.experiments.register("customObjectFormatters", "Custom object formatters", true);
         Runtime.experiments.register("externalDeviceList", "External device list", true);
