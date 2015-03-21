@@ -248,6 +248,7 @@
 
 .CodeMirror .cm-execution-line .text-editor-value-decoration {
     background-color: transparent;
+    opacity: 0.5;
 }
 
 .text-editor-messages-description-container {
