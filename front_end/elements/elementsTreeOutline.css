@@ -121,7 +121,8 @@
 .elements-tree-outline li.shadow-root + ol {
     margin-left: 5px;
     padding-left: 5px;
-    border-left: 1px solid gray;
+    border-left: 1px solid rgb(190, 190, 190);
+    background-color: rgba(0, 0, 0, 0.05);
 }
 
 .elements-tree-editor {
