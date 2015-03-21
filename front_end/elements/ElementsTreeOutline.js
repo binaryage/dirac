@@ -474,6 +474,9 @@ WebInspector.ElementsTreeOutline.prototype = {
     update: function()
     {
         var selectedTreeElement = this.selectedTreeElement;
+        if (!(selectedTreeElement instanceof WebInspector.ElementsTreeElement))
+            selectedTreeElement = null;
+
         var selectedNode = selectedTreeElement ? selectedTreeElement.node() : null;
 
         this.removeChildren();
