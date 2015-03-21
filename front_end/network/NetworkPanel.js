@@ -48,17 +48,22 @@ WebInspector.NetworkPanel = function()
 
     this._searchableView = new WebInspector.SearchableView(this);
     this._searchableView.show(this.element);
-    var contentsElement = this._searchableView.element;
+
+    var overview = new WebInspector.NetworkOverview();
 
     this._splitView = new WebInspector.SplitView(true, false, "networkPanelSplitViewState");
-    this._splitView.show(contentsElement);
     this._splitView.hideMain();
+
+    this._auxilarySplitView = new WebInspector.SplitView(false, false, "networkPanelAuxilarySplitViewState", 0, 114);
+    this._auxilarySplitView.show(this._searchableView.element);
+    this._auxilarySplitView.setSidebarView(overview);
+    this._auxilarySplitView.setMainView(this._splitView);
 
     this._progressBarContainer = createElement("div");
     this._createStatusbarButtons();
 
     /** @type {!WebInspector.NetworkLogView} */
-    this._networkLogView = new WebInspector.NetworkLogView(this._filterBar, this._progressBarContainer);
+    this._networkLogView = new WebInspector.NetworkLogView(overview, this._filterBar, this._progressBarContainer);
     this._splitView.setSidebarView(this._networkLogView);
 
     this._detailsView = new WebInspector.VBox();

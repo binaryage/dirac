@@ -33,16 +33,19 @@
  * @implements {WebInspector.Searchable}
  * @implements {WebInspector.TargetManager.Observer}
  * @extends {WebInspector.VBox}
+ * @param {!WebInspector.NetworkOverview} overview
  * @param {!WebInspector.FilterBar} filterBar
  * @param {!Element} progressBarContainer
  */
-WebInspector.NetworkLogView = function(filterBar, progressBarContainer)
+WebInspector.NetworkLogView = function(overview, filterBar, progressBarContainer)
 {
     WebInspector.VBox.call(this);
     this.registerRequiredCSS("network/networkLogView.css");
     this.registerRequiredCSS("ui/filter.css");
 
     this._filterBar = filterBar;
+    /** @type {!WebInspector.NetworkOverview} */
+    this._overview = overview;
     this._progressBarContainer = progressBarContainer;
 
     var defaultColumnsVisibility = WebInspector.NetworkLogView._defaultColumnsVisibility;
@@ -66,6 +69,8 @@ WebInspector.NetworkLogView = function(filterBar, progressBarContainer)
 
     /** @type {!Array.<!WebInspector.NetworkLogView.Filter>} */
     this._filters = [];
+    /** @type {?WebInspector.NetworkLogView.Filter} */
+    this._timeFilter = null;
 
     this._currentMatchedRequestNode = null;
     this._currentMatchedRequestIndex = -1;
@@ -85,6 +90,8 @@ WebInspector.NetworkLogView = function(filterBar, progressBarContainer)
     this._addFilters();
     this._resetSuggestionBuilder();
     this._initializeView();
+
+    this._overview.addEventListener(WebInspector.NetworkOverview.Events.WindowChanged, this._onWindowChanged, this);
 
     WebInspector.settings.networkColorCodeResourceTypes.addChangeListener(this._invalidateAllItems, this);
     WebInspector.settings.networkLogLargeRows.addChangeListener(this._updateRowsSize, this);
@@ -199,6 +206,24 @@ WebInspector.NetworkLogView.prototype = {
      */
     targetRemoved: function(target)
     {
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _onWindowChanged: function(event)
+    {
+        var start = /** @type {number} */ (event.data.start);
+        var end = /** @type {number} */ (event.data.end);
+        if (!start && !end) {
+            this._timeFilter = null;
+            this._timeCalculator.setWindow(null);
+        } else {
+            this._timeFilter = WebInspector.NetworkLogView._requestTimeFilter.bind(null, start, end);
+            this._timeCalculator.setWindow(new WebInspector.NetworkTimeBoundary(start, end));
+        }
+        this._updateDividersIfNeeded();
+        this._filterRequests();
     },
 
     clearSelection: function()
@@ -882,8 +907,9 @@ WebInspector.NetworkLogView.prototype = {
         if (this._popoverHelper)
             this._popoverHelper.hidePopover();
 
-        if (this._calculator)
-            this._calculator.reset();
+        this._overview.reset();
+        this._timeFilter = null;
+        this._calculator.reset();
 
         this._timeCalculator.setWindow(null);
 
@@ -976,6 +1002,7 @@ WebInspector.NetworkLogView.prototype = {
         }
 
         this._staleRequestIds[request.requestId] = true;
+        this._overview.updateRequest(request);
         this._scheduleRefresh();
     },
 
@@ -1456,6 +1483,8 @@ WebInspector.NetworkLogView.prototype = {
     _applyFilter: function(node)
     {
         var request = node.request();
+        if (this._timeFilter && !this._timeFilter(request))
+            return false;
         var resourceType = request.resourceType();
         if (resourceType === WebInspector.resourceTypes.TextTrack)
             resourceType = WebInspector.resourceTypes.Other;
@@ -1951,6 +1980,21 @@ WebInspector.NetworkLogView.HTTPRequestsFilter = function(request)
 WebInspector.NetworkLogView.FinishedRequestsFilter = function(request)
 {
     return request.finished;
+}
+
+/**
+ * @param {number} windowStart
+ * @param {number} windowEnd
+ * @param {!WebInspector.NetworkRequest} request
+ * @return {boolean}
+ */
+WebInspector.NetworkLogView._requestTimeFilter = function(windowStart, windowEnd, request)
+{
+    if (request.issueTime() > windowEnd)
+        return false;
+    if (request.endTime !== -1 && request.endTime < windowStart)
+        return false;
+    return true;
 }
 
 WebInspector.NetworkLogView.EventTypes = {
