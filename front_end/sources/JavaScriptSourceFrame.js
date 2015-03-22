@@ -833,6 +833,8 @@ WebInspector.JavaScriptSourceFrame.prototype = {
             for (var name of names) {
                 if (renderedNameCount > 10)
                     break;
+                if (namesPerLine.get(i - 1) && namesPerLine.get(i - 1).has(name))
+                    continue;  // Only render name once in the given continuous block.
                 if (renderedNameCount)
                     widget.createTextChild(", ");
                 var nameValuePair = widget.createChild("span");
