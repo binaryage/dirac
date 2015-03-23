@@ -106,7 +106,7 @@ WebInspector.WorkerManager.prototype = {
         function onConnectionReady(connection)
         {
             var parsedURL = url.asParsedURL();
-            var workerName = parsedURL ? parsedURL.lastPathComponent : "#" + (++this._lastAnonymousTargetId);
+            var workerName = parsedURL ? parsedURL.lastPathComponentWithFragment() : "#" + (++this._lastAnonymousTargetId);
             var title = WebInspector.UIString("\u2699 %s", workerName);
             WebInspector.targetManager.createTarget(title, WebInspector.Target.Type.DedicatedWorker, connection, this.target(), targetCreated.bind(this));
         }

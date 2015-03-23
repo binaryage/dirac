@@ -228,7 +228,7 @@ WebInspector.ServiceWorker = function(manager, workerId, url)
     this._connection = new WebInspector.ServiceWorkerConnection(this._agent, workerId);
 
     var parsedURL = url.asParsedURL();
-    this._name = parsedURL ? parsedURL.lastPathComponent : "#" + (++WebInspector.ServiceWorker._lastAnonymousTargetId);
+    this._name = parsedURL ? parsedURL.lastPathComponentWithFragment()  : "#" + (++WebInspector.ServiceWorker._lastAnonymousTargetId);
     this._scope = parsedURL.host + parsedURL.folderPathComponents;
     var title = WebInspector.UIString("\u2699 %s", this._name);
 

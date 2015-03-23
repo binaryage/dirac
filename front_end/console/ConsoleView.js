@@ -341,7 +341,8 @@ WebInspector.ConsoleView.prototype = {
                 var frame = executionContext.target().resourceTreeModel.frameForId(executionContext.frameId);
                 result =  frame ? frame.displayName() : (executionContext.origin || executionContext.name);
             } else {
-                var name = WebInspector.displayNameForURL(executionContext.origin) || executionContext.name;
+                var parsedUrl = executionContext.origin.asParsedURL();
+                var name = parsedUrl? parsedUrl.lastPathComponentWithFragment() : executionContext.name;
                 result = executionContext.target().decorateLabel(name);
             }
         } else {
