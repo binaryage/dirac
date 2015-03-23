@@ -485,6 +485,14 @@ WebInspector.HeapSnapshotProxy.prototype = {
         return this._callMethodPromise("getStatistics");
     },
 
+    /**
+     * @return {!Promise.<?WebInspector.HeapSnapshotCommon.Samples>}
+     */
+    getSamples: function()
+    {
+        return this._callMethodPromise("getSamples");
+    },
+
     get totalSize()
     {
         return this._staticData.totalSize;
