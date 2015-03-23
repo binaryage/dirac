@@ -1188,52 +1188,6 @@ WebInspector.LongClickController.prototype = {
 }
 
 /**
- * @param {string} url
- * @param {string=} linkText
- * @param {string=} classes
- * @return {!Element}
- */
-WebInspector.createExternalAnchor = function(url, linkText, classes)
-{
-    var anchor = createElementWithClass("a", "link");
-    var href = sanitizeHref(url);
-
-    if (href)
-        anchor.href = href;
-    anchor.title = url;
-
-    if (!linkText)
-        linkText = url;
-
-    anchor.className = classes;
-    anchor.textContent = linkText;
-    anchor.setAttribute("target", "_blank");
-
-    /**
-     * @param {!Event} event
-     */
-    function clickHandler(event)
-    {
-        event.consume(true);
-        InspectorFrontendHost.openInNewTab(anchor.href);
-    }
-
-    anchor.addEventListener("click", clickHandler, false);
-
-    return anchor;
-}
-
-/**
- * @param {string} article
- * @param {string} title
- * @return {!Element}
- */
-WebInspector.createDocumentationAnchor = function(article, title)
-{
-    return WebInspector.createExternalAnchor("https://developer.chrome.com/devtools/docs/" + article, title);
-}
-
-/**
  * @param {!Window} window
  */
 WebInspector.initializeUIUtils = function(window)

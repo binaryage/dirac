@@ -189,6 +189,16 @@ WebInspector.linkifyURLAsNode = function(url, linkText, classes, isExternal, too
 }
 
 /**
+ * @param {string} article
+ * @param {string} title
+ * @return {!Element}
+ */
+WebInspector.linkifyDocumentationURLAsNode = function(article, title)
+{
+    return WebInspector.linkifyURLAsNode("https://developer.chrome.com/devtools/docs/" + article, title, undefined, true);
+}
+
+/**
  * @param {string} url
  * @param {number=} lineNumber
  * @param {string=} classes

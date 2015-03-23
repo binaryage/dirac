@@ -440,7 +440,10 @@ WebInspector.Main.prototype = {
             return;
         }
 
-        followLink();
+        if (!anchor.classList.contains("webkit-html-external-link"))
+            followLink();
+        else
+            InspectorFrontendHost.openInNewTab(anchor.href);
     },
 
     _registerShortcuts: function()
