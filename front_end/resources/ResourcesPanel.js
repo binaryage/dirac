@@ -173,7 +173,8 @@ WebInspector.ResourcesPanel.prototype = {
         this._target.domStorageModel.enable();
         this._target.indexedDBModel.enable();
 
-        this._populateResourceTree();
+        if (this._target.isPage())
+            this._populateResourceTree();
         this._populateDOMStorageTree();
         this._populateApplicationCacheTree();
         this.indexedDBListTreeElement._initialize();
