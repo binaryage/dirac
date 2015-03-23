@@ -165,6 +165,8 @@ WebInspector.Main.prototype = {
                 Runtime.experiments.enableForTest("animationInspection");
             if (testPath.indexOf("debugger/promise") !== -1)
                 Runtime.experiments.enableForTest("promiseTracker");
+            if (testPath.indexOf("/service-workers/") !== -1)
+                Runtime.experiments.enableForTest("serviceWorkersInResources");
         } else {
             Runtime.experiments.setDefaultExperiments([
                 "serviceWorkersInPageFrontend"
