@@ -121,7 +121,7 @@ WebInspector.ConsoleViewMessage.prototype = {
     {
         if (this._cachedHeight)
             return this._cachedHeight;
-        const defaultConsoleRowHeight = 16;
+        const defaultConsoleRowHeight = 18;  // Sync with consoleView.css
         if (this._message.type === WebInspector.ConsoleMessage.MessageType.Table) {
             var table = this._message.parameters[0];
             if (table && table.preview)
@@ -918,24 +918,6 @@ WebInspector.ConsoleViewMessage.prototype = {
         var element = createElementWithClass("div", "console-message");
         this._element = element;
 
-        switch (this._message.level) {
-        case WebInspector.ConsoleMessage.MessageLevel.Log:
-            element.classList.add("console-log-level");
-            break;
-        case WebInspector.ConsoleMessage.MessageLevel.Debug:
-            element.classList.add("console-debug-level");
-            break;
-        case WebInspector.ConsoleMessage.MessageLevel.Warning:
-            element.classList.add("console-warning-level");
-            break;
-        case WebInspector.ConsoleMessage.MessageLevel.Error:
-            element.classList.add("console-error-level");
-            break;
-        case WebInspector.ConsoleMessage.MessageLevel.Info:
-            element.classList.add("console-info-level");
-            break;
-        }
-
         if (this._message.type === WebInspector.ConsoleMessage.MessageType.StartGroup || this._message.type === WebInspector.ConsoleMessage.MessageType.StartGroupCollapsed)
             element.classList.add("console-group-title");
 
@@ -963,6 +945,24 @@ WebInspector.ConsoleViewMessage.prototype = {
             this._nestingLevelMarkers.push(this._wrapperElement.createChild("div", "nesting-level-marker"));
         this._updateCloseGroupDecorations();
         this._wrapperElement.message = this;
+
+        switch (this._message.level) {
+        case WebInspector.ConsoleMessage.MessageLevel.Log:
+            this._wrapperElement.classList.add("console-log-level");
+            break;
+        case WebInspector.ConsoleMessage.MessageLevel.Debug:
+            this._wrapperElement.classList.add("console-debug-level");
+            break;
+        case WebInspector.ConsoleMessage.MessageLevel.Warning:
+            this._wrapperElement.classList.add("console-warning-level");
+            break;
+        case WebInspector.ConsoleMessage.MessageLevel.Error:
+            this._wrapperElement.classList.add("console-error-level");
+            break;
+        case WebInspector.ConsoleMessage.MessageLevel.Info:
+            this._wrapperElement.classList.add("console-info-level");
+            break;
+        }
 
         this._wrapperElement.appendChild(this.contentElement());
         return this._wrapperElement;
