@@ -283,6 +283,14 @@ function TreeOutlineInShadow()
 }
 
 TreeOutlineInShadow.prototype = {
+    /**
+     * @param {string} cssFile
+     */
+    registerRequiredCSS: function(cssFile)
+    {
+        this._shadowRoot.appendChild(WebInspector.View.createStyleElement(cssFile));
+    },
+
     __proto__: TreeOutline.prototype
 }
 
