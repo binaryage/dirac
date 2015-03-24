@@ -38,6 +38,7 @@ WebInspector.ServiceWorkerManager = function(target)
     WebInspector.SDKObject.call(this, target);
     target.registerServiceWorkerDispatcher(new WebInspector.ServiceWorkerDispatcher(this));
     this._lastAnonymousTargetId = 0;
+    this._agent = target.serviceWorkerAgent();
     /** @type {!Map.<string, !WebInspector.ServiceWorker>} */
     this._workers = new Map();
     /** @type {!Map.<string, !ServiceWorkerAgent.ServiceWorkerRegistration>} */
@@ -62,7 +63,7 @@ WebInspector.ServiceWorkerManager.prototype = {
             return;
         this._enabled = true;
 
-        this.target().serviceWorkerAgent().enable();
+        this._agent.enable();
         WebInspector.targetManager.addEventListener(WebInspector.TargetManager.Events.MainFrameNavigated, this._mainFrameNavigated, this);
     },
 
@@ -77,7 +78,7 @@ WebInspector.ServiceWorkerManager.prototype = {
         this._workers.clear();
         this._registrations.clear();
         this._versions.clear();
-        this.target().serviceWorkerAgent().disable();
+        this._agent.disable();
         WebInspector.targetManager.removeEventListener(WebInspector.TargetManager.Events.MainFrameNavigated, this._mainFrameNavigated, this);
     },
 
@@ -111,6 +112,38 @@ WebInspector.ServiceWorkerManager.prototype = {
     versions: function()
     {
         return this._versions;
+    },
+
+    /**
+     * @param {string} scope
+     */
+    unregister: function(scope)
+    {
+        this._agent.unregister(scope);
+    },
+
+    /**
+     * @param {string} scope
+     */
+    startWorker: function(scope)
+    {
+        this._agent.startWorker(scope);
+    },
+
+    /**
+     * @param {string} versionId
+     */
+    stopWorker: function(versionId)
+    {
+        this._agent.stopWorker(versionId);
+    },
+
+    /**
+     * @param {string} versionId
+     */
+    inspectWorker: function(versionId)
+    {
+        this._agent.inspectWorker(versionId);
     },
 
     /**

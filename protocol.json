@@ -4134,6 +4134,34 @@
                     { "name": "workerId", "type": "string" }
                 ],
                 "handlers": ["browser"]
+            },
+            {
+                "name": "unregister",
+                "parameters": [
+                    { "name": "scopeURL", "type": "string" }
+                ],
+                "handlers": ["browser"]
+            },
+            {
+                "name": "startWorker",
+                "parameters": [
+                    { "name": "scopeURL", "type": "string" }
+                ],
+                "handlers": ["browser"]
+            },
+            {
+                "name": "stopWorker",
+                "parameters": [
+                    { "name": "versionId", "type": "string" }
+                ],
+                "handlers": ["browser"]
+            },
+            {
+                "name": "inspectWorker",
+                "parameters": [
+                    { "name": "versionId", "type": "string" }
+                ],
+                "handlers": ["browser"]
             }
         ],
         "events": [
