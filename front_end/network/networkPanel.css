@@ -200,6 +200,7 @@
     flex: auto;
     display: flex;
     position: relative;
+    border-bottom: 1px solid #CDCDCD;
 }
 
 .network-overview-canvas-container {
@@ -210,7 +211,6 @@
     left: 0;
     background-color: white;
     z-index: 200;
-    border-bottom: 1px solid #CDCDCD;
 }
 
 .network-overview-canvas-container canvas {
