@@ -828,6 +828,7 @@ WebInspector.JavaScriptSourceFrame.prototype = {
             var left = offset.x - base.x + codeMirrorLinesLeftPadding;
             widget.style.left = left + "px";
             widget.__nameToToken = new Map();
+            widget.__lineNumber = i;
 
             var renderedNameCount = 0;
             for (var name of names) {
