@@ -835,10 +835,10 @@ WebInspector.ConsoleViewMessage.prototype = {
 
     clearHighlights: function()
     {
-        if (!this._formattedMessage)
-            return;
-
-        WebInspector.removeSearchResultsHighlight(this._formattedMessage, WebInspector.highlightedSearchResultClassName);
+        if (this._higlightNodeChanges) {
+            WebInspector.revertDomChanges(this._higlightNodeChanges);
+            this._higlightNodeChanges = null;
+        }
     },
 
     /**
@@ -1131,8 +1131,9 @@ WebInspector.ConsoleViewMessage.prototype = {
     highlightMatches: function(ranges)
     {
         var highlightNodes = [];
+        this._higlightNodeChanges = [];
         if (this._formattedMessage)
-            highlightNodes = WebInspector.highlightSearchResults(this._messageElement, ranges);
+            highlightNodes = WebInspector.highlightSearchResults(this._messageElement, ranges, this._higlightNodeChanges);
         return highlightNodes;
     },
 

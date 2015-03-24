@@ -1285,7 +1285,10 @@ WebInspector.ConsoleCommand = function(message, linkifier, nestingLevel)
 WebInspector.ConsoleCommand.prototype = {
     clearHighlights: function()
     {
-        WebInspector.removeSearchResultsHighlight(this._formattedCommand, WebInspector.highlightedSearchResultClassName);
+        if (this._higlightNodeChanges) {
+            WebInspector.revertDomChanges(this._higlightNodeChanges);
+            this._higlightNodeChanges = null;
+        }
     },
 
     /**
@@ -1336,9 +1339,10 @@ WebInspector.ConsoleCommand.prototype = {
     highlightMatches: function(ranges)
     {
         var highlightNodes = [];
-        if (this._formattedCommand) {
-            highlightNodes = WebInspector.highlightRangesWithStyleClass(this._formattedCommand, ranges, WebInspector.highlightedSearchResultClassName);
-        }
+        this._higlightNodeChanges = [];
+        if (this._formattedCommand)
+            highlightNodes = WebInspector.highlightRangesWithStyleClass(this._formattedCommand, ranges, WebInspector.highlightedSearchResultClassName, this._higlightNodeChanges);
+
         return highlightNodes;
     },
 
