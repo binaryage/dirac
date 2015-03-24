@@ -81,7 +81,7 @@ WebInspector.ElementsPanel = function()
     this.sidebarPanes.domBreakpoints = WebInspector.domBreakpointsSidebarPane.createProxy(this);
     this.sidebarPanes.eventListeners = new WebInspector.EventListenersSidebarPane();
     if (Runtime.experiments.isEnabled("animationInspection"))
-        this.sidebarPanes.animations = new WebInspector.AnimationsSidebarPane(this.sidebarPanes.styles);
+        this.sidebarPanes.animations = new WebInspector.AnimationsSidebarPane();
     if (Runtime.experiments.isEnabled("accessibilityInspection"))
         this.sidebarPanes.accessibility = new WebInspector.AccessibilitySidebarPane();
 

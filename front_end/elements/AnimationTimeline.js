@@ -5,12 +5,10 @@
 /**
  * @constructor
  * @extends {WebInspector.VBox}
- * @param {!WebInspector.StylesSidebarPane} stylesPane
  */
-WebInspector.AnimationTimeline = function(stylesPane)
+WebInspector.AnimationTimeline = function()
 {
     WebInspector.VBox.call(this, true);
-    this._stylesPane = stylesPane;
     this.registerRequiredCSS("elements/animationTimeline.css");
     this.element.classList.add("animations-timeline");
 
@@ -205,7 +203,7 @@ WebInspector.AnimationTimeline.prototype = {
             this._nodesMap.set(animation.source().backendNodeId(), nodeUI);
         }
         var nodeRow = nodeUI.findRow(animation);
-        var uiAnimation = new WebInspector.AnimationUI(this._stylesPane, animation, this, nodeRow.element);
+        var uiAnimation = new WebInspector.AnimationUI(animation, this, nodeRow.element);
         animation.source().deferredNode().resolve(nodeResolved.bind(this));
         nodeRow.animations.push(uiAnimation);
         this._animationsMap.set(animation.id(), animation);
@@ -479,13 +477,11 @@ WebInspector.AnimationTimeline.NodeUI.prototype = {
 
 /**
  * @constructor
- * @param {!WebInspector.StylesSidebarPane} stylesPane
  * @param {!WebInspector.AnimationModel.AnimationPlayer} animation
  * @param {!WebInspector.AnimationTimeline} timeline
  * @param {!Element} parentElement
  */
-WebInspector.AnimationUI = function(stylesPane, animation, timeline, parentElement) {
-    this._stylesPane = stylesPane;
+WebInspector.AnimationUI = function(animation, timeline, parentElement) {
     this._animation = animation;
     this._timeline = timeline;
     this._parentElement = parentElement;
