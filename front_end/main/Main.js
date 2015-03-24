@@ -154,24 +154,29 @@ WebInspector.Main.prototype = {
         Runtime.experiments.register("stepIntoAsync", "Step into async");
         Runtime.experiments.register("timelineInvalidationTracking", "Timeline invalidation tracking", true);
         Runtime.experiments.register("timelineFlowEvents", "Timeline flow events", true);
+        Runtime.experiments.register("inlineVariableValues", "Display variable values inline while debugging");
+
         Runtime.experiments.cleanUpStaleExperiments();
 
         if (InspectorFrontendHost.isUnderTest()) {
             // Enable experiments for testing.
             var testPath = WebInspector.settings.testPath.get();
-            if (testPath.indexOf("timeline/") !== -1 || testPath.indexOf("layers/") !== -1)
-                Runtime.experiments.enableForTest("layersPanel");
-            if (testPath.indexOf("elements/") !== -1)
-                Runtime.experiments.enableForTest("animationInspection");
             if (testPath.indexOf("debugger/promise") !== -1)
                 Runtime.experiments.enableForTest("promiseTracker");
-            if (testPath.indexOf("/service-workers/") !== -1)
+            if (testPath.indexOf("elements/") !== -1)
+                Runtime.experiments.enableForTest("animationInspection");
+            if (testPath.indexOf("layers/") !== -1)
+                Runtime.experiments.enableForTest("layersPanel");
+            if (testPath.indexOf("service-workers/") !== -1)
                 Runtime.experiments.enableForTest("serviceWorkersInResources");
-        } else {
-            Runtime.experiments.setDefaultExperiments([
-                "serviceWorkersInPageFrontend"
-            ]);
+            if (testPath.indexOf("timeline/") !== -1 || testPath.indexOf("layers/") !== -1)
+                Runtime.experiments.enableForTest("layersPanel");
         }
+
+        Runtime.experiments.setDefaultExperiments([
+            "inlineVariableValues",
+            "serviceWorkersInPageFrontend"
+        ]);
     },
 
     /**
