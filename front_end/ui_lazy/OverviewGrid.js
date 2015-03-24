@@ -76,15 +76,6 @@ WebInspector.OverviewGrid.prototype = {
         this._grid.removeEventDividers();
     },
 
-    /**
-     * @param {?number} start
-     * @param {?number} end
-     */
-    setWindowPosition: function(start, end)
-    {
-        this._window._setWindowPosition(start, end);
-    },
-
     reset: function()
     {
         this._window.reset();

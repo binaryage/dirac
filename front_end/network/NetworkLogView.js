@@ -1244,14 +1244,6 @@ WebInspector.NetworkLogView.prototype = {
     /**
      * @param {!WebInspector.NetworkRequest} request
      */
-    _copyLocation: function(request)
-    {
-        InspectorFrontendHost.copyText(request.url);
-    },
-
-    /**
-     * @param {!WebInspector.NetworkRequest} request
-     */
     _copyRequestHeaders: function(request)
     {
         InspectorFrontendHost.copyText(request.requestHeadersText());

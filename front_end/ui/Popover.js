@@ -255,7 +255,6 @@ WebInspector.Popover.prototype = {
  */
 WebInspector.PopoverHelper = function(panelElement, getAnchor, showPopover, onHide, disableOnClick)
 {
-    this._panelElement = panelElement;
     this._getAnchor = getAnchor;
     this._showPopover = showPopover;
     this._onHide = onHide;
@@ -364,14 +363,6 @@ WebInspector.PopoverHelper.prototype = {
             clearTimeout(this._hoverTimer);
             delete this._hoverTimer;
         }
-    },
-
-    /**
-     * @return {boolean}
-     */
-    isHoverTimerActive: function()
-    {
-        return !!this._hoverTimer;
     },
 
     /**

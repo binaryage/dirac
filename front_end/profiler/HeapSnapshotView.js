@@ -1319,7 +1319,6 @@ WebInspector.TrackingHeapSnapshotProfileType.prototype = {
     {
         var target =  WebInspector.context.flavor(WebInspector.Target);
         this.setProfileBeingRecorded(new WebInspector.HeapProfileHeader(target, this, undefined, withAllocationStacks));
-        this._lastSeenIndex = -1;
         this._profileSamples = {
             "sizes": [],
             "ids": [],
@@ -1387,7 +1386,6 @@ WebInspector.TrackingHeapSnapshotProfileType.prototype = {
         this.setProfileBeingRecorded(null);
         WebInspector.HeapSnapshotProfileType.prototype._resetProfiles.call(this);
         this._profileSamples = null;
-        this._lastSeenIndex = -1;
         if (wasRecording)
             this._addNewProfile(recordingAllocationStacks);
     },

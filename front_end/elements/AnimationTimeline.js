@@ -55,7 +55,7 @@ WebInspector.AnimationTimeline.prototype = {
 
         var container = createElementWithClass("div", "animation-timeline-header");
         var controls = container.createChild("div", "animation-controls");
-        this._gridMarkers = container.createChild("div", "animation-timeline-markers");
+        container.createChild("div", "animation-timeline-markers");
 
         var replayButton = controls.createSVGChild("svg", "animation-control-replay");
         replayButton.setAttribute("height", 24);

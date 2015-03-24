@@ -92,7 +92,6 @@ WebInspector.SourcesPanel = function(workspaceForTest)
 
     this._lastSelectedTabSetting = WebInspector.settings.createSetting("lastSelectedSourcesSidebarPaneTab", this.sidebarPanes.scopechain.title());
 
-    this._extensionSidebarPanes = [];
     this._installDebuggerSidebarController();
 
     WebInspector.dockController.addEventListener(WebInspector.DockController.Events.DockSideChanged, this._dockSideChanged.bind(this));
@@ -330,26 +329,24 @@ WebInspector.SourcesPanel.prototype = {
      * @param {!WebInspector.UISourceCode} uiSourceCode
      * @param {number=} lineNumber 0-based
      * @param {number=} columnNumber
-     * @param {boolean=} forceShowInPanel
      */
-    showUISourceCode: function(uiSourceCode, lineNumber, columnNumber, forceShowInPanel)
+    showUISourceCode: function(uiSourceCode, lineNumber, columnNumber)
     {
-        this._showEditor(forceShowInPanel);
+        this._showEditor();
         this._sourcesView.showSourceLocation(uiSourceCode, lineNumber, columnNumber);
     },
 
-    _showEditor: function(forceShowInPanel)
+    _showEditor: function()
     {
         WebInspector.inspectorView.setCurrentPanel(this);
     },
 
     /**
      * @param {!WebInspector.UILocation} uiLocation
-     * @param {boolean=} forceShowInPanel
      */
-    showUILocation: function(uiLocation, forceShowInPanel)
+    showUILocation: function(uiLocation)
     {
-        this.showUISourceCode(uiLocation.uiSourceCode, uiLocation.lineNumber, uiLocation.columnNumber, forceShowInPanel);
+        this.showUISourceCode(uiLocation.uiSourceCode, uiLocation.lineNumber, uiLocation.columnNumber);
     },
 
     /**
@@ -1078,7 +1075,7 @@ WebInspector.SourcesPanel.prototype = {
 
         var uiLocation = WebInspector.debuggerWorkspaceBinding.rawLocationToUILocation(location);
         if (uiLocation)
-            this.showUILocation(uiLocation, true);
+            this.showUILocation(uiLocation);
     },
 
     showGoToSourceDialog: function()

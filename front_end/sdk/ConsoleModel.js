@@ -68,14 +68,6 @@ WebInspector.ConsoleModel.prototype = {
     },
 
     /**
-     * @return {boolean}
-     */
-    enablingConsole: function()
-    {
-        return !!this._enablingConsole;
-    },
-
-    /**
      * @param {!WebInspector.ConsoleMessage} msg
      */
     addMessage: function(msg)

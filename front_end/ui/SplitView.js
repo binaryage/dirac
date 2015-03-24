@@ -251,14 +251,6 @@ WebInspector.SplitView.prototype = {
     },
 
     /**
-     * @return {number}
-     */
-    preferredSidebarSize: function()
-    {
-        return this._preferredSidebarSizeDIP();
-    },
-
-    /**
      * @return {!Element}
      */
     resizerElement: function()

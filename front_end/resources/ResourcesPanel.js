@@ -159,14 +159,6 @@ WebInspector.ResourcesPanel.prototype = {
         this._resetWithFrames();
     },
 
-    /**
-     * @return {boolean}
-     */
-    canSearch: function()
-    {
-        return false;
-    },
-
     _initialize: function()
     {
         this._target.databaseModel.enable();

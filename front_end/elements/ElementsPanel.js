@@ -150,14 +150,6 @@ WebInspector.ElementsPanel.prototype = {
         treeOutline.element.remove();
     },
 
-    /**
-     * @return {?WebInspector.ElementsTreeOutline}
-     */
-    _firstTreeOutlineDeprecated: function()
-    {
-        return this._treeOutlines[0] || null;
-    },
-
     _updateTreeOutlineVisibleWidth: function()
     {
         if (!this._treeOutlines.length)

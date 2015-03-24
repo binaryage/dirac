@@ -885,13 +885,11 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     _enableLongLinesMode: function()
     {
         this._codeMirror.setOption("styleSelectedText", false);
-        this._longLinesMode = true;
     },
 
     _disableLongLinesMode: function()
     {
         this._codeMirror.setOption("styleSelectedText", true);
-        this._longLinesMode = false;
     },
 
     _updateCodeMirrorMode: function()

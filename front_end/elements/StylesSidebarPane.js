@@ -446,7 +446,6 @@ WebInspector.StylesSidebarPane.prototype = {
     _resetComputedCache: function()
     {
         delete this._computedStylePromise;
-        delete this._animationPropertiesPromise;
     },
 
     /**
@@ -514,31 +513,6 @@ WebInspector.StylesSidebarPane.prototype = {
     },
 
     /**
-     * @return {!Promise.<!Map.<string, string>>}
-     */
-    _fetchAnimationProperties: function()
-    {
-        var node = this.node();
-        if (!node)
-            return Promise.resolve(new Map());
-        if (!this._animationPropertiesPromise)
-            this._animationPropertiesPromise = new Promise(this._getAnimationPropertiesForNode.bind(this, node)).then(onAnimationProperties.bind(this));
-
-        return this._animationPropertiesPromise;
-
-        /**
-         * @param {!Map.<string, string>} properties
-         * @return {!Map.<string, string>}
-         * @this {WebInspector.StylesSidebarPane}
-         */
-        function onAnimationProperties(properties)
-        {
-            return this.node() !== node ? new Map() : properties;
-        }
-
-    },
-
-    /**
      * @param {!WebInspector.DOMNode} node
      * @param {function(!WebInspector.StylesSidebarPane.MatchedRulesPayload)} callback
      */
@@ -571,40 +545,6 @@ WebInspector.StylesSidebarPane.prototype = {
                 payload.inherited = /** @type {?Array.<{matchedCSSRules: !Array.<!WebInspector.CSSRule>}>} */(matchedResult.inherited);
             }
             callback(payload);
-        }
-    },
-
-    /**
-     * @param {!WebInspector.DOMNode} node
-     * @param {function(!Map<string, string>)} callback
-     */
-    _getAnimationPropertiesForNode: function(node, callback)
-    {
-        if (Runtime.experiments.isEnabled("animationInspection"))
-            node.target().animationModel.getAnimationPlayers(node.id, false, animationPlayersCallback);
-        else
-            callback(new Map());
-
-        /**
-         * @param {?Array.<!WebInspector.AnimationModel.AnimationPlayer>} animationPlayers
-         */
-        function animationPlayersCallback(animationPlayers)
-        {
-            var animationProperties = new Map();
-            if (!animationPlayers)
-                return;
-            for (var i = 0; i < animationPlayers.length; i++) {
-                var player = animationPlayers[i];
-                if (!player.source().keyframesRule())
-                    continue;
-                var animationCascade = new WebInspector.SectionCascade();
-                var keyframes = player.source().keyframesRule().keyframes();
-                for (var j = 0; j < keyframes.length; j++)
-                    animationCascade.appendModelFromStyle(keyframes[j].style(), "");
-                for (var property of animationCascade.allUsedProperties())
-                    animationProperties.set(property, player.name());
-            }
-            callback(animationProperties);
         }
     },
 
