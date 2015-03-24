@@ -50,15 +50,16 @@ WebInspector.ConsoleViewMessage = function(consoleMessage, linkifier, nestingLev
 
     /** @type {!Object.<string, function(!WebInspector.RemoteObject, !Element, boolean=)>} */
     this._customFormatters = {
-        "object": this._formatParameterAsObject,
         "array": this._formatParameterAsArray,
-        "node": this._formatParameterAsNode,
-        "map": this._formatParameterAsObject,
-        "set": this._formatParameterAsObject,
-        "iterator": this._formatParameterAsObject,
+        "error": this._formatParameterAsError,
+        "function": this._formatParameterAsFunction,
         "generator": this._formatParameterAsObject,
-        "string": this._formatParameterAsString,
-        "error": this._formatParameterAsError
+        "iterator": this._formatParameterAsObject,
+        "map": this._formatParameterAsObject,
+        "node": this._formatParameterAsNode,
+        "object": this._formatParameterAsObject,
+        "set": this._formatParameterAsObject,
+        "string": this._formatParameterAsString
     };
     this._previewFormatter = new WebInspector.RemoteObjectPreviewFormatter();
 }
@@ -452,6 +453,37 @@ WebInspector.ConsoleViewMessage.prototype = {
 
         var note = section.titleElement.createChild("span", "object-info-state-note");
         note.title = WebInspector.UIString("Object state below is captured upon first expansion");
+    },
+
+    /**
+     * @param {!WebInspector.RemoteObject} func
+     * @param {!Element} element
+     */
+    _formatParameterAsFunction: function(func, element)
+    {
+        func.functionDetails(didGetDetails.bind(this));
+
+        /**
+         * @param {?WebInspector.DebuggerModel.FunctionDetails} response
+         * @this {WebInspector.ConsoleViewMessage}
+         */
+        function didGetDetails(response)
+        {
+            if (!response) {
+                element.createTextChild(func.description || "");
+                return;
+            }
+
+            var title = (response.functionName || "function")+ "()";
+            if (response.location) {
+                var anchor = this._linkifier.linkifyRawLocation(response.location, "");
+                anchor.textContent = title;
+                element.appendChild(anchor);
+            } else {
+                element.createTextChild(title);
+            }
+            element.addEventListener("contextmenu", this._contextMenuEventFired.bind(this, func), false);
+        }
     },
 
     /**

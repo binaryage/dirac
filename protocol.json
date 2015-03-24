@@ -3182,7 +3182,7 @@
                 "hidden": true,
                 "type": "object",
                 "properties": [
-                    { "name": "location", "$ref": "Location", "description": "Location of the function." },
+                    { "name": "location", "$ref": "Location", "optional": true, "description": "Location of the function, none for native functions." },
                     { "name": "functionName", "type": "string", "description": "Name of the function." },
                     { "name": "isGenerator", "type": "boolean", "description": "Whether this is a generator function." },
                     { "name": "scopeChain", "type": "array", "optional": true, "items": { "$ref": "Scope" }, "description": "Scope chain for this closure." }
