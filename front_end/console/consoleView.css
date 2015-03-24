@@ -64,8 +64,6 @@
     min-height: 18px;  /* Sync with ConsoleViewMessage.js */
     white-space: pre-wrap;
     -webkit-user-modify: read-write-plaintext-only;
-    display: flex;
-    align-items: center;
 }
 
 #console-prompt::before {
