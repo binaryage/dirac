@@ -369,6 +369,15 @@ WebInspector.ServiceWorkerDispatcher.prototype = {
     workerVersionUpdated: function(versions)
     {
         this._manager._workerVersionUpdated(versions);
+    },
+
+    /**
+     * @override
+     * @param {!ServiceWorkerAgent.ServiceWorkerErrorMessage} errorMessage
+     */
+    workerErrorReported: function(errorMessage)
+    {
+        // FIXME: Implement this.
     }
 }
 

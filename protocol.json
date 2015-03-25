@@ -4089,13 +4089,11 @@
             {
                 "id": "ServiceWorkerVersionRunningStatus",
                 "type": "string",
-                "hidden": true,
                 "enum": ["stopped", "starting", "running", "stopping"]
             },
             {
                 "id": "ServiceWorkerVersionStatus",
                 "type": "string",
-                "hidden": true,
                 "enum": ["new", "installing", "installed", "activating", "activated", "redundant"]
             },
             {
@@ -4108,6 +4106,19 @@
                     { "name": "scriptURL", "type": "string" },
                     { "name": "runningStatus", "$ref": "ServiceWorkerVersionRunningStatus" },
                     { "name": "status", "$ref": "ServiceWorkerVersionStatus" }
+                ]
+            },
+            {
+                "id": "ServiceWorkerErrorMessage",
+                "type": "object",
+                "description": "ServiceWorker error message.",
+                "properties": [
+                    { "name": "errorMessage", "type": "string" },
+                    { "name": "registrationId", "type": "string" },
+                    { "name": "versionId", "type": "string" },
+                    { "name": "sourceURL", "type": "string" },
+                    { "name": "lineNumber", "type": "integer" },
+                    { "name": "columnNumber", "type": "integer" }
                 ]
             }
         ],
@@ -4199,6 +4210,13 @@
                 "name": "workerVersionUpdated",
                 "parameters": [
                     { "name": "versions", "type": "array", "items": { "$ref": "ServiceWorkerVersion" } }
+                ],
+                "handlers": ["browser"]
+            },
+            {
+                "name": "workerErrorReported",
+                "parameters": [
+                    { "name": "errorMessage", "$ref": "ServiceWorkerErrorMessage" }
                 ],
                 "handlers": ["browser"]
             }
