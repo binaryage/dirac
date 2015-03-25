@@ -349,7 +349,8 @@ WebInspector.StylesSidebarPane.prototype = {
     setNode: function(node)
     {
         // We should update SSP on main frame navigation only.
-        if (!node || !this.node() || node.ownerDocument === this.node().ownerDocument) {
+        var mainFrameNavigated = node && this.node() && node.ownerDocument !== this.node().ownerDocument;
+        if (!mainFrameNavigated && node !== this.node()) {
             this.element.classList.toggle("no-affect", this._isEditingStyle);
             if (this._isEditingStyle) {
                 this._pendingNode = node;
