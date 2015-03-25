@@ -1629,12 +1629,12 @@ WebInspector.StylePropertiesSection.prototype = {
      */
     _updateFilter: function()
     {
-        if (this.styleRule.isAttribute())
-            return true;
-
         var hasMatchingChild = false;
         for (var child of this.propertiesTreeOutline.rootElement().children())
             hasMatchingChild |= child._updateFilter();
+
+        if (this.styleRule.isAttribute())
+            return true;
 
         var regex = this._parentPane.filterRegex();
         var hideRule = !hasMatchingChild && regex && !regex.test(this.element.textContent);
