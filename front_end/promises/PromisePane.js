@@ -342,8 +342,7 @@ WebInspector.PromisePane.prototype = {
     {
         var node = this._promiseIdToNode.get(details.id);
         if (!node) {
-            node = new WebInspector.PromiseDataGridNode(details, this._target, this._linkifier);
-            node.dataGrid = this._dataGrid;
+            node = new WebInspector.PromiseDataGridNode(details, this._target, this._linkifier, this._dataGrid);
             this._promiseIdToNode.set(details.id, node);
         } else {
             node.update(details);
@@ -504,15 +503,17 @@ WebInspector.PromisePane.prototype = {
  * @param {!DebuggerAgent.PromiseDetails} details
  * @param {!WebInspector.Target} target
  * @param {!WebInspector.Linkifier} linkifier
+ * @param {!WebInspector.ViewportDataGrid} dataGrid
  */
-WebInspector.PromiseDataGridNode = function(details, target, linkifier)
+WebInspector.PromiseDataGridNode = function(details, target, linkifier, dataGrid)
 {
+    WebInspector.ViewportDataGridNode.call(this, {});
     this._details = details;
     this._target = target;
     this._linkifier = linkifier;
     /** @type {!Array.<!Element>} */
     this._linkifiedAnchors = [];
-    WebInspector.ViewportDataGridNode.call(this, {});
+    this.dataGrid = dataGrid;
 }
 
 WebInspector.PromiseDataGridNode.prototype = {
@@ -630,6 +631,15 @@ WebInspector.PromiseDataGridNode.prototype = {
         return cell;
     },
 
+    /**
+     * @return {string}
+     */
+    dataTextForSearch: function()
+    {
+        var details = this._details;
+        return WebInspector.beautifyFunctionName(details.callFrame ? details.callFrame.functionName : "");
+    },
+
     __proto__: WebInspector.ViewportDataGridNode.prototype
 }
 
@@ -709,26 +719,9 @@ WebInspector.PromisePaneFilter.prototype = {
         if (!regex)
             return true;
 
-        var text = this._createDataTextForSearch(node);
+        var text = node.dataTextForSearch();
         regex.lastIndex = 0;
         return regex.test(text);
-    },
-
-    /**
-     * @param {!WebInspector.DataGridNode} node
-     * @return {string}
-     */
-    _createDataTextForSearch: function(node)
-    {
-        var texts = [];
-        var data = node.data;
-        for (var key in data) {
-            var value = data[key];
-            var text = (value instanceof Node) ? value.textContent : String(value);
-            if (text)
-                texts.push(text);
-        }
-        return texts.join(" ");
     },
 
     /**
