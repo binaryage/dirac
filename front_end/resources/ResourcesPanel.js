@@ -71,11 +71,6 @@ WebInspector.ResourcesPanel = function()
         this._sidebarTree.appendChild(this.fileSystemListTreeElement);
     }
 
-    if (Runtime.experiments.isEnabled("serviceWorkersInResources")) {
-        this.serviceWorkersTreeElement = new WebInspector.ServiceWorkersTreeElement(this);
-        this._sidebarTree.appendChild(this.serviceWorkersTreeElement);
-    }
-
     var mainView = new WebInspector.VBox();
     this.storageViews = mainView.element.createChild("div", "vbox flex-auto");
     this._storageViewStatusBar = new WebInspector.StatusBar(mainView.element);
@@ -130,6 +125,11 @@ WebInspector.ResourcesPanel.prototype = {
         if (target.isServiceWorker()) {
             this.serviceWorkerCacheListTreeElement = new WebInspector.ServiceWorkerCacheTreeElement(this);
             this._sidebarTree.appendChild(this.serviceWorkerCacheListTreeElement);
+        }
+
+        if (target.serviceWorkerManager && Runtime.experiments.isEnabled("serviceWorkersInResources")) {
+            this.serviceWorkersTreeElement = new WebInspector.ServiceWorkersTreeElement(this);
+            this._sidebarTree.appendChild(this.serviceWorkersTreeElement);
         }
 
         if (target.resourceTreeModel.cachedResourcesLoaded())
