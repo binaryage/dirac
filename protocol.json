@@ -4105,7 +4105,8 @@
                     { "name": "registrationId", "type": "string" },
                     { "name": "scriptURL", "type": "string" },
                     { "name": "runningStatus", "$ref": "ServiceWorkerVersionRunningStatus" },
-                    { "name": "status", "$ref": "ServiceWorkerVersionStatus" }
+                    { "name": "status", "$ref": "ServiceWorkerVersionStatus" },
+                    { "name": "updateTime", "type": "number", "optional": true}
                 ]
             },
             {
