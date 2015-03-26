@@ -76,6 +76,7 @@
         "Spectrum.js",
         "ElementsBreadcrumbs.js",
         "ElementsSidebarPane.js",
+        "ElementsSidebarView.js",
         "ElementsTreeElement.js",
         "ElementsTreeOutline.js",
         "EventListenersSidebarPane.js",
@@ -87,7 +88,7 @@
         "ComputedStyleSidebarPane.js",
         "ElementsPanel.js",
         "AnimationsSidebarPane.js",
-        "AccessibilitySidebarPane.js"
+        "AccessibilitySidebarView.js"
     ],
     "stylesheets": [
         "animationTimeline.css",

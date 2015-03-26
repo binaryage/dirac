@@ -83,7 +83,7 @@ WebInspector.ElementsPanel = function()
     if (Runtime.experiments.isEnabled("animationInspection"))
         this.sidebarPanes.animations = new WebInspector.AnimationsSidebarPane();
     if (Runtime.experiments.isEnabled("accessibilityInspection"))
-        this.sidebarPanes.accessibility = new WebInspector.AccessibilitySidebarPane();
+        this._accessibilitySidebarView = new WebInspector.AccessibilitySidebarView();
 
     WebInspector.dockController.addEventListener(WebInspector.DockController.Events.DockSideChanged, this._dockSideChanged.bind(this));
     WebInspector.settings.splitVerticallyWhenDockedToRight.addChangeListener(this._dockSideChanged.bind(this));
@@ -289,8 +289,8 @@ WebInspector.ElementsPanel.prototype = {
         this.sidebarPanes.eventListeners.setNode(this.selectedDOMNode());
         if (this.sidebarPanes.animations)
             this.sidebarPanes.animations.setNode(this.selectedDOMNode());
-        if (this.sidebarPanes.accessibility)
-            this.sidebarPanes.accessibility.setNode(this.selectedDOMNode());
+        if (this._accessibilitySidebarView)
+            this._accessibilitySidebarView.setNode(this.selectedDOMNode());
     },
 
     _reset: function()
@@ -941,8 +941,8 @@ WebInspector.ElementsPanel.prototype = {
         this.sidebarPaneView.addPane(this.sidebarPanes.properties);
         if (this.sidebarPanes.animations)
             this.sidebarPaneView.addPane(this.sidebarPanes.animations);
-        if (this.sidebarPanes.accessibility)
-            this.sidebarPaneView.addPane(this.sidebarPanes.accessibility);
+        if (this._accessibilitySidebarView)
+            this.sidebarPaneView.addPane(new WebInspector.ElementsSidebarViewWrapperPane(WebInspector.UIString("Accessibility"), this._accessibilitySidebarView));
 
         this._extensionSidebarPanesContainer = this.sidebarPaneView;
 

@@ -4,14 +4,14 @@
 
 /**
  * @constructor
- * @extends {WebInspector.ElementsSidebarPane}
+ * @extends {WebInspector.ThrottledElementsSidebarView}
  */
-WebInspector.AccessibilitySidebarPane = function()
+WebInspector.AccessibilitySidebarView = function()
 {
-    WebInspector.ElementsSidebarPane.call(this, WebInspector.UIString("Accessibility"));
+    WebInspector.ThrottledElementsSidebarView.call(this);
 }
 
-WebInspector.AccessibilitySidebarPane.prototype = {
+WebInspector.AccessibilitySidebarView.prototype = {
     /**
      * @override
      * @param {!WebInspector.Throttler.FinishCallback} finishCallback
@@ -21,7 +21,7 @@ WebInspector.AccessibilitySidebarPane.prototype = {
     {
         /**
          * @param {?AccessibilityAgent.AXNode} accessibilityNode
-         * @this {WebInspector.AccessibilitySidebarPane}
+         * @this {WebInspector.AccessibilitySidebarView}
          */
         function accessibilityNodeCallback(accessibilityNode)
         {
@@ -44,7 +44,7 @@ WebInspector.AccessibilitySidebarPane.prototype = {
         this._rootElement = new TreeElement("Accessibility Node", true);
         this._rootElement.selectable = false;
         this._treeOutline.appendChild(this._rootElement);
-        this.bodyElement.appendChild(this._treeOutline.element);
+        this.element.appendChild(this._treeOutline.element);
         this._rootElement.expand();
 
         WebInspector.targetManager.addModelListener(WebInspector.DOMModel, WebInspector.DOMModel.Events.AttrModified, this._onNodeChange, this);
@@ -116,7 +116,7 @@ WebInspector.AccessibilitySidebarPane.prototype = {
         this._setAXNode(node);
     },
 
-    __proto__: WebInspector.ElementsSidebarPane.prototype
+    __proto__: WebInspector.ThrottledElementsSidebarView.prototype
 };
 
 /**
