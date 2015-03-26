@@ -623,8 +623,7 @@ WebInspector.PromiseDataGridNode.prototype = {
             break;
 
         case "tts":
-            if (details.creationTime && details.settlementTime && details.settlementTime >= details.creationTime)
-                cell.createTextChild(Number.millisToString(details.settlementTime - details.creationTime));
+            cell.createTextChild(this._ttsCellText());
             break;
         }
 
@@ -634,10 +633,41 @@ WebInspector.PromiseDataGridNode.prototype = {
     /**
      * @return {string}
      */
+    _ttsCellText: function()
+    {
+        var details = this._details;
+        if (details.creationTime && details.settlementTime && details.settlementTime >= details.creationTime)
+            return Number.millisToString(details.settlementTime - details.creationTime);
+        return "";
+    },
+
+    /**
+     * @param {?ConsoleAgent.CallFrame=} callFrame
+     * @return {string}
+     */
+    _callFrameAnchorTextForSearch: function(callFrame)
+    {
+        if (!callFrame)
+            return "";
+        var script = callFrame.scriptId ? this._target.debuggerModel.scriptForId(callFrame.scriptId) : null;
+        var sourceURL = script ? script.sourceURL : callFrame.url;
+        var lineNumber = callFrame.lineNumber || 0;
+        return WebInspector.displayNameForURL(sourceURL) + ":" + lineNumber;
+    },
+
+    /**
+     * @return {string}
+     */
     dataTextForSearch: function()
     {
         var details = this._details;
-        return WebInspector.beautifyFunctionName(details.callFrame ? details.callFrame.functionName : "");
+        var texts = [
+            WebInspector.beautifyFunctionName(details.callFrame ? details.callFrame.functionName : ""),
+            this._callFrameAnchorTextForSearch(details.callFrame),
+            this._callFrameAnchorTextForSearch(details.settlementStack ? details.settlementStack[0] : null),
+            this._ttsCellText().replace(/\u2009/g, " ") // \u2009 is a thin space.
+        ];
+        return texts.join(" ");
     },
 
     __proto__: WebInspector.ViewportDataGridNode.prototype
