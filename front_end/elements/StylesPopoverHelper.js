@@ -25,7 +25,7 @@ WebInspector.StylesPopoverHelper.prototype = {
      */
     _onFocusOut: function(event)
     {
-        if (event.relatedTarget && event.relatedTarget.isSelfOrDescendant(this._view.contentElement))
+        if (!event.relatedTarget || event.relatedTarget.isSelfOrDescendant(this._view.contentElement))
             return;
         this._hideProxy();
     },
