@@ -136,6 +136,7 @@ WebInspector.Main.prototype = {
         Runtime.experiments.register("accessibilityInspection", "Accessibility Inspection", true);
         Runtime.experiments.register("animationInspection", "Animation Inspection", true);
         Runtime.experiments.register("applyCustomStylesheet", "Allow custom UI themes");
+        Runtime.experiments.register("blackboxJSFramesOnTimeline", "Blackbox JavaScript frames on Timeline");
         Runtime.experiments.register("canvasInspection", "Canvas inspection");
         Runtime.experiments.register("timelineDetailsChart", "Costly functions view in Timeline details", true);
         Runtime.experiments.register("customObjectFormatters", "Custom object formatters", true);
