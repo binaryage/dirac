@@ -32,6 +32,7 @@
 
 .service-workers-registration-header {
     display: flex;
+    position: relative;
 }
 
 .service-workers-registration-title {
@@ -46,7 +47,6 @@
 }
 
 .service-workers-version-mode-row {
-    border-bottom: 1px solid #e1e1e1;
     display: flex;
 }
 
@@ -59,8 +59,9 @@
 }
 
 .service-workers-version-mode {
+    border-bottom: 1px solid #e1e1e1;
     display: flex;
-    flex: 1;
+    flex: 1 1 0;
     font-weight: bold;
     overflow: hidden;
     position: relative;
@@ -70,15 +71,17 @@
 .service-workers-version-mode-text {
     position: absolute;
     top: 50%;
-    transform: translate(3px,-50%);
+    transform: translate(3px, -50%);
 }
 
 .service-workers-versions {
     display: flex;
-    flex: 6;
+    flex: 6 6 0;
+    flex-direction: column;
 }
 
 .service-workers-version-row {
+    border-bottom: 1px solid #e1e1e1;
     display: flex;
     min-height: 30px;
     width: 100%;
@@ -87,22 +90,32 @@
 .service-workers-version-status {
     border-left: 1px solid #e1e1e1;
     display: flex;
-    flex: 0.7;
+    flex: 0.7 0.7 0;
     overflow: hidden;
     position: relative;
     text-overflow: ellipsis;
 }
 
+.service-workers-icon {
+    position: absolute;
+    top: 50%;
+    transform: translate(3px, -50%);
+    -webkit-mask-image: url(Images/serviceWorker.svg);
+    -webkit-mask-size: 20px 20px;
+    height: 20px;
+    width: 20px;
+}
+
 .service-workers-version-status-text {
     position: absolute;
     top: 50%;
-    transform: translate(3px,-50%);
+    transform: translate(30px, -50%);
 }
 
 .service-workers-version-running-status {
     border-left: 1px solid #e1e1e1;
     display: flex;
-    flex: 1;
+    flex: 0.7 0.7 0;
     overflow: hidden;
     position: relative;
     text-overflow: ellipsis;
@@ -123,7 +136,7 @@
 .service-workers-version-script-url {
     border-left: 1px solid #e1e1e1;
     display: block;
-    flex: 3;
+    flex: 3 3 0;
     overflow: hidden;
     text-overflow: ellipsis;
 }
@@ -142,8 +155,11 @@
     -webkit-mask-position: -96px -48px;
 }
 
-.service-workers-unregister-button {
+.service-workers-delete-button {
     -webkit-mask-position: -128px -24px;
+    position: absolute;
+    top: 50%;
+    transform: translate(0, -50%);
 }
 
 .service-workers-button {
@@ -169,4 +185,70 @@
 
 .service-workers-button:active {
     opacity: 0.8;
+}
+
+.service-workers-error-icon {
+    background-image: url(Images/statusbarButtonGlyphs.png);
+    background-size: 320px 144px;
+    background-position: -213px -96px;
+    height: 10px;
+    width: 10px;
+    border: 0;
+    padding: 0;
+    margin: 2px;
+    min-width: 10px;
+}
+
+@media (-webkit-min-device-pixel-ratio: 1.5) {
+.service-workers-error-icon {
+    background-image: url(Images/statusbarButtonGlyphs_2x.png);
+}
+} /* media */
+
+.service-workers-error {
+    display: flex;
+}
+
+.service-workers-error-message {
+    font-weight: bold;
+}
+
+.service-workers-color-0 {
+    background-color: #003366;
+}
+
+.service-workers-color-1 {
+    background-color: #663300;
+}
+
+.service-workers-color-2 {
+    background-color: #660066;
+}
+
+.service-workers-color-3 {
+    background-color: #003300;
+}
+
+.service-workers-color-4 {
+    background-color: #993333;
+}
+
+.service-workers-color-5 {
+    background-color: #000066;
+}
+
+.service-workers-color-6 {
+    background-color: #006666;
+}
+
+.service-workers-color-7 {
+    background-color: #996600;
+}
+
+.service-workers-color-8 {
+    background-color: #9900CC;
+}
+
+.service-workers-color-9 {
+    background-color: #336600;
 }

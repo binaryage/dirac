@@ -41,19 +41,15 @@ WebInspector.ServiceWorkerManager = function(target)
     this._agent = target.serviceWorkerAgent();
     /** @type {!Map.<string, !WebInspector.ServiceWorker>} */
     this._workers = new Map();
-    /** @type {!Map.<string, !ServiceWorkerAgent.ServiceWorkerRegistration>} */
+    /** @type {!Map.<string, !WebInspector.ServiceWorkerRegistration>} */
     this._registrations = new Map();
-    /** @type {!Map.<string, !Map.<string, !ServiceWorkerAgent.ServiceWorkerVersion>>} */
-    this._versions = new Map();
     this.enable();
 }
 
 WebInspector.ServiceWorkerManager.Events = {
     WorkersUpdated: "WorkersUpdated",
     RegistrationUpdated: "RegistrationUpdated",
-    RegistrationDeleted: "RegistrationDeleted",
-    VersionUpdated: "VersionUpdated",
-    VersionDeleted: "VersionDeleted"
+    RegistrationDeleted: "RegistrationDeleted"
 }
 
 WebInspector.ServiceWorkerManager.prototype = {
@@ -77,7 +73,6 @@ WebInspector.ServiceWorkerManager.prototype = {
             worker._connection.close();
         this._workers.clear();
         this._registrations.clear();
-        this._versions.clear();
         this._agent.disable();
         WebInspector.targetManager.removeEventListener(WebInspector.TargetManager.Events.MainFrameNavigated, this._mainFrameNavigated, this);
     },
@@ -99,7 +94,7 @@ WebInspector.ServiceWorkerManager.prototype = {
     },
 
     /**
-     * @return {!Map.<string, !ServiceWorkerAgent.ServiceWorkerRegistration>}
+     * @return {!Map.<string, !WebInspector.ServiceWorkerRegistration>}
      */
     registrations: function()
     {
@@ -107,17 +102,28 @@ WebInspector.ServiceWorkerManager.prototype = {
     },
 
     /**
-     * @return {!Map.<string, !Map.<string, !ServiceWorkerAgent.ServiceWorkerVersion>>}
+     * @param {string} registrationId
      */
-    versions: function()
+    deleteRegistration: function(registrationId)
     {
-        return this._versions;
+        var registration = this._registrations.get(registrationId);
+        if (!registration)
+            return;
+        if (registration._isRedundant()) {
+            this._registrations.delete(registrationId);
+            this.dispatchEventToListeners(WebInspector.ServiceWorkerManager.Events.RegistrationDeleted, registration);
+            return;
+        }
+        registration._deleting = true;
+        for (var version of registration.versions.values())
+            this.stopWorker(version.id);
+        this._unregister(registration.scopeURL);
     },
 
     /**
      * @param {string} scope
      */
-    unregister: function(scope)
+    _unregister: function(scope)
     {
         this._agent.unregister(scope);
     },
@@ -186,13 +192,21 @@ WebInspector.ServiceWorkerManager.prototype = {
      */
     _workerRegistrationUpdated: function(registrations)
     {
-        for (var registration of registrations) {
-            this._registrations.set(registration.registrationId, registration);
-            this.dispatchEventToListeners(WebInspector.ServiceWorkerManager.Events.RegistrationUpdated, registration);
+        for (var payload of registrations) {
+            var registration = this._registrations.get(payload.registrationId);
+            if (!registration) {
+                registration = new WebInspector.ServiceWorkerRegistration(payload);
+                this._registrations.set(payload.registrationId, registration);
+                this.dispatchEventToListeners(WebInspector.ServiceWorkerManager.Events.RegistrationUpdated, registration);
+                continue;
+            }
+            registration._update(payload);
 
-            if (registration.isDeleted && !this._versions.get(registration.registrationId)) {
-                this._registrations.delete(registration.registrationId);
+            if (registration._shouldBeRemoved()) {
+                this._registrations.delete(registration.id);
                 this.dispatchEventToListeners(WebInspector.ServiceWorkerManager.Events.RegistrationDeleted, registration);
+            } else {
+                this.dispatchEventToListeners(WebInspector.ServiceWorkerManager.Events.RegistrationUpdated, registration);
             }
         }
     },
@@ -202,38 +216,31 @@ WebInspector.ServiceWorkerManager.prototype = {
      */
     _workerVersionUpdated: function(versions)
     {
-        for (var version of versions) {
-            var versionMap = this._versions.get(version.registrationId);
-            if (!versionMap) {
-                versionMap = new Map();
-                this._versions.set(version.registrationId, versionMap);
-            }
-            versionMap.set(version.versionId, version);
-            this.dispatchEventToListeners(WebInspector.ServiceWorkerManager.Events.VersionUpdated, version);
+        for (var payload of versions) {
+            var registration = this._registrations.get(payload.registrationId);
+            if (!registration)
+                continue;
+            registration._updateVersion(payload);
 
-            if (!this._isDeletedVersion(version))
-                continue;
-            versionMap.delete(version.versionId);
-            this.dispatchEventToListeners(WebInspector.ServiceWorkerManager.Events.VersionDeleted, version);
-            if (versionMap.size != 0)
-                continue;
-            this._versions.delete(version.registrationId);
-            var registration = this._registrations.get(version.registrationId);
-            if (!registration || !registration.isDeleted)
-                continue;
-            this._registrations.delete(version.registrationId);
-            this.dispatchEventToListeners(WebInspector.ServiceWorkerManager.Events.RegistrationDeleted, registration);
+            if (registration._shouldBeRemoved()) {
+                this._registrations.delete(registration.id);
+                this.dispatchEventToListeners(WebInspector.ServiceWorkerManager.Events.RegistrationDeleted, registration);
+            } else {
+                this.dispatchEventToListeners(WebInspector.ServiceWorkerManager.Events.RegistrationUpdated, registration);
+            }
         }
     },
 
     /**
-     * @param {!ServiceWorkerAgent.ServiceWorkerVersion} version
-     * @return {boolean}
+     * @param {!ServiceWorkerAgent.ServiceWorkerErrorMessage} payload
      */
-     _isDeletedVersion: function(version)
+     _workerErrorReported: function(payload)
     {
-        return version.runningStatus == ServiceWorkerAgent.ServiceWorkerVersionRunningStatus.Stopped &&
-            version.status == ServiceWorkerAgent.ServiceWorkerVersionStatus.Redundant;
+        var registration = this._registrations.get(payload.registrationId);
+        if (!registration)
+            return;
+        registration._addError(payload);
+        this.dispatchEventToListeners(WebInspector.ServiceWorkerManager.Events.RegistrationUpdated, registration);
     },
 
     /**
@@ -377,7 +384,7 @@ WebInspector.ServiceWorkerDispatcher.prototype = {
      */
     workerErrorReported: function(errorMessage)
     {
-        // FIXME: Implement this.
+        this._manager._workerErrorReported(errorMessage);
     }
 }
 
@@ -412,4 +419,229 @@ WebInspector.ServiceWorkerConnection.prototype = {
     },
 
     __proto__: InspectorBackendClass.Connection.prototype
+}
+
+/**
+ * @constructor
+ * @param {!ServiceWorkerAgent.ServiceWorkerErrorMessage} payload
+ */
+WebInspector.ServiceWorkerErrorMessage = function(payload)
+{
+    this.errorMessage = payload.errorMessage;
+    this.sourceURL = payload.sourceURL;
+    this.lineNumber = payload.lineNumber;
+    this.columnNumber = payload.columnNumber;
+}
+
+/**
+ * @constructor
+ * @param {!WebInspector.ServiceWorkerRegistration} registration
+ * @param {!ServiceWorkerAgent.ServiceWorkerVersion} payload
+ */
+WebInspector.ServiceWorkerVersion = function(registration, payload)
+{
+    this._registration = registration;
+    this._update(payload);
+    /** @type {!Array<!WebInspector.ServiceWorkerErrorMessage>} */
+    this.errorMessages = [];
+}
+
+WebInspector.ServiceWorkerVersion.prototype = {
+    /**
+     * @param {!ServiceWorkerAgent.ServiceWorkerVersion} payload
+     */
+    _update: function(payload)
+    {
+        this.id = payload.versionId;
+        this.scriptURL = payload.scriptURL;
+        this.runningStatus = payload.runningStatus;
+        this.status = payload.status;
+        this.updateTime = payload.updateTime;
+    },
+
+    /**
+     * @return {boolean}
+     */
+    isStartable: function()
+    {
+        return !this._registration.isDeleted && this.isActivated() && this.isStopped();
+    },
+
+    /**
+     * @return {boolean}
+     */
+    isStoppedAndRedundant: function()
+    {
+        return this.runningStatus == ServiceWorkerAgent.ServiceWorkerVersionRunningStatus.Stopped && this.status == ServiceWorkerAgent.ServiceWorkerVersionStatus.Redundant;
+    },
+
+    /**
+     * @return {boolean}
+     */
+    isStopped: function()
+    {
+        return this.runningStatus == ServiceWorkerAgent.ServiceWorkerVersionRunningStatus.Stopped;
+    },
+
+    /**
+     * @return {boolean}
+     */
+    isStarting: function()
+    {
+        return this.runningStatus == ServiceWorkerAgent.ServiceWorkerVersionRunningStatus.Starting;
+    },
+
+    /**
+     * @return {boolean}
+     */
+    isRunning: function()
+    {
+        return this.runningStatus == ServiceWorkerAgent.ServiceWorkerVersionRunningStatus.Running;
+    },
+
+    /**
+     * @return {boolean}
+     */
+    isStopping: function()
+    {
+        return this.runningStatus == ServiceWorkerAgent.ServiceWorkerVersionRunningStatus.Stopping;
+    },
+
+    /**
+     * @return {boolean}
+     */
+    isNew: function()
+    {
+        return this.status == ServiceWorkerAgent.ServiceWorkerVersionStatus.New;
+    },
+
+    /**
+     * @return {boolean}
+     */
+    isInstalling: function()
+    {
+        return this.status == ServiceWorkerAgent.ServiceWorkerVersionStatus.Installing;
+    },
+
+    /**
+     * @return {boolean}
+     */
+    isInstalled: function()
+    {
+        return this.status == ServiceWorkerAgent.ServiceWorkerVersionStatus.Installed;
+    },
+
+    /**
+     * @return {boolean}
+     */
+    isActivating: function()
+    {
+        return this.status == ServiceWorkerAgent.ServiceWorkerVersionStatus.Activating;
+    },
+
+    /**
+     * @return {boolean}
+     */
+    isActivated: function()
+    {
+        return this.status == ServiceWorkerAgent.ServiceWorkerVersionStatus.Activated;
+    },
+
+    /**
+     * @return {boolean}
+     */
+    isRedundant: function()
+    {
+        return this.status == ServiceWorkerAgent.ServiceWorkerVersionStatus.Redundant;
+    },
+
+    /**
+     * @param {!ServiceWorkerAgent.ServiceWorkerErrorMessage} payload
+     */
+    _addError: function(payload)
+    {
+        this.errorMessages.push(new WebInspector.ServiceWorkerErrorMessage(payload));
+    }
+}
+
+/**
+* @constructor
+* @param {!ServiceWorkerAgent.ServiceWorkerRegistration} payload
+*/
+WebInspector.ServiceWorkerRegistration = function(payload)
+{
+   this._update(payload);
+   /** @type {!Map.<string, !WebInspector.ServiceWorkerVersion>} */
+   this.versions = new Map();
+   this._deleting = false;
+}
+
+WebInspector.ServiceWorkerRegistration.prototype = {
+    /**
+     * @param {!ServiceWorkerAgent.ServiceWorkerRegistration} payload
+     */
+    _update: function(payload)
+    {
+        this.id = payload.registrationId;
+        this.scopeURL = payload.scopeURL;
+        this.isDeleted = payload.isDeleted;
+    },
+
+    /**
+     * @param {!ServiceWorkerAgent.ServiceWorkerVersion} payload
+     * @return {!WebInspector.ServiceWorkerVersion}
+     */
+    _updateVersion: function(payload)
+    {
+        var version = this.versions.get(payload.versionId);
+        if (!version) {
+            version = new WebInspector.ServiceWorkerVersion(this, payload);
+            this.versions.set(payload.versionId, version);
+            return version;
+        }
+        version._update(payload);
+        return version;
+    },
+
+    /**
+     * @param {!ServiceWorkerAgent.ServiceWorkerErrorMessage} payload
+     */
+    _addError: function(payload)
+    {
+        var version = this.versions.get(payload.versionId);
+        if (version)
+            version._addError(payload);
+    },
+
+    /**
+     * @return {boolean}
+     */
+    _isRedundant: function()
+    {
+        for (var version of this.versions.values()) {
+            if (!version.isStoppedAndRedundant())
+                return false;
+        }
+        return true;
+    },
+
+    /**
+     * @return {boolean}
+     */
+    _hasErrorLog: function()
+    {
+        for (var version of this.versions.values()) {
+            if (version.errorMessages.length)
+                return true;
+        }
+        return false;
+    },
+
+    /**
+     * @return {boolean}
+     */
+    _shouldBeRemoved: function()
+    {
+        return this._isRedundant() && (!this._hasErrorLog() || this._deleting);
+    }
 }
