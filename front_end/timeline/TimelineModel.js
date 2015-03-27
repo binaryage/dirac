@@ -1897,7 +1897,7 @@ WebInspector.InvalidationTracker.prototype = {
         for (var i = 0; i < styleInvalidatorInvalidation.invalidationList.length; i++) {
             var setId = styleInvalidatorInvalidation.invalidationList[i]["id"];
             var lastScheduleStyleRecalculation;
-            var nodeInvalidations = this._invalidationsByNodeId[styleInvalidatorInvalidation.nodeId];
+            var nodeInvalidations = this._invalidationsByNodeId[styleInvalidatorInvalidation.nodeId] || [];
             for (var j = 0; j < nodeInvalidations.length; j++) {
                 var invalidation = nodeInvalidations[j];
                 if (invalidation.frame !== frameId || invalidation.invalidationSet !== setId || invalidation.type !== WebInspector.TimelineModel.RecordType.ScheduleStyleInvalidationTracking)
