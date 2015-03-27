@@ -1574,13 +1574,14 @@ WebInspector.TimelineFlameChartView.prototype = {
 
     /**
      * @param {boolean} enable
+     * @param {boolean=} animate
      */
-    enableNetworkPane: function(enable)
+    enableNetworkPane: function(enable, animate)
     {
         if (enable)
-            this._splitView.showBoth(true);
+            this._splitView.showBoth(animate);
         else
-            this._splitView.hideSidebar(true);
+            this._splitView.hideSidebar(animate);
     },
 
     _refresh: function()

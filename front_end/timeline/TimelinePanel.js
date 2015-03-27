@@ -602,7 +602,7 @@ WebInspector.TimelinePanel.prototype = {
             this._filterBar.filterButton().setEnabled(false);
             this._filtersContainer.classList.toggle("hidden", true);
             this._flameChart = new WebInspector.TimelineFlameChartView(this, this._model, this._frameModel());
-            this._onNetworkChanged();
+            this._flameChart.enableNetworkPane(this._captureNetworkSetting.get());
             this._addModeView(this._flameChart);
         } else {
             this._flameChart = null;
@@ -632,7 +632,7 @@ WebInspector.TimelinePanel.prototype = {
     _onNetworkChanged: function()
     {
         if (this._flameChart)
-            this._flameChart.enableNetworkPane(this._captureNetworkSetting.get());
+            this._flameChart.enableNetworkPane(this._captureNetworkSetting.get(), true);
     },
 
     /**
