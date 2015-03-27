@@ -322,6 +322,14 @@ button.record-status-bar-item.toggled-on .glyph {
     background-color: rgb(216, 0, 0) !important;
 }
 
+.record-filmstrip-status-bar-item .glyph {
+    -webkit-mask-position: -96px -24px;
+}
+
+button.record-filmstrip-status-bar-item.toggled-on .glyph {
+    background-color: rgb(216, 0, 0) !important;
+}
+
 .last-step-status-bar-item .glyph {
     -webkit-mask-position: 0 -72px;
 }

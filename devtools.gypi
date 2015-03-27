@@ -414,6 +414,7 @@
         ],
         'devtools_network_js_files': [
             'front_end/network/eventSourceMessagesView.css',
+            'front_end/network/networkFilmStripView.css',
             'front_end/network/networkLogView.css',
             'front_end/network/networkPanel.css',
             'front_end/network/requestCookiesView.css',
@@ -425,6 +426,7 @@
             'front_end/network/HARWriter.js',
             'front_end/network/NetworkDataGridNode.js',
             'front_end/network/NetworkItemView.js',
+            'front_end/network/NetworkFilmStripView.js',
             'front_end/network/NetworkLogView.js',
             'front_end/network/NetworkOverview.js',
             'front_end/network/NetworkPanel.js',
@@ -709,6 +711,7 @@
             'front_end/Images/sessionStorage.png',
             'front_end/Images/settingsListRemove.png',
             'front_end/Images/settingsListRemove_2x.png',
+            'front_end/Images/spinner.svg',
             'front_end/Images/statusbarButtonGlyphs.png',
             'front_end/Images/statusbarButtonGlyphs_2x.png',
             'front_end/Images/statusbarResizerHorizontal.png',
