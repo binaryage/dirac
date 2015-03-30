@@ -10,6 +10,7 @@ WebInspector.ElementsSidebarView = function()
 }
 
 WebInspector.ElementsSidebarView.prototype = {
+    // FIXME: nodeUpdates should also be here.
     /**
      * @param {?WebInspector.DOMNode} node
      */
@@ -25,14 +26,23 @@ WebInspector.ElementsSidebarView.prototype = {
  * @constructor
  * @extends {WebInspector.SidebarPane}
  * @param {string} title
- * @param {!WebInspector.View} view
+ * @param {!WebInspector.ElementsSidebarView} elementsSidebarView
  */
-WebInspector.ElementsSidebarViewWrapperPane = function(title, view)
+WebInspector.ElementsSidebarViewWrapperPane = function(title, elementsSidebarView)
 {
     WebInspector.SidebarPane.call(this, title);
-    view.show(this.element);
+    this._elementsSidebarView = elementsSidebarView;
+    this._elementsSidebarView.view().show(this.element);
 }
 
 WebInspector.ElementsSidebarViewWrapperPane.prototype = {
+    /**
+     * @param {?WebInspector.DOMNode} node
+     */
+    setNode: function(node)
+    {
+        this._elementsSidebarView.setNode(node);
+    },
+
     __proto__: WebInspector.SidebarPane.prototype
 }

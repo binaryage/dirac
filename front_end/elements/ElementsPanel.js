@@ -62,6 +62,8 @@ WebInspector.ElementsPanel = function()
     this._breadcrumbs.addEventListener(WebInspector.ElementsBreadcrumbs.Events.NodeSelected, this._crumbNodeSelected, this);
 
     this.sidebarPanes = {};
+    /** @type !Array<!WebInspector.ElementsSidebarViewWrapperPane> */
+    this._elementsSidebarViewWrappers = [];
     this.sidebarPanes.platformFonts = new WebInspector.PlatformFontsSidebarPane();
     this.sidebarPanes.computedStyle = new WebInspector.ComputedStyleSidebarPane();
     this.sidebarPanes.styles = new WebInspector.StylesSidebarPane(this.sidebarPanes.computedStyle, this._showStylesSidebar.bind(this));
@@ -82,12 +84,11 @@ WebInspector.ElementsPanel = function()
     this.sidebarPanes.eventListeners = new WebInspector.EventListenersSidebarPane();
     if (Runtime.experiments.isEnabled("animationInspection"))
         this.sidebarPanes.animations = new WebInspector.AnimationsSidebarPane();
-    if (Runtime.experiments.isEnabled("accessibilityInspection"))
-        this._accessibilitySidebarView = new WebInspector.AccessibilitySidebarView();
 
     WebInspector.dockController.addEventListener(WebInspector.DockController.Events.DockSideChanged, this._dockSideChanged.bind(this));
     WebInspector.settings.splitVerticallyWhenDockedToRight.addChangeListener(this._dockSideChanged.bind(this));
     this._dockSideChanged();
+    this._loadSidebarViews();
 
     /** @type {!Array.<!WebInspector.ElementsTreeOutline>} */
     this._treeOutlines = [];
@@ -101,7 +102,37 @@ WebInspector.ElementsPanel = function()
     WebInspector.extensionServer.addEventListener(WebInspector.ExtensionServer.Events.SidebarPaneAdded, this._extensionSidebarPaneAdded, this);
 }
 
+WebInspector.ElementsPanel._elementsSidebarViewTitleSymbol = Symbol("title");
+
 WebInspector.ElementsPanel.prototype = {
+    _loadSidebarViews: function()
+    {
+        var extensions = self.runtime.extensions("@WebInspector.ElementsSidebarView");
+
+        for (var i = 0; i < extensions.length; ++i) {
+            var descriptor = extensions[i].descriptor();
+            var title = WebInspector.UIString(descriptor["title"]);
+            extensions[i].instancePromise().then(addSidebarView.bind(this, title));
+        }
+
+        /**
+         * @param {string} title
+         * @param {!Object} object
+         * @this {WebInspector.ElementsPanel}
+         */
+        function addSidebarView(title, object)
+        {
+            var sidebarView = /** @type {!WebInspector.ElementsSidebarView} */ (object);
+            var elementsSidebarViewWrapperPane = new WebInspector.ElementsSidebarViewWrapperPane(title, sidebarView);
+            this._elementsSidebarViewWrappers.push(elementsSidebarViewWrapperPane);
+
+            if (this.sidebarPaneView)
+                this.sidebarPaneView.addPane(elementsSidebarViewWrapperPane);
+
+            sidebarView.setNode(this.selectedDOMNode());
+        }
+    },
+
     _onEditingSelectorStarted: function()
     {
         for (var i = 0; i < this._treeOutlines.length; ++i)
@@ -289,8 +320,8 @@ WebInspector.ElementsPanel.prototype = {
         this.sidebarPanes.eventListeners.setNode(this.selectedDOMNode());
         if (this.sidebarPanes.animations)
             this.sidebarPanes.animations.setNode(this.selectedDOMNode());
-        if (this._accessibilitySidebarView)
-            this._accessibilitySidebarView.setNode(this.selectedDOMNode());
+        for (var sidebarView of this._elementsSidebarViewWrappers)
+            sidebarView.setNode(this.selectedDOMNode());
     },
 
     _reset: function()
@@ -941,8 +972,9 @@ WebInspector.ElementsPanel.prototype = {
         this.sidebarPaneView.addPane(this.sidebarPanes.properties);
         if (this.sidebarPanes.animations)
             this.sidebarPaneView.addPane(this.sidebarPanes.animations);
-        if (this._accessibilitySidebarView)
-            this.sidebarPaneView.addPane(new WebInspector.ElementsSidebarViewWrapperPane(WebInspector.UIString("Accessibility"), this._accessibilitySidebarView));
+
+        for (var sidebarViewWrapper of this._elementsSidebarViewWrappers)
+            this.sidebarPaneView.addPane(sidebarViewWrapper);
 
         this._extensionSidebarPanesContainer = this.sidebarPaneView;
 

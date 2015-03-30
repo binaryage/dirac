@@ -158,8 +158,6 @@ WebInspector.Target.prototype = {
         this.layerTreeModel = new WebInspector.LayerTreeModel(this);
         /** @type {!WebInspector.AnimationModel} */
         this.animationModel = new WebInspector.AnimationModel(this);
-        /** @type {!WebInspector.AccessibilityModel} */
-        this.accessibilityModel = new WebInspector.AccessibilityModel(this);
 
         if (this._parentTarget && this._parentTarget.isServiceWorker()) {
             /** @type {!WebInspector.ServiceWorkerCacheModel} */

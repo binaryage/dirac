@@ -123,7 +123,6 @@
             'front_end/screencast/ScreencastView.js',
         ],
         'devtools_sdk_js_files': [
-            'front_end/sdk/AccessibilityModel.js',
             'front_end/sdk/AnimationModel.js',
             'front_end/sdk/ApplicationCacheModel.js',
             'front_end/sdk/ConsoleModel.js',
@@ -290,6 +289,7 @@
             'front_end/main/TestController.js',
         ],
         'devtools_module_json_files': [
+            'front_end/accessibility/module.json',
             'front_end/audits/module.json',
             'front_end/bindings/module.json',
             'front_end/common/module.json',
@@ -333,6 +333,10 @@
         ],
 
         # Lazy-loaded modules.
+        'devtools_accessibility_js_files': [
+            'front_end/accessibility/AccessibilityModel.js',
+            'front_end/accessibility/AccessibilitySidebarView.js',
+        ],
         'devtools_audits_js_files': [
             'front_end/audits/auditsPanel.css',
             'front_end/audits/AuditCategories.js',
@@ -363,7 +367,6 @@
             'front_end/elements/elementsPanel.css',
             'front_end/elements/elementsTreeOutline.css',
             'front_end/elements/spectrum.css',
-            'front_end/elements/AccessibilitySidebarView.js',
             'front_end/elements/AnimationTimeline.js',
             'front_end/elements/AnimationsSidebarPane.js',
             'front_end/elements/BezierEditor.js',
@@ -633,6 +636,7 @@
         ],
 
         'devtools_modules_js_files': [
+            '<@(devtools_accessibility_js_files)',
             '<@(devtools_audits_js_files)',
             '<@(devtools_components_lazy_js_files)',
             '<@(devtools_console_js_files)',

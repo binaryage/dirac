@@ -28,7 +28,7 @@ WebInspector.AccessibilitySidebarView.prototype = {
             this._setAXNode(accessibilityNode);
             finishCallback();
         }
-        this.node().target().accessibilityModel.getAXNode(this.node().id, accessibilityNodeCallback.bind(this));
+        WebInspector.AccessibilityModel.fromTarget(this.node().target()).getAXNode(this.node().id, accessibilityNodeCallback.bind(this));
     },
 
     /**
