@@ -4075,7 +4075,8 @@
                     { "name": "scriptURL", "type": "string" },
                     { "name": "runningStatus", "$ref": "ServiceWorkerVersionRunningStatus" },
                     { "name": "status", "$ref": "ServiceWorkerVersionStatus" },
-                    { "name": "updateTime", "type": "number", "optional": true}
+                    { "name": "scriptLastModified", "type": "number", "optional": true, "description": "The Last-Modified header value of the main script." },
+                    { "name": "scriptResponseTime", "type": "number", "optional": true, "description": "The time at which the response headers of the main script were received from the server.  For cached script it is the last time the cache entry was validated." }
                 ]
             },
             {

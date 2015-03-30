@@ -456,7 +456,8 @@ WebInspector.ServiceWorkerVersion.prototype = {
         this.scriptURL = payload.scriptURL;
         this.runningStatus = payload.runningStatus;
         this.status = payload.status;
-        this.updateTime = payload.updateTime;
+        this.scriptLastModified = payload.scriptLastModified;
+        this.scriptResponseTime = payload.scriptResponseTime;
     },
 
     /**
