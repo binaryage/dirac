@@ -248,7 +248,7 @@ WebInspector.OverridesSupport.DeviceOrientation.parseUserInput = function(alphaS
 WebInspector.OverridesSupport.DeviceOrientation._clearDeviceOrientationOverride = function()
 {
     for (var target of WebInspector.targetManager.targets())
-        target.pageAgent().clearDeviceOrientationOverride();
+        target.deviceOrientationAgent().clearDeviceOrientationOverride();
 }
 
 /**
@@ -626,12 +626,16 @@ WebInspector.OverridesSupport.prototype = {
     _geolocationPositionChanged: function()
     {
         if (!this.emulationEnabled() || !this.settings.overrideGeolocation.get()) {
-            for (var target of WebInspector.targetManager.targets())
-                target.emulationAgent().clearGeolocationOverride();
+            for (var target of WebInspector.targetManager.targets()) {
+                if (target.supportsEmulation())
+                    target.emulationAgent().clearGeolocationOverride();
+            }
             return;
         }
         var geolocation = WebInspector.OverridesSupport.GeolocationPosition.parseSetting(this.settings.geolocationOverride.get());
         for (var target of WebInspector.targetManager.targets()) {
+            if (!target.supportsEmulation())
+                continue;
             if (geolocation.error)
                 target.emulationAgent().setGeolocationOverride();
             else
@@ -648,7 +652,7 @@ WebInspector.OverridesSupport.prototype = {
 
         var deviceOrientation = WebInspector.OverridesSupport.DeviceOrientation.parseSetting(this.settings.deviceOrientationOverride.get());
         for (var target of WebInspector.targetManager.targets())
-            target.pageAgent().setDeviceOrientationOverride(deviceOrientation.alpha, deviceOrientation.beta, deviceOrientation.gamma);
+            target.deviceOrientationAgent().setDeviceOrientationOverride(deviceOrientation.alpha, deviceOrientation.beta, deviceOrientation.gamma);
     },
 
     _emulateTouchEventsChanged: function()
