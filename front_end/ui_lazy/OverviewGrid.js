@@ -151,7 +151,7 @@ WebInspector.OverviewGrid.Window = function(parentElement, dividersLabelBarEleme
 {
     this._parentElement = parentElement;
 
-    WebInspector.installDragHandle(this._parentElement, this._startWindowSelectorDragging.bind(this), this._windowSelectorDragging.bind(this), this._endWindowSelectorDragging.bind(this), "ew-resize", null);
+    WebInspector.installDragHandle(this._parentElement, this._startWindowSelectorDragging.bind(this), this._windowSelectorDragging.bind(this), this._endWindowSelectorDragging.bind(this), "text", null);
     if (dividersLabelBarElement)
         WebInspector.installDragHandle(dividersLabelBarElement, this._startWindowDragging.bind(this), this._windowDragging.bind(this), null, "-webkit-grabbing", "-webkit-grab");
 
@@ -210,7 +210,7 @@ WebInspector.OverviewGrid.Window.prototype = {
         if (this._enabled === enabled)
             return;
         this._enabled = enabled;
-        this._currentPositionArea.style.cursor = enabled ? "col-resize" : "";
+        this._currentPositionArea.style.cursor = enabled ? "text" : "";
     },
 
     /**

@@ -75,8 +75,7 @@
     top: 0;
     bottom: 0;
     width: 2px;
-    margin-left: -1px;
-    background-color: hsla(240, 50%, 50%, 0.5);
+    background-color: hsla(220, 95%, 50%, 0.7);
     z-index: 500;
     pointer-events: none;
 }
