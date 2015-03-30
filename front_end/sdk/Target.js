@@ -144,16 +144,10 @@ WebInspector.Target.prototype = {
         this.cssModel = new WebInspector.CSSStyleModel(this);
         /** @type {?WebInspector.WorkerManager} */
         this.workerManager = !this.isDedicatedWorker() ? new WebInspector.WorkerManager(this) : null;
-        /** @type {!WebInspector.DatabaseModel} */
-        this.databaseModel = new WebInspector.DatabaseModel(this);
-        /** @type {!WebInspector.DOMStorageModel} */
-        this.domStorageModel = new WebInspector.DOMStorageModel(this);
         /** @type {!WebInspector.CPUProfilerModel} */
         this.cpuProfilerModel = new WebInspector.CPUProfilerModel(this);
         /** @type {!WebInspector.HeapProfilerModel} */
         this.heapProfilerModel = new WebInspector.HeapProfilerModel(this);
-        /** @type {!WebInspector.IndexedDBModel} */
-        this.indexedDBModel = new WebInspector.IndexedDBModel(this);
         /** @type {!WebInspector.LayerTreeModel} */
         this.layerTreeModel = new WebInspector.LayerTreeModel(this);
         /** @type {!WebInspector.AnimationModel} */
