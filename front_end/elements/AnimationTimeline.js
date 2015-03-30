@@ -634,15 +634,15 @@ WebInspector.AnimationUI.prototype = {
     {
         var durationWithDelay = this._delay() + this._duration() * this._animation.source().iterations() + this._animation.source().endDelay();
         var svgWidth = Math.min(this._timeline.width(), durationWithDelay * this._timeline.pixelMsRatio());
-        var leftMargin = ((this._animation.startTime() - this._timeline.startTime()) * this._timeline.pixelMsRatio()).toFixed(2);
+        var leftMargin = ((this._animation.startTime() - this._timeline.startTime()) * this._timeline.pixelMsRatio());
 
         this._svg.classList.toggle("animation-ui-canceled", this._animation.playState() === "idle");
         this._svg.setAttribute("width", (svgWidth + 2 * WebInspector.AnimationUI.Options.AnimationMargin).toFixed(2));
-        this._svg.style.transform = "translateX(" + leftMargin  + "px)";
+        this._svg.style.transform = "translateX(" + leftMargin.toFixed(2)  + "px)";
         this._activeIntervalGroup.style.transform = "translateX(" + (this._delay() * this._timeline.pixelMsRatio()).toFixed(2) + "px)";
 
-        this._nameElement.style.transform = "translateX(" + (leftMargin + this._delay() * this._timeline.pixelMsRatio() + WebInspector.AnimationUI.Options.AnimationMargin) + "px)";
-        this._nameElement.style.width = this._duration() * this._timeline.pixelMsRatio() + "px";
+        this._nameElement.style.transform = "translateX(" + (leftMargin + this._delay() * this._timeline.pixelMsRatio() + WebInspector.AnimationUI.Options.AnimationMargin).toFixed(2) + "px)";
+        this._nameElement.style.width = (this._duration() * this._timeline.pixelMsRatio().toFixed(2)) + "px";
         this._drawDelayLine(this._svg);
 
         if (this._animation.type() === "CSSTransition") {
