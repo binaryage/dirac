@@ -220,16 +220,6 @@ WebInspector.TimelinePanel.prototype = {
     },
 
     /**
-     * @return {!WebInspector.TimelineView}
-     */
-    _timelineView: function()
-    {
-        if (!this._lazyTimelineView)
-            this._lazyTimelineView = new WebInspector.TimelineView(this, this._model);
-        return this._lazyTimelineView;
-    },
-
-    /**
      * @return {!WebInspector.View}
      */
     _layersView: function()
@@ -608,7 +598,9 @@ WebInspector.TimelinePanel.prototype = {
             this._flameChart = null;
             this._filterBar.filterButton().setEnabled(true);
             this._filtersContainer.classList.toggle("hidden", !this._filterBar.filtersToggled());
-            this._addModeView(this._timelineView());
+            var timelineView = new WebInspector.TimelineView(this, this._model)
+            this._addModeView(timelineView);
+            timelineView.setFrameModel(isFrameMode ? this._frameModel() : null);
         }
 
         if (this._captureMemorySetting.get()) {
@@ -618,9 +610,6 @@ WebInspector.TimelinePanel.prototype = {
         }
 
         var mainTarget = WebInspector.targetManager.mainTarget();
-        if (this._lazyTimelineView)
-            this._lazyTimelineView.setFrameModel(isFrameMode ? this._frameModel() : null);
-
         this._overviewPane.setOverviewControls(this._overviewControls);
         this.doResize();
         this._selection = null;
