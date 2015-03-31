@@ -72,8 +72,8 @@ WebInspector.StylesSidebarPane = function(computedStylePane, requestShowCallback
 
     this._createElementStatePane();
     this.bodyElement.appendChild(this._elementStatePane);
-    this._createAnimationsControlPane();
-    this.bodyElement.appendChild(this._animationsControlPane);
+    this._animationsControlPane = new WebInspector.AnimationControlPane();
+    this.bodyElement.appendChild(this._animationsControlPane.element);
     this._sectionsContainer = createElement("div");
     this.bodyElement.appendChild(this._sectionsContainer);
 
@@ -369,6 +369,7 @@ WebInspector.StylesSidebarPane.prototype = {
 
         this._resetCache();
         this._computedStylePane.setNode(node);
+        this._animationsControlPane.setNode(node);
         WebInspector.ElementsSidebarPane.prototype.setNode.call(this, node);
     },
 
@@ -387,7 +388,6 @@ WebInspector.StylesSidebarPane.prototype = {
             this._target.domModel.removeEventListener(WebInspector.DOMModel.Events.AttrModified, this._attributeChanged, this);
             this._target.domModel.removeEventListener(WebInspector.DOMModel.Events.AttrRemoved, this._attributeChanged, this);
             this._target.resourceTreeModel.removeEventListener(WebInspector.ResourceTreeModel.EventTypes.FrameResized, this._frameResized, this);
-            this._target.resourceTreeModel.removeEventListener(WebInspector.ResourceTreeModel.EventTypes.MainFrameNavigated, this._updateAnimationsPlaybackRate, this);
         }
         this._target = target;
         this._target.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetAdded, this._styleSheetOrMediaQueryResultChanged, this);
@@ -397,8 +397,6 @@ WebInspector.StylesSidebarPane.prototype = {
         this._target.domModel.addEventListener(WebInspector.DOMModel.Events.AttrModified, this._attributeChanged, this);
         this._target.domModel.addEventListener(WebInspector.DOMModel.Events.AttrRemoved, this._attributeChanged, this);
         this._target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.FrameResized, this._frameResized, this);
-        this._target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.MainFrameNavigated, this._updateAnimationsPlaybackRate, this);
-        this._updateAnimationsPlaybackRate();
     },
 
     /**
@@ -902,7 +900,7 @@ WebInspector.StylesSidebarPane.prototype = {
         this._elementStateButton.classList.toggle("toggled", buttonToggled);
         this._elementStatePane.classList.toggle("expanded", buttonToggled);
         this._animationsControlButton.classList.remove("toggled");
-        this._animationsControlPane.classList.remove("expanded");
+        this._animationsControlPane.element.classList.remove("expanded");
     },
 
     _createElementStatePane: function()
@@ -965,82 +963,9 @@ WebInspector.StylesSidebarPane.prototype = {
         if (buttonToggled)
             this.expand();
         this._animationsControlButton.classList.toggle("toggled", buttonToggled);
-        this._animationsControlPane.classList.toggle("expanded", buttonToggled);
+        this._animationsControlPane.element.classList.toggle("expanded", buttonToggled);
         this._elementStateButton.classList.remove("toggled");
         this._elementStatePane.classList.remove("expanded");
-    },
-
-    /**
-     * @param {!WebInspector.Event=} event
-     */
-    _updateAnimationsPlaybackRate: function(event)
-    {
-        /**
-         * @param {?Protocol.Error} error
-         * @param {number} playbackRate
-         * @this {WebInspector.StylesSidebarPane}
-         */
-        function setPlaybackRate(error, playbackRate)
-        {
-            this._animationsPlaybackSlider.value = WebInspector.AnimationsSidebarPane.GlobalPlaybackRates.indexOf(playbackRate);
-            this._animationsPlaybackLabel.textContent = playbackRate + "x";
-        }
-
-        if (this._target)
-            this._target.animationAgent().getPlaybackRate(setPlaybackRate.bind(this));
-    },
-
-    _createAnimationsControlPane: function()
-    {
-        /**
-         * @param {!Event} event
-         * @this {WebInspector.StylesSidebarPane}
-         */
-        function playbackSliderInputHandler(event)
-        {
-            this._animationsPlaybackRate = WebInspector.AnimationsSidebarPane.GlobalPlaybackRates[event.target.value];
-            this._target.animationAgent().setPlaybackRate(this._animationsPaused ? 0 : this._animationsPlaybackRate);
-            this._animationsPlaybackLabel.textContent = this._animationsPlaybackRate + "x";
-            WebInspector.userMetrics.AnimationsPlaybackRateChanged.record();
-        }
-
-        /**
-         * @this {WebInspector.StylesSidebarPane}
-         */
-        function pauseButtonHandler()
-        {
-            this._animationsPaused = !this._animationsPaused;
-            this._target.animationAgent().setPlaybackRate(this._animationsPaused ? 0 : this._animationsPlaybackRate);
-            WebInspector.userMetrics.AnimationsPlaybackRateChanged.record();
-            this._animationsPauseButton.element.classList.toggle("pause-status-bar-item");
-            this._animationsPauseButton.element.classList.toggle("play-status-bar-item");
-        }
-
-
-        this._animationsPaused = false;
-        this._animationsPlaybackRate = 1;
-
-        this._animationsControlPane = createElementWithClass("div", "styles-animations-controls-pane");
-        var labelElement = createElement("div");
-        labelElement.createTextChild("Animations");
-        this._animationsControlPane.appendChild(labelElement);
-        var container = this._animationsControlPane.createChild("div", "animations-controls");
-
-        var statusBar = new WebInspector.StatusBar();
-        this._animationsPauseButton = new WebInspector.StatusBarButton("", "pause-status-bar-item");
-        statusBar.appendStatusBarItem(this._animationsPauseButton);
-        this._animationsPauseButton.addEventListener("click", pauseButtonHandler.bind(this));
-        container.appendChild(statusBar.element);
-
-        this._animationsPlaybackSlider = container.createChild("input");
-        this._animationsPlaybackSlider.type = "range";
-        this._animationsPlaybackSlider.min = 0;
-        this._animationsPlaybackSlider.max = WebInspector.AnimationsSidebarPane.GlobalPlaybackRates.length - 1;
-        this._animationsPlaybackSlider.value = this._animationsPlaybackSlider.max;
-        this._animationsPlaybackSlider.addEventListener("input", playbackSliderInputHandler.bind(this));
-
-        this._animationsPlaybackLabel = container.createChild("div", "playback-label");
-        this._animationsPlaybackLabel.createTextChild("1x");
     },
 
     /**

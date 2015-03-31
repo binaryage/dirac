@@ -70,6 +70,7 @@
     ],
     "scripts": [
         "BezierUI.js",
+        "AnimationControlPane.js",
         "AnimationTimeline.js",
         "StylesPopoverHelper.js",
         "BezierEditor.js",

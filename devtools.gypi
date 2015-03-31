@@ -364,6 +364,7 @@
             'front_end/elements/elementsPanel.css',
             'front_end/elements/elementsTreeOutline.css',
             'front_end/elements/spectrum.css',
+            'front_end/elements/AnimationControlPane.js',
             'front_end/elements/AnimationTimeline.js',
             'front_end/elements/AnimationsSidebarPane.js',
             'front_end/elements/BezierEditor.js',
