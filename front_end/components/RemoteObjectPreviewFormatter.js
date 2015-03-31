@@ -127,11 +127,6 @@ WebInspector.RemoteObjectPreviewFormatter.prototype = {
     _renderPropertyPreviewOrAccessor: function(propertyPath)
     {
         var property = propertyPath.peekLast();
-        if (property.type === "accessor") {
-            var valueElement = createElement("span");
-            valueElement.textContent = WebInspector.UIString("(...)");
-            return valueElement;
-        }
         return this.renderPropertyPreview(property.type, /** @type {string} */ (property.subtype), property.value);
     },
 
