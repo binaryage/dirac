@@ -138,6 +138,11 @@
         },
         {
             "type": "@WebInspector.Revealer",
+            "contextTypes": ["WebInspector.DebuggerModel.Location"],
+            "className": "WebInspector.SourcesPanel.DebuggerLocationRevealer"
+        },
+        {
+            "type": "@WebInspector.Revealer",
             "contextTypes": ["WebInspector.UISourceCode"],
             "className": "WebInspector.SourcesPanel.UISourceCodeRevealer"
         },

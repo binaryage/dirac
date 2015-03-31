@@ -476,7 +476,8 @@ WebInspector.ConsoleViewMessage.prototype = {
 
             var title = (response.functionName || "function")+ "()";
             if (response.location) {
-                var anchor = this._linkifier.linkifyRawLocation(response.location, "");
+                var anchor = createElementWithClass("a", "link");
+                anchor.addEventListener("click", WebInspector.Revealer.reveal.bind(WebInspector.Revealer, response.location, undefined));
                 anchor.textContent = title;
                 element.appendChild(anchor);
             } else {

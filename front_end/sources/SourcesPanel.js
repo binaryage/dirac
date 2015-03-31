@@ -1264,6 +1264,29 @@ WebInspector.SourcesPanel.UILocationRevealer.prototype = {
  * @constructor
  * @implements {WebInspector.Revealer}
  */
+WebInspector.SourcesPanel.DebuggerLocationRevealer = function()
+{
+}
+
+WebInspector.SourcesPanel.DebuggerLocationRevealer.prototype = {
+    /**
+     * @override
+     * @param {!Object} rawLocation
+     * @return {!Promise}
+     */
+    reveal: function(rawLocation)
+    {
+        if (!(rawLocation instanceof WebInspector.DebuggerModel.Location))
+            return Promise.reject(new Error("Internal error: not a debugger location"));
+        WebInspector.SourcesPanel.instance().showUILocation(WebInspector.debuggerWorkspaceBinding.rawLocationToUILocation(rawLocation));
+        return Promise.resolve();
+    }
+}
+
+/**
+ * @constructor
+ * @implements {WebInspector.Revealer}
+ */
 WebInspector.SourcesPanel.UISourceCodeRevealer = function()
 {
 }
