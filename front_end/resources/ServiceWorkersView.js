@@ -321,10 +321,22 @@ WebInspector.SWRegistrationElement.prototype = {
                 inspectButton.createTextChild(WebInspector.UIString("inspect"));
                 inspectButton.addEventListener("click", this._inspectButtonClicked.bind(this, version.id), false);
             }
+
+            if (version.scriptLastModified) {
+                var scriptLastModifiedLabel = scriptURLDiv.createChild("label", " service-workers-info service-worker-script-last-modified", "dt-icon-label");
+                scriptLastModifiedLabel.type = "info-icon";
+                scriptLastModifiedLabel.createTextChild(WebInspector.UIString("Last-Modified: %s", (new Date(version.scriptLastModified * 1000)).toConsoleTime()));
+            }
+            if (version.scriptResponseTime) {
+                var scriptResponseTimeDiv = scriptURLDiv.createChild("label", " service-workers-info service-worker-script-response-time", "dt-icon-label");
+                scriptResponseTimeDiv.type = "info-icon";
+                scriptResponseTimeDiv.createTextChild(WebInspector.UIString("Server response time: %s", (new Date(version.scriptResponseTime * 1000)).toConsoleTime()));
+            }
+
             var errorMessages = version.errorMessages;
             for (var index = 0; index < errorMessages.length; ++index) {
                 var errorDiv = scriptURLDiv.createChild("div", "service-workers-error");
-                errorDiv.createChild("div", "service-workers-error-icon");
+                errorDiv.createChild("label", "", "dt-icon-label").type = "error-icon";
                 errorDiv.createChild("div", "service-workers-error-message").createTextChild(errorMessages[index].errorMessage);
                 var script_path = errorMessages[index].sourceURL;
                 var script_url;
@@ -334,6 +346,7 @@ WebInspector.SWRegistrationElement.prototype = {
                     script_path = String.sprintf("%s:%d", script_path, errorMessages[index].lineNumber);
                 errorDiv.createChild("div", "service-workers-error-line").createTextChild(script_path);
             }
+
         }
         if (!versions.length) {
             var stateRowElement = versionsElement.createChild("div", "service-workers-version-row");
