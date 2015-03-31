@@ -1334,18 +1334,18 @@ Map.prototype.keysArray = function()
 
 /**
  * @constructor
- * @template T
+ * @template K, V
  */
-var StringMultimap = function()
+var Multimap = function()
 {
-    /** @type {!Map.<string, !Set.<!T>>} */
+    /** @type {!Map.<K, !Set.<!V>>} */
     this._map = new Map();
 }
 
-StringMultimap.prototype = {
+Multimap.prototype = {
     /**
-     * @param {string} key
-     * @param {T} value
+     * @param {K} key
+     * @param {V} value
      */
     set: function(key, value)
     {
@@ -1358,8 +1358,8 @@ StringMultimap.prototype = {
     },
 
     /**
-     * @param {string} key
-     * @return {!Set.<!T>}
+     * @param {K} key
+     * @return {!Set.<!V>}
      */
     get: function(key)
     {
@@ -1370,8 +1370,8 @@ StringMultimap.prototype = {
     },
 
     /**
-     * @param {string} key
-     * @param {T} value
+     * @param {K} key
+     * @param {V} value
      */
     remove: function(key, value)
     {
@@ -1382,7 +1382,7 @@ StringMultimap.prototype = {
     },
 
     /**
-     * @param {string} key
+     * @param {K} key
      */
     removeAll: function(key)
     {
@@ -1390,7 +1390,7 @@ StringMultimap.prototype = {
     },
 
     /**
-     * @return {!Array.<string>}
+     * @return {!Array.<K>}
      */
     keysArray: function()
     {
@@ -1398,7 +1398,7 @@ StringMultimap.prototype = {
     },
 
     /**
-     * @return {!Array.<!T>}
+     * @return {!Array.<!V>}
      */
     valuesArray: function()
     {
