@@ -2925,14 +2925,12 @@ WebInspector.StylePropertyTreeElement.prototype = {
 
     _revertStyleUponEditingCanceled: function()
     {
-        if (typeof this._originalPropertyText === "string") {
+        if (this._propertyHasBeenEditedIncrementally)
             this.applyStyleText(this._originalPropertyText, false);
-        } else {
-            if (this._newProperty)
-                this.treeOutline.removeChild(this);
-            else
-                this.updateTitle();
-        }
+        else if (this._newProperty)
+            this.treeOutline.removeChild(this);
+        else
+            this.updateTitle();
     },
 
     /**
@@ -3083,16 +3081,6 @@ WebInspector.StylePropertyTreeElement.prototype = {
         }
     },
 
-    /**
-     * @return {boolean}
-     */
-    _hasBeenModifiedIncrementally: function()
-    {
-        // New properties applied via up/down or live editing have an _originalPropertyText and will be deleted later
-        // on, if cancelled, when the empty string gets applied as their style text.
-        return typeof this._originalPropertyText === "string" || (!!this.property.propertyText && this._newProperty);
-    },
-
     styleTextAppliedForTest: function() { },
 
     /**
@@ -3117,7 +3105,7 @@ WebInspector.StylePropertyTreeElement.prototype = {
         }
 
         styleText = styleText.replace(/\s/g, " ").trim(); // Replace &nbsp; with whitespace.
-        if (!styleText.length && majorChange && this._newProperty && !this._hasBeenModifiedIncrementally()) {
+        if (!styleText.length && majorChange && this._newProperty && !this._propertyHasBeenEditedIncrementally) {
             // The user deleted everything and never applied a new property value via Up/Down scrolling/live editing, so remove the tree element and update.
             var section = this.section();
             this.parent.removeChild(this);
@@ -3147,9 +3135,7 @@ WebInspector.StylePropertyTreeElement.prototype = {
             }
             this._applyNewStyle(newStyle);
 
-            if (this._newProperty)
-                this._newPropertyInStyle = true;
-
+            this._propertyHasBeenEditedIncrementally = true;
             this.property = newStyle.propertyAt(this.property.index);
 
             // We are happy to update UI if user is not editing.
@@ -3164,7 +3150,7 @@ WebInspector.StylePropertyTreeElement.prototype = {
         // FIXME: this does not handle trailing comments.
         if (styleText.length && !/;\s*$/.test(styleText))
             styleText += ";";
-        var overwriteProperty = !!(!this._newProperty || this._newPropertyInStyle);
+        var overwriteProperty = !this._newProperty || this._propertyHasBeenEditedIncrementally;
         this.property.setText(styleText, majorChange, overwriteProperty, callback.bind(this));
     },
 
