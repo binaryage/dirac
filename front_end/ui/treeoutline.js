@@ -265,12 +265,15 @@ TreeOutline.prototype = {
 /**
  * @constructor
  * @extends {TreeOutline}
+ * @param {string=} className
  */
-function TreeOutlineInShadow()
+function TreeOutlineInShadow(className)
 {
     TreeOutline.call(this);
     var innerElement = this.element;
     innerElement.classList.add("tree-outline");
+    if (className)
+        innerElement.classList.add(className);
 
     // Redefine element to the external one.
     this.element = createElement("div");

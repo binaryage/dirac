@@ -91,6 +91,7 @@
         "AnimationsSidebarPane.js"
     ],
     "stylesheets": [
+        "accessibilityNode.css",
         "animationTimeline.css",
         "bezierEditor.css",
         "breadcrumbs.css",
