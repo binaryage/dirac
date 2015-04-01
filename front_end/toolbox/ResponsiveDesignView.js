@@ -111,8 +111,7 @@ WebInspector.ResponsiveDesignView.prototype = {
      */
     targetAdded: function(target)
     {
-        // FIXME: adapt this to multiple targets.
-        if (this._target || !target.supportsEmulation())
+        if (this._target || !WebInspector.OverridesSupport.targetSupportsEmulation(target))
             return;
         this._target = target;
         target.registerEmulationDispatcher(new WebInspector.EmulationDispatcher(this));
