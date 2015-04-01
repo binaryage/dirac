@@ -707,6 +707,9 @@ WebInspector.ElementsPanel.prototype = {
             }
         }
 
+        if (WebInspector.isEditing())
+            return;
+
         var treeOutline = null;
         for (var i = 0; i < this._treeOutlines.length; ++i) {
             if (this._treeOutlines[i].selectedDOMNode() === this._lastValidSelectedNode)
