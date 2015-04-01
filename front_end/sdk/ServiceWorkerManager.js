@@ -397,6 +397,15 @@ WebInspector.ServiceWorkerDispatcher.prototype = {
     workerErrorReported: function(errorMessage)
     {
         this._manager._workerErrorReported(errorMessage);
+    },
+
+    /**
+     * @override
+     * @param {boolean} debugOnStart
+     */
+    debugOnStartUpdated: function(debugOnStart)
+    {
+        // FIXME: implement this.
     }
 }
 

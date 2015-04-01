@@ -4144,6 +4144,13 @@
                     { "name": "versionId", "type": "string" }
                 ],
                 "handlers": ["browser"]
+            },
+            {
+                "name": "setDebugOnStart",
+                "parameters": [
+                    { "name": "debugOnStart", "type": "boolean" }
+                ],
+                "handlers": ["browser"]
             }
         ],
         "events": [
@@ -4188,6 +4195,13 @@
                 "name": "workerErrorReported",
                 "parameters": [
                     { "name": "errorMessage", "$ref": "ServiceWorkerErrorMessage" }
+                ],
+                "handlers": ["browser"]
+            },
+            {
+                "name": "debugOnStartUpdated",
+                "parameters": [
+                    { "name": "debugOnStart", "type": "boolean" }
                 ],
                 "handlers": ["browser"]
             }
