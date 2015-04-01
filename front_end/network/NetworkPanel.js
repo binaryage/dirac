@@ -167,6 +167,9 @@ WebInspector.NetworkPanel.prototype = {
 
         this._panelStatusBar.appendStatusBarItem(this._filterBar.filterButton());
 
+        var viewModeLabel = new WebInspector.StatusBarText(WebInspector.UIString("View:"), "status-bar-group-label");
+        this._panelStatusBar.appendStatusBarItem(viewModeLabel);
+
         this._largerRequestsButton = new WebInspector.StatusBarButton(WebInspector.UIString(""), "large-list-status-bar-item");
         this._largerRequestsButton.addEventListener("click", this._onLargerRequestsClicked, this);
         this._panelStatusBar.appendStatusBarItem(this._largerRequestsButton);
@@ -174,6 +177,9 @@ WebInspector.NetworkPanel.prototype = {
         this._showOverviewButton = new WebInspector.StatusBarButton(WebInspector.UIString(""), "waterfall-status-bar-item");
         this._showOverviewButton.addEventListener("click", this._onShowOverviewButtonClicked, this);
         this._panelStatusBar.appendStatusBarItem(this._showOverviewButton);
+
+        var optionsLabel = new WebInspector.StatusBarText(WebInspector.UIString("Options:"), "status-bar-group-label");
+        this._panelStatusBar.appendStatusBarItem(optionsLabel);
 
         this._preserveLogCheckbox = new WebInspector.StatusBarCheckbox(WebInspector.UIString("Preserve log"), WebInspector.UIString("Do not clear log on page reload / navigation."));
         this._preserveLogCheckbox.inputElement.addEventListener("change", this._onPreserveLogCheckboxChanged.bind(this), false);

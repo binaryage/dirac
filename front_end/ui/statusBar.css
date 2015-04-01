@@ -236,6 +236,13 @@ select.status-bar-item {
     border-right: 1px solid #CCC;
 }
 
+.status-bar-group-label {
+    margin-left: 6px;
+    margin-right: 3px;
+    color: #888;
+}
+
+
 /* Predefined items */
 
 .dock-status-bar-item.toggled-undocked .glyph {
