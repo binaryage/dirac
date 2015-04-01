@@ -216,12 +216,16 @@ WebInspector.ServiceWorkerManager.prototype = {
      */
     _workerVersionUpdated: function(versions)
     {
+        /** @type {!Set.<!WebInspector.ServiceWorkerRegistration>} */
+        var registrations = new Set();
         for (var payload of versions) {
             var registration = this._registrations.get(payload.registrationId);
             if (!registration)
                 continue;
             registration._updateVersion(payload);
-
+            registrations.add(registration);
+        }
+        for (var registration of registrations) {
             if (registration._shouldBeRemoved()) {
                 this._registrations.delete(registration.id);
                 this.dispatchEventToListeners(WebInspector.ServiceWorkerManager.Events.RegistrationDeleted, registration);
