@@ -28,6 +28,8 @@ WebInspector.Target = function(name, type, connection, parentTarget, callback)
 
     /** @type {!Object.<string, boolean>} */
     this._capabilities = {};
+    if (this.supportsEmulation())
+        this.emulationAgent().canEmulate(this._initializeCapability.bind(this, WebInspector.Target.Capabilities.CanEmulate, null));
     this.pageAgent().canScreencast(this._initializeCapability.bind(this, WebInspector.Target.Capabilities.CanScreencast, this._loadedWithCapabilities.bind(this, callback)));
 }
 
@@ -35,7 +37,9 @@ WebInspector.Target = function(name, type, connection, parentTarget, callback)
  * @enum {string}
  */
 WebInspector.Target.Capabilities = {
-    CanScreencast: "CanScreencast"
+    CanScreencast: "CanScreencast",
+    HasTouchInputs: "HasTouchInputs",
+    CanEmulate: "CanEmulate"
 }
 
 /**
@@ -176,6 +180,14 @@ WebInspector.Target.prototype = {
     /**
      * @return {boolean}
      */
+    supportsEmulation: function()
+    {
+        return this.isPage();
+    },
+
+    /**
+     * @return {boolean}
+     */
     isPage: function()
     {
         return this._type === WebInspector.Target.Type.Page;
@@ -219,6 +231,14 @@ WebInspector.Target.prototype = {
     parentTarget: function()
     {
         return this._parentTarget;
+    },
+
+    /**
+     * @return {boolean}
+     */
+    canEmulate: function()
+    {
+        return this.hasCapability(WebInspector.Target.Capabilities.CanEmulate);
     },
 
     _onDisconnect: function()

@@ -352,15 +352,7 @@ WebInspector.Main.prototype = {
         if (this._mainTarget.isServiceWorker())
             this._mainTarget.runtimeAgent().run();
 
-        WebInspector.overridesSupport.applyInitialOverrides(overridesApplied);
-
-        function overridesApplied()
-        {
-            if (!WebInspector.overridesSupport.responsiveDesignAvailable() && WebInspector.overridesSupport.emulationEnabled())
-                WebInspector.inspectorView.showViewInDrawer("emulation", true);
-
-            target.inspectorAgent().enable(inspectorAgentEnableCallback);
-        }
+        target.inspectorAgent().enable(inspectorAgentEnableCallback);
 
         function inspectorAgentEnableCallback()
         {
@@ -369,6 +361,10 @@ WebInspector.Main.prototype = {
             // Asynchronously run the extensions.
             setTimeout(function() { WebInspector.extensionServer.initializeExtensions(); }, 0);
         }
+
+        WebInspector.overridesSupport.applyInitialOverrides();
+        if (!WebInspector.overridesSupport.responsiveDesignAvailable() && WebInspector.overridesSupport.emulationEnabled())
+            WebInspector.inspectorView.showViewInDrawer("emulation", true);
     },
 
     _registerForwardedShortcuts: function()
@@ -960,7 +956,7 @@ WebInspector.DisableJavaScriptObserver.prototype = {
      */
     targetAdded: function(target)
     {
-        if (WebInspector.OverridesSupport.targetSupportsEmulation(target))
+        if (target.supportsEmulation())
             target.emulationAgent().setScriptExecutionDisabled(this._setting.get());
     },
 
@@ -978,9 +974,11 @@ WebInspector.DisableJavaScriptObserver.prototype = {
     _settingChanged: function(event)
     {
         var value = this._setting.get();
-        var targets = WebInspector.OverridesSupport.targetsSupportingEmulation();
-        for (var i = 0; i < targets.length; ++i)
-            targets[i].emulationAgent().setScriptExecutionDisabled(value);
+        var targets = WebInspector.targetManager.targets();
+        for (var i = 0; i < targets.length; ++i) {
+            if (targets[i].supportsEmulation())
+                targets[i].emulationAgent().setScriptExecutionDisabled(value);
+        }
     }
 }
 
