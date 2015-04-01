@@ -786,8 +786,7 @@ WebInspector.AnimationUI.prototype = {
             var duration = this._duration();
             this._setDelay(delay);
             this._setDuration(duration);
-            // FIXME: Transition timing updates currently not supported
-            if (this._animation.type() == "WebAnimation") {
+            if (this._animation.type() !== "CSSAnimation") {
                 var target = WebInspector.targetManager.mainTarget();
                 if (target)
                     target.animationAgent().setTiming(this._animation.id(), duration, delay);
