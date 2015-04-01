@@ -270,7 +270,7 @@ WebInspector.ServiceWorker = function(manager, workerId, url)
     this._agent = manager.target().serviceWorkerAgent();
     this._workerId = workerId;
     this._connection = new WebInspector.ServiceWorkerConnection(this._agent, workerId);
-
+    this._url = url;
     var parsedURL = url.asParsedURL();
     this._name = parsedURL ? parsedURL.lastPathComponentWithFragment()  : "#" + (++WebInspector.ServiceWorker._lastAnonymousTargetId);
     this._scope = parsedURL.host + parsedURL.folderPathComponents;
@@ -303,6 +303,14 @@ WebInspector.ServiceWorker.prototype = {
     name: function()
     {
         return this._name;
+    },
+
+    /**
+     * @return {string}
+     */
+    url: function()
+    {
+        return this._url;
     },
 
     /**
