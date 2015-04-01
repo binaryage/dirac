@@ -300,7 +300,7 @@ WebInspector.SWRegistrationElement.prototype = {
         for (var version of versions) {
             var stateRowElement = versionsElement.createChild("div", "service-workers-version-row");
             var statusDiv = stateRowElement.createChild("div", "service-workers-version-status");
-            var icon = statusDiv.createChild("div", "service-workers-icon service-workers-color-" + (version.id % 10));
+            var icon = statusDiv.createChild("div", "service-workers-version-status-icon service-workers-color-" + (version.id % 10));
             icon.title = WebInspector.UIString("ID: %s", version.id);
             statusDiv.createChild("div", "service-workers-version-status-text").createTextChild(version.status);
             var runningStatusDiv = stateRowElement.createChild("div", "service-workers-version-running-status");
@@ -313,15 +313,16 @@ WebInspector.SWRegistrationElement.prototype = {
                 startButton.addEventListener("click", this._startButtonClicked.bind(this), false);
                 startButton.title = WebInspector.UIString("Start");
             }
-            runningStatusDiv.createChild("div", "service-workers-version-running-status-text").createTextChild(version.runningStatus);
-            var scriptURLDiv = stateRowElement.createChild("div", "service-workers-version-script-url");
-            scriptURLDiv.createChild("div", "service-workers-version-script-url-text").createTextChild(version.scriptURL.asParsedURL().path);
             if (version.isRunning() || version.isStarting()) {
-                var inspectButton = scriptURLDiv.createChild("span", "service-workers-version-inspect");
+                runningStatusDiv.classList.add("service-workers-version-running-status-inspectable");
+                var inspectButton = runningStatusDiv.createChild("div", "service-workers-version-inspect");
                 inspectButton.createTextChild(WebInspector.UIString("inspect"));
                 inspectButton.addEventListener("click", this._inspectButtonClicked.bind(this, version.id), false);
             }
 
+            runningStatusDiv.createChild("div", "service-workers-version-running-status-text").createTextChild(version.runningStatus);
+            var scriptURLDiv = stateRowElement.createChild("div", "service-workers-version-script-url");
+            scriptURLDiv.createChild("div", "service-workers-version-script-url-text").createTextChild(WebInspector.UIString("Script: %s", version.scriptURL.asParsedURL().path));
             if (version.scriptLastModified) {
                 var scriptLastModifiedLabel = scriptURLDiv.createChild("label", " service-workers-info service-worker-script-last-modified", "dt-icon-label");
                 scriptLastModifiedLabel.type = "info-icon";
@@ -341,9 +342,9 @@ WebInspector.SWRegistrationElement.prototype = {
                 var script_path = errorMessages[index].sourceURL;
                 var script_url;
                 if (script_url = script_path.asParsedURL())
-                    script_path = script_url.path;
-                if (errorMessages[index].lineNumber != -1)
-                    script_path = String.sprintf("%s:%d", script_path, errorMessages[index].lineNumber);
+                    script_path = script_url.displayName;
+                if (script_path.length && errorMessages[index].lineNumber != -1)
+                    script_path = String.sprintf("(%s:%d)", script_path, errorMessages[index].lineNumber);
                 errorDiv.createChild("div", "service-workers-error-line").createTextChild(script_path);
             }
 

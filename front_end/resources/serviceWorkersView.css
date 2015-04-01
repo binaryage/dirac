@@ -69,9 +69,9 @@
 }
 
 .service-workers-version-mode-text {
+    left: 4px;
     position: absolute;
-    top: 50%;
-    transform: translate(3px, -50%);
+    top: 8px;
 }
 
 .service-workers-versions {
@@ -96,20 +96,20 @@
     text-overflow: ellipsis;
 }
 
-.service-workers-icon {
+.service-workers-version-status-icon {
     position: absolute;
-    top: 50%;
-    transform: translate(3px, -50%);
     -webkit-mask-image: url(Images/serviceWorker.svg);
     -webkit-mask-size: 20px 20px;
     height: 20px;
+    left: 4px;
+    top: 8px;
     width: 20px;
 }
 
 .service-workers-version-status-text {
     position: absolute;
-    top: 50%;
-    transform: translate(30px, -50%);
+    left: 28px;
+    top: 10px;
 }
 
 .service-workers-version-running-status {
@@ -121,16 +121,29 @@
     text-overflow: ellipsis;
 }
 
-.service-workers-version-running-status-text {
-    position: absolute;
-    top: 50%;
-    transform: translate(30px,-50%);
+.service-workers-version-running-status-inspectable {
+    min-height: 40px;
 }
 
 .service-workers-version-running-status-button {
     position: absolute;
-    top: 50%;
-    transform: translate(0,-50%);
+    left: 0px;
+    top: 6px;
+}
+
+.service-workers-version-running-status-text {
+    left: 32px;
+    position: absolute;
+    top: 10px;
+}
+
+.service-workers-version-inspect {
+    color: #00e;
+    cursor: pointer;
+    left: 32px;
+    position: absolute;
+    text-decoration: underline;
+    top: 22px;
 }
 
 .service-workers-version-script-url {
@@ -139,12 +152,6 @@
     flex: 3 3 0;
     overflow: hidden;
     text-overflow: ellipsis;
-}
-
-.service-workers-version-inspect {
-    color: #00e;
-    cursor: pointer;
-    text-decoration: underline;
 }
 
 .service-workers-start-button {
@@ -168,7 +175,7 @@
     background-color: rgba(0, 0, 0, 0.75);
     height: 24px;
     opacity: 0.8;
-    width: 30px;
+    width: 32px;
     border: 0;
     padding: 0;
 }
