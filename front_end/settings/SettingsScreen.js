@@ -223,7 +223,7 @@ WebInspector.GenericSettingsTab = function()
     {
         if (window.localStorage)
             window.localStorage.clear();
-        WebInspector.reload();
+        WebInspector.AppUtils.reload();
     }
 }
 

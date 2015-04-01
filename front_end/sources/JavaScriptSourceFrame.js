@@ -1069,7 +1069,7 @@ WebInspector.JavaScriptSourceFrame.prototype = {
     _createNewBreakpoint: function(lineNumber, columnNumber, condition, enabled)
     {
         this._setBreakpoint(lineNumber, columnNumber, condition, enabled);
-        WebInspector.userMetrics.ScriptsBreakpointSet.record();
+        WebInspector.userMetrics.actionTaken(WebInspector.UserMetrics.Actions.ScriptsBreakpointSet);
     },
 
     toggleBreakpointOnCurrentLine: function()
