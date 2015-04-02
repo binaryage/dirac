@@ -80,6 +80,7 @@ WebInspector.TimelineModel.RecordType = {
     LayoutInvalidationTracking: "LayoutInvalidationTracking",
     LayerInvalidationTracking: "LayerInvalidationTracking",
     PaintInvalidationTracking: "PaintInvalidationTracking",
+    ScrollInvalidationTracking: "ScrollInvalidationTracking",
 
     ParseHTML: "ParseHTML",
     ParseAuthorStyleSheet: "ParseAuthorStyleSheet",
@@ -1062,6 +1063,7 @@ WebInspector.TimelineModel.prototype = {
         case recordTypes.LayoutInvalidationTracking:
         case recordTypes.LayerInvalidationTracking:
         case recordTypes.PaintInvalidationTracking:
+        case recordTypes.ScrollInvalidationTracking:
             this._invalidationTracker.addInvalidation(new WebInspector.InvalidationTrackingEvent(event));
             break;
 
@@ -1966,7 +1968,8 @@ WebInspector.InvalidationTracker.prototype = {
         var paintFrameId = paintEvent.args["data"]["frame"];
         var types = [WebInspector.TimelineModel.RecordType.StyleRecalcInvalidationTracking,
             WebInspector.TimelineModel.RecordType.LayoutInvalidationTracking,
-            WebInspector.TimelineModel.RecordType.PaintInvalidationTracking];
+            WebInspector.TimelineModel.RecordType.PaintInvalidationTracking,
+            WebInspector.TimelineModel.RecordType.ScrollInvalidationTracking];
         for (var invalidation of this._invalidationsOfTypes(types)) {
             if (invalidation.paintId === effectivePaintId)
                 this._addInvalidationToEvent(paintEvent, paintFrameId, invalidation);
