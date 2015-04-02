@@ -49,7 +49,8 @@ WebInspector.ServiceWorkerManager = function(target)
 WebInspector.ServiceWorkerManager.Events = {
     WorkersUpdated: "WorkersUpdated",
     RegistrationUpdated: "RegistrationUpdated",
-    RegistrationDeleted: "RegistrationDeleted"
+    RegistrationDeleted: "RegistrationDeleted",
+    DebugOnStartUpdated: "DebugOnStartUpdated"
 }
 
 WebInspector.ServiceWorkerManager.prototype = {
@@ -91,6 +92,22 @@ WebInspector.ServiceWorkerManager.prototype = {
     hasWorkers: function()
     {
         return !!this._workers.size;
+    },
+
+    /**
+     * @return {boolean}
+     */
+    debugOnStart: function()
+    {
+        return !!this._debugOnStart;
+    },
+
+    /**
+     * @param {boolean} flag
+     */
+    setDebugOnStart: function(flag)
+    {
+        this._agent.setDebugOnStart(flag);
     },
 
     /**
@@ -248,6 +265,15 @@ WebInspector.ServiceWorkerManager.prototype = {
     },
 
     /**
+     * @param {boolean} flag
+     */
+    _debugOnStartUpdated: function(flag)
+    {
+        this._debugOnStart = flag;
+        this.dispatchEventToListeners(WebInspector.ServiceWorkerManager.Events.DebugOnStartUpdated, flag);
+    },
+
+    /**
      * @param {!WebInspector.Event} event
      */
     _mainFrameNavigated: function(event)
@@ -401,11 +427,11 @@ WebInspector.ServiceWorkerDispatcher.prototype = {
 
     /**
      * @override
-     * @param {boolean} debugOnStart
+     * @param {boolean} flag
      */
-    debugOnStartUpdated: function(debugOnStart)
+    debugOnStartUpdated: function(flag)
     {
-        // FIXME: implement this.
+        this._manager._debugOnStartUpdated(flag);
     }
 }
 
