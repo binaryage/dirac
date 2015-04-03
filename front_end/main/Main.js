@@ -636,6 +636,13 @@ WebInspector.Main.prototype = {
     }
 }
 
+WebInspector.reload = function()
+{
+    if (WebInspector.dockController.canDock() && WebInspector.dockController.dockSide() === WebInspector.DockController.State.Undocked)
+        InspectorFrontendHost.setIsDocked(true, function() {});
+    window.top.location.reload();
+}
+
 /**
  * @constructor
  * @implements {WebInspector.ActionDelegate}
@@ -689,7 +696,7 @@ WebInspector.Main.DebugReloadActionDelegate.prototype = {
      */
     handleAction: function()
     {
-        WebInspector.AppUtils.reload();
+        WebInspector.reload();
         return true;
     }
 }

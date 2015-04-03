@@ -144,7 +144,7 @@ WebInspector.EditFileSystemDialog.prototype = {
         if (!this._hasMappingChanges)
             return;
         if (window.confirm(WebInspector.UIString("It is recommended to restart DevTools after making these changes. Would you like to restart it?")))
-            WebInspector.AppUtils.reload();
+            WebInspector.reload();
     },
 
     _fileMappingAdded: function(event)

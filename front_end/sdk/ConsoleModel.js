@@ -153,7 +153,7 @@ WebInspector.ConsoleModel.evaluateCommandInConsole = function(executionContext, 
 
     executionContext.evaluate(text, "console", useCommandLineAPI, false, false, true, printResult);
 
-    WebInspector.userMetrics.actionTaken(WebInspector.UserMetrics.Actions.ConsoleEvaluated);
+    WebInspector.userMetrics.ConsoleEvaluated.record();
 }
 
 

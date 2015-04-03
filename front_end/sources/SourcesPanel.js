@@ -653,7 +653,7 @@ WebInspector.SourcesPanel.prototype = {
     _hiddenCallFramesRevealedInSidebar: function()
     {
         if (Runtime.experiments.isEnabled("stepIntoAsync"))
-            this.sidebarPanes.asyncOperationBreakpoints.revealHiddenCallFrames(/** @type {!WebInspector.Target} */ (WebInspector.context.flavor(WebInspector.Target)));
+            this.sidebarPanes.asyncOperationBreakpoints.revealHiddenCallFrames(WebInspector.context.flavor(WebInspector.Target));
     },
 
     /**
@@ -823,7 +823,7 @@ WebInspector.SourcesPanel.prototype = {
     _suggestReload: function()
     {
         if (window.confirm(WebInspector.UIString("It is recommended to restart inspector after making these changes. Would you like to restart it?")))
-            WebInspector.AppUtils.reload();
+            WebInspector.reload();
     },
 
     /**
@@ -1026,7 +1026,7 @@ WebInspector.SourcesPanel.prototype = {
             if (wasThrown || !result || result.type !== "string")
                 failedToSave(result);
             else
-                WebInspector.ConsoleModel.evaluateCommandInConsole(/** @type {!WebInspector.ExecutionContext} */ (currentExecutionContext), result.value);
+                WebInspector.ConsoleModel.evaluateCommandInConsole(currentExecutionContext, result.value);
         }
 
         /**
