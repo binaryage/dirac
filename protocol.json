@@ -4441,7 +4441,8 @@
                     { "name": "isKeypad", "type": "boolean", "optional": true, "description": "Whether the event was generated from the keypad (default: false)." },
                     { "name": "isSystemKey", "type": "boolean", "optional": true, "description": "Whether the event was a system key event (default: false)." }
                 ],
-                "description": "Dispatches a key event to the page."
+                "description": "Dispatches a key event to the page.",
+                "handlers": ["renderer", "browser"]
             },
             {
                 "name": "dispatchMouseEvent",
@@ -4455,7 +4456,7 @@
                     { "name": "clickCount", "type": "integer", "optional": true, "description": "Number of times the mouse button was clicked (default: 0)." }
                 ],
                 "description": "Dispatches a mouse event to the page.",
-                "handlers": ["renderer"]
+                "handlers": ["renderer", "browser"]
             },
             {
                 "name": "dispatchTouchEvent",
