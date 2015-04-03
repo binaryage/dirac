@@ -11,6 +11,7 @@ div.ax-computed-name {
     background-position: 2px center;
     padding-left: 22px;
     border-bottom: 1px solid #BFBFBF;
+    margin-bottom: 3px;
     min-height: 22px;
     text-overflow: ellipsis;
     white-space: nowrap;
