@@ -1184,7 +1184,7 @@ WebInspector.HeapSnapshotProfileType.prototype = {
         if (!profile)
             return;
         var data = /** @type {{done: number, total: number, finished: boolean}} */ (event.data);
-        profile.updateStatus(WebInspector.UIString("%.0f%", (data.done / data.total) * 100), true);
+        profile.updateStatus(WebInspector.UIString("%.0f%%", (data.done / data.total) * 100), true);
         if (data.finished)
             profile._prepareToLoad();
     },
@@ -1663,7 +1663,7 @@ WebInspector.HeapProfileHeader.prototype = {
     _updateSaveProgress: function(value, total)
     {
         var percentValue = ((total ? (value / total) : 0) * 100).toFixed(0);
-        this.updateStatus(WebInspector.UIString("Saving\u2026 %d\%", percentValue));
+        this.updateStatus(WebInspector.UIString("Saving\u2026 %d%%", percentValue));
     },
 
     /**

@@ -326,7 +326,7 @@ WebInspector.FlameChart.ColorGenerator.prototype = {
      */
     _generateColorForID: function(id)
     {
-        var hash = id.hashCode();
+        var hash = Math.abs(String.hashCode(id));
         var h = this._indexToValueInSpace(hash, this._hueSpace);
         var s = this._indexToValueInSpace(hash, this._satSpace);
         var l = this._indexToValueInSpace(hash, this._lightnessSpace);

@@ -763,7 +763,7 @@ WebInspector.TimelinePanel.prototype = {
     _onTracingBufferUsage: function(event)
     {
         var usage = /** @type {number} */ (event.data);
-        this._updateProgress(WebInspector.UIString("Buffer usage %d%", Math.round(usage * 100)));
+        this._updateProgress(WebInspector.UIString("Buffer usage %d%%", Math.round(usage * 100)));
     },
 
     /**
@@ -772,7 +772,7 @@ WebInspector.TimelinePanel.prototype = {
     _onRetrieveEventsProgress: function(event)
     {
         var progress = /** @type {number} */ (event.data);
-        this._updateProgress(WebInspector.UIString("Retrieving events\u2026 %d%", Math.round(progress * 100)));
+        this._updateProgress(WebInspector.UIString("Retrieving events\u2026 %d%%", Math.round(progress * 100)));
     },
 
     /**
