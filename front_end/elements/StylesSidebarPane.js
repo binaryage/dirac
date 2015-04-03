@@ -433,7 +433,8 @@ WebInspector.StylesSidebarPane.prototype = {
 
         this._fetchMatchedCascade()
             .then(this._innerRebuildUpdate.bind(this))
-            .then(finishedCallback);
+            .then(finishedCallback)
+            .catch(/** @type {function()} */(finishedCallback));
     },
 
     _resetCache: function()
