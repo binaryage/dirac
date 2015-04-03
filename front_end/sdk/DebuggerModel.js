@@ -669,7 +669,6 @@ WebInspector.DebuggerModel.prototype = {
         function didGetDetails(error, response)
         {
             if (error) {
-                console.error(error);
                 callback(null);
                 return;
             }

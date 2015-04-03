@@ -445,7 +445,12 @@ WebInspector.ConsoleViewMessage.prototype = {
                 return;
             }
         } else {
-            titleElement.createTextChild(obj.description || "");
+            if (obj.type === "function") {
+                WebInspector.ObjectPropertiesSection.formatObjectAsFunction(obj, titleElement, false);
+                titleElement.classList.add("object-value-function");
+            } else {
+                titleElement.createTextChild(obj.description || "");
+            }
         }
         var section = new WebInspector.ObjectPropertiesSection(obj, titleElement);
         section.enableContextMenu();
@@ -461,82 +466,8 @@ WebInspector.ConsoleViewMessage.prototype = {
      */
     _formatParameterAsFunction: function(func, element)
     {
-        func.functionDetails(didGetDetails.bind(this));
-
-        /**
-         * @param {?WebInspector.DebuggerModel.FunctionDetails} response
-         * @this {WebInspector.ConsoleViewMessage}
-         */
-        function didGetDetails(response)
-        {
-            if (!response) {
-                element.createTextChild(func.description || "");
-                return;
-            }
-
-            var title = (response.functionName || "anonymous")+ "()";
-            if (!response.location) {
-                element.createTextChild(title);
-                return;
-            }
-
-            var anchor = createElement("span");
-            element.addEventListener("click", WebInspector.Revealer.reveal.bind(WebInspector.Revealer, response.location, undefined));
-            anchor.textContent = title;
-            element.appendChild(anchor);
-            element.addEventListener("contextmenu", this._contextMenuEventFired.bind(this, func), false);
-            response.location.script().requestContent(contentAvailable);
-
-            // Format function parameters.
-            /**
-             * @param {?string} content
-             */
-            function contentAvailable(content)
-            {
-                if (!content)
-                    return;
-
-                self.runtime.instancePromise(WebInspector.TokenizerFactory).then(processTokens);
-
-                var params = [];
-
-                /**
-                 * @param {!WebInspector.TokenizerFactory} tokenizerFactory
-                 */
-                function processTokens(tokenizerFactory)
-                {
-                    var lines = content.split("\n");
-                    var lineNumber = response.location.lineNumber - response.location.script().lineOffset;
-                    var columnNumber = response.location.columnNumber - (response.location.lineNumber ? 0 : response.location.script().columnOffset);
-
-                    var budget = 200;
-                    var tokenize = tokenizerFactory.createTokenizer("text/javascript");
-                    for (var i = lineNumber; budget > 0 && i < lines.length; ++i) {
-                        var nextLine = lines[i].substring(columnNumber, budget);
-                        tokenize(nextLine, processToken);
-                        budget -= nextLine.length;
-                        columnNumber = 0;
-                    }
-                    if (params.length)
-                        anchor.textContent = (response.functionName || "anonymous")+ "(" + params.join(", ") + ")";
-                }
-
-                var doneProcessing = false;
-
-                /**
-                 * @param {string} token
-                 * @param {?string} tokenType
-                 * @param {number} column
-                 * @param {number} newColumn
-                 */
-                function processToken(token, tokenType, column, newColumn)
-                {
-                    doneProcessing = doneProcessing || token === ")";
-                    if (!doneProcessing && tokenType === "js-variable")
-                        params.push(token);
-                }
-            }
-        }
+        WebInspector.ObjectPropertiesSection.formatObjectAsFunction(func, element, true);
+        element.addEventListener("contextmenu", this._contextMenuEventFired.bind(this, func), false);
     },
 
     /**

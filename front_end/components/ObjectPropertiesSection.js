@@ -1024,9 +1024,9 @@ WebInspector.ObjectPropertiesSection.createValueElement = function(value, wasThr
         prefix = "\"";
         valueText = description.replace(/\n/g, "\u21B5");
         suffix = "\"";
-    } else if (type === "function" && typeof description === "string") {
-        // Render function description until the first \n.
-        valueText = /.*/.exec(description)[0].replace(/\s+$/g, "").replace(/^function /, "");
+    } else if (type === "function") {
+        var match = /function\s([^)]*)/.exec(description)[1];
+        valueText = match ? match.replace(/\n/g, " ") + ")" : (description || "");
     } else if (type !== "object" || subtype !== "node") {
         valueText = description;
     }
@@ -1071,4 +1071,73 @@ WebInspector.ObjectPropertiesSection.createValueElement = function(value, wasThr
     }
 
     return valueElement;
+}
+
+/**
+ * @param {!WebInspector.RemoteObject} func
+ * @param {!Element} element
+ * @param {boolean} linkify
+ */
+WebInspector.ObjectPropertiesSection.formatObjectAsFunction = function(func, element, linkify)
+{
+    func.functionDetails(didGetDetails);
+
+    /**
+     * @param {?WebInspector.DebuggerModel.FunctionDetails} response
+     */
+    function didGetDetails(response)
+    {
+        if (!response) {
+            var match = /function\s([^)]*)/.exec(func.description)[1];
+            element.createTextChild(match ? match.replace(/\n/g, " ") + ")" : (func.description || ""));
+            return;
+        }
+
+        if (linkify && response && response.location) {
+            var anchor = createElement("span");
+            element.appendChild(anchor);
+            element.addEventListener("click", WebInspector.Revealer.reveal.bind(WebInspector.Revealer, response.location, undefined));
+            element = anchor;
+        }
+
+        // Now parse description and get the real params and title.
+        self.runtime.instancePromise(WebInspector.TokenizerFactory).then(processTokens);
+
+        var params = null;
+        var functionName = response ? response.functionName : "";
+
+        /**
+         * @param {!WebInspector.TokenizerFactory} tokenizerFactory
+         */
+        function processTokens(tokenizerFactory)
+        {
+            var text = func.description.substring(0, 200);
+            var tokenize = tokenizerFactory.createTokenizer("text/javascript");
+            tokenize(text, processToken);
+            element.textContent = (functionName || "anonymous") + "(" + (params || []).join(", ") + ")";
+        }
+
+        var doneProcessing = false;
+
+        /**
+         * @param {string} token
+         * @param {?string} tokenType
+         * @param {number} column
+         * @param {number} newColumn
+         */
+        function processToken(token, tokenType, column, newColumn)
+        {
+            if (!params && tokenType === "js-variable" && !functionName)
+                functionName = token;
+            doneProcessing = doneProcessing || token === ")";
+            if (doneProcessing)
+                return;
+            if (token === "(") {
+                params = [];
+                return;
+            }
+            if (params && tokenType === "js-def")
+                params.push(token);
+        }
+    }
 }
