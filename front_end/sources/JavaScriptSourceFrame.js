@@ -851,20 +851,27 @@ WebInspector.JavaScriptSourceFrame.prototype = {
                 ++renderedNameCount;
             }
 
+            var widgetChanged = true;
             if (oldWidget) {
+                widgetChanged = false;
                 for (var name of widget.__nameToToken.keys()) {
                     var oldText = oldWidget.__nameToToken.get(name) ? oldWidget.__nameToToken.get(name).textContent : "";
                     var newText = widget.__nameToToken.get(name) ? widget.__nameToToken.get(name).textContent : "";
                     if (newText !== oldText) {
+                        widgetChanged = true;
                         // value has changed, update it.
                         WebInspector.runCSSAnimationOnce(/** @type {!Element} */ (widget.__nameToToken.get(name)), "source-frame-value-update-highlight");
                     }
                 }
-                this._valueWidgets.delete(i);
-                this.textEditor.removeDecoration(i, oldWidget);
+                if (widgetChanged) {
+                    this._valueWidgets.delete(i);
+                    this.textEditor.removeDecoration(i, oldWidget);
+                }
             }
-            this._valueWidgets.set(i, widget);
-            this.textEditor.addDecoration(i, widget);
+            if (widgetChanged) {
+                this._valueWidgets.set(i, widget);
+                this.textEditor.addDecoration(i, widget);
+            }
         }
     },
 

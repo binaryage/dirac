@@ -20,7 +20,6 @@
 
 .object-value-function::before {
     content: "function";
-    cursor: pointer;
     color: rgb(170, 13, 145);
     padding-right: 5px;
 }
