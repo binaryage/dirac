@@ -283,7 +283,6 @@ WebInspector.TimelineFlameChartDataProvider = function(model, frameModel)
 }
 
 WebInspector.TimelineFlameChartDataProvider.InstantEventVisibleDurationMs = 0.001;
-WebInspector.TimelineFlameChartDataProvider.JSFrameCoalesceThresholdMs = 1.1;
 
 WebInspector.TimelineFlameChartDataProvider.prototype = {
     /**
