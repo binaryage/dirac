@@ -452,12 +452,12 @@ WebInspector.ConsoleViewMessage.prototype = {
                 titleElement.createTextChild(obj.description || "");
             }
         }
+        var note = titleElement.createChild("span", "object-info-state-note");
+        note.title = WebInspector.UIString("Object state below is captured upon first expansion");
         var section = new WebInspector.ObjectPropertiesSection(obj, titleElement);
         section.enableContextMenu();
         elem.appendChild(section.element);
-
-        var note = section.titleElement.createChild("span", "object-info-state-note");
-        note.title = WebInspector.UIString("Object state below is captured upon first expansion");
+        section.element.classList.add("console-view-object-properties-section");
     },
 
     /**

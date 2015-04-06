@@ -280,7 +280,7 @@
 }
 
 .console-error-level .console-message-text,
-.console-error-level .section > .header .title {
+.console-error-level .console-view-object-properties-section {
     color: red !important;
 }
 
@@ -377,6 +377,8 @@
 
 .console-object-preview {
     font-style: italic;
+    white-space: normal;
+    word-wrap: break-word;
 }
 
 .console-object-preview .name {
@@ -410,9 +412,44 @@
     max-width: 200px;
 }
 
-.highlighted-search-result.current-search-result {
-    border-radius: 1px;
-    padding: 1px;
-    margin: -1px;
-    background-color: rgba(255, 127, 0, 0.8);
+.object-info-state-note {
+    display: inline-block;
+    width: 11px;
+    height: 11px;
+    background-color: rgb(179, 203, 247);
+    color: white;
+    text-align: center;
+    border-radius: 3px;
+    line-height: 13px;
+    margin: 0 6px;
+    font-size: 9px;
+}
+
+.object-info-state-note::before {
+    content: "i";
+}
+
+.console-view-object-properties-section:not(.expanded) .object-info-state-note {
+    display: none;
+}
+
+.object-info-state-note {
+    display: inline-block;
+    width: 11px;
+    height: 11px;
+    background-color: rgb(179, 203, 247);
+    color: white;
+    text-align: center;
+    border-radius: 3px;
+    line-height: 13px;
+    margin: 0 6px;
+    font-size: 9px;
+}
+
+.object-info-state-note::before {
+    content: "i";
+}
+
+.console-view-object-properties-section:not(.expanded) .object-info-state-note {
+    display: none;
 }

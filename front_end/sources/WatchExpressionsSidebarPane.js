@@ -327,7 +327,12 @@ WebInspector.WatchExpression.prototype = {
     {
         this._result = result;
 
-        var titleElement = createElementWithClass("div", "watch-expression-title");
+        var headerElement= createElementWithClass("div", "watch-expression-header");
+        var deleteButton = headerElement.createChild("button", "watch-expression-delete-button");
+        deleteButton.title = WebInspector.UIString("Delete watch expression");
+        deleteButton.addEventListener("click", this._deleteWatchExpression.bind(this), false);
+
+        var titleElement = headerElement.createChild("div", "watch-expression-title");
         this._nameElement = WebInspector.ObjectPropertiesSection.createNameElement(this._expression);
         if (wasThrown || !result) {
             this._valueElement = createElementWithClass("span", "error-message value");
@@ -336,58 +341,53 @@ WebInspector.WatchExpression.prototype = {
         } else {
             this._valueElement = WebInspector.ObjectPropertiesSection.createValueElement(result, wasThrown, titleElement);
         }
-        var separatorElement = createElementWithClass("span", "separator");
+        var separatorElement = createElementWithClass("span", "watch-expressions-separator");
         separatorElement.textContent = ": ";
         titleElement.appendChildren(this._nameElement, separatorElement, this._valueElement);
 
+        this._element.removeChildren();
+        this._objectPropertiesSection = null;
         if (!wasThrown && result && result.hasChildren) {
-            var objectPropertiesSection = new WebInspector.ObjectPropertiesSection(result, titleElement);
-            this._objectPresentationElement = objectPropertiesSection.element;
-            objectPropertiesSection.headerElement.addEventListener("click", this._onSectionClick.bind(this, objectPropertiesSection), false);
-            objectPropertiesSection.doNotExpandOnTitleClick();
-            this._installHover(objectPropertiesSection.headerElement);
+            this._objectPropertiesSection = new WebInspector.ObjectPropertiesSection(result, headerElement);
+            this._objectPresentationElement = this._objectPropertiesSection.element;
+            var objectTreeElement = this._objectPropertiesSection.objectTreeElement();
+            objectTreeElement.toggleOnClick = false;
+            objectTreeElement.listItemElement.addEventListener("click", this._onSectionClick.bind(this), false);
+            objectTreeElement.listItemElement.addEventListener("dblclick", this._dblClickOnWatchExpression.bind(this));
         } else {
-            this._objectPresentationElement = this._element.createChild("div", "primitive-value");
-            this._objectPresentationElement.appendChild(titleElement);
-            this._installHover(this._objectPresentationElement);
+            this._objectPresentationElement = headerElement;
+            this._objectPresentationElement.addEventListener("dblclick", this._dblClickOnWatchExpression.bind(this));
         }
 
-        this._element.removeChildren();
         this._element.appendChild(this._objectPresentationElement);
-        this._element.addEventListener("dblclick", this._dblClickOnWatchExpression.bind(this));
     },
 
     /**
-     * @param {!Element} hoverableElement
-     */
-    _installHover: function(hoverableElement)
-    {
-        var deleteButton = createElementWithClass("button", "delete-button");
-        deleteButton.title = WebInspector.UIString("Delete watch expression");
-        deleteButton.addEventListener("click", this._deleteWatchExpression.bind(this), false);
-        hoverableElement.insertBefore(deleteButton, hoverableElement.firstChild);
-    },
-
-    /**
-     * @param {!WebInspector.ObjectPropertiesSection} objectPropertiesSection
      * @param {!Event} event
      */
-    _onSectionClick: function(objectPropertiesSection, event)
+    _onSectionClick: function(event)
     {
         event.consume(true);
         if (event.detail == 1) {
-            this._preventClickTimeout = setTimeout(handleClick, 333);
+            this._preventClickTimeout = setTimeout(handleClick.bind(this), 333);
         } else {
             clearTimeout(this._preventClickTimeout);
             delete this._preventClickTimeout;
         }
 
+        /**
+         * @this {WebInspector.WatchExpression}
+         */
         function handleClick()
         {
-            if (objectPropertiesSection.expanded)
-                objectPropertiesSection.collapse();
+            if (!this._objectPropertiesSection)
+                return;
+
+            var objectTreeElement = this._objectPropertiesSection.objectTreeElement();
+            if (objectTreeElement.expanded)
+                objectTreeElement.collapse();
             else
-                objectPropertiesSection.expand();
+                objectTreeElement.expand();
         }
     },
 

@@ -33,6 +33,7 @@
     "stylesheets": [
         "breakpointsList.css",
         "nodeLink.css",
+        "objectPropertiesSection.css",
         "objectValue.css"
     ]
 }

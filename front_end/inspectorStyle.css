@@ -163,27 +163,6 @@ body.undocked.platform-mac.inactive .inspector-view-tabbed-pane.tabbed-pane::sha
     border-radius: 7px;
 }
 
-.object-info-state-note {
-    display: inline-block;
-    width: 11px;
-    height: 11px;
-    background-color: rgb(179, 203, 247);
-    color: white;
-    text-align: center;
-    border-radius: 3px;
-    line-height: 13px;
-    margin: 0 6px;
-    font-size: 9px;
-}
-
-.object-info-state-note::before {
-    content: "i";
-}
-
-.section:not(.expanded) .object-info-state-note {
-    display: none;
-}
-
 .error-message {
     color: red;
 }
