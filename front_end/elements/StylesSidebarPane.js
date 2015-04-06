@@ -358,6 +358,7 @@ WebInspector.StylesSidebarPane.prototype = {
             }
         }
 
+        this._stylesPopoverHelper.hide();
         if (node && node.nodeType() === Node.TEXT_NODE && node.parentNode)
             node = node.parentNode;
 
