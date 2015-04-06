@@ -247,9 +247,10 @@
 #timeline-overview-events,
 #timeline-overview-memory,
 #timeline-overview-power {
-    flex: 0 0 60px;
+    flex: 0 0 59px;
     z-index: 160;
     width: 100%;
+    margin-bottom: 1px;
 }
 
 #timeline-overview-memory {
@@ -257,7 +258,7 @@
 }
 
 #timeline-overview-frames {
-    flex-basis: 79px;
+    flex-basis: 80px;
 }
 
 #timeline-overview-pane {
@@ -510,7 +511,7 @@
 
 #timeline-grid-header {
     pointer-events: none;
-    height: 19px;
+    height: 20px;
 }
 
 #timeline-graph-records-header {
