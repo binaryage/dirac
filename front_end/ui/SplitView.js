@@ -311,14 +311,13 @@ WebInspector.SplitView.prototype = {
             shadowToHide.classList.add("hidden");
             shadowToHide.classList.remove("maximized");
             this._removeAllLayoutProperties();
-        }
-
-        if (animate) {
-            this._animate(true, callback.bind(this));
-        } else {
-            callback.call(this);
             this.doResize();
         }
+
+        if (animate)
+            this._animate(true, callback.bind(this));
+        else
+            callback.call(this);
 
         this._sidebarSizeDIP = -1;
         this.setResizable(false);
