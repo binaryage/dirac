@@ -1216,6 +1216,19 @@ WebInspector.ExtensibleTabbedPaneController.prototype = {
     /**
      * @param {string} id
      * @param {string} title
+     * @param {number} order
+     * @param {!WebInspector.View} view
+     */
+    appendView: function(id, title, order, view)
+    {
+        this._tabOrders[id] = order;
+        this._views.set(id, view);
+        this._tabbedPane.appendTab(id, title, new WebInspector.View());
+    },
+
+    /**
+     * @param {string} id
+     * @param {string} title
      * @param {!WebInspector.Setting} setting
      */
     _toggleSettingBasedView: function(id, title, setting)
