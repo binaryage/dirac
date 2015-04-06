@@ -136,7 +136,6 @@
             'front_end/sdk/CSSStyleModel.js',
             'front_end/sdk/DebuggerModel.js',
             'front_end/sdk/DOMModel.js',
-            'front_end/sdk/FileSystemModel.js',
             'front_end/sdk/HAREntry.js',
             'front_end/sdk/HeapProfilerModel.js',
             'front_end/sdk/InspectorBackend.js',
@@ -334,6 +333,7 @@
 
         # Lazy-loaded modules.
         'devtools_accessibility_js_files': [
+            'front_end/accessibility/accessibilityNode.css',
             'front_end/accessibility/AccessibilityModel.js',
             'front_end/accessibility/AccessibilitySidebarView.js',
         ],
@@ -481,6 +481,7 @@
             'front_end/resources/DOMStorageModel.js',
             'front_end/resources/DOMStorageItemsView.js',
             'front_end/resources/FileContentView.js',
+            'front_end/resources/FileSystemModel.js',
             'front_end/resources/FileSystemView.js',
             'front_end/resources/IndexedDBViews.js',
             'front_end/resources/IndexedDBModel.js',

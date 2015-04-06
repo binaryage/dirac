@@ -55,7 +55,7 @@ WebInspector.AXNodeSubPane = function()
 {
     WebInspector.SidebarPane.call(this, WebInspector.UIString("Accessibility Node"));
 
-    this.registerRequiredCSS("elements/accessibilityNode.css");
+    this.registerRequiredCSS("accessibility/accessibilityNode.css");
 
     this._computedNameElement = this.bodyElement.createChild("div", "ax-computed-name");
 
@@ -64,7 +64,7 @@ WebInspector.AXNodeSubPane = function()
     this.bodyElement.appendChild(this._infoElement);
 
     this._treeOutline = new TreeOutlineInShadow('monospace');
-    this._treeOutline.registerRequiredCSS("elements/accessibilityNode.css");
+    this._treeOutline.registerRequiredCSS("accessibility/accessibilityNode.css");
     this._treeOutline.registerRequiredCSS("components/objectValue.css");
     this.bodyElement.appendChild(this._treeOutline.element);
 };

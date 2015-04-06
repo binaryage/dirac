@@ -20,7 +20,6 @@
         "CSSStyleModel.js",
         "DOMModel.js",
         "DebuggerModel.js",
-        "FileSystemModel.js",
         "HAREntry.js",
         "LayerTreeModel.js",
         "NetworkLog.js",
