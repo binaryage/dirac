@@ -66,7 +66,7 @@ WebInspector.ResponsiveDesignView.prototype = {
         var warningDisableButton = this._warningMessage.createChild("div", "disable-warning");
         warningDisableButton.textContent = WebInspector.UIString("Never show");
         warningDisableButton.addEventListener("click", this._disableOverridesWarnings.bind(this), false);
-        var warningCloseButton = this._warningMessage.createChild("div", "close-button");
+        var warningCloseButton = this._warningMessage.createChild("div", "", "dt-close-button");
         warningCloseButton.addEventListener("click", WebInspector.overridesSupport.clearWarningMessage.bind(WebInspector.overridesSupport), false);
         WebInspector.overridesSupport.addEventListener(WebInspector.OverridesSupport.Events.OverridesWarningUpdated, this._overridesWarningUpdated, this);
         WebInspector.settings.disableOverridesWarning.addChangeListener(this._overridesWarningUpdated, this);

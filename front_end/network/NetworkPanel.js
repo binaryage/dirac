@@ -72,8 +72,7 @@ WebInspector.NetworkPanel = function()
     this._detailsView.element.classList.add("network-details-view");
     this._splitView.setMainView(this._detailsView);
 
-    this._closeButtonElement = createElementWithClass("div", "close-button");
-    this._closeButtonElement.classList.add("network-close-button");
+    this._closeButtonElement = createElementWithClass("div", "network-close-button", "dt-close-button");
     this._closeButtonElement.addEventListener("click", this._showRequest.bind(this, null), false);
 
     this._toggleRecordButton(true);

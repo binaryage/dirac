@@ -46,6 +46,7 @@
     ],
     "stylesheets": [
         "checkboxTextLabel.css",
+        "closeButton.css",
         "colorSwatch.css",
         "dropTarget.css",
         "emptyView.css",

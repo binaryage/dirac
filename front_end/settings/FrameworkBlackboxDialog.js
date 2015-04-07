@@ -17,7 +17,8 @@ WebInspector.FrameworkBlackboxDialog = function()
     var header = this.element.createChild("div", "header");
     header.createChild("span").textContent = WebInspector.UIString("Framework blackbox patterns");
 
-    var closeButton = header.createChild("div", "close-button-gray done-button");
+    var closeButton = header.createChild("div", "done-button", "dt-close-button");
+    closeButton.gray = true;
     closeButton.addEventListener("click", this._onDoneClick.bind(this), false);
 
     var contents = this.element.createChild("div", "contents");

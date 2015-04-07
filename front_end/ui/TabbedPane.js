@@ -976,7 +976,7 @@ WebInspector.TabbedPaneTab.prototype = {
             this._titleElement = titleElement;
 
         if (this._closeable)
-            tabElement.createChild("div", "tabbed-pane-close-button-gray");
+            tabElement.createChild("div", "tabbed-pane-close-button", "dt-close-button").gray = true;
 
         if (measuring) {
             tabElement.classList.add("measuring");
@@ -1000,7 +1000,7 @@ WebInspector.TabbedPaneTab.prototype = {
     _tabClicked: function(event)
     {
         var middleButton = event.button === 1;
-        var shouldClose = this._closeable && (middleButton || event.target.classList.contains("tabbed-pane-close-button-gray"));
+        var shouldClose = this._closeable && (middleButton || event.target.classList.contains("tabbed-pane-close-button"));
         if (!shouldClose) {
             this._tabbedPane.focus();
             return;
@@ -1014,7 +1014,7 @@ WebInspector.TabbedPaneTab.prototype = {
      */
     _tabMouseDown: function(event)
     {
-        if (event.target.classList.contains("tabbed-pane-close-button-gray") || event.button === 1)
+        if (event.target.classList.contains("tabbed-pane-close-button") || event.button === 1)
             return;
         this._tabbedPane.selectTab(this.id, true);
     },
@@ -1089,7 +1089,7 @@ WebInspector.TabbedPaneTab.prototype = {
      */
     _startTabDragging: function(event)
     {
-        if (event.target.classList.contains("tabbed-pane-close-button-gray"))
+        if (event.target.classList.contains("tabbed-pane-close-button"))
             return false;
         this._dragStartX = event.pageX;
         return true;

@@ -61,7 +61,7 @@ WebInspector.InspectorView = function()
     this._tabbedPane.appendAfterTabStrip(this._rightToolbar.element);
 
     this._closeButtonToolbarItem = createElementWithClass("div", "inspector-view-close-button");
-    var closeButtonElement = this._closeButtonToolbarItem.createChild("div", "close-button");
+    var closeButtonElement = this._closeButtonToolbarItem.createChild("div", "", "dt-close-button");
     closeButtonElement.addEventListener("click", InspectorFrontendHost.closeWindow.bind(InspectorFrontendHost), true);
     this._rightToolbar.element.appendChild(this._closeButtonToolbarItem);
 

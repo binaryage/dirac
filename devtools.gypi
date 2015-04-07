@@ -216,6 +216,7 @@
         ],
         'devtools_ui_js_files': [
             'front_end/ui/checkboxTextLabel.css',
+            'front_end/ui/closeButton.css',
             'front_end/ui/colorSwatch.css',
             'front_end/ui/dropTarget.css',
             'front_end/ui/emptyView.css',
