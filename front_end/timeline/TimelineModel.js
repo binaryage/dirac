@@ -1253,7 +1253,7 @@ WebInspector.TimelineModel.prototype = {
     loadFromURL: function(url, progress)
     {
         var stream = new WebInspector.TracingModelLoader(this, progress);
-        WebInspector.NetworkManager.loadResourceAsStream(url, null, stream);
+        WebInspector.ResourceLoader.loadAsStream(url, null, stream);
     },
 
     _createFileReader: function(file, delegate)

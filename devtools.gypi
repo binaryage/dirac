@@ -83,7 +83,7 @@
             'front_end/common/ResourceType.js',
             'front_end/common/Settings.js',
             'front_end/common/StaticContentProvider.js',
-            'front_end/common/Streams.js',
+            'front_end/common/OutputStream.js',
             'front_end/common/TestBase.js',
             'front_end/common/TextDictionary.js',
             'front_end/common/TextRange.js',
@@ -116,6 +116,7 @@
         'devtools_host_js_files': [
             'front_end/host/InspectorFrontendHost.js',
             'front_end/host/Platform.js',
+            'front_end/host/ResourceLoader.js',
             'front_end/host/UserMetrics.js',
         ],
         'devtools_screencast_js_files': [

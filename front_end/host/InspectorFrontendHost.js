@@ -714,7 +714,7 @@ var InspectorFrontendHost = window.InspectorFrontendHost || null;
          */
         streamWrite: function(id, chunk)
         {
-            WebInspector.Streams.streamWrite(id, chunk);
+            WebInspector.ResourceLoader.streamWrite(id, chunk);
         }
     }
 

@@ -67,54 +67,6 @@ WebInspector.NetworkManager._MIMETypes = {
     "text/vtt":                    {"texttrack": true},
 }
 
-/**
- * @param {string} url
- * @param {?Object.<string, string>} headers
- * @param {function(number, !Object.<string, string>, string)} callback
- */
-WebInspector.NetworkManager.loadResourceForFrontend = function(url, headers, callback)
-{
-    var stream = new WebInspector.StringOutputStream();
-    WebInspector.NetworkManager.loadResourceAsStream(url, headers, stream, mycallback);
-
-    /**
-     * @param {number} statusCode
-     * @param {!Object.<string, string>} headers
-     */
-    function mycallback(statusCode, headers)
-    {
-        callback(statusCode, headers, stream.data());
-    }
-}
-
-/**
- * @param {string} url
- * @param {?Object.<string, string>} headers
- * @param {!WebInspector.OutputStream} stream
- * @param {function(number, !Object.<string, string>)=} callback
- */
-WebInspector.NetworkManager.loadResourceAsStream = function(url, headers, stream, callback)
-{
-    var rawHeaders = [];
-    if (headers) {
-        for (var key in headers)
-            rawHeaders.push(key + ": " + headers[key]);
-    }
-    var streamId = WebInspector.Streams.bindOutputStream(stream);
-
-    InspectorFrontendHost.loadNetworkResource(url, rawHeaders.join("\r\n"), streamId, mycallback);
-
-    /**
-     * @param {!InspectorFrontendHostAPI.LoadNetworkResourceResult} response
-     */
-    function mycallback(response)
-    {
-        if (callback)
-            callback(response.statusCode, response.headers || {});
-        WebInspector.Streams.discardOutputStream(streamId);
-    }
-}
-
 WebInspector.NetworkManager.prototype = {
     /**
      * @param {string} url

@@ -163,7 +163,7 @@ WebInspector.SASSSourceMapping.prototype = {
         if (wasLoadedFromFileSystem)
             sassFile.requestMetadata(metadataReceived.bind(this));
         else
-            WebInspector.NetworkManager.loadResourceForFrontend(sassURL, null, sassLoadedViaNetwork.bind(this));
+            WebInspector.ResourceLoader.load(sassURL, null, sassLoadedViaNetwork.bind(this));
 
         /**
          * @param {number} statusCode
@@ -283,7 +283,7 @@ WebInspector.SASSSourceMapping.prototype = {
             return;
         }
         var headers = { "if-modified-since": new Date(data.sassTimestamp.getTime() - 1000).toUTCString() };
-        WebInspector.NetworkManager.loadResourceForFrontend(cssURL, headers, contentLoaded.bind(this));
+        WebInspector.ResourceLoader.load(cssURL, headers, contentLoaded.bind(this));
 
         /**
          * @param {number} statusCode
