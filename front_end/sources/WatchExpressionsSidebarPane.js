@@ -259,7 +259,7 @@ WebInspector.WatchExpression.prototype = {
         newDiv.textContent = this._nameElement.textContent;
         this._textPrompt = new WebInspector.ObjectPropertyPrompt();
         this._textPrompt.renderAsBlock();
-        var proxyElement = this._textPrompt.attachAndStartEditing(newDiv, this._finishEditing.bind(this, this._expression));
+        var proxyElement = this._textPrompt.attachAndStartEditing(newDiv, this._finishEditing.bind(this));
         proxyElement.classList.add("watch-expression-text-prompt-proxy");
         proxyElement.addEventListener("keydown", this._promptKeyDown.bind(this), false);
         this._element.getComponentSelection().setBaseAndExtent(newDiv, 0, newDiv, 1);
@@ -274,20 +274,22 @@ WebInspector.WatchExpression.prototype = {
     },
 
     /**
-     * @param {?string} newExpression
      * @param {!Event} event
+     * @param {boolean=} canceled
      */
-    _finishEditing: function(newExpression, event)
+    _finishEditing: function(event, canceled)
     {
         if (event)
             event.consume(true);
 
         this._editing = false;
         this._textPrompt.detach();
+        var newExpression = this._textPrompt.text();
         delete this._textPrompt;
         this._element.removeChildren();
         this._element.appendChild(this._objectPresentationElement);
-        this._updateExpression(newExpression);
+        if (!canceled && newExpression !== this._expression)
+            this._updateExpression(newExpression);
     },
 
     /**
@@ -396,14 +398,8 @@ WebInspector.WatchExpression.prototype = {
      */
     _promptKeyDown: function(event)
     {
-        if (isEnterKey(event)) {
-            this._finishEditing(this._textPrompt.text(), event);
-            return;
-        }
-        if (event.keyIdentifier === "U+001B") { // Esc
-            this._finishEditing(this._expression, event);
-            return;
-        }
+        if (isEnterKey(event) || isEscKey(event))
+            this._finishEditing(event, isEscKey(event));
     },
 
     /**
