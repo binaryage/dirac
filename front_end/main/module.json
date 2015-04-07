@@ -209,49 +209,50 @@
             "location": "toolbar-right"
         },
         {
-            "type": "ui-setting",
+            "type": "setting",
             "title": "Disable cache (while DevTools is open)",
             "settingName": "cacheDisabled",
-            "settingType": "checkbox"
+            "settingType": "boolean"
         },
         {
-            "type": "ui-setting",
+            "type": "setting",
             "title": "Disable JavaScript",
             "settingName": "javaScriptDisabled",
-            "settingType": "checkbox"
+            "settingType": "boolean"
         },
         {
-            "type": "ui-setting",
-            "section": "Appearance",
+            "type": "setting",
+            "category": "Appearance",
             "title": "Split panels vertically when docked to right",
             "settingName": "splitVerticallyWhenDockedToRight",
-            "settingType": "checkbox"
+            "settingType": "boolean"
         },
         {
-            "type": "ui-setting",
-            "section": "Appearance",
-            "settingType": "custom",
-            "className": "WebInspector.Main.ShortcutPanelSwitchSettingDelegate"
+            "type": "setting",
+            "category": "Appearance",
+            "title": "Enable Ctrl + 1-9 shortcut to switch panels",
+            "title-mac": "Enable Cmd + 1-9 shortcut to switch panels",
+            "settingName": "shortcutPanelSwitch",
+            "settingType": "boolean"
         },
         {
-            "type": "ui-setting",
-            "section": "Appearance",
+            "type": "setting",
+            "category": "Appearance",
             "title": "Don't show emulation warnings",
             "settingName": "disableOverridesWarning",
-            "settingType": "checkbox"
+            "settingType": "boolean"
         },
         {
-            "type": "ui-setting",
-            "section": "Appearance",
+            "type": "setting",
+            "category": "Appearance",
             "title": "Disable paused state overlay",
             "settingName": "disablePausedStateOverlay",
-            "settingType": "checkbox"
+            "settingType": "boolean"
         },
         {
-            "type": "ui-setting",
-            "section": "Extensions",
-            "settingType": "custom",
-            "className": "WebInspector.HandlerRegistry.OpenAnchorLocationSettingDelegate"
+            "type": "@WebInspector.SettingUI",
+            "category": "Extensions",
+            "className": "WebInspector.HandlerRegistry.OpenAnchorLocationSettingUI"
         }
     ],
     "dependencies": [

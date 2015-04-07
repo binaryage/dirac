@@ -30,32 +30,32 @@
             ]
         },
         {
-            "type": "ui-setting",
-            "section": "Console",
+            "type": "setting",
+            "category": "Console",
             "title": "Hide network messages",
             "settingName": "hideNetworkMessages",
-            "settingType": "checkbox"
+            "settingType": "boolean"
         },
         {
-            "type": "ui-setting",
-            "section": "Console",
+            "type": "setting",
+            "category": "Console",
             "title": "Log XMLHttpRequests",
             "settingName": "monitoringXHREnabled",
-            "settingType": "checkbox"
+            "settingType": "boolean"
         },
         {
-            "type": "ui-setting",
-            "section": "Console",
+            "type": "setting",
+            "category": "Console",
             "title": "Preserve log upon navigation",
             "settingName": "preserveConsoleLog",
-            "settingType": "checkbox"
+            "settingType": "boolean"
         },
         {
-            "type": "ui-setting",
-            "section": "Console",
+            "type": "setting",
+            "category": "Console",
             "title": "Show timestamps",
             "settingName": "consoleTimestampsEnabled",
-            "settingType": "checkbox"
+            "settingType": "boolean"
         }
     ],
     "dependencies": [

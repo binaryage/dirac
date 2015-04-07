@@ -9,11 +9,11 @@
             "className": "WebInspector.CodeMirrorUtils.TokenizerFactory"
         },
         {
-            "type": "ui-setting",
-            "section": "Sources",
+            "type": "setting",
+            "category": "Sources",
             "title": "Default indentation:",
             "settingName": "textEditorIndent",
-            "settingType": "select",
+            "settingType": "enum",
             "options": [
                 ["2 spaces", "  "],
                 ["4 spaces", "    "],

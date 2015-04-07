@@ -173,7 +173,16 @@ WebInspector.GenericSettingsTab = function()
 {
     WebInspector.SettingsTab.call(this, WebInspector.UIString("General"), "general-tab-content");
 
-    this._populateSectionsFromExtensions();
+    /** @const */
+    var explicitSectionOrder = ["", "Appearance", "Elements", "Sources", "Network", "Profiler", "Console", "Extensions"];
+    /** @type {!Map<string, !Element>} */
+    this._nameToSection = new Map();
+    /** @type {!Map<string, !Element>} */
+    this._nameToSettingElement = new Map();
+    for (var sectionName of explicitSectionOrder)
+        this._sectionElement(sectionName);
+    self.runtime.extensions("setting").forEach(this._addSetting.bind(this));
+    self.runtime.extensions(WebInspector.SettingUI).forEach(this._addSettingUI.bind(this));
 
     this._appendSection().appendChild(createTextButton(WebInspector.UIString("Restore defaults and reload"), restoreAndReload));
 
@@ -186,130 +195,90 @@ WebInspector.GenericSettingsTab = function()
 }
 
 WebInspector.GenericSettingsTab.prototype = {
-    _populateSectionsFromExtensions: function()
+    /**
+     * @param {!Runtime.Extension} extension
+     */
+    _addSetting: function(extension)
     {
-        /** @const */
-        var explicitSectionOrder = ["", "Appearance", "Elements", "Sources", "Network", "Profiler", "Console", "Extensions"];
+        var descriptor = extension.descriptor();
+        var sectionName = descriptor["category"] || "";
 
-        var allExtensions = self.runtime.extensions("ui-setting");
+        var settingName = descriptor["settingName"];
+        var setting = WebInspector.settings[settingName];
+        var uiTitle = WebInspector.UIString(extension.title(WebInspector.platform()));
 
-        /** @type {!Multimap.<string, !Runtime.Extension>} */
-        var extensionsBySectionId = new Multimap();
-        /** @type {!Multimap.<string, !Runtime.Extension>} */
-        var childSettingExtensionsByParentName = new Multimap();
-
-        allExtensions.forEach(function(extension) {
-            var descriptor = extension.descriptor();
-            var sectionName = descriptor["section"] || "";
-            if (!sectionName && descriptor["parentSettingName"]) {
-                childSettingExtensionsByParentName.set(descriptor["parentSettingName"], extension);
-                return;
+        var sectionElement = this._sectionElement(sectionName);
+        var parentSettingName = descriptor["parentSettingName"];
+        var parentSettingElement = parentSettingName ? this._nameToSettingElement.get(descriptor["parentSettingName"]) : null;
+        var parentFieldset = null;
+        if (parentSettingElement) {
+            parentFieldset = parentSettingElement.__fieldset;
+            if (!parentFieldset) {
+                parentFieldset = WebInspector.SettingsUI.createSettingFieldset(WebInspector.settings[parentSettingName]);
+                parentSettingElement.appendChild(parentFieldset);
+                parentSettingElement.__fieldset = parentFieldset;
             }
-            extensionsBySectionId.set(sectionName, extension);
-        });
-
-        var sectionIds = extensionsBySectionId.keysArray();
-        var explicitlyOrderedSections = explicitSectionOrder.keySet();
-        for (var i = 0; i < explicitSectionOrder.length; ++i) {
-            var extensions = extensionsBySectionId.get(explicitSectionOrder[i]);
-            if (!extensions.size)
-                continue;
-            this._addSectionWithExtensionProvidedSettings(explicitSectionOrder[i], extensions.valuesArray(), childSettingExtensionsByParentName);
         }
-        for (var i = 0; i < sectionIds.length; ++i) {
-            if (explicitlyOrderedSections[sectionIds[i]])
-                continue;
-            this._addSectionWithExtensionProvidedSettings(sectionIds[i], extensionsBySectionId.get(sectionIds[i]).valuesArray(), childSettingExtensionsByParentName);
+
+        var settingControl;
+
+        switch (descriptor["settingType"]) {
+        case "boolean":
+            settingControl = WebInspector.SettingsUI.createSettingCheckbox(uiTitle, setting);
+            break;
+        case "enum":
+            var descriptorOptions = descriptor["options"];
+            var options = new Array(descriptorOptions.length);
+            for (var i = 0; i < options.length; ++i) {
+                // The third array item flags that the option name is "raw" (non-i18n-izable).
+                var optionName = descriptorOptions[i][2] ? descriptorOptions[i][0] : WebInspector.UIString(descriptorOptions[i][0]);
+                options[i] = [optionName, descriptorOptions[i][1]];
+            }
+            settingControl = this._createSelectSetting(uiTitle, options, setting);
+            break;
+        default:
+            console.error("Invalid setting type: " + descriptor["settingType"]);
+            return;
+        }
+        this._nameToSettingElement.set(settingName, settingControl);
+        (parentFieldset || sectionElement).appendChild(/** @type {!Element} */ (settingControl));
+    },
+
+    /**
+     * @param {!Runtime.Extension} extension
+     */
+    _addSettingUI: function(extension)
+    {
+        var descriptor = extension.descriptor();
+        var sectionName = descriptor["category"] || "";
+        extension.instancePromise().then(appendCustomSetting.bind(this));
+
+        /**
+         * @param {!Object} object
+         * @this {WebInspector.GenericSettingsTab}
+         */
+        function appendCustomSetting(object)
+        {
+            var settingUI = /** @type {!WebInspector.SettingUI} */ (object);
+            var element = settingUI.settingElement();
+            if (element)
+                this._sectionElement(sectionName).appendChild(element);
         }
     },
 
     /**
      * @param {string} sectionName
-     * @param {!Array.<!Runtime.Extension>} extensions
-     * @param {!Multimap.<string, !Runtime.Extension>} childSettingExtensionsByParentName
+     * @return {!Element}
      */
-    _addSectionWithExtensionProvidedSettings: function(sectionName, extensions, childSettingExtensionsByParentName)
+    _sectionElement: function(sectionName)
     {
-        var uiSectionName = sectionName && WebInspector.UIString(sectionName);
-        var sectionElement = this._appendSection(uiSectionName);
-        extensions.forEach(processSetting.bind(this, null));
-
-        /**
-         * @param {?Element} parentFieldset
-         * @param {!Runtime.Extension} extension
-         * @this {WebInspector.GenericSettingsTab}
-         */
-        function processSetting(parentFieldset, extension)
-        {
-            var descriptor = extension.descriptor();
-            var experimentName = descriptor["experiment"];
-            if (experimentName && !Runtime.experiments.isEnabled(experimentName))
-                return;
-
-            if (descriptor["settingType"] === "custom") {
-                extension.instancePromise().then(appendCustomSetting);
-                return;
-            }
-
-            var uiTitle = WebInspector.UIString(descriptor["title"]);
-            var settingName = descriptor["settingName"];
-            var setting = WebInspector.settings[settingName];
-            var settingControl = createSettingControl.call(this, uiTitle, setting, descriptor);
-            if (settingName) {
-                var childSettings = childSettingExtensionsByParentName.get(settingName);
-                if (childSettings.size) {
-                    var fieldSet = WebInspector.SettingsUI.createSettingFieldset(setting);
-                    settingControl.appendChild(fieldSet);
-                    childSettings.valuesArray().forEach(function(item) { processSetting.call(this, fieldSet, item); }, this);
-                }
-            }
-            appendAsChild(settingControl);
-
-            /**
-             * @param {!Object} object
-             */
-            function appendCustomSetting(object)
-            {
-                var uiSettingDelegate = /** @type {!WebInspector.UISettingDelegate} */ (object);
-                var element = uiSettingDelegate.settingElement();
-                if (element)
-                    appendAsChild(element);
-            }
-
-            /**
-             * @param {!Object} settingControl
-             */
-            function appendAsChild(settingControl)
-            {
-                (parentFieldset || sectionElement).appendChild(/** @type {!Element} */ (settingControl));
-            }
+        var sectionElement = this._nameToSection.get(sectionName);
+        if (!sectionElement) {
+            var uiSectionName = sectionName && WebInspector.UIString(sectionName);
+            sectionElement = this._appendSection(uiSectionName);
+            this._nameToSection.set(sectionName, sectionElement);
         }
-
-        /**
-         * @param {string} uiTitle
-         * @param {!WebInspector.Setting} setting
-         * @param {!Object} descriptor
-         * @return {!Element}
-         * @this {WebInspector.GenericSettingsTab}
-         */
-        function createSettingControl(uiTitle, setting, descriptor)
-        {
-            switch (descriptor["settingType"]) {
-            case "checkbox":
-                return WebInspector.SettingsUI.createSettingCheckbox(uiTitle, setting);
-            case "select":
-                var descriptorOptions = descriptor["options"];
-                var options = new Array(descriptorOptions.length);
-                for (var i = 0; i < options.length; ++i) {
-                    // The third array item flags that the option name is "raw" (non-i18n-izable).
-                    var optionName = descriptorOptions[i][2] ? descriptorOptions[i][0] : WebInspector.UIString(descriptorOptions[i][0]);
-                    options[i] = [optionName, descriptorOptions[i][1]];
-                }
-                return this._createSelectSetting(uiTitle, options, setting);
-            default:
-                throw "Invalid setting type: " + descriptor["settingType"];
-            }
-        }
+        return sectionElement;
     },
 
     __proto__: WebInspector.SettingsTab.prototype
@@ -317,14 +286,13 @@ WebInspector.GenericSettingsTab.prototype = {
 
 /**
  * @constructor
- * @extends {WebInspector.UISettingDelegate}
+ * @implements {WebInspector.SettingUI}
  */
-WebInspector.SettingsScreen.SkipStackFramePatternSettingDelegate = function()
+WebInspector.SettingsScreen.SkipStackFramePatternSettingUI = function()
 {
-    WebInspector.UISettingDelegate.call(this);
 }
 
-WebInspector.SettingsScreen.SkipStackFramePatternSettingDelegate.prototype = {
+WebInspector.SettingsScreen.SkipStackFramePatternSettingUI.prototype = {
     /**
      * @override
      * @return {!Element}
@@ -337,9 +305,7 @@ WebInspector.SettingsScreen.SkipStackFramePatternSettingDelegate.prototype = {
     _onManageButtonClick: function()
     {
         WebInspector.FrameworkBlackboxDialog.show(WebInspector.inspectorView.element);
-    },
-
-    __proto__: WebInspector.UISettingDelegate.prototype
+    }
 }
 
 /**

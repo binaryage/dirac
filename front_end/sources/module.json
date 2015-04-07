@@ -207,67 +207,67 @@
             ]
         },
         {
-            "type": "ui-setting",
-            "section": "Sources",
+            "type": "setting",
+            "category": "Sources",
             "title": "Search in content scripts",
             "settingName": "searchInContentScripts",
-            "settingType": "checkbox"
+            "settingType": "boolean"
         },
         {
-            "type": "ui-setting",
-            "section": "Sources",
+            "type": "setting",
+            "category": "Sources",
             "title": "Enable JavaScript source maps",
             "settingName": "jsSourceMapsEnabled",
-            "settingType": "checkbox"
+            "settingType": "boolean"
         },
         {
-            "type": "ui-setting",
-            "section": "Sources",
+            "type": "setting",
+            "category": "Sources",
             "title": "Detect indentation",
             "settingName": "textEditorAutoDetectIndent",
-            "settingType": "checkbox"
+            "settingType": "boolean"
         },
         {
-            "type": "ui-setting",
-            "section": "Sources",
+            "type": "setting",
+            "category": "Sources",
             "title": "Autocompletion",
             "settingName": "textEditorAutocompletion",
-            "settingType": "checkbox"
+            "settingType": "boolean"
         },
         {
-            "type": "ui-setting",
-            "section": "Sources",
+            "type": "setting",
+            "category": "Sources",
             "title": "Bracket matching",
             "settingName": "textEditorBracketMatching",
-            "settingType": "checkbox"
+            "settingType": "boolean"
         },
         {
-            "type": "ui-setting",
-            "section": "Sources",
+            "type": "setting",
+            "category": "Sources",
             "title": "Show whitespace characters",
             "settingName": "showWhitespacesInEditor",
-            "settingType": "checkbox"
+            "settingType": "boolean"
         },
         {
-            "type": "ui-setting",
-            "section": "Sources",
+            "type": "setting",
+            "category": "Sources",
             "title": "Display variable values inline while debugging",
             "settingName": "inlineVariableValues",
-            "settingType": "checkbox"
+            "settingType": "boolean"
         },
         {
-            "type": "ui-setting",
-            "section": "Sources",
+            "type": "setting",
+            "category": "Sources",
             "title": "Enable CSS source maps",
             "settingName": "cssSourceMapsEnabled",
-            "settingType": "checkbox"
+            "settingType": "boolean"
         },
         {
-            "type": "ui-setting",
+            "type": "setting",
             "title": "Auto-reload generated CSS",
             "parentSettingName": "cssSourceMapsEnabled",
             "settingName": "cssReloadEnabled",
-            "settingType": "checkbox"
+            "settingType": "boolean"
         }
     ],
     "dependencies": [

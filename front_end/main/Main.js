@@ -771,29 +771,6 @@ WebInspector.Main.ZoomResetActionDelegate.prototype = {
 }
 
 /**
- * @constructor
- * @extends {WebInspector.UISettingDelegate}
- */
-WebInspector.Main.ShortcutPanelSwitchSettingDelegate = function()
-{
-    WebInspector.UISettingDelegate.call(this);
-}
-
-WebInspector.Main.ShortcutPanelSwitchSettingDelegate.prototype = {
-    /**
-     * @override
-     * @return {!Element}
-     */
-    settingElement: function()
-    {
-        var modifier = WebInspector.platform() === "mac" ? "Cmd" : "Ctrl";
-        return WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Enable %s + 1-9 shortcut to switch panels", modifier), WebInspector.settings.shortcutPanelSwitch);
-    },
-
-    __proto__: WebInspector.UISettingDelegate.prototype
-}
-
-/**
  * @param {boolean} hard
  * @return {boolean}
  */

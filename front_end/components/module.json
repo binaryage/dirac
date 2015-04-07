@@ -1,11 +1,11 @@
 {
     "extensions": [
         {
-            "type": "ui-setting",
-            "section": "Console",
+            "type": "setting",
+            "category": "Console",
             "title": "Enable custom formatters",
             "settingName": "enableCustomFormatters",
-            "settingType": "checkbox",
+            "settingType": "boolean",
             "experiment": "customObjectFormatters"
         }
     ],

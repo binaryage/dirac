@@ -19,10 +19,9 @@
             "elementClass": "settings-status-bar-item"
         },
         {
-            "type": "ui-setting",
-            "section": "Sources",
-            "settingType": "custom",
-            "className": "WebInspector.SettingsScreen.SkipStackFramePatternSettingDelegate"
+            "type": "@WebInspector.SettingUI",
+            "category": "Sources",
+            "className": "WebInspector.SettingsScreen.SkipStackFramePatternSettingUI"
         }
     ],
     "dependencies": [

@@ -861,6 +861,15 @@ Runtime.Extension.prototype = {
                 return Promise.reject("Could not instantiate: " + className);
             return result;
         }
+    },
+
+    /**
+     * @param {string} platform
+     * @return {string}
+     */
+    title: function(platform)
+    {
+        return this._descriptor["title-" + platform] || this._descriptor["title"];
     }
 }
 
