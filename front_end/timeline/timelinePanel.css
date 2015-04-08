@@ -55,7 +55,9 @@
     background-color: rgb(255, 255, 255);
 }
 
-.timeline-overview-frames-mode #timeline-overview-grid {
+.timeline-overview-frames-mode #timeline-overview-grid,
+.timeline-overview-frames-mode .overview-grid-window-area,
+.timeline-overview-frames-mode .overview-grid-current-position {
     display: none;
 }
 
@@ -282,7 +284,8 @@
 
 #timeline-overview-frames canvas {
     z-index: 200;
-    background-color: rgba(255, 255, 255, 0.8);
+    opacity: 0.8;
+    background-color: rgb(255, 255, 255);
 }
 
 #timeline-graphs {

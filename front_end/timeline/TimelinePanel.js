@@ -80,6 +80,7 @@ WebInspector.TimelinePanel = function()
 
     // Create top overview component.
     this._overviewPane = new WebInspector.TimelineOverviewPane(this._model);
+    this._overviewPane.addEventListener(WebInspector.TimelineOverviewPane.Events.SelectionChanged, this._onOverviewSelectionChanged.bind(this));
     this._overviewPane.addEventListener(WebInspector.TimelineOverviewPane.Events.WindowChanged, this._onWindowChanged.bind(this));
     this._overviewPane.show(topPaneElement);
 
@@ -194,6 +195,24 @@ WebInspector.TimelinePanel.prototype = {
 
         for (var i = 0; i < this._currentViews.length; ++i)
             this._currentViews[i].setWindowTimes(this._windowStartTime, this._windowEndTime);
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _onOverviewSelectionChanged: function(event)
+    {
+        var selection = /** @type {!WebInspector.TimelineSelection} */ (event.data);
+        if (selection && selection.type() === WebInspector.TimelineSelection.Type.Frame) {
+            var frameDuration = selection._endTime - selection._startTime;
+            // Only readjust the window if the frame does not fit entirely or if the zoom level is too small.
+            var needAdjustWindow = selection._startTime < this._windowStartTime ||
+                selection._endTime > this._windowEndTime ||
+                (this._windowEndTime - this._windowStartTime) / frameDuration > 4;
+            if (needAdjustWindow)
+                this.requestWindowTimes(selection._startTime - frameDuration, selection._endTime + frameDuration);
+        }
+        this.select(selection);
     },
 
     /**
@@ -516,7 +535,8 @@ WebInspector.TimelinePanel.prototype = {
     /**
      * @return {boolean}
      */
-    _selectFileToLoad: function() {
+    _selectFileToLoad: function()
+    {
         this._fileSelectorElement.click();
         return true;
     },
@@ -627,7 +647,8 @@ WebInspector.TimelinePanel.prototype = {
     /**
      * @param {boolean} enabled
      */
-    _setUIControlsEnabled: function(enabled) {
+    _setUIControlsEnabled: function(enabled)
+    {
         /**
          * @param {!WebInspector.StatusBarButton} statusBarItem
          */
@@ -1052,15 +1073,9 @@ WebInspector.TimelinePanel.prototype = {
         var index = frames.indexOf(currentFrame);
         console.assert(index >= 0, "Can't find current frame in the frame list");
         index = Number.constrain(index + offset, 0, frames.length - 1);
-        var newFrame = frames[index];
-        var timeShift = 0;
-        if (this._windowEndTime < newFrame.endTime)
-            timeShift = newFrame.endTime - this._windowEndTime;
-        else if (this._windowStartTime > newFrame.startTime)
-            timeShift = newFrame.startTime - this._windowStartTime;
-        if (timeShift)
-            this.requestWindowTimes(this._windowStartTime + timeShift, this._windowEndTime + timeShift);
-        this.select(WebInspector.TimelineSelection.fromFrame(newFrame));
+        var frame = frames[index];
+        this._revealTimeRange(frame.startTime, frame.endTime);
+        this.select(WebInspector.TimelineSelection.fromFrame(frame));
         return true;
     },
 
@@ -1193,7 +1208,19 @@ WebInspector.TimelinePanel.prototype = {
             var view = this._currentViews[i];
             view.setSelection(selection);
         }
+        this._overviewPane.select(selection);
         this._updateSelectionDetails();
+    },
+
+    _revealTimeRange: function(startTime, endTime)
+    {
+        var timeShift = 0;
+        if (this._windowEndTime < endTime)
+            timeShift = endTime - this._windowEndTime;
+        else if (this._windowStartTime > startTime)
+            timeShift = startTime - this._windowStartTime;
+        if (timeShift)
+            this.requestWindowTimes(this._windowStartTime + timeShift, this._windowEndTime + timeShift);
     },
 
     /**

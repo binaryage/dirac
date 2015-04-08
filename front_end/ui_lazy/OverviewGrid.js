@@ -183,7 +183,8 @@ WebInspector.OverviewGrid.Window = function(parentElement, dividersLabelBarEleme
 }
 
 WebInspector.OverviewGrid.Events = {
-    WindowChanged: "WindowChanged"
+    WindowChanged: "WindowChanged",
+    Click: "Click"
 }
 
 WebInspector.OverviewGrid.Window.prototype = {
@@ -294,7 +295,10 @@ WebInspector.OverviewGrid.Window.prototype = {
     {
         var window = this._overviewWindowSelector._close(event.x - this._offsetLeft);
         delete this._overviewWindowSelector;
-        if (window.end === window.start) { // Click, not drag.
+        var clickThreshold = 3;
+        if (window.end - window.start < clickThreshold) {
+            if (this.dispatchEventToListeners(WebInspector.OverviewGrid.Events.Click, event))
+                return;
             var middle = window.end;
             window.start = Math.max(0, middle - WebInspector.OverviewGrid.MinSelectableSize / 2);
             window.end = Math.min(this._parentElement.clientWidth, middle + WebInspector.OverviewGrid.MinSelectableSize / 2);
