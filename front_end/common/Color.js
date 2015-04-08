@@ -70,7 +70,7 @@ WebInspector.Color.parse = function(text)
 {
     // Simple - #hex, rgb(), nickname, hsl()
     var value = text.toLowerCase().replace(/\s+/g, "");
-    var simple = /^(?:#([0-9a-f]{3,6})|rgb\(([^)]+)\)|(\w+)|hsl\(([^)]+)\))$/i;
+    var simple = /^(?:#([0-9a-f]{3}|[0-9a-f]{6})|rgb\(((?:-?\d+%?,){2}-?\d+%?)\)|(\w+)|hsl\((-?\d+\.?\d*(?:,-?\d+\.?\d*%){2})\))$/i;
     var match = value.match(simple);
     if (match) {
         if (match[1]) { // hex
@@ -120,7 +120,7 @@ WebInspector.Color.parse = function(text)
     }
 
     // Advanced - rgba(), hsla()
-    var advanced = /^(?:rgba\(([^)]+)\)|hsla\(([^)]+)\))$/;
+    var advanced = /^(?:rgba\(((?:-?\d+%?,){3}-?\d+(?:\.\d+)?)\)|hsla\((-?\d+\.?\d*(?:,-?\d+\.?\d*%){2},-?\d+(?:\.\d+)?)\))$/;
     match = value.match(advanced);
     if (match) {
         if (match[1]) { // rgba
@@ -423,7 +423,7 @@ WebInspector.Color._parseHueNumeric = function(value)
  */
 WebInspector.Color._parseSatLightNumeric = function(value)
 {
-    return parseFloat(value) / 100;
+    return Math.min(1, parseFloat(value) / 100);
 }
 
 /**
