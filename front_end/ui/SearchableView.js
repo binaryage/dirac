@@ -629,11 +629,14 @@ WebInspector.SearchableView.prototype = {
 
     _onInput: function(event)
     {
-        this._onValueChanged();
+        if (this._valueChangedTimeoutId)
+            clearTimeout(this._valueChangedTimeoutId);
+        this._valueChangedTimeoutId = setTimeout(this._onValueChanged.bind(this), 200);
     },
 
     _onValueChanged: function()
     {
+        delete this._valueChangedTimeoutId;
         this._performSearch(false, true);
     },
 
