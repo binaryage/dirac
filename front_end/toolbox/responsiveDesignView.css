@@ -432,6 +432,8 @@ div.responsive-design-icon:disabled {
     left: 0;
     right: 0;
     top: 0;
+    overflow: hidden;
+    border-bottom: 1px solid rgb(187, 187, 187);
 }
 
 /* Media query inspector */

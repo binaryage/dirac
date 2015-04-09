@@ -6,25 +6,30 @@
 
 .infobar {
     color: rgb(34, 34, 34);
-    padding: 2px 4px;
+    padding: 4px;
     white-space: nowrap;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     border-bottom: 1px solid rgb(171, 171, 171);
 }
 
 .infobar-warning {
-    background-color: rgb(252, 234, 156);
+    background-color: rgb(253, 242, 192);
 }
 
 .infobar-info {
     background-color: rgb(255, 255, 255);
 }
 
+.infobar .icon {
+    flex: none;
+}
+
 .infobar .content {
     flex: auto;
     padding-left: 3px;
     overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .infobar .close-button {
