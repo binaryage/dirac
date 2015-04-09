@@ -1003,7 +1003,7 @@ WebInspector.TimelineModel.prototype = {
         if (WebInspector.TracingModel.isAsyncPhase(event.phase))
             return;
         var eventStack = this._eventStack;
-        while (eventStack.length && eventStack.peekLast().endTime < event.startTime)
+        while (eventStack.length && eventStack.peekLast().endTime <= event.startTime)
             eventStack.pop();
         var duration = event.duration;
         if (!duration)
@@ -1013,7 +1013,8 @@ WebInspector.TimelineModel.prototype = {
             parent.selfTime -= duration;
             if (parent.selfTime < 0) {
                 var epsilon = 1e-3;
-                console.assert(parent.selfTime > -epsilon, "Children are longer than parent at " + event.startTime);
+                if (parent.selfTime < -epsilon)
+                    console.error("Children are longer than parent at " + event.startTime + " (" + (event.startTime - this.minimumRecordTime()).toFixed(3) + ") by " + parent.selfTime.toFixed(3));
                 parent.selfTime = 0;
             }
         }
