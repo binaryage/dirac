@@ -64,8 +64,7 @@
     "scripts": [
         "ConsoleViewMessage.js",
         "ConsoleView.js",
-        "ConsolePanel.js",
-        "CustomPreviewSection.js"
+        "ConsolePanel.js"
     ],
     "stylesheets": [
         "consoleView.css"

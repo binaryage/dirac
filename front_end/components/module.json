@@ -16,6 +16,7 @@
     ],
     "scripts": [
         "BreakpointsSidebarPaneBase.js",
+        "CustomPreviewSection.js",
         "DebuggerPresentationUtils.js",
         "DOMBreakpointsSidebarPane.js",
         "DOMPresentationUtils.js",
@@ -32,6 +33,7 @@
     ],
     "stylesheets": [
         "breakpointsList.css",
+        "customPreviewSection.css",
         "nodeLink.css",
         "objectPropertiesSection.css",
         "objectValue.css"

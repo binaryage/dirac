@@ -200,7 +200,7 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
     ondblclick: function(event)
     {
         var editableElement = this.valueElement;
-        if ((this.property.writable || this.property.setter) && event.target.isSelfOrDescendant(editableElement))
+        if (!this.property.value.customPreview() && (this.property.writable || this.property.setter) && event.target.isSelfOrDescendant(editableElement))
             this._startEditing();
         return false;
     },
@@ -212,7 +212,7 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
     {
         this.update();
         if (this.property.value)
-            this.setExpandable(this.property.value.hasChildren && !this.property.wasThrown);
+            this.setExpandable(!this.property.value.customPreview() && this.property.value.hasChildren && !this.property.wasThrown);
     },
 
     update: function()
@@ -225,7 +225,15 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
         if (this.property.symbol)
             this.nameElement.addEventListener("contextmenu", this._contextMenuFired.bind(this, this.property.symbol), false);
 
-        if (this.property.value) {
+        var separatorElement = createElementWithClass("span", "object-properties-section-separator");
+        separatorElement.textContent = ": ";
+
+        if (this.property.value && this.property.value.customPreview()) {
+            this.nameElement.classList.add("custom-formatted-property");
+            separatorElement.classList.add("custom-formatted-property");
+            this.valueElement = WebInspector.CustomPreviewSection.createInShadow(this.property.value);
+            this.valueElement.classList.add("object-properties-section-custom-section");
+        } else  if (this.property.value) {
             this.valueElement = WebInspector.ObjectPropertiesSection.createValueElement(this.property.value, this.property.wasThrown, this.listItemElement);
             this.valueElement.addEventListener("contextmenu", this._contextMenuFired.bind(this, this.property.value), false);
         } else if (this.property.getter) {
@@ -235,9 +243,6 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
             this.valueElement.textContent = WebInspector.UIString("<unreadable>");
             this.valueElement.title = WebInspector.UIString("No property getter");
         }
-
-        var separatorElement = createElementWithClass("span", "object-properties-section-separator");
-        separatorElement.textContent = ": ";
 
         this.listItemElement.removeChildren();
         this.listItemElement.appendChildren(this.nameElement, separatorElement, this.valueElement);

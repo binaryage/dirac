@@ -95,9 +95,11 @@
         ],
         'devtools_components_js_files': [
             'front_end/components/breakpointsList.css',
+            'front_end/components/customPreviewSection.css',
             'front_end/components/nodeLink.css',
             'front_end/components/objectPropertiesSection.css',
             'front_end/components/objectValue.css',
+            'front_end/components/CustomPreviewSection.js',
             'front_end/components/DebuggerPresentationUtils.js',
             'front_end/components/DockController.js',
             'front_end/components/DOMBreakpointsSidebarPane.js',
@@ -361,7 +363,6 @@
             'front_end/console/ConsolePanel.js',
             'front_end/console/ConsoleView.js',
             'front_end/console/ConsoleViewMessage.js',
-            'front_end/console/CustomPreviewSection.js',
         ],
         'devtools_elements_js_files': [
             'front_end/elements/animationTimeline.css',
