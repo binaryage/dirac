@@ -78,20 +78,15 @@
 .console-user-command {
     clear: right;
     position: relative;
-    padding: 1px 22px 1px 0;
+    padding: 3px 22px 1px 0;
     margin-left: 24px;
     min-height: 18px;  /* Sync with ConsoleViewMessage.js */
     flex: auto;
     display: flex;
-    align-items: center;
 }
 
 .console-message > * {
     flex: auto;
-}
-
-.console-adjacent-user-command-result .console-user-command {
-    border-bottom: none;
 }
 
 .console-adjacent-user-command-result + .console-user-command-result.console-log-level::before {
@@ -114,7 +109,7 @@
     top: 9px;
     width: 10px;
     height: 10px;
-    margin-top: -5px;
+    margin-top: -4px;
     -webkit-user-select: none;
     background-image: url(Images/statusbarButtonGlyphs.png);
     background-size: 320px 144px;
@@ -224,6 +219,10 @@
 .console-message-wrapper {
     display: flex;
     border-bottom: 1px solid rgb(240, 240, 240);
+}
+
+.console-message-wrapper.console-adjacent-user-command-result {
+    border-bottom: none;
 }
 
 .console-message-wrapper.console-error-level {
