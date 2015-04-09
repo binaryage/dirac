@@ -1135,8 +1135,7 @@ WebInspector.ConsoleViewMessage.prototype = {
      */
     renderedText: function ()
     {
-        if (!this._messageElement)
-            return "";
+        this.element();
         return this._messageElement.deepTextContent();
     },
 

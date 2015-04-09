@@ -46,6 +46,7 @@ WebInspector.ConsoleView = function()
 
     this._contentsElement = this._searchableView.element;
     this._contentsElement.classList.add("console-view");
+    /** @type {!Array.<!WebInspector.ConsoleViewMessage>} */
     this._visibleViewMessages = [];
     this._urlToMessageCount = {};
     this._hiddenByFilterCount = 0;
@@ -588,6 +589,9 @@ WebInspector.ConsoleView.prototype = {
      */
     _appendMessageToEnd: function(viewMessage)
     {
+        if (this._searchRegex)
+            viewMessage.clearHighlights();
+
         if (!this._filter.shouldBeVisible(viewMessage)) {
             this._hiddenByFilterCount++;
             return;
@@ -616,6 +620,13 @@ WebInspector.ConsoleView.prototype = {
 
         if (viewMessage.consoleMessage().isGroupStartMessage())
             this._currentGroup = new WebInspector.ConsoleGroup(this._currentGroup, viewMessage);
+
+        this._messageAppendedForTests();
+    },
+
+    _messageAppendedForTests: function()
+    {
+        // This method is sniffed in tests.
     },
 
     /**
@@ -747,8 +758,6 @@ WebInspector.ConsoleView.prototype = {
             var lines = [];
             for (var i = 0; i < chunkSize && i + messageIndex < this.itemCount(); ++i) {
                 var message = this.itemElement(messageIndex + i);
-                // Ensure DOM element for console message.
-                message.element();
                 lines.push(message.renderedText());
             }
             messageIndex += i;
@@ -760,7 +769,7 @@ WebInspector.ConsoleView.prototype = {
 
     /**
      * @param {!WebInspector.ConsoleViewMessage} lastMessage
-     * @param {?WebInspector.ConsoleViewMessage} viewMessage
+     * @param {?WebInspector.ConsoleViewMessage=} viewMessage
      * @return {boolean}
      */
     _tryToCollapseMessages: function(lastMessage, viewMessage)
@@ -955,6 +964,7 @@ WebInspector.ConsoleView.prototype = {
      */
     searchCanceled: function()
     {
+        this._cleanupAfterSearch();
         this._clearSearchResultHighlights();
         this._regexMatchRanges = [];
         delete this._searchRegex;
@@ -976,12 +986,65 @@ WebInspector.ConsoleView.prototype = {
 
         this._regexMatchRanges = [];
         this._currentMatchRangeIndex = -1;
-        for (var i = 0; i < this._visibleViewMessages.length; i++)
-            this._searchMessage(i);
-        this._searchableView.updateSearchMatchesCount(this._regexMatchRanges.length);
+
         if (shouldJump)
-            this._jumpToMatch(jumpBackwards ? -1 : 0);
-        this._viewport.refresh();
+            this._searchShouldJumpBackwards = !!jumpBackwards;
+
+        this._searchProgressIndicator = new WebInspector.ProgressIndicator();
+        this._searchProgressIndicator.setTitle(WebInspector.UIString("Searching…"));
+        this._searchProgressIndicator.setTotalWork(this._visibleViewMessages.length);
+        this._progressStatusBarItem.element.appendChild(this._searchProgressIndicator.element);
+
+        this._innerSearch(0);
+    },
+
+    _cleanupAfterSearch: function()
+    {
+        delete this._searchShouldJumpBackwards;
+        if (this._innerSearchTimeoutId) {
+            clearTimeout(this._innerSearchTimeoutId);
+            delete this._innerSearchTimeoutId;
+        }
+        if (this._searchProgressIndicator) {
+            this._searchProgressIndicator.done();
+            delete this._searchProgressIndicator;
+        }
+    },
+
+    _searchFinishedForTests: function()
+    {
+        // This method is sniffed in tests.
+    },
+
+    /**
+     * @param {number} index
+     */
+    _innerSearch: function(index)
+    {
+        delete this._innerSearchTimeoutId;
+        if (this._searchProgressIndicator.isCanceled()) {
+            this._cleanupAfterSearch();
+            return;
+        }
+
+        var startTime = Date.now();
+        for (; index < this._visibleViewMessages.length && Date.now() - startTime < 100; ++index)
+            this._searchMessage(index);
+
+        this._searchableView.updateSearchMatchesCount(this._regexMatchRanges.length);
+        if (typeof this._searchShouldJumpBackwards !== "undefined" && this._regexMatchRanges.length) {
+            this._jumpToMatch(this._searchShouldJumpBackwards ? -1 : 0);
+            delete this._searchShouldJumpBackwards;
+        }
+
+        if (index === this._visibleViewMessages.length) {
+            this._cleanupAfterSearch();
+            setTimeout(this._searchFinishedForTests.bind(this), 0);
+            return;
+        }
+
+        this._innerSearchTimeoutId = setTimeout(this._innerSearch.bind(this, index), 100);
+        this._searchProgressIndicator.setWorked(index);
     },
 
     /**
@@ -1288,6 +1351,7 @@ WebInspector.ConsoleCommand.prototype = {
      */
     renderedText: function()
     {
+        this.element();
         return this.text;
     },
 
