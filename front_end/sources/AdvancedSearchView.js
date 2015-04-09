@@ -47,7 +47,7 @@ WebInspector.AdvancedSearchView = function()
     this._searchStatusBarElement.createChild("div", "search-message-spacer");
     this._searchResultsMessageElement = this._searchStatusBarElement.createChild("div", "search-message");
 
-    WebInspector.settings.advancedSearchConfig = WebInspector.settings.createSetting("advancedSearchConfig", new WebInspector.SearchConfig("", true, false).toPlainObject());
+    this._advancedSearchConfig = WebInspector.settings.createSetting("advancedSearchConfig", new WebInspector.SearchConfig("", true, false).toPlainObject());
     this._load();
     WebInspector.AdvancedSearchView._instance = this;
     /** @type {!WebInspector.SearchScope} */
@@ -294,12 +294,12 @@ WebInspector.AdvancedSearchView.prototype = {
 
     _save: function()
     {
-        WebInspector.settings.advancedSearchConfig.set(this._buildSearchConfig().toPlainObject());
+        this._advancedSearchConfig.set(this._buildSearchConfig().toPlainObject());
     },
 
     _load: function()
     {
-        var searchConfig = WebInspector.SearchConfig.fromPlainObject(WebInspector.settings.advancedSearchConfig.get());
+        var searchConfig = WebInspector.SearchConfig.fromPlainObject(this._advancedSearchConfig.get());
         this._search.value = searchConfig.query();
         this._ignoreCaseCheckbox.checked = searchConfig.ignoreCase();
         this._regexCheckbox.checked = searchConfig.isRegex();

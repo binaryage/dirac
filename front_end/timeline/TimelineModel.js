@@ -613,7 +613,7 @@ WebInspector.TimelineModel.prototype = {
      */
     _startProfilingOnAllTargets: function()
     {
-        var intervalUs = WebInspector.settings.highResolutionCpuProfiling.get() ? 100 : 1000;
+        var intervalUs = WebInspector.moduleSetting("highResolutionCpuProfiling").get() ? 100 : 1000;
         this._targets[0].profilerAgent().setSamplingInterval(intervalUs);
         this._profiling = true;
         return Promise.all(this._targets.map(this._startProfilingOnTarget));

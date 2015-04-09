@@ -392,7 +392,7 @@ WebInspector.InspectorView.prototype = {
 
         var keyboardEvent = /** @type {!KeyboardEvent} */ (event);
         // Ctrl/Cmd + 1-9 should show corresponding panel.
-        var panelShortcutEnabled = WebInspector.settings.shortcutPanelSwitch.get();
+        var panelShortcutEnabled = WebInspector.moduleSetting("shortcutPanelSwitch").get();
         if (panelShortcutEnabled && !event.shiftKey && !event.altKey) {
             var panelIndex = -1;
             if (event.keyCode > 0x30 && event.keyCode < 0x3A)

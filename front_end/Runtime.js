@@ -363,7 +363,7 @@ Runtime._assert = function(value, message)
 {
     if (value)
         return;
-    Runtime._originalAssert.call(Runtime._console, value, message);
+    Runtime._originalAssert.call(Runtime._console, value, message + " " + new Error().stack);
 }
 
 Runtime.prototype = {

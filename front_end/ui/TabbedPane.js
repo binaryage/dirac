@@ -1198,18 +1198,9 @@ WebInspector.ExtensibleTabbedPaneController.prototype = {
             var id = descriptor["name"];
             this._tabOrders[id] = i;
             var title = WebInspector.UIString(descriptor["title"]);
-            var settingName = descriptor["setting"];
-            var setting = settingName ? /** @type {!WebInspector.Setting|undefined} */ (WebInspector.settings[settingName]) : null;
 
             this._extensions.set(id, extensions[i]);
-
-            if (setting) {
-                setting.addChangeListener(this._toggleSettingBasedView.bind(this, id, title, setting));
-                if (setting.get())
-                    this._tabbedPane.appendTab(id, title, new WebInspector.View());
-            } else {
-                this._tabbedPane.appendTab(id, title, new WebInspector.View());
-            }
+            this._tabbedPane.appendTab(id, title, new WebInspector.View());
         }
     },
 
@@ -1224,18 +1215,6 @@ WebInspector.ExtensibleTabbedPaneController.prototype = {
         this._tabOrders[id] = order;
         this._views.set(id, view);
         this._tabbedPane.appendTab(id, title, new WebInspector.View());
-    },
-
-    /**
-     * @param {string} id
-     * @param {string} title
-     * @param {!WebInspector.Setting} setting
-     */
-    _toggleSettingBasedView: function(id, title, setting)
-    {
-        this._tabbedPane.closeTab(id);
-        if (setting.get())
-            this._tabbedPane.appendTab(id, title, new WebInspector.View());
     },
 
     /**

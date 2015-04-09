@@ -473,7 +473,7 @@ WebInspector.ConsoleDispatcher.prototype = {
      */
     messagesCleared: function()
     {
-        if (!WebInspector.settings.preserveConsoleLog.get())
+        if (!WebInspector.moduleSetting("preserveConsoleLog").get())
             this._console._messagesCleared();
     }
 }

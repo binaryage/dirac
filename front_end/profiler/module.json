@@ -17,21 +17,24 @@
             "category": "Profiler",
             "title": "Show advanced heap snapshot properties",
             "settingName": "showAdvancedHeapSnapshotProperties",
-            "settingType": "boolean"
+            "settingType": "boolean",
+            "defaultValue": false
         },
         {
             "type": "setting",
             "category": "Profiler",
             "title": "Record heap allocation stack traces",
             "settingName": "recordAllocationStacks",
-            "settingType": "boolean"
+            "settingType": "boolean",
+            "defaultValue": false
         },
         {
             "type": "setting",
             "category": "Profiler",
             "title": "High resolution CPU profiling",
             "settingName": "highResolutionCpuProfiling",
-            "settingType": "boolean"
+            "settingType": "boolean",
+            "defaultValue": false
         }
     ],
     "dependencies": [

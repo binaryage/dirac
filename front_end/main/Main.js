@@ -123,8 +123,8 @@ WebInspector.Main.prototype = {
 
     _createSettings: function()
     {
-        WebInspector.settings = new WebInspector.Settings();
         this._initializeExperiments();
+        WebInspector.settings = new WebInspector.Settings();
 
         // This setting is needed for backwards compatibility with Devtools CodeSchool extension. DO NOT REMOVE
         WebInspector.settings.pauseOnExceptionStateString = new WebInspector.PauseOnExceptionStateSetting();
@@ -163,7 +163,7 @@ WebInspector.Main.prototype = {
 
         if (InspectorFrontendHost.isUnderTest()) {
             // Enable experiments for testing.
-            var testPath = WebInspector.settings.testPath.get();
+            var testPath = self.localStorage ? self.localStorage["testPath"] || "" : "";
             if (testPath.indexOf("debugger/promise") !== -1)
                 Runtime.experiments.enableForTest("promiseTracker");
             if (testPath.indexOf("elements/") !== -1)
@@ -222,6 +222,7 @@ WebInspector.Main.prototype = {
         WebInspector.shortcutsScreen.section(WebInspector.UIString("Console"));
         WebInspector.shortcutsScreen.section(WebInspector.UIString("Elements Panel"));
 
+        WebInspector.fileManager = new WebInspector.FileManager();
         WebInspector.isolatedFileSystemManager = new WebInspector.IsolatedFileSystemManager();
         WebInspector.workspace = new WebInspector.Workspace(WebInspector.isolatedFileSystemManager.mapping());
         WebInspector.networkMapping = new WebInspector.NetworkMapping(WebInspector.workspace, WebInspector.isolatedFileSystemManager.mapping());
@@ -230,7 +231,7 @@ WebInspector.Main.prototype = {
         WebInspector.cssWorkspaceBinding = new WebInspector.CSSWorkspaceBinding(WebInspector.targetManager, WebInspector.workspace, WebInspector.networkMapping);
         WebInspector.debuggerWorkspaceBinding = new WebInspector.DebuggerWorkspaceBinding(WebInspector.targetManager, WebInspector.workspace, WebInspector.networkMapping);
         WebInspector.fileSystemWorkspaceBinding = new WebInspector.FileSystemWorkspaceBinding(WebInspector.isolatedFileSystemManager, WebInspector.workspace, WebInspector.networkMapping);
-        WebInspector.breakpointManager = new WebInspector.BreakpointManager(WebInspector.settings.breakpoints, WebInspector.workspace, WebInspector.networkMapping, WebInspector.targetManager, WebInspector.debuggerWorkspaceBinding);
+        WebInspector.breakpointManager = new WebInspector.BreakpointManager(null, WebInspector.workspace, WebInspector.networkMapping, WebInspector.targetManager, WebInspector.debuggerWorkspaceBinding);
         WebInspector.extensionServer = new WebInspector.ExtensionServer();
 
         new WebInspector.OverlayController();
@@ -933,7 +934,7 @@ WebInspector.WorkerTerminatedScreen.prototype = {
  */
 WebInspector.DisableJavaScriptObserver = function()
 {
-    this._setting = WebInspector.settings.javaScriptDisabled;
+    this._setting = WebInspector.moduleSetting("javaScriptDisabled");
     this._setting.addChangeListener(this._settingChanged, this);
     WebInspector.targetManager.observeTargets(this);
 }

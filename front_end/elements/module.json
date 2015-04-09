@@ -28,6 +28,7 @@
             "title": "Color format:",
             "settingName": "colorFormat",
             "settingType": "enum",
+            "defaultValue": "original",
             "options": [
                 ["As authored", "original"],
                 ["HEX: #DAC0DE", "hex", true],
@@ -40,28 +41,32 @@
             "category": "Elements",
             "title": "Show user agent shadow DOM",
             "settingName": "showUAShadowDOM",
-            "settingType": "boolean"
+            "settingType": "boolean",
+            "defaultValue": false
         },
         {
             "type": "setting",
             "category": "Elements",
             "title": "Word wrap",
             "settingName": "domWordWrap",
-            "settingType": "boolean"
+            "settingType": "boolean",
+            "defaultValue": true
         },
         {
             "type": "setting",
             "category": "Elements",
             "title": "Show rulers",
             "settingName": "showMetricsRulers",
-            "settingType": "boolean"
+            "settingType": "boolean",
+            "defaultValue": false
         },
         {
             "type": "setting",
             "category": "Elements",
             "title": "Highlight DOM updates",
             "settingName": "highlightDOMUpdates",
-            "settingType": "boolean"
+            "settingType": "boolean",
+            "defaultValue": true
         }
     ],
     "dependencies": [

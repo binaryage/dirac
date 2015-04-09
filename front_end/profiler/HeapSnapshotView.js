@@ -1338,7 +1338,7 @@ WebInspector.TrackingHeapSnapshotProfileType.prototype = {
     {
         if (this.profileBeingRecorded())
             return;
-        var recordAllocationStacks = WebInspector.settings.recordAllocationStacks.get();
+        var recordAllocationStacks = WebInspector.moduleSetting("recordAllocationStacks").get();
         this._addNewProfile(recordAllocationStacks);
         this.profileBeingRecorded().target().heapProfilerAgent().startTrackingHeapObjects(recordAllocationStacks);
     },

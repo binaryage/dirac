@@ -40,13 +40,13 @@ WebInspector.NetworkManager = function(target)
     this._target = target;
     this._networkAgent = target.networkAgent();
     target.registerNetworkDispatcher(this._dispatcher);
-    if (WebInspector.settings.cacheDisabled.get())
+    if (WebInspector.moduleSetting("cacheDisabled").get())
         this._networkAgent.setCacheDisabled(true);
-    if (WebInspector.settings.monitoringXHREnabled.get())
+    if (WebInspector.moduleSetting("monitoringXHREnabled").get())
         this._networkAgent.setMonitoringXHREnabled(true);
     this._networkAgent.enable();
 
-    WebInspector.settings.cacheDisabled.addChangeListener(this._cacheDisabledSettingChanged, this);
+    WebInspector.moduleSetting("cacheDisabled").addChangeListener(this._cacheDisabledSettingChanged, this);
 }
 
 WebInspector.NetworkManager.EventTypes = {
@@ -88,7 +88,7 @@ WebInspector.NetworkManager.prototype = {
 
     dispose: function()
     {
-        WebInspector.settings.cacheDisabled.removeChangeListener(this._cacheDisabledSettingChanged, this);
+        WebInspector.moduleSetting("cacheDisabled").removeChangeListener(this._cacheDisabledSettingChanged, this);
     },
 
     clearBrowserCache: function()

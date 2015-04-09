@@ -12,7 +12,8 @@
             "category": "Profiler",
             "title": "Hide chrome frame in Layers view",
             "settingName": "frameViewerHideChromeWindow",
-            "settingType": "boolean"
+            "settingType": "boolean",
+            "defaultValue": false
         },
         {
             "type": "@WebInspector.QueryParamHandler",

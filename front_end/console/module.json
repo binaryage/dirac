@@ -34,28 +34,32 @@
             "category": "Console",
             "title": "Hide network messages",
             "settingName": "hideNetworkMessages",
-            "settingType": "boolean"
+            "settingType": "boolean",
+            "defaultValue": false
         },
         {
             "type": "setting",
             "category": "Console",
             "title": "Log XMLHttpRequests",
             "settingName": "monitoringXHREnabled",
-            "settingType": "boolean"
+            "settingType": "boolean",
+            "defaultValue": false
         },
         {
             "type": "setting",
             "category": "Console",
             "title": "Preserve log upon navigation",
             "settingName": "preserveConsoleLog",
-            "settingType": "boolean"
+            "settingType": "boolean",
+            "defaultValue": false
         },
         {
             "type": "setting",
             "category": "Console",
             "title": "Show timestamps",
             "settingName": "consoleTimestampsEnabled",
-            "settingType": "boolean"
+            "settingType": "boolean",
+            "defaultValue": false
         }
     ],
     "dependencies": [

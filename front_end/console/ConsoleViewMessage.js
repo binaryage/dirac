@@ -941,7 +941,7 @@ WebInspector.ConsoleViewMessage.prototype = {
         if (this._repeatCount > 1)
             this._showRepeatCountElement();
 
-        this.updateTimestamp(WebInspector.settings.consoleTimestampsEnabled.get());
+        this.updateTimestamp(WebInspector.moduleSetting("consoleTimestampsEnabled").get());
 
         return this._element;
     },

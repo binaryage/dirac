@@ -212,20 +212,23 @@
             "type": "setting",
             "title": "Disable cache (while DevTools is open)",
             "settingName": "cacheDisabled",
-            "settingType": "boolean"
+            "settingType": "boolean",
+            "defaultValue": false
         },
         {
             "type": "setting",
             "title": "Disable JavaScript",
             "settingName": "javaScriptDisabled",
-            "settingType": "boolean"
+            "settingType": "boolean",
+            "defaultValue": false
         },
         {
             "type": "setting",
             "category": "Appearance",
             "title": "Split panels vertically when docked to right",
             "settingName": "splitVerticallyWhenDockedToRight",
-            "settingType": "boolean"
+            "settingType": "boolean",
+            "defaultValue": true
         },
         {
             "type": "setting",
@@ -233,26 +236,59 @@
             "title": "Enable Ctrl + 1-9 shortcut to switch panels",
             "title-mac": "Enable Cmd + 1-9 shortcut to switch panels",
             "settingName": "shortcutPanelSwitch",
-            "settingType": "boolean"
+            "settingType": "boolean",
+            "defaultValue": false
         },
         {
             "type": "setting",
             "category": "Appearance",
             "title": "Don't show emulation warnings",
             "settingName": "disableOverridesWarning",
-            "settingType": "boolean"
+            "settingType": "boolean",
+            "defaultValue": false
         },
         {
             "type": "setting",
             "category": "Appearance",
             "title": "Disable paused state overlay",
             "settingName": "disablePausedStateOverlay",
-            "settingType": "boolean"
+            "settingType": "boolean",
+            "defaultValue": false
         },
         {
             "type": "@WebInspector.SettingUI",
             "category": "Extensions",
             "className": "WebInspector.HandlerRegistry.OpenAnchorLocationSettingUI"
+        },
+        {
+            "type": "setting",
+            "settingName": "showPaintRects",
+            "settingType": "boolean",
+            "defaultValue": false
+        },
+        {
+            "type": "setting",
+            "settingName": "showDebugBorders",
+            "settingType": "boolean",
+            "defaultValue": false
+        },
+        {
+            "type": "setting",
+            "settingName": "showFPSCounter",
+            "settingType": "boolean",
+            "defaultValue": false
+        },
+        {
+            "type": "setting",
+            "settingName": "continuousPainting",
+            "settingType": "boolean",
+            "defaultValue": false
+        },
+        {
+            "type": "setting",
+            "settingName": "showScrollBottleneckRects",
+            "settingType": "boolean",
+            "defaultValue": false
         }
     ],
     "dependencies": [

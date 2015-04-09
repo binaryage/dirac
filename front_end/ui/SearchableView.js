@@ -41,7 +41,7 @@ WebInspector.SearchableView = function(searchable, settingName)
     this.registerRequiredCSS("ui/searchableView.css");
 
     this._searchProvider = searchable;
-    this._settingName = settingName;
+    this._setting = settingName ? WebInspector.settings.createSetting(settingName, {}) : null;
 
     this.element.addEventListener("keydown", this._onKeyDown.bind(this), false);
 
@@ -214,32 +214,19 @@ WebInspector.SearchableView.prototype = {
         this._performSearch(false, true);
     },
 
-    /**
-     * @return {?WebInspector.Setting}
-     */
-    _setting: function()
-    {
-        if (!this._settingName)
-            return null;
-        if (!WebInspector.settings[this._settingName])
-            WebInspector.settings[this._settingName] = WebInspector.settings.createSetting(this._settingName, {});
-        return WebInspector.settings[this._settingName];
-    },
-
     _saveSetting: function()
     {
-        var setting = this._setting();
-        if (!setting)
+        if (!this._setting)
             return;
-        var settingValue = setting.get() || {};
+        var settingValue = this._setting.get() || {};
         settingValue.caseSensitive = this._caseSensitiveButton.toggled();
         settingValue.isRegex = this._regexButton.toggled();
-        setting.set(settingValue);
+        this._setting.set(settingValue);
     },
 
     _loadSetting: function()
     {
-        var settingValue = this._setting() ? (this._setting().get() || {}) : {};
+        var settingValue = this._setting ? (this._setting.get() || {}) : {};
         if (this._searchProvider.supportsCaseSensitiveSearch())
             this._caseSensitiveButton.setToggled(!!settingValue.caseSensitive);
         if (this._searchProvider.supportsRegexSearch())

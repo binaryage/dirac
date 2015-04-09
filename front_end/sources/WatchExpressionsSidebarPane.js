@@ -39,6 +39,7 @@ WebInspector.WatchExpressionsSidebarPane = function()
     this._requiresUpdate = true;
     /** @type {!Array.<!WebInspector.WatchExpression>} */
     this._watchExpressions = [];
+    this._watchExpressionsSetting = WebInspector.settings.createSetting("watchExpressions", []);
 
     this.registerRequiredCSS("components/objectValue.css");
     this.bodyElement.classList.add("vbox", "watch-expressions");
@@ -80,6 +81,12 @@ WebInspector.WatchExpressionsSidebarPane.prototype = {
         this._saveExpressions();
     },
 
+    expandIfNecessary: function()
+    {
+        if (this._watchExpressionsSetting.get().length)
+            this.expand();
+    },
+
     _saveExpressions: function()
     {
         var toSave = [];
@@ -87,7 +94,7 @@ WebInspector.WatchExpressionsSidebarPane.prototype = {
             if (this._watchExpressions[i].expression())
                 toSave.push(this._watchExpressions[i].expression());
 
-        WebInspector.settings.watchExpressions.set(toSave);
+        this._watchExpressionsSetting.set(toSave);
     },
 
     _refreshExpressionsIfNeeded: function()
@@ -125,7 +132,7 @@ WebInspector.WatchExpressionsSidebarPane.prototype = {
         this._watchExpressions = [];
         this._emptyElement = this.bodyElement.createChild("div", "info");
         this._emptyElement.textContent = WebInspector.UIString("No Watch Expressions");
-        var watchExpressionStrings = WebInspector.settings.watchExpressions.get();
+        var watchExpressionStrings = this._watchExpressionsSetting.get();
         for (var i = 0; i < watchExpressionStrings.length; ++i) {
             var expression = watchExpressionStrings[i];
             if (!expression)

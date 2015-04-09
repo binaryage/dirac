@@ -4,8 +4,9 @@
             "type": "setting",
             "category": "Console",
             "title": "Enable custom formatters",
-            "settingName": "enableCustomFormatters",
+            "settingName": "customFormatters",
             "settingType": "boolean",
+            "defaultValue": false,
             "experiment": "customObjectFormatters"
         }
     ],

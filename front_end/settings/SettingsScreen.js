@@ -201,10 +201,12 @@ WebInspector.GenericSettingsTab.prototype = {
     _addSetting: function(extension)
     {
         var descriptor = extension.descriptor();
-        var sectionName = descriptor["category"] || "";
+        if (!("title" in descriptor) || !("category" in descriptor))
+            return;
 
+        var sectionName = descriptor["category"] || "";
         var settingName = descriptor["settingName"];
-        var setting = WebInspector.settings[settingName];
+        var setting = WebInspector.moduleSetting(settingName);
         var uiTitle = WebInspector.UIString(extension.title(WebInspector.platform()));
 
         var sectionElement = this._sectionElement(sectionName);
@@ -214,7 +216,7 @@ WebInspector.GenericSettingsTab.prototype = {
         if (parentSettingElement) {
             parentFieldset = parentSettingElement.__fieldset;
             if (!parentFieldset) {
-                parentFieldset = WebInspector.SettingsUI.createSettingFieldset(WebInspector.settings[parentSettingName]);
+                parentFieldset = WebInspector.SettingsUI.createSettingFieldset(WebInspector.moduleSetting(parentSettingName));
                 parentSettingElement.appendChild(parentFieldset);
                 parentSettingElement.__fieldset = parentFieldset;
             }
@@ -319,7 +321,8 @@ WebInspector.WorkspaceSettingsTab = function()
     WebInspector.isolatedFileSystemManager.addEventListener(WebInspector.IsolatedFileSystemManager.Events.FileSystemRemoved, this._fileSystemRemoved, this);
 
     this._commonSection = this._appendSection(WebInspector.UIString("Common"));
-    var folderExcludePatternInput = WebInspector.SettingsUI.createSettingInputField(WebInspector.UIString("Folder exclude pattern"), WebInspector.settings.workspaceFolderExcludePattern, false, 0, "270px", WebInspector.SettingsUI.regexValidator);
+    var folderExcludeSetting = WebInspector.isolatedFileSystemManager.excludedFolderManager().workspaceFolderExcludePatternSetting();
+    var folderExcludePatternInput = WebInspector.SettingsUI.createSettingInputField(WebInspector.UIString("Folder exclude pattern"), folderExcludeSetting, false, 0, "270px", WebInspector.SettingsUI.regexValidator);
     this._commonSection.appendChild(folderExcludePatternInput);
 
     this._fileSystemsSection = this._appendSection(WebInspector.UIString("Folders"));

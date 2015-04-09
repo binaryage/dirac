@@ -95,12 +95,12 @@ WebInspector.SourcesPanel = function(workspaceForTest)
     this._installDebuggerSidebarController();
 
     WebInspector.dockController.addEventListener(WebInspector.DockController.Events.DockSideChanged, this._dockSideChanged.bind(this));
-    WebInspector.settings.splitVerticallyWhenDockedToRight.addChangeListener(this._dockSideChanged.bind(this));
+    WebInspector.moduleSetting("splitVerticallyWhenDockedToRight").addChangeListener(this._dockSideChanged.bind(this));
     this._dockSideChanged();
 
     this._updateDebuggerButtons();
     this._pauseOnExceptionEnabledChanged();
-    WebInspector.settings.pauseOnExceptionEnabled.addChangeListener(this._pauseOnExceptionEnabledChanged, this);
+    WebInspector.moduleSetting("pauseOnExceptionEnabled").addChangeListener(this._pauseOnExceptionEnabledChanged, this);
     this._setTarget(WebInspector.context.flavor(WebInspector.Target));
     WebInspector.breakpointManager.addEventListener(WebInspector.BreakpointManager.Events.BreakpointsActiveStateChanged, this._breakpointsActiveStateChanged, this);
     WebInspector.context.addFlavorChangeListener(WebInspector.Target, this._onCurrentTargetChanged, this);
@@ -421,7 +421,7 @@ WebInspector.SourcesPanel.prototype = {
 
     _pauseOnExceptionEnabledChanged: function()
     {
-        var enabled = WebInspector.settings.pauseOnExceptionEnabled.get();
+        var enabled = WebInspector.moduleSetting("pauseOnExceptionEnabled").get();
         this._pauseOnExceptionButton.setToggled(enabled);
         this._pauseOnExceptionButton.setTitle(WebInspector.UIString(enabled ? "Don't pause on exceptions." : "Pause on exceptions."));
         this._debugToolbarDrawer.classList.toggle("expanded", enabled);
@@ -491,7 +491,7 @@ WebInspector.SourcesPanel.prototype = {
 
     _togglePauseOnExceptions: function()
     {
-        WebInspector.settings.pauseOnExceptionEnabled.set(!this._pauseOnExceptionButton.toggled());
+        WebInspector.moduleSetting("pauseOnExceptionEnabled").set(!this._pauseOnExceptionButton.toggled());
     },
 
     /**
@@ -744,7 +744,7 @@ WebInspector.SourcesPanel.prototype = {
         var debugToolbarDrawer = createElementWithClass("div", "scripts-debug-toolbar-drawer");
 
         var label = WebInspector.UIString("Pause On Caught Exceptions");
-        var setting = WebInspector.settings.pauseOnCaughtException;
+        var setting = WebInspector.moduleSetting("pauseOnCaughtException");
         debugToolbarDrawer.appendChild(WebInspector.SettingsUI.createSettingCheckbox(label, setting, true));
 
         return debugToolbarDrawer;
@@ -1085,7 +1085,7 @@ WebInspector.SourcesPanel.prototype = {
 
     _dockSideChanged: function()
     {
-        var vertically = WebInspector.dockController.isVertical() && WebInspector.settings.splitVerticallyWhenDockedToRight.get();
+        var vertically = WebInspector.dockController.isVertical() && WebInspector.moduleSetting("splitVerticallyWhenDockedToRight").get();
         this._splitVertically(vertically);
     },
 
@@ -1125,8 +1125,7 @@ WebInspector.SourcesPanel.prototype = {
             this.sidebarPaneView = vbox;
 
             this.sidebarPanes.scopechain.expand();
-            if (WebInspector.settings.watchExpressions.get().length > 0)
-                this.sidebarPanes.watchExpressions.expand();
+            this.sidebarPanes.watchExpressions.expandIfNecessary();
         } else {
             var splitView = new WebInspector.SplitView(true, true, "sourcesPanelDebuggerSidebarSplitViewState", 0.5);
             splitView.setMainView(vbox);

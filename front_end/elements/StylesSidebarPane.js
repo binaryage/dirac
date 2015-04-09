@@ -66,7 +66,7 @@ WebInspector.StylesSidebarPane = function(computedStylePane, requestShowCallback
     this._computedStylePane = computedStylePane;
     computedStylePane.setHostingPane(this);
     this.element.addEventListener("contextmenu", this._contextMenuEventFired.bind(this), true);
-    WebInspector.settings.colorFormat.addChangeListener(this._colorFormatSettingChanged.bind(this));
+    WebInspector.moduleSetting("colorFormat").addChangeListener(this._colorFormatSettingChanged.bind(this));
 
     this._requestShowCallback = requestShowCallback;
 

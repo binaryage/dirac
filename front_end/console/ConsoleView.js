@@ -71,7 +71,7 @@ WebInspector.ConsoleView = function()
 
     this._filterBar = new WebInspector.FilterBar();
 
-    this._preserveLogCheckbox = new WebInspector.StatusBarCheckbox(WebInspector.UIString("Preserve log"), WebInspector.UIString("Do not clear log on page reload / navigation."), WebInspector.settings.preserveConsoleLog);
+    this._preserveLogCheckbox = new WebInspector.StatusBarCheckbox(WebInspector.UIString("Preserve log"), WebInspector.UIString("Do not clear log on page reload / navigation."), WebInspector.moduleSetting("preserveConsoleLog"));
     this._progressStatusBarItem = new WebInspector.StatusBarItem(createElement("div"));
 
     var statusBar = new WebInspector.StatusBar(this._contentsElement);
@@ -130,7 +130,7 @@ WebInspector.ConsoleView = function()
     this._registerShortcuts();
 
     this._messagesElement.addEventListener("contextmenu", this._handleContextMenuEvent.bind(this), false);
-    WebInspector.settings.monitoringXHREnabled.addChangeListener(this._monitoringXHREnabledSettingChanged, this);
+    WebInspector.moduleSetting("monitoringXHREnabled").addChangeListener(this._monitoringXHREnabledSettingChanged, this);
 
     this._linkifier = new WebInspector.Linkifier();
 
@@ -143,12 +143,13 @@ WebInspector.ConsoleView = function()
     this._prompt.renderAsBlock();
     var proxyElement = this._prompt.attach(this._promptElement);
     proxyElement.addEventListener("keydown", this._promptKeyDown.bind(this), false);
-    this._prompt.setHistoryData(WebInspector.settings.consoleHistory.get());
-    var historyData = WebInspector.settings.consoleHistory.get();
+
+    this._consoleHistorySetting = WebInspector.settings.createSetting("consoleHistory", []);
+    var historyData = this._consoleHistorySetting.get();
     this._prompt.setHistoryData(historyData);
 
     this._updateFilterStatus();
-    WebInspector.settings.consoleTimestampsEnabled.addChangeListener(this._consoleTimestampsSettingChanged, this);
+    WebInspector.moduleSetting("consoleTimestampsEnabled").addChangeListener(this._consoleTimestampsSettingChanged, this);
 
     this._registerWithMessageSink();
     WebInspector.targetManager.observeTargets(this);
@@ -675,9 +676,9 @@ WebInspector.ConsoleView.prototype = {
 
         function monitoringXHRItemAction()
         {
-            WebInspector.settings.monitoringXHREnabled.set(!WebInspector.settings.monitoringXHREnabled.get());
+            WebInspector.moduleSetting("monitoringXHREnabled").set(!WebInspector.moduleSetting("monitoringXHREnabled").get());
         }
-        contextMenu.appendCheckboxItem(WebInspector.UIString("Log XMLHttpRequests"), monitoringXHRItemAction, WebInspector.settings.monitoringXHREnabled.get());
+        contextMenu.appendCheckboxItem(WebInspector.UIString("Log XMLHttpRequests"), monitoringXHRItemAction, WebInspector.moduleSetting("monitoringXHREnabled").get());
 
         var sourceElement = event.target.enclosingNodeOrSelfWithClass("console-message-wrapper");
         var consoleMessage = sourceElement ? sourceElement.message.consoleMessage() : null;
@@ -774,7 +775,7 @@ WebInspector.ConsoleView.prototype = {
      */
     _tryToCollapseMessages: function(lastMessage, viewMessage)
     {
-        if (!WebInspector.settings.consoleTimestampsEnabled.get() && viewMessage && !lastMessage.consoleMessage().isGroupMessage() && lastMessage.consoleMessage().isEqual(viewMessage.consoleMessage())) {
+        if (!WebInspector.moduleSetting("consoleTimestampsEnabled").get() && viewMessage && !lastMessage.consoleMessage().isGroupMessage() && lastMessage.consoleMessage().isEqual(viewMessage.consoleMessage())) {
             viewMessage.incrementRepeatCount();
             return true;
         }
@@ -946,7 +947,7 @@ WebInspector.ConsoleView.prototype = {
     {
         var data = /**{{result: ?WebInspector.RemoteObject, wasThrown: boolean, text: string, commandMessage: !WebInspector.ConsoleMessage}} */ (event.data);
         this._prompt.pushHistoryItem(data.text);
-        WebInspector.settings.consoleHistory.set(this._prompt.historyData().slice(-30));
+        this._consoleHistorySetting.set(this._prompt.historyData().slice(-30));
         this._printResult(data.result, data.wasThrown, data.commandMessage, data.exceptionDetails);
     },
 
@@ -1165,8 +1166,11 @@ WebInspector.ConsoleView.prototype = {
  */
 WebInspector.ConsoleViewFilter = function(view)
 {
+    this._messageURLFiltersSetting = WebInspector.settings.createSetting("messageURLFilters", {});
+    this._messageLevelFiltersSetting = WebInspector.settings.createSetting("messageLevelFilters", {});
+
     this._view = view;
-    this._messageURLFilters = WebInspector.settings.messageURLFilters.get();
+    this._messageURLFilters = this._messageURLFiltersSetting.get();
     this._filterChanged = this.dispatchEventToListeners.bind(this, WebInspector.ConsoleViewFilter.Events.FilterChanged);
 };
 
@@ -1188,10 +1192,10 @@ WebInspector.ConsoleViewFilter.prototype = {
             {name: "log", label: WebInspector.UIString("Logs")},
             {name: "debug", label: WebInspector.UIString("Debug")}
         ];
-        this._levelFilterUI = new WebInspector.NamedBitSetFilterUI(levels, WebInspector.settings.messageLevelFilters);
+        this._levelFilterUI = new WebInspector.NamedBitSetFilterUI(levels, this._messageLevelFiltersSetting);
         this._levelFilterUI.addEventListener(WebInspector.FilterUI.Events.FilterChanged, this._filterChanged, this);
         filterBar.addFilter(this._levelFilterUI);
-        this._hideNetworkMessagesCheckbox = new WebInspector.CheckboxFilterUI("hide-network-messages", WebInspector.UIString("Hide network messages"), true, WebInspector.settings.hideNetworkMessages);
+        this._hideNetworkMessagesCheckbox = new WebInspector.CheckboxFilterUI("hide-network-messages", WebInspector.UIString("Hide network messages"), true, WebInspector.moduleSetting("hideNetworkMessages"));
         this._hideNetworkMessagesCheckbox.addEventListener(WebInspector.FilterUI.Events.FilterChanged, this._filterChanged.bind(this), this);
         filterBar.addFilter(this._hideNetworkMessagesCheckbox);
     },
@@ -1209,7 +1213,7 @@ WebInspector.ConsoleViewFilter.prototype = {
     addMessageURLFilter: function(url)
     {
         this._messageURLFilters[url] = true;
-        WebInspector.settings.messageURLFilters.set(this._messageURLFilters);
+        this._messageURLFiltersSetting.set(this._messageURLFilters);
         this._filterChanged();
     },
 
@@ -1223,7 +1227,7 @@ WebInspector.ConsoleViewFilter.prototype = {
         else
             delete this._messageURLFilters[url];
 
-        WebInspector.settings.messageURLFilters.set(this._messageURLFilters);
+        this._messageURLFiltersSetting.set(this._messageURLFilters);
         this._filterChanged();
     },
 
@@ -1254,7 +1258,7 @@ WebInspector.ConsoleViewFilter.prototype = {
             }
         }
 
-        if (WebInspector.settings.hideNetworkMessages.get() && viewMessage.consoleMessage().source === WebInspector.ConsoleMessage.MessageSource.Network)
+        if (WebInspector.moduleSetting("hideNetworkMessages").get() && viewMessage.consoleMessage().source === WebInspector.ConsoleMessage.MessageSource.Network)
             return false;
 
         if (viewMessage.consoleMessage().isGroupMessage())
@@ -1281,8 +1285,8 @@ WebInspector.ConsoleViewFilter.prototype = {
     reset: function()
     {
         this._messageURLFilters = {};
-        WebInspector.settings.messageURLFilters.set(this._messageURLFilters);
-        WebInspector.settings.messageLevelFilters.set({});
+        this._messageURLFiltersSetting.set(this._messageURLFilters);
+        this._messageLevelFiltersSetting.set({});
         this._view._showAllMessagesCheckbox.inputElement.checked = true;
         this._hideNetworkMessagesCheckbox.setState(false);
         this._textFilterUI.setValue("");

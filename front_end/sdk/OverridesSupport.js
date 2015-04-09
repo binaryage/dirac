@@ -471,7 +471,7 @@ WebInspector.OverridesSupport.prototype = {
         this.settings.networkConditions.addChangeListener(this._networkConditionsChanged, this);
 
         this.settings._emulationEnabled.addChangeListener(this._showRulersChanged, this);
-        WebInspector.settings.showMetricsRulers.addChangeListener(this._showRulersChanged, this);
+        WebInspector.moduleSetting("showMetricsRulers").addChangeListener(this._showRulersChanged, this);
         this._showRulersChanged();
 
         if (this.emulationEnabled()) {
@@ -762,7 +762,7 @@ WebInspector.OverridesSupport.prototype = {
 
     _showRulersChanged: function()
     {
-        var showRulersValue = WebInspector.settings.showMetricsRulers.get();
+        var showRulersValue = WebInspector.moduleSetting("showMetricsRulers").get();
         for (var target of WebInspector.targetManager.targets()) {
             target.pageAgent().setShowViewportSizeOnResize(!this._pageResizerActive(), showRulersValue);
             target.domModel.setHighlightSettings(showRulersValue && !this._pageResizerActive(), showRulersValue);

@@ -211,63 +211,72 @@
             "category": "Sources",
             "title": "Search in content scripts",
             "settingName": "searchInContentScripts",
-            "settingType": "boolean"
+            "settingType": "boolean",
+            "defaultValue": false
         },
         {
             "type": "setting",
             "category": "Sources",
             "title": "Enable JavaScript source maps",
             "settingName": "jsSourceMapsEnabled",
-            "settingType": "boolean"
+            "settingType": "boolean",
+            "defaultValue": true
         },
         {
             "type": "setting",
             "category": "Sources",
             "title": "Detect indentation",
             "settingName": "textEditorAutoDetectIndent",
-            "settingType": "boolean"
+            "settingType": "boolean",
+            "defaultValue": true
         },
         {
             "type": "setting",
             "category": "Sources",
             "title": "Autocompletion",
             "settingName": "textEditorAutocompletion",
-            "settingType": "boolean"
+            "settingType": "boolean",
+            "defaultValue": true
         },
         {
             "type": "setting",
             "category": "Sources",
             "title": "Bracket matching",
             "settingName": "textEditorBracketMatching",
-            "settingType": "boolean"
+            "settingType": "boolean",
+            "defaultValue": true
         },
         {
             "type": "setting",
             "category": "Sources",
             "title": "Show whitespace characters",
             "settingName": "showWhitespacesInEditor",
-            "settingType": "boolean"
+            "settingType": "boolean",
+            "defaultValue": false
         },
         {
             "type": "setting",
             "category": "Sources",
             "title": "Display variable values inline while debugging",
             "settingName": "inlineVariableValues",
-            "settingType": "boolean"
+            "settingType": "boolean",
+            "defaultValue": true
         },
         {
             "type": "setting",
             "category": "Sources",
             "title": "Enable CSS source maps",
             "settingName": "cssSourceMapsEnabled",
-            "settingType": "boolean"
+            "settingType": "boolean",
+            "defaultValue": true
         },
         {
             "type": "setting",
             "title": "Auto-reload generated CSS",
             "parentSettingName": "cssSourceMapsEnabled",
             "settingName": "cssReloadEnabled",
-            "settingType": "boolean"
+            "settingType": "boolean",
+            "defaultValue": false
         }
     ],
     "dependencies": [

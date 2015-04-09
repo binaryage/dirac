@@ -16,6 +16,8 @@ WebInspector.ResponsiveDesignView = function(inspectedPagePlaceholder)
     this.element.classList.add("responsive-design-view");
     this.registerRequiredCSS("toolbox/responsiveDesignView.css");
 
+    this._showMediaQueryInspectorSetting = WebInspector.settings.createSetting("showMediaQueryInspector", false);
+
     this._responsiveDesignContainer = new WebInspector.VBox();
     this._uiInitialized = false;
 
@@ -60,7 +62,7 @@ WebInspector.ResponsiveDesignView.prototype = {
         this._mediaInspector = new WebInspector.MediaQueryInspector();
         this._updateMediaQueryInspector();
 
-        this._warningInfobar = new WebInspector.Infobar(WebInspector.Infobar.Type.Warning, WebInspector.settings.disableOverridesWarning);
+        this._warningInfobar = new WebInspector.Infobar(WebInspector.Infobar.Type.Warning, WebInspector.moduleSetting("disableOverridesWarning"));
         this._warningInfobar.element.classList.add("responsive-design-warning");
         this._warningInfobar.setCloseCallback(WebInspector.overridesSupport.clearWarningMessage.bind(WebInspector.overridesSupport));
         this._canvasContainer.element.appendChild(this._warningInfobar.element);
@@ -591,10 +593,10 @@ WebInspector.ResponsiveDesignView.prototype = {
 
         // Media Query Inspector.
         this._toggleMediaInspectorButton = new WebInspector.StatusBarButton(WebInspector.UIString("Media queries not found"), "waterfall-status-bar-item");
-        this._toggleMediaInspectorButton.setToggled(WebInspector.settings.showMediaQueryInspector.get());
+        this._toggleMediaInspectorButton.setToggled(this._showMediaQueryInspectorSetting.get());
         this._toggleMediaInspectorButton.setEnabled(false);
         this._toggleMediaInspectorButton.addEventListener("click", this._onToggleMediaInspectorButtonClick, this);
-        WebInspector.settings.showMediaQueryInspector.addChangeListener(this._updateMediaQueryInspector, this);
+        this._showMediaQueryInspectorSetting.addChangeListener(this._updateMediaQueryInspector, this);
         buttonsStatusBar.appendStatusBarItem(this._toggleMediaInspectorButton);
     },
 
@@ -673,13 +675,13 @@ WebInspector.ResponsiveDesignView.prototype = {
 
     _onToggleMediaInspectorButtonClick: function()
     {
-        WebInspector.settings.showMediaQueryInspector.set(!this._toggleMediaInspectorButton.toggled());
+        this._showMediaQueryInspectorSetting.set(!this._toggleMediaInspectorButton.toggled());
     },
 
     _updateMediaQueryInspector: function()
     {
-        this._toggleMediaInspectorButton.setToggled(WebInspector.settings.showMediaQueryInspector.get());
-        if (this._mediaInspector.isShowing() === WebInspector.settings.showMediaQueryInspector.get())
+        this._toggleMediaInspectorButton.setToggled(this._showMediaQueryInspectorSetting.get());
+        if (this._mediaInspector.isShowing() === this._showMediaQueryInspectorSetting.get())
             return;
         if (this._mediaInspector.isShowing())
             this._mediaInspector.detach();
