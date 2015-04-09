@@ -202,9 +202,10 @@ WebInspector.CustomPreviewSection.prototype = {
          * @suppressReceiverCheck
          * @suppressGlobalPropertiesCheck
          * @suppress {undefinedVars}
-         * @this {?}
+         * @this {Object}
+         * @param {*=} formatter
          */
-        function load()
+        function load(formatter)
         {
             /**
              * @param {*} jsonMLObject
@@ -229,16 +230,11 @@ WebInspector.CustomPreviewSection.prototype = {
                     jsonMLObject[1] = bindRemoteObject(originObject, false, false, null, false);
                     startIndex = 2;
                 }
-
                 for (var i = startIndex; i < jsonMLObject.length; ++i)
                     substituteObjectTagsInCustomPreview(jsonMLObject[i]);
             }
 
             try {
-                var formatter = window["devtoolsFormatter"];
-                if (!formatter)
-                    return null;
-
                 var body = formatter.body(this);
                 substituteObjectTagsInCustomPreview(body);
                 return body;
@@ -248,7 +244,8 @@ WebInspector.CustomPreviewSection.prototype = {
             }
         }
 
-        this._object.callFunctionJSON(load, [], onBodyLoaded.bind(this));
+        var customPreview = this._object.customPreview();
+        this._object.callFunctionJSON(load, [{objectId: customPreview.formatterObjectId}], onBodyLoaded.bind(this));
 
         /**
          * @param {*} bodyJsonML
