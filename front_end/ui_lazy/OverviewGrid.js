@@ -169,8 +169,7 @@ WebInspector.OverviewGrid.Window = function(parentElement, dividersLabelBarEleme
     this._currentPositionElement = parentElement.createChild("div", "overview-grid-current-position");
     this._currentPositionArea = parentElement.createChild("div", "overview-grid-window-area");
     this._currentPositionArea.addEventListener("mousemove", this._onMouseMove.bind(this), true);
-    this._currentPositionArea.addEventListener("mouseover", this._onMouseOver.bind(this, true), true);
-    this._currentPositionArea.addEventListener("mouseout", this._onMouseOver.bind(this, false), true);
+    this._currentPositionArea.addEventListener("mouseout", this._hideCurrentPosition.bind(this), true);
 
     this._leftResizeElement = parentElement.createChild("div", "overview-grid-window-resizer");
     this._leftResizeElement.style.left = 0;
@@ -212,16 +211,13 @@ WebInspector.OverviewGrid.Window.prototype = {
             return;
         this._enabled = enabled;
         this._currentPositionArea.style.cursor = enabled ? "text" : "";
+        if (!enabled)
+            this._hideCurrentPosition();
     },
 
-    /**
-     * @param {boolean} entered
-     */
-    _onMouseOver: function(entered)
+    _hideCurrentPosition: function()
     {
-        if (!this._enabled)
-            return;
-        this._currentPositionElement.style.visibility = entered ? "" : "hidden";
+        this._currentPositionElement.style.visibility = "hidden";
     },
 
     /**
@@ -233,6 +229,7 @@ WebInspector.OverviewGrid.Window.prototype = {
             return;
         var x = event.offsetX + event.target.offsetLeft;
         this._currentPositionElement.style.left = x + "px";
+        this._currentPositionElement.style.visibility = "visible";
     },
 
     /**
