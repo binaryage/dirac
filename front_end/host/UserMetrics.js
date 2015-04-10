@@ -55,7 +55,9 @@ WebInspector.UserMetrics._ActionCodes = {
     FileSavedInWorkspace: 9,
     DeviceModeEnabled: 10,
     AnimationsPlaybackRateChanged: 11,
-    RevisionApplied: 12
+    RevisionApplied: 12,
+    FileSystemDirectoryContentReceived: 13,
+    StyleRuleEdited: 14
 }
 
 WebInspector.UserMetrics._PanelCodes = {
@@ -66,7 +68,8 @@ WebInspector.UserMetrics._PanelCodes = {
     timeline: 5,
     profiles: 6,
     audits: 7,
-    console: 8
+    console: 8,
+    layers: 9
 }
 
 WebInspector.UserMetrics.UserAction = "UserAction";
