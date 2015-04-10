@@ -163,6 +163,8 @@ WebInspector.ObjectPopoverHelper.prototype = {
 
                 if (result.type === "string")
                     valueElement.createTextChildren("\"", description, "\"");
+                else if (result.type === "function")
+                    WebInspector.ObjectPropertiesSection.formatObjectAsFunction(result, valueElement, true);
                 else
                     valueElement.textContent = description;
 
