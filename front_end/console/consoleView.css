@@ -242,11 +242,7 @@
     flex: 0 0 auto;
     border-right: 1px solid #A3A3A3;
     position: relative;
-}
-
-.console-message-wrapper:last-child .nesting-level-marker,
-.console-message-wrapper .nesting-level-marker.group-closed {
-    margin-bottom: 4px;
+    margin-bottom: -1px;
 }
 
 .console-message-wrapper:last-child .nesting-level-marker::before,
