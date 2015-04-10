@@ -814,7 +814,8 @@ WebInspector.ConsoleView.prototype = {
      */
     _messagesClicked: function(event)
     {
-        if (!this._prompt.isCaretInsidePrompt() && event.deepElementFromPoint().isComponentSelectionCollapsed())
+        var targetElement = event.deepElementFromPoint();
+        if (!this._prompt.isCaretInsidePrompt() && (!targetElement || targetElement.isComponentSelectionCollapsed()))
             this._prompt.moveCaretToEndOfPrompt();
         var groupMessage = event.target.enclosingNodeOrSelfWithClass("console-group-title");
         if (!groupMessage)
