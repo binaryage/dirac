@@ -1330,19 +1330,26 @@ WebInspector.SourcesPanel.DebuggerPausedDetailsRevealer.prototype = {
  * @constructor
  * @implements {WebInspector.ActionDelegate}
  */
-WebInspector.SourcesPanel.ShowGoToSourceDialogActionDelegate = function() {}
+WebInspector.SourcesPanel.RevealingActionDelegate = function() {}
 
-WebInspector.SourcesPanel.ShowGoToSourceDialogActionDelegate.prototype = {
+WebInspector.SourcesPanel.RevealingActionDelegate.prototype = {
     /**
      * @override
-     * @return {boolean}
+     * @param {!WebInspector.Context} context
+     * @param {string} actionId
      */
-    handleAction: function()
+    handleAction: function(context, actionId)
     {
         var panel = WebInspector.SourcesPanel.instance();
         WebInspector.inspectorView.setCurrentPanel(panel);
-        panel.showGoToSourceDialog();
-        return true;
+        switch (actionId) {
+        case "debugger.toggle-pause":
+            panel.togglePause();
+            break;
+        case "sources.go-to-source":
+            panel.showGoToSourceDialog();
+            break;
+        }
     }
 }
 
@@ -1350,108 +1357,38 @@ WebInspector.SourcesPanel.ShowGoToSourceDialogActionDelegate.prototype = {
  * @constructor
  * @implements {WebInspector.ActionDelegate}
  */
-WebInspector.SourcesPanel.TogglePauseActionDelegate = function()
+WebInspector.SourcesPanel.DebuggingActionDelegate = function()
 {
 }
 
-WebInspector.SourcesPanel.TogglePauseActionDelegate.prototype = {
+WebInspector.SourcesPanel.DebuggingActionDelegate.prototype = {
     /**
      * @override
-     * @return {boolean}
+     * @param {!WebInspector.Context} context
+     * @param {string} actionId
      */
-    handleAction: function()
+    handleAction: function(context, actionId)
     {
         var panel = WebInspector.SourcesPanel.instance();
-        WebInspector.inspectorView.setCurrentPanel(panel);
-        panel.togglePause();
-        return true;
+        switch (actionId) {
+        case "debugger.step-over":
+            panel._stepOverClicked();
+            break;
+        case "debugger.step-into":
+            panel._stepIntoClicked();
+            break;
+        case "debugger.step-into-async":
+            panel._stepIntoAsyncClicked();
+            break;
+        case "debugger.step-out":
+            panel._stepOutClicked();
+            break;
+        case "debugger.run-snippet":
+            panel._runSnippet();
+            break;
+
+        }
     }
-}
-
-/**
- * @constructor
- * @implements {WebInspector.ActionDelegate}
- * @param {function(this:WebInspector.SourcesPanel):boolean} handler
- */
-WebInspector.SourcesPanel.BaseActionDelegate = function(handler)
-{
-    this._handler = handler;
-}
-
-WebInspector.SourcesPanel.BaseActionDelegate.prototype = {
-    /**
-     * @override
-     * @return {boolean}
-     */
-    handleAction: function()
-    {
-        return this._handler.call(WebInspector.SourcesPanel.instance());
-    }
-}
-
-/**
- * @constructor
- * @extends {WebInspector.SourcesPanel.BaseActionDelegate}
- */
-WebInspector.SourcesPanel.StepOverActionDelegate = function()
-{
-    WebInspector.SourcesPanel.BaseActionDelegate.call(this, WebInspector.SourcesPanel.prototype._stepOverClicked);
-}
-
-WebInspector.SourcesPanel.StepOverActionDelegate.prototype = {
-    __proto__: WebInspector.SourcesPanel.BaseActionDelegate.prototype
-}
-
-/**
- * @constructor
- * @extends {WebInspector.SourcesPanel.BaseActionDelegate}
- */
-WebInspector.SourcesPanel.StepIntoActionDelegate = function()
-{
-    WebInspector.SourcesPanel.BaseActionDelegate.call(this, WebInspector.SourcesPanel.prototype._stepIntoClicked);
-}
-
-WebInspector.SourcesPanel.StepIntoActionDelegate.prototype = {
-    __proto__: WebInspector.SourcesPanel.BaseActionDelegate.prototype
-}
-
-/**
- * @constructor
- * @extends {WebInspector.SourcesPanel.BaseActionDelegate}
- */
-WebInspector.SourcesPanel.StepIntoAsyncActionDelegate = function()
-{
-    WebInspector.SourcesPanel.BaseActionDelegate.call(this, WebInspector.SourcesPanel.prototype._stepIntoAsyncClicked);
-}
-
-WebInspector.SourcesPanel.StepIntoAsyncActionDelegate.prototype = {
-    __proto__: WebInspector.SourcesPanel.BaseActionDelegate.prototype
-}
-
-/**
- * @constructor
- * @extends {WebInspector.SourcesPanel.BaseActionDelegate}
- */
-WebInspector.SourcesPanel.StepOutActionDelegate = function()
-{
-    WebInspector.SourcesPanel.BaseActionDelegate.call(this, WebInspector.SourcesPanel.prototype._stepOutClicked);
-}
-
-WebInspector.SourcesPanel.StepOutActionDelegate.prototype = {
-    __proto__: WebInspector.SourcesPanel.BaseActionDelegate.prototype
-}
-
-/**
- * @constructor
- * @extends {WebInspector.SourcesPanel.BaseActionDelegate}
- */
-WebInspector.SourcesPanel.RunSnippetActionDelegate = function()
-{
-    WebInspector.SourcesPanel.BaseActionDelegate.call(this, WebInspector.SourcesPanel.prototype._runSnippet);
-}
-
-WebInspector.SourcesPanel.RunSnippetActionDelegate.prototype = {
-    __proto__: WebInspector.SourcesPanel.BaseActionDelegate.prototype
 }
 
 WebInspector.SourcesPanel.show = function()

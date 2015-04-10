@@ -108,14 +108,14 @@ WebInspector.InspectElementModeController.ToggleSearchActionDelegate = function(
 WebInspector.InspectElementModeController.ToggleSearchActionDelegate.prototype = {
     /**
      * @override
-     * @return {boolean}
+     * @param {!WebInspector.Context} context
+     * @param {string} actionId
      */
-    handleAction: function()
+    handleAction: function(context, actionId)
     {
         if (!WebInspector.inspectElementModeController)
-            return false;
+            return;
         WebInspector.inspectElementModeController._toggleSearch();
-        return true;
     }
 }
 

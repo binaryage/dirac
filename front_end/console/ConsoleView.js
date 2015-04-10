@@ -1472,12 +1472,12 @@ WebInspector.ConsoleView.ShowConsoleActionDelegate = function()
 WebInspector.ConsoleView.ShowConsoleActionDelegate.prototype = {
     /**
      * @override
-     * @return {boolean}
+     * @param {!WebInspector.Context} context
+     * @param {string} actionId
      */
-    handleAction: function()
+    handleAction: function(context, actionId)
     {
         WebInspector.console.show();
-        return true;
     }
 }
 

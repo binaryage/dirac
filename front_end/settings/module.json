@@ -3,7 +3,7 @@
         {
             "type": "@WebInspector.ActionDelegate",
             "actionId": "settings.show",
-            "className": "WebInspector.SettingsController.SettingsScreenActionDelegate",
+            "className": "WebInspector.SettingsController.ActionDelegate",
             "bindings": [
                 {
                     "shortcut": "F1 Shift+?"

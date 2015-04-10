@@ -655,11 +655,22 @@ WebInspector.Main.ReloadActionDelegate = function()
 WebInspector.Main.ReloadActionDelegate.prototype = {
     /**
      * @override
-     * @return {boolean}
+     * @param {!WebInspector.Context} context
+     * @param {string} actionId
      */
-    handleAction: function()
+    handleAction: function(context, actionId)
     {
-        return WebInspector.Main._reloadPage(false);
+        switch (actionId) {
+        case "main.reload":
+            WebInspector.Main._reloadPage(false);
+            break;
+        case "main.hard-reload":
+            WebInspector.Main._reloadPage(true);
+            break;
+        case "main.debug-reload":
+            WebInspector.reload();
+            break;
+        }
     }
 }
 
@@ -667,122 +678,45 @@ WebInspector.Main.ReloadActionDelegate.prototype = {
  * @constructor
  * @implements {WebInspector.ActionDelegate}
  */
-WebInspector.Main.HardReloadActionDelegate = function()
+WebInspector.Main.ZoomActionDelegate = function()
 {
 }
 
-WebInspector.Main.HardReloadActionDelegate.prototype = {
+WebInspector.Main.ZoomActionDelegate.prototype = {
     /**
      * @override
-     * @return {boolean}
+     * @param {!WebInspector.Context} context
+     * @param {string} actionId
      */
-    handleAction: function()
-    {
-        return WebInspector.Main._reloadPage(true);
-    }
-}
-
-/**
- * @constructor
- * @implements {WebInspector.ActionDelegate}
- */
-WebInspector.Main.DebugReloadActionDelegate = function()
-{
-}
-
-WebInspector.Main.DebugReloadActionDelegate.prototype = {
-    /**
-     * @override
-     * @return {boolean}
-     */
-    handleAction: function()
-    {
-        WebInspector.reload();
-        return true;
-    }
-}
-
-/**
- * @constructor
- * @implements {WebInspector.ActionDelegate}
- */
-WebInspector.Main.ZoomInActionDelegate = function()
-{
-}
-
-WebInspector.Main.ZoomInActionDelegate.prototype = {
-    /**
-     * @override
-     * @return {boolean}
-     */
-    handleAction: function()
+    handleAction: function(context, actionId)
     {
         if (InspectorFrontendHost.isHostedMode())
-            return false;
+            return;
 
-        InspectorFrontendHost.zoomIn();
-        return true;
-    }
-}
-
-/**
- * @constructor
- * @implements {WebInspector.ActionDelegate}
- */
-WebInspector.Main.ZoomOutActionDelegate = function()
-{
-}
-
-WebInspector.Main.ZoomOutActionDelegate.prototype = {
-    /**
-     * @override
-     * @return {boolean}
-     */
-    handleAction: function()
-    {
-        if (InspectorFrontendHost.isHostedMode())
-            return false;
-
-        InspectorFrontendHost.zoomOut();
-        return true;
-    }
-}
-
-/**
- * @constructor
- * @implements {WebInspector.ActionDelegate}
- */
-WebInspector.Main.ZoomResetActionDelegate = function()
-{
-}
-
-WebInspector.Main.ZoomResetActionDelegate.prototype = {
-    /**
-     * @override
-     * @return {boolean}
-     */
-    handleAction: function()
-    {
-        if (InspectorFrontendHost.isHostedMode())
-            return false;
-
-        InspectorFrontendHost.resetZoom();
-        return true;
+        switch (actionId) {
+        case "main.zoom-in":
+            InspectorFrontendHost.zoomIn();
+            break;
+        case "main.zoom-out":
+            InspectorFrontendHost.zoomOut();
+            break;
+        case "main.zoom-reset":
+            InspectorFrontendHost.resetZoom();
+            break;
+        }
     }
 }
 
 /**
  * @param {boolean} hard
- * @return {boolean}
  */
 WebInspector.Main._reloadPage = function(hard)
 {
     if (!WebInspector.targetManager.hasTargets())
-        return false;
+        return;
     if (WebInspector.targetManager.mainTarget().isServiceWorker())
-        return false;
+        return;
     WebInspector.targetManager.reloadPage(hard);
-    return true;
 }
 
 /**

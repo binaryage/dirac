@@ -574,17 +574,17 @@ WebInspector.SettingsController.prototype = {
  * @constructor
  * @implements {WebInspector.ActionDelegate}
  */
-WebInspector.SettingsController.SettingsScreenActionDelegate = function() { }
+WebInspector.SettingsController.ActionDelegate = function() { }
 
-WebInspector.SettingsController.SettingsScreenActionDelegate.prototype = {
+WebInspector.SettingsController.ActionDelegate.prototype = {
     /**
      * @override
-     * @return {boolean}
+     * @param {!WebInspector.Context} context
+     * @param {string} actionId
      */
-    handleAction: function()
+    handleAction: function(context, actionId)
     {
         WebInspector._settingsController.showSettingsScreen();
-        return true;
     }
 }
 

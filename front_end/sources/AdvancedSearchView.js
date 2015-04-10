@@ -347,21 +347,20 @@ WebInspector.SearchResultsPane.prototype = {
  * @constructor
  * @implements {WebInspector.ActionDelegate}
  */
-WebInspector.AdvancedSearchView.ToggleDrawerViewActionDelegate = function()
+WebInspector.AdvancedSearchView.ActionDelegate = function()
 {
 }
 
-WebInspector.AdvancedSearchView.ToggleDrawerViewActionDelegate.prototype = {
+WebInspector.AdvancedSearchView.ActionDelegate.prototype = {
     /**
      * @override
-     * @return {boolean}
-     * // FIXME: remove this suppression.
-     * @suppressGlobalPropertiesCheck
+     * @param {!WebInspector.Context} context
+     * @param {string} actionId
      */
-    handleAction: function()
+    handleAction: function(context, actionId)
     {
         var searchView = WebInspector.AdvancedSearchView._instance;
-        if (!searchView || !searchView.isShowing() || searchView._search !== document.activeElement) {
+        if (!searchView || !searchView.isShowing() || searchView._search !== searchView.element.window().document.activeElement) {
             var selection = WebInspector.inspectorView.element.getDeepSelection();
             var queryCandidate = "";
             if (selection.rangeCount)
@@ -376,7 +375,6 @@ WebInspector.AdvancedSearchView.ToggleDrawerViewActionDelegate.prototype = {
         } else {
             WebInspector.inspectorView.closeDrawer();
         }
-        return true;
     }
 }
 

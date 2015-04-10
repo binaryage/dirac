@@ -34,7 +34,7 @@
         {
             "type": "@WebInspector.ActionDelegate",
             "actionId": "main.hard-reload",
-            "className": "WebInspector.Main.HardReloadActionDelegate",
+            "className": "WebInspector.Main.ReloadActionDelegate",
             "bindings": [
                 {
                     "platform": "windows,linux",
@@ -59,7 +59,7 @@
         {
             "type": "@WebInspector.ActionDelegate",
             "actionId": "main.debug-reload",
-            "className": "WebInspector.Main.DebugReloadActionDelegate",
+            "className": "WebInspector.Main.ReloadActionDelegate",
             "bindings": [
                 {
                     "shortcut": "Alt+R"
@@ -69,6 +69,7 @@
         {
             "type": "@WebInspector.ActionDelegate",
             "actionId": "main.toggle-element-search",
+            "contextTypes": ["WebInspector.InspectElementModeController"],
             "className": "WebInspector.InspectElementModeController.ToggleSearchActionDelegate",
             "bindings": [
                 {
@@ -99,7 +100,7 @@
         {
             "type": "@WebInspector.ActionDelegate",
             "actionId": "main.zoom-in",
-            "className": "WebInspector.Main.ZoomInActionDelegate",
+            "className": "WebInspector.Main.ZoomActionDelegate",
             "bindings": [
                 {
                     "platform": "windows,linux",
@@ -114,7 +115,7 @@
         {
             "type": "@WebInspector.ActionDelegate",
             "actionId": "main.zoom-out",
-            "className": "WebInspector.Main.ZoomOutActionDelegate",
+            "className": "WebInspector.Main.ZoomActionDelegate",
             "bindings": [
                 {
                     "platform": "windows,linux",
@@ -129,7 +130,7 @@
         {
             "type": "@WebInspector.ActionDelegate",
             "actionId": "main.zoom-reset",
-            "className": "WebInspector.Main.ZoomResetActionDelegate",
+            "className": "WebInspector.Main.ZoomActionDelegate",
             "bindings": [
                 {
                     "platform": "windows,linux",

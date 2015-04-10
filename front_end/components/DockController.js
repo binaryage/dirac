@@ -201,15 +201,15 @@ WebInspector.DockController.ToggleDockActionDelegate = function()
 WebInspector.DockController.ToggleDockActionDelegate.prototype = {
     /**
      * @override
-     * @return {boolean}
+     * @param {!WebInspector.Context} context
+     * @param {string} actionId
      */
-    handleAction: function()
+    handleAction: function(context, actionId)
     {
         var toggleButton = new WebInspector.DockController.ButtonProvider().item();
         if (!toggleButton || !toggleButton.enabled())
-            return false;
+            return;
         /** @type {!WebInspector.StatusBarStatesSettingButton} */ (toggleButton).toggle();
-        return true;
     }
 }
 
