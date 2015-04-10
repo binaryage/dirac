@@ -578,6 +578,7 @@
             'front_end/temp_storage_shared_worker/TempStorageSharedWorker.js',
         ],
         'devtools_timeline_js_files': [
+            'front_end/timeline/invalidationsTree.css',
             'front_end/timeline/timelinePanel.css',
             'front_end/timeline/CountersGraph.js',
             'front_end/timeline/LayerDetailsView.js',

@@ -50,6 +50,7 @@
         "TimelinePanel.js"
     ],
     "stylesheets": [
+        "invalidationsTree.css",
         "timelinePanel.css"
     ]
 }
