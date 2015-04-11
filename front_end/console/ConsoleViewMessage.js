@@ -62,6 +62,7 @@ WebInspector.ConsoleViewMessage = function(consoleMessage, linkifier, nestingLev
         "string": this._formatParameterAsString
     };
     this._previewFormatter = new WebInspector.RemoteObjectPreviewFormatter();
+    this._searchRegex = null;
 }
 
 WebInspector.ConsoleViewMessage.prototype = {
@@ -252,12 +253,6 @@ WebInspector.ConsoleViewMessage.prototype = {
             this._populateStackTraceTreeElement(root);
             this._formattedMessage = treeOutline.element;
         }
-    },
-
-    _formattedMessageText: function()
-    {
-        this.formattedMessage();
-        return this._messageElement.deepTextContent();
     },
 
     /**
@@ -848,21 +843,13 @@ WebInspector.ConsoleViewMessage.prototype = {
         return String.format(format, parameters, formatters, formattedResult, append);
     },
 
-    clearHighlights: function()
-    {
-        if (this._higlightNodeChanges) {
-            WebInspector.revertDomChanges(this._higlightNodeChanges);
-            this._higlightNodeChanges = null;
-        }
-    },
-
     /**
      * @return {boolean}
      */
-    matchesRegex: function(regexObject)
+    matchesFilterRegex: function(regexObject)
     {
         regexObject.lastIndex = 0;
-        var text = this._formattedMessageText();
+        var text = this.searchableElement().deepTextContent();
         if (this._anchorElement)
             text += " " + this._anchorElement.textContent;
         return regexObject.test(text);
@@ -1130,25 +1117,60 @@ WebInspector.ConsoleViewMessage.prototype = {
     },
 
     /**
-     * @return {string}
+     * @param {?RegExp} regex
      */
-    renderedText: function ()
+    setSearchRegex: function(regex)
     {
-        this.element();
-        return this._messageElement.deepTextContent();
+        if (this._searchHiglightNodeChanges && this._searchHiglightNodeChanges.length)
+            WebInspector.revertDomChanges(this._searchHiglightNodeChanges);
+        this._searchRegex = regex;
+        this._searchHighlightNodes = [];
+        this._searchHiglightNodeChanges = [];
+        if (!this._searchRegex)
+            return;
+
+        var text = this.searchableElement().deepTextContent();
+        var match;
+        this._searchRegex.lastIndex = 0;
+        var sourceRanges = [];
+        while ((match = this._searchRegex.exec(text)) && match[0])
+            sourceRanges.push(new WebInspector.SourceRange(match.index, match[0].length));
+
+        if (sourceRanges.length && this.searchableElement())
+            this._searchHighlightNodes = WebInspector.highlightSearchResults(this.searchableElement(), sourceRanges, this._searchHiglightNodeChanges);
     },
 
     /**
-     * @param {!Array.<!Object>} ranges
-     * @return {!Array.<!Element>}
+     * @return {?RegExp}
      */
-    highlightMatches: function(ranges)
+    searchRegex: function()
     {
-        var highlightNodes = [];
-        this._higlightNodeChanges = [];
-        if (this._formattedMessage)
-            highlightNodes = WebInspector.highlightSearchResults(this._messageElement, ranges, this._higlightNodeChanges);
-        return highlightNodes;
+        return this._searchRegex;
+    },
+
+    /**
+     * @return {number}
+     */
+    searchCount: function()
+    {
+        return this._searchHighlightNodes.length;
+    },
+
+    /**
+     * @return {!Element}
+     */
+    searchHighlightNode: function(index)
+    {
+        return this._searchHighlightNodes[index];
+    },
+
+    /**
+     * @return {!Element}
+     */
+    searchableElement: function()
+    {
+        this.formattedMessage();
+        return this._messageElement;
     },
 
     /**

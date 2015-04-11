@@ -572,6 +572,7 @@ WebInspector.ConsoleView.prototype = {
         if (!insertedInMiddle) {
             this._appendMessageToEnd(viewMessage);
             this._updateFilterStatus();
+            this._searchableView.updateSearchMatchesCount(this._regexMatchRanges.length);
         } else {
             this._needsFullUpdate = true;
         }
@@ -590,9 +591,6 @@ WebInspector.ConsoleView.prototype = {
      */
     _appendMessageToEnd: function(viewMessage)
     {
-        if (this._searchRegex)
-            viewMessage.clearHighlights();
-
         if (!this._filter.shouldBeVisible(viewMessage)) {
             this._hiddenByFilterCount++;
             return;
@@ -614,9 +612,7 @@ WebInspector.ConsoleView.prototype = {
                 lastMessage.toMessageElement().classList.add("console-adjacent-user-command-result");
 
             this._visibleViewMessages.push(viewMessage);
-
-            if (this._searchRegex && this._searchMessage(this._visibleViewMessages.length - 1))
-                this._searchableView.updateSearchMatchesCount(this._regexMatchRanges.length);
+            this._searchMessage(this._visibleViewMessages.length - 1);
         }
 
         if (viewMessage.consoleMessage().isGroupStartMessage())
@@ -652,14 +648,10 @@ WebInspector.ConsoleView.prototype = {
 
     _consoleCleared: function()
     {
-        this._clearSearchResultHighlights();
+        this._currentMatchRangeIndex = -1;
         this._consoleMessages = [];
         this._updateMessageList();
         this._hidePromptSuggestBox();
-
-        if (this._searchRegex)
-            this._searchableView.updateSearchMatchesCount(0);
-
         this._linkifier.reset();
     },
 
@@ -759,7 +751,7 @@ WebInspector.ConsoleView.prototype = {
             var lines = [];
             for (var i = 0; i < chunkSize && i + messageIndex < this.itemCount(); ++i) {
                 var message = this.itemElement(messageIndex + i);
-                lines.push(message.renderedText());
+                lines.push(message.searchableElement().deepTextContent());
             }
             messageIndex += i;
             stream.write(lines.join("\n") + "\n", writeNextChunk.bind(this));
@@ -797,6 +789,7 @@ WebInspector.ConsoleView.prototype = {
         for (var i = 0; i < this._consoleMessages.length; ++i)
             this._appendMessageToEnd(this._consoleMessages[i]);
         this._updateFilterStatus();
+        this._searchableView.updateSearchMatchesCount(this._regexMatchRanges.length);
         this._viewport.invalidate();
     },
 
@@ -967,7 +960,11 @@ WebInspector.ConsoleView.prototype = {
     searchCanceled: function()
     {
         this._cleanupAfterSearch();
-        this._clearSearchResultHighlights();
+        for (var i = 0; i < this._visibleViewMessages.length; ++i) {
+            var message = this._visibleViewMessages[i];
+            message.setSearchRegex(null);
+        }
+        this._currentMatchRangeIndex = -1;
         this._regexMatchRanges = [];
         delete this._searchRegex;
         this._viewport.refresh();
@@ -1051,35 +1048,17 @@ WebInspector.ConsoleView.prototype = {
 
     /**
      * @param {number} index
-     * @return {boolean}
      */
     _searchMessage: function(index)
     {
-        // Reset regex wrt. global search.
-        this._searchRegex.lastIndex = 0;
-
         var message = this._visibleViewMessages[index];
-        var text = message.renderedText();
-        var match;
-        var matchRanges = [];
-        var sourceRanges = [];
-        while ((match = this._searchRegex.exec(text)) && match[0]) {
-            matchRanges.push({
+        message.setSearchRegex(this._searchRegex);
+        for (var i = 0; i < message.searchCount(); ++i) {
+            this._regexMatchRanges.push({
                 messageIndex: index,
-                highlightNode: null,
+                matchIndex: i
             });
-            sourceRanges.push(new WebInspector.SourceRange(match.index, match[0].length));
         }
-
-        var matchRange;
-        var highlightNodes = message.highlightMatches(sourceRanges);
-        for (var i = 0; i < matchRanges.length; ++i) {
-            matchRange = matchRanges[i];
-            matchRange.highlightNode = highlightNodes[i];
-            this._regexMatchRanges.push(matchRange);
-        }
-
-        return !!matchRange;
     },
 
     /**
@@ -1116,22 +1095,6 @@ WebInspector.ConsoleView.prototype = {
         return true;
     },
 
-    _clearSearchResultHighlights: function()
-    {
-        var handledMessageIndexes = [];
-        for (var i = 0; i < this._regexMatchRanges.length; ++i) {
-            var matchRange = this._regexMatchRanges[i];
-            if (handledMessageIndexes[matchRange.messageIndex])
-                continue;
-
-            var message = this._visibleViewMessages[matchRange.messageIndex];
-            if (message)
-                message.clearHighlights();
-            handledMessageIndexes[matchRange.messageIndex] = true;
-        }
-        this._currentMatchRangeIndex = -1;
-    },
-
     /**
      * @param {number} index
      */
@@ -1145,16 +1108,19 @@ WebInspector.ConsoleView.prototype = {
         var matchRange;
         if (this._currentMatchRangeIndex >= 0) {
             matchRange = this._regexMatchRanges[this._currentMatchRangeIndex];
-            matchRange.highlightNode.classList.remove(currentSearchResultClassName);
+            var message = this._visibleViewMessages[matchRange.messageIndex];
+            message.searchHighlightNode(matchRange.matchIndex).classList.remove(currentSearchResultClassName);
         }
 
         index = mod(index, this._regexMatchRanges.length);
         this._currentMatchRangeIndex = index;
         this._searchableView.updateCurrentMatchIndex(index);
         matchRange = this._regexMatchRanges[index];
-        matchRange.highlightNode.classList.add(currentSearchResultClassName);
+        var message = this._visibleViewMessages[matchRange.messageIndex];
+        var highlightNode = message.searchHighlightNode(matchRange.matchIndex);
+        highlightNode.classList.add(currentSearchResultClassName);
         this._viewport.scrollItemIntoView(matchRange.messageIndex);
-        matchRange.highlightNode.scrollIntoViewIfNeeded();
+        highlightNode.scrollIntoViewIfNeeded();
     },
 
     __proto__: WebInspector.VBox.prototype
@@ -1276,7 +1242,7 @@ WebInspector.ConsoleViewFilter.prototype = {
 
         if (this._filterRegex) {
             this._filterRegex.lastIndex = 0;
-            if (!viewMessage.matchesRegex(this._filterRegex))
+            if (!viewMessage.matchesFilterRegex(this._filterRegex))
                 return false;
         }
 
@@ -1311,23 +1277,13 @@ WebInspector.ConsoleCommand = function(message, linkifier, nestingLevel)
 }
 
 WebInspector.ConsoleCommand.prototype = {
-    clearHighlights: function()
-    {
-        if (this._higlightNodeChanges) {
-            WebInspector.revertDomChanges(this._higlightNodeChanges);
-            this._higlightNodeChanges = null;
-        }
-    },
-
     /**
      * @override
-     * @param {!RegExp} regexObject
-     * @return {boolean}
+     * @return {!Element})
      */
-    matchesRegex: function(regexObject)
+    searchableElement: function()
     {
-        regexObject.lastIndex = 0;
-        return regexObject.test(this.text);
+        return this.contentElement();
     },
 
     /**
@@ -1345,34 +1301,14 @@ WebInspector.ConsoleCommand.prototype = {
             this._element.appendChild(this._formattedCommand);
 
             var javascriptSyntaxHighlighter = new WebInspector.DOMSyntaxHighlighter("text/javascript", true);
-            javascriptSyntaxHighlighter.syntaxHighlightNode(this._formattedCommand);
+            javascriptSyntaxHighlighter.syntaxHighlightNode(this._formattedCommand).then(this._updateSearch.bind(this))
         }
         return this._element;
     },
 
-    /**
-     * @override
-     * @return {string}
-     */
-    renderedText: function()
+    _updateSearch: function()
     {
-        this.element();
-        return this.text;
-    },
-
-    /**
-     * @override
-     * @param {!Array.<!Object>} ranges
-     * @return {!Array.<!Element>}
-     */
-    highlightMatches: function(ranges)
-    {
-        var highlightNodes = [];
-        this._higlightNodeChanges = [];
-        if (this._formattedCommand)
-            highlightNodes = WebInspector.highlightRangesWithStyleClass(this._formattedCommand, ranges, WebInspector.highlightedSearchResultClassName, this._higlightNodeChanges);
-
-        return highlightNodes;
+        this.setSearchRegex(this.searchRegex());
     },
 
     __proto__: WebInspector.ConsoleViewMessage.prototype
@@ -1483,6 +1419,6 @@ WebInspector.ConsoleView.ShowConsoleActionDelegate.prototype = {
 }
 
 /**
-* @typedef {{messageIndex: number, highlightNode: !Element}}
+* @typedef {{messageIndex: number, matchIndex: number}}
 */
 WebInspector.ConsoleView.RegexMatchRange;
