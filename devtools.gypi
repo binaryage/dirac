@@ -701,6 +701,7 @@
             'front_end/Images/localStorage.png',
             'front_end/Images/navigationControls.png',
             'front_end/Images/navigationControls_2x.png',
+            'front_end/Images/notifications.svg',
             'front_end/Images/paneAddButtons.png',
             'front_end/Images/paneAnimationsButtons.png',
             'front_end/Images/paneElementStateButtons.png',

@@ -4152,6 +4152,15 @@
                     { "name": "debugOnStart", "type": "boolean" }
                 ],
                 "handlers": ["browser"]
+            },
+            {
+                "name": "deliverPushMessage",
+                "parameters": [
+                    { "name": "origin", "type": "string" },
+                    { "name": "registrationId", "type": "string" },
+                    { "name": "data", "type": "string" }
+                ],
+                "handlers": ["browser"]
             }
         ],
         "events": [
