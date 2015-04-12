@@ -54,13 +54,10 @@
         "HeapSnapshotGridNodes.js",
         "HeapSnapshotView.js",
         "ProfileLauncherView.js",
-        "CanvasProfileView.js",
-        "CanvasReplayStateView.js",
         "ProfileTypeRegistry.js",
         "TargetsComboBoxController.js"
     ],
     "stylesheets": [
-        "canvasProfiler.css",
         "heapProfiler.css",
         "profilesPanel.css"
     ]

@@ -452,11 +452,8 @@
             'front_end/network/XMLView.js',
         ],
         'devtools_profiler_js_files': [
-            'front_end/profiler/canvasProfiler.css',
             'front_end/profiler/heapProfiler.css',
             'front_end/profiler/profilesPanel.css',
-            'front_end/profiler/CanvasProfileView.js',
-            'front_end/profiler/CanvasReplayStateView.js',
             'front_end/profiler/CPUProfileBottomUpDataGrid.js',
             'front_end/profiler/CPUProfileDataGrid.js',
             'front_end/profiler/CPUProfileFlameChart.js',

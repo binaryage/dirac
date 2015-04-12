@@ -356,8 +356,6 @@ WebInspector.VersionController.prototype = {
             return;
         var settingNames = {
             "FileSystemViewSidebarWidth": "fileSystemViewSplitViewState",
-            "canvasProfileViewReplaySplitLocation": "canvasProfileViewReplaySplitViewState",
-            "canvasProfileViewSplitLocation": "canvasProfileViewSplitViewState",
             "elementsSidebarWidth": "elementsPanelSplitViewState",
             "StylesPaneSplitRatio": "stylesPaneSplitViewState",
             "heapSnapshotRetainersViewSize": "heapSnapshotSplitViewState",
@@ -440,7 +438,6 @@ WebInspector.VersionController.prototype = {
         var settingNames = {
             "sourcesPanelNavigatorSplitViewState": "sourcesPanelNavigatorSplitViewState",
             "elementsPanelSplitViewState": "elementsPanelSplitViewState",
-            "canvasProfileViewReplaySplitViewState": "canvasProfileViewReplaySplitViewState",
             "stylesPaneSplitViewState": "stylesPaneSplitViewState",
             "sourcesPanelDebuggerSidebarSplitViewState": "sourcesPanelDebuggerSidebarSplitViewState"
         };
