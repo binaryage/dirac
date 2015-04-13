@@ -614,11 +614,15 @@ WebInspector.SearchableView.prototype = {
         /** @type {!WebInspector.Replaceable} */ (this._searchProvider).replaceAllWith(searchConfig, this._replaceInputElement.value);
     },
 
+    /**
+     * @param {!Event} event
+     */
     _onInput: function(event)
     {
         if (this._valueChangedTimeoutId)
             clearTimeout(this._valueChangedTimeoutId);
-        this._valueChangedTimeoutId = setTimeout(this._onValueChanged.bind(this), 200);
+        var timeout = this._searchInputElement.value.length < 3 ? 200 : 0;
+        this._valueChangedTimeoutId = setTimeout(this._onValueChanged.bind(this), timeout);
     },
 
     _onValueChanged: function()
