@@ -1199,6 +1199,23 @@
                     { "name": "lineNumber", "type": "number", "optional": true, "description": "Initiator line number, set for Parser type only." },
                     { "name": "asyncStackTrace", "$ref": "Console.AsyncStackTrace", "optional": true, "description": "Initiator asynchronous JavaScript stack trace, if available.", "hidden": true }
                 ]
+            },
+            {
+                "id": "Cookie",
+                "type": "object",
+                "description": "Cookie object",
+                "properties": [
+                    { "name": "name", "type": "string", "description": "Cookie name." },
+                    { "name": "value", "type": "string", "description": "Cookie value." },
+                    { "name": "domain", "type": "string", "description": "Cookie domain." },
+                    { "name": "path", "type": "string", "description": "Cookie path." },
+                    { "name": "expires", "type": "number", "description": "Cookie expires." },
+                    { "name": "size", "type": "integer", "description": "Cookie size." },
+                    { "name": "httpOnly", "type": "boolean", "description": "True if cookie is http-only." },
+                    { "name": "secure", "type": "boolean", "description": "True if cookie is secure." },
+                    { "name": "session", "type": "boolean", "description": "True in case of session cookie." }
+                ],
+                "hidden": true
             }
         ],
         "commands": [
@@ -1275,6 +1292,27 @@
                 "name": "clearBrowserCookies",
                 "description": "Clears browser cookies.",
                 "handlers": ["browser"]
+            },
+            {
+                "name": "getCookies",
+                "returns": [
+                    { "name": "cookies", "type": "array", "items": { "$ref": "Cookie" }, "description": "Array of cookie objects." }
+                ],
+                "description": "Returns all browser cookies. Depending on the backend support, will return detailed cookie information in the <code>cookies</code> field.",
+                "handlers": ["browser"],
+                "async": true,
+                "hidden": true
+            },
+            {
+                "name": "deleteCookie",
+                "parameters": [
+                    { "name": "cookieName", "type": "string", "description": "Name of the cookie to remove." },
+                    { "name": "url", "type": "string", "description": "URL to match cooke domain and path." }
+                ],
+                "description": "Deletes browser cookie with given name, domain and path.",
+                "handlers": ["browser"],
+                "async": true,
+                "hidden": true
             },
             {
                 "name": "canEmulateNetworkConditions",
