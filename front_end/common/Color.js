@@ -224,6 +224,15 @@ WebInspector.Color.prototype = {
     },
 
     /**
+     * @return {!Array.<number>}
+     */
+    canonicalHSLA: function()
+    {
+        var hsla = this.hsla();
+        return [Math.round(hsla[0] * 360), Math.round(hsla[1] * 100), Math.round(hsla[2] * 100), hsla[3]];
+    },
+
+    /**
      * @return {!Array.<number>} HSVA with components within [0..1]
      */
     hsva: function()
@@ -331,13 +340,12 @@ WebInspector.Color.prototype = {
     /**
      * @return {!Array.<number>}
      */
-    _canonicalRGBA: function()
+    canonicalRGBA: function()
     {
-        var rgba = new Array(3);
+        var rgba = new Array(4);
         for (var i = 0; i < 3; ++i)
             rgba[i] = Math.round(this._rgba[i] * 255);
-        if (this._rgba[3] !== 1)
-            rgba.push(this._rgba[3]);
+        rgba[3] = this._rgba[3];
         return rgba;
     },
 
@@ -350,11 +358,13 @@ WebInspector.Color.prototype = {
             WebInspector.Color._rgbaToNickname = {};
             for (var nickname in WebInspector.Color.Nicknames) {
                 var rgba = WebInspector.Color.Nicknames[nickname];
+                if (rgba.length !== 4)
+                    rgba = rgba.concat(1);
                 WebInspector.Color._rgbaToNickname[rgba] = nickname;
             }
         }
 
-        return WebInspector.Color._rgbaToNickname[this._canonicalRGBA()] || null;
+        return WebInspector.Color._rgbaToNickname[this.canonicalRGBA()] || null;
     },
 
     /**
@@ -362,7 +372,7 @@ WebInspector.Color.prototype = {
      */
     toProtocolRGBA: function()
     {
-        var rgba = this._canonicalRGBA();
+        var rgba = this.canonicalRGBA();
         var result = { r: rgba[0], g: rgba[1], b: rgba[2] };
         if (rgba[3] !== 1)
             result.a = rgba[3];
