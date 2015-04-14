@@ -228,7 +228,7 @@ WebInspector.JavaScriptSourceFrame.prototype = {
     wasShown: function()
     {
         WebInspector.UISourceCodeFrame.prototype.wasShown.call(this);
-        if (this._executionLineNumber && this.loaded)
+        if (this._executionLocation && this.loaded)
             this._generateValuesInSource();
     },
 
@@ -700,15 +700,15 @@ WebInspector.JavaScriptSourceFrame.prototype = {
     },
 
     /**
-     * @param {number} lineNumber
+     * @param {!WebInspector.UILocation} uiLocation
      */
-    setExecutionLine: function(lineNumber)
+    setExecutionLocation: function(uiLocation)
     {
-        this._executionLineNumber = lineNumber;
+        this._executionLocation = uiLocation;
         if (!this.loaded)
             return;
 
-        this.textEditor.setExecutionLine(lineNumber);
+        this.textEditor.setExecutionLocation(uiLocation.lineNumber, uiLocation.columnNumber);
         if (this.isShowing())
             this._generateValuesInSource();
     },
@@ -877,9 +877,9 @@ WebInspector.JavaScriptSourceFrame.prototype = {
 
     clearExecutionLine: function()
     {
-        if (this.loaded && typeof this._executionLineNumber === "number")
+        if (this.loaded && this._executionLocation)
             this.textEditor.clearExecutionLine();
-        delete this._executionLineNumber;
+        delete this._executionLocation;
         this._clearValueWidgetsTimer = setTimeout(this._clearValueWidgets.bind(this), 1000);
     },
 
@@ -1014,8 +1014,8 @@ WebInspector.JavaScriptSourceFrame.prototype = {
 
     onTextEditorContentLoaded: function()
     {
-        if (typeof this._executionLineNumber === "number")
-            this.setExecutionLine(this._executionLineNumber);
+        if (this._executionLocation)
+            this.setExecutionLocation(this._executionLocation);
 
         var breakpointLocations = this._breakpointManager.breakpointLocationsForUISourceCode(this._uiSourceCode);
         for (var i = 0; i < breakpointLocations.length; ++i)

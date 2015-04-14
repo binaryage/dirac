@@ -444,10 +444,13 @@ WebInspector.SourcesView.prototype = {
         delete this._executionSourceFrame;
     },
 
-    setExecutionLine: function(uiLocation)
+    /**
+     * @param {!WebInspector.UILocation} uiLocation
+     */
+    setExecutionLocation: function(uiLocation)
     {
         var sourceFrame = this._getOrCreateSourceFrame(uiLocation.uiSourceCode);
-        sourceFrame.setExecutionLine(uiLocation.lineNumber);
+        sourceFrame.setExecutionLocation(uiLocation);
         this._executionSourceFrame = sourceFrame;
     },
 

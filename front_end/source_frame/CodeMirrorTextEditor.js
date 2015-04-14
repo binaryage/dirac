@@ -1069,14 +1069,16 @@ WebInspector.CodeMirrorTextEditor.prototype = {
 
     /**
      * @param {number} lineNumber
+     * @param {number} columnNumber
      */
-    setExecutionLine: function(lineNumber)
+    setExecutionLocation: function(lineNumber, columnNumber)
     {
         this.clearPositionHighlight();
         this._executionLine = this._codeMirror.getLineHandle(lineNumber);
         if (!this._executionLine)
             return;
         this._codeMirror.addLineClass(this._executionLine, "wrap", "cm-execution-line");
+        this._executionLineTailMarker = this._codeMirror.markText({ line: lineNumber, ch: columnNumber }, { line: lineNumber, ch: this._codeMirror.getLine(lineNumber).length }, { className: "cm-execution-line-tail" });
     },
 
     clearExecutionLine: function()
@@ -1085,6 +1087,10 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         if (this._executionLine)
             this._codeMirror.removeLineClass(this._executionLine, "wrap", "cm-execution-line");
         delete this._executionLine;
+
+        if (this._executionLineTailMarker)
+            this._executionLineTailMarker.clear();
+        delete this._executionLineTailMarker;
     },
 
     /**

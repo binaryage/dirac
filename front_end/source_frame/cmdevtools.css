@@ -12,7 +12,9 @@
   border: 1px solid rgb(163, 41, 34);
   border-left-width: 0;
   border-right-width: 0;
+  background-color: rgb(255, 255, 194);
 }
+
 
 .CodeMirror .source-frame-eval-expression-end {
   border-right-width: 1px;
@@ -132,8 +134,12 @@
 }
 
 .cm-execution-line {
-    background-color: rgb(171, 191, 254);
+    background-color: rgb(230, 236, 255);
     outline: 1px solid rgb(64, 115, 244);
+}
+
+.cm-execution-line-tail {
+    background-color: rgb(171, 191, 254);
 }
 
 .cm-execution-line .CodeMirror-linenumber {

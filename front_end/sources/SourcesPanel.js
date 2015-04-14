@@ -371,7 +371,7 @@ WebInspector.SourcesPanel.prototype = {
     _executionLineChanged: function(uiLocation)
     {
         this._sourcesView.clearCurrentExecutionLine();
-        this._sourcesView.setExecutionLine(uiLocation);
+        this._sourcesView.setExecutionLocation(uiLocation);
         if (this._ignoreExecutionLineEvents)
             return;
         this._sourcesView.showSourceLocation(uiLocation.uiSourceCode, uiLocation.lineNumber, uiLocation.columnNumber, undefined, true);
