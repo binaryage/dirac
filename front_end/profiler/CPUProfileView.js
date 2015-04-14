@@ -535,13 +535,14 @@ WebInspector.CPUProfileType.prototype = {
             return;
 
         /**
-         * @param {!ProfilerAgent.CPUProfile} profile
+         * @param {?ProfilerAgent.CPUProfile} profile
          * @this {WebInspector.CPUProfileType}
          */
         function didStopProfiling(profile)
         {
             if (!this._profileBeingRecorded)
                 return;
+            console.assert(profile);
             this._profileBeingRecorded.setProtocolProfile(profile);
             this._profileBeingRecorded.updateStatus("");
             var recordedProfile = this._profileBeingRecorded;
