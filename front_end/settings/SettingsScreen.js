@@ -204,7 +204,7 @@ WebInspector.GenericSettingsTab.prototype = {
         if (!("title" in descriptor) || !("category" in descriptor))
             return;
 
-        var sectionName = descriptor["category"] || "";
+        var sectionName = descriptor["category"];
         var settingName = descriptor["settingName"];
         var setting = WebInspector.moduleSetting(settingName);
         var uiTitle = WebInspector.UIString(extension.title(WebInspector.platform()));

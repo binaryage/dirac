@@ -211,6 +211,7 @@
         },
         {
             "type": "setting",
+            "category": "",
             "title": "Disable cache (while DevTools is open)",
             "settingName": "cacheDisabled",
             "settingType": "boolean",
@@ -218,6 +219,7 @@
         },
         {
             "type": "setting",
+            "category": "",
             "title": "Disable JavaScript",
             "settingName": "javaScriptDisabled",
             "settingType": "boolean",
