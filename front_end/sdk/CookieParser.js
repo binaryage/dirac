@@ -370,7 +370,7 @@ WebInspector.Cookie.prototype = {
      */
     remove: function(callback)
     {
-        this._target.networkAgent().deleteCookie(this.name(), (this.secure() ? "https://" : "http://") + this.domain() + this.path(), callback);
+        this._target.pageAgent().deleteCookie(this.name(), (this.secure() ? "https://" : "http://") + this.domain() + this.path(), callback);
     }
 }
 
@@ -393,7 +393,7 @@ WebInspector.Cookies.getCookiesAsync = function(callback)
     /**
      * @param {!WebInspector.Target} target
      * @param {?Protocol.Error} error
-     * @param {!Array.<!NetworkAgent.Cookie>} cookies
+     * @param {!Array.<!PageAgent.Cookie>} cookies
      */
     function mycallback(target, error, cookies)
     {
@@ -407,13 +407,13 @@ WebInspector.Cookies.getCookiesAsync = function(callback)
 
     var barrier = new CallbackBarrier();
     for (var target of WebInspector.targetManager.targets())
-        target.networkAgent().getCookies(barrier.createCallback(mycallback.bind(null, target)));
+        target.pageAgent().getCookies(barrier.createCallback(mycallback.bind(null, target)));
     barrier.callWhenDone(callback.bind(null, allCookies));
 }
 
 /**
  * @param {!WebInspector.Target} target
- * @param {!NetworkAgent.Cookie} protocolCookie
+ * @param {!PageAgent.Cookie} protocolCookie
  * @return {!WebInspector.Cookie}
  */
 WebInspector.Cookies._parseProtocolCookie = function(target, protocolCookie)
