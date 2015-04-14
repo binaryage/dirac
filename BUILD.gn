@@ -122,6 +122,7 @@ action("generate_devtools_grd") {
     static_files += all_devtools_files + [ "front_end/Runtime.js" ]
   } else {
     # Release: pick compiled non-remote files and lazy-loaded CSS.
+    # TODO(dgozman): remove remote modules from here once experiment is over.
     generated_files = [
       resources_out_dir + "devtools.css",
       resources_out_dir + "devtools.html",

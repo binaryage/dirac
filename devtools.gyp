@@ -95,6 +95,7 @@
                         'devtools_static_files_list': '<|(devtools_static_grd_files.tmp <@(_static_files))',
                         'generated_files': [
                             # Core and remote modules should not be listed here.
+                            # TODO(dgozman): remove remote modules from here once experiment is over.
                             '<(PRODUCT_DIR)/resources/inspector/devtools.css',
                             '<(PRODUCT_DIR)/resources/inspector/devtools.html',
                             '<(PRODUCT_DIR)/resources/inspector/devtools.js',
