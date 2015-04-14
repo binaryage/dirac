@@ -207,6 +207,24 @@ InspectorFrontendHostAPI.prototype = {
     loadNetworkResource: function(url, headers, streamId, callback) { },
 
     /**
+     * @param {function(!Object<string, string>)} callback
+     */
+    getPreferences: function(callback) { },
+
+    /**
+     * @param {string} name
+     * @param {string} value
+     */
+    setPreference: function(name, value) { },
+
+    /**
+     * @param {string} name
+     */
+    removePreference: function(name) { },
+
+    clearPreferences: function() { },
+
+    /**
      * @param {!FileSystem} fileSystem
      */
     upgradeDraggedFileSystemPermissions: function(fileSystem) { },
@@ -498,6 +516,45 @@ WebInspector.InspectorFrontendHostStub.prototype = {
     loadNetworkResource: function(url, headers, streamId, callback)
     {
         callback({statusCode : 404});
+    },
+
+    /**
+     * @override
+     * @param {function(!Object<string, string>)} callback
+     */
+    getPreferences: function(callback)
+    {
+        var prefs = {};
+        for (var name in window.localStorage)
+            prefs[name] = window.localStorage[name];
+        callback(prefs);
+    },
+
+    /**
+     * @override
+     * @param {string} name
+     * @param {string} value
+     */
+    setPreference: function(name, value)
+    {
+        window.localStorage[name] = value;
+    },
+
+    /**
+     * @override
+     * @param {string} name
+     */
+    removePreference: function(name)
+    {
+        delete window.localStorage[name];
+    },
+
+    /**
+     * @override
+     */
+    clearPreferences: function()
+    {
+        window.localStorage.clear();
     },
 
     /**

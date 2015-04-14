@@ -12,7 +12,7 @@ WebInspector.EventListenerBreakpointsSidebarPane = function()
     WebInspector.SidebarPane.call(this, WebInspector.UIString("Event Listener Breakpoints"));
     this.registerRequiredCSS("components/breakpointsList.css");
 
-    this._eventListenerBreakpointsSetting = WebInspector.settings.createSetting("eventListenerBreakpoints", []);
+    this._eventListenerBreakpointsSetting = WebInspector.settings.createLocalSetting("eventListenerBreakpoints", []);
 
     this._categoriesTreeOutline = new TreeOutline();
     this._categoriesTreeOutline.element.tabIndex = 0;
