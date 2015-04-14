@@ -111,23 +111,6 @@
                 "hidden": true
             },
             {
-                "id": "Cookie",
-                "type": "object",
-                "description": "Cookie object",
-                "properties": [
-                    { "name": "name", "type": "string", "description": "Cookie name." },
-                    { "name": "value", "type": "string", "description": "Cookie value." },
-                    { "name": "domain", "type": "string", "description": "Cookie domain." },
-                    { "name": "path", "type": "string", "description": "Cookie path." },
-                    { "name": "expires", "type": "number", "description": "Cookie expires." },
-                    { "name": "size", "type": "integer", "description": "Cookie size." },
-                    { "name": "httpOnly", "type": "boolean", "description": "True if cookie is http-only." },
-                    { "name": "secure", "type": "boolean", "description": "True if cookie is secure." },
-                    { "name": "session", "type": "boolean", "description": "True in case of session cookie." }
-                ],
-                "hidden": true
-            },
-            {
                 "id": "ScriptIdentifier",
                 "type": "string",
                 "description": "Unique script identifier.",
@@ -231,10 +214,13 @@
             {
                 "name": "getCookies",
                 "returns": [
-                    { "name": "cookies", "type": "array", "items": { "$ref": "Cookie" }, "description": "Array of cookie objects." }
+                    { "name": "cookies", "type": "array", "items": { "$ref": "Network.Cookie" }, "description": "Array of cookie objects." }
                 ],
                 "description": "Returns all browser cookies. Depending on the backend support, will return detailed cookie information in the <code>cookies</code> field.",
-                "hidden": true
+                "handlers": ["browser"],
+                "async": true,
+                "hidden": true,
+                "redirect": "Network"
             },
             {
                 "name": "deleteCookie",
@@ -243,7 +229,10 @@
                     { "name": "url", "type": "string", "description": "URL to match cooke domain and path." }
                 ],
                 "description": "Deletes browser cookie with given name, domain and path.",
-                "hidden": true
+                "handlers": ["browser"],
+                "async": true,
+                "hidden": true,
+                "redirect": "Network"
             },
             {
                 "name": "getResourceTree",
