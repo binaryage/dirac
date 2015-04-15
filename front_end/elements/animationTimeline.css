@@ -204,8 +204,13 @@ svg.animation-ui g:first-child {
     opacity: 0.5;
 }
 
-
 svg.animation-ui.animation-ui-canceled {
     -webkit-filter: grayscale(100%) blur(1px);
     transition: -webkit-filter 100ms cubic-bezier(0, 0, 0.2, 1);
 }
+
+.animation-keyframe-step line {
+    stroke-width: 2;
+    stroke-opacity: 0.3;
+}
+
