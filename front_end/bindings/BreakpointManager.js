@@ -1007,7 +1007,7 @@ WebInspector.BreakpointManager.Breakpoint.State.equals = function(stateA, stateB
 WebInspector.BreakpointManager.Storage = function(breakpointManager, setting)
 {
     this._breakpointManager = breakpointManager;
-    this._setting = setting || WebInspector.settings.createLocalSetting("breakpoints", []);
+    this._setting = setting || WebInspector.settings.createSetting("breakpoints", []);
     var breakpoints = this._setting.get();
     /** @type {!Object.<string, !WebInspector.BreakpointManager.Storage.Item>} */
     this._breakpoints = {};

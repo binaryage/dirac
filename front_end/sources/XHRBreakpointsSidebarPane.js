@@ -10,7 +10,7 @@
 WebInspector.XHRBreakpointsSidebarPane = function()
 {
     WebInspector.BreakpointsSidebarPaneBase.call(this, WebInspector.UIString("XHR Breakpoints"));
-    this._xhrBreakpointsSetting = WebInspector.settings.createLocalSetting("xhrBreakpoints", []);
+    this._xhrBreakpointsSetting = WebInspector.settings.createSetting("xhrBreakpoints", []);
 
     /** @type {!Map.<string, !Element>} */
     this._breakpointElements = new Map();

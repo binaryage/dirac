@@ -9,7 +9,7 @@
 WebInspector.ExcludedFolderManager = function()
 {
     WebInspector.Object.call(this);
-    this._excludedFoldersSetting = WebInspector.settings.createLocalSetting("workspaceExcludedFolders", {});
+    this._excludedFoldersSetting = WebInspector.settings.createSetting("workspaceExcludedFolders", {});
     var defaultCommonExcludedFolders = [
         "/\\.git/",
         "/\\.sass-cache/",

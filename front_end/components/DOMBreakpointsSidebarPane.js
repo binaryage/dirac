@@ -35,7 +35,7 @@
 WebInspector.DOMBreakpointsSidebarPane = function()
 {
     WebInspector.BreakpointsSidebarPaneBase.call(this, WebInspector.UIString("DOM Breakpoints"));
-    this._domBreakpointsSetting = WebInspector.settings.createLocalSetting("domBreakpoints", []);
+    this._domBreakpointsSetting = WebInspector.settings.createSetting("domBreakpoints", []);
 
     this._breakpointElements = {};
 

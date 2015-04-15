@@ -90,7 +90,7 @@ WebInspector.SourcesPanel = function(workspaceForTest)
     if (Runtime.experiments.isEnabled("stepIntoAsync"))
         this.sidebarPanes.asyncOperationBreakpoints = new WebInspector.AsyncOperationsSidebarPane();
 
-    this._lastSelectedTabSetting = WebInspector.settings.createLocalSetting("lastSelectedSourcesSidebarPaneTab", this.sidebarPanes.scopechain.title());
+    this._lastSelectedTabSetting = WebInspector.settings.createSetting("lastSelectedSourcesSidebarPaneTab", this.sidebarPanes.scopechain.title());
 
     this._installDebuggerSidebarController();
 

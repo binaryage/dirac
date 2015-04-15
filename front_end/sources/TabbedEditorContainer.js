@@ -43,10 +43,10 @@ WebInspector.TabbedEditorContainerDelegate.prototype = {
  * @constructor
  * @extends {WebInspector.Object}
  * @param {!WebInspector.TabbedEditorContainerDelegate} delegate
- * @param {!WebInspector.Setting} setting
+ * @param {string} settingName
  * @param {string} placeholderText
  */
-WebInspector.TabbedEditorContainer = function(delegate, setting, placeholderText)
+WebInspector.TabbedEditorContainer = function(delegate, settingName, placeholderText)
 {
     WebInspector.Object.call(this);
     this._delegate = delegate;
@@ -64,7 +64,7 @@ WebInspector.TabbedEditorContainer = function(delegate, setting, placeholderText
     this._tabIds = new Map();
     this._files = {};
 
-    this._previouslyViewedFilesSetting = setting;
+    this._previouslyViewedFilesSetting = WebInspector.settings.createSetting(settingName, []);
     this._history = WebInspector.TabbedEditorContainer.History.fromObject(this._previouslyViewedFilesSetting.get());
 }
 

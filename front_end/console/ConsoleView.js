@@ -144,7 +144,7 @@ WebInspector.ConsoleView = function()
     var proxyElement = this._prompt.attach(this._promptElement);
     proxyElement.addEventListener("keydown", this._promptKeyDown.bind(this), false);
 
-    this._consoleHistorySetting = WebInspector.settings.createLocalSetting("consoleHistory", []);
+    this._consoleHistorySetting = WebInspector.settings.createSetting("consoleHistory", []);
     var historyData = this._consoleHistorySetting.get();
     this._prompt.setHistoryData(historyData);
 

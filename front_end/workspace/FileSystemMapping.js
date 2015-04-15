@@ -35,7 +35,7 @@
 WebInspector.FileSystemMapping = function()
 {
     WebInspector.Object.call(this);
-    this._fileSystemMappingSetting = WebInspector.settings.createLocalSetting("fileSystemMapping", {});
+    this._fileSystemMappingSetting = WebInspector.settings.createSetting("fileSystemMapping", {});
     /** @type {!Object.<string, !Array.<!WebInspector.FileSystemMapping.Entry>>} */
     this._fileSystemMappings = {};
     this._loadFromSettings();

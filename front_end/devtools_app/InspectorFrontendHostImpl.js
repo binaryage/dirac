@@ -104,42 +104,6 @@ WebInspector.InspectorFrontendHostImpl.prototype = {
 
     /**
      * @override
-     * @param {function(!Object<string, string>)} callback
-     */
-    getPreferences: function(callback)
-    {
-        DevToolsAPI.sendMessageToEmbedder("getPreferences", [], /** @type {function(?Object)} */ (callback));
-    },
-
-    /**
-     * @override
-     * @param {string} name
-     * @param {string} value
-     */
-    setPreference: function(name, value)
-    {
-        DevToolsAPI.sendMessageToEmbedder("setPreference", [name, value], null);
-    },
-
-    /**
-     * @override
-     * @param {string} name
-     */
-    removePreference: function(name)
-    {
-        DevToolsAPI.sendMessageToEmbedder("removePreference", [name], null);
-    },
-
-    /**
-     * @override
-     */
-    clearPreferences: function()
-    {
-        DevToolsAPI.sendMessageToEmbedder("clearPreferences", [], null);
-    },
-
-    /**
-     * @override
      * @param {string} origin
      * @param {string} script
      */

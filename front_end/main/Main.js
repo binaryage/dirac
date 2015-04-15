@@ -117,63 +117,21 @@ WebInspector.Main.prototype = {
 
         if (InspectorFrontendHost.isUnderTest())
             self.runtime.useTestBase();
-        InspectorFrontendHost.getPreferences(this._createSettings.bind(this));
-    },
-
-    /**
-     * @param {!Object<string, string>} prefs
-     */
-    _createSettings: function(prefs)
-    {
-        // Patch settings from the URL param (for tests).
-        var settingsParam = Runtime.queryParam("settings");
-        if (settingsParam) {
-            try {
-                var settings = JSON.parse(window.decodeURI(settingsParam));
-                for (var key in settings)
-                    prefs[key] = settings[key];
-            } catch(e) {
-                // Ignore malformed settings.
-            }
-        }
-
-        this._initializeExperiments(prefs);
-
-        /**
-         * @param {!Array<{name: string}>} changes
-         */
-        function trackPrefsObject(changes)
-        {
-            if (!Object.keys(prefs).length) {
-                InspectorFrontendHost.clearPreferences();
-                return;
-            }
-
-            for (var change of changes) {
-                var name = change.name;
-                if (name in prefs)
-                    InspectorFrontendHost.setPreference(name, prefs[name]);
-                else
-                    InspectorFrontendHost.removePreference(name);
-            }
-        }
-
-        Object.observe(prefs, trackPrefsObject);
-        WebInspector.settings = new WebInspector.Settings(prefs);
-
-        if (!InspectorFrontendHost.isUnderTest()) {
-            // This setting is needed for backwards compatibility with Devtools CodeSchool extension. DO NOT REMOVE
-            WebInspector.settings.pauseOnExceptionStateString = new WebInspector.PauseOnExceptionStateSetting();
-            new WebInspector.VersionController().updateVersion();
-        }
-
+        this._createSettings();
         this._createAppUI();
     },
 
-    /**
-     * @param {!Object<string, string>} prefs
-     */
-    _initializeExperiments: function(prefs)
+    _createSettings: function()
+    {
+        this._initializeExperiments();
+        WebInspector.settings = new WebInspector.Settings();
+
+        // This setting is needed for backwards compatibility with Devtools CodeSchool extension. DO NOT REMOVE
+        WebInspector.settings.pauseOnExceptionStateString = new WebInspector.PauseOnExceptionStateSetting();
+        new WebInspector.VersionController().updateVersion();
+    },
+
+    _initializeExperiments: function()
     {
         Runtime.experiments.register("accessibilityInspection", "Accessibility Inspection", true);
         Runtime.experiments.register("animationInspection", "Animation Inspection");
@@ -203,8 +161,8 @@ WebInspector.Main.prototype = {
         Runtime.experiments.cleanUpStaleExperiments();
 
         if (InspectorFrontendHost.isUnderTest()) {
-            var testPath = JSON.parse(prefs["testPath"] || "\"\"");
             // Enable experiments for testing.
+            var testPath = self.localStorage ? self.localStorage["testPath"] || "" : "";
             if (testPath.indexOf("debugger/promise") !== -1)
                 Runtime.experiments.enableForTest("promiseTracker");
             if (testPath.indexOf("elements/") !== -1)

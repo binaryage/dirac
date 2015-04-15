@@ -34,7 +34,7 @@
  */
 WebInspector.FileManager = function()
 {
-    this._savedURLsSetting = WebInspector.settings.createLocalSetting("savedURLs", {});
+    this._savedURLsSetting = WebInspector.settings.createSetting("savedURLs", {});
 
     /** @type {!Object.<string, ?function(boolean)>} */
     this._saveCallbacks = {};
