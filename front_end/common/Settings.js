@@ -341,6 +341,11 @@ WebInspector.VersionController.prototype = {
         var versionSetting = WebInspector.settings.createSetting(WebInspector.VersionController._currentVersionName, 0);
         var currentVersion = WebInspector.VersionController.currentVersion;
         var oldVersion = versionSetting.get();
+        if (oldVersion === 0) {
+            // First run, no need to do anything.
+            versionSetting.set(currentVersion);
+            return;
+        }
         var methodsToRun = this._methodsToRunToUpdateVersion(oldVersion, currentVersion);
         for (var i = 0; i < methodsToRun.length; ++i)
             this[methodsToRun[i]].call(this);
@@ -438,17 +443,20 @@ WebInspector.VersionController.prototype = {
             "WebInspector.Drawer.showOnLoad": "Inspector.drawerSplitViewState"
         };
 
-        var empty = {};
         for (var oldName in settingNames) {
-            var newName = settingNames[oldName];
+            var oldSetting = WebInspector.settings.createSetting(oldName, null);
+            if (oldSetting.get() === null) {
+                oldSetting.remove();
+                continue;
+            }
 
-            var oldSetting = WebInspector.settings.createSetting(oldName, empty);
+            var newName = settingNames[oldName];
             var invert = "WebInspector.Drawer.showOnLoad" === oldName;
-            var hidden = (oldSetting.get() !== empty) !== invert;
+            var hidden = oldSetting.get() !== invert;
             oldSetting.remove();
             var showMode = hidden ? "OnlyMain" : "Both";
 
-            var newSetting = WebInspector.settings.createSetting(newName, empty);
+            var newSetting = WebInspector.settings.createSetting(newName, {});
             var newValue = newSetting.get() || {};
             newValue.vertical = newValue.vertical || {};
             newValue.vertical.showMode = showMode;
