@@ -1043,18 +1043,6 @@ Runtime.Experiment.prototype = {
         var name = pair.shift();
         Runtime._queryParamsObject[name] = pair.join("=");
     }
-
-    // Patch settings from the URL param (for tests).
-    var settingsParam = Runtime.queryParam("settings");
-    if (settingsParam) {
-        try {
-            var settings = JSON.parse(window.decodeURI(settingsParam));
-            for (var key in settings)
-                window.localStorage[key] = settings[key];
-        } catch(e) {
-            // Ignore malformed settings.
-        }
-    }
 })();}
 
 

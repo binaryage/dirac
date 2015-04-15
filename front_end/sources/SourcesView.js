@@ -30,7 +30,7 @@ WebInspector.SourcesView = function(workspace, sourcesPanel)
     this._sourceFramesByUISourceCode = new Map();
 
     var tabbedEditorPlaceholderText = WebInspector.isMac() ? WebInspector.UIString("Hit Cmd+P to open a file") : WebInspector.UIString("Hit Ctrl+P to open a file");
-    this._editorContainer = new WebInspector.TabbedEditorContainer(this, "previouslyViewedFiles", tabbedEditorPlaceholderText);
+    this._editorContainer = new WebInspector.TabbedEditorContainer(this, WebInspector.settings.createLocalSetting("previouslyViewedFiles", []), tabbedEditorPlaceholderText);
     this._editorContainer.show(this._searchableView.element);
     this._editorContainer.addEventListener(WebInspector.TabbedEditorContainer.Events.EditorSelected, this._editorSelected, this);
     this._editorContainer.addEventListener(WebInspector.TabbedEditorContainer.Events.EditorClosed, this._editorClosed, this);

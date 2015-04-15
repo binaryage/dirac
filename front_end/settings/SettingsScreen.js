@@ -188,8 +188,7 @@ WebInspector.GenericSettingsTab = function()
 
     function restoreAndReload()
     {
-        if (window.localStorage)
-            window.localStorage.clear();
+        WebInspector.settings.clearAll();
         WebInspector.reload();
     }
 }

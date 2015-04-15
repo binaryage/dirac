@@ -39,7 +39,7 @@ WebInspector.WatchExpressionsSidebarPane = function()
     this._requiresUpdate = true;
     /** @type {!Array.<!WebInspector.WatchExpression>} */
     this._watchExpressions = [];
-    this._watchExpressionsSetting = WebInspector.settings.createSetting("watchExpressions", []);
+    this._watchExpressionsSetting = WebInspector.settings.createLocalSetting("watchExpressions", []);
 
     this.registerRequiredCSS("components/objectValue.css");
     this.bodyElement.classList.add("vbox", "watch-expressions");
