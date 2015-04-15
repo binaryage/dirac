@@ -9,7 +9,7 @@
 WebInspector.AdvancedApp = function()
 {
     if (WebInspector.overridesSupport.responsiveDesignAvailable()) {
-        this._toggleEmulationButton = new WebInspector.StatusBarButton(WebInspector.UIString("Toggle device mode."), "emulation-status-bar-item");
+        this._toggleEmulationButton = new WebInspector.ToolbarButton(WebInspector.UIString("Toggle device mode."), "emulation-toolbar-item");
         this._toggleEmulationButton.setToggled(WebInspector.overridesSupport.emulationEnabled());
         this._toggleEmulationButton.addEventListener("click", this._toggleEmulationEnabled, this);
         WebInspector.overridesSupport.addEventListener(WebInspector.OverridesSupport.Events.EmulationStateChanged, this._emulationEnabledChanged, this);
@@ -244,7 +244,7 @@ WebInspector.AdvancedAppProvider.prototype = {
 
 /**
  * @constructor
- * @implements {WebInspector.StatusBarItem.Provider}
+ * @implements {WebInspector.ToolbarItem.Provider}
  */
 WebInspector.AdvancedApp.EmulationButtonProvider = function()
 {
@@ -253,7 +253,7 @@ WebInspector.AdvancedApp.EmulationButtonProvider = function()
 WebInspector.AdvancedApp.EmulationButtonProvider.prototype = {
     /**
      * @override
-     * @return {?WebInspector.StatusBarItem}
+     * @return {?WebInspector.ToolbarItem}
      */
     item: function()
     {

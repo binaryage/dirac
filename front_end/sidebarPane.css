@@ -80,7 +80,7 @@
 }
 
 .sidebar-pane-title::before {
-    background-image: url(Images/statusbarButtonGlyphs.png);
+    background-image: url(Images/toolbarButtonGlyphs.png);
     background-size: 320px 144px;
     opacity: 0.5;
     float: left;
@@ -95,7 +95,7 @@
 
 @media (-webkit-min-device-pixel-ratio: 1.5) {
 .sidebar-pane-title::before {
-    background-image: url(Images/statusbarButtonGlyphs_2x.png);
+    background-image: url(Images/toolbarButtonGlyphs_2x.png);
 }
 } /* media */
 
@@ -155,7 +155,7 @@
 
 .sidebar-pane-toolbar > .pane-title-button.add .long-click-glyph {
     background-color: rgba(135, 135, 135, 1);
-    -webkit-mask-image: url(Images/statusbarButtonGlyphs.png);
+    -webkit-mask-image: url(Images/toolbarButtonGlyphs.png);
     -webkit-mask-position: -298px -53px;
     -webkit-mask-size: 320px 144px;
 }

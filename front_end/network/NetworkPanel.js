@@ -47,7 +47,7 @@ WebInspector.NetworkPanel = function()
     /** @type {boolean} */
     this._shouldRecordFilmStrip = false;
 
-    this._panelStatusBar = new WebInspector.StatusBar(this.element);
+    this._panelToolbar = new WebInspector.Toolbar(this.element);
     this._filterBar = new WebInspector.FilterBar();
     this._filtersContainer = this.element.createChild("div", "network-filters-header hidden");
     this._filtersContainer.appendChild(this._filterBar.filtersElement());
@@ -65,7 +65,7 @@ WebInspector.NetworkPanel = function()
     this._splitView.show(this._searchableView.element);
 
     this._progressBarContainer = createElement("div");
-    this._createStatusbarButtons();
+    this._createToolbarButtons();
 
     /** @type {!WebInspector.NetworkLogView} */
     this._networkLogView = new WebInspector.NetworkLogView(this._overview, this._filterBar, this._progressBarContainer, this._networkLogLargeRowsSetting);
@@ -151,46 +151,46 @@ WebInspector.NetworkPanel.prototype = {
             this._filmStripView.selectFrame(time);
     },
 
-    _createStatusbarButtons: function()
+    _createToolbarButtons: function()
     {
-        this._recordButton = new WebInspector.StatusBarButton("", "record-status-bar-item");
+        this._recordButton = new WebInspector.ToolbarButton("", "record-toolbar-item");
         this._recordButton.addEventListener("click", this._onRecordButtonClicked, this);
-        this._panelStatusBar.appendStatusBarItem(this._recordButton);
+        this._panelToolbar.appendToolbarItem(this._recordButton);
 
-        this._recordFilmStripButton = new WebInspector.StatusBarButton("", "record-filmstrip-status-bar-item");
+        this._recordFilmStripButton = new WebInspector.ToolbarButton("", "record-filmstrip-toolbar-item");
         this._toggleRecordFilmStripButton(false);
         this._recordFilmStripButton.addEventListener("click", this._onRecordFilmStripButtonClicked, this);
         if (Runtime.experiments.isEnabled("recordFilmStrimInNetworkPanel"))
-            this._panelStatusBar.appendStatusBarItem(this._recordFilmStripButton);
+            this._panelToolbar.appendToolbarItem(this._recordFilmStripButton);
 
-        this._clearButton = new WebInspector.StatusBarButton(WebInspector.UIString("Clear"), "clear-status-bar-item");
+        this._clearButton = new WebInspector.ToolbarButton(WebInspector.UIString("Clear"), "clear-toolbar-item");
         this._clearButton.addEventListener("click", this._onClearButtonClicked, this);
-        this._panelStatusBar.appendStatusBarItem(this._clearButton);
+        this._panelToolbar.appendToolbarItem(this._clearButton);
 
-        this._panelStatusBar.appendStatusBarItem(this._filterBar.filterButton());
+        this._panelToolbar.appendToolbarItem(this._filterBar.filterButton());
 
-        var viewModeLabel = new WebInspector.StatusBarText(WebInspector.UIString("View:"), "status-bar-group-label");
-        this._panelStatusBar.appendStatusBarItem(viewModeLabel);
+        var viewModeLabel = new WebInspector.ToolbarText(WebInspector.UIString("View:"), "toolbar-group-label");
+        this._panelToolbar.appendToolbarItem(viewModeLabel);
 
-        this._largerRequestsButton = new WebInspector.StatusBarButton(WebInspector.UIString(""), "large-list-status-bar-item");
+        this._largerRequestsButton = new WebInspector.ToolbarButton(WebInspector.UIString(""), "large-list-toolbar-item");
         this._largerRequestsButton.addEventListener("click", this._onLargerRequestsClicked, this);
-        this._panelStatusBar.appendStatusBarItem(this._largerRequestsButton);
+        this._panelToolbar.appendToolbarItem(this._largerRequestsButton);
 
-        this._showOverviewButton = new WebInspector.StatusBarButton(WebInspector.UIString(""), "waterfall-status-bar-item");
+        this._showOverviewButton = new WebInspector.ToolbarButton(WebInspector.UIString(""), "waterfall-toolbar-item");
         this._showOverviewButton.addEventListener("click", this._onShowOverviewButtonClicked, this);
-        this._panelStatusBar.appendStatusBarItem(this._showOverviewButton);
+        this._panelToolbar.appendToolbarItem(this._showOverviewButton);
 
-        var optionsLabel = new WebInspector.StatusBarText(WebInspector.UIString("Options:"), "status-bar-group-label");
-        this._panelStatusBar.appendStatusBarItem(optionsLabel);
+        var optionsLabel = new WebInspector.ToolbarText(WebInspector.UIString("Options:"), "toolbar-group-label");
+        this._panelToolbar.appendToolbarItem(optionsLabel);
 
-        this._preserveLogCheckbox = new WebInspector.StatusBarCheckbox(WebInspector.UIString("Preserve log"), WebInspector.UIString("Do not clear log on page reload / navigation."));
+        this._preserveLogCheckbox = new WebInspector.ToolbarCheckbox(WebInspector.UIString("Preserve log"), WebInspector.UIString("Do not clear log on page reload / navigation."));
         this._preserveLogCheckbox.inputElement.addEventListener("change", this._onPreserveLogCheckboxChanged.bind(this), false);
-        this._panelStatusBar.appendStatusBarItem(this._preserveLogCheckbox);
+        this._panelToolbar.appendToolbarItem(this._preserveLogCheckbox);
 
-        this._disableCacheCheckbox = new WebInspector.StatusBarCheckbox(WebInspector.UIString("Disable cache"), WebInspector.UIString("Disable cache (while DevTools is open)."), WebInspector.moduleSetting("cacheDisabled"));
-        this._panelStatusBar.appendStatusBarItem(this._disableCacheCheckbox);
+        this._disableCacheCheckbox = new WebInspector.ToolbarCheckbox(WebInspector.UIString("Disable cache"), WebInspector.UIString("Disable cache (while DevTools is open)."), WebInspector.moduleSetting("cacheDisabled"));
+        this._panelToolbar.appendToolbarItem(this._disableCacheCheckbox);
 
-        this._panelStatusBar.appendStatusBarItem(new WebInspector.StatusBarItem(this._progressBarContainer));
+        this._panelToolbar.appendToolbarItem(new WebInspector.ToolbarItem(this._progressBarContainer));
     },
 
     /**

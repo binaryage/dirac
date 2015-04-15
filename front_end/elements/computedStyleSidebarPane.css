@@ -38,7 +38,7 @@
 }
 
 .computed-style-trace-button > .glyph {
-    -webkit-mask-image: url(Images/statusbarButtonGlyphs.png);
+    -webkit-mask-image: url(Images/toolbarButtonGlyphs.png);
     -webkit-mask-size: 320px 144px;
     -webkit-mask-position: -224px -24px;
     background-color: rgba(0, 0, 0, 0.75);
@@ -52,7 +52,7 @@
 
 @media (-webkit-min-device-pixel-ratio: 1.5) {
 .computed-style-trace-button > .glyph {
-    -webkit-mask-image: url(Images/statusbarButtonGlyphs_2x.png);
+    -webkit-mask-image: url(Images/toolbarButtonGlyphs_2x.png);
 }
 } /* media */
 

@@ -51,7 +51,7 @@
 }
 
 .promises .status {
-    -webkit-mask-image: url(Images/statusbarButtonGlyphs.png);
+    -webkit-mask-image: url(Images/toolbarButtonGlyphs.png);
     -webkit-mask-size: 320px 144px;
     -webkit-mask-position: -294px -26px;
     background-color: #bbb;

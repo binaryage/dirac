@@ -37,7 +37,7 @@ WebInspector.FilterBar = function()
     this._filtersShown = false;
     this._element = createElementWithClass("div", "filter-bar hbox");
 
-    this._filterButton = new WebInspector.StatusBarButton(WebInspector.UIString("Filter"), "filter-status-bar-item", 3);
+    this._filterButton = new WebInspector.ToolbarButton(WebInspector.UIString("Filter"), "filter-toolbar-item", 3);
     this._filterButton.element.addEventListener("click", this._handleFilterButtonClick.bind(this), false);
 
     this._filters = [];
@@ -65,7 +65,7 @@ WebInspector.FilterBar.prototype = {
     },
 
     /**
-     * @return {!WebInspector.StatusBarButton}
+     * @return {!WebInspector.ToolbarButton}
      */
     filterButton: function()
     {
@@ -598,7 +598,7 @@ WebInspector.ComboBoxFilterUI = function(options)
     this._filterElement.className = "filter-combobox-filter";
 
     this._options = options;
-    this._filterComboBox = new WebInspector.StatusBarComboBox(this._filterChanged.bind(this));
+    this._filterComboBox = new WebInspector.ToolbarComboBox(this._filterChanged.bind(this));
     for (var i = 0; i < options.length; ++i) {
         var filterOption = options[i];
         var option = createElement("option");

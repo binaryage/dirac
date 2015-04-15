@@ -117,7 +117,7 @@
 }
 
 .audit-result-tree::shadow .severity {
-    background-image: url(Images/statusbarButtonGlyphs.png);
+    background-image: url(Images/toolbarButtonGlyphs.png);
     background-size: 320px 144px;
     display: inline-block;
     width: 10px;
@@ -133,7 +133,7 @@
 
 @media (-webkit-min-device-pixel-ratio: 1.5) {
 .audit-result-tree::shadow .severity {
-    background-image: url(Images/statusbarButtonGlyphs_2x.png);
+    background-image: url(Images/toolbarButtonGlyphs_2x.png);
 }
 } /* media */
 

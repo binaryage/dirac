@@ -52,7 +52,7 @@ WebInspector.HeapSnapshotSortableDataGrid = function(dataDisplayDelegate, column
      */
     this._populatedAndSorted = false;
     /**
-     * @type {?WebInspector.StatusBarInput}
+     * @type {?WebInspector.ToolbarInput}
      */
     this._nameFilter = null;
     this._nodeFilter = new WebInspector.HeapSnapshotCommon.NodeFilter();
@@ -75,7 +75,7 @@ WebInspector.HeapSnapshotSortableDataGrid.prototype = {
     },
 
     /**
-     * @param {!WebInspector.StatusBarInput} nameFilter
+     * @param {!WebInspector.ToolbarInput} nameFilter
      */
     setNameFilter: function(nameFilter)
     {
@@ -103,7 +103,7 @@ WebInspector.HeapSnapshotSortableDataGrid.prototype = {
     wasShown: function()
     {
         if (this._nameFilter) {
-            this._nameFilter.addEventListener(WebInspector.StatusBarInput.Event.TextChanged, this._onNameFilterChanged, this);
+            this._nameFilter.addEventListener(WebInspector.ToolbarInput.Event.TextChanged, this._onNameFilterChanged, this);
             this.updateVisibleNodes(true);
         }
         if (this._populatedAndSorted)
@@ -123,7 +123,7 @@ WebInspector.HeapSnapshotSortableDataGrid.prototype = {
     willHide: function()
     {
         if (this._nameFilter)
-            this._nameFilter.removeEventListener(WebInspector.StatusBarInput.Event.TextChanged, this._onNameFilterChanged, this);
+            this._nameFilter.removeEventListener(WebInspector.ToolbarInput.Event.TextChanged, this._onNameFilterChanged, this);
         this._clearCurrentHighlight();
     },
 

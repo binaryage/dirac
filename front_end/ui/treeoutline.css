@@ -84,7 +84,7 @@ ol.tree-outline:focus li.selected * {
 .tree-outline li::before {
     float: left;
     -webkit-user-select: none;
-    -webkit-mask-image: url(Images/statusbarButtonGlyphs.png);
+    -webkit-mask-image: url(Images/toolbarButtonGlyphs.png);
     -webkit-mask-size: 320px 144px;
     content: "a";
     color: transparent;
@@ -102,7 +102,7 @@ ol.tree-outline:focus li.selected * {
 
 @media (-webkit-min-device-pixel-ratio: 1.5) {
 .tree-outline li::before {
-    -webkit-mask-image: url(Images/statusbarButtonGlyphs_2x.png);
+    -webkit-mask-image: url(Images/toolbarButtonGlyphs_2x.png);
 }
 } /* media */
 

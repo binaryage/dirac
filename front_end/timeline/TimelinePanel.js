@@ -73,7 +73,7 @@ WebInspector.TimelinePanel = function()
 
     this._overviewModeSetting = WebInspector.settings.createSetting("timelineOverviewMode", WebInspector.TimelinePanel.OverviewMode.Frames);
     this._flameChartEnabledSetting = WebInspector.settings.createSetting("timelineFlameChartEnabled", true);
-    this._createStatusBarItems();
+    this._createToolbarItems();
 
     var topPaneElement = this.element.createChild("div", "hbox");
     topPaneElement.id = "timeline-overview-panel";
@@ -284,83 +284,83 @@ WebInspector.TimelinePanel.prototype = {
      * @param {string} name
      * @param {!WebInspector.Setting} setting
      * @param {string} tooltip
-     * @return {!WebInspector.StatusBarItem}
+     * @return {!WebInspector.ToolbarItem}
      */
     _createSettingCheckbox: function(name, setting, tooltip)
     {
         if (!this._recordingOptionUIControls)
             this._recordingOptionUIControls = [];
-        var checkboxItem = new WebInspector.StatusBarCheckbox(name, tooltip, setting);
+        var checkboxItem = new WebInspector.ToolbarCheckbox(name, tooltip, setting);
         this._recordingOptionUIControls.push(checkboxItem);
         return checkboxItem;
     },
 
-    _createStatusBarItems: function()
+    _createToolbarItems: function()
     {
-        this._panelToolbar = new WebInspector.StatusBar(this.element);
+        this._panelToolbar = new WebInspector.Toolbar(this.element);
 
-        this.toggleTimelineButton = new WebInspector.StatusBarButton("Record timeline", "record-status-bar-item");
+        this.toggleTimelineButton = new WebInspector.ToolbarButton("Record timeline", "record-toolbar-item");
         this.toggleTimelineButton.addEventListener("click", this._toggleTimelineButtonClicked, this);
-        this._panelToolbar.appendStatusBarItem(this.toggleTimelineButton);
+        this._panelToolbar.appendToolbarItem(this.toggleTimelineButton);
         this._updateToggleTimelineButton(false);
 
-        var clearButton = new WebInspector.StatusBarButton(WebInspector.UIString("Clear recording"), "clear-status-bar-item");
+        var clearButton = new WebInspector.ToolbarButton(WebInspector.UIString("Clear recording"), "clear-toolbar-item");
         clearButton.addEventListener("click", this._onClearButtonClick, this);
-        this._panelToolbar.appendStatusBarItem(clearButton);
+        this._panelToolbar.appendToolbarItem(clearButton);
 
         this._filterBar = this._createFilterBar();
-        this._panelToolbar.appendStatusBarItem(this._filterBar.filterButton());
+        this._panelToolbar.appendToolbarItem(this._filterBar.filterButton());
 
-        var garbageCollectButton = new WebInspector.StatusBarButton(WebInspector.UIString("Collect garbage"), "garbage-collect-status-bar-item");
+        var garbageCollectButton = new WebInspector.ToolbarButton(WebInspector.UIString("Collect garbage"), "garbage-collect-toolbar-item");
         garbageCollectButton.addEventListener("click", this._garbageCollectButtonClicked, this);
-        this._panelToolbar.appendStatusBarItem(garbageCollectButton);
+        this._panelToolbar.appendToolbarItem(garbageCollectButton);
 
-        var viewModeLabel = new WebInspector.StatusBarText(WebInspector.UIString("View:"), "status-bar-group-label");
-        this._panelToolbar.appendStatusBarItem(viewModeLabel);
+        var viewModeLabel = new WebInspector.ToolbarText(WebInspector.UIString("View:"), "toolbar-group-label");
+        this._panelToolbar.appendToolbarItem(viewModeLabel);
 
-        var framesToggleButton = new WebInspector.StatusBarButton(WebInspector.UIString("Frames view. (Activity split into frames)"), "histogram-status-bar-item");
+        var framesToggleButton = new WebInspector.ToolbarButton(WebInspector.UIString("Frames view. (Activity split into frames)"), "histogram-toolbar-item");
         framesToggleButton.setToggled(this._overviewModeSetting.get() === WebInspector.TimelinePanel.OverviewMode.Frames);
         framesToggleButton.addEventListener("click", this._overviewModeChanged.bind(this, framesToggleButton));
-        this._panelToolbar.appendStatusBarItem(framesToggleButton);
+        this._panelToolbar.appendToolbarItem(framesToggleButton);
 
-        this._flameChartToggleButton = new WebInspector.StatusBarButton(WebInspector.UIString("Flame chart view. (Use WASD or time selection to navigate)"), "flame-chart-status-bar-item");
+        this._flameChartToggleButton = new WebInspector.ToolbarButton(WebInspector.UIString("Flame chart view. (Use WASD or time selection to navigate)"), "flame-chart-toolbar-item");
         this._flameChartToggleButton.setToggled(this._flameChartEnabledSetting.get());
         this._flameChartToggleButton.addEventListener("click", this._flameChartEnabledChanged.bind(this));
-        this._panelToolbar.appendStatusBarItem(this._flameChartToggleButton);
+        this._panelToolbar.appendToolbarItem(this._flameChartToggleButton);
 
-        var captureSettingsLabel = new WebInspector.StatusBarText(WebInspector.UIString("Capture:"), "status-bar-group-label");
-        this._panelToolbar.appendStatusBarItem(captureSettingsLabel);
+        var captureSettingsLabel = new WebInspector.ToolbarText(WebInspector.UIString("Capture:"), "toolbar-group-label");
+        this._panelToolbar.appendToolbarItem(captureSettingsLabel);
 
         this._captureNetworkSetting = WebInspector.settings.createSetting("timelineCaptureNetwork", false);
         this._captureNetworkSetting.addChangeListener(this._onNetworkChanged, this);
         if (Runtime.experiments.isEnabled("networkRequestsOnTimeline")) {
-            this._panelToolbar.appendStatusBarItem(this._createSettingCheckbox(WebInspector.UIString("Network"),
+            this._panelToolbar.appendToolbarItem(this._createSettingCheckbox(WebInspector.UIString("Network"),
                                                                           this._captureNetworkSetting,
                                                                           WebInspector.UIString("Capture network requests information")));
         }
         this._captureCausesSetting = WebInspector.settings.createSetting("timelineCaptureCauses", true);
         this._captureCausesSetting.addChangeListener(this._refreshViews, this);
-        this._panelToolbar.appendStatusBarItem(this._createSettingCheckbox(WebInspector.UIString("Causes"),
+        this._panelToolbar.appendToolbarItem(this._createSettingCheckbox(WebInspector.UIString("Causes"),
                                                                       this._captureCausesSetting,
                                                                       WebInspector.UIString("Capture causes (e.g., stack traces) for timeline events. (Has performance overhead)")));
         this._enableJSSamplingSettingSetting = WebInspector.settings.createSetting("timelineEnableJSSampling", false);
-        this._panelToolbar.appendStatusBarItem(this._createSettingCheckbox(WebInspector.UIString("JS Stacks"),
+        this._panelToolbar.appendToolbarItem(this._createSettingCheckbox(WebInspector.UIString("JS Stacks"),
                                                                       this._enableJSSamplingSettingSetting,
                                                                       WebInspector.UIString("Capture JavaScript stacks with sampling profiler. (Has performance overhead)")));
 
         this._captureMemorySetting = WebInspector.settings.createSetting("timelineCaptureMemory", false);
-        this._panelToolbar.appendStatusBarItem(this._createSettingCheckbox(WebInspector.UIString("Memory"),
+        this._panelToolbar.appendToolbarItem(this._createSettingCheckbox(WebInspector.UIString("Memory"),
                                                                       this._captureMemorySetting,
                                                                       WebInspector.UIString("Capture memory information on every timeline event.")));
         this._captureMemorySetting.addChangeListener(this._onModeChanged, this);
         this._captureLayersAndPicturesSetting = WebInspector.settings.createSetting("timelineCaptureLayersAndPictures", false);
-        this._panelToolbar.appendStatusBarItem(this._createSettingCheckbox(WebInspector.UIString("Paint"),
+        this._panelToolbar.appendToolbarItem(this._createSettingCheckbox(WebInspector.UIString("Paint"),
                                                                       this._captureLayersAndPicturesSetting,
                                                                       WebInspector.UIString("Capture graphics layer positions and painted pictures.  (Has performance overhead)")));
 
-        this._progressStatusBarItem = new WebInspector.StatusBarItem(createElement("div"));
-        this._progressStatusBarItem.setVisible(false);
-        this._panelToolbar.appendStatusBarItem(this._progressStatusBarItem);
+        this._progressToolbarItem = new WebInspector.ToolbarItem(createElement("div"));
+        this._progressToolbarItem.setVisible(false);
+        this._panelToolbar.appendToolbarItem(this._progressToolbarItem);
 
         this._filtersContainer = this.element.createChild("div", "timeline-filters-header hidden");
         this._filtersContainer.appendChild(this._filterBar.filtersElement());
@@ -473,10 +473,10 @@ WebInspector.TimelinePanel.prototype = {
         this._panelToolbar.setEnabled(!this._operationInProgress);
         this._dropTarget.setEnabled(!this._operationInProgress);
 
-        this._progressStatusBarItem.setVisible(this._operationInProgress);
-        this._progressStatusBarItem.element.removeChildren();
+        this._progressToolbarItem.setVisible(this._operationInProgress);
+        this._progressToolbarItem.element.removeChildren();
         if (indicator)
-            this._progressStatusBarItem.element.appendChild(indicator.element);
+            this._progressToolbarItem.element.appendChild(indicator.element);
     },
 
     _registerShortcuts: function()
@@ -571,7 +571,7 @@ WebInspector.TimelinePanel.prototype = {
     },
 
     /**
-     * @param {!WebInspector.StatusBarButton} button
+     * @param {!WebInspector.ToolbarButton} button
      */
     _overviewModeChanged: function(button)
     {
@@ -650,11 +650,11 @@ WebInspector.TimelinePanel.prototype = {
     _setUIControlsEnabled: function(enabled)
     {
         /**
-         * @param {!WebInspector.StatusBarButton} statusBarItem
+         * @param {!WebInspector.ToolbarButton} toolbarItem
          */
-        function handler(statusBarItem)
+        function handler(toolbarItem)
         {
-            statusBarItem.setEnabled(enabled);
+            toolbarItem.setEnabled(enabled);
         }
         this._recordingOptionUIControls.forEach(handler);
     },

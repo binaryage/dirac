@@ -48,7 +48,7 @@ WebInspector.CPUProfileView = function(profileHeader)
     this.dataGrid = new WebInspector.DataGrid(columns);
     this.dataGrid.addEventListener(WebInspector.DataGrid.Events.SortingChanged, this._sortProfile, this);
 
-    this.viewSelectComboBox = new WebInspector.StatusBarComboBox(this._changeView.bind(this));
+    this.viewSelectComboBox = new WebInspector.ToolbarComboBox(this._changeView.bind(this));
 
     var options = {};
     options[WebInspector.CPUProfileView._TypeFlame] = this.viewSelectComboBox.createOption(WebInspector.UIString("Chart"), "", WebInspector.CPUProfileView._TypeFlame);
@@ -59,15 +59,15 @@ WebInspector.CPUProfileView = function(profileHeader)
     var option = options[optionName] || options[WebInspector.CPUProfileView._TypeFlame];
     this.viewSelectComboBox.select(option);
 
-    this.focusButton = new WebInspector.StatusBarButton(WebInspector.UIString("Focus selected function."), "focus-status-bar-item");
+    this.focusButton = new WebInspector.ToolbarButton(WebInspector.UIString("Focus selected function."), "focus-toolbar-item");
     this.focusButton.setEnabled(false);
     this.focusButton.addEventListener("click", this._focusClicked, this);
 
-    this.excludeButton = new WebInspector.StatusBarButton(WebInspector.UIString("Exclude selected function."), "delete-status-bar-item");
+    this.excludeButton = new WebInspector.ToolbarButton(WebInspector.UIString("Exclude selected function."), "delete-toolbar-item");
     this.excludeButton.setEnabled(false);
     this.excludeButton.addEventListener("click", this._excludeClicked, this);
 
-    this.resetButton = new WebInspector.StatusBarButton(WebInspector.UIString("Restore all functions."), "refresh-status-bar-item");
+    this.resetButton = new WebInspector.ToolbarButton(WebInspector.UIString("Restore all functions."), "refresh-toolbar-item");
     this.resetButton.setVisible(false);
     this.resetButton.addEventListener("click", this._resetClicked, this);
 
@@ -138,9 +138,9 @@ WebInspector.CPUProfileView.prototype = {
     },
 
     /**
-     * @return {!Array.<!WebInspector.StatusBarItem>}
+     * @return {!Array.<!WebInspector.ToolbarItem>}
      */
-    statusBarItems: function()
+    toolbarItems: function()
     {
         return [this.viewSelectComboBox, this.focusButton, this.excludeButton, this.resetButton];
     },

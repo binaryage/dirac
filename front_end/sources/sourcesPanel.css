@@ -36,7 +36,7 @@
     height: 23px;
 }
 
-.scripts-debug-toolbar::shadow .status-bar-item {
+.scripts-debug-toolbar::shadow .toolbar-item {
     position: relative;
     top: -1px;
 }
@@ -78,7 +78,7 @@
     right: 0;
     height: 24px;
     width: 16px;
-    background-image: url(Images/statusbarResizerHorizontal.png);
+    background-image: url(Images/toolbarResizerHorizontal.png);
     background-repeat: no-repeat;
     background-position: center;
     z-index: 13;

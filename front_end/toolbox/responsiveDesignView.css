@@ -74,7 +74,7 @@
 }
 
 .responsive-design-thumb-handle {
-    content: url(Images/statusbarResizerHorizontal.png);
+    content: url(Images/toolbarResizerHorizontal.png);
     pointer-events: none;
 }
 
@@ -309,14 +309,14 @@ div.responsive-design-icon:disabled {
 } /* media */
 
 .responsive-design-toolbar input[type='checkbox']:after {
-    -webkit-mask-image: url(Images/statusbarButtonGlyphs.png);
+    -webkit-mask-image: url(Images/toolbarButtonGlyphs.png);
     -webkit-mask-size: 320px 144px;
     -webkit-mask-position: -128px -110px;
 }
 
 @media (-webkit-min-device-pixel-ratio: 1.5) {
     .responsive-design-toolbar input[type='checkbox']:after {
-        -webkit-mask-image: url(Images/statusbarButtonGlyphs_2x.png);
+        -webkit-mask-image: url(Images/toolbarButtonGlyphs_2x.png);
     }
 } /* media */
 

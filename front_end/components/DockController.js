@@ -45,7 +45,7 @@ WebInspector.DockController = function(canDock)
     this._currentDockStateSetting = WebInspector.settings.createSetting("currentDockState", "");
     this._lastDockStateSetting = WebInspector.settings.createSetting("lastDockState", "");
 
-    /** @type {!WebInspector.StatusBarStatesSettingButton|undefined} */
+    /** @type {!WebInspector.ToolbarStatesSettingButton|undefined} */
     this._dockToggleButton;
 }
 
@@ -160,7 +160,7 @@ WebInspector.DockController.prototype = {
 
 /**
  * @constructor
- * @implements {WebInspector.StatusBarItem.Provider}
+ * @implements {WebInspector.ToolbarItem.Provider}
  */
 WebInspector.DockController.ButtonProvider = function()
 {
@@ -169,7 +169,7 @@ WebInspector.DockController.ButtonProvider = function()
 WebInspector.DockController.ButtonProvider.prototype = {
     /**
      * @override
-     * @return {?WebInspector.StatusBarItem}
+     * @return {?WebInspector.ToolbarItem}
      */
     item: function()
     {
@@ -177,8 +177,8 @@ WebInspector.DockController.ButtonProvider.prototype = {
             return null;
 
         if (!WebInspector.dockController._dockToggleButton) {
-            WebInspector.dockController._dockToggleButton = new WebInspector.StatusBarStatesSettingButton(
-                    "dock-status-bar-item",
+            WebInspector.dockController._dockToggleButton = new WebInspector.ToolbarStatesSettingButton(
+                    "dock-toolbar-item",
                     WebInspector.dockController._states,
                     WebInspector.dockController._titles,
                     WebInspector.dockController.dockSide(),
@@ -209,7 +209,7 @@ WebInspector.DockController.ToggleDockActionDelegate.prototype = {
         var toggleButton = new WebInspector.DockController.ButtonProvider().item();
         if (!toggleButton || !toggleButton.enabled())
             return;
-        /** @type {!WebInspector.StatusBarStatesSettingButton} */ (toggleButton).toggle();
+        /** @type {!WebInspector.ToolbarStatesSettingButton} */ (toggleButton).toggle();
     }
 }
 

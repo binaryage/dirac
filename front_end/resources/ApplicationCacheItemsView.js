@@ -36,7 +36,7 @@ WebInspector.ApplicationCacheItemsView = function(model, frameId)
     this.element.classList.add("storage-view", "table");
 
     // FIXME: Needs better tooltip. (Localized)
-    this.deleteButton = new WebInspector.StatusBarButton(WebInspector.UIString("Delete"), "delete-status-bar-item");
+    this.deleteButton = new WebInspector.ToolbarButton(WebInspector.UIString("Delete"), "delete-toolbar-item");
     this.deleteButton.setVisible(false);
     this.deleteButton.addEventListener("click", this._deleteButtonClicked, this);
 
@@ -68,16 +68,16 @@ WebInspector.ApplicationCacheItemsView = function(model, frameId)
 
 WebInspector.ApplicationCacheItemsView.prototype = {
     /**
-     * @return {!Array.<!WebInspector.StatusBarItem>}
+     * @return {!Array.<!WebInspector.ToolbarItem>}
      */
-    statusBarItems: function()
+    toolbarItems: function()
     {
         return [
             this.deleteButton,
-            new WebInspector.StatusBarItem(this.connectivityIcon),
-            new WebInspector.StatusBarItem(this.connectivityMessage),
-            new WebInspector.StatusBarItem(this.statusIcon),
-            new WebInspector.StatusBarItem(this.statusMessage)
+            new WebInspector.ToolbarItem(this.connectivityIcon),
+            new WebInspector.ToolbarItem(this.connectivityMessage),
+            new WebInspector.ToolbarItem(this.statusIcon),
+            new WebInspector.ToolbarItem(this.statusMessage)
         ];
     },
 

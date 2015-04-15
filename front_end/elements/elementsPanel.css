@@ -323,7 +323,7 @@
 
 .styles-section.matched-styles .style-properties li.parent .expand-element {
     -webkit-user-select: none;
-    background-image: url(Images/statusbarButtonGlyphs.png);
+    background-image: url(Images/toolbarButtonGlyphs.png);
     background-size: 320px 144px;
     margin-right: 2px;
     margin-left: -6px;
@@ -335,7 +335,7 @@
 
 @media (-webkit-min-device-pixel-ratio: 1.5) {
 .styles-section.matched-styles .style-properties li.parent .expand-element {
-    background-image: url(Images/statusbarButtonGlyphs_2x.png);
+    background-image: url(Images/toolbarButtonGlyphs_2x.png);
 }
 } /* media */
 
@@ -443,7 +443,7 @@
     align-items: center;
 }
 
-.animations-controls > .status-bar {
+.animations-controls > .toolbar {
     display: inline-block;
 }
 

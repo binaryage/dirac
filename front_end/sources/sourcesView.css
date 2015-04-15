@@ -33,7 +33,7 @@
     position: relative;
 }
 
-#sources-panel-sources-view .sources-status-bar {
+#sources-panel-sources-view .sources-toolbar {
     display: flex;
     position: relative;
     flex: 0 0 20px;
@@ -42,7 +42,7 @@
     overflow: hidden;
 }
 
-#sources-panel-sources-view .sources-status-bar .status-bar {
+#sources-panel-sources-view .sources-toolbar .toolbar {
     margin-top: -2px;
 }
 

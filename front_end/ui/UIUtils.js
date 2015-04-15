@@ -766,11 +766,11 @@ WebInspector.setToolbarColors = function(document, backgroundColor, color)
              "   color: %s;" +
              "}", prefix, color) +
         String.sprintf(
-             "%s .inspector-view-toolbar.status-bar::shadow .status-bar-item {" +
+             "%s .inspector-view-toolbar.toolbar::shadow .toolbar-item {" +
              "   color: %s;" +
              "}", prefix, colorWithAlpha) +
         String.sprintf(
-             "%s .inspector-view-toolbar.status-bar::shadow .status-bar-button-theme {" +
+             "%s .inspector-view-toolbar.toolbar::shadow .toolbar-button-theme {" +
              "   background-color: %s;" +
              "}", prefix, colorWithAlpha);
 }

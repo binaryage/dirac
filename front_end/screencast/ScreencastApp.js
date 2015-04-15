@@ -10,7 +10,7 @@
 WebInspector.ScreencastApp = function()
 {
     this._enabledSetting = WebInspector.settings.createSetting("screencastEnabled", true);
-    this._toggleButton = new WebInspector.StatusBarButton(WebInspector.UIString("Toggle screencast."), "screencast-status-bar-item");
+    this._toggleButton = new WebInspector.ToolbarButton(WebInspector.UIString("Toggle screencast."), "screencast-toolbar-item");
     this._toggleButton.setToggled(this._enabledSetting.get());
     this._toggleButton.addEventListener("click", this._toggleButtonClicked, this);
     WebInspector.targetManager.observeTargets(this);
@@ -108,16 +108,16 @@ WebInspector.ScreencastApp._instance = function()
 
 /**
  * @constructor
- * @implements {WebInspector.StatusBarItem.Provider}
+ * @implements {WebInspector.ToolbarItem.Provider}
  */
-WebInspector.ScreencastApp.StatusBarButtonProvider = function()
+WebInspector.ScreencastApp.ToolbarButtonProvider = function()
 {
 }
 
-WebInspector.ScreencastApp.StatusBarButtonProvider.prototype = {
+WebInspector.ScreencastApp.ToolbarButtonProvider.prototype = {
     /**
      * @override
-     * @return {?WebInspector.StatusBarItem}
+     * @return {?WebInspector.ToolbarItem}
      */
     item: function()
     {

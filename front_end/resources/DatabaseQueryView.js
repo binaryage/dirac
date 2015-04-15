@@ -54,9 +54,9 @@ WebInspector.DatabaseQueryView.Events = {
 
 WebInspector.DatabaseQueryView.prototype = {
     /**
-     * @return {!Array.<!WebInspector.StatusBarItem>}
+     * @return {!Array.<!WebInspector.ToolbarItem>}
      */
-    statusBarItems: function()
+    toolbarItems: function()
     {
         return [];
     },

@@ -81,9 +81,9 @@ WebInspector.ProfileType.prototype = {
     },
 
     /**
-     * @return {!Array.<!WebInspector.StatusBarItem>}
+     * @return {!Array.<!WebInspector.ToolbarItem>}
      */
-    statusBarItems: function()
+    toolbarItems: function()
     {
         return [];
     },
@@ -455,24 +455,24 @@ WebInspector.ProfilesPanel = function()
     this.profileViews.classList.add("vbox");
     mainView.element.appendChild(this.profileViews);
 
-    this._statusBarElement = createElementWithClass("div", "profiles-status-bar");
-    mainView.element.insertBefore(this._statusBarElement, mainView.element.firstChild);
+    this._toolbarElement = createElementWithClass("div", "profiles-toolbar");
+    mainView.element.insertBefore(this._toolbarElement, mainView.element.firstChild);
 
     this.panelSidebarElement().classList.add("profiles-sidebar-tree-box");
-    var statusBarContainerLeft = createElementWithClass("div", "profiles-status-bar");
-    this.panelSidebarElement().insertBefore(statusBarContainerLeft, this.panelSidebarElement().firstChild);
-    var statusBar = new WebInspector.StatusBar(statusBarContainerLeft);
+    var toolbarContainerLeft = createElementWithClass("div", "profiles-toolbar");
+    this.panelSidebarElement().insertBefore(toolbarContainerLeft, this.panelSidebarElement().firstChild);
+    var toolbar = new WebInspector.Toolbar(toolbarContainerLeft);
 
-    this.recordButton = new WebInspector.StatusBarButton("", "record-status-bar-item");
+    this.recordButton = new WebInspector.ToolbarButton("", "record-toolbar-item");
     this.recordButton.addEventListener("click", this.toggleRecordButton, this);
-    statusBar.appendStatusBarItem(this.recordButton);
+    toolbar.appendToolbarItem(this.recordButton);
 
-    this.clearResultsButton = new WebInspector.StatusBarButton(WebInspector.UIString("Clear all profiles."), "clear-status-bar-item");
+    this.clearResultsButton = new WebInspector.ToolbarButton(WebInspector.UIString("Clear all profiles."), "clear-toolbar-item");
     this.clearResultsButton.addEventListener("click", this._reset, this);
-    statusBar.appendStatusBarItem(this.clearResultsButton);
+    toolbar.appendToolbarItem(this.clearResultsButton);
 
-    this._profileTypeStatusBar = new WebInspector.StatusBar(this._statusBarElement);
-    this._profileViewStatusBar = new WebInspector.StatusBar(this._statusBarElement);
+    this._profileTypeToolbar = new WebInspector.Toolbar(this._toolbarElement);
+    this._profileViewToolbar = new WebInspector.Toolbar(this._toolbarElement);
 
     this._profileGroups = {};
     this._launcherView = new WebInspector.MultiProfileLauncherView(this);
@@ -619,10 +619,10 @@ WebInspector.ProfilesPanel.prototype = {
     _updateProfileTypeSpecificUI: function()
     {
         this._updateRecordButton(this.recordButton.toggled());
-        this._profileTypeStatusBar.removeStatusBarItems();
-        var statusBarItems = this._selectedProfileType.statusBarItems();
-        for (var i = 0; i < statusBarItems.length; ++i)
-            this._profileTypeStatusBar.appendStatusBarItem(statusBarItems[i]);
+        this._profileTypeToolbar.removeToolbarItems();
+        var toolbarItems = this._selectedProfileType.toolbarItems();
+        for (var i = 0; i < toolbarItems.length; ++i)
+            this._profileTypeToolbar.appendToolbarItem(toolbarItems[i]);
     },
 
     _reset: function()
@@ -643,12 +643,12 @@ WebInspector.ProfilesPanel.prototype = {
 
         this._launcherView.detach();
         this.profileViews.removeChildren();
-        this._profileViewStatusBar.removeStatusBarItems();
+        this._profileViewToolbar.removeToolbarItems();
 
         this.removeAllListeners();
 
         this.recordButton.setVisible(true);
-        this._profileViewStatusBar.element.classList.remove("hidden");
+        this._profileViewToolbar.element.classList.remove("hidden");
         this.clearResultsButton.element.classList.remove("hidden");
         this.profilesItemTreeElement.select();
         this._showLauncherView();
@@ -657,7 +657,7 @@ WebInspector.ProfilesPanel.prototype = {
     _showLauncherView: function()
     {
         this.closeVisibleView();
-        this._profileViewStatusBar.removeStatusBarItems();
+        this._profileViewToolbar.removeToolbarItems();
         this._launcherView.show(this.profileViews);
         this.visibleView = this._launcherView;
     },
@@ -801,11 +801,11 @@ WebInspector.ProfilesPanel.prototype = {
         var sidebarElement = profileTypeSection.sidebarElementForProfile(profile);
         sidebarElement.revealAndSelect();
 
-        this._profileViewStatusBar.removeStatusBarItems();
+        this._profileViewToolbar.removeToolbarItems();
 
-        var statusBarItems = view.statusBarItems();
-        for (var i = 0; i < statusBarItems.length; ++i)
-            this._profileViewStatusBar.appendStatusBarItem(statusBarItems[i]);
+        var toolbarItems = view.toolbarItems();
+        for (var i = 0; i < toolbarItems.length; ++i)
+            this._profileViewToolbar.appendToolbarItem(toolbarItems[i]);
 
         return view;
     },

@@ -55,7 +55,7 @@ WebInspector.SourceFrame = function(contentProvider)
     this._shortcuts = {};
     this.element.addEventListener("keydown", this._handleKeyDown.bind(this), false);
 
-    this._sourcePosition = new WebInspector.StatusBarText("", "source-frame-cursor-position");
+    this._sourcePosition = new WebInspector.ToolbarText("", "source-frame-cursor-position");
 
     this._errorPopoverHelper = new WebInspector.PopoverHelper(this.element, this._getErrorAnchor.bind(this), this._showErrorPopover.bind(this));
     this._errorPopoverHelper.setTimeout(100, 100);
@@ -132,9 +132,9 @@ WebInspector.SourceFrame.prototype = {
     },
 
     /**
-     * @return {!WebInspector.StatusBarText}
+     * @return {!WebInspector.ToolbarText}
      */
-    statusBarText: function()
+    toolbarText: function()
     {
         return this._sourcePosition;
     },

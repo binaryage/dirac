@@ -41,8 +41,8 @@ WebInspector.ExtensionPanel = function(server, id, pageURL)
     WebInspector.Panel.call(this, id);
     this._server = server;
     this.setHideOnDetach();
-    this._panelStatusBar = new WebInspector.StatusBar(this.element);
-    this._panelStatusBar.element.classList.add("hidden");
+    this._panelToolbar = new WebInspector.Toolbar(this.element);
+    this._panelToolbar.element.classList.add("hidden");
 
     this._searchableView = new WebInspector.SearchableView(this);
     this._searchableView.show(this.element);
@@ -63,12 +63,12 @@ WebInspector.ExtensionPanel.prototype = {
     },
 
     /**
-     * @param {!WebInspector.StatusBarItem} item
+     * @param {!WebInspector.ToolbarItem} item
      */
-    addStatusBarItem: function(item)
+    addToolbarItem: function(item)
     {
-        this._panelStatusBar.element.classList.remove("hidden");
-        this._panelStatusBar.appendStatusBarItem(item);
+        this._panelToolbar.element.classList.remove("hidden");
+        this._panelToolbar.appendToolbarItem(item);
     },
 
     /**
@@ -150,8 +150,8 @@ WebInspector.ExtensionButton = function(server, id, iconURL, tooltip, disabled)
 {
     this._id = id;
 
-    this._statusBarButton = new WebInspector.StatusBarButton("", "extension");
-    this._statusBarButton.addEventListener("click", server.notifyButtonClicked.bind(server, this._id));
+    this._toolbarButton = new WebInspector.ToolbarButton("", "extension");
+    this._toolbarButton.addEventListener("click", server.notifyButtonClicked.bind(server, this._id));
     this.update(iconURL, tooltip, disabled);
 }
 
@@ -164,19 +164,19 @@ WebInspector.ExtensionButton.prototype = {
     update: function(iconURL, tooltip, disabled)
     {
         if (typeof iconURL === "string")
-            this._statusBarButton.setBackgroundImage(iconURL);
+            this._toolbarButton.setBackgroundImage(iconURL);
         if (typeof tooltip === "string")
-            this._statusBarButton.setTitle(tooltip);
+            this._toolbarButton.setTitle(tooltip);
         if (typeof disabled === "boolean")
-            this._statusBarButton.setEnabled(!disabled);
+            this._toolbarButton.setEnabled(!disabled);
     },
 
     /**
-     * @return {!WebInspector.StatusBarButton}
+     * @return {!WebInspector.ToolbarButton}
      */
-    statusBarButton: function()
+    toolbarButton: function()
     {
-        return this._statusBarButton;
+        return this._toolbarButton;
     }
 }
 

@@ -137,26 +137,26 @@ WebInspector.HeapSnapshotView = function(dataDisplayDelegate, profile)
         this._perspectives.push(new WebInspector.HeapSnapshotView.AllocationPerspective());
     this._perspectives.push(new WebInspector.HeapSnapshotView.StatisticsPerspective());
 
-    this._perspectiveSelect = new WebInspector.StatusBarComboBox(this._onSelectedPerspectiveChanged.bind(this));
+    this._perspectiveSelect = new WebInspector.ToolbarComboBox(this._onSelectedPerspectiveChanged.bind(this));
     for (var i = 0; i < this._perspectives.length; ++i)
         this._perspectiveSelect.createOption(this._perspectives[i].title());
 
     this._profile = profile;
 
-    this._baseSelect = new WebInspector.StatusBarComboBox(this._changeBase.bind(this));
+    this._baseSelect = new WebInspector.ToolbarComboBox(this._changeBase.bind(this));
     this._baseSelect.setVisible(false);
     this._updateBaseOptions();
 
-    this._filterSelect = new WebInspector.StatusBarComboBox(this._changeFilter.bind(this));
+    this._filterSelect = new WebInspector.ToolbarComboBox(this._changeFilter.bind(this));
     this._filterSelect.setVisible(false);
     this._updateFilterOptions();
 
-    this._classNameFilter = new WebInspector.StatusBarInput("Class filter");
+    this._classNameFilter = new WebInspector.ToolbarInput("Class filter");
     this._classNameFilter.setVisible(false);
     this._constructorsDataGrid.setNameFilter(this._classNameFilter);
     this._diffDataGrid.setNameFilter(this._classNameFilter);
 
-    this._selectedSizeText = new WebInspector.StatusBarText("");
+    this._selectedSizeText = new WebInspector.ToolbarText("");
 
     this._popoverHelper = new WebInspector.ObjectPopoverHelper(this.element, this._getHoverAnchor.bind(this), this._resolveObjectForPopover.bind(this), undefined, true);
 
@@ -550,9 +550,9 @@ WebInspector.HeapSnapshotView.prototype = {
     },
 
     /**
-     * @return {!Array.<!WebInspector.StatusBarItem>}
+     * @return {!Array.<!WebInspector.ToolbarItem>}
      */
-    statusBarItems: function()
+    toolbarItems: function()
     {
         var result = [this._perspectiveSelect, this._classNameFilter];
         if (this._profile.profileType() !== WebInspector.ProfileTypeRegistry.instance.trackingHeapSnapshotProfileType)

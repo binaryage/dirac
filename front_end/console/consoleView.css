@@ -111,7 +111,7 @@
     height: 10px;
     margin-top: -4px;
     -webkit-user-select: none;
-    background-image: url(Images/statusbarButtonGlyphs.png);
+    background-image: url(Images/toolbarButtonGlyphs.png);
     background-size: 320px 144px;
 }
 
@@ -120,7 +120,7 @@
 .console-user-command::before,
 #console-prompt::before,
 .console-group-title::before {
-    background-image: url(Images/statusbarButtonGlyphs_2x.png);
+    background-image: url(Images/toolbarButtonGlyphs_2x.png);
 }
 } /* media */
 
@@ -186,7 +186,7 @@
 
 .console-group-title::before {
     -webkit-user-select: none;
-    -webkit-mask-image: url(Images/statusbarButtonGlyphs.png);
+    -webkit-mask-image: url(Images/toolbarButtonGlyphs.png);
     -webkit-mask-size: 320px 144px;
     float: left;
     width: 8px;
@@ -199,7 +199,7 @@
 
 @media (-webkit-min-device-pixel-ratio: 1.5) {
 .console-group-title::before {
-    -webkit-mask-image: url(Images/statusbarButtonGlyphs_2x.png);
+    -webkit-mask-image: url(Images/toolbarButtonGlyphs_2x.png);
 }
 } /* media */
 
@@ -291,7 +291,7 @@
 .console-warning-level .console-message::before,
 .console-debug-level .console-message::before,
 .console-info-level .console-message::before {
-    background-image: url(Images/statusbarButtonGlyphs.png);
+    background-image: url(Images/toolbarButtonGlyphs.png);
     background-size: 320px 144px;
     width: 10px;
     height: 10px;
@@ -302,7 +302,7 @@
 .console-warning-level .console-message::before,
 .console-debug-level .console-message::before,
 .console-info-level .console-message::before {
-    background-image: url(Images/statusbarButtonGlyphs_2x.png);
+    background-image: url(Images/toolbarButtonGlyphs_2x.png);
 }
 } /* media */
 
@@ -403,7 +403,7 @@
     white-space: nowrap !important;
 }
 
-.console-view .status-bar::shadow .console-context {
+.console-view .toolbar::shadow .console-context {
     max-width: 200px;
 }
 

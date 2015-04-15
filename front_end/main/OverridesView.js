@@ -68,10 +68,10 @@ WebInspector.OverridesView = function()
 
     if (WebInspector.overridesSupport.responsiveDesignAvailable()) {
         this._splashScreenElement.createTextChild(WebInspector.UIString("Emulation is currently disabled. Toggle "));
-        var statusBar = new WebInspector.StatusBar(this._splashScreenElement);
-        var toggleEmulationButton = new WebInspector.StatusBarButton("", "emulation-status-bar-item");
+        var toolbar = new WebInspector.Toolbar(this._splashScreenElement);
+        var toggleEmulationButton = new WebInspector.ToolbarButton("", "emulation-toolbar-item");
         toggleEmulationButton.addEventListener("click", this._toggleEmulationEnabled, this);
-        statusBar.appendStatusBarItem(toggleEmulationButton);
+        toolbar.appendToolbarItem(toggleEmulationButton);
         this._splashScreenElement.createTextChild(WebInspector.UIString("in the main toolbar to enable it."));
     } else {
         this._splashScreenElement.appendChild(createTextButton(WebInspector.UIString("Enable emulation"), this._toggleEmulationEnabled.bind(this), "overrides-enable-button"));

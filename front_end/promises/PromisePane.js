@@ -14,24 +14,24 @@ WebInspector.PromisePane = function()
     this.registerRequiredCSS("promises/promisePane.css");
     this.element.classList.add("promises");
 
-    var statusBar = new WebInspector.StatusBar(this.element);
-    this._recordButton = new WebInspector.StatusBarButton("", "record-status-bar-item");
+    var toolbar = new WebInspector.Toolbar(this.element);
+    this._recordButton = new WebInspector.ToolbarButton("", "record-toolbar-item");
     this._recordButton.addEventListener("click", this._recordButtonClicked.bind(this));
-    statusBar.appendStatusBarItem(this._recordButton);
+    toolbar.appendToolbarItem(this._recordButton);
 
-    var clearButton = new WebInspector.StatusBarButton(WebInspector.UIString("Clear"), "clear-status-bar-item");
+    var clearButton = new WebInspector.ToolbarButton(WebInspector.UIString("Clear"), "clear-toolbar-item");
     clearButton.addEventListener("click", this._clearButtonClicked.bind(this));
-    statusBar.appendStatusBarItem(clearButton);
+    toolbar.appendToolbarItem(clearButton);
 
     this._filter = new WebInspector.PromisePaneFilter(this._refresh.bind(this));
-    statusBar.appendStatusBarItem(this._filter.filterButton());
+    toolbar.appendToolbarItem(this._filter.filterButton());
 
-    var garbageCollectButton = new WebInspector.StatusBarButton(WebInspector.UIString("Collect garbage"), "garbage-collect-status-bar-item");
+    var garbageCollectButton = new WebInspector.ToolbarButton(WebInspector.UIString("Collect garbage"), "garbage-collect-toolbar-item");
     garbageCollectButton.addEventListener("click", this._garbageCollectButtonClicked, this);
-    statusBar.appendStatusBarItem(garbageCollectButton);
+    toolbar.appendToolbarItem(garbageCollectButton);
 
-    var asyncCheckbox = new WebInspector.StatusBarCheckbox(WebInspector.UIString("Async"), WebInspector.UIString("Capture async stack traces"), WebInspector.moduleSetting("enableAsyncStackTraces"));
-    statusBar.appendStatusBarItem(asyncCheckbox);
+    var asyncCheckbox = new WebInspector.ToolbarCheckbox(WebInspector.UIString("Async"), WebInspector.UIString("Capture async stack traces"), WebInspector.moduleSetting("enableAsyncStackTraces"));
+    toolbar.appendToolbarItem(asyncCheckbox);
 
     this.element.appendChild(this._filter.filtersContainer());
 
@@ -709,7 +709,7 @@ WebInspector.PromisePaneFilter = function(filterChanged)
 
 WebInspector.PromisePaneFilter.prototype = {
     /**
-     * @return {!WebInspector.StatusBarButton}
+     * @return {!WebInspector.ToolbarButton}
      */
     filterButton: function()
     {

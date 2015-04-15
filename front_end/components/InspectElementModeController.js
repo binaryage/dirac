@@ -32,7 +32,7 @@
  */
 WebInspector.InspectElementModeController = function()
 {
-    this._toggleSearchButton = new WebInspector.StatusBarButton(WebInspector.UIString("Select an element in the page to inspect it."), "node-search-status-bar-item");
+    this._toggleSearchButton = new WebInspector.ToolbarButton(WebInspector.UIString("Select an element in the page to inspect it."), "node-search-toolbar-item");
     InspectorFrontendHost.events.addEventListener(InspectorFrontendHostAPI.Events.EnterInspectElementMode, this._toggleSearch, this);
     WebInspector.targetManager.addModelListener(WebInspector.DOMModel, WebInspector.DOMModel.Events.ModelSuspended, this._onModelSuspended, this);
     WebInspector.targetManager.observeTargets(this);
@@ -121,7 +121,7 @@ WebInspector.InspectElementModeController.ToggleSearchActionDelegate.prototype =
 
 /**
  * @constructor
- * @implements {WebInspector.StatusBarItem.Provider}
+ * @implements {WebInspector.ToolbarItem.Provider}
  */
 WebInspector.InspectElementModeController.ToggleButtonProvider = function()
 {
@@ -130,7 +130,7 @@ WebInspector.InspectElementModeController.ToggleButtonProvider = function()
 WebInspector.InspectElementModeController.ToggleButtonProvider.prototype = {
     /**
      * @override
-     * @return {?WebInspector.StatusBarItem}
+     * @return {?WebInspector.ToolbarItem}
      */
     item: function()
     {

@@ -230,7 +230,7 @@ ol.outline-disclosure:focus li.selected * {
 .outline-disclosure li::before {
     float: left;
     -webkit-user-select: none;
-    -webkit-mask-image: url(Images/statusbarButtonGlyphs.png);
+    -webkit-mask-image: url(Images/toolbarButtonGlyphs.png);
     -webkit-mask-size: 320px 144px;
     content: "a";
     color: transparent;
@@ -248,7 +248,7 @@ ol.outline-disclosure:focus li.selected * {
 
 @media (-webkit-min-device-pixel-ratio: 1.5) {
 .outline-disclosure li::before {
-    -webkit-mask-image: url(Images/statusbarButtonGlyphs_2x.png);
+    -webkit-mask-image: url(Images/toolbarButtonGlyphs_2x.png);
 }
 } /* media */
 
@@ -384,7 +384,7 @@ ol.outline-disclosure:focus li.selected * {
     width: 10px;
     height: 10px;
     border: 0;
-    -webkit-mask-image: url(Images/statusbarButtonGlyphs.png);
+    -webkit-mask-image: url(Images/toolbarButtonGlyphs.png);
     -webkit-mask-size: 320px 144px;
     -webkit-appearance: none;
     background-color: rgba(0, 0, 0, 0.75);
@@ -394,7 +394,7 @@ ol.outline-disclosure:focus li.selected * {
 
 @media (-webkit-min-device-pixel-ratio: 1.5) {
 .sidebar-tree-item .disclosure-button {
-    -webkit-mask-image: url(Images/statusbarButtonGlyphs_2x.png);
+    -webkit-mask-image: url(Images/toolbarButtonGlyphs_2x.png);
 }
 } /* media */
 

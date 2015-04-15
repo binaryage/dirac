@@ -41,7 +41,7 @@ WebInspector.Drawer = function(splitView)
     splitView.hideDefaultResizer();
     splitView.setSidebarView(this);
 
-    this._toggleDrawerButton = new WebInspector.StatusBarButton(WebInspector.UIString("Show drawer."), "console-status-bar-item");
+    this._toggleDrawerButton = new WebInspector.ToolbarButton(WebInspector.UIString("Show drawer."), "console-toolbar-item");
     this._toggleDrawerButton.addEventListener("click", this.toggle, this);
 
     this._tabbedPane = new WebInspector.TabbedPane();
@@ -57,7 +57,7 @@ WebInspector.Drawer = function(splitView)
 
 WebInspector.Drawer.prototype = {
     /**
-     * @return {!WebInspector.StatusBarButton}
+     * @return {!WebInspector.ToolbarButton}
      */
     toggleButton: function()
     {

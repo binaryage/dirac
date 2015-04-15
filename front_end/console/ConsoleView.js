@@ -56,10 +56,10 @@ WebInspector.ConsoleView = function()
      */
     this._regexMatchRanges = [];
 
-    this._clearConsoleButton = new WebInspector.StatusBarButton(WebInspector.UIString("Clear console log."), "clear-status-bar-item");
+    this._clearConsoleButton = new WebInspector.ToolbarButton(WebInspector.UIString("Clear console log."), "clear-toolbar-item");
     this._clearConsoleButton.addEventListener("click", this._requestClearMessages, this);
 
-    this._executionContextSelector = new WebInspector.StatusBarComboBox(this._executionContextChanged.bind(this), "console-context");
+    this._executionContextSelector = new WebInspector.ToolbarComboBox(this._executionContextChanged.bind(this), "console-context");
 
     /**
      * @type {!Map.<!WebInspector.ExecutionContext, !Element>}
@@ -71,15 +71,15 @@ WebInspector.ConsoleView = function()
 
     this._filterBar = new WebInspector.FilterBar();
 
-    this._preserveLogCheckbox = new WebInspector.StatusBarCheckbox(WebInspector.UIString("Preserve log"), WebInspector.UIString("Do not clear log on page reload / navigation."), WebInspector.moduleSetting("preserveConsoleLog"));
-    this._progressStatusBarItem = new WebInspector.StatusBarItem(createElement("div"));
+    this._preserveLogCheckbox = new WebInspector.ToolbarCheckbox(WebInspector.UIString("Preserve log"), WebInspector.UIString("Do not clear log on page reload / navigation."), WebInspector.moduleSetting("preserveConsoleLog"));
+    this._progressToolbarItem = new WebInspector.ToolbarItem(createElement("div"));
 
-    var statusBar = new WebInspector.StatusBar(this._contentsElement);
-    statusBar.appendStatusBarItem(this._clearConsoleButton);
-    statusBar.appendStatusBarItem(this._filterBar.filterButton());
-    statusBar.appendStatusBarItem(this._executionContextSelector);
-    statusBar.appendStatusBarItem(this._preserveLogCheckbox);
-    statusBar.appendStatusBarItem(this._progressStatusBarItem);
+    var toolbar = new WebInspector.Toolbar(this._contentsElement);
+    toolbar.appendToolbarItem(this._clearConsoleButton);
+    toolbar.appendToolbarItem(this._filterBar.filterButton());
+    toolbar.appendToolbarItem(this._executionContextSelector);
+    toolbar.appendToolbarItem(this._preserveLogCheckbox);
+    toolbar.appendToolbarItem(this._progressToolbarItem);
 
     this._filtersContainer = this._contentsElement.createChild("div", "console-filters-header hidden");
     this._filtersContainer.appendChild(this._filterBar.filtersElement());
@@ -119,13 +119,13 @@ WebInspector.ConsoleView = function()
     var selectAllFixer = this._messagesElement.createChild("div", "console-view-fix-select-all");
     selectAllFixer.textContent = ".";
 
-    this._showAllMessagesCheckbox = new WebInspector.StatusBarCheckbox(WebInspector.UIString("Show all messages"));
+    this._showAllMessagesCheckbox = new WebInspector.ToolbarCheckbox(WebInspector.UIString("Show all messages"));
     this._showAllMessagesCheckbox.inputElement.checked = true;
     this._showAllMessagesCheckbox.inputElement.addEventListener("change", this._updateMessageList.bind(this), false);
 
     this._showAllMessagesCheckbox.element.classList.add("hidden");
 
-    statusBar.appendStatusBarItem(this._showAllMessagesCheckbox);
+    toolbar.appendToolbarItem(this._showAllMessagesCheckbox);
 
     this._registerShortcuts();
 
@@ -732,7 +732,7 @@ WebInspector.ConsoleView.prototype = {
         {
             if (!accepted)
                 return;
-            this._progressStatusBarItem.element.appendChild(progressIndicator.element);
+            this._progressToolbarItem.element.appendChild(progressIndicator.element);
             writeNextChunk.call(this, stream);
         }
 
@@ -992,7 +992,7 @@ WebInspector.ConsoleView.prototype = {
         this._searchProgressIndicator = new WebInspector.ProgressIndicator();
         this._searchProgressIndicator.setTitle(WebInspector.UIString("Searching…"));
         this._searchProgressIndicator.setTotalWork(this._visibleViewMessages.length);
-        this._progressStatusBarItem.element.appendChild(this._searchProgressIndicator.element);
+        this._progressToolbarItem.element.appendChild(this._searchProgressIndicator.element);
 
         this._innerSearch(0);
     },

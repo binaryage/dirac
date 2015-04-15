@@ -18,7 +18,7 @@ div.device-icon,
 div.red-ball,
 div.green-ball,
 div.orange-ball {
-    background-image: url(Images/statusbarButtonGlyphs.png);
+    background-image: url(Images/toolbarButtonGlyphs.png);
     background-size: 320px 144px;
 }
 
@@ -30,7 +30,7 @@ div.device-icon,
 div.red-ball,
 div.green-ball,
 div.orange-ball {
-    background-image: url(Images/statusbarButtonGlyphs_2x.png);
+    background-image: url(Images/toolbarButtonGlyphs_2x.png);
 }
 } /* media */
 

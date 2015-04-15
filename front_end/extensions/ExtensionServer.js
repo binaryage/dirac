@@ -58,7 +58,7 @@ WebInspector.ExtensionServer = function()
     this._registerHandler(commands.ApplyStyleSheet, this._onApplyStyleSheet.bind(this));
     this._registerHandler(commands.CreatePanel, this._onCreatePanel.bind(this));
     this._registerHandler(commands.CreateSidebarPane, this._onCreateSidebarPane.bind(this));
-    this._registerHandler(commands.CreateStatusBarButton, this._onCreateStatusBarButton.bind(this));
+    this._registerHandler(commands.CreateToolbarButton, this._onCreateToolbarButton.bind(this));
     this._registerHandler(commands.EvaluateOnInspectedPage, this._onEvaluateOnInspectedPage.bind(this));
     this._registerHandler(commands.ForwardKeyboardEvent, this._onForwardKeyboardEvent.bind(this));
     this._registerHandler(commands.GetHAR, this._onGetHAR.bind(this));
@@ -278,7 +278,7 @@ WebInspector.ExtensionServer.prototype = {
         WebInspector.inspectorView.showPanel(message.id);
     },
 
-    _onCreateStatusBarButton: function(message, port)
+    _onCreateToolbarButton: function(message, port)
     {
         var panelDescriptor = this._clientObjects[message.panel];
         if (!panelDescriptor || !(panelDescriptor instanceof WebInspector.ExtensionServerPanelDescriptor))
@@ -293,7 +293,7 @@ WebInspector.ExtensionServer.prototype = {
          */
         function appendButton(panel)
         {
-            /** @type {!WebInspector.ExtensionPanel} panel*/ (panel).addStatusBarItem(button.statusBarButton());
+            /** @type {!WebInspector.ExtensionPanel} panel*/ (panel).addToolbarItem(button.toolbarButton());
         }
 
         return this._status.OK();

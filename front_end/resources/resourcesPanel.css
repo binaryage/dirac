@@ -73,7 +73,7 @@ body.inactive .resources.panel .sidebar li.selected .selection {
     top: 1px;
 }
 
-.resources-status-bar {
+.resources-toolbar {
     border-top: 1px solid #ccc;
     background-color: #eee;
 }
@@ -157,7 +157,7 @@ li.selected .base-storage-tree-element-subtitle {
     height: 10px;
     margin-top: -7px;
     -webkit-user-select: none;
-    background-image: url(Images/statusbarButtonGlyphs.png);
+    background-image: url(Images/toolbarButtonGlyphs.png);
     background-size: 320px 144px;
 }
 
@@ -165,7 +165,7 @@ li.selected .base-storage-tree-element-subtitle {
 .database-user-query::before,
 .database-query-prompt::before,
 .database-query-result::before {
-    background-image: url(Images/statusbarButtonGlyphs_2x.png);
+    background-image: url(Images/toolbarButtonGlyphs_2x.png);
 }
 } /* media */
 
@@ -358,13 +358,13 @@ li.selected .base-storage-tree-element-subtitle {
     content: url(Images/fileSystem.png);
 }
 
-.resources-status-bar::shadow .storage-application-cache-connectivity {
+.resources-toolbar::shadow .storage-application-cache-connectivity {
     padding-right: 5px;
     border-right: 1px solid #CCC;
     height: 23px;
     line-height: 23px
 }
 
-.resources-status-bar::shadow label[is=dt-icon-label] {
+.resources-toolbar::shadow label[is=dt-icon-label] {
     margin: 4px;
 }

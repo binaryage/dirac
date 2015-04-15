@@ -6,7 +6,7 @@
 
 .custom-expandable-section::before {
     -webkit-user-select: none;
-    background-image: url(Images/statusbarButtonGlyphs.png);
+    background-image: url(Images/toolbarButtonGlyphs.png);
     background-size: 320px 144px;
     opacity: 0.5;
     content: "a";

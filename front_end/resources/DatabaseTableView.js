@@ -38,10 +38,10 @@ WebInspector.DatabaseTableView = function(database, tableName)
 
     this._visibleColumnsSetting = WebInspector.settings.createSetting("databaseTableViewVisibleColumns", {});
 
-    this.refreshButton = new WebInspector.StatusBarButton(WebInspector.UIString("Refresh"), "refresh-status-bar-item");
+    this.refreshButton = new WebInspector.ToolbarButton(WebInspector.UIString("Refresh"), "refresh-toolbar-item");
     this.refreshButton.addEventListener("click", this._refreshButtonClicked, this);
-    this._visibleColumnsInput = new WebInspector.StatusBarInput(WebInspector.UIString("Visible columns"), 1);
-    this._visibleColumnsInput.addEventListener(WebInspector.StatusBarInput.Event.TextChanged, this._onVisibleColumnsChanged, this);
+    this._visibleColumnsInput = new WebInspector.ToolbarInput(WebInspector.UIString("Visible columns"), 1);
+    this._visibleColumnsInput.addEventListener(WebInspector.ToolbarInput.Event.TextChanged, this._onVisibleColumnsChanged, this);
 }
 
 WebInspector.DatabaseTableView.prototype = {
@@ -51,9 +51,9 @@ WebInspector.DatabaseTableView.prototype = {
     },
 
     /**
-     * @return {!Array.<!WebInspector.StatusBarItem>}
+     * @return {!Array.<!WebInspector.ToolbarItem>}
      */
-    statusBarItems: function()
+    toolbarItems: function()
     {
         return [this.refreshButton, this._visibleColumnsInput];
     },

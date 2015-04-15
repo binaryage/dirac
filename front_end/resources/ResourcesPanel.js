@@ -73,8 +73,8 @@ WebInspector.ResourcesPanel = function()
 
     var mainView = new WebInspector.VBox();
     this.storageViews = mainView.element.createChild("div", "vbox flex-auto");
-    this._storageViewStatusBar = new WebInspector.StatusBar(mainView.element);
-    this._storageViewStatusBar.element.classList.add("resources-status-bar");
+    this._storageViewToolbar = new WebInspector.Toolbar(mainView.element);
+    this._storageViewToolbar.element.classList.add("resources-toolbar");
     this.splitView().setMainView(mainView);
 
     /** @type {!Map.<!WebInspector.Database, !Object.<string, !WebInspector.DatabaseTableView>>} */
@@ -239,7 +239,7 @@ WebInspector.ResourcesPanel.prototype = {
         if (this.visibleView && !(this.visibleView instanceof WebInspector.StorageCategoryView))
             this.visibleView.detach();
 
-        this._storageViewStatusBar.removeStatusBarItems();
+        this._storageViewToolbar.removeToolbarItems();
 
         if (this._sidebarTree.selectedTreeElement)
             this._sidebarTree.selectedTreeElement.deselect();
@@ -637,10 +637,10 @@ WebInspector.ResourcesPanel.prototype = {
         view.show(this.storageViews);
         this.visibleView = view;
 
-        this._storageViewStatusBar.removeStatusBarItems();
-        var statusBarItems = view.statusBarItems ? view.statusBarItems() : null;
-        for (var i = 0; statusBarItems && i < statusBarItems.length; ++i)
-            this._storageViewStatusBar.appendStatusBarItem(statusBarItems[i]);
+        this._storageViewToolbar.removeToolbarItems();
+        var toolbarItems = view.toolbarItems ? view.toolbarItems() : null;
+        for (var i = 0; toolbarItems && i < toolbarItems.length; ++i)
+            this._storageViewToolbar.appendToolbarItem(toolbarItems[i]);
     },
 
     closeVisibleView: function()
@@ -2390,9 +2390,9 @@ WebInspector.StorageCategoryView = function()
 
 WebInspector.StorageCategoryView.prototype = {
     /**
-     * @return {!Array.<!WebInspector.StatusBarItem>}
+     * @return {!Array.<!WebInspector.ToolbarItem>}
      */
-    statusBarItems: function()
+    toolbarItems: function()
     {
         return [];
     },

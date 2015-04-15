@@ -37,15 +37,15 @@ WebInspector.CookieItemsView = function(treeElement, cookieDomain)
 
     this.element.classList.add("storage-view");
 
-    this._deleteButton = new WebInspector.StatusBarButton(WebInspector.UIString("Delete"), "delete-status-bar-item");
+    this._deleteButton = new WebInspector.ToolbarButton(WebInspector.UIString("Delete"), "delete-toolbar-item");
     this._deleteButton.setVisible(false);
     this._deleteButton.addEventListener("click", this._deleteButtonClicked, this);
 
-    this._clearButton = new WebInspector.StatusBarButton(WebInspector.UIString("Clear"), "clear-status-bar-item");
+    this._clearButton = new WebInspector.ToolbarButton(WebInspector.UIString("Clear"), "clear-toolbar-item");
     this._clearButton.setVisible(false);
     this._clearButton.addEventListener("click", this._clearButtonClicked, this);
 
-    this._refreshButton = new WebInspector.StatusBarButton(WebInspector.UIString("Refresh"), "refresh-status-bar-item");
+    this._refreshButton = new WebInspector.ToolbarButton(WebInspector.UIString("Refresh"), "refresh-toolbar-item");
     this._refreshButton.addEventListener("click", this._refreshButtonClicked, this);
 
     this._treeElement = treeElement;
@@ -59,9 +59,9 @@ WebInspector.CookieItemsView = function(treeElement, cookieDomain)
 
 WebInspector.CookieItemsView.prototype = {
     /**
-     * @return {!Array.<!WebInspector.StatusBarItem>}
+     * @return {!Array.<!WebInspector.ToolbarItem>}
      */
-    statusBarItems: function()
+    toolbarItems: function()
     {
         return [this._refreshButton, this._clearButton, this._deleteButton];
     },

@@ -50,20 +50,20 @@ WebInspector.FileSystemView = function(fileSystem)
     this._directoryTree.appendChild(rootItem);
     this._visibleView = null;
 
-    this._refreshButton = new WebInspector.StatusBarButton(WebInspector.UIString("Refresh"), "refresh-status-bar-item");
+    this._refreshButton = new WebInspector.ToolbarButton(WebInspector.UIString("Refresh"), "refresh-toolbar-item");
     this._refreshButton.setVisible(true);
     this._refreshButton.addEventListener("click", this._refresh, this);
 
-    this._deleteButton = new WebInspector.StatusBarButton(WebInspector.UIString("Delete"), "delete-status-bar-item");
+    this._deleteButton = new WebInspector.ToolbarButton(WebInspector.UIString("Delete"), "delete-toolbar-item");
     this._deleteButton.setVisible(true);
     this._deleteButton.addEventListener("click", this._confirmDelete, this);
 }
 
 WebInspector.FileSystemView.prototype = {
     /**
-     * @return {!Array.<!WebInspector.StatusBarItem>}
+     * @return {!Array.<!WebInspector.ToolbarItem>}
      */
-    statusBarItems: function()
+    toolbarItems: function()
     {
         return [this._refreshButton, this._deleteButton];
     },

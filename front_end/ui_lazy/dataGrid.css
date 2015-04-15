@@ -148,7 +148,7 @@
 
 .data-grid th .sort-order-icon {
     margin-right: 4px;
-    background-image: url(Images/statusbarButtonGlyphs.png);
+    background-image: url(Images/toolbarButtonGlyphs.png);
     background-size: 320px 144px;
     opacity: 0.5;
     width: 8px;
@@ -158,7 +158,7 @@
 
 @media (-webkit-min-device-pixel-ratio: 1.5) {
 .data-grid th .sort-order-icon {
-    background-image: url(Images/statusbarButtonGlyphs_2x.png);
+    background-image: url(Images/toolbarButtonGlyphs_2x.png);
 }
 } /* media */
 
@@ -183,7 +183,7 @@
 
 .data-grid tr.parent td.disclosure::before {
     -webkit-user-select: none;
-    -webkit-mask-image: url(Images/statusbarButtonGlyphs.png);
+    -webkit-mask-image: url(Images/toolbarButtonGlyphs.png);
     -webkit-mask-size: 320px 144px;
     float: left;
     width: 8px;
@@ -202,7 +202,7 @@
 
 @media (-webkit-min-device-pixel-ratio: 1.5) {
 .data-grid tr.parent td.disclosure::before {
-    -webkit-mask-image: url(Images/statusbarButtonGlyphs_2x.png);
+    -webkit-mask-image: url(Images/toolbarButtonGlyphs_2x.png);
 }
 } /* media */
 

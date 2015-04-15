@@ -135,7 +135,7 @@
 .timeline-tree-item-expand-arrow {
     display: inline-block;
     -webkit-user-select: none;
-    -webkit-mask-image: url(Images/statusbarButtonGlyphs.png);
+    -webkit-mask-image: url(Images/toolbarButtonGlyphs.png);
     -webkit-mask-size: 320px 144px;
     width: 10px;
     height: 10px;
@@ -148,7 +148,7 @@
 
 @media (-webkit-min-device-pixel-ratio: 1.5) {
 .timeline-tree-item-expand-arrow {
-    -webkit-mask-image: url(Images/statusbarButtonGlyphs_2x.png);
+    -webkit-mask-image: url(Images/toolbarButtonGlyphs_2x.png);
 }
 } /* media */
 
@@ -161,7 +161,7 @@
 }
 
 .timeline-expandable-arrow {
-    background-image: url(Images/statusbarButtonGlyphs.png);
+    background-image: url(Images/toolbarButtonGlyphs.png);
     background-size: 320px 144px;
     opacity: 0.5;
     width: 10px;
@@ -173,7 +173,7 @@
 
 @media (-webkit-min-device-pixel-ratio: 1.5) {
 .timeline-expandable-arrow {
-    background-image: url(Images/statusbarButtonGlyphs_2x.png);
+    background-image: url(Images/toolbarButtonGlyphs_2x.png);
 }
 } /* media */
 
@@ -211,7 +211,7 @@
 
 .timeline-tree-item-warning {
     display: block;
-    background-image: url(Images/statusbarButtonGlyphs.png);
+    background-image: url(Images/toolbarButtonGlyphs.png);
     background-size: 320px 144px;
     width: 10px;
     height: 10px;
@@ -227,7 +227,7 @@
 
 @media (-webkit-min-device-pixel-ratio: 1.5) {
 .timeline-tree-item-warning {
-    background-image: url(Images/statusbarButtonGlyphs_2x.png);
+    background-image: url(Images/toolbarButtonGlyphs_2x.png);
 }
 } /* media */
 

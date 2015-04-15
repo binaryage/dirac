@@ -29,7 +29,7 @@
 
 .elements-disclosure li.parent::before {
     -webkit-user-select: none;
-    -webkit-mask-image: url(Images/statusbarButtonGlyphs.png);
+    -webkit-mask-image: url(Images/toolbarButtonGlyphs.png);
     -webkit-mask-size: 320px 144px;
     content: "a";
     color: transparent;
@@ -39,7 +39,7 @@
 
 @media (-webkit-min-device-pixel-ratio: 1.5) {
 .elements-disclosure li.parent::before {
-    -webkit-mask-image: url(Images/statusbarButtonGlyphs_2x.png);
+    -webkit-mask-image: url(Images/toolbarButtonGlyphs_2x.png);
 }
 } /* media */
 

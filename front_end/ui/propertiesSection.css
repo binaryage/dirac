@@ -39,7 +39,7 @@
 
 .properties-tree li.parent::before {
     -webkit-user-select: none;
-    background-image: url(Images/statusbarButtonGlyphs.png);
+    background-image: url(Images/toolbarButtonGlyphs.png);
     background-size: 320px 144px;
     opacity: 0.5;
     content: "a";
@@ -52,7 +52,7 @@
 
 @media (-webkit-min-device-pixel-ratio: 1.5) {
 .properties-tree li.parent::before {
-    background-image: url(Images/statusbarButtonGlyphs_2x.png);
+    background-image: url(Images/toolbarButtonGlyphs_2x.png);
 }
 } /* media */
 

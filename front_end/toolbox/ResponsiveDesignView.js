@@ -581,23 +581,23 @@ WebInspector.ResponsiveDesignView.prototype = {
 
     _createButtonsSection: function()
     {
-        var buttonsStatusBar = new WebInspector.StatusBar(this._toolbarElement);
-        buttonsStatusBar.makeVertical();
-        buttonsStatusBar.setColor("white");
-        buttonsStatusBar.setToggledColor("rgb(105, 194, 236)");
-        buttonsStatusBar.element.classList.add("responsive-design-section", "responsive-design-section-buttons");
+        var buttonsToolbar = new WebInspector.Toolbar(this._toolbarElement);
+        buttonsToolbar.makeVertical();
+        buttonsToolbar.setColor("white");
+        buttonsToolbar.setToggledColor("rgb(105, 194, 236)");
+        buttonsToolbar.element.classList.add("responsive-design-section", "responsive-design-section-buttons");
 
-        var resetButton = new WebInspector.StatusBarButton(WebInspector.UIString("Reset all overrides."), "clear-status-bar-item");
-        buttonsStatusBar.appendStatusBarItem(resetButton);
+        var resetButton = new WebInspector.ToolbarButton(WebInspector.UIString("Reset all overrides."), "clear-toolbar-item");
+        buttonsToolbar.appendToolbarItem(resetButton);
         resetButton.addEventListener("click", WebInspector.overridesSupport.reset, WebInspector.overridesSupport);
 
         // Media Query Inspector.
-        this._toggleMediaInspectorButton = new WebInspector.StatusBarButton(WebInspector.UIString("Media queries not found"), "waterfall-status-bar-item");
+        this._toggleMediaInspectorButton = new WebInspector.ToolbarButton(WebInspector.UIString("Media queries not found"), "waterfall-toolbar-item");
         this._toggleMediaInspectorButton.setToggled(this._showMediaQueryInspectorSetting.get());
         this._toggleMediaInspectorButton.setEnabled(false);
         this._toggleMediaInspectorButton.addEventListener("click", this._onToggleMediaInspectorButtonClick, this);
         this._showMediaQueryInspectorSetting.addChangeListener(this._updateMediaQueryInspector, this);
-        buttonsStatusBar.appendStatusBarItem(this._toggleMediaInspectorButton);
+        buttonsToolbar.appendToolbarItem(this._toggleMediaInspectorButton);
     },
 
     _createDeviceSection: function()

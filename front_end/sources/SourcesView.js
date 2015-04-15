@@ -37,8 +37,8 @@ WebInspector.SourcesView = function(workspace, sourcesPanel)
 
     this._historyManager = new WebInspector.EditingLocationHistoryManager(this, this.currentSourceFrame.bind(this));
 
-    this._statusBarContainerElement = this.element.createChild("div", "sources-status-bar");
-    this._statusBarEditorActions = new WebInspector.StatusBar(this._statusBarContainerElement);
+    this._toolbarContainerElement = this.element.createChild("div", "sources-toolbar");
+    this._toolbarEditorActions = new WebInspector.Toolbar(this._toolbarContainerElement);
 
     self.runtime.instancesPromise(WebInspector.SourcesView.EditorAction).then(appendButtonsForExtensions.bind(this));
     /**
@@ -48,9 +48,9 @@ WebInspector.SourcesView = function(workspace, sourcesPanel)
     function appendButtonsForExtensions(actions)
     {
         for (var i = 0; i < actions.length; ++i)
-            this._statusBarEditorActions.appendStatusBarItem(actions[i].button(this));
+            this._toolbarEditorActions.appendToolbarItem(actions[i].button(this));
     }
-    this._scriptViewStatusBarText = new WebInspector.StatusBar(this._statusBarContainerElement);
+    this._scriptViewToolbarText = new WebInspector.Toolbar(this._toolbarContainerElement);
 
     WebInspector.startBatchUpdate();
     this._workspace.uiSourceCodes().forEach(this._addUISourceCode.bind(this));
@@ -160,9 +160,9 @@ WebInspector.SourcesView.prototype = {
     /**
      * @return {!Element}
      */
-    statusBarContainerElement: function()
+    toolbarContainerElement: function()
     {
-        return this._statusBarContainerElement;
+        return this._toolbarContainerElement;
     },
 
     /**
@@ -295,15 +295,15 @@ WebInspector.SourcesView.prototype = {
             this._editorContainer.reset();
     },
 
-    _updateScriptViewStatusBarItems: function()
+    _updateScriptViewToolbarItems: function()
     {
-        this._scriptViewStatusBarText.removeStatusBarItems();
+        this._scriptViewToolbarText.removeToolbarItems();
         var sourceFrame = this.currentSourceFrame();
         if (!sourceFrame)
             return;
 
-        var statusBarText = sourceFrame.statusBarText();
-        this._scriptViewStatusBarText.appendStatusBarItem(statusBarText);
+        var toolbarText = sourceFrame.toolbarText();
+        this._scriptViewToolbarText.appendToolbarItem(toolbarText);
     },
 
     /**
@@ -341,7 +341,7 @@ WebInspector.SourcesView.prototype = {
 
         this._currentUISourceCode = uiSourceCode;
         this._editorContainer.showFile(uiSourceCode);
-        this._updateScriptViewStatusBarItems();
+        this._updateScriptViewToolbarItems();
         return sourceFrame;
     },
 
@@ -466,7 +466,7 @@ WebInspector.SourcesView.prototype = {
         }
 
         // SourcesNavigator does not need to update on EditorClosed.
-        this._updateScriptViewStatusBarItems();
+        this._updateScriptViewToolbarItems();
         this._searchableView.resetSearch();
 
         var data = {};
@@ -760,7 +760,7 @@ WebInspector.SourcesView.EditorAction = function()
 WebInspector.SourcesView.EditorAction.prototype = {
     /**
      * @param {!WebInspector.SourcesView} sourcesView
-     * @return {!WebInspector.StatusBarButton}
+     * @return {!WebInspector.ToolbarButton}
      */
     button: function(sourcesView) { }
 }

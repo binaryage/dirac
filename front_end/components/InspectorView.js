@@ -51,12 +51,12 @@ WebInspector.InspectorView = function()
     this._drawerSplitView.setMainView(this._tabbedPane);
     this._drawer = new WebInspector.Drawer(this._drawerSplitView);
 
-    this._leftToolbar = new WebInspector.StatusBar();
+    this._leftToolbar = new WebInspector.Toolbar();
     this._leftToolbar.element.classList.add("inspector-view-toolbar", "inspector-view-toolbar-left");
     this._leftToolbar.makeNarrow();
     this._tabbedPane.insertBeforeTabStrip(this._leftToolbar.element);
 
-    this._rightToolbar = new WebInspector.StatusBar();
+    this._rightToolbar = new WebInspector.Toolbar();
     this._rightToolbar.element.classList.add("inspector-view-toolbar");
     this._tabbedPane.appendAfterTabStrip(this._rightToolbar.element);
 
@@ -126,19 +126,19 @@ WebInspector.InspectorView.prototype = {
     },
 
     /**
-     * @param {!WebInspector.StatusBarItem} item
+     * @param {!WebInspector.ToolbarItem} item
      */
     appendToLeftToolbar: function(item)
     {
-        this._leftToolbar.appendStatusBarItem(item);
+        this._leftToolbar.appendToolbarItem(item);
     },
 
     /**
-     * @param {!WebInspector.StatusBarItem} item
+     * @param {!WebInspector.ToolbarItem} item
      */
     appendToRightToolbar: function(item)
     {
-        this._rightToolbar.appendStatusBarItem(item);
+        this._rightToolbar.appendToolbarItem(item);
     },
 
     /**
@@ -539,7 +539,7 @@ WebInspector.InspectorView.DrawerToggleActionDelegate.prototype = {
 
 /**
  * @constructor
- * @implements {WebInspector.StatusBarItem.Provider}
+ * @implements {WebInspector.ToolbarItem.Provider}
  */
 WebInspector.InspectorView.ToggleDrawerButtonProvider = function()
 {
@@ -548,7 +548,7 @@ WebInspector.InspectorView.ToggleDrawerButtonProvider = function()
 WebInspector.InspectorView.ToggleDrawerButtonProvider.prototype = {
     /**
      * @override
-     * @return {?WebInspector.StatusBarItem}
+     * @return {?WebInspector.ToolbarItem}
      */
     item: function()
     {

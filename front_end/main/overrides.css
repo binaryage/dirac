@@ -215,7 +215,7 @@
 }
 
 .overrides-view .overrides-footer::before {
-    background-image: url(Images/statusbarButtonGlyphs.png);
+    background-image: url(Images/toolbarButtonGlyphs.png);
     background-size: 320px 144px;
     width: 10px;
     height: 10px;
@@ -229,7 +229,7 @@
 
 @media (-webkit-min-device-pixel-ratio: 1.5) {
 .overrides-view .overrides-footer::before {
-    background-image: url(Images/statusbarButtonGlyphs_2x.png);
+    background-image: url(Images/toolbarButtonGlyphs_2x.png);
 }
 } /* media */
 
@@ -242,7 +242,7 @@
     flex: auto;
 }
 
-.overrides-splash-screen .status-bar {
+.overrides-splash-screen .toolbar {
     height: 16px;
     display: inline-block;
     margin-left: -4px;

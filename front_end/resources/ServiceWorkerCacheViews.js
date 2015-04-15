@@ -22,7 +22,7 @@ WebInspector.ServiceWorkerCacheView = function(model, cacheId, cache)
 
     this._createEditorToolbar();
 
-    this._refreshButton = new WebInspector.StatusBarButton(WebInspector.UIString("Refresh"), "refresh-status-bar-item");
+    this._refreshButton = new WebInspector.ToolbarButton(WebInspector.UIString("Refresh"), "refresh-toolbar-item");
     this._refreshButton.addEventListener("click", this._refreshButtonClicked, this);
 
     this._pageSize = 50;
@@ -49,17 +49,17 @@ WebInspector.ServiceWorkerCacheView.prototype = {
 
     _createEditorToolbar: function()
     {
-        var editorToolbar = new WebInspector.StatusBar(this.element);
+        var editorToolbar = new WebInspector.Toolbar(this.element);
         editorToolbar.element.classList.add("data-view-toolbar");
 
-        this._pageBackButton = new WebInspector.StatusBarButton(WebInspector.UIString("Show previous page."), "play-backwards-status-bar-item");
+        this._pageBackButton = new WebInspector.ToolbarButton(WebInspector.UIString("Show previous page."), "play-backwards-toolbar-item");
         this._pageBackButton.addEventListener("click", this._pageBackButtonClicked, this);
-        editorToolbar.appendStatusBarItem(this._pageBackButton);
+        editorToolbar.appendToolbarItem(this._pageBackButton);
 
-        this._pageForwardButton = new WebInspector.StatusBarButton(WebInspector.UIString("Show next page."), "play-status-bar-item");
+        this._pageForwardButton = new WebInspector.ToolbarButton(WebInspector.UIString("Show next page."), "play-toolbar-item");
         this._pageForwardButton.setEnabled(false);
         this._pageForwardButton.addEventListener("click", this._pageForwardButtonClicked, this);
-        editorToolbar.appendStatusBarItem(this._pageForwardButton);
+        editorToolbar.appendToolbarItem(this._pageForwardButton);
     },
 
     _pageBackButtonClicked: function()
@@ -142,9 +142,9 @@ WebInspector.ServiceWorkerCacheView.prototype = {
     },
 
     /**
-     * @return {!Array.<!WebInspector.StatusBarItem>}
+     * @return {!Array.<!WebInspector.ToolbarItem>}
      */
-    statusBarItems: function()
+    toolbarItems: function()
     {
         return [this._refreshButton];
     },

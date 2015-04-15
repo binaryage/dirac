@@ -50,9 +50,9 @@ WebInspector.Main.prototype = {
         return WebInspector.Revealer.revealPromise(WebInspector.console);
     },
 
-    _createGlobalStatusBarItems: function()
+    _createGlobalToolbarItems: function()
     {
-        var extensions = self.runtime.extensions(WebInspector.StatusBarItem.Provider);
+        var extensions = self.runtime.extensions(WebInspector.ToolbarItem.Provider);
         var promises = [];
         for (var i = 0; i < extensions.length; ++i)
             promises.push(resolveItem(extensions[i]));
@@ -60,13 +60,13 @@ WebInspector.Main.prototype = {
 
         /**
          * @param {!Runtime.Extension} extension
-         * @return {!Promise.<?WebInspector.StatusBarItem>}
+         * @return {!Promise.<?WebInspector.ToolbarItem>}
          */
         function resolveItem(extension)
         {
             var descriptor = extension.descriptor();
             if (!descriptor.className)
-                return Promise.resolve(new WebInspector.StatusBarButton(WebInspector.UIString(descriptor["title"]), descriptor["elementClass"])).then(attachHandler);
+                return Promise.resolve(new WebInspector.ToolbarButton(WebInspector.UIString(descriptor["title"]), descriptor["elementClass"])).then(attachHandler);
             return extension.instancePromise().then(fetchItemFromProvider).then(attachHandler);
 
             /**
@@ -74,12 +74,12 @@ WebInspector.Main.prototype = {
              */
             function fetchItemFromProvider(provider)
             {
-                return /** @type {!WebInspector.StatusBarItem.Provider} */ (provider).item();
+                return /** @type {!WebInspector.ToolbarItem.Provider} */ (provider).item();
             }
 
             /**
-             * @param {?WebInspector.StatusBarItem} item
-             * @return {?WebInspector.StatusBarItem} item
+             * @param {?WebInspector.ToolbarItem} item
+             * @return {?WebInspector.ToolbarItem} item
              */
             function attachHandler(item)
             {
@@ -95,7 +95,7 @@ WebInspector.Main.prototype = {
         }
 
         /**
-         * @param {!Array.<?WebInspector.StatusBarItem>} items
+         * @param {!Array.<?WebInspector.ToolbarItem>} items
          */
         function appendItemsInOrder(items)
         {
@@ -316,7 +316,7 @@ WebInspector.Main.prototype = {
 
         if (!Runtime.queryParam("isSharedWorker"))
             WebInspector.inspectElementModeController = new WebInspector.InspectElementModeController();
-        this._createGlobalStatusBarItems();
+        this._createGlobalToolbarItems();
 
         InspectorFrontendHost.loadCompleted();
 
@@ -785,11 +785,11 @@ WebInspector.__defineGetter__("inspectedPageURL", function()
 
 /**
  * @constructor
- * @implements {WebInspector.StatusBarItem.Provider}
+ * @implements {WebInspector.ToolbarItem.Provider}
  */
 WebInspector.Main.WarningErrorCounter = function()
 {
-    this._counter = new WebInspector.StatusBarCounter(["error-icon", "warning-icon"]);
+    this._counter = new WebInspector.ToolbarCounter(["error-icon", "warning-icon"]);
     this._counter.addEventListener("click", showConsole);
 
     function showConsole()
@@ -818,7 +818,7 @@ WebInspector.Main.WarningErrorCounter.prototype = {
 
     /**
      * @override
-     * @return {?WebInspector.StatusBarItem}
+     * @return {?WebInspector.ToolbarItem}
      */
     item: function()
     {

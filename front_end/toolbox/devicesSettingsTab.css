@@ -77,7 +77,7 @@
 
 .devices-settings-tab .devices-list-remove,
 .devices-settings-tab .devices-list-edit {
-    background-image: url(Images/statusbarButtonGlyphs.png);
+    background-image: url(Images/toolbarButtonGlyphs.png);
     background-size: 320px 144px;
     width: 32px;
     height: 24px;
@@ -100,7 +100,7 @@
 @media (-webkit-min-device-pixel-ratio: 1.5) {
 .devices-settings-tab .devices-list-remove,
 .devices-settings-tab .devices-list-edit {
-    background-image: url(Images/statusbarButtonGlyphs_2x.png);
+    background-image: url(Images/toolbarButtonGlyphs_2x.png);
 }
 } /* media */
 
