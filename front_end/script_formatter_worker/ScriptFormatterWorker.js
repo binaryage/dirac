@@ -311,12 +311,12 @@ FormatterWorker._formatScript = function(content, mapping, offset, formattedOffs
 {
     var formattedContent;
     try {
-        var tokenizer = new FormatterWorker.JavaScriptTokenizer(content);
-        var builder = new FormatterWorker.JavaScriptFormattedContentBuilder(tokenizer.content(), mapping, offset, formattedOffset, indentString);
-        var formatter = new FormatterWorker.JavaScriptFormatter(tokenizer, builder);
+        var builder = new FormatterWorker.JavaScriptFormattedContentBuilder(content, mapping, offset, formattedOffset, indentString);
+        var formatter = new FormatterWorker.JavaScriptFormatter(content, builder);
         formatter.format();
         formattedContent = builder.content();
     } catch (e) {
+        console.error(e);
         formattedContent = content;
     }
     return formattedContent;
@@ -470,17 +470,3 @@ FormatterWorker.HTMLFormatter.prototype = {
         this._position = cursor;
     }
 }
-
-/**
- * @return {!Object}
- */
-function require()
-{
-    return tokenizerHolder;
-}
-
-/**
- * @type {!{tokenizer}}
- */
-var exports = { tokenizer: null };
-var tokenizerHolder = exports;

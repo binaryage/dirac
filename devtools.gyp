@@ -313,9 +313,9 @@
                             ],
                         },
                         {
-                            'destination': '<(_output_path)/UglifyJS',
+                            'destination': '<(_output_path)/acorn',
                             'files': [
-                                '<@(devtools_uglify_files)',
+                                '<@(devtools_acorn_files)',
                             ],
                         },
                         {

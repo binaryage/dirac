@@ -334,7 +334,7 @@
             '<@(devtools_core_files)',
             '<@(devtools_module_json_files)',
             '<@(devtools_modules_js_files)',
-            '<@(devtools_uglify_files)',
+            '<@(devtools_acorn_files)',
         ],
 
         # Lazy-loaded modules.
@@ -500,6 +500,7 @@
             'front_end/common/WebInspector.js',
             'front_end/platform/utilities.js',
             'front_end/script_formatter_worker/CSSFormatter.js',
+            'front_end/script_formatter_worker/ESTreeWalker.js',
             'front_end/script_formatter_worker/JavaScriptFormatter.js',
             'front_end/script_formatter_worker/ScriptFormatterWorker.js',
         ],
@@ -639,8 +640,8 @@
             'front_end/cm/shell.js',
             'front_end/cm/xml.js',
         ],
-        'devtools_uglify_files': [
-            'front_end/UglifyJS/parse-js.js',
+        'devtools_acorn_files': [
+            'front_end/acorn/acorn.js',
         ],
 
         'devtools_modules_js_files': [

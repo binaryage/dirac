@@ -61,7 +61,7 @@ all_devtools_files =
   devtools_core_files +
   gypi_values.devtools_module_json_files +
   devtools_modules_js_files +
-  gypi_values.devtools_uglify_files
+  gypi_values.devtools_acorn_files
 
 # FIXME: Fix the generate_devtools_grd.py script to accept trailing slashes.
 resources_out_dir_no_slash = "$root_out_dir/resources/inspector"
@@ -284,7 +284,7 @@ if (debug_devtools) {
   group("copy_debug_non_modules") {
     deps = [
       ":copy_runtime_core",
-      ":copy_uglify_js_files",
+      ":copy_acorn_js_files",
       ":copy_codemirror_files",
     ]
   }
@@ -295,9 +295,9 @@ if (debug_devtools) {
     outputs = [ resources_out_dir + "/{{source_file_part}}" ]
   }
 
-  copy("copy_uglify_js_files") {
-    sources = gypi_values.devtools_uglify_files
-    outputs = [ resources_out_dir + "UglifyJS/{{source_file_part}}" ]
+  copy("copy_acorn_js_files") {
+    sources = gypi_values.devtools_acorn_files
+    outputs = [ resources_out_dir + "acorn/{{source_file_part}}" ]
   }
 
   copy("copy_codemirror_files") {

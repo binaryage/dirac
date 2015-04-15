@@ -376,6 +376,9 @@ CodeMirror.prototype = {
      */
     getLineHandle: function(line) { },
     getLineNumber: function(line) { },
+    /**
+     * @return {!{token: function(CodeMirror.StringStream, Object):string}}
+     */
     getMode: function() { },
     getOption: function(option) { },
     /** @param {*=} lineSep */
@@ -548,3 +551,87 @@ ArrayBuffer.isView = function(obj) { }
  * @return {Object}
  */
 Element.prototype.animate = function(keyframes, timing) { }
+
+var acorn = {
+    /**
+     * @param {string} text
+     * @param {Object.<string, boolean>} options
+     * @return {!ESTree.Node}
+     */
+    parse: function(text, options) {},
+
+    /**
+     * @param {string} text
+     * @param {Object.<string, boolean>} options
+     * @return {!Acorn.Tokenizer}
+     */
+    tokenizer: function(text, options) {},
+
+    tokTypes: {
+        _true: new Acorn.TokenType(),
+        _false: new Acorn.TokenType(),
+        num: new Acorn.TokenType(),
+        regexp: new Acorn.TokenType(),
+        string: new Acorn.TokenType(),
+        name: new Acorn.TokenType(),
+        eof: new Acorn.TokenType()
+    }
+};
+
+var Acorn = {};
+/**
+ * @constructor
+ */
+Acorn.Tokenizer = function() {
+    /** @type {function():!Acorn.Token} */
+    this.getToken;
+}
+
+/**
+ * @constructor
+ */
+Acorn.TokenType = function() {
+    /** @type {string} */
+    this.label;
+    /** @type {(string|undefined)} */
+    this.keyword;
+}
+
+/**
+ * @typedef {{type: !Acorn.TokenType, value: string, start: number, end: number}}
+ */
+Acorn.Token;
+
+/**
+ * @typedef {{type: string, value: string, start: number, end: number}}
+ */
+Acorn.Comment;
+
+/**
+ * @typedef {(!Acorn.Token|!Acorn.Comment)}
+ */
+Acorn.TokenOrComment;
+
+var ESTree = {};
+
+/**
+ * @constructor
+ */
+ESTree.Node = function()
+{
+    /** @type {number} */
+    this.start;
+    /** @type {number} */
+    this.end;
+    /** @type {string} */
+    this.type;
+    /** @type {(!ESTree.Node|undefined)} */
+    this.body;
+    /** @type {(!Array.<!ESTree.Node>|undefined)} */
+    this.declarations;
+    /** @type {(!Array.<!ESTree.Node>|undefined)} */
+    this.properties;
+    /** @type {(!ESTree.Node|undefined)} */
+    this.init;
+}
+
