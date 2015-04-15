@@ -15,7 +15,7 @@ WebInspector.ServiceWorkersSidebarPane = function()
 
     /** @type {?WebInspector.ServiceWorkerManager} */
     this._manager = null;
-    WebInspector.targetManager.observeTargets(this);
+    WebInspector.targetManager.observeTargets(this, WebInspector.Target.Type.Page);
     this._placeholderElement = createElementWithClass("div", "info");
     this._placeholderElement.textContent = WebInspector.UIString("No service workers control this page");
 }
@@ -27,7 +27,7 @@ WebInspector.ServiceWorkersSidebarPane.prototype = {
      */
     targetAdded: function(target)
     {
-        if (this._manager || !target.isPage())
+        if (this._manager)
             return;
         this._manager = target.serviceWorkerManager;
         this._updateVisibility();
@@ -40,8 +40,7 @@ WebInspector.ServiceWorkersSidebarPane.prototype = {
      */
     targetRemoved: function(target)
     {
-        if (target.isPage())
-            target.serviceWorkerManager.removeEventListener(WebInspector.ServiceWorkerManager.Events.WorkersUpdated, this._update, this);
+        target.serviceWorkerManager.removeEventListener(WebInspector.ServiceWorkerManager.Events.WorkersUpdated, this._update, this);
         this._updateVisibility();
     },
 

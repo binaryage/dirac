@@ -94,7 +94,7 @@ WebInspector.ElementsPanel = function()
     this._treeOutlines = [];
     /** @type {!Map.<!WebInspector.Target, !WebInspector.ElementsTreeOutline>} */
     this._targetToTreeOutline = new Map();
-    WebInspector.targetManager.observeTargets(this);
+    WebInspector.targetManager.observeTargets(this, WebInspector.Target.Type.Page);
     WebInspector.moduleSetting("showUAShadowDOM").addChangeListener(this._showUAShadowDOMChanged.bind(this));
     WebInspector.targetManager.addModelListener(WebInspector.DOMModel, WebInspector.DOMModel.Events.DocumentUpdated, this._documentUpdatedEvent, this);
     WebInspector.targetManager.addModelListener(WebInspector.CSSStyleModel, WebInspector.CSSStyleModel.Events.ModelWasEnabled, this._updateSidebars, this);
@@ -151,8 +151,6 @@ WebInspector.ElementsPanel.prototype = {
      */
     targetAdded: function(target)
     {
-        if (!target.isPage())
-            return;
         var treeOutline = new WebInspector.ElementsTreeOutline(target, true, true);
         treeOutline.setWordWrap(WebInspector.moduleSetting("domWordWrap").get());
         treeOutline.wireToDOMModel();
@@ -173,8 +171,6 @@ WebInspector.ElementsPanel.prototype = {
      */
     targetRemoved: function(target)
     {
-        if (!target.isPage())
-            return;
         var treeOutline = this._targetToTreeOutline.remove(target);
         treeOutline.unwireFromDOMModel();
         this._treeOutlines.remove(treeOutline);
@@ -413,7 +409,7 @@ WebInspector.ElementsPanel.prototype = {
         delete this._currentSearchResultIndex;
         delete this._searchResults;
 
-        var targets = WebInspector.targetManager.targets();
+        var targets = WebInspector.targetManager.targets(WebInspector.Target.Type.Page);
         for (var i = 0; i < targets.length; ++i)
             targets[i].domModel.cancelSearch();
     },
@@ -436,7 +432,7 @@ WebInspector.ElementsPanel.prototype = {
 
         this._searchQuery = query;
 
-        var targets = WebInspector.targetManager.targets();
+        var targets = WebInspector.targetManager.targets(WebInspector.Target.Type.Page);
         var promises = [];
         for (var i = 0; i < targets.length; ++i)
             promises.push(targets[i].domModel.performSearchPromise(whitespaceTrimmedQuery, WebInspector.moduleSetting("showUAShadowDOM").get()));

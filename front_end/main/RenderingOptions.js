@@ -44,28 +44,16 @@ WebInspector.RenderingOptions = function()
     this._mapSettingToSetter(WebInspector.moduleSetting("continuousPainting"), "setContinuousPaintingEnabled");
     this._mapSettingToSetter(WebInspector.moduleSetting("showScrollBottleneckRects"), "setShowScrollBottleneckRects");
 
-    WebInspector.targetManager.observeTargets(this);
+    WebInspector.targetManager.observeTargets(this, WebInspector.Target.Type.Page);
 }
 
 WebInspector.RenderingOptions.prototype = {
-    /**
-     * @param {!WebInspector.Target} target
-     * @return {boolean}
-     */
-    supportsRendering: function(target)
-    {
-        return target.isPage();
-    },
-
     /**
      * @override
      * @param {!WebInspector.Target} target
      */
     targetAdded: function(target)
     {
-        if (this.supportsRendering(target))
-            return;
-
         var settings = this._setterNames.keysArray();
         for (var i = 0; i < settings.length; ++i) {
             var setting = settings[i];
@@ -91,18 +79,13 @@ WebInspector.RenderingOptions.prototype = {
     _mapSettingToSetter: function(setting, setterName)
     {
         this._setterNames.set(setting, setterName);
-        setting.addChangeListener(changeListener.bind(this));
+        setting.addChangeListener(changeListener);
 
-        /**
-         * @this {WebInspector.RenderingOptions}
-         */
         function changeListener()
         {
-            var targets = WebInspector.targetManager.targets();
-            for (var i = 0; i < targets.length; ++i) {
-                if (this.supportsRendering(targets[i]))
-                    targets[i].renderingAgent()[setterName](setting.get());
-            }
+            var targets = WebInspector.targetManager.targets(WebInspector.Target.Type.Page);
+            for (var i = 0; i < targets.length; ++i)
+                targets[i].renderingAgent()[setterName](setting.get());
         }
     }
 }

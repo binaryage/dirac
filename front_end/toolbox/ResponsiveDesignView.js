@@ -32,7 +32,7 @@ WebInspector.ResponsiveDesignView = function(inspectedPagePlaceholder)
 
     WebInspector.zoomManager.addEventListener(WebInspector.ZoomManager.Events.ZoomChanged, this._onZoomChanged, this);
     WebInspector.overridesSupport.addEventListener(WebInspector.OverridesSupport.Events.EmulationStateChanged, this._emulationEnabledChanged, this);
-    WebInspector.targetManager.observeTargets(this);
+    WebInspector.targetManager.observeTargets(this, WebInspector.Target.Type.Page);
     this._emulationEnabledChanged();
 };
 
@@ -109,7 +109,7 @@ WebInspector.ResponsiveDesignView.prototype = {
      */
     targetAdded: function(target)
     {
-        if (this._target || !WebInspector.OverridesSupport.targetSupportsEmulation(target))
+        if (this._target)
             return;
         this._target = target;
         target.registerEmulationDispatcher(new WebInspector.EmulationDispatcher(this));
@@ -121,8 +121,6 @@ WebInspector.ResponsiveDesignView.prototype = {
      */
     targetRemoved: function(target)
     {
-        if (target !== this._target)
-            return;
     },
 
     _invalidateCache: function()
