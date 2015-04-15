@@ -5,8 +5,6 @@
 
 WebInspector.TimelineJSProfileProcessor = { };
 
-WebInspector.TimelineJSProfileProcessor.JSFrameCoalesceThresholdMs = 1.5;
-
 /**
  * @param {!ProfilerAgent.CPUProfile} jsProfile
  * @param {!WebInspector.TracingModel.Thread} thread
@@ -83,7 +81,9 @@ WebInspector.TimelineJSProfileProcessor.generateJSFrameEvents = function(events)
 
     var jsFrameEvents = [];
     var jsFramesStack = [];
-    var coalesceThresholdMs = WebInspector.TimelineJSProfileProcessor.JSFrameCoalesceThresholdMs;
+    var lockedJsFramesCount = [];
+    var invocationEventsDepth = 0;
+    var minFrameDurationMs = 0.05;
 
     /**
      * @param {!WebInspector.TracingModel.Event} e
@@ -91,17 +91,19 @@ WebInspector.TimelineJSProfileProcessor.generateJSFrameEvents = function(events)
     function onStartEvent(e)
     {
         extractStackTrace(e);
+        // For the duration of the event we cannot go beyond the stack associated with it.
+        lockedJsFramesCount.push(jsFramesStack.length);
+        if (isJSInvocationEvent(e))
+            ++invocationEventsDepth;
     }
 
     /**
      * @param {!WebInspector.TracingModel.Event} e
-     * @param {?WebInspector.TracingModel.Event} top
      */
-    function onInstantEvent(e, top)
+    function onInstantEvent(e)
     {
-        if (e.name === WebInspector.TimelineModel.RecordType.JSSample && top && !isJSInvocationEvent(top))
-            return;
-        extractStackTrace(e);
+        if (invocationEventsDepth)
+            extractStackTrace(e);
     }
 
     /**
@@ -109,15 +111,35 @@ WebInspector.TimelineJSProfileProcessor.generateJSFrameEvents = function(events)
      */
     function onEndEvent(e)
     {
+        lockedJsFramesCount.pop();
         if (!isJSInvocationEvent(e))
             return;
+        --invocationEventsDepth;
         var eventData = e.args["data"] || e.args["beginData"];
         var stackTrace = eventData && eventData["stackTrace"];
-        var stackLength = stackTrace ? stackTrace.length : 0;
-        // FIXME: there shouldn't be such a case.
-        // The current stack should never go beyond the parent event's stack.
-        if (stackLength < jsFramesStack.length)
-            jsFramesStack.length = stackLength;
+        truncateJSStack(stackTrace ? stackTrace.length : 0, e.endTime);
+    }
+
+    /**
+     * @param {number} size
+     * @param {number} time
+     */
+    function truncateJSStack(size, time)
+    {
+        if (lockedJsFramesCount.length) {
+            var lockedCount = lockedJsFramesCount.peekLast();
+            if (size < lockedCount) {
+                console.error("Child stack is shallower than the parent stack at " + time);
+                size = lockedCount;
+            }
+        }
+        if (jsFramesStack.length < size) {
+            console.error("Trying to truncate higher than the current stack size at " + time);
+            size = jsFramesStack.length;
+        }
+        for (var k = size; k < jsFramesStack.length; ++k)
+            jsFramesStack[k].setEndTime(Math.min(eventEndTime(jsFramesStack[k]) + minFrameDurationMs, time));
+        jsFramesStack.length = size;
     }
 
     /**
@@ -125,8 +147,6 @@ WebInspector.TimelineJSProfileProcessor.generateJSFrameEvents = function(events)
      */
     function extractStackTrace(e)
     {
-        while (jsFramesStack.length && eventEndTime(jsFramesStack.peekLast()) + coalesceThresholdMs <= e.startTime)
-            jsFramesStack.pop();
         var eventData = e.args["data"] || e.args["beginData"];
         var stackTrace = eventData && eventData["stackTrace"];
         // GC events do not hold call stack, so make a copy of the current stack.
@@ -137,17 +157,17 @@ WebInspector.TimelineJSProfileProcessor.generateJSFrameEvents = function(events)
         var endTime = eventEndTime(e);
         var numFrames = stackTrace.length;
         var minFrames = Math.min(numFrames, jsFramesStack.length);
-        var j;
-        for (j = 0; j < minFrames; ++j) {
-            var newFrame = stackTrace[numFrames - 1 - j];
-            var oldFrame = jsFramesStack[j].args["data"];
+        var i;
+        for (i = lockedJsFramesCount.peekLast() || 0; i < minFrames; ++i) {
+            var newFrame = stackTrace[numFrames - 1 - i];
+            var oldFrame = jsFramesStack[i].args["data"];
             if (!equalFrames(newFrame, oldFrame))
                 break;
-            jsFramesStack[j].setEndTime(Math.max(jsFramesStack[j].endTime, endTime));
+            jsFramesStack[i].setEndTime(Math.max(jsFramesStack[i].endTime, endTime));
         }
-        jsFramesStack.length = j;
-        for (; j < numFrames; ++j) {
-            var frame = stackTrace[numFrames - 1 - j];
+        truncateJSStack(i, e.startTime);
+        for (; i < numFrames; ++i) {
+            var frame = stackTrace[numFrames - 1 - i];
             var jsFrameEvent = new WebInspector.TracingModel.Event(WebInspector.TracingModel.DevToolsTimelineEventCategory, WebInspector.TimelineModel.RecordType.JSFrame,
                 WebInspector.TracingModel.Phase.Complete, e.startTime, e.thread);
             jsFrameEvent.addArgs({ data: frame });
