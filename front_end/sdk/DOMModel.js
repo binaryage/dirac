@@ -314,7 +314,7 @@ WebInspector.DOMNode.prototype = {
     /**
      * @return {?WebInspector.DOMNode}
      */
-    ancestorClosedShadowRoot: function()
+    ancestorUserAgentShadowRoot: function()
     {
         var ancestorShadowRoot = this.ancestorShadowRoot();
         if (!ancestorShadowRoot)
@@ -947,7 +947,7 @@ WebInspector.DOMNode.prototype = {
     {
         var node = this;
         while (true) {
-            var ancestor = node.ancestorClosedShadowRoot();
+            var ancestor = node.ancestorUserAgentShadowRoot();
             if (!ancestor)
                 break;
             ancestor = node.ancestorShadowHost();

@@ -431,7 +431,7 @@ WebInspector.ElementsTreeElement.prototype = {
      */
     hasEditableNode: function()
     {
-        return !this._node.isShadowRoot() && !this._node.ancestorClosedShadowRoot();
+        return !this._node.isShadowRoot() && !this._node.ancestorUserAgentShadowRoot();
     },
 
     _insertInLastAttributePosition: function(tag, node)

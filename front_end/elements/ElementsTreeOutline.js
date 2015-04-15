@@ -307,7 +307,7 @@ WebInspector.ElementsTreeOutline.prototype = {
      */
     performCopyOrCut: function(isCut, node)
     {
-        if (isCut && (node.isShadowRoot() || node.ancestorClosedShadowRoot()))
+        if (isCut && (node.isShadowRoot() || node.ancestorUserAgentShadowRoot()))
             return;
 
         node.copyNode();
@@ -320,7 +320,7 @@ WebInspector.ElementsTreeOutline.prototype = {
      */
     canPaste: function(targetNode)
     {
-        if (targetNode.isShadowRoot() || targetNode.ancestorClosedShadowRoot())
+        if (targetNode.isShadowRoot() || targetNode.ancestorUserAgentShadowRoot())
             return false;
 
         if (!this._clipboardNodeData)
