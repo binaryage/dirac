@@ -1045,6 +1045,21 @@ WebInspector.ObjectPropertiesSection.createNameElement = function(name)
 }
 
 /**
+ * @param {?string=} description
+ * @return {string} valueText
+ */
+WebInspector.ObjectPropertiesSection.valueTextForFunctionDescription = function(description)
+{
+    var matches = /function\s([^)]*)/.exec(description);
+    if (!matches) {
+        // process shorthand methods
+        matches = /[^(]*(\([^)]*)/.exec(description);
+    }
+    var match = matches ? matches[1] : null;
+    return match ? match.replace(/\n/g, " ") + ")" : (description || "");
+}
+
+/**
  * @param {!WebInspector.RemoteObject} value
  * @param {boolean} wasThrown
  * @param {!Element=} parentElement
@@ -1069,8 +1084,7 @@ WebInspector.ObjectPropertiesSection.createValueElement = function(value, wasThr
         valueText = description.replace(/\n/g, "\u21B5");
         suffix = "\"";
     } else if (type === "function") {
-        var match = /function\s([^)]*)/.exec(description)[1];
-        valueText = match ? match.replace(/\n/g, " ") + ")" : (description || "");
+        valueText = WebInspector.ObjectPropertiesSection.valueTextForFunctionDescription(description);
     } else if (type !== "object" || subtype !== "node") {
         valueText = description;
     }
@@ -1132,8 +1146,8 @@ WebInspector.ObjectPropertiesSection.formatObjectAsFunction = function(func, ele
     function didGetDetails(response)
     {
         if (!response) {
-            var match = /function\s([^)]*)/.exec(func.description)[1];
-            element.createTextChild(match ? match.replace(/\n/g, " ") + ")" : (func.description || ""));
+            var valueText = WebInspector.ObjectPropertiesSection.valueTextForFunctionDescription(func.description);
+            element.createTextChild(valueText);
             return;
         }
 
