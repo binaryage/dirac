@@ -50,23 +50,6 @@ WebInspector.ObjectPopoverHelper.MaxPopoverTextLength = 10000;
 
 WebInspector.ObjectPopoverHelper.prototype = {
     /**
-     * @param {function(!WebInspector.RemoteObject):string} formatter
-     */
-    setRemoteObjectFormatter: function(formatter)
-    {
-        this._remoteObjectFormatter = formatter;
-    },
-
-    /**
-     * @param {!WebInspector.RemoteObject} object
-     */
-    _formattedObjectDescription: function(object)
-    {
-        var description = (this._remoteObjectFormatter && this._remoteObjectFormatter(object)) || object.description;
-        return description.trimEnd(WebInspector.ObjectPopoverHelper.MaxPopoverTextLength);
-    },
-
-    /**
      * @param {!Element} element
      * @param {!WebInspector.Popover} popover
      */
@@ -153,7 +136,7 @@ WebInspector.ObjectPopoverHelper.prototype = {
             }
             this._objectTarget = result.target();
             var anchorElement = anchorOverride || element;
-            var description = this._formattedObjectDescription(result);
+            var description = result.description.trimEnd(WebInspector.ObjectPopoverHelper.MaxPopoverTextLength);
             var popoverContentElement = null;
             if (result.type !== "object") {
                 popoverContentElement =  createElement("span");
@@ -178,19 +161,21 @@ WebInspector.ObjectPopoverHelper.prototype = {
                     result.target().domModel.highlightObjectAsDOMNode(result);
                     this._resultHighlightedAsDOM = result;
                 }
-                popoverContentElement = createElement("div");
 
-                this._titleElement = popoverContentElement.createChild("div", "monospace");
-                this._titleElement.createChild("span", "source-frame-popover-title").textContent = description;
+                if (result.customPreview()) {
+                    popoverContentElement = WebInspector.CustomPreviewSection.createInShadow(result, true);
+                } else {
+                    popoverContentElement = createElement("div");
+                    this._titleElement = popoverContentElement.createChild("div", "monospace");
+                    this._titleElement.createChild("span", "source-frame-popover-title").textContent = description;
+                    var section = new WebInspector.ObjectPropertiesSection(result, "");
+                    section.element.classList.add("source-frame-popover-tree");
+                    section.titleLessMode();
+                    popoverContentElement.appendChild(section.element);
 
-                var section = new WebInspector.ObjectPropertiesSection(result, "");
-                section.element.classList.add("source-frame-popover-tree");
-                section.titleLessMode();
-                popoverContentElement.appendChild(section.element);
-
-                if (result.subtype === "generator")
-                    result.generatorObjectDetails(didGetGeneratorObjectDetails.bind(this));
-
+                    if (result.subtype === "generator")
+                        result.generatorObjectDetails(didGetGeneratorObjectDetails.bind(this));
+                }
                 var popoverWidth = 300;
                 var popoverHeight = 250;
                 popover.showForAnchor(popoverContentElement, anchorElement, popoverWidth, popoverHeight);

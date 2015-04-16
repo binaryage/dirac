@@ -32,15 +32,19 @@ WebInspector.CustomPreviewSection = function(object)
 /**
  * @constructor
  * @param {!WebInspector.RemoteObject} object
+ * @param {boolean=} expand
  * @return {!Element}
  */
-WebInspector.CustomPreviewSection.createInShadow = function(object)
+WebInspector.CustomPreviewSection.createInShadow = function(object, expand)
 {
     var customPreviewSection = new WebInspector.CustomPreviewSection(object);
     var element = WebInspector.CustomPreviewSection._createComponentRoot();
     var shadowRoot = element.createShadowRoot();
     shadowRoot.appendChild(WebInspector.View.createStyleElement("components/customPreviewSection.css"));
     shadowRoot.appendChild(customPreviewSection.element());
+
+    if (expand && object.customPreview().hasBody)
+        customPreviewSection._loadBody();
     return element;
 }
 
