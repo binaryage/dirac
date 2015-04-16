@@ -7,11 +7,6 @@
     flex-shrink: 0;
 }
 
-.object-properties-section .name.custom-formatted-property,
-.object-properties-section-separator.custom-formatted-property{
-    vertical-align: top;
-}
-
 .object-properties-section-dimmed {
     opacity: 0.6;
 }
@@ -40,10 +35,6 @@
 .object-properties-section li.editing {
     margin-left: 10px;
     text-overflow: clip;
-}
-
-.object-properties-section-custom-section {
-    display: inline-block;
 }
 
 .tree-outline ol.title-less-mode {

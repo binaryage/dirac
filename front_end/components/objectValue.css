@@ -105,3 +105,8 @@
 .section .object-value-node {
     color: rgb(136, 18, 128);
 }
+
+.object-properties-section-custom-section {
+    display: inline-flex;
+    flex-direction: column;
+}

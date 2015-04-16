@@ -348,7 +348,7 @@ WebInspector.WatchExpression.prototype = {
             titleElement.classList.add("dimmed");
             this._valueElement.textContent = WebInspector.UIString("<not available>");
         } else {
-            this._valueElement = WebInspector.ObjectPropertiesSection.createValueElement(result, wasThrown, titleElement);
+            this._valueElement = WebInspector.ObjectPropertiesSection.createValueElementWithCustomSupport(result, wasThrown, titleElement);
         }
         var separatorElement = createElementWithClass("span", "watch-expressions-separator");
         separatorElement.textContent = ": ";
@@ -356,7 +356,7 @@ WebInspector.WatchExpression.prototype = {
 
         this._element.removeChildren();
         this._objectPropertiesSection = null;
-        if (!wasThrown && result && result.hasChildren) {
+        if (!wasThrown && result && result.hasChildren && !result.customPreview()) {
             this._objectPropertiesSection = new WebInspector.ObjectPropertiesSection(result, headerElement);
             this._objectPresentationElement = this._objectPropertiesSection.element;
             var objectTreeElement = this._objectPropertiesSection.objectTreeElement();

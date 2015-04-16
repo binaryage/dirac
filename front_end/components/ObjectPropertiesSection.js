@@ -228,13 +228,8 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
         var separatorElement = createElementWithClass("span", "object-properties-section-separator");
         separatorElement.textContent = ": ";
 
-        if (this.property.value && this.property.value.customPreview()) {
-            this.nameElement.classList.add("custom-formatted-property");
-            separatorElement.classList.add("custom-formatted-property");
-            this.valueElement = WebInspector.CustomPreviewSection.createInShadow(this.property.value);
-            this.valueElement.classList.add("object-properties-section-custom-section");
-        } else  if (this.property.value) {
-            this.valueElement = WebInspector.ObjectPropertiesSection.createValueElement(this.property.value, this.property.wasThrown, this.listItemElement);
+        if (this.property.value) {
+            this.valueElement = WebInspector.ObjectPropertiesSection.createValueElementWithCustomSupport(this.property.value, this.property.wasThrown, this.listItemElement);
             this.valueElement.addEventListener("contextmenu", this._contextMenuFired.bind(this, this.property.value), false);
         } else if (this.property.getter) {
             this.valueElement = WebInspector.ObjectPropertyTreeElement.createRemoteObjectAccessorPropertySpan(this.property.parentObject, [this.property.name], this._onInvokeGetterClick.bind(this));
@@ -1057,6 +1052,22 @@ WebInspector.ObjectPropertiesSection.valueTextForFunctionDescription = function(
     }
     var match = matches ? matches[1] : null;
     return match ? match.replace(/\n/g, " ") + ")" : (description || "");
+}
+
+/**
+ * @param {!WebInspector.RemoteObject} value
+ * @param {boolean} wasThrown
+ * @param {!Element=} parentElement
+ * @return {!Element}
+ */
+WebInspector.ObjectPropertiesSection.createValueElementWithCustomSupport = function(value, wasThrown, parentElement)
+{
+    if (value.customPreview()) {
+        var result = WebInspector.CustomPreviewSection.createInShadow(value);
+        result.classList.add("object-properties-section-custom-section");
+        return result
+    }
+    return WebInspector.ObjectPropertiesSection.createValueElement(value, wasThrown, parentElement);
 }
 
 /**
