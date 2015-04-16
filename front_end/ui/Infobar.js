@@ -30,7 +30,7 @@ WebInspector.Infobar = function(type, disableSetting)
     }
 
     this._closeButton = this._contentElement.createChild("div", "close-button", "dt-close-button");
-    this._closeButton.addEventListener("click", this._onClose.bind(this), false);
+    this._closeButton.addEventListener("click", this.close.bind(this), false);
     /** @type {?function()} */
     this._closeCallback = null;
 
@@ -60,7 +60,7 @@ WebInspector.Infobar.prototype = {
         this.setVisible(this._visible);
     },
 
-    _onClose: function()
+    close: function()
     {
         this.setVisible(false);
         if (this._closeCallback)

@@ -6,7 +6,7 @@
 
 .infobar {
     color: rgb(34, 34, 34);
-    padding: 4px;
+    padding: 4px 6px;
     white-space: nowrap;
     display: flex;
     align-items: flex-start;

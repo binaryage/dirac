@@ -253,6 +253,14 @@
         {
             "type": "setting",
             "category": "Appearance",
+            "title": "Don't show Chrome Data Saver warning",
+            "settingName": "disableDataSaverInfobar",
+            "settingType": "boolean",
+            "defaultValue": false
+        },
+        {
+            "type": "setting",
+            "category": "Appearance",
             "title": "Disable paused state overlay",
             "settingName": "disablePausedStateOverlay",
             "settingType": "boolean",

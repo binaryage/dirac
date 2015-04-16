@@ -103,6 +103,7 @@ WebInspector.NetworkPanel = function()
         return this._networkItemView.currentSourceFrame();
     }
     WebInspector.GoToLineDialog.install(this, sourceFrameGetter.bind(this));
+    WebInspector.DataSaverInfobar.maybeShowInPanel(this);
 }
 
 WebInspector.NetworkPanel.prototype = {

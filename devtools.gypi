@@ -100,6 +100,7 @@
             'front_end/components/objectPropertiesSection.css',
             'front_end/components/objectValue.css',
             'front_end/components/CustomPreviewSection.js',
+            'front_end/components/DataSaverInfobar.js',
             'front_end/components/DebuggerPresentationUtils.js',
             'front_end/components/DockController.js',
             'front_end/components/DOMBreakpointsSidebarPane.js',

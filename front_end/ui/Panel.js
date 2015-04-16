@@ -113,6 +113,29 @@ WebInspector.Panel.prototype = {
             this._shortcuts[keys[i].key] = handler;
     },
 
+    /**
+     * @param {!WebInspector.Infobar} infobar
+     */
+    showInfobar: function(infobar)
+    {
+        infobar.setCloseCallback(this._onInfobarClosed.bind(this, infobar));
+        if (this.element.firstChild)
+            this.element.insertBefore(infobar.element, this.element.firstChild);
+        else
+            this.element.appendChild(infobar.element);
+        infobar.setVisible(true);
+        this.doResize();
+    },
+
+    /**
+     * @param {!WebInspector.Infobar} infobar
+     */
+    _onInfobarClosed: function(infobar)
+    {
+        infobar.element.remove();
+        this.doResize();
+    },
+
     __proto__: WebInspector.VBox.prototype
 }
 

@@ -113,6 +113,7 @@ WebInspector.SourcesPanel = function(workspaceForTest)
     WebInspector.targetManager.addModelListener(WebInspector.DebuggerModel, WebInspector.DebuggerModel.Events.GlobalObjectCleared, this._debuggerReset, this);
     new WebInspector.WorkspaceMappingTip(this, this._workspace);
     WebInspector.extensionServer.addEventListener(WebInspector.ExtensionServer.Events.SidebarPaneAdded, this._extensionSidebarPaneAdded, this);
+    WebInspector.DataSaverInfobar.maybeShowInPanel(this);
 }
 
 WebInspector.SourcesPanel.minToolbarWidth = 215;
