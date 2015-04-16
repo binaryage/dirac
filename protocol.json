@@ -4919,7 +4919,6 @@
                 "type": "object",
                 "properties": [
                     { "name": "offset", "type": "string", "description": "Keyframe's time offset." },
-                    { "name": "style", "$ref": "CSS.CSSStyle", "description": "Keyframe's associated CSS style declaration." },
                     { "name": "easing", "type": "string", "description": "<code>AnimationNode</code>'s timing function." }
                 ],
                 "description": "Keyframe Style"

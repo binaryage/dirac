@@ -406,7 +406,6 @@ WebInspector.AnimationModel.KeyframeStyle = function(target, payload)
 {
     WebInspector.SDKObject.call(this, target);
     this._payload = payload;
-    this._style = WebInspector.CSSStyleDeclaration.parsePayload(this.target().cssModel, payload.style);
     this._offset = this._payload.offset;
 }
 
@@ -433,14 +432,6 @@ WebInspector.AnimationModel.KeyframeStyle.prototype = {
     offsetAsNumber: function()
     {
         return parseFloat(this._offset) / 100;
-    },
-
-    /**
-     * @return {!WebInspector.CSSStyleDeclaration}
-     */
-    style: function()
-    {
-        return this._style;
     },
 
     /**
