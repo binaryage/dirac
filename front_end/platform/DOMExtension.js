@@ -228,9 +228,26 @@ Node.prototype.enclosingNodeOrSelfWithNodeName = function(nodeName)
  */
 Node.prototype.enclosingNodeOrSelfWithClass = function(className, stayWithin)
 {
+    return this.enclosingNodeOrSelfWithClassList([className], stayWithin);
+}
+
+/**
+ * @param {!Array.<string>} classNames
+ * @param {!Element=} stayWithin
+ * @return {?Element}
+ */
+Node.prototype.enclosingNodeOrSelfWithClassList = function(classNames, stayWithin)
+{
     for (var node = this; node && node !== stayWithin && node !== this.ownerDocument; node = node.parentNodeOrShadowHost()) {
-        if (node.nodeType === Node.ELEMENT_NODE && node.classList.contains(className))
-            return /** @type {!Element} */ (node);
+        if (node.nodeType === Node.ELEMENT_NODE) {
+            var containsAll = true;
+            for (var i = 0; i < classNames.length && containsAll; ++i) {
+                if (!node.classList.contains(classNames[i]))
+                    containsAll = false;
+            }
+            if (containsAll)
+                return /** @type {!Element} */ (node);
+        }
     }
     return null;
 }
