@@ -174,6 +174,10 @@ WebInspector.TracingModel.prototype = {
         this._processMetadataEvents();
         this._processPendingAsyncEvents();
         this._backingStorage.finishWriting();
+        for (var process of Object.values(this._processById)) {
+            for (var thread of Object.values(process._threads))
+                thread.tracingComplete();
+        }
     },
 
     reset: function()
@@ -229,8 +233,6 @@ WebInspector.TracingModel.prototype = {
             var endTimeStamp = (payload.ts + (payload.dur || 0)) / 1000;
             this._maximumRecordTime = Math.max(this._maximumRecordTime, endTimeStamp);
             var event = process._addEvent(payload);
-            if (!event)
-                return;
             // Build async event when we've got events from all threads & processes, so we can sort them and process in the
             // chronological order. However, also add individual async events to the thread flow (above), so we can easily
             // display them on the same chart as other events, should we choose so.
@@ -555,15 +557,15 @@ WebInspector.TracingModel.Event.prototype = {
     },
 
     /**
-     * @param {!WebInspector.TracingManager.EventPayload} payload
+     * @param {!WebInspector.TracingModel.Event} endEvent
      */
-    _complete: function(payload)
+    _complete: function(endEvent)
     {
-        if (payload.args)
-            this.addArgs(payload.args);
+        if (endEvent.args)
+            this.addArgs(endEvent.args);
         else
-            console.error("Missing mandatory event argument 'args' at " + payload.ts / 1000);
-        this.setEndTime(payload.ts / 1000);
+            console.error("Missing mandatory event argument 'args' at " + endEvent.startTime);
+        this.setEndTime(endEvent.startTime);
     },
 
     /**
@@ -814,15 +816,12 @@ WebInspector.TracingModel.Process.prototype = {
 
     /**
      * @param {!WebInspector.TracingManager.EventPayload} payload
-     * @return {?WebInspector.TracingModel.Event} event
+     * @return {!WebInspector.TracingModel.Event} event
      */
     _addEvent: function(payload)
     {
         var phase = WebInspector.TracingModel.Phase;
-
         var event = this.threadById(payload.tid)._addEvent(payload);
-        if (!event)
-            return null;
         if (payload.ph === phase.SnapshotObject)
             this.objectsByName(event.name).push(event);
         return event;
@@ -875,8 +874,6 @@ WebInspector.TracingModel.Thread = function(process, id)
     this._events = [];
     this._asyncEvents = [];
     this._id = id;
-
-    this._stack = [];
 }
 
 WebInspector.TracingModel.Thread.prototype = {
@@ -892,32 +889,43 @@ WebInspector.TracingModel.Thread.prototype = {
             return null;
     },
 
+    tracingComplete: function()
+    {
+        this._asyncEvents.stableSort(WebInspector.TracingModel.Event.compareStartTime);
+        this._events.stableSort(WebInspector.TracingModel.Event.compareStartTime);
+        var phases = WebInspector.TracingModel.Phase;
+        var stack = [];
+        for (var i = 0; i < this._events.length; ++i) {
+            var e = this._events[i];
+            switch (e.phase) {
+            case phases.End:
+                this._events[i] = null;  // Mark for removal.
+                // Quietly ignore unbalanced close events, they're legit (we could have missed start one).
+                if (!stack.length)
+                    continue;
+                var top = stack.pop();
+                if (top.name !== e.name || top.category !== e.category)
+                    console.error("B/E events mismatch at " + top.startTime + " (" + top.name + ") vs. " + e.startTime + " (" + e.name + ")");
+                else
+                    top._complete(e);
+                break;
+            case phases.Begin:
+                stack.push(e);
+                break;
+            }
+        }
+        this._events.remove(null, false);
+    },
+
     /**
      * @param {!WebInspector.TracingManager.EventPayload} payload
-     * @return {?WebInspector.TracingModel.Event} event
+     * @return {!WebInspector.TracingModel.Event} event
      */
     _addEvent: function(payload)
     {
-        var timestamp = payload.ts / 1000;
-        if (payload.ph === WebInspector.TracingModel.Phase.End) {
-            // Quietly ignore unbalanced close events, they're legit (we could have missed start one).
-            if (!this._stack.length)
-                return null;
-            var top = this._stack.pop();
-            if (top.name !== payload.name || top.category !== payload.cat)
-                console.error("B/E events mismatch at " + top.startTime + " (" + top.name + ") vs. " + timestamp + " (" + payload.name + ")");
-            else
-                top._complete(payload);
-            return null;
-        }
         var event = payload.ph === WebInspector.TracingModel.Phase.SnapshotObject
             ? WebInspector.TracingModel.ObjectSnapshot.fromPayload(payload, this)
             : WebInspector.TracingModel.Event.fromPayload(payload, this);
-        if (payload.ph === WebInspector.TracingModel.Phase.Begin)
-            this._stack.push(event);
-        // TODO(alph): According to the spec events are not required to come in a sorted order.
-        if (this._events.length && this._events.peekLast().startTime > event.startTime)
-            console.assert(false, "Event is out of order: " + event.name);
         this._events.push(event);
         return event;
     },

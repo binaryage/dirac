@@ -932,7 +932,7 @@ WebInspector.TimelineModel.prototype = {
      */
     _processThreadEvents: function(startTime, endTime, mainThread, thread)
     {
-        var events = thread.events().stableSort(WebInspector.TracingModel.Event.compareStartTime);
+        var events = thread.events();
         var asyncEvents = thread.asyncEvents();
 
         var jsSamples;
