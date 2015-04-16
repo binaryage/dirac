@@ -4,7 +4,12 @@
  * found in the LICENSE file.
  */
 
-.custom-expandable-section::before {
+.custom-expandable-section {
+    display: inline-flex;
+    flex-direction: column;
+}
+
+.custom-expandable-section-header::before {
     -webkit-user-select: none;
     background-image: url(Images/toolbarButtonGlyphs.png);
     background-size: 320px 144px;
@@ -17,10 +22,14 @@
     text-shadow: none;
 }
 
-.custom-expandable-section::before {
+.custom-expandable-section-header::before {
     background-position: -4px -96px;
 }
 
-.custom-expandable-section.expanded::before {
+.custom-expandable-section-header.expanded::before {
     background-position: -20px -96px;
+}
+
+.custom-expandable-section-standard-section {
+    display: inline-flex;
 }
