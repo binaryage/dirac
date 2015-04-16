@@ -46,7 +46,7 @@ WebInspector.AnimationTimeline.prototype = {
             this._animationsPlaybackRate = WebInspector.AnimationsSidebarPane.GlobalPlaybackRates[event.target.value];
             var target = WebInspector.targetManager.mainTarget();
             if (target)
-                target.animationAgent().setPlaybackRate(this._animationsPlaybackRate);
+                target.animationModel.setPlaybackRate(this._animationsPlaybackRate);
             this._playbackLabel.textContent = this._animationsPlaybackRate + "x";
             WebInspector.userMetrics.AnimationsPlaybackRateChanged.record();
             if (this._scrubberPlayer)
@@ -366,7 +366,7 @@ WebInspector.AnimationTimeline.prototype = {
 
         var target = WebInspector.targetManager.mainTarget();
         if (target)
-            target.animationAgent().setPlaybackRate(0);
+            target.animationModel.setPlaybackRate(0);
         return true;
     },
 
@@ -394,7 +394,7 @@ WebInspector.AnimationTimeline.prototype = {
         this._timelineScrubberHead.window().requestAnimationFrame(this._updateScrubber.bind(this));
         var target = WebInspector.targetManager.mainTarget();
         if (target)
-            target.animationAgent().setPlaybackRate(this._animationsPlaybackRate);
+            target.animationModel.setPlaybackRate(this._animationsPlaybackRate);
     },
 
     __proto__: WebInspector.VBox.prototype

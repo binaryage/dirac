@@ -63,6 +63,14 @@ WebInspector.AnimationModel.prototype = {
         this.dispatchEventToListeners(WebInspector.AnimationModel.Events.AnimationPlayerCanceled, { "playerId": playerId });
     },
 
+    /**
+     * @param {number} playbackRate
+     */
+    setPlaybackRate: function(playbackRate)
+    {
+        this._agent.setPlaybackRate(playbackRate);
+    },
+
     ensureEnabled: function()
     {
         if (this._enabled)
