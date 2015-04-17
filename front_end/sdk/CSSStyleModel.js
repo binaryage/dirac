@@ -44,7 +44,8 @@ WebInspector.CSSStyleModel = function(target)
     this._domModel.addEventListener(WebInspector.DOMModel.Events.UndoRedoCompleted, this._undoRedoCompleted, this);
     target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.MainFrameNavigated, this._mainFrameNavigated, this);
     target.registerCSSDispatcher(new WebInspector.CSSDispatcher(this));
-    this._agent.enable(this._wasEnabled.bind(this));
+    if (target.isPage())
+        this._agent.enable(this._wasEnabled.bind(this));
     /** @type {!Map.<string, !WebInspector.CSSStyleSheetHeader>} */
     this._styleSheetIdToHeader = new Map();
     /** @type {!Map.<string, !Object.<!PageAgent.FrameId, !Array.<!CSSAgent.StyleSheetId>>>} */
@@ -83,12 +84,16 @@ WebInspector.CSSStyleModel.MediaTypes = ["all", "braille", "embossed", "handheld
 WebInspector.CSSStyleModel.prototype = {
     suspendModel: function()
     {
+        if (!this.target().isPage())
+            return;
         this._agent.disable();
         this._isEnabled = false;
     },
 
     resumeModel: function()
     {
+        if (!this.target().isPage())
+            return;
         this._resetStyleSheets();
         this._agent.enable(this._wasEnabled.bind(this));
     },

@@ -581,7 +581,7 @@ InspectorBackendClass.Connection.prototype = {
      */
     _dispatchConnectionErrorResponse: function(domain, methodName, callback)
     {
-        var error = { message: "Connection is closed", code:  InspectorBackendClass._DevToolsErrorCode, data: null};
+        var error = { message: "Connection is closed, can't dispatch pending " + methodName, code:  InspectorBackendClass._DevToolsErrorCode, data: null};
         var messageObject = {error: error};
         setTimeout(InspectorBackendClass.AgentPrototype.prototype.dispatchResponse.bind(this.agent(domain), messageObject, methodName, callback), 0);
     },

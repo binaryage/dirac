@@ -1085,12 +1085,16 @@ WebInspector.DOMModel.Events = {
 WebInspector.DOMModel.prototype = {
     suspendModel: function()
     {
+        if (!this.target().isPage())
+            return;
         this._agent.disable();
         this.dispatchEventToListeners(WebInspector.DOMModel.Events.ModelSuspended);
     },
 
     resumeModel: function()
     {
+        if (!this.target().isPage())
+            return;
         this._agent.enable();
         this._setDocument(null);
     },
