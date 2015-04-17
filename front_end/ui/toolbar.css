@@ -19,6 +19,10 @@
     align-items: center;
 }
 
+.material.toolbar-shadow {
+    height: 28px;
+}
+
 .toolbar-shadow.vertical {
     flex-direction: column;
     height: auto;
@@ -52,6 +56,10 @@
     height: 24px;
 }
 
+.material .toolbar-item {
+    height: 28px;
+}
+
 .toolbar-text {
     white-space: nowrap;
     overflow: hidden;
@@ -80,6 +88,12 @@
     -webkit-mask-position: -288px -48px;
     -webkit-mask-size: 320px 144px;
     z-index: 1;
+    width: 32px;
+    height: 24px;
+}
+
+.material .long-click-glyph {
+    top: 2px;
 }
 
 @media (-webkit-min-device-pixel-ratio: 1.5) {
@@ -98,6 +112,10 @@
 
 button.toolbar-item {
     width: 30px;
+}
+
+.material button.toolbar-item {
+    width: 32px;
 }
 
 button.toolbar-item.toggled-on .glyph {
@@ -186,15 +204,11 @@ select.toolbar-item {
     -webkit-mask-size: 320px 144px;
     background-color: rgba(0, 0, 0, 0.75);
     opacity: 0.8;
-    flex: auto;
     z-index: 1;
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    margin: 0 -1px;
+    width: 32px;
+    height: 24px;
 }
+
 
 @media (-webkit-min-device-pixel-ratio: 1.5) {
 .toolbar-item > .glyph {
@@ -208,6 +222,7 @@ select.toolbar-item {
 
 .toolbar-counter {
     cursor: pointer;
+    padding: 0 2px;
 }
 
 .toolbar-counter:hover .toolbar-counter-item {

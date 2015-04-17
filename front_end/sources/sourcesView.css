@@ -42,8 +42,16 @@
     overflow: hidden;
 }
 
+.material #sources-panel-sources-view .sources-toolbar {
+    flex: 0 0 24px;
+}
+
 #sources-panel-sources-view .sources-toolbar .toolbar {
     margin-top: -2px;
+}
+
+#sources-panel-sources-view .sources-toolbar .toolbar {
+    margin-top: -3px;
 }
 
 .source-frame-debugger-script {

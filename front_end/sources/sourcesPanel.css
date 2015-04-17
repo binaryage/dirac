@@ -36,6 +36,10 @@
     height: 23px;
 }
 
+.material .scripts-debug-toolbar {
+    height: 27px;
+}
+
 .scripts-debug-toolbar::shadow .toolbar-item {
     position: relative;
     top: -1px;
@@ -49,6 +53,12 @@
     border-bottom: 1px solid rgb(202, 202, 202);
     background-color: white;
     overflow: hidden;
+}
+
+.material .scripts-debug-toolbar-drawer {
+    flex: 0 0 54px;
+    margin-top: -27px;
+    padding-top: 26px;
 }
 
 .scripts-debug-toolbar-drawer.expanded {
@@ -84,6 +94,10 @@
     z-index: 13;
 }
 
+.material #scripts-debug-sidebar-resizer-widget {
+    height: 28px;
+}
+
 .sources-split-view-vertical #scripts-debug-sidebar-resizer-widget {
     transform: rotate(90deg);
     right: 17px;
@@ -91,6 +105,11 @@
     top: auto;
     height: 10px;
     width: 18px;
+}
+
+.material .sources-split-view-vertical #scripts-debug-sidebar-resizer-widget {
+    right: 23px;
+    bottom: 6px;
 }
 
 .panel.sources .split-view.hbox #scripts-debug-sidebar-resizer-widget {

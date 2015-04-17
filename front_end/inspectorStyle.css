@@ -62,16 +62,35 @@ body .inspector-view-tabbed-pane.tabbed-pane::shadow .tabbed-pane-header {
     flex: 0 0 24px;
 }
 
+.material .inspector-view-tabbed-pane.tabbed-pane::shadow .tabbed-pane-header {
+    flex: 0 0 28px;
+}
+
+.inspector-view-tabbed-pane.tabbed-pane::shadow .tabbed-pane-header-tab {
+    height: 23px;
+}
+
+.material .inspector-view-tabbed-pane.tabbed-pane::shadow .tabbed-pane-header-tab {
+    height: 27px;
+}
+
 .inspector-view-toolbar-left {
     padding-left: 2px;
     margin-right: -5px; /* Should compensate for .tabbed-pane-header-contents margin-left. */
 }
 
+
 .inspector-view-tabbed-pane.tabbed-pane::shadow .tabbed-pane-header-tab,
 .inspector-view-tabbed-pane.tabbed-pane::shadow .tabbed-pane-header-tab.selected {
     border-width: 0 2px 0 2px;
     background: none;
-    padding-right: 3px;
+    margin: 0;
+    padding: 0 3px;
+}
+
+.material .inspector-view-tabbed-pane.tabbed-pane::shadow .tabbed-pane-header-tab,
+.material .inspector-view-tabbed-pane.tabbed-pane::shadow .tabbed-pane-header-tab.selected {
+    padding: 0 6px;
 }
 
 .inspector-view-tabbed-pane.tabbed-pane::shadow .tabbed-pane-header-tab.selected {

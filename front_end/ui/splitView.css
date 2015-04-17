@@ -120,6 +120,11 @@
     left: 4px;
 }
 
+.material.shadow-split-view button.left-sidebar-show-hide-button,
+.material.shadow-split-view button.top-sidebar-show-hide-button {
+    top: 5px;
+}
+
 .shadow-split-view button.left-sidebar-show-hide-button:active,
 .shadow-split-view button.top-sidebar-show-hide-button:active {
     top: 4px;
@@ -131,6 +136,11 @@
     right:2px;
 }
 
+.material.shadow-split-view button.right-sidebar-show-hide-button {
+    top: 5px;
+    right: 5px;
+}
+
 .shadow-split-view button.right-sidebar-show-hide-button:active {
     top: 4px;
     right: 1px;
@@ -139,6 +149,11 @@
 .shadow-split-view button.bottom-sidebar-show-hide-button {
     bottom: 1px;
     right: 1px;
+}
+
+.material.shadow-split-view button.bottom-sidebar-show-hide-button {
+    bottom: 3px;
+    right: 3px;
 }
 
 .shadow-split-view button.bottom-sidebar-show-hide-button:active {

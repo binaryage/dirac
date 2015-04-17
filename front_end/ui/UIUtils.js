@@ -621,6 +621,8 @@ WebInspector.installComponentRootStyles = function(element)
     if (wasInstalled)
         return false;
     element.classList.add("component-root", "platform-" + WebInspector.platform());
+    if (Runtime.experiments.isEnabled("materialDesign"))
+        element.classList.add("material");
     return true;
 }
 
@@ -630,6 +632,8 @@ WebInspector.installComponentRootStyles = function(element)
 WebInspector.uninstallComponentRootStyles = function(element)
 {
     element.classList.remove("component-root", "platform-" + WebInspector.platform());
+    if (Runtime.experiments.isEnabled("materialDesign"))
+        element.classList.remove("material");
 }
 
 /**

@@ -485,6 +485,7 @@ WebInspector.ToolbarButtonBase.prototype = {
 
         var optionsGlassPane = new WebInspector.GlassPane(document);
         var optionsBar = new WebInspector.Toolbar(optionsGlassPane.element);
+
         optionsBar.element.classList.add("fill");
         optionsBar._contentElement.classList.add("floating");
         const buttonHeight = 23;

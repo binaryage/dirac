@@ -186,6 +186,7 @@ WebInspector.Main.prototype = {
         Runtime.experiments.register("gpuTimeline", "GPU data on timeline", true);
         Runtime.experiments.register("inputEventsOnTimelineOverview", "Input events on Timeline overview", true)
         Runtime.experiments.register("layersPanel", "Layers panel");
+        Runtime.experiments.register("materialDesign", "Material design", true);
         Runtime.experiments.register("networkRequestHeadersFilterInDetailsView", "Network request headers filter in details view", true);
         Runtime.experiments.register("networkRequestsOnTimeline", "Network requests on Timeline");
         Runtime.experiments.register("privateScriptInspection", "Private script inspection");
