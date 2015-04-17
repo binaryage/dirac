@@ -346,7 +346,7 @@ WebInspector.TimelineOverview.prototype = {
      * @param {!Event} event
      * @return {?WebInspector.TimelineSelection|undefined}
      */
-    selectionFromEvent(event) { },
+    selectionFromEvent: function(event) { },
 
     /**
      * @param {number} windowLeft
