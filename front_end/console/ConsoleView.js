@@ -930,8 +930,11 @@ WebInspector.ConsoleView.prototype = {
     {
         this._prompt.setText("");
         var currentExecutionContext = WebInspector.context.flavor(WebInspector.ExecutionContext);
-        if (currentExecutionContext)
+        if (currentExecutionContext) {
             WebInspector.ConsoleModel.evaluateCommandInConsole(currentExecutionContext, text, useCommandLineAPI);
+            if (WebInspector.inspectorView.currentPanel() && WebInspector.inspectorView.currentPanel().name === "console")
+                WebInspector.userMetrics.CommandEvaluatedInConsolePanel.record();
+        }
     },
 
     /**

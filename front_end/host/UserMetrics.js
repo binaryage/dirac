@@ -57,7 +57,8 @@ WebInspector.UserMetrics._ActionCodes = {
     AnimationsPlaybackRateChanged: 11,
     RevisionApplied: 12,
     FileSystemDirectoryContentReceived: 13,
-    StyleRuleEdited: 14
+    StyleRuleEdited: 14,
+    CommandEvaluatedInConsolePanel: 15
 }
 
 WebInspector.UserMetrics._PanelCodes = {
