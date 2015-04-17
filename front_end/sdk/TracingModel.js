@@ -770,7 +770,6 @@ WebInspector.TracingModel.Process = function(id)
     /** @type {!Object.<number, !WebInspector.TracingModel.Thread>} */
     this._threads = {};
     this._threadByName = new Map();
-    this._objects = {};
 }
 
 WebInspector.TracingModel.Process.prototype = {
@@ -820,33 +819,7 @@ WebInspector.TracingModel.Process.prototype = {
      */
     _addEvent: function(payload)
     {
-        var phase = WebInspector.TracingModel.Phase;
-        var event = this.threadById(payload.tid)._addEvent(payload);
-        if (payload.ph === phase.SnapshotObject)
-            this.objectsByName(event.name).push(event);
-        return event;
-    },
-
-    /**
-     * @param {string} name
-     * @return {!Array.<!WebInspector.TracingModel.Event>}
-     */
-    objectsByName: function(name)
-    {
-        var objects = this._objects[name];
-        if (!objects) {
-            objects = [];
-            this._objects[name] = objects;
-        }
-        return objects;
-    },
-
-    /**
-     * @return {!Array.<string>}
-     */
-    sortedObjectNames: function()
-    {
-        return Object.keys(this._objects).sort();
+        return this.threadById(payload.tid)._addEvent(payload);
     },
 
     /**
