@@ -753,15 +753,18 @@ WebInspector.SelectUISourceCodeDialog.prototype = {
     {
         query = this.rewriteQuery(query);
         var uiSourceCode = this._uiSourceCodes[itemIndex];
-        titleElement.textContent = uiSourceCode.displayName() + (this._queryLineNumberAndColumnNumber || "");
-        subtitleElement.textContent = uiSourceCode.fullDisplayName().trimEnd(100);
 
+        var fullDisplayName = uiSourceCode.fullDisplayName();
         var indexes = [];
-        var score = new WebInspector.FilePathScoreFunction(query).score(uiSourceCode.fullDisplayName(), indexes);
-        var fileNameIndex = subtitleElement.textContent.lastIndexOf("/");
+        var score = new WebInspector.FilePathScoreFunction(query).score(fullDisplayName, indexes);
+        var fileNameIndex = fullDisplayName.lastIndexOf("/");
+
+        titleElement.textContent = uiSourceCode.displayName() + (this._queryLineNumberAndColumnNumber || "");
+        subtitleElement.textContent = fullDisplayName.trimEnd(100);
         var ranges = [];
         for (var i = 0; i < indexes.length; ++i)
             ranges.push({offset: indexes[i], length: 1});
+
         if (indexes[0] > fileNameIndex) {
             for (var i = 0; i < ranges.length; ++i)
                 ranges[i].offset -= fileNameIndex + 1;
