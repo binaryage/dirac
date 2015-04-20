@@ -111,7 +111,9 @@ WebInspector.DOMBreakpointsSidebarPane.prototype = {
     createBreakpointHitStatusMessage: function(details, callback)
     {
         var auxData = /** @type {!Object} */ (details.auxData);
-        var domModel = details.target().domModel;
+        var domModel = WebInspector.DOMModel.fromTarget(details.target());
+        if (!domModel)
+            return;
         if (auxData.type === this._breakpointTypes.SubtreeModified) {
             var targetNodeObject = details.target().runtimeModel.createRemoteObject(auxData["targetNode"]);
             domModel.pushObjectAsNodeToFrontend(targetNodeObject, didPushNodeToFrontend.bind(this));
@@ -373,9 +375,9 @@ WebInspector.DOMBreakpointsSidebarPane.prototype = {
     },
 
     /**
-     * @param {!WebInspector.Target} target
+     * @param {!WebInspector.DOMModel} domModel
      */
-    restoreBreakpoints: function(target)
+    restoreBreakpoints: function(domModel)
     {
         var pathToBreakpoints = {};
 
@@ -386,7 +388,7 @@ WebInspector.DOMBreakpointsSidebarPane.prototype = {
          */
         function didPushNodeByPathToFrontend(path, nodeId)
         {
-            var node = nodeId ? target.domModel.nodeForId(nodeId) : null;
+            var node = nodeId ? domModel.nodeForId(nodeId) : null;
             if (!node)
                 return;
 
@@ -403,7 +405,7 @@ WebInspector.DOMBreakpointsSidebarPane.prototype = {
             var path = breakpoint.path;
             if (!pathToBreakpoints[path]) {
                 pathToBreakpoints[path] = [];
-                target.domModel.pushNodeByPathToFrontend(path, didPushNodeByPathToFrontend.bind(this, path));
+                domModel.pushNodeByPathToFrontend(path, didPushNodeByPathToFrontend.bind(this, path));
             }
             pathToBreakpoints[path].push(breakpoint);
         }

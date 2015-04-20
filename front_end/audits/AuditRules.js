@@ -373,6 +373,13 @@ WebInspector.AuditRules.UnusedCssRule.prototype = {
      */
     doRun: function(target, requests, result, callback, progress)
     {
+        var domModel = WebInspector.DOMModel.fromTarget(target);
+        var cssModel = WebInspector.CSSStyleModel.fromTarget(target);
+        if (!domModel || !cssModel) {
+            callback(null);
+            return;
+        }
+
         /**
          * @param {!Array.<!WebInspector.AuditRules.ParsedStyleSheet>} styleSheets
          */
@@ -473,14 +480,14 @@ WebInspector.AuditRules.UnusedCssRule.prototype = {
                     if (progress.isCanceled())
                         return;
                     var effectiveSelector = selectors[i].replace(pseudoSelectorRegexp, "");
-                    target.domModel.querySelector(document.id, effectiveSelector, queryCallback.bind(null, i === selectors.length - 1 ? selectorsCallback.bind(null, styleSheets) : null, selectors[i]));
+                    domModel.querySelector(document.id, effectiveSelector, queryCallback.bind(null, i === selectors.length - 1 ? selectorsCallback.bind(null, styleSheets) : null, selectors[i]));
                 }
             }
 
-            target.domModel.requestDocument(documentLoaded.bind(null, selectors));
+            domModel.requestDocument(documentLoaded.bind(null, selectors));
         }
 
-        var styleSheetInfos = target.cssModel.allStyleSheets();
+        var styleSheetInfos = cssModel.allStyleSheets();
         if (!styleSheetInfos || !styleSheetInfos.length) {
             evalCallback([]);
             return;
@@ -884,6 +891,13 @@ WebInspector.AuditRules.ImageDimensionsRule.prototype = {
      */
     doRun: function(target, requests, result, callback, progress)
     {
+        var domModel = WebInspector.DOMModel.fromTarget(target);
+        var cssModel = WebInspector.CSSStyleModel.fromTarget(target);
+        if (!domModel || !cssModel) {
+            callback(null);
+            return;
+        }
+
         var urlToNoDimensionCount = {};
 
         function doneCallback()
@@ -904,7 +918,7 @@ WebInspector.AuditRules.ImageDimensionsRule.prototype = {
             if (progress.isCanceled())
                 return;
 
-            const node = target.domModel.nodeForId(imageId);
+            const node = domModel.nodeForId(imageId);
             var src = node.getAttribute("src");
             if (!src.asParsedURL()) {
                 for (var frameOwnerCandidate = node; frameOwnerCandidate; frameOwnerCandidate = frameOwnerCandidate.parentNode) {
@@ -980,9 +994,9 @@ WebInspector.AuditRules.ImageDimensionsRule.prototype = {
                 doneCallback();
 
             for (var i = 0; nodeIds && i < nodeIds.length; ++i) {
-                target.cssModel.getMatchedStylesAsync(nodeIds[i], false, false, matchedCallback);
-                target.cssModel.getInlineStylesAsync(nodeIds[i], inlineCallback);
-                target.cssModel.getComputedStyleAsync(nodeIds[i], imageStylesReady.bind(null, nodeIds[i], targetResult, i === nodeIds.length - 1));
+                cssModel.getMatchedStylesAsync(nodeIds[i], false, false, matchedCallback);
+                cssModel.getInlineStylesAsync(nodeIds[i], inlineCallback);
+                cssModel.getComputedStyleAsync(nodeIds[i], imageStylesReady.bind(null, nodeIds[i], targetResult, i === nodeIds.length - 1));
             }
         }
 
@@ -990,12 +1004,12 @@ WebInspector.AuditRules.ImageDimensionsRule.prototype = {
         {
             if (progress.isCanceled())
                 return;
-            target.domModel.querySelectorAll(root.id, "img[src]", getStyles);
+            domModel.querySelectorAll(root.id, "img[src]", getStyles);
         }
 
         if (progress.isCanceled())
             return;
-        target.domModel.requestDocument(onDocumentAvailable);
+        domModel.requestDocument(onDocumentAvailable);
     },
 
     __proto__: WebInspector.AuditRule.prototype
@@ -1021,6 +1035,12 @@ WebInspector.AuditRules.CssInHeadRule.prototype = {
      */
     doRun: function(target, requests, result, callback, progress)
     {
+        var domModel = WebInspector.DOMModel.fromTarget(target);
+        if (!domModel) {
+            callback(null);
+            return;
+        }
+
         function evalCallback(evalResult)
         {
             if (progress.isCanceled())
@@ -1063,7 +1083,7 @@ WebInspector.AuditRules.CssInHeadRule.prototype = {
                 var urlToViolationsArray = {};
                 var externalStylesheetHrefs = [];
                 for (var j = 0; j < externalStylesheetNodeIds.length; ++j) {
-                    var linkNode = target.domModel.nodeForId(externalStylesheetNodeIds[j]);
+                    var linkNode = domModel.nodeForId(externalStylesheetNodeIds[j]);
                     var completeHref = WebInspector.ParsedURL.completeURL(linkNode.ownerDocument.baseURL, linkNode.getAttribute("href"));
                     externalStylesheetHrefs.push(completeHref || "<empty>");
                 }
@@ -1084,7 +1104,7 @@ WebInspector.AuditRules.CssInHeadRule.prototype = {
 
             if (!nodeIds)
                 return;
-            target.domModel.querySelectorAll(root.id, "body link[rel~='stylesheet'][href]", externalStylesheetsReceived.bind(null, root, nodeIds));
+            domModel.querySelectorAll(root.id, "body link[rel~='stylesheet'][href]", externalStylesheetsReceived.bind(null, root, nodeIds));
         }
 
         /**
@@ -1095,10 +1115,10 @@ WebInspector.AuditRules.CssInHeadRule.prototype = {
             if (progress.isCanceled())
                 return;
 
-            target.domModel.querySelectorAll(root.id, "body style", inlineStylesReceived.bind(null, root));
+            domModel.querySelectorAll(root.id, "body style", inlineStylesReceived.bind(null, root));
         }
 
-        target.domModel.requestDocument(onDocumentAvailable);
+        domModel.requestDocument(onDocumentAvailable);
     },
 
     __proto__: WebInspector.AuditRule.prototype
@@ -1124,6 +1144,12 @@ WebInspector.AuditRules.StylesScriptsOrderRule.prototype = {
      */
     doRun: function(target, requests, result, callback, progress)
     {
+        var domModel = WebInspector.DOMModel.fromTarget(target);
+        if (!domModel) {
+            callback(null);
+            return;
+        }
+
         function evalCallback(resultValue)
         {
             if (progress.isCanceled())
@@ -1165,7 +1191,7 @@ WebInspector.AuditRules.StylesScriptsOrderRule.prototype = {
             if (lateStyleIds.length || cssBeforeInlineCount) {
                 var lateStyleUrls = [];
                 for (var i = 0; i < lateStyleIds.length; ++i) {
-                    var lateStyleNode = target.domModel.nodeForId(lateStyleIds[i]);
+                    var lateStyleNode = domModel.nodeForId(lateStyleIds[i]);
                     var completeHref = WebInspector.ParsedURL.completeURL(lateStyleNode.ownerDocument.baseURL, lateStyleNode.getAttribute("href"));
                     lateStyleUrls.push(completeHref || "<empty>");
                 }
@@ -1187,7 +1213,7 @@ WebInspector.AuditRules.StylesScriptsOrderRule.prototype = {
             if (!nodeIds)
                 return;
 
-            target.domModel.querySelectorAll(root.id, "head link[rel~='stylesheet'][href] ~ script:not([src])", cssBeforeInlineReceived.bind(null, nodeIds));
+            domModel.querySelectorAll(root.id, "head link[rel~='stylesheet'][href] ~ script:not([src])", cssBeforeInlineReceived.bind(null, nodeIds));
         }
 
         /**
@@ -1198,10 +1224,10 @@ WebInspector.AuditRules.StylesScriptsOrderRule.prototype = {
             if (progress.isCanceled())
                 return;
 
-            target.domModel.querySelectorAll(root.id, "head script[src] ~ link[rel~='stylesheet'][href]", lateStylesReceived.bind(null, root));
+            domModel.querySelectorAll(root.id, "head script[src] ~ link[rel~='stylesheet'][href]", lateStylesReceived.bind(null, root));
         }
 
-        target.domModel.requestDocument(onDocumentAvailable);
+        domModel.requestDocument(onDocumentAvailable);
     },
 
     __proto__: WebInspector.AuditRule.prototype
@@ -1227,8 +1253,13 @@ WebInspector.AuditRules.CSSRuleBase.prototype = {
      */
     doRun: function(target, requests, result, callback, progress)
     {
-        var headers = target.cssModel.allStyleSheets();
+        var cssModel = WebInspector.CSSStyleModel.fromTarget(target);
+        if (!cssModel) {
+            callback(null);
+            return;
+        }
 
+        var headers = cssModel.allStyleSheets();
         if (!headers.length) {
             callback(null);
             return;

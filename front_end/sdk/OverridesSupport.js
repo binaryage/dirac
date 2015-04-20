@@ -329,7 +329,9 @@ WebInspector.OverridesSupport.prototype = {
 
             if (this.canEmulate()) {
                 target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.MainFrameNavigated, this._onMainFrameNavigated, this);
-                target.domModel.addEventListener(WebInspector.DOMModel.Events.InspectModeWillBeToggled, this._inspectModeWillBeToggled, this);
+                var domModel = WebInspector.DOMModel.fromTarget(this._target);
+                if (domModel)
+                    domModel.addEventListener(WebInspector.DOMModel.Events.InspectModeWillBeToggled, this._inspectModeWillBeToggled, this);
                 this._applyInitialOverrides();
             }
 
@@ -716,7 +718,9 @@ WebInspector.OverridesSupport.prototype = {
     {
         var enabled = this.emulationEnabled() && this.settings.overrideCSSMedia.get();
         this._target.emulationAgent().setEmulatedMedia(enabled ? this.settings.emulatedCSSMedia.get() : "");
-        this._target.cssModel.mediaQueryResultChanged();
+        var cssModel = WebInspector.CSSStyleModel.fromTarget(this._target);
+        if (cssModel)
+            cssModel.mediaQueryResultChanged();
     },
 
     _networkConditionsChanged: function()
@@ -745,9 +749,11 @@ WebInspector.OverridesSupport.prototype = {
     _showRulersChanged: function()
     {
         var showRulersValue = WebInspector.moduleSetting("showMetricsRulers").get();
-        for (var target of WebInspector.targetManager.targets()) {
+        for (var target of WebInspector.targetManager.targets(WebInspector.Target.Type.Page)) {
             target.pageAgent().setShowViewportSizeOnResize(!this._pageResizerActive(), showRulersValue);
-            target.domModel.setHighlightSettings(showRulersValue && !this._pageResizerActive(), showRulersValue);
+            var domModel = WebInspector.DOMModel.fromTarget(target);
+            if (domModel)
+                domModel.setHighlightSettings(showRulersValue && !this._pageResizerActive(), showRulersValue);
         }
     },
 

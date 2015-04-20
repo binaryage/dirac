@@ -579,7 +579,7 @@ WebInspector.SASSSourceMapping.prototype = {
     {
         // FIXME: Implement this when ui -> raw mapping has clients.
         var networkURL = this._networkMapping.networkURL(uiSourceCode);
-        return new WebInspector.CSSLocation(this._cssModel.target(), null, networkURL || "", lineNumber, columnNumber);
+        return new WebInspector.CSSLocation(this._cssModel, null, networkURL || "", lineNumber, columnNumber);
     },
 
     /**

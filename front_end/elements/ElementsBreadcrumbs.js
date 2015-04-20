@@ -66,7 +66,7 @@ WebInspector.ElementsBreadcrumbs.prototype = {
     _mouseMovedOutOfCrumbs: function(event)
     {
         if (this._currentDOMNode)
-            this._currentDOMNode.domModel().hideDOMNodeHighlight();
+            WebInspector.DOMModel.hideDOMNodeHighlight();
     },
 
     /**

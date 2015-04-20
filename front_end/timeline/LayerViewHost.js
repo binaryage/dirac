@@ -269,8 +269,7 @@ WebInspector.LayerViewHost.prototype = {
             node.highlightForTwoSeconds();
             return;
         }
-        if (this._target)
-            this._target.domModel.hideDOMNodeHighlight();
+        WebInspector.DOMModel.hideDOMNodeHighlight();
     }
 }
 

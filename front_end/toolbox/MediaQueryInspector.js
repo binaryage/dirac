@@ -46,13 +46,15 @@ WebInspector.MediaQueryInspector.prototype = {
     targetAdded: function(target)
     {
         // FIXME: adapt this to multiple targets.
-        if (this._target)
+        if (this._cssModel)
             return;
-        this._target = target;
-        target.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetAdded, this._scheduleMediaQueriesUpdate, this);
-        target.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetRemoved, this._scheduleMediaQueriesUpdate, this);
-        target.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetChanged, this._scheduleMediaQueriesUpdate, this);
-        target.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.MediaQueryResultChanged, this._scheduleMediaQueriesUpdate, this);
+        this._cssModel = WebInspector.CSSStyleModel.fromTarget(target);
+        if (!this._cssModel)
+            return;
+        this._cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetAdded, this._scheduleMediaQueriesUpdate, this);
+        this._cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetRemoved, this._scheduleMediaQueriesUpdate, this);
+        this._cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetChanged, this._scheduleMediaQueriesUpdate, this);
+        this._cssModel.addEventListener(WebInspector.CSSStyleModel.Events.MediaQueryResultChanged, this._scheduleMediaQueriesUpdate, this);
     },
 
     /**
@@ -61,13 +63,13 @@ WebInspector.MediaQueryInspector.prototype = {
      */
     targetRemoved: function(target)
     {
-        if (target !== this._target)
+        if (WebInspector.CSSStyleModel.fromTarget(target) !== this._cssModel)
             return;
-        target.cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.StyleSheetAdded, this._scheduleMediaQueriesUpdate, this);
-        target.cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.StyleSheetRemoved, this._scheduleMediaQueriesUpdate, this);
-        target.cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.StyleSheetChanged, this._scheduleMediaQueriesUpdate, this);
-        target.cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.MediaQueryResultChanged, this._scheduleMediaQueriesUpdate, this);
-        delete this._target;
+        this._cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.StyleSheetAdded, this._scheduleMediaQueriesUpdate, this);
+        this._cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.StyleSheetRemoved, this._scheduleMediaQueriesUpdate, this);
+        this._cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.StyleSheetChanged, this._scheduleMediaQueriesUpdate, this);
+        this._cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.MediaQueryResultChanged, this._scheduleMediaQueriesUpdate, this);
+        delete this._cssModel;
     },
 
     /**
@@ -131,7 +133,7 @@ WebInspector.MediaQueryInspector.prototype = {
      */
     _onContextMenu: function(event)
     {
-        if (!this._target || !this._target.cssModel.isEnabled())
+        if (!this._cssModel || !this._cssModel.isEnabled())
             return;
 
         var mediaQueryMarker = event.target.enclosingNodeOrSelfWithClass("media-inspector-marker");
@@ -178,7 +180,7 @@ WebInspector.MediaQueryInspector.prototype = {
      */
     _refetchMediaQueries: function(finishCallback)
     {
-        if (!this._enabled || !this._target) {
+        if (!this._enabled || !this._cssModel) {
             finishCallback();
             return;
         }
@@ -192,7 +194,7 @@ WebInspector.MediaQueryInspector.prototype = {
             this._rebuildMediaQueries(cssMedias);
             finishCallback();
         }
-        this._target.cssModel.getMediaQueries(callback.bind(this));
+        this._cssModel.getMediaQueries(callback.bind(this));
     },
 
     /**

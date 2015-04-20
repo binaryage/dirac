@@ -519,15 +519,14 @@ WebInspector.IndexedDBModel.Index.prototype = {
     }
 }
 
-WebInspector.IndexedDBModel._symbol = Symbol("IndexedDBModel");
 /**
  * @param {!WebInspector.Target} target
- * @return {!WebInspector.IndexedDBModel}
+ * @return {?WebInspector.IndexedDBModel}
  */
 WebInspector.IndexedDBModel.fromTarget = function(target)
 {
-    if (!target[WebInspector.IndexedDBModel._symbol])
-        target[WebInspector.IndexedDBModel._symbol] = new WebInspector.IndexedDBModel(target);
-
-    return target[WebInspector.IndexedDBModel._symbol];
+    var model = /** @type {?WebInspector.IndexedDBModel} */ (target.model(WebInspector.IndexedDBModel));
+    if (!model)
+        model = new WebInspector.IndexedDBModel(target);
+    return model;
 }

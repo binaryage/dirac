@@ -426,7 +426,7 @@ WebInspector.LogTreeElement.prototype = {
         if (!target)
             return;
         if (!hovered) {
-            target.domModel.hideDOMNodeHighlight();
+            WebInspector.DOMModel.hideDOMNodeHighlight();
             return;
         }
         var logItem = /** @type {!WebInspector.PaintProfilerLogItem} */ (this._logItem);

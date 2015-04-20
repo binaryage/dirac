@@ -21,13 +21,11 @@ WebInspector.AnimationsSidebarPane.prototype = {
     setNode: function(node)
     {
         WebInspector.ElementsSidebarPane.prototype.setNode.call(this, node);
-        if (!node)
-            return;
-        this._updateTarget(node.target());
+        this._updateTarget(node ? node.target() : null);
     },
 
     /**
-     * @param {!WebInspector.Target} target
+     * @param {?WebInspector.Target} target
      */
     _updateTarget: function(target)
     {
@@ -38,8 +36,10 @@ WebInspector.AnimationsSidebarPane.prototype = {
             this._target.animationModel.removeEventListener(WebInspector.AnimationModel.Events.AnimationPlayerCanceled, this._animationPlayerCanceled, this);
         }
         this._target = target;
-        this._target.animationModel.addEventListener(WebInspector.AnimationModel.Events.AnimationPlayerCreated, this._animationPlayerCreated, this);
-        this._target.animationModel.addEventListener(WebInspector.AnimationModel.Events.AnimationPlayerCanceled, this._animationPlayerCanceled, this);
+        if (this._target) {
+            this._target.animationModel.addEventListener(WebInspector.AnimationModel.Events.AnimationPlayerCreated, this._animationPlayerCreated, this);
+            this._target.animationModel.addEventListener(WebInspector.AnimationModel.Events.AnimationPlayerCanceled, this._animationPlayerCanceled, this);
+        }
     },
 
     /**

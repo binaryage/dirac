@@ -533,7 +533,7 @@ WebInspector.ElementsTreeElement.prototype = {
          */
         function setPseudoStateCallback(pseudoState, enabled)
         {
-            node.target().cssModel.forcePseudoState(node, pseudoState, enabled);
+            WebInspector.CSSStyleModel.fromNode(node).forcePseudoState(node, pseudoState, enabled);
         }
     },
 

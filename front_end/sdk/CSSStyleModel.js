@@ -36,16 +36,16 @@
 WebInspector.CSSStyleModel = function(target)
 {
     WebInspector.SDKModel.call(this, WebInspector.CSSStyleModel, target);
-    this._domModel = target.domModel;
+    this._domModel = WebInspector.DOMModel.fromTarget(target);
     this._agent = target.cssAgent();
+    WebInspector.targetManager.addEventListener(WebInspector.TargetManager.Events.SuspendStateChanged, this._suspendStateChanged, this);
     this._pendingCommandsMajorState = [];
     this._styleLoader = new WebInspector.CSSStyleModel.ComputedStyleLoader(this);
     this._domModel.addEventListener(WebInspector.DOMModel.Events.UndoRedoRequested, this._undoRedoRequested, this);
     this._domModel.addEventListener(WebInspector.DOMModel.Events.UndoRedoCompleted, this._undoRedoCompleted, this);
     target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.MainFrameNavigated, this._mainFrameNavigated, this);
     target.registerCSSDispatcher(new WebInspector.CSSDispatcher(this));
-    if (target.isPage())
-        this._agent.enable(this._wasEnabled.bind(this));
+    this._agent.enable(this._wasEnabled.bind(this));
     /** @type {!Map.<string, !WebInspector.CSSStyleSheetHeader>} */
     this._styleSheetIdToHeader = new Map();
     /** @type {!Map.<string, !Object.<!PageAgent.FrameId, !Array.<!CSSAgent.StyleSheetId>>>} */
@@ -82,22 +82,6 @@ WebInspector.CSSStyleModel.Events = {
 WebInspector.CSSStyleModel.MediaTypes = ["all", "braille", "embossed", "handheld", "print", "projection", "screen", "speech", "tty", "tv"];
 
 WebInspector.CSSStyleModel.prototype = {
-    suspendModel: function()
-    {
-        if (!this.target().isPage())
-            return;
-        this._agent.disable();
-        this._isEnabled = false;
-    },
-
-    resumeModel: function()
-    {
-        if (!this.target().isPage())
-            return;
-        this._resetStyleSheets();
-        this._agent.enable(this._wasEnabled.bind(this));
-    },
-
     /**
      * @param {function(!Array.<!WebInspector.CSSMedia>)} userCallback
      */
@@ -634,21 +618,33 @@ WebInspector.CSSStyleModel.prototype = {
             this.dispatchEventToListeners(WebInspector.CSSStyleModel.Events.StyleSheetRemoved, headers[i]);
     },
 
+    _suspendStateChanged: function()
+    {
+        if (WebInspector.targetManager.allTargetsSuspended()) {
+            this._agent.disable();
+            this._isEnabled = false;
+        } else {
+            this._resetStyleSheets();
+            this._agent.enable(this._wasEnabled.bind(this));
+        }
+    },
+
     __proto__: WebInspector.SDKModel.prototype
 }
 
 /**
  * @constructor
  * @extends {WebInspector.SDKObject}
- * @param {!WebInspector.Target} target
+ * @param {!WebInspector.CSSStyleModel} cssModel
  * @param {?CSSAgent.StyleSheetId} styleSheetId
  * @param {string} url
  * @param {number} lineNumber
  * @param {number=} columnNumber
  */
-WebInspector.CSSLocation = function(target, styleSheetId, url, lineNumber, columnNumber)
+WebInspector.CSSLocation = function(cssModel, styleSheetId, url, lineNumber, columnNumber)
 {
-    WebInspector.SDKObject.call(this, target);
+    WebInspector.SDKObject.call(this, cssModel.target());
+    this._cssModel = cssModel;
     this.styleSheetId = styleSheetId;
     this.url = url;
     this.lineNumber = lineNumber;
@@ -656,6 +652,14 @@ WebInspector.CSSLocation = function(target, styleSheetId, url, lineNumber, colum
 }
 
 WebInspector.CSSLocation.prototype = {
+    /**
+     * @return {!WebInspector.CSSStyleModel}
+     */
+    cssModel: function()
+    {
+        return this._cssModel;
+    },
+
     __proto__: WebInspector.SDKObject.prototype
 }
 
@@ -701,16 +705,16 @@ WebInspector.CSSStyleDeclaration = function(cssModel, payload)
 }
 
 /**
- * @param {!WebInspector.Target} target
+ * @param {!WebInspector.CSSStyleModel} cssModel
  * @return {!WebInspector.CSSStyleDeclaration}
  */
-WebInspector.CSSStyleDeclaration.createDummyStyle = function(target)
+WebInspector.CSSStyleDeclaration.createDummyStyle = function(cssModel)
 {
     var dummyPayload = {
         shorthandEntries: [],
         cssProperties: []
     };
-    return new WebInspector.CSSStyleDeclaration(target.cssModel, dummyPayload);
+    return new WebInspector.CSSStyleDeclaration(cssModel, dummyPayload);
 }
 
 /**
@@ -756,6 +760,14 @@ WebInspector.CSSStyleDeclaration.prototype = {
     target: function()
     {
         return this._cssModel.target();
+    },
+
+    /**
+     * @return {!WebInspector.CSSStyleModel}
+     */
+    cssModel: function()
+    {
+        return this._cssModel;
     },
 
     /**
@@ -1568,7 +1580,7 @@ WebInspector.CSSMedia.prototype = {
         if (!this.header() || this.lineNumberInSource() === undefined)
             return null;
         var lineNumber = Number(this.lineNumberInSource());
-        return new WebInspector.CSSLocation(this._cssModel.target(), this.header().id, this.sourceURL, lineNumber, this.columnNumberInSource());
+        return new WebInspector.CSSLocation(this._cssModel, this.header().id, this.sourceURL, lineNumber, this.columnNumberInSource());
     }
 }
 
@@ -1603,6 +1615,14 @@ WebInspector.CSSStyleSheetHeader.prototype = {
     target: function()
     {
         return this._cssModel.target();
+    },
+
+    /**
+     * @return {!WebInspector.CSSStyleModel}
+     */
+    cssModel: function()
+    {
+        return this._cssModel;
     },
 
     /**
@@ -1827,4 +1847,24 @@ WebInspector.CSSStyleModel.ComputedStyleLoader.prototype = {
                 callbacks[i](computedStyle);
         }
     }
+}
+
+/**
+ * @param {!WebInspector.Target} target
+ * @return {?WebInspector.CSSStyleModel}
+ */
+WebInspector.CSSStyleModel.fromTarget = function(target)
+{
+    if (!target.isPage())
+        return null;
+    return /** @type {?WebInspector.CSSStyleModel} */ (target.model(WebInspector.CSSStyleModel));
+}
+
+/**
+ * @param {!WebInspector.DOMNode} node
+ * @return {!WebInspector.CSSStyleModel}
+ */
+WebInspector.CSSStyleModel.fromNode = function(node)
+{
+    return /** @type {!WebInspector.CSSStyleModel} */ (WebInspector.CSSStyleModel.fromTarget(node.target()));
 }

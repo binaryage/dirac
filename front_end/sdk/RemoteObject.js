@@ -270,7 +270,6 @@ WebInspector.RemoteObjectImpl = function(target, objectId, type, subtype, value,
 
     this._target = target;
     this._runtimeAgent = target.runtimeAgent();
-    this._domModel = target.domModel;
 
     this._type = type;
     this._subtype = subtype;

@@ -53,14 +53,10 @@ WebInspector.Target.prototype = {
     suspend: function()
     {
         this.debuggerModel.suspendModel();
-        this.cssModel.suspendModel();
-        this.domModel.suspendModel();
     },
 
     resume: function()
     {
-        this.domModel.resumeModel();
-        this.cssModel.resumeModel();
         this.debuggerModel.resumeModel();
     },
 
@@ -134,10 +130,12 @@ WebInspector.Target.prototype = {
         this.debuggerModel = new WebInspector.DebuggerModel(this);
         /** @type {!WebInspector.RuntimeModel} */
         this.runtimeModel = new WebInspector.RuntimeModel(this);
-        /** @type {!WebInspector.DOMModel} */
-        this.domModel = new WebInspector.DOMModel(this);
-        /** @type {!WebInspector.CSSStyleModel} */
-        this.cssModel = new WebInspector.CSSStyleModel(this);
+
+        if (this._type === WebInspector.Target.Type.Page) {
+            new WebInspector.DOMModel(this);
+            new WebInspector.CSSStyleModel(this);
+        }
+
         /** @type {?WebInspector.WorkerManager} */
         this.workerManager = !this.isDedicatedWorker() ? new WebInspector.WorkerManager(this) : null;
         /** @type {!WebInspector.CPUProfilerModel} */
@@ -244,6 +242,15 @@ WebInspector.Target.prototype = {
     isDetached: function()
     {
         return this._connection.isClosed();
+    },
+
+    /**
+     * @param {!Function} modelClass
+     * @return {?WebInspector.SDKModel}
+     */
+    model: function(modelClass)
+    {
+        return this._modelByConstructor.get(modelClass) || null;
     },
 
     __proto__: Protocol.Agents.prototype

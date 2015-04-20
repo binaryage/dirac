@@ -77,7 +77,7 @@ WebInspector.StylesSourceMapping.prototype = {
     uiLocationToRawLocation: function(uiSourceCode, lineNumber, columnNumber)
     {
         var networkURL = this._networkMapping.networkURL(uiSourceCode);
-        return new WebInspector.CSSLocation(this._cssModel.target(), null, networkURL || "", lineNumber, columnNumber);
+        return new WebInspector.CSSLocation(this._cssModel, null, networkURL || "", lineNumber, columnNumber);
     },
 
     /**

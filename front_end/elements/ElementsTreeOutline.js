@@ -31,14 +31,13 @@
 /**
  * @constructor
  * @extends {TreeOutline}
- * @param {!WebInspector.Target} target
+ * @param {!WebInspector.DOMModel} domModel
  * @param {boolean=} omitRootDOMNode
  * @param {boolean=} selectEnabled
  */
-WebInspector.ElementsTreeOutline = function(target, omitRootDOMNode, selectEnabled)
+WebInspector.ElementsTreeOutline = function(domModel, omitRootDOMNode, selectEnabled)
 {
-    this._target = target;
-    this._domModel = target.domModel;
+    this._domModel = domModel;
     this._treeElementSymbol = Symbol("treeElement");
 
     var element = createElement("div");
@@ -188,14 +187,6 @@ WebInspector.ElementsTreeOutline.prototype = {
         if (hasRunningAnimation)
             element.classList.toggle("elements-tree-element-pick-node-2");
         return true;
-    },
-
-    /**
-     * @return {!WebInspector.Target}
-     */
-    target: function()
-    {
-        return this._target;
     },
 
     /**
@@ -770,7 +761,7 @@ WebInspector.ElementsTreeOutline.prototype = {
             delete this._previousHoveredElement;
         }
 
-        this._domModel.hideDOMNodeHighlight();
+        WebInspector.DOMModel.hideDOMNodeHighlight();
     },
 
     _ondragstart: function(event)
@@ -791,7 +782,7 @@ WebInspector.ElementsTreeOutline.prototype = {
         event.dataTransfer.effectAllowed = "copyMove";
         this._treeElementBeingDragged = treeElement;
 
-        this._domModel.hideDOMNodeHighlight();
+        WebInspector.DOMModel.hideDOMNodeHighlight();
 
         return true;
     },
@@ -1121,7 +1112,7 @@ WebInspector.ElementsTreeOutline.prototype = {
         this.selectDOMNode(null, false);
         this._popoverHelper.hidePopover();
         delete this._clipboardNodeData;
-        this._domModel.hideDOMNodeHighlight();
+        WebInspector.DOMModel.hideDOMNodeHighlight();
         this._updateRecords.clear();
     },
 
@@ -1792,14 +1783,19 @@ WebInspector.ElementsTreeOutline.Renderer.prototype = {
          */
         function renderPromise(resolve, reject)
         {
-            if (object instanceof WebInspector.DOMNode)
+            if (object instanceof WebInspector.DOMNode) {
                 onNodeResolved(/** @type {!WebInspector.DOMNode} */ (object));
-            else if (object instanceof WebInspector.DeferredDOMNode)
+            } else if (object instanceof WebInspector.DeferredDOMNode) {
                 (/** @type {!WebInspector.DeferredDOMNode} */ (object)).resolve(onNodeResolved);
-            else if (object instanceof WebInspector.RemoteObject)
-                (/** @type {!WebInspector.RemoteObject} */ (object)).target().domModel.pushObjectAsNodeToFrontend(object, onNodeResolved);
-            else
+            } else if (object instanceof WebInspector.RemoteObject) {
+                var domModel = WebInspector.DOMModel.fromTarget((/** @type {!WebInspector.RemoteObject} */ (object)).target());
+                if (domModel)
+                    domModel.pushObjectAsNodeToFrontend(object, onNodeResolved);
+                else
+                    reject(new Error("No dom model for given JS object target found."));
+            } else {
                 reject(new Error("Can't reveal not a node."));
+            }
 
             /**
              * @param {?WebInspector.DOMNode} node
@@ -1810,7 +1806,7 @@ WebInspector.ElementsTreeOutline.Renderer.prototype = {
                     reject(new Error("Could not resolve node."));
                     return;
                 }
-                var treeOutline = new WebInspector.ElementsTreeOutline(node.target(), false, false);
+                var treeOutline = new WebInspector.ElementsTreeOutline(node.domModel(), false, false);
                 treeOutline.rootDOMNode = node;
                 if (!treeOutline.firstChild().isExpandable())
                     treeOutline._element.classList.add("single-node");

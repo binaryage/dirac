@@ -38,6 +38,7 @@ WebInspector.ScreencastView = function(target)
 {
     WebInspector.VBox.call(this);
     this._target = target;
+    this._domModel = WebInspector.DOMModel.fromTarget(target);
 
     this.setMinimumSize(150, 150);
     this.registerRequiredCSS("screencast/screencastView.css");
@@ -130,7 +131,7 @@ WebInspector.ScreencastView.prototype = {
         dimensions.width *= window.devicePixelRatio;
         dimensions.height *= window.devicePixelRatio;
         this._target.pageAgent().startScreencast("jpeg", 80, Math.min(maxImageDimension, dimensions.width), Math.min(maxImageDimension, dimensions.height));
-        this._target.domModel.setHighlighter(this);
+        this._domModel.setHighlighter(this);
     },
 
     _stopCasting: function()
@@ -139,7 +140,7 @@ WebInspector.ScreencastView.prototype = {
             return;
         this._isCasting = false;
         this._target.pageAgent().stopScreencast();
-        this._target.domModel.setHighlighter(null);
+        this._domModel.setHighlighter(null);
     },
 
     /**
@@ -218,8 +219,8 @@ WebInspector.ScreencastView.prototype = {
     _handleMouseEvent: function(event)
     {
         if (this._isGlassPaneActive()) {
-          event.consume();
-          return;
+            event.consume();
+            return;
         }
 
         if (!this._pageScaleFactor)
@@ -234,7 +235,7 @@ WebInspector.ScreencastView.prototype = {
         }
 
         var position = this._convertIntoScreenSpace(event);
-        this._target.domModel.nodeForLocation(position.x / this._pageScaleFactor + this._scrollOffsetX, position.y / this._pageScaleFactor + this._scrollOffsetY, callback.bind(this));
+        this._domModel.nodeForLocation(position.x / this._pageScaleFactor + this._scrollOffsetX, position.y / this._pageScaleFactor + this._scrollOffsetY, callback.bind(this));
 
         /**
          * @param {?WebInspector.DOMNode} node

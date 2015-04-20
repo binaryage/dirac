@@ -158,8 +158,8 @@ WebInspector.ObjectPopoverHelper.prototype = {
                 popover.showForAnchor(popoverContentElement, anchorElement);
             } else {
                 if (result.subtype === "node") {
-                    result.target().domModel.highlightObjectAsDOMNode(result);
-                    this._resultHighlightedAsDOM = result;
+                    WebInspector.DOMModel.highlightObjectAsDOMNode(result);
+                    this._resultHighlightedAsDOM = true;
                 }
 
                 if (result.customPreview()) {
@@ -188,7 +188,7 @@ WebInspector.ObjectPopoverHelper.prototype = {
     _onHideObjectPopover: function()
     {
         if (this._resultHighlightedAsDOM) {
-            this._resultHighlightedAsDOM.target().domModel.hideDOMNodeHighlight();
+            WebInspector.DOMModel.hideDOMNodeHighlight();
             delete this._resultHighlightedAsDOM;
         }
         if (this._linkifier) {

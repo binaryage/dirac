@@ -43,11 +43,11 @@ WebInspector.MetricsSidebarPane.prototype = {
     setNode: function(node)
     {
         WebInspector.ElementsSidebarPane.prototype.setNode.call(this, node);
-        this._updateTarget(node.target());
+        this._updateTarget(node ? node.target() : null);
     },
 
     /**
-     * @param {!WebInspector.Target} target
+     * @param {?WebInspector.Target} target
      */
     _updateTarget: function(target)
     {
@@ -55,22 +55,26 @@ WebInspector.MetricsSidebarPane.prototype = {
             return;
 
         if (this._target) {
-            this._target.cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.StyleSheetAdded, this.update, this);
-            this._target.cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.StyleSheetRemoved, this.update, this);
-            this._target.cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.StyleSheetChanged, this.update, this);
-            this._target.cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.MediaQueryResultChanged, this.update, this);
-            this._target.domModel.removeEventListener(WebInspector.DOMModel.Events.AttrModified, this._attributesUpdated, this);
-            this._target.domModel.removeEventListener(WebInspector.DOMModel.Events.AttrRemoved, this._attributesUpdated, this);
+            this._cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.StyleSheetAdded, this.update, this);
+            this._cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.StyleSheetRemoved, this.update, this);
+            this._cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.StyleSheetChanged, this.update, this);
+            this._cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.MediaQueryResultChanged, this.update, this);
+            this._domModel.removeEventListener(WebInspector.DOMModel.Events.AttrModified, this._attributesUpdated, this);
+            this._domModel.removeEventListener(WebInspector.DOMModel.Events.AttrRemoved, this._attributesUpdated, this);
             this._target.resourceTreeModel.removeEventListener(WebInspector.ResourceTreeModel.EventTypes.FrameResized, this.update, this);
         }
         this._target = target;
-        this._target.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetAdded, this.update, this);
-        this._target.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetRemoved, this.update, this);
-        this._target.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetChanged, this.update, this);
-        this._target.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.MediaQueryResultChanged, this.update, this);
-        this._target.domModel.addEventListener(WebInspector.DOMModel.Events.AttrModified, this._attributesUpdated, this);
-        this._target.domModel.addEventListener(WebInspector.DOMModel.Events.AttrRemoved, this._attributesUpdated, this);
-        this._target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.FrameResized, this.update, this);
+        if (target) {
+            this._domModel = WebInspector.DOMModel.fromTarget(target);
+            this._cssModel = WebInspector.CSSStyleModel.fromTarget(target);
+            this._cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetAdded, this.update, this);
+            this._cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetRemoved, this.update, this);
+            this._cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetChanged, this.update, this);
+            this._cssModel.addEventListener(WebInspector.CSSStyleModel.Events.MediaQueryResultChanged, this.update, this);
+            this._domModel.addEventListener(WebInspector.DOMModel.Events.AttrModified, this._attributesUpdated, this);
+            this._domModel.addEventListener(WebInspector.DOMModel.Events.AttrRemoved, this._attributesUpdated, this);
+            this._target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.FrameResized, this.update, this);
+        }
     },
 
     /**
@@ -106,7 +110,7 @@ WebInspector.MetricsSidebarPane.prototype = {
                 return;
             this._updateMetrics(style);
         }
-        this._target.cssModel.getComputedStyleAsync(node.id, callback.bind(this));
+        this._cssModel.getComputedStyleAsync(node.id, callback.bind(this));
 
         /**
          * @param {?WebInspector.CSSStyleDeclaration} style
@@ -118,7 +122,7 @@ WebInspector.MetricsSidebarPane.prototype = {
                 this.inlineStyle = style;
             finishedCallback();
         }
-        this._target.cssModel.getInlineStylesAsync(node.id, inlineStyleCallback.bind(this));
+        this._cssModel.getInlineStylesAsync(node.id, inlineStyleCallback.bind(this));
     },
 
     _attributesUpdated: function(event)
@@ -159,7 +163,7 @@ WebInspector.MetricsSidebarPane.prototype = {
             this.node().highlight(mode);
         } else {
             delete this._highlightMode;
-            this._target.domModel.hideDOMNodeHighlight();
+            WebInspector.DOMModel.hideDOMNodeHighlight();
         }
 
         for (var i = 0; this._boxElements && i < this._boxElements.length; ++i) {

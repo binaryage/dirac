@@ -182,6 +182,7 @@ WebInspector.LayerTreeModel.prototype = {
 WebInspector.LayerTreeBase = function(target)
 {
     this._target = target;
+    this._domModel = target ? WebInspector.DOMModel.fromTarget(target) : null;
     this._layersById = {};
     /** @type Map<number, ?WebInspector.DOMNode> */
     this._backendNodeIdToNode = new Map();
@@ -249,11 +250,12 @@ WebInspector.LayerTreeBase.prototype = {
      */
     _resolveBackendNodeIds: function(requestedNodeIds, callback)
     {
-        if (!requestedNodeIds.size || !this._target) {
+        if (!requestedNodeIds.size || !this._domModel) {
             callback();
             return;
         }
-        this._target.domModel.pushNodesByBackendIdsToFrontend(requestedNodeIds, populateBackendNodeMap.bind(this));
+        if (this._domModel)
+            this._domModel.pushNodesByBackendIdsToFrontend(requestedNodeIds, populateBackendNodeMap.bind(this));
 
         /**
          * @this {WebInspector.LayerTreeBase}
@@ -291,9 +293,9 @@ WebInspector.LayerTreeBase.prototype = {
      */
     _nodeForId: function(id)
     {
-        return this._target ? this._target.domModel.nodeForId(id) : null;
+        return this._domModel ? this._domModel.nodeForId(id) : null;
     }
-};
+}
 
 /**
   * @constructor

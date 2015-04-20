@@ -166,7 +166,9 @@ WebInspector.ResourcesPanel.prototype = {
     {
         this._databaseModel.enable();
         this._domStorageModel.enable();
-        WebInspector.IndexedDBModel.fromTarget(this._target).enable();
+        var indexedDBModel = WebInspector.IndexedDBModel.fromTarget(this._target);
+        if (indexedDBModel)
+            indexedDBModel.enable();
 
         if (this._target.isPage())
             this._populateResourceTree();
@@ -1075,7 +1077,7 @@ WebInspector.FrameTreeElement.prototype = {
         this._storagePanel.showCategoryView(this.displayName);
 
         this.listItemElement.classList.remove("hovered");
-        this._frame.target().domModel.hideDOMNodeHighlight();
+        WebInspector.DOMModel.hideDOMNodeHighlight();
         return false;
     },
 
@@ -1083,10 +1085,12 @@ WebInspector.FrameTreeElement.prototype = {
     {
         if (hovered) {
             this.listItemElement.classList.add("hovered");
-            this._frame.target().domModel.highlightFrame(this._frameId);
+            var domModel = WebInspector.DOMModel.fromTarget(this._frame.target());
+            if (domModel)
+                domModel.highlightFrame(this._frameId);
         } else {
             this.listItemElement.classList.remove("hovered");
-            this._frame.target().domModel.hideDOMNodeHighlight();
+            WebInspector.DOMModel.hideDOMNodeHighlight();
         }
     },
 

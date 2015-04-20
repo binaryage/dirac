@@ -280,9 +280,12 @@ WebInspector.ConsoleViewMessage.prototype = {
         lineNumber = lineNumber ? lineNumber - 1 : 0;
         columnNumber = columnNumber ? columnNumber - 1 : 0;
         if (this._message.source === WebInspector.ConsoleMessage.MessageSource.CSS) {
-            var headerIds = target.cssModel.styleSheetIdsForURL(url);
-            var cssLocation = new WebInspector.CSSLocation(target, headerIds[0] || null, url, lineNumber, columnNumber);
-            return this._linkifier.linkifyCSSLocation(cssLocation, "console-message-url");
+            var cssModel = WebInspector.CSSStyleModel.fromTarget(target);
+            if (cssModel) {
+                var headerIds = cssModel.styleSheetIdsForURL(url);
+                var cssLocation = new WebInspector.CSSLocation(cssModel, headerIds[0] || null, url, lineNumber, columnNumber);
+                return this._linkifier.linkifyCSSLocation(cssLocation, "console-message-url");
+            }
         }
 
         return this._linkifier.linkifyScriptLocation(target, null, url, lineNumber, columnNumber, "console-message-url");

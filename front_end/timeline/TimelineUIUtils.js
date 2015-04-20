@@ -476,8 +476,11 @@ WebInspector.TimelineUIUtils.buildTraceEventDetails = function(event, model, lin
         nodeIdsToResolve.add(event.backendNodeId);
     if (event.invalidationTrackingEvents)
         WebInspector.TimelineUIUtils._collectInvalidationNodeIds(nodeIdsToResolve, event.invalidationTrackingEvents);
-    if (nodeIdsToResolve.size)
-        target.domModel.pushNodesByBackendIdsToFrontend(nodeIdsToResolve, barrier.createCallback(setRelatedNodeMap));
+    if (nodeIdsToResolve.size) {
+        var domModel = WebInspector.DOMModel.fromTarget(target);
+        if (domModel)
+            domModel.pushNodesByBackendIdsToFrontend(nodeIdsToResolve, barrier.createCallback(setRelatedNodeMap));
+    }
     barrier.callWhenDone(callbackWrapper);
 
     /**
