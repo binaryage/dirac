@@ -303,9 +303,11 @@ FormatterWorker.JavaScriptFormatter.prototype = {
                     postFormat = "s";
                 return preFormat + postFormat;
             }
-        } else if (node.type === "CallExpression" || node.type === "SequenceExpression") {
+        } else if (node.type === "CallExpression") {
             if (this._punctuator(token, ","))
                 return "ts";
+        } else if (node.type === "SequenceExpression" && this._punctuator(token, ",")) {
+            return node.parent && node.parent.type === "SwitchCase" ? "ts" : "tn";
         } else if (node.type === "ForStatement" || node.type === "ForOfStatement" || node.type === "ForInStatement") {
             if (this._punctuator(token, ";"))
                 return "ts";
