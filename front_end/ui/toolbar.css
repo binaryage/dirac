@@ -291,12 +291,12 @@ select.toolbar-item {
 .emulation-toolbar-item.warning::after {
     background-image: url(Images/toolbarButtonGlyphs.png);
     background-size: 320px 144px;
-    width: 10px;
-    height: 10px;
+    width: 13px;
+    height: 11px;
     content: "";
     position: relative;
     top: 4px;
-    left: 6px;
+    left: -1px;
     background-position: -202px -107px;
     z-index: 1;
 }

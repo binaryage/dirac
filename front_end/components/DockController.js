@@ -71,7 +71,7 @@ WebInspector.DockController.prototype = {
             return;
 
         this._states = [WebInspector.DockController.State.DockedToRight, WebInspector.DockController.State.DockedToBottom, WebInspector.DockController.State.Undocked];
-        this._titles = [WebInspector.UIString("Dock to main window."), WebInspector.UIString("Dock to main window."), WebInspector.UIString("Undock into separate window.")];
+        this._titles = [WebInspector.UIString("Dock to right"), WebInspector.UIString("Dock to bottom"), WebInspector.UIString("Undock into separate window")];
         var initialState = this._currentDockStateSetting.get();
         initialState = this._states.indexOf(initialState) >= 0 ? initialState : this._states[0];
         this._dockSideChanged(initialState);

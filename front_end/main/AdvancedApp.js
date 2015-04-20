@@ -9,7 +9,7 @@
 WebInspector.AdvancedApp = function()
 {
     if (WebInspector.overridesSupport.responsiveDesignAvailable()) {
-        this._toggleEmulationButton = new WebInspector.ToolbarButton(WebInspector.UIString("Toggle device mode."), "emulation-toolbar-item");
+        this._toggleEmulationButton = new WebInspector.ToolbarButton(WebInspector.UIString("Toggle device mode"), "emulation-toolbar-item");
         this._toggleEmulationButton.setToggled(WebInspector.overridesSupport.emulationEnabled());
         this._toggleEmulationButton.addEventListener("click", this._toggleEmulationEnabled, this);
         WebInspector.overridesSupport.addEventListener(WebInspector.OverridesSupport.Events.EmulationStateChanged, this._emulationEnabledChanged, this);
@@ -37,7 +37,7 @@ WebInspector.AdvancedApp.prototype = {
         if (!this._toggleEmulationButton)
             return;
         var message = WebInspector.overridesSupport.warningMessage();
-        this._toggleEmulationButton.setTitle(message || WebInspector.UIString("Toggle device mode."));
+        this._toggleEmulationButton.setTitle(message || WebInspector.UIString("Toggle device mode"));
         this._toggleEmulationButton.element.classList.toggle("warning", !!message);
     },
 
