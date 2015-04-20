@@ -106,6 +106,7 @@ WebInspector.TimelinePanel = function()
     this._stackView.show(this._searchableView.element);
     this._stackView.element.classList.add("timeline-view-stack");
 
+    this._flameChartEnabledSetting.addChangeListener(this._onModeChanged, this);
     this._onModeChanged();
     this._detailsSplitView.show(this.element);
     WebInspector.targetManager.addEventListener(WebInspector.TargetManager.Events.SuspendStateChanged, this._onSuspendStateChanged, this);
@@ -323,9 +324,7 @@ WebInspector.TimelinePanel.prototype = {
         framesToggleButton.addEventListener("click", this._overviewModeChanged.bind(this, framesToggleButton));
         this._panelToolbar.appendToolbarItem(framesToggleButton);
 
-        this._flameChartToggleButton = new WebInspector.ToolbarButton(WebInspector.UIString("Flame chart view. (Use WASD or time selection to navigate)"), "flame-chart-toolbar-item");
-        this._flameChartToggleButton.setToggled(this._flameChartEnabledSetting.get());
-        this._flameChartToggleButton.addEventListener("click", this._flameChartEnabledChanged.bind(this));
+        this._flameChartToggleButton = new WebInspector.ToolbarSettingToggle(this._flameChartEnabledSetting, "flame-chart-toolbar-item", WebInspector.UIString("Flame chart view. (Use WASD or time selection to navigate)"));
         this._panelToolbar.appendToolbarItem(this._flameChartToggleButton);
 
         var captureSettingsLabel = new WebInspector.ToolbarText(WebInspector.UIString("Capture:"), "toolbar-group-label");
@@ -583,15 +582,6 @@ WebInspector.TimelinePanel.prototype = {
             this._overviewModeSetting.set(WebInspector.TimelinePanel.OverviewMode.Events);
             button.setToggled(false);
         }
-        this._onModeChanged();
-    },
-
-    _flameChartEnabledChanged: function()
-    {
-        var oldValue = this._flameChartEnabledSetting.get();
-        var newValue = !oldValue;
-        this._flameChartEnabledSetting.set(newValue);
-        this._flameChartToggleButton.setToggled(newValue);
         this._onModeChanged();
     },
 

@@ -39,8 +39,8 @@ WebInspector.NetworkPanel = function()
     WebInspector.Panel.call(this, "network");
     this.registerRequiredCSS("network/networkPanel.css");
 
-    this._networkLogLargeRowsSetting = WebInspector.settings.createSetting("networkLogLargeRows", false);
     this._networkLogShowOverviewSetting = WebInspector.settings.createSetting("networkLogShowOverview", true);
+    this._networkLogLargeRowsSetting = WebInspector.settings.createSetting("networkLogLargeRows", false);
 
     /** @type {?WebInspector.NetworkFilmStripView} */
     this._filmStripView = null;
@@ -78,9 +78,12 @@ WebInspector.NetworkPanel = function()
     this._closeButtonElement = createElementWithClass("div", "network-close-button", "dt-close-button");
     this._closeButtonElement.addEventListener("click", this._showRequest.bind(this, null), false);
 
+    this._networkLogShowOverviewSetting.addChangeListener(this._toggleShowOverview, this);
+    this._networkLogLargeRowsSetting.addChangeListener(this._toggleLargerRequests, this);
+
     this._toggleRecordButton(true);
-    this._toggleShowOverviewButton(this._networkLogShowOverviewSetting.get());
-    this._toggleLargerRequests(this._networkLogLargeRowsSetting.get());
+    this._toggleShowOverview();
+    this._toggleLargerRequests();
     this._dockSideChanged();
 
     WebInspector.dockController.addEventListener(WebInspector.DockController.Events.DockSideChanged, this._dockSideChanged.bind(this));
@@ -173,13 +176,11 @@ WebInspector.NetworkPanel.prototype = {
         var viewModeLabel = new WebInspector.ToolbarText(WebInspector.UIString("View:"), "toolbar-group-label");
         this._panelToolbar.appendToolbarItem(viewModeLabel);
 
-        this._largerRequestsButton = new WebInspector.ToolbarButton(WebInspector.UIString(""), "large-list-toolbar-item");
-        this._largerRequestsButton.addEventListener("click", this._onLargerRequestsClicked, this);
-        this._panelToolbar.appendToolbarItem(this._largerRequestsButton);
+        var largerRequestsButton = new WebInspector.ToolbarSettingToggle(this._networkLogLargeRowsSetting, "large-list-toolbar-item", WebInspector.UIString("Use large request rows."), WebInspector.UIString("Use small request rows."));
+        this._panelToolbar.appendToolbarItem(largerRequestsButton);
 
-        this._showOverviewButton = new WebInspector.ToolbarButton(WebInspector.UIString(""), "waterfall-toolbar-item");
-        this._showOverviewButton.addEventListener("click", this._onShowOverviewButtonClicked, this);
-        this._panelToolbar.appendToolbarItem(this._showOverviewButton);
+        var showOverviewButton = new WebInspector.ToolbarSettingToggle(this._networkLogShowOverviewSetting, "waterfall-toolbar-item", WebInspector.UIString("Show overview."), WebInspector.UIString("Hide overview."));
+        this._panelToolbar.appendToolbarItem(showOverviewButton);
 
         var optionsLabel = new WebInspector.ToolbarText(WebInspector.UIString("Options:"), "toolbar-group-label");
         this._panelToolbar.appendToolbarItem(optionsLabel);
@@ -268,7 +269,7 @@ WebInspector.NetworkPanel.prototype = {
             this._toggleRecordFilmStripButton(true);
             this._networkLogView.setShowSelectedFrame(true);
             this._filmStripView = new WebInspector.NetworkFilmStripView(this._networkLogView.timeCalculator());
-            this._filmStripView.show(this._searchableView.element, this._showOverviewButton.toggled() ? this._overview.element : this._splitView.element);
+            this._filmStripView.show(this._searchableView.element, this._networkLogShowOverviewSetting.get() ? this._overview.element : this._splitView.element);
             this._filmStripView.addEventListener(WebInspector.NetworkFilmStripView.Events.FrameSelected, this._onFilmFrameSelected, this);
             this._filmStripView.addEventListener(WebInspector.NetworkFilmStripView.Events.RecordingFinished, this._onFilmRecordingFinished, this);
             this._filmStripView.startRecording();
@@ -295,46 +296,18 @@ WebInspector.NetworkPanel.prototype = {
         this._networkLogView.setShowSelectedFrame(false);
     },
 
-    /**
-     * @param {!WebInspector.Event=} event
-     */
-    _onLargerRequestsClicked: function(event)
+    _toggleLargerRequests: function()
     {
-        this._toggleLargerRequests(!this._largerRequestsButton.toggled());
-    },
-
-    /**
-     * @param {boolean} toggled
-     */
-    _toggleLargerRequests: function(toggled)
-    {
-        this._networkLogLargeRowsSetting.set(toggled);
-        this._largerRequestsButton.setToggled(toggled);
-        this._largerRequestsButton.setTitle(WebInspector.UIString(toggled ? "Use small request rows." : "Use large request rows."));
         this._updateUI();
     },
 
-    /**
-     * @param {!WebInspector.Event} event
-     */
-    _onShowOverviewButtonClicked: function(event)
+    _toggleShowOverview: function()
     {
-        this._toggleShowOverviewButton(!this._networkLogShowOverviewSetting.get());
-    },
-
-    /**
-     * @param {boolean} toggled
-     */
-    _toggleShowOverviewButton: function(toggled)
-    {
-        this._networkLogShowOverviewSetting.set(toggled);
-        this._showOverviewButton.setTitle(toggled ? WebInspector.UIString("Hide overview.") : WebInspector.UIString("Show overview."));
-        this._showOverviewButton.setToggled(toggled);
-        if (toggled) {
+        var toggled = this._networkLogShowOverviewSetting.get();
+        if (toggled)
             this._overview.show(this._searchableView.element, this._splitView.element);
-        } else {
+        else
             this._overview.detach();
-        }
     },
 
     /**

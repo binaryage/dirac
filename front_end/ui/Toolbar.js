@@ -577,6 +577,44 @@ WebInspector.ToolbarButton.prototype = {
 
 /**
  * @constructor
+ * @extends {WebInspector.ToolbarButton}
+ * @param {!WebInspector.Setting} setting
+ * @param {string} className
+ * @param {string} title
+ * @param {string=} toggledTitle
+ */
+WebInspector.ToolbarSettingToggle = function(setting, className, title, toggledTitle)
+{
+    WebInspector.ToolbarButton.call(this, "", className, 2);
+    this._defaultTitle = title;
+    this._toggledTitle = toggledTitle || title;
+    this._setting = setting;
+    this._settingChanged();
+    this._setting.addChangeListener(this._settingChanged, this);
+}
+
+WebInspector.ToolbarSettingToggle.prototype = {
+    _settingChanged: function()
+    {
+        var toggled = this._setting.get();
+        this.setToggled(toggled);
+        this.setTitle(toggled ? this._toggledTitle : this._defaultTitle);
+    },
+
+    /**
+     * @override
+     */
+    _clicked: function()
+    {
+        this._setting.set(!this.toggled());
+        WebInspector.ToolbarButton.prototype._clicked.call(this);
+    },
+
+    __proto__: WebInspector.ToolbarButton.prototype
+}
+
+/**
+ * @constructor
  * @extends {WebInspector.ToolbarItem}
  */
 WebInspector.ToolbarSeparator = function()
