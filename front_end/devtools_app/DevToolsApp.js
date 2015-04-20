@@ -50,6 +50,12 @@ WebInspector.DevToolsApp.prototype = {
         // Support for legacy (<M41) frontends. Remove in M45.
         this._iframe.contentWindow.CSSStyleDeclaration.prototype.getPropertyCSSValue = getValue;
         this._iframe.contentWindow.CSSPrimitiveValue = { CSS_PX: "CSS_PX" };
+
+        // Support for legacy (<M44) frontends. Remove in M48.
+        var styleElement = this._iframe.contentWindow.document.createElement("style");
+        styleElement.type = "text/css";
+        styleElement.textContent = "html /deep/ * { min-width: 0; min-height: 0; }";
+        this._iframe.contentWindow.document.head.appendChild(styleElement);
     }
 }
 
