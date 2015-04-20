@@ -243,11 +243,10 @@
 }
 
 .overrides-splash-screen .toolbar {
-    height: 16px;
     display: inline-block;
     margin-left: -4px;
     position: relative;
-    top: -3px;
+    top: 8px;
 }
 
 #overrides-reset-button,
