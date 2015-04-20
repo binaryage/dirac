@@ -13,10 +13,9 @@ WebInspector.RemoteObjectPreviewFormatter.prototype = {
     /**
      * @param {!Element} parentElement
      * @param {!RuntimeAgent.ObjectPreview} preview
-     * @param {?WebInspector.RemoteObject} object
      * @return {boolean} true iff preview captured all information.
      */
-    appendObjectPreview: function(parentElement, preview, object)
+    appendObjectPreview: function(parentElement, preview)
     {
         var description = preview.description;
         if (preview.type !== "object" || preview.subtype === "null") {
@@ -29,7 +28,7 @@ WebInspector.RemoteObjectPreviewFormatter.prototype = {
         }
         if (preview.entries)
             return this._appendEntriesPreview(parentElement, preview);
-        return this._appendPropertiesPreview(parentElement, preview, object);
+        return this._appendPropertiesPreview(parentElement, preview);
     },
 
     /**
@@ -47,10 +46,9 @@ WebInspector.RemoteObjectPreviewFormatter.prototype = {
     /**
      * @param {!Element} parentElement
      * @param {!RuntimeAgent.ObjectPreview} preview
-     * @param {?WebInspector.RemoteObject} object
      * @return {boolean} true iff preview captured all information.
      */
-    _appendPropertiesPreview: function(parentElement, preview, object)
+    _appendPropertiesPreview: function(parentElement, preview)
     {
         var isArray = preview.subtype === "array";
         var arrayLength = WebInspector.RemoteObject.arrayLength(preview);
@@ -122,10 +120,10 @@ WebInspector.RemoteObjectPreviewFormatter.prototype = {
 
             var entry = preview.entries[i];
             if (entry.key) {
-                this.appendObjectPreview(parentElement, entry.key, null);
+                this.appendObjectPreview(parentElement, entry.key);
                 parentElement.createTextChild(" => ");
             }
-            this.appendObjectPreview(parentElement, entry.value, null);
+            this.appendObjectPreview(parentElement, entry.value);
         }
         if (preview.overflow)
             parentElement.createChild("span").textContent = "\u2026";

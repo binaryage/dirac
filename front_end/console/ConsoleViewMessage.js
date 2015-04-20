@@ -432,7 +432,7 @@ WebInspector.ConsoleViewMessage.prototype = {
         var titleElement = createElement("span");
         if (includePreview && obj.preview) {
             titleElement.classList.add("console-object-preview");
-            var lossless = this._previewFormatter.appendObjectPreview(titleElement, obj.preview, obj);
+            var lossless = this._previewFormatter.appendObjectPreview(titleElement, obj.preview);
             if (lossless) {
                 elem.appendChild(titleElement);
                 titleElement.addEventListener("contextmenu", this._contextMenuEventFired.bind(this, obj), false);

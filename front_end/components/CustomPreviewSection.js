@@ -61,17 +61,6 @@ WebInspector.CustomPreviewSection._createComponentRoot = function()
 
 WebInspector.CustomPreviewSection._tagsWhiteList = new Set(["span", "div", "ol", "li","table", "tr", "td"]);
 
-WebInspector.CustomPreviewSection._attributes = [
-    "background-color",
-    "color",
-    "font-style", "font-weight",
-    "list-style-type",
-    "margin", "margin-top", "margin-right", "margin-bottom", "margin-left",
-    "padding", "padding-top", "padding-right", "padding-bottom", "padding-left",
-    "text-align"];
-
-WebInspector.CustomPreviewSection._attributesWhiteList = new Set(WebInspector.CustomPreviewSection._attributes);
-
 WebInspector.CustomPreviewSection.prototype = {
 
     /**
@@ -80,40 +69,6 @@ WebInspector.CustomPreviewSection.prototype = {
     element: function()
     {
         return this._sectionElement;
-    },
-
-    /**
-     * @param {string} style
-     * @return {boolean}
-     */
-    _validateStyleAttributes: function(style)
-    {
-        var valueRegEx = /^[\w\s()-,.#]*$/;
-        var styleAttributes = style.split(";");
-        for (var i = 0; i < styleAttributes.length; ++i) {
-            var attribute = styleAttributes[i].trim();
-            if (!attribute.length)
-                continue;
-
-            var pair = attribute.split(":");
-            if (pair.length != 2) {
-                WebInspector.console.error("Broken formatter: " + styleAttributes[i]);
-                return false;
-            }
-
-            var key = pair[0].trim();
-            var value = pair[1];
-            if (!WebInspector.CustomPreviewSection._attributesWhiteList.has(key)) {
-                WebInspector.console.error("Broken formatter: style attribute " + key + " is not allowed!");
-                return false;
-            }
-            if (!value.match(valueRegEx)) {
-                WebInspector.console.error("Broken formatter: style attribute value" + value + " is not allowed!");
-                return false;
-            }
-
-        }
-        return true;
     },
 
     /**
@@ -149,7 +104,7 @@ WebInspector.CustomPreviewSection.prototype = {
             var attributes = object.shift();
             for (var key in attributes) {
                 var value = attributes[key];
-                if ((key !== "style") || (typeof value !== "string") || !this._validateStyleAttributes(value))
+                if ((key !== "style") || (typeof value !== "string"))
                     continue;
 
                 element.setAttribute(key, value);

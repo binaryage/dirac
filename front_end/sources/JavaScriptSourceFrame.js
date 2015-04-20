@@ -845,7 +845,7 @@ WebInspector.JavaScriptSourceFrame.prototype = {
                 var propertyCount = value.preview ? value.preview.properties.length : 0;
                 var entryCount = value.preview && value.preview.entries ? value.preview.entries.length : 0;
                 if (value.preview && propertyCount + entryCount < 10)
-                    formatter.appendObjectPreview(nameValuePair, value.preview, value);
+                    formatter.appendObjectPreview(nameValuePair, value.preview);
                 else
                     nameValuePair.appendChild(WebInspector.ObjectPropertiesSection.createValueElement(value, false));
                 ++renderedNameCount;
