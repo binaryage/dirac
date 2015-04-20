@@ -5,25 +5,15 @@
  */
 
 .shadow-network-film-strip-view {
-    overflow-x: hidden;
-    overflow-y: auto;
-    flex-wrap: wrap;
+    overflow-x: auto;
+    overflow-y: hidden;
     align-content: flex-start;
 }
 
 .shadow-network-film-strip-view .label {
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
     margin: auto;
-    align-items: center;
     font-size: 18px;
-}
-
-.shadow-network-film-strip-view .spinner {
-    background-image: url(Images/spinner.svg);
-    width: 32px;
-    height: 32px;
+    color: #999;
 }
 
 .shadow-network-film-strip-view .frame {
@@ -32,30 +22,8 @@
     align-items: center;
     padding: 6px 9px 3px 9px;
     margin: 1px;
-    flex: 0 0 auto;
-    border-radius: 8px;
+    flex: none;
     height: 114px;
-}
-
-.shadow-network-film-strip-view .frame .event-text {
-    border: solid 1px;
-    display: inline-flex;
-    flex-direction: row;
-    align-items: center;
-    flex: 0 0 90px;
-    text-align: center;
-    width: 72px;
-    padding: 6px;
-}
-
-.shadow-network-film-strip-view .frame.dcl-event .event-text {
-    border-color: rgba(0,0,255,0.3);
-    color: blue;
-}
-
-.shadow-network-film-strip-view .frame.load-event .event-text {
-    border: solid 1px rgba(255,0,0,0.3);
-    color: red;
 }
 
 .shadow-network-film-strip-view .frame-limit-reached {
@@ -64,15 +32,14 @@
     justify-content: center;
     display: inline-flex;
     flex-direction: column;
-    flex: 0 0 auto;
+    flex: none;
 }
 
-.shadow-network-film-strip-view .frame.selected {
-    background-color: #fd8;
+.shadow-network-film-strip-view .frame:hover {
+    background-color: #eee;
 }
 
 .shadow-network-film-strip-view .frame .thumbnail {
-    flex: 0 0 90px;
     min-width: 48px;
     display: flex;
     flex-direction: row;

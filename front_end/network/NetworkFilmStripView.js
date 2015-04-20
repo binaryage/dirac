@@ -5,7 +5,6 @@
 /**
  * @constructor
  * @extends {WebInspector.HBox}
- * @implements {WebInspector.TargetManager.Observer}
  * @implements {WebInspector.TracingManagerClient}
  * @param {!WebInspector.NetworkTimeCalculator} calculator
  */
@@ -18,72 +17,23 @@ WebInspector.NetworkFilmStripView = function(calculator)
 
     /** @type {!WebInspector.NetworkTimeCalculator} */
     this._calculator = calculator;
-    /** @type {?number} */
-    this._timeOffset = null;
-    /** @type {!Array.<!WebInspector.NetworkFilmStripFrame>} */
-    this._frames = [];
-    /** @type {?WebInspector.NetworkFilmStripFrame} */
-    this._selectedFrame = null;
-    /** @type {?WebInspector.Target} */
-    this._target = null;
-    /** @type {boolean} */
-    this._recording = false;
-    /** @type {?number} */
-    this._loadTime = null;
-    /** @type {?number} */
-    this._dclTime = null;
-    /** @type {boolean} */
-    this._scrolling = false;
 
-    /** @type {?WebInspector.TracingModel} */
-    this._tracingModel = null;
-
-    this._label = this.contentElement.createChild("div", "label");
-    this._label.createChild("div", "spinner");
-    this._label.createTextChild(WebInspector.UIString("Recording..."));
-
-    WebInspector.targetManager.observeTargets(this);
-    WebInspector.targetManager.addModelListener(WebInspector.ResourceTreeModel, WebInspector.ResourceTreeModel.EventTypes.Load, this._loadEventFired, this);
-    WebInspector.targetManager.addModelListener(WebInspector.ResourceTreeModel, WebInspector.ResourceTreeModel.EventTypes.DOMContentLoaded, this._dclEventFired, this);
+    this.reset();
 }
 
 WebInspector.NetworkFilmStripView._maximumFrameCount = 60;
 
 WebInspector.NetworkFilmStripView.Events = {
     FrameSelected: "FrameSelected",
-    RecordingFinished: "RecordingFinished"
 }
 
 WebInspector.NetworkFilmStripView.prototype = {
     /**
      * @override
-     * @param {!WebInspector.Target} target
      */
-    targetAdded: function(target)
+    tracingStarted: function()
     {
-        if (this._target)
-            return;
-        this._target = target;
     },
-
-    /**
-     * @override
-     * @param {!WebInspector.Target} target
-     */
-    targetRemoved: function(target)
-    {
-        if (this._target === target && this._recording) {
-            this._label.textContent = WebInspector.UIString("Detached.");
-            this._recording = false;
-            this.dispatchEventToListeners(WebInspector.NetworkFilmStripView.Events.RecordingFinished);
-            this._unsubscribe();
-        }
-    },
-
-    /**
-     * @override
-     */
-    tracingStarted: function() { },
 
     /**
      * @override
@@ -114,18 +64,15 @@ WebInspector.NetworkFilmStripView.prototype = {
                     if (events[i].category === "disabled-by-default-devtools.screenshot" && events[i].name === "CaptureFrame") {
                         var data = events[i].args.data;
                         var timestamp = events[i].startTime / 1000.0;
-                        this._appendEventDividers(timestamp, frames);
                         if (data)
                             frames.push(new WebInspector.NetworkFilmStripFrame(this, data, timestamp));
                     }
                 }
             }
         }
-        this._appendEventDividers(Number.MAX_VALUE, frames);
-        this._unsubscribe();
 
         if (!frames.length) {
-            this._label.textContent = WebInspector.UIString("No frames recorded.");
+            this.reset();
             return;
         }
         this._label.remove();
@@ -136,67 +83,36 @@ WebInspector.NetworkFilmStripView.prototype = {
         this._updateTimeOffset(true);
     },
 
+    reset: function()
+    {
+        this.contentElement.removeChildren();
+        /** @type {?number} */
+        this._timeOffset = null;
+        /** @type {!Array.<!WebInspector.NetworkFilmStripFrame>} */
+        this._frames = [];
+        /** @type {?WebInspector.NetworkFilmStripFrame} */
+        this._selectedFrame = null;
+
+        /** @type {?WebInspector.TracingModel} */
+        this._tracingModel = null;
+
+        this._label = this.contentElement.createChild("div", "label");
+        this._label.textContent = WebInspector.UIString("No frames recorded. Reload page to start recording.");
+    },
+
     /**
      * @override
      */
-    tracingBufferUsage: function() { },
+    tracingBufferUsage: function()
+    {
+    },
 
     /**
      * @override
      * @param {number} progress
      */
-    eventsRetrievalProgress: function(progress) { },
-
-    /**
-     * @return {boolean}
-     */
-    recording: function()
+    eventsRetrievalProgress: function(progress)
     {
-        return this._recording;
-    },
-
-    /**
-     * @param {!WebInspector.Event} event
-     */
-    _loadEventFired: function(event)
-    {
-        this._loadTime = /** @type {number} */ (event.data);
-    },
-
-    /**
-     * @param {!WebInspector.Event} event
-     */
-    _dclEventFired: function(event)
-    {
-        this._dclTime = /** @type {number} */ (event.data);
-    },
-
-    /**
-     * @param {number} time
-     */
-    selectFrame: function(time)
-    {
-        var frames = this._frames;
-        var frameCount = frames.length;
-        if (!frameCount)
-            return;
-        var selectedFrame = frames[frameCount - 1];
-        for (var i = frameCount - 2; i >= 0; --i) {
-            var frame = frames[i];
-            if (time < frame.timestamp())
-                selectedFrame = frame;
-        }
-        this._selectFrame(selectedFrame, true);
-    },
-
-    _unsubscribe: function()
-    {
-        if (this._tracingModel) {
-            this._tracingModel.reset();
-            this._tracingModel = null;
-        }
-        WebInspector.targetManager.unobserveTargets(this);
-        this._target = null;
     },
 
     /**
@@ -237,90 +153,33 @@ WebInspector.NetworkFilmStripView.prototype = {
             this._frames[i]._setTimeOffset(offset);
     },
 
-    /**
-     * @param {number} time
-     * @param {!Array.<!WebInspector.NetworkFilmStripFrame>} frames
-     */
-    _appendEventDividers: function(time, frames)
-    {
-        if (this._dclTime && time > this._dclTime) {
-            frames.push(new WebInspector.NetworkFilmStripFrame(this, null, this._dclTime, "dcl-event", WebInspector.UIString("DOM Content Loaded")));
-            this._dclTime = null;
-        }
-        if (this._loadTime && time > this._loadTime) {
-            frames.push(new WebInspector.NetworkFilmStripFrame(this, null, this._loadTime, "load-event", WebInspector.UIString("Document Load")));
-            this._loadTime = null;
-        }
-    },
-
     startRecording: function()
     {
-        this._recording = true;
+        if (this._target)
+            return;
+
+        this.reset();
+        this._target = WebInspector.targetManager.mainTarget();
         this._tracingModel = new WebInspector.TracingModel(new WebInspector.TempFileBackingStorage("tracing"));
         this._target.tracingManager.start(this, "-*,disabled-by-default-devtools.screenshot", "");
+        this._label.textContent = WebInspector.UIString("Recording frames...");
     },
 
     stopRecording: function()
     {
-        if (this._target && this._recording) {
-            this._recording = false;
-            this._target.tracingManager.stop();
-            this.dispatchEventToListeners(WebInspector.NetworkFilmStripView.Events.RecordingFinished);
-        }
+        if (!this._target)
+            return;
+
+        this._target.tracingManager.stop();
+        this._target = null;
     },
 
     /**
      * @param {!WebInspector.NetworkFilmStripFrame} frame
-     * @param {boolean} reveal
      */
-    _selectFrame: function(frame, reveal)
+    _selectFrame: function(frame)
     {
-        if (this._selectedFrame === frame)
-            return;
-        if (this._selectedFrame)
-            this._selectedFrame.unselect();
-        frame.select(reveal);
-        this._selectedFrame = frame;
-        this.dispatchEventToListeners(WebInspector.NetworkFilmStripView.Events.FrameSelected, frame.timestamp());
-    },
-
-    /**
-     * @param {number} to
-     */
-    _smoothScroll: function(to)
-    {
-        var height = this.contentElement.offsetHeight;
-        var max = this.contentElement.scrollHeight - height;
-        if (max < 0)
-            max = 0;
-        if (to > max)
-            to = max;
-        this._scrollStartTime = Date.now();
-        var maxMove = 2.5 * height;
-        var from = Number.constrain(this.contentElement.scrollTop, to - maxMove, to + maxMove);
-        this._scrollStartPosition = from;
-        this._scrollEndPosition = to;
-        if (!this._scrolling) {
-            this._scrolling = true;
-            this.contentElement.window().requestAnimationFrame(this._scroll.bind(this));
-        }
-    },
-
-    _scroll: function()
-    {
-        if (!this._scrolling)
-            return;
-        var duration = 500;
-        var t = (Date.now() - this._scrollStartTime) / duration;
-        if (t > 1)
-            t = 1;
-        var x = t * t * t * (6 * t * t - 15 * t + 10);
-        var position = this._scrollStartPosition + x * (this._scrollEndPosition - this._scrollStartPosition);
-        this.contentElement.scrollTop = position;
-        if (t < 1)
-            this.contentElement.window().requestAnimationFrame(this._scroll.bind(this));
-        else
-            this._scrolling = false;
+        this.dispatchEventToListeners(WebInspector.NetworkFilmStripView.Events.FrameSelected, frame);
     },
 
     __proto__: WebInspector.HBox.prototype
@@ -331,25 +190,15 @@ WebInspector.NetworkFilmStripView.prototype = {
  * @param {!WebInspector.NetworkFilmStripView} parent
  * @param {?string} imageData
  * @param {number} timestamp
- * @param {?string=} eventType
- * @param {?string=} eventText
  */
-WebInspector.NetworkFilmStripFrame = function(parent, imageData, timestamp, eventType, eventText)
+WebInspector.NetworkFilmStripFrame = function(parent, imageData, timestamp)
 {
     this._parent = parent;
     this._timestamp = timestamp;
     this._element = createElementWithClass("div", "frame");
-    if (imageData) {
-        this._element.createChild("div", "thumbnail").createChild("img").src = "data:image/jpg;base64," + imageData;
-    } else {
-        if (eventType)
-            this._element.classList.add("event", eventType);
-        if (eventText)
-            this._element.createChild("div", "event-text").createTextChild(eventText);
-    }
+    this._element.createChild("div", "thumbnail").createChild("img").src = "data:image/jpg;base64," + imageData;
     this._timeLabel = this._element.createChild("div", "time");
-
-    this._element.addEventListener("mouseover", this._onMouseOver.bind(this), false);
+    this._element.addEventListener("mousedown", this._onMouseDown.bind(this), false);
 }
 
 WebInspector.NetworkFilmStripFrame.prototype = {
@@ -364,24 +213,9 @@ WebInspector.NetworkFilmStripFrame.prototype = {
     /**
      * @param {!Event} event
      */
-    _onMouseOver: function(event)
+    _onMouseDown: function(event)
     {
-        this._parent._selectFrame(this, false);
-    },
-
-    /**
-     * @param {boolean} reveal
-     */
-    select: function(reveal)
-    {
-        this._element.classList.add("selected");
-        if (reveal)
-            this._parent._smoothScroll(this._element.offsetTop);
-    },
-
-    unselect: function()
-    {
-        this._element.classList.remove("selected");
+        this._parent._selectFrame(this);
     },
 
     /**

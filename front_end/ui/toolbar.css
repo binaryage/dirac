@@ -348,10 +348,6 @@ button.record-toolbar-item.toggled-on .glyph {
     -webkit-mask-position: -96px -24px;
 }
 
-button.record-filmstrip-toolbar-item.toggled-on .glyph {
-    background-color: rgb(216, 0, 0) !important;
-}
-
 .last-step-toolbar-item .glyph {
     -webkit-mask-position: 0 -72px;
 }

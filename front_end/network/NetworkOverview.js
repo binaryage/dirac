@@ -57,6 +57,17 @@ WebInspector.NetworkOverview.Window;
 
 WebInspector.NetworkOverview.prototype = {
     /**
+     * @param {number} windowStart
+     * @param {number} windowEnd
+     */
+    setWindow: function(windowStart, windowEnd)
+    {
+        var startTime = this._calculator.minimumBoundary();
+        var totalTime = this._calculator.boundarySpan();
+        this._overviewGrid.setWindow(Math.max(windowStart - startTime, 0) / totalTime, (windowEnd - startTime) / totalTime);
+    },
+
+    /**
      * @param {!WebInspector.Event} event
      */
     _onWindowChanged: function(event)
