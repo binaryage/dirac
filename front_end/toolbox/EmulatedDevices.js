@@ -240,6 +240,7 @@ WebInspector.EmulatedDevice.fromOverridesDevice = function(device, title, type)
     result.horizontal.height = device.width;
     result.deviceScaleFactor = device.deviceScaleFactor;
     result.userAgent = device.userAgent;
+    result.capabilities = [];
     if (device.touch)
         result.capabilities.push(WebInspector.EmulatedDevice.Capability.Touch);
     if (device.mobile)
