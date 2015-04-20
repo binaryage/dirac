@@ -741,6 +741,7 @@
             'front_end/Images/toolbarItemSelected.png',
             'front_end/Images/touchCursor.png',
             'front_end/Images/touchCursor_2x.png',
+            'front_end/Images/updateServiceWorker.svg',
         ],
         'devtools_extension_api_files': [
             'front_end/extensions/ExtensionAPI.js',

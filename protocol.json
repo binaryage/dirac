@@ -4153,6 +4153,13 @@
                 "handlers": ["browser"]
             },
             {
+                "name": "updateRegistration",
+                "parameters": [
+                    { "name": "scopeURL", "type": "string" }
+                ],
+                "handlers": ["browser"]
+            },
+            {
                 "name": "startWorker",
                 "parameters": [
                     { "name": "scopeURL", "type": "string" }

@@ -137,18 +137,29 @@ WebInspector.ServiceWorkerManager.prototype = {
         this._unregister(registration.scopeURL);
     },
 
+    /**
+     * @param {string} registrationId
+     */
+    updateRegistration: function(registrationId)
+    {
+        var registration = this._registrations.get(registrationId);
+        if (!registration)
+            return;
+        this._agent.updateRegistration(registration.scopeURL);
+    },
+
      /**
       * @param {string} registrationId
       * @param {string} data
       */
-     deliverPushMessage: function(registrationId, data)
-     {
-         var registration = this._registrations.get(registrationId);
-         if (!registration)
-             return;
-         var origin = WebInspector.ParsedURL.splitURLIntoPathComponents(registration.scopeURL)[0];
-         this._agent.deliverPushMessage(origin, registrationId, data);
-     },
+    deliverPushMessage: function(registrationId, data)
+    {
+        var registration = this._registrations.get(registrationId);
+        if (!registration)
+            return;
+        var origin = WebInspector.ParsedURL.splitURLIntoPathComponents(registration.scopeURL)[0];
+        this._agent.deliverPushMessage(origin, registrationId, data);
+    },
 
     /**
      * @param {string} scope

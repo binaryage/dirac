@@ -271,6 +271,10 @@ WebInspector.SWRegistrationElement = function(manager, registration)
     this._deleteButton = headerNode.createChild("button", "service-workers-button service-workers-delete-button");
     this._deleteButton.addEventListener("click", this._deleteButtonClicked.bind(this), false);
     this._deleteButton.title = WebInspector.UIString("Delete");
+    this._updateButton = headerNode.createChild("button", "service-workers-button service-workers-update-button");
+    this._updateButton.addEventListener("click", this._updateButtonClicked.bind(this), false);
+    this._updateButton.title = WebInspector.UIString("Update");
+    this._updateButton.disabled = true
     this._pushButton = headerNode.createChild("button", "service-workers-button service-workers-push-button");
     this._pushButton.addEventListener("click", this._pushButtonClicked.bind(this), false);
     this._pushButton.title = WebInspector.UIString("Emulate push event");
@@ -287,6 +291,7 @@ WebInspector.SWRegistrationElement.prototype = {
     {
         this._registration = registration;
         this._titleNode.textContent = WebInspector.UIString(registration.isDeleted ? "Scope: %s - deleted" : "Scope: %s", registration.scopeURL.asParsedURL().path);
+        this._updateButton.disabled = !!registration.isDeleted;
         this._deleteButton.disabled = !!registration.isDeleted;
         this._updateVersionList();
     },
@@ -400,6 +405,14 @@ WebInspector.SWRegistrationElement.prototype = {
     _deleteButtonClicked: function(event)
     {
         this._manager.deleteRegistration(this._registration.id);
+    },
+
+    /**
+     * @param {!Event} event
+     */
+    _updateButtonClicked: function(event)
+    {
+        this._manager.updateRegistration(this._registration.id);
     },
 
     /**
