@@ -160,22 +160,10 @@
         },
         {
             "type": "drawer-view",
-            "name": "emulation",
-            "title": "Emulation",
-            "order": "10",
-            "className": "WebInspector.OverridesView"
-        },
-        {
-            "type": "drawer-view",
             "name": "rendering",
             "title": "Rendering",
             "order": "11",
             "className": "WebInspector.RenderingOptions.View"
-        },
-        {
-            "type": "@WebInspector.Revealer",
-            "contextTypes": ["WebInspector.OverridesSupport"],
-            "className": "WebInspector.OverridesView.Revealer"
         },
         {
             "type": "@WebInspector.ToolbarItem.Provider",
@@ -307,12 +295,11 @@
         "host",
         "platform",
         "sdk",
-        "toolbox"
+        "emulation"
     ],
     "scripts": [
         "HelpScreenUntilReload.js",
         "AdvancedApp.js",
-        "OverridesView.js",
         "RenderingOptions.js",
         "SimpleApp.js",
         "TestController.js",
@@ -324,7 +311,5 @@
         "Tests.js"
     ],
     "stylesheets": [
-        "accelerometer.css",
-        "overrides.css"
     ]
 }

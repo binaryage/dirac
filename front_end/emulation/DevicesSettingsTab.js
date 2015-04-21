@@ -11,7 +11,7 @@ WebInspector.DevicesSettingsTab = function()
     WebInspector.VBox.call(this);
     this.element.classList.add("settings-tab-container");
     this.element.classList.add("devices-settings-tab");
-    this.registerRequiredCSS("toolbox/devicesSettingsTab.css");
+    this.registerRequiredCSS("emulation/devicesSettingsTab.css");
 
     var header = this.element.createChild("header");
     header.createChild("h3").createTextChild(WebInspector.UIString("Devices"));

@@ -35,7 +35,7 @@
 WebInspector.OverridesView = function()
 {
     WebInspector.VBox.call(this);
-    this.registerRequiredCSS("main/overrides.css");
+    this.registerRequiredCSS("emulation/overrides.css");
     this.element.classList.add("overrides-view");
 
     this._tabbedPane = new WebInspector.TabbedPane();
@@ -373,7 +373,7 @@ WebInspector.OverridesView.SensorsTab = function()
     ]);
 
     this.element.classList.add("overrides-sensors");
-    this.registerRequiredCSS("main/accelerometer.css");
+    this.registerRequiredCSS("emulation/accelerometer.css");
     this.element.appendChild(this._createSettingCheckbox(WebInspector.UIString("Emulate touch screen"), WebInspector.overridesSupport.settings.emulateTouch, undefined));
     this._appendGeolocationOverrideControl();
     this._apendDeviceOrientationOverrideControl();

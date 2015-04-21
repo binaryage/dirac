@@ -1,0 +1,45 @@
+{
+    "extensions": [
+        {
+            "type": "drawer-view",
+            "name": "emulation",
+            "title": "Emulation",
+            "order": "10",
+            "className": "WebInspector.OverridesView"
+        },
+        {
+            "type": "@WebInspector.Revealer",
+            "contextTypes": ["WebInspector.OverridesSupport"],
+            "className": "WebInspector.OverridesView.Revealer"
+        },
+        {
+            "type": "settings-view",
+            "name": "devices",
+            "title": "Devices",
+            "order": "30",
+            "className": "WebInspector.DevicesSettingsTab"
+        }
+    ],
+    "dependencies": [
+        "bindings",
+        "components",
+        "platform",
+        "ui"
+    ],
+    "scripts": [
+        "OverridesSupport.js",
+        "EmulatedDevices.js",
+        "DevicesSettingsTab.js",
+        "OverridesUI.js",
+        "InspectedPagePlaceholder.js",
+        "MediaQueryInspector.js",
+        "ResponsiveDesignView.js",
+        "OverridesView.js"
+    ],
+    "stylesheets": [
+        "accelerometer.css",
+        "devicesSettingsTab.css",
+        "responsiveDesignView.css",
+        "overrides.css"
+    ]
+}
