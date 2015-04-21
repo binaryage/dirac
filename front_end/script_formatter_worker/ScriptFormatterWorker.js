@@ -91,71 +91,62 @@ FormatterWorker.format = function(params)
 FormatterWorker.javaScriptOutline = function(params)
 {
     var chunkSize = 100000; // characters per data chunk
-    var lines = params.content.split("\n");
     var outlineChunk = [];
     var previousIdentifier = null;
     var previousToken = null;
-    var previousTokenType = null;
     var processedChunkCharacters = 0;
     var addedFunction = false;
     var isReadingArguments = false;
     var argumentsText = "";
     var currentFunction = null;
-    var tokenizer = FormatterWorker.createTokenizer("text/javascript");
-    for (var i = 0; i < lines.length; ++i) {
-        var line = lines[i];
-        tokenizer(line, processToken);
-    }
+    var tokenizer = new FormatterWorker.AcornTokenizer(params.content);
+    var AT = FormatterWorker.AcornTokenizer;
 
-    /**
-     * @param {?string} tokenType
-     * @return {boolean}
-     */
-    function isJavaScriptIdentifier(tokenType)
-    {
-        if (!tokenType)
-            return false;
-        return tokenType.startsWith("variable") || tokenType.startsWith("property") || tokenType === "def";
-    }
+    while (tokenizer.peekToken()) {
+        var token = /** @type {!Acorn.TokenOrComment} */(tokenizer.nextToken());
+        if (AT.lineComment(token) || AT.blockComment(token))
+            continue;
 
-    /**
-     * @param {string} tokenValue
-     * @param {?string} tokenType
-     * @param {number} column
-     * @param {number} newColumn
-     */
-    function processToken(tokenValue, tokenType, column, newColumn)
-    {
-        if (tokenType === "property" && previousTokenType === "property" && (previousToken === "get" || previousToken === "set")) {
-            currentFunction = { line: i, column: column, name: previousToken + " " + tokenValue };
+        var tokenValue = params.content.substring(token.start, token.end);
+
+        if (AT.identifier(token) && previousToken && (AT.identifier(previousToken, "get") || AT.identifier(previousToken, "set"))) {
+            currentFunction = {
+                line: tokenizer.tokenLineStart(),
+                column: tokenizer.tokenColumnStart(),
+                name : previousToken.value + " " + tokenValue
+            };
             addedFunction = true;
             previousIdentifier = null;
-        } else if (isJavaScriptIdentifier(tokenType)) {
+        } else if (AT.identifier(token)) {
             previousIdentifier = tokenValue;
-            if (tokenValue && previousToken === "function") {
+            if (tokenValue && previousToken && AT.keyword(previousToken, "function")) {
                 // A named function: "function f...".
-                currentFunction = { line: i, column: column, name: tokenValue };
+                currentFunction = {
+                    line: tokenizer.tokenLineStart(),
+                    column: tokenizer.tokenColumnStart(),
+                    name: tokenValue
+                };
                 addedFunction = true;
                 previousIdentifier = null;
             }
-        } else if (tokenType === "keyword") {
-            if (tokenValue === "function") {
-                if (previousIdentifier && (previousToken === "=" || previousToken === ":")) {
-                    // Anonymous function assigned to an identifier: "...f = function..."
-                    // or "funcName: function...".
-                    currentFunction = { line: i, column: column, name: previousIdentifier };
-                    addedFunction = true;
-                    previousIdentifier = null;
-                }
-            }
-        } else if (tokenValue === "." && isJavaScriptIdentifier(previousTokenType))
+        } else if (AT.keyword(token, "function") && previousIdentifier && previousToken && AT.punctuator(previousToken, ":=")) {
+            // Anonymous function assigned to an identifier: "...f = function..."
+            // or "funcName: function...".
+            currentFunction = {
+                line: tokenizer.tokenLineStart(),
+                column: tokenizer.tokenColumnStart(),
+                name: previousIdentifier
+            };
+            addedFunction = true;
+            previousIdentifier = null;
+        } else if (AT.punctuator(token, ".") && previousToken && AT.identifier(previousToken))
             previousIdentifier += ".";
-        else if (tokenValue === "(" && addedFunction)
+        else if (AT.punctuator(token, "(") && addedFunction)
             isReadingArguments = true;
         if (isReadingArguments && tokenValue)
             argumentsText += tokenValue;
 
-        if (tokenValue === ")" && isReadingArguments) {
+        if (AT.punctuator(token, ")") && isReadingArguments) {
             addedFunction = false;
             isReadingArguments = false;
             currentFunction.arguments = argumentsText.replace(/,[\r\n\s]*/g, ", ").replace(/([^,])[\r\n\s]+/g, "$1");
@@ -163,12 +154,8 @@ FormatterWorker.javaScriptOutline = function(params)
             outlineChunk.push(currentFunction);
         }
 
-        if (tokenValue.trim().length) {
-            // Skip whitespace tokens.
-            previousToken = tokenValue;
-            previousTokenType = tokenType;
-        }
-        processedChunkCharacters += newColumn - column;
+        previousToken = token;
+        processedChunkCharacters += token.end - token.start;
 
         if (processedChunkCharacters >= chunkSize) {
             postMessage({ chunk: outlineChunk, isLastChunk: false });
