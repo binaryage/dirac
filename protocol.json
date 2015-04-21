@@ -1709,9 +1709,14 @@
         ]
     },
     {
-        "domain": "ServiceWorkerCache",
+        "domain": "CacheStorage",
         "hidden": true,
         "types": [
+            {
+                "id": "CacheId",
+                "type": "string",
+                "description": "Unique identifier of the Cache object."
+            },
             {
                 "id": "DataEntry",
                 "type": "object",
@@ -1720,14 +1725,27 @@
                     { "name": "request", "type": "string", "description": "JSON-stringified request object." },
                     { "name": "response", "type": "string", "description": "JSON-stringified response object." }
                 ]
+            },
+            {
+                "id": "Cache",
+                "type": "object",
+                "description": "Cache identifier.",
+                "properties": [
+                    { "name": "cacheId", "$ref": "CacheId", "description": "An opaque unique id of the cache." },
+                    { "name": "securityOrigin", "type": "string", "description": "Security origin of the cache." },
+                    { "name": "cacheName", "type": "string", "description": "The name of the cache." }
+                ]
             }
         ],
         "commands": [
             {
                 "name": "requestCacheNames",
                 "async": true,
+                "parameters": [
+                    { "name": "securityOrigin", "type": "string", "description": "Security origin." }
+                ],
                 "returns": [
-                    { "name": "cacheNames", "type": "array", "items": { "type": "string" }, "description": "Cache names for origin." }
+                    { "name": "caches", "type": "array", "items": { "$ref": "Cache" }, "description": "Caches for the security origin." }
                 ],
                 "description": "Requests cache names."
             },
@@ -1735,7 +1753,7 @@
                 "name": "requestEntries",
                 "async": true,
                 "parameters": [
-                    { "name": "cacheName", "type": "string", "description": "Cache name." },
+                    { "name": "cacheId", "$ref": "CacheId", "description": "ID of cache to get entries from." },
                     { "name": "skipCount", "type": "integer", "description": "Number of records to skip." },
                     { "name": "pageSize", "type": "integer", "description": "Number of records to fetch." }
                 ],
@@ -1749,7 +1767,7 @@
                 "name": "deleteCache",
                 "async": true,
                 "parameters": [
-                    { "name": "cacheName", "type": "string", "description": "Cache name." }
+                    { "name": "cacheId", "$ref": "CacheId", "description": "Id of cache for deletion." }
                 ],
                 "description": "Deletes a cache."
             }

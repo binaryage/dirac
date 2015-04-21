@@ -237,7 +237,7 @@ WebInspector.WorkerConnection = function(workerManager, workerId, inspectorConne
 {
     InspectorBackendClass.Connection.call(this);
     //FIXME: remove resourceTreeModel and others from worker targets
-    this.suppressErrorsForDomains(["Worker", "Page", "CSS", "DOM", "DOMStorage", "Database", "Network", "IndexedDB", "ServiceWorkerCache"]);
+    this.suppressErrorsForDomains(["Worker", "Page", "CSS", "DOM", "DOMStorage", "Database", "Network", "IndexedDB"]);
     this._agent = workerManager.target().workerAgent();
     this._workerId = workerId;
 

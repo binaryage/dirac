@@ -66,6 +66,9 @@ WebInspector.ResourcesPanel = function()
     this.applicationCacheListTreeElement = new WebInspector.StorageCategoryTreeElement(this, WebInspector.UIString("Application Cache"), "ApplicationCache", ["application-cache-storage-tree-item"]);
     this._sidebarTree.appendChild(this.applicationCacheListTreeElement);
 
+    this.cacheStorageListTreeElement = new WebInspector.ServiceWorkerCacheTreeElement(this);
+    this._sidebarTree.appendChild(this.cacheStorageListTreeElement);
+
     if (Runtime.experiments.isEnabled("fileSystemInspection")) {
         this.fileSystemListTreeElement = new WebInspector.FileSystemListTreeElement(this);
         this._sidebarTree.appendChild(this.fileSystemListTreeElement);
@@ -122,11 +125,6 @@ WebInspector.ResourcesPanel.prototype = {
             return;
         this._target = target;
 
-        if (target.isServiceWorker()) {
-            this.serviceWorkerCacheListTreeElement = new WebInspector.ServiceWorkerCacheTreeElement(this);
-            this._sidebarTree.appendChild(this.serviceWorkerCacheListTreeElement);
-        }
-
         if (target.serviceWorkerManager && Runtime.experiments.isEnabled("serviceWorkersInResources")) {
             this.serviceWorkersTreeElement = new WebInspector.ServiceWorkersTreeElement(this);
             this._sidebarTree.appendChild(this.serviceWorkersTreeElement);
@@ -170,13 +168,16 @@ WebInspector.ResourcesPanel.prototype = {
         if (indexedDBModel)
             indexedDBModel.enable();
 
+        var cacheStorageModel = WebInspector.ServiceWorkerCacheModel.fromTarget(this._target);
+        if (cacheStorageModel)
+            cacheStorageModel.enable();
+
         if (this._target.isPage())
             this._populateResourceTree();
         this._populateDOMStorageTree();
         this._populateApplicationCacheTree();
         this.indexedDBListTreeElement._initialize();
-        if (this.serviceWorkerCacheListTreeElement)
-            this.serviceWorkerCacheListTreeElement._initialize();
+        this.cacheStorageListTreeElement._initialize();
         if (Runtime.experiments.isEnabled("fileSystemInspection"))
             this.fileSystemListTreeElement._initialize();
         this._initDefaultSelection();
@@ -235,8 +236,7 @@ WebInspector.ResourcesPanel.prototype = {
         this.localStorageListTreeElement.removeChildren();
         this.sessionStorageListTreeElement.removeChildren();
         this.cookieListTreeElement.removeChildren();
-        if (this.serviceWorkerCacheListTreeElement)
-            this.serviceWorkerCacheListTreeElement.removeChildren();
+        this.cacheStorageListTreeElement.removeChildren();
 
         if (this.visibleView && !(this.visibleView instanceof WebInspector.StorageCategoryView))
             this.visibleView.detach();
@@ -1425,11 +1425,10 @@ WebInspector.DatabaseTableTreeElement.prototype = {
  * @constructor
  * @extends {WebInspector.StorageCategoryTreeElement}
  * @param {!WebInspector.ResourcesPanel} storagePanel
- * @implements {WebInspector.TargetManager.Observer}
  */
 WebInspector.ServiceWorkerCacheTreeElement = function(storagePanel)
 {
-    WebInspector.StorageCategoryTreeElement.call(this, storagePanel, WebInspector.UIString("Service Worker Cache"), "ServiceWorkerCache", ["service-worker-cache-storage-tree-item"]);
+    WebInspector.StorageCategoryTreeElement.call(this, storagePanel, WebInspector.UIString("Cache Storage"), "CacheStorage", ["service-worker-cache-storage-tree-item"]);
 }
 
 WebInspector.ServiceWorkerCacheTreeElement.prototype = {
@@ -1437,18 +1436,15 @@ WebInspector.ServiceWorkerCacheTreeElement.prototype = {
     {
         /** @type {!Array.<!WebInspector.SWCacheTreeElement>} */
         this._swCacheTreeElements = [];
-        var targets = WebInspector.targetManager.targets();
-        for (var i = 0; i < targets.length; ++i) {
-            if (!targets[i].serviceWorkerCacheModel)
-                continue;
-            var caches = targets[i].serviceWorkerCacheModel.caches();
-            for (var j = 0; j < caches.length; ++j)
-                this._addCache(targets[i].serviceWorkerCacheModel, caches[j]);
+        var target = this._storagePanel._target;
+        if (target) {
+            var model = WebInspector.ServiceWorkerCacheModel.fromTarget(target);
+            var caches = model.caches();
+            for (var cache of caches)
+                this._addCache(model, cache);
         }
         WebInspector.targetManager.addModelListener(WebInspector.ServiceWorkerCacheModel, WebInspector.ServiceWorkerCacheModel.EventTypes.CacheAdded, this._cacheAdded, this);
         WebInspector.targetManager.addModelListener(WebInspector.ServiceWorkerCacheModel, WebInspector.ServiceWorkerCacheModel.EventTypes.CacheRemoved, this._cacheRemoved, this);
-        this._refreshCaches();
-        WebInspector.targetManager.observeTargets(this);
     },
 
     onattach: function()
@@ -1456,22 +1452,6 @@ WebInspector.ServiceWorkerCacheTreeElement.prototype = {
         WebInspector.StorageCategoryTreeElement.prototype.onattach.call(this);
         this.listItemElement.addEventListener("contextmenu", this._handleContextMenuEvent.bind(this), true);
     },
-
-    /**
-     * @override
-     * @param {!WebInspector.Target} target
-     */
-    targetAdded: function(target)
-    {
-        if (target.isServiceWorker() && target.serviceWorkerCacheModel)
-            this._refreshCaches();
-    },
-
-    /**
-     * @override
-     * @param {!WebInspector.Target} target
-     */
-    targetRemoved: function(target) {},
 
     _handleContextMenuEvent: function(event)
     {
@@ -1482,10 +1462,10 @@ WebInspector.ServiceWorkerCacheTreeElement.prototype = {
 
     _refreshCaches: function()
     {
-        var targets = WebInspector.targetManager.targets();
-        for (var i = 0; i < targets.length; ++i) {
-            if (targets[i].serviceWorkerCacheModel)
-                targets[i].serviceWorkerCacheModel.refreshCacheNames();
+        var target = this._storagePanel._target;
+        if (target) {
+            var model = WebInspector.ServiceWorkerCacheModel.fromTarget(target);
+            model.refreshCacheNames();
         }
     },
 
@@ -1494,18 +1474,18 @@ WebInspector.ServiceWorkerCacheTreeElement.prototype = {
      */
     _cacheAdded: function(event)
     {
-        var cacheId = /** @type {!WebInspector.ServiceWorkerCacheModel.CacheId} */ (event.data);
+        var cache = /** @type {!WebInspector.ServiceWorkerCacheModel.Cache} */ (event.data);
         var model = /** @type {!WebInspector.ServiceWorkerCacheModel} */ (event.target);
-        this._addCache(model, cacheId);
+        this._addCache(model, cache);
     },
 
     /**
      * @param {!WebInspector.ServiceWorkerCacheModel} model
-     * @param {!WebInspector.ServiceWorkerCacheModel.CacheId} cacheId
+     * @param {!WebInspector.ServiceWorkerCacheModel.Cache} cache
      */
-    _addCache: function(model, cacheId)
+    _addCache: function(model, cache)
     {
-        var swCacheTreeElement = new WebInspector.SWCacheTreeElement(this._storagePanel, model, cacheId);
+        var swCacheTreeElement = new WebInspector.SWCacheTreeElement(this._storagePanel, model, cache);
         this._swCacheTreeElements.push(swCacheTreeElement);
         this.appendChild(swCacheTreeElement);
     },
@@ -1515,10 +1495,10 @@ WebInspector.ServiceWorkerCacheTreeElement.prototype = {
      */
     _cacheRemoved: function(event)
     {
-        var cacheId = /** @type {!WebInspector.ServiceWorkerCacheModel.CacheId} */ (event.data);
+        var cache = /** @type {!WebInspector.ServiceWorkerCacheModel.Cache} */ (event.data);
         var model = /** @type {!WebInspector.ServiceWorkerCacheModel} */ (event.target);
 
-        var swCacheTreeElement = this._cacheTreeElement(model, cacheId);
+        var swCacheTreeElement = this._cacheTreeElement(model, cache);
         if (!swCacheTreeElement)
             return;
 
@@ -1529,14 +1509,14 @@ WebInspector.ServiceWorkerCacheTreeElement.prototype = {
 
     /**
      * @param {!WebInspector.ServiceWorkerCacheModel} model
-     * @param {!WebInspector.ServiceWorkerCacheModel.CacheId} cacheId
+     * @param {!WebInspector.ServiceWorkerCacheModel.Cache} cache
      * @return {?WebInspector.SWCacheTreeElement}
      */
-    _cacheTreeElement: function(model, cacheId)
+    _cacheTreeElement: function(model, cache)
     {
         var index = -1;
         for (var i = 0; i < this._swCacheTreeElements.length; ++i) {
-            if (this._swCacheTreeElements[i]._cacheId.equals(cacheId) && this._swCacheTreeElements[i]._model === model) {
+            if (this._swCacheTreeElements[i]._cache.equals(cache) && this._swCacheTreeElements[i]._model === model) {
                 index = i;
                 break;
             }
@@ -1554,20 +1534,20 @@ WebInspector.ServiceWorkerCacheTreeElement.prototype = {
  * @extends {WebInspector.BaseStorageTreeElement}
  * @param {!WebInspector.ResourcesPanel} storagePanel
  * @param {!WebInspector.ServiceWorkerCacheModel} model
- * @param {!WebInspector.ServiceWorkerCacheModel.CacheId} cacheId
+ * @param {!WebInspector.ServiceWorkerCacheModel.Cache} cache
  */
-WebInspector.SWCacheTreeElement = function(storagePanel, model, cacheId)
+WebInspector.SWCacheTreeElement = function(storagePanel, model, cache)
 {
-    WebInspector.BaseStorageTreeElement.call(this, storagePanel, cacheId.name, ["service-worker-cache-tree-item"]);
+    WebInspector.BaseStorageTreeElement.call(this, storagePanel, cache.cacheName + " - " + cache.securityOrigin, ["service-worker-cache-tree-item"]);
     this._model = model;
-    this._cacheId = cacheId;
+    this._cache = cache;
 }
 
 WebInspector.SWCacheTreeElement.prototype = {
     get itemURL()
     {
         // I don't think this will work at all.
-        return "swcache://" + this._cacheId.name;
+        return "cache://" + this._cache.cacheId;
     },
 
     onattach: function()
@@ -1585,7 +1565,7 @@ WebInspector.SWCacheTreeElement.prototype = {
 
     _clearCache: function()
     {
-        this._model.deleteCache(this._cacheId);
+        this._model.deleteCache(this._cache);
     },
 
     /**
@@ -1606,7 +1586,7 @@ WebInspector.SWCacheTreeElement.prototype = {
     {
         WebInspector.BaseStorageTreeElement.prototype.onselect.call(this, selectedByUser);
         if (!this._view)
-            this._view = new WebInspector.ServiceWorkerCacheView(this._model, this._cacheId, this._cache);
+            this._view = new WebInspector.ServiceWorkerCacheView(this._model, this._cache);
 
         this._storagePanel.showServiceWorkerCache(this._view);
         return false;

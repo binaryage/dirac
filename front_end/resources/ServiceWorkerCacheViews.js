@@ -6,16 +6,14 @@
  * @constructor
  * @extends {WebInspector.VBox}
  * @param {!WebInspector.ServiceWorkerCacheModel} model
- * @param {!WebInspector.ServiceWorkerCacheModel.CacheId} cacheId
  * @param {!WebInspector.ServiceWorkerCacheModel.Cache} cache
  */
-WebInspector.ServiceWorkerCacheView = function(model, cacheId, cache)
+WebInspector.ServiceWorkerCacheView = function(model, cache)
 {
     WebInspector.VBox.call(this);
     this.registerRequiredCSS("resources/serviceWorkerCacheViews.css");
 
     this._model = model;
-    this._cacheId = cacheId;
 
     this.element.classList.add("service-worker-cache-data-view");
     this.element.classList.add("storage-view");
@@ -91,6 +89,29 @@ WebInspector.ServiceWorkerCacheView.prototype = {
     },
 
     /**
+     * @param {number} skipCount
+     * @param {!Array.<!WebInspector.ServiceWorkerCacheModel.Entry>} entries
+     * @param {boolean} hasMore
+     * @this {WebInspector.ServiceWorkerCacheView}
+     */
+    _updateDataCallback(skipCount, entries, hasMore)
+    {
+        this._refreshButton.setEnabled(true);
+        this.clear();
+        this._entries = entries;
+        for (var i = 0; i < entries.length; ++i) {
+            var data = {};
+            data["number"] = i + skipCount;
+            data["request"] = entries[i].request;
+            data["response"] = entries[i].response;
+            var node = new WebInspector.SWCacheDataGridNode(data);
+            this._dataGrid.rootNode().appendChild(node);
+        }
+        this._pageBackButton.setEnabled(!!skipCount);
+        this._pageForwardButton.setEnabled(hasMore);
+    },
+
+    /**
      * @param {boolean} force
      */
     _updateData: function(force)
@@ -108,32 +129,7 @@ WebInspector.ServiceWorkerCacheView.prototype = {
         }
         this._lastPageSize = pageSize;
         this._lastSkipCount = skipCount;
-
-        /**
-         * @param {!Array.<!WebInspector.ServiceWorkerCacheModel.Entry>} entries
-         * @param {boolean} hasMore
-         * @this {WebInspector.ServiceWorkerCacheView}
-         */
-        function callback(entries, hasMore)
-        {
-            this._refreshButton.setEnabled(true);
-            this.clear();
-            this._entries = entries;
-            for (var i = 0; i < entries.length; ++i) {
-                var data = {};
-                data["number"] = i + skipCount;
-                data["request"] = entries[i].request;
-                data["response"] = entries[i].response;
-
-                var node = new WebInspector.SWCacheDataGridNode(data);
-                this._dataGrid.rootNode().appendChild(node);
-            }
-
-            this._pageBackButton.setEnabled(!!skipCount);
-            this._pageForwardButton.setEnabled(hasMore);
-        }
-
-        this._model.loadCacheData(this._cacheId, skipCount, pageSize, callback.bind(this));
+        this._model.loadCacheData(this._cache, skipCount, pageSize, this._updateDataCallback.bind(this, skipCount));
     },
 
     _refreshButtonClicked: function(event)

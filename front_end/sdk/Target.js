@@ -147,11 +147,6 @@ WebInspector.Target.prototype = {
         /** @type {!WebInspector.AnimationModel} */
         this.animationModel = new WebInspector.AnimationModel(this);
 
-        if (this._parentTarget && this._parentTarget.isServiceWorker()) {
-            /** @type {!WebInspector.ServiceWorkerCacheModel} */
-            this.serviceWorkerCacheModel = new WebInspector.ServiceWorkerCacheModel(this);
-        }
-
         this.tracingManager = new WebInspector.TracingManager(this);
 
         if (this.isPage() && (Runtime.experiments.isEnabled("serviceWorkersInPageFrontend") || Runtime.experiments.isEnabled("serviceWorkersInResources")))
@@ -230,8 +225,7 @@ WebInspector.Target.prototype = {
         this.debuggerModel.dispose();
         this.networkManager.dispose();
         this.cpuProfilerModel.dispose();
-        if (this.serviceWorkerCacheModel)
-            this.serviceWorkerCacheModel.dispose();
+        WebInspector.ServiceWorkerCacheModel.fromTarget(this).dispose();
         if (this.workerManager)
             this.workerManager.dispose();
     },
