@@ -118,6 +118,10 @@ button.toolbar-item {
     width: 32px;
 }
 
+.material button.toolbar-item:hover {
+    background-color: rgba(105, 105, 105, 0.1);
+}
+
 button.toolbar-item.toggled-on .glyph {
     background-color: rgb(66, 129, 235) !important;
 }

@@ -42,6 +42,7 @@ WebInspector.TabbedPane = function()
     this._headerElement = this.contentElement.createChild("div", "tabbed-pane-header toolbar-colors");
     this._headerElement.createChild("content").select = ".tabbed-pane-header-before";
     this._headerContentsElement = this._headerElement.createChild("div", "tabbed-pane-header-contents");
+    this._tabSlider = this._headerContentsElement.createChild("div", "tabbed-pane-tab-slider");
     this._headerElement.createChild("content").select = ".tabbed-pane-header-after";
     this._tabsElement = this._headerContentsElement.createChild("div", "tabbed-pane-header-tabs");
     this._contentElement = this.contentElement.createChild("div", "tabbed-pane-content");
@@ -453,6 +454,15 @@ WebInspector.TabbedPane.prototype = {
     },
 
     /**
+     * @param {boolean} enable
+     */
+    setTabSlider: function(enable)
+    {
+        this._sliderEnabled = enable;
+        this._tabSlider.classList.toggle("enabled", enable);
+    },
+
+    /**
      * @override
      * @return {!Constraints}
      */
@@ -735,6 +745,13 @@ WebInspector.TabbedPane.prototype = {
     {
         tab.tabElement.classList.add("selected");
         tab.view.show(this.element);
+
+        if (!this._sliderEnabled)
+            return;
+        var left = 0;
+        for (var i = 0; tab !== this._tabs[i] && i < this._tabs.length; i++)
+            left += this._tabs[i]._measuredWidth;
+        this._tabSlider.style.transform = "translateX(" + left + "px) scaleX(" + tab._measuredWidth + ")";
     },
 
     /**
