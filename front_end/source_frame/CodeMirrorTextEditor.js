@@ -899,6 +899,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         var showWhitespaces = WebInspector.moduleSetting("showWhitespacesInEditor").get();
         this.element.classList.toggle("show-whitespaces", showWhitespaces);
         this._codeMirror.setOption("mode", showWhitespaces ? this._whitespaceOverlayMode(this._mimeType) : this._mimeType);
+        WebInspector.CodeMirrorTextEditor._loadMimeTypeModes(this._mimeType, this._updateCodeMirrorMode.bind(this));
     },
 
     /**
@@ -2158,4 +2159,51 @@ WebInspector.CodeMirrorTextEditor.GutterClickEventData;
 /** @enum {string} */
 WebInspector.CodeMirrorTextEditor.Events = {
     GutterClick: "GutterClick"
+}
+
+/** @type {!Set<!Runtime.Extension>} */
+WebInspector.CodeMirrorTextEditor._loadedMimeModeExtensions = new Set();
+
+/**
+ * @param {string} mimeType
+ * @param {function()} callback
+ */
+WebInspector.CodeMirrorTextEditor._loadMimeTypeModes = function(mimeType, callback)
+{
+    var installed = WebInspector.CodeMirrorTextEditor._loadedMimeModeExtensions;
+
+    var promises = [];
+    for (var extension of self.runtime.extensions(WebInspector.CodeMirrorMimeMode)) {
+        if (!installed.has(extension) && extension.descriptor()["mimeTypes"].indexOf(mimeType) !== -1)
+            promises.push(extension.instancePromise().then(installMode.bind(null, extension)));
+    }
+    if (promises.length)
+        Promise.all(promises).then(callback);
+
+    /**
+     * @param {!Runtime.Extension} extension
+     * @param {!Object} instance
+     */
+    function installMode(extension, instance)
+    {
+        if (installed.has(extension))
+            return;
+        var mode = /** @type {!WebInspector.CodeMirrorMimeMode} */ (instance);
+        mode.install(extension);
+        installed.add(extension);
+    }
+}
+
+/**
+ * @interface
+ */
+WebInspector.CodeMirrorMimeMode = function()
+{
+}
+
+WebInspector.CodeMirrorMimeMode.prototype = {
+    /**
+     * @param {!Runtime.Extension} extension
+     */
+    install: function(extension) { }
 }

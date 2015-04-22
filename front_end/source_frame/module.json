@@ -32,6 +32,7 @@
         "../cm/javascript.js",
         "../cm/xml.js",
         "../cm/htmlmixed.js",
+        "../cm/htmlembedded.js",
 
         "../cm/matchbrackets.js",
         "../cm/closebrackets.js",
@@ -39,12 +40,6 @@
         "../cm/comment.js",
         "../cm/overlay.js",
 
-        "../cm/htmlembedded.js",
-        "../cm/clike.js",
-        "../cm/coffeescript.js",
-        "../cm/php.js",
-        "../cm/python.js",
-        "../cm/shell.js",
         "CodeMirrorUtils.js",
         "CodeMirrorDictionary.js",
         "TextEditorAutocompleteController.js",
@@ -61,19 +56,13 @@
         "../cm/javascript.js",
         "../cm/xml.js",
         "../cm/htmlmixed.js",
+        "../cm/htmlembedded.js",
 
         "../cm/matchbrackets.js",
         "../cm/closebrackets.js",
         "../cm/markselection.js",
         "../cm/comment.js",
-        "../cm/overlay.js",
-
-        "../cm/htmlembedded.js",
-        "../cm/clike.js",
-        "../cm/coffeescript.js",
-        "../cm/php.js",
-        "../cm/python.js",
-        "../cm/shell.js"
+        "../cm/overlay.js"
     ],
     "resources": [
         "../cm/codemirror.css",

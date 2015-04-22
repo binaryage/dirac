@@ -298,6 +298,7 @@
             'front_end/accessibility/module.json',
             'front_end/audits/module.json',
             'front_end/bindings/module.json',
+            'front_end/cm_modes/module.json',
             'front_end/common/module.json',
             'front_end/components/module.json',
             'front_end/components_lazy/module.json',
@@ -355,6 +356,14 @@
             'front_end/audits/AuditResultView.js',
             'front_end/audits/AuditRules.js',
             'front_end/audits/AuditsPanel.js',
+        ],
+        'devtools_cm_modes_js_files': [
+            'front_end/cm_modes/clike.js',
+            'front_end/cm_modes/coffeescript.js',
+            'front_end/cm_modes/php.js',
+            'front_end/cm_modes/python.js',
+            'front_end/cm_modes/shell.js',
+            'front_end/cm_modes/DefaultCodeMirrorMimeMode.js',
         ],
         'devtools_components_lazy_js_files': [
             'front_end/components_lazy/CookiesTable.js',
@@ -623,12 +632,9 @@
             'front_end/cm/codemirror.css',
         ],
         'devtools_cm_js_files': [
-            'front_end/cm/clike.js',
             'front_end/cm/closebrackets.js',
             'front_end/cm/codemirror.js',
-            'front_end/cm/coffeescript.js',
             'front_end/cm/comment.js',
-            'front_end/cm/css.js',
             'front_end/cm/headlesscodemirror.js',
             'front_end/cm/htmlembedded.js',
             'front_end/cm/htmlmixed.js',
@@ -636,9 +642,6 @@
             'front_end/cm/markselection.js',
             'front_end/cm/matchbrackets.js',
             'front_end/cm/overlay.js',
-            'front_end/cm/php.js',
-            'front_end/cm/python.js',
-            'front_end/cm/shell.js',
             'front_end/cm/xml.js',
         ],
         'devtools_acorn_files': [
@@ -648,6 +651,7 @@
         'devtools_modules_js_files': [
             '<@(devtools_accessibility_js_files)',
             '<@(devtools_audits_js_files)',
+            '<@(devtools_cm_modes_js_files)',
             '<@(devtools_components_lazy_js_files)',
             '<@(devtools_console_js_files)',
             '<@(devtools_elements_js_files)',

@@ -21,6 +21,7 @@
     { "name": "audits", "type": "remote" },
     { "name": "console", "type": "remote" },
     { "name": "source_frame", "type": "remote" },
+    { "name": "cm_modes", "type": "remote" },
     { "name": "settings", "type": "remote" },
     { "name": "layers", "type": "remote" },
     { "name": "promises", "type": "remote" },
