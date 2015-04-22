@@ -338,9 +338,11 @@ WebInspector.VersionController.currentVersion = 12;
 WebInspector.VersionController.prototype = {
     updateVersion: function()
     {
+        var localStorageVersion = window.localStorage ? window.localStorage[WebInspector.VersionController._currentVersionName] : 0;
         var versionSetting = WebInspector.settings.createSetting(WebInspector.VersionController._currentVersionName, 0);
         var currentVersion = WebInspector.VersionController.currentVersion;
-        var oldVersion = versionSetting.get();
+        // While localStorage version exists, treat it as the main one. It'll be erased once migrated to prefs.
+        var oldVersion = parseInt(localStorageVersion || "0", 10) || versionSetting.get();
         if (oldVersion === 0) {
             // First run, no need to do anything.
             versionSetting.set(currentVersion);
