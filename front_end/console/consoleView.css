@@ -59,7 +59,7 @@
 #console-prompt {
     clear: right;
     position: relative;
-    padding: 1px 22px 1px 0;
+    padding: 3px 22px 1px 0;
     margin-left: 24px;
     min-height: 18px;  /* Sync with ConsoleViewMessage.js */
     white-space: pre-wrap;
