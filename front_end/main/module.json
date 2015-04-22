@@ -310,6 +310,6 @@
     "skip_compilation": [
         "Tests.js"
     ],
-    "stylesheets": [
+    "resources": [
     ]
 }

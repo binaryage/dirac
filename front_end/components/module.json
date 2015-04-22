@@ -33,7 +33,7 @@
         "RemoteObjectPreviewFormatter.js",
         "ShortcutsScreen.js"
     ],
-    "stylesheets": [
+    "resources": [
         "breakpointsList.css",
         "customPreviewSection.css",
         "nodeLink.css",

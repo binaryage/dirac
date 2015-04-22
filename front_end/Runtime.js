@@ -654,6 +654,19 @@ Runtime.Module.prototype = {
     },
 
     /**
+     * @param {string} name
+     * @return {string}
+     */
+    resource: function(name)
+    {
+        var fullName = this._name + "/" + name;
+        var content = Runtime.cachedResources[fullName];
+        if (!content)
+            throw new Error(fullName + " not preloaded. Check module.json");
+        return content;
+    },
+
+    /**
      * @return {!Promise.<undefined>}
      */
     _loadPromise: function()
@@ -673,7 +686,7 @@ Runtime.Module.prototype = {
             dependencyPromises.push(this._manager._modulesMap[dependencies[i]]._loadPromise());
 
         this._pendingLoadPromise = Promise.all(dependencyPromises)
-            .then(this._loadStylesheets.bind(this))
+            .then(this._loadResources.bind(this))
             .then(this._loadScripts.bind(this))
             .then(markAsLoaded.bind(this));
 
@@ -693,15 +706,15 @@ Runtime.Module.prototype = {
      * @return {!Promise.<undefined>}
      * @this {Runtime.Module}
      */
-    _loadStylesheets: function()
+    _loadResources: function()
     {
-        var stylesheets = this._descriptor["stylesheets"];
-        if (!stylesheets)
+        var resources = this._descriptor["resources"];
+        if (!resources)
             return Promise.resolve();
         var promises = [];
-        for (var i = 0; i < stylesheets.length; ++i) {
-            var url = this._modularizeURL(stylesheets[i]);
-            promises.push(loadResourcePromise(url).then(cacheStylesheet.bind(this, url), cacheStylesheet.bind(this, url, undefined)));
+        for (var i = 0; i < resources.length; ++i) {
+            var url = this._modularizeURL(resources[i]);
+            promises.push(loadResourcePromise(url).then(cacheResource.bind(this, url), cacheResource.bind(this, url, undefined)));
         }
         return Promise.all(promises).then(undefined);
 
@@ -709,10 +722,10 @@ Runtime.Module.prototype = {
          * @param {string} path
          * @param {string=} content
          */
-        function cacheStylesheet(path, content)
+        function cacheResource(path, content)
         {
             if (!content) {
-                console.error("Failed to load stylesheet: " + path);
+                console.error("Failed to load resource: " + path);
                 return;
             }
             var sourceURL = window.location.href;

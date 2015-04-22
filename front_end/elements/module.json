@@ -95,7 +95,7 @@
         "ElementsPanel.js",
         "AnimationsSidebarPane.js"
     ],
-    "stylesheets": [
+    "resources": [
         "animationTimeline.css",
         "bezierEditor.css",
         "breadcrumbs.css",

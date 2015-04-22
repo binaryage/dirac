@@ -57,7 +57,7 @@
         "ProfileTypeRegistry.js",
         "TargetsComboBoxController.js"
     ],
-    "stylesheets": [
+    "resources": [
         "heapProfiler.css",
         "profilesPanel.css"
     ]

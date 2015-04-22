@@ -323,7 +323,7 @@
     "skip_compilation": [
         "jsdifflib.js"
     ],
-    "stylesheets": [
+    "resources": [
         "filteredItemSelectionDialog.css",
         "uiList.css",
         "navigatorView.css",

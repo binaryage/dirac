@@ -70,7 +70,7 @@
         "ConsoleView.js",
         "ConsolePanel.js"
     ],
-    "stylesheets": [
+    "resources": [
         "consoleView.css"
     ]
 }

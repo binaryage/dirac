@@ -58,7 +58,7 @@
         "NetworkPanel.js",
         "XMLView.js"
     ],
-    "stylesheets": [
+    "resources": [
         "eventSourceMessagesView.css",
         "networkFilmStripView.css",
         "networkLogView.css",

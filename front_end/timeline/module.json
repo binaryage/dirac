@@ -49,7 +49,7 @@
         "PaintProfilerView.js",
         "TimelinePanel.js"
     ],
-    "stylesheets": [
+    "resources": [
         "invalidationsTree.css",
         "timelinePanel.css"
     ]

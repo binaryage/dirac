@@ -32,7 +32,7 @@
         "ServiceWorkerCacheViews.js",
         "ServiceWorkersView.js"
     ],
-    "stylesheets": [
+    "resources": [
         "indexedDBViews.css",
         "resourcesPanel.css",
         "serviceWorkerCacheViews.css",

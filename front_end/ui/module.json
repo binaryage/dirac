@@ -45,7 +45,7 @@
         "ViewportControl.js",
         "ZoomManager.js"
     ],
-    "stylesheets": [
+    "resources": [
         "checkboxTextLabel.css",
         "closeButton.css",
         "colorSwatch.css",

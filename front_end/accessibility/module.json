@@ -12,7 +12,7 @@
         "AccessibilityModel.js",
         "AccessibilitySidebarView.js"
     ],
-    "stylesheets": [
+    "resources": [
         "accessibilityNode.css"
     ]
 }

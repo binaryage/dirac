@@ -75,7 +75,7 @@
         "../cm/python.js",
         "../cm/shell.js"
     ],
-    "stylesheets": [
+    "resources": [
         "../cm/codemirror.css",
         "cmdevtools.css",
         "fontView.css",

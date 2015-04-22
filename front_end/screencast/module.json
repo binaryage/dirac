@@ -19,7 +19,7 @@
         "ScreencastApp.js",
         "ScreencastView.js"
     ],
-    "stylesheets": [
+    "resources": [
         "screencastView.css"
     ]
 }

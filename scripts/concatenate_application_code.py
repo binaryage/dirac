@@ -41,7 +41,7 @@ sys.path.append(rjsmin_path)
 import rjsmin
 
 
-def css_source_url(url):
+def resource_source_url(url):
     return '\n/*# sourceURL=' + url + ' */'
 
 
@@ -85,17 +85,17 @@ class AppBuilder:
     def app_file(self, extension):
         return self.application_name + '.' + extension
 
-    def core_css_names(self):
+    def core_resource_names(self):
         result = []
         for module in self.descriptors.sorted_modules():
             if self.descriptors.application[module].get('type') != 'autostart':
                 continue
 
-            stylesheets = self.descriptors.modules[module].get('stylesheets')
-            if not stylesheets:
+            resources = self.descriptors.modules[module].get('resources')
+            if not resources:
                 continue
-            for css_name in stylesheets:
-                result.append(path.join(module, css_name))
+            for resource_name in resources:
+                result.append(path.join(module, resource_name))
         return result
 
 
@@ -152,12 +152,12 @@ class ReleaseBuilder(AppBuilder):
             module = copy.copy(module_descriptors[name])
             # Clear scripts, as they are not used at runtime
             # (only the fact of their presence is important).
-            stylesheets = module.get('stylesheets', None)
-            if module.get('scripts') or stylesheets:
+            resources = module.get('resources', None)
+            if module.get('scripts') or resources:
                 module['scripts'] = []
-            # Stylesheets list is not used at runtime.
-            if stylesheets is not None:
-                del module['stylesheets']
+            # Resources list is not used at runtime.
+            if resources is not None:
+                del module['resources']
             condition = self.descriptors.application[name].get('condition')
             if condition:
                 module['condition'] = condition
@@ -167,15 +167,15 @@ class ReleaseBuilder(AppBuilder):
             result.append(module)
         return json.dumps(result)
 
-    def _write_module_css_styles(self, css_names, output):
-        for css_name in css_names:
-            css_name = path.normpath(css_name).replace('\\', '/')
-            output.write('Runtime.cachedResources["%s"] = "' % css_name)
-            css_content = read_file(path.join(self.application_dir, css_name)) + css_source_url(css_name)
-            css_content = css_content.replace('\\', '\\\\')
-            css_content = css_content.replace('\n', '\\n')
-            css_content = css_content.replace('"', '\\"')
-            output.write(css_content)
+    def _write_module_resources(self, resource_names, output):
+        for resource_name in resource_names:
+            resource_name = path.normpath(resource_name).replace('\\', '/')
+            output.write('Runtime.cachedResources["%s"] = "' % resource_name)
+            resource_content = read_file(path.join(self.application_dir, resource_name)) + resource_source_url(resource_name)
+            resource_content = resource_content.replace('\\', '\\\\')
+            resource_content = resource_content.replace('\n', '\\n')
+            resource_content = resource_content.replace('"', '\\"')
+            output.write(resource_content)
             output.write('";\n')
 
     def _concatenate_autostart_modules(self, output):
@@ -205,23 +205,23 @@ class ReleaseBuilder(AppBuilder):
         output.write('/* Application descriptor %s */\n' % self.app_file('json'))
         output.write('applicationDescriptor = ')
         output.write(self.descriptors.application_json())
-        output.write(';\n/* Core CSS */\n')
-        self._write_module_css_styles(self.core_css_names(), output)
+        output.write(';\n/* Core resources */\n')
+        self._write_module_resources(self.core_resource_names(), output)
         output.write('\n/* Application loader */\n')
         output.write(read_file(join(self.application_dir, self.app_file('js'))))
 
     def _concatenate_dynamic_module(self, module_name):
         module = self.descriptors.modules[module_name]
         scripts = module.get('scripts')
-        stylesheets = self.descriptors.module_stylesheets(module_name)
-        if not scripts and not stylesheets:
+        resources = self.descriptors.module_resources(module_name)
+        if not scripts and not resources:
             return
         module_dir = join(self.application_dir, module_name)
         output = StringIO()
         if scripts:
             modular_build.concatenate_scripts(scripts, module_dir, self.output_dir, output)
-        if stylesheets:
-            self._write_module_css_styles(stylesheets, output)
+        if resources:
+            self._write_module_resources(resources, output)
         output_file_path = concatenated_module_filename(module_name, self.output_dir)
         write_file(output_file_path, minify_js(output.getvalue()))
         output.close()
