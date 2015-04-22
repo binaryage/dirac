@@ -14,7 +14,6 @@ WebInspector.NetworkFilmStripView = function(calculator)
     this.registerRequiredCSS("network/networkFilmStripView.css");
     this.element.classList.add("network-film-strip-view");
     this.contentElement.classList.add("shadow-network-film-strip-view");
-
     /** @type {!WebInspector.NetworkTimeCalculator} */
     this._calculator = calculator;
 
@@ -77,8 +76,11 @@ WebInspector.NetworkFilmStripView.prototype = {
         }
         this._label.remove();
 
-        for (var i = 0; i < frames.length; ++i)
+        for (var i = 0; i < frames.length; ++i) {
+            frames[i]._index = i;
             frames[i].show(this.contentElement);
+
+        }
         this._frames = frames;
         this._updateTimeOffset(true);
     },
@@ -165,6 +167,14 @@ WebInspector.NetworkFilmStripView.prototype = {
         this._label.textContent = WebInspector.UIString("Recording frames...");
     },
 
+    /**
+     * @return {boolean}
+     */
+    isRecording: function()
+    {
+        return !!this._target;
+    },
+
     stopRecording: function()
     {
         if (!this._target)
@@ -197,8 +207,10 @@ WebInspector.NetworkFilmStripFrame = function(parent, imageData, timestamp)
     this._timestamp = timestamp;
     this._element = createElementWithClass("div", "frame");
     this._element.createChild("div", "thumbnail").createChild("img").src = "data:image/jpg;base64," + imageData;
+    this._imageData = imageData;
     this._timeLabel = this._element.createChild("div", "time");
     this._element.addEventListener("mousedown", this._onMouseDown.bind(this), false);
+    this._element.addEventListener("dblclick", this._onDoubleClick.bind(this), false);
 }
 
 WebInspector.NetworkFilmStripFrame.prototype = {
@@ -210,12 +222,14 @@ WebInspector.NetworkFilmStripFrame.prototype = {
         parent.appendChild(this._element);
     },
 
-    /**
-     * @param {!Event} event
-     */
-    _onMouseDown: function(event)
+    _onMouseDown: function()
     {
         this._parent._selectFrame(this);
+    },
+
+    _onDoubleClick: function()
+    {
+        WebInspector.Dialog.show(WebInspector.Dialog.modalHostView().element, new WebInspector.NetworkFilmStripFrame.DialogDelegate(this._parent._frames, this._index));
     },
 
     /**
@@ -233,4 +247,114 @@ WebInspector.NetworkFilmStripFrame.prototype = {
     {
         this._timeLabel.textContent = Number.secondsToString(this._timestamp - offset);
     }
+}
+
+
+/**
+ * @constructor
+ * @extends {WebInspector.DialogDelegate}
+ * @param {!Array<!WebInspector.NetworkFilmStripFrame>} frames
+ * @param {number} index
+ */
+WebInspector.NetworkFilmStripFrame.DialogDelegate = function(frames, index)
+{
+    WebInspector.DialogDelegate.call(this);
+    this.element.classList.add("network-filmstrip-preview");
+    this.element.tabIndex = 0;
+
+    this._frames = frames;
+    this._index = index;
+
+    this._imageElement = this.element.createChild("img");
+    var footerElement = this.element.createChild("div", "network-filmstrip-preview-footer");
+    footerElement.createChild("div", "flex-auto");
+    var prevButton = createTextButton("\u25C0", this._onPrevFrame.bind(this), undefined, WebInspector.UIString("Previous frame"));
+    footerElement.appendChild(prevButton);
+    this._timeLabel = footerElement.createChild("div", "network-filmstrip-preview-label");
+    var nextButton = createTextButton("\u25B6", this._onNextFrame.bind(this), undefined, WebInspector.UIString("Next frame"));
+    footerElement.appendChild(nextButton);
+    footerElement.createChild("div", "flex-auto");
+
+    this._render();
+    this.element.addEventListener("keydown", this._keyDown.bind(this), false);
+}
+
+WebInspector.NetworkFilmStripFrame.DialogDelegate.prototype = {
+    /**
+     * @override
+     */
+    focus: function()
+    {
+        this.element.focus();
+    },
+
+    /**
+     * @param {!Event} event
+     */
+    _keyDown: function(event)
+    {
+        if (event.keyIdentifier === "Left") {
+            if (WebInspector.isMac() && event.metaKey) {
+                this._onFirstFrame();
+                return;
+            }
+
+            this._onPrevFrame();
+            return;
+        }
+
+        if (event.keyIdentifier === "Right") {
+            if (WebInspector.isMac() && event.metaKey) {
+                this._onLastFrame();
+                return;
+            }
+
+            this._onNextFrame();
+        }
+
+        if (event.keyIdentifier === "Home") {
+            this._onFirstFrame();
+            return;
+        }
+
+        if (event.keyIdentifier === "End") {
+            this._onLastFrame();
+            return;
+        }
+    },
+
+    _onPrevFrame: function()
+    {
+        if (this._index > 0)
+            --this._index;
+        this._render();
+    },
+
+    _onNextFrame: function()
+    {
+        if (this._index < this._frames.length - 1)
+            ++this._index;
+        this._render();
+    },
+
+    _onFirstFrame: function()
+    {
+        this._index = 0;
+        this._render();
+    },
+
+    _onLastFrame: function()
+    {
+        this._index = this._frames.length - 1;
+        this._render();
+    },
+
+    _render: function()
+    {
+        var frame = this._frames[this._index];
+        this._imageElement.src = "data:image/jpg;base64," + frame._imageData;
+        this._timeLabel.textContent = frame._timeLabel.textContent;
+    },
+
+    __proto__: WebInspector.DialogDelegate.prototype
 }

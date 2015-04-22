@@ -143,8 +143,7 @@ WebInspector.Dialog.prototype = {
  */
 WebInspector.DialogDelegate = function()
 {
-    /** @type {!Element} */
-    this.element;
+    this.element = createElement("div");
 }
 
 WebInspector.DialogDelegate.prototype = {

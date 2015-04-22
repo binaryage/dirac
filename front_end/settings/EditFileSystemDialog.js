@@ -36,9 +36,8 @@
 WebInspector.EditFileSystemDialog = function(fileSystemPath)
 {
     WebInspector.DialogDelegate.call(this);
+    this.element.classList.add("dialog-contents");
     this._fileSystemPath = fileSystemPath;
-
-    this.element = createElementWithClass("div", "dialog-contents");
 
     var header = this.element.createChild("div", "header");
     var headerText = header.createChild("span");

@@ -256,3 +256,21 @@
     height: 100%;
     position: absolute;
 }
+
+.network-filmstrip-preview {
+    margin: 12px;
+}
+
+.network-filmstrip-preview > img {
+    border: 1px solid #ddd;
+}
+
+.network-filmstrip-preview-footer {
+    display: flex;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.network-filmstrip-preview-label {
+    margin: 8px 2px;
+}

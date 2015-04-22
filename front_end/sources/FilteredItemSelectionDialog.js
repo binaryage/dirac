@@ -38,7 +38,6 @@ WebInspector.FilteredItemSelectionDialog = function(delegate)
 {
     WebInspector.DialogDelegate.call(this);
 
-    this.element = createElement("div");
     this.element.className = "filtered-item-list-dialog";
     this.element.addEventListener("keydown", this._onKeyDown.bind(this), false);
     this.element.appendChild(WebInspector.View.createStyleElement("sources/filteredItemSelectionDialog.css"));

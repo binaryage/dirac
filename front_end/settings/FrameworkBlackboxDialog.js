@@ -11,8 +11,7 @@
 WebInspector.FrameworkBlackboxDialog = function()
 {
     WebInspector.DialogDelegate.call(this);
-
-    this.element = createElementWithClass("div", "blackbox-dialog dialog-contents");
+    this.element.classList.add("blackbox-dialog", "dialog-contents");
 
     var header = this.element.createChild("div", "header");
     header.createChild("span").textContent = WebInspector.UIString("Framework blackbox patterns");

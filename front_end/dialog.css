@@ -31,7 +31,7 @@
     box-shadow: 0 1px 0 hsla(0, 0%, 0%, 0.08), inset 0 1px 2px hsla(0, 100%, 100%, 0.75);
     color: hsl(0, 0%, 27%);
     font-size: 12px;
-    margin: 0 1px 0 6px;
+    margin: 0 6px 0 6px;
     text-shadow: 0 1px 0 hsl(0, 0%, 94%);
     min-height: 2em;
     padding-left: 10px;

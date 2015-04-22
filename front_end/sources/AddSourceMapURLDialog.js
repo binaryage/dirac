@@ -10,8 +10,7 @@
 WebInspector.AddSourceMapURLDialog = function(callback)
 {
     WebInspector.DialogDelegate.call(this);
-
-    this.element = createElementWithClass("div", "go-to-line-dialog");
+    this.element.classList.add("go-to-line-dialog");
     this.element.createChild("label").textContent = WebInspector.UIString("Source map URL: ");
 
     this._input = this.element.createChild("input");
