@@ -1143,9 +1143,9 @@ WebInspector.HeapSnapshotConstructorNode.prototype = {
         var sortAscending = this._dataGrid.isSortOrderAscending();
         var sortColumnIdentifier = this._dataGrid.sortColumnIdentifier();
         var sortFields = {
-            object: ["id", sortAscending, "retainedSize", false],
+            object: ["name", sortAscending, "id", true],
             distance: ["distance", sortAscending, "retainedSize", false],
-            count: ["id", true, "retainedSize", false],
+            count: ["name", true, "id", true],
             shallowSize: ["selfSize", sortAscending, "id", true],
             retainedSize: ["retainedSize", sortAscending, "id", true]
         }[sortColumnIdentifier];
@@ -1392,10 +1392,10 @@ WebInspector.HeapSnapshotDiffNode.prototype = {
         var sortAscending = this._dataGrid.isSortOrderAscending();
         var sortColumnIdentifier = this._dataGrid.sortColumnIdentifier();
         var sortFields = {
-            object: ["id", sortAscending, "selfSize", false],
-            addedCount: ["selfSize", sortAscending, "id", true],
-            removedCount: ["selfSize", sortAscending, "id", true],
-            countDelta: ["selfSize", sortAscending, "id", true],
+            object: ["name", sortAscending, "id", true],
+            addedCount: ["name", true, "id", true],
+            removedCount: ["name", true, "id", true],
+            countDelta: ["name", true, "id", true],
             addedSize: ["selfSize", sortAscending, "id", true],
             removedSize: ["selfSize", sortAscending, "id", true],
             sizeDelta: ["selfSize", sortAscending, "id", true]
