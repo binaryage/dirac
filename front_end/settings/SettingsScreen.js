@@ -200,7 +200,9 @@ WebInspector.GenericSettingsTab.prototype = {
     _addSetting: function(extension)
     {
         var descriptor = extension.descriptor();
-        if (!("title" in descriptor) || !("category" in descriptor))
+        if (!("title" in descriptor))
+            return;
+        if (!(("category" in descriptor) || ("parentSettingName" in descriptor)))
             return;
 
         var sectionName = descriptor["category"];
