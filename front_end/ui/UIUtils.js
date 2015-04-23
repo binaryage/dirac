@@ -131,6 +131,11 @@ WebInspector._unregisterDragEvents = function()
  */
 WebInspector._elementDragMove = function(event)
 {
+    if (event.buttons !== 1) {
+        WebInspector._elementDragEnd(event);
+        return;
+    }
+
     if (WebInspector._elementDraggingEventListener(/** @type {!MouseEvent} */ (event)))
         WebInspector._cancelDragEvents(event);
 }
