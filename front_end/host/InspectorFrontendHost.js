@@ -515,7 +515,12 @@ WebInspector.InspectorFrontendHostStub.prototype = {
      */
     loadNetworkResource: function(url, headers, streamId, callback)
     {
-        callback({statusCode : 404});
+        loadResourcePromise(url).then(function(text) {
+            WebInspector.ResourceLoader.streamWrite(streamId, text);
+            callback({statusCode : 200});
+        }).catch(function() {
+            callback({statusCode : 404});
+        });
     },
 
     /**
