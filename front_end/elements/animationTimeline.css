@@ -152,6 +152,20 @@ input.animation-playback-slider {
     top: -29px;
     left: -25px;
     font-size: 10px;
+    visibility: visible;
+}
+
+.animation-timeline-capturing > .animation-scrubber-head {
+    visibility: hidden;
+}
+
+.animation-timeline-end > .animation-scrubber-head {
+    visibility: visible;
+}
+
+.animation-timeline-end > .animation-scrubber-arrow,
+.animation-timeline-capturing > .animation-scrubber-arrow {
+    visibility: hidden;
 }
 
 .animation-scrubber-arrow {
@@ -164,8 +178,56 @@ input.animation-playback-slider {
     background-color: rgba(0, 0, 0, 0.5);
 }
 
-.animation-timeline-end > .animation-scrubber-arrow {
+.animation-timeline-timer {
+    width: 22px;
+    height: 22px;
+    position: relative;
+    top: -51px;
+    left: -11px;
+    border-radius: 22px;
+    border: 1px solid #7B7B7B;
     visibility: hidden;
+    background-color: white;
+}
+
+.animation-timeline-capturing > .animation-timeline-timer {
+    visibility: visible;
+}
+
+.animation-timeline-end > .animation-timeline-timer {
+    visibility: hidden;
+}
+
+.timer-hemisphere {
+    width: 50%;
+    height: 100%;
+    position: absolute;
+    background: #808080;
+}
+
+.timer-spinner {
+    border-radius: 20px 0 0 20px;
+    z-index: 200;
+    border-right: none;
+    transform-origin: 10px 10px;
+}
+
+.timer-filler {
+    border-radius: 0 20px 20px 0;
+    z-index: 100;
+    border-left: none;
+    left: 50%;
+    opacity: 0;
+}
+
+.timer-mask {
+    width: 50%;
+    height: 100%;
+    position: absolute;
+    z-index: 300;
+    opacity: 1;
+    background: white;
+    border-radius: 20px 0 0 20px;
 }
 
 svg.animation-timeline-grid {

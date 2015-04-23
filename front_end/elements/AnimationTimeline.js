@@ -13,10 +13,7 @@ WebInspector.AnimationTimeline = function()
     this.element.classList.add("animations-timeline");
 
     this._grid = this.contentElement.createSVGChild("svg", "animation-timeline-grid");
-    this._timelineScrubber = this.contentElement.createChild("div", "animation-scrubber");
-    this._timelineScrubber.createChild("div", "animation-time-overlay");
-    this._timelineScrubber.createChild("div", "animation-scrubber-arrow");
-    this._timelineScrubberHead = this._timelineScrubber.createChild("div", "animation-scrubber-head");
+    this.contentElement.appendChild(this._createScrubber());
     WebInspector.installDragHandle(this._timelineScrubberHead, this._scrubberDragStart.bind(this), this._scrubberDragMove.bind(this), this._scrubberDragEnd.bind(this), "move");
     this._timelineScrubberHead.textContent = WebInspector.UIString(Number.millisToString(0));
 
@@ -35,6 +32,24 @@ WebInspector.AnimationTimeline = function()
 }
 
 WebInspector.AnimationTimeline.prototype = {
+    /**
+     * @return {!Element} element
+     */
+    _createScrubber: function() {
+        this._timelineScrubber = createElementWithClass("div", "animation-scrubber hidden");
+        this._timelineScrubber.createChild("div", "animation-time-overlay");
+        this._timelineScrubber.createChild("div", "animation-scrubber-arrow");
+        this._timelineScrubberHead = this._timelineScrubber.createChild("div", "animation-scrubber-head");
+        var timerContainer = this._timelineScrubber.createChild("div", "animation-timeline-timer");
+        this._timerSpinner = timerContainer.createChild("div", "timer-spinner timer-hemisphere");
+        this._timerFiller = timerContainer.createChild("div", "timer-filler timer-hemisphere");
+        this._timerMask = timerContainer.createChild("div", "timer-mask");
+        return this._timelineScrubber;
+    },
+
+    /**
+     * @return {!Element}
+     */
     _createHeader: function()
     {
         /**
@@ -117,7 +132,7 @@ WebInspector.AnimationTimeline.prototype = {
      */
     _defaultDuration: function ()
     {
-        return 300;
+        return 100;
     },
 
     /**
@@ -295,17 +310,45 @@ WebInspector.AnimationTimeline.prototype = {
         if (requiredDuration > this._duration * 0.8) {
             resized = true;
             this._duration = requiredDuration * 1.5;
-            this._animateTime(animation.startTime() - this.startTime());
+            this._timelineScrubber.classList.remove("hidden");
+            this._animateTime(animation.startTime() - this.startTime(), true);
         }
         return resized;
     },
 
     /**
+     * @return {!Object}
+     */
+    _startTimerAnimation: function() {
+        var timerDuration = 1000 / this._animationsPlaybackRate;
+        var player = this._timerSpinner.animate([{ transform: "rotate(0deg)" }, { transform: "rotate(360deg)" }], timerDuration);
+        player.onfinish = this._timerFinished.bind(this, player);
+        var keyframes = [{ opacity: 0 }, { opacity: 1 }];
+        this._timerFiller.animate(keyframes, { duration: timerDuration, easing: "steps(1, middle)" });
+        this._timerMask.animate(keyframes, { duration: timerDuration, easing: "steps(1, middle)", direction: "reverse" });
+        return player;
+    },
+
+    /**
+     * @param {!Object} timerPlayer
+     */
+    _timerFinished: function(timerPlayer) {
+        if (this._timerPlayer !== timerPlayer)
+            return;
+        this._timelineScrubber.classList.add("animation-timeline-end");
+        delete this._timerPlayer;
+    },
+
+    /**
       * @param {number=} time
+      * @param {boolean=} timelineCapturing
       */
-    _animateTime: function(time)
+    _animateTime: function(time, timelineCapturing)
     {
         var oldPlayer = this._scrubberPlayer;
+        this._timelineScrubber.classList.toggle("animation-timeline-capturing", timelineCapturing);
+        if (timelineCapturing)
+            this._timerPlayer = this._startTimerAnimation();
 
         this._scrubberPlayer = this._timelineScrubber.animate([
             { transform: "translateX(0px)" },
@@ -346,7 +389,8 @@ WebInspector.AnimationTimeline.prototype = {
             this._timelineScrubberHead.window().requestAnimationFrame(this._updateScrubber.bind(this));
         } else if (this._scrubberPlayer.playState === "finished") {
             this._timelineScrubberHead.textContent = WebInspector.UIString(". . .");
-            this._timelineScrubber.classList.add("animation-timeline-end");
+            if (!this._timerPlayer)
+                this._timelineScrubber.classList.add("animation-timeline-end");
         }
     },
 
@@ -361,6 +405,7 @@ WebInspector.AnimationTimeline.prototype = {
 
         this._originalScrubberTime = this._scrubberPlayer.currentTime;
         this._timelineScrubber.classList.remove("animation-timeline-end");
+        this._timelineScrubber.classList.remove("animation-timeline-capturing");
         this._scrubberPlayer.pause();
         this._originalMousePosition = new WebInspector.Geometry.Point(event.x, event.y);
 
