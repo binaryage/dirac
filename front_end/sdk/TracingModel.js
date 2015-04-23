@@ -71,6 +71,8 @@ WebInspector.TracingModel._legacyAsyncEventsString =
     WebInspector.TracingModel.Phase.AsyncStepInto +
     WebInspector.TracingModel.Phase.AsyncStepPast;
 
+WebInspector.TracingModel._rendererMainThreadName = "CrRendererMain";
+
 WebInspector.TracingModel._asyncEventsString = WebInspector.TracingModel._nestableAsyncEventsString + WebInspector.TracingModel._legacyAsyncEventsString;
 
 /**
@@ -192,6 +194,7 @@ WebInspector.TracingModel.prototype = {
         this._devtoolsWorkerMetadataEvents = [];
         this._backingStorage.reset();
         this._appendDelimiter = false;
+        this._loadedFromFile = false;
         /** @type {!Array<!WebInspector.TracingModel.Event>} */
         this._asyncEvents = [];
         /** @type {!Map<string, !WebInspector.TracingModel.AsyncEvent>} */
@@ -271,8 +274,13 @@ WebInspector.TracingModel.prototype = {
     {
         this._devtoolsPageMetadataEvents.sort(WebInspector.TracingModel.Event.compareStartTime);
         if (!this._devtoolsPageMetadataEvents.length) {
-            WebInspector.console.error(WebInspector.TracingModel.DevToolsMetadataEvent.TracingStartedInPage + " event not found.");
-            return;
+            // The trace is probably coming not from DevTools. Make a mock Metadata event.
+            var pageMetaEvent = this._loadedFromFile ? this._makeMockPageMetadataEvent() : null;
+            if (!pageMetaEvent) {
+                WebInspector.console.error(WebInspector.TracingModel.DevToolsMetadataEvent.TracingStartedInPage + " event not found.");
+                return;
+            }
+            this._devtoolsPageMetadataEvents.push(pageMetaEvent);
         }
         var sessionId = this._devtoolsPageMetadataEvents[0].args["sessionId"] || this._devtoolsPageMetadataEvents[0].args["data"]["sessionId"];
         this._sessionId = sessionId;
@@ -296,6 +304,26 @@ WebInspector.TracingModel.prototype = {
         var idList = Object.keys(mismatchingIds);
         if (idList.length)
             WebInspector.console.error("Timeline recording was started in more than one page simultaneously. Session id mismatch: " + this._sessionId + " and " + idList + ".");
+    },
+
+    /**
+     * @return {?WebInspector.TracingModel.Event}
+     */
+    _makeMockPageMetadataEvent: function()
+    {
+        var rendererMainThreadName = WebInspector.TracingModel._rendererMainThreadName;
+        // FIXME: pick up the first renderer process for now.
+        var process = Object.values(this._processById).filter(function(p) { return p.threadByName(rendererMainThreadName); })[0];
+        var thread = process && process.threadByName(rendererMainThreadName);
+        if (!thread)
+            return null;
+        var pageMetaEvent = new WebInspector.TracingModel.Event(
+            WebInspector.TracingModel.DevToolsMetadataEventCategory,
+            WebInspector.TracingModel.DevToolsMetadataEvent.TracingStartedInPage,
+            WebInspector.TracingModel.Phase.Metadata,
+            this._minimumRecordTime, thread);
+        pageMetaEvent.addArgs({"data": {"sessionId": "mockSessionId"}});
+        return pageMetaEvent;
     },
 
     /**
@@ -465,6 +493,7 @@ WebInspector.TracingModel.Loader.prototype = {
 
     finish: function()
     {
+        this._tracingModel._loadedFromFile = true;
         this._tracingModel.tracingComplete();
     }
 }
@@ -856,7 +885,7 @@ WebInspector.TracingModel.Thread.prototype = {
     target: function()
     {
         //FIXME: correctly specify target
-        if (this.name() === "CrRendererMain")
+        if (this.name() === WebInspector.TracingModel._rendererMainThreadName)
             return WebInspector.targetManager.targets()[0] || null;
         else
             return null;

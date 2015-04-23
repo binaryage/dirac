@@ -1605,6 +1605,8 @@ WebInspector.TracingModelLoader = function(model, progress, canceledCallback)
     this._progress.setTitle(WebInspector.UIString("Loading"));
     this._progress.setTotalWork(WebInspector.TracingModelLoader._totalProgress);  // Unknown, will loop the values.
 
+    this._state = WebInspector.TracingModelLoader.State.Initial;
+    this._buffer = "";
     this._firstChunk = true;
     this._wasCanceledOnce = false;
 
@@ -1613,6 +1615,12 @@ WebInspector.TracingModelLoader = function(model, progress, canceledCallback)
 }
 
 WebInspector.TracingModelLoader._totalProgress = 100000;
+
+WebInspector.TracingModelLoader.State = {
+    Initial: "Initial",
+    LookingForEvents: "LookingForEvents",
+    ReadingEvents: "ReadingEvents"
+}
 
 WebInspector.TracingModelLoader.prototype = {
     /**
@@ -1629,6 +1637,28 @@ WebInspector.TracingModelLoader.prototype = {
         }
         this._progress.setWorked(this._loadedBytes % WebInspector.TracingModelLoader._totalProgress,
                                  WebInspector.UIString("Loaded %s", Number.bytesToString(this._loadedBytes)));
+        if (this._state === WebInspector.TracingModelLoader.State.Initial) {
+            if (chunk[0] === "{")
+                this._state = WebInspector.TracingModelLoader.State.LookingForEvents;
+            else if (chunk[0] === "[")
+                this._state = WebInspector.TracingModelLoader.State.ReadingEvents;
+            else {
+                this._reportErrorAndCancelLoading(WebInspector.UIString("Malformed timeline data: Unknown JSON format"));
+                return;
+            }
+        }
+
+        if (this._state === WebInspector.TracingModelLoader.State.LookingForEvents) {
+            var objectName = "\"traceEvents\":";
+            var startPos = this._buffer.length - objectName.length;
+            this._buffer += chunk;
+            var pos = this._buffer.indexOf(objectName, startPos);
+            if (pos === -1)
+                return;
+            chunk = this._buffer.slice(pos + objectName.length)
+            this._state = WebInspector.TracingModelLoader.State.ReadingEvents;
+        }
+
         this._jsonTokenizer.write(chunk);
     },
 
