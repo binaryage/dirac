@@ -366,7 +366,10 @@
             'front_end/cm_modes/DefaultCodeMirrorMimeMode.js',
         ],
         'devtools_components_lazy_js_files': [
+            'front_end/components_lazy/filmStripDialog.css',
+            'front_end/components_lazy/filmStripView.css',
             'front_end/components_lazy/CookiesTable.js',
+            'front_end/components_lazy/FilmStripView.js',
         ],
         'devtools_console_js_files': [
             'front_end/console/consoleView.css',
@@ -433,7 +436,6 @@
         ],
         'devtools_network_js_files': [
             'front_end/network/eventSourceMessagesView.css',
-            'front_end/network/networkFilmStripView.css',
             'front_end/network/networkLogView.css',
             'front_end/network/networkPanel.css',
             'front_end/network/requestCookiesView.css',
@@ -445,7 +447,6 @@
             'front_end/network/HARWriter.js',
             'front_end/network/NetworkDataGridNode.js',
             'front_end/network/NetworkItemView.js',
-            'front_end/network/NetworkFilmStripView.js',
             'front_end/network/NetworkLogView.js',
             'front_end/network/NetworkOverview.js',
             'front_end/network/NetworkPanel.js',

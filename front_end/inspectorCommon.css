@@ -123,6 +123,10 @@ body /deep/ .flex-auto {
     flex: auto;
 }
 
+body /deep/ .flex-none {
+    flex: none;
+}
+
 body /deep/ .flex-centered {
     display: flex;
     align-items: center;

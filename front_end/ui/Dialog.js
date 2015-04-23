@@ -69,14 +69,14 @@ WebInspector.Dialog.currentInstance = function()
 }
 
 /**
- * @param {!Element} relativeToElement
+ * @param {?Element} relativeToElement
  * @param {!WebInspector.DialogDelegate} delegate
  */
 WebInspector.Dialog.show = function(relativeToElement, delegate)
 {
     if (WebInspector.Dialog._instance)
         return;
-    WebInspector.Dialog._instance = new WebInspector.Dialog(relativeToElement, delegate);
+    WebInspector.Dialog._instance = new WebInspector.Dialog(relativeToElement || WebInspector.Dialog.modalHostView().element, delegate);
 }
 
 WebInspector.Dialog.hide = function()

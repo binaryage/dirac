@@ -5,8 +5,11 @@
         "ui_lazy"
     ],
     "scripts": [
-        "CookiesTable.js"
+        "CookiesTable.js",
+        "FilmStripView.js"
     ],
     "resources": [
+        "filmStripDialog.css",
+        "filmStripView.css"
     ]
 }
