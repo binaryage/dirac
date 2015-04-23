@@ -214,6 +214,8 @@ WebInspector.SourceMap.prototype = {
     findEntryReversed: function(sourceURL, lineNumber, span)
     {
         var mappings = this._reverseMappingsBySourceURL[sourceURL];
+        if (!mappings)
+            return null;
         var maxLineNumber = typeof span === "number" ? Math.min(lineNumber + span + 1, mappings.length) : mappings.length;
         for ( ; lineNumber < maxLineNumber; ++lineNumber) {
             var mapping = mappings[lineNumber];
