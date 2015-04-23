@@ -136,6 +136,7 @@ WebInspector.ConsoleView = function()
 
     /** @type {!Array.<!WebInspector.ConsoleViewMessage>} */
     this._consoleMessages = [];
+    this._viewMessageSymbol = Symbol("viewMessage");
 
     this._prompt = new WebInspector.TextPromptWithHistory(WebInspector.ExecutionContextSelector.completionsForTextPromptInCurrentContext);
     this._prompt.setSuggestBoxEnabled(true);
@@ -206,6 +207,7 @@ WebInspector.ConsoleView.prototype = {
     {
         WebInspector.multitargetConsoleModel.addEventListener(WebInspector.ConsoleModel.Events.ConsoleCleared, this._consoleCleared, this);
         WebInspector.multitargetConsoleModel.addEventListener(WebInspector.ConsoleModel.Events.MessageAdded, this._onConsoleMessageAdded, this);
+        WebInspector.multitargetConsoleModel.addEventListener(WebInspector.ConsoleModel.Events.MessageUpdated, this._onConsoleMessageUpdated, this);
         WebInspector.multitargetConsoleModel.addEventListener(WebInspector.ConsoleModel.Events.CommandEvaluated, this._commandEvaluated, this);
         WebInspector.multitargetConsoleModel.messages().forEach(this._addConsoleMessage, this);
     },
@@ -560,6 +562,7 @@ WebInspector.ConsoleView.prototype = {
         if (message.type === WebInspector.ConsoleMessage.MessageType.Command || message.type === WebInspector.ConsoleMessage.MessageType.Result)
             message.timestamp = this._consoleMessages.length ? this._consoleMessages.peekLast().consoleMessage().timestamp : 0;
         var viewMessage = this._createViewMessage(message);
+        message[this._viewMessageSymbol] = viewMessage;
         var insertAt = insertionIndexForObjectInListSortedByFunction(viewMessage, this._consoleMessages, compareTimestamps, true);
         var insertedInMiddle = insertAt < this._consoleMessages.length;
         this._consoleMessages.splice(insertAt, 0, viewMessage);
@@ -579,6 +582,19 @@ WebInspector.ConsoleView.prototype = {
 
         this._scheduleViewportRefresh();
         this._consoleMessageAddedForTest(viewMessage);
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _onConsoleMessageUpdated: function(event)
+    {
+        var message = /** @type {!WebInspector.ConsoleMessage} */ (event.data);
+        var viewMessage = message[this._viewMessageSymbol];
+        if (viewMessage) {
+            viewMessage.updateMessageElement();
+            this._updateMessageList();
+        }
     },
 
     /**
@@ -1156,11 +1172,12 @@ WebInspector.ConsoleViewFilter.prototype = {
         filterBar.addFilter(this._textFilterUI);
 
         var levels = [
-            {name: "error", label: WebInspector.UIString("Errors")},
-            {name: "warning", label: WebInspector.UIString("Warnings")},
-            {name: "info", label: WebInspector.UIString("Info")},
-            {name: "log", label: WebInspector.UIString("Logs")},
-            {name: "debug", label: WebInspector.UIString("Debug")}
+            {name: WebInspector.ConsoleMessage.MessageLevel.Error, label: WebInspector.UIString("Errors")},
+            {name: WebInspector.ConsoleMessage.MessageLevel.Warning, label: WebInspector.UIString("Warnings")},
+            {name: WebInspector.ConsoleMessage.MessageLevel.Info, label: WebInspector.UIString("Info")},
+            {name: WebInspector.ConsoleMessage.MessageLevel.Log, label: WebInspector.UIString("Logs")},
+            {name: WebInspector.ConsoleMessage.MessageLevel.Debug, label: WebInspector.UIString("Debug")},
+            {name: WebInspector.ConsoleMessage.MessageLevel.RevokedError, label: WebInspector.UIString("Handled")}
         ];
         this._levelFilterUI = new WebInspector.NamedBitSetFilterUI(levels, this._messageLevelFiltersSetting);
         this._levelFilterUI.addEventListener(WebInspector.FilterUI.Events.FilterChanged, this._filterChanged, this);
