@@ -742,7 +742,8 @@
                 "properties": [
                     { "name": "header", "type": "string"},
                     { "name": "hasBody", "type": "boolean"},
-                    {"name": "formatterObjectId", "$ref": "RemoteObjectId"}
+                    {"name": "formatterObjectId", "$ref": "RemoteObjectId"},
+                    {"name": "configObjectId", "$ref": "RemoteObjectId", "optional": true}
                 ]
             },
             {

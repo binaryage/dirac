@@ -21,6 +21,11 @@ WebInspector.CustomPreviewSection = function(object)
         return;
     }
     this._header = this._renderJSONMLTag(headerJSON);
+    if (this._header.nodeType === Node.TEXT_NODE) {
+        WebInspector.console.error("Broken formatter: header should be an element node.");
+        return;
+    }
+
     if (customPreview.hasBody) {
         this._header.classList.add("custom-expandable-section-header");
         this._header.addEventListener("click", this._onClick.bind(this), false);
@@ -152,8 +157,12 @@ WebInspector.CustomPreviewSection.prototype = {
             parentElement.appendChild(this._renderJSONMLTag(jsonMLTags[i]));
     },
 
-    _onClick: function()
+    /**
+     * @param {!Event} event
+     */
+    _onClick: function(event)
     {
+        event.consume(true);
         if (this._cachedContent)
             this._toggleExpand();
         else
@@ -175,8 +184,9 @@ WebInspector.CustomPreviewSection.prototype = {
          * @suppress {undefinedVars}
          * @this {Object}
          * @param {*=} formatter
+         * @param {*=} config
          */
-        function load(formatter)
+        function load(formatter, config)
         {
             /**
              * @param {*} jsonMLObject
@@ -195,10 +205,11 @@ WebInspector.CustomPreviewSection.prototype = {
                 if (jsonMLObject[0] === "object") {
                     var attributes = jsonMLObject[1];
                     var originObject = attributes["object"];
+                    var config = attributes["config"];
                     if (typeof originObject === "undefined")
                         throw "Illegal format: obligatory attribute \"object\" isn't specified";
 
-                    jsonMLObject[1] = bindRemoteObject(originObject, false, false, null, false);
+                    jsonMLObject[1] = bindRemoteObject(originObject, false, false, null, false, config);
                     startIndex = 2;
                 }
                 for (var i = startIndex; i < jsonMLObject.length; ++i)
@@ -206,7 +217,7 @@ WebInspector.CustomPreviewSection.prototype = {
             }
 
             try {
-                var body = formatter.body(this);
+                var body = formatter.body(this, config);
                 substituteObjectTagsInCustomPreview(body);
                 return body;
             } catch (e) {
@@ -216,7 +227,10 @@ WebInspector.CustomPreviewSection.prototype = {
         }
 
         var customPreview = this._object.customPreview();
-        this._object.callFunctionJSON(load, [{objectId: customPreview.formatterObjectId}], onBodyLoaded.bind(this));
+        var args = [{objectId: customPreview.formatterObjectId}];
+        if (customPreview.configObjectId)
+            args.push({objectId: customPreview.configObjectId});
+        this._object.callFunctionJSON(load, args, onBodyLoaded.bind(this));
 
         /**
          * @param {*} bodyJsonML
