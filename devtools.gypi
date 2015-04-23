@@ -635,6 +635,7 @@
             'front_end/cm/closebrackets.js',
             'front_end/cm/codemirror.js',
             'front_end/cm/comment.js',
+            'front_end/cm/css.js',
             'front_end/cm/headlesscodemirror.js',
             'front_end/cm/htmlembedded.js',
             'front_end/cm/htmlmixed.js',
