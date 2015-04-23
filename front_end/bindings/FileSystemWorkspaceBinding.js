@@ -56,7 +56,7 @@ WebInspector.FileSystemWorkspaceBinding = function(isolatedFileSystemManager, wo
     InspectorFrontendHost.events.addEventListener(InspectorFrontendHostAPI.Events.SearchCompleted, this._onSearchCompleted, this);
 }
 
-WebInspector.FileSystemWorkspaceBinding._scriptExtensions = ["js", "java", "coffee", "ts", "dart"].keySet();
+WebInspector.FileSystemWorkspaceBinding._scriptExtensions = ["js", "java", "coffee", "ts", "dart", "hx"].keySet();
 WebInspector.FileSystemWorkspaceBinding._styleSheetExtensions = ["css", "scss", "sass", "less"].keySet();
 WebInspector.FileSystemWorkspaceBinding._documentExtensions = ["htm", "html", "asp", "aspx", "phtml", "jsp"].keySet();
 
