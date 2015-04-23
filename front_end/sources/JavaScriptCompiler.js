@@ -68,7 +68,7 @@ WebInspector.JavaScriptCompiler.prototype = {
             }
             if (!exceptionDetails)
                 return;
-            var message = new WebInspector.SourceFrameMessage(exceptionDetails.text, WebInspector.SourceFrameMessage.Level.Error, exceptionDetails.line - 1, exceptionDetails.column);
+            var message = new WebInspector.SourceFrameMessage(exceptionDetails.text, WebInspector.SourceFrameMessage.Level.Error, exceptionDetails.line - 1, exceptionDetails.column + 1);
             this._sourceFrame.addMessageToSource(message);
             this._compilationFinishedForTest();
         }

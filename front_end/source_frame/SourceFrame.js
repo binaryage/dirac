@@ -111,7 +111,7 @@ WebInspector.SourceFrame.prototype = {
         this._editorAttached = true;
         for (var line in this._rowMessageBuckets) {
             var bucket = this._rowMessageBuckets[line];
-            bucket._updateDecorationPosition();
+            bucket._updateDecoration();
         }
         this._wasShownOrLoaded();
     },
@@ -854,24 +854,21 @@ WebInspector.SourceFrame.RowMessageBucket = function(sourceFrame, textEditor, li
     /** @type {!Array.<!WebInspector.SourceFrame.RowMessage>} */
     this._messages = [];
 
-    this._updateDecorationPosition();
-
     this._level = null;
 }
 
 WebInspector.SourceFrame.RowMessageBucket.prototype = {
-    _updateDecorationPosition: function()
+    /**
+     * @param {number} lineNumber
+     * @param {number} columnNumber
+     */
+    _updateWavePosition: function(lineNumber, columnNumber)
     {
-        if (!this._sourceFrame._isEditorShowing())
-            return;
-        var position = this._lineHandle.resolve();
-        if (!position)
-            return;
-        var lineNumber = position.lineNumber;
         var lineText = this._textEditor.line(lineNumber);
         var lineIndent = WebInspector.TextUtils.lineIndent(lineText).length;
         var base = this._textEditor.cursorPositionToCoordinates(lineNumber, 0);
-        var start = this._textEditor.cursorPositionToCoordinates(lineNumber, lineIndent);
+
+        var start = this._textEditor.cursorPositionToCoordinates(lineNumber, columnNumber - 1);
         var end = this._textEditor.cursorPositionToCoordinates(lineNumber, lineText.length);
         /** @const */
         var codeMirrorLinesLeftPadding = 4;
@@ -925,7 +922,7 @@ WebInspector.SourceFrame.RowMessageBucket.prototype = {
 
         var rowMessage = new WebInspector.SourceFrame.RowMessage(message);
         this._messages.push(rowMessage);
-        this._updateBucketLevel();
+        this._updateDecoration();
     },
 
     /**
@@ -940,13 +937,15 @@ WebInspector.SourceFrame.RowMessageBucket.prototype = {
             rowMessage.setRepeatCount(rowMessage.repeatCount() - 1);
             if (!rowMessage.repeatCount())
                 this._messages.splice(i, 1);
-            this._updateBucketLevel();
+            this._updateDecoration();
             return;
         }
     },
 
-    _updateBucketLevel: function()
+    _updateDecoration: function()
     {
+        if (!this._sourceFrame._isEditorShowing())
+            return;
         if (!this._messages.length)
             return;
         var position = this._lineHandle.resolve();
@@ -954,12 +953,15 @@ WebInspector.SourceFrame.RowMessageBucket.prototype = {
             return;
 
         var lineNumber = position.lineNumber;
+        var columnNumber = Number.MAX_VALUE;
         var maxMessage = null;
         for (var i = 0; i < this._messages.length; ++i) {
             var message = this._messages[i].message();
+            columnNumber = Math.min(columnNumber, message.columnNumber());
             if (!maxMessage || WebInspector.SourceFrameMessage.messageLevelComparator(maxMessage, message) < 0)
                 maxMessage = message;
         }
+        this._updateWavePosition(lineNumber, columnNumber);
 
         if (this._level) {
             this._textEditor.toggleLineClass(lineNumber, WebInspector.SourceFrame._lineClassPerLevel[this._level], false);

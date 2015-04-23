@@ -384,7 +384,7 @@ WebInspector.JavaScriptSourceFrame.prototype = {
             var compileError = errorData.compileError;
             if (compileError) {
                 var messageText = WebInspector.UIString("LiveEdit compile failed: %s", compileError.message);
-                var message = new WebInspector.SourceFrameMessage(messageText, WebInspector.SourceFrameMessage.Level.Error, compileError.lineNumber - 1, compileError.columnNumber);
+                var message = new WebInspector.SourceFrameMessage(messageText, WebInspector.SourceFrameMessage.Level.Error, compileError.lineNumber - 1, compileError.columnNumber + 1);
                 this.addMessageToSource(message);
             } else {
                 WebInspector.console.addMessage(WebInspector.UIString("Unknown LiveEdit error: %s; %s", JSON.stringify(errorData), error), warningLevel);
