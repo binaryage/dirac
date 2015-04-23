@@ -789,8 +789,7 @@ WebInspector.__defineGetter__("inspectedPageURL", function()
  */
 WebInspector.Main.WarningErrorCounter = function()
 {
-    this._counter = new WebInspector.ToolbarCounter(["error-icon", "revokedError-icon", "warning-icon"]);
-    WebInspector.Main.WarningErrorCounter._instanceForTest = this._counter;
+    this._counter = new WebInspector.ToolbarCounter(["error-icon", "warning-icon"]);
     this._counter.addEventListener("click", showConsole);
 
     function showConsole()
@@ -806,17 +805,14 @@ WebInspector.Main.WarningErrorCounter.prototype = {
     _updateErrorAndWarningCounts: function()
     {
         var errors = 0;
-        var revokedErrors = 0;
         var warnings = 0;
         var targets = WebInspector.targetManager.targets();
         for (var i = 0; i < targets.length; ++i) {
-            errors += targets[i].consoleModel.errors();
-            revokedErrors += targets[i].consoleModel.revokedErrors();
-            warnings += targets[i].consoleModel.warnings();
+            errors = errors + targets[i].consoleModel.errors;
+            warnings = warnings + targets[i].consoleModel.warnings;
         }
-        this._counter.setCounter("error-icon", errors, WebInspector.UIString(errors === 1 ? "%d errors" : "%d error", errors));
-        this._counter.setCounter("revokedError-icon", revokedErrors, WebInspector.UIString(revokedErrors === 1 ? "%d handled promise rejections" : "%d handled promise rejection", revokedErrors));
-        this._counter.setCounter("warning-icon", warnings, WebInspector.UIString(warnings === 1 ? "%d warnings" : "%d warning", warnings));
+        this._counter.setCounter("error-icon", errors, WebInspector.UIString(errors > 1 ? "%d errors" : "%d error", errors));
+        this._counter.setCounter("warning-icon", warnings, WebInspector.UIString(warnings > 1 ? "%d warnings" : "%d warning", warnings));
         WebInspector.inspectorView.toolbarItemResized();
     },
 
