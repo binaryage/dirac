@@ -268,13 +268,6 @@ WebInspector.ElementsPanel.prototype = {
         var node = /** @type {!WebInspector.DOMNode} */ (event.data["node"]);
         this._treeOutlineForNode(node).updateOpenCloseTags(node);
         this._updateCSSSidebars();
-
-        WebInspector.notifications.dispatchEventToListeners(WebInspector.UserMetrics.UserAction, {
-            action: WebInspector.UserMetrics.UserActionNames.ForcedElementState,
-            selector: WebInspector.DOMPresentationUtils.fullQualifiedSelector(node, false),
-            enabled: event.data["enable"],
-            state: event.data["pseudoClass"]
-        });
     },
 
     /**

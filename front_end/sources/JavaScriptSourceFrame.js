@@ -1099,13 +1099,6 @@ WebInspector.JavaScriptSourceFrame.prototype = {
     _setBreakpoint: function(lineNumber, columnNumber, condition, enabled)
     {
         this._breakpointManager.setBreakpoint(this._uiSourceCode, lineNumber, columnNumber, condition, enabled);
-
-        WebInspector.notifications.dispatchEventToListeners(WebInspector.UserMetrics.UserAction, {
-            action: WebInspector.UserMetrics.UserActionNames.SetBreakpoint,
-            url: this._uiSourceCode.originURL(),
-            line: lineNumber,
-            enabled: enabled
-        });
     },
 
     /**

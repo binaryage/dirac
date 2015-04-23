@@ -741,11 +741,6 @@ WebInspector.HeapSnapshotView.prototype = {
         var profileIndex = this._filterSelect.selectedIndex() - 1;
         this._dataGrid.filterSelectIndexChanged(this._profiles(), profileIndex);
 
-        WebInspector.notifications.dispatchEventToListeners(WebInspector.UserMetrics.UserAction, {
-            action: WebInspector.UserMetrics.UserActionNames.HeapSnapshotFilterChanged,
-            label: this._filterSelect.selectedOption().label
-        });
-
         if (!this.currentQuery || !this._searchResults)
             return;
 
@@ -883,12 +878,6 @@ WebInspector.HeapSnapshotView.prototype = {
     _onSelectedPerspectiveChanged: function(event)
     {
         this._changePerspective(event.target.selectedIndex);
-        // FIXME: This is needed by CodeSchool extension.
-        this._onSelectedViewChanged(event);
-    },
-
-    _onSelectedViewChanged: function(event)
-    {
     },
 
     /**

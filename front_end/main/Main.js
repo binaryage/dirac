@@ -161,11 +161,8 @@ WebInspector.Main.prototype = {
         Object.observe(prefs, trackPrefsObject);
         WebInspector.settings = new WebInspector.Settings(prefs);
 
-        if (!InspectorFrontendHost.isUnderTest()) {
-            // This setting is needed for backwards compatibility with Devtools CodeSchool extension. DO NOT REMOVE
-            WebInspector.settings.pauseOnExceptionStateString = new WebInspector.PauseOnExceptionStateSetting();
+        if (!InspectorFrontendHost.isUnderTest())
             new WebInspector.VersionController().updateVersion();
-        }
 
         this._createAppUI();
     },
@@ -774,14 +771,6 @@ WebInspector.Main._addWebSocketTarget = function(ws)
     }
     new InspectorBackendClass.WebSocketConnection(ws, callback);
 }
-
-// These methods are added for backwards compatibility with Devtools CodeSchool extension.
-// DO NOT REMOVE
-
-WebInspector.__defineGetter__("inspectedPageURL", function()
-{
-    return WebInspector.targetManager.inspectedPageURL();
-});
 
 /**
  * @constructor

@@ -322,11 +322,6 @@ WebInspector.SourcesView.prototype = {
         this._historyManager.pushNewState();
         if (!omitFocus)
             sourceFrame.focus();
-        WebInspector.notifications.dispatchEventToListeners(WebInspector.UserMetrics.UserAction, {
-            action: WebInspector.UserMetrics.UserActionNames.OpenSourceLink,
-            url: uiSourceCode.originURL(),
-            lineNumber: lineNumber
-        });
     },
 
     /**

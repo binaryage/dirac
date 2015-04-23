@@ -73,22 +73,6 @@ WebInspector.UserMetrics._PanelCodes = {
     layers: 9
 }
 
-WebInspector.UserMetrics.UserAction = "UserAction";
-
-WebInspector.UserMetrics.UserActionNames = {
-    ForcedElementState: "forcedElementState",
-    FileSaved: "fileSaved",
-    RevertRevision: "revertRevision",
-    ApplyOriginalContent: "applyOriginalContent",
-    TogglePrettyPrint: "togglePrettyPrint",
-    SetBreakpoint: "setBreakpoint",
-    OpenSourceLink: "openSourceLink",
-    NetworkSort: "networkSort",
-    NetworkRequestSelected: "networkRequestSelected",
-    NetworkRequestTabSelected: "networkRequestTabSelected",
-    HeapSnapshotFilterChanged: "heapSnapshotFilterChanged"
-};
-
 WebInspector.UserMetrics.prototype = {
     /**
      * @param {string} panelName

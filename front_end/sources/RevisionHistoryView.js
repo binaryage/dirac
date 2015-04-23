@@ -120,11 +120,6 @@ WebInspector.RevisionHistoryView.prototype = {
     _revertToOriginal: function(uiSourceCode)
     {
         uiSourceCode.revertToOriginal();
-
-        WebInspector.notifications.dispatchEventToListeners(WebInspector.UserMetrics.UserAction, {
-            action: WebInspector.UserMetrics.UserActionNames.ApplyOriginalContent,
-            url: WebInspector.networkMapping.networkURL(uiSourceCode)
-        });
     },
 
     /**
@@ -133,11 +128,6 @@ WebInspector.RevisionHistoryView.prototype = {
     _clearHistory: function(uiSourceCode)
     {
         uiSourceCode.revertAndClearHistory(this._removeUISourceCode.bind(this));
-
-        WebInspector.notifications.dispatchEventToListeners(WebInspector.UserMetrics.UserAction, {
-            action: WebInspector.UserMetrics.UserActionNames.RevertRevision,
-            url: WebInspector.networkMapping.networkURL(uiSourceCode)
-        });
     },
 
     _revisionAdded: function(event)

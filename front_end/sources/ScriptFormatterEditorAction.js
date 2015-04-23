@@ -266,12 +266,6 @@ WebInspector.ScriptFormatterEditorAction.prototype = {
         if (!this._isFormatableScript(uiSourceCode))
             return;
         this._formatUISourceCodeScript(uiSourceCode);
-
-        WebInspector.notifications.dispatchEventToListeners(WebInspector.UserMetrics.UserAction, {
-            action: WebInspector.UserMetrics.UserActionNames.TogglePrettyPrint,
-            enabled: true,
-            url: uiSourceCode.originURL()
-        });
     },
 
     /**

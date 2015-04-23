@@ -594,12 +594,6 @@ WebInspector.NetworkLogView.prototype = {
         this._dataGrid.sortNodes(sortingFunction, !this._dataGrid.isSortOrderAscending());
         this._highlightNthMatchedRequestForSearch(this._updateMatchCountAndFindMatchIndex(this._currentMatchedRequestNode), false);
         this._timelineSortSelector.selectedIndex = 0;
-
-        WebInspector.notifications.dispatchEventToListeners(WebInspector.UserMetrics.UserAction, {
-            action: WebInspector.UserMetrics.UserActionNames.NetworkSort,
-            column: columnIdentifier,
-            sortOrder: this._dataGrid.sortOrder()
-        });
     },
 
     _sortByTimeline: function()
