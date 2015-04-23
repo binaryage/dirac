@@ -247,16 +247,28 @@ WebInspector.AnimationTimeline.prototype = {
 
     _renderGrid: function()
     {
+        const gridSize = 250;
         this._grid.setAttribute("width", this._cachedTimelineWidth);
         this._grid.setAttribute("height", "100%");
         this._grid.setAttribute("shape-rendering", "crispEdges");
         this._grid.removeChildren();
-        for (var time = 250; time < this.duration(); time += 250) {
+        var lastDraw = undefined;
+        for (var time = gridSize; time < this.duration(); time += gridSize) {
             var line = this._grid.createSVGChild("rect", "animation-timeline-grid-line");
             line.setAttribute("x", time * this.pixelMsRatio());
             line.setAttribute("y", 0);
             line.setAttribute("height", "100%");
             line.setAttribute("width", 1);
+        }
+        for (var time = gridSize; time < this.duration(); time += gridSize) {
+            var gridWidth = time * this.pixelMsRatio();
+            if (!lastDraw || gridWidth - lastDraw > 50) {
+                lastDraw = gridWidth;
+                var label = this._grid.createSVGChild("text", "animation-timeline-grid-label");
+                label.setAttribute("x", gridWidth + 5);
+                label.setAttribute("y", 35);
+                label.innerHTML = WebInspector.UIString(Number.millisToString(time));
+            }
         }
     },
 

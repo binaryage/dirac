@@ -276,3 +276,7 @@ svg.animation-ui.animation-ui-canceled {
     stroke-opacity: 0.3;
 }
 
+text.animation-timeline-grid-label {
+    font-size: 10px;
+    fill: #999;
+}
