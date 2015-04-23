@@ -577,7 +577,7 @@ WebInspector.HeapSnapshotGenericObjectNode.prototype = {
             valueStyle = "string";
             break;
         case "closure":
-            value = "function" + (value ? " " : "") + value + "()";
+            value = value + "()";
             valueStyle = "function";
             break;
         case "number":
