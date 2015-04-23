@@ -331,7 +331,12 @@ WebInspector.TimelineJSProfileProcessor.processRawV8Samples = function(events)
         return codeMap.lookupEntry(address) || unknownFrame;
     }
 
-    var reName = /^(\S*:)?~?(\S*)(?: (\S*))?$/;
+    // Code states:
+    // (empty) -> compiled
+    //    ~    -> optimizable
+    //    *    -> optimized
+    var reName = /^(\S*:)?[*~]?(\S*)(?: (\S*))?$/;
+
     /**
      * @param {string} name
      * @param {number} scriptId
