@@ -192,7 +192,7 @@ WebInspector.ConsoleViewMessage.prototype = {
             } else if (consoleMessage.source === WebInspector.ConsoleMessage.MessageSource.Network) {
                 if (consoleMessage.request) {
                     this._messageElement = createElement("span");
-                    if (consoleMessage.level === WebInspector.ConsoleMessage.MessageLevel.Error) {
+                    if (consoleMessage.level === WebInspector.ConsoleMessage.MessageLevel.Error || consoleMessage.level === WebInspector.ConsoleMessage.MessageLevel.RevokedError) {
                         this._messageElement.createTextChildren(consoleMessage.request.requestMethod, " ");
                         this._messageElement.appendChild(WebInspector.Linkifier.linkifyUsingRevealer(consoleMessage.request, consoleMessage.request.url, consoleMessage.request.url));
                         if (consoleMessage.request.failed)
@@ -237,7 +237,7 @@ WebInspector.ConsoleViewMessage.prototype = {
             this._formattedMessage.insertBefore(this._anchorElement, this._formattedMessage.firstChild);
         }
 
-        var dumpStackTrace = !!consoleMessage.stackTrace && consoleMessage.stackTrace.length && (consoleMessage.source === WebInspector.ConsoleMessage.MessageSource.Network || consoleMessage.level === WebInspector.ConsoleMessage.MessageLevel.Error || consoleMessage.type === WebInspector.ConsoleMessage.MessageType.Trace);
+        var dumpStackTrace = !!consoleMessage.stackTrace && consoleMessage.stackTrace.length && (consoleMessage.source === WebInspector.ConsoleMessage.MessageSource.Network || consoleMessage.level === WebInspector.ConsoleMessage.MessageLevel.Error || consoleMessage.level === WebInspector.ConsoleMessage.MessageLevel.RevokedError || consoleMessage.type === WebInspector.ConsoleMessage.MessageType.Trace);
         if (dumpStackTrace) {
             var treeOutline = new TreeOutline();
             treeOutline.element.classList.add("outline-disclosure", "outline-disclosure-no-padding");
@@ -319,14 +319,6 @@ WebInspector.ConsoleViewMessage.prototype = {
         return this._linkifier.linkifyScriptLocation(target, scriptId, url, lineNumber, columnNumber, "console-message-url");
     },
 
-    /**
-     * @return {boolean}
-     */
-    isErrorOrWarning: function()
-    {
-        return (this._message.level === WebInspector.ConsoleMessage.MessageLevel.Warning || this._message.level === WebInspector.ConsoleMessage.MessageLevel.Error);
-    },
-
     _format: function(parameters)
     {
         // This node is used like a Builder. Values are continually appended onto it.
@@ -355,7 +347,7 @@ WebInspector.ConsoleViewMessage.prototype = {
         }
 
         // There can be string log and string eval result. We distinguish between them based on message type.
-        var shouldFormatMessage = WebInspector.RemoteObject.type(parameters[0]) === "string" && (this._message.type !== WebInspector.ConsoleMessage.MessageType.Result || this._message.level === WebInspector.ConsoleMessage.MessageLevel.Error);
+        var shouldFormatMessage = WebInspector.RemoteObject.type(parameters[0]) === "string" && (this._message.type !== WebInspector.ConsoleMessage.MessageType.Result || this._message.level === WebInspector.ConsoleMessage.MessageLevel.Error || this._message.level === WebInspector.ConsoleMessage.MessageLevel.RevokedError);
 
         // Multiple parameters with the first being a format string. Save unused substitutions.
         if (shouldFormatMessage) {
@@ -944,7 +936,19 @@ WebInspector.ConsoleViewMessage.prototype = {
         if (this._wrapperElement)
             return this._wrapperElement;
 
-        this._wrapperElement = createElementWithClass("div", "console-message-wrapper");
+        this._wrapperElement = createElement("div");
+        this.updateMessageElement();
+        return this._wrapperElement;
+    },
+
+    updateMessageElement: function()
+    {
+        if (!this._wrapperElement)
+            return;
+
+        this._wrapperElement.className = "console-message-wrapper";
+        this._wrapperElement.removeChildren();
+
         this._nestingLevelMarkers = [];
         for (var i = 0; i < this._nestingLevel; ++i)
             this._nestingLevelMarkers.push(this._wrapperElement.createChild("div", "nesting-level-marker"));
@@ -964,13 +968,15 @@ WebInspector.ConsoleViewMessage.prototype = {
         case WebInspector.ConsoleMessage.MessageLevel.Error:
             this._wrapperElement.classList.add("console-error-level");
             break;
+        case WebInspector.ConsoleMessage.MessageLevel.RevokedError:
+            this._wrapperElement.classList.add("console-revokedError-level");
+            break;
         case WebInspector.ConsoleMessage.MessageLevel.Info:
             this._wrapperElement.classList.add("console-info-level");
             break;
         }
 
         this._wrapperElement.appendChild(this.contentElement());
-        return this._wrapperElement;
     },
 
     /**
@@ -1105,6 +1111,9 @@ WebInspector.ConsoleViewMessage.prototype = {
                 break;
             case WebInspector.ConsoleMessage.MessageLevel.Error:
                 levelString = "Error";
+                break;
+            case WebInspector.ConsoleMessage.MessageLevel.RevokedError:
+                levelString = "RevokedError";
                 break;
             case WebInspector.ConsoleMessage.MessageLevel.Info:
                 levelString = "Info";

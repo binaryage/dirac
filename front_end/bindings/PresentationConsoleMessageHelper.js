@@ -217,6 +217,8 @@ WebInspector.PresentationConsoleMessageHelper.prototype = {
         for (var i = 0; i < messages.length; i++) {
             var message = messages[i];
             var rawLocation = this._rawLocation(message);
+            if (!rawLocation)
+                continue;
             if (script.target() === message.target() && script.scriptId === rawLocation.scriptId)
                 this._addConsoleMessageToScript(message, rawLocation);
             else

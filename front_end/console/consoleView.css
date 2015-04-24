@@ -152,6 +152,7 @@
 }
 
 .console-error-level .repeated-message::before,
+.console-revokedError-level .repeated-message::before,
 .console-warning-level .repeated-message::before,
 .console-debug-level .repeated-message::before,
 .console-info-level .repeated-message::before {
@@ -165,6 +166,7 @@
 
 .console-warning-level .repeated-message,
 .console-error-level .repeated-message,
+.console-revokedError-level .repeated-message,
 .console-log-level .repeated-message,
 .console-debug-level .repeated-message,
 .console-info-level .repeated-message {
@@ -246,8 +248,7 @@
 }
 
 .console-message-wrapper:last-child .nesting-level-marker::before,
-.console-message-wrapper .nesting-level-marker.group-closed::before
-{
+.console-message-wrapper .nesting-level-marker.group-closed::before {
     content: "";
 }
 
@@ -288,6 +289,7 @@
 }
 
 .console-error-level .console-message::before,
+.console-revokedError-level .console-message::before,
 .console-warning-level .console-message::before,
 .console-debug-level .console-message::before,
 .console-info-level .console-message::before {
@@ -299,6 +301,7 @@
 
 @media (-webkit-min-device-pixel-ratio: 1.5) {
 .console-error-level .console-message::before,
+.console-revokedError-level .console-message::before,
 .console-warning-level .console-message::before,
 .console-debug-level .console-message::before,
 .console-info-level .console-message::before {
@@ -312,6 +315,10 @@
 
 .console-error-level .console-message::before {
     background-position: -213px -96px;
+}
+
+.console-revokedError-level .console-message::before {
+    background-position: -245px -107px;
 }
 
 .console-info-level .console-message::before {
