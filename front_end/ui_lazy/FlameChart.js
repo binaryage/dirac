@@ -44,7 +44,7 @@ WebInspector.FlameChartDelegate.prototype = {
      * @param {number} startTime
      * @param {number} endTime
      */
-    updateBoxSelection: function(startTime, endTime) { }
+    updateRangeSelection: function(startTime, endTime) { }
 }
 
 /**
@@ -542,16 +542,17 @@ WebInspector.FlameChart.prototype = {
 
     /**
      * @param {!MouseEvent} event
+     * @return {boolean}
      */
     _startCanvasDragging: function(event)
     {
+        if (!this._timelineData() || this._timeWindowRight === Infinity)
+            return false;
         if (event.shiftKey) {
-            this._startBoxSelection(event);
+            this._startRangeSelection(event);
             this._isDragging = true;
             return true;
         }
-        if (!this._timelineData() || this._timeWindowRight === Infinity)
-            return false;
         this._isDragging = true;
         this._maxDragOffset = 0;
         this._dragStartPointX = event.pageX;
@@ -570,7 +571,7 @@ WebInspector.FlameChart.prototype = {
     _canvasDragging: function(event)
     {
         if (this._isSelecting) {
-            this._updateBoxSelection(event);
+            this._updateRangeSelection(event);
             return;
         }
         var pixelShift = this._dragStartPointX - event.pageX;
@@ -586,35 +587,28 @@ WebInspector.FlameChart.prototype = {
 
     _endCanvasDragging: function()
     {
-        this._hideBoxSelection();
+        this._hideRangeSelection();
         this._isDragging = false;
     },
 
     /**
      * @param {!MouseEvent} event
      */
-    _startBoxSelection: function(event)
+    _startRangeSelection: function(event)
     {
         this._selectionOffsetShiftX = event.offsetX - event.pageX;
         this._selectionOffsetShiftY = event.offsetY - event.pageY;
         this._selectionStartX = event.offsetX;
-        this._selectionStartY = event.offsetY;
         this._isSelecting = true;
         var style = this._selectionOverlay.style;
         style.left = this._selectionStartX + "px";
-        style.top = this._selectionStartY + "px";
         style.width = "1px";
-        style.height = "1px";
         this._selectedTimeSpanLabel.textContent = "";
         this._selectionOverlay.classList.remove("hidden");
     },
 
-    _hideBoxSelection: function()
+    _hideRangeSelection: function()
     {
-        this._selectionOffsetShiftX = null;
-        this._selectionOffsetShiftY = null;
-        this._selectionStartX = null;
-        this._selectionStartY = null;
         this._isSelecting = false;
         this._selectionOverlay.classList.add("hidden");
     },
@@ -622,27 +616,22 @@ WebInspector.FlameChart.prototype = {
     /**
      * @param {!MouseEvent} event
      */
-    _updateBoxSelection: function(event)
+    _updateRangeSelection: function(event)
     {
         var x = event.pageX + this._selectionOffsetShiftX;
         var y = event.pageY + this._selectionOffsetShiftY;
         x = Number.constrain(x, 0, this._offsetWidth);
         y = Number.constrain(y, 0, this._offsetHeight);
         var style = this._selectionOverlay.style;
+        style.paddingTop = y + "px";
         style.left = Math.min(x, this._selectionStartX) + "px";
-        style.top = Math.min(y, this._selectionStartY) + "px";
         var selectionWidth = Math.abs(x - this._selectionStartX);
         style.width =  selectionWidth + "px";
-        style.height = Math.abs(y - this._selectionStartY) + "px";
-
         var timeSpan = selectionWidth * this._pixelToTime;
-        this._selectedTimeSpanLabel.textContent =  Number.preciseMillisToString(timeSpan, 2);
+        this._selectedTimeSpanLabel.textContent = Number.preciseMillisToString(timeSpan, 2);
         var start = this._cursorTime(this._selectionStartX);
         var end = this._cursorTime(x);
-        if (end > start)
-            this._flameChartDelegate.updateBoxSelection(start, end);
-        else
-            this._flameChartDelegate.updateBoxSelection(end, start);
+        this._flameChartDelegate.updateRangeSelection(Math.min(start, end), Math.max(start, end));
     },
 
     /**

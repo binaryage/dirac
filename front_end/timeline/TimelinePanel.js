@@ -1418,7 +1418,7 @@ WebInspector.TimelineDetailsView.BottomUpChartView.prototype = {
      * @param {number} startTime
      * @param {number} endTime
      */
-    updateBoxSelection: function(startTime, endTime)
+    updateRangeSelection: function(startTime, endTime)
     {
     },
 

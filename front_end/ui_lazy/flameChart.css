@@ -46,9 +46,12 @@
     z-index: 100;
     background-color: rgba(56, 121, 217, 0.3);
     border-color: rgb(16, 81, 177);
-    border-width: 1px;
+    border-width: 0 1px;
     border-style: solid;
-    pointer-events:none;
+    pointer-events: none;
+    top: 0;
+    bottom: 0;
+    text-align: center;
 }
 
 .flame-chart-selection-overlay .time-span {

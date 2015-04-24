@@ -1455,7 +1455,7 @@ WebInspector.TimelineFlameChartView.prototype = {
      * @param {number} startTime
      * @param {number} endTime
      */
-    updateBoxSelection: function(startTime, endTime)
+    updateRangeSelection: function(startTime, endTime)
     {
         this._delegate.select(WebInspector.TimelineSelection.fromRange(startTime, endTime));
     },
