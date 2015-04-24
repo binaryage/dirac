@@ -81,7 +81,7 @@ WebInspector.TimelineJSProfileProcessor.generateJSFrameEvents = function(events)
 
     var jsFrameEvents = [];
     var jsFramesStack = [];
-    var lockedJsFramesCount = [];
+    var lockedJsStackDepth = [];
     var invocationEventsDepth = 0;
     var currentSamplingIntervalMs = 0.1;
     var lastStackSampleTime = 0;
@@ -111,7 +111,7 @@ WebInspector.TimelineJSProfileProcessor.generateJSFrameEvents = function(events)
     {
         extractStackTrace(e);
         // For the duration of the event we cannot go beyond the stack associated with it.
-        lockedJsFramesCount.push(jsFramesStack.length);
+        lockedJsStackDepth.push(jsFramesStack.length);
         if (isJSInvocationEvent(e))
             ++invocationEventsDepth;
     }
@@ -131,36 +131,32 @@ WebInspector.TimelineJSProfileProcessor.generateJSFrameEvents = function(events)
      */
     function onEndEvent(e)
     {
-        lockedJsFramesCount.pop();
-        if (!isJSInvocationEvent(e))
-            return;
-        --invocationEventsDepth;
-        var eventData = e.args["data"] || e.args["beginData"];
-        var stackTrace = eventData && eventData["stackTrace"];
-        truncateJSStack(stackTrace ? stackTrace.length : 0, e.endTime);
+        if (isJSInvocationEvent(e))
+            --invocationEventsDepth;
+        truncateJSStack(lockedJsStackDepth.pop(), e.endTime);
     }
 
     /**
-     * @param {number} size
+     * @param {number} depth
      * @param {number} time
      */
-    function truncateJSStack(size, time)
+    function truncateJSStack(depth, time)
     {
-        if (lockedJsFramesCount.length) {
-            var lockedCount = lockedJsFramesCount.peekLast();
-            if (size < lockedCount) {
-                console.error("Child stack is shallower than the parent stack at " + time);
-                size = lockedCount;
+        if (lockedJsStackDepth.length) {
+            var lockedDepth = lockedJsStackDepth.peekLast();
+            if (depth < lockedDepth) {
+                console.error("Child stack is shallower (" + depth + ") than the parent stack (" + lockedDepth + ") at " + time);
+                depth = lockedDepth;
             }
         }
-        if (jsFramesStack.length < size) {
+        if (jsFramesStack.length < depth) {
             console.error("Trying to truncate higher than the current stack size at " + time);
-            size = jsFramesStack.length;
+            depth = jsFramesStack.length;
         }
         var minFrameDurationMs = currentSamplingIntervalMs / 2;
-        for (var k = size; k < jsFramesStack.length; ++k)
+        for (var k = depth; k < jsFramesStack.length; ++k)
             jsFramesStack[k].setEndTime(Math.min(eventEndTime(jsFramesStack[k]) + minFrameDurationMs, time));
-        jsFramesStack.length = size;
+        jsFramesStack.length = depth;
     }
 
     /**
@@ -179,7 +175,7 @@ WebInspector.TimelineJSProfileProcessor.generateJSFrameEvents = function(events)
         var numFrames = stackTrace.length;
         var minFrames = Math.min(numFrames, jsFramesStack.length);
         var i;
-        for (i = lockedJsFramesCount.peekLast() || 0; i < minFrames; ++i) {
+        for (i = lockedJsStackDepth.peekLast() || 0; i < minFrames; ++i) {
             var newFrame = stackTrace[numFrames - 1 - i];
             var oldFrame = jsFramesStack[i].args["data"];
             if (!equalFrames(newFrame, oldFrame))
