@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/** @typedef {{imageData: string, timestamp: number}}*/
-WebInspector.FilmStripFrame;
-
 /**
  * @constructor
  * @extends {WebInspector.HBox}
@@ -12,7 +9,6 @@ WebInspector.FilmStripFrame;
 WebInspector.FilmStripView = function()
 {
     WebInspector.HBox.call(this, true);
-    this.element.classList.add("flex-none");
     this.registerRequiredCSS("components_lazy/filmStripView.css");
     this.contentElement.classList.add("film-strip-view");
     this.reset();
@@ -29,7 +25,7 @@ WebInspector.FilmStripView.prototype = {
      */
     setFramesFromModel: function(tracingModel, zeroTime)
     {
-        var frames = this._extractFrames(tracingModel);
+        var frames = new WebInspector.FilmStripModel(tracingModel).frames();
         if (!frames.length) {
             this.reset();
             return;
@@ -43,37 +39,9 @@ WebInspector.FilmStripView.prototype = {
             element.createChild("div", "thumbnail").createChild("img").src = "data:image/jpg;base64," + frames[i].imageData;
             element.createChild("div", "time").textContent = Number.millisToString(frames[i].timestamp - zeroTime);
             element.addEventListener("mousedown", this._onMouseDown.bind(this, frames[i].timestamp), false);
-            element.addEventListener("dblclick", this._onDoubleClick.bind(this, frames, i), false);
+            element.addEventListener("dblclick", this._onDoubleClick.bind(this, frames[i]), false);
             this.contentElement.appendChild(element);
         }
-    },
-
-    /**
-     * @param {!WebInspector.TracingModel} tracingModel
-     * @return {!Array<!WebInspector.FilmStripFrame>}
-     */
-    _extractFrames: function(tracingModel)
-    {
-        /** @type {!Array<!WebInspector.FilmStripFrame>} */
-        var frames = [];
-
-        var browserProcess = tracingModel.processByName("Browser");
-        if (!browserProcess)
-            return [];
-        var mainThread = browserProcess.threadByName("CrBrowserMain");
-        if (!mainThread)
-            return [];
-
-        var events = mainThread.events();
-        for (var i = 0; i < events.length; ++i) {
-            if (events[i].category === "disabled-by-default-devtools.screenshot" && events[i].name === "CaptureFrame") {
-                var data = events[i].args.data;
-                if (!data)
-                    continue;
-                frames.push({ imageData: data, timestamp: events[i].startTime });
-            }
-        }
-        return frames;
     },
 
     /**
@@ -85,12 +53,11 @@ WebInspector.FilmStripView.prototype = {
     },
 
     /**
-     * @param {!Array<!{imageData: string, timestamp: number}>} frames
-     * @param {number} index
+     * @param {!WebInspector.FilmStripModel.Frame} filmStripFrame
      */
-    _onDoubleClick: function(frames, index)
+    _onDoubleClick: function(filmStripFrame)
     {
-        WebInspector.Dialog.show(null, new WebInspector.FilmStripView.DialogDelegate(frames, index, this._zeroTime));
+        WebInspector.Dialog.show(null, new WebInspector.FilmStripView.DialogDelegate(filmStripFrame, this._zeroTime));
     },
 
     reset: function()
@@ -113,11 +80,10 @@ WebInspector.FilmStripView.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.DialogDelegate}
- * @param {!Array<!WebInspector.FilmStripFrame>} frames
- * @param {number} index
- * @param {number} zeroTime
+ * @param {!WebInspector.FilmStripModel.Frame} filmStripFrame
+ * @param {number=} zeroTime
  */
-WebInspector.FilmStripView.DialogDelegate = function(frames, index, zeroTime)
+WebInspector.FilmStripView.DialogDelegate = function(filmStripFrame, zeroTime)
 {
     WebInspector.DialogDelegate.call(this);
     var shadowRoot = this.element.createShadowRoot();
@@ -125,9 +91,9 @@ WebInspector.FilmStripView.DialogDelegate = function(frames, index, zeroTime)
     this._contentElement = shadowRoot.createChild("div", "filmstrip-dialog");
     this._contentElement.tabIndex = 0;
 
-    this._frames = frames;
-    this._index = index;
-    this._zeroTime = zeroTime;
+    this._frames = filmStripFrame.model().frames();
+    this._index = filmStripFrame.index;
+    this._zeroTime = zeroTime || filmStripFrame.model().zeroTime();
 
     this._imageElement = this._contentElement.createChild("img");
     var footerElement = this._contentElement.createChild("div", "filmstrip-dialog-footer");

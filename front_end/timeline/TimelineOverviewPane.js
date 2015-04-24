@@ -77,11 +77,8 @@ WebInspector.TimelineOverviewPane.prototype = {
      */
     setOverviewControls: function(overviewControls)
     {
-        for (var i = 0; i < this._overviewControls.length; ++i) {
-            var overviewControl = this._overviewControls[i];
-            overviewControl.detach();
-            overviewControl.dispose();
-        }
+        for (var i = 0; i < this._overviewControls.length; ++i)
+            this._overviewControls[i].dispose();
 
         for (var i = 0; i < overviewControls.length; ++i) {
             overviewControls[i].setOverviewGrid(this._overviewGrid);
@@ -361,6 +358,10 @@ WebInspector.TimelineOverview.prototype = {
      * @return {!{left: number, right: number}}
      */
     windowBoundaries: function(startTime, endTime) { },
+
+    timelineStarted: function() { },
+
+    timelineStopped: function() { },
 }
 
 /**
@@ -400,6 +401,7 @@ WebInspector.TimelineOverviewBase.prototype = {
      */
     dispose: function()
     {
+        this.detach();
     },
 
     /**
@@ -409,10 +411,16 @@ WebInspector.TimelineOverviewBase.prototype = {
     {
     },
 
+    /**
+     * @override
+     */
     timelineStarted: function()
     {
     },
 
+    /**
+     * @override
+     */
     timelineStopped: function()
     {
     },

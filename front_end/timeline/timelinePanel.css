@@ -661,6 +661,7 @@
 
 .timeline-details-view-pie-chart-wrapper {
     margin: 8px 10px 8px 0;
+    min-height: 144px;
 }
 
 .timeline-details-view-pie-chart {
@@ -865,4 +866,11 @@
 
 .timeline-gap {
     flex: none;
+}
+
+.timeline-filmstrip-preview {
+    margin-top: 10px;
+    max-width: 200px;
+    max-height: 200px;
+    cursor: pointer;
 }

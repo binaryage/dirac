@@ -59,6 +59,7 @@ WebInspector.TimelineEventOverview.prototype = {
      */
     dispose: function()
     {
+        WebInspector.TimelineOverviewBase.prototype.dispose.call(this);
         var categories = WebInspector.TimelineUIUtils.categories();
         for (var category in categories)
             categories[category].removeEventListener(WebInspector.TimelineCategory.Events.VisibilityChanged, this._onCategoryVisibilityChanged, this);

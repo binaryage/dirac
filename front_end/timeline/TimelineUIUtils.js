@@ -1283,15 +1283,22 @@ WebInspector.TimelineUIUtils.generatePieChart = function(aggregatedStats, selfCa
 /**
  * @param {!WebInspector.TimelineFrameModelBase} frameModel
  * @param {!WebInspector.TimelineFrame} frame
+ * @param {?WebInspector.FilmStripModel.Frame} filmStripFrame
  * @return {!Element}
  */
-WebInspector.TimelineUIUtils.generateDetailsContentForFrame = function(frameModel, frame)
+WebInspector.TimelineUIUtils.generateDetailsContentForFrame = function(frameModel, frame, filmStripFrame)
 {
     var durationInMillis = frame.endTime - frame.startTime;
     var durationText = WebInspector.UIString("%s (at %s)", Number.millisToString(frame.endTime - frame.startTime, true),
         Number.millisToString(frame.startTimeOffset, true));
     var pieChart = WebInspector.TimelineUIUtils.generatePieChart(frame.timeByCategory);
     var contentHelper = new WebInspector.TimelineDetailsContentHelper(null, null, null, true);
+    if (filmStripFrame) {
+        var filmStripPreview = createElementWithClass("img", "timeline-filmstrip-preview");
+        filmStripPreview.src = "data:image/jpg;base64," + filmStripFrame.imageData;
+        contentHelper.appendElementRow(WebInspector.UIString("Screenshot"), filmStripPreview);
+        filmStripPreview.addEventListener("click", filmStripClicked.bind(null, filmStripFrame), false);
+    }
     contentHelper.appendTextRow(WebInspector.UIString("Duration"), durationText);
     contentHelper.appendTextRow(WebInspector.UIString("FPS"), Math.floor(1000 / durationInMillis));
     contentHelper.appendTextRow(WebInspector.UIString("CPU time"), Number.millisToString(frame.cpuTime, true));
@@ -1300,6 +1307,15 @@ WebInspector.TimelineUIUtils.generateDetailsContentForFrame = function(frameMode
         contentHelper.appendElementRow(WebInspector.UIString("Layer tree"),
                                        WebInspector.Linkifier.linkifyUsingRevealer(frame.layerTree, WebInspector.UIString("show")));
     }
+
+    /**
+     * @param {!WebInspector.FilmStripModel.Frame} filmStripFrame
+     */
+    function filmStripClicked(filmStripFrame)
+    {
+        WebInspector.Dialog.show(null, new WebInspector.FilmStripView.DialogDelegate(filmStripFrame, 0));
+    }
+
     return contentHelper.element;
 }
 

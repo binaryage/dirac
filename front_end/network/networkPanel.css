@@ -251,3 +251,8 @@
     height: 100%;
     position: absolute;
 }
+
+.network-film-strip {
+    border-bottom: solid 1px #cdcdcd;
+    flex: none !important;
+}

@@ -78,6 +78,7 @@ WebInspector.TimelineFrameOverview.prototype = {
      */
     dispose: function()
     {
+        WebInspector.TimelineOverviewBase.prototype.dispose.call(this);
         this._overviewGrid.element.classList.remove("timeline-overview-frames-mode");
     },
 

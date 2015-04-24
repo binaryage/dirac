@@ -8,8 +8,7 @@
     overflow-x: auto;
     overflow-y: hidden;
     align-content: flex-start;
-    border-bottom: solid 1px #cdcdcd;
-    height: 114px;
+    height: 130px;
 }
 
 .film-strip-view .label {

@@ -445,8 +445,9 @@ WebInspector.TimelineModel.prototype = {
      * @param {boolean} enableJSSampling
      * @param {boolean} captureMemory
      * @param {boolean} capturePictures
+     * @param {boolean} captureFilmStrip
      */
-    startRecording: function(captureCauses, enableJSSampling, captureMemory, capturePictures)
+    startRecording: function(captureCauses, enableJSSampling, captureMemory, capturePictures, captureFilmStrip)
     {
         function disabledByDefault(category)
         {
@@ -474,6 +475,9 @@ WebInspector.TimelineModel.prototype = {
                                  disabledByDefault("devtools.timeline.picture"),
                                  disabledByDefault("blink.graphics_context_annotations"));
         }
+        if (captureFilmStrip)
+            categoriesArray.push(disabledByDefault("devtools.screenshot"));
+
         var categories = categoriesArray.join(",");
         this._startRecordingWithCategories(categories, enableJSSampling);
     },

@@ -339,11 +339,11 @@ WebInspector.TimelinePanel.prototype = {
         }
         this._captureCausesSetting = WebInspector.settings.createSetting("timelineCaptureCauses", true);
         this._captureCausesSetting.addChangeListener(this._refreshViews, this);
-        this._panelToolbar.appendToolbarItem(this._createSettingCheckbox(WebInspector.UIString("Causes"),
+        this._panelToolbar.appendToolbarItem(this._createSettingCheckbox(WebInspector.UIString("Stacks"),
                                                                       this._captureCausesSetting,
                                                                       WebInspector.UIString("Capture causes (e.g., stack traces) for timeline events. (Has performance overhead)")));
         this._enableJSSamplingSettingSetting = WebInspector.settings.createSetting("timelineEnableJSSampling", false);
-        this._panelToolbar.appendToolbarItem(this._createSettingCheckbox(WebInspector.UIString("JS Stacks"),
+        this._panelToolbar.appendToolbarItem(this._createSettingCheckbox(WebInspector.UIString("Profile JS"),
                                                                       this._enableJSSamplingSettingSetting,
                                                                       WebInspector.UIString("Capture JavaScript stacks with sampling profiler. (Has performance overhead)")));
 
@@ -356,6 +356,13 @@ WebInspector.TimelinePanel.prototype = {
         this._panelToolbar.appendToolbarItem(this._createSettingCheckbox(WebInspector.UIString("Paint"),
                                                                       this._captureLayersAndPicturesSetting,
                                                                       WebInspector.UIString("Capture graphics layer positions and painted pictures.  (Has performance overhead)")));
+
+        if (Runtime.experiments.isEnabled("filmStripInNetworkAndTimeline")) {
+            this._captureFilmStripSetting = WebInspector.settings.createSetting("timelineCaptureFilmStrip", false);
+            this._panelToolbar.appendToolbarItem(this._createSettingCheckbox(WebInspector.UIString("Screenshots"),
+                                                                          this._captureFilmStripSetting,
+                                                                          WebInspector.UIString("Capture screenshots while recording. (Has performance overhead)")));
+        }
 
         this._progressToolbarItem = new WebInspector.ToolbarItem(createElement("div"));
         this._progressToolbarItem.setVisible(false);
@@ -657,7 +664,7 @@ WebInspector.TimelinePanel.prototype = {
         this._updateProgress(WebInspector.UIString("Initializing recording..."));
         this._autoRecordGeneration = userInitiated ? null : {};
         var enableJSSampling = this._enableJSSamplingSettingSetting && this._enableJSSamplingSettingSetting.get();
-        this._model.startRecording(this._captureCausesSetting.get(), enableJSSampling, this._captureMemorySetting.get(), this._captureLayersAndPicturesSetting && this._captureLayersAndPicturesSetting.get());
+        this._model.startRecording(this._captureCausesSetting.get(), enableJSSampling, this._captureMemorySetting.get(), this._captureLayersAndPicturesSetting.get(), this._captureFilmStripSetting && this._captureFilmStripSetting.get());
         if (this._lazyFrameModel)
             this._lazyFrameModel.setMergeRecords(false);
 
@@ -677,9 +684,6 @@ WebInspector.TimelinePanel.prototype = {
         this._model.stopRecording();
         if (this._progressElement)
             this._updateProgress(WebInspector.UIString("Retrieving events\u2026"));
-
-        for (var i = 0; i < this._overviewControls.length; ++i)
-            this._overviewControls[i].timelineStopped();
         this._setUIControlsEnabled(true);
     },
 
@@ -750,6 +754,7 @@ WebInspector.TimelinePanel.prototype = {
             this._overviewControls[i].reset();
         this._selection = null;
         this._updateSelectionDetails();
+        delete this._filmStripModel;
     },
 
     /**
@@ -821,6 +826,8 @@ WebInspector.TimelinePanel.prototype = {
         this.requestWindowTimes(this._model.minimumRecordTime(), this._model.maximumRecordTime());
         this._refreshViews();
         this._hideProgressPane();
+        for (var i = 0; i < this._overviewControls.length; ++i)
+            this._overviewControls[i].timelineStopped();
         this._overviewPane.update();
         this._updateSearchHighlight(false, true);
     },
@@ -1016,7 +1023,10 @@ WebInspector.TimelinePanel.prototype = {
             break;
         case WebInspector.TimelineSelection.Type.Frame:
             var frame = /** @type {!WebInspector.TimelineFrame} */ (this._selection.object());
-            this.showInDetails(WebInspector.TimelineUIUtils.generateDetailsContentForFrame(this._lazyFrameModel, frame));
+            if (Runtime.experiments.isEnabled("filmStripInNetworkAndTimeline") && !this._filmStripModel)
+                this._filmStripModel = new WebInspector.FilmStripModel(this._tracingModel);
+            var filmStripFrame = this._filmStripModel ? this._filmStripModel.firstFrameAfterCommit(frame.endTime) : null;
+            this.showInDetails(WebInspector.TimelineUIUtils.generateDetailsContentForFrame(this._lazyFrameModel, frame, filmStripFrame));
             if (frame.layerTree) {
                 var layersView = this._layersView();
                 layersView.showLayerTree(frame.layerTree, frame.paints);
