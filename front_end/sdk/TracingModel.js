@@ -71,6 +71,11 @@ WebInspector.TracingModel._legacyAsyncEventsString =
     WebInspector.TracingModel.Phase.AsyncStepInto +
     WebInspector.TracingModel.Phase.AsyncStepPast;
 
+WebInspector.TracingModel._flowEventsString =
+    WebInspector.TracingModel.Phase.FlowBegin +
+    WebInspector.TracingModel.Phase.FlowStep +
+    WebInspector.TracingModel.Phase.FlowEnd;
+
 WebInspector.TracingModel._rendererMainThreadName = "CrRendererMain";
 
 WebInspector.TracingModel._asyncEventsString = WebInspector.TracingModel._nestableAsyncEventsString + WebInspector.TracingModel._legacyAsyncEventsString;
@@ -100,6 +105,15 @@ WebInspector.TracingModel.isAsyncBeginPhase = function(phase)
 WebInspector.TracingModel.isAsyncPhase = function(phase)
 {
     return WebInspector.TracingModel._asyncEventsString.indexOf(phase) >= 0;
+}
+
+/**
+ * @param {string} phase
+ * @return {boolean}
+ */
+WebInspector.TracingModel.isFlowPhase = function(phase)
+{
+    return WebInspector.TracingModel._flowEventsString.indexOf(phase) >= 0;
 }
 
 /**

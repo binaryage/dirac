@@ -170,6 +170,8 @@ WebInspector.TimelineModel.forEachEvent = function(events, onStartEvent, onEndEv
     var stack = [];
     for (var i = 0; i < events.length; ++i) {
         var e = events[i];
+        if (WebInspector.TracingModel.isAsyncPhase(e.phase) || WebInspector.TracingModel.isFlowPhase(e.phase))
+            continue;
         while (stack.length && stack.peekLast().endTime <= e.startTime)
             onEndEvent(stack.pop());
         if (e.duration) {
