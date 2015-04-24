@@ -39,8 +39,6 @@ WebInspector.JavaScriptSourceFrame = function(scriptsPanel, uiSourceCode)
     this._scriptsPanel = scriptsPanel;
     this._breakpointManager = WebInspector.breakpointManager;
     this._uiSourceCode = uiSourceCode;
-    if (uiSourceCode.contentType() === WebInspector.resourceTypes.Script)
-        this._compiler = new WebInspector.JavaScriptCompiler(this);
 
     WebInspector.UISourceCodeFrame.call(this, uiSourceCode);
     if (uiSourceCode.project().type() === WebInspector.projectTypes.Debugger)
@@ -73,6 +71,9 @@ WebInspector.JavaScriptSourceFrame = function(scriptsPanel, uiSourceCode)
         if (scriptFile)
             this._updateScriptFile(targets[i]);
     }
+
+    if (this._scriptFileForTarget.size || uiSourceCode.extension() === "js")
+        this._compiler = new WebInspector.JavaScriptCompiler(this);
 
     WebInspector.moduleSetting("skipStackFramesPattern").addChangeListener(this._showBlackboxInfobarIfNeeded, this);
     WebInspector.moduleSetting("skipContentScripts").addChangeListener(this._showBlackboxInfobarIfNeeded, this);
