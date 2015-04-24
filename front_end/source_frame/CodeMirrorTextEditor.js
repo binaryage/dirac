@@ -978,17 +978,6 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         this._codeMirror.focus();
     },
 
-    beginUpdates: function()
-    {
-        ++this._nestedUpdatesCounter;
-    },
-
-    endUpdates: function()
-    {
-        if (!--this._nestedUpdatesCounter)
-            this._codeMirror.refresh();
-    },
-
     /**
      * @param {function()} operation
      */

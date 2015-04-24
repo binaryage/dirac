@@ -331,29 +331,17 @@ WebInspector.SourceFrame.prototype = {
         }
 
         this._updateHighlighterType(content || "");
-
-        this._textEditor.beginUpdates();
-
-        this._setTextEditorDecorations();
-
+        this.clearMessages();
         this._wasShownOrLoaded();
 
         if (this._delayedFindSearchMatches) {
             this._delayedFindSearchMatches();
             delete this._delayedFindSearchMatches;
         }
-
         this.onTextEditorContentLoaded();
-
-        this._textEditor.endUpdates();
     },
 
     onTextEditorContentLoaded: function() {},
-
-    _setTextEditorDecorations: function()
-    {
-        this._rowMessageBuckets = {};
-    },
 
     /**
      * @param {!WebInspector.SearchableView.SearchConfig} searchConfig
