@@ -50,67 +50,6 @@ WebInspector.Main.prototype = {
         return WebInspector.Revealer.revealPromise(WebInspector.console);
     },
 
-    _createGlobalToolbarItems: function()
-    {
-        var extensions = self.runtime.extensions(WebInspector.ToolbarItem.Provider);
-        var promises = [];
-        for (var i = 0; i < extensions.length; ++i)
-            promises.push(resolveItem(extensions[i]));
-        Promise.all(promises).then(appendItemsInOrder);
-
-        /**
-         * @param {!Runtime.Extension} extension
-         * @return {!Promise.<?WebInspector.ToolbarItem>}
-         */
-        function resolveItem(extension)
-        {
-            var descriptor = extension.descriptor();
-            if (!descriptor.className)
-                return Promise.resolve(new WebInspector.ToolbarButton(WebInspector.UIString(descriptor["title"]), descriptor["elementClass"])).then(attachHandler);
-            return extension.instancePromise().then(fetchItemFromProvider).then(attachHandler);
-
-            /**
-             * @param {!Object} provider
-             */
-            function fetchItemFromProvider(provider)
-            {
-                return /** @type {!WebInspector.ToolbarItem.Provider} */ (provider).item();
-            }
-
-            /**
-             * @param {?WebInspector.ToolbarItem} item
-             * @return {?WebInspector.ToolbarItem} item
-             */
-            function attachHandler(item)
-            {
-                if (extension.descriptor()["actionId"] && item)
-                    item.addEventListener("click", handler);
-                return item;
-            }
-
-            function handler()
-            {
-                WebInspector.actionRegistry.execute(extension.descriptor()["actionId"]);
-            }
-        }
-
-        /**
-         * @param {!Array.<?WebInspector.ToolbarItem>} items
-         */
-        function appendItemsInOrder(items)
-        {
-            for (var i = 0; i < items.length; ++i) {
-                var item = items[i];
-                if (!item)
-                    continue;
-                if (extensions[i].descriptor()["location"] === "toolbar-left")
-                    WebInspector.inspectorView.appendToLeftToolbar(item);
-                else if (extensions[i].descriptor()["location"] === "toolbar-right")
-                    WebInspector.inspectorView.appendToRightToolbar(item);
-            }
-        }
-    },
-
     _loaded: function()
     {
         console.timeStamp("Main._loaded");
@@ -313,8 +252,7 @@ WebInspector.Main.prototype = {
 
         if (!Runtime.queryParam("isSharedWorker"))
             WebInspector.inspectElementModeController = new WebInspector.InspectElementModeController();
-        this._createGlobalToolbarItems();
-
+        WebInspector.inspectorView.createToolbars();
         InspectorFrontendHost.loadCompleted();
 
         var extensions = self.runtime.extensions(WebInspector.QueryParamHandler);

@@ -168,7 +168,7 @@
         {
             "type": "@WebInspector.ToolbarItem.Provider",
             "className": "WebInspector.InspectElementModeController.ToggleButtonProvider",
-            "location": "toolbar-left",
+            "location": "main-toolbar-left",
             "order": 0,
             "actionId": "main.toggle-element-search"
         },
@@ -177,25 +177,25 @@
             "className": "WebInspector.AdvancedApp.EmulationButtonProvider",
             "condition": "can_dock",
             "order": 1,
-            "location": "toolbar-left"
+            "location": "main-toolbar-left"
         },
         {
             "type": "@WebInspector.ToolbarItem.Provider",
             "className": "WebInspector.Main.WarningErrorCounter",
             "order": 1,
-            "location": "toolbar-right"
+            "location": "main-toolbar-right"
         },
         {
             "type": "@WebInspector.ToolbarItem.Provider",
             "className": "WebInspector.InspectorView.ToggleDrawerButtonProvider",
             "order": 2,
-            "location": "toolbar-right"
+            "location": "main-toolbar-right"
         },
         {
             "type": "@WebInspector.ToolbarItem.Provider",
             "className": "WebInspector.DockController.ButtonProvider",
             "order": 4,
-            "location": "toolbar-right"
+            "location": "main-toolbar-right"
         },
         {
             "type": "setting",

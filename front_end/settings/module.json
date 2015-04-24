@@ -13,7 +13,7 @@
         {
             "type": "@WebInspector.ToolbarItem.Provider",
             "actionId": "settings.show",
-            "location": "toolbar-right",
+            "location": "main-toolbar-right",
             "title": "Settings",
             "order": 3,
             "elementClass": "settings-toolbar-item"

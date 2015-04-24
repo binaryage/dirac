@@ -53,20 +53,6 @@ WebInspector.InspectorView = function()
     this._drawerSplitView.setMainView(this._tabbedPane);
     this._drawer = new WebInspector.Drawer(this._drawerSplitView);
 
-    this._leftToolbar = new WebInspector.Toolbar();
-    this._leftToolbar.element.classList.add("inspector-view-toolbar", "inspector-view-toolbar-left");
-    this._leftToolbar.makeNarrow();
-    this._tabbedPane.insertBeforeTabStrip(this._leftToolbar.element);
-
-    this._rightToolbar = new WebInspector.Toolbar();
-    this._rightToolbar.element.classList.add("inspector-view-toolbar");
-    this._tabbedPane.appendAfterTabStrip(this._rightToolbar.element);
-
-    this._closeButtonToolbarItem = createElementWithClass("div", "inspector-view-close-button");
-    var closeButtonElement = this._closeButtonToolbarItem.createChild("div", "", "dt-close-button");
-    closeButtonElement.addEventListener("click", InspectorFrontendHost.closeWindow.bind(InspectorFrontendHost), true);
-    this._rightToolbar.element.appendChild(this._closeButtonToolbarItem);
-
     this._panels = {};
     // Used by tests.
     WebInspector["panels"] = this._panels;
@@ -127,20 +113,22 @@ WebInspector.InspectorView.prototype = {
         WebInspector.endBatchUpdate();
     },
 
-    /**
-     * @param {!WebInspector.ToolbarItem} item
-     */
-    appendToLeftToolbar: function(item)
+    createToolbars: function()
     {
-        this._leftToolbar.appendToolbarItem(item);
-    },
+        this._leftToolbar = new WebInspector.ExtensibleToolbar("main-toolbar-left");
+        this._leftToolbar.element.classList.add("inspector-view-toolbar", "inspector-view-toolbar-left");
+        this._leftToolbar.makeNarrow();
+        this._tabbedPane.insertBeforeTabStrip(this._leftToolbar.element);
 
-    /**
-     * @param {!WebInspector.ToolbarItem} item
-     */
-    appendToRightToolbar: function(item)
-    {
-        this._rightToolbar.appendToolbarItem(item);
+        var rightToolbarContainer = createElementWithClass("div", "hbox flex-none flex-centered");
+        this._tabbedPane.appendAfterTabStrip(rightToolbarContainer);
+
+        this._rightToolbar = new WebInspector.ExtensibleToolbar("main-toolbar-right");
+        this._rightToolbar.element.classList.add("inspector-view-toolbar", "flex-none");
+        rightToolbarContainer.appendChild(this._rightToolbar.element);
+
+        var closeButtonElement = rightToolbarContainer.createChild("div", "inspector-view-close-button flex-none", "dt-close-button");
+        closeButtonElement.addEventListener("click", InspectorFrontendHost.closeWindow.bind(InspectorFrontendHost), true);
     },
 
     /**
@@ -204,8 +192,10 @@ WebInspector.InspectorView.prototype = {
     {
         this._currentPanelLocked = WebInspector.targetManager.allTargetsSuspended();
         this._tabbedPane.setCurrentTabLocked(this._currentPanelLocked);
-        this._leftToolbar.setEnabled(!this._currentPanelLocked);
-        this._rightToolbar.setEnabled(!this._currentPanelLocked);
+        if (this._leftToolbar)
+            this._leftToolbar.setEnabled(!this._currentPanelLocked);
+        if (this._rightToolbar)
+            this._rightToolbar.setEnabled(!this._currentPanelLocked);
     },
 
     /**

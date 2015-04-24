@@ -9,7 +9,7 @@
             "type": "@WebInspector.ToolbarItem.Provider",
             "className": "WebInspector.ScreencastApp.ToolbarButtonProvider",
             "order": 1,
-            "location": "toolbar-left"
+            "location": "main-toolbar-left"
         }
     ],
     "dependencies": [
