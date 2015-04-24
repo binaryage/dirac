@@ -37,36 +37,28 @@ WebInspector.StylesSidebarPane = function(computedStylePane, requestShowCallback
 {
     WebInspector.ElementsSidebarPane.call(this, WebInspector.UIString("Styles"));
 
-    if (!Runtime.experiments.isEnabled("animationInspection")) {
-        this._animationsControlButton = createElement("button");
-        this._animationsControlButton.className = "pane-title-button animations-controls";
-        this._animationsControlButton.title = WebInspector.UIString("Animations Controls");
-        this._animationsControlButton.addEventListener("click", this._toggleAnimationsControlPane.bind(this), false);
-        this.titleElement.appendChild(this._animationsControlButton);
-    }
-
-    this._elementStateButton = createElement("button");
-    this._elementStateButton.className = "pane-title-button element-state";
-    this._elementStateButton.title = WebInspector.UIString("Toggle Element State");
-    this._elementStateButton.addEventListener("click", this._toggleElementStatePane.bind(this), false);
-    this.titleElement.appendChild(this._elementStateButton);
-
-    var addButton = createElement("button");
-    addButton.className = "pane-title-button add";
-    addButton.id = "add-style-button-test-id";
-    addButton.title = WebInspector.UIString("New Style Rule");
-    addButton.addEventListener("click", this._createNewRuleInViaInspectorStyleSheet.bind(this), false);
-    this.titleElement.appendChild(addButton);
-    addButton.createChild("div", "long-click-glyph fill");
-
-    this._addButtonLongClickController = new WebInspector.LongClickController(addButton);
-    this._addButtonLongClickController.addEventListener(WebInspector.LongClickController.Events.LongClick, this._onAddButtonLongClick.bind(this));
-    this._addButtonLongClickController.enable();
-
     this._computedStylePane = computedStylePane;
     computedStylePane.setHostingPane(this);
     this.element.addEventListener("contextmenu", this._contextMenuEventFired.bind(this), true);
     WebInspector.moduleSetting("colorFormat").addChangeListener(this._colorFormatSettingChanged.bind(this));
+
+    var toolbar = new WebInspector.Toolbar(this.titleElement);
+    toolbar.element.classList.add("styles-pane-toolbar");
+    toolbar.makeNarrow();
+
+    var addNewStyleRuleButton = new WebInspector.ToolbarButton(WebInspector.UIString("New Style Rule"), "add-toolbar-item");
+    addNewStyleRuleButton.makeLongClickEnabled();
+    addNewStyleRuleButton.addEventListener("click", this._createNewRuleInViaInspectorStyleSheet, this);
+    addNewStyleRuleButton.addEventListener("longClickDown", this._onAddButtonLongClick, this);
+    toolbar.appendToolbarItem(addNewStyleRuleButton);
+
+    this._elementStateButton = new WebInspector.ToolbarButton(WebInspector.UIString("Toggle Element State"), "element-state-toolbar-item");
+    this._elementStateButton.addEventListener("click", this._toggleElementStatePane, this);
+    toolbar.appendToolbarItem(this._elementStateButton);
+
+    this._animationsControlButton = new WebInspector.ToolbarButton(WebInspector.UIString("Animations Controls"), "animation-toolbar-item");
+    this._animationsControlButton.addEventListener("click", this._toggleAnimationsControlPane, this);
+    toolbar.appendToolbarItem(this._animationsControlButton);
 
     this._requestShowCallback = requestShowCallback;
 
@@ -165,7 +157,6 @@ WebInspector.StylesSidebarPane.prototype = {
      */
     _onAddButtonLongClick: function(event)
     {
-        this._addButtonLongClickController.reset();
         var cssModel = this._cssModel;
         var headers = cssModel.styleSheetHeaders().filter(styleSheetResourceHeader);
 
@@ -330,8 +321,8 @@ WebInspector.StylesSidebarPane.prototype = {
             return;
 
         var hasPseudoType = !!node.pseudoType();
-        this._elementStateButton.classList.toggle("hidden", hasPseudoType);
-        this._elementStatePane.classList.toggle("expanded", !hasPseudoType && this._elementStateButton.classList.contains("toggled"));
+        this._elementStateButton.setEnabled(!hasPseudoType);
+        this._elementStatePane.classList.toggle("expanded", !hasPseudoType && this._elementStateButton.toggled());
 
         var nodePseudoState = this._forcedPseudoClasses();
         if (!nodePseudoState)
@@ -816,10 +807,7 @@ WebInspector.StylesSidebarPane.prototype = {
         }
     },
 
-    /**
-     * @param {?Event} event
-     */
-    _createNewRuleInViaInspectorStyleSheet: function(event)
+    _createNewRuleInViaInspectorStyleSheet: function()
     {
         var cssModel = this._cssModel;
         this._userOperation = true;
@@ -894,19 +882,14 @@ WebInspector.StylesSidebarPane.prototype = {
         }
     },
 
-    /**
-     * @param {!Event} event
-     */
-    _toggleElementStatePane: function(event)
+    _toggleElementStatePane: function()
     {
-        event.consume();
-
-        var buttonToggled = !this._elementStateButton.classList.contains("toggled");
+        var buttonToggled = !this._elementStateButton.toggled();
         if (buttonToggled)
             this.expand();
-        this._elementStateButton.classList.toggle("toggled", buttonToggled);
+        this._elementStateButton.setToggled(buttonToggled);
         this._elementStatePane.classList.toggle("expanded", buttonToggled);
-        this._animationsControlButton.classList.remove("toggled");
+        this._animationsControlButton.setToggled(false);
         this._animationsControlPane.element.classList.remove("expanded");
     },
 
@@ -959,19 +942,14 @@ WebInspector.StylesSidebarPane.prototype = {
         this._elementStatePane.appendChild(table);
     },
 
-        /**
-     * @param {!Event} event
-     */
-    _toggleAnimationsControlPane: function(event)
+    _toggleAnimationsControlPane: function()
     {
-        event.consume();
-
-        var buttonToggled = !this._animationsControlButton.classList.contains("toggled");
+        var buttonToggled = !this._animationsControlButton.toggled();
         if (buttonToggled)
             this.expand();
-        this._animationsControlButton.classList.toggle("toggled", buttonToggled);
+        this._animationsControlButton.setToggled(buttonToggled);
         this._animationsControlPane.element.classList.toggle("expanded", buttonToggled);
-        this._elementStateButton.classList.remove("toggled");
+        this._elementStateButton.setToggled(false);
         this._elementStatePane.classList.remove("expanded");
     },
 

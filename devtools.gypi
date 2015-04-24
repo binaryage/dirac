@@ -708,8 +708,6 @@
             'front_end/Images/navigationControls_2x.png',
             'front_end/Images/notifications.svg',
             'front_end/Images/paneAddButtons.png',
-            'front_end/Images/paneAnimationsButtons.png',
-            'front_end/Images/paneElementStateButtons.png',
             'front_end/Images/paneFilterButtons.png',
             'front_end/Images/paneRefreshButtons.png',
             'front_end/Images/popoverArrows.png',

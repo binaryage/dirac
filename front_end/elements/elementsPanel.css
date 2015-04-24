@@ -753,3 +753,8 @@ label.checkbox-with-label {
     margin: -1px -6px -8px -6px;
     text-overflow: clip;
 }
+
+.styles-pane-toolbar {
+    float: right;
+    margin-top: -3px;
+}

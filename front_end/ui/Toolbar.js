@@ -336,7 +336,8 @@ WebInspector.ToolbarButtonBase.prototype = {
      */
     _onLongClick: function(event)
     {
-        this.dispatchEventToListeners("longClickDown");
+        var nativeEvent = event.data;
+        this.dispatchEventToListeners("longClickDown", nativeEvent);
     },
 
     /**
@@ -344,7 +345,8 @@ WebInspector.ToolbarButtonBase.prototype = {
      */
     _onLongPress: function(event)
     {
-        this.dispatchEventToListeners("longPressDown");
+        var nativeEvent = event.data;
+        this.dispatchEventToListeners("longPressDown", nativeEvent);
     },
 
     _clicked: function()
@@ -433,11 +435,14 @@ WebInspector.ToolbarButtonBase.prototype = {
     makeLongClickEnabled: function()
     {
         this._longClickController.enable();
+        this._longClickGlyph = this.element.createChild("div", "fill long-click-glyph toolbar-button-theme");
     },
 
     unmakeLongClickEnabled: function()
     {
         this._longClickController.disable();
+        if (this._longClickGlyph)
+            this.element.removeChild(this._longClickGlyph);
     },
 
     /**
@@ -449,13 +454,10 @@ WebInspector.ToolbarButtonBase.prototype = {
             if (!this._longClickOptionsData) {
                 this.makeLongClickEnabled();
 
-                this.longClickGlyph = this.element.createChild("div", "fill long-click-glyph toolbar-button-theme");
-
                 var longClickDownListener = this._showOptions.bind(this);
                 this.addEventListener("longClickDown", longClickDownListener, this);
 
                 this._longClickOptionsData = {
-                    glyphElement: this.longClickGlyph,
                     longClickDownListener: longClickDownListener
                 };
             }
@@ -463,7 +465,6 @@ WebInspector.ToolbarButtonBase.prototype = {
         } else {
             if (!this._longClickOptionsData)
                 return;
-            this.element.removeChild(this._longClickOptionsData.glyphElement);
 
             this.removeEventListener("longClickDown", this._longClickOptionsData.longClickDownListener, this);
             delete this._longClickOptionsData;

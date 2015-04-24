@@ -92,6 +92,11 @@
     height: 24px;
 }
 
+.narrow .long-click-glyph {
+    top: -2px;
+    left: -7px;
+}
+
 .material .long-click-glyph {
     top: 2px;
 }
@@ -459,6 +464,18 @@ button.record-toolbar-item.toggled-on .glyph {
 
 .rotate-toolbar-item .glyph {
     -webkit-mask-position: -160px -120px;
+}
+
+.element-state-toolbar-item .glyph {
+    -webkit-mask-position: -256px -120px;
+}
+
+.animation-toolbar-item .glyph {
+    -webkit-mask-position: -192px -120px;
+}
+
+.add-toolbar-item .glyph {
+    -webkit-mask-position: -224px -120px;
 }
 
 .case-sensitive-search-toolbar-item.toggled-on .toolbar-button-text {
