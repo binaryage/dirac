@@ -131,8 +131,6 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
 
     this._codeMirror.setOption("keyMap", WebInspector.isMac() ? "devtools-mac" : "devtools-pc");
 
-    CodeMirror.commands.maybeAvoidSmartSingleQuotes = this._maybeAvoidSmartQuotes.bind(this, "'");
-    CodeMirror.commands.maybeAvoidSmartDoubleQuotes = this._maybeAvoidSmartQuotes.bind(this, "\"");
     this._codeMirror.addKeyMap({
         "'": "maybeAvoidSmartSingleQuotes",
         "'\"'": "maybeAvoidSmartDoubleQuotes"
@@ -331,6 +329,33 @@ CodeMirror.commands.dismissMultipleSelections = function(codemirror)
     codemirror._codeMirrorTextEditor._revealLine(selection.anchor.line);
 }
 
+/**
+ * @param {string} quoteCharacter
+ * @param {!CodeMirror} codeMirror
+ * @return {*}
+ */
+WebInspector.CodeMirrorTextEditor._maybeAvoidSmartQuotes = function(quoteCharacter, codeMirror)
+{
+    var textEditor = codeMirror._codeMirrorTextEditor;
+    if (!WebInspector.moduleSetting("textEditorBracketMatching").get())
+        return CodeMirror.Pass;
+    var selections = textEditor.selections();
+    if (selections.length !== 1 || !selections[0].isEmpty())
+        return CodeMirror.Pass;
+
+    var selection = selections[0];
+    var token = textEditor.tokenAtTextPosition(selection.startLine, selection.startColumn);
+    if (!token || !token.type || token.type.indexOf("string") === -1)
+        return CodeMirror.Pass;
+    var line = textEditor.line(selection.startLine);
+    var tokenValue = line.substring(token.startColumn, token.endColumn);
+    if (tokenValue[0] === tokenValue[tokenValue.length - 1] && (tokenValue[0] === "'" || tokenValue[0] === "\""))
+        return CodeMirror.Pass;
+    codeMirror.replaceSelection(quoteCharacter);
+}
+CodeMirror.commands.maybeAvoidSmartSingleQuotes = WebInspector.CodeMirrorTextEditor._maybeAvoidSmartQuotes.bind(null, "'");
+CodeMirror.commands.maybeAvoidSmartDoubleQuotes = WebInspector.CodeMirrorTextEditor._maybeAvoidSmartQuotes.bind(null, "\"");
+
 WebInspector.CodeMirrorTextEditor.LongLineModeLineLengthThreshold = 2000;
 WebInspector.CodeMirrorTextEditor.MaximumNumberOfWhitespacesPerSingleSpan = 16;
 WebInspector.CodeMirrorTextEditor.MaxEditableTextSize = 1024 * 1024 * 10;
@@ -393,29 +418,6 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     _enableAutocompletionIfNeeded: function()
     {
         this._autocompleteController.setEnabled(WebInspector.moduleSetting("textEditorAutocompletion").get());
-    },
-
-    /**
-     * @param {string} quoteCharacter
-     * @return {*}
-     */
-    _maybeAvoidSmartQuotes: function(quoteCharacter)
-    {
-        if (!WebInspector.moduleSetting("textEditorBracketMatching").get())
-            return CodeMirror.Pass;
-        var selections = this.selections();
-        if (selections.length !== 1 || !selections[0].isEmpty())
-            return CodeMirror.Pass;
-
-        var selection = selections[0];
-        var token = this.tokenAtTextPosition(selection.startLine, selection.startColumn);
-        if (!token || !token.type || token.type.indexOf("string") === -1)
-            return CodeMirror.Pass;
-        var line = this.line(selection.startLine);
-        var tokenValue = line.substring(token.startColumn, token.endColumn);
-        if (tokenValue[0] === tokenValue[tokenValue.length - 1] && (tokenValue[0] === "'" || tokenValue[0] === "\""))
-            return CodeMirror.Pass;
-        this._codeMirror.replaceSelection(quoteCharacter);
     },
 
     _onKeyHandled: function()
