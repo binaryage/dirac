@@ -162,6 +162,8 @@ WebInspector.ConsoleView = function()
     WebInspector.context.addFlavorChangeListener(WebInspector.ExecutionContext, this._executionContextChangedExternally, this);
 }
 
+WebInspector.ConsoleView.persistedHistorySize = 300;
+
 WebInspector.ConsoleView.prototype = {
     /**
      * @return {!WebInspector.SearchableView}
@@ -944,7 +946,7 @@ WebInspector.ConsoleView.prototype = {
     {
         var data = /**{{result: ?WebInspector.RemoteObject, wasThrown: boolean, text: string, commandMessage: !WebInspector.ConsoleMessage}} */ (event.data);
         this._prompt.pushHistoryItem(data.text);
-        this._consoleHistorySetting.set(this._prompt.historyData().slice(-30));
+        this._consoleHistorySetting.set(this._prompt.historyData().slice(-WebInspector.ConsoleView.persistedHistorySize));
         this._printResult(data.result, data.wasThrown, data.commandMessage, data.exceptionDetails);
     },
 
