@@ -856,7 +856,7 @@ WebInspector.SourceFrame.RowMessageBucket.prototype = {
         var lineIndent = WebInspector.TextUtils.lineIndent(lineText).length;
         var base = this._textEditor.cursorPositionToCoordinates(lineNumber, 0);
 
-        var start = this._textEditor.cursorPositionToCoordinates(lineNumber, columnNumber - 1);
+        var start = this._textEditor.cursorPositionToCoordinates(lineNumber, Math.max(columnNumber - 1, lineIndent));
         var end = this._textEditor.cursorPositionToCoordinates(lineNumber, lineText.length);
         /** @const */
         var codeMirrorLinesLeftPadding = 4;
