@@ -267,7 +267,6 @@ WebInspector.ElementsPanel.prototype = {
     {
         var node = /** @type {!WebInspector.DOMNode} */ (event.data["node"]);
         this._treeOutlineForNode(node).updateOpenCloseTags(node);
-        this._updateCSSSidebars();
     },
 
     /**
@@ -310,13 +309,18 @@ WebInspector.ElementsPanel.prototype = {
 
     _updateSidebars: function()
     {
-        this._updateCSSSidebars();
-        this.sidebarPanes.properties.setNode(this.selectedDOMNode());
-        this.sidebarPanes.eventListeners.setNode(this.selectedDOMNode());
+        var selectedDOMNode = this.selectedDOMNode();
+        if (selectedDOMNode && WebInspector.CSSStyleModel.fromNode(selectedDOMNode).isEnabled()) {
+            this.sidebarPanes.styles.setNode(selectedDOMNode);
+            this.sidebarPanes.metrics.setNode(selectedDOMNode);
+            this.sidebarPanes.platformFonts.setNode(selectedDOMNode);
+        }
+        this.sidebarPanes.properties.setNode(selectedDOMNode);
+        this.sidebarPanes.eventListeners.setNode(selectedDOMNode);
         if (this.sidebarPanes.animations)
-            this.sidebarPanes.animations.setNode(this.selectedDOMNode());
+            this.sidebarPanes.animations.setNode(selectedDOMNode);
         for (var sidebarView of this._elementsSidebarViewWrappers)
-            sidebarView.setNode(this.selectedDOMNode());
+            sidebarView.setNode(selectedDOMNode);
     },
 
     _reset: function()
@@ -661,17 +665,6 @@ WebInspector.ElementsPanel.prototype = {
     {
         var node = /** @type {!WebInspector.DOMNode} */ (event.data);
         this.selectDOMNode(node, true);
-    },
-
-    _updateCSSSidebars: function()
-    {
-        var selectedDOMNode = this.selectedDOMNode();
-        if (!selectedDOMNode || !WebInspector.CSSStyleModel.fromNode(selectedDOMNode).isEnabled())
-            return;
-
-        this.sidebarPanes.styles.setNode(selectedDOMNode);
-        this.sidebarPanes.metrics.setNode(selectedDOMNode);
-        this.sidebarPanes.platformFonts.setNode(selectedDOMNode);
     },
 
     /**

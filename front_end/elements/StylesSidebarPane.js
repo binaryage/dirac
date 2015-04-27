@@ -376,6 +376,7 @@ WebInspector.StylesSidebarPane.prototype = {
             this._cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.StyleSheetRemoved, this._styleSheetOrMediaQueryResultChanged, this);
             this._cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.StyleSheetChanged, this._styleSheetOrMediaQueryResultChanged, this);
             this._cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.MediaQueryResultChanged, this._styleSheetOrMediaQueryResultChanged, this);
+            this._cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.PseudoStateForced, this._styleSheetOrMediaQueryResultChanged, this);
             this._domModel.removeEventListener(WebInspector.DOMModel.Events.AttrModified, this._attributeChanged, this);
             this._domModel.removeEventListener(WebInspector.DOMModel.Events.AttrRemoved, this._attributeChanged, this);
             this._target.resourceTreeModel.removeEventListener(WebInspector.ResourceTreeModel.EventTypes.FrameResized, this._frameResized, this);
@@ -388,6 +389,7 @@ WebInspector.StylesSidebarPane.prototype = {
             this._cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetRemoved, this._styleSheetOrMediaQueryResultChanged, this);
             this._cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetChanged, this._styleSheetOrMediaQueryResultChanged, this);
             this._cssModel.addEventListener(WebInspector.CSSStyleModel.Events.MediaQueryResultChanged, this._styleSheetOrMediaQueryResultChanged, this);
+            this._cssModel.addEventListener(WebInspector.CSSStyleModel.Events.PseudoStateForced, this._styleSheetOrMediaQueryResultChanged, this);
             this._domModel.addEventListener(WebInspector.DOMModel.Events.AttrModified, this._attributeChanged, this);
             this._domModel.addEventListener(WebInspector.DOMModel.Events.AttrRemoved, this._attributeChanged, this);
             this._target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.FrameResized, this._frameResized, this);
