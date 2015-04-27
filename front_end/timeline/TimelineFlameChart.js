@@ -407,24 +407,12 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
         var openEvents = [];
         var flowEventsEnabled = Runtime.experiments.isEnabled("timelineFlowEvents");
         var blackboxingEnabled = Runtime.experiments.isEnabled("blackboxJSFramesOnTimeline");
-
-        /**
-         * @param {!WebInspector.TracingModel.Event} event
-         * @return {boolean}
-         */
-        function isFlowEvent(event)
-        {
-            return e.phase === WebInspector.TracingModel.Phase.FlowBegin ||
-                   e.phase === WebInspector.TracingModel.Phase.FlowStep ||
-                   e.phase === WebInspector.TracingModel.Phase.FlowEnd;
-        }
-
         var maxStackDepth = 0;
         for (var i = 0; i < events.length; ++i) {
             var e = events[i];
             if (WebInspector.TimelineUIUtils.isMarkerEvent(e))
                 this._markers.push(new WebInspector.TimelineFlameChartMarker(e.startTime, e.startTime - this._model.minimumRecordTime(), WebInspector.TimelineUIUtils.markerStyleForEvent(e)));
-            if (!isFlowEvent(e)) {
+            if (!WebInspector.TracingModel.isFlowPhase(e.phase)) {
                 if (!e.endTime && e.phase !== WebInspector.TracingModel.Phase.Instant)
                     continue;
                 if (WebInspector.TracingModel.isAsyncPhase(e.phase))

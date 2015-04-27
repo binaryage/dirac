@@ -980,9 +980,9 @@ WebInspector.TimelineModel.prototype = {
             var event = events[i];
             if (endTime && event.startTime >= endTime)
                 break;
-            this._updateEventStack(event);
             if (!this._processEvent(event))
                 continue;
+            this._updateEventStack(event);
             threadEvents.push(event);
             this._inspectedTargetEvents.push(event);
         }
