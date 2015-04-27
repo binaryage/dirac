@@ -72,7 +72,8 @@ WebInspector.FlameChart = function(dataProvider, flameChartDelegate, isTopDown)
     this._canvas.addEventListener("mousewheel", this._onMouseWheel.bind(this), false);
     this._canvas.addEventListener("click", this._onClick.bind(this), false);
     this._canvas.addEventListener("keydown", this._onKeyDown.bind(this), false);
-    WebInspector.installDragHandle(this._canvas, this._startCanvasDragging.bind(this), this._canvasDragging.bind(this), this._endCanvasDragging.bind(this), "move", null);
+    WebInspector.installDragHandle(this._canvas, this._startCanvasDragging.bind(this), this._canvasDragging.bind(this), this._endCanvasDragging.bind(this), "-webkit-grabbing", null);
+    WebInspector.installDragHandle(this._canvas, this._startRangeSelection.bind(this), this._updateRangeSelection.bind(this), this._endRangeSelection.bind(this), "text", null);
 
     this._vScrollElement = this.contentElement.createChild("div", "flame-chart-v-scroll");
     this._vScrollContent = this._vScrollElement.createChild("div");
@@ -546,13 +547,10 @@ WebInspector.FlameChart.prototype = {
      */
     _startCanvasDragging: function(event)
     {
+        if (event.shiftKey)
+            return false;
         if (!this._timelineData() || this._timeWindowRight === Infinity)
             return false;
-        if (event.shiftKey) {
-            this._startRangeSelection(event);
-            this._isDragging = true;
-            return true;
-        }
         this._isDragging = true;
         this._maxDragOffset = 0;
         this._dragStartPointX = event.pageX;
@@ -570,10 +568,6 @@ WebInspector.FlameChart.prototype = {
      */
     _canvasDragging: function(event)
     {
-        if (this._isSelecting) {
-            this._updateRangeSelection(event);
-            return;
-        }
         var pixelShift = this._dragStartPointX - event.pageX;
         this._dragStartPointX = event.pageX;
         this._muteAnimation = true;
@@ -587,29 +581,32 @@ WebInspector.FlameChart.prototype = {
 
     _endCanvasDragging: function()
     {
-        this._hideRangeSelection();
         this._isDragging = false;
     },
 
     /**
      * @param {!MouseEvent} event
+     * @return {boolean}
      */
     _startRangeSelection: function(event)
     {
+        if (!event.shiftKey)
+            return false;
+        this._isDragging = true;
         this._selectionOffsetShiftX = event.offsetX - event.pageX;
         this._selectionOffsetShiftY = event.offsetY - event.pageY;
         this._selectionStartX = event.offsetX;
-        this._isSelecting = true;
         var style = this._selectionOverlay.style;
         style.left = this._selectionStartX + "px";
         style.width = "1px";
         this._selectedTimeSpanLabel.textContent = "";
         this._selectionOverlay.classList.remove("hidden");
+        return true;
     },
 
-    _hideRangeSelection: function()
+    _endRangeSelection: function()
     {
-        this._isSelecting = false;
+        this._isDragging = false;
         this._selectionOverlay.classList.add("hidden");
     },
 
