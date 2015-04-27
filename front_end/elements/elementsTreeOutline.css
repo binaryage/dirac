@@ -122,7 +122,22 @@
     margin-left: 5px;
     padding-left: 5px;
     border-left: 1px solid rgb(190, 190, 190);
+}
+
+.elements-tree-outline ol.shadow-root-depth-4 {
     background-color: rgba(0, 0, 0, 0.04);
+}
+
+.elements-tree-outline ol.shadow-root-depth-3 {
+    background-color: rgba(0, 0, 0, 0.03);
+}
+
+.elements-tree-outline ol.shadow-root-depth-2 {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+.elements-tree-outline ol.shadow-root-depth-1 {
+    background-color: rgba(0, 0, 0, 0.01);
 }
 
 .elements-tree-outline ol.shadow-root-deep {
