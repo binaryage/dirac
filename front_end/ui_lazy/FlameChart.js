@@ -1194,6 +1194,8 @@ WebInspector.FlameChart.prototype = {
      */
     setSelectedEntry: function(entryIndex)
     {
+        if (this._selectedEntryIndex === entryIndex)
+            return;
         this._selectedEntryIndex = entryIndex;
         this._revealEntry(entryIndex);
         this._updateElementPosition(this._selectedElement, this._selectedEntryIndex);
