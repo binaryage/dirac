@@ -3658,14 +3658,6 @@
                 "description": "Disables promise tracking."
             },
             {
-                "name": "getPromises",
-                "returns": [
-                    { "name": "promises", "type": "array", "items": { "$ref": "PromiseDetails" }, "description": "Information about stored promises." }
-                ],
-                "hidden": true,
-                "description": "Returns detailed information about all <code>Promise</code>s that were created or updated after the <code>enablePromiseTracker</code> command, and have not been garbage collected yet."
-            },
-            {
                 "name": "getPromiseById",
                 "parameters": [
                     { "name": "promiseId", "type": "integer" },
