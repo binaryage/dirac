@@ -291,12 +291,11 @@ WebInspector.WatchExpression.prototype = {
 
         this._editing = false;
         this._textPrompt.detach();
-        var newExpression = this._textPrompt.text();
+        var newExpression = canceled ? this._expression : this._textPrompt.text();
         delete this._textPrompt;
         this._element.removeChildren();
         this._element.appendChild(this._objectPresentationElement);
-        if (!canceled && newExpression !== this._expression)
-            this._updateExpression(newExpression);
+        this._updateExpression(newExpression);
     },
 
     /**
