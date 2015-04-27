@@ -257,6 +257,10 @@ WebInspector.TimelineUIUtils.buildDetailsTextForTraceEvent = function(event, tar
         detailsText = linkifyTopCallFrameAsText() || eventData["id"];
         break;
     case recordType.ParseHTML:
+        var endLine = event.args["endData"]["endLine"];
+        var url = event.args["beginData"]["url"];
+        detailsText = endLine ? WebInspector.UIString("%s [%d:%d]", url, event.args["beginData"]["startLine"] + 1, endLine + 1) : url;
+        break;
     case recordType.RecalculateStyles:
         detailsText = linkifyTopCallFrameAsText();
         break;
@@ -373,6 +377,7 @@ WebInspector.TimelineUIUtils.buildDetailsNodeForTraceEvent = function(event, tar
     case recordType.ResourceReceiveResponse:
     case recordType.ResourceFinish:
     case recordType.EmbedderCallback:
+    case recordType.ParseHTML:
         detailsText = WebInspector.TimelineUIUtils.buildDetailsTextForTraceEvent(event, target);
         break;
     case recordType.FunctionCall:
@@ -397,7 +402,6 @@ WebInspector.TimelineUIUtils.buildDetailsNodeForTraceEvent = function(event, tar
         details = linkifyTopCallFrame();
         detailsText = eventData["id"];
         break;
-    case recordType.ParseHTML:
     case recordType.RecalculateStyles:
         details = linkifyTopCallFrame();
         break;
@@ -632,6 +636,16 @@ WebInspector.TimelineUIUtils._buildTraceEventDetailsSynchronously = function(eve
     case recordTypes.Animation:
         if (event.phase === WebInspector.TracingModel.Phase.NestableAsyncInstant)
             contentHelper.appendTextRow(WebInspector.UIString("State"), eventData["state"]);
+        break;
+    case recordTypes.ParseHTML:
+        var beginData = event.args["beginData"];
+        var url = beginData["url"];
+        if (url)
+            contentHelper.appendTextRow(WebInspector.UIString("URL"), url);
+        var startLine = beginData["startLine"] + 1;
+        var endLine = event.args["endData"]["endLine"] + 1;
+        if (endLine)
+            contentHelper.appendTextRow(WebInspector.UIString("Range"), WebInspector.UIString("%d \u2014 %d", startLine, endLine));
         break;
     default:
         var detailsNode = WebInspector.TimelineUIUtils.buildDetailsNodeForTraceEvent(event, model.target(), linkifier);
