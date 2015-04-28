@@ -19,6 +19,7 @@ div {
     width: 14px;
     height: 14px;
     background-position: -128px -96px;
+    cursor: default;
 }
 
 .close-button:hover {
