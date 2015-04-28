@@ -257,7 +257,7 @@ WebInspector.TimelineUIUtils.buildDetailsTextForTraceEvent = function(event, tar
         detailsText = linkifyTopCallFrameAsText() || eventData["id"];
         break;
     case recordType.ParseHTML:
-        var endLine = event.args["endData"]["endLine"];
+        var endLine = event.args["endData"] && event.args["endData"]["endLine"];
         var url = event.args["beginData"]["url"];
         detailsText = endLine ? WebInspector.UIString("%s [%d:%d]", url, event.args["beginData"]["startLine"] + 1, endLine + 1) : url;
         break;
@@ -643,7 +643,7 @@ WebInspector.TimelineUIUtils._buildTraceEventDetailsSynchronously = function(eve
         if (url)
             contentHelper.appendTextRow(WebInspector.UIString("URL"), url);
         var startLine = beginData["startLine"] + 1;
-        var endLine = event.args["endData"]["endLine"] + 1;
+        var endLine = event.args["endData"] ? event.args["endData"]["endLine"] + 1 : 0;
         if (endLine)
             contentHelper.appendTextRow(WebInspector.UIString("Range"), WebInspector.UIString("%d \u2014 %d", startLine, endLine));
         break;
