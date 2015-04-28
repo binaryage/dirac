@@ -85,6 +85,7 @@ WebInspector.TimelineJSProfileProcessor.generateJSFrameEvents = function(events)
     var invocationEventsDepth = 0;
     var currentSamplingIntervalMs = 0.1;
     var lastStackSampleTime = 0;
+    var ordinal = 0;
 
     /**
      * @param {!WebInspector.TracingModel.Event} e
@@ -109,6 +110,7 @@ WebInspector.TimelineJSProfileProcessor.generateJSFrameEvents = function(events)
      */
     function onStartEvent(e)
     {
+        e.ordinal = ++ordinal;
         extractStackTrace(e);
         // For the duration of the event we cannot go beyond the stack associated with it.
         lockedJsStackDepth.push(jsFramesStack.length);
@@ -121,6 +123,7 @@ WebInspector.TimelineJSProfileProcessor.generateJSFrameEvents = function(events)
      */
     function onInstantEvent(e)
     {
+        e.ordinal = ++ordinal;
         updateSamplingInterval(e);
         if (invocationEventsDepth)
             extractStackTrace(e);
@@ -187,6 +190,7 @@ WebInspector.TimelineJSProfileProcessor.generateJSFrameEvents = function(events)
             var frame = stackTrace[numFrames - 1 - i];
             var jsFrameEvent = new WebInspector.TracingModel.Event(WebInspector.TracingModel.DevToolsTimelineEventCategory, WebInspector.TimelineModel.RecordType.JSFrame,
                 WebInspector.TracingModel.Phase.Complete, e.startTime, e.thread);
+            jsFrameEvent.ordinal = e.ordinal;
             jsFrameEvent.addArgs({ data: frame });
             jsFrameEvent.setEndTime(endTime);
             jsFramesStack.push(jsFrameEvent);
@@ -382,6 +386,7 @@ WebInspector.TimelineJSProfileProcessor.processRawV8Samples = function(events)
                 WebInspector.TracingModel.DevToolsTimelineEventCategory,
                 WebInspector.TimelineModel.RecordType.JSSample,
                 WebInspector.TracingModel.Phase.Instant, e.startTime, e.thread);
+            sampleEvent.ordinal = e.ordinal;
             sampleEvent.args = {"data": {"stackTrace": stack }};
             samples.push(sampleEvent);
             break;

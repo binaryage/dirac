@@ -639,7 +639,7 @@ WebInspector.TracingModel.Event.orderedCompareStartTime = function (a, b)
     // Array.mergeOrdered coalesces objects if comparator returns 0.
     // To change this behavior this comparator return -1 in the case events
     // startTime's are equal, so both events got placed into the result array.
-    return a.startTime - b.startTime || -1;
+    return a.startTime - b.startTime || a.ordinal - b.ordinal || -1;
 }
 
 /**
@@ -913,6 +913,7 @@ WebInspector.TracingModel.Thread.prototype = {
         var stack = [];
         for (var i = 0; i < this._events.length; ++i) {
             var e = this._events[i];
+            e.ordinal = i;
             switch (e.phase) {
             case phases.End:
                 this._events[i] = null;  // Mark for removal.
