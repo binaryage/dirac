@@ -472,9 +472,9 @@ WebInspector.TabbedPane.prototype = {
         var minContentConstraints = new Constraints(new Size(0, 0), new Size(50, 50));
         constraints = constraints.widthToMax(minContentConstraints).heightToMax(minContentConstraints);
         if (this._verticalTabLayout)
-            constraints = constraints.addWidth(new Constraints(new Size(this._headerElement.offsetWidth, 0)));
+            constraints = constraints.addWidth(new Constraints(new Size(120, 0)));
         else
-            constraints = constraints.addHeight(new Constraints(new Size(0, this._headerElement.offsetHeight)));
+            constraints = constraints.addHeight(new Constraints(new Size(0, 30)));
         return constraints;
     },
 
