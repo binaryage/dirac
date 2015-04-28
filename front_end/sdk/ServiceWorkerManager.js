@@ -194,6 +194,14 @@ WebInspector.ServiceWorkerManager.prototype = {
     },
 
     /**
+     * @param {string} versionId
+     */
+    skipWaiting: function(versionId)
+    {
+        this._agent.skipWaiting(versionId);
+    },
+
+    /**
      * @param {string} workerId
      * @param {string} url
      */

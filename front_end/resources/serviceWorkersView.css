@@ -70,16 +70,17 @@
     border-bottom: 1px solid #e1e1e1;
     display: flex;
     flex: 1 1 0;
-    font-weight: bold;
+    min-width: 100px;
     overflow: hidden;
     position: relative;
     text-overflow: ellipsis;
 }
 
 .service-workers-version-mode-text {
+    font-weight: bold;
     left: 4px;
     position: absolute;
-    top: 8px;
+    top: 4px;
 }
 
 .service-workers-versions {
@@ -91,7 +92,7 @@
 .service-workers-version-row {
     border-bottom: 1px solid #e1e1e1;
     display: flex;
-    min-height: 30px;
+    min-height: 41px;
     width: 100%;
 }
 
@@ -110,14 +111,14 @@
     -webkit-mask-size: 20px 20px;
     height: 20px;
     left: 4px;
-    top: 8px;
+    top: 10px;
     width: 20px;
 }
 
 .service-workers-version-status-text {
     position: absolute;
     left: 28px;
-    top: 10px;
+    top: 12px;
 }
 
 .service-workers-version-running-status {
@@ -130,7 +131,7 @@
 }
 
 .service-workers-version-running-status-inspectable {
-    min-height: 40px;
+    min-height: 39px;
 }
 
 .service-workers-version-running-status-button {
@@ -215,6 +216,12 @@
     -webkit-mask-position: 7px 3px;
     -webkit-mask-repeat: no-repeat;
     -webkit-mask-size: 18px 18px;
+}
+
+.service-workers-skip-waiting-checkbox-label {
+    left: 10px;
+    position: absolute;
+    top: 20px;
 }
 
 .service-workers-error {
