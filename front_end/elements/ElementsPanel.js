@@ -45,6 +45,7 @@ WebInspector.ElementsPanel = function()
 
     this._searchableView = new WebInspector.SearchableView(this);
     this._searchableView.setMinimumSize(25, 19);
+    this._searchableView.setPlaceholder(WebInspector.UIString("Find by string, selector, or XPath"));
     this._splitView.setMainView(this._searchableView);
     var stackElement = this._searchableView.element;
 

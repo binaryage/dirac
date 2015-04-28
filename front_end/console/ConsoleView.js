@@ -41,6 +41,7 @@ WebInspector.ConsoleView = function()
     this.registerRequiredCSS("console/consoleView.css");
 
     this._searchableView = new WebInspector.SearchableView(this);
+    this._searchableView.setPlaceholder(WebInspector.UIString("Find string in logs"));
     this._searchableView.setMinimalSearchQuerySize(0);
     this._searchableView.show(this.element);
 

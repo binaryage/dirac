@@ -289,6 +289,14 @@ WebInspector.SearchableView.prototype = {
     },
 
     /**
+     * @param {string} placeholder
+     */
+    setPlaceholder: function(placeholder)
+    {
+        this._searchInputElement.placeholder = placeholder;
+    },
+
+    /**
      * @param {boolean} replaceable
      */
     setReplaceable: function(replaceable)

@@ -36,6 +36,7 @@ WebInspector.CPUProfileView = function(profileHeader)
     this.element.classList.add("cpu-profile-view");
 
     this._searchableView = new WebInspector.SearchableView(this);
+    this._searchableView.setPlaceholder(WebInspector.UIString("Find by cost (>50ms), name or file"));
     this._searchableView.show(this.element);
 
     this._viewType = WebInspector.settings.createSetting("cpuProfilerView", WebInspector.CPUProfileView._TypeHeavy);
