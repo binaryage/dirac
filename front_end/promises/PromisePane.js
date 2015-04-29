@@ -59,7 +59,7 @@ WebInspector.PromisePane = function()
 
     this._linkifier = new WebInspector.Linkifier();
 
-    /** @type {!Map.<!WebInspector.Target, !Map.<number, !DebuggerAgent.PromiseDetails>>} */
+    /** @type {!Map.<!WebInspector.Target, !Map.<number, !WebInspector.PromiseDetails>>} */
     this._promiseDetailsByTarget = new Map();
     /** @type {!Map.<number, !WebInspector.DataGridNode>} */
     this._promiseIdToNode = new Map();
@@ -77,6 +77,48 @@ WebInspector.PromisePane = function()
 }
 
 WebInspector.PromisePane._maxPromiseCount = 10000;
+
+
+/**
+ * @constructor
+ * @param {!DebuggerAgent.PromiseDetails} details
+ */
+WebInspector.PromiseDetails = function(details)
+{
+    this.id = details.id;
+    this.isGarbageCollected = false;
+    this.update(details);
+}
+
+WebInspector.PromiseDetails.prototype = {
+    /**
+     * @param {!DebuggerAgent.PromiseDetails} details
+     */
+    update: function(details)
+    {
+        if (this.id !== details.id)
+            throw new Error("Invalid id, expected " + this.id + " was " + details.id);
+        if (details.status)
+            this.status = details.status;
+        if (details.parentId)
+            this.parentId = details.parentId;
+        if (details.callFrame)
+            this.callFrame = details.callFrame;
+        if (details.creationTime)
+            this.creationTime = details.creationTime;
+        if (details.settlementTime)
+            this.settlementTime = details.settlementTime;
+        if (details.creationStack)
+            this.creationStack = details.creationStack;
+        if (details.asyncCreationStack)
+            this.asyncCreationStack = details.asyncCreationStack;
+        if (details.settlementStack)
+            this.settlementStack = details.settlementStack;
+        if (details.asyncSettlementStack)
+            this.asyncSettlementStack = details.asyncSettlementStack;
+    }
+}
+
 
 WebInspector.PromisePane.prototype = {
     /**
@@ -234,8 +276,8 @@ WebInspector.PromisePane.prototype = {
         return true;
 
         /**
-         * @param {!DebuggerAgent.PromiseDetails} x
-         * @param {!DebuggerAgent.PromiseDetails} y
+         * @param {!WebInspector.PromiseDetails} x
+         * @param {!WebInspector.PromiseDetails} y
          * @return {number}
          */
         function compare(x, y)
@@ -253,9 +295,7 @@ WebInspector.PromisePane.prototype = {
     {
         var target = /** @type {!WebInspector.Target} */ (event.target.target());
         var eventType = /** @type {string} */ (event.data.eventType);
-        var details = /** @type {!DebuggerAgent.PromiseDetails} */ (event.data.promise);
-        if (eventType === "gc")
-            details.__isGarbageCollected = true;
+        var protocolDetails = /** @type {!DebuggerAgent.PromiseDetails} */ (event.data.promise);
 
         var promiseIdToDetails = this._promiseDetailsByTarget.get(target);
         if (!promiseIdToDetails) {
@@ -263,12 +303,19 @@ WebInspector.PromisePane.prototype = {
             this._promiseDetailsByTarget.set(target, promiseIdToDetails)
         }
 
-        var previousDetails = promiseIdToDetails.get(details.id);
-        if (!previousDetails && eventType === "gc")
+        var details = promiseIdToDetails.get(protocolDetails.id);
+        if (!details && eventType === "gc")
             return;
 
         var truncated = this._truncateLogIfNeeded(target);
+        if (details)
+            details.update(protocolDetails)
+        else
+            details = new WebInspector.PromiseDetails(protocolDetails);
         promiseIdToDetails.set(details.id, details);
+
+        if (eventType === "gc")
+            details.isGarbageCollected = true;
 
         if (target === this._target) {
             if (!this.isShowing()) {
@@ -281,7 +328,7 @@ WebInspector.PromisePane.prototype = {
             }
 
             var node = /** @type {!WebInspector.DataGridNode} */ (this._promiseIdToNode.get(details.id));
-            var wasVisible = !previousDetails || this._filter.shouldBeVisible(previousDetails, node);
+            var wasVisible = !node || !node._isPromiseHidden;
 
             // Check for the fast path on GC events.
             if (eventType === "gc" && node && node.parent && !this._filter.shouldHideCollectedPromises())
@@ -298,7 +345,7 @@ WebInspector.PromisePane.prototype = {
     },
 
     /**
-     * @param {!DebuggerAgent.PromiseDetails} details
+     * @param {!WebInspector.PromiseDetails} details
      */
     _attachDataGridNode: function(details)
     {
@@ -313,12 +360,12 @@ WebInspector.PromisePane.prototype = {
     },
 
     /**
-     * @param {!DebuggerAgent.PromiseDetails} details
+     * @param {!WebInspector.PromiseDetails} details
      * @return {!WebInspector.DataGridNode}
      */
     _findVisibleParentNodeDetails: function(details)
     {
-        var promiseIdToDetails = /** @type {!Map.<number, !DebuggerAgent.PromiseDetails>} */ (this._promiseDetailsByTarget.get(this._target));
+        var promiseIdToDetails = /** @type {!Map.<number, !WebInspector.PromiseDetails>} */ (this._promiseDetailsByTarget.get(this._target));
         var currentDetails = details;
         while (currentDetails) {
             var parentId = currentDetails.parentId;
@@ -335,7 +382,7 @@ WebInspector.PromisePane.prototype = {
     },
 
     /**
-     * @param {!DebuggerAgent.PromiseDetails} details
+     * @param {!WebInspector.PromiseDetails} details
      * @return {!WebInspector.DataGridNode}
      */
     _createDataGridNode: function(details)
@@ -360,15 +407,16 @@ WebInspector.PromisePane.prototype = {
             return;
 
         var rootNode = this._dataGrid.rootNode();
-        var promiseIdToDetails = /** @type {!Map.<number, !DebuggerAgent.PromiseDetails>} */ (this._promiseDetailsByTarget.get(this._target));
+        var promiseIdToDetails = /** @type {!Map.<number, !WebInspector.PromiseDetails>} */ (this._promiseDetailsByTarget.get(this._target));
 
         var nodesToInsert = { __proto__: null };
         // The for..of loop iterates in insertion order.
         for (var pair of promiseIdToDetails) {
             var id = /** @type {number} */ (pair[0]);
-            var details = /** @type {!DebuggerAgent.PromiseDetails} */ (pair[1]);
+            var details = /** @type {!WebInspector.PromiseDetails} */ (pair[1]);
             var node = this._createDataGridNode(details);
-            if (!this._filter.shouldBeVisible(details, node)) {
+            node._isPromiseHidden = !this._filter.shouldBeVisible(details, node);
+            if (node._isPromiseHidden) {
                 ++this._hiddenByFilterCount;
                 continue;
             }
@@ -413,7 +461,7 @@ WebInspector.PromisePane.prototype = {
         var promiseId = node.promiseId();
         if (this._promiseDetailsByTarget.has(target)) {
             var details = this._promiseDetailsByTarget.get(target).get(promiseId);
-            if (details.__isGarbageCollected)
+            if (details.isGarbageCollected)
                 return;
         }
 
@@ -500,7 +548,7 @@ WebInspector.PromisePane.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.ViewportDataGridNode}
- * @param {!DebuggerAgent.PromiseDetails} details
+ * @param {!WebInspector.PromiseDetails} details
  * @param {!WebInspector.Target} target
  * @param {!WebInspector.Linkifier} linkifier
  * @param {!WebInspector.ViewportDataGrid} dataGrid
@@ -525,7 +573,7 @@ WebInspector.PromiseDataGridNode.prototype = {
     },
 
     /**
-     * @param {!DebuggerAgent.PromiseDetails} details
+     * @param {!WebInspector.PromiseDetails} details
      */
     update: function(details)
     {
@@ -564,7 +612,7 @@ WebInspector.PromiseDataGridNode.prototype = {
      */
     createCells: function()
     {
-        this._element.classList.toggle("promise-gc", !!this._details.__isGarbageCollected);
+        this._element.classList.toggle("promise-gc", !!this._details.isGarbageCollected);
         WebInspector.ViewportDataGridNode.prototype.createCells.call(this);
     },
 
@@ -605,7 +653,7 @@ WebInspector.PromiseDataGridNode.prototype = {
                 title = WebInspector.UIString("Rejected");
                 break;
             }
-            if (details.__isGarbageCollected)
+            if (details.isGarbageCollected)
                 title += " " + WebInspector.UIString("(garbage collected)");
             cell.createChild("div", "status " + details.status).title = title;
             break;
@@ -733,7 +781,7 @@ WebInspector.PromisePaneFilter.prototype = {
     },
 
     /**
-     * @param {!DebuggerAgent.PromiseDetails} details
+     * @param {!WebInspector.PromiseDetails} details
      * @param {!WebInspector.DataGridNode} node
      * @return {boolean}
      */
@@ -742,7 +790,7 @@ WebInspector.PromisePaneFilter.prototype = {
         if (!this._statusFilterUI.accept(details.status))
             return false;
 
-        if (this.shouldHideCollectedPromises() && details.__isGarbageCollected)
+        if (this.shouldHideCollectedPromises() && details.isGarbageCollected)
             return false;
 
         var regex = this._textFilterUI.regex();
