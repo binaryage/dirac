@@ -56,6 +56,10 @@
 
 .flame-chart-selection-overlay .time-span {
     white-space: nowrap;
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
 }
 
 .flame-chart-entry-info {
