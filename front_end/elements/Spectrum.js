@@ -112,7 +112,7 @@ WebInspector.Spectrum = function()
     function alphaDrag(element, dragX, dragY)
     {
         this._hsv[3] = Math.round((dragX / this._hueAlphaWidth) * 100) / 100;
-        if (this._color().hasAlpha() && (this._currentFormat === WebInspector.Color.Format.HEX || this._currentFormat === WebInspector.Color.Format.Nickname))
+        if (this._color().hasAlpha() && (this._currentFormat === WebInspector.Color.Format.ShortHEX || this._currentFormat === WebInspector.Color.Format.HEX || this._currentFormat === WebInspector.Color.Format.Nickname))
             this.setColorFormat(WebInspector.Color.Format.RGB);
         this._onchange();
     }
@@ -261,8 +261,7 @@ WebInspector.Spectrum.prototype = {
             format = WebInspector.Color.Format.RGB;
         else if (format === WebInspector.Color.Format.HSLA)
             format = WebInspector.Color.Format.HSL;
-        else if (format === WebInspector.Color.Format.ShortHEX)
-            format = WebInspector.Color.Format.HEX;
+        this._originalFormat = format;
         this._currentFormat = format;
     },
 
@@ -285,7 +284,7 @@ WebInspector.Spectrum.prototype = {
         if (colorString)
             return colorString;
 
-        if (this._currentFormat === cf.Nickname) {
+        if (this._currentFormat === cf.Nickname || this._currentFormat === cf.ShortHEX) {
             colorString = color.asString(cf.HEX);
             if (colorString)
                 return colorString;
@@ -341,10 +340,13 @@ WebInspector.Spectrum.prototype = {
     _updateInput: function()
     {
         var cf = WebInspector.Color.Format;
-        if (this._currentFormat === cf.HEX || this._currentFormat === cf.Nickname) {
+        if (this._currentFormat === cf.HEX || this._currentFormat === cf.ShortHEX || this._currentFormat === cf.Nickname) {
             this._hexContainer.hidden = false;
             this._displayContainer.hidden = true;
-            this._hexValue.value = this._color().asString(cf.HEX);
+            if (this._currentFormat === cf.ShortHEX && this._color().canBeShortHex())
+                this._hexValue.value = this._color().asString(cf.ShortHEX);
+            else
+                this._hexValue.value = this._color().asString(cf.HEX);
         } else {
             // RGBA, HSLA display.
             this._hexContainer.hidden = true;
@@ -369,7 +371,8 @@ WebInspector.Spectrum.prototype = {
         // Show border if the swatch is white.
         this._swatchInnerElement.classList.toggle("swatch-inner-white", this._color().hsla()[2] > 0.9);
         this._dragHelperElement.style.backgroundColor = /** @type {string} */ (this._color().asString(WebInspector.Color.Format.RGBA));
-        this._alphaElementBackground.style.backgroundImage = String.sprintf("linear-gradient(to right, rgba(0,0,0,0), %s)", h.asString(WebInspector.Color.Format.RGB));
+        var noAlpha = WebInspector.Color.fromHSVA(this._hsv.slice(0,3).concat(1));
+        this._alphaElementBackground.style.backgroundImage = String.sprintf("linear-gradient(to right, rgba(0,0,0,0), %s)", noAlpha.asString(WebInspector.Color.Format.RGB));
     },
 
     _formatViewSwitch: function()
@@ -378,7 +381,7 @@ WebInspector.Spectrum.prototype = {
         if (this._currentFormat === cf.RGB)
             this._currentFormat = cf.HSL;
         else if (this._currentFormat === cf.HSL && !this._color().hasAlpha())
-            this._currentFormat = cf.HEX;
+            this._currentFormat = this._originalFormat === cf.ShortHEX ? cf.ShortHEX : cf.HEX;
         else
             this._currentFormat = cf.RGB;
         this._onchange();
@@ -398,11 +401,12 @@ WebInspector.Spectrum.prototype = {
             return element.value;
         }
 
+        const cf = WebInspector.Color.Format;
         var colorString;
-        if (this._currentFormat === WebInspector.Color.Format.HEX) {
+        if (this._currentFormat === cf.HEX || this._currentFormat === cf.ShortHEX) {
             colorString = this._hexValue.value;
         } else {
-            var format = this._currentFormat === WebInspector.Color.Format.RGB ? "rgba" : "hsla";
+            var format = this._currentFormat === cf.RGB ? "rgba" : "hsla";
             var values = this._textValues.map(elementValue).join(",");
             colorString = String.sprintf("%s(%s)", format, values);
         }
@@ -411,6 +415,8 @@ WebInspector.Spectrum.prototype = {
         if (!color)
             return;
         this._hsv = color.hsva();
+        if (this._currentFormat === cf.HEX || this._currentFormat === cf.ShortHEX)
+            this._currentFormat = color.canBeShortHex() ? cf.ShortHEX : cf.HEX;
 
         this._dispatchChangeEvent();
         this._updateHelperLocations();
