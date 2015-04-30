@@ -40,7 +40,7 @@ WebInspector.FilteredItemSelectionDialog = function(delegate)
 
     this.element.className = "filtered-item-list-dialog";
     this.element.addEventListener("keydown", this._onKeyDown.bind(this), false);
-    this.element.appendChild(WebInspector.View.createStyleElement("sources/filteredItemSelectionDialog.css"));
+    this.element.appendChild(WebInspector.Widget.createStyleElement("sources/filteredItemSelectionDialog.css"));
 
     this._promptElement = this.element.createChild("input", "monospace");
     this._promptElement.addEventListener("input", this._onInput.bind(this), false);
@@ -540,7 +540,7 @@ WebInspector.JavaScriptOutlineDialog = function(uiSourceCode, selectItemCallback
 }
 
 /**
- * @param {!WebInspector.View} view
+ * @param {!WebInspector.Widget} view
  * @param {!WebInspector.UISourceCode} uiSourceCode
  * @param {function(number, number)} selectItemCallback
  */

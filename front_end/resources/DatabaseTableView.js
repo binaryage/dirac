@@ -74,14 +74,14 @@ WebInspector.DatabaseTableView.prototype = {
 
     _queryFinished: function(columnNames, values)
     {
-        this.detachChildViews();
+        this.detachChildWidgets();
         this.element.removeChildren();
 
         this._dataGrid = WebInspector.SortableDataGrid.create(columnNames, values);
         this._visibleColumnsInput.setVisible(!!this._dataGrid);
         if (!this._dataGrid) {
-            this._emptyView = new WebInspector.EmptyView(WebInspector.UIString("The “%s”\ntable is empty.", this.tableName));
-            this._emptyView.show(this.element);
+            this._emptyWidget = new WebInspector.EmptyWidget(WebInspector.UIString("The “%s”\ntable is empty.", this.tableName));
+            this._emptyWidget.show(this.element);
             return;
         }
         this._dataGrid.show(this.element);
@@ -128,7 +128,7 @@ WebInspector.DatabaseTableView.prototype = {
 
     _queryError: function(error)
     {
-        this.detachChildViews();
+        this.detachChildWidgets();
         this.element.removeChildren();
 
         var errorMsgElement = createElement("div");

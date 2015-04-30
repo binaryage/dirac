@@ -57,7 +57,7 @@ WebInspector.ElementsSidebarPane.prototype = {
 
 /**
  * @constructor
- * @param {!WebInspector.View} view
+ * @param {!WebInspector.Widget} view
  * @param {function(!WebInspector.Throttler.FinishCallback)} doUpdate
  */
 WebInspector.ElementsSidebarPane._UpdateController = function(view, doUpdate)
@@ -98,12 +98,12 @@ WebInspector.ElementsSidebarPane._UpdateController.prototype = {
 
 /**
  * @constructor
- * @extends {WebInspector.View}
+ * @extends {WebInspector.Widget}
  * @implements {WebInspector.ElementsSidebarView}
  */
 WebInspector.ThrottledElementsSidebarView = function()
 {
-    WebInspector.View.call(this);
+    WebInspector.Widget.call(this);
     this._node = null;
     this._updateController = new WebInspector.ElementsSidebarPane._UpdateController(this, this.doUpdate.bind(this));
 }
@@ -143,18 +143,18 @@ WebInspector.ThrottledElementsSidebarView.prototype = {
 
     wasShown: function()
     {
-        WebInspector.View.prototype.wasShown.call(this);
+        WebInspector.Widget.prototype.wasShown.call(this);
         this._updateController.viewWasShown();
     },
 
     /**
      * @override
-     * @return {!WebInspector.View}
+     * @return {!WebInspector.Widget}
      */
     view: function()
     {
         return this;
     },
 
-    __proto__: WebInspector.View.prototype
+    __proto__: WebInspector.Widget.prototype
 }

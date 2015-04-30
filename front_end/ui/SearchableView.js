@@ -245,7 +245,7 @@ WebInspector.SearchableView.prototype = {
             if (element)
                 return element;
         }
-        return WebInspector.View.prototype.defaultFocusedElement.call(this);
+        return WebInspector.Widget.prototype.defaultFocusedElement.call(this);
     },
 
     /**

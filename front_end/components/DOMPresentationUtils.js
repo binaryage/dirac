@@ -101,7 +101,7 @@ WebInspector.DOMPresentationUtils.linkifyNodeReference = function(node)
 
     var root = createElement("span");
     var shadowRoot = root.createShadowRoot();
-    shadowRoot.appendChild(WebInspector.View.createStyleElement("components/nodeLink.css"));
+    shadowRoot.appendChild(WebInspector.Widget.createStyleElement("components/nodeLink.css"));
     var link = shadowRoot.createChild("div", "node-link");
 
     WebInspector.DOMPresentationUtils.decorateNodeLabel(node, link);
@@ -121,7 +121,7 @@ WebInspector.DOMPresentationUtils.linkifyDeferredNodeReference = function(deferr
 {
     var root = createElement("div");
     var shadowRoot = root.createShadowRoot();
-    shadowRoot.appendChild(WebInspector.View.createStyleElement("components/nodeLink.css"));
+    shadowRoot.appendChild(WebInspector.Widget.createStyleElement("components/nodeLink.css"));
     var link = shadowRoot.createChild("div", "node-link");
     link.createChild("content");
     link.addEventListener("click", deferredNode.resolve.bind(deferredNode, onDeferredNodeResolved), false);

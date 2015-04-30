@@ -102,7 +102,7 @@ body /deep/ iframe.fill {
     height: 100%;
 }
 
-body /deep/ .view {
+body /deep/ .widget {
     position: relative;
     flex: auto;
 }
@@ -133,7 +133,7 @@ body /deep/ .flex-centered {
     justify-content: center;
 }
 
-body /deep/ iframe.view {
+body /deep/ iframe.widget {
     position: absolute;
     width: 100%;
     height: 100%;

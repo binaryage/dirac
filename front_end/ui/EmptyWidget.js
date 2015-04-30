@@ -32,16 +32,16 @@
  * @constructor
  * @extends {WebInspector.VBox}
  */
-WebInspector.EmptyView = function(text)
+WebInspector.EmptyWidget = function(text)
 {
     WebInspector.VBox.call(this);
-    this.registerRequiredCSS("ui/emptyView.css");
+    this.registerRequiredCSS("ui/emptyWidget.css");
     this.element.classList.add("empty-view");
     this.textElement = this.element.createChild("span");
     this._text = text;
 }
 
-WebInspector.EmptyView.prototype = {
+WebInspector.EmptyWidget.prototype = {
     wasShown: function()
     {
         this.textElement.textContent = this._text;

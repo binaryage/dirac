@@ -126,7 +126,7 @@ WebInspector.SourceFrame.prototype = {
 
     willHide: function()
     {
-        WebInspector.View.prototype.willHide.call(this);
+        WebInspector.Widget.prototype.willHide.call(this);
 
         this._clearPositionToReveal();
     },
@@ -347,7 +347,7 @@ WebInspector.SourceFrame.prototype = {
      * @param {!WebInspector.SearchableView.SearchConfig} searchConfig
      * @param {boolean} shouldJump
      * @param {boolean} jumpBackwards
-     * @param {function(!WebInspector.View, number)} searchFinishedCallback
+     * @param {function(!WebInspector.Widget, number)} searchFinishedCallback
      */
     _doFindSearchMatches: function(searchConfig, shouldJump, jumpBackwards, searchFinishedCallback)
     {
@@ -372,7 +372,7 @@ WebInspector.SourceFrame.prototype = {
      * @param {!WebInspector.SearchableView.SearchConfig} searchConfig
      * @param {boolean} shouldJump
      * @param {boolean} jumpBackwards
-     * @param {function(!WebInspector.View, number)} searchFinishedCallback
+     * @param {function(!WebInspector.Widget, number)} searchFinishedCallback
      * @param {function(number)} currentMatchChangedCallback
      * @param {function()} searchResultsChangedCallback
      */

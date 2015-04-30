@@ -183,7 +183,7 @@ WebInspector.SourcesView.prototype = {
     },
 
     /**
-     * @return {!WebInspector.View}
+     * @return {!WebInspector.Widget}
      */
     visibleView: function()
     {
@@ -524,7 +524,7 @@ WebInspector.SourcesView.prototype = {
         this._searchConfig = searchConfig;
 
         /**
-         * @param {!WebInspector.View} view
+         * @param {!WebInspector.Widget} view
          * @param {number} searchMatches
          * @this {WebInspector.SourcesView}
          */

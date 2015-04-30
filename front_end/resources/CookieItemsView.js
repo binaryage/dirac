@@ -51,8 +51,8 @@ WebInspector.CookieItemsView = function(treeElement, cookieDomain)
     this._treeElement = treeElement;
     this._cookieDomain = cookieDomain;
 
-    this._emptyView = new WebInspector.EmptyView(cookieDomain ? WebInspector.UIString("This site has no cookies.") : WebInspector.UIString("By default cookies are disabled for local files.\nYou could override this by starting the browser with --enable-file-cookies command line flag."));
-    this._emptyView.show(this.element);
+    this._emptyWidget = new WebInspector.EmptyWidget(cookieDomain ? WebInspector.UIString("This site has no cookies.") : WebInspector.UIString("By default cookies are disabled for local files.\nYou could override this by starting the browser with --enable-file-cookies command line flag."));
+    this._emptyWidget.show(this.element);
 
     this.element.addEventListener("contextmenu", this._contextMenu.bind(this), true);
 }
@@ -90,7 +90,7 @@ WebInspector.CookieItemsView.prototype = {
 
         if (!this._cookies.length) {
             // Nothing to show.
-            this._emptyView.show(this.element);
+            this._emptyWidget.show(this.element);
             this._clearButton.setVisible(false);
             this._deleteButton.setVisible(false);
             if (this._cookiesTable)
@@ -102,7 +102,7 @@ WebInspector.CookieItemsView.prototype = {
             this._cookiesTable = new WebInspector.CookiesTable(false, this._update.bind(this), this._showDeleteButton.bind(this));
 
         this._cookiesTable.setCookies(this._cookies);
-        this._emptyView.detach();
+        this._emptyWidget.detach();
         this._cookiesTable.show(this.element);
         this._treeElement.subtitle = String.sprintf(WebInspector.UIString("%d cookies (%s)"), this._cookies.length,
             Number.bytesToString(this._totalSize));

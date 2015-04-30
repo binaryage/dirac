@@ -30,12 +30,12 @@
 
 /**
  * @constructor
- * @extends {WebInspector.SplitView}
+ * @extends {WebInspector.SplitWidget}
  * @param {!WebInspector.FileSystemModel.FileSystem} fileSystem
  */
 WebInspector.FileSystemView = function(fileSystem)
 {
-    WebInspector.SplitView.call(this, true, false, "fileSystemViewSplitViewState");
+    WebInspector.SplitWidget.call(this, true, false, "fileSystemViewSplitViewState");
     this.element.classList.add("file-system-view", "storage-view");
 
     var vbox = new WebInspector.VBox();
@@ -43,7 +43,7 @@ WebInspector.FileSystemView = function(fileSystem)
     this._directoryTree = new TreeOutline();
     this._directoryTree.element.classList.add("outline-disclosure", "filesystem-directory-tree");
     vbox.element.appendChild(this._directoryTree.element);
-    this.setSidebarView(vbox);
+    this.setSidebarWidget(vbox);
 
     var rootItem = new WebInspector.FileSystemView.EntryTreeElement(this, fileSystem.root);
     rootItem.expanded = true;
@@ -69,7 +69,7 @@ WebInspector.FileSystemView.prototype = {
     },
 
     /**
-     * @type {!WebInspector.View}
+     * @type {!WebInspector.Widget}
      */
     get visibleView()
     {
@@ -77,7 +77,7 @@ WebInspector.FileSystemView.prototype = {
     },
 
     /**
-     * @param {!WebInspector.View} view
+     * @param {!WebInspector.Widget} view
      */
     showView: function(view)
     {
@@ -86,7 +86,7 @@ WebInspector.FileSystemView.prototype = {
         if (this._visibleView)
             this._visibleView.detach();
         this._visibleView = view;
-        this.setMainView(view);
+        this.setMainWidget(view);
     },
 
     _refresh: function()
@@ -105,7 +105,7 @@ WebInspector.FileSystemView.prototype = {
         this._directoryTree.selectedTreeElement.deleteEntry();
     },
 
-    __proto__: WebInspector.SplitView.prototype
+    __proto__: WebInspector.SplitWidget.prototype
 }
 
 /**

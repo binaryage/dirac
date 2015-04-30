@@ -42,7 +42,7 @@ WebInspector.StyleSheetOutlineDialog = function(uiSourceCode, selectItemCallback
 }
 
 /**
- * @param {!WebInspector.View} view
+ * @param {!WebInspector.Widget} view
  * @param {!WebInspector.UISourceCode} uiSourceCode
  * @param {function(number, number)} selectItemCallback
  */

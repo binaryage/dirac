@@ -25,7 +25,7 @@
 
 /**
  * @constructor
- * @extends {WebInspector.View}
+ * @extends {WebInspector.Widget}
  * @param {!Array.<!WebInspector.DataGrid.ColumnDescriptor>} columnsArray
  * @param {function(!WebInspector.DataGridNode, string, string, string)=} editCallback
  * @param {function(!WebInspector.DataGridNode)=} deleteCallback
@@ -34,7 +34,7 @@
  */
 WebInspector.DataGrid = function(columnsArray, editCallback, deleteCallback, refreshCallback, contextMenuCallback)
 {
-    WebInspector.View.call(this);
+    WebInspector.Widget.call(this);
     this.registerRequiredCSS("ui_lazy/dataGrid.css");
 
     this.element.className = "data-grid"; // Override
@@ -1066,7 +1066,7 @@ WebInspector.DataGrid.prototype = {
 
     CenterResizerOverBorderAdjustment: 3,
 
-    __proto__: WebInspector.View.prototype
+    __proto__: WebInspector.Widget.prototype
 }
 
 /** @enum {string} */

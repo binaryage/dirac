@@ -52,7 +52,7 @@ WebInspector.TimelineView = function(delegate, model)
     this._scrollTop = 0;
 
     this._recordsView = this._createRecordsView();
-    this._recordsView.addEventListener(WebInspector.SplitView.Events.SidebarSizeChanged, this._sidebarResized, this);
+    this._recordsView.addEventListener(WebInspector.SplitWidget.Events.SidebarSizeChanged, this._sidebarResized, this);
 
     this._topGapElement = this.element.createChild("div", "timeline-gap");
     this._recordsView.show(this.element);
@@ -85,7 +85,7 @@ WebInspector.TimelineView.prototype = {
     },
 
     /**
-     * @return {!WebInspector.SplitView}
+     * @return {!WebInspector.SplitWidget}
      */
     _createRecordsView: function()
     {
@@ -94,19 +94,19 @@ WebInspector.TimelineView.prototype = {
         this._containerElement.id = "timeline-container";
         this._containerElement.addEventListener("scroll", this._onScroll.bind(this), false);
 
-        var recordsView = new WebInspector.SplitView(true, false, "timelinePanelRecorsSplitViewState");
+        var recordsView = new WebInspector.SplitWidget(true, false, "timelinePanelRecorsSplitViewState");
         recordsView.element.style.flex = "1 0 auto";
 
         // Create records list in the records sidebar.
-        var sidebarView = new WebInspector.VBox();
-        sidebarView.element.createChild("div", "timeline-records-title").textContent = WebInspector.UIString("RECORDS");
-        recordsView.setSidebarView(sidebarView);
-        this._sidebarListElement = sidebarView.element.createChild("div", "timeline-records-list");
+        var sidebarWidget = new WebInspector.VBox();
+        sidebarWidget.element.createChild("div", "timeline-records-title").textContent = WebInspector.UIString("RECORDS");
+        recordsView.setSidebarWidget(sidebarWidget);
+        this._sidebarListElement = sidebarWidget.element.createChild("div", "timeline-records-list");
 
         // Create grid in the records main area.
         this._gridContainer = new WebInspector.VBoxWithResizeCallback(this._onViewportResize.bind(this));
         this._gridContainer.element.id = "resources-container-content";
-        recordsView.setMainView(this._gridContainer);
+        recordsView.setMainWidget(this._gridContainer);
         this._timelineGrid = new WebInspector.TimelineGrid();
         this._gridContainer.element.appendChild(this._timelineGrid.element);
 
@@ -215,7 +215,7 @@ WebInspector.TimelineView.prototype = {
      */
     _sidebarResized: function(event)
     {
-        this.dispatchEventToListeners(WebInspector.SplitView.Events.SidebarSizeChanged, event.data);
+        this.dispatchEventToListeners(WebInspector.SplitWidget.Events.SidebarSizeChanged, event.data);
     },
 
     _onViewportResize: function()
@@ -250,7 +250,7 @@ WebInspector.TimelineView.prototype = {
 
     /**
      * @override
-     * @return {!WebInspector.View}
+     * @return {!WebInspector.Widget}
      */
     view: function()
     {
@@ -296,7 +296,7 @@ WebInspector.TimelineView.prototype = {
     willHide: function()
     {
         this._closeRecordDetails();
-        WebInspector.View.prototype.willHide.call(this);
+        WebInspector.Widget.prototype.willHide.call(this);
     },
 
     _onScroll: function(event)

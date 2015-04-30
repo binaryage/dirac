@@ -78,7 +78,7 @@
     margin-right: 36px;
 }
 
-.panel.sources .split-view /deep/ button.scripts-debugger-show-hide-button.right-sidebar-show-hide-button.toggled-hide {
+.panel.sources .split-widget /deep/ button.scripts-debugger-show-hide-button.right-sidebar-show-hide-button.toggled-hide {
     margin-right: 15px;
 }
 
@@ -112,7 +112,7 @@
     bottom: 6px;
 }
 
-.panel.sources .split-view.hbox #scripts-debug-sidebar-resizer-widget {
+.panel.sources .split-widget.hbox #scripts-debug-sidebar-resizer-widget {
     bottom: 0;
 }
 

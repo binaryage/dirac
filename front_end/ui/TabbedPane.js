@@ -75,7 +75,7 @@ WebInspector.TabbedPane.prototype = {
     },
 
     /**
-     * @return {?WebInspector.View}
+     * @return {?WebInspector.Widget}
      */
     get visibleView()
     {
@@ -83,13 +83,13 @@ WebInspector.TabbedPane.prototype = {
     },
 
     /**
-     * @return {!Array.<!WebInspector.View>}
+     * @return {!Array.<!WebInspector.Widget>}
      */
     tabViews: function()
     {
         /**
          * @param {!WebInspector.TabbedPaneTab} tab
-         * @return {!WebInspector.View}
+         * @return {!WebInspector.Widget}
          */
         function tabToView(tab)
         {
@@ -191,7 +191,7 @@ WebInspector.TabbedPane.prototype = {
     /**
      * @param {string} id
      * @param {string} tabTitle
-     * @param {!WebInspector.View} view
+     * @param {!WebInspector.Widget} view
      * @param {string=} tabTooltip
      * @param {boolean=} userGesture
      * @param {boolean=} isCloseable
@@ -422,7 +422,7 @@ WebInspector.TabbedPane.prototype = {
 
     /**
      * @param {string} id
-     * @param {!WebInspector.View} view
+     * @param {!WebInspector.Widget} view
      */
     changeTabView: function(id, view)
     {
@@ -813,7 +813,7 @@ WebInspector.TabbedPane.prototype = {
  * @param {string} id
  * @param {string} title
  * @param {boolean} closeable
- * @param {!WebInspector.View} view
+ * @param {!WebInspector.Widget} view
  * @param {string=} tooltip
  */
 WebInspector.TabbedPaneTab = function(tabbedPane, id, title, closeable, view, tooltip)
@@ -900,7 +900,7 @@ WebInspector.TabbedPaneTab.prototype = {
     },
 
     /**
-     * @return {!WebInspector.View}
+     * @return {!WebInspector.Widget}
      */
     get view()
     {
@@ -1185,7 +1185,7 @@ WebInspector.TabbedPaneTabDelegate.prototype = {
  * @constructor
  * @param {!WebInspector.TabbedPane} tabbedPane
  * @param {string} extensionPoint
- * @param {function(string, !WebInspector.View)=} viewCallback
+ * @param {function(string, !WebInspector.Widget)=} viewCallback
  */
 WebInspector.ExtensibleTabbedPaneController = function(tabbedPane, extensionPoint, viewCallback)
 {
@@ -1193,12 +1193,12 @@ WebInspector.ExtensibleTabbedPaneController = function(tabbedPane, extensionPoin
     this._extensionPoint = extensionPoint;
     this._viewCallback = viewCallback;
     this._tabOrders = {};
-    /** @type {!Object.<string, !Promise.<?WebInspector.View>>} */
+    /** @type {!Object.<string, !Promise.<?WebInspector.Widget>>} */
     this._promiseForId = {};
 
     this._tabbedPane.setRetainTabOrder(true, this._tabOrderComparator.bind(this));
     this._tabbedPane.addEventListener(WebInspector.TabbedPane.EventTypes.TabSelected, this._tabSelected, this);
-    /** @type {!Map.<string, ?WebInspector.View>} */
+    /** @type {!Map.<string, ?WebInspector.Widget>} */
     this._views = new Map();
     this._initialize();
 }
@@ -1217,7 +1217,7 @@ WebInspector.ExtensibleTabbedPaneController.prototype = {
             var title = WebInspector.UIString(descriptor["title"]);
 
             this._extensions.set(id, extensions[i]);
-            this._tabbedPane.appendTab(id, title, new WebInspector.View());
+            this._tabbedPane.appendTab(id, title, new WebInspector.Widget());
         }
     },
 
@@ -1225,13 +1225,13 @@ WebInspector.ExtensibleTabbedPaneController.prototype = {
      * @param {string} id
      * @param {string} title
      * @param {number} order
-     * @param {!WebInspector.View} view
+     * @param {!WebInspector.Widget} view
      */
     appendView: function(id, title, order, view)
     {
         this._tabOrders[id] = order;
         this._views.set(id, view);
-        this._tabbedPane.appendTab(id, title, new WebInspector.View());
+        this._tabbedPane.appendTab(id, title, new WebInspector.Widget());
     },
 
     /**
@@ -1244,7 +1244,7 @@ WebInspector.ExtensibleTabbedPaneController.prototype = {
 
         /**
          * @this {WebInspector.ExtensibleTabbedPaneController}
-         * @param {?WebInspector.View} view
+         * @param {?WebInspector.Widget} view
          */
         function viewLoaded(view)
         {
@@ -1267,19 +1267,19 @@ WebInspector.ExtensibleTabbedPaneController.prototype = {
 
     /**
      * @param {string} id
-     * @return {!Promise.<?WebInspector.View>}
+     * @return {!Promise.<?WebInspector.Widget>}
      */
     viewForId: function(id)
     {
         if (this._views.has(id))
-            return Promise.resolve(/** @type {?WebInspector.View} */ (this._views.get(id)));
+            return Promise.resolve(/** @type {?WebInspector.Widget} */ (this._views.get(id)));
         if (!this._extensions.has(id))
-            return Promise.resolve(/** @type {?WebInspector.View} */ (null));
+            return Promise.resolve(/** @type {?WebInspector.Widget} */ (null));
         if (this._promiseForId[id])
             return this._promiseForId[id];
 
         var promise = this._extensions.get(id).instancePromise();
-        this._promiseForId[id] = /** @type {!Promise.<?WebInspector.View>} */ (promise);
+        this._promiseForId[id] = /** @type {!Promise.<?WebInspector.Widget>} */ (promise);
         return promise.then(cacheView.bind(this));
 
         /**
@@ -1288,7 +1288,7 @@ WebInspector.ExtensibleTabbedPaneController.prototype = {
          */
         function cacheView(object)
         {
-            var view = /** @type {!WebInspector.View} */ (object);
+            var view = /** @type {!WebInspector.Widget} */ (object);
             delete this._promiseForId[id];
             this._views.set(id, view);
             if (this._viewCallback && view)

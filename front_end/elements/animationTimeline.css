@@ -113,7 +113,7 @@ circle.animation-keyframe-point {
     width: 100%;
 }
 
-.view.component-root.platform-linux.vbox {
+.widget.component-root.platform-linux.vbox {
     overflow: hidden;
 }
 

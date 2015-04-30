@@ -40,18 +40,18 @@ WebInspector.InspectorView = function()
     this.setMinimumSize(210, 72);
 
     // DevTools sidebar is a vertical split of panels tabbed pane and a drawer.
-    this._drawerSplitView = new WebInspector.SplitView(false, true, "Inspector.drawerSplitViewState", 200, 200);
-    this._drawerSplitView.hideSidebar();
-    this._drawerSplitView.enableShowModeSaving();
-    this._drawerSplitView.show(this.element);
+    this._drawerSplitWidget = new WebInspector.SplitWidget(false, true, "Inspector.drawerSplitViewState", 200, 200);
+    this._drawerSplitWidget.hideSidebar();
+    this._drawerSplitWidget.enableShowModeSaving();
+    this._drawerSplitWidget.show(this.element);
 
     this._tabbedPane = new WebInspector.TabbedPane();
     this._tabbedPane.element.classList.add("inspector-view-tabbed-pane");
     this._tabbedPane.setRetainTabOrder(true);
     if (Runtime.experiments.isEnabled("materialDesign"))
         this._tabbedPane.setTabSlider(true);
-    this._drawerSplitView.setMainView(this._tabbedPane);
-    this._drawer = new WebInspector.Drawer(this._drawerSplitView);
+    this._drawerSplitWidget.setMainWidget(this._tabbedPane);
+    this._drawer = new WebInspector.Drawer(this._drawerSplitWidget);
 
     this._panels = {};
     // Used by tests.
@@ -138,7 +138,7 @@ WebInspector.InspectorView.prototype = {
     {
         var panelName = panelDescriptor.name();
         this._panelDescriptors[panelName] = panelDescriptor;
-        this._tabbedPane.appendTab(panelName, panelDescriptor.title(), new WebInspector.View());
+        this._tabbedPane.appendTab(panelName, panelDescriptor.title(), new WebInspector.Widget());
         if (this._lastActivePanelSetting.get() === panelName)
             this._tabbedPane.selectTab(panelName);
     },
@@ -316,7 +316,7 @@ WebInspector.InspectorView.prototype = {
     /**
      * @param {string} id
      * @param {string} title
-     * @param {!WebInspector.View} view
+     * @param {!WebInspector.Widget} view
      */
     showCloseableViewInDrawer: function(id, title, view)
     {

@@ -25,13 +25,13 @@ WebInspector.ScreencastApp.prototype = {
     {
         var rootView = new WebInspector.RootView();
 
-        this._rootSplitView = new WebInspector.SplitView(false, true, "InspectorView.screencastSplitViewState", 300, 300);
-        this._rootSplitView.setVertical(true);
-        this._rootSplitView.setSecondIsSidebar(true);
-        this._rootSplitView.show(rootView.element);
-        this._rootSplitView.hideMain();
+        this._rootSplitWidget = new WebInspector.SplitWidget(false, true, "InspectorView.screencastSplitViewState", 300, 300);
+        this._rootSplitWidget.setVertical(true);
+        this._rootSplitWidget.setSecondIsSidebar(true);
+        this._rootSplitWidget.show(rootView.element);
+        this._rootSplitWidget.hideMain();
 
-        this._rootSplitView.setSidebarView(WebInspector.inspectorView);
+        this._rootSplitWidget.setSidebarWidget(WebInspector.inspectorView);
         WebInspector.inspectorView.showInitialPanel();
         rootView.attachToDocument(document);
     },
@@ -47,7 +47,7 @@ WebInspector.ScreencastApp.prototype = {
         this._target = target;
         if (target.hasCapability(WebInspector.Target.Capabilities.CanScreencast)) {
             this._screencastView = new WebInspector.ScreencastView(target);
-            this._rootSplitView.setMainView(this._screencastView);
+            this._rootSplitWidget.setMainWidget(this._screencastView);
             this._screencastView.initialize();
         } else {
             this._toggleButton.setEnabled(false);
@@ -81,14 +81,14 @@ WebInspector.ScreencastApp.prototype = {
 
     _onScreencastEnabledChanged: function()
     {
-        if (!this._rootSplitView)
+        if (!this._rootSplitWidget)
             return;
         var enabled = this._enabledSetting.get() && this._screencastView;
         this._toggleButton.setToggled(enabled);
         if (enabled)
-            this._rootSplitView.showBoth();
+            this._rootSplitWidget.showBoth();
         else
-            this._rootSplitView.hideMain();
+            this._rootSplitWidget.hideMain();
     }
 };
 

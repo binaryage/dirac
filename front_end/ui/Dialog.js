@@ -185,11 +185,11 @@ WebInspector.DialogDelegate.prototype = {
     __proto__: WebInspector.Object.prototype
 }
 
-/** @type {?WebInspector.View} */
+/** @type {?WebInspector.Widget} */
 WebInspector.Dialog._modalHostView = null;
 
 /**
- * @param {!WebInspector.View} view
+ * @param {!WebInspector.Widget} view
  */
 WebInspector.Dialog.setModalHostView = function(view)
 {
@@ -199,7 +199,7 @@ WebInspector.Dialog.setModalHostView = function(view)
 /**
  * FIXME: make utility method in Dialog, so clients use it instead of this getter.
  * Method should be like Dialog.showModalElement(position params, reposition callback).
- * @return {?WebInspector.View}
+ * @return {?WebInspector.Widget}
  */
 WebInspector.Dialog.modalHostView = function()
 {

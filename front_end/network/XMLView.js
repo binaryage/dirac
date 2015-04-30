@@ -4,12 +4,12 @@
 
 /**
  * @constructor
- * @extends {WebInspector.View}
+ * @extends {WebInspector.Widget}
  * @param {!Document} parsedXML
  */
 WebInspector.XMLView = function(parsedXML)
 {
-    WebInspector.View.call(this, true);
+    WebInspector.Widget.call(this, true);
     this.registerRequiredCSS("network/xmlView.css");
     this.contentElement.classList.add("shadow-xml-view", "source-code");
     var treeOutline = new TreeOutline();
@@ -36,7 +36,7 @@ WebInspector.XMLView.parseXML = function(text, mimeType)
 }
 
 WebInspector.XMLView.prototype = {
-    __proto__: WebInspector.View.prototype
+    __proto__: WebInspector.Widget.prototype
 }
 
 /**

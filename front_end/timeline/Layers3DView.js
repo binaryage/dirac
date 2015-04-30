@@ -38,7 +38,7 @@ WebInspector.Layers3DView = function(layerViewHost)
 {
     WebInspector.VBox.call(this);
     this.element.classList.add("layers-3d-view");
-    this._emptyView = new WebInspector.EmptyView(WebInspector.UIString("Layer information is not yet available."));
+    this._emptyWidget = new WebInspector.EmptyWidget(WebInspector.UIString("Layer information is not yet available."));
 
     this._layerViewHost = layerViewHost;
     this._layerViewHost.registerView(this);
@@ -644,10 +644,10 @@ WebInspector.Layers3DView.prototype = {
             return;
         }
         if (!this._layerTree || !this._layerTree.root()) {
-            this._emptyView.show(this.element);
+            this._emptyWidget.show(this.element);
             return;
         }
-        this._emptyView.detach();
+        this._emptyWidget.detach();
 
         var gl = this._initGLIfNecessary();
         this._resizeCanvas();

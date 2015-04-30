@@ -74,11 +74,11 @@ WebInspector.ResourcesPanel = function()
         this._sidebarTree.appendChild(this.fileSystemListTreeElement);
     }
 
-    var mainView = new WebInspector.VBox();
-    this.storageViews = mainView.element.createChild("div", "vbox flex-auto");
-    this._storageViewToolbar = new WebInspector.Toolbar(mainView.element);
+    var mainContainer = new WebInspector.VBox();
+    this.storageViews = mainContainer.element.createChild("div", "vbox flex-auto");
+    this._storageViewToolbar = new WebInspector.Toolbar(mainContainer.element);
     this._storageViewToolbar.element.classList.add("resources-toolbar");
-    this.splitView().setMainView(mainView);
+    this.splitWidget().setMainWidget(mainContainer);
 
     /** @type {!Map.<!WebInspector.Database, !Object.<string, !WebInspector.DatabaseTableView>>} */
     this._databaseTableViews = new Map();
@@ -473,7 +473,7 @@ WebInspector.ResourcesPanel.prototype = {
 
     /**
      * @param {!WebInspector.Resource} resource
-     * @return {?WebInspector.View}
+     * @return {?WebInspector.Widget}
      */
     _resourceViewForResource: function(resource)
     {
@@ -490,7 +490,7 @@ WebInspector.ResourcesPanel.prototype = {
         case WebInspector.resourceTypes.Font:
             return new WebInspector.FontView(resource.url, resource.mimeType, resource);
         default:
-            return new WebInspector.EmptyView(resource.url);
+            return new WebInspector.EmptyWidget(resource.url);
         }
     },
 
@@ -540,7 +540,7 @@ WebInspector.ResourcesPanel.prototype = {
     },
 
     /**
-     * @param {!WebInspector.View} view
+     * @param {!WebInspector.Widget} view
      */
     showIndexedDB: function(view)
     {
@@ -548,7 +548,7 @@ WebInspector.ResourcesPanel.prototype = {
     },
 
     /**
-     * @param {!WebInspector.View} view
+     * @param {!WebInspector.Widget} view
      */
     showServiceWorkerCache: function(view)
     {
@@ -556,7 +556,7 @@ WebInspector.ResourcesPanel.prototype = {
     },
 
     /**
-     * @param {!WebInspector.View} view
+     * @param {!WebInspector.Widget} view
      */
      showServiceWorkersView: function(view)
     {
@@ -613,7 +613,7 @@ WebInspector.ResourcesPanel.prototype = {
     },
 
     /**
-     *  @param {!WebInspector.View} view
+     *  @param {!WebInspector.Widget} view
      */
     showFileSystem: function(view)
     {
@@ -2368,8 +2368,8 @@ WebInspector.StorageCategoryView = function()
     WebInspector.VBox.call(this);
 
     this.element.classList.add("storage-view");
-    this._emptyView = new WebInspector.EmptyView("");
-    this._emptyView.show(this.element);
+    this._emptyWidget = new WebInspector.EmptyWidget("");
+    this._emptyWidget.show(this.element);
 }
 
 WebInspector.StorageCategoryView.prototype = {
@@ -2383,7 +2383,7 @@ WebInspector.StorageCategoryView.prototype = {
 
     setText: function(text)
     {
-        this._emptyView.text = text;
+        this._emptyWidget.text = text;
     },
 
     __proto__: WebInspector.VBox.prototype

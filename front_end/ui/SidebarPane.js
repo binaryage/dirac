@@ -28,12 +28,12 @@
 
 /**
  * @constructor
- * @extends {WebInspector.View}
+ * @extends {WebInspector.Widget}
  * @param {string} title
  */
 WebInspector.SidebarPane = function(title)
 {
-    WebInspector.View.call(this);
+    WebInspector.Widget.call(this);
     this.setMinimumSize(25, 0);
     this.element.className = "sidebar-pane"; // Override
 
@@ -92,7 +92,7 @@ WebInspector.SidebarPane.prototype = {
             this._setVisibleCallback(visible)
     },
 
-    __proto__: WebInspector.View.prototype
+    __proto__: WebInspector.Widget.prototype
 }
 
 /**
@@ -146,11 +146,11 @@ WebInspector.SidebarPaneTitle.prototype = {
 
 /**
  * @constructor
- * @extends {WebInspector.View}
+ * @extends {WebInspector.Widget}
  */
 WebInspector.SidebarPaneStack = function()
 {
-    WebInspector.View.call(this);
+    WebInspector.Widget.call(this);
     this.setMinimumSize(25, 0);
     this.element.className = "sidebar-pane-stack"; // Override
     /** @type {!Map.<!WebInspector.SidebarPane, !WebInspector.SidebarPaneTitle>} */
@@ -182,7 +182,7 @@ WebInspector.SidebarPaneStack.prototype = {
         pane.element.classList.toggle("hidden", !visible);
     },
 
-    __proto__: WebInspector.View.prototype
+    __proto__: WebInspector.Widget.prototype
 }
 
 /**

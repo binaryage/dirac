@@ -51,7 +51,7 @@ WebInspector.ShortcutsScreen.prototype = {
     },
 
     /**
-     * @return {!WebInspector.View}
+     * @return {!WebInspector.Widget}
      */
     createShortcutsTabView: function()
     {
@@ -64,11 +64,11 @@ WebInspector.ShortcutsScreen.prototype = {
         }
         orderedSections.sort(compareSections);
 
-        var view = new WebInspector.View();
+        var widget = new WebInspector.Widget();
 
-        view.element.className = "settings-tab-container"; // Override
-        view.element.createChild("header").createChild("h3").createTextChild(WebInspector.UIString("Shortcuts"));
-        var scrollPane = view.element.createChild("div", "help-container-wrapper");
+        widget.element.className = "settings-tab-container"; // Override
+        widget.element.createChild("header").createChild("h3").createTextChild(WebInspector.UIString("Shortcuts"));
+        var scrollPane = widget.element.createChild("div", "help-container-wrapper");
         var container = scrollPane.createChild("div");
         container.className = "help-content help-container";
         for (var i = 0; i < orderedSections.length; ++i)
@@ -77,7 +77,7 @@ WebInspector.ShortcutsScreen.prototype = {
         var note = scrollPane.createChild("p", "help-footnote");
         note.appendChild(WebInspector.linkifyDocumentationURLAsNode("shortcuts", WebInspector.UIString("Full list of keyboard shortcuts and gestures")));
 
-        return view;
+        return widget;
     }
 }
 

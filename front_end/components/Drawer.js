@@ -30,16 +30,16 @@
 /**
  * @constructor
  * @extends {WebInspector.VBox}
- * @param {!WebInspector.SplitView} splitView
+ * @param {!WebInspector.SplitWidget} splitWidget
  */
-WebInspector.Drawer = function(splitView)
+WebInspector.Drawer = function(splitWidget)
 {
     WebInspector.VBox.call(this);
     this.element.id = "drawer-contents";
 
-    this._splitView = splitView;
-    splitView.hideDefaultResizer();
-    splitView.setSidebarView(this);
+    this._splitWidget = splitWidget;
+    splitWidget.hideDefaultResizer();
+    splitWidget.setSidebarWidget(this);
 
     this._toggleDrawerButton = new WebInspector.ToolbarButton(WebInspector.UIString("Show drawer"), "console-toolbar-item");
     this._toggleDrawerButton.addEventListener("click", this.toggle, this);
@@ -50,7 +50,7 @@ WebInspector.Drawer = function(splitView)
     this._tabbedPane.addEventListener(WebInspector.TabbedPane.EventTypes.TabSelected, this._tabSelected, this);
     new WebInspector.ExtensibleTabbedPaneController(this._tabbedPane, "drawer-view");
 
-    splitView.installResizer(this._tabbedPane.headerElement());
+    splitWidget.installResizer(this._tabbedPane.headerElement());
     this._lastSelectedViewSetting = WebInspector.settings.createSetting("WebInspector.Drawer.lastSelectedView", "console");
     this._tabbedPane.show(this.element);
 }
@@ -92,7 +92,7 @@ WebInspector.Drawer.prototype = {
     /**
      * @param {string} id
      * @param {string} title
-     * @param {!WebInspector.View} view
+     * @param {!WebInspector.Widget} view
      */
     showCloseableView: function(id, title, view)
     {
@@ -132,7 +132,7 @@ WebInspector.Drawer.prototype = {
         if (this.isShowing())
             return;
 
-        this._splitView.showBoth(!immediate);
+        this._splitWidget.showBoth(!immediate);
 
         if (this._visibleView())
             this._visibleView().focus();
@@ -144,11 +144,11 @@ WebInspector.Drawer.prototype = {
             return;
 
         WebInspector.restoreFocusFromElement(this.element);
-        this._splitView.hideSidebar(true);
+        this._splitWidget.hideSidebar(true);
     },
 
     /**
-     * @return {?WebInspector.View} view
+     * @return {?WebInspector.Widget} view
      */
     _visibleView: function()
     {
@@ -206,7 +206,7 @@ WebInspector.Drawer.ViewFactory = function()
 
 WebInspector.Drawer.ViewFactory.prototype = {
     /**
-     * @return {!WebInspector.View}
+     * @return {!WebInspector.Widget}
      */
     createView: function() {}
 }
@@ -225,12 +225,12 @@ WebInspector.Drawer.SingletonViewFactory = function(constructor)
 WebInspector.Drawer.SingletonViewFactory.prototype = {
     /**
      * @override
-     * @return {!WebInspector.View}
+     * @return {!WebInspector.Widget}
      */
     createView: function()
     {
         if (!this._instance)
-            this._instance = /** @type {!WebInspector.View} */(new this._constructor());
+            this._instance = /** @type {!WebInspector.Widget} */(new this._constructor());
         return this._instance;
     }
 }

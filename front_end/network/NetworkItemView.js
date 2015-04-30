@@ -129,7 +129,7 @@ WebInspector.RequestContentView = function(request)
 
 WebInspector.RequestContentView.prototype = {
     /**
-     * @return {!WebInspector.View}
+     * @return {!WebInspector.Widget}
      */
     get innerView()
     {

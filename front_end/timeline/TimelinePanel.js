@@ -91,16 +91,16 @@ WebInspector.TimelinePanel = function()
     WebInspector.targetManager.addEventListener(WebInspector.TargetManager.Events.Load, this._loadEventFired, this);
 
     // Create top level properties splitter.
-    this._detailsSplitView = new WebInspector.SplitView(false, true, "timelinePanelDetailsSplitViewState");
-    this._detailsSplitView.element.classList.add("timeline-details-split");
+    this._detailsSplitWidget = new WebInspector.SplitWidget(false, true, "timelinePanelDetailsSplitViewState");
+    this._detailsSplitWidget.element.classList.add("timeline-details-split");
     this._detailsView = new WebInspector.TimelineDetailsView(this._model);
-    this._detailsSplitView.installResizer(this._detailsView.headerElement());
-    this._detailsSplitView.setSidebarView(this._detailsView);
+    this._detailsSplitWidget.installResizer(this._detailsView.headerElement());
+    this._detailsSplitWidget.setSidebarWidget(this._detailsView);
 
     this._searchableView = new WebInspector.SearchableView(this);
     this._searchableView.setMinimumSize(0, 25);
     this._searchableView.element.classList.add("searchable-view");
-    this._detailsSplitView.setMainView(this._searchableView);
+    this._detailsSplitWidget.setMainWidget(this._searchableView);
 
     this._stackView = new WebInspector.StackView(false);
     this._stackView.show(this._searchableView.element);
@@ -108,7 +108,7 @@ WebInspector.TimelinePanel = function()
 
     this._flameChartEnabledSetting.addChangeListener(this._onModeChanged, this);
     this._onModeChanged();
-    this._detailsSplitView.show(this.element);
+    this._detailsSplitWidget.show(this.element);
     WebInspector.targetManager.addEventListener(WebInspector.TargetManager.Events.SuspendStateChanged, this._onSuspendStateChanged, this);
 }
 
@@ -240,7 +240,7 @@ WebInspector.TimelinePanel.prototype = {
     },
 
     /**
-     * @return {!WebInspector.View}
+     * @return {!WebInspector.Widget}
      */
     _layersView: function()
     {
@@ -267,18 +267,18 @@ WebInspector.TimelinePanel.prototype = {
         modeView.setWindowTimes(this.windowStartTime(), this.windowEndTime());
         modeView.refreshRecords(this._textFilter._regex);
         this._stackView.appendView(modeView.view(), "timelinePanelTimelineStackSplitViewState");
-        modeView.view().addEventListener(WebInspector.SplitView.Events.SidebarSizeChanged, this._sidebarResized, this);
+        modeView.view().addEventListener(WebInspector.SplitWidget.Events.SidebarSizeChanged, this._sidebarResized, this);
         this._currentViews.push(modeView);
     },
 
     _removeAllModeViews: function()
     {
         for (var i = 0; i < this._currentViews.length; ++i) {
-            this._currentViews[i].removeEventListener(WebInspector.SplitView.Events.SidebarSizeChanged, this._sidebarResized, this);
+            this._currentViews[i].removeEventListener(WebInspector.SplitWidget.Events.SidebarSizeChanged, this._sidebarResized, this);
             this._currentViews[i].dispose();
         }
         this._currentViews = [];
-        this._stackView.detachChildViews();
+        this._stackView.detachChildWidgets();
     },
 
     /**
@@ -1278,10 +1278,10 @@ WebInspector.TimelineDetailsView = function(timelineModel)
     WebInspector.TabbedPane.call(this);
     this.element.classList.add("timeline-details");
 
-    this._defaultDetailsView = new WebInspector.VBox();
-    this._defaultDetailsView.element.classList.add("timeline-details-view");
-    this._defaultDetailsContentElement = this._defaultDetailsView.element.createChild("div", "timeline-details-view-body vbox");
-    this.appendTab(WebInspector.TimelinePanel.DetailsTab.Details, WebInspector.UIString("Summary"), this._defaultDetailsView);
+    this._defaultDetailsWidget = new WebInspector.VBox();
+    this._defaultDetailsWidget.element.classList.add("timeline-details-view");
+    this._defaultDetailsContentElement = this._defaultDetailsWidget.element.createChild("div", "timeline-details-view-body vbox");
+    this.appendTab(WebInspector.TimelinePanel.DetailsTab.Details, WebInspector.UIString("Summary"), this._defaultDetailsWidget);
     this.setPreferredTab(WebInspector.TimelinePanel.DetailsTab.Details);
 
     if (Runtime.experiments.isEnabled("timelineDetailsChart")) {
@@ -1327,7 +1327,7 @@ WebInspector.TimelineDetailsView.prototype = {
      * @override
      * @param {string} id
      * @param {string} tabTitle
-     * @param {!WebInspector.View} view
+     * @param {!WebInspector.Widget} view
      * @param {string=} tabTooltip
      * @param {boolean=} userGesture
      * @param {boolean=} isCloseable
@@ -1535,7 +1535,7 @@ WebInspector.TimelineModeView = function()
 
 WebInspector.TimelineModeView.prototype = {
     /**
-     * @return {!WebInspector.View}
+     * @return {!WebInspector.Widget}
      */
     view: function() {},
 

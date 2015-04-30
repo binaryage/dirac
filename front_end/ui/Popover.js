@@ -30,12 +30,12 @@
 
 /**
  * @constructor
- * @extends {WebInspector.View}
+ * @extends {WebInspector.Widget}
  * @param {!WebInspector.PopoverHelper=} popoverHelper
  */
 WebInspector.Popover = function(popoverHelper)
 {
-    WebInspector.View.call(this);
+    WebInspector.Widget.call(this);
     this.markAsRoot();
     this.element.className = WebInspector.Popover._classNamePrefix; // Override
     WebInspector.installComponentRootStyles(this.element);
@@ -64,7 +64,7 @@ WebInspector.Popover.prototype = {
     },
 
     /**
-     * @param {!WebInspector.View} view
+     * @param {!WebInspector.Widget} view
      * @param {!Element|!AnchorBox} anchor
      * @param {?number=} preferredWidth
      * @param {?number=} preferredHeight
@@ -75,7 +75,7 @@ WebInspector.Popover.prototype = {
     },
 
     /**
-     * @param {?WebInspector.View} view
+     * @param {?WebInspector.Widget} view
      * @param {!Element} contentElement
      * @param {!Element|!AnchorBox} anchor
      * @param {?number=} preferredWidth
@@ -103,7 +103,7 @@ WebInspector.Popover.prototype = {
 
         window.addEventListener("resize", this._hideBound, false);
         document.body.appendChild(this._containerElement);
-        WebInspector.View.prototype.show.call(this, this._containerElement);
+        WebInspector.Widget.prototype.show.call(this, this._containerElement);
 
         if (view)
             view.show(this._contentDiv);
@@ -245,7 +245,7 @@ WebInspector.Popover.prototype = {
         this.element.style.height = newElementPosition.height + borderWidth * 2 + "px";
     },
 
-    __proto__: WebInspector.View.prototype
+    __proto__: WebInspector.Widget.prototype
 }
 
 /**

@@ -39,7 +39,7 @@ WebInspector.StylesPopoverHelper.prototype = {
     },
 
     /**
-     * @param {!WebInspector.View} view
+     * @param {!WebInspector.Widget} view
      * @param {!Element} anchorElement
      * @param {function(boolean)=} hiddenCallback
      */

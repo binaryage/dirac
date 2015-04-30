@@ -60,7 +60,7 @@ WebInspector.RequestView.hasTextContent = function(request)
 
 /**
  * @param {!WebInspector.NetworkRequest} request
- * @return {!WebInspector.View}
+ * @return {!WebInspector.Widget}
  */
 WebInspector.RequestView.nonSourceViewForRequest = function(request)
 {

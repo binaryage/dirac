@@ -4,11 +4,11 @@
 
 /**
  * @constructor
- * @extends {WebInspector.View}
+ * @extends {WebInspector.Widget}
  */
 WebInspector.InspectedPagePlaceholder = function()
 {
-    WebInspector.View.call(this);
+    WebInspector.Widget.call(this);
     this.element.classList.add("inspected-page-placeholder");
     WebInspector.zoomManager.addEventListener(WebInspector.ZoomManager.Events.ZoomChanged, this._scheduleUpdate, this);
     this._margins = { top: 0, right: 0, bottom: 0, left: 0 };
@@ -28,18 +28,18 @@ WebInspector.InspectedPagePlaceholder.prototype = {
 
         if (this._useMargins) {
             var adjacent = { top: true, right: true, bottom: true, left: true };
-            var view = this;
-            while (view.parentView()) {
-                var parent = view.parentView();
-                // This view assumes it's always inside the main split view element, not a sidebar.
-                // Every parent which is not a split view, must be of the same size as this view.
-                if (parent instanceof WebInspector.SplitView) {
+            var widget = this;
+            while (widget.parentWidget()) {
+                var parent = widget.parentWidget();
+                // This view assumes it's always inside the main split widget element, not a sidebar.
+                // Every parent which is not a split widget, must be of the same size as this widget.
+                if (parent instanceof WebInspector.SplitWidget) {
                     var side = parent.sidebarSide();
                     if (adjacent[side] && !parent.hasCustomResizer() && parent.isResizable())
                         margins[side] = WebInspector.InspectedPagePlaceholder.MarginValue;
                     adjacent[side] = false;
                 }
-                view = parent;
+                widget = parent;
             }
         }
 
@@ -98,5 +98,5 @@ WebInspector.InspectedPagePlaceholder.prototype = {
         this.dispatchEventToListeners(WebInspector.InspectedPagePlaceholder.Events.Update, bounds);
     },
 
-    __proto__: WebInspector.View.prototype
+    __proto__: WebInspector.Widget.prototype
 };

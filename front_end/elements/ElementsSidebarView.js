@@ -17,7 +17,7 @@ WebInspector.ElementsSidebarView.prototype = {
     setNode: function(node) { },
 
     /**
-     * @return {!WebInspector.View}
+     * @return {!WebInspector.Widget}
      */
     view: function() { }
 }

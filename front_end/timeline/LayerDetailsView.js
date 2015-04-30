@@ -31,16 +31,16 @@
 /**
  * @constructor
  * @param {!WebInspector.LayerViewHost} layerViewHost
- * @extends {WebInspector.View}
+ * @extends {WebInspector.Widget}
  * @implements {WebInspector.LayerView}
  */
 WebInspector.LayerDetailsView = function(layerViewHost)
 {
-    WebInspector.View.call(this);
+    WebInspector.Widget.call(this);
     this.element.classList.add("layer-details-view");
     this._layerViewHost = layerViewHost;
     this._layerViewHost.registerView(this);
-    this._emptyView = new WebInspector.EmptyView(WebInspector.UIString("Select a layer to see its details"));
+    this._emptyWidget = new WebInspector.EmptyWidget(WebInspector.UIString("Select a layer to see its details"));
     this._buildContent();
 }
 
@@ -117,7 +117,7 @@ WebInspector.LayerDetailsView.prototype = {
 
     wasShown: function()
     {
-        WebInspector.View.prototype.wasShown.call(this);
+        WebInspector.Widget.prototype.wasShown.call(this);
         this.update();
     },
 
@@ -160,10 +160,10 @@ WebInspector.LayerDetailsView.prototype = {
         if (!layer) {
             this._tableElement.remove();
             this._paintProfilerButton.remove();
-            this._emptyView.show(this.element);
+            this._emptyWidget.show(this.element);
             return;
         }
-        this._emptyView.detach();
+        this._emptyWidget.detach();
         this.element.appendChild(this._tableElement);
         this.element.appendChild(this._paintProfilerButton);
         this._sizeCell.textContent = WebInspector.UIString("%d × %d (at %d,%d)", layer.width(), layer.height(), layer.offsetX(), layer.offsetY());
@@ -222,5 +222,5 @@ WebInspector.LayerDetailsView.prototype = {
         }
     },
 
-    __proto__: WebInspector.View.prototype
+    __proto__: WebInspector.Widget.prototype
 }

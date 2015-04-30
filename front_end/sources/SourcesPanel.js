@@ -43,20 +43,20 @@ WebInspector.SourcesPanel = function(workspaceForTest)
     this._debugToolbarDrawer = this._createDebugToolbarDrawer();
 
     const initialDebugSidebarWidth = 225;
-    this._splitView = new WebInspector.SplitView(true, true, "sourcesPanelSplitViewState", initialDebugSidebarWidth);
-    this._splitView.enableShowModeSaving();
-    this._splitView.show(this.element);
+    this._splitWidget = new WebInspector.SplitWidget(true, true, "sourcesPanelSplitViewState", initialDebugSidebarWidth);
+    this._splitWidget.enableShowModeSaving();
+    this._splitWidget.show(this.element);
 
     // Create scripts navigator
     const initialNavigatorWidth = 225;
-    this.editorView = new WebInspector.SplitView(true, false, "sourcesPanelNavigatorSplitViewState", initialNavigatorWidth);
+    this.editorView = new WebInspector.SplitWidget(true, false, "sourcesPanelNavigatorSplitViewState", initialNavigatorWidth);
     this.editorView.enableShowModeSaving();
     this.editorView.element.tabIndex = 0;
-    this._splitView.setMainView(this.editorView);
+    this._splitWidget.setMainWidget(this.editorView);
 
     this._navigator = new WebInspector.SourcesNavigator(this._workspace);
     this._navigator.view.setMinimumSize(100, 25);
-    this.editorView.setSidebarView(this._navigator.view);
+    this.editorView.setSidebarWidget(this._navigator.view);
     this._navigator.addEventListener(WebInspector.SourcesNavigator.Events.SourceSelected, this._sourceSelected, this);
     this._navigator.addEventListener(WebInspector.SourcesNavigator.Events.SourceRenamed, this._sourceRenamed, this);
 
@@ -64,13 +64,13 @@ WebInspector.SourcesPanel = function(workspaceForTest)
     this._sourcesView.addEventListener(WebInspector.SourcesView.Events.EditorSelected, this._editorSelected.bind(this));
     this._sourcesView.addEventListener(WebInspector.SourcesView.Events.EditorClosed, this._editorClosed.bind(this));
     this._sourcesView.registerShortcuts(this.registerShortcuts.bind(this));
-    this.editorView.setMainView(this._sourcesView);
+    this.editorView.setMainWidget(this._sourcesView);
 
     this._debugSidebarResizeWidgetElement = createElement("div");
     this._debugSidebarResizeWidgetElement.id = "scripts-debug-sidebar-resizer-widget";
-    this._splitView.addEventListener(WebInspector.SplitView.Events.ShowModeChanged, this._updateDebugSidebarResizeWidget, this);
+    this._splitWidget.addEventListener(WebInspector.SplitWidget.Events.ShowModeChanged, this._updateDebugSidebarResizeWidget, this);
     this._updateDebugSidebarResizeWidget();
-    this._splitView.installResizer(this._debugSidebarResizeWidgetElement);
+    this._splitWidget.installResizer(this._debugSidebarResizeWidgetElement);
 
     this.sidebarPanes = {};
     this.sidebarPanes.threads = new WebInspector.ThreadsSidebarPane();
@@ -278,7 +278,7 @@ WebInspector.SourcesPanel.prototype = {
                 console.warn("ScriptsPanel paused, but callFrames.length is zero."); // TODO remove this once we understand this case better
         }
 
-        this._splitView.showBoth(true);
+        this._splitWidget.showBoth(true);
         this._toggleDebuggerSidebarButton.disabled = true;
         window.focus();
         InspectorFrontendHost.bringToFront();
@@ -319,7 +319,7 @@ WebInspector.SourcesPanel.prototype = {
     },
 
     /**
-     * @return {!WebInspector.View}
+     * @return {!WebInspector.Widget}
      */
     get visibleView()
     {
@@ -791,13 +791,13 @@ WebInspector.SourcesPanel.prototype = {
     _installDebuggerSidebarController: function()
     {
         this.editorView.displayShowHideSidebarButton("navigator");
-        this._toggleDebuggerSidebarButton = this._splitView.displayShowHideSidebarButton("debugger", "scripts-debugger-show-hide-button");
+        this._toggleDebuggerSidebarButton = this._splitWidget.displayShowHideSidebarButton("debugger", "scripts-debugger-show-hide-button");
         this._sourcesView.element.appendChild(this._debugSidebarResizeWidgetElement);
     },
 
     _updateDebugSidebarResizeWidget: function()
     {
-        this._debugSidebarResizeWidgetElement.classList.toggle("hidden", this._splitView.showMode() !== WebInspector.SplitView.ShowMode.Both);
+        this._debugSidebarResizeWidgetElement.classList.toggle("hidden", this._splitWidget.showMode() !== WebInspector.SplitWidget.ShowMode.Both);
     },
 
     /**
@@ -1095,19 +1095,19 @@ WebInspector.SourcesPanel.prototype = {
      */
     _splitVertically: function(vertically)
     {
-        if (this.sidebarPaneView && vertically === !this._splitView.isVertical())
+        if (this.sidebarPaneView && vertically === !this._splitWidget.isVertical())
             return;
 
         if (this.sidebarPaneView)
             this.sidebarPaneView.detach();
 
-        this._splitView.setVertical(!vertically);
-        this._splitView.element.classList.toggle("sources-split-view-vertical", vertically);
+        this._splitWidget.setVertical(!vertically);
+        this._splitWidget.element.classList.toggle("sources-split-view-vertical", vertically);
 
         if (!vertically)
-            this._splitView.uninstallResizer(this._sourcesView.toolbarContainerElement());
+            this._splitWidget.uninstallResizer(this._sourcesView.toolbarContainerElement());
         else
-            this._splitView.installResizer(this._sourcesView.toolbarContainerElement());
+            this._splitWidget.installResizer(this._sourcesView.toolbarContainerElement());
 
         // Create vertical box with stack.
         var vbox = new WebInspector.VBox();
@@ -1128,8 +1128,8 @@ WebInspector.SourcesPanel.prototype = {
             this.sidebarPanes.scopechain.expand();
             this.sidebarPanes.watchExpressions.expandIfNecessary();
         } else {
-            var splitView = new WebInspector.SplitView(true, true, "sourcesPanelDebuggerSidebarSplitViewState", 0.5);
-            splitView.setMainView(vbox);
+            var splitWidget = new WebInspector.SplitWidget(true, true, "sourcesPanelDebuggerSidebarSplitViewState", 0.5);
+            splitWidget.setMainWidget(vbox);
 
             // Populate the left stack.
             sidebarPaneStack.addPane(this.sidebarPanes.threads);
@@ -1142,7 +1142,7 @@ WebInspector.SourcesPanel.prototype = {
                 sidebarPaneStack.addPane(this.sidebarPanes.asyncOperationBreakpoints);
 
             var tabbedPane = new WebInspector.SidebarTabbedPane();
-            splitView.setSidebarView(tabbedPane);
+            splitWidget.setSidebarWidget(tabbedPane);
             tabbedPane.addPane(this.sidebarPanes.scopechain);
             tabbedPane.addPane(this.sidebarPanes.watchExpressions);
             if (this.sidebarPanes.serviceWorkers)
@@ -1150,14 +1150,14 @@ WebInspector.SourcesPanel.prototype = {
             tabbedPane.selectTab(this._lastSelectedTabSetting.get());
             tabbedPane.addEventListener(WebInspector.TabbedPane.EventTypes.TabSelected, this._tabSelected, this);
             this._extensionSidebarPanesContainer = tabbedPane;
-            this.sidebarPaneView = splitView;
+            this.sidebarPaneView = splitWidget;
         }
 
         var extensionSidebarPanes = WebInspector.extensionServer.sidebarPanes();
         for (var i = 0; i < extensionSidebarPanes.length; ++i)
             this._addExtensionSidebarPane(extensionSidebarPanes[i]);
 
-        this._splitView.setSidebarView(this.sidebarPaneView);
+        this._splitWidget.setSidebarWidget(this.sidebarPaneView);
         this.sidebarPanes.threads.expand();
         this.sidebarPanes.jsBreakpoints.expand();
         this.sidebarPanes.callstack.expand();

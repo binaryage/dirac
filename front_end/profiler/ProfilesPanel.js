@@ -288,7 +288,7 @@ WebInspector.ProfileType.DataDisplayDelegate = function()
 WebInspector.ProfileType.DataDisplayDelegate.prototype = {
     /**
      * @param {?WebInspector.ProfileHeader} profile
-     * @return {?WebInspector.View}
+     * @return {?WebInspector.Widget}
      */
     showProfile: function(profile) { },
 
@@ -371,7 +371,7 @@ WebInspector.ProfileHeader.prototype = {
 
     /**
      * @param {!WebInspector.ProfileType.DataDisplayDelegate} dataDisplayDelegate
-     * @return {!WebInspector.View}
+     * @return {!WebInspector.Widget}
      */
     createView: function(dataDisplayDelegate)
     {
@@ -438,8 +438,8 @@ WebInspector.ProfilesPanel = function()
     this.registerRequiredCSS("profiler/profilesPanel.css");
     this.registerRequiredCSS("components/objectValue.css");
 
-    var mainView = new WebInspector.VBox();
-    this.splitView().setMainView(mainView);
+    var mainContainer = new WebInspector.VBox();
+    this.splitWidget().setMainWidget(mainContainer);
 
     this.profilesItemTreeElement = new WebInspector.ProfilesSidebarTreeElement(this);
 
@@ -453,10 +453,10 @@ WebInspector.ProfilesPanel = function()
     this.profileViews = createElement("div");
     this.profileViews.id = "profile-views";
     this.profileViews.classList.add("vbox");
-    mainView.element.appendChild(this.profileViews);
+    mainContainer.element.appendChild(this.profileViews);
 
     this._toolbarElement = createElementWithClass("div", "profiles-toolbar");
-    mainView.element.insertBefore(this._toolbarElement, mainView.element.firstChild);
+    mainContainer.element.insertBefore(this._toolbarElement, mainContainer.element.firstChild);
 
     this.panelSidebarElement().classList.add("profiles-sidebar-tree-box");
     var toolbarContainerLeft = createElementWithClass("div", "profiles-toolbar");
@@ -779,7 +779,7 @@ WebInspector.ProfilesPanel.prototype = {
     /**
      * @override
      * @param {?WebInspector.ProfileHeader} profile
-     * @return {?WebInspector.View}
+     * @return {?WebInspector.Widget}
      */
     showProfile: function(profile)
     {
@@ -832,7 +832,7 @@ WebInspector.ProfilesPanel.prototype = {
 
     /**
      * @param {!WebInspector.ProfileHeader} profile
-     * @return {!WebInspector.View}
+     * @return {!WebInspector.Widget}
      */
     _viewForProfile: function(profile)
     {

@@ -156,7 +156,7 @@ WebInspector.AuditsPanel.prototype = {
         this._visibleView = x;
 
         if (x)
-            this.splitView().setMainView(x);
+            this.splitWidget().setMainWidget(x);
     },
 
     wasShown: function()

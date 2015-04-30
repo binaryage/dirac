@@ -11,7 +11,7 @@ WebInspector.Infobar = function(type, disableSetting)
 {
     this.element = createElementWithClass("div");
     this._shadowRoot = this.element.createShadowRoot();
-    this._shadowRoot.appendChild(WebInspector.View.createStyleElement("ui/infobar.css"));
+    this._shadowRoot.appendChild(WebInspector.Widget.createStyleElement("ui/infobar.css"));
     this._contentElement = this._shadowRoot.createChild("div", "infobar infobar-" + type);
     WebInspector.installComponentRootStyles(this.element);
 

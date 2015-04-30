@@ -169,7 +169,7 @@ WebInspector.DatabaseQueryView.prototype = {
 
     /**
      * @param {string} query
-     * @param {!WebInspector.View} view
+     * @param {!WebInspector.Widget} view
      */
     _appendViewQueryResult: function(query, view)
     {

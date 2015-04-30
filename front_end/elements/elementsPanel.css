@@ -592,7 +592,7 @@
     border-bottom: none;
 }
 
-.sidebar-pane > .body > .split-view {
+.sidebar-pane > .body > .split-widget {
     position: absolute;
     top: 0;
     bottom: 0;

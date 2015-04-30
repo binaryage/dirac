@@ -59,7 +59,7 @@ WebInspector.ExtensionPanel.prototype = {
      */
     defaultFocusedElement: function()
     {
-        return WebInspector.View.prototype.defaultFocusedElement.call(this);
+        return WebInspector.Widget.prototype.defaultFocusedElement.call(this);
     },
 
     /**

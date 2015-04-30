@@ -52,7 +52,7 @@ WebInspector.ResponsiveDesignView.prototype = {
 
         this._createToolbar();
 
-        this._canvasContainer = new WebInspector.View();
+        this._canvasContainer = new WebInspector.Widget();
         this._canvasContainer.element.classList.add("responsive-design");
         this._canvasContainer.show(this._responsiveDesignContainer.element);
 

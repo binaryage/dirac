@@ -61,21 +61,21 @@ WebInspector.NetworkPanel = function()
 
     this._overview = new WebInspector.NetworkOverview();
 
-    this._splitView = new WebInspector.SplitView(true, false, "networkPanelSplitViewState");
-    this._splitView.hideMain();
+    this._splitWidget = new WebInspector.SplitWidget(true, false, "networkPanelSplitViewState");
+    this._splitWidget.hideMain();
 
-    this._splitView.show(this._searchableView.element);
+    this._splitWidget.show(this._searchableView.element);
 
     this._progressBarContainer = createElement("div");
     this._createToolbarButtons();
 
     /** @type {!WebInspector.NetworkLogView} */
     this._networkLogView = new WebInspector.NetworkLogView(this._overview, this._filterBar, this._progressBarContainer, this._networkLogLargeRowsSetting);
-    this._splitView.setSidebarView(this._networkLogView);
+    this._splitWidget.setSidebarWidget(this._networkLogView);
 
-    this._detailsView = new WebInspector.VBox();
-    this._detailsView.element.classList.add("network-details-view");
-    this._splitView.setMainView(this._detailsView);
+    this._detailsWidget = new WebInspector.VBox();
+    this._detailsWidget.element.classList.add("network-details-view");
+    this._splitWidget.setMainWidget(this._detailsWidget);
 
     this._closeButtonElement = createElementWithClass("div", "network-close-button", "dt-close-button");
     this._closeButtonElement.addEventListener("click", this._showRequest.bind(this, null), false);
@@ -230,7 +230,7 @@ WebInspector.NetworkPanel.prototype = {
     {
         var toggled = this._networkLogShowOverviewSetting.get();
         if (toggled)
-            this._overview.show(this._searchableView.element, this._splitView.element);
+            this._overview.show(this._searchableView.element, this._splitWidget.element);
         else
             this._overview.detach();
     },
@@ -264,7 +264,7 @@ WebInspector.NetworkPanel.prototype = {
     _dockSideChanged: function()
     {
         var detailsViewAtBottom = this._isDetailsPaneAtBottom();
-        this._splitView.setVertical(!detailsViewAtBottom);
+        this._splitWidget.setVertical(!detailsViewAtBottom);
         this._updateUI();
     },
 
@@ -374,11 +374,11 @@ WebInspector.NetworkPanel.prototype = {
         if (request) {
             this._networkItemView = new WebInspector.NetworkItemView(request, this._networkLogView.timeCalculator());
             this._networkItemView.insertBeforeTabStrip(this._closeButtonElement);
-            this._networkItemView.show(this._detailsView.element);
-            this._splitView.showBoth();
+            this._networkItemView.show(this._detailsWidget.element);
+            this._splitWidget.showBoth();
             this._networkLogView.revealSelectedItem();
         } else {
-            this._splitView.hideMain();
+            this._splitWidget.hideMain();
             this._networkLogView.clearSelection();
         }
         this._updateUI();
@@ -387,8 +387,8 @@ WebInspector.NetworkPanel.prototype = {
     _updateUI: function()
     {
         var detailsPaneAtBottom = this._isDetailsPaneAtBottom();
-        this._detailsView.element.classList.toggle("network-details-view-tall-header", this._networkLogLargeRowsSetting.get() && !detailsPaneAtBottom);
-        this._networkLogView.switchViewMode(!this._splitView.isResizable() || detailsPaneAtBottom);
+        this._detailsWidget.element.classList.toggle("network-details-view-tall-header", this._networkLogLargeRowsSetting.get() && !detailsPaneAtBottom);
+        this._networkLogView.switchViewMode(!this._splitWidget.isResizable() || detailsPaneAtBottom);
     },
 
     /**

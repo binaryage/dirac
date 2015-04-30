@@ -490,7 +490,7 @@ WebInspector.ConsoleView.prototype = {
         if (this._viewport.scrolledToBottom())
             this._immediatelyScrollToBottom();
         else
-            WebInspector.View.prototype.restoreScrollPositions.call(this);
+            WebInspector.Widget.prototype.restoreScrollPositions.call(this);
     },
 
     onResize: function()

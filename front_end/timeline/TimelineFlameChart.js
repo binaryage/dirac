@@ -1392,7 +1392,7 @@ WebInspector.TimelineFlameChartView = function(delegate, timelineModel, frameMod
     this._delegate = delegate;
     this._model = timelineModel;
 
-    this._splitView = new WebInspector.SplitView(false, false, "timelineFlamechartMainView", 150);
+    this._splitWidget = new WebInspector.SplitWidget(false, false, "timelineFlamechartMainView", 150);
 
     this._dataProvider = new WebInspector.TimelineFlameChartDataProvider(this._model, frameModel);
     this._mainView = new WebInspector.FlameChart(this._dataProvider, this, true);
@@ -1401,9 +1401,9 @@ WebInspector.TimelineFlameChartView = function(delegate, timelineModel, frameMod
     this._networkView = new WebInspector.FlameChart(this._networkDataProvider, this, true);
 
     if (Runtime.experiments.isEnabled("networkRequestsOnTimeline")) {
-        this._splitView.setMainView(this._mainView);
-        this._splitView.setSidebarView(this._networkView);
-        this._splitView.show(this.element);
+        this._splitWidget.setMainWidget(this._mainView);
+        this._splitWidget.setSidebarWidget(this._networkView);
+        this._splitWidget.show(this.element);
     } else {
         this._mainView.show(this.element);
     }
@@ -1468,7 +1468,7 @@ WebInspector.TimelineFlameChartView.prototype = {
 
     /**
      * @override
-     * @return {!WebInspector.View}
+     * @return {!WebInspector.Widget}
      */
     view: function()
     {
@@ -1565,9 +1565,9 @@ WebInspector.TimelineFlameChartView.prototype = {
     enableNetworkPane: function(enable, animate)
     {
         if (enable)
-            this._splitView.showBoth(animate);
+            this._splitWidget.showBoth(animate);
         else
-            this._splitView.hideSidebar(animate);
+            this._splitWidget.hideSidebar(animate);
     },
 
     _refresh: function()

@@ -116,7 +116,7 @@ WebInspector.CPUProfileView.prototype = {
         if (this._flameChart)
             this._flameChart.focus();
         else
-            WebInspector.View.prototype.focus.call(this);
+            WebInspector.Widget.prototype.focus.call(this);
     },
 
     /**

@@ -45,7 +45,7 @@ WebInspector.CustomPreviewSection.createInShadow = function(object, expand)
     var customPreviewSection = new WebInspector.CustomPreviewSection(object);
     var element = WebInspector.CustomPreviewSection._createComponentRoot();
     var shadowRoot = element.createShadowRoot();
-    shadowRoot.appendChild(WebInspector.View.createStyleElement("components/customPreviewSection.css"));
+    shadowRoot.appendChild(WebInspector.Widget.createStyleElement("components/customPreviewSection.css"));
     shadowRoot.appendChild(customPreviewSection.element());
 
     if (expand && object.customPreview().hasBody)
@@ -136,7 +136,7 @@ WebInspector.CustomPreviewSection.prototype = {
         var componentRoot = WebInspector.CustomPreviewSection._createComponentRoot();
         header.appendChild(componentRoot);
         var shadowRoot = componentRoot.createShadowRoot();
-        shadowRoot.appendChild(WebInspector.View.createStyleElement("components/objectValue.css"));
+        shadowRoot.appendChild(WebInspector.Widget.createStyleElement("components/objectValue.css"));
         shadowRoot.appendChild(WebInspector.ObjectPropertiesSection.createValueElement(remoteObject, false));
         if (!remoteObject.hasChildren)
             return header;

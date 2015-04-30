@@ -51,8 +51,8 @@ WebInspector.ApplicationCacheItemsView = function(model, frameId)
 
     this._frameId = frameId;
 
-    this._emptyView = new WebInspector.EmptyView(WebInspector.UIString("No Application Cache information available."));
-    this._emptyView.show(this.element);
+    this._emptyWidget = new WebInspector.EmptyWidget(WebInspector.UIString("No Application Cache information available."));
+    this._emptyWidget.show(this.element);
 
     this._markDirty();
 
@@ -163,7 +163,7 @@ WebInspector.ApplicationCacheItemsView.prototype = {
             delete this._size;
             delete this._resources;
 
-            this._emptyView.show(this.element);
+            this._emptyWidget.show(this.element);
             this.deleteButton.setVisible(false);
             if (this._dataGrid)
                 this._dataGrid.element.classList.add("hidden");
@@ -182,7 +182,7 @@ WebInspector.ApplicationCacheItemsView.prototype = {
         this._populateDataGrid();
         this._dataGrid.autoSizeColumns(20, 80);
         this._dataGrid.element.classList.remove("hidden");
-        this._emptyView.detach();
+        this._emptyWidget.detach();
         this.deleteButton.setVisible(true);
 
         // FIXME: For Chrome, put creationTime and updateTime somewhere.

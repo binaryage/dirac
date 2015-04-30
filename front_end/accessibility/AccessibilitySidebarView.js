@@ -85,7 +85,7 @@ WebInspector.AXNodeSubPane.prototype = {
             this._setAXNode(accessibilityNode);
             callback();
         }
-        var node = this.parentView().parentView().node();
+        var node = this.parentWidget().parentWidget().node();
         WebInspector.AccessibilityModel.fromTarget(node.target()).getAXNode(node.id, accessibilityNodeCallback.bind(this));
     },
 
@@ -135,7 +135,7 @@ WebInspector.AXNodeSubPane.prototype = {
         treeOutline.element.classList.remove("hidden");
         this._infoElement.classList.add("hidden");
 
-        var target = this.parentView().parentView().node().target();
+        var target = this.parentWidget().parentWidget().node().target();
 
         this._computedNameElement.removeChildren();
         if (axNode.name && axNode.name.value)

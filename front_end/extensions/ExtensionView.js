@@ -30,7 +30,7 @@
 
 /**
  * @constructor
- * @extends {WebInspector.View}
+ * @extends {WebInspector.Widget}
  * @param {!WebInspector.ExtensionServer} server
  * @param {string} id
  * @param {string} src
@@ -38,7 +38,7 @@
  */
 WebInspector.ExtensionView = function(server, id, src, className)
 {
-    WebInspector.View.call(this);
+    WebInspector.Widget.call(this);
     this.element.className = "flex-auto fill"; // Override
 
     this._server = server;
@@ -73,7 +73,7 @@ WebInspector.ExtensionView.prototype = {
             this._server.notifyViewShown(this._id, this._frameIndex);
     },
 
-    __proto__: WebInspector.View.prototype
+    __proto__: WebInspector.Widget.prototype
 }
 
 /**

@@ -194,7 +194,7 @@ WebInspector.AdvancedSearchView.prototype = {
         this._updateSearchResultsMessage();
 
         if (!this._searchingView)
-            this._searchingView = new WebInspector.EmptyView(WebInspector.UIString("Searching\u2026"));
+            this._searchingView = new WebInspector.EmptyWidget(WebInspector.UIString("Searching\u2026"));
         this._searchingView.show(this._searchResultsElement);
     },
 
@@ -244,7 +244,7 @@ WebInspector.AdvancedSearchView.prototype = {
         this._resetResults();
 
         if (!this._notFoundView)
-            this._notFoundView = new WebInspector.EmptyView(WebInspector.UIString("No matches found."));
+            this._notFoundView = new WebInspector.EmptyWidget(WebInspector.UIString("No matches found."));
         this._notFoundView.show(this._searchResultsElement);
         this._searchResultsMessageElement.textContent = WebInspector.UIString("No matches found.");
     },
