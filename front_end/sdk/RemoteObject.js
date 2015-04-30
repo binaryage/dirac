@@ -413,11 +413,18 @@ WebInspector.RemoteObjectImpl.prototype = {
          * @param {?Protocol.Error} error
          * @param {!Array.<!RuntimeAgent.PropertyDescriptor>} properties
          * @param {!Array.<!RuntimeAgent.InternalPropertyDescriptor>=} internalProperties
+         * @param {?DebuggerAgent.ExceptionDetails=} exceptionDetails
          * @this {WebInspector.RemoteObjectImpl}
          */
-        function remoteObjectBinder(error, properties, internalProperties)
+        function remoteObjectBinder(error, properties, internalProperties, exceptionDetails)
         {
             if (error) {
+                callback(null, null);
+                return;
+            }
+            if (exceptionDetails) {
+                var msg = new WebInspector.ConsoleMessage(this._target, WebInspector.ConsoleMessage.MessageSource.JS, WebInspector.ConsoleMessage.MessageLevel.Error, exceptionDetails.text);
+                this._target.consoleModel.addMessage(msg);
                 callback(null, null);
                 return;
             }
