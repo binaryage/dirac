@@ -14,6 +14,10 @@ WebInspector.TracingManagerClient = function()
 WebInspector.TracingManagerClient.prototype = {
     tracingStarted: function() { },
     /**
+     * @param {string} error
+     */
+    tracingFailed: function(error) { },
+    /**
      * @param {!Array.<!WebInspector.TracingManager.EventPayload>} events
      */
     traceEventsCollected: function(events) { },
@@ -105,17 +109,27 @@ WebInspector.TracingManager.prototype = {
      * @param {!WebInspector.TracingManagerClient} client
      * @param {string} categoryFilter
      * @param {string} options
-     * @param {function(?string)=} callback
      */
-    start: function(client, categoryFilter, options, callback)
+    start: function(client, categoryFilter, options)
     {
         if (this._activeClient)
             throw new Error("Tracing is already started");
         WebInspector.targetManager.suspendAllTargets();
         var bufferUsageReportingIntervalMs = 500;
         this._activeClient = client;
-        this._target.tracingAgent().start(categoryFilter, options, bufferUsageReportingIntervalMs, callback);
-        this._activeClient.tracingStarted();
+        /**
+         * @param {?string} error
+         * @this {WebInspector.TracingManager}
+         */
+        function traceStartCallback(error)
+        {
+            if (error) {
+                this._activeClient.tracingFailed(error);
+                this._activeClient = null;
+            } else
+                this._activeClient.tracingStarted();
+        }
+        this._target.tracingAgent().start(categoryFilter, options, bufferUsageReportingIntervalMs, traceStartCallback.bind(this));
     },
 
     stop: function()

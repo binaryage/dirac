@@ -601,6 +601,16 @@ WebInspector.NetworkPanel.FilmStripRecorder.prototype = {
 
     /**
      * @override
+     * @param {string} error
+     */
+    tracingFailed: function(error)
+    {
+        WebInspector.console.error("Failed to start tracing: " + error);
+        this._target = null;
+    },
+
+    /**
+     * @override
      * @param {!Array.<!WebInspector.TracingManager.EventPayload>} events
      */
     traceEventsCollected: function(events)
