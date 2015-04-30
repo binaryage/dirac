@@ -175,6 +175,7 @@ body.undocked.platform-mac.inactive .inspector-view-tabbed-pane.tabbed-pane::sha
 }
 
 iframe.extension {
+    flex: auto;
     width: 100%;
     height: 100%;
 }

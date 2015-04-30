@@ -861,6 +861,10 @@ WebInspector.ElementsPanel.prototype = {
         if (this.sidebarPaneView && vertically === !this._splitWidget.isVertical())
             return;
 
+        var extensionSidebarPanes = WebInspector.extensionServer.sidebarPanes();
+        if (this.sidebarPaneView && extensionSidebarPanes.length)
+            return; // We can't reparent extension iframes.
+
         if (this.sidebarPaneView) {
             this.sidebarPaneView.detach();
             this._splitWidget.uninstallResizer(this.sidebarPaneView.headerElement());
@@ -968,7 +972,6 @@ WebInspector.ElementsPanel.prototype = {
 
         this._extensionSidebarPanesContainer = this.sidebarPaneView;
 
-        var extensionSidebarPanes = WebInspector.extensionServer.sidebarPanes();
         for (var i = 0; i < extensionSidebarPanes.length; ++i)
             this._addExtensionSidebarPane(extensionSidebarPanes[i]);
 
