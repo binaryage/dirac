@@ -3318,10 +3318,10 @@
             {
                 "id": "PromiseDetails",
                 "type": "object",
-                "description": "Information about the promise.",
+                "description": "Information about the promise. All fields but id are optional and if present they reflect the new state of the property on the promise with given id.",
                 "properties": [
                     { "name": "id", "type": "integer", "description": "Unique id of the promise." },
-                    { "name": "status", "type": "string", "enum": ["pending", "resolved", "rejected"], "description": "Status of the promise." },
+                    { "name": "status", "type": "string", "optional": true, "enum": ["pending", "resolved", "rejected"], "description": "Status of the promise." },
                     { "name": "parentId", "type": "integer", "optional": true, "description": "Id of the parent promise." },
                     { "name": "callFrame", "$ref": "Console.CallFrame", "optional": true, "description": "Top call frame on promise creation."},
                     { "name": "creationTime", "type": "number", "optional": true, "description": "Creation time of the promise." },
