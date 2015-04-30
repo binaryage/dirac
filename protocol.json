@@ -1750,8 +1750,8 @@
                 "type": "object",
                 "description": "Data entry.",
                 "properties": [
-                    { "name": "request", "type": "string", "description": "JSON-stringified request object." },
-                    { "name": "response", "type": "string", "description": "JSON-stringified response object." }
+                    { "name": "request", "type": "string", "description": "Request url spec." },
+                    { "name": "response", "type": "string", "description": "Response stataus text." }
                 ]
             },
             {
@@ -1798,6 +1798,15 @@
                     { "name": "cacheId", "$ref": "CacheId", "description": "Id of cache for deletion." }
                 ],
                 "description": "Deletes a cache."
+            },
+            {
+                "name": "deleteEntry",
+                "async": true,
+                "parameters": [
+                    { "name": "cacheId", "$ref": "CacheId", "description": "Id of cache where the entry will be deleted." },
+                    { "name": "request", "type": "string", "description": "URL spec of the request." }
+                ],
+                "description": "Deletes a cache entry."
             }
         ]
     },

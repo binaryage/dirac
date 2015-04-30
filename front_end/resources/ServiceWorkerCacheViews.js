@@ -41,7 +41,7 @@ WebInspector.ServiceWorkerCacheView.prototype = {
         columns.push({id: "request", title: WebInspector.UIString("Request")});
         columns.push({id: "response", title: WebInspector.UIString("Response")});
 
-        var dataGrid = new WebInspector.DataGrid(columns);
+        var dataGrid = new WebInspector.DataGrid(columns, undefined, this._deleteButtonClicked.bind(this), this._updateData.bind(this, true));
         return dataGrid;
     },
 
@@ -70,6 +70,14 @@ WebInspector.ServiceWorkerCacheView.prototype = {
     {
         this._skipCount = this._skipCount + this._pageSize;
         this._updateData(false);
+    },
+
+    /**
+     * @param {!WebInspector.DataGridNode} node
+     */
+    _deleteButtonClicked: function(node)
+    {
+        this._model.deleteCacheEntry(this._cache, node.data["request"], node.remove.bind(node));
     },
 
     /**
@@ -162,7 +170,7 @@ WebInspector.ServiceWorkerCacheView.prototype = {
 WebInspector.SWCacheDataGridNode = function(data)
 {
     WebInspector.DataGridNode.call(this, data, false);
-    this.selectable = false;
+    this.selectable = true;
 }
 
 WebInspector.SWCacheDataGridNode.prototype = {
@@ -189,17 +197,9 @@ WebInspector.SWCacheDataGridNode.prototype = {
 
     _formatValue: function(cell, value)
     {
-        var valueElement = WebInspector.ObjectPropertiesSection.createValueElement(value, false, cell);
-        valueElement.classList.add("source-code");
-        if (value.type === "object") {
-            var section = new WebInspector.ObjectPropertiesSection(value, valueElement);
-            section.editable = false;
-            section.skipProto();
-            cell.appendChild(section.element);
-        } else {
-            valueElement.classList.add("primitive-value");
-            cell.appendChild(valueElement);
-        }
+        cell.classList.add("source-code");
+        cell.classList.add("primitive-value");
+        cell.appendChild(createTextNode(value));
     },
 
     __proto__: WebInspector.DataGridNode.prototype

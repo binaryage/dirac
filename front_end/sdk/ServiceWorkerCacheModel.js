@@ -69,6 +69,28 @@ WebInspector.ServiceWorkerCacheModel.prototype = {
 
     /**
      * @param {!WebInspector.ServiceWorkerCacheModel.Cache} cache
+     * @param {string} request
+     * @param {function()} callback
+     */
+    deleteCacheEntry: function(cache, request, callback)
+    {
+
+        /**
+         * @param {?Protocol.Error} error
+         */
+        function myCallback(error)
+        {
+            if (error) {
+                WebInspector.console.error(WebInspector.UIString("ServiceWorkerCacheAgent error deleting cache entry %s in cache: %s", cache.toString(), error));
+                return;
+            }
+            callback();
+        }
+        this._agent.deleteEntry(cache.cacheId, request, myCallback);
+    },
+
+    /**
+     * @param {!WebInspector.ServiceWorkerCacheModel.Cache} cache
      * @param {number} skipCount
      * @param {number} pageSize
      * @param {function(!Array.<!WebInspector.ServiceWorkerCacheModel.Entry>, boolean)} callback
@@ -233,9 +255,7 @@ WebInspector.ServiceWorkerCacheModel.prototype = {
             }
             var entries = [];
             for (var i = 0; i < dataEntries.length; ++i) {
-                var request = WebInspector.RemoteObject.fromLocalObject(JSON.parse(dataEntries[i].request));
-                var response = WebInspector.RemoteObject.fromLocalObject(JSON.parse(dataEntries[i].response));
-                entries.push(new WebInspector.ServiceWorkerCacheModel.Entry(request, response));
+                entries.push(new WebInspector.ServiceWorkerCacheModel.Entry(dataEntries[i].request, dataEntries[i].response));
             }
             callback(entries, hasMore);
         }
@@ -247,8 +267,8 @@ WebInspector.ServiceWorkerCacheModel.prototype = {
 
 /**
  * @constructor
- * @param {!WebInspector.RemoteObject} request
- * @param {!WebInspector.RemoteObject} response
+ * @param {string} request
+ * @param {string} response
  */
 WebInspector.ServiceWorkerCacheModel.Entry = function(request, response)
 {
