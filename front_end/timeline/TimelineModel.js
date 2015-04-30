@@ -655,8 +655,9 @@ WebInspector.TimelineModel.prototype = {
     /**
      * @param {string} categories
      * @param {boolean=} enableJSSampling
+     * @param {function(?string)=} callback
      */
-    _startRecordingWithCategories: function(categories, enableJSSampling)
+    _startRecordingWithCategories: function(categories, enableJSSampling, callback)
     {
         if (!this._targets.length)
             return;
@@ -666,7 +667,7 @@ WebInspector.TimelineModel.prototype = {
         var samplingFrequencyHz = WebInspector.moduleSetting("highResolutionCpuProfiling").get() ? 10000 : 1000;
         var options = "sampling-frequency=" + samplingFrequencyHz;
         var tracingManager = this._targets[0].tracingManager;
-        profilingStartedPromise.then(tracingManager.start.bind(tracingManager, this, categories, options, undefined));
+        profilingStartedPromise.then(tracingManager.start.bind(tracingManager, this, categories, options, callback));
     },
 
     /**
