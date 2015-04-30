@@ -210,6 +210,7 @@
     bottom: 0;
     left: 0;
     z-index: 200;
+    background-color: white;
 }
 
 .network-overview-canvas-container canvas {
