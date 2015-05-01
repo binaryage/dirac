@@ -4957,12 +4957,14 @@
                 "type": "object",
                 "properties": [
                     { "name": "nodeId", "$ref": "AXNodeId", "description": "Unique identifier for this node." },
-                    { "name": "role", "$ref": "AXValue", "description": "This <code>Node</code>'s role, whether explicit or implicit." },
+                    { "name": "ignored", "type": "boolean", "description": "Whether this node is ignored for accessibility" },
+                    { "name": "ignoredReasons", "type": "array", "items": { "$ref": "AXProperty" }, "description": "Collection of reasons why this node is hidden.", "optional": true },
+                    { "name": "role", "$ref": "AXValue", "description": "This <code>Node</code>'s role, whether explicit or implicit.", "optional": true},
                     { "name": "name", "$ref": "AXValue", "description": "The accessible name for this <code>Node</code>.", "optional": true },
                     { "name": "description", "$ref": "AXValue", "description": "The accessible description for this <code>Node</code>.", "optional": true },
                     { "name": "value", "$ref": "AXValue", "description": "The value for this <code>Node</code>.", "optional": true },
                     { "name": "help", "$ref": "AXValue", "description": "Help.", "optional": true },
-                    { "name": "properties", "type": "array", "items": { "$ref": "AXProperty" }, "description": "All other properties" }
+                    { "name": "properties", "type": "array", "items": { "$ref": "AXProperty" }, "description": "All other properties", "optional": true }
                 ],
                 "description": "A node in the accessibility tree."
             }

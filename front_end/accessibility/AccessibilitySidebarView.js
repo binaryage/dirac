@@ -9,6 +9,7 @@
 WebInspector.AccessibilitySidebarView = function()
 {
     WebInspector.ThrottledElementsSidebarView.call(this);
+    this._axNodeSubPane = null;
 }
 
 WebInspector.AccessibilitySidebarView.prototype = {
@@ -33,6 +34,7 @@ WebInspector.AccessibilitySidebarView.prototype = {
             return;
 
         this._axNodeSubPane = new WebInspector.AXNodeSubPane();
+        this._axNodeSubPane.setNode(this.node());
         this._axNodeSubPane.show(this.element);
         this._axNodeSubPane.expand();
 
@@ -40,6 +42,17 @@ WebInspector.AccessibilitySidebarView.prototype = {
         sidebarPaneStack.element.classList.add("flex-auto");
         sidebarPaneStack.show(this.element);
         sidebarPaneStack.addPane(this._axNodeSubPane);
+    },
+
+    /**
+     * @param {?WebInspector.DOMNode} node
+     * @override
+     */
+    setNode: function(node)
+    {
+        WebInspector.ThrottledElementsSidebarView.prototype.setNode.call(this, node);
+        if (this._axNodeSubPane)
+            this._axNodeSubPane.setNode(node);
     },
 
 
@@ -57,20 +70,47 @@ WebInspector.AXNodeSubPane = function()
 
     this.registerRequiredCSS("accessibility/accessibilityNode.css");
 
-    this._computedNameElement = this.bodyElement.createChild("div", "ax-computed-name");
+    this._computedNameElement = this.bodyElement.createChild("div", "ax-computed-name hidden");
 
-    this._infoElement = createElementWithClass("div", "info hidden");
-    this._infoElement.textContent = WebInspector.UIString("No Accessibility Node");
-    this.bodyElement.appendChild(this._infoElement);
+    this._noNodeInfo = createElementWithClass("div", "info");
+    this._noNodeInfo.textContent = WebInspector.UIString("No accessibility node");
+    this.bodyElement.appendChild(this._noNodeInfo);
+
+    this._ignoredInfo = createElementWithClass("div", "ax-ignored-info hidden");
+    this._ignoredInfo.textContent = WebInspector.UIString("Accessibility node not exposed");
+    this.bodyElement.appendChild(this._ignoredInfo);
 
     this._treeOutline = new TreeOutlineInShadow('monospace');
     this._treeOutline.registerRequiredCSS("accessibility/accessibilityNode.css");
     this._treeOutline.registerRequiredCSS("components/objectValue.css");
+    this._treeOutline.element.classList.add("hidden");
     this.bodyElement.appendChild(this._treeOutline.element);
+
+    this._ignoredReasonsTree = new TreeOutlineInShadow();
+    this._ignoredReasonsTree.element.classList.add("hidden");
+    this._ignoredReasonsTree.registerRequiredCSS("accessibility/accessibilityNode.css");
+    this._ignoredReasonsTree.registerRequiredCSS("components/objectValue.css");
+    this.bodyElement.appendChild(this._ignoredReasonsTree.element);
 };
 
 
 WebInspector.AXNodeSubPane.prototype = {
+    /**
+     * @return {?WebInspector.DOMNode}
+     */
+    node: function()
+    {
+        return this._node;
+    },
+
+    /**
+     * @param {?WebInspector.DOMNode} node
+     */
+    setNode: function(node)
+    {
+        this._node = node;
+    },
+
     /**
      * @param {!WebInspector.Throttler.FinishCallback} callback
      */
@@ -85,7 +125,7 @@ WebInspector.AXNodeSubPane.prototype = {
             this._setAXNode(accessibilityNode);
             callback();
         }
-        var node = this.parentWidget().parentWidget().node();
+        var node = this.node();
         WebInspector.AccessibilityModel.fromTarget(node.target()).getAXNode(node.id, accessibilityNodeCallback.bind(this));
     },
 
@@ -124,37 +164,71 @@ WebInspector.AXNodeSubPane.prototype = {
 
         var treeOutline = this._treeOutline;
         treeOutline.removeChildren();
+        var ignoredReasons = this._ignoredReasonsTree;
+        ignoredReasons.removeChildren();
+        var target = this.node().target();
 
         if (!axNode) {
             this._computedNameElement.classList.add("hidden");
             treeOutline.element.classList.add("hidden");
-            this._infoElement.classList.remove("hidden");
+            this._ignoredInfo.classList.add("hidden");
+            ignoredReasons.element.classList.add("hidden");
+
+            this._noNodeInfo.classList.remove("hidden");
+            return;
+        } else if (axNode.ignored) {
+            this._computedNameElement.classList.add("hidden");
+            this._noNodeInfo.classList.add("hidden");
+            treeOutline.element.classList.add("hidden");
+
+            this._ignoredInfo.classList.remove("hidden");
+            ignoredReasons.element.classList.remove("hidden");
+            /**
+             * @param {!AccessibilityAgent.AXProperty} property
+             */
+            function addIgnoredReason(property)
+            {
+                ignoredReasons.appendChild(new WebInspector.AXNodeIgnoredReasonTreeElement(property, axNode, target));
+            }
+            var ignoredReasonsArray = /** @type {!Array.<!Object>} */(axNode.ignoredReasons);
+            for (var reason of ignoredReasonsArray)
+                addIgnoredReason(reason);
+            if (!ignoredReasons.firstChild())
+                ignoredReasons.element.classList.add("hidden");
             return;
         }
+        this._ignoredInfo.classList.add("hidden");
+        ignoredReasons.element.classList.add("hidden");
+        this._noNodeInfo.classList.add("hidden");
+
         this._computedNameElement.classList.remove("hidden");
         treeOutline.element.classList.remove("hidden");
-        this._infoElement.classList.add("hidden");
-
-        var target = this.parentWidget().parentWidget().node().target();
 
         this._computedNameElement.removeChildren();
         if (axNode.name && axNode.name.value)
             this._computedNameElement.textContent = axNode.name.value;
 
+        /**
+         * @param {!AccessibilityAgent.AXProperty} property
+         */
         function addProperty(property)
         {
             treeOutline.appendChild(new WebInspector.AXNodePropertyTreeElement(property, target));
         }
 
-        addProperty({name: "role", value: axNode.role});
+        var roleProperty = /** @type {!AccessibilityAgent.AXProperty} */ ({name: "role", value: axNode.role});
+        addProperty(roleProperty);
 
         for (var propertyName of ["description", "help", "value"]) {
-            if (propertyName in axNode)
-                addProperty({name: propertyName, value: axNode[propertyName]});
+            if (propertyName in axNode) {
+                var defaultProperty = /** @type {!AccessibilityAgent.AXProperty} */ ({name: propertyName, value: axNode[propertyName]});
+                addProperty(defaultProperty);
+            }
         }
 
         var propertyMap = {};
-        for (var property of axNode.properties)
+        var propertiesArray = /** @type {!Array.<!AccessibilityAgent.AXProperty>} */ (axNode.properties);
+        for (var property of propertiesArray)
             propertyMap[property.name] = property;
 
         for (var propertySet of [AccessibilityAgent.AXWidgetAttributes, AccessibilityAgent.AXWidgetStates, AccessibilityAgent.AXGlobalStates, AccessibilityAgent.AXLiveRegionAttributes, AccessibilityAgent.AXRelationshipAttributes]) {
@@ -367,3 +441,114 @@ WebInspector.AXNodePropertyTreeElement.TypeStyles = {
     role: "ax-role",
     internalRole: "ax-internal-role"
 };
+
+/**
+ * @constructor
+ * @extends {TreeElement}
+ * @param {!AccessibilityAgent.AXProperty} property
+ * @param {?AccessibilityAgent.AXNode} axNode
+ * @param {!WebInspector.Target} target
+ */
+WebInspector.AXNodeIgnoredReasonTreeElement = function(property, axNode, target)
+{
+    this._property = property;
+    this._axNode = axNode;
+    this._target = target;
+
+    // Pass an empty title, the title gets made later in onattach.
+    TreeElement.call(this, "");
+    this.toggleOnClick = true;
+    this.selectable = false;
+}
+
+WebInspector.AXNodeIgnoredReasonTreeElement.prototype = {
+    /**
+     * @override
+     */
+    onattach: function()
+    {
+        this.listItemElement.removeChildren();
+
+        this._reasonElement = WebInspector.AXNodeIgnoredReasonTreeElement.createReasonElement(this._property.name, this._axNode);
+        this.listItemElement.appendChild(this._reasonElement);
+
+        var value = this._property.value;
+        if (value.type === "idref") {
+            this._valueElement = WebInspector.AXNodePropertyTreeElement.createRelationshipValueElement(value, this._target);
+            this.listItemElement.appendChild(this._valueElement);
+        }
+    },
+
+    __proto__: TreeElement.prototype
+};
+
+/**
+ * @param {?string} reason
+ * @param {?AccessibilityAgent.AXNode} axNode
+ * @return {?Element}
+ */
+WebInspector.AXNodeIgnoredReasonTreeElement.createReasonElement = function(reason, axNode)
+{
+    var reasonElement = null;
+    switch(reason) {
+    case "activeModalDialog":
+        reasonElement = WebInspector.formatLocalized("Element is hidden by active modal dialog: ", [], "");
+        break;
+    case "ancestorDisallowsChild":
+        reasonElement = WebInspector.formatLocalized("Element is not permitted as child of ", [], "");
+        break;
+    // http://www.w3.org/TR/wai-aria/roles#childrenArePresentational
+    case "ancestorIsLeafNode":
+        reasonElement = WebInspector.formatLocalized("Ancestor's children are all presentational: ", [], "");
+        break;
+    case "ariaHidden":
+        var ariaHiddenSpan = createElement("span", "source-code").textContent = "aria-hidden";
+        reasonElement = WebInspector.formatLocalized("Element is %s.", [ ariaHiddenSpan ], "");
+        break;
+    case "ariaHiddenRoot":
+        var ariaHiddenSpan = createElement("span", "source-code").textContent = "aria-hidden";
+        var trueSpan = createElement("span", "source-code").textContent = "true";
+        reasonElement = WebInspector.formatLocalized("%s is %s on ancestor: ", [ ariaHiddenSpan, trueSpan ], "");
+        break;
+    case "emptyAlt":
+        reasonElement = WebInspector.formatLocalized("Element has empty alt text.", [], "");
+        break;
+    case "emptyText":
+        reasonElement = WebInspector.formatLocalized("No text content.", [], "");
+        break;
+    case "inert":
+        reasonElement = WebInspector.formatLocalized("Element is inert.", [], "");
+        break;
+    case "inheritsPresentation":
+        reasonElement = WebInspector.formatLocalized("Element inherits presentational role from ", [], "");
+        break;
+    case "labelContainer":
+        reasonElement = WebInspector.formatLocalized("Part of label element: ", [], "");
+        break;
+    case "labelFor":
+        reasonElement = WebInspector.formatLocalized("Label for ", [], "");
+        break;
+    case "notRendered":
+        reasonElement = WebInspector.formatLocalized("Element is not rendered.", [], "");
+        break;
+    case "notVisible":
+        reasonElement = WebInspector.formatLocalized("Element is not visible.", [], "");
+        break;
+    case "presentationalRole":
+        var rolePresentationSpan = createElement("span", "source-code").textContent = "role=" + axNode.role.value;
+        reasonElement = WebInspector.formatLocalized("Element has %s.", [ rolePresentationSpan ], "");
+        break;
+    case "probablyPresentational":
+        reasonElement = WebInspector.formatLocalized("Element is presentational.", [], "");
+        break;
+    case "staticTextUsedAsNameFor":
+        reasonElement = WebInspector.formatLocalized("Static text node is used as name for ", [], "");
+        break;
+    case "uninteresting":
+        reasonElement = WebInspector.formatLocalized("Element not interesting for accessibility.", [], "")
+        break;
+    }
+    if (reasonElement)
+        reasonElement.classList.add("ax-reason");
+    return reasonElement;
+}

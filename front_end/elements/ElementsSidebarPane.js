@@ -46,7 +46,7 @@ WebInspector.ElementsSidebarPane.prototype = {
         this._updateController.update();
     },
 
-     wasShown: function()
+    wasShown: function()
     {
         WebInspector.SidebarPane.prototype.wasShown.call(this);
         this._updateController.viewWasShown();

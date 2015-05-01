@@ -563,14 +563,28 @@ Number.withThousandsSeparator = function(num)
 /**
  * @param {string} format
  * @param {?ArrayLike} substitutions
- * @param {!Object.<string, function(string, ...):*>} formatters
- * @param {string} initialValue
- * @param {function(string, string): ?} append
- * @return {!{formattedResult: string, unusedSubstitutions: ?ArrayLike}};
+ * @param {?string} initialValue
+ * @return {!Element}
  */
-WebInspector.formatLocalized = function(format, substitutions, formatters, initialValue, append)
+WebInspector.formatLocalized = function(format, substitutions, initialValue)
 {
-    return String.format(WebInspector.UIString(format), substitutions, formatters, initialValue, append);
+    var element = createElement("span");
+    var formatters = {
+        s: function(substitution)
+        {
+            return substitution;
+        }
+    };
+    function append(a, b)
+    {
+        if (typeof b === "string")
+            b = createTextNode(b);
+        else if (b.shadowRoot)
+            b = createTextNode(b.shadowRoot.lastChild.textContent);
+        element.appendChild(b);
+    }
+    String.format(WebInspector.UIString(format), substitutions, formatters, initialValue, append);
+    return element;
 }
 
 /**

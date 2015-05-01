@@ -30,3 +30,8 @@ span.ax-role {
 span.ax-internal-role {
     font-style: italic;
 }
+
+.ax-ignored-info {
+    padding: 6px;
+    font-style: italic;
+}

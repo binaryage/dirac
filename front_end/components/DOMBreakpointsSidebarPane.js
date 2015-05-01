@@ -163,22 +163,7 @@ WebInspector.DOMBreakpointsSidebarPane.prototype = {
         } else
             message = "Paused on a \"%s\" breakpoint set on %s.";
 
-        var element = createElement("span");
-        var formatters = {
-            s: function(substitution)
-            {
-                return substitution;
-            }
-        };
-        function append(a, b)
-        {
-            if (typeof b === "string")
-                b = createTextNode(b);
-            else if (b.shadowRoot)
-                b = createTextNode(b.shadowRoot.lastChild.textContent);
-            element.appendChild(b);
-        }
-        WebInspector.formatLocalized(message, substitutions, formatters, "", append);
+        var element = WebInspector.formatLocalized(message, substitutions, "");
 
         callback(element);
     },
