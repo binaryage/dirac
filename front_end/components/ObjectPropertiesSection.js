@@ -55,6 +55,30 @@ WebInspector.ObjectPropertiesSection = function(object, title, emptyPlaceholder,
 /** @const */
 WebInspector.ObjectPropertiesSection._arrayLoadThreshold = 100;
 
+/**
+ * @param {!WebInspector.RemoteObject} object
+ * @param {boolean=} skipProto
+ * @return {!Element}
+ */
+WebInspector.ObjectPropertiesSection.defaultObjectPresentation = function(object, skipProto)
+{
+    var componentRoot = createElementWithClass("span", "source-code");
+    WebInspector.installComponentRootStyles(componentRoot);
+
+    var shadowRoot = componentRoot.createShadowRoot();
+    shadowRoot.appendChild(WebInspector.Widget.createStyleElement("components/objectValue.css"));
+    shadowRoot.appendChild(WebInspector.ObjectPropertiesSection.createValueElement(object, false));
+    if (!object.hasChildren)
+        return componentRoot;
+
+    var objectPropertiesSection = new WebInspector.ObjectPropertiesSection(object, componentRoot);
+    objectPropertiesSection.editable = false;
+    if (skipProto)
+        objectPropertiesSection.skipProto();
+
+    return objectPropertiesSection.element;
+}
+
 WebInspector.ObjectPropertiesSection.prototype = {
     skipProto: function()
     {
@@ -1063,7 +1087,7 @@ WebInspector.ObjectPropertiesSection.valueTextForFunctionDescription = function(
 WebInspector.ObjectPropertiesSection.createValueElementWithCustomSupport = function(value, wasThrown, parentElement)
 {
     if (value.customPreview()) {
-        var result = WebInspector.CustomPreviewSection.createInShadow(value);
+        var result = (new WebInspector.CustomPreviewComponent(value)).element;
         result.classList.add("object-properties-section-custom-section");
         return result
     }

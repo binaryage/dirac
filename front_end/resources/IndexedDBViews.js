@@ -390,27 +390,13 @@ WebInspector.IDBDataGridNode.prototype = {
         case "key":
         case "primaryKey":
             cell.removeChildren();
-            this._formatValue(cell, value);
+            var objectElement = WebInspector.ObjectPropertiesSection.defaultObjectPresentation(value, true);
+            cell.appendChild(objectElement);
             break;
         default:
         }
 
         return cell;
-    },
-
-    _formatValue: function(cell, value)
-    {
-        var valueElement = WebInspector.ObjectPropertiesSection.createValueElement(value, false, cell);
-        valueElement.classList.add("source-code");
-        if (value.type === "object") {
-            var section = new WebInspector.ObjectPropertiesSection(value, valueElement);
-            section.editable = false;
-            section.skipProto();
-            cell.appendChild(section.element);
-        } else {
-            valueElement.classList.add("primitive-value");
-            cell.appendChild(valueElement);
-        }
     },
 
     __proto__: WebInspector.DataGridNode.prototype

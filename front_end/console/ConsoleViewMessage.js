@@ -376,7 +376,7 @@ WebInspector.ConsoleViewMessage.prototype = {
     _formatParameter: function(output, forceObjectFormat, includePreview)
     {
         if (output.customPreview()) {
-            return WebInspector.CustomPreviewSection.createInShadow(output);
+            return (new WebInspector.CustomPreviewComponent(output)).element;
         }
 
         var type = forceObjectFormat ? "object" : (output.subtype || output.type);

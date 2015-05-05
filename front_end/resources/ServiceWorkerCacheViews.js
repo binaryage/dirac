@@ -187,19 +187,13 @@ WebInspector.SWCacheDataGridNode.prototype = {
         case "request":
         case "response":
             cell.removeChildren();
-            this._formatValue(cell, value);
+            var objectElement = WebInspector.ObjectPropertiesSection.defaultObjectPresentation(value, true);
+            cell.appendChild(objectElement);
             break;
         default:
         }
 
         return cell;
-    },
-
-    _formatValue: function(cell, value)
-    {
-        cell.classList.add("source-code");
-        cell.classList.add("primitive-value");
-        cell.appendChild(createTextNode(value));
     },
 
     __proto__: WebInspector.DataGridNode.prototype

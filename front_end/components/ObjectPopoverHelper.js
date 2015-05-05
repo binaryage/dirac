@@ -163,7 +163,9 @@ WebInspector.ObjectPopoverHelper.prototype = {
                 }
 
                 if (result.customPreview()) {
-                    popoverContentElement = WebInspector.CustomPreviewSection.createInShadow(result, true);
+                    var customPreviewComponent = new WebInspector.CustomPreviewComponent(result);
+                    customPreviewComponent.expandIfPossible();
+                    popoverContentElement = customPreviewComponent.element;
                 } else {
                     popoverContentElement = createElement("div");
                     this._titleElement = popoverContentElement.createChild("div", "monospace");

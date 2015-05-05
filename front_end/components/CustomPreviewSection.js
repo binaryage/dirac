@@ -37,31 +37,45 @@ WebInspector.CustomPreviewSection = function(object)
 /**
  * @constructor
  * @param {!WebInspector.RemoteObject} object
- * @param {boolean=} expand
- * @return {!Element}
  */
-WebInspector.CustomPreviewSection.createInShadow = function(object, expand)
+WebInspector.CustomPreviewComponent = function(object)
 {
-    var customPreviewSection = new WebInspector.CustomPreviewSection(object);
-    var element = WebInspector.CustomPreviewSection._createComponentRoot();
-    var shadowRoot = element.createShadowRoot();
-    shadowRoot.appendChild(WebInspector.Widget.createStyleElement("components/customPreviewSection.css"));
-    shadowRoot.appendChild(customPreviewSection.element());
+    this._object = object;
+    this._customPreviewSection = new WebInspector.CustomPreviewSection(object);
+    this.element  = createElementWithClass("span", "source-code");
+    WebInspector.installComponentRootStyles(this.element);
+    this.element.addEventListener("contextmenu", this._contextMenuEventFired.bind(this), false);
 
-    if (expand && object.customPreview().hasBody)
-        customPreviewSection._loadBody();
-    return element;
+    var shadowRoot = this.element.createShadowRoot();
+    shadowRoot.appendChild(WebInspector.Widget.createStyleElement("components/customPreviewSection.css"));
+    shadowRoot.appendChild(this._customPreviewSection.element());
 }
 
-/**
- * @return {!Element}
- */
-WebInspector.CustomPreviewSection._createComponentRoot = function()
-{
-    var element = createElement("span");
-    WebInspector.installComponentRootStyles(element);
-    element.classList.add("source-code");
-    return element;
+WebInspector.CustomPreviewComponent.prototype = {
+    expandIfPossible: function()
+    {
+        if (this._object.customPreview().hasBody && this._customPreviewSection)
+            this._customPreviewSection._loadBody();
+    },
+
+    /**
+     * @param {!Event} event
+     */
+    _contextMenuEventFired: function(event)
+    {
+        var contextMenu = new WebInspector.ContextMenu(event);
+        if (this._customPreviewSection)
+            contextMenu.appendItem(WebInspector.UIString.capitalize("Show as Javascript ^object" ), this._disassemble.bind(this));
+        contextMenu.appendApplicableItems(this._object);
+        contextMenu.show();
+    },
+
+    _disassemble: function()
+    {
+        this.element.shadowRoot.textContent = "";
+        this._customPreviewSection = null;
+        this.element.shadowRoot.appendChild(WebInspector.ObjectPropertiesSection.defaultObjectPresentation(this._object));
+    }
 }
 
 WebInspector.CustomPreviewSection._tagsWhiteList = new Set(["span", "div", "ol", "li","table", "tr", "td"]);
@@ -132,18 +146,8 @@ WebInspector.CustomPreviewSection.prototype = {
         if (remoteObject.customPreview())
             return (new WebInspector.CustomPreviewSection(remoteObject)).element();
 
-        var header = createElement("span");
-        var componentRoot = WebInspector.CustomPreviewSection._createComponentRoot();
-        header.appendChild(componentRoot);
-        var shadowRoot = componentRoot.createShadowRoot();
-        shadowRoot.appendChild(WebInspector.Widget.createStyleElement("components/objectValue.css"));
-        shadowRoot.appendChild(WebInspector.ObjectPropertiesSection.createValueElement(remoteObject, false));
-        if (!remoteObject.hasChildren)
-            return header;
-
-        var objectPropertiesSection = new WebInspector.ObjectPropertiesSection(remoteObject, header);
-        var sectionElement = objectPropertiesSection.element;
-        sectionElement.classList.add("custom-expandable-section-standard-section");
+        var sectionElement = WebInspector.ObjectPropertiesSection.defaultObjectPresentation(remoteObject);
+        sectionElement.classList.toggle("custom-expandable-section-standard-section", remoteObject.hasChildren);
         return sectionElement;
     },
 
