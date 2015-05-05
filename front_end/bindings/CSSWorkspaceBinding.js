@@ -161,23 +161,11 @@ WebInspector.CSSWorkspaceBinding.prototype = {
     {
         if (!rawLocation)
             return null;
-        var cssModel = rawLocation.cssModel();
-        var frameIdToSheetIds = cssModel.styleSheetIdsByFrameIdForURL(rawLocation.url);
-        if (!Object.values(frameIdToSheetIds).length)
+        var header = rawLocation.cssModel().styleSheetHeaderForId(rawLocation.styleSheetId);
+        if (!header)
             return null;
-        var styleSheetIds = [];
-        for (var frameId in frameIdToSheetIds)
-            styleSheetIds = styleSheetIds.concat(frameIdToSheetIds[frameId]);
-        var uiLocation;
-        for (var i = 0; !uiLocation && i < styleSheetIds.length; ++i) {
-            var header = cssModel.styleSheetHeaderForId(styleSheetIds[i]);
-            if (!header)
-                continue;
-            var info = this._headerInfo(header);
-            if (info)
-                uiLocation = info._rawLocationToUILocation(rawLocation.lineNumber, rawLocation.columnNumber);
-        }
-        return uiLocation || null;
+        var info = this._headerInfo(header);
+        return info ? info._rawLocationToUILocation(rawLocation.lineNumber, rawLocation.columnNumber) : null;
     }
 }
 

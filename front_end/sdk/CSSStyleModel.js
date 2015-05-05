@@ -555,18 +555,6 @@ WebInspector.CSSStyleModel.prototype = {
     },
 
     /**
-     * @param {string} url
-     * @return {!Object.<!PageAgent.FrameId, !Array.<!CSSAgent.StyleSheetId>>}
-     */
-    styleSheetIdsByFrameIdForURL: function(url)
-    {
-        var styleSheetIdsForFrame = this._styleSheetIdsForURL.get(url);
-        if (!styleSheetIdsForFrame)
-            return {};
-        return styleSheetIdsForFrame;
-    },
-
-    /**
      * @param {!CSSAgent.StyleSheetId} styleSheetId
      * @param {string} newText
      * @param {boolean} majorChange
@@ -636,7 +624,7 @@ WebInspector.CSSStyleModel.prototype = {
  * @constructor
  * @extends {WebInspector.SDKObject}
  * @param {!WebInspector.CSSStyleModel} cssModel
- * @param {?CSSAgent.StyleSheetId} styleSheetId
+ * @param {!CSSAgent.StyleSheetId} styleSheetId
  * @param {string} url
  * @param {number} lineNumber
  * @param {number=} columnNumber
