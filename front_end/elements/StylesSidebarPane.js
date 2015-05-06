@@ -40,7 +40,8 @@ WebInspector.StylesSidebarPane = function(computedStylePane, requestShowCallback
     this._computedStylePane = computedStylePane;
     computedStylePane.setHostingPane(this);
     this.element.addEventListener("contextmenu", this._contextMenuEventFired.bind(this), true);
-    WebInspector.moduleSetting("colorFormat").addChangeListener(this._colorFormatSettingChanged.bind(this));
+    WebInspector.moduleSetting("colorFormat").addChangeListener(this.update.bind(this));
+    WebInspector.moduleSetting("textEditorIndent").addChangeListener(this.update.bind(this));
 
     var toolbar = new WebInspector.Toolbar(this.titleElement);
     toolbar.element.classList.add("styles-pane-toolbar");
@@ -796,17 +797,6 @@ WebInspector.StylesSidebarPane.prototype = {
                 return true;
         }
         return false;
-    },
-
-    /**
-     * @param {!WebInspector.Event} event
-     */
-    _colorFormatSettingChanged: function(event)
-    {
-        for (var block of this._sectionBlocks) {
-            for (var section of block.sections)
-                section.update(true);
-        }
     },
 
     _createNewRuleInViaInspectorStyleSheet: function()
@@ -2288,7 +2278,8 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
         if (!this.treeOutline)
             return;
 
-        this.listItemElement.createChild("span", "styles-clipboard-only").createTextChild(this.disabled ? "  /* " : "  ");
+        var indent = WebInspector.moduleSetting("textEditorIndent").get();
+        this.listItemElement.createChild("span", "styles-clipboard-only").createTextChild(indent + (this.disabled ? "/* " : ""));
         this.listItemElement.appendChild(this.nameElement);
         this.listItemElement.createTextChild(": ");
         this.listItemElement.appendChild(this._expandElement);
