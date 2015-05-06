@@ -85,6 +85,7 @@ WebInspector.DebuggerModel.Events = {
     AsyncOperationCompleted: "AsyncOperationCompleted",
     DebuggerWasEnabled: "DebuggerWasEnabled",
     DebuggerWasDisabled: "DebuggerWasDisabled",
+    BeforeDebuggerPaused: "BeforeDebuggerPaused",
     DebuggerPaused: "DebuggerPaused",
     DebuggerResumed: "DebuggerResumed",
     ParsedScriptSource: "ParsedScriptSource",
@@ -437,17 +438,25 @@ WebInspector.DebuggerModel.prototype = {
 
     /**
      * @param {?WebInspector.DebuggerPausedDetails} debuggerPausedDetails
+     * @return {boolean}
      */
     _setDebuggerPausedDetails: function(debuggerPausedDetails)
     {
         this._isPausing = false;
         this._debuggerPausedDetails = debuggerPausedDetails;
-        if (this._debuggerPausedDetails)
+        if (this._debuggerPausedDetails) {
+            if (Runtime.experiments.isEnabled("emptySourceMapAutoStepping")) {
+                if (this.dispatchEventToListeners(WebInspector.DebuggerModel.Events.BeforeDebuggerPaused, this._debuggerPausedDetails)) {
+                    return false;
+                }
+            }
             this.dispatchEventToListeners(WebInspector.DebuggerModel.Events.DebuggerPaused, this._debuggerPausedDetails);
+        }
         if (debuggerPausedDetails)
             this.setSelectedCallFrame(debuggerPausedDetails.callFrames[0]);
         else
             this.setSelectedCallFrame(null);
+        return true;
     },
 
     /**
@@ -459,11 +468,15 @@ WebInspector.DebuggerModel.prototype = {
      */
     _pausedScript: function(callFrames, reason, auxData, breakpointIds, asyncStackTrace)
     {
-        this._setDebuggerPausedDetails(new WebInspector.DebuggerPausedDetails(this.target(), callFrames, reason, auxData, breakpointIds, asyncStackTrace));
-        if (this._pendingLiveEditCallback) {
-            var callback = this._pendingLiveEditCallback;
-            delete this._pendingLiveEditCallback;
-            callback();
+        var pausedDetails = new WebInspector.DebuggerPausedDetails(this.target(), callFrames, reason, auxData, breakpointIds, asyncStackTrace);
+        if (this._setDebuggerPausedDetails(pausedDetails)) {
+            if (this._pendingLiveEditCallback) {
+                var callback = this._pendingLiveEditCallback;
+                delete this._pendingLiveEditCallback;
+                callback();
+            }
+        } else {
+            this._agent.stepInto();
         }
     },
 

@@ -19,6 +19,7 @@ WebInspector.DebuggerWorkspaceBinding = function(targetManager, workspace, netwo
     targetManager.observeTargets(this);
 
     targetManager.addModelListener(WebInspector.DebuggerModel, WebInspector.DebuggerModel.Events.GlobalObjectCleared, this._globalObjectCleared, this);
+    targetManager.addModelListener(WebInspector.DebuggerModel, WebInspector.DebuggerModel.Events.BeforeDebuggerPaused, this._beforeDebuggerPaused, this);
     targetManager.addModelListener(WebInspector.DebuggerModel, WebInspector.DebuggerModel.Events.DebuggerResumed, this._debuggerResumed, this);
     workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeRemoved, this._uiSourceCodeRemoved, this);
     workspace.addEventListener(WebInspector.Workspace.Events.ProjectRemoved, this._projectRemoved, this);
@@ -299,6 +300,19 @@ WebInspector.DebuggerWorkspaceBinding.prototype = {
     {
         var debuggerModel = /** @type {!WebInspector.DebuggerModel} */ (event.target);
         this._reset(debuggerModel.target());
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _beforeDebuggerPaused: function(event)
+    {
+        var rawLocation = event.data.callFrames[0].location();
+        var targetData = this._targetToData.get(rawLocation.target());
+        if (!targetData._compilerMapping.mapsToSourceCode(rawLocation)) {
+            event.stopPropagation();
+            event.preventDefault();
+        }
     }
 }
 

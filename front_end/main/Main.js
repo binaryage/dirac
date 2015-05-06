@@ -111,6 +111,7 @@ WebInspector.Main.prototype = {
      */
     _initializeExperiments: function(prefs)
     {
+        Runtime.experiments.register("emptySourceMapAutoStepping", "Empty sourcemap auto-stepping");
         Runtime.experiments.register("accessibilityInspection", "Accessibility Inspection", true);
         Runtime.experiments.register("animationInspection", "Animation Inspection");
         Runtime.experiments.register("applyCustomStylesheet", "Allow custom UI themes");

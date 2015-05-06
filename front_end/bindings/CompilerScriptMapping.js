@@ -67,6 +67,18 @@ WebInspector.CompilerScriptMapping = function(debuggerModel, workspace, networkM
 
 WebInspector.CompilerScriptMapping.prototype = {
     /**
+     * @param {!WebInspector.DebuggerModel.Location} rawLocation
+     * @return {boolean}
+     */
+    mapsToSourceCode: function (rawLocation) {
+        var sourceMap = this._sourceMapForScriptId[rawLocation.scriptId];
+        if (!sourceMap) {
+            return true;
+        }
+        return !!sourceMap.findEntry(rawLocation.lineNumber, rawLocation.columnNumber);
+    },
+
+    /**
      * @override
      * @param {!WebInspector.DebuggerModel.Location} rawLocation
      * @return {?WebInspector.UILocation}
