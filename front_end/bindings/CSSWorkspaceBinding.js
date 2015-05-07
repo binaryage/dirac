@@ -149,7 +149,8 @@ WebInspector.CSSWorkspaceBinding.prototype = {
         var line = forName ? range.startLine : range.endLine;
         // End of range is exclusive, so subtract 1 from the end offset.
         var column = forName ? range.startColumn : range.endColumn - (cssProperty.text && cssProperty.text.endsWith(";") ? 2 : 1);
-        var rawLocation = new WebInspector.CSSLocation(style.cssModel(), style.styleSheetId, url, line, column);
+        var header = style.cssModel().styleSheetHeaderForId(style.styleSheetId);
+        var rawLocation = new WebInspector.CSSLocation(style.cssModel(), style.styleSheetId, url, header.lineNumberInSource(line), header.columnNumberInSource(line, column));
         return this.rawLocationToUILocation(rawLocation);
     },
 

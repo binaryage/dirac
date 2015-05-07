@@ -304,7 +304,7 @@ WebInspector.NetworkProject.prototype = {
     _styleSheetAdded: function(event)
     {
         var header = /** @type {!WebInspector.CSSStyleSheetHeader} */ (event.data);
-        if (header.isInline && header.origin !== "inspector")
+        if (header.isInline && !header.hasSourceURL && header.origin !== "inspector")
             return;
 
         this._addFile(header.resourceURL(), header, false);
@@ -316,7 +316,7 @@ WebInspector.NetworkProject.prototype = {
     _styleSheetRemoved: function(event)
     {
         var header = /** @type {!WebInspector.CSSStyleSheetHeader} */ (event.data);
-        if (header.isInline && header.origin !== "inspector")
+        if (header.isInline && !header.hasSourceURL && header.origin !== "inspector")
             return;
 
         this._removeFile(header.resourceURL());

@@ -60,11 +60,17 @@ WebInspector.StylesSourceMapping.prototype = {
      */
     rawLocationToUILocation: function(rawLocation)
     {
-        var location = /** @type WebInspector.CSSLocation */ (rawLocation);
-        var uiSourceCode = this._networkMapping.uiSourceCodeForURL(location.url, rawLocation.target());
+        var uiSourceCode = this._networkMapping.uiSourceCodeForURL(rawLocation.url, rawLocation.target());
         if (!uiSourceCode)
             return null;
-        return uiSourceCode.uiLocation(location.lineNumber, location.columnNumber);
+        var lineNumber = rawLocation.lineNumber;
+        var columnNumber = rawLocation.columnNumber;
+        var header = this._cssModel.styleSheetHeaderForId(rawLocation.styleSheetId);
+        if (header && header.isInline && header.hasSourceURL) {
+            lineNumber -= header.lineNumberInSource(0);
+            columnNumber -= header.columnNumberInSource(lineNumber, 0);
+        }
+        return uiSourceCode.uiLocation(lineNumber, columnNumber);
     },
 
     /**
@@ -189,7 +195,7 @@ WebInspector.StylesSourceMapping.prototype = {
      */
     _bindUISourceCode: function(uiSourceCode, header)
     {
-        if (this._styleFiles.get(uiSourceCode) || header.isInline)
+        if (this._styleFiles.get(uiSourceCode) || (header.isInline && !header.hasSourceURL))
             return;
         this._styleFiles.set(uiSourceCode, new WebInspector.StyleFile(uiSourceCode, this));
         WebInspector.cssWorkspaceBinding.updateLocations(header);
