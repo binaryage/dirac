@@ -800,18 +800,6 @@
                 ]
             },
             {
-                "id": "EventListener",
-                "type": "object",
-                "description": "Object event listener.",
-                "properties": [
-                    { "name": "type", "type": "string", "description": "<code>EventListener</code>'s type." },
-                    { "name": "useCapture", "type": "boolean", "description": "<code>EventListener</code>'s useCapture." },
-                    { "name": "location", "$ref": "Debugger.Location", "description": "Handler code location." },
-                    { "name": "handler", "$ref": "Runtime.RemoteObject", "optional": true, "description": "Event handler function value." }
-                ],
-                "hidden": true
-            },
-            {
                 "id": "InternalPropertyDescriptor",
                 "type": "object",
                 "description": "Object internal property descriptor. This property isn't normally visible in JavaScript code.",
@@ -898,18 +886,6 @@
                     { "name": "exceptionDetails", "$ref": "Debugger.ExceptionDetails", "optional": true, "hidden": true, "description": "Exception details."}
                 ],
                 "description": "Returns properties of a given object. Object group of the result is inherited from the target object."
-            },
-            {
-                "name": "getEventListeners",
-                "hidden": true,
-                "parameters": [
-                    { "name": "objectId", "$ref": "RemoteObjectId", "description": "Identifier of the object to return listeners for." },
-                    { "name": "objectGroup", "type": "string", "optional": true, "description": "Symbolic group name for handler value. Handler value is not returned without this parameter specified." }
-                ],
-                "returns": [
-                    { "name": "listeners", "type": "array", "items": { "$ref": "EventListener" }, "description": "Array of relevant listeners." }
-                ],
-                "description": "Returns event listeners of the given object."
             },
             {
                 "name": "releaseObject",
@@ -3797,6 +3773,18 @@
                 "type": "string",
                 "enum": ["subtree-modified", "attribute-modified", "node-removed"],
                 "description": "DOM breakpoint type."
+            },
+            {
+                "id": "EventListener",
+                "type": "object",
+                "description": "Object event listener.",
+                "properties": [
+                    { "name": "type", "type": "string", "description": "<code>EventListener</code>'s type." },
+                    { "name": "useCapture", "type": "boolean", "description": "<code>EventListener</code>'s useCapture." },
+                    { "name": "location", "$ref": "Debugger.Location", "description": "Handler code location." },
+                    { "name": "handler", "$ref": "Runtime.RemoteObject", "optional": true, "description": "Event handler function value." }
+                ],
+                "hidden": true
             }
         ],
         "commands": [
@@ -3861,6 +3849,17 @@
                     { "name": "url", "type": "string", "description": "Resource URL substring." }
                 ],
                 "description": "Removes breakpoint from XMLHttpRequest."
+            },
+            {
+                "name": "getEventListeners",
+                "hidden": true,
+                "parameters": [
+                    { "name": "objectId", "$ref": "Runtime.RemoteObjectId", "description": "Identifier of the object to return listeners for." }
+                ],
+                "returns": [
+                    { "name": "listeners", "type": "array", "items": { "$ref": "EventListener" }, "description": "Array of relevant listeners." }
+                ],
+                "description": "Returns event listeners of the given object."
             }
         ]
     },
