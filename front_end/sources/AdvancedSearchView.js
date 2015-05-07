@@ -84,6 +84,8 @@ WebInspector.AdvancedSearchView.prototype = {
      */
     _onIndexingFinished: function(finished)
     {
+        this._progressIndicator.done();
+        delete this._progressIndicator;
         delete this._isIndexing;
         this._indexingFinished(finished);
         if (!finished)

@@ -69,19 +69,13 @@ WebInspector.SourcesSearchScope.prototype = {
 
         var projects = this._projects();
         var compositeProgress = new WebInspector.CompositeProgress(progress);
-        progress.addEventListener(WebInspector.Progress.Events.Canceled, indexingCanceled);
+        progress.addEventListener(WebInspector.Progress.Events.Canceled, indexingFinishedCallback.bind(null, false));
         for (var i = 0; i < projects.length; ++i) {
             var project = projects[i];
             var projectProgress = compositeProgress.createSubProgress(project.uiSourceCodes().length);
             project.indexContent(projectProgress);
         }
-        compositeProgress.addEventListener(WebInspector.Progress.Events.Done, indexingFinishedCallback.bind(this, true));
-
-        function indexingCanceled()
-        {
-            indexingFinishedCallback(false);
-            progress.done();
-        }
+        compositeProgress.addEventListener(WebInspector.Progress.Events.Done, indexingFinishedCallback.bind(null, true));
     },
 
     /**
