@@ -160,6 +160,10 @@ WebInspector.FileSystemWorkspaceBinding.prototype = {
         if (!progress)
             return;
         progress.worked(worked);
+        if (progress.isCanceled()) {
+            InspectorFrontendHost.stopIndexing(requestId);
+            this._onIndexingDone(event);
+        }
     },
 
     /**
@@ -462,16 +466,7 @@ WebInspector.FileSystemWorkspaceBinding.FileSystem.prototype = {
     {
         progress.setTotalWork(1);
         var requestId = this._fileSystemWorkspaceBinding.registerProgress(progress);
-        progress.addEventListener(WebInspector.Progress.Events.Canceled, this._indexingCanceled.bind(this, requestId));
         InspectorFrontendHost.indexPath(requestId, this._fileSystem.path());
-    },
-
-    /**
-     * @param {number} requestId
-     */
-    _indexingCanceled: function(requestId)
-    {
-        InspectorFrontendHost.stopIndexing(requestId);
     },
 
     /**

@@ -79,11 +79,9 @@ WebInspector.AdvancedSearchView.prototype = {
         this._startIndexing();
     },
 
-    /**
-     * @param {boolean} finished
-     */
-    _onIndexingFinished: function(finished)
+    _onIndexingFinished: function()
     {
+        var finished = !this._progressIndicator.isCanceled();
         this._progressIndicator.done();
         delete this._progressIndicator;
         delete this._isIndexing;
@@ -103,8 +101,9 @@ WebInspector.AdvancedSearchView.prototype = {
         if (this._progressIndicator)
             this._progressIndicator.done();
         this._progressIndicator = new WebInspector.ProgressIndicator();
-        this._indexingStarted(this._progressIndicator);
-        this._searchScope.performIndexing(this._progressIndicator, this._onIndexingFinished.bind(this));
+        this._searchMessageElement.textContent = WebInspector.UIString("Indexing\u2026");
+        this._progressIndicator.show(this._searchProgressPlaceholderElement);
+        this._searchScope.performIndexing(new WebInspector.ProgressProxy(this._progressIndicator, this._onIndexingFinished.bind(this)));
     },
 
     /**
@@ -113,8 +112,12 @@ WebInspector.AdvancedSearchView.prototype = {
      */
     _onSearchResult: function(searchId, searchResult)
     {
-        if (searchId !== this._searchId)
+        if (searchId !== this._searchId || !this._progressIndicator)
             return;
+        if (this._progressIndicator && this._progressIndicator.isCanceled()) {
+            this._onIndexingFinished();
+            return;
+        }
         this._addSearchResult(searchResult);
         if (!searchResult.searchMatches.length)
             return;
@@ -131,7 +134,7 @@ WebInspector.AdvancedSearchView.prototype = {
      */
     _onSearchFinished: function(searchId, finished)
     {
-        if (searchId !== this._searchId)
+        if (searchId !== this._searchId || !this._progressIndicator)
             return;
         if (!this._searchResultsPane)
             this._nothingFound();
@@ -198,15 +201,6 @@ WebInspector.AdvancedSearchView.prototype = {
         if (!this._searchingView)
             this._searchingView = new WebInspector.EmptyWidget(WebInspector.UIString("Searching\u2026"));
         this._searchingView.show(this._searchResultsElement);
-    },
-
-    /**
-     * @param {!WebInspector.ProgressIndicator} progressIndicator
-     */
-    _indexingStarted: function(progressIndicator)
-    {
-        this._searchMessageElement.textContent = WebInspector.UIString("Indexing\u2026");
-        progressIndicator.show(this._searchProgressPlaceholderElement);
     },
 
     /**
@@ -408,9 +402,8 @@ WebInspector.SearchScope.prototype = {
 
     /**
      * @param {!WebInspector.Progress} progress
-     * @param {function(boolean)} callback
      */
-    performIndexing: function(progress, callback) { },
+    performIndexing: function(progress) { },
 
     stopSearch: function() { },
 

@@ -446,7 +446,7 @@ WebInspector.TimelinePanel.prototype = {
     },
 
     /**
-     * @return {!WebInspector.ProgressIndicator}
+     * @return {!WebInspector.Progress}
      */
     _prepareToLoadTimeline: function()
     {
@@ -465,9 +465,8 @@ WebInspector.TimelinePanel.prototype = {
             this._hideProgressPane();
         }
         var progressIndicator = new WebInspector.ProgressIndicator();
-        progressIndicator.addEventListener(WebInspector.Progress.Events.Done, finishLoading.bind(this));
         this._setOperationInProgress(progressIndicator);
-        return progressIndicator;
+        return new WebInspector.ProgressProxy(progressIndicator, finishLoading.bind(this));
     },
 
     /**

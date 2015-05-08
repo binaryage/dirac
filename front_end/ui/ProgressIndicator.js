@@ -31,7 +31,6 @@
 /**
  * @constructor
  * @implements {WebInspector.Progress}
- * @extends {WebInspector.Object}
  */
 WebInspector.ProgressIndicator = function()
 {
@@ -68,13 +67,11 @@ WebInspector.ProgressIndicator.prototype = {
             return;
         this._isDone = true;
         this.element.remove();
-        this.dispatchEventToListeners(WebInspector.Progress.Events.Done);
     },
 
     cancel: function()
     {
         this._isCanceled = true;
-        this.dispatchEventToListeners(WebInspector.Progress.Events.Canceled);
     },
 
     /**
@@ -129,7 +126,5 @@ WebInspector.ProgressIndicator.prototype = {
     hideStopButton: function()
     {
         this._stopButton.classList.add("hidden");
-    },
-
-    __proto__: WebInspector.Object.prototype
+    }
 }

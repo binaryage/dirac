@@ -1258,7 +1258,7 @@ WebInspector.TimelineModel.prototype = {
     {
         var delegate = new WebInspector.TimelineModelLoadFromFileDelegate(this, progress);
         var fileReader = this._createFileReader(file, delegate);
-        var loader = new WebInspector.TracingModelLoader(this, new WebInspector.ProgressStub(), fileReader.cancel.bind(fileReader));
+        var loader = new WebInspector.TracingModelLoader(this, new WebInspector.ProgressProxy(null), fileReader.cancel.bind(fileReader));
         fileReader.start(loader);
     },
 

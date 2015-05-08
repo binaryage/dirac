@@ -61,21 +61,18 @@ WebInspector.SourcesSearchScope.prototype = {
     /**
      * @override
      * @param {!WebInspector.Progress} progress
-     * @param {function(boolean)} indexingFinishedCallback
      */
-    performIndexing: function(progress, indexingFinishedCallback)
+    performIndexing: function(progress)
     {
         this.stopSearch();
 
         var projects = this._projects();
         var compositeProgress = new WebInspector.CompositeProgress(progress);
-        progress.addEventListener(WebInspector.Progress.Events.Canceled, indexingFinishedCallback.bind(null, false));
         for (var i = 0; i < projects.length; ++i) {
             var project = projects[i];
             var projectProgress = compositeProgress.createSubProgress(project.uiSourceCodes().length);
             project.indexContent(projectProgress);
         }
-        compositeProgress.addEventListener(WebInspector.Progress.Events.Done, indexingFinishedCallback.bind(null, true));
     },
 
     /**
