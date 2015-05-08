@@ -488,3 +488,74 @@ WebInspector.ExecutionContext.prototype = {
 
     __proto__: WebInspector.SDKObject.prototype
 }
+
+/**
+ * @constructor
+ * @extends {WebInspector.SDKObject}
+ * @param {!WebInspector.Target} target
+ * @param {!DOMDebuggerAgent.EventListener} payload
+ * @param {!RuntimeAgent.RemoteObjectId} objectId
+ */
+WebInspector.EventListener = function(target, payload, objectId)
+{
+    WebInspector.SDKObject.call(this, target);
+    this._type = payload.type;
+    this._useCapture = payload.useCapture;
+    this._location = WebInspector.DebuggerModel.Location.fromPayload(this.target(), payload.location);
+    this._handler = payload.handler ? this.target().runtimeModel.createRemoteObject(payload.handler) : null;
+    var script = target.debuggerModel.scriptForId(payload.location.scriptId);
+    this._sourceName = script ? script.contentURL() : "";
+    this._objectId = objectId;
+}
+
+WebInspector.EventListener.prototype = {
+    /**
+     * @return {string}
+     */
+    type: function()
+    {
+        return this._type;
+    },
+
+    /**
+     * @return {boolean}
+     */
+    useCapture: function()
+    {
+        return this._useCapture;
+    },
+
+    /**
+     * @return {!WebInspector.DebuggerModel.Location}
+     */
+    location: function()
+    {
+        return this._location;
+    },
+
+    /**
+     * @return {?WebInspector.RemoteObject}
+     */
+    handler: function()
+    {
+        return this._handler;
+    },
+
+    /**
+     * @return {string}
+     */
+    sourceName: function()
+    {
+        return this._sourceName;
+    },
+
+    /**
+     * @return {!RuntimeAgent.RemoteObjectId}
+     */
+     objectId: function()
+     {
+        return this._objectId;
+     },
+
+    __proto__: WebInspector.SDKObject.prototype
+}

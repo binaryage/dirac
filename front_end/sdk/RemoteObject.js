@@ -95,6 +95,14 @@ WebInspector.RemoteObject.prototype = {
     },
 
     /**
+     * @param {function(?Array<!WebInspector.EventListener>)} callback
+     */
+    getEventListeners: function(callback)
+    {
+        throw "Not implemented";
+    },
+
+    /**
      * @param {!RuntimeAgent.CallArgument} name
      * @param {function(string=)} callback
      */
@@ -370,6 +378,40 @@ WebInspector.RemoteObjectImpl.prototype = {
     getAllProperties: function(accessorPropertiesOnly, callback)
     {
         this.doGetProperties(false, accessorPropertiesOnly, false, callback);
+    },
+
+    /**
+     * @override
+     * @param {function(?Array<!WebInspector.EventListener>)} callback
+     */
+    getEventListeners: function(callback)
+    {
+        if (!this._objectId) {
+            callback(null);
+            return;
+        }
+        /**
+         * @this {!WebInspector.RemoteObject}
+         * @param {?Protocol.Error} error
+         * @param {!Array<!DOMDebuggerAgent.EventListener>} payloads
+         */
+        function mycallback(error, payloads)
+        {
+            if (error) {
+                callback(null);
+                return;
+            }
+            callback(payloads.map(createEventListener.bind(this)));
+        }
+        /**
+         * @this {!WebInspector.RemoteObject}
+         * @param {!DOMDebuggerAgent.EventListener} payload
+         */
+        function createEventListener(payload)
+        {
+            return new WebInspector.EventListener(this._target, payload, this._objectId);
+        }
+        this.target().domdebuggerAgent().getEventListeners(this._objectId, mycallback.bind(this));
     },
 
     /**
