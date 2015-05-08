@@ -64,22 +64,43 @@ WebInspector.ResourceLoader.load = function(url, headers, callback)
  */
 WebInspector.ResourceLoader.loadAsStream = function(url, headers, stream, callback)
 {
+    var streamId = WebInspector.ResourceLoader._bindOutputStream(stream);
+    var parsedURL = new WebInspector.ParsedURL(url);
+    if (parsedURL.isDataURL()) {
+        loadXHR(url)
+            .then(dataURLDecodeSuccessful)
+            .catch(dataURLDecodeFailed);
+        return;
+    }
+
     var rawHeaders = [];
     if (headers) {
         for (var key in headers)
             rawHeaders.push(key + ": " + headers[key]);
     }
-    var streamId = WebInspector.ResourceLoader._bindOutputStream(stream);
-
-    InspectorFrontendHost.loadNetworkResource(url, rawHeaders.join("\r\n"), streamId, mycallback);
+    InspectorFrontendHost.loadNetworkResource(url, rawHeaders.join("\r\n"), streamId, finishedCallback);
 
     /**
      * @param {!InspectorFrontendHostAPI.LoadNetworkResourceResult} response
      */
-    function mycallback(response)
+    function finishedCallback(response)
     {
         if (callback)
             callback(response.statusCode, response.headers || {});
         WebInspector.ResourceLoader._discardOutputStream(streamId);
+    }
+
+    /**
+     * @param {string} text
+     */
+    function dataURLDecodeSuccessful(text)
+    {
+        WebInspector.ResourceLoader.streamWrite(streamId, text);
+        finishedCallback(/** @type {!InspectorFrontendHostAPI.LoadNetworkResourceResult} */ ({statusCode : 200}));
+    }
+
+    function dataURLDecodeFailed()
+    {
+        finishedCallback(/** @type {!InspectorFrontendHostAPI.LoadNetworkResourceResult} */ ({statusCode : 404}));
     }
 }
