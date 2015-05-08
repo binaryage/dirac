@@ -388,6 +388,8 @@ WebInspector.ElementsTreeOutline.prototype = {
         this._visible = visible;
         if (!this._visible) {
             this._popoverHelper.hidePopover();
+            if (this._multilineEditing)
+                this._multilineEditing.cancel();
             return;
         }
 
