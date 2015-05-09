@@ -56,7 +56,6 @@ WebInspector.FileSystemWorkspaceBinding = function(isolatedFileSystemManager, wo
     InspectorFrontendHost.events.addEventListener(InspectorFrontendHostAPI.Events.SearchCompleted, this._onSearchCompleted, this);
 }
 
-WebInspector.FileSystemWorkspaceBinding._scriptExtensions = ["js", "java", "coffee", "ts", "dart", "hx"].keySet();
 WebInspector.FileSystemWorkspaceBinding._styleSheetExtensions = ["css", "scss", "sass", "less"].keySet();
 WebInspector.FileSystemWorkspaceBinding._documentExtensions = ["htm", "html", "asp", "aspx", "phtml", "jsp"].keySet();
 
@@ -487,13 +486,11 @@ WebInspector.FileSystemWorkspaceBinding.FileSystem.prototype = {
      */
     _contentTypeForExtension: function(extension)
     {
-        if (WebInspector.FileSystemWorkspaceBinding._scriptExtensions[extension])
-            return WebInspector.resourceTypes.Script;
         if (WebInspector.FileSystemWorkspaceBinding._styleSheetExtensions[extension])
             return WebInspector.resourceTypes.Stylesheet;
         if (WebInspector.FileSystemWorkspaceBinding._documentExtensions[extension])
             return WebInspector.resourceTypes.Document;
-        return WebInspector.resourceTypes.Other;
+        return WebInspector.resourceTypes.Script;
     },
 
     populate: function()
