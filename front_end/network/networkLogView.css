@@ -539,6 +539,21 @@
     background-color: rgba(0, 0, 255, 0.5);
 }
 
+.network-frame-divider {
+    margin-top: -5px;
+    width: 10px;
+    height: 10px;
+    border: 1px solid #063;
+    background-color: #085;
+    border-radius: 5px;
+    z-index: 1;
+}
+
+.network-frame-divider-selected {
+    background-color: #FFE3C7;
+    z-index: 10;
+}
+
 .network-summary-bar .summary-blue {
     color: blue;
 }

@@ -16,16 +16,18 @@ WebInspector.FilmStripView = function()
 
 WebInspector.FilmStripView.Events = {
     FrameSelected: "FrameSelected",
+    FrameEnter: "FrameEnter",
+    FrameExit: "FrameExit",
 }
 
 WebInspector.FilmStripView.prototype = {
     /**
-     * @param {!WebInspector.TracingModel} tracingModel
+     * @param {!WebInspector.FilmStripModel} filmStripModel
      * @param {number} zeroTime
      */
-    setFramesFromModel: function(tracingModel, zeroTime)
+    setModel: function(filmStripModel, zeroTime)
     {
-        var frames = new WebInspector.FilmStripModel(tracingModel).frames();
+        var frames = filmStripModel.frames();
         if (!frames.length) {
             this.reset();
             return;
@@ -38,18 +40,21 @@ WebInspector.FilmStripView.prototype = {
             var element = createElementWithClass("div", "frame");
             element.createChild("div", "thumbnail").createChild("img").src = "data:image/jpg;base64," + frames[i].imageData;
             element.createChild("div", "time").textContent = Number.millisToString(frames[i].timestamp - zeroTime);
-            element.addEventListener("mousedown", this._onMouseDown.bind(this, frames[i].timestamp), false);
+            element.addEventListener("mousedown", this._onMouseEvent.bind(this, WebInspector.FilmStripView.Events.FrameSelected, frames[i].timestamp), false);
+            element.addEventListener("mouseenter", this._onMouseEvent.bind(this, WebInspector.FilmStripView.Events.FrameEnter, frames[i].timestamp), false);
+            element.addEventListener("mouseout", this._onMouseEvent.bind(this, WebInspector.FilmStripView.Events.FrameExit, frames[i].timestamp), false);
             element.addEventListener("dblclick", this._onDoubleClick.bind(this, frames[i]), false);
             this.contentElement.appendChild(element);
         }
     },
 
     /**
+     * @param {string} eventName
      * @param {number} timestamp
      */
-    _onMouseDown: function(timestamp)
+    _onMouseEvent: function(eventName, timestamp)
     {
-        this.dispatchEventToListeners(WebInspector.FilmStripView.Events.FrameSelected, timestamp);
+        this.dispatchEventToListeners(eventName, timestamp);
     },
 
     /**
@@ -72,6 +77,11 @@ WebInspector.FilmStripView.prototype = {
     {
         this.reset();
         this._label.textContent = WebInspector.UIString("Recording frames...");
+    },
+
+    setFetching: function()
+    {
+        this._label.textContent = WebInspector.UIString("Fetching frames...");
     },
 
     __proto__: WebInspector.HBox.prototype

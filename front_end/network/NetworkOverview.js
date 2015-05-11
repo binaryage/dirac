@@ -68,6 +68,30 @@ WebInspector.NetworkOverview.prototype = {
     },
 
     /**
+     * @param {?WebInspector.FilmStripModel} filmStripModel
+     */
+    setFilmStripModel: function(filmStripModel)
+    {
+        this._filmStripModel = filmStripModel;
+        this.scheduleUpdate();
+    },
+
+    /**
+     * @param {number} time
+     */
+    selectFilmStripFrame: function(time)
+    {
+        this._selectedFilmStripTime = time;
+        this.scheduleUpdate();
+    },
+
+    clearFilmStripFrame: function()
+    {
+        this._selectedFilmStripTime = -1;
+        this.scheduleUpdate();
+    },
+
+    /**
      * @param {!WebInspector.Event} event
      */
     _onWindowChanged: function(event)
@@ -172,6 +196,8 @@ WebInspector.NetworkOverview.prototype = {
         this._overviewGrid.reset();
         this._windowStart = 0;
         this._windowEnd = 0;
+        /** @type {?WebInspector.FilmStripModel} */
+        this._filmStripModel = null;
 
         /** @type {number} */
         this._span = 1;
@@ -317,6 +343,7 @@ WebInspector.NetworkOverview.prototype = {
             context.lineTo(x + 0.5, this._canvasHeight);
         }
         context.stroke();
+
         context.beginPath();
         context.strokeStyle = "#FF8080"; // Keep in sync with .network-red-divider CSS rule.
         for (var i = this._loadEvents.length; i >= 0; --i) {
@@ -326,6 +353,25 @@ WebInspector.NetworkOverview.prototype = {
         }
         context.stroke();
 
+        context.strokeStyle = "#063"; // Keep in sync with .network-frame-divider CSS rule.
+        context.fillStyle = "#085"; // Keep in sync with .network-frame-divider CSS rule.
+        var frames = this._filmStripModel ? this._filmStripModel.frames() : [];
+        for (var i = 0; i < frames.length; ++i) {
+            var x = Math.round(calculator.computePosition(frames[i].timestamp / 1000));
+            context.beginPath();
+            context.arc(x, 20, 4, 0, 2*Math.PI, false);
+            context.fill();
+            context.stroke();
+        }
+
+        if (this._selectedFilmStripTime !== -1) {
+             context.fillStyle = "#FFE3C7"; // Keep in sync with .network-frame-divider CSS rule.
+             var x = Math.round(calculator.computePosition(this._selectedFilmStripTime));
+             context.beginPath();
+             context.arc(x, 20, 4, 0, 2 * Math.PI, false);
+             context.fill();
+             context.stroke();
+        }
         context.restore();
     },
 

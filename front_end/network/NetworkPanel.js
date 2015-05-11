@@ -111,15 +111,6 @@ WebInspector.NetworkPanel = function()
 }
 
 WebInspector.NetworkPanel.prototype = {
-    /**
-     * @param {!WebInspector.Event} event
-     */
-    _onFilmFrameSelected: function(event)
-    {
-        var timestamp = /** @type {number} */ (event.data);
-        this._overview.setWindow(0, timestamp / 1000);
-    },
-
     _createToolbarButtons: function()
     {
         this._recordButton = new WebInspector.ToolbarButton("", "record-toolbar-item");
@@ -178,7 +169,20 @@ WebInspector.NetworkPanel.prototype = {
         this._recordButton.setTitle(toggled ? WebInspector.UIString("Stop Recording Network Log") : WebInspector.UIString("Record Network Log"));
         this._networkLogView.setRecording(toggled);
         if (!toggled && this._filmStripRecorder)
-            this._filmStripRecorder.stopRecording(this._networkLogView.timeCalculator().zeroTime() * 1000);
+            this._filmStripRecorder.stopRecording(this._filmStripAvailable.bind(this));
+    },
+
+    /**
+     * @param {?WebInspector.FilmStripModel} filmStripModel
+     */
+    _filmStripAvailable: function(filmStripModel)
+    {
+        if (!filmStripModel)
+            return;
+        this._filmStripView.setModel(filmStripModel, this._networkLogView.timeCalculator().zeroTime() * 1000);
+        this._overview.setFilmStripModel(filmStripModel);
+        for (var frame of filmStripModel.frames())
+            this._networkLogView.addFilmStripFrame(frame.timestamp / 1000);
     },
 
     /**
@@ -244,6 +248,8 @@ WebInspector.NetworkPanel.prototype = {
             this._filmStripRecorder = new WebInspector.NetworkPanel.FilmStripRecorder(this._filmStripView);
             this._filmStripView.show(this._searchableView.element, this._searchableView.element.firstElementChild);
             this._filmStripView.addEventListener(WebInspector.FilmStripView.Events.FrameSelected, this._onFilmFrameSelected, this);
+            this._filmStripView.addEventListener(WebInspector.FilmStripView.Events.FrameEnter, this._onFilmFrameEnter, this);
+            this._filmStripView.addEventListener(WebInspector.FilmStripView.Events.FrameExit, this._onFilmFrameExit, this);
         }
 
         if (!toggled && this._filmStripRecorder) {
@@ -496,6 +502,34 @@ WebInspector.NetworkPanel.prototype = {
         appendRevealItem.call(this, request);
     },
 
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _onFilmFrameSelected: function(event)
+    {
+        var timestamp = /** @type {number} */ (event.data);
+        this._overview.setWindow(0, timestamp / 1000);
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _onFilmFrameEnter: function(event)
+    {
+        var timestamp = /** @type {number} */ (event.data);
+        this._overview.selectFilmStripFrame(timestamp / 1000);
+        this._networkLogView.selectFilmStripFrame(timestamp / 1000);
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _onFilmFrameExit: function(event)
+    {
+        this._overview.clearFilmStripFrame();
+        this._networkLogView.clearFilmStripFrame();
+    },
+
     __proto__: WebInspector.Panel.prototype
 }
 
@@ -617,7 +651,8 @@ WebInspector.NetworkPanel.FilmStripRecorder.prototype = {
         if (!this._tracingModel)
             return;
         this._tracingModel.tracingComplete();
-        this._filmStripView.setFramesFromModel(this._tracingModel, this._zeroTime);
+        this._callback(new WebInspector.FilmStripModel(this._tracingModel));
+        delete this._callback;
     },
 
     /**
@@ -655,15 +690,16 @@ WebInspector.NetworkPanel.FilmStripRecorder.prototype = {
     },
 
     /**
-     * @param {number} zeroTime
+     * @param {function(?WebInspector.FilmStripModel)} callback
      */
-    stopRecording: function(zeroTime)
+    stopRecording: function(callback)
     {
         if (!this._target)
             return;
 
         this._target.tracingManager.stop();
         this._target = null;
-        this._zeroTime = zeroTime;
+        this._callback = callback;
+        this._filmStripView.setFetching();
     }
 }

@@ -22,7 +22,6 @@
     flex-direction: column;
     align-items: center;
     padding: 6px 9px 3px 9px;
-    margin: 2px;
     flex: none;
     height: 114px;
 }
@@ -45,6 +44,7 @@
     display: flex;
     flex-direction: row;
     align-items: center;
+    pointer-events: none;
 }
 
 .film-strip-view .frame .thumbnail img {
@@ -55,6 +55,7 @@
     max-width: 162px;
     max-height: 90px;
     box-shadow: 3px 3px 4px rgba(0, 0, 0, 0.5);
+    pointer-events: none;
 }
 
 .film-strip-view .frame .time {

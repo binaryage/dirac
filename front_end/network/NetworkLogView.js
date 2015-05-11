@@ -71,6 +71,8 @@ WebInspector.NetworkLogView = function(overview, filterBar, progressBarContainer
     /** @type {number} */
     this._mainRequestDOMContentLoadedTime = -1;
     this._matchedRequestCount = 0;
+    /** @type {!Array<{time: number, element: !Element}>} */
+    this._eventDividers = [];
     this._highlightedSubstringChanges = [];
 
     /** @type {!Array.<!WebInspector.NetworkLogView.Filter>} */
@@ -315,10 +317,6 @@ WebInspector.NetworkLogView.prototype = {
         this._timelineGrid = new WebInspector.TimelineGrid();
         this._timelineGrid.element.classList.add("network-timeline-grid");
         this._dataGrid.element.appendChild(this._timelineGrid.element);
-        this._loadDivider = createElementWithClass("div", "network-event-divider network-red-divider invisible");
-        this._timelineGrid.addEventDivider(this._loadDivider);
-        this._domContentLoadedDivider = createElementWithClass("div", "network-event-divider network-blue-divider invisible");
-        this._timelineGrid.addEventDivider(this._domContentLoadedDivider);
     },
 
     _createTable: function()
@@ -728,17 +726,49 @@ WebInspector.NetworkLogView.prototype = {
         this._updateEventDividers();
     },
 
+    /**
+     * @param {number} time
+     */
+    addFilmStripFrame: function(time)
+    {
+        this._addEventDivider(time, "network-frame-divider");
+    },
+
+    /**
+     * @param {number} time
+     */
+    selectFilmStripFrame: function(time)
+    {
+        for (var divider of this._eventDividers)
+            divider.element.classList.toggle("network-frame-divider-selected", divider.time === time);
+    },
+
+    clearFilmStripFrame: function()
+    {
+        for (var divider of this._eventDividers)
+            divider.element.classList.toggle("network-frame-divider-selected", false);
+    },
+
+    /**
+     * @param {number} time
+     * @param {string} className
+     */
+    _addEventDivider: function(time, className)
+    {
+        var element = createElementWithClass("div", "network-event-divider " + className);
+        this._timelineGrid.addEventDivider(element);
+        this._eventDividers.push({time: time, element: element});
+        this._scheduleRefresh();
+    },
+
     _updateEventDividers: function()
     {
         var calculator = this.calculator();
-
-        var loadTimePercent = calculator.computePercentageFromEventTime(this._mainRequestLoadTime);
-        this._loadDivider.classList.toggle("invisible", this._mainRequestLoadTime === -1 || loadTimePercent < 0);
-        this._loadDivider.style.left = loadTimePercent + "%";
-
-        var domLoadTimePrecent = calculator.computePercentageFromEventTime(this._mainRequestDOMContentLoadedTime);
-        this._domContentLoadedDivider.classList.toggle("invisible", this._mainRequestDOMContentLoadedTime === -1 || domLoadTimePrecent < 0);
-        this._domContentLoadedDivider.style.left = domLoadTimePrecent + "%";
+        for (var divider of this._eventDividers) {
+            var timePercent = calculator.computePercentageFromEventTime(divider.time);
+            divider.element.classList.toggle("invisible", timePercent < 0);
+            divider.element.style.left = timePercent + "%";
+        }
     },
 
     _refreshIfNeeded: function()
@@ -799,9 +829,10 @@ WebInspector.NetworkLogView.prototype = {
             return;
 
         var data = /** @type {number} */ (event.data);
-        this._mainRequestLoadTime = data || -1;
-        // Schedule refresh to update boundaries and draw the new line.
-        this._scheduleRefresh();
+        if (data) {
+            this._mainRequestLoadTime = data;
+            this._addEventDivider(data, "network-blue-divider");
+        }
     },
 
     /**
@@ -812,9 +843,10 @@ WebInspector.NetworkLogView.prototype = {
         if (!this._recording)
             return;
         var data = /** @type {number} */ (event.data);
-        this._mainRequestDOMContentLoadedTime = data || -1;
-        // Schedule refresh to update boundaries and draw the new line.
-        this._scheduleRefresh();
+        if (data) {
+            this._mainRequestDOMContentLoadedTime = data;
+            this._addEventDivider(data, "network-red-divider");
+        }
     },
 
     wasShown: function()
@@ -921,6 +953,8 @@ WebInspector.NetworkLogView.prototype = {
 
         this._mainRequestLoadTime = -1;
         this._mainRequestDOMContentLoadedTime = -1;
+        this._eventDividers = [];
+        this._timelineGrid.removeEventDividers();
 
         if (this._dataGrid) {
             this._dataGrid.rootNode().removeChildren();
