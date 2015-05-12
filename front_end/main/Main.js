@@ -742,9 +742,9 @@ WebInspector.Main.WarningErrorCounter.prototype = {
             revokedErrors += targets[i].consoleModel.revokedErrors();
             warnings += targets[i].consoleModel.warnings();
         }
-        this._counter.setCounter("error-icon", errors, WebInspector.UIString(errors === 1 ? "%d errors" : "%d error", errors));
-        this._counter.setCounter("revokedError-icon", revokedErrors, WebInspector.UIString(revokedErrors === 1 ? "%d handled promise rejections" : "%d handled promise rejection", revokedErrors));
-        this._counter.setCounter("warning-icon", warnings, WebInspector.UIString(warnings === 1 ? "%d warnings" : "%d warning", warnings));
+        this._counter.setCounter("error-icon", errors, WebInspector.UIString(errors === 1 ? "%d error" : "%d errors", errors));
+        this._counter.setCounter("revokedError-icon", revokedErrors, WebInspector.UIString(revokedErrors === 1 ? "%d handled promise rejection" : "%d handled promise rejections", revokedErrors));
+        this._counter.setCounter("warning-icon", warnings, WebInspector.UIString(warnings === 1 ? "%d warning" : "%d warnings", warnings));
         WebInspector.inspectorView.toolbarItemResized();
     },
 
