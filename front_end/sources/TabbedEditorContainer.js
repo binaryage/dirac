@@ -270,6 +270,17 @@ WebInspector.TabbedEditorContainer.prototype = {
     },
 
     /**
+     * @param {string} tabId
+     * @param {!WebInspector.ContextMenu} contextMenu
+     */
+    _onContextMenu: function(tabId, contextMenu)
+    {
+        var uiSourceCode = this._files[tabId];
+        if (uiSourceCode)
+            contextMenu.appendApplicableItems(uiSourceCode);
+    },
+
+    /**
      * @param {!WebInspector.UISourceCode} uiSourceCode
      */
     addUISourceCode: function(uiSourceCode)
@@ -736,5 +747,15 @@ WebInspector.EditorContainerTabDelegate.prototype = {
     closeTabs: function(tabbedPane, ids)
     {
         this._editorContainer._closeTabs(ids);
+    },
+
+    /**
+     * @override
+     * @param {string} tabId
+     * @param {!WebInspector.ContextMenu} contextMenu
+     */
+    onContextMenu: function(tabId, contextMenu)
+    {
+        this._editorContainer._onContextMenu(tabId, contextMenu);
     }
 }

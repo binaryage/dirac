@@ -1002,10 +1002,9 @@ WebInspector.TabbedPaneTab.prototype = {
             tabElement.addEventListener("mousedown", this._tabMouseDown.bind(this), false);
             tabElement.addEventListener("mouseup", this._tabMouseUp.bind(this), false);
 
-            if (this._closeable) {
-                tabElement.addEventListener("contextmenu", this._tabContextMenu.bind(this), false);
+            tabElement.addEventListener("contextmenu", this._tabContextMenu.bind(this), false);
+            if (this._closeable)
                 WebInspector.installDragHandle(tabElement, this._startTabDragging.bind(this), this._tabDragging.bind(this), this._endTabDragging.bind(this), "pointer");
-            }
         }
 
         return tabElement;
@@ -1093,10 +1092,14 @@ WebInspector.TabbedPaneTab.prototype = {
         }
 
         var contextMenu = new WebInspector.ContextMenu(event);
-        contextMenu.appendItem(WebInspector.UIString.capitalize("Close"), close.bind(this));
-        contextMenu.appendItem(WebInspector.UIString.capitalize("Close ^others"), closeOthers.bind(this));
-        contextMenu.appendItem(WebInspector.UIString.capitalize("Close ^tabs to the ^right"), closeToTheRight.bind(this));
-        contextMenu.appendItem(WebInspector.UIString.capitalize("Close ^all"), closeAll.bind(this));
+        if (this._closeable) {
+            contextMenu.appendItem(WebInspector.UIString.capitalize("Close"), close.bind(this));
+            contextMenu.appendItem(WebInspector.UIString.capitalize("Close ^others"), closeOthers.bind(this));
+            contextMenu.appendItem(WebInspector.UIString.capitalize("Close ^tabs to the ^right"), closeToTheRight.bind(this));
+            contextMenu.appendItem(WebInspector.UIString.capitalize("Close ^all"), closeAll.bind(this));
+        }
+        if (this._delegate)
+            this._delegate.onContextMenu(this.id, contextMenu);
         contextMenu.show();
     },
 
@@ -1178,7 +1181,13 @@ WebInspector.TabbedPaneTabDelegate.prototype = {
      * @param {!WebInspector.TabbedPane} tabbedPane
      * @param {!Array.<string>} ids
      */
-    closeTabs: function(tabbedPane, ids) { }
+    closeTabs: function(tabbedPane, ids) { },
+
+    /**
+     * @param {string} tabId
+     * @param {!WebInspector.ContextMenu} contextMenu
+     */
+    onContextMenu: function(tabId, contextMenu) { }
 }
 
 /**
