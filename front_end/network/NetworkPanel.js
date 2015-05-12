@@ -237,6 +237,7 @@ WebInspector.NetworkPanel.prototype = {
             this._overview.show(this._searchableView.element, this._splitWidget.element);
         else
             this._overview.detach();
+        this.doResize();
     },
 
     _toggleRecordFilmStrip: function()
