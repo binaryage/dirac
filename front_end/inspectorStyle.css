@@ -27,10 +27,6 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-label {
-    cursor: pointer;
-}
-
 label:hover input {
     box-shadow: 0 0 3px highlight;
 }
