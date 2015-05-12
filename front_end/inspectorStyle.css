@@ -109,6 +109,7 @@ body .inspector-view-tabbed-pane.tabbed-pane::shadow .tabbed-pane-header {
 .inspector-view-close-button {
     padding-right: 6px;
     padding-left: 4px;
+    cursor: default;
 }
 
 body.undocked .inspector-view-close-button {
