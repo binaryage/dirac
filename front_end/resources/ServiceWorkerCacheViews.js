@@ -112,7 +112,8 @@ WebInspector.ServiceWorkerCacheView.prototype = {
             data["number"] = i + skipCount;
             data["request"] = entries[i].request;
             data["response"] = entries[i].response;
-            var node = new WebInspector.SWCacheDataGridNode(data);
+            var node = new WebInspector.DataGridNode(data);
+            node.selectable = true;
             this._dataGrid.rootNode().appendChild(node);
         }
         this._pageBackButton.setEnabled(!!skipCount);
@@ -160,41 +161,4 @@ WebInspector.ServiceWorkerCacheView.prototype = {
     },
 
     __proto__: WebInspector.VBox.prototype
-}
-
-/**
- * @constructor
- * @extends {WebInspector.DataGridNode}
- * @param {!Object.<string, *>} data
- */
-WebInspector.SWCacheDataGridNode = function(data)
-{
-    WebInspector.DataGridNode.call(this, data, false);
-    this.selectable = true;
-}
-
-WebInspector.SWCacheDataGridNode.prototype = {
-    /**
-     * @override
-     * @return {!Element}
-     */
-    createCell: function(columnIdentifier)
-    {
-        var cell = WebInspector.DataGridNode.prototype.createCell.call(this, columnIdentifier);
-        var value = this.data[columnIdentifier];
-
-        switch (columnIdentifier) {
-        case "request":
-        case "response":
-            cell.removeChildren();
-            var objectElement = WebInspector.ObjectPropertiesSection.defaultObjectPresentation(value, true);
-            cell.appendChild(objectElement);
-            break;
-        default:
-        }
-
-        return cell;
-    },
-
-    __proto__: WebInspector.DataGridNode.prototype
 }
