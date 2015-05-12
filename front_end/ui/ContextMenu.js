@@ -238,7 +238,7 @@ WebInspector.ContextMenu.installHandler = function(doc)
     function handler(event)
     {
         var contextMenu = new WebInspector.ContextMenu(event);
-        contextMenu.appendApplicableItems(/** @type {!Object} */ (event.target));
+        contextMenu.appendApplicableItems(/** @type {!Object} */ (event.deepElementFromPoint()));
         contextMenu.show();
     }
 }
