@@ -37,7 +37,6 @@ WebInspector.RuntimeModel = function(target)
 {
     WebInspector.SDKModel.call(this, WebInspector.RuntimeModel, target);
 
-    this._debuggerModel = target.debuggerModel;
     this._agent = target.runtimeAgent();
     this.target().registerRuntimeDispatcher(new WebInspector.RuntimeDispatcher(this));
     if (target.hasJSContext())
@@ -214,7 +213,8 @@ WebInspector.ExecutionContext = function(target, id, name, origin, isPageContext
     this.name = name;
     this.origin = origin;
     this.isMainWorldContext = isPageContext;
-    this._debuggerModel = target.debuggerModel;
+    this.runtimeModel = target.runtimeModel;
+    this.debuggerModel = WebInspector.DebuggerModel.fromTarget(target);
     this.frameId = frameId;
 }
 
@@ -267,8 +267,8 @@ WebInspector.ExecutionContext.prototype = {
     evaluate: function(expression, objectGroup, includeCommandLineAPI, doNotPauseOnExceptionsAndMuteConsole, returnByValue, generatePreview, callback)
     {
         // FIXME: It will be moved to separate ExecutionContext.
-        if (this._debuggerModel.selectedCallFrame()) {
-            this._debuggerModel.evaluateOnSelectedCallFrame(expression, objectGroup, includeCommandLineAPI, doNotPauseOnExceptionsAndMuteConsole, returnByValue, generatePreview, callback);
+        if (this.debuggerModel.selectedCallFrame()) {
+            this.debuggerModel.evaluateOnSelectedCallFrame(expression, objectGroup, includeCommandLineAPI, doNotPauseOnExceptionsAndMuteConsole, returnByValue, generatePreview, callback);
             return;
         }
         this._evaluateGlobal.apply(this, arguments);
@@ -318,7 +318,7 @@ WebInspector.ExecutionContext.prototype = {
             if (returnByValue)
                 callback(null, !!wasThrown, wasThrown ? null : result, exceptionDetails);
             else
-                callback(this.target().runtimeModel.createRemoteObject(result), !!wasThrown, undefined, exceptionDetails);
+                callback(this.runtimeModel.createRemoteObject(result), !!wasThrown, undefined, exceptionDetails);
         }
         this.target().runtimeAgent().evaluate(expression, objectGroup, includeCommandLineAPI, doNotPauseOnExceptionsAndMuteConsole, this.id, returnByValue, generatePreview, evalCallback.bind(this));
     },
@@ -350,8 +350,8 @@ WebInspector.ExecutionContext.prototype = {
             return;
         }
 
-        if (!expressionString && this._debuggerModel.selectedCallFrame())
-            this._debuggerModel.selectedCallFrame().variableNames(receivedPropertyNames.bind(this));
+        if (!expressionString && this.debuggerModel.selectedCallFrame())
+            this.debuggerModel.selectedCallFrame().variableNames(receivedPropertyNames.bind(this));
         else
             this.evaluate(expressionString, "completion", true, true, false, false, evaluated.bind(this));
 
@@ -492,18 +492,18 @@ WebInspector.ExecutionContext.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.SDKObject}
- * @param {!WebInspector.Target} target
+ * @param {!WebInspector.DebuggerModel} debuggerModel
  * @param {!DOMDebuggerAgent.EventListener} payload
  * @param {!RuntimeAgent.RemoteObjectId} objectId
  */
-WebInspector.EventListener = function(target, payload, objectId)
+WebInspector.EventListener = function(debuggerModel, payload, objectId)
 {
-    WebInspector.SDKObject.call(this, target);
+    WebInspector.SDKObject.call(this, debuggerModel.target());
     this._type = payload.type;
     this._useCapture = payload.useCapture;
-    this._location = WebInspector.DebuggerModel.Location.fromPayload(this.target(), payload.location);
+    this._location = WebInspector.DebuggerModel.Location.fromPayload(debuggerModel, payload.location);
     this._handler = payload.handler ? this.target().runtimeModel.createRemoteObject(payload.handler) : null;
-    var script = target.debuggerModel.scriptForId(payload.location.scriptId);
+    var script = debuggerModel.scriptForId(payload.location.scriptId);
     this._sourceName = script ? script.contentURL() : "";
     this._objectId = objectId;
 }

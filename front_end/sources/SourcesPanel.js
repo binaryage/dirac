@@ -126,10 +126,13 @@ WebInspector.SourcesPanel.prototype = {
     {
         if (!target)
             return;
+        var debuggerModel = WebInspector.DebuggerModel.fromTarget(target);
+        if (!debuggerModel)
+            return;
 
-        if (target.debuggerModel.isPaused()) {
-            this._showDebuggerPausedDetails(/** @type {!WebInspector.DebuggerPausedDetails} */ (target.debuggerModel.debuggerPausedDetails()));
-            var callFrame = target.debuggerModel.selectedCallFrame();
+        if (debuggerModel.isPaused()) {
+            this._showDebuggerPausedDetails(/** @type {!WebInspector.DebuggerPausedDetails} */ (debuggerModel.debuggerPausedDetails()));
+            var callFrame = debuggerModel.selectedCallFrame();
             if (callFrame)
                 this._selectCallFrame(callFrame);
         } else {
@@ -188,10 +191,11 @@ WebInspector.SourcesPanel.prototype = {
 
     _consoleCommandEvaluatedInSelectedCallFrame: function(event)
     {
-        var target = /** @type {!WebInspector.Target} */  (event.target.target());
+        var debuggerModel =  /** @type {!WebInspector.DebuggerModel} */  (event.target);
+        var target = debuggerModel.target();
         if (WebInspector.context.flavor(WebInspector.Target) !== target)
             return;
-        this.sidebarPanes.scopechain.update(target.debuggerModel.selectedCallFrame());
+        this.sidebarPanes.scopechain.update(debuggerModel.selectedCallFrame());
     },
 
     /**
@@ -289,13 +293,14 @@ WebInspector.SourcesPanel.prototype = {
      */
     _debuggerResumed: function(event)
     {
-        var target = /** @type {!WebInspector.Target} */  (event.target.target());
+        var debuggerModel = /** @type {!WebInspector.DebuggerModel} */  (event.target);
+        var target = debuggerModel.target();
         if (WebInspector.context.flavor(WebInspector.Target) !== target)
             return;
         this._paused = false;
         this._clearInterface();
         this._toggleDebuggerSidebarButton.disabled = false;
-        this._switchToPausedTargetTimeout = setTimeout(this._switchToPausedTarget.bind(this), 500);
+        this._switchToPausedTargetTimeout = setTimeout(this._switchToPausedTarget.bind(this, debuggerModel), 500);
     },
 
     /**
@@ -431,10 +436,13 @@ WebInspector.SourcesPanel.prototype = {
     _updateDebuggerButtons: function()
     {
         var currentTarget = WebInspector.context.flavor(WebInspector.Target);
-        if (!currentTarget)
-            return;
-
-        if (this._paused) {
+        var currentDebuggerModel = WebInspector.DebuggerModel.fromTarget(currentTarget);
+        if (!currentDebuggerModel) {
+            this._pauseButton.setEnabled(false);
+            this._stepOverButton.setEnabled(false);
+            this._stepIntoButton.setEnabled(false);
+            this._stepOutButton.setEnabled(false);
+        } else if (this._paused) {
             this._updateButtonTitle(this._pauseButton, WebInspector.UIString("Resume script execution (%s)."));
             this._pauseButton.setToggled(true);
             this._pauseButton.setLongClickOptionsEnabled((function() { return [ this._longResumeButton ]; }).bind(this));
@@ -448,7 +456,7 @@ WebInspector.SourcesPanel.prototype = {
             this._pauseButton.setToggled(false);
             this._pauseButton.setLongClickOptionsEnabled(null);
 
-            this._pauseButton.setEnabled(!currentTarget.debuggerModel.isPausing());
+            this._pauseButton.setEnabled(!currentDebuggerModel.isPausing());
             this._stepOverButton.setEnabled(false);
             this._stepIntoButton.setEnabled(false);
             this._stepOutButton.setEnabled(false);
@@ -473,18 +481,21 @@ WebInspector.SourcesPanel.prototype = {
             clearTimeout(this._switchToPausedTargetTimeout);
     },
 
-    _switchToPausedTarget: function()
+    /**
+     * @param {!WebInspector.DebuggerModel} debuggerModel
+     */
+    _switchToPausedTarget: function(debuggerModel)
     {
         delete this._switchToPausedTargetTimeout;
         if (this._paused)
             return;
         var target = WebInspector.context.flavor(WebInspector.Target);
-        if (target && target.debuggerModel.isPaused())
+        if (debuggerModel.isPaused())
             return;
-        var targets = WebInspector.targetManager.targets();
-        for (var i = 0; i < targets.length; ++i) {
-            if (targets[i].debuggerModel.isPaused()) {
-                WebInspector.context.setFlavor(WebInspector.Target, targets[i]);
+        var debuggerModels = WebInspector.DebuggerModel.instances();
+        for (var i = 0; i < debuggerModels.length; ++i) {
+            if (debuggerModels[i].isPaused()) {
+                WebInspector.context.setFlavor(WebInspector.Target, debuggerModels[i].target());
                 break;
             }
         }
@@ -548,13 +559,16 @@ WebInspector.SourcesPanel.prototype = {
         var target = WebInspector.context.flavor(WebInspector.Target);
         if (!target)
             return true;
+        var debuggerModel = WebInspector.DebuggerModel.fromTarget(target);
+        if (!debuggerModel)
+            return true;
 
         if (this._paused) {
             this._paused = false;
-            target.debuggerModel.resume();
+            debuggerModel.resume();
         } else {
             // Make sure pauses didn't stick skipped.
-            target.debuggerModel.pause();
+            debuggerModel.pause();
         }
 
         this._clearInterface();
@@ -573,7 +587,7 @@ WebInspector.SourcesPanel.prototype = {
 
         this._clearInterface();
         var target = WebInspector.context.flavor(WebInspector.Target);
-        return target ? target.debuggerModel : null;
+        return target ? WebInspector.DebuggerModel.fromTarget(target) : null;
     },
 
     /**
@@ -648,7 +662,7 @@ WebInspector.SourcesPanel.prototype = {
     _callFrameSelectedInSidebar: function(event)
     {
         var callFrame = /** @type {!WebInspector.DebuggerModel.CallFrame} */ (event.data);
-        callFrame.target().debuggerModel.setSelectedCallFrame(callFrame);
+        callFrame.debuggerModel.setSelectedCallFrame(callFrame);
     },
 
     _hiddenCallFramesRevealedInSidebar: function()
@@ -1049,8 +1063,7 @@ WebInspector.SourcesPanel.prototype = {
      */
     _showFunctionDefinition: function(remoteObject)
     {
-        var debuggerModel = remoteObject.target().debuggerModel;
-        debuggerModel.functionDetails(remoteObject, this._didGetFunctionOrGeneratorObjectDetails.bind(this));
+        remoteObject.debuggerModel().functionDetails(remoteObject, this._didGetFunctionOrGeneratorObjectDetails.bind(this));
     },
 
     /**
@@ -1058,8 +1071,7 @@ WebInspector.SourcesPanel.prototype = {
      */
     _showGeneratorLocation: function(remoteObject)
     {
-        var debuggerModel = remoteObject.target().debuggerModel;
-        debuggerModel.generatorObjectDetails(remoteObject, this._didGetFunctionOrGeneratorObjectDetails.bind(this));
+        remoteObject.debuggerModel().generatorObjectDetails(remoteObject, this._didGetFunctionOrGeneratorObjectDetails.bind(this));
     },
 
     /**

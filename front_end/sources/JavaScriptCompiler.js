@@ -46,19 +46,21 @@ WebInspector.JavaScriptCompiler.prototype = {
         var target = this._findTarget();
         if (!target)
             return;
+        var debuggerModel = WebInspector.DebuggerModel.fromTarget(target);
+        if (!debuggerModel)
+            return;
 
         this._compiling = true;
         var code = this._sourceFrame.textEditor.text();
-        target.debuggerAgent().compileScript(code, "", false, undefined, compileCallback.bind(this, target));
+        debuggerModel.compileScript(code, "", false, undefined, compileCallback.bind(this, target));
 
         /**
          * @param {!WebInspector.Target} target
-         * @param {?string} error
          * @param {!DebuggerAgent.ScriptId=} scriptId
          * @param {?DebuggerAgent.ExceptionDetails=} exceptionDetails
          * @this {WebInspector.JavaScriptCompiler}
          */
-        function compileCallback(target, error, scriptId, exceptionDetails)
+        function compileCallback(target, scriptId, exceptionDetails)
         {
             this._compiling = false;
             if (this._recompileScheduled) {

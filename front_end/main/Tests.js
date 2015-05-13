@@ -91,7 +91,7 @@ TestSuite.prototype.testShowScriptsTab = function()
 TestSuite.prototype.testScriptsTabIsPopulatedOnInspectedPageRefresh = function()
 {
     var test = this;
-    var debuggerModel = WebInspector.targetManager.mainTarget().debuggerModel;
+    var debuggerModel = WebInspector.DebuggerModel.fromTarget(WebInspector.targetManager.mainTarget());
     debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.GlobalObjectCleared, waitUntilScriptIsParsed);
 
     this.showPanel("elements").then(function() {
@@ -192,7 +192,7 @@ TestSuite.prototype.testNoScriptDuplicatesOnPanelSwitch = function()
 // frontend is being loaded.
 TestSuite.prototype.testPauseWhenLoadingDevTools = function()
 {
-    var debuggerModel = WebInspector.targetManager.mainTarget().debuggerModel;
+    var debuggerModel = WebInspector.DebuggerModel.fromTarget(WebInspector.targetManager.mainTarget());
     if (debuggerModel.debuggerPausedDetails)
         return;
 
@@ -416,7 +416,7 @@ TestSuite.prototype.testPauseInSharedWorkerInitialization1 = function()
 
 TestSuite.prototype.testPauseInSharedWorkerInitialization2 = function()
 {
-    var debuggerModel = WebInspector.targetManager.mainTarget().debuggerModel;
+    var debuggerModel = WebInspector.DebuggerModel.fromTarget(WebInspector.targetManager.mainTarget());
     if (debuggerModel.isPaused())
         return;
     this._waitForScriptPause(this.releaseControl.bind(this));

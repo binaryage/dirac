@@ -14,6 +14,7 @@ WebInspector.DebuggerWorkspaceBinding = function(targetManager, workspace, netwo
     this._workspace = workspace;
     this._networkMapping = networkMapping;
 
+    // FIXME: Migrate from _targetToData to _debuggerModelToData.
     /** @type {!Map.<!WebInspector.Target, !WebInspector.DebuggerWorkspaceBinding.TargetData>} */
     this._targetToData = new Map();
     targetManager.observeTargets(this);
@@ -32,7 +33,9 @@ WebInspector.DebuggerWorkspaceBinding.prototype = {
      */
     targetAdded: function(target)
     {
-        this._targetToData.set(target, new WebInspector.DebuggerWorkspaceBinding.TargetData(target, this));
+        var debuggerModel = WebInspector.DebuggerModel.fromTarget(target);
+        if (debuggerModel)
+            this._targetToData.set(target, new WebInspector.DebuggerWorkspaceBinding.TargetData(debuggerModel, this));
     },
 
     /**
@@ -41,6 +44,8 @@ WebInspector.DebuggerWorkspaceBinding.prototype = {
      */
     targetRemoved: function(target)
     {
+        if (!WebInspector.DebuggerModel.fromTarget(target))
+            return;
         var targetData = this._targetToData.get(target);
         targetData._dispose();
         this._targetToData.remove(target);
@@ -318,12 +323,12 @@ WebInspector.DebuggerWorkspaceBinding.prototype = {
 
 /**
  * @constructor
- * @param {!WebInspector.Target} target
+ * @param {!WebInspector.DebuggerModel} debuggerModel
  * @param {!WebInspector.DebuggerWorkspaceBinding} debuggerWorkspaceBinding
  */
-WebInspector.DebuggerWorkspaceBinding.TargetData = function(target, debuggerWorkspaceBinding)
+WebInspector.DebuggerWorkspaceBinding.TargetData = function(debuggerModel, debuggerWorkspaceBinding)
 {
-    this._target = target;
+    this._target = debuggerModel.target();
 
     /** @type {!Map.<string, !WebInspector.DebuggerWorkspaceBinding.ScriptInfo>} */
     this.scriptDataMap = new Map();
@@ -331,13 +336,12 @@ WebInspector.DebuggerWorkspaceBinding.TargetData = function(target, debuggerWork
     /** @type {!Set.<!WebInspector.DebuggerWorkspaceBinding.Location>} */
     this.callFrameLocations = new Set();
 
-    var debuggerModel = target.debuggerModel;
     var workspace = debuggerWorkspaceBinding._workspace;
     var networkMapping = debuggerWorkspaceBinding._networkMapping;
 
     this._defaultMapping = new WebInspector.DefaultScriptMapping(debuggerModel, workspace, debuggerWorkspaceBinding);
     this._resourceMapping = new WebInspector.ResourceScriptMapping(debuggerModel, workspace, networkMapping, debuggerWorkspaceBinding);
-    this._compilerMapping = new WebInspector.CompilerScriptMapping(debuggerModel, workspace, networkMapping, WebInspector.NetworkProject.forTarget(target), debuggerWorkspaceBinding);
+    this._compilerMapping = new WebInspector.CompilerScriptMapping(debuggerModel, workspace, networkMapping, WebInspector.NetworkProject.forTarget(this._target), debuggerWorkspaceBinding);
 
     /** @type {!Map.<!WebInspector.UISourceCode, !WebInspector.DebuggerSourceMapping>} */
     this._uiSourceCodeToSourceMapping = new Map();

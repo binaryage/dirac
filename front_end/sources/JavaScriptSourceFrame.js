@@ -510,7 +510,8 @@ WebInspector.JavaScriptSourceFrame.prototype = {
     _getPopoverAnchor: function(element, event)
     {
         var target = WebInspector.context.flavor(WebInspector.Target);
-        if (!target || !target.debuggerModel.isPaused())
+        var debuggerModel = WebInspector.DebuggerModel.fromTarget(target);
+        if (!debuggerModel || !debuggerModel.isPaused())
             return;
 
         var textPosition = this.textEditor.coordinatesToCursorPosition(event.x, event.y);
@@ -562,7 +563,8 @@ WebInspector.JavaScriptSourceFrame.prototype = {
     _resolveObjectForPopover: function(anchorBox, showCallback, objectGroupName)
     {
         var target = WebInspector.context.flavor(WebInspector.Target);
-        if (!target || !target.debuggerModel.isPaused()) {
+        var debuggerModel = WebInspector.DebuggerModel.fromTarget(target);
+        if (!debuggerModel || !debuggerModel.isPaused()) {
             this._popoverHelper.hidePopover();
             return;
         }
@@ -581,7 +583,7 @@ WebInspector.JavaScriptSourceFrame.prototype = {
             }
         }
         var evaluationText = line.substring(startHighlight, endHighlight + 1);
-        var selectedCallFrame = target.debuggerModel.selectedCallFrame();
+        var selectedCallFrame = debuggerModel.selectedCallFrame();
         selectedCallFrame.evaluate(evaluationText, objectGroupName, false, true, false, false, showObjectPopover.bind(this));
 
         /**
@@ -592,7 +594,7 @@ WebInspector.JavaScriptSourceFrame.prototype = {
         function showObjectPopover(result, wasThrown)
         {
             var target = WebInspector.context.flavor(WebInspector.Target);
-            if (selectedCallFrame.target() != target || !target.debuggerModel.isPaused() || !result) {
+            if (selectedCallFrame.target() != target || !debuggerModel.isPaused() || !result) {
                 this._popoverHelper.hidePopover();
                 return;
             }
@@ -721,7 +723,7 @@ WebInspector.JavaScriptSourceFrame.prototype = {
         var executionContext = WebInspector.context.flavor(WebInspector.ExecutionContext);
         if (!executionContext)
             return;
-        var callFrame = executionContext.target().debuggerModel.selectedCallFrame();
+        var callFrame = executionContext.debuggerModel.selectedCallFrame();
         if (!callFrame)
             return;
 

@@ -311,7 +311,6 @@ WebInspector.ResourceScriptFile.prototype = {
      */
     commitLiveEdit: function(callback)
     {
-        var target = this._resourceScriptMapping._target;
         /**
          * @param {?string} error
          * @param {!DebuggerAgent.SetScriptSourceError=} errorData
@@ -327,8 +326,9 @@ WebInspector.ResourceScriptFile.prototype = {
         }
         if (!this._script)
             return;
+        var debuggerModel = this._resourceScriptMapping._debuggerModel;
         var source = this._uiSourceCode.workingCopy();
-        target.debuggerModel.setScriptSource(this._script.scriptId, source, innerCallback.bind(this));
+        debuggerModel.setScriptSource(this._script.scriptId, source, innerCallback.bind(this));
     },
 
     /**

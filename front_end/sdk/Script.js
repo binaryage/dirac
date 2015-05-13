@@ -27,7 +27,7 @@
  * @constructor
  * @extends {WebInspector.SDKObject}
  * @implements {WebInspector.ContentProvider}
- * @param {!WebInspector.Target} target
+ * @param {!WebInspector.DebuggerModel} debuggerModel
  * @param {string} scriptId
  * @param {string} sourceURL
  * @param {number} startLine
@@ -39,9 +39,10 @@
  * @param {string=} sourceMapURL
  * @param {boolean=} hasSourceURL
  */
-WebInspector.Script = function(target, scriptId, sourceURL, startLine, startColumn, endLine, endColumn, isContentScript, isInternalScript, sourceMapURL, hasSourceURL)
+WebInspector.Script = function(debuggerModel, scriptId, sourceURL, startLine, startColumn, endLine, endColumn, isContentScript, isInternalScript, sourceMapURL, hasSourceURL)
 {
-    WebInspector.SDKObject.call(this, target);
+    WebInspector.SDKObject.call(this, debuggerModel.target());
+    this.debuggerModel = debuggerModel;
     this.scriptId = scriptId;
     this.sourceURL = sourceURL;
     this.lineOffset = startLine;
@@ -223,7 +224,7 @@ WebInspector.Script.prototype = {
      */
     rawLocation: function(lineNumber, columnNumber)
     {
-        return new WebInspector.DebuggerModel.Location(this.target(), this.scriptId, lineNumber, columnNumber || 0);
+        return new WebInspector.DebuggerModel.Location(this.debuggerModel, this.scriptId, lineNumber, columnNumber || 0);
     },
 
     /**

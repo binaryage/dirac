@@ -210,8 +210,9 @@ WebInspector.AsyncOperationsSidebarPane.prototype = {
     {
         event.consume();
         this.expand();
-        if (this._target)
-            this._target.debuggerAgent().flushAsyncOperationEvents();
+        var debuggerModel = WebInspector.DebuggerModel.fromTarget(this._target);
+        if (debuggerModel)
+            debuggerModel.flushAsyncOperationEvents();
     },
 
     /**
@@ -283,8 +284,8 @@ WebInspector.AsyncOperationsSidebarPane.prototype = {
         label.classList.add("checkbox-elem");
         label.checkboxElement.addEventListener("click", this._checkboxClicked.bind(this, operation.id), false);
         element.appendChild(label);
-
-        var callFrame = WebInspector.DebuggerPresentationUtils.callFrameAnchorFromStackTrace(this._target, operation.stackTrace, operation.asyncStackTrace, this._revealBlackboxedCallFrames);
+        var debuggerModel = WebInspector.DebuggerModel.fromTarget(this._target);
+        var callFrame = WebInspector.DebuggerPresentationUtils.callFrameAnchorFromStackTrace(debuggerModel, operation.stackTrace, operation.asyncStackTrace, this._revealBlackboxedCallFrames);
         if (callFrame)
             element.createChild("div").appendChild(this._linkifier.linkifyConsoleCallFrame(this._target, callFrame));
 
@@ -307,11 +308,14 @@ WebInspector.AsyncOperationsSidebarPane.prototype = {
         var operation = this.operationById(this._target, operationId);
         if (!operation)
             return;
+        var debuggerModel = WebInspector.DebuggerModel.fromTarget(this._target);
+        if (!debuggerModel)
+            return;
         operation[this._checkedSymbol] = event.target.checked;
         if (event.target.checked)
-            this._target.debuggerAgent().setAsyncOperationBreakpoint(operationId);
+            debuggerModel.setAsyncOperationBreakpoint(operationId);
         else
-            this._target.debuggerAgent().removeAsyncOperationBreakpoint(operationId);
+            debuggerModel.removeAsyncOperationBreakpoint(operationId);
     },
 
     _clear: function()

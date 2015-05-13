@@ -222,7 +222,8 @@ WebInspector.ConsoleViewMessage.prototype = {
                 this._anchorElement = this._linkifyScriptId(consoleMessage.scriptId, consoleMessage.url || "", consoleMessage.line, consoleMessage.column);
             } else {
                 var showBlackboxed = (consoleMessage.source !== WebInspector.ConsoleMessage.MessageSource.ConsoleAPI);
-                var callFrame = WebInspector.DebuggerPresentationUtils.callFrameAnchorFromStackTrace(this._target(), consoleMessage.stackTrace, consoleMessage.asyncStackTrace, showBlackboxed);
+                var debuggerModel = WebInspector.DebuggerModel.fromTarget(this._target());
+                var callFrame = WebInspector.DebuggerPresentationUtils.callFrameAnchorFromStackTrace(debuggerModel, consoleMessage.stackTrace, consoleMessage.asyncStackTrace, showBlackboxed);
                 if (callFrame && callFrame.scriptId)
                     this._anchorElement = this._linkifyCallFrame(callFrame);
                 else if (consoleMessage.url && consoleMessage.url !== "undefined")
@@ -1186,6 +1187,9 @@ WebInspector.ConsoleViewMessage.prototype = {
         var target = this._target();
         if (!target || !errorPrefixes.some(String.prototype.startsWith.bind(new String(string))))
             return null;
+        var debuggerModel = WebInspector.DebuggerModel.fromTarget(target);
+        if (!debuggerModel)
+            return null;
 
         var lines = string.split("\n");
         var links = [];
@@ -1218,7 +1222,7 @@ WebInspector.ConsoleViewMessage.prototype = {
             var url;
             if (parsed)
                 url = parsed.url;
-            else if (target.debuggerModel.scriptsForSourceURL(splitResult.url).length)
+            else if (debuggerModel.scriptsForSourceURL(splitResult.url).length)
                 url = splitResult.url;
             else if (splitResult.url === "<anonymous>")
                 continue;

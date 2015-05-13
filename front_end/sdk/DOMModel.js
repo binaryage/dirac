@@ -538,6 +538,11 @@ WebInspector.DOMNode.prototype = {
     eventListeners: function(objectGroupId, callback)
     {
         var domModel = this._domModel;
+        var debuggerModel = WebInspector.DebuggerModel.fromTarget(domModel.target());
+        if (!debuggerModel) {
+            callback(null);
+            return;
+        }
 
         /**
          * @param {?Protocol.Error} error
@@ -550,7 +555,7 @@ WebInspector.DOMNode.prototype = {
                 return;
             }
             callback(payloads.map(function(payload) {
-                return new WebInspector.DOMModel.EventListener(domModel, payload);
+                return new WebInspector.DOMModel.EventListener(domModel, /** @type {!WebInspector.DebuggerModel} */ (debuggerModel), payload);
             }));
         }
         this._agent.getEventListenersForNode(this.id, objectGroupId, mycallback);
@@ -2054,14 +2059,16 @@ WebInspector.DOMDispatcher.prototype = {
  * @constructor
  * @extends {WebInspector.SDKObject}
  * @param {!WebInspector.DOMModel} domModel
+ * @param {!WebInspector.DebuggerModel} debuggerModel
  * @param {!DOMAgent.EventListener} payload
  */
-WebInspector.DOMModel.EventListener = function(domModel, payload)
+WebInspector.DOMModel.EventListener = function(domModel, debuggerModel, payload)
 {
     WebInspector.SDKObject.call(this, domModel.target());
     this._domModel = domModel;
+    this._debuggerModel = debuggerModel;
     this._payload = payload;
-    var script = domModel.target().debuggerModel.scriptForId(payload.location.scriptId);
+    var script = debuggerModel.scriptForId(payload.location.scriptId);
     var sourceName = script ? script.contentURL() : "";
     this._sourceName = sourceName;
 }
@@ -2088,7 +2095,7 @@ WebInspector.DOMModel.EventListener.prototype = {
      */
     location: function()
     {
-        return WebInspector.DebuggerModel.Location.fromPayload(this.target(), this._payload.location);
+        return WebInspector.DebuggerModel.Location.fromPayload(this._debuggerModel, this._payload.location);
     },
 
     /**

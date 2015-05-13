@@ -59,8 +59,8 @@ WebInspector.PromisePane = function()
 
     this._linkifier = new WebInspector.Linkifier();
 
-    /** @type {!Map.<!WebInspector.Target, !Map.<number, !WebInspector.PromiseDetails>>} */
-    this._promiseDetailsByTarget = new Map();
+    /** @type {!Map.<!WebInspector.DebuggerModel, !Map.<number, !WebInspector.PromiseDetails>>} */
+    this._promiseDetailsByDebuggerModel = new Map();
     /** @type {!Map.<number, !WebInspector.DataGridNode>} */
     this._promiseIdToNode = new Map();
 
@@ -136,8 +136,9 @@ WebInspector.PromisePane.prototype = {
      */
     targetAdded: function(target)
     {
-        if (this._enabled)
-            this._enablePromiseTracker(target);
+        var debuggerModel = WebInspector.DebuggerModel.fromTarget(target);
+        if (debuggerModel && this._enabled)
+            this._enablePromiseTracker(debuggerModel);
     },
 
     /**
@@ -146,10 +147,13 @@ WebInspector.PromisePane.prototype = {
      */
     targetRemoved: function(target)
     {
-        this._promiseDetailsByTarget.delete(target);
-        if (this._target === target) {
+        var debuggerModel = WebInspector.DebuggerModel.fromTarget(target);
+        if (!debuggerModel)
+            return;
+        this._promiseDetailsByDebuggerModel.delete(debuggerModel);
+        if (this._debuggerModel === debuggerModel) {
             this._clear();
-            delete this._target;
+            delete this._debuggerModel;
         }
     },
 
@@ -161,9 +165,10 @@ WebInspector.PromisePane.prototype = {
         if (!this._enabled)
             return;
         var target = /** @type {!WebInspector.Target} */ (event.data);
-        if (this._target === target)
+        var debuggerModel = WebInspector.DebuggerModel.fromTarget(target);
+        if (!debuggerModel || this._debuggerModel === debuggerModel)
             return;
-        this._target = target;
+        this._debuggerModel = debuggerModel;
         this._refresh();
     },
 
@@ -174,8 +179,11 @@ WebInspector.PromisePane.prototype = {
     {
         var frame = /** @type {!WebInspector.ResourceTreeFrame} */ (event.data);
         var target = frame.target();
-        this._promiseDetailsByTarget.delete(target);
-        if (this._target === target)
+        var debuggerModel = WebInspector.DebuggerModel.fromTarget(target);
+        if (!debuggerModel)
+            return;
+        this._promiseDetailsByDebuggerModel.delete(debuggerModel);
+        if (this._debuggerModel === debuggerModel)
             this._clear();
     },
 
@@ -184,7 +192,8 @@ WebInspector.PromisePane.prototype = {
     {
         // Auto enable upon the very first show.
         if (typeof this._enabled === "undefined") {
-            this._target = WebInspector.context.flavor(WebInspector.Target);
+            var target = WebInspector.context.flavor(WebInspector.Target);
+            this._debuggerModel = WebInspector.DebuggerModel.fromTarget(target);
             this._updateRecordingState(true);
         }
         if (this._refreshIsNeeded)
@@ -192,19 +201,19 @@ WebInspector.PromisePane.prototype = {
     },
 
     /**
-     * @param {!WebInspector.Target} target
+     * @param {!WebInspector.DebuggerModel} debuggerModel
      */
-    _enablePromiseTracker: function(target)
+    _enablePromiseTracker: function(debuggerModel)
     {
-        target.debuggerAgent().enablePromiseTracker(true);
+        debuggerModel.enablePromiseTracker(true);
     },
 
     /**
-     * @param {!WebInspector.Target} target
+     * @param {!WebInspector.DebuggerModel} debuggerModel
      */
-    _disablePromiseTracker: function(target)
+    _disablePromiseTracker: function(debuggerModel)
     {
-        target.debuggerAgent().disablePromiseTracker();
+        debuggerModel.disablePromiseTracker();
     },
 
     /** @override */
@@ -231,14 +240,14 @@ WebInspector.PromisePane.prototype = {
         this._enabled = enabled;
         this._recordButton.setToggled(this._enabled);
         this._recordButton.setTitle(this._enabled ? WebInspector.UIString("Stop Recording Promises Log") : WebInspector.UIString("Record Promises Log"));
-        WebInspector.targetManager.targets().forEach(this._enabled ? this._enablePromiseTracker : this._disablePromiseTracker, this);
+        WebInspector.DebuggerModel.instances().forEach(this._enabled ? this._enablePromiseTracker : this._disablePromiseTracker, this);
     },
 
     _clearButtonClicked: function()
     {
         this._clear();
-        if (this._target)
-            this._promiseDetailsByTarget.delete(this._target);
+        if (this._debuggerModel)
+            this._promiseDetailsByDebuggerModel.delete(this._debuggerModel);
     },
 
     _resetFilters: function()
@@ -260,12 +269,12 @@ WebInspector.PromisePane.prototype = {
     },
 
     /**
-     * @param {!WebInspector.Target} target
+     * @param {!WebInspector.DebuggerModel} debuggerModel
      * @return {boolean}
      */
-    _truncateLogIfNeeded: function(target)
+    _truncateLogIfNeeded: function(debuggerModel)
     {
-        var promiseIdToDetails = this._promiseDetailsByTarget.get(target);
+        var promiseIdToDetails = this._promiseDetailsByDebuggerModel.get(debuggerModel);
         if (!promiseIdToDetails || promiseIdToDetails.size <= WebInspector.PromisePane._maxPromiseCount)
             return false;
 
@@ -293,21 +302,21 @@ WebInspector.PromisePane.prototype = {
      */
     _onPromiseUpdated: function(event)
     {
-        var target = /** @type {!WebInspector.Target} */ (event.target.target());
+        var debuggerModel = /** @type {!WebInspector.DebuggerModel} */ (event.target);
         var eventType = /** @type {string} */ (event.data.eventType);
         var protocolDetails = /** @type {!DebuggerAgent.PromiseDetails} */ (event.data.promise);
 
-        var promiseIdToDetails = this._promiseDetailsByTarget.get(target);
+        var promiseIdToDetails = this._promiseDetailsByDebuggerModel.get(debuggerModel);
         if (!promiseIdToDetails) {
             promiseIdToDetails = new Map();
-            this._promiseDetailsByTarget.set(target, promiseIdToDetails)
+            this._promiseDetailsByDebuggerModel.set(debuggerModel, promiseIdToDetails);
         }
 
         var details = promiseIdToDetails.get(protocolDetails.id);
         if (!details && eventType === "gc")
             return;
 
-        var truncated = this._truncateLogIfNeeded(target);
+        var truncated = this._truncateLogIfNeeded(debuggerModel);
         if (details)
             details.update(protocolDetails)
         else
@@ -317,7 +326,7 @@ WebInspector.PromisePane.prototype = {
         if (eventType === "gc")
             details.isGarbageCollected = true;
 
-        if (target === this._target) {
+        if (debuggerModel === this._debuggerModel) {
             if (!this.isShowing()) {
                 this._refreshIsNeeded = true;
                 return;
@@ -365,7 +374,7 @@ WebInspector.PromisePane.prototype = {
      */
     _findVisibleParentNodeDetails: function(details)
     {
-        var promiseIdToDetails = /** @type {!Map.<number, !WebInspector.PromiseDetails>} */ (this._promiseDetailsByTarget.get(this._target));
+        var promiseIdToDetails = /** @type {!Map.<number, !WebInspector.PromiseDetails>} */ (this._promiseDetailsByDebuggerModel.get(this._debuggerModel));
         var currentDetails = details;
         while (currentDetails) {
             var parentId = currentDetails.parentId;
@@ -389,7 +398,7 @@ WebInspector.PromisePane.prototype = {
     {
         var node = this._promiseIdToNode.get(details.id);
         if (!node) {
-            node = new WebInspector.PromiseDataGridNode(details, this._target, this._linkifier, this._dataGrid);
+            node = new WebInspector.PromiseDataGridNode(details, this._debuggerModel, this._linkifier, this._dataGrid);
             this._promiseIdToNode.set(details.id, node);
         } else {
             node.update(details);
@@ -401,13 +410,13 @@ WebInspector.PromisePane.prototype = {
     {
         delete this._refreshIsNeeded;
         this._clear();
-        if (!this._target)
+        if (!this._debuggerModel)
             return;
-        if (!this._promiseDetailsByTarget.has(this._target))
+        if (!this._promiseDetailsByDebuggerModel.has(this._debuggerModel))
             return;
 
         var rootNode = this._dataGrid.rootNode();
-        var promiseIdToDetails = /** @type {!Map.<number, !WebInspector.PromiseDetails>} */ (this._promiseDetailsByTarget.get(this._target));
+        var promiseIdToDetails = /** @type {!Map.<number, !WebInspector.PromiseDetails>} */ (this._promiseDetailsByDebuggerModel.get(this._debuggerModel));
 
         var nodesToInsert = { __proto__: null };
         // The for..of loop iterates in insertion order.
@@ -454,13 +463,13 @@ WebInspector.PromisePane.prototype = {
      */
     _onContextMenu: function(contextMenu, node)
     {
-        var target = this._target;
-        if (!target)
+        var debuggerModel = this._debuggerModel;
+        if (!debuggerModel)
             return;
 
         var promiseId = node.promiseId();
-        if (this._promiseDetailsByTarget.has(target)) {
-            var details = this._promiseDetailsByTarget.get(target).get(promiseId);
+        if (this._promiseDetailsByDebuggerModel.has(debuggerModel)) {
+            var details = this._promiseDetailsByDebuggerModel.get(debuggerModel).get(promiseId);
             if (details.isGarbageCollected)
                 return;
         }
@@ -470,18 +479,17 @@ WebInspector.PromisePane.prototype = {
 
         function showPromiseInConsole()
         {
-            target.debuggerAgent().getPromiseById(promiseId, "console", didGetPromiseById);
+            debuggerModel.getPromiseById(promiseId, "console", didGetPromiseById);
         }
 
         /**
-         * @param {?Protocol.Error} error
          * @param {?RuntimeAgent.RemoteObject} promise
          */
-        function didGetPromiseById(error, promise)
+        function didGetPromiseById(promise)
         {
-            if (error || !promise)
+            if (!promise)
                 return;
-            var object = target.runtimeModel.createRemoteObject(promise);
+            var object = debuggerModel.target().runtimeModel.createRemoteObject(promise);
             object.callFunction(dumpIntoConsole);
             object.release();
             /**
@@ -503,12 +511,12 @@ WebInspector.PromisePane.prototype = {
      */
     _getPopoverAnchor: function(element, event)
     {
-        if (!this._target || !this._promiseDetailsByTarget.has(this._target))
+        if (!this._debuggerModel || !this._promiseDetailsByDebuggerModel.has(this._debuggerModel))
             return undefined;
         var node = this._dataGrid.dataGridNodeFromNode(element);
         if (!node)
             return undefined;
-        var details = this._promiseDetailsByTarget.get(this._target).get(node.promiseId());
+        var details = this._promiseDetailsByDebuggerModel.get(this._debuggerModel).get(node.promiseId());
         if (!details)
             return undefined;
         var anchor = element.enclosingNodeOrSelfWithClass("created-column");
@@ -525,7 +533,7 @@ WebInspector.PromisePane.prototype = {
     _showPopover: function(anchor, popover)
     {
         var node = this._dataGrid.dataGridNodeFromNode(anchor);
-        var details = this._promiseDetailsByTarget.get(this._target).get(node.promiseId());
+        var details = this._promiseDetailsByDebuggerModel.get(this._debuggerModel).get(node.promiseId());
 
         var stackTrace;
         var asyncStackTrace;
@@ -537,7 +545,7 @@ WebInspector.PromisePane.prototype = {
             asyncStackTrace = details.asyncSettlementStack;
         }
 
-        var content = WebInspector.DOMPresentationUtils.buildStackTracePreviewContents(this._target, this._linkifier, stackTrace, asyncStackTrace);
+        var content = WebInspector.DOMPresentationUtils.buildStackTracePreviewContents(this._debuggerModel.target(), this._linkifier, stackTrace, asyncStackTrace);
         popover.setCanShrink(true);
         popover.showForAnchor(content, anchor);
     },
@@ -549,15 +557,15 @@ WebInspector.PromisePane.prototype = {
  * @constructor
  * @extends {WebInspector.ViewportDataGridNode}
  * @param {!WebInspector.PromiseDetails} details
- * @param {!WebInspector.Target} target
+ * @param {!WebInspector.DebuggerModel} debuggerModel
  * @param {!WebInspector.Linkifier} linkifier
  * @param {!WebInspector.ViewportDataGrid} dataGrid
  */
-WebInspector.PromiseDataGridNode = function(details, target, linkifier, dataGrid)
+WebInspector.PromiseDataGridNode = function(details, debuggerModel, linkifier, dataGrid)
 {
     WebInspector.ViewportDataGridNode.call(this, {});
     this._details = details;
-    this._target = target;
+    this._debuggerModel = debuggerModel;
     this._linkifier = linkifier;
     /** @type {!Array.<!Element>} */
     this._linkifiedAnchors = [];
@@ -568,7 +576,7 @@ WebInspector.PromiseDataGridNode.prototype = {
     _disposeAnchors: function()
     {
         for (var i = 0; i < this._linkifiedAnchors.length; ++i)
-            this._linkifier.disposeAnchor(this._target, this._linkifiedAnchors[i]);
+            this._linkifier.disposeAnchor(this._debuggerModel.target(), this._linkifiedAnchors[i]);
         this._linkifiedAnchors = [];
     },
 
@@ -624,7 +632,7 @@ WebInspector.PromiseDataGridNode.prototype = {
     {
         if (!callFrame)
             return;
-        var anchor = this._linkifier.linkifyConsoleCallFrame(this._target, callFrame);
+        var anchor = this._linkifier.linkifyConsoleCallFrame(this._debuggerModel.target(), callFrame);
         this._linkifiedAnchors.push(anchor);
         cell.appendChild(anchor);
     },
@@ -697,7 +705,7 @@ WebInspector.PromiseDataGridNode.prototype = {
     {
         if (!callFrame)
             return "";
-        var script = callFrame.scriptId ? this._target.debuggerModel.scriptForId(callFrame.scriptId) : null;
+        var script = callFrame.scriptId && this._debuggerModel ? this._debuggerModel.scriptForId(callFrame.scriptId) : null;
         var sourceURL = script ? script.sourceURL : callFrame.url;
         var lineNumber = callFrame.lineNumber || 0;
         return WebInspector.displayNameForURL(sourceURL) + ":" + lineNumber;

@@ -5,12 +5,12 @@
 /**
  * @constructor
  * @implements {WebInspector.DebuggerSourceMapping}
- * @param {!WebInspector.Target} target
+ * @param {!WebInspector.DebuggerModel} debuggerModel
  * @param {!WebInspector.ScriptFormatterEditorAction} editorAction
  */
-WebInspector.FormatterScriptMapping = function(target, editorAction)
+WebInspector.FormatterScriptMapping = function(debuggerModel, editorAction)
 {
-    this._target = target;
+    this._debuggerModel = debuggerModel;
     this._editorAction = editorAction;
 }
 
@@ -52,8 +52,8 @@ WebInspector.FormatterScriptMapping.prototype = {
             return null;
         var originalLocation = formatData.mapping.formattedToOriginal(lineNumber, columnNumber);
         for (var i = 0; i < formatData.scripts.length; ++i) {
-            if (formatData.scripts[i].target() === this._target)
-                return this._target.debuggerModel.createRawLocation(formatData.scripts[i], originalLocation[0], originalLocation[1]);
+            if (formatData.scripts[i].debuggerModel === this._debuggerModel)
+                return this._debuggerModel.createRawLocation(formatData.scripts[i], originalLocation[0], originalLocation[1]);
         }
         return null;
     },
@@ -173,8 +173,11 @@ WebInspector.ScriptFormatterEditorAction.prototype = {
      */
     targetAdded: function(target)
     {
-        this._scriptMappingByTarget.set(target, new WebInspector.FormatterScriptMapping(target, this));
-        target.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.GlobalObjectCleared, this._debuggerReset, this);
+        var debuggerModel = WebInspector.DebuggerModel.fromTarget(target);
+        if (!debuggerModel)
+            return;
+        this._scriptMappingByTarget.set(target, new WebInspector.FormatterScriptMapping(debuggerModel, this));
+        debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.GlobalObjectCleared, this._debuggerReset, this);
     },
 
     /**
@@ -183,9 +186,12 @@ WebInspector.ScriptFormatterEditorAction.prototype = {
      */
     targetRemoved: function(target)
     {
+        var debuggerModel = WebInspector.DebuggerModel.fromTarget(target);
+        if (!debuggerModel)
+            return;
         this._scriptMappingByTarget.remove(target);
         this._cleanForTarget(target);
-        target.debuggerModel.removeEventListener(WebInspector.DebuggerModel.Events.GlobalObjectCleared, this._debuggerReset, this);
+        debuggerModel.removeEventListener(WebInspector.DebuggerModel.Events.GlobalObjectCleared, this._debuggerReset, this);
     },
 
     /**
@@ -361,10 +367,10 @@ WebInspector.ScriptFormatterEditorAction.prototype = {
 
         if (uiSourceCode.contentType() === WebInspector.resourceTypes.Document) {
             var scripts = [];
-            var targets = WebInspector.targetManager.targets();
-            for (var i = 0; i < targets.length; ++i) {
+            var debuggerModels = WebInspector.DebuggerModel.instances();
+            for (var i = 0; i < debuggerModels.length; ++i) {
                 var networkURL = WebInspector.networkMapping.networkURL(uiSourceCode);
-                scripts.pushAll(targets[i].debuggerModel.scriptsForSourceURL(networkURL));
+                scripts.pushAll(debuggerModels[i].scriptsForSourceURL(networkURL));
             }
             return scripts.filter(isInlineScript);
         }

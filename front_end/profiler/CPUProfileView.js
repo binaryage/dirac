@@ -277,13 +277,13 @@ WebInspector.CPUProfileView.prototype = {
     {
         var entryIndex = event.data;
         var node = this._dataProvider._entryNodes[entryIndex];
-        var target = this._profileHeader.target();
-        if (!node || !node.scriptId || !target)
+        var debuggerModel = this._profileHeader._debuggerModel;
+        if (!node || !node.scriptId || !debuggerModel)
             return;
-        var script = target.debuggerModel.scriptForId(node.scriptId);
+        var script = debuggerModel.scriptForId(node.scriptId);
         if (!script)
             return;
-        var location = /** @type {!WebInspector.DebuggerModel.Location} */ (script.target().debuggerModel.createRawLocation(script, node.lineNumber, node.columnNumber));
+        var location = /** @type {!WebInspector.DebuggerModel.Location} */ (debuggerModel.createRawLocation(script, node.lineNumber, node.columnNumber));
         WebInspector.Revealer.reveal(WebInspector.debuggerWorkspaceBinding.rawLocationToUILocation(location));
     },
 
@@ -586,6 +586,7 @@ WebInspector.CPUProfileType.prototype = {
 WebInspector.CPUProfileHeader = function(target, type, title)
 {
     WebInspector.ProfileHeader.call(this, target, type, title || WebInspector.UIString("Profile %d", type.nextProfileUid()));
+    this._debuggerModel = WebInspector.DebuggerModel.fromTarget(target);
     this._tempFile = null;
 }
 

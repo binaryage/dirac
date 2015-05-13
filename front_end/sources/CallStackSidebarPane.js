@@ -65,7 +65,7 @@ WebInspector.CallStackSidebarPane.prototype = {
         }
 
         this.callFrameList.show(this.bodyElement);
-        this._target = details.target();
+        this._debuggerModel = details.debuggerModel;
         var callFrames = details.callFrames;
         var asyncStackTrace = details.asyncStackTrace;
 
@@ -235,13 +235,13 @@ WebInspector.CallStackSidebarPane.prototype = {
 
     _blackboxingStateChanged: function()
     {
-        if (!this._target)
+        if (!this._debuggerModel)
             return;
-        var details = this._target.debuggerModel.debuggerPausedDetails();
+        var details = this._debuggerModel.debuggerPausedDetails();
         if (!details)
             return;
         this.update(details);
-        var selectedCallFrame = this._target.debuggerModel.selectedCallFrame();
+        var selectedCallFrame = this._debuggerModel.selectedCallFrame();
         if (selectedCallFrame)
             this.setSelectedCallFrame(selectedCallFrame);
     },
@@ -339,7 +339,9 @@ WebInspector.CallStackSidebarPane.prototype = {
      */
     _selectedCallFrameIndex: function()
     {
-        var selectedCallFrame = this._target.debuggerModel.selectedCallFrame();
+        if (!this._debuggerModel)
+            return -1;
+        var selectedCallFrame = this._debuggerModel.selectedCallFrame();
         if (!selectedCallFrame)
             return -1;
         for (var i = 0; i < this.callFrames.length; ++i) {

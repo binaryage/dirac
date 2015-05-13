@@ -597,8 +597,11 @@ WebInspector.Main.prototype = {
      */
     targetCrashed: function()
     {
+        var debuggerModel = WebInspector.DebuggerModel.fromTarget(this._mainTarget);
+        if (!debuggerModel)
+            return;
         (new WebInspector.HelpScreenUntilReload(
-            this._mainTarget,
+            debuggerModel,
             WebInspector.UIString("Inspected target disconnected"),
             WebInspector.UIString("Inspected target disconnected. Once it reloads we will attach to it automatically."))).showModal();
     },

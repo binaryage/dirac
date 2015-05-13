@@ -74,7 +74,8 @@ WebInspector.CPUProfilerModel.prototype = {
          */
         function dispatchEvent()
         {
-            var debuggerLocation = WebInspector.DebuggerModel.Location.fromPayload(this.target(), scriptLocation);
+            var debuggerModel = /** @type {!WebInspector.DebuggerModel} */ (WebInspector.DebuggerModel.fromTarget(this.target()));
+            var debuggerLocation = WebInspector.DebuggerModel.Location.fromPayload(debuggerModel, scriptLocation);
             this.dispatchEventToListeners(WebInspector.CPUProfilerModel.EventTypes.ConsoleProfileFinished, {protocolId: id, scriptLocation: debuggerLocation, cpuProfile: cpuProfile, title: title});
         }
     },
@@ -94,7 +95,8 @@ WebInspector.CPUProfilerModel.prototype = {
          */
         function dispatchEvent()
         {
-            var debuggerLocation = WebInspector.DebuggerModel.Location.fromPayload(this.target(), scriptLocation);
+            var debuggerModel = /** @type {!WebInspector.DebuggerModel} */ (WebInspector.DebuggerModel.fromTarget(this.target()));
+            var debuggerLocation = WebInspector.DebuggerModel.Location.fromPayload(debuggerModel, scriptLocation);
             this.dispatchEventToListeners(WebInspector.CPUProfilerModel.EventTypes.ConsoleProfileStarted, {protocolId: id, scriptLocation: debuggerLocation, title: title});
         }
     },

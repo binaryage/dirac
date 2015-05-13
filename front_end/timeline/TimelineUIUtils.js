@@ -322,7 +322,8 @@ WebInspector.TimelineUIUtils.buildDetailsTextForTraceEvent = function(event, tar
     function linkifyLocationAsText(scriptId, lineNumber, columnNumber)
     {
         // FIXME(62725): stack trace line/column numbers are one-based.
-        var rawLocation = target && !target.isDetached() && scriptId ? target.debuggerModel.createRawLocationByScriptId(scriptId, lineNumber - 1, (columnNumber || 1) - 1) : null;
+        var debuggerModel = WebInspector.DebuggerModel.fromTarget(target);
+        var rawLocation = target && !target.isDetached() && scriptId && debuggerModel ? debuggerModel.createRawLocationByScriptId(scriptId, lineNumber - 1, (columnNumber || 1) - 1) : null;
         if (!rawLocation)
             return null;
         var uiLocation = WebInspector.debuggerWorkspaceBinding.rawLocationToUILocation(rawLocation);

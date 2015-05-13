@@ -50,16 +50,6 @@ WebInspector.Target.Type = {
 WebInspector.Target._nextId = 1;
 
 WebInspector.Target.prototype = {
-    suspend: function()
-    {
-        this.debuggerModel.suspendModel();
-    },
-
-    resume: function()
-    {
-        this.debuggerModel.resumeModel();
-    },
-
     /**
      * @return {number}
      */
@@ -126,8 +116,10 @@ WebInspector.Target.prototype = {
         this.resourceTreeModel = new WebInspector.ResourceTreeModel(this);
         /** @type {!WebInspector.NetworkLog} */
         this.networkLog = new WebInspector.NetworkLog(this);
-        /** @type {!WebInspector.DebuggerModel} */
-        this.debuggerModel = new WebInspector.DebuggerModel(this);
+
+        if (this.hasJSContext())
+            new WebInspector.DebuggerModel(this);
+
         /** @type {!WebInspector.RuntimeModel} */
         this.runtimeModel = new WebInspector.RuntimeModel(this);
 
@@ -222,7 +214,7 @@ WebInspector.Target.prototype = {
 
     _dispose: function()
     {
-        this.debuggerModel.dispose();
+        WebInspector.targetManager.dispatchEventToListeners(WebInspector.TargetManager.Events.TargetDisposed, this);
         this.networkManager.dispose();
         this.cpuProfilerModel.dispose();
         WebInspector.ServiceWorkerCacheModel.fromTarget(this).dispose();
@@ -312,7 +304,8 @@ WebInspector.TargetManager.Events = {
     MainFrameNavigated: "MainFrameNavigated",
     Load: "Load",
     WillReloadPage: "WillReloadPage",
-    SuspendStateChanged: "SuspendStateChanged"
+    SuspendStateChanged: "SuspendStateChanged",
+    TargetDisposed: "TargetDisposed"
 }
 
 WebInspector.TargetManager.prototype = {
@@ -320,8 +313,6 @@ WebInspector.TargetManager.prototype = {
     {
         if (this._suspendCount++)
             return;
-        for (var target of this._targets)
-            target.suspend();
         this.dispatchEventToListeners(WebInspector.TargetManager.Events.SuspendStateChanged);
     },
 
@@ -330,8 +321,6 @@ WebInspector.TargetManager.prototype = {
         console.assert(this._suspendCount > 0);
         if (--this._suspendCount)
             return;
-        for (var target of this._targets)
-            target.resume();
         this.dispatchEventToListeners(WebInspector.TargetManager.Events.SuspendStateChanged);
     },
 

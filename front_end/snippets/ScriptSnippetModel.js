@@ -64,7 +64,9 @@ WebInspector.ScriptSnippetModel.prototype = {
      */
     targetAdded: function(target)
     {
-        this._mappingForTarget.set(target, new WebInspector.SnippetScriptMapping(target, this));
+        var debuggerModel = WebInspector.DebuggerModel.fromTarget(target);
+        if (debuggerModel)
+            this._mappingForTarget.set(target, new WebInspector.SnippetScriptMapping(debuggerModel, this));
     },
 
     /**
@@ -73,7 +75,8 @@ WebInspector.ScriptSnippetModel.prototype = {
      */
     targetRemoved: function(target)
     {
-        this._mappingForTarget.remove(target);
+        if (WebInspector.DebuggerModel.fromTarget(target))
+            this._mappingForTarget.remove(target);
     },
 
     /**
@@ -223,37 +226,32 @@ WebInspector.ScriptSnippetModel.prototype = {
         this._restoreBreakpoints(uiSourceCode, breakpointLocations);
 
         var target = executionContext.target();
+        var debuggerModel = executionContext.debuggerModel;
         var evaluationIndex = this._nextEvaluationIndex();
         var mapping = this._mappingForTarget.get(target);
         mapping._setEvaluationIndex(evaluationIndex, uiSourceCode);
         var evaluationUrl = mapping._evaluationSourceURL(uiSourceCode);
         var expression = uiSourceCode.workingCopy();
         WebInspector.console.show();
-        target.debuggerAgent().compileScript(expression, "", true, executionContext.id, compileCallback.bind(this));
+        debuggerModel.compileScript(expression, "", true, executionContext.id, compileCallback.bind(this));
 
         /**
-         * @param {?string} error
          * @param {!DebuggerAgent.ScriptId=} scriptId
          * @param {?DebuggerAgent.ExceptionDetails=} exceptionDetails
          * @this {WebInspector.ScriptSnippetModel}
          */
-        function compileCallback(error, scriptId, exceptionDetails)
+        function compileCallback(scriptId, exceptionDetails)
         {
             var mapping = this._mappingForTarget.get(target);
             if (mapping.evaluationIndex(uiSourceCode) !== evaluationIndex)
                 return;
-
-            if (error) {
-                console.error(error);
-                return;
-            }
 
             if (!scriptId) {
                 this._printRunOrCompileScriptResultFailure(target, exceptionDetails, evaluationUrl);
                 return;
             }
 
-            mapping._addScript(target.debuggerModel.scriptForId(scriptId), uiSourceCode);
+            mapping._addScript(debuggerModel.scriptForId(scriptId), uiSourceCode);
             var breakpointLocations = this._removeBreakpoints(uiSourceCode);
             this._restoreBreakpoints(uiSourceCode, breakpointLocations);
 
@@ -269,22 +267,16 @@ WebInspector.ScriptSnippetModel.prototype = {
     _runScript: function(scriptId, executionContext, sourceURL)
     {
         var target = executionContext.target();
-        target.debuggerAgent().runScript(scriptId, executionContext.id, "console", false, runCallback.bind(this, target));
+        executionContext.debuggerModel.runScript(scriptId, executionContext.id, "console", false, runCallback.bind(this, target));
 
         /**
          * @param {!WebInspector.Target} target
-         * @param {?string} error
          * @param {?RuntimeAgent.RemoteObject} result
          * @param {?DebuggerAgent.ExceptionDetails=} exceptionDetails
          * @this {WebInspector.ScriptSnippetModel}
          */
-        function runCallback(target, error, result, exceptionDetails)
+        function runCallback(target, result, exceptionDetails)
         {
-            if (error) {
-                console.error(error);
-                return;
-            }
-
             if (!exceptionDetails)
                 this._printRunScriptResult(target, result, sourceURL);
             else
@@ -389,12 +381,13 @@ WebInspector.ScriptSnippetModel.prototype = {
 /**
  * @constructor
  * @implements {WebInspector.DebuggerSourceMapping}
- * @param {!WebInspector.Target} target
+ * @param {!WebInspector.DebuggerModel} debuggerModel
  * @param {!WebInspector.ScriptSnippetModel} scriptSnippetModel
  */
-WebInspector.SnippetScriptMapping = function(target, scriptSnippetModel)
+WebInspector.SnippetScriptMapping = function(debuggerModel, scriptSnippetModel)
 {
-    this._target = target;
+    this._target = debuggerModel.target();
+    this._debuggerModel = debuggerModel;
     this._scriptSnippetModel = scriptSnippetModel;
     /** @type {!Object.<string, !WebInspector.UISourceCode>} */
     this._uiSourceCodeForScriptId = {};
@@ -402,7 +395,7 @@ WebInspector.SnippetScriptMapping = function(target, scriptSnippetModel)
     this._scriptForUISourceCode = new Map();
     /** @type {!Map.<!WebInspector.UISourceCode, number>} */
     this._evaluationIndexForUISourceCode = new Map();
-    target.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.GlobalObjectCleared, this._reset, this);
+    debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.GlobalObjectCleared, this._reset, this);
 }
 
 WebInspector.SnippetScriptMapping.prototype = {
@@ -484,7 +477,7 @@ WebInspector.SnippetScriptMapping.prototype = {
         if (!script)
             return null;
 
-        return this._target.debuggerModel.createRawLocation(script, lineNumber, columnNumber);
+        return this._debuggerModel.createRawLocation(script, lineNumber, columnNumber);
     },
 
     /**
@@ -509,8 +502,7 @@ WebInspector.SnippetScriptMapping.prototype = {
         var script = this._scriptForUISourceCode.get(uiSourceCode);
         if (!script)
             return;
-
-        var rawLocation = /** @type {!WebInspector.DebuggerModel.Location} */ (script.target().debuggerModel.createRawLocation(script, 0, 0));
+        var rawLocation = /** @type {!WebInspector.DebuggerModel.Location} */ (this._debuggerModel.createRawLocation(script, 0, 0));
         var scriptUISourceCode = WebInspector.debuggerWorkspaceBinding.rawLocationToUILocation(rawLocation).uiSourceCode;
         if (scriptUISourceCode)
             this._scriptSnippetModel._restoreBreakpoints(scriptUISourceCode, breakpointLocations);

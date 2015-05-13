@@ -164,9 +164,12 @@ WebInspector.Linkifier.prototype = {
         var fallbackAnchor = WebInspector.linkifyResourceAsNode(sourceURL, lineNumber, classes);
         if (!target || target.isDetached())
             return fallbackAnchor;
+        var debuggerModel = WebInspector.DebuggerModel.fromTarget(target);
+        if (!debuggerModel)
+            return fallbackAnchor;
 
-        var rawLocation = scriptId ? target.debuggerModel.createRawLocationByScriptId(scriptId, lineNumber, columnNumber || 0) :
-                                     target.debuggerModel.createRawLocationByURL(sourceURL, lineNumber, columnNumber || 0);
+        var rawLocation = scriptId ? debuggerModel.createRawLocationByScriptId(scriptId, lineNumber, columnNumber || 0) :
+                                     debuggerModel.createRawLocationByURL(sourceURL, lineNumber, columnNumber || 0);
         if (!rawLocation)
             return fallbackAnchor;
 
@@ -200,8 +203,8 @@ WebInspector.Linkifier.prototype = {
         var lineNumber = callFrame.lineNumber ? callFrame.lineNumber - 1 : 0;
         var columnNumber = callFrame.columnNumber ? callFrame.columnNumber - 1 : 0;
         var anchor = this.linkifyScriptLocation(target, callFrame.scriptId, callFrame.url, lineNumber, columnNumber, classes);
-
-        var script = target && target.debuggerModel.scriptForId(callFrame.scriptId);
+        var debuggerModel = WebInspector.DebuggerModel.fromTarget(target);
+        var script = debuggerModel && debuggerModel.scriptForId(callFrame.scriptId);
         var blackboxed = script ?
             WebInspector.BlackboxSupport.isBlackboxed(script.sourceURL, script.isContentScript()) :
             WebInspector.BlackboxSupport.isBlackboxedURL(callFrame.url);
@@ -399,10 +402,13 @@ WebInspector.Linkifier.LinkHandler.prototype = {
  */
 WebInspector.Linkifier.liveLocationText = function(target, scriptId, lineNumber, columnNumber)
 {
-    var script = target.debuggerModel.scriptForId(scriptId);
+    var debuggerModel = WebInspector.DebuggerModel.fromTarget(target);
+    if (!debuggerModel)
+        return "";
+    var script = debuggerModel.scriptForId(scriptId);
     if (!script)
         return "";
-    var location = /** @type {!WebInspector.DebuggerModel.Location} */ (target.debuggerModel.createRawLocation(script, lineNumber, columnNumber || 0));
+    var location = /** @type {!WebInspector.DebuggerModel.Location} */ (debuggerModel.createRawLocation(script, lineNumber, columnNumber || 0));
     var uiLocation = /** @type {!WebInspector.UILocation} */ (WebInspector.debuggerWorkspaceBinding.rawLocationToUILocation(location));
     return uiLocation.linkText();
 }

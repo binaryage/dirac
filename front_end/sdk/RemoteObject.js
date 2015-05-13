@@ -140,6 +140,14 @@ WebInspector.RemoteObject.prototype = {
     },
 
     /**
+     * @return {?WebInspector.DebuggerModel}
+     */
+    debuggerModel: function()
+    {
+        throw new Error("DebuggerModel-less object");
+    },
+
+    /**
      * @return {boolean}
      */
     isNode: function()
@@ -278,6 +286,7 @@ WebInspector.RemoteObjectImpl = function(target, objectId, type, subtype, value,
 
     this._target = target;
     this._runtimeAgent = target.runtimeAgent();
+    this._debuggerModel = WebInspector.DebuggerModel.fromTarget(target);
 
     this._type = type;
     this._subtype = subtype;
@@ -409,7 +418,7 @@ WebInspector.RemoteObjectImpl.prototype = {
          */
         function createEventListener(payload)
         {
-            return new WebInspector.EventListener(this._target, payload, this._objectId);
+            return new WebInspector.EventListener(this._debuggerModel, payload, this._objectId);
         }
         this.target().domdebuggerAgent().getEventListeners(this._objectId, mycallback.bind(this));
     },
@@ -679,6 +688,15 @@ WebInspector.RemoteObjectImpl.prototype = {
 
     /**
      * @override
+     * @return {?WebInspector.DebuggerModel}
+     */
+    debuggerModel: function()
+    {
+        return this._debuggerModel;
+    },
+
+    /**
+     * @override
      * @return {boolean}
      */
     isNode: function()
@@ -692,7 +710,7 @@ WebInspector.RemoteObjectImpl.prototype = {
      */
     functionDetails: function(callback)
     {
-        this._target.debuggerModel.functionDetails(this, callback);
+        this._debuggerModel.functionDetails(this, callback);
     },
 
     /**
@@ -701,7 +719,7 @@ WebInspector.RemoteObjectImpl.prototype = {
      */
     generatorObjectDetails: function(callback)
     {
-        this._target.debuggerModel.generatorObjectDetails(this, callback);
+        this._debuggerModel.generatorObjectDetails(this, callback);
     },
 
     /**
@@ -714,22 +732,7 @@ WebInspector.RemoteObjectImpl.prototype = {
             callback(null);
             return;
         }
-
-        this._target.debuggerAgent().getCollectionEntries(this._objectId, didGetCollectionEntries);
-
-        /**
-         * @param {?Protocol.Error} error
-         * @param {?Array.<!DebuggerAgent.CollectionEntry>} response
-         */
-        function didGetCollectionEntries(error, response)
-        {
-            if (error) {
-                console.error(error);
-                callback(null);
-                return;
-            }
-            callback(response);
-        }
+        this._debuggerModel.getCollectionEntries(this._objectId, callback);
     },
 
     __proto__: WebInspector.RemoteObject.prototype
@@ -808,7 +811,6 @@ WebInspector.ScopeRemoteObject = function(target, objectId, scopeRef, type, subt
     WebInspector.RemoteObjectImpl.call(this, target, objectId, type, subtype, value, description, preview);
     this._scopeRef = scopeRef;
     this._savedScopeProperties = undefined;
-    this._debuggerAgent = target.debuggerAgent();
 };
 
 WebInspector.ScopeRemoteObject.prototype = {
@@ -860,10 +862,10 @@ WebInspector.ScopeRemoteObject.prototype = {
      */
     doSetObjectPropertyValue: function(result, name, callback)
     {
-        this._debuggerAgent.setVariableValue(this._scopeRef.number, /** @type {string} */ (name.value), WebInspector.RemoteObject.toCallArgument(result), this._scopeRef.callFrameId, this._scopeRef.functionId, setVariableValueCallback.bind(this));
+        this._debuggerModel.setVariableValue(this._scopeRef.number, /** @type {string} */ (name.value), WebInspector.RemoteObject.toCallArgument(result), this._scopeRef.callFrameId, this._scopeRef.functionId, setVariableValueCallback.bind(this));
 
         /**
-         * @param {?Protocol.Error} error
+         * @param {string=} error
          * @this {WebInspector.ScopeRemoteObject}
          */
         function setVariableValueCallback(error)
