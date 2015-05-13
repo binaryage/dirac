@@ -29,6 +29,9 @@
             "type": "@WebInspector.CodeMirrorMimeMode",
             "className": "WebInspector.DefaultCodeMirrorMimeMode",
             "fileName": "php.js",
+            "dependencies": [
+                "clike.js"
+            ],
             "mimeTypes": [
                 "application/x-httpd-php",
                 "application/x-httpd-php-open",

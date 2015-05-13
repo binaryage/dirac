@@ -2163,11 +2163,29 @@ WebInspector.CodeMirrorTextEditor._loadMimeTypeModes = function(mimeType, callba
 {
     var installed = WebInspector.CodeMirrorTextEditor._loadedMimeModeExtensions;
 
-    var promises = [];
-    for (var extension of self.runtime.extensions(WebInspector.CodeMirrorMimeMode)) {
-        if (!installed.has(extension) && extension.descriptor()["mimeTypes"].indexOf(mimeType) !== -1)
-            promises.push(extension.instancePromise().then(installMode.bind(null, extension)));
+    var nameToExtension = new Map();
+    var extensions = self.runtime.extensions(WebInspector.CodeMirrorMimeMode);
+    for (var extension of extensions)
+        nameToExtension.set(extension.descriptor()["fileName"], extension);
+
+    var modesToLoad = new Set();
+    for (var extension of extensions) {
+        var descriptor = extension.descriptor();
+        if (installed.has(extension) || descriptor["mimeTypes"].indexOf(mimeType) === -1)
+            continue;
+
+        modesToLoad.add(extension);
+        var deps = descriptor["dependencies"] || [];
+        for (var i = 0; i < deps.length; ++i) {
+            var extension = nameToExtension.get(deps[i]);
+            if (extension && !installed.has(extension))
+                modesToLoad.add(extension);
+        }
     }
+
+    var promises = [];
+    for (var extension of modesToLoad)
+        promises.push(extension.instancePromise().then(installMode.bind(null, extension)));
     if (promises.length)
         Promise.all(promises).then(callback);
 
