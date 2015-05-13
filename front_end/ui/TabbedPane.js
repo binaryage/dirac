@@ -515,6 +515,7 @@ WebInspector.TabbedPane.prototype = {
 
         this._updateWidths();
         this._updateTabsDropDown();
+        this._updateTabSlider();
     },
 
     /**
@@ -654,7 +655,7 @@ WebInspector.TabbedPane.prototype = {
         // Perform measurement
         for (var i = 0; i < measuringTabElements.length; ++i) {
             var width = measuringTabElements[i].getBoundingClientRect().width;
-            measuringTabElements[i].__tab._measuredWidth = width;
+            measuringTabElements[i].__tab._measuredWidth = Math.round(width);
         }
 
         // Nuke elements from the UI
@@ -713,8 +714,11 @@ WebInspector.TabbedPane.prototype = {
 
         var totalTabsWidth = 0;
         var tabCount = tabsOrdered.length;
+        var tabsToLookAt = tabsOrdered.slice(0);
+        if (this._currentTab !== undefined)
+            tabsToLookAt.unshift(tabsToLookAt.splice(tabsToLookAt.indexOf(this._currentTab), 1)[0]);
         for (var i = 0; i < tabCount; ++i) {
-            var tab = this._retainTabOrder ? tabsOrdered[i] : tabsHistory[i];
+            var tab = this._retainTabOrder ? tabsToLookAt[i] : tabsHistory[i];
             totalTabsWidth += tab.width();
             var minimalRequiredWidth = totalTabsWidth;
             if (i !== tabCount - 1)
@@ -745,13 +749,18 @@ WebInspector.TabbedPane.prototype = {
     {
         tab.tabElement.classList.add("selected");
         tab.view.show(this.element);
+        this._updateTabSlider();
+    },
 
+    _updateTabSlider: function()
+    {
         if (!this._sliderEnabled)
             return;
         var left = 0;
-        for (var i = 0; tab !== this._tabs[i] && i < this._tabs.length; i++)
+        for (var i = 0; this._currentTab !== this._tabs[i] && this._tabs[i]._shown && i < this._tabs.length; i++)
             left += this._tabs[i]._measuredWidth;
-        this._tabSlider.style.transform = "translateX(" + left + "px) scaleX(" + tab._measuredWidth + ")";
+        var sliderWidth = this._currentTab._shown ? this._currentTab._measuredWidth : this._dropDownButton.offsetWidth;
+        this._tabSlider.style.transform = "translateX(" + left + "px) scaleX(" + sliderWidth + ")";
     },
 
     /**

@@ -141,6 +141,14 @@
 
 .material .tabbed-pane-header-tabs-drop-down-container {
     line-height: 25px;
+    height: 28px;
+    width: 28px;
+    text-align: center;
+    padding: 0;
+}
+
+.material .tabbed-pane-header-tabs-drop-down-container:hover {
+    background-color: rgba(105, 105, 105, 0.1);
 }
 
 .tabbed-pane-header-tabs-drop-down-container.measuring {
