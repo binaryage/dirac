@@ -138,6 +138,14 @@ WebInspector.ElementsTreeOutline.prototype = {
     },
 
     /**
+     * @return {boolean}
+     */
+    hasFocus: function()
+    {
+        return this._element === WebInspector.currentFocusElement();
+    },
+
+    /**
      * @param {boolean} wrap
      */
     setWordWrap: function(wrap)
