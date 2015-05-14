@@ -322,14 +322,13 @@ WebInspector.FilteredItemSelectionDialog.prototype = {
     {
         if (!this._filteredItems.length)
             return;
-        var element = this._viewportControl.renderedElementAt(this._selectedIndexInFiltered);
-        if (element)
-            element.classList.remove("selected");
+        if (this._selectedElement)
+            this._selectedElement.classList.remove("selected");
         this._viewportControl.scrollItemIntoView(index, makeLast);
         this._selectedIndexInFiltered = index;
-        element = this._viewportControl.renderedElementAt(index);
-        if (element)
-            element.classList.add("selected");
+        this._selectedElement = this._viewportControl.renderedElementAt(index);
+        if (this._selectedElement)
+            this._selectedElement.classList.add("selected");
     },
 
     _onClick: function(event)
@@ -374,8 +373,6 @@ WebInspector.FilteredItemSelectionDialog.prototype = {
     {
         var delegateIndex = this._filteredItems[index];
         var element = this._createItemElement(delegateIndex);
-        if (index === this._selectedIndexInFiltered)
-            element.classList.add("selected");
         return new WebInspector.StaticViewportElement(element);
     },
 
