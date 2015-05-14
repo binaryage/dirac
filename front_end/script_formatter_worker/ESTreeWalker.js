@@ -40,12 +40,22 @@ FormatterWorker.ESTreeWalker.prototype = {
             return;
         }
 
-        for (var i = 0; i < walkOrder.length; ++i) {
-            var entity = node[walkOrder[i]];
-            if (Array.isArray(entity))
-                this._walkArray(entity, node);
-            else
-                this._innerWalk(entity, node);
+        if (node.type === "TemplateLiteral") {
+            var templateLiteral = /** @type {!ESTree.TemplateLiteralNode} */ (node);
+            var expressionsLength = templateLiteral.expressions.length;
+            for (var i = 0; i < expressionsLength; ++i) {
+                this._innerWalk(templateLiteral.quasis[i], templateLiteral);
+                this._innerWalk(templateLiteral.expressions[i], templateLiteral);
+            }
+            this._innerWalk(templateLiteral.quasis[expressionsLength], templateLiteral);
+        } else {
+            for (var i = 0; i < walkOrder.length; ++i) {
+                var entity = node[walkOrder[i]];
+                if (Array.isArray(entity))
+                    this._walkArray(entity, node);
+                else
+                    this._innerWalk(entity, node);
+            }
         }
 
         this._afterVisit.call(null, node);
@@ -100,6 +110,9 @@ FormatterWorker.ESTreeWalker._walkOrder = {
     "Super": [],
     "SwitchCase": ["test", "consequent"],
     "SwitchStatement": ["discriminant", "cases"],
+    "TaggedTemplateExpression": ["tag", "quasi"],
+    "TemplateElement": [],
+    "TemplateLiteral": ["quasis", "expressions"],
     "ThisExpression": [],
     "ThrowStatement": ["argument"],
     "TryStatement": ["block", "handler", "finalizer"],

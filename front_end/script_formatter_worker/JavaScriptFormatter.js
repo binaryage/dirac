@@ -240,6 +240,10 @@ FormatterWorker.JavaScriptFormatter.prototype = {
             if (AT.punctuator(token, "}"))
                 return "<ntn";
             return "t";
+        } else if (node.type === "YieldExpression") {
+            return "t";
+        } else if (node.type === "Super") {
+            return "t";
         }
         return AT.keyword(token) && !AT.keyword(token, "this") ? "ts" : "t";
     },

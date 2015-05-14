@@ -10,7 +10,7 @@ FormatterWorker.AcornTokenizer = function(content)
 {
     this._content = content;
     this._comments = [];
-    this._tokenizer = acorn.tokenizer(this._content, { onComment: this._comments });
+    this._tokenizer = acorn.tokenizer(this._content, { ecmaVersion: 6, onComment: this._comments });
     this._lineEndings = this._content.lineEndings();
     this._lineNumber = 0;
     this._tokenLineStart = 0;

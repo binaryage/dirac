@@ -635,3 +635,14 @@ ESTree.Node = function()
     this.init;
 }
 
+/**
+ * @extends {ESTree.Node}
+ * @constructor
+ */
+ESTree.TemplateLiteralNode = function()
+{
+    /** @type {!Array.<!ESTree.Node>} */
+    this.quasis;
+    /** @type {!Array.<!ESTree.Node>} */
+    this.expressions;
+}
