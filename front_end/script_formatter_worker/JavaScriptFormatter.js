@@ -234,6 +234,12 @@ FormatterWorker.JavaScriptFormatter.prototype = {
                 return blockBody ? "ts" : "tn>";
             if (AT.keyword(token, "while"))
                 return blockBody ? "sts" : "n<ts";
+        } else if (node.type === "ClassBody") {
+            if (AT.punctuator(token, "{"))
+                return "stn>";
+            if (AT.punctuator(token, "}"))
+                return "<ntn";
+            return "t";
         }
         return AT.keyword(token) && !AT.keyword(token, "this") ? "ts" : "t";
     },
