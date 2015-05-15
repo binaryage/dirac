@@ -63,8 +63,6 @@ WebInspector.IsolatedFileSystem.normalizePath = function(fileSystemPath)
     return fileSystemPath;
 }
 
-WebInspector.IsolatedFileSystem.tempFileSuffix = "~";
-
 WebInspector.IsolatedFileSystem.prototype = {
     /**
      * @return {string}
@@ -163,11 +161,11 @@ WebInspector.IsolatedFileSystem.prototype = {
      */
     createFile: function(path, name, callback)
     {
+        this._requestFileSystem(fileSystemLoaded.bind(this));
+        var newFileIndex = 1;
         if (!name)
             name = "NewFile";
-        if (!path.endsWith("/"))
-            path += "/";
-        this._requestFileSystem(fileSystemLoaded.bind(this));
+        var nameCandidate;
 
         /**
          * @param {?DOMFileSystem} fs
@@ -177,12 +175,40 @@ WebInspector.IsolatedFileSystem.prototype = {
         {
             var domFileSystem = /** @type {!DOMFileSystem} */ (fs);
             console.assert(domFileSystem);
-            this._createFileInner(domFileSystem, path + name, onSuccess, errorHandler.bind(this));
+            domFileSystem.root.getDirectory(path, null, dirEntryLoaded.bind(this), errorHandler.bind(this));
         }
 
-        function onSuccess(entry)
+        /**
+         * @param {!DirectoryEntry} dirEntry
+         * @this {WebInspector.IsolatedFileSystem}
+         */
+        function dirEntryLoaded(dirEntry)
         {
-            callback(entry.fullPath.substr(1));
+            var nameCandidate = name;
+            if (newFileIndex > 1)
+                nameCandidate += newFileIndex;
+            ++newFileIndex;
+            dirEntry.getFile(nameCandidate, { create: true, exclusive: true }, fileCreated, fileCreationError.bind(this));
+
+            function fileCreated(entry)
+            {
+                callback(entry.fullPath.substr(1));
+            }
+
+            /**
+             * @this {WebInspector.IsolatedFileSystem}
+             */
+            function fileCreationError(error)
+            {
+                if (error.code === FileError.INVALID_MODIFICATION_ERR) {
+                    dirEntryLoaded.call(this, dirEntry);
+                    return;
+                }
+
+                var errorMessage = WebInspector.IsolatedFileSystem.errorMessage(error);
+                console.error(errorMessage + " when testing if file exists '" + (this._path + "/" + path + "/" + nameCandidate) + "'");
+                callback(null);
+            }
         }
 
         /**
@@ -191,7 +217,10 @@ WebInspector.IsolatedFileSystem.prototype = {
         function errorHandler(error)
         {
             var errorMessage = WebInspector.IsolatedFileSystem.errorMessage(error);
-            console.error(errorMessage + " when testing if file exists '" + (this._path + "/" + path + "/" + name) + "'");
+            var filePath = this._path + "/" + path;
+            if (nameCandidate)
+                filePath += "/" + nameCandidate;
+            console.error(errorMessage + " when getting content for file '" + (filePath) + "'");
             callback(null);
         }
     },
@@ -351,53 +380,14 @@ WebInspector.IsolatedFileSystem.prototype = {
     },
 
     /**
-     * @param {!DOMFileSystem} domFileSystem
      * @param {string} path
-     * @param {function(!FileEntry)} successCallback
-     * @param {function(?)} failureCallback
-     */
-    _createFileInner: function(domFileSystem, path, successCallback, failureCallback)
-    {
-        var newFileIndex = 1;
-        attemptToCreateFile();
-
-        function attemptToCreateFile()
-        {
-            var pathCandidate = path;
-            if (newFileIndex > 1)
-                pathCandidate += newFileIndex;
-            ++newFileIndex;
-            domFileSystem.root.getFile(pathCandidate, { create: true, exclusive: true }, successCallback, fileCreationError);
-        }
-
-        function fileCreationError(error)
-        {
-            if (error.code === FileError.INVALID_MODIFICATION_ERR) {
-                attemptToCreateFile();
-                return;
-            }
-            failureCallback(error);
-        }
-    },
-
-    /**
-     * @param {string} fullPath
      * @param {string} content
      * @param {function()} callback
      */
-    setFileContent: function(fullPath, content, callback)
+    setFileContent: function(path, content, callback)
     {
-        var nameIndex = fullPath.lastIndexOf("/");
-        var path = fullPath.substring(0, fullPath.lastIndexOf("/") + 1);
-        var name = fullPath.substring(nameIndex + 1);
-
-        var errorHandler = onError.bind(this);
-
         this._requestFileSystem(fileSystemLoaded.bind(this));
         WebInspector.userMetrics.FileSavedInWorkspace.record();
-
-        var domFileSystem;
-        var tmpFileEntry;
 
         /**
          * @param {?DOMFileSystem} fs
@@ -405,45 +395,39 @@ WebInspector.IsolatedFileSystem.prototype = {
          */
         function fileSystemLoaded(fs)
         {
-            domFileSystem = /** @type {!DOMFileSystem} */ (fs);
+            var domFileSystem = /** @type {!DOMFileSystem} */ (fs);
             console.assert(domFileSystem);
-            this._createFileInner(domFileSystem, fullPath + WebInspector.IsolatedFileSystem.tempFileSuffix, fileEntryLoaded, errorHandler);
+            domFileSystem.root.getFile(path, { create: true }, fileEntryLoaded.bind(this), errorHandler.bind(this));
         }
 
         /**
          * @param {!FileEntry} entry
+         * @this {WebInspector.IsolatedFileSystem}
          */
         function fileEntryLoaded(entry)
         {
-            tmpFileEntry = entry;
-            entry.createWriter(tempWriterCreated, errorHandler);
+            entry.createWriter(fileWriterCreated.bind(this), errorHandler.bind(this));
         }
 
         /**
          * @param {!FileWriter} fileWriter
+         * @this {WebInspector.IsolatedFileSystem}
          */
-        function tempWriterCreated(fileWriter)
+        function fileWriterCreated(fileWriter)
         {
-            fileWriter.onerror = errorHandler;
-            fileWriter.onwriteend = tempFileWritten;
-            var blob = new Blob([content], { type: "text/plain" });
-            fileWriter.write(blob);
+            fileWriter.onerror = errorHandler.bind(this);
+            fileWriter.onwriteend = fileTruncated;
+            fileWriter.truncate(0);
+
+            function fileTruncated()
+            {
+                fileWriter.onwriteend = writerEnd;
+                var blob = new Blob([content], { type: "text/plain" });
+                fileWriter.write(blob);
+            }
         }
 
-        function tempFileWritten()
-        {
-            tmpFileEntry.getParent(onParentDirectory, errorHandler);
-        }
-
-        /**
-         * @param {!FileEntry} parentDirectory
-         */
-        function onParentDirectory(parentDirectory)
-        {
-            tmpFileEntry.moveTo(parentDirectory, name, fileRenamed, errorHandler);
-        }
-
-        function fileRenamed()
+        function writerEnd()
         {
             callback();
         }
@@ -451,7 +435,7 @@ WebInspector.IsolatedFileSystem.prototype = {
         /**
          * @this {WebInspector.IsolatedFileSystem}
          */
-        function onError(error)
+        function errorHandler(error)
         {
             var errorMessage = WebInspector.IsolatedFileSystem.errorMessage(error);
             console.error(errorMessage + " when setting content for file '" + (this._path + "/" + path) + "'");
