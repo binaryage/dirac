@@ -816,14 +816,24 @@ WebInspector.ConsoleViewMessage.prototype = {
                 var toAppend = WebInspector.linkifyStringAsFragment(String(b));
                 if (currentStyle) {
                     var wrapper = createElement('span');
-                    for (var key in currentStyle)
-                        wrapper.style[key] = currentStyle[key];
                     wrapper.appendChild(toAppend);
+                    applyCurrentStyle(wrapper);
+                    for (var i = 0; i < wrapper.children.length; ++i)
+                        applyCurrentStyle(wrapper.children[i]);
                     toAppend = wrapper;
                 }
                 a.appendChild(toAppend);
             }
             return a;
+        }
+
+        /**
+         * @param {!Element} element
+         */
+        function applyCurrentStyle(element)
+        {
+            for (var key in currentStyle)
+                element.style[key] = currentStyle[key];
         }
 
         // String.format does treat formattedResult like a Builder, result is an object.
