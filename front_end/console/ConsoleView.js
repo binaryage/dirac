@@ -37,6 +37,7 @@
 WebInspector.ConsoleView = function()
 {
     WebInspector.VBox.call(this);
+    this.setMinimumSize(0, 35);
     this.registerRequiredCSS("ui/filter.css");
     this.registerRequiredCSS("console/consoleView.css");
 

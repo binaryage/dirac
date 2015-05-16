@@ -9,6 +9,7 @@
 WebInspector.AdvancedSearchView = function()
 {
     WebInspector.VBox.call(this, true);
+    this.setMinimumSize(0, 40);
     this.registerRequiredCSS("sources/sourcesSearch.css");
 
     this._searchId = 0;

@@ -35,6 +35,7 @@
 WebInspector.OverridesView = function()
 {
     WebInspector.VBox.call(this);
+    this.setMinimumSize(0, 30);
     this.registerRequiredCSS("emulation/overrides.css");
     this.element.classList.add("overrides-view");
 
