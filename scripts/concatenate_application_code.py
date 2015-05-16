@@ -53,16 +53,16 @@ def concatenated_module_filename(module_name, output_dir):
     return join(output_dir, module_name + '_module.js')
 
 
-def hardlink_or_copy_file(src, dest, safe=False):
+def symlink_or_copy_file(src, dest, safe=False):
     if safe and path.exists(dest):
         os.remove(dest)
-    if hasattr(os, 'link'):
-        os.link(src, dest)
+    if hasattr(os, 'symlink'):
+        os.symlink(src, dest)
     else:
         shutil.copy(src, dest)
 
 
-def hardlink_or_copy_dir(src, dest):
+def symlink_or_copy_dir(src, dest):
     if path.exists(dest):
         shutil.rmtree(dest)
     for src_dir, dirs, files in os.walk(src):
@@ -70,9 +70,9 @@ def hardlink_or_copy_dir(src, dest):
         dest_dir = path.normpath(join(dest, subpath))
         os.mkdir(dest_dir)
         for name in files:
-            src_name = join(src_dir, name)
+            src_name = join(os.getcwd(), src_dir, name)
             dest_name = join(dest_dir, name)
-            hardlink_or_copy_file(src_name, dest_name)
+            symlink_or_copy_file(src_name, dest_name)
 
 
 class AppBuilder:
@@ -259,16 +259,17 @@ class DebugBuilder(AppBuilder):
     def build_app(self):
         self._build_html()
         js_name = self.app_file('js')
-        hardlink_or_copy_file(join(self.application_dir, js_name), join(self.output_dir, js_name), True)
+        src_name = join(os.getcwd(), self.application_dir, js_name)
+        symlink_or_copy_file(src_name, join(self.output_dir, js_name), True)
         for module_name in self.descriptors.modules:
             module = self.descriptors.modules[module_name]
             input_module_dir = join(self.application_dir, module_name)
             output_module_dir = join(self.output_dir, module_name)
-            hardlink_or_copy_dir(input_module_dir, output_module_dir)
+            symlink_or_copy_dir(input_module_dir, output_module_dir)
 
     def _build_html(self):
         html_name = self.app_file('html')
-        hardlink_or_copy_file(join(self.application_dir, html_name), join(self.output_dir, html_name), True)
+        symlink_or_copy_file(join(os.getcwd(), self.application_dir, html_name), join(self.output_dir, html_name), True)
 
 
 def build_application(application_name, loader, application_dir, output_dir, release_mode):
