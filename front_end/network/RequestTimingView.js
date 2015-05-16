@@ -73,6 +73,7 @@ WebInspector.RequestTimingView.prototype = {
 
 /** @enum {string} */
 WebInspector.RequestTimeRangeNames = {
+    Queueing: "queueing",
     Blocking: "blocking",
     Connecting: "connecting",
     DNS: "dns",
@@ -87,6 +88,7 @@ WebInspector.RequestTimeRangeNames = {
 };
 
 WebInspector.RequestTimingView.ConnectionSetupRangeNames = [
+    WebInspector.RequestTimeRangeNames.Queueing,
     WebInspector.RequestTimeRangeNames.Blocking,
     WebInspector.RequestTimeRangeNames.Connecting,
     WebInspector.RequestTimeRangeNames.DNS,
@@ -104,6 +106,7 @@ WebInspector.RequestTimeRange;
 WebInspector.RequestTimingView._timeRangeTitle = function(name)
 {
     switch (name) {
+    case WebInspector.RequestTimeRangeNames.Queueing: return WebInspector.UIString("Queueing");
     case WebInspector.RequestTimeRangeNames.Blocking: return WebInspector.UIString("Stalled");
     case WebInspector.RequestTimeRangeNames.Connecting: return WebInspector.UIString("Initial connection");
     case WebInspector.RequestTimeRangeNames.DNS: return WebInspector.UIString("DNS Lookup");
@@ -177,6 +180,8 @@ WebInspector.RequestTimingView.calculateRequestTimeRanges = function(request)
     var endTime = firstPositive([request.endTime, request.responseReceivedTime]) || startTime;
 
     addRange(WebInspector.RequestTimeRangeNames.Total, issueTime < startTime ? issueTime : startTime, endTime);
+    if (issueTime < startTime)
+        addRange(WebInspector.RequestTimeRangeNames.Queueing, issueTime, startTime);
 
     if (request.fetchedViaServiceWorker) {
         addOffsetRange(WebInspector.RequestTimeRangeNames.Blocking, 0, timing.serviceWorkerFetchStart);

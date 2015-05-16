@@ -369,6 +369,7 @@
 
 /* Resource categories */
 
+.network-graph-bar.request-timing.queueing,
 .network-graph-bar.request-timing.total,
 .network-graph-bar.request-timing.proxy,
 .network-graph-bar.request-timing.dns,
@@ -378,6 +379,7 @@
     margin: 3px 0;
 }
 
+.network-graph-bar.request-timing.queueing,
 .network-graph-bar.request-timing.total {
     border: solid 1px #AAAAAA;
 }

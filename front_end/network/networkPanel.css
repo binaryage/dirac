@@ -130,6 +130,7 @@
     text-align: right;
 }
 
+.network-timing-bar.queueing,
 .network-timing-bar.total {
     border: 1px solid rgba(0, 0, 0, 0.1);
 }
