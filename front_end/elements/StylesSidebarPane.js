@@ -2130,27 +2130,32 @@ WebInspector.BlankStylePropertiesSection.prototype = {
 /**
  * @constructor
  * @extends {TreeElement}
+ * @param {!WebInspector.StylesSidebarPane} stylesPane
  * @param {!WebInspector.StylesSectionModel} styleRule
  * @param {!WebInspector.CSSProperty} property
+ * @param {boolean} isShorthand
  * @param {boolean} inherited
  * @param {boolean} overloaded
- * @param {boolean} expandable
  */
-WebInspector.StylePropertyTreeElementBase = function(styleRule, property, inherited, overloaded, expandable)
+WebInspector.StylePropertyTreeElement = function(stylesPane, styleRule, property, isShorthand, inherited, overloaded)
 {
+    // Pass an empty title, the title gets made later in onattach.
+    TreeElement.call(this, "", isShorthand);
     this._styleRule = styleRule;
     this.property = property;
     this._inherited = inherited;
     this._overloaded = overloaded;
-
-    // Pass an empty title, the title gets made later in onattach.
-    TreeElement.call(this, "", expandable);
-
     this.selectable = false;
+    this._parentPane = stylesPane;
+    this.isShorthand = isShorthand;
+    this._applyStyleThrottler = new WebInspector.Throttler(0);
 }
 
-WebInspector.StylePropertyTreeElementBase.prototype = {
-    /**
+/** @typedef {{expanded: boolean, hasChildren: boolean, isEditingName: boolean, previousContent: string}} */
+WebInspector.StylePropertyTreeElement.Context;
+
+WebInspector.StylePropertyTreeElement.prototype = {
+/**
      * @return {!WebInspector.CSSStyleDeclaration}
      */
     style: function()
@@ -2193,47 +2198,6 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
     get value()
     {
         return this.property.value;
-    },
-
-    updateTitle: function()
-    {
-        this._updateState();
-        this._expandElement = createElement("span");
-        this._expandElement.className = "expand-element";
-
-        var propertyRenderer = new WebInspector.StylesSidebarPropertyRenderer(this._styleRule.rule(), this.node(), this.name, this.value);
-        if (this.property.parsedOk) {
-            propertyRenderer.setColorHandler(this._processColor.bind(this));
-            propertyRenderer.setBezierHandler(this._processBezier.bind(this));
-        }
-
-        this.listItemElement.removeChildren();
-        this.nameElement = propertyRenderer.renderName();
-        this.nameElement.title = this.property.propertyText;
-        this.valueElement = propertyRenderer.renderValue();
-        if (!this.treeOutline)
-            return;
-
-        var indent = WebInspector.moduleSetting("textEditorIndent").get();
-        this.listItemElement.createChild("span", "styles-clipboard-only").createTextChild(indent + (this.property.disabled ? "/* " : ""));
-        this.listItemElement.appendChild(this.nameElement);
-        this.listItemElement.createTextChild(": ");
-        this.listItemElement.appendChild(this._expandElement);
-        this.listItemElement.appendChild(this.valueElement);
-        this.listItemElement.createTextChild(";");
-        if (this.property.disabled)
-            this.listItemElement.createChild("span", "styles-clipboard-only").createTextChild(" */");
-
-        if (!this.property.parsedOk) {
-            // Avoid having longhands under an invalid shorthand.
-            this.listItemElement.classList.add("not-parsed-ok");
-
-            // Add a separate exclamation mark IMG element with a tooltip.
-            this.listItemElement.insertBefore(WebInspector.StylesSidebarPane.createExclamationMark(this.property), this.listItemElement.firstChild);
-        }
-        if (this.property.inactive)
-            this.listItemElement.classList.add("inactive");
-        this._updateFilter();
     },
 
     /**
@@ -2338,31 +2302,6 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
             this.listItemElement.classList.remove("disabled");
     },
 
-    __proto__: TreeElement.prototype
-}
-
-/**
- * @constructor
- * @extends {WebInspector.StylePropertyTreeElementBase}
- * @param {!WebInspector.StylesSidebarPane} stylesPane
- * @param {!WebInspector.StylesSectionModel} styleRule
- * @param {!WebInspector.CSSProperty} property
- * @param {boolean} isShorthand
- * @param {boolean} inherited
- * @param {boolean} overloaded
- */
-WebInspector.StylePropertyTreeElement = function(stylesPane, styleRule, property, isShorthand, inherited, overloaded)
-{
-    WebInspector.StylePropertyTreeElementBase.call(this, styleRule, property, inherited, overloaded, isShorthand);
-    this._parentPane = stylesPane;
-    this.isShorthand = isShorthand;
-    this._applyStyleThrottler = new WebInspector.Throttler(0);
-}
-
-/** @typedef {{expanded: boolean, hasChildren: boolean, isEditingName: boolean, previousContent: string}} */
-WebInspector.StylePropertyTreeElement.Context;
-
-WebInspector.StylePropertyTreeElement.prototype = {
     /**
      * @return {?WebInspector.DOMNode}
      */
@@ -2497,12 +2436,45 @@ WebInspector.StylePropertyTreeElement.prototype = {
         }
     },
 
-    /**
-     * @override
-     */
     updateTitle: function()
     {
-        WebInspector.StylePropertyTreeElementBase.prototype.updateTitle.call(this);
+        this._updateState();
+        this._expandElement = createElement("span");
+        this._expandElement.className = "expand-element";
+
+        var propertyRenderer = new WebInspector.StylesSidebarPropertyRenderer(this._styleRule.rule(), this.node(), this.name, this.value);
+        if (this.property.parsedOk) {
+            propertyRenderer.setColorHandler(this._processColor.bind(this));
+            propertyRenderer.setBezierHandler(this._processBezier.bind(this));
+        }
+
+        this.listItemElement.removeChildren();
+        this.nameElement = propertyRenderer.renderName();
+        this.nameElement.title = this.property.propertyText;
+        this.valueElement = propertyRenderer.renderValue();
+        if (!this.treeOutline)
+            return;
+
+        var indent = WebInspector.moduleSetting("textEditorIndent").get();
+        this.listItemElement.createChild("span", "styles-clipboard-only").createTextChild(indent + (this.property.disabled ? "/* " : ""));
+        this.listItemElement.appendChild(this.nameElement);
+        this.listItemElement.createTextChild(": ");
+        this.listItemElement.appendChild(this._expandElement);
+        this.listItemElement.appendChild(this.valueElement);
+        this.listItemElement.createTextChild(";");
+        if (this.property.disabled)
+            this.listItemElement.createChild("span", "styles-clipboard-only").createTextChild(" */");
+
+        if (!this.property.parsedOk) {
+            // Avoid having longhands under an invalid shorthand.
+            this.listItemElement.classList.add("not-parsed-ok");
+
+            // Add a separate exclamation mark IMG element with a tooltip.
+            this.listItemElement.insertBefore(WebInspector.StylesSidebarPane.createExclamationMark(this.property), this.listItemElement.firstChild);
+        }
+        if (this.property.inactive)
+            this.listItemElement.classList.add("inactive");
+        this._updateFilter();
 
         if (this.property.parsedOk && this.section() && this.parent.root) {
             var enabledCheckboxElement = createElement("input");
@@ -3077,7 +3049,7 @@ WebInspector.StylePropertyTreeElement.prototype = {
         return event.target === this._expandElement;
     },
 
-    __proto__: WebInspector.StylePropertyTreeElementBase.prototype
+    __proto__: TreeElement.prototype
 }
 
 /**

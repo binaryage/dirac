@@ -135,7 +135,7 @@ WebInspector.StylesPopoverHelper.prototype = {
 
 /**
  * @constructor
- * @param {!WebInspector.StylePropertyTreeElementBase} treeElement
+ * @param {!WebInspector.StylePropertyTreeElement} treeElement
  * @param {!WebInspector.StylesPopoverHelper} stylesPopoverHelper
  * @param {string} text
  */
@@ -223,7 +223,7 @@ WebInspector.BezierPopoverIcon.prototype = {
 
 /**
  * @constructor
- * @param {!WebInspector.StylePropertyTreeElementBase} treeElement
+ * @param {!WebInspector.StylePropertyTreeElement} treeElement
  * @param {!WebInspector.StylesPopoverHelper} stylesPopoverHelper
  * @param {string} colorText
  */
