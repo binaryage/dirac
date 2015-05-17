@@ -1275,14 +1275,6 @@ WebInspector.StylePropertiesSection.prototype = {
     },
 
     /**
-     * @return {boolean}
-     */
-    inherited: function()
-    {
-        return this.styleRule.inherited();
-    },
-
-    /**
      * @return {?WebInspector.CSSRule}
      */
     rule: function()
@@ -1384,7 +1376,7 @@ WebInspector.StylePropertiesSection.prototype = {
      */
     isPropertyInherited: function(propertyName)
     {
-        if (this.inherited()) {
+        if (this.styleRule.inherited()) {
             // While rendering inherited stylesheet, reverse meaning of this property.
             // Render truly inherited properties with black, i.e. return them as non-inherited.
             return !WebInspector.CSSMetadata.isPropertyInherited(propertyName);
@@ -1444,7 +1436,7 @@ WebInspector.StylePropertiesSection.prototype = {
         } else {
             var child = this.propertiesTreeOutline.firstChild();
             while (child) {
-                child.overloaded = this.styleRule.isPropertyOverloaded(child.name, child.isShorthand);
+                child.setOverloaded(this.styleRule.isPropertyOverloaded(child.name, child.isShorthand));
                 child = child.traverseNextTreeElement(false, null, true);
             }
         }
@@ -1848,7 +1840,7 @@ WebInspector.StylePropertiesSection.prototype = {
 
         if (moveDirection === "forward") {
             var firstChild = this.propertiesTreeOutline.firstChild();
-            while (firstChild && firstChild.inherited)
+            while (firstChild && firstChild.inherited())
                 firstChild = firstChild.nextSibling;
             if (!firstChild)
                 this.addNewBlankProperty().startEditing();
@@ -2167,22 +2159,9 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
     },
 
     /**
-     * @return {?WebInspector.DOMNode}
+     * @return {boolean}
      */
-    node: function()
-    {
-        return null;  // Overridden by ancestors.
-    },
-
-    /**
-     * @return {!WebInspector.StylesSidebarPane|!WebInspector.ComputedStyleSidebarPane}
-     */
-    parentPane: function()
-    {
-        throw "Not implemented";
-    },
-
-    get inherited()
+    inherited: function()
     {
         return this._inherited;
     },
@@ -2190,17 +2169,15 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
     /**
      * @return {boolean}
      */
-    hasIgnorableError: function()
-    {
-        return !this.parsedOk && WebInspector.StylesSidebarPane.ignoreErrorsForProperty(this.property);
-    },
-
-    get overloaded()
+    overloaded: function()
     {
         return this._overloaded;
     },
 
-    set overloaded(x)
+    /**
+     * @param {boolean} x
+     */
+    setOverloaded: function(x)
     {
         if (x === this._overloaded)
             return;
@@ -2208,55 +2185,14 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
         this._updateState();
     },
 
-    get disabled()
-    {
-        return this.property.disabled;
-    },
-
     get name()
     {
-        if (!this.disabled || !this.property.text)
-            return this.property.name;
-
-        var text = this.property.text;
-        var index = text.indexOf(":");
-        if (index < 1)
-            return this.property.name;
-
-        text = text.substring(0, index).trim();
-        if (text.startsWith("/*"))
-            text = text.substring(2).trim();
-        return text;
+        return this.property.name;
     },
 
     get value()
     {
-        if (!this.disabled || !this.property.text)
-            return this.property.value;
-
-        var match = this.property.text.match(/(.*);\s*/);
-        if (!match || !match[1])
-            return this.property.value;
-
-        var text = match[1];
-        var index = text.indexOf(":");
-        if (index < 1)
-            return this.property.value;
-
-        return text.substring(index + 1).trim();
-    },
-
-    get parsedOk()
-    {
-        return this.property.parsedOk;
-    },
-
-    /**
-     * @override
-     */
-    onattach: function()
-    {
-        this.updateTitle();
+        return this.property.value;
     },
 
     updateTitle: function()
@@ -2266,7 +2202,7 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
         this._expandElement.className = "expand-element";
 
         var propertyRenderer = new WebInspector.StylesSidebarPropertyRenderer(this._styleRule.rule(), this.node(), this.name, this.value);
-        if (this.parsedOk) {
+        if (this.property.parsedOk) {
             propertyRenderer.setColorHandler(this._processColor.bind(this));
             propertyRenderer.setBezierHandler(this._processBezier.bind(this));
         }
@@ -2279,16 +2215,16 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
             return;
 
         var indent = WebInspector.moduleSetting("textEditorIndent").get();
-        this.listItemElement.createChild("span", "styles-clipboard-only").createTextChild(indent + (this.disabled ? "/* " : ""));
+        this.listItemElement.createChild("span", "styles-clipboard-only").createTextChild(indent + (this.property.disabled ? "/* " : ""));
         this.listItemElement.appendChild(this.nameElement);
         this.listItemElement.createTextChild(": ");
         this.listItemElement.appendChild(this._expandElement);
         this.listItemElement.appendChild(this.valueElement);
         this.listItemElement.createTextChild(";");
-        if (this.disabled)
+        if (this.property.disabled)
             this.listItemElement.createChild("span", "styles-clipboard-only").createTextChild(" */");
 
-        if (!this.parsedOk) {
+        if (!this.property.parsedOk) {
             // Avoid having longhands under an invalid shorthand.
             this.listItemElement.classList.add("not-parsed-ok");
 
@@ -2305,7 +2241,7 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
      */
     _updateFilter: function()
     {
-        var regex = this.parentPane().filterRegex();
+        var regex = this._parentPane.filterRegex();
         var matches = !!regex && (regex.test(this.property.name) || regex.test(this.property.value));
         this.listItemElement.classList.toggle("filter-match", matches);
 
@@ -2345,7 +2281,7 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
             return swatch;
         }
 
-        var stylesPopoverHelper = this.parentPane()._stylesPopoverHelper;
+        var stylesPopoverHelper = this._parentPane._stylesPopoverHelper;
         return new WebInspector.ColowSwatchPopoverIcon(this, stylesPopoverHelper, text).element();
     },
 
@@ -2366,7 +2302,7 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
         var geometry = WebInspector.Geometry.CubicBezier.parse(text);
         if (!geometry || !this._styleRule.editable())
             return createTextNode(text);
-        var stylesPopoverHelper = this.parentPane()._stylesPopoverHelper;
+        var stylesPopoverHelper = this._parentPane._stylesPopoverHelper;
         return new WebInspector.BezierPopoverIcon(this, stylesPopoverHelper, text).element();
     },
 
@@ -2380,22 +2316,23 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
         else
             this.listItemElement.classList.remove("implicit");
 
-        if (this.hasIgnorableError())
+        var hasIgnorableError = !this.property.parsedOk && WebInspector.StylesSidebarPane.ignoreErrorsForProperty(this.property);
+        if (hasIgnorableError)
             this.listItemElement.classList.add("has-ignorable-error");
         else
             this.listItemElement.classList.remove("has-ignorable-error");
 
-        if (this.inherited)
+        if (this.inherited())
             this.listItemElement.classList.add("inherited");
         else
             this.listItemElement.classList.remove("inherited");
 
-        if (this.overloaded)
+        if (this.overloaded())
             this.listItemElement.classList.add("overloaded");
         else
             this.listItemElement.classList.remove("overloaded");
 
-        if (this.disabled)
+        if (this.property.disabled)
             this.listItemElement.classList.add("disabled");
         else
             this.listItemElement.classList.remove("disabled");
@@ -2427,7 +2364,6 @@ WebInspector.StylePropertyTreeElement.Context;
 
 WebInspector.StylePropertyTreeElement.prototype = {
     /**
-     * @override
      * @return {?WebInspector.DOMNode}
      */
     node: function()
@@ -2436,7 +2372,6 @@ WebInspector.StylePropertyTreeElement.prototype = {
     },
 
     /**
-     * @override
      * @return {!WebInspector.StylesSidebarPane}
      */
     parentPane: function()
@@ -2474,7 +2409,7 @@ WebInspector.StylePropertyTreeElement.prototype = {
     /**
      * @param {!Event} event
      */
-    toggleEnabled: function(event)
+    _toggleEnabled: function(event)
     {
         var disabled = !event.target.checked;
 
@@ -2499,6 +2434,9 @@ WebInspector.StylePropertyTreeElement.prototype = {
         event.consume();
     },
 
+    /**
+     * @override
+     */
     onpopulate: function()
     {
         // Only populate once and if this property is a shorthand.
@@ -2526,9 +2464,12 @@ WebInspector.StylePropertyTreeElement.prototype = {
         }
     },
 
+    /**
+     * @override
+     */
     onattach: function()
     {
-        WebInspector.StylePropertyTreeElementBase.prototype.onattach.call(this);
+        this.updateTitle();
 
         this.listItemElement.addEventListener("mousedown", this._mouseDown.bind(this));
         this.listItemElement.addEventListener("mouseup", this._resetMouseDownElement.bind(this));
@@ -2542,8 +2483,8 @@ WebInspector.StylePropertyTreeElement.prototype = {
     {
         if (this._parentPane) {
             this._parentPane._mouseDownTreeElement = this;
-            this._parentPane._mouseDownTreeElementIsName = this._isNameElement(/** @type {!Element} */(event.target));
-            this._parentPane._mouseDownTreeElementIsValue = this._isValueElement(/** @type {!Element} */(event.target));
+            this._parentPane._mouseDownTreeElementIsName = this.nameElement && this.nameElement.isSelfOrAncestor(event.target);
+            this._parentPane._mouseDownTreeElementIsValue = this.valueElement && this.valueElement.isSelfOrAncestor(event.target);
         }
     },
 
@@ -2556,16 +2497,19 @@ WebInspector.StylePropertyTreeElement.prototype = {
         }
     },
 
+    /**
+     * @override
+     */
     updateTitle: function()
     {
         WebInspector.StylePropertyTreeElementBase.prototype.updateTitle.call(this);
 
-        if (this.parsedOk && this.section() && this.parent.root) {
+        if (this.property.parsedOk && this.section() && this.parent.root) {
             var enabledCheckboxElement = createElement("input");
             enabledCheckboxElement.className = "enabled-button";
             enabledCheckboxElement.type = "checkbox";
-            enabledCheckboxElement.checked = !this.disabled;
-            enabledCheckboxElement.addEventListener("click", this.toggleEnabled.bind(this), false);
+            enabledCheckboxElement.checked = !this.property.disabled;
+            enabledCheckboxElement.addEventListener("click", this._toggleEnabled.bind(this), false);
             this.listItemElement.insertBefore(enabledCheckboxElement, this.listItemElement.firstChild);
         }
     },
@@ -2609,24 +2553,6 @@ WebInspector.StylePropertyTreeElement.prototype = {
         var uiLocation = WebInspector.cssWorkspaceBinding.propertyUILocation(this.property, propertyNameClicked);
         if (uiLocation)
             WebInspector.Revealer.reveal(uiLocation);
-    },
-
-    /**
-     * @param {!Element} element
-     * @return {boolean}
-     */
-    _isNameElement: function(element)
-    {
-        return element.enclosingNodeOrSelfWithClass("webkit-css-property") === this.nameElement;
-    },
-
-    /**
-     * @param {!Element} element
-     * @return {boolean}
-     */
-    _isValueElement: function(element)
-    {
-        return !!element.enclosingNodeOrSelfWithClass("value");
     },
 
     /**
@@ -2920,7 +2846,7 @@ WebInspector.StylePropertyTreeElement.prototype = {
         var target = this;
         do {
             target = (moveDirection === "forward" ? target.nextSibling : target.previousSibling);
-        } while(target && target.inherited);
+        } while(target && target.inherited());
 
         return target;
     },
