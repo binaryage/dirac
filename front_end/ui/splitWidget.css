@@ -100,7 +100,7 @@
     height: 16px;
     width: 16px;
     border: none;
-    z-index: 10;
+    z-index: 20;
     background-color: rgba(0, 0, 0, 0.6);
 }
 
