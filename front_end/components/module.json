@@ -25,6 +25,7 @@
         "DockController.js",
         "Drawer.js",
         "ExecutionContextSelector.js",
+        "ExecutionContextModel.js",
         "HandlerRegistry.js",
         "InspectElementModeController.js",
         "InspectorView.js",

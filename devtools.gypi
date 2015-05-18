@@ -107,6 +107,7 @@
             'front_end/components/DOMPresentationUtils.js',
             'front_end/components/Drawer.js',
             'front_end/components/ExecutionContextSelector.js',
+            'front_end/components/ExecutionContextModel.js',
             'front_end/components/HandlerRegistry.js',
             'front_end/components/InspectElementModeController.js',
             'front_end/components/InspectorView.js',

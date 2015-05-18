@@ -61,12 +61,8 @@ WebInspector.ConsoleView = function()
     this._clearConsoleButton = new WebInspector.ToolbarButton(WebInspector.UIString("Clear console log."), "clear-toolbar-item");
     this._clearConsoleButton.addEventListener("click", this._requestClearMessages, this);
 
-    this._executionContextSelector = new WebInspector.ToolbarComboBox(this._executionContextChanged.bind(this), "console-context");
-
-    /**
-     * @type {!Map.<!WebInspector.ExecutionContext, !Element>}
-     */
-    this._optionByExecutionContext = new Map();
+    this._executionContextComboBox = new WebInspector.ToolbarComboBox(null, "console-context");
+    this._executionContextModel = new WebInspector.ExecutionContextModel(this._executionContextComboBox.selectElement());
 
     this._filter = new WebInspector.ConsoleViewFilter(this);
     this._filter.addEventListener(WebInspector.ConsoleViewFilter.Events.FilterChanged, this._updateMessageList.bind(this));
@@ -79,7 +75,7 @@ WebInspector.ConsoleView = function()
     var toolbar = new WebInspector.Toolbar(this._contentsElement);
     toolbar.appendToolbarItem(this._clearConsoleButton);
     toolbar.appendToolbarItem(this._filterBar.filterButton());
-    toolbar.appendToolbarItem(this._executionContextSelector);
+    toolbar.appendToolbarItem(this._executionContextComboBox);
     toolbar.appendToolbarItem(this._preserveLogCheckbox);
     toolbar.appendToolbarItem(this._progressToolbarItem);
 
@@ -156,13 +152,11 @@ WebInspector.ConsoleView = function()
 
     this._registerWithMessageSink();
     WebInspector.targetManager.observeTargets(this);
-    WebInspector.targetManager.addModelListener(WebInspector.RuntimeModel, WebInspector.RuntimeModel.Events.ExecutionContextCreated, this._onExecutionContextCreated, this);
-    WebInspector.targetManager.addModelListener(WebInspector.RuntimeModel, WebInspector.RuntimeModel.Events.ExecutionContextDestroyed, this._onExecutionContextDestroyed, this);
     WebInspector.targetManager.addEventListener(WebInspector.TargetManager.Events.MainFrameNavigated, this._onMainFrameNavigated, this);
 
     this._initConsoleMessages();
 
-    WebInspector.context.addFlavorChangeListener(WebInspector.ExecutionContext, this._executionContextChangedExternally, this);
+    WebInspector.context.addFlavorChangeListener(WebInspector.ExecutionContext, this._executionContextChanged, this);
 }
 
 WebInspector.ConsoleView.persistedHistorySize = 300;
@@ -261,7 +255,6 @@ WebInspector.ConsoleView.prototype = {
     targetAdded: function(target)
     {
         this._viewport.invalidate();
-        target.runtimeModel.executionContexts().forEach(this._executionContextCreated, this);
         if (WebInspector.targetManager.targets().length > 1 && WebInspector.targetManager.mainTarget().isPage())
             this._showAllMessagesCheckbox.element.classList.toggle("hidden", false);
     },
@@ -272,7 +265,6 @@ WebInspector.ConsoleView.prototype = {
      */
     targetRemoved: function(target)
     {
-        this._clearExecutionContextsForTarget(target);
     },
 
     _registerWithMessageSink: function()
@@ -337,133 +329,11 @@ WebInspector.ConsoleView.prototype = {
         this._filtersContainer.classList.toggle("hidden", !toggled);
     },
 
-    /**
-     * @param {!WebInspector.ExecutionContext} executionContext
-     * @return {string}
-     */
-    _titleFor: function(executionContext)
-    {
-        var result;
-        if (executionContext.isMainWorldContext) {
-            if (executionContext.frameId) {
-                var frame = executionContext.target().resourceTreeModel.frameForId(executionContext.frameId);
-                result =  frame ? frame.displayName() : (executionContext.origin || executionContext.name);
-            } else {
-                var parsedUrl = executionContext.origin.asParsedURL();
-                var name = parsedUrl? parsedUrl.lastPathComponentWithFragment() : executionContext.name;
-                result = executionContext.target().decorateLabel(name);
-            }
-        } else {
-            result = "\u00a0\u00a0\u00a0\u00a0" + (executionContext.name || executionContext.origin);
-        }
-
-        var maxLength = 50;
-        return result.trimMiddle(maxLength);
-    },
-
-    /**
-     * @param {!WebInspector.Event} event
-     */
-    _onExecutionContextCreated: function(event)
-    {
-        var executionContext = /** @type {!WebInspector.ExecutionContext} */ (event.data);
-        this._executionContextCreated(executionContext);
-    },
-
-    /**
-     * @param {!WebInspector.ExecutionContext} executionContext
-     */
-    _executionContextCreated: function(executionContext)
-    {
-        // FIXME(413886): We never want to show execution context for the main thread of shadow page in service/shared worker frontend.
-        // This check could be removed once we do not send this context to frontend.
-        if (executionContext.target().isServiceWorker())
-            return;
-
-        var newOption = createElement("option");
-        newOption.__executionContext = executionContext;
-        newOption.text = this._titleFor(executionContext);
-        this._optionByExecutionContext.set(executionContext, newOption);
-        var sameGroupExists = false;
-        var options = this._executionContextSelector.selectElement().options;
-        var contexts = Array.prototype.map.call(options, mapping);
-        var index = insertionIndexForObjectInListSortedByFunction(executionContext, contexts, WebInspector.ExecutionContext.comparator);
-        this._executionContextSelector.selectElement().insertBefore(newOption, options[index]);
-        if (executionContext === WebInspector.context.flavor(WebInspector.ExecutionContext))
-            this._executionContextSelector.select(newOption);
-
-        /**
-         * @param {!Element} option
-         * @return {!WebInspector.ExecutionContext}
-         */
-        function mapping(option)
-        {
-            return option.__executionContext;
-        }
-    },
-
-    /**
-     * @param {!WebInspector.Event} event
-     */
-    _onExecutionContextDestroyed: function(event)
-    {
-        var executionContext = /** @type {!WebInspector.ExecutionContext} */ (event.data);
-        this._executionContextDestroyed(executionContext);
-    },
-
-    /**
-     * @param {!WebInspector.ExecutionContext} executionContext
-     */
-    _executionContextDestroyed: function(executionContext)
-    {
-        var option = this._optionByExecutionContext.remove(executionContext);
-        option.remove();
-    },
-
-    /**
-     * @param {!WebInspector.Target} target
-     */
-    _clearExecutionContextsForTarget: function(target)
-    {
-        var executionContexts = this._optionByExecutionContext.keysArray();
-        for (var i = 0; i < executionContexts.length; ++i) {
-            if (executionContexts[i].target() === target)
-                this._executionContextDestroyed(executionContexts[i]);
-        }
-    },
-
     _executionContextChanged: function()
     {
-        var newContext = this._currentExecutionContext();
-        WebInspector.context.setFlavor(WebInspector.ExecutionContext, newContext);
         this._prompt.clearAutoComplete(true);
         if (!this._showAllMessagesCheckbox.checked())
             this._updateMessageList();
-    },
-
-    /**
-     * @param {!WebInspector.Event} event
-     */
-    _executionContextChangedExternally: function(event)
-    {
-        var executionContext =  /** @type {?WebInspector.ExecutionContext} */ (event.data);
-        if (!executionContext)
-            return;
-
-        var options = this._executionContextSelector.selectElement().options;
-        for (var i = 0; i < options.length; ++i) {
-            if (options[i].__executionContext === executionContext)
-                this._executionContextSelector.select(options[i]);
-        }
-    },
-
-    /**
-     * @return {?WebInspector.ExecutionContext}
-     */
-    _currentExecutionContext: function()
-    {
-        var option = this._executionContextSelector.selectedOption();
-        return option ? option.__executionContext : null;
     },
 
     willHide: function()
