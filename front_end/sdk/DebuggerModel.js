@@ -71,7 +71,7 @@ WebInspector.DebuggerModel.FunctionDetails;
 WebInspector.DebuggerModel.GeneratorObjectDetails;
 
 /**
- * Keep these in sync with WebCore::ScriptDebugServer
+ * Keep these in sync with WebCore::V8Debugger
  *
  * @enum {string}
  */
