@@ -474,6 +474,10 @@ button.record-toolbar-item.toggled-on .glyph {
     -webkit-mask-position: -192px -120px;
 }
 
+.eyedropper-toolbar-item .glyph {
+    -webkit-mask-position: -288px -120px;
+}
+
 .add-toolbar-item .glyph {
     -webkit-mask-position: -224px -120px;
 }

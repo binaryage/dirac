@@ -52,6 +52,13 @@ WebInspector.Spectrum = function()
     this._draggerElement = this.contentElement.createChild("div", "spectrum-color");
     this._dragHelperElement = this._draggerElement.createChild("div", "spectrum-sat fill").createChild("div", "spectrum-val fill").createChild("div", "spectrum-dragger");
 
+    var toolbar = new WebInspector.Toolbar(this.contentElement);
+    toolbar.element.classList.add("spectrum-eye-dropper");
+    this._colorPickerButton = new WebInspector.ToolbarButton(WebInspector.UIString("Toggle color picker"), "eyedropper-toolbar-item");
+    this._colorPickerButton.setToggled(true);
+    this._colorPickerButton.addEventListener("click", this._toggleColorPicker.bind(this, undefined));
+    toolbar.appendToolbarItem(this._colorPickerButton);
+
     var swatchElement = this.contentElement.createChild("span", "swatch");
     this._swatchInnerElement = swatchElement.createChild("span", "swatch-inner");
 
@@ -436,7 +443,41 @@ WebInspector.Spectrum.prototype = {
         this.dragHeight = this._draggerElement.offsetHeight;
         this._dragHelperElementHeight = this._dragHelperElement.offsetHeight / 2;
         this._update();
+        this._toggleColorPicker(true);
     },
+
+    willHide: function()
+    {
+        this._toggleColorPicker(false);
+        WebInspector.targetManager.removeModelListener(WebInspector.ResourceTreeModel, WebInspector.ResourceTreeModel.EventTypes.ColorPicked, this._colorPicked, this);
+    },
+
+    /**
+     * @param {boolean=} enabled
+     * @param {!WebInspector.Event=} event
+     */
+    _toggleColorPicker: function(enabled, event)
+    {
+        if (enabled === undefined)
+            enabled = !this._colorPickerButton.toggled();
+        this._colorPickerButton.setToggled(enabled);
+        for (var target of WebInspector.targetManager.targets())
+            target.pageAgent().setColorPickerEnabled(enabled);
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _colorPicked: function(event)
+    {
+        var rgbColor = /** @type {!DOMAgent.RGBA} */ (event.data);
+        var rgba = [rgbColor.r, rgbColor.g, rgbColor.b, (rgbColor.a / 2.55 | 0) / 100];
+        var color = WebInspector.Color.fromRGBA(rgba);
+        this.setColor(color);
+        this._dispatchChangeEvent();
+        InspectorFrontendHost.bringToFront();
+    },
+
 
     __proto__: WebInspector.VBox.prototype
 }

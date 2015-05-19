@@ -285,10 +285,6 @@ WebInspector.ColowSwatchPopoverIcon.prototype = {
             return;
         }
 
-        WebInspector.targetManager.addModelListener(WebInspector.ResourceTreeModel, WebInspector.ResourceTreeModel.EventTypes.ColorPicked, this._colorPicked, this);
-        for (var target of WebInspector.targetManager.targets())
-            target.pageAgent().setColorPickerEnabled(true);
-
         var color = this._swatch.color();
         var format = this._swatch.format();
         if (format === WebInspector.Color.Format.Original)
@@ -314,28 +310,10 @@ WebInspector.ColowSwatchPopoverIcon.prototype = {
     },
 
     /**
-     * @param {!WebInspector.Event} event
-     */
-    _colorPicked: function(event)
-    {
-        var rgbColor = /** @type {!DOMAgent.RGBA} */ (event.data);
-        var rgba = [rgbColor.r, rgbColor.g, rgbColor.b, (rgbColor.a / 2.55 | 0) / 100];
-        var color = WebInspector.Color.fromRGBA(rgba);
-        this._spectrum.setColor(color);
-        this._swatch.setColorText(this._spectrum.colorString());
-        this._treeElement.applyStyleText(this._treeElement.renderedPropertyText(), false);
-        InspectorFrontendHost.bringToFront();
-    },
-
-    /**
      * @param {boolean} commitEdit
      */
     _onPopoverHidden: function(commitEdit)
     {
-        for (var target of WebInspector.targetManager.targets())
-            target.pageAgent().setColorPickerEnabled(false);
-        WebInspector.targetManager.removeModelListener(WebInspector.ResourceTreeModel, WebInspector.ResourceTreeModel.EventTypes.ColorPicked, this._colorPicked, this);
-
         this._spectrum.removeEventListener(WebInspector.Spectrum.Events.ColorChanged, this._boundSpectrumChanged);
         delete this._spectrum;
 
