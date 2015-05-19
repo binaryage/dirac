@@ -487,6 +487,13 @@ WebInspector.Main.prototype = {
         if (event.handled)
             return;
 
+        var target = event.deepActiveElement();
+        if (target) {
+            var anchor = target.enclosingNodeOrSelfWithNodeName("a");
+            if (anchor && anchor.preventFollow)
+                event.preventDefault();
+        }
+
         if (!WebInspector.Dialog.currentInstance() && WebInspector.inspectorView.currentPanel()) {
             WebInspector.inspectorView.currentPanel().handleShortcut(event);
             if (event.handled) {

@@ -892,6 +892,17 @@ Event.prototype.deepElementFromPoint = function()
 }
 
 /**
+ * @return {?Element}
+ */
+Event.prototype.deepActiveElement = function()
+{
+    var activeElement = this.target && this.target.ownerDocument ? this.target.ownerDocument.activeElement : null;
+    while (activeElement && activeElement.shadowRoot)
+        activeElement = activeElement.shadowRoot.activeElement;
+    return activeElement;
+}
+
+/**
  * @param {number} x
  * @param {number} y
  * @return {?Node}

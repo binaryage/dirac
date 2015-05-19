@@ -697,9 +697,7 @@ WebInspector.currentFocusElement = function()
  */
 WebInspector._focusChanged = function(document, event)
 {
-    var node = document.activeElement;
-    while (node && node.shadowRoot)
-        node = node.shadowRoot.activeElement;
+    var node = event.deepActiveElement();
     WebInspector.setCurrentFocusElement(node);
 }
 
