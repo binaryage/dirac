@@ -81,6 +81,20 @@ WebInspector.NavigatorView.iconClassForType = function(type)
     return "navigator-folder-tree-item";
 }
 
+/**
+ * @param {!WebInspector.ContextMenu} contextMenu
+ */
+WebInspector.NavigatorView.appendAddFolderItem = function(contextMenu)
+{
+    function addFolder()
+    {
+        WebInspector.isolatedFileSystemManager.addFileSystem();
+    }
+
+    var addFolderLabel = WebInspector.UIString.capitalize("Add ^folder to ^workspace");
+    contextMenu.appendItem(addFolderLabel, addFolder);
+}
+
 WebInspector.NavigatorView.prototype = {
     setWorkspace: function(workspace)
     {
@@ -311,22 +325,8 @@ WebInspector.NavigatorView.prototype = {
     handleContextMenu: function(event)
     {
         var contextMenu = new WebInspector.ContextMenu(event);
-        this._appendAddFolderItem(contextMenu);
+        WebInspector.NavigatorView.appendAddFolderItem(contextMenu);
         contextMenu.show();
-    },
-
-    /**
-     * @param {!WebInspector.ContextMenu} contextMenu
-     */
-    _appendAddFolderItem: function(contextMenu)
-    {
-        function addFolder()
-        {
-            WebInspector.isolatedFileSystemManager.addFileSystem();
-        }
-
-        var addFolderLabel = WebInspector.UIString.capitalize("Add ^folder to ^workspace");
-        contextMenu.appendItem(addFolderLabel, addFolder);
     },
 
     /**
@@ -399,7 +399,6 @@ WebInspector.NavigatorView.prototype = {
             contextMenu.appendSeparator();
         }
 
-        this._appendAddFolderItem(contextMenu);
         contextMenu.show();
     },
 
@@ -425,7 +424,7 @@ WebInspector.NavigatorView.prototype = {
             contextMenu.appendItem(WebInspector.UIString.capitalize("Exclude ^folder"), this._handleContextMenuExclude.bind(this, project, path));
         }
         contextMenu.appendSeparator();
-        this._appendAddFolderItem(contextMenu);
+        WebInspector.NavigatorView.appendAddFolderItem(contextMenu);
 
         function removeFolder()
         {

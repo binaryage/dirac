@@ -898,6 +898,7 @@ WebInspector.SourcesPanel.prototype = {
      */
     _appendUISourceCodeMappingItems: function(contextMenu, uiSourceCode)
     {
+        WebInspector.NavigatorView.appendAddFolderItem(contextMenu);
         if (uiSourceCode.project().type() === WebInspector.projectTypes.FileSystem) {
             var hasMappings = !!this._networkMapping.networkURL(uiSourceCode);
             if (!hasMappings)
