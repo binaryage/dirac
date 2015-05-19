@@ -192,11 +192,16 @@ WebInspector.TimelineFrameOverview.prototype = {
     {
         this._context.save();
         this._context.beginPath();
-        var left = this._barIndexToScreenPosition(index);
-        this._context.rect(left - this._actualPadding, 0, this._actualOuterBarWidth + this._actualPadding - 1, this._canvas.height);
-        this._context.fillStyle = "rgba(255, 255, 255, 1)";
-        this._context.fill();
+        var left = this._barIndexToScreenPosition(index) - this._actualPadding;
+        var right = Math.ceil(left + this._actualOuterBarWidth);
+        this._context.rect(left, 0, right - left + 1, this._canvas.height);
+        this._context.fillStyle = "rgb(255, 255, 255)";
         this._context.clip();
+        this._context.fill();
+        if (index > 0)
+            this._drawBar(index - 1);
+        if (index + 1 < this._visibleFrames.length)
+            this._drawBar(index + 1);
         this._drawBar(index);
         this._drawTopShadeGradient();
         this._drawFPSMarks();
