@@ -634,6 +634,7 @@
             'front_end/cm/codemirror.css',
         ],
         'devtools_cm_js_files': [
+            'front_end/cm/activeline.js',
             'front_end/cm/closebrackets.js',
             'front_end/cm/codemirror.js',
             'front_end/cm/comment.js',

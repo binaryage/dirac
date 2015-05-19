@@ -39,6 +39,7 @@
         "../cm/markselection.js",
         "../cm/comment.js",
         "../cm/overlay.js",
+        "../cm/activeline.js",
 
         "CodeMirrorUtils.js",
         "CodeMirrorDictionary.js",
@@ -62,7 +63,8 @@
         "../cm/closebrackets.js",
         "../cm/markselection.js",
         "../cm/comment.js",
-        "../cm/overlay.js"
+        "../cm/overlay.js",
+        "../cm/activeline.js"
     ],
     "resources": [
         "../cm/codemirror.css",

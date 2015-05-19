@@ -249,10 +249,15 @@
         {
             "type": "setting",
             "category": "Sources",
-            "title": "Show whitespace characters",
+            "title": "Show whitespace characters:",
             "settingName": "showWhitespacesInEditor",
-            "settingType": "boolean",
-            "defaultValue": false
+            "settingType": "enum",
+            "defaultValue": "original",
+            "options": [
+                ["None", "none"],
+                ["All", "all"],
+                ["Trailing", "trailing"]
+            ]
         },
         {
             "type": "setting",
