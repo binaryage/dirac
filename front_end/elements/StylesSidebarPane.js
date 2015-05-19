@@ -881,7 +881,8 @@ WebInspector.StylesSidebarPane.prototype = {
             this.expand();
         this._elementStateButton.setToggled(buttonToggled);
         this._elementStatePane.classList.toggle("expanded", buttonToggled);
-        this._animationsControlButton.setToggled(false);
+        if (!Runtime.experiments.isEnabled("animationInspection"))
+            this._animationsControlButton.setToggled(false);
         this._animationsControlPane.element.classList.remove("expanded");
     },
 
@@ -940,9 +941,16 @@ WebInspector.StylesSidebarPane.prototype = {
         if (buttonToggled)
             this.expand();
         this._animationsControlButton.setToggled(buttonToggled);
-        this._animationsControlPane.element.classList.toggle("expanded", buttonToggled);
-        this._elementStateButton.setToggled(false);
-        this._elementStatePane.classList.remove("expanded");
+        if (Runtime.experiments.isEnabled("animationInspection")) {
+            if (!this._animationTimeline)
+                this._animationTimeline = new WebInspector.AnimationTimeline();
+            var elementsPanel = WebInspector.ElementsPanel.instance();
+            elementsPanel.setWidgetBelowDOM(buttonToggled ? this._animationTimeline : null);
+        } else {
+            this._animationsControlPane.element.classList.toggle("expanded", buttonToggled);
+            this._elementStateButton.setToggled(false);
+            this._elementStatePane.classList.remove("expanded");
+        }
     },
 
     /**

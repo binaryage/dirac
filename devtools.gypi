@@ -389,7 +389,6 @@
             'front_end/elements/spectrum.css',
             'front_end/elements/AnimationControlPane.js',
             'front_end/elements/AnimationTimeline.js',
-            'front_end/elements/AnimationsSidebarPane.js',
             'front_end/elements/BezierEditor.js',
             'front_end/elements/BezierUI.js',
             'front_end/elements/ElementsBreadcrumbs.js',

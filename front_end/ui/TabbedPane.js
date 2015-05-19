@@ -754,6 +754,8 @@ WebInspector.TabbedPane.prototype = {
 
     _updateTabSlider: function()
     {
+        if (!this._currentTab)
+            return;
         if (!this._sliderEnabled)
             return;
         var left = 0;

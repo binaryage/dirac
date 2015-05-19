@@ -75,8 +75,8 @@
     ],
     "scripts": [
         "BezierUI.js",
-        "AnimationControlPane.js",
         "AnimationTimeline.js",
+        "AnimationControlPane.js",
         "StylesPopoverHelper.js",
         "BezierEditor.js",
         "Spectrum.js",
@@ -92,8 +92,7 @@
         "StylesSectionModel.js",
         "StylesSidebarPane.js",
         "ComputedStyleSidebarPane.js",
-        "ElementsPanel.js",
-        "AnimationsSidebarPane.js"
+        "ElementsPanel.js"
     ],
     "resources": [
         "animationTimeline.css",

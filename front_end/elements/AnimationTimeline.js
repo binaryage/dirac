@@ -5,6 +5,7 @@
 /**
  * @constructor
  * @extends {WebInspector.VBox}
+ * @implements {WebInspector.TargetManager.Observer}
  */
 WebInspector.AnimationTimeline = function()
 {
@@ -17,8 +18,9 @@ WebInspector.AnimationTimeline = function()
     WebInspector.installDragHandle(this._timelineScrubberHead, this._scrubberDragStart.bind(this), this._scrubberDragMove.bind(this), this._scrubberDragEnd.bind(this), "move");
     this._timelineScrubberHead.textContent = WebInspector.UIString(Number.millisToString(0));
 
+    this._animationsPlaybackRate = 1;
     this.contentElement.appendChild(this._createHeader());
-    this._animationsContainer = this.contentElement.createChild("div");
+    this._animationsContainer = this.contentElement.createChild("div", "animation-timeline-rows");
     this._duration = this._defaultDuration();
     this._scrubberRadius = 25;
     this._timelineControlsWidth = 200;
@@ -29,9 +31,60 @@ WebInspector.AnimationTimeline = function()
     this._animationsMap = new Map();
     WebInspector.targetManager.addModelListener(WebInspector.ResourceTreeModel, WebInspector.ResourceTreeModel.EventTypes.MainFrameNavigated, this._mainFrameNavigated, this);
     WebInspector.targetManager.addModelListener(WebInspector.DOMModel, WebInspector.DOMModel.Events.NodeRemoved, this._nodeRemoved, this);
+
+    WebInspector.targetManager.observeTargets(this);
 }
 
+WebInspector.AnimationTimeline.GlobalPlaybackRates = [0.1, 0.25, 0.5, 1.0];
+
 WebInspector.AnimationTimeline.prototype = {
+    wasShown: function()
+    {
+        this._addEventListeners(WebInspector.targetManager.mainTarget());
+    },
+
+    willHide: function()
+    {
+        var target = WebInspector.targetManager.mainTarget();
+        if (!target)
+            return;
+        target.animationModel.removeEventListener(WebInspector.AnimationModel.Events.AnimationPlayerCreated, this._animationCreated, this);
+        target.animationModel.removeEventListener(WebInspector.AnimationModel.Events.AnimationPlayerCanceled, this._animationCanceled, this);
+    },
+
+    /**
+     * @override
+     * @param {!WebInspector.Target} target
+     */
+    targetAdded: function(target)
+    {
+        if (target === WebInspector.targetManager.mainTarget())
+            return;
+        this._addEventListeners(target);
+    },
+
+    /**
+     * @override
+     * @param {!WebInspector.Target} target
+     */
+    targetRemoved: function(target)
+    {
+        target.animationModel.removeEventListener(WebInspector.AnimationModel.Events.AnimationPlayerCreated, this._animationCreated, this);
+        target.animationModel.removeEventListener(WebInspector.AnimationModel.Events.AnimationPlayerCanceled, this._animationCanceled, this);
+    },
+
+    /**
+     * @param {?WebInspector.Target} target
+     */
+    _addEventListeners: function(target)
+    {
+        if (!target)
+            return;
+        target.animationModel.ensureEnabled();
+        target.animationModel.addEventListener(WebInspector.AnimationModel.Events.AnimationPlayerCreated, this._animationCreated, this);
+        target.animationModel.addEventListener(WebInspector.AnimationModel.Events.AnimationPlayerCanceled, this._animationCanceled, this);
+    },
+
     /**
      * @return {!Element} element
      */
@@ -58,7 +111,7 @@ WebInspector.AnimationTimeline.prototype = {
          */
         function playbackSliderInputHandler(event)
         {
-            this._animationsPlaybackRate = WebInspector.AnimationsSidebarPane.GlobalPlaybackRates[event.target.value];
+            this._animationsPlaybackRate = WebInspector.AnimationTimeline.GlobalPlaybackRates[event.target.value];
             var target = WebInspector.targetManager.mainTarget();
             if (target)
                 target.animationModel.setPlaybackRate(this._animationsPlaybackRate);
@@ -90,7 +143,7 @@ WebInspector.AnimationTimeline.prototype = {
         this._playbackSlider = controls.createChild("input", "animation-playback-slider");
         this._playbackSlider.type = "range";
         this._playbackSlider.min = 0;
-        this._playbackSlider.max = WebInspector.AnimationsSidebarPane.GlobalPlaybackRates.length - 1;
+        this._playbackSlider.max = WebInspector.AnimationTimeline.GlobalPlaybackRates.length - 1;
         this._playbackSlider.value = this._playbackSlider.max;
         this._playbackSlider.addEventListener("input", playbackSliderInputHandler.bind(this));
         this._updateAnimationsPlaybackRate();
@@ -108,7 +161,7 @@ WebInspector.AnimationTimeline.prototype = {
         function setPlaybackRate(error, playbackRate)
         {
             this._animationsPlaybackRate = playbackRate;
-            this._playbackSlider.value = WebInspector.AnimationsSidebarPane.GlobalPlaybackRates.indexOf(playbackRate);
+            this._playbackSlider.value = WebInspector.AnimationTimeline.GlobalPlaybackRates.indexOf(playbackRate);
             this._playbackLabel.textContent = playbackRate + "x";
         }
 
@@ -178,6 +231,7 @@ WebInspector.AnimationTimeline.prototype = {
     _mainFrameNavigated: function(event)
     {
         this._reset();
+        this._addEventListeners(WebInspector.targetManager.mainTarget());
         this._updateAnimationsPlaybackRate();
         if (this._scrubberPlayer)
             this._scrubberPlayer.cancel();
@@ -186,10 +240,18 @@ WebInspector.AnimationTimeline.prototype = {
     },
 
     /**
+     * @param {!WebInspector.Event} event
+     */
+    _animationCreated: function(event)
+    {
+        this._addAnimation(/** @type {!WebInspector.AnimationModel.AnimationPlayer} */ (event.data.player), event.data.resetTimeline)
+    },
+
+    /**
      * @param {!WebInspector.AnimationModel.AnimationPlayer} animation
      * @param {boolean} resetTimeline
      */
-    addAnimation: function(animation, resetTimeline)
+    _addAnimation: function(animation, resetTimeline)
     {
         /**
          * @param {?WebInspector.DOMNode} node
@@ -210,6 +272,8 @@ WebInspector.AnimationTimeline.prototype = {
 
         if (this._resizeWindow(animation))
             this.scheduleRedraw();
+        else
+            this._resetTimerAnimation();
 
         var nodeUI = this._nodesMap.get(animation.source().backendNodeId());
         if (!nodeUI) {
@@ -225,9 +289,17 @@ WebInspector.AnimationTimeline.prototype = {
     },
 
     /**
+     * @param {!WebInspector.Event} event
+     */
+    _animationCanceled: function(event)
+    {
+        this._cancelAnimation(/** @type {string} */ (event.data.playerId));
+    },
+
+    /**
      * @param {string} playerId
      */
-    cancelAnimation: function(playerId)
+    _cancelAnimation: function(playerId)
     {
         var animation = this._animationsMap.get(playerId);
         animation.setPlayState("idle");
@@ -248,21 +320,21 @@ WebInspector.AnimationTimeline.prototype = {
     _renderGrid: function()
     {
         const gridSize = 250;
-        this._grid.setAttribute("width", this._cachedTimelineWidth);
-        this._grid.setAttribute("height", "100%");
+        this._grid.setAttribute("width", this.width());
+        this._grid.setAttribute("height", this._animationsContainer.offsetHeight + 43);
         this._grid.setAttribute("shape-rendering", "crispEdges");
         this._grid.removeChildren();
         var lastDraw = undefined;
-        for (var time = gridSize; time < this.duration(); time += gridSize) {
+        for (var time = 0; time < this.duration(); time += gridSize) {
             var line = this._grid.createSVGChild("rect", "animation-timeline-grid-line");
             line.setAttribute("x", time * this.pixelMsRatio());
             line.setAttribute("y", 0);
             line.setAttribute("height", "100%");
             line.setAttribute("width", 1);
         }
-        for (var time = gridSize; time < this.duration(); time += gridSize) {
+        for (var time = 0; time < this.duration(); time += gridSize) {
             var gridWidth = time * this.pixelMsRatio();
-            if (!lastDraw || gridWidth - lastDraw > 50) {
+            if (time && (!lastDraw || gridWidth - lastDraw > 50)) {
                 lastDraw = gridWidth;
                 var label = this._grid.createSVGChild("text", "animation-timeline-grid-label");
                 label.setAttribute("x", gridWidth + 5);
@@ -292,7 +364,7 @@ WebInspector.AnimationTimeline.prototype = {
 
     onResize: function()
     {
-        this._cachedTimelineWidth = this._animationsContainer.offsetWidth - this._timelineControlsWidth || 0;
+        this._cachedTimelineWidth = Math.max(0, this._animationsContainer.offsetWidth - this._timelineControlsWidth) || 0;
         this.scheduleRedraw();
         if (this._scrubberPlayer)
             this._animateTime();
@@ -328,27 +400,36 @@ WebInspector.AnimationTimeline.prototype = {
         return resized;
     },
 
-    /**
-     * @return {!Object}
-     */
-    _startTimerAnimation: function() {
+    _startTimerAnimation: function()
+    {
         var timerDuration = 1000 / this._animationsPlaybackRate;
-        var player = this._timerSpinner.animate([{ transform: "rotate(0deg)" }, { transform: "rotate(360deg)" }], timerDuration);
-        player.onfinish = this._timerFinished.bind(this, player);
+        this._timerSpinnerPlayer = this._timerSpinner.animate([{ transform: "rotate(0deg)" }, { transform: "rotate(360deg)" }], timerDuration);
+        this._timerSpinnerPlayer.onfinish = this._timerFinished.bind(this, this._timerSpinnerPlayer);
         var keyframes = [{ opacity: 0 }, { opacity: 1 }];
-        this._timerFiller.animate(keyframes, { duration: timerDuration, easing: "steps(1, middle)" });
-        this._timerMask.animate(keyframes, { duration: timerDuration, easing: "steps(1, middle)", direction: "reverse" });
-        return player;
+        this._timerFillerPlayer = this._timerFiller.animate(keyframes, { duration: timerDuration, easing: "steps(1, middle)" });
+        this._timerMaskPlayer = this._timerMask.animate(keyframes, { duration: timerDuration, easing: "steps(1, middle)", direction: "reverse" });
+    },
+
+    _resetTimerAnimation: function()
+    {
+        if (!this._timerSpinnerPlayer)
+            return;
+        this._timerSpinnerPlayer.currentTime = 0;
+        this._timerFillerPlayer.currentTime = 0;
+        this._timerMaskPlayer.currentTime = 0;
     },
 
     /**
      * @param {!Object} timerPlayer
      */
-    _timerFinished: function(timerPlayer) {
-        if (this._timerPlayer !== timerPlayer)
+    _timerFinished: function(timerPlayer)
+    {
+        if (this._timerSpinnerPlayer !== timerPlayer)
             return;
         this._timelineScrubber.classList.add("animation-timeline-end");
-        delete this._timerPlayer;
+        delete this._timerSpinnerPlayer;
+        delete this._timerFillerPlayer;
+        delete this._timerMaskPlayer;
     },
 
     /**
@@ -360,7 +441,7 @@ WebInspector.AnimationTimeline.prototype = {
         var oldPlayer = this._scrubberPlayer;
         this._timelineScrubber.classList.toggle("animation-timeline-capturing", timelineCapturing);
         if (timelineCapturing)
-            this._timerPlayer = this._startTimerAnimation();
+            this._startTimerAnimation();
 
         this._scrubberPlayer = this._timelineScrubber.animate([
             { transform: "translateX(0px)" },
@@ -401,7 +482,7 @@ WebInspector.AnimationTimeline.prototype = {
             this._timelineScrubberHead.window().requestAnimationFrame(this._updateScrubber.bind(this));
         } else if (this._scrubberPlayer.playState === "finished") {
             this._timelineScrubberHead.textContent = WebInspector.UIString(". . .");
-            if (!this._timerPlayer)
+            if (!this._timerSpinnerPlayer)
                 this._timelineScrubber.classList.add("animation-timeline-end");
         }
     },
@@ -742,8 +823,9 @@ WebInspector.AnimationUI.prototype = {
     redraw: function()
     {
         var durationWithDelay = this._delay() + this._duration() * this._animation.source().iterations() + this._animation.source().endDelay();
-        var svgWidth = Math.min(this._timeline.width(), durationWithDelay * this._timeline.pixelMsRatio());
         var leftMargin = ((this._animation.startTime() - this._timeline.startTime()) * this._timeline.pixelMsRatio());
+        var maxWidth = this._timeline.width() - WebInspector.AnimationUI.Options.AnimationMargin - leftMargin;
+        var svgWidth = Math.min(maxWidth, durationWithDelay * this._timeline.pixelMsRatio());
 
         this._svg.classList.toggle("animation-ui-canceled", this._animation.playState() === "idle");
         this._svg.setAttribute("width", (svgWidth + 2 * WebInspector.AnimationUI.Options.AnimationMargin).toFixed(2));
@@ -989,7 +1071,7 @@ WebInspector.AnimationUI.prototype = {
 WebInspector.AnimationUI.Options = {
     AnimationHeight: 32,
     AnimationSVGHeight: 80,
-    AnimationMargin: 8,
+    AnimationMargin: 7,
     EndpointsClickRegionSize: 10,
     GridCanvasHeight: 40
 }

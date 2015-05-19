@@ -23,7 +23,7 @@ WebInspector.AnimationControlPane = function()
     this._animationsPlaybackSlider = container.createChild("input");
     this._animationsPlaybackSlider.type = "range";
     this._animationsPlaybackSlider.min = 0;
-    this._animationsPlaybackSlider.max = WebInspector.AnimationsSidebarPane.GlobalPlaybackRates.length - 1;
+    this._animationsPlaybackSlider.max = WebInspector.AnimationTimeline.GlobalPlaybackRates.length - 1;
     this._animationsPlaybackSlider.value = this._animationsPlaybackSlider.max;
     this._animationsPlaybackSlider.addEventListener("input", this._playbackSliderInputHandler.bind(this));
 
@@ -38,7 +38,7 @@ WebInspector.AnimationControlPane.prototype = {
      */
     _playbackSliderInputHandler: function (event)
     {
-        this._animationsPlaybackRate = WebInspector.AnimationsSidebarPane.GlobalPlaybackRates[event.target.value];
+        this._animationsPlaybackRate = WebInspector.AnimationTimeline.GlobalPlaybackRates[event.target.value];
         this._target.animationModel.setPlaybackRate(this._animationsPaused ? 0 : this._animationsPlaybackRate);
         this._animationsPlaybackLabel.textContent = this._animationsPlaybackRate + "x";
         WebInspector.userMetrics.AnimationsPlaybackRateChanged.record();
@@ -65,7 +65,7 @@ WebInspector.AnimationControlPane.prototype = {
          */
         function setPlaybackRate(error, playbackRate)
         {
-            this._animationsPlaybackSlider.value = WebInspector.AnimationsSidebarPane.GlobalPlaybackRates.indexOf(playbackRate);
+            this._animationsPlaybackSlider.value = WebInspector.AnimationTimeline.GlobalPlaybackRates.indexOf(playbackRate);
             this._animationsPlaybackLabel.textContent = playbackRate + "x";
         }
 

@@ -46,8 +46,12 @@ WebInspector.ElementsPanel = function()
     this._searchableView = new WebInspector.SearchableView(this);
     this._searchableView.setMinimumSize(25, 19);
     this._searchableView.setPlaceholder(WebInspector.UIString("Find by string, selector, or XPath"));
-    this._splitWidget.setMainWidget(this._searchableView);
     var stackElement = this._searchableView.element;
+
+    this._elementsPanelTreeOutilneSplit = new WebInspector.SplitWidget(false, true, "treeOutlineAnimationTimelineWidget", 300, 300);
+    this._elementsPanelTreeOutilneSplit.hideSidebar();
+    this._elementsPanelTreeOutilneSplit.setMainWidget(this._searchableView);
+    this._splitWidget.setMainWidget(this._elementsPanelTreeOutilneSplit);
 
     this._contentElement = stackElement.createChild("div");
     this._contentElement.id = "elements-content";
@@ -83,8 +87,6 @@ WebInspector.ElementsPanel = function()
     this.sidebarPanes.properties = new WebInspector.PropertiesSidebarPane();
     this.sidebarPanes.domBreakpoints = WebInspector.domBreakpointsSidebarPane.createProxy(this);
     this.sidebarPanes.eventListeners = new WebInspector.EventListenersSidebarPane();
-    if (Runtime.experiments.isEnabled("animationInspection"))
-        this.sidebarPanes.animations = new WebInspector.AnimationsSidebarPane();
 
     WebInspector.dockController.addEventListener(WebInspector.DockController.Events.DockSideChanged, this._dockSideChanged.bind(this));
     WebInspector.moduleSetting("splitVerticallyWhenDockedToRight").addChangeListener(this._dockSideChanged.bind(this));
@@ -318,8 +320,6 @@ WebInspector.ElementsPanel.prototype = {
         }
         this.sidebarPanes.properties.setNode(selectedDOMNode);
         this.sidebarPanes.eventListeners.setNode(selectedDOMNode);
-        if (this.sidebarPanes.animations)
-            this.sidebarPanes.animations.setNode(selectedDOMNode);
         for (var sidebarView of this._elementsSidebarViewWrappers)
             sidebarView.setNode(selectedDOMNode);
     },
@@ -974,8 +974,6 @@ WebInspector.ElementsPanel.prototype = {
         this.sidebarPaneView.addPane(this.sidebarPanes.eventListeners);
         this.sidebarPaneView.addPane(this.sidebarPanes.domBreakpoints);
         this.sidebarPaneView.addPane(this.sidebarPanes.properties);
-        if (this.sidebarPanes.animations)
-            this.sidebarPaneView.addPane(this.sidebarPanes.animations);
 
         for (var sidebarViewWrapper of this._elementsSidebarViewWrappers)
             this.sidebarPaneView.addPane(sidebarViewWrapper);
@@ -1006,6 +1004,19 @@ WebInspector.ElementsPanel.prototype = {
         if (pane.panelName() === this.name) {
             this.setHideOnDetach();
             this._extensionSidebarPanesContainer.addPane(pane);
+        }
+    },
+
+    /**
+     * @param {?WebInspector.Widget} widget
+     */
+    setWidgetBelowDOM: function(widget)
+    {
+        if (widget) {
+            this._elementsPanelTreeOutilneSplit.setSidebarWidget(widget);
+            this._elementsPanelTreeOutilneSplit.showBoth(true);
+        } else {
+            this._elementsPanelTreeOutilneSplit.hideSidebar(true);
         }
     },
 
