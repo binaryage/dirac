@@ -368,13 +368,6 @@ WebInspector.HeapSnapshotView.AllocationPerspective = function()
     this._allocationSplitWidget = new WebInspector.SplitWidget(false, true, "heapSnapshotAllocationSplitViewState", 200, 200);
     this._allocationSplitWidget.setSidebarWidget(new WebInspector.VBox());
 
-    var resizer = createElementWithClass("div", "heap-snapshot-view-resizer");
-    var title = resizer.createChild("div", "title").createChild("span");
-    title.textContent = WebInspector.UIString("Live objects");
-    this._allocationSplitWidget.hideDefaultResizer();
-    this._allocationSplitWidget.installResizer(resizer);
-
-    this._allocationSplitWidget.sidebarWidget().element.appendChild(resizer);
 }
 
 WebInspector.HeapSnapshotView.AllocationPerspective.prototype = {
@@ -387,7 +380,17 @@ WebInspector.HeapSnapshotView.AllocationPerspective.prototype = {
         this._allocationSplitWidget.setMainWidget(heapSnapshotView._allocationWidget);
         heapSnapshotView._splitWidget.setMainWidget(heapSnapshotView._constructorsWidget);
         heapSnapshotView._splitWidget.setSidebarWidget(heapSnapshotView._objectDetailsView);
-        this._allocationSplitWidget.setSidebarWidget(heapSnapshotView._splitWidget);
+
+        var allocatedObjectsView = new WebInspector.VBox();
+        var resizer = createElementWithClass("div", "heap-snapshot-view-resizer");
+        var title = resizer.createChild("div", "title").createChild("span");
+        title.textContent = WebInspector.UIString("Live objects");
+        this._allocationSplitWidget.hideDefaultResizer();
+        this._allocationSplitWidget.installResizer(resizer);
+        allocatedObjectsView.element.appendChild(resizer);
+        heapSnapshotView._splitWidget.show(allocatedObjectsView.element);
+        this._allocationSplitWidget.setSidebarWidget(allocatedObjectsView);
+
         this._allocationSplitWidget.show(heapSnapshotView._searchableView.element);
 
         heapSnapshotView._constructorsDataGrid.clear();
