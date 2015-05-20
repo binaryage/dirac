@@ -509,7 +509,7 @@ WebInspector.FlameChart.prototype = {
      */
     setWindowTimes: function(startTime, endTime)
     {
-        if (this._muteAnimation || this._timeWindowLeft === 0 || this._timeWindowRight === Infinity || (startTime === 0 && endTime === Infinity)) {
+        if (this._muteAnimation || this._timeWindowLeft === 0 || this._timeWindowRight === Infinity || (startTime === 0 && endTime === Infinity) || (startTime === Infinity && endTime === Infinity)) {
             // Initial setup.
             this._timeWindowLeft = startTime;
             this._timeWindowRight = endTime;
@@ -1374,6 +1374,10 @@ WebInspector.FlameChart.prototype = {
             this._windowLeft = (this._timeWindowLeft - this._minimumBoundary) / this._totalTime;
             this._windowRight = (this._timeWindowRight - this._minimumBoundary) / this._totalTime;
             this._windowWidth = this._windowRight - this._windowLeft;
+        } else if (this._timeWindowLeft === Infinity) {
+            this._windowLeft = Infinity;
+            this._windowRight = Infinity;
+            this._windowWidth = 1;
         } else {
             this._windowLeft = 0;
             this._windowRight = 1;
