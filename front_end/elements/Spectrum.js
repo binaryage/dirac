@@ -49,8 +49,8 @@ WebInspector.Spectrum = function()
     this.registerRequiredCSS("elements/spectrum.css");
     this.contentElement.tabIndex = 0;
 
-    this._draggerElement = this.contentElement.createChild("div", "spectrum-color");
-    this._dragHelperElement = this._draggerElement.createChild("div", "spectrum-sat fill").createChild("div", "spectrum-val fill").createChild("div", "spectrum-dragger");
+    this._colorElement = this.contentElement.createChild("div", "spectrum-color");
+    this._colorDragElement = this._colorElement.createChild("div", "spectrum-sat fill").createChild("div", "spectrum-val fill").createChild("div", "spectrum-dragger");
 
     var toolbar = new WebInspector.Toolbar(this.contentElement);
     toolbar.element.classList.add("spectrum-eye-dropper");
@@ -96,158 +96,76 @@ WebInspector.Spectrum = function()
     var label = this._hexContainer.createChild("div", "spectrum-text-label");
     label.textContent = "HEX";
 
-    WebInspector.Spectrum.draggable(this._hueElement, hueDrag.bind(this));
-    WebInspector.Spectrum.draggable(this._alphaElement, alphaDrag.bind(this));
-    WebInspector.Spectrum.draggable(this._draggerElement, colorDrag.bind(this), colorDragStart.bind(this));
+    WebInspector.installDragHandle(this._hueElement, dragStart.bind(this), hueDrag.bind(this), null, "default");
+    WebInspector.installDragHandle(this._alphaElement, dragStart.bind(this), alphaDrag.bind(this), null, "default");
+    WebInspector.installDragHandle(this._colorElement, colorDragStart.bind(this), colorDrag.bind(this), null, "default");
 
     /**
-     * @param {!Element} element
-     * @param {number} dragX
-     * @param {number} dragY
+     * @param {!Event} event
+     * @return {boolean}
      * @this {WebInspector.Spectrum}
      */
-    function hueDrag(element, dragX, dragY)
+    function dragStart(event)
     {
-        this._hsv[0] = (this._hueAlphaWidth - dragX) / this._hueAlphaWidth;
+        this._mouseDownPosition = new WebInspector.Geometry.Point(event.x, event.y);
+        this._originalColor = this._hsv.slice();
+        return true;
+    }
+
+    /**
+     * @param {!Event} event
+     * @return {boolean}
+     * @this {WebInspector.Spectrum}
+     */
+    function colorDragStart(event)
+    {
+        this._hsv[1] = event.offsetX / this.dragWidth;
+        this._hsv[2] = (this.dragHeight - event.offsetY) / this.dragHeight;
+        this._onchange();
+        return dragStart.call(this, event);
+    }
+
+    /**
+     * @param {!Event} event
+     * @this {WebInspector.Spectrum}
+     */
+    function hueDrag(event)
+    {
+        var deltaX = event.x - this._mouseDownPosition.x;
+        this._hsv[0] = Number.constrain(this._originalColor[0] - deltaX / this._hueAlphaWidth, 0, 1);
         this._onchange();
     }
 
     /**
-     * @param {!Element} element
-     * @param {number} dragX
-     * @param {number} dragY
+     * @param {!Event} event
      * @this {WebInspector.Spectrum}
      */
-    function alphaDrag(element, dragX, dragY)
+    function alphaDrag(event)
     {
-        this._hsv[3] = Math.round((dragX / this._hueAlphaWidth) * 100) / 100;
+        var deltaX = event.x - this._mouseDownPosition.x;
+        var newAlpha = this._originalColor[3] + Math.round((deltaX / this._hueAlphaWidth) * 100) / 100;
+        this._hsv[3] = Number.constrain(newAlpha, 0, 1);
         if (this._color().hasAlpha() && (this._currentFormat === WebInspector.Color.Format.ShortHEX || this._currentFormat === WebInspector.Color.Format.HEX || this._currentFormat === WebInspector.Color.Format.Nickname))
             this.setColorFormat(WebInspector.Color.Format.RGB);
         this._onchange();
     }
 
-    var initialHelperOffset;
-
     /**
+     * @param {!Event} event
      * @this {WebInspector.Spectrum}
      */
-    function colorDragStart()
+    function colorDrag(event)
     {
-        initialHelperOffset = { x: this._dragHelperElement.offsetLeft, y: this._dragHelperElement.offsetTop };
-    }
-
-    /**
-     * @param {!Element} element
-     * @param {number} dragX
-     * @param {number} dragY
-     * @param {!MouseEvent} event
-     * @this {WebInspector.Spectrum}
-     */
-    function colorDrag(element, dragX, dragY, event)
-    {
-        if (event.shiftKey) {
-            if (Math.abs(dragX - initialHelperOffset.x) >= Math.abs(dragY - initialHelperOffset.y))
-                dragY = initialHelperOffset.y;
-            else
-                dragX = initialHelperOffset.x;
-        }
-
-        this._hsv[1] = dragX / this.dragWidth;
-        this._hsv[2] = (this.dragHeight - dragY) / this.dragHeight;
-
+        var deltaX = event.x - this._mouseDownPosition.x;
+        var deltaY = event.y - this._mouseDownPosition.y;
+        this._hsv[1] = Number.constrain(this._originalColor[1] + deltaX / this.dragWidth, 0, 1);
+        this._hsv[2] = Number.constrain(this._originalColor[2] - deltaY / this.dragHeight, 0, 1);
         this._onchange();
     }
 };
 
 WebInspector.Spectrum.Events = {
     ColorChanged: "ColorChanged"
-};
-
-/**
- * @param {!Element} element
- * @param {function(!Element, number, number, !MouseEvent)=} onmove
- * @param {function(!Element, !MouseEvent)=} onstart
- * @param {function(!Element, !MouseEvent)=} onstop
- */
-WebInspector.Spectrum.draggable = function(element, onmove, onstart, onstop) {
-
-    var dragging;
-    var offset;
-    var scrollOffset;
-    var maxHeight;
-    var maxWidth;
-
-    /**
-     * @param {!Event} e
-     */
-    function consume(e)
-    {
-        e.consume(true);
-    }
-
-    /**
-     * @param {!Event} e
-     */
-    function move(e)
-    {
-        if (dragging) {
-            var dragX = Math.max(0, Math.min(e.pageX - offset.left + scrollOffset.left, maxWidth));
-            var dragY = Math.max(0, Math.min(e.pageY - offset.top + scrollOffset.top, maxHeight));
-
-            if (onmove)
-                onmove(element, dragX, dragY, /** @type {!MouseEvent} */ (e));
-        }
-    }
-
-    /**
-     * @param {!Event} e
-     */
-    function start(e)
-    {
-        var mouseEvent = /** @type {!MouseEvent} */ (e);
-        var rightClick = mouseEvent.which ? (mouseEvent.which === 3) : (mouseEvent.button === 2);
-
-        if (!rightClick && !dragging) {
-
-            if (onstart)
-                onstart(element, mouseEvent);
-
-            dragging = true;
-            maxHeight = element.clientHeight;
-            maxWidth = element.clientWidth;
-
-            scrollOffset = element.scrollOffset();
-            offset = element.totalOffset();
-
-            element.ownerDocument.addEventListener("selectstart", consume, false);
-            element.ownerDocument.addEventListener("dragstart", consume, false);
-            element.ownerDocument.addEventListener("mousemove", move, false);
-            element.ownerDocument.addEventListener("mouseup", stop, false);
-
-            move(mouseEvent);
-            consume(mouseEvent);
-        }
-    }
-
-    /**
-     * @param {!Event} e
-     */
-    function stop(e)
-    {
-        if (dragging) {
-            element.ownerDocument.removeEventListener("selectstart", consume, false);
-            element.ownerDocument.removeEventListener("dragstart", consume, false);
-            element.ownerDocument.removeEventListener("mousemove", move, false);
-            element.ownerDocument.removeEventListener("mouseup", stop, false);
-
-            if (onstop)
-                onstop(element, /** @type {!MouseEvent} */ (e));
-        }
-
-        dragging = false;
-    }
-
-    element.addEventListener("mousedown", start, false);
 };
 
 WebInspector.Spectrum.prototype = {
@@ -332,12 +250,12 @@ WebInspector.Spectrum.prototype = {
         var dragX = s * this.dragWidth;
         var dragY = this.dragHeight - (v * this.dragHeight);
 
-        dragX = Math.max(-this._dragHelperElementHeight,
-                        Math.min(this.dragWidth - this._dragHelperElementHeight, dragX - this._dragHelperElementHeight));
-        dragY = Math.max(-this._dragHelperElementHeight,
-                        Math.min(this.dragHeight - this._dragHelperElementHeight, dragY - this._dragHelperElementHeight));
+        dragX = Math.max(-this._colorDragElementHeight,
+                        Math.min(this.dragWidth - this._colorDragElementHeight, dragX - this._colorDragElementHeight));
+        dragY = Math.max(-this._colorDragElementHeight,
+                        Math.min(this.dragHeight - this._colorDragElementHeight, dragY - this._colorDragElementHeight));
 
-        this._dragHelperElement.positionAt(dragX, dragY);
+        this._colorDragElement.positionAt(dragX, dragY);
 
         // Where to show the bar that displays your current selected hue.
         var hueSlideX = (1 - h) * this._hueAlphaWidth - this.slideHelperWidth;
@@ -375,11 +293,11 @@ WebInspector.Spectrum.prototype = {
     _updateUI: function()
     {
         var h = WebInspector.Color.fromHSVA([this._hsv[0], 1, 1, 1]);
-        this._draggerElement.style.backgroundColor = /** @type {string} */ (h.asString(WebInspector.Color.Format.RGB));
+        this._colorElement.style.backgroundColor = /** @type {string} */ (h.asString(WebInspector.Color.Format.RGB));
         this._swatchInnerElement.style.backgroundColor = /** @type {string} */ (this._color().asString(WebInspector.Color.Format.RGBA));
         // Show border if the swatch is white.
         this._swatchInnerElement.classList.toggle("swatch-inner-white", this._color().hsla()[2] > 0.9);
-        this._dragHelperElement.style.backgroundColor = /** @type {string} */ (this._color().asString(WebInspector.Color.Format.RGBA));
+        this._colorDragElement.style.backgroundColor = /** @type {string} */ (this._color().asString(WebInspector.Color.Format.RGBA));
         var noAlpha = WebInspector.Color.fromHSVA(this._hsv.slice(0,3).concat(1));
         this._alphaElementBackground.style.backgroundImage = String.sprintf("linear-gradient(to right, rgba(0,0,0,0), %s)", noAlpha.asString(WebInspector.Color.Format.RGB));
     },
@@ -439,9 +357,9 @@ WebInspector.Spectrum.prototype = {
     {
         this._hueAlphaWidth = this._hueElement.offsetWidth;
         this.slideHelperWidth = this._hueSlider.offsetWidth / 2;
-        this.dragWidth = this._draggerElement.offsetWidth;
-        this.dragHeight = this._draggerElement.offsetHeight;
-        this._dragHelperElementHeight = this._dragHelperElement.offsetHeight / 2;
+        this.dragWidth = this._colorElement.offsetWidth;
+        this.dragHeight = this._colorElement.offsetHeight;
+        this._colorDragElementHeight = this._colorDragElement.offsetHeight / 2;
         this._update();
         this._toggleColorPicker(true);
     },
