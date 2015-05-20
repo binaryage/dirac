@@ -1553,9 +1553,7 @@ WebInspector.TimelineFlameChartView.prototype = {
     _onEntrySelected: function(dataProvider, event)
     {
         var entryIndex = /** @type{number} */ (event.data);
-        var timelineSelection = dataProvider.createSelection(entryIndex);
-        if (timelineSelection)
-            this._delegate.select(timelineSelection);
+        this._delegate.select(dataProvider.createSelection(entryIndex));
     },
 
     /**

@@ -733,8 +733,6 @@ WebInspector.FlameChart.prototype = {
         if (this._maxDragOffset() > clickThreshold)
             return;
         this._hideRangeSelection();
-        if (this._highlightedEntryIndex === -1)
-            return;
         this.dispatchEventToListeners(WebInspector.FlameChart.Events.EntrySelected, this._highlightedEntryIndex);
     },
 
