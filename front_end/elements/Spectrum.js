@@ -80,7 +80,7 @@ WebInspector.Spectrum = function()
         var inputValue = this._displayContainer.createChild("span", "spectrum-text-value");
         inputValue.maxLength = 4;
         this._textValues.push(inputValue);
-        inputValue.addEventListener("keydown", this._inputChanged.bind(this));
+        inputValue.addEventListener("keyup", this._inputChanged.bind(this));
         inputValue.addEventListener("mousewheel", this._inputChanged.bind(this));
     }
 
@@ -90,7 +90,7 @@ WebInspector.Spectrum = function()
     this._hexContainer = this.contentElement.createChild("div", "spectrum-text spectrum-text-hex source-code");
     this._hexValue = this._hexContainer.createChild("span", "spectrum-text-value");
     this._hexValue.maxLength = 7;
-    this._hexValue.addEventListener("keydown", this._inputChanged.bind(this));
+    this._hexValue.addEventListener("keyup", this._inputChanged.bind(this));
     this._hexValue.addEventListener("mousewheel", this._inputChanged.bind(this));
 
     var label = this._hexContainer.createChild("div", "spectrum-text-label");
