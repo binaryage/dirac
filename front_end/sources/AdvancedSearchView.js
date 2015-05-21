@@ -180,7 +180,7 @@ WebInspector.AdvancedSearchView.prototype = {
 
     _stopSearch: function()
     {
-        if (this._progressIndicator)
+        if (this._progressIndicator && !this._isIndexing)
             this._progressIndicator.cancel();
         if (this._searchScope)
             this._searchScope.stopSearch();
