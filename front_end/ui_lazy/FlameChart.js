@@ -1445,6 +1445,7 @@ WebInspector.FlameChart.prototype = {
 
     reset: function()
     {
+        this._vScrollElement.scrollTop = 0;
         this._highlightedMarkerIndex = -1;
         this._highlightedEntryIndex = -1;
         this._selectedEntryIndex = -1;
