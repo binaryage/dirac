@@ -1193,7 +1193,7 @@ WebInspector.TimelineFlameChartBottomUpDataProvider.prototype = {
         function eventId(e)
         {
             if (e.name === "JSFrame")
-                return "f:" + e.args.data.callUID;
+                return "f:" + (e.args.data.callUID || e.args.data.functionName);
             return e.name;
         }
 
