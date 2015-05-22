@@ -96,43 +96,31 @@ WebInspector.Spectrum = function()
     var label = this._hexContainer.createChild("div", "spectrum-text-label");
     label.textContent = "HEX";
 
-    WebInspector.installDragHandle(this._hueElement, dragStart.bind(this), hueDrag.bind(this), null, "default");
-    WebInspector.installDragHandle(this._alphaElement, dragStart.bind(this), alphaDrag.bind(this), null, "default");
-    WebInspector.installDragHandle(this._colorElement, colorDragStart.bind(this), colorDrag.bind(this), null, "default");
+    WebInspector.installDragHandle(this._hueElement, dragStart.bind(this, positionHue.bind(this)), positionHue.bind(this), null, "default");
+    WebInspector.installDragHandle(this._alphaElement, dragStart.bind(this, positionAlpha.bind(this)), positionAlpha.bind(this), null, "default");
+    WebInspector.installDragHandle(this._colorElement, dragStart.bind(this, positionColor.bind(this)), positionColor.bind(this), null, "default");
 
     /**
+     * @param {function(!Event)} callback
      * @param {!Event} event
      * @return {boolean}
      * @this {WebInspector.Spectrum}
      */
-    function dragStart(event)
+    function dragStart(callback, event)
     {
-        this._mouseDownPosition = new WebInspector.Geometry.Point(event.x, event.y);
-        this._originalColor = this._hsv.slice();
+        this._hueAlphaLeft = this._hueElement.totalOffsetLeft();
+        this._colorOffset = this._colorElement.totalOffset();
+        callback(event);
         return true;
     }
 
     /**
      * @param {!Event} event
-     * @return {boolean}
      * @this {WebInspector.Spectrum}
      */
-    function colorDragStart(event)
+    function positionHue(event)
     {
-        this._hsv[1] = event.offsetX / this.dragWidth;
-        this._hsv[2] = (this.dragHeight - event.offsetY) / this.dragHeight;
-        this._onchange();
-        return dragStart.call(this, event);
-    }
-
-    /**
-     * @param {!Event} event
-     * @this {WebInspector.Spectrum}
-     */
-    function hueDrag(event)
-    {
-        var deltaX = event.x - this._mouseDownPosition.x;
-        this._hsv[0] = Number.constrain(this._originalColor[0] - deltaX / this._hueAlphaWidth, 0, 1);
+        this._hsv[0] = Number.constrain(1 - (event.x - this._hueAlphaLeft) / this._hueAlphaWidth, 0, 1);
         this._onchange();
     }
 
@@ -140,10 +128,9 @@ WebInspector.Spectrum = function()
      * @param {!Event} event
      * @this {WebInspector.Spectrum}
      */
-    function alphaDrag(event)
+    function positionAlpha(event)
     {
-        var deltaX = event.x - this._mouseDownPosition.x;
-        var newAlpha = this._originalColor[3] + Math.round((deltaX / this._hueAlphaWidth) * 100) / 100;
+        var newAlpha = Math.round((event.x - this._hueAlphaLeft) / this._hueAlphaWidth * 100) / 100;
         this._hsv[3] = Number.constrain(newAlpha, 0, 1);
         if (this._color().hasAlpha() && (this._currentFormat === WebInspector.Color.Format.ShortHEX || this._currentFormat === WebInspector.Color.Format.HEX || this._currentFormat === WebInspector.Color.Format.Nickname))
             this.setColorFormat(WebInspector.Color.Format.RGB);
@@ -154,12 +141,10 @@ WebInspector.Spectrum = function()
      * @param {!Event} event
      * @this {WebInspector.Spectrum}
      */
-    function colorDrag(event)
+    function positionColor(event)
     {
-        var deltaX = event.x - this._mouseDownPosition.x;
-        var deltaY = event.y - this._mouseDownPosition.y;
-        this._hsv[1] = Number.constrain(this._originalColor[1] + deltaX / this.dragWidth, 0, 1);
-        this._hsv[2] = Number.constrain(this._originalColor[2] - deltaY / this.dragHeight, 0, 1);
+        this._hsv[1] = Number.constrain((event.x - this._colorOffset.left) / this.dragWidth, 0, 1);
+        this._hsv[2] = Number.constrain(1 - (event.y - this._colorOffset.top) / this.dragHeight, 0, 1);
         this._onchange();
     }
 };
@@ -362,6 +347,7 @@ WebInspector.Spectrum.prototype = {
         this._colorDragElementHeight = this._colorDragElement.offsetHeight / 2;
         this._update();
         this._toggleColorPicker(true);
+        WebInspector.targetManager.addModelListener(WebInspector.ResourceTreeModel, WebInspector.ResourceTreeModel.EventTypes.ColorPicked, this._colorPicked, this);
     },
 
     willHide: function()

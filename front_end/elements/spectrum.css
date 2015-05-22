@@ -114,7 +114,6 @@
 .spectrum-text-value {
     display: inline-block;
     width: 36px;
-    max-width: 36px;
     overflow: hidden;
     text-align: center;
     border: 1px solid #dadada;
