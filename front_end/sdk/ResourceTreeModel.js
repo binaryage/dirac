@@ -246,7 +246,7 @@ WebInspector.ResourceTreeModel.prototype = {
     _frameAttached: function(frameId, parentFrameId)
     {
         // Do nothing unless cached resource tree is processed - it will overwrite everything.
-        if (!this._cachedResourcesProcessed)
+        if (!this._cachedResourcesProcessed && parentFrameId)
             return null;
         if (this._frames[frameId])
             return null;
@@ -268,7 +268,7 @@ WebInspector.ResourceTreeModel.prototype = {
     _frameNavigated: function(framePayload)
     {
         // Do nothing unless cached resource tree is processed - it will overwrite everything.
-        if (!this._cachedResourcesProcessed)
+        if (!this._cachedResourcesProcessed && framePayload.parentId)
             return;
         var frame = this._frames[framePayload.id];
         if (!frame) {

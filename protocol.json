@@ -7,7 +7,8 @@
         "commands": [
             {
                 "name": "enable",
-                "description": "Enables inspector domain notifications."
+                "description": "Enables inspector domain notifications.",
+                "handlers": ["browser", "renderer"]
             },
             {
                 "name": "disable",
