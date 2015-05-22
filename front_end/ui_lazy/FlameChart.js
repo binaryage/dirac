@@ -767,7 +767,85 @@ WebInspector.FlameChart.prototype = {
      */
     _onKeyDown: function(e)
     {
-        if (e.altKey || e.ctrlKey || e.metaKey)
+        this._handleZoomPanKeys(e);
+        this._handleSelectionNavigation(e);
+    },
+
+    /**
+     * @param {!Event} e
+     */
+    _handleSelectionNavigation: function(e)
+    {
+        if (!WebInspector.KeyboardShortcut.hasNoModifiers(e))
+            return;
+        if (this._selectedEntryIndex === -1)
+            return;
+        var timelineData = this._timelineData();
+        if (!timelineData)
+            return;
+
+        /**
+         * @param {number} time
+         * @param {number} entryIndex
+         * @return {number}
+         */
+        function timeComparator(time, entryIndex)
+        {
+            return time - timelineData.entryStartTimes[entryIndex];
+        }
+
+        /**
+         * @param {number} entry1
+         * @param {number} entry2
+         * @return {boolean}
+         */
+        function entriesIntersect(entry1, entry2)
+        {
+            var start1 = timelineData.entryStartTimes[entry1];
+            var start2 = timelineData.entryStartTimes[entry2];
+            var end1 = start1 + timelineData.entryTotalTimes[entry1];
+            var end2 = start2 + timelineData.entryTotalTimes[entry2];
+            return start1 < end2 && start2 < end1;
+        }
+
+        var keys = WebInspector.KeyboardShortcut.Keys;
+        if (e.keyCode === keys.Left.code || e.keyCode === keys.Right.code) {
+            var level = timelineData.entryLevels[this._selectedEntryIndex];
+            var levelIndexes = this._timelineLevels[level];
+            var indexOnLevel = levelIndexes.lowerBound(this._selectedEntryIndex);
+            indexOnLevel += e.keyCode === keys.Left.code ? -1 : 1;
+            e.consume(true);
+            if (indexOnLevel >= 0 && indexOnLevel < levelIndexes.length)
+                this.dispatchEventToListeners(WebInspector.FlameChart.Events.EntrySelected, levelIndexes[indexOnLevel]);
+            return;
+        }
+        if (e.keyCode === keys.Up.code || e.keyCode === keys.Down.code) {
+            var level = timelineData.entryLevels[this._selectedEntryIndex];
+            var delta = e.keyCode === keys.Up.code ? 1 : -1;
+            e.consume(true);
+            if (this._isTopDown)
+                delta = -delta;
+            level += delta;
+            if (level < 0 || level >= this._timelineLevels.length)
+                return;
+            var entryTime = timelineData.entryStartTimes[this._selectedEntryIndex] + timelineData.entryTotalTimes[this._selectedEntryIndex] / 2;
+            var levelIndexes = this._timelineLevels[level];
+            var indexOnLevel = levelIndexes.upperBound(entryTime, timeComparator) - 1;
+            if (!entriesIntersect(this._selectedEntryIndex, levelIndexes[indexOnLevel])) {
+                ++indexOnLevel;
+                if (indexOnLevel >= levelIndexes.length || !entriesIntersect(this._selectedEntryIndex, levelIndexes[indexOnLevel]))
+                    return;
+            }
+            this.dispatchEventToListeners(WebInspector.FlameChart.Events.EntrySelected, levelIndexes[indexOnLevel]);
+        }
+    },
+
+    /**
+     * @param {!Event} e
+     */
+    _handleZoomPanKeys: function(e)
+    {
+        if (!WebInspector.KeyboardShortcut.hasNoModifiers(e))
             return;
         var zoomMultiplier = e.shiftKey ? 0.8 : 0.3;
         var panMultiplier = e.shiftKey ? 320 : 80;
