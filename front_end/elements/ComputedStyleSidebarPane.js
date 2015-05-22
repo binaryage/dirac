@@ -29,9 +29,10 @@
 
 /**
  * @constructor
+ * @param {!WebInspector.StylesSidebarPane} stylesSidebarPane
  * @extends {WebInspector.ElementsSidebarPane}
  */
-WebInspector.ComputedStyleSidebarPane = function()
+WebInspector.ComputedStyleSidebarPane = function(stylesSidebarPane)
 {
     WebInspector.ElementsSidebarPane.call(this, WebInspector.UIString("Computed Style"));
     this.registerRequiredCSS("elements/computedStyleSidebarPane.css");
@@ -48,6 +49,8 @@ WebInspector.ComputedStyleSidebarPane = function()
     this._propertiesContainer = this.bodyElement.createChild("div", "monospace");
     this._propertiesContainer.classList.add("computed-properties");
     this._onTracePropertyBound = this._onTraceProperty.bind(this);
+
+    this._stylesSidebarPane = stylesSidebarPane;
 }
 
 WebInspector.ComputedStyleSidebarPane._propertySymbol = Symbol("property");
@@ -72,13 +75,24 @@ WebInspector.ComputedStyleSidebarPane.prototype = {
 
     /**
      * @override
+     * @param {?WebInspector.DOMNode} node
+     */
+    setNode: function(node)
+    {
+        node = WebInspector.StylesSidebarPane.normalizeNode(node);
+        this._resetCache();
+        WebInspector.ElementsSidebarPane.prototype.setNode.call(this, node);
+    },
+
+    /**
+     * @override
      * @param {!WebInspector.Throttler.FinishCallback} finishedCallback
      */
     doUpdate: function(finishedCallback)
     {
         var promises = [
-            this._stylesSidebarPane._fetchComputedStyle(),
-            this._stylesSidebarPane._fetchMatchedCascade()
+            this._fetchComputedStyle(),
+            this._stylesSidebarPane.fetchMatchedCascade()
         ];
         Promise.all(promises)
             .spread(this._innerRebuildUpdate.bind(this))
@@ -174,14 +188,6 @@ WebInspector.ComputedStyleSidebarPane.prototype = {
     },
 
     /**
-     * @param {!WebInspector.StylesSidebarPane} pane
-     */
-    setHostingPane: function(pane)
-    {
-        this._stylesSidebarPane = pane;
-    },
-
-    /**
      * @param {!Element} element
      */
     setFilterBoxContainer: function(element)
@@ -197,6 +203,66 @@ WebInspector.ComputedStyleSidebarPane.prototype = {
             this._filterRegex = regex;
             this._updateFilter(regex);
         }
+    },
+
+    /**
+     * @return {!Promise.<?WebInspector.CSSStyleDeclaration>}
+     */
+    _fetchComputedStyle: function()
+    {
+        var node = this.node();
+        var cssModel = this.cssModel();
+        if (!node || !cssModel)
+            return Promise.resolve(/** @type {?WebInspector.CSSStyleDeclaration} */(null));
+
+        if (!this._computedStylePromise)
+            this._computedStylePromise = new Promise(getComputedStyle.bind(null, node)).then(verifyOutdated.bind(this, node));
+
+        return this._computedStylePromise;
+
+        /**
+         * @param {!WebInspector.DOMNode} node
+         * @param {function(?WebInspector.CSSStyleDeclaration)} resolve
+         */
+        function getComputedStyle(node, resolve)
+        {
+            cssModel.getComputedStyleAsync(node.id, resolve);
+        }
+
+        /**
+         * @param {!WebInspector.DOMNode} node
+         * @param {?WebInspector.CSSStyleDeclaration} style
+         * @return {?WebInspector.CSSStyleDeclaration}
+         * @this {WebInspector.ComputedStyleSidebarPane}
+         */
+        function verifyOutdated(node, style)
+        {
+            return node !== this.node() ? null : style;
+        }
+    },
+
+    _resetCache: function()
+    {
+        delete this._computedStylePromise;
+    },
+
+    /**
+     * @override
+     */
+    onCSSModelChanged: function()
+    {
+        this._resetCache();
+        this.update();
+    },
+
+    /**
+     * @override
+     * @param {!WebInspector.DOMNode} changedNode
+     */
+    onDOMNodeChanged: function(changedNode)
+    {
+        this._resetCache();
+        this.update();
     },
 
     __proto__: WebInspector.ElementsSidebarPane.prototype

@@ -30,15 +30,12 @@
 /**
  * @constructor
  * @extends {WebInspector.ElementsSidebarPane}
- * @param {!WebInspector.ComputedStyleSidebarPane} computedStylePane
  * @param {function()} requestShowCallback
  */
-WebInspector.StylesSidebarPane = function(computedStylePane, requestShowCallback)
+WebInspector.StylesSidebarPane = function(requestShowCallback)
 {
     WebInspector.ElementsSidebarPane.call(this, WebInspector.UIString("Styles"));
 
-    this._computedStylePane = computedStylePane;
-    computedStylePane.setHostingPane(this);
     this.element.addEventListener("contextmenu", this._contextMenuEventFired.bind(this), true);
     WebInspector.moduleSetting("colorFormat").addChangeListener(this.update.bind(this));
     WebInspector.moduleSetting("textEditorIndent").addChangeListener(this.update.bind(this));
@@ -78,6 +75,20 @@ WebInspector.StylesSidebarPane = function(computedStylePane, requestShowCallback
     this.element.addEventListener("mousemove", this._mouseMovedOverElement.bind(this), false);
     this._keyDownBound = this._keyDown.bind(this);
     this._keyUpBound = this._keyUp.bind(this);
+}
+
+/**
+ * @param {?WebInspector.DOMNode} node
+ * @return {?WebInspector.DOMNode}
+ */
+WebInspector.StylesSidebarPane.normalizeNode = function(node)
+{
+    if (node && node.nodeType() === Node.TEXT_NODE && node.parentNode)
+        node = node.parentNode;
+
+    if (node && node.nodeType() !== Node.ELEMENT_NODE)
+        node = null;
+    return node;
 }
 
 // Keep in sync with ComputedStyleConstants.h PseudoId enum. Array below contains pseudo id names for corresponding enum indexes.
@@ -353,14 +364,9 @@ WebInspector.StylesSidebarPane.prototype = {
         }
 
         this._stylesPopoverHelper.hide();
-        if (node && node.nodeType() === Node.TEXT_NODE && node.parentNode)
-            node = node.parentNode;
-
-        if (node && node.nodeType() !== Node.ELEMENT_NODE)
-            node = null;
+        node = WebInspector.StylesSidebarPane.normalizeNode(node);
 
         this._resetCache();
-        this._computedStylePane.setNode(node);
         this._animationsControlPane.setNode(node);
         WebInspector.ElementsSidebarPane.prototype.setNode.call(this, node);
     },
@@ -382,7 +388,6 @@ WebInspector.StylesSidebarPane.prototype = {
             }
         }
 
-        this._computedStylePane.update();
         if (this._filterRegex)
             this._updateFilter();
         this._nodeStylesUpdatedForTest(node, false);
@@ -397,7 +402,7 @@ WebInspector.StylesSidebarPane.prototype = {
         this._updateForcedPseudoStateInputs();
         this._discardElementUnderMouse();
 
-        this._fetchMatchedCascade()
+        this.fetchMatchedCascade()
             .then(this._innerRebuildUpdate.bind(this))
             .then(finishedCallback)
             .catch(/** @type {function()} */(finishedCallback));
@@ -406,18 +411,12 @@ WebInspector.StylesSidebarPane.prototype = {
     _resetCache: function()
     {
         delete this._matchedCascadePromise;
-        this._resetComputedCache();
-    },
-
-    _resetComputedCache: function()
-    {
-        delete this._computedStylePromise;
     },
 
     /**
      * @return {!Promise.<?{matched: !WebInspector.SectionCascade, pseudo: !Map.<number, !WebInspector.SectionCascade>}>}
      */
-    _fetchMatchedCascade: function()
+    fetchMatchedCascade: function()
     {
         var node = this.node();
         if (!node)
@@ -441,42 +440,6 @@ WebInspector.StylesSidebarPane.prototype = {
                 matched: this._buildMatchedRulesSectionCascade(node, payload),
                 pseudo: this._buildPseudoCascades(node, payload)
             };
-        }
-    },
-
-    /**
-     * @return {!Promise.<?WebInspector.CSSStyleDeclaration>}
-     */
-    _fetchComputedStyle: function()
-    {
-        var node = this.node();
-        var cssModel = this.cssModel();
-        if (!node || !cssModel)
-            return Promise.resolve(/** @type {?WebInspector.CSSStyleDeclaration} */(null));
-
-        if (!this._computedStylePromise)
-            this._computedStylePromise = new Promise(getComputedStyle.bind(null, node)).then(verifyOutdated.bind(this, node));
-
-        return this._computedStylePromise;
-
-        /**
-         * @param {!WebInspector.DOMNode} node
-         * @param {function(?WebInspector.CSSStyleDeclaration)} resolve
-         */
-        function getComputedStyle(node, resolve)
-        {
-            cssModel.getComputedStyleAsync(node.id, resolve);
-        }
-
-        /**
-         * @param {!WebInspector.DOMNode} node
-         * @param {?WebInspector.CSSStyleDeclaration} style
-         * @return {?WebInspector.CSSStyleDeclaration}
-         * @this {WebInspector.StylesSidebarPane}
-         */
-        function verifyOutdated(node, style)
-        {
-            return node !== this.node() ? null : style;
         }
     },
 
@@ -538,10 +501,8 @@ WebInspector.StylesSidebarPane.prototype = {
      */
     onCSSModelChanged: function()
     {
-        if (this._userOperation || this._isEditingStyle) {
-            this._resetComputedCache();
+        if (this._userOperation || this._isEditingStyle)
             return;
-        }
 
         this._resetCache();
         this.update();
@@ -563,10 +524,8 @@ WebInspector.StylesSidebarPane.prototype = {
     {
         // Any attribute removal or modification can affect the styles of "related" nodes.
         // Do not touch the styles if they are being edited.
-        if (this._isEditingStyle || this._userOperation) {
-            this._resetComputedCache();
+        if (this._isEditingStyle || this._userOperation)
             return;
-        }
 
         if (!this._canAffectCurrentStyles(changedNode))
             return;
@@ -624,7 +583,6 @@ WebInspector.StylesSidebarPane.prototype = {
             this._updateFilter();
 
         this._nodeStylesUpdatedForTest(node, true);
-        this._computedStylePane.update();
     },
 
     /**

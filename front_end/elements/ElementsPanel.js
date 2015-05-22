@@ -70,8 +70,8 @@ WebInspector.ElementsPanel = function()
     /** @type !Array<!WebInspector.ElementsSidebarViewWrapperPane> */
     this._elementsSidebarViewWrappers = [];
     this.sidebarPanes.platformFonts = new WebInspector.PlatformFontsSidebarPane();
-    this.sidebarPanes.computedStyle = new WebInspector.ComputedStyleSidebarPane();
-    this.sidebarPanes.styles = new WebInspector.StylesSidebarPane(this.sidebarPanes.computedStyle, this._showStylesSidebar.bind(this));
+    this.sidebarPanes.styles = new WebInspector.StylesSidebarPane(this._showStylesSidebar.bind(this));
+    this.sidebarPanes.computedStyle = new WebInspector.ComputedStyleSidebarPane(this.sidebarPanes.styles);
     this.sidebarPanes.styles.addEventListener(WebInspector.StylesSidebarPane.Events.SelectorEditingStarted, this._onEditingSelectorStarted.bind(this));
     this.sidebarPanes.styles.addEventListener(WebInspector.StylesSidebarPane.Events.SelectorEditingEnded, this._onEditingSelectorEnded.bind(this));
 
@@ -315,6 +315,7 @@ WebInspector.ElementsPanel.prototype = {
         var selectedDOMNode = this.selectedDOMNode();
         if (selectedDOMNode && WebInspector.CSSStyleModel.fromNode(selectedDOMNode).isEnabled()) {
             this.sidebarPanes.styles.setNode(selectedDOMNode);
+            this.sidebarPanes.computedStyle.setNode(selectedDOMNode);
             this.sidebarPanes.metrics.setNode(selectedDOMNode);
             this.sidebarPanes.platformFonts.setNode(selectedDOMNode);
         }
