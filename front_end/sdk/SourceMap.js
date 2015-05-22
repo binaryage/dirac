@@ -91,6 +91,15 @@ WebInspector.SourceMap = function(sourceMappingURL, payload)
  */
 WebInspector.SourceMap.load = function(sourceMapURL, compiledURL, callback)
 {
+    var parsedURL = new WebInspector.ParsedURL(sourceMapURL);
+    if (parsedURL.isDataURL()) {
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", sourceMapURL, false);
+        xhr.send(null);
+        contentLoaded(xhr.status, {}, xhr.responseText);
+        return;
+    }
+
     WebInspector.ResourceLoader.load(sourceMapURL, null, contentLoaded);
 
     /**
