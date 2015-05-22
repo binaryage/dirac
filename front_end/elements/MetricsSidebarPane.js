@@ -38,49 +38,6 @@ WebInspector.MetricsSidebarPane = function()
 WebInspector.MetricsSidebarPane.prototype = {
     /**
      * @override
-     * @param {?WebInspector.DOMNode} node
-     */
-    setNode: function(node)
-    {
-        WebInspector.ElementsSidebarPane.prototype.setNode.call(this, node);
-        this._updateTarget(node ? node.target() : null);
-    },
-
-    /**
-     * @param {?WebInspector.Target} target
-     */
-    _updateTarget: function(target)
-    {
-        if (this._target === target)
-            return;
-
-        if (this._target) {
-            this._cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.StyleSheetAdded, this.update, this);
-            this._cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.StyleSheetRemoved, this.update, this);
-            this._cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.StyleSheetChanged, this.update, this);
-            this._cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.MediaQueryResultChanged, this.update, this);
-            this._cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.PseudoStateForced, this.update, this);
-            this._domModel.removeEventListener(WebInspector.DOMModel.Events.AttrModified, this._attributesUpdated, this);
-            this._domModel.removeEventListener(WebInspector.DOMModel.Events.AttrRemoved, this._attributesUpdated, this);
-            this._target.resourceTreeModel.removeEventListener(WebInspector.ResourceTreeModel.EventTypes.FrameResized, this.update, this);
-        }
-        this._target = target;
-        if (target) {
-            this._domModel = WebInspector.DOMModel.fromTarget(target);
-            this._cssModel = WebInspector.CSSStyleModel.fromTarget(target);
-            this._cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetAdded, this.update, this);
-            this._cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetRemoved, this.update, this);
-            this._cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetChanged, this.update, this);
-            this._cssModel.addEventListener(WebInspector.CSSStyleModel.Events.MediaQueryResultChanged, this.update, this);
-            this._cssModel.addEventListener(WebInspector.CSSStyleModel.Events.PseudoStateForced, this.update, this);
-            this._domModel.addEventListener(WebInspector.DOMModel.Events.AttrModified, this._attributesUpdated, this);
-            this._domModel.addEventListener(WebInspector.DOMModel.Events.AttrRemoved, this._attributesUpdated, this);
-            this._target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.FrameResized, this.update, this);
-        }
-    },
-
-    /**
-     * @override
      * @param {!WebInspector.Throttler.FinishCallback} finishedCallback
      * @protected
      */
@@ -95,8 +52,8 @@ WebInspector.MetricsSidebarPane.prototype = {
 
         // FIXME: avoid updates of a collapsed pane.
         var node = this.node();
-
-        if (!node || node.nodeType() !== Node.ELEMENT_NODE) {
+        var cssModel = this.cssModel();
+        if (!node || node.nodeType() !== Node.ELEMENT_NODE || !cssModel) {
             this.bodyElement.removeChildren();
             finishedCallback();
             return;
@@ -112,7 +69,7 @@ WebInspector.MetricsSidebarPane.prototype = {
                 return;
             this._updateMetrics(style);
         }
-        this._cssModel.getComputedStyleAsync(node.id, callback.bind(this));
+        cssModel.getComputedStyleAsync(node.id, callback.bind(this));
 
         /**
          * @param {?WebInspector.CSSStyleDeclaration} style
@@ -124,14 +81,34 @@ WebInspector.MetricsSidebarPane.prototype = {
                 this.inlineStyle = style;
             finishedCallback();
         }
-        this._cssModel.getInlineStylesAsync(node.id, inlineStyleCallback.bind(this));
+        cssModel.getInlineStylesAsync(node.id, inlineStyleCallback.bind(this));
     },
 
-    _attributesUpdated: function(event)
+    /**
+     * @override
+     * @param {!WebInspector.DOMNode} changedNode
+     */
+    onDOMNodeChanged: function(changedNode)
     {
-        if (this.node() !== event.data.node)
+        if (this.node() !== changedNode)
             return;
 
+        this.update();
+    },
+
+    /**
+     * @override
+     */
+    onCSSModelChanged: function()
+    {
+        this.update();
+    },
+
+    /**
+     * @override
+     */
+    onFrameResizedThrottled: function()
+    {
         this.update();
     },
 

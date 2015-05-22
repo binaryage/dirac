@@ -158,7 +158,9 @@ WebInspector.StylesSidebarPane.prototype = {
      */
     _onAddButtonLongClick: function(event)
     {
-        var cssModel = this._cssModel;
+        var cssModel = this.cssModel();
+        if (!cssModel)
+            return;
         var headers = cssModel.styleSheetHeaders().filter(styleSheetResourceHeader);
 
         /** @type {!Array.<{text: string, handler: function()}>} */
@@ -357,44 +359,10 @@ WebInspector.StylesSidebarPane.prototype = {
         if (node && node.nodeType() !== Node.ELEMENT_NODE)
             node = null;
 
-        this._updateTarget(node ? node.target() : null);
-
         this._resetCache();
         this._computedStylePane.setNode(node);
         this._animationsControlPane.setNode(node);
         WebInspector.ElementsSidebarPane.prototype.setNode.call(this, node);
-    },
-
-    /**
-     * @param {?WebInspector.Target} target
-     */
-    _updateTarget: function(target)
-    {
-        if (this._target === target)
-            return;
-        if (this._target) {
-            this._cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.StyleSheetAdded, this._styleSheetOrMediaQueryResultChanged, this);
-            this._cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.StyleSheetRemoved, this._styleSheetOrMediaQueryResultChanged, this);
-            this._cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.StyleSheetChanged, this._styleSheetOrMediaQueryResultChanged, this);
-            this._cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.MediaQueryResultChanged, this._styleSheetOrMediaQueryResultChanged, this);
-            this._cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.PseudoStateForced, this._styleSheetOrMediaQueryResultChanged, this);
-            this._domModel.removeEventListener(WebInspector.DOMModel.Events.AttrModified, this._attributeChanged, this);
-            this._domModel.removeEventListener(WebInspector.DOMModel.Events.AttrRemoved, this._attributeChanged, this);
-            this._target.resourceTreeModel.removeEventListener(WebInspector.ResourceTreeModel.EventTypes.FrameResized, this._frameResized, this);
-        }
-        this._target = target;
-        if (target) {
-            this._domModel = WebInspector.DOMModel.fromTarget(target);
-            this._cssModel = WebInspector.CSSStyleModel.fromTarget(target);
-            this._cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetAdded, this._styleSheetOrMediaQueryResultChanged, this);
-            this._cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetRemoved, this._styleSheetOrMediaQueryResultChanged, this);
-            this._cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetChanged, this._styleSheetOrMediaQueryResultChanged, this);
-            this._cssModel.addEventListener(WebInspector.CSSStyleModel.Events.MediaQueryResultChanged, this._styleSheetOrMediaQueryResultChanged, this);
-            this._cssModel.addEventListener(WebInspector.CSSStyleModel.Events.PseudoStateForced, this._styleSheetOrMediaQueryResultChanged, this);
-            this._domModel.addEventListener(WebInspector.DOMModel.Events.AttrModified, this._attributeChanged, this);
-            this._domModel.addEventListener(WebInspector.DOMModel.Events.AttrRemoved, this._attributeChanged, this);
-            this._target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.FrameResized, this._frameResized, this);
-        }
     },
 
     /**
@@ -482,10 +450,10 @@ WebInspector.StylesSidebarPane.prototype = {
     _fetchComputedStyle: function()
     {
         var node = this.node();
-        if (!node)
+        var cssModel = this.cssModel();
+        if (!node || !cssModel)
             return Promise.resolve(/** @type {?WebInspector.CSSStyleDeclaration} */(null));
 
-        var cssModel = this._cssModel;
         if (!this._computedStylePromise)
             this._computedStylePromise = new Promise(getComputedStyle.bind(null, node)).then(verifyOutdated.bind(this, node));
 
@@ -518,11 +486,14 @@ WebInspector.StylesSidebarPane.prototype = {
      */
     _getMatchedStylesForNode: function(node, callback)
     {
-        var target = node.target();
-        this._cssModel.getInlineStylesAsync(node.id, inlineCallback);
-        this._cssModel.getMatchedStylesAsync(node.id, false, false, matchedCallback);
-
         var payload = new WebInspector.StylesSidebarPane.MatchedRulesPayload();
+        var cssModel = this.cssModel();
+        if (!cssModel) {
+            callback(payload);
+            return;
+        }
+        cssModel.getInlineStylesAsync(node.id, inlineCallback);
+        cssModel.getMatchedStylesAsync(node.id, false, false, matchedCallback);
 
         /**
          * @param {?WebInspector.CSSStyleDeclaration} inlineStyle
@@ -562,7 +533,10 @@ WebInspector.StylesSidebarPane.prototype = {
         }
     },
 
-    _styleSheetOrMediaQueryResultChanged: function()
+    /**
+     * @override
+     */
+    onCSSModelChanged: function()
     {
         if (this._userOperation || this._isEditingStyle) {
             this._resetComputedCache();
@@ -573,27 +547,19 @@ WebInspector.StylesSidebarPane.prototype = {
         this.update();
     },
 
-    _frameResized: function()
+    /**
+     * @override
+     */
+    onFrameResizedThrottled: function()
     {
-        /**
-         * @this {WebInspector.StylesSidebarPane}
-         */
-        function refreshContents()
-        {
-            this._styleSheetOrMediaQueryResultChanged();
-            delete this._activeTimer;
-        }
-
-        if (this._activeTimer)
-            clearTimeout(this._activeTimer);
-
-        this._activeTimer = setTimeout(refreshContents.bind(this), 100);
+        this.onCSSModelChanged();
     },
 
     /**
-     * @param {!WebInspector.Event} event
+     * @override
+     * @param {!WebInspector.DOMNode} changedNode
      */
-    _attributeChanged: function(event)
+    onDOMNodeChanged: function(changedNode)
     {
         // Any attribute removal or modification can affect the styles of "related" nodes.
         // Do not touch the styles if they are being edited.
@@ -602,7 +568,7 @@ WebInspector.StylesSidebarPane.prototype = {
             return;
         }
 
-        if (!this._canAffectCurrentStyles(event.data.node))
+        if (!this._canAffectCurrentStyles(changedNode))
             return;
 
         this._resetCache();
@@ -801,9 +767,12 @@ WebInspector.StylesSidebarPane.prototype = {
 
     _createNewRuleInViaInspectorStyleSheet: function()
     {
-        var cssModel = this._cssModel;
+        var cssModel = this.cssModel();
+        var node = this.node();
+        if (!cssModel || !node)
+            return;
         this._userOperation = true;
-        cssModel.requestViaInspectorStylesheet(this.node(), onViaInspectorStyleSheet.bind(this));
+        cssModel.requestViaInspectorStylesheet(node, onViaInspectorStyleSheet.bind(this));
 
         /**
          * @param {?WebInspector.CSSStyleSheetHeader} styleSheetHeader

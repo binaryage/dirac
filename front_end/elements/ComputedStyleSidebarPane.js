@@ -72,17 +72,6 @@ WebInspector.ComputedStyleSidebarPane.prototype = {
 
     /**
      * @override
-     * @param {?WebInspector.DOMNode} node
-     */
-    setNode: function(node)
-    {
-        if (node)
-            this._target = node.target();
-        WebInspector.ElementsSidebarPane.prototype.setNode.call(this, node);
-    },
-
-    /**
-     * @override
      * @param {!WebInspector.Throttler.FinishCallback} finishedCallback
      */
     doUpdate: function(finishedCallback)

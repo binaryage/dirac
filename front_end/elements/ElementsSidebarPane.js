@@ -24,11 +24,20 @@ WebInspector.ElementsSidebarPane.prototype = {
     },
 
     /**
+     * @return {?WebInspector.CSSStyleModel}
+     */
+    cssModel: function()
+    {
+        return this._cssModel;
+    },
+
+    /**
      * @param {?WebInspector.DOMNode} node
      */
     setNode: function(node)
     {
         this._node = node;
+        this._updateTarget(node ? node.target() : null);
         this.update();
     },
 
@@ -51,6 +60,85 @@ WebInspector.ElementsSidebarPane.prototype = {
         WebInspector.SidebarPane.prototype.wasShown.call(this);
         this._updateController.viewWasShown();
     },
+
+    /**
+     * @param {?WebInspector.Target} target
+     */
+    _updateTarget: function(target)
+    {
+        if (this._target === target)
+            return;
+        if (this._target) {
+            this._cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.StyleSheetAdded, this.onCSSModelChanged, this);
+            this._cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.StyleSheetRemoved, this.onCSSModelChanged, this);
+            this._cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.StyleSheetChanged, this.onCSSModelChanged, this);
+            this._cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.MediaQueryResultChanged, this.onCSSModelChanged, this);
+            this._cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.PseudoStateForced, this.onCSSModelChanged, this);
+            this._domModel.removeEventListener(WebInspector.DOMModel.Events.AttrModified, this._onAttributeChanged, this);
+            this._domModel.removeEventListener(WebInspector.DOMModel.Events.AttrRemoved, this._onAttributeChanged, this);
+            this._domModel.removeEventListener(WebInspector.DOMModel.Events.CharacterDataModified, this._onCharDataChanged, this);
+            this._target.resourceTreeModel.removeEventListener(WebInspector.ResourceTreeModel.EventTypes.FrameResized, this._onFrameResized, this);
+        }
+        this._target = target;
+        if (target) {
+            this._cssModel = WebInspector.CSSStyleModel.fromTarget(target);
+            this._cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetAdded, this.onCSSModelChanged, this);
+            this._cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetRemoved, this.onCSSModelChanged, this);
+            this._cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetChanged, this.onCSSModelChanged, this);
+            this._cssModel.addEventListener(WebInspector.CSSStyleModel.Events.MediaQueryResultChanged, this.onCSSModelChanged, this);
+            this._cssModel.addEventListener(WebInspector.CSSStyleModel.Events.PseudoStateForced, this.onCSSModelChanged, this);
+            this._domModel = WebInspector.DOMModel.fromTarget(target);
+            this._domModel.addEventListener(WebInspector.DOMModel.Events.AttrModified, this._onAttributeChanged, this);
+            this._domModel.addEventListener(WebInspector.DOMModel.Events.AttrRemoved, this._onAttributeChanged, this);
+            this._domModel.addEventListener(WebInspector.DOMModel.Events.CharacterDataModified, this._onCharDataChanged, this);
+            this._target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.FrameResized, this._onFrameResized, this);
+        }
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _onAttributeChanged: function(event)
+    {
+        this.onDOMNodeChanged(/** @type {!WebInspector.DOMNode} */(event.data.node));
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _onCharDataChanged: function(event)
+    {
+        this.onDOMNodeChanged(/** @type {!WebInspector.DOMNode} */(event.data));
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _onFrameResized: function(event)
+    {
+        /**
+         * @this {WebInspector.ElementsSidebarPane}
+         */
+        function refreshContents()
+        {
+            this.onFrameResizedThrottled();
+            delete this._frameResizedTimer;
+        }
+
+        if (this._frameResizedTimer)
+            clearTimeout(this._frameResizedTimer);
+
+        this._frameResizedTimer = setTimeout(refreshContents.bind(this), 100);
+    },
+
+    /**
+     * @param {!WebInspector.DOMNode} changedNode
+     */
+    onDOMNodeChanged: function(changedNode) { },
+
+    onCSSModelChanged: function() { },
+
+    onFrameResizedThrottled: function() { },
 
     __proto__: WebInspector.SidebarPane.prototype
 }
