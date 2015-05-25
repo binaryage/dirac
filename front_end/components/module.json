@@ -32,11 +32,13 @@
         "ObjectPopoverHelper.js",
         "ObjectPropertiesSection.js",
         "RemoteObjectPreviewFormatter.js",
-        "ShortcutsScreen.js"
+        "ShortcutsScreen.js",
+        "EventListenersView.js"
     ],
     "resources": [
         "breakpointsList.css",
         "customPreviewSection.css",
+        "eventListenersView.css",
         "nodeLink.css",
         "objectPropertiesSection.css",
         "objectValue.css"

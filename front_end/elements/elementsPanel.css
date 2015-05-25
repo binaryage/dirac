@@ -460,38 +460,6 @@
     cursor: text;
 }
 
-.event-listener-tree li {
-    padding: 2px 0 0 5px;
-}
-
-.event-listener-tree {
-    margin-top: 5px;
-}
-
-.event-listener-tree > li {
-    border-top: 1px solid rgb(231, 231, 231);
-}
-
-.event-listener-tree > li:first-of-type {
-    border-top: none;
-}
-
-.event-listener-tree {
-    padding-left: 0 !important;
-}
-
-.event-listener-tree li.parent::before {
-    top: 0 !important;
-}
-
-.event-listener-tree .name {
-    color: rgb(136, 19, 145);
-}
-
-.event-listener-tree-subtitle {
-    float: right;
-}
-
 .image-preview-container {
     background: transparent;
     text-align: center;

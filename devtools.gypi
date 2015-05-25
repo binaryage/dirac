@@ -116,6 +116,7 @@
             'front_end/components/ObjectPropertiesSection.js',
             'front_end/components/RemoteObjectPreviewFormatter.js',
             'front_end/components/ShortcutsScreen.js',
+            'front_end/components/EventListenersView.js',
         ],
         'devtools_host_js_files': [
             'front_end/host/InspectorFrontendHost.js',
