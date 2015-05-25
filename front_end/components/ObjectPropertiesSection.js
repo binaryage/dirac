@@ -1170,8 +1170,9 @@ WebInspector.ObjectPropertiesSection.createValueElement = function(value, wasThr
  * @param {!WebInspector.RemoteObject} func
  * @param {!Element} element
  * @param {boolean} linkify
+ * @param {boolean=} includePreview
  */
-WebInspector.ObjectPropertiesSection.formatObjectAsFunction = function(func, element, linkify)
+WebInspector.ObjectPropertiesSection.formatObjectAsFunction = function(func, element, linkify, includePreview)
 {
     func.functionDetails(didGetDetails);
 
@@ -1193,6 +1194,12 @@ WebInspector.ObjectPropertiesSection.formatObjectAsFunction = function(func, ele
             element = anchor;
         }
 
+        var text = func.description.substring(0, 200);
+        if (includePreview) {
+            element.textContent = text.replace(/^function /, "") + (func.description.length > 200 ? "\u2026" : "");
+            return;
+        }
+
         // Now parse description and get the real params and title.
         self.runtime.instancePromise(WebInspector.TokenizerFactory).then(processTokens);
 
@@ -1204,7 +1211,6 @@ WebInspector.ObjectPropertiesSection.formatObjectAsFunction = function(func, ele
          */
         function processTokens(tokenizerFactory)
         {
-            var text = func.description.substring(0, 200);
             var tokenize = tokenizerFactory.createTokenizer("text/javascript");
             tokenize(text, processToken);
             element.textContent = (functionName || "anonymous") + "(" + (params || []).join(", ") + ")";

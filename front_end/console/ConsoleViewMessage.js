@@ -444,10 +444,11 @@ WebInspector.ConsoleViewMessage.prototype = {
     /**
      * @param {!WebInspector.RemoteObject} func
      * @param {!Element} element
+     * @param {boolean=} includePreview
      */
-    _formatParameterAsFunction: function(func, element)
+    _formatParameterAsFunction: function(func, element, includePreview)
     {
-        WebInspector.ObjectPropertiesSection.formatObjectAsFunction(func, element, true);
+        WebInspector.ObjectPropertiesSection.formatObjectAsFunction(func, element, true, includePreview);
         element.addEventListener("contextmenu", this._contextMenuEventFired.bind(this, func), false);
     },
 

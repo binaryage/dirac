@@ -28,8 +28,8 @@
     font-style: italic;
 }
 
-.object-value-function:hover > span {
-    text-decoration: underline;
+.object-value-function:hover {
+    background-color: rgba(0, 0, 0, 0.1);
     cursor: pointer;
 }
 
