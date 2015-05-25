@@ -1147,6 +1147,7 @@ WebInspector.ObjectPropertiesSection.createValueElement = function(value, wasThr
 
     if (type === "object" && subtype === "node" && description) {
         WebInspector.DOMPresentationUtils.createSpansForNodeTitle(valueElement, description);
+        valueElement.addEventListener("click", mouseClick, false);
         valueElement.addEventListener("mousemove", mouseMove, false);
         valueElement.addEventListener("mouseleave", mouseLeave, false);
     } else {
@@ -1161,6 +1162,15 @@ WebInspector.ObjectPropertiesSection.createValueElement = function(value, wasThr
     function mouseLeave()
     {
         WebInspector.DOMModel.hideDOMNodeHighlight();
+    }
+
+    /**
+     * @param {!Event} event
+     */
+    function mouseClick(event)
+    {
+        WebInspector.Revealer.reveal(value);
+        event.consume(true);
     }
 
     return valueElement;

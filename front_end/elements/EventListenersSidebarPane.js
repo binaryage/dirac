@@ -59,7 +59,7 @@ WebInspector.EventListenersSidebarPane = function()
     this.settingsSelectElement.addEventListener("click", consumeEvent, false);
     this.settingsSelectElement.addEventListener("change", this._changeSetting.bind(this), false);
 
-    this._eventListenersView = new WebInspector.EventListenersView(this.bodyElement, WebInspector.EventListenersSidebarPane._objectGroupName);
+    this._eventListenersView = new WebInspector.EventListenersView(this.bodyElement);
 }
 
 WebInspector.EventListenersSidebarPane._objectGroupName = "event-listeners-panel";
@@ -84,25 +84,66 @@ WebInspector.EventListenersSidebarPane.prototype = {
             return;
         }
 
+        this._lastRequestedNode = node;
         var selectedNodeOnly = "selected" === this._eventListenersFilterSetting.get();
         var promises = [];
-        promises.push(this._eventListenersView.addNodeEventListeners(node));
+        var listenersView = this._eventListenersView;
+        promises.push(node.resolveToObjectPromise(WebInspector.EventListenersSidebarPane._objectGroupName).then(listenersView.addObjectEventListeners.bind(listenersView)));
         if (!selectedNodeOnly) {
             var currentNode = node.parentNode;
             while (currentNode) {
-                promises.push(this._eventListenersView.addNodeEventListeners(currentNode));
+                promises.push(currentNode.resolveToObjectPromise(WebInspector.EventListenersSidebarPane._objectGroupName).then(listenersView.addObjectEventListeners.bind(listenersView)));
                 currentNode = currentNode.parentNode;
             }
+            this._windowObjectInNodeContext(node).then(windowObjectCallback.bind(this));
+        } else {
+            Promise.all(promises).then(mycallback.bind(this));
         }
-        Promise.all(promises).then(mycallback.bind(this));
+        /**
+         * @param {!WebInspector.RemoteObject} object
+         * @this {WebInspector.EventListenersSidebarPane}
+         */
+        function windowObjectCallback(object)
+        {
+            promises.push(this._eventListenersView.addObjectEventListeners(object));
+            Promise.all(promises).then(mycallback.bind(this));
+        }
         /**
          * @this {WebInspector.EventListenersSidebarPane}
          */
         function mycallback()
         {
-            this._lastRequestedNode = node;
             this._eventListenersArivedForTest();
             finishCallback();
+        }
+    },
+
+    /**
+     * @param {!WebInspector.DOMNode} node
+     * @return {!Promise<!WebInspector.RemoteObject>} object
+     */
+    _windowObjectInNodeContext: function(node)
+    {
+        return new Promise(windowObjectInNodeContext);
+
+        /**
+         * @param {function(?)} fulfill
+         * @param {function(*)} reject
+         */
+        function windowObjectInNodeContext(fulfill, reject)
+        {
+            var executionContexts = node.target().runtimeModel.executionContexts();
+            var context = null;
+            if (node.frameId()) {
+                for (var i = 0; i < executionContexts.length; ++i) {
+                    var executionContext = executionContexts[i];
+                    if (executionContext.frameId === node.frameId() && executionContext.isMainWorldContext)
+                        context = executionContext;
+                }
+            } else {
+                context = executionContexts[0];
+            }
+            context.evaluate("self", WebInspector.EventListenersSidebarPane._objectGroupName, false, true, false, false, fulfill);
         }
     },
 

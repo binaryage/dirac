@@ -5,12 +5,10 @@
 /**
  * @constructor
  * @param {!Element} element
- * @param {string} objectGroup
  */
-WebInspector.EventListenersView = function(element, objectGroup)
+WebInspector.EventListenersView = function(element)
 {
     this._element = element;
-    this._objectGroup = objectGroup;
     this._treeOutline = new TreeOutlineInShadow("event-listener-tree");
     this._treeOutline.registerRequiredCSS("components/objectValue.css");
     this._treeOutline.registerRequiredCSS("components/eventListenersView.css");
@@ -27,16 +25,16 @@ WebInspector.EventListenersView = function(element, objectGroup)
 
 WebInspector.EventListenersView.prototype = {
     /**
-     * @param {!WebInspector.DOMNode} node
+     * @param {!WebInspector.RemoteObject} object
      * @param {?Array<!WebInspector.EventListener>} eventListeners
      */
-    _addNodeEventListeners: function(node, eventListeners)
+    _addObjectEventListeners: function(object, eventListeners)
     {
         if (!eventListeners)
             return;
         for (var eventListener of eventListeners) {
             var treeItem = this._getOrCreateTreeElementForType(eventListener.type());
-            treeItem.addNodeEventListener(eventListener, node);
+            treeItem.addObjectEventListener(eventListener, object);
         }
     },
 
@@ -57,41 +55,12 @@ WebInspector.EventListenersView.prototype = {
     },
 
     /**
-     * @param {!WebInspector.DOMNode} node
-     * @return {!Promise}
+     * @param {!WebInspector.RemoteObject} object
+     * @return {!Promise<undefined>}
      */
-    addNodeEventListeners: function(node)
+    addObjectEventListeners: function(object)
     {
-        return new Promise(addEventListeners.bind(this));
-        /**
-         * @param {function(?)} fulfill
-         * @param {function(*)} reject
-         * @this {WebInspector.EventListenersView}
-         */
-        function addEventListeners(fulfill, reject)
-        {
-            node.resolveToObject(this._objectGroup, objectCallback.bind(this));
-            /**
-             * @param {?WebInspector.RemoteObject} object
-             * @this {WebInspector.EventListenersView}
-             */
-            function objectCallback(object)
-            {
-                if (object)
-                    object.getEventListeners(listenersCallback.bind(this));
-                else
-                    reject(undefined);
-            }
-            /**
-             * @param {?Array<!WebInspector.EventListener>} listeners
-             * @this {WebInspector.EventListenersView}
-             */
-            function listenersCallback(listeners)
-            {
-                this._addNodeEventListeners(node, listeners);
-                fulfill(undefined);
-            }
-        }
+        return object.eventListeners().then(this._addObjectEventListeners.bind(this, object));
     },
 
     reset: function()
@@ -131,11 +100,11 @@ WebInspector.EventListenersTreeElement.comparator = function(element1, element2)
 WebInspector.EventListenersTreeElement.prototype = {
     /**
      * @param {!WebInspector.EventListener} eventListener
-     * @param {!WebInspector.DOMNode} node
+     * @param {!WebInspector.RemoteObject} object
      */
-    addNodeEventListener: function(eventListener, node)
+    addObjectEventListener: function(eventListener, object)
     {
-        var treeElement = new WebInspector.NodeEventListenerBar(eventListener, node, this._linkifier);
+        var treeElement = new WebInspector.ObjectEventListenerBar(eventListener, object, this._linkifier);
         this.appendChild(/** @type {!TreeElement} */ (treeElement));
     },
 
@@ -146,16 +115,18 @@ WebInspector.EventListenersTreeElement.prototype = {
  * @constructor
  * @extends {TreeElement}
  * @param {!WebInspector.EventListener} eventListener
+ * @param {!WebInspector.RemoteObject} object
  * @param {!WebInspector.Linkifier} linkifier
  */
-WebInspector.EventListenerBar = function(eventListener, linkifier)
+WebInspector.ObjectEventListenerBar = function(eventListener, object, linkifier)
 {
     TreeElement.call(this, "", true);
     this._eventListener = eventListener;
     this.editable = false;
+    this._setTitle(object, linkifier);
 }
 
-WebInspector.EventListenerBar.prototype = {
+WebInspector.ObjectEventListenerBar.prototype = {
     onpopulate: function()
     {
         var properties = [];
@@ -167,42 +138,17 @@ WebInspector.EventListenerBar.prototype = {
         WebInspector.ObjectPropertyTreeElement.populateWithProperties(this, properties, [], true, null);
     },
 
-    __proto__: TreeElement.prototype
-}
-
-/**
- * @constructor
- * @extends {WebInspector.EventListenerBar}
- * @param {!WebInspector.EventListener} eventListener
- * @param {!WebInspector.DOMNode} node
- * @param {!WebInspector.Linkifier} linkifier
- */
-WebInspector.NodeEventListenerBar = function(eventListener, node, linkifier)
-{
-    WebInspector.EventListenerBar.call(this, eventListener, linkifier);
-    this._setNodeTitle(node, linkifier);
-}
-
-WebInspector.NodeEventListenerBar.prototype = {
     /**
-     * @param {!WebInspector.DOMNode} node
+     * @param {!WebInspector.RemoteObject} object
      * @param {!WebInspector.Linkifier} linkifier
      */
-    _setNodeTitle: function(node, linkifier)
+    _setTitle: function(object, linkifier)
     {
         var title = this.listItemElement.createChild("span");
         var subtitle = this.listItemElement.createChild("span", "event-listener-tree-subtitle");
         subtitle.appendChild(linkifier.linkifyRawLocation(this._eventListener.location(), this._eventListener.sourceName()));
-        if (node.nodeType() === Node.DOCUMENT_NODE) {
-            title.textContent = "document";
-            return;
-        }
-        if (this._eventListener.isSelected) {
-            title.textContent = WebInspector.DOMPresentationUtils.simpleSelector(node);
-            return;
-        }
-        title.appendChild(WebInspector.DOMPresentationUtils.linkifyNodeReference(node));
+        title.appendChild(WebInspector.ObjectPropertiesSection.createValueElement(object, false));
     },
 
-    __proto__: WebInspector.EventListenerBar.prototype
+    __proto__: TreeElement.prototype
 }

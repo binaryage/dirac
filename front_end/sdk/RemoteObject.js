@@ -95,9 +95,9 @@ WebInspector.RemoteObject.prototype = {
     },
 
     /**
-     * @param {function(?Array<!WebInspector.EventListener>)} callback
+     * @return {!Promise<?Array<!WebInspector.EventListener>>}
      */
-    getEventListeners: function(callback)
+    eventListeners: function()
     {
         throw "Not implemented";
     },
@@ -391,36 +391,45 @@ WebInspector.RemoteObjectImpl.prototype = {
 
     /**
      * @override
-     * @param {function(?Array<!WebInspector.EventListener>)} callback
+     * @return {!Promise<?Array<!WebInspector.EventListener>>}
      */
-    getEventListeners: function(callback)
+    eventListeners: function()
     {
-        if (!this._objectId) {
-            callback(null);
-            return;
-        }
+        return new Promise(eventListeners.bind(this));
         /**
-         * @this {!WebInspector.RemoteObject}
-         * @param {?Protocol.Error} error
-         * @param {!Array<!DOMDebuggerAgent.EventListener>} payloads
+         * @param {function(?)} fulfill
+         * @param {function(*)} reject
+         * @this {WebInspector.RemoteObject}
          */
-        function mycallback(error, payloads)
+        function eventListeners(fulfill, reject)
         {
-            if (error) {
-                callback(null);
+            if (!this._objectId) {
+                reject(null);
                 return;
             }
-            callback(payloads.map(createEventListener.bind(this)));
+            this.target().domdebuggerAgent().getEventListeners(this._objectId, mycallback.bind(this));
+            /**
+             * @this {!WebInspector.RemoteObject}
+             * @param {?Protocol.Error} error
+             * @param {!Array<!DOMDebuggerAgent.EventListener>} payloads
+             */
+            function mycallback(error, payloads)
+            {
+                if (error) {
+                    reject(null);
+                    return;
+                }
+                fulfill(payloads.map(createEventListener.bind(this)));
+            }
+            /**
+             * @this {!WebInspector.RemoteObject}
+             * @param {!DOMDebuggerAgent.EventListener} payload
+             */
+            function createEventListener(payload)
+            {
+                return new WebInspector.EventListener(this._debuggerModel, payload, this._objectId);
+            }
         }
-        /**
-         * @this {!WebInspector.RemoteObject}
-         * @param {!DOMDebuggerAgent.EventListener} payload
-         */
-        function createEventListener(payload)
-        {
-            return new WebInspector.EventListener(this._debuggerModel, payload, this._objectId);
-        }
-        this.target().domdebuggerAgent().getEventListeners(this._objectId, mycallback.bind(this));
     },
 
     /**

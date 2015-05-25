@@ -941,6 +941,31 @@ WebInspector.DOMNode.prototype = {
     },
 
     /**
+     * @param {string=} objectGroup
+     * @return {!Promise<!WebInspector.RemoteObject>}
+     */
+    resolveToObjectPromise: function(objectGroup)
+    {
+        return new Promise(resolveToObject.bind(this));
+        /**
+         * @param {function(?)} fulfill
+         * @param {function(*)} reject
+         * @this {WebInspector.DOMNode}
+         */
+        function resolveToObject(fulfill, reject)
+        {
+            this.resolveToObject(objectGroup, mycallback);
+            function mycallback(object)
+            {
+                if (object)
+                    fulfill(object)
+                else
+                    reject(null);
+            }
+        }
+    },
+
+    /**
      * @param {function(?DOMAgent.BoxModel)} callback
      */
     boxModel: function(callback)
