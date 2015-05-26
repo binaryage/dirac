@@ -90,7 +90,6 @@ group("devtools_frontend_resources") {
     # This overwrites application-specific core CSS (devtools.css),
     # and thus should be guarded out in Debug builds.
     deps += [
-      ":concatenated_devtools_css",
       ":concatenated_inspector_css",
       ":concatenated_toolbox_css",
     ]
@@ -125,7 +124,6 @@ action("generate_devtools_grd") {
     # Release: pick compiled non-remote files and lazy-loaded CSS.
     # TODO(dgozman): remove remote modules from here once experiment is over.
     generated_files = [
-      resources_out_dir + "devtools.css",
       resources_out_dir + "devtools.html",
       resources_out_dir + "devtools.js",
       resources_out_dir + "inspector.css",
@@ -327,10 +325,6 @@ if (!debug_devtools) {
       args = [ rebase_path(input_stylesheet, root_build_dir) ] +
         rebase_path(outputs, root_build_dir)
     }
-  }
-
-  concatenate_css("concatenated_devtools_css") {
-    app_name = "devtools"
   }
 
   concatenate_css("concatenated_inspector_css") {

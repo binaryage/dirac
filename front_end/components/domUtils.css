@@ -1,0 +1,18 @@
+:host {
+  display: inline;
+}
+
+.node-link {
+    text-decoration: underline;
+    cursor: pointer;
+    display: inline;
+}
+
+.stack-preview-async-description {
+    padding: 3px 0 1px;
+    font-style: italic;
+}
+
+.stack-preview-container .webkit-html-blackbox-link {
+    opacity: 0.6;
+}

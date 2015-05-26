@@ -63,9 +63,8 @@ WebInspector.ObjectPropertiesSection._arrayLoadThreshold = 100;
 WebInspector.ObjectPropertiesSection.defaultObjectPresentation = function(object, skipProto)
 {
     var componentRoot = createElementWithClass("span", "source-code");
-    WebInspector.installComponentRootStyles(componentRoot);
-
     var shadowRoot = componentRoot.createShadowRoot();
+    WebInspector.installShadowRootStyles(shadowRoot);
     shadowRoot.appendChild(WebInspector.Widget.createStyleElement("components/objectValue.css"));
     shadowRoot.appendChild(WebInspector.ObjectPropertiesSection.createValueElement(object, false));
     if (!object.hasChildren)

@@ -44,7 +44,6 @@
             'conditions': [
                 ['debug_devtools==0', {
                     'dependencies': [
-                        'concatenated_devtools_css',
                         'concatenated_inspector_css',
                         'concatenated_toolbox_css',
                     ],
@@ -96,7 +95,6 @@
                         'generated_files': [
                             # Core and remote modules should not be listed here.
                             # TODO(dgozman): remove remote modules from here once experiment is over.
-                            '<(PRODUCT_DIR)/resources/inspector/devtools.css',
                             '<(PRODUCT_DIR)/resources/inspector/devtools.html',
                             '<(PRODUCT_DIR)/resources/inspector/devtools.js',
                             '<(PRODUCT_DIR)/resources/inspector/inspector.css',
@@ -335,23 +333,6 @@
     'conditions': [
         ['debug_devtools==0', {
             'targets': [
-                {
-                    'target_name': 'concatenated_devtools_css',
-                    'type': 'none',
-                    'actions': [{
-                        'action_name': 'concatenate_devtools_css',
-                        'script_name': 'scripts/concatenate_css_files.py',
-                        'input_stylesheet': 'front_end/devtools.css',
-                        'inputs': [
-                            '<@(_script_name)',
-                            '<@(_input_stylesheet)',
-                            '<@(devtools_core_css_files)',
-                        ],
-                        'search_path': [ 'front_end' ],
-                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/devtools.css'],
-                        'action': ['python', '<@(_script_name)', '<@(_input_stylesheet)', '<@(_outputs)'],
-                    }],
-                },
                 {
                     'target_name': 'concatenated_inspector_css',
                     'type': 'none',

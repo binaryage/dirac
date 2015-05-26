@@ -39,7 +39,7 @@
         "breakpointsList.css",
         "customPreviewSection.css",
         "eventListenersView.css",
-        "nodeLink.css",
+        "domUtils.css",
         "objectPropertiesSection.css",
         "objectValue.css"
     ]

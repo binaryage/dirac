@@ -80,26 +80,10 @@ body.dock-to-bottom .help-content {
     margin-bottom: 8px;
 }
 
-.platform-mac .help-window-main .tabbed-pane-header-contents {
-    margin-left: 27px;
-}
-
-.platform-mac .help-window-main .help-window-title {
-    margin-left: 18px;
-}
-
 .help-container {
     width: 100%;
     -webkit-user-select: auto;
     -webkit-column-width: 470px;
-}
-
-.platform-mac .settings-tab .help-container {
-    -webkit-column-width: 430px;
-}
-
-.platform-mac .help-container {
-    -webkit-column-width: 361px;
 }
 
 .help-no-columns {
@@ -111,10 +95,6 @@ body.dock-to-bottom .help-content {
     padding-bottom: 9px;
     width: 470px;
     -webkit-column-break-inside: avoid;
-}
-
-.platform-mac .settings-tab .help-block {
-    width: 430px;
 }
 
 .settings-tab.help-container {
@@ -142,10 +122,6 @@ body.dock-to-bottom .help-content {
     text-align: right;
 }
 
-.platform-mac .help-key-cell {
-    width: 151px;
-}
-
 .help-cell {
     display: inline-block;
     width: 200px;
@@ -169,9 +145,6 @@ body.dock-to-bottom .help-content {
     text-shadow: 0 1px 0 #fff;
     line-height: 1.5;
     white-space: nowrap;
-}
-
-.platform-mac .help-key {
     font-family: Lucida Grande, sans-serif;
 }
 

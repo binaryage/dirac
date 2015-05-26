@@ -78,48 +78,6 @@
     margin-right: 36px;
 }
 
-.panel.sources .split-widget /deep/ button.scripts-debugger-show-hide-button.right-sidebar-show-hide-button.toggled-hide {
-    margin-right: 15px;
-}
-
-#scripts-debug-sidebar-resizer-widget {
-    position: absolute;
-    top: 0;
-    right: 0;
-    height: 24px;
-    width: 16px;
-    background-image: url(Images/toolbarResizerHorizontal.png);
-    background-repeat: no-repeat;
-    background-position: center;
-    z-index: 13;
-}
-
-.material #scripts-debug-sidebar-resizer-widget {
-    height: 28px;
-}
-
-.sources-split-view-vertical #scripts-debug-sidebar-resizer-widget {
-    transform: rotate(90deg);
-    right: 17px;
-    bottom: 4px;
-    top: auto;
-    height: 10px;
-    width: 18px;
-}
-
-.material .sources-split-view-vertical #scripts-debug-sidebar-resizer-widget {
-    right: 23px;
-    bottom: 6px;
-}
-
-.panel.sources .split-widget.hbox #scripts-debug-sidebar-resizer-widget {
-    bottom: 0;
-}
-
-.panel.sources /deep/ .scripts-debugger-show-hide-button {
-    display: block;
-}
-
 .function-location-link {
     float: right;
     margin-left: 10px;

@@ -51,7 +51,6 @@
             '<@(devtools_core_css_files)',
         ],
         'devtools_core_base_files': [
-            'front_end/devtools.css',
             'front_end/devtools.js',
             'front_end/devtools.json',
             'front_end/inspector.css',
@@ -64,9 +63,7 @@
         ],
         'devtools_core_css_files': [
             'front_end/dialog.css',
-            'front_end/inspectorCommon.css',
             'front_end/inspectorStyle.css',
-            'front_end/inspectorSyntaxHighlight.css',
             'front_end/popover.css',
             'front_end/sidebarPane.css',
         ],
@@ -96,7 +93,7 @@
         'devtools_components_js_files': [
             'front_end/components/breakpointsList.css',
             'front_end/components/customPreviewSection.css',
-            'front_end/components/nodeLink.css',
+            'front_end/components/domUtils.css',
             'front_end/components/objectPropertiesSection.css',
             'front_end/components/objectValue.css',
             'front_end/components/CustomPreviewSection.js',
@@ -231,6 +228,8 @@
             'front_end/ui/filter.css',
             'front_end/ui/helpScreen.css',
             'front_end/ui/infobar.css',
+            'front_end/ui/inspectorCommon.css',
+            'front_end/ui/inspectorSyntaxHighlight.css',
             'front_end/ui/panelEnablerView.css',
             'front_end/ui/progressIndicator.css',
             'front_end/ui/propertiesSection.css',

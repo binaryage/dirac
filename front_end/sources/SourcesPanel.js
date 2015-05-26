@@ -66,12 +66,6 @@ WebInspector.SourcesPanel = function(workspaceForTest)
     this._sourcesView.registerShortcuts(this.registerShortcuts.bind(this));
     this.editorView.setMainWidget(this._sourcesView);
 
-    this._debugSidebarResizeWidgetElement = createElement("div");
-    this._debugSidebarResizeWidgetElement.id = "scripts-debug-sidebar-resizer-widget";
-    this._splitWidget.addEventListener(WebInspector.SplitWidget.Events.ShowModeChanged, this._updateDebugSidebarResizeWidget, this);
-    this._updateDebugSidebarResizeWidget();
-    this._splitWidget.installResizer(this._debugSidebarResizeWidgetElement);
-
     this.sidebarPanes = {};
     this.sidebarPanes.threads = new WebInspector.ThreadsSidebarPane();
     this.sidebarPanes.watchExpressions = new WebInspector.WatchExpressionsSidebarPane();
@@ -806,12 +800,6 @@ WebInspector.SourcesPanel.prototype = {
     {
         this.editorView.displayShowHideSidebarButton("navigator");
         this._toggleDebuggerSidebarButton = this._splitWidget.displayShowHideSidebarButton("debugger", "scripts-debugger-show-hide-button");
-        this._sourcesView.element.appendChild(this._debugSidebarResizeWidgetElement);
-    },
-
-    _updateDebugSidebarResizeWidget: function()
-    {
-        this._debugSidebarResizeWidgetElement.classList.toggle("hidden", this._splitWidget.showMode() !== WebInspector.SplitWidget.ShowMode.Both);
     },
 
     /**

@@ -54,6 +54,8 @@
         "filter.css",
         "helpScreen.css",
         "infobar.css",
+        "inspectorCommon.css",
+        "inspectorSyntaxHighlight.css",
         "panelEnablerView.css",
         "progressIndicator.css",
         "propertiesSection.css",

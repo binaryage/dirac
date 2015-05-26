@@ -101,7 +101,7 @@ WebInspector.DOMPresentationUtils.linkifyNodeReference = function(node)
 
     var root = createElement("span");
     var shadowRoot = root.createShadowRoot();
-    shadowRoot.appendChild(WebInspector.Widget.createStyleElement("components/nodeLink.css"));
+    shadowRoot.appendChild(WebInspector.Widget.createStyleElement("components/domUtils.css"));
     var link = shadowRoot.createChild("div", "node-link");
 
     WebInspector.DOMPresentationUtils.decorateNodeLabel(node, link);
@@ -121,7 +121,7 @@ WebInspector.DOMPresentationUtils.linkifyDeferredNodeReference = function(deferr
 {
     var root = createElement("div");
     var shadowRoot = root.createShadowRoot();
-    shadowRoot.appendChild(WebInspector.Widget.createStyleElement("components/nodeLink.css"));
+    shadowRoot.appendChild(WebInspector.Widget.createStyleElement("components/domUtils.css"));
     var link = shadowRoot.createChild("div", "node-link");
     link.createChild("content");
     link.addEventListener("click", deferredNode.resolve.bind(deferredNode, onDeferredNodeResolved), false);
@@ -212,7 +212,10 @@ WebInspector.DOMPresentationUtils.buildImagePreviewContents = function(target, o
  */
 WebInspector.DOMPresentationUtils.buildStackTracePreviewContents = function(target, linkifier, stackTrace, asyncStackTrace)
 {
-    var element = createElementWithClass("table", "stack-preview-container");
+    var element = createElement("span");
+    var shadowRoot = element.createShadowRoot();
+    shadowRoot.appendChild(WebInspector.Widget.createStyleElement("components/domUtils.css"));
+    var contentElement = shadowRoot.createChild("table", "stack-preview-container");
 
     /**
      * @param {!Array.<!ConsoleAgent.CallFrame>} stackTrace
@@ -224,7 +227,7 @@ WebInspector.DOMPresentationUtils.buildStackTracePreviewContents = function(targ
             row.createChild("td").textContent = WebInspector.beautifyFunctionName(stackFrame.functionName);
             row.createChild("td").textContent = " @ ";
             row.createChild("td").appendChild(linkifier.linkifyConsoleCallFrame(target, stackFrame));
-            element.appendChild(row);
+            contentElement.appendChild(row);
         }
     }
 
@@ -235,7 +238,7 @@ WebInspector.DOMPresentationUtils.buildStackTracePreviewContents = function(targ
         var callFrames = asyncStackTrace.callFrames;
         if (!callFrames || !callFrames.length)
             break;
-        var row = element.createChild("tr");
+        var row = contentElement.createChild("tr");
         row.createChild("td", "stack-preview-async-description").textContent = WebInspector.asyncStackTraceLabel(asyncStackTrace.description);
         row.createChild("td");
         row.createChild("td");

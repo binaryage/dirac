@@ -106,10 +106,6 @@ circle.animation-keyframe-point {
     width: 100%;
 }
 
-.widget.component-root.platform-linux.vbox {
-    overflow: hidden;
-}
-
 input.animation-playback-slider {
     width: 68px;
     margin-left: 12px;

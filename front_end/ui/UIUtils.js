@@ -632,27 +632,23 @@ WebInspector.manageBlackboxingButtonLabel = function()
 
 /**
  * @param {!Element} element
- * @return {boolean}
  */
 WebInspector.installComponentRootStyles = function(element)
 {
-    var wasInstalled = element.classList.contains("component-root");
-    if (wasInstalled)
-        return false;
-    element.classList.add("component-root", "platform-" + WebInspector.platform());
+    element.appendChild(WebInspector.Widget.createStyleElement("ui/inspectorCommon.css"));
+    element.appendChild(WebInspector.Widget.createStyleElement("ui/inspectorSyntaxHighlight.css"));
+    element.classList.add("platform-" + WebInspector.platform());
     if (Runtime.experiments.isEnabled("materialDesign"))
         element.classList.add("material");
-    return true;
 }
 
 /**
- * @param {!Element} element
+ * @param {!DocumentFragment=} shadowRoot
  */
-WebInspector.uninstallComponentRootStyles = function(element)
+WebInspector.installShadowRootStyles = function(shadowRoot)
 {
-    element.classList.remove("component-root", "platform-" + WebInspector.platform());
-    if (Runtime.experiments.isEnabled("materialDesign"))
-        element.classList.remove("material");
+    shadowRoot.appendChild(WebInspector.Widget.createStyleElement("ui/inspectorCommon.css"));
+    shadowRoot.appendChild(WebInspector.Widget.createStyleElement("ui/inspectorSyntaxHighlight.css"));
 }
 
 /**

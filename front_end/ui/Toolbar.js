@@ -40,9 +40,9 @@ WebInspector.Toolbar = function(parentElement)
 
     this._shadowRoot = this.element.createShadowRoot();
     this._shadowRoot.appendChild(WebInspector.Widget.createStyleElement("ui/toolbar.css"));
+    WebInspector.installShadowRootStyles(this._shadowRoot);
     this._contentElement = this._shadowRoot.createChild("div", "toolbar-shadow");
     this._contentElement.createChild("content");
-    WebInspector.installComponentRootStyles(this._contentElement);
 }
 
 WebInspector.Toolbar.prototype = {

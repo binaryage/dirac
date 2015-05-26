@@ -33,9 +33,9 @@ WebInspector.Widget = function(isWebComponent)
 {
     this.contentElement = createElementWithClass("div", "widget");
     if (isWebComponent) {
-        WebInspector.installComponentRootStyles(this.contentElement);
         this.element = createElementWithClass("div", "vbox flex-auto");
         this._shadowRoot = this.element.createShadowRoot();
+        WebInspector.installShadowRootStyles(this._shadowRoot);
         this._shadowRoot.appendChild(this.contentElement);
     } else {
         this.element = this.contentElement;
@@ -68,7 +68,6 @@ WebInspector.Widget.createStyleElement = function(cssFile)
 WebInspector.Widget.prototype = {
     markAsRoot: function()
     {
-        WebInspector.installComponentRootStyles(this.element);
         WebInspector.Widget.__assert(!this.element.parentElement, "Attempt to mark as root attached node");
         this._isRoot = true;
     },

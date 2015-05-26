@@ -279,9 +279,9 @@ function TreeOutlineInShadow(className)
     this.element = createElement("div");
 
     this._shadowRoot = this.element.createShadowRoot();
+    WebInspector.installShadowRootStyles(this._shadowRoot);
     this._shadowRoot.appendChild(WebInspector.Widget.createStyleElement("ui/treeoutline.css"));
     this._shadowRoot.appendChild(innerElement);
-    WebInspector.installComponentRootStyles(innerElement);
     this._renderSelection = true;
 }
 

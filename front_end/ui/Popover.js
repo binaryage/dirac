@@ -38,7 +38,6 @@ WebInspector.Popover = function(popoverHelper)
     WebInspector.Widget.call(this);
     this.markAsRoot();
     this.element.className = WebInspector.Popover._classNamePrefix; // Override
-    WebInspector.installComponentRootStyles(this.element);
     this._containerElement = createElementWithClass("div", "fill popover-container");
 
     this._popupArrowElement = this.element.createChild("div", "arrow");
@@ -239,7 +238,6 @@ WebInspector.Popover.prototype = {
         }
 
         this.element.className = WebInspector.Popover._classNamePrefix + " " + verticalAlignment + "-" + horizontalAlignment + "-arrow";
-        WebInspector.installComponentRootStyles(this.element);
         this.element.positionAt(newElementPosition.x, newElementPosition.y - borderWidth, container);
         this.element.style.width = newElementPosition.width + borderWidth * 2 + "px";
         this.element.style.height = newElementPosition.height + borderWidth * 2 + "px";
