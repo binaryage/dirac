@@ -368,6 +368,8 @@ WebInspector.StylesSidebarPane.prototype = {
 
         this._resetCache();
         this._animationsControlPane.setNode(node);
+        if (this._animationTimeline)
+            this._animationTimeline.setNode(node);
         WebInspector.ElementsSidebarPane.prototype.setNode.call(this, node);
     },
 

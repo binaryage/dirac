@@ -309,8 +309,13 @@ text.animation-timeline-grid-label {
     flex-grow: 1;
     overflow-y: auto;
     z-index: 1;
+    overflow-x: hidden;
 }
 
 .toolbar.animation-controls-toolbar {
     float: right;
+}
+
+.animation-node-row.animation-node-selected {
+    background-color: hsla(218, 78%, 66%, 0.1);
 }

@@ -86,6 +86,15 @@ WebInspector.AnimationTimeline.prototype = {
     },
 
     /**
+     * @param {?WebInspector.DOMNode} node
+     */
+    setNode: function(node)
+    {
+        for (var nodeUI of this._nodesMap.values())
+            nodeUI.setNode(node);
+    },
+
+    /**
      * @return {!Element} element
      */
     _createScrubber: function() {
@@ -585,7 +594,9 @@ WebInspector.AnimationTimeline.NodeUI = function(animationNode) {
      */
     function nodeResolved(node)
     {
+        this._node = node;
         this._description.appendChild(WebInspector.DOMPresentationUtils.linkifyNodeReference(node));
+        this.element.addEventListener("click", WebInspector.Revealer.reveal.bind(WebInspector.Revealer, node, undefined), false);
     }
 
     this._rows = [];
@@ -646,6 +657,14 @@ WebInspector.AnimationTimeline.NodeUI.prototype = {
     nodeRemoved: function()
     {
         this.element.classList.add("animation-node-removed");
+    },
+
+    /**
+     * @param {?WebInspector.DOMNode} node
+     */
+    setNode: function(node)
+    {
+        this.element.classList.toggle("animation-node-selected", node === this._node);
     }
 }
 
