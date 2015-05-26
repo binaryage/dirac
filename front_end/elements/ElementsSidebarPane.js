@@ -75,9 +75,7 @@ WebInspector.ElementsSidebarPane.prototype = {
             this._cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.MediaQueryResultChanged, this.onCSSModelChanged, this);
             this._cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.PseudoStateForced, this.onCSSModelChanged, this);
             this._cssModel.addEventListener(WebInspector.CSSStyleModel.Events.ModelWasEnabled, this.onCSSModelChanged, this);
-            this._domModel.removeEventListener(WebInspector.DOMModel.Events.AttrModified, this._onAttributeChanged, this);
-            this._domModel.removeEventListener(WebInspector.DOMModel.Events.AttrRemoved, this._onAttributeChanged, this);
-            this._domModel.removeEventListener(WebInspector.DOMModel.Events.CharacterDataModified, this._onCharDataChanged, this);
+            this._domModel.removeEventListener(WebInspector.DOMModel.Events.DOMMutated, this.onDOMModelChanged, this);
             this._target.resourceTreeModel.removeEventListener(WebInspector.ResourceTreeModel.EventTypes.FrameResized, this._onFrameResized, this);
         }
         this._target = target;
@@ -90,27 +88,9 @@ WebInspector.ElementsSidebarPane.prototype = {
             this._cssModel.addEventListener(WebInspector.CSSStyleModel.Events.PseudoStateForced, this.onCSSModelChanged, this);
             this._cssModel.addEventListener(WebInspector.CSSStyleModel.Events.ModelWasEnabled, this.onCSSModelChanged, this);
             this._domModel = WebInspector.DOMModel.fromTarget(target);
-            this._domModel.addEventListener(WebInspector.DOMModel.Events.AttrModified, this._onAttributeChanged, this);
-            this._domModel.addEventListener(WebInspector.DOMModel.Events.AttrRemoved, this._onAttributeChanged, this);
-            this._domModel.addEventListener(WebInspector.DOMModel.Events.CharacterDataModified, this._onCharDataChanged, this);
+            this._domModel.addEventListener(WebInspector.DOMModel.Events.DOMMutated, this.onDOMModelChanged, this);
             this._target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.FrameResized, this._onFrameResized, this);
         }
-    },
-
-    /**
-     * @param {!WebInspector.Event} event
-     */
-    _onAttributeChanged: function(event)
-    {
-        this.onDOMNodeChanged(/** @type {!WebInspector.DOMNode} */(event.data.node));
-    },
-
-    /**
-     * @param {!WebInspector.Event} event
-     */
-    _onCharDataChanged: function(event)
-    {
-        this.onDOMNodeChanged(/** @type {!WebInspector.DOMNode} */(event.data));
     },
 
     /**
@@ -133,10 +113,7 @@ WebInspector.ElementsSidebarPane.prototype = {
         this._frameResizedTimer = setTimeout(refreshContents.bind(this), 100);
     },
 
-    /**
-     * @param {!WebInspector.DOMNode} changedNode
-     */
-    onDOMNodeChanged: function(changedNode) { },
+    onDOMModelChanged: function() { },
 
     onCSSModelChanged: function() { },
 

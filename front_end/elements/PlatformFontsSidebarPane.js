@@ -46,9 +46,8 @@ WebInspector.PlatformFontsSidebarPane = function()
 WebInspector.PlatformFontsSidebarPane.prototype = {
     /**
      * @override
-     * @param {!WebInspector.DOMNode} changedNode
      */
-    onDOMNodeChanged: function(changedNode)
+    onDOMModelChanged: function()
     {
         this.update();
     },

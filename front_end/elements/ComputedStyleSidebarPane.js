@@ -259,9 +259,8 @@ WebInspector.ComputedStyleSidebarPane.prototype = {
 
     /**
      * @override
-     * @param {!WebInspector.DOMNode} changedNode
      */
-    onDOMNodeChanged: function(changedNode)
+    onDOMModelChanged: function()
     {
         this._resetCache();
         this.update();

@@ -86,13 +86,9 @@ WebInspector.MetricsSidebarPane.prototype = {
 
     /**
      * @override
-     * @param {!WebInspector.DOMNode} changedNode
      */
-    onDOMNodeChanged: function(changedNode)
+    onDOMModelChanged: function()
     {
-        if (this.node() !== changedNode)
-            return;
-
         this.update();
     },
 

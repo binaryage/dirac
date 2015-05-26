@@ -674,12 +674,11 @@ WebInspector.ElementsPanel.prototype = {
     {
         /**
          * @param {!WebInspector.ElementsTreeOutline} treeOutline
-         * @this {WebInspector.ElementsPanel}
          */
         function handleUndoRedo(treeOutline)
         {
             if (WebInspector.KeyboardShortcut.eventHasCtrlOrMeta(event) && !event.shiftKey && event.keyIdentifier === "U+005A") { // Z key
-                treeOutline.domModel().undo(this._updateSidebars.bind(this));
+                treeOutline.domModel().undo();
                 event.handled = true;
                 return;
             }
@@ -687,7 +686,7 @@ WebInspector.ElementsPanel.prototype = {
             var isRedoKey = WebInspector.isMac() ? event.metaKey && event.shiftKey && event.keyIdentifier === "U+005A" : // Z key
                                                    event.ctrlKey && event.keyIdentifier === "U+0059"; // Y key
             if (isRedoKey) {
-                treeOutline.domModel().redo(this._updateSidebars.bind(this));
+                treeOutline.domModel().redo();
                 event.handled = true;
             }
         }
@@ -704,7 +703,7 @@ WebInspector.ElementsPanel.prototype = {
             return;
 
         if (!treeOutline.editing()) {
-            handleUndoRedo.call(this, treeOutline);
+            handleUndoRedo.call(null, treeOutline);
             if (event.handled)
                 return;
         }
