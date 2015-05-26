@@ -116,42 +116,6 @@
     margin: 0 0 3px;
 }
 
-.audit-result-tree::shadow .severity {
-    background-image: url(Images/toolbarButtonGlyphs.png);
-    background-size: 320px 144px;
-    display: inline-block;
-    width: 10px;
-    height: 10px;
-    position: relative;
-    top: 1px;
-    margin-right: 4px;
-}
-
-.audit-result-tree::shadow li {
-    -webkit-user-select: text;
-}
-
-@media (-webkit-min-device-pixel-ratio: 1.5) {
-.audit-result-tree::shadow .severity {
-    background-image: url(Images/toolbarButtonGlyphs_2x.png);
-}
-} /* media */
-
-.audit-result-tree::shadow .severity.severe {
-    background-position: -224px -96px;
-}
-
-.audit-result-tree::shadow .severity.warning {
-    background-position: -246px -96px;
-}
-
-.audit-result-tree::shadow .severity.info {
-    background-position: -235px -96px;
-}
-.audit-result-tree::shadow .audit-result {
-    font-weight: bold;
-}
-
 .audit-launcher-view .progress-indicator {
     display: inline-block;
 }

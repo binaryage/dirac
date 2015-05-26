@@ -154,3 +154,7 @@ input[type="text"]:focus {
     margin: -1px;
     background-color: rgba(255, 127, 0, 0.8);
 }
+
+.dimmed {
+    opacity: 0.6;
+}

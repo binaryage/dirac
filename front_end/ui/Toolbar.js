@@ -776,6 +776,14 @@ WebInspector.ToolbarComboBox.prototype = {
         return this._selectElement.selectedIndex;
     },
 
+    /**
+     * @param {number} width
+     */
+    setMaxWidth: function(width)
+    {
+        this._selectElement.style.maxWidth = width + "px";
+    },
+
     __proto__: WebInspector.ToolbarItem.prototype
 }
 

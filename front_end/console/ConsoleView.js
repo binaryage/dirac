@@ -62,6 +62,7 @@ WebInspector.ConsoleView = function()
     this._clearConsoleButton.addEventListener("click", this._requestClearMessages, this);
 
     this._executionContextComboBox = new WebInspector.ToolbarComboBox(null, "console-context");
+    this._executionContextComboBox.setMaxWidth(200);
     this._executionContextModel = new WebInspector.ExecutionContextModel(this._executionContextComboBox.selectElement());
 
     this._filter = new WebInspector.ConsoleViewFilter(this);

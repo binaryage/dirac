@@ -410,10 +410,6 @@
     white-space: nowrap !important;
 }
 
-.console-view .toolbar::shadow .console-context {
-    max-width: 200px;
-}
-
 .object-info-state-note {
     display: inline-block;
     width: 11px;

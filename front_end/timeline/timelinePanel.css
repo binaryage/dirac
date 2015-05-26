@@ -731,11 +731,6 @@
     overflow: auto;
 }
 
-.layer-tree::shadow .dimmed {
-    opacity: 0.6;
-    padding-left: 5px;
-}
-
 .layers-3d-view {
     overflow: hidden;
     -webkit-user-select: none;

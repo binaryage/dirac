@@ -24,6 +24,7 @@
         "AuditExtensionCategory.js"
     ],
     "resources": [
-        "auditsPanel.css"
+        "auditsPanel.css",
+        "auditResultTree.css"
     ]
 }
