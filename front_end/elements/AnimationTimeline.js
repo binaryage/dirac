@@ -32,7 +32,7 @@ WebInspector.AnimationTimeline = function()
     WebInspector.targetManager.addModelListener(WebInspector.ResourceTreeModel, WebInspector.ResourceTreeModel.EventTypes.MainFrameNavigated, this._mainFrameNavigated, this);
     WebInspector.targetManager.addModelListener(WebInspector.DOMModel, WebInspector.DOMModel.Events.NodeRemoved, this._nodeRemoved, this);
 
-    WebInspector.targetManager.observeTargets(this);
+    WebInspector.targetManager.observeTargets(this, WebInspector.Target.Type.Page);
 }
 
 WebInspector.AnimationTimeline.GlobalPlaybackRates = [0.1, 0.25, 0.5, 1.0];
@@ -40,16 +40,14 @@ WebInspector.AnimationTimeline.GlobalPlaybackRates = [0.1, 0.25, 0.5, 1.0];
 WebInspector.AnimationTimeline.prototype = {
     wasShown: function()
     {
-        this._addEventListeners(WebInspector.targetManager.mainTarget());
+        for (var target of WebInspector.targetManager.targets(WebInspector.Target.Type.Page))
+            this._addEventListeners(target);
     },
 
     willHide: function()
     {
-        var target = WebInspector.targetManager.mainTarget();
-        if (!target)
-            return;
-        target.animationModel.removeEventListener(WebInspector.AnimationModel.Events.AnimationPlayerCreated, this._animationCreated, this);
-        target.animationModel.removeEventListener(WebInspector.AnimationModel.Events.AnimationPlayerCanceled, this._animationCanceled, this);
+        for (var target of WebInspector.targetManager.targets(WebInspector.Target.Type.Page))
+            this._removeEventListeners(target);
     },
 
     /**
@@ -58,9 +56,8 @@ WebInspector.AnimationTimeline.prototype = {
      */
     targetAdded: function(target)
     {
-        if (target === WebInspector.targetManager.mainTarget())
-            return;
-        this._addEventListeners(target);
+        if (this.isShowing())
+            this._addEventListeners(target);
     },
 
     /**
@@ -69,20 +66,26 @@ WebInspector.AnimationTimeline.prototype = {
      */
     targetRemoved: function(target)
     {
-        target.animationModel.removeEventListener(WebInspector.AnimationModel.Events.AnimationPlayerCreated, this._animationCreated, this);
-        target.animationModel.removeEventListener(WebInspector.AnimationModel.Events.AnimationPlayerCanceled, this._animationCanceled, this);
+        this._removeEventListeners(target);
     },
 
     /**
-     * @param {?WebInspector.Target} target
+     * @param {!WebInspector.Target} target
      */
     _addEventListeners: function(target)
     {
-        if (!target)
-            return;
         target.animationModel.ensureEnabled();
         target.animationModel.addEventListener(WebInspector.AnimationModel.Events.AnimationPlayerCreated, this._animationCreated, this);
         target.animationModel.addEventListener(WebInspector.AnimationModel.Events.AnimationPlayerCanceled, this._animationCanceled, this);
+    },
+
+    /**
+     * @param {!WebInspector.Target} target
+     */
+    _removeEventListeners: function(target)
+    {
+        target.animationModel.removeEventListener(WebInspector.AnimationModel.Events.AnimationPlayerCreated, this._animationCreated, this);
+        target.animationModel.removeEventListener(WebInspector.AnimationModel.Events.AnimationPlayerCanceled, this._animationCanceled, this);
     },
 
     /**
@@ -271,7 +274,6 @@ WebInspector.AnimationTimeline.prototype = {
     _mainFrameNavigated: function(event)
     {
         this._reset();
-        this._addEventListeners(WebInspector.targetManager.mainTarget());
         this._updateAnimationsPlaybackRate();
         if (this._scrubberPlayer)
             this._scrubberPlayer.cancel();
@@ -356,7 +358,6 @@ WebInspector.AnimationTimeline.prototype = {
         var node = event.data.node;
         if (node[this._symbol])
             node[this._symbol].nodeRemoved();
-
     },
 
     _renderGrid: function()
