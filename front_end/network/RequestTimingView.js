@@ -184,10 +184,10 @@ WebInspector.RequestTimingView.calculateRequestTimeRanges = function(request)
         addRange(WebInspector.RequestTimeRangeNames.Queueing, issueTime, startTime);
 
     if (request.fetchedViaServiceWorker) {
-        addOffsetRange(WebInspector.RequestTimeRangeNames.Blocking, 0, timing.serviceWorkerFetchStart);
-        addOffsetRange(WebInspector.RequestTimeRangeNames.ServiceWorker, timing.serviceWorkerFetchStart, timing.serviceWorkerFetchEnd);
-        addOffsetRange(WebInspector.RequestTimeRangeNames.ServiceWorkerPreparation, timing.serviceWorkerFetchStart, timing.serviceWorkerFetchReady);
-        addOffsetRange(WebInspector.RequestTimeRangeNames.Waiting, timing.serviceWorkerFetchEnd, timing.receiveHeadersEnd);
+        addOffsetRange(WebInspector.RequestTimeRangeNames.Blocking, 0, timing.workerStart);
+        addOffsetRange(WebInspector.RequestTimeRangeNames.ServiceWorker, timing.workerStart, timing.sendEnd);
+        addOffsetRange(WebInspector.RequestTimeRangeNames.ServiceWorkerPreparation, timing.workerStart, timing.sendStart);
+        addOffsetRange(WebInspector.RequestTimeRangeNames.Waiting, timing.sendEnd, timing.receiveHeadersEnd);
     } else {
         var blocking = firstPositive([timing.dnsStart, timing.connectStart, timing.sendStart]) || 0;
         addOffsetRange(WebInspector.RequestTimeRangeNames.Blocking, 0, blocking);
