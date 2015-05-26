@@ -117,7 +117,6 @@ WebInspector.NetworkProjectManager = function(targetManager, workspace, networkM
 {
     this._workspace = workspace;
     this._networkMapping = networkMapping;
-    this._projectSymbol = Symbol("networkProject");
     targetManager.observeTargets(this);
 }
 
@@ -173,7 +172,6 @@ WebInspector.NetworkProject = function(target, workspace, networkMapping)
 }
 
 WebInspector.NetworkProject._networkProjectSymbol = Symbol("networkProject");
-WebInspector.NetworkProject._targetSymbol = Symbol("target");
 WebInspector.NetworkProject._contentTypeSymbol = Symbol("networkContentType");
 
 /**
@@ -185,6 +183,16 @@ WebInspector.NetworkProject._contentTypeSymbol = Symbol("networkContentType");
 WebInspector.NetworkProject.projectId = function(target, projectURL, isContentScripts)
 {
     return target.id() + ":" + (isContentScripts ? "contentscripts:" : "") + projectURL;
+}
+
+/**
+ * @param {!WebInspector.Project} project
+ * @return {?WebInspector.Target}
+ */
+WebInspector.NetworkProject._targetForProject = function(project)
+{
+    var targetId = parseInt(project.id(), 10);
+    return WebInspector.targetManager.targetById(targetId);
 }
 
 /**
@@ -202,7 +210,10 @@ WebInspector.NetworkProject.forTarget = function(target)
  */
 WebInspector.NetworkProject.targetForUISourceCode = function(uiSourceCode)
 {
-    return uiSourceCode[WebInspector.NetworkProject._targetSymbol];
+    if (uiSourceCode.project().type() !== WebInspector.projectTypes.ContentScripts && uiSourceCode.project().type() !==  WebInspector.projectTypes.Network)
+        return null;
+
+    return WebInspector.NetworkProject._targetForProject(uiSourceCode.project());
 }
 
 /**
@@ -247,7 +258,6 @@ WebInspector.NetworkProject.prototype = {
         var projectDelegate = this._projectDelegate(projectURL, isContentScript || false);
         var path = projectDelegate.addFile(parentPath, name, url, contentProvider);
         var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (this._workspace.uiSourceCode(projectDelegate.id(), path));
-        uiSourceCode[WebInspector.NetworkProject._targetSymbol] = this.target();
         console.assert(uiSourceCode);
         return uiSourceCode;
     },

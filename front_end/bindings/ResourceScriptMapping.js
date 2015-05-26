@@ -224,6 +224,9 @@ WebInspector.ResourceScriptMapping.prototype = {
      */
     _scriptsForUISourceCode: function(uiSourceCode)
     {
+        var target = WebInspector.NetworkProject.targetForUISourceCode(uiSourceCode);
+        if (target && target !== this._debuggerModel.target())
+            return [];
         if (!this._networkMapping.networkURL(uiSourceCode))
             return [];
         return this._debuggerModel.scriptsForSourceURL(this._networkMapping.networkURL(uiSourceCode));

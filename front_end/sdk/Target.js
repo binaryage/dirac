@@ -567,6 +567,20 @@ WebInspector.TargetManager.prototype = {
     },
 
     /**
+     *
+     * @param {number} id
+     * @return {?WebInspector.Target}
+     */
+    targetById: function(id)
+    {
+        for (var i = 0; i < this._targets.length; ++i) {
+            if (this._targets[i].id() === id)
+                return this._targets[i];
+        }
+        return null;
+    },
+
+    /**
      * @return {?WebInspector.Target}
      */
     mainTarget: function()
