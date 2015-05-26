@@ -114,11 +114,25 @@ def _CheckOptimizePNGHashes(input_api, output_api):
     return [output_api.PresubmitError(error_message)]
 
 
+def _CheckCSSViolations(input_api, output_api):
+    results = []
+    for f in input_api.AffectedFiles(include_deletes=False):
+        if not f.LocalPath().endswith(".css"):
+            continue
+        for line_number, line in f.ChangedContents():
+            if "/deep/" in line:
+                results.append(output_api.PresubmitError(("%s:%d uses /deep/ selector") % (f.LocalPath(), line_number)))
+            if "::shadow" in line:
+                results.append(output_api.PresubmitError(("%s:%d uses ::shadow selector") % (f.LocalPath(), line_number)))
+    return results
+
+
 def CheckChangeOnUpload(input_api, output_api):
     results = []
     results.extend(_CompileDevtoolsFrontend(input_api, output_api))
     results.extend(_CheckConvertSVGToPNGHashes(input_api, output_api))
     results.extend(_CheckOptimizePNGHashes(input_api, output_api))
+    results.extend(_CheckCSSViolations(input_api, output_api))
     return results
 
 
