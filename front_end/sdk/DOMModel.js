@@ -532,36 +532,6 @@ WebInspector.DOMNode.prototype = {
     },
 
     /**
-     * @param {string} objectGroupId
-     * @param {function(?Array.<!WebInspector.DOMModel.EventListener>)} callback
-     */
-    eventListeners: function(objectGroupId, callback)
-    {
-        var domModel = this._domModel;
-        var debuggerModel = WebInspector.DebuggerModel.fromTarget(domModel.target());
-        if (!debuggerModel) {
-            callback(null);
-            return;
-        }
-
-        /**
-         * @param {?Protocol.Error} error
-         * @param {!Array.<!DOMAgent.EventListener>} payloads
-         */
-        function mycallback(error, payloads)
-        {
-            if (error) {
-                callback(null);
-                return;
-            }
-            callback(payloads.map(function(payload) {
-                return new WebInspector.DOMModel.EventListener(domModel, /** @type {!WebInspector.DebuggerModel} */ (debuggerModel), payload);
-            }));
-        }
-        this._agent.getEventListenersForNode(this.id, objectGroupId, mycallback);
-    },
-
-    /**
      * @return {string}
      */
     path: function()
@@ -2078,68 +2048,6 @@ WebInspector.DOMDispatcher.prototype = {
     {
         this._domModel._distributedNodesUpdated(insertionPointId, distributedNodes);
     }
-}
-
-/**
- * @constructor
- * @extends {WebInspector.SDKObject}
- * @param {!WebInspector.DOMModel} domModel
- * @param {!WebInspector.DebuggerModel} debuggerModel
- * @param {!DOMAgent.EventListener} payload
- */
-WebInspector.DOMModel.EventListener = function(domModel, debuggerModel, payload)
-{
-    WebInspector.SDKObject.call(this, domModel.target());
-    this._domModel = domModel;
-    this._debuggerModel = debuggerModel;
-    this._payload = payload;
-    var script = debuggerModel.scriptForId(payload.location.scriptId);
-    var sourceName = script ? script.contentURL() : "";
-    this._sourceName = sourceName;
-}
-
-WebInspector.DOMModel.EventListener.prototype = {
-    /**
-     * @return {!DOMAgent.EventListener}
-     */
-    payload: function()
-    {
-        return this._payload;
-    },
-
-    /**
-     * @return {?WebInspector.DOMNode}
-     */
-    node: function()
-    {
-        return this._domModel.nodeForId(this._payload.nodeId);
-    },
-
-    /**
-     * @return {!WebInspector.DebuggerModel.Location}
-     */
-    location: function()
-    {
-        return WebInspector.DebuggerModel.Location.fromPayload(this._debuggerModel, this._payload.location);
-    },
-
-    /**
-     * @return {?WebInspector.RemoteObject}
-     */
-    handler: function()
-    {
-        return this._payload.handler ? this.target().runtimeModel.createRemoteObject(this._payload.handler) : null;
-    },
-
-    /**
-     * @return {string}
-     */
-    sourceName: function()
-    {
-        return this._sourceName;
-    },
-
-    __proto__: WebInspector.SDKObject.prototype
 }
 
 /**
