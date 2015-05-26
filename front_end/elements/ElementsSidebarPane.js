@@ -28,7 +28,7 @@ WebInspector.ElementsSidebarPane.prototype = {
      */
     cssModel: function()
     {
-        return this._cssModel;
+        return this._cssModel && this._cssModel.isEnabled() ? this._cssModel : null;
     },
 
     /**
@@ -74,6 +74,7 @@ WebInspector.ElementsSidebarPane.prototype = {
             this._cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.StyleSheetChanged, this.onCSSModelChanged, this);
             this._cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.MediaQueryResultChanged, this.onCSSModelChanged, this);
             this._cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.PseudoStateForced, this.onCSSModelChanged, this);
+            this._cssModel.addEventListener(WebInspector.CSSStyleModel.Events.ModelWasEnabled, this.onCSSModelChanged, this);
             this._domModel.removeEventListener(WebInspector.DOMModel.Events.AttrModified, this._onAttributeChanged, this);
             this._domModel.removeEventListener(WebInspector.DOMModel.Events.AttrRemoved, this._onAttributeChanged, this);
             this._domModel.removeEventListener(WebInspector.DOMModel.Events.CharacterDataModified, this._onCharDataChanged, this);
@@ -87,6 +88,7 @@ WebInspector.ElementsSidebarPane.prototype = {
             this._cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetChanged, this.onCSSModelChanged, this);
             this._cssModel.addEventListener(WebInspector.CSSStyleModel.Events.MediaQueryResultChanged, this.onCSSModelChanged, this);
             this._cssModel.addEventListener(WebInspector.CSSStyleModel.Events.PseudoStateForced, this.onCSSModelChanged, this);
+            this._cssModel.addEventListener(WebInspector.CSSStyleModel.Events.ModelWasEnabled, this.onCSSModelChanged, this);
             this._domModel = WebInspector.DOMModel.fromTarget(target);
             this._domModel.addEventListener(WebInspector.DOMModel.Events.AttrModified, this._onAttributeChanged, this);
             this._domModel.addEventListener(WebInspector.DOMModel.Events.AttrRemoved, this._onAttributeChanged, this);

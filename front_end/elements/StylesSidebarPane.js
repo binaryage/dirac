@@ -331,7 +331,7 @@ WebInspector.StylesSidebarPane.prototype = {
     _updateForcedPseudoStateInputs: function()
     {
         var node = this.node();
-        if (!node)
+        if (!node || !WebInspector.CSSStyleModel.fromNode(node).isEnabled())
             return;
 
         var hasPseudoType = !!node.pseudoType();

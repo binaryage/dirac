@@ -100,7 +100,6 @@ WebInspector.ElementsPanel = function()
     WebInspector.targetManager.observeTargets(this);
     WebInspector.moduleSetting("showUAShadowDOM").addChangeListener(this._showUAShadowDOMChanged.bind(this));
     WebInspector.targetManager.addModelListener(WebInspector.DOMModel, WebInspector.DOMModel.Events.DocumentUpdated, this._documentUpdatedEvent, this);
-    WebInspector.targetManager.addModelListener(WebInspector.CSSStyleModel, WebInspector.CSSStyleModel.Events.ModelWasEnabled, this._updateSidebars, this);
     WebInspector.targetManager.addModelListener(WebInspector.CSSStyleModel, WebInspector.CSSStyleModel.Events.PseudoStateForced, this._pseudoStateForced, this);
     WebInspector.extensionServer.addEventListener(WebInspector.ExtensionServer.Events.SidebarPaneAdded, this._extensionSidebarPaneAdded, this);
 }
@@ -313,12 +312,10 @@ WebInspector.ElementsPanel.prototype = {
     _updateSidebars: function()
     {
         var selectedDOMNode = this.selectedDOMNode();
-        if (selectedDOMNode && WebInspector.CSSStyleModel.fromNode(selectedDOMNode).isEnabled()) {
-            this.sidebarPanes.styles.setNode(selectedDOMNode);
-            this.sidebarPanes.computedStyle.setNode(selectedDOMNode);
-            this.sidebarPanes.metrics.setNode(selectedDOMNode);
-            this.sidebarPanes.platformFonts.setNode(selectedDOMNode);
-        }
+        this.sidebarPanes.styles.setNode(selectedDOMNode);
+        this.sidebarPanes.computedStyle.setNode(selectedDOMNode);
+        this.sidebarPanes.metrics.setNode(selectedDOMNode);
+        this.sidebarPanes.platformFonts.setNode(selectedDOMNode);
         this.sidebarPanes.properties.setNode(selectedDOMNode);
         this.sidebarPanes.eventListeners.setNode(selectedDOMNode);
         for (var sidebarView of this._elementsSidebarViewWrappers)
