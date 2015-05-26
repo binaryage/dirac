@@ -356,6 +356,7 @@ WebInspector.TracingTimelineFrameModel.prototype = {
         WebInspector.TimelineFrameModelBase.prototype.reset.call(this);
         this._target = null;
         this._sessionId = null;
+        this._currentTaskTimeByCategory = {};
     },
 
     /**
@@ -443,21 +444,34 @@ WebInspector.TracingTimelineFrameModel.prototype = {
             return;
         }
 
+        if (event.name === eventNames.Program)
+            this._currentTaskTimeByCategory = {};
         if (!this._framePendingCommit && WebInspector.TracingTimelineFrameModel._mainFrameMarkers.indexOf(event.name) >= 0)
-            this._framePendingCommit = new WebInspector.PendingFrame();
-        if (!this._framePendingCommit)
+            this._framePendingCommit = new WebInspector.PendingFrame(this._currentTaskTimeByCategory);
+        if (!this._framePendingCommit) {
+            this._addTimeForCategory(this._currentTaskTimeByCategory, event);
             return;
+        }
+        this._addTimeForCategory(this._framePendingCommit.timeByCategory, event);
+
         if (event.name === eventNames.BeginMainThreadFrame && event.args["data"] && event.args["data"]["frameId"])
             this._framePendingCommit.mainFrameId = event.args["data"]["frameId"];
         if (event.name === eventNames.Paint && event.args["data"]["layerId"] && event.picture && this._target)
             this._framePendingCommit.paints.push(new WebInspector.LayerPaintEvent(event, this._target));
-
-        if (selfTime) {
-            var categoryName = WebInspector.TimelineUIUtils.eventStyle(event).category.name;
-            this._framePendingCommit.timeByCategory[categoryName] = (this._framePendingCommit.timeByCategory[categoryName] || 0) + selfTime;
-        }
         if (event.name === eventNames.CompositeLayers && event.args["layerTreeId"] === this._layerTreeId)
             this.handleCompositeLayers();
+    },
+
+    /**
+     * @param {!Object.<string, number>} timeByCategory
+     * @param {!WebInspector.TracingModel.Event} event
+     */
+    _addTimeForCategory: function(timeByCategory, event)
+    {
+        if (!event.selfTime)
+            return;
+        var categoryName = WebInspector.TimelineUIUtils.eventStyle(event).category.name;
+        timeByCategory[categoryName] = (timeByCategory[categoryName] || 0) + event.selfTime;
     },
 
     __proto__: WebInspector.TimelineFrameModelBase.prototype
@@ -634,11 +648,12 @@ WebInspector.LayerPaintEvent.prototype = {
 
 /**
  * @constructor
+ * @param {!Object.<string, number>} timeByCategory
  */
-WebInspector.PendingFrame = function()
+WebInspector.PendingFrame = function(timeByCategory)
 {
     /** @type {!Object.<string, number>} */
-    this.timeByCategory = {};
+    this.timeByCategory = timeByCategory;
     /** @type {!Array.<!WebInspector.LayerPaintEvent>} */
     this.paints = [];
     /** @type {number|undefined} */
