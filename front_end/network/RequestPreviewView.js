@@ -144,20 +144,12 @@ WebInspector.RequestPreviewView.prototype = {
             return xmlView;
 
         if (this.request.resourceType() === WebInspector.resourceTypes.XHR) {
-            var isHtml = false;
-            try {
-                isHtml = !!((new DOMParser()).parseFromString(this._requestContent(), mimeType)).body;
-            } catch (e) {
-            }
-            if (!isHtml) {
-                var jsonView = this._jsonView();
-                if (jsonView)
-                    return jsonView;
-            } else {
-                var htmlErrorPreview = this._htmlErrorPreview();
-                if (htmlErrorPreview)
-                    return htmlErrorPreview;
-            }
+            var jsonView = this._jsonView();
+            if (jsonView)
+                return jsonView;
+            var htmlErrorPreview = this._htmlErrorPreview();
+            if (htmlErrorPreview)
+                return htmlErrorPreview;
         }
 
         if (this._responseView.sourceView)
