@@ -174,24 +174,9 @@
 }
 
 .spectrum-eye-dropper {
-    width: 16px;
-    height: 16px;
+    width: 32px;
+    height: 24px;
     position: absolute;
-    left: 16px;
-    top: 148px;
-}
-
-.spectrum-eye-dropper::shadow .toolbar-shadow {
-    height: 16px;
-}
-
-.spectrum-eye-dropper::shadow .toolbar-item {
-    width: 16px;
-    height: 16px;
-}
-
-.spectrum-eye-dropper::shadow .eyedropper-toolbar-item .glyph {
-    width: 16px;
-    height: 16px;
-    -webkit-mask-position: -296px -124px;
+    left: 12px;
+    top: 144px;
 }

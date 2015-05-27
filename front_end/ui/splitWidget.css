@@ -124,8 +124,8 @@
     left: 4px;
 }
 
-.material.shadow-split-widget button.left-sidebar-show-hide-button,
-.material.shadow-split-widget button.top-sidebar-show-hide-button {
+:host-context(.material).shadow-split-widget button.left-sidebar-show-hide-button,
+:host-context(.material).shadow-split-widget button.top-sidebar-show-hide-button {
     top: 5px;
 }
 
@@ -140,7 +140,7 @@
     right:2px;
 }
 
-.material.shadow-split-widget button.right-sidebar-show-hide-button {
+:host-context(.material).shadow-split-widget button.right-sidebar-show-hide-button {
     top: 5px;
     right: 5px;
 }
@@ -155,7 +155,7 @@
     right: 1px;
 }
 
-.material.shadow-split-widget button.bottom-sidebar-show-hide-button {
+:host-context(.material).shadow-split-widget button.bottom-sidebar-show-hide-button {
     bottom: 3px;
     right: 3px;
 }

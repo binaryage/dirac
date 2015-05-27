@@ -40,9 +40,9 @@
     height: 27px;
 }
 
-.scripts-debug-toolbar::shadow .toolbar-item {
-    position: relative;
-    top: -1px;
+.scripts-debug-toolbar {
+    margin-top: -1px;
+    height: 24px;
 }
 
 .scripts-debug-toolbar-drawer {
@@ -67,15 +67,17 @@
 
 .scripts-debug-toolbar-drawer > label {
     display: flex;
-    padding-top: 3px;
     padding-left: 3px;
     border-top: 1px solid rgb(196,196,196);
     height: 24px;
 }
 
-.panel.sources #sources-editor-container-tabbed-pane::shadow .tabbed-pane-header-contents {
-    margin-left: 22px;
-    margin-right: 36px;
+.sources-editor-tabstrip-left {
+    width: 22px;
+}
+
+.sources-editor-tabstrip-right {
+    width: 36px;
 }
 
 .function-location-link {

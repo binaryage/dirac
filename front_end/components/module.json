@@ -40,6 +40,7 @@
         "customPreviewSection.css",
         "eventListenersView.css",
         "domUtils.css",
+        "inspectorViewTabbedPane.css",
         "objectPropertiesSection.css",
         "objectValue.css"
     ]

@@ -37,6 +37,7 @@
 WebInspector.NetworkItemView = function(request, calculator)
 {
     WebInspector.TabbedPane.call(this);
+    this.renderWithNoHeaderBackground();
     this.element.classList.add("network-item-view");
 
     this._resourceViewTabSetting = WebInspector.settings.createSetting("resourceViewTab", "preview");

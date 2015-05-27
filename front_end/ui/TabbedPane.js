@@ -815,6 +815,11 @@ WebInspector.TabbedPane.prototype = {
         this.element.appendChild(element);
     },
 
+    renderWithNoHeaderBackground: function()
+    {
+        this._headerElement.classList.add("tabbed-pane-no-header-background");
+    },
+
     __proto__: WebInspector.VBox.prototype
 }
 

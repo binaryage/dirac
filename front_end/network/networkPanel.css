@@ -35,15 +35,8 @@
     margin: auto -1px auto 4px;
 }
 
-.network-details-view .network-item-view::shadow .tabbed-pane-header {
-    flex: 0 0 23px;
-    padding-top: 0;
-    white-space: nowrap;
-}
-
-.network-details-view-tall-header .network-item-view::shadow .tabbed-pane-header {
-    flex-basis: 31px;
-    padding-top: 8px;
+.network-details-view-tall-header {
+    margin-top: 8px;
 }
 
 .network-item-view {
@@ -53,11 +46,6 @@
 
 .network-item-view.visible {
     display: flex;
-}
-
-.network-item-view::shadow .tabbed-pane-header {
-    border-bottom: 1px solid rgb(205, 205, 205);
-    background-color: transparent;
 }
 
 .resource-timing-view {

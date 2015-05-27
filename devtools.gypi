@@ -94,6 +94,7 @@
             'front_end/components/breakpointsList.css',
             'front_end/components/customPreviewSection.css',
             'front_end/components/domUtils.css',
+            'front_end/components/inspectorViewTabbedPane.css',
             'front_end/components/objectPropertiesSection.css',
             'front_end/components/objectValue.css',
             'front_end/components/CustomPreviewSection.js',

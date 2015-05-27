@@ -82,60 +82,9 @@ fieldset[disabled] label:hover input {
     background-clip: padding-box;
 }
 
-body .inspector-view-tabbed-pane.tabbed-pane::shadow .tabbed-pane-header {
-    background-color: #eee;
-}
-
-.inspector-view-tabbed-pane.tabbed-pane::shadow .tabbed-pane-header {
-    flex: 0 0 24px;
-}
-
-.material .inspector-view-tabbed-pane.tabbed-pane::shadow .tabbed-pane-header {
-    flex: 0 0 28px;
-    overflow: visible;
-}
-
-.inspector-view-tabbed-pane.tabbed-pane::shadow .tabbed-pane-header-tab {
-    height: 23px;
-}
-
-.material .inspector-view-tabbed-pane.tabbed-pane::shadow .tabbed-pane-header-tab {
-    height: 27px;
-    border: none;
-    transition: background-color 100ms cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.material .inspector-view-tabbed-pane.tabbed-pane::shadow .tabbed-pane-header-tab:hover {
-    background-color: rgba(105, 105, 105, 0.1);
-}
-
 .inspector-view-toolbar-left {
     padding-left: 2px;
     margin-right: -5px; /* Should compensate for .tabbed-pane-header-contents margin-left. */
-}
-
-.inspector-view-tabbed-pane.tabbed-pane::shadow .tabbed-pane-header-tab,
-.inspector-view-tabbed-pane.tabbed-pane::shadow .tabbed-pane-header-tab.selected {
-    border-width: 0 2px 0 2px;
-    background: none;
-    margin: 0;
-    padding: 0 3px;
-}
-
-.material .inspector-view-tabbed-pane.tabbed-pane::shadow .tabbed-pane-header-tab,
-.material .inspector-view-tabbed-pane.tabbed-pane::shadow .tabbed-pane-header-tab.selected {
-    padding: 0 6px;
-    transition: background-color 150ms cubic-bezier(0, 0, 0.2, 1);
-}
-
-.material .inspector-view-tabbed-pane.tabbed-pane::shadow .tabbed-pane-header-tab.selected {
-    border: none;
-    background-color: rgba(105, 105, 105, 0.1);
-}
-
-.inspector-view-tabbed-pane.tabbed-pane::shadow .tabbed-pane-header-tab.selected {
-    border-width: 0 2px 0 2px;
-    -webkit-border-image: url(Images/toolbarItemSelected.png) 0 2 0 2;
 }
 
 .inspector-view-close-button {
@@ -146,21 +95,6 @@ body .inspector-view-tabbed-pane.tabbed-pane::shadow .tabbed-pane-header {
 
 body.undocked .inspector-view-close-button {
     display: none;
-}
-
-.platform-windows .inspector-view-tabbed-pane.tabbed-pane::shadow .tabbed-pane-header,
-.platform-windows.inactive .inspector-view-tabbed-pane.tabbed-pane::shadow .tabbed-pane-header {
-    background-image: none;
-}
-
-body.undocked.platform-mac .inspector-view-tabbed-pane.tabbed-pane::shadow .tabbed-pane-header {
-    background-image: linear-gradient(to bottom, rgb(208, 208, 208), rgb(200, 200, 200)) !important;
-    color: #333 !important;
-}
-
-body.undocked.platform-mac.inactive .inspector-view-tabbed-pane.tabbed-pane::shadow .tabbed-pane-header {
-    background-image: linear-gradient(to bottom, rgb(238, 238, 238), rgb(224, 224, 224)) !important;
-    color: #555 !important;
 }
 
 .bubble-repeat-count {

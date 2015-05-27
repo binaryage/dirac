@@ -357,14 +357,3 @@ li.selected .base-storage-tree-element-subtitle {
 .file-system-storage-tree-item .icon {
     content: url(Images/fileSystem.png);
 }
-
-.resources-toolbar::shadow .storage-application-cache-connectivity {
-    padding-right: 5px;
-    border-right: 1px solid #CCC;
-    height: 23px;
-    line-height: 23px
-}
-
-.resources-toolbar::shadow label[is=dt-icon-label] {
-    margin: 4px;
-}
