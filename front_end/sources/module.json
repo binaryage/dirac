@@ -323,7 +323,8 @@
         "SourcesPanel.js",
         "WorkspaceMappingTip.js",
         "XHRBreakpointsSidebarPane.js",
-        "JavaScriptCompiler.js"
+        "JavaScriptCompiler.js",
+        "ObjectEventListenersSidebarPane.js"
     ],
     "skip_compilation": [
         "jsdifflib.js"

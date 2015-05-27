@@ -81,6 +81,7 @@ WebInspector.SourcesPanel = function(workspaceForTest)
     this.sidebarPanes.domBreakpoints = WebInspector.domBreakpointsSidebarPane.createProxy(this);
     this.sidebarPanes.xhrBreakpoints = new WebInspector.XHRBreakpointsSidebarPane();
     this.sidebarPanes.eventListenerBreakpoints = new WebInspector.EventListenerBreakpointsSidebarPane();
+    this.sidebarPanes.objectEventListeners = new WebInspector.ObjectEventListenersSidebarPane();
     if (Runtime.experiments.isEnabled("stepIntoAsync"))
         this.sidebarPanes.asyncOperationBreakpoints = new WebInspector.AsyncOperationsSidebarPane();
 
@@ -1139,6 +1140,7 @@ WebInspector.SourcesPanel.prototype = {
             sidebarPaneStack.addPane(this.sidebarPanes.domBreakpoints);
             sidebarPaneStack.addPane(this.sidebarPanes.xhrBreakpoints);
             sidebarPaneStack.addPane(this.sidebarPanes.eventListenerBreakpoints);
+            sidebarPaneStack.addPane(this.sidebarPanes.objectEventListeners);
             if (Runtime.experiments.isEnabled("stepIntoAsync"))
                 sidebarPaneStack.addPane(this.sidebarPanes.asyncOperationBreakpoints);
 

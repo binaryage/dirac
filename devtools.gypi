@@ -562,6 +562,7 @@
             'front_end/sources/JavaScriptSourceFrame.js',
             'front_end/sources/jsdifflib.js',
             'front_end/sources/NavigatorView.js',
+            'front_end/sources/ObjectEventListenersSidebarPane.js',
             'front_end/sources/RevisionHistoryView.js',
             'front_end/sources/ScopeChainSidebarPane.js',
             'front_end/sources/ScriptFormatter.js',
