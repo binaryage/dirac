@@ -38,6 +38,7 @@ body {
     position: relative;
     overflow: hidden;
     margin: 0;
+    cursor: default;
     font-family: Lucida Grande, sans-serif;
     font-size: 12px;
     tab-size: 4;
