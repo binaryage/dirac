@@ -285,6 +285,7 @@
             'front_end/ui/Widget.js',
             'front_end/ui/ZoomManager.js',
             'front_end/ui/treeoutline.js',
+            'front_end/ui/ThrottledWidget.js'
         ],
         'devtools_main_js_files': [
             'front_end/main/AdvancedApp.js',

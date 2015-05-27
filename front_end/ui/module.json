@@ -43,7 +43,8 @@
         "TextPrompt.js",
         "UIUtils.js",
         "ViewportControl.js",
-        "ZoomManager.js"
+        "ZoomManager.js",
+        "ThrottledWidget.js"
     ],
     "resources": [
         "checkboxTextLabel.css",

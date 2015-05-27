@@ -4,25 +4,26 @@
 
 /**
  * @constructor
- * @extends {WebInspector.ThrottledElementsSidebarView}
+ * @extends {WebInspector.ThrottledWidget}
  */
 WebInspector.AccessibilitySidebarView = function()
 {
-    WebInspector.ThrottledElementsSidebarView.call(this);
+    WebInspector.ThrottledWidget.call(this);
     this._computedTextSubPane = null;
     this._axNodeSubPane = null;
+    this._node = null;
     this._sidebarPaneStack = null;
-    WebInspector.context.addFlavorChangeListener(WebInspector.DOMNode, this._nodeChanged, this);
-    this.setNode(WebInspector.context.flavor(WebInspector.DOMNode));
+    WebInspector.context.addFlavorChangeListener(WebInspector.DOMNode, this._pullNode, this);
+    this._pullNode();
 }
 
 WebInspector.AccessibilitySidebarView.prototype = {
     /**
-     * @param {!WebInspector.Event} event
+     * @return {?WebInspector.DOMNode}
      */
-    _nodeChanged: function(event)
+    node: function()
     {
-        this.setNode(/** @type {?WebInspector.DOMNode} */ (event.data));
+        return this._node;
     },
 
     /**
@@ -53,7 +54,7 @@ WebInspector.AccessibilitySidebarView.prototype = {
      */
     wasShown: function()
     {
-        WebInspector.ElementsSidebarPane.prototype.wasShown.call(this);
+        WebInspector.ThrottledWidget.prototype.wasShown.call(this);
 
         if (!this._sidebarPaneStack) {
             this._computedTextSubPane = new WebInspector.AXComputedTextSubPane();
@@ -90,17 +91,14 @@ WebInspector.AccessibilitySidebarView.prototype = {
         WebInspector.targetManager.removeModelListener(WebInspector.DOMModel, WebInspector.DOMModel.Events.ChildNodeCountUpdated, this._onNodeChange, this);
     },
 
-    /**
-     * @param {?WebInspector.DOMNode} node
-     * @override
-     */
-    setNode: function(node)
+    _pullNode: function()
     {
-        WebInspector.ThrottledElementsSidebarView.prototype.setNode.call(this, node);
+        this._node = WebInspector.context.flavor(WebInspector.DOMNode);
         if (this._computedTextSubPane)
-            this._computedTextSubPane.setNode(node);
+            this._computedTextSubPane.setNode(this._node);
         if (this._axNodeSubPane)
-            this._axNodeSubPane.setNode(node);
+            this._axNodeSubPane.setNode(this._node);
+        this.update();
     },
 
     /**
@@ -130,7 +128,7 @@ WebInspector.AccessibilitySidebarView.prototype = {
     },
 
 
-    __proto__: WebInspector.ThrottledElementsSidebarView.prototype
+    __proto__: WebInspector.ThrottledWidget.prototype
 };
 
 /**
