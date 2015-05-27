@@ -1198,6 +1198,7 @@ WebInspector.ObjectPropertiesSection.formatObjectAsFunction = function(func, ele
 
         if (linkify && response && response.location) {
             var anchor = createElement("span");
+            element.classList.add("linkified");
             element.appendChild(anchor);
             element.addEventListener("click", WebInspector.Revealer.reveal.bind(WebInspector.Revealer, response.location, undefined));
             element = anchor;

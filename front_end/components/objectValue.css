@@ -33,7 +33,7 @@
     font-style: italic;
 }
 
-.object-value-function:hover {
+.object-value-function.linkified:hover {
     background-color: rgba(0, 0, 0, 0.1);
     cursor: pointer;
 }
