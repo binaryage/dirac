@@ -12,6 +12,7 @@ WebInspector.ElementsSidebarPane = function(title)
     WebInspector.SidebarPane.call(this, title);
     this._node = null;
     this._updateController = new WebInspector.ElementsSidebarPane._UpdateController(this, this.doUpdate.bind(this));
+    WebInspector.context.addFlavorChangeListener(WebInspector.DOMNode, this._nodeChanged, this);
 }
 
 WebInspector.ElementsSidebarPane.prototype = {
@@ -29,6 +30,14 @@ WebInspector.ElementsSidebarPane.prototype = {
     cssModel: function()
     {
         return this._cssModel && this._cssModel.isEnabled() ? this._cssModel : null;
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _nodeChanged: function(event)
+    {
+        this.setNode(/** @type {?WebInspector.DOMNode} */ (event.data));
     },
 
     /**
@@ -166,7 +175,6 @@ WebInspector.ElementsSidebarPane._UpdateController.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.Widget}
- * @implements {WebInspector.ElementsSidebarView}
  */
 WebInspector.ThrottledElementsSidebarView = function()
 {
@@ -185,7 +193,6 @@ WebInspector.ThrottledElementsSidebarView.prototype = {
     },
 
     /**
-     * @override
      * @param {?WebInspector.DOMNode} node
      */
     setNode: function(node)
@@ -212,15 +219,6 @@ WebInspector.ThrottledElementsSidebarView.prototype = {
     {
         WebInspector.Widget.prototype.wasShown.call(this);
         this._updateController.viewWasShown();
-    },
-
-    /**
-     * @override
-     * @return {!WebInspector.Widget}
-     */
-    view: function()
-    {
-        return this;
     },
 
     __proto__: WebInspector.Widget.prototype

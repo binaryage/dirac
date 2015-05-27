@@ -109,10 +109,13 @@ WebInspector.ElementsPanel._elementsSidebarViewTitleSymbol = Symbol("title");
 WebInspector.ElementsPanel.prototype = {
     _loadSidebarViews: function()
     {
-        var extensions = self.runtime.extensions("@WebInspector.ElementsSidebarView");
+        var extensions = self.runtime.extensions("@WebInspector.Widget");
 
         for (var i = 0; i < extensions.length; ++i) {
             var descriptor = extensions[i].descriptor();
+            if (descriptor["location"] !== "elements-panel")
+                continue;
+
             var title = WebInspector.UIString(descriptor["title"]);
             extensions[i].instancePromise().then(addSidebarView.bind(this, title));
         }
@@ -124,14 +127,12 @@ WebInspector.ElementsPanel.prototype = {
          */
         function addSidebarView(title, object)
         {
-            var sidebarView = /** @type {!WebInspector.ElementsSidebarView} */ (object);
-            var elementsSidebarViewWrapperPane = new WebInspector.ElementsSidebarViewWrapperPane(title, sidebarView);
+            var widget = /** @type {!WebInspector.Widget} */ (object);
+            var elementsSidebarViewWrapperPane = new WebInspector.ElementsSidebarViewWrapperPane(title, widget);
             this._elementsSidebarViewWrappers.push(elementsSidebarViewWrapperPane);
 
             if (this.sidebarPaneView)
                 this.sidebarPaneView.addPane(elementsSidebarViewWrapperPane);
-
-            sidebarView.setNode(this.selectedDOMNode());
         }
     },
 
@@ -297,7 +298,7 @@ WebInspector.ElementsPanel.prototype = {
 
         this._breadcrumbs.setSelectedNode(selectedNode);
 
-        this._updateSidebars();
+        WebInspector.context.setFlavor(WebInspector.DOMNode, selectedNode);
 
         if (selectedNode) {
             selectedNode.setAsInspectedNode();
@@ -308,19 +309,6 @@ WebInspector.ElementsPanel.prototype = {
     },
 
     _selectedNodeChangedForTest: function() { },
-
-    _updateSidebars: function()
-    {
-        var selectedDOMNode = this.selectedDOMNode();
-        this.sidebarPanes.styles.setNode(selectedDOMNode);
-        this.sidebarPanes.computedStyle.setNode(selectedDOMNode);
-        this.sidebarPanes.metrics.setNode(selectedDOMNode);
-        this.sidebarPanes.platformFonts.setNode(selectedDOMNode);
-        this.sidebarPanes.properties.setNode(selectedDOMNode);
-        this.sidebarPanes.eventListeners.setNode(selectedDOMNode);
-        for (var sidebarView of this._elementsSidebarViewWrappers)
-            sidebarView.setNode(selectedDOMNode);
-    },
 
     _reset: function()
     {

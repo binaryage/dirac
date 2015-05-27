@@ -12,9 +12,19 @@ WebInspector.AccessibilitySidebarView = function()
     this._computedTextSubPane = null;
     this._axNodeSubPane = null;
     this._sidebarPaneStack = null;
+    WebInspector.context.addFlavorChangeListener(WebInspector.DOMNode, this._nodeChanged, this);
+    this.setNode(WebInspector.context.flavor(WebInspector.DOMNode));
 }
 
 WebInspector.AccessibilitySidebarView.prototype = {
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _nodeChanged: function(event)
+    {
+        this.setNode(/** @type {?WebInspector.DOMNode} */ (event.data));
+    },
+
     /**
      * @override
      * @param {!WebInspector.Throttler.FinishCallback} finishCallback

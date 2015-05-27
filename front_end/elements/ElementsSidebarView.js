@@ -3,46 +3,17 @@
 // found in the LICENSE file.
 
 /**
- * @interface
- */
-WebInspector.ElementsSidebarView = function()
-{
-}
-
-WebInspector.ElementsSidebarView.prototype = {
-    // FIXME: nodeUpdates should also be here.
-    /**
-     * @param {?WebInspector.DOMNode} node
-     */
-    setNode: function(node) { },
-
-    /**
-     * @return {!WebInspector.Widget}
-     */
-    view: function() { }
-}
-
-/**
  * @constructor
  * @extends {WebInspector.SidebarPane}
  * @param {string} title
- * @param {!WebInspector.ElementsSidebarView} elementsSidebarView
+ * @param {!WebInspector.Widget} widget
  */
-WebInspector.ElementsSidebarViewWrapperPane = function(title, elementsSidebarView)
+WebInspector.ElementsSidebarViewWrapperPane = function(title, widget)
 {
     WebInspector.SidebarPane.call(this, title);
-    this._elementsSidebarView = elementsSidebarView;
-    this._elementsSidebarView.view().show(this.element);
+    widget.show(this.element);
 }
 
 WebInspector.ElementsSidebarViewWrapperPane.prototype = {
-    /**
-     * @param {?WebInspector.DOMNode} node
-     */
-    setNode: function(node)
-    {
-        this._elementsSidebarView.setNode(node);
-    },
-
     __proto__: WebInspector.SidebarPane.prototype
 }
