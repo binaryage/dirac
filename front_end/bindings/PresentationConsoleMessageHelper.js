@@ -303,9 +303,20 @@ WebInspector.PresentationConsoleMessage.prototype = {
         WebInspector.presentationConsoleMessageHelper._presentationConsoleMessageAdded(this);
     },
 
-    get lineNumber()
+    /**
+     * @return {number}
+     */
+    lineNumber: function()
     {
         return this._uiLocation.lineNumber;
+    },
+
+    /**
+     * @return {number}
+     */
+    columnNumber: function()
+    {
+        return this._uiLocation.columnNumber;
     },
 
     dispose: function()

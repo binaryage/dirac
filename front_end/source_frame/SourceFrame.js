@@ -706,13 +706,14 @@ WebInspector.SourceFrameMessage.Level = {
 /**
  * @param {!WebInspector.ConsoleMessage} consoleMessage
  * @param {number} lineNumber
+ * @param {number} columnNumber
  * @return {!WebInspector.SourceFrameMessage}
  */
-WebInspector.SourceFrameMessage.fromConsoleMessage = function(consoleMessage, lineNumber)
+WebInspector.SourceFrameMessage.fromConsoleMessage = function(consoleMessage, lineNumber, columnNumber)
 {
     console.assert(consoleMessage.level === WebInspector.ConsoleMessage.MessageLevel.Error || consoleMessage.level === WebInspector.ConsoleMessage.MessageLevel.Warning);
     var level = consoleMessage.level === WebInspector.ConsoleMessage.MessageLevel.Error ? WebInspector.SourceFrameMessage.Level.Error : WebInspector.SourceFrameMessage.Level.Warning;
-    return new WebInspector.SourceFrameMessage(consoleMessage.messageText, level, lineNumber, consoleMessage.column);
+    return new WebInspector.SourceFrameMessage(consoleMessage.messageText, level, lineNumber, columnNumber);
 }
 
 WebInspector.SourceFrameMessage.prototype = {

@@ -957,7 +957,7 @@ WebInspector.JavaScriptSourceFrame.prototype = {
      */
     _sourceFrameMessage: function(message)
     {
-        return WebInspector.SourceFrameMessage.fromConsoleMessage(message.originalMessage, message.lineNumber);
+        return WebInspector.SourceFrameMessage.fromConsoleMessage(message.originalMessage, message.lineNumber(), message.columnNumber());
     },
 
     _consoleMessagesCleared: function(event)
