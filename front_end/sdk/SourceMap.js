@@ -100,7 +100,7 @@ WebInspector.SourceMap.load = function(sourceMapURL, compiledURL, callback)
         return;
     }
 
-    WebInspector.ResourceLoader.load(sourceMapURL, null, contentLoaded);
+    WebInspector.ResourceLoader.loadUsingTargetUA(sourceMapURL, null, contentLoaded);
 
     /**
      * @param {number} statusCode

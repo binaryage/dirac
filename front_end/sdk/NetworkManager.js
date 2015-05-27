@@ -625,6 +625,7 @@ WebInspector.MultitargetNetworkManager.prototype = {
      */
     setUserAgentOverride: function(userAgent)
     {
+        WebInspector.ResourceLoader.targetUserAgent = userAgent;
         this._userAgent = userAgent;
         for (var target of WebInspector.targetManager.targets())
             target.networkAgent().setUserAgentOverride(this._userAgent);
