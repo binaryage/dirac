@@ -403,7 +403,7 @@
             'front_end/elements/EventListenersSidebarPane.js',
             'front_end/elements/MetricsSidebarPane.js',
             'front_end/elements/PlatformFontsSidebarPane.js',
-            'front_end/elements/PropertiesSidebarPane.js',
+            'front_end/elements/PropertiesWidget.js',
             'front_end/elements/Spectrum.js',
             'front_end/elements/StylesPopoverHelper.js',
             'front_end/elements/StylesSectionModel.js',

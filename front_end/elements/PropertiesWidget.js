@@ -29,21 +29,39 @@
 
 /**
  * @constructor
- * @extends {WebInspector.ElementsSidebarPane}
+ * @extends {WebInspector.ThrottledWidget}
  */
-WebInspector.PropertiesSidebarPane = function()
+WebInspector.PropertiesWidget = function()
 {
-    WebInspector.ElementsSidebarPane.call(this, WebInspector.UIString("Properties"));
+    WebInspector.ThrottledWidget.call(this);
 
     WebInspector.targetManager.addModelListener(WebInspector.DOMModel, WebInspector.DOMModel.Events.AttrModified, this._onNodeChange, this);
     WebInspector.targetManager.addModelListener(WebInspector.DOMModel, WebInspector.DOMModel.Events.AttrRemoved, this._onNodeChange, this);
     WebInspector.targetManager.addModelListener(WebInspector.DOMModel, WebInspector.DOMModel.Events.CharacterDataModified, this._onNodeChange, this);
     WebInspector.targetManager.addModelListener(WebInspector.DOMModel, WebInspector.DOMModel.Events.ChildNodeCountUpdated, this._onNodeChange, this);
+    WebInspector.context.addFlavorChangeListener(WebInspector.DOMNode, this._setNode, this);
 }
 
-WebInspector.PropertiesSidebarPane._objectGroupName = "properties-sidebar-pane";
+/**
+ * @return {!WebInspector.ElementsSidebarViewWrapperPane}
+ */
+WebInspector.PropertiesWidget.createSidebarWrapper = function()
+{
+    return new WebInspector.ElementsSidebarViewWrapperPane(WebInspector.UIString("Properties"), new WebInspector.PropertiesWidget());
+}
 
-WebInspector.PropertiesSidebarPane.prototype = {
+WebInspector.PropertiesWidget._objectGroupName = "properties-sidebar-pane";
+
+WebInspector.PropertiesWidget.prototype = {
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _setNode: function(event)
+    {
+        this._node = /** @type {?WebInspector.DOMNode} */(event.data);
+        this.update();
+    },
+
     /**
      * @override
      * @param {!WebInspector.Throttler.FinishCallback} finishCallback
@@ -52,24 +70,23 @@ WebInspector.PropertiesSidebarPane.prototype = {
     doUpdate: function(finishCallback)
     {
         if (this._lastRequestedNode) {
-            this._lastRequestedNode.target().runtimeAgent().releaseObjectGroup(WebInspector.PropertiesSidebarPane._objectGroupName);
+            this._lastRequestedNode.target().runtimeAgent().releaseObjectGroup(WebInspector.PropertiesWidget._objectGroupName);
             delete this._lastRequestedNode;
         }
 
-        var node = this.node();
-        if (!node) {
-            this.bodyElement.removeChildren();
+        if (!this._node) {
+            this.element.removeChildren();
             this.sections = [];
             finishCallback();
             return;
         }
 
-        this._lastRequestedNode = node;
-        node.resolveToObject(WebInspector.PropertiesSidebarPane._objectGroupName, nodeResolved.bind(this));
+        this._lastRequestedNode = this._node;
+        this._node.resolveToObject(WebInspector.PropertiesWidget._objectGroupName, nodeResolved.bind(this));
 
         /**
          * @param {?WebInspector.RemoteObject} object
-         * @this {WebInspector.PropertiesSidebarPane}
+         * @this {WebInspector.PropertiesWidget}
          */
         function nodeResolved(object)
         {
@@ -100,7 +117,7 @@ WebInspector.PropertiesSidebarPane.prototype = {
         /**
          * @param {?WebInspector.RemoteObject} object
          * @param {boolean=} wasThrown
-         * @this {WebInspector.PropertiesSidebarPane}
+         * @this {WebInspector.PropertiesWidget}
          */
         function nodePrototypesReady(object, wasThrown)
         {
@@ -114,7 +131,7 @@ WebInspector.PropertiesSidebarPane.prototype = {
 
         /**
          * @param {?Array.<!WebInspector.RemoteObjectProperty>} prototypes
-         * @this {WebInspector.PropertiesSidebarPane}
+         * @this {WebInspector.PropertiesWidget}
          */
         function fillSection(prototypes)
         {
@@ -128,8 +145,7 @@ WebInspector.PropertiesSidebarPane.prototype = {
             for (var i = 0; i < sections.length; ++i)
                 expanded.push(sections[i].expanded);
 
-            var body = this.bodyElement;
-            body.removeChildren();
+            this.element.removeChildren();
             this.sections = [];
 
             // Get array of prototype user-friendly names.
@@ -141,7 +157,7 @@ WebInspector.PropertiesSidebarPane.prototype = {
                 title = title.replace(/Prototype$/, "");
                 var section = new WebInspector.ObjectPropertiesSection(prototype, title);
                 this.sections.push(section);
-                body.appendChild(section.element);
+                this.element.appendChild(section.element);
                 if (expanded[this.sections.length - 1])
                     section.expand();
             }
@@ -155,14 +171,14 @@ WebInspector.PropertiesSidebarPane.prototype = {
      */
     _onNodeChange: function(event)
     {
-        if (!this.node())
+        if (!this._node)
             return;
         var data = event.data;
         var node = /** @type {!WebInspector.DOMNode} */ (data instanceof WebInspector.DOMNode ? data : data.node);
-        if (this.node() !== node)
+        if (this._node !== node)
             return;
         this.update();
     },
 
-    __proto__: WebInspector.ElementsSidebarPane.prototype
+    __proto__: WebInspector.ThrottledWidget.prototype
 }

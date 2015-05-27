@@ -88,7 +88,7 @@
         "EventListenersSidebarPane.js",
         "MetricsSidebarPane.js",
         "PlatformFontsSidebarPane.js",
-        "PropertiesSidebarPane.js",
+        "PropertiesWidget.js",
         "StylesSectionModel.js",
         "StylesSidebarPane.js",
         "ComputedStyleSidebarPane.js",
