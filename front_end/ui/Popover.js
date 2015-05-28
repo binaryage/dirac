@@ -163,7 +163,7 @@ WebInspector.Popover.prototype = {
      */
     _positionElement: function(anchorElement, preferredWidth, preferredHeight, arrowDirection)
     {
-        const borderWidth = this._hasNoMargins ? 0 : 7;
+        const borderWidth = this._hasNoMargins ? 0 : 8;
         const scrollerWidth = this._hasFixedHeight ? 0 : 11;
         const arrowHeight = this._hasNoMargins ? 8 : 15;
         const arrowOffset = 10;

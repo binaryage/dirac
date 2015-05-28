@@ -120,7 +120,7 @@ WebInspector.TextPrompt.prototype = {
         this._boundSelectStart = this._selectStart.bind(this);
         this._boundRemoveSuggestionAids = this._removeSuggestionAids.bind(this);
         this._proxyElement = element.ownerDocument.createElement("span");
-        var shadowRoot = this._proxyElement.createShadowRoot();
+        var shadowRoot = WebInspector.createShadowRootWithCoreStyles(this._proxyElement);
         shadowRoot.appendChild(WebInspector.Widget.createStyleElement("ui/textPrompt.css"));
         this._contentElement = shadowRoot.createChild("div");
         this._contentElement.createChild("content");

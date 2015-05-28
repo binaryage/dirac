@@ -10,9 +10,8 @@
 WebInspector.Infobar = function(type, disableSetting)
 {
     this.element = createElementWithClass("div");
-    this._shadowRoot = this.element.createShadowRoot();
+    this._shadowRoot = WebInspector.createShadowRootWithCoreStyles(this.element);
     this._shadowRoot.appendChild(WebInspector.Widget.createStyleElement("ui/infobar.css"));
-    WebInspector.installShadowRootStyles(this._shadowRoot);
     this._contentElement = this._shadowRoot.createChild("div", "infobar infobar-" + type);
 
     this._contentElement.createChild("label", "icon", "dt-icon-label").type = type + "-icon";

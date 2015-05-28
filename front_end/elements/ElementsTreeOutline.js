@@ -42,8 +42,7 @@ WebInspector.ElementsTreeOutline = function(domModel, omitRootDOMNode, selectEna
 
     var element = createElement("div");
 
-    this._shadowRoot = element.createShadowRoot();
-    WebInspector.installShadowRootStyles(this._shadowRoot);
+    this._shadowRoot = WebInspector.createShadowRootWithCoreStyles(element);
     this._shadowRoot.appendChild(WebInspector.Widget.createStyleElement("elements/elementsTreeOutline.css"));
     var outlineDisclosureElement = this._shadowRoot.createChild("div", "elements-disclosure");
 

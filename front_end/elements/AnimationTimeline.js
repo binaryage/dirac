@@ -382,7 +382,7 @@ WebInspector.AnimationTimeline.prototype = {
                 var label = this._grid.createSVGChild("text", "animation-timeline-grid-label");
                 label.setAttribute("x", gridWidth + 5);
                 label.setAttribute("y", 35);
-                label.innerHTML = WebInspector.UIString(Number.millisToString(time));
+                label.textContent = WebInspector.UIString(Number.millisToString(time));
             }
         }
     },

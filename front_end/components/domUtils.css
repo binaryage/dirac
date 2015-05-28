@@ -22,3 +22,7 @@
 .stack-preview-container .webkit-html-blackbox-link {
     opacity: 0.6;
 }
+
+.stack-preview-container > tr {
+    height: 17px;
+}

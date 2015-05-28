@@ -34,8 +34,7 @@ WebInspector.Widget = function(isWebComponent)
     this.contentElement = createElementWithClass("div", "widget");
     if (isWebComponent) {
         this.element = createElementWithClass("div", "vbox flex-auto");
-        this._shadowRoot = this.element.createShadowRoot();
-        WebInspector.installShadowRootStyles(this._shadowRoot);
+        this._shadowRoot = WebInspector.createShadowRootWithCoreStyles(this.element);
         this._shadowRoot.appendChild(this.contentElement);
     } else {
         this.element = this.contentElement;

@@ -189,7 +189,7 @@ WebInspector.FilmStripView.prototype = {
 WebInspector.FilmStripView.DialogDelegate = function(filmStripFrame, zeroTime)
 {
     WebInspector.DialogDelegate.call(this);
-    var shadowRoot = this.element.createShadowRoot();
+    var shadowRoot = WebInspector.createShadowRootWithCoreStyles(this.element);
     shadowRoot.appendChild(WebInspector.Widget.createStyleElement("components_lazy/filmStripDialog.css"));
     this._contentElement = shadowRoot.createChild("div", "filmstrip-dialog");
     this._contentElement.tabIndex = 0;

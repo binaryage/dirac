@@ -78,7 +78,7 @@ WebInspector.ColorSwatch.prototype = {
 
     createdCallback: function()
     {
-        var root = this.createShadowRoot();
+        var root = WebInspector.createShadowRootWithCoreStyles(this);
         root.appendChild(WebInspector.Widget.createStyleElement("ui/colorSwatch.css"));
 
         this._iconElement = root.createChild("span", "color-swatch");

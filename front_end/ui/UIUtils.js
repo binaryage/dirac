@@ -643,12 +643,15 @@ WebInspector.installComponentRootStyles = function(element)
 }
 
 /**
- * @param {!DocumentFragment=} shadowRoot
+ * @param {!Element} element
+ * @return {!DocumentFragment}
  */
-WebInspector.installShadowRootStyles = function(shadowRoot)
+WebInspector.createShadowRootWithCoreStyles = function(element)
 {
+    var shadowRoot = element.createShadowRoot();
     shadowRoot.appendChild(WebInspector.Widget.createStyleElement("ui/inspectorCommon.css"));
     shadowRoot.appendChild(WebInspector.Widget.createStyleElement("ui/inspectorSyntaxHighlight.css"));
+    return shadowRoot;
 }
 
 /**
@@ -1284,7 +1287,7 @@ function createCheckboxLabel(title, checked)
         createdCallback: function()
         {
             this.type = "button";
-            var root = this.createShadowRoot();
+            var root = WebInspector.createShadowRootWithCoreStyles(this);
             root.appendChild(WebInspector.Widget.createStyleElement("ui/textButton.css"));
             root.createChild("content");
         },
@@ -1300,8 +1303,7 @@ function createCheckboxLabel(title, checked)
         {
             this.radioElement = this.createChild("input", "dt-radio-button");
             this.radioElement.type = "radio";
-
-            var root = this.createShadowRoot();
+            var root = WebInspector.createShadowRootWithCoreStyles(this);
             root.appendChild(WebInspector.Widget.createStyleElement("ui/radioButton.css"));
             root.createChild("content").select = ".dt-radio-button";
             root.createChild("content");
@@ -1330,7 +1332,7 @@ function createCheckboxLabel(title, checked)
          */
         createdCallback: function()
         {
-            var root = this.createShadowRoot();
+            var root = WebInspector.createShadowRootWithCoreStyles(this);
             root.appendChild(WebInspector.Widget.createStyleElement("ui/checkboxTextLabel.css"));
             this.checkboxElement = this.createChild("input", "dt-checkbox-button");
             this.checkboxElement.type = "checkbox";
@@ -1347,7 +1349,7 @@ function createCheckboxLabel(title, checked)
          */
         createdCallback: function()
         {
-            var root = this.createShadowRoot();
+            var root = WebInspector.createShadowRootWithCoreStyles(this);
             root.appendChild(WebInspector.Widget.createStyleElement("ui/smallIcon.css"));
             this._iconElement = root.createChild("div");
             root.createChild("content");
@@ -1371,7 +1373,7 @@ function createCheckboxLabel(title, checked)
          */
         createdCallback: function()
         {
-            var root = this.createShadowRoot();
+            var root = WebInspector.createShadowRootWithCoreStyles(this);
             root.appendChild(WebInspector.Widget.createStyleElement("ui/closeButton.css"));
             this._buttonElement = root.createChild("div", "close-button");
         },

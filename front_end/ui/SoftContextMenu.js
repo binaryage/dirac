@@ -56,7 +56,7 @@ WebInspector.SoftContextMenu.prototype = {
 
         // Create context menu.
         this._contextMenuElement = createElementWithClass("div", "soft-context-menu");
-        var root = this._contextMenuElement.createShadowRoot();
+        var root = WebInspector.createShadowRootWithCoreStyles(this._contextMenuElement);
         root.appendChild(WebInspector.Widget.createStyleElement("ui/softContextMenu.css"));
         var menuElement = root.createChild("div");
         this._contextMenuElement.tabIndex = 0;

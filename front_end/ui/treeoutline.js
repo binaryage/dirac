@@ -277,9 +277,7 @@ function TreeOutlineInShadow(className)
 
     // Redefine element to the external one.
     this.element = createElement("div");
-
-    this._shadowRoot = this.element.createShadowRoot();
-    WebInspector.installShadowRootStyles(this._shadowRoot);
+    this._shadowRoot = WebInspector.createShadowRootWithCoreStyles(this.element);
     this._shadowRoot.appendChild(WebInspector.Widget.createStyleElement("ui/treeoutline.css"));
     this._shadowRoot.appendChild(innerElement);
     this._renderSelection = true;
