@@ -1027,7 +1027,7 @@ WebInspector.TimelinePanel.prototype = {
             var frame = /** @type {!WebInspector.TimelineFrame} */ (this._selection.object());
             if (Runtime.experiments.isEnabled("filmStripInNetworkAndTimeline") && !this._filmStripModel)
                 this._filmStripModel = new WebInspector.FilmStripModel(this._tracingModel);
-            var filmStripFrame = this._filmStripModel ? this._filmStripModel.firstFrameAfterCommit(frame.endTime) : null;
+            var filmStripFrame = this._filmStripModel && this._filmStripModel.firstFrameAfterCommit(frame.endTime);
             this.showInDetails(WebInspector.TimelineUIUtils.generateDetailsContentForFrame(this._lazyFrameModel, frame, filmStripFrame));
             if (frame.layerTree) {
                 var layersView = this._layersView();

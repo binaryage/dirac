@@ -11,6 +11,7 @@ WebInspector.FilmStripView = function()
     WebInspector.HBox.call(this, true);
     this.registerRequiredCSS("components_lazy/filmStripView.css");
     this.contentElement.classList.add("film-strip-view");
+    this._mode = WebInspector.FilmStripView.Modes.TimeBased;
     this.reset();
 }
 
@@ -20,32 +21,124 @@ WebInspector.FilmStripView.Events = {
     FrameExit: "FrameExit",
 }
 
+WebInspector.FilmStripView.Modes = {
+    TimeBased: "TimeBased",
+    FrameBased: "FrameBased"
+}
+
 WebInspector.FilmStripView.prototype = {
+    /**
+     * @param {string} mode
+     */
+    setMode: function(mode)
+    {
+        this._mode = mode;
+        this.update();
+    },
+
     /**
      * @param {!WebInspector.FilmStripModel} filmStripModel
      * @param {number} zeroTime
+     * @param {number} spanTime
      */
-    setModel: function(filmStripModel, zeroTime)
+    setModel: function(filmStripModel, zeroTime, spanTime)
     {
+        this._model = filmStripModel;
+        this._zeroTime = zeroTime;
+        this._spanTime = spanTime;
         var frames = filmStripModel.frames();
         if (!frames.length) {
             this.reset();
             return;
         }
+        this.update();
+    },
 
-        this._zeroTime = zeroTime;
+    update: function()
+    {
+        if (!this._model)
+            return;
+        var frames = this._model.frames();
+        if (!frames.length)
+            return;
         this.contentElement.removeChildren();
         this._label.remove();
-        for (var i = 0; i < frames.length; ++i) {
+        var zeroTime = this._zeroTime;
+
+        /**
+         * @param {!WebInspector.FilmStripModel.Frame} frame
+         * @param {boolean=} skipTimeLabel
+         * @return {!Element}
+         * @this {WebInspector.FilmStripView}
+         */
+        function createElementForFrame(frame, skipTimeLabel)
+        {
+            var time = frame.timestamp;
             var element = createElementWithClass("div", "frame");
-            element.createChild("div", "thumbnail").createChild("img").src = "data:image/jpg;base64," + frames[i].imageData;
-            element.createChild("div", "time").textContent = Number.millisToString(frames[i].timestamp - zeroTime);
-            element.addEventListener("mousedown", this._onMouseEvent.bind(this, WebInspector.FilmStripView.Events.FrameSelected, frames[i].timestamp), false);
-            element.addEventListener("mouseenter", this._onMouseEvent.bind(this, WebInspector.FilmStripView.Events.FrameEnter, frames[i].timestamp), false);
-            element.addEventListener("mouseout", this._onMouseEvent.bind(this, WebInspector.FilmStripView.Events.FrameExit, frames[i].timestamp), false);
-            element.addEventListener("dblclick", this._onDoubleClick.bind(this, frames[i]), false);
+            element.createChild("div", "thumbnail").createChild("img").src = "data:image/jpg;base64," + frame.imageData;
+            if (!skipTimeLabel)
+                element.createChild("div", "time").textContent = Number.millisToString(time - zeroTime);
+            element.addEventListener("mousedown", this._onMouseEvent.bind(this, WebInspector.FilmStripView.Events.FrameSelected, time), false);
+            element.addEventListener("mouseenter", this._onMouseEvent.bind(this, WebInspector.FilmStripView.Events.FrameEnter, time), false);
+            element.addEventListener("mouseout", this._onMouseEvent.bind(this, WebInspector.FilmStripView.Events.FrameExit, time), false);
+            element.addEventListener("dblclick", this._onDoubleClick.bind(this, frame), false);
             this.contentElement.appendChild(element);
+            return element;
         }
+
+        if (this._mode === WebInspector.FilmStripView.Modes.FrameBased) {
+            for (var frame of frames)
+                createElementForFrame.call(this, frame);
+            return;
+        }
+
+        /**
+         * @return {!Element}
+         * @this {WebInspector.FilmStripView}
+         */
+        function createEmptyElement()
+        {
+            var element = createElementWithClass("div", "frame");
+            this.contentElement.appendChild(element);
+            return element;
+        }
+
+        /**
+         * @param {number} time
+         * @param {!WebInspector.FilmStripModel.Frame} frame
+         * @return {number}
+         */
+        function comparator(time, frame)
+        {
+            return time - frame.timestamp;
+        }
+
+        var width = this.contentElement.clientWidth;
+        var scale = this._spanTime / width;
+
+        // Calculate frame width basing on the first frame.
+        var tempElement = createElementWithClass("div", "frame");
+        tempElement.createChild("div", "thumbnail").createChild("img").src = "data:image/jpg;base64," + frames[0].imageData;
+        var frameWidth = Math.ceil(WebInspector.measurePreferredSize(tempElement, this.contentElement).width);
+        if (!frameWidth)
+            return;
+
+        for (var pos = frameWidth; pos < width; pos += frameWidth) {
+            var time = pos * scale + zeroTime;
+            var index = frames.upperBound(time, comparator) - 1;
+            var element = index >= 0 ? createElementForFrame.call(this, frames[index], true) : createEmptyElement.call(this);
+            element.style.width = frameWidth + "px";
+        }
+    },
+
+    /**
+     * @override
+     */
+    onResize: function()
+    {
+        if (this._mode === WebInspector.FilmStripView.Modes.FrameBased)
+            return;
+        this.update();
     },
 
     /**
@@ -133,30 +226,28 @@ WebInspector.FilmStripView.DialogDelegate.prototype = {
      */
     _keyDown: function(event)
     {
-        if (event.keyIdentifier === "Left") {
-            if (WebInspector.isMac() && event.metaKey) {
+        switch (event.keyIdentifier) {
+        case "Left":
+            if (WebInspector.isMac() && event.metaKey)
                 this._onFirstFrame();
-                return;
-            }
+            else
+                this._onPrevFrame();
+            break;
 
-            this._onPrevFrame();
-            return;
-        }
-        if (event.keyIdentifier === "Right") {
-            if (WebInspector.isMac() && event.metaKey) {
+        case "Right":
+            if (WebInspector.isMac() && event.metaKey)
                 this._onLastFrame();
-                return;
-            }
+            else
+                this._onNextFrame();
+            break;
 
-            this._onNextFrame();
-        }
-        if (event.keyIdentifier === "Home") {
+        case "Home":
             this._onFirstFrame();
-            return;
-        }
-        if (event.keyIdentifier === "End") {
+            break;
+
+        case "End":
             this._onLastFrame();
-            return;
+            break;
         }
     },
 

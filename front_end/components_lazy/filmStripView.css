@@ -8,7 +8,7 @@
     overflow-x: auto;
     overflow-y: hidden;
     align-content: flex-start;
-    height: 130px;
+    min-height: 60px;
 }
 
 .film-strip-view .label {
@@ -18,12 +18,11 @@
 }
 
 .film-strip-view .frame {
-    display: inline-flex;
+    display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 6px 9px 3px 9px;
+    padding: 5px 0;
     flex: none;
-    height: 114px;
 }
 
 .film-strip-view .frame-limit-reached {
@@ -40,7 +39,7 @@
 }
 
 .film-strip-view .frame .thumbnail {
-    min-width: 48px;
+    min-width: 24px;
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -48,17 +47,15 @@
 }
 
 .film-strip-view .frame .thumbnail img {
-    border: solid 1px #ccc;
     height: auto;
     width: auto;
-    margin: auto;
-    max-width: 162px;
-    max-height: 90px;
-    box-shadow: 3px 3px 4px rgba(0, 0, 0, 0.5);
+    max-width: 80px;
+    max-height: 50px;
     pointer-events: none;
+    border-right: solid 1px #eee;
 }
 
 .film-strip-view .frame .time {
     font-size: 10px;
-    margin-top: 3px;
+    margin-top: 4px;
 }
