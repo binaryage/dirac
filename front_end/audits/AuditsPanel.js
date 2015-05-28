@@ -230,10 +230,9 @@ WebInspector.AuditCategoryImpl.prototype = {
      * @param {!WebInspector.Target} target
      * @param {!Array.<!WebInspector.NetworkRequest>} requests
      * @param {function(!WebInspector.AuditRuleResult)} ruleResultCallback
-     * @param {function()} categoryDoneCallback
      * @param {!WebInspector.Progress} progress
      */
-    run: function(target, requests, ruleResultCallback, categoryDoneCallback, progress)
+    run: function(target, requests, ruleResultCallback, progress)
     {
         this._ensureInitialized();
         var remainingRulesCount = this._rules.length;
@@ -243,10 +242,14 @@ WebInspector.AuditCategoryImpl.prototype = {
             ruleResultCallback(result);
             progress.worked();
             if (!--remainingRulesCount)
-                categoryDoneCallback();
+                progress.done();
         }
-        for (var i = 0; i < this._rules.length; ++i)
-            this._rules[i].run(target, requests, callbackWrapper, progress);
+        for (var i = 0; i < this._rules.length; ++i) {
+            if (!progress.isCanceled())
+                this._rules[i].run(target, requests, callbackWrapper, progress);
+            else
+                callbackWrapper(null);
+        }
     },
 
     _ensureInitialized: function()

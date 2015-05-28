@@ -130,24 +130,12 @@ WebInspector.AuditLauncherView.prototype = {
         this._selectedCategoriesUpdated();
     },
 
-    /**
-     * @param {boolean} auditRunning
-     */
-    _setAuditRunning: function(auditRunning)
-    {
-        if (this._auditRunning === auditRunning)
-            return;
-        this._auditRunning = auditRunning;
-        this._updateButton();
-        this._toggleUIComponents(this._auditRunning);
-        if (this._auditRunning)
-            this._startAudit();
-        else
-            this._stopAudit();
-    },
-
     _startAudit: function()
     {
+        this._auditRunning = true;
+        this._updateButton();
+        this._toggleUIComponents(this._auditRunning);
+
         var catIds = [];
         for (var category = 0; category < this._sortedCategories.length; ++category) {
             if (this._sortedCategories[category]._checkboxElement.checked)
@@ -156,7 +144,6 @@ WebInspector.AuditLauncherView.prototype = {
 
         this._resetResourceCount();
         this._progressIndicator = new WebInspector.ProgressIndicator();
-        this._progressIndicator.hideStopButton();
         this._buttonContainerElement.appendChild(this._progressIndicator.element);
         this._displayResourceLoadingProgress = true;
 
@@ -167,15 +154,17 @@ WebInspector.AuditLauncherView.prototype = {
         {
             this._displayResourceLoadingProgress = false;
         }
-        this._auditController.initiateAudit(catIds, this._progressIndicator, this._auditPresentStateElement.checked, onAuditStarted.bind(this), this._setAuditRunning.bind(this, false));
+        this._auditController.initiateAudit(catIds, new WebInspector.ProgressProxy(this._progressIndicator, this._auditsDone.bind(this)), this._auditPresentStateElement.checked, onAuditStarted.bind(this));
     },
 
-    _stopAudit: function()
+    _auditsDone: function()
     {
         this._displayResourceLoadingProgress = false;
-        this._progressIndicator.cancel();
-        this._progressIndicator.done();
         delete this._progressIndicator;
+        this._launchButton.disabled = false;
+        this._auditRunning = false;
+        this._updateButton();
+        this._toggleUIComponents(this._auditRunning);
     },
 
     /**
@@ -191,7 +180,12 @@ WebInspector.AuditLauncherView.prototype = {
 
     _launchButtonClicked: function(event)
     {
-        this._setAuditRunning(!this._auditRunning);
+        if (this._auditRunning) {
+            this._launchButton.disabled = true;
+            this._progressIndicator.cancel();
+            return;
+        }
+        this._startAudit();
     },
 
     _clearButtonClicked: function()

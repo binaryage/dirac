@@ -121,10 +121,5 @@ WebInspector.ProgressIndicator.prototype = {
     worked: function(worked)
     {
         this.setWorked(this._worked + (worked || 1));
-    },
-
-    hideStopButton: function()
-    {
-        this._stopButton.classList.add("hidden");
     }
 }

@@ -407,8 +407,10 @@ WebInspector.AuditRules.UnusedCssRule.prototype = {
              */
             function selectorsCallback(styleSheets)
             {
-                if (progress.isCanceled())
+                if (progress.isCanceled()) {
+                    callback(null);
                     return;
+                }
 
                 var inlineBlockOrdinal = 0;
                 var totalStylesheetSize = 0;
@@ -477,8 +479,10 @@ WebInspector.AuditRules.UnusedCssRule.prototype = {
                     return;
                 }
                 for (var i = 0; i < selectors.length; ++i) {
-                    if (progress.isCanceled())
+                    if (progress.isCanceled()) {
+                        callback(null);
                         return;
+                    }
                     var effectiveSelector = selectors[i].replace(pseudoSelectorRegexp, "");
                     domModel.querySelector(document.id, effectiveSelector, queryCallback.bind(null, i === selectors.length - 1 ? selectorsCallback.bind(null, styleSheets) : null, selectors[i]));
                 }
@@ -555,7 +559,7 @@ WebInspector.AuditRules.StyleSheetProcessor.prototype = {
     _onStyleSheetParsed: function(rules)
     {
         if (this._progress.isCanceled()) {
-            this._terminateWorker();
+            this._finish();
             return;
         }
 
@@ -915,8 +919,10 @@ WebInspector.AuditRules.ImageDimensionsRule.prototype = {
 
         function imageStylesReady(imageId, styles, isLastStyle, computedStyle)
         {
-            if (progress.isCanceled())
+            if (progress.isCanceled()) {
+                callback(null);
                 return;
+            }
 
             const node = domModel.nodeForId(imageId);
             var src = node.getAttribute("src");
@@ -974,8 +980,10 @@ WebInspector.AuditRules.ImageDimensionsRule.prototype = {
          */
         function getStyles(nodeIds)
         {
-            if (progress.isCanceled())
+            if (progress.isCanceled()) {
+                callback(null);
                 return;
+            }
             var targetResult = {};
 
             function inlineCallback(inlineStyle, attributesStyle)
@@ -1002,13 +1010,17 @@ WebInspector.AuditRules.ImageDimensionsRule.prototype = {
 
         function onDocumentAvailable(root)
         {
-            if (progress.isCanceled())
+            if (progress.isCanceled()) {
+                callback(null);
                 return;
+            }
             domModel.querySelectorAll(root.id, "img[src]", getStyles);
         }
 
-        if (progress.isCanceled())
+        if (progress.isCanceled()) {
+            callback(null);
             return;
+        }
         domModel.requestDocument(onDocumentAvailable);
     },
 
@@ -1043,8 +1055,10 @@ WebInspector.AuditRules.CssInHeadRule.prototype = {
 
         function evalCallback(evalResult)
         {
-            if (progress.isCanceled())
+            if (progress.isCanceled()) {
+                callback(null);
                 return;
+            }
 
             if (!evalResult)
                 return callback(null);
@@ -1072,8 +1086,10 @@ WebInspector.AuditRules.CssInHeadRule.prototype = {
          */
         function externalStylesheetsReceived(root, inlineStyleNodeIds, nodeIds)
         {
-            if (progress.isCanceled())
+            if (progress.isCanceled()) {
+                callback(null);
                 return;
+            }
 
             if (!nodeIds)
                 return;
@@ -1099,8 +1115,10 @@ WebInspector.AuditRules.CssInHeadRule.prototype = {
          */
         function inlineStylesReceived(root, nodeIds)
         {
-            if (progress.isCanceled())
+            if (progress.isCanceled()) {
+                callback(null);
                 return;
+            }
 
             if (!nodeIds)
                 return;
@@ -1112,8 +1130,10 @@ WebInspector.AuditRules.CssInHeadRule.prototype = {
          */
         function onDocumentAvailable(root)
         {
-            if (progress.isCanceled())
+            if (progress.isCanceled()) {
+                callback(null);
                 return;
+            }
 
             domModel.querySelectorAll(root.id, "body style", inlineStylesReceived.bind(null, root));
         }
@@ -1152,8 +1172,10 @@ WebInspector.AuditRules.StylesScriptsOrderRule.prototype = {
 
         function evalCallback(resultValue)
         {
-            if (progress.isCanceled())
+            if (progress.isCanceled()) {
+                callback(null);
                 return;
+            }
 
             if (!resultValue)
                 return callback(null);
@@ -1180,8 +1202,10 @@ WebInspector.AuditRules.StylesScriptsOrderRule.prototype = {
          */
         function cssBeforeInlineReceived(lateStyleIds, nodeIds)
         {
-            if (progress.isCanceled())
+            if (progress.isCanceled()) {
+                callback(null);
                 return;
+            }
 
             if (!nodeIds)
                 return;
@@ -1207,8 +1231,10 @@ WebInspector.AuditRules.StylesScriptsOrderRule.prototype = {
          */
         function lateStylesReceived(root, nodeIds)
         {
-            if (progress.isCanceled())
+            if (progress.isCanceled()) {
+                callback(null);
                 return;
+            }
 
             if (!nodeIds)
                 return;
@@ -1221,8 +1247,10 @@ WebInspector.AuditRules.StylesScriptsOrderRule.prototype = {
          */
         function onDocumentAvailable(root)
         {
-            if (progress.isCanceled())
+            if (progress.isCanceled()) {
+                callback(null);
                 return;
+            }
 
             domModel.querySelectorAll(root.id, "head script[src] ~ link[rel~='stylesheet'][href]", lateStylesReceived.bind(null, root));
         }
@@ -1458,9 +1486,12 @@ WebInspector.AuditRules.CookieRuleBase.prototype = {
     doRun: function(target, requests, result, callback, progress)
     {
         var self = this;
-        function resultCallback(receivedCookies) {
-            if (progress.isCanceled())
+        function resultCallback(receivedCookies)
+        {
+            if (progress.isCanceled()) {
+                callback(result);
                 return;
+            }
 
             self.processCookies(receivedCookies, requests, result);
             callback(result);
