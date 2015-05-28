@@ -65,25 +65,6 @@ WebInspector.TimelineFrameOverview = function(model, frameModel)
 WebInspector.TimelineFrameOverview.prototype = {
     /**
      * @override
-     * @param {!WebInspector.OverviewGrid} grid
-     */
-    setOverviewGrid: function(grid)
-    {
-        this._overviewGrid = grid;
-        this._overviewGrid.element.classList.add("timeline-overview-frames-mode");
-    },
-
-    /**
-     * @override
-     */
-    dispose: function()
-    {
-        WebInspector.TimelineOverviewBase.prototype.dispose.call(this);
-        this._overviewGrid.element.classList.remove("timeline-overview-frames-mode");
-    },
-
-    /**
-     * @override
      */
     reset: function()
     {

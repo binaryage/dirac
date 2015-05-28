@@ -602,10 +602,10 @@ WebInspector.TimelinePanel.prototype = {
         this._removeAllModeViews();
         this._overviewControls = [];
 
-        if (isFrameMode)
-            this._overviewControls.push(new WebInspector.TimelineFrameOverview(this._model, this._frameModel()));
-        else
-            this._overviewControls.push(new WebInspector.TimelineEventOverview(this._model));
+        var mainOverview = isFrameMode ? new WebInspector.TimelineFrameOverview(this._model, this._frameModel())
+                                       : new WebInspector.TimelineEventOverview(this._model);
+        this._overviewControls.push(mainOverview);
+        this.element.classList.toggle("timeline-overview-frames-mode", isFrameMode);
 
         if (this._flameChartEnabledSetting.get()) {
             this._filterBar.filterButton().setEnabled(false);

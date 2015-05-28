@@ -81,7 +81,6 @@ WebInspector.TimelineOverviewPane.prototype = {
             this._overviewControls[i].dispose();
 
         for (var i = 0; i < overviewControls.length; ++i) {
-            overviewControls[i].setOverviewGrid(this._overviewGrid);
             overviewControls[i].show(this._overviewGrid.element);
             if (this._currentSelection)
                 overviewControls[i].select(this._currentSelection);
@@ -323,11 +322,6 @@ WebInspector.TimelineOverview.prototype = {
      */
     show: function(parentElement, insertBefore) { },
 
-    /**
-     * @param {!WebInspector.OverviewGrid} grid
-     */
-    setOverviewGrid: function(grid) { },
-
     update: function() { },
 
     dispose: function() { },
@@ -380,14 +374,6 @@ WebInspector.TimelineOverviewBase = function(model)
 }
 
 WebInspector.TimelineOverviewBase.prototype = {
-    /**
-     * @override
-     * @param {!WebInspector.OverviewGrid} grid
-     */
-    setOverviewGrid: function(grid)
-    {
-    },
-
     /**
      * @override
      */
