@@ -85,11 +85,14 @@
     border-bottom: none;
     line-height: 15px;
     white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
     cursor: default;
     display: flex;
     align-items: center;
+}
+
+.tabbed-pane-header-tab-title {
+    text-overflow: ellipsis;
+    overflow: hidden;
 }
 
 :host-context(.material) .tabbed-pane-header-tab {
