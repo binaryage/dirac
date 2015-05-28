@@ -30,36 +30,34 @@
 
 /**
  * @constructor
- * @extends {WebInspector.ElementsSidebarPane}
+ * @extends {WebInspector.ThrottledWidget}
+ * @param {!WebInspector.SharedSidebarModel} sharedModel
  */
-WebInspector.PlatformFontsSidebarPane = function()
+WebInspector.PlatformFontsWidget = function(sharedModel)
 {
-    WebInspector.ElementsSidebarPane.call(this, WebInspector.UIString("Fonts"));
+    WebInspector.ThrottledWidget.call(this);
     this.element.classList.add("platform-fonts");
 
+    this._sharedModel = sharedModel;
+    this._sharedModel.addEventListener(WebInspector.SharedSidebarModel.Events.ComputedStyleChanged, this.update, this);
+
     this._sectionTitle = createElementWithClass("div", "sidebar-separator");
-    this.element.insertBefore(this._sectionTitle, this.bodyElement);
+    this.element.appendChild(this._sectionTitle);
     this._sectionTitle.textContent = WebInspector.UIString("Rendered Fonts");
-    this._fontStatsSection = this.bodyElement.createChild("div", "stats-section");
+    this._fontStatsSection = this.element.createChild("div", "stats-section");
 }
 
-WebInspector.PlatformFontsSidebarPane.prototype = {
-    /**
-     * @override
-     */
-    onDOMModelChanged: function()
-    {
-        this.update();
-    },
+/**
+ * @param {!WebInspector.SharedSidebarModel} sharedModel
+ * @return {!WebInspector.ElementsSidebarViewWrapperPane}
+ */
+WebInspector.PlatformFontsWidget.createSidebarWrapper = function(sharedModel)
+{
+    var widget = new WebInspector.PlatformFontsWidget(sharedModel);
+    return new WebInspector.ElementsSidebarViewWrapperPane(WebInspector.UIString("Fonts"), widget)
+}
 
-    /**
-     * @override
-     */
-    onCSSModelChanged: function()
-    {
-        this.update();
-    },
-
+WebInspector.PlatformFontsWidget.prototype = {
     /**
      * @override
      * @param {!WebInspector.Throttler.FinishCallback} finishedCallback
@@ -67,12 +65,13 @@ WebInspector.PlatformFontsSidebarPane.prototype = {
      */
     doUpdate: function(finishedCallback)
     {
-        var cssModel = this.cssModel();
-        if (!this.node() || !cssModel) {
+        var cssModel = this._sharedModel.cssModel();
+        var node = this._sharedModel.node();
+        if (!node || !cssModel) {
             finishedCallback();
             return;
         }
-        cssModel.getPlatformFontsForNode(this.node().id, this._refreshUI.bind(this, /** @type {!WebInspector.DOMNode} */ (this.node()), finishedCallback));
+        cssModel.getPlatformFontsForNode(node.id, this._refreshUI.bind(this, node, finishedCallback));
     },
 
     /**
@@ -83,7 +82,7 @@ WebInspector.PlatformFontsSidebarPane.prototype = {
      */
     _refreshUI: function(node, finishedCallback, cssFamilyName, platformFonts)
     {
-        if (this.node() !== node) {
+        if (this._sharedModel.node() !== node) {
             finishedCallback();
             return;
         }
@@ -115,5 +114,5 @@ WebInspector.PlatformFontsSidebarPane.prototype = {
         finishedCallback();
     },
 
-    __proto__: WebInspector.ElementsSidebarPane.prototype
+    __proto__: WebInspector.ThrottledWidget.prototype
 }

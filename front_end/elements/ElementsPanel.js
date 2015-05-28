@@ -69,7 +69,8 @@ WebInspector.ElementsPanel = function()
     this.sidebarPanes = {};
     /** @type !Array<!WebInspector.ElementsSidebarViewWrapperPane> */
     this._elementsSidebarViewWrappers = [];
-    this.sidebarPanes.platformFonts = new WebInspector.PlatformFontsSidebarPane();
+    var sharedSidebarModel = new WebInspector.SharedSidebarModel();
+    this.sidebarPanes.platformFonts = WebInspector.PlatformFontsWidget.createSidebarWrapper(sharedSidebarModel);
     this.sidebarPanes.styles = new WebInspector.StylesSidebarPane(this._showStylesSidebar.bind(this));
     this.sidebarPanes.computedStyle = new WebInspector.ComputedStyleSidebarPane(this.sidebarPanes.styles);
     this.sidebarPanes.styles.addEventListener(WebInspector.StylesSidebarPane.Events.SelectorEditingStarted, this._onEditingSelectorStarted.bind(this));
