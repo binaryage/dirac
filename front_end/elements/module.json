@@ -92,7 +92,7 @@
         "PropertiesWidget.js",
         "StylesSectionModel.js",
         "StylesSidebarPane.js",
-        "ComputedStyleSidebarPane.js",
+        "ComputedStyleWidget.js",
         "ElementsPanel.js"
     ],
     "resources": [

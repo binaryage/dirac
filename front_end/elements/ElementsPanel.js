@@ -72,7 +72,11 @@ WebInspector.ElementsPanel = function()
     var sharedSidebarModel = new WebInspector.SharedSidebarModel();
     this.sidebarPanes.platformFonts = WebInspector.PlatformFontsWidget.createSidebarWrapper(sharedSidebarModel);
     this.sidebarPanes.styles = new WebInspector.StylesSidebarPane(this._showStylesSidebar.bind(this));
-    this.sidebarPanes.computedStyle = new WebInspector.ComputedStyleSidebarPane(this.sidebarPanes.styles);
+
+    this._computedStylesFilterBoxContainer = createElement("div");
+    this._computedStylesFilterBoxContainer.className = "sidebar-pane-filter-box";
+    this.sidebarPanes.computedStyle = WebInspector.ComputedStyleWidget.createSidebarWrapper(this.sidebarPanes.styles, sharedSidebarModel, this._computedStylesFilterBoxContainer);
+
     this.sidebarPanes.styles.addEventListener(WebInspector.StylesSidebarPane.Events.SelectorEditingStarted, this._onEditingSelectorStarted.bind(this));
     this.sidebarPanes.styles.addEventListener(WebInspector.StylesSidebarPane.Events.SelectorEditingEnded, this._onEditingSelectorEnded.bind(this));
 
@@ -80,9 +84,6 @@ WebInspector.ElementsPanel = function()
     this._matchedStylesFilterBoxContainer.className = "sidebar-pane-filter-box";
     this.sidebarPanes.styles.setFilterBoxContainer(this._matchedStylesFilterBoxContainer);
 
-    this._computedStylesFilterBoxContainer = createElement("div");
-    this._computedStylesFilterBoxContainer.className = "sidebar-pane-filter-box";
-    this.sidebarPanes.computedStyle.setFilterBoxContainer(this._computedStylesFilterBoxContainer);
 
     this.sidebarPanes.metrics = new WebInspector.MetricsSidebarPane();
     this.sidebarPanes.properties = WebInspector.PropertiesWidget.createSidebarWrapper();

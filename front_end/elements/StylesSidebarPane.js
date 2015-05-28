@@ -77,20 +77,6 @@ WebInspector.StylesSidebarPane = function(requestShowCallback)
     this._keyUpBound = this._keyUp.bind(this);
 }
 
-/**
- * @param {?WebInspector.DOMNode} node
- * @return {?WebInspector.DOMNode}
- */
-WebInspector.StylesSidebarPane.normalizeNode = function(node)
-{
-    if (node && node.nodeType() === Node.TEXT_NODE && node.parentNode)
-        node = node.parentNode;
-
-    if (node && node.nodeType() !== Node.ELEMENT_NODE)
-        node = null;
-    return node;
-}
-
 // Keep in sync with ComputedStyleConstants.h PseudoId enum. Array below contains pseudo id names for corresponding enum indexes.
 // First item is empty due to its artificial NOPSEUDO nature in the enum.
 // FIXME: find a way of generating this mapping or getting it from combination of ComputedStyleConstants and CSSSelector.cpp at
@@ -364,7 +350,7 @@ WebInspector.StylesSidebarPane.prototype = {
         }
 
         this._stylesPopoverHelper.hide();
-        node = WebInspector.StylesSidebarPane.normalizeNode(node);
+        node = WebInspector.SharedSidebarModel.elementNode(node);
 
         this._resetCache();
         this._animationsControlPane.setNode(node);

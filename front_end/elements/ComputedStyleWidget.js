@@ -30,39 +30,57 @@
 /**
  * @constructor
  * @param {!WebInspector.StylesSidebarPane} stylesSidebarPane
- * @extends {WebInspector.ElementsSidebarPane}
+ * @param {!WebInspector.SharedSidebarModel} sharedModel
+ * @param {!Element} filterContainer
+ * @extends {WebInspector.ThrottledWidget}
  */
-WebInspector.ComputedStyleSidebarPane = function(stylesSidebarPane)
+WebInspector.ComputedStyleWidget = function(stylesSidebarPane, sharedModel, filterContainer)
 {
-    WebInspector.ElementsSidebarPane.call(this, WebInspector.UIString("Computed Style"));
+    WebInspector.ThrottledWidget.call(this);
     this.registerRequiredCSS("elements/computedStyleSidebarPane.css");
     this._alwaysShowComputedProperties = { "display": true, "height": true, "width": true };
+
+    this._sharedModel = sharedModel;
+    this._sharedModel.addEventListener(WebInspector.SharedSidebarModel.Events.ComputedStyleChanged, this.update, this);
 
     this._showInheritedComputedStylePropertiesSetting = WebInspector.settings.createSetting("showInheritedComputedStyleProperties", false);
 
     var inheritedCheckBox = WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Show inherited properties"), this._showInheritedComputedStylePropertiesSetting, true);
     inheritedCheckBox.classList.add("checkbox-with-label");
-    this.bodyElement.appendChild(inheritedCheckBox);
-    this.bodyElement.classList.add("computed-style-sidebar-pane");
+    this.element.appendChild(inheritedCheckBox);
+    this.element.classList.add("computed-style-sidebar-pane");
     this._showInheritedComputedStylePropertiesSetting.addChangeListener(this._showInheritedComputedStyleChanged.bind(this));
 
-    this._propertiesContainer = this.bodyElement.createChild("div", "monospace");
+    this._propertiesContainer = this.element.createChild("div", "monospace");
     this._propertiesContainer.classList.add("computed-properties");
     this._onTracePropertyBound = this._onTraceProperty.bind(this);
 
     this._stylesSidebarPane = stylesSidebarPane;
+    this._installFilter(filterContainer);
 }
 
-WebInspector.ComputedStyleSidebarPane._propertySymbol = Symbol("property");
+/**
+ * @param {!WebInspector.StylesSidebarPane} stylesSidebarPane
+ * @param {!WebInspector.SharedSidebarModel} sharedModel
+ * @param {!Element} filterContainer
+ * @return {!WebInspector.ElementsSidebarViewWrapperPane}
+ */
+WebInspector.ComputedStyleWidget.createSidebarWrapper = function(stylesSidebarPane, sharedModel, filterContainer)
+{
+    var widget = new WebInspector.ComputedStyleWidget(stylesSidebarPane, sharedModel, filterContainer);
+    return new WebInspector.ElementsSidebarViewWrapperPane(WebInspector.UIString("Computed Style"), widget)
+}
 
-WebInspector.ComputedStyleSidebarPane.prototype = {
+WebInspector.ComputedStyleWidget._propertySymbol = Symbol("property");
+
+WebInspector.ComputedStyleWidget.prototype = {
     /**
      * @param {!Event} event
      */
     _onTraceProperty: function(event)
     {
         var item = event.target.enclosingNodeOrSelfWithClass("computed-style-property");
-        var property = item && item[WebInspector.ComputedStyleSidebarPane._propertySymbol];
+        var property = item && item[WebInspector.ComputedStyleWidget._propertySymbol];
         if (!property)
             return;
         this._stylesSidebarPane.tracePropertyName(property.name);
@@ -75,23 +93,12 @@ WebInspector.ComputedStyleSidebarPane.prototype = {
 
     /**
      * @override
-     * @param {?WebInspector.DOMNode} node
-     */
-    setNode: function(node)
-    {
-        node = WebInspector.StylesSidebarPane.normalizeNode(node);
-        this._resetCache();
-        WebInspector.ElementsSidebarPane.prototype.setNode.call(this, node);
-    },
-
-    /**
-     * @override
      * @param {!WebInspector.Throttler.FinishCallback} finishedCallback
      */
     doUpdate: function(finishedCallback)
     {
         var promises = [
-            this._fetchComputedStyle(),
+            this._sharedModel.fetchComputedStyle(),
             this._stylesSidebarPane.fetchMatchedCascade()
         ];
         Promise.all(promises)
@@ -114,16 +121,16 @@ WebInspector.ComputedStyleSidebarPane.prototype = {
     },
 
     /**
-     * @param {?WebInspector.CSSStyleDeclaration} computedStyle
+     * @param {?WebInspector.SharedSidebarModel.ComputedStyle} nodeStyle
        @param {?{matched: !WebInspector.SectionCascade, pseudo: !Map.<number, !WebInspector.SectionCascade>}} cascades
      */
-    _innerRebuildUpdate: function(computedStyle, cascades)
+    _innerRebuildUpdate: function(nodeStyle, cascades)
     {
         this._propertiesContainer.removeChildren();
-        if (!computedStyle || !cascades)
+        if (!nodeStyle || !cascades)
             return;
 
-        var uniqueProperties = computedStyle.allProperties.slice();
+        var uniqueProperties = nodeStyle.computedStyle.allProperties.slice();
         uniqueProperties.sort(propertySorter);
 
         var showInherited = this._showInheritedComputedStylePropertiesSetting.get();
@@ -133,12 +140,12 @@ WebInspector.ComputedStyleSidebarPane.prototype = {
             if (!showInherited && inherited && !(property.name in this._alwaysShowComputedProperties))
                 continue;
             var canonicalName = WebInspector.CSSMetadata.canonicalPropertyName(property.name);
-            if (property.name !== canonicalName && property.value === computedStyle.getPropertyValue(canonicalName))
+            if (property.name !== canonicalName && property.value === nodeStyle.computedStyle.getPropertyValue(canonicalName))
                 continue;
             var item = this._propertiesContainer.createChild("div", "computed-style-property");
-            item[WebInspector.ComputedStyleSidebarPane._propertySymbol] = property;
+            item[WebInspector.ComputedStyleWidget._propertySymbol] = property;
             item.classList.toggle("computed-style-property-inherited", inherited);
-            var renderer = new WebInspector.StylesSidebarPropertyRenderer(null, this.node(), property.name, property.value);
+            var renderer = new WebInspector.StylesSidebarPropertyRenderer(null, nodeStyle.node, property.name, property.value);
             renderer.setColorHandler(this._processColor.bind(this));
 
             if (!inherited) {
@@ -183,22 +190,22 @@ WebInspector.ComputedStyleSidebarPane.prototype = {
     {
         for (var i = 0; i < this._propertiesContainer.children.length; ++i) {
             var item = this._propertiesContainer.children[i];
-            var property = item[WebInspector.ComputedStyleSidebarPane._propertySymbol];
+            var property = item[WebInspector.ComputedStyleWidget._propertySymbol];
             var matched = !regex || regex.test(property.name) || regex.test(property.value);
             item.classList.toggle("hidden", !matched);
         }
     },
 
     /**
-     * @param {!Element} element
+     * @param {!Element} container
      */
-    setFilterBoxContainer: function(element)
+    _installFilter: function(container)
     {
-        element.appendChild(WebInspector.StylesSidebarPane.createPropertyFilterElement(WebInspector.UIString("Filter"), filterCallback.bind(this)));
+        container.appendChild(WebInspector.StylesSidebarPane.createPropertyFilterElement(WebInspector.UIString("Filter"), filterCallback.bind(this)));
 
         /**
          * @param {?RegExp} regex
-         * @this {WebInspector.ComputedStyleSidebarPane}
+         * @this {WebInspector.ComputedStyleWidget}
          */
         function filterCallback(regex)
         {
@@ -207,64 +214,5 @@ WebInspector.ComputedStyleSidebarPane.prototype = {
         }
     },
 
-    /**
-     * @return {!Promise.<?WebInspector.CSSStyleDeclaration>}
-     */
-    _fetchComputedStyle: function()
-    {
-        var node = this.node();
-        var cssModel = this.cssModel();
-        if (!node || !cssModel)
-            return Promise.resolve(/** @type {?WebInspector.CSSStyleDeclaration} */(null));
-
-        if (!this._computedStylePromise)
-            this._computedStylePromise = new Promise(getComputedStyle.bind(null, node)).then(verifyOutdated.bind(this, node));
-
-        return this._computedStylePromise;
-
-        /**
-         * @param {!WebInspector.DOMNode} node
-         * @param {function(?WebInspector.CSSStyleDeclaration)} resolve
-         */
-        function getComputedStyle(node, resolve)
-        {
-            cssModel.getComputedStyleAsync(node.id, resolve);
-        }
-
-        /**
-         * @param {!WebInspector.DOMNode} node
-         * @param {?WebInspector.CSSStyleDeclaration} style
-         * @return {?WebInspector.CSSStyleDeclaration}
-         * @this {WebInspector.ComputedStyleSidebarPane}
-         */
-        function verifyOutdated(node, style)
-        {
-            return node !== this.node() ? null : style;
-        }
-    },
-
-    _resetCache: function()
-    {
-        delete this._computedStylePromise;
-    },
-
-    /**
-     * @override
-     */
-    onCSSModelChanged: function()
-    {
-        this._resetCache();
-        this.update();
-    },
-
-    /**
-     * @override
-     */
-    onDOMModelChanged: function()
-    {
-        this._resetCache();
-        this.update();
-    },
-
-    __proto__: WebInspector.ElementsSidebarPane.prototype
+    __proto__: WebInspector.ThrottledWidget.prototype
 }

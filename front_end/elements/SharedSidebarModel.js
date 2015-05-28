@@ -13,6 +13,20 @@ WebInspector.SharedSidebarModel = function()
     WebInspector.context.addFlavorChangeListener(WebInspector.DOMNode, this._onNodeChanged, this);
 }
 
+/**
+ * @param {?WebInspector.DOMNode} node
+ * @return {?WebInspector.DOMNode}
+ */
+WebInspector.SharedSidebarModel.elementNode = function(node)
+{
+    if (node && node.nodeType() === Node.TEXT_NODE && node.parentNode)
+        node = node.parentNode;
+
+    if (node && node.nodeType() !== Node.ELEMENT_NODE)
+        node = null;
+    return node;
+}
+
 WebInspector.SharedSidebarModel.Events = {
     ComputedStyleChanged: "ComputedStyleChanged"
 }
@@ -74,10 +88,66 @@ WebInspector.SharedSidebarModel.prototype = {
         }
     },
 
+    /**
+     * @return {?WebInspector.DOMNode}
+     */
+    _elementNode: function()
+    {
+        return WebInspector.SharedSidebarModel.elementNode(this.node());
+    },
+
+    /**
+     * @return {!Promise.<?WebInspector.SharedSidebarModel.ComputedStyle>}
+     */
+    fetchComputedStyle: function()
+    {
+        var elementNode = this._elementNode();
+        var cssModel = this.cssModel();
+        if (!elementNode || !cssModel)
+            return Promise.resolve(/** @type {?WebInspector.SharedSidebarModel.ComputedStyle} */(null));
+
+        if (!this._computedStylePromise)
+            this._computedStylePromise = new Promise(getComputedStyle.bind(null, elementNode)).then(verifyOutdated.bind(this, elementNode));
+
+        return this._computedStylePromise;
+
+        /**
+         * @param {!WebInspector.DOMNode} elementNode
+         * @param {function(?WebInspector.CSSStyleDeclaration)} resolve
+         */
+        function getComputedStyle(elementNode, resolve)
+        {
+            cssModel.getComputedStyleAsync(elementNode.id, resolve);
+        }
+
+        /**
+         * @param {!WebInspector.DOMNode} elementNode
+         * @param {?WebInspector.CSSStyleDeclaration} style
+         * @return {?WebInspector.SharedSidebarModel.ComputedStyle}
+         * @this {WebInspector.SharedSidebarModel}
+         */
+        function verifyOutdated(elementNode, style)
+        {
+            return elementNode === this._elementNode() && style ? new WebInspector.SharedSidebarModel.ComputedStyle(elementNode, style) : /** @type {?WebInspector.SharedSidebarModel.ComputedStyle} */(null);
+        }
+    },
+
     _onComputedStyleChanged: function()
     {
+        delete this._computedStylePromise;
         this.dispatchEventToListeners(WebInspector.SharedSidebarModel.Events.ComputedStyleChanged);
     },
 
     __proto__: WebInspector.Object.prototype
+}
+
+/**
+ * @constructor
+ * @param {!WebInspector.DOMNode} node
+ * @param {!WebInspector.CSSStyleDeclaration} computedStyle
+ */
+WebInspector.SharedSidebarModel.ComputedStyle = function(node, computedStyle)
+{
+    this.node = node;
+    this.computedStyle = computedStyle;
 }
