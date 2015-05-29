@@ -79,7 +79,7 @@ WebInspector.TimelinePanel = function()
     topPaneElement.id = "timeline-overview-panel";
 
     // Create top overview component.
-    this._overviewPane = new WebInspector.TimelineOverviewPane(this._model);
+    this._overviewPane = new WebInspector.TimelineOverviewPane();
     this._overviewPane.addEventListener(WebInspector.TimelineOverviewPane.Events.SelectionChanged, this._onOverviewSelectionChanged.bind(this));
     this._overviewPane.addEventListener(WebInspector.TimelineOverviewPane.Events.WindowChanged, this._onWindowChanged.bind(this));
     this._overviewPane.show(topPaneElement);
@@ -754,6 +754,7 @@ WebInspector.TimelinePanel.prototype = {
         delete this._selection;
         if (this._lazyFrameModel)
             this._lazyFrameModel.reset();
+        this._overviewPane.reset();
         for (var i = 0; i < this._currentViews.length; ++i)
             this._currentViews[i].reset();
         for (var i = 0; i < this._overviewControls.length; ++i)
@@ -829,13 +830,27 @@ WebInspector.TimelinePanel.prototype = {
             this._lazyFrameModel.reset();
             this._lazyFrameModel.addTraceEvents(this._model.target(), this._model.inspectedTargetEvents(), this._tracingModel.sessionId());
         }
+        this._overviewPane.setBounds(this._model.minimumRecordTime(), this._model.maximumRecordTime());
         this.requestWindowTimes(this._model.minimumRecordTime(), this._model.maximumRecordTime());
         this._refreshViews();
         this._hideProgressPane();
         for (var i = 0; i < this._overviewControls.length; ++i)
             this._overviewControls[i].timelineStopped();
+        this._setMarkers();
         this._overviewPane.update();
         this._updateSearchHighlight(false, true);
+    },
+
+    _setMarkers: function()
+    {
+        var markers = new Map();
+        var recordTypes = WebInspector.TimelineModel.RecordType;
+        for (var record of this._model.eventDividerRecords()) {
+            if (record.type() === recordTypes.TimeStamp || record.type() === recordTypes.ConsoleTime)
+                continue;
+            markers.set(record.startTime(), WebInspector.TimelineUIUtils.createDividerForRecord(record, 0));
+        }
+        this._overviewPane.setMarkers(markers);
     },
 
     /**
@@ -1219,6 +1234,10 @@ WebInspector.TimelinePanel.prototype = {
         this._updateSelectionDetails();
     },
 
+    /**
+     * @param {number} startTime
+     * @param {number} endTime
+     */
     _revealTimeRange: function(startTime, endTime)
     {
         var timeShift = 0;

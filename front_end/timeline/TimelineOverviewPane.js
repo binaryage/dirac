@@ -31,23 +31,23 @@
 /**
  * @constructor
  * @extends {WebInspector.VBox}
- * @param {!WebInspector.TimelineModel} model
  */
-WebInspector.TimelineOverviewPane = function(model)
+WebInspector.TimelineOverviewPane = function()
 {
     WebInspector.VBox.call(this);
     this.element.id = "timeline-overview-pane";
 
-    this._model = model;
     this._overviewCalculator = new WebInspector.TimelineOverviewCalculator();
+    this._overviewCalculator._setWindow(0, 1000);
 
     this._overviewGrid = new WebInspector.OverviewGrid("timeline");
     this.element.appendChild(this._overviewGrid.element);
 
-    model.addEventListener(WebInspector.TimelineModel.Events.RecordsCleared, this._reset, this);
+    this._overviewGrid.setResizeEnabled(false);
     this._overviewGrid.addEventListener(WebInspector.OverviewGrid.Events.WindowChanged, this._onWindowChanged, this);
     this._overviewGrid.addEventListener(WebInspector.OverviewGrid.Events.Click, this._onClick, this);
     this._overviewControls = [];
+    this._markers = new Map();
 }
 
 WebInspector.TimelineOverviewPane.Events = {
@@ -89,21 +89,25 @@ WebInspector.TimelineOverviewPane.prototype = {
         this.update();
     },
 
+    /**
+     * @param {number} minimumBoundary
+     * @param {number} maximumBoundary
+     */
+    setBounds: function(minimumBoundary, maximumBoundary)
+    {
+        this._overviewCalculator._setWindow(minimumBoundary, maximumBoundary);
+        this._overviewGrid.setResizeEnabled(true);
+    },
+
     update: function()
     {
         if (!this.isShowing())
             return;
-
-        if (this._model.isEmpty())
-            this._overviewCalculator._setWindow(0, 1000);
-        else
-            this._overviewCalculator._setWindow(this._model.minimumRecordTime(), this._model.maximumRecordTime());
-
         this._overviewCalculator._setDisplayWindow(0, this._overviewGrid.clientWidth());
         for (var i = 0; i < this._overviewControls.length; ++i)
             this._overviewControls[i].update();
         this._overviewGrid.updateDividers(this._overviewCalculator);
-        this._updateEventDividers();
+        this._updateMarkers();
         this._updateWindow();
     },
 
@@ -117,29 +121,38 @@ WebInspector.TimelineOverviewPane.prototype = {
             overviewControl.select(selection);
     },
 
-    _updateEventDividers: function()
+    /**
+     * @param {!Map<number, !Element>} markers
+     */
+    setMarkers: function(markers)
     {
-        this._overviewGrid.removeEventDividers();
-        var recordTypes = WebInspector.TimelineModel.RecordType;
-        var dividers = new Map();
-        for (var record of this._model.eventDividerRecords()) {
-            if (record.type() === recordTypes.TimeStamp || record.type() === recordTypes.ConsoleTime)
-                continue;
-            var dividerPosition = Math.round(this._overviewCalculator.computePosition(record.startTime()));
-            // Limit the number of dividers to one per pixel.
-            if (dividers.has(dividerPosition))
-                continue;
-            dividers.set(dividerPosition, WebInspector.TimelineUIUtils.createDividerForRecord(record, dividerPosition));
-        }
-        this._overviewGrid.addEventDividers(dividers.valuesArray());
+        this._markers = markers;
+        this._updateMarkers();
     },
 
-    _reset: function()
+    _updateMarkers: function()
+    {
+        var filteredMarkers = new Map();
+        for (var time of this._markers.keys()) {
+            var marker = this._markers.get(time);
+            var position = Math.round(this._overviewCalculator.computePosition(time));
+            // Limit the number of markers to one per pixel.
+            if (filteredMarkers.has(position))
+                continue;
+            filteredMarkers.set(position, marker);
+            marker.style.left = position + "px";
+        }
+        this._overviewGrid.removeEventDividers();
+        this._overviewGrid.addEventDividers(filteredMarkers.valuesArray());
+    },
+
+    reset: function()
     {
         this._overviewCalculator.reset();
         this._overviewGrid.reset();
         this._overviewGrid.setResizeEnabled(false);
         this._overviewGrid.updateDividers(this._overviewCalculator);
+        this._markers = new Map();
         for (var i = 0; i < this._overviewControls.length; ++i)
             this._overviewControls[i].reset();
         this.update();
@@ -200,7 +213,6 @@ WebInspector.TimelineOverviewPane.prototype = {
         var windowBoundaries = this._overviewControls[0].windowBoundaries(this._windowStartTime, this._windowEndTime);
         this._muteOnWindowChanged = true;
         this._overviewGrid.setWindow(windowBoundaries.left, windowBoundaries.right);
-        this._overviewGrid.setResizeEnabled(!!this._model.records().length);
         this._muteOnWindowChanged = false;
     },
 
