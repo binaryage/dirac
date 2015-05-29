@@ -29,42 +29,57 @@
 
 /**
  * @constructor
- * @extends {WebInspector.ElementsSidebarPane}
+ * @extends {WebInspector.ThrottledWidget}
  */
-WebInspector.EventListenersSidebarPane = function()
+WebInspector.EventListenersWidget = function()
 {
-    WebInspector.ElementsSidebarPane.call(this, WebInspector.UIString("Event Listeners"));
-    this.bodyElement.classList.add("events-pane");
+    WebInspector.ThrottledWidget.call(this);
+    this.element.classList.add("events-pane");
 
-    var refreshButton = this.titleElement.createChild("button", "pane-title-button refresh");
-    refreshButton.addEventListener("click", this.update.bind(this), false);
-    refreshButton.title = WebInspector.UIString("Refresh");
+    this._settingsSelectElement = createElement("select");
+    this._settingsSelectElement.classList.add("select-filter")
 
-    this.settingsSelectElement = this.titleElement.createChild("select", "select-filter");
-
-    var option = this.settingsSelectElement.createChild("option");
+    var option = this._settingsSelectElement.createChild("option");
     option.value = "all";
     option.label = WebInspector.UIString("All Nodes");
 
-    option = this.settingsSelectElement.createChild("option");
+    option = this._settingsSelectElement.createChild("option");
     option.value = "selected";
     option.label = WebInspector.UIString("Selected Node Only");
 
     this._eventListenersFilterSetting = WebInspector.settings.createSetting("eventListenersFilter", "all");
     var filter = this._eventListenersFilterSetting.get();
     if (filter === "all")
-        this.settingsSelectElement[0].selected = true;
+        this._settingsSelectElement[0].selected = true;
     else if (filter === "selected")
-        this.settingsSelectElement[1].selected = true;
-    this.settingsSelectElement.addEventListener("click", consumeEvent, false);
-    this.settingsSelectElement.addEventListener("change", this._changeSetting.bind(this), false);
+        this._settingsSelectElement[1].selected = true;
+    this._settingsSelectElement.addEventListener("click", consumeEvent, false);
+    this._settingsSelectElement.addEventListener("change", this._changeSetting.bind(this), false);
 
-    this._eventListenersView = new WebInspector.EventListenersView(this.bodyElement);
+    this._eventListenersView = new WebInspector.EventListenersView(this.element);
+
+    WebInspector.context.addFlavorChangeListener(WebInspector.DOMNode, this.update, this);
 }
 
-WebInspector.EventListenersSidebarPane._objectGroupName = "event-listeners-panel";
+/**
+ * @return {!WebInspector.ElementsSidebarViewWrapperPane}
+ */
+WebInspector.EventListenersWidget.createSidebarWrapper = function()
+{
+    var widget = new WebInspector.EventListenersWidget();
+    var sidebarView = new WebInspector.ElementsSidebarViewWrapperPane(WebInspector.UIString("Event Listeners"), widget);
 
-WebInspector.EventListenersSidebarPane.prototype = {
+    var refreshButton = sidebarView.titleElement.createChild("button", "pane-title-button refresh");
+    refreshButton.addEventListener("click", widget.update.bind(widget), false);
+    refreshButton.title = WebInspector.UIString("Refresh");
+
+    sidebarView.titleElement.appendChild(widget._settingsSelectElement);
+    return sidebarView;
+}
+
+WebInspector.EventListenersWidget._objectGroupName = "event-listeners-panel";
+
+WebInspector.EventListenersWidget.prototype = {
     /**
      * @override
      * @param {!WebInspector.Throttler.FinishCallback} finishCallback
@@ -73,13 +88,13 @@ WebInspector.EventListenersSidebarPane.prototype = {
     doUpdate: function(finishCallback)
     {
         if (this._lastRequestedNode) {
-            this._lastRequestedNode.target().runtimeAgent().releaseObjectGroup(WebInspector.EventListenersSidebarPane._objectGroupName);
+            this._lastRequestedNode.target().runtimeAgent().releaseObjectGroup(WebInspector.EventListenersWidget._objectGroupName);
             delete this._lastRequestedNode;
         }
         this._eventListenersView.reset();
-        var node = this.node();
+        var node = WebInspector.context.flavor(WebInspector.DOMNode);
         if (!node) {
-            this._eventListenersArivedForTest();
+            this._eventListenersArrivedForTest();
             finishCallback();
             return;
         }
@@ -88,11 +103,11 @@ WebInspector.EventListenersSidebarPane.prototype = {
         var selectedNodeOnly = "selected" === this._eventListenersFilterSetting.get();
         var promises = [];
         var listenersView = this._eventListenersView;
-        promises.push(node.resolveToObjectPromise(WebInspector.EventListenersSidebarPane._objectGroupName).then(listenersView.addObjectEventListeners.bind(listenersView)));
+        promises.push(node.resolveToObjectPromise(WebInspector.EventListenersWidget._objectGroupName).then(listenersView.addObjectEventListeners.bind(listenersView)));
         if (!selectedNodeOnly) {
             var currentNode = node.parentNode;
             while (currentNode) {
-                promises.push(currentNode.resolveToObjectPromise(WebInspector.EventListenersSidebarPane._objectGroupName).then(listenersView.addObjectEventListeners.bind(listenersView)));
+                promises.push(currentNode.resolveToObjectPromise(WebInspector.EventListenersWidget._objectGroupName).then(listenersView.addObjectEventListeners.bind(listenersView)));
                 currentNode = currentNode.parentNode;
             }
             this._windowObjectInNodeContext(node).then(windowObjectCallback.bind(this));
@@ -101,7 +116,7 @@ WebInspector.EventListenersSidebarPane.prototype = {
         }
         /**
          * @param {!WebInspector.RemoteObject} object
-         * @this {WebInspector.EventListenersSidebarPane}
+         * @this {WebInspector.EventListenersWidget}
          */
         function windowObjectCallback(object)
         {
@@ -109,11 +124,11 @@ WebInspector.EventListenersSidebarPane.prototype = {
             Promise.all(promises).then(mycallback.bind(this));
         }
         /**
-         * @this {WebInspector.EventListenersSidebarPane}
+         * @this {WebInspector.EventListenersWidget}
          */
         function mycallback()
         {
-            this._eventListenersArivedForTest();
+            this._eventListenersArrivedForTest();
             finishCallback();
         }
     },
@@ -143,20 +158,20 @@ WebInspector.EventListenersSidebarPane.prototype = {
             } else {
                 context = executionContexts[0];
             }
-            context.evaluate("self", WebInspector.EventListenersSidebarPane._objectGroupName, false, true, false, false, fulfill);
+            context.evaluate("self", WebInspector.EventListenersWidget._objectGroupName, false, true, false, false, fulfill);
         }
     },
 
     _changeSetting: function()
     {
-        var selectedOption = this.settingsSelectElement[this.settingsSelectElement.selectedIndex];
+        var selectedOption = this._settingsSelectElement[this._settingsSelectElement.selectedIndex];
         this._eventListenersFilterSetting.set(selectedOption.value);
         this.update();
     },
 
-    _eventListenersArivedForTest: function()
+    _eventListenersArrivedForTest: function()
     {
     },
 
-    __proto__: WebInspector.ElementsSidebarPane.prototype
+    __proto__: WebInspector.ThrottledWidget.prototype
 }

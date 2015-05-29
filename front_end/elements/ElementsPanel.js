@@ -88,7 +88,7 @@ WebInspector.ElementsPanel = function()
     this.sidebarPanes.metrics = new WebInspector.MetricsSidebarPane();
     this.sidebarPanes.properties = WebInspector.PropertiesWidget.createSidebarWrapper();
     this.sidebarPanes.domBreakpoints = WebInspector.domBreakpointsSidebarPane.createProxy(this);
-    this.sidebarPanes.eventListeners = new WebInspector.EventListenersSidebarPane();
+    this.sidebarPanes.eventListeners = WebInspector.EventListenersWidget.createSidebarWrapper();
 
     WebInspector.dockController.addEventListener(WebInspector.DockController.Events.DockSideChanged, this._dockSideChanged.bind(this));
     WebInspector.moduleSetting("splitVerticallyWhenDockedToRight").addChangeListener(this._dockSideChanged.bind(this));
