@@ -110,6 +110,11 @@
     padding: 1px 0;
 }
 
+.network-log-grid.data-grid .timeline-column .sort-order-icon-container {
+    right: 15px;
+    pointer-events: none;
+}
+
 #network-container:not(.brief-mode) .network-log-grid.data-grid td.name-column:hover {
     text-decoration: underline;
 }

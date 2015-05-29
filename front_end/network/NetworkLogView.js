@@ -498,36 +498,44 @@ WebInspector.NetworkLogView.prototype = {
         var option = createElement("option");
         option.value = "startTime";
         option.label = WebInspector.UIString("Timeline");
+        option.disabled = true;
         timelineSorting.appendChild(option);
 
         option = createElement("option");
         option.value = "startTime";
-        option.label = WebInspector.UIString("Start Time");
+        option.label = WebInspector.UIString("Timeline \u2013 Start Time");
+        option.sortOrder = WebInspector.DataGrid.Order.Ascending;
         timelineSorting.appendChild(option);
 
         option = createElement("option");
         option.value = "responseTime";
-        option.label = WebInspector.UIString("Response Time");
+        option.label = WebInspector.UIString("Timeline \u2013 Response Time");
+        option.sortOrder = WebInspector.DataGrid.Order.Ascending;
         timelineSorting.appendChild(option);
 
         option = createElement("option");
         option.value = "endTime";
-        option.label = WebInspector.UIString("End Time");
+        option.label = WebInspector.UIString("Timeline \u2013 End Time");
+        option.sortOrder = WebInspector.DataGrid.Order.Ascending;
         timelineSorting.appendChild(option);
 
         option = createElement("option");
         option.value = "duration";
-        option.label = WebInspector.UIString("Duration");
+        option.label = WebInspector.UIString("Timeline \u2013 Total Duration");
+        option.sortOrder = WebInspector.DataGrid.Order.Descending;
         timelineSorting.appendChild(option);
 
         option = createElement("option");
         option.value = "latency";
-        option.label = WebInspector.UIString("Latency");
+        option.label = WebInspector.UIString("Timeline \u2013 Latency");
+        option.sortOrder = WebInspector.DataGrid.Order.Descending;
         timelineSorting.appendChild(option);
 
         var header = this._dataGrid.headerTableHeader("timeline");
         header.replaceChild(timelineSorting, header.firstChild);
+        header.createChild("div", "sort-order-icon-container").createChild("div", "sort-order-icon");
 
+        timelineSorting.selectedIndex = 1;
         timelineSorting.addEventListener("click", function(event) { event.consume(); }, false);
         timelineSorting.addEventListener("change", this._sortByTimeline.bind(this), false);
         this._timelineSortSelector = timelineSorting;
@@ -607,7 +615,7 @@ WebInspector.NetworkLogView.prototype = {
         var sortingFunction = this._sortingFunctions[value];
         this._dataGrid.sortNodes(sortingFunction);
         this._highlightNthMatchedRequestForSearch(this._updateMatchCountAndFindMatchIndex(this._currentMatchedRequestNode), false);
-        this._dataGrid.markColumnAsSortedBy("timeline", WebInspector.DataGrid.Order.Ascending);
+        this._dataGrid.markColumnAsSortedBy("timeline", selectedOption.sortOrder);
     },
 
     _updateSummaryBar: function()
