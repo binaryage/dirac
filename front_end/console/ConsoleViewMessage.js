@@ -611,7 +611,21 @@ WebInspector.ConsoleViewMessage.prototype = {
     _formatParameterAsError: function(output, elem)
     {
         var span = elem.createChild("span", "object-value-error source-code");
-        span.appendChild(WebInspector.linkifyStringAsFragment(output.description || ""));
+        var text = output.description || "";
+        var lines = text.split("\n", 2);
+        span.appendChild(WebInspector.linkifyStringAsFragment(lines[0]));
+        if (lines.length > 1) {
+            var detailedLink = elem.createChild("a");
+            detailedLink.textContent = "(\u2026)";
+            function showDetailed(event)
+            {
+                span.removeChildren();
+                detailedLink.remove();
+                span.appendChild(WebInspector.linkifyStringAsFragment(text));
+                event.consume(true);
+            }
+            detailedLink.addEventListener("click", showDetailed, false);
+        }
     },
 
     /**
