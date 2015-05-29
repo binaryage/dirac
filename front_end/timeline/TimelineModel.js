@@ -61,7 +61,8 @@ WebInspector.TimelineModel.RecordType = {
     ActivateLayerTree: "ActivateLayerTree",
     DrawFrame: "DrawFrame",
     ScheduleStyleRecalculation: "ScheduleStyleRecalculation",
-    RecalculateStyles: "RecalculateStyles",
+    RecalculateStyles: "RecalculateStyles", // For backwards compatibility only, now replaced by UpdateLayoutTree.
+    UpdateLayoutTree: "UpdateLayoutTree",
     InvalidateLayout: "InvalidateLayout",
     Layout: "Layout",
     UpdateLayer: "UpdateLayer",
@@ -107,7 +108,9 @@ WebInspector.TimelineModel.RecordType = {
     ResourceFinish: "ResourceFinish",
 
     FunctionCall: "FunctionCall",
-    GCEvent: "GCEvent",
+    GCEvent: "GCEvent", // For backwards compatibility only, now replaced by MinorGC/MajorGC.
+    MajorGC: "MajorGC",
+    MinorGC: "MinorGC",
     JSFrame: "JSFrame",
     JSSample: "JSSample",
     // V8Sample events are coming from tracing and contain raw stacks with function addresses.
@@ -364,6 +367,7 @@ WebInspector.TimelineModel.Record.prototype = {
     frameId: function()
     {
         switch (this._event.name) {
+        case WebInspector.TimelineModel.RecordType.UpdateLayoutTree:
         case WebInspector.TimelineModel.RecordType.RecalculateStyles:
         case WebInspector.TimelineModel.RecordType.Layout:
             return this._event.args["beginData"]["frame"];
@@ -455,6 +459,7 @@ WebInspector.TimelineModel.prototype = {
         }
         var categoriesArray = [
             "-*",
+            "devtools.timeline",
             disabledByDefault("devtools.timeline"),
             disabledByDefault("devtools.timeline.frame"),
             WebInspector.TracingModel.TopLevelEventCategory,
@@ -1052,6 +1057,7 @@ WebInspector.TimelineModel.prototype = {
             this._lastScheduleStyleRecalculation[event.args["data"]["frame"]] = event;
             break;
 
+        case recordTypes.UpdateLayoutTree:
         case recordTypes.RecalculateStyles:
             this._invalidationTracker.didRecalcStyle(event);
             if (event.args["beginData"])

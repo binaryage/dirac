@@ -169,8 +169,9 @@ WebInspector.TimelineJSProfileProcessor.generateJSFrameEvents = function(events)
     {
         var eventData = e.args["data"] || e.args["beginData"];
         var stackTrace = eventData && eventData["stackTrace"];
+        var recordTypes = WebInspector.TimelineModel.RecordType;
         // GC events do not hold call stack, so make a copy of the current stack.
-        if (e.name === WebInspector.TimelineModel.RecordType.GCEvent)
+        if (e.name === recordTypes.GCEvent || e.name === recordTypes.MajorGC || e.name === recordTypes.MinorGC)
             stackTrace = jsFramesStack.map(function(frameEvent) { return frameEvent.args["data"]; }).reverse();
         if (!stackTrace)
             return;
