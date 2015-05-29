@@ -362,9 +362,10 @@ WebInspector.TimelinePanel.prototype = {
 
         if (Runtime.experiments.isEnabled("filmStripInNetworkAndTimeline")) {
             this._captureFilmStripSetting = WebInspector.settings.createSetting("timelineCaptureFilmStrip", false);
+            this._captureFilmStripSetting.addChangeListener(this._onModeChanged, this);
             this._panelToolbar.appendToolbarItem(this._createSettingCheckbox(WebInspector.UIString("Screenshots"),
-                                                                          this._captureFilmStripSetting,
-                                                                          WebInspector.UIString("Capture screenshots while recording. (Has performance overhead)")));
+                                                                             this._captureFilmStripSetting,
+                                                                             WebInspector.UIString("Capture screenshots while recording. (Has performance overhead)")));
         }
 
         this._progressToolbarItem = new WebInspector.ToolbarItem(createElement("div"));
@@ -627,6 +628,9 @@ WebInspector.TimelinePanel.prototype = {
                 this._overviewControls.push(new WebInspector.TimelineMemoryOverview(this._model));
             this._addModeView(new WebInspector.MemoryCountersGraph(this, this._model));
         }
+
+        if (Runtime.experiments.isEnabled("filmStripInNetworkAndTimeline") && this._captureFilmStripSetting.get())
+            this._overviewControls.push(new WebInspector.TimelineFilmStripOverview(this._model, this._tracingModel));
 
         var mainTarget = WebInspector.targetManager.mainTarget();
         this._overviewPane.setOverviewControls(this._overviewControls);
@@ -1784,3 +1788,38 @@ WebInspector.LoadTimelineHandler.prototype = {
     }
 }
 
+/**
+ * @constructor
+ * @extends {WebInspector.TimelineOverviewBase}
+ * @param {!WebInspector.TimelineModel} model
+ * @param {!WebInspector.TracingModel} tracingModel
+ */
+WebInspector.TimelineFilmStripOverview = function(model, tracingModel)
+{
+    WebInspector.TimelineOverviewBase.call(this, model);
+    this._tracingModel = tracingModel;
+    this._filmStripView = new WebInspector.FilmStripView();
+    this._filmStripView.show(this.element);
+}
+
+WebInspector.TimelineFilmStripOverview.prototype = {
+    /**
+     * @override
+     */
+    update: function()
+    {
+        var model = this._tracingModel;
+        this._filmStripModel = new WebInspector.FilmStripModel(model);
+        this._filmStripView.setModel(this._filmStripModel, model.minimumRecordTime(), model.maximumRecordTime() - model.minimumRecordTime());
+    },
+
+    /**
+     * @override
+     */
+    reset: function()
+    {
+        this._filmStripView.reset();
+    },
+
+    __proto__: WebInspector.TimelineOverviewBase.prototype
+}
