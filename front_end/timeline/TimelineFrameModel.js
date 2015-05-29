@@ -444,7 +444,7 @@ WebInspector.TracingTimelineFrameModel.prototype = {
             return;
         }
 
-        if (event.name === eventNames.Program)
+        if (WebInspector.TracingModel.isTopLevelEvent(event))
             this._currentTaskTimeByCategory = {};
         if (!this._framePendingCommit && WebInspector.TracingTimelineFrameModel._mainFrameMarkers.indexOf(event.name) >= 0)
             this._framePendingCommit = new WebInspector.PendingFrame(this._currentTaskTimeByCategory);

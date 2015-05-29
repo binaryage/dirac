@@ -86,7 +86,7 @@ WebInspector.TimelinePresentationModel.prototype = {
      */
     addRecord: function(record)
     {
-        if (record.type() === WebInspector.TimelineModel.RecordType.Program) {
+        if (WebInspector.TracingModel.isTopLevelEvent(record.traceEvent())) {
             var records = record.children();
             for (var i = 0; i < records.length; ++i)
                 this._innerAddRecord(this._rootRecord, records[i]);

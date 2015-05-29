@@ -457,12 +457,12 @@ WebInspector.TimelineModel.prototype = {
             "-*",
             disabledByDefault("devtools.timeline"),
             disabledByDefault("devtools.timeline.frame"),
+            WebInspector.TracingModel.TopLevelEventCategory,
             WebInspector.TracingModel.ConsoleEventCategory
         ];
         if (Runtime.experiments.isEnabled("timelineFlowEvents")) {
             categoriesArray.push(disabledByDefault("toplevel.flow"),
-                                 disabledByDefault("ipc.flow"),
-                                 disabledByDefault("devtools.timeline.top-level-task"));
+                                 disabledByDefault("ipc.flow"));
         }
         if (Runtime.experiments.isEnabled("timelineTracingJSProfile") && enableJSSampling)
             categoriesArray.push(disabledByDefault("v8.cpu_profile"));
@@ -853,7 +853,7 @@ WebInspector.TimelineModel.prototype = {
 
         for (var i = 0; i < topLevelRecords.length; i++) {
             var record = topLevelRecords[i];
-            if (record.type() === WebInspector.TimelineModel.RecordType.Program)
+            if (WebInspector.TracingModel.isTopLevelEvent(record.traceEvent()))
                 this._mainThreadTasks.push(record);
         }
         this._records = topLevelRecords;
@@ -886,11 +886,8 @@ WebInspector.TimelineModel.prototype = {
 
         for (var i = 0, size = threadEvents.length; i < size; ++i) {
             var event = threadEvents[i];
-            for (var top = recordStack.peekLast(); top && top._event.endTime <= event.startTime; top = recordStack.peekLast()) {
+            for (var top = recordStack.peekLast(); top && top._event.endTime <= event.startTime; top = recordStack.peekLast())
                 recordStack.pop();
-                if (!recordStack.length)
-                    topLevelRecords.push(top);
-            }
             if (event.phase === WebInspector.TracingModel.Phase.AsyncEnd || event.phase === WebInspector.TracingModel.Phase.NestableAsyncEnd)
                 continue;
             var parentRecord = recordStack.peekLast();
@@ -900,16 +897,15 @@ WebInspector.TimelineModel.prototype = {
             var record = new WebInspector.TimelineModel.Record(this, event);
             if (WebInspector.TimelineUIUtils.isMarkerEvent(event))
                 this._eventDividerRecords.push(record);
-            if (!this._recordFilter.accept(record))
+            if (!this._recordFilter.accept(record) && !WebInspector.TracingModel.isTopLevelEvent(event))
                 continue;
             if (parentRecord)
                 parentRecord._addChild(record);
+            else
+                topLevelRecords.push(record);
             if (event.endTime)
                 recordStack.push(record);
         }
-
-        if (recordStack.length)
-            topLevelRecords.push(recordStack[0]);
 
         return topLevelRecords;
     },
@@ -983,7 +979,6 @@ WebInspector.TimelineModel.prototype = {
                 break;
             if (!this._processEvent(event))
                 continue;
-            this._updateEventStack(event);
             threadEvents.push(event);
             this._inspectedTargetEvents.push(event);
         }
@@ -1006,37 +1001,14 @@ WebInspector.TimelineModel.prototype = {
 
     /**
      * @param {!WebInspector.TracingModel.Event} event
-     */
-    _updateEventStack: function(event)
-    {
-        if (WebInspector.TracingModel.isAsyncPhase(event.phase))
-            return;
-        var eventStack = this._eventStack;
-        while (eventStack.length && eventStack.peekLast().endTime <= event.startTime)
-            eventStack.pop();
-        var duration = event.duration;
-        if (!duration)
-            return;
-        if (eventStack.length) {
-            var parent = eventStack.peekLast();
-            parent.selfTime -= duration;
-            if (parent.selfTime < 0) {
-                var epsilon = 1e-3;
-                if (parent.selfTime < -epsilon)
-                    console.error("Children are longer than parent at " + event.startTime + " (" + (event.startTime - this.minimumRecordTime()).toFixed(3) + ") by " + parent.selfTime.toFixed(3));
-                parent.selfTime = 0;
-            }
-        }
-        event.selfTime = duration;
-        eventStack.push(event);
-    },
-
-    /**
-     * @param {!WebInspector.TracingModel.Event} event
      * @return {boolean}
      */
     _processEvent: function(event)
     {
+        var eventStack = this._eventStack;
+        while (eventStack.length && eventStack.peekLast().endTime <= event.startTime)
+            eventStack.pop();
+
         var recordTypes = WebInspector.TimelineModel.RecordType;
 
         if (this._currentScriptEvent && event.startTime > this._currentScriptEvent.endTime)
@@ -1220,6 +1192,23 @@ WebInspector.TimelineModel.prototype = {
             // FIXME: bring back Animation events as we figure out a way to show them while not cluttering the UI.
             return false;
         }
+        if (WebInspector.TracingModel.isAsyncPhase(event.phase))
+            return true;
+        var duration = event.duration;
+        if (!duration)
+            return true;
+        if (eventStack.length) {
+            var parent = eventStack.peekLast();
+            parent.selfTime -= duration;
+            if (parent.selfTime < 0) {
+                var epsilon = 1e-3;
+                if (parent.selfTime < -epsilon)
+                    console.error("Children are longer than parent at " + event.startTime + " (" + (event.startTime - this.minimumRecordTime()).toFixed(3) + ") by " + parent.selfTime.toFixed(3));
+                parent.selfTime = 0;
+            }
+        }
+        event.selfTime = duration;
+        eventStack.push(event);
         return true;
     },
 
@@ -1567,23 +1556,21 @@ WebInspector.InclusiveTraceEventNameFilter.prototype = {
     accept: function(event)
     {
         return event.category === WebInspector.TracingModel.ConsoleEventCategory
-            || event.category === WebInspector.TracingModel.TopLevelEventCategory
             || !!this._eventNames[event.name];
     },
+
     __proto__: WebInspector.TraceEventNameFilter.prototype
 }
 
 /**
  * @constructor
- * @extends {WebInspector.TraceEventNameFilter}
- * @param {!Array.<string>} excludeNames
+ * @implements {WebInspector.TraceEventFilter}
  */
-WebInspector.ExclusiveTraceEventNameFilter = function(excludeNames)
+WebInspector.ExcludeTopLevelFilter = function()
 {
-    WebInspector.TraceEventNameFilter.call(this, excludeNames);
 }
 
-WebInspector.ExclusiveTraceEventNameFilter.prototype = {
+WebInspector.ExcludeTopLevelFilter.prototype = {
     /**
      * @override
      * @param {!WebInspector.TracingModel.Event} event
@@ -1591,10 +1578,8 @@ WebInspector.ExclusiveTraceEventNameFilter.prototype = {
      */
     accept: function(event)
     {
-        return !this._eventNames[event.name];
-    },
-
-    __proto__: WebInspector.TraceEventNameFilter.prototype
+        return !WebInspector.TracingModel.isTopLevelEvent(event);
+    }
 }
 
 /**

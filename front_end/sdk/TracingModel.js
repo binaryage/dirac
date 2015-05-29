@@ -47,11 +47,11 @@ WebInspector.TracingModel.MetadataEvent = {
     ThreadName: "thread_name"
 }
 
+WebInspector.TracingModel.TopLevelEventCategory = "toplevel";
 WebInspector.TracingModel.DevToolsMetadataEventCategory = "disabled-by-default-devtools.timeline";
 WebInspector.TracingModel.DevToolsTimelineEventCategory = "disabled-by-default-devtools.timeline";
 
 WebInspector.TracingModel.ConsoleEventCategory = "blink.console";
-WebInspector.TracingModel.TopLevelEventCategory = "disabled-by-default-devtools.timeline.top-level-task";
 
 WebInspector.TracingModel.FrameLifecycleEventCategory = "cc,devtools";
 
@@ -114,6 +114,16 @@ WebInspector.TracingModel.isAsyncPhase = function(phase)
 WebInspector.TracingModel.isFlowPhase = function(phase)
 {
     return WebInspector.TracingModel._flowEventsString.indexOf(phase) >= 0;
+}
+
+/**
+ * @param {!WebInspector.TracingModel.Event} event
+ * @return {boolean}
+ */
+WebInspector.TracingModel.isTopLevelEvent = function(event)
+{
+    return event.category === WebInspector.TracingModel.TopLevelEventCategory ||
+        event.category === WebInspector.TracingModel.DevToolsMetadataEventCategory && event.name === "Program"; // Older timelines may have this instead of toplevel.
 }
 
 /**
@@ -250,6 +260,8 @@ WebInspector.TracingModel.prototype = {
             var endTimeStamp = (payload.ts + (payload.dur || 0)) / 1000;
             this._maximumRecordTime = Math.max(this._maximumRecordTime, endTimeStamp);
             var event = process._addEvent(payload);
+            if (!event)
+                return;
             // Build async event when we've got events from all threads & processes, so we can sort them and process in the
             // chronological order. However, also add individual async events to the thread flow (above), so we can easily
             // display them on the same chart as other events, should we choose so.
@@ -858,7 +870,7 @@ WebInspector.TracingModel.Process.prototype = {
 
     /**
      * @param {!WebInspector.TracingManager.EventPayload} payload
-     * @return {!WebInspector.TracingModel.Event} event
+     * @return {?WebInspector.TracingModel.Event} event
      */
     _addEvent: function(payload)
     {
@@ -936,13 +948,19 @@ WebInspector.TracingModel.Thread.prototype = {
 
     /**
      * @param {!WebInspector.TracingManager.EventPayload} payload
-     * @return {!WebInspector.TracingModel.Event} event
+     * @return {?WebInspector.TracingModel.Event} event
      */
     _addEvent: function(payload)
     {
         var event = payload.ph === WebInspector.TracingModel.Phase.SnapshotObject
             ? WebInspector.TracingModel.ObjectSnapshot.fromPayload(payload, this)
             : WebInspector.TracingModel.Event.fromPayload(payload, this);
+        if (WebInspector.TracingModel.isTopLevelEvent(event)) {
+            // Discard nested "top-level" events.
+            if (this._lastTopLevelEvent && this._lastTopLevelEvent.endTime > event.startTime)
+                return null;
+            this._lastTopLevelEvent = event;
+        }
         this._events.push(event);
         return event;
     },
