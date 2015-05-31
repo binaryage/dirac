@@ -347,6 +347,7 @@
             'front_end/accessibility/accessibilityNode.css',
             'front_end/accessibility/AccessibilityModel.js',
             'front_end/accessibility/AccessibilitySidebarView.js',
+            'front_end/accessibility/AccessibilityStrings.js',
         ],
         'devtools_audits_js_files': [
             'front_end/audits/auditResultTree.css',

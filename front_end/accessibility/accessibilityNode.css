@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 The Chromium Authors. All rights reserved.
+ * Copyright 2015 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -9,15 +9,22 @@
     background-image: url(Images/speech.png);
     background-repeat: no-repeat;
     background-position: 2px center;
-    border-bottom: solid 1px rgba(128, 128, 128, 0.3);
-    padding: 2px 5px;
-    padding-left: 21px;
+    padding: 4px 4px 0 4px;
+    padding-left: 22px;
     min-height: 18px;
+    font-style: italic;
+}
+
+.ax-computed-text div {
+    display: inline-block;
+    border: solid 1px rgba(128, 128, 128, 0.3);
+    padding: 2px;
+    width: 100%;
     text-overflow: ellipsis;
     white-space: nowrap;
     overflow: hidden;
     width: 100%;
-    font-style: italic;
+    text-align: center;
 }
 
 div.ax-text-alternatives {
@@ -30,8 +37,12 @@ div.ax-text-alternatives {
     flex-shrink: 0;
 }
 
+.ax-readable-name {
+    flex-shrink: 0;
+}
+
 span.ax-role {
-    color: #006649;
+    font-weight: bold;
 }
 
 span.ax-internal-role {
@@ -41,4 +52,8 @@ span.ax-internal-role {
 .ax-ignored-info {
     padding: 6px;
     font-style: italic;
+}
+
+.tree-outline li {
+    padding-top: 5px;
 }

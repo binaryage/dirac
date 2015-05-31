@@ -1,4 +1,4 @@
-// Copyright (c) 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -212,7 +212,7 @@ WebInspector.AXComputedTextSubPane = function()
 
     this._noTextInfo = this.createInfo(WebInspector.UIString("No computed text"));
     this._noNodeInfo = this.createInfo(WebInspector.UIString("No accessibility node"));
-    this._treeOutline = this.createTreeOutline("monospace");
+    this._treeOutline = this.createTreeOutline();
 };
 
 
@@ -246,7 +246,7 @@ WebInspector.AXComputedTextSubPane.prototype = {
         // TODO(aboxhall): include contents where appropriate (requires protocol change)
         this._computedTextElement.classList.toggle("hidden", !axNode.name || !axNode.name.value);
         if (axNode.name && axNode.name.value)
-            this._computedTextElement.textContent = axNode.name.value;
+            this._computedTextElement.createChild("div").textContent = axNode.name.value;
 
         var foundProperty = false;
         /**
@@ -294,7 +294,7 @@ WebInspector.AXNodeSubPane = function()
     this._noNodeInfo = this.createInfo(WebInspector.UIString("No accessibility node"));
     this._ignoredInfo = this.createInfo(WebInspector.UIString("Accessibility node not exposed"), "ax-ignored-info hidden");
 
-    this._treeOutline = this.createTreeOutline('monospace');
+    this._treeOutline = this.createTreeOutline();
     this._ignoredReasonsTree = this.createTreeOutline();
 };
 
@@ -459,11 +459,16 @@ WebInspector.AXNodePropertyTreeElement.populateWithNode = function(treeNode, axN
  */
 WebInspector.AXNodePropertyTreeElement.createNameElement = function(name)
 {
-    var nameElement = createElementWithClass("span", "ax-name");
-    if (/^\s|\s$|^$|\n/.test(name))
-        nameElement.createTextChildren("\"", name.replace(/\n/g, "\u21B5"), "\"");
-    else
+    var nameElement = createElement("span");
+    var AXAttributes = WebInspector.AccessibilityStrings.AXAttributes;
+    if (name in AXAttributes) {
+        nameElement.textContent = WebInspector.UIString(AXAttributes[name].name);
+        nameElement.title = WebInspector.UIString(AXAttributes[name].description);
+        nameElement.classList.add("ax-readable-name");
+    } else {
         nameElement.textContent = name;
+        nameElement.classList.add("ax-name");
+    }
     return nameElement;
 }
 
@@ -496,7 +501,7 @@ WebInspector.AXNodePropertyTreeElement.createRelationshipValueElement = function
  */
 WebInspector.AXNodePropertyTreeElement.createValueElement = function(value, parentElement)
 {
-    var valueElement = createElementWithClass("span", "object-value");
+    var valueElement = createElementWithClass("span", "monospace");
     var type = value.type;
     var prefix;
     var valueText;
