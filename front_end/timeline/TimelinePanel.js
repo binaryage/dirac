@@ -629,7 +629,7 @@ WebInspector.TimelinePanel.prototype = {
             this._addModeView(new WebInspector.MemoryCountersGraph(this, this._model));
         }
 
-        if (Runtime.experiments.isEnabled("filmStripInNetworkAndTimeline") && this._captureFilmStripSetting.get())
+        if (Runtime.experiments.isEnabled("filmStripInNetworkAndTimeline") && !isFrameMode && this._captureFilmStripSetting.get())
             this._overviewControls.push(new WebInspector.TimelineFilmStripOverview(this._model, this._tracingModel));
 
         var mainTarget = WebInspector.targetManager.mainTarget();
