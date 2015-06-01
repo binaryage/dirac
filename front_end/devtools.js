@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+(function() {
+
 // DevToolsAPI ----------------------------------------------------------------
 
 /**
@@ -351,7 +353,7 @@ DevToolsAPIImpl.prototype = {
 }
 
 var DevToolsAPI = new DevToolsAPIImpl();
-
+window.DevToolsAPI = DevToolsAPI;
 
 // InspectorFrontendHostImpl --------------------------------------------------
 
@@ -851,6 +853,38 @@ InspectorFrontendHostImpl.prototype = {
 
 // DevToolsApp ---------------------------------------------------------------
 
+function installBackwardsCompatibility(window)
+{
+    /**
+     * @this {CSSStyleDeclaration}
+     */
+    function getValue(property)
+    {
+        // Note that |property| comes from another context, so we can't use === here.
+        if (property == "padding-left") {
+            return {
+                /**
+                 * @suppressReceiverCheck
+                 * @this {Object}
+                 */
+                getFloatValue: function() { return this.__paddingLeft; },
+                __paddingLeft: parseFloat(this.paddingLeft)
+            };
+        }
+        throw new Error("getPropertyCSSValue is undefined");
+    }
+
+    // Support for legacy (<M41) frontends. Remove in M45.
+    window.CSSStyleDeclaration.prototype.getPropertyCSSValue = getValue;
+    window.CSSPrimitiveValue = { CSS_PX: "CSS_PX" };
+
+    // Support for legacy (<M44) frontends. Remove in M48.
+    var styleElement = window.document.createElement("style");
+    styleElement.type = "text/css";
+    styleElement.textContent = "html /deep/ * { min-width: 0; min-height: 0; }";
+    window.document.head.appendChild(styleElement);
+}
+
 /**
  * @constructor
  * @suppressGlobalPropertiesCheck
@@ -874,46 +908,28 @@ function DevToolsApp()
 DevToolsApp.prototype = {
     _onIframeLoad: function()
     {
-        /**
-         * @this {CSSStyleDeclaration}
-         */
-        function getValue(property)
-        {
-            // Note that |property| comes from another context, so we can't use === here.
-            if (property == "padding-left") {
-                return {
-                    /**
-                     * @suppressReceiverCheck
-                     * @this {Object}
-                     */
-                    getFloatValue: function() { return this.__paddingLeft; },
-                    __paddingLeft: parseFloat(this.paddingLeft)
-                };
-            }
-            throw new Error("getPropertyCSSValue is undefined");
-        }
-
-        // Support for legacy (<M41) frontends. Remove in M45.
-        this._iframe.contentWindow.CSSStyleDeclaration.prototype.getPropertyCSSValue = getValue;
-        this._iframe.contentWindow.CSSPrimitiveValue = { CSS_PX: "CSS_PX" };
-
-        // Support for legacy (<M44) frontends. Remove in M48.
-        var styleElement = this._iframe.contentWindow.document.createElement("style");
-        styleElement.type = "text/css";
-        styleElement.textContent = "html /deep/ * { min-width: 0; min-height: 0; }";
-        this._iframe.contentWindow.document.head.appendChild(styleElement);
+        installBackwardsCompatibility(this._iframe.contentWindow);
     }
 };
 
-(
 /**
  * @suppressGlobalPropertiesCheck
  */
-function()
+function startup()
 {
+    var path = window.location.pathname;
+    var injected = path.substring(path.length - 14) === "inspector.html";
+    if (injected) {
+        window.InspectorFrontendHost = new InspectorFrontendHostImpl();
+        window.DevToolsAPI.setInspectorWindow(window);
+    }
+
     function run()
     {
-        new DevToolsApp();
+        if (injected)
+            installBackwardsCompatibility(window);
+        else
+            new DevToolsApp();
     }
 
     /**
@@ -929,8 +945,9 @@ function()
         run();
     else
         window.addEventListener("DOMContentLoaded", windowLoaded, false);
-})();
+}
 
+startup();
 
 // UITests ------------------------------------------------------------------
 
@@ -957,4 +974,8 @@ if (window.domAutomationController) {
         uiTests._testSuite = testSuiteConstructor(window.domAutomationController);
         uiTests._tryRun();
     };
+
+    window.uiTests = uiTests;
 }
+
+})();

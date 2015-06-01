@@ -676,3 +676,5 @@ return new TestSuite();
 
 if (window.parent && window.parent.uiTests)
     window.parent.uiTests.testSuiteReady(createTestSuite, WebInspector.TestBase);
+if (window.uiTests)
+    window.uiTests.testSuiteReady(createTestSuite, WebInspector.TestBase);
