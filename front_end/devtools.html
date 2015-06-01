@@ -13,22 +13,19 @@
             height: 100%;
             overflow: hidden;
         }
-        body {
-            height: 100%;
-            width: 100%;
-            overflow: hidden;
-            margin: 0;
-        }
         .fill {
-            height: 100%;
+            position: absolute;
             width: 100%;
+            height: 100%;
+            overflow: hidden;
             border: 0;
+            margin: 0;
         }
     </style>
     <script type="text/javascript" src="Runtime.js"></script>
     <script type="text/javascript" src="devtools.js"></script>
 </head>
-<body class="undocked" id="-blink-dev-tools">
+<body class="fill undocked" id="-blink-dev-tools">
 <script>
 (function() {
     var remoteFrontendUrl = Runtime.queryParam("remoteFrontendUrl");
