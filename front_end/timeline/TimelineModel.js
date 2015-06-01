@@ -844,6 +844,11 @@ WebInspector.TimelineModel.prototype = {
     _buildTimelineRecords: function()
     {
         var topLevelRecords = this._buildTimelineRecordsForThread(this.mainThreadEvents());
+        for (var i = 0; i < topLevelRecords.length; i++) {
+            var record = topLevelRecords[i];
+            if (WebInspector.TracingModel.isTopLevelEvent(record.traceEvent()))
+                this._mainThreadTasks.push(record);
+        }
 
         /**
          * @param {!WebInspector.TimelineModel.VirtualThread} virtualThread
@@ -855,12 +860,6 @@ WebInspector.TimelineModel.prototype = {
             topLevelRecords = topLevelRecords.mergeOrdered(threadRecords, WebInspector.TimelineModel.Record._compareStartTime);
         }
         this.virtualThreads().forEach(processVirtualThreadEvents.bind(this));
-
-        for (var i = 0; i < topLevelRecords.length; i++) {
-            var record = topLevelRecords[i];
-            if (WebInspector.TracingModel.isTopLevelEvent(record.traceEvent()))
-                this._mainThreadTasks.push(record);
-        }
         this._records = topLevelRecords;
     },
 
