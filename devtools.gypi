@@ -39,7 +39,6 @@
             '<@(devtools_common_js_files)',
             '<@(devtools_components_js_files)',
             '<@(devtools_core_base_files)',
-            '<@(devtools_devtools_app_js_files)',
             '<@(devtools_emulation_js_files)',
             '<@(devtools_host_js_files)',
             '<@(devtools_main_js_files)',
@@ -51,8 +50,6 @@
             '<@(devtools_core_css_files)',
         ],
         'devtools_core_base_files': [
-            'front_end/devtools.js',
-            'front_end/devtools.json',
             'front_end/inspector.css',
             'front_end/inspector.js',
             'front_end/inspector.json',
@@ -194,12 +191,6 @@
             'front_end/bindings/TempFile.js',
             'front_end/bindings/WorkspaceController.js',
         ],
-        'devtools_devtools_app_js_files': [
-            'front_end/devtools_app/DevToolsAPI.js',
-            'front_end/devtools_app/DevToolsApp.js',
-            'front_end/devtools_app/InspectorFrontendHostImpl.js',
-            'front_end/devtools_app/UITests.js',
-        ],
         'devtools_platform_js_files': [
             'front_end/platform/DOMExtension.js',
             'front_end/platform/utilities.js',
@@ -307,7 +298,6 @@
             'front_end/components/module.json',
             'front_end/components_lazy/module.json',
             'front_end/console/module.json',
-            'front_end/devtools_app/module.json',
             'front_end/elements/module.json',
             'front_end/emulation/module.json',
             'front_end/extensions/module.json',

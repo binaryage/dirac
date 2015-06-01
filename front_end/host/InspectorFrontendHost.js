@@ -510,12 +510,7 @@ var InspectorFrontendHost = window.InspectorFrontendHost || null;
     // so the host instance should not initialized there.
     initializeInspectorFrontendHost();
     window.InspectorFrontendAPI = new InspectorFrontendAPIImpl();
-    if (!window.DevToolsHost) {
-        WebInspector.setLocalizationPlatform(InspectorFrontendHost.platform());
-    } else {
-        WebInspector.setLocalizationPlatform(DevToolsHost.platform());
-    }
-
+    WebInspector.setLocalizationPlatform(InspectorFrontendHost.platform());
 })();
 
 /**

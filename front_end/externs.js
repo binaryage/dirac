@@ -182,6 +182,11 @@ function DOMFileSystem() {}
  */
 DOMFileSystem.prototype.root = null;
 
+/**
+ * @type {*}
+ */
+window.domAutomationController;
+
 var DevToolsHost = {};
 
 /** @typedef {{type:string, id:(number|undefined),

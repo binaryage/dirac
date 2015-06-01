@@ -17,7 +17,6 @@ devtools_core_files =
   gypi_values.devtools_bindings_js_files +
   gypi_values.devtools_common_js_files +
   gypi_values.devtools_components_js_files +
-  gypi_values.devtools_devtools_app_js_files +
   gypi_values.devtools_emulation_js_files +
   gypi_values.devtools_host_js_files +
   gypi_values.devtools_main_js_files +
@@ -79,6 +78,7 @@ visibility = [ "//third_party/WebKit/*" ]
 
 group("devtools_frontend_resources") {
   deps = [
+    ":copy_devtools_html",
     ":copy_inspector_images",
     ":devtools_extension_api",
     ":frontend_protocol_sources",
@@ -94,6 +94,11 @@ group("devtools_frontend_resources") {
       ":concatenated_toolbox_css",
     ]
   }
+}
+
+copy("copy_devtools_html") {
+  sources = [ "front_end/devtools.html", "front_end/devtools.js" ]
+  outputs = [ resources_out_dir + "{{source_file_part}}" ]
 }
 
 copy("copy_inspector_images") {
@@ -116,6 +121,7 @@ action("generate_devtools_grd") {
     # Debug: all files are picked as-is.
     generated_files = generated_scripts + [
       resources_out_dir + "devtools.html",
+      resources_out_dir + "devtools.js",
       resources_out_dir + "inspector.html",
       resources_out_dir + "toolbox.html",
     ]
@@ -221,13 +227,11 @@ action("build_applications") {
   ]
 
   inputs = helper_scripts + all_devtools_files + generated_scripts + [
-    "front_end/devtools.html",
     "front_end/inspector.html",
     "front_end/toolbox.html",
   ]
 
   outputs = [
-    resources_out_dir + "devtools.html",
     resources_out_dir + "inspector.html",
     resources_out_dir + "toolbox.html",
   ]
@@ -238,7 +242,6 @@ action("build_applications") {
     debug_mode = "1"
   } else {
     outputs += [
-      resources_out_dir + "devtools.js",
       resources_out_dir + "inspector.js",
       resources_out_dir + "toolbox.js",
       resources_out_dir + "accessibility_module.js",
@@ -273,7 +276,7 @@ action("build_applications") {
   }
 
   args = [
-    "devtools", "inspector", "toolbox",
+    "inspector", "toolbox",
     "--input_path", rebase_path("front_end", root_build_dir),
     "--output_path", rebase_path(resources_out_dir, root_build_dir),
     "--debug", debug_mode

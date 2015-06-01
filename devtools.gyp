@@ -56,6 +56,13 @@
                         '<@(devtools_image_files)',
                     ],
                 },
+                {
+                    'destination': '<(PRODUCT_DIR)/resources/inspector/',
+                    'files': [
+                        'front_end/devtools.html',
+                        'front_end/devtools.js',
+                    ],
+                },
             ],
         },
         {
@@ -161,6 +168,7 @@
                             '<(PRODUCT_DIR)/resources/inspector/InspectorBackendCommands.js',
                             '<(PRODUCT_DIR)/resources/inspector/SupportedCSSProperties.js',
                             '<(PRODUCT_DIR)/resources/inspector/devtools.html',
+                            '<(PRODUCT_DIR)/resources/inspector/devtools.js',
                             '<(PRODUCT_DIR)/resources/inspector/inspector.html',
                             '<(PRODUCT_DIR)/resources/inspector/toolbox.html',
                         ],
@@ -251,18 +259,15 @@
                     '<@(_script_name)',
                     '<@(_helper_scripts)',
                     '<@(all_devtools_files)',
-                    'front_end/devtools.html',
                     'front_end/inspector.html',
                     'front_end/toolbox.html',
                     '<(_output_path)/InspectorBackendCommands.js',
                     '<(_output_path)/SupportedCSSProperties.js',
                 ],
-                'action': ['python', '<@(_script_name)', 'devtools', 'inspector', 'toolbox', '--input_path', 'front_end', '--output_path', '<@(_output_path)', '--debug', '<@(debug_devtools)'],
+                'action': ['python', '<@(_script_name)', 'inspector', 'toolbox', '--input_path', 'front_end', '--output_path', '<@(_output_path)', '--debug', '<@(debug_devtools)'],
                 'conditions': [
                     ['debug_devtools==0', { # Release
                         'outputs': [
-                            '<(_output_path)/devtools.html',
-                            '<(_output_path)/devtools.js',
                             '<(_output_path)/inspector.html',
                             '<(_output_path)/inspector.js',
                             '<(_output_path)/toolbox.html',
@@ -292,7 +297,6 @@
                     },
                     { # Debug
                         'outputs': [
-                            '<(_output_path)/devtools.html',
                             '<(_output_path)/inspector.html',
                             '<(_output_path)/toolbox.html',
                         ]

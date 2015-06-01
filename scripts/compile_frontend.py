@@ -129,7 +129,7 @@ def error_excepthook(exctype, value, traceback):
     sys.__excepthook__(exctype, value, traceback)
 sys.excepthook = error_excepthook
 
-application_descriptors = ['devtools.json', 'inspector.json', 'toolbox.json']
+application_descriptors = ['inspector.json', 'toolbox.json']
 loader = modular_build.DescriptorLoader(devtools_frontend_path)
 descriptors = loader.load_applications(application_descriptors)
 modules_by_name = descriptors.modules
@@ -402,6 +402,15 @@ command += '        --js ' + to_platform_path(injectedScriptSourceTmpFile)
 
 injectedScriptCompileProc = run_in_shell(command)
 
+print 'Compiling devtools.js...'
+spawned_compiler_command = '%s -jar %s %s' % (java_exec, closure_compiler_jar, common_closure_args)
+command = spawned_compiler_command
+command += '    --externs ' + to_platform_path(global_externs_file)
+command += '    --externs ' + to_platform_path(path.join(devtools_frontend_path, 'host', 'InspectorFrontendHostAPI.js'))
+command += '    --module ' + jsmodule_name_prefix + 'devtools_js' + ':1'
+command += '        --js ' + to_platform_path(path.join(devtools_frontend_path, 'devtools.js'))
+devtoolsJSCompileProc = run_in_shell(command)
+
 print 'Verifying JSDoc comments...'
 additional_jsdoc_check_files = [injectedScriptSourceTmpFile]
 errors_found |= verify_jsdoc(additional_jsdoc_check_files)
@@ -481,6 +490,10 @@ if error_count:
 (injectedScriptCompileOut, _) = injectedScriptCompileProc.communicate()
 print 'InjectedScriptSource.js compilation output:%s' % os.linesep, injectedScriptCompileOut
 errors_found |= hasErrors(injectedScriptCompileOut)
+
+(devtoolsJSCompileOut, _) = devtoolsJSCompileProc.communicate()
+print 'devtools.js compilation output:%s' % os.linesep, devtoolsJSCompileOut
+errors_found |= hasErrors(devtoolsJSCompileOut)
 
 (validateInjectedScriptOut, _) = validateInjectedScriptProc.communicate()
 print 'Validate InjectedScriptSource.js output:%s' % os.linesep, (validateInjectedScriptOut if validateInjectedScriptOut else '<empty>')
