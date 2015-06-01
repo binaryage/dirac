@@ -6,11 +6,11 @@
  * @constructor
  * @implements {InspectorFrontendHostAPI}
  */
-WebInspector.InspectorFrontendHostImpl = function()
+function InspectorFrontendHostImpl()
 {
 }
 
-WebInspector.InspectorFrontendHostImpl.prototype = {
+InspectorFrontendHostImpl.prototype = {
     /**
      * @override
      * @return {string}

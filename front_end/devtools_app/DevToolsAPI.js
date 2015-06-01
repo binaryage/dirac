@@ -125,10 +125,10 @@ DevToolsAPIImpl.prototype = {
         function dispatch(inspectorWindow)
         {
             // Support for legacy front-ends (<M41).
-            if (inspectorWindow.WebInspector.addExtensions)
-                inspectorWindow.WebInspector.addExtensions(extensions);
+            if (inspectorWindow["WebInspector"].addExtensions)
+                inspectorWindow["WebInspector"].addExtensions(extensions);
             else
-                inspectorWindow.InspectorFrontendAPI.addExtensions(extensions);
+                inspectorWindow["InspectorFrontendAPI"].addExtensions(extensions);
         }
 
         this._dispatchOnInspectorWindow(dispatch);
@@ -304,10 +304,10 @@ DevToolsAPIImpl.prototype = {
         function dispatch(inspectorWindow)
         {
             // Support for legacy front-ends (<M41).
-            if (inspectorWindow.WebInspector.setInspectedTabId)
-                inspectorWindow.WebInspector.setInspectedTabId(tabId);
+            if (inspectorWindow["WebInspector"].setInspectedTabId)
+                inspectorWindow["WebInspector"].setInspectedTabId(tabId);
             else
-                inspectorWindow.InspectorFrontendAPI.setInspectedTabId(tabId);
+                inspectorWindow["InspectorFrontendAPI"].setInspectedTabId(tabId);
         }
 
         this._dispatchOnInspectorWindow(dispatch);

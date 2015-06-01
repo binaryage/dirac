@@ -117,6 +117,7 @@
             'front_end/components/EventListenersView.js',
         ],
         'devtools_host_js_files': [
+            'front_end/host/InspectorFrontendHostAPI.js',
             'front_end/host/InspectorFrontendHost.js',
             'front_end/host/Platform.js',
             'front_end/host/ResourceLoader.js',

@@ -6,13 +6,13 @@
  * @constructor
  * @suppressGlobalPropertiesCheck
  */
-WebInspector.DevToolsApp = function()
+function DevToolsApp()
 {
     if (DevToolsHost.isUnderTest())
         self.runtime.useTestBase();
 
     this._iframe = document.getElementById("inspector-app-iframe");
-    this._inspectorFrontendHostImpl = new WebInspector.InspectorFrontendHostImpl();
+    this._inspectorFrontendHostImpl = new InspectorFrontendHostImpl();
 
     /**
      * @type {!Window}
@@ -25,7 +25,7 @@ WebInspector.DevToolsApp = function()
     this._iframe.addEventListener("load", this._onIframeLoad.bind(this), false);
 }
 
-WebInspector.DevToolsApp.prototype = {
+DevToolsApp.prototype = {
     _onIframeLoad: function()
     {
         /**
@@ -59,4 +59,4 @@ WebInspector.DevToolsApp.prototype = {
     }
 }
 
-runOnWindowLoad(function() { new WebInspector.DevToolsApp(); });
+runOnWindowLoad(function() { new DevToolsApp(); });

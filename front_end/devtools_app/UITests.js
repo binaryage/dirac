@@ -7,12 +7,8 @@ if (window.domAutomationController) {
 
     function UITestSuite()
     {
-        WebInspector.TestBase.call(this, window.domAutomationController);
+        uiTests._testBase.call(this, window.domAutomationController);
     }
-
-    UITestSuite.prototype = {
-        __proto__: WebInspector.TestBase.prototype
-    };
 
     UITestSuite.prototype.testRemoteWebSocket = function()
     {
@@ -44,7 +40,8 @@ if (window.domAutomationController) {
         DevToolsAPI.sendMessageToEmbedder("setDevicesUpdatesEnabled", [true], null);
     };
 
-    uiTests._tryRun = function() {
+    uiTests._tryRun = function()
+    {
         if (uiTests._testSuite && uiTests._pendingTestName) {
             var name = uiTests._pendingTestName;
             delete uiTests._pendingTestName;
@@ -61,8 +58,10 @@ if (window.domAutomationController) {
         uiTests._tryRun();
     };
 
-    uiTests.testSuiteReady = function(testSuiteConstructor)
+    uiTests.testSuiteReady = function(testSuiteConstructor, testBase)
     {
+        uiTests._testBase = testBase;
+        UITestSuite.prototype.__proto__ = testBase.prototype;
         uiTests._testSuite = testSuiteConstructor(window.domAutomationController);
         uiTests._tryRun();
     };
