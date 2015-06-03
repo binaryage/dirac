@@ -399,14 +399,43 @@
 
 .styles-element-state-pane {
     overflow: hidden;
-    margin-top: -56px;
     padding-top: 18px;
     height: 56px;
-    -webkit-transition: margin-top 0.1s ease-in-out;
     padding-left: 2px;
+    border-bottom: 1px solid rgb(189, 189, 189);
 }
 
-.styles-element-state-pane.expanded {
+@keyframes styles-element-state-pane-slidein {
+    from {
+        margin-top: -56px;
+    }
+    to {
+        margin-top: 0px;
+    }
+}
+
+@keyframes styles-element-state-pane-slideout {
+    from {
+        margin-top: 0px;
+    }
+    to {
+        margin-top: -56px;
+    }
+}
+
+.styles-sidebar-toolbar-pane {
+    position: relative;
+    animation-duration: 0.1s;
+    animation-direction: normal;
+}
+
+.styles-sidebar-toolbar-pane-container {
+    position: relative;
+    max-height: 56px;
+    overflow: hidden;
+}
+
+.styles-element-state-pane.visible {
     border-bottom: 1px solid rgb(189, 189, 189);
     margin-top: 0;
 }
@@ -421,19 +450,14 @@
     margin: 1px;
 }
 
-.styles-animations-controls-pane {
-    overflow: hidden;
-    -webkit-transition: height 0.1s ease-out;
-    height: 0;
-}
-
 .styles-animations-controls-pane > * {
     margin: 6px 4px;
 }
 
-.styles-animations-controls-pane.expanded {
+.styles-animations-controls-pane {
     border-bottom: 1px solid rgb(189, 189, 189);
     height: 56px;
+    overflow: hidden;
 }
 
 .animations-controls {

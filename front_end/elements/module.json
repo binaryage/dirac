@@ -67,6 +67,24 @@
             "settingName": "highlightDOMUpdates",
             "settingType": "boolean",
             "defaultValue": true
+        },
+        {
+            "type": "@WebInspector.ToolbarItem.Provider",
+            "className": "WebInspector.StylesSidebarPane.AddNewRuleButtonProvider",
+            "order": 0,
+            "location": "styles-sidebarpane-toolbar"
+        },
+        {
+            "type": "@WebInspector.ToolbarItem.Provider",
+            "className": "WebInspector.ElementStatePaneWidget.ButtonProvider",
+            "order": 1,
+            "location": "styles-sidebarpane-toolbar"
+        },
+        {
+            "type": "@WebInspector.ToolbarItem.Provider",
+            "className": "WebInspector.AnimationControlPane.ButtonProvider",
+            "order": 2,
+            "location": "styles-sidebarpane-toolbar"
         }
     ],
     "dependencies": [
@@ -76,7 +94,6 @@
     "scripts": [
         "BezierUI.js",
         "AnimationTimeline.js",
-        "AnimationControlPane.js",
         "StylesPopoverHelper.js",
         "BezierEditor.js",
         "Spectrum.js",
@@ -93,6 +110,8 @@
         "StylesSectionModel.js",
         "StylesSidebarPane.js",
         "ComputedStyleWidget.js",
+        "AnimationControlPane.js",
+        "ElementStatePaneWidget.js",
         "ElementsPanel.js"
     ],
     "resources": [

@@ -4,13 +4,15 @@
 
 /**
  * @constructor
+ * @extends {WebInspector.StylesSidebarPane.BaseToolbarPaneWidget}
  */
-WebInspector.AnimationControlPane = function()
+WebInspector.AnimationControlPane = function(toolbarItem)
 {
+    WebInspector.StylesSidebarPane.BaseToolbarPaneWidget.call(this, toolbarItem);
     this._animationsPaused = false;
     this._animationsPlaybackRate = 1;
 
-    this.element = createElementWithClass("div", "styles-animations-controls-pane");
+    this.element.className =  "styles-animations-controls-pane";
     this.element.createChild("div").createTextChild("Animations");
     var container = this.element.createChild("div", "animations-controls");
 
@@ -74,12 +76,15 @@ WebInspector.AnimationControlPane.prototype = {
     },
 
     /**
+     * @override
      * @param {?WebInspector.DOMNode} node
      */
-    setNode: function(node)
+    onNodeChanged: function(node)
     {
-        if (!node)
+        if (!node) {
+            this.detach();
             return;
+        }
 
         if (this._target)
             this._target.resourceTreeModel.removeEventListener(WebInspector.ResourceTreeModel.EventTypes.MainFrameNavigated, this._updateAnimationsPlaybackRate, this);
@@ -87,6 +92,60 @@ WebInspector.AnimationControlPane.prototype = {
         this._target = node.target();
         this._target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.MainFrameNavigated, this._updateAnimationsPlaybackRate, this);
         this._updateAnimationsPlaybackRate();
-    }
+    },
 
+    __proto__: WebInspector.StylesSidebarPane.BaseToolbarPaneWidget.prototype
+}
+
+/**
+ * @constructor
+ * @implements {WebInspector.ToolbarItem.Provider}
+ */
+WebInspector.AnimationControlPane.ButtonProvider = function()
+{
+    this._button = new WebInspector.ToolbarButton(WebInspector.UIString("Animations Controls"), "animation-toolbar-item");
+    this._button.addEventListener("click", this._clicked, this);
+    WebInspector.context.addFlavorChangeListener(WebInspector.DOMNode, this._nodeChanged, this);
+    this._nodeChanged();
+}
+
+WebInspector.AnimationControlPane.ButtonProvider.prototype = {
+    _animationTimelineModeClick: function()
+    {
+        if (!this._animationTimeline)
+            this._animationTimeline = new WebInspector.AnimationTimeline();
+        this._button.setToggled(!this._animationTimeline.isShowing());
+        var elementsPanel = WebInspector.ElementsPanel.instance();
+        elementsPanel.setWidgetBelowDOM(!this._animationTimeline.isShowing() ? this._animationTimeline : null);
+    },
+
+    _animationControlPaneModeClick: function()
+    {
+        if (!this._animationsControlPane)
+            this._animationsControlPane = new WebInspector.AnimationControlPane(this.item());
+        var stylesSidebarPane = WebInspector.ElementsPanel.instance().sidebarPanes.styles;
+        stylesSidebarPane.showToolbarPane(!this._animationsControlPane.isShowing() ? this._animationsControlPane : null);
+    },
+
+    _clicked: function()
+    {
+        if (Runtime.experiments.isEnabled("animationInspection"))
+            this._animationTimelineModeClick();
+        else
+            this._animationControlPaneModeClick();
+    },
+
+    _nodeChanged: function()
+    {
+        this._button.setEnabled(!!WebInspector.context.flavor(WebInspector.DOMNode));
+    },
+
+    /**
+     * @override
+     * @return {!WebInspector.ToolbarItem}
+     */
+    item: function()
+    {
+        return this._button;
+    }
 }

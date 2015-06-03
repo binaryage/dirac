@@ -392,6 +392,7 @@
             'front_end/elements/ElementsSidebarView.js',
             'front_end/elements/ElementsTreeElement.js',
             'front_end/elements/ElementsTreeOutline.js',
+            'front_end/elements/ElementStatePaneWidget.js',
             'front_end/elements/SharedSidebarModel.js',
             'front_end/elements/EventListenersWidget.js',
             'front_end/elements/MetricsSidebarPane.js',
