@@ -216,7 +216,7 @@
 
 .overrides-view .overrides-footer::before {
     background-image: url(Images/toolbarButtonGlyphs.png);
-    background-size: 320px 144px;
+    background-size: 352px 144px;
     width: 10px;
     height: 10px;
     content: "";

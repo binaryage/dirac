@@ -82,7 +82,7 @@
 
 .sidebar-pane-title::before {
     background-image: url(Images/toolbarButtonGlyphs.png);
-    background-size: 320px 144px;
+    background-size: 352px 144px;
     opacity: 0.5;
     float: left;
     width: 11px;

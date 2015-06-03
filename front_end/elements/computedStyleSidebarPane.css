@@ -39,7 +39,7 @@
 
 .computed-style-trace-button > .glyph {
     -webkit-mask-image: url(Images/toolbarButtonGlyphs.png);
-    -webkit-mask-size: 320px 144px;
+    -webkit-mask-size: 352px 144px;
     -webkit-mask-position: -224px -24px;
     background-color: rgba(0, 0, 0, 0.75);
     position: absolute;

@@ -85,7 +85,7 @@ ol.tree-outline:focus li.selected * {
     float: left;
     -webkit-user-select: none;
     -webkit-mask-image: url(Images/toolbarButtonGlyphs.png);
-    -webkit-mask-size: 320px 144px;
+    -webkit-mask-size: 352px 144px;
     content: "a";
     color: transparent;
     text-shadow: none;

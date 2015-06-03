@@ -310,7 +310,7 @@ div.responsive-design-icon:disabled {
 
 .responsive-design-toolbar input[type='checkbox']:after {
     -webkit-mask-image: url(Images/toolbarButtonGlyphs.png);
-    -webkit-mask-size: 320px 144px;
+    -webkit-mask-size: 352px 144px;
     -webkit-mask-position: -128px -110px;
 }
 

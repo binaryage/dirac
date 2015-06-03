@@ -149,7 +149,7 @@
 .data-grid th .sort-order-icon {
     margin-right: 4px;
     background-image: url(Images/toolbarButtonGlyphs.png);
-    background-size: 320px 144px;
+    background-size: 352px 144px;
     opacity: 0.5;
     width: 8px;
     height: 7px;
@@ -184,7 +184,7 @@
 .data-grid tr.parent td.disclosure::before {
     -webkit-user-select: none;
     -webkit-mask-image: url(Images/toolbarButtonGlyphs.png);
-    -webkit-mask-size: 320px 144px;
+    -webkit-mask-size: 352px 144px;
     float: left;
     width: 8px;
     height: 12px;

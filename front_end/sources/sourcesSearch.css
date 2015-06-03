@@ -73,7 +73,7 @@
 #search-results-pane-file-based li.parent::before {
     -webkit-user-select: none;
     background-image: url(Images/toolbarButtonGlyphs.png);
-    background-size: 320px 144px;
+    background-size: 352px 144px;
     opacity: 0.5;
     width: 12px;
     content: "a";

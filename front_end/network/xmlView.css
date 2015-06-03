@@ -33,7 +33,7 @@
 .shadow-xml-view li.parent::before {
   -webkit-user-select: none;
   -webkit-mask-image: url(Images/toolbarButtonGlyphs.png);
-  -webkit-mask-size: 320px 144px;
+  -webkit-mask-size: 352px 144px;
   -webkit-mask-position: -4px -97px;
   background-color: rgb(110, 110, 110);
   content: "";

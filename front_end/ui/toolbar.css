@@ -86,7 +86,7 @@
     background-color: rgba(0, 0, 0, 0.75);
     -webkit-mask-image: url(Images/toolbarButtonGlyphs.png);
     -webkit-mask-position: -288px -48px;
-    -webkit-mask-size: 320px 144px;
+    -webkit-mask-size: 352px 144px;
     z-index: 1;
     width: 32px;
     height: 24px;
@@ -159,7 +159,7 @@ button.toolbar-item.extension {
 
 .toolbar-select-arrow {
     background-image: url(Images/toolbarButtonGlyphs.png);
-    background-size: 320px 144px;
+    background-size: 352px 144px;
     opacity: 0.7;
     width: 12px;
     height: 12px;
@@ -210,7 +210,7 @@ select.toolbar-item {
 
 .toolbar-item > .glyph {
     -webkit-mask-image: url(Images/toolbarButtonGlyphs.png);
-    -webkit-mask-size: 320px 144px;
+    -webkit-mask-size: 352px 144px;
     background-color: rgba(0, 0, 0, 0.75);
     opacity: 0.8;
     z-index: 1;
@@ -299,7 +299,7 @@ select.toolbar-item {
 
 .emulation-toolbar-item.warning::after {
     background-image: url(Images/toolbarButtonGlyphs.png);
-    background-size: 320px 144px;
+    background-size: 352px 144px;
     width: 15px;
     height: 11px;
     content: "";
@@ -481,8 +481,16 @@ button.record-toolbar-item.toggled-on .glyph {
     -webkit-mask-position: -224px -120px;
 }
 
-.replay-toolbar-item .glyph {
-    -webkit-mask-position: -192px -24px;
+.pause-outline-toolbar-item .glyph {
+    -webkit-mask-position: -320px 0px;
+}
+
+.replay-outline-toolbar-item .glyph {
+    -webkit-mask-position: -320px -24px;
+}
+
+.play-outline-toolbar-item .glyph {
+    -webkit-mask-position: -320px -48px;
 }
 
 .case-sensitive-search-toolbar-item.toggled-on .toolbar-button-text {

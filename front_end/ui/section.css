@@ -20,7 +20,7 @@
 .section > .header::before {
     -webkit-user-select: none;
     background-image: url(Images/toolbarButtonGlyphs.png);
-    background-size: 320px 144px;
+    background-size: 352px 144px;
     opacity: 0.5;
     content: "a";
     color: transparent;

@@ -158,7 +158,7 @@ li.selected .base-storage-tree-element-subtitle {
     margin-top: -7px;
     -webkit-user-select: none;
     background-image: url(Images/toolbarButtonGlyphs.png);
-    background-size: 320px 144px;
+    background-size: 352px 144px;
 }
 
 @media (-webkit-min-device-pixel-ratio: 1.5) {

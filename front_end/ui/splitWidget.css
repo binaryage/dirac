@@ -100,7 +100,7 @@
 .shadow-split-widget button.sidebar-show-hide-button {
     position: absolute;
     -webkit-mask-image: url(Images/toolbarButtonGlyphs.png);
-    -webkit-mask-size: 320px 144px;
+    -webkit-mask-size: 352px 144px;
     height: 16px;
     width: 16px;
     border: none;
