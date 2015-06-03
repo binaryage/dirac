@@ -123,6 +123,7 @@ WebInspector.ObjectEventListenerBar = function(eventListener, object, linkifier)
     TreeElement.call(this, "", true);
     this._eventListener = eventListener;
     this.editable = false;
+    this.selectable = false;
     this._setTitle(object, linkifier);
 }
 

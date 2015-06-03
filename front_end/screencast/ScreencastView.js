@@ -278,7 +278,7 @@ WebInspector.ScreencastView.prototype = {
         }
 
         var text = event.type === "keypress" ? String.fromCharCode(event.charCode) : undefined;
-        this._target.inputAgent().dispatchKeyEvent({
+        this._target.inputAgent().invoke_dispatchKeyEvent({
             type: type,
             modifiers: this._modifiersForEvent(event),
             timestamp: event.timeStamp / 1000,
