@@ -750,3 +750,7 @@ label.checkbox-with-label {
     float: right;
     margin-top: -3px;
 }
+
+.properties-widget-section {
+    padding: 2px 0px 2px 5px;
+}
