@@ -278,8 +278,20 @@ WebInspector.ScreencastView.prototype = {
         }
 
         var text = event.type === "keypress" ? String.fromCharCode(event.charCode) : undefined;
-        this._target.inputAgent().dispatchKeyEvent(type, this._modifiersForEvent(event), event.timeStamp / 1000, text, text ? text.toLowerCase() : undefined,
-                                    event.keyIdentifier, event.code, event.keyCode /* windowsVirtualKeyCode */, event.keyCode /* nativeVirtualKeyCode */, false, false, false);
+        this._target.inputAgent().dispatchKeyEvent({
+            type: type,
+            modifiers: this._modifiersForEvent(event),
+            timestamp: event.timeStamp / 1000,
+            text: text,
+            unmodifiedText: text ? text.toLowerCase() : undefined,
+            keyIdentifier: event.keyIdentifier,
+            code: event.code,
+            key: event.key,
+            windowsVirtualKeyCode: event.keyCode,
+            nativeVirtualKeyCode: event.keyCode,
+            autoRepeat: false,
+            isKeypad: false,
+            isSystemKey: false});
         event.consume();
         this._canvasElement.focus();
     },
