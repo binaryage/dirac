@@ -405,7 +405,7 @@ WebInspector.TracingTimelineFrameModel.prototype = {
     _addBackgroundTraceEvent: function(event)
     {
         var eventNames = WebInspector.TimelineModel.RecordType;
-        if (this._lastFrame && event.selfTime)
+        if (this._lastFrame && event.selfTime && !WebInspector.TracingModel.isTopLevelEvent(event))
             this._lastFrame._addTimeForCategory(WebInspector.TimelineUIUtils.eventStyle(event).category.name, event.selfTime);
 
         if (event.args["layerTreeId"] !== this._layerTreeId)
