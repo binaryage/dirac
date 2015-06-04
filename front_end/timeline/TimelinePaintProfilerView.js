@@ -49,7 +49,10 @@ WebInspector.TimelinePaintProfilerView.prototype = {
         this._target = target;
         this._event = event;
 
-        this._updateWhenVisible = true;
+        if (this.isShowing())
+            this._update();
+        else
+            this._updateWhenVisible = true;
 
         if (this._event.name === WebInspector.TimelineModel.RecordType.Paint)
             return !!event.picture;
