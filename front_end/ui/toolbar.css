@@ -257,7 +257,11 @@ select.toolbar-item {
 
 .toolbar-divider {
     margin-left: 7px;
-    border-right: 1px solid #CCC;
+    border-right: 1px solid hsla(0, 0%, 0%, 0.1);
+}
+
+:host-context(.material) .toolbar-divider {
+    height: 18px;
 }
 
 .toolbar-group-label {

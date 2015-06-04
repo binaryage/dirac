@@ -48,19 +48,30 @@ WebInspector.ElementsPanel = function()
     this._searchableView.setPlaceholder(WebInspector.UIString("Find by string, selector, or XPath"));
     var stackElement = this._searchableView.element;
 
+    this._contentElement = createElement("div");
+    var crumbsContainer = createElement("div");
+    if (Runtime.experiments.isEnabled("materialDesign")) {
+        this._toolbar = this._createElementsToolbar();
+        var toolbar = stackElement.createChild("div", "elements-topbar hbox");
+        toolbar.appendChild(crumbsContainer);
+        toolbar.appendChild(this._toolbar.element);
+        stackElement.appendChild(this._contentElement);
+    } else {
+        stackElement.appendChild(this._contentElement);
+        stackElement.appendChild(crumbsContainer);
+    }
+
     this._elementsPanelTreeOutilneSplit = new WebInspector.SplitWidget(false, true, "treeOutlineAnimationTimelineWidget", 300, 300);
     this._elementsPanelTreeOutilneSplit.hideSidebar();
     this._elementsPanelTreeOutilneSplit.setMainWidget(this._searchableView);
     this._splitWidget.setMainWidget(this._elementsPanelTreeOutilneSplit);
 
-    this._contentElement = stackElement.createChild("div");
     this._contentElement.id = "elements-content";
     // FIXME: crbug.com/425984
     if (WebInspector.moduleSetting("domWordWrap").get())
         this._contentElement.classList.add("elements-wrap");
     WebInspector.moduleSetting("domWordWrap").addChangeListener(this._domWordWrapSettingChanged.bind(this));
 
-    var crumbsContainer = stackElement.createChild("div");
     crumbsContainer.id = "elements-crumbs";
     this._breadcrumbs = new WebInspector.ElementsBreadcrumbs();
     this._breadcrumbs.show(crumbsContainer);
@@ -109,6 +120,17 @@ WebInspector.ElementsPanel = function()
 WebInspector.ElementsPanel._elementsSidebarViewTitleSymbol = Symbol("title");
 
 WebInspector.ElementsPanel.prototype = {
+    /**
+     * @return {!WebInspector.Toolbar}
+     */
+    _createElementsToolbar: function()
+    {
+        var toolbar = new WebInspector.ExtensibleToolbar("elements-toolbar");
+        toolbar.element.classList.add("elements-toolbar");
+        toolbar.appendToolbarItem(new WebInspector.ToolbarSeparator());
+        return toolbar;
+    },
+
     _loadSidebarViews: function()
     {
         var extensions = self.runtime.extensions("@WebInspector.Widget");

@@ -43,6 +43,11 @@
     overflow-x: hidden;
 }
 
+.elements-topbar {
+    border-bottom: 1px solid hsla(0, 0%, 0%, 0.1);
+    flex-shrink: 0;
+}
+
 #elements-crumbs {
     flex: 0 0 19px;
     background-color: white;
@@ -50,6 +55,12 @@
     overflow: hidden;
     height: 19px;
     width: 100%;
+}
+
+.material #elements-crumbs {
+    flex: 1 0 28px;
+    border: none;
+    height: 100%;
 }
 
 .metrics {

@@ -10,6 +10,7 @@
     cursor: default;
     font-size: 11px;
     line-height: 17px;
+    white-space: nowrap;
 }
 
 .crumbs .crumb {
@@ -17,6 +18,24 @@
     padding: 0 7px;
     height: 18px;
     white-space: nowrap;
+}
+
+:host-context(.material) .crumb {
+    padding: 0px 4px 0px 11px;
+    cursor: pointer;
+    line-height: 18px;
+    margin: 5px 0px;
+    position: relative;
+    color: hsl(0, 0%, 35%);
+}
+
+:host-context(.material) .crumb:not(.collapsed):not(:first-child):before {
+    content: "\27E9";
+    position: absolute;
+    left: 0px;
+    color: hsl(0, 0%, 35%);
+    width: 7px;
+    text-align: center;
 }
 
 .crumbs .crumb.collapsed > * {
@@ -38,6 +57,20 @@
     text-shadow: rgba(255, 255, 255, 0.5) 0 0 0;
 }
 
+:host-context(.material) .crumb.selected {
+    color: hsl(0, 0%, 35%);
+    background-color: transparent !important;
+}
+
+:host-context(.material) .crumb.selected:before {
+    color: hsl(217, 89%, 61%) !important;
+}
+
 .crumbs .crumb:hover {
     background-color: rgb(216, 216, 216);
+}
+
+:host-context(.material) .crumb:hover {
+    background-color: transparent;
+    color: hsl(0, 0%, 20%) !important;
 }

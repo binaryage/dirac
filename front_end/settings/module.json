@@ -19,6 +19,14 @@
             "elementClass": "settings-toolbar-item"
         },
         {
+            "type": "@WebInspector.ToolbarItem.Provider",
+            "actionId": "settings.show",
+            "location": "elements-toolbar",
+            "title": "Settings",
+            "order": 1,
+            "elementClass": "settings-toolbar-item"
+        },
+        {
             "type": "@WebInspector.SettingUI",
             "category": "Sources",
             "className": "WebInspector.SettingsScreen.SkipStackFramePatternSettingUI"
