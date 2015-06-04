@@ -78,10 +78,7 @@ patched_es6_externs_file = to_platform_path(path.join(devtools_frontend_path, 'e
 global_externs_file = to_platform_path(path.join(devtools_frontend_path, 'externs.js'))
 protocol_externs_file = path.join(devtools_frontend_path, 'protocol_externs.js')
 injected_script_source_name = path.join(inspector_path, 'InjectedScriptSource.js')
-injected_script_externs_static_file = path.join(inspector_path, 'injected_script_externs.js')
-injected_script_externs_idl_names = [
-    path.join(inspector_path, 'InjectedScriptHost.idl'),
-]
+injected_script_externs_file = path.join(inspector_path, 'injected_script_externs.js')
 
 jsmodule_name_prefix = 'jsmodule_'
 runtime_module_name = '_runtime'
@@ -386,17 +383,10 @@ injectedScriptSourceTmpFile = to_platform_path(path.join(inspector_path, 'Inject
 unclosure_injected_script(injected_script_source_name, injectedScriptSourceTmpFile)
 
 print 'Compiling InjectedScriptSource.js...'
-injected_script_externs_generated_file = tempfile.NamedTemporaryFile(mode='wt', delete=False)
-try:
-    generate_injected_script_externs.generate_injected_script_externs(injected_script_externs_idl_names, injected_script_externs_generated_file)
-finally:
-    injected_script_externs_generated_file.close()
-
 spawned_compiler_command = '%s -jar %s %s' % (java_exec, closure_compiler_jar, common_closure_args)
 
 command = spawned_compiler_command
-command += '    --externs ' + to_platform_path_exact(injected_script_externs_generated_file.name)
-command += '    --externs ' + to_platform_path(injected_script_externs_static_file)
+command += '    --externs ' + to_platform_path(injected_script_externs_file)
 command += '    --externs ' + to_platform_path(protocol_externs_file)
 command += '    --module ' + jsmodule_name_prefix + 'injected_script' + ':1'
 command += '        --js ' + to_platform_path(injectedScriptSourceTmpFile)
@@ -505,6 +495,5 @@ if errors_found:
 
 os.remove(injectedScriptSourceTmpFile)
 os.remove(compiler_args_file.name)
-os.remove(injected_script_externs_generated_file.name)
 os.remove(protocol_externs_file)
 shutil.rmtree(modules_dir, True)
