@@ -245,21 +245,21 @@ WebInspector.NetworkLogView.prototype = {
         this._textFilterUI.addEventListener(WebInspector.FilterUI.Events.FilterChanged, this._filterChanged, this);
         this._filterBar.addFilter(this._textFilterUI);
 
+        var dataURLSetting = this._networkHideDataURLSetting;
+        this._dataURLFilterUI = new WebInspector.CheckboxFilterUI("hide-data-url", WebInspector.UIString("Hide data URLs"), true, dataURLSetting);
+        this._dataURLFilterUI.addEventListener(WebInspector.FilterUI.Events.FilterChanged, this._filterChanged.bind(this), this);
+        this._filterBar.addFilter(this._dataURLFilterUI);
+
         var types = [];
         for (var typeId in WebInspector.resourceTypes) {
             var resourceType = WebInspector.resourceTypes[typeId];
             if (resourceType === WebInspector.resourceTypes.TextTrack)
                 continue;
-            types.push({name: resourceType.name(), label: resourceType.categoryTitle()});
+            types.push({name: resourceType.name(), label: resourceType.shortCategoryTitle(), title: resourceType.categoryTitle()});
         }
         this._resourceTypeFilterUI = new WebInspector.NamedBitSetFilterUI(types, this._networkResourceTypeFiltersSetting);
         this._resourceTypeFilterUI.addEventListener(WebInspector.FilterUI.Events.FilterChanged, this._filterChanged.bind(this), this);
         this._filterBar.addFilter(this._resourceTypeFilterUI);
-
-        var dataURLSetting = this._networkHideDataURLSetting;
-        this._dataURLFilterUI = new WebInspector.CheckboxFilterUI("hide-data-url", WebInspector.UIString("Hide data URLs"), true, dataURLSetting);
-        this._dataURLFilterUI.addEventListener(WebInspector.FilterUI.Events.FilterChanged, this._filterChanged.bind(this), this);
-        this._filterBar.addFilter(this._dataURLFilterUI);
     },
 
     _resetSuggestionBuilder: function()

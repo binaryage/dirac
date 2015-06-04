@@ -124,7 +124,7 @@ button.toolbar-item {
 }
 
 :host-context(.material) button.toolbar-item:hover {
-    background-color: rgba(105, 105, 105, 0.1);
+    background-color: #eee;
 }
 
 button.toolbar-item.toggled-on .glyph {
@@ -447,6 +447,10 @@ button.record-toolbar-item.toggled-on .glyph {
 
 .filter-toolbar-item.toggled-shown .glyph {
     background-color: rgb(66, 129, 235);
+}
+
+.filter-toolbar-item.toggled-shown {
+    background-color: rgba(105, 105, 105, 0.1);
 }
 
 .filter-toolbar-item.toggled-active .glyph {

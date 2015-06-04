@@ -456,9 +456,8 @@
     border-spacing: 0;
 }
 
-.styles-element-state-pane label {
-    display: flex;
-    margin: 1px;
+.styles-element-state-pane td {
+    padding: 0;
 }
 
 .styles-animations-controls-pane > * {
@@ -760,6 +759,7 @@ label.checkbox-with-label {
 .styles-pane-toolbar {
     float: right;
     margin-top: -3px;
+    background-color: rgba(255, 255, 255, 0.8);
 }
 
 .properties-widget-section {

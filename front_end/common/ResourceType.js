@@ -32,14 +32,16 @@
  * @param {string} name
  * @param {string} title
  * @param {string} categoryTitle
+ * @param {string} shortCategoryTitle
  * @param {string} color
  * @param {boolean} isTextType
  */
-WebInspector.ResourceType = function(name, title, categoryTitle, color, isTextType)
+WebInspector.ResourceType = function(name, title, categoryTitle, shortCategoryTitle, color, isTextType)
 {
     this._name = name;
     this._title = title;
     this._categoryTitle = categoryTitle;
+    this._shortCategoryTitle = shortCategoryTitle;
     this._color = color;
     this._isTextType = isTextType;
 }
@@ -67,6 +69,14 @@ WebInspector.ResourceType.prototype = {
     categoryTitle: function()
     {
         return this._categoryTitle;
+    },
+
+    /**
+     * @return {string}
+     */
+    shortCategoryTitle: function()
+    {
+        return this._shortCategoryTitle;
     },
 
     /**
@@ -114,16 +124,16 @@ WebInspector.ResourceType.prototype = {
  * @enum {!WebInspector.ResourceType}
  */
 WebInspector.resourceTypes = {
-    XHR: new WebInspector.ResourceType("xhr", "XHR", "XHR", "rgb(231,231,10)", true),
-    Script: new WebInspector.ResourceType("script", "Script", "Script", "rgb(255,121,0)", true),
-    Stylesheet: new WebInspector.ResourceType("stylesheet", "Stylesheet", "Style", "rgb(157,231,119)", true),
-    Image: new WebInspector.ResourceType("image", "Image", "Images", "rgb(164,60,255)", false),
-    Media: new WebInspector.ResourceType("media", "Media", "Media", "rgb(164,60,255)", false), // FIXME: Decide the color.
-    Font: new WebInspector.ResourceType("font", "Font", "Fonts", "rgb(255,82,62)", false),
-    Document: new WebInspector.ResourceType("document", "Document", "Documents", "rgb(47,102,236)", true),
-    TextTrack: new WebInspector.ResourceType("texttrack", "TextTrack", "TextTracks", "rgb(164,60,255)", true), // FIXME: Decide the color.
-    WebSocket: new WebInspector.ResourceType("websocket", "WebSocket", "WebSockets", "rgb(186,186,186)", false), // FIXME: Decide the color.
-    Other: new WebInspector.ResourceType("other", "Other", "Other", "rgb(186,186,186)", false)
+    XHR: new WebInspector.ResourceType("xhr", "XHR", "XHR", "XHR", "rgb(231,231,10)", true),
+    Script: new WebInspector.ResourceType("script", "Script", "Scripts", "JS", "rgb(255,121,0)", true),
+    Stylesheet: new WebInspector.ResourceType("stylesheet", "Stylesheet", "Stylesheets", "CSS", "rgb(157,231,119)", true),
+    Image: new WebInspector.ResourceType("image", "Image", "Images", "Img", "rgb(164,60,255)", false),
+    Media: new WebInspector.ResourceType("media", "Media", "Media", "Media", "rgb(164,60,255)", false), // FIXME: Decide the color.
+    Font: new WebInspector.ResourceType("font", "Font", "Fonts", "Font", "rgb(255,82,62)", false),
+    Document: new WebInspector.ResourceType("document", "Document", "Documents", "Doc", "rgb(47,102,236)", true),
+    TextTrack: new WebInspector.ResourceType("texttrack", "TextTrack", "TextTracks", "TextTracks", "rgb(164,60,255)", true), // FIXME: Decide the color.
+    WebSocket: new WebInspector.ResourceType("websocket", "WebSocket", "WebSockets", "WS", "rgb(186,186,186)", false), // FIXME: Decide the color.
+    Other: new WebInspector.ResourceType("other", "Other", "Other", "Other", "rgb(186,186,186)", false)
 }
 
 WebInspector.ResourceType.mimeTypesForExtensions = {

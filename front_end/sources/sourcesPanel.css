@@ -37,7 +37,8 @@
 }
 
 .material .scripts-debug-toolbar {
-    height: 27px;
+    height: 28px;
+    overflow: hidden;
 }
 
 .scripts-debug-toolbar {

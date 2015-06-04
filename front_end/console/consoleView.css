@@ -42,8 +42,8 @@
 }
 
 .console-filters-header {
-    flex: 0 0 23px;
     overflow: hidden;
+    flex: none;
 }
 
 #console-messages {

@@ -50,7 +50,8 @@ WebInspector.SearchableView = function(searchable, settingName)
     this._footerElementContainer.style.order = 100;
 
     var toolbar = new WebInspector.Toolbar(this._footerElementContainer);
-    toolbar.makeNarrow();
+    if (!Runtime.experiments.isEnabled("materialDesign"))
+        toolbar.makeNarrow();
 
     if (this._searchProvider.supportsCaseSensitiveSearch()) {
         this._caseSensitiveButton = new WebInspector.ToolbarTextButton(WebInspector.UIString("Case sensitive"), "case-sensitive-search-toolbar-item", "Aa", 2);

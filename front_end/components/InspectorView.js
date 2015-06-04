@@ -118,7 +118,9 @@ WebInspector.InspectorView.prototype = {
     {
         this._leftToolbar = new WebInspector.ExtensibleToolbar("main-toolbar-left");
         this._leftToolbar.element.classList.add("inspector-view-toolbar", "inspector-view-toolbar-left");
-        this._leftToolbar.makeNarrow();
+
+        if (!Runtime.experiments.isEnabled("materialDesign"))
+            this._leftToolbar.makeNarrow();
         this._tabbedPane.insertBeforeTabStrip(this._leftToolbar.element);
 
         var rightToolbarContainer = createElementWithClass("div", "hbox flex-none flex-centered");

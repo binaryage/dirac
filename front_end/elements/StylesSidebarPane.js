@@ -42,7 +42,8 @@ WebInspector.StylesSidebarPane = function(requestShowCallback)
 
     var toolbar = new WebInspector.ExtensibleToolbar("styles-sidebarpane-toolbar", this.titleElement);
     toolbar.element.classList.add("styles-pane-toolbar");
-    toolbar.makeNarrow();
+    if (!Runtime.experiments.isEnabled("materialDesign"))
+        toolbar.makeNarrow();
 
     this._requestShowCallback = requestShowCallback;
     var toolbarPaneContainer = this.bodyElement.createChild("div", "styles-sidebar-toolbar-pane-container");

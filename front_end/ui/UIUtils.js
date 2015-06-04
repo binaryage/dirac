@@ -1334,10 +1334,44 @@ function createCheckboxLabel(title, checked)
         {
             var root = WebInspector.createShadowRootWithCoreStyles(this);
             root.appendChild(WebInspector.Widget.createStyleElement("ui/checkboxTextLabel.css"));
-            this.checkboxElement = this.createChild("input", "dt-checkbox-button");
-            this.checkboxElement.type = "checkbox";
-            root.createChild("content").select = ".dt-checkbox-button";
+            var checkboxElement = createElementWithClass("input", "dt-checkbox-button");
+            checkboxElement.type = "checkbox";
+            root.appendChild(checkboxElement);
+            this.checkboxElement = checkboxElement;
+
+            this.addEventListener("click", toggleCheckbox.bind(this));
+
+            /**
+             * @param {!Event} event
+             * @this {Node}
+             */
+            function toggleCheckbox(event)
+            {
+                if (event.target !== checkboxElement && event.target !== this)
+                    checkboxElement.click();
+            }
+
             root.createChild("content");
+        },
+
+        /**
+         * @param {string} color
+         * @this {Element}
+         */
+        set backgroundColor(color)
+        {
+            this.checkboxElement.classList.add("dt-checkbox-colored");
+            this.checkboxElement.style.backgroundColor = color;
+        },
+
+        /**
+         * @param {string} color
+         * @this {Element}
+         */
+        set borderColor(color)
+        {
+            this.checkboxElement.classList.add("dt-checkbox-colored");
+            this.checkboxElement.style.borderColor = color;
         },
 
         __proto__: HTMLLabelElement.prototype

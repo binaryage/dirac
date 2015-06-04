@@ -1046,6 +1046,10 @@ WebInspector.ConsoleViewFilter.prototype = {
         this._textFilterUI.addEventListener(WebInspector.FilterUI.Events.FilterChanged, this._textFilterChanged, this);
         filterBar.addFilter(this._textFilterUI);
 
+        this._hideNetworkMessagesCheckbox = new WebInspector.CheckboxFilterUI("hide-network-messages", WebInspector.UIString("Hide network messages"), true, WebInspector.moduleSetting("hideNetworkMessages"));
+        this._hideNetworkMessagesCheckbox.addEventListener(WebInspector.FilterUI.Events.FilterChanged, this._filterChanged.bind(this), this);
+        filterBar.addFilter(this._hideNetworkMessagesCheckbox);
+
         var levels = [
             {name: WebInspector.ConsoleMessage.MessageLevel.Error, label: WebInspector.UIString("Errors")},
             {name: WebInspector.ConsoleMessage.MessageLevel.Warning, label: WebInspector.UIString("Warnings")},
@@ -1057,9 +1061,6 @@ WebInspector.ConsoleViewFilter.prototype = {
         this._levelFilterUI = new WebInspector.NamedBitSetFilterUI(levels, this._messageLevelFiltersSetting);
         this._levelFilterUI.addEventListener(WebInspector.FilterUI.Events.FilterChanged, this._filterChanged, this);
         filterBar.addFilter(this._levelFilterUI);
-        this._hideNetworkMessagesCheckbox = new WebInspector.CheckboxFilterUI("hide-network-messages", WebInspector.UIString("Hide network messages"), true, WebInspector.moduleSetting("hideNetworkMessages"));
-        this._hideNetworkMessagesCheckbox.addEventListener(WebInspector.FilterUI.Events.FilterChanged, this._filterChanged.bind(this), this);
-        filterBar.addFilter(this._hideNetworkMessagesCheckbox);
     },
 
     _textFilterChanged: function(event)
@@ -1150,7 +1151,7 @@ WebInspector.ConsoleViewFilter.prototype = {
         this._messageURLFiltersSetting.set(this._messageURLFilters);
         this._messageLevelFiltersSetting.set({});
         this._view._showAllMessagesCheckbox.inputElement.checked = true;
-        this._hideNetworkMessagesCheckbox.setState(false);
+        WebInspector.moduleSetting("hideNetworkMessages").set(false);
         this._textFilterUI.setValue("");
         this._filterChanged();
     },

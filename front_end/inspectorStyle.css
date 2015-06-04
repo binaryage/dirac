@@ -89,9 +89,13 @@ fieldset[disabled] label:hover input {
 }
 
 .inspector-view-close-button {
-    padding-right: 6px;
-    padding-left: 4px;
     cursor: default;
+    width: 28px;
+    padding-left: 8px;
+}
+
+.material .inspector-view-close-button {
+    width: 32px;
 }
 
 body.undocked .inspector-view-close-button {

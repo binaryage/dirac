@@ -35,7 +35,7 @@
 WebInspector.FilterBar = function()
 {
     this._filtersShown = false;
-    this._element = createElementWithClass("div", "filter-bar hbox");
+    this._element = createElementWithClass("div", "filter-bar");
 
     this._filterButton = new WebInspector.ToolbarButton(WebInspector.UIString("Filter"), "filter-toolbar-item", 3);
     this._filterButton.element.addEventListener("click", this._handleFilterButtonClick.bind(this), false);
@@ -472,7 +472,7 @@ WebInspector.NamedBitSetFilterUI = function(items, setting)
     this._filtersElement.createChild("div", "filter-bitset-filter-divider");
 
     for (var i = 0; i < items.length; ++i)
-        this._addBit(items[i].name, items[i].label);
+        this._addBit(items[i].name, items[i].label, items[i].title);
 
     if (setting) {
         this._setting = setting;
@@ -483,7 +483,7 @@ WebInspector.NamedBitSetFilterUI = function(items, setting)
     }
 }
 
-/** @typedef {{name: string, label: string}} */
+/** @typedef {{name: string, label: string, title: (string|undefined)}} */
 WebInspector.NamedBitSetFilterUI.Item;
 
 WebInspector.NamedBitSetFilterUI.ALL_TYPES = "all";
@@ -541,12 +541,15 @@ WebInspector.NamedBitSetFilterUI.prototype = {
     /**
      * @param {string} name
      * @param {string} label
+     * @param {string=} title
      */
-    _addBit: function(name, label)
+    _addBit: function(name, label, title)
     {
         var typeFilterElement = this._filtersElement.createChild("li", name);
         typeFilterElement.typeName = name;
         typeFilterElement.createTextChild(label);
+        if (title)
+            typeFilterElement.title = title;
         typeFilterElement.addEventListener("click", this._onTypeFilterClicked.bind(this), false);
         this._typeFilterElements[name] = typeFilterElement;
     },
@@ -679,19 +682,16 @@ WebInspector.ComboBoxFilterUI.prototype = {
  */
 WebInspector.CheckboxFilterUI = function(className, title, activeWhenChecked, setting)
 {
-    this._filterElement = createElement("div");
-    this._filterElement.classList.add("filter-checkbox-filter", "filter-checkbox-filter-" + className);
+    this._filterElement = createElementWithClass("div", "filter-checkbox-filter");
     this._activeWhenChecked = !!activeWhenChecked;
-    this._createCheckbox(title);
-
-    if (setting) {
-        this._setting = setting;
-        setting.addChangeListener(this._settingChanged.bind(this));
-        this._settingChanged();
-    } else {
-        this._checked = !this._activeWhenChecked;
-        this._update();
-    }
+    this._label = createCheckboxLabel(title);
+    this._filterElement.appendChild(this._label);
+    this._checkboxElement = this._label.checkboxElement;
+    if (setting)
+        WebInspector.SettingsUI.bindCheckbox(this._checkboxElement, setting);
+    else
+        this._checkboxElement.checked = true;
+    this._checkboxElement.addEventListener("change", this._fireUpdated.bind(this), false);
 }
 
 WebInspector.CheckboxFilterUI.prototype = {
@@ -701,7 +701,15 @@ WebInspector.CheckboxFilterUI.prototype = {
      */
     isActive: function()
     {
-        return this._activeWhenChecked === this._checked;
+        return this._activeWhenChecked === this._checkboxElement.checked;
+    },
+
+    /**
+     * @return {boolean}
+     */
+    checked: function()
+    {
+        return this._checkboxElement.checked;
     },
 
     /**
@@ -713,61 +721,19 @@ WebInspector.CheckboxFilterUI.prototype = {
         return this._filterElement;
     },
 
-    /**
-     * @return {boolean}
-     */
-    checked: function()
+    _fireUpdated: function()
     {
-        return this._checked;
-    },
-
-    /**
-     * @param {boolean} state
-     */
-    setState: function(state)
-    {
-        this._checked = state;
-        if (this._setting)
-            this._setting.set(state);
-        else
-            this._update();
-    },
-
-    _update: function()
-    {
-        this._checkElement.classList.toggle("checkbox-filter-checkbox-checked", this._checked);
         this.dispatchEventToListeners(WebInspector.FilterUI.Events.FilterChanged, null);
     },
 
-    _settingChanged: function()
-    {
-        this._checked = this._setting.get();
-        this._update();
-    },
-
     /**
-     * @param {!Event} event
+     * @param {string} backgroundColor
+     * @param {string} borderColor
      */
-    _onClick: function(event)
+    setColor: function(backgroundColor, borderColor)
     {
-        this._checked = !this._checked;
-        if (this._setting)
-            this._setting.set(this._checked);
-        else
-            this._update();
-    },
-
-    /**
-     * @param {string} title
-     */
-    _createCheckbox: function(title)
-    {
-        var label = this._filterElement.createChild("label");
-        var checkBorder = label.createChild("div", "checkbox-filter-checkbox");
-        this._checkElement = checkBorder.createChild("div", "checkbox-filter-checkbox-check");
-        this._filterElement.addEventListener("click", this._onClick.bind(this), false);
-        var typeElement = label.createChild("span", "type");
-        typeElement.textContent = title;
+        this._label.backgroundColor = backgroundColor;
+        this._label.borderColor = borderColor;
     },
 
     __proto__: WebInspector.Object.prototype

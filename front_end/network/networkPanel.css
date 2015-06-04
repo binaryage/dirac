@@ -174,16 +174,6 @@
     width: 100%;
 }
 
-.network-filters-header {
-    flex: 0 0 23px;
-    padding-right: 4px;
-}
-
-.network-filters-header .filter-text-filter {
-    flex-grow: 1;
-    max-width: 312px;
-}
-
 #network-overview-container {
     overflow: hidden;
     flex: auto;
