@@ -628,7 +628,7 @@ WebInspector.reload = function()
 {
     if (WebInspector.dockController.canDock() && WebInspector.dockController.dockSide() === WebInspector.DockController.State.Undocked)
         InspectorFrontendHost.setIsDocked(true, function() {});
-    window.top.location.reload();
+    window.location.reload();
 }
 
 /**

@@ -59,8 +59,7 @@
                 {
                     'destination': '<(PRODUCT_DIR)/resources/inspector/',
                     'files': [
-                        'front_end/devtools.html',
-                        'front_end/devtools.js',
+                        '<@(devtools_compatibility_scripts)',
                     ],
                 },
             ],
@@ -102,8 +101,6 @@
                         'generated_files': [
                             # Core and remote modules should not be listed here.
                             # TODO(dgozman): remove remote modules from here once experiment is over.
-                            '<(PRODUCT_DIR)/resources/inspector/devtools.html',
-                            '<(PRODUCT_DIR)/resources/inspector/devtools.js',
                             '<(PRODUCT_DIR)/resources/inspector/inspector.css',
                             '<(PRODUCT_DIR)/resources/inspector/inspector.html',
                             '<(PRODUCT_DIR)/resources/inspector/inspector.js',
@@ -136,6 +133,7 @@
                         'inputs': [
                             '<@(_script_name)',
                             '<@(_static_files)',
+                            '<@(devtools_compatibility_scripts)',
                             '<@(_generated_files)',
                             '<@(devtools_image_files)',
                             '<(_devtools_static_files_list)',
@@ -144,7 +142,7 @@
                             'front_end/Images',
                         ],
                         'outputs': ['<(SHARED_INTERMEDIATE_DIR)/devtools/devtools_resources.grd'],
-                        'action': ['python', '<@(_script_name)', '<@(_generated_files)', '--static_files_list', '<(_devtools_static_files_list)', '--relative_path_dirs', '<@(_relative_path_dirs)', '--images', '<@(_images_path)', '--output', '<@(_outputs)'],
+                        'action': ['python', '<@(_script_name)', '<@(_generated_files)', '<@(devtools_compatibility_scripts)', '--static_files_list', '<(_devtools_static_files_list)', '--relative_path_dirs', '<@(_relative_path_dirs)', '--images', '<@(_images_path)', '--output', '<@(_outputs)'],
                     }],
                 },
                 {
@@ -167,14 +165,13 @@
                         'generated_files': [
                             '<(PRODUCT_DIR)/resources/inspector/InspectorBackendCommands.js',
                             '<(PRODUCT_DIR)/resources/inspector/SupportedCSSProperties.js',
-                            '<(PRODUCT_DIR)/resources/inspector/devtools.html',
-                            '<(PRODUCT_DIR)/resources/inspector/devtools.js',
                             '<(PRODUCT_DIR)/resources/inspector/inspector.html',
                             '<(PRODUCT_DIR)/resources/inspector/toolbox.html',
                         ],
                         'inputs': [
                             '<@(_script_name)',
                             '<@(_static_files)',
+                            '<@(devtools_compatibility_scripts)',
                             '<@(_generated_files)',
                             '<@(devtools_image_files)',
                             '<(_devtools_static_files_list)',
@@ -184,7 +181,7 @@
                         ],
                         # Note that other files are put under /devtools directory, together with declared devtools_resources.grd
                         'outputs': ['<(SHARED_INTERMEDIATE_DIR)/devtools/devtools_resources.grd'],
-                        'action': ['python', '<@(_script_name)', '<@(_generated_files)', '--static_files_list', '<(_devtools_static_files_list)', '--relative_path_dirs', '<@(_relative_path_dirs)', '--images', '<@(_images_path)', '--output', '<@(_outputs)'],
+                        'action': ['python', '<@(_script_name)', '<@(_generated_files)', '<@(devtools_compatibility_scripts)', '--static_files_list', '<(_devtools_static_files_list)', '--relative_path_dirs', '<@(_relative_path_dirs)', '--images', '<@(_images_path)', '--output', '<@(_outputs)'],
                     }],
                 }],
             ],

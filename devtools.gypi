@@ -49,6 +49,9 @@
             '<@(devtools_workspace_js_files)',
             '<@(devtools_core_css_files)',
         ],
+        'devtools_compatibility_scripts': [
+            'front_end/devtools.js',
+        ],
         'devtools_core_base_files': [
             'front_end/inspector.css',
             'front_end/inspector.js',

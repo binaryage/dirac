@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-(function() {
+(function(window) {
 
 // DevToolsAPI ----------------------------------------------------------------
 
@@ -12,16 +12,6 @@
 function DevToolsAPIImpl()
 {
     /**
-     * @type {?Window}
-     */
-    this._inspectorWindow;
-
-    /**
-     * @type {!Array.<function(!Window)>}
-     */
-    this._pendingDispatches = [];
-
-    /**
      * @type {number}
      */
     this._lastCallId = 0;
@@ -30,11 +20,6 @@ function DevToolsAPIImpl()
      * @type {!Object.<number, function(?Object)>}
      */
     this._callbacks = {};
-
-    /**
-     * @type {?function(!Array.<!Adb.Device>)}
-     */
-    this._devicesUpdatedCallback = null;
 }
 
 DevToolsAPIImpl.prototype = {
@@ -67,53 +52,13 @@ DevToolsAPIImpl.prototype = {
     },
 
     /**
-     * @param {function(!Array.<!Adb.Device>)} callback
-     */
-    setDevicesUpdatedCallback: function(callback)
-    {
-        this._devicesUpdatedCallback = callback;
-    },
-
-    /**
-     * @param {?Window} inspectorWindow
-     */
-    setInspectorWindow: function(inspectorWindow)
-    {
-        this._inspectorWindow = inspectorWindow;
-        if (!inspectorWindow)
-            return;
-        while (this._pendingDispatches.length)
-            this._pendingDispatches.shift()(inspectorWindow);
-    },
-
-    /**
-     * @param {function(!Window)} callback
-     */
-    _dispatchOnInspectorWindow: function(callback)
-    {
-        if (this._inspectorWindow) {
-            callback(this._inspectorWindow);
-        } else {
-            this._pendingDispatches.push(callback);
-        }
-    },
-
-    /**
      * @param {string} method
      * @param {!Array.<*>} args
      */
     _dispatchOnInspectorFrontendAPI: function(method, args)
     {
-        /**
-         * @param {!Window} inspectorWindow
-         */
-        function dispatch(inspectorWindow)
-        {
-            var api = inspectorWindow["InspectorFrontendAPI"];
-            api[method].apply(api, args);
-        }
-
-        this._dispatchOnInspectorWindow(dispatch);
+        var api = window["InspectorFrontendAPI"];
+        api[method].apply(api, args);
     },
 
     // API methods below this line --------------------------------------------
@@ -123,19 +68,11 @@ DevToolsAPIImpl.prototype = {
      */
     addExtensions: function(extensions)
     {
-        /**
-         * @param {!Window} inspectorWindow
-         */
-        function dispatch(inspectorWindow)
-        {
-            // Support for legacy front-ends (<M41).
-            if (inspectorWindow["WebInspector"].addExtensions)
-                inspectorWindow["WebInspector"].addExtensions(extensions);
-            else
-                inspectorWindow["InspectorFrontendAPI"].addExtensions(extensions);
-        }
-
-        this._dispatchOnInspectorWindow(dispatch);
+        // Support for legacy front-ends (<M41).
+        if (window["WebInspector"].addExtensions)
+            window["WebInspector"].addExtensions(extensions);
+        else
+            this._dispatchOnInspectorFrontendAPI("addExtensions", [extensions]);
     },
 
     /**
@@ -180,8 +117,6 @@ DevToolsAPIImpl.prototype = {
      */
     devicesUpdated: function(devices)
     {
-        if (this._devicesUpdatedCallback)
-            this._devicesUpdatedCallback.call(null, devices);
         this._dispatchOnInspectorFrontendAPI("devicesUpdated", [devices]);
     },
 
@@ -190,9 +125,6 @@ DevToolsAPIImpl.prototype = {
      */
     dispatchMessage: function(message)
     {
-        // TODO(dgozman): remove once iframe is gone.
-        if (typeof message !== "string")
-            message = JSON.stringify(message);
         this._dispatchOnInspectorFrontendAPI("dispatchMessage", [message]);
     },
 
@@ -305,19 +237,11 @@ DevToolsAPIImpl.prototype = {
      */
     setInspectedTabId: function(tabId)
     {
-        /**
-         * @param {!Window} inspectorWindow
-         */
-        function dispatch(inspectorWindow)
-        {
-            // Support for legacy front-ends (<M41).
-            if (inspectorWindow["WebInspector"].setInspectedTabId)
-                inspectorWindow["WebInspector"].setInspectedTabId(tabId);
-            else
-                inspectorWindow["InspectorFrontendAPI"].setInspectedTabId(tabId);
-        }
-
-        this._dispatchOnInspectorWindow(dispatch);
+        // Support for legacy front-ends (<M41).
+        if (window["WebInspector"].setInspectedTabId)
+            window["WebInspector"].setInspectedTabId(tabId);
+        else
+            this._dispatchOnInspectorFrontendAPI("setInspectedTabId", [tabId]);
     },
 
     /**
@@ -850,10 +774,14 @@ InspectorFrontendHostImpl.prototype = {
     }
 }
 
+window.InspectorFrontendHost = new InspectorFrontendHostImpl();
 
 // DevToolsApp ---------------------------------------------------------------
 
-function installBackwardsCompatibility(window)
+/**
+ * @suppressGlobalPropertiesCheck
+ */
+function installBackwardsCompatibility()
 {
     /**
      * @this {CSSStyleDeclaration}
@@ -885,69 +813,16 @@ function installBackwardsCompatibility(window)
     window.document.head.appendChild(styleElement);
 }
 
-/**
- * @constructor
- * @suppressGlobalPropertiesCheck
- */
-function DevToolsApp()
+function windowLoaded()
 {
-    this._iframe = document.getElementById("inspector-app-iframe");
-    this._inspectorFrontendHostImpl = new InspectorFrontendHostImpl();
-
-    /**
-     * @type {!Window}
-     */
-    this._inspectorWindow = this._iframe.contentWindow;
-    this._inspectorWindow.InspectorFrontendHost = this._inspectorFrontendHostImpl;
-    DevToolsAPI.setInspectorWindow(this._inspectorWindow);
-
-    this._iframe.focus();
-    this._iframe.addEventListener("load", this._onIframeLoad.bind(this), false);
+    window.removeEventListener("DOMContentLoaded", windowLoaded, false);
+    installBackwardsCompatibility();
 }
 
-DevToolsApp.prototype = {
-    _onIframeLoad: function()
-    {
-        installBackwardsCompatibility(this._iframe.contentWindow);
-    }
-};
-
-/**
- * @suppressGlobalPropertiesCheck
- */
-function startup()
-{
-    var path = window.location.pathname;
-    var injected = path.substring(path.length - 14) === "inspector.html";
-    if (injected) {
-        window.InspectorFrontendHost = new InspectorFrontendHostImpl();
-        window.DevToolsAPI.setInspectorWindow(window);
-    }
-
-    function run()
-    {
-        if (injected)
-            installBackwardsCompatibility(window);
-        else
-            new DevToolsApp();
-    }
-
-    /**
-     * @suppressGlobalPropertiesCheck
-     */
-    function windowLoaded()
-    {
-        window.removeEventListener("DOMContentLoaded", windowLoaded, false);
-        run();
-    }
-
-    if (document.readyState === "complete" || document.readyState === "interactive")
-        run();
-    else
-        window.addEventListener("DOMContentLoaded", windowLoaded, false);
-}
-
-startup();
+if (window.document.readyState === "complete" || window.document.readyState === "interactive")
+    installBackwardsCompatibility();
+else
+    window.addEventListener("DOMContentLoaded", windowLoaded, false);
 
 // UITests ------------------------------------------------------------------
 
@@ -978,4 +853,4 @@ if (window.domAutomationController) {
     window.uiTests = uiTests;
 }
 
-})();
+})(window);
