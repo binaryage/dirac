@@ -71,7 +71,7 @@ WebInspector.SharedSidebarModel.prototype = {
             this._cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.StyleSheetChanged, this._onComputedStyleChanged, this);
             this._cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.MediaQueryResultChanged, this._onComputedStyleChanged, this);
             this._cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.PseudoStateForced, this._onComputedStyleChanged, this);
-            this._cssModel.addEventListener(WebInspector.CSSStyleModel.Events.ModelWasEnabled, this._onComputedStyleChanged, this);
+            this._cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.ModelWasEnabled, this._onComputedStyleChanged, this);
             this._domModel.removeEventListener(WebInspector.DOMModel.Events.DOMMutated, this._onComputedStyleChanged, this);
         }
         this._target = target;

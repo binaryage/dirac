@@ -56,21 +56,59 @@ WebInspector.ElementStatePaneWidget = function(toolbarItem)
 
 WebInspector.ElementStatePaneWidget.prototype = {
     /**
+     * @param {?WebInspector.Target} target
+     */
+    _updateTarget: function(target)
+    {
+        if (this._target === target)
+            return;
+
+        if (this._target) {
+            var cssModel = WebInspector.CSSStyleModel.fromTarget(this._target);
+            cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.PseudoStateForced, this._pseudoStateForced, this)
+        }
+        this._target = target;
+        if (target) {
+            var cssModel = WebInspector.CSSStyleModel.fromTarget(target);
+            cssModel.addEventListener(WebInspector.CSSStyleModel.Events.PseudoStateForced, this._pseudoStateForced, this)
+        }
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _pseudoStateForced: function(event)
+    {
+        var node = /** @type{!WebInspector.DOMNode} */(event.data.node);
+        if (node === WebInspector.context.flavor(WebInspector.DOMNode))
+            this._updateInputs(node);
+    },
+
+    /**
      * @override
      * @param {?WebInspector.DOMNode} newNode
      */
     onNodeChanged: function(newNode)
     {
+        this._updateTarget(newNode? newNode.target() : null);
         this.toolbarItem().setEnabled(!!newNode);
-        if (!newNode && this.isShowing()) {
-            this.detach();
+        if (!newNode) {
+            if (this.isShowing())
+                this.detach();
             return;
         }
+        this._updateInputs(newNode);
+    },
 
-        var nodePseudoState = newNode.getUserProperty(WebInspector.CSSStyleModel.PseudoStatePropertyName) || [];
+    /**
+     * @param {!WebInspector.DOMNode} node
+     */
+    _updateInputs: function(node)
+    {
+        var nodePseudoState = node.getUserProperty(WebInspector.CSSStyleModel.PseudoStatePropertyName) || [];
         var inputs = this._inputs;
         for (var i = 0; i < inputs.length; ++i) {
-            inputs[i].disabled = !!newNode.pseudoType();
+            inputs[i].disabled = !!node.pseudoType();
             inputs[i].checked = nodePseudoState.indexOf(inputs[i].state) >= 0;
         }
     },
