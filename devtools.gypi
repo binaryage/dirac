@@ -129,7 +129,6 @@
             'front_end/screencast/ScreencastView.js',
         ],
         'devtools_sdk_js_files': [
-            'front_end/sdk/AnimationModel.js',
             'front_end/sdk/ApplicationCacheModel.js',
             'front_end/sdk/ConsoleModel.js',
             'front_end/sdk/ContentProviders.js',
@@ -294,6 +293,7 @@
         ],
         'devtools_module_json_files': [
             'front_end/accessibility/module.json',
+            'front_end/animation/module.json',
             'front_end/audits/module.json',
             'front_end/bindings/module.json',
             'front_end/cm_modes/module.json',
@@ -343,6 +343,12 @@
             'front_end/accessibility/AccessibilitySidebarView.js',
             'front_end/accessibility/AccessibilityStrings.js',
         ],
+        'devtools_animation_js_files': [
+            'front_end/animation/animationTimeline.css',
+            'front_end/animation/AnimationControlPane.js',
+            'front_end/animation/AnimationModel.js',
+            'front_end/animation/AnimationTimeline.js',
+        ],
         'devtools_audits_js_files': [
             'front_end/audits/auditResultTree.css',
             'front_end/audits/auditsPanel.css',
@@ -378,15 +384,12 @@
             'front_end/console/ConsoleViewMessage.js',
         ],
         'devtools_elements_js_files': [
-            'front_end/elements/animationTimeline.css',
             'front_end/elements/bezierEditor.css',
             'front_end/elements/breadcrumbs.css',
             'front_end/elements/computedStyleSidebarPane.css',
             'front_end/elements/elementsPanel.css',
             'front_end/elements/elementsTreeOutline.css',
             'front_end/elements/spectrum.css',
-            'front_end/elements/AnimationControlPane.js',
-            'front_end/elements/AnimationTimeline.js',
             'front_end/elements/BezierEditor.js',
             'front_end/elements/BezierUI.js',
             'front_end/elements/ElementsBreadcrumbs.js',
@@ -655,6 +658,7 @@
 
         'devtools_modules_js_files': [
             '<@(devtools_accessibility_js_files)',
+            '<@(devtools_animation_js_files)',
             '<@(devtools_audits_js_files)',
             '<@(devtools_cm_modes_js_files)',
             '<@(devtools_components_lazy_js_files)',

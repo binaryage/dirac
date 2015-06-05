@@ -10,7 +10,7 @@
 WebInspector.AnimationTimeline = function()
 {
     WebInspector.VBox.call(this, true);
-    this.registerRequiredCSS("elements/animationTimeline.css");
+    this.registerRequiredCSS("animation/animationTimeline.css");
     this.element.classList.add("animations-timeline");
 
     this._grid = this.contentElement.createSVGChild("svg", "animation-timeline-grid");
@@ -74,9 +74,10 @@ WebInspector.AnimationTimeline.prototype = {
      */
     _addEventListeners: function(target)
     {
-        target.animationModel.ensureEnabled();
-        target.animationModel.addEventListener(WebInspector.AnimationModel.Events.AnimationPlayerCreated, this._animationCreated, this);
-        target.animationModel.addEventListener(WebInspector.AnimationModel.Events.AnimationPlayerCanceled, this._animationCanceled, this);
+        var animationModel = WebInspector.AnimationModel.fromTarget(target);
+        animationModel.ensureEnabled();
+        animationModel.addEventListener(WebInspector.AnimationModel.Events.AnimationPlayerCreated, this._animationCreated, this);
+        animationModel.addEventListener(WebInspector.AnimationModel.Events.AnimationPlayerCanceled, this._animationCanceled, this);
     },
 
     /**
@@ -84,8 +85,9 @@ WebInspector.AnimationTimeline.prototype = {
      */
     _removeEventListeners: function(target)
     {
-        target.animationModel.removeEventListener(WebInspector.AnimationModel.Events.AnimationPlayerCreated, this._animationCreated, this);
-        target.animationModel.removeEventListener(WebInspector.AnimationModel.Events.AnimationPlayerCanceled, this._animationCanceled, this);
+        var animationModel = WebInspector.AnimationModel.fromTarget(target);
+        animationModel.removeEventListener(WebInspector.AnimationModel.Events.AnimationPlayerCreated, this._animationCreated, this);
+        animationModel.removeEventListener(WebInspector.AnimationModel.Events.AnimationPlayerCanceled, this._animationCanceled, this);
     },
 
     /**
@@ -124,9 +126,7 @@ WebInspector.AnimationTimeline.prototype = {
         function playbackSliderInputHandler(event)
         {
             this._underlyingPlaybackRate = WebInspector.AnimationTimeline.GlobalPlaybackRates[event.target.value];
-            var target = WebInspector.targetManager.mainTarget();
-            if (target)
-                target.animationModel.setPlaybackRate(this._playbackRate());
+            this._setPlaybackRate(this._playbackRate());
             this._playbackLabel.textContent = this._underlyingPlaybackRate + "✕";
             WebInspector.userMetrics.AnimationsPlaybackRateChanged.record();
             this._updateTimelineAnimations();
@@ -204,9 +204,7 @@ WebInspector.AnimationTimeline.prototype = {
     _togglePause: function()
     {
         this._paused = !this._paused;
-        var target = WebInspector.targetManager.mainTarget();
-        if (target)
-            target.animationModel.setPlaybackRate(this._playbackRate());
+        this._setPlaybackRate(this._playbackRate());
         WebInspector.userMetrics.AnimationsPlaybackRateChanged.record();
         this._pauseButton.element.classList.toggle("pause-toolbar-item");
         this._pauseButton.element.classList.toggle("play-toolbar-item");
@@ -548,9 +546,7 @@ WebInspector.AnimationTimeline.prototype = {
         this._scrubberPlayer.pause();
         this._originalMousePosition = new WebInspector.Geometry.Point(event.x, event.y);
 
-        var target = WebInspector.targetManager.mainTarget();
-        if (target)
-            target.animationModel.setPlaybackRate(0);
+        this._setPlaybackRate(0);
         return true;
     },
 
@@ -576,9 +572,17 @@ WebInspector.AnimationTimeline.prototype = {
         if (this._scrubberPlayer.currentTime < this.duration() - this._scrubberRadius / this.pixelMsRatio())
             this._scrubberPlayer.play();
         this._timelineScrubberHead.window().requestAnimationFrame(this._updateScrubber.bind(this));
+        this._setPlaybackRate(this._playbackRate());
+    },
+
+    /**
+     * @param {number} playbackRate
+     */
+    _setPlaybackRate: function(playbackRate)
+    {
         var target = WebInspector.targetManager.mainTarget();
         if (target)
-            target.animationModel.setPlaybackRate(this._playbackRate());
+            WebInspector.AnimationModel.fromTarget(target).setPlaybackRate(playbackRate);
     },
 
     __proto__: WebInspector.VBox.prototype

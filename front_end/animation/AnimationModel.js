@@ -82,6 +82,20 @@ WebInspector.AnimationModel.prototype = {
     __proto__: WebInspector.SDKModel.prototype
 }
 
+WebInspector.AnimationModel._symbol = Symbol("AnimationModel");
+
+/**
+ * @param {!WebInspector.Target} target
+ * @return {!WebInspector.AnimationModel}
+ */
+WebInspector.AnimationModel.fromTarget = function(target)
+{
+    if (!target[WebInspector.AnimationModel._symbol])
+        target[WebInspector.AnimationModel._symbol] = new WebInspector.AnimationModel(target);
+
+    return target[WebInspector.AnimationModel._symbol];
+}
+
 /**
  * @constructor
  * @extends {WebInspector.SDKObject}

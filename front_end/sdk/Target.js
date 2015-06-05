@@ -136,8 +136,6 @@ WebInspector.Target.prototype = {
         this.heapProfilerModel = new WebInspector.HeapProfilerModel(this);
         /** @type {!WebInspector.LayerTreeModel} */
         this.layerTreeModel = new WebInspector.LayerTreeModel(this);
-        /** @type {!WebInspector.AnimationModel} */
-        this.animationModel = new WebInspector.AnimationModel(this);
 
         this.tracingManager = new WebInspector.TracingManager(this);
 

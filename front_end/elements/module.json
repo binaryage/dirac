@@ -79,12 +79,6 @@
             "className": "WebInspector.ElementStatePaneWidget.ButtonProvider",
             "order": 1,
             "location": "styles-sidebarpane-toolbar"
-        },
-        {
-            "type": "@WebInspector.ToolbarItem.Provider",
-            "className": "WebInspector.AnimationControlPane.ButtonProvider",
-            "order": 2,
-            "location": "styles-sidebarpane-toolbar"
         }
     ],
     "dependencies": [
@@ -93,7 +87,6 @@
     ],
     "scripts": [
         "BezierUI.js",
-        "AnimationTimeline.js",
         "StylesPopoverHelper.js",
         "BezierEditor.js",
         "Spectrum.js",
@@ -110,12 +103,10 @@
         "StylesSectionModel.js",
         "StylesSidebarPane.js",
         "ComputedStyleWidget.js",
-        "AnimationControlPane.js",
         "ElementStatePaneWidget.js",
         "ElementsPanel.js"
     ],
     "resources": [
-        "animationTimeline.css",
         "bezierEditor.css",
         "breadcrumbs.css",
         "computedStyleSidebarPane.css",

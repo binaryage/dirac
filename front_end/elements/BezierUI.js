@@ -78,7 +78,7 @@ WebInspector.BezierUI.prototype = {
         if (!bezier)
             return;
         var width = this.curveWidth();
-        var height = this.curveHeight();;
+        var height = this.curveHeight();
         svg.setAttribute("width", this.width);
         svg.setAttribute("height", this.height);
         svg.removeChildren();
@@ -100,6 +100,8 @@ WebInspector.BezierUI.prototype = {
     }
 }
 
+WebInspector.BezierUI.Height = 32;
+
 /**
  * @param {!WebInspector.Geometry.CubicBezier} bezier
  * @param {!Element} path
@@ -107,7 +109,7 @@ WebInspector.BezierUI.prototype = {
  */
 WebInspector.BezierUI.drawVelocityChart = function(bezier, path, width)
 {
-    var height = WebInspector.AnimationUI.Options.AnimationHeight;
+    var height = WebInspector.BezierUI.Height;
     var pathBuilder = ["M", 0, height];
     const sampleSize = 1 / 40;
 

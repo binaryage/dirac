@@ -40,7 +40,6 @@
         "InspectorBackend.js",
         "../InspectorBackendCommands.js",
         "Target.js",
-        "AnimationModel.js",
         "ApplicationCacheModel.js",
         "ConsoleModel.js",
         "ContentProviders.js",

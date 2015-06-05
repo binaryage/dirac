@@ -41,7 +41,7 @@ WebInspector.AnimationControlPane.prototype = {
     _playbackSliderInputHandler: function (event)
     {
         this._animationsPlaybackRate = WebInspector.AnimationTimeline.GlobalPlaybackRates[event.target.value];
-        this._target.animationModel.setPlaybackRate(this._animationsPaused ? 0 : this._animationsPlaybackRate);
+        WebInspector.AnimationModel.fromTarget(this._target).setPlaybackRate(this._animationsPaused ? 0 : this._animationsPlaybackRate);
         this._animationsPlaybackLabel.textContent = this._animationsPlaybackRate + "x";
         WebInspector.userMetrics.AnimationsPlaybackRateChanged.record();
     },
@@ -49,7 +49,7 @@ WebInspector.AnimationControlPane.prototype = {
     _pauseButtonHandler: function ()
     {
         this._animationsPaused = !this._animationsPaused;
-        this._target.animationModel.setPlaybackRate(this._animationsPaused ? 0 : this._animationsPlaybackRate);
+        WebInspector.AnimationModel.fromTarget(this._target).setPlaybackRate(this._animationsPaused ? 0 : this._animationsPlaybackRate);
         WebInspector.userMetrics.AnimationsPlaybackRateChanged.record();
         this._animationsPauseButton.element.classList.toggle("pause-toolbar-item");
         this._animationsPauseButton.element.classList.toggle("play-toolbar-item");
