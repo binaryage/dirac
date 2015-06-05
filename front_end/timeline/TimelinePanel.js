@@ -605,7 +605,7 @@ WebInspector.TimelinePanel.prototype = {
         this._overviewControls = [];
 
         var mainOverview = isFrameMode ? new WebInspector.TimelineFrameOverview(this._model, this._frameModel())
-                                       : new WebInspector.TimelineEventOverview(this._model);
+                                       : new WebInspector.TimelineEventOverview(this._model, this._frameModel());
         this._overviewControls.push(mainOverview);
         this.element.classList.toggle("timeline-overview-frames-mode", isFrameMode);
 
@@ -619,7 +619,7 @@ WebInspector.TimelinePanel.prototype = {
             this._flameChart = null;
             this._filterBar.filterButton().setEnabled(true);
             this._filtersContainer.classList.toggle("hidden", !this._filterBar.filtersToggled());
-            var timelineView = new WebInspector.TimelineView(this, this._model)
+            var timelineView = new WebInspector.TimelineView(this, this._model);
             this._addModeView(timelineView);
             timelineView.setFrameModel(isFrameMode ? this._frameModel() : null);
         }

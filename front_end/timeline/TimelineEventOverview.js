@@ -32,11 +32,13 @@
  * @constructor
  * @extends {WebInspector.TimelineOverviewBase}
  * @param {!WebInspector.TimelineModel} model
+ * @param {!WebInspector.TimelineFrameModelBase} frameModel
  */
-WebInspector.TimelineEventOverview = function(model)
+WebInspector.TimelineEventOverview = function(model, frameModel)
 {
     WebInspector.TimelineOverviewBase.call(this, model);
     this.element.id = "timeline-overview-events";
+    this._frameModel = frameModel;
 
     this._fillStyles = {};
     var categories = WebInspector.TimelineUIUtils.categories();
@@ -49,7 +51,7 @@ WebInspector.TimelineEventOverview = function(model)
 }
 
 /** @const */
-WebInspector.TimelineEventOverview._mainStripHeight = 16;
+WebInspector.TimelineEventOverview._fullStripHeight = 16;
 /** @const */
 WebInspector.TimelineEventOverview._smallStripHeight = 8;
 
@@ -74,7 +76,7 @@ WebInspector.TimelineEventOverview.prototype = {
         var threads = this._model.virtualThreads();
         var mainThreadEvents = this._model.mainThreadEvents();
         var networkHeight = this._canvas.clientHeight
-            - WebInspector.TimelineEventOverview._mainStripHeight
+            - WebInspector.TimelineEventOverview._fullStripHeight
             - 2 * WebInspector.TimelineEventOverview._smallStripHeight;
         var position = 0;
         if (Runtime.experiments.isEnabled("inputEventsOnTimelineOverview")) {
@@ -82,8 +84,12 @@ WebInspector.TimelineEventOverview.prototype = {
             position += inputHeight;
             networkHeight -= inputHeight;
         }
+        if (Runtime.experiments.isEnabled("frameRateOnEventsOverview"))
+            networkHeight -= WebInspector.TimelineEventOverview._fullStripHeight;
         position += this._drawNetwork(mainThreadEvents, position, networkHeight);
-        position += this._drawEvents(mainThreadEvents, position, WebInspector.TimelineEventOverview._mainStripHeight);
+        if (Runtime.experiments.isEnabled("frameRateOnEventsOverview"))
+            position += this._drawFrames(position, WebInspector.TimelineEventOverview._fullStripHeight);
+        position += this._drawEvents(mainThreadEvents, position, WebInspector.TimelineEventOverview._fullStripHeight);
         for (var thread of threads.filter(function(thread) { return !thread.isWorker(); }))
             this._drawEvents(thread.events, position, WebInspector.TimelineEventOverview._smallStripHeight);
         position += WebInspector.TimelineEventOverview._smallStripHeight;
@@ -241,6 +247,48 @@ WebInspector.TimelineEventOverview.prototype = {
 
         WebInspector.TimelineModel.forEachEvent(events, onEventStart.bind(this), onEventEnd.bind(this));
         return stripHeight;
+    },
+
+    /**
+     * @param {number} position
+     * @param {number} height
+     * @return {number}
+     */
+    _drawFrames: function(position, height)
+    {
+        var /** @const */ padding = 2;
+        var /** @const */ baseFrameDurationMs = 1e3 / 60;
+        var visualHeight = (height - padding) * window.devicePixelRatio;
+        var timeOffset = this._model.minimumRecordTime();
+        var timeSpan = this._model.maximumRecordTime() - timeOffset;
+        var scale = this._canvas.width / timeSpan;
+        var frames = this._frameModel.frames();
+        var baseY = (position + height) * window.devicePixelRatio;
+        var y = baseY + 10;
+        var ctx = this._context;
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(0, position * window.devicePixelRatio, this._canvas.width, height * window.devicePixelRatio);
+        ctx.clip();
+        ctx.beginPath();
+        ctx.lineWidth = 1 * window.devicePixelRatio;
+        ctx.strokeStyle = "hsl(110, 50%, 60%)";
+        ctx.fillStyle = "hsl(110, 50%, 70%)";
+        ctx.moveTo(0, y);
+        for (var i = 0; i < frames.length; ++i) {
+            var frame = frames[i];
+            var x = 0.5 + Math.round((frame.startTime - timeOffset) * scale);
+            ctx.lineTo(x, y);
+            y = 0.5 + Math.round(baseY - visualHeight * Math.min(baseFrameDurationMs / frame.duration, 1));
+            ctx.lineTo(x, y);
+        }
+        ctx.lineTo(this._canvas.width, y);
+        ctx.lineTo(this._canvas.width, baseY + 10);
+        ctx.closePath();
+        ctx.stroke();
+        ctx.fill();
+        ctx.restore();
+        return height;
     },
 
     _onCategoryVisibilityChanged: function()
