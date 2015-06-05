@@ -804,7 +804,12 @@ function installBackwardsCompatibility()
 
     // Support for legacy (<M41) frontends. Remove in M45.
     window.CSSStyleDeclaration.prototype.getPropertyCSSValue = getValue;
-    window.CSSPrimitiveValue = { CSS_PX: "CSS_PX" };
+
+    function CSSPrimitiveValue()
+    {
+    }
+    CSSPrimitiveValue.CSS_PX = 5;
+    window.CSSPrimitiveValue = CSSPrimitiveValue;
 
     // Support for legacy (<M44) frontends. Remove in M48.
     var styleElement = window.document.createElement("style");
