@@ -53,9 +53,8 @@ if len(sys.argv) == 2 and sys.argv[1] == '--help':
 is_cygwin = sys.platform == 'cygwin'
 
 
-def run_in_shell(command_line):
-    return subprocess.Popen(command_line, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
-
+def popen(arguments):
+    return subprocess.Popen(arguments, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
 def to_platform_path(filepath):
     if not is_cygwin:
@@ -66,7 +65,7 @@ def to_platform_path(filepath):
 def to_platform_path_exact(filepath):
     if not is_cygwin:
         return filepath
-    output, _ = run_in_shell('cygpath -w %s' % filepath).communicate()
+    output, _ = popen(['cygpath', '-w', filepath]).communicate()
     # pylint: disable=E1103
     return output.strip().replace('\\', '\\\\')
 
@@ -114,7 +113,6 @@ def which(program):
             exe_file = path.join(part, program)
             if is_exe(exe_file):
                 return exe_file
-
     return None
 
 
@@ -143,7 +141,7 @@ def verify_jsdoc_extra(additional_files):
         file_list.write('\n'.join(files))
     finally:
         file_list.close()
-    return run_in_shell('%s -jar %s --files-list-name %s' % (java_exec, jsdoc_validator_jar, to_platform_path_exact(file_list.name))), file_list
+    return popen(java_exec + ['-jar', jsdoc_validator_jar, '--files-list-name', to_platform_path_exact(file_list.name)]), file_list
 
 
 def verify_jsdoc(additional_files):
@@ -212,7 +210,7 @@ def find_java():
         sys.exit(1)
 
     is_ok = False
-    java_version_out, _ = run_in_shell('%s -version' % java_path).communicate()
+    java_version_out, _ = popen([java_path, '-version']).communicate()
     # pylint: disable=E1103
     match = re.search(java_build_regex, java_version_out)
     if match:
@@ -220,12 +218,12 @@ def find_java():
         minor = int(match.group(2))
         is_ok = major >= required_major and minor >= required_minor
     if is_ok:
-        exec_command = '%s -Xms1024m -server -XX:+TieredCompilation' % java_path
-        check_server_proc = run_in_shell('%s -version' % exec_command)
+        exec_command = [java_path, '-Xms1024m', '-server', '-XX:+TieredCompilation']
+        check_server_proc = popen(exec_command + ['-version'])
         check_server_proc.communicate()
         if check_server_proc.returncode != 0:
             # Not all Java installs have server JVMs.
-            exec_command = exec_command.replace('-server ', '')
+            exec_command = exec_command.remove('-server')
             has_server_jvm = False
 
     if not is_ok:
@@ -241,7 +239,18 @@ closure_runner_jar = to_platform_path(path.join(scripts_path, 'compiler-runner',
 jsdoc_validator_jar = to_platform_path(path.join(scripts_path, 'jsdoc-validator', 'jsdoc-validator.jar'))
 
 modules_dir = tempfile.mkdtemp()
-common_closure_args = ' --summary_detail_level 3 --jscomp_error visibility --compilation_level SIMPLE_OPTIMIZATIONS --warning_level VERBOSE --language_in=ES6_STRICT --language_out=ES5_STRICT --accept_const_keyword --extra_annotation_name suppressReceiverCheck --extra_annotation_name suppressGlobalPropertiesCheck --module_output_path_prefix %s' % to_platform_path_exact(modules_dir + path.sep)
+common_closure_args = [
+    '--summary_detail_level', '3',
+    '--jscomp_error', 'visibility',
+    '--compilation_level', 'SIMPLE_OPTIMIZATIONS',
+    '--warning_level', 'VERBOSE',
+    '--language_in=ES6_STRICT',
+    '--language_out=ES5_STRICT',
+    '--accept_const_keyword',
+    '--extra_annotation_name', 'suppressReceiverCheck',
+    '--extra_annotation_name', 'suppressGlobalPropertiesCheck',
+    '--module_output_path_prefix', to_platform_path_exact(modules_dir + path.sep)
+]
 
 worker_modules_by_name = {}
 dependents_by_module_name = {}
@@ -346,7 +355,7 @@ try:
     runtime_js_path = to_platform_path(path.join(devtools_frontend_path, 'Runtime.js'))
     checked_modules = modules_to_check()
     for name in checked_modules:
-        closure_args = common_closure_args
+        closure_args = ' '.join(common_closure_args)
         closure_args += ' --externs ' + to_platform_path(patched_es6_externs_file)
         closure_args += ' --externs ' + to_platform_path(global_externs_file)
         closure_args += ' --externs ' + platform_protocol_externs_file
@@ -356,8 +365,7 @@ try:
 finally:
     compiler_args_file.close()
 
-closure_runner_command = '%s -jar %s --compiler-args-file %s' % (java_exec, closure_runner_jar, to_platform_path_exact(compiler_args_file.name))
-modular_compiler_proc = run_in_shell(closure_runner_command)
+modular_compiler_proc = popen(java_exec + ['-jar', closure_runner_jar, '--compiler-args-file', to_platform_path_exact(compiler_args_file.name)])
 
 
 def unclosure_injected_script(sourceFileName, outFileName):
@@ -383,24 +391,30 @@ injectedScriptSourceTmpFile = to_platform_path(path.join(inspector_path, 'Inject
 unclosure_injected_script(injected_script_source_name, injectedScriptSourceTmpFile)
 
 print 'Compiling InjectedScriptSource.js...'
-spawned_compiler_command = '%s -jar %s %s' % (java_exec, closure_compiler_jar, common_closure_args)
 
-command = spawned_compiler_command
-command += '    --externs ' + to_platform_path(injected_script_externs_file)
-command += '    --externs ' + to_platform_path(protocol_externs_file)
-command += '    --module ' + jsmodule_name_prefix + 'injected_script' + ':1'
-command += '        --js ' + to_platform_path(injectedScriptSourceTmpFile)
+spawned_compiler_command = java_exec + [
+    '-jar',
+    closure_compiler_jar
+] + common_closure_args
 
-injectedScriptCompileProc = run_in_shell(command)
+command = spawned_compiler_command + [
+    '--externs', to_platform_path_exact(injected_script_externs_file),
+    '--externs', to_platform_path_exact(protocol_externs_file),
+    '--module', jsmodule_name_prefix + 'injected_script' + ':1',
+    '--js', to_platform_path(injectedScriptSourceTmpFile)
+]
+
+injectedScriptCompileProc = popen(command)
 
 print 'Compiling devtools.js...'
-spawned_compiler_command = '%s -jar %s %s' % (java_exec, closure_compiler_jar, common_closure_args)
-command = spawned_compiler_command
-command += '    --externs ' + to_platform_path(global_externs_file)
-command += '    --externs ' + to_platform_path(path.join(devtools_frontend_path, 'host', 'InspectorFrontendHostAPI.js'))
-command += '    --module ' + jsmodule_name_prefix + 'devtools_js' + ':1'
-command += '        --js ' + to_platform_path(path.join(devtools_frontend_path, 'devtools.js'))
-devtoolsJSCompileProc = run_in_shell(command)
+
+command = spawned_compiler_command + [
+    '--externs', to_platform_path(global_externs_file),
+    '--externs', to_platform_path(path.join(devtools_frontend_path, 'host', 'InspectorFrontendHostAPI.js')),
+    '--module', jsmodule_name_prefix + 'devtools_js' + ':1',
+    '--js', to_platform_path(path.join(devtools_frontend_path, 'devtools.js'))
+]
+devtoolsJSCompileProc = popen(command)
 
 print 'Verifying JSDoc comments...'
 additional_jsdoc_check_files = [injectedScriptSourceTmpFile]
@@ -409,8 +423,7 @@ jsdocValidatorProc, jsdocValidatorFileList = verify_jsdoc_extra(additional_jsdoc
 
 print 'Validating InjectedScriptSource.js...'
 injectedscript_check_script_path = path.join(scripts_path, "check_injected_script_source.py")
-check_injected_script_command = '%s %s' % (injectedscript_check_script_path, injected_script_source_name)
-validateInjectedScriptProc = run_in_shell(check_injected_script_command)
+validateInjectedScriptProc = popen([sys.executable, injectedscript_check_script_path, injected_script_source_name])
 
 print
 
