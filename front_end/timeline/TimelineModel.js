@@ -57,6 +57,7 @@ WebInspector.TimelineModel.RecordType = {
     Animation: "Animation",
     RequestMainThreadFrame: "RequestMainThreadFrame",
     BeginFrame: "BeginFrame",
+    NeedsBeginFrameChanged: "NeedsBeginFrameChanged",
     BeginMainThreadFrame: "BeginMainThreadFrame",
     ActivateLayerTree: "ActivateLayerTree",
     DrawFrame: "DrawFrame",

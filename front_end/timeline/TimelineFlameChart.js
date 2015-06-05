@@ -580,7 +580,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
             barY += vPadding;
             barHeight -= 2 * vPadding + 1;
 
-            context.fillStyle = "#ccc";
+            context.fillStyle = frame.idle ? "#eee" : "#ccc";
             context.fillRect(barX, barY, barWidth, barHeight);
 
             // Draw frame perforation.

@@ -209,6 +209,8 @@ WebInspector.TimelineFrameModelBase.prototype = {
         this._mainFrameCommitted = false;
         this._mainFrameRequested = false;
         this._framePendingCommit = null;
+        this._lastBeginFrame = null;
+        this._lastNeedsBeginFrame = null;
     },
 
     /**
@@ -218,6 +220,7 @@ WebInspector.TimelineFrameModelBase.prototype = {
     {
         if (!this._lastFrame)
             this._startBackgroundFrame(startTime);
+        this._lastBeginFrame = startTime;
     },
 
     /**
@@ -232,8 +235,18 @@ WebInspector.TimelineFrameModelBase.prototype = {
 
         // - if it wasn't drawn, it didn't happen!
         // - only show frames that either did not wait for the main thread frame or had one committed.
-        if (this._mainFrameCommitted || !this._mainFrameRequested)
+        if (this._mainFrameCommitted || !this._mainFrameRequested) {
+            if (this._lastNeedsBeginFrame) {
+                this._lastFrame.idle = true;
+                var idleTimeEnd = this._framePendingActivation ? this._framePendingActivation.triggerTime : (this._lastBeginFrame || this._lastNeedsBeginFrame);
+                this._startBackgroundFrame(idleTimeEnd);
+                if (this._framePendingActivation)
+                    this._commitPendingFrame();
+                this._lastNeedsBeginFrame = null;
+                this._lastBeginFrame = null;
+            }
             this._startBackgroundFrame(startTime);
+        }
         this._mainFrameCommitted = false;
     },
 
@@ -241,12 +254,8 @@ WebInspector.TimelineFrameModelBase.prototype = {
     {
         if (!this._lastFrame)
             return;
-        if (this._framePendingActivation) {
-            this._lastFrame._addTimeForCategories(this._framePendingActivation.timeByCategory);
-            this._lastFrame.paints = this._framePendingActivation.paints;
-            this._lastFrame._mainFrameId = this._framePendingActivation.mainFrameId;
-            this._framePendingActivation = null;
-        }
+        if (this._framePendingActivation && !this._lastNeedsBeginFrame)
+            this._commitPendingFrame();
     },
 
     handleRequestMainThreadFrame: function()
@@ -272,6 +281,16 @@ WebInspector.TimelineFrameModelBase.prototype = {
     handleLayerTreeSnapshot: function(layerTree)
     {
         this._lastLayerTree = layerTree;
+    },
+
+    /**
+     * @param {number} startTime
+     * @param {boolean} needsBeginFrame
+     */
+    handleNeedFrameChanged: function(startTime, needsBeginFrame)
+    {
+        if (needsBeginFrame)
+            this._lastNeedsBeginFrame = startTime;
     },
 
     /**
@@ -312,6 +331,14 @@ WebInspector.TimelineFrameModelBase.prototype = {
         this._frames.push(frame);
         if (typeof frame._mainFrameId === "number")
             this._frameById[frame._mainFrameId] = frame;
+    },
+
+    _commitPendingFrame: function()
+    {
+        this._lastFrame._addTimeForCategories(this._framePendingActivation.timeByCategory);
+        this._lastFrame.paints = this._framePendingActivation.paints;
+        this._lastFrame._mainFrameId = this._framePendingActivation.mainFrameId;
+        this._framePendingActivation = null;
     },
 
     /**
@@ -420,6 +447,8 @@ WebInspector.TracingTimelineFrameModel.prototype = {
             this.handleActivateLayerTree();
         else if (event.name === eventNames.RequestMainThreadFrame)
             this.handleRequestMainThreadFrame();
+        else if (event.name === eventNames.NeedsBeginFrameChanged)
+            this.handleNeedFrameChanged(timestamp, event.args["data"] && event.args["data"]["needsBeginFrame"]);
     },
 
     /**
@@ -444,10 +473,12 @@ WebInspector.TracingTimelineFrameModel.prototype = {
             return;
         }
 
-        if (WebInspector.TracingModel.isTopLevelEvent(event))
+        if (WebInspector.TracingModel.isTopLevelEvent(event)) {
             this._currentTaskTimeByCategory = {};
+            this._lastTaskBeginTime = event.startTime;
+        }
         if (!this._framePendingCommit && WebInspector.TracingTimelineFrameModel._mainFrameMarkers.indexOf(event.name) >= 0)
-            this._framePendingCommit = new WebInspector.PendingFrame(this._currentTaskTimeByCategory);
+            this._framePendingCommit = new WebInspector.PendingFrame(this._lastTaskBeginTime, this._currentTaskTimeByCategory);
         if (!this._framePendingCommit) {
             this._addTimeForCategory(this._currentTaskTimeByCategory, event);
             return;
@@ -532,6 +563,7 @@ WebInspector.TimelineFrame = function(startTime, startTimeOffset)
     this.duration = 0;
     this.timeByCategory = {};
     this.cpuTime = 0;
+    this.idle = false;
     /** @type {?WebInspector.DeferredLayerTree} */
     this.layerTree = null;
     /** @type {number|undefined} */
@@ -648,9 +680,10 @@ WebInspector.LayerPaintEvent.prototype = {
 
 /**
  * @constructor
+ * @param {number} triggerTime
  * @param {!Object.<string, number>} timeByCategory
  */
-WebInspector.PendingFrame = function(timeByCategory)
+WebInspector.PendingFrame = function(triggerTime, timeByCategory)
 {
     /** @type {!Object.<string, number>} */
     this.timeByCategory = timeByCategory;
@@ -658,4 +691,5 @@ WebInspector.PendingFrame = function(timeByCategory)
     this.paints = [];
     /** @type {number|undefined} */
     this.mainFrameId = undefined;
+    this.triggerTime = triggerTime;
 }
