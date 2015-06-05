@@ -118,7 +118,6 @@ WebInspector.Main.prototype = {
         Runtime.experiments.register("blackboxJSFramesOnTimeline", "Blackbox JavaScript frames on Timeline");
         Runtime.experiments.register("timelineDetailsChart", "Costly functions view in Timeline details", true);
         Runtime.experiments.register("customObjectFormatters", "Custom object formatters", true);
-        Runtime.experiments.register("externalDeviceList", "External device list", true);
         Runtime.experiments.register("fileSystemInspection", "FileSystem inspection");
         Runtime.experiments.register("filmStripInNetworkAndTimeline", "Filmstrip in Network and Timeline Panel", true);
         Runtime.experiments.register("frameRateOnEventsOverview", "Frame rate on Timeline events overview", true);

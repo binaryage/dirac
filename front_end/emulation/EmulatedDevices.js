@@ -387,10 +387,6 @@ WebInspector.EmulatedDevice.Images = function()
     this._scales = [];
 }
 
-WebInspector.EmulatedDevice.Images.Events = {
-    Update: "Update"
-}
-
 WebInspector.EmulatedDevice.Images.prototype = {
     /**
      * @return {*}
@@ -454,22 +450,12 @@ WebInspector.EmulatedDevicesList = function()
     this._customSetting = WebInspector.settings.createSetting("customEmulatedDeviceList", []);
     /** @type {!Array.<!WebInspector.EmulatedDevice>} */
     this._custom = this._listFromJSONV1(this._customSetting.get());
-
-    /** @type {!WebInspector.Setting} */
-    this._lastUpdatedSetting = WebInspector.settings.createSetting("lastUpdatedDeviceList", null);
-
-    /** @type {boolean} */
-    this._updating = false;
 }
 
 WebInspector.EmulatedDevicesList.Events = {
     CustomDevicesUpdated: "CustomDevicesUpdated",
-    IsUpdatingChanged: "IsUpdatingChanged",
     StandardDevicesUpdated: "StandardDevicesUpdated"
 }
-
-WebInspector.EmulatedDevicesList._DevicesJsonUrl = "https://api.github.com/repos/GoogleChrome/devtools-device-data/contents/devices.json?ref=release";
-WebInspector.EmulatedDevicesList._UpdateIntervalMs = 24 * 60 * 60 * 1000;
 
 WebInspector.EmulatedDevicesList.prototype = {
     /**
@@ -537,107 +523,6 @@ WebInspector.EmulatedDevicesList.prototype = {
         this.dispatchEventToListeners(WebInspector.EmulatedDevicesList.Events.StandardDevicesUpdated);
     },
 
-    update: function()
-    {
-        if (this._updating)
-            return;
-
-        this._updating = true;
-        this.dispatchEventToListeners(WebInspector.EmulatedDevicesList.Events.IsUpdatingChanged);
-
-        /**
-         * @param {*} json
-         * @return {!Promise.<string>}
-         */
-        function decodeBase64Content(json)
-        {
-            return loadXHR("data:application/json;charset=utf-8;base64," + json.content);
-        }
-
-        /**
-         * FIXME: promise chain below does not compile with JSON.parse.
-         * @return {*}
-         */
-        function myJsonParse(json)
-        {
-            return JSON.parse(json);
-        }
-
-        loadXHR(WebInspector.EmulatedDevicesList._DevicesJsonUrl)
-            .then(JSON.parse)
-            .then(decodeBase64Content)
-            .then(myJsonParse)
-            .then(this._parseUpdatedDevices.bind(this))
-            .then(this._updateFinished.bind(this))
-            .catch(this._updateFailed.bind(this));
-    },
-
-    maybeAutoUpdate: function()
-    {
-        if (!Runtime.experiments.isEnabled("externalDeviceList"))
-            return;
-        var lastUpdated = this._lastUpdatedSetting.get();
-        if (lastUpdated && (Date.now() - lastUpdated < WebInspector.EmulatedDevicesList._UpdateIntervalMs))
-            return;
-        this.update();
-    },
-
-    /**
-     * @param {*} json
-     */
-    _parseUpdatedDevices: function(json)
-    {
-        if (!json || typeof json !== "object") {
-            WebInspector.console.error("Malfromed device list");
-            return;
-        }
-        if (!("version" in json) || typeof json["version"] !== "number") {
-            WebInspector.console.error("Device list does not specify version");
-            return;
-        }
-        var version = json["version"];
-        if (version === 1) {
-            this._parseDevicesV1(json);
-            return;
-        }
-        WebInspector.console.error("Unsupported device list version '" + version + "'");
-    },
-
-    /**
-     * @param {*} json
-     */
-    _parseDevicesV1: function(json)
-    {
-        if (!("devices" in json)) {
-            WebInspector.console.error("Malfromed device list");
-            return;
-        }
-        var devices = json["devices"];
-        if (!Array.isArray(devices)) {
-            WebInspector.console.error("Malfromed device list");
-            return;
-        }
-
-        devices = this._listFromJSONV1(devices);
-        this._copyShowValues(this._standard, devices);
-        this._standard = devices;
-        this.saveStandardDevices();
-        WebInspector.console.log("Device list updated successfully");
-    },
-
-    _updateFailed: function()
-    {
-        WebInspector.console.error("Cannot update device list");
-        this._updateFinished();
-    },
-
-    _updateFinished: function()
-    {
-        this._updating = false;
-        this._lastUpdatedSetting.set(Date.now());
-        this.dispatchEventToListeners(WebInspector.EmulatedDevicesList.Events.IsUpdatingChanged);
-    },
-
     /**
      * @param {!Array.<!WebInspector.EmulatedDevice>} from
      * @param {!Array.<!WebInspector.EmulatedDevice>} to
@@ -653,14 +538,6 @@ WebInspector.EmulatedDevicesList.prototype = {
             if (deviceById.has(title))
                 to[i].copyShowFrom(/** @type {!WebInspector.EmulatedDevice} */ (deviceById.get(title)));
         }
-    },
-
-    /**
-     * @return {boolean}
-     */
-    isUpdating: function()
-    {
-        return this._updating;
     },
 
     __proto__: WebInspector.Object.prototype
