@@ -31,9 +31,8 @@
 /**
  * @constructor
  * @extends {WebInspector.Object}
- * @param {boolean} responsiveDesignAvailable
  */
-WebInspector.OverridesSupport = function(responsiveDesignAvailable)
+WebInspector.OverridesSupport = function()
 {
     this._touchEmulationSuspended = false;
     this._emulateMobileEnabled = false;
@@ -43,7 +42,6 @@ WebInspector.OverridesSupport = function(responsiveDesignAvailable)
     this._fixedDeviceScale = false;
     this._initialized = false;
     this._deviceMetricsThrottler = new WebInspector.Throttler(0);
-    this._responsiveDesignAvailable = responsiveDesignAvailable;
 
     this.settings = {};
     this.settings._emulationEnabled = WebInspector.settings.createSetting("emulationEnabled", false);
@@ -295,14 +293,6 @@ WebInspector.OverridesSupport.prototype = {
             if (enabled && this.settings.emulateResolution.get())
                 this._target.emulationAgent().resetScrollAndPageScaleFactor();
         }
-    },
-
-    /**
-     * @return {boolean}
-     */
-    responsiveDesignAvailable: function()
-    {
-        return this._responsiveDesignAvailable;
     },
 
     /**

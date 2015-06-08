@@ -57,26 +57,15 @@ WebInspector.OverridesView = function()
     resetButtonElement.id = "overrides-reset-button";
     this._tabbedPane.appendAfterTabStrip(resetButtonElement);
 
-    if (!WebInspector.overridesSupport.responsiveDesignAvailable()) {
-        var disableButtonElement = createTextButton(WebInspector.UIString("Disable"), this._toggleEmulationEnabled.bind(this), "overrides-disable-button");
-        disableButtonElement.id = "overrides-disable-button";
-        this._tabbedPane.appendAfterTabStrip(disableButtonElement);
-    }
+    var disableButtonElement = createTextButton(WebInspector.UIString("Disable"), this._toggleEmulationEnabled.bind(this), "overrides-disable-button");
+    disableButtonElement.id = "overrides-disable-button";
+    this._tabbedPane.appendAfterTabStrip(disableButtonElement);
 
     this._splashScreenElement = this.element.createChild("div", "overrides-splash-screen");
+    this._splashScreenElement.appendChild(createTextButton(WebInspector.UIString("Enable emulation"), this._toggleEmulationEnabled.bind(this), "overrides-enable-button"));
+
     this._unavailableSplashScreenElement = this.element.createChild("div", "overrides-splash-screen");
     this._unavailableSplashScreenElement.createTextChild(WebInspector.UIString("Emulation is not available."));
-
-    if (WebInspector.overridesSupport.responsiveDesignAvailable()) {
-        this._splashScreenElement.createTextChild(WebInspector.UIString("Emulation is currently disabled. Toggle "));
-        var toolbar = new WebInspector.Toolbar(this._splashScreenElement);
-        var toggleEmulationButton = new WebInspector.ToolbarButton("", "emulation-toolbar-item");
-        toggleEmulationButton.addEventListener("click", this._toggleEmulationEnabled, this);
-        toolbar.appendToolbarItem(toggleEmulationButton);
-        this._splashScreenElement.createTextChild(WebInspector.UIString("in the main toolbar to enable it."));
-    } else {
-        this._splashScreenElement.appendChild(createTextButton(WebInspector.UIString("Enable emulation"), this._toggleEmulationEnabled.bind(this), "overrides-enable-button"));
-    }
 
     this._warningFooter = this.element.createChild("div", "overrides-footer");
     this._overridesWarningUpdated();

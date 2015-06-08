@@ -191,7 +191,7 @@ WebInspector.Main.prototype = {
         WebInspector.ContextMenu.initialize();
         WebInspector.ContextMenu.installHandler(document);
         WebInspector.dockController = new WebInspector.DockController(canDock);
-        WebInspector.overridesSupport = new WebInspector.OverridesSupport(canDock);
+        WebInspector.overridesSupport = new WebInspector.OverridesSupport();
         WebInspector.emulatedDevicesList = new WebInspector.EmulatedDevicesList();
         WebInspector.multitargetConsoleModel = new WebInspector.MultitargetConsoleModel();
         WebInspector.multitargetNetworkManager = new WebInspector.MultitargetNetworkManager();
@@ -335,7 +335,7 @@ WebInspector.Main.prototype = {
 
         function overridesReady()
         {
-            if (!WebInspector.overridesSupport.responsiveDesignAvailable() && WebInspector.overridesSupport.emulationEnabled())
+            if (!WebInspector.dockController.canDock() && WebInspector.overridesSupport.emulationEnabled())
                 WebInspector.inspectorView.showViewInDrawer("emulation", true);
 
             target.inspectorAgent().enable(inspectorAgentEnableCallback);
@@ -455,10 +455,10 @@ WebInspector.Main.prototype = {
         var toggleConsoleLabel = WebInspector.UIString("Show console");
         section.addKey(shortcut.makeDescriptor(shortcut.Keys.Tilde, shortcut.Modifiers.Ctrl), toggleConsoleLabel);
         section.addKey(shortcut.makeDescriptor(shortcut.Keys.Esc), WebInspector.UIString("Toggle drawer"));
-        if (WebInspector.overridesSupport.responsiveDesignAvailable())
+        if (WebInspector.dockController.canDock()) {
             section.addKey(shortcut.makeDescriptor("M", shortcut.Modifiers.CtrlOrMeta | shortcut.Modifiers.Shift), WebInspector.UIString("Toggle device mode"));
-        if (WebInspector.dockController.canDock())
             section.addKey(shortcut.makeDescriptor("D", shortcut.Modifiers.CtrlOrMeta | shortcut.Modifiers.Shift), WebInspector.UIString("Toggle dock side"));
+        }
         section.addKey(shortcut.makeDescriptor("f", shortcut.Modifiers.CtrlOrMeta), WebInspector.UIString("Search"));
 
         var advancedSearchShortcutModifier = WebInspector.isMac()

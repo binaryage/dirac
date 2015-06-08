@@ -8,13 +8,11 @@
  */
 WebInspector.AdvancedApp = function()
 {
-    if (WebInspector.overridesSupport.responsiveDesignAvailable()) {
-        this._toggleEmulationButton = new WebInspector.ToolbarButton(WebInspector.UIString("Toggle device mode"), "emulation-toolbar-item");
-        this._toggleEmulationButton.setToggled(WebInspector.overridesSupport.emulationEnabled());
-        this._toggleEmulationButton.addEventListener("click", this._toggleEmulationEnabled, this);
-        WebInspector.overridesSupport.addEventListener(WebInspector.OverridesSupport.Events.EmulationStateChanged, this._emulationEnabledChanged, this);
-        WebInspector.overridesSupport.addEventListener(WebInspector.OverridesSupport.Events.OverridesWarningUpdated, this._overridesWarningUpdated, this);
-    }
+    this._toggleEmulationButton = new WebInspector.ToolbarButton(WebInspector.UIString("Toggle device mode"), "emulation-toolbar-item");
+    this._toggleEmulationButton.setToggled(WebInspector.overridesSupport.emulationEnabled());
+    this._toggleEmulationButton.addEventListener("click", this._toggleEmulationEnabled, this);
+    WebInspector.overridesSupport.addEventListener(WebInspector.OverridesSupport.Events.EmulationStateChanged, this._emulationEnabledChanged, this);
+    WebInspector.overridesSupport.addEventListener(WebInspector.OverridesSupport.Events.OverridesWarningUpdated, this._overridesWarningUpdated, this);
     WebInspector.dockController.addEventListener(WebInspector.DockController.Events.BeforeDockSideChanged, this._openToolboxWindow, this);
 };
 
@@ -28,8 +26,6 @@ WebInspector.AdvancedApp.prototype = {
     _emulationEnabledChanged: function()
     {
         this._toggleEmulationButton.setToggled(WebInspector.overridesSupport.emulationEnabled());
-        if (!WebInspector.overridesSupport.responsiveDesignAvailable() && WebInspector.overridesSupport.emulationEnabled())
-            WebInspector.inspectorView.showViewInDrawer("emulation", true);
     },
 
     _overridesWarningUpdated: function()
@@ -277,7 +273,6 @@ WebInspector.AdvancedApp.ToggleDeviceModeActionDelegate.prototype = {
      */
     handleAction: function(context, actionId)
     {
-        if (WebInspector.overridesSupport.responsiveDesignAvailable())
-            WebInspector.AdvancedApp._instance()._toggleEmulationEnabled();
+        WebInspector.AdvancedApp._instance()._toggleEmulationEnabled();
     }
 }
