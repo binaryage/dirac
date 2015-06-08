@@ -92,8 +92,10 @@ WebInspector.TimelinePaintProfilerView.prototype = {
             this._disposeSnapshot();
             this._lastLoadedSnapshot = snapshot;
             this._imageView.setMask(tileRect);
-            if (!snapshot)
+            if (!snapshot) {
+                this._imageView.showImage();
                 return;
+            }
             snapshot.commandLog(onCommandLogDone.bind(this, snapshot, tileRect));
         }
 
@@ -105,7 +107,7 @@ WebInspector.TimelinePaintProfilerView.prototype = {
          */
         function onCommandLogDone(snapshot, clipRect, log)
         {
-            this._logTreeView.setCommandLog(snapshot.target(), log);
+            this._logTreeView.setCommandLog(snapshot.target(), log || []);
             this._paintProfilerView.setSnapshotAndLog(snapshot, log || [], clipRect);
         }
     },
@@ -193,7 +195,8 @@ WebInspector.TimelinePaintImageView.prototype = {
     showImage: function(imageURL)
     {
         this._imageContainer.classList.toggle("hidden", !imageURL);
-        this._imageElement.src = imageURL;
+        if (imageURL)
+            this._imageElement.src = imageURL;
     },
 
     /**

@@ -47,7 +47,7 @@ WebInspector.LayerPaintProfilerView.prototype = {
          */
         function onCommandLogDone(snapshot, log)
         {
-            this._logTreeView.setCommandLog(snapshot.target(), log);
+            this._logTreeView.setCommandLog(snapshot.target(), log || []);
             this._paintProfilerView.setSnapshotAndLog(snapshot || null, log || [], null);
         }
     },

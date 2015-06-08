@@ -130,7 +130,7 @@ WebInspector.OverviewGrid.prototype = {
      */
     setResizeEnabled: function(enabled)
     {
-        this._window._setEnabled(!!enabled);
+        this._window.setEnabled(!!enabled);
     }
 }
 
@@ -178,7 +178,7 @@ WebInspector.OverviewGrid.Window = function(parentElement, dividersLabelBarEleme
     this._rightResizeElement = parentElement.createChild("div", "overview-grid-window-resizer overview-grid-window-resizer-right");
     this._rightResizeElement.style.right = 0;
     WebInspector.installDragHandle(this._rightResizeElement, this._resizerElementStartDragging.bind(this), this._rightResizeElementDragging.bind(this), null, "ew-resize");
-    this._setEnabled(true);
+    this.setEnabled(true);
 }
 
 WebInspector.OverviewGrid.Events = {
@@ -198,13 +198,13 @@ WebInspector.OverviewGrid.Window.prototype = {
         this._overviewWindowBordersElement.style.right = "0%";
         this._leftResizeElement.style.left = "0%";
         this._rightResizeElement.style.left = "100%";
-        this._setEnabled(true);
+        this.setEnabled(true);
     },
 
     /**
      * @param {boolean} enabled
      */
-    _setEnabled: function(enabled)
+    setEnabled: function(enabled)
     {
         enabled = !!enabled;
         if (this._enabled === enabled)

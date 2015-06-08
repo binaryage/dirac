@@ -84,8 +84,10 @@ WebInspector.PaintProfilerView.prototype = {
         if (!this._snapshot) {
             this._update();
             this._pieChart.setTotal(0);
+            this._selectionWindow.setEnabled(false);
             return;
         }
+        this._selectionWindow.setEnabled(true);
         this._progressBanner.classList.remove("hidden");
         snapshot.requestImage(null, null, 1, this._showImageCallback);
         snapshot.profile(clipRect, onProfileDone.bind(this));
@@ -271,7 +273,7 @@ WebInspector.PaintProfilerCommandLogView = function()
 WebInspector.PaintProfilerCommandLogView.prototype = {
     /**
      * @param {?WebInspector.Target} target
-     * @param {!Array.<!WebInspector.PaintProfilerLogItem>=} log
+     * @param {!Array.<!WebInspector.PaintProfilerLogItem>} log
      */
     setCommandLog: function(target, log)
     {
@@ -297,7 +299,7 @@ WebInspector.PaintProfilerCommandLogView.prototype = {
     updateWindow: function(stepLeft, stepRight)
     {
         this._treeOutline.removeChildren();
-        if (!this._log)
+        if (!this._log.length)
             return;
         stepLeft = stepLeft || 0;
         stepRight = stepRight || this._log.length;
