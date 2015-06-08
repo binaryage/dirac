@@ -273,13 +273,13 @@ WebInspector.TimelineEventOverview.prototype = {
         ctx.beginPath();
         ctx.lineWidth = 1 * window.devicePixelRatio;
         ctx.strokeStyle = "hsl(110, 50%, 60%)";
-        ctx.fillStyle = "hsl(110, 50%, 70%)";
+        ctx.fillStyle = "hsl(110, 50%, 80%)";
         ctx.moveTo(0, y);
         for (var i = 0; i < frames.length; ++i) {
             var frame = frames[i];
-            var x = 0.5 + Math.round((frame.startTime - timeOffset) * scale);
+            var x = Math.round((frame.startTime - timeOffset) * scale) + 0.5;
             ctx.lineTo(x, y);
-            y = 0.5 + Math.round(baseY - visualHeight * Math.min(baseFrameDurationMs / frame.duration, 1));
+            y = frame.idle ? baseY + 0.5 : Math.round(baseY - visualHeight * Math.min(baseFrameDurationMs / frame.duration, 1)) - 0.5;
             ctx.lineTo(x, y);
         }
         ctx.lineTo(this._canvas.width, y);
