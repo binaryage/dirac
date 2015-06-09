@@ -61,6 +61,7 @@ WebInspector.TimelineModel.RecordType = {
     BeginMainThreadFrame: "BeginMainThreadFrame",
     ActivateLayerTree: "ActivateLayerTree",
     DrawFrame: "DrawFrame",
+    HitTest: "HitTest",
     ScheduleStyleRecalculation: "ScheduleStyleRecalculation",
     RecalculateStyles: "RecalculateStyles", // For backwards compatibility only, now replaced by UpdateLayoutTree.
     UpdateLayoutTree: "UpdateLayoutTree",
