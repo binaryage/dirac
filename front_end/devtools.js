@@ -824,7 +824,7 @@ function windowLoaded()
     installBackwardsCompatibility();
 }
 
-if (window.document.readyState === "complete" || window.document.readyState === "interactive")
+if (window.document.head && (window.document.readyState === "complete" || window.document.readyState === "interactive"))
     installBackwardsCompatibility();
 else
     window.addEventListener("DOMContentLoaded", windowLoaded, false);
