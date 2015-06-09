@@ -31,6 +31,7 @@
     position: relative;
     flex-direction: column;
     display: flex;
+    flex: none;
 }
 
 .sidebar-pane .info {
@@ -104,7 +105,7 @@
     pointer-events: auto;
 }
 
-.sidebar-pane-title .sidebar-pane > .toolbar {
+.sidebar-pane-title > .toolbar {
     position: absolute;
     right: 0;
     top: -3px;
@@ -133,7 +134,7 @@
     position: absolute;
     height: 16px;
     width: 23px;
-    right: 2px;
+    right: 5px;
     bottom: 3px;
     visibility: hidden;
 }

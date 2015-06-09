@@ -11,27 +11,26 @@
     white-space: nowrap;
 }
 
+.list-item:nth-of-type(2n) {
+    background-color: #f8f8f8;
+}
+
+.list-item.selected {
+    background-color: rgb(212, 212, 212);
+}
+
+.list-item.selected > .title {
+    font-weight: bold;
+}
+
 .list-item:hover {
     background-color: #eee;
-}
-
-.list-item > .title::before {
-    content: "\2713 ";
-    color: transparent;
-}
-
-.list-item.selected > .title::before {
-    color: inherit;
 }
 
 .list-item > .title {
     font-weight: normal;
     word-wrap: break-word;
     white-space: normal;
-}
-
-.list-item.selected > .title {
-    font-weight: bold;
 }
 
 .list-item > .subtitle {
