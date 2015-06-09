@@ -87,8 +87,6 @@ WebInspector.TimelineEventOverview.prototype = {
         if (Runtime.experiments.isEnabled("frameRateOnEventsOverview"))
             networkHeight -= WebInspector.TimelineEventOverview._fullStripHeight;
         position += this._drawNetwork(mainThreadEvents, position, networkHeight);
-        if (Runtime.experiments.isEnabled("frameRateOnEventsOverview"))
-            position += this._drawFrames(position, WebInspector.TimelineEventOverview._fullStripHeight);
         position += this._drawStackedUtilizationChart(mainThreadEvents, position, WebInspector.TimelineEventOverview._fullStripHeight);
         for (var thread of threads.filter(function(thread) { return !thread.isWorker(); }))
             this._drawEvents(thread.events, position, WebInspector.TimelineEventOverview._smallStripHeight);
@@ -96,6 +94,8 @@ WebInspector.TimelineEventOverview.prototype = {
         for (var thread of threads.filter(function(thread) { return thread.isWorker(); }))
             this._drawEvents(thread.events, position, WebInspector.TimelineEventOverview._smallStripHeight);
         position += WebInspector.TimelineEventOverview._smallStripHeight;
+        if (Runtime.experiments.isEnabled("frameRateOnEventsOverview"))
+            position += this._drawFrames(position, WebInspector.TimelineEventOverview._fullStripHeight);
         console.assert(position === this._canvas.clientHeight);
     },
 
@@ -341,20 +341,26 @@ WebInspector.TimelineEventOverview.prototype = {
         ctx.beginPath();
         ctx.lineWidth = 1 * window.devicePixelRatio;
         ctx.strokeStyle = "hsl(110, 50%, 60%)";
-        ctx.fillStyle = "hsl(110, 50%, 80%)";
+        ctx.fillStyle = "hsl(110, 50%, 88%)";
         ctx.moveTo(0, y);
         for (var i = 0; i < frames.length; ++i) {
             var frame = frames[i];
             var x = Math.round((frame.startTime - timeOffset) * scale) + 0.5;
             ctx.lineTo(x, y);
+            ctx.lineTo(x, y + 1.5);
             y = frame.idle ? baseY + 0.5 : Math.round(baseY - visualHeight * Math.min(baseFrameDurationMs / frame.duration, 1)) - 0.5;
+            ctx.lineTo(x, y + 1.5);
             ctx.lineTo(x, y);
         }
-        ctx.lineTo(this._canvas.width, y);
-        ctx.lineTo(this._canvas.width, baseY + 10);
+        if (frames.length) {
+            var lastFrame = frames.peekLast();
+            var x = Math.round((lastFrame.startTime + lastFrame.duration - timeOffset) * scale) + 0.5;
+            ctx.lineTo(x, y);
+        }
+        ctx.lineTo(x, baseY + 10);
         ctx.closePath();
-        ctx.stroke();
         ctx.fill();
+        ctx.stroke();
         ctx.restore();
         return height;
     },
